@@ -9,19 +9,21 @@
 ### 1.1 类型安全
 
 - [ ] **无隐式 any**
+
   ```typescript
   // ❌ 避免
   function process(data) { /* ... */ }
-  
+
   // ✅ 推荐
   function process(data: unknown) { /* ... */ }
   ```
 
 - [ ] **无类型断言滥用**
+
   ```typescript
   // ❌ 避免
   const user = json as User;
-  
+
   // ✅ 推荐
   if (isValidUser(json)) {
       const user = json;
@@ -29,6 +31,7 @@
   ```
 
 - [ ] **启用严格模式**
+
   ```json
   {
     "compilerOptions": {
@@ -53,6 +56,7 @@
   - 私有成员: `_leadingUnderscore` 或 `#private`
 
 - [ ] **使用 ESLint 和 Prettier**
+
   ```json
   // .eslintrc.json
   {
@@ -77,6 +81,7 @@
 ### 1.3 代码结构
 
 - [ ] **单一职责原则 (SRP)**
+
   ```typescript
   // ❌ 坏: 一个类做太多事
   class UserManager {
@@ -85,7 +90,7 @@
       validateData() { }
       logActivity() { }
   }
-  
+
   // ✅ 好: 分离职责
   class UserService {
       createUser() { }
@@ -99,12 +104,13 @@
   ```
 
 - [ ] **依赖注入**
+
   ```typescript
   // ❌ 坏: 直接实例化依赖
   class OrderService {
       private db = new Database();  // 紧耦合
   }
-  
+
   // ✅ 好: 通过构造函数注入
   class OrderService {
       constructor(private db: Database) { }
@@ -118,27 +124,29 @@
 ### 2.1 输入验证
 
 - [ ] **所有用户输入都经过验证**
+
   ```typescript
   import { z } from 'zod';
-  
+
   const UserSchema = z.object({
       email: z.string().email(),
       age: z.number().int().min(0).max(150),
       name: z.string().min(1).max(100)
   });
-  
+
   // 验证输入
   const user = UserSchema.parse(req.body);
   ```
 
 - [ ] **防止原型污染**
+
   ```typescript
   // ✅ 冻结原型
   Object.freeze(Object.prototype);
-  
+
   // ✅ 使用 Object.create(null) 创建无原型对象
   const safeMap = Object.create(null);
-  
+
   // ✅ 拒绝危险键
   function safeSet(obj: any, key: string, value: any) {
       if (key === '__proto__' || key === 'constructor') {
@@ -151,6 +159,7 @@
 ### 2.2 依赖安全
 
 - [ ] **定期审计依赖**
+
   ```bash
   npm audit
   pnpm audit
@@ -159,6 +168,7 @@
   ```
 
 - [ ] **锁定版本**
+
   ```json
   // package.json
   {
@@ -166,7 +176,7 @@
       "lodash": "4.17.21"  // 精确版本
     }
   }
-  
+
   // 使用 lock 文件
   // package-lock.json, pnpm-lock.yaml, yarn.lock
   ```
@@ -179,10 +189,11 @@
 ### 2.3 敏感数据处理
 
 - [ ] **不将密钥硬编码**
+
   ```typescript
   // ❌ 坏
   const API_KEY = 'sk-1234567890';
-  
+
   // ✅ 好
   const API_KEY = process.env.API_KEY;
   if (!API_KEY) {
@@ -191,10 +202,11 @@
   ```
 
 - [ ] **安全存储 Token**
+
   ```typescript
   // 浏览器: 使用 httpOnly cookies
   // 避免 localStorage 存储敏感信息
-  
+
   // Node.js: 使用 Key Management Service
   import { KMS } from '@aws-sdk/client-kms';
   ```
@@ -206,10 +218,11 @@
 ### 3.1 加载性能
 
 - [ ] **代码分割**
+
   ```typescript
   // ✅ 路由级分割
   const Dashboard = lazy(() => import('./Dashboard'));
-  
+
   // ✅ 组件级分割
   const HeavyChart = lazy(() => import('./HeavyChart'));
   ```
@@ -221,6 +234,7 @@
   - [ ] 启用 Gzip/Brotli 压缩
 
 - [ ] **缓存策略**
+
   ```nginx
   # Nginx 缓存配置
   location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
@@ -232,6 +246,7 @@
 ### 3.2 运行时性能
 
 - [ ] **避免内存泄漏**
+
   ```typescript
   // ✅ 清理事件监听器
   useEffect(() => {
@@ -239,29 +254,31 @@
       window.addEventListener('resize', handler);
       return () => window.removeEventListener('resize', handler);
   }, []);
-  
+
   // ✅ 使用 WeakRef 避免强引用
   const cache = new WeakMap();
   ```
 
 - [ ] **优化重渲染**
+
   ```typescript
   // ✅ 使用 memo
   const MemoizedComponent = memo(Component, (prev, next) => {
       return prev.id === next.id;
   });
-  
+
   // ✅ 使用 useMemo/useCallback
   const expensiveValue = useMemo(() => computeExpensive(a, b), [a, b]);
   ```
 
 - [ ] **长任务优化**
+
   ```typescript
   // ✅ 使用 requestIdleCallback
   requestIdleCallback(() => {
       performNonCriticalWork();
   });
-  
+
   // ✅ 任务分片
   async function processLargeArray(items: any[]) {
       for (let i = 0; i < items.length; i += 100) {
@@ -281,6 +298,7 @@
   - [ ] 使用 GraphQL 减少过度获取
 
 - [ ] **连接优化**
+
   ```typescript
   // ✅ 使用 keep-alive
   // ✅ 使用 HTTP/2 多路复用
@@ -294,6 +312,7 @@
 ### 4.1 单元测试
 
 - [ ] **测试覆盖率**
+
   ```json
   {
     "jest": {
@@ -310,18 +329,20 @@
   ```
 
 - [ ] **可测试的代码结构**
+
   ```typescript
   // ✅ 纯函数易于测试
   function calculateTotal(price: number, quantity: number): number {
       return price * quantity;
   }
-  
+
   test('calculateTotal', () => {
       expect(calculateTotal(10, 2)).toBe(20);
   });
   ```
 
 - [ ] **Mock 外部依赖**
+
   ```typescript
   // ✅ 使用依赖注入便于 mock
   jest.mock('./api', () => ({
@@ -332,6 +353,7 @@
 ### 4.2 集成测试
 
 - [ ] **API 测试**
+
   ```typescript
   describe('User API', () => {
       it('should create user', async () => {
@@ -339,7 +361,7 @@
               .post('/api/users')
               .send({ name: 'John', email: 'john@example.com' })
               .expect(201);
-          
+
           expect(response.body).toHaveProperty('id');
       });
   });
@@ -358,6 +380,7 @@
   - [ ] 核心业务流程
 
 - [ ] **使用 Playwright/Cypress**
+
   ```typescript
   test('user can complete purchase', async ({ page }) => {
       await page.goto('/products');
@@ -376,6 +399,7 @@
 ### 5.1 文档
 
 - [ ] **代码注释**
+
   ```typescript
   /**
    * 计算折扣后的价格
@@ -402,6 +426,7 @@
 ### 5.2 版本控制
 
 - [ ] **Commit 规范**
+
   ```
   feat: 添加用户认证功能
   fix: 修复登录状态丢失问题
@@ -420,6 +445,7 @@
 ### 5.3 监控和日志
 
 - [ ] **结构化日志**
+
   ```typescript
   // ✅ 使用结构化日志
   logger.info('User created', {
@@ -430,6 +456,7 @@
   ```
 
 - [ ] **错误追踪**
+
   ```typescript
   // ✅ 集成 Sentry
   Sentry.init({
@@ -446,6 +473,7 @@
 ### 6.1 CI/CD 流水线
 
 - [ ] **自动化检查**
+
   ```yaml
   # .github/workflows/ci.yml
   jobs:
@@ -466,18 +494,20 @@
 ### 6.2 环境配置
 
 - [ ] **环境变量管理**
+
   ```bash
   # .env.example (提交到仓库)
   DATABASE_URL=
   API_KEY=
   REDIS_URL=
-  
+
   # .env (不提交，本地使用)
   DATABASE_URL=postgresql://localhost:5432/mydb
   API_KEY=dev-key
   ```
 
 - [ ] **健康检查**
+
   ```typescript
   app.get('/health', (req, res) => {
       const checks = {
@@ -485,7 +515,7 @@
           redis: checkRedis(),
           disk: checkDiskSpace()
       };
-      
+
       const isHealthy = Object.values(checks).every(c => c.status === 'ok');
       res.status(isHealthy ? 200 : 503).json(checks);
   });
@@ -501,10 +531,11 @@
   - [ ] 支持快捷键
 
 - [ ] **屏幕阅读器**
+
   ```html
   <!-- ✅ 使用语义化标签 -->
   <button aria-label="关闭对话框">×</button>
-  
+
   <!-- ✅ 提供状态信息 -->
   <div role="alert" aria-live="polite">
       表单提交成功
@@ -521,18 +552,21 @@
 ## 8. 检查清单使用指南
 
 ### 新项目启动
+
 1. 复制本检查清单
 2. 根据项目特点调整优先级
 3. 在代码审查中使用
 4. 定期回顾和更新
 
 ### 代码审查流程
+
 1. 作者自检查清单
 2. 审查者对照检查
 3. 讨论并记录例外情况
 4. 跟踪改进项
 
 ### 自动化检查
+
 ```bash
 # 运行所有检查
 npm run check:all

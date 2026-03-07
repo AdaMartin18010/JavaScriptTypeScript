@@ -1,0 +1,4 @@
+packages:
+  - '.'
+  # 未来可扩展为 monorepo
+  # - 'packages/*'

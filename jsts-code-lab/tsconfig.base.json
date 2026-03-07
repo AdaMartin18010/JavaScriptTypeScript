@@ -1,0 +1,53 @@
+{
+  "compilerOptions": {
+    /* 语言和环境 */
+    "target": "ES2024",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    
+    /* JavaScript 支持 */
+    "allowJs": true,
+    "checkJs": true,
+    
+    /* 类型系统 - 严格模式 */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    
+    /* 额外检查 */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    
+    /* 模块解析 */
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    
+    /* 声明文件 */
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    
+    /* 输出 */
+    "outDir": "./dist",
+    "rootDir": ".",
+    "removeComments": false,
+    
+    /* 拦截器 */
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]
+}
