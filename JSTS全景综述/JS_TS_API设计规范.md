@@ -132,7 +132,7 @@ class UserService {
         private emailService: EmailService,
         private logger: Logger
     ) { }
-    
+
     async createUser(data: UserData): Promise<User> {
         const validated = this.validator.validate(data);
         const user = await this.repository.save(validated);
@@ -154,7 +154,7 @@ class ImmutableUser {
         readonly createdAt: Date,
         private _lastLogin?: Date
     ) { }
-    
+
     // 更新返回新实例
     withLastLogin(date: Date): ImmutableUser {
         return new ImmutableUser(
@@ -164,7 +164,7 @@ class ImmutableUser {
             date
         );
     }
-    
+
     get lastLogin(): Date | undefined {
         return this._lastLogin;
     }
@@ -176,23 +176,23 @@ class UserBuilder {
     private lastName = '';
     private email = '';
     private roles: string[] = [];
-    
+
     setName(first: string, last: string): this {
         this.firstName = first;
         this.lastName = last;
         return this;
     }
-    
+
     setEmail(email: string): this {
         this.email = email;
         return this;
     }
-    
+
     addRole(role: string): this {
         this.roles.push(role);
         return this;
     }
-    
+
     build(): User {
         return new User(
             this.firstName,
@@ -406,11 +406,11 @@ const statusCodes = {
     CREATED: 201,               // POST 创建成功
     ACCEPTED: 202,              // 异步处理已接受
     NO_CONTENT: 204,            // 删除成功，无返回内容
-    
+
     // 3xx 重定向
     MOVED_PERMANENTLY: 301,     // 资源永久移动
     NOT_MODIFIED: 304,          // 缓存有效
-    
+
     // 4xx 客户端错误
     BAD_REQUEST: 400,           // 请求参数错误
     UNAUTHORIZED: 401,          // 未认证
@@ -419,7 +419,7 @@ const statusCodes = {
     CONFLICT: 409,              // 资源冲突 (如重复创建)
     UNPROCESSABLE_ENTITY: 422,  // 语义错误
     TOO_MANY_REQUESTS: 429,     // 限流
-    
+
     // 5xx 服务端错误
     INTERNAL_ERROR: 500,        // 内部错误
     NOT_IMPLEMENTED: 501,       // 功能未实现
@@ -477,7 +477,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
             }
         });
     }
-    
+
     // 未预期的错误
     logger.error('Unexpected error', err);
     return res.status(500).json({
@@ -587,7 +587,7 @@ const resolvers = {
             return userService.findAll(filter, pagination);
         }
     },
-    
+
     Order: {
         // ✅ 使用 DataLoader 批量加载
         user: (order) => userLoader.load(order.userId)
@@ -606,23 +606,23 @@ const resolvers = {
 class ApiClient {
     private baseURL: string;
     private headers: Record<string, string> = {};
-    
+
     constructor(config: { baseURL: string; apiKey?: string }) {
         this.baseURL = config.baseURL;
         if (config.apiKey) {
             this.headers['Authorization'] = `Bearer ${config.apiKey}`;
         }
     }
-    
+
     // 资源访问
     get users() {
         return new UserResource(this);
     }
-    
+
     get orders() {
         return new OrderResource(this);
     }
-    
+
     // 内部请求方法
     async request<T>(
         method: string,
@@ -635,7 +635,7 @@ class ApiClient {
                 url.searchParams.append(k, v);
             });
         }
-        
+
         const response = await fetch(url.toString(), {
             method,
             headers: {
@@ -644,12 +644,12 @@ class ApiClient {
             },
             body: options?.body ? JSON.stringify(options.body) : undefined
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new ApiError(error.code, error.message, response.status);
         }
-        
+
         return response.json();
     }
 }
@@ -657,23 +657,23 @@ class ApiClient {
 // 资源类
 class UserResource {
     constructor(private client: ApiClient) { }
-    
+
     async list(params?: { page?: number; limit?: number }) {
         return this.client.request<User[]>('GET', '/users', { params });
     }
-    
+
     async get(id: string) {
         return this.client.request<User>('GET', `/users/${id}`);
     }
-    
+
     async create(data: CreateUserDTO) {
         return this.client.request<User>('POST', '/users', { body: data });
     }
-    
+
     async update(id: string, data: UpdateUserDTO) {
         return this.client.request<User>('PUT', `/users/${id}`, { body: data });
     }
-    
+
     async delete(id: string) {
         return this.client.request<void>('DELETE', `/users/${id}`);
     }
@@ -771,7 +771,7 @@ const authenticate: RequestHandler = async (req, res, next) => {
             error: { code: 'UNAUTHORIZED', message: '缺少认证令牌' }
         });
     }
-    
+
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET) as JWTPayload;
         (req as AuthenticatedRequest).user = decoded;
