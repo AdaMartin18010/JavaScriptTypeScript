@@ -406,6 +406,66 @@ const DEMO_MODULES = {
     console.log('\n⌨️ CLI框架\n');
     const cli = await import('./69-cli-framework/cli-builder.js');
     cli.demo?.();
+  },
+
+  'distributed-systems': async () => {
+    console.log('\n🌐 分布式系统\n');
+    const ds = await import('./70-distributed-systems/distributed-primitives.js');
+    ds.demo?.();
+  },
+
+  'consensus-algorithms': async () => {
+    console.log('\n🗳️ 一致性算法\n');
+    const ca = await import('./71-consensus-algorithms/raft-consensus.js');
+    ca.demo?.();
+  },
+
+  'container-orchestration': async () => {
+    console.log('\n🐳 容器编排\n');
+    const co = await import('./72-container-orchestration/orchestration-engine.js');
+    co.demo?.();
+  },
+
+  'service-mesh-advanced': async () => {
+    console.log('\n🕸️ 高级服务网格\n');
+    const sm = await import('./73-service-mesh-advanced/mesh-architecture.js');
+    sm.demo?.();
+  },
+
+  'observability': async () => {
+    console.log('\n📡 可观测性\n');
+    const obs = await import('./74-observability/observability-stack.js');
+    obs.demo?.();
+  },
+
+  'chaos-engineering': async () => {
+    console.log('\n💥 混沌工程\n');
+    const ce = await import('./75-chaos-engineering/chaos-experiments.js');
+    ce.demo?.();
+  },
+
+  'ml-engineering': async () => {
+    console.log('\n🧠 机器学习工程\n');
+    const ml = await import('./76-ml-engineering/ml-pipeline.js');
+    ml.demo?.();
+  },
+
+  'quantum-computing': async () => {
+    console.log('\n⚛️ 量子计算\n');
+    const qc = await import('./77-quantum-computing/quantum-simulator.js');
+    qc.demo?.();
+  },
+
+  'metaprogramming': async () => {
+    console.log('\n🪞 元编程\n');
+    const mp = await import('./78-metaprogramming/meta-techniques.js');
+    mp.demo?.();
+  },
+
+  'compiler-design': async () => {
+    console.log('\n📝 编译器设计\n');
+    const cd = await import('./79-compiler-design/compiler-pipeline.js');
+    cd.demo?.();
   }
 };
 
