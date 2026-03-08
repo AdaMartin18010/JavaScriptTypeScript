@@ -466,6 +466,66 @@ const DEMO_MODULES = {
     console.log('\n📝 编译器设计\n');
     const cd = await import('./79-compiler-design/compiler-pipeline.js');
     cd.demo?.();
+  },
+
+  'formal-verification': async () => {
+    console.log('\n✓ 形式化验证\n');
+    const fv = await import('./80-formal-verification/verification-framework.js');
+    fv.demo?.();
+  },
+
+  'cybersecurity': async () => {
+    console.log('\n🔐 网络安全\n');
+    const cs = await import('./81-cybersecurity/security-framework.js');
+    cs.demo?.();
+  },
+
+  'edge-ai': async () => {
+    console.log('\n🤖 边缘AI\n');
+    const ea = await import('./82-edge-ai/edge-inference.js');
+    ea.demo?.();
+  },
+
+  'blockchain-advanced': async () => {
+    console.log('\n⛓️ 区块链高级\n');
+    const ba = await import('./83-blockchain-advanced/smart-contracts.js');
+    ba.demo?.();
+  },
+
+  'webxr': async () => {
+    console.log('\n🥽 WebXR\n');
+    const xr = await import('./84-webxr/xr-engine.js');
+    xr.demo?.();
+  },
+
+  'nlp-engineering': async () => {
+    console.log('\n🗣️ NLP工程\n');
+    const nlp = await import('./85-nlp-engineering/nlp-pipeline.js');
+    nlp.demo?.();
+  },
+
+  'graph-database': async () => {
+    console.log('\n🕸️ 图数据库\n');
+    const gd = await import('./86-graph-database/graph-engine.js');
+    gd.demo?.();
+  },
+
+  'realtime-analytics': async () => {
+    console.log('\n📊 实时分析\n');
+    const ra = await import('./87-realtime-analytics/streaming-analytics.js');
+    ra.demo?.();
+  },
+
+  'lowcode-platform': async () => {
+    console.log('\n🧩 低代码平台\n');
+    const lc = await import('./88-lowcode-platform/lowcode-engine.js');
+    lc.demo?.();
+  },
+
+  'autonomous-systems': async () => {
+    console.log('\n🤖 自动化系统\n');
+    const au = await import('./89-autonomous-systems/autonomous-agents.js');
+    au.demo?.();
   }
 };
 

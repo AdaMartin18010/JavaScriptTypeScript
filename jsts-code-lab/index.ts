@@ -235,11 +235,41 @@ export * as Metaprogramming from './78-metaprogramming/index';
 // 编译器设计
 export * as CompilerDesign from './79-compiler-design/index';
 
+// 形式化验证
+export * as FormalVerification from './80-formal-verification/index';
+
+// 网络安全
+export * as Cybersecurity from './81-cybersecurity/index';
+
+// 边缘AI
+export * as EdgeAI from './82-edge-ai/index';
+
+// 区块链高级
+export * as BlockchainAdvanced from './83-blockchain-advanced/index';
+
+// WebXR
+export * as WebXR from './84-webxr/index';
+
+// NLP工程
+export * as NLPEngineering from './85-nlp-engineering/index';
+
+// 图数据库
+export * as GraphDatabase from './86-graph-database/index';
+
+// 实时分析
+export * as RealtimeAnalytics from './87-realtime-analytics/index';
+
+// 低代码平台
+export * as LowcodePlatform from './88-lowcode-platform/index';
+
+// 自动化系统
+export * as AutonomousSystems from './89-autonomous-systems/index';
+
 // 共享模块
 export * as Shared from './shared/index';
 
 // 版本信息
-export const VERSION = '3.0.0';
+export const VERSION = '4.0.0';
 
 // 模块统计
 export const MODULES = {
@@ -313,6 +343,16 @@ export const MODULES = {
   quantumComputing: { name: '量子计算', files: 1 },
   metaprogramming: { name: '元编程', files: 1 },
   compilerDesign: { name: '编译器设计', files: 1 },
+  formalVerification: { name: '形式化验证', files: 1 },
+  cybersecurity: { name: '网络安全', files: 1 },
+  edgeAI: { name: '边缘AI', files: 1 },
+  blockchainAdvanced: { name: '区块链高级', files: 1 },
+  webXR: { name: 'WebXR', files: 1 },
+  nlpEngineering: { name: 'NLP工程', files: 1 },
+  graphDatabase: { name: '图数据库', files: 1 },
+  realtimeAnalytics: { name: '实时分析', files: 1 },
+  lowcodePlatform: { name: '低代码平台', files: 1 },
+  autonomousSystems: { name: '自动化系统', files: 1 },
 } as const;
 
 // 总览信息
