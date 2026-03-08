@@ -135,14 +135,26 @@ const DEMO_MODULES = {
 
   'frontend-frameworks': async () => {
     console.log('\n⚛️ 前端框架\n');
-    const reactivity = await import('./18-frontend-frameworks/react-patterns.tsx');
-    reactivity.demo?.();
+    const react = await import('./18-frontend-frameworks/react-patterns.tsx');
+    react.demo?.();
+    
+    const router = await import('./18-frontend-frameworks/router-implementation.ts');
+    router.demo?.();
+    
+    const state = await import('./18-frontend-frameworks/state-management.ts');
+    await state.demo?.();
   },
 
   'backend-development': async () => {
     console.log('\n🖥️ 后端开发\n');
     const express = await import('./19-backend-development/express-patterns.ts');
     express.demo?.();
+    
+    const api = await import('./19-backend-development/api-design.ts');
+    api.demo?.();
+    
+    const ws = await import('./19-backend-development/websocket-patterns.ts');
+    ws.demo?.();
   },
 
   'database-orm': async () => {
@@ -152,6 +164,12 @@ const DEMO_MODULES = {
     
     const queryBuilder = await import('./20-database-orm/sql-query-builder.ts');
     queryBuilder.demo?.();
+    
+    const migration = await import('./20-database-orm/migration-system.ts');
+    await migration.demo?.();
+    
+    const pool = await import('./20-database-orm/connection-pool.ts');
+    await pool.demo?.();
   },
 
   'api-security': async () => {
@@ -161,18 +179,63 @@ const DEMO_MODULES = {
     
     const rateLimiter = await import('./21-api-security/rate-limiter.ts');
     rateLimiter.demo?.();
+    
+    const corsCsrf = await import('./21-api-security/cors-csrf.ts');
+    corsCsrf.demo?.();
   },
 
   'deployment-devops': async () => {
     console.log('\n🐳 部署与 DevOps\n');
     const docker = await import('./22-deployment-devops/docker-config.ts');
     docker.demo?.();
+    
+    const cicd = await import('./22-deployment-devops/cicd-pipeline.ts');
+    cicd.demo?.();
   },
 
   'toolchain-configuration': async () => {
     console.log('\n⚙️ 工具链配置\n');
     const vite = await import('./23-toolchain-configuration/vite-config.ts');
     vite.demo?.();
+    
+    const linting = await import('./23-toolchain-configuration/eslint-prettier.ts');
+    linting.demo?.();
+  },
+
+  'graphql': async () => {
+    console.log('\n🔍 GraphQL\n');
+    const graphql = await import('./24-graphql/schema-builder.ts');
+    await graphql.demo?.();
+  },
+
+  'microservices': async () => {
+    console.log('\n🔗 微服务\n');
+    const microservices = await import('./25-microservices/service-mesh.ts');
+    microservices.demo?.();
+  },
+
+  'event-sourcing': async () => {
+    console.log('\n📜 事件溯源\n');
+    const eventSourcing = await import('./26-event-sourcing/event-store.ts');
+    await eventSourcing.demo?.();
+  },
+
+  'internationalization': async () => {
+    console.log('\n🌍 国际化\n');
+    const i18n = await import('./27-internationalization/i18n-system.ts');
+    i18n.demo?.();
+  },
+
+  'advanced-testing': async () => {
+    console.log('\n🧪 高级测试\n');
+    const e2e = await import('./28-testing-advanced/e2e-testing.ts');
+    await e2e.demo?.();
+  },
+
+  'documentation': async () => {
+    console.log('\n📚 文档生成\n');
+    const docs = await import('./29-documentation/api-docs-generator.ts');
+    docs.demo?.();
   }
 };
 

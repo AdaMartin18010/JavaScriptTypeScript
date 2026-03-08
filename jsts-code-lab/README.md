@@ -2,6 +2,11 @@
 
 > 从理论到实践的完整代码示例库
 
+[![Modules](https://img.shields.io/badge/Modules-29-blue)](./)
+[![Files](https://img.shields.io/badge/Files-177-green)](./)
+[![Patterns](https://img.shields.io/badge/Patterns-23%20GoF-orange)](./)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](./LICENSE)
+
 ## 📖 项目简介
 
 本项目是 [JavaScriptTypeScript 全景综述](../JSTS全景综述/) 的配套代码实验室，将理论知识转化为可运行、可测试的实际代码。
@@ -117,6 +122,18 @@ jsts-code-lab/
 │   └── docker-config.ts          # Docker配置
 ├── 📁 23-toolchain-configuration/# 工具链配置
 │   └── vite-config.ts            # Vite配置
+├── 📁 24-graphql/                # GraphQL
+│   └── schema-builder.ts         # Schema构建器
+├── 📁 25-microservices/          # 微服务
+│   └── service-mesh.ts           # 服务网格
+├── 📁 26-event-sourcing/         # 事件溯源
+│   └── event-store.ts            # 事件存储
+├── 📁 27-internationalization/   # 国际化
+│   └── i18n-system.ts            # i18n系统
+├── 📁 28-testing-advanced/       # 高级测试
+│   └── e2e-testing.ts            # E2E测试
+├── 📁 29-documentation/          # 文档生成
+│   └── api-docs-generator.ts     # API文档生成
 ├── 📁 shared/                    # 共享模块
 ├── 📁 tests/                     # 测试套件
 └── 📁 playground/                # 演练场
