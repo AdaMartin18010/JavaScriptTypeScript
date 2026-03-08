@@ -58,6 +58,9 @@ export * as RealWorldExamples from './09-real-world-examples/index';
 // JS/TS 对比分析
 export * as JSTSComparison from './10-js-ts-comparison/index';
 
+// 性能基准测试
+export * as Benchmarks from './11-benchmarks/index';
+
 // 共享模块
 export * as Shared from './shared/index';
 
