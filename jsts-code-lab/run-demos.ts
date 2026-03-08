@@ -131,6 +131,48 @@ const DEMO_MODULES = {
     
     const interop = await import('./10-js-ts-comparison/interoperability/js-ts-interop.js');
     interop.demo?.();
+  },
+
+  'frontend-frameworks': async () => {
+    console.log('\n⚛️ 前端框架\n');
+    const reactivity = await import('./18-frontend-frameworks/reactivity-system.js');
+    reactivity.demo?.();
+  },
+
+  'backend-development': async () => {
+    console.log('\n🖥️ 后端开发\n');
+    const express = await import('./19-backend-development/express-patterns.js');
+    express.demo?.();
+  },
+
+  'database-orm': async () => {
+    console.log('\n💾 数据库 ORM\n');
+    const prisma = await import('./20-database-orm/prisma-patterns.js');
+    await prisma.demo?.();
+    
+    const queryBuilder = await import('./20-database-orm/sql-query-builder.js');
+    queryBuilder.demo?.();
+  },
+
+  'api-security': async () => {
+    console.log('\n🔒 API 安全\n');
+    const jwt = await import('./21-api-security/jwt-auth.js');
+    jwt.demo?.();
+    
+    const rateLimiter = await import('./21-api-security/rate-limiter.js');
+    rateLimiter.demo?.();
+  },
+
+  'deployment-devops': async () => {
+    console.log('\n🐳 部署与 DevOps\n');
+    const docker = await import('./22-deployment-devops/docker-config.js');
+    docker.demo?.();
+  },
+
+  'toolchain-configuration': async () => {
+    console.log('\n⚙️ 工具链配置\n');
+    const vite = await import('./23-toolchain-configuration/vite-config.js');
+    vite.demo?.();
   }
 };
 
