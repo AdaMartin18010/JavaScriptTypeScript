@@ -430,12 +430,7 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  QueryBuilder,
-  InsertBuilder,
-  UpdateBuilder,
-  DeleteBuilder
-};
+// Classes already exported inline above
 
 export type {
   Primitive,

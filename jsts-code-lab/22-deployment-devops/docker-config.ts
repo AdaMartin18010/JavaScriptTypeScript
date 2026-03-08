@@ -274,7 +274,7 @@ export class DockerComposeBuilder {
   }
 }
 
-class ServiceBuilder {
+export class ServiceBuilder {
   private service: DockerComposeService = {};
 
   constructor(
@@ -406,12 +406,7 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  DockerfileBuilder,
-  DockerComposeBuilder,
-  ServiceBuilder,
-  createNodeDockerfile
-};
+// Classes/functions already exported inline above
 
 export type {
   DockerfileStage,

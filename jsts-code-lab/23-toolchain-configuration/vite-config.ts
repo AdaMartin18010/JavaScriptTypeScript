@@ -254,7 +254,7 @@ export default defineConfig(${JSON.stringify(this.config, null, 2)});`;
 }
 
 // 构建选项构建器
-class BuildOptionsBuilder {
+export class BuildOptionsBuilder {
   private options: BuildOptions = {};
 
   constructor(private parent: ViteConfigBuilder) {}
@@ -295,7 +295,7 @@ class BuildOptionsBuilder {
 }
 
 // 服务器选项构建器
-class ServerOptionsBuilder {
+export class ServerOptionsBuilder {
   private options: ServerOptions = {};
 
   constructor(private parent: ViteConfigBuilder) {}
@@ -337,7 +337,7 @@ class ServerOptionsBuilder {
 }
 
 // 解析选项构建器
-class ResolveOptionsBuilder {
+export class ResolveOptionsBuilder {
   private options: ResolveOptions = {};
 
   constructor(private parent: ViteConfigBuilder) {}
@@ -476,10 +476,4 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  ViteConfigBuilder,
-  BuildOptionsBuilder,
-  ServerOptionsBuilder,
-  ResolveOptionsBuilder,
-  VitePresets
-};
+// Classes/objects already exported inline above

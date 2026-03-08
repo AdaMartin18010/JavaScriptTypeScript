@@ -74,7 +74,7 @@ interface QueryOptions<T> {
 }
 
 // 用户 Repository 实现
-class UserRepository implements Repository<User, CreateUserInput, UpdateUserInput> {
+export class UserRepository implements Repository<User, CreateUserInput, UpdateUserInput> {
   private users: Map<string, User> = new Map();
 
   async findMany(options?: QueryOptions<User>): Promise<User[]> {
@@ -356,12 +356,7 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export {
-  UserRepository,
-  RelationLoader,
-  TransactionManager,
-  PaginationHelper
-};
+// Classes already exported inline above
 
 export type {
   User,
