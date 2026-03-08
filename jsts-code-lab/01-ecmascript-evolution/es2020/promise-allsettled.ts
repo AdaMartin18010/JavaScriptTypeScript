@@ -127,3 +127,37 @@ export {
 };
 
 export type { Result };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export async function demo(): Promise<void> {
+  console.log("=== Promise.allSettled Demo ===");
+  
+  // 基础用法
+  const promises = [
+    Promise.resolve("success 1"),
+    Promise.reject(new Error("failure")),
+    Promise.resolve("success 2")
+  ];
+  
+  const results = await Promise.allSettled(promises);
+  console.log("Results:", results);
+  
+  // 分类结果
+  const succeeded = results.filter(r => r.status === "fulfilled");
+  const failed = results.filter(r => r.status === "rejected");
+  console.log("Succeeded:", succeeded.length);
+  console.log("Failed:", failed.length);
+  
+  // 类型安全处理
+  const { values, errors } = await typedAllSettled([
+    Promise.resolve(1),
+    Promise.resolve(2),
+    Promise.reject(new Error("oops"))
+  ]);
+  console.log("Values:", values);
+  console.log("Errors:", errors.length);
+  
+  console.log("=== End of Demo ===\n");
+}

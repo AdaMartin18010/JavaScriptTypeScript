@@ -157,3 +157,37 @@ export {
 };
 
 export type { Prototype };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Prototype Pattern Demo ===");
+  
+  // 文档克隆
+  const doc1 = new Document("Original", "Content here", "Alice");
+  const doc2 = doc1.clone();
+  console.log("Original:", doc1.displayInfo());
+  console.log("Clone:", doc2.displayInfo());
+  console.log("Different instances:", doc1 !== doc2);
+  
+  // Shape 克隆
+  const shape1 = new Shape("circle", 10, 20, { radius: 5 });
+  const shape2 = shape1.clone();
+  console.log("Shape 1:", shape1);
+  console.log("Shape 2 (cloned):", shape2);
+  
+  // 原型注册表
+  const registry = new PrototypeRegistry();
+  registry.register("doc", doc1);
+  const cloned = registry.create<Document>("doc");
+  console.log("Registry clone:", cloned.displayInfo());
+  
+  // 深拷贝
+  const gameChar = new GameCharacter("Hero", 10, ["sword", "shield"], { health: 100, mana: 50, strength: 20 });
+  const charCopy = gameChar.deepClone();
+  console.log("Game char:", gameChar);
+  console.log("Deep clone:", charCopy);
+  
+  console.log("=== End of Demo ===\n");
+}

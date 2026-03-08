@@ -236,3 +236,42 @@ export {
 };
 
 export type { UserData };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== ES2022 Class Fields Demo ===");
+  
+  // 公共实例字段
+  const person = new Person("Alice", 30);
+  console.log("Person:", { name: person.name, age: person.age });
+  
+  // 私有字段
+  const account = new BankAccount("ACC-123", 1000);
+  account.deposit(500);
+  account.withdraw(200);
+  console.log("Bank balance:", account.getBalance());
+  
+  // 单例模式
+  const db1 = Database.getInstance("mongodb://localhost/db");
+  const db2 = Database.getInstance("mongodb://localhost/db");
+  console.log("Same instance:", db1 === db2);
+  
+  // 私有字段检查
+  const container = new Container();
+  console.log("Has private data:", container.hasPrivateData());
+  console.log("Static check:", Container.hasPrivateData(container));
+  
+  // User 类
+  const user = new User({
+    id: "1",
+    name: "Bob",
+    email: "bob@example.com",
+    password: "secret123"
+  });
+  console.log("User created at:", user.createdAt);
+  console.log("Password valid:", user.validatePassword("secret123"));
+  
+  console.log("=== End of Demo ===\n");
+}

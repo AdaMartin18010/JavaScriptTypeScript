@@ -263,3 +263,33 @@ export type {
   IsString,
   Getters
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Generics Demo ===");
+  
+  // 基础泛型
+  console.log("Identity:", identity<number>(42));
+  console.log("Identity (inferred):", identity("hello"));
+  
+  // 泛型数组
+  const arr = [1, 2, 3];
+  console.log("Original:", arr);
+  console.log("Reversed:", reverse(arr));
+  
+  // 泛型约束
+  const result = logLength("Hello TypeScript");
+  console.log("LogLength result:", result);
+  
+  // 泛型类
+  const box = new Box<string>("secret");
+  console.log("Box value:", box.getValue());
+  
+  // 工厂函数
+  const date = create(Date);
+  console.log("Created date:", date.toISOString());
+  
+  console.log("=== End of Demo ===\n");
+}

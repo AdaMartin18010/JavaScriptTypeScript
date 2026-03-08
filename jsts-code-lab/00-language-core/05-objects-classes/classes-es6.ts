@@ -246,3 +246,34 @@ export {
   PersonClass,
   NamedClass
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== ES6 Classes Demo ===");
+  
+  // 基础类
+  const dog = new Dog("Rex", 5, "German Shepherd");
+  console.log("Dog speaks:", dog.speak());
+  console.log("Dog fetches:", dog.fetch());
+  
+  // 私有字段
+  const account = new BankAccount("Alice", 1000);
+  account.deposit(500);
+  account.withdraw(200);
+  console.log("Bank balance:", account.getBalance());
+  
+  // 抽象类
+  const rect = new Rectangle(5, 3);
+  console.log("Rectangle area:", rect.area());
+  console.log("Rectangle perimeter:", rect.perimeter());
+  console.log("Rectangle description:", rect.describe());
+  
+  // 链式调用
+  const fluent = new FluentArray<number>();
+  fluent.add(1).add(2).add(3).remove(2);
+  console.log("Fluent array length:", fluent.length);
+  
+  console.log("=== End of Demo ===\n");
+}

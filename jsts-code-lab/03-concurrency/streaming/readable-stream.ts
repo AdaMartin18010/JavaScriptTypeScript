@@ -188,7 +188,7 @@ export async function* readFileChunks(
 // 7. 使用示例
 // ============================================================================
 
-async function demo() {
+export async function demo() {
   // 创建数字流
   const numberStream = createNumberStream(10);
 

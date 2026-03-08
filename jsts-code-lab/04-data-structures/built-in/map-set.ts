@@ -181,3 +181,92 @@ export {
   unique,
   frequency
 };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Map and Set Demo ===");
+
+  // Map 基础操作
+  console.log("\n1. Map Basics:");
+  const userMap = new Map<string, { name: string; age: number }>();
+  userMap.set("user1", { name: "Alice", age: 30 });
+  userMap.set("user2", { name: "Bob", age: 25 });
+  console.log("   user1:", userMap.get("user1"));
+  console.log("   Has user1:", userMap.has("user1"));
+  console.log("   Size:", userMap.size);
+
+  // Map 迭代
+  console.log("\n2. Map Iteration:");
+  const map = new Map([["a", 1], ["b", 2], ["c", 3]]);
+  console.log("   Entries:");
+  for (const [key, value] of map) {
+    console.log(`     ${key}: ${value}`);
+  }
+  console.log("   Keys:", [...map.keys()]);
+  console.log("   Values:", [...map.values()]);
+
+  // 对象作为键
+  console.log("\n3. Object as Key:");
+  const objKey = { id: 1 };
+  const mapWithObjectKey = new Map<object, string>();
+  mapWithObjectKey.set(objKey, "value");
+  console.log("   Value:", mapWithObjectKey.get(objKey));
+
+  // Set 基础
+  console.log("\n4. Set Basics:");
+  const uniqueNumbers = new Set<number>([1, 2, 2, 3, 3, 3]);
+  console.log("   Unique numbers:", [...uniqueNumbers]);
+  uniqueNumbers.add(4);
+  console.log("   After adding 4:", [...uniqueNumbers]);
+  console.log("   Has 4:", uniqueNumbers.has(4));
+
+  // Set 操作
+  console.log("\n5. Set Operations:");
+  const a = new Set([1, 2, 3]);
+  const b = new Set([2, 3, 4]);
+  console.log("   Set A:", [...a]);
+  console.log("   Set B:", [...b]);
+  console.log("   Union:", [...union(a, b)]);
+  console.log("   Intersection:", [...intersection(a, b)]);
+  console.log("   Difference (A-B):", [...difference(a, b)]);
+  console.log("   Symmetric Difference:", [...symmetricDifference(a, b)]);
+
+  // 缓存实现
+  console.log("\n6. Cache with TTL:");
+  const cache = new Cache<string, string>();
+  cache.set("key1", "value1", 1000);
+  console.log("   Get key1 (immediately):", cache.get("key1"));
+  console.log("   Get key1 (after 1.1s):", "(would be undefined)");
+
+  // 数组去重
+  console.log("\n7. Array Unique:");
+  const duplicates = [1, 2, 2, 3, 3, 3, 4];
+  console.log("   Original:", duplicates);
+  console.log("   Unique:", unique(duplicates));
+
+  // 频率统计
+  console.log("\n8. Frequency Count:");
+  const items = ["a", "b", "a", "c", "a", "b"];
+  const freq = frequency(items);
+  console.log("   Items:", items);
+  console.log("   Frequency:");
+  for (const [item, count] of freq) {
+    console.log(`     ${item}: ${count}`);
+  }
+
+  // WeakMap/WeakSet
+  console.log("\n9. WeakMap & WeakSet:");
+  const weakMap = new WeakMap<object, string>();
+  let tempObj = { id: 1 };
+  weakMap.set(tempObj, "data");
+  console.log("   WeakMap value:", weakMap.get(tempObj));
+  
+  const weakSet = new WeakSet<object>();
+  weakSet.add(tempObj);
+  console.log("   WeakSet has:", weakSet.has(tempObj));
+
+  console.log("=== End of Demo ===\n");
+}

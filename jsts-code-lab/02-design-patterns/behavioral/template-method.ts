@@ -190,3 +190,48 @@ export {
 };
 
 export type { Step };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Template Method Pattern Demo ===");
+
+  // 数据挖掘器演示
+  console.log("\nPDF Data Mining:");
+  const pdfMiner = new PdfDataMiner();
+  pdfMiner.mine("document.pdf");
+
+  console.log("\nCSV Data Mining:");
+  const csvMiner = new CsvDataMiner();
+  csvMiner.mine("data.csv");
+
+  // 游戏AI演示
+  console.log("\nOrcs AI Turn:");
+  const orcsAI = new OrcsAI();
+  orcsAI.takeTurn();
+
+  console.log("\nHumans AI Turn:");
+  const humansAI = new HumansAI();
+  humansAI.takeTurn();
+
+  // 函数式模板方法
+  console.log("\nFunctional Template Method:");
+  const processOrder = createTemplateMethod(
+    [
+      () => console.log("Step 1: Validate order"),
+      () => console.log("Step 2: Check inventory"),
+      () => console.log("Step 3: Process payment"),
+      () => console.log("Step 4: Send confirmation")
+    ],
+    {
+      before: () => console.log("--- Starting order processing ---"),
+      after: () => console.log("--- Order processing complete ---")
+    }
+  );
+
+  processOrder();
+
+  console.log("=== End of Demo ===\n");
+}

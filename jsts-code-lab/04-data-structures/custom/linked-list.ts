@@ -233,3 +233,38 @@ function hasCycle<T>(head: ListNode<T> | null): boolean {
 // ============================================================================
 
 export { ListNode, DoublyListNode, reverseLinkedList, hasCycle };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Linked List Demo ===");
+  
+  // 单向链表
+  const list = new LinkedList<number>();
+  list.append(1).append(2).append(3);
+  list.prepend(0);
+  console.log("List:", list.toArray());
+  console.log("Size:", list.size);
+  
+  const found = list.find(x => x === 2);
+  console.log("Found 2:", found);
+  
+  list.delete(2);
+  console.log("After delete 2:", list.toArray());
+  
+  // 双向链表
+  const dlist = new DoublyLinkedList<string>();
+  dlist.append("a").append("b").append("c");
+  console.log("\nDoubly linked list forward:", [...dlist]);
+  console.log("Doubly linked list reverse:", [...dlist.reverse()]);
+  
+  // 反转链表
+  const head = new ListNode(1);
+  head.next = new ListNode(2);
+  head.next.next = new ListNode(3);
+  const reversed = reverseLinkedList(head);
+  console.log("\nReversed list head:", reversed?.value);
+  
+  console.log("=== End of Demo ===\n");
+}

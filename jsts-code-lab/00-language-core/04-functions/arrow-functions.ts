@@ -202,3 +202,37 @@ export {
   curry,
   curriedAdd
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Arrow Functions Demo ===");
+  
+  // 基础箭头函数
+  console.log("Arrow (5):", arrow(5));
+  console.log("Traditional (5):", traditional(5));
+  
+  // 返回对象
+  const obj = makeObject(10);
+  console.log("MakeObject:", obj);
+  
+  // 高阶函数
+  const numbers = [1, 2, 3, 4, 5];
+  const doubled = numbers.map(n => n * 2);
+  console.log("Doubled:", doubled);
+  
+  // 函数组合
+  const composed = compose(toString, multiply2, add5);
+  console.log("Composed (10):", composed(10));
+  
+  // 柯里化
+  const add5Curried = curriedAdd(5);
+  console.log("Curried add 5 + 3:", add5Curried(3));
+  
+  // IIFE
+  const result = (() => "immediate")();
+  console.log("IIFE result:", result);
+  
+  console.log("=== End of Demo ===\n");
+}

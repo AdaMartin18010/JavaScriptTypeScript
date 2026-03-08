@@ -208,3 +208,37 @@ export type {
   Button,
   Checkbox
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Factory Pattern Demo ===");
+  
+  // 简单工厂
+  const car = VehicleFactory.create("car");
+  const bike = VehicleFactory.create("bike");
+  console.log("Car:", car.drive());
+  console.log("Bike:", bike.drive());
+  
+  // 工厂方法
+  const roadLogistics = new RoadLogistics();
+  const seaLogistics = new SeaLogistics();
+  console.log("Road:", roadLogistics.planDelivery());
+  console.log("Sea:", seaLogistics.planDelivery());
+  
+  // 抽象工厂
+  const windowsFactory = new WindowsFactory();
+  const macFactory = new MacFactory();
+  const winButton = windowsFactory.createButton();
+  const macButton = macFactory.createButton();
+  console.log("Windows button:", winButton.render());
+  console.log("Mac button:", macButton.render());
+  
+  // 泛型工厂
+  const userFactory = new GenericFactory(User);
+  const user = userFactory.create("Alice", 30);
+  console.log("Created user:", { name: user.name, age: user.age });
+  
+  console.log("=== End of Demo ===\n");
+}

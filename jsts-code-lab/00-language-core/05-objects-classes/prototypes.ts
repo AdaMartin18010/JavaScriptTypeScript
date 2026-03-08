@@ -218,3 +218,38 @@ export {
   ModernClass,
   TraditionalClass
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Prototypes Demo ===");
+  
+  // 原型链
+  const animal = { eat() { return "eating"; } };
+  const dog = Object.create(animal);
+  dog.bark = () => "barking";
+  console.log("Dog barks:", dog.bark());
+  console.log("Dog eats:", dog.eat());
+  console.log("Dog's prototype is animal:", Object.getPrototypeOf(dog) === animal);
+  
+  // 构造函数
+  function Person(name: string) {
+    (this as any).name = name;
+  }
+  Person.prototype.greet = function() {
+    return `Hello, I'm ${this.name}`;
+  };
+  const alice = new (Person as any)("Alice");
+  console.log("Person greet:", alice.greet());
+  
+  // hasOwnProperty
+  const obj = { ownProp: "I am own" };
+  console.log("Has own property 'ownProp':", obj.hasOwnProperty("ownProp"));
+  
+  // 现代类
+  const modern = new ModernClass();
+  console.log("Modern class method:", modern.method());
+  
+  console.log("=== End of Demo ===\n");
+}

@@ -186,3 +186,36 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 // ============================================================================
 
 export { binarySearch as default };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Binary Search Demo ===");
+  
+  const arr = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
+  console.log("Array:", arr);
+  
+  // 基础二分查找
+  console.log("\nFind 7:", binarySearch(arr, 7));
+  console.log("Find 4 (not found):", binarySearch(arr, 4));
+  
+  // 递归版本
+  console.log("Find 13 (recursive):", binarySearchRecursive(arr, 13));
+  
+  // 查找第一个/最后一个
+  const duplicates = [1, 2, 2, 2, 3, 4, 5];
+  console.log("\nArray with duplicates:", duplicates);
+  console.log("First 2:", findFirst(duplicates, 2));
+  console.log("Last 2:", findLast(duplicates, 2));
+  
+  // 查找插入位置
+  console.log("Insert position for 6:", searchInsert(arr, 6));
+  console.log("Insert position for 20:", searchInsert(arr, 20));
+  
+  // 字符串二分查找
+  const words = ["apple", "banana", "cherry", "date", "elderberry"];
+  console.log("\nFind 'cherry':", binarySearch(words, "cherry", (a, b) => a.localeCompare(b)));
+  
+  console.log("=== End of Demo ===\n");
+}

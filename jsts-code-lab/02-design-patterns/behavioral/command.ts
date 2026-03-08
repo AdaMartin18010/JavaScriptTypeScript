@@ -234,3 +234,41 @@ export {
 };
 
 export type { Command, AsyncCommand, CommandFn, UndoFn };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Command Pattern Demo ===");
+  
+  // 文本编辑器
+  const editor = new TextEditor();
+  const history = new CommandHistory();
+  
+  // 插入文本
+  history.execute(new InsertCommand(editor, "Hello "));
+  console.log("After insert 'Hello':", editor.getContent());
+  
+  history.execute(new InsertCommand(editor, "World"));
+  console.log("After insert 'World':", editor.getContent());
+  
+  // 撤销
+  history.undo();
+  console.log("After undo:", editor.getContent());
+  
+  // 重做
+  history.redo();
+  console.log("After redo:", editor.getContent());
+  
+  // 宏命令
+  const macro = new MacroCommand();
+  macro.add(new InsertCommand(editor, "!"));
+  macro.add(new InsertCommand(editor, "!"));
+  history.execute(macro);
+  console.log("After macro:", editor.getContent());
+  
+  console.log("Can undo:", history.canUndo());
+  console.log("Can redo:", history.canRedo());
+  
+  console.log("=== End of Demo ===\n");
+}

@@ -189,3 +189,28 @@ export {
   ECommerceFacade,
   DOMFacade
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Facade Pattern Demo ===");
+  
+  // 计算机外观
+  const computer = new ComputerFacade();
+  computer.start();
+  computer.shutdown();
+  
+  // 电商外观
+  const ecommerce = new ECommerceFacade();
+  const result = ecommerce.placeOrder(
+    "user123",
+    "user@example.com",
+    ["Product A", "Product B"],
+    99.99,
+    "123 Main St"
+  );
+  console.log("Order result:", result);
+  
+  console.log("=== End of Demo ===\n");
+}

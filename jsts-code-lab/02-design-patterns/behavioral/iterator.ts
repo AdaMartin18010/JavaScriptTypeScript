@@ -223,3 +223,74 @@ export {
 };
 
 export type { Iterator, IterableCollection };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Iterator Pattern Demo ===");
+
+  // 数组迭代器
+  console.log("\nArray Iterator:");
+  const collection = new WordsCollection();
+  collection.addItem("First");
+  collection.addItem("Second");
+  collection.addItem("Third");
+
+  const iterator = collection.createIterator();
+  console.log("Forward traversal:");
+  while (iterator.hasNext()) {
+    console.log("  ", iterator.next());
+  }
+
+  const reverseIterator = collection.createReverseIterator();
+  console.log("Reverse traversal:");
+  while (reverseIterator.hasNext()) {
+    console.log("  ", reverseIterator.next());
+  }
+
+  // 二叉树中序遍历
+  console.log("\nBinary Tree In-Order Iterator:");
+  const root = new TreeNode(4);
+  root.left = new TreeNode(2);
+  root.right = new TreeNode(6);
+  root.left.left = new TreeNode(1);
+  root.left.right = new TreeNode(3);
+  root.right.left = new TreeNode(5);
+  root.right.right = new TreeNode(7);
+
+  const treeIterator = new InOrderIterator(root);
+  const values: number[] = [];
+  while (treeIterator.hasNext()) {
+    values.push(treeIterator.next());
+  }
+  console.log("In-order values:", values);
+
+  // 社交网络 BFS
+  console.log("\nSocial Network BFS:");
+  const network = new SocialNetwork();
+  network.addProfile("Alice", ["Bob", "Carol"]);
+  network.addProfile("Bob", ["David", "Eve"]);
+  network.addProfile("Carol", ["Frank"]);
+  network.addProfile("David", []);
+  network.addProfile("Eve", []);
+  network.addProfile("Frank", []);
+
+  const bfsIterator = network.createBfsIterator("Alice");
+  const visited: string[] = [];
+  while (bfsIterator.hasNext()) {
+    visited.push(bfsIterator.next());
+  }
+  console.log("BFS from Alice:", visited);
+
+  // 内置迭代器
+  console.log("\nBuilt-in Symbol.iterator:");
+  const allFriends: string[] = [];
+  for (const friend of network) {
+    allFriends.push(friend);
+  }
+  console.log("All friends in network:", allFriends);
+
+  console.log("=== End of Demo ===\n");
+}

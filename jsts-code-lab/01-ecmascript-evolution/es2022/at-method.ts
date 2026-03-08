@@ -139,3 +139,36 @@ export {
   safeAt,
   unsafeAt
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Array.at() Demo ===");
+  
+  const arr = ["a", "b", "c", "d", "e"];
+  
+  // 正索引
+  console.log("First element:", arr.at(0));
+  console.log("Third element:", arr.at(2));
+  
+  // 负索引
+  console.log("Last element:", arr.at(-1));
+  console.log("Second last:", arr.at(-2));
+  
+  // 字符串
+  const str = "Hello, World!";
+  console.log("Last char:", str.at(-1));
+  console.log("First char:", str.at(0));
+  
+  // 获取文件扩展名
+  const filename = "document.pdf";
+  const ext = getFileExtensionSimple(filename);
+  console.log(`Extension of ${filename}:`, ext);
+  
+  // 获取路径最后部分
+  const path = "/home/user/documents/file.txt";
+  console.log("Last path segment:", getLastPathSegment(path));
+  
+  console.log("=== End of Demo ===\n");
+}

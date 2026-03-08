@@ -183,3 +183,47 @@ export {
 };
 
 export type { FileSystemComponent, UIComponent, Expression };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Composite Pattern Demo ===");
+  
+  // 文件系统
+  const root = new Directory("root");
+  const docs = new Directory("documents");
+  const pics = new Directory("pictures");
+  
+  const file1 = new File("readme.txt", 1024);
+  const file2 = new File("photo.jpg", 2048);
+  const file3 = new File("doc.pdf", 3072);
+  
+  docs.add(file1);
+  docs.add(file3);
+  pics.add(file2);
+  root.add(docs);
+  root.add(pics);
+  
+  console.log("File system:");
+  console.log(root.display());
+  console.log("Total size:", root.getSize(), "bytes");
+  
+  // UI 组件
+  const panel = new Panel(0, 0, 400, 300);
+  const button = new Button2("Click me", 10, 10, 100, 30);
+  panel.add(button);
+  
+  console.log("\nUI HTML:");
+  console.log(panel.render());
+  
+  // 表达式树
+  const expr = new AddExpression(
+    new MultiplyExpression(new NumberExpression(2), new NumberExpression(3)),
+    new NumberExpression(4)
+  );
+  console.log("\nExpression:", expr.toString());
+  console.log("Result:", expr.evaluate());
+  
+  console.log("=== End of Demo ===\n");
+}

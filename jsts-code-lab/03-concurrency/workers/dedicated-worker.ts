@@ -227,3 +227,51 @@ export async function parallelMap<T, R>(
 // ============================================================================
 
 export { workerScript };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Web Workers Demo ===");
+
+  // 注意：Web Workers 需要浏览器环境，这里仅演示 API
+
+  console.log("\n1. Worker Script Example:");
+  console.log("   The workerScript constant contains:");
+  console.log("   " + workerScript.substring(0, 100) + "...");
+
+  // ArrayProcessor 演示 (需要浏览器环境)
+  console.log("\n2. ArrayProcessor API:");
+  console.log("   const processor = new ArrayProcessor();");
+  console.log("   processor.process([1,2,3,4,5], 'sum')");
+  console.log("   processor.process([1,2,3,4,5], 'max')");
+  console.log("   processor.process([1,2,3,4,5], 'map') // x * 2");
+  console.log("   processor.process([1,2,3,4,5], 'filter') // x > 50");
+
+  // WorkerPool API 演示
+  console.log("\n3. WorkerPool API:");
+  console.log("   const pool = new WorkerPool('worker.js', 4);");
+  console.log("   const result = await pool.execute('CALCULATE', { iterations: 1000000 });");
+  console.log("   pool.terminate();");
+
+  // 并行映射 API
+  console.log("\n4. parallelMap API:");
+  console.log("   const results = await parallelMap(");
+  console.log("     [1, 2, 3, 4, 5, 6, 7, 8],");
+  console.log("     x => x * x,");
+  console.log("     4 // worker count");
+  console.log("   );");
+
+  // 内联 Worker 演示
+  console.log("\n5. Inline Worker Example:");
+  console.log("   const worker = createInlineWorker(() => {");
+  console.log("     self.onmessage = (e) => {");
+  console.log("       const result = e.data * 2;");
+  console.log("       self.postMessage(result);");
+  console.log("     };");
+  console.log("   });");
+
+  console.log("\nNote: Web Workers require a browser environment.");
+  console.log("=== End of Demo ===\n");
+}

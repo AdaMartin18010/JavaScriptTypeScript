@@ -165,3 +165,48 @@ export {
 
 // 导出示例数据供测试
 export { numbers, letters, items, arr, nums, data };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== ES2023 Array Methods Demo ===");
+  
+  // toSorted
+  const nums = [3, 1, 4, 1, 5, 9];
+  const sorted = nums.toSorted((a, b) => a - b);
+  console.log("Original:", nums);
+  console.log("Sorted:", sorted);
+  
+  // toReversed
+  const letters = ["a", "b", "c", "d"];
+  const reversed = letters.toReversed();
+  console.log("Original:", letters);
+  console.log("Reversed:", reversed);
+  
+  // toSpliced
+  const items = ["a", "b", "c", "d", "e"];
+  const spliced = items.toSpliced(2, 2, "X", "Y");
+  console.log("Original:", items);
+  console.log("Spliced:", spliced);
+  
+  // with
+  const arr = [1, 2, 3, 4, 5];
+  const replaced = arr.with(2, 99);
+  console.log("Original:", arr);
+  console.log("With replacement:", replaced);
+  
+  // findLast
+  const numbers = [5, 12, 8, 130, 44, 8];
+  const lastMatch = numbers.findLast(n => n > 10);
+  const lastIndex = numbers.findLastIndex(n => n > 10);
+  console.log("Last match > 10:", lastMatch);
+  console.log("Last index > 10:", lastIndex);
+  
+  // 链式操作
+  const data = [3, 1, 4, 1, 5];
+  const result = data.toSorted((a, b) => a - b).toReversed();
+  console.log("Chained result:", result);
+  
+  console.log("=== End of Demo ===\n");
+}

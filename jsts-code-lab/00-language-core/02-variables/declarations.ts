@@ -218,3 +218,31 @@ export {
   tdzDemo,
   blockScopedReDeclaration
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Variable Declarations Demo ===");
+  
+  // var vs let 作用域
+  varScopeDemo();
+  letScopeDemo();
+  
+  // TDZ 演示
+  tdzDemo();
+  
+  // 块级作用域重新声明
+  blockScopedReDeclaration();
+  
+  // const 不可变性
+  const arr = [1, 2, 3];
+  arr.push(4);
+  console.log("Const array (can modify contents):", arr);
+  
+  // 解构
+  const [a, b] = [10, 20];
+  console.log("Destructured:", { a, b });
+  
+  console.log("=== End of Demo ===\n");
+}

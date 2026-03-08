@@ -196,3 +196,34 @@ export {
   TestableSingleton,
   config
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Singleton Pattern Demo ===");
+  
+  // 基础单例
+  const s1 = BasicSingleton.getInstance();
+  const s2 = BasicSingleton.getInstance();
+  console.log("Same instance:", s1 === s2);
+  
+  // ES Module 单例
+  config.set("apiUrl", "https://api.example.com");
+  console.log("Config value:", config.get("apiUrl"));
+  
+  // 闭包单例
+  const db1 = getDatabase();
+  const db2 = getDatabase();
+  console.log("Database same instance:", db1 === db2);
+  db1.query("SELECT * FROM users");
+  
+  // 装饰器单例
+  const logger1 = new Logger();
+  const logger2 = new Logger();
+  console.log("Logger same instance:", logger1 === logger2);
+  logger1.log("Test message");
+  console.log("Logs:", logger1.getLogs());
+  
+  console.log("=== End of Demo ===\n");
+}

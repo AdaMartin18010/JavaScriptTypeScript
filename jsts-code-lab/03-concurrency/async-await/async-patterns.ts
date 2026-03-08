@@ -182,3 +182,42 @@ export {
   paginatedFetcher,
   consumeIterator
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export async function demo(): Promise<void> {
+  console.log("=== Async/Await Patterns Demo ===");
+  
+  // 模拟延迟
+  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  
+  // 重试模式
+  console.log("Testing retry:");
+  let attempts = 0;
+  const result = await withRetry(async () => {
+    attempts++;
+    if (attempts < 3) throw new Error("Not yet");
+    return "Success after " + attempts + " attempts";
+  }, 3, 100);
+  console.log(result);
+  
+  // 超时控制
+  console.log("\nTesting timeout:");
+  try {
+    await withTimeout(delay(2000), 100);
+  } catch (e) {
+    console.log("Timed out as expected");
+  }
+  
+  // 批量处理
+  console.log("\nBatch processing:");
+  const items = [1, 2, 3, 4, 5];
+  const processed = await batchProcess(items, async (n) => {
+    await delay(50);
+    return n * n;
+  }, 2);
+  console.log("Processed:", processed);
+  
+  console.log("=== End of Demo ===\n");
+}

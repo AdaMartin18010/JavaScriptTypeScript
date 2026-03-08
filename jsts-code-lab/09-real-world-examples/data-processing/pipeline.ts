@@ -177,7 +177,7 @@ class BatchProcessor<T, R> {
 // 7. 使用示例
 // ============================================================================
 
-async function demo() {
+export async function demo() {
   // CSV 处理管道
   const csvPipeline = new Pipeline<string>()
     .pipe(new CSVParser())

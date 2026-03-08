@@ -214,3 +214,107 @@ export function topologicalSort(graph: Graph): string[] | null {
 // ============================================================================
 
 export { Graph as default };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Graph Algorithms Demo ===");
+
+  // 构建图
+  console.log("\n1. Graph Construction:");
+  const graph = new Graph();
+  graph.addEdge("A", "B");
+  graph.addEdge("A", "C");
+  graph.addEdge("B", "D");
+  graph.addEdge("B", "E");
+  graph.addEdge("C", "F");
+  graph.addEdge("E", "F");
+
+  console.log("   Graph structure:");
+  console.log("   A -> B, C");
+  console.log("   B -> D, E");
+  console.log("   C -> F");
+  console.log("   E -> F");
+  console.log("   Vertices:", graph.getVertices());
+
+  // BFS
+  console.log("\n2. Breadth-First Search (BFS):");
+  console.log("   BFS from A:", bfs(graph, "A"));
+  console.log("   BFS from A to F:", bfs(graph, "A", "F"));
+
+  // BFS 最短路径
+  console.log("\n3. BFS Shortest Path (unweighted):");
+  const shortestPath = bfsShortestPath(graph, "A", "F");
+  console.log("   Shortest path A -> F:", shortestPath);
+  console.log("   Path length:", shortestPath ? shortestPath.length - 1 : "N/A");
+
+  // DFS
+  console.log("\n4. Depth-First Search (DFS):");
+  console.log("   DFS (recursive) from A:", dfsRecursive(graph, "A"));
+  console.log("   DFS (iterative) from A:", dfsIterative(graph, "A"));
+
+  // 环检测
+  console.log("\n5. Cycle Detection:");
+  const acyclicGraph = new Graph();
+  acyclicGraph.addEdge("A", "B");
+  acyclicGraph.addEdge("B", "C");
+  acyclicGraph.addEdge("C", "D");
+  console.log("   Acyclic graph (A->B->C->D) has cycle:", hasCycle(acyclicGraph));
+
+  const cyclicGraph = new Graph();
+  cyclicGraph.addEdge("A", "B");
+  cyclicGraph.addEdge("B", "C");
+  cyclicGraph.addEdge("C", "A");
+  console.log("   Cyclic graph (A->B->C->A) has cycle:", hasCycle(cyclicGraph));
+
+  // 拓扑排序
+  console.log("\n6. Topological Sort:");
+  const dag = new Graph();
+  dag.addEdge("Foundation", "Walls");
+  dag.addEdge("Foundation", "Plumbing");
+  dag.addEdge("Walls", "Roof");
+  dag.addEdge("Plumbing", "Roof");
+  dag.addEdge("Walls", "Electrical");
+  dag.addEdge("Roof", "Paint");
+  dag.addEdge("Electrical", "Paint");
+
+  const topoOrder = topologicalSort(dag);
+  console.log("   Construction steps:");
+  console.log("   Foundation -> Walls, Plumbing");
+  console.log("   Walls -> Roof, Electrical");
+  console.log("   Plumbing -> Roof");
+  console.log("   Roof -> Paint");
+  console.log("   Electrical -> Paint");
+  console.log("   Topological order:", topoOrder);
+
+  // 无向图
+  console.log("\n7. Undirected Graph:");
+  const undirected = new Graph();
+  undirected.addUndirectedEdge("1", "2");
+  undirected.addUndirectedEdge("1", "3");
+  undirected.addUndirectedEdge("2", "4");
+  
+  console.log("   Neighbors of 1:", undirected.getNeighbors("1"));
+  console.log("   Neighbors of 2:", undirected.getNeighbors("2"));
+
+  // 迷宫示例
+  console.log("\n8. Maze Pathfinding:");
+  const maze = new Graph();
+  // Simple 3x3 grid maze
+  // S . .
+  // # . #
+  // . . E
+  maze.addEdge("(0,0)", "(0,1)");
+  maze.addEdge("(0,1)", "(1,1)");
+  maze.addEdge("(1,1)", "(2,1)");
+  maze.addEdge("(2,1)", "(2,2)");
+  maze.addEdge("(2,0)", "(2,1)");
+
+  const mazePath = bfsShortestPath(maze, "(0,0)", "(2,2)");
+  console.log("   Maze path from S(0,0) to E(2,2):");
+  console.log("   ", mazePath);
+
+  console.log("=== End of Demo ===\n");
+}

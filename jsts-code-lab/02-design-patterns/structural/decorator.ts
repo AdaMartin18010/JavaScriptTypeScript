@@ -167,3 +167,37 @@ export {
 };
 
 export type { Coffee, Fn };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Decorator Pattern Demo ===");
+  
+  // 咖啡装饰
+  let coffee: Coffee = new SimpleCoffee();
+  console.log(`${coffee.description()} = $${coffee.cost()}`);
+  
+  coffee = new MilkDecorator(coffee);
+  console.log(`${coffee.description()} = $${coffee.cost()}`);
+  
+  coffee = new SugarDecorator(coffee);
+  console.log(`${coffee.description()} = $${coffee.cost()}`);
+  
+  // 豪华咖啡
+  const deluxeCoffee = new WhipDecorator(new MilkDecorator(new SimpleCoffee()));
+  console.log(`${deluxeCoffee.description()} = $${deluxeCoffee.cost()}`);
+  
+  // 方法装饰器
+  const calc = new Calculator();
+  console.log("\nCalculator with timing:");
+  calc.heavyCalculation(1000000);
+  
+  // 函数组合
+  const addOne = (x: number) => x + 1;
+  const double = (x: number) => x * 2;
+  const composed = compose<number>(double, addOne);
+  console.log("\nComposed (5 + 1) * 2:", composed(5));
+  
+  console.log("=== End of Demo ===\n");
+}
