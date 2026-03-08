@@ -197,6 +197,67 @@ startServer(app, 3000);
 */
 
 // ============================================================================
+// 6. 使用示例
+// ============================================================================
+
+export function demo(): void {
+  console.log('=== 基础 Web 服务器演示 ===\n');
+
+  // 创建应用
+  const app = createApp();
+
+  // 添加中间件
+  app
+    .use(loggerMiddleware)
+    .use(jsonMiddleware)
+    .use(corsMiddleware);
+
+  // 添加路由
+  app
+    .get('/api/users', async (req, res) => {
+      console.log('[模拟] 获取用户列表');
+    })
+    .get('/api/users/:id', async (req, res, params) => {
+      console.log(`[模拟] 获取用户 ${params.id}`);
+    })
+    .post('/api/users', async (req, res) => {
+      const body = parseBody(req);
+      console.log('[模拟] 创建用户:', body);
+    });
+
+  console.log('路由已注册:');
+  console.log('  GET    /api/users');
+  console.log('  GET    /api/users/:id');
+  console.log('  POST   /api/users');
+
+  // 模拟请求处理
+  console.log('\n模拟请求:');
+  
+  const mockReq = {
+    method: 'GET',
+    url: '/api/users/123',
+    headers: {}
+  } as IncomingMessage;
+
+  const mockRes = {
+    writeHead: (code: number, headers?: any) => {
+      console.log(`  响应状态: ${code}`);
+    },
+    end: (data?: any) => {
+      console.log(`  响应数据: ${data}`);
+    },
+    on: (event: string, cb: any) => {},
+    setHeader: (name: string, value: string) => {},
+    statusCode: 200
+  } as unknown as ServerResponse;
+
+  app.handle(mockReq, mockRes).catch(console.error);
+
+  console.log('\n服务器功能演示完成');
+  console.log('实际启动请取消注释底部的 startServer(app, 3000)');
+}
+
+// ============================================================================
 // 导出
 // ============================================================================
 

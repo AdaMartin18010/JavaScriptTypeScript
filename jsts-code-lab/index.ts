@@ -55,6 +55,9 @@ export * as Performance from './08-performance/index';
 // 实战案例
 export * as RealWorldExamples from './09-real-world-examples/index';
 
+// JS/TS 对比分析
+export * as JSTSComparison from './10-js-ts-comparison/index';
+
 // 共享模块
 export * as Shared from './shared/index';
 
@@ -73,6 +76,7 @@ export const MODULES = {
   testing: { name: '测试', files: 5 },
   performance: { name: '性能优化', files: 5 },
   realWorldExamples: { name: '实战案例', files: 8 },
+  jsTsComparison: { name: 'JS/TS对比', files: 4 },
 };
 
 // 总览信息
@@ -85,6 +89,7 @@ export const OVERVIEW = {
   architecturePatterns: ['分层架构', '六边形架构', 'MVC', 'MVVM', '微服务', 'CQRS'],
   testTypes: ['单元测试', '集成测试', 'E2E测试', 'Mock/Stub', 'TDD/BDD'],
   optimizationAreas: ['内存管理', '构建优化', '渲染优化', '网络优化'],
+  jsTsComparison: ['类型理论', '形式化证明', 'JS实现对比', '互操作性'],
 };
 
 console.log(`
@@ -97,6 +102,9 @@ console.log(`
 ║   📊 模块数: ${OVERVIEW.totalModules.toString().padEnd(3)}  📁 源文件: ${OVERVIEW.totalSourceFiles.toString().padEnd(3)}              ║
 ║   🎨 设计模式: 23种  🏗️ 架构模式: 6种                      ║
 ║   🧪 测试类型: 5种   ⚡ 性能优化: 5大方向                  ║
+║   🔄 JS/TS对比: 完整                                    ║
+║                                                          ║
+║   运行所有示例: tsx run-demos.ts                         ║
 ║                                                          ║
 ╚══════════════════════════════════════════════════════════╝
 `);
