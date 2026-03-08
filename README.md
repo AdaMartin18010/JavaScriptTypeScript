@@ -24,7 +24,8 @@ JavaScript TypeScript 全景综述与代码实验室 - **持续完善中**
 | 08-performance | **5** | 🟢 完成 | **优化模式、内存管理、构建优化、渲染优化、网络优化** |
 | 09-real-world-examples | **8** | 🟢 完成 | **API客户端、CLI工具、Web服务器、数据处理、状态管理、认证授权、事件总线、表单验证** |
 | shared + tests | 12 | 🟢 完成 | 共享模块、测试套件 |
-| **总计** | **114** | **🟢 100%** | |
+| 10-js-ts-comparison | **4** | 🟢 完成 | 类型理论、JS对比、互操作性 |
+| **总计** | **118** | **🟢 100%** | |
 
 ## 🗂️ 项目结构
 
@@ -91,23 +92,40 @@ JavaScriptTypeScript/
 - ✅ API客户端、CLI工具、Web服务器、数据处理
 - ✅ 状态管理、认证授权、事件总线、表单验证
 
+### 8️⃣ JS/TS 对比分析 (4个文件) ✅
+
+- ✅ 类型系统的形式化论证 (Γ ⊢ e : τ、健全性证明)
+- ✅ JavaScript 实现对比 (类型擦除演示)
+- ✅ 互操作性指南 (声明文件、渐进迁移)
+
 ## 🚀 快速开始
 
 ```bash
 cd jsts-code-lab
 pnpm install
+
+# 运行所有 Demo 示例
+pnpm tsx run-demos.ts
+
+# 或运行指定模块
+pnpm tsx run-demos.ts design-patterns
+pnpm tsx run-demos.ts architecture-patterns
+pnpm tsx run-demos.ts js-ts-comparison
+
+# 运行测试
 pnpm test
 ```
 
 ## 📊 统计
 
-- **总文件数**: 114
-- **TypeScript**: 104 (源码 92 + 测试 12)
+- **总文件数**: 119
+- **TypeScript**: 109 (源码 97 + 测试 12)
 - **设计模式**: 23种 GoF 模式全部完成
 - **架构模式**: 6种企业级架构
 - **测试类型**: 5种完整测试方案
 - **性能优化**: 5大优化方向
 - **实战案例**: 8个完整案例
+- **JS/TS 对比**: 类型理论、实现对比、互操作性
 - **ES 特性**: ES2020-ES2024
 - **数据结构与算法**: 15+ 实现
 
@@ -120,4 +138,4 @@ pnpm test
 
 ---
 
-**状态**: 🟢 **100% 完成** 🎉 | **文件数**: 118 | **TypeScript**: 108
+**状态**: 🟢 **100% 完成** 🎉 | **文件数**: 119 | **TypeScript**: 109
