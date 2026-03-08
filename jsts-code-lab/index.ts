@@ -115,6 +115,36 @@ export * as AdvancedTesting from './28-testing-advanced/index';
 // 文档生成
 export * as Documentation from './29-documentation/index';
 
+// 实时通信
+export * as RealTimeCommunication from './30-real-time-communication/index';
+
+// 无服务器架构
+export * as Serverless from './31-serverless/index';
+
+// 边缘计算
+export * as EdgeComputing from './32-edge-computing/index';
+
+// AI 集成
+export * as AIIntegration from './33-ai-integration/index';
+
+// Web3/区块链
+export * as BlockchainWeb3 from './34-blockchain-web3/index';
+
+// 无障碍访问
+export * as Accessibility from './35-accessibility-a11y/index';
+
+// WebAssembly
+export * as WebAssembly from './36-web-assembly/index';
+
+// PWA
+export * as PWA from './37-pwa/index';
+
+// Web 安全
+export * as WebSecurity from './38-web-security/index';
+
+// 性能监控
+export * as PerformanceMonitoring from './39-performance-monitoring/index';
+
 // 共享模块
 export * as Shared from './shared/index';
 
@@ -153,6 +183,16 @@ export const MODULES = {
   internationalization: { name: '国际化', files: 1 },
   advancedTesting: { name: '高级测试', files: 1 },
   documentation: { name: '文档生成', files: 1 },
+  realTimeCommunication: { name: '实时通信', files: 1 },
+  serverless: { name: '无服务器', files: 1 },
+  edgeComputing: { name: '边缘计算', files: 1 },
+  aiIntegration: { name: 'AI集成', files: 1 },
+  blockchainWeb3: { name: 'Web3/区块链', files: 1 },
+  accessibility: { name: '无障碍访问', files: 1 },
+  webAssembly: { name: 'WebAssembly', files: 1 },
+  pwa: { name: 'PWA', files: 1 },
+  webSecurity: { name: 'Web安全', files: 1 },
+  performanceMonitoring: { name: '性能监控', files: 1 },
 };
 
 // 总览信息

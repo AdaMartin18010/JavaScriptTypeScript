@@ -2,8 +2,8 @@
 
 > 从理论到实践的完整代码示例库
 
-[![Modules](https://img.shields.io/badge/Modules-29-blue)](./)
-[![Files](https://img.shields.io/badge/Files-177-green)](./)
+[![Modules](https://img.shields.io/badge/Modules-39-blue)](./)
+[![Files](https://img.shields.io/badge/Files-200+-green)](./)
 [![Patterns](https://img.shields.io/badge/Patterns-23%20GoF-orange)](./)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](./LICENSE)
 
@@ -134,6 +134,26 @@ jsts-code-lab/
 │   └── e2e-testing.ts            # E2E测试
 ├── 📁 29-documentation/          # 文档生成
 │   └── api-docs-generator.ts     # API文档生成
+├── 📁 30-real-time-communication/# 实时通信
+│   └── sse-webrtc.ts             # SSE/WebRTC
+├── 📁 31-serverless/             # 无服务器架构
+│   └── serverless-patterns.ts    # Serverless模式
+├── 📁 32-edge-computing/         # 边缘计算
+│   └── edge-runtime.ts           # 边缘运行时
+├── 📁 33-ai-integration/         # AI集成
+│   └── ai-sdk-patterns.ts        # AI SDK模式
+├── 📁 34-blockchain-web3/        # Web3/区块链
+│   └── web3-patterns.ts          # Web3模式
+├── 📁 35-accessibility-a11y/     # 无障碍访问
+│   └── a11y-utils.ts             # 无障碍工具
+├── 📁 36-web-assembly/           # WebAssembly
+│   └── wasm-integration.ts       # WASM集成
+├── 📁 37-pwa/                    # PWA
+│   └── pwa-patterns.ts           # PWA模式
+├── 📁 38-web-security/           # Web安全
+│   └── xss-csp.ts                # XSS/CSP
+├── 📁 39-performance-monitoring/ # 性能监控
+│   └── core-web-vitals.ts        # Core Web Vitals
 ├── 📁 shared/                    # 共享模块
 ├── 📁 tests/                     # 测试套件
 └── 📁 playground/                # 演练场

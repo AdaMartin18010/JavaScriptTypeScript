@@ -236,6 +236,66 @@ const DEMO_MODULES = {
     console.log('\n📚 文档生成\n');
     const docs = await import('./29-documentation/api-docs-generator.ts');
     docs.demo?.();
+  },
+
+  'real-time-communication': async () => {
+    console.log('\n📡 实时通信\n');
+    const rtc = await import('./30-real-time-communication/sse-webrtc.ts');
+    rtc.demo?.();
+  },
+
+  'serverless': async () => {
+    console.log('\n⚡ 无服务器架构\n');
+    const serverless = await import('./31-serverless/serverless-patterns.ts');
+    await serverless.demo?.();
+  },
+
+  'edge-computing': async () => {
+    console.log('\n🌐 边缘计算\n');
+    const edge = await import('./32-edge-computing/edge-runtime.ts');
+    await edge.demo?.();
+  },
+
+  'ai-integration': async () => {
+    console.log('\n🤖 AI 集成\n');
+    const ai = await import('./33-ai-integration/ai-sdk-patterns.ts');
+    await ai.demo?.();
+  },
+
+  'blockchain-web3': async () => {
+    console.log('\n⛓️ Web3/区块链\n');
+    const web3 = await import('./34-blockchain-web3/web3-patterns.ts');
+    await web3.demo?.();
+  },
+
+  'accessibility': async () => {
+    console.log('\n♿ 无障碍访问\n');
+    const a11y = await import('./35-accessibility-a11y/a11y-utils.ts');
+    a11y.demo?.();
+  },
+
+  'web-assembly': async () => {
+    console.log('\n⚙️ WebAssembly\n');
+    const wasm = await import('./36-web-assembly/wasm-integration.ts');
+    wasm.demo?.();
+  },
+
+  'pwa': async () => {
+    console.log('\n📱 PWA\n');
+    const pwa = await import('./37-pwa/pwa-patterns.ts');
+    await pwa.demo?.();
+  },
+
+  'web-security': async () => {
+    console.log('\n🔐 Web 安全\n');
+    const security = await import('./38-web-security/xss-csp.ts');
+    security.demo?.();
+  },
+
+  'performance-monitoring': async () => {
+    console.log('\n📊 性能监控\n');
+    const perf = await import('./39-performance-monitoring/core-web-vitals.ts');
+    perf.demo?.();
   }
 };
 
