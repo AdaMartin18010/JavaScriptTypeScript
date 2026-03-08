@@ -359,13 +359,5 @@ export function demo(): void {
 }
 
 // ============================================================================
-// 导出
+// 导出 (已在上面导出)
 // ============================================================================
-
-export {
-  Store,
-  combineReducers,
-  loggerMiddleware,
-  thunkMiddleware,
-  persistMiddleware
-};

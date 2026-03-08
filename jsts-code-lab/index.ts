@@ -97,6 +97,24 @@ export * as DeploymentDevOps from './22-deployment-devops/index';
 // 工具链配置
 export * as ToolchainConfiguration from './23-toolchain-configuration/index';
 
+// GraphQL
+export * as GraphQL from './24-graphql/index';
+
+// 微服务
+export * as Microservices from './25-microservices/index';
+
+// 事件溯源
+export * as EventSourcing from './26-event-sourcing/index';
+
+// 国际化
+export * as Internationalization from './27-internationalization/index';
+
+// 高级测试
+export * as AdvancedTesting from './28-testing-advanced/index';
+
+// 文档生成
+export * as Documentation from './29-documentation/index';
+
 // 共享模块
 export * as Shared from './shared/index';
 
@@ -123,12 +141,18 @@ export const MODULES = {
   dataFlow: { name: '数据流', files: 1 },
   appDevelopment: { name: '应用开发', files: 1 },
   debuggingMonitoring: { name: '调试监控', files: 1 },
-  frontendFrameworks: { name: '前端框架', files: 1 },
-  backendDevelopment: { name: '后端开发', files: 1 },
-  databaseORM: { name: '数据库ORM', files: 2 },
-  apiSecurity: { name: 'API安全', files: 2 },
-  deploymentDevOps: { name: '部署DevOps', files: 1 },
-  toolchainConfiguration: { name: '工具链配置', files: 1 },
+  frontendFrameworks: { name: '前端框架', files: 3 },
+  backendDevelopment: { name: '后端开发', files: 3 },
+  databaseORM: { name: '数据库ORM', files: 4 },
+  apiSecurity: { name: 'API安全', files: 3 },
+  deploymentDevOps: { name: '部署DevOps', files: 2 },
+  toolchainConfiguration: { name: '工具链配置', files: 2 },
+  graphql: { name: 'GraphQL', files: 1 },
+  microservices: { name: '微服务', files: 1 },
+  eventSourcing: { name: '事件溯源', files: 1 },
+  internationalization: { name: '国际化', files: 1 },
+  advancedTesting: { name: '高级测试', files: 1 },
+  documentation: { name: '文档生成', files: 1 },
 };
 
 // 总览信息
@@ -138,16 +162,17 @@ export const OVERVIEW = {
   totalSourceFiles: Object.values(MODULES).reduce((sum, m) => sum + m.files, 0),
   designPatterns: 23, // GoF 23种
   esVersions: ['ES2020', 'ES2021', 'ES2022', 'ES2023', 'ES2024'],
-  architecturePatterns: ['分层架构', '六边形架构', 'MVC', 'MVVM', '微服务', 'CQRS'],
+  architecturePatterns: ['分层架构', '六边形架构', 'MVC', 'MVVM', '微服务', 'CQRS', '事件溯源'],
   testTypes: ['单元测试', '集成测试', 'E2E测试', 'Mock/Stub', 'TDD/BDD'],
   optimizationAreas: ['内存管理', '构建优化', '渲染优化', '网络优化'],
   jsTsComparison: ['类型理论', '形式化证明', 'JS实现对比', '互操作性'],
   frontendFrameworks: ['响应式系统', '组件模式', '路由管理', '状态管理'],
-  backendPatterns: ['Express中间件', '路由组织', '认证授权'],
-  databasePatterns: ['Repository模式', '查询构建器', '关联查询'],
-  securityPatterns: ['JWT认证', '速率限制', '权限检查'],
-  deployment: ['Docker', '多阶段构建', 'CI/CD'],
-  toolchain: ['Vite', '构建优化', '开发服务器'],
+  backendPatterns: ['Express中间件', '路由组织', '认证授权', 'API设计', 'WebSocket'],
+  databasePatterns: ['Repository模式', '查询构建器', '关联查询', '迁移系统', '连接池'],
+  securityPatterns: ['JWT认证', '速率限制', '权限检查', 'CORS/CSRF'],
+  deployment: ['Docker', '多阶段构建', 'CI/CD', '部署策略'],
+  toolchain: ['Vite', '构建优化', 'ESLint/Prettier', '文档生成'],
+  advancedTopics: ['GraphQL', '微服务通信', '事件溯源', '国际化', 'E2E测试'],
 };
 
 console.log(`

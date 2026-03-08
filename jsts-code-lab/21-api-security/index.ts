@@ -6,7 +6,10 @@
  * - JWT 认证与授权
  * - 速率限制算法
  * - 权限检查
+ * - CORS 配置
+ * - CSRF 防护
  */
 
 export * from './jwt-auth.js';
 export * from './rate-limiter.js';
+export * from './cors-csrf.js';

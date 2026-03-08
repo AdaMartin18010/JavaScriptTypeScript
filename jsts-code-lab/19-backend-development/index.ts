@@ -6,6 +6,10 @@
  * - Express 中间件与路由模式
  * - 请求验证与错误处理
  * - 控制器架构
+ * - API 设计
+ * - WebSocket 实时通信
  */
 
 export * from './express-patterns.js';
+export * from './api-design.js';
+export * from './websocket-patterns.js';

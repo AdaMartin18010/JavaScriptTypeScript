@@ -6,6 +6,8 @@
  * - Dockerfile 生成
  * - Docker Compose 配置
  * - 多阶段构建
+ * - CI/CD 流水线
  */
 
 export * from './docker-config.js';
+export * from './cicd-pipeline.js';

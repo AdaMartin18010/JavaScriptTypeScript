@@ -6,7 +6,11 @@
  * - Repository 模式
  * - 查询构建器
  * - 关联查询与事务
+ * - 迁移系统
+ * - 连接池
  */
 
 export * from './prisma-patterns.js';
 export * from './sql-query-builder.js';
+export * from './migration-system.js';
+export * from './connection-pool.js';
