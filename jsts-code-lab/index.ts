@@ -145,11 +145,41 @@ export * as WebSecurity from './38-web-security/index';
 // 性能监控
 export * as PerformanceMonitoring from './39-performance-monitoring/index';
 
+// 浏览器运行时 (深度模型)
+export * as BrowserRuntime from './50-browser-runtime/index';
+
+// AI驱动UI组件
+export * as UIComponents from './51-ui-components/index';
+
+// Web渲染
+export * as WebRendering from './52-web-rendering/index';
+
+// 应用架构
+export * as AppArchitecture from './53-app-architecture/index';
+
+// 智能性能优化
+export * as IntelligentPerformance from './54-intelligent-performance/index';
+
+// AI测试
+export * as AITesting from './55-ai-testing/index';
+
+// 代码生成
+export * as CodeGeneration from './56-code-generation/index';
+
+// 设计系统
+export * as DesignSystem from './57-design-system/index';
+
+// 数据可视化
+export * as DataVisualization from './58-data-visualization/index';
+
+// 全栈模式
+export * as FullstackPatterns from './59-fullstack-patterns/index';
+
 // 共享模块
 export * as Shared from './shared/index';
 
 // 版本信息
-export const VERSION = '1.0.0';
+export const VERSION = '1.1.0';
 
 // 模块统计
 export const MODULES = {
@@ -193,7 +223,17 @@ export const MODULES = {
   pwa: { name: 'PWA', files: 1 },
   webSecurity: { name: 'Web安全', files: 1 },
   performanceMonitoring: { name: '性能监控', files: 1 },
-};
+  browserRuntime: { name: '浏览器运行时', files: 2 },
+  uiComponents: { name: 'AI驱动UI组件', files: 1 },
+  webRendering: { name: 'Web渲染', files: 1 },
+  appArchitecture: { name: '应用架构', files: 1 },
+  intelligentPerformance: { name: '智能性能优化', files: 1 },
+  aiTesting: { name: 'AI测试', files: 1 },
+  codeGeneration: { name: '代码生成', files: 1 },
+  designSystem: { name: '设计系统', files: 1 },
+  dataVisualization: { name: '数据可视化', files: 1 },
+  fullstackPatterns: { name: '全栈模式', files: 1 },
+} as const;
 
 // 总览信息
 export const OVERVIEW = {

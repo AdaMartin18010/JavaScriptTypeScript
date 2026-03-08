@@ -224,10 +224,9 @@
  * ```css
  * .isolated-component {
  *   contain: layout style paint;
- *   /* 变更不会传播到外部 */
+ *   // 变更不会传播到外部
  * }
- * ```
- * 
+ *
  * contain值:
  * - `layout`: 内部布局不影响外部
  * - `style`: 样式不传播到外部
@@ -240,10 +239,9 @@
  * 仅触发Composite的属性 (60fps友好):
  * ```css
  * .animated {
- *   transform: translateX(100px); /* GPU加速 */
- *   opacity: 0.5;                 /* GPU加速 */
- *   will-change: transform;       /* 提示浏览器优化 */
- * }
+ *   transform: translateX(100px);
+ *   opacity: 0.5;
+ *   will-change: transform;
  * ```
  * 
  * 避免动画触发布局的属性:
@@ -451,9 +449,16 @@ export class FastDOM {
     if (this.scheduled) return;
     this.scheduled = true;
 
-    requestAnimationFrame(() => {
-      this.execute();
-    });
+    if (typeof requestAnimationFrame !== 'undefined') {
+      requestAnimationFrame(() => {
+        this.execute();
+      });
+    } else {
+      // Node.js fallback
+      setImmediate(() => {
+        this.execute();
+      });
+    }
   }
 
   private execute(): void {
@@ -594,17 +599,5 @@ export function demo(): void {
 }
 
 // ============================================================================
-// 导出
+// 导出 (类已在上面使用 export class 导出)
 // ============================================================================
-
-export {
-  RenderingPipelineMonitor,
-  LayoutThrashingDetector,
-  FastDOM,
-  VirtualScrollCalculator
-};
-
-export type {
-  RenderMetrics,
-  VirtualScrollConfig
-};
