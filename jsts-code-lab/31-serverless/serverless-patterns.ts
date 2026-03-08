@@ -370,8 +370,4 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export {
-  FunctionOrchestrator,
-  EventTriggerManager,
-  StepFunction
-};
+export type { ServerlessFunction, FunctionTrigger, FunctionContext, Handler, Step };

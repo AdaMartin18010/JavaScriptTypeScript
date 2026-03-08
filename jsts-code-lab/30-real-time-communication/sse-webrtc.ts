@@ -373,9 +373,4 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  SSEServer,
-  SignalingServer,
-  WebRTCConnection,
-  CollaborativeWhiteboard
-};
+export type { SSEMessage, SignalMessage, DrawingAction };

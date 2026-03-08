@@ -400,9 +400,4 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export {
-  EdgeCache,
-  GeoRouter,
-  EdgeRuntime,
-  EdgeABTesting
-};
+export type { EdgeRequest, EdgeResponse, EdgeContext, GeoLocation, EdgeHandler };
