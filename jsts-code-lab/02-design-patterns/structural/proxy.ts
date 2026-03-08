@@ -226,3 +226,44 @@ export {
 };
 
 export type { Image, Document, Calculator, RemoteService };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Proxy Pattern Demo ===");
+  
+  // 虚拟代理 (延迟加载)
+  const image = new ProxyImage("photo.jpg");
+  console.log("Image created (not loaded yet)");
+  console.log("Filename:", image.getFileName());
+  image.display(); // 这里才会加载
+  image.display(); // 复用已加载的图像
+  
+  // 保护代理
+  const doc = new RealDocument("secret.txt", "Top secret content");
+  const viewerDoc = new ProtectedDocumentProxy(doc, "viewer");
+  const adminDoc = new ProtectedDocumentProxy(doc, "admin");
+  
+  console.log("\nViewer can view:", viewerDoc.view());
+  try {
+    viewerDoc.edit("new content");
+  } catch (e) {
+    console.log("Viewer cannot edit:", (e as Error).message);
+  }
+  
+  console.log("\nAdmin operations:");
+  adminDoc.edit("modified by admin");
+  console.log("Content after edit:", adminDoc.view());
+  
+  // 缓存代理
+  const calculator = new RealCalculator();
+  const cached = new CachedCalculatorProxy(calculator);
+  
+  console.log("\nCached calculator:");
+  console.log("fib(10):", cached.fibonacci(10));
+  console.log("fib(10) again (cached):", cached.fibonacci(10));
+  console.log("fact(5):", cached.factorial(5));
+  
+  console.log("=== End of Demo ===\n");
+}

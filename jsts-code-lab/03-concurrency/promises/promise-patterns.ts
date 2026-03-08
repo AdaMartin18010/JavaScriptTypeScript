@@ -163,3 +163,56 @@ export {
 };
 
 export type { AsyncFn };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export async function demo(): Promise<void> {
+  console.log("=== Promise Patterns Demo ===");
+  
+  // Promise.all
+  console.log("Promise.all:");
+  const [a, b, c] = await Promise.all([
+    Promise.resolve(1),
+    Promise.resolve(2),
+    Promise.resolve(3)
+  ]);
+  console.log("Results:", { a, b, c });
+  
+  // Promise.race
+  console.log("\nPromise.race:");
+  const winner = await Promise.race([
+    delay(200).then(() => "slow"),
+    delay(100).then(() => "fast")
+  ]);
+  console.log("Winner:", winner);
+  
+  // Promise.allSettled
+  console.log("\nPromise.allSettled:");
+  const settled = await Promise.allSettled([
+    Promise.resolve("ok"),
+    Promise.reject(new Error("fail"))
+  ]);
+  console.log("Settled:", settled.map(s => s.status));
+  
+  // 顺序执行
+  console.log("\nSequence:");
+  const seq = await sequence([
+    () => Promise.resolve("first"),
+    () => Promise.resolve("second"),
+    () => Promise.resolve("third")
+  ]);
+  console.log("Sequence:", seq);
+  
+  // 管道
+  console.log("\nPipe:");
+  const piped = await pipe(
+    5,
+    async (x) => x + 1,
+    async (x) => x * 2,
+    async (x) => String(x)
+  );
+  console.log("Piped:", piped);
+  
+  console.log("=== End of Demo ===\n");
+}

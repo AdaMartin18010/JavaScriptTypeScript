@@ -179,3 +179,91 @@ export function isBalanced<T>(root: TreeNode<T> | null): boolean {
 // ============================================================================
 
 export { TreeNode as default };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Tree Data Structure Demo ===");
+
+  // 构建二叉树
+  //       1
+  //      / \
+  //     2   3
+  //    / \   \
+  //   4   5   6
+  console.log("\n1. Building Binary Tree:");
+  const root = new TreeNode(1);
+  root.left = new TreeNode(2);
+  root.right = new TreeNode(3);
+  root.left.left = new TreeNode(4);
+  root.left.right = new TreeNode(5);
+  root.right.right = new TreeNode(6);
+
+  console.log("   Tree structure:");
+  console.log("        1");
+  console.log("       / \\");
+  console.log("      2   3");
+  console.log("     / \   \\");
+  console.log("    4   5   6");
+
+  // DFS 遍历
+  console.log("\n2. Depth-First Search (DFS):");
+  console.log("   Pre-order (Root -> Left -> Right):", preOrder(root));
+  console.log("   In-order (Left -> Root -> Right):", inOrder(root));
+  console.log("   Post-order (Left -> Right -> Root):", postOrder(root));
+
+  // BFS 遍历
+  console.log("\n3. Breadth-First Search (Level Order):");
+  const levels = levelOrder(root);
+  console.log("   Level by level:");
+  levels.forEach((level, i) => {
+    console.log(`     Level ${i}:`, level);
+  });
+
+  // 二叉搜索树
+  console.log("\n4. Binary Search Tree (BST):");
+  const bst = new BinarySearchTree<number>();
+  const values = [50, 30, 70, 20, 40, 60, 80];
+  values.forEach(v => bst.insert(v));
+
+  console.log("   Inserted values:", values);
+  console.log("   Search 40:", bst.search(40));
+  console.log("   Search 100:", bst.search(100));
+
+  // BST 中序遍历（应该是有序的）
+  const bstRoot = bst.getRoot();
+  console.log("   BST in-order (sorted):", inOrder(bstRoot));
+
+  // 最大深度
+  console.log("\n5. Tree Properties:");
+  console.log("   Max depth of tree:", maxDepth(root));
+  console.log("   Is balanced:", isBalanced(root));
+
+  // 不平衡树
+  const unbalanced = new TreeNode(1);
+  unbalanced.right = new TreeNode(2);
+  unbalanced.right.right = new TreeNode(3);
+  unbalanced.right.right.right = new TreeNode(4);
+  console.log("   Unbalanced tree is balanced:", isBalanced(unbalanced));
+
+  // 更大树的遍历
+  console.log("\n6. Larger Tree Traversal:");
+  const bigTree = new TreeNode("A");
+  bigTree.left = new TreeNode("B");
+  bigTree.right = new TreeNode("C");
+  bigTree.left.left = new TreeNode("D");
+  bigTree.left.right = new TreeNode("E");
+  bigTree.right.left = new TreeNode("F");
+  bigTree.right.right = new TreeNode("G");
+  bigTree.left.left.left = new TreeNode("H");
+  bigTree.left.left.right = new TreeNode("I");
+
+  console.log("   Pre-order:", preOrder(bigTree));
+  console.log("   In-order:", inOrder(bigTree));
+  console.log("   Post-order:", postOrder(bigTree));
+  console.log("   Level-order:", levelOrder(bigTree));
+
+  console.log("=== End of Demo ===\n");
+}

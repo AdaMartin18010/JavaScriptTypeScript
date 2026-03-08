@@ -234,3 +234,84 @@ export {
 };
 
 export type { Database, TestCase };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export async function demo(): Promise<void> {
+  console.log('=== 单元测试模式演示 ===\n');
+
+  // 1. AAA 模式演示
+  console.log('--- AAA 模式 (Arrange-Act-Assert) ---');
+  console.log('测试 add(2, 3):');
+  // Arrange
+  const a = 2;
+  const b = 3;
+  const expected = 5;
+  // Act
+  const result = add(a, b);
+  // Assert
+  console.log(`  结果: ${result}, 期望: ${expected}, ${result === expected ? '✓ 通过' : '✗ 失败'}`);
+
+  // 2. 参数化测试
+  console.log('\n--- 参数化测试 ---');
+  console.log('测试 validateEmail:');
+  runParameterizedTests(validateEmail, emailTestCases);
+
+  // 3. 测试替身
+  console.log('\n--- 测试替身 ---');
+  
+  // Mock
+  const mockDb = new MockDatabase();
+  mockDb.setResponse('SELECT * FROM users', [{ id: 1, name: 'Alice' }]);
+  const users = await mockDb.query('SELECT * FROM users');
+  console.log(`MockDatabase 查询结果: ${JSON.stringify(users)}`);
+
+  // Stub
+  const stubEmail = new StubEmailService();
+  stubEmail.setShouldSucceed(true);
+  const emailResult = await stubEmail.send('test@example.com', 'Hello');
+  console.log(`StubEmailService 发送结果: ${emailResult ? '成功' : '失败'}`);
+
+  // Spy
+  const spyLogger = new SpyLogger();
+  spyLogger.log('Error occurred');
+  spyLogger.log('Operation completed');
+  console.log(`SpyLogger 被调用次数: ${spyLogger.logs.length}`);
+  console.log(`是否记录 'Error occurred': ${spyLogger.wasCalledWith('Error occurred') ? '是' : '否'}`);
+
+  // 4. Setup/Teardown
+  console.log('\n--- Setup/Teardown ---');
+  const testDb = new TestDatabase();
+  testDb.setup();
+  console.log(`Setup 后获取 test-user: ${JSON.stringify(testDb.get('test-user'))}`);
+  testDb.teardown();
+  console.log(`Teardown 后获取 test-user: ${testDb.get('test-user') ?? 'undefined'}`);
+
+  // 5. 快照测试
+  console.log('\n--- 快照测试 ---');
+  const data = { id: 1, name: 'Test', items: [1, 2, 3] };
+  const snapshot = createSnapshot(data);
+  console.log('生成的快照:');
+  console.log(snapshot);
+  console.log(`快照匹配: ${matchSnapshot(data, snapshot) ? '✓ 是' : '✗ 否'}`);
+
+  // 6. 异步测试
+  console.log('\n--- 异步测试 ---');
+  console.log('获取用户数据...');
+  const user = await fetchUserData('123');
+  console.log(`获取结果: ${JSON.stringify(user)}`);
+
+  // 7. 属性测试
+  console.log('\n--- 属性测试 ---');
+  console.log('测试加法交换律 (a + b = b + a):');
+  const propertyPassed = propertyTest(
+    () => [generateRandomInt(-100, 100), generateRandomInt(-100, 100)],
+    ([a, b]) => add(a, b) === add(b, a),
+    100
+  );
+  console.log(`测试结果: ${propertyPassed ? '✓ 通过' : '✗ 失败'}`);
+
+  console.log('\n=== 演示结束 ===\n');
+}

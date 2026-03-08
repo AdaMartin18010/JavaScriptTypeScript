@@ -127,3 +127,30 @@ export {
 };
 
 export type { MediaPlayer, OldPrinter, ModernPrinter, Target };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Adapter Pattern Demo ===");
+  
+  // 媒体适配器
+  const player = new UniversalPlayer();
+  console.log("Playing MP3:");
+  player.play("mp3", "song.mp3");
+  console.log("Playing MP4:");
+  player.play("mp4", "video.mp4");
+  console.log("Playing VLC:");
+  player.play("vlc", "movie.vlc");
+  
+  // 对象适配器
+  const oldPrinter = { oldPrint: (text: string) => console.log("Old printer:", text) };
+  const adaptedPrinter = new PrinterAdapter(oldPrinter);
+  adaptedPrinter.print("Hello World");
+  
+  // 类适配器
+  const adapter = new ClassAdapter();
+  console.log("Class adapter request:", adapter.request());
+  
+  console.log("=== End of Demo ===\n");
+}

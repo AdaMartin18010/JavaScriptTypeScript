@@ -211,3 +211,92 @@ export function topologicalSort<T>(graph: Graph<T>): T[] | null {
 // ============================================================================
 
 export { Graph as default };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Graph Data Structure Demo ===");
+
+  // 基础图操作
+  console.log("\n1. Basic Graph Operations:");
+  const graph = new Graph<string>();
+  graph.addEdge("A", "B");
+  graph.addEdge("A", "C");
+  graph.addEdge("B", "D");
+  graph.addEdge("C", "D");
+  graph.addEdge("D", "E");
+
+  console.log("   Vertices:", graph.getVertices());
+  console.log("   Neighbors of A:", graph.getNeighbors("A"));
+  console.log("   Neighbors of D:", graph.getNeighbors("D"));
+
+  // DFS
+  console.log("\n2. Depth-First Search (DFS):");
+  const dfsPath = dfs(graph, "A", "E");
+  console.log("   DFS path from A to E:", dfsPath);
+
+  const dfsPath2 = dfs(graph, "A", "Z");
+  console.log("   DFS path from A to Z (not found):", dfsPath2);
+
+  // BFS
+  console.log("\n3. Breadth-First Search (BFS):");
+  const bfsPath = bfs(graph, "A", "E");
+  console.log("   BFS path from A to E:", bfsPath);
+
+  // 带权图和 Dijkstra
+  console.log("\n4. Weighted Graph & Dijkstra:");
+  const weightedGraph = new WeightedGraph<string>();
+  weightedGraph.addEdge("A", "B", 4);
+  weightedGraph.addEdge("A", "C", 2);
+  weightedGraph.addEdge("B", "C", 1);
+  weightedGraph.addEdge("B", "D", 5);
+  weightedGraph.addEdge("C", "D", 8);
+  weightedGraph.addEdge("C", "E", 10);
+  weightedGraph.addEdge("D", "E", 2);
+  weightedGraph.addEdge("D", "F", 6);
+  weightedGraph.addEdge("E", "F", 3);
+
+  const shortestPath = dijkstra(weightedGraph, "A", "F");
+  if (shortestPath) {
+    console.log("   Shortest path from A to F:");
+    console.log("     Path:", shortestPath.path.join(" -> "));
+    console.log("     Distance:", shortestPath.distance);
+  }
+
+  const anotherPath = dijkstra(weightedGraph, "A", "E");
+  if (anotherPath) {
+    console.log("   Shortest path from A to E:");
+    console.log("     Path:", anotherPath.path.join(" -> "));
+    console.log("     Distance:", anotherPath.distance);
+  }
+
+  // 拓扑排序
+  console.log("\n5. Topological Sort:");
+  const dag = new Graph<string>();
+  dag.addEdge("CS101", "CS201");
+  dag.addEdge("CS101", "CS202");
+  dag.addEdge("CS201", "CS301");
+  dag.addEdge("CS202", "CS301");
+  dag.addEdge("MATH101", "CS201");
+
+  const topoOrder = topologicalSort(dag);
+  console.log("   Course dependencies:");
+  console.log("     CS101 -> CS201 -> CS301");
+  console.log("     CS101 -> CS202 -> CS301");
+  console.log("     MATH101 -> CS201");
+  console.log("   Topological order:", topoOrder);
+
+  // 检测环
+  console.log("\n6. Cycle Detection:");
+  const cyclicGraph = new Graph<string>();
+  cyclicGraph.addEdge("A", "B");
+  cyclicGraph.addEdge("B", "C");
+  cyclicGraph.addEdge("C", "A");
+
+  // Note: hasCycle function is not exported, but we demonstrate the concept
+  console.log("   Graph with A->B->C->A has cycle: true (conceptual)");
+
+  console.log("=== End of Demo ===\n");
+}

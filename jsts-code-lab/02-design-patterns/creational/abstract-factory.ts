@@ -210,3 +210,30 @@ export {
 };
 
 export type { Button, Checkbox, TextField, GUIFactory };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Abstract Factory Pattern Demo ===");
+  
+  // Windows 风格 UI
+  const windowsFactory = getFactory("windows");
+  const windowsApp = new Application(windowsFactory);
+  console.log("Windows UI:");
+  console.log(windowsApp.render());
+  
+  // Mac 风格 UI
+  const macFactory = getFactory("mac");
+  const macApp = new Application(macFactory);
+  console.log("Mac UI:");
+  console.log(macApp.render());
+  
+  // 直接创建组件
+  const winButton = new WindowsButton();
+  const macCheckbox = new MacCheckbox();
+  console.log("Windows button render:", winButton.render());
+  console.log("Mac checkbox render:", macCheckbox.render());
+  
+  console.log("=== End of Demo ===\n");
+}

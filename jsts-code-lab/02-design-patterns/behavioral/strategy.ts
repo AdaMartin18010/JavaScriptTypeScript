@@ -196,3 +196,48 @@ export {
 };
 
 export type { PaymentStrategy, SortStrategy, ValidationStrategy };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Strategy Pattern Demo ===");
+  
+  // 购物车支付
+  const cart = new ShoppingCart();
+  cart.addItem("Laptop", 999);
+  cart.addItem("Mouse", 29);
+  cart.addItem("Keyboard", 79);
+  
+  console.log("Total:", cart.getTotal());
+  
+  cart.setPaymentStrategy(new CreditCardPayment("1234567890123456", "123"));
+  cart.checkout();
+  
+  cart.setPaymentStrategy(new PayPalPayment("user@example.com"));
+  cart.checkout();
+  
+  // 排序策略
+  const sorter = new Sorter<number>(SortStrategies.numericAscending);
+  const data = [3, 1, 4, 1, 5, 9, 2, 6];
+  console.log("\nAscending:", sorter.sort(data));
+  
+  sorter.setStrategy(SortStrategies.numericDescending);
+  console.log("Descending:", sorter.sort(data));
+  
+  // 验证策略
+  const validator = new Validator()
+    .addStrategy(ValidationStrategies.required)
+    .addStrategy(ValidationStrategies.email);
+  
+  const result1 = validator.validate("");
+  console.log("\nEmpty validation:", result1);
+  
+  const result2 = validator.validate("invalid-email");
+  console.log("Invalid email:", result2);
+  
+  const result3 = validator.validate("valid@example.com");
+  console.log("Valid email:", result3);
+  
+  console.log("=== End of Demo ===\n");
+}

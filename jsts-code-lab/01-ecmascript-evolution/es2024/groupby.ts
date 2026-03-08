@@ -174,3 +174,34 @@ export {
 };
 
 export type { Task, Employee };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Object.groupBy Demo ===");
+  
+  // 按类别分组产品
+  console.log("By category:", Object.keys(byCategory));
+  
+  // 按价格范围分组
+  console.log("By price range:", Array.from(byPriceRange.keys()));
+  
+  // 任务分组
+  console.log("Tasks by status:", Object.keys(tasksByStatus));
+  console.log("Tasks by priority:", Object.keys(tasksByPriority));
+  
+  // 奇偶分组
+  console.log("Parity groups:", Object.keys(parityGroups));
+  console.log("Even numbers:", parityGroups.even);
+  console.log("Odd numbers:", parityGroups.odd);
+  
+  // 统计
+  const counts = countBy(products, p => p.category);
+  console.log("Category counts:", counts);
+  
+  // 按部门分组员工
+  console.log("By department:", Object.keys(byYear));
+  
+  console.log("=== End of Demo ===\n");
+}

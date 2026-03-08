@@ -192,3 +192,42 @@ export {
 };
 
 export type { ComputerBuilder, UserProfile, Builder };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Builder Pattern Demo ===");
+  
+  // 建造者模式
+  const builder = new DesktopComputerBuilder();
+  const director = new ComputerDirector(builder);
+  
+  const gamingPC = director.buildGamingPC();
+  console.log("Gaming PC:", gamingPC.toString());
+  
+  builder.reset?.();
+  const officePC = director.buildOfficePC();
+  console.log("Office PC:", officePC.toString());
+  
+  // 手动构建
+  const customPC = builder
+    .setCPU("AMD Ryzen 9")
+    .setRAM("64GB")
+    .setStorage("4TB NVMe")
+    .setGPU("RX 7900 XTX")
+    .setWiFi(true)
+    .build();
+  console.log("Custom PC:", customPC.toString());
+  
+  // UserProfile 建造者
+  const profile = new UserProfileBuilder()
+    .setId("123")
+    .setName("Alice")
+    .setEmail("alice@example.com")
+    .setAge(30)
+    .build();
+  console.log("User profile:", profile);
+  
+  console.log("=== End of Demo ===\n");
+}

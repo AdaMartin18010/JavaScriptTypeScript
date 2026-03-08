@@ -223,3 +223,42 @@ export {
   executeQuery,
   fetchMultipleResources
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Error Cause Demo ===");
+  
+  // 基础用法
+  try {
+    try {
+      throw new Error("Original error");
+    } catch (error) {
+      throw new Error("Wrapped error", { cause: error });
+    }
+  } catch (error) {
+    const e = error as Error;
+    console.log("Error message:", e.message);
+    console.log("Error cause:", e.cause);
+  }
+  
+  // 自定义错误
+  const networkError = new NetworkError("Connection failed", { 
+    cause: new Error("Timeout") 
+  });
+  console.log("Network error:", networkError.message);
+  
+  // 错误链
+  const validationError = new ValidationError("Invalid input", "email", {
+    cause: networkError
+  });
+  const errorChain = getErrorChain(validationError);
+  console.log("Error chain length:", errorChain.length);
+  
+  // 格式化
+  console.log("Formatted chain:");
+  console.log(formatErrorChain(validationError));
+  
+  console.log("=== End of Demo ===\n");
+}

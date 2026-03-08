@@ -191,3 +191,45 @@ export {
 };
 
 export type { Observer, EventMap, EventKey, EventHandler, StoreEvents };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Observer Pattern Demo ===");
+  
+  // 基础主题
+  const subject = new Subject<string>();
+  const unsubscribe1 = subject.subscribe(msg => console.log("Observer 1:", msg));
+  const unsubscribe2 = subject.subscribe(msg => console.log("Observer 2:", msg));
+  
+  console.log("Notifying observers:");
+  subject.notify("Hello observers!");
+  
+  unsubscribe1();
+  console.log("\nAfter unsubscribe 1:");
+  subject.notify("Second message");
+  
+  // 事件发射器
+  const emitter = new EventEmitter<{ message: string; count: number }>();
+  emitter.on("message", data => console.log("\nEvent received:", data));
+  emitter.once("message", data => console.log("Once handler:", data));
+  
+  emitter.emit("message", { message: "First", count: 1 });
+  emitter.emit("message", { message: "Second", count: 2 });
+  
+  // 响应式状态
+  const state = new ObservableState(0);
+  state.subscribe((value, oldValue) => {
+    console.log(`\nState changed: ${oldValue} -> ${value}`);
+  });
+  state.value = 10;
+  state.value = 20;
+  
+  // Store
+  const store = new Store();
+  store.on("user:login", data => console.log("\nUser logged in:", data));
+  store.login("123", "Alice");
+  
+  console.log("=== End of Demo ===\n");
+}

@@ -154,3 +154,37 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.log('---');
   }
 }
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Quick Sort Demo ===");
+  
+  // 基础快速排序
+  const arr1 = [3, 6, 8, 10, 1, 2, 1];
+  console.log("Original:", arr1);
+  console.log("Sorted:", quickSort(arr1));
+  
+  // 原地排序
+  const arr2 = [64, 34, 25, 12, 22, 11, 90];
+  console.log("\nOriginal:", arr2);
+  quickSortInPlace(arr2);
+  console.log("In-place sorted:", arr2);
+  
+  // 自定义比较
+  const words = ["banana", "apple", "cherry", "date"];
+  const sortedWords = quickSort(words, (a, b) => a.localeCompare(b));
+  console.log("\nWords sorted:", sortedWords);
+  
+  // 对象排序
+  const people = [
+    { name: "Alice", age: 30 },
+    { name: "Bob", age: 25 },
+    { name: "Charlie", age: 35 }
+  ];
+  const sortedByAge = quickSort(people, (a, b) => a.age - b.age);
+  console.log("\nPeople sorted by age:", sortedByAge.map(p => p.name));
+  
+  console.log("=== End of Demo ===\n");
+}

@@ -215,3 +215,38 @@ export {
 };
 
 export type { User, ApiResponse, Config };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Optional Chaining Demo ===");
+  
+  const user: User = {
+    name: "Alice",
+    address: {
+      city: "Beijing"
+    }
+  };
+  
+  // 安全访问嵌套属性
+  console.log("City:", user.address?.city);
+  console.log("Street:", user.address?.street);
+  console.log("Country:", user.address?.country?.name);
+  
+  // 方法调用
+  const apiClient: ApiClient = {};
+  const result = apiClient.fetch?.();
+  console.log("Safe method call:", result);
+  
+  // 数组访问
+  const items: string[] | undefined = ["a", "b", "c"];
+  console.log("First item:", items?.[0]);
+  console.log("Last item:", items?.[items.length - 1]);
+  
+  // 与空值合并结合
+  const displayName = user?.profile?.name ?? "Anonymous";
+  console.log("Display name:", displayName);
+  
+  console.log("=== End of Demo ===\n");
+}

@@ -141,6 +141,84 @@ export {
   createFibGenerator,
   fibGenerator,
   fibTail,
-  fibFastDoubling,
-  demo
+  fibFastDoubling
 };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Recursion Patterns Demo ===");
+
+  // 基础递归
+  console.log("\n1. Basic Recursion:");
+  console.log("   Fibonacci (recursive, n=10):", fibRecursive(10));
+
+  // 记忆化递归
+  console.log("\n2. Memoization:");
+  console.log("   Fibonacci (memoized, n=40):", fibMemo(40));
+  console.log("   Fibonacci (memoized, n=100):", fibMemo(100));
+
+  // 迭代实现
+  console.log("\n3. Iterative:");
+  console.log("   Fibonacci (iterative, n=50):", fibIterative(50));
+  console.log("   Fibonacci (iterative, n=100):", fibIterative(100));
+
+  // 尾递归
+  console.log("\n4. Tail Recursion:");
+  console.log("   Fibonacci (tail recursive, n=30):", fibTail(30));
+
+  // 快速倍增
+  console.log("\n5. Fast Doubling (O(log n)):");
+  console.log("   Fibonacci (fast doubling, n=50):", fibFastDoubling(50));
+  console.log("   Fibonacci (fast doubling, n=100):", fibFastDoubling(100));
+
+  // 生成器
+  console.log("\n6. Generator:");
+  const fib = fibGenerator();
+  console.log("   First 15 Fibonacci numbers:");
+  const first15: number[] = [];
+  for (let i = 0; i < 15; i++) {
+    first15.push(fib.next().value);
+  }
+  console.log("   ", first15.join(", "));
+
+  // 闭包生成器
+  console.log("\n7. Closure Generator:");
+  const nextFib = createFibGenerator();
+  console.log("   Next 10 Fibonacci numbers:");
+  const next10: number[] = [];
+  for (let i = 0; i < 10; i++) {
+    next10.push(nextFib());
+  }
+  console.log("   ", next10.join(", "));
+
+  // 性能对比
+  console.log("\n8. Performance Comparison:");
+  const testN = 35;
+
+  console.time("   Recursive (naive)");
+  fibRecursive(testN);
+  console.timeEnd("   Recursive (naive)");
+
+  console.time("   Memoization");
+  fibMemo(testN);
+  console.timeEnd("   Memoization");
+
+  console.time("   Iterative");
+  fibIterative(testN);
+  console.timeEnd("   Iterative");
+
+  console.time("   Tail recursive");
+  fibTail(testN);
+  console.timeEnd("   Tail recursive");
+
+  console.time("   Fast doubling");
+  fibFastDoubling(testN);
+  console.timeEnd("   Fast doubling");
+
+  console.log("\nNote: Fast doubling is O(log n), others are O(n)");
+
+  console.log("=== End of Demo ===\n");
+}

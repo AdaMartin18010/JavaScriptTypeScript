@@ -227,3 +227,60 @@ export {
 };
 
 export type { Handler, Order, MiddlewareContext, NextFunction, Middleware, LogMessage };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Chain of Responsibility Pattern Demo ===");
+
+  // 订单验证责任链
+  const stockHandler = new StockCheckHandler();
+  const paymentHandler = new PaymentValidationHandler();
+  const couponHandler = new CouponValidationHandler();
+
+  stockHandler.setNext(paymentHandler).setNext(couponHandler);
+
+  const validOrder: Order = {
+    id: "order-1",
+    items: [{ name: "Apple", quantity: 5, price: 10 }],
+    userId: "user-1",
+    couponCode: "DISCOUNT10"
+  };
+
+  console.log("\nProcessing valid order:");
+  try {
+    stockHandler.handle(validOrder);
+    console.log("Order passed all checks!");
+  } catch (error) {
+    console.log("Order failed:", (error as Error).message);
+  }
+
+  // 中间件链演示
+  console.log("\nMiddleware chain:");
+  const chain = new MiddlewareChain();
+  chain
+    .use((ctx, next) => {
+      console.log("Middleware 1: before");
+      next();
+      console.log("Middleware 1: after");
+    })
+    .use((ctx, next) => {
+      console.log("Middleware 2: before");
+      next();
+      console.log("Middleware 2: after");
+    });
+  chain.execute({});
+
+  // 日志处理器演示
+  console.log("\nLog handlers:");
+  const consoleHandler = new ConsoleLogHandler();
+  const fileHandler = new FileLogHandler();
+  consoleHandler.setNext(fileHandler);
+
+  consoleHandler.handle({ level: "INFO", message: "Application started" });
+  consoleHandler.handle({ level: "ERROR", message: "Something went wrong" });
+
+  console.log("=== End of Demo ===\n");
+}

@@ -130,3 +130,43 @@ export {
 };
 
 export type { User };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export async function demo(): Promise<void> {
+  console.log("=== Promise.any Demo ===");
+  
+  // 基础用法 - 第一个成功的
+  const promises = [
+    new Promise((_, reject) => setTimeout(reject, 100, new Error("First"))),
+    new Promise(resolve => setTimeout(resolve, 200, "Second")),
+    new Promise((_, reject) => setTimeout(reject, 300, new Error("Third")))
+  ];
+  
+  try {
+    const result = await Promise.any(promises);
+    console.log("First success:", result);
+  } catch (error) {
+    console.log("All failed");
+  }
+  
+  // 带超时
+  const fastPromise = withTimeout(Promise.resolve("quick"), 1000);
+  const result = await fastPromise;
+  console.log("With timeout:", result);
+  
+  // 错误处理
+  try {
+    await Promise.any([
+      Promise.reject(new Error("A")),
+      Promise.reject(new Error("B"))
+    ]);
+  } catch (error) {
+    if (error instanceof AggregateError) {
+      console.log("Aggregate errors:", error.errors.length);
+    }
+  }
+  
+  console.log("=== End of Demo ===\n");
+}

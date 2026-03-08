@@ -260,3 +260,93 @@ export {
 };
 
 export type { Memento, GameState };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Memento Pattern Demo ===");
+
+  // 文本编辑器演示
+  console.log("\nText Editor:");
+  const editor = new Editor();
+  const history = new History();
+
+  editor.setText("Hello");
+  editor.setCursor(5, 0);
+  history.backup(editor.save());
+  console.log("Saved state 1:", editor.getText());
+
+  editor.setText("Hello World");
+  editor.setCursor(11, 0);
+  history.backup(editor.save());
+  console.log("Saved state 2:", editor.getText());
+
+  editor.setText("Hello World!");
+  history.backup(editor.save());
+  console.log("Saved state 3:", editor.getText());
+
+  console.log("\nUndo operations:");
+  const undo1 = history.undo();
+  if (undo1) {
+    editor.restore(undo1);
+    console.log("After undo:", editor.getText());
+  }
+
+  const undo2 = history.undo();
+  if (undo2) {
+    editor.restore(undo2);
+    console.log("After another undo:", editor.getText());
+  }
+
+  console.log("\nRedo operation:");
+  const redo = history.redo();
+  if (redo) {
+    editor.restore(redo);
+    console.log("After redo:", editor.getText());
+  }
+
+  // 游戏存档演示
+  console.log("\nGame Save System:");
+  const player = new GameCharacter();
+  const saveManager = new SaveManager();
+
+  player.setLevel(1);
+  player.setHealth(100);
+  player.setPosition(0, 0);
+  player.addItem("Sword");
+  saveManager.addSavepoint("start", player.createSavepoint("Level 1 Start"));
+  console.log("Initial status:", player.getStatus());
+
+  player.setLevel(5);
+  player.setHealth(80);
+  player.setPosition(100, 200);
+  player.addItem("Shield");
+  saveManager.addSavepoint("mid", player.createSavepoint("Level 5 Mid"));
+  console.log("After progress:", player.getStatus());
+
+  console.log("\nLoading savepoint 'start'...");
+  const savepoint = saveManager.getSavepoint("start");
+  if (savepoint) {
+    player.loadSavepoint(savepoint);
+    console.log("After loading:", player.getStatus());
+  }
+
+  // 现代编辑器演示
+  console.log("\nModern Editor with structuredClone:");
+  const modernEditor = new ModernEditor();
+  modernEditor.setState("text", "Original");
+  modernEditor.setState("cursor", { x: 10, y: 5 });
+
+  const snapshot = modernEditor.save();
+  console.log("Original state:", modernEditor.getState("text"));
+
+  modernEditor.setState("text", "Modified");
+  console.log("Modified state:", modernEditor.getState("text"));
+
+  modernEditor.restore(snapshot);
+  console.log("Restored state:", modernEditor.getState("text"));
+
+  console.log("=== End of Demo ===\n");
+}

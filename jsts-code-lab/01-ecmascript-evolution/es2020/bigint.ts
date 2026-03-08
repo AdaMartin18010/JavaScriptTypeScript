@@ -99,3 +99,30 @@ console.log(formatBigInt(12345678901234567890n));
 // ============================================================================
 
 export { bigintToNumber, formatBigInt };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== BigInt Demo ===");
+  
+  // 创建 BigInt
+  const big1 = 9007199254740991n;
+  const big2 = BigInt(123);
+  console.log("BigInt literal:", big1);
+  console.log("BigInt constructor:", big2);
+  
+  // 运算
+  console.log("100n + 20n:", 100n + 20n);
+  console.log("100n * 3n:", 100n * 3n);
+  console.log("100n ** 3n:", 100n ** 3n);
+  
+  // 转换
+  const num = bigintToNumber(100n);
+  console.log("Converted to number:", num);
+  
+  // 格式化
+  console.log("Formatted:", formatBigInt(12345678901234567890n));
+  
+  console.log("=== End of Demo ===\n");
+}

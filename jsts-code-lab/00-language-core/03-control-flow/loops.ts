@@ -263,3 +263,32 @@ export {
   groupedByAge,
   people
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Loops Demo ===");
+  
+  // 经典 for
+  const nums = [1, 2, 3, 4, 5];
+  console.log("Sum (classic):", classicFor(nums));
+  
+  // for-of
+  console.log("Concat (for-of):", forOfLoop(["a", "b", "c"]));
+  
+  // 高阶函数
+  console.log("Doubled:", doubled);
+  console.log("Evens:", evens);
+  console.log("Sum (reduce):", sum);
+  
+  // 生成器
+  const fib = [...fibonacci(10)];
+  console.log("Fibonacci (10):", fib);
+  
+  // 惰性管道
+  const result = [...take(filter(map(range(0, 100), x => x * x), x => x % 2 === 0), 5)];
+  console.log("Lazy pipeline result:", result);
+  
+  console.log("=== End of Demo ===\n");
+}

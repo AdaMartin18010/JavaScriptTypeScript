@@ -228,3 +228,43 @@ export {
   safeBind,
   autoBind
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== This Binding Demo ===");
+  
+  // 隐式绑定
+  const obj = {
+    name: "Test Object",
+    greet() {
+      return `Hello from ${this.name}`;
+    }
+  };
+  console.log("Implicit binding:", obj.greet());
+  
+  // 显式绑定
+  const person = { name: "Alice" };
+  console.log("ExplicitGreet.call:", explicitGreet.call(person));
+  
+  // bind
+  const boundGreet = explicitGreet.bind(person);
+  console.log("Bound greet:", boundGreet());
+  
+  // call vs apply
+  function introduce(greeting: string, punctuation: string) {
+    return `${greeting}, I'm ${this.name}${punctuation}`;
+  }
+  console.log("Call:", introduce.call(person, "Hello", "!"));
+  console.log("Apply:", introduce.apply(person, ["Hi", "."]));
+  
+  // new 绑定
+  function Person(name: string) {
+    (this as any).name = name;
+  }
+  const alice = new (Person as any)("Alice");
+  console.log("New binding:", alice.name);
+  
+  console.log("=== End of Demo ===\n");
+}

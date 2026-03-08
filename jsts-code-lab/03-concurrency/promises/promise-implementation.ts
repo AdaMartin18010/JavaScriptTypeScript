@@ -177,3 +177,95 @@ demo
 // ============================================================================
 
 export { MyPromise };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== MyPromise Implementation Demo ===");
+
+  // 基础 Promise 演示
+  console.log("\n1. Basic Promise resolution:");
+  const p1 = new MyPromise<number>((resolve) => {
+    setTimeout(() => resolve(42), 10);
+  });
+  p1.then(value => {
+    console.log("   Resolved with:", value);
+  });
+
+  // Promise 链式调用
+  console.log("\n2. Chaining:");
+  const p2 = new MyPromise<number>((resolve) => {
+    resolve(10);
+  });
+  p2
+    .then(value => {
+      console.log("   First then:", value);
+      return value * 2;
+    })
+    .then(value => {
+      console.log("   Second then:", value);
+      return value + 5;
+    })
+    .then(value => {
+      console.log("   Third then:", value);
+    });
+
+  // Promise 错误处理
+  console.log("\n3. Error handling:");
+  const p3 = new MyPromise<number>((_, reject) => {
+    reject(new Error("Something went wrong"));
+  });
+  p3
+    .catch(error => {
+      console.log("   Caught error:", (error as Error).message);
+      return 0;
+    })
+    .then(value => {
+      console.log("   Recovered with:", value);
+    });
+
+  // Promise.finally
+  console.log("\n4. Finally:");
+  const p4 = new MyPromise<string>((resolve) => {
+    resolve("Success");
+  });
+  p4
+    .then(value => console.log("   Value:", value))
+    .finally(() => console.log("   Finally executed"));
+
+  // 静态方法演示
+  console.log("\n5. Static methods:");
+  
+  // MyPromise.resolve
+  MyPromise.resolve("Immediate value").then(v => 
+    console.log("   resolve:", v)
+  );
+
+  // MyPromise.reject
+  MyPromise.reject("Error value").catch(e => 
+    console.log("   reject:", e)
+  );
+
+  // MyPromise.all
+  console.log("\n6. Promise.all:");
+  MyPromise.all([
+    MyPromise.resolve(1),
+    MyPromise.resolve(2),
+    MyPromise.resolve(3)
+  ]).then(results => {
+    console.log("   All results:", results);
+  });
+
+  // MyPromise.race
+  console.log("\n7. Promise.race:");
+  MyPromise.race([
+    new MyPromise<number>(resolve => setTimeout(() => resolve(1), 50)),
+    new MyPromise<number>(resolve => setTimeout(() => resolve(2), 10))
+  ]).then(winner => {
+    console.log("   Race winner:", winner);
+  });
+
+  console.log("\n=== End of Demo ===\n");
+}

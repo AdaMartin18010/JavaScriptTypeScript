@@ -189,3 +189,37 @@ export {
 };
 
 export type { CancellableRequest };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export async function demo(): Promise<void> {
+  console.log("=== Promise.withResolvers Demo ===");
+  
+  // 基础用法
+  const { promise, resolve, reject } = Promise.withResolvers<string>();
+  
+  setTimeout(() => resolve("completed!"), 100);
+  const result = await promise;
+  console.log("Resolved:", result);
+  
+  // 延迟操作
+  const delayed = new DelayedAction<string>();
+  delayed.schedule(() => "delayed result", 50);
+  const delayedResult = await delayed.promise;
+  console.log("Delayed:", delayedResult);
+  
+  // 异步锁
+  const lock = new AsyncLock();
+  await lock.acquire();
+  console.log("Lock acquired");
+  lock.release();
+  console.log("Lock released");
+  
+  // 对比旧方式和新方式
+  const modern = createDeferredModern<string>();
+  modern.resolve("modern way");
+  console.log("Modern deferred:", await modern.promise);
+  
+  console.log("=== End of Demo ===\n");
+}

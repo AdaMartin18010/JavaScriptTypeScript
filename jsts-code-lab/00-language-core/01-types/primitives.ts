@@ -208,3 +208,37 @@ export {
   greet,
   iterable
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Primitives Demo ===");
+  
+  // 字符串
+  console.log("Template string:", str3);
+  
+  // 数字精度
+  console.log("0.1 + 0.2:", 0.1 + 0.2);
+  console.log("Roughly equal:", roughlyEqual(0.1 + 0.2, 0.3));
+  
+  // BigInt
+  const big = 9007199254740991n;
+  console.log("BigInt + 1n:", big + 1n);
+  
+  // Symbol
+  const sym = Symbol("demo");
+  console.log("Symbol:", sym.toString());
+  
+  // 空值合并
+  const value = null ?? "default";
+  console.log("Nullish coalescing:", value);
+  
+  // unknown 类型
+  let unknownValue: unknown = 42;
+  if (typeof unknownValue === "number") {
+    console.log("Unknown as number:", unknownValue.toFixed(2));
+  }
+  
+  console.log("=== End of Demo ===\n");
+}

@@ -240,3 +240,61 @@ export {
 };
 
 export type { ChatMediator, User, FormMediator, Component, EventCallback };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Mediator Pattern Demo ===");
+
+  // 聊天室演示
+  console.log("\nChat Room:");
+  const chatRoom = new ChatRoom();
+
+  const user1 = new ConcreteUser("Alice");
+  const user2 = new ConcreteUser("Bob");
+  const user3 = new ConcreteUser("Carol");
+
+  chatRoom.addUser(user1);
+  chatRoom.addUser(user2);
+  chatRoom.addUser(user3);
+
+  user1.send("Hello everyone!");
+  user2.send("Hi Alice!");
+
+  // 表单演示
+  console.log("\nRegistration Form:");
+  const form = new RegistrationForm();
+
+  console.log("Trying to submit empty form...");
+  form.getSubmitButton().click(); // 不应该提交
+
+  console.log("\nFilling form...");
+  form.getNameField().setValue("John Doe");
+  form.getEmailField().setValue("john@example.com");
+  form.getAgreeCheckbox().check();
+
+  console.log("Submit button enabled, clicking...");
+  form.getSubmitButton().click();
+
+  // 事件总线演示
+  console.log("\nEvent Bus:");
+  const eventBus = new EventBus();
+
+  const unsubscribe1 = eventBus.subscribe("user:login", (data) => {
+    console.log("User logged in:", data);
+  });
+
+  const unsubscribe2 = eventBus.subscribe("user:login", (data) => {
+    console.log("Another handler for login:", data);
+  });
+
+  eventBus.publish("user:login", { userId: "123", name: "Alice" });
+
+  unsubscribe1();
+  console.log("After unsubscribing first handler:");
+  eventBus.publish("user:login", { userId: "456", name: "Bob" });
+
+  console.log("=== End of Demo ===\n");
+}

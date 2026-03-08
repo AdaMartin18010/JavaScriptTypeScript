@@ -284,3 +284,56 @@ export {
 };
 
 export type { Expression, Rule, Query };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Interpreter Pattern Demo ===");
+
+  // 数学表达式解析
+  const parser = new Parser();
+
+  console.log("\nMath Expressions:");
+  const expressions = ["2 + 3", "10 - 4 * 2", "(1 + 2) * 3", "100 / 5 + 5"];
+
+  for (const expr of expressions) {
+    const parsed = parser.parse(expr);
+    const result = parsed.interpret(new Map());
+    console.log(`${expr} = ${result}`);
+  }
+
+  // 带变量的表达式
+  console.log("\nExpressions with variables:");
+  const context = new Map<string, number>([["x", 10], ["y", 5]]);
+  const varExpr = parser.parse("x + y * 2");
+  console.log(`x=10, y=5: x + y * 2 = ${varExpr.interpret(context)}`);
+
+  // 规则引擎演示
+  console.log("\nRule Engine:");
+  const ageRule = new ComparisonRule("age", ">=", 18);
+  const incomeRule = new ComparisonRule("income", ">=", 50000);
+  const combinedRule = new AndRule([ageRule, incomeRule]);
+
+  const eligiblePerson = new Map<string, unknown>([["age", 25], ["income", 60000]]);
+  const ineligiblePerson = new Map<string, unknown>([["age", 16], ["income", 60000]]);
+
+  console.log("Person (age=25, income=60000) eligible:", combinedRule.evaluate(eligiblePerson));
+  console.log("Person (age=16, income=60000) eligible:", combinedRule.evaluate(ineligiblePerson));
+
+  // SQL查询演示
+  console.log("\nSQL-like Query:");
+  const data = [
+    { name: "Alice", age: 25, city: "NYC" },
+    { name: "Bob", age: 30, city: "LA" },
+    { name: "Carol", age: 25, city: "NYC" }
+  ];
+
+  const query = new SelectQuery(["name", "age"], "people", new WhereClause("city", "=", "NYC"));
+  const results = query.execute(data);
+  console.log("SELECT name, age FROM people WHERE city = 'NYC':");
+  console.log(results);
+
+  console.log("=== End of Demo ===\n");
+}

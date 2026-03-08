@@ -210,3 +210,37 @@ export {
 };
 
 export type { TreeType, Tree, CharacterStyle };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Flyweight Pattern Demo ===");
+  
+  // 森林示例
+  const forest = new Forest();
+  
+  // 种植大量树但共享类型
+  forest.plantTree(1, 1, "Oak", "Green", "Rough");
+  forest.plantTree(2, 3, "Oak", "Green", "Rough");
+  forest.plantTree(5, 5, "Pine", "Dark Green", "Smooth");
+  forest.plantTree(8, 2, "Oak", "Green", "Rough");
+  forest.plantTree(10, 10, "Birch", "White", "Smooth");
+  
+  console.log(`Total trees: ${forest.getTreeCount()}`);
+  console.log(`Unique types: ${forest.getTypeCount()}`);
+  
+  forest.draw();
+  
+  // 连接池
+  const pool = new ConnectionPool(3);
+  const conn1 = pool.acquire();
+  const conn2 = pool.acquire();
+  conn1.query("SELECT * FROM users");
+  conn2.query("INSERT INTO logs VALUES ('test')");
+  pool.release(conn1);
+  const conn3 = pool.acquire(); // 复用 conn1
+  console.log("\nConnection 1 === Connection 3:", conn1 === conn3);
+  
+  console.log("=== End of Demo ===\n");
+}

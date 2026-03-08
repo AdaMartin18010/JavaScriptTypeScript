@@ -217,3 +217,44 @@ export {
 };
 
 export type { Renderer, Shape, Device };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Bridge Pattern Demo ===");
+  
+  // 不同渲染器的形状
+  const canvasRenderer = new CanvasRenderer();
+  const svgRenderer = new SVGRenderer();
+  
+  const circle1 = new Circle(canvasRenderer, 10, 5, 5);
+  const circle2 = new Circle(svgRenderer, 10, 5, 5);
+  
+  console.log("Canvas circle:");
+  circle1.draw();
+  console.log("SVG circle:");
+  circle2.draw();
+  
+  // 设备控制
+  const tv = new TV();
+  const radio = new Radio();
+  
+  const tvRemote = new RemoteControl(tv);
+  const radioRemote = new RemoteControl(radio);
+  
+  console.log("\nTV remote:");
+  tvRemote.togglePower();
+  tvRemote.volumeUp();
+  
+  console.log("\nRadio remote:");
+  radioRemote.togglePower();
+  radioRemote.volumeDown();
+  
+  // 高级遥控器
+  const advancedRemote = new AdvancedRemoteControl(tv);
+  console.log("\nAdvanced remote (mute):");
+  advancedRemote.mute();
+  
+  console.log("=== End of Demo ===\n");
+}

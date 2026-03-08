@@ -239,3 +239,52 @@ export function isBalancedBrackets(str: string): boolean {
 // ============================================================================
 
 export { isBalancedBrackets };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Stack & Queue Demo ===");
+  
+  // 栈
+  const stack = new Stack<number>();
+  stack.push(1);
+  stack.push(2);
+  stack.push(3);
+  console.log("Stack peek:", stack.peek());
+  console.log("Stack pop:", stack.pop());
+  console.log("Stack size:", stack.size());
+  console.log("Stack to array:", stack.toArray());
+  
+  // 队列
+  const queue = new Queue<string>();
+  queue.enqueue("first");
+  queue.enqueue("second");
+  queue.enqueue("third");
+  console.log("\nQueue front:", queue.front());
+  console.log("Queue dequeue:", queue.dequeue());
+  console.log("Queue size:", queue.size());
+  
+  // 双端队列
+  const deque = new Deque<number>();
+  deque.addFront(1);
+  deque.addRear(2);
+  deque.addFront(0);
+  console.log("\nDeque:", deque.peekFront(), "...", deque.peekRear());
+  
+  // 优先队列
+  const pq = new PriorityQueue<string>();
+  pq.enqueue("low", 3);
+  pq.enqueue("high", 1);
+  pq.enqueue("medium", 2);
+  console.log("\nPriority queue dequeue order:");
+  while (!pq.isEmpty()) {
+    console.log(" -", pq.dequeue());
+  }
+  
+  // 括号匹配
+  console.log("\nBrackets '([])':", isBalancedBrackets("([])"));
+  console.log("Brackets '([)]':", isBalancedBrackets("([)]"));
+  
+  console.log("=== End of Demo ===\n");
+}

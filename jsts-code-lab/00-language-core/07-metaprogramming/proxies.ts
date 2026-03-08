@@ -301,3 +301,34 @@ export {
   revocableProxy,
   revoke
 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Proxies Demo ===");
+  
+  // 验证 Proxy
+  const person = createValidator({ name: "", age: 0 });
+  person.name = "Alice";
+  person.age = 30;
+  console.log("Validated person:", person);
+  
+  // 私有属性保护
+  const secure = withPrivacy({ public: "visible", _private: "secret" });
+  console.log("Public property:", secure.public);
+  console.log("Keys (no private):", Object.keys(secure));
+  
+  // 响应式
+  const state = reactive({ count: 0 });
+  effect(() => {
+    console.log("Reactive count:", state.count);
+  });
+  state.count = 5;
+  
+  // 函数日志
+  const loggedAdd = createLoggerFn((a: number, b: number) => a + b);
+  console.log("Logged add result:", loggedAdd(3, 4));
+  
+  console.log("=== End of Demo ===\n");
+}

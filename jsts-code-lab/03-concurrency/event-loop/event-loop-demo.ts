@@ -202,3 +202,70 @@ export {
   nonBlockingExample,
   setImmediateDemo
 };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export async function demo(): Promise<void> {
+  console.log("=== Event Loop Demo ===");
+
+  // 同步 vs 微任务 vs 宏任务
+  console.log("\n1. Task Priority Demo:");
+  console.log("   Expected order: Sync start, Sync end, Promise.then, queueMicrotask, setTimeout");
+  
+  console.log("   Sync start");
+  setTimeout(() => {
+    console.log("   setTimeout (macrotask)");
+  }, 0);
+  Promise.resolve().then(() => {
+    console.log("   Promise.then (microtask)");
+  });
+  queueMicrotask(() => {
+    console.log("   queueMicrotask (microtask)");
+  });
+  console.log("   Sync end");
+
+  // 等待同步代码执行完
+  await new Promise(resolve => setTimeout(resolve, 10));
+
+  // 嵌套微任务
+  console.log("\n2. Nested Microtasks Demo:");
+  console.log("   Expected: A, E, B, D, C");
+  console.log("   A");
+  Promise.resolve().then(() => {
+    console.log("   B");
+    Promise.resolve().then(() => {
+      console.log("   C");
+    });
+  });
+  Promise.resolve().then(() => {
+    console.log("   D");
+  });
+  console.log("   E");
+
+  await new Promise(resolve => setTimeout(resolve, 10));
+
+  // 事件循环模拟器
+  console.log("\n3. Event Loop Simulator:");
+  const simulator = new EventLoopSimulator();
+  simulator.sync(() => console.log("   Sync code"));
+  simulator.promiseThen(() => console.log("   Microtask 1"));
+  simulator.setTimeout(() => console.log("   Macrotask 1"));
+  simulator.promiseThen(() => console.log("   Microtask 2"));
+  simulator.setTimeout(() => console.log("   Macrotask 2"));
+  
+  // Note: The simulator doesn't actually execute here
+  // but we demonstrate the API
+  console.log("   (EventLoopSimulator API demonstrated)");
+
+  // 非阻塞示例
+  console.log("\n4. Non-blocking Example:");
+  console.log("   Starting non-blocking operation...");
+  nonBlockingExample();
+  console.log("   Non-blocking operation scheduled (check console in ~1s)");
+
+  await new Promise(resolve => setTimeout(resolve, 1100));
+
+  console.log("\n=== End of Demo ===\n");
+}

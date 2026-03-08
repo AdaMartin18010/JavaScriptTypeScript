@@ -241,3 +241,34 @@ export {
 };
 
 export type { HttpMethod, Animal, Cat, Dog, Bird, Shape, Shape2 };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Conditionals Demo ===");
+  
+  // 数字分类
+  console.log("Classify 5:", classifyNumber(5));
+  console.log("Classify -3:", classifyNumber(-3));
+  console.log("Classify 0:", classifyNumber(0));
+  
+  // 三元运算符
+  console.log("Max of 10, 20:", max(10, 20));
+  
+  // HTTP 方法处理
+  console.log("Handle GET:", handleRequest("GET"));
+  console.log("Handle POST:", handleRequest("POST"));
+  
+  // 类型守卫
+  const circle = new Circle(5);
+  const rectangle = new Rectangle(4, 6);
+  console.log("Circle area:", getArea(circle));
+  console.log("Rectangle area:", getArea(rectangle));
+  
+  // 可辨识联合
+  const square: Shape2 = { kind: "square", size: 5 };
+  console.log("Square area:", area2(square));
+  
+  console.log("=== End of Demo ===\n");
+}

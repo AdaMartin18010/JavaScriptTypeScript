@@ -336,3 +336,77 @@ export {
 };
 
 export type { DocumentState, OrderState, StateMachineConfig };
+
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== State Pattern Demo ===");
+
+  // 文档状态机
+  console.log("\nDocument State Machine:");
+  const doc = new Document("My Article");
+  console.log("Initial state:", doc.getStateName());
+
+  doc.publish();
+  console.log("After publish:", doc.getStateName());
+
+  doc.publish();
+  console.log("After second publish:", doc.getStateName());
+
+  doc.reject();
+  console.log("After reject:", doc.getStateName());
+
+  // 订单状态机
+  console.log("\nOrder State Machine:");
+  const order = new Order(["Item1", "Item2"]);
+  console.log("Initial state:", order.getStateName());
+
+  order.pay();
+  console.log("After pay:", order.getStateName());
+
+  order.ship();
+  console.log("After ship:", order.getStateName());
+
+  order.deliver();
+  console.log("After deliver:", order.getStateName());
+
+  // 尝试无效操作
+  console.log("\nTrying invalid operations:");
+  order.pay(); // Already paid
+  order.cancel(); // Cannot cancel delivered order
+
+  // 新订单测试取消
+  const order2 = new Order(["Item3"]);
+  order2.pay();
+  order2.cancel();
+  console.log("Order2 state after cancel:", order2.getStateName());
+
+  // JavaScript 状态机
+  console.log("\nTraffic Light State Machine:");
+  const light = createStateMachine({
+    initial: "green",
+    states: {
+      green: {
+        on: { TIMER: "yellow" },
+        entry: () => console.log("🟢 Green light - GO!")
+      },
+      yellow: {
+        on: { TIMER: "red" },
+        entry: () => console.log("🟡 Yellow light - CAUTION!")
+      },
+      red: {
+        on: { TIMER: "green" },
+        entry: () => console.log("🔴 Red light - STOP!")
+      }
+    }
+  });
+
+  console.log("Current state:", light.getState());
+  light.send("TIMER");
+  light.send("TIMER");
+  light.send("TIMER");
+
+  console.log("=== End of Demo ===\n");
+}

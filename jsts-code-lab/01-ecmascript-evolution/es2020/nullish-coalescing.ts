@@ -204,3 +204,32 @@ export {
 };
 
 export type { ServerConfig, User };
+// ============================================================================
+// Demo 函数
+// ============================================================================
+
+export function demo(): void {
+  console.log("=== Nullish Coalescing Demo ===");
+  
+  // 基础用法
+  console.log("null ?? 'default':", null ?? "default");
+  console.log("undefined ?? 'default':", undefined ?? "default");
+  console.log("0 ?? 'default':", 0 ?? "default");
+  console.log("'' ?? 'default':", "" ?? "default");
+  
+  // 配置端口
+  console.log("Port (undefined):", configurePort(undefined));
+  console.log("Port (0):", configurePort(0));
+  console.log("Port (8080):", configurePort(8080));
+  
+  // 问候语
+  console.log("Greet (undefined):", greet(undefined));
+  console.log("Greet (''):", greet(""));
+  console.log("Greet ('Alice'):", greet("Alice"));
+  
+  // 链式使用
+  const result = null ?? undefined ?? "final" ?? "ignored";
+  console.log("Chain result:", result);
+  
+  console.log("=== End of Demo ===\n");
+}
