@@ -205,11 +205,41 @@ export * as PluginSystem from './68-plugin-system/index';
 // CLI框架
 export * as CLIFramework from './69-cli-framework/index';
 
+// 分布式系统
+export * as DistributedSystems from './70-distributed-systems/index';
+
+// 一致性算法
+export * as ConsensusAlgorithms from './71-consensus-algorithms/index';
+
+// 容器编排
+export * as ContainerOrchestration from './72-container-orchestration/index';
+
+// 高级服务网格
+export * as ServiceMeshAdvanced from './73-service-mesh-advanced/index';
+
+// 可观测性
+export * as Observability from './74-observability/index';
+
+// 混沌工程
+export * as ChaosEngineering from './75-chaos-engineering/index';
+
+// 机器学习工程
+export * as MLEngineering from './76-ml-engineering/index';
+
+// 量子计算
+export * as QuantumComputing from './77-quantum-computing/index';
+
+// 元编程
+export * as Metaprogramming from './78-metaprogramming/index';
+
+// 编译器设计
+export * as CompilerDesign from './79-compiler-design/index';
+
 // 共享模块
 export * as Shared from './shared/index';
 
 // 版本信息
-export const VERSION = '2.0.0';
+export const VERSION = '3.0.0';
 
 // 模块统计
 export const MODULES = {
@@ -273,6 +303,16 @@ export const MODULES = {
   multiTenancy: { name: '多租户', files: 1 },
   pluginSystem: { name: '插件系统', files: 1 },
   cliFramework: { name: 'CLI框架', files: 1 },
+  distributedSystems: { name: '分布式系统', files: 1 },
+  consensusAlgorithms: { name: '一致性算法', files: 1 },
+  containerOrchestration: { name: '容器编排', files: 1 },
+  serviceMeshAdvanced: { name: '高级服务网格', files: 1 },
+  observability: { name: '可观测性', files: 1 },
+  chaosEngineering: { name: '混沌工程', files: 1 },
+  mlEngineering: { name: '机器学习工程', files: 1 },
+  quantumComputing: { name: '量子计算', files: 1 },
+  metaprogramming: { name: '元编程', files: 1 },
+  compilerDesign: { name: '编译器设计', files: 1 },
 } as const;
 
 // 总览信息
