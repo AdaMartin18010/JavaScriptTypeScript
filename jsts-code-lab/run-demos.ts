@@ -296,6 +296,56 @@ const DEMO_MODULES = {
     console.log('\n📊 性能监控\n');
     const perf = await import('./39-performance-monitoring/core-web-vitals.ts');
     perf.demo?.();
+  },
+
+  'browser-runtime': async () => {
+    console.log('\n🖥️ 浏览器运行时\n');
+    const rendering = await import('./50-browser-runtime/rendering-pipeline.ts');
+    rendering.demo?.();
+    const eventLoop = await import('./50-browser-runtime/event-loop-architecture.ts');
+    eventLoop.demo?.();
+  },
+
+  'ui-components': async () => {
+    console.log('\n🧩 AI驱动UI组件\n');
+    const ui = await import('./51-ui-components/ai-component-system.ts');
+    await ui.demo?.();
+  },
+
+  'intelligent-performance': async () => {
+    console.log('\n⚡ 智能性能优化\n');
+    const perf = await import('./54-intelligent-performance/ai-performance-optimizer.ts');
+    perf.demo?.();
+  },
+
+  'ai-testing': async () => {
+    console.log('\n🤖 AI测试\n');
+    const ai = await import('./55-ai-testing/ai-test-generator.js');
+    ai.demo?.();
+  },
+
+  'code-generation': async () => {
+    console.log('\n✨ 代码生成\n');
+    const gen = await import('./56-code-generation/ai-code-generator.js');
+    gen.demo?.();
+  },
+
+  'design-system': async () => {
+    console.log('\n🎨 设计系统\n');
+    const ds = await import('./57-design-system/design-tokens.js');
+    ds.demo?.();
+  },
+
+  'data-visualization': async () => {
+    console.log('\n📈 数据可视化\n');
+    const viz = await import('./58-data-visualization/chart-architecture.js');
+    viz.demo?.();
+  },
+
+  'fullstack-patterns': async () => {
+    console.log('\n🌐 全栈模式\n');
+    const patterns = await import('./59-fullstack-patterns/end-to-end-types.js');
+    patterns.demo?.();
   }
 };
 

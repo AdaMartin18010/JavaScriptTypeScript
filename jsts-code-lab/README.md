@@ -2,8 +2,8 @@
 
 > 从理论到实践的完整代码示例库
 
-[![Modules](https://img.shields.io/badge/Modules-39-blue)](./)
-[![Files](https://img.shields.io/badge/Files-200+-green)](./)
+[![Modules](https://img.shields.io/badge/Modules-44-blue)](./)
+[![Files](https://img.shields.io/badge/Files-206-green)](./)
 [![Patterns](https://img.shields.io/badge/Patterns-23%20GoF-orange)](./)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](./LICENSE)
 
