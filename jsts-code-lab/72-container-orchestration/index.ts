@@ -1,0 +1,11 @@
+/**
+ * @file 容器编排模块
+ * @module Container Orchestration
+ * @description
+ * 容器编排：
+ * - 服务调度
+ * - 健康检查
+ * - 自动扩缩容
+ */
+
+export * from './orchestration-engine.js';
