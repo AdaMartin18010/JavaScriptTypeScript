@@ -27,7 +27,7 @@
     "demo:architecture": "tsx run-demos.ts architecture-patterns",
     "demo:comparison": "tsx run-demos.ts js-ts-comparison",
     "benchmark": "tsx 11-benchmarks/js-vs-ts-performance.ts",
-    "stats": "echo 'Files: $(find . -name "*.ts" -not -path "*/node_modules/*" | wc -l)'"
+    "stats": "find . -name '*.ts' -not -path '*/node_modules/*' | wc -l"
   },
   "devDependencies": {
     "@types/node": "^22.13.0",

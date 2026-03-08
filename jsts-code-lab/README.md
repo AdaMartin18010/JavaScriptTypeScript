@@ -95,6 +95,28 @@ jsts-code-lab/
 ├── 📁 07-testing/                # 测试实践
 ├── 📁 08-performance/            # 性能优化
 ├── 📁 09-real-world-examples/    # 真实场景案例
+├── 📁 10-js-ts-comparison/       # JS/TS对比
+├── 📁 11-benchmarks/             # 性能基准
+├── 📁 12-package-management/     # 包管理
+├── 📁 13-code-organization/      # 代码组织
+├── 📁 14-execution-flow/         # 执行流
+├── 📁 15-data-flow/              # 数据流
+├── 📁 16-application-development/# 应用开发
+├── 📁 17-debugging-monitoring/   # 调试监控
+├── 📁 18-frontend-frameworks/    # 前端框架
+│   └── reactivity-system.ts      # 响应式系统
+├── 📁 19-backend-development/    # 后端开发
+│   └── express-patterns.ts       # Express模式
+├── 📁 20-database-orm/           # 数据库ORM
+│   ├── prisma-patterns.ts        # Prisma模式
+│   └── sql-query-builder.ts      # 查询构建器
+├── 📁 21-api-security/           # API安全
+│   ├── jwt-auth.ts               # JWT认证
+│   └── rate-limiter.ts           # 速率限制
+├── 📁 22-deployment-devops/      # 部署与DevOps
+│   └── docker-config.ts          # Docker配置
+├── 📁 23-toolchain-configuration/# 工具链配置
+│   └── vite-config.ts            # Vite配置
 ├── 📁 shared/                    # 共享模块
 ├── 📁 tests/                     # 测试套件
 └── 📁 playground/                # 演练场
@@ -135,16 +157,19 @@ jsts-code-lab/
 ## 📚 学习路径
 
 ### 初学者
+
 1. `00-language-core/01-types/primitives.ts` - 原始类型
 2. `00-language-core/02-variables/declarations.ts` - 变量声明
 3. `01-ecmascript-evolution/es2020/optional-chaining.ts` - 现代语法
 
 ### 进阶开发者
+
 1. `00-language-core/01-types/generics.ts` - 泛型系统
 2. `02-design-patterns/` - 设计模式
 3. `03-concurrency/` - 并发编程
 
 ### 架构师
+
 1. `05-distributed-systems/` - 分布式系统
 2. `06-architecture-patterns/` - 架构模式
 3. `07-testing/` - 测试策略
