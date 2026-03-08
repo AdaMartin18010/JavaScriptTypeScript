@@ -276,16 +276,8 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  validateRequest,
-  asyncHandler,
-  RouteBuilder,
-  BaseController,
-  requestLogger,
-  authMiddleware,
-  errorHandler,
-  userCreateSchema
-};
+// Classes/functions already exported inline above
+export { userCreateSchema };
 
 export type {
   Middleware,
