@@ -175,11 +175,41 @@ export * as DataVisualization from './58-data-visualization/index';
 // 全栈模式
 export * as FullstackPatterns from './59-fullstack-patterns/index';
 
+// 开发者体验
+export * as DeveloperExperience from './60-developer-experience/index';
+
+// API网关
+export * as APIGateway from './61-api-gateway/index';
+
+// 消息队列
+export * as MessageQueue from './62-message-queue/index';
+
+// 缓存策略
+export * as CachingStrategies from './63-caching-strategies/index';
+
+// 搜索引擎
+export * as SearchEngine from './64-search-engine/index';
+
+// 数据分析
+export * as Analytics from './65-analytics/index';
+
+// 功能开关
+export * as FeatureFlags from './66-feature-flags/index';
+
+// 多租户
+export * as MultiTenancy from './67-multi-tenancy/index';
+
+// 插件系统
+export * as PluginSystem from './68-plugin-system/index';
+
+// CLI框架
+export * as CLIFramework from './69-cli-framework/index';
+
 // 共享模块
 export * as Shared from './shared/index';
 
 // 版本信息
-export const VERSION = '1.1.0';
+export const VERSION = '2.0.0';
 
 // 模块统计
 export const MODULES = {
@@ -233,6 +263,16 @@ export const MODULES = {
   designSystem: { name: '设计系统', files: 1 },
   dataVisualization: { name: '数据可视化', files: 1 },
   fullstackPatterns: { name: '全栈模式', files: 1 },
+  developerExperience: { name: '开发者体验', files: 1 },
+  apiGateway: { name: 'API网关', files: 1 },
+  messageQueue: { name: '消息队列', files: 1 },
+  cachingStrategies: { name: '缓存策略', files: 1 },
+  searchEngine: { name: '搜索引擎', files: 1 },
+  analytics: { name: '数据分析', files: 1 },
+  featureFlags: { name: '功能开关', files: 1 },
+  multiTenancy: { name: '多租户', files: 1 },
+  pluginSystem: { name: '插件系统', files: 1 },
+  cliFramework: { name: 'CLI框架', files: 1 },
 } as const;
 
 // 总览信息

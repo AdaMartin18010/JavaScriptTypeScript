@@ -346,6 +346,66 @@ const DEMO_MODULES = {
     console.log('\n🌐 全栈模式\n');
     const patterns = await import('./59-fullstack-patterns/end-to-end-types.js');
     patterns.demo?.();
+  },
+
+  'developer-experience': async () => {
+    console.log('\n🔧 开发者体验\n');
+    const dx = await import('./60-developer-experience/dev-server.js');
+    dx.demo?.();
+  },
+
+  'api-gateway': async () => {
+    console.log('\n🚪 API网关\n');
+    const gw = await import('./61-api-gateway/gateway-implementation.js');
+    gw.demo?.();
+  },
+
+  'message-queue': async () => {
+    console.log('\n📮 消息队列\n');
+    const mq = await import('./62-message-queue/queue-implementation.js');
+    mq.demo?.();
+  },
+
+  'caching-strategies': async () => {
+    console.log('\n💾 缓存策略\n');
+    const cache = await import('./63-caching-strategies/cache-patterns.js');
+    cache.demo?.();
+  },
+
+  'search-engine': async () => {
+    console.log('\n🔍 搜索引擎\n');
+    const search = await import('./64-search-engine/search-implementation.js');
+    search.demo?.();
+  },
+
+  'analytics': async () => {
+    console.log('\n📊 数据分析\n');
+    const analytics = await import('./65-analytics/analytics-engine.js');
+    analytics.demo?.();
+  },
+
+  'feature-flags': async () => {
+    console.log('\n🎛️ 功能开关\n');
+    const ff = await import('./66-feature-flags/feature-flag-system.js');
+    ff.demo?.();
+  },
+
+  'multi-tenancy': async () => {
+    console.log('\n🏢 多租户\n');
+    const mt = await import('./67-multi-tenancy/tenant-architecture.js');
+    mt.demo?.();
+  },
+
+  'plugin-system': async () => {
+    console.log('\n🔌 插件系统\n');
+    const plugin = await import('./68-plugin-system/plugin-architecture.js');
+    plugin.demo?.();
+  },
+
+  'cli-framework': async () => {
+    console.log('\n⌨️ CLI框架\n');
+    const cli = await import('./69-cli-framework/cli-builder.js');
+    cli.demo?.();
   }
 };
 
