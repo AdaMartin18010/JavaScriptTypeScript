@@ -415,8 +415,4 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export {
-  AISDK,
-  RAGSystem,
-  AIAgent
-};
+export type { ChatMessage, LLMRequest, FunctionDefinition, LLMResponse, Document, AgentTool };

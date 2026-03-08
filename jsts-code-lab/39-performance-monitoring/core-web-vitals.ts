@@ -807,5 +807,14 @@ export function demo(): void {
 }
 
 // ============================================================================
-// 导出（已在文件中使用 export class 导出）
+// 导出
 // ============================================================================
+
+export type { 
+  WebVitalsMetric, 
+  WebVitalsReport, 
+  DeviceInfo, 
+  ConnectionInfo, 
+  RUMConfig, 
+  PerformanceBudget 
+};
