@@ -308,4 +308,4 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export { ProductModel, ProductViewModel, ProductView, ref, computed, watchEffect };
+// (已在上方使用 export class / export function 直接导出，此处无需重复导出)

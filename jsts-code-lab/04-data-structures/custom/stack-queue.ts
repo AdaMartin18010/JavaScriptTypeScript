@@ -12,8 +12,9 @@
 export class Stack<T> {
   private items: T[] = [];
 
-  push(item: T): void {
+  push(item: T): this {
     this.items.push(item);
+    return this;
   }
 
   pop(): T | undefined {
@@ -48,8 +49,9 @@ export class Stack<T> {
 export class Queue<T> {
   private items: T[] = [];
 
-  enqueue(item: T): void {
+  enqueue(item: T): this {
     this.items.push(item);
+    return this;
   }
 
   dequeue(): T | undefined {
@@ -84,12 +86,14 @@ export class Queue<T> {
 export class Deque<T> {
   private items: T[] = [];
 
-  addFront(item: T): void {
+  addFront(item: T): this {
     this.items.unshift(item);
+    return this;
   }
 
-  addRear(item: T): void {
+  addRear(item: T): this {
     this.items.push(item);
+    return this;
   }
 
   removeFront(): T | undefined {
@@ -114,6 +118,10 @@ export class Deque<T> {
 
   size(): number {
     return this.items.length;
+  }
+
+  *[Symbol.iterator](): IterableIterator<T> {
+    yield* this.items;
   }
 }
 
@@ -238,7 +246,7 @@ export function isBalancedBrackets(str: string): boolean {
 // 导出
 // ============================================================================
 
-export { isBalancedBrackets };
+// (isBalancedBrackets 已在上方用 export function 直接导出，此处无需重复导出)
 // ============================================================================
 // Demo 函数
 // ============================================================================

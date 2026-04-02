@@ -184,16 +184,7 @@ export function knapsack(
 // 导出
 // ============================================================================
 
-export {
-  fibMemo,
-  fibDP,
-  fibOptimized,
-  climbStairs,
-  maxSubArray,
-  lengthOfLIS,
-  minDistance,
-  knapsack
-};
+;
 
 // ============================================================================
 // Demo 函数

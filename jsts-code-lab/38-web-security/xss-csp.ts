@@ -730,9 +730,4 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export type { 
-  SanitizeOptions, 
-  CSPDirective, 
-  CSPPolicy, 
-  SecurityHeaders 
-};
+;

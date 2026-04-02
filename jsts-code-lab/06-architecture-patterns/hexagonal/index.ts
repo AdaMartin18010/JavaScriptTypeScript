@@ -96,4 +96,4 @@ export class ConsoleNotification implements NotificationService {
 // 导出
 // ============================================================================
 
-export { UserService, InMemoryUserRepository, ConsoleNotification };
+// (已在上方使用 export class 直接导出，此处无需重复导出)

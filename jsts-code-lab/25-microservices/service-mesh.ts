@@ -261,7 +261,7 @@ export class RetryPolicy {
 
   private shouldRetry(error: Error): boolean {
     return this.config.retryableErrors.some(e => 
-      error.message.includes(e) || (error as any).code === e
+      error.message.includes(e) || ('code' in error && error.code === e)
     );
   }
 

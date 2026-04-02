@@ -1743,41 +1743,12 @@ export function demo(): void {
 }
 
 // 导出所有公共成员
-export {
-  // 类型
-  ValidationResult,
-  ValidationError,
-  ValidationWarning,
-  ValidationContext,
-  ValidationOptions,
-  ValidationFunction,
-  TransformFunction,
-  FormField,
-  // 类
-  Validator,
-  OptionalValidator,
-  StringValidator,
-  NumberValidator,
-  ArrayValidator,
-  ObjectValidator,
-  BooleanValidator,
-  DateValidator,
-  UnionValidator,
-  EnumValidator,
-  FormValidator,
-  // 常量
-  DEFAULT_OPTIONS,
-  DEFAULT_MESSAGES,
-  // 预定义验证器
-  emailValidator,
-  usernameValidator,
-  passwordValidator,
-  phoneValidator,
-  urlValidator,
-  uuidValidator,
-  // 工厂
-  v,
-};
+export { // 类型
+  ValidationResult, // 类
+  Validator, // 常量
+  DEFAULT_OPTIONS, // 预定义验证器
+  emailValidator, // 工厂
+  v };;
 
 // 如果是直接运行此文件，执行 demo
 if (require.main === module) {

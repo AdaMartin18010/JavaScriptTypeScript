@@ -473,18 +473,6 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export {
-  RequestDeduplicator,
-  RequestBatcher,
-  SmartCache,
-  CacheStrategies,
-  PriorityRequestQueue,
-  OfflineSupport
-};
+;
 
-export type {
-  BatchConfig,
-  CacheStrategy,
-  RequestPriority,
-  PendingRequest
-};
+;

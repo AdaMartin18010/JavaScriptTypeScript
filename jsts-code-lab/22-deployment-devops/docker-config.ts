@@ -408,9 +408,4 @@ export function demo(): void {
 
 // Classes/functions already exported inline above
 
-export type {
-  DockerfileStage,
-  DockerfileCommand,
-  DockerComposeService,
-  DockerComposeConfig
-};
+;

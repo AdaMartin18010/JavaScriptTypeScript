@@ -394,12 +394,4 @@ export function demo(): void {
 // 导出 (类已在上面使用 export class 导出)
 // ============================================================================
 
-export type {
-  JWTHeader,
-  JWTPayload,
-  JWTTokenPair,
-  AuthUser,
-  AuthConfig,
-  GuardContext,
-  Guard
-};
+export type { JWTHeader, JWTPayload, JWTTokenPair, Guard };;

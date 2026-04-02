@@ -10,7 +10,7 @@
 // ============================================================================
 
 /** 1. 默认绑定 (独立调用) */
-function defaultBinding() {
+function defaultBinding(this: unknown) {
   console.log(this); // 严格模式: undefined, 非严格: 全局对象
 }
 
@@ -42,12 +42,14 @@ const boundGreet = explicitGreet.bind(person);
 console.log(boundGreet()); // 'Hello, Alice'
 
 /** 4. new 绑定 */
-function Person(name: string) {
-  // @ts-ignore
-  this.name = name;
+interface Person {
+  name: string;
 }
 
-// @ts-ignore
+const Person = function (this: Person, name: string) {
+  this.name = name;
+} as unknown as new (name: string) => Person;
+
 const alice = new Person('Alice');
 console.log(alice.name); // 'Alice'
 
@@ -55,7 +57,7 @@ console.log(alice.name); // 'Alice'
 // 2. call vs apply vs bind
 // ============================================================================
 
-function introduce(greeting: string, punctuation: string) {
+function introduce(this: { name: string }, greeting: string, punctuation: string) {
   return `${greeting}, I'm ${this.name}${punctuation}`;
 }
 
@@ -78,13 +80,13 @@ console.log({ callResult, applyResult, bindResult });
 // ============================================================================
 
 /** 硬绑定 (bind 的 polyfill) */
-function hardBind<T extends (...args: any[]) => any>(
-  fn: T,
-  context: ThisParameterType<T>
-): OmitThisParameter<T> {
-  return function (...args: Parameters<T>): ReturnType<T> {
+function hardBind<This, Args extends unknown[], Return>(
+  fn: (this: This, ...args: Args) => Return,
+  context: This
+): (...args: Args) => Return {
+  return function (...args: Args): Return {
     return fn.apply(context, args);
-  } as OmitThisParameter<T>;
+  };
 }
 
 // ============================================================================
@@ -105,10 +107,8 @@ class Timer {
   // 传统函数 + bind 方式
   startTraditional() {
     setInterval(
-      function () {
-        // @ts-ignore
+      function (this: Timer) {
         this.count++;
-        // @ts-ignore
         console.log(this.count);
       }.bind(this),
       1000
@@ -173,12 +173,12 @@ class SafeButton {
 // 7. 严格模式 vs 非严格模式
 // ============================================================================
 
-function checkThis() {
+function checkThis(this: unknown) {
   'use strict';
   console.log(this); // undefined
 }
 
-function checkThisNonStrict() {
+function checkThisNonStrict(this: unknown) {
   console.log(this); // 全局对象 (浏览器: window, Node: global)
 }
 
@@ -187,10 +187,10 @@ function checkThisNonStrict() {
 // ============================================================================
 
 /** 安全的 bind */
-function safeBind<T extends (...args: any[]) => any>(
-  fn: T,
-  thisArg: ThisParameterType<T>
-): (...args: Parameters<T>) => ReturnType<T> {
+function safeBind<This, Args extends unknown[], Return>(
+  fn: (this: This, ...args: Args) => Return,
+  thisArg: This
+): (...args: Args) => Return {
   return fn.bind(thisArg);
 }
 
@@ -202,8 +202,8 @@ function autoBind<T extends object>(instance: T): T {
   for (const key of propertyNames) {
     const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
     if (descriptor && typeof descriptor.value === 'function' && key !== 'constructor') {
-      // @ts-ignore
-      instance[key] = instance[key].bind(instance);
+      const method = (instance as Record<string, unknown>)[key];
+      (instance as Record<string, unknown>)[key] = (method as (...args: unknown[]) => unknown).bind(instance);
     }
   }
 
@@ -253,17 +253,20 @@ export function demo(): void {
   console.log("Bound greet:", boundGreet());
   
   // call vs apply
-  function introduce(greeting: string, punctuation: string) {
+  function introduce(this: { name: string }, greeting: string, punctuation: string) {
     return `${greeting}, I'm ${this.name}${punctuation}`;
   }
   console.log("Call:", introduce.call(person, "Hello", "!"));
   console.log("Apply:", introduce.apply(person, ["Hi", "."]));
   
   // new 绑定
-  function Person(name: string) {
-    (this as any).name = name;
+  interface DemoPerson {
+    name: string;
   }
-  const alice = new (Person as any)("Alice");
+  const Person = function(this: DemoPerson, name: string) {
+    this.name = name;
+  } as unknown as new (name: string) => DemoPerson;
+  const alice = new Person("Alice");
   console.log("New binding:", alice.name);
   
   console.log("=== End of Demo ===\n");

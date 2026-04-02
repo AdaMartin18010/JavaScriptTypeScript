@@ -202,7 +202,7 @@ export class WebRTCConnection {
 
   sendData(data: unknown): void {
     if (this.dataChannel) {
-      (this.dataChannel as any).send(data);
+      (this.dataChannel as RTCDataChannel).send(data as string);
     }
   }
 
@@ -373,4 +373,4 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export type { SSEMessage, SignalMessage, DrawingAction };
+;

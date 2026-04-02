@@ -391,18 +391,6 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  frontendStructure,
-  backendStructure,
-  ModuleBoundaryChecker,
-  codeSplitStrategies
-};
+;
 
-export type {
-  ProjectStructure,
-  DirectoryStructure,
-  FileTemplate,
-  DependencyRule,
-  ImportCheck,
-  CodeSplitStrategy
-};
+;

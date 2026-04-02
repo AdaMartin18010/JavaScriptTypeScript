@@ -395,11 +395,4 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  ServiceRegistry,
-  ApiGateway,
-  CircuitBreaker,
-  EventBus,
-  RoundRobinBalancer,
-  RandomBalancer
-};
+// (已在上方使用 export class 直接导出，此处无需重复导出)

@@ -211,14 +211,4 @@ export async function demo() {
 // 导出
 // ============================================================================
 
-export {
-  createNumberStream,
-  generateData,
-  createAsyncGeneratorStream,
-  JsonParserTransformStream,
-  LineSplitterTransformStream,
-  StreamPipeline,
-  createBackpressureStream,
-  readFileChunks,
-  demo
-};
+export { generateData, readFileChunks, demo };;

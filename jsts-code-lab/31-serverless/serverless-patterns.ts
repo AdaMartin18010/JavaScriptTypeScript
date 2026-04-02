@@ -370,4 +370,4 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export type { ServerlessFunction, FunctionTrigger, FunctionContext, Handler, Step };
+;

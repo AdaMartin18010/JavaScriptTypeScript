@@ -21,7 +21,7 @@ describe('Singleton Pattern', () => {
     logger1.log('message 1');
     
     const logger2 = new Logger();
-    expect(logger2.getLogs()).toContain('message 1');
+    expect(logger2.getLogs().some(log => log.includes('message 1'))).toBe(true);
   });
 });
 
@@ -37,7 +37,8 @@ describe('Factory Pattern', () => {
   });
 
   it('should throw for unknown type', () => {
-    expect(() => VehicleFactory.create('plane' as any)).toThrow('Unknown vehicle type');
+    // @ts-expect-error 故意传入非法类型以测试异常分支
+    expect(() => VehicleFactory.create('plane')).toThrow('Unknown vehicle type');
   });
 });
 

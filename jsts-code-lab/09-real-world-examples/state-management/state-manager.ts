@@ -384,11 +384,4 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  createStore,
-  applyMiddleware,
-  combineReducers,
-  createSelector,
-  loggerMiddleware,
-  thunkMiddleware
-};
+;

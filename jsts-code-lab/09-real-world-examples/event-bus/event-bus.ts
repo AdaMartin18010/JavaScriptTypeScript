@@ -1053,27 +1053,9 @@ export function demo(): void {
 }
 
 // 导出所有公共成员
-export {
-  // 类型
-  EventType,
-  EventPriority,
-  BaseEvent,
-  EventHandler,
-  MiddlewareContext,
-  Middleware,
-  SubscribeOptions,
-  Subscription,
-  EventRecord,
-  EventBusConfig,
-  Command,
-  CommandHandler,
-  Query,
-  QueryHandler,
-  // 类
-  EventBus,
-  CommandBus,
-  QueryBus,
-};
+export { // 类型
+  EventType, // 类
+  EventBus };;
 
 // 如果是直接运行此文件，执行 demo
 if (require.main === module) {

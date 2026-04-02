@@ -264,9 +264,4 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  SingletonTS,
-  SingletonJS,
-  SingletonJSClass,
-  SingletonJSWithDefense
-};
+export { SingletonJSClass };;

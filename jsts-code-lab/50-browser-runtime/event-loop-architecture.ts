@@ -322,6 +322,17 @@
  * @implementation
  */
 
+declare global {
+  interface Scheduler {
+    yield(): Promise<void>;
+  }
+  interface Window {
+    scheduler?: Scheduler;
+    requestIdleCallback(callback: IdleRequestCallback, options?: { timeout?: number }): number;
+    cancelIdleCallback(handle: number): void;
+  }
+}
+
 // ============================================================================
 // 任务调度器实现
 // ============================================================================
@@ -468,7 +479,7 @@ export class LongTaskSplitter {
     return new Promise(resolve => {
       // 优先使用 scheduler.yield (如果可用)
       if ('scheduler' in globalThis) {
-        (globalThis as any).scheduler.yield().then(resolve);
+        (globalThis as unknown as Window).scheduler?.yield().then(resolve);
       } else {
         setTimeout(resolve, 0);
       }
@@ -534,7 +545,7 @@ export class IdleTaskScheduler {
 
   addTask(callback: (deadline: IdleDeadline) => void, timeout?: number): void {
     if ('requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(callback, { timeout });
+      window.requestIdleCallback(callback, { timeout });
     } else {
       // 降级方案
       this.polyfillIdleCallback(callback);

@@ -998,27 +998,10 @@ export function demo(): void {
 }
 
 // 导出所有公共成员
-export {
-  // 主要类
-  JWTManager,
-  SessionManager,
-  PermissionGuard,
-  AuthManager,
-  // 类型
-  UserRole,
-  Permission,
-  User,
-  JWTPayload,
-  TokenPair,
-  Session,
-  AuthResult,
-  AuthConfig,
-  GuardContext,
-  GuardFunction,
-  GuardResult,
-  // 常量
-  DEFAULT_ROLE_PERMISSIONS,
-};
+export { // 主要类
+  JWTManager, // 类型
+  UserRole, // 常量
+  DEFAULT_ROLE_PERMISSIONS };;
 
 // 如果是直接运行此文件，执行 demo
 if (require.main === module) {

@@ -14,6 +14,14 @@
 
 import type { Request, Response, NextFunction } from 'express';
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: { id: string; email: string };
+    }
+  }
+}
+
 // ============================================================================
 // 1. 中间件类型定义
 // ============================================================================
@@ -206,7 +214,7 @@ export const authMiddleware: Middleware = (req, res, next) => {
 
   try {
     // 验证 token
-    (req as any).user = { id: '123', email: 'user@example.com' };
+    req.user = { id: '123', email: 'user@example.com' };
     next();
   } catch (error) {
     res.status(401).json({ error: 'Invalid token' });

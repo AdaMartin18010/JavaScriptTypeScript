@@ -26,247 +26,247 @@
  */
 
 // 语言核心
-export * as LanguageCore from './00-language-core/index';
+export * as LanguageCore from './00-language-core/index.js';
 
 // ECMAScript 演进
-export * as ECMAScriptEvolution from './01-ecmascript-evolution/index';
+export * as ECMAScriptEvolution from './01-ecmascript-evolution/index.js';
 
 // 设计模式
-export * as DesignPatterns from './02-design-patterns/index';
+export * as DesignPatterns from './02-design-patterns/index.js';
 
 // 并发编程
-export * as Concurrency from './03-concurrency/index';
+export * as Concurrency from './03-concurrency/index.js';
 
 // 数据结构
-export * as DataStructures from './04-data-structures/index';
+export * as DataStructures from './04-data-structures/index.js';
 
 // 算法
-export * as Algorithms from './05-algorithms/index';
+export * as Algorithms from './05-algorithms/index.js';
 
 // 架构模式
-export * as ArchitecturePatterns from './06-architecture-patterns/index';
+export * as ArchitecturePatterns from './06-architecture-patterns/index.js';
 
 // 测试
-export * as Testing from './07-testing/index';
+export * as Testing from './07-testing/index.js';
 
 // 性能优化
-export * as Performance from './08-performance/index';
+export * as Performance from './08-performance/index.js';
 
 // 实战案例
-export * as RealWorldExamples from './09-real-world-examples/index';
+export * as RealWorldExamples from './09-real-world-examples/index.js';
 
 // JS/TS 对比分析
-export * as JSTSComparison from './10-js-ts-comparison/index';
+export * as JSTSComparison from './10-js-ts-comparison/index.js';
 
 // 性能基准测试
-export * as Benchmarks from './11-benchmarks/index';
+export * as Benchmarks from './11-benchmarks/index.js';
 
 // 包管理
-export * as PackageManagement from './12-package-management/index';
+export * as PackageManagement from './12-package-management/index.js';
 
 // 代码组织
-export * as CodeOrganization from './13-code-organization/index';
+export * as CodeOrganization from './13-code-organization/index.js';
 
 // 执行流
-export * as ExecutionFlow from './14-execution-flow/index';
+export * as ExecutionFlow from './14-execution-flow/index.js';
 
 // 数据流
-export * as DataFlow from './15-data-flow/index';
+export * as DataFlow from './15-data-flow/index.js';
 
 // 应用开发
-export * as AppDevelopment from './16-application-development/index';
+export * as AppDevelopment from './16-application-development/index.js';
 
 // 调试与监控
-export * as DebuggingMonitoring from './17-debugging-monitoring/index';
+export * as DebuggingMonitoring from './17-debugging-monitoring/index.js';
 
 // 前端框架
-export * as FrontendFrameworks from './18-frontend-frameworks/index';
+export * as FrontendFrameworks from './18-frontend-frameworks/index.js';
 
 // 后端开发
-export * as BackendDevelopment from './19-backend-development/index';
+export * as BackendDevelopment from './19-backend-development/index.js';
 
 // 数据库 ORM
-export * as DatabaseORM from './20-database-orm/index';
+export * as DatabaseORM from './20-database-orm/index.js';
 
 // API 安全
-export * as APISecurity from './21-api-security/index';
+export * as APISecurity from './21-api-security/index.js';
 
 // 部署与 DevOps
-export * as DeploymentDevOps from './22-deployment-devops/index';
+export * as DeploymentDevOps from './22-deployment-devops/index.js';
 
 // 工具链配置
-export * as ToolchainConfiguration from './23-toolchain-configuration/index';
+export * as ToolchainConfiguration from './23-toolchain-configuration/index.js';
 
 // GraphQL
-export * as GraphQL from './24-graphql/index';
+export * as GraphQL from './24-graphql/index.js';
 
 // 微服务
-export * as Microservices from './25-microservices/index';
+export * as Microservices from './25-microservices/index.js';
 
 // 事件溯源
-export * as EventSourcing from './26-event-sourcing/index';
+export * as EventSourcing from './26-event-sourcing/index.js';
 
 // 国际化
-export * as Internationalization from './27-internationalization/index';
+export * as Internationalization from './27-internationalization/index.js';
 
 // 高级测试
-export * as AdvancedTesting from './28-testing-advanced/index';
+export * as AdvancedTesting from './28-testing-advanced/index.js';
 
 // 文档生成
-export * as Documentation from './29-documentation/index';
+export * as Documentation from './29-documentation/index.js';
 
 // 实时通信
-export * as RealTimeCommunication from './30-real-time-communication/index';
+export * as RealTimeCommunication from './30-real-time-communication/index.js';
 
 // 无服务器架构
-export * as Serverless from './31-serverless/index';
+export * as Serverless from './31-serverless/index.js';
 
 // 边缘计算
-export * as EdgeComputing from './32-edge-computing/index';
+export * as EdgeComputing from './32-edge-computing/index.js';
 
 // AI 集成
-export * as AIIntegration from './33-ai-integration/index';
+export * as AIIntegration from './33-ai-integration/index.js';
 
 // Web3/区块链
-export * as BlockchainWeb3 from './34-blockchain-web3/index';
+export * as BlockchainWeb3 from './34-blockchain-web3/index.js';
 
 // 无障碍访问
-export * as Accessibility from './35-accessibility-a11y/index';
+export * as Accessibility from './35-accessibility-a11y/index.js';
 
 // WebAssembly
-export * as WebAssembly from './36-web-assembly/index';
+export * as WebAssembly from './36-web-assembly/index.js';
 
 // PWA
-export * as PWA from './37-pwa/index';
+export * as PWA from './37-pwa/index.js';
 
 // Web 安全
-export * as WebSecurity from './38-web-security/index';
+export * as WebSecurity from './38-web-security/index.js';
 
 // 性能监控
-export * as PerformanceMonitoring from './39-performance-monitoring/index';
+export * as PerformanceMonitoring from './39-performance-monitoring/index.js';
 
 // 浏览器运行时 (深度模型)
-export * as BrowserRuntime from './50-browser-runtime/index';
+export * as BrowserRuntime from './50-browser-runtime/index.js';
 
 // AI驱动UI组件
-export * as UIComponents from './51-ui-components/index';
+export * as UIComponents from './51-ui-components/index.js';
 
 // Web渲染
-export * as WebRendering from './52-web-rendering/index';
+export * as WebRendering from './52-web-rendering/index.js';
 
 // 应用架构
-export * as AppArchitecture from './53-app-architecture/index';
+export * as AppArchitecture from './53-app-architecture/index.js';
 
 // 智能性能优化
-export * as IntelligentPerformance from './54-intelligent-performance/index';
+export * as IntelligentPerformance from './54-intelligent-performance/index.js';
 
 // AI测试
-export * as AITesting from './55-ai-testing/index';
+export * as AITesting from './55-ai-testing/index.js';
 
 // 代码生成
-export * as CodeGeneration from './56-code-generation/index';
+export * as CodeGeneration from './56-code-generation/index.js';
 
 // 设计系统
-export * as DesignSystem from './57-design-system/index';
+export * as DesignSystem from './57-design-system/index.js';
 
 // 数据可视化
-export * as DataVisualization from './58-data-visualization/index';
+export * as DataVisualization from './58-data-visualization/index.js';
 
 // 全栈模式
-export * as FullstackPatterns from './59-fullstack-patterns/index';
+export * as FullstackPatterns from './59-fullstack-patterns/index.js';
 
 // 开发者体验
-export * as DeveloperExperience from './60-developer-experience/index';
+export * as DeveloperExperience from './60-developer-experience/index.js';
 
 // API网关
-export * as APIGateway from './61-api-gateway/index';
+export * as APIGateway from './61-api-gateway/index.js';
 
 // 消息队列
-export * as MessageQueue from './62-message-queue/index';
+export * as MessageQueue from './62-message-queue/index.js';
 
 // 缓存策略
-export * as CachingStrategies from './63-caching-strategies/index';
+export * as CachingStrategies from './63-caching-strategies/index.js';
 
 // 搜索引擎
-export * as SearchEngine from './64-search-engine/index';
+export * as SearchEngine from './64-search-engine/index.js';
 
 // 数据分析
-export * as Analytics from './65-analytics/index';
+export * as Analytics from './65-analytics/index.js';
 
 // 功能开关
-export * as FeatureFlags from './66-feature-flags/index';
+export * as FeatureFlags from './66-feature-flags/index.js';
 
 // 多租户
-export * as MultiTenancy from './67-multi-tenancy/index';
+export * as MultiTenancy from './67-multi-tenancy/index.js';
 
 // 插件系统
-export * as PluginSystem from './68-plugin-system/index';
+export * as PluginSystem from './68-plugin-system/index.js';
 
 // CLI框架
-export * as CLIFramework from './69-cli-framework/index';
+export * as CLIFramework from './69-cli-framework/index.js';
 
 // 分布式系统
-export * as DistributedSystems from './70-distributed-systems/index';
+export * as DistributedSystems from './70-distributed-systems/index.js';
 
 // 一致性算法
-export * as ConsensusAlgorithms from './71-consensus-algorithms/index';
+export * as ConsensusAlgorithms from './71-consensus-algorithms/index.js';
 
 // 容器编排
-export * as ContainerOrchestration from './72-container-orchestration/index';
+export * as ContainerOrchestration from './72-container-orchestration/index.js';
 
 // 高级服务网格
-export * as ServiceMeshAdvanced from './73-service-mesh-advanced/index';
+export * as ServiceMeshAdvanced from './73-service-mesh-advanced/index.js';
 
 // 可观测性
-export * as Observability from './74-observability/index';
+export * as Observability from './74-observability/index.js';
 
 // 混沌工程
-export * as ChaosEngineering from './75-chaos-engineering/index';
+export * as ChaosEngineering from './75-chaos-engineering/index.js';
 
 // 机器学习工程
-export * as MLEngineering from './76-ml-engineering/index';
+export * as MLEngineering from './76-ml-engineering/index.js';
 
 // 量子计算
-export * as QuantumComputing from './77-quantum-computing/index';
+export * as QuantumComputing from './77-quantum-computing/index.js';
 
 // 元编程
-export * as Metaprogramming from './78-metaprogramming/index';
+export * as Metaprogramming from './78-metaprogramming/index.js';
 
 // 编译器设计
-export * as CompilerDesign from './79-compiler-design/index';
+export * as CompilerDesign from './79-compiler-design/index.js';
 
 // 形式化验证
-export * as FormalVerification from './80-formal-verification/index';
+export * as FormalVerification from './80-formal-verification/index.js';
 
 // 网络安全
-export * as Cybersecurity from './81-cybersecurity/index';
+export * as Cybersecurity from './81-cybersecurity/index.js';
 
 // 边缘AI
-export * as EdgeAI from './82-edge-ai/index';
+export * as EdgeAI from './82-edge-ai/index.js';
 
 // 区块链高级
-export * as BlockchainAdvanced from './83-blockchain-advanced/index';
+export * as BlockchainAdvanced from './83-blockchain-advanced/index.js';
 
 // WebXR
-export * as WebXR from './84-webxr/index';
+export * as WebXR from './84-webxr/index.js';
 
 // NLP工程
-export * as NLPEngineering from './85-nlp-engineering/index';
+export * as NLPEngineering from './85-nlp-engineering/index.js';
 
 // 图数据库
-export * as GraphDatabase from './86-graph-database/index';
+export * as GraphDatabase from './86-graph-database/index.js';
 
 // 实时分析
-export * as RealtimeAnalytics from './87-realtime-analytics/index';
+export * as RealtimeAnalytics from './87-realtime-analytics/index.js';
 
 // 低代码平台
-export * as LowcodePlatform from './88-lowcode-platform/index';
+export * as LowcodePlatform from './88-lowcode-platform/index.js';
 
 // 自动化系统
-export * as AutonomousSystems from './89-autonomous-systems/index';
+export * as AutonomousSystems from './89-autonomous-systems/index.js';
 
 // 共享模块
-export * as Shared from './shared/index';
+export * as Shared from './shared/index.js';
 
 // 版本信息
 export const VERSION = '4.0.0';

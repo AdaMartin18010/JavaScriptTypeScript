@@ -27,19 +27,30 @@ console.log(Object.getPrototypeOf(dog) === animal); // true
 // 2. 构造函数与 prototype
 // ============================================================================
 
-function Person(name: string) {
-  // @ts-ignore
-  this.name = name;
+interface Person {
+  name: string;
+  greet(): string;
+  sayGoodbye(): string;
+  constructor: PersonConstructor;
 }
 
-Person.prototype.greet = function () {
+interface PersonConstructor {
+  (this: Person, name: string): void;
+  new (name: string): Person;
+  prototype: Person;
+}
+
+const Person = function (this: Person, name: string) {
+  this.name = name;
+} as unknown as PersonConstructor;
+
+Person.prototype.greet = function (this: Person) {
   return `Hello, I'm ${this.name}`;
 };
 
-// @ts-ignore
 const alice = new Person('Alice');
 console.log(alice.greet()); // 'Hello, I'm Alice'
-console.log(alice.__proto__ === Person.prototype); // true
+console.log(Object.getPrototypeOf(alice) === Person.prototype); // true
 console.log(Person.prototype.constructor === Person); // true
 
 // ============================================================================
@@ -61,31 +72,49 @@ function demonstrateLookup() {
 // 4. 继承实现 (ES5 方式)
 // ============================================================================
 
-function AnimalES5(name: string) {
-  // @ts-ignore
-  this.name = name;
+interface AnimalES5 {
+  name: string;
+  eat(): string;
 }
 
-AnimalES5.prototype.eat = function () {
+interface AnimalES5Constructor {
+  (this: AnimalES5, name: string): void;
+  new (name: string): AnimalES5;
+  prototype: AnimalES5;
+}
+
+const AnimalES5 = function (this: AnimalES5, name: string) {
+  this.name = name;
+} as unknown as AnimalES5Constructor;
+
+AnimalES5.prototype.eat = function (this: AnimalES5) {
   return `${this.name} is eating`;
 };
 
-function DogES5(name: string, breed: string) {
-  // @ts-ignore
-  AnimalES5.call(this, name); // 调用父构造函数
-  // @ts-ignore
-  this.breed = breed;
+interface DogES5 extends AnimalES5 {
+  breed: string;
+  bark(): string;
 }
 
-// 设置原型链
-DogES5.prototype = Object.create(AnimalES5.prototype);
-DogES5.prototype.constructor = DogES5;
+interface DogES5Constructor {
+  (this: DogES5, name: string, breed: string): void;
+  new (name: string, breed: string): DogES5;
+  prototype: DogES5;
+}
 
-DogES5.prototype.bark = function () {
+const DogES5 = function (this: DogES5, name: string, breed: string) {
+  AnimalES5.call(this, name); // 调用父构造函数
+  this.breed = breed;
+} as unknown as DogES5Constructor;
+
+// 设置原型链
+DogES5.prototype = Object.create(AnimalES5.prototype) as DogES5;
+(DogES5.prototype as unknown as { constructor: unknown }).constructor = DogES5;
+
+DogES5.prototype.bark = function (this: DogES5) {
   return `${this.name} barks`;
 };
 
-// @ts-ignore
 const dog5 = new DogES5('Rex', 'German Shepherd');
 console.log(dog5.eat()); // 继承方法
 console.log(dog5.bark()); // 自有方法
@@ -99,7 +128,7 @@ const objWithProps = {
   inheritedProp: undefined
 };
 
-Object.prototype.inheritedProp = 'I am inherited';
+(Object.prototype as Record<string, unknown>).inheritedProp = 'I am inherited';
 
 console.log(objWithProps.hasOwnProperty('ownProp')); // true
 console.log(objWithProps.hasOwnProperty('inheritedProp')); // false
@@ -150,7 +179,7 @@ const withDescriptors = Object.create(Object.prototype, {
 // ============================================================================
 
 // 可以动态修改原型
-Person.prototype.sayGoodbye = function () {
+Person.prototype.sayGoodbye = function (this: Person) {
   return `Goodbye from ${this.name}`;
 };
 
@@ -165,7 +194,6 @@ console.log(alice.sayGoodbye());
 // ============================================================================
 
 function testInstanceof() {
-  // @ts-ignore
   const p = new Person('Test');
 
   console.log(p instanceof Person); // true
@@ -199,7 +227,7 @@ function TraditionalClass(this: { value: number }) {
   this.value = 10;
 }
 
-TraditionalClass.prototype.method = function () {
+TraditionalClass.prototype.method = function (this: { value: number }) {
   return this.value;
 };
 
@@ -234,13 +262,17 @@ export function demo(): void {
   console.log("Dog's prototype is animal:", Object.getPrototypeOf(dog) === animal);
   
   // 构造函数
-  function Person(name: string) {
-    (this as any).name = name;
+  interface DemoPerson {
+    name: string;
+    greet(): string;
   }
-  Person.prototype.greet = function() {
+  const Person = function(this: DemoPerson, name: string) {
+    this.name = name;
+  } as unknown as new (name: string) => DemoPerson;
+  Person.prototype.greet = function(this: DemoPerson) {
     return `Hello, I'm ${this.name}`;
   };
-  const alice = new (Person as any)("Alice");
+  const alice = new Person("Alice");
   console.log("Person greet:", alice.greet());
   
   // hasOwnProperty

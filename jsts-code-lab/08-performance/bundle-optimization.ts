@@ -429,25 +429,9 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export {
-  ModuleLoader,
-  RouteBasedCodeSplitter,
-  createUtils,
-  sideEffect,
-  mathUtils,
-  ResourceHintsManager,
-  BundleAnalyzer,
-  CompressionOptimizer
-};
+;
 
-export type {
-  DynamicImport,
-  RouteConfig,
-  ResourceHint,
-  ResourceHintConfig,
-  BundleAnalysis,
-  CompressionResult
-};
+export type { DynamicImport };;
 
 // 兼容性处理
 declare function requestIdleCallback(callback: () => void): number;

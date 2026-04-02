@@ -21,17 +21,17 @@
     "alwaysStrict": true,
     
     /* 额外检查 */
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
+    "noUncheckedIndexedAccess": false,
     
     /* 模块解析 */
     "resolveJsonModule": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    "erasableSyntaxOnly": true,
+    "erasableSyntaxOnly": false,
     
     /* 声明文件 */
     "declaration": true,

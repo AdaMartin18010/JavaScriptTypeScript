@@ -4,11 +4,11 @@
  */
 
 // 类型理论
-export * from './type-theory/formal-type-system';
+export * from './type-theory/formal-type-system.js';
 
 // JS 实现对比
-export * from './js-implementations/singleton-js';
-export * from './js-implementations/factory-js';
+export * from './js-implementations/singleton-js.js';
+export * from './js-implementations/factory-js.js';
 
 // 互操作性
-export * from './interoperability/js-ts-interop';
+export * from './interoperability/js-ts-interop.js';

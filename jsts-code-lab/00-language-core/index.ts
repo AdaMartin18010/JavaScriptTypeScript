@@ -4,26 +4,26 @@
  */
 
 // 类型系统
-export * from './01-types/advanced-types';
-export * from './01-types/generics';
-export * from './01-types/type-guards';
+export * from './01-types/advanced-types.js';
+export * from './01-types/generics.js';
+export * from './01-types/type-guards.js';
 
 // 变量声明
-export * from './02-variables/declarations';
+export * from './02-variables/declarations.js';
 
 // 控制流
-export * from './03-control-flow/conditionals';
+export * from './03-control-flow/conditionals.js';
 
 // 函数
-export * from './04-functions/arrow-functions';
-export * from './04-functions/higher-order';
+export * from './04-functions/arrow-functions.js';
+export * from './04-functions/higher-order.js';
 
 // 对象与类
-export * from './05-objects-classes/classes';
+export * from './05-objects-classes/classes.js';
 
 // 模块
-export * from './06-modules/module-patterns';
+export * from './06-modules/module-patterns.js';
 
 // 元编程
-export * from './07-metaprogramming/decorators';
-export * from './07-metaprogramming/reflection';
+export * from './07-metaprogramming/decorators.js';
+export * from './07-metaprogramming/reflection.js';

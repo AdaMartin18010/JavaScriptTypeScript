@@ -13,6 +13,43 @@
  * - 报告与分析
  */
 
+interface MemoryInfo {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+}
+
+declare global {
+  interface LayoutShift extends PerformanceEntry {
+    hadRecentInput: boolean;
+    value: number;
+  }
+  interface PerformanceEventTiming extends PerformanceEntry {
+    duration: number;
+  }
+  interface PerformanceResourceTiming {
+    transferSize: number;
+    initiatorType: string;
+  }
+  interface PerformanceObserverInit {
+    entryTypes?: string[];
+    buffered?: boolean;
+  }
+  interface NetworkInformation {
+    effectiveType?: string;
+    downlink?: number;
+    rtt?: number;
+    saveData?: boolean;
+  }
+  interface Navigator {
+    deviceMemory?: number;
+    connection?: NetworkInformation;
+  }
+  interface Performance {
+    memory?: MemoryInfo;
+  }
+}
+
 // ============================================================================
 // 1. Core Web Vitals 指标
 // ============================================================================
@@ -60,14 +97,15 @@ export class CLSMonitor {
 
     this.observer = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        if (!(entry as any).hadRecentInput) {
-          this.value += (entry as any).value;
+        const layoutShift = entry as LayoutShift;
+        if (!layoutShift.hadRecentInput) {
+          this.value += layoutShift.value;
           this.entries.push(entry);
         }
       }
     });
 
-    this.observer.observe({ entryTypes: ['layout-shift'] as any });
+    this.observer.observe({ entryTypes: ['layout-shift'] });
   }
 
   getMetric(): WebVitalsMetric {
@@ -103,7 +141,7 @@ export class LCPMonitor {
       this.entries.push(lastEntry);
     });
 
-    this.observer.observe({ entryTypes: ['largest-contentful-paint'] as any });
+    this.observer.observe({ entryTypes: ['largest-contentful-paint'] });
   }
 
   getMetric(): WebVitalsMetric {
@@ -132,7 +170,7 @@ export class FIDMonitor {
   start(): void {
     this.listener = (event: Event) => {
       const entry = performance.now();
-      const targetTime = (event as any).timeStamp;
+      const targetTime = event.timeStamp;
       this.value = entry - targetTime;
       
       // 创建模拟的 PerformanceEntry
@@ -188,12 +226,12 @@ export class INPMonitor {
 
     this.observer = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        const duration = (entry as any).duration;
+        const duration = (entry as PerformanceEventTiming).duration;
         this.interactions.push({ delay: duration, entry });
       }
     });
 
-    this.observer.observe({ entryTypes: ['event'] as any, buffered: true });
+    this.observer.observe({ entryTypes: ['event'], buffered: true });
   }
 
   getMetric(): WebVitalsMetric {
@@ -307,7 +345,7 @@ export class PerformanceCollector {
 
   private getDeviceInfo(): DeviceInfo {
     return {
-      memory: (navigator as any).deviceMemory,
+      memory: navigator.deviceMemory,
       cores: navigator.hardwareConcurrency || 1,
       userAgent: navigator.userAgent,
       screenWidth: typeof window !== 'undefined' ? window.screen.width : 0,
@@ -317,7 +355,7 @@ export class PerformanceCollector {
   }
 
   private getConnectionInfo(): ConnectionInfo {
-    const conn = (navigator as any).connection || {};
+    const conn = navigator.connection || {};
     
     return {
       effectiveType: conn.effectiveType || '4g',
@@ -592,8 +630,9 @@ export class PerformanceAnalyzer {
     const entries = performance.getEntriesByType('resource');
     
     return entries.map(entry => {
+      const resourceEntry = entry as PerformanceResourceTiming;
       const duration = entry.duration;
-      const size = (entry as any).transferSize || 0;
+      const size = resourceEntry.transferSize || 0;
       
       let rating: 'good' | 'slow' | 'large' = 'good';
       if (duration > 1000) rating = 'slow';
@@ -601,7 +640,7 @@ export class PerformanceAnalyzer {
       
       return {
         name: entry.name,
-        type: (entry as any).initiatorType || 'unknown',
+        type: resourceEntry.initiatorType || 'unknown',
         duration: Math.round(duration),
         size,
         rating
@@ -641,7 +680,7 @@ export class PerformanceAnalyzer {
     limit: number;
     usagePercent: number;
   } | null {
-    const memory = (performance as any).memory;
+    const memory = performance.memory;
     
     if (!memory) return null;
     
@@ -810,11 +849,4 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export type { 
-  WebVitalsMetric, 
-  WebVitalsReport, 
-  DeviceInfo, 
-  ConnectionInfo, 
-  RUMConfig, 
-  PerformanceBudget 
-};
+;

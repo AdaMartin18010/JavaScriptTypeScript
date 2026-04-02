@@ -805,9 +805,4 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export type { 
-  WASMModule, 
-  WASMLoadOptions, 
-  JSBridge, 
-  PerformanceMetrics 
-};
+;

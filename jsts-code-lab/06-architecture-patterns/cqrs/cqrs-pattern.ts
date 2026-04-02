@@ -503,20 +503,6 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  EventStore,
-  Order,
-  CommandHandler,
-  OrderProjection
-};
+// (已在上方使用 export class / export interface 直接导出，此处无需重复导出)
 
-export type { 
-  DomainEvent, 
-  OrderCreatedEvent, 
-  OrderPaidEvent, 
-  OrderShippedEvent,
-  OrderView,
-  OrderDetailView,
-  OrderStatus,
-  OrderItem
-};
+;

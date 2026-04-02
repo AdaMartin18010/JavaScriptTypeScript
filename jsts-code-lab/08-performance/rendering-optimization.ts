@@ -417,17 +417,6 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  RAFScheduler,
-  VirtualScroller,
-  DOMBatcher,
-  LayoutOptimizer,
-  LazyLoader,
-  ImageOptimizer
-};
+;
 
-export type {
-  VirtualScrollConfig,
-  VirtualScrollState,
-  ImageOptimizationConfig
-};
+;

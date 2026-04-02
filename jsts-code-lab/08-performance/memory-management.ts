@@ -481,19 +481,6 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  MemoryLeakDetector,
-  PrivateDataStore,
-  DOMMetadataCache,
-  ActiveObjectTracker,
-  AutoCleanupPool,
-  ChunkedProcessor,
-  AutoCleanupEventEmitter,
-  MemoryEfficientCache
-};
+;
 
-export type {
-  MemorySnapshot,
-  ElementMetadata,
-  CacheEntry
-};
+;

@@ -244,17 +244,7 @@ export class ObjectPool<T> {
 // 导出
 // ============================================================================
 
-export {
-  memoize,
-  debounce,
-  throttle,
-  calculateVisibleRange,
-  LazyLoader,
-  WorkerPool,
-  measurePerformance,
-  measureAsyncPerformance,
-  ObjectPool
-};
+export { measureAsyncPerformance };;
 
 // ============================================================================
 // Demo 函数

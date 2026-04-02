@@ -111,12 +111,12 @@ console.log('Difference:', [...difference(a, b)]); // [1]
 
 // WeakMap: 键必须是对象，弱引用，不可迭代
 const weakMap = new WeakMap<object, string>();
-let obj = { id: 1 };
-weakMap.set(obj, 'data');
-console.log(weakMap.get(obj)); // 'data'
+let obj: { id: number } | null = { id: 1 };
+weakMap.set(obj!, 'data');
+console.log(weakMap.get(obj!)); // 'data'
 
 // 当 obj 不再被引用时，WeakMap 中的条目会被垃圾回收
-obj = null as any;
+obj = null;
 // weakMap 中的条目现在可以被垃圾回收
 
 // WeakSet: 类似 Set，但只能存储对象，弱引用
