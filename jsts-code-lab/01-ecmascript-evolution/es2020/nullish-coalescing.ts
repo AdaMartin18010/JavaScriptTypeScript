@@ -153,7 +153,9 @@ console.log('\nChain result:', chainResult); // 'value'
 // const mixed = null || undefined ?? 'default'; // SyntaxError
 
 /** ✅ 使用括号明确优先级 */
+// @ts-expect-error 演示 nullish/falsy 混用
 const mixed1 = (null || undefined) ?? 'default'; // 'default'
+// @ts-expect-error 演示 nullish/falsy 混用
 const mixed2 = null || (undefined ?? 'default'); // 'default'
 
 /** 常见模式：设置多个默认值 */
@@ -212,9 +214,13 @@ export function demo(): void {
   console.log("=== Nullish Coalescing Demo ===");
   
   // 基础用法
+  // @ts-expect-error 演示 nullish 基础
   console.log("null ?? 'default':", null ?? "default");
+  // @ts-expect-error 演示 nullish 基础
   console.log("undefined ?? 'default':", undefined ?? "default");
+  // @ts-expect-error 演示 nullish 基础
   console.log("0 ?? 'default':", 0 ?? "default");
+  // @ts-expect-error 演示 nullish 基础
   console.log("'' ?? 'default':", "" ?? "default");
   
   // 配置端口
@@ -228,6 +234,7 @@ export function demo(): void {
   console.log("Greet ('Alice'):", greet("Alice"));
   
   // 链式使用
+  // @ts-expect-error 演示 nullish 链
   const result = null ?? undefined ?? "final" ?? "ignored";
   console.log("Chain result:", result);
   

@@ -91,7 +91,9 @@ const falsyValues = [false, 0, '', null, undefined, NaN, 0n, -0];
 const truthyValues = [true, 1, 'hello', [], {}, -1, Infinity];
 
 /** 严格相等 vs 宽松相等 */
+// @ts-expect-error 演示宽松相等
 console.log(false == 0);  // true (宽松)
+// @ts-expect-error 演示宽松相等
 console.log(false === 0); // false (严格)
 console.log(null == undefined);  // true
 console.log(null === undefined); // false
@@ -110,6 +112,7 @@ console.log(sym2 === sym3); // false! 每次创建都是唯一的
 /** 全局 Symbol 注册表 */
 const globalSym1 = Symbol.for('app.id');
 const globalSym2 = Symbol.for('app.id');
+// @ts-expect-error 演示全局 Symbol 相等
 console.log(globalSym1 === globalSym2); // true
 
 /** Well-Known Symbols */
@@ -148,9 +151,13 @@ interface Config {
 }
 
 /** 空值合并运算符 (??) - 只在 null/undefined 时生效 */
+// @ts-expect-error 演示 nullish 行为
 const value1 = 0 ?? 'default';      // 0
+// @ts-expect-error 演示 nullish 行为
 const value2 = '' ?? 'default';     // ''
+// @ts-expect-error 演示 nullish 行为
 const value3 = null ?? 'default';   // 'default'
+// @ts-expect-error 演示 nullish 行为
 const value4 = undefined ?? 'default'; // 'default'
 
 // ============================================================================
@@ -235,8 +242,8 @@ export function demo(): void {
   console.log("Symbol:", sym.toString());
   
   // 空值合并
-  const value = null ?? "default";
-  console.log("Nullish coalescing:", value);
+  const value: string | null = null;
+  console.log("Nullish coalescing:", value ?? "default");
   
   // unknown 类型
   let unknownValue: unknown = 42;

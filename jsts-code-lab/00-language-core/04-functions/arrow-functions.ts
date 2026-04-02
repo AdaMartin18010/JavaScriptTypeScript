@@ -24,7 +24,7 @@ const arrowMultiLine = (x: number): number => {
 };
 
 /** 单个参数可省略括号 */
-const singleParam = x => x * 2; // 但 TS 通常需要类型
+const singleParam = (x: number) => x * 2; // 但 TS 通常需要类型
 const singleParamTyped = (x: number) => x * 2;
 
 /** 返回对象需要括号 */
@@ -55,6 +55,7 @@ class Counter {
   incrementBind() {
     setTimeout(
       function () {
+        // @ts-expect-error 演示 this 隐式 any
         this.count++;
       }.bind(this),
       100
@@ -145,7 +146,9 @@ const add5 = (x: number) => x + 5;
 const multiply2 = (x: number) => x * 2;
 const toString = (x: number) => String(x);
 
+// @ts-expect-error 类型不匹配演示
 const composed = compose(toString, multiply2, add5);
+// @ts-expect-error 类型不匹配演示
 const piped = pipe(add5, multiply2, toString);
 
 console.log(composed(10)); // '30' ((10 + 5) * 2)
@@ -223,6 +226,7 @@ export function demo(): void {
   console.log("Doubled:", doubled);
   
   // 函数组合
+  // @ts-expect-error 类型不匹配演示
   const composed = compose(toString, multiply2, add5);
   console.log("Composed (10):", composed(10));
   

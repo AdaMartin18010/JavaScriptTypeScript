@@ -30,18 +30,8 @@
 //   parseJSON: (str) => { ... }
 // };
 
-// 方案 A: 快速声明 (any 类型)
-declare module 'legacy-utils' {
-  const content: any;
-  export = content;
-}
-
-// 方案 B: 精确声明 (推荐)
-declare module 'legacy-utils' {
-  export function formatDate(date: Date | string, format?: string): string;
-  export function parseJSON<T = unknown>(jsonString: string): T;
-  export const VERSION: string;
-}
+// 方案 A/B 的 declare module 声明应放在独立的 .d.ts 文件中，
+// 并确保对应的 JavaScript 模块在运行时真实存在。
 
 // 使用方式
 // import { formatDate, parseJSON } from 'legacy-utils';
@@ -134,7 +124,7 @@ function greetUser(maybeUser: unknown): string {
  * @param {Product} product
  * @returns {string}
  */
-function formatProductJS(product) {
+function formatProductJS(product: Product) {
   return `${product.name}: $${product.price}`;
 }
 
@@ -158,36 +148,7 @@ function formatProductTS(product: Product): string {
  */
 
 // 创建 types/library-name/index.d.ts
-
-declare module 'untyped-library' {
-  // 主要导出
-  export function init(options: InitOptions): Promise<Client>;
-  export const version: string;
-  
-  // 接口定义
-  export interface InitOptions {
-    apiKey: string;
-    endpoint?: string;
-    timeout?: number;
-  }
-  
-  export interface Client {
-    request<T>(method: string, params: Record<string, unknown>): Promise<T>;
-    close(): void;
-  }
-  
-  // 类定义
-  export class EventEmitter {
-    on(event: string, listener: (...args: any[]) => void): this;
-    emit(event: string, ...args: any[]): boolean;
-  }
-  
-  // 命名空间 (用于嵌套类型)
-  export namespace Utils {
-    export function clamp(value: number, min: number, max: number): number;
-    export function debounce(fn: Function, delay: number): Function;
-  }
-}
+// （declare module 'xxx' 声明应放在独立的 .d.ts 文件中）
 
 // ============================================================================
 // 5. 运行时类型验证
@@ -213,7 +174,7 @@ export class ObjectValidator<T> {
       return false;
     }
 
-    for (const [key, validator] of Object.entries(this.schema)) {
+    for (const [key, validator] of Object.entries(this.schema) as [string, (v: unknown) => boolean][]) {
       if (!(key in data) || !validator((data as Record<string, unknown>)[key])) {
         return false;
       }
@@ -230,7 +191,7 @@ export class ObjectValidator<T> {
 }
 
 // 使用示例
-const userValidator = new ObjectValidator<{ name: string; age: number }>({
+const userValidator: ObjectValidator<{ name: string; age: number }> = new ObjectValidator<{ name: string; age: number }>({
   name: (v) => typeof v === 'string',
   age: (v) => typeof v === 'number' && v >= 0
 });
@@ -250,26 +211,15 @@ function processUser(data: unknown): { name: string; age: number } {
 
 // CommonJS 导入 ES Module (动态导入)
 async function loadESM() {
-  const { default: myModule } = await import('esm-module');
-  return myModule;
+  // 示例：动态导入 ESM 模块（使用时请替换为真实存在的模块名）
+  // const { default: myModule } = await import('esm-module');
+  // return myModule;
 }
 
 // ES Module 导入 CommonJS
 // import * as cjsModule from 'cjs-module';
 // 或
 // import cjsModule = require('cjs-module');
-
-// 声明文件中的模块格式
-declare module 'mixed-format-lib' {
-  // 默认导出 (ESM: export default, CJS: module.exports)
-  export default function main(): void;
-  
-  // 命名导出
-  export const helper: () => void;
-  
-  // CommonJS 风格导出
-  export = main; // 当模块主要导出一个函数时
-}
 
 // ============================================================================
 // 7. 使用示例

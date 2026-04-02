@@ -69,10 +69,9 @@ export class JsonParserTransformStream<T> extends TransformStream<string, T> {
 }
 
 export class LineSplitterTransformStream extends TransformStream<string, string> {
-  private buffer = '';
-
   constructor() {
     super({
+      buffer: '',
       transform(chunk, controller) {
         this.buffer += chunk;
         const lines = this.buffer.split('\n');
@@ -86,7 +85,7 @@ export class LineSplitterTransformStream extends TransformStream<string, string>
           controller.enqueue(this.buffer);
         }
       }
-    });
+    } as Transformer<string, string> & { buffer: string });
   }
 }
 
@@ -102,7 +101,7 @@ export class StreamPipeline<T> {
   }
 
   pipeThrough<U>(transform: TransformStream<T, U>): StreamPipeline<U> {
-    this.stream = this.stream.pipeThrough(transform);
+    this.stream = this.stream.pipeThrough(transform) as unknown as ReadableStream<T>;
     return this as unknown as StreamPipeline<U>;
   }
 
@@ -206,9 +205,3 @@ export async function demo() {
 
   console.log(results); // [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
 }
-
-// ============================================================================
-// 导出
-// ============================================================================
-
-export { generateData, readFileChunks, demo };;

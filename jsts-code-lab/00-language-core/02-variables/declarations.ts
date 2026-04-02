@@ -43,6 +43,7 @@ letScopeDemo();
 console.log('\n=== 2. 变量提升对比 ===');
 
 /** var: 声明提升，初始化为 undefined */
+// @ts-expect-error 演示 var 提升
 console.log('varBefore:', varBefore); // undefined (不是 ReferenceError!)
 var varBefore = 'I am hoisted';
 
