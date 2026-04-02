@@ -100,11 +100,65 @@ Structs 提案与 TypeScript 的类型擦除范式之间，存在着一种耐人
 
 ---
 
+## 5. TypeScript 原生编译器：从学术理论到工程实践
+
+### 研究背景
+
+在程序语言（PL）学术领域，编译器前端性能与开发者体验（Developer Experience, DX）之间的张力长期是一个核心议题。POPL 与 PLDI 会议上关于增量类型检查（incremental type checking）、并行约束求解（parallel constraint solving）以及语言服务器协议（LSP）优化的研究，为现代 IDE 提供了坚实的理论基础。然而，这些学术成果大多停留在形式化模型或小型原型阶段，难以直接应用于工业级代码库。
+
+TypeScript 作为当今世界使用最广泛的渐进类型语言，其编译器性能问题已经超出了单纯的工程优化范畴，成为了一个**学术与工程交叉**的标志性案例。传统的自托管（self-hosted）JavaScript 实现虽然在语义一致性和社区贡献方面具有优势，但在面对数百万行代码的 monorepo 时，其单线程执行模型与动态语言的运行时开销已触及天花板。
+
+### 工程意义
+
+2025 年 3 月，微软 TypeScript 团队宣布将编译器原生移植到 Go 语言，目标实现 **10 倍构建提速** 与 **50% 内存降低**。这一决策不仅是对学术研究中"并行类型推断"与"紧凑内存布局"思想的工程验证，也标志着高性能编译器基础设施从前沿研究走向了主流开发工具。
+
+从 PL 研究视角看，TypeScript 7.0 的原生编译器面临的核心挑战与学术热点高度重合：
+- **增量计算与可复用性**：如何在文件变更时最小化类型图的重新计算；
+- **并发安全与确定性**：Go 的 goroutine 模型如何在共享类型缓存的同时保证诊断结果的一致性；
+- **LSP 标准化**：将私有协议迁移到标准 Language Server Protocol，涉及形式化协议语义与实现正确性的对齐。
+
+TypeScript 7.0 的成功与否，将直接影响未来渐进类型语言工具链的设计范式。对于 JS/TS 社区而言，这不仅是"更快的 tsc"，更是将 PL 学术成果转化为十亿级开发者日常生产力的历史性实验。更详细的性能基准、路线图与迁移策略，请参阅 [《TypeScript 7.0 原生编译器深度分析》](JS_TS_TypeScript_7_0_Native_Compiler.md)。
+
+---
+
+## 6. Records & Tuples 提案状态更新
+
+Records & Tuples（即 Immutable Records 与 Tuples）曾是 TC39 最受关注的提案之一，旨在为 JavaScript 引入不可变的、按值比较（deep equality）的复合数据类型，语法形式为 `#{ a: 1 }` 与 `#[1, 2, 3]`。该提案一度被视为解决 React 不可变状态、Redux 规范化数据以及复杂对象比较问题的潜在方案。
+
+> [!CAUTION]
+> **该提案已于 2025 年 4 月 14 日 TC39 全会正式 Withdrawn。**
+
+### 撤回原因分析
+
+提案被正式撤回的核心原因是**性能预期不现实**。具体而言：
+
+1. **`===` 深层递归比较的成本**：Records & Tuples 的语义要求对任意嵌套结构进行按值比较。在引擎层面，这意味着每次 `===` 操作都可能触发对深层树结构的递归遍历，其时间复杂度在最坏情况下与对象规模成正比。这与 JavaScript 开发者对原始值比较（`O(1)`）的性能直觉严重冲突。
+2. **引擎实现复杂度过高**：为了优化按值比较，引擎需要维护复杂的哈希缓存或规范化表（canonicalization table），并处理循环引用、大对象序列化、跨 Realm 比较等边缘情况。V8、SpiderMonkey 和 JavaScriptCore 的核心维护者一致认为，这些开销无法在常规对象访问路径上被有效摊销。
+
+### 替代方案：Composite / Composite Keys
+
+在 Records & Tuples 撤回后，Ashley Claymore 提出了一个新的 **Composite / Composite Keys** 提案，目前已进入 **Stage 1**。该提案并不试图引入全新的不可变数据结构，而是聚焦于解决 `Map` 与 `Set` 中的**多值键（multi-value keys）**问题：
+
+```javascript
+// 使用 Composite 将多个值组合为一个可用于 Map/Set 的键
+const key = Composite({ 0: "hello", 1: "world" });
+const map = new Map();
+map.set(key, 42);
+
+// 按值比较，行为类似于 Tuple 的一个受限子集
+console.log(map.has(Composite({ 0: "hello", 1: "world" }))); // true
+```
+
+与 Records & Tuples 不同，Composite 的设计范围被刻意收窄：它仅用于键比较场景，不承担通用不可变数据结构的职责，从而大幅降低了引擎实现负担。对于需要多值键的开发者而言，Composite 提供了一个更务实的前进方向。
+
+---
+
 ## 关联文档
 
 - **渐进类型数学基础** 的规范级分析，请参阅 [《JavaScript / TypeScript 语言语义模型全面分析》](JS_TS_语言语义模型全面分析.md) 第 6.1 节（Gradual Typing 与一致性关系）。
 - **Structs 与固定布局对象** 对 V8 引擎性能悬崖的规避作用，请参阅 [《JS/TS 现代运行时深度分析》](JS_TS_现代运行时深度分析.md) 第 2 章（对象模型：Hidden Classes、Shapes、Inline Caching）。
 - **Type-Constrained LLM 代码生成** 的工程启示，请参阅 [《JavaScript / TypeScript 深度技术分析》](JS_TS_深度技术分析.md) 第 3 节（类型系统深度洞察）。
+- **TypeScript 原生编译器** 的详细分析，请参阅 [《TypeScript 7.0 原生编译器深度分析》](JS_TS_TypeScript_7_0_Native_Compiler.md)。
 
 ---
 

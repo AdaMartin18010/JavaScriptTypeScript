@@ -2,227 +2,189 @@
  * @file Hoare 逻辑验证框架
  * @category Formal Verification → Hoare Logic
  * @difficulty hard
+ * @tags hoare-triple, precondition, postcondition, loop-invariant, partial-correctness
  * @description
- * 实现 Hoare 三元组 `{P} C {Q}` 的运行时验证框架。支持前置条件、后置条件的
- * 断言检查，并通过不变量模拟循环正确性证明。演示求和循环、交换变量等经典例子的
- * 部分正确性验证。
+ * 实现 Hoare 三元组 `{P} C {Q}` 的运行时验证框架，支持前置条件、后置条件、
+ * 循环不变量的断言检查。演示二分查找的完全正确性（partial + total correctness）。
  *
  * @theoretical_basis
- * - **Hoare 三元组 (Hoare Triple)**: C. A. R. Hoare 于 1969 年提出，形如 `{P} C {Q}`，
- *   表示若前置条件 P 成立，执行命令 C 后后置条件 Q 成立。
- * - **循环不变量 (Loop Invariant)**: 循环体每次执行前后均保持的断言，
- *   结合变体函数 (variant) 可证明循环终止性与完全正确性。
- * - **赋值公理 (Assignment Axiom)**: `{Q[E/V]} V := E {Q}`，即后置条件 Q 中
- *   将 V 替换为 E 得到前置条件。
- * - **顺序组合规则**: 若 `{P} C1 {R}` 且 `{R} C2 {Q}`，则 `{P} C1; C2 {Q}`。
- *
- * @complexity_analysis
- * - 前置/后置条件检查: O(p + q) 其中 p、q 分别为条件数量。
- * - 循环验证: O(n * i) 其中 n 为迭代次数，i 为不变量数量。
- * - 整体框架为运行时模拟，非静态验证，复杂度随程序执行路径线性增长。
+ * - **Hoare Triple**: Tony Hoare 于 1969 年提出 `{P} C {Q}`，表示若前置条件 P 成立，
+ *   执行命令 C 后后置条件 Q 成立。
+ * - **Loop Invariant**: 循环不变量 I 满足：
+ *   1. Initiation: P ⇒ I
+ *   2. Maintenance: {I ∧ B} C {I}
+ *   3. Termination: I ∧ ¬B ⇒ Q
+ * - **Total Correctness**: 在部分正确性基础上增加终止性证明，通常依赖 well-founded
+ *   递减函数（variant function）证明循环必终止。
  */
 
-/** 变量存储环境 */
-export type Env = Record<string, number>;
+export class HoareLogic<T> {
+  private preconditions: Array<(input: T) => boolean> = [];
+  private postconditions: Array<(input: T, output: unknown) => boolean> = [];
 
-/** 断言：关于环境的布尔谓词 */
-export type Assertion = (env: Env) => boolean;
+  require(name: string, predicate: (input: T) => boolean): this {
+    this.preconditions.push(predicate);
+    return this;
+  }
 
-/** 命令：修改环境的操作 */
-export type Command = (env: Env) => Env;
+  ensure(name: string, predicate: (input: T, output: unknown) => boolean): this {
+    this.postconditions.push(predicate);
+    return this;
+  }
 
-/** Hoare 三元组验证结果 */
-export interface HoareResult {
-  valid: boolean;
-  violations: string[];
-}
+  execute<R>(input: T, computation: (input: T) => R): R {
+    // 验证前置条件（P）
+    for (const pre of this.preconditions) {
+      if (!pre(input)) {
+        throw new Error(`Hoare precondition violated`);
+      }
+    }
 
-/** 不变量包装器：附带名称与检查函数 */
-export interface Invariant {
-  name: string;
-  check: (env: Env) => boolean;
+    const output = computation(input);
+
+    // 验证后置条件（Q）
+    for (const post of this.postconditions) {
+      if (!post(input, output)) {
+        throw new Error(`Hoare postcondition violated`);
+      }
+    }
+
+    return output;
+  }
 }
 
 /**
- * Hoare 验证器：在运行时模拟 Hoare 逻辑验证。
+ * 循环不变量监视器
+ *
+ * 用于在运行时检查循环不变量是否保持。
  */
-export class HoareVerifier {
-  private violations: string[] = [];
-
-  /**
-   * 验证顺序命令：先检查前置条件，执行命令，再检查后置条件。
-   */
-  verifyCommand(
-    env: Env,
-    pre: Assertion[],
-    cmd: Command,
-    post: Assertion[]
-  ): { env: Env; result: HoareResult } {
-    this.violations = [];
-
-    // 检查前置条件
-    for (let i = 0; i < pre.length; i++) {
-      if (!pre[i]!(env)) {
-        this.violations.push(`Precondition #${i} failed before command`);
-      }
+export class LoopInvariantMonitor {
+  static assert<T>(label: string, invariant: () => boolean): void {
+    if (!invariant()) {
+      throw new Error(`Loop invariant violated: ${label}`);
     }
-
-    const newEnv = cmd(env);
-
-    // 检查后置条件
-    for (let i = 0; i < post.length; i++) {
-      if (!post[i]!(newEnv)) {
-        this.violations.push(`Postcondition #${i} failed after command`);
-      }
-    }
-
-    return {
-      env: newEnv,
-      result: {
-        valid: this.violations.length === 0,
-        violations: [...this.violations]
-      }
-    };
-  }
-
-  /**
-   * 验证循环：使用不变量模拟部分正确性证明。
-   * 在循环的每次迭代前后检查不变量，并在循环结束后检查后置条件。
-   */
-  verifyLoop(
-    initEnv: Env,
-    condition: (env: Env) => boolean,
-    body: (env: Env) => Env,
-    invariants: Invariant[],
-    post: Assertion[]
-  ): HoareResult {
-    this.violations = [];
-    let env = { ...initEnv };
-
-    // 检查初始不变量
-    for (const inv of invariants) {
-      if (!inv.check(env)) {
-        this.violations.push(`Invariant "${inv.name}" failed before loop`);
-      }
-    }
-
-    let iterations = 0;
-    const maxIterations = 1000; // 防止无限循环
-
-    while (condition(env) && iterations < maxIterations) {
-      env = body(env);
-      iterations++;
-
-      for (const inv of invariants) {
-        if (!inv.check(env)) {
-          this.violations.push(`Invariant "${inv.name}" failed at iteration ${iterations}`);
-        }
-      }
-    }
-
-    if (iterations >= maxIterations) {
-      this.violations.push('Loop exceeded maximum iterations (possible non-termination)');
-    }
-
-    // 循环结束后检查后置条件
-    for (let i = 0; i < post.length; i++) {
-      if (!post[i]!(env)) {
-        this.violations.push(`Postcondition #${i} failed after loop`);
-      }
-    }
-
-    return {
-      valid: this.violations.length === 0,
-      violations: [...this.violations]
-    };
-  }
-
-  /**
-   * 验证赋值语句 `{P} x := e {Q}`，
-   * 通过运行时检查模拟赋值公理。
-   */
-  verifyAssignment(
-    env: Env,
-    varName: string,
-    expr: (env: Env) => number,
-    post: Assertion[]
-  ): { env: Env; result: HoareResult } {
-    const newEnv = { ...env, [varName]: expr(env) };
-    this.violations = [];
-
-    for (let i = 0; i < post.length; i++) {
-      if (!post[i]!(newEnv)) {
-        this.violations.push(`Postcondition #${i} failed after assignment to ${varName}`);
-      }
-    }
-
-    return {
-      env: newEnv,
-      result: {
-        valid: this.violations.length === 0,
-        violations: [...this.violations]
-      }
-    };
   }
 }
 
+/**
+ * 二分查找的完全正确性演示
+ *
+ * 前置条件：数组已排序
+ * 后置条件：若返回值 ≥ 0，则 arr[return] = target；若返回 -1，则 target 不存在于数组
+ * 循环不变量：
+ *   1. 0 ≤ left ≤ right+1 ≤ n
+ *   2. 若 target 存在于数组，则 target ∈ arr[left..right]
+ * 终止函数：right - left + 1（每次迭代严格递减）
+ */
+export function verifiedBinarySearch(sortedArr: number[], target: number): number {
+  const n = sortedArr.length;
+
+  // 前置条件检查：数组必须有序
+  for (let i = 1; i < n; i++) {
+    if (sortedArr[i] < sortedArr[i - 1]) {
+      throw new Error('Precondition failed: array must be sorted');
+    }
+  }
+
+  let left = 0;
+  let right = n - 1;
+
+  while (left <= right) {
+    // 循环不变量 I1: 0 ≤ left ≤ right+1 ≤ n
+    LoopInvariantMonitor.assert('I1: bounds', () => left >= 0 && left <= right + 1 && right + 1 <= n);
+
+    // 循环不变量 I2: target ∈ arr[left..right]（若存在）
+    LoopInvariantMonitor.assert('I2: containment', () => {
+      const found = sortedArr.findIndex(x => x === target);
+      if (found === -1) return true;
+      return found >= left && found <= right;
+    });
+
+    const mid = left + Math.floor((right - left) / 2);
+    if (sortedArr[mid] === target) {
+      // 后置条件：返回有效索引
+      return mid;
+    } else if (sortedArr[mid] < target) {
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+
+    // 终止性：right - left + 1 严格递减（well-founded ordering）
+  }
+
+  // 后置条件：返回 -1 表示未找到
+  return -1;
+}
+
+/**
+ * 插入排序的正确性演示
+ *
+ * 循环不变量（外层循环）：
+ *   每次迭代开始时，子数组 arr[0..i-1] 已排序，且包含原数组 arr[0..i-1] 的所有元素。
+ */
+export function verifiedInsertionSort(arr: number[]): number[] {
+  const result = [...arr];
+  const n = result.length;
+
+  for (let i = 1; i < n; i++) {
+    // 外层不变量：result[0..i-1] 已排序
+    LoopInvariantMonitor.assert('outer: sorted prefix', () => {
+      for (let k = 1; k < i; k++) {
+        if (result[k] < result[k - 1]) return false;
+      }
+      return true;
+    });
+
+    // 外层不变量：result[0..i-1] 是原数组的多重集子集
+    LoopInvariantMonitor.assert('outer: permutation prefix', () => {
+      const originalPrefix = arr.slice(0, i).sort((a, b) => a - b);
+      const currentPrefix = result.slice(0, i).sort((a, b) => a - b);
+      return JSON.stringify(originalPrefix) === JSON.stringify(currentPrefix);
+    });
+
+    const key = result[i];
+    let j = i - 1;
+
+    while (j >= 0 && result[j] > key) {
+      result[j + 1] = result[j];
+      j--;
+    }
+    result[j + 1] = key;
+  }
+
+  // 后置条件：整个数组已排序
+  for (let i = 1; i < n; i++) {
+    if (result[i] < result[i - 1]) {
+      throw new Error('Postcondition failed: array not sorted');
+    }
+  }
+
+  // 后置条件：是原数组的排列
+  const sortedOriginal = [...arr].sort((a, b) => a - b);
+  if (JSON.stringify(result) !== JSON.stringify(sortedOriginal)) {
+    throw new Error('Postcondition failed: not a permutation');
+  }
+
+  return result;
+}
+
 export function demo(): void {
-  console.log('=== Hoare 逻辑演示 ===\n');
-  const verifier = new HoareVerifier();
+  console.log('=== Hoare Logic ===\n');
 
-  // 演示 1：交换两个变量
-  console.log('--- 交换变量 x, y ---');
-  const swapEnv: Env = { x: 5, y: 3 };
-  const swapPre: Assertion[] = [
-    e => e['x'] !== undefined && e['y'] !== undefined,
-    e => typeof e['x'] === 'number' && typeof e['y'] === 'number'
-  ];
-  const swapCmd: Command = e => {
-    const t = e['x']!;
-    return { ...e, x: e['y']!, y: t };
-  };
-  const swapPost: Assertion[] = [
-    e => e['x'] === 3 && e['y'] === 5
-  ];
-  const swapResult = verifier.verifyCommand(swapEnv, swapPre, swapCmd, swapPost);
-  console.log('交换后环境:', swapResult.env);
-  console.log('验证结果:', swapResult.result);
+  const arr = [1, 3, 5, 7, 9, 11, 13];
+  console.log('Binary search for 7:', verifiedBinarySearch(arr, 7));
+  console.log('Binary search for 4:', verifiedBinarySearch(arr, 4));
 
-  // 演示 2：求和循环 {n >= 0} sum = 0; i = 0; while (i < n) { i++; sum += i; } {sum = n*(n+1)/2}
-  console.log('\n--- 求和循环验证 ---');
-  const loopInit: Env = { n: 10, i: 0, sum: 0 };
-  const loopCondition = (e: Env) => e['i']! < e['n']!;
-  const loopBody = (e: Env) => ({
-    ...e,
-    i: e['i']! + 1,
-    sum: e['sum']! + e['i']! + 1
-  });
-  const loopInvariants: Invariant[] = [
-    {
-      name: 'i-in-range',
-      check: e => e['i']! >= 0 && e['i']! <= e['n']!
-    },
-    {
-      name: 'sum-invariant',
-      check: e => e['sum']! === (e['i']! * (e['i']! + 1)) / 2
-    }
-  ];
-  const loopPost: Assertion[] = [
-    e => e['i'] === e['n'],
-    e => e['sum'] === (e['n']! * (e['n']! + 1)) / 2
-  ];
-  const loopResult = verifier.verifyLoop(loopInit, loopCondition, loopBody, loopInvariants, loopPost);
-  console.log('循环验证结果:', loopResult);
+  const unsorted = [5, 2, 4, 6, 1, 3];
+  console.log('Insertion sort:', verifiedInsertionSort(unsorted));
 
-  // 演示 3：失败的不变量（教学用）
-  console.log('\n--- 故意失败的不变量演示 ---');
-  const badInit: Env = { n: 3, i: 0, sum: 0 };
-  const badInvariants: Invariant[] = [
-    {
-      name: 'wrong-sum',
-      check: e => e['sum'] === e['i'] * e['i'] // 错误的不变量
-    }
-  ];
-  const badResult = verifier.verifyLoop(badInit, loopCondition, loopBody, badInvariants, []);
-  console.log('错误不变量检测结果:', badResult);
+  // Hoare 三元组显式验证
+  const hoare = new HoareLogic<number>();
+  hoare
+    .require('non-negative', x => x >= 0)
+    .ensure('sqrt-approx', (x, out) => Math.abs((out as number) ** 2 - x) < 0.001);
+
+  const sqrtResult = hoare.execute(25, Math.sqrt);
+  console.log('Hoare sqrt(25):', sqrtResult);
 }

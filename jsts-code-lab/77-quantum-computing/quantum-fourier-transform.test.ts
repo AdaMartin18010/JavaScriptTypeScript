@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { buildQFTMatrix, applyQFT, estimatePeriod } from './shor-algorithm.js';
-import { ComplexNumber, QuantumCircuitV2 } from './quantum-simulator.js';
+import { buildQFTMatrix, applyQFT, applyQFTCircuit } from './quantum-fourier-transform.js';
+import { QuantumCircuitV2 } from './quantum-simulator.js';
+import { ComplexNumber } from './quantum-state-vector.js';
 
-describe('Shor Algorithm (QFT)', () => {
-  it('QFT is unitary', () => {
+describe('Quantum Fourier Transform', () => {
+  it('QFT matrix is unitary for n=3', () => {
     const qft = buildQFTMatrix(3);
     const size = qft.length;
     for (let i = 0; i < size; i++) {
@@ -19,7 +20,7 @@ describe('Shor Algorithm (QFT)', () => {
     }
   });
 
-  it('QFT followed by inverse QFT yields identity', () => {
+  it('QFT + IQFT restores original state', () => {
     const circuit = new QuantumCircuitV2(3, 5); // |101⟩
     const clone = circuit.cloneState();
     applyQFT(circuit);
@@ -30,14 +31,14 @@ describe('Shor Algorithm (QFT)', () => {
     }
   });
 
-  it('estimates period correctly for n=4, r=4', () => {
-    // QFT 可能给出周期的约数（如 2），因此允许 2 或 4
-    const result = estimatePeriod(4, 4);
-    expect([2, 4]).toContain(result.estimatedPeriod);
-  });
-
-  it('estimates period correctly for n=4, r=2', () => {
-    const result = estimatePeriod(4, 2);
-    expect(result.estimatedPeriod).toBe(2);
+  it('circuit-level QFT + IQFT restores original state', () => {
+    const circuit = new QuantumCircuitV2(3, 5); // |101⟩
+    const clone = circuit.cloneState();
+    applyQFTCircuit(circuit);
+    applyQFTCircuit(circuit, true);
+    for (let i = 0; i < clone.size; i++) {
+      expect(circuit.stateVector.amplitudes[i].real).toBeCloseTo(clone.amplitudes[i].real, 10);
+      expect(circuit.stateVector.amplitudes[i].imag).toBeCloseTo(clone.amplitudes[i].imag, 10);
+    }
   });
 });
