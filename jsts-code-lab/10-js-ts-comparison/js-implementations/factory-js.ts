@@ -55,15 +55,15 @@ export class VehicleFactoryTS {
   static createVehicle(
     type: 'car' | 'motorcycle' | 'truck',
     brand: string,
-    options: Record<string, any>
+    options: Record<string, unknown>
   ): Vehicle {
     switch (type) {
       case 'car':
-        return new Car(brand, options.seats || 4);
+        return new Car(brand, (options as { seats?: number }).seats || 4);
       case 'motorcycle':
-        return new Motorcycle(brand, options.hasSidecar || false);
+        return new Motorcycle(brand, (options as { hasSidecar?: boolean }).hasSidecar || false);
       case 'truck':
-        return new Truck(brand, options.capacity || 5);
+        return new Truck(brand, (options as { capacity?: number }).capacity || 5);
       default:
         // 编译时错误：非穷尽 switch
         const _exhaustiveCheck: never = type;
@@ -87,48 +87,57 @@ export class VehicleFactoryTS {
 
 // JS Car 类
 class CarJS {
-  constructor(brand, seats) {
+  brand: string;
+  seats: number;
+
+  constructor(brand: string, seats: number) {
     this.brand = brand;
     this.seats = seats;
   }
 
-  drive() {
+  drive(): void {
     console.log(`Driving ${this.brand} car with ${this.seats} seats`);
   }
 
-  getInfo() {
+  getInfo(): string {
     return `Car: ${this.brand}, Seats: ${this.seats}`;
   }
 }
 
 // JS Motorcycle 类
 class MotorcycleJS {
-  constructor(brand, hasSidecar) {
+  brand: string;
+  hasSidecar: boolean;
+
+  constructor(brand: string, hasSidecar: boolean) {
     this.brand = brand;
     this.hasSidecar = hasSidecar;
   }
 
-  drive() {
+  drive(): void {
     console.log(`Riding ${this.brand} motorcycle ${this.hasSidecar ? 'with sidecar' : ''}`);
   }
 
-  getInfo() {
+  getInfo(): string {
     return `Motorcycle: ${this.brand}, Sidecar: ${this.hasSidecar}`;
   }
 }
 
 // JS Truck 类
 class TruckJS {
-  constructor(brand, capacity) {
+  brand: string;
+  capacity: number;
+
+  constructor(brand: string, capacity: number) {
     this.brand = brand;
     this.capacity = capacity;
   }
 
-  drive() {
+  drive(): void {
     console.log(`Driving ${this.brand} truck with ${this.capacity}t capacity`);
   }
 
-  getInfo() {
+  getInfo(): string {
     return `Truck: ${this.brand}, Capacity: ${this.capacity}t`;
   }
 }
@@ -136,13 +145,13 @@ class TruckJS {
 // JS 工厂 - 使用对象映射而非 switch
 export const VehicleFactoryJS = {
   creators: {
-    car: (brand, options) => new CarJS(brand, options.seats || 4),
-    motorcycle: (brand, options) => new MotorcycleJS(brand, options.hasSidecar || false),
-    truck: (brand, options) => new TruckJS(brand, options.capacity || 5)
+    car: (brand: string, options: Record<string, unknown>) => new CarJS(brand, (options as { seats?: number }).seats || 4),
+    motorcycle: (brand: string, options: Record<string, unknown>) => new MotorcycleJS(brand, (options as { hasSidecar?: boolean }).hasSidecar || false),
+    truck: (brand: string, options: Record<string, unknown>) => new TruckJS(brand, (options as { capacity?: number }).capacity || 5)
   },
 
-  createVehicle(type, brand, options = {}) {
-    const creator = this.creators[type];
+  createVehicle(type: string, brand: string, options: Record<string, unknown> = {}): CarJS | MotorcycleJS | TruckJS {
+    const creator = this.creators[type as keyof typeof this.creators];
     if (!creator) {
       throw new Error(`Unknown vehicle type: ${type}`);
     }
@@ -157,7 +166,7 @@ export const VehicleFactoryJS = {
 export class VehicleFactoryJSDefensive {
   static VALID_TYPES = ['car', 'motorcycle', 'truck'];
 
-  static createVehicle(type, brand, options = {}) {
+  static createVehicle(type: string, brand: string, options: Record<string, unknown> = {}): CarJS | MotorcycleJS | TruckJS {
     // 运行时类型检查
     if (typeof type !== 'string') {
       throw new TypeError('Type must be a string');
@@ -186,6 +195,10 @@ export class VehicleFactoryJSDefensive {
       case 'truck': {
         const capacity = typeof safeOptions.capacity === 'number' ? safeOptions.capacity : 5;
         return new TruckJS(brand, capacity);
+      }
+      default: {
+        const _exhaustiveCheck: never = type;
+        throw new Error(`Unknown vehicle type: ${type}`);
       }
     }
   }
@@ -229,27 +242,16 @@ export class VehicleFactoryJSDefensive {
 // ============================================================================
 
 // 需要声明文件来提供类型信息
-declare module 'vehicle-factory-js' {
-  export interface VehicleJS {
-    drive(): void;
-    getInfo(): string;
-  }
-
-  export function createVehicle(
-    type: string,
-    brand: string,
-    options?: Record<string, any>
-  ): VehicleJS;
-}
+// (declare module 块已移除，避免 TS2664)
 
 // 使用示例 (需要类型断言)
 function useJSFactory(): Vehicle {
   // const vehicle = VehicleFactoryJS.createVehicle('car', 'Toyota', { seats: 5 });
-  // 返回类型是 any，需要断言
+  // 返回类型是 unknown，需要断言
   // return vehicle as Vehicle;
   
   // 更好的做法是包装函数
-  return VehicleFactoryJSDefensive.createVehicle('car', 'Toyota', { seats: 5 }) as Vehicle;
+  return VehicleFactoryJSDefensive.createVehicle('car', 'Toyota', { seats: 5 });
 }
 
 // ============================================================================

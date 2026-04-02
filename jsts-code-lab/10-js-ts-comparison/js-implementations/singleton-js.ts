@@ -56,7 +56,17 @@ export class SingletonTS {
  * 3. 运行时可能传入错误类型
  * 4. IDE 无法提供智能提示
  */
-const SingletonJS = {
+type SingletonJSInstance = {
+  data: Map<string, unknown>;
+  set(key: string, value: unknown): void;
+  get(key: string): unknown;
+  has(key: string): boolean;
+};
+
+const SingletonJS: {
+  instance: SingletonJSInstance | null;
+  getInstance(): SingletonJSInstance;
+} = {
   instance: null,
   
   getInstance() {
@@ -64,15 +74,15 @@ const SingletonJS = {
       this.instance = {
         data: new Map(),
         
-        set(key, value) {
+        set(key: string, value: unknown) {
           this.data.set(key, value);
         },
         
-        get(key) {
+        get(key: string) {
           return this.data.get(key);
         },
         
-        has(key) {
+        has(key: string) {
           return this.data.has(key);
         }
       };
@@ -83,7 +93,8 @@ const SingletonJS = {
 
 // JavaScript 类版本 (ES6+)
 class SingletonJSClass {
-  static instance = null;
+  static instance: SingletonJSClass | null = null;
+  data: Map<string, unknown>;
   
   constructor() {
     if (SingletonJSClass.instance) {
@@ -93,11 +104,11 @@ class SingletonJSClass {
     SingletonJSClass.instance = this;
   }
 
-  set(key, value) {
+  set(key: string, value: unknown) {
     this.data.set(key, value);
   }
 
-  get(key) {
+  get(key: string) {
     return this.data.get(key);
   }
 }
@@ -158,28 +169,28 @@ class SingletonJSClass {
 // ============================================================================
 
 export class SingletonJSWithDefense {
-  static instance = null;
-  data = new Map();
+  static instance: SingletonJSWithDefense | null = null;
+  data: Map<string, unknown> = new Map();
 
-  static getInstance() {
+  static getInstance(): SingletonJSWithDefense {
     if (!this.instance) {
       this.instance = new SingletonJSWithDefense();
     }
-    return this.instance;
+    return this.instance!;
   }
 
   /**
    * JavaScript 需要在运行时进行类型检查
    * 增加了代码复杂度，且只在运行时暴露错误
    */
-  set(key, value) {
+  set(key: string, value: unknown) {
     if (typeof key !== 'string') {
       throw new TypeError('Key must be a string');
     }
     this.data.set(key, value);
   }
 
-  get(key) {
+  get(key: string) {
     if (typeof key !== 'string') {
       throw new TypeError('Key must be a string');
     }
@@ -197,19 +208,11 @@ export class SingletonJSWithDefense {
  */
 
 // singleton-js.d.ts (声明文件)
-declare module 'singleton-js' {
-  export interface SingletonJS {
-    set(key: string, value: any): void;
-    get(key: string): any;
-    has(key: string): boolean;
-  }
-  
-  export function getInstance(): SingletonJS;
-}
+// (declare module 块已移除，避免 TS2664)
 
 // 使用方式
 // import { getInstance } from 'singleton-js';
-// const instance: SingletonJS = getInstance();
+// const instance = getInstance();
 
 // ============================================================================
 // 使用示例

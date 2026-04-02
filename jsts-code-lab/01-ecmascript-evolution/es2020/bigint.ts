@@ -52,6 +52,7 @@ console.log('Exponentiation:', a ** 3n); // 1000000n
 
 console.log('10n > 5n:', 10n > 5n); // true
 console.log('10n === 10n:', 10n === 10n); // true
+// @ts-expect-error 演示 BigInt 与 Number 的宽松相等
 console.log('10n == 10:', 10n == 10); // true (宽松相等)
 // console.log(10n === 10); // false (严格不相等，类型不同)
 
@@ -70,7 +71,7 @@ const data = { bigValue: 100n };
 // JSON.stringify(data); // ❌ TypeError
 
 /** 自定义 JSON 处理 */
-const json = JSON.stringify(data, (key, value) =>
+const json = JSON.stringify(data, (_key, value) =>
   typeof value === 'bigint' ? value.toString() + 'n' : value
 );
 console.log(json);

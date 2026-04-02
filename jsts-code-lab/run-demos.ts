@@ -57,11 +57,7 @@ const DEMO_MODULES = {
 
   'algorithms': async () => {
     console.log('\n🔍 算法\n');
-    const sorting = await import('./05-algorithms/sorting/sort-algorithms.js');
-    sorting.demo?.();
     
-    const searching = await import('./05-algorithms/searching/search-algorithms.js');
-    searching.demo?.();
   },
 
   'architecture-patterns': async () => {
@@ -135,186 +131,184 @@ const DEMO_MODULES = {
 
   'frontend-frameworks': async () => {
     console.log('\n⚛️ 前端框架\n');
-    const react = await import('./18-frontend-frameworks/react-patterns.tsx');
-    react.demo?.();
     
-    const router = await import('./18-frontend-frameworks/router-implementation.ts');
+    const router = await import('./18-frontend-frameworks/router-implementation.js');
     router.demo?.();
     
-    const state = await import('./18-frontend-frameworks/state-management.ts');
+    const state = await import('./18-frontend-frameworks/state-management.js');
     await state.demo?.();
   },
 
   'backend-development': async () => {
     console.log('\n🖥️ 后端开发\n');
-    const express = await import('./19-backend-development/express-patterns.ts');
+    const express = await import('./19-backend-development/express-patterns.js');
     express.demo?.();
     
-    const api = await import('./19-backend-development/api-design.ts');
+    const api = await import('./19-backend-development/api-design.js');
     api.demo?.();
     
-    const ws = await import('./19-backend-development/websocket-patterns.ts');
+    const ws = await import('./19-backend-development/websocket-patterns.js');
     ws.demo?.();
   },
 
   'database-orm': async () => {
     console.log('\n💾 数据库 ORM\n');
-    const prisma = await import('./20-database-orm/prisma-patterns.ts');
+    const prisma = await import('./20-database-orm/prisma-patterns.js');
     await prisma.demo?.();
     
-    const queryBuilder = await import('./20-database-orm/sql-query-builder.ts');
+    const queryBuilder = await import('./20-database-orm/sql-query-builder.js');
     queryBuilder.demo?.();
     
-    const migration = await import('./20-database-orm/migration-system.ts');
+    const migration = await import('./20-database-orm/migration-system.js');
     await migration.demo?.();
     
-    const pool = await import('./20-database-orm/connection-pool.ts');
+    const pool = await import('./20-database-orm/connection-pool.js');
     await pool.demo?.();
   },
 
   'api-security': async () => {
     console.log('\n🔒 API 安全\n');
-    const jwt = await import('./21-api-security/jwt-auth.ts');
+    const jwt = await import('./21-api-security/jwt-auth.js');
     jwt.demo?.();
     
-    const rateLimiter = await import('./21-api-security/rate-limiter.ts');
+    const rateLimiter = await import('./21-api-security/rate-limiter.js');
     rateLimiter.demo?.();
     
-    const corsCsrf = await import('./21-api-security/cors-csrf.ts');
+    const corsCsrf = await import('./21-api-security/cors-csrf.js');
     corsCsrf.demo?.();
   },
 
   'deployment-devops': async () => {
     console.log('\n🐳 部署与 DevOps\n');
-    const docker = await import('./22-deployment-devops/docker-config.ts');
+    const docker = await import('./22-deployment-devops/docker-config.js');
     docker.demo?.();
     
-    const cicd = await import('./22-deployment-devops/cicd-pipeline.ts');
+    const cicd = await import('./22-deployment-devops/cicd-pipeline.js');
     cicd.demo?.();
   },
 
   'toolchain-configuration': async () => {
     console.log('\n⚙️ 工具链配置\n');
-    const vite = await import('./23-toolchain-configuration/vite-config.ts');
+    const vite = await import('./23-toolchain-configuration/vite-config.js');
     vite.demo?.();
     
-    const linting = await import('./23-toolchain-configuration/eslint-prettier.ts');
+    const linting = await import('./23-toolchain-configuration/eslint-prettier.js');
     linting.demo?.();
   },
 
   'graphql': async () => {
     console.log('\n🔍 GraphQL\n');
-    const graphql = await import('./24-graphql/schema-builder.ts');
+    const graphql = await import('./24-graphql/schema-builder.js');
     await graphql.demo?.();
   },
 
   'microservices': async () => {
     console.log('\n🔗 微服务\n');
-    const microservices = await import('./25-microservices/service-mesh.ts');
+    const microservices = await import('./25-microservices/service-mesh.js');
     microservices.demo?.();
   },
 
   'event-sourcing': async () => {
     console.log('\n📜 事件溯源\n');
-    const eventSourcing = await import('./26-event-sourcing/event-store.ts');
+    const eventSourcing = await import('./26-event-sourcing/event-store.js');
     await eventSourcing.demo?.();
   },
 
   'internationalization': async () => {
     console.log('\n🌍 国际化\n');
-    const i18n = await import('./27-internationalization/i18n-system.ts');
+    const i18n = await import('./27-internationalization/i18n-system.js');
     i18n.demo?.();
   },
 
   'advanced-testing': async () => {
     console.log('\n🧪 高级测试\n');
-    const e2e = await import('./28-testing-advanced/e2e-testing.ts');
+    const e2e = await import('./28-testing-advanced/e2e-testing.js');
     await e2e.demo?.();
   },
 
   'documentation': async () => {
     console.log('\n📚 文档生成\n');
-    const docs = await import('./29-documentation/api-docs-generator.ts');
+    const docs = await import('./29-documentation/api-docs-generator.js');
     docs.demo?.();
   },
 
   'real-time-communication': async () => {
     console.log('\n📡 实时通信\n');
-    const rtc = await import('./30-real-time-communication/sse-webrtc.ts');
+    const rtc = await import('./30-real-time-communication/sse-webrtc.js');
     rtc.demo?.();
   },
 
   'serverless': async () => {
     console.log('\n⚡ 无服务器架构\n');
-    const serverless = await import('./31-serverless/serverless-patterns.ts');
+    const serverless = await import('./31-serverless/serverless-patterns.js');
     await serverless.demo?.();
   },
 
   'edge-computing': async () => {
     console.log('\n🌐 边缘计算\n');
-    const edge = await import('./32-edge-computing/edge-runtime.ts');
+    const edge = await import('./32-edge-computing/edge-runtime.js');
     await edge.demo?.();
   },
 
   'ai-integration': async () => {
     console.log('\n🤖 AI 集成\n');
-    const ai = await import('./33-ai-integration/ai-sdk-patterns.ts');
+    const ai = await import('./33-ai-integration/ai-sdk-patterns.js');
     await ai.demo?.();
   },
 
   'blockchain-web3': async () => {
     console.log('\n⛓️ Web3/区块链\n');
-    const web3 = await import('./34-blockchain-web3/web3-patterns.ts');
+    const web3 = await import('./34-blockchain-web3/web3-patterns.js');
     await web3.demo?.();
   },
 
   'accessibility': async () => {
     console.log('\n♿ 无障碍访问\n');
-    const a11y = await import('./35-accessibility-a11y/a11y-utils.ts');
+    const a11y = await import('./35-accessibility-a11y/a11y-utils.js');
     a11y.demo?.();
   },
 
   'web-assembly': async () => {
     console.log('\n⚙️ WebAssembly\n');
-    const wasm = await import('./36-web-assembly/wasm-integration.ts');
+    const wasm = await import('./36-web-assembly/wasm-integration.js');
     wasm.demo?.();
   },
 
   'pwa': async () => {
     console.log('\n📱 PWA\n');
-    const pwa = await import('./37-pwa/pwa-patterns.ts');
+    const pwa = await import('./37-pwa/pwa-patterns.js');
     await pwa.demo?.();
   },
 
   'web-security': async () => {
     console.log('\n🔐 Web 安全\n');
-    const security = await import('./38-web-security/xss-csp.ts');
+    const security = await import('./38-web-security/xss-csp.js');
     security.demo?.();
   },
 
   'performance-monitoring': async () => {
     console.log('\n📊 性能监控\n');
-    const perf = await import('./39-performance-monitoring/core-web-vitals.ts');
+    const perf = await import('./39-performance-monitoring/core-web-vitals.js');
     perf.demo?.();
   },
 
   'browser-runtime': async () => {
     console.log('\n🖥️ 浏览器运行时\n');
-    const rendering = await import('./50-browser-runtime/rendering-pipeline.ts');
+    const rendering = await import('./50-browser-runtime/rendering-pipeline.js');
     rendering.demo?.();
-    const eventLoop = await import('./50-browser-runtime/event-loop-architecture.ts');
+    const eventLoop = await import('./50-browser-runtime/event-loop-architecture.js');
     eventLoop.demo?.();
   },
 
   'ui-components': async () => {
     console.log('\n🧩 AI驱动UI组件\n');
-    const ui = await import('./51-ui-components/ai-component-system.ts');
+    const ui = await import('./51-ui-components/ai-component-system.js');
     await ui.demo?.();
   },
 
   'intelligent-performance': async () => {
     console.log('\n⚡ 智能性能优化\n');
-    const perf = await import('./54-intelligent-performance/ai-performance-optimizer.ts');
+    const perf = await import('./54-intelligent-performance/ai-performance-optimizer.js');
     perf.demo?.();
   },
 

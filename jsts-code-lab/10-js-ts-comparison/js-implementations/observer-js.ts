@@ -17,7 +17,7 @@
 
 // 事件映射接口
 type EventMap = {
-  [event: string]: any;
+  [event: string]: unknown;
 };
 
 // 类型安全的事件监听器
@@ -117,11 +117,13 @@ export const userEventBus = new TypedEventEmitter<UserEvents>();
  * 4. IDE 无法提供自动补全
  */
 class EventEmitterJS {
+  private listeners: Record<string, ((data: unknown) => void)[]>;
+
   constructor() {
     this.listeners = {};
   }
 
-  on(event, listener) {
+  on(event: string, listener: (data: unknown) => void): () => void {
     if (!this.listeners[event]) {
       this.listeners[event] = [];
     }
@@ -130,7 +132,7 @@ class EventEmitterJS {
     return () => this.off(event, listener);
   }
 
-  off(event, listener) {
+  off(event: string, listener: (data: unknown) => void): void {
     const listeners = this.listeners[event];
     if (listeners) {
       const index = listeners.indexOf(listener);
@@ -140,15 +142,15 @@ class EventEmitterJS {
     }
   }
 
-  emit(event, data) {
+  emit(event: string, data: unknown): void {
     const listeners = this.listeners[event];
     if (listeners) {
       listeners.forEach(listener => listener(data));
     }
   }
 
-  once(event, listener) {
-    const onceWrapper = (data) => {
+  once(event: string, listener: (data: unknown) => void): void {
+    const onceWrapper = (data: unknown) => {
       this.off(event, onceWrapper);
       listener(data);
     };
@@ -161,17 +163,20 @@ class EventEmitterJS {
 // ============================================================================
 
 class EventEmitterJSDefensive {
+  private listeners: Map<string, ((data: unknown) => void)[]>;
+  private validEvents: Set<string>;
+
   constructor() {
     this.listeners = new Map();
     this.validEvents = new Set();
   }
 
   // 注册有效事件名
-  registerEvent(eventName) {
+  registerEvent(eventName: string): void {
     this.validEvents.add(eventName);
   }
 
-  on(event, listener) {
+  on(event: string, listener: (data: unknown) => void): () => void {
     // 运行时检查事件名
     if (!this.validEvents.has(event)) {
       console.warn(`Warning: Event "${event}" is not registered`);
@@ -184,12 +189,22 @@ class EventEmitterJSDefensive {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);
     }
-    this.listeners.get(event).push(listener);
+    this.listeners.get(event)!.push(listener);
 
     return () => this.off(event, listener);
   }
 
-  emit(event, data) {
+  off(event: string, listener: (data: unknown) => void): void {
+    const listeners = this.listeners.get(event);
+    if (listeners) {
+      const index = listeners.indexOf(listener);
+      if (index > -1) {
+        listeners.splice(index, 1);
+      }
+    }
+  }
+
+  emit(event: string, data: unknown): void {
     if (!this.validEvents.has(event)) {
       console.warn(`Warning: Emitting unregistered event "${event}"`);
     }
@@ -207,7 +222,7 @@ class EventEmitterJSDefensive {
   }
 
   // 数据验证
-  emitWithValidation(event, data, validator) {
+  emitWithValidation(event: string, data: unknown, validator?: (data: unknown) => boolean): void {
     if (validator && !validator(data)) {
       throw new TypeError(`Invalid data for event "${event}"`);
     }
