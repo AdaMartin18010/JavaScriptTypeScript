@@ -2,31 +2,49 @@
  * @file 验证框架
  * @category Formal Verification → Framework
  * @difficulty hard
- * @tags formal-verification, type-proofs, invariants, model-checking
+ * @description
+ * 提供不变量检查器、模型检测器、类型级证明辅助与合约编程运行时验证。
+ * 用于教学演示形式化验证的核心概念在 TypeScript 中的简化实现。
+ *
+ * @theoretical_basis
+ * - **不变量 (Invariant)**: 源自 Floyd-Hoare 验证理论，程序执行过程中始终保持的断言。
+ * - **模型检测 (Model Checking)**: Clarke, Emerson 与 Queille, Sifakis 提出的自动验证技术，
+ *   通过遍历状态空间验证安全性 (Safety) 与活性 (Liveness) 性质。
+ * - **合约编程 (Design by Contract)**: Meyer 提出的 Eiffel 语言概念，通过前置条件 (Precondition)、
+ *   后置条件 (Postcondition) 与不变量约束组件行为。
+ * - **类型即证明 (Curry-Howard 同构)**: 利用 TypeScript 的类型系统模拟轻量级证明，
+ *   `Proved<T>` 类型标记表示该值已通过运行时验证。
+ *
+ * @complexity_analysis
+ * - `InvariantChecker.check`: O(n) 其中 n 为不变量数量，每个不变量对状态求值一次。
+ * - `ModelChecker.checkReachability`: O(b^d) 最坏情况，b 为分支因子（动作数量），d 为最大深度。
+ * - `ModelChecker.checkSafety`: O(b^d) 广度优先遍历状态空间。
+ * - `ModelChecker.checkLiveness`: O(b^d * d) 需维护每条路径的访问集合以检测循环。
+ * - `ContractEnforcer.enforce`: O(p + q) 其中 p 为前置条件数量，q 为后置条件数量。
  */
 
 // 不变量检查器
 export class InvariantChecker<T> {
   private invariants: Array<{ name: string; check: (state: T) => boolean }> = [];
   private violations: string[] = [];
-  
+
   addInvariant(name: string, check: (state: T) => boolean): void {
     this.invariants.push({ name, check });
   }
-  
+
   check(state: T): boolean {
     this.violations = [];
-    
+
     for (const invariant of this.invariants) {
       if (!invariant.check(state)) {
         this.violations.push(invariant.name);
         console.error(`[Invariant] Violation: ${invariant.name}`);
       }
     }
-    
+
     return this.violations.length === 0;
   }
-  
+
   getViolations(): string[] {
     return [...this.violations];
   }
@@ -43,22 +61,22 @@ export interface StateMachine<S, A> {
 export class ModelChecker<S, A> {
   private visited = new Set<string>();
   private counterexamples: Array<{ path: A[]; property: string }> = [];
-  
+
   constructor(private machine: StateMachine<S, A>) {}
-  
+
   // 检查可达性
   checkReachability(target: S, maxDepth: number = 10): { reachable: boolean; path?: A[] } {
     const queue: Array<{ state: S; path: A[] }> = [{ state: this.machine.initial, path: [] }];
-    
+
     while (queue.length > 0) {
       const { state, path } = queue.shift()!;
-      
+
       if (this.stateEquals(state, target)) {
         return { reachable: true, path };
       }
-      
+
       if (path.length >= maxDepth) continue;
-      
+
       for (const action of this.machine.actions) {
         const next = this.machine.transition(state, action);
         if (next && !this.isVisited(next, path)) {
@@ -66,23 +84,23 @@ export class ModelChecker<S, A> {
         }
       }
     }
-    
+
     return { reachable: false };
   }
-  
+
   // 检查安全性 (Safety): 不该发生的事情永远不会发生
   checkSafety(property: (state: S) => boolean, maxDepth: number = 10): { holds: boolean; counterexample?: A[] } {
     const queue: Array<{ state: S; path: A[] }> = [{ state: this.machine.initial, path: [] }];
-    
+
     while (queue.length > 0) {
       const { state, path } = queue.shift()!;
-      
+
       if (!property(state)) {
         return { holds: false, counterexample: path };
       }
-      
+
       if (path.length >= maxDepth) continue;
-      
+
       for (const action of this.machine.actions) {
         const next = this.machine.transition(state, action);
         if (next) {
@@ -90,10 +108,10 @@ export class ModelChecker<S, A> {
         }
       }
     }
-    
+
     return { holds: true };
   }
-  
+
   // 检查活性 (Liveness): 该发生的事情最终会发生
   checkLiveness(
     targetProperty: (state: S) => boolean,
@@ -105,27 +123,27 @@ export class ModelChecker<S, A> {
       path: [],
       visited: new Set()
     }];
-    
+
     while (queue.length > 0) {
       const { state, path, visited } = queue.shift()!;
-      
+
       if (targetProperty(state)) {
         continue; // 这条路径满足
       }
-      
+
       if (path.length >= maxDepth) {
         return { holds: false, counterexample: path };
       }
-      
+
       const stateKey = JSON.stringify(state);
       if (visited.has(stateKey)) {
         // 循环但没有达到目标
         return { holds: false, counterexample: path };
       }
-      
+
       const newVisited = new Set(visited);
       newVisited.add(stateKey);
-      
+
       for (const action of this.machine.actions) {
         const next = this.machine.transition(state, action);
         if (next) {
@@ -133,14 +151,14 @@ export class ModelChecker<S, A> {
         }
       }
     }
-    
+
     return { holds: true };
   }
-  
+
   private stateEquals(a: S, b: S): boolean {
     return JSON.stringify(a) === JSON.stringify(b);
   }
-  
+
   private isVisited(state: S, path: A[]): boolean {
     const key = JSON.stringify({ state, pathLength: path.length });
     if (this.visited.has(key)) return true;
@@ -173,31 +191,31 @@ export interface Contract<T> {
 
 export class ContractEnforcer {
   private contracts = new Map<string, Contract<unknown>>();
-  
+
   register<T>(fnName: string, contract: Contract<T>): void {
     this.contracts.set(fnName, contract as Contract<unknown>);
   }
-  
+
   enforce<T, R>(fnName: string, fn: (input: T) => R, input: T): R {
     const contract = this.contracts.get(fnName);
     if (!contract) return fn(input);
-    
+
     // 检查前置条件
     for (const pre of contract.preconditions) {
       if (!pre(input)) {
         throw new Error(`Precondition violation in ${fnName}`);
       }
     }
-    
+
     const result = fn(input);
-    
+
     // 检查后置条件
     for (const post of contract.postconditions) {
       if (!post(input, result)) {
         throw new Error(`Postcondition violation in ${fnName}`);
       }
     }
-    
+
     return result;
   }
 }
@@ -210,30 +228,30 @@ interface BankAccount {
 
 export function demo(): void {
   console.log('=== 形式化验证 ===\n');
-  
+
   // 不变量检查示例
   console.log('--- 不变量检查 ---');
   const accountChecker = new InvariantChecker<BankAccount>();
-  
+
   accountChecker.addInvariant('balance-non-negative', acc => acc.balance >= 0);
-  accountChecker.addInvariant('frozen-accounts-cannot-have-negative-balance', acc => 
+  accountChecker.addInvariant('frozen-accounts-cannot-have-negative-balance', acc =>
     !(acc.frozen && acc.balance < 0)
   );
-  
+
   const validAccount: BankAccount = { balance: 100, frozen: false };
   const invalidAccount: BankAccount = { balance: -50, frozen: true };
-  
+
   console.log('有效账户检查:', accountChecker.check(validAccount));
   console.log('无效账户检查:', accountChecker.check(invalidAccount));
   console.log('违规项:', accountChecker.getViolations());
-  
+
   // 状态机模型检测
   console.log('\n--- 模型检测 ---');
-  
+
   // 定义一个简单的交通灯状态机
   type TrafficLightState = 'red' | 'green' | 'yellow';
   type TrafficLightAction = 'timer';
-  
+
   const trafficLight: StateMachine<TrafficLightState, TrafficLightAction> = {
     initial: 'red',
     states: ['red', 'green', 'yellow'],
@@ -249,13 +267,13 @@ export function demo(): void {
       return null;
     }
   };
-  
+
   const checker = new ModelChecker(trafficLight);
-  
+
   // 检查是否可以从red到达green
   const reachability = checker.checkReachability('green', 5);
   console.log('能否到达绿灯:', reachability.reachable, '路径:', reachability.path);
-  
+
   // 安全性检查：永远不会同时是红灯和绿灯
   const safety = checker.checkSafety(
     // @ts-expect-error 演示不相等比较
@@ -263,15 +281,15 @@ export function demo(): void {
     10
   );
   console.log('安全性检查通过:', safety.holds);
-  
+
   // 活性检查：最终一定会变绿灯
   const liveness = checker.checkLiveness(state => state === 'green', 10);
   console.log('活性检查通过:', liveness.holds);
-  
+
   // 合约编程
   console.log('\n--- 合约编程 ---');
   const contractSystem = new ContractEnforcer();
-  
+
   contractSystem.register<number>('sqrt', {
     preconditions: [
       x => x >= 0 // 平方根的前提：输入必须非负
@@ -280,11 +298,11 @@ export function demo(): void {
       (x, result) => Math.abs((result as number) ** 2 - x) < 0.0001 // 结果的平方应该接近原数
     ]
   });
-  
+
   try {
     const result = contractSystem.enforce('sqrt', Math.sqrt, 16);
     console.log('sqrt(16) =', result);
-    
+
     // 这会触发前置条件违规
     // contractSystem.enforce('sqrt', Math.sqrt, -4);
   } catch (e) {

@@ -3,6 +3,31 @@
  * @category Consensus → Raft
  * @difficulty hard
  * @tags raft, consensus, leader-election, log-replication
+ * @description
+ * Raft 将一致性分解为三个子问题：领导者选举、日志复制、安全性。
+ * 通过强领导人模型简化 Paxos 的难以理解性，是工程实践中使用最广泛的一致性算法之一。
+ *
+ * @complexity_analysis
+ * - 时间复杂度：
+ *   - 领导者选举：O(n)，候选者需向所有节点发送 RequestVote 并收集响应
+ *   - 日志复制：O(n) 每批次，领导者需将日志条目并发发送给所有跟随者
+ *   - 提交确认：O(1) 领导者本地计数，无需额外通信
+ * - 空间复杂度：
+ *   - 每个节点 O(L)，其中 L 为日志总长度
+ *   - 领导者额外维护 nextIndex 与 matchIndex，空间 O(n)
+ *
+ * 安全性证明概要（Safety Proof Sketch）：
+ * 1. 选举安全性（Election Safety）：任意任期内至多只有一个领导者。
+ *    证明：候选人需获得多数派（strict majority）投票；根据鸽巢原理，
+ *    两个不同候选人不可能在同一任期同时获得互不相交的多数派集合。
+ * 2. 领导人完备性（Leader Completeness）：若某日志条目在任期 T 被提交，
+ *    则后续任期的领导者必然包含该条目。
+ *    证明：提交意味着已复制到多数派；新领导者必须获得多数派投票，
+ *    因此至少会与一个已包含该条目的节点通信，并在投票比较时采纳更完整的日志。
+ * 3. 状态机安全性（State Machine Safety）：若某节点将日志条目应用于状态机，
+ *    则其他任何节点不会在同一索引处应用不同的命令。
+ *    证明：领导者确保其日志是最新的；跟随者无条件复制领导者日志；
+ *    提交条件要求该条目及之前所有条目已复制到多数派，因此索引-任期二元组唯一确定命令。
  */
 
 export type NodeState = 'follower' | 'candidate' | 'leader';
