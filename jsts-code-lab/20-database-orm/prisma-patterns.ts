@@ -148,8 +148,9 @@ export class UserRepository implements Repository<User, CreateUserInput, UpdateU
   }
 
   private matchWhere(user: User, where: Partial<User>): boolean {
+    const userRecord = user as Record<string, unknown>;
     for (const [key, value] of Object.entries(where)) {
-      if ((user as any)[key] !== value) return false;
+      if (userRecord[key] !== value) return false;
     }
     return true;
   }
@@ -358,14 +359,4 @@ export async function demo(): Promise<void> {
 
 // Classes already exported inline above
 
-export type {
-  User,
-  Post,
-  Profile,
-  Category,
-  Repository,
-  QueryOptions,
-  PaginationResult,
-  CreateUserInput,
-  UpdateUserInput
-};
+export type { User, Post, Profile, Category, QueryOptions, CreateUserInput, UpdateUserInput };;

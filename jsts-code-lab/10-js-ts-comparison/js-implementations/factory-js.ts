@@ -310,15 +310,7 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  Car,
-  Motorcycle,
-  Truck,
-  VehicleFactoryTS,
-  VehicleFactoryJS,
-  VehicleFactoryJSDefensive,
-  useJSFactory
-};
+export { Car, Motorcycle, Truck, useJSFactory };;
 
 export type {
   Vehicle

@@ -329,12 +329,7 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  TypedEventEmitter,
-  EventEmitterJS,
-  EventEmitterJSDefensive,
-  userEventBus
-};
+export { EventEmitterJS, EventEmitterJSDefensive };;
 
 export type {
   EventMap,

@@ -818,8 +818,4 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export type { 
-  ARIAAttributes, 
-  KeyboardNavigationOptions, 
-  RGBColor 
-};
+;

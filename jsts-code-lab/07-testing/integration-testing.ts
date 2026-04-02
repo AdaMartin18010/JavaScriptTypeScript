@@ -341,17 +341,6 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export {
-  DatabaseTestEnvironment,
-  MockDatabaseConnection,
-  MockApiTestClient,
-  IntegrationTestRunner,
-  UserFlowTester
-};
+;
 
-export type {
-  TestEnvironment,
-  ApiTestClient,
-  IntegrationTestSuite,
-  UserFlow
-};
+;

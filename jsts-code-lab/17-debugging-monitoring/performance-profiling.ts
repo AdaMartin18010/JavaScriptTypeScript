@@ -12,6 +12,21 @@
  * - 实时监控
  */
 
+interface MemoryInfo {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+}
+
+declare global {
+  interface PerformanceObserverInit {
+    entryTypes?: string[];
+  }
+  interface Performance {
+    memory?: MemoryInfo;
+  }
+}
+
 // ============================================================================
 // 1. 性能指标采集器
 // ============================================================================
@@ -65,12 +80,12 @@ export class PerformanceMonitor {
             this.metrics.fcp = entry.startTime;
           }
           if (entry.entryType === 'largest-contentful-paint') {
-            this.metrics.lcp = (entry as any).startTime;
+            this.metrics.lcp = entry.startTime;
           }
         }
       });
       
-      observer.observe({ entryTypes: ['paint', 'largest-contentful-paint'] as any });
+      observer.observe({ entryTypes: ['paint', 'largest-contentful-paint'] });
       this.observers.push(() => observer.disconnect());
     }
   }
@@ -97,12 +112,14 @@ export class PerformanceMonitor {
   // 观察内存
   private observeMemory(): void {
     if ('memory' in performance) {
-      const memory = (performance as any).memory;
-      this.metrics.memory = {
-        usedJSHeapSize: memory.usedJSHeapSize,
-        totalJSHeapSize: memory.totalJSHeapSize,
-        jsHeapSizeLimit: memory.jsHeapSizeLimit
-      };
+      const memory = performance.memory;
+      if (memory) {
+        this.metrics.memory = {
+          usedJSHeapSize: memory.usedJSHeapSize,
+          totalJSHeapSize: memory.totalJSHeapSize,
+          jsHeapSizeLimit: memory.jsHeapSizeLimit
+        };
+      }
     }
   }
 
@@ -184,9 +201,11 @@ export class MemoryProfiler {
     };
 
     if ('memory' in performance) {
-      const memory = (performance as any).memory;
-      snapshot.used = memory.usedJSHeapSize;
-      snapshot.total = memory.totalJSHeapSize;
+      const memory = performance.memory;
+      if (memory) {
+        snapshot.used = memory.usedJSHeapSize;
+        snapshot.total = memory.totalJSHeapSize;
+      }
     }
 
     this.snapshots.push(snapshot);
@@ -382,14 +401,6 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  PerformanceMonitor,
-  MemoryProfiler,
-  CodeProfiler
-};
+;
 
-export type {
-  PerformanceMetrics,
-  MemorySnapshot,
-  FunctionProfile
-};
+;

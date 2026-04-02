@@ -438,21 +438,6 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export {
-  ErrorCategory,
-  createError,
-  withRetry,
-  CircuitBreaker,
-  ErrorBoundary,
-  Logger,
-  LogLevel,
-  consoleHandler
-};
+export { withRetry };;
 
-export type {
-  AppError,
-  RetryConfig,
-  CircuitBreakerConfig,
-  ErrorBoundaryFallback,
-  LogEntry
-};
+;

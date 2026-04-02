@@ -320,17 +320,7 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  processJSData,
-  processJSDataSafe,
-  isUser,
-  greetUser,
-  formatProductJS,
-  formatProductTS,
-  ObjectValidator,
-  userValidator,
-  processUser
-};
+export { processJSData, processJSDataSafe, isUser, greetUser, formatProductJS, formatProductTS, userValidator, processUser };;
 
 export type {
   User,

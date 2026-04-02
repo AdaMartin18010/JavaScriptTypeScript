@@ -193,8 +193,7 @@ export {
   getDatabase,
   Singleton,
   Logger,
-  TestableSingleton,
-  config
+  TestableSingleton
 };
 // ============================================================================
 // Demo 函数

@@ -426,19 +426,6 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  Observable,
-  createSignal,
-  createComputed,
-  createEffect,
-  DataFlowGraph,
-  StateMachine
-};
+;
 
-export type {
-  Observer,
-  TeardownLogic,
-  Signal,
-  DataNode,
-  StateTransition
-};
+export type { StateTransition };;

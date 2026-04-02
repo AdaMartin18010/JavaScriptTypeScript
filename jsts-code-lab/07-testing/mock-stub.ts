@@ -472,23 +472,6 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export {
-  FakeUserRepository,
-  FakeEmailService,
-  StubPaymentGateway,
-  StubHttpClient,
-  SpyLogger,
-  createSpy,
-  MockObject,
-  DummyUser,
-  processOrder
-};
+;
 
-export type {
-  UserRepository,
-  User,
-  EmailService,
-  PaymentResult,
-  MockExpectation,
-  SpyFunction
-};
+;

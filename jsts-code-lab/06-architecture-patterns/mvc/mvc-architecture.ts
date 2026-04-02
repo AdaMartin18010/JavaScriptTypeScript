@@ -248,8 +248,4 @@ export function demo(): void {
   controller.handleShowAll();
 }
 
-// ============================================================================
-// 导出
-// ============================================================================
-
-export { TaskModel, ConsoleTaskView, TaskController };
+// (已在上文使用 export class / export interface 直接导出，此处无需重复导出)

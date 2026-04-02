@@ -13,6 +13,25 @@
  * - 后台同步
  */
 
+declare global {
+  interface NetworkInformation {
+    effectiveType?: string;
+    downlink?: number;
+    rtt?: number;
+    saveData?: boolean;
+  }
+  interface Navigator {
+    connection?: NetworkInformation;
+    mozConnection?: NetworkInformation;
+    webkitConnection?: NetworkInformation;
+  }
+  interface ServiceWorkerRegistration {
+    sync?: {
+      register(tag: string): Promise<void>;
+    };
+  }
+}
+
 // ============================================================================
 // 1. Service Worker 管理
 // ============================================================================
@@ -463,9 +482,9 @@ export class OfflineManager {
     rtt: number;
     saveData: boolean;
   }> {
-    const connection = (navigator as any).connection ||
-                      (navigator as any).mozConnection ||
-                      (navigator as any).webkitConnection;
+    const connection = navigator.connection ||
+                      navigator.mozConnection ||
+                      navigator.webkitConnection;
 
     if (connection) {
       return {
@@ -670,7 +689,10 @@ export class BackgroundSyncManager {
     const registration = await navigator.serviceWorker.ready;
     
     try {
-      await (registration as any).sync.register(tag);
+      if (!registration.sync) {
+        throw new Error('Background sync not supported');
+      }
+      await registration.sync.register(tag);
       console.log('[Sync] Registered:', tag);
     } catch (error) {
       console.error('[Sync] Registration failed:', error);
@@ -857,12 +879,4 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export type { 
-  ServiceWorkerConfig, 
-  ServiceWorkerState, 
-  CacheStrategy, 
-  CacheConfig, 
-  OfflineConfig, 
-  PushNotificationOptions, 
-  SyncTask 
-};
+;

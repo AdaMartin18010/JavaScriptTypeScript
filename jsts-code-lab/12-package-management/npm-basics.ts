@@ -457,17 +457,6 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  SemVer,
-  DependencyManager,
-  PackagePublisher,
-  NPM_LIFECYCLE
-};
+;
 
-export type {
-  PackageJson,
-  PackageExports,
-  ExportConditions,
-  DependencyAnalysis,
-  PublishOptions
-};
+;

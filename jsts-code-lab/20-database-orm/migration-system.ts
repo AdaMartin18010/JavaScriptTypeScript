@@ -252,7 +252,7 @@ export class MigrationRunner {
   }
 
   private generateMigrationTemplate(id: string, name: string): string {
-    return `import { Migration } from './migration-system';
+    return `import { Migration } from './migration-system.js';
 
 export const ${this.slugify(name)}: Migration = {
   id: '${id}',
@@ -408,9 +408,4 @@ export async function demo(): Promise<void> {
 // 导出 (已在上面导出)
 // ============================================================================
 
-export type {
-  Migration,
-  MigrationRecord,
-  MigrationStatus,
-  MigrationStorage
-};
+;

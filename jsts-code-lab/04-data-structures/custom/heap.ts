@@ -75,9 +75,10 @@ export class MinHeap<T> {
   }
 
   // 插入元素
-  insert(value: T): void {
+  insert(value: T): this {
     this.heap.push(value);
     this.heapifyUp(this.heap.length - 1);
+    return this;
   }
 
   // 移除并返回最小元素
@@ -191,9 +192,10 @@ export class MaxHeap<T> {
     }
   }
 
-  insert(value: T): void {
+  insert(value: T): this {
     this.heap.push(value);
     this.heapifyUp(this.heap.length - 1);
+    return this;
   }
 
   extractMax(): T | undefined {
@@ -267,7 +269,7 @@ export function findKthLargest<T>(arr: T[], k: number, compare?: (a: T, b: T) =>
 // 导出
 // ============================================================================
 
-export { MinHeap as default };
+;
 
 // ============================================================================
 // Demo 函数

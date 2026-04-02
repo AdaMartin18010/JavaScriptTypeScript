@@ -415,4 +415,4 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export type { ChatMessage, LLMRequest, FunctionDefinition, LLMResponse, Document, AgentTool };
+;

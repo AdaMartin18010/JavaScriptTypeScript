@@ -462,18 +462,6 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  WorkspaceDependencyGraph,
-  ChangesetManager,
-  TaskRunner
-};
+;
 
-export type {
-  PnpmWorkspaceConfig,
-  WorkspaceConfig,
-  WorkspacePackage,
-  DependencyGraph,
-  Changeset,
-  ChangeType,
-  Task
-};
+;

@@ -450,24 +450,6 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export {
-  BasePage,
-  LoginPage,
-  ProductListPage,
-  MockPage,
-  MockElement,
-  VisualRegressionTester,
-  CrossBrowserTester,
-  E2ETestRunner
-};
+export { BasePage, MockElement };;
 
-export type {
-  Page,
-  ElementHandle,
-  ScreenshotOptions,
-  ComparisonResult,
-  BrowserType,
-  BrowserCapabilities,
-  E2EScenario,
-  TestContext
-};
+;

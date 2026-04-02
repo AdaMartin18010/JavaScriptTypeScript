@@ -160,7 +160,11 @@ const value4 = undefined ?? 'default'; // 'default'
 /** any: 关闭类型检查 (避免使用) */
 let anything: any = 4;
 anything = 'string';
-anything.toFixed(); // 编译通过，但可能运行时错误
+try {
+  anything.toFixed(); // 编译通过，但可能运行时错误
+} catch {
+  // 故意演示 any 的运行时风险
+}
 
 /** unknown: 类型安全的 any */
 let unknownValue: unknown = 4;

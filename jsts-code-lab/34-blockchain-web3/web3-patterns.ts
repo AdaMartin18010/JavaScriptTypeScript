@@ -778,15 +778,4 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export type { 
-  WalletAccount, 
-  WalletConnection, 
-  EIP1193Provider, 
-  ContractConfig, 
-  ContractABI, 
-  TransactionReceipt, 
-  EventLog, 
-  Transaction, 
-  TypedDataDomain, 
-  ChainConfig 
-};
+;

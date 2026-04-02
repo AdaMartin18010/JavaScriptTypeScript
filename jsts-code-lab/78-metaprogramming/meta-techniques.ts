@@ -117,7 +117,7 @@ export class Reflection {
 export function createObservable<T extends object>(obj: T, callback: (prop: string, oldVal: any, newVal: any) => void): T {
   return new Proxy(obj, {
     set(target, prop, value) {
-      const oldValue = (target as any)[prop];
+      const oldValue = Reflect.get(target, prop);
       const result = Reflect.set(target, prop, value);
       callback(String(prop), oldValue, value);
       return result;
@@ -316,7 +316,7 @@ export function demo(): void {
   const immutable = createImmutable({ value: 42 });
   console.log('\n不可变对象:', immutable.value);
   try {
-    (immutable as any).value = 100;
+    (immutable as Record<string, number>).value = 100;
   } catch (e) {
     console.log('修改失败:', (e as Error).message);
   }

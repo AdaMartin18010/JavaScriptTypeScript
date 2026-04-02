@@ -261,14 +261,6 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  Router,
-  jsonMiddleware,
-  corsMiddleware,
-  loggerMiddleware,
-  parseBody,
-  createApp,
-  startServer
-};
+;
 
 export type { Handler, Middleware, Route };

@@ -139,4 +139,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 // 导出
 // ============================================================================
 
-export { mergeSort as default };
+;

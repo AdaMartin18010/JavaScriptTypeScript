@@ -380,19 +380,6 @@ Feature: 用户登录
 // 导出
 // ============================================================================
 
-export {
-  StringCalculator,
-  FizzBuzz,
-  ShoppingCart,
-  BddTestBuilder,
-  GherkinParser,
-  DocumentingTest
-};
+;
 
-export type {
-  BddScenario,
-  TestResult,
-  Feature,
-  Scenario,
-  Step
-};
+;

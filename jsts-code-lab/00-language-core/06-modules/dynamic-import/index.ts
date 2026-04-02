@@ -147,15 +147,4 @@ export function cachedImport<T>(path: string): Promise<T> {
 // 导出
 // ============================================================================
 
-export {
-  basicDynamicImport,
-  conditionalImport,
-  safeImport,
-  loadLanguage,
-  parallelImports,
-  ViewLoader,
-  webpackMagicComments,
-  vitePrefetch,
-  importJSON,
-  cachedImport
-};
+export { basicDynamicImport, conditionalImport, safeImport, loadLanguage, parallelImports, ViewLoader, webpackMagicComments, vitePrefetch, importJSON };;

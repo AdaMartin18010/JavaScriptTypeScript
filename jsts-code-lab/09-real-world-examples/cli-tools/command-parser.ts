@@ -219,13 +219,9 @@ export function demo(): void {
 // 导出
 // ============================================================================
 
-export {
-  parseArgs,
-  CLI,
-  ProgressBar
-};
+;
 
-export type { ParsedArgs, CommandHandler, Command };
+export type { CommandHandler, Command };;
 
 // ============================================================================
 // Demo 函数

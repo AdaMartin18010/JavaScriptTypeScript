@@ -218,4 +218,4 @@ const userSchema = new SchemaValidator<User>({
 // 导出
 // ============================================================================
 
-export { Validators as default, userSchema };
+export { userSchema };;

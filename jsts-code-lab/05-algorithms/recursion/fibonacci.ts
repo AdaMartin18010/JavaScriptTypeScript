@@ -134,15 +134,7 @@ function demo() {
 // 导出
 // ============================================================================
 
-export {
-  fibRecursive,
-  fibMemo,
-  fibIterative,
-  createFibGenerator,
-  fibGenerator,
-  fibTail,
-  fibFastDoubling
-};
+export { fibGenerator };;
 
 // ============================================================================
 // Demo 函数
