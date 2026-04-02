@@ -6,34 +6,49 @@
 
 ## 目录
 
-- [1. 三层边界：从规范到实现的宏观框架](#1-三层边界从规范到实现的宏观框架)
-  - [1.1 为什么需要三层边界](#11-为什么需要三层边界)
-  - [1.2 各层职责与交互关系](#12-各层职责与交互关系)
-- [2. V8 引擎层：执行上下文与任务调度](#2-v8-引擎层执行上下文与任务调度)
-  - [2.1 v8::Isolate：执行上下文的物理隔离](#21-v8isolate执行上下文的物理隔离)
-  - [2.2 v8::MicrotaskQueue：微任务的生命周期管理](#22-v8microtaskqueue微任务的生命周期管理)
-  - [2.3 v8::TaskRunner：宏任务的宿主注入](#23-v8taskrunner宏任务的宿主注入)
-- [3. 宿主环境层：Event Loop 的分野](#3-宿主环境层event-loop-的分野)
-  - [3.1 浏览器的 HTML Event Loop（2024–2025 更新）](#31-浏览器的-html-event-loop20242025-更新)
-    - [3.1.1 从单一队列到 Per-Source Task Queues](#311-从单一队列到-per-source-task-queues)
-    - [3.1.2 Microtask Checkpoint 的精确触发时机](#312-microtask-checkpoint-的精确触发时机)
-    - [3.1.3 "Perform a microtask checkpoint" 算法步骤](#313-perform-a-microtask-checkpoint-算法步骤)
-  - [3.2 Node.js 的 libuv Event Loop](#32-nodejs-的-libuv-event-loop)
-    - [3.2.1 七个阶段与 nextTick 的特权](#321-七个阶段与-nexttick-的特权)
-    - [3.2.2 浏览器与 Node.js 的本质差异](#322-浏览器与-nodejs-的本质差异)
-- [4. 语言规范层：ECMA-262 的 Job 与模块语义](#4-语言规范层ecma-262-的-job-与模块语义)
-  - [4.1 Job Queues 与宿主环境的桥接](#41-job-queues-与宿主环境的桥接)
-  - [4.2 Promise 的反应任务（Reaction Jobs）](#42-promise-的反应任务reaction-jobs)
-  - [4.3 async/await 的状态机转换](#43-asyncawait-的状态机转换)
-    - [4.3.1 async function 的挂起与恢复](#431-async-function-的挂起与恢复)
-    - [4.3.2 `Await` 抽象操作的展开语义](#432-await-抽象操作的展开语义)
-  - [4.4 Top-level await 的模块语义](#44-top-level-await-的模块语义)
-    - [4.4.1 模块图中的 AsyncModuleExecutionFulfilled / Rejected](#441-模块图中的-asyncmoduleexecutionfulfilled--rejected)
-    - [4.4.2 求值冻结与并行加载的边界](#442-求值冻结与并行加载的边界)
-- [5. SharedArrayBuffer、Agent Cluster 与 Atomics](#5-sharedarraybufferagent-cluster-与-atomics)
-  - [5.1 Agent Cluster 与共享内存边界](#51-agent-cluster-与共享内存边界)
-  - [5.2 `Atomics.pause`（ES2025 新增）的语义与工程意义](#52-atomicspausees2025-新增的语义与工程意义)
-- [6. 总结](#6-总结)
+- [JavaScript 执行模型与并发语义深度解析](#javascript-执行模型与并发语义深度解析)
+  - [目录](#目录)
+  - [1. 三层边界：从规范到实现的宏观框架](#1-三层边界从规范到实现的宏观框架)
+    - [1.1 为什么需要三层边界](#11-为什么需要三层边界)
+    - [1.2 各层职责与交互关系](#12-各层职责与交互关系)
+  - [2. V8 引擎层：执行上下文与任务调度](#2-v8-引擎层执行上下文与任务调度)
+    - [2.1 v8::Isolate：执行上下文的物理隔离](#21-v8isolate执行上下文的物理隔离)
+    - [2.2 v8::MicrotaskQueue：微任务的生命周期管理](#22-v8microtaskqueue微任务的生命周期管理)
+    - [2.3 v8::TaskRunner：宏任务的宿主注入](#23-v8taskrunner宏任务的宿主注入)
+  - [3. 宿主环境层：Event Loop 的分野](#3-宿主环境层event-loop-的分野)
+    - [3.1 浏览器的 HTML Event Loop（2024–2025 更新）](#31-浏览器的-html-event-loop20242025-更新)
+      - [3.1.1 从单一队列到 Per-Source Task Queues](#311-从单一队列到-per-source-task-queues)
+      - [3.1.2 Microtask Checkpoint 的精确触发时机](#312-microtask-checkpoint-的精确触发时机)
+      - [3.1.3 "Perform a microtask checkpoint" 算法步骤](#313-perform-a-microtask-checkpoint-算法步骤)
+    - [3.2 Node.js 的 libuv Event Loop](#32-nodejs-的-libuv-event-loop)
+      - [3.2.1 七个阶段与 nextTick 的特权](#321-七个阶段与-nexttick-的特权)
+      - [3.2.2 浏览器与 Node.js 的本质差异](#322-浏览器与-nodejs-的本质差异)
+  - [4. 语言规范层：ECMA-262 的 Job 与模块语义](#4-语言规范层ecma-262-的-job-与模块语义)
+    - [4.1 Job Queues 与宿主环境的桥接](#41-job-queues-与宿主环境的桥接)
+    - [4.2 Promise 的反应任务（Reaction Jobs）](#42-promise-的反应任务reaction-jobs)
+    - [4.3 async/await 的状态机转换](#43-asyncawait-的状态机转换)
+      - [4.3.1 async function 的挂起与恢复](#431-async-function-的挂起与恢复)
+      - [4.3.2 `Await` 抽象操作的展开语义](#432-await-抽象操作的展开语义)
+    - [4.4 Top-level await 的模块语义](#44-top-level-await-的模块语义)
+      - [4.4.1 模块图中的 AsyncModuleExecutionFulfilled / Rejected](#441-模块图中的-asyncmoduleexecutionfulfilled--rejected)
+      - [4.4.2 求值冻结与并行加载的边界](#442-求值冻结与并行加载的边界)
+    - [4.5 Node.js 24 的 require(esm) 与模块并发](#45-nodejs-24-的-requireesm-与模块并发)
+      - [同步求值约束](#同步求值约束)
+      - [与 `import()` 的本质差异](#与-import-的本质差异)
+      - [对并发与启动性能的影响](#对并发与启动性能的影响)
+  - [5. SharedArrayBuffer、Agent Cluster 与 Atomics](#5-sharedarraybufferagent-cluster-与-atomics)
+    - [5.1 Agent Cluster 与共享内存边界](#51-agent-cluster-与共享内存边界)
+    - [5.2 `Atomics.pause`（ES2025 新增）的语义与工程意义](#52-atomicspausees2025-新增的语义与工程意义)
+      - [规范语义](#规范语义)
+      - [与 `Atomics.wait` 的本质区别](#与-atomicswait-的本质区别)
+      - [工程应用：带退避的自旋锁](#工程应用带退避的自旋锁)
+  - [6. 总结](#6-总结)
+  - [7. Async Context（Stage 2）前瞻分析](#7-async-contextstage-2前瞻分析)
+    - [核心问题：异步边界上的上下文断裂](#核心问题异步边界上的上下文断裂)
+    - [Async Context 的语义](#async-context-的语义)
+    - [与现有解决方案的对比](#与现有解决方案的对比)
+    - [工程意义](#工程意义)
+  - [参考文献与来源索引](#参考文献与来源索引)
 
 ---
 
@@ -370,6 +385,37 @@ A (入口)
 
 这个语义使得 Top-level await 在模块初始化场景中非常强大，但也要求开发者注意：不要在共享模块中放置长时间的 TLA，否则会导致大量依赖该模块的代码被延迟执行。
 
+### 4.5 Node.js 24 的 require(esm) 与模块并发
+
+Node.js 24 起，`--experimental-require-module` 标志默认启用，标志着 CommonJS（CJS）与 ECMAScript Modules（ESM）互操作性进入新阶段 [Node.js 24 Release Notes]。这一变化对模块加载的并发语义产生了直接影响。
+
+#### 同步求值约束
+
+`require()` 是一个**同步调用**。为了保持这一语义不变，Node.js 24 的 `require(esm)` 机制对被加载的 ESM 图施加了严格的**同步求值约束**：被 `require()` 加载的 ESM 模块及其整个静态依赖图中，**不能包含任何 Top-level await（TLA）** [Node.js Docs: require(esm)]。
+
+如果被 `require()` 的 ESM 或其任何依赖链中存在 TLA，Node.js 将立即抛出 `ERR_REQUIRE_ASYNC_MODULE` 错误。这确保了 `require()` 的调用者无需等待 Promise，可以像传统 CJS 模块一样同步获得导出的命名空间对象。
+
+#### 与 `import()` 的本质差异
+
+这与 `import()` 的动态导入形成了鲜明对比：
+
+| 维度 | `require(esm)` | `import()` |
+|------|---------------|------------|
+| **求值方式** | 同步求值，立即执行模块体 | 异步求值，返回 Promise |
+| **TLA 支持** | **不支持**。依赖链中若存在 TLA，则抛出 `ERR_REQUIRE_ASYNC_MODULE` | **支持**。可以加载含 TLA 的 ESM，待 TLA settle 后 resolve |
+| **返回值** | 模块命名空间对象（同步返回） | Promise（异步 resolve 为模块命名空间对象） |
+| **加载时机** | 运行时按需同步加载 | 运行时按需异步加载 |
+
+这种差异本质上反映了两种模块系统的根本张力：CJS 假设模块求值是同步、原子的；而 ESM 允许模块在求值过程中让出主线程（通过 TLA），从而实现 I/O 密集型初始化（如读取配置文件或建立数据库连接）。
+
+#### 对并发与启动性能的影响
+
+从并发模型角度看，`require(esm)` 的引入有以下工程意义：
+
+1. **启动路径的同步性得以保留**：CJS 入口文件可以无缝地 `require()` ESM 依赖，而无需将自身重构为异步模块或包裹在 `async` IIFE 中。这对于大量现有 CJS 工具链和测试框架的平滑迁移至关重要。
+2. **模块求值仍按图顺序单线程执行**：无论是 `require(esm)` 还是 `import()`，模块的实际求值（Evaluation）仍然严格遵循 ECMA-262 的模块图算法，**在单个 Agent（即单线程）内按深度优先或拓扑顺序依次执行**。`require(esm)` 并不会引入并行求值；它仅仅是在 CJS 的同步边界内允许加载 ESM。
+3. **TLA 的"传染"效应被显式阻断**：在纯 ESM 项目中，一个深层依赖引入 TLA 会通过 `AsyncParentModules` 向上传播异步性。`require(esm)` 通过强制抛出错误，将这种异步性阻隔在 CJS 同步入口之外，防止了无意识的"异步泄漏"。
+
 ---
 
 ## 5. SharedArrayBuffer、Agent Cluster 与 Atomics
@@ -473,6 +519,70 @@ JavaScript 的并发模型是一个跨越三层边界的复杂系统：
 
 ---
 
+## 7. Async Context（Stage 2）前瞻分析
+
+`Async Context` 是 TC39 当前处于 Stage 2 的提案，旨在从语言层面解决 JavaScript 异步代码中长期存在的**上下文传播丢失**问题 [TC39 Proposals: async-context]。它的出现标志着 JavaScript 并发模型在"隐式状态管理"维度上的重要演进。
+
+### 核心问题：异步边界上的上下文断裂
+
+在当前的 JavaScript 执行模型中，调用栈（Call Stack）是上下文信息（如请求 ID、用户身份、分布式追踪的 span、区域设置 locale）最自然的载体。然而，一旦代码进入异步领域，这种连续性就会被打破：
+
+- 在 `Promise.then` 链中，回调函数的执行上下文与创建该 Promise 的上下文之间没有隐式关联。
+- 在 `async/await` 函数中，每次 `await` 都会挂起当前执行上下文，恢复时调用栈已经发生了切换。
+- 在 `EventEmitter` 或 `stream` 的事件回调中，事件处理函数的执行上下文与事件订阅时的上下文完全隔离。
+
+这导致开发者不得不通过**显式参数传递**（如在每个函数签名中增加 `ctx` 参数）或**全局变量**来维系上下文，前者造成严重的代码侵入（俗称为"context drilling"），后者在并发处理多个请求时极易产生串扰。
+
+### Async Context 的语义
+
+`Async Context` 提案引入了一种**在异步操作之间隐式传播上下文**的机制。其核心抽象是 `AsyncContext.Variable`：
+
+```javascript
+const requestId = new AsyncContext.Variable();
+
+function handleRequest(req) {
+  requestId.run(req.id, async () => {
+    await db.query('...');
+    // 即使在 await 恢复后，仍然可以访问到原始的 requestId
+    console.log(requestId.get()); // => req.id
+  });
+}
+```
+
+与 Zone.js 的 monkey-patching 方案不同，`Async Context` 的语义被直接嵌入 ECMA-262 的 Job 调度算法中 [TC39 Proposals: async-context]：
+
+- 当一个 Promise reaction job 或 async function resumption job 被创建时，引擎会**自动捕获**当前 `AsyncContext` 的快照。
+- 当该 job 稍后被执行时，引擎会**恢复**这个快照，使得 job 的执行环境看起来像是"从创建点无缝延续"的。
+
+这种隐式传播覆盖了 Promise、async/await、`queueMicrotask`、`setTimeout`、事件监听器等几乎所有标准的异步边界。
+
+### 与现有解决方案的对比
+
+| 方案 | 实现层级 | 侵入性 | 跨运行时 | 主要局限 |
+|------|---------|--------|----------|----------|
+| **Zone.js** | 用户空间库 | 高。通过 monkey-patch 原生 API（Promise、EventTarget、`setTimeout` 等） | 浏览器为主 | 补丁范围难以穷尽，容易与新 API 或库不兼容；增加运行时开销 |
+| **Node.js AsyncLocalStorage** | Node.js 运行时 API | 中。仅对 Node.js 内部异步资源进行包装 | **仅限 Node.js** | 不适用于浏览器、边缘运行时（Edge Runtime）或其他 JS 宿主 |
+| **Async Context** | **语言规范层** | **低。内置语义，无需补丁** | **跨运行时通用** | 仍在 Stage 2，API 细节可能调整；无法传播到某些非标准异步边界（如 Web Worker `postMessage`） |
+
+Zone.js 是 Angular 生态中广泛使用的补丁方案，它的核心思想是拦截所有异步 API 的入口和出口，在任务切换时手动保存/恢复上下文。这种方法虽然有效，但本质上是对引擎和宿主的一种"逆向工程"，每当平台新增 API（如 `navigator.scheduling.isInputPending()`）时，Zone.js 都需要跟进补丁 [TC39 Proposals: async-context]。
+
+Node.js 的 `AsyncLocalStorage`（ALS）提供了更为优雅的运行时支持，但它是一个 **Node.js 特有的 API**。对于需要在浏览器、Node.js 服务端渲染（SSR）和边缘计算（如 Cloudflare Workers、Vercel Edge Functions）之间共享代码的现代全栈框架而言，ALS 的不可移植性是一个重大障碍。
+
+`Async Context` 作为 TC39 的语言级提案，其价值在于提供了**统一的、无侵入的、跨运行时的标准**。一旦进入 Stage 4 并被各引擎实现，它将成为所有 JavaScript 宿主环境的基础能力。
+
+### 工程意义
+
+`Async Context` 的实现将为多个高阶工程能力奠定基石：
+
+1. **OpenTelemetry 分布式追踪**：目前 JS 中的自动链路追踪（automatic instrumentation）严重依赖对 HTTP 客户端、数据库驱动等库的 monkey-patch。有了 `Async Context`，trace context 可以在异步 I/O 边界自然流动，实现真正的**无侵入式可观测性**。
+2. **AOP 与日志关联**：在服务端，将一个请求的所有日志自动关联到同一个 `requestId`，无需修改业务代码中的每一个 `console.log` 或日志工具调用。
+3. **React Server Components 与并发渲染**：React 的异步服务器渲染和 Suspense 边界需要精确跟踪组件树的异步上下文。`Async Context` 有望取代或简化当前复杂的 context propagation 实现。
+4. **边缘运行时的安全与隔离**：在边缘计算环境中，多个请求可能共享同一个 Isolate 或 Agent。`Async Context` 提供了一种轻量级的请求级隔离手段，防止上下文串扰。
+
+尽管 `Async Context` 仍处于 Stage 2，但其语义设计已经相对成熟，且得到了 V8、SpiderMonkey 等引擎实现者的积极反馈。对于需要设计长期并发架构的开发者而言，提前理解这一提案的语义，是把握 JavaScript 执行模型演进方向的关键。
+
+---
+
 ## 参考文献与来源索引
 
 - [HTML Standard §8.1] HTML Living Standard, "Web application APIs — Event loops". <https://html.spec.whatwg.org/multipage/webappapis.html#event-loops>
@@ -494,3 +604,6 @@ JavaScript 的并发模型是一个跨越三层边界的复杂系统：
 - [libuv Docs] libuv Documentation, "The event loop". <https://docs.libuv.org/en/v1.x/design.html>
 - [Node.js Docs] Node.js Documentation, "The Node.js Event Loop". <https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/>
 - [Chromium Docs] Chromium Documentation, "Site Isolation". <https://www.chromium.org/Home/chromium-security/site-isolation/>
+- [TC39 Proposals: async-context] TC39, "Async Context". <https://github.com/tc39/proposal-async-context>
+- [Node.js 24 Release Notes] Node.js v24.0.0 Release Notes. <https://nodejs.org/en/blog/release/v24.0.0>
+- [Node.js Docs: require(esm)] Node.js Documentation, "Modules: require(esm)". <https://nodejs.org/api/modules.html#requiring-ecmascript-modules>
