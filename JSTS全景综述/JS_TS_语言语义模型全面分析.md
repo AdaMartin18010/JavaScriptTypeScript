@@ -1,10 +1,10 @@
 # JavaScript / TypeScript 语言语义模型全面分析
 
-> 本文档结合文件夹内所有文档内容、网络权威资源（ECMAScript 2025 Specification、TypeScript 5.8 Release Notes、ACM Research Papers等），使用多种思维表征方式全面分析 JS/TS 的语言语义模型。
+> 本文档基于 ECMA-262 2025、TypeScript 5.8 规范、HTML Living Standard、Node.js 文档及 PL 学术前沿，建立 JS/TS 的精确概念语义模型。面向研究者与高级开发者，强调规范引用与学术概念的准确性，摒弃不可执行的玩具代码与伪形式化表述。
 
-**分析日期**: 2026-03-07
+**分析日期**: 2026-04-02
 **TypeScript 版本**: 5.8
-**ECMAScript 版本**: ES2024 / ES2025 (ES16)
+**ECMAScript 版本**: 2025 (ES16) [ECMA-262 2025]
 
 ---
 
@@ -12,312 +12,339 @@
 
 - [JavaScript / TypeScript 语言语义模型全面分析](#javascript--typescript-语言语义模型全面分析)
   - [目录](#目录)
-  - [1. 思维导图：JS/TS 语言语义全景](#1-思维导图jsts-语言语义全景)
-  - [2. 多维概念矩阵对比](#2-多维概念矩阵对比)
-    - [2.1 语言特性演进矩阵](#21-语言特性演进矩阵)
-    - [2.2 JS vs TS 语义对比矩阵](#22-js-vs-ts-语义对比矩阵)
-    - [2.3 执行模型对比矩阵](#23-执行模型对比矩阵)
-  - [3. 决策树图：技术选型指南](#3-决策树图技术选型指南)
-    - [3.1 类型系统使用决策树](#31-类型系统使用决策树)
-    - [3.2 异步模式选择决策树](#32-异步模式选择决策树)
-    - [3.3 模块系统选择决策树](#33-模块系统选择决策树)
-  - [4. 形式化语义模型](#4-形式化语义模型)
-    - [4.1 ECMAScript 形式化操作语义](#41-ecmascript-形式化操作语义)
-    - [4.2 TypeScript 类型系统形式化](#42-typescript-类型系统形式化)
-    - [4.3 Promise 状态机形式化](#43-promise-状态机形式化)
-  - [5. 语言层次结构分析](#5-语言层次结构分析)
-    - [5.1 JavaScript 语义层次](#51-javascript-语义层次)
-    - [5.2 TypeScript 类型层次](#52-typescript-类型层次)
-  - [6. 类型系统语义](#6-类型系统语义)
-    - [6.1 类型关系形式化](#61-类型关系形式化)
-    - [6.2 条件类型分发语义](#62-条件类型分发语义)
-  - [7. 执行模型语义](#7-执行模型语义)
-    - [7.1 Event Loop 形式化模型](#71-event-loop-形式化模型)
-    - [7.2 任务优先级层次](#72-任务优先级层次)
-  - [8. 综合论证与结论](#8-综合论证与结论)
-    - [8.1 JS/TS 语言语义模型核心特征](#81-jsts-语言语义模型核心特征)
-    - [8.2 TypeScript 5.8 语义增强](#82-typescript-58-语义增强)
-    - [8.3 语义一致性定理](#83-语义一致性定理)
-    - [8.4 实践建议](#84-实践建议)
+  - [1. 三层语义模型总览](#1-三层语义模型总览)
+  - [2. 核心概念规范对照](#2-核心概念规范对照)
+    - [2.1 语义层次与规范来源](#21-语义层次与规范来源)
+    - [2.2 JS vs TS 语义边界矩阵](#22-js-vs-ts-语义边界矩阵)
+    - [2.3 执行环境调度矩阵](#23-执行环境调度矩阵)
+  - [3. 决策树：技术语义选型](#3-决策树技术语义选型)
+    - [3.1 类型系统严格度决策](#31-类型系统严格度决策)
+    - [3.2 异步并发模式决策](#32-异步并发模式决策)
+    - [3.3 模块解析策略决策](#33-模块解析策略决策)
+  - [4. 基于规范的精确语义模型](#4-基于规范的精确语义模型)
+    - [4.1 JavaScript 运行时语义（ECMA-262 2025）](#41-javascript-运行时语义ecma-262-2025)
+      - [4.1.1 执行上下文（Execution Context）](#411-执行上下文execution-context)
+      - [4.1.2 完成记录（Completion Record）](#412-完成记录completion-record)
+      - [4.1.3 环境记录（Environment Record）](#413-环境记录environment-record)
+      - [4.1.4 对象内部方法（Internal Methods）](#414-对象内部方法internal-methods)
+      - [4.1.5 Jobs 与 Job Queues（规范层面并发）](#415-jobs-与-job-queues规范层面并发)
+    - [4.2 TypeScript 编译时 / 擦除语义](#42-typescript-编译时--擦除语义)
+      - [4.2.1 编译时语义的本质](#421-编译时语义的本质)
+      - [4.2.2 类型关系的三元判定](#422-类型关系的三元判定)
+    - [4.3 宿主调度语义：浏览器与 Node.js](#43-宿主调度语义浏览器与-nodejs)
+      - [4.3.1 引擎与宿主的边界](#431-引擎与宿主的边界)
+      - [4.3.2 浏览器调度语义](#432-浏览器调度语义)
+      - [4.3.3 Node.js 调度语义](#433-nodejs-调度语义)
+  - [5. 语言层次与语义边界](#5-语言层次与语义边界)
+    - [5.1 ECMAScript 规范内部层次](#51-ecmascript-规范内部层次)
+    - [5.2 TypeScript 的编译时语义层次](#52-typescript-的编译时语义层次)
+    - [5.3 引擎 - 宿主 - 运行时分界](#53-引擎---宿主---运行时分界)
+  - [6. 类型系统深度语义](#6-类型系统深度语义)
+    - [6.1 Gradual Typing 与一致性关系](#61-gradual-typing-与一致性关系)
+    - [6.2 Structural Subtyping 的本质](#62-structural-subtyping-的本质)
+    - [6.3 约束求解式类型推断](#63-约束求解式类型推断)
+    - [6.4 类型擦除：保证与例外](#64-类型擦除保证与例外)
+    - [6.5 方差与位置敏感性](#65-方差与位置敏感性)
+    - [6.6 条件类型分发语义](#66-条件类型分发语义)
+  - [7. 执行与调度模型语义](#7-执行与调度模型语义)
+    - [7.1 ECMA-262 层面的 Jobs 与队列](#71-ecma-262-层面的-jobs-与队列)
+    - [7.2 HTML 标准：浏览器 Event Loop](#72-html-标准浏览器-event-loop)
+    - [7.3 Node.js：libuv Event Loop](#73-nodejslibuv-event-loop)
+    - [7.4 Worker 的隔离语义](#74-worker-的隔离语义)
+  - [8. 前沿特性语义分析](#8-前沿特性语义分析)
+    - [8.1 `--erasableSyntaxOnly` 的语义意义](#81---erasablesyntaxonly-的语义意义)
+    - [8.2 `--module nodenext` 与 ESM/CJS 互操作](#82---module-nodenext-与-esmcjs-互操作)
+    - [8.3 `NoInfer<T>` 的约束语义](#83-noinfert-的约束语义)
+    - [8.4 `using` 声明与显式资源管理](#84-using-声明与显式资源管理)
+  - [9. 综合论证与结论](#9-综合论证与结论)
+    - [9.1 JS/TS 语义模型的核心特征](#91-jsts-语义模型的核心特征)
+    - [9.2 学术概念与工程实践的对照](#92-学术概念与工程实践的对照)
+    - [9.3 实践建议](#93-实践建议)
   - [参考资源](#参考资源)
 
 ---
 
-## 1. 思维导图：JS/TS 语言语义全景
+## 1. 三层语义模型总览
 
 ```mermaid
 mindmap
-  root((JS/TS 语言语义模型))
-    JavaScript核心语义
-      词法语义
-        Tokenization
-        Automatic Semicolon Insertion
-        Strict Mode
-      类型语义
-        7种原始类型
-        Object类型系统
-        类型强制转换规则
-      执行语义
-        Event Loop
-        Execution Context
-        Call Stack
-      作用域语义
-        Lexical Scope
-        Closure
-        Hoisting
-      原型语义
-        Prototype Chain
-        [[Prototype]]
-        Property Descriptor
-    TypeScript扩展语义
-      静态类型语义
-        类型层次结构
-        结构化类型
-        类型推断
-      泛型语义
-        参数多态
-        约束推断
-        协变/逆变/不变
-      类型操作语义
-        条件类型
-        映射类型
-        模板字面量类型
-      模块语义
-        ESM/CJS互操作
-        声明合并
-        命名空间
-    运行时语义
-      内存模型
-        堆栈分配
-        GC机制
-        WeakRef/FinalizationRegistry
-      并发语义
-        单线程模型
-        宏任务/微任务
-        Atomics/SharedArrayBuffer
-      模块加载语义
-        ESM加载器
-        CJS加载器
-        动态import
-    形式化基础
-      ECMA-262规范
-        抽象操作
-        内部方法
-        固有对象
-      类型理论
-        Hindley-Milner
-        子类型关系
-        类型安全
+  root((JS/TS 精确语义模型))
+    L1[JavaScript 运行时语义<br/>ECMA-262 2025]
+      执行上下文 Execution Context
+      Realm 与全局环境
+      环境记录 Environment Record
+      完成记录 Completion Record
+      抽象操作 Abstract Operations
+      内部方法 Internal Methods
+      Jobs 与 Job Queues
+    L2[TypeScript 编译时 / 擦除语义]
+      Gradual Typing
+      Structural Subtyping
+      约束求解式类型推断
+      Type Erasure 与例外
+      条件类型与映射类型
+      方差 Variance
+    L3[宿主调度语义]
+      HTML Event Loop
+      libuv Event Loop Node.js
+      渲染流水线 Rendering Pipeline
+      Worker Threads / Web Workers
+      引擎与宿主边界
 ```
 
----
+**核心立场**：JS/TS 的完整语义不能被单一规范涵盖。必须区分：
 
-## 2. 多维概念矩阵对比
-
-### 2.1 语言特性演进矩阵
-
-| 特性类别 | ES2020 | ES2021 | ES2022 | ES2023 | ES2024 | TS 5.x |
-|---------|--------|--------|--------|--------|--------|--------|
-| **数据类型** | BigInt | - | - | - | - | 改进的BigInt类型 |
-| **异步编程** | Promise.allSettled, 动态import() | Promise.any, WeakRef | - | - | Promise.withResolvers | async/await类型推断优化 |
-| **对象操作** | globalThis, 可选链, 空值合并 | Object.hasOwn() | Class私有字段, at() | 不可变数组方法 | Object.groupBy, Map.groupBy | 更严格的null检查 |
-| **模块系统** | 动态import() | - | - | - | - | --module nodenext, --erasableSyntaxOnly |
-| **字符串处理** | - | String.prototype.replaceAll | - | - | isWellFormed/toWellFormed | 模板字面量类型 |
-| **类型系统** | - | - | - | - | - | 条件类型改进, const类型参数 |
-
-### 2.2 JS vs TS 语义对比矩阵
-
-| 维度 | JavaScript | TypeScript | 关键差异 |
-|------|-----------|-----------|---------|
-| **类型系统** | 动态类型，运行时检查 | 静态类型，编译时检查 | TS在编译期消除类型信息 |
-| **类型推断** | 基于运行时行为 | 基于静态分析 | TS使用Hindley-Milner变体 |
-| **类型兼容性** | 鸭子类型（运行时） | 结构化类型（编译时） | TS使用结构子类型而非名义子类型 |
-| **泛型** | 无（运行时类型擦除） | 参数化类型 | TS泛型在编译后完全擦除 |
-| **模块语义** | ESM/CJS运行时加载 | 编译时模块解析 | TS支持声明合并 |
-| **装饰器** | Stage 3提案（ES2024+） | 实验性支持+元数据 | TS装饰器有运行时元数据 |
-
-### 2.3 执行模型对比矩阵
-
-| 执行环境 | 调度模型 | 并发原语 | 内存模型 |
-|---------|---------|---------|---------|
-| **浏览器主线程** | Event Loop + 渲染流水线 | Web Workers | 单进程多线程 |
-| **Node.js主线程** | libuv Event Loop | Worker Threads, Cluster | 多进程 |
-| **Web Worker** | 独立Event Loop | MessageChannel | 隔离内存 |
-| **Service Worker** | 独立Event Loop + 生命周期 | - | 缓存API |
+1. **ECMA-262** 定义的引擎级运行时语义；
+2. **TypeScript 编译器** 实现的静态分析语义（不保证运行时类型安全）；
+3. **宿主环境**（浏览器/Node.js）提供的调度、I/O 与并发语义 [ECMA-262 §2]。
 
 ---
 
-## 3. 决策树图：技术选型指南
+## 2. 核心概念规范对照
 
-### 3.1 类型系统使用决策树
+### 2.1 语义层次与规范来源
+
+| 语义层次 | 权威规范 | 关键抽象 | 与代码的关联阶段 |
+|---------|---------|---------|----------------|
+| **JavaScript 运行时** | ECMA-262 2025 | Execution Context, Environment Record, Completion Record, Job | 运行时 |
+| **TypeScript 静态分析** | TypeScript 5.8 Language Specification / Compiler API | Type, Type Relationship, Constraint, Erasure | 编译时 |
+| **浏览器调度** | HTML Living Standard §8.1 | Event Loop, Task Queue, Microtask, Rendering | 运行时 |
+| **Node.js 调度** | Node.js Documentation / libuv | Event Loop Phases, `nextTick`, `setImmediate` | 运行时 |
+
+### 2.2 JS vs TS 语义边界矩阵
+
+| 维度 | JavaScript (ECMA-262) | TypeScript (编译时) | 关键差异 |
+|------|----------------------|---------------------|---------|
+| **类型系统** | 动态类型，运行时标签检查 | 静态类型，结构化子类型 | TS 类型信息在擦除后不可见 [TS Handbook: Type Erasure] |
+| **类型推断** | 无（运行时求值） | 基于约束求解（constraint-based），**非 Hindley-Milner** | HM 要求全称量词与无子类型；TS 支持子类型与重载 [TS Deep Dive: Inference] |
+| **类型兼容性** | 运行时鸭子类型 | 编译时 Structural Subtyping | 不依赖声明名称，而依赖成员结构 [TS Spec §3.11] |
+| **泛型** | 无（对象仅携带原型） | 参数多态，编译后完全擦除 | 除 `enum`、`namespace`、参数属性等例外 |
+| **Gradual Typing** | `any` 即为无约束动态值 | `any` 与 `unknown` 构成渐进类型边界 | `any` 与所有类型满足一致性关系 `~` [Siek & Taha 2006] |
+| **模块语义** | ESM/CJS 运行时加载与链接 | 编译时模块解析、路径映射、声明合并 | TS 不执行模块加载，仅做类型检查与转译 |
+
+### 2.3 执行环境调度矩阵
+
+| 执行环境 | 调度模型 | 并发原语 | 与 V8 引擎的关系 |
+|---------|---------|---------|----------------|
+| **浏览器主线程** | HTML Event Loop + 渲染流水线 | Web Workers, Service Workers | V8 嵌入 Blink，由宿主控制 Job 入队 [HTML Standard §8.1] |
+| **Node.js 主线程** | libuv Event Loop (7 phases) | Worker Threads, `cluster` | V8 与 libuv 协同，`nextTick` 为 Node.js 特有扩展 [Node.js Docs: Event Loop] |
+| **Web Worker** | 独立 HTML Event Loop | `MessageChannel`, `Atomics` | 独立 V8 Isolate，无 DOM [HTML Standard §11] |
+| **Service Worker** | 独立 Event Loop + 生命周期管理 | `fetch` 拦截、缓存 API | 受浏览器生命周期管理，不保证常驻 |
+
+---
+
+## 3. 决策树：技术语义选型
+
+### 3.1 类型系统严格度决策
 
 ```mermaid
 flowchart TD
-    A[需要类型安全?] -->|是| B[项目规模?]
-    A -->|否| C[纯JavaScript]
-
-    B -->|小型/原型| D[JavaScript + JSDoc]
-    B -->|中型/团队| E[TypeScript]
-    B -->|大型/企业| F[TypeScript + Strict Mode]
-
-    E --> G[配置严格度?]
-    G -->|宽松| H[--strict false]
-    G -->|标准| I[--strict true]
-    G -->|最大安全| J[--strict true + noImplicitAny + strictNullChecks]
-
-    F --> K[架构模式?]
-    K -->|DDD| L[领域模型 + 类型守卫]
-    K -->|微服务| M[API契约 + 代码生成]
-    K -->|全栈| N[共享类型定义]
+    A[目标: 最大可移植性与宿主无关性?] -->|是| B[启用 --erasableSyntaxOnly]
+    A -->|否| C[允许运行时语义: enum/namespace/参数属性]
+    B --> D[需要最大程度类型安全?]
+    D -->|是| E[--strict true + noImplicitAny + strictNullChecks]
+    D -->|否| F[--strict false, 保留 JSDoc 迁移路径]
+    E --> G[使用 --module nodenext 发布库?]
+    G -->|是| H[确保 package.json 配置 exports/types 字段]
+    G -->|否| I[选择 ESM 或 CJS 单一模块格式]
 ```
 
-### 3.2 异步模式选择决策树
+### 3.2 异步并发模式决策
 
 ```mermaid
 flowchart TD
-    A[异步操作?] -->|简单顺序| B[async/await]
-    A -->|并行执行| C[Promise.all]
-    A -->|竞争响应| D[Promise.race/any]
-    A -->|流处理| E[Async Iterator/Generator]
-    A -->|背压控制| F[RxJS/Streams API]
-
-    B --> G[错误处理?]
-    G -->|统一捕获| H[try/catch]
-    G -->|分离处理| I[.catch() per Promise]
-
-    C --> J[容错?]
-    J -->|全部必须成功| K[Promise.all]
-    J -->|部分失败允许| L[Promise.allSettled]
+    A[需要并行计算?] -->|是| B[Worker Threads / Web Workers + SharedArrayBuffer]
+    A -->|否| C[需要等待多个异步结果?]
+    C -->|是| D[容错?]
+    D -->|全部必须成功| E[Promise.all]
+    D -->|允许部分失败| F[Promise.allSettled]
+    C -->|否| G[需要顺序执行异步流?]
+    G -->|是| H[async/await]
+    G -->|否| I[事件流/背压控制 -> Async Iterators / Node.js Streams]
 ```
 
-### 3.3 模块系统选择决策树
+### 3.3 模块解析策略决策
 
 ```mermaid
 flowchart TD
-    A[目标环境?] -->|浏览器| B[ES Modules]
-    A -->|Node.js 12+| C[ESM或CJS]
-    A -->|Node.js <12| D[CommonJS]
-    A -->|混合环境| E[双模式发布]
-
-    B --> F[构建工具?]
-    F -->|Webpack/Vite| G[ESM + Tree Shaking]
-    F -->|无构建| H[原生ESM]
-
-    C --> I[TypeScript配置?]
-    I -->|--module nodenext| J[支持require ESM]
-    I -->|--module commonjs| K[传统CJS]
+    A[运行时为 Node.js 22+?] -->|是| B[--module nodenext + --moduleResolution nodenext]
+    A -->|否| C[--module esnext / commonjs]
+    B --> D[需要 CJS 消费者 require() ESM?]
+    D -->|是| E[Node.js 22+ 支持 require(esm) 但有限制]
+    D -->|否| F[纯 ESM 输出]
+    C --> G[浏览器环境?]
+    G -->|是| H[ESM + importmap]
+    G -->|否| I[根据 Node.js 版本选择 CJS 或 ESM]
 ```
 
 ---
 
-## 4. 形式化语义模型
+## 4. 基于规范的精确语义模型
 
-### 4.1 ECMAScript 形式化操作语义
+### 4.1 JavaScript 运行时语义（ECMA-262 2025）
 
-基于 ECMA-262 2025 规范的形式化定义：
+#### 4.1.1 执行上下文（Execution Context）
 
-```
-执行上下文 (Execution Context) 形式化:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ExecutionContext = {
-  codeEvaluationState: Continuation,
-  Function: Object | Null,
-  Realm: Realm Record,
-  ScriptOrModule: ScriptRecord | ModuleRecord | Null,
-  LexicalEnvironment: EnvironmentRecord,
-  VariableEnvironment: EnvironmentRecord,
-  PrivateEnvironment: PrivateEnvironmentRecord | Null
-}
+ECMA-262 将执行上下文定义为运行时追踪代码执行的规范设备 [ECMA-262 §8.1]。一个执行上下文并非普通对象，而是一个包含以下字段的规范结构：
 
-环境记录 (Environment Record):
-────────────────────────────────
-EnvironmentRecord =
-  | DeclarativeEnvironmentRecord
-  | ObjectEnvironmentRecord
-  | GlobalEnvironmentRecord
-  | FunctionEnvironmentRecord
-  | ModuleEnvironmentRecord
+- **codeEvaluationState**：恢复该上下文执行所需的Continuation。
+- **Function**：若该上下文正在执行函数代码，则为该函数对象；否则为 **null**。
+- **Realm**：关联的 Realm Record，决定可用的内置对象与全局环境。
+- **ScriptOrModule**：关联的 Script Record 或 Module Record。
+- **LexicalEnvironment**：用于解析标识符词法绑定的环境记录。
+- **VariableEnvironment**：用于解析 `var` 绑定的环境记录。
+- **PrivateEnvironment**：用于解析私有标识符的私有环境记录。
 
-抽象操作 (Abstract Operations):
-────────────────────────────────
-GetValue(V) → NormalCompletion(value) | ThrowCompletion(error)
-PutValue(V, W) → NormalCompletion(empty) | ThrowCompletion(error)
-ToPrimitive(input, PreferredType?) → Completion Record
-ToNumber(argument) → Completion Record
-ToString(argument) → Completion Record
-```
+> **规范说明**：执行上下文栈（Execution Context Stack）是严格的后进先出结构，但 Generator 和 async 函数通过挂起（suspend）与恢复（resume）机制，允许其执行上下文在栈中保留并在未来恢复 [ECMA-262 §8.1.3]。
 
-### 4.2 TypeScript 类型系统形式化
+#### 4.1.2 完成记录（Completion Record）
+
+ECMA-262 的所有运行时求值都产生 Completion Record，这是一个规范类型 [ECMA-262 §6.2.4]：
 
 ```
-类型判断规则 (Typing Rules):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Γ ⊢ e : T    (在上下文Γ中，表达式e具有类型T)
-
-子类型关系 (<:):
-────────────────
-T <: T                          (自反性)
-T <: U, U <: V ⇒ T <: V         (传递性)
-
-结构化子类型 (Structural Subtyping):
-────────────────────────────────────
-{ x: T1, y: T2 } <: { x: T1 }   (宽度子类型)
-{ x: T } <: { x: U }  if T <: U  (深度子类型)
-
-泛型实例化:
-───────────
-∀α. T[α]  →  T[U/α]  (将α替换为U)
-
-条件类型求值:
-─────────────
-T extends U ? X : Y
-  → X  if T <: U
-  → Y  otherwise
+Completion Record 结构:
+  [[Type]]  ∈ { normal, break, continue, return, throw }
+  [[Value]] ∈ any ECMAScript language value | empty
+  [[Target]]∈ string | empty
 ```
 
-### 4.3 Promise 状态机形式化
+控制流语义可通过以下说明性规则描述：
 
-```
-Promise 状态转换 (基于文档04_concurrency.md):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-State = { PENDING, FULFILLED, REJECTED }
+- 若表达式 `e` 求值为 `ReturnCompletion(v)`，则包含 `e` 的函数体立即以 `v` 返回。
+- 若 `throw e` 求值为 `ThrowCompletion(err)`，则引擎沿执行上下文栈搜索最近的 `catch` 或异常处理器（通过 **RunJobs** 机制将其转化为 rejection）。
 
-状态转换函数:
-─────────────
-δ: State × Event → State
+#### 4.1.3 环境记录（Environment Record）
 
-δ(PENDING, resolve(v)) = FULFILLED(v)
-δ(PENDING, reject(e))  = REJECTED(e)
-δ(FULFILLED(v), _)     = FULFILLED(v)   (终态)
-δ(REJECTED(e), _)      = REJECTED(e)    (终态)
+环境记录是规范层面的抽象，用于建模作用域链 [ECMA-262 §9.1]：
 
-Then 链接语义:
-──────────────
-then(f, g): Promise<T> → (T → U) → (E → U) → Promise<U>
+| 环境记录类型 | 语义功能 |
+|-------------|---------|
+| **Declarative Environment Record** | 绑定 `let`、`const`、`class`、`function` 等声明 |
+| **Object Environment Record** | 将 `with` 语句的对象属性映射为绑定（严格模式禁用） |
+| **Function Environment Record** | 额外包含 `this` 绑定、 `new.target`、参数对象 |
+| **Global Environment Record** | 复合记录，包含对象环境记录（全局对象）+ 声明性环境记录 |
+| **Module Environment Record** | 包含显式导入/导出绑定，支持不可变间接绑定 |
 
-如果 p: Promise<T> 且 p 状态为 FULFILLED(v):
-  p.then(f, g) = f(v): Promise<U>
+**闭包语义**：当一个函数对象被创建时，其 `[[Environment]]` 内部槽被设置为当前执行上下文的词法环境。这意味着闭包捕获的是环境记录的引用，而非静态作用域的文本拷贝 [ECMA-262 §10.2.11]。
 
-如果 p: Promise<T> 且 p 状态为 REJECTED(e):
-  p.then(f, g) = g(e): Promise<U>
-```
+#### 4.1.4 对象内部方法（Internal Methods）
+
+对象在 ECMA-262 中的行为由一组必需内部方法定义 [ECMA-262 §6.1.7.2]：
+
+- `[[GetPrototypeOf]]()` → Object | Null
+- `[[SetPrototypeOf]](V)` → Boolean
+- `[[IsExtensible]]()` → Boolean
+- `[[PreventExtensions]]()` → Boolean
+- `[[GetOwnProperty]](P)` → Property Descriptor | Undefined
+- `[[DefineOwnProperty]](P, Desc)` → Boolean
+- `[[HasProperty]](P)` → Boolean
+- `[[Get]](P, Receiver)` → ECMAScript value
+- `[[Set]](P, V, Receiver)` → Boolean
+- `[[Delete]](P)` → Boolean
+- `[[OwnPropertyKeys]]()` → List of property keys
+
+普通对象（ordinary object）使用规范定义的默认算法实现这些方法；异质对象（exotic object）如 `Proxy` 可覆盖这些行为。这构成了 JavaScript 对象模型的真正“形式化接口”。
+
+#### 4.1.5 Jobs 与 Job Queues（规范层面并发）
+
+ECMA-262 不定义完整的 Event Loop，而是定义了 **Job** 和 **Job Queue** 抽象 [ECMA-262 §9.5]。
+
+- **Job**：一个抽象闭包，无参数，当调用时执行某些规范步骤。Job 的创建与执行之间存在 happen-before 关系。
+- **Job Queue**：FIFO 队列，存放待执行的 Job。
+
+规范要求存在至少两个队列 [ECMA-262 §9.5]：
+
+1. **ScriptJobs**：用于初始脚本求值。
+2. **PromiseJobs**：用于 Promise 的 resolution/rejection 处理。
+
+**宿主的责任**：具体的 Event Loop 实现（如浏览器或 Node.js）负责从队列中取出 Job 并推入引擎执行。微任务（microtask）在规范中通常对应 PromiseJobs 队列的执行，但宿主可能扩展更多队列（如 Node.js 的 `nextTickQueue`）。
+
+### 4.2 TypeScript 编译时 / 擦除语义
+
+#### 4.2.1 编译时语义的本质
+
+TypeScript 是一种 **编译时静态类型层**，它在 ECMA-262 运行时语义之上添加了类型判断与类型转换规则 [TS Handbook: TypeScript's Type System]。TypeScript 不引入新的运行时值语义（除擦除例外），而是：
+
+1. **类型检查**：在编译时验证程序是否满足类型规则。
+2. **擦除（Erasure）**：将类型注解、接口、泛型参数、类型别名等从源代码中移除，生成纯 ECMAScript 代码。
+3. **代码生成**：在某些情况下（如 `enum`、`namespace`、装饰器元数据）生成额外的运行时结构。
+
+#### 4.2.2 类型关系的三元判定
+
+TypeScript 的类型检查核心可概括为三个判断：
+
+1. **可赋值性（Assignable）**：`S` 可赋值给 `T`，记作 `S ≲ T`。这是 TypeScript 最常用的类型关系，比严格子类型稍宽（允许某些双变场景）。
+2. **子类型（Subtype）**：`S` 是 `T` 的子类型，基于 Structural Subtyping。
+3. **一致性（Consistent）**：在 Gradual Typing 框架下，`any` 与所有类型相互一致（见 §6.1）。
+
+TypeScript 编译器在检查函数调用、变量赋值、返回值时，主要使用 **可赋值性** 判断。
+
+### 4.3 宿主调度语义：浏览器与 Node.js
+
+#### 4.3.1 引擎与宿主的边界
+
+**V8 引擎** 负责：
+
+- 解析 ECMAScript 源代码；
+- 执行抽象操作与内部方法；
+- 管理堆内存与垃圾回收；
+- 执行 Job Queue 中的 Job（当被宿主调用时）。
+
+**宿主环境** 负责：
+
+- 提供全局对象（`window`、`global`、`process`）；
+- 管理 I/O、定时器、网络请求；
+- 实现 Event Loop，决定何时将任务推入 V8；
+- 管理多线程 Worker 的生命周期。
+
+这一边界至关重要：ECMA-262 规范中的 `HostEnqueuePromiseJob` 是一个宿主钩子（host hook），浏览器和 Node.js 以不同方式实现它，导致微任务优先级与执行时机的差异 [ECMA-262 §9.5]。
+
+#### 4.3.2 浏览器调度语义
+
+浏览器遵循 **HTML Living Standard** §8.1 的 Event Loop 定义：
+
+- 一个浏览上下文（browsing context）通常有一个 Event Loop。
+- Event Loop 维护多个 **task queues**（如 DOM 事件队列、网络事件队列、定时器队列）。
+- 每个循环迭代执行：
+  1. 从 task queue 中取出一个 **oldest task** 执行。
+  2. 执行 **microtask checkpoint**：清空 microtask queue（包括 Promise callbacks 和 `queueMicrotask` 注册的回调）。
+  3. 若必要，执行 **update the rendering**（样式计算、布局、绘制、`requestAnimationFrame`）。
+
+> **规范要点**：在浏览器中，一个 task 执行完毕后必须清空所有 microtasks，然后才能执行渲染或下一个 task [HTML Standard §8.1.6.3]。
+
+#### 4.3.3 Node.js 调度语义
+
+Node.js 使用 **libuv** 实现 Event Loop，包含 7 个阶段（phase） [Node.js Docs: The Node.js Event Loop]：
+
+1. **timers**：执行 `setTimeout` / `setInterval` 回调。
+2. **pending callbacks**：执行系统操作（如 TCP 错误）的延迟回调。
+3. **idle, prepare**：Node.js 内部使用。
+4. **poll**：检索新的 I/O 事件；执行 I/O 回调；适当阻塞等待。
+5. **check**：执行 `setImmediate` 回调。
+6. **close callbacks**：执行 `close` 事件回调。
+
+**Node.js 特有语义**：
+
+- `process.nextTick` 回调在 **当前操作完成后、Event Loop 进入下一阶段前** 立即执行。从规范视角看，`nextTick` 队列的优先级高于 Promise microtask，但这并非 ECMA-262 规范的一部分，而是 Node.js 宿主扩展 [Node.js Docs: process.nextTick]。
 
 ---
 
-## 5. 语言层次结构分析
+## 5. 语言层次与语义边界
 
-### 5.1 JavaScript 语义层次
+### 5.1 ECMAScript 规范内部层次
 
 ```mermaid
 graph TB
-    subgraph "ECMAScript 语义层次"
-    L1[词法层<br/>Lexical Grammar] --> L2[语法层<br/>Syntactic Grammar]
+    subgraph "ECMA-262 2025 规范层次"
+    L1[词法语法<br/>Lexical Grammar] --> L2[语法语法<br/>Syntactic Grammar]
     L2 --> L3[静态语义<br/>Static Semantics]
     L3 --> L4[运行时语义<br/>Runtime Semantics]
 
-    L4 --> R1[执行上下文]
-    L4 --> R2[环境记录]
+    L4 --> R1[执行上下文栈]
+    L4 --> R2[Realm & 环境记录]
     L4 --> R3[对象内部方法]
+    L4 --> R4[Completion Records]
+    L4 --> R5[Jobs & Job Queues]
 
     R3 --> M1[[Get]]
     R3 --> M2[[Set]]
@@ -326,231 +353,388 @@ graph TB
     end
 ```
 
-### 5.2 TypeScript 类型层次
+### 5.2 TypeScript 的编译时语义层次
 
 ```mermaid
 graph TB
-    subgraph "TypeScript 类型层次"
-    T1[Top Type<br/>unknown/any] --> T2[Object Types]
+    subgraph "TypeScript 编译时语义层次"
+    T1[Top Types<br/>unknown / any] --> T2[Object Types]
     T1 --> T3[Primitive Types]
 
-    T2 --> O1[具体对象]
-    T2 --> O2[接口]
-    T2 --> O3[类类型]
+    T2 --> O1[具体对象类型]
+    T2 --> O2[接口 Interface]
+    T2 --> O3[类类型 Class Type]
+    T2 --> O4[映射类型 Mapped Type]
 
     T3 --> P1[string]
     T3 --> P2[number]
     T3 --> P3[boolean]
     T3 --> P4[bigint]
     T3 --> P5[symbol]
-    T3 --> P6[null/undefined]
+    T3 --> P6[null / undefined]
 
     T2 --> G1[泛型参数]
-    G1 --> G2[实例化类型]
+    G1 --> G2[约束化实例化]
 
     B1[Bottom Type<br/>never] --> T3
     B1 --> T2
     end
 ```
 
----
+### 5.3 引擎 - 宿主 - 运行时分界
 
-## 6. 类型系统语义
+| 责任域 | 规范/实现 | 控制范围 |
+|-------|----------|---------|
+| **引擎（V8/SpiderMonkey/JavaScriptCore）** | ECMA-262 | 执行抽象操作、内存管理、JIT 编译、Job 执行 |
+| **宿主（浏览器/Node.js）** | HTML / libuv / 自定义 | Event Loop、I/O、定时器、Worker 生命周期、全局对象 |
+| **TypeScript 编译器（tsc）** | TypeScript 语言规范 | 静态类型检查、擦除、模块解析、声明合并 |
 
-### 6.1 类型关系形式化
-
-```typescript
-// 协变/逆变/不变形式化定义
-
-// 协变 (Covariant): A <: B ⇒ F<A> <: F<B>
-interface Covariant<T> {
-  readonly value: T;  // 只读属性是协变的
-}
-
-// 逆变 (Contravariant): A <: B ⇒ F<B> <: F<A>
-interface Contravariant<T> {
-  consume(value: T): void;  // 参数位置是逆变的
-}
-
-// 不变 (Invariant): A <: B 不蕴含 F<A> <: F<B>
-interface Invariant<T> {
-  value: T;
-  consume(value: T): void;  // 读写 = 不变
-}
-
-// 双变 (Bivariant): A <: B ⇒ F<A> <: F<B> 且 F<B> <: F<A>
-// TS中开启strictFunctionTypes时，函数参数是逆变的
-```
-
-### 6.2 条件类型分发语义
-
-```typescript
-// 条件类型分发规则 (Distributive Conditional Types)
-
-type Distribute<T, U> = T extends U ? T : never;
-
-// 形式化规则:
-// Distribute<A | B | C, U> = Distribute<A, U> | Distribute<B, U> | Distribute<C, U>
-
-// 示例:
-type StringOrNumber = string | number | boolean;
-type ExtractString<T> = T extends string ? T : never;
-
-// ExtractString<StringOrNumber>
-// = ExtractString<string> | ExtractString<number> | ExtractString<boolean>
-// = string | never | never
-// = string
-
-// 防止分发的技巧: 包装类型
-type NoDistribute<T, U> = [T] extends [U] ? T : never;
-```
+**关键边界示例**：`Promise.then` 的回调注册由引擎的 Promise 内部方法处理，但回调何时被推入执行上下文栈由宿主的 `HostEnqueuePromiseJob` 实现决定 [ECMA-262 §26.2.5.3]。
 
 ---
 
-## 7. 执行模型语义
+## 6. 类型系统深度语义
 
-### 7.1 Event Loop 形式化模型
+### 6.1 Gradual Typing 与一致性关系
+
+TypeScript 的类型系统属于 **Gradual Typing** 家族，其标志性特征是 `any` 类型 [Siek & Taha 2006]。Gradual Typing 的核心语义设备是 **一致性关系（consistency relation）**，记作 `~`：
+
+**一致性规则（说明性）**：
+
+- `T ~ T`  （自反性）
+- `any ~ T` （`any` 与任何类型一致）
+- `T ~ any` （对称性）
+- 若 `S1 ~ T1` 且 `S2 ~ T2`，则 `{ x: S1, y: S2 } ~ { x: T1, y: T2 }`（结构一致性）
+
+与标准子类型不同的是：一致性允许 `any` 出现在任何位置，而不破坏类型的整体一致性。这意味着 TypeScript 的 `any` 不仅是“关闭类型检查”的逃逸口，它在学术上被理解为 **动态类型与静态类型之间的渐近边界**。
+
+**精度序（Precision Ordering）**：
+
+Gradual Typing 还定义了精度序 `⊑`，表示一个类型比另一个类型“更精确”（包含更少的 `any`）：
+
+- `any ⊑ T`（`any` 是最不精确的类型）
+- 若 `S1 ⊑ T1` 且 `S2 ⊑ T2`，则 `{ x: S1 } ⊑ { x: T1 }`
+- 若 `S ⊑ T`，则 `S` 是 `T` 的更精确近似
+
+TypeScript 的 `unknown` 可被视为 `any` 的安全对偶：它是最顶端的静态类型，必须通过类型断言或窄化（narrowing）才能使用，因此不破坏静态类型保证。
+
+### 6.2 Structural Subtyping 的本质
+
+TypeScript 使用 **Structural Subtyping**（结构子类型），这与 Java、C# 的 **Nominal Subtyping**（名义子类型）形成根本对比 [Pierce 2002, TS Spec §3.11]。
+
+**核心差异**：
+
+| 特性 | Nominal Subtyping | Structural Subtyping |
+|------|------------------|---------------------|
+| 子类型判定依据 | 显式声明的继承/实现关系（`extends`/`implements`） | 类型的成员结构兼容性 |
+| 跨模块/声明兼容性 | 要求同一声明来源（名称+位置） | 仅要求结构形状匹配 |
+| 密封性（Sealedness） | 编译器可假设无额外子类型 | 任何时候都可能出现结构匹配的新类型 |
+| 语义表达 | 类型即契约+身份 | 类型即契约 |
+
+**TypeScript 的结构子类型规则（说明性）**：
+
+对于对象类型，若 `S` 是 `T` 的子类型（`S <: T`），则：
+
+- **宽度子类型（Width Subtyping）**：`S` 必须至少包含 `T` 的所有必需属性（`S` 可以有更多属性）。
+- **深度子类型（Depth Subtyping）**：对于 `S` 和 `T` 的同名属性，该属性在 `S` 中的类型必须是其在 `T` 中类型的子类型。
+- **函数子类型**：参数类型逆变（contravariant），返回类型协变（covariant）。在 `--strictFunctionTypes` 启用时，TypeScript 对函数参数使用严格的逆变检查。
+
+**关键工程影响**：
+
+- 在 TypeScript 中，两个从未互相引用的接口如果结构相同，即被视为兼容。这支持了鸭子类型的编译时表达，但也意味着**不存在真正的密封类型**（即无法阻止外部构造出结构匹配的类型）。
+- `private` 和 `protected` 修饰符仅在类类型比较时引入名义化成分：当比较两个类类型时，如果一方包含 `private` 或 `protected` 成员，则另一方必须是同一类（或继承链上的类）的实例才被视为了兼容 [TS Handbook: Classes]。
+
+### 6.3 约束求解式类型推断
+
+**TypeScript 不使用 Hindley-Milner（HM）算法**。HM 算法适用于无子类型系统、无重载、无泛型约束的语言（如 ML、Haskell）。TypeScript 的类型推断是 **基于约束求解（constraint-based inference）** 的 [TS Compiler Internals, TS Deep Dive]。
+
+**推断过程可概念性地描述为**：
+
+1. **收集阶段**：编译器遍历 AST，为泛型参数和待推断类型生成一组 **约束（constraints）**。例如，对于 `function f<T>(x: T) { return x }`，调用 `f(42)` 会产生约束 `T = number`。
+2. **求解阶段**：编译器求解约束系统，为每个类型参数选择 **最佳公共类型（best common type）** 或根据上下文类型（contextual type）进行推断。
+3. **上下文敏感性**：TypeScript 大量依赖 **上下文类型推断（contextual typing）**。例如，在 `const arr: number[] = [1, 2, 3]` 中，数组字面量的元素类型从左侧的 `number[]` 获得上下文约束。
+
+**与 HM 的关键差异**：
+
+| 特性 | Hindley-Milner | TypeScript 约束推断 |
+|------|---------------|---------------------|
+| 子类型支持 | 不支持 | 核心机制 |
+| 泛型约束 | 无（通过类型类间接实现） | 直接支持 `T extends U` |
+| 重载解析 | 不支持 | 支持函数重载 |
+| 错误定位 | 全局统一类型（最一般化类型） | 局部约束失败报告 |
+| 全称量词 | 隐式 `∀`（let-polymorphism） | 显式泛型参数声明 |
+
+**协变返回值与逆变参数推断**：
+
+在函数类型推断中，TypeScript 遵循标准 PL 原则：
+
+- 返回类型位置：协变（covariant）
+- 参数类型位置：逆变（contravariant，在 `--strictFunctionTypes` 下）
+- 泛型参数本身：默认双变（bivariant），但在严格模式下对读写位置分别检查 [TS Handbook: Type Compatibility]。
+
+### 6.4 类型擦除：保证与例外
+
+TypeScript 的核心设计承诺是 **Type Erasure**：类型注解、接口、类型别名、泛型参数在编译后完全消失，不生成任何运行时结构 [TS Handbook: Type Erasure]。
+
+**完全擦除的构造**：
+
+- 类型注解（`: Type`）
+- 接口声明（`interface`）
+- 类型别名（`type`）
+- 泛型参数与约束
+- `as` 类型断言
+
+**有运行时语义的例外（擦除不彻底）**：
+
+1. **`enum` 声明**：编译为对象和反向映射（reverse mapping）。`enum Color { Red }` 生成运行时对象 `Color` [TS Handbook: Enums]。
+2. **`namespace` / `module` 声明**：编译为立即执行函数表达式（IIFE）以创建运行时命名空间对象 [TS Handbook: Namespaces]。
+3. **参数属性（Parameter Properties）**：`constructor(public x: number)` 在编译后成为显式的属性赋值 `this.x = x`，这改变了构造函数的运行时行为 [TS Handbook: Classes]。
+4. **装饰器元数据（Experimental Decorators）**：当启用 `emitDecoratorMetadata` 时，编译器注入 `Reflect.metadata` 调用，产生运行时类型信息 [TS Handbook: Decorators]。
+5. **`import()` 类型与模块加载**：虽然类型 `import("mod")` 被擦除，但编译为动态 `import()` 表达式时保留模块加载的副作用 [TS Spec §2.4.1]。
+
+**`--erasableSyntaxOnly` 的语义意义**：
+
+TypeScript 5.8 引入 `--erasableSyntaxOnly`，该标志强制要求所有 TypeScript 专有语法必须能被完全擦除为纯 ECMAScript，不生成任何额外的运行时结构 [TS 5.8 Release Notes]。启用后，以下代码将报错：
+
+- `enum` 声明
+- `namespace` / `module` 声明
+- 参数属性（parameter properties）
+- `import alias = require()` 语法
+
+该选项的目标是确保 TypeScript 代码可以无需转译器（transpiler）直接由支持 TypeScript 语法的运行时（如 Deno、Bun、Node.js 22+ 的 `--experimental-strip-types`）执行。
+
+### 6.5 方差与位置敏感性
+
+TypeScript 的方差（variance）由类型参数在结构中的出现位置决定 [TS Handbook: Type Compatibility]：
+
+| 位置 | 方差 | 说明 |
+|------|------|------|
+| 只读属性值 | 协变（Covariant） | `readonly x: T` |
+| 函数参数 | 逆变（Contravariant，严格模式） | `(x: T) => void` |
+| 可写属性值 | 不变（Invariant） | `x: T` 且同时可读可写 |
+| 函数返回值 | 协变（Covariant） | `() => T` |
+| 泛型参数（无修饰符） | 默认双变（Bivariant） | 可通过 `--strictFunctionTypes` 和 `--strictPropertyInitialization` 收紧 |
+
+**说明性规则**：
+
+若 `Cat <: Animal`，则：
+
+- `() => Cat <: () => Animal` （返回类型协变）
+- `(x: Animal) => void <: (x: Cat) => void` （参数类型逆变）
+- `{ value: Cat }` **不是** `{ value: Animal }` 的子类型（若可写），因为可以写入 `Animal` 类型的值到期望 `Cat` 的容器中，导致类型不安全。
+
+### 6.6 条件类型分发语义
+
+条件类型 `T extends U ? X : Y` 在 TypeScript 中具有 **分发性（distributivity）** [TS Handbook: Conditional Types]：
+
+**分发规则（说明性）**：
+
+若 `T` 是裸类型参数（naked type parameter）且为联合类型 `A | B | C`，则：
 
 ```
-Event Loop 五元组模型:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-M = (S, M, Q, E, δ)
-
-其中:
-• S: 调用栈 (Call Stack)
-• M: 微任务队列 (Microtask Queue)
-• Q: 宏任务队列 (Macrotask Queue)
-• E: 执行环境 (Execution Context)
-• δ: 状态转移函数
-
-状态转移函数 δ:
-───────────────
-δ₁: 执行调用栈直到为空
-   while (S.notEmpty()) executeTopFrame()
-
-δ₂: 执行所有微任务
-   while (M.notEmpty()) execute(M.dequeue())
-
-δ₃: 渲染 (浏览器环境)
-   if (shouldRender()) render()
-
-δ₄: 执行一个宏任务
-   if (Q.notEmpty()) execute(Q.dequeue())
-
-终止条件: S.empty() ∧ M.empty() ∧ Q.empty()
+(A | B | C) extends U ? X : Y  ≡  (A extends U ? X : Y) | (B extends U ? X : Y) | (C extends U ? X : Y)
 ```
 
-### 7.2 任务优先级层次
+**防止分发**：将类型参数包装为元组类型（tuple type）可阻止分发：
 
 ```
-执行优先级 (从高到低):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. 同步代码 (Sync Code)
-   └── 当前调用栈帧
+[T] extends [U] ? X : Y   // 不分发，整体判断
+```
 
-2. 微任务 (Microtasks) - 当前事件循环迭代
-   ├── Promise.then/catch/finally
-   ├── MutationObserver
-   ├── queueMicrotask()
-   └── process.nextTick (Node.js, 优先级最高)
+**never 的语义**：在条件类型分发中，`never` 作为空联合类型，分发后结果仍为 `never`。这是 `Exclude<T, U>` 和 `Extract<T, U>` 实现的基础：
 
-3. 渲染阶段 (Rendering)
-   ├── requestAnimationFrame
-   ├── 样式计算
-   ├── 布局 (Layout)
-   └── 绘制 (Paint)
-
-4. 宏任务 (Macrotasks) - 下一个事件循环迭代
-   ├── setTimeout/setInterval
-   ├── I/O 操作完成
-   ├── UI 事件
-   └── MessageChannel
+```typescript
+type Exclude<T, U> = T extends U ? never : T;
 ```
 
 ---
 
-## 8. 综合论证与结论
+## 7. 执行与调度模型语义
 
-### 8.1 JS/TS 语言语义模型核心特征
+### 7.1 ECMA-262 层面的 Jobs 与队列
 
-| 特征 | 论证 | 影响 |
-|-----|------|------|
-| **动态类型基础** | ECMA-262 定义所有值为动态类型 | 运行时灵活性，但需额外类型检查 |
-| **静态类型层** | TypeScript 作为编译时类型系统 | 类型安全 + 零运行时开销 |
-| **单线程并发** | Event Loop 模型确保无数据竞争 | 简化并发编程，避免锁问题 |
-| **原型继承** | 基于 [[Prototype]] 的委托机制 | 灵活的对象组合，非类继承 |
-| **词法作用域** | 编译时确定的作用域链 | 可预测的闭包行为 |
+ECMA-262 将异步操作的最小单位定义为 **Job** [ECMA-262 §9.5]。Promise 的 `then` 回调不直接执行，而是被包装为 Job 并推入 Job Queue。规范中的 `EnqueueJob(queueName, job, arguments)` 操作定义了这一过程。
 
-### 8.2 TypeScript 5.8 语义增强
+**关键抽象**：
 
-基于最新 TypeScript 5.8 发布的语义增强：
+- `HostEnqueuePromiseJob(job, realm)`：宿主必须提供的钩子，用于将 Promise 相关的 Job 入队。
+- 规范保证：如果 Job A 在 Job B 之前入队，则 A 必须在 B 之前执行（FIFO）。
+
+> **注意**：ECMA-262 不定义 Job 与 UI 渲染、I/O 事件之间的相对顺序，这完全由宿主决定。
+
+### 7.2 HTML 标准：浏览器 Event Loop
+
+浏览器的 Event Loop 由 HTML Living Standard 精确定义 [HTML Standard §8.1]。一个 Event Loop 包含：
+
+1. **Task Queue（任务队列）**：多个，如用户交互事件队列、网络事件队列、定时器队列。
+2. **Microtask Queue（微任务队列）**：单一队列，包含 Promise callbacks 和 `MutationObserver` 回调、`queueMicrotask()` 注册的回调。
+
+**每次循环迭代的规范步骤**：
+
+1. 令 **oldestTask** 为 task queues 中最早进入的 task。
+2. 设置 Event Loop 的 **currently running task** 为 oldestTask 并执行。
+3. 执行完毕后，执行 **microtask checkpoint**：
+   a. 当 microtask queue 非空时，出队并执行最老的 microtask。
+   b. 若 microtask 执行过程中又产生了新 microtask，继续处理，直到队列为空。
+4. 执行 **Update the rendering**（如果需要）。
+
+**渲染时机**：浏览器在一次 task 和随后的所有 microtasks 执行完毕后，才进行渲染。因此，长时间运行的同步代码或密集的 microtask 链会阻塞渲染，导致 UI 卡顿 [HTML Standard §8.1.6.3]。
+
+### 7.3 Node.js：libuv Event Loop
+
+Node.js 的 Event Loop 基于 libuv，包含 7 个阶段。与浏览器不同的是，Node.js 的 `process.nextTick` 和 `Promise` microtask 有优先级差异 [Node.js Docs: Event Loop]：
+
+**执行顺序（同一阶段内）**：
+
+1. 执行当前阶段的回调（如 timer 回调）。
+2. 清空 `nextTickQueue`（所有 `process.nextTick` 回调，包括递归产生的）。
+3. 清空 microtask queue（Promise callbacks，包括递归产生的）。
+4. 进入下一个 Event Loop 阶段。
+
+**`setImmediate` vs `setTimeout(0)`**：
+
+- `setImmediate` 在 check 阶段执行。
+- `setTimeout(0)` 在 timers 阶段执行。
+- 当两者在主模块中直接使用时，执行顺序取决于机器性能和当前 Event Loop 状态，通常 `setTimeout` 可能因最小阈值（约 1ms）而稍慢于 `setImmediate`。
+
+### 7.4 Worker 的隔离语义
+
+**Web Worker**（浏览器）和 **Worker Threads**（Node.js）都提供了与主线程隔离的执行环境，但语义有重要差异：
+
+| 特性 | Web Worker | Node.js Worker Threads |
+|------|-----------|----------------------|
+| **规范** | HTML Living Standard §11 | Node.js `worker_threads` API |
+| **全局对象** | `DedicatedWorkerGlobalScope` | `worker.MessagePort` + 自定义上下文 |
+| **共享内存** | `SharedArrayBuffer` + `Atomics` | `SharedArrayBuffer` + `Atomics` + `MessageChannel` |
+| **DOM 访问** | 无 | 无 |
+| **模块系统** | ESM（`type: module`）或经典脚本 | 支持 ESM 和 CJS |
+| **V8 关系** | 独立的 V8 Isolate，独立的 Event Loop | 独立的 V8 Isolate，但共享 libuv 线程池 |
+
+> **隔离保证**：每个 Worker 运行在自己的 V8 Isolate 中，拥有独立的堆内存和垃圾回收器。它们不共享执行上下文栈或全局环境记录 [HTML Standard §11.1.1]。
+
+---
+
+## 8. 前沿特性语义分析
+
+### 8.1 `--erasableSyntaxOnly` 的语义意义
+
+`--erasableSyntaxOnly` 是 TypeScript 5.8 引入的编译选项 [TS 5.8 Release Notes]。其语义核心是：
+
+> 拒绝任何无法被纯粹擦除为 ECMAScript 语法的 TypeScript 特性。
+
+**被禁止的构造**：
+
+| 构造 | 被禁止的原因 |
+|------|-------------|
+| `enum` | 生成运行时对象和反向映射 |
+| `namespace` / `module` | 生成 IIFE 运行时命名空间对象 |
+| 参数属性（Parameter Properties） | 在构造函数体内生成 `this.prop = param` |
+| `import foo = require("mod")` | 非标准 ECMAScript 导入语法 |
+
+**工程意义**：
+
+- 确保 `.ts` 文件可以直接被现代运行时（Node.js 22+ `--experimental-strip-types`、Deno、Bun）加载，无需 `tsc` 转译。
+- 标志着 TypeScript 向“纯注释型类型系统”的进一步收敛。
+
+### 8.2 `--module nodenext` 与 ESM/CJS 互操作
+
+`--module nodenext` 和 `--moduleResolution nodenext` 是 TypeScript 对 Node.js ESM/CJS 互操作规范的完整建模 [TS 5.8 Release Notes, Node.js Docs: ESM]。
+
+**关键语义**：
+
+1. **文件扩展名强制**：在 ESM 上下文中，相对导入必须包含 `.js` 扩展名（即使源文件是 `.ts`）。这直接映射到 Node.js ESM 加载器的行为。
+2. **`__dirname` / `__filename` 不可用**：在 `.mts` 文件或 `"type": "module"` 的 `.ts` 文件中，这些 CJS 全局变量不存在。
+3. **`require(esm)` 支持**：Node.js 22+ 开始支持 `require()` 加载 ESM 模块（带有异步边界限制）。TypeScript 5.8 的 `--module nodenext` 允许在 `.cts` 文件中对 ESM 模块使用 `require()`，前提是运行时支持 [Node.js Docs: require(esm)]。
+4. **`exports` 字段解析**：类型解析严格遵循 Node.js `package.json` 的 `exports` 和 `types` 条件导出规则。
+
+### 8.3 `NoInfer<T>` 的约束语义
+
+TypeScript 5.8 引入内置工具类型 `NoInfer<T>` [TS 5.8 Release Notes]。其语义是：
+
+> 在类型推断过程中，`NoInfer<T>` 包装的位置不参与最佳公共类型的推断，仅作为候选类型的消费侧使用。
+
+**语义模型**：
+
+假设函数签名 `declare function f<T>(arg: T, defaultValue: NoInfer<T>): T;`
+
+- 调用 `f(1, 2)` 时，`T` 从第一个参数 `arg` 推断为 `number`。
+- 第二个参数 `defaultValue` 的 `NoInfer<T>` 仅检查 `2` 是否可赋值给 `number`，不参与 `T` 的推断。
+
+这解决了以下经典问题：当多个参数共同推断一个泛型参数时，编译器可能将它们的类型合并为过于宽泛的联合类型。`NoInfer<T>` 允许开发者明确指定“哪一侧应该主导推断，哪一侧只应接受推断结果”。
+
+### 8.4 `using` 声明与显式资源管理
+
+`using` 声明是 ECMAScript 显式资源管理（Explicit Resource Management）提案的 Stage 3 实现，TypeScript 5.2+ 已支持 [TS 5.2 Release Notes, ECMA-262 Proposals]。
+
+**语义核心**：
 
 ```typescript
-// 1. 返回语句条件分支的粒度检查
-function getUrlObject(urlString: string): URL {
-    return untypedCache.has(urlString)
-        ? untypedCache.get(urlString)   // 现在会检查: any vs URL
-        : urlString;                     // 错误! string is not assignable to URL
-}
-
-// 2. --erasableSyntaxOnly 确保可擦除语义
-// 以下代码在 --erasableSyntaxOnly 下会报错:
-class Point {
-    constructor(public x: number) {}  // 错误: 参数属性有运行时语义
-}
-enum Direction { Up, Down }           // 错误: enum 有运行时语义
-
-// 3. --module nodenext 支持 require() ESM
-// CommonJS 可以 require() ES Module (Node.js 22+)
+{
+  using file = await openFile("path");
+  // ... 使用 file
+} // 此处自动调用 file[Symbol.dispose]()
 ```
 
-### 8.3 语义一致性定理
+1. **同步 `using`**：绑定变量的作用域结束时，调用 `value[Symbol.dispose]()`。
+2. **异步 `await using`**：绑定变量的作用域结束时，调用 `await value[Symbol.asyncDispose]()`。
+3. **异常安全**：无论块内是否正常退出（return、throw、break），`dispose` 方法都会被调用，语义上类似于 RAII（Resource Acquisition Is Initialization）。
 
-**定理 1: Type Erasure 保持性**
-对于任何有效的 TypeScript 程序 P，设 erase(P) 为类型擦除后的 JavaScript 程序，则：
+**规范语义**：
 
-```
-∀P: TypeScriptProgram. ∃erase(P): JavaScriptProgram
-⊢ P ↓ v  ⟹  erase(P) ↓ v
-```
+ECMA-262 提案定义了新的抽象操作 `DisposeResources`，它收集作用域内所有 `using` 声明的资源，在作用域退出时按 **后进先出（LIFO）** 顺序释放。如果某个 `dispose` 调用抛出异常，后续资源仍会被释放（best-effort），且原始异常（如果有）会被优先抛出 [ECMA-262 Explicit Resource Management Proposal]。
 
-（TypeScript 的类型擦除不改变程序的运行时行为）
+---
 
-**定理 2: 类型安全**
-在 strict 模式下，如果 TypeScript 程序通过类型检查，则运行时类型错误不会发生：
+## 9. 综合论证与结论
 
-```
-Γ ⊢ e : T,  T ≠ any,  T ≠ unknown  ⟹  运行时 e 的值类型 <: T
-```
+### 9.1 JS/TS 语义模型的核心特征
 
-**定理 3: Event Loop 确定性**
-对于给定的初始状态，Event Loop 的执行顺序是确定性的：
+| 特征 | 规范论证 | 工程影响 |
+|------|---------|---------|
+| **动态类型基础** | ECMA-262 所有值在运行时携带类型标签（Type Tag） | 运行时高度灵活，但无法静态保证无类型错误 |
+| **Gradual Typing 层** | TypeScript 通过 `any` 和 `unknown` 实现渐进类型边界 | 允许大型项目逐步迁移，但 `any` 会破坏类型安全保证 |
+| **Structural Subtyping** | 类型兼容性基于成员结构而非声明身份 [TS Spec §3.11] | 支持接口演化和跨模块兼容，但无法创建真正的密封类型 |
+| **单线程并发调度** | ECMA-262 Jobs + 宿主 Event Loop | 消除了数据竞争，但 I/O 密集任务需借助 Worker |
+| **类型擦除为主** | 绝大多数 TS 语法无运行时残留 [TS Handbook] | 零运行时开销，但调试时丢失类型信息 |
 
-```
-∀S₀. |{ executionTrace(S₀) }| = 1
-```
+### 9.2 学术概念与工程实践的对照
 
-### 8.4 实践建议
+**Hindley-Milner 的澄清**：TypeScript 的类型推断在学术界和工程社区常被误称为 HM。实际上，由于 TS 支持子类型、泛型约束、函数重载和上下文敏感推断，其推断引擎是 **基于约束求解** 的专用实现，与 HM 的 let-polymorphism 和无子类型假设有本质区别。
 
-| 场景 | 推荐语义模型 | 理由 |
-|-----|-------------|------|
-| 新启动项目 | TypeScript 5.8 + Strict Mode | 最大类型安全，最新的JS互操作 |
-| 遗留项目迁移 | 渐进式类型添加 | JSDoc → TypeScript → Strict |
-| 库开发 | --erasableSyntaxOnly + --verbatimModuleSyntax | 确保类型可擦除，用户无感知 |
-| Node.js 22+ | --module nodenext | 支持 require ESM，简化模块系统 |
-| 高性能计算 | Web Workers + SharedArrayBuffer | 真正的并行计算 |
-| 并发控制 | async/await + Promise.allSettled | 容错并行执行 |
+**Event Loop 的澄清**：JS 的并发模型不能被简单概括为“宏任务 → 微任务 → 渲染”。准确的表述是：
+
+- ECMA-262 定义了 Jobs 和 Job Queues；
+- HTML 标准定义了浏览器的 Task Queue 和 Microtask Queue 及其与渲染的交互；
+- Node.js 的 libuv 定义了 7 阶段 Event Loop 和 `nextTick` 扩展。
+
+V8 引擎本身不负责调度，它只负责执行被推入的 Job。
+
+### 9.3 实践建议
+
+| 场景 | 推荐语义配置 | 理由 |
+|------|-------------|------|
+| **新启动项目** | TypeScript 5.8 + `--strict` + `--erasableSyntaxOnly` | 最大类型安全，兼容现代直接执行引擎 |
+| **库开发（npm 发布）** | `--erasableSyntaxOnly` + `--verbatimModuleSyntax` + `--module nodenext` | 确保消费者无运行时副作用，支持 ESM/CJS 双模式 |
+| **遗留项目迁移** | 渐进式启用 `--strictNullChecks` → `--strict` | 避免一次性引入大量类型错误 |
+| **Node.js 22+ 服务端** | `--module nodenext` + `--moduleResolution nodenext` | 精确匹配 Node.js ESM/CJS 互操作语义 |
+| **需要资源确定性释放** | `using` / `await using` | 提供异常安全的 RAII 语义 |
+| **泛型推断失控** | 使用 `NoInfer<T>` 约束辅助参数 | 明确区分推断源与消费侧 |
 
 ---
 
 ## 参考资源
 
-1. **ECMAScript 2025 Specification** - <https://tc39.es/ecma262/2025/>
-2. **TypeScript 5.8 Release Notes** - <https://devblogs.microsoft.com/typescript/announcing-typescript-5-8/>
-3. **ACM CACM: JavaScript Language Design and Implementation** - <https://cacm.acm.org/research/javascript-language-design-and-implementation-in-tandem/>
-4. **Brown University S5 Semantics** - <https://cs.brown.edu/~sk/Publications/Papers/Published/pclpk-s5-semantics/>
-5. **K Framework JavaScript Semantics** - <https://runtimeverification.com/blog/k-framework-an-overview>
+1. **ECMAScript 2025 Language Specification** - <https://tc39.es/ecma262/2025/> [ECMA-262 2025]
+2. **TypeScript 5.8 Release Notes** - <https://devblogs.microsoft.com/typescript/announcing-typescript-5-8/> [TS 5.8 Release Notes]
+3. **TypeScript 5.2 Release Notes (using)** - <https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/> [TS 5.2 Release Notes]
+4. **HTML Living Standard: Event Loops** - <https://html.spec.whatwg.org/multipage/webappapis.html#event-loops> [HTML Standard §8.1]
+5. **Node.js Documentation: The Event Loop** - <https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/> [Node.js Docs: Event Loop]
+6. **Node.js Documentation: require(esm)** - <https://nodejs.org/api/modules.html#loading-ecmascript-modules-using-require> [Node.js Docs: require(esm)]
+7. **Siek, J. G., & Taha, W. (2006).** *Gradual Typing for Functional Languages.* Scheme and Functional Programming Workshop. [Siek & Taha 2006]
+8. **Pierce, B. C. (2002).** *Types and Programming Languages.* MIT Press. [Pierce 2002]
+9. **TypeScript Language Specification** - <https://github.com/microsoft/TypeScript/blob/main/doc/spec-ARCHIVED.md> [TS Spec]
+10. **TypeScript Handbook: Type Erasure** - <https://www.typescriptlang.org/docs/handbook/2/basic-types.html#erased-types> [TS Handbook: Type Erasure]
 
 ---
 
-*本文档通过结合文件夹内10个专业文档和最新网络权威资源，使用思维导图、多维矩阵、决策树和形式化语义等多种表征方式，全面分析了 JavaScript/TypeScript 的语言语义模型。*
+*本文档基于 ECMA-262 2025、TypeScript 5.8、HTML Living Standard 及 PL 学术文献建立精确概念模型，摒弃伪形式化与玩具代码，面向研究者与高级开发者提供规范级语义分析。*
