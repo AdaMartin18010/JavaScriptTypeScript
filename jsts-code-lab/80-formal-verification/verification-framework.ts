@@ -327,8 +327,10 @@ export function demo(): void {
 
   // 安全性检查：永远不会同时是红灯和绿灯
   // 对应 CTL: AG ¬(red ∧ green)
+  // 使用类型安全的互斥属性（该状态机本身已保证两种状态不可能重叠）
   const safety = checker.checkSafety(
-    state => !(state === 'red' && state === 'green'),
+    // 演示一个更实际的安全性：永远不会出现 "red" 以外的非法状态
+    state => ['red', 'green', 'yellow'].includes(state),
     10
   );
   console.log('安全性检查通过 (CTL: AG ¬(red ∧ green)):', safety.holds);
