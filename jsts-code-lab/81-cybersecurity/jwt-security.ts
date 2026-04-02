@@ -12,7 +12,7 @@
  * - JWT 黑名单模拟（Logout / 撤销机制）
  */
 
-import { createHmac, createSign, createVerify, randomBytes } from 'node:crypto';
+import { createHmac, createSign, createVerify, randomBytes, generateKeyPairSync } from 'node:crypto';
 
 export type JwtAlgorithm = 'HS256' | 'RS256';
 
@@ -281,7 +281,6 @@ export function demo(): void {
   console.log('=== JWT 安全最佳实践 Demo ===\n');
 
   // 生成演示用的 RSA 密钥对（实际项目应从安全密钥库加载）
-  const { generateKeyPairSync } = require('node:crypto');
   const { privateKey, publicKey } = generateKeyPairSync('rsa', {
     modulusLength: 2048,
     publicKeyEncoding: { type: 'spki', format: 'pem' },
