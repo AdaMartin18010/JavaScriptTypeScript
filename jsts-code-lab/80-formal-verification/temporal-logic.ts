@@ -1,244 +1,174 @@
 /**
- * @file 线性时序逻辑（LTL）简化模型检测器
+ * @file 线性时序逻辑 (LTL) 解释器
  * @category Formal Verification → Temporal Logic
  * @difficulty hard
+ * @tags ltl, temporal-logic, trace, semantics, model-checking
  * @description
- * 实现线性时序逻辑（LTL）的简化模型检测器。支持 G (Globally)、F (Finally)、
- * U (Until)、X (Next) 算子。对一个有限状态机进行 LTL 公式验证，
- * 演示安全性与活性性质的自动检测。
+ * 实现线性时序逻辑（LTL）的语法树与解释器，能够对有限状态迹（trace）进行
+ * G (Globally)、F (Finally)、U (Until)、X (Next) 的求值。
  *
  * @theoretical_basis
- * - **LTL (Linear Temporal Logic)**: Pnueli 于 1977 年提出，用于规约并发系统
- *   的时序性质。公式在行为的单个执行路径上解释。
- * - **G φ (Globally)**: φ 在当前状态及之后的所有状态上成立。
- * - **F φ (Finally)**: φ 在当前状态之后的某个状态上成立。
- * - **φ U ψ (Until)**: ψ 最终成立，且在此之前 φ 一直成立。
- * - **X φ (Next)**: φ 在下一个状态上成立。
- * - **模型检测复杂度**: LTL 模型检测为 PSPACE-完全问题。本实现通过遍历
- *   状态机的所有有限路径前缀进行简化验证。
- *
- * @complexity_analysis
- * - 路径展开: O(b^d) 其中 b 为分支因子，d 为最大深度。
- * - LTL 公式求值: O(d * |φ|) 对单条路径，|φ| 为公式大小。
- * - 整体模型检测: O(b^d * d * |φ|) 对于教学用的简化实现。
+ * - **LTL (Linear Temporal Logic)**: Pnueli 于 1977 年提出，用于描述程序执行迹上的时序性质。
+ *   语法：φ ::= p | ¬φ | φ ∧ φ | X φ | F φ | G φ | φ U φ
+ * - **Trace Semantics**: 给定有限迹 π = s₀, s₁, ..., sₙ，LTL 公式在位置 i 上的满足关系
+ *   ⊨ 递归定义。为简化教学，本实现基于有限迹语义（Finite-Trace LTL）。
  */
 
-/** LTL 公式抽象语法树 */
-export type LTLFormula =
-  | { type: 'atom'; predicate: (state: string) => boolean }
-  | { type: 'not'; sub: LTLFormula }
-  | { type: 'and'; left: LTLFormula; right: LTLFormula }
-  | { type: 'or'; left: LTLFormula; right: LTLFormula }
-  | { type: 'G'; sub: LTLFormula }
-  | { type: 'F'; sub: LTLFormula }
-  | { type: 'X'; sub: LTLFormula }
-  | { type: 'U'; left: LTLFormula; right: LTLFormula };
+// ---------------------------------------------------------------------------
+// LTL 语法树
+// ---------------------------------------------------------------------------
 
-/** 转移关系：状态 -> (动作, 下一状态)[] */
-export type Transitions = Record<string, Array<{ action: string; next: string }>>;
+export type LTLFormula<T> =
+  | { type: 'atom'; predicate: (state: T) => boolean }
+  | { type: 'not'; operand: LTLFormula<T> }
+  | { type: 'and'; left: LTLFormula<T>; right: LTLFormula<T> }
+  | { type: 'or'; left: LTLFormula<T>; right: LTLFormula<T> }
+  | { type: 'X'; operand: LTLFormula<T> }          // Next
+  | { type: 'F'; operand: LTLFormula<T> }          // Finally
+  | { type: 'G'; operand: LTLFormula<T> }          // Globally
+  | { type: 'U'; left: LTLFormula<T>; right: LTLFormula<T> }; // Until
 
-/** 有限状态机 */
-export interface FiniteStateMachine {
-  initial: string;
-  transitions: Transitions;
+// ---------------------------------------------------------------------------
+// 工厂函数
+// ---------------------------------------------------------------------------
+
+export function atom<T>(predicate: (state: T) => boolean): LTLFormula<T> {
+  return { type: 'atom', predicate };
 }
 
-/** 单条路径 */
-export type Path = string[];
-
-/** LTL 模型检测结果 */
-export interface LTLResult {
-  holds: boolean;
-  counterexample?: Path;
-  checkedPaths: number;
+export function not<T>(operand: LTLFormula<T>): LTLFormula<T> {
+  return { type: 'not', operand };
 }
 
-/**
- * LTL 模型检测器。
- */
-export class LTLModelChecker {
-  constructor(private fsm: FiniteStateMachine, private maxDepth: number = 10) {}
+export function and<T>(left: LTLFormula<T>, right: LTLFormula<T>): LTLFormula<T> {
+  return { type: 'and', left, right };
+}
 
+export function or<T>(left: LTLFormula<T>, right: LTLFormula<T>): LTLFormula<T> {
+  return { type: 'or', left, right };
+}
+
+export function next<T>(operand: LTLFormula<T>): LTLFormula<T> {
+  return { type: 'X', operand };
+}
+
+export function finally_<T>(operand: LTLFormula<T>): LTLFormula<T> {
+  return { type: 'F', operand };
+}
+
+export function globally<T>(operand: LTLFormula<T>): LTLFormula<T> {
+  return { type: 'G', operand };
+}
+
+export function until<T>(left: LTLFormula<T>, right: LTLFormula<T>): LTLFormula<T> {
+  return { type: 'U', left, right };
+}
+
+// ---------------------------------------------------------------------------
+// LTL 有限迹解释器
+// ---------------------------------------------------------------------------
+
+export class LTLInterpreter<T> {
   /**
-   * 检测 LTL 公式是否在所有路径上成立。
+   * 在迹 trace 的位置 pos 上求值公式 formula
+   *
+   * 语义规则（有限迹版本）：
+   * - π, i ⊨ p       ⟺  p(π[i]) = true
+   * - π, i ⊨ ¬φ      ⟺  π, i ⊭ φ
+   * - π, i ⊨ φ ∧ ψ   ⟺  π, i ⊨ φ 且 π, i ⊨ ψ
+   * - π, i ⊨ X φ     ⟺  i+1 < |π| 且 π, i+1 ⊨ φ
+   * - π, i ⊨ F φ     ⟺  ∃j ≥ i. π, j ⊨ φ
+   * - π, i ⊨ G φ     ⟺  ∀j ≥ i. π, j ⊨ φ
+   * - π, i ⊨ φ U ψ   ⟺  ∃j ≥ i. π, j ⊨ ψ 且 ∀k ∈ [i, j). π, k ⊨ φ
    */
-  check(formula: LTLFormula): LTLResult {
-    const paths = this.generateAllPaths();
-    let checkedPaths = 0;
-
-    for (const path of paths) {
-      checkedPaths++;
-      if (!this.evaluateOnPath(formula, path)) {
-        return { holds: false, counterexample: path, checkedPaths };
-      }
-    }
-
-    return { holds: true, checkedPaths };
-  }
-
-  /**
-   * 生成所有有限路径前缀（深度不超过 maxDepth）。
-   */
-  private generateAllPaths(): Path[] {
-    const paths: Path[] = [];
-    const dfs = (state: string, path: string[]) => {
-      const currentPath = [...path, state];
-      if (currentPath.length >= this.maxDepth) {
-        paths.push(currentPath);
-        return;
-      }
-      const nexts = this.fsm.transitions[state] ?? [];
-      if (nexts.length === 0) {
-        paths.push(currentPath);
-        return;
-      }
-      for (const t of nexts) {
-        dfs(t.next, currentPath);
-      }
-    };
-    dfs(this.fsm.initial, []);
-    return paths;
-  }
-
-  /**
-   * 在单条路径上求值 LTL 公式。
-   */
-  private evaluateOnPath(formula: LTLFormula, path: Path): boolean {
-    return this.evalAtIndex(formula, path, 0);
-  }
-
-  private evalAtIndex(formula: LTLFormula, path: Path, index: number): boolean {
+  evaluate(formula: LTLFormula<T>, trace: T[], pos: number = 0): boolean {
     switch (formula.type) {
       case 'atom':
-        return index < path.length && formula.predicate(path[index]!);
+        if (pos >= trace.length) return false;
+        return formula.predicate(trace[pos]);
+
       case 'not':
-        return !this.evalAtIndex(formula.sub, path, index);
+        return !this.evaluate(formula.operand, trace, pos);
+
       case 'and':
-        return this.evalAtIndex(formula.left, path, index) && this.evalAtIndex(formula.right, path, index);
+        return this.evaluate(formula.left, trace, pos) && this.evaluate(formula.right, trace, pos);
+
       case 'or':
-        return this.evalAtIndex(formula.left, path, index) || this.evalAtIndex(formula.right, path, index);
-      case 'G': {
-        for (let i = index; i < path.length; i++) {
-          if (!this.evalAtIndex(formula.sub, path, i)) {
-            return false;
-          }
+        return this.evaluate(formula.left, trace, pos) || this.evaluate(formula.right, trace, pos);
+
+      case 'X':
+        return pos + 1 < trace.length && this.evaluate(formula.operand, trace, pos + 1);
+
+      case 'F':
+        for (let i = pos; i < trace.length; i++) {
+          if (this.evaluate(formula.operand, trace, i)) return true;
+        }
+        return false;
+
+      case 'G':
+        for (let i = pos; i < trace.length; i++) {
+          if (!this.evaluate(formula.operand, trace, i)) return false;
         }
         return true;
-      }
-      case 'F': {
-        for (let i = index; i < path.length; i++) {
-          if (this.evalAtIndex(formula.sub, path, i)) {
-            return true;
-          }
-        }
-        return false;
-      }
-      case 'X':
-        return index + 1 < path.length && this.evalAtIndex(formula.sub, path, index + 1);
+
       case 'U': {
-        for (let i = index; i < path.length; i++) {
-          if (this.evalAtIndex(formula.right, path, i)) {
+        for (let j = pos; j < trace.length; j++) {
+          if (this.evaluate(formula.right, trace, j)) {
+            for (let k = pos; k < j; k++) {
+              if (!this.evaluate(formula.left, trace, k)) return false;
+            }
             return true;
-          }
-          if (!this.evalAtIndex(formula.left, path, i)) {
-            return false;
           }
         }
         return false;
       }
-      default:
-        return false;
     }
   }
 }
 
-/**
- * 辅助函数：构造 LTL 公式
- */
-export const LTL = {
-  atom(predicate: (state: string) => boolean): LTLFormula {
-    return { type: 'atom', predicate };
-  },
-  not(sub: LTLFormula): LTLFormula {
-    return { type: 'not', sub };
-  },
-  and(left: LTLFormula, right: LTLFormula): LTLFormula {
-    return { type: 'and', left, right };
-  },
-  or(left: LTLFormula, right: LTLFormula): LTLFormula {
-    return { type: 'or', left, right };
-  },
-  G(sub: LTLFormula): LTLFormula {
-    return { type: 'G', sub };
-  },
-  F(sub: LTLFormula): LTLFormula {
-    return { type: 'F', sub };
-  },
-  X(sub: LTLFormula): LTLFormula {
-    return { type: 'X', sub };
-  },
-  U(left: LTLFormula, right: LTLFormula): LTLFormula {
-    return { type: 'U', left, right };
-  }
-};
+// ---------------------------------------------------------------------------
+// 演示
+// ---------------------------------------------------------------------------
 
-/**
- * 构造一个教学用的请求-响应状态机。
- * 状态: idle -> request -> processing -> response -> idle
- */
-export function requestResponseFSM(): FiniteStateMachine {
-  return {
-    initial: 'idle',
-    transitions: {
-      idle: [{ action: 'send', next: 'request' }],
-      request: [{ action: 'process', next: 'processing' }],
-      processing: [
-        { action: 'ok', next: 'response' }
-      ],
-      response: [{ action: 'reset', next: 'idle' }]
-    }
-  };
-}
+type SystemState = { temp: number; alert: boolean };
 
 export function demo(): void {
-  console.log('=== LTL 模型检测演示 ===\n');
-  const fsm = requestResponseFSM();
-  const checker = new LTLModelChecker(fsm, 6);
+  console.log('=== Linear Temporal Logic (LTL) ===\n');
 
-  // 性质 1：安全性 □(非 error)
-  const safety = LTL.G(LTL.atom(s => s !== 'error'));
-  console.log('--- 安全性：G(¬error) ---');
-  const safetyResult = checker.check(safety);
-  console.log('成立?', safetyResult.holds, '检查路径数:', safetyResult.checkedPaths);
-  if (!safetyResult.holds) {
-    console.log('反例路径:', safetyResult.counterexample);
-  }
+  const trace: SystemState[] = [
+    { temp: 20, alert: false },
+    { temp: 35, alert: false },
+    { temp: 45, alert: false },
+    { temp: 55, alert: true },
+    { temp: 60, alert: true },
+  ];
 
-  // 性质 2：活性 F(response)
-  const liveness = LTL.F(LTL.atom(s => s === 'response'));
-  console.log('\n--- 活性：F(response) ---');
-  const livenessResult = checker.check(liveness);
-  console.log('成立?', livenessResult.holds, '检查路径数:', livenessResult.checkedPaths);
-  if (!livenessResult.holds) {
-    console.log('反例路径:', livenessResult.counterexample);
-  }
+  const interpreter = new LTLInterpreter<SystemState>();
 
-  // 性质 3：request U processing（从 idle 开始需考虑 X）
-  // 从初始状态后的路径来看：在 request 之后，processing 最终成立且 request 保持到那之前
-  // 这里我们检测 G(request -> (request U processing)) 的简化版
-  const untilProp = LTL.G(
-    LTL.or(
-      LTL.atom(s => s !== 'request'),
-      LTL.U(LTL.atom(s => s === 'request'), LTL.atom(s => s === 'processing'))
-    )
+  // G(temp > 0): 全局温度始终大于 0
+  const f1 = globally(atom<SystemState>(s => s.temp > 0));
+  console.log('G(temp > 0):', interpreter.evaluate(f1, trace));
+
+  // F(alert): 最终会发生警报
+  const f2 = finally_(atom<SystemState>(s => s.alert));
+  console.log('F(alert):', interpreter.evaluate(f2, trace));
+
+  // X(alert): 下一步就发生警报（在位置 1 求值，对应 trace[2]）
+  const f3 = next(atom<SystemState>(s => s.alert));
+  console.log('X(alert) @ pos 1:', interpreter.evaluate(f3, trace, 1));
+  console.log('X(alert) @ pos 2:', interpreter.evaluate(f3, trace, 2));
+
+  // (temp < 50) U (alert): 在警报响起之前，温度始终小于 50
+  const f4 = until(
+    atom<SystemState>(s => s.temp < 50),
+    atom<SystemState>(s => s.alert)
   );
-  console.log('\n--- G(request → (request U processing)) ---');
-  const untilResult = checker.check(untilProp);
-  console.log('成立?', untilResult.holds, '检查路径数:', untilResult.checkedPaths);
+  console.log('(temp < 50) U alert:', interpreter.evaluate(f4, trace));
 
-  // 性质 4：X(request) 从 idle 出发的下一步
-  const nextProp = LTL.X(LTL.atom(s => s === 'request'));
-  console.log('\n--- X(request) (从 idle) ---');
-  const nextResult = checker.check(nextProp);
-  console.log('成立?', nextResult.holds);
+  // G(¬alert) ∨ F(alert): 始终无警报或最终有警报（排中律演示）
+  const f5 = or(
+    globally(not(atom<SystemState>(s => s.alert))),
+    finally_(atom<SystemState>(s => s.alert))
+  );
+  console.log('G(¬alert) ∨ F(alert):', interpreter.evaluate(f5, trace));
 }

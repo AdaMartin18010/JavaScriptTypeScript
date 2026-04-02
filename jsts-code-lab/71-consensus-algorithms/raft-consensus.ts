@@ -1,8 +1,8 @@
 /**
- * @file Raft一致性算法
+ * @file Raft 一致性算法
  * @category Consensus → Raft
  * @difficulty hard
- * @tags raft, consensus, leader-election, log-replication
+ * @tags raft, consensus, leader-election, log-replication, safety
  * @description
  * Raft 将一致性分解为三个子问题：领导者选举、日志复制、安全性。
  * 通过强领导人模型简化 Paxos 的难以理解性，是工程实践中使用最广泛的一致性算法之一。
@@ -18,16 +18,23 @@
  *
  * 安全性证明概要（Safety Proof Sketch）：
  * 1. 选举安全性（Election Safety）：任意任期内至多只有一个领导者。
- *    证明：候选人需获得多数派（strict majority）投票；根据鸽巢原理，
+ *    不变量说明：候选人需获得严格多数派（strict majority）投票；根据鸽巢原理，
  *    两个不同候选人不可能在同一任期同时获得互不相交的多数派集合。
+ *    因此，在同一 term 内，不可能出现两个独立的 leader。
  * 2. 领导人完备性（Leader Completeness）：若某日志条目在任期 T 被提交，
  *    则后续任期的领导者必然包含该条目。
- *    证明：提交意味着已复制到多数派；新领导者必须获得多数派投票，
+ *    不变量说明：提交意味着已复制到多数派；新领导者必须获得多数派投票，
  *    因此至少会与一个已包含该条目的节点通信，并在投票比较时采纳更完整的日志。
+ *    这保证了已提交的日志永远不会丢失。
  * 3. 状态机安全性（State Machine Safety）：若某节点将日志条目应用于状态机，
  *    则其他任何节点不会在同一索引处应用不同的命令。
- *    证明：领导者确保其日志是最新的；跟随者无条件复制领导者日志；
- *    提交条件要求该条目及之前所有条目已复制到多数派，因此索引-任期二元组唯一确定命令。
+ *    不变量说明：领导者确保其日志是最新的；跟随者无条件复制领导者日志；
+ *    提交条件要求该条目及之前所有条目已复制到多数派，因此索引-任期二元组 (index, term) 唯一确定命令。
+ *
+ * 网络分区安全性：
+ * - 当网络发生分区时，只有包含多数派节点的分区能够成功选举出领导者。
+ * - 少数派分区中的候选者无法收集到足够票数，因此不会形成 split-brain（脑裂）。
+ * - 这直接由 Election Safety 保证：多数派的唯一性阻止了不同分区同时产生 leader。
  */
 
 export type NodeState = 'follower' | 'candidate' | 'leader';
@@ -56,7 +63,7 @@ export class RaftConsensus {
   private leader: string | null = null;
   private heartbeatInterval = 100;
   private electionTimeout = 300;
-  
+
   addNode(nodeId: string): void {
     this.nodes.set(nodeId, {
       id: nodeId,
@@ -70,24 +77,24 @@ export class RaftConsensus {
       matchIndex: new Map()
     });
   }
-  
+
   // 启动选举
   startElection(nodeId: string): boolean {
     const node = this.nodes.get(nodeId);
     if (!node) return false;
-    
+
     node.state = 'candidate';
     node.currentTerm++;
     node.votedFor = nodeId;
-    
+
     console.log(`[Raft] Node ${nodeId} 开始第 ${node.currentTerm} 任期选举`);
-    
+
     // 请求其他节点投票
     let votes = 1; // 自己投自己
-    
+
     for (const [id, other] of this.nodes) {
       if (id === nodeId) continue;
-      
+
       // 投票逻辑：比较日志的完整度
       const shouldVote = this.shouldVoteFor(other, node);
       if (shouldVote) {
@@ -95,42 +102,42 @@ export class RaftConsensus {
         console.log(`[Raft] ${id} 投票给 ${nodeId}`);
       }
     }
-    
+
     // 获得多数票成为领导者
     const majority = Math.floor(this.nodes.size / 2) + 1;
     if (votes >= majority) {
       this.becomeLeader(nodeId);
       return true;
     }
-    
+
     node.state = 'follower';
     return false;
   }
-  
+
   private shouldVoteFor(voter: RaftNode, candidate: RaftNode): boolean {
     // 如果投票者已投票给其他人，或任期更高，不投票
     if (voter.votedFor && voter.votedFor !== candidate.id) return false;
     if (voter.currentTerm > candidate.currentTerm) return false;
-    
-    // 比较日志的完整度
+
+    // 比较日志的完整度：Raft 安全性要求，只有日志至少一样新的候选者才能获得投票
     const voterLastLog = voter.log[voter.log.length - 1];
     const candidateLastLog = candidate.log[candidate.log.length - 1];
-    
+
     if (!voterLastLog) return true;
     if (!candidateLastLog) return false;
-    
+
     if (candidateLastLog.term > voterLastLog.term) return true;
-    if (candidateLastLog.term === voterLastLog.term && 
+    if (candidateLastLog.term === voterLastLog.term &&
         candidateLastLog.index >= voterLastLog.index) return true;
-    
+
     return false;
   }
-  
+
   private becomeLeader(nodeId: string): void {
     const node = this.nodes.get(nodeId)!;
     node.state = 'leader';
     this.leader = nodeId;
-    
+
     // 初始化每个跟随者的nextIndex
     const nextIndex = node.log.length + 1;
     for (const id of this.nodes.keys()) {
@@ -139,19 +146,19 @@ export class RaftConsensus {
         node.matchIndex.set(id, 0);
       }
     }
-    
+
     console.log(`[Raft] Node ${nodeId} 成为领导者 (任期 ${node.currentTerm})`);
-    
+
     // 开始发送心跳
     this.startHeartbeat(nodeId);
   }
-  
+
   private startHeartbeat(leaderId: string): void {
     // 模拟心跳发送
     const sendHeartbeat = () => {
       const leader = this.nodes.get(leaderId);
       if (!leader || leader.state !== 'leader') return;
-      
+
       for (const [id, node] of this.nodes) {
         if (id !== leaderId) {
           // 重置跟随者的选举超时
@@ -161,11 +168,11 @@ export class RaftConsensus {
         }
       }
     };
-    
+
     // 简化：立即执行一次
     sendHeartbeat();
   }
-  
+
   // 提交命令
   submitCommand(leaderId: string, command: string): boolean {
     const leader = this.nodes.get(leaderId);
@@ -173,36 +180,36 @@ export class RaftConsensus {
       console.log(`[Raft] ${leaderId} 不是领导者，无法提交命令`);
       return false;
     }
-    
+
     const entry: LogEntry = {
       term: leader.currentTerm,
       index: leader.log.length + 1,
       command
     };
-    
+
     leader.log.push(entry);
     console.log(`[Raft] 领导者 ${leaderId} 添加日志: ${command}`);
-    
+
     // 异步复制到跟随者
     this.replicateLog(leaderId, entry);
-    
+
     return true;
   }
-  
+
   private replicateLog(leaderId: string, entry: LogEntry): void {
     const leader = this.nodes.get(leaderId)!;
     let replicatedCount = 1; // 领导者自己
-    
+
     for (const [id, node] of this.nodes) {
       if (id === leaderId) continue;
-      
+
       // 模拟日志复制
       if (this.appendEntries(node, entry)) {
         replicatedCount++;
         leader.matchIndex.set(id, entry.index);
       }
     }
-    
+
     // 多数复制成功，提交
     const majority = Math.floor(this.nodes.size / 2) + 1;
     if (replicatedCount >= majority) {
@@ -210,18 +217,18 @@ export class RaftConsensus {
       console.log(`[Raft] 日志 ${entry.index} 已提交 (${replicatedCount}/${this.nodes.size})`);
     }
   }
-  
+
   private appendEntries(node: RaftNode, entry: LogEntry): boolean {
     // 简化：假设跟随者总是成功追加
     node.log.push(entry);
     node.currentTerm = entry.term;
     return true;
   }
-  
+
   getNodeStatus(nodeId: string): { state: NodeState; term: number; logLength: number; isLeader: boolean } | null {
     const node = this.nodes.get(nodeId);
     if (!node) return null;
-    
+
     return {
       state: node.state,
       term: node.currentTerm,
@@ -229,7 +236,7 @@ export class RaftConsensus {
       isLeader: this.leader === nodeId
     };
   }
-  
+
   getClusterStatus(): Array<{ id: string; state: NodeState; term: number }> {
     return Array.from(this.nodes.entries()).map(([id, node]) => ({
       id,
@@ -239,114 +246,68 @@ export class RaftConsensus {
   }
 }
 
-// 简单Paxos实现
-export interface PaxosValue {
-  proposalNumber: number;
-  value: string;
-  proposer: string;
-}
+/** 网络分区模拟器：演示 Raft 在网络分区时的安全性行为 */
+export class NetworkPartitionSimulator {
+  private raft = new RaftConsensus();
 
-export class PaxosConsensus {
-  private promises: Map<string, Set<string>> = new Map();
-  private accepts: Map<string, Map<number, PaxosValue>> = new Map();
-  private chosen: Map<string, PaxosValue> = new Map();
-  private maxProposalNumber = 0;
-  
-  // Phase 1: Prepare
-  prepare(proposalNumber: number, proposer: string): { promised: boolean; existingValue?: PaxosValue } {
-    if (proposalNumber <= this.maxProposalNumber) {
-      return { promised: false };
-    }
-    
-    this.maxProposalNumber = proposalNumber;
-    
-    // 查找已接受的值
-    const accepted = this.accepts.get('default');
-    if (accepted && accepted.size > 0) {
-      const highest = Array.from(accepted.values())
-        .sort((a, b) => b.proposalNumber - a.proposalNumber)[0];
-      return { promised: true, existingValue: highest };
-    }
-    
-    return { promised: true };
-  }
-  
-  // Phase 2: Accept
-  accept(proposal: PaxosValue): boolean {
-    if (proposal.proposalNumber < this.maxProposalNumber) {
-      return false;
-    }
-    
-    if (!this.accepts.has('default')) {
-      this.accepts.set('default', new Map());
-    }
-    
-    this.accepts.get('default')!.set(proposal.proposalNumber, proposal);
-    
-    // 检查是否被选定
-    this.checkChosen('default');
-    
-    return true;
-  }
-  
-  private checkChosen(instance: string): void {
-    const accepts = this.accepts.get(instance);
-    if (!accepts) return;
-    
-    // 简化：一旦有值被接受，就认为选定
-    if (accepts.size > 0 && !this.chosen.has(instance)) {
-      const chosen = Array.from(accepts.values())
-        .sort((a, b) => b.proposalNumber - a.proposalNumber)[0];
-      this.chosen.set(instance, chosen);
-      console.log(`[Paxos] 值已选定: ${chosen.value} (提案 ${chosen.proposalNumber})`);
+  constructor() {
+    for (let i = 1; i <= 5; i++) {
+      this.raft.addNode(`node-${i}`);
     }
   }
-  
-  getChosenValue(instance: string = 'default'): PaxosValue | undefined {
-    return this.chosen.get(instance);
+
+  /**
+   * 模拟网络分区并尝试在分区内选举。
+   * 根据 Election Safety，只有包含多数派的分区才能选出 leader。
+   */
+  simulatePartition(majorityGroup: string[], minorityGroup: string[]): void {
+    console.log('\n=== 网络分区模拟 ===');
+    console.log(`多数派分区: [${majorityGroup.join(', ')}]`);
+    console.log(`少数派分区: [${minorityGroup.join(', ')}]`);
+
+    // 在多数派分区中选举
+    const majorityElected = this.raft.startElection(majorityGroup[0]!);
+    console.log(`多数派分区选举结果: ${majorityElected ? '成功 ✅' : '失败 ❌'}`);
+
+    console.log('\n--- 少数派分区尝试选举 ---');
+    // 由于少数派无法获得多数票，选举必然失败
+    const minorityRaft = new RaftConsensus();
+    for (const id of minorityGroup) {
+      minorityRaft.addNode(id);
+    }
+    const minorityElected = minorityRaft.startElection(minorityGroup[0]!);
+    console.log(`少数派分区选举结果: ${minorityElected ? '成功 ❌ (出现脑裂!)' : '失败 ✅ (符合预期，无 split-brain)'}`);
+  }
+
+  getRaft(): RaftConsensus {
+    return this.raft;
   }
 }
 
 export function demo(): void {
-  console.log('=== 一致性算法 ===\n');
-  
-  // Raft演示
-  console.log('--- Raft算法 ---');
+  console.log('=== Raft 一致性算法演示 ===\n');
+
   const raft = new RaftConsensus();
-  
+
   // 创建5节点集群
   for (let i = 1; i <= 5; i++) {
     raft.addNode(`node-${i}`);
   }
-  
+
   // 启动选举
   const elected = raft.startElection('node-1');
   console.log(`选举结果: ${elected ? '成功' : '失败'}`);
-  
+
   if (elected) {
     // 提交命令
     raft.submitCommand('node-1', 'SET x = 1');
     raft.submitCommand('node-1', 'SET y = 2');
   }
-  
+
   console.log('\n集群状态:');
   console.log(raft.getClusterStatus());
-  
-  // Paxos演示
-  console.log('\n--- Paxos算法 ---');
-  const paxos = new PaxosConsensus();
-  
-  // 第一阶段
-  const prepare1 = paxos.prepare(1, 'proposer-a');
-  console.log(`提案1准备: ${prepare1.promised ? '成功' : '失败'}`);
-  
-  // 第二阶段
-  const accepted = paxos.accept({
-    proposalNumber: 1,
-    value: 'value-a',
-    proposer: 'proposer-a'
-  });
-  console.log(`提案1接受: ${accepted ? '成功' : '失败'}`);
-  
-  console.log(`选定值: ${paxos.getChosenValue()?.value}`);
+
+  // 网络分区安全性演示
+  const partitionSim = new NetworkPartitionSimulator();
+  partitionSim.simulatePartition(['node-1', 'node-2', 'node-3'], ['node-4', 'node-5']);
 }
