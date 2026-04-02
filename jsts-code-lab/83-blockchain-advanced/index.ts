@@ -8,4 +8,4 @@
  * - 跨链桥
  */
 
-export * from './smart-contracts.js';
+export * as SmartContracts from './smart-contracts.js';

@@ -9,5 +9,5 @@
  * - 优化选项
  */
 
-export * from './vite-config.js';
-export * from './eslint-prettier.js';
+export * as ViteConfig from './vite-config.js';
+export * as EslintPrettier from './eslint-prettier.js';

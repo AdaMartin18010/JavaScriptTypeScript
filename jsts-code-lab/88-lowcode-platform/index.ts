@@ -8,4 +8,4 @@
  * - 工作流引擎
  */
 
-export * from './lowcode-engine.js';
+export * as LowcodeEngine from './lowcode-engine.js';

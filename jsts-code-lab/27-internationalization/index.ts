@@ -8,4 +8,4 @@
  * - 日期/数字格式化
  */
 
-export * from './i18n-system.js';
+export * as I18nSystem from './i18n-system.js';

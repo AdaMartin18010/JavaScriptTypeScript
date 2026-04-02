@@ -8,4 +8,4 @@
  * - 对比度检查
  */
 
-export * from './a11y-utils.js';
+export * as A11yUtils from './a11y-utils.js';

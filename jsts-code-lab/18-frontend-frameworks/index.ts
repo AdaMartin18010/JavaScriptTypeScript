@@ -9,6 +9,5 @@
  * - 状态管理
  */
 
-export * from './react-patterns.js';
-export * from './router-implementation.js';
-export * from './state-management.js';
+export * as RouterImplementation from './router-implementation.js';
+export * as StateManagement from './state-management.js';

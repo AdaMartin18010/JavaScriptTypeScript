@@ -8,4 +8,4 @@
  * - 进度显示
  */
 
-export * from './cli-builder.js';
+export * as CliBuilder from './cli-builder.js';

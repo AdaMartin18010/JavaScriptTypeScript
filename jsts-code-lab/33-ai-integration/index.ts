@@ -8,4 +8,4 @@
  * - AI 代理
  */
 
-export * from './ai-sdk-patterns.js';
+export * as AiSdkPatterns from './ai-sdk-patterns.js';

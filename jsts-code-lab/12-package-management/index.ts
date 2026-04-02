@@ -2,5 +2,5 @@
  * @file 包管理模块入口
  */
 
-export * from './npm-basics.js';
-export * from './monorepo-workspaces.js';
+export * as NpmBasics from './npm-basics.js';
+export * as MonorepoWorkspaces from './monorepo-workspaces.js';

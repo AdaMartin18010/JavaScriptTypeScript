@@ -8,4 +8,4 @@
  * - 自适应UI
  */
 
-export * from './ai-component-system.js';
+export * as AiComponentSystem from './ai-component-system.js';

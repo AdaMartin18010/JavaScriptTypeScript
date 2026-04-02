@@ -9,5 +9,5 @@
  * - CI/CD 流水线
  */
 
-export * from './docker-config.js';
-export * from './cicd-pipeline.js';
+export * as DockerConfig from './docker-config.js';
+export * as CicdPipeline from './cicd-pipeline.js';

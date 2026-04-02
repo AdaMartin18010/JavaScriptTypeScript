@@ -7,4 +7,4 @@
  * - 数据转换
  */
 
-export * from './chart-architecture.js';
+export * as ChartArchitecture from './chart-architecture.js';

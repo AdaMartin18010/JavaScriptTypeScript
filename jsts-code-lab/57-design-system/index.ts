@@ -7,4 +7,4 @@
  * - 主题系统
  */
 
-export * from './design-tokens.js';
+export * as DesignTokens from './design-tokens.js';

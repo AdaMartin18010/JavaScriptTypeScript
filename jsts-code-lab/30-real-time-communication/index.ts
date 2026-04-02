@@ -8,4 +8,4 @@
  * - 信令服务器
  */
 
-export * from './sse-webrtc.js';
+export * as SseWebrtc from './sse-webrtc.js';

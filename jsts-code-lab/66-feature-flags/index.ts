@@ -8,4 +8,4 @@
  * - 渐进发布
  */
 
-export * from './feature-flag-system.js';
+export * as FeatureFlagSystem from './feature-flag-system.js';

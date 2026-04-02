@@ -7,4 +7,4 @@
  * - API路由模式
  */
 
-export * from './end-to-end-types.js';
+export * as EndToEndTypes from './end-to-end-types.js';

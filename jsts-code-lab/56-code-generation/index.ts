@@ -7,4 +7,4 @@
  * - 代码补全
  */
 
-export * from './ai-code-generator.js';
+export * as AiCodeGenerator from './ai-code-generator.js';

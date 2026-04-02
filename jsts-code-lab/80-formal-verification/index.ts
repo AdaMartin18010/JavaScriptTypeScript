@@ -8,4 +8,4 @@
  * - 模型检测
  */
 
-export * from './verification-framework.js';
+export * as VerificationFramework from './verification-framework.js';

@@ -8,4 +8,4 @@
  * - 延迟队列
  */
 
-export * from './queue-implementation.js';
+export * as QueueImplementation from './queue-implementation.js';

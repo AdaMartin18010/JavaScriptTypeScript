@@ -8,4 +8,4 @@
  * - 用户行为
  */
 
-export * from './analytics-engine.js';
+export * as AnalyticsEngine from './analytics-engine.js';

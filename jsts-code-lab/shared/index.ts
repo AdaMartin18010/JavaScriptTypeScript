@@ -4,10 +4,10 @@
  */
 
 // 类型
-export * from './types/index.js';
+export * as Types from './types/index.js';
 
 // 工具函数
-export * from './utils/index.js';
+export * as Utils from './utils/index.js';
 
 // 验证工具
-export * from './utils/validation.js';
+export * as Validation from './utils/validation.js';

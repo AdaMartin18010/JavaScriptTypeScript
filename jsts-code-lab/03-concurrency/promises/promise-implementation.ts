@@ -23,9 +23,9 @@ enum PromiseState {
 
 class MyPromise<T> {
   private state = PromiseState.Pending;
-  private value?: T;
+  private value?: T | PromiseLike<T>;
   private reason?: any;
-  private onFulfilledCallbacks: Array<(value: T) => void> = [];
+  private onFulfilledCallbacks: Array<(value: T | PromiseLike<T>) => void> = [];
   private onRejectedCallbacks: Array<(reason: any) => void> = [];
 
   constructor(executor: Executor<T>) {
@@ -57,13 +57,13 @@ class MyPromise<T> {
     onRejected?: OnRejected<TResult2> | null
   ): MyPromise<TResult1 | TResult2> {
     return new MyPromise((resolve, reject) => {
-      const fulfilledHandler = (value: T) => {
+      const fulfilledHandler = (value: T | PromiseLike<T>) => {
         if (!onFulfilled) {
           resolve(value as unknown as TResult1);
           return;
         }
         try {
-          resolve(onFulfilled(value));
+          resolve(onFulfilled(value as T));
         } catch (error) {
           reject(error);
         }
@@ -157,23 +157,6 @@ class MyPromise<T> {
 
 // ============================================================================
 // 2. 使用示例
-// ============================================================================
-
-const demo = new MyPromise<number>((resolve, reject) => {
-  setTimeout(() => resolve(42), 100);
-});
-
-demo
-  .then(value => {
-    console.log('Value:', value);
-    return value * 2;
-  })
-  .then(value => {
-    console.log('Doubled:', value);
-  });
-
-// ============================================================================
-// 导出
 // ============================================================================
 
 export { MyPromise };

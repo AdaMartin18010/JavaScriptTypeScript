@@ -10,6 +10,6 @@
  * - WebSocket 实时通信
  */
 
-export * from './express-patterns.js';
-export * from './api-design.js';
-export * from './websocket-patterns.js';
+export * as ExpressPatterns from './express-patterns.js';
+export * as ApiDesign from './api-design.js';
+export * as WebsocketPatterns from './websocket-patterns.js';

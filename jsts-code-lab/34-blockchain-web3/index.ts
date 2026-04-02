@@ -8,4 +8,4 @@
  * - 多链支持
  */
 
-export * from './web3-patterns.js';
+export * as Web3Patterns from './web3-patterns.js';

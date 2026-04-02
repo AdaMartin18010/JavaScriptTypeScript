@@ -8,4 +8,4 @@
  * - 搜索建议
  */
 
-export * from './search-implementation.js';
+export * as SearchImplementation from './search-implementation.js';

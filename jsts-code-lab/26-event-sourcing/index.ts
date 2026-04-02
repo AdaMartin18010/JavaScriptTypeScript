@@ -8,4 +8,4 @@
  * - Saga 流程
  */
 
-export * from './event-store.js';
+export * as EventStore from './event-store.js';

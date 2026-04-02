@@ -8,4 +8,4 @@
  * - 语义搜索
  */
 
-export * from './nlp-pipeline.js';
+export * as NlpPipeline from './nlp-pipeline.js';

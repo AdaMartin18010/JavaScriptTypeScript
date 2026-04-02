@@ -8,4 +8,4 @@
  * - 安全头部
  */
 
-export * from './xss-csp.js';
+export * as XssCsp from './xss-csp.js';

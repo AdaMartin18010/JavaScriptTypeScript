@@ -10,7 +10,7 @@
  * - 连接池
  */
 
-export * from './prisma-patterns.js';
-export * from './sql-query-builder.js';
-export * from './migration-system.js';
-export * from './connection-pool.js';
+export * as PrismaPatterns from './prisma-patterns.js';
+export * as SqlQueryBuilder from './sql-query-builder.js';
+export * as MigrationSystem from './migration-system.js';
+export * as ConnectionPool from './connection-pool.js';

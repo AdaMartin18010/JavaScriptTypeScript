@@ -8,4 +8,4 @@
  * - A/B测试
  */
 
-export * from './ml-pipeline.js';
+export * as MlPipeline from './ml-pipeline.js';

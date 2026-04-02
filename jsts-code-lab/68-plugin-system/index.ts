@@ -8,4 +8,4 @@
  * - 沙箱隔离
  */
 
-export * from './plugin-architecture.js';
+export * as PluginArchitecture from './plugin-architecture.js';

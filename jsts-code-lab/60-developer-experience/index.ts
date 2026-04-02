@@ -8,4 +8,4 @@
  * - 开发工具集成
  */
 
-export * from './dev-server.js';
+export * as DevServer from './dev-server.js';

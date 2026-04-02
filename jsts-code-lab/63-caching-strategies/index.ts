@@ -8,4 +8,4 @@
  * - Write Behind
  */
 
-export * from './cache-patterns.js';
+export * as CachePatterns from './cache-patterns.js';

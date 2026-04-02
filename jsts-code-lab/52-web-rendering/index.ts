@@ -8,4 +8,4 @@
  * - Islands架构
  */
 
-export * from './intelligent-rendering.js';
+export * as IntelligentRendering from './intelligent-rendering.js';

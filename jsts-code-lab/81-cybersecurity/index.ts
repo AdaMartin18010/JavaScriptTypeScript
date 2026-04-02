@@ -8,4 +8,4 @@
  * - 入侵检测
  */
 
-export * from './security-framework.js';
+export * as SecurityFramework from './security-framework.js';

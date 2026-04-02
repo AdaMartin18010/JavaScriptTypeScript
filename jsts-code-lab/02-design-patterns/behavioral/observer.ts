@@ -215,8 +215,8 @@ export function demo(): void {
   emitter.on("message", data => console.log("\nEvent received:", data));
   emitter.once("message", data => console.log("Once handler:", data));
   
-  emitter.emit("message", { message: "First", count: 1 });
-  emitter.emit("message", { message: "Second", count: 2 });
+  emitter.emit("message", "First");
+  emitter.emit("message", "Second");
   
   // 响应式状态
   const state = new ObservableState(0);

@@ -8,4 +8,4 @@
  * - 限流熔断
  */
 
-export * from './gateway-implementation.js';
+export * as GatewayImplementation from './gateway-implementation.js';

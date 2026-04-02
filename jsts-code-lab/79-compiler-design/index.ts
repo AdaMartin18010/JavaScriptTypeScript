@@ -8,4 +8,4 @@
  * - 代码生成
  */
 
-export * from './compiler-pipeline.js';
+export * as CompilerPipeline from './compiler-pipeline.js';

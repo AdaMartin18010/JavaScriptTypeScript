@@ -8,4 +8,4 @@
  * - 分区容错
  */
 
-export * from './distributed-primitives.js';
+export * as DistributedPrimitives from './distributed-primitives.js';
