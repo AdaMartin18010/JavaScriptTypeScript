@@ -1,6 +1,6 @@
 # JavaScript/TypeScript 语言核心特性全览
 
-> 版本范围：ES2020–ES2025 (ES11–ES16) + TypeScript 5.8
+> 版本范围：ES2020–ES2025 (ES11–ES16) + TypeScript 5.8–6.0（含 7.0 前瞻）
 > 最后更新：2025年
 
 ---
@@ -105,6 +105,105 @@
     - [5.3 Hashbang 支持](#53-hashbang-支持)
       - [概念定义（形式化）](#概念定义形式化-18)
       - [使用示例](#使用示例-18)
+  - [6. ES2024 特性详解](#6-es2024-特性详解)
+    - [6.1 Object.groupBy / Map.groupBy](#61-objectgroupby--mapgroupby)
+      - [概念定义（形式化）](#概念定义形式化-19)
+      - [使用示例](#使用示例-19)
+    - [6.2 Promise.withResolvers](#62-promisewithresolvers)
+      - [概念定义（形式化）](#概念定义形式化-20)
+      - [使用示例](#使用示例-20)
+    - [6.3 String isWellFormed / toWellFormed](#63-string-iswellformed--towellformed)
+      - [概念定义（形式化）](#概念定义形式化-21)
+      - [使用示例](#使用示例-21)
+    - [6.4 RegExp `v` flag（unicodeSets）](#64-regexp-v-flagunicodesets)
+      - [概念定义（形式化）](#概念定义形式化-22)
+      - [使用示例](#使用示例-22)
+  - [7. ES2025 特性详解](#7-es2025-特性详解)
+    - [7.1 Atomics.pause](#71-atomicspause)
+      - [概念定义（形式化）](#概念定义形式化-23)
+      - [使用示例](#使用示例-23)
+    - [7.2 Iterator 辅助方法](#72-iterator-辅助方法)
+      - [概念定义（形式化）](#概念定义形式化-24)
+      - [使用示例](#使用示例-24)
+    - [7.3 Set 数学方法](#73-set-数学方法)
+      - [概念定义（形式化）](#概念定义形式化-25)
+      - [使用示例](#使用示例-25)
+    - [7.4 RegExp 增强（ES2025）](#74-regexp-增强es2025)
+      - [概念定义（形式化）](#概念定义形式化-26)
+      - [使用示例](#使用示例-26)
+    - [7.5 Promise.try](#75-promisetry)
+      - [概念定义（形式化）](#概念定义形式化-27)
+      - [使用示例](#使用示例-27)
+    - [7.6 Import Attributes（JSON 模块）](#76-import-attributesjson-模块)
+      - [概念定义（形式化）](#概念定义形式化-28)
+      - [使用示例](#使用示例-28)
+    - [7.7 Float16Array](#77-float16array)
+      - [概念定义（形式化）](#概念定义形式化-29)
+      - [使用示例](#使用示例-29)
+  - [8. TypeScript 5.x 核心特性](#8-typescript-5x-核心特性)
+    - [8.1 装饰器元数据 (Decorator Metadata)](#81-装饰器元数据-decorator-metadata)
+      - [概念定义（形式化）](#概念定义形式化-30)
+      - [使用示例](#使用示例-30)
+    - [8.2 const 类型参数](#82-const-类型参数)
+      - [概念定义（形式化）](#概念定义形式化-31)
+      - [使用示例](#使用示例-31)
+    - [8.3 NoInfer](#83-noinfer)
+      - [概念定义（形式化）](#概念定义形式化-32)
+      - [使用示例](#使用示例-32)
+    - [8.4 satisfies 运算符](#84-satisfies-运算符)
+      - [概念定义（形式化）](#概念定义形式化-33)
+      - [使用示例](#使用示例-33)
+    - [8.5 using 声明与显式资源管理](#85-using-声明与显式资源管理)
+      - [概念定义（形式化）](#概念定义形式化-34)
+      - [使用示例](#使用示例-34)
+    - [8.6 模块解析与类型剥离](#86-模块解析与类型剥离)
+      - [概念定义（形式化）](#概念定义形式化-35)
+      - [配置示例](#配置示例)
+    - [8.7 TypeScript 6.x 核心特性](#87-typescript-6x-核心特性)
+      - [概念定义（形式化）](#概念定义形式化-36)
+      - [使用示例](#使用示例-35)
+    - [8.8 TypeScript 7.0 前瞻：Go 重写与 LSP 迁移](#88-typescript-70-前瞻go-重写与-lsp-迁移)
+  - [9. 类型系统深度解析](#9-类型系统深度解析)
+    - [9.1 基础类型系统](#91-基础类型系统)
+      - [9.1.1 原始类型](#911-原始类型)
+      - [9.1.2 对象类型](#912-对象类型)
+    - [9.2 联合类型与交叉类型](#92-联合类型与交叉类型)
+      - [9.2.1 联合类型 (Union Types)](#921-联合类型-union-types)
+      - [9.2.2 交叉类型 (Intersection Types)](#922-交叉类型-intersection-types)
+    - [9.3 条件类型](#93-条件类型)
+      - [9.3.1 基本条件类型](#931-基本条件类型)
+      - [9.3.2 内置条件类型](#932-内置条件类型)
+    - [9.4 映射类型](#94-映射类型)
+      - [9.4.1 基本映射类型](#941-基本映射类型)
+      - [9.4.2 高级映射模式](#942-高级映射模式)
+    - [9.5 模板字面量类型](#95-模板字面量类型)
+      - [9.5.1 基本模板字面量类型](#951-基本模板字面量类型)
+      - [9.5.2 高级模板字面量模式](#952-高级模板字面量模式)
+    - [9.6 类型推断与类型守卫](#96-类型推断与类型守卫)
+      - [9.6.1 类型推断](#961-类型推断)
+      - [9.6.2 类型守卫](#962-类型守卫)
+    - [9.7 类型谓词与类型断言](#97-类型谓词与类型断言)
+      - [9.7.1 类型谓词详解](#971-类型谓词详解)
+      - [9.7.2 类型断言](#972-类型断言)
+    - [9.8 逆变、协变、双变与不变](#98-逆变协变双变与不变)
+      - [9.8.1 类型系统变型理论](#981-类型系统变型理论)
+      - [9.8.2 变型在实际代码中的影响](#982-变型在实际代码中的影响)
+  - [10. 形式化类型理论](#10-形式化类型理论)
+    - [10.1 类型系统的形式化定义](#101-类型系统的形式化定义)
+      - [10.1.1 类型判断规则](#1011-类型判断规则)
+      - [10.1.2 TypeScript 类型关系的形式化](#1012-typescript-类型关系的形式化)
+    - [10.2 类型推断的形式化](#102-类型推断的形式化)
+      - [10.2.1 基于约束求解的类型推断](#1021-基于约束求解的类型推断)
+      - [10.2.2 与 Hindley-Milner 的核心区别](#1022-与-hindley-milner-的核心区别)
+    - [10.3 条件类型的形式化](#103-条件类型的形式化)
+      - [10.3.1 条件类型求值规则](#1031-条件类型求值规则)
+      - [10.3.2 条件类型推导示例](#1032-条件类型推导示例)
+    - [10.4 类型系统可靠性分析](#104-类型系统可靠性分析)
+      - [10.4.1 类型安全边界](#1041-类型安全边界)
+      - [10.4.2 类型系统限制](#1042-类型系统限制)
+  - [附录](#附录)
+    - [A. 类型速查表](#a-类型速查表)
+    - [B. ES 版本特性对照表](#b-es-版本特性对照表)
 
 ---
 
@@ -123,24 +222,25 @@ ES2021 (ES12)   → 2021年6月  → Promise.any, 数字分隔符
 ES2022 (ES13)   → 2022年6月  → Class私有字段, at(), Object.hasOwn
 ES2023 (ES14)   → 2023年6月  → 不可变数组方法, findLast
 ES2024 (ES15)   → 2024年6月  → Array分组, Promise.withResolvers, RegExp v flag
-ES2025 (ES16)   → 2025年6月  → Iterator辅助方法, Set数学方法, Atomics.pause, Float16Array
+ES2025 (ES16)   → 2025年6月  → Iterator辅助方法, Set数学方法, Atomics.pause, Float16Array, Explicit Resource Management
+ES2026 (ES17)   → 2026年6月（预计）→ Temporal API, import defer, Decorators, Joint Iteration 等（Stage 3/4）
 ```
 
-*来源：ECMA-262 16th Edition, June 2025*
+*来源：ECMA-262 16th Edition, June 2025; TC39 Temporal Proposal Stage 4; TC39 import defer Proposal Stage 3*
 
 ### 1.2 特性分类矩阵
 
-| 类别 | ES2020 | ES2021 | ES2022 | ES2023 | ES2024 | ES2025 |
-|------|--------|--------|--------|--------|--------|--------|
-| 数据类型 | BigInt | - | - | - | - | Float16Array |
-| 异步编程 | allSettled | any, WeakRef | - | - | withResolvers | Promise.try |
-| 数组/迭代器操作 | - | - | at() | toSorted等 | groupBy | Iterator helpers |
-| 集合操作 | - | - | - | - | - | Set 数学方法 |
-| 对象操作 | globalThis | - | hasOwn() | - | groupBy | - |
-| 类相关 | - | - | 私有字段 | - | - | - |
-| 字符串 | - | replaceAll | - | - | isWellFormed | RegExp 增强 |
-| 并发/内存 | - | - | - | - | waitAsync | Atomics.pause |
-| 模块 | 动态 import | - | - | - | - | Import Attributes |
+| 类别 | ES2020 | ES2021 | ES2022 | ES2023 | ES2024 | ES2025 | ES2026(Stage 3/4) |
+|------|--------|--------|--------|--------|--------|--------|-------------------|
+| 数据类型 | BigInt | - | - | - | - | Float16Array | Temporal API |
+| 异步编程 | allSettled | any, WeakRef | - | - | withResolvers | Promise.try | - |
+| 数组/迭代器操作 | - | - | at() | toSorted等 | groupBy | Iterator helpers | Joint Iteration |
+| 集合操作 | - | - | - | - | - | Set 数学方法 | - |
+| 对象操作 | globalThis | - | hasOwn() | - | groupBy | - | - |
+| 类相关 | - | - | 私有字段 | - | - | - | Decorators |
+| 字符串 | - | replaceAll | - | - | isWellFormed | RegExp 增强 | - |
+| 并发/内存 | - | - | - | - | waitAsync | Atomics.pause | - |
+| 模块 | 动态 import | - | - | - | - | Import Attributes | import defer |
 
 ---
 
@@ -2005,3 +2105,2398 @@ console.log(content);
 ```
 
 ---
+
+## 6. ES2024 特性详解
+
+### 6.1 Object.groupBy / Map.groupBy
+
+#### 概念定义（形式化）
+
+**Object.groupBy** 将可迭代对象按回调函数返回的键分组为对象。
+
+**Map.groupBy** 将可迭代对象按回调函数返回的键分组为 Map。
+
+**形式化定义：**
+
+```
+Object.groupBy: (items: Iterable<T>, callback: (T, number) => string) → Record<string, T[]>
+Map.groupBy: (items: Iterable<T>, callback: (T, number) => K) → Map<K, T[]>
+
+语义：
+- 遍历 items，对每个元素调用 callback
+- 按返回的键将元素分组
+- Object.groupBy 键必须是字符串或可以转为字符串
+```
+
+*来源：ECMA-262 §20.1.2.13, §24.1.2.2*
+
+> **版本归属说明**：`Object.groupBy` 与 `Map.groupBy` 是 **ES2024 (ES15)** 的特性，而非 ES2025。ES2025 在此基础上扩展了 `Iterator` 辅助方法与 `Set` 数学方法。
+
+#### 使用示例
+
+```javascript
+// ===== Object.groupBy =====
+const people = [
+  { name: 'Alice', age: 25, city: 'NYC' },
+  { name: 'Bob', age: 30, city: 'LA' },
+  { name: 'Carol', age: 25, city: 'NYC' },
+  { name: 'David', age: 30, city: 'LA' }
+];
+
+// 按城市分组
+const byCity = Object.groupBy(people, person => person.city);
+console.log(byCity);
+// {
+//   NYC: [{ name: 'Alice', ... }, { name: 'Carol', ... }],
+//   LA: [{ name: 'Bob', ... }, { name: 'David', ... }]
+// }
+
+// 按年龄段分组
+const byAgeGroup = Object.groupBy(people, person =>
+  person.age < 30 ? 'young' : 'adult'
+);
+
+// ===== Map.groupBy =====
+// 使用非字符串键
+const byAge = Map.groupBy(people, person => person.age);
+console.log(byAge.get(25));  // [{ name: 'Alice', ... }, { name: 'Carol', ... }]
+
+// 使用对象作为键
+const categories = new Map();
+const byCategory = Map.groupBy(products, product => {
+  return categories.get(product.categoryId);
+});
+
+// ===== 与 reduce 对比 =====
+// 旧方式
+const byCityOld = people.reduce((acc, person) => {
+  const key = person.city;
+  acc[key] = acc[key] || [];
+  acc[key].push(person);
+  return acc;
+}, {});
+
+// 新方式
+const byCityNew = Object.groupBy(people, p => p.city);
+
+// ===== 处理 null/undefined =====
+const items = [1, 2, null, 3, undefined, 4];
+const grouped = Object.groupBy(items, x => x ?? 'nullish');
+// { '1': [1], '2': [2], 'nullish': [null, undefined], '3': [3], '4': [4] }
+```
+
+---
+
+### 6.2 Promise.withResolvers
+
+#### 概念定义（形式化）
+
+**Promise.withResolvers** 返回一个对象，包含 Promise 及其 resolve/reject 函数。
+
+**形式化定义：**
+
+```
+Promise.withResolvers: () → { promise: Promise<T>, resolve: (T) => void, reject: (any) => void }
+
+语义：
+- 创建一个未解决的 Promise
+- 将 resolve/reject 暴露给外部
+- 用于需要外部控制 Promise 状态的场景
+```
+
+*来源：ECMA-262 §27.2.4.6*
+
+> **版本归属说明**：`Promise.withResolvers` 是 **ES2024 (ES15)** 的特性。ES2025 新增了 `Promise.try()` 用于统一处理同步/异步错误。
+
+#### 使用示例
+
+```javascript
+// ===== 基本用法 =====
+const { promise, resolve, reject } = Promise.withResolvers();
+
+// 稍后解决
+setTimeout(() => resolve('Done!'), 1000);
+
+const result = await promise;
+console.log(result);  // 'Done!'
+
+// ===== 实际应用场景：可取消的请求 =====
+class CancelableRequest {
+  #controller = null;
+
+  async fetch(url) {
+    this.#controller = new AbortController();
+    const { promise, resolve, reject } = Promise.withResolvers();
+
+    fetch(url, { signal: this.#controller.signal })
+      .then(resolve)
+      .catch(reject);
+
+    return promise;
+  }
+
+  cancel() {
+    this.#controller?.abort();
+  }
+}
+
+// ===== 手动控制异步流程 =====
+function createDeferred() {
+  const { promise, resolve, reject } = Promise.withResolvers();
+  return {
+    promise,
+    resolve,
+    reject,
+    // 便捷方法
+    then: (fn) => promise.then(fn),
+    catch: (fn) => promise.catch(fn)
+  };
+}
+
+// ===== 与旧方式对比 =====
+// 旧方式
+let outerResolve, outerReject;
+const oldPromise = new Promise((resolve, reject) => {
+  outerResolve = resolve;
+  outerReject = reject;
+});
+
+// 新方式
+const { promise, resolve, reject } = Promise.withResolvers();
+```
+
+---
+
+### 6.3 String isWellFormed / toWellFormed
+
+#### 概念定义（形式化）
+
+**isWellFormed** 检查字符串是否是格式良好的 UTF-16。
+
+**toWellFormed** 将字符串中的孤立代理对替换为替换字符（U+FFFD）。
+
+**形式化定义：**
+
+```
+isWellFormed: () → boolean
+toWellFormed: () → string
+
+语义：
+- 代理对：UTF-16 中用于表示增补字符的 16 位码元对
+- 孤立代理：不成对的代理码元（无效）
+- toWellFormed 将孤立代理替换为 \uFFFD
+```
+
+*来源：ECMA-262 §22.1.3.13, §22.1.3.14*
+
+#### 使用示例
+
+```javascript
+// ===== isWellFormed =====
+const wellFormed = 'Hello';
+console.log(wellFormed.isWellFormed());  // true
+
+// 创建格式不良的字符串（包含孤立代理）
+const illFormed = 'Hello\uD800';  // \uD800 是高代理，没有低代理配对
+console.log(illFormed.isWellFormed());  // false
+
+// ===== toWellFormed =====
+const illFormed = 'Hello\uD800World';
+const wellFormed = illFormed.toWellFormed();
+console.log(wellFormed);  // 'Hello\uFFFDWorld'
+
+// ===== 实际应用场景 =====
+// 处理外部数据
+function safeJSONStringify(obj) {
+  const str = JSON.stringify(obj);
+  return str.toWellFormed();
+}
+
+// 确保字符串可以安全编码
+function safeEncode(str) {
+  if (!str.isWellFormed()) {
+    console.warn('String contains ill-formed code units, fixing...');
+    return str.toWellFormed();
+  }
+  return str;
+}
+
+// ===== 与 encodeURI 对比 =====
+const illFormed = '\uD800';
+
+try {
+  encodeURI(illFormed);  // URIError: URI malformed
+} catch (e) {
+  console.log('encodeURI failed');
+}
+
+const fixed = illFormed.toWellFormed();
+console.log(encodeURI(fixed));  // 正常工作
+```
+
+---
+
+### 6.4 RegExp `v` flag（unicodeSets）
+
+#### 概念定义（形式化）
+
+ES2024 引入了 `v` flag（`unicodeSets`），作为 `u` flag（`unicode`）的超集，为正则表达式提供更强大的 Unicode 集合操作能力。在 `RegExp.prototype[Symbol.match]` 等方法的调用中，`v` flag 改变了正则引擎对字符类的解析语义：它允许使用集合运算（交集 `&&`、差集 `--`、并集）、Unicode 字符串属性（`\p{...}`）以及字符串字面量（`\q{...}`）。
+
+**形式化定义：**
+
+```
+RegExpLiteral ::= "/" Pattern "/" [gimsuvy]*
+
+v-flag 语义扩展：
+- 字符类支持集合运算：[[A]&&[B]]、[[A]--[B]]
+- 支持 \p{Property=Value} 的字符串属性
+- 支持 \q{string} 多码点字符串字面量
+- 在 Symbol.match 上下文中按 grapheme cluster 匹配
+```
+
+*来源：ECMA-262 §22.2*
+
+> **版本归属说明**：`v` flag 是 **ES2024 (ES15)** 引入的。ES2025 在此基础上增加了重复命名捕获组、内联标志修饰符和 `RegExp.escape()`。
+
+#### 使用示例
+
+```javascript
+// ===== 集合运算：交集 =====
+// 匹配希腊语小写字母
+const greekLower = /[\p{Lowercase}&&\p{Script=Greek}]/v;
+console.log(greekLower.test('α')); // true
+console.log(greekLower.test('Α')); // false (大写)
+console.log(greekLower.test('a')); // false (非希腊语)
+
+// ===== 集合运算：差集 =====
+// 匹配 ASCII 字母，但排除元音
+const noVowels = /^[[a-zA-Z]--[aeiouAEIOU]]+$/v;
+console.log(noVowels.test('rhythm')); // true
+console.log(noVowels.test('hello'));  // false
+
+// ===== 字符串属性与字面量 =====
+// 匹配表情符号键帽序列或特定字符串
+const re = /^[\p{Emoji_Keycap_Sequence}\q{🇧🇪|abc}0-9]$/v;
+console.log(re.test('4️⃣')); // true
+console.log(re.test('🇧🇪')); // true
+console.log(re.test('abc')); // true
+
+// ===== Symbol.match 语义影响 =====
+const str = 'Hello world';
+const matchResult = str.match(/\p{Letter}+/gv);
+console.log(matchResult); // ['Hello', 'world']
+
+// v flag 下多码点字符正确匹配
+const flagRe = /[\p{RGI_Emoji_Flag_Sequence}]/v;
+console.log('🇧🇪'.match(flagRe)); // ['🇧🇪'] — 在 v flag 下按完整 grapheme 处理
+```
+
+---
+
+## 7. ES2025 特性详解
+
+### 7.1 Atomics.pause
+
+#### 概念定义（形式化）
+
+**Atomics.pause** 为自旋锁（spinlock）和忙等待（busy-waiting）场景提供 CPU 提示，允许处理器在等待共享内存状态变化时降低功耗、减少总线竞争，并提升多线程代码的性能。
+
+**形式化定义：**
+
+```
+Atomics.pause: (iterationHint?: number) → undefined
+
+语义：
+- iterationHint 为可选提示值，指示当前处于第几次自旋迭代
+- 具体行为由底层硬件/宿主环境决定，通常是执行 PAUSE 或 YIELD 指令
+- 不保证任何可观察的内存效果，仅作为性能优化提示
+```
+
+*来源：ECMA-262 §25.4.11*
+
+#### 使用示例
+
+```javascript
+// ===== 自旋锁优化 =====
+const sharedArray = new Int32Array(new SharedArrayBuffer(4));
+
+// 等待共享内存状态改变
+while (Atomics.load(sharedArray, 0) === 0) {
+  Atomics.pause(); // 让出 CPU，降低功耗
+}
+
+// ===== 带迭代提示的自旋 =====
+for (let i = 0; Atomics.load(sharedArray, 0) === 0; i++) {
+  Atomics.pause(i);
+  // 底层实现可根据迭代次数调整退避策略
+}
+
+// ===== 与 Atomics.wait / waitAsync 对比 =====
+// wait/waitAsync：阻塞线程，适合长等待
+// Atomics.pause：非阻塞提示，适合短自旋
+```
+
+---
+
+### 7.2 Iterator 辅助方法
+
+#### 概念定义（形式化）
+
+ES2025 引入了全局的 `Iterator` 构造函数及其原型上的辅助方法，允许对任意可迭代对象进行惰性（lazy）的链式操作，类似于数组方法但不在中间步骤创建数组。
+
+**形式化定义：**
+
+```
+Iterator.from(object: Iterable<T> | Iterator<T>): IteratorObject<T>
+
+Iterator.prototype 方法：
+- map(mapper): IteratorObject<U>
+- filter(predicate): IteratorObject<T>
+- take(limit): IteratorObject<T>
+- drop(limit): IteratorObject<T>
+- flatMap(mapper): IteratorObject<U>
+- reduce(reducer, initial?): U
+- toArray(): T[]
+- forEach(fn): void
+- some(predicate): boolean
+- every(predicate): boolean
+- find(predicate): T | undefined
+- zip(...iterables): IteratorObject<T[]>
+```
+
+*来源：ECMA-262 §27.1.4*
+
+#### 使用示例
+
+```javascript
+// ===== 链式惰性操作 =====
+const arr = ['a', '', 'b', '', 'c', '', 'd', '', 'e'];
+
+const result = arr.values()
+  .filter(x => x.length > 0)
+  .drop(1)
+  .take(3)
+  .map(x => `=${x}=`)
+  .toArray();
+
+console.log(result); // ['=b=', '=c=', '=d=']
+
+// ===== 与生成器配合 =====
+function* naturals() {
+  let n = 1;
+  while (true) yield n++;
+}
+
+const firstFiveEvens = Iterator.from(naturals())
+  .filter(n => n % 2 === 0)
+  .take(5)
+  .toArray();
+
+console.log(firstFiveEvens); // [2, 4, 6, 8, 10]
+
+// ===== zip 同步遍历 =====
+const names = ['Alice', 'Bob'];
+const ages = [25, 30];
+
+for (const [name, age] of Iterator.zip(names, ages)) {
+  console.log(`${name} is ${age}`);
+}
+// Alice is 25
+// Bob is 30
+```
+
+---
+
+### 7.3 Set 数学方法
+
+#### 概念定义（形式化）
+
+ES2025 为 `Set.prototype` 添加了数学集合运算方法，使 `Set` 成为更完整的数据结构。
+
+**形式化定义：**
+
+```
+Set.prototype.union(other): Set<T>              // 并集
+Set.prototype.intersection(other): Set<T>       // 交集
+Set.prototype.difference(other): Set<T>         // 差集
+Set.prototype.symmetricDifference(other): Set<T>// 对称差集
+Set.prototype.isSubsetOf(other): boolean
+Set.prototype.isSupersetOf(other): boolean
+Set.prototype.isDisjointFrom(other): boolean
+```
+
+*来源：ECMA-262 §24.2.4*
+
+#### 使用示例
+
+```javascript
+const setA = new Set([1, 2, 3, 4]);
+const setB = new Set([3, 4, 5, 6]);
+
+// ===== 并集 =====
+console.log([...setA.union(setB)]); // [1, 2, 3, 4, 5, 6]
+
+// ===== 交集 =====
+console.log([...setA.intersection(setB)]); // [3, 4]
+
+// ===== 差集 =====
+console.log([...setA.difference(setB)]); // [1, 2]
+
+// ===== 对称差集 =====
+console.log([...setA.symmetricDifference(setB)]); // [1, 2, 5, 6]
+
+// ===== 子集/超集判断 =====
+const setC = new Set([1, 2]);
+console.log(setC.isSubsetOf(setA));     // true
+console.log(setA.isSupersetOf(setC));   // true
+console.log(setA.isDisjointFrom(setB)); // false
+console.log(setC.isDisjointFrom(setB)); // true (无共同元素)
+```
+
+---
+
+### 7.4 RegExp 增强（ES2025）
+
+#### 概念定义（形式化）
+
+ES2025 在 ES2024 `v` flag 的基础上进一步增强了正则表达式：引入 `RegExp.escape()`、内联标志修饰符（inline modifiers）以及重复命名捕获组（duplicate named capturing groups）。
+
+**形式化定义：**
+
+```
+RegExp.escape(string: string): string
+  // 将字符串中的正则元字符转义，使其可安全用于构造 RegExp
+
+Inline Modifiers:
+  (?i:pattern)   // 局部启用忽略大小写
+  (?-i:pattern)  // 局部禁用忽略大小写
+  (?ims:pattern) // 局部启用多个标志
+  (?-ims:pattern)// 局部禁用多个标志
+
+Duplicate Named Groups:
+  // 允许在不同分支中使用同名捕获组
+  /(?<year>\d{4})-(?<month>\d{2})|(?<month>\d{2})\/(?<year>\d{4})/
+```
+
+*来源：ECMA-262 §22.2.3, §22.2.1*
+
+#### 使用示例
+
+```javascript
+// ===== RegExp.escape =====
+const userInput = 'file.(txt)';
+const safePattern = RegExp.escape(userInput); // "file\.\(txt\)"
+const re = new RegExp(safePattern, 'i');
+console.log(re.test('File.(TXT)')); // true
+
+// ===== 内联标志修饰符 =====
+// 仅对括号内部分启用忽略大小写
+const re1 = /^[a-z](?-i:[a-z])$/i;
+console.log(re1.test('ab'));  // true
+console.log(re1.test('Ab'));  // true
+console.log(re1.test('aB'));  // false (B 不受外部 i 影响)
+
+const re2 = /^(?i:[a-z])[a-z]$/;
+console.log(re2.test('ab'));  // true
+console.log(re2.test('Ab'));  // true
+console.log(re2.test('aB'));  // false
+
+// ===== 重复命名捕获组 =====
+const dateRe = /(?<year>\d{4})-(?<month>\d{2})|(?<month>\d{2})\/(?<year>\d{4})/;
+console.log("2025-06".match(dateRe).groups); // { year: "2025", month: "06" }
+console.log("06/2025".match(dateRe).groups); // { year: "2025", month: "06" }
+```
+
+---
+
+### 7.5 Promise.try
+
+#### 概念定义（形式化）
+
+**Promise.try** 接受一个回调函数，将其返回值包装为 Promise，并统一捕获同步抛出的异常和异步的 reject。它消除了 `Promise.resolve().then()` 的微任务延迟问题。
+
+**形式化定义：**
+
+```
+Promise.try: (fn: () => T | Promise<T>) → Promise<T>
+
+语义：
+- 若 fn 同步返回 value，则返回 resolved Promise(value)
+- 若 fn 同步抛出异常，则返回 rejected Promise(error)
+- 若 fn 返回 Promise，则直接传递该 Promise
+```
+
+*来源：ECMA-262 §27.2.4.7*
+
+#### 使用示例
+
+```javascript
+// ===== 统一处理同步/异步错误 =====
+Promise.try(() => {
+  if (Math.random() > 0.5) throw new Error('同步错误');
+  return fetchData(); // 可能返回 Promise
+}).catch(console.error);
+
+// ===== 对比旧方式 =====
+// 旧方式有微任务延迟
+Promise.resolve()
+  .then(() => maybeThrow())
+  .catch(handleError);
+
+// 新方式立即执行
+Promise.try(() => maybeThrow())
+  .catch(handleError);
+
+// ===== 确保函数结果总是 Promise =====
+function safeCall(fn) {
+  return Promise.try(fn);
+}
+
+safeCall(() => 42).then(v => console.log(v));        // 42
+safeCall(() => { throw new Error('oops'); }).catch(e => console.log(e.message)); // 'oops'
+```
+
+---
+
+### 7.6 Import Attributes（JSON 模块）
+
+#### 概念定义（形式化）
+
+ES2025 标准化了 Import Attributes 语法（`with { type: 'json' }`），允许在导入模块时声明模块的属性，最初用于安全地导入 JSON 模块。
+
+**形式化定义：**
+
+```
+ImportDeclaration ::=
+  "import" ImportClause "from" ModuleSpecifier "with" "{" AttributeList "}"
+
+AttributeList ::=
+  Identifier ":" StringLiteral
+
+动态导入：
+  import(moduleSpecifier, { with: { type: 'json' } })
+```
+
+*来源：ECMA-262 §16.2.2*
+
+#### 使用示例
+
+```javascript
+// ===== 静态导入 JSON 模块 =====
+import config from './config.json' with { type: 'json' };
+console.log(config.apiUrl);
+
+// ===== 动态导入 JSON 模块 =====
+const data = await import('./data.json', {
+  with: { type: 'json' }
+});
+console.log(data.default);
+
+// ===== 与 assert 的演进关系 =====
+// 旧语法（已废弃）：
+// import config from './config.json' assert { type: 'json' };
+// 新语法（ES2025 标准）：
+// import config from './config.json' with { type: 'json' };
+```
+
+---
+
+### 7.7 Float16Array
+
+#### 概念定义（形式化）
+
+ES2025 引入了 `Float16Array` —— 一种 16 位半精度浮点数的 TypedArray，适用于 WebGPU、机器学习模型传输等需要节省内存的场景。
+
+**形式化定义：**
+
+```
+Float16Array: TypedArray
+DataView.prototype.getFloat16(byteOffset, littleEndian?): number
+DataView.prototype.setFloat16(byteOffset, value, littleEndian?): void
+Math.f16round(x: number): number
+```
+
+*来源：ECMA-262 §24.1, §24.3*
+
+#### 使用示例
+
+```javascript
+// ===== 创建 Float16Array =====
+const halfPrecision = new Float16Array([1.2, 3.4, 5.6]);
+console.log(halfPrecision.BYTES_PER_ELEMENT); // 2
+
+// ===== DataView 读写 =====
+const buffer = new ArrayBuffer(4);
+const view = new DataView(buffer);
+view.setFloat16(0, 1.337, true); // 小端序
+console.log(view.getFloat16(0, true)); // 1.3369140625 (精度损失)
+
+// ===== Math.f16round =====
+console.log(Math.f16round(1.337)); // 1.3369140625
+
+// ===== 应用场景：WebGPU/ML =====
+// 相比 Float32Array 节省 50% 内存
+const modelWeights = new Float16Array(1024 * 1024);
+```
+
+---
+
+## 8. TypeScript 5.x 核心特性
+
+### 8.1 装饰器元数据 (Decorator Metadata)
+
+#### 概念定义（形式化）
+
+TypeScript 5.0 实现了 ECMAScript Stage 3 装饰器提案，并增加了元数据支持。装饰器上下文对象包含 `metadata` 属性，用于存储与装饰目标关联的元数据。
+
+**形式化定义：**
+
+```
+装饰器上下文包含：
+- kind: 'class' | 'method' | 'getter' | 'setter' | 'field' | 'accessor'
+- name: string | symbol
+- access: { get?(), set?() }
+- private?: boolean
+- static?: boolean
+- addInitializer?: (initializer) => void
+- metadata?: Record<symbol, any>  // 元数据存储
+```
+
+*来源：TypeScript 5.0 Release Notes, TC39 Decorators Proposal*
+
+#### 使用示例
+
+```typescript
+// ===== 启用装饰器元数据 =====
+// tsconfig.json
+{
+  "compilerOptions": {
+    "experimentalDecorators": false,  // 使用新的装饰器
+    "emitDecoratorMetadata": true     // 启用元数据发射
+  }
+}
+
+// ===== 元数据装饰器 =====
+import 'reflect-metadata';
+
+const DESIGN_TYPE = Symbol.for('design:type');
+const DESIGN_PARAM_TYPES = Symbol.for('design:paramtypes');
+const DESIGN_RETURN_TYPE = Symbol.for('design:returntype');
+
+function LogType(target: any, propertyKey: string) {
+  const type = Reflect.getMetadata(DESIGN_TYPE, target, propertyKey);
+  console.log(`${propertyKey} type:`, type);
+}
+
+function Injectable(target: any) {
+  const paramTypes = Reflect.getMetadata(DESIGN_PARAM_TYPES, target);
+  console.log(`${target.name} dependencies:`, paramTypes);
+  return target;
+}
+
+// ===== 实际应用：依赖注入 =====
+@Injectable
+class DatabaseService {
+  constructor(
+    @Inject('CONFIG') private config: Config,
+    @Inject('LOGGER') private logger: Logger
+  ) {}
+
+  @LogType
+  connect(): Promise<Connection> {
+    // ...
+  }
+}
+
+// ===== 自定义元数据装饰器 =====
+const COLUMN_KEY = Symbol('column');
+
+function Column(options: { name?: string; type?: string } = {}) {
+  return function(target: any, propertyKey: string) {
+    const existing = Reflect.getMetadata(COLUMN_KEY, target) || [];
+    Reflect.defineMetadata(COLUMN_KEY, [
+      ...existing,
+      { property: propertyKey, ...options }
+    ], target);
+  };
+}
+
+@Entity('users')
+class User {
+  @Column({ name: 'user_id', type: 'uuid' })
+  id: string;
+
+  @Column({ name: 'user_name', type: 'varchar' })
+  name: string;
+
+  @Column({ type: 'timestamp' })
+  createdAt: Date;
+}
+
+// 读取元数据
+const columns = Reflect.getMetadata(COLUMN_KEY, User.prototype);
+console.log(columns);
+// [
+//   { property: 'id', name: 'user_id', type: 'uuid' },
+//   { property: 'name', name: 'user_name', type: 'varchar' },
+//   { property: 'createdAt', type: 'timestamp' }
+// ]
+```
+
+---
+
+### 8.2 const 类型参数
+
+#### 概念定义（形式化）
+
+**const 类型参数** 允许在类型参数声明中使用 `const` 修饰符，使推断的类型更加精确（字面量类型而非拓宽类型）。
+
+**形式化定义：**
+
+```
+ConstTypeParameter ::= "const" TypeParameter
+
+语义：
+- 推断时尽可能使用字面量类型
+- 类似于在调用时使用 as const
+```
+
+*来源：TypeScript 5.0 Release Notes*
+
+#### 使用示例
+
+```typescript
+// ===== 基本用法 =====
+// 不使用 const 类型参数
+function createArray<T>(items: readonly T[]): T[] {
+  return [...items];
+}
+
+const arr1 = createArray([1, 2, 3]);
+// T 被推断为 number，返回 number[]
+
+// 使用 const 类型参数
+function createArrayConst<const T>(items: readonly T[]): T[] {
+  return [...items];
+}
+
+const arr2 = createArrayConst([1, 2, 3]);
+// T 被推断为 readonly [1, 2, 3]，返回 [1, 2, 3]
+
+// ===== 实际应用场景 =====
+// 路由定义
+type Route<Path extends string> = {
+  path: Path;
+  component: ComponentType;
+};
+
+function defineRoute<const P extends string>(
+  route: Route<P>
+): Route<P> {
+  return route;
+}
+
+const homeRoute = defineRoute({
+  path: '/home',
+  component: HomeComponent
+});
+// path 类型为 '/home' 而不是 string
+
+// ===== 事件处理 =====
+function createEvent<const T extends string, const P>(
+  type: T,
+  payload: P
+): { type: T; payload: P } {
+  return { type, payload };
+}
+
+const event = createEvent('USER_LOGIN', { userId: 123 });
+// event.type 类型为 'USER_LOGIN' 而不是 string
+
+// ===== 与泛型约束配合 =====
+function pick<const T extends Record<string, any>, const K extends keyof T>(
+  obj: T,
+  keys: readonly K[]
+): Pick<T, K> {
+  const result = {} as Pick<T, K>;
+  for (const key of keys) {
+    result[key] = obj[key];
+  }
+  return result;
+}
+
+const user = { name: 'John', age: 30, email: 'john@example.com' };
+const picked = pick(user, ['name', 'age'] as const);
+// picked 类型为 { name: string; age: number }
+// 而不是 Pick<{...}, 'name' | 'age'>
+```
+
+---
+
+### 8.3 NoInfer<T>
+
+#### 概念定义（形式化）
+
+**`NoInfer<T>`** 是 TypeScript 5.4 引入的内置工具类型，其语义是：阻止该位置作为类型参数 `T` 的推断来源。换言之，当函数签名中存在多个可作为推断依据的位置时，被 `NoInfer<T>` 包裹的位置不会参与对 `T` 的推断，从而使 `T` 仅由其他位置推断得出。
+
+**形式化定义：**
+
+```
+NoInfer<T>  // intrinsic 类型
+
+语义：
+- 在类型推断阶段，NoInfer<T> 所在的位置不作为 T 的推断候选
+- 除推断外，NoInfer<T> 与 T 被视为同一类型
+```
+
+*来源：TypeScript 5.4 Release Notes, PR #53098*
+
+#### 使用示例
+
+```typescript
+// ===== 阻止从第二个参数推断 =====
+function createStreetLight<C extends string>(
+  colors: C[],
+  defaultColor?: NoInfer<C>
+) {
+  // ...
+}
+
+createStreetLight(["red", "yellow", "green"], "blue");
+// ~~~~~~
+// error: Argument of type '"blue"' is not assignable to parameter of type
+// '"red" | "yellow" | "green" | undefined'.
+// 若不用 NoInfer，C 会被推断为 "red" | "yellow" | "green" | "blue"
+
+// ===== 配置对象推断控制 =====
+function makeFSM<TState extends string>(config: {
+  states: TState[];
+  initial: NoInfer<TState>;
+}) {
+  return config;
+}
+
+makeFSM({
+  states: ["open", "closed"],
+  initial: "not-allowed"
+  // ~~~~~
+  // error: Type '"not-allowed"' is not assignable to type '"open" | "closed"'
+});
+
+// ===== 与默认值结合 =====
+function search<T>(items: T[], target: NoInfer<T>) {
+  return items.indexOf(target);
+}
+
+search(["a", "b", "c"], "d");
+// ~~~~~~~~~~~~~~~~~~~~ error: "d" 不能赋给 "a" | "b" | "c"
+```
+
+---
+
+### 8.4 satisfies 运算符
+
+#### 概念定义（形式化）
+
+**`satisfies`** 运算符（TypeScript 4.9 引入，5.x 持续完善）用于检查表达式是否满足给定的类型约束，但**不改变表达式的推断类型**。这与 `as`（类型断言）有本质区别：`as` 是告诉编译器"相信我，按这个类型处理"，可能隐藏类型错误；`satisfies` 则是要求编译器验证"该值至少满足此约束"，同时保留原始推断类型。
+
+**形式化定义：**
+
+```
+SatisfiesExpression ::= Expression "satisfies" Type
+
+语义：
+- 检查 Expression 的类型可赋值给 Type（子类型检查）
+- 最终类型保持为 Expression 的原始推断类型
+- 与 as 的本质区别：as 是单向强制转换，satisfies 是双向验证+保留推断
+```
+
+*来源：TypeScript 4.9 Release Notes*
+
+#### 使用示例
+
+```typescript
+// ===== 与 as 的对比 =====
+const config1 = {
+  host: 'localhost',
+  port: 3000
+} as Record<string, string | number>;
+// config1.host 类型为 string | number — 丢失了字面量信息
+
+const config2 = {
+  host: 'localhost',
+  port: 3000
+} satisfies Record<string, string | number>;
+// config2.host 类型为 'localhost' — 保留推断，同时验证约束
+
+// ===== 检查多余属性同时保留精确类型 =====
+type Routes = Record<string, string>;
+
+const routes = {
+  home: '/',
+  about: '/about',
+  contact: '/contact'
+} satisfies Routes;
+
+// routes.home 仍是 '/':string 字面量类型
+// 若缺少属性或类型不匹配，会报错
+
+// ===== 在泛型配置中的使用 =====
+interface ThemeConfig {
+  colors: { primary: string; secondary: string };
+  fonts: { heading: string; body: string };
+}
+
+const theme = {
+  colors: {
+    primary: '#007bff',
+    secondary: '#6c757d'
+  },
+  fonts: {
+    heading: 'Inter',
+    body: 'Roboto'
+  }
+} satisfies ThemeConfig;
+
+// theme.colors.primary 类型为 '#007bff' 而不是 string
+```
+
+---
+
+### 8.5 using 声明与显式资源管理
+
+#### 概念定义（形式化）
+
+**`using` 与 `await using`** 声明基于 ECMAScript Explicit Resource Management（Stage 4，已纳入 ECMAScript 2025 标准），用于在代码块结束时自动调用对象的 `Symbol.dispose` 或 `Symbol.asyncDispose` 方法，实现确定性的资源释放。
+
+**形式化定义：**
+
+```
+UsingDeclaration ::= "using" BindingIdentifier "=" Expression
+AwaitUsingDeclaration ::= "await using" BindingIdentifier "=" Expression
+
+语义：
+- 表达式必须实现 Disposable 接口（具有 [Symbol.dispose] 方法）
+- await using 要求对象实现 AsyncDisposable（具有 [Symbol.asyncDispose] 方法）
+- 当 using 声明所在的块作用域退出时，自动按声明的逆序调用 dispose
+- 即使在抛出异常时也会执行 dispose（类似 finally）
+```
+
+*来源：TypeScript 5.2 Release Notes, ECMA-262 §34.2（Explicit Resource Management）*
+
+#### 使用示例
+
+```typescript
+// ===== 同步资源释放 =====
+{
+  using file = openFile('data.txt');
+  // file[Symbol.dispose]() 会在块结束时自动调用
+  const content = file.read();
+} // dispose 在这里调用
+
+// ===== 异步资源释放 =====
+async function processData() {
+  await using conn = await createDatabaseConnection();
+  // conn[Symbol.asyncDispose]() 会在块结束时自动 await 调用
+  const result = await conn.query('SELECT * FROM users');
+  return result;
+} // asyncDispose 在这里调用
+
+// ===== 自定义 Disposable 对象 =====
+class TempFile implements Disposable {
+  #path: string;
+
+  constructor(path: string) {
+    this.#path = path;
+    // 创建临时文件...
+  }
+
+  [Symbol.dispose]() {
+    // 清理临时文件
+    fs.unlinkSync(this.#path);
+    console.log(`Cleaned up ${this.#path}`);
+  }
+}
+
+function doWork() {
+  using file = new TempFile('/tmp/temp-123.txt');
+  // 使用 file...
+} // 自动调用 file[Symbol.dispose]()
+
+// ===== 异常安全 =====
+function riskyOperation() {
+  using resource = acquireResource();
+  throw new Error('Something went wrong');
+  // resource[Symbol.dispose]() 仍会在抛出前调用
+}
+```
+
+---
+
+### 8.6 模块解析与类型剥离
+
+#### 概念定义（形式化）
+
+TypeScript 5.0+ 引入了 `verbatimModuleSyntax`，5.8 引入了 `erasableSyntaxOnly`。这两个标志在 Node.js 原生 TypeScript 支持（类型剥离 / type stripping）场景下尤为重要。
+
+- **`verbatimModuleSyntax`**：强制使用 `import type` / `export type` 进行纯类型导入导出，禁止 TypeScript 自动删除（elide）或重写 import 语句。启用后，若导入仅用于类型位置但未标记 `type`，则报错。
+- **`erasableSyntaxOnly`**（TS 5.8+）：禁止任何无法通过简单删除类型语法来转换为 JavaScript 的 TypeScript 特性（如 `enum`、命名空间、构造函数的参数属性、JSX、尖括号类型断言 `<T>val` 等）。它确保代码可以安全地通过 "type stripping" 运行，无需编译转换。
+
+**语义边界：**
+
+```
+verbatimModuleSyntax:
+  - 允许：import type { Foo } from './foo'
+  - 报错：import { Foo } from './foo'  （若 Foo 仅用于类型）
+  - 保证 import 语句在输出中保持不变（或被显式标记为 type-only）
+
+erasableSyntaxOnly:
+  - 允许：interface、type alias、as 断言、泛型参数标注
+  - 报错：enum、namespace、constructor(public x: number)、JSX、<T>val
+```
+
+*来源：TypeScript 5.0 & 5.8 Release Notes, Node.js Type Stripping Documentation*
+
+#### 配置示例
+
+```json
+// tsconfig.json — 推荐用于 Node.js 原生 TypeScript 执行
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "nodenext",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "rewriteRelativeImportExtensions": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  }
+}
+```
+
+```typescript
+// ===== verbatimModuleSyntax 示例 =====
+// ❌ 错误：Foo 仅用于类型，但未标记 type
+import { Foo } from './types';
+function useFoo(foo: Foo) {}
+
+// ✅ 正确
+import type { Foo } from './types';
+function useFoo(foo: Foo) {}
+
+// ===== erasableSyntaxOnly 示例 =====
+// ❌ 错误：enum 需要代码生成，不能通过类型剥离移除
+enum Color { Red, Green, Blue }
+
+// ❌ 错误：参数属性需要代码生成
+class Point {
+  constructor(public x: number, public y: number) {}
+}
+
+// ❌ 错误：尖括号断言语法与 JSX 冲突，无法安全擦除
+const val = <string>someValue;
+
+// ✅ 正确：as 断言可安全擦除
+const val = someValue as string;
+```
+
+---
+
+### 8.7 TypeScript 6.x 核心特性
+
+#### 概念定义（形式化）
+
+TypeScript 6.0 延续了 TypeScript 5.x 的类型系统演进，主要聚焦于将 `esnext` 中的成熟内置 API 定型到 `es2025`，引入已达 Stage 4 的 Temporal API 类型声明，并提前支持 Stage 3 提案 `import defer` 和 Node.js `#/` subpath imports 的解析语义。
+
+**形式化边界：**
+
+```
+TS 6.0 新增语言/类型层面支持:
+  - target/lib: "es2025" — 将 esnext 中稳定的内置 API 定型
+  - Temporal API 类型声明 — 纳秒精度日期/时间类型系统
+  - import defer — 同步语法、惰性求值的模块导入（TC39 Stage 3）
+  - #/ subpath imports — package.json imports 字段的解析语义
+```
+
+*来源：[TS 6.0 Release Notes], [TC39 Temporal Proposal Stage 4], [Node.js Subpath Imports Documentation], [TC39 import defer Proposal Stage 3]*
+
+#### 使用示例
+
+```typescript
+// ===== es2025 target/lib =====
+// TS 6.0 将以下 API 从 esnext 定型到 es2025：
+// - RegExp.escape
+// - Promise.try
+// - Iterator.map / filter / take / drop / flatMap 等
+// - Set.prototype.union / intersection / difference / symmetricDifference / isSubsetOf 等
+
+// tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2025",
+    "lib": ["ES2025"]
+  }
+}
+
+// ===== Temporal API 类型 =====
+// Temporal 提案已达 Stage 4，TypeScript 6.0 提供完整类型声明
+
+const now = Temporal.Now.instant(); // Instant — 纳秒精度、无时区时间点
+const date = Temporal.PlainDate.from('2025-06-15'); // PlainDate — 日历日期，无时区
+const zoned = Temporal.Now.zonedDateTimeISO('Asia/Shanghai');
+
+// 与 Date 的本质差异：
+// 1. 不可变性 — 所有 Temporal 对象不可变
+const d1 = Temporal.PlainDate.from('2025-01-01');
+const d2 = d1.add({ days: 1 }); // 返回新对象，d1 不变
+
+// 2. 纳秒精度 — Instant 存储自 Unix 纪元以来的纳秒（bigint）
+const ns = now.epochNanoseconds; // bigint
+
+// 3. 时区安全 — PlainDate/PlainTime 与 ZonedDateTime 严格分离
+// 4. 无 2038 年问题 — 使用 bigint 存储时间戳，不受 32 位限制
+
+// ===== #/ subpath imports =====
+// Node.js 在 package.json 中支持 "imports" 字段，允许使用 # 前缀进行子路径映射
+// TypeScript 6.0 增强了对该解析语义的支持（配合 --moduleResolution bundler / nodenext）
+
+// package.json
+// {
+//   "imports": {
+//     "#root/*": "./*",
+//     "#utils": "./src/utils/index.ts"
+//   }
+// }
+
+// TypeScript 代码中可直接解析：
+// import { helper } from '#utils';        // → ./src/utils/index.ts
+// import type { Config } from '#root/config'; // → ./config
+
+// ===== import defer =====
+// TC39 Stage 3 提案，TypeScript 6.0 已支持
+// 与 dynamic import() 的本质区别：同步句法、惰性求值
+
+// 动态 import() — 运行时返回 Promise，异步加载
+const mod = await import('./heavy-module');
+
+// import defer — 同步句法，但模块求值延迟到首次访问命名空间属性时才执行
+// import defer * as heavy from './heavy-module';
+// heavy.someExport; // 首次访问此属性时，才执行该模块的求值（evaluation）
+
+// 核心语义：
+// - 语法位置与常规 import 相同（模块顶层）
+// - 模块的加载（fetch/parse）仍可能提前发生，但 evaluation 被延迟
+// - 首次访问模块命名空间的任何属性时，才触发模块求值
+```
+
+---
+
+### 8.8 TypeScript 7.0 前瞻：Go 重写与 LSP 迁移
+
+微软正在推进一项代号为 **Corsa** 的重大工程：用 Go 语言重写 TypeScript 编译器。这一决策的根本动因是，当前的 JavaScript/TypeScript 实现的 `tsc` 受限于单线程事件循环，在超大型代码库（数百万行代码）上的类型检查性能已触及瓶颈。
+
+**核心要点：**
+
+- **性能目标**：Go 重写旨在将类型检查性能提升约 10 倍，显著缩短大型项目的编译时间和编辑器反馈延迟 [Microsoft Blog: TypeScript Native Port]。
+- **维护模式**：JavaScript 版本的 `tsc` 将在 6.x 系列结束后进入维护模式。短期内（6.x 期间）两个版本将并行维护，以保证生态平滑过渡 [TypeScript Roadmap 2025]。
+- **LSP 迁移**：语言服务（Language Service）将全面迁移至 Language Server Protocol (LSP)。这意味着 VS Code 等编辑器将更多地通过标准 LSP 与 TypeScript 交互，降低编辑器集成的耦合度。
+- **源码级兼容**：微软多次强调，TypeScript 7.0 将保持源码级向后兼容，现有 `.ts` 文件和 `tsconfig.json` 配置无需重写。
+- **工具链影响**：构建工具链（如 `tsc` CLI）和编辑器插件将逐步迁移到新的原生实现，具体时间表取决于 beta 和社区反馈。
+
+*来源：[Microsoft Blog: TypeScript Native Port], [TypeScript Roadmap 2025]*
+
+---
+
+## 9. 类型系统深度解析
+
+### 9.1 基础类型系统
+
+#### 9.1.1 原始类型
+
+```typescript
+// ===== 基本原始类型 =====
+let str: string = 'hello';
+let num: number = 42;
+let bool: boolean = true;
+let nil: null = null;
+let undef: undefined = undefined;
+let sym: symbol = Symbol('key');
+let big: bigint = 100n;
+
+// ===== 字面量类型 =====
+let literal: 'hello' = 'hello';  // 只能是 'hello'
+let numLiteral: 42 = 42;          // 只能是 42
+let boolLiteral: true = true;     // 只能是 true
+
+// ===== any 类型 =====
+let anything: any = 4;
+anything = 'string';  // OK
+anything.toFixed();   // OK (无类型检查)
+
+// ===== unknown 类型 =====
+let unknownValue: unknown = 4;
+// unknownValue.toFixed();  // Error: 需要先类型检查
+if (typeof unknownValue === 'number') {
+  unknownValue.toFixed();  // OK
+}
+
+// ===== never 类型 =====
+function throwError(message: string): never {
+  throw new Error(message);
+}
+
+function infiniteLoop(): never {
+  while (true) {}
+}
+
+// ===== void 类型 =====
+function logMessage(message: string): void {
+  console.log(message);
+  // 可以没有 return 或 return undefined
+}
+```
+
+#### 9.1.2 对象类型
+
+```typescript
+// ===== 对象字面量类型 =====
+interface Person {
+  name: string;
+  age: number;
+  email?: string;           // 可选属性
+  readonly id: string;      // 只读属性
+}
+
+// ===== 索引签名 =====
+interface Dictionary {
+  [key: string]: number;    // 任意字符串键映射到 number
+}
+
+const dict: Dictionary = {
+  a: 1,
+  b: 2
+};
+
+// ===== 混合类型 =====
+interface Counter {
+  (start: number): string;  // 调用签名
+  interval: number;         // 属性
+  reset(): void;            // 方法
+}
+
+// ===== 类类型 =====
+class Animal {
+  name: string;
+  constructor(name: string) {
+    this.name = name;
+  }
+  move(distance: number): void {
+    console.log(`${this.name} moved ${distance}m`);
+  }
+}
+
+interface Dog extends Animal {
+  breed: string;
+  bark(): void;
+}
+```
+
+---
+
+### 9.2 联合类型与交叉类型
+
+#### 9.2.1 联合类型 (Union Types)
+
+```typescript
+// ===== 基本联合类型 =====
+type StringOrNumber = string | number;
+let value: StringOrNumber = 'hello';
+value = 42;  // OK
+
+// ===== 可辨识联合类型 =====
+type Shape =
+  | { kind: 'circle'; radius: number }
+  | { kind: 'square'; side: number }
+  | { kind: 'rectangle'; width: number; height: number };
+
+function getArea(shape: Shape): number {
+  switch (shape.kind) {
+    case 'circle':
+      return Math.PI * shape.radius ** 2;
+    case 'square':
+      return shape.side ** 2;
+    case 'rectangle':
+      return shape.width * shape.height;
+    default:
+      // 穷尽检查
+      const _exhaustive: never = shape;
+      return _exhaustive;
+  }
+}
+
+// ===== 字面量联合类型 =====
+type Status = 'pending' | 'loading' | 'success' | 'error';
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+
+// ===== null/undefined 联合 =====
+type Nullable<T> = T | null;
+type Optional<T> = T | undefined;
+type Maybe<T> = T | null | undefined;
+```
+
+#### 9.2.2 交叉类型 (Intersection Types)
+
+```typescript
+// ===== 基本交叉类型 =====
+interface ErrorHandling {
+  success: boolean;
+  error?: string;
+}
+
+interface ArtworksData {
+  artworks: { title: string }[];
+}
+
+type ArtworksResponse = ArtworksData & ErrorHandling;
+
+const response: ArtworksResponse = {
+  artworks: [{ title: 'Mona Lisa' }],
+  success: true
+};
+
+// ===== 同名属性的交叉 =====
+interface A { x: string; }
+interface B { x: number; }
+type AB = A & B;  // x: never (冲突)
+```
+
+---
+
+### 9.3 条件类型
+
+#### 9.3.1 基本条件类型
+
+```typescript
+// ===== 基本语法 =====
+type IsString<T> = T extends string ? true : false;
+
+type A = IsString<string>;   // true
+type B = IsString<number>;   // false
+
+// ===== 分布式条件类型 =====
+type ToArray<T> = T extends any ? T[] : never;
+
+type StrOrNumArray = ToArray<string | number>;
+// string[] | number[] (分布式)
+
+// 阻止分布
+type ToArrayNonDist<T> = [T] extends [any] ? T[] : never;
+type ArrayOfUnion = ToArrayNonDist<string | number>;
+// (string | number)[]
+
+// ===== infer 关键字 =====
+type ReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+type Parameters<T> = T extends (...args: infer P) => any ? P : never;
+
+type Fn = (x: number, y: string) => boolean;
+type FnReturn = ReturnType<Fn>;    // boolean
+type FnParams = Parameters<Fn>;    // [number, string]
+
+// ===== 递归条件类型 =====
+type DeepReadonly<T> = {
+  readonly [K in keyof T]: T[K] extends object
+    ? DeepReadonly<T[K]>
+    : T[K];
+};
+
+// ===== 条件类型链 =====
+type TypeName<T> =
+  T extends string ? 'string' :
+  T extends number ? 'number' :
+  T extends boolean ? 'boolean' :
+  T extends undefined ? 'undefined' :
+  T extends Function ? 'function' :
+  'object';
+```
+
+#### 9.3.2 内置条件类型
+
+```typescript
+// ===== Exclude / Extract =====
+type T0 = Exclude<'a' | 'b' | 'c', 'a'>;           // 'b' | 'c'
+type T1 = Extract<'a' | 'b' | 'c', 'a' | 'f'>;     // 'a'
+
+// ===== NonNullable =====
+type T2 = NonNullable<string | number | undefined>;  // string | number
+
+// ===== Parameters / ReturnType =====
+declare function f1(arg: { a: number; b: string }): void;
+type T3 = Parameters<typeof f1>;    // [{ a: number; b: string }]
+type T4 = ReturnType<typeof f1>;    // void
+
+// ===== InstanceType =====
+class C {
+  x = 0;
+  y = 0;
+}
+type T5 = InstanceType<typeof C>;   // C
+
+// ===== ThisParameterType / OmitThisParameter =====
+function toHex(this: Number) {
+  return this.toString(16);
+}
+type T6 = ThisParameterType<typeof toHex>;      // Number
+type T7 = OmitThisParameter<typeof toHex>;      // () => string
+
+// ===== ThisType =====
+type ObjectDescriptor<D, M> = {
+  data?: D;
+  methods?: M & ThisType<D & M>;
+};
+
+function makeObject<D, M>(desc: ObjectDescriptor<D, M>): D & M {
+  const data: object = desc.data || {};
+  const methods: object = desc.methods || {};
+  return { ...data, ...methods } as D & M;
+}
+
+const obj = makeObject({
+  data: { x: 0, y: 0 },
+  methods: {
+    moveBy(dx: number, dy: number) {
+      this.x += dx;  // this 被推断为 { x: number; y: number } & { moveBy: ... }
+      this.y += dy;
+    }
+  }
+});
+```
+
+---
+
+### 9.4 映射类型
+
+#### 9.4.1 基本映射类型
+
+```typescript
+// ===== 基础映射 =====
+type Readonly<T> = {
+  readonly [P in keyof T]: T[P];
+};
+
+type Partial<T> = {
+  [P in keyof T]?: T[P];
+};
+
+type Required<T> = {
+  [P in keyof T]-?: T[P];  // -? 移除可选性
+};
+
+type Pick<T, K extends keyof T> = {
+  [P in K]: T[P];
+};
+
+type Record<K extends keyof any, T> = {
+  [P in K]: T;
+};
+
+type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
+
+// ===== 键重映射 =====
+type Getters<T> = {
+  [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K];
+};
+
+interface Person {
+  name: string;
+  age: number;
+}
+
+type PersonGetters = Getters<Person>;
+// {
+//   getName: () => string;
+//   getAge: () => number;
+// }
+
+// ===== 过滤键 =====
+type RemoveKindField<T> = {
+  [K in keyof T as Exclude<K, 'kind'>]: T[K];
+};
+
+interface Circle {
+  kind: 'circle';
+  radius: number;
+}
+
+type KindlessCircle = RemoveKindField<Circle>;
+// { radius: number }
+```
+
+#### 9.4.2 高级映射模式
+
+```typescript
+// ===== 深度映射 =====
+type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
+
+// ===== 事件处理器映射 =====
+type EventHandlers<Events extends Record<string, any>> = {
+  [K in keyof Events as `on${Capitalize<string & K>}`]:
+    (payload: Events[K]) => void;
+};
+
+interface UserEvents {
+  login: { userId: string };
+  logout: { userId: string };
+  update: { userId: string; data: Partial<User> };
+}
+
+type UserEventHandlers = EventHandlers<UserEvents>;
+// {
+//   onLogin: (payload: { userId: string }) => void;
+//   onLogout: (payload: { userId: string }) => void;
+//   onUpdate: (payload: { userId: string; data: Partial<User> }) => void;
+// }
+
+// ===== 路径类型 =====
+type Path<T, K extends keyof T = keyof T> = K extends string
+  ? T[K] extends Record<string, any>
+    ? `${K}` | `${K}.${Path<T[K]>}`
+    : `${K}`
+  : never;
+
+interface Nested {
+  a: {
+    b: {
+      c: string;
+    };
+    d: number;
+  };
+  e: boolean;
+}
+
+type NestedPaths = Path<Nested>;
+// 'a' | 'a.b' | 'a.b.c' | 'a.d' | 'e'
+
+// ===== 路径值类型 =====
+type PathValue<T, P extends string> =
+  P extends `${infer K}.${infer Rest}`
+    ? K extends keyof T
+      ? PathValue<T[K], Rest>
+      : never
+    : P extends keyof T
+    ? T[P]
+    : never;
+
+type CType = PathValue<Nested, 'a.b.c'>;  // string
+```
+
+---
+
+### 9.5 模板字面量类型
+
+#### 9.5.1 基本模板字面量类型
+
+```typescript
+// ===== 字符串模板 =====
+type World = 'world';
+type Greeting = `hello ${World}`;  // 'hello world'
+
+// ===== 联合类型展开 =====
+type Color = 'red' | 'green' | 'blue';
+type Size = 'small' | 'medium' | 'large';
+type Style = `${Color}-${Size}`;
+// 'red-small' | 'red-medium' | 'red-large' |
+// 'green-small' | 'green-medium' | 'green-large' |
+// 'blue-small' | 'blue-medium' | 'blue-large'
+
+// ===== 内置字符串操作类型 =====
+type T1 = Uppercase<'hello'>;      // 'HELLO'
+type T2 = Lowercase<'WORLD'>;      // 'world'
+type T3 = Capitalize<'hello'>;     // 'Hello'
+type T4 = Uncapitalize<'Hello'>;   // 'hello'
+```
+
+#### 9.5.2 高级模板字面量模式
+
+```typescript
+// ===== CSS 属性类型 =====
+type CSSUnit = 'px' | 'em' | 'rem' | '%';
+type CSSValue = number | `${number}${CSSUnit}`;
+
+interface CSSProperties {
+  width: CSSValue;
+  height: CSSValue;
+  margin: CSSValue | `${CSSValue} ${CSSValue}` |
+          `${CSSValue} ${CSSValue} ${CSSValue}` |
+          `${CSSValue} ${CSSValue} ${CSSValue} ${CSSValue}`;
+}
+
+// ===== 路由参数提取 =====
+type ExtractParams<T extends string> =
+  T extends `${infer Start}:${infer Param}/${infer Rest}`
+    ? { [K in Param | keyof ExtractParams<Rest>]: string }
+    : T extends `${infer Start}:${infer Param}`
+    ? { [K in Param]: string }
+    : {};
+
+type UserRoute = ExtractParams<'/users/:id/posts/:postId'>;
+// { id: string; postId: string }
+
+// ===== 事件名称模式 =====
+type EventName<T extends string> = `on${Capitalize<T>}`;
+
+type MouseEvents = 'click' | 'dblclick' | 'mousedown' | 'mouseup';
+type MouseEventHandlers = {
+  [K in MouseEvents as EventName<K>]: (event: MouseEvent) => void;
+};
+// {
+//   onClick: (event: MouseEvent) => void;
+//   onDblclick: (event: MouseEvent) => void;
+//   ...
+// }
+```
+
+---
+
+### 9.6 类型推断与类型守卫
+
+#### 9.6.1 类型推断
+
+```typescript
+// ===== 变量类型推断 =====
+let x = 3;           // number
+let y = 'hello';     // string
+let z = [1, 2, 3];   // number[]
+
+// ===== 上下文类型推断 =====
+window.onmousedown = function(event) {
+  console.log(event.button);  // event 被推断为 MouseEvent
+};
+
+// ===== 最佳通用类型 =====
+let arr = [0, 1, null];  // (number | null)[]
+
+// ===== 上下文类型 =====
+class Animal {
+  move() {}
+}
+class Dog extends Animal {
+  woof() {}
+}
+
+let createAnimal: () => Animal;
+createAnimal = () => new Dog();  // OK，返回类型兼容
+
+// ===== 泛型类型推断 =====
+function identity<T>(arg: T): T {
+  return arg;
+}
+
+let output = identity('myString');  // T 被推断为 'myString'
+let output2 = identity<string>('myString');  // 显式指定
+
+// ===== 复杂推断 =====
+function map<T, U>(array: T[], fn: (item: T) => U): U[] {
+  return array.map(fn);
+}
+
+const numbers = [1, 2, 3];
+const strings = map(numbers, n => n.toString());
+// U 被推断为 string
+```
+
+#### 9.6.2 类型守卫
+
+```typescript
+// ===== typeof 类型守卫 =====
+function padLeft(value: string | number, padding: string | number) {
+  if (typeof padding === 'number') {
+    return Array(padding + 1).join(' ') + value;  // padding: number
+  }
+  if (typeof padding === 'string') {
+    return padding + value;  // padding: string
+  }
+  throw new Error(`Expected string or number, got '${padding}'`);
+}
+
+// ===== instanceof 类型守卫 =====
+class SpaceRepeatingPadder {
+  constructor(private numSpaces: number) {}
+  getPaddingString() {
+    return Array(this.numSpaces + 1).join(' ');
+  }
+}
+
+class StringPadder {
+  constructor(private value: string) {}
+  getPaddingString() {
+    return this.value;
+  }
+}
+
+function getRandomPadder() {
+  return Math.random() < 0.5
+    ? new SpaceRepeatingPadder(4)
+    : new StringPadder('  ');
+}
+
+const padder = getRandomPadder();
+if (padder instanceof SpaceRepeatingPadder) {
+  padder;  // SpaceRepeatingPadder
+}
+if (padder instanceof StringPadder) {
+  padder;  // StringPadder
+}
+
+// ===== in 类型守卫 =====
+interface Fish {
+  swim: () => void;
+}
+
+interface Bird {
+  fly: () => void;
+}
+
+function move(animal: Fish | Bird) {
+  if ('swim' in animal) {
+    return animal.swim();  // animal: Fish
+  }
+  return animal.fly();     // animal: Bird
+}
+
+// ===== 自定义类型守卫 (类型谓词) =====
+function isFish(animal: Fish | Bird): animal is Fish {
+  return (animal as Fish).swim !== undefined;
+}
+
+function zoo(animal: Fish | Bird) {
+  if (isFish(animal)) {
+    animal.swim();  // animal: Fish
+  } else {
+    animal.fly();   // animal: Bird
+  }
+}
+
+// ===== 可辨识联合类型守卫 =====
+type Shape =
+  | { kind: 'circle'; radius: number }
+  | { kind: 'square'; side: number }
+  | { kind: 'rectangle'; width: number; height: number };
+
+function getArea(shape: Shape): number {
+  switch (shape.kind) {
+    case 'circle':
+      return Math.PI * shape.radius ** 2;
+    case 'square':
+      return shape.side ** 2;
+    case 'rectangle':
+      return shape.width * shape.height;
+    default:
+      // 穷尽检查
+      const _exhaustiveCheck: never = shape;
+      return _exhaustiveCheck;
+  }
+}
+
+// ===== 断言函数 =====
+function assertIsString(val: any): asserts val is string {
+  if (typeof val !== 'string') {
+    throw new Error('Not a string!');
+  }
+}
+
+function assertNonNull<T>(val: T): asserts val is NonNullable<T> {
+  if (val === undefined || val === null) {
+    throw new Error('Value is null or undefined!');
+  }
+}
+
+function handleInput(input: string | undefined) {
+  assertNonNull(input);  // 此后 input 类型为 string
+  console.log(input.toUpperCase());
+}
+```
+
+---
+
+### 9.7 类型谓词与类型断言
+
+#### 9.7.1 类型谓词详解
+
+```typescript
+// ===== 基本类型谓词 =====
+function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+function isNumber(value: unknown): value is number {
+  return typeof value === 'number';
+}
+
+function isArrayOf<T>(
+  value: unknown,
+  itemCheck: (item: unknown) => item is T
+): value is T[] {
+  return Array.isArray(value) && value.every(itemCheck);
+}
+
+// ===== 复杂类型谓词 =====
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    'name' in value &&
+    'email' in value &&
+    typeof (value as User).id === 'string' &&
+    typeof (value as User).name === 'string' &&
+    typeof (value as User).email === 'string'
+  );
+}
+
+// ===== 泛型类型谓词 =====
+function hasProperty<T extends string>(
+  obj: object,
+  prop: T
+): obj is Record<T, unknown> {
+  return prop in obj;
+}
+
+const data: object = { name: 'John', age: 30 };
+if (hasProperty(data, 'name')) {
+  console.log(data.name);  // OK，data 被推断为 Record<'name', unknown>
+}
+
+// ===== 联合类型谓词 =====
+type Status = 'loading' | 'success' | 'error';
+
+function isValidStatus(value: string): value is Status {
+  return ['loading', 'success', 'error'].includes(value as Status);
+}
+```
+
+#### 9.7.2 类型断言
+
+```typescript
+// ===== 基本类型断言 =====
+let someValue: unknown = 'this is a string';
+let strLength: number = (someValue as string).length;
+// 或者使用尖括号语法（在 JSX 中不推荐）
+let strLength2: number = (<string>someValue).length;
+
+// ===== 双重断言 =====
+// 当类型完全不兼容时使用
+let value = 'hello' as unknown as number;  // 谨慎使用！
+
+// ===== const 断言 =====
+let arr = [1, 2, 3] as const;
+// arr 类型为 readonly [1, 2, 3]
+
+let obj = { x: 10, y: 20 } as const;
+// obj 类型为 { readonly x: 10; readonly y: 20 }
+
+// ===== satisfies 关键字 =====
+const config = {
+  host: 'localhost',
+  port: 3000
+} satisfies Record<string, string | number>;
+
+// config.host 类型为 'localhost' (字面量类型)
+// 而不是 string | number
+
+// ===== 非空断言 =====
+function processNullable(value: string | null | undefined) {
+  // 使用非空断言（当你确定值不为 null/undefined 时）
+  const length = value!.length;  // 告诉编译器 value 不为 null
+
+  // 更安全的做法是先检查
+  if (value) {
+    const length2 = value.length;  // OK，value 被收窄为 string
+  }
+}
+```
+
+---
+
+### 9.8 逆变、协变、双变与不变
+
+#### 9.8.1 类型系统变型理论
+
+TypeScript 采用**结构类型系统（structural typing）**。在结构子类型关系中，复合类型的变型（variance）取决于其组成部分的变型位置：
+
+- **协变（Covariant）**：若 `A <: B`，则 `F<A> <: F<B>`。子类型关系与复合类型同向。
+- **逆变（Contravariant）**：若 `A <: B`，则 `F<B> <: F<A>`。子类型关系与复合类型反向。
+- **双变（Bivariant）**：同时允许协变和逆变。
+- **不变（Invariant）**：既不允许协变也不允许逆变，要求类型完全一致。
+
+在 TypeScript 中：
+
+- **返回值位置是协变的**：如果函数 `f` 的返回类型是 `Dog`，函数 `g` 的返回类型是 `Animal`，且 `Dog <: Animal`，则 `f` 可以赋值给期望返回 `Animal` 的位置。
+- **参数位置是逆变的**：如果期望一个接收 `Animal` 参数的函数，那么一个接收 `Dog` 参数的函数**不能**安全赋值给它（因为调用者可能传入 `Cat`）。反之，一个接收 `Animal` 参数的函数可以赋值给期望接收 `Dog` 参数的位置。
+- **属性读取位置是协变的**：`{ get(): T }` 中 `T` 是协变的。
+- **属性写入位置是逆变的**：`{ set(value: T): void }` 中 `T` 是逆变的。
+
+**关键设计权衡**：TypeScript 在**方法参数位置默认采用双变（bivariant）**。这是为了兼容大量现有 JavaScript 代码（如 EventHandler 接口），而非类型理论的必然结果。开启 `strictFunctionTypes` 后，函数类型参数变为严格的逆变，但**对象属性中的方法参数仍保持双变**。
+*来源：TypeScript Handbook — Type Compatibility, PR #18654*
+
+```typescript
+// ===== 协变示例：数组元素 =====
+interface Animal {
+  name: string;
+}
+
+interface Dog extends Animal {
+  bark(): void;
+}
+
+declare let animals: Animal[];
+declare let dogs: Dog[];
+
+animals = dogs;  // OK: Dog[] <: Animal[] (数组元素协变)
+
+// ===== 逆变示例：函数参数 =====
+type AnimalHandler = (animal: Animal) => void;
+type DogHandler = (dog: Dog) => void;
+
+let handleAnimal: AnimalHandler = (animal) => console.log(animal.name);
+let handleDog: DogHandler = (dog) => dog.bark();
+
+handleDog = handleAnimal;  // OK: AnimalHandler <: DogHandler (参数逆变)
+// handleAnimal = handleDog;  // Error! (strictFunctionTypes 开启时)
+
+// ===== 对象属性：方法参数的双变行为 =====
+interface Comparator<T> {
+  compare(a: T, b: T): number;  // 方法参数默认双变
+}
+
+let animalComparator: Comparator<Animal> = {
+  compare(a, b) { return a.name.localeCompare(b.name); }
+};
+
+let dogComparator: Comparator<Dog> = {
+  compare(a, b) { return a.bark.length - b.bark.length; }
+};
+
+// 在默认配置下，以下赋值双向都通过（双变），即使理论上不安全
+animalComparator = dogComparator;  // 默认允许
+dogComparator = animalComparator;  // 默认允许
+// 若开启 strictFunctionTypes，部分场景会收紧，但方法属性仍保持双变
+
+// ===== 显式变型注解（TypeScript 4.7+） =====
+interface Producer<out T> {
+  produce(): T;
+}
+
+interface Consumer<in T> {
+  consume(value: T): void;
+}
+
+interface Processor<in T, out U> {
+  process(value: T): U;
+}
+
+// out = 协变位置（输出）
+// in = 逆变位置（输入）
+```
+
+#### 9.8.2 变型在实际代码中的影响
+
+```typescript
+// ===== 常见陷阱 =====
+// 1. 数组协变的问题
+let dogs: Dog[] = [{ name: 'Rex', bark: () => {} }];
+let animals: Animal[] = dogs;  // OK，协变
+animals.push({ name: 'Cat' });  // 编译通过，但 dogs 中现在有了非 Dog！
+
+// 2. 函数参数逆变
+function trainDog(dog: Dog) { /* ... */ }
+function trainAnimal(animal: Animal) { /* ... */ }
+
+type Trainer = (animal: Animal) => void;
+let trainer: Trainer = trainDog;  // strictFunctionTypes 开启时报错
+
+// ===== 解决方案 =====
+// 1. 使用 readonly 数组
+let readonlyDogs: readonly Dog[] = [{ name: 'Rex', bark: () => {} }];
+let readonlyAnimals: readonly Animal[] = readonlyDogs;  // OK
+// readonlyAnimals.push(...);  // 编译错误
+
+// 2. 显式变型注解
+interface ReadOnlyContainer<out T> {
+  getValue(): T;
+}
+
+interface WriteOnlyContainer<in T> {
+  setValue(value: T): void;
+}
+
+// ===== strictFunctionTypes 的影响 =====
+// 开启前：
+// let f: (x: Animal) => void = (x: Dog) => {}; // 可能通过（双变）
+
+// 开启后：
+// let f: (x: Animal) => void = (x: Dog) => {}; // Error: 参数位置要求逆变
+
+// 但注意：对象字面量中的方法声明仍可能保持双变
+interface EventHandler<T> {
+  handle(event: T): void;  // 方法，默认双变
+}
+```
+
+---
+
+## 10. 形式化类型理论
+
+### 10.1 类型系统的形式化定义
+
+#### 10.1.1 类型判断规则
+
+以下采用自然演绎风格描述类型系统的基本规则：
+
+```
+变量规则:
+  Γ ⊢ x : T    (如果 x:T ∈ Γ)
+
+常量规则:
+  Γ ⊢ c : T    (如果 c 有类型 T)
+
+函数抽象:
+  Γ, x:T₁ ⊢ e : T₂
+  ────────────────────
+  Γ ⊢ λx:T₁.e : T₁ → T₂
+
+函数应用:
+  Γ ⊢ f : T₁ → T₂    Γ ⊢ a : T₁
+  ───────────────────────────────
+  Γ ⊢ f(a) : T₂
+
+子类型规则:
+  Γ ⊢ e : S    S <: T
+  ────────────────────
+  Γ ⊢ e : T
+```
+
+#### 10.1.2 TypeScript 类型关系的形式化
+
+```typescript
+// ===== 子类型关系 =====
+// S <: T 表示 S 是 T 的子类型
+
+// 宽度子类型（对象）
+interface Animal { name: string }
+interface Dog extends Animal { bark(): void }
+// Dog <: Animal
+
+// 函数子类型（参数逆变，返回协变）
+// (T₁ → T₂) <: (S₁ → S₂) 当且仅当 S₁ <: T₁ 且 T₂ <: S₂
+// 这是 Liskov 替换原则（LSP）在函数类型上的直接推论
+// 来源：Pierce, "Types and Programming Languages", §15.3
+
+// 数组/元组子类型
+// readonly T[] <: readonly U[] 当且仅当 T <: U (协变)
+// [T₁, T₂] <: [U₁, U₂] 当且仅当 T₁ <: U₁ 且 T₂ <: U₂
+
+// ===== 类型等价 =====
+// S ≡ T 表示 S 和 T 是等价的类型
+
+// 结构等价（TypeScript 使用）
+interface Point1 { x: number; y: number }
+interface Point2 { x: number; y: number }
+// Point1 ≡ Point2 (结构等价)
+
+// ===== 最具体类型 =====
+// 字面量类型比基础类型更具体
+// 'hello' <: string
+// 42 <: number
+// true <: boolean
+```
+
+### 10.2 类型推断的形式化
+
+#### 10.2.1 基于约束求解的类型推断
+
+**重要纠正**：TypeScript 的类型推断**并非**"Hindley-Milner 算法的扩展版本"。TypeScript 使用的是**基于约束求解的类型推断（constraint-based type inference）**。
+*来源：TypeScript Design Goals & Handbook, Microsoft TypeScript Team Blog*
+
+在基于约束求解的框架中，类型推断过程如下：
+
+1. **引入类型变量**：对每个泛型参数 `T`，引入一个待定的类型变量。
+2. **收集约束**：在类型检查过程中，每当发现某个值必须可赋值给 `T`（或 `T` 必须可赋值给某个类型），就生成一个约束。
+3. **求解约束集**：使用 TypeScript 的**最佳通用类型（best common type）**算法和**结构化子类型规则**来求解约束集，得到 `T` 的具体类型。
+
+```typescript
+// ===== 示例推断过程 =====
+function identity<T>(x: T): T {
+  return x;
+}
+
+const result = identity('hello');
+// 推断过程：
+// 1. 调用 identity('hello')
+// 2. 'hello' 的类型是 'hello' (字面量类型)
+// 3. 约束：'hello' <: T
+// 4. TypeScript 选择最精确解：T = 'hello'
+// 5. 结果类型：'hello'
+
+// ===== 多态推断 =====
+function map<T, U>(array: T[], fn: (x: T) => U): U[] {
+  return array.map(fn);
+}
+
+const nums = [1, 2, 3];
+const strs = map(nums, n => n.toString());
+// 推断过程：
+// 1. nums: number[]
+// 2. fn: (n: number) => string
+// 3. 约束：number <: T, string <: U
+// 4. 结果：T = number, U = string
+// 5. 结果类型：string[]
+
+// ===== 上下文类型推断 =====
+window.onmousedown = function(event) {
+  // event 从上下文推断为 MouseEvent
+};
+```
+
+#### 10.2.2 与 Hindley-Milner 的核心区别
+
+| 特性 | Hindley-Milner | TypeScript 约束求解 |
+|------|----------------|---------------------|
+| **完备性** | 具有**主类型（principal type）**：对任意表达式，存在最一般的类型 | **不保证主类型**：可能存在多个不可比较的最佳候选 |
+| **联合类型** | 通常不支持（ML 风格） | **原生支持**：推断结果可以是联合类型 |
+| **子类型** | 基于参数多态（parametric polymorphism），无子类型 | **基于结构子类型**：推断受子类型约束影响 |
+| **类型断言** | 不允许 | **允许 `as`**，可绕过推断 |
+| **any/unknown** | 无对应概念 | **支持**，影响推断的可靠性 |
+| **上下文敏感性** | 有限 | **强上下文敏感**：大量依赖上下文类型 |
+
+*来源：TypeScript Compiler Internals, "How TypeScript's Type Inference Works"; Pierce, TAPL §22.3*
+
+### 10.3 条件类型的形式化
+
+#### 10.3.1 条件类型求值规则
+
+```
+条件类型求值：
+
+基本规则:
+T extends U ? X : Y
+
+分布规则:
+(A | B) extends U ? X : Y
+  ⟹ (A extends U ? X : Y) | (B extends U ? X : Y)
+
+[T] extends [U] ? X : Y  (非分布)
+  ⟹ 直接求值，不展开联合类型
+
+infer 规则:
+T extends infer X ? F<X> : Y
+  ⟹ X 被推断为 T 的最具体类型
+
+递归规则:
+type Rec<T> = T extends Base ? T : Rec<Sub<T>>;
+  ⟹ 递归展开直到满足条件
+```
+
+#### 10.3.2 条件类型推导示例
+
+```typescript
+// ===== 推导 ReturnType =====
+type ReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+
+// 推导 ReturnType<(x: number) => string>:
+// 1. (x: number) => string extends (...args: any[]) => infer R
+// 2. 匹配成功，R 被推断为 string
+// 3. 结果：string
+
+// ===== 推导 Parameters =====
+type Parameters<T> = T extends (...args: infer P) => any ? P : never;
+
+// 推导 Parameters<(x: number, y: string) => void>:
+// 1. 匹配成功，P 被推断为 [number, string]
+// 2. 结果：[number, string]
+
+// ===== 递归条件类型 =====
+type DeepReadonly<T> = {
+  readonly [K in keyof T]: T[K] extends object
+    ? DeepReadonly<T[K]>
+    : T[K];
+};
+
+// 推导 DeepReadonly<{ a: { b: number } }>:
+// 1. T = { a: { b: number } }
+// 2. { b: number } extends object ? true
+// 3. 递归：DeepReadonly<{ b: number }>
+// 4. number extends object ? false
+// 5. 结果：{ readonly a: { readonly b: number } }
+```
+
+### 10.4 类型系统可靠性分析
+
+#### 10.4.1 类型安全边界
+
+在形式化类型理论中，**类型安全定理（Type Safety）**通常表述为：
+
+> 如果 `⊢ e : T`（表达式 `e` 有类型 `T`），那么：
+>
+> 1. **进度（Progress）**：`e` 是一个值，或者存在一个 `e'` 使得 `e → e'`
+> 2. **保持（Preservation）**：如果 `e → e'`，那么 `⊢ e' : T`
+
+TypeScript **不保证**上述定理的严格成立，因为它是**设计为对 JavaScript 进行可选类型检查的超集**，而非一个独立的、封闭的类型安全语言。TypeScript 的类型系统可以被描述为：
+
+- **结构上有意图的（Structurally Intentional）**：类型检查器尽量捕获常见的运行时错误模式。
+- **非可靠的（Not Sound）**：存在多种合法的 TypeScript 程序会在运行时抛出类型相关的错误。
+
+*来源：TypeScript Design Goals §1, §6; "TypeScript and Soundness" — Anders Hejlsberg*
+
+#### 10.4.2 类型系统限制
+
+```typescript
+// ===== 类型系统的不完备性 =====
+
+// 1. any 类型破坏类型安全
+let x: any = 'string';
+x.toFixed();  // 编译通过，运行时错误
+
+// 2. 类型断言可以绕过检查
+let y = 'hello' as unknown as number;
+y.toFixed();  // 编译通过，运行时错误
+
+// 3. 数组协变问题
+interface Animal { name: string }
+interface Dog extends Animal { bark(): void }
+
+let dogs: Dog[] = [];
+let animals: Animal[] = dogs;  // 协变允许
+animals.push({ name: 'Cat' });  // dogs 中现在有非 Dog！
+
+// 4. 可选属性与 undefined
+interface Config {
+  value?: number;
+}
+const config: Config = {};
+// config.value 类型为 number | undefined
+// 但 TypeScript 允许直接访问
+
+// ===== 严格模式改进 =====
+// strictNullChecks: 强制处理 null/undefined
+// strictFunctionTypes: 函数参数严格的逆变检查
+// strictPropertyInitialization: 属性初始化检查
+// noImplicitAny: 禁止隐式 any
+// noImplicitReturns: 函数必须有返回
+
+// ===== 类型安全最佳实践 =====
+// 1. 启用所有严格选项
+// 2. 避免使用 any
+// 3. 谨慎使用类型断言
+// 4. 使用 unknown 替代 any
+// 5. 使用 readonly 防止意外修改
+// 6. 使用类型守卫进行运行时检查
+```
+
+---
+
+## 附录
+
+### A. 类型速查表
+
+```typescript
+// ===== 常用工具类型 =====
+type Partial<T> = { [P in keyof T]?: T[P] };
+type Required<T> = { [P in keyof T]-?: T[P] };
+type Readonly<T> = { readonly [P in keyof T]: T[P] };
+type Pick<T, K extends keyof T> = { [P in K]: T[P] };
+type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
+type Record<K extends keyof any, T> = { [P in K]: T };
+type Exclude<T, U> = T extends U ? never : T;
+type Extract<T, U> = T extends U ? T : never;
+type NonNullable<T> = T extends null | undefined ? never : T;
+type Parameters<T> = T extends (...args: infer P) => any ? P : never;
+type ReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+type InstanceType<T> = T extends new (...args: any[]) => infer R ? R : never;
+
+// ===== 新增工具类型 =====
+type NoInfer<T> = intrinsic;  // TS 5.4+
+
+// ===== 条件类型工具 =====
+type IsNever<T> = [T] extends [never] ? true : false;
+type IsAny<T> = 0 extends (1 & T) ? true : false;
+type IsUnknown<T> = unknown extends T ? true : false;
+type IsEqual<A, B> = (<T>() => T extends A ? 1 : 2) extends
+  (<T>() => T extends B ? 1 : 2) ? true : false;
+
+// ===== 数组/元组工具 =====
+type Head<T> = T extends [infer H, ...infer _] ? H : never;
+type Tail<T> = T extends [infer _, ...infer R] ? R : never;
+type Last<T> = T extends [...infer _, infer L] ? L : never;
+type Length<T extends readonly any[]> = T['length'];
+type Prepend<T, Arr extends readonly any[]> = [T, ...Arr];
+type Reverse<T extends readonly any[]> = T extends
+  [infer F, ...infer R] ? [...Reverse<R>, F] : [];
+
+// ===== 对象路径工具 =====
+type Path<T, K extends keyof T = keyof T> = K extends string
+  ? T[K] extends Record<string, any>
+    ? K | `${K}.${Path<T[K]>}`
+    : K
+  : never;
+
+type PathValue<T, P extends string> = P extends `${infer K}.${infer R}`
+  ? K extends keyof T ? PathValue<T[K], R> : never
+  : P extends keyof T ? T[P] : never;
+```
+
+### B. ES 版本特性对照表
+
+| 特性 | ES2020 | ES2021 | ES2022 | ES2023 | ES2024 | ES2025 | ES2026(Stage 3/4) |
+|------|--------|--------|--------|--------|--------|--------|-------------------|
+| BigInt | ✓ | | | | | | |
+| Promise.allSettled | ✓ | | | | | | |
+| globalThis | ✓ | | | | | | |
+| 可选链 ?. | ✓ | | | | | | |
+| 空值合并 ?? | ✓ | | | | | | |
+| 动态 import() | ✓ | | | | | | |
+| Promise.any | | ✓ | | | | | |
+| WeakRef | | ✓ | | | | | |
+| 逻辑赋值 ||=/&&=/??= | | ✓ | | | | | |
+| 数字分隔符 | | ✓ | | | | | |
+| replaceAll | | ✓ | | | | | |
+| Class 私有字段 | | | ✓ | | | | |
+| Class 静态块 | | | ✓ | | | | |
+| at() | | | ✓ | | | | |
+| Object.hasOwn() | | | ✓ | | | | |
+| Error cause | | | ✓ | | | | |
+| toSorted/toReversed | | | | ✓ | | | |
+| toSpliced/with | | | | ✓ | | | |
+| findLast/findLastIndex | | | | ✓ | | | |
+| Hashbang | | | | ✓ | | | |
+| Object.groupBy | | | | | ✓ | | |
+| Map.groupBy | | | | | ✓ | | |
+| Promise.withResolvers | | | | | ✓ | | |
+| isWellFormed/toWellFormed | | | | | ✓ | | |
+| RegExp v flag | | | | | ✓ | | |
+| Atomics.pause | | | | | | ✓ | |
+| Iterator helpers | | | | | | ✓ | |
+| Set 数学方法 | | | | | | ✓ | |
+| RegExp.escape | | | | | | ✓ | |
+| 重复命名捕获组 | | | | | | ✓ | |
+| 正则内联标志 | | | | | | ✓ | |
+| Promise.try | | | | | | ✓ | |
+| Import Attributes | | | | | | ✓ | |
+| Float16Array | | | | | | ✓ | |
+| Explicit Resource Management (using) | | | | | | ✓ | |
+| Temporal API | | | | | | | ✓ |
+| import defer | | | | | | | ✓ |
+| Decorators | | | | | | | ✓ |
+| Joint Iteration | | | | | | | ✓ |
+
+---
+
+*文档结束*
