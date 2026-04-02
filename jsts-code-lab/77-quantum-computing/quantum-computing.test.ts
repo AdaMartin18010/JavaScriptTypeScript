@@ -45,8 +45,12 @@ describe('Quantum Computing Integration', () => {
   });
 
   it('Grover search hits target with high probability', () => {
-    const result = runGroverSearch(3, 5);
-    expect(result.success).toBe(true);
+    let successes = 0;
+    for (let i = 0; i < 100; i++) {
+      const result = runGroverSearch(3, 5);
+      if (result.success) successes++;
+    }
+    expect(successes / 100).toBeGreaterThan(0.9);
   });
 
   it('Quantum teleportation fidelity is 1', () => {

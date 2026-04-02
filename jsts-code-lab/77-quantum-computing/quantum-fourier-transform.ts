@@ -47,9 +47,16 @@ export function applyQFT(circuit: QuantumCircuitV2, inverse = false): void {
  * 用基本门构造 QFT 电路：Hadamard + Controlled-Phase 级联。
  * 这是 QFT 的物理电路实现方式，避免了显式构造巨大矩阵。
  */
+/**
+ * 用基本门构造 QFT 电路的核心级联：Hadamard + Controlled-Phase。
+ * 注意：此实现不包含末端的 SWAP 网络，因此其效果与矩阵 QFT 相差一个
+ * 比特顺序反转（bit-reversal）。这在量子计算教材中是常见约定，
+ * 且使得正向与逆电路严格互为酉逆。
+ */
 export function applyQFTCircuit(circuit: QuantumCircuitV2, inverse = false): void {
   const n = circuit.stateVector.n;
   const sign = inverse ? -1 : 1;
+
   for (let i = 0; i < n; i++) {
     const q = inverse ? n - 1 - i : i;
     circuit.h(q);
@@ -60,16 +67,6 @@ export function applyQFTCircuit(circuit: QuantumCircuitV2, inverse = false): voi
       // 受控相位门 CR(control, target, angle)
       const cpMatrix = buildControlledPhase(n, control, target, angle);
       circuit.stateVector.applyGate(cpMatrix);
-    }
-  }
-  // 交换比特顺序以匹配矩阵定义（可选，教学演示中省略亦可）
-  if (!inverse) {
-    for (let i = 0; i < Math.floor(n / 2); i++) {
-      circuit.swap(i, n - 1 - i);
-    }
-  } else {
-    for (let i = 0; i < Math.floor(n / 2); i++) {
-      circuit.swap(i, n - 1 - i);
     }
   }
 }
@@ -101,19 +98,26 @@ export function demo(): void {
     const probsMatrix = circuitMatrix.getProbabilities();
     console.log('输入态 |' + '1'.repeat(n) + '⟩ 经矩阵 QFT 后的概率分布前4项:', probsMatrix.slice(0, 4).map((p) => p.toFixed(4)));
 
-    // 用电路级 QFT 实现对比
+    // 电路级 QFT（不含末端 SWAP，与矩阵 QFT 相差比特顺序反转）
     const circuitGate = new QuantumCircuitV2(n, (1 << n) - 1);
     applyQFTCircuit(circuitGate);
     const probsGate = circuitGate.getProbabilities();
     console.log('输入态 |' + '1'.repeat(n) + '⟩ 经电路级 QFT 后的概率分布前4项:', probsGate.slice(0, 4).map((p) => p.toFixed(4)));
 
-    // 验证逆 QFT 能恢复原态
+    // 验证电路级 QFT + IQFT 能严格恢复原态
     const circuitInv = new QuantumCircuitV2(n, (1 << n) - 1);
-    applyQFT(circuitInv);
-    applyQFT(circuitInv, true);
+    applyQFTCircuit(circuitInv);
+    applyQFTCircuit(circuitInv, true);
     const finalProbs = circuitInv.getProbabilities();
     const recovered = finalProbs[(1 << n) - 1];
-    console.log('QFT + IQFT 恢复原始态的概率:', recovered.toFixed(6));
+    console.log('电路级 QFT + IQFT 恢复原始态的概率:', recovered.toFixed(6));
+
+    // 验证矩阵级 QFT + IQFT
+    const circuitInvMatrix = new QuantumCircuitV2(n, (1 << n) - 1);
+    applyQFT(circuitInvMatrix);
+    applyQFT(circuitInvMatrix, true);
+    const recoveredMatrix = circuitInvMatrix.getProbabilities()[(1 << n) - 1];
+    console.log('矩阵级 QFT + IQFT 恢复原始态的概率:', recoveredMatrix.toFixed(6));
     console.log('');
   }
 }
