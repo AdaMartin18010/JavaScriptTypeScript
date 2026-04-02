@@ -4,10 +4,10 @@
  */
 
 // 导出测试工具
-export * from './unit/design-patterns.test';
-export * from './unit/heap.test';
-export * from './unit/nullish-coalescing.test';
-export * from './unit/optional-chaining.test';
-export * from './unit/primitives.test';
-export * from './unit/stack-queue.test';
-export * from './unit/architecture-patterns.test';
+export * from './unit/design-patterns.test.js';
+export * from './unit/heap.test.js';
+export * from './unit/nullish-coalescing.test.js';
+export * from './unit/optional-chaining.test.js';
+export * from './unit/primitives.test.js';
+export * from './unit/stack-queue.test.js';
+export * from './unit/architecture-patterns.test.js';

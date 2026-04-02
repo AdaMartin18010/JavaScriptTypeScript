@@ -336,7 +336,7 @@ export class MockObject<T extends object> {
   }
 }
 
-class MockExpectationBuilder<T> {
+class MockExpectationBuilder<T extends object> {
   private expectation: MockExpectation = { method: '' };
 
   constructor(private mock: MockObject<T>, method: string) {

@@ -450,6 +450,6 @@ export async function demo(): Promise<void> {
 // 导出
 // ============================================================================
 
-export { BasePage, MockElement };;
+export { MockElement };
 
 ;

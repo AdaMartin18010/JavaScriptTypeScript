@@ -89,6 +89,7 @@ export class UserRepository implements Repository<User, CreateUserInput, UpdateU
       results.sort((a, b) => {
         const aVal = a[key as keyof User];
         const bVal = b[key as keyof User];
+        if (aVal === null || bVal === null) return 0;
         return order === 'asc' ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
       });
     }
@@ -148,7 +149,7 @@ export class UserRepository implements Repository<User, CreateUserInput, UpdateU
   }
 
   private matchWhere(user: User, where: Partial<User>): boolean {
-    const userRecord = user as Record<string, unknown>;
+    const userRecord = user as unknown as Record<string, unknown>;
     for (const [key, value] of Object.entries(where)) {
       if (userRecord[key] !== value) return false;
     }

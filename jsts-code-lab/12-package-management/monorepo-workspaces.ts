@@ -425,9 +425,9 @@ export function demo(): void {
   });
 
   const packages = new Map([
-    ['core', { name: 'core', path: '', version: '1.0.0', dependencies: {} }],
-    ['utils', { name: 'utils', path: '', version: '1.0.0', dependencies: {} }],
-    ['app', { name: 'app', path: '', version: '1.0.0', dependencies: {} }]
+    ['core', { name: 'core', path: '', version: '1.0.0', dependencies: {}, devDependencies: {} }],
+    ['utils', { name: 'utils', path: '', version: '1.0.0', dependencies: {}, devDependencies: {} }],
+    ['app', { name: 'app', path: '', version: '1.0.0', dependencies: {}, devDependencies: {} }]
   ]);
 
   const plan = changesetManager.generateVersionPlan(packages);

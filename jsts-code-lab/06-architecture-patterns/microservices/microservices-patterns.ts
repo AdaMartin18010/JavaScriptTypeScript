@@ -251,6 +251,10 @@ export class CircuitBreaker {
 abstract class LoadBalancer {
   protected instances: ServiceInstance[] = [];
 
+  constructor(instances: ServiceInstance[] = []) {
+    this.instances = instances;
+  }
+
   updateInstances(instances: ServiceInstance[]): void {
     this.instances = instances;
   }

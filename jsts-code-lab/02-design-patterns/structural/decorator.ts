@@ -99,14 +99,14 @@ function orderCoffee(): void {
 // 6. TypeScript 方法装饰器示例
 // ============================================================================
 
-function timing(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  const original = descriptor.value;
+function timing(target: (n: number) => number, context: ClassMethodDecoratorContext) {
+  const original = target;
 
-  descriptor.value = function (...args: any[]) {
+  return function (this: unknown, n: number): number {
     const start = performance.now();
-    const result = original.apply(this, args);
+    const result = original.call(this, n);
     const end = performance.now();
-    console.log(`${propertyKey} took ${end - start}ms`);
+    console.log(`${String(context.name)} took ${end - start}ms`);
     return result;
   };
 }

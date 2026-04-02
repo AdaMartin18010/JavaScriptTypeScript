@@ -204,6 +204,15 @@ export class SmartCache implements CacheStorage {
     return Array.from(this.cache.values()).map(e => e.response.clone());
   }
 
+  async has(request: RequestInfo): Promise<boolean> {
+    const key = this.getKey(request);
+    return this.cache.has(key);
+  }
+
+  async open(_cacheName: string): Promise<Cache> {
+    throw new Error('Not implemented');
+  }
+
   private getKey(request: RequestInfo): string {
     if (typeof request === 'string') return request;
     return request.url;

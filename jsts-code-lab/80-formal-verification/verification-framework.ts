@@ -258,6 +258,7 @@ export function demo(): void {
   
   // 安全性检查：永远不会同时是红灯和绿灯
   const safety = checker.checkSafety(
+    // @ts-expect-error 演示不相等比较
     state => !(state === 'red' && state === 'green'),
     10
   );
@@ -271,7 +272,7 @@ export function demo(): void {
   console.log('\n--- 合约编程 ---');
   const contractSystem = new ContractEnforcer();
   
-  contractSystem.register<number, number>('sqrt', {
+  contractSystem.register<number>('sqrt', {
     preconditions: [
       x => x >= 0 // 平方根的前提：输入必须非负
     ],

@@ -185,6 +185,14 @@ export class DoublyLinkedList<T> {
     }
   }
 
+  *[Symbol.iterator](): Generator<T> {
+    let current = this.head;
+    while (current) {
+      yield current.value;
+      current = current.next;
+    }
+  }
+
   get size(): number {
     return this.length;
   }

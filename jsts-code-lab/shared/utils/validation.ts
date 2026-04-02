@@ -69,7 +69,7 @@ type Schema<T> = {
 };
 
 export class SchemaValidator<T extends object> {
-  constructor(private schema: Schema<T>) {}
+  constructor(private schema: Record<string, ValidationRule[]>) {}
 
   validate(data: unknown): { valid: boolean; errors: Record<string, string[]> } {
     const errors: Record<string, string[]> = {};

@@ -28,8 +28,8 @@ declare global {
     duration: number;
   }
   interface PerformanceResourceTiming {
-    transferSize: number;
-    initiatorType: string;
+    readonly transferSize: number;
+    readonly initiatorType: string;
   }
   interface PerformanceObserverInit {
     entryTypes?: string[];
@@ -579,7 +579,7 @@ export class PerformanceBudgetChecker {
   // 生成性能预算报告
   generateReport(): {
     summary: { pass: number; warning: number; fail: number };
-    violations: typeof this.violations;
+    violations: Array<{ budget: PerformanceBudget; actual: number; timestamp: number }>;
     recommendations: string[];
   } {
     const results = this.check(new Map()); // 空检查获取最新状态

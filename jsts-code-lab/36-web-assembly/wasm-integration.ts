@@ -27,7 +27,7 @@ export interface WASMLoadOptions {
   imports?: WebAssembly.Imports;
   streaming?: boolean;
   compileOptions?: WebAssembly.CompileError;
-  instantiateOptions?: WebAssembly.InstantiationError;
+  instantiateOptions?: Error;
 }
 
 export class WASMLoader {
@@ -468,7 +468,7 @@ export class WASMPerformanceMonitor {
       this.startTimer(name);
       try {
         const result = fn(...args);
-        return result;
+        return result as ReturnType<T>;
       } finally {
         this.endTimer(name);
       }
@@ -724,10 +724,10 @@ export async function demo(): Promise<void> {
   const monitor = new WASMPerformanceMonitor();
   
   // JS 加法
-  const jsAdd = monitor.wrap((a: number, b: number) => a + b, 'js_add');
+  const jsAdd = monitor.wrap(((a: number, b: number) => a + b) as (...args: unknown[]) => unknown, 'js_add');
   
   // WASM 加法
-  const wasmAdd = monitor.wrap(add, 'wasm_add');
+  const wasmAdd = monitor.wrap(add as (...args: unknown[]) => unknown, 'wasm_add');
   
   // 执行多次
   for (let i = 0; i < 100; i++) {

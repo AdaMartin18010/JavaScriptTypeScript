@@ -144,12 +144,12 @@ async function* paginatedFetcher(url: string) {
   let nextUrl: string | null = url;
   
   while (nextUrl) {
-    const response = await fetch(nextUrl);
-    const data = await response.json();
-    
-    yield data.results;
-    
-    nextUrl = data.next;
+    const response: Response = await fetch(nextUrl);
+    const data: unknown = await response.json();
+
+    yield (data as { results: unknown }).results;
+
+    nextUrl = (data as { next: string | null }).next;
   }
 }
 

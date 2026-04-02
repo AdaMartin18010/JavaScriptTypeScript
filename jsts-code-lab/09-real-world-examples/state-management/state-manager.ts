@@ -29,7 +29,7 @@ export type Listener<S> = (state: S, prevState: S) => void;
 export type Unsubscribe = () => void;
 
 export interface Middleware<S> {
-  (store: StoreAPI<S>): (next: Dispatch) => Dispatch;
+  (store: StoreAPI<S>): (next: Dispatch) => (action: Action) => unknown;
 }
 
 export type Dispatch = (action: Action) => Action;
@@ -44,6 +44,10 @@ export interface Store<S> extends StoreAPI<S> {
   replaceReducer(nextReducer: Reducer<S>): void;
 }
 
+export interface StoreCreator {
+  <S>(reducer: Reducer<S>, preloadedState?: S, enhancer?: (createStore: StoreCreator) => StoreCreator): Store<S>;
+}
+
 // ============================================================================
 // 2. Store 实现
 // ============================================================================
@@ -51,9 +55,19 @@ export interface Store<S> extends StoreAPI<S> {
 export function createStore<S>(
   reducer: Reducer<S>,
   preloadedState?: S,
-  enhancer?: (createStore: typeof createStore) => typeof createStore
+  enhancer?: (createStore: StoreCreator) => StoreCreator
+): Store<S>;
+export function createStore<S>(reducer: Reducer<S>, enhancer: (createStore: StoreCreator) => StoreCreator): Store<S>;
+export function createStore<S>(
+  reducer: Reducer<S>,
+  preloadedState?: S,
+  enhancer?: (createStore: StoreCreator) => StoreCreator
 ): Store<S> {
   // 支持 enhancer
+  if (typeof preloadedState === 'function' && !enhancer) {
+    enhancer = preloadedState as (createStore: StoreCreator) => StoreCreator;
+    preloadedState = undefined;
+  }
   if (enhancer) {
     return enhancer(createStore)(reducer, preloadedState);
   }
@@ -130,7 +144,7 @@ export function createStore<S>(
 // ============================================================================
 
 export function applyMiddleware<S>(...middlewares: Middleware<S>[]) {
-  return (createStore: typeof createStore) =>
+  return ((createStore: StoreCreator) =>
     (reducer: Reducer<S>, preloadedState?: S): Store<S> => {
       const store = createStore(reducer, preloadedState);
       let dispatch: Dispatch = () => {
@@ -143,8 +157,8 @@ export function applyMiddleware<S>(...middlewares: Middleware<S>[]) {
       };
 
       const chain = middlewares.map(middleware => middleware(middlewareAPI));
-      dispatch = chain.reduceRight(
-        (composed, middleware) => middleware(composed),
+      dispatch = chain.reduceRight<Dispatch>(
+        (composed, middleware) => middleware(composed) as Dispatch,
         store.dispatch
       );
 
@@ -152,7 +166,7 @@ export function applyMiddleware<S>(...middlewares: Middleware<S>[]) {
         ...store,
         dispatch
       };
-    };
+    }) as (createStore: StoreCreator) => StoreCreator;
 }
 
 // 日志中间件
@@ -319,24 +333,28 @@ const selectFilter = (state: TodoState) => state.filter;
 export const selectFilteredTodos = createSelector(
   [selectTodos, selectFilter],
   (todos, filter) => {
+    const todoList = todos as Todo[];
     switch (filter) {
       case 'active':
-        return todos.filter(t => !t.completed);
+        return todoList.filter(t => !t.completed);
       case 'completed':
-        return todos.filter(t => t.completed);
+        return todoList.filter(t => t.completed);
       default:
-        return todos;
+        return todoList;
     }
   }
 );
 
 export const selectStats = createSelector(
   [selectTodos],
-  (todos) => ({
-    total: todos.length,
-    completed: todos.filter(t => t.completed).length,
-    active: todos.filter(t => !t.completed).length
-  })
+  (todos) => {
+    const todoList = todos as Todo[];
+    return {
+      total: todoList.length,
+      completed: todoList.filter(t => t.completed).length,
+      active: todoList.filter(t => !t.completed).length
+    };
+  }
 );
 
 // ============================================================================

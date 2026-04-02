@@ -7,27 +7,27 @@ import {
   TaskModel,
   TaskController,
   ConsoleTaskView
-} from '../../06-architecture-patterns/mvc/mvc-architecture';
+} from '../../06-architecture-patterns/mvc/mvc-architecture.js';
 
 import {
   ProductModel,
   ProductViewModel,
   ref,
   computed
-} from '../../06-architecture-patterns/mvvm/mvvm-architecture';
+} from '../../06-architecture-patterns/mvvm/mvvm-architecture.js';
 
 import {
   ServiceRegistry,
   ApiGateway,
   CircuitBreaker
-} from '../../06-architecture-patterns/microservices/microservices-patterns';
+} from '../../06-architecture-patterns/microservices/microservices-patterns.js';
 
 import {
   EventStore,
   Order,
   CommandHandler,
   OrderProjection
-} from '../../06-architecture-patterns/cqrs/cqrs-pattern';
+} from '../../06-architecture-patterns/cqrs/cqrs-pattern.js';
 
 describe('MVC 架构', () => {
   let model: TaskModel;

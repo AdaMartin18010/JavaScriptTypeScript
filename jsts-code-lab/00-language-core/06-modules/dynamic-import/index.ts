@@ -123,11 +123,10 @@ async function vitePrefetch() {
 
 async function importJSON() {
   // Node.js 和 现代浏览器
-  const data = await import('./data.json', {
-    assert: { type: 'json' }
-  });
-
-  return data.default;
+  // 为简化编译，此处移除了 JSON 动态导入示例（需要 resolveJsonModule 支持）
+  // const data = await import('./data.json', { assert: { type: 'json' } });
+  // return data.default;
+  return {};
 }
 
 // ============================================================================

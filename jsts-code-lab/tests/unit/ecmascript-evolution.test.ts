@@ -11,9 +11,11 @@ describe('ES2020 特性', () => {
   });
 
   it('应该支持空值合并运算符 ??', () => {
+    // @ts-expect-error
     const value = null ?? 'default';
     expect(value).toBe('default');
     
+    // @ts-expect-error
     const zero = 0 ?? 'default';
     expect(zero).toBe(0); // 与 || 不同，0 不是假值
   });
@@ -21,6 +23,7 @@ describe('ES2020 特性', () => {
   it('应该支持可选链操作符 ?.', () => {
     const obj = { a: { b: { c: 42 } } };
     expect(obj?.a?.b?.c).toBe(42);
+    // @ts-expect-error
     expect(obj?.x?.y?.z).toBeUndefined();
   });
 

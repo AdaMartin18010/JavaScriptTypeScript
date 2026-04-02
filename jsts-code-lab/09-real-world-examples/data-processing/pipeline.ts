@@ -17,15 +17,15 @@ interface PipelineStage<I, O> {
 // 2. 管道构建器
 // ============================================================================
 
-class Pipeline<T> {
+class Pipeline<I, T = I> {
   private stages: Array<(input: unknown) => unknown> = [];
 
-  pipe<U>(stage: PipelineStage<T, U>): Pipeline<U> {
+  pipe<U>(stage: PipelineStage<T, U>): Pipeline<I, U> {
     this.stages.push(stage.process.bind(stage) as (input: unknown) => unknown);
-    return this as unknown as Pipeline<U>;
+    return this as unknown as Pipeline<I, U>;
   }
 
-  async execute(input: T): Promise<unknown> {
+  async execute(input: I): Promise<unknown> {
     let result: unknown = input;
     for (const stage of this.stages) {
       result = await stage(result);
@@ -219,8 +219,7 @@ export {
   CSVParser,
   CSVTransformer,
   DataCleaningPipeline,
-  BatchProcessor,
-  demo
+  BatchProcessor
 };
 
 export type { PipelineStage, CSVRow, UserData };

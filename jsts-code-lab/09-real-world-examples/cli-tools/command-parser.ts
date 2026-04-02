@@ -166,56 +166,6 @@ cli.run(process.argv.slice(2));
 */
 
 // ============================================================================
-// 6. 使用示例
-// ============================================================================
-
-export function demo(): void {
-  console.log('=== CLI 命令解析器演示 ===\n');
-
-  // 参数解析示例
-  const testArgs = ['init', 'my-project', '--template', 'typescript', '--force'];
-  const parsed = parseArgs(testArgs);
-  
-  console.log('解析参数:', testArgs.join(' '));
-  console.log('命令:', parsed.command);
-  console.log('参数:', parsed.args);
-  console.log('标志:', Object.fromEntries(parsed.flags));
-
-  // CLI 构建器示例
-  console.log('\n--- CLI 构建器 ---');
-  const cli = new CLI();
-  
-  cli
-    .command('init', '初始化项目', (args, flags) => {
-      console.log(`初始化项目: ${args[0] || '未命名'}`);
-      if (flags.has('template')) {
-        console.log(`使用模板: ${flags.get('template')}`);
-      }
-    })
-    .command('build', '构建项目', (args, flags) => {
-      const watch = flags.has('watch');
-      console.log(`构建项目${watch ? ' (监听模式)' : ''}`);
-    });
-
-  console.log(cli.help());
-
-  // 进度条示例
-  console.log('\n--- 进度条 ---');
-  const progress = new ProgressBar(100, 30, '下载进度');
-  
-  // 模拟进度更新
-  let current = 0;
-  const interval = setInterval(() => {
-    current += 10;
-    progress.update(current);
-    if (current >= 100) {
-      clearInterval(interval);
-      console.log('\n下载完成!');
-    }
-  }, 100);
-}
-
-// ============================================================================
 // 导出
 // ============================================================================
 
