@@ -410,8 +410,29 @@ const DEMO_MODULES = {
 
   'consensus-algorithms': async () => {
     console.log('\n🗳️ 一致性算法\n');
-    const ca = await import('./71-consensus-algorithms/raft-consensus.js');
-    ca.demo?.();
+    const raft = await import('./71-consensus-algorithms/raft-consensus.js');
+    raft.demo?.();
+
+    const paxos = await import('./71-consensus-algorithms/paxos-consensus.js');
+    paxos.demo?.();
+
+    const pbft = await import('./71-consensus-algorithms/pbft-consensus.js');
+    pbft.demo?.();
+
+    const vr = await import('./71-consensus-algorithms/viewstamped-replication.js');
+    vr.demo?.();
+
+    const cap = await import('./71-consensus-algorithms/cap-theorem-formal.js');
+    cap.demo?.();
+
+    const snapshot = await import('./71-consensus-algorithms/raft-log-compaction.js');
+    snapshot.demo?.();
+
+    const membership = await import('./71-consensus-algorithms/raft-membership-change.js');
+    membership.demo?.();
+
+    const election = await import('./71-consensus-algorithms/leader-election-theory.js');
+    election.demo?.();
   },
 
   'container-orchestration': async () => {
