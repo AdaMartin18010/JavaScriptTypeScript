@@ -196,10 +196,8 @@ export class VehicleFactoryJSDefensive {
         const capacity = typeof safeOptions.capacity === 'number' ? safeOptions.capacity : 5;
         return new TruckJS(brand, capacity);
       }
-      default: {
-        const _exhaustiveCheck: never = type;
+      default:
         throw new Error(`Unknown vehicle type: ${type}`);
-      }
     }
   }
 }

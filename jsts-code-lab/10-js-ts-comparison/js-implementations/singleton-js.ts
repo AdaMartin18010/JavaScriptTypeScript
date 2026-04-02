@@ -94,7 +94,7 @@ const SingletonJS: {
 // JavaScript 类版本 (ES6+)
 class SingletonJSClass {
   static instance: SingletonJSClass | null = null;
-  data: Map<string, unknown>;
+  data!: Map<string, unknown>;
   
   constructor() {
     if (SingletonJSClass.instance) {

@@ -95,6 +95,7 @@ export class TypedEventEmitter<Events extends EventMap> {
 
 // 定义具体事件类型
 interface UserEvents {
+  [event: string]: unknown;
   'user:login': { userId: string; timestamp: number };
   'user:logout': { userId: string; duration: number };
   'user:update': { userId: string; changes: Partial<{ name: string; email: string }> };
