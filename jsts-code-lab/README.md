@@ -1,9 +1,9 @@
 # JavaScript TypeScript 代码实验室
 
-> 从理论到实践的完整代码示例库，80+ 模块，305+ TypeScript 文件
+> 从理论到实践的代码示例库，80 个模块，~283 个 TypeScript 文件（不含 node_modules，仅模块源码）
 
 [![Modules](https://img.shields.io/badge/Modules-80-blue)](./)
-[![Files](https://img.shields.io/badge/Files-305+-green)](./)
+[![Files](https://img.shields.io/badge/Files-~283-green)](./)
 [![Patterns](https://img.shields.io/badge/Patterns-23%20GoF-orange)](./)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](./LICENSE)
 
@@ -14,7 +14,7 @@
 本项目是 JavaScript/TypeScript 生态系统的**完整技术实现**，包含：
 
 - **🎓 理论基础**：每个模块配有详细的设计原理和架构论证
-- **💻 可运行代码**：305+ TypeScript 文件，全部可独立运行
+- **💻 可运行代码**：~283 个 TypeScript 文件，按模块成熟度分级
 - **📊 性能分析**：算法复杂度、内存占用、执行效率的理论与实测
 - **🏗️ 架构设计**：从设计模式到分布式系统的完整架构实践
 
@@ -144,7 +144,7 @@ pnpm benchmark
 ## 📊 项目统计
 
 - **模块数**: 80 个
-- **TypeScript 文件**: 305+
+- **TypeScript 文件**: ~283（不含 node_modules，仅模块源码）
 - **设计模式**: 23 种 GoF 模式完整实现
 - **架构模式**: 6 种企业级架构
 - **可运行 Demo**: 110+

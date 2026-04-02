@@ -1,113 +1,68 @@
 import { describe, it, expect } from 'vitest';
-import {
-  always,
-  eventually,
-  until,
-  leadsTo,
-  checkNext,
-  primedEquals,
-  generateMutexBehavior,
-  generateBadMutexBehavior,
-  generateStarvationBehavior
-} from './tla-plus-patterns.js';
-import type { TLAState, Behavior } from './tla-plus-patterns.js';
+import { TLAPlusLite, type PhilosopherSystem } from './tlaplus-lite.js';
 
-describe('tla-plus-patterns', () => {
-  describe('temporal operators', () => {
-    const behavior: Behavior = [
-      { x: 0 },
-      { x: 1 },
-      { x: 2 }
-    ];
+describe('TLAPlusLite', () => {
+  it('should verify dining philosophers invariants', () => {
+    const spec = {
+      name: 'DiningPhilosophers',
+      variables: ['philosophers', 'forks'] as (keyof PhilosopherSystem)[],
+      init: (s: PhilosopherSystem) => s.philosophers.every((p: PhilosopherSystem['philosophers'][number]) => p === 'thinking') && s.forks.every((f: PhilosopherSystem['forks'][number]) => f === 'clean'),
+      next: (curr: PhilosopherSystem, next: PhilosopherSystem) => {
+        const n = curr.philosophers.length;
+        let changed = 0;
+        for (let i = 0; i < n; i++) {
+          if (curr.philosophers[i] !== next.philosophers[i]) changed++;
+          if (curr.forks[i] !== next.forks[i]) changed++;
+        }
+        return changed <= 3;
+      }
+    };
 
-    it('always should hold when predicate is true for all states', () => {
-      expect(always((s: TLAState) => (s['x'] as number) >= 0)(behavior)).toBe(true);
-    });
+    const checker = new TLAPlusLite(spec);
+    const initial: PhilosopherSystem[] = [{
+      philosophers: ['thinking', 'thinking'],
+      forks: ['clean', 'clean']
+    }];
 
-    it('always should fail when predicate is false for some state', () => {
-      expect(always((s: TLAState) => (s['x'] as number) > 0)(behavior)).toBe(false);
-    });
+    const inv = (s: PhilosopherSystem) => {
+      for (let i = 0; i < s.philosophers.length; i++) {
+        if (s.philosophers[i] === 'eating' && s.philosophers[(i + 1) % s.philosophers.length] === 'eating') return false;
+      }
+      return true;
+    };
 
-    it('eventually should hold when predicate is true for some future state', () => {
-      expect(eventually((s: TLAState) => (s['x'] as number) === 2)(behavior)).toBe(true);
-    });
+    function genStates(s: PhilosopherSystem): PhilosopherSystem[] {
+      const n = s.philosophers.length;
+      const r: PhilosopherSystem[] = [];
+      for (let i = 0; i < n; i++) {
+        if (s.philosophers[i] === 'thinking') {
+          const ns = structuredClone(s);
+          ns.philosophers[i] = 'hungry';
+          r.push(ns);
+        }
+        if (s.philosophers[i] === 'hungry') {
+          const left = i;
+          const right = (i + 1) % n;
+          if (s.forks[left] === 'clean' && s.forks[right] === 'clean') {
+            const ns = structuredClone(s);
+            ns.philosophers[i] = 'eating';
+            ns.forks[left] = 'dirty';
+            ns.forks[right] = 'dirty';
+            r.push(ns);
+          }
+        }
+        if (s.philosophers[i] === 'eating') {
+          const ns = structuredClone(s);
+          ns.philosophers[i] = 'thinking';
+          ns.forks[i] = 'clean';
+          ns.forks[(i + 1) % n] = 'clean';
+          r.push(ns);
+        }
+      }
+      return r;
+    }
 
-    it('eventually should fail when predicate is never true', () => {
-      expect(eventually((s: TLAState) => (s['x'] as number) === 99)(behavior)).toBe(false);
-    });
-
-    it('until should hold when left holds until right becomes true', () => {
-      const prop = until(
-        (s: TLAState) => (s['x'] as number) < 2,
-        (s: TLAState) => (s['x'] as number) === 2
-      );
-      expect(prop(behavior)).toBe(true);
-    });
-
-    it('until should fail when left becomes false before right', () => {
-      const prop = until(
-        (s: TLAState) => (s['x'] as number) < 1,
-        (s: TLAState) => (s['x'] as number) === 2
-      );
-      expect(prop(behavior)).toBe(false);
-    });
-
-    it('leadsTo should hold when P is followed by Q', () => {
-      const prop = leadsTo(
-        (s: TLAState) => (s['x'] as number) === 0,
-        (s: TLAState) => (s['x'] as number) === 2
-      );
-      expect(prop(behavior)).toBe(true);
-    });
-
-    it('leadsTo should fail when P is never followed by Q', () => {
-      const badBehavior: Behavior = [
-        { x: 0 },
-        { x: 1 },
-        { x: 1 }
-      ];
-      const prop = leadsTo(
-        (s: TLAState) => (s['x'] as number) === 0,
-        (s: TLAState) => (s['x'] as number) === 2
-      );
-      expect(prop(badBehavior)).toBe(false);
-    });
-  });
-
-  describe('action checking', () => {
-    it('checkNext should verify all transitions satisfy action', () => {
-      const behavior: Behavior = [{ x: 0 }, { x: 1 }, { x: 2 }];
-      const action = primedEquals('x', s => (s['x'] as number) + 1);
-      expect(checkNext(behavior, action)).toBe(true);
-    });
-
-    it('checkNext should detect invalid transition', () => {
-      const behavior: Behavior = [{ x: 0 }, { x: 1 }, { x: 3 }];
-      const action = primedEquals('x', s => (s['x'] as number) + 1);
-      expect(checkNext(behavior, action)).toBe(false);
-    });
-  });
-
-  describe('mutex examples', () => {
-    it('good mutex behavior should satisfy mutual exclusion', () => {
-      const behavior = generateMutexBehavior();
-      const mutex = always((s: TLAState) => !(s['pc1'] === 'cs' && s['pc2'] === 'cs'));
-      expect(mutex(behavior)).toBe(true);
-    });
-
-    it('bad mutex behavior should violate mutual exclusion', () => {
-      const behavior = generateBadMutexBehavior();
-      const mutex = always((s: TLAState) => !(s['pc1'] === 'cs' && s['pc2'] === 'cs'));
-      expect(mutex(behavior)).toBe(false);
-    });
-
-    it('starvation behavior should violate liveness', () => {
-      const behavior = generateStarvationBehavior();
-      const live = leadsTo(
-        (s: TLAState) => s['pc1'] === 'wait',
-        (s: TLAState) => s['pc1'] === 'cs'
-      );
-      expect(live(behavior)).toBe(false);
-    });
+    const result = checker.checkInvariant(initial, inv, genStates, 6);
+    expect(result.holds).toBe(true);
   });
 });

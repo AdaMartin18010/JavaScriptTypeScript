@@ -109,11 +109,11 @@ export class TLAPlusLite<S> {
 // 哲学家就餐问题（Dining Philosophers）
 // ---------------------------------------------------------------------------
 
-type ForkState = 'clean' | 'dirty';
+export type ForkState = 'clean' | 'dirty';
 
-type PhilosopherState = 'thinking' | 'hungry' | 'eating';
+export type PhilosopherState = 'thinking' | 'hungry' | 'eating';
 
-interface PhilosopherSystem {
+export interface PhilosopherSystem {
   philosophers: PhilosopherState[];
   forks: ForkState[];
 }
