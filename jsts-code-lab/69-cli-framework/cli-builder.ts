@@ -30,8 +30,8 @@ export class CLIBuilder {
     return this;
   }
   
-  globalOption(option: Command['options'][0]): this {
-    this.globalOptions.push(option);
+  globalOption(option: NonNullable<Command['options']>[number]): this {
+    this.globalOptions!.push(option);
     return this;
   }
   
@@ -119,6 +119,10 @@ export class CLIBuilder {
     return { args, options };
   }
   
+  displayHelp(): void {
+    this.showHelp();
+  }
+
   private showHelp(): void {
     console.log(`\n${this.name} v${this.version}\n`);
     console.log('Usage: <command> [options] [arguments]\n');
@@ -132,8 +136,8 @@ export class CLIBuilder {
     console.log('  -h, --help     Show help');
     console.log('  -v, --version  Show version');
     
-    if (this.globalOptions.length > 0) {
-      for (const opt of this.globalOptions) {
+    if (this.globalOptions!.length > 0) {
+      for (const opt of this.globalOptions!) {
         const alias = opt.alias ? `-${opt.alias}, ` : '    ';
         console.log(`  ${alias}--${opt.name.padEnd(10)} ${opt.type}`);
       }
@@ -268,7 +272,7 @@ export function demo(): void {
   
   // 显示帮助
   console.log('--- CLI帮助 ---');
-  cli.showHelp = cli['showHelp']; // 访问私有方法用于演示
+  cli.displayHelp(); // 访问公共方法用于演示
   
   // 模拟解析命令
   console.log('\n--- 模拟命令解析 ---');

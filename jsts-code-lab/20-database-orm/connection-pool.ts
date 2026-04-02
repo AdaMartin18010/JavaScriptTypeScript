@@ -98,7 +98,7 @@ export class ConnectionPool {
   async initialize(): Promise<void> {
     console.log(`Initializing pool with ${this.config.minConnections} connections...`);
     
-    const createPromises: Promise<void>[] = [];
+    const createPromises: Promise<void | PooledConnection>[] = [];
     for (let i = 0; i < this.config.minConnections; i++) {
       createPromises.push(this.createConnection());
     }

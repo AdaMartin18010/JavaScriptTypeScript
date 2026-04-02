@@ -1656,11 +1656,11 @@ export function demo(): void {
   console.log('-'.repeat(40));
 
   const registrationForm = v.form()
-    .field('username', v.string().username().required(), '用户名')
-    .field('email', v.string().email().required(), '邮箱')
-    .field('password', v.string().password().required(), '密码')
-    .field('confirmPassword', v.ref('password'), '确认密码')
-    .field('age', v.number().min(18).optional(), '年龄');
+    .field('username', v.string().username().required() as Validator<unknown>, '用户名')
+    .field('email', v.string().email().required() as Validator<unknown>, '邮箱')
+    .field('password', v.string().password().required() as Validator<unknown>, '密码')
+    .field('confirmPassword', v.ref('password') as Validator<unknown>, '确认密码')
+    .field('age', v.number().min(18).optional() as Validator<unknown>, '年龄');
 
   const formData1 = {
     username: 'john_doe',

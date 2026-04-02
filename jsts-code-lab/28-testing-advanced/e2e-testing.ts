@@ -233,7 +233,7 @@ export const Fixtures = {
       isEnabled: async () => true,
       waitForSelector: async () => {},
       waitForNavigation: async () => {},
-      evaluate: async (fn: () => unknown) => fn()
+      evaluate: async <T>(fn: () => T): Promise<T> => fn()
     };
 
     return {

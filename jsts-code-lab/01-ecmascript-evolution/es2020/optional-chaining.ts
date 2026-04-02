@@ -14,8 +14,13 @@
 // 1. 基础用法
 // ============================================================================
 
+interface UserProfile {
+  name?: string;
+}
+
 interface User {
   name: string;
+  profile?: UserProfile;
   address?: {
     street?: string;
     city?: string;

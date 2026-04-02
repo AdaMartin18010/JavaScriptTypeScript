@@ -12,7 +12,12 @@
  * - 请求验证
  */
 
-import type { Request, Response, NextFunction } from 'express';
+// 占位类型，避免安装 express 依赖
+type Request = { body: unknown; params: Record<string, string>; query: Record<string, unknown>; headers: Record<string, string>; method?: string; path?: string; user?: { id: string; email: string } };
+type Response = { status(code: number): Response; json(body: unknown): Response; send(body?: unknown): Response; on(event: string, callback: () => void): Response; statusCode?: number };
+type NextFunction = () => void;
+type RequestHandler = (req: Request, res: Response, next: NextFunction) => void;
+type ErrorRequestHandler = (err: unknown, req: Request, res: Response, next: NextFunction) => void;
 
 declare global {
   namespace Express {
@@ -46,7 +51,7 @@ export const validateRequest = (schema: ValidationSchema): Middleware => {
     // 验证 body
     if (schema.body) {
       for (const [field, validator] of Object.entries(schema.body)) {
-        if (!validator(req.body[field])) {
+        if (!validator((req.body as Record<string, unknown>)[field])) {
           errors.push(`Invalid body field: ${field}`);
         }
       }
@@ -225,18 +230,18 @@ export const authMiddleware: Middleware = (req, res, next) => {
 // 8. 错误处理中间件
 // ============================================================================
 
-export const errorHandler: Middleware = (err, req, res, next) => {
+export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   console.error(err);
 
-  if (err.name === 'ValidationError') {
+  if ((err as Error).name === 'ValidationError') {
     res.status(400).json({
       error: 'Validation Error',
-      details: err.message
+      details: (err as Error).message
     });
     return;
   }
 
-  if (err.name === 'UnauthorizedError') {
+  if ((err as Error).name === 'UnauthorizedError') {
     res.status(401).json({
       error: 'Unauthorized'
     });
@@ -245,7 +250,7 @@ export const errorHandler: Middleware = (err, req, res, next) => {
 
   res.status(500).json({
     error: 'Internal Server Error',
-    message: process.env.NODE_ENV === 'development' ? err.message : undefined
+    message: process.env.NODE_ENV === 'development' ? (err as Error).message : undefined
   });
 };
 

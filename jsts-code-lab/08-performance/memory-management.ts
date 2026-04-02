@@ -463,7 +463,7 @@ export function demo(): void {
   console.log(`获取 8 个缓冲区后的池状态:`, bufferPool.getStats());
 
   // 释放部分缓冲区
-  buffers.slice(0, 4).forEach(buf => bufferPool.release(buf));
+  buffers.slice(0, 4).forEach(buf => bufferPool.release(buf as unknown as Buffer<ArrayBuffer>));
   console.log(`释放 4 个缓冲区后的池状态:`, bufferPool.getStats());
 
   // 内存高效缓存

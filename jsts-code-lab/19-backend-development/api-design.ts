@@ -243,7 +243,7 @@ export interface ApiError {
 
 export interface ResponseMeta {
   timestamp: string;
-  requestId: string;
+  requestId?: string;
   pagination?: OffsetPaginationResult<unknown>['pagination'];
 }
 

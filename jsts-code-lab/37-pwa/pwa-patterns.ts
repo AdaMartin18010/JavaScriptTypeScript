@@ -344,7 +344,7 @@ export class CacheManager {
     }).catch(() => cached);
 
     // 立即返回缓存（如果有），否则等待网络
-    return cached || fetchPromise;
+    return cached || (await fetchPromise as Response);
   }
 
   // 清除缓存
@@ -488,7 +488,7 @@ export class OfflineManager {
 
     if (connection) {
       return {
-        type: connection.effectiveType || 'unknown',
+        type: (connection.effectiveType || 'unknown') as 'slow-2g' | '2g' | '3g' | '4g' | 'unknown',
         downlink: connection.downlink || 0,
         rtt: connection.rtt || 0,
         saveData: connection.saveData || false
@@ -561,7 +561,7 @@ export class PushNotificationManager {
 
     const subscription = await this.swRegistration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: this.urlBase64ToUint8Array(applicationServerKey)
+      applicationServerKey: this.urlBase64ToUint8Array(applicationServerKey) as BufferSource
     });
 
     console.log('[Push] Subscribed:', subscription.endpoint);
@@ -595,6 +595,7 @@ export class PushNotificationManager {
       body: options.body,
       icon: options.icon,
       badge: options.badge,
+      // @ts-expect-error NotificationOptions does not have image in some DOM typings
       image: options.image,
       tag: options.tag,
       requireInteraction: options.requireInteraction,

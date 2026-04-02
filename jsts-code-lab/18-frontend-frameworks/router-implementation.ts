@@ -254,16 +254,21 @@ export class HashRouter {
 
 export function createRouterLink(router: HistoryRouter) {
   return class RouterLink {
-    constructor(private to: string, private text: string) {}
+    #to: string;
+    #text: string;
+    constructor(to: string, text: string) {
+      this.#to = to;
+      this.#text = text;
+    }
 
     render(): string {
-      return `<a href="${this.to}" data-router-link>${this.text}</a>`;
+      return `<a href="${this.#to}" data-router-link>${this.#text}</a>`;
     }
 
     attachEvent(element: HTMLElement): void {
       element.addEventListener('click', (e) => {
         e.preventDefault();
-        router.push(this.to);
+        router.push(this.#to);
       });
     }
   };

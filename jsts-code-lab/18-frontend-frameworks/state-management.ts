@@ -178,15 +178,15 @@ export class Store<S, A extends Action = Action> {
   }
 
   // 创建记忆化 Selector
-  createSelector<T, R>(
-    inputSelectors: ((state: S) => T)[],
-    resultFn: (...args: T[]) => R
+  createSelector<T extends unknown[], R>(
+    inputSelectors: { [K in keyof T]: (state: S) => T[K] },
+    resultFn: (...args: T) => R
   ): (state: S) => R {
-    let lastArgs: T[] = [];
+    let lastArgs: T = [] as unknown as T;
     let lastResult: R;
 
     return (state: S): R => {
-      const args = inputSelectors.map(sel => sel(state));
+      const args = inputSelectors.map(sel => sel(state)) as T;
       
       if (!this.shallowEqual(args, lastArgs)) {
         lastResult = resultFn(...args);
@@ -225,7 +225,7 @@ export const thunkMiddleware = <S, A extends Action>(store: Store<S, A>) =>
   (next: (action: A | ((dispatch: (a: A) => A, getState: () => S) => Promise<A>)) => A) =>
   (action: A | ((dispatch: (a: A) => A, getState: () => S) => Promise<A>)): A => {
     if (typeof action === 'function') {
-      return action(store.dispatch.bind(store), store.getState.bind(store)) as A;
+      return action(store.dispatch.bind(store), store.getState.bind(store)) as unknown as A;
     }
     return next(action);
   };

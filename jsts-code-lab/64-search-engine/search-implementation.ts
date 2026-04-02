@@ -66,7 +66,7 @@ export class InvertedIndex {
       if (docIds === null) {
         docIds = new Set(ids);
       } else {
-        docIds = new Set([...docIds].filter(id => ids.has(id)));
+        docIds = new Set([...docIds].filter((value: string) => ids.has(value)));
       }
     }
     

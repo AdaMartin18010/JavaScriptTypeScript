@@ -86,7 +86,7 @@ async function fetchWithTimeout(sources: string[], timeoutMs: number) {
   );
 
   try {
-    return await Promise.any([...sources.map(fetch), timeoutPromise]);
+    return await Promise.any([...sources.map(url => fetch(url)), timeoutPromise]);
   } catch (error) {
     if (error instanceof AggregateError) {
       console.log('All sources failed or timed out');

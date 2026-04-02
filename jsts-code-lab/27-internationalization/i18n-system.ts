@@ -185,9 +185,15 @@ export class I18nManager {
   private getNestedValue(obj: TranslationDict | undefined, path: string): unknown {
     if (!obj) return undefined;
     
-    return path.split('.').reduce((current, key) => {
-      return current && typeof current === 'object' ? current[key] : undefined;
-    }, obj as unknown);
+    let current: unknown = obj;
+    for (const key of path.split('.')) {
+      if (current && typeof current === 'object') {
+        current = (current as Record<string, unknown>)[key];
+      } else {
+        return undefined;
+      }
+    }
+    return current;
   }
 
   private interpolate(template: string, options: InterpolationOptions): string {

@@ -122,7 +122,7 @@ export function omit<T extends object, K extends keyof T>(
   const result = {} as Omit<T, K>;
   for (const key of Object.keys(obj) as K[]) {
     if (!keySet.has(key)) {
-      (result as Record<K, T[K]>)[key] = obj[key];
+      (result as unknown as Record<K, T[K]>)[key] = obj[key];
     }
   }
   return result;

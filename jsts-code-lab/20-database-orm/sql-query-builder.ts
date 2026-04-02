@@ -72,7 +72,7 @@ export class QueryBuilder<T = Record<string, unknown>> {
     this.whereConditions.push({
       column: column as string,
       operator: 'IN',
-      value: values as Primitive
+      value: values as unknown as Primitive
     });
     return this;
   }

@@ -80,7 +80,7 @@ export function isArray<T>(value: unknown): value is T[] {
 export function isPromise<T>(value: unknown): value is Promise<T> {
   return value instanceof Promise || (
     isObject(value) && 
-    isFunction((value as Promise<T>).then)
+    isFunction((value as unknown as Promise<T>).then)
   );
 }
 

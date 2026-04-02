@@ -139,7 +139,7 @@ export class FunctionOrchestrator {
 // ============================================================================
 
 export class EventTriggerManager {
-  private triggers: Map<string, (event: unknown) => Promise<void>> = new Map();
+  private triggers: Map<string, (event: unknown) => Promise<unknown>> = new Map();
 
   // HTTP 触发器
   addHttpTrigger(path: string, method: string, handler: (req: unknown) => Promise<unknown>): void {

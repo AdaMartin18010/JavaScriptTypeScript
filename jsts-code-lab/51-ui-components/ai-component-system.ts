@@ -182,9 +182,9 @@ export class AdaptiveUIEngine {
   adaptComponent<T extends Record<string, unknown>>(
     baseConfig: T,
     adaptations: {
-      mobile?: Partial<T>;
-      lowPerformance?: Partial<T>;
-      slowNetwork?: Partial<T>;
+      mobile?: Partial<T & { infiniteScroll?: boolean; lazyLoad?: boolean }>;
+      lowPerformance?: Partial<T & { infiniteScroll?: boolean; lazyLoad?: boolean }>;
+      slowNetwork?: Partial<T & { infiniteScroll?: boolean; lazyLoad?: boolean }>;
     }
   ): T {
     let config = { ...baseConfig };
@@ -390,7 +390,11 @@ export async function demo(): Promise<void> {
   console.log('   预测意图:', adaptive.predictIntent());
 
   console.log('\n3. 智能状态管理');
-  const stateManager = new IntelligentStateManager({
+  const stateManager = new IntelligentStateManager<{
+    user: { id: number; name: string } | null;
+    preferences: Record<string, unknown>;
+    predictedActions: string[];
+  }>({
     user: null,
     preferences: {},
     predictedActions: []

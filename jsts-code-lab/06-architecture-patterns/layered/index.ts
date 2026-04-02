@@ -153,7 +153,7 @@ async function demo() {
   console.log('Created:', createResult);
 
   // 获取用户
-  if (createResult.success) {
+  if (createResult.success && createResult.data) {
     const getResult = await controller.getUser(createResult.data.id);
     console.log('Retrieved:', getResult);
   }
