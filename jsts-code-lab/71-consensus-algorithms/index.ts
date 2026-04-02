@@ -8,4 +8,4 @@
  * - 领导者选举
  */
 
-export * from './raft-consensus.js';
+export * as RaftConsensus from './raft-consensus.js';

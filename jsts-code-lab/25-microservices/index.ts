@@ -9,4 +9,4 @@
  * - 负载均衡
  */
 
-export * from './service-mesh.js';
+export * as ServiceMesh from './service-mesh.js';

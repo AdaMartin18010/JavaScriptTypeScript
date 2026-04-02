@@ -8,4 +8,4 @@
  * - 步骤函数
  */
 
-export * from './serverless-patterns.js';
+export * as ServerlessPatterns from './serverless-patterns.js';

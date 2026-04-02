@@ -8,4 +8,4 @@
  * - 性能预算
  */
 
-export * from './core-web-vitals.js';
+export * as CoreWebVitals from './core-web-vitals.js';

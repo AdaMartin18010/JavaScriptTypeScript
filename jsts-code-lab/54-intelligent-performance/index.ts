@@ -7,4 +7,4 @@
  * - 智能预加载
  */
 
-export * from './ai-performance-optimizer.js';
+export * as AiPerformanceOptimizer from './ai-performance-optimizer.js';

@@ -8,4 +8,4 @@
  * - 社区发现
  */
 
-export * from './graph-engine.js';
+export * as GraphEngine from './graph-engine.js';

@@ -8,4 +8,4 @@
  * - 手势识别
  */
 
-export * from './xr-engine.js';
+export * as XrEngine from './xr-engine.js';

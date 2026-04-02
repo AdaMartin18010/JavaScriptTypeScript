@@ -8,4 +8,4 @@
  * - 可观测性
  */
 
-export * from './mesh-architecture.js';
+export * as MeshArchitecture from './mesh-architecture.js';

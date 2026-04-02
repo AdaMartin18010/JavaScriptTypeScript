@@ -8,4 +8,4 @@
  * - 联邦学习
  */
 
-export * from './edge-inference.js';
+export * as EdgeInference from './edge-inference.js';

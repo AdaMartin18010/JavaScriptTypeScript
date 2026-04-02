@@ -8,4 +8,4 @@
  * - 代码生成
  */
 
-export * from './meta-techniques.js';
+export * as MetaTechniques from './meta-techniques.js';

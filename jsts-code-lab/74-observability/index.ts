@@ -8,4 +8,4 @@
  * - 追踪 (Tracing)
  */
 
-export * from './observability-stack.js';
+export * as ObservabilityStack from './observability-stack.js';

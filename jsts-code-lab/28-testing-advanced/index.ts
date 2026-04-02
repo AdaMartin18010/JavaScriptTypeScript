@@ -8,4 +8,4 @@
  * - 测试夹具
  */
 
-export * from './e2e-testing.js';
+export * as E2eTesting from './e2e-testing.js';

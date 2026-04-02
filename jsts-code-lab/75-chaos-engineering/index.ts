@@ -8,4 +8,4 @@
  * - 爆炸半径控制
  */
 
-export * from './chaos-experiments.js';
+export * as ChaosExperiments from './chaos-experiments.js';

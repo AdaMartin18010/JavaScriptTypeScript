@@ -8,4 +8,4 @@
  * - 推送通知
  */
 
-export * from './pwa-patterns.js';
+export * as PwaPatterns from './pwa-patterns.js';

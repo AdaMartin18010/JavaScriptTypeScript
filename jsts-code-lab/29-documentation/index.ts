@@ -8,4 +8,4 @@
  * - Markdown 输出
  */
 
-export * from './api-docs-generator.js';
+export * as ApiDocsGenerator from './api-docs-generator.js';

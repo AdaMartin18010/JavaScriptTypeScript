@@ -8,4 +8,4 @@
  * - 量子算法
  */
 
-export * from './quantum-simulator.js';
+export * as QuantumSimulator from './quantum-simulator.js';

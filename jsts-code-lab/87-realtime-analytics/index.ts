@@ -8,4 +8,4 @@
  * - 异常检测
  */
 
-export * from './streaming-analytics.js';
+export * as StreamingAnalytics from './streaming-analytics.js';

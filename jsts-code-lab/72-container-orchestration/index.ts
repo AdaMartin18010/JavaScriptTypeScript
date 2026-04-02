@@ -8,4 +8,4 @@
  * - 自动扩缩容
  */
 
-export * from './orchestration-engine.js';
+export * as OrchestrationEngine from './orchestration-engine.js';

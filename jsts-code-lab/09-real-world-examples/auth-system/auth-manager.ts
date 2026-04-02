@@ -67,6 +67,8 @@ export interface JWTPayload {
   iat: number;
   exp: number;
   jti: string;
+  iss?: string;
+  aud?: string;
 }
 
 /**
@@ -859,7 +861,7 @@ export function createAdminUser(overrides?: Partial<User>): User {
 /**
  * 演示认证授权系统的使用
  */
-export function demo(): void {
+export async function demo(): Promise<void> {
   console.log('='.repeat(60));
   console.log('🔐 Auth Manager Demo');
   console.log('='.repeat(60));
@@ -886,7 +888,7 @@ export function demo(): void {
 
   // 用户登录
   console.log('\n🔑 User Login...');
-  const loginResult = auth.login(regularUser, {
+  const loginResult = await auth.login(regularUser, {
     ipAddress: '192.168.1.100',
     userAgent: 'Mozilla/5.0',
   });
@@ -909,7 +911,7 @@ export function demo(): void {
 
   // 验证请求
   console.log('\n🔍 Authenticate Request...');
-  const authResult = auth.authenticate(accessToken);
+  const authResult = await auth.authenticate(accessToken);
   if (authResult.success) {
     console.log('  ✅ Token is valid');
     console.log('  User:', authResult.user?.username, `(${authResult.user?.role})`);
@@ -935,7 +937,7 @@ export function demo(): void {
 
   // 管理员权限
   console.log('\n  Admin User Permissions:');
-  const adminLogin = auth.login(adminUser);
+  const adminLogin = await auth.login(adminUser);
   if (adminLogin.tokens) {
     auth.authorize(adminLogin.tokens.accessToken, 'read:any').then(result => {
       console.log(`    read:any: ${result.allowed ? '✅' : '❌'}`);
@@ -950,7 +952,7 @@ export function demo(): void {
 
   // 超级管理员权限
   console.log('\n  Super Admin Permissions:');
-  const superLogin = auth.login(superAdmin);
+  const superLogin = await auth.login(superAdmin);
   if (superLogin.tokens) {
     auth.authorize(superLogin.tokens.accessToken, 'manage:system').then(result => {
       console.log(`    manage:system: ${result.allowed ? '✅' : '❌'}`);
@@ -981,7 +983,7 @@ export function demo(): void {
 
   // Token 刷新
   console.log('\n🔄 Token Refresh...');
-  const refreshResult = auth.refresh(loginResult.tokens.refreshToken, regularUser);
+  const refreshResult = await auth.refresh(loginResult.tokens.refreshToken, regularUser);
   if (refreshResult.tokens) {
     console.log('  ✅ Token refreshed successfully!');
     console.log('  New Access Token:', refreshResult.tokens.accessToken.substring(0, 50) + '...');
@@ -996,12 +998,6 @@ export function demo(): void {
   console.log('✨ Demo completed!');
   console.log('='.repeat(60));
 }
-
-// 导出所有公共成员
-export { // 主要类
-  JWTManager, // 类型
-  UserRole, // 常量
-  DEFAULT_ROLE_PERMISSIONS };;
 
 // 如果是直接运行此文件，执行 demo
 if (require.main === module) {

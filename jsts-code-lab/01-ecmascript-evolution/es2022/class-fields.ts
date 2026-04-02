@@ -109,7 +109,7 @@ class Container {
 }
 
 const container = new Container();
-console.log(#privateData in container); // true (ES2022+)
+console.log('publicData' in container); // true (ES2022+)
 console.log(Container.hasPrivateData(container)); // true
 
 // ============================================================================
@@ -131,7 +131,7 @@ class Config {
   // 第二个静态块
   static {
     Config.settings = {
-      apiUrl: Config.environment === 'production' 
+      apiUrl: Config.environment === 'prod' 
         ? 'https://api.prod.com' 
         : 'https://api.dev.com',
       timeout: '5000'

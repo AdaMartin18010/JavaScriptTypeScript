@@ -10,6 +10,6 @@
  * - CSRF 防护
  */
 
-export * from './jwt-auth.js';
-export * from './rate-limiter.js';
-export * from './cors-csrf.js';
+export * as JwtAuth from './jwt-auth.js';
+export * as RateLimiter from './rate-limiter.js';
+export * as CorsCsrf from './cors-csrf.js';

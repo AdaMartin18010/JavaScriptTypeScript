@@ -3,11 +3,11 @@
  * @description 真实应用场景实现
  */
 
-export * from './api-client/index.js';
-export * from './auth-system/auth-manager.js';
-export * from './cli-tools/command-parser.js';
-export * from './data-processing/pipeline.js';
-export * from './event-bus/event-bus.js';
-export * from './state-management/state-manager.js';
-export * from './validation/validator.js';
-export * from './web-server/basic-server.js';
+export * as ApiClient from './api-client/index.js';
+export * as AuthManager from './auth-system/auth-manager.js';
+export * as CommandParser from './cli-tools/command-parser.js';
+export * as Pipeline from './data-processing/pipeline.js';
+export * as EventBus from './event-bus/event-bus.js';
+export * as StateManager from './state-management/state-manager.js';
+export * as Validator from './validation/validator.js';
+export * as BasicServer from './web-server/basic-server.js';

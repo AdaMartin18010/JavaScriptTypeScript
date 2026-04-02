@@ -8,4 +8,4 @@
  * - JS-WASM 互操作
  */
 
-export * from './wasm-integration.js';
+export * as WasmIntegration from './wasm-integration.js';

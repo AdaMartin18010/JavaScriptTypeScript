@@ -8,4 +8,4 @@
  * - 强化学习基础
  */
 
-export * from './autonomous-agents.js';
+export * as AutonomousAgents from './autonomous-agents.js';

@@ -8,4 +8,4 @@
  * - 数据加载器
  */
 
-export * from './schema-builder.js';
+export * as SchemaBuilder from './schema-builder.js';

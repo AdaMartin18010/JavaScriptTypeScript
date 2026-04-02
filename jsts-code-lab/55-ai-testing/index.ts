@@ -7,4 +7,4 @@
  * - 自动化测试维护
  */
 
-export * from './ai-test-generator.js';
+export * as AiTestGenerator from './ai-test-generator.js';

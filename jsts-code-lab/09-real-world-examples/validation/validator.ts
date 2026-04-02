@@ -206,7 +206,7 @@ function isValidDate(value: unknown): value is Date {
  * 基础验证器类
  */
 export class Validator<T = unknown> {
-  protected validations: ValidationFunction<T>[] = [];
+  protected validations: readonly ValidationFunction<T>[] = [];
   protected transforms: TransformFunction<T, T>[] = [];
   protected defaultValue?: T;
   protected isRequired = false;
@@ -283,7 +283,7 @@ export class Validator<T = unknown> {
    * 添加验证函数
    */
   protected addValidation(validation: ValidationFunction<T>): void {
-    this.validations.push(validation);
+    this.validations = [...this.validations, validation];
   }
 
   /**
@@ -1055,25 +1055,25 @@ export class ObjectValidator<T extends Record<string, unknown> = Record<string, 
   /**
    * 选择字段
    */
-  pick<K extends keyof T>(...keys: K[]): ObjectValidator<Pick<T, K>> {
+  pick<K extends keyof T>(...keys: K[]): ObjectValidator<T> {
     const pickedShape: Record<string, Validator> = {};
     for (const key of keys) {
       pickedShape[key as string] = this.shapeValidators[key as string];
     }
-    return new ObjectValidator(pickedShape as { [P in K]: Validator<T[P]> });
+    return new ObjectValidator(pickedShape as { [K in keyof T]: Validator<T[K]> });
   }
 
   /**
    * 排除字段
    */
-  omit<K extends keyof T>(...keys: K[]): ObjectValidator<Omit<T, K>> {
+  omit<K extends keyof T>(...keys: K[]): ObjectValidator<T> {
     const omittedShape: Record<string, Validator> = {};
     for (const [key, validator] of Object.entries(this.shapeValidators)) {
       if (!keys.includes(key as K)) {
         omittedShape[key] = validator;
       }
     }
-    return new ObjectValidator(omittedShape as { [P in Exclude<keyof T, K>]: Validator<T[P]> });
+    return new ObjectValidator(omittedShape as { [K in keyof T]: Validator<T[K]> });
   }
 
   /**
@@ -1741,14 +1741,6 @@ export function demo(): void {
   console.log('✨ Demo completed!');
   console.log('='.repeat(60));
 }
-
-// 导出所有公共成员
-export { // 类型
-  ValidationResult, // 类
-  Validator, // 常量
-  DEFAULT_OPTIONS, // 预定义验证器
-  emailValidator, // 工厂
-  v };;
 
 // 如果是直接运行此文件，执行 demo
 if (require.main === module) {

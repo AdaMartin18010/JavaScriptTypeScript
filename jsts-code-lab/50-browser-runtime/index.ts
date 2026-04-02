@@ -7,5 +7,5 @@
  * - 事件循环架构
  */
 
-export * from './rendering-pipeline.js';
-export * from './event-loop-architecture.js';
+export * as RenderingPipeline from './rendering-pipeline.js';
+export * as EventLoopArchitecture from './event-loop-architecture.js';

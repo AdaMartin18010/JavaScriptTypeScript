@@ -8,4 +8,4 @@
  * - 资源配额
  */
 
-export * from './tenant-architecture.js';
+export * as TenantArchitecture from './tenant-architecture.js';

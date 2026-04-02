@@ -8,4 +8,4 @@
  * - A/B测试
  */
 
-export * from './edge-runtime.js';
+export * as EdgeRuntime from './edge-runtime.js';

@@ -7,4 +7,4 @@
  * - AI辅助状态管理
  */
 
-export * from './llm-driven-architecture.js';
+export * as LlmDrivenArchitecture from './llm-driven-architecture.js';

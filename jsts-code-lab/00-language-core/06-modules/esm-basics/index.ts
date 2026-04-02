@@ -53,7 +53,7 @@ export { Utils as utils };
 
 // 从其他模块重新导出
 export { add as addNumbers } from './math.js';
-export * from './constants.js';
+export * as Constants from './constants.js';
 
 // 重新导出并重命名
 export { default as MathUtils } from './math.js';
