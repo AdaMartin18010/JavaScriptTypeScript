@@ -7,11 +7,13 @@
 ## 1. 架构概述
 
 ### 1.1 设计目标
+
 - 提供可扩展、可维护的系统架构方案
 - 降低系统复杂度，提高代码质量
 - 支持业务需求的快速迭代
 
 ### 1.2 架构风格
+
 本文档涵盖多种企业级架构模式，包括分层架构、六边形架构、CQRS、事件溯源和微服务。
 
 ---
@@ -442,16 +444,31 @@ State_now = fold(apply, InitialState, Events[0..n])
 - 缺点：...
 ```
 
-## 参考资源
+## 10. 参考文档
 
-### 经典书籍
+### 10.1 经典著作
 
-1. Richards, M., & Ford, N. (2020). *Fundamentals of Software Architecture*
-2. Newman, S. (2021). *Building Microservices* (2nd Edition)
-3. Evans, E. (2003). *Domain-Driven Design*
-4. Vernon, V. (2016). *Implementing Domain-Driven Design*
+1. Evans, E. (2003). *Domain-Driven Design: Tackling Complexity in the Heart of Software*. Addison-Wesley.
+2. Vernon, V. (2016). *Implementing Domain-Driven Design*. Addison-Wesley.
+3. Richards, M., & Ford, N. (2020). *Fundamentals of Software Architecture: An Engineering Approach*. O'Reilly Media.
+4. Newman, S. (2021). *Building Microservices* (2nd Edition). O'Reilly Media.
+5. Hohpe, G., & Woolf, B. (2003). *Enterprise Integration Patterns*. Addison-Wesley.
 
-### 论文
+### 10.2 学术论文
 
-1. Fielding, R. T. (2000). "Architectural Styles and the Design of Network-based Software Architectures" (REST)
-2. Cockburn, A. (2005). "Hexagonal Architecture"
+1. Fielding, R. T. (2000). "Architectural Styles and the Design of Network-based Software Architectures". *Ph.D. Dissertation, UC Irvine*.
+2. Cockburn, A. (2005). "Hexagonal Architecture". *alistair.cockburn.us*.
+3. Martin, R. C. (2003). "The Principles of OOD". *butunclebob.com*.
+
+### 10.3 在线资源
+
+- [Microservices.io](https://microservices.io/) - 微服务模式与实践
+- [DDD Community](https://dddcommunity.org/) - 领域驱动设计社区
+- [MartinFowler.com](https://martinfowler.com/) - 架构模式权威资源
+- [The Twelve-Factor App](https://12factor.net/) - 云原生应用最佳实践
+
+### 10.4 相关模块
+
+- [02-design-patterns](../02-design-patterns/THEORY.md) - 设计模式理论
+- [25-microservices](../25-microservices/) - 微服务实现
+- [70-distributed-systems](../70-distributed-systems/THEORY.md) - 分布式系统理论
