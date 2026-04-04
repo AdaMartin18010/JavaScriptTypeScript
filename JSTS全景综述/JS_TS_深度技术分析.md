@@ -36,9 +36,11 @@
     - [5.3 现代模块解析（Module Resolution）](#53-现代模块解析module-resolution)
   - [6. 2026 年推荐配置](#6-2026-年推荐配置)
     - [6.1 2026 推荐技术栈](#61-2026-推荐技术栈)
-    - [6.2 推荐 `tsconfig.json`（2026）](#62-推荐-tsconfigjson2026)
+    - [6.2 推荐 `tsconfig.json`（TypeScript 6.0 / 2026）](#62-推荐-tsconfigjsontypescript-60--2026)
+      - [2026 年配置升级要点](#2026-年配置升级要点)
       - [关键选项语义解释](#关键选项语义解释)
     - [6.3 为 TypeScript 7.0 做准备](#63-为-typescript-70-做准备)
+      - [核心准备策略](#核心准备策略)
   - [7. 从"知识图谱"到"深度分析"的学习路径建议](#7-从知识图谱到深度分析的学习路径建议)
     - [7.1 研究者路径（形式化视角）](#71-研究者路径形式化视角)
     - [7.2 工程师路径（实践视角）](#72-工程师路径实践视角)
@@ -104,20 +106,24 @@ ES2025 已于 2025 年 6 月定稿，主要新增特性包括：
 
 ### 2.2 TypeScript 5.9 / 6.0 / 7.0 预览
 
-TypeScript 在 2025 年进入了快速迭代周期，5.9 和 6.0 逐步铺垫了 2026 年 TypeScript 7.0（Go 重写，代号 Corsa）的语义基线：
+TypeScript 在 2025-2026 年进入了快速迭代周期，5.9 和 6.0 逐步铺垫了 2026 年 TypeScript 7.0（Go 重写，代号 Corsa）的语义基线：
 
 - **TypeScript 5.9（2025 年 4 月发布）**
   - **`--strictInference`**：要求编译器在推断结果可能过于宽泛（如从泛型参数推断出 `unknown`）或存在歧义时发出错误，强制开发者在关键边界显式注解类型 [^ts-5.9-release]。
   - **`--noUncheckedSideEffectImports`**：对 `import "./styles.css"` 这类纯副作用导入进行存在性检查，防止拼写错误或模块丢失 [^ts-5.9-release]。
   - **更精确的泛型上下文推断**：改进了嵌套回调中的泛型类型推导，减少了显式类型参数的需求。
 
-- **TypeScript 6.0（2025 年下半年发布）**
+- **TypeScript 6.0（2026 年 3 月 17 日发布）**
+  - **`es2025` target/lib**：将 ES2025 标准 API（`Promise.try`、`RegExp.escape`、Iterator Helpers、Set 数学方法）定型到 `target: "ES2025"` [^ts-6.0-release]。
+  - **Temporal API 类型支持**：为已达 Stage 4 的 Temporal API 提供完整类型声明，支持纳秒精度日期时间类型 [^ts-6.0-release]。
+  - **`import defer` 支持**：TC39 Stage 3 提案，提供同步语法、惰性求值的模块导入 [^ts-6.0-release]。
+  - **`#/` subpath imports**：增强对 `package.json` `imports` 字段的解析语义支持 [^ts-6.0-release]。
   - 语言服务架构的进一步现代化，为 Go 重写版的编辑器体验做前置准备。
-  - 持续扩展 `erasableSyntaxOnly` 的覆盖范围，拒绝更多非标准可擦除语法。
-  - 改进大型单体仓库（monorepo）中的增量类型检查性能 [^ts-6.0-release]。
 
-- **TypeScript 7.0 预览（Go 原生重写）**
-  - Microsoft 官方宣布 TS 7.0 将采用 Go 语言重写编译器核心，预计 2026 年发布。性能目标是将编译速度提升 **10 倍以上**，同时**完全保持现有语言语义和类型系统行为** [^microsoft-blog-ts-native-port]。
+- **TypeScript 7.0 预览（Go 原生重写，Project Corsa）**
+  - Microsoft 官方宣布 TS 7.0 将采用 Go 语言重写编译器核心，预计 2026 年下半年发布。性能目标是将编译速度提升 **10 倍以上**，同时**完全保持现有语言语义和类型系统行为** [^microsoft-blog-ts-native-port]。
+  - **JS 版 tsc 维护模式**：6.x 结束后，JavaScript 实现的 `tsc` 将进入维护模式。
+  - **LSP 统一**：语言服务将全面迁移至 Language Server Protocol，降低编辑器集成耦合度。
   - 对工程实践的影响：`tsc` 的角色将从"类型检查 + 转译"进一步聚焦为"纯类型检查器"。
 
 ### 2.3 V8 Maglev：编译器层级的范式转移
@@ -318,9 +324,9 @@ V8 的 GC 基于**分代假说**：大多数对象很快死亡。
 | **格式化** | Prettier 3+ | 一致，生态成熟 |
 | **运行时类型校验** | `zod` 或 `valibot` | 编译时类型与运行时校验的桥接 |
 
-### 6.2 推荐 `tsconfig.json`（2026）
+### 6.2 推荐 `tsconfig.json`（TypeScript 6.0 / 2026）
 
-以下配置是面向 Node.js 24+ 新项目的"黄金标准"。它代表了 TypeScript 团队、V8 团队和 Node.js 团队在 2025-2026 年的最佳实践共识，并为 TS 7.0（Go 重写版）做了前置兼容。
+以下配置是面向 Node.js 24+ 新项目的 **TypeScript 6.0 "黄金标准"**。它代表了 TypeScript 团队、V8 团队和 Node.js 团队在 2026 年的最佳实践共识，并为 TS 7.0（Go 重写版）做了前置兼容。
 
 ```json
 {
@@ -338,6 +344,73 @@ V8 的 GC 基于**分代假说**：大多数对象很快死亡。
     "exactOptionalPropertyTypes": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  }
+}
+```
+
+#### 2026 年配置升级要点
+
+**从 TypeScript 5.8 升级到 6.0 的关键变化**：
+
+| 配置项 | 5.8 推荐 | 6.0 推荐 | 变更原因 |
+|--------|---------|---------|---------|
+| `target` | `"ES2024"` | `"ES2025"` | ES2025 已定稿，Node.js 24+ 原生支持 |
+| `lib` | `["ES2024"]` | `["ES2025"]` | 包含 `Promise.try`、`RegExp.escape` 等新 API |
+| `strictInference` | 可选 | **强烈推荐启用** | 减少隐式 `unknown` 泄漏，TS 7.0 的前置准备 |
+| `erasableSyntaxOnly` | 可选 | **强烈推荐启用** | Node.js 24 `--strip-types` 兼容性 |
+
+**针对不同场景的变体配置**：
+
+```json
+// ===== 场景 A：前端应用（使用 Vite/Webpack）=====
+{
+  "compilerOptions": {
+    "target": "ES2025",
+    "lib": ["ES2025", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "strictInference": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noEmit": true
+  }
+}
+
+// ===== 场景 B：Node.js 库（发布到 npm）=====
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "strict": true,
+    "strictInference": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "./dist",
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true
+  }
+}
+
+// ===== 场景 C：纯类型检查（tsc 仅用于类型检查）=====
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "strictInference": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "erasableSyntaxOnly": true,
     "isolatedModules": true,
     "skipLibCheck": true,
     "noEmit": true
@@ -367,20 +440,110 @@ V8 的 GC 基于**分代假说**：大多数对象很快死亡。
 
 ### 6.3 为 TypeScript 7.0 做准备
 
-TypeScript 7.0（Go 原生重写版）不会破坏语言语义，但工程实践需要提前规避已知风险，以确保平滑迁移：
+TypeScript 7.0（Project Corsa，Go 原生重写版）预计于 2026 年发布。虽然微软承诺源码级向后兼容，但工程实践需要提前准备，以确保平滑迁移。
 
-1. **始终开启 `isolatedModules` 和 `erasableSyntaxOnly`**：
-   TS 7.0 的核心设计原则之一是"快速、独立的单文件编译"。`isolatedModules` 和 `erasableSyntaxOnly` 是这个架构的默认假设。现在就开启它们，可以避免 2026 年出现大量不兼容代码。
+#### 核心准备策略
 
-2. **避免使用已被标记为 deprecated 的特性**：
-   - 旧版 `moduleResolution: "node"`（即 Node 10 之前的策略）已被废弃，应迁移到 `"nodenext"` 或 `"bundler"`。
-   - `enum`、`namespace`、参数属性（parameter properties）等语法在 `erasableSyntaxOnly: true` 下会被拒绝，应提前用对象字面量 + `as const`、ESM 模块、或显式类赋值替代。
+**1. 编写与原生编译器兼容的代码**
 
-3. **避免深度依赖 tsc 的 JS 实现细节**：
-   如果你的工具链通过 `require("typescript")` 直接操作 AST（如自定义 transformer、lint 规则生成器），需要提前迁移到更抽象的接口：
-   - **`@typescript/vfs`**：用于测试和沙箱场景的虚拟文件系统。
-   - **`ts-morph`**：提供稳定、高级的 AST 操作 API，屏蔽底层编译器实现细节。
-   - TS 7.0 的 `typescript` 包仍将提供 JS API，但内部实现可能变化。依赖高层抽象可以减少迁移成本。
+TS 7.0 的核心设计原则是"快速、独立的单文件编译"。以下配置现在是强制性的：
+
+```json
+{
+  "compilerOptions": {
+    "isolatedModules": true,      // 每个文件必须能独立编译
+    "erasableSyntaxOnly": true,   // 拒绝需要代码生成的语法
+    "verbatimModuleSyntax": true  // 显式区分类型导入
+  }
+}
+```
+
+**2. 避免已被标记为废弃的特性**
+
+| 废弃特性 | 问题 | 替代方案 |
+|---------|------|---------|
+| `moduleResolution: "node"` | Node 10 之前的策略 | `"nodenext"` 或 `"bundler"` |
+| `enum` 声明 | 需要代码生成（反向映射） | 对象字面量 + `as const` |
+| `namespace` / `module` | 生成 IIFE 运行时对象 | ESM 模块（文件级命名空间）|
+| 参数属性（parameter properties）| 生成构造函数内赋值 | 显式属性声明 + 赋值 |
+| 尖括号断言 `<T>value` | JSX 冲突，无法安全擦除 | `as T` 断言 |
+| `import = require()` | CommonJS 特定语法 | ESM `import` / `import()` |
+
+**迁移示例**：
+
+```typescript
+// ❌ 避免：enum
+enum Color { Red, Green, Blue }
+
+// ✅ 推荐：const 对象 + as const
+const Color = {
+  Red: 'RED',
+  Green: 'GREEN',
+  Blue: 'BLUE'
+} as const;
+type Color = typeof Color[keyof typeof Color];
+
+// ❌ 避免：namespace
+namespace Utils {
+  export function helper() {}
+}
+
+// ✅ 推荐：ESM 模块
+// utils.ts
+export function helper() {}
+
+// ❌ 避免：参数属性
+class Point {
+  constructor(public x: number, public y: number) {}
+}
+
+// ✅ 推荐：显式声明
+class Point {
+  x: number;
+  y: number;
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+}
+```
+
+**3. 工具链迁移策略**
+
+如果你的工具链依赖 TypeScript 内部 API，需要提前迁移：
+
+| 使用场景 | 当前做法 | 推荐迁移到 |
+|---------|---------|-----------|
+| AST 操作 | `require("typescript")` + `ts.createSourceFile` | `ts-morph`（高级抽象 API）|
+| 虚拟文件系统 | 自定义实现 | `@typescript/vfs` |
+| 类型检查集成 | 直接调用 `ts.createProgram` | LSP 客户端或 `typescript-language-server` |
+| 代码生成 | 自定义 Transformer | `tsc` + 独立的代码生成工具 |
+
+**4. 关注 LSP 生态**
+
+TS 7.0 将全面采用 LSP：
+
+```
+当前架构：
+  VS Code / Vim / Emacs ←→ TypeScript 语言服务 API（紧密耦合）
+
+TS 7.0 架构：
+  VS Code / Vim / Emacs ←→ LSP ←→ Go 实现的 TypeScript 语言服务器
+```
+
+- 确保编辑器/IDE 支持 LSP
+- 自定义编辑器插件应迁移到 LSP 协议而非直接调用 tsc API
+
+**5. 验证清单**
+
+在升级到 TypeScript 7.0 前，确认以下检查项：
+
+- [ ] `tsc --noEmit` 在 `isolatedModules: true` 下无错误
+- [ ] `tsc --noEmit` 在 `erasableSyntaxOnly: true` 下无错误
+- [ ] 没有使用 `enum`、`namespace`、参数属性
+- [ ] `moduleResolution` 设置为 `"nodenext"` 或 `"bundler"`
+- [ ] 所有纯类型导入使用 `import type` 或 `type` 修饰符
+- [ ] 工具链不依赖 `typescript` 包的内部 API
 
 ---
 

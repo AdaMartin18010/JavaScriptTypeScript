@@ -6,6 +6,13 @@
  * - 请求路由
  * - 认证授权
  * - 限流熔断
+ * - 负载均衡
+ * - 缓存层
  */
 
 export * as GatewayImplementation from './gateway-implementation.js';
+export * as RateLimiting from './rate-limiting.js';
+export * as Authentication from './authentication.js';
+export * as RequestRouting from './request-routing.js';
+export * as LoadBalancing from './load-balancing.js';
+export * as CachingLayer from './caching-layer.js';

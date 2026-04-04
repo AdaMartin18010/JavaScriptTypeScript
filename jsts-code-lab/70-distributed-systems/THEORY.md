@@ -1,6 +1,23 @@
 # 分布式系统的理论基础
 
-## 1. 分布式系统的基本模型
+> CAP 定理、一致性模型与共识算法的形式化分析
+
+---
+
+## 1. 简介
+
+本文档系统阐述分布式系统的核心理论，包括系统模型、CAP 定理、一致性谱系和共识算法。
+
+**学习目标**:
+- 理解分布式系统的基本模型和约束
+- 掌握 CAP 定理的形式化证明
+- 了解不同一致性模型的权衡
+
+---
+
+## 2. 理论基础
+
+### 2.1 分布式系统的基本模型
 
 ### 1.1 系统模型分类
 
@@ -414,21 +431,25 @@ P(consistent) = 1 - e^(-λt)
 复杂度：O(log n) 而非 O(n)
 ```
 
-## 参考资源
+## 6. 参考文献
 
-### 经典论文
+### 6.1 经典著作
 
-1. Lamport, L. (1978). "Time, Clocks, and the Ordering of Events in a Distributed System"
-2. Fischer, M. J., Lynch, N. A., & Paterson, M. S. (1985). "Impossibility of Distributed Consensus with One Faulty Process"
-3. Castro, M., & Liskov, B. (2002). "Practical Byzantine Fault Tolerance"
+1. van Steen, M., & Tanenbaum, A. S. (2017). *Distributed Systems* (3rd Edition). CreateSpace Independent Publishing Platform.
+2. Kleppmann, M. (2017). *Designing Data-Intensive Applications: The Big Ideas Behind Reliable, Scalable, and Maintainable Systems*. O'Reilly Media.
+3. Charron-Bost, B., & Tel, G. (2019). *Introduction to Distributed Algorithms* (2nd Edition). Cambridge University Press.
+4. Cachin, C., Guerraoui, R., & Rodrigues, L. (2011). *Introduction to Reliable and Secure Distributed Programming* (2nd Edition). Springer.
 
-### 书籍
+### 6.2 学术论文
 
-1. van Steen, M., & Tanenbaum, A. S. (2017). *Distributed Systems* (3rd Edition)
-2. Kleppmann, M. (2017). *Designing Data-Intensive Applications*
-3. Charron-Bost, B., & Tel, G. (2019). *Introduction to Distributed Algorithms*
+1. Lamport, L. (1978). "Time, Clocks, and the Ordering of Events in a Distributed System". *Communications of the ACM*.
+2. Fischer, M. J., Lynch, N. A., & Paterson, M. S. (1985). "Impossibility of Distributed Consensus with One Faulty Process". *Journal of the ACM*.
+3. Castro, M., & Liskov, B. (2002). "Practical Byzantine Fault Tolerance". *OSDI*.
+4. Ongaro, D., & Ousterhout, J. (2014). "In Search of an Understandable Consensus Algorithm". *USENIX ATC*.
 
-### 在线课程
+### 6.3 在线资源
 
-1. [MIT 6.824: Distributed Systems](https://pdos.csail.mit.edu/6.824/)
-2. [Coursera: Cloud Computing Concepts](https://www.coursera.org/learn/cloud-computing)
+- [MIT 6.824: Distributed Systems](https://pdos.csail.mit.edu/6.824/) - MIT 分布式系统课程
+- [Coursera: Cloud Computing Concepts](https://www.coursera.org/learn/cloud-computing) - 云计算基础
+- [The Raft Consensus Algorithm](https://raft.github.io/) - Raft 算法官方资源
+- [Paxos Made Simple](https://lamport.azurewebsites.net/pubs/paxos-simple.pdf) - Leslie Lamport

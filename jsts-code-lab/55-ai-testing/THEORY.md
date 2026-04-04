@@ -1,6 +1,23 @@
 # AI 驱动测试的理论基础
 
-## 1. 测试生成的形式化模型
+> 智能测试生成、符号执行与性质测试的数学模型
+
+---
+
+## 1. 简介
+
+本文档探讨 AI 技术在软件测试中的应用理论，包括测试生成、符号执行、智能修复等前沿方向。
+
+**学习目标**:
+- 理解 AI 测试生成的形式化模型
+- 掌握符号执行和搜索式测试原理
+- 了解测试维护的智能化方法
+
+---
+
+## 2. 理论基础
+
+### 2.1 测试生成的形式化模型
 
 ### 1.1 测试空间的形式化定义
 
@@ -255,21 +272,23 @@ LLM 能力：
 3. 监控运行时行为（与形式化模型对比）
 ```
 
-## 参考资源
+## 6. 参考文献
 
-### 学术论文
+### 6.1 经典著作
 
-1. Godefroid, P., Klarlund, N., & Sen, K. (2005). "DART: Directed Automated Random Testing"
-2. Cadar, C., Dunbar, D., & Engler, D. (2008). "KLEE: Unassisted and Automatic Generation of High-Coverage Tests"
-3. Fraser, G., & Arcuri, A. (2013). "Whole Test Suite Generation"
+1. Pezzè, M., & Young, M. (2007). *Software Testing and Analysis: Process, Principles, and Techniques*. Wiley.
+2. Myers, G. J., et al. (2011). *The Art of Software Testing* (3rd Edition). Wiley.
 
-### 书籍
+### 6.2 学术论文
 
-1. Anand, S., et al. (2013). "An Orchestrated Survey of Methodologies for Automated Software Test Case Generation"
-2. Pezzè, M., & Young, M. (2007). *Software Testing and Analysis*
+1. Godefroid, P., Klarlund, N., & Sen, K. (2005). "DART: Directed Automated Random Testing". *ACM SIGPLAN Notices*.
+2. Cadar, C., Dunbar, D., & Engler, D. (2008). "KLEE: Unassisted and Automatic Generation of High-Coverage Tests for Complex Systems Programs". *OSDI*.
+3. Fraser, G., & Arcuri, A. (2013). "Whole Test Suite Generation". *IEEE Transactions on Software Engineering*.
+4. Anand, S., et al. (2013). "An Orchestrated Survey of Methodologies for Automated Software Test Case Generation". *Journal of Systems and Software*.
 
-### 工具
+### 6.3 在线资源
 
-1. [Hypothesis](https://hypothesis.readthedocs.io/) - Python 的 property-based testing
-2. [QuickCheck](http://www.cse.chalmers.se/~rjmh/QuickCheck/) - Haskell 的 property-based testing
-3. [Evosuite](https://www.evosuite.org/) - Java 的自动生成测试工具
+- [Hypothesis](https://hypothesis.readthedocs.io/) - Python Property-Based Testing Framework
+- [QuickCheck](http://www.cse.chalmers.se/~rjmh/QuickCheck/) - Haskell Property-Based Testing
+- [Evosuite](https://www.evosuite.org/) - Java Test Generation Tool
+- [Testing Strategies in Modern Software Development](https://martinfowler.com/articles/microservice-testing/) - Martin Fowler

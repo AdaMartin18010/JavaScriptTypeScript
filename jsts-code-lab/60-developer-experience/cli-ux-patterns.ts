@@ -122,7 +122,6 @@ export class PromptSimulator {
    * 单选提示：模拟用户从列表中选择一项。
    * 在真实 CLI 中会监听 stdin 的上下箭头事件；此处用随机选择演示。
    */
-  singleSelect<T>(message: string, choices: Choice<T>, simulateIndex: number): T;
   singleSelect<T>(message: string, choices: Choice<T>[], simulateIndex: number): T {
     const list = Array.isArray(choices) ? choices : [choices];
     const idx = Math.max(0, Math.min(simulateIndex, list.length - 1));

@@ -241,7 +241,8 @@ export function demo(): void {
   console.log('安全聚合通过随机掩码确保服务器无法窥探单个客户端的模型。');
 
   console.log('\n--- 差分隐私 ---');
-  const privateModel = dp.addGaussianNoise(aggregated, epsilon = 1.0, clients.length, 1.0);
+  const epsilon = 1.0;
+  const privateModel = dp.addGaussianNoise(aggregated, epsilon, clients.length, 1.0);
   console.log('加噪后 layer1:', Array.from(privateModel.layer1).map(v => v.toFixed(4)).join(', '));
   console.log('差分隐私通过添加校准后的高斯噪声，防止成员推断攻击。');
 }
