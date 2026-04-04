@@ -164,20 +164,20 @@ export function createBarChart(
 
   // X 轴标签（旋转长文本）
   xAxis.selectAll('text')
-    .attr('transform', function(this: SVGTextElement) {
-      const textLength = this.getComputedTextLength();
+    .attr('transform', function() {
+      const textLength = (this as SVGTextElement).getComputedTextLength();
       return textLength > xScale.bandwidth() ? 'rotate(-45)' : 'rotate(0)';
     })
-    .style('text-anchor', function(this: SVGTextElement) {
-      const textLength = this.getComputedTextLength();
+    .style('text-anchor', function() {
+      const textLength = (this as SVGTextElement).getComputedTextLength();
       return textLength > xScale.bandwidth() ? 'end' : 'middle';
     })
-    .attr('dx', function(this: SVGTextElement) {
-      const textLength = this.getComputedTextLength();
+    .attr('dx', function() {
+      const textLength = (this as SVGTextElement).getComputedTextLength();
       return textLength > xScale.bandwidth() ? '-0.5em' : '0';
     })
-    .attr('dy', function(this: SVGTextElement) {
-      const textLength = this.getComputedTextLength();
+    .attr('dy', function() {
+      const textLength = (this as SVGTextElement).getComputedTextLength();
       return textLength > xScale.bandwidth() ? '0.15em' : '0.71em';
     });
 
@@ -215,20 +215,20 @@ export function createBarChart(
     .attr('width', xScale.bandwidth())
     .attr('y', innerHeight)  // 从底部开始
     .attr('height', 0)       // 初始高度为0
-    .attr('fill', (d, i) => `url(#bar-gradient-${i})`)
+    .attr('fill', (_d, i) => `url(#bar-gradient-${i})`)
     .attr('rx', 4)           // 圆角
     .style('cursor', 'pointer');
 
   // 添加动画
   bars.transition()
     .duration(animationDuration)
-    .delay((d, i) => i * 50)  // 交错动画
+    .delay((_d, i) => i * 50)  // 交错动画
     .attr('y', d => yScale(d.value))
     .attr('height', d => innerHeight - yScale(d.value));
 
   // 添加交互
   bars
-    .on('mouseenter', function(event: MouseEvent, d: BarChartData) {
+    .on('mouseenter', function() {
       // 高亮效果
       d3.select(this)
         .transition()
@@ -237,10 +237,11 @@ export function createBarChart(
         .attr('stroke', '#333')
         .attr('stroke-width', 2);
 
+      const data = d3.select(this).datum() as BarChartData;
       // 显示提示框
       tooltip
         .style('visibility', 'visible')
-        .html(`<strong>${d.label}</strong><br/>数值: ${d.value}`);
+        .html(`<strong>${data.label}</strong><br/>数值: ${data.value}`);
     })
     .on('mousemove', function(event: MouseEvent) {
       tooltip
@@ -273,10 +274,10 @@ export function createBarChart(
       .style('font-weight', 'bold')
       .style('fill', '#333')
       .style('opacity', 0)
-      .text(d => d.value)
+      .text(d => String(d.value))
       .transition()
       .duration(animationDuration)
-      .delay((d, i) => i * 50 + animationDuration / 2)
+      .delay((_d, i) => i * 50 + animationDuration / 2)
       .attr('y', d => yScale(d.value) - 5)
       .style('opacity', 1);
   }

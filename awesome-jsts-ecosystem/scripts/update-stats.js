@@ -1,537 +1,349 @@
 #!/usr/bin/env node
 
 /**
- * Library Stats Update Script
+ * update-stats.js
  * 
  * 功能：
- * 1. 解析 README 和 docs 中的 GitHub 仓库链接
- * 2. 调用 GitHub GraphQL API 获取 Stars、最后更新时间等信息
- * 3. 更新徽章和统计数据
- * 4. 生成更新报告
+ * - 读取 README.md 中的 GitHub 链接
+ * - 调用 GitHub API 获取 Stars、最后更新时间
+ * - 更新文件中的徽章
+ * - 生成报告
+ * 
+ * 使用方法：
+ *   node update-stats.js [--token=<github_token>] [--dry-run]
+ * 
+ * 环境变量：
+ *   GITHUB_TOKEN - GitHub Personal Access Token（可选，用于提高 API 限制）
  */
 
-import { graphql } from '@octokit/graphql';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const fs = require('fs');
+const path = require('path');
+const { Octokit } = require('@octokit/rest');
 
 // 配置
 const CONFIG = {
-  // API 配置
-  apiUrl: 'https://api.github.com/graphql',
-  perPage: 100,
-  
-  // 限流配置
-  rateLimitBuffer: 100,  // 保留的 API 调用余量
-  requestDelay: 100,     // 请求间隔 (ms)
-  
-  // 文件配置
-  readmePath: 'README.md',
-  docsDir: 'docs',
-  logsDir: 'logs',
-  
-  // 更新配置
-  forceUpdate: process.env.FORCE_UPDATE === 'true',
-  minStarsChange: 5,     // 最小 Stars 变化才更新（减少无意义的提交）
+  readmePath: path.join(__dirname, '..', 'README.md'),
+  reportPath: path.join(__dirname, '..', 'docs', 'stats-report.md'),
+  dryRun: process.argv.includes('--dry-run'),
 };
 
-// 日志工具
-class Logger {
-  constructor() {
-    this.logs = [];
-    this.logsDir = path.join(process.cwd(), CONFIG.logsDir);
-    this.ensureLogsDir();
-  }
-  
-  ensureLogsDir() {
-    if (!fs.existsSync(this.logsDir)) {
-      fs.mkdirSync(this.logsDir, { recursive: true });
+// 解析命令行参数
+function parseArgs() {
+  const args = {};
+  process.argv.slice(2).forEach(arg => {
+    if (arg.startsWith('--token=')) {
+      args.token = arg.split('=')[1];
     }
-  }
-  
-  log(level, message, data = null) {
-    const timestamp = new Date().toISOString();
-    const entry = { timestamp, level, message, data };
-    this.logs.push(entry);
-    
-    const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
-    console.log(`${prefix} ${message}`);
-    if (data && level === 'error') {
-      console.error(data);
+    if (arg === '--dry-run') {
+      args.dryRun = true;
     }
-  }
-  
-  info(message, data) { this.log('info', message, data); }
-  warn(message, data) { this.log('warn', message, data); }
-  error(message, data) { this.log('error', message, data); }
-  debug(message, data) { this.log('debug', message, data); }
-  
-  save(filename) {
-    const filepath = path.join(this.logsDir, filename);
-    fs.writeFileSync(filepath, JSON.stringify(this.logs, null, 2));
-    this.info(`Logs saved to ${filepath}`);
-  }
+  });
+  return args;
 }
 
-const logger = new Logger();
+// 初始化 Octokit
+function initOctokit(token) {
+  const authToken = token || process.env.GITHUB_TOKEN;
+  if (!authToken) {
+    console.warn('⚠️  未提供 GitHub Token，使用匿名访问（限制 60 请求/小时）');
+  }
+  return new Octokit({
+    auth: authToken,
+    throttle: {
+      onRateLimit: (retryAfter, options) => {
+        console.warn(`⏳ 触发速率限制，等待 ${retryAfter} 秒后重试...`);
+        return true;
+      },
+      onSecondaryRateLimit: (retryAfter, options) => {
+        console.warn(`⏳ 触发二级速率限制，等待 ${retryAfter} 秒后重试...`);
+        return true;
+      },
+    },
+  });
+}
+
+// 从 README.md 中提取 GitHub 链接
+function extractGitHubLinks(content) {
+  const links = new Set();
+  
+  // 匹配 Markdown 链接 [text](url)
+  const markdownLinkRegex = /\[([^\]]+)\]\((https:\/\/github\.com\/[^\/\s]+\/[^\/\s\)]+)\)/g;
+  let match;
+  while ((match = markdownLinkRegex.exec(content)) !== null) {
+    links.add(match[2]);
+  }
+  
+  // 匹配裸 URL
+  const urlRegex = /https:\/\/github\.com\/[^\/\s]+\/[^\/\s\)\]>,]+/g;
+  while ((match = urlRegex.exec(content)) !== null) {
+    links.add(match[0]);
+  }
+  
+  return Array.from(links);
+}
 
 // 解析 GitHub URL
 function parseGitHubUrl(url) {
-  if (!url) return null;
-  
-  const patterns = [
-    // https://github.com/owner/repo
-    /github\.com\/([^\/]+)\/([^\/\s\)]+)/,
-    // [text](https://github.com/owner/repo)
-    /github\.com\/([^\/]+)\/([^\/\s\)]+)/,
-  ];
-  
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match) {
-      return {
-        owner: match[1].toLowerCase(),
-        repo: match[2].replace(/\/$/, '').toLowerCase(),
-        fullName: `${match[1].toLowerCase()}/${match[2].replace(/\/$/, '').toLowerCase()}`
-      };
-    }
-  }
-  return null;
+  const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+  if (!match) return null;
+  return {
+    owner: match[1],
+    repo: match[2].replace(/\.git$/, '').replace(/\/$/, ''),
+  };
 }
 
-// 提取 Markdown 文件中的所有 GitHub 链接
-function extractGitHubLinks(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
-  const links = new Map(); // 使用 Map 去重
-  
-  // 匹配 Markdown 链接 [text](url)
-  const mdLinkRegex = /\[([^\]]+)\]\((https?:\/\/github\.com\/[^\/\s]+\/[^\/\s\)]+)\)/g;
-  let match;
-  while ((match = mdLinkRegex.exec(content)) !== null) {
-    const parsed = parseGitHubUrl(match[2]);
-    if (parsed && !parsed.repo.includes('.')) { // 过滤掉特殊页面
-      links.set(parsed.fullName, {
-        ...parsed,
-        url: match[2],
-        text: match[1],
-        source: filePath
-      });
-    }
-  }
-  
-  // 匹配裸链接
-  const bareLinkRegex = /https?:\/\/github\.com\/([^\/\s]+)\/([^\/\s\)]+)/g;
-  while ((match = bareLinkRegex.exec(content)) !== null) {
-    const parsed = parseGitHubUrl(match[0]);
-    if (parsed && !parsed.repo.includes('.') && !links.has(parsed.fullName)) {
-      links.set(parsed.fullName, {
-        ...parsed,
-        url: match[0],
-        text: parsed.repo,
-        source: filePath
-      });
-    }
-  }
-  
-  return Array.from(links.values());
-}
-
-// 获取所有需要扫描的文件
-function getMarkdownFiles(dir) {
-  const files = [];
-  
-  function scanDir(currentDir) {
-    if (!fs.existsSync(currentDir)) return;
-    
-    const entries = fs.readdirSync(currentDir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = path.join(currentDir, entry.name);
-      if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
-        scanDir(fullPath);
-      } else if (entry.isFile() && entry.name.endsWith('.md')) {
-        files.push(fullPath);
-      }
-    }
-  }
-  
-  scanDir(dir);
-  return files;
-}
-
-// 调用 GitHub GraphQL API
-async function fetchRepoStats(repos, token) {
-  const graphqlWithAuth = graphql.defaults({
-    headers: {
-      authorization: `token ${token}`,
-    },
-  });
-  
-  // 构建 GraphQL 查询
-  const queryParts = repos.map((repo, index) => `
-    repo${index}: repository(owner: "${repo.owner}", name: "${repo.repo}") {
-      nameWithOwner
-      stargazerCount
-      forkCount
-      updatedAt
-      pushedAt
-      createdAt
-      description
-      isArchived
-      isTemplate
-      releases(last: 1) {
-        nodes {
-          tagName
-          publishedAt
-          isLatest
-        }
-      }
-      defaultBranchRef {
-        name
-        target {
-          ... on Commit {
-            committedDate
-          }
-        }
-      }
-      licenseInfo {
-        spdxId
-        name
-      }
-    }
-  `);
-  
-  const query = `
-    query {
-      ${queryParts.join('\n')}
-      rateLimit {
-        limit
-        remaining
-        resetAt
-        cost
-      }
-    }
-  `;
-  
+// 获取仓库统计信息
+async function fetchRepoStats(octokit, owner, repo) {
   try {
-    const response = await graphqlWithAuth(query);
-    return response;
+    const { data } = await octokit.rest.repos.get({ owner, repo });
+    return {
+      name: data.full_name,
+      stars: data.stargazers_count,
+      forks: data.forks_count,
+      openIssues: data.open_issues_count,
+      lastUpdated: data.updated_at,
+      lastPushed: data.pushed_at,
+      createdAt: data.created_at,
+      description: data.description,
+      language: data.language,
+      license: data.license?.name || 'N/A',
+      url: data.html_url,
+      success: true,
+    };
   } catch (error) {
-    logger.error('GraphQL query failed', error.message);
-    throw error;
+    return {
+      name: `${owner}/${repo}`,
+      error: error.message,
+      success: false,
+    };
   }
-}
-
-// 检查限流状态
-async function checkRateLimit(token) {
-  const response = await fetch('https://api.github.com/rate_limit', {
-    headers: {
-      'Authorization': `token ${token}`,
-      'Accept': 'application/vnd.github.v3+json'
-    }
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Rate limit check failed: ${response.status}`);
-  }
-  
-  return await response.json();
 }
 
 // 格式化数字
 function formatNumber(num) {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1) + 'M';
-  } else if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'k';
-  }
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
   return num.toString();
 }
 
 // 格式化日期
 function formatDate(dateString) {
+  if (!dateString) return 'N/A';
   const date = new Date(dateString);
   const now = new Date();
-  const diffMs = now - date;
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
   
-  if (diffDays === 0) return 'today';
-  if (diffDays === 1) return 'yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-  return `${Math.floor(diffDays / 365)} years ago`;
+  if (diffDays === 0) return '今天';
+  if (diffDays === 1) return '昨天';
+  if (diffDays < 7) return `${diffDays} 天前`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} 周前`;
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} 个月前`;
+  return `${Math.floor(diffDays / 365)} 年前`;
 }
 
-// 更新文件中的徽章
-function updateBadgesInFile(filePath, stats) {
-  let content = fs.readFileSync(filePath, 'utf8');
-  let updated = false;
+// 生成徽章 URL
+function generateBadgeUrl(repo, stars) {
+  return `https://img.shields.io/github/stars/${repo}?style=flat-square&logo=github`;
+}
+
+// 更新 README.md 中的徽章
+function updateBadges(content, stats) {
+  let updatedContent = content;
   
-  // 查找并更新 Stars 徽章
-  // 支持格式: ![Stars](https://img.shields.io/github/stars/owner/repo?style=flat)
-  // 或: <!-- STARS:owner/repo:1234 -->
-  
-  const badgeRegex = /!\[([^\]]*)\]\(https:\/\/img\.shields\.io\/github\/stars\/([^\/]+)\/([^\s\?\)]+)[^\)]*\)/g;
-  const commentRegex = /<!--\s*STARS:([^:]+):(\d+)\s*-->/g;
-  
-  // 更新徽章 URL
-  content = content.replace(badgeRegex, (match, label, owner, repo) => {
-    const fullName = `${owner}/${repo}`.toLowerCase();
-    if (stats[fullName]) {
-      const stars = stats[fullName].stargazerCount;
-      updated = true;
-      return `![${label || 'Stars'}](https://img.shields.io/github/stars/${owner}/${repo}?style=flat&logo=github&color=blue&label=%E2%AD%90%20${formatNumber(stars)})`;
-    }
-    return match;
-  });
-  
-  // 更新注释标记
-  content = content.replace(commentRegex, (match, fullName, oldStars) => {
-    const normalizedName = fullName.toLowerCase();
-    if (stats[normalizedName]) {
-      const stars = stats[normalizedName].stargazerCount;
-      updated = true;
-      return `<!-- STARS:${fullName}:${stars} -->`;
-    }
-    return match;
-  });
-  
-  if (updated) {
-    fs.writeFileSync(filePath, content);
-    logger.info(`Updated badges in ${filePath}`);
+  for (const stat of stats) {
+    if (!stat.success) continue;
+    
+    const repoPattern = new RegExp(
+      `(\\[.*?\\]\\(https:\\/\\/github\\.com\\/${stat.name.replace('/', '\\/')}\\).*?)(?:!\\[Stars\\]\\(https:\\/\\/img\\.shields\\.io\\/github\\/stars\\/[^\\)]+\\))?`,
+      'g'
+    );
+    
+    const badgeUrl = generateBadgeUrl(stat.name, stat.stars);
+    const badgeMarkdown = ` ![Stars](${badgeUrl})`;
+    
+    updatedContent = updatedContent.replace(repoPattern, (match, p1) => {
+      // 如果已有 Stars 徽章，替换它
+      if (match.includes('![Stars]')) {
+        return match.replace(/!\[Stars\]\([^)]+\)/, `![Stars](${badgeUrl})`);
+      }
+      // 否则添加新徽章
+      return p1 + badgeMarkdown;
+    });
   }
   
-  return updated;
+  return updatedContent;
+}
+
+// 生成统计报告
+function generateReport(stats) {
+  const successful = stats.filter(s => s.success);
+  const failed = stats.filter(s => !s.success);
+  
+  // 按 stars 排序
+  const sortedByStars = [...successful].sort((a, b) => b.stars - a.stars);
+  
+  let report = `# 📊 仓库统计报告\n\n`;
+  report += `生成时间：${new Date().toLocaleString('zh-CN')}\n\n`;
+  
+  // 汇总信息
+  report += `## 📈 汇总\n\n`;
+  report += `- 总计仓库：${stats.length}\n`;
+  report += `- 成功获取：${successful.length}\n`;
+  report += `- 失败：${failed.length}\n`;
+  report += `- 总 Stars：${formatNumber(successful.reduce((sum, s) => sum + s.stars, 0))}\n\n`;
+  
+  // Stars 排行榜
+  report += `## ⭐ Stars 排行榜（Top 20）\n\n`;
+  report += `| 排名 | 仓库 | Stars | 语言 | 最后更新 |\n`;
+  report += `|:----:|------|:-----:|:----:|:--------:|\n`;
+  
+  sortedByStars.slice(0, 20).forEach((stat, index) => {
+    const emoji = index < 3 ? ['🥇', '🥈', '🥉'][index] : `${index + 1}`;
+    report += `| ${emoji} | [${stat.name}](${stat.url}) | ${formatNumber(stat.stars)} | ${stat.language || '-'} | ${formatDate(stat.lastPushed)} |\n`;
+  });
+  
+  report += `\n`;
+  
+  // 最近更新
+  report += `## 🔄 最近更新（Top 10）\n\n`;
+  const sortedByUpdate = [...successful].sort((a, b) => new Date(b.lastPushed) - new Date(a.lastPushed));
+  
+  report += `| 仓库 | 最后推送 | 描述 |\n`;
+  report += `|------|:--------:|------|\n`;
+  
+  sortedByUpdate.slice(0, 10).forEach(stat => {
+    const desc = stat.description ? stat.description.substring(0, 50) + (stat.description.length > 50 ? '...' : '') : '-';
+    report += `| [${stat.name}](${stat.url}) | ${formatDate(stat.lastPushed)} | ${desc} |\n`;
+  });
+  
+  report += `\n`;
+  
+  // 失败列表
+  if (failed.length > 0) {
+    report += `## ❌ 获取失败的仓库\n\n`;
+    failed.forEach(stat => {
+      report += `- **${stat.name}**: ${stat.error}\n`;
+    });
+    report += `\n`;
+  }
+  
+  // 详细信息表格
+  report += `## 📋 详细信息\n\n`;
+  report += `<details>\n<summary>点击展开所有仓库详情</summary>\n\n`;
+  report += `| 仓库 | ⭐ Stars | 🍴 Forks | 🐛 Issues | 语言 | 许可证 | 最后更新 |\n`;
+  report += `|------|:-------:|:--------:|:---------:|:----:|:------:|:--------:|\n`;
+  
+  sortedByStars.forEach(stat => {
+    report += `| [${stat.name}](${stat.url}) | ${formatNumber(stat.stars)} | ${formatNumber(stat.forks)} | ${formatNumber(stat.openIssues)} | ${stat.language || '-'} | ${stat.license} | ${formatDate(stat.lastPushed)} |\n`;
+  });
+  
+  report += `\n</details>\n`;
+  
+  return report;
 }
 
 // 主函数
 async function main() {
-  const startTime = Date.now();
-  logger.info('Starting library stats update...');
+  console.log('🚀 开始更新仓库统计信息...\n');
   
-  // 获取 GitHub Token
-  const token = process.env.GITHUB_TOKEN;
-  if (!token) {
-    logger.error('GITHUB_TOKEN environment variable is required');
+  const args = parseArgs();
+  const octokit = initOctokit(args.token);
+  
+  // 读取 README.md
+  console.log(`📖 读取 ${CONFIG.readmePath}...`);
+  if (!fs.existsSync(CONFIG.readmePath)) {
+    console.error(`❌ 错误：找不到文件 ${CONFIG.readmePath}`);
     process.exit(1);
   }
   
-  try {
-    // 检查限流状态
-    logger.info('Checking rate limit...');
-    const rateLimit = await checkRateLimit(token);
-    const remaining = rateLimit.resources.graphql?.remaining || rateLimit.rate.remaining;
-    const limit = rateLimit.resources.graphql?.limit || rateLimit.rate.limit;
-    
-    logger.info(`Rate limit: ${remaining}/${limit} remaining`);
-    
-    if (remaining < CONFIG.rateLimitBuffer) {
-      const resetAt = new Date(rateLimit.resources.graphql?.resetAt || rateLimit.rate.reset * 1000);
-      logger.error(`Rate limit too low. Resets at ${resetAt}`);
-      process.exit(1);
-    }
-    
-    // 收集所有 GitHub 链接
-    logger.info('Scanning markdown files...');
-    const allLinks = [];
-    
-    // 扫描 README
-    if (fs.existsSync(CONFIG.readmePath)) {
-      const links = extractGitHubLinks(CONFIG.readmePath);
-      allLinks.push(...links);
-      logger.info(`Found ${links.length} repos in README.md`);
-    }
-    
-    // 扫描 docs 目录
-    if (fs.existsSync(CONFIG.docsDir)) {
-      const docFiles = getMarkdownFiles(CONFIG.docsDir);
-      logger.info(`Found ${docFiles.length} markdown files in docs/`);
-      
-      for (const file of docFiles) {
-        const links = extractGitHubLinks(file);
-        allLinks.push(...links);
-      }
-    }
-    
-    // 去重
-    const uniqueRepos = new Map();
-    for (const link of allLinks) {
-      if (!uniqueRepos.has(link.fullName)) {
-        uniqueRepos.set(link.fullName, link);
-      }
-    }
-    
-    const repos = Array.from(uniqueRepos.values());
-    logger.info(`Total unique repositories: ${repos.length}`);
-    
-    if (repos.length === 0) {
-      logger.warn('No repositories found to update');
-      process.exit(0);
-    }
-    
-    // 分批获取统计信息
-    const stats = {};
-    const batchSize = 50; // GraphQL 查询复杂度限制
-    
-    for (let i = 0; i < repos.length; i += batchSize) {
-      const batch = repos.slice(i, i + batchSize);
-      logger.info(`Fetching batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(repos.length / batchSize)} (${batch.length} repos)`);
-      
-      try {
-        const response = await fetchRepoStats(batch, token);
-        
-        // 处理结果
-        Object.keys(response).forEach(key => {
-          if (key.startsWith('repo')) {
-            const repoData = response[key];
-            if (repoData) {
-              stats[repoData.nameWithOwner.toLowerCase()] = repoData;
-            }
-          }
-        });
-        
-        // 记录限流信息
-        if (response.rateLimit) {
-          logger.info(`Rate limit after query: ${response.rateLimit.remaining}/${response.rateLimit.limit} (cost: ${response.rateLimit.cost})`);
-        }
-        
-        // 请求间隔，避免触发限流
-        if (i + batchSize < repos.length) {
-          await new Promise(resolve => setTimeout(resolve, CONFIG.requestDelay));
-        }
-        
-      } catch (error) {
-        logger.error(`Failed to fetch batch ${Math.floor(i / batchSize) + 1}`, error.message);
-        // 继续处理下一批
-      }
-    }
-    
-    logger.info(`Successfully fetched stats for ${Object.keys(stats).length} repositories`);
-    
-    // 生成报告
-    const report = {
-      timestamp: new Date().toISOString(),
-      summary: {
-        total: repos.length,
-        fetched: Object.keys(stats).length,
-        updated: 0
-      },
-      repositories: []
-    };
-    
-    // 统计热门仓库
-    const sortedRepos = Object.entries(stats)
-      .sort((a, b) => b[1].stargazerCount - a[1].stargazerCount)
-      .slice(0, 20);
-    
-    for (const [fullName, data] of sortedRepos) {
-      report.repositories.push({
-        name: fullName,
-        stars: data.stargazerCount,
-        forks: data.forkCount,
-        lastPush: data.pushedAt,
-        lastUpdate: data.updatedAt,
-        latestRelease: data.releases?.nodes?.[0]?.tagName || null,
-        isArchived: data.isArchived
-      });
-    }
-    
-    // 更新文件中的徽章
-    logger.info('Updating badges in files...');
-    
-    if (fs.existsSync(CONFIG.readmePath)) {
-      if (updateBadgesInFile(CONFIG.readmePath, stats)) {
-        report.summary.updated++;
-      }
-    }
-    
-    if (fs.existsSync(CONFIG.docsDir)) {
-      const docFiles = getMarkdownFiles(CONFIG.docsDir);
-      for (const file of docFiles) {
-        if (updateBadgesInFile(file, stats)) {
-          report.summary.updated++;
-        }
-      }
-    }
-    
-    // 保存报告
-    const reportPath = path.join(CONFIG.logsDir, 'update-report.json');
-    fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-    logger.info(`Report saved to ${reportPath}`);
-    
-    // 生成 Markdown 报告
-    const markdownReport = generateMarkdownReport(report, stats);
-    const mdReportPath = path.join(CONFIG.logsDir, 'update-report.md');
-    fs.writeFileSync(mdReportPath, markdownReport);
-    
-    // 输出 GitHub Actions 变量
-    if (process.env.GITHUB_OUTPUT) {
-      const updatedLibs = report.repositories
-        .slice(0, 10)
-        .map(r => `- ${r.name}: ⭐ ${formatNumber(r.stars)}`)
-        .join('\\n');
-      fs.appendFileSync(process.env.GITHUB_OUTPUT, `updated_libs=${updatedLibs}\n`);
-    }
-    
-    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-    logger.info(`Update completed in ${duration}s`);
-    logger.info(`Summary: ${report.summary.fetched}/${report.summary.total} repos fetched, ${report.summary.updated} files updated`);
-    
-    // 保存日志
-    logger.save('update-stats.log.json');
-    
-  } catch (error) {
-    logger.error('Update failed', error.stack);
-    logger.save('update-stats-error.log.json');
-    process.exit(1);
-  }
-}
-
-// 生成 Markdown 格式报告
-function generateMarkdownReport(report, stats) {
-  const lines = [
-    '# Library Stats Update Report',
-    '',
-    `**Generated:** ${new Date(report.timestamp).toLocaleString()}`,
-    '',
-    '## Summary',
-    '',
-    `- **Total repositories:** ${report.summary.total}`,
-    `- **Successfully fetched:** ${report.summary.fetched}`,
-    `- **Files updated:** ${report.summary.updated}`,
-    '',
-    '## Top Repositories by Stars',
-    '',
-    '| Repository | Stars | Forks | Last Push | Release |',
-    '|------------|-------|-------|-----------|---------|'
-  ];
+  const readmeContent = fs.readFileSync(CONFIG.readmePath, 'utf-8');
   
-  for (const repo of report.repositories.slice(0, 20)) {
-    const status = repo.isArchived ? ' 🏛️ Archived' : '';
-    lines.push(
-      `| ${repo.name}${status} | ⭐ ${formatNumber(repo.stars)} | 🍴 ${formatNumber(repo.forks)} | ${formatDate(repo.lastPush)} | ${repo.latestRelease || '-'} |`
+  // 提取 GitHub 链接
+  console.log('🔗 提取 GitHub 链接...');
+  const links = extractGitHubLinks(readmeContent);
+  console.log(`   找到 ${links.length} 个 GitHub 链接\n`);
+  
+  if (links.length === 0) {
+    console.log('⚠️  未找到任何 GitHub 链接');
+    return;
+  }
+  
+  // 解析仓库信息
+  const repos = links
+    .map(parseGitHubUrl)
+    .filter(r => r !== null);
+  
+  // 去重
+  const uniqueRepos = Array.from(new Map(repos.map(r => [`${r.owner}/${r.repo}`, r])).values());
+  console.log(`📦 解析到 ${uniqueRepos.length} 个唯一仓库\n`);
+  
+  // 获取统计信息
+  console.log('📊 正在获取仓库统计信息...');
+  const stats = [];
+  const batchSize = 10; // 每批处理的仓库数
+  
+  for (let i = 0; i < uniqueRepos.length; i += batchSize) {
+    const batch = uniqueRepos.slice(i, i + batchSize);
+    console.log(`   处理第 ${i + 1}-${Math.min(i + batchSize, uniqueRepos.length)} 个仓库...`);
+    
+    const batchStats = await Promise.all(
+      batch.map(async ({ owner, repo }) => {
+        const stat = await fetchRepoStats(octokit, owner, repo);
+        if (stat.success) {
+          console.log(`     ✅ ${stat.name}: ⭐ ${formatNumber(stat.stars)}`);
+        } else {
+          console.log(`     ❌ ${stat.name}: ${stat.error}`);
+        }
+        return stat;
+      })
     );
+    
+    stats.push(...batchStats);
+    
+    // 避免速率限制，添加延迟
+    if (i + batchSize < uniqueRepos.length) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
   }
   
-  lines.push('', '## Recently Active', '');
+  console.log('\n');
   
-  const recentlyActive = Object.entries(stats)
-    .map(([name, data]) => ({ name, ...data }))
-    .sort((a, b) => new Date(b.pushedAt) - new Date(a.pushedAt))
-    .slice(0, 10);
+  // 生成报告
+  console.log('📝 生成统计报告...');
+  const report = generateReport(stats);
   
-  for (const repo of recentlyActive) {
-    lines.push(`- **${repo.nameWithOwner}** - pushed ${formatDate(repo.pushedAt)}`);
+  // 确保 docs 目录存在
+  const docsDir = path.dirname(CONFIG.reportPath);
+  if (!fs.existsSync(docsDir)) {
+    fs.mkdirSync(docsDir, { recursive: true });
   }
   
-  return lines.join('\n');
+  if (!args.dryRun && !CONFIG.dryRun) {
+    fs.writeFileSync(CONFIG.reportPath, report, 'utf-8');
+    console.log(`   ✅ 报告已保存到 ${CONFIG.reportPath}`);
+    
+    // 更新 README.md 中的徽章
+    console.log('\n🏷️  更新 README.md 徽章...');
+    const updatedReadme = updateBadges(readmeContent, stats);
+    fs.writeFileSync(CONFIG.readmePath, updatedReadme, 'utf-8');
+    console.log('   ✅ README.md 已更新');
+  } else {
+    console.log('   📝 [Dry Run] 报告内容预览：');
+    console.log('   ' + report.split('\n').join('\n   ').substring(0, 500) + '...');
+  }
+  
+  // 输出摘要
+  const successful = stats.filter(s => s.success);
+  console.log('\n📈 统计摘要：');
+  console.log(`   ✅ 成功: ${successful.length}`);
+  console.log(`   ❌ 失败: ${stats.length - successful.length}`);
+  console.log(`   ⭐ 总 Stars: ${formatNumber(successful.reduce((sum, s) => sum + s.stars, 0))}`);
+  
+  console.log('\n✨ 完成！');
 }
 
-// 运行主函数
+// 错误处理
 main().catch(error => {
-  console.error('Unhandled error:', error);
+  console.error('❌ 发生错误:', error);
   process.exit(1);
 });

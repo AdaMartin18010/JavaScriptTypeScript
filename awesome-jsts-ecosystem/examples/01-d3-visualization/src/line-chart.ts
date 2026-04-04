@@ -102,9 +102,10 @@ export function createLineChart(
     animationDuration = 1000,
     showDots = true,
     showArea = false,
-    enableZoom = false,
+    enableZoom: _enableZoom = false,
     timeFormat = '%Y-%m'
   } = options;
+  void _enableZoom;
 
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
@@ -221,7 +222,7 @@ export function createLineChart(
   if (showArea) {
     seriesGroups.append('path')
       .attr('class', 'area')
-      .attr('fill', (d, i) => `url(#area-gradient-${i})`)
+      .attr('fill', (_d, i) => `url(#area-gradient-${i})`)
       .attr('d', d => areaGenerator(d.data) || '')
       .style('opacity', 0)
       .transition()
@@ -270,19 +271,20 @@ export function createLineChart(
         .style('cursor', 'pointer');
 
       dots.transition()
-        .delay((d, i) => i * 30 + animationDuration * 0.5)
+        .delay((_, i) => i * 30 + animationDuration * 0.5)
         .duration(300)
         .attr('r', 5);
 
       // 数据点交互
       dots
-        .on('mouseenter', function(event: MouseEvent, d: LineChartDataPoint) {
+        .on('mouseenter', function() {
           d3.select(this)
             .transition()
             .duration(200)
             .attr('r', 8);
         })
         .on('mouseleave', function() {
+      void d3;
           d3.select(this)
             .transition()
             .duration(200)
@@ -364,7 +366,7 @@ export function createLineChart(
     
     data.forEach(series => {
       series.data.forEach(point => {
-        const px = (xScale as any)(point.x);
+        const px = (xScale as any)(point.x) as number;
         const distance = Math.abs(px - mx);
         if (!closestPoint || distance < closestPoint.distance) {
           closestPoint = { series, point, distance };
@@ -372,10 +374,9 @@ export function createLineChart(
       });
     });
 
-    if (closestPoint && closestPoint.distance < 50) {
-      const { series, point } = closestPoint;
-      const px = (xScale as any)(point.x);
-      const py = yScale(point.y);
+    if (closestPoint && (closestPoint as any).distance < 50) {
+      const series = (closestPoint as any).series as LineChartSeries;
+      const point = (closestPoint as any).point as LineChartDataPoint;
 
       const xLabel = isTimeData 
         ? d3.timeFormat(timeFormat)(point.x as Date)
@@ -384,7 +385,7 @@ export function createLineChart(
       tooltip
         .style('visibility', 'visible')
         .html(`
-          <div style="font-weight: bold; margin-bottom: 4px;">${series.name}</div>
+          <div style="font-weight: bold; margin-bottom: 4px;">${String(series.name)}</div>
           <div>${xLabel}: <strong>${point.y}</strong></div>
         `)
         .style('top', `${event.pageY - 50}px`)
@@ -409,7 +410,7 @@ export function createLineChart(
     .enter()
     .append('g')
     .attr('class', 'legend-item')
-    .attr('transform', (d, i) => `translate(0, ${i * 20})`);
+    .attr('transform', (_d, i) => `translate(0, ${i * 20})`);
 
   legendItems.append('line')
     .attr('x1', 0)
@@ -424,7 +425,7 @@ export function createLineChart(
     .attr('y', 10)
     .style('font-size', '12px')
     .style('fill', '#333')
-    .text(d => d.name);
+    .text(d => String((d as LineChartSeries).name));
 
   // 添加标题
   svg.append('text')

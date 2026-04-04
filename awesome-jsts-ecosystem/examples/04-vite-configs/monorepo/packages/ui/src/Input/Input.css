@@ -1,0 +1,88 @@
+/* Input 组件样式 */
+
+.myorg-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.myorg-input__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.myorg-input__inner {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.myorg-input {
+  width: 100%;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  background-color: white;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.myorg-input:focus {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.myorg-input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+/* 尺寸 */
+.myorg-input--small {
+  padding: 4px 8px;
+  font-size: 14px;
+  height: 28px;
+}
+
+.myorg-input--medium {
+  padding: 6px 12px;
+  font-size: 14px;
+  height: 32px;
+}
+
+.myorg-input--large {
+  padding: 8px 16px;
+  font-size: 16px;
+  height: 40px;
+}
+
+/* 前缀后缀 */
+.myorg-input__prefix,
+.myorg-input__suffix {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  color: #999;
+}
+
+.myorg-input--with-prefix {
+  padding-left: 32px;
+}
+
+.myorg-input--with-suffix {
+  padding-right: 32px;
+}
+
+/* 错误状态 */
+.myorg-input-wrapper--error .myorg-input {
+  border-color: #ff4d4f;
+}
+
+.myorg-input-wrapper--error .myorg-input:focus {
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+}
+
+.myorg-input__error {
+  font-size: 12px;
+  color: #ff4d4f;
+}
