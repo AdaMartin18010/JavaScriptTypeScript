@@ -1,6 +1,23 @@
 # 浏览器运行时深度解析
 
-## 1. 渲染管线的计算机图形学基础
+> 浏览器渲染机制、事件循环模型与内存管理的理论基础
+
+---
+
+## 1. 简介
+
+本文档深入解析浏览器运行时的核心机制，包括渲染管线、事件循环、垃圾回收等关键技术原理。
+
+**学习目标**:
+- 理解浏览器渲染的完整流程
+- 掌握事件循环的并发模型
+- 了解内存管理和性能优化策略
+
+---
+
+## 2. 理论基础
+
+### 2.1 渲染管线的计算机图形学基础
 
 ### 1.1 渲染流水线概览
 
@@ -323,19 +340,25 @@ Spectre 漏洞后的安全架构：
 - 渲染进程无法直接访问其他站点的内存
 ```
 
-## 参考资源
+## 6. 参考文献
 
-### 规范文档
+### 6.1 规范文档
 
-1. [HTML Standard - Event Loops](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops)
-2. [W3C Performance Timeline](https://www.w3.org/TR/performance-timeline/)
+1. [HTML Standard - Event Loops](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops). WHATWG.
+2. [W3C Performance Timeline](https://www.w3.org/TR/performance-timeline/). W3C.
 
-### 技术文章
+### 6.2 经典著作
 
-1. [Inside look at modern web browser](https://developers.google.com/web/updates/2018/09/inside-browser-part1) (Google)
-2. [The Anatomy of a Frame](https://aerotwist.com/blog/the-anatomy-of-a-frame/) (Paul Lewis)
+1. Haverbeke, M. (2018). *Eloquent JavaScript* (3rd Edition). No Starch Press.
+2. Stoyan, S. (2010). *JavaScript Patterns*. O'Reilly Media.
 
-### 学术研究
+### 6.3 学术论文
 
-1. Meyerovich, L. A., & Bodik, R. (2010). "Fast and Parallel Webpage Layout"
-2. Hackett, B., & Guo, S. (2012). "Fast and Precise Hybrid Type Inference for JavaScript"
+1. Meyerovich, L. A., & Bodik, P. (2010). "Fast and Parallel Webpage Layout". *ACM SIGPLAN Notices*.
+2. Hackett, B., & Guo, S. (2012). "Fast and Precise Hybrid Type Inference for JavaScript". *ACM SIGPLAN Notices*.
+
+### 6.4 在线资源
+
+- [Inside look at modern web browser](https://developers.google.com/web/updates/2018/09/inside-browser-part1) - Google Developers
+- [The Anatomy of a Frame](https://aerotwist.com/blog/the-anatomy-of-a-frame/) - Paul Lewis
+- [Web Performance Best Practices](https://developer.mozilla.org/en-US/docs/Web/Performance) - MDN Web Docs

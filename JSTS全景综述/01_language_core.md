@@ -1,7 +1,7 @@
 # JavaScript/TypeScript 语言核心特性全览
 
 > 版本范围：ES2020–ES2025 (ES11–ES16) + TypeScript 5.8–6.0（含 7.0 前瞻）
-> 最后更新：2025年
+> 最后更新：2026年4月
 
 ---
 
@@ -160,9 +160,15 @@
       - [概念定义（形式化）](#概念定义形式化-35)
       - [配置示例](#配置示例)
     - [8.7 TypeScript 6.x 核心特性](#87-typescript-6x-核心特性)
-      - [概念定义（形式化）](#概念定义形式化-36)
+      - [8.7.1 `es2025` target/lib 的语义](#871-es2025-targetlib-的语义)
+      - [8.7.2 Temporal API 类型：与 `Date` 的本质差异](#872-temporal-api-类型与-date-的本质差异)
+      - [8.7.3 `#/` subpath imports：package.json `imports` 字段的解析语义](#873--subpath-importspackagejson-imports-字段的解析语义)
+      - [8.7.4 `import defer`：延迟求值的精确语义与工程场景](#874-import-defer延迟求值的精确语义与工程场景)
       - [使用示例](#使用示例-35)
     - [8.8 TypeScript 7.0 前瞻：Go 重写与 LSP 迁移](#88-typescript-70-前瞻go-重写与-lsp-迁移)
+      - [为什么从 JavaScript 迁移到 Go？](#为什么从-javascript-迁移到-go)
+      - [对生态的影响](#对生态的影响)
+      - [为 TypeScript 7.0 做准备的建议](#为-typescript-70-做准备的建议)
   - [9. 类型系统深度解析](#9-类型系统深度解析)
     - [9.1 基础类型系统](#91-基础类型系统)
       - [9.1.1 原始类型](#911-原始类型)
@@ -3067,7 +3073,7 @@ const theme = {
 
 #### 概念定义（形式化）
 
-**`using` 与 `await using`** 声明基于 ECMAScript Explicit Resource Management（Stage 4，已纳入 ECMAScript 2025 标准），用于在代码块结束时自动调用对象的 `Symbol.dispose` 或 `Symbol.asyncDispose` 方法，实现确定性的资源释放。
+**`using` 与 `await using`** 声明基于 ECMAScript Explicit Resource Management（**Stage 4 / 已纳入 ECMAScript 2025 标准**），用于在代码块结束时自动调用对象的 `Symbol.dispose` 或 `Symbol.asyncDispose` 方法，实现确定性的资源释放。
 
 **形式化定义：**
 
@@ -3205,18 +3211,154 @@ const val = someValue as string;
 
 ### 8.7 TypeScript 6.x 核心特性
 
-#### 概念定义（形式化）
+TypeScript 6.0 于 **2026 年 3 月**正式发布，是 TypeScript 在 Go 重写（7.0）之前的最后一个主要 JavaScript 实现版本。该版本聚焦于 ES2025 标准对齐、Temporal API 类型支持、模块系统增强，以及为原生编译器过渡做准备。
 
-TypeScript 6.0 延续了 TypeScript 5.x 的类型系统演进，主要聚焦于将 `esnext` 中的成熟内置 API 定型到 `es2025`，引入已达 Stage 4 的 Temporal API 类型声明，并提前支持 Stage 3 提案 `import defer` 和 Node.js `#/` subpath imports 的解析语义。
+#### 8.7.1 `es2025` target/lib 的语义
 
-**形式化边界：**
+TypeScript 6.0 将以下已达 Stage 4 的 ECMAScript 特性从 `esnext` 定型到 `es2025`：
+
+| 特性类别 | 具体 API | 规范来源 |
+|---------|---------|---------|
+| Promise 扩展 | `Promise.try()` | ECMA-262 §27.2.4.8 |
+| 正则表达式 | `RegExp.escape()` | ECMA-262 §22.2.3 |
+| Iterator 辅助方法 | `Iterator.prototype.map/filter/take/drop/flatMap/reduce/toArray` | ECMA-262 §27.1.4 |
+| Set 数学方法 | `Set.prototype.union/intersection/difference/symmetricDifference/isSubsetOf/isSupersetOf/isDisjointFrom` | ECMA-262 §24.2.4 |
+| 显式资源管理 | `Symbol.dispose`, `Symbol.asyncDispose` | ECMA-262 §19.4.2.10 |
+
+**配置语义**：
 
 ```
-TS 6.0 新增语言/类型层面支持:
-  - target/lib: "es2025" — 将 esnext 中稳定的内置 API 定型
-  - Temporal API 类型声明 — 纳秒精度日期/时间类型系统
-  - import defer — 同步语法、惰性求值的模块导入（TC39 Stage 3）
-  - #/ subpath imports — package.json imports 字段的解析语义
+target: "ES2025"  // 编译目标为 ES2025，保留上述原生 API 调用
+lib: ["ES2025"]   // 类型声明包含上述 API 的类型定义
+```
+
+与 `"ESNext"` 的区别：`ES2025` 是固定的快照，保证编译后的代码在支持 ES2025 的运行时（Node.js 24+、现代浏览器）上可执行，而 `ESNext` 可能包含尚未稳定的实验性 API。
+
+#### 8.7.2 Temporal API 类型：与 `Date` 的本质差异
+
+Temporal 提案已达 **Stage 4**，作为 ECMAScript 2026 的确定成员，TypeScript 6.0 提供完整的类型声明。
+
+**核心类型体系**：
+
+| 类型 | 语义 | 与 `Date` 的差异 |
+|------|------|-----------------|
+| `Temporal.Instant` | 纳秒精度的绝对时间点 | `Date` 仅毫秒精度；`Instant` 无时区信息 |
+| `Temporal.PlainDate` | 日历日期（年-月-日） | `Date` 混合了日期和时间；`PlainDate` 无时间分量 |
+| `Temporal.PlainTime` |  wall-clock 时间 | 独立于日期的纯时间 |
+| `Temporal.PlainDateTime` | 本地日期+时间 | 无时区，用于用户输入场景 |
+| `Temporal.ZonedDateTime` | 带时区的完整日期时间 | 替代 `Date` 的最接近等价物，但时区感知 |
+| `Temporal.Duration` | 时间长度/间隔 | 明确区分时间点和时间段 |
+
+**不可变性与时区安全**：
+
+```typescript
+// Date 的问题：可变、时区不安全、精度不足
+const d = new Date('2025-06-15T10:00:00');
+d.setHours(12); // 修改了原对象！
+
+// Temporal：不可变、显式时区处理
+const date = Temporal.PlainDate.from('2025-06-15');
+const nextDay = date.add({ days: 1 }); // 返回新对象，date 不变
+// nextDay 为 2025-06-16，类型仍为 PlainDate
+
+// 时区安全转换
+const zoned = Temporal.Now.zonedDateTimeISO('Asia/Shanghai');
+const instant = zoned.toInstant(); // 明确的时区剥离
+const inTokyo = instant.toZonedDateTimeISO('Asia/Tokyo'); // 显式时区转换
+```
+
+**类型系统意义**：Temporal 的类型设计消除了 `Date` 的以下歧义：
+
+1. 本地时间 vs UTC 的混淆 → 通过 `Plain*` vs `Zoned*` 类型分离
+2. 时间点 vs 时间段的混淆 → `Instant`/`ZonedDateTime` vs `Duration`
+3. 可变状态的副作用 → 所有对象不可变
+
+#### 8.7.3 `#/` subpath imports：package.json `imports` 字段的解析语义
+
+Node.js 支持在 `package.json` 中使用 `imports` 字段定义模块子路径映射，允许使用 `#` 前缀进行内部模块导入。TypeScript 6.0 增强了对该解析语义的支持。
+
+**package.json 配置**：
+
+```json
+{
+  "imports": {
+    "#root/*": "./*",
+    "#utils/*": "./src/utils/*",
+    "#config": "./src/config/index.ts"
+  }
+}
+```
+
+**TypeScript 解析语义**：
+
+```
+解析规则（需配合 --moduleResolution bundler 或 nodenext）：
+1. 以 "#" 开头的导入说明符被视为 subpath import
+2. TypeScript 按照 Node.js 的解析算法查找 package.json 中的 "imports" 字段
+3. 支持类型导入的解析：import type { Config } from '#config'
+4. 路径映射后的文件扩展名处理遵循当前 moduleResolution 策略
+```
+
+**与 `paths` 配置的对比**：
+
+| 特性 | `paths` (tsconfig) | `imports` (package.json) |
+|------|-------------------|-------------------------|
+| 适用范围 | TypeScript 编译时 | Node.js 运行时 + TypeScript |
+| 消费者可见性 | 仅 TypeScript 感知 | 所有 ESM 消费者 |
+| 条件导出 | 不支持 | 支持（development/production 等条件）|
+| 子路径 | 需显式配置 | 支持通配符 |
+
+**最佳实践**：库作者应优先使用 `package.json` 的 `imports` 而非 `tsconfig.json` 的 `paths`，以确保类型解析与运行时行为一致。
+
+#### 8.7.4 `import defer`：延迟求值的精确语义与工程场景
+
+`import defer` 是 TC39 Stage 3 提案，TypeScript 6.0 提供完整支持。它引入模块加载的**延迟求值（lazy evaluation）**机制。
+
+**语法形式**：
+
+```typescript
+import defer * as heavyModule from './heavy-module';
+```
+
+**精确语义**：
+
+```
+语义模型：
+1. 声明同步性：语法层面与常规 import 相同（模块顶层、同步声明）
+2. 加载 vs 求值分离：
+   - 加载（Fetch/Instantiate）：可能仍提前发生（宿主决定）
+   - 求值（Evaluation）：延迟到首次访问命名空间属性时执行
+3. 单次求值保证：遵循 ECMA-262 模块记录语义，仅执行一次
+4. 类型系统处理：命名空间类型与常规 import * 完全一致
+```
+
+**与 `dynamic import()` 的本质区别**：
+
+| 特性 | `import defer` | `dynamic import()` |
+|------|----------------|-------------------|
+| **语法位置** | 模块顶层声明 | 表达式，可在任意位置 |
+| **返回类型** | 模块命名空间对象（同步）| Promise<Module>（异步）|
+| **对调用链的影响** | 无需 async/await | 需要 async 上下文 |
+| **求值触发时机** | 首次访问命名空间属性 | Promise 解决时 |
+| **代码分割** | 由宿主决定 | 明确触发代码分割 |
+
+**工程应用场景**：
+
+```typescript
+// 场景：CLI 工具，某些命令需要重型依赖
+import defer * as heavyAnalyzer from './analyzer';
+import { parseArgs } from './args';
+
+async function main() {
+  const args = parseArgs();
+
+  if (args.command === 'analyze') {
+    // 仅当执行 analyze 命令时才加载并求值 analyzer 模块
+    const results = heavyAnalyzer.runAnalysis(args.input);
+    console.log(results);
+  }
+  // 其他命令不会触发 heavyAnalyzer 的求值，减少启动时间
+}
 ```
 
 *来源：[TS 6.0 Release Notes], [TC39 Temporal Proposal Stage 4], [Node.js Subpath Imports Documentation], [TC39 import defer Proposal Stage 3]*
@@ -3294,15 +3436,80 @@ const mod = await import('./heavy-module');
 
 ### 8.8 TypeScript 7.0 前瞻：Go 重写与 LSP 迁移
 
-微软正在推进一项代号为 **Corsa** 的重大工程：用 Go 语言重写 TypeScript 编译器。这一决策的根本动因是，当前的 JavaScript/TypeScript 实现的 `tsc` 受限于单线程事件循环，在超大型代码库（数百万行代码）上的类型检查性能已触及瓶颈。
+微软正在推进一项代号为 **Project Corsa** 的重大工程：用 **Go 语言重写 TypeScript 编译器**。这是 TypeScript 自 2012 年发布以来最重大的架构变革。
 
-**核心要点：**
+#### 为什么从 JavaScript 迁移到 Go？
 
-- **性能目标**：Go 重写旨在将类型检查性能提升约 10 倍，显著缩短大型项目的编译时间和编辑器反馈延迟 [Microsoft Blog: TypeScript Native Port]。
-- **维护模式**：JavaScript 版本的 `tsc` 将在 6.x 系列结束后进入维护模式。短期内（6.x 期间）两个版本将并行维护，以保证生态平滑过渡 [TypeScript Roadmap 2025]。
-- **LSP 迁移**：语言服务（Language Service）将全面迁移至 Language Server Protocol (LSP)。这意味着 VS Code 等编辑器将更多地通过标准 LSP 与 TypeScript 交互，降低编辑器集成的耦合度。
-- **源码级兼容**：微软多次强调，TypeScript 7.0 将保持源码级向后兼容，现有 `.ts` 文件和 `tsconfig.json` 配置无需重写。
-- **工具链影响**：构建工具链（如 `tsc` CLI）和编辑器插件将逐步迁移到新的原生实现，具体时间表取决于 beta 和社区反馈。
+**根本动因**：当前的 JavaScript/TypeScript 实现的 `tsc` 受限于单线程事件循环，在超大型代码库（数百万行代码）上的类型检查性能已触及瓶颈。具体技术原因包括：
+
+| 限制因素 | JavaScript/TypeScript 实现 | Go 实现的优势 |
+|---------|--------------------------|--------------|
+| **并发模型** | 单线程事件循环，无法利用多核 CPU | 原生 goroutine，轻松并行化类型检查 |
+| **内存布局** | 动态类型和 GC 开销大 | 静态类型、值类型、更紧凑的内存布局 |
+| **类型检查吞吐量** | 大型项目类型检查可达数十秒 | 目标 **10 倍性能提升**，实现秒级检查 |
+| **增量检查** | 复杂依赖图的增量更新成本高 | 更激进的增量分析与缓存策略 |
+| **编译器启动** | Node.js 启动开销 | 原生二进制，即时启动 |
+
+**为什么不继续使用 JavaScript/TypeScript？**
+
+- 类型检查算法本身是 CPU 密集型的，JavaScript 的异步 I/O 优势在此不适用
+- 现有架构经过多年演进，并发改造成本不亚于重写
+- Go 在编译器实现领域有成熟生态（如 Go 编译器本身、LSP 实现）
+
+#### 对生态的影响
+
+**1. JS 版 tsc 维护模式**
+
+- JavaScript 版本的 `tsc` 将在 6.x 系列结束后进入**维护模式**
+- 6.x 期间两个版本将并行维护，以保证生态平滑过渡
+- 新语言特性将优先在 Go 版本中实现，JS 版本仅接收关键 bug 修复
+
+**2. LSP 统一与编辑器集成变革**
+
+语言服务（Language Service）将全面迁移至 **Language Server Protocol (LSP)**：
+
+```
+架构演进：
+现在：编辑器插件 ←→ TypeScript 语言服务 API（紧密耦合）
+      ↓
+TS 7.0：编辑器插件 ←→ LSP ←→ Go 实现的 TypeScript 语言服务器
+```
+
+- **编辑器无关性**：任何支持 LSP 的编辑器（Vim、Emacs、Helix、Zed）都将获得一流的 TypeScript 支持
+- **降低耦合度**：编辑器不再依赖 TypeScript 特定的 API，通过标准协议交互
+- **性能提升**：语言服务器的响应速度将显著改善编辑器体验（自动完成、错误提示的延迟降低）
+
+**3. 对开发者工具链的影响**
+
+| 工具类型 | 影响 | 应对策略 |
+|---------|------|---------|
+| `tsc` CLI | 新的原生二进制 | 命令行参数保持兼容 |
+| 构建工具（Vite、Webpack）| 需要适配新的编译器接口 | 社区已提前准备 |
+| 代码分析工具（ESLint）| AST 格式可能变化 | 使用 `@typescript-eslint` 的抽象层 |
+| 自定义 Transformer | 需要迁移到新的插件 API | 提前使用 `ts-morph` 等抽象库 |
+
+**4. 源码级兼容保证**
+
+微软多次强调，TypeScript 7.0 将保持**源码级向后兼容**：
+
+- 现有 `.ts` 文件无需修改
+- `tsconfig.json` 配置语义保持不变
+- 类型系统行为完全一致（Go 重写是编译器工程革命，非类型理论革命）
+
+**5. 时间线预测**
+
+| 阶段 | 预计时间 | 里程碑 |
+|------|---------|--------|
+| 内部原型 | 2025 年 Q1-Q2 | Go 编译器核心验证 |
+| 公共预览版 | 2025 年 Q4 | 开发者可测试 Go 版本 |
+| Beta 发布 | 2026 年 Q1 | 主要功能完整 |
+| 正式版 (7.0) | 2026 年 Q2-Q3 | 全面发布，JS 版进入维护模式 |
+
+#### 为 TypeScript 7.0 做准备的建议
+
+1. **启用 `isolatedModules` 和 `erasableSyntaxOnly`**：确保代码可被独立编译，与 Go 编译器的单文件处理模型兼容
+2. **避免依赖 TypeScript 内部 API**：使用 `ts-morph` 等高级抽象而非直接操作 `ts` 模块内部
+3. **关注 LSP 生态**：熟悉 Language Server Protocol 的工作原理，为新的编辑器体验做准备
 
 *来源：[Microsoft Blog: TypeScript Native Port], [TypeScript Roadmap 2025]*
 

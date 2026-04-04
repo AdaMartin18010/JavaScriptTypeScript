@@ -1,6 +1,23 @@
 # 设计模式理论基础
 
-## 设计模式的哲学基础
+> GoF (Gang of Four) 设计模式的理论根基与形式化论证
+
+---
+
+## 1. 简介
+
+本文档深入探讨设计模式的理论基础，包括其哲学根基、SOLID 原则的形式化定义，以及各类设计模式的数学模型。
+
+**学习目标**:
+- 理解设计模式的本质和价值
+- 掌握 SOLID 原则的理论依据
+- 能够根据场景选择合适的设计模式
+
+---
+
+## 2. 理论基础
+
+### 2.1 设计模式的哲学基础
 
 ### 1. 设计模式的本质
 
@@ -340,20 +357,21 @@ Observer ↔ 轮询
 - async/await 是 Coroutine 模式的语法糖
 - EventEmitter 是 Observer 的异步变体
 
-## 参考资源
+## 6. 参考文献
 
-### 经典著作
+### 6.1 经典著作
 
-1. Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994). *Design Patterns: Elements of Reusable Object-Oriented Software*
-2. Fowler, M. (2002). *Patterns of Enterprise Application Architecture*
-3. Freeman, E., & Freeman, E. (2004). *Head First Design Patterns*
+1. Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994). *Design Patterns: Elements of Reusable Object-Oriented Software*. Addison-Wesley.
+2. Fowler, M. (2002). *Patterns of Enterprise Application Architecture*. Addison-Wesley.
+3. Freeman, E., & Freeman, E. (2004). *Head First Design Patterns*. O'Reilly Media.
 
-### 学术论文
+### 6.2 学术论文
 
-1. Aldrich, J. (2013). "The Power of Interoperability: Why Objects Are Inevitable"
-2. Cook, W. R. (2009). "On Understanding Data Abstraction, Revisited"
+1. Aldrich, J. (2013). "The Power of Interoperability: Why Objects Are Inevitable". *ACM SIGPLAN Notices*.
+2. Cook, W. R. (2009). "On Understanding Data Abstraction, Revisited". *ACM SIGPLAN Notices*.
 
-### 在线资源
+### 6.3 在线资源
 
-- [Refactoring.Guru](https://refactoring.guru/design-patterns)
-- [SourceMaking](https://sourcemaking.com/design_patterns)
+- [Refactoring.Guru - Design Patterns](https://refactoring.guru/design-patterns) - 交互式设计模式教程
+- [SourceMaking - Design Patterns](https://sourcemaking.com/design_patterns) - 设计模式与反模式参考
+- [SOLID Principles](https://en.wikipedia.org/wiki/SOLID) - SOLID 原则维基百科

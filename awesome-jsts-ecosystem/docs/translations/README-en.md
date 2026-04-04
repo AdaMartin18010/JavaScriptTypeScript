@@ -4,20 +4,24 @@
 
 ## Contents
 
-- [Hot Picks](#hot-picks)
-- [Runtimes & Engines](#runtimes--engines)
-- [Build Tools](#build-tools)
-- [Package Managers](#package-managers)
-- [Developer Tools](#developer-tools)
-- [Testing Frameworks](#testing-frameworks)
-- [Web Frameworks](#web-frameworks)
-- [Databases & ORMs](#databases--orms)
-- [Authentication & Security](#authentication--security)
-- [UI Component Libraries](#ui-component-libraries)
-- [Mobile Development](#mobile-development)
-- [Desktop Development](#desktop-development)
-- [Cloud & Deployment](#cloud--deployment)
-- [Learning Resources](#learning-resources)
+- [Awesome JavaScript/TypeScript Ecosystem](#awesome-javascripttypescript-ecosystem)
+  - [Contents](#contents)
+  - [Hot Picks](#hot-picks)
+  - [Runtimes \& Engines](#runtimes--engines)
+  - [Build Tools](#build-tools)
+  - [Package Managers](#package-managers)
+  - [Developer Tools](#developer-tools)
+  - [Testing Frameworks](#testing-frameworks)
+  - [Web Frameworks](#web-frameworks)
+  - [Databases \& ORMs](#databases--orms)
+  - [Authentication \& Security](#authentication--security)
+  - [UI Component Libraries](#ui-component-libraries)
+  - [Mobile Development](#mobile-development)
+  - [Desktop Development](#desktop-development)
+  - [Cloud \& Deployment](#cloud--deployment)
+  - [Learning Resources](#learning-resources)
+  - [Contributing](#contributing)
+  - [License](#license)
 
 ## Hot Picks
 

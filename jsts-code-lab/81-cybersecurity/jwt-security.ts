@@ -28,6 +28,8 @@ export interface JwtPayload {
   iat: number;
   exp: number;
   jti: string;
+  /** 生效时间 (not before) */
+  nbf?: number;
   /** 角色/权限声明 */
   roles?: readonly string[];
 }

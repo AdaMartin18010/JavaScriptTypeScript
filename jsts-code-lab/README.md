@@ -20,6 +20,83 @@
 
 ---
 
+## 🗺️ 模块关系图
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          模块架构与学习路径                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                        基础层 (00-19)                                │   │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐   │   │
+│  │  │00-lang  │  │02-design│  │03-concur│  │04-data  │  │06-archi │   │   │
+│  │  │-core    │──│patterns │──│rency    │  │structs  │  │tecture  │   │   │
+│  │  └────┬────┘  └────┬────┘  └────┬────┘  └─────────┘  └────┬────┘   │   │
+│  │       │            │            │                        │        │   │
+│  │       └────────────┴────────────┴────────────────────────┘        │   │
+│  │                                  │                                 │   │
+│  │                                  ▼                                 │   │
+│  │                        ┌─────────────────┐                         │   │
+│  │                        │  07-testing     │                         │   │
+│  │                        └─────────────────┘                         │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    │                                        │
+│                                    ▼                                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                        应用层 (20-49)                                │   │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐   │   │
+│  │  │20-db    │  │21-api   │  │25-micro │  │31-server│  │33-ai    │   │   │
+│  │  │-orm     │  │-security│  │-services│  │-less    │  │-integrat│   │   │
+│  │  └─────────┘  └─────────┘  └────┬────┘  └─────────┘  └─────────┘   │   │
+│  │                                │                                   │   │
+│  │  ┌─────────┐  ┌─────────┐      │      ┌─────────┐  ┌─────────┐   │   │
+│  │  │18-front │  │19-backend      │      │34-web3  │  │36-wasm  │   │   │
+│  │  │-end-fw  │  │-dev     │──────┘      │         │  │         │   │   │
+│  │  └─────────┘  └─────────┘             └─────────┘  └─────────┘   │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    │                                        │
+│                                    ▼                                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                        智能层 (50-69)                                │   │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐   │   │
+│  │  │50-browse│  │51-ui    │  │54-perfor│  │55-ai    │  │56-code  │   │   │
+│  │  │-runtime │  │-comp    │  │-mance   │  │-testing │  │-gen     │   │   │
+│  │  └────┬────┘  └─────────┘  └─────────┘  └─────────┘  └─────────┘   │   │
+│  │       │                                                            │   │
+│  │       └──────────────────┬─────────────────────────────────────────┘   │
+│  │                          │                                              │
+│  │                          ▼                                              │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐      │
+│  │  │61-api   │  │62-queue │  │63-cache │  │66-flags │  │68-plugin│      │
+│  │  │-gateway │  │         │  │         │  │         │  │         │      │
+│  │  └─────────┘  └─────────┘  └─────────┘  └─────────┘  └─────────┘      │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    │                                        │
+│                                    ▼                                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                        系统层 (70-89)                                │   │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐   │   │
+│  │  │70-distri│  │71-consen│  │72-contai│  │74-observ│  │75-chaos │   │   │
+│  │  │-buted   │──│-sus     │  │-ner     │  │ability  │  │         │   │   │
+│  │  └────┬────┘  └─────────┘  └─────────┘  └─────────┘  └─────────┘   │   │
+│  │       │                                                            │   │
+│  │       └──────┬─────────────┬────────────────────────────────────────┘   │
+│  │              │             │                                            │
+│  │              ▼             ▼                                            │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐      │
+│  │  │77-quantu│  │80-formal│  │81-cyber │  │83-block │  │89-autono│      │
+│  │  │-m      │  │-verify  │  │-security│  │-chain   │  │-mous    │      │
+│  │  └─────────┘  └─────────┘  └─────────┘  └─────────┘  └─────────┘      │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+完整依赖关系请查看: [CROSS-REFERENCE.md](./CROSS-REFERENCE.md)
+```
+
+---
+
 ## 📚 文档导航
 
 ### 架构与设计文档
@@ -29,18 +106,30 @@
 | [ARCHITECTURE_GUIDE.md](./ARCHITECTURE_GUIDE.md) | 项目整体架构设计 | 架构师、技术负责人 |
 | [DOCUMENTATION_GUIDE.md](./DOCUMENTATION_GUIDE.md) | 文档编写规范 | 贡献者 |
 | [CODE_STRUCTURE.md](./CODE_STRUCTURE.md) | 代码结构说明 | 新加入开发者 |
+| [CROSS-REFERENCE.md](./CROSS-REFERENCE.md) | 模块交叉引用索引 | 系统学习者 |
 
 ### 模块理论文档
 
 #### 核心基础
 
-- [设计模式理论](./02-design-patterns/THEORY.md) - GoF 模式的理论基础、SOLID 原则形式化论证
-- [并发编程架构](./03-concurrency/ARCHITECTURE.md) - 事件循环、内存模型、并发控制理论
-- [架构模式解析](./06-architecture-patterns/ARCHITECTURE.md) - 分层、六边形、CQRS、事件溯源
+| 模块 | 理论文档 | 内容概述 |
+|------|----------|----------|
+| **02-design-patterns** | [THEORY.md](./02-design-patterns/THEORY.md) | GoF 模式的理论基础、SOLID 原则形式化论证 |
+| **03-concurrency** | [ARCHITECTURE.md](./03-concurrency/ARCHITECTURE.md) | 事件循环、内存模型、并发控制理论 |
+| **06-architecture-patterns** | [ARCHITECTURE.md](./06-architecture-patterns/ARCHITECTURE.md) | 分层、六边形、CQRS、事件溯源 |
 
 #### 运行时与性能
 
-- [浏览器运行时理论](./50-browser-runtime/THEORY.md) - 渲染管线、V8 引擎、性能优化
+| 模块 | 理论文档 | 内容概述 |
+|------|----------|----------|
+| **50-browser-runtime** | [THEORY.md](./50-browser-runtime/THEORY.md) | 渲染管线、V8 引擎、性能优化 |
+| **55-ai-testing** | [THEORY.md](./55-ai-testing/THEORY.md) | AI 驱动测试的理论基础 |
+
+#### 分布式系统
+
+| 模块 | 理论文档 | 内容概述 |
+|------|----------|----------|
+| **70-distributed-systems** | [THEORY.md](./70-distributed-systems/THEORY.md) | CAP 定理、一致性模型、共识算法 |
 
 ---
 
@@ -206,21 +295,46 @@ EventLoop = (TaskQueues, MicrotaskQueue, EventSource)
 
 ### 初级开发者
 
-1. 00-language-core - 掌握 TypeScript 类型系统
-2. 02-design-patterns - 理解 SOLID 原则和设计模式
-3. 07-testing - 学习测试驱动开发
+| 顺序 | 模块 | 重点内容 |
+|------|------|----------|
+| 1 | [00-language-core](./00-language-core/) | 掌握 TypeScript 类型系统 |
+| 2 | [02-design-patterns](./02-design-patterns/) | 理解 SOLID 原则和设计模式 |
+| 3 | [07-testing](./07-testing/) | 学习测试驱动开发 |
+| 4 | [18-frontend-frameworks](./18-frontend-frameworks/) | 深入前端框架原理 |
+
+完整路径: [beginners-path.md](../docs/learning-paths/beginners-path.md)
 
 ### 中级开发者
 
-1. 06-architecture-patterns - 掌握企业级架构
-2. 18-frontend-frameworks - 深入前端框架原理
-3. 19-backend-development - 后端开发模式
+| 顺序 | 模块 | 重点内容 |
+|------|------|----------|
+| 1 | [06-architecture-patterns](./06-architecture-patterns/) | 掌握企业级架构 |
+| 2 | [03-concurrency](./03-concurrency/) | 并发编程深入 |
+| 3 | [19-backend-development](./19-backend-development/) | 后端开发模式 |
+| 4 | [20-database-orm](./20-database-orm/) | 数据库与 ORM |
+
+完整路径: [intermediate-path.md](../docs/learning-paths/intermediate-path.md)
 
 ### 高级开发者
 
-1. 70-distributed-systems - 分布式系统原理
-2. 71-consensus-algorithms - 一致性算法
-3. 77-quantum-computing - 量子计算基础
+| 顺序 | 模块 | 重点内容 |
+|------|------|----------|
+| 1 | [70-distributed-systems](./70-distributed-systems/) | 分布式系统原理 |
+| 2 | [71-consensus-algorithms](./71-consensus-algorithms/) | 一致性算法 |
+| 3 | [25-microservices](./25-microservices/) | 微服务架构 |
+| 4 | [77-quantum-computing](./77-quantum-computing/) | 量子计算基础 |
+
+完整路径: [advanced-path.md](../docs/learning-paths/advanced-path.md)
+
+---
+
+## 🔗 相关资源
+
+| 资源 | 描述 |
+|------|------|
+| [GLOSSARY.md](../GLOSSARY.md) | 专业术语表（中英对照） |
+| [CROSS-REFERENCE.md](./CROSS-REFERENCE.md) | 模块依赖关系索引 |
+| [awesome-jsts-ecosystem](../awesome-jsts-ecosystem/) | JS/TS 生态工具导航 |
 
 ---
 

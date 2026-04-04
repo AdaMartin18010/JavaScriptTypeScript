@@ -18,21 +18,25 @@
 ### 判定标准
 
 #### 🟢 Native TypeScript
+
 - 源码使用 TypeScript 编写
 - package.json 中包含 `types` 或 `typings` 字段
 - 类型定义与源码同步更新
 
 #### 🟡 Full Type Definitions
+
 - 官方维护类型定义
 - 类型覆盖率 > 90%
 - 类型测试完善
 
 #### 🟠 Partial Types
+
 - 社区维护的 @types 包
 - 类型覆盖率 50-90%
 - 部分 API 可能缺少类型
 
 #### 🔴 No Types
+
 - 无任何类型定义
 - @types 包质量差或不存在
 - 仅适用于纯 JavaScript 项目
@@ -53,21 +57,25 @@
 ### 补充说明
 
 #### ⭐⭐⭐ Actively Maintained
+
 - 最近 3 个月内有代码提交
 - issue 响应时间 < 7 天
 - 定期发布新版本
 
 #### ⭐⭐ Maintained
+
 - 最近 6 个月内有代码提交
 - issue 响应时间 < 30 天
 - 安全漏洞及时修复
 
 #### ⭐ Low Maintenance
+
 - 最近 12 个月内有代码提交
 - 功能已完善，无需频繁更新
 - 进入维护模式
 
 #### ⚠️ Unmaintained
+
 - 超过 12 个月无代码提交
 - issue 堆积无人处理
 - 考虑标记为归档并推荐替代方案
@@ -88,24 +96,28 @@
 ### 场景详解
 
 #### 🏢 Enterprise
+
 - 经过大规模生产环境验证
 - 有长期维护承诺或商业支持
 - 完善的测试覆盖和文档
 - 安全审计合规
 
 #### 🚀 Rapid Prototyping
+
 - 5 分钟内可跑起来
 - 零配置或低配置
 - 功能开箱即用
 - 适合 MVP 开发
 
 #### 🎮 Personal Projects
+
 - 解决特定小众需求
 - 设计有趣或有特色
 - 社区活跃度高
 - 适合 side project
 
 #### 📚 Learning
+
 - 源码易于阅读
 - 有详细教程或示例
 - 设计模式清晰

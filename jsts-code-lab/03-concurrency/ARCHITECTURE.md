@@ -1,6 +1,24 @@
 # 并发编程架构设计
 
-## 并发理论基础
+> 多线程模型、同步机制与并发架构模式的系统设计
+
+---
+
+## 1. 架构概述
+
+### 1.1 设计目标
+- 提供清晰易用的并发编程抽象
+- 保证线程安全和数据一致性
+- 优化资源利用和性能表现
+
+### 1.2 架构风格
+采用 **分层架构 + Actor 模型** 的混合设计，结合 CSP (Communicating Sequential Processes) 并发理论。
+
+---
+
+## 2. 理论基础
+
+### 2.1 并发理论基础
 
 ### 1. 并发的数学模型
 
@@ -455,21 +473,30 @@ atomic {
 - 性能开销
 - 不适合高争用场景
 
-## 参考资源
+## 10. 参考文档
 
-### 经典论文
+### 10.1 经典著作
 
-1. Dijkstra, E. W. (1965). "Cooperating Sequential Processes"
-2. Hoare, C. A. R. (1978). "Communicating Sequential Processes"
-3. Herlihy, M., & Shavit, N. (2008). "The Art of Multiprocessor Programming"
+1. Goetz, B., et al. (2006). *Java Concurrency in Practice*. Addison-Wesley.
+2. Herlihy, M., & Shavit, N. (2008). *The Art of Multiprocessor Programming*. Morgan Kaufmann.
+3. Armstrong, J. (2013). *Programming Erlang: Software for a Concurrent World* (2nd Edition). Pragmatic Bookshelf.
+4. Kleppmann, M. (2017). *Designing Data-Intensive Applications*. O'Reilly Media.
 
-### 书籍
+### 10.2 学术论文
 
-1. Goetz, B. (2006). *Java Concurrency in Practice*
-2. Armstrong, J. (2013). *Programming Erlang*
-3. Kleppmann, M. (2017). *Designing Data-Intensive Applications* (Chapter 9)
+1. Dijkstra, E. W. (1965). "Cooperating Sequential Processes". In F. Genuys (Ed.), *Programming Languages*.
+2. Hoare, C. A. R. (1978). "Communicating Sequential Processes". *Communications of the ACM*.
+3. Lamport, L. (1979). "How to Make a Multiprocessor Computer That Correctly Executes Multiprocess Programs". *IEEE Transactions on Computers*.
 
-### 在线资源
+### 10.3 在线资源
 
-- [The Memory Model](http://www.cs.umd.edu/~pugh/java/memoryModel/)
-- [Go Memory Model](https://golang.org/ref/mem)
+- [The Java Memory Model](http://www.cs.umd.edu/~pugh/java/memoryModel/) - 马里兰大学
+- [Go Memory Model](https://golang.org/ref/mem) - Go 官方文档
+- [Java Concurrency in Practice](https://jcip.net/) - 配套网站
+- [Erlang Documentation](https://www.erlang.org/doc/) - Erlang 官方文档
+
+### 10.4 相关模块
+
+- [02-design-patterns](../02-design-patterns/THEORY.md) - 设计模式理论
+- [50-browser-runtime](../50-browser-runtime/THEORY.md) - 浏览器运行时理论
+- [70-distributed-systems](../70-distributed-systems/THEORY.md) - 分布式系统理论
