@@ -21,10 +21,10 @@
    - [Pinia](#21-pinia-) ⭐35k 🍍
    - [Vuex ⚠️ 已弃用](#22-vuex-) ⭐28k
 3. [跨框架状态管理](#3-跨框架状态管理)
-   - [MobX](#31-mobx-跨框架)
-   - [Effector](#32-effector-) ⭐5k
-   - [XState](#33-xstate-跨框架)
-   - [Immer](#34-immer-)
+   - [MobX](#31-mobx-) ⭐27k
+   - [XState](#32-xstate-) ⭐27k
+   - [Effector](#33-effector-) ⭐5k
+   - [Immer](#34-immer-) ⭐27k
    - [Nano Stores](#35-nano-stores-) ⭐6k
    - [RxJS](#36-rxjs-) ⭐30k
 4. [服务端状态 (Server State)](#4-服务端状态-server-state)
@@ -917,7 +917,213 @@ Vue官方提供从Vuex到Pinia的迁移工具：https://pinia.vuejs.org/cookbook
 
 ## 3. 跨框架状态管理
 
-### 3.1 Nano Stores ⭐6k
+### 3.1 MobX ⭐27k
+
+| 属性 | 详情 |
+|------|------|
+| **Stars** | 27k |
+| **TypeScript** | ✅ 原生支持 |
+| **包体积** | ~16KB |
+| **维护者** | MobX Team |
+
+**特点**
+- 🔄 响应式编程范式
+- 🎯 自动追踪依赖
+- 📝 可变状态，面向对象风格
+- 🏢 适合复杂业务逻辑
+- 🌐 跨框架支持React、Vue、Angular
+
+**适用场景**
+- 复杂领域模型
+- 面向对象设计风格
+- 需要自动派生计算
+
+**代码示例**
+```typescript
+import { makeAutoObservable } from "mobx"
+import { observer } from "mobx-react-lite"
+
+class CounterStore {
+  count = 0
+  
+  constructor() {
+    makeAutoObservable(this)
+  }
+  
+  increment() {
+    this.count++
+  }
+  
+  get doubleCount() {
+    return this.count * 2
+  }
+}
+
+const store = new CounterStore()
+
+const Counter = observer(() => {
+  return (
+    <div>
+      <p>Count: {store.count}</p>
+      <p>Double: {store.doubleCount}</p>
+      <button onClick={() => store.increment()}>+</button>
+    </div>
+  )
+})
+```
+
+**链接**
+- 🏠 官网：https://mobx.js.org/
+- 📦 GitHub：https://github.com/mobxjs/mobx
+
+---
+
+### 3.2 XState ⭐27k
+
+| 属性 | 详情 |
+|------|------|
+| **Stars** | 27k |
+| **TypeScript** | ✅ 原生支持 |
+| **包体积** | ~8KB (core) |
+| **维护者** | Stately Team |
+
+**特点**
+- 🎮 有限状态机与状态图
+- 📊 可视化编辑器 (Stately Studio)
+- 🔒 类型安全的状态转换
+- 🧪 易于测试
+- 🌐 支持React、Vue、Svelte、Solid
+
+**适用场景**
+- 复杂UI状态流程
+- 工作流引擎
+- 需要可视化状态机
+- 严格的状态控制
+
+**代码示例**
+```typescript
+import { createMachine } from "xstate"
+import { useMachine } from "@xstate/react"
+
+const toggleMachine = createMachine({
+  id: "toggle",
+  initial: "inactive",
+  states: {
+    inactive: { on: { TOGGLE: "active" } },
+    active: { on: { TOGGLE: "inactive" } },
+  },
+})
+
+function Toggle() {
+  const [state, send] = useMachine(toggleMachine)
+  
+  return (
+    <button onClick={() => send({ type: "TOGGLE" })}>
+      {state.matches("inactive") ? "Off" : "On"}
+    </button>
+  )
+}
+```
+
+**链接**
+- 🏠 官网：https://stately.ai/
+- 📦 GitHub：https://github.com/statelyai/xstate
+- 🎨 编辑器：https://stately.ai/registry
+
+---
+
+### 3.3 Effector ⭐5k
+
+| 属性 | 详情 |
+|------|------|
+| **Stars** | 5k+ |
+| **TypeScript** | ✅ 原生支持 |
+| **包体积** | ~8KB |
+| **维护者** | Effector Team |
+
+**特点**
+- 🏢 专为业务逻辑设计的响应式状态管理
+- 🔄 强大的事件驱动架构
+- 🧪 内置测试友好设计
+- 📊 优秀的TypeScript支持
+- 🌐 跨框架支持（React、Vue、Svelte等）
+
+**核心概念**
+- **Store**: 存储状态
+- **Event**: 触发状态变化的事件
+- **Effect**: 处理副作用（如API调用）
+
+**适用场景**
+- 复杂业务逻辑
+- 需要严格数据流控制
+- 事件驱动架构
+
+**代码示例**
+```typescript
+import { createStore, createEvent, createEffect } from "effector"
+import { useUnit } from "effector-react"
+
+const increment = createEvent()
+const $counter = createStore(0).on(increment, (c) => c + 1)
+
+function Counter() {
+  const count = useUnit($counter)
+  return <button onClick={() => increment()}>{count}</button>
+}
+```
+
+**链接**
+- 🏠 官网：https://effector.dev/
+- 📦 GitHub：https://github.com/effector/effector
+
+---
+
+### 3.4 Immer ⭐27k
+
+| 属性 | 详情 |
+|------|------|
+| **Stars** | 27k |
+| **TypeScript** | ✅ 原生支持 |
+| **包体积** | ~3KB |
+| **维护者** | Immer Team |
+
+**特点**
+- 📝 通过可变语法创建不可变状态
+- 🔄 与Redux、Zustand等完美集成
+- ⚡ 高性能，使用结构共享
+- 🎯 简化嵌套状态更新
+
+**适用场景**
+- 深嵌套对象状态更新
+- 与Redux/Zustand配合使用
+- 需要不可变数据但不想写繁琐的展开运算符
+
+**代码示例**
+```typescript
+import { produce } from "immer"
+import { create } from "zustand"
+
+// 基础用法
+const nextState = produce(baseState, (draft) => {
+  draft.user.name = "New Name"
+  draft.todos.push({ id: 3, text: "New Todo", done: false })
+})
+
+// 与Zustand结合使用
+const useStore = create((set) => ({
+  user: { name: "John" },
+  updateUser: (name) =>
+    set(produce((state) => { state.user.name = name })),
+}))
+```
+
+**链接**
+- 📦 GitHub：https://github.com/immerjs/immer
+- 📖 文档：https://immerjs.github.io/immer/
+
+---
+
+### 3.5 Nano Stores ⭐6k
 
 | 属性 | 详情 |
 |------|------|
@@ -997,7 +1203,7 @@ import { $count, $doubleCount } from "./stores"
 
 ---
 
-### 3.2 RxJS ⭐30k
+### 3.6 RxJS ⭐30k
 
 | 属性 | 详情 |
 |------|------|
@@ -1087,86 +1293,6 @@ class UserService {
 - 🏠 官网：https://rxjs.dev/
 - 📦 GitHub：https://github.com/ReactiveX/rxjs
 - 📖 文档：https://rxjs.dev/guide/overview
-
----
-
-### 3.3 Effector ⭐5k
-
-| 属性 | 详情 |
-|------|------|
-| **Stars** | 5k+ |
-| **TypeScript** | ✅ 原生支持 |
-| **包体积** | ~8KB |
-| **维护者** | Effector Team |
-
-**特点**
-- 🏢 专为业务逻辑设计的响应式状态管理
-- 🔄 强大的事件驱动架构
-- 🧪 内置测试友好设计
-- 📊 优秀的TypeScript支持
-- 🌐 跨框架支持（React、Vue、Svelte等）
-
-**核心概念**
-- **Store**: 存储状态
-- **Event**: 触发状态变化的事件
-- **Effect**: 处理副作用（如API调用）
-- **Domain**: 逻辑分组
-
-**适用场景**
-- 复杂业务逻辑
-- 需要严格数据流控制
-- 事件驱动架构
-- 团队需要明确的状态管理规范
-
-**代码示例**
-```typescript
-import { createStore, createEvent, createEffect, sample } from "effector"
-import { useUnit } from "effector-react"
-
-// 定义事件
-export const increment = createEvent()
-export const decrement = createEvent()
-export const reset = createEvent()
-
-// 定义副作用
-export const fetchUserFx = createEffect(async (id: string) => {
-  const response = await fetch(`/api/users/${id}`)
-  return response.json()
-})
-
-// 创建Store
-export const $counter = createStore(0)
-  .on(increment, (count) => count + 1)
-  .on(decrement, (count) => count - 1)
-  .reset(reset)
-
-export const $user = createStore<User | null>(null)
-  .on(fetchUserFx.doneData, (_, user) => user)
-
-// 派生Store
-export const $doubleCounter = $counter.map((count) => count * 2)
-
-// React中使用
-function Counter() {
-  const [count, double, user] = useUnit([$counter, $doubleCounter, $user])
-  
-  return (
-    <div>
-      <p>Count: {count}</p>
-      <p>Double: {double}</p>
-      <button onClick={() => increment()}>+</button>
-      <button onClick={() => decrement()}>-</button>
-      <button onClick={() => fetchUserFx("123")}>Load User</button>
-      {user && <span>{user.name}</span>}
-    </div>
-  )
-}
-```
-
-**链接**
-- 🏠 官网：https://effector.dev/
-- 📦 GitHub：https://github.com/effector/effector
-- 📖 文档：https://effector.dev/docs/introduction
 
 ---
 
@@ -1605,4 +1731,4 @@ Vue项目状态管理选择
 
 > 📅 最后更新：2026-04-04
 > 
-> 📊 文档统计：20+ 库 | 4大分类 | 10+ 代码示例
+> 📊 文档统计：20+ 库 | 6大分类 | 15+ 代码示例 | 覆盖React/Vue/跨框架
