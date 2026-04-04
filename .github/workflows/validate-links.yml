@@ -1,0 +1,56 @@
+name: Validate Links
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  schedule:
+    # 每周一 UTC 00:00 运行
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  validate-links:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: |
+        npm install -g markdown-link-check
+
+    - name: Check links in README
+      run: |
+        markdown-link-check README.md --config .github/link-check-config.json || true
+
+    - name: Check links in CONTRIBUTING
+      run: |
+        markdown-link-check CONTRIBUTING.md --config .github/link-check-config.json || true
+
+  validate-format:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Validate format
+      run: |
+        node scripts/validate-format.js

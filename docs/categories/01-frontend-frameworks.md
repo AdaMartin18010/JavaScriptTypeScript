@@ -12,7 +12,13 @@
 | Vue | 202k+ | ⭐ 稳定增长 | ✅ 优秀 |
 | Angular | 96k+ | ⭐ 企业级 | ✅ 原生TS |
 | Svelte | 80k+ | ⭐ 快速增长 | ✅ 官方支持 |
-| Solid | 30k+ | ⭐ 新兴热门 | ✅ 原生TS |
+| Next.js | 127k+ | ⭐ 全栈首选 | ✅ 原生TS |
+| htmx | 36k+ | ⭐ 黑马崛起 | ⚠️ 社区定义 |
+| Preact | 35k+ | ⭐ 轻量替代 | ✅ 官方支持 |
+| Pinia | 35k+ | ⭐ Vue官方状态 | ✅ 原生TS |
+| Solid | 34k+ | ⭐ 新兴热门 | ✅ 原生TS |
+| RxJS | 30k+ | ⭐ 响应式标准 | ✅ 官方支持 |
+| Alpine.js | 27k+ | ⭐ 轻量渐进 | ⚠️ 社区定义 |
 | Qwik | 20k+ | ⭐ 创新框架 | ✅ 官方支持 |
 
 ---
@@ -120,6 +126,33 @@
 
 ---
 
+### 1.5 Next.js
+
+| 属性 | 详情 |
+|------|------|
+| **名称** | Next.js |
+| **Stars** | ⭐ 127,000+ |
+| **TS支持** | ✅ 原生支持 |
+| **GitHub** | [vercel/next.js](https://github.com/vercel/next.js) |
+| **官网** | [nextjs.org](https://nextjs.org) |
+
+**一句话描述**：React 的全栈框架，提供服务端渲染、静态生成和 App Router 路由系统。
+
+**核心特点**：
+- React Server Components (RSC) 支持
+- 基于文件系统的 App Router
+- 服务端渲染 (SSR) 和静态站点生成 (SSG)
+- 内置图像优化和字体优化
+- 边缘计算 (Edge Runtime) 支持
+- 与 Vercel 平台深度集成
+
+**适用场景**：
+- 需要 SEO 的 React 应用
+- 全栈 React 项目
+- 电商平台和内容网站
+
+---
+
 ## 2. Vue 生态
 
 ### 2.1 Vue 3 (Composition API)
@@ -175,7 +208,62 @@
 
 ---
 
-### 2.3 Nuxt
+### 2.3 Vue Router
+
+| 属性 | 详情 |
+|------|------|
+| **名称** | Vue Router |
+| **Stars** | ⭐ 19,000+ |
+| **TS支持** | ✅ 官方支持 |
+| **GitHub** | [vuejs/router](https://github.com/vuejs/router) |
+| **官网** | [router.vuejs.org](https://router.vuejs.org) |
+
+**一句话描述**：Vue.js 的官方路由管理器，提供声明式路由配置和导航守卫。
+
+**核心特点**：
+- 声明式路由配置
+- 嵌套路由和动态路由匹配
+- 导航守卫和路由元信息
+- 历史模式 (History/Hash) 支持
+- 路由懒加载和代码分割
+- 与 Vue 3 Composition API 深度集成
+
+**适用场景**：
+- 单页应用 (SPA) 路由管理
+- 需要权限控制的页面导航
+- 复杂嵌套路由结构
+
+---
+
+### 2.4 Pinia
+
+| 属性 | 详情 |
+|------|------|
+| **名称** | Pinia |
+| **Stars** | ⭐ 35,000+ |
+| **TS支持** | ✅ 原生 TypeScript，类型推断完善 |
+| **GitHub** | [vuejs/pinia](https://github.com/vuejs/pinia) |
+| **官网** | [pinia.vuejs.org](https://pinia.vuejs.org) |
+
+**一句话描述**：Vue 的官方状态管理库，Vuex 的继任者，提供更简洁的 API 和更好的 TypeScript 支持。
+
+**核心特点**：
+- 极简的 API 设计，无 mutations
+- 完整的 TypeScript 类型支持
+- 支持 Composition API 和 Options API
+- 模块化存储设计
+- 开发工具支持 (Vue DevTools)
+- 服务端渲染 (SSR) 友好
+- 体积小巧 (~1KB)
+
+**适用场景**：
+- Vue 3 应用的状态管理
+- 需要类型安全的状态管理
+- 替代 Vuex 的新项目
+
+---
+
+### 2.5 Nuxt
 
 | 属性 | 详情 |
 |------|------|
@@ -233,11 +321,40 @@
 
 ---
 
-### 3.2 Angular Universal
+### 3.2 RxJS
+
+| 属性 | 详情 |
+|------|------|
+| **名称** | RxJS |
+| **Stars** | ⭐ 30,000+ |
+| **TS支持** | ✅ 官方支持 |
+| **GitHub** | [ReactiveX/rxjs](https://github.com/ReactiveX/rxjs) |
+| **官网** | [rxjs.dev](https://rxjs.dev) |
+
+**一句话描述**：JavaScript 的响应式编程库，使用 Observables 处理异步和基于事件的程序。
+
+**核心特点**：
+- Observable 模式处理异步数据流
+- 丰富的操作符 (map, filter, merge, combine 等)
+- 支持订阅和取消订阅
+- 错误处理和重试机制
+- 与 Angular 深度集成
+- 支持背压 (Backpressure) 控制
+
+**适用场景**：
+- 复杂的异步数据流处理
+- 实时数据更新 (WebSocket、SSE)
+- 事件驱动的用户交互
+- Angular 应用开发
+
+---
+
+### 3.3 Angular Universal
 
 | 属性 | 详情 |
 |------|------|
 | **名称** | Angular Universal |
+| **Stars** | ⭐ 4,000+ |
 | **TS支持** | ✅ 原生支持 |
 | **GitHub** | [angular/universal](https://github.com/angular/universal) |
 | **官网** | [angular.io/guide/universal](https://angular.io/guide/universal) |
@@ -426,7 +543,36 @@
 
 ---
 
-### 6.3 Lit
+### 6.3 htmx
+
+| 属性 | 详情 |
+|------|------|
+| **名称** | htmx |
+| **Stars** | ⭐ 36,000+ |
+| **TS支持** | ⚠️ 社区类型定义 |
+| **GitHub** | [bigskysoftware/htmx](https://github.com/bigskysoftware/htmx) |
+| **官网** | [htmx.org](https://htmx.org) |
+
+**一句话描述**：通过属性直接在 HTML 中使用 AJAX、WebSocket 和 Server Sent Events，无需大量 JavaScript。
+
+**核心特点**：
+- 扩展 HTML 的交互能力
+- 无构建步骤，直接引入使用
+- 支持 AJAX、CSS 动画、WebSocket、SSE
+- 轻量级 (~14KB min.gzipped)
+- 与任何后端框架兼容
+- 渐进式增强理念
+
+**适用场景**：
+- 传统服务端渲染站点的现代化
+- 减少前端 JavaScript 复杂度
+- 快速原型开发
+- 需要与后端紧密集成的项目
+- 极简前端架构
+
+---
+
+### 6.4 Lit
 
 | 属性 | 详情 |
 |------|------|
@@ -459,10 +605,10 @@
 
 | 规模 | 推荐框架 |
 |------|----------|
-| 小型/快速原型 | Vue 3、Alpine.js、Svelte |
-| 中型应用 | React、Vue 3、Svelte |
-| 大型企业应用 | Angular、React + TypeScript |
-| 性能极致要求 | Solid、Qwik、Svelte |
+| 小型/快速原型 | Vue 3、Alpine.js、Svelte、htmx |
+| 中型应用 | React、Vue 3、Svelte、Next.js |
+| 大型企业应用 | Angular、React + TypeScript、Next.js |
+| 性能极致要求 | Solid、Qwik、Svelte、Preact |
 
 ### 按团队背景
 
@@ -480,7 +626,9 @@
 | 跨平台移动开发 | React Native |
 | SEO 优先 | Next.js、Nuxt、SvelteKit、Qwik |
 | 微前端/组件共享 | Lit (Web Components) |
-| 渐进式增强现有站点 | Alpine.js |
+| 渐进式增强现有站点 | Alpine.js、htmx |
+| 状态管理 | Pinia (Vue)、RxJS (响应式) |
+| 路由管理 | Vue Router |
 
 ---
 

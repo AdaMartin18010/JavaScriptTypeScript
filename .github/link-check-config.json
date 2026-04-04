@@ -1,0 +1,28 @@
+{
+  "ignorePatterns": [
+    {
+      "pattern": "^https://img.shields.io"
+    },
+    {
+      "pattern": "^https://awesome.re"
+    },
+    {
+      "pattern": "^https://licensebuttons.net"
+    },
+    {
+      "pattern": "^https://raw.githubusercontent.com/devicons"
+    }
+  ],
+  "httpHeaders": [
+    {
+      "urls": ["https://github.com"],
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+      }
+    }
+  ],
+  "timeout": 30000,
+  "retryOn429": true,
+  "retryCount": 3,
+  "fallbackRetryDelay": 5000
+}

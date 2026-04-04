@@ -1,32 +1,51 @@
 # 05 - 状态管理库生态 (State Management)
 
-> 📊 统计：20+ 主流库 | React生态占主导 | 原子化与轻量化为2024趋势
+> 📊 统计：20+ 主流库 | React生态占主导 | 原子化与轻量化为2025趋势 | Recol已于2025年归档
 
 ---
 
 ## 📑 目录
 
 1. [React 状态管理](#1-react-状态管理)
+   - [Zustand](#11-zustand-) ⭐48k 🐻
+   - [Redux / Redux Toolkit](#12-redux--redux-toolkit-) ⭐61k
+   - [Jotai](#13-jotai-) ⭐18k
+   - [Recoil ⚠️ 已归档](#14-recoil-) ⭐19k
+   - [Valtio](#15-valtio-) ⭐9k
+   - [MobX](#16-mobx-) ⭐27k
+   - [XState](#17-xstate-) ⭐27k
+   - [TanStack Query](#18-react-query-tanstack-query-) ⭐43k
+   - [SWR](#19-swr-) ⭐31k
+   - [Zustand-X](#110-zustand-x)
 2. [Vue 状态管理](#2-vue-状态管理)
+   - [Pinia](#21-pinia-) ⭐35k 🍍
+   - [Vuex ⚠️ 已弃用](#22-vuex-) ⭐28k
 3. [跨框架状态管理](#3-跨框架状态管理)
+   - [MobX](#31-mobx-跨框架)
+   - [Effector](#32-effector-) ⭐5k
+   - [XState](#33-xstate-跨框架)
+   - [Immer](#34-immer-)
+   - [Nano Stores](#35-nano-stores-) ⭐6k
+   - [RxJS](#36-rxjs-) ⭐30k
 4. [服务端状态 (Server State)](#4-服务端状态-server-state)
 5. [选型决策树](#5-选型决策树)
+6. [2025趋势与展望](#6-2025趋势与展望)
 
 ---
 
 ## 1. React 状态管理
 
-### 1.1 Zustand ⭐47k
+### 1.1 Zustand ⭐48k 🐻
 
 | 属性 | 详情 |
 |------|------|
-| **Stars** | 47k |
+| **Stars** | 48k |
 | **TypeScript** | ✅ 原生支持 |
 | **包体积** | ~1KB (minified+gzipped) |
 | **维护者** | Poimandres (pmndrs) |
 
 **特点**
-- 🚀 2024年最热门React状态管理库
+- 🚀 2025年最热门React状态管理库，小熊状态管理
 - 📝 极简API，无样板代码
 - 🐻 基于Hook，无Provider包裹
 - 🔄 支持中间件（持久化、日志、Immer等）
@@ -74,11 +93,11 @@ function BearCounter() {
 
 ---
 
-### 1.2 Redux Toolkit ⭐51k
+### 1.2 Redux / Redux Toolkit ⭐61k
 
 | 属性 | 详情 |
 |------|------|
-| **Stars** | 51k (redux整体) |
+| **Stars** | 61k (redux整体) |
 | **TypeScript** | ✅ 原生支持 |
 | **包体积** | ~11KB |
 | **维护者** | Redux Team |
@@ -225,7 +244,7 @@ function Counter() {
 
 ---
 
-### 1.4 Recoil ⭐19k
+### 1.4 Recoil ⭐19k ⚠️ 已归档
 
 | 属性 | 详情 |
 |------|------|
@@ -233,6 +252,7 @@ function Counter() {
 | **TypeScript** | ✅ 支持 |
 | **包体积** | ~25KB |
 | **维护者** | Facebook (Meta) |
+| **状态** | 🔴 2025年1月1日已归档，停止维护 |
 
 **特点**
 - 🏢 Facebook官方出品
@@ -240,7 +260,7 @@ function Counter() {
 - ⚛️ 原子化状态管理先驱
 - 🔄 支持派生状态与异步查询
 
-**⚠️ 注意**：Recoil目前处于实验状态，Facebook已减少维护投入，新项目建议考虑Jotai或Zustand。
+**⚠️ 重要提醒**：Recoil已于2025年1月1日被Meta官方归档，停止维护。新项目强烈建议使用 **Jotai** 替代（同为原子化状态管理，API相似，生态活跃）。
 
 **适用场景**
 - 探索原子化状态管理概念
@@ -745,13 +765,38 @@ function UpdateUser() {
 
 ---
 
-## 2. Vue 状态管理
-
-### 2.1 Pinia ⭐13k
+### 1.10 Zustand-X
 
 | 属性 | 详情 |
 |------|------|
-| **Stars** | 13k (pinia整体) |
+| **基于** | Zustand |
+| **TypeScript** | ✅ 原生支持 |
+| **特点** | Zustand扩展版，提供更多功能 |
+| **维护者** | 社区扩展 |
+
+**特点**
+- 🔧 基于Zustand的扩展封装
+- 📝 提供更完整的Store模式
+- 🔄 内置更多常用中间件组合
+- 🎯 更适合大型项目架构
+
+**适用场景**
+- 需要比Zustand更完整功能的项目
+- 团队需要统一Store模式
+- 从MobX/MobX-State-Tree迁移
+
+**链接**
+- 📦 GitHub：https://github.com/zustand-x/zustand-x
+
+---
+
+## 2. Vue 状态管理
+
+### 2.1 Pinia ⭐35k 🍍
+
+| 属性 | 详情 |
+|------|------|
+| **Stars** | 35k |
 | **TypeScript** | ✅ 原生支持 |
 | **包体积** | ~1KB |
 | **维护者** | Vue Team |
@@ -843,7 +888,7 @@ const { increment } = store
 
 ---
 
-### 2.2 Vuex ⚠️ 已不推荐
+### 2.2 Vuex ⭐28k ⚠️ 已弃用
 
 | 属性 | 详情 |
 |------|------|
@@ -878,11 +923,11 @@ Vue官方提供从Vuex到Pinia的迁移工具：https://pinia.vuejs.org/cookbook
 |------|------|
 | **Stars** | 6k |
 | **TypeScript** | ✅ 原生支持 |
-| **包体积** | ~300B |
+| **包体积** | ~286B (极轻量) |
 | **维护者** | Nano Stores Team |
 
 **特点**
-- 🪶 极轻量 (~300B)
+- 🪶 极轻量 (~286B)
 - 🌐 跨框架：React、Vue、Svelte、Solid、Angular、Vanilla JS
 - 🚀 高性能，无依赖
 - 📦 模块化，按需引入
@@ -957,6 +1002,7 @@ import { $count, $doubleCount } from "./stores"
 | 属性 | 详情 |
 |------|------|
 | **Stars** | 30k |
+| **包体积** | ~30KB (全量) / 支持按需导入 |
 | **TypeScript** | ✅ 原生支持 |
 | **包体积** | ~30KB (全量) |
 | **维护者** | ReactiveX |
@@ -1041,6 +1087,86 @@ class UserService {
 - 🏠 官网：https://rxjs.dev/
 - 📦 GitHub：https://github.com/ReactiveX/rxjs
 - 📖 文档：https://rxjs.dev/guide/overview
+
+---
+
+### 3.3 Effector ⭐5k
+
+| 属性 | 详情 |
+|------|------|
+| **Stars** | 5k+ |
+| **TypeScript** | ✅ 原生支持 |
+| **包体积** | ~8KB |
+| **维护者** | Effector Team |
+
+**特点**
+- 🏢 专为业务逻辑设计的响应式状态管理
+- 🔄 强大的事件驱动架构
+- 🧪 内置测试友好设计
+- 📊 优秀的TypeScript支持
+- 🌐 跨框架支持（React、Vue、Svelte等）
+
+**核心概念**
+- **Store**: 存储状态
+- **Event**: 触发状态变化的事件
+- **Effect**: 处理副作用（如API调用）
+- **Domain**: 逻辑分组
+
+**适用场景**
+- 复杂业务逻辑
+- 需要严格数据流控制
+- 事件驱动架构
+- 团队需要明确的状态管理规范
+
+**代码示例**
+```typescript
+import { createStore, createEvent, createEffect, sample } from "effector"
+import { useUnit } from "effector-react"
+
+// 定义事件
+export const increment = createEvent()
+export const decrement = createEvent()
+export const reset = createEvent()
+
+// 定义副作用
+export const fetchUserFx = createEffect(async (id: string) => {
+  const response = await fetch(`/api/users/${id}`)
+  return response.json()
+})
+
+// 创建Store
+export const $counter = createStore(0)
+  .on(increment, (count) => count + 1)
+  .on(decrement, (count) => count - 1)
+  .reset(reset)
+
+export const $user = createStore<User | null>(null)
+  .on(fetchUserFx.doneData, (_, user) => user)
+
+// 派生Store
+export const $doubleCounter = $counter.map((count) => count * 2)
+
+// React中使用
+function Counter() {
+  const [count, double, user] = useUnit([$counter, $doubleCounter, $user])
+  
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <p>Double: {double}</p>
+      <button onClick={() => increment()}>+</button>
+      <button onClick={() => decrement()}>-</button>
+      <button onClick={() => fetchUserFx("123")}>Load User</button>
+      {user && <span>{user.name}</span>}
+    </div>
+  )
+}
+```
+
+**链接**
+- 🏠 官网：https://effector.dev/
+- 📦 GitHub：https://github.com/effector/effector
+- 📖 文档：https://effector.dev/docs/introduction
 
 ---
 
@@ -1407,33 +1533,41 @@ Vue项目状态管理选择
 
 | 场景 | 推荐 |
 |------|------|
-| 极轻量需求 | Nano Stores |
+| 极轻量需求 | Nano Stores (~286B) |
 | 复杂异步流 | RxJS |
 | 服务端状态 | TanStack Query |
+| 业务逻辑驱动 | Effector |
+| 响应式编程 | MobX |
 
 ### 5.4 快速对比表
 
 | 库 | 体积 | 学习曲线 | 生态 | 推荐场景 |
 |----|------|----------|------|----------|
-| Zustand | ~1KB | ⭐ | ⭐⭐⭐ | 通用首选 |
+| Zustand | ~1KB | ⭐ | ⭐⭐⭐⭐ | 通用首选 |
 | Redux Toolkit | ~11KB | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 大型企业应用 |
-| Jotai | ~3KB | ⭐⭐ | ⭐⭐⭐ | 原子化状态 |
+| Jotai | ~3KB | ⭐⭐ | ⭐⭐⭐⭐ | 原子化状态 |
 | MobX | ~16KB | ⭐⭐⭐ | ⭐⭐⭐⭐ | 响应式编程 |
+| Valtio | ~3.5KB | ⭐⭐ | ⭐⭐ | Proxy驱动可变状态 |
 | XState | ~8KB | ⭐⭐⭐⭐ | ⭐⭐⭐ | 状态机/流程 |
 | TanStack Query | ~12KB | ⭐⭐ | ⭐⭐⭐⭐⭐ | 服务端状态 |
-| Pinia | ~1KB | ⭐ | ⭐⭐⭐⭐ | Vue生态 |
-| Nano Stores | ~300B | ⭐ | ⭐⭐ | 跨框架/极轻量 |
+| SWR | ~4KB | ⭐ | ⭐⭐⭐ | Next.js/Vercel生态 |
+| Pinia | ~1KB | ⭐ | ⭐⭐⭐⭐⭐ | Vue生态 |
+| Vuex | ~4KB | ⭐⭐ | ⭐⭐⭐ | Vue 2维护项目 |
+| Nano Stores | ~286B | ⭐ | ⭐⭐⭐ | 跨框架/极轻量 |
+| Effector | ~8KB | ⭐⭐⭐ | ⭐⭐⭐ | 业务逻辑状态 |
+| RxJS | ~30KB | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 复杂异步流 |
 
 ---
 
-## 6. 2024趋势与展望
+## 6. 2025趋势与展望
 
 ### 6.1 当前趋势
 
-1. **🚀 Zustand崛起** - 极简API赢得开发者青睐
-2. **⚛️ 原子化兴起** - Jotai引领细粒度状态管理
+1. **🚀 Zustand统治地位** - 2025年React新项目的默认选择
+2. **⚛️ 原子化成熟** - Jotai成为原子化状态管理首选（替代Recoil）
 3. **🌐 跨框架统一** - TanStack Query、Nano Stores支持多框架
-4. **🔄 服务端状态独立** - 客户端与服务端状态管理分离
+4. **🔄 服务端状态独立** - 客户端与服务端状态管理分离成为共识
+5. **⚰️ Recoil退场** - Meta于2025年归档Recoil，原子化转向Jotai
 
 ### 6.2 技术演进
 
@@ -1442,15 +1576,30 @@ Vue项目状态管理选择
 | 2015-2018 | Redux/MobX | 单一Store，Flux架构 |
 | 2018-2021 | Hooks时代 | useState/useReducer为主 |
 | 2021-2023 | 原子化/轻量 | Recoil/Jotai/Zustand |
-| 2024+ | 细粒度+服务端 | 原子化+独立服务端状态管理 |
+| 2024-2025 | 细粒度+服务端 | 原子化+独立服务端状态管理 |
 
 ### 6.3 选型建议
 
-- **新项目React**: Zustand + TanStack Query
-- **新项目Vue**: Pinia + TanStack Query (Vue Query)
-- **跨框架**: Nano Stores + TanStack Query
-- **企业级**: Redux Toolkit + RTK Query
-- **复杂状态机**: XState
+| 场景 | 推荐方案 | 说明 |
+|------|----------|------|
+| **新项目React** | Zustand + TanStack Query | 2025年最受欢迎组合 |
+| **新项目Vue** | Pinia + TanStack Query | Vue官方推荐 |
+| **跨框架微前端** | Nano Stores + TanStack Query | 极轻量，多框架支持 |
+| **企业级大型应用** | Redux Toolkit + RTK Query | 生态最成熟 |
+| **复杂状态机/工作流** | XState | 可视化、可测试 |
+| **响应式/OOP风格** | MobX 或 Valtio | 可变状态语法 |
+| **原子化细粒度** | Jotai | Recoil替代品，更轻量 |
+| **事件驱动业务逻辑** | Effector | 严格的单向数据流 |
+| **Next.js/Vercel** | SWR 或 TanStack Query | 官方生态支持 |
+
+### 6.4 迁移建议
+
+| 从 | 迁移到 | 说明 |
+|----|--------|------|
+| Recoil | Jotai | API相似，迁移成本低 |
+| Vuex | Pinia | Vue官方提供迁移指南 |
+| 传统Redux | Redux Toolkit | 官方工具集，大幅简化 |
+| MobX | Valtio | 更轻量的Proxy方案 |
 
 ---
 

@@ -1,46 +1,14 @@
 {
   "name": "awesome-jsts-ecosystem",
   "version": "1.0.0",
-  "description": "中文领域最全面、最权威的 JavaScript/TypeScript 生态库导航 / The most comprehensive and authoritative JS/TS ecosystem navigation in Chinese",
-  "main": "index.js",
+  "description": "A curated list of awesome JavaScript/TypeScript libraries",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "markdownlint README.md CONTRIBUTING.md",
-    "lint:fix": "markdownlint --fix README.md CONTRIBUTING.md",
-    "check-links": "markdown-link-check README.md",
-    "build": "echo 'Build completed'",
-    "format": "prettier --write \"**/*.md\" \"**/*.json\" \"**/*.ts\""
+    "update:stats": "node scripts/update-stats.js",
+    "validate:links": "node scripts/validate-links.js",
+    "generate:toc": "node scripts/generate-toc.js"
   },
-  "keywords": [
-    "awesome",
-    "javascript",
-    "typescript",
-    "nodejs",
-    "ecosystem",
-    "awesome-list",
-    "中文",
-    "导航",
-    "资源",
-    "resources"
-  ],
-  "author": "Awesome JS/TS Ecosystem Contributors",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yourusername/awesome-jsts-ecosystem.git"
-  },
-  "bugs": {
-    "url": "https://github.com/yourusername/awesome-jsts-ecosystem/issues"
-  },
-  "homepage": "https://github.com/yourusername/awesome-jsts-ecosystem#readme",
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "markdown-link-check": "^3.11.2",
-    "markdownlint-cli": "^0.38.0",
-    "prettier": "^3.1.0",
+    "@octokit/rest": "^20.0.0",
     "typescript": "^5.3.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
   }
 }
