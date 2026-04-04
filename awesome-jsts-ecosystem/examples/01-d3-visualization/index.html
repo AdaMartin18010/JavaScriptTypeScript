@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D3.js TypeScript 可视化示例</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 40px;
+    }
+
+    .chart-section {
+      background: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    .chart-section h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chart-section h2::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+      border-radius: 2px;
+    }
+
+    .chart-description {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 20px;
+      padding: 12px 16px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 3px solid #667eea;
+    }
+
+    .chart-container {
+      min-height: 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    button.secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    button.secondary:hover {
+      background: #e0e0e0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .info-box {
+      background: #e3f2fd;
+      border: 1px solid #90caf9;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .info-box h3 {
+      color: #1565c0;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+
+    .info-box p {
+      color: #424242;
+      font-size: 14px;
+    }
+
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 13px;
+    }
+
+    pre {
+      background: #2d3436;
+      color: #dfe6e9;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 13px;
+      margin-top: 15px;
+    }
+
+    .loading {
+      text-align: center;
+      color: #999;
+      padding: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>D3.js TypeScript 可视化示例</h1>
+    <p class="subtitle">现代、类型安全、交互丰富的数据可视化组件</p>
+
+    <div class="info-box">
+      <h3>💡 快速开始</h3>
+      <p>运行 <code>npm install && npm run build</code> 编译代码，然后点击下方的按钮查看各个图表示例。</p>
+    </div>
+
+    <!-- 柱状图 -->
+    <div class="chart-section">
+      <h2>柱状图 (Bar Chart)</h2>
+      <div class="chart-description">
+        支持渐变填充、交错动画、悬停提示框、网格线显示。点击按钮更新数据查看动画效果。
+      </div>
+      <div id="bar-chart" class="chart-container">
+        <div class="loading">点击"渲染柱状图"按钮加载...</div>
+      </div>
+      <div class="btn-group">
+        <button onclick="renderBarChart()">渲染柱状图</button>
+        <button class="secondary" onclick="updateBarChartData()">更新数据</button>
+        <button class="secondary" onclick="clearBarChart()">清除</button>
+      </div>
+    </div>
+
+    <!-- 折线图 -->
+    <div class="chart-section">
+      <h2>折线图 (Line Chart)</h2>
+      <div class="chart-description">
+        支持平滑曲线、区域填充、数据点标记、鼠标追踪线。适用于时间序列数据展示。
+      </div>
+      <div id="line-chart" class="chart-container">
+        <div class="loading">点击"渲染折线图"按钮加载...</div>
+      </div>
+      <div class="btn-group">
+        <button onclick="renderLineChart()">渲染折线图</button>
+        <button class="secondary" onclick="updateLineChartData()">更新数据</button>
+        <button class="secondary" onclick="clearLineChart()">清除</button>
+      </div>
+    </div>
+
+    <!-- 饼图 -->
+    <div class="chart-section">
+      <h2>饼图 (Pie Chart)</h2>
+      <div class="chart-description">
+        经典饼图展示，支持扇形分离、百分比标签显示、图例交互。点击扇形可高亮选中。
+      </div>
+      <div id="pie-chart" class="chart-container">
+        <div class="loading">点击"渲染饼图"按钮加载...</div>
+      </div>
+      <div class="btn-group">
+        <button onclick="renderPieChart()">渲染饼图</button>
+        <button class="secondary" onclick="updatePieChartData()">更新数据</button>
+        <button class="secondary" onclick="clearPieChart()">清除</button>
+      </div>
+    </div>
+
+    <!-- 环形图 -->
+    <div class="chart-section">
+      <h2>环形图 (Donut Chart)</h2>
+      <div class="chart-description">
+        环形图变体，中心显示总计数值。适合展示占比关系同时保留中心区域用于信息展示。
+      </div>
+      <div id="donut-chart" class="chart-container">
+        <div class="loading">点击"渲染环形图"按钮加载...</div>
+      </div>
+      <div class="btn-group">
+        <button onclick="renderDonutChart()">渲染环形图</button>
+        <button class="secondary" onclick="updateDonutChartData()">更新数据</button>
+        <button class="secondary" onclick="clearDonutChart()">清除</button>
+      </div>
+    </div>
+
+    <!-- 力导向图 -->
+    <div class="chart-section">
+      <h2>力导向图 (Force-Directed Graph)</h2>
+      <div class="chart-description">
+        基于物理模拟的网络图，支持节点拖拽、画布缩放、连接高亮。展示节点间的关系网络。
+      </div>
+      <div id="force-chart" class="chart-container">
+        <div class="loading">点击"渲染力导向图"按钮加载...</div>
+      </div>
+      <div class="btn-group">
+        <button onclick="renderForceGraph()">渲染力导向图</button>
+        <button class="secondary" onclick="clearForceChart()">清除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- D3.js 依赖 -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  
+  <script>
+    // 注意：这里使用全局 d3 对象演示
+    // 实际项目中应使用 ES 模块导入
+
+    // ========== 柱状图 ==========
+    function renderBarChart() {
+      const data = [
+        { label: '一月', value: 65 },
+        { label: '二月', value: 80 },
+        { label: '三月', value: 45 },
+        { label: '四月', value: 90 },
+        { label: '五月', value: 55 },
+        { label: '六月', value: 75 },
+      ];
+
+      const container = d3.select('#bar-chart');
+      container.selectAll('*').remove();
+
+      const width = 600, height = 400;
+      const margin = { top: 40, right: 30, bottom: 60, left: 60 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+
+      const svg = container.append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+      const g = svg.append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+      const xScale = d3.scaleBand()
+        .domain(data.map(d => d.label))
+        .range([0, innerWidth])
+        .padding(0.2);
+
+      const yScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.value)])
+        .nice()
+        .range([innerHeight, 0]);
+
+      // 渐变
+      const defs = svg.append('defs');
+      const gradient = defs.append('linearGradient')
+        .attr('id', 'bar-gradient')
+        .attr('x1', '0%').attr('y1', '0%')
+        .attr('x2', '0%').attr('y2', '100%');
+      gradient.append('stop').attr('offset', '0%').attr('stop-color', '#667eea');
+      gradient.append('stop').attr('offset', '100%').attr('stop-color', '#764ba2');
+
+      // 网格线
+      g.append('g')
+        .attr('opacity', 0.1)
+        .call(d3.axisLeft(yScale).tickSize(-innerWidth).tickFormat(''));
+
+      // 坐标轴
+      g.append('g')
+        .attr('transform', `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(xScale));
+
+      g.append('g').call(d3.axisLeft(yScale));
+
+      // 柱子
+      g.selectAll('.bar')
+        .data(data)
+        .enter()
+        .append('rect')
+        .attr('class', 'bar')
+        .attr('x', d => xScale(d.label))
+        .attr('width', xScale.bandwidth())
+        .attr('y', innerHeight)
+        .attr('height', 0)
+        .attr('fill', 'url(#bar-gradient)')
+        .attr('rx', 4)
+        .transition()
+        .duration(750)
+        .delay((d, i) => i * 50)
+        .attr('y', d => yScale(d.value))
+        .attr('height', d => innerHeight - yScale(d.value));
+
+      // 标题
+      svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', 25)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '18px')
+        .style('font-weight', 'bold')
+        .text('月度销售数据');
+    }
+
+    function updateBarChartData() {
+      renderBarChart();
+    }
+
+    function clearBarChart() {
+      d3.select('#bar-chart').selectAll('*').remove();
+      d3.select('#bar-chart').append('div')
+        .attr('class', 'loading')
+        .text('点击"渲染柱状图"按钮加载...');
+    }
+
+    // ========== 折线图 ==========
+    function renderLineChart() {
+      const data = [
+        { name: '系列A', values: [
+          { x: 1, y: 30 }, { x: 2, y: 50 }, { x: 3, y: 45 },
+          { x: 4, y: 70 }, { x: 5, y: 65 }, { x: 6, y: 85 }
+        ]},
+        { name: '系列B', values: [
+          { x: 1, y: 20 }, { x: 2, y: 35 }, { x: 3, y: 55 },
+          { x: 4, y: 45 }, { x: 5, y: 60 }, { x: 6, y: 75 }
+        ]}
+      ];
+
+      const container = d3.select('#line-chart');
+      container.selectAll('*').remove();
+
+      const width = 700, height = 400;
+      const margin = { top: 40, right: 80, bottom: 50, left: 60 };
+      const innerWidth = width - margin.left - margin.right;
+      const innerHeight = height - margin.top - margin.bottom;
+
+      const svg = container.append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+      const g = svg.append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+
+      const xScale = d3.scaleLinear()
+        .domain([1, 6])
+        .range([0, innerWidth]);
+
+      const yScale = d3.scaleLinear()
+        .domain([0, 100])
+        .nice()
+        .range([innerHeight, 0]);
+
+      const colors = ['#667eea', '#f093fb'];
+
+      // 网格线
+      g.append('g')
+        .attr('opacity', 0.1)
+        .call(d3.axisLeft(yScale).tickSize(-innerWidth).tickFormat(''));
+
+      // 坐标轴
+      g.append('g')
+        .attr('transform', `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(xScale).ticks(6));
+
+      g.append('g').call(d3.axisLeft(yScale));
+
+      // 线条生成器
+      const line = d3.line()
+        .x(d => xScale(d.x))
+        .y(d => yScale(d.y))
+        .curve(d3.curveMonotoneX);
+
+      // 绘制线条
+      data.forEach((series, i) => {
+        const path = g.append('path')
+          .datum(series.values)
+          .attr('fill', 'none')
+          .attr('stroke', colors[i])
+          .attr('stroke-width', 3)
+          .attr('d', line);
+
+        // 动画
+        const length = path.node().getTotalLength();
+        path
+          .attr('stroke-dasharray', length)
+          .attr('stroke-dashoffset', length)
+          .transition()
+          .duration(1000)
+          .ease(d3.easeCubicOut)
+          .attr('stroke-dashoffset', 0);
+
+        // 数据点
+        g.selectAll(`.dot-${i}`)
+          .data(series.values)
+          .enter()
+          .append('circle')
+          .attr('cx', d => xScale(d.x))
+          .attr('cy', d => yScale(d.y))
+          .attr('r', 0)
+          .attr('fill', colors[i])
+          .attr('stroke', '#fff')
+          .attr('stroke-width', 2)
+          .transition()
+          .delay((d, j) => j * 100 + 500)
+          .attr('r', 5);
+      });
+
+      // 图例
+      const legend = svg.append('g')
+        .attr('transform', `translate(${width - 70}, ${margin.top})`);
+
+      data.forEach((series, i) => {
+        const item = legend.append('g')
+          .attr('transform', `translate(0, ${i * 20})`);
+        
+        item.append('line')
+          .attr('x1', 0).attr('x2', 15)
+          .attr('y1', 6).attr('y2', 6)
+          .attr('stroke', colors[i])
+          .attr('stroke-width', 3);
+        
+        item.append('text')
+          .attr('x', 20).attr('y', 10)
+          .style('font-size', '12px')
+          .text(series.name);
+      });
+
+      // 标题
+      svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', 25)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '18px')
+        .style('font-weight', 'bold')
+        .text('趋势对比图');
+    }
+
+    function updateLineChartData() {
+      renderLineChart();
+    }
+
+    function clearLineChart() {
+      d3.select('#line-chart').selectAll('*').remove();
+      d3.select('#line-chart').append('div')
+        .attr('class', 'loading')
+        .text('点击"渲染折线图"按钮加载...');
+    }
+
+    // ========== 饼图 ==========
+    function renderPieChart() {
+      const data = [
+        { label: '产品A', value: 30 },
+        { label: '产品B', value: 50 },
+        { label: '产品C', value: 25 },
+        { label: '产品D', value: 35 },
+        { label: '产品E', value: 20 },
+      ];
+
+      const container = d3.select('#pie-chart');
+      container.selectAll('*').remove();
+
+      const width = 500, height = 400;
+      const radius = Math.min(width, height) / 2 - 40;
+
+      const svg = container.append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+      const g = svg.append('g')
+        .attr('transform', `translate(${width / 2},${height / 2})`);
+
+      const colors = d3.scaleOrdinal(['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe']);
+
+      const pie = d3.pie().value(d => d.value).padAngle(0.02);
+      const arc = d3.arc().innerRadius(0).outerRadius(radius);
+      const arcHover = d3.arc().innerRadius(0).outerRadius(radius * 1.08);
+
+      const arcs = g.selectAll('.arc')
+        .data(pie(data))
+        .enter()
+        .append('g')
+        .attr('class', 'arc');
+
+      arcs.append('path')
+        .attr('fill', d => colors(d.data.label))
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 2)
+        .each(function() { this._current = { startAngle: 0, endAngle: 0 }; })
+        .transition()
+        .duration(1000)
+        .attrTween('d', function(d) {
+          const interpolate = d3.interpolate({ startAngle: 0, endAngle: 0 }, d);
+          return t => arc(interpolate(t));
+        });
+
+      // 标签
+      arcs.append('text')
+        .attr('transform', d => `translate(${arc.centroid(d)})`)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '12px')
+        .style('fill', '#fff')
+        .style('opacity', 0)
+        .text(d => d.data.label)
+        .transition()
+        .delay(800)
+        .style('opacity', 1);
+
+      // 标题
+      svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', 30)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '18px')
+        .style('font-weight', 'bold')
+        .text('产品销售占比');
+
+      // 图例
+      const legend = svg.append('g')
+        .attr('transform', `translate(${width - 100}, 60)`);
+
+      data.forEach((d, i) => {
+        const item = legend.append('g')
+          .attr('transform', `translate(0, ${i * 25})`);
+        
+        item.append('rect')
+          .attr('width', 15).attr('height', 15)
+          .attr('fill', colors(d.label));
+        
+        item.append('text')
+          .attr('x', 20).attr('y', 12)
+          .style('font-size', '12px')
+          .text(d.label);
+      });
+    }
+
+    function updatePieChartData() {
+      renderPieChart();
+    }
+
+    function clearPieChart() {
+      d3.select('#pie-chart').selectAll('*').remove();
+      d3.select('#pie-chart').append('div')
+        .attr('class', 'loading')
+        .text('点击"渲染饼图"按钮加载...');
+    }
+
+    // ========== 环形图 ==========
+    function renderDonutChart() {
+      const data = [
+        { label: '分类A', value: 40 },
+        { label: '分类B', value: 30 },
+        { label: '分类C', value: 20 },
+        { label: '分类D', value: 10 },
+      ];
+
+      const container = d3.select('#donut-chart');
+      container.selectAll('*').remove();
+
+      const width = 400, height = 400;
+      const radius = Math.min(width, height) / 2 - 40;
+
+      const svg = container.append('svg')
+        .attr('width', width)
+        .attr('height', height);
+
+      const g = svg.append('g')
+        .attr('transform', `translate(${width / 2},${height / 2})`);
+
+      const colors = d3.scaleOrdinal(['#667eea', '#764ba2', '#f093fb', '#f5576c']);
+
+      const pie = d3.pie().value(d => d.value).padAngle(0.03);
+      const arc = d3.arc().innerRadius(radius * 0.6).outerRadius(radius);
+
+      const arcs = g.selectAll('.arc')
+        .data(pie(data))
+        .enter()
+        .append('g')
+        .attr('class', 'arc');
+
+      arcs.append('path')
+        .attr('fill', d => colors(d.data.label))
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 2)
+        .each(function() { this._current = { startAngle: 0, endAngle: 0 }; })
+        .transition()
+        .duration(1000)
+        .attrTween('d', function(d) {
+          const interpolate = d3.interpolate({ startAngle: 0, endAngle: 0 }, d);
+          return t => arc(interpolate(t));
+        });
+
+      // 中心文字
+      const centerGroup = g.append('g').style('opacity', 0);
+      
+      centerGroup.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('y', -5)
+        .style('font-size', '14px')
+        .style('fill', '#666')
+        .text('总计');
+
+      const total = d3.sum(data, d => d.value);
+      centerGroup.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('y', 20)
+        .style('font-size', '24px')
+        .style('font-weight', 'bold')
+        .style('fill', '#333')
+        .text(total);
+
+      centerGroup.transition().delay(800).style('opacity', 1);
+
+      // 标题
+      svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', 30)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '18px')
+        .style('font-weight', 'bold')
+        .text('分类分布');
+    }
+
+    function updateDonutChartData() {
+      renderDonutChart();
+    }
+
+    function clearDonutChart() {
+      d3.select('#donut-chart').selectAll('*').remove();
+      d3.select('#donut-chart').append('div')
+        .attr('class', 'loading')
+        .text('点击"渲染环形图"按钮加载...');
+    }
+
+    // ========== 力导向图 ==========
+    function renderForceGraph() {
+      const nodes = [
+        { id: '1', name: '中心', group: 1, size: 30 },
+        { id: '2', name: 'A', group: 2, size: 20 },
+        { id: '3', name: 'B', group: 2, size: 20 },
+        { id: '4', name: 'C', group: 2, size: 20 },
+        { id: '5', name: 'D', group: 3, size: 15 },
+        { id: '6', name: 'E', group: 3, size: 15 },
+        { id: '7', name: 'F', group: 3, size: 15 },
+        { id: '8', name: 'G', group: 4, size: 15 },
+        { id: '9', name: 'H', group: 4, size: 15 },
+      ];
+
+      const links = [
+        { source: '1', target: '2' },
+        { source: '1', target: '3' },
+        { source: '1', target: '4' },
+        { source: '2', target: '5' },
+        { source: '2', target: '6' },
+        { source: '3', target: '7' },
+        { source: '4', target: '8' },
+        { source: '5', target: '9' },
+        { source: '6', target: '9' },
+      ];
+
+      const container = d3.select('#force-chart');
+      container.selectAll('*').remove();
+
+      const width = 800, height = 500;
+
+      const svg = container.append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .style('background', '#f8f9fa')
+        .style('border-radius', '8px');
+
+      const g = svg.append('g');
+
+      // 缩放
+      const zoom = d3.zoom()
+        .scaleExtent([0.1, 4])
+        .on('zoom', (event) => g.attr('transform', event.transform));
+      svg.call(zoom);
+
+      // 颜色
+      const colors = d3.scaleOrdinal(['#667eea', '#764ba2', '#f093fb', '#f5576c']);
+
+      // 模拟器
+      const simulation = d3.forceSimulation(nodes)
+        .force('link', d3.forceLink(links).id(d => d.id).distance(100))
+        .force('charge', d3.forceManyBody().strength(-300))
+        .force('center', d3.forceCenter(width / 2, height / 2));
+
+      // 连线
+      const link = g.append('g')
+        .selectAll('line')
+        .data(links)
+        .enter()
+        .append('line')
+        .attr('stroke', '#999')
+        .attr('stroke-opacity', 0.6)
+        .attr('stroke-width', 1.5);
+
+      // 节点
+      const node = g.append('g')
+        .selectAll('g')
+        .data(nodes)
+        .enter()
+        .append('g')
+        .call(d3.drag()
+          .on('start', dragstarted)
+          .on('drag', dragged)
+          .on('end', dragended));
+
+      node.append('circle')
+        .attr('r', d => d.size)
+        .attr('fill', d => colors(d.group))
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 2);
+
+      node.append('text')
+        .attr('dy', d => d.size + 15)
+        .attr('text-anchor', 'middle')
+        .style('font-size', '11px')
+        .style('fill', '#333')
+        .text(d => d.name);
+
+      simulation.on('tick', () => {
+        link
+          .attr('x1', d => d.source.x)
+          .attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x)
+          .attr('y2', d => d.target.y);
+
+        node.attr('transform', d => `translate(${d.x},${d.y})`);
+      });
+
+      function dragstarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.3).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      }
+
+      function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+      }
+
+      function dragended(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      }
+
+      // 标题
+      svg.append('text')
+        .attr('x', 20)
+        .attr('y', 30)
+        .style('font-size', '16px')
+        .style('font-weight', 'bold')
+        .style('fill', '#333')
+        .text('关系网络图');
+    }
+
+    function clearForceChart() {
+      d3.select('#force-chart').selectAll('*').remove();
+      d3.select('#force-chart').append('div')
+        .attr('class', 'loading')
+        .text('点击"渲染力导向图"按钮加载...');
+    }
+  </script>
+</body>
+</html>

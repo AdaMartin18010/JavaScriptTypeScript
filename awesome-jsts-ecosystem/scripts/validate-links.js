@@ -1,552 +1,534 @@
 #!/usr/bin/env node
 
 /**
- * Link Validation Script
+ * validate-links.js
  * 
  * 功能：
- * 1. 批量检查 README 和 docs 中的所有外部链接
- * 2. 实现超时处理和重试机制
- * 3. 生成失效链接报告
+ * - 检查 README.md 中所有链接的可访问性
+ * - 报告失效链接及其位置
+ * - 支持重定向跟踪
+ * 
+ * 使用方法：
+ *   node validate-links.js [--timeout=<ms>] [--concurrency=<n>] [--output=<path>]
+ * 
+ * 选项：
+ *   --timeout=<ms>      请求超时时间（默认 10000ms）
+ *   --concurrency=<n>   并发请求数（默认 5）
+ *   --output=<path>     输出报告文件路径
+ *   --include-redirects 将重定向视为警告而非通过
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const fs = require('fs');
+const path = require('path');
+const https = require('https');
+const http = require('http');
+const { URL } = require('url');
 
 // 配置
 const CONFIG = {
-  // 检查配置
-  timeout: 30000,           // 单个请求超时 (ms)
-  retries: 3,               // 重试次数
-  retryDelay: 1000,         // 重试间隔 (ms)
-  concurrency: 10,          // 并发数
-  
-  // 文件配置
-  readmePath: 'README.md',
-  docsDir: 'docs',
-  logsDir: 'logs',
-  
-  // 检查范围
-  checkExternal: process.env.CHECK_EXTERNAL !== 'false',
-  checkAnchors: false,      // 是否检查锚点（较慢）
-  
-  // 跳过模式
-  skipPatterns: [
-    /^mailto:/,
-    /^#/,
-    /^javascript:/,
-    /localhost/,
-    /127\.0\.0\.1/,
-    /example\.com/,
-    /\.local($|\/)/,
-  ],
-  
-  // 允许的 HTTP 状态码（某些网站返回非标准状态码但实际可用）
-  allowedStatusCodes: [200, 201, 204, 301, 302, 303, 307, 308, 401, 403, 405, 429, 503],
-  
-  // 用户代理
-  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.0'
+  readmePath: path.join(__dirname, '..', 'README.md'),
+  timeout: 10000,
+  concurrency: 5,
+  retries: 2,
+  retryDelay: 1000,
 };
 
-// 日志工具
-class Logger {
-  constructor() {
-    this.logs = [];
-    this.logsDir = path.join(process.cwd(), CONFIG.logsDir);
-    this.ensureLogsDir();
-  }
+// 链接检查结果类型
+const STATUS = {
+  OK: 'ok',
+  WARNING: 'warning',
+  ERROR: 'error',
+  SKIPPED: 'skipped',
+};
+
+// 解析命令行参数
+function parseArgs() {
+  const args = {
+    timeout: CONFIG.timeout,
+    concurrency: CONFIG.concurrency,
+    output: null,
+    includeRedirects: process.argv.includes('--include-redirects'),
+  };
   
-  ensureLogsDir() {
-    if (!fs.existsSync(this.logsDir)) {
-      fs.mkdirSync(this.logsDir, { recursive: true });
+  process.argv.slice(2).forEach(arg => {
+    if (arg.startsWith('--timeout=')) {
+      args.timeout = parseInt(arg.split('=')[1], 10);
+    } else if (arg.startsWith('--concurrency=')) {
+      args.concurrency = parseInt(arg.split('=')[1], 10);
+    } else if (arg.startsWith('--output=')) {
+      args.output = arg.split('=')[1];
     }
-  }
+  });
   
-  log(level, message, data = null) {
-    const timestamp = new Date().toISOString();
-    const entry = { timestamp, level, message, data };
-    this.logs.push(entry);
-    
-    const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
-    console.log(`${prefix} ${message}`);
-    if (data && level === 'error') {
-      console.error(data);
-    }
-  }
-  
-  info(message, data) { this.log('info', message, data); }
-  warn(message, data) { this.log('warn', message, data); }
-  error(message, data) { this.log('error', message, data); }
-  debug(message, data) { this.log('debug', message, data); }
+  return args;
 }
 
-const logger = new Logger();
-
-// 链接信息类
-class LinkChecker {
-  constructor() {
-    this.results = {
-      total: 0,
-      ok: 0,
-      broken: 0,
-      skipped: 0,
-      errors: 0,
-      details: []
-    };
-    this.cache = new Map(); // 缓存检查结果
-  }
-  
-  // 检查是否需要跳过
-  shouldSkip(url) {
-    return CONFIG.skipPatterns.some(pattern => pattern.test(url));
-  }
-  
-  // 规范化 URL
-  normalizeUrl(url, basePath) {
-    // 处理相对路径
-    if (url.startsWith('./') || url.startsWith('../')) {
-      const baseDir = path.dirname(basePath);
-      return path.resolve(baseDir, url);
-    }
-    
-    // 处理根相对路径
-    if (url.startsWith('/')) {
-      return path.join(process.cwd(), url);
-    }
-    
-    return url;
-  }
-  
-  // 检查单个链接
-  async checkLink(linkInfo) {
-    const { url, text, file, line } = linkInfo;
-    const cacheKey = url;
-    
-    // 检查缓存
-    if (this.cache.has(cacheKey)) {
-      const cached = this.cache.get(cacheKey);
-      return { ...cached, file, line, text };
-    }
-    
-    // 跳过特定模式
-    if (this.shouldSkip(url)) {
-      this.results.skipped++;
-      const result = { url, status: 'skipped', ok: true };
-      this.cache.set(cacheKey, result);
-      return { ...result, file, line, text };
-    }
-    
-    // 本地文件检查
-    if (!url.startsWith('http')) {
-      return this.checkLocalFile(url, file, text, line);
-    }
-    
-    // 外部链接检查
-    if (!CONFIG.checkExternal) {
-      this.results.skipped++;
-      return { url, status: 'skipped_external', ok: true, file, line, text };
-    }
-    
-    return this.checkExternalLink(url, file, text, line);
-  }
-  
-  // 检查本地文件
-  async checkLocalFile(url, sourceFile, text, line) {
-    const normalizedPath = this.normalizeUrl(url, sourceFile);
-    
-    try {
-      const exists = fs.existsSync(normalizedPath);
-      const result = {
-        url,
-        normalizedPath,
-        status: exists ? 200 : 404,
-        ok: exists,
-        file: sourceFile,
-        line,
-        text
-      };
-      
-      if (exists) {
-        this.results.ok++;
-      } else {
-        this.results.broken++;
-        this.results.details.push(result);
-      }
-      
-      this.cache.set(url, { url, status: result.status, ok: result.ok });
-      return result;
-      
-    } catch (error) {
-      const result = {
-        url,
-        status: 'error',
-        error: error.message,
-        ok: false,
-        file: sourceFile,
-        line,
-        text
-      };
-      this.results.broken++;
-      this.results.details.push(result);
-      return result;
-    }
-  }
-  
-  // 检查外部链接
-  async checkExternalLink(url, sourceFile, text, line) {
-    let lastError = null;
-    
-    for (let attempt = 1; attempt <= CONFIG.retries; attempt++) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), CONFIG.timeout);
-        
-        const response = await fetch(url, {
-          method: 'HEAD',
-          signal: controller.signal,
-          headers: {
-            'User-Agent': CONFIG.userAgent,
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'DNT': '1',
-            'Connection': 'keep-alive',
-          },
-          redirect: 'follow'
-        });
-        
-        clearTimeout(timeoutId);
-        
-        const isOk = CONFIG.allowedStatusCodes.includes(response.status);
-        const result = {
-          url,
-          status: response.status,
-          statusText: response.statusText,
-          ok: isOk,
-          file: sourceFile,
-          line,
-          text,
-          attempts: attempt
-        };
-        
-        if (isOk) {
-          this.results.ok++;
-        } else {
-          this.results.broken++;
-          this.results.details.push(result);
-        }
-        
-        this.cache.set(url, { url, status: response.status, ok: isOk });
-        return result;
-        
-      } catch (error) {
-        lastError = error;
-        
-        if (error.name === 'AbortError') {
-          logger.debug(`Timeout checking ${url} (attempt ${attempt})`);
-        } else {
-          logger.debug(`Error checking ${url} (attempt ${attempt}): ${error.message}`);
-        }
-        
-        if (attempt < CONFIG.retries) {
-          await new Promise(resolve => setTimeout(resolve, CONFIG.retryDelay));
-        }
-      }
-    }
-    
-    // 所有重试失败
-    const result = {
-      url,
-      status: 'error',
-      error: lastError?.message || 'Unknown error',
-      ok: false,
-      file: sourceFile,
-      line,
-      text,
-      attempts: CONFIG.retries
-    };
-    
-    this.results.broken++;
-    this.results.details.push(result);
-    this.cache.set(url, { url, status: 'error', ok: false });
-    return result;
-  }
-  
-  // 批量检查链接（带并发控制）
-  async checkLinks(links) {
-    const results = [];
-    const queue = [...links];
-    
-    async function processBatch() {
-      while (queue.length > 0) {
-        const link = queue.shift();
-        const result = await this.checkLink(link);
-        results.push(result);
-        
-        // 每检查10个链接输出一次进度
-        if (results.length % 10 === 0) {
-          logger.info(`Progress: ${results.length}/${links.length} (${((results.length / links.length) * 100).toFixed(1)}%)`);
-        }
-      }
-    }
-    
-    // 启动并发 workers
-    const workers = Array(CONFIG.concurrency).fill().map(() => processBatch.call(this));
-    await Promise.all(workers);
-    
-    return results;
-  }
-}
-
-// 提取 Markdown 中的所有链接
-function extractLinks(filePath) {
-  const content = fs.readFileSync(filePath, 'utf8');
+// 提取所有链接
+function extractLinks(content) {
   const links = [];
   const lines = content.split('\n');
   
-  // 匹配 Markdown 链接 [text](url "title")
-  const mdLinkRegex = /\[([^\]]+)\]\(([^\s\)]+)(?:\s+"[^"]*")?\)/g;
-  
-  // 匹配裸链接
-  const bareLinkRegex = /<(https?:\/\/[^>]+)>/g;
-  
-  // 匹配 HTML 链接
-  const htmlLinkRegex = /<a[^>]+href=["']([^"']+)["'][^>]*>([^<]*)<\/a>/gi;
-  
-  // 匹配图片链接
+  // Markdown 链接 [text](url)
+  const markdownLinkRegex = /\[([^\]]*)\]\(([^)]+)\)/g;
+  // 裸 URL
+  const urlRegex = /(https?:\/\/[^\s\)\]<>"]+)/g;
+  // HTML 链接 <a href="url">
+  const htmlLinkRegex = /<a[^>]+href=["']([^"']+)["'][^>]*>/gi;
+  // 图片链接 ![alt](url)
   const imageLinkRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
   
-  lines.forEach((line, index) => {
-    const lineNum = index + 1;
+  lines.forEach((line, lineIndex) => {
+    const lineNumber = lineIndex + 1;
     
     // Markdown 链接
     let match;
-    while ((match = mdLinkRegex.exec(line)) !== null) {
-      links.push({
-        url: match[2],
-        text: match[1],
-        file: filePath,
-        line: lineNum,
-        type: 'markdown'
-      });
-    }
-    
-    // 裸链接
-    while ((match = bareLinkRegex.exec(line)) !== null) {
-      links.push({
-        url: match[1],
-        text: match[1],
-        file: filePath,
-        line: lineNum,
-        type: 'bare'
-      });
+    while ((match = markdownLinkRegex.exec(line)) !== null) {
+      const url = match[2].split(' ')[0]; // 移除可能的 title 属性
+      if (isExternalUrl(url)) {
+        links.push({
+          url,
+          text: match[1],
+          lineNumber,
+          type: 'markdown',
+        });
+      }
     }
     
     // HTML 链接
     while ((match = htmlLinkRegex.exec(line)) !== null) {
-      links.push({
-        url: match[1],
-        text: match[2] || match[1],
-        file: filePath,
-        line: lineNum,
-        type: 'html'
-      });
+      const url = match[1];
+      if (isExternalUrl(url)) {
+        links.push({
+          url,
+          text: '',
+          lineNumber,
+          type: 'html',
+        });
+      }
     }
     
-    // 图片链接（只检查 URL 有效性）
+    // 图片链接
     while ((match = imageLinkRegex.exec(line)) !== null) {
-      const imageUrl = match[2].split(' ')[0]; // 移除可能的标题
-      if (imageUrl.startsWith('http')) {
+      const url = match[2];
+      if (isExternalUrl(url)) {
         links.push({
-          url: imageUrl,
+          url,
           text: match[1] || 'image',
-          file: filePath,
-          line: lineNum,
-          type: 'image'
+          lineNumber,
+          type: 'image',
         });
       }
     }
   });
   
-  return links;
+  // 去重（基于 URL 和行号）
+  const seen = new Set();
+  return links.filter(link => {
+    const key = `${link.url}:${link.lineNumber}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
-// 获取所有 Markdown 文件
-function getMarkdownFiles(dir) {
-  const files = [];
-  
-  function scanDir(currentDir) {
-    if (!fs.existsSync(currentDir)) return;
+// 判断是否为外部 URL
+function isExternalUrl(url) {
+  return url.startsWith('http://') || url.startsWith('https://');
+}
+
+// 检查链接是否可访问
+function checkLink(link, timeout) {
+  return new Promise((resolve) => {
+    const url = new URL(link.url);
+    const client = url.protocol === 'https:' ? https : http;
     
-    const entries = fs.readdirSync(currentDir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = path.join(currentDir, entry.name);
-      if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
-        scanDir(fullPath);
-      } else if (entry.isFile() && entry.name.endsWith('.md')) {
-        files.push(fullPath);
+    const options = {
+      hostname: url.hostname,
+      path: url.pathname + url.search,
+      method: 'HEAD',
+      timeout: timeout,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': '*/*',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+      },
+      // 允许自签名证书（某些开发服务器）
+      rejectUnauthorized: false,
+    };
+    
+    const req = client.request(options, (res) => {
+      const statusCode = res.statusCode;
+      const finalUrl = res.headers.location || link.url;
+      
+      // 处理重定向
+      if (statusCode >= 300 && statusCode < 400 && res.headers.location) {
+        resolve({
+          ...link,
+          status: STATUS.WARNING,
+          statusCode,
+          message: `重定向到: ${res.headers.location}`,
+          finalUrl,
+        });
+        return;
+      }
+      
+      // 成功
+      if (statusCode >= 200 && statusCode < 300) {
+        resolve({
+          ...link,
+          status: STATUS.OK,
+          statusCode,
+          message: 'OK',
+          finalUrl,
+        });
+        return;
+      }
+      
+      // 客户端错误
+      if (statusCode >= 400 && statusCode < 500) {
+        // 某些服务器不允许 HEAD 请求，尝试 GET
+        if (statusCode === 405 || statusCode === 403) {
+          resolve(checkWithGet(link, timeout));
+          return;
+        }
+        
+        resolve({
+          ...link,
+          status: STATUS.ERROR,
+          statusCode,
+          message: `客户端错误: ${statusCode}`,
+          finalUrl,
+        });
+        return;
+      }
+      
+      // 服务器错误
+      resolve({
+        ...link,
+        status: STATUS.ERROR,
+        statusCode,
+        message: `服务器错误: ${statusCode}`,
+        finalUrl,
+      });
+    });
+    
+    req.on('error', (error) => {
+      resolve({
+        ...link,
+        status: STATUS.ERROR,
+        statusCode: null,
+        message: `请求失败: ${error.message}`,
+        finalUrl: link.url,
+      });
+    });
+    
+    req.on('timeout', () => {
+      req.destroy();
+      resolve({
+        ...link,
+        status: STATUS.ERROR,
+        statusCode: null,
+        message: '请求超时',
+        finalUrl: link.url,
+      });
+    });
+    
+    req.end();
+  });
+}
+
+// 使用 GET 方法检查（用于不支持 HEAD 的服务器）
+function checkWithGet(link, timeout) {
+  return new Promise((resolve) => {
+    const url = new URL(link.url);
+    const client = url.protocol === 'https:' ? https : http;
+    
+    const options = {
+      hostname: url.hostname,
+      path: url.pathname + url.search,
+      method: 'GET',
+      timeout: timeout,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': '*/*',
+      },
+    };
+    
+    const req = client.request(options, (res) => {
+      // 立即中止请求，我们只关心状态码
+      req.destroy();
+      
+      const statusCode = res.statusCode;
+      
+      if (statusCode >= 200 && statusCode < 300) {
+        resolve({
+          ...link,
+          status: STATUS.OK,
+          statusCode,
+          message: 'OK (GET)',
+          finalUrl: res.headers.location || link.url,
+        });
+      } else if (statusCode >= 300 && statusCode < 400) {
+        resolve({
+          ...link,
+          status: STATUS.WARNING,
+          statusCode,
+          message: `重定向: ${res.headers.location}`,
+          finalUrl: res.headers.location,
+        });
+      } else {
+        resolve({
+          ...link,
+          status: STATUS.ERROR,
+          statusCode,
+          message: `错误: ${statusCode}`,
+          finalUrl: link.url,
+        });
+      }
+    });
+    
+    req.on('error', (error) => {
+      resolve({
+        ...link,
+        status: STATUS.ERROR,
+        statusCode: null,
+        message: `GET 请求失败: ${error.message}`,
+        finalUrl: link.url,
+      });
+    });
+    
+    req.on('timeout', () => {
+      req.destroy();
+      resolve({
+        ...link,
+        status: STATUS.ERROR,
+        statusCode: null,
+        message: 'GET 请求超时',
+        finalUrl: link.url,
+      });
+    });
+    
+    req.end();
+  });
+}
+
+// 带重试的检查
+async function checkLinkWithRetry(link, timeout, retries, retryDelay) {
+  let lastResult;
+  
+  for (let i = 0; i <= retries; i++) {
+    lastResult = await checkLink(link, timeout);
+    
+    // 如果成功或者是客户端错误（4xx），不需要重试
+    if (lastResult.status === STATUS.OK || 
+        (lastResult.statusCode && lastResult.statusCode >= 400 && lastResult.statusCode < 500)) {
+      return lastResult;
+    }
+    
+    // 最后一次尝试，返回结果
+    if (i === retries) {
+      return lastResult;
+    }
+    
+    // 等待后重试
+    await new Promise(resolve => setTimeout(resolve, retryDelay));
+  }
+  
+  return lastResult;
+}
+
+// 并发执行检查
+async function checkLinksConcurrently(links, config) {
+  const results = [];
+  const queue = [...links];
+  
+  async function processBatch() {
+    while (queue.length > 0) {
+      const link = queue.shift();
+      const result = await checkLinkWithRetry(
+        link, 
+        config.timeout, 
+        CONFIG.retries, 
+        CONFIG.retryDelay
+      );
+      results.push(result);
+      
+      // 实时输出
+      const icon = result.status === STATUS.OK ? '✅' : 
+                   result.status === STATUS.WARNING ? '⚠️' : '❌';
+      console.log(`   ${icon} ${link.url.substring(0, 60)}${link.url.length > 60 ? '...' : ''}`);
+      
+      if (result.status !== STATUS.OK) {
+        console.log(`      ${result.message}`);
       }
     }
   }
   
-  scanDir(dir);
-  return files;
+  // 启动多个并发 worker
+  const workers = Array(config.concurrency).fill(null).map(processBatch);
+  await Promise.all(workers);
+  
+  return results;
 }
 
 // 生成报告
-function generateReport(checker) {
-  const { results } = checker;
+function generateReport(results, config) {
+  const ok = results.filter(r => r.status === STATUS.OK);
+  const warnings = results.filter(r => r.status === STATUS.WARNING);
+  const errors = results.filter(r => r.status === STATUS.ERROR);
   
-  const report = {
-    timestamp: new Date().toISOString(),
-    summary: {
-      total: results.total,
-      ok: results.ok,
-      broken: results.broken,
-      skipped: results.skipped,
-      successRate: results.total > 0 ? ((results.ok / results.total) * 100).toFixed(2) + '%' : '0%'
-    },
-    brokenLinks: results.details.filter(d => !d.ok)
-  };
+  let report = `# 🔗 链接检查报告\n\n`;
+  report += `生成时间：${new Date().toLocaleString('zh-CN')}\n\n`;
   
-  // 保存 JSON 报告
-  const reportPath = path.join(CONFIG.logsDir, 'link-validation-report.json');
-  fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-  logger.info(`JSON report saved to ${reportPath}`);
+  // 汇总
+  report += `## 📊 汇总\n\n`;
+  report += `- 总计链接：${results.length}\n`;
+  report += `- ✅ 正常：${ok.length}\n`;
+  report += `- ⚠️  警告：${warnings.length}\n`;
+  report += `- ❌ 错误：${errors.length}\n\n`;
   
-  // 生成 Markdown 报告
-  const mdReport = generateMarkdownReport(report);
-  const mdPath = path.join(CONFIG.logsDir, 'broken-links.md');
-  fs.writeFileSync(mdPath, mdReport);
-  logger.info(`Markdown report saved to ${mdPath}`);
+  // 错误详情
+  if (errors.length > 0) {
+    report += `## ❌ 失效链接\n\n`;
+    report += `| 链接 | 状态码 | 错误信息 | 行号 |\n`;
+    report += `|------|:------:|----------|:----:|\n`;
+    
+    errors.forEach(err => {
+      const shortUrl = err.url.length > 50 ? err.url.substring(0, 50) + '...' : err.url;
+      report += `| [${shortUrl}](${err.url}) | ${err.statusCode || '-'} | ${err.message} | ${err.lineNumber} |\n`;
+    });
+    
+    report += `\n`;
+  }
+  
+  // 警告详情
+  if (warnings.length > 0) {
+    report += `## ⚠️ 警告链接（重定向）\n\n`;
+    report += `| 链接 | 状态码 | 重定向目标 | 行号 |\n`;
+    report += `|------|:------:|------------|:----:|\n`;
+    
+    warnings.forEach(warn => {
+      const shortUrl = warn.url.length > 40 ? warn.url.substring(0, 40) + '...' : warn.url;
+      const shortFinal = warn.finalUrl && warn.finalUrl.length > 40 
+        ? warn.finalUrl.substring(0, 40) + '...' 
+        : warn.finalUrl;
+      report += `| [${shortUrl}](${warn.url}) | ${warn.statusCode} | ${shortFinal ? `[链接](${warn.finalUrl})` : '-'} | ${warn.lineNumber} |\n`;
+    });
+    
+    report += `\n`;
+  }
+  
+  // 正常链接（折叠）
+  if (ok.length > 0) {
+    report += `## ✅ 正常链接（${ok.length} 个）\n\n`;
+    report += `<details>\n<summary>点击查看</summary>\n\n`;
+    report += `| 链接 | 状态码 | 行号 |\n`;
+    report += `|------|:------:|:----:|\n`;
+    
+    ok.forEach(item => {
+      const shortUrl = item.url.length > 60 ? item.url.substring(0, 60) + '...' : item.url;
+      report += `| [${shortUrl}](${item.url}) | ${item.statusCode} | ${item.lineNumber} |\n`;
+    });
+    
+    report += `\n</details>\n`;
+  }
   
   return report;
 }
 
-// 生成 Markdown 格式报告
-function generateMarkdownReport(report) {
-  const lines = [
-    '# Link Validation Report',
-    '',
-    `**Generated:** ${new Date(report.timestamp).toLocaleString()}`,
-    '',
-    '## Summary',
-    '',
-    '| Metric | Count |',
-    '|--------|-------|',
-    `| Total Links | ${report.summary.total} |`,
-    `| ✅ OK | ${report.summary.ok} |`,
-    `| ❌ Broken | ${report.summary.broken} |`,
-    `| ⏭️ Skipped | ${report.summary.skipped} |`,
-    `| Success Rate | ${report.summary.successRate} |`,
-    '',
-    '## Broken Links',
-    ''
-  ];
-  
-  if (report.brokenLinks.length === 0) {
-    lines.push('*No broken links found! 🎉*');
-  } else {
-    lines.push('| URL | Status | File | Line | Text |');
-    lines.push('|-----|--------|------|------|------|');
-    
-    for (const link of report.brokenLinks) {
-      const status = link.error ? `Error: ${link.error}` : `${link.status} ${link.statusText || ''}`;
-      const file = link.file ? path.relative(process.cwd(), link.file) : 'N/A';
-      const line = link.line || '-';
-      const text = link.text ? (link.text.length > 30 ? link.text.substring(0, 30) + '...' : link.text) : '-';
-      const url = link.url.length > 60 ? link.url.substring(0, 60) + '...' : link.url;
-      
-      lines.push(`| \`${url}\` | ${status} | ${file} | ${line} | ${text} |`);
-    }
-  }
-  
-  return lines.join('\n');
-}
-
 // 主函数
 async function main() {
-  const startTime = Date.now();
-  logger.info('Starting link validation...');
+  console.log('🚀 开始检查链接...\n');
   
-  try {
-    const checker = new LinkChecker();
-    const allLinks = [];
-    
-    // 扫描 README
-    if (fs.existsSync(CONFIG.readmePath)) {
-      logger.info('Scanning README.md...');
-      const links = extractLinks(CONFIG.readmePath);
-      allLinks.push(...links);
-      logger.info(`Found ${links.length} links in README.md`);
-    }
-    
-    // 扫描 docs 目录
-    if (fs.existsSync(CONFIG.docsDir)) {
-      const docFiles = getMarkdownFiles(CONFIG.docsDir);
-      logger.info(`Found ${docFiles.length} markdown files in docs/`);
-      
-      for (const file of docFiles) {
-        const links = extractLinks(file);
-        allLinks.push(...links);
-      }
-    }
-    
-    // 去重
-    const uniqueLinks = [];
-    const seen = new Set();
-    for (const link of allLinks) {
-      const key = `${link.url}:${link.file}:${link.line}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        uniqueLinks.push(link);
-      }
-    }
-    
-    checker.results.total = uniqueLinks.length;
-    logger.info(`Total unique links to check: ${uniqueLinks.length}`);
-    
-    if (uniqueLinks.length === 0) {
-      logger.info('No links found to validate');
-      process.exit(0);
-    }
-    
-    // 执行检查
-    logger.info('Checking links...');
-    await checker.checkLinks(uniqueLinks);
-    
-    // 生成报告
-    const report = generateReport(checker);
-    
-    // 输出摘要
-    const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-    logger.info(`Validation completed in ${duration}s`);
-    logger.info(`Results: ${report.summary.ok} OK, ${report.summary.broken} Broken, ${report.summary.skipped} Skipped`);
-    logger.info(`Success rate: ${report.summary.successRate}`);
-    
-    // 设置 GitHub Actions 输出
-    if (process.env.GITHUB_OUTPUT) {
-      fs.appendFileSync(process.env.GITHUB_OUTPUT, `broken_count=${report.summary.broken}\n`);
-      fs.appendFileSync(process.env.GITHUB_OUTPUT, `total_count=${report.summary.total}\n`);
-    }
-    
-    // 如果有失效链接，设置失败退出码（除非环境变量指定不失败）
-    if (report.summary.broken > 0 && process.env.FAIL_ON_ERROR !== 'false') {
-      logger.error(`${report.summary.broken} broken link(s) found`);
-      process.exit(1);
-    }
-    
-  } catch (error) {
-    logger.error('Validation failed', error.stack);
+  const args = parseArgs();
+  
+  // 读取 README.md
+  console.log(`📖 读取 ${CONFIG.readmePath}...`);
+  if (!fs.existsSync(CONFIG.readmePath)) {
+    console.error(`❌ 错误：找不到文件 ${CONFIG.readmePath}`);
+    process.exit(1);
+  }
+  
+  const content = fs.readFileSync(CONFIG.readmePath, 'utf-8');
+  
+  // 提取链接
+  console.log('🔗 提取链接...');
+  const links = extractLinks(content);
+  console.log(`   找到 ${links.length} 个外部链接\n`);
+  
+  if (links.length === 0) {
+    console.log('⚠️  未找到任何外部链接');
+    return;
+  }
+  
+  // 显示链接列表
+  console.log('📋 链接列表：');
+  links.slice(0, 10).forEach(link => {
+    const shortUrl = link.url.length > 60 ? link.url.substring(0, 60) + '...' : link.url;
+    console.log(`   - ${shortUrl} (第 ${link.lineNumber} 行)`);
+  });
+  if (links.length > 10) {
+    console.log(`   ... 还有 ${links.length - 10} 个链接`);
+  }
+  console.log('');
+  
+  // 检查链接
+  console.log(`🔍 开始检查链接（超时: ${args.timeout}ms, 并发: ${args.concurrency}）...\n`);
+  const startTime = Date.now();
+  const results = await checkLinksConcurrently(links, args);
+  const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+  
+  console.log(`\n⏱️  检查完成，耗时 ${duration} 秒\n`);
+  
+  // 生成报告
+  console.log('📝 生成报告...');
+  const report = generateReport(results, args);
+  
+  // 输出到文件
+  if (args.output) {
+    fs.writeFileSync(args.output, report, 'utf-8');
+    console.log(`   ✅ 报告已保存到 ${args.output}`);
+  }
+  
+  // 控制台输出摘要
+  const ok = results.filter(r => r.status === STATUS.OK);
+  const warnings = results.filter(r => r.status === STATUS.WARNING);
+  const errors = results.filter(r => r.status === STATUS.ERROR);
+  
+  console.log('\n📊 检查结果摘要：');
+  console.log(`   ✅ 正常: ${ok.length}`);
+  console.log(`   ⚠️  警告: ${warnings.length}`);
+  console.log(`   ❌ 错误: ${errors.length}`);
+  
+  // 如果有错误，显示详细信息
+  if (errors.length > 0) {
+    console.log('\n❌ 失效链接详情：');
+    errors.forEach(err => {
+      console.log(`   - 第 ${err.lineNumber} 行: ${err.url}`);
+      console.log(`     ${err.message}`);
+    });
+  }
+  
+  // 如果有警告且 include-redirects 为 true
+  if (args.includeRedirects && warnings.length > 0) {
+    console.log('\n⚠️  重定向警告：');
+    warnings.forEach(warn => {
+      console.log(`   - 第 ${warn.lineNumber} 行: ${warn.url}`);
+      console.log(`     -> ${warn.finalUrl}`);
+    });
+  }
+  
+  console.log('\n✨ 完成！');
+  
+  // 如果有错误，以非零状态退出
+  if (errors.length > 0) {
     process.exit(1);
   }
 }
 
-// 运行主函数
+// 错误处理
 main().catch(error => {
-  console.error('Unhandled error:', error);
+  console.error('❌ 发生错误:', error);
   process.exit(1);
 });

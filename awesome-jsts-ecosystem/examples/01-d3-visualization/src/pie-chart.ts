@@ -176,11 +176,11 @@ export function createPieChart(
 
   // 添加扇形路径
   const paths = arcs.append('path')
-    .attr('fill', (d, i) => d.data.color || colorScale(d.data.label))
+    .attr('fill', (d) => d.data.color || colorScale(d.data.label))
     .attr('stroke', '#fff')
     .attr('stroke-width', 2)
     .style('cursor', 'pointer')
-    .each(function(d) {
+    .each(function() {
       // 保存初始角度用于动画
       (this as any)._current = { startAngle: 0, endAngle: 0, padAngle: 0 };
     });
@@ -200,7 +200,8 @@ export function createPieChart(
 
   // 交互效果
   paths
-    .on('mouseenter', function(event: MouseEvent, d: PieArcData) {
+    .on('mouseenter', function() {
+      const arcData = d3.select(this).datum() as PieArcData;
       // 扇形放大
       d3.select(this)
         .transition()
@@ -208,14 +209,14 @@ export function createPieChart(
         .attr('d', arcHover as any);
 
       // 计算百分比
-      const percentage = ((d.data.value / totalValue) * 100).toFixed(1);
+      const percentage = ((arcData.data.value / totalValue) * 100).toFixed(1);
 
       // 显示提示框
       tooltip
         .style('visibility', 'visible')
         .html(`
-          <div style="font-weight: bold; margin-bottom: 4px;">${d.data.label}</div>
-          <div>数值: ${d.data.value}</div>
+          <div style="font-weight: bold; margin-bottom: 4px;">${arcData.data.label}</div>
+          <div>数值: ${arcData.data.value}</div>
           <div>占比: ${percentage}%</div>
         `);
     })
@@ -224,7 +225,7 @@ export function createPieChart(
         .style('top', `${event.pageY - 10}px`)
         .style('left', `${event.pageX + 10}px`);
     })
-    .on('mouseleave', function(event: MouseEvent, d: PieArcData) {
+    .on('mouseleave', function() {
       // 恢复扇形大小
       d3.select(this)
         .transition()
@@ -234,9 +235,11 @@ export function createPieChart(
       // 隐藏提示框
       tooltip.style('visibility', 'hidden');
     })
-    .on('click', function(event: MouseEvent, d: PieArcData) {
+    .on('click', function() {
+      const arcData = d3.select(this).datum() as PieArcData;
       // 点击效果
       const isSelected = d3.select(this).classed('selected');
+      void arcData;
       
       // 重置所有扇形
       paths
@@ -255,12 +258,12 @@ export function createPieChart(
           .attr('d', arcHover as any);
 
         // 降低其他扇形透明度
-        paths.filter((p: PieArcData) => p.data.label !== d.data.label)
+        paths.filter((p: PieArcData) => p.data.label !== arcData.data.label)
           .style('opacity', 0.6);
 
         // 触发回调
         if (onSliceClick) {
-          onSliceClick(d.data, d.index);
+          onSliceClick(arcData.data, arcData.index);
         }
       }
     });
@@ -287,6 +290,7 @@ export function createPieChart(
       .delay(animationDuration * 0.5)
       .duration(500)
       .style('opacity', 1);
+    void labelArc;
   }
 
   // 环形图中心文字（可选）
@@ -335,7 +339,7 @@ export function createPieChart(
       .enter()
       .append('g')
       .attr('class', 'legend-item')
-      .attr('transform', (d, i) => {
+      .attr('transform', (_, i) => {
         if (legendPosition === 'right') {
           return `translate(0, ${i * 25})`;
         } else {
@@ -351,7 +355,7 @@ export function createPieChart(
       .attr('width', 15)
       .attr('height', 15)
       .attr('rx', 3)
-      .attr('fill', (d, i) => d.color || colorScale(d.label));
+      .attr('fill', (d) => d.color || colorScale(d.label));
 
     legendItems.append('text')
       .attr('x', 20)
@@ -362,7 +366,8 @@ export function createPieChart(
 
     // 图例交互
     legendItems
-      .on('mouseenter', function(event: MouseEvent, d: PieChartData) {
+      .on('mouseenter', function() {
+        const d = d3.select(this).datum() as PieChartData;
         // 高亮对应扇形
         paths
           .transition()
@@ -375,7 +380,8 @@ export function createPieChart(
           .duration(200)
           .style('opacity', 1);
       })
-      .on('click', function(event: MouseEvent, d: PieChartData) {
+      .on('click', function() {
+        const d = d3.select(this).datum() as PieChartData;
         const arcData = pie(data).find(p => p.data.label === d.label);
         if (arcData && onSliceClick) {
           onSliceClick(d, arcData.index);
