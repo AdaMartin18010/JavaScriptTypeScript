@@ -1,0 +1,241 @@
+{
+  "generatedAt": "2026-04-04T09:59:21.483Z",
+  "totalPackages": 47,
+  "stats": {
+    "express": {
+      "weekly": 87547333,
+      "monthly": 390679528,
+      "lastUpdated": "2026-04-04"
+    },
+    "@nestjs/core": {
+      "weekly": 8068597,
+      "monthly": 35895524,
+      "lastUpdated": "2026-04-04"
+    },
+    "hono": {
+      "weekly": 31677160,
+      "monthly": 135369345,
+      "lastUpdated": "2026-04-04"
+    },
+    "koa": {
+      "weekly": 6351629,
+      "monthly": 29456568,
+      "lastUpdated": "2026-04-04"
+    },
+    "fastify": {
+      "weekly": 5601643,
+      "monthly": 25359910,
+      "lastUpdated": "2026-04-04"
+    },
+    "@remix-run/core": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-04"
+    },
+    "elysia": {
+      "weekly": 433252,
+      "monthly": 1823576,
+      "lastUpdated": "2026-04-04"
+    },
+    "@sveltejs/kit": {
+      "weekly": 1883929,
+      "monthly": 7260817,
+      "lastUpdated": "2026-04-04"
+    },
+    "nuxt": {
+      "weekly": 1359035,
+      "monthly": 6171953,
+      "lastUpdated": "2026-04-04"
+    },
+    "next": {
+      "weekly": 44002607,
+      "monthly": 165961312,
+      "lastUpdated": "2026-04-04"
+    },
+    "esbuild": {
+      "weekly": 165092063,
+      "monthly": 646399802,
+      "lastUpdated": "2026-04-04"
+    },
+    "typescript": {
+      "weekly": 163218894,
+      "monthly": 681486601,
+      "lastUpdated": "2026-04-04"
+    },
+    "astro": {
+      "weekly": 1869786,
+      "monthly": 7749192,
+      "lastUpdated": "2026-04-04"
+    },
+    "vite": {
+      "weekly": 91209857,
+      "monthly": 355936129,
+      "lastUpdated": "2026-04-04"
+    },
+    "@swc/core": {
+      "weekly": 35204099,
+      "monthly": 119758859,
+      "lastUpdated": "2026-04-04"
+    },
+    "jest": {
+      "weekly": 43763617,
+      "monthly": 196335097,
+      "lastUpdated": "2026-04-04"
+    },
+    "vitest": {
+      "weekly": 43167382,
+      "monthly": 185168461,
+      "lastUpdated": "2026-04-04"
+    },
+    "cypress": {
+      "weekly": 6877512,
+      "monthly": 32070722,
+      "lastUpdated": "2026-04-04"
+    },
+    "rollup": {
+      "weekly": 93661567,
+      "monthly": 403619502,
+      "lastUpdated": "2026-04-04"
+    },
+    "@playwright/test": {
+      "weekly": 31462944,
+      "monthly": 128326212,
+      "lastUpdated": "2026-04-04"
+    },
+    "mocha": {
+      "weekly": 13674732,
+      "monthly": 61153340,
+      "lastUpdated": "2026-04-04"
+    },
+    "@prisma/client": {
+      "weekly": 8238717,
+      "monthly": 35305217,
+      "lastUpdated": "2026-04-04"
+    },
+    "drizzle-orm": {
+      "weekly": 6771317,
+      "monthly": 27150461,
+      "lastUpdated": "2026-04-04"
+    },
+    "typeorm": {
+      "weekly": 3738576,
+      "monthly": 16958776,
+      "lastUpdated": "2026-04-04"
+    },
+    "sequelize": {
+      "weekly": 2513488,
+      "monthly": 11783013,
+      "lastUpdated": "2026-04-04"
+    },
+    "lodash": {
+      "weekly": 131396624,
+      "monthly": 556650553,
+      "lastUpdated": "2026-04-04"
+    },
+    "dayjs": {
+      "weekly": 41343743,
+      "monthly": 183459651,
+      "lastUpdated": "2026-04-04"
+    },
+    "date-fns": {
+      "weekly": 66741571,
+      "monthly": 257856186,
+      "lastUpdated": "2026-04-04"
+    },
+    "ramda": {
+      "weekly": 12394530,
+      "monthly": 58388476,
+      "lastUpdated": "2026-04-04"
+    },
+    "mongoose": {
+      "weekly": 4407762,
+      "monthly": 19833823,
+      "lastUpdated": "2026-04-04"
+    },
+    "@trpc/server": {
+      "weekly": 2710106,
+      "monthly": 11627047,
+      "lastUpdated": "2026-04-04"
+    },
+    "redux": {
+      "weekly": 27925269,
+      "monthly": 122876786,
+      "lastUpdated": "2026-04-04"
+    },
+    "jotai": {
+      "weekly": 3350229,
+      "monthly": 14469826,
+      "lastUpdated": "2026-04-04"
+    },
+    "zod": {
+      "weekly": 139490922,
+      "monthly": 552970520,
+      "lastUpdated": "2026-04-04"
+    },
+    "zustand": {
+      "weekly": 29602264,
+      "monthly": 122953107,
+      "lastUpdated": "2026-04-04"
+    },
+    "pinia": {
+      "weekly": 3243578,
+      "monthly": 14607319,
+      "lastUpdated": "2026-04-04"
+    },
+    "@mui/material": {
+      "weekly": 7922591,
+      "monthly": 35925365,
+      "lastUpdated": "2026-04-04"
+    },
+    "@chakra-ui/react": {
+      "weekly": 1182975,
+      "monthly": 5336145,
+      "lastUpdated": "2026-04-04"
+    },
+    "antd": {
+      "weekly": 2933320,
+      "monthly": 12277593,
+      "lastUpdated": "2026-04-04"
+    },
+    "@tanstack/react-query": {
+      "weekly": 37043911,
+      "monthly": 130158144,
+      "lastUpdated": "2026-04-04"
+    },
+    "eslint": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-04"
+    },
+    "prettier": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-04"
+    },
+    "tsx": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-04"
+    },
+    "biome": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-04"
+    },
+    "@shadcn/ui": {
+      "weekly": 94732,
+      "monthly": 404663,
+      "lastUpdated": "2026-04-04"
+    },
+    "nodemon": {
+      "weekly": 11445710,
+      "monthly": 51292831,
+      "lastUpdated": "2026-04-04"
+    },
+    "pm2": {
+      "weekly": 2600069,
+      "monthly": 11276433,
+      "lastUpdated": "2026-04-04"
+    }
+  }
+}
