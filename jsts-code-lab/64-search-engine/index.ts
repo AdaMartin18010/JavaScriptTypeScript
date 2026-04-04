@@ -9,3 +9,6 @@
  */
 
 export * as SearchImplementation from './search-implementation.js';
+export * as FullTextSearch from './full-text-search.js';
+export * as FacetedSearch from './faceted-search.js';
+export * as SearchSuggestions from './search-suggestions.js';

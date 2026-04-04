@@ -6,6 +6,7 @@
  * - 服务调度
  * - 健康检查
  * - 自动扩缩容
+ * - 服务发现
  */
 
 export * as OrchestrationEngine from './orchestration-engine.js';

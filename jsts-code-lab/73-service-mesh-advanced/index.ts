@@ -3,8 +3,9 @@
  * @module Service Mesh Advanced
  * @description
  * 高级服务网格：
- * - 流量管理
- * - 安全通信
+ * - Sidecar 代理
+ * - 流量管理（金丝雀、A/B测试）
+ * - 安全通信（mTLS）
  * - 可观测性
  */
 

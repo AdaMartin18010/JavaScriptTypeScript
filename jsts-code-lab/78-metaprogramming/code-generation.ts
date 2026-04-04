@@ -33,7 +33,7 @@ export interface CodeGeneratorOptions {
 export class CodeGenerator {
   private code: string[] = [];
   private indentLevel = 0;
-  private options: CodeGeneratorOptions;
+  protected options: CodeGeneratorOptions;
 
   constructor(options: Partial<CodeGeneratorOptions> = {}) {
     this.options = {
@@ -291,7 +291,7 @@ export class TypeScriptGenerator extends CodeGenerator {
             if (p.defaultValue && !p.optional) {
               param += ` = ${p.defaultValue}`;
             }
-            param += `: ' + p.type;
+            param += ': ' + p.type;
             return param;
           }).join(', ');
 
@@ -326,7 +326,7 @@ export class TypeScriptGenerator extends CodeGenerator {
       if (p.defaultValue) {
         param += ` = ${p.defaultValue}`;
       }
-      param += `: ' + p.type;
+      param += ': ' + p.type;
       return param;
     }).join(', ');
 
