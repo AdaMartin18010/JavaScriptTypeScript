@@ -1,597 +1,498 @@
-# 构建工具生态 (Build Tools Ecosystem)
+# 构建工具全景
 
-> 构建工具是前端工程化的核心基础设施，决定着开发体验、构建速度和输出质量。
+> 数据更新时间：2025年4月
 
----
-
-## 📊 生态概览
-
-| 趋势 | 说明 |
-|------|------|
-| **Vite 崛起** | 以极速冷启动和HMR取代 Webpack 成为新项目首选 |
-| **Rust/Go 化** | esbuild、swc、Turbopack 用系统语言重写给 JS 工具链带来数量级性能提升 |
-| **工具链整合** | bun 将运行时、包管理器、构建工具、测试框架整合为一体 |
-| **Monorepo 成熟** | Turborepo、Nx 提供成熟的 Monorepo 任务编排和缓存方案 |
+JavaScript/TypeScript 生态的构建工具经历了从 Webpack 一统天下到百花齐放的发展过程。现代构建工具追求**极速构建**、**原生 ESM 支持**和**TypeScript 开箱即用**。
 
 ---
 
-## 1. 现代构建工具
+## 主流构建工具对比
 
-### Vite
-| 属性 | 详情 |
-|------|------|
-| ⭐ Stars | 69k+ |
-| 🔧 TS 支持 | ✅ 原生支持 |
-| 👥 维护团队 | Vue 团队 (Evan You) |
-| 🏠 官网 | https://vitejs.dev/ |
-| 📦 GitHub | https://github.com/vitejs/vite |
-
-**特点：**
-- 开发阶段基于原生 ESM，无需打包，极速冷启动
-- 生产阶段使用 Rollup 打包，优化输出
-- 开箱即用的 TypeScript、JSX、CSS 支持
-- 热更新 (HMR) 速度极快，与模块数量无关
-- 丰富的插件生态，兼容 Rollup 插件
-
-**适用场景：**
-- 现代前端项目开发（Vue、React、Svelte 等）
-- 需要极速开发体验的项目
-- 库开发和应用开发均可
+| 工具 | ⭐ Stars | 语言 | TS支持 | 定位 | 适用场景 |
+|------|---------|------|--------|------|----------|
+| [Vite](https://vitejs.dev/) | 72k+ | TypeScript | ✅ 原生 | 下一代前端工具 | 现代 Web 应用 |
+| [Webpack](https://webpack.js.org/) | 65k+ | JavaScript | ⚠️ 需配置 | 模块打包器 | 复杂企业级项目 |
+| [Rollup](https://rollupjs.org/) | 26k+ | JavaScript | ⚠️ 需插件 | ES模块打包器 | 库/组件开发 |
+| [esbuild](https://esbuild.github.io/) | 39k+ | Go | ✅ 内置 | 极速打包器 | 构建脚本、CI |
+| [Turbopack](https://turbo.build/) | 27.5k+ | Rust | ✅ 原生 | Next.js 御用 | Next.js 项目 |
+| [Parcel](https://parceljs.org/) | 43k+ | JavaScript | ✅ 零配置 | 零配置打包器 | 快速原型开发 |
+| [Rspack](https://www.rspack.dev/) | 11.5k+ | Rust | ✅ 内置 | Webpack 替代 | 迁移 Webpack 项目 |
+| [Farm](https://www.farmfe.org/) | 8k+ | Rust | ✅ 内置 | 极速构建引擎 | 现代化项目 |
+| [Bun](https://bun.sh/) | 88k+ | Zig | ✅ 原生 | 全功能 JS 运行时 | 全栈开发 |
+| [Rolldown](https://rolldown.rs/) | 11k+ | Rust | ✅ 内置 | Rollup 替代 | 库开发（未来） |
 
 ---
 
-### Webpack
-| 属性 | 详情 |
-|------|------|
-| ⭐ Stars | 64k+ |
-| 🔧 TS 支持 | ✅ ts-loader / babel-loader |
-| 👥 维护团队 | OpenJS Foundation |
-| 🏠 官网 | https://webpack.js.org/ |
-| 📦 GitHub | https://github.com/webpack/webpack |
+## 主流构建工具详解
 
-**特点：**
-- 生态最丰富，loader 和 plugin 数量庞大
-- 配置灵活，几乎可以处理任何构建需求
-- 支持代码分割、Tree Shaking、懒加载
-- 成熟稳定，企业级项目广泛采用
-- 配置相对复杂，学习曲线较陡
+### Vite ⚡
 
-**适用场景：**
-- 大型复杂项目
-- 需要深度定制构建流程
-- 遗留项目维护
-- 对构建产物有精细控制需求
+> ⭐ 72k+ | 下一代前端工具链
 
----
+**核心优势：**
+- 开发时使用原生 ESM，无需打包，冷启动极快
+- 生产构建基于 Rollup，输出高度优化
+- 开箱即用的 TypeScript 支持
+- 丰富的插件生态，与 Rollup 插件兼容
 
-### Rollup
-| 属性 | 详情 |
-|------|------|
-| ⭐ Stars | 25k+ |
-| 🔧 TS 支持 | ✅ rollup-plugin-typescript2 |
-| 👥 维护团队 | Rich Harris 等 |
-| 🏠 官网 | https://rollupjs.org/ |
-| 📦 GitHub | https://github.com/rollup/rollup |
+**TS 支持度：** ⭐⭐⭐⭐⭐ 完美
+- 原生支持 `.ts` 文件
+- 支持类型导入/导出
+- 内置 TSX/JSX 支持
+- 类型检查可配置（生产环境建议配合 `tsc --noEmit`）
 
-**特点：**
-- 专注于 ES Module 打包，输出更干净的代码
-- Tree Shaking 效果出色
-- 天然支持 ESM、CJS、UMD、IIFE 等多种输出格式
-- 配置相对简单，适合库开发
-- 插件生态丰富
+```bash
+# 快速开始
+npm create vite@latest my-app -- --template vue-ts
+npm create vite@latest my-app -- --template react-ts
+npm create vite@latest my-app -- --template vanilla-ts
+```
 
-**适用场景：**
-- JavaScript 库/框架打包
-- 需要输出多种模块格式的场景
-- 对包体积敏感的项目
+**适用场景：** 现代 Web 应用、SPA、SSR 项目
 
 ---
 
-### esbuild
-| 属性 | 详情 |
-|------|------|
-| ⭐ Stars | 38k+ |
-| 🔧 TS 支持 | ✅ 原生支持 |
-| 👥 维护团队 | Evan Wallace |
-| 🏠 官网 | https://esbuild.github.io/ |
-| 📦 GitHub | https://github.com/evanw/esbuild |
+### Webpack 📦
 
-**特点：**
-- Go 语言编写，编译速度极快（比 Webpack 快 10-100 倍）
-- 原生支持 TypeScript、JSX 转译
-- 支持 Tree Shaking、代码压缩、Source Map
-- 单文件无依赖，安装体积小
-- 插件系统相对简单
+> ⭐ 65k+ | 模块打包器鼻祖
 
-**适用场景：**
-- 需要极速构建的开发工具链
-- 大型代码库的快速转译
-- 作为其他工具的底层引擎（如 Vite 开发模式）
+**核心优势：**
+- 生态最成熟，插件/加载器丰富
+- 高度可配置，灵活处理各种资源
+- Webpack 5 引入持久缓存和 Module Federation
+- 企业级项目首选
 
----
+**TS 支持度：** ⭐⭐⭐ 良好（需配置）
+- 需配置 `ts-loader` 或 `babel-loader` + `@babel/preset-typescript`
+- 推荐使用 `fork-ts-checker-webpack-plugin` 进行类型检查
 
-### swc
-| 属性 | 详情 |
-|------|------|
-| ⭐ Stars | 31k+ |
-| 🔧 TS 支持 | ✅ 原生支持 |
-| 👥 维护团队 | Vercel / kdy1 |
-| 🏠 官网 | https://swc.rs/ |
-| 📦 GitHub | https://github.com/swc-project/swc |
+```js
+// webpack.config.js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js'],
+  },
+};
+```
 
-**特点：**
-- Rust 编写，Babel 的高性能替代品
-- 支持 TypeScript、JSX、最新 ECMAScript 特性
-- 可用于编译和代码压缩 (minify)
-- 与 Babel 生态兼容，可逐步迁移
-- 被 Next.js、Parcel、Deno 等工具采用
-
-**适用场景：**
-- 替代 Babel 进行代码转译
-- 需要高性能编译的大型项目
-- 与 Next.js 等框架配合使用
+**适用场景：** 复杂企业级应用、需要精细控制的场景
 
 ---
 
-### Turbopack
-| 属性 | 详情 |
-|------|------|
-| ⭐ Stars | 26k+ |
-| 🔧 TS 支持 | ✅ 原生支持 |
-| 👥 维护团队 | Vercel / Next.js 团队 |
-| 🏠 官网 | https://turbo.build/pack |
-| 📦 GitHub | https://github.com/vercel/turbopack |
+### Rollup 📜
 
-**特点：**
-- Rust 编写，定位为 Webpack 继任者
-- 增量编译架构，大型项目 HMR 速度极快
-- 原生支持 TypeScript、JSX、CSS、CSS Modules
+> ⭐ 26k+ | ES 模块打包专家
+
+**核心优势：**
+- 输出更简洁、更高效的 ES 模块
+- Tree Shaking 效果更好
+- 库开发的标准选择
+
+**TS 支持度：** ⭐⭐⭐ 良好（需插件）
+- 使用 `@rollup/plugin-typescript` 或 `rollup-plugin-ts`
+
+```js
+// rollup.config.js
+import typescript from '@rollup/plugin-typescript';
+
+export default {
+  input: 'src/index.ts',
+  output: [
+    { file: 'dist/index.cjs', format: 'cjs' },
+    { file: 'dist/index.mjs', format: 'es' },
+  ],
+  plugins: [typescript()],
+};
+```
+
+**适用场景：** 库/组件开发、npm 包发布
+
+---
+
+### esbuild 🚀
+
+> ⭐ 39k+ | 极速 Go 编写打包器
+
+**核心优势：**
+- 比传统工具快 10-100 倍
+- 内置 TypeScript、TSX、JSX 支持
+- 单一可执行文件，无依赖
+
+**TS 支持度：** ⭐⭐⭐⭐⭐ 完美
+- 原生支持 TypeScript（仅转译，不类型检查）
+- 需要类型检查需配合 `tsc --noEmit`
+
+```bash
+# 命令行使用
+esbuild src/index.ts --bundle --outfile=dist/index.js --platform=node
+
+# 代码中使用
+import { build } from 'esbuild';
+await build({
+  entryPoints: ['src/index.ts'],
+  bundle: true,
+  outfile: 'dist/index.js',
+  platform: 'node',
+});
+```
+
+**适用场景：** 构建脚本、CI/CD、工具开发
+
+---
+
+### Turbopack ⚡
+
+> ⭐ 27.5k+ | Vercel 出品，Next.js 御用
+
+**核心优势：**
+- Rust 编写，号称比 Webpack 快 700 倍
+- 增量编译，HMR 极速
 - 与 Next.js 深度集成
-- 开发中，尚未完全成熟
 
-**适用场景：**
-- Next.js 13+ 项目
-- 超大型前端应用
-- 对 HMR 速度有极致要求
+**TS 支持度：** ⭐⭐⭐⭐⭐ 完美
+- 原生支持 TypeScript
+- 内置 SWC 进行转译
 
----
+```bash
+# Next.js 中使用
+next dev --turbo
+```
 
-### Parcel
-| 属性 | 详情 |
-|------|------|
-| ⭐ Stars | 43k+ |
-| 🔧 TS 支持 | ✅ 零配置支持 |
-| 👥 维护团队 | Parcel 团队 |
-| 🏠 官网 | https://parceljs.org/ |
-| 📦 GitHub | https://github.com/parcel-bundler/parcel |
-
-**特点：**
-- 真正的零配置，开箱即用
-- 自动检测依赖关系，智能打包
-- 内置对 TypeScript、JSX、CSS、图片等资源的支持
-- 使用 swc 进行快速编译
-- 支持 HMR 和代码分割
-
-**适用场景：**
-- 快速原型开发
-- 不喜欢配置构建工具的团队
-- 中小型项目
+**适用场景：** Next.js 项目（目前主要场景）
 
 ---
 
-### Farm
-| 属性 | 详情 |
-|------|------|
-| ⭐ Stars | 11k+ |
-| 🔧 TS 支持 | ✅ 原生支持 |
-| 👥 维护团队 | 国产开源 (farm-fe) |
-| 🏠 官网 | https://www.farmfe.org/ |
-| 📦 GitHub | https://github.com/farm-fe/farm |
+### Parcel 📦
 
-**特点：**
-- Rust 编写的极速构建工具
+> ⭐ 43k+ | 零配置打包器
+
+**核心优势：**
+- 真正零配置，开箱即用
+- 内置对多种语言的转换支持
+- 自动代码分割
+
+**TS 支持度：** ⭐⭐⭐⭐⭐ 完美
+- 零配置支持 TypeScript
+- 自动检测 `tsconfig.json`
+
+```bash
+# 零配置启动
+parcel src/index.html
+```
+
+**适用场景：** 快速原型、小型项目
+
+---
+
+### Rspack 🦀
+
+> ⭐ 11.5k+ | 字节跳动出品，Webpack 替代
+
+**核心优势：**
+- Rust 编写，性能媲美 esbuild
+- 兼容 Webpack 配置和生态
+- 平滑迁移现有 Webpack 项目
+- 内置 SWC，转译速度极快
+
+**TS 支持度：** ⭐⭐⭐⭐⭐ 完美
+- 内置 TypeScript 支持
+- 兼容 `ts-loader` 配置
+
+```js
+// rspack.config.js (与 webpack 配置兼容)
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: 'builtin:swc-loader', // 使用内置 SWC
+      },
+    ],
+  },
+};
+```
+
+**适用场景：** 从 Webpack 迁移、追求性能的企业项目
+
+---
+
+### Farm 🌾
+
+> ⭐ 8k+ | Rust 编写极速构建
+
+**核心优势：**
+- 基于 Rust 的极速编译
 - 兼容 Vite 插件生态
-- 支持 Webpack 的 loader 和 plugin
-- 统一的插件系统，同时支持 Rust 和 JS 插件
-- 编译速度比 Webpack 快 20 倍以上
+- 支持增量构建
 
-**适用场景：**
-- 需要极速构建的国内项目
-- 希望从 Webpack 迁移但保留生态
-- 对构建工具有国产化要求的场景
+**TS 支持度：** ⭐⭐⭐⭐⭐ 完美
+- 原生 TypeScript 支持
 
----
+```bash
+# 快速开始
+npm create farm@latest
+```
 
-## 2. 类型检查与编译
-
-### TypeScript Compiler (tsc)
-| 属性 | 详情 |
-|------|------|
-| 🔧 TS 支持 | ✅ 官方实现 |
-| 👥 维护团队 | Microsoft |
-| 🏠 官网 | https://www.typescriptlang.org/ |
-| 📦 GitHub | https://github.com/microsoft/TypeScript |
-
-**特点：**
-- TypeScript 官方编译器
-- 类型检查和代码生成一体化
-- 配置灵活，tsconfig.json 生态标准
-- 编译速度相对较慢（纯 JS 实现）
-
-**适用场景：**
-- 类型检查（CI/CD 必备）
-- 需要完整类型信息的场景
-- 库发布的类型声明生成
+**适用场景：** 追求极致构建速度的现代化项目
 
 ---
 
-### tsx
-| 属性 | 详情 |
-|------|------|
-| 🔧 TS 支持 | ✅ 直接执行 |
-| 👥 维护团队 | privatenumber |
-| 🏠 官网 | https://tsx.is/ |
-| 📦 GitHub | https://github.com/privatenumber/tsx |
+### Bun 🥯
 
-**特点：**
-- 基于 esbuild，极速 TypeScript 执行
-- 支持 TypeScript + ESM + CJS
-- 支持 Watch 模式
-- 可直接运行 TS 文件，无需预编译
+> ⭐ 88k+ | 全功能 JS 运行时 + 构建
 
-**适用场景：**
-- Node.js 脚本开发
-- TypeScript CLI 工具
-- 替代 ts-node 获得更好性能
+**核心优势：**
+- 一体化工具链：运行时 + 包管理器 + 测试 + 构建
+- 比 Node.js 快 4-5 倍
+- 内置打包器，兼容 esbuild API
 
----
+**TS 支持度：** ⭐⭐⭐⭐⭐ 完美
+- 原生执行 `.ts` 文件，无需转译
+- 内置类型检查支持
 
-### ts-node
-| 属性 | 详情 |
-|------|------|
-| 🔧 TS 支持 | ✅ 直接执行 |
-| 👥 维护团队 | TypeStrong |
-| 📦 GitHub | https://github.com/TypeStrong/ts-node |
+```bash
+# 直接运行 TypeScript
+bun run index.ts
 
-**特点：**
-- 直接在 Node.js 中运行 TypeScript
-- 支持 REPL 交互式环境
-- 与 tsconfig.json 完全兼容
-- 支持多种转译模式
+# 打包
+bun build ./index.ts --outdir ./dist
 
-**适用场景：**
-- Node.js 后端开发
-- TypeScript 脚本执行
-- 测试和原型开发
+# 作为包管理器
+bun install
+bun add typescript
+```
+
+**适用场景：** 全栈开发、追求极简工具链的项目
 
 ---
 
-### tsimp
-| 属性 | 详情 |
-|------|------|
-| 🔧 TS 支持 | ✅ 直接执行 |
-| 👥 维护团队 | isaacs |
-| 📦 GitHub | https://github.com/isaacs/tsimp |
+### Rolldown 🔄
 
-**特点：**
-- 利用 Node.js 的 import hooks 运行 TS
-- 基于 TypeScript 官方编译器
-- 类型错误不会阻止执行（可配置）
-- 性能优于 ts-node
+> ⭐ 11k+ | Rollup 的 Rust 替代
 
-**适用场景：**
-- 需要原生 Node.js import 支持的 TS 项目
-- 对类型检查策略有特殊需求
+**核心优势：**
+- Rust 编写，结合 Rollup 的 API 和 esbuild 的速度
+- 与 Rollup 插件兼容
+- 未来将成为 Vite 的底层打包器
+
+**TS 支持度：** ⭐⭐⭐⭐⭐ 完美
+- 原生 TypeScript 支持
+
+**适用场景：** 库开发（未来 Vite 生态的核心）
 
 ---
 
-## 3. 包管理器
+## 转译工具对比
 
-### npm
-| 属性 | 详情 |
-|------|------|
-| 🔧 TS 支持 | ✅ 通过 @types |
-| 👥 维护团队 | GitHub / npm, Inc. |
-| 🏠 官网 | https://www.npmjs.com/ |
-| 📦 GitHub | https://github.com/npm/cli |
+| 工具 | ⭐ Stars | 语言 | 特点 | TS支持 |
+|------|---------|------|------|--------|
+| [SWC](https://swc.rs/) | 30k+ | Rust | 极速编译，Babel 替代 | ✅ 原生 |
+| [Babel](https://babeljs.io/) | 43k+ | JavaScript | 生态成熟，可配置性强 | ✅ 插件 |
+| [Sucrase](https://github.com/alangpierce/sucrase) | 6k+ | JavaScript | 超快开发构建，放弃旧浏览器支持 | ✅ 内置 |
 
-**特点：**
-- Node.js 官方默认包管理器
-- 生态最完善，软件包数量最多
-- npm workspaces 支持 Monorepo
-- v5+ 引入 lock 文件，依赖管理更可靠
+### SWC 🦀
 
-**适用场景：**
-- 所有 Node.js 项目的基础选择
-- 与 Node.js 捆绑，无需额外安装
+> ⭐ 30k+ | Rust 编写的下一代编译器
 
----
+**核心优势：**
+- 比 Babel 快 20-70 倍
+- 由 Vercel 赞助，Next.js 默认使用
+- 支持编译和压缩
 
-### Yarn
-| 属性 | 详情 |
-|------|------|
-| 🔧 TS 支持 | ✅ 通过 @types |
-| 👥 维护团队 | OpenJS Foundation |
-| 🏠 官网 | https://yarnpkg.com/ |
-| 📦 GitHub | https://github.com/yarnpkg/berry |
+**TS 支持：** 原生支持，可直接编译 TypeScript
 
-**特点：**
-- Yarn Berry (v2+) 采用 Plug'n'Play (PnP) 模式
-- Zero-installs 支持，依赖可提交到仓库
-- 严格的依赖树管理，避免幽灵依赖
-- Constraints、Workspaces 等高级功能
+```json
+// .swcrc
+{
+  "jsc": {
+    "parser": {
+      "syntax": "typescript",
+      "tsx": true
+    },
+    "target": "es2020"
+  }
+}
+```
 
-**适用场景：**
-- 大型 Monorepo 项目
-- 需要严格依赖管理的团队
-- 对安装速度有要求的场景
+### Babel 🐠
 
----
+> ⭐ 43k+ | JavaScript 编译器标准
 
-### pnpm
-| 属性 | 详情 |
-|------|------|
-| ⭐ Stars | 31k+ |
-| 🔧 TS 支持 | ✅ 原生支持 |
-| 👥 维护团队 | pnpm 团队 |
-| 🏠 官网 | https://pnpm.io/ |
-| 📦 GitHub | https://github.com/pnpm/pnpm |
+**核心优势：**
+- 生态最成熟
+- 插件系统强大
+- 可转换任何新特性到旧环境
 
-**特点：**
-- 磁盘高效：全局内容寻址存储，节省磁盘空间
-- 安装速度快：并行下载和链接
-- 严格的依赖隔离：默认不访问未声明的依赖
-- 原生 Monorepo workspaces 支持
-- 与 npm 生态完全兼容
+**TS 支持：** 使用 `@babel/preset-typescript`
 
-**适用场景：**
-- 磁盘空间有限的环境
-- Monorepo 项目
-- 追求安装速度和可靠性的团队
-- 推荐作为现代项目首选
+```json
+// .babelrc
+{
+  "presets": [
+    "@babel/preset-env",
+    "@babel/preset-typescript"
+  ]
+}
+```
 
----
+### Sucrase ⚡
 
-### Bun
-| 属性 | 详情 |
-|------|------|
-| ⭐ Stars | 75k+ |
-| 🔧 TS 支持 | ✅ 原生支持 |
-| 👥 维护团队 | Oven (Jarred Sumner) |
-| 🏠 官网 | https://bun.sh/ |
-| 📦 GitHub | https://github.com/oven-sh/bun |
+> ⭐ 6k+ | 超快开发构建
 
-**特点：**
-- 全功能工具链：运行时 + 包管理器 + 构建工具 + 测试框架
-- 极速性能：Zig 编写，比 Node.js 快数倍
-- 原生 TypeScript 和 JSX 支持
-- 兼容 npm 包生态
-- 内置 bundler、test runner、SQLite 客户端
+**核心优势：**
+- 比 Babel 快 20 倍
+- 仅支持现代浏览器特性
+- 专注 TypeScript/JSX/Flow
 
-**适用场景：**
-- 需要一体化工具链的新项目
-- 对性能有极致要求的应用
-- 边缘计算和 Serverless
-- 实验性项目（尚不完全稳定）
+**TS 支持：** 内置支持
 
 ---
 
-## 4. Monorepo 工具
+## 任务运行器/打包工具
 
-### Turborepo
-| 属性 | 详情 |
-|------|------|
-| ⭐ Stars | 26k+ |
-| 🔧 TS 支持 | ✅ 完全支持 |
-| 👥 维护团队 | Vercel |
-| 🏠 官网 | https://turbo.build/repo |
-| 📦 GitHub | https://github.com/vercel/turborepo |
+| 工具 | ⭐ Stars | 用途 | TS支持 |
+|------|---------|------|--------|
+| [tsup](https://github.com/egoist/tsup) | 8k+ | TypeScript 库打包 | ✅ 原生 |
+| [unbuild](https://github.com/unjs/unbuild) | 4k+ | 统一 JavaScript 构建系统 | ✅ 原生 |
+| [tsx](https://github.com/privatenumber/tsx) | 10k+ | TypeScript 执行器 | ✅ 原生 |
+| [pkgroll](https://github.com/privatenumber/pkgroll) | 2k+ | 零配置打包 | ✅ 原生 |
 
-**特点：**
-- 增量构建：只构建发生变化的部分
-- 远程缓存：团队共享构建结果
-- 任务管道：定义任务依赖关系
-- 与包管理器无关（npm/yarn/pnpm/bun）
-- 零配置快速上手
+### tsup 📦
 
-**适用场景：**
-- 大型 Monorepo 项目
-- 需要构建缓存的团队
-- 多包发布管理的场景
+基于 esbuild 的 TypeScript 库打包工具：
 
----
+```bash
+# 零配置打包 TypeScript 库
+npx tsup src/index.ts --format cjs,esm --dts
+```
 
-### Nx
-| 属性 | 详情 |
-|------|------|
-| ⭐ Stars | 23k+ |
-| 🔧 TS 支持 | ✅ 完全支持 |
-| 👥 维护团队 | Nrwl |
-| 🏠 官网 | https://nx.dev/ |
-| 📦 GitHub | https://github.com/nrwl/nx |
+### unbuild 🛠️
 
-**特点：**
-- 企业级 Monorepo 解决方案
-- 智能代码变更检测和受影响项目分析
-- 丰富的插件生态（React、Angular、Node 等）
-- 分布式任务执行 (DTE)
-- 内置代码生成器和代码规范检查
+统一的 JavaScript 构建系统，基于 Rollup：
 
-**适用场景：**
-- 企业级大型代码库
-- 需要代码生成和脚手架的团队
-- Angular/React 全栈项目
-- 需要分布式构建的大型团队
+```json
+// build.config.ts
+import { defineBuildConfig } from 'unbuild';
+
+export default defineBuildConfig({
+  entries: ['src/index'],
+  declaration: true,
+  rollup: {
+    emitCJS: true,
+  },
+});
+```
+
+### tsx ⚡
+
+Node.js 的 TypeScript 增强执行器：
+
+```bash
+# 直接执行 TypeScript（比 ts-node 快 100 倍）
+npx tsx watch src/index.ts
+```
 
 ---
 
-### Lerna
-| 属性 | 详情 |
-|------|------|
-| 🔧 TS 支持 | ✅ 支持 |
-| 👥 维护团队 | Nrwl (现已与 Nx 整合) |
-| 📦 GitHub | https://github.com/lerna/lerna |
+## Monorepo 工具
 
-**特点：**
-- 早期 Monorepo 工具的标杆
-- 专注于版本管理和包发布
-- 现已整合到 Nx 生态
-- 提供 `lerna run`、`lerna publish` 等命令
+| 工具 | ⭐ Stars | 定位 | TS支持 |
+|------|---------|------|--------|
+| [Turborepo](https://turbo.build/) | 26k+ | 智能构建系统 | ✅ 完美 |
+| [Nx](https://nx.dev/) | 24k+ | 智能构建与脚手架 | ✅ 完美 |
+| [pnpm](https://pnpm.io/) | 30k+ | 高效包管理器 + workspace | ✅ 完美 |
+| [Lerna](https://lerna.js.org/) | 35k+ | 包管理（已维护放缓） | ✅ 良好 |
+| [Rush](https://rushstack.io/) | 5k+ | 微软出品的企业级方案 | ✅ 完美 |
 
-**适用场景：**
-- 需要独立版本管理的 Monorepo
-- 多包发布的项目管理
-- 遗留项目维护
+### Turborepo 🚀
 
----
+Vercel 出品的智能构建系统：
 
-### pnpm Workspace
-| 属性 | 详情 |
-|------|------|
-| 🔧 TS 支持 | ✅ 原生支持 |
-| 👥 维护团队 | pnpm 团队 |
-| 🏠 文档 | https://pnpm.io/workspaces |
+```json
+// turbo.json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
+```
 
-**特点：**
-- 内置在 pnpm 中的 Workspace 支持
-- 无需额外工具即可管理 Monorepo
-- 支持 workspace 协议和筛选器
-- 与 pnpm 的高效存储机制结合
+### Nx 🧠
 
-**适用场景：**
-- 中小型 Monorepo
-- 希望保持工具链简单的团队
-- 配合 Turborepo 或 Nx 使用
+功能完整的 Monorepo 工具：
 
----
+```bash
+# 创建 Nx 工作区
+npx create-nx-workspace@latest --preset=ts
 
-### Rush Stack
-| 属性 | 详情 |
-|------|------|
-| 🔧 TS 支持 | ✅ 完全支持 |
-| 👥 维护团队 | Microsoft |
-| 🏠 官网 | https://rushstack.io/ |
-| 📦 GitHub | https://github.com/microsoft/rushstack |
+# 生成 TypeScript 库
+nx g @nx/js:lib my-lib
+```
 
-**特点：**
-- 微软开源的企业级 Monorepo 方案
-- Rush：Monorepo 编排工具
-- Heft：可扩展的构建系统
-- API Extractor：API 文档和声明文件生成
-- 严格的依赖管理和版本策略
+### pnpm workspace 📦
 
-**适用场景：**
-- 超大型企业级 Monorepo
-- 需要严格发布流程的团队
-- 对 API 文档和兼容性有要求的项目
+现代包管理器的 workspace 方案：
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'apps/*'
+  - 'packages/*'
+```
 
 ---
 
-## 5. 任务运行器
+## 选型建议
 
-### Nx
-| 属性 | 详情 |
-|------|------|
-| 🔧 TS 支持 | ✅ 完全支持 |
-| 👥 维护团队 | Nrwl |
-| 🏠 官网 | https://nx.dev/ |
-| 📦 GitHub | https://github.com/nrwl/nx |
+### 新项目选型
 
-**特点：**
-- 智能任务调度，基于依赖图分析
-- 支持并行和分布式执行
-- 内置缓存机制
-- 支持自定义任务和生命周期钩子
+| 项目类型 | 推荐工具 | 理由 |
+|---------|---------|------|
+| 现代 Web 应用 | **Vite** | 开发体验最佳，生态成熟 |
+| Next.js 项目 | **Turbopack** | 官方支持，性能最优 |
+| 库/组件开发 | **tsup** / **Rollup** | 输出质量高，配置简单 |
+| Node.js 工具 | **esbuild** / **Bun** | 构建速度极快 |
+| 全栈应用 | **Bun** | 一体化工具链 |
 
-**适用场景：**
-- 复杂构建流程的编排
-- 需要精细控制任务依赖的项目
-- 大型团队的 CI/CD 流程
+### 迁移建议
 
----
+| 现状 | 推荐迁移目标 | 迁移成本 |
+|------|-------------|---------|
+| Webpack 项目 | **Rspack** | 低（配置兼容） |
+| CRA 项目 | **Vite** | 中 |
+| Rollup 项目 | **Rolldown**（未来） | 待定 |
 
-### Turbo
-| 属性 | 详情 |
-|------|------|
-| 🔧 TS 支持 | ✅ 完全支持 |
-| 👥 维护团队 | Vercel |
-| 🏠 官网 | https://turbo.build/repo |
-| 📦 GitHub | https://github.com/vercel/turborepo |
+### TypeScript 项目配置建议
 
-**特点：**
-- 管道式任务定义（pipeline）
-- 本地和远程缓存
-- 与包管理器无缝集成
-- 简洁的配置语法
-
-**适用场景：**
-- Monorepo 任务编排
-- 需要远程缓存加速 CI 的团队
-- 简洁高效的任务管理需求
+1. **开发环境**：使用 Vite + SWC（最快 HMR）
+2. **生产构建**：Vite 默认使用 Rollup，可替换为 Rolldown（未来）
+3. **库发布**：使用 tsup 或 unbuild 进行多格式输出
+4. **类型检查**：独立运行 `tsc --noEmit`，不阻塞构建
+5. **Monorepo**：pnpm + Turborepo 是 2025 年黄金组合
 
 ---
 
-### Lage
-| 属性 | 详情 |
-|------|------|
-| 🔧 TS 支持 | ✅ 支持 |
-| 👥 维护团队 | Microsoft |
-| 📦 GitHub | https://github.com/microsoft/lage |
+## 趋势展望
 
-**特点：**
-- 微软开源的任务调度器
-- 基于依赖关系的智能任务执行
-- 支持拓扑排序和优先级
-- 内置缓存和日志管理
-- 支持分布式执行
-
-**适用场景：**
-- 需要复杂任务依赖管理的项目
-- 与 Rush Stack 配合使用
-- 企业级 CI/CD 流程
-
----
-
-## 📈 选型建议
-
-### 新项目构建工具选择
-
-| 场景 | 推荐工具 | 理由 |
-|------|----------|------|
-| 前端应用开发 | **Vite** | 极速开发体验，生态完善 |
-| 库/组件打包 | **Rollup** + **tsup** | 输出格式丰富，Tree Shaking 优秀 |
-| 超大型应用 | **Turbopack** / **Rspack** | 增量编译，极速 HMR |
-| 零配置快速启动 | **Parcel** | 开箱即用，智能默认配置 |
-
-### Monorepo 工具选择
-
-| 规模 | 推荐方案 |
-|------|----------|
-| 小型 (2-5 包) | pnpm workspace |
-| 中型 (5-20 包) | pnpm + Turborepo |
-| 大型 (20+ 包) | Nx 或 Rush Stack |
-| 企业级 | Nx + 分布式缓存 |
-
-### 包管理器选择
-
-| 场景 | 推荐 |
-|------|------|
-| 通用项目 | **pnpm** - 速度快、磁盘省、依赖严格 |
-| 新项目尝试 | **Bun** - 一体化体验，性能优异 |
-| 遗留项目 | npm - 兼容性好 |
-| 严格依赖管理 | Yarn Berry (PnP) |
-
----
-
-## 🔗 相关资源
-
-- [Vite 官方文档](https://vitejs.dev/)
-- [Webpack 官方文档](https://webpack.js.org/)
-- [Rollup 官方文档](https://rollupjs.org/)
-- [Turborepo 手册](https://turbo.build/repo/docs)
-- [Nx 文档](https://nx.dev/getting-started/intro)
-- [pnpm 工作区指南](https://pnpm.io/workspaces)
-
----
-
-> **注意**: Stars 数量基于 2024-2025 年数据，仅供参考。实际选择工具时，请结合项目需求、团队熟悉度和工具成熟度综合考虑。
+1. **Rust 化**：Rspack、Farm、Rolldown、Turbopack 均采用 Rust 编写，追求极致性能
+2. **原生 TS 支持**：所有现代工具都内置 TypeScript 支持，无需额外配置
+3. **统一工具链**：Bun 代表的一体化趋势，减少工具碎片化
+4. **ESM 优先**：原生 ESM 支持成为标配
+5. **Vite 生态**：Rolldown 未来将成为 Vite 底层，带来更大性能提升

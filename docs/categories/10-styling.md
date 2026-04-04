@@ -1,641 +1,535 @@
-﻿# CSS 与样式方案生态全景
+# 样式/CSS工具
 
-> 优先级：P0 | 趋势：Tailwind CSS 统治级，CSS-in-JS 降温，零运行时方案兴起
-
----
-
-## 生态概览
-
-| 类别 | 代表方案 | 趋势 |
-|------|----------|------|
-| Utility-First CSS | Tailwind CSS | 统治级增长 |
-| CSS-in-JS | Styled Components -> Panda CSS | 向零运行时迁移 |
-| CSS 预处理器 | Sass/SCSS | 稳定使用 |
-| CSS 后处理器 | PostCSS | 基础设施级 |
-| CSS 框架 | Bootstrap | 逐渐被 Tailwind 替代 |
-| CSS 工具 | PurgeCSS | 集成化趋势 |
+CSS 和样式工具生态系统，包括 CSS 框架、CSS-in-JS 解决方案、CSS 处理器和样式系统。
 
 ---
 
-## 1. Utility-First CSS（原子化 CSS）
+## CSS框架
 
-### 1.1 Tailwind CSS (83k+)
+### [Tailwind CSS](https://tailwindcss.com/) ⭐ 94.3k
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 83k+ |
-| TS 支持 | 完整支持，官方提供 TypeScript 类型 |
-| 运行时开销 | 零运行时（构建时生成） |
-| 版本 | v3.x / v4.0（alpha） |
+> A utility-first CSS framework for rapid UI development.
 
-**核心特点：**
-- 原子化类名：flex, pt-4, text-center, bg-blue-500
-- JIT 编译器：即时生成所需样式，开发体验极佳
-- 高度可配置：通过 tailwind.config.js 完全自定义设计系统
-- 响应式优先：内置断点系统（sm:, md:, lg:, xl:）
-- Dark Mode 支持：原生支持深色模式
-- v4 新特性：基于 Rust 引擎，性能大幅提升
+实用优先的 CSS 框架，通过组合原子类快速构建自定义界面。Tailwind v4 于 2025 年发布，采用基于 Rust 的 CSS 引擎，构建速度提升 10 倍。
 
-**生态系统：**
-- Tailwind UI：官方付费组件库
-- Headless UI：无样式 UI 组件
-- Heroicons：配套图标库
-- Tailwind CSS IntelliSense：VS Code 智能提示
+**核心特性：**
+- 实用优先（Utility-first）的设计哲学
+- JIT（Just-in-Time）编译器，只生成使用的样式
+- 高度可配置的设计系统
+- 深色模式、响应式断点内置支持
+- 与 React、Vue、Svelte 等框架深度集成
 
-**适用场景：**
-- 现代 React/Vue/Angular 项目
-- 需要快速原型开发
-- 设计系统构建
-- 团队协作开发
-
-**链接：**
-- 官网：https://tailwindcss.com
-- GitHub：https://github.com/tailwindlabs/tailwindcss
-
----
-
-### 1.2 Windi CSS
-
-| 属性 | 详情 |
-|------|------|
-| Stars | - |
-| TS 支持 | 支持 |
-| 运行时开销 | 零运行时 |
-| 维护状态 | **已停止维护**（2022年） |
-
-**核心特点：**
-- 从 v3.0 起停止维护，官方建议迁移至 UnoCSS
-- 曾是 Tailwind 的替代方案，按需编译速度快
-
-**迁移建议：**
 ```bash
-# 官方迁移工具
-npx @windicss/windicss-to-unocss
+npm install -D tailwindcss
+npx tailwindcss init
 ```
 
-**适用场景：**
-- 新项目不推荐使用
-- 现有项目建议迁移到 UnoCSS
+```html
+<!-- 示例：使用 Tailwind 构建卡片 -->
+<div class="max-w-sm rounded overflow-hidden shadow-lg bg-white">
+  <img class="w-full" src="/img/card-top.jpg" alt="Sunset">
+  <div class="px-6 py-4">
+    <div class="font-bold text-xl mb-2">标题</div>
+    <p class="text-gray-700 text-base">
+      卡片内容描述...
+    </p>
+  </div>
+</div>
+```
 
 ---
 
-### 1.3 UnoCSS (17k+)
+### [Bootstrap](https://getbootstrap.com/) ⭐ 174.1k
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 17k+ |
-| TS 支持 | 原生 TypeScript 编写 |
-| 运行时开销 | 零运行时 |
-| 维护者 | Anthony Fu（Vue/Vite 核心团队） |
+> The most popular HTML, CSS, and JavaScript framework for developing responsive, mobile first projects on the web.
 
-**核心特点：**
-- 即时原子化 CSS：按需生成，毫秒级冷启动
-- 完全可定制：基于预设（presets）的架构
-- 预设生态丰富：
-  - @unocss/preset-wind：兼容 Tailwind
-  - @unocss/preset-mini：最小化核心
-  - @unocss/preset-icons：纯 CSS 图标
-  - @unocss/preset-typography：排版预设
-- 属性化模式：<div m-2 p-4 bg-blue></div>
-- 交互式文档：可视化规则探索
+最经典的 CSS 框架，由 Twitter 开发。提供完整的组件库、栅格系统和 JavaScript 插件。
 
-**适用场景：**
-- 需要极致构建性能的项目
-- 希望完全自定义原子化方案
-- 图标与样式一体化需求
-- Vite 项目首选
+**核心特性：**
+- 丰富的预构建组件（按钮、模态框、导航等）
+- 响应式 12 列栅格系统
+- 内置 JavaScript 交互组件
+- 庞大的主题和插件生态
+- 优秀的文档和社区支持
 
-**链接：**
-- 官网：https://unocss.dev
-- GitHub：https://github.com/unocss/unocss
+```bash
+npm install bootstrap
+```
+
+```html
+<!-- 示例：Bootstrap 按钮组 -->
+<div class="btn-group" role="group">
+  <button type="button" class="btn btn-primary">左</button>
+  <button type="button" class="btn btn-primary">中</button>
+  <button type="button" class="btn btn-primary">右</button>
+</div>
+```
 
 ---
 
-### 1.4 Tachyons (11k+)
+### [Bulma](https://bulma.io/) ⭐ 50.1k
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 11k+ |
-| TS 支持 | 无官方类型定义 |
-| 运行时开销 | 零运行时 |
-| 诞生时间 | 2014年（老牌方案） |
+> Modern CSS framework based on Flexbox
 
-**核心特点：**
-- 最早的原子化 CSS 方案之一
-- 功能性类名：pa2, ma3, f4, bg-blue
-- 移动优先：dn（display:none）vs dib-l（large 屏幕显示）
-- 色彩系统：包含丰富的配色方案
-- 单一 CSS 文件：无需构建工具
+基于 Flexbox 的现代 CSS 框架，纯 CSS 无 JavaScript，语法简洁直观。
 
-**适用场景：**
-- 快速原型开发
-- 小型项目
-- 无构建工具的静态页面
-- 学习原子化 CSS 概念
+**核心特性：**
+- 纯 CSS，无 JavaScript 依赖
+- 基于 Flexbox 的现代布局
+- 语义化类名，易于理解
+- 模块化导入，可按需使用
+- 100+ 内置 helper 类
 
-**链接：**
-- 官网：https://tachyons.io
-- GitHub：https://github.com/tachyons-css/tachyons
+```bash
+npm install bulma
+```
 
----
-
-## 2. CSS-in-JS
-
-### 2.1 Styled Components (40k+)
-
-| 属性 | 详情 |
-|------|------|
-| Stars | 40k+ |
-| TS 支持 | 完整支持，社区类型定义 |
-| 运行时开销 | 有运行时开销 |
-| 维护者 | Callstack / styled-components 团队 |
-
-**核心特点：**
-- 标签模板语法
-- 动态样式：基于 props 的样式计算
-- 主题系统：内置 ThemeProvider
-- CSS 预处理：支持 SCSS 语法
-- 服务端渲染：支持 SSR
-
-**性能考量：**
-- 运行时生成类名和样式
-- 大型应用可能有性能瓶颈
-- React 18 配合并发特性有所改善
-
-**适用场景：**
-- React 项目
-- 需要高度动态样式的组件
-- 已有项目维护
-- 新项目建议评估零运行时方案
-
-**链接：**
-- 官网：https://styled-components.com
-- GitHub：https://github.com/styled-components/styled-components
+```html
+<!-- 示例：Bulma 布局 -->
+<div class="columns">
+  <div class="column is-three-quarters">3/4</div>
+  <div class="column">1/4</div>
+</div>
+```
 
 ---
 
-### 2.2 Emotion (17k+)
+### [UnoCSS](https://unocss.dev/) ⭐ 18.7k
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 17k+ |
-| TS 支持 | 完整支持 |
-| 运行时开销 | 有运行时开销（比 styled-components 轻量） |
-| 性能 | 比 styled-components 更高效 |
+> The instant on-demand atomic CSS engine.
 
-**核心特点：**
-- 高性能：优化的运行时性能
-- 两种写法：css prop 模式和 styled 模式
-- 源映射：更好的开发体验
-- 压缩后体积小：约 4KB（gzipped）
-- 测试友好：易于测试样式
+即时按需原子 CSS 引擎，受 Tailwind CSS、Windi CSS 启发，但完全可定制。
 
-**适用场景：**
-- React 项目
-- 性能敏感的应用
-- 需要 css prop 灵活性的项目
-- MUI (Material-UI) 底层依赖
+**核心特性：**
+- 完全按需生成，零运行时开销
+- 完全可定制，无核心工具类
+- 属性化模式（Attributify）支持
+- 变体组（Variant Groups）简化代码
+- 规则、快捷方式、主题完全可配置
 
-**链接：**
-- 官网：https://emotion.sh
-- GitHub：https://github.com/emotion-js/emotion
+```bash
+npm install -D unocss
+```
 
----
+```ts
+// uno.config.ts
+import { defineConfig } from 'unocss'
 
-### 2.3 Stitches (7k+)
+export default defineConfig({
+  rules: [
+    ['m-1', { margin: '0.25rem' }],
+  ],
+})
+```
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 7k+ |
-| TS 支持 | 原生 TypeScript，类型体验极佳 |
-| 运行时开销 | 轻量运行时 |
-| 维护状态 | **已停止维护**（2023年） |
-
-**核心特点：**
-- 基于 Variant 的样式
-- 极致的类型推断：CSS 属性、主题 token 都有类型提示
-- 主题 Token 系统：设计系统友好
-- 运行时性能：比 styled-components 更高效
-
-**停止维护说明：**
-- 官方建议迁移至 Panda CSS 或 Tailwind CSS
-
-**适用场景：**
-- 新项目不推荐使用
-- 现有项目建议评估迁移
-
-**链接：**
-- 官网：https://stitches.dev
-- GitHub：https://github.com/stitchesjs/stitches
+```html
+<!-- 示例：UnoCSS 属性化模式 -->
+<div m-1 p-2 bg-blue text-white rounded>
+  内容
+</div>
+```
 
 ---
 
-### 2.4 vanilla-extract (12k+)
+### [Windi CSS](https://windicss.org/) ⭐ 6.5k
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 12k+ |
-| TS 支持 | 原生 TypeScript，CSS-in-TS |
-| 运行时开销 | **零运行时** |
-| 维护者 | Seek（澳大利亚招聘公司） |
+> Next generation utility-first CSS framework.
 
-**核心特点：**
-- 零运行时：构建时生成静态 CSS 文件
-- 类型安全：CSS 属性都有 TypeScript 类型检查
-- 主题系统：createTheme 函数定义主题
-- Scoped Styles：自动生成唯一类名
-- CSS 变量：原生 CSS 变量支持
-- Sprinkles API：类似原子化 CSS 的工具
+下一代实用优先 CSS 框架，Tailwind CSS 的替代品，**已不再积极维护**。
 
-**适用场景：**
-- 需要类型安全的样式系统
-- 零运行时开销要求
-- 设计系统构建
-- 服务端渲染应用
+**⚠️ 状态：** 项目已归档，建议迁移到 UnoCSS 或 Tailwind CSS v4
 
-**链接：**
-- 官网：https://vanilla-extract.style
-- GitHub：https://github.com/vanilla-extract-css/vanilla-extract
+**核心特性：**
+- 完全兼容 Tailwind CSS
+- 按需生成，无需 purge
+- 更快的编译速度
+- 额外的功能（变体组、属性化模式等）
 
 ---
 
-### 2.5 Linaria (12k+)
+## CSS-in-JS
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 12k+ |
-| TS 支持 | 支持 |
-| 运行时开销 | **零运行时** |
-| 底层 | 基于 Babel 转换 |
+### [styled-components](https://styled-components.com/) ⭐ 41.0k
 
-**核心特点：**
-- 零运行时：构建时提取 CSS
-- 类似 styled-components 的 API
-- 动态样式限制：动态值转换为 CSS 变量
-- CSS 提取：生成独立 CSS 文件
-- 构建工具集成：支持 Webpack、Vite、Rollup
+> Fast, expressive styling for React. Server components, client components, streaming SSR, React Native—one API.
 
-**适用场景：**
-- 从 styled-components 迁移的零运行时方案
-- 需要零运行时但需要 CSS-in-JS 体验
-- React 项目
+React 的 CSS-in-JS 标准方案，支持标签模板字符串定义组件样式。
 
-**链接：**
-- 官网：https://linaria.dev
-- GitHub：https://github.com/callstack/linaria
+**核心特性：**
+- 组件级样式作用域
+- 支持主题（Theme）系统
+- 动态样式基于 props
+- 自动供应商前缀
+- SSR 支持
 
----
+```bash
+npm install styled-components
+```
 
-### 2.6 Panda CSS (6k+)
+```jsx
+import styled from 'styled-components';
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 6k+ |
-| TS 支持 | 原生 TypeScript，类型体验极佳 |
-| 运行时开销 | **零运行时** |
-| 维护者 | Chakra UI 团队 |
+const Button = styled.button`
+  background: ${props => props.primary ? 'blue' : 'white'};
+  color: ${props => props.primary ? 'white' : 'blue'};
+  padding: 10px 20px;
+  border-radius: 4px;
+`;
 
-**核心特点：**
-- 零运行时：构建时生成静态 CSS
-- 极佳的类型体验：类型提示无处不在
-- 类 Stitches API：继承了 Stitches 的优秀设计
-- CSS 属性对象：<div className={css({ bg: 'red.300', p: '4' })} />
-- Recipe System：组件变体系统
-- PostCSS 集成：与 PostCSS 生态兼容
-
-**适用场景：**
-- 新项目首选 CSS-in-JS 方案
-- 从 Stitches 迁移的理想选择
-- 需要类型安全 + 零运行时
-- 设计系统开发
-
-**链接：**
-- 官网：https://panda-css.com
-- GitHub：https://github.com/chakra-ui/panda
+// 使用
+<Button primary>主要按钮</Button>
+```
 
 ---
 
-## 3. CSS 预处理器
+### [Emotion](https://emotion.sh/) ⭐ 18.0k
 
-### 3.1 Sass/SCSS (15k+)
+> CSS-in-JS library designed for high performance style composition
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 15k+（Dart Sass 仓库） |
-| TS 支持 | 通过类型定义 |
-| 运行时开销 | 编译时处理 |
-| 语法 | SCSS（推荐）/ Sass（缩进式） |
+高性能 CSS-in-JS 库，支持字符串和对象样式，适用于 React。
 
-**核心特点：**
-- 历史最悠久：2006年诞生，生态成熟
-- 功能丰富：变量、嵌套、混合、继承、条件/循环
-- 函数库：丰富的内置函数
-- 模块系统：@use 替代 @import（现代方案）
+**核心特性：**
+- 高性能，支持缓存
+- 源映射和标签支持
+- 可预测的样式组合
+- 支持 `css` prop
+- 支持字符串和对象样式
 
-**适用场景：**
-- 大型项目样式系统
-- 需要复杂样式逻辑
-- 团队熟悉 CSS 预处理器
-- 非 React 项目
+```bash
+npm install @emotion/react @emotion/styled
+```
 
-**链接：**
-- 官网：https://sass-lang.com
-- GitHub：https://github.com/sass/dart-sass
+```jsx
+/** @jsx jsx */
+import { jsx, css } from '@emotion/react'
 
----
+const style = css`
+  color: hotpink;
+  &:hover {
+    color: darkorchid;
+  }
+`
 
-### 3.2 Less
-
-| 属性 | 详情 |
-|------|------|
-| Stars | 17k+ |
-| TS 支持 | 通过类型定义 |
-| 运行时开销 | 编译时处理 |
-| 诞生时间 | 2009年 |
-
-**核心特点：**
-- JavaScript 编写：易于在 Node.js 环境运行
-- 类 Sass 语法：变量、嵌套、混合等
-- 客户端编译：可直接在浏览器运行（开发用）
-- 历史原因：Ant Design 早期使用
-
-**适用场景：**
-- 历史项目维护
-- Ant Design 项目（传统）
-
-**链接：**
-- 官网：https://lesscss.org
-- GitHub：https://github.com/less/less.js
+<div css={style}>内容</div>
+```
 
 ---
 
-### 3.3 Stylus
+### [Linaria](https://github.com/callstack/linaria) ⭐ 12.3k
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 11k+ |
-| TS 支持 | 社区类型定义 |
-| 运行时开销 | 编译时处理 |
-| 诞生时间 | 2010年 |
+> Zero-runtime CSS in JS library
 
-**核心特点：**
-- 极简语法：可选括号、分号、冒号
-- 灵活性高：语法自由度大
-- JavaScript 编写：Node.js 原生
-- 功能丰富：内置函数、哈希对象等
+零运行时 CSS-in-JS 库，构建时将样式提取到 CSS 文件。
 
-**适用场景：**
-- 喜欢极简语法的开发者
-- 历史项目维护
-- 新项目推荐使用 Sass
+**核心特性：**
+- 零运行时开销
+- 真正的 CSS 文件输出
+- 支持 CSS 嵌套和自定义属性
+- 与 React、Preact 集成
+- 支持动态样式
 
-**链接：**
-- 官网：https://stylus-lang.com
-- GitHub：https://github.com/stylus/stylus
+```bash
+npm install @linaria/core @linaria/react
+```
 
----
+```jsx
+import { styled } from '@linaria/react';
 
-## 4. CSS 后处理器
-
-### 4.1 PostCSS (28k+)
-
-| 属性 | 详情 |
-|------|------|
-| Stars | 28k+ |
-| TS 支持 | 官方类型定义 |
-| 运行时开销 | 构建时处理 |
-| 架构 | 插件化系统 |
-
-**核心特点：**
-- 插件化架构：超过 200 个官方/社区插件
-- 用途广泛：添加浏览器前缀、未来 CSS 语法、CSS 优化
-- 高性能：基于 JavaScript 的快速转换
-- 生态丰富：与所有构建工具集成
-
-**常用插件：**
-- autoprefixer：添加浏览器前缀
-- postcss-preset-env：未来 CSS 语法
-- cssnano：CSS 优化压缩
-
-**适用场景：**
-- 所有现代前端项目的标配
-- 需要处理 CSS 的构建流程
-- Tailwind CSS 项目必需
-
-**链接：**
-- 官网：https://postcss.org
-- GitHub：https://github.com/postcss/postcss
+const Title = styled.h1`
+  font-size: 24px;
+  color: ${props => props.color};
+`;
+```
 
 ---
 
-### 4.2 Autoprefixer
+### [vanilla-extract](https://vanilla-extract.style/) ⭐ 10.3k
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 23k+（独立仓库） |
-| TS 支持 | 支持 |
-| 运行时开销 | 构建时处理 |
-| 定位 | PostCSS 插件 |
+> Zero-runtime Stylesheets-in-TypeScript
 
-**核心特点：**
-- 自动添加浏览器前缀：-webkit-, -moz-, -ms-
-- 基于 Can I Use：根据目标浏览器自动决策
-- 纯 CSS：不修改代码逻辑
-- 持续更新：跟随浏览器支持变化
+零运行时 TypeScript 样式表，在构建时生成类型安全的 CSS。
 
-**适用场景：**
-- 所有需要兼容多浏览器的项目
-- 现代 CSS 特性的安全使用
+**核心特性：**
+- 类型安全，100% TypeScript
+- 零运行时开销
+- CSS 变量和主题支持
+- 原子 CSS 支持
+- 可与任何框架配合使用
 
-**链接：**
-- GitHub：https://github.com/postcss/autoprefixer
+```bash
+npm install @vanilla-extract/css
+```
 
----
+```ts
+// styles.css.ts
+import { style, createTheme } from '@vanilla-extract/css';
 
-### 4.3 cssnano
+export const [themeClass, vars] = createTheme({
+  color: {
+    brand: 'blue'
+  }
+});
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 包含在 PostCSS 生态 |
-| TS 支持 | 支持 |
-| 运行时开销 | 构建时处理 |
-| 定位 | PostCSS 插件 |
-
-**核心特点：**
-- CSS 压缩优化：删除空格、注释
-- 高级优化：合并重复规则、优化颜色值
-- Preset 系统：default, advanced, lite
-- 安全优化：不会破坏 CSS 功能
-
-**适用场景：**
-- 生产环境 CSS 优化
-- 减小 CSS 文件体积
-
-**链接：**
-- 官网：https://cssnano.co
-- GitHub：https://github.com/cssnano/cssnano
+export const button = style({
+  backgroundColor: vars.color.brand,
+  padding: '10px'
+});
+```
 
 ---
 
-## 5. CSS 框架
+### [Stitches](https://stitches.dev/) ⭐ 7.8k
 
-### 5.1 Bootstrap (167k+)
+> [Not Actively Maintained] CSS-in-JS with near-zero runtime, SSR, multi-variant support, and a best-in-class developer experience.
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 167k+ |
-| TS 支持 | 社区类型定义 |
-| 运行时开销 | 纯 CSS + 可选 JS |
-| 诞生时间 | 2011年 |
+高性能 CSS-in-JS 库，支持多变体，**已不再积极维护**。
 
-**核心特点：**
-- 历史最悠久：现代响应式框架的鼻祖
-- 组件丰富：按钮、卡片、导航、模态框等
-- 网格系统：经典的 12 列网格
-- 主题系统：通过 Sass 变量定制
-- JS 组件：基于 Popper.js 的交互组件
+**⚠️ 状态：** 项目已归档，建议考虑其他方案
 
-**版本变化：**
-- Bootstrap 4：Flexbox 布局
-- Bootstrap 5：移除 jQuery 依赖，原生 JavaScript
+**核心特性：**
+- 近零运行时开销
+- 变体（Variants）支持
+- 服务器端渲染
+- 主题支持
+- 开发者体验优秀
 
-**适用场景：**
-- 快速原型开发
-- 后台管理系统
-- 团队不熟悉 Tailwind
-- 需要开箱即用的组件
-
-**链接：**
-- 官网：https://getbootstrap.com
-- GitHub：https://github.com/twbs/bootstrap
+```bash
+npm install @stitches/react
+```
 
 ---
 
-### 5.2 Bulma (49k+)
+## CSS工具
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 49k+ |
-| TS 支持 | 社区类型定义 |
-| 运行时开销 | 纯 CSS |
-| 诞生时间 | 2016年 |
+### [PostCSS](https://postcss.org/) ⭐ 29.0k
 
-**核心特点：**
-- 纯 CSS：无 JavaScript 依赖
-- Flexbox 网格：现代布局系统
-- 简洁的类名：.button, .card, .modal
-- 内置主题：多种配色方案
-- 响应式优先：移动优先设计
+> Transforming styles with JS plugins
 
-**适用场景：**
-- 不需要 JS 组件的项目
-- 喜欢简洁语义化类名
-- 快速原型开发
+使用 JavaScript 插件转换 CSS 的工具，现代 CSS 工作流的核心。
 
-**链接：**
-- 官网：https://bulma.io
-- GitHub：https://github.com/jgthms/bulma
+**核心特性：**
+- 插件生态丰富
+- 现代 CSS 转译（未来的语法）
+- 代码优化和压缩
+- 与构建工具集成
 
----
+```bash
+npm install -D postcss postcss-cli
+```
 
-### 5.3 Foundation
-
-| 属性 | 详情 |
-|------|------|
-| Stars | 30k+ |
-| TS 支持 | 社区类型定义 |
-| 运行时开销 | CSS + JS |
-| 维护者 | ZURB |
-
-**核心特点：**
-- 移动优先：响应式设计
-- 企业级：强调可访问性和性能
-- 模块化：按需加载组件
-- 高级功能：XY 网格、Motion UI 动画
-
-**适用场景：**
-- 企业级应用
-- 强调可访问性的项目
-- 需要丰富交互功能
-
-**链接：**
-- 官网：https://get.foundation
-- GitHub：https://github.com/foundation/foundation-sites
+```js
+// postcss.config.js
+module.exports = {
+  plugins: [
+    require('autoprefixer'),
+    require('postcss-preset-env')
+  ]
+}
+```
 
 ---
 
-## 6. CSS 工具
+### [Autoprefixer](https://github.com/postcss/autoprefixer) ⭐ 22.6k
 
-### 6.1 PurgeCSS
+> Parse CSS and add vendor prefixes to rules by Can I Use
 
-| 属性 | 详情 |
-|------|------|
-| Stars | 9k+ |
-| TS 支持 | 支持 |
-| 运行时开销 | 构建时处理 |
-| 定位 | 未使用 CSS 移除工具 |
+PostCSS 插件，根据 Can I Use 数据自动添加浏览器前缀。
 
-**核心特点：**
-- 移除未使用的 CSS：分析 HTML/JS 文件
-- 大幅减小 CSS 体积：可减少 90%+ 体积
-- 灵活配置：白名单、提取器模式
-- 集成友好：PostCSS 插件、Webpack 插件等
+**核心特性：**
+- 自动添加浏览器前缀
+- 移除过时的前缀
+- 支持 Flexbox、Grid 等
+- 可配置目标浏览器
 
-**Tailwind 集成：**
-Tailwind JIT 内置了 PurgeCSS 功能，通过 content 配置自动优化。
-
-**适用场景：**
-- 使用大型 CSS 框架时优化体积
-- 生产环境必用
-- 与 Tailwind 配合使用
-
-**链接：**
-- 官网：https://purgecss.com
-- GitHub：https://github.com/FullHuman/purgecss
+```js
+// postcss.config.js
+module.exports = {
+  plugins: [
+    require('autoprefixer')({
+      browsers: ['last 2 versions', '> 1%']
+    })
+  ]
+}
+```
 
 ---
 
-## 生态趋势总结
+### [postcss-preset-env](https://preset-env.cssdb.org/) ⭐ 1.0k
 
-### 2024-2025 关键趋势
+> PostCSS Tools and Plugins
 
-| 趋势 | 说明 |
-|------|------|
-| Tailwind 统治级 | 成为现代前端默认选择 |
-| 零运行时兴起 | Panda CSS, vanilla-extract 崛起 |
-| CSS-in-JS 降温 | styled-components, Emotion 增长放缓 |
-| 预处理器稳定 | Sass 仍是大型项目首选 |
-| 构建时优化 | 性能优先的样式方案 |
-| 类型安全 | TypeScript 集成成为标配 |
+将现代 CSS 转换为大多数浏览器可理解的代码。
 
-### 技术选型建议
-
-**新项目：**
-- 优先选择 Tailwind CSS 或 UnoCSS
-- 需要 CSS-in-JS 时选择 Panda CSS 或 vanilla-extract
-
-**现有项目：**
-- styled-components/Emotion 可继续维护
-- 考虑评估迁移到零运行时方案
-
-**避免使用：**
-- Windi CSS（已停止维护）
-- Stitches（已停止维护）
+**核心特性：**
+- 支持 CSS 新特性
+- 自动 polyfill
+- 嵌套规则支持
+- 自定义属性支持
 
 ---
 
-## 统计信息
+### [Sass](https://sass-lang.com/) ⭐ 15.4k
 
-| 类别 | 方案数 | 总 Stars |
-|------|--------|----------|
-| Utility-First CSS | 4 | 111k+ |
-| CSS-in-JS | 6 | 94k+ |
-| CSS 预处理器 | 3 | 43k+ |
-| CSS 后处理器 | 3 | 51k+ |
-| CSS 框架 | 3 | 246k+ |
-| CSS 工具 | 1 | 9k+ |
-| **总计** | **20** | **554k+** |
+> Sass makes CSS fun!
+
+功能强大的 CSS 预处理器，支持变量、嵌套、混合等特性。
+
+**核心特性：**
+- 变量和计算
+- 嵌套规则
+- Mixins 和函数
+- 继承
+- 模块化（@use, @forward）
+
+```scss
+// 示例：Sass 变量和嵌套
+$primary-color: #3498db;
+
+.button {
+  background: $primary-color;
+  
+  &:hover {
+    background: darken($primary-color, 10%);
+  }
+  
+  &--large {
+    padding: 20px 40px;
+  }
+}
+```
 
 ---
 
-*文档创建时间：2026年4月 | 维护状态：活跃*
+### [Less](https://lesscss.org/) ⭐ 17.0k
+
+> Less. The dynamic stylesheet language.
+
+动态样式语言，CSS 预处理器，语法类似于 CSS。
+
+**核心特性：**
+- 变量和运算
+- 嵌套规则
+- Mixins
+- 命名空间和访问器
+- 函数和运算
+
+```less
+// 示例：Less 变量和混合
+@primary: #3498db;
+
+.mixin-border-radius(@radius) {
+  border-radius: @radius;
+}
+
+.button {
+  color: @primary;
+  .mixin-border-radius(4px);
+}
+```
+
+---
+
+### [Lightning CSS](https://lightningcss.dev/) ⭐ 7.5k
+
+> An extremely fast CSS parser, transformer, bundler, and minifier written in Rust.
+
+用 Rust 编写的极速 CSS 解析器、转换器、打包器和压缩器。
+
+**核心特性：**
+- 极快的处理速度
+- CSS 模块支持
+- 嵌套 CSS 转换
+- 供应商前缀自动添加
+- 代码压缩和优化
+- 与 Parcel 集成
+
+```bash
+npm install lightningcss
+```
+
+---
+
+## 样式系统
+
+### [Theme UI](https://theme-ui.com/) ⭐ 5.4k
+
+> Build consistent, themeable React apps based on constraint-based design principles
+
+基于约束设计原则构建一致、可主题化的 React 应用。
+
+**核心特性：**
+- 主题规范
+- 设计约束系统
+- 深色模式支持
+- 与 MDX 集成
+- 响应式样式
+
+```jsx
+import { ThemeProvider } from 'theme-ui'
+
+const theme = {
+  colors: {
+    text: '#000',
+    background: '#fff',
+    primary: '#07c',
+  },
+  fonts: {
+    body: 'system-ui, sans-serif',
+    heading: 'Georgia, serif',
+  }
+}
+
+<ThemeProvider theme={theme}>
+  <App />
+</ThemeProvider>
+```
+
+---
+
+### [Styled System](https://styled-system.com/) ⭐ 7.9k
+
+> ⬢ Style props for rapid UI development
+
+样式属性快速 UI 开发，通过 props 快速应用主题值。
+
+**核心特性：**
+- 样式属性 API
+- 主题一致性
+- 响应式样式
+- 与 styled-components、emotion 配合
+
+```jsx
+import styled from 'styled-components'
+import { color, space, typography } from 'styled-system'
+
+const Box = styled.div`
+  ${color}
+  ${space}
+  ${typography}
+`
+
+// 使用
+<Box color="primary" bg="secondary" p={3} fontSize={2}>
+  内容
+</Box>
+```
+
+---
+
+## 选择建议
+
+| 场景 | 推荐方案 |
+|------|----------|
+| 快速原型开发 | Tailwind CSS、Bootstrap |
+| 大型项目定制 | Tailwind CSS、UnoCSS |
+| React 组件样式 | styled-components、Emotion |
+| 零运行时开销 | Linaria、vanilla-extract |
+| 遗留项目维护 | Sass、Less |
+| 现代构建工具链 | PostCSS + Lightning CSS |
+| 设计系统构建 | Theme UI、Styled System |
+
+---
+
+> 📊 **数据统计时间**：2025年4月
+> 
+> ⭐ Stars 数据来源于 GitHub API，可能存在延迟
