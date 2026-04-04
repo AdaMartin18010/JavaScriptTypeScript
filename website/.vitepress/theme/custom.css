@@ -1,0 +1,309 @@
+/* 自定义CSS样式 */
+
+/* ========== 品牌色配置 ========== */
+:root {
+  --vp-c-brand-1: #646cff;
+  --vp-c-brand-2: #747bff;
+  --vp-c-brand-3: #5f67ee;
+  --vp-c-brand-soft: rgba(100, 108, 255, 0.14);
+}
+
+/* 暗色模式品牌色 */
+.dark {
+  --vp-c-brand-1: #a5b4fc;
+  --vp-c-brand-2: #818cf8;
+  --vp-c-brand-3: #6366f1;
+}
+
+/* ========== 首页样式 ========== */
+.VPHero {
+  margin-top: 2rem;
+}
+
+.VPHero .name {
+  background: linear-gradient(120deg, var(--vp-c-brand-3) 30%, #41d1ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 首页Hero区域 */
+.VPHero .text {
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: var(--vp-c-text-2);
+}
+
+/* ========== 特性卡片 ========== */
+.VPFeatures {
+  margin-top: 3rem;
+}
+
+.VPFeatures .box {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border: 1px solid var(--vp-c-divider);
+}
+
+.VPFeatures .box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  border-color: var(--vp-c-brand-3);
+}
+
+/* 特性图标 */
+.VPFeatures .icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+/* ========== 分类卡片样式 ========== */
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.category-card {
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+}
+
+.category-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  border-color: var(--vp-c-brand-3);
+}
+
+.category-card .icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.category-card h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--vp-c-text-1);
+}
+
+.category-card p {
+  font-size: 0.9rem;
+  color: var(--vp-c-text-2);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ========== 统计面板 ========== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.stat-card {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  border-radius: 12px;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--vp-c-brand-3);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--vp-c-text-2);
+  margin-top: 0.5rem;
+}
+
+/* ========== 最新更新列表 ========== */
+.update-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+}
+
+.update-list li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--vp-c-divider);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.update-list li:last-child {
+  border-bottom: none;
+}
+
+.update-list .date {
+  font-size: 0.75rem;
+  color: var(--vp-c-text-3);
+  white-space: nowrap;
+  min-width: 80px;
+}
+
+.update-list .tag {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  background: var(--vp-c-brand-soft);
+  color: var(--vp-c-brand-1);
+  white-space: nowrap;
+}
+
+/* ========== 搜索框样式优化 ========== */
+.VPLocalSearchBox {
+  --vp-local-search-highlight-bg: var(--vp-c-brand-soft);
+  --vp-local-search-highlight-text: var(--vp-c-brand-1);
+}
+
+/* ========== 侧边栏样式 ========== */
+.VPSidebarItem {
+  font-size: 0.95rem;
+}
+
+.VPSidebarItem .item:hover {
+  color: var(--vp-c-brand-1);
+}
+
+.VPSidebarItem.is-active .item {
+  color: var(--vp-c-brand-1);
+}
+
+/* 分组标题 */
+.VPSidebarItem.level-0 > .item > .text {
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--vp-c-text-3);
+}
+
+/* ========== 内容区域样式 ========== */
+.vp-doc h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.vp-doc h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  border-top: none;
+  padding-top: 0;
+  margin-top: 2.5rem;
+  border-bottom: 1px solid var(--vp-c-divider);
+  padding-bottom: 0.75rem;
+}
+
+.vp-doc h3 {
+  font-size: 1.375rem;
+  font-weight: 600;
+}
+
+/* 表格样式优化 */
+.vp-doc table {
+  font-size: 0.9rem;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.vp-doc th {
+  background: var(--vp-c-bg-soft);
+  font-weight: 600;
+}
+
+.vp-doc tr:nth-child(2n) {
+  background: var(--vp-c-bg-soft);
+}
+
+/* 代码块样式 */
+.vp-doc div[class*='language-'] {
+  border-radius: 8px;
+}
+
+/* ========== 按钮样式 ========== */
+.VPButton {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.VPButton.brand {
+  background: linear-gradient(135deg, var(--vp-c-brand-3), var(--vp-c-brand-1));
+  border: none;
+}
+
+.VPButton.brand:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(100, 108, 255, 0.4);
+}
+
+/* ========== 响应式设计 ========== */
+@media (max-width: 768px) {
+  .category-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .VPHero .text {
+    font-size: 1.25rem;
+  }
+  
+  .vp-doc h1 {
+    font-size: 1.75rem;
+  }
+  
+  .vp-doc h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* ========== 动画效果 ========== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.category-card {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* 渐进式动画延迟 */
+.category-card:nth-child(1) { animation-delay: 0.05s; }
+.category-card:nth-child(2) { animation-delay: 0.1s; }
+.category-card:nth-child(3) { animation-delay: 0.15s; }
+.category-card:nth-child(4) { animation-delay: 0.2s; }
+.category-card:nth-child(5) { animation-delay: 0.25s; }
+.category-card:nth-child(6) { animation-delay: 0.3s; }
+.category-card:nth-child(7) { animation-delay: 0.35s; }
+.category-card:nth-child(8) { animation-delay: 0.4s; }
+.category-card:nth-child(9) { animation-delay: 0.45s; }
+.category-card:nth-child(10) { animation-delay: 0.5s; }
+.category-card:nth-child(11) { animation-delay: 0.55s; }
+.category-card:nth-child(12) { animation-delay: 0.6s; }
+.category-card:nth-child(13) { animation-delay: 0.65s; }
+.category-card:nth-child(14) { animation-delay: 0.7s; }

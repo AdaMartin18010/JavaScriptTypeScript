@@ -1,0 +1,259 @@
+name: Security Scan
+
+on:
+  # 定期扫描：每天 UTC 02:00 运行
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # 手动触发
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: '扫描类型'
+        required: true
+        default: 'npm-audit'
+        type: choice
+        options:
+          - npm-audit
+          - full
+      fail_on_high:
+        description: '发现高危漏洞时失败'
+        required: false
+        default: true
+        type: boolean
+  
+  # PR 时自动检查
+  pull_request:
+    branches: [main, master]
+    paths:
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/pnpm-lock.yaml'
+  
+  # push 到 main 分支时检查
+  push:
+    branches: [main, master]
+    paths:
+      - '**/package.json'
+      - '**/package-lock.json'
+      - '**/pnpm-lock.yaml'
+
+jobs:
+  # 安全扫描主任务
+  security-scan:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      security-events: write
+      issues: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      # 安装依赖
+      - name: Install dependencies (jsts-code-lab)
+        working-directory: jsts-code-lab
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm install --frozen-lockfile
+          elif [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      # 运行安全扫描
+      - name: Run security check
+        id: security_check
+        continue-on-error: true
+        run: |
+          node scripts/security-check.js --json > security-report.json
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          cat security-report.json
+
+      # 上传扫描结果作为 Artifact
+      - name: Upload security report
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: |
+            security-report.json
+            SECURITY.md
+          retention-days: 30
+
+      # 解析报告并设置输出
+      - name: Parse security report
+        id: parse_report
+        run: |
+          # 检查是否有高危漏洞
+          CRITICAL=$(cat security-report.json | grep -o '"critical":[0-9]*' | grep -o '[0-9]*' | awk '{s+=$1} END {print s}')
+          HIGH=$(cat security-report.json | grep -o '"high":[0-9]*' | grep -o '[0-9]*' | awk '{s+=$1} END {print s}')
+          MODERATE=$(cat security-report.json | grep -o '"moderate":[0-9]*' | grep -o '[0-9]*' | awk '{s+=$1} END {print s}')
+          LOW=$(cat security-report.json | grep -o '"low":[0-9]*' | grep -o '[0-9]*' | awk '{s+=$1} END {print s}')
+          
+          echo "critical=${CRITICAL:-0}" >> $GITHUB_OUTPUT
+          echo "high=${HIGH:-0}" >> $GITHUB_OUTPUT
+          echo "moderate=${MODERATE:-0}" >> $GITHUB_OUTPUT
+          echo "low=${LOW:-0}" >> $GITHUB_OUTPUT
+          
+          TOTAL=$((CRITICAL + HIGH + MODERATE + LOW))
+          echo "total=${TOTAL:-0}" >> $GITHUB_OUTPUT
+
+      # PR 评论：安全扫描结果
+      - name: Comment PR with security results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('security-report.json', 'utf-8'));
+            
+            let body = '## 🔒 安全扫描结果\n\n';
+            
+            const critical = ${{ steps.parse_report.outputs.critical }};
+            const high = ${{ steps.parse_report.outputs.high }};
+            const moderate = ${{ steps.parse_report.outputs.moderate }};
+            const low = ${{ steps.parse_report.outputs.low }};
+            
+            if (critical > 0 || high > 0) {
+              body += '❌ **发现高危漏洞，请修复后再合并**\n\n';
+            } else if (moderate > 0 || low > 0) {
+              body += '⚠️ **发现漏洞，建议修复**\n\n';
+            } else {
+              body += '✅ **未发现安全漏洞**\n\n';
+            }
+            
+            body += '| 等级 | 数量 |\n';
+            body += '|------|------|\n';
+            body += `| 🔴 严重 | ${critical} |\n`;
+            body += `| 🔴 高危 | ${high} |\n`;
+            body += `| 🟠 中危 | ${moderate} |\n`;
+            body += `| 🟡 低危 | ${low} |\n`;
+            
+            body += '\n<details>\n<summary>查看详细报告</summary>\n\n';
+            body += '```json\n';
+            body += JSON.stringify(report, null, 2);
+            body += '\n```\n</details>\n';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      # 发现高危漏洞时创建 Issue
+      - name: Create issue for critical vulnerabilities
+        if: |
+          (steps.parse_report.outputs.critical != '0' || steps.parse_report.outputs.high != '0') && 
+          github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const critical = ${{ steps.parse_report.outputs.critical }};
+            const high = ${{ steps.parse_report.outputs.high }};
+            
+            const title = `🚨 安全警报: 发现 ${critical} 个严重、${high} 个高危漏洞`;
+            
+            // 检查是否已存在相同标题的 Issue
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'security'
+            });
+            
+            const exists = issues.some(issue => issue.title === title);
+            if (exists) {
+              console.log('Issue already exists');
+              return;
+            }
+            
+            const body = `## 安全扫描发现漏洞\n\n` +
+              `- 严重: ${critical}\n` +
+              `- 高危: ${high}\n\n` +
+              `请运行 \`npm audit\` 查看详细信息并修复。\n\n` +
+              `查看完整报告: [SECURITY.md](../blob/main/SECURITY.md)`;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['security', 'bug', 'high-priority']
+            });
+
+      # 失败检查
+      - name: Fail on high severity
+        if: |
+          (steps.parse_report.outputs.critical != '0' || steps.parse_report.outputs.high != '0') &&
+          (github.event.inputs.fail_on_high != 'false')
+        run: |
+          echo "❌ 发现高危或严重漏洞"
+          exit 1
+
+  # 依赖审查 (PR)
+  dependency-review:
+    name: 📋 Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: true
+
+  # Snyk 扫描 (可选)
+  snyk-scan:
+    name: 🔍 Snyk Scan
+    runs-on: ubuntu-latest
+    if: github.event.inputs.scan_type == 'full' || github.event_name == 'schedule'
+    permissions:
+      contents: read
+      security-events: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Snyk
+        uses: snyk/actions/setup@master
+
+      - name: Snyk test
+        working-directory: jsts-code-lab
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk test --all-projects --json-file-output=snyk-report.json || true
+        continue-on-error: true
+
+      - name: Upload Snyk report
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-report
+          path: jsts-code-lab/snyk-report.json
+          retention-days: 30
