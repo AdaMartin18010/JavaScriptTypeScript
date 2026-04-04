@@ -43,15 +43,15 @@ export const METADATA_KEYS = {
  */
 export function Singleton<T extends new (...args: any[]) => any>(target: T): T {
   let instance: InstanceType<T> | null = null;
-  const proxy = new Proxy(target, {
-    construct(ctor, args) {
+  const SingletonClass = new Proxy(target, {
+    construct(ctor: T, args: any[]): any {
       if (!instance) {
-        instance = Reflect.construct(ctor, args);
+        instance = Reflect.construct(ctor, args) as InstanceType<T>;
       }
       return instance;
     }
   });
-  return proxy as T;
+  return SingletonClass as T;
 }
 
 /**
@@ -74,14 +74,15 @@ export function Frozen(constructor: Function): void {
  * 抽象类装饰器 - 模拟抽象类
  */
 export function Abstract<T extends new (...args: any[]) => any>(target: T): T {
-  return class extends target {
+  const AbstractClass = class extends target {
     constructor(...args: any[]) {
-      if (new.target === Abstract) {
+      super(...args);
+      if (new.target === AbstractClass) {
         throw new Error('Cannot instantiate abstract class directly');
       }
-      super(...args);
     }
-  } as T;
+  };
+  return AbstractClass as T;
 }
 
 /**
@@ -109,7 +110,7 @@ export function Log(options: MethodDecoratorOptions = {}): MethodDecorator {
     const originalMethod = descriptor.value!;
     const className = target.constructor.name;
 
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = function (this: any, ...args: any[]) {
       const startTime = performance.now();
       
       if (options.logArgs !== false) {
@@ -117,7 +118,7 @@ export function Log(options: MethodDecoratorOptions = {}): MethodDecorator {
       }
 
       try {
-        const result = originalMethod.apply(this, args);
+        const result = (originalMethod as (...args: any[]) => any).apply(this as any, args);
         
         // 处理异步方法
         if (result instanceof Promise) {
@@ -162,7 +163,7 @@ export function Measure(label?: string): MethodDecorator {
     const originalMethod = descriptor.value!;
     const methodName = label || `${target.constructor.name}.${String(propertyKey)}`;
 
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = function (this: any, ...args: any[]) {
       const startMark = `${methodName}_start`;
       const endMark = `${methodName}_end`;
       const measureName = `${methodName}_measure`;
@@ -182,7 +183,7 @@ export function Measure(label?: string): MethodDecorator {
       };
 
       try {
-        const result = originalMethod.apply(this, args);
+        const result = (originalMethod as (...args: any[]) => any).apply(this as any, args);
 
         if (result instanceof Promise) {
           return result.finally(complete);
@@ -208,7 +209,7 @@ export function Memoize(resolver?: (...args: any[]) => string): MethodDecorator 
     const originalMethod = descriptor.value!;
     const cache = new Map<string, any>();
 
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = function (this: any, ...args: any[]) {
       const key = resolver ? resolver(...args) : JSON.stringify(args);
 
       if (cache.has(key)) {
@@ -216,7 +217,7 @@ export function Memoize(resolver?: (...args: any[]) => string): MethodDecorator 
         return cache.get(key);
       }
 
-      const result = originalMethod.apply(this, args);
+      const result = (originalMethod as (...args: any[]) => any).apply(this as any, args);
 
       if (result instanceof Promise) {
         return result.then((value) => {
@@ -244,13 +245,13 @@ export function Debounce(waitMs: number): MethodDecorator {
     const originalMethod = descriptor.value!;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = function (this: any, ...args: any[]) {
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
 
       timeoutId = setTimeout(() => {
-        originalMethod.apply(this, args);
+        (originalMethod as (...args: any[]) => any).apply(this as any, args);
         timeoutId = null;
       }, waitMs);
     } as typeof originalMethod;
@@ -268,7 +269,7 @@ export function Throttle(waitMs: number): MethodDecorator {
     let lastExecution = 0;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = function (this: any, ...args: any[]) {
       const now = Date.now();
       const remaining = waitMs - (now - lastExecution);
 
@@ -278,12 +279,12 @@ export function Throttle(waitMs: number): MethodDecorator {
           timeoutId = null;
         }
         lastExecution = now;
-        originalMethod.apply(this, args);
+        (originalMethod as (...args: any[]) => any).apply(this as any, args);
       } else if (!timeoutId) {
         timeoutId = setTimeout(() => {
           lastExecution = Date.now();
           timeoutId = null;
-          originalMethod.apply(this, args);
+          (originalMethod as (...args: any[]) => any).apply(this as any, args);
         }, remaining);
       }
     } as typeof originalMethod;
@@ -302,7 +303,7 @@ export function Retry(maxAttempts: number, delayMs: number = 0): MethodDecorator
     descriptor.value = async function (...args: any[]) {
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
-          return await originalMethod.apply(this, args);
+          return await (originalMethod as (...args: any[]) => any).apply(this as any, args);
         } catch (error) {
           if (attempt === maxAttempts) {
             throw error;
@@ -326,7 +327,7 @@ export function Authorize(...roles: string[]): MethodDecorator {
   return (target, propertyKey, descriptor) => {
     const originalMethod = descriptor.value!;
 
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = function (this: any, ...args: any[]) {
       // 假设第一个参数是用户上下文
       const user = args[0];
       
@@ -338,7 +339,7 @@ export function Authorize(...roles: string[]): MethodDecorator {
         throw new Error(`Forbidden: Required roles [${roles.join(', ')}]`);
       }
 
-      return originalMethod.apply(this, args);
+      return (originalMethod as (...args: any[]) => any).apply(this as any, args);
     } as typeof originalMethod;
 
     return descriptor;
@@ -352,7 +353,7 @@ export function Validate(schema: Record<string, (value: any) => boolean | string
   return (target, propertyKey, descriptor) => {
     const originalMethod = descriptor.value!;
 
-    descriptor.value = function (...args: any[]) {
+    descriptor.value = function (this: any, ...args: any[]) {
       const params = args[0];
 
       for (const [key, validator] of Object.entries(schema)) {
@@ -365,7 +366,7 @@ export function Validate(schema: Record<string, (value: any) => boolean | string
         }
       }
 
-      return originalMethod.apply(this, args);
+      return (originalMethod as (...args: any[]) => any).apply(this as any, args);
     } as typeof originalMethod;
 
     return descriptor;
@@ -480,7 +481,7 @@ export function Transactional(): MethodDecorator {
       console.log(`[TRANSACTION] Starting transaction for ${String(propertyKey)}`);
       
       try {
-        const result = await originalMethod.apply(this, args);
+        const result = await (originalMethod as (...args: any[]) => any).apply(this as any, args);
         console.log(`[TRANSACTION] Committing transaction for ${String(propertyKey)}`);
         return result;
       } catch (error) {
