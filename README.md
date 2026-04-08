@@ -13,7 +13,7 @@
 </p>
 
 > 🚀 精心策划的 JavaScript/TypeScript 生态系统资源列表，涵盖框架、工具、库和最佳实践。
-> 
+>
 > 📚 配套代码实验室：[jsts-code-lab](./jsts-code-lab/) - 80+ 模块，280+ TypeScript 文件，从理论到实践的完整实现
 
 ---
@@ -177,6 +177,7 @@ pnpm test
 ### 统一错误处理架构
 
 **错误类型定义**
+
 ```typescript
 // lib/errors.ts
 export class AppError extends Error {
@@ -214,6 +215,7 @@ export class NotFoundError extends AppError {
 ```
 
 **全局错误处理中间件**
+
 ```typescript
 // middleware/errorHandler.ts
 import { NextApiRequest, NextApiResponse } from 'next'
@@ -261,8 +263,8 @@ export function errorHandler(
   return res.status(500).json({
     error: {
       code: 'INTERNAL_ERROR',
-      message: process.env.NODE_ENV === 'production' 
-        ? 'Internal server error' 
+      message: process.env.NODE_ENV === 'production'
+        ? 'Internal server error'
         : err.message
     }
   })
@@ -270,6 +272,7 @@ export function errorHandler(
 ```
 
 **React 错误边界**
+
 ```typescript
 // components/ErrorBoundary.tsx
 'use client'
@@ -328,6 +331,7 @@ export class ErrorBoundary extends Component<Props, State> {
 ### 日志记录最佳实践
 
 **结构化日志配置**
+
 ```typescript
 // lib/logger.ts
 import pino from 'pino'
@@ -336,7 +340,7 @@ const isDev = process.env.NODE_ENV === 'development'
 
 export const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
-  transport: isDev 
+  transport: isDev
     ? {
         target: 'pino-pretty',
         options: {
@@ -370,6 +374,7 @@ export function createLogger(component: string) {
 ```
 
 **日志使用示例**
+
 ```typescript
 // API 路由中使用
 import { createLogger } from '@/lib/logger'
@@ -378,7 +383,7 @@ const logger = createLogger('AuthAPI')
 
 export async function POST(req: Request) {
   logger.info({ email: req.body.email }, 'Login attempt')
-  
+
   try {
     const user = await authenticate(req.body)
     logger.info({ userId: user.id }, 'Login successful')
@@ -391,6 +396,7 @@ export async function POST(req: Request) {
 ```
 
 **前端日志收集**
+
 ```typescript
 // lib/client-logger.ts
 export function logError(error: Error, context?: Record<string, any>) {
@@ -428,6 +434,7 @@ export const queryClient = new QueryClient({
 ### 监控与告警
 
 **Sentry 集成**
+
 ```typescript
 // lib/sentry.ts
 import * as Sentry from '@sentry/nextjs'
@@ -436,26 +443,26 @@ Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   environment: process.env.NODE_ENV,
   release: process.env.NEXT_PUBLIC_APP_VERSION,
-  
+
   // 采样率
   tracesSampleRate: 1.0,
   profilesSampleRate: 0.1,
-  
+
   //  replays
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
-  
+
   // 过滤
   beforeSend(event) {
     // 忽略 404 错误
-    if (event.exception?.values?.some(e => 
+    if (event.exception?.values?.some(e =>
       e.value?.includes('Not found')
     )) {
       return null
     }
     return event
   },
-  
+
   // 标签
   initialScope: {
     tags: {
@@ -466,14 +473,15 @@ Sentry.init({
 ```
 
 **性能监控**
+
 ```typescript
 // lib/performance.ts
 export function measurePerformance(name: string, fn: () => Promise<any>) {
   const start = performance.now()
-  
+
   return fn().finally(() => {
     const duration = performance.now() - start
-    
+
     // 发送到分析平台
     if (window.gtag) {
       window.gtag('event', 'timing_complete', {
@@ -481,7 +489,7 @@ export function measurePerformance(name: string, fn: () => Promise<any>) {
         value: Math.round(duration)
       })
     }
-    
+
     // 慢操作告警
     if (duration > 3000) {
       console.warn(`Slow operation: ${name} took ${duration}ms`)
@@ -491,6 +499,7 @@ export function measurePerformance(name: string, fn: () => Promise<any>) {
 ```
 
 **健康检查端点**
+
 ```typescript
 // app/api/health/route.ts
 import { prisma } from '@/lib/prisma'
@@ -502,25 +511,25 @@ export async function GET() {
     redis: false,
     timestamp: new Date().toISOString()
   }
-  
+
   try {
     await prisma.$queryRaw`SELECT 1`
     checks.database = true
   } catch (error) {
     console.error('Database health check failed', error)
   }
-  
+
   try {
     await redis.ping()
     checks.redis = true
   } catch (error) {
     console.error('Redis health check failed', error)
   }
-  
+
   const healthy = checks.database && checks.redis
-  
-  return Response.json(checks, { 
-    status: healthy ? 200 : 503 
+
+  return Response.json(checks, {
+    status: healthy ? 200 : 503
   })
 }
 ```
@@ -532,11 +541,13 @@ export async function GET() {
 ### next-intl 完整配置
 
 **安装**
+
 ```bash
 npm install next-intl
 ```
 
 **配置文件**
+
 ```typescript
 // i18n.ts
 import { getRequestConfig } from 'next-intl/server'
@@ -547,7 +558,7 @@ export type Locale = (typeof locales)[number]
 
 export default getRequestConfig(async ({ locale }) => {
   if (!locales.includes(locale as any)) notFound()
-  
+
   return {
     messages: (await import(`./messages/${locale}.json`)).default
   }
@@ -555,6 +566,7 @@ export default getRequestConfig(async ({ locale }) => {
 ```
 
 **消息文件结构**
+
 ```json
 // messages/zh.json
 {
@@ -604,6 +616,7 @@ export default getRequestConfig(async ({ locale }) => {
 ```
 
 **Next.js 配置**
+
 ```typescript
 // next.config.js
 const withNextIntl = require('next-intl/plugin')('./i18n.ts')
@@ -614,6 +627,7 @@ module.exports = withNextIntl({
 ```
 
 **中间件配置**
+
 ```typescript
 // middleware.ts
 import createMiddleware from 'next-intl/middleware'
@@ -631,6 +645,7 @@ export const config = {
 ```
 
 **页面结构**
+
 ```
 app/
 ├── [locale]/
@@ -644,14 +659,15 @@ app/
 ```
 
 **使用示例**
+
 ```typescript
 // app/[locale]/page.tsx
 import { useTranslations } from 'next-intl'
 import { getTranslations } from 'next-intl/server'
 
 // 服务端组件
-export async function generateMetadata({ 
-  params: { locale } 
+export async function generateMetadata({
+  params: { locale }
 }: { params: { locale: string } }) {
   const t = await getTranslations({ locale, namespace: 'Metadata' })
   return {
@@ -662,7 +678,7 @@ export async function generateMetadata({
 
 export default function HomePage() {
   const t = useTranslations('Hero')
-  
+
   return (
     <div>
       <h1>{t('title', { appName: 'MyApp' })}</h1>
@@ -678,7 +694,7 @@ import { useTranslations } from 'next-intl'
 
 export function Navigation() {
   const t = useTranslations('Navigation')
-  
+
   return (
     <nav>
       <a href="/">{t('home')}</a>
@@ -689,6 +705,7 @@ export function Navigation() {
 ```
 
 **语言切换组件**
+
 ```typescript
 // components/LocaleSwitcher.tsx
 'use client'
@@ -701,14 +718,14 @@ export function LocaleSwitcher() {
   const locale = useLocale()
   const router = useRouter()
   const pathname = usePathname()
-  
+
   const handleChange = (newLocale: string) => {
     router.replace(pathname, { locale: newLocale })
   }
-  
+
   return (
-    <select 
-      value={locale} 
+    <select
+      value={locale}
       onChange={(e) => handleChange(e.target.value)}
     >
       <option value="zh">中文</option>
@@ -731,24 +748,24 @@ function FormattedValues() {
   const now = useNow({
     updateInterval: 1000 * 60 // 每分钟更新
   })
-  
+
   // 日期
   format.dateTime(new Date(), {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   }) // 2024年1月15日
-  
+
   // 相对时间
   format.relativeTime(new Date('2024-01-01'))
   // 2周前
-  
+
   // 数字
   format.number(1234567.89, {
     style: 'currency',
     currency: 'CNY'
   }) // ¥1,234,567.89
-  
+
   // 列表
   format.list(['苹果', '香蕉', '橙子'])
   // 苹果、香蕉和橙子
@@ -781,6 +798,7 @@ t('items', { count: 5 }) // 5个项目
 ### 翻译管理 CLI
 
 **提取脚本**
+
 ```bash
 # 提取所有翻译键
 npx next-intl extract
@@ -791,6 +809,7 @@ ls messages/
 ```
 
 **翻译工作流**
+
 ```bash
 # 1. 开发时添加新 key
 const t = useTranslations()
@@ -813,6 +832,7 @@ npm run i18n:validate
 ### Vercel 部署 (推荐)
 
 **vercel.json 配置**
+
 ```json
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
@@ -853,6 +873,7 @@ npm run i18n:validate
 ```
 
 **环境变量设置**
+
 ```bash
 # Production
 vercel env add DATABASE_URL production
@@ -867,6 +888,7 @@ vercel env add DATABASE_URL preview
 ### AWS ECS + Fargate 部署
 
 **task-definition.json**
+
 ```json
 {
   "family": "my-app",
@@ -912,6 +934,7 @@ vercel env add DATABASE_URL preview
 ```
 
 **GitHub Actions 部署到 ECS**
+
 ```yaml
 # .github/workflows/deploy-aws.yml
 name: Deploy to AWS ECS
@@ -931,18 +954,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-      
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-      
+
       - name: Build and push Docker image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -951,7 +974,7 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-      
+
       - name: Update ECS service
         run: |
           aws ecs update-service \
@@ -965,6 +988,7 @@ jobs:
 ### Docker Compose 本地/生产部署
 
 **docker-compose.yml**
+
 ```yaml
 version: '3.8'
 
@@ -1039,6 +1063,7 @@ networks:
 ### Kubernetes 部署配置
 
 **deployment.yaml**
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -1091,6 +1116,7 @@ spec:
 ```
 
 **service.yaml**
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -1107,6 +1133,7 @@ spec:
 ```
 
 **ingress.yaml**
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -1153,12 +1180,14 @@ spec:
 ### tRPC 方案（推荐用于全栈 TypeScript）
 
 **为什么选 tRPC？**
+
 - 端到端类型安全，无需代码生成
 - 与 React Query 集成，缓存开箱即用
 - 支持订阅（WebSocket）
 - 前后端共享类型定义
 
 **项目结构**
+
 ```
 src/
 ├── server/
@@ -1175,6 +1204,7 @@ src/
 ```
 
 **服务端配置**
+
 ```typescript
 // src/server/trpc.ts
 import { initTRPC, TRPCError } from '@trpc/server'
@@ -1202,6 +1232,7 @@ export const protectedProcedure = t.procedure.use(
 ```
 
 **路由定义**
+
 ```typescript
 // src/server/routers/user.ts
 import { router, publicProcedure, protectedProcedure } from '../trpc'
@@ -1218,7 +1249,7 @@ export const userRouter = router({
       if (!user) throw new TRPCError({ code: 'NOT_FOUND' })
       return user
     }),
-  
+
   // 列表查询（分页）
   list: publicProcedure
     .input(z.object({
@@ -1231,16 +1262,16 @@ export const userRouter = router({
         cursor: input.cursor ? { id: input.cursor } : undefined,
         orderBy: { createdAt: 'desc' }
       })
-      
+
       let nextCursor: typeof input.cursor = undefined
       if (users.length > input.limit) {
         const nextItem = users.pop()
         nextCursor = nextItem!.id
       }
-      
+
       return { users, nextCursor }
     }),
-  
+
   // 创建（需要登录）
   create: protectedProcedure
     .input(z.object({
@@ -1256,6 +1287,7 @@ export const userRouter = router({
 ```
 
 **主路由合并**
+
 ```typescript
 // src/server/routers/_app.ts
 import { router } from '../trpc'
@@ -1271,6 +1303,7 @@ export type AppRouter = typeof appRouter
 ```
 
 **API 路由**
+
 ```typescript
 // src/app/api/trpc/[trpc]/route.ts
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
@@ -1289,6 +1322,7 @@ export { handler as GET, handler as POST }
 ```
 
 **客户端使用**
+
 ```typescript
 // src/lib/trpc.ts
 import { createTRPCReact } from '@trpc/react-query'
@@ -1328,6 +1362,7 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 ```
 
 **React 组件中使用**
+
 ```typescript
 // 查询
 function UserList() {
@@ -1337,7 +1372,7 @@ function UserList() {
       getNextPageParam: (lastPage) => lastPage.nextCursor
     }
   )
-  
+
   return (
     <div>
       {data?.pages.map((page) =>
@@ -1359,7 +1394,7 @@ function CreateUser() {
       utils.user.list.invalidate()
     }
   })
-  
+
   return (
     <form onSubmit={(e) => {
       e.preventDefault()
@@ -1380,6 +1415,7 @@ function CreateUser() {
 **适用场景**: 需要与现有 GraphQL 生态集成，或团队熟悉 GraphQL
 
 **服务端 (GraphQL Yoga)**
+
 ```typescript
 // src/app/api/graphql/route.ts
 import { createYoga } from 'graphql-yoga'
@@ -1395,6 +1431,7 @@ export { handleRequest as GET, handleRequest as POST }
 ```
 
 **Schema 定义**
+
 ```typescript
 // src/server/graphql/schema.ts
 import { makeExecutableSchema } from '@graphql-tools/schema'
@@ -1414,20 +1451,20 @@ export const typeDefs = `
     email: String!
     posts: [Post!]!
   }
-  
+
   type Post {
     id: ID!
     title: String!
     content: String!
     author: User!
   }
-  
+
   type Query {
     users: [User!]!
     user(id: ID!): User
     posts: [Post!]!
   }
-  
+
   type Mutation {
     createUser(name: String!, email: String!): User!
     createPost(title: String!, content: String!, authorId: ID!): Post!
@@ -1436,6 +1473,7 @@ export const typeDefs = `
 ```
 
 **客户端 (Apollo Client)**
+
 ```typescript
 // src/lib/apollo.ts
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client'
@@ -1489,6 +1527,7 @@ export const apolloClient = new ApolloClient({
 | 适用场景 | 全栈 TS 项目 | 多客户端/公共 API |
 
 **选型建议**
+
 - 新项目 + 全栈 TypeScript → **tRPC**
 - 需要移动端/第三方接入 → **GraphQL**
 - 已有 GraphQL 生态 → **GraphQL Yoga**
@@ -1500,6 +1539,7 @@ export const apolloClient = new ApolloClient({
 ### Socket.io 完整实现
 
 **服务端 (Next.js API Route)**
+
 ```typescript
 // src/app/api/socket/route.ts
 import { Server as NetServer } from 'http'
@@ -1529,19 +1569,19 @@ export async function GET(req: NextApiRequest) {
   // 连接处理
   io.on('connection', (socket) => {
     console.log('Client connected:', socket.id)
-    
+
     // 加入房间
     socket.on('join-room', (roomId: string) => {
       socket.join(roomId)
       socket.to(roomId).emit('user-joined', socket.id)
     })
-    
+
     // 离开房间
     socket.on('leave-room', (roomId: string) => {
       socket.leave(roomId)
       socket.to(roomId).emit('user-left', socket.id)
     })
-    
+
     // 消息广播
     socket.on('send-message', (data: { roomId: string; message: string }) => {
       socket.to(data.roomId).emit('new-message', {
@@ -1551,12 +1591,12 @@ export async function GET(req: NextApiRequest) {
         timestamp: new Date().toISOString()
       })
     })
-    
+
     // 协作编辑（Yjs 集成）
     socket.on('doc-update', (data: { roomId: string; update: Uint8Array }) => {
       socket.to(data.roomId).emit('doc-update', data.update)
     })
-    
+
     // 断开连接
     socket.on('disconnect', () => {
       console.log('Client disconnected:', socket.id)
@@ -1564,12 +1604,13 @@ export async function GET(req: NextApiRequest) {
   })
 
   ;(req.socket as any).server.io = io
-  
+
   return new Response('Socket initialized', { status: 200 })
 }
 ```
 
 **客户端 Hook**
+
 ```typescript
 // src/hooks/useSocket.ts
 import { useEffect, useRef, useState } from 'react'
@@ -1589,7 +1630,7 @@ export function useSocket(roomId?: string) {
     socketRef.current.on('connect', () => {
       setIsConnected(true)
       console.log('Connected:', socketRef.current?.id)
-      
+
       // 加入房间
       if (roomId) {
         socketRef.current?.emit('join-room', roomId)
@@ -1625,6 +1666,7 @@ export function useSocket(roomId?: string) {
 ```
 
 **聊天组件**
+
 ```typescript
 // src/components/Chat.tsx
 'use client'
@@ -1641,7 +1683,7 @@ export function Chat({ roomId }: { roomId: string }) {
       <div className="connection-status">
         {isConnected ? '🟢 已连接' : '🔴 未连接'}
       </div>
-      
+
       <div className="messages">
         {messages.map((msg) => (
           <div key={msg.id} className="message">
@@ -1653,7 +1695,7 @@ export function Chat({ roomId }: { roomId: string }) {
           </div>
         ))}
       </div>
-      
+
       <form onSubmit={(e) => {
         e.preventDefault()
         sendMessage(input)
@@ -1678,6 +1720,7 @@ export function Chat({ roomId }: { roomId: string }) {
 ### PartyKit 边缘实时方案
 
 **PartyKit 服务端**
+
 ```typescript
 // party/server.ts
 import type * as Party from 'partykit/server'
@@ -1687,7 +1730,7 @@ export default class Server implements Party.Server {
 
   onConnect(conn: Party.Connection) {
     console.log(`Client ${conn.id} connected to room ${this.room.id}`)
-    
+
     // 广播新用户加入
     this.room.broadcast(
       JSON.stringify({ type: 'user-joined', userId: conn.id }),
@@ -1697,7 +1740,7 @@ export default class Server implements Party.Server {
 
   onMessage(message: string, sender: Party.Connection) {
     const data = JSON.parse(message)
-    
+
     switch (data.type) {
       case 'cursor-move':
         // 广播光标位置（排除发送者）
@@ -1711,12 +1754,12 @@ export default class Server implements Party.Server {
           [sender.id]
         )
         break
-        
+
       case 'doc-update':
         // Yjs 文档更新广播
         this.room.broadcast(message, [sender.id])
         break
-        
+
       case 'chat-message':
         // 聊天消息持久化 + 广播
         this.persistMessage(data)
@@ -1730,7 +1773,7 @@ export default class Server implements Party.Server {
       JSON.stringify({ type: 'user-left', userId: conn.id })
     )
   }
-  
+
   async persistMessage(data: any) {
     // 保存到外部数据库
     await fetch(process.env.API_URL + '/messages', {
@@ -1747,6 +1790,7 @@ Server satisfies Party.Worker
 ```
 
 **PartyKit 配置**
+
 ```typescript
 // partykit.json
 {
@@ -1760,6 +1804,7 @@ Server satisfies Party.Worker
 ```
 
 **客户端使用**
+
 ```typescript
 // src/hooks/useParty.ts
 import { useEffect, useRef, useState } from 'react'
@@ -1774,10 +1819,10 @@ export function useParty(roomId: string) {
     wsRef.current = ws
 
     ws.onopen = () => console.log('Connected to PartyKit')
-    
+
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data)
-      
+
       switch (data.type) {
         case 'user-joined':
           setUsers((prev) => [...prev, data.userId])
@@ -1808,6 +1853,7 @@ export function useParty(roomId: string) {
 ### Yjs 协作编辑实现
 
 **文档同步**
+
 ```typescript
 // src/hooks/useYjs.ts
 import { useEffect, useRef, useState } from 'react'
@@ -1823,9 +1869,9 @@ export function useCollaborativeEditor(roomId: string) {
   useEffect(() => {
     const doc = new Y.Doc()
     docRef.current = doc
-    
+
     const yText = doc.getText('content')
-    
+
     // 监听本地变化
     yText.observe(() => {
       setContent(yText.toString())
@@ -1936,15 +1982,16 @@ export function useCollaborativeEditor(roomId: string) {
 ```
     /\
    /  \     E2E 测试 (Playwright) - 关键用户流程
-  /----\    
+  /----\
  /      \   集成测试 (Vitest) - API/组件交互
-/--------\  
+/--------\
 ----------  单元测试 (Vitest) - 纯函数/工具类
 ```
 
 ### Vitest 单元测试配置
 
 **vitest.config.ts**
+
 ```typescript
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
@@ -1980,6 +2027,7 @@ export default defineConfig({
 ```
 
 **测试配置 (tests/setup.ts)**
+
 ```typescript
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
@@ -2005,6 +2053,7 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 ```
 
 **单元测试示例**
+
 ```typescript
 // utils/calculate.test.ts
 import { describe, it, expect } from 'vitest'
@@ -2036,6 +2085,7 @@ describe('applyDiscount', () => {
 ```
 
 **React 组件测试**
+
 ```typescript
 // components/Button.test.tsx
 import { describe, it, expect, vi } from 'vitest'
@@ -2051,7 +2101,7 @@ describe('Button', () => {
   it('点击时应该触发 onClick 事件', () => {
     const handleClick = vi.fn()
     render(<Button onClick={handleClick}>点击</Button>)
-    
+
     fireEvent.click(screen.getByText('点击'))
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
@@ -2059,7 +2109,7 @@ describe('Button', () => {
   it('禁用时应该不可点击', () => {
     const handleClick = vi.fn()
     render(<Button disabled onClick={handleClick}>禁用</Button>)
-    
+
     fireEvent.click(screen.getByText('禁用'))
     expect(handleClick).not.toHaveBeenCalled()
   })
@@ -2067,6 +2117,7 @@ describe('Button', () => {
 ```
 
 **API 测试 (MSW Mock)**
+
 ```typescript
 // tests/mocks/handlers.ts
 import { http, HttpResponse } from 'msw'
@@ -2082,11 +2133,11 @@ export const handlers = [
 
   http.post('/api/login', async ({ request }) => {
     const body = await request.json()
-    
+
     if (body.email === 'test@example.com' && body.password === 'password') {
       return HttpResponse.json({ token: 'fake-jwt-token' })
     }
-    
+
     return new HttpResponse(null, { status: 401 })
   })
 ]
@@ -2097,6 +2148,7 @@ export const handlers = [
 ### Playwright E2E 测试配置
 
 **playwright.config.ts**
+
 ```typescript
 import { defineConfig, devices } from '@playwright/test'
 
@@ -2107,7 +2159,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
-  
+
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
@@ -2143,6 +2195,7 @@ export default defineConfig({
 ```
 
 **E2E 测试示例**
+
 ```typescript
 // e2e/auth.spec.ts
 import { test, expect } from '@playwright/test'
@@ -2150,25 +2203,25 @@ import { test, expect } from '@playwright/test'
 test.describe('认证流程', () => {
   test('用户应该能登录', async ({ page }) => {
     await page.goto('/login')
-    
+
     await page.fill('[name="email"]', 'test@example.com')
     await page.fill('[name="password"]', 'password')
     await page.click('button[type="submit"]')
-    
+
     // 验证跳转
     await expect(page).toHaveURL('/dashboard')
-    
+
     // 验证用户信息显示
     await expect(page.locator('[data-testid="user-name"]')).toContainText('Test User')
   })
 
   test('错误密码应该显示错误信息', async ({ page }) => {
     await page.goto('/login')
-    
+
     await page.fill('[name="email"]', 'test@example.com')
     await page.fill('[name="password"]', 'wrong-password')
     await page.click('button[type="submit"]')
-    
+
     await expect(page.locator('[data-testid="error-message"]')).toContainText('Invalid credentials')
   })
 })
@@ -2176,18 +2229,18 @@ test.describe('认证流程', () => {
 test.describe('购物车流程', () => {
   test('用户应该能添加商品到购物车并结账', async ({ page }) => {
     await page.goto('/products')
-    
+
     // 添加商品
     await page.click('[data-testid="add-to-cart-1"]')
     await page.click('[data-testid="add-to-cart-2"]')
-    
+
     // 去购物车
     await page.click('[data-testid="cart-button"]')
     await expect(page).toHaveURL('/cart')
-    
+
     // 验证商品
     await expect(page.locator('[data-testid="cart-item"]')).toHaveCount(2)
-    
+
     // 结账
     await page.click('[data-testid="checkout-button"]')
     await expect(page).toHaveURL('/checkout')
@@ -2200,6 +2253,7 @@ test.describe('购物车流程', () => {
 ### 测试最佳实践
 
 **测试命名规范**
+
 ```typescript
 // ❌ 不好的命名
 test('works', () => {})
@@ -2211,6 +2265,7 @@ test('当库存不足时应该显示错误提示', () => {})
 ```
 
 **测试数据工厂**
+
 ```typescript
 // tests/factories/user.ts
 import { faker } from '@faker-js/faker'
@@ -2243,6 +2298,7 @@ const products = Array.from({ length: 10 }, () => createProduct())
 ```
 
 **覆盖率报告集成**
+
 ```yaml
 # .github/workflows/test.yml
 - name: Run tests with coverage
@@ -2308,6 +2364,7 @@ const products = Array.from({ length: 10 }, () => createProduct())
 ```
 
 详细路径请参考：
+
 - [初学者路径](./docs/learning-paths/beginners-path.md)
 - [进阶路径](./docs/learning-paths/intermediate-path.md)
 - [架构师路径](./docs/learning-paths/advanced-path.md)
@@ -2319,11 +2376,13 @@ const products = Array.from({ length: 10 }, () => createProduct())
 ### 案例一：电商平台（月活 50万）
 
 **项目背景**
+
 - 类型: B2C 电商平台
 - 规模: 月活 50万，日均订单 5000+
 - 团队: 8 人（2 前端 + 2 后端 + 2 全栈 + 1 产品 + 1 设计）
 
 **技术栈**
+
 ```
 前端: Next.js 14 + TypeScript + Tailwind + Zustand + React Query
 后端: Next.js API Routes + tRPC + Prisma + PostgreSQL + Redis
@@ -2332,7 +2391,8 @@ const products = Array.from({ length: 10 }, () => createProduct())
 ```
 
 **架构亮点**
-1. ** ISR + SSR 混合渲染**
+
+1. **ISR + SSR 混合渲染**
    - 商品详情页: ISR (revalidate: 60s)
    - 用户中心: SSR (实时数据)
    - 首页: SSG + 客户端数据获取
@@ -2348,6 +2408,7 @@ const products = Array.from({ length: 10 }, () => createProduct())
    - 数据库: Prisma + 连接池 (查询性能提升 40%)
 
 **核心代码示例**
+
 ```typescript
 // 商品详情页 ISR
 export async function generateStaticParams() {
@@ -2368,7 +2429,7 @@ const useCart = create<CartState>((set, get) => ({
     set((state) => ({
       items: [...state.items, { ...product, quantity: 1 }]
     }))
-    
+
     try {
       await api.cart.add(product.id)
     } catch {
@@ -2382,6 +2443,7 @@ const useCart = create<CartState>((set, get) => ({
 ```
 
 **遇到的挑战与解决方案**
+
 | 挑战 | 解决方案 | 效果 |
 |------|---------|------|
 | 首屏加载慢 | 代码分割 + 图片优化 + ISR | LCP 从 3.5s 降到 1.2s |
@@ -2394,11 +2456,13 @@ const useCart = create<CartState>((set, get) => ({
 ### 案例二：实时协作白板（团队 20 人同时编辑）
 
 **项目背景**
+
 - 类型: 在线白板工具（类似 Miro）
 - 规模: 支持 20 人同时编辑，延迟 < 50ms
 - 技术挑战: 实时同步、冲突解决、离线编辑
 
 **技术栈**
+
 ```
 前端: SvelteKit + TypeScript + Yjs + PartyKit
 样式: Tailwind CSS + 自定义 Canvas 渲染
@@ -2408,6 +2472,7 @@ const useCart = create<CartState>((set, get) => ({
 ```
 
 **核心架构**
+
 ```
 用户操作 → Yjs Doc → 本地更新 → PartyKit → 其他用户
               ↓
@@ -2419,22 +2484,23 @@ const useCart = create<CartState>((set, get) => ({
 **关键技术实现**
 
 1. **CRDT 文档结构**
+
 ```typescript
 // yjs/document.ts
 import * as Y from 'yjs'
 
 export function createWhiteboardDoc() {
   const doc = new Y.Doc()
-  
+
   // 形状集合
   const shapes = doc.getMap('shapes')
-  
+
   // 用户光标位置
   const cursors = doc.getMap('cursors')
-  
+
   // 视口信息
   const viewport = doc.getMap('viewport')
-  
+
   return { doc, shapes, cursors, viewport }
 }
 
@@ -2453,29 +2519,30 @@ export function moveShape(shapes: Y.Map<any>, id: string, x: number, y: number) 
 }
 ```
 
-2. **PartyKit 同步**
+1. **PartyKit 同步**
+
 ```typescript
 // party/whiteboard.ts
 export default class WhiteboardServer implements Party.Server {
   doc = new Y.Doc()
-  
+
   onConnect(conn: Party.Connection) {
     // 发送当前文档状态
     const state = Y.encodeStateAsUpdate(this.doc)
     conn.send(state)
   }
-  
+
   onMessage(message: Uint8Array, sender: Party.Connection) {
     // 应用更新
     Y.applyUpdate(this.doc, message)
-    
+
     // 广播给其他用户
     this.room.broadcast(message, [sender.id])
-    
+
     // 持久化（防抖）
     this.debouncedSave()
   }
-  
+
   debouncedSave = debounce(async () => {
     const state = Y.encodeStateAsUpdate(this.doc)
     await supabase.from('whiteboards')
@@ -2485,44 +2552,46 @@ export default class WhiteboardServer implements Party.Server {
 }
 ```
 
-3. **离线支持**
+1. **离线支持**
+
 ```typescript
 // hooks/useWhiteboard.ts
 export function useWhiteboard(roomId: string) {
   const [isOffline, setIsOffline] = useState(false)
-  
+
   useEffect(() => {
     // 加载本地缓存
     const cached = localStorage.getItem(`doc-${roomId}`)
     if (cached) {
       Y.applyUpdate(doc, new Uint8Array(JSON.parse(cached)))
     }
-    
+
     // 监听网络状态
     window.addEventListener('online', () => {
       setIsOffline(false)
       // 同步离线期间的更改
       syncPendingChanges()
     })
-    
+
     window.addEventListener('offline', () => {
       setIsOffline(true)
     })
-    
+
     // 定期本地保存
     const interval = setInterval(() => {
       const state = Y.encodeStateAsUpdate(doc)
       localStorage.setItem(`doc-${roomId}`, JSON.stringify(Array.from(state)))
     }, 1000)
-    
+
     return () => clearInterval(interval)
   }, [roomId])
-  
+
   return { isOffline, doc }
 }
 ```
 
 **性能数据**
+
 - 同步延迟: < 50ms (P95)
 - 内存占用: < 200MB (1000 个形状)
 - 离线恢复: < 1s
@@ -2532,11 +2601,13 @@ export function useWhiteboard(roomId: string) {
 ### 案例三：AI 客服系统（日处理 1万+ 对话）
 
 **项目背景**
+
 - 类型: AI 智能客服系统
 - 规模: 日处理 1万+ 对话，平均响应时间 < 3s
 - 技术挑战: RAG 知识库、流式输出、上下文管理
 
 **技术栈**
+
 ```
 前端: Next.js 14 + Vercel AI SDK + Tailwind
 后端: Next.js API + LangChain.js + OpenAI
@@ -2546,6 +2617,7 @@ export function useWhiteboard(roomId: string) {
 ```
 
 **系统架构**
+
 ```
 用户提问 → 向量化 → 相似度搜索 → 召回上下文 → LLM → 流式响应
                  ↓
@@ -2555,6 +2627,7 @@ export function useWhiteboard(roomId: string) {
 **核心实现**
 
 1. **知识库构建**
+
 ```typescript
 // scripts/ingest.ts
 import { OpenAIEmbeddings } from '@langchain/openai'
@@ -2568,7 +2641,7 @@ async function ingestDocuments(docs: Document[]) {
     chunkOverlap: 200
   })
   const chunks = await splitter.splitDocuments(docs)
-  
+
   // 向量化并存储
   const embeddings = new OpenAIEmbeddings()
   await SupabaseVectorStore.fromDocuments(chunks, embeddings, {
@@ -2578,7 +2651,8 @@ async function ingestDocuments(docs: Document[]) {
 }
 ```
 
-2. **聊天 API (流式)**
+1. **聊天 API (流式)**
+
 ```typescript
 // app/api/chat/route.ts
 import { OpenAIStream, StreamingTextResponse } from 'ai'
@@ -2587,36 +2661,37 @@ import { OpenAI } from 'openai'
 export async function POST(req: Request) {
   const { messages } = await req.json()
   const lastMessage = messages[messages.length - 1]
-  
+
   // 检索相关上下文
   const relevantDocs = await vectorStore.similaritySearch(
     lastMessage.content,
     5
   )
-  
+
   const context = relevantDocs.map(d => d.pageContent).join('\n')
-  
+
   // 构建提示
   const prompt = `
     你是客服助手。基于以下知识回答问题：
     ${context}
-    
+
     用户问题: ${lastMessage.content}
   `
-  
+
   // 流式响应
   const response = await openai.chat.completions.create({
     model: 'gpt-4',
     messages: [{ role: 'system', content: prompt }, ...messages],
     stream: true
   })
-  
+
   const stream = OpenAIStream(response)
   return new StreamingTextResponse(stream)
 }
 ```
 
-3. **上下文管理**
+1. **上下文管理**
+
 ```typescript
 // lib/conversation.ts
 export async function manageConversation(
@@ -2626,23 +2701,24 @@ export async function manageConversation(
   // 获取历史消息
   const history = await redis.lrange(`chat:${sessionId}`, 0, 9)
   const messages = history.map(h => JSON.parse(h))
-  
+
   // 计算 token 数，必要时总结
   const totalTokens = estimateTokens(messages)
   if (totalTokens > 3000) {
     const summary = await summarizeConversation(messages.slice(0, -5))
     messages = [{ role: 'system', content: summary }, ...messages.slice(-5)]
   }
-  
+
   // 保存新消息
   await redis.lpush(`chat:${sessionId}`, JSON.stringify(newMessage))
   await redis.expire(`chat:${sessionId}`, 60 * 60 * 24) // 24h TTL
-  
+
   return messages
 }
 ```
 
 **运营数据**
+
 - 问题解决率: 78% (无需人工介入)
 - 平均响应时间: 2.3s
 - 用户满意度: 4.2/5
@@ -2653,11 +2729,13 @@ export async function manageConversation(
 ### 案例四：企业级 Monorepo（50+ 包，30+ 开发者）
 
 **项目背景**
+
 - 类型: 金融 SaaS 平台
 - 规模: 50+ 内部包，30+ 开发者，10+ 应用
 - 技术挑战: 构建性能、代码复用、版本管理
 
 **技术栈**
+
 ```
 Monorepo: Nx + pnpm + TypeScript
 应用: Next.js + React
@@ -2667,6 +2745,7 @@ CI/CD: GitHub Actions + AWS CodePipeline
 ```
 
 **Monorepo 结构**
+
 ```
 packages/
 ├── ui/                 # 设计系统组件
@@ -2688,6 +2767,7 @@ tools/
 **关键配置**
 
 1. **Nx 任务管道**
+
 ```json
 {
   "targetDefaults": {
@@ -2709,7 +2789,8 @@ tools/
 }
 ```
 
-2. **变更集管理**
+1. **变更集管理**
+
 ```bash
 # 创建变更
 npx changeset
@@ -2721,7 +2802,8 @@ npx changeset version
 npx changeset publish
 ```
 
-3. **构建优化**
+1. **构建优化**
+
 ```typescript
 // vite.config.ts
 export default defineConfig({
@@ -2742,12 +2824,14 @@ export default defineConfig({
 ```
 
 **成果**
+
 - 构建时间: 从 15min 优化到 3min (Nx 缓存)
 - 代码复用率: 60%+ (共享包)
 - 发布频率: 每周 20+ 次 (自动化)
 - 开发者满意度: 显著提升
 
 **经验教训**
+
 1. 尽早定义清晰的包边界
 2. 强制代码审查 + CI 检查
 3. 定期清理无用依赖
