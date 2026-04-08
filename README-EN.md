@@ -34,140 +34,145 @@ This project aims to be a comprehensive, TypeScript-first resource collection th
 
 ## 📚 Table of Contents
 
-- [🌟 Inclusion Criteria](#-inclusion-criteria)
-- [⚡ Quick Start](#-quick-start)
-- [📦 Frameworks & Runtimes](#-frameworks--runtimes)
-  - [Web Frameworks](#web-frameworks)
-  - [Full-Stack Frameworks](#full-stack-frameworks)
-    - [Full-Stack Framework Selection Guide](#full-stack-framework-selection-guide)
-  - [Runtimes](#runtimes)
-  - [Runtime Comparison 2025](#runtime-comparison-2025)
-- [📱 Mobile Development](#-mobile-development)
-  - [Cross-Platform Frameworks](#cross-platform-frameworks)
-  - [Mobile UI Components](#mobile-ui-components)
-- [🔧 Development Tools](#-development-tools)
-  - [Build Tools](#build-tools)
-    - [Build Tool Selection Guide](#build-tool-selection-guide)
-  - [Code Quality](#code-quality)
-  - [Rust Toolchain](#rust-toolchain)
-  - [Testing Frameworks](#testing-frameworks)
-- [🧪 Testing Strategy & Configuration](#-testing-strategy--configuration)
-  - [Testing Pyramid](#testing-pyramid-implementation)
-  - [Vitest Unit Testing](#vitest-unit-testing-configuration)
-  - [Playwright E2E Testing](#playwright-e2e-testing-configuration)
-  - [Testing Best Practices](#testing-best-practices)
-- [📝 Error Handling & Logging](#-error-handling--logging)
-  - [Unified Error Handling](#unified-error-handling-architecture)
-  - [Logging Best Practices](#logging-best-practices)
-  - [Monitoring & Alerting](#monitoring--alerting)
-- [🌍 Internationalization (i18n)](#-internationalization-i18n)
-  - [next-intl Configuration](#next-intl-complete-configuration)
-  - [Date/Number Formatting](#datenumbercurrency-formatting)
-  - [Translation Management](#translation-management-cli)
-- [🚀 Multi-Platform Deployment](#-multi-platform-deployment)
-  - [Vercel Deployment](#vercel-deployment-recommended)
-  - [AWS ECS + Fargate](#aws-ecs--fargate-deployment)
-  - [Docker Compose](#docker-compose-localproduction-deployment)
-  - [Kubernetes](#kubernetes-deployment-configuration)
-  - [Platform Comparison](#deployment-platform-comparison)
-- [🔌 GraphQL Implementation](#-graphql-implementation)
-  - [tRPC Approach](#trpc-approach-recommended-for-full-stack-typescript)
-  - [Apollo Client + GraphQL Yoga](#apollo-client--graphql-yoga-approach)
-  - [Solution Comparison](#solution-comparison)
-- [📡 WebSocket Real-Time Communication](#-websocket-real-time-communication)
-  - [Socket.io](#socketio-complete-implementation)
-  - [PartyKit](#partykit-edge-real-time-solution)
-  - [Yjs Collaborative Editing](#yjs-collaborative-editing-implementation)
-  - [Solution Comparison](#real-time-solution-comparison)
-- [📦 Monorepo Tools](#-monorepo-tools)
-  - [Build Systems](#build-systems)
-  - [Package Managers](#package-managers)
-- [📊 Data & Storage](#-data--storage)
-  - [ORM & Database Tools](#orm--database-tools)
-    - [ORM Selection Guide](#orm-selection-guide)
-  - [Caching & Message Queues](#caching--message-queues)
-  - [Backend as a Service (BaaS)](#backend-as-a-service-baas)
-- [📡 Real-time Communication](#-real-time-communication)
-  - [WebSocket Frameworks](#websocket-frameworks)
-  - [Collaborative Editing (CRDT)](#collaborative-editing-crdt)
-- [🔐 Security & Authentication](#-security--authentication)
-- [⚡ Performance Optimization](#-performance-optimization)
-  - [Bundle Analysis](#bundle-analysis--optimization)
-  - [Image Optimization](#image-optimization-complete-guide)
-  - [Code Splitting](#code-splitting-strategies)
-  - [Caching](#caching-strategy-configuration)
-  - [Database Optimization](#database-query-optimization)
-  - [Monitoring](#performance-monitoring--alerting)
-- [🚀 Deployment & DevOps](#-deployment--devops)
-- [🔧 Production Configuration](#-production-configuration)
-  - [Next.js Config](#nextjs-14-production-config-nextconfigjs)
-  - [Vite Config](#vite-production-config-viteconfigts)
-  - [TypeScript Config](#typescript-strict-config-tsconfigjson)
-  - [Docker Config](#docker-production-deployment-dockerfile)
-  - [Nginx Config](#nginx-reverse-proxy-config)
-- [🚀 Production Environment](#-production-environment)
-  - [CI/CD](#github-actions-cicd-configuration)
-  - [Monitoring](#monitoring--logging-sentry--datadog)
-  - [Database](#database-migration--backup-strategy)
-  - [Environment Variables](#environment-variable-management-strategy)
-- [🔄 Migration Guide](#-migration-guide)
-  - [Webpack to Vite](#webpack--vite-migration)
-  - [Redux to Zustand](#redux--zustand-migration)
-  - [Prisma 2.x to 5.x](#prisma-2x--5x-migration)
-- [🔒 Security Best Practices](#-security-best-practices)
-  - [Authentication](#authentication--authorization-architecture)
-  - [Data Validation](#data-validation--sanitization)
-  - [XSS Protection](#xss-protection)
-  - [API Security](#api-security)
-  - [Security Scanning](#security-scanning--auditing)
-- [📊 Benchmarks](#-benchmarks)
-  - [Runtime Performance](#runtime-performance-comparison)
-  - [Build Tools](#build-tool-speed-comparison)
-  - [Frontend Performance](#frontend-framework-runtime-performance)
-  - [Database](#database-query-performance)
-  - [State Management](#state-management-runtime-overhead)
-  - [Case Studies](#real-world-case-studies)
-- [🏗️ Architecture Implementation](#%EF%B8%8F-architecture-implementation)
-  - [Monorepo](#monorepo-architecture-nx--pnpm)
-  - [AI RAG](#ai-rag-architecture-implementation)
-  - [Micro-Frontend](#micro-frontend-architecture-module-federation)
-- [📚 Real-World Case Studies](#-real-world-case-studies)
-  - [E-commerce Platform](#case-1-e-commerce-platform-500k-mau)
-  - [Real-Time Whiteboard](#case-2-real-time-collaborative-whiteboard-20-concurrent-editors)
-  - [AI Customer Service](#case-3-ai-customer-service-system-10k-daily-conversations)
-  - [Enterprise Monorepo](#case-4-enterprise-monorepo-50-packages-30-developers)
-- [📝 Documentation & Content](#-documentation--content)
-  - [Documentation Frameworks](#documentation-frameworks)
-  - [Content Management (Headless CMS)](#content-management-headless-cms)
-- [⚡ Edge Computing & Serverless](#-edge-computing--serverless)
-  - [Edge Runtimes](#edge-runtimes)
-  - [Edge Frameworks](#edge-frameworks)
-  - [Serverless Tools](#serverless-tools)
-- [🤖 Automation & Integration](#-automation--integration)
-- [🧠 AI & Machine Learning](#-ai--machine-learning)
-  - [AI Platforms](#ai-platforms)
-  - [Browser ML](#browser-ml)
-  - [AI Dev Tools](#ai-dev-tools)
-  - [AI Application Architecture Guide](#ai-application-architecture-guide)
-- [🎨 UI Components & Design Systems](#-ui-components--design-systems)
-  - [Component Libraries](#component-libraries)
-  - [Design Systems](#design-systems)
-- [🔄 State Management](#-state-management)
-  - [React State Management](#react-state-management)
-  - [Vue State Management](#vue-state-management)
-  - [State Management Selection Guide](#state-management-selection-guide)
-- [💻 Desktop Development](#-desktop-development)
-  - [Desktop App Frameworks](#desktop-app-frameworks)
-  - [Desktop UI Frameworks](#desktop-ui-frameworks)
-- [🧩 Utility Libraries](#-utility-libraries)
-- [🏗️ Recommended Tech Stack Combinations](#%EF%B8%8F-recommended-tech-stack-combinations)
-  - [Combination A: Modern Full-Stack SaaS](#combination-a-modern-full-stack-saas-recommended-2025)
-  - [Combination B: High-Performance Real-Time](#combination-b-high-performance-real-time-applications)
-  - [Combination C: AI-Native Applications](#combination-c-ai-native-applications)
-  - [Combination D: Enterprise Monorepo](#combination-d-enterprise-monorepo)
-  - [Quick Selection Reference](#quick-selection-reference)
-- [📝 Contribution Guidelines](#-contribution-guidelines)
-- [📄 License](#-license)
+- [Awesome JavaScript/TypeScript Ecosystem](#awesome-javascripttypescript-ecosystem-)
+  - [📖 Overview](#-overview)
+    - [Why This List?](#why-this-list)
+  - [📚 Table of Contents](#-table-of-contents)
+  - [🌟 Inclusion Criteria](#-inclusion-criteria)
+  - [⚡ Quick Start](#-quick-start)
+  - [📦 Frameworks \& Runtimes](#-frameworks--runtimes)
+    - [Web Frameworks](#web-frameworks)
+    - [Full-Stack Frameworks](#full-stack-frameworks)
+      - [Full-Stack Framework Selection Guide](#full-stack-framework-selection-guide)
+    - [Runtimes](#runtimes)
+    - [Runtime Comparison 2025](#runtime-comparison-2025)
+  - [📱 Mobile Development](#-mobile-development)
+    - [Cross-Platform Frameworks](#cross-platform-frameworks)
+    - [Mobile UI Components](#mobile-ui-components)
+  - [🔧 Development Tools](#-development-tools)
+    - [Build Tools](#build-tools)
+      - [Build Tool Selection Guide](#build-tool-selection-guide)
+    - [Code Quality](#code-quality)
+    - [Rust Toolchain](#rust-toolchain)
+    - [Testing Frameworks](#testing-frameworks)
+  - [🧪 Testing Strategy \& Configuration](#-testing-strategy--configuration)
+    - [Testing Pyramid Implementation](#testing-pyramid-implementation)
+    - [Vitest Unit Testing Configuration](#vitest-unit-testing-configuration)
+    - [Playwright E2E Testing Configuration](#playwright-e2e-testing-configuration)
+    - [Testing Best Practices](#testing-best-practices)
+  - [📝 Error Handling \& Logging](#-error-handling--logging)
+    - [Unified Error Handling Architecture](#unified-error-handling-architecture)
+    - [Logging Best Practices](#logging-best-practices)
+    - [Monitoring \& Alerting](#monitoring--alerting)
+  - [🌍 Internationalization (i18n)](#-internationalization-i18n)
+    - [next-intl Complete Configuration](#next-intl-complete-configuration)
+    - [Date/Number/Currency Formatting](#datenumbercurrency-formatting)
+    - [Plural Rules](#plural-rules)
+    - [Translation Management CLI](#translation-management-cli)
+  - [🚀 Multi-Platform Deployment](#-multi-platform-deployment)
+    - [Vercel Deployment (Recommended)](#vercel-deployment-recommended)
+    - [AWS ECS + Fargate Deployment](#aws-ecs--fargate-deployment)
+    - [Docker Compose Local/Production Deployment](#docker-compose-localproduction-deployment)
+    - [Kubernetes Deployment Configuration](#kubernetes-deployment-configuration)
+    - [Deployment Platform Comparison](#deployment-platform-comparison)
+  - [🔌 GraphQL Implementation](#-graphql-implementation)
+    - [tRPC Approach (Recommended for Full-Stack TypeScript)](#trpc-approach-recommended-for-full-stack-typescript)
+    - [Apollo Client + GraphQL Yoga Approach](#apollo-client--graphql-yoga-approach)
+    - [Solution Comparison](#solution-comparison)
+  - [📡 WebSocket Real-Time Communication](#-websocket-real-time-communication)
+    - [Socket.io Complete Implementation](#socketio-complete-implementation)
+    - [PartyKit Edge Real-Time Solution](#partykit-edge-real-time-solution)
+    - [Yjs Collaborative Editing Implementation](#yjs-collaborative-editing-implementation)
+    - [Real-Time Solution Comparison](#real-time-solution-comparison)
+    - [Build Systems](#build-systems)
+    - [Package Managers](#package-managers)
+  - [📊 Data \& Storage](#-data--storage)
+    - [ORM \& Database Tools](#orm--database-tools)
+      - [ORM Selection Guide](#orm-selection-guide)
+    - [Caching \& Message Queues](#caching--message-queues)
+    - [Backend as a Service (BaaS)](#backend-as-a-service-baas)
+  - [📡 Real-time Communication](#-real-time-communication)
+    - [WebSocket Frameworks](#websocket-frameworks)
+    - [Collaborative Editing (CRDT)](#collaborative-editing-crdt)
+  - [🔐 Security \& Authentication](#-security--authentication)
+  - [⚡ Performance Optimization](#-performance-optimization)
+    - [Bundle Analysis \& Optimization](#bundle-analysis--optimization)
+    - [Image Optimization Complete Guide](#image-optimization-complete-guide)
+    - [Code Splitting Strategies](#code-splitting-strategies)
+    - [Caching Strategy Configuration](#caching-strategy-configuration)
+    - [Database Query Optimization](#database-query-optimization)
+    - [Performance Monitoring \& Alerting](#performance-monitoring--alerting)
+  - [🚀 Deployment \& DevOps](#-deployment--devops)
+  - [🔧 Production Configuration](#-production-configuration)
+    - [Next.js 14 Production Config (next.config.js)](#nextjs-14-production-config-nextconfigjs)
+    - [Vite Production Config (vite.config.ts)](#vite-production-config-viteconfigts)
+    - [TypeScript Strict Config (tsconfig.json)](#typescript-strict-config-tsconfigjson)
+    - [Docker Production Deployment (Dockerfile)](#docker-production-deployment-dockerfile)
+    - [Nginx Reverse Proxy Config](#nginx-reverse-proxy-config)
+  - [🚀 Production Environment](#-production-environment)
+    - [GitHub Actions CI/CD Configuration](#github-actions-cicd-configuration)
+    - [Monitoring \& Logging (Sentry + Datadog)](#monitoring--logging-sentry--datadog)
+    - [Database Migration \& Backup Strategy](#database-migration--backup-strategy)
+    - [Environment Variable Management Strategy](#environment-variable-management-strategy)
+  - [📝 Documentation \& Content](#-documentation--content)
+    - [Documentation Frameworks](#documentation-frameworks)
+    - [Content Management (Headless CMS)](#content-management-headless-cms)
+  - [⚡ Edge Computing \& Serverless](#-edge-computing--serverless)
+    - [Edge Runtimes](#edge-runtimes)
+    - [Edge Frameworks](#edge-frameworks)
+    - [Serverless Tools](#serverless-tools)
+  - [🤖 Automation \& Integration](#-automation--integration)
+  - [🧠 AI \& Machine Learning](#-ai--machine-learning)
+    - [AI Platforms](#ai-platforms)
+    - [Browser ML](#browser-ml)
+    - [AI Dev Tools](#ai-dev-tools)
+      - [AI Application Architecture Guide](#ai-application-architecture-guide)
+  - [🎨 UI Components \& Design Systems](#-ui-components--design-systems)
+    - [Component Libraries](#component-libraries)
+    - [Design Systems](#design-systems)
+  - [🔄 State Management](#-state-management)
+    - [React State Management](#react-state-management)
+    - [Vue State Management](#vue-state-management)
+      - [State Management Selection Guide](#state-management-selection-guide)
+  - [💻 Desktop Development](#-desktop-development)
+    - [Desktop App Frameworks](#desktop-app-frameworks)
+    - [Desktop UI Frameworks](#desktop-ui-frameworks)
+  - [🧩 Utility Libraries](#-utility-libraries)
+  - [🏗️ Recommended Tech Stack Combinations](#️-recommended-tech-stack-combinations)
+    - [Combination A: Modern Full-Stack SaaS (Recommended 2025)](#combination-a-modern-full-stack-saas-recommended-2025)
+    - [Combination B: High-Performance Real-Time Applications](#combination-b-high-performance-real-time-applications)
+    - [Combination C: AI-Native Applications](#combination-c-ai-native-applications)
+    - [Combination D: Enterprise Monorepo](#combination-d-enterprise-monorepo)
+    - [Quick Selection Reference](#quick-selection-reference)
+  - [🔄 Migration Guide](#-migration-guide)
+    - [Webpack → Vite Migration](#webpack--vite-migration)
+    - [Redux → Zustand Migration](#redux--zustand-migration)
+    - [Prisma 2.x → 5.x Migration](#prisma-2x--5x-migration)
+  - [🔒 Security Best Practices](#-security-best-practices)
+    - [Authentication \& Authorization Architecture](#authentication--authorization-architecture)
+    - [Data Validation \& Sanitization](#data-validation--sanitization)
+    - [XSS Protection](#xss-protection)
+    - [API Security](#api-security)
+    - [Security Scanning \& Auditing](#security-scanning--auditing)
+  - [📊 Benchmarks](#-benchmarks)
+    - [Runtime Performance Comparison](#runtime-performance-comparison)
+    - [Build Tool Speed Comparison](#build-tool-speed-comparison)
+    - [Frontend Framework Runtime Performance](#frontend-framework-runtime-performance)
+    - [Database Query Performance](#database-query-performance)
+    - [State Management Runtime Overhead](#state-management-runtime-overhead)
+    - [Real-World Case Studies](#real-world-case-studies)
+  - [🏗️ Architecture Implementation](#️-architecture-implementation)
+    - [Monorepo Architecture (Nx + pnpm)](#monorepo-architecture-nx--pnpm)
+    - [AI RAG Architecture Implementation](#ai-rag-architecture-implementation)
+    - [Micro-Frontend Architecture (Module Federation)](#micro-frontend-architecture-module-federation)
+  - [📚 Real-World Case Studies](#-real-world-case-studies)
+    - [Case 1: E-commerce Platform (500K MAU)](#case-1-e-commerce-platform-500k-mau)
+    - [Case 2: Real-Time Collaborative Whiteboard (20 Concurrent Editors)](#case-2-real-time-collaborative-whiteboard-20-concurrent-editors)
+    - [Case 3: AI Customer Service System (10K+ Daily Conversations)](#case-3-ai-customer-service-system-10k-daily-conversations)
+    - [Case 4: Enterprise Monorepo (50+ Packages, 30+ Developers)](#case-4-enterprise-monorepo-50-packages-30-developers)
+  - [📝 Contribution Guidelines](#-contribution-guidelines)
+    - [Quick Contribution Checklist](#quick-contribution-checklist)
+  - [📄 License](#-license)
 
 ---
 
@@ -474,15 +479,16 @@ Next-generation Rust toolchain driven by VoidZero, bringing extreme performance 
 ```
     /\
    /  \     E2E Tests (Playwright) - Critical user flows
-  /----\    
+  /----\
  /      \   Integration Tests (Vitest) - API/Component interactions
-/--------\  
+/--------\
 ----------  Unit Tests (Vitest) - Pure functions/Utilities
 ```
 
 ### Vitest Unit Testing Configuration
 
 **vitest.config.ts**
+
 ```typescript
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
@@ -518,6 +524,7 @@ export default defineConfig({
 ```
 
 **Test Setup (tests/setup.ts)**
+
 ```typescript
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
@@ -543,6 +550,7 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 ```
 
 **Unit Test Example**
+
 ```typescript
 // utils/calculate.test.ts
 import { describe, it, expect } from 'vitest'
@@ -574,6 +582,7 @@ describe('applyDiscount', () => {
 ```
 
 **React Component Testing**
+
 ```typescript
 // components/Button.test.tsx
 import { describe, it, expect, vi } from 'vitest'
@@ -589,7 +598,7 @@ describe('Button', () => {
   it('should trigger onClick when clicked', () => {
     const handleClick = vi.fn()
     render(<Button onClick={handleClick}>Click</Button>)
-    
+
     fireEvent.click(screen.getByText('Click'))
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
@@ -597,7 +606,7 @@ describe('Button', () => {
   it('should not be clickable when disabled', () => {
     const handleClick = vi.fn()
     render(<Button disabled onClick={handleClick}>Disabled</Button>)
-    
+
     fireEvent.click(screen.getByText('Disabled'))
     expect(handleClick).not.toHaveBeenCalled()
   })
@@ -605,6 +614,7 @@ describe('Button', () => {
 ```
 
 **API Testing (MSW Mock)**
+
 ```typescript
 // tests/mocks/handlers.ts
 import { http, HttpResponse } from 'msw'
@@ -620,11 +630,11 @@ export const handlers = [
 
   http.post('/api/login', async ({ request }) => {
     const body = await request.json()
-    
+
     if (body.email === 'test@example.com' && body.password === 'password') {
       return HttpResponse.json({ token: 'fake-jwt-token' })
     }
-    
+
     return new HttpResponse(null, { status: 401 })
   })
 ]
@@ -635,6 +645,7 @@ export const handlers = [
 ### Playwright E2E Testing Configuration
 
 **playwright.config.ts**
+
 ```typescript
 import { defineConfig, devices } from '@playwright/test'
 
@@ -645,7 +656,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
-  
+
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
@@ -681,6 +692,7 @@ export default defineConfig({
 ```
 
 **E2E Test Example**
+
 ```typescript
 // e2e/auth.spec.ts
 import { test, expect } from '@playwright/test'
@@ -688,25 +700,25 @@ import { test, expect } from '@playwright/test'
 test.describe('Authentication Flow', () => {
   test('user should be able to login', async ({ page }) => {
     await page.goto('/login')
-    
+
     await page.fill('[name="email"]', 'test@example.com')
     await page.fill('[name="password"]', 'password')
     await page.click('button[type="submit"]')
-    
+
     // Verify redirect
     await expect(page).toHaveURL('/dashboard')
-    
+
     // Verify user info display
     await expect(page.locator('[data-testid="user-name"]')).toContainText('Test User')
   })
 
   test('should show error for wrong password', async ({ page }) => {
     await page.goto('/login')
-    
+
     await page.fill('[name="email"]', 'test@example.com')
     await page.fill('[name="password"]', 'wrong-password')
     await page.click('button[type="submit"]')
-    
+
     await expect(page.locator('[data-testid="error-message"]')).toContainText('Invalid credentials')
   })
 })
@@ -714,18 +726,18 @@ test.describe('Authentication Flow', () => {
 test.describe('Shopping Cart Flow', () => {
   test('user should be able to add items to cart and checkout', async ({ page }) => {
     await page.goto('/products')
-    
+
     // Add items
     await page.click('[data-testid="add-to-cart-1"]')
     await page.click('[data-testid="add-to-cart-2"]')
-    
+
     // Go to cart
     await page.click('[data-testid="cart-button"]')
     await expect(page).toHaveURL('/cart')
-    
+
     // Verify items
     await expect(page.locator('[data-testid="cart-item"]')).toHaveCount(2)
-    
+
     // Checkout
     await page.click('[data-testid="checkout-button"]')
     await expect(page).toHaveURL('/checkout')
@@ -738,6 +750,7 @@ test.describe('Shopping Cart Flow', () => {
 ### Testing Best Practices
 
 **Test Naming Conventions**
+
 ```typescript
 // ❌ Bad naming
 test('works', () => {})
@@ -749,6 +762,7 @@ test('should show error when inventory is insufficient', () => {})
 ```
 
 **Test Data Factory**
+
 ```typescript
 // tests/factories/user.ts
 import { faker } from '@faker-js/faker'
@@ -781,6 +795,7 @@ const products = Array.from({ length: 10 }, () => createProduct())
 ```
 
 **Coverage Report Integration**
+
 ```yaml
 # .github/workflows/test.yml
 - name: Run tests with coverage
@@ -800,6 +815,7 @@ const products = Array.from({ length: 10 }, () => createProduct())
 ### Unified Error Handling Architecture
 
 **Error Type Definitions**
+
 ```typescript
 // lib/errors.ts
 export class AppError extends Error {
@@ -837,6 +853,7 @@ export class NotFoundError extends AppError {
 ```
 
 **Global Error Handler Middleware**
+
 ```typescript
 // middleware/errorHandler.ts
 import { NextApiRequest, NextApiResponse } from 'next'
@@ -884,8 +901,8 @@ export function errorHandler(
   return res.status(500).json({
     error: {
       code: 'INTERNAL_ERROR',
-      message: process.env.NODE_ENV === 'production' 
-        ? 'Internal server error' 
+      message: process.env.NODE_ENV === 'production'
+        ? 'Internal server error'
         : err.message
     }
   })
@@ -893,6 +910,7 @@ export function errorHandler(
 ```
 
 **React Error Boundary**
+
 ```typescript
 // components/ErrorBoundary.tsx
 'use client'
@@ -951,6 +969,7 @@ export class ErrorBoundary extends Component<Props, State> {
 ### Logging Best Practices
 
 **Structured Logging Configuration**
+
 ```typescript
 // lib/logger.ts
 import pino from 'pino'
@@ -959,7 +978,7 @@ const isDev = process.env.NODE_ENV === 'development'
 
 export const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
-  transport: isDev 
+  transport: isDev
     ? {
         target: 'pino-pretty',
         options: {
@@ -993,6 +1012,7 @@ export function createLogger(component: string) {
 ```
 
 **Logging Usage Example**
+
 ```typescript
 // Using in API routes
 import { createLogger } from '@/lib/logger'
@@ -1001,7 +1021,7 @@ const logger = createLogger('AuthAPI')
 
 export async function POST(req: Request) {
   logger.info({ email: req.body.email }, 'Login attempt')
-  
+
   try {
     const user = await authenticate(req.body)
     logger.info({ userId: user.id }, 'Login successful')
@@ -1014,6 +1034,7 @@ export async function POST(req: Request) {
 ```
 
 **Frontend Error Logging**
+
 ```typescript
 // lib/client-logger.ts
 export function logError(error: Error, context?: Record<string, any>) {
@@ -1051,6 +1072,7 @@ export const queryClient = new QueryClient({
 ### Monitoring & Alerting
 
 **Sentry Integration**
+
 ```typescript
 // lib/sentry.ts
 import * as Sentry from '@sentry/nextjs'
@@ -1059,26 +1081,26 @@ Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   environment: process.env.NODE_ENV,
   release: process.env.NEXT_PUBLIC_APP_VERSION,
-  
+
   // Sampling rates
   tracesSampleRate: 1.0,
   profilesSampleRate: 0.1,
-  
+
   // Session replays
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
-  
+
   // Filtering
   beforeSend(event) {
     // Ignore 404 errors
-    if (event.exception?.values?.some(e => 
+    if (event.exception?.values?.some(e =>
       e.value?.includes('Not found')
     )) {
       return null
     }
     return event
   },
-  
+
   // Tags
   initialScope: {
     tags: {
@@ -1089,14 +1111,15 @@ Sentry.init({
 ```
 
 **Performance Monitoring**
+
 ```typescript
 // lib/performance.ts
 export function measurePerformance(name: string, fn: () => Promise<any>) {
   const start = performance.now()
-  
+
   return fn().finally(() => {
     const duration = performance.now() - start
-    
+
     // Send to analytics platform
     if (window.gtag) {
       window.gtag('event', 'timing_complete', {
@@ -1104,7 +1127,7 @@ export function measurePerformance(name: string, fn: () => Promise<any>) {
         value: Math.round(duration)
       })
     }
-    
+
     // Alert on slow operations
     if (duration > 3000) {
       console.warn(`Slow operation: ${name} took ${duration}ms`)
@@ -1114,6 +1137,7 @@ export function measurePerformance(name: string, fn: () => Promise<any>) {
 ```
 
 **Health Check Endpoint**
+
 ```typescript
 // app/api/health/route.ts
 import { prisma } from '@/lib/prisma'
@@ -1125,25 +1149,25 @@ export async function GET() {
     redis: false,
     timestamp: new Date().toISOString()
   }
-  
+
   try {
     await prisma.$queryRaw`SELECT 1`
     checks.database = true
   } catch (error) {
     console.error('Database health check failed', error)
   }
-  
+
   try {
     await redis.ping()
     checks.redis = true
   } catch (error) {
     console.error('Redis health check failed', error)
   }
-  
+
   const healthy = checks.database && checks.redis
-  
-  return Response.json(checks, { 
-    status: healthy ? 200 : 503 
+
+  return Response.json(checks, {
+    status: healthy ? 200 : 503
   })
 }
 ```
@@ -1155,11 +1179,13 @@ export async function GET() {
 ### next-intl Complete Configuration
 
 **Installation**
+
 ```bash
 npm install next-intl
 ```
 
 **Configuration File**
+
 ```typescript
 // i18n.ts
 import { getRequestConfig } from 'next-intl/server'
@@ -1170,7 +1196,7 @@ export type Locale = (typeof locales)[number]
 
 export default getRequestConfig(async ({ locale }) => {
   if (!locales.includes(locale as any)) notFound()
-  
+
   return {
     messages: (await import(`./messages/${locale}.json`)).default
   }
@@ -1178,6 +1204,7 @@ export default getRequestConfig(async ({ locale }) => {
 ```
 
 **Message File Structure**
+
 ```json
 // messages/en.json
 {
@@ -1204,6 +1231,7 @@ export default getRequestConfig(async ({ locale }) => {
 ```
 
 **Next.js Configuration**
+
 ```typescript
 // next.config.js
 const withNextIntl = require('next-intl/plugin')('./i18n.ts')
@@ -1214,6 +1242,7 @@ module.exports = withNextIntl({
 ```
 
 **Middleware Configuration**
+
 ```typescript
 // middleware.ts
 import createMiddleware from 'next-intl/middleware'
@@ -1231,6 +1260,7 @@ export const config = {
 ```
 
 **Page Structure**
+
 ```
 app/
 ├── [locale]/
@@ -1244,14 +1274,15 @@ app/
 ```
 
 **Usage Example**
+
 ```typescript
 // app/[locale]/page.tsx
 import { useTranslations } from 'next-intl'
 import { getTranslations } from 'next-intl/server'
 
 // Server Component
-export async function generateMetadata({ 
-  params: { locale } 
+export async function generateMetadata({
+  params: { locale }
 }: { params: { locale: string } }) {
   const t = await getTranslations({ locale, namespace: 'Metadata' })
   return {
@@ -1262,7 +1293,7 @@ export async function generateMetadata({
 
 export default function HomePage() {
   const t = useTranslations('Hero')
-  
+
   return (
     <div>
       <h1>{t('title', { appName: 'MyApp' })}</h1>
@@ -1278,7 +1309,7 @@ import { useTranslations } from 'next-intl'
 
 export function Navigation() {
   const t = useTranslations('Navigation')
-  
+
   return (
     <nav>
       <a href="/">{t('home')}</a>
@@ -1289,6 +1320,7 @@ export function Navigation() {
 ```
 
 **Locale Switcher Component**
+
 ```typescript
 // components/LocaleSwitcher.tsx
 'use client'
@@ -1301,14 +1333,14 @@ export function LocaleSwitcher() {
   const locale = useLocale()
   const router = useRouter()
   const pathname = usePathname()
-  
+
   const handleChange = (newLocale: string) => {
     router.replace(pathname, { locale: newLocale })
   }
-  
+
   return (
-    <select 
-      value={locale} 
+    <select
+      value={locale}
       onChange={(e) => handleChange(e.target.value)}
     >
       <option value="en">English</option>
@@ -1331,24 +1363,24 @@ function FormattedValues() {
   const now = useNow({
     updateInterval: 1000 * 60 // Update every minute
   })
-  
+
   // Date
   format.dateTime(new Date(), {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
   }) // January 15, 2024
-  
+
   // Relative time
   format.relativeTime(new Date('2024-01-01'))
   // 2 weeks ago
-  
+
   // Number
   format.number(1234567.89, {
     style: 'currency',
     currency: 'USD'
   }) // $1,234,567.89
-  
+
   // List
   format.list(['Apple', 'Banana', 'Orange'])
   // Apple, Banana, and Orange
@@ -1381,6 +1413,7 @@ t('items', { count: 5 }) // 5 items
 ### Translation Management CLI
 
 **Extract Script**
+
 ```bash
 # Extract all translation keys
 npx next-intl extract
@@ -1391,6 +1424,7 @@ ls messages/
 ```
 
 **Translation Workflow**
+
 ```bash
 # 1. Add new keys during development
 const t = useTranslations()
@@ -1413,6 +1447,7 @@ npm run i18n:validate
 ### Vercel Deployment (Recommended)
 
 **vercel.json Configuration**
+
 ```json
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
@@ -1453,6 +1488,7 @@ npm run i18n:validate
 ```
 
 **Environment Variable Setup**
+
 ```bash
 # Production
 vercel env add DATABASE_URL production
@@ -1467,6 +1503,7 @@ vercel env add DATABASE_URL preview
 ### AWS ECS + Fargate Deployment
 
 **task-definition.json**
+
 ```json
 {
   "family": "my-app",
@@ -1512,6 +1549,7 @@ vercel env add DATABASE_URL preview
 ```
 
 **GitHub Actions for ECS Deployment**
+
 ```yaml
 # .github/workflows/deploy-aws.yml
 name: Deploy to AWS ECS
@@ -1531,18 +1569,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-      
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-      
+
       - name: Build and push Docker image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -1551,7 +1589,7 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
-      
+
       - name: Update ECS service
         run: |
           aws ecs update-service \
@@ -1565,6 +1603,7 @@ jobs:
 ### Docker Compose Local/Production Deployment
 
 **docker-compose.yml**
+
 ```yaml
 version: '3.8'
 
@@ -1639,6 +1678,7 @@ networks:
 ### Kubernetes Deployment Configuration
 
 **deployment.yaml**
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -1691,6 +1731,7 @@ spec:
 ```
 
 **service.yaml**
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -1707,6 +1748,7 @@ spec:
 ```
 
 **ingress.yaml**
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -1753,12 +1795,14 @@ spec:
 ### tRPC Approach (Recommended for Full-Stack TypeScript)
 
 **Why tRPC?**
+
 - End-to-end type safety without code generation
 - React Query integration with built-in caching
 - Subscription support (WebSocket)
 - Shared types between frontend and backend
 
 **Project Structure**
+
 ```
 src/
 ├── server/
@@ -1775,6 +1819,7 @@ src/
 ```
 
 **Server Configuration**
+
 ```typescript
 // src/server/trpc.ts
 import { initTRPC, TRPCError } from '@trpc/server'
@@ -1802,6 +1847,7 @@ export const protectedProcedure = t.procedure.use(
 ```
 
 **Router Definition**
+
 ```typescript
 // src/server/routers/user.ts
 import { router, publicProcedure, protectedProcedure } from '../trpc'
@@ -1818,7 +1864,7 @@ export const userRouter = router({
       if (!user) throw new TRPCError({ code: 'NOT_FOUND' })
       return user
     }),
-  
+
   // List query (pagination)
   list: publicProcedure
     .input(z.object({
@@ -1831,16 +1877,16 @@ export const userRouter = router({
         cursor: input.cursor ? { id: input.cursor } : undefined,
         orderBy: { createdAt: 'desc' }
       })
-      
+
       let nextCursor: typeof input.cursor = undefined
       if (users.length > input.limit) {
         const nextItem = users.pop()
         nextCursor = nextItem!.id
       }
-      
+
       return { users, nextCursor }
     }),
-  
+
   // Create (requires login)
   create: protectedProcedure
     .input(z.object({
@@ -1856,6 +1902,7 @@ export const userRouter = router({
 ```
 
 **Main Router Merge**
+
 ```typescript
 // src/server/routers/_app.ts
 import { router } from '../trpc'
@@ -1871,6 +1918,7 @@ export type AppRouter = typeof appRouter
 ```
 
 **API Route**
+
 ```typescript
 // src/app/api/trpc/[trpc]/route.ts
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch'
@@ -1889,6 +1937,7 @@ export { handler as GET, handler as POST }
 ```
 
 **Client Usage**
+
 ```typescript
 // src/lib/trpc.ts
 import { createTRPCReact } from '@trpc/react-query'
@@ -1928,6 +1977,7 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 ```
 
 **Using in React Components**
+
 ```typescript
 // Query
 function UserList() {
@@ -1937,7 +1987,7 @@ function UserList() {
       getNextPageParam: (lastPage) => lastPage.nextCursor
     }
   )
-  
+
   return (
     <div>
       {data?.pages.map((page) =>
@@ -1959,7 +2009,7 @@ function CreateUser() {
       utils.user.list.invalidate()
     }
   })
-  
+
   return (
     <form onSubmit={(e) => {
       e.preventDefault()
@@ -1980,6 +2030,7 @@ function CreateUser() {
 **Use Case**: Need to integrate with existing GraphQL ecosystem, or team familiar with GraphQL
 
 **Server (GraphQL Yoga)**
+
 ```typescript
 // src/app/api/graphql/route.ts
 import { createYoga } from 'graphql-yoga'
@@ -1995,6 +2046,7 @@ export { handleRequest as GET, handleRequest as POST }
 ```
 
 **Schema Definition**
+
 ```typescript
 // src/server/graphql/schema.ts
 import { makeExecutableSchema } from '@graphql-tools/schema'
@@ -2014,20 +2066,20 @@ export const typeDefs = `
     email: String!
     posts: [Post!]!
   }
-  
+
   type Post {
     id: ID!
     title: String!
     content: String!
     author: User!
   }
-  
+
   type Query {
     users: [User!]!
     user(id: ID!): User
     posts: [Post!]!
   }
-  
+
   type Mutation {
     createUser(name: String!, email: String!): User!
     createPost(title: String!, content: String!, authorId: ID!): Post!
@@ -2036,6 +2088,7 @@ export const typeDefs = `
 ```
 
 **Client (Apollo Client)**
+
 ```typescript
 // src/lib/apollo.ts
 import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client'
@@ -2089,6 +2142,7 @@ export const apolloClient = new ApolloClient({
 | Use Case | Full-stack TS projects | Multi-client/Public API |
 
 **Selection Recommendations**
+
 - New project + Full-stack TypeScript → **tRPC**
 - Need mobile/third-party access → **GraphQL**
 - Existing GraphQL ecosystem → **GraphQL Yoga**
@@ -2100,6 +2154,7 @@ export const apolloClient = new ApolloClient({
 ### Socket.io Complete Implementation
 
 **Server (Next.js API Route)**
+
 ```typescript
 // src/app/api/socket/route.ts
 import { Server as NetServer } from 'http'
@@ -2129,19 +2184,19 @@ export async function GET(req: NextApiRequest) {
   // Connection handling
   io.on('connection', (socket) => {
     console.log('Client connected:', socket.id)
-    
+
     // Join room
     socket.on('join-room', (roomId: string) => {
       socket.join(roomId)
       socket.to(roomId).emit('user-joined', socket.id)
     })
-    
+
     // Leave room
     socket.on('leave-room', (roomId: string) => {
       socket.leave(roomId)
       socket.to(roomId).emit('user-left', socket.id)
     })
-    
+
     // Message broadcast
     socket.on('send-message', (data: { roomId: string; message: string }) => {
       socket.to(data.roomId).emit('new-message', {
@@ -2151,12 +2206,12 @@ export async function GET(req: NextApiRequest) {
         timestamp: new Date().toISOString()
       })
     })
-    
+
     // Collaborative editing (Yjs integration)
     socket.on('doc-update', (data: { roomId: string; update: Uint8Array }) => {
       socket.to(data.roomId).emit('doc-update', data.update)
     })
-    
+
     // Disconnect
     socket.on('disconnect', () => {
       console.log('Client disconnected:', socket.id)
@@ -2164,12 +2219,13 @@ export async function GET(req: NextApiRequest) {
   })
 
   ;(req.socket as any).server.io = io
-  
+
   return new Response('Socket initialized', { status: 200 })
 }
 ```
 
 **Client Hook**
+
 ```typescript
 // src/hooks/useSocket.ts
 import { useEffect, useRef, useState } from 'react'
@@ -2189,7 +2245,7 @@ export function useSocket(roomId?: string) {
     socketRef.current.on('connect', () => {
       setIsConnected(true)
       console.log('Connected:', socketRef.current?.id)
-      
+
       // Join room
       if (roomId) {
         socketRef.current?.emit('join-room', roomId)
@@ -2225,6 +2281,7 @@ export function useSocket(roomId?: string) {
 ```
 
 **Chat Component**
+
 ```typescript
 // src/components/Chat.tsx
 'use client'
@@ -2241,7 +2298,7 @@ export function Chat({ roomId }: { roomId: string }) {
       <div className="connection-status">
         {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
       </div>
-      
+
       <div className="messages">
         {messages.map((msg) => (
           <div key={msg.id} className="message">
@@ -2253,7 +2310,7 @@ export function Chat({ roomId }: { roomId: string }) {
           </div>
         ))}
       </div>
-      
+
       <form onSubmit={(e) => {
         e.preventDefault()
         sendMessage(input)
@@ -2278,6 +2335,7 @@ export function Chat({ roomId }: { roomId: string }) {
 ### PartyKit Edge Real-Time Solution
 
 **PartyKit Server**
+
 ```typescript
 // party/server.ts
 import type * as Party from 'partykit/server'
@@ -2287,7 +2345,7 @@ export default class Server implements Party.Server {
 
   onConnect(conn: Party.Connection) {
     console.log(`Client ${conn.id} connected to room ${this.room.id}`)
-    
+
     // Broadcast new user joined
     this.room.broadcast(
       JSON.stringify({ type: 'user-joined', userId: conn.id }),
@@ -2297,7 +2355,7 @@ export default class Server implements Party.Server {
 
   onMessage(message: string, sender: Party.Connection) {
     const data = JSON.parse(message)
-    
+
     switch (data.type) {
       case 'cursor-move':
         // Broadcast cursor position (exclude sender)
@@ -2311,12 +2369,12 @@ export default class Server implements Party.Server {
           [sender.id]
         )
         break
-        
+
       case 'doc-update':
         // Yjs document update broadcast
         this.room.broadcast(message, [sender.id])
         break
-        
+
       case 'chat-message':
         // Chat message persistence + broadcast
         this.persistMessage(data)
@@ -2330,7 +2388,7 @@ export default class Server implements Party.Server {
       JSON.stringify({ type: 'user-left', userId: conn.id })
     )
   }
-  
+
   async persistMessage(data: any) {
     // Save to external database
     await fetch(process.env.API_URL + '/messages', {
@@ -2347,6 +2405,7 @@ Server satisfies Party.Worker
 ```
 
 **PartyKit Configuration**
+
 ```typescript
 // partykit.json
 {
@@ -2360,6 +2419,7 @@ Server satisfies Party.Worker
 ```
 
 **Client Usage**
+
 ```typescript
 // src/hooks/useParty.ts
 import { useEffect, useRef, useState } from 'react'
@@ -2374,10 +2434,10 @@ export function useParty(roomId: string) {
     wsRef.current = ws
 
     ws.onopen = () => console.log('Connected to PartyKit')
-    
+
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data)
-      
+
       switch (data.type) {
         case 'user-joined':
           setUsers((prev) => [...prev, data.userId])
@@ -2408,6 +2468,7 @@ export function useParty(roomId: string) {
 ### Yjs Collaborative Editing Implementation
 
 **Document Sync**
+
 ```typescript
 // src/hooks/useYjs.ts
 import { useEffect, useRef, useState } from 'react'
@@ -2422,9 +2483,9 @@ export function useCollaborativeEditor(roomId: string) {
   useEffect(() => {
     const doc = new Y.Doc()
     docRef.current = doc
-    
+
     const yText = doc.getText('content')
-    
+
     // Listen for local changes
     yText.observe(() => {
       setContent(yText.toString())
@@ -2645,11 +2706,13 @@ const users = await userRepository.find({
 ### Bundle Analysis & Optimization
 
 **Install Analysis Tools**
+
 ```bash
 npm install -D @next/bundle-analyzer rollup-plugin-visualizer
 ```
 
 **Next.js Bundle Analysis**
+
 ```javascript
 // next.config.js
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
@@ -2677,6 +2740,7 @@ ANALYZE=true npm run build
 | Dependency Optimization | Reduce duplicates | Medium |
 
 **Dynamic Import Implementation**
+
 ```typescript
 // Before - Static import
 import HeavyComponent from './HeavyComponent'
@@ -2692,14 +2756,15 @@ const HeavyComponent = dynamic(() => import('./HeavyComponent'), {
 // Route-based dynamic import
 const AdminDashboard = dynamic(
   () => import('./AdminDashboard'),
-  { 
+  {
     loading: () => <LoadingSpinner />,
-    ssr: true 
+    ssr: true
   }
 )
 ```
 
 **lodash Optimization**
+
 ```typescript
 // ❌ Import entire library
 import _ from 'lodash'
@@ -2720,6 +2785,7 @@ import { debounce } from 'es-toolkit'
 ### Image Optimization Complete Guide
 
 **Next.js Image Component Best Practices**
+
 ```typescript
 import Image from 'next/image'
 
@@ -2754,6 +2820,7 @@ import Image from 'next/image'
 ```
 
 **Responsive Image Config (next.config.js)**
+
 ```javascript
 images: {
   deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -2766,6 +2833,7 @@ images: {
 ```
 
 **Performance Comparison**
+
 | Optimization | Before | After | Improvement |
 |--------------|--------|-------|-------------|
 | Image Format | JPEG | WebP/AVIF | -70% |
@@ -2778,6 +2846,7 @@ images: {
 ### Code Splitting Strategies
 
 **Route-level Splitting**
+
 ```typescript
 // app/page.tsx - Automatic route-based splitting
 import { Suspense } from 'react'
@@ -2792,6 +2861,7 @@ export default function Page() {
 ```
 
 **Component-level Splitting**
+
 ```typescript
 // Split by feature
 const Chart = dynamic(() => import('./Chart'), { ssr: false })
@@ -2803,7 +2873,7 @@ const HeavyFeature = dynamic(() => import('./HeavyFeature'))
 
 function App() {
   const [showFeature, setShowFeature] = useState(false)
-  
+
   return (
     <div>
       <button onClick={() => setShowFeature(true)}>
@@ -2816,6 +2886,7 @@ function App() {
 ```
 
 **Preloading Strategies**
+
 ```typescript
 // Preload on hover
 function LinkWithPrefetch({ href, children }) {
@@ -2844,6 +2915,7 @@ import Link from 'next/link'
 ### Caching Strategy Configuration
 
 **Next.js Caching Strategies**
+
 ```typescript
 // Static page (SSG)
 export const revalidate = 3600 // 1 hour ISR
@@ -2869,6 +2941,7 @@ export async function GET() {
 ```
 
 **Redis Cache Layer**
+
 ```typescript
 // lib/cache.ts
 import Redis from 'ioredis'
@@ -2881,14 +2954,14 @@ export async function getCachedOrFetch<T>(
   ttl: number = 3600
 ): Promise<T> {
   const cached = await redis.get(key)
-  
+
   if (cached) {
     return JSON.parse(cached)
   }
-  
+
   const data = await fetcher()
   await redis.setex(key, ttl, JSON.stringify(data))
-  
+
   return data
 }
 
@@ -2905,6 +2978,7 @@ const user = await getCachedOrFetch(
 ### Database Query Optimization
 
 **Prisma Query Optimization**
+
 ```typescript
 // ❌ Inefficient: N+1 query
 const users = await prisma.user.findMany()
@@ -2943,6 +3017,7 @@ const page = await prisma.post.findMany({
 ```
 
 **Database Index Optimization**
+
 ```prisma
 // schema.prisma
 model Post {
@@ -2952,7 +3027,7 @@ model Post {
   authorId  String
   published Boolean  @default(false)
   createdAt DateTime @default(now())
-  
+
   // Composite index for query optimization
   @@index([authorId, published, createdAt])
   @@index([slug])
@@ -2960,6 +3035,7 @@ model Post {
 ```
 
 **Connection Pool Configuration**
+
 ```typescript
 // lib/prisma.ts
 const prisma = new PrismaClient({
@@ -2981,6 +3057,7 @@ const prisma = new PrismaClient({
 ### Performance Monitoring & Alerting
 
 **Web Vitals Monitoring**
+
 ```typescript
 // lib/vitals.ts
 import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals'
@@ -2998,7 +3075,7 @@ export function reportWebVitals(onPerfEntry) {
 // Report to analytics platform
 function sendToAnalytics(metric) {
   const body = JSON.stringify(metric)
-  
+
   // Use navigator.sendBeacon to ensure data is sent
   if (navigator.sendBeacon) {
     navigator.sendBeacon('/analytics/vitals', body)
@@ -3013,6 +3090,7 @@ function sendToAnalytics(metric) {
 ```
 
 **Custom Performance Markers**
+
 ```typescript
 // Measure API response time
 const start = performance.now()
@@ -3050,7 +3128,7 @@ performance.measure('api-call', 'api-start', 'api-end')
 const nextConfig = {
   // Output static export or standalone
   output: 'standalone',
-  
+
   // Image optimization config
   images: {
     domains: ['cdn.example.com'],
@@ -3059,7 +3137,7 @@ const nextConfig = {
       { protocol: 'https', hostname: '**.example.com' }
     ]
   },
-  
+
   // Experimental features
   experimental: {
     // Partial Prerendering (Next.js 14+)
@@ -3067,14 +3145,14 @@ const nextConfig = {
     // Optimize package imports
     optimizePackageImports: ['lodash', '@mui/material']
   },
-  
+
   // Rewrites and proxy
   async rewrites() {
     return [
       { source: '/api/:path*', destination: 'http://localhost:3001/:path*' }
     ]
   },
-  
+
   // Security headers
   async headers() {
     return [{
@@ -3086,7 +3164,7 @@ const nextConfig = {
       ]
     }]
   },
-  
+
   // Webpack customization (if needed)
   webpack: (config, { isServer }) => {
     if (!isServer) {
@@ -3100,6 +3178,7 @@ module.exports = nextConfig
 ```
 
 **Key Configuration Notes**:
+
 - `output: 'standalone'` - Required for Docker deployment, reduces image size by 80%
 - `optimizePackageImports` - Automatic tree-shaking, reduces initial load by 40%
 - `ppr: true` - Partial Prerendering, optimal solution for mixed static+dynamic content
@@ -3122,7 +3201,7 @@ export default defineConfig(({ mode }) => ({
     // Gzip/Brotli compression
     compression({ algorithm: 'brotliCompress', ext: '.br' })
   ].filter(Boolean),
-  
+
   build: {
     target: 'es2022',
     // Code splitting strategy
@@ -3140,13 +3219,13 @@ export default defineConfig(({ mode }) => ({
     // Source maps (disable in production or upload to Sentry)
     sourcemap: process.env.SENTRY_UPLOAD === 'true'
   },
-  
+
   // Dependency pre-bundling optimization
   optimizeDeps: {
     include: ['react', 'react-dom', 'lodash-es'],
     exclude: ['@your-company/internal-lib']
   },
-  
+
   // Dev server proxy
   server: {
     proxy: {
@@ -3157,6 +3236,7 @@ export default defineConfig(({ mode }) => ({
 ```
 
 **Performance Optimization Results**:
+
 - Code splitting reduces initial JS by 60%
 - Brotli compression reduces transfer size by 75%
 - Pre-bundling achieves cold start time < 500ms
@@ -3173,14 +3253,14 @@ export default defineConfig(({ mode }) => ({
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "preserve",
-    
+
     // Strict type checking
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    
+
     // Path aliases
     "baseUrl": ".",
     "paths": {
@@ -3188,7 +3268,7 @@ export default defineConfig(({ mode }) => ({
       "@/components/*": ["./src/components/*"],
       "@/utils/*": ["./src/utils/*"]
     },
-    
+
     // Modern features
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -3246,6 +3326,7 @@ CMD ["node", "server.js"]
 ```
 
 **Image Optimization Results**:
+
 - Multi-stage build achieves image size < 150MB (from 1GB+)
 - Non-root user improves security
 - Contains only runtime necessary files
@@ -3262,26 +3343,26 @@ upstream nextjs {
 server {
     listen 80;
     server_name example.com;
-    
+
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    
+
     # Gzip compression
     gzip on;
     gzip_vary on;
     gzip_proxied any;
     gzip_comp_level 6;
     gzip_types text/plain text/css text/xml application/json application/javascript;
-    
+
     # Static asset caching
     location /_next/static {
         alias /app/.next/static;
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
-    
+
     # Reverse proxy to Next.js
     location / {
         proxy_pass http://nextjs;
@@ -3290,7 +3371,7 @@ server {
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
         proxy_cache_bypass $http_upgrade;
-        
+
         # Timeout configuration
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
@@ -3306,6 +3387,7 @@ server {
 ### GitHub Actions CI/CD Configuration
 
 **.github/workflows/deploy.yml**
+
 ```yaml
 name: Deploy to Production
 
@@ -3325,30 +3407,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
           version: ${{ env.PNPM_VERSION }}
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
-      
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      
+
       - name: Lint
         run: pnpm lint
-      
+
       - name: Type check
         run: pnpm type-check
-      
+
       - name: Unit tests
         run: pnpm test:ci
-        
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
@@ -3359,44 +3441,44 @@ jobs:
     needs: lint-and-typecheck
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
           version: ${{ env.PNPM_VERSION }}
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
-      
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      
+
       - name: Build application
         run: pnpm build
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      
+
       - name: Run E2E tests
         run: pnpm test:e2e
-      
+
       # Docker build and push
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Login to Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -3407,7 +3489,7 @@ jobs:
             ghcr.io/${{ github.repository }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
+
       # Deploy to production (example: AWS ECS)
       - name: Deploy to ECS
         run: |
@@ -3426,6 +3508,7 @@ jobs:
 ### Monitoring & Logging (Sentry + Datadog)
 
 **Sentry Initialization Config**
+
 ```typescript
 // lib/sentry.ts
 import * as Sentry from '@sentry/nextjs'
@@ -3434,14 +3517,14 @@ Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   environment: process.env.NODE_ENV,
   release: process.env.NEXT_PUBLIC_APP_VERSION,
-  
+
   // Performance monitoring
   tracesSampleRate: 1.0,
-  
+
   // Error sampling (100% in production)
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
-  
+
   // Integrations
   integrations: [
     Sentry.replayIntegration({
@@ -3449,11 +3532,11 @@ Sentry.init({
       blockAllMedia: false
     })
   ],
-  
+
   // Filter sensitive errors
   beforeSend(event) {
-    if (event.exception?.values?.some(e => 
-      e.value?.includes('password') || 
+    if (event.exception?.values?.some(e =>
+      e.value?.includes('password') ||
       e.value?.includes('token')
     )) {
       return null
@@ -3472,6 +3555,7 @@ export function captureAPIError(error: Error, context?: Record<string, any>) {
 ```
 
 **API Monitoring Middleware**
+
 ```typescript
 // middleware/monitor.ts
 import { NextResponse } from 'next/server'
@@ -3481,19 +3565,19 @@ export async function monitorMiddleware(req: NextRequest) {
   const start = Date.now()
   const response = NextResponse.next()
   const duration = Date.now() - start
-  
+
   // Record metrics
   metrics.timing('http.request.duration', duration, {
     path: req.nextUrl.pathname,
     method: req.method,
     status: response.status
   })
-  
+
   metrics.increment('http.request.count', 1, {
     path: req.nextUrl.pathname,
     status: response.status
   })
-  
+
   return response
 }
 ```
@@ -3503,6 +3587,7 @@ export async function monitorMiddleware(req: NextRequest) {
 ### Database Migration & Backup Strategy
 
 **Prisma Migration Workflow**
+
 ```bash
 # Create migration in development
 npx prisma migrate dev --name add_user_preferences
@@ -3518,6 +3603,7 @@ npx prisma migrate status
 ```
 
 **Automated Backup Script**
+
 ```typescript
 // scripts/backup.ts
 import { exec } from 'child_process'
@@ -3529,26 +3615,26 @@ const execAsync = promisify(exec)
 async function backupDatabase() {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
   const filename = `backup-${timestamp}.sql.gz`
-  
+
   // Execute pg_dump
   await execAsync(
     `pg_dump ${process.env.DATABASE_URL} | gzip > /tmp/${filename}`
   )
-  
+
   // Upload to S3
   const s3 = new S3Client({ region: 'us-east-1' })
   const file = await fs.readFile(`/tmp/${filename}`)
-  
+
   await s3.send(new PutObjectCommand({
     Bucket: 'my-app-backups',
     Key: `database/${filename}`,
     Body: file,
     StorageClass: 'STANDARD_IA'
   }))
-  
+
   // Cleanup local file
   await fs.unlink(`/tmp/${filename}`)
-  
+
   console.log(`Backup completed: ${filename}`)
 }
 
@@ -3561,15 +3647,17 @@ backupDatabase().catch(console.error)
 ### Environment Variable Management Strategy
 
 **Environment Config Layers**
+
 ```
 .env                 # Default config (commit to repo)
 .env.local           # Local development override (don't commit)
 .env.development     # Development environment
-.env.staging         # Staging environment  
+.env.staging         # Staging environment
 .env.production      # Production environment (encrypted storage)
 ```
 
 **Production Environment Variables Checklist**
+
 ```bash
 # .env.production.example
 
@@ -3597,6 +3685,7 @@ REDIS_URL=redis://redis.example.com:6379
 ```
 
 **Secret Rotation Strategy**
+
 ```typescript
 // lib/secrets.ts
 import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager'
@@ -3607,18 +3696,18 @@ const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
 
 export async function getSecret(key: string): Promise<string> {
   const now = Date.now()
-  
+
   // Cache expired or not exists
   if (!cachedSecrets[key] || now - lastFetch > CACHE_TTL) {
     const client = new SecretsManagerClient({ region: 'us-east-1' })
     const response = await client.send(new GetSecretValueCommand({
       SecretId: `prod/my-app/${key}`
     }))
-    
+
     cachedSecrets[key] = response.SecretString!
     lastFetch = now
   }
-  
+
   return cachedSecrets[key]
 }
 ```
@@ -4106,6 +4195,7 @@ flowchart TB
 ### Webpack → Vite Migration
 
 **Pre-migration Checklist**
+
 ```bash
 # 1. Check Webpack special configs
 grep -r "webpack" config/
@@ -4121,12 +4211,14 @@ grep -r "process.env" src/
 **Migration Steps**
 
 **Step 1: Install Dependencies**
+
 ```bash
 npm uninstall webpack webpack-cli webpack-dev-server
 npm install -D vite @vitejs/plugin-react
 ```
 
 **Step 2: Create vite.config.ts**
+
 ```typescript
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -4145,6 +4237,7 @@ export default defineConfig({
 ```
 
 **Step 3: Update index.html**
+
 ```html
 <!-- Move from public/index.html to root directory -->
 <!DOCTYPE html>
@@ -4164,6 +4257,7 @@ export default defineConfig({
 ```
 
 **Step 4: Handle Environment Variables**
+
 ```typescript
 // Before (Webpack)
 const apiUrl = process.env.REACT_APP_API_URL
@@ -4184,6 +4278,7 @@ interface ImportMeta {
 ```
 
 **Step 5: Handle SVG Imports**
+
 ```typescript
 // Before
 import { ReactComponent as Logo } from './logo.svg'
@@ -4209,6 +4304,7 @@ export default defineConfig({
 | HMR not working | Check if component export is default |
 
 **Migration Results**
+
 - Build time: 180s → 45s (-75%)
 - Dev server startup: 45s → 3s (-93%)
 - HMR update: 2.5s → 120ms (-95%)
@@ -4220,12 +4316,14 @@ export default defineConfig({
 **Migration Strategy: Progressive Replacement**
 
 **Step 1: Install Zustand**
+
 ```bash
 npm install zustand
 npm install -D @types/node
 ```
 
 **Step 2: Create Zustand Store**
+
 ```typescript
 // stores/userStore.ts
 import { create } from 'zustand'
@@ -4254,6 +4352,7 @@ export const useUserStore = create<UserState>()(
 ```
 
 **Step 3: Create Adapter Pattern (Backward Compatible)**
+
 ```typescript
 // stores/adapters/reduxAdapter.ts
 import { useUserStore } from '../userStore'
@@ -4278,6 +4377,7 @@ export function useMapUserState() {
 ```
 
 **Step 4: Gradually Replace Components**
+
 ```typescript
 // Before (Redux)
 import { connect } from 'react-redux'
@@ -4307,6 +4407,7 @@ function Profile() {
 ```
 
 **Step 5: Migrate Async Logic**
+
 ```typescript
 // stores/userStore.ts
 import { create } from 'zustand'
@@ -4318,7 +4419,7 @@ interface UserState {
 
 export const useUserStore = create<UserState>()((set, get) => ({
   // ... initial state
-  
+
   fetchUser: async (id) => {
     set({ loading: true, error: null })
     try {
@@ -4332,6 +4433,7 @@ export const useUserStore = create<UserState>()((set, get) => ({
 ```
 
 **Migration Verification Checklist**
+
 - [ ] All components render correctly
 - [ ] State updates work properly
 - [ ] DevTools can track state
@@ -4339,6 +4441,7 @@ export const useUserStore = create<UserState>()((set, get) => ({
 - [ ] Unit tests pass
 
 **Results Comparison**
+
 | Metric | Redux | Zustand | Improvement |
 |--------|-------|---------|-------------|
 | Lines of Code | 150 | 60 | -60% |
@@ -4351,6 +4454,7 @@ export const useUserStore = create<UserState>()((set, get) => ({
 ### Prisma 2.x → 5.x Migration
 
 **Breaking Changes Handling**
+
 ```typescript
 // Before (2.x)
 const user = await prisma.user.findOne({ where: { id } })
@@ -4369,6 +4473,7 @@ prisma.$on('query', (e) => console.log(e.query))
 ```
 
 **Performance Optimization Config**
+
 ```typescript
 // prisma/client.ts
 import { PrismaClient } from '@prisma/client'
@@ -4397,6 +4502,7 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 ### Authentication & Authorization Architecture
 
 **NextAuth.js Complete Configuration**
+
 ```typescript
 // lib/auth.ts
 import NextAuth from 'next-auth'
@@ -4428,24 +4534,24 @@ export const authOptions = {
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Invalid credentials')
         }
-        
+
         const user = await prisma.user.findUnique({
           where: { email: credentials.email }
         })
-        
+
         if (!user || !user.password) {
           throw new Error('User not found')
         }
-        
+
         const isPasswordValid = await compare(
           credentials.password,
           user.password
         )
-        
+
         if (!isPasswordValid) {
           throw new Error('Invalid password')
         }
-        
+
         return {
           id: user.id,
           email: user.email,
@@ -4502,6 +4608,7 @@ export default NextAuth(authOptions)
 ```
 
 **API Route Permission Control**
+
 ```typescript
 // lib/permissions.ts
 import { getServerSession } from 'next-auth/next'
@@ -4509,12 +4616,12 @@ import { authOptions } from './auth'
 
 export async function requireAuth(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions)
-  
+
   if (!session) {
     res.status(401).json({ error: 'Unauthorized' })
     return null
   }
-  
+
   return session
 }
 
@@ -4525,12 +4632,12 @@ export async function requireRole(
 ) {
   const session = await requireAuth(req, res)
   if (!session) return null
-  
+
   if (!allowedRoles.includes(session.user.role)) {
     res.status(403).json({ error: 'Forbidden' })
     return null
   }
-  
+
   return session
 }
 
@@ -4538,7 +4645,7 @@ export async function requireRole(
 export default async function handler(req, res) {
   const session = await requireRole(req, res, ['ADMIN', 'EDITOR'])
   if (!session) return
-  
+
   // Process request
 }
 ```
@@ -4548,6 +4655,7 @@ export default async function handler(req, res) {
 ### Data Validation & Sanitization
 
 **Zod Validation Schema**
+
 ```typescript
 // lib/validations/user.ts
 import { z } from 'zod'
@@ -4569,20 +4677,21 @@ import { userSchema } from '@/lib/validations/user'
 
 export default async function handler(req, res) {
   const result = userSchema.safeParse(req.body)
-  
+
   if (!result.success) {
     return res.status(400).json({
       error: 'Validation failed',
       issues: result.error.issues
     })
   }
-  
+
   const { email, password, name } = result.data
   // Process validated data
 }
 ```
 
 **SQL Injection Prevention (Prisma)**
+
 ```typescript
 // ❌ Dangerous: String concatenation
 const users = await prisma.$queryRaw`
@@ -4605,13 +4714,14 @@ const user = await prisma.user.findUnique({
 ### XSS Protection
 
 **Content Security Policy (CSP)**
+
 ```typescript
 // middleware.ts
 import { NextResponse } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
-  
+
   const cspHeader = `
     default-src 'self';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
@@ -4625,22 +4735,23 @@ export function middleware(request: NextRequest) {
     block-all-mixed-content;
     upgrade-insecure-requests;
   `.replace(/\s{2,}/g, ' ').trim()
-  
+
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-nonce', nonce)
   requestHeaders.set('Content-Security-Policy', cspHeader)
-  
+
   const response = NextResponse.next({
     request: { headers: requestHeaders }
   })
-  
+
   response.headers.set('Content-Security-Policy', cspHeader)
-  
+
   return response
 }
 ```
 
 **Input Sanitization**
+
 ```typescript
 // lib/sanitize.ts
 import DOMPurify from 'isomorphic-dompurify'
@@ -4662,6 +4773,7 @@ const safeContent = sanitizeHtml(userContent)
 ### API Security
 
 **Rate Limiting**
+
 ```typescript
 // lib/rate-limit.ts
 import { LRUCache } from 'lru-cache'
@@ -4680,17 +4792,17 @@ const cache = new LRUCache<string, number[]>({
 export async function rateLimit(context: RateLimitContext) {
   const { ip, limit, windowMs } = context
   const now = Date.now()
-  
+
   const timestamps = cache.get(ip) || []
   const validTimestamps = timestamps.filter(t => now - t < windowMs)
-  
+
   if (validTimestamps.length >= limit) {
     return { success: false, limit, remaining: 0 }
   }
-  
+
   validTimestamps.push(now)
   cache.set(ip, validTimestamps)
-  
+
   return {
     success: true,
     limit,
@@ -4705,16 +4817,17 @@ export default async function handler(req, res) {
     limit: 10,
     windowMs: 60 * 1000 // 1 minute
   })
-  
+
   if (!limit.success) {
     return res.status(429).json({ error: 'Too many requests' })
   }
-  
+
   // Process request
 }
 ```
 
 **CSRF Protection**
+
 ```typescript
 // lib/csrf.ts
 import { createHash, randomBytes } from 'crypto'
@@ -4727,21 +4840,21 @@ export function validateCSRFToken(token: string, secret: string): boolean {
   const expected = createHash('sha256')
     .update(secret)
     .digest('hex')
-  
+
   return token === expected
 }
 
 // Middleware
 export function csrfProtection(req, res, next) {
   if (req.method === 'GET') return next()
-  
+
   const token = req.headers['x-csrf-token']
   const secret = req.cookies['csrf-secret']
-  
+
   if (!validateCSRFToken(token, secret)) {
     return res.status(403).json({ error: 'Invalid CSRF token' })
   }
-  
+
   next()
 }
 ```
@@ -4751,6 +4864,7 @@ export function csrfProtection(req, res, next) {
 ### Security Scanning & Auditing
 
 **Dependency Vulnerability Check**
+
 ```bash
 # Check for vulnerabilities
 npm audit
@@ -4766,6 +4880,7 @@ npm audit --audit-level=high
 ```
 
 **Security Code Rules (ESLint)**
+
 ```json
 {
   "extends": [
@@ -4791,6 +4906,7 @@ npm audit --audit-level=high
 ## 📊 Benchmarks
 
 Based on 2024-2025 actual test data, test environment:
+
 - **Hardware**: AWS c6i.2xlarge (8 vCPU, 16GB RAM)
 - **Node.js**: v20.11.0 / Deno: v1.40 / Bun: v1.0.26
 - **Testing Tools**: k6 (load testing), Lighthouse (frontend performance)
@@ -4878,6 +4994,7 @@ Based on 2024-2025 actual test data, test environment:
 ### Real-World Case Studies
 
 **Case: E-commerce Admin Dashboard**
+
 - **Stack**: Next.js 14 + Prisma + PostgreSQL + Zustand
 - **Codebase**: 150K lines of TypeScript
 - **Build Optimization Results**:
@@ -4887,12 +5004,14 @@ Based on 2024-2025 actual test data, test environment:
   - State management Redux→Zustand: Initial JS 180KB → 95KB (-47%)
 
 **Performance Monitoring Data** (Production environment, 100K PV/day)
+
 - Average page load time: 1.2s
 - P95 response time: 2.8s
 - Error rate: < 0.1%
 - Server cost: $120/month (AWS ECS)
 
 **Case: Real-time Collaborative Whiteboard**
+
 - **Stack**: SvelteKit + Yjs + PartyKit + Drizzle
 - **Concurrency Test**: 1000 concurrent editors
 - Latency: < 50ms (P95)
@@ -4906,6 +5025,7 @@ Based on 2024-2025 actual test data, test environment:
 ### Monorepo Architecture (Nx + pnpm)
 
 **Directory Structure**
+
 ```
 my-org/
 ├── apps/
@@ -4925,6 +5045,7 @@ my-org/
 ```
 
 **nx.json Configuration**
+
 ```json
 {
   "extends": "nx/presets/npm.json",
@@ -4960,6 +5081,7 @@ my-org/
 ```
 
 **Shared Library Example (libs/shared-ui/src/Button.tsx)**
+
 ```typescript
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@my-org/shared-utils'
@@ -4998,6 +5120,7 @@ export function Button({ className, variant, size, ...props }: ButtonProps) {
 ```
 
 **Usage in App**
+
 ```typescript
 // apps/web/app/page.tsx
 import { Button } from '@my-org/shared-ui'
@@ -5012,6 +5135,7 @@ export default function Page() {
 ### AI RAG Architecture Implementation
 
 **Overall Architecture**
+
 ```
 User Query → Embedding → Vector Search → Retrieve Context → LLM → Stream Response
                     ↓
@@ -5034,12 +5158,12 @@ export async function ingestDocuments(docs: Document[]) {
   const embeddings = new OpenAIEmbeddings({
     modelName: 'text-embedding-3-small'
   })
-  
+
   const client = createClient(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!
   )
-  
+
   await SupabaseVectorStore.fromDocuments(
     docs,
     embeddings,
@@ -5050,57 +5174,58 @@ export async function ingestDocuments(docs: Document[]) {
 // 2. Retrieval-Augmented Generation
 export async function askQuestion(question: string) {
   const { stream, handlers } = LangChainStream()
-  
+
   // Vectorize query
   const embeddings = new OpenAIEmbeddings()
   const client = createClient(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_KEY!
   )
-  
+
   const vectorStore = new SupabaseVectorStore(embeddings, { client })
-  
+
   // Similarity search (Top 5)
   const relevantDocs = await vectorStore.similaritySearch(question, 5)
   const context = relevantDocs.map(d => d.pageContent).join('\n\n')
-  
+
   // Build prompt
   const prompt = PromptTemplate.fromTemplate(`
     Answer the question based on the following context. If context is insufficient, please indicate.
-    
+
     Context:
     {context}
-    
+
     Question: {question}
-    
+
     Answer:
   `)
-  
+
   // Stream LLM call
   const model = new ChatOpenAI({
     modelName: 'gpt-4o',
     streaming: true,
     callbacks: [handlers]
   })
-  
+
   model.invoke(prompt.format({ context, question }))
-  
+
   return new StreamingTextResponse(stream)
 }
 ```
 
 **API Route Implementation**
+
 ```typescript
 // app/api/chat/route.ts
 import { askQuestion } from '@/lib/rag'
 
 export async function POST(req: Request) {
   const { question } = await req.json()
-  
+
   if (!question) {
     return new Response('Question cannot be empty', { status: 400 })
   }
-  
+
   return askQuestion(question)
 }
 
@@ -5109,21 +5234,22 @@ export async function POST(req: Request) {
 export async function POST(req: Request) {
   const formData = await req.formData()
   const file = formData.get('file') as File
-  
+
   // Parse PDF/Word
   const docs = await parseDocument(file)
-  
+
   // Chunk processing
   const chunks = await splitDocuments(docs, { chunkSize: 1000 })
-  
+
   // Store in vector database
   await ingestDocuments(chunks)
-  
+
   return Response.json({ success: true, chunks: chunks.length })
 }
 ```
 
 **Frontend Component**
+
 ```typescript
 // components/Chat.tsx
 'use client'
@@ -5132,7 +5258,7 @@ import { useChat } from 'ai/react'
 
 export function Chat() {
   const { messages, input, handleInputChange, handleSubmit } = useChat()
-  
+
   return (
     <div className="flex flex-col h-[600px]">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -5146,7 +5272,7 @@ export function Chat() {
           </div>
         ))}
       </div>
-      
+
       <form onSubmit={handleSubmit} className="p-4 border-t">
         <input
           value={input}
@@ -5165,6 +5291,7 @@ export function Chat() {
 ### Micro-Frontend Architecture (Module Federation)
 
 **Host App Config (apps/shell/webpack.config.js)**
+
 ```javascript
 const { ModuleFederationPlugin } = require('webpack').container
 
@@ -5186,6 +5313,7 @@ module.exports = {
 ```
 
 **Remote App Exposing Components**
+
 ```javascript
 // apps/shop/webpack.config.js
 new ModuleFederationPlugin({
@@ -5200,6 +5328,7 @@ new ModuleFederationPlugin({
 ```
 
 **Using Remote Components in Host**
+
 ```typescript
 // apps/shell/src/App.tsx
 import { lazy, Suspense } from 'react'
@@ -5221,6 +5350,7 @@ export default function App() {
 ```
 
 **Runtime Type Safety**
+
 ```typescript
 // types/remotes.d.ts
 declare module 'shop/ProductList' {
@@ -5241,11 +5371,13 @@ declare module 'shop/ProductList' {
 ### Case 1: E-commerce Platform (500K MAU)
 
 **Project Background**
+
 - Type: B2C E-commerce Platform
 - Scale: 500K Monthly Active Users, 5000+ daily orders
 - Team: 8 people (2 Frontend + 2 Backend + 2 Full-stack + 1 Product + 1 Design)
 
 **Tech Stack**
+
 ```
 Frontend: Next.js 14 + TypeScript + Tailwind + Zustand + React Query
 Backend: Next.js API Routes + tRPC + Prisma + PostgreSQL + Redis
@@ -5254,6 +5386,7 @@ Monitoring: Vercel Analytics + Sentry + LogRocket
 ```
 
 **Architecture Highlights**
+
 1. **ISR + SSR Hybrid Rendering**
    - Product detail pages: ISR (revalidate: 60s)
    - User dashboard: SSR (real-time data)
@@ -5270,6 +5403,7 @@ Monitoring: Vercel Analytics + Sentry + LogRocket
    - Database: Prisma + connection pooling (40% query performance boost)
 
 **Core Code Example**
+
 ```typescript
 // Product detail page ISR
 export async function generateStaticParams() {
@@ -5290,7 +5424,7 @@ const useCart = create<CartState>((set, get) => ({
     set((state) => ({
       items: [...state.items, { ...product, quantity: 1 }]
     }))
-    
+
     try {
       await api.cart.add(product.id)
     } catch {
@@ -5304,6 +5438,7 @@ const useCart = create<CartState>((set, get) => ({
 ```
 
 **Challenges & Solutions**
+
 | Challenge | Solution | Result |
 |-----------|----------|--------|
 | Slow initial load | Code splitting + Image optimization + ISR | LCP improved from 3.5s to 1.2s |
@@ -5316,11 +5451,13 @@ const useCart = create<CartState>((set, get) => ({
 ### Case 2: Real-Time Collaborative Whiteboard (20 Concurrent Editors)
 
 **Project Background**
+
 - Type: Online Whiteboard Tool (similar to Miro)
 - Scale: Supports 20 concurrent editors with <50ms latency
 - Technical Challenges: Real-time sync, conflict resolution, offline editing
 
 **Tech Stack**
+
 ```
 Frontend: SvelteKit + TypeScript + Yjs + PartyKit
 Styling: Tailwind CSS + Custom Canvas rendering
@@ -5330,6 +5467,7 @@ Deployment: Vercel + PartyKit
 ```
 
 **Core Architecture**
+
 ```
 User Action → Yjs Doc → Local Update → PartyKit → Other Users
               ↓
@@ -5341,22 +5479,23 @@ User Action → Yjs Doc → Local Update → PartyKit → Other Users
 **Key Technical Implementation**
 
 1. **CRDT Document Structure**
+
 ```typescript
 // yjs/document.ts
 import * as Y from 'yjs'
 
 export function createWhiteboardDoc() {
   const doc = new Y.Doc()
-  
+
   // Shape collection
   const shapes = doc.getMap('shapes')
-  
+
   // User cursor positions
   const cursors = doc.getMap('cursors')
-  
+
   // Viewport info
   const viewport = doc.getMap('viewport')
-  
+
   return { doc, shapes, cursors, viewport }
 }
 
@@ -5375,29 +5514,30 @@ export function moveShape(shapes: Y.Map<any>, id: string, x: number, y: number) 
 }
 ```
 
-2. **PartyKit Sync**
+1. **PartyKit Sync**
+
 ```typescript
 // party/whiteboard.ts
 export default class WhiteboardServer implements Party.Server {
   doc = new Y.Doc()
-  
+
   onConnect(conn: Party.Connection) {
     // Send current document state
     const state = Y.encodeStateAsUpdate(this.doc)
     conn.send(state)
   }
-  
+
   onMessage(message: Uint8Array, sender: Party.Connection) {
     // Apply update
     Y.applyUpdate(this.doc, message)
-    
+
     // Broadcast to other users
     this.room.broadcast(message, [sender.id])
-    
+
     // Persistence (debounced)
     this.debouncedSave()
   }
-  
+
   debouncedSave = debounce(async () => {
     const state = Y.encodeStateAsUpdate(this.doc)
     await supabase.from('whiteboards')
@@ -5407,44 +5547,46 @@ export default class WhiteboardServer implements Party.Server {
 }
 ```
 
-3. **Offline Support**
+1. **Offline Support**
+
 ```typescript
 // hooks/useWhiteboard.ts
 export function useWhiteboard(roomId: string) {
   const [isOffline, setIsOffline] = useState(false)
-  
+
   useEffect(() => {
     // Load from local cache
     const cached = localStorage.getItem(`doc-${roomId}`)
     if (cached) {
       Y.applyUpdate(doc, new Uint8Array(JSON.parse(cached)))
     }
-    
+
     // Listen for network status
     window.addEventListener('online', () => {
       setIsOffline(false)
       // Sync offline changes
       syncPendingChanges()
     })
-    
+
     window.addEventListener('offline', () => {
       setIsOffline(true)
     })
-    
+
     // Periodic local save
     const interval = setInterval(() => {
       const state = Y.encodeStateAsUpdate(doc)
       localStorage.setItem(`doc-${roomId}`, JSON.stringify(Array.from(state)))
     }, 1000)
-    
+
     return () => clearInterval(interval)
   }, [roomId])
-  
+
   return { isOffline, doc }
 }
 ```
 
 **Performance Metrics**
+
 - Sync latency: <50ms (P95)
 - Memory usage: <200MB (1000 shapes)
 - Offline recovery: <1s
@@ -5454,11 +5596,13 @@ export function useWhiteboard(roomId: string) {
 ### Case 3: AI Customer Service System (10K+ Daily Conversations)
 
 **Project Background**
+
 - Type: AI Intelligent Customer Service System
 - Scale: 10K+ daily conversations, average response time <3s
 - Technical Challenges: RAG knowledge base, streaming output, context management
 
 **Tech Stack**
+
 ```
 Frontend: Next.js 14 + Vercel AI SDK + Tailwind
 Backend: Next.js API + LangChain.js + OpenAI
@@ -5468,6 +5612,7 @@ Deployment: Vercel
 ```
 
 **System Architecture**
+
 ```
 User Query → Vectorization → Similarity Search → Retrieve Context → LLM → Stream Response
                  ↓
@@ -5477,6 +5622,7 @@ User Query → Vectorization → Similarity Search → Retrieve Context → LLM 
 **Core Implementation**
 
 1. **Knowledge Base Construction**
+
 ```typescript
 // scripts/ingest.ts
 import { OpenAIEmbeddings } from '@langchain/openai'
@@ -5490,7 +5636,7 @@ async function ingestDocuments(docs: Document[]) {
     chunkOverlap: 200
   })
   const chunks = await splitter.splitDocuments(docs)
-  
+
   // Vectorization and storage
   const embeddings = new OpenAIEmbeddings()
   await SupabaseVectorStore.fromDocuments(chunks, embeddings, {
@@ -5500,7 +5646,8 @@ async function ingestDocuments(docs: Document[]) {
 }
 ```
 
-2. **Chat API (Streaming)**
+1. **Chat API (Streaming)**
+
 ```typescript
 // app/api/chat/route.ts
 import { OpenAIStream, StreamingTextResponse } from 'ai'
@@ -5509,36 +5656,37 @@ import { OpenAI } from 'openai'
 export async function POST(req: Request) {
   const { messages } = await req.json()
   const lastMessage = messages[messages.length - 1]
-  
+
   // Retrieve relevant context
   const relevantDocs = await vectorStore.similaritySearch(
     lastMessage.content,
     5
   )
-  
+
   const context = relevantDocs.map(d => d.pageContent).join('\n')
-  
+
   // Build prompt
   const prompt = `
     You are a customer service assistant. Answer based on the following knowledge:
     ${context}
-    
+
     User Question: ${lastMessage.content}
   `
-  
+
   // Stream response
   const response = await openai.chat.completions.create({
     model: 'gpt-4',
     messages: [{ role: 'system', content: prompt }, ...messages],
     stream: true
   })
-  
+
   const stream = OpenAIStream(response)
   return new StreamingTextResponse(stream)
 }
 ```
 
-3. **Context Management**
+1. **Context Management**
+
 ```typescript
 // lib/conversation.ts
 export async function manageConversation(
@@ -5548,23 +5696,24 @@ export async function manageConversation(
   // Get history
   const history = await redis.lrange(`chat:${sessionId}`, 0, 9)
   const messages = history.map(h => JSON.parse(h))
-  
+
   // Calculate tokens, summarize if needed
   const totalTokens = estimateTokens(messages)
   if (totalTokens > 3000) {
     const summary = await summarizeConversation(messages.slice(0, -5))
     messages = [{ role: 'system', content: summary }, ...messages.slice(-5)]
   }
-  
+
   // Save new message
   await redis.lpush(`chat:${sessionId}`, JSON.stringify(newMessage))
   await redis.expire(`chat:${sessionId}`, 60 * 60 * 24) // 24h TTL
-  
+
   return messages
 }
 ```
 
 **Operational Data**
+
 - Issue resolution rate: 78% (no human intervention needed)
 - Average response time: 2.3s
 - User satisfaction: 4.2/5
@@ -5575,11 +5724,13 @@ export async function manageConversation(
 ### Case 4: Enterprise Monorepo (50+ Packages, 30+ Developers)
 
 **Project Background**
+
 - Type: Financial SaaS Platform
 - Scale: 50+ internal packages, 30+ developers, 10+ applications
 - Technical Challenges: Build performance, code reuse, version management
 
 **Tech Stack**
+
 ```
 Monorepo: Nx + pnpm + TypeScript
 Apps: Next.js + React
@@ -5589,6 +5740,7 @@ CI/CD: GitHub Actions + AWS CodePipeline
 ```
 
 **Monorepo Structure**
+
 ```
 packages/
 ├── ui/                 # Design system components
@@ -5610,6 +5762,7 @@ tools/
 **Key Configurations**
 
 1. **Nx Task Pipeline**
+
 ```json
 {
   "targetDefaults": {
@@ -5631,7 +5784,8 @@ tools/
 }
 ```
 
-2. **Changeset Management**
+1. **Changeset Management**
+
 ```bash
 # Create changeset
 npx changeset
@@ -5643,7 +5797,8 @@ npx changeset version
 npx changeset publish
 ```
 
-3. **Build Optimization**
+1. **Build Optimization**
+
 ```typescript
 // vite.config.ts
 export default defineConfig({
@@ -5664,12 +5819,14 @@ export default defineConfig({
 ```
 
 **Results**
+
 - Build time: Optimized from 15min to 3min (Nx caching)
 - Code reuse: 60%+ (shared packages)
 - Release frequency: 20+ times per week (automated)
 - Developer satisfaction: Significantly improved
 
 **Lessons Learned**
+
 1. Define clear package boundaries early
 2. Enforce code review + CI checks
 3. Regular cleanup of unused dependencies
