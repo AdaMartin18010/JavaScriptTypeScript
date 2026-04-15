@@ -148,11 +148,11 @@ node scripts/npm-stats.js report -o my-report.md
 你可以在其他脚本中导入 npm-stats 模块：
 
 ```javascript
-const { 
-  getPackageStats, 
+const {
+  getPackageStats,
   getBatchStats,
   saveStats,
-  loadStats 
+  loadStats
 } = require('./scripts/npm-stats');
 
 // 获取单个包
@@ -212,14 +212,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
+
       - name: Update stats
         run: node scripts/update-stats.js
-      
+
       - name: Commit changes
         run: |
           git config user.name "GitHub Action"
@@ -256,6 +256,7 @@ Scoped packages（如 `@nestjs/core`）会自动进行 URL 编码。
 ### 网络问题
 
 如果遇到网络超时，检查：
+
 1. 网络连接
 2. 代理设置
 3. 防火墙规则

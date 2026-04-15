@@ -1,6 +1,6 @@
 # 安全扫描报告
 
-> 生成时间: 2026-04-04T09:59:12.008Z
+> 生成时间: 2026-04-15T22:01:20.780Z
 
 ## 摘要
 
@@ -21,9 +21,9 @@
 
 ## 详细报告
 
-### 🟢 `jsts-code-lab\package.json`
+### 🟢 `package.json`
 
-> ⚠️ Dependencies not installed. Run npm install first.
+✅ 未发现安全漏洞
 
 ## 修复建议
 

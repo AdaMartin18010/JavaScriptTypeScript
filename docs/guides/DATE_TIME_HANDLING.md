@@ -264,10 +264,10 @@ function toTimezoneComponents(
     minute: 'numeric',
     hour12: false,
   });
-  
+
   const parts = formatter.formatToParts(date);
   const get = (type: string) => parseInt(parts.find(p => p.type === type)?.value ?? '0');
-  
+
   return {
     year: get('year'),
     month: get('month'),
@@ -301,10 +301,10 @@ function createDateInTimezone(
   // 创建一个该时区的日期字符串，然后解析
   const pad = (n: number) => n.toString().padStart(2, '0');
   const dateStr = `${year}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:00`;
-  
+
   // 使用 Intl 找出该时区与 UTC 的偏移
   const offset = getTimezoneOffsetMinutes(dateStr, timeZone);
-  
+
   // 调整时间戳
   const localDate = new Date(dateStr);
   return new Date(localDate.getTime() + offset * 60 * 1000);
@@ -312,7 +312,7 @@ function createDateInTimezone(
 
 function getTimezoneOffsetMinutes(dateStr: string, timeZone: string): number {
   const date = new Date(dateStr);
-  
+
   // 获取该时区的时间分量
   const tzFormatter = new Intl.DateTimeFormat('en-US', {
     timeZone,
@@ -324,12 +324,12 @@ function getTimezoneOffsetMinutes(dateStr: string, timeZone: string): number {
     second: '2-digit',
     hour12: false,
   });
-  
+
   const parts = tzFormatter.formatToParts(date);
   const get = (type: string) => parts.find(p => p.type === type)?.value ?? '0';
-  
+
   const tzDate = new Date(`${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}:${get('second')}`);
-  
+
   return (date.getTime() - tzDate.getTime()) / (60 * 1000);
 }
 ```
@@ -370,7 +370,7 @@ function displayMeetingTime(meeting: MeetingTime): {
   utc: string;
 } {
   const utcDate = new Date(meeting.utcTime);
-  
+
   return {
     organizerLocal: toUserTimezone(utcDate, meeting.organizerTimezone),
     participantLocal: toUserTimezone(utcDate, meeting.participantTimezone),
@@ -382,11 +382,11 @@ function displayMeetingTime(meeting: MeetingTime): {
 // 判断某 UTC 时间是否在用户的"今天"
 function isTodayInTimezone(utcDate: Date, userTimezone: string): boolean {
   const now = new Date();
-  
+
   // 获取用户时区的"今天"日期字符串
   const todayStr = formatInTimezone(now, userTimezone, 'yyyy-MM-dd');
   const dateStr = formatInTimezone(utcDate, userTimezone, 'yyyy-MM-dd');
-  
+
   return todayStr === dateStr;
 }
 
@@ -398,12 +398,12 @@ function formatInTimezone(date: Date, timeZone: string, format: 'yyyy-MM-dd' | '
     month: '2-digit',
     day: '2-digit',
   };
-  
+
   if (format === 'full') {
     options.hour = '2-digit';
     options.minute = '2-digit';
   }
-  
+
   return new Intl.DateTimeFormat('en-CA', options).format(date);
 }
 ```
@@ -604,7 +604,7 @@ function addBusinessDays(
 ): Temporal.PlainDate {
   let result = date;
   let remaining = days;
-  
+
   while (remaining > 0) {
     result = result.add({ days: 1 });
     // dayOfWeek: 1=周一, 7=周日
@@ -612,7 +612,7 @@ function addBusinessDays(
       remaining--;
     }
   }
-  
+
   return result;
 }
 
@@ -989,7 +989,7 @@ function parseMultipleFormats(input: string): Date | null {
     'MM/dd/yyyy',
     'yyyy年MM月dd日',
   ];
-  
+
   for (const fmt of formats) {
     try {
       const parsed = parse(input, fmt, new Date());
@@ -998,7 +998,7 @@ function parseMultipleFormats(input: string): Date | null {
       continue;
     }
   }
-  
+
   return null;
 }
 ```
@@ -1033,31 +1033,31 @@ formatRelative(date, new Date(), { locale: zhCN });    // "上周一 10:30"
 // ===== 自定义格式化工具 =====
 class DateFormatter {
   private locale: Locale;
-  
+
   constructor(locale: Locale = zhCN) {
     this.locale = locale;
   }
-  
+
   short(date: Date): string {
     return format(date, 'MM/dd', { locale: this.locale });
   }
-  
+
   medium(date: Date): string {
     return format(date, 'yyyy-MM-dd', { locale: this.locale });
   }
-  
+
   long(date: Date): string {
     return format(date, 'yyyy年MM月dd日', { locale: this.locale });
   }
-  
+
   full(date: Date): string {
     return format(date, 'yyyy年MM月dd日 HH:mm:ss', { locale: this.locale });
   }
-  
+
   relative(date: Date): string {
-    return formatDistance(date, new Date(), { 
-      addSuffix: true, 
-      locale: this.locale 
+    return formatDistance(date, new Date(), {
+      addSuffix: true,
+      locale: this.locale
     });
   }
 }
@@ -1116,7 +1116,7 @@ getISOWeekYear(date);    // ISO 周数年
 function addBusinessDays(date: Date, days: number): Date {
   let result = date;
   let added = 0;
-  
+
   while (added < days) {
     result = addDays(result, 1);
     const day = result.getDay();
@@ -1124,7 +1124,7 @@ function addBusinessDays(date: Date, days: number): Date {
       added++;
     }
   }
-  
+
   return result;
 }
 
@@ -1194,23 +1194,23 @@ class DateRange {
       throw new Error('Start date must be before end date');
     }
   }
-  
+
   contains(date: Date): boolean {
     return isWithinInterval(date, { start: this.start, end: this.end });
   }
-  
+
   overlaps(other: DateRange): boolean {
     return isBefore(this.start, other.end) && isAfter(this.end, other.start);
   }
-  
+
   intersect(other: DateRange): DateRange | null {
     const start = isAfter(this.start, other.start) ? this.start : other.start;
     const end = isBefore(this.end, other.end) ? this.end : other.end;
-    
+
     if (isBefore(end, start)) return null;
     return new DateRange(start, end);
   }
-  
+
   union(other: DateRange): DateRange {
     const start = isBefore(this.start, other.start) ? this.start : other.start;
     const end = isAfter(this.end, other.end) ? this.end : other.end;
@@ -1253,11 +1253,11 @@ clamp(date, { start: minDate, end: maxDate });
 // ===== 年龄计算 =====
 function calculateAge(birthDate: Date, referenceDate = new Date()): number {
   const years = differenceInYears(referenceDate, birthDate);
-  const hadBirthdayThisYear = 
+  const hadBirthdayThisYear =
     referenceDate.getMonth() > birthDate.getMonth() ||
-    (referenceDate.getMonth() === birthDate.getMonth() && 
+    (referenceDate.getMonth() === birthDate.getMonth() &&
      referenceDate.getDate() >= birthDate.getDate());
-  
+
   return hadBirthdayThisYear ? years : years - 1;
 }
 
@@ -1272,7 +1272,7 @@ interface TimeLeft {
 function getTimeLeft(targetDate: Date): TimeLeft {
   const now = new Date();
   const diff = Math.max(0, targetDate.getTime() - now.getTime());
-  
+
   return {
     days: Math.floor(diff / (1000 * 60 * 60 * 24)),
     hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
@@ -1379,10 +1379,10 @@ getISOWeek(date);  // ISO 8601 周数（周一开始）
 function getWeeksOfMonth(year: number, month: number): Date[][] {
   const start = startOfWeek(new Date(year, month - 1, 1), { weekStartsOn: 1 });
   const end = endOfWeek(new Date(year, month - 1, getDaysInMonth(year, month)), { weekStartsOn: 1 });
-  
+
   const weeks: Date[][] = [];
   let current = start;
-  
+
   while (current <= end) {
     const week: Date[] = [];
     for (let i = 0; i < 7; i++) {
@@ -1391,7 +1391,7 @@ function getWeeksOfMonth(year: number, month: number): Date[][] {
     }
     weeks.push(week);
   }
-  
+
   return weeks;
 }
 
@@ -1406,14 +1406,14 @@ function generateCalendarMatrix(year: number, month: number): CalendarDay[][] {
   const today = new Date();
   const firstDay = new Date(year, month - 1, 1);
   const lastDay = new Date(year, month - 1, getDaysInMonth(year, month));
-  
+
   // 找到日历起始（周日）
   const start = new Date(firstDay);
   start.setDate(start.getDate() - firstDay.getDay());
-  
+
   const matrix: CalendarDay[][] = [];
   let current = new Date(start);
-  
+
   for (let week = 0; week < 6; week++) {
     const weekRow: CalendarDay[] = [];
     for (let day = 0; day < 7; day++) {
@@ -1425,11 +1425,11 @@ function generateCalendarMatrix(year: number, month: number): CalendarDay[][] {
       current.setDate(current.getDate() + 1);
     }
     matrix.push(weekRow);
-    
+
     // 如果已经超出本月且是完整周，停止
     if (current > lastDay && week >= 4) break;
   }
-  
+
   return matrix;
 }
 ```
@@ -1471,14 +1471,14 @@ function getHalfYearRange(year: number, half: 1 | 2): { start: Date; end: Date }
 function getFiscalYear(date: Date, fiscalStartMonth: number = 4): { year: number; quarter: number } {
   const month = date.getMonth() + 1;
   let year = date.getFullYear();
-  
+
   if (month < fiscalStartMonth) {
     year--;
   }
-  
+
   const fiscalMonth = month >= fiscalStartMonth ? month - fiscalStartMonth + 1 : month + (12 - fiscalStartMonth) + 1;
   const quarter = Math.ceil(fiscalMonth / 3);
-  
+
   return { year, quarter };
 }
 ```
@@ -1490,6 +1490,7 @@ function getFiscalYear(date: Date, fiscalStartMonth: number = 4): { year: number
 ### 7.1 夏令时概念
 
 夏令时(DST)是在夏季将时间调快一小时的做法，影响时间计算：
+
 - 春季"跳跃"： clocks spring forward (时间丢失一小时)
 - 秋季"回退"： clocks fall back (时间重复一小时)
 - 不同地区规则不同，且会变化
@@ -1503,17 +1504,17 @@ function getFiscalYear(date: Date, fiscalStartMonth: number = 4): { year: number
 function isDST(date: Date, timeZone: string): boolean {
   const january = new Date(date.getFullYear(), 0, 1);
   const july = new Date(date.getFullYear(), 6, 1);
-  
+
   // 获取指定时区的偏移
   const getOffset = (d: Date) => {
     const str = d.toLocaleString('en-US', { timeZone, timeZoneName: 'shortOffset' });
     const match = str.match(/GMT([+-]\d+)/);
     return match ? parseInt(match[1]) : 0;
   };
-  
+
   const stdOffset = Math.max(getOffset(january), getOffset(july));
   const dateOffset = getOffset(date);
-  
+
   return dateOffset !== stdOffset;
 }
 
@@ -1533,17 +1534,17 @@ function getTimezoneOffsetInfo(date: Date, timeZone: string): {
     timeZone,
     timeZoneName: 'longOffset',
   });
-  
+
   const parts = formatter.formatToParts(date);
   const offsetPart = parts.find(p => p.type === 'timeZoneName')?.value ?? '';
   const match = offsetPart.match(/GMT([+-])(\d{1,2}):?(\d{2})?/);
-  
+
   if (!match) return { offset: 0, isDST: false, offsetStr: 'UTC' };
-  
+
   const hours = parseInt(match[2]);
   const minutes = parseInt(match[3] ?? '0');
   const offsetMinutes = (hours * 60 + minutes) * (match[1] === '+' ? 1 : -1);
-  
+
   return {
     offset: offsetMinutes,
     isDST: isDST(date, timeZone),
@@ -1603,11 +1604,11 @@ function safeCreateInTimezone(
     },
     { zone: timeZone }
   );
-  
+
   if (!dt.isValid) {
     throw new Error(`Invalid datetime in ${timeZone}: ${JSON.stringify(components)}`);
   }
-  
+
   return dt;
 }
 
@@ -1624,7 +1625,7 @@ function resolveAmbiguousTime(
     { year, month, day, hour },
     { zone: timeZone }
   );
-  
+
   // 如果时间在 DST 回退期间，Luxon 默认使用 offset 较大的（DST 中）
   // 可以通过比较确定
   if (dt.isInDST !== preferDST) {
@@ -1634,7 +1635,7 @@ function resolveAmbiguousTime(
       return alt;
     }
   }
-  
+
   return dt;
 }
 ```
@@ -1704,7 +1705,7 @@ const formatter = new Intl.DateTimeFormat('zh-CN', {
   dateStyle: 'full',   // 'full' | 'long' | 'medium' | 'short'
   // 时间样式
   timeStyle: 'medium', // 'full' | 'long' | 'medium' | 'short'
-  
+
   // 单独指定（与 dateStyle/timeStyle 互斥）
   // year: 'numeric' | '2-digit',
   // month: 'numeric' | '2-digit' | 'long' | 'short' | 'narrow',
@@ -1712,17 +1713,17 @@ const formatter = new Intl.DateTimeFormat('zh-CN', {
   // hour: 'numeric' | '2-digit',
   // minute: 'numeric' | '2-digit',
   // second: 'numeric' | '2-digit',
-  
+
   // 时区
   timeZone: 'Asia/Shanghai',
   timeZoneName: 'short', // 'short' | 'long' | 'shortOffset' | 'longOffset' | 'shortGeneric' | 'longGeneric'
-  
+
   // 小时制
   hour12: false,
-  
+
   // 星期格式
   weekday: 'long', // 'long' | 'short' | 'narrow'
-  
+
   // 时代（BC/AD）
   era: 'short', // 'long' | 'short' | 'narrow'
 });
@@ -1757,9 +1758,9 @@ function formatRelativeTime(date: Date, locale = 'zh-CN'): string {
   const diffDay = Math.round(diffHour / 24);
   const diffMonth = Math.round(diffDay / 30);
   const diffYear = Math.round(diffDay / 365);
-  
+
   const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
-  
+
   if (Math.abs(diffYear) >= 1) return rtf.format(diffYear, 'year');
   if (Math.abs(diffMonth) >= 1) return rtf.format(diffMonth, 'month');
   if (Math.abs(diffDay) >= 1) return rtf.format(diffDay, 'day');
@@ -1789,7 +1790,7 @@ interface Duration {
 function formatDuration(duration: Duration, locale = 'zh-CN'): string {
   const parts: string[] = [];
   const formatter = new Intl.NumberFormat(locale);
-  
+
   const units: Array<[keyof Duration, string]> = [
     ['years', '年'],
     ['months', '个月'],
@@ -1798,14 +1799,14 @@ function formatDuration(duration: Duration, locale = 'zh-CN'): string {
     ['minutes', '分钟'],
     ['seconds', '秒'],
   ];
-  
+
   for (const [unit, label] of units) {
     const value = duration[unit];
     if (value) {
       parts.push(`${formatter.format(value)}${label}`);
     }
   }
-  
+
   return parts.join('') || '0秒';
 }
 
@@ -1843,7 +1844,7 @@ const listFormatter = new Intl.ListFormat('zh-CN', {
   type: 'conjunction',
 });
 
-const dateStrings = dates.map(d => 
+const dateStrings = dates.map(d =>
   new Intl.DateTimeFormat('zh-CN', { month: 'long', day: 'numeric' }).format(d)
 );
 
@@ -1853,18 +1854,18 @@ listFormatter.format(dateStrings); // "1月15日、1月16日和1月17日"
 function formatDateRange(start: Date, end: Date, locale = 'zh-CN'): string {
   const sameYear = start.getFullYear() === end.getFullYear();
   const sameMonth = sameYear && start.getMonth() === end.getMonth();
-  
+
   const startFormat: Intl.DateTimeFormatOptions = sameMonth
     ? { day: 'numeric' }
     : sameYear
     ? { month: 'short', day: 'numeric' }
     : { year: 'numeric', month: 'short', day: 'numeric' };
-  
+
   const endFormat: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-  
+
   const dtf1 = new Intl.DateTimeFormat(locale, startFormat);
   const dtf2 = new Intl.DateTimeFormat(locale, endFormat);
-  
+
   return `${dtf1.format(start)} - ${dtf2.format(end)}`;
 }
 
@@ -1885,12 +1886,12 @@ interface DateFormatOptions {
 class InternationalDateFormatter {
   private defaultLocale: string;
   private defaultTimeZone: string;
-  
+
   constructor(defaultLocale = 'zh-CN', defaultTimeZone = 'Asia/Shanghai') {
     this.defaultLocale = defaultLocale;
     this.defaultTimeZone = defaultTimeZone;
   }
-  
+
   format(date: Date, options: DateFormatOptions = {}): string {
     const {
       locale = this.defaultLocale,
@@ -1898,27 +1899,27 @@ class InternationalDateFormatter {
       showTime = false,
       relative = false,
     } = options;
-    
+
     if (relative) {
       return formatRelativeTime(date, locale);
     }
-    
+
     const formatter = new Intl.DateTimeFormat(locale, {
       dateStyle: 'medium',
       timeStyle: showTime ? 'short' : undefined,
       timeZone,
     });
-    
+
     return formatter.format(date);
   }
-  
+
   formatShort(date: Date, locale = this.defaultLocale): string {
     return new Intl.DateTimeFormat(locale, {
       month: 'short',
       day: 'numeric',
     }).format(date);
   }
-  
+
   formatFull(date: Date, locale = this.defaultLocale): string {
     return new Intl.DateTimeFormat(locale, {
       dateStyle: 'full',
@@ -1926,7 +1927,7 @@ class InternationalDateFormatter {
       timeZone: this.defaultTimeZone,
     }).format(date);
   }
-  
+
   formatRange(start: Date, end: Date, locale = this.defaultLocale): string {
     return formatDateRange(start, end, locale);
   }
@@ -1989,7 +1990,7 @@ function getDateRange(
     last7Days: () => getLastNDaysRange(7),
     last30Days: () => getLastNDaysRange(30),
   };
-  
+
   return ranges[type]();
 }
 ```
@@ -2029,35 +2030,35 @@ class DateCursorPaginator<T extends { date: Date }> {
     // 确保按日期排序
     this.items.sort((a, b) => a.date.getTime() - b.date.getTime());
   }
-  
+
   paginate(params: CursorPaginationParams): CursorPageResult<T> {
     const { cursor, limit, direction } = params;
-    
+
     let startIndex = 0;
     if (cursor) {
       const cursorDate = new Date(cursor);
       startIndex = this.items.findIndex(
-        item => direction === 'forward' 
-          ? item.date > cursorDate 
+        item => direction === 'forward'
+          ? item.date > cursorDate
           : item.date < cursorDate
       );
       if (startIndex === -1) startIndex = this.items.length;
     }
-    
-    const endIndex = direction === 'forward' 
+
+    const endIndex = direction === 'forward'
       ? Math.min(startIndex + limit, this.items.length)
       : Math.max(0, startIndex - limit);
-    
+
     const data = direction === 'forward'
       ? this.items.slice(startIndex, endIndex)
       : this.items.slice(endIndex, startIndex);
-    
+
     return {
       data,
       nextCursor: data[data.length - 1]?.date.toISOString(),
       prevCursor: data[0]?.date.toISOString(),
-      hasMore: direction === 'forward' 
-        ? endIndex < this.items.length 
+      hasMore: direction === 'forward'
+        ? endIndex < this.items.length
         : endIndex > 0,
     };
   }
@@ -2074,7 +2075,7 @@ interface CalendarPage {
 function getCalendarPage(year: number, month: number): CalendarPage {
   const start = new Date(year, month - 1, 1);
   const end = new Date(year, month, 0, 23, 59, 59);
-  
+
   return {
     year,
     month,
@@ -2114,14 +2115,14 @@ function buildDateRangeQuery(
 ): DateRangeQuery {
   const conditions: string[] = [`${dateColumn} >= ?`, `${dateColumn} <= ?`];
   const params: unknown[] = [range.start.toISOString(), range.end.toISOString()];
-  
+
   if (additionalFilters) {
     for (const [key, value] of Object.entries(additionalFilters)) {
       conditions.push(`${key} = ?`);
       params.push(value);
     }
   }
-  
+
   return {
     sql: `SELECT * FROM ${tableName} WHERE ${conditions.join(' AND ')} ORDER BY ${dateColumn} DESC`,
     params,
@@ -2158,19 +2159,19 @@ function buildDateConnection<T extends { id: string; createdAt: Date }>(
   after?: string
 ): DateConnection {
   let filtered = items;
-  
+
   if (after) {
     const afterDate = new Date(after);
     filtered = items.filter(item => item.createdAt > afterDate);
   }
-  
+
   if (first) {
     filtered = filtered.slice(0, first + 1); // 多取一个判断是否还有更多
   }
-  
+
   const hasNextPage = first !== undefined && filtered.length > first;
   const nodes = first !== undefined ? filtered.slice(0, first) : filtered;
-  
+
   return {
     edges: nodes.map(node => ({
       node,
@@ -2203,14 +2204,14 @@ function aggregateByTime<T extends { date: Date }>(
   valueExtractor: (items: T[]) => number
 ): TimeSeriesPoint[] {
   const groups = new Map<string, T[]>();
-  
+
   for (const item of items) {
     const key = getTimeKey(item.date, granularity);
     const group = groups.get(key) ?? [];
     group.push(item);
     groups.set(key, group);
   }
-  
+
   return Array.from(groups.entries())
     .map(([key, groupItems]) => ({
       timestamp: parseTimeKey(key),
@@ -2221,7 +2222,7 @@ function aggregateByTime<T extends { date: Date }>(
 
 function getTimeKey(date: Date, granularity: Granularity): string {
   const pad = (n: number) => n.toString().padStart(2, '0');
-  
+
   switch (granularity) {
     case 'hour':
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}`;
@@ -2250,18 +2251,18 @@ function fillMissingTimePoints(
   const result: TimeSeriesPoint[] = [];
   let current = new Date(start);
   let seriesIndex = 0;
-  
+
   while (current <= end) {
     const key = getTimeKey(current, granularity);
     const existing = series[seriesIndex];
-    
+
     if (existing && getTimeKey(existing.timestamp, granularity) === key) {
       result.push(existing);
       seriesIndex++;
     } else {
       result.push({ timestamp: new Date(current), value: defaultValue });
     }
-    
+
     // 前进到下一个时间点
     switch (granularity) {
       case 'hour':
@@ -2278,7 +2279,7 @@ function fillMissingTimePoints(
         break;
     }
   }
-  
+
   return result;
 }
 ```
@@ -2310,13 +2311,13 @@ const duration = end - start; // 毫秒，带小数
 function measurePerformance<T>(fn: () => T, iterations = 1): { result: T; averageMs: number } {
   const times: number[] = [];
   let result: T;
-  
+
   for (let i = 0; i < iterations; i++) {
     const start = performance.now();
     result = fn();
     times.push(performance.now() - start);
   }
-  
+
   const averageMs = times.reduce((a, b) => a + b, 0) / times.length;
   return { result: result!, averageMs };
 }
@@ -2359,14 +2360,14 @@ observer.observe({ entryTypes: ['measure', 'mark'] });
 // ===== User Timing API 装饰器 =====
 function measureMethod(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
   const originalMethod = descriptor.value;
-  
+
   descriptor.value = function (...args: any[]) {
     const markName = `${propertyKey}-start`;
     const measureName = `${propertyKey}-duration`;
-    
+
     performance.mark(markName);
     const result = originalMethod.apply(this, args);
-    
+
     if (result instanceof Promise) {
       return result.finally(() => {
         performance.mark(`${propertyKey}-end`);
@@ -2378,7 +2379,7 @@ function measureMethod(target: any, propertyKey: string, descriptor: PropertyDes
       return result;
     }
   };
-  
+
   return descriptor;
 }
 
@@ -2388,7 +2389,7 @@ class DataService {
   async fetchData() {
     // ... 异步操作
   }
-  
+
   @measureMethod
   processData(data: unknown[]) {
     // ... 同步操作
@@ -2405,7 +2406,7 @@ import { hrtime } from 'process';
 
 function createNanoTimer() {
   const start = hrtime.bigint();
-  
+
   return {
     elapsed(): bigint {
       return hrtime.bigint() - start;
@@ -2422,30 +2423,30 @@ class HighResolutionTimer {
   private paused = false;
   private pausedAt = 0;
   private totalPaused = 0;
-  
+
   constructor() {
     this.startTime = performance.now();
   }
-  
+
   pause() {
     if (!this.paused) {
       this.pausedAt = performance.now();
       this.paused = true;
     }
   }
-  
+
   resume() {
     if (this.paused) {
       this.totalPaused += performance.now() - this.pausedAt;
       this.paused = false;
     }
   }
-  
+
   elapsed(): number {
     const current = this.paused ? this.pausedAt : performance.now();
     return current - this.startTime - this.totalPaused;
   }
-  
+
   reset() {
     this.startTime = performance.now();
     this.totalPaused = 0;
@@ -2470,24 +2471,24 @@ async function benchmark(
   iterations = 1000
 ): Promise<BenchmarkResult> {
   const times: number[] = [];
-  
+
   // 预热
   for (let i = 0; i < Math.min(10, iterations); i++) {
     await fn();
   }
-  
+
   // 正式测试
   for (let i = 0; i < iterations; i++) {
     const start = performance.now();
     await fn();
     times.push(performance.now() - start);
   }
-  
+
   const totalMs = times.reduce((a, b) => a + b, 0);
   const avgMs = totalMs / iterations;
   const minMs = Math.min(...times);
   const maxMs = Math.max(...times);
-  
+
   return {
     name,
     iterations,
@@ -2502,16 +2503,16 @@ async function benchmark(
 // 比较两种日期解析方法
 async function compareDateParsing() {
   const isoString = '2024-01-15T10:30:00.000Z';
-  
+
   const nativeResult = await benchmark('Native Date', () => {
     new Date(isoString);
   }, 10000);
-  
+
   const parseISO = (await import('date-fns')).parseISO;
   const dateFnsResult = await benchmark('date-fns parseISO', () => {
     parseISO(isoString);
   }, 10000);
-  
+
   console.table([nativeResult, dateFnsResult]);
 }
 ```
@@ -2558,10 +2559,10 @@ function shouldRenderFrame(lastFrameTime: number, fps: number): boolean {
 interface Event {
   // 存储毫秒时间戳（最通用）
   timestamp: number;
-  
+
   // 或存储 ISO 字符串（可读性好）
   timestampISO: string;
-  
+
   // 避免存储 Date 对象（JSON 序列化问题）
 }
 
@@ -2587,13 +2588,13 @@ function debounce<T extends (...args: any[]) => void>(
 ): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
   let lastCallTime = 0;
-  
+
   return (...args) => {
     const now = performance.now();
     const elapsed = now - lastCallTime;
-    
+
     if (timeoutId) clearTimeout(timeoutId);
-    
+
     if (elapsed > waitMs) {
       fn(...args);
       lastCallTime = now;

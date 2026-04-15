@@ -183,7 +183,7 @@
 | **移除只读** | `{ -readonly [K in keyof T]: T[K] }` | 可变版本 |
 | **重命名键** | `{ [K in keyof T as NewKey]: T[K] }` | 键名转换 (TS4.1+) |
 | **过滤键** | `{ [K in keyof T as K extends U ? K : never]: T[K] }` | 选择特定键 |
-| **Getter模板** | `{ [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K] }` | 生成getter方法名 |
+| **Getter模板** | `{ [K in keyof T as`get${Capitalize<string & K>}`]: () => T[K] }` | 生成getter方法名 |
 | **值转换** | `{ [K in keyof T]: Transform<T[K]> }` | 递归转换值类型 |
 | **只读递归** | `{ [K in keyof T]: T[K] extends object ? ReadonlyDeep<T[K]> : T[K] }` | 深度只读 |
 | **Promise包装** | `{ [K in keyof T]: Promise<T[K]> }` | 所有属性Promise化 |

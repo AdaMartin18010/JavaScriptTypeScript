@@ -1,7 +1,7 @@
 # 国际权威 JS/TS 生态资源报告
 
 > 更新时间：2024-2025年度综合报告
-> 
+>
 > 本文档汇总国际权威机构的 JavaScript/TypeScript 生态调研数据，为技术选型提供数据支撑。
 
 ---
@@ -24,8 +24,9 @@
 ## 1. State of JavaScript 2024/2025
 
 ### 来源链接
-- **官方站点**: https://stateofjs.com/
-- **2024 完整报告**: https://2024.stateofjs.com/
+
+- **官方站点**: <https://stateofjs.com/>
+- **2024 完整报告**: <https://2024.stateofjs.com/>
 - **方法论**: 由 Devographics 组织，超过 13,002 名开发者参与（2025年9-11月）
 
 ### 关键发现摘要
@@ -88,8 +89,9 @@
 ## 2. State of CSS 2024
 
 ### 来源链接
-- **官方站点**: https://stateofcss.com/
-- **2024 完整报告**: https://2024.stateofcss.com/
+
+- **官方站点**: <https://stateofcss.com/>
+- **2024 完整报告**: <https://2024.stateofcss.com/>
 - **参与规模**: 9,704 名开发者，来自 20+ 国家
 
 ### 关键发现摘要
@@ -139,8 +141,9 @@
 ## 3. Stack Overflow Developer Survey 2024
 
 ### 来源链接
-- **官方报告**: https://survey.stackoverflow.co/2024/
-- **技术板块**: https://survey.stackoverflow.co/2024/technology
+
+- **官方报告**: <https://survey.stackoverflow.co/2024/>
+- **技术板块**: <https://survey.stackoverflow.co/2024/technology>
 - **参与规模**: 超过 65,000 名开发者
 
 ### 关键发现摘要
@@ -209,8 +212,9 @@
 ## 4. GitHub Octoverse 2024/2025
 
 ### 来源链接
-- **2024 报告**: https://github.blog/news-insights/octoverse/octoverse-2024/
-- **2025 报告**: https://github.blog/news-insights/octoverse/octoverse-a-new-developer joins-github-every-second-as-ai-leads-typescript-to-1/
+
+- **2024 报告**: <https://github.blog/news-insights/octoverse/octoverse-2024/>
+- **2025 报告**: <https://github.blog/news-insights/octoverse/octoverse-a-new-developer> joins-github-every-second-as-ai-leads-typescript-to-1/
 
 ### 关键发现摘要
 
@@ -270,8 +274,9 @@
 ## 5. npm 趋势 2024-2025
 
 ### 来源链接
-- **npmcharts**: https://www.npmcharts.com/
-- **npm rank**: https://gist.github.com/anvaka/8e8fa57c7ee1350e3491
+
+- **npmcharts**: <https://www.npmcharts.com/>
+- **npm rank**: <https://gist.github.com/anvaka/8e8fa57c7ee1350e3491>
 
 ### 关键发现摘要
 
@@ -321,9 +326,10 @@
 ## 6. ThoughtWorks Technology Radar 2024/2025
 
 ### 来源链接
-- **官方雷达**: https://www.thoughtworks.com/radar
-- **Vol 32 (2025年4月)**: https://www.thoughtworks.com/content/dam/thoughtworks/documents/radar/2025/04/tr_technology_radar_vol_32_en.pdf
-- **Vol 33 (2025年11月)**: https://www.thoughtworks.com/content/dam/thoughtworks/documents/radar/2025/11/tr_technology_radar_vol_33_en.pdf
+
+- **官方雷达**: <https://www.thoughtworks.com/radar>
+- **Vol 32 (2025年4月)**: <https://www.thoughtworks.com/content/dam/thoughtworks/documents/radar/2025/04/tr_technology_radar_vol_32_en.pdf>
+- **Vol 33 (2025年11月)**: <https://www.thoughtworks.com/content/dam/thoughtworks/documents/radar/2025/11/tr_technology_radar_vol_33_en.pdf>
 
 ### 关键发现摘要
 
@@ -376,29 +382,34 @@
 ## 7. InfoQ Architecture Trends 2025
 
 ### 来源链接
-- **2025 报告**: https://www.infoq.com/articles/architecture-trends-2025/
-- **播客讨论**: https://www.infoq.com/presentations/video-podcast-ad-trends-report-2025/
+
+- **2025 报告**: <https://www.infoq.com/articles/architecture-trends-2025/>
+- **播客讨论**: <https://www.infoq.com/presentations/video-podcast-ad-trends-report-2025/>
 
 ### 关键发现摘要
 
 #### 7.1 采用曲线定位
 
 **创新者（Innovators）**:
+
 - Agentic AI（自主 AI 代理）
 - Small Language Models（小型语言模型）
 - Green Software（绿色软件）
 - Privacy Engineering（隐私工程）
 
 **早期采用者（Early Adopters）**:
+
 - Retrieval-Augmented Generation（RAG）
 - Cell-based Architecture（单元架构）
 - Socio-technical Architecture（社会技术架构）
 
 **早期多数（Early Majority）**:
+
 - AI-assisted Development（AI 辅助开发）
 - Platform Engineering（平台工程）
 
 **晚期多数（Late Majority）**:
+
 - Large Language Models（LLM）
 
 #### 7.2 前端架构趋势
@@ -431,13 +442,13 @@
 
 | 资源名称 | 链接 | 更新频率 | 数据规模 |
 |---------|------|---------|---------|
-| State of JS | https://stateofjs.com/ | 年度 | 13,000+ 开发者 |
-| State of CSS | https://stateofcss.com/ | 年度 | 9,700+ 开发者 |
-| Stack Overflow Survey | https://survey.stackoverflow.co/ | 年度 | 65,000+ 开发者 |
-| GitHub Octoverse | https://github.blog/news-insights/octoverse/ | 年度 | 1.8亿+ 开发者 |
-| npm Charts | https://www.npmcharts.com/ | 实时 | 全量包数据 |
-| ThoughtWorks Radar | https://www.thoughtworks.com/radar | 半年 | 专家评估 |
-| InfoQ Trends | https://www.infoq.com/articles/ | 年度 | 专家面板 |
+| State of JS | <https://stateofjs.com/> | 年度 | 13,000+ 开发者 |
+| State of CSS | <https://stateofcss.com/> | 年度 | 9,700+ 开发者 |
+| Stack Overflow Survey | <https://survey.stackoverflow.co/> | 年度 | 65,000+ 开发者 |
+| GitHub Octoverse | <https://github.blog/news-insights/octoverse/> | 年度 | 1.8亿+ 开发者 |
+| npm Charts | <https://www.npmcharts.com/> | 实时 | 全量包数据 |
+| ThoughtWorks Radar | <https://www.thoughtworks.com/radar> | 半年 | 专家评估 |
+| InfoQ Trends | <https://www.infoq.com/articles/> | 年度 | 专家面板 |
 
 ---
 

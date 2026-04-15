@@ -22,6 +22,7 @@
 #### console.table() - 表格化输出数组/对象
 
 **操作步骤**：
+
 1. 打开浏览器开发者工具（F12 或 Ctrl+Shift+I）
 2. 切换到 Console 面板
 3. 输入 `console.table(data)` 命令
@@ -42,6 +43,7 @@ console.table(users, ['name', 'role']);
 ```
 
 **截图说明**：
+
 ```
 ┌─────────┬─────┬────────┬─────┬─────────┐
 │ (index) │ id  │  name  │ age │  role   │
@@ -58,17 +60,17 @@ console.table(users, ['name', 'role']);
 // 案例：复杂应用中的日志分组
 function fetchUserData(userId) {
   console.group(`🔍 获取用户数据 [ID: ${userId}]`);
-  
+
   console.log('步骤1: 验证用户ID格式');
   console.assert(userId > 0, '用户ID必须大于0');
-  
+
   console.log('步骤2: 发送API请求');
   console.log('API端点:', `/api/users/${userId}`);
-  
+
   console.log('步骤3: 处理响应数据');
   const mockData = { id: userId, name: '测试用户' };
   console.log('原始数据:', mockData);
-  
+
   console.groupEnd();
   return mockData;
 }
@@ -77,6 +79,7 @@ fetchUserData(123);
 ```
 
 **截图说明**：
+
 ```
 🔍 获取用户数据 [ID: 123]
   步骤1: 验证用户ID格式
@@ -92,7 +95,7 @@ fetchUserData(123);
 // 案例：测量复杂算法执行时间
 function bubbleSort(arr) {
   console.time('冒泡排序执行时间');
-  
+
   const result = [...arr];
   for (let i = 0; i < result.length; i++) {
     for (let j = 0; j < result.length - i - 1; j++) {
@@ -101,7 +104,7 @@ function bubbleSort(arr) {
       }
     }
   }
-  
+
   console.timeEnd('冒泡排序执行时间');
   return result;
 }
@@ -149,6 +152,7 @@ level1();
 #### 条件断点实战
 
 **操作步骤**：
+
 1. 在代码行号上右键 → "Add conditional breakpoint"
 2. 输入条件表达式
 3. 只有条件为真时才会暂停
@@ -172,6 +176,7 @@ const orders = [
 ```
 
 **截图说明**：
+
 ```
 在 Sources 面板中：
 - 行号显示为橙色（条件断点标识）
@@ -205,12 +210,14 @@ const submitBtn = document.getElementById('submit');
 #### 请求瀑布图分析
 
 **操作步骤**：
+
 1. 打开 Network 面板
 2. 勾选 "Preserve log" 保留历史
 3. 勾选 "Disable cache" 禁用缓存
 4. 刷新页面观察请求
 
 **截图说明**：
+
 ```
 Network 面板关键列说明：
 ┌──────────┬────────┬────────┬────────┬──────────┬──────────┐
@@ -255,6 +262,7 @@ async function loadDashboardOptimized() {
 #### 模拟网络条件
 
 **操作步骤**：
+
 1. Network 面板 → "No throttling" 下拉菜单
 2. 选择预设：Slow 3G / Fast 3G / Offline
 3. 或使用自定义配置
@@ -264,7 +272,7 @@ async function loadDashboardOptimized() {
 async function fetchWithTimeout(url, timeout = 5000) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
-  
+
   try {
     const response = await fetch(url, { signal: controller.signal });
     clearTimeout(timeoutId);
@@ -288,12 +296,14 @@ fetchWithTimeout('/api/data');
 #### CPU 性能分析
 
 **操作步骤**：
+
 1. Performance 面板 → 点击 "Record" 按钮
 2. 执行需要分析的操作
 3. 点击 "Stop" 结束录制
 4. 分析火焰图
 
 **截图说明**：
+
 ```
 Performance 面板视图：
 ┌─────────────────────────────────────────────────────────────┐
@@ -334,10 +344,10 @@ function processLargeDataset(data) {
 // 优化后：使用 requestIdleCallback 分片处理
 async function processLargeDatasetOptimized(data, chunkSize = 1000) {
   const results = [];
-  
+
   for (let i = 0; i < data.length; i += chunkSize) {
     const chunk = data.slice(i, i + chunkSize);
-    
+
     // 使用 requestIdleCallback 在浏览器空闲时处理
     await new Promise(resolve => {
       requestIdleCallback(() => {
@@ -347,7 +357,7 @@ async function processLargeDatasetOptimized(data, chunkSize = 1000) {
       });
     });
   }
-  
+
   return results;
 }
 // Performance 面板显示：任务被拆分成小块，保持 60 FPS
@@ -359,12 +369,12 @@ async function processLargeDatasetOptimized(data, chunkSize = 1000) {
 // 案例：检测强制同步布局 (Forced Reflow)
 function badLayoutExample() {
   const elements = document.querySelectorAll('.item');
-  
+
   elements.forEach(el => {
     // ❌ 错误：读取后立即写入，触发强制重排
     const height = el.offsetHeight;  // 读取
     el.style.height = height + 10 + 'px';  // 写入
-    
+
     const width = el.offsetWidth;    // 再次读取 (触发新的重排!)
     el.style.width = width + 10 + 'px';
   });
@@ -373,14 +383,14 @@ function badLayoutExample() {
 // 优化版本
 function goodLayoutExample() {
   const elements = document.querySelectorAll('.item');
-  
+
   // 1. 先读取所有值
   const dimensions = Array.from(elements).map(el => ({
     el,
     height: el.offsetHeight,
     width: el.offsetWidth
   }));
-  
+
   // 2. 批量写入
   dimensions.forEach(({ el, height, width }) => {
     el.style.height = height + 10 + 'px';
@@ -397,6 +407,7 @@ function goodLayoutExample() {
 #### Heap Snapshot 分析
 
 **操作步骤**：
+
 1. Memory 面板 → 选择 "Heap snapshot"
 2. 点击 "Take snapshot" 记录初始状态
 3. 执行可疑操作
@@ -404,6 +415,7 @@ function goodLayoutExample() {
 5. 对比两个快照（Comparison 视图）
 
 **截图说明**：
+
 ```
 Heap Snapshot 对比视图：
 ┌────────────────────────────────────────────────────────────┐
@@ -430,7 +442,7 @@ class DataFetcher {
     // ❌ 错误：未移除全局事件监听
     window.addEventListener('resize', this.handleResize);
   }
-  
+
   handleResize() {
     console.log('window resized');
   }
@@ -446,11 +458,11 @@ class DataFetcherFixed {
     this.handleResize = this.handleResize.bind(this);
     window.addEventListener('resize', this.handleResize);
   }
-  
+
   handleResize() {
     console.log('window resized');
   }
-  
+
   // ✅ 添加清理方法
   destroy() {
     window.removeEventListener('resize', this.handleResize);
@@ -468,7 +480,7 @@ dataFetcher.destroy();
 // 案例：使用 Allocation instrumentation 检测间歇性泄漏
 function simulateMemoryLeak() {
   const leakyArray = [];
-  
+
   setInterval(() => {
     // 模拟泄漏：持续添加大对象
     const bigObject = {
@@ -477,7 +489,7 @@ function simulateMemoryLeak() {
       id: Math.random()
     };
     leakyArray.push(bigObject);
-    
+
     console.log(`当前缓存大小: ${leakyArray.length}`);
   }, 100);
 }
@@ -495,6 +507,7 @@ function simulateMemoryLeak() {
 #### 启动调试模式
 
 **操作步骤**：
+
 ```bash
 # 方式1: 基础调试模式
 node --inspect server.js
@@ -510,6 +523,7 @@ npx nodemon --inspect server.js
 ```
 
 **截图说明**：
+
 ```
 终端输出：
 Debugger listening on ws://127.0.0.1:9229/abc123-def456
@@ -543,16 +557,16 @@ const app = express();
 // 在 Chrome DevTools 中设置断点
 app.get('/api/users/:id', async (req, res) => {
   const userId = req.params.id;  // 在这里设置断点
-  
+
   console.log(`获取用户: ${userId}`);
-  
+
   // 模拟数据库查询
   const user = await db.findById(userId);
-  
+
   if (!user) {
     return res.status(404).json({ error: '用户不存在' });
   }
-  
+
   res.json(user);
 });
 
@@ -562,6 +576,7 @@ app.listen(3000, () => {
 ```
 
 **调试步骤**：
+
 ```bash
 # 1. 启动调试模式
 node --inspect-brk server.js
@@ -626,6 +641,7 @@ curl http://localhost:3000/api/users/123
 ```
 
 **截图说明**：
+
 ```
 VS Code 调试界面：
 ┌─────────────────────────────────────────────────────────────┐
@@ -688,11 +704,11 @@ export class UsersController {
   async findOne(@Param('id') id: string) {
     // 在这里设置断点
     const user = await this.usersService.findOne(+id);
-    
+
     if (!user) {
       throw new NotFoundException(`User #${id} not found`);
     }
-    
+
     return user;
   }
 }
@@ -740,14 +756,14 @@ const logger = require('./logger');
 
 function processOrder(orderId) {
   logger.debug('开始处理订单', { orderId });
-  
+
   try {
     logger.info('验证订单信息', { orderId });
     validateOrder(orderId);
-    
+
     logger.info('扣减库存', { orderId });
     deductInventory(orderId);
-    
+
     logger.info('订单处理完成', { orderId });
   } catch (error) {
     logger.error('订单处理失败', {
@@ -761,6 +777,7 @@ function processOrder(orderId) {
 ```
 
 **日志输出示例**：
+
 ```json
 // production 环境 (JSON 格式)
 {
@@ -790,20 +807,20 @@ const app = express();
 app.post('/admin/log-level', (req, res) => {
   const { level } = req.body;
   const validLevels = ['error', 'warn', 'info', 'verbose', 'debug', 'silly'];
-  
+
   if (!validLevels.includes(level)) {
-    return res.status(400).json({ 
+    return res.status(400).json({
       error: 'Invalid level',
-      validLevels 
+      validLevels
     });
   }
-  
+
   logger.level = level;
   logger.info(`日志级别已调整为: ${level}`);
-  
-  res.json({ 
+
+  res.json({
     message: 'Log level updated',
-    currentLevel: level 
+    currentLevel: level
   });
 });
 
@@ -940,6 +957,7 @@ async function processPayment(orderId) {
 ```
 
 **Chrome DevTools 截图说明**：
+
 ```
 Sources 面板中的异步堆栈：
 ┌─────────────────────────────────────────────────────────────┐
@@ -999,7 +1017,7 @@ fetchUser(userId)
 function trackPromise(name, promise) {
   const startTime = Date.now();
   console.log(`[${name}] 开始执行`);
-  
+
   return promise
     .then(result => {
       console.log(`[${name}] 成功 (${Date.now() - startTime}ms)`);
@@ -1016,7 +1034,7 @@ async function loadDashboard(userId) {
   const user = await trackPromise('fetchUser', fetchUser(userId));
   const orders = await trackPromise('fetchOrders', fetchOrders(user.id));
   const stats = await trackPromise('fetchStats', fetchStats(user.id));
-  
+
   return { user, orders, stats };
 }
 
@@ -1039,15 +1057,15 @@ async function loadDashboard(userId) {
 // 案例：复杂的异步流程
 async function processOrderBatch(orderIds) {
   const results = [];
-  
+
   for (const orderId of orderIds) {
     // 断点1: 在这里设置断点，观察每次迭代的值
     console.log(`处理订单: ${orderId}`);
-    
+
     try {
       // 断点2: Step Into 进入 processOrder
       const result = await processOrder(orderId);
-      
+
       // 断点3: 观察 result 的值
       results.push(result);
     } catch (error) {
@@ -1056,7 +1074,7 @@ async function processOrderBatch(orderIds) {
       results.push({ orderId, error: error.message });
     }
   }
-  
+
   return results;
 }
 
@@ -1074,6 +1092,7 @@ async function processOrderBatch(orderIds) {
 ```
 
 **调试技巧**：
+
 ```
 在 VS Code 中：
 1. 设置断点后按 F5 启动
@@ -1101,17 +1120,17 @@ async function processOrderBatch(orderIds) {
     "lib": ["ES2020"],
     "outDir": "./dist",
     "rootDir": "./src",
-    
+
     // Source Map 配置
     "sourceMap": true,              // 生成 .js.map 文件
     "inlineSourceMap": false,       // 不内联 source map
     "sourceRoot": "/",              // source map 根路径
     "mapRoot": "/",                 // map 文件根路径
-    
+
     // 声明文件
     "declaration": true,            // 生成 .d.ts 文件
     "declarationMap": true,         // 生成 .d.ts.map 文件
-    
+
     // 调试增强
     "strict": true,
     "noImplicitAny": true,
@@ -1163,6 +1182,7 @@ async function processOrderBatch(orderIds) {
 ```
 
 **Source Map 工作原理**：
+
 ```
 文件结构：
 src/
@@ -1225,7 +1245,7 @@ type User = {
 async function fetchUser(): Promise<ApiResponse<User>> {
   const response = await fetch('/api/user');
   const data = await response.json();
-  
+
   // ❌ 类型错误：Type 'any' is not assignable to type 'User'
   return {
     data: data,
@@ -1239,11 +1259,11 @@ async function fetchUser(): Promise<ApiResponse<User>> {
 // 2. 使用显式类型注解
 async function fetchUserDebug(): Promise<ApiResponse<User>> {
   const response = await fetch('/api/user');
-  
+
   // 显式声明类型
   const data: User = await response.json();
   //          ^^^^ 如果这里报错，说明 API 返回格式不符合预期
-  
+
   return {
     data,
     status: response.status,
@@ -1275,13 +1295,13 @@ type ImmutableUser = {
 
 function testImmutableUser() {
   const user: ImmutableUser = { id: 1, name: '张三' };
-  
+
   // @ts-expect-error - 测试只读属性不能被修改
   user.id = 2;
-  
+
   // @ts-expect-error - 测试缺少必需属性
   const incomplete: ImmutableUser = { id: 1 };
-  
+
   // 如果没有产生 TypeScript 错误，@ts-expect-error 会报错
   // 这确保了类型系统按预期工作
 }
@@ -1302,6 +1322,7 @@ tsc --traceResolution 2>&1 | grep -A 5 "lodash"
 ```
 
 **输出分析**：
+
 ```
 ======== Resolving module 'express' from '/project/src/server.ts'. ========
 Module resolution kind is not specified, using 'NodeJs'.
@@ -1313,6 +1334,7 @@ File '/project/node_modules/express/types/index.d.ts' exists - use it as a modul
 ```
 
 **常见问题排查**：
+
 ```bash
 # 问题1: 找不到模块声明文件
 tsc --traceResolution 2>&1 | grep "Cannot find module"
@@ -1371,27 +1393,27 @@ class MemoryMonitor {
     this.interval = options.interval || 60000; // 1分钟
     this.threshold = options.threshold || 100 * 1024 * 1024; // 100MB
     this.snapshotsDir = options.snapshotsDir || './snapshots';
-    
+
     this.stats = [];
     this.timer = null;
   }
-  
+
   start() {
     console.log('内存监控已启动');
     this.timer = setInterval(() => this.checkMemory(), this.interval);
   }
-  
+
   stop() {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
     }
   }
-  
+
   checkMemory() {
     const usage = process.memoryUsage();
     const heapStats = v8.getHeapStatistics();
-    
+
     const stat = {
       timestamp: new Date().toISOString(),
       rss: this.formatBytes(usage.rss),
@@ -1400,28 +1422,28 @@ class MemoryMonitor {
       external: this.formatBytes(usage.external),
       heapSizeLimit: this.formatBytes(heapStats.heap_size_limit)
     };
-    
+
     this.stats.push(stat);
     console.log(`[${stat.timestamp}] RSS: ${stat.rss}, Heap Used: ${stat.heapUsed}`);
-    
+
     // 超过阈值时生成堆快照
     if (usage.heapUsed > this.threshold) {
       this.takeHeapSnapshot();
     }
-    
+
     // 保持最近100条记录
     if (this.stats.length > 100) {
       this.stats.shift();
     }
   }
-  
+
   takeHeapSnapshot() {
     const snapshot = v8.writeHeapSnapshot(
       `${this.snapshotsDir}/heap-${Date.now()}.heapsnapshot`
     );
     console.log('堆快照已生成:', snapshot);
   }
-  
+
   formatBytes(bytes) {
     const units = ['B', 'KB', 'MB', 'GB'];
     let unitIndex = 0;
@@ -1431,23 +1453,23 @@ class MemoryMonitor {
     }
     return `${bytes.toFixed(2)} ${units[unitIndex]}`;
   }
-  
+
   generateReport() {
     const report = {
       summary: {
         totalSamples: this.stats.length,
-        duration: this.stats.length > 0 
+        duration: this.stats.length > 0
           ? `${this.interval * this.stats.length / 60000} 分钟`
           : 'N/A'
       },
       stats: this.stats
     };
-    
+
     fs.writeFileSync(
-      './memory-report.json', 
+      './memory-report.json',
       JSON.stringify(report, null, 2)
     );
-    
+
     return report;
   }
 }
@@ -1497,7 +1519,7 @@ class PerformanceAnalyzer {
     this.measurements = new Map();
     this.setupObserver();
   }
-  
+
   setupObserver() {
     const obs = new PerformanceObserver((list) => {
       const entries = list.getEntries();
@@ -1508,15 +1530,15 @@ class PerformanceAnalyzer {
     });
     obs.observe({ entryTypes: ['measure', 'function'] });
   }
-  
+
   measure(name, fn) {
     const startMark = `${name}-start`;
     const endMark = `${name}-end`;
-    
+
     performance.mark(startMark);
-    
+
     const result = fn();
-    
+
     // 处理异步函数
     if (result instanceof Promise) {
       return result.finally(() => {
@@ -1524,26 +1546,26 @@ class PerformanceAnalyzer {
         performance.measure(name, startMark, endMark);
       });
     }
-    
+
     performance.mark(endMark);
     performance.measure(name, startMark, endMark);
     return result;
   }
-  
+
   recordMeasurement(name, duration) {
     if (!this.measurements.has(name)) {
       this.measurements.set(name, []);
     }
     this.measurements.get(name).push(duration);
   }
-  
+
   generateReport() {
     const report = {};
-    
+
     for (const [name, durations] of this.measurements) {
       const sorted = durations.sort((a, b) => a - b);
       const sum = sorted.reduce((a, b) => a + b, 0);
-      
+
       report[name] = {
         count: sorted.length,
         total: sum.toFixed(2) + 'ms',
@@ -1554,7 +1576,7 @@ class PerformanceAnalyzer {
         p99: sorted[Math.floor(sorted.length * 0.99)].toFixed(2) + 'ms'
       };
     }
-    
+
     console.log('\n========== 性能报告 ==========');
     console.table(report);
     return report;
@@ -1588,7 +1610,7 @@ async function runBenchmark() {
     await getUserData(i);
     await callExternalAPI();
   }
-  
+
   analyzer.generateReport();
 }
 
@@ -1608,29 +1630,29 @@ class DeadlockDetector {
     this.lockGraph = new Map(); // resource -> resources it waits for
     this.heldLocks = new Map(); // resource -> holder
   }
-  
+
   // 尝试获取锁
   acquireLock(resource, holder) {
     const currentHolder = this.heldLocks.get(resource);
-    
+
     if (currentHolder && currentHolder !== holder) {
       // 资源被占用，检查是否会形成循环等待
       this.lockGraph.set(holder, resource);
-      
+
       if (this.hasCycle(holder)) {
         this.lockGraph.delete(holder);
         throw new Error(
           `死锁检测: ${holder} 等待 ${resource} 会形成循环依赖`
         );
       }
-      
+
       return false; // 获取失败，需要等待
     }
-    
+
     this.heldLocks.set(resource, holder);
     return true;
   }
-  
+
   // 释放锁
   releaseLock(resource, holder) {
     if (this.heldLocks.get(resource) === holder) {
@@ -1638,16 +1660,16 @@ class DeadlockDetector {
       this.lockGraph.delete(holder);
     }
   }
-  
+
   // 使用 DFS 检测环
   hasCycle(start) {
     const visited = new Set();
     const recursionStack = new Set();
-    
+
     const dfs = (node) => {
       visited.add(node);
       recursionStack.add(node);
-      
+
       const neighbor = this.lockGraph.get(node);
       if (neighbor) {
         if (!visited.has(neighbor)) {
@@ -1656,11 +1678,11 @@ class DeadlockDetector {
           return true;
         }
       }
-      
+
       recursionStack.delete(node);
       return false;
     };
-    
+
     return dfs(start);
   }
 }
@@ -1671,15 +1693,15 @@ const detector = new DeadlockDetector();
 async function transfer(from, to, amount) {
   const lock1 = from < to ? from : to;
   const lock2 = from < to ? to : from;
-  
+
   // 按固定顺序获取锁，避免死锁
   await acquireLock(lock1);
   await acquireLock(lock2);
-  
+
   // 执行转账
   accounts[from] -= amount;
   accounts[to] += amount;
-  
+
   releaseLock(lock2);
   releaseLock(lock1);
 }
@@ -1694,7 +1716,7 @@ class RaceConditionDetector {
     this.sharedAccess = new Map(); // variable -> access log
     this.warnings = [];
   }
-  
+
   trackAccess(variable, operation, context) {
     const access = {
       operation, // 'read' | 'write'
@@ -1702,28 +1724,28 @@ class RaceConditionDetector {
       timestamp: Date.now(),
       stack: new Error().stack
     };
-    
+
     if (!this.sharedAccess.has(variable)) {
       this.sharedAccess.set(variable, []);
     }
-    
+
     const logs = this.sharedAccess.get(variable);
     logs.push(access);
-    
+
     // 检查竞态条件：非原子的读写操作
     this.checkRaceCondition(variable, logs);
-    
+
     // 保持最近100条记录
     if (logs.length > 100) logs.shift();
   }
-  
+
   checkRaceCondition(variable, logs) {
     const recent = logs.slice(-5); // 最近5次访问
-    
+
     // 检测读写冲突
     const writes = recent.filter(l => l.operation === 'write');
     const reads = recent.filter(l => l.operation === 'read');
-    
+
     if (writes.length > 0 && reads.length > 0) {
       // 检查是否是不同的异步上下文
       const contexts = new Set(recent.map(l => l.context));
@@ -1737,13 +1759,13 @@ class RaceConditionDetector {
       }
     }
   }
-  
+
   report() {
     if (this.warnings.length === 0) {
       console.log('✓ 未检测到竞态条件');
       return;
     }
-    
+
     console.warn(`⚠️ 检测到 ${this.warnings.length} 个潜在竞态条件:\n`);
     this.warnings.forEach((warning, i) => {
       console.warn(`${i + 1}. ${warning.type} - 变量: ${warning.variable}`);
@@ -1760,10 +1782,10 @@ let sharedCounter = 0;
 async function increment() {
   detector.trackAccess('sharedCounter', 'read', 'increment');
   const current = sharedCounter;
-  
+
   // 模拟一些操作
   await new Promise(resolve => setTimeout(resolve, 10));
-  
+
   detector.trackAccess('sharedCounter', 'write', 'increment');
   sharedCounter = current + 1; // 竞态条件！
 }
@@ -1796,19 +1818,19 @@ class CircularDependencyDetector {
     this.exclude = options.exclude || ['node_modules'];
     this.dependencies = new Map();
   }
-  
+
   analyze(dir) {
     this.scanDirectory(dir);
     const cycles = this.findCycles();
     return this.generateReport(cycles);
   }
-  
+
   scanDirectory(dir, basePath = dir) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
-      
+
       if (entry.isDirectory()) {
         if (!this.exclude.some(e => fullPath.includes(e))) {
           this.scanDirectory(fullPath, basePath);
@@ -1818,19 +1840,19 @@ class CircularDependencyDetector {
       }
     }
   }
-  
+
   analyzeFile(filePath, basePath) {
     const content = fs.readFileSync(filePath, 'utf-8');
     const relativePath = path.relative(basePath, filePath);
-    
+
     // 匹配 import 和 require 语句
     const importRegex = /(?:import\s+.*?\s+from\s+|require\s*\(\s*)['"]([^'"]+)['"]/g;
     const deps = [];
-    
+
     let match;
     while ((match = importRegex.exec(content)) !== null) {
       const importPath = match[1];
-      
+
       // 只处理相对路径的导入
       if (importPath.startsWith('.')) {
         const resolved = this.resolveImport(filePath, importPath);
@@ -1839,14 +1861,14 @@ class CircularDependencyDetector {
         }
       }
     }
-    
+
     this.dependencies.set(relativePath, deps);
   }
-  
+
   resolveImport(fromFile, importPath) {
     const dir = path.dirname(fromFile);
     const resolved = path.resolve(dir, importPath);
-    
+
     // 尝试不同的扩展名
     for (const ext of ['', ...this.extensions]) {
       const fullPath = resolved + ext;
@@ -1859,21 +1881,21 @@ class CircularDependencyDetector {
         return indexPath;
       }
     }
-    
+
     return null;
   }
-  
+
   findCycles() {
     const cycles = [];
     const visited = new Set();
     const recursionStack = new Set();
     const path = [];
-    
+
     const dfs = (node) => {
       visited.add(node);
       recursionStack.add(node);
       path.push(node);
-      
+
       const neighbors = this.dependencies.get(node) || [];
       for (const neighbor of neighbors) {
         if (!visited.has(neighbor)) {
@@ -1885,12 +1907,12 @@ class CircularDependencyDetector {
           return [...path.slice(cycleStart), neighbor];
         }
       }
-      
+
       path.pop();
       recursionStack.delete(node);
       return null;
     };
-    
+
     for (const node of this.dependencies.keys()) {
       if (!visited.has(node)) {
         const cycle = dfs(node);
@@ -1899,10 +1921,10 @@ class CircularDependencyDetector {
         }
       }
     }
-    
+
     return cycles;
   }
-  
+
   cyclesEqual(a, b) {
     if (a.length !== b.length) return false;
     const strA = a.join('->');
@@ -1912,7 +1934,7 @@ class CircularDependencyDetector {
     }
     return false;
   }
-  
+
   generateReport(cycles) {
     return {
       totalFiles: this.dependencies.size,
@@ -1926,7 +1948,7 @@ class CircularDependencyDetector {
       suggestions: cycles.map(cycle => this.generateSuggestion(cycle))
     };
   }
-  
+
   generateSuggestion(cycle) {
     return {
       problem: `循环依赖: ${cycle.join(' → ')}`,
@@ -1943,22 +1965,22 @@ class CircularDependencyDetector {
 // CLI 使用
 if (require.main === module) {
   const targetDir = process.argv[2] || './src';
-  
+
   console.log(`分析目录: ${targetDir}\n`);
-  
+
   const detector = new CircularDependencyDetector();
   const report = detector.analyze(targetDir);
-  
+
   console.log(`扫描文件数: ${report.totalFiles}`);
   console.log(`依赖关系数: ${report.totalDependencies}`);
   console.log(`循环依赖数: ${report.circularDependencies}\n`);
-  
+
   if (report.cycles.length > 0) {
     console.log('发现的循环依赖:');
     report.cycles.forEach((cycle, i) => {
       console.log(`\n${i + 1}. ${cycle.chain}`);
     });
-    
+
     console.log('\n解决建议:');
     report.suggestions.forEach((s, i) => {
       console.log(`\n${i + 1}. ${s.problem}`);
@@ -2245,6 +2267,7 @@ clinic bubbleprof -- node server.js
 ```
 
 **气泡图解读**：
+
 ```
 气泡图说明：
 
@@ -2296,9 +2319,9 @@ const server = http.createServer((req, res) => {
     timestamp: Date.now(),
     url: req.url
   };
-  
+
   leakyCache.push(bigObject);
-  
+
   res.end(`Cache size: ${leakyCache.length} items`);
 });
 
@@ -2312,7 +2335,7 @@ process.on('SIGUSR2', () => {
 setInterval(() => {
   const usage = process.memoryUsage();
   console.log(`Heap Used: ${(usage.heapUsed / 1024 / 1024).toFixed(2)} MB`);
-  
+
   if (usage.heapUsed > 100 * 1024 * 1024) { // 超过 100MB
     console.log('内存使用过高，生成诊断快照');
     heapdump.writeSnapshot(`./heap-high-${Date.now()}.heapsnapshot`);
@@ -2377,70 +2400,70 @@ class AutoLeakDetector {
     this.thresholdMB = options.thresholdMB || 100;
     this.growthThreshold = options.growthThreshold || 0.2; // 20% 增长
     this.checkInterval = options.checkInterval || 60000; // 1分钟
-    
+
     this.measurements = [];
     this.checkCount = 0;
   }
-  
+
   start() {
     console.log('自动内存泄漏检测已启动');
     this.timer = setInterval(() => this.check(), this.checkInterval);
   }
-  
+
   stop() {
     if (this.timer) {
       clearInterval(this.timer);
     }
   }
-  
+
   check() {
     const usage = process.memoryUsage();
     const heapMB = usage.heapUsed / 1024 / 1024;
-    
+
     this.measurements.push({
       timestamp: Date.now(),
       heapMB,
       rssMB: usage.rss / 1024 / 1024
     });
-    
+
     this.checkCount++;
-    
+
     // 保留最近20个测量点
     if (this.measurements.length > 20) {
       this.measurements.shift();
     }
-    
+
     console.log(`[检查 ${this.checkCount}] Heap: ${heapMB.toFixed(2)} MB`);
-    
+
     // 检测持续增长
     if (this.measurements.length >= 5) {
       this.detectGrowth();
     }
-    
+
     // 超过绝对阈值
     if (heapMB > this.thresholdMB) {
       this.triggerDiagnostic('超过内存阈值');
     }
   }
-  
+
   detectGrowth() {
     const recent = this.measurements.slice(-5);
     const first = recent[0].heapMB;
     const last = recent[recent.length - 1].heapMB;
     const growth = (last - first) / first;
-    
+
     if (growth > this.growthThreshold) {
       this.triggerDiagnostic(`内存持续增长: ${(growth * 100).toFixed(1)}%`);
     }
   }
-  
+
   triggerDiagnostic(reason) {
     const timestamp = Date.now();
     const filename = `./heap-diagnostic-${timestamp}.heapsnapshot`;
-    
+
     console.warn(`⚠️ ${reason}`);
     console.warn(`生成诊断快照: ${filename}`);
-    
+
     heapdump.writeSnapshot(filename, (err) => {
       if (err) {
         console.error('生成快照失败:', err);
@@ -2448,7 +2471,7 @@ class AutoLeakDetector {
         console.log('诊断快照已生成');
       }
     });
-    
+
     // 同时生成 GC 统计
     const heapStats = v8.getHeapStatistics();
     console.log('GC 统计:', {

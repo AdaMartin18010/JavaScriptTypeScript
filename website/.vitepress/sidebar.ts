@@ -11,7 +11,19 @@ export const sidebar: DefaultTheme.Sidebar = {
       ]
     }
   ],
-  
+
+  // 学习路径部分
+  '/learning-paths/': [
+    {
+      text: '学习路径',
+      items: [
+        { text: '初学者路径', link: '/learning-paths/beginners-path' },
+        { text: '进阶者路径', link: '/learning-paths/intermediate-path' },
+        { text: '高级路径', link: '/learning-paths/advanced-path' },
+      ]
+    }
+  ],
+
   // 分类部分
   '/categories/': [
     {

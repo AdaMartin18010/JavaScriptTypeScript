@@ -80,12 +80,13 @@ function LineChart({ data }) {
   const xScale = scaleLinear().domain([0, 100]).range([0, 500]);
   const yScale = scaleLinear().domain([0, 100]).range([300, 0]);
   const lineGenerator = line().x(d => xScale(d.x)).y(d => yScale(d.y));
-  
+
   return <path d={lineGenerator(data)} fill="none" stroke="steelblue" />;
 }
 ```
 
 **最佳适用场景**
+
 - 高度自定义的数据可视化
 - 复杂交互需求（缩放、拖拽、刷选）
 - 实时数据流可视化
@@ -108,6 +109,7 @@ function LineChart({ data }) {
 | **官网** | [observablehq.com/plot](https://observablehq.com/plot/) |
 
 **核心特性**
+
 - 基于 D3，但隐藏复杂性
 - 自动推断 scale、axes、legends
 - 内置统计变换 (bin, group, regression等)
@@ -124,6 +126,7 @@ Plot.plot({
 ```
 
 **最佳适用场景**
+
 - 快速探索性数据分析
 - 标准统计图表
 - Observable Notebook 用户
@@ -169,11 +172,13 @@ D3 + Canvas/SVG      → 最终输出
 ```
 
 **生态系统**
+
 - **Vega-Embed**: 在网页中嵌入 Vega/Vega-Lite
 - **Altair**: Python 绑定（极流行）
 - **Voyager**: 可视化推荐工具
 
 **最佳适用场景**
+
 - 跨语言可视化（JSON 规范）
 - 需要序列化/存储图表定义
 - 数据 journalists
@@ -225,6 +230,7 @@ bar3D, line3D, surface, scatter3D
 ```
 
 **ECharts 6 新特性 (2025)**
+
 - 全新默认主题
 - 动态主题切换 / 暗黑模式支持
 - 新图表类型：Chord Chart, Beeswarm Chart, Scatter Jittering
@@ -232,6 +238,7 @@ bar3D, line3D, surface, scatter3D
 - 自定义系列注册
 
 **React/Vue 集成**
+
 - **echarts-for-react** ⭐5k
 - **vue-echarts** ⭐9k
 
@@ -248,6 +255,7 @@ const option = {
 ```
 
 **最佳适用场景**
+
 - 企业级后台管理系统
 - 大屏数据可视化
 - 需要丰富中文文档支持
@@ -271,6 +279,7 @@ const option = {
 | **NPM 下载** | 240万+/周 |
 
 **核心特性**
+
 - 简洁的 API 设计
 - 响应式，自动调整大小
 - 8种内置图表类型
@@ -298,6 +307,7 @@ new Chart(ctx, {
 ```
 
 **最佳适用场景**
+
 - 简单图表需求
 - 快速原型开发
 - 移动端优先项目
@@ -321,6 +331,7 @@ new Chart(ctx, {
 | **许可证** | MIT |
 
 **核心特性**
+
 - **极致性能**: 25ms 内渲染 166,650 数据点，~100,000 pts/ms
 - **内存高效**: 3600 点 @ 60fps 仅使用 10% CPU / 12.3MB RAM
 - **Canvas 2D**: 无需 WebGL/WASM，启动更快
@@ -336,6 +347,7 @@ new Chart(ctx, {
 | ECharts | 70% | 85MB | 1000KB |
 
 **最佳适用场景**
+
 - 高性能时间序列数据
 - 实时数据监控
 - 金融行情图表
@@ -358,6 +370,7 @@ new Chart(ctx, {
 | **官网** | [apexcharts.com](https://apexcharts.com/) |
 
 **核心特性**
+
 - 15+ 图表类型，美观默认样式
 - 交互式工具提示、钻取、导出
 - 响应式设计和流畅动画
@@ -379,6 +392,7 @@ chart.render();
 ```
 
 **最佳适用场景**
+
 - 追求美观的仪表板
 - 需要丰富交互功能
 - 快速原型开发
@@ -406,6 +420,7 @@ chart.render();
 | **NPM 下载** | 360万+/周 |
 
 **核心特性**
+
 - 纯 React 组件，声明式 API
 - 基于 D3 计算，React 渲染
 - SVG 支持
@@ -426,6 +441,7 @@ const data = [{name: 'A', value: 400}, {name: 'B', value: 300}];
 ```
 
 **最佳适用场景**
+
 - React 项目
 - 需要与 React 生命周期深度集成
 - 自定义组件样式
@@ -448,6 +464,7 @@ const data = [{name: 'A', value: 400}, {name: 'B', value: 300}];
 | **NPM 下载** | 66万+/周 |
 
 **核心特性**
+
 - 20+ 图表类型
 - 服务端渲染 (SSR) 支持 - Next.js 首选
 - 三种渲染模式：SVG / Canvas / HTML
@@ -456,6 +473,7 @@ const data = [{name: 'A', value: 400}, {name: 'B', value: 300}];
 - 动画由 React Motion 驱动
 
 **图表分类**
+
 ```
 Bar, Line, Area, Pie
 Tree, Sankey, Sunburst, Treemap
@@ -475,6 +493,7 @@ import { ResponsivePie } from '@nivo/pie';
 ```
 
 **最佳适用场景**
+
 - React + D3 结合需求
 - Next.js SSR 项目
 - 现代化设计需求
@@ -498,6 +517,7 @@ import { ResponsivePie } from '@nivo/pie';
 | **NPM 下载** | 27万+/周 |
 
 **核心特性**
+
 - 跨平台 (Web + React Native)
 - 强大的动画系统
 - 声明式风格
@@ -517,6 +537,7 @@ import { VictoryPie, VictoryChart, VictoryBar } from 'victory';
 ```
 
 **最佳适用场景**
+
 - React Native 图表需求
 - 需要丰富动画效果
 - 跨平台应用
@@ -539,6 +560,7 @@ import { VictoryPie, VictoryChart, VictoryBar } from 'victory';
 | **NPM 下载** | 220万+/周 (@visx/shape) |
 
 **设计理念**
+
 - "Un-opinionated" - 不强制样式
 - D3 计算 + React 渲染
 - 可组合的底层组件
@@ -581,6 +603,7 @@ import { Group } from '@visx/group';
 ```
 
 **最佳适用场景**
+
 - 需要完全控制样式的项目
 - 设计系统团队
 - 企业级图表组件库建设
@@ -682,6 +705,7 @@ import { Canvas } from '@react-three/fiber';
 ```
 
 **最佳适用场景**
+
 - 3D 数据可视化
 - 产品展示/配置器
 - 游戏开发
@@ -705,6 +729,7 @@ import { Canvas } from '@react-three/fiber';
 | **官网** | [babylonjs.com](https://www.babylonjs.com/) |
 
 **核心特性**
+
 - 完整的游戏引擎功能
 - 物理引擎集成 (Cannon.js, Ammo.js)
 - 粒子系统 + 新 NPE (Node Particle Editor)
@@ -724,6 +749,7 @@ import { Canvas } from '@react-three/fiber';
 | 包体积 | 较大 | 较小 |
 
 **Babylon.js 9.0 新特性 (2025)**
+
 - 聚类光照 (Clustered Lighting)
 - 纹理区域光照
 - 节点粒子编辑器
@@ -732,6 +758,7 @@ import { Canvas } from '@react-three/fiber';
 - WebGPU 性能优化
 
 **最佳适用场景**
+
 - 3D 游戏开发
 - 复杂交互 3D 应用
 - 需要内置物理引擎
@@ -754,12 +781,14 @@ import { Canvas } from '@react-three/fiber';
 | **官网** | [cesium.com](https://cesium.com/) |
 
 **核心特性**
+
 - 全球地形和影像
 - 3D Tiles 标准
 - 时间动态可视化
 - KML/GeoJSON/CZML 支持
 
 **最佳适用场景**
+
 - 数字孪生城市
 - 航空航天可视化
 - 地理空间分析
@@ -786,6 +815,7 @@ import { Canvas } from '@react-three/fiber';
 | **官网** | [pixijs.com](https://pixijs.com/) |
 
 **核心特性**
+
 - WebGL & WebGPU 渲染器
 - 极速性能和轻量级
 - 完整的鼠标和多点触控支持
@@ -794,6 +824,7 @@ import { Canvas } from '@react-three/fiber';
 - 支持 Canvas 降级
 
 **PixiJS v8 新特性 (2024)**
+
 - 全新的渲染组概念 (isRenderGroup)
 - 混合模式和色调继承
 - Photoshop 级滤镜（20+ 种混合模式）
@@ -820,6 +851,7 @@ app.ticker.add((time) => {
 ```
 
 **最佳适用场景**
+
 - 2D 游戏开发
 - 高性能 2D 交互应用
 - 富媒体广告
@@ -842,6 +874,7 @@ app.ticker.add((time) => {
 | **官网** | [fabricjs.com](https://fabricjs.com/) |
 
 **核心特性**
+
 - 开箱即用的交互（缩放、移动、旋转、倾斜、组合）
 - 内置形状、控件、动画、图像滤镜
 - 支持 JPG、PNG、JSON、SVG 导入导出
@@ -861,6 +894,7 @@ canvas.add(rect);
 ```
 
 **最佳适用场景**
+
 - 图片编辑器
 - 在线设计工具
 - 白板/协作画布
@@ -884,6 +918,7 @@ canvas.add(rect);
 | **官网** | [konvajs.org](https://konvajs.org/) |
 
 **核心特性**
+
 - Stage → Layer → Shape 层级结构
 - 高性能动画和过渡
 - 拖拽、缩放、旋转支持
@@ -918,6 +953,7 @@ layer.add(rect);
 ```
 
 **最佳适用场景**
+
 - 交互式 2D 应用
 - 设计编辑器/白板
 - 注释工具
@@ -945,6 +981,7 @@ layer.add(rect);
 | **官网** | [leafletjs.com](https://leafletjs.com/) |
 
 **核心特性**
+
 - 极简 API 设计
 - 38KB 完整包
 - 丰富的插件生态
@@ -972,6 +1009,7 @@ L.marker([51.5, -0.09]).addTo(map)
 | Leaflet-routing-machine | 路线规划 |
 
 **最佳适用场景**
+
 - 简单地图展示
 - 标记点/区域展示
 - 移动优先的地图应用
@@ -994,6 +1032,7 @@ L.marker([51.5, -0.09]).addTo(map)
 | **官网** | [docs.mapbox.com](https://docs.mapbox.com/mapbox-gl-js/) |
 
 **核心特性**
+
 - 矢量切片渲染
 - 流畅的缩放/旋转
 - 自定义地图样式 (Mapbox Studio)
@@ -1004,6 +1043,7 @@ L.marker([51.5, -0.09]).addTo(map)
 **开源替代**: **MapLibre GL JS** (Mapbox v1.x 分支)
 
 **最佳适用场景**
+
 - 自定义地图样式
 - 高性能矢量地图
 - 3D 地形可视化
@@ -1025,6 +1065,7 @@ L.marker([51.5, -0.09]).addTo(map)
 | **官网** | [deck.gl](https://deck.gl/) |
 
 **核心特性**
+
 - 百万级数据点渲染
 - 多层叠加架构
 - 与 Mapbox/Google Maps 集成
@@ -1074,6 +1115,7 @@ import { ScatterplotLayer } from '@deck.gl/layers';
 ```
 
 **最佳适用场景**
+
 - 大规模地理数据可视化
 - 时空数据分析
 - 与 React 深度集成
@@ -1096,6 +1138,7 @@ import { ScatterplotLayer } from '@deck.gl/layers';
 | **官网** | [kepler.gl](https://kepler.gl/) |
 
 **核心特性**
+
 - 零代码可视化配置
 - 支持 CSV/JSON/GeoJSON
 - 时间轴动画
@@ -1103,6 +1146,7 @@ import { ScatterplotLayer } from '@deck.gl/layers';
 - 可导出为 React 组件
 
 **最佳适用场景**
+
 - 地理数据探索
 - 数据分析师
 - 快速生成可视化原型
@@ -1136,6 +1180,7 @@ flowchart TD
     B -->|条件1| C[处理1]
     B -->|条件2| D[处理2]
 ```
+
 ```
 
 ```markdown
@@ -1146,6 +1191,7 @@ sequenceDiagram
     A->>B: 请求数据
     B->>A: 返回结果
 ```
+
 ```
 
 **支持图表**
@@ -1205,6 +1251,7 @@ Alice <-- Bob: Another authentication Response
 ```
 
 **最佳适用场景**
+
 - 技术架构文档
 - UML 建模
 - 软件设计文档
@@ -1225,6 +1272,7 @@ Alice <-- Bob: Another authentication Response
 | **GitHub** | [dagrejs/dagre](https://github.com/dagrejs/dagre) |
 
 **核心特性**
+
 - 网络单纯形排名算法
 - 质心排序启发式
 - Brandes-Köpf 坐标分配
@@ -1232,6 +1280,7 @@ Alice <-- Bob: Another authentication Response
 - 边标签自动定位
 
 **算法流程**
+
 1. 循环移除 - 临时反转边创建 DAG
 2. 排名分配 - 网络单纯形
 3. 排序 - 最小化边交叉
@@ -1254,10 +1303,12 @@ dagre.layout(g);
 ```
 
 **相关项目**
+
 - **dagre-d3**: D3 渲染器
 - **graphlib**: 图数据结构
 
 **最佳适用场景**
+
 - 自动图布局
 - 流程图/有向无环图
 - 与 React Flow 集成
@@ -1279,6 +1330,7 @@ dagre.layout(g);
 | **官网** | [js.cytoscape.org](https://js.cytoscape.org/) |
 
 **核心特性**
+
 - 图论算法内置（路径查找、聚类等）
 - 交互式操作（选择、平移、缩放）
 - 多种布局算法
@@ -1286,6 +1338,7 @@ dagre.layout(g);
 - 高性能渲染
 
 **内置布局**
+
 - null, random, grid, circle
 - concentric, breadthfirst
 - cose (Compound Spring Embedder)
@@ -1304,6 +1357,7 @@ var cy = cytoscape({
 ```
 
 **最佳适用场景**
+
 - 社交网络分析
 - 生物网络可视化
 - 系统拓扑图
@@ -1326,12 +1380,14 @@ var cy = cytoscape({
 | **官网** | [sigmajs.org](https://sigmajs.org/) |
 
 **核心特性**
+
 - WebGL 渲染（百万级节点/边）
 - 流畅的缩放和平移
 - 可定制的渲染管线
 - 专注于大图性能
 
 **Sigma.js v2+ 架构**
+
 - 核心库精简
 - 渲染器插件化
 - 与 Graphology 图库集成
@@ -1349,6 +1405,7 @@ const sigma = new Sigma(graph, document.getElementById('container'));
 ```
 
 **最佳适用场景**
+
 - 大规模网络图（> 10k 节点）
 - 社交网络可视化
 - 复杂关系图
@@ -1369,18 +1426,21 @@ const sigma = new Sigma(graph, document.getElementById('container'));
 | **Stars** | ~4k |
 
 **定位**
+
 - deck.gl 的底层依赖
 - 高性能 GPU 计算
 - 现代 WebGL2 特性
 - WebGPU 支持
 
 **核心特性**
+
 - 高级着色器系统
 - GPU 计算
 - 多上下文支持
 - 与 deck.gl 紧密集成
 
 **最佳适用场景**
+
 - 自定义 WebGL 应用
 - 构建可视化框架
 - 高性能 GPU 计算
@@ -1406,6 +1466,7 @@ const sigma = new Sigma(graph, document.getElementById('container'));
 | **官网** | [reactflow.dev](https://reactflow.dev/) |
 
 **核心特性**
+
 - 拖拽节点
 - 连接边
 - 缩放/平移
@@ -1430,6 +1491,7 @@ const edges = [{ id: 'e1-2', source: '1', target: '2' }];
 ```
 
 **最佳适用场景**
+
 - 工作流编辑器
 - 流程图设计器
 - 低代码平台
@@ -1451,6 +1513,7 @@ const edges = [{ id: 'e1-2', source: '1', target: '2' }];
 | **官网** | [gojs.net](https://gojs.net/) |
 
 **核心特性**
+
 - 丰富的内置功能
 - 商业支持
 - 成熟稳定
@@ -1465,6 +1528,7 @@ const edges = [{ id: 'e1-2', source: '1', target: '2' }];
 | 定制灵活性 | 高 | 高 |
 
 **最佳适用场景**
+
 - 企业预算充足
 - 需要高级功能和专业支持
 - BPM/工作流系统
@@ -1527,25 +1591,30 @@ const edges = [{ id: 'e1-2', source: '1', target: '2' }];
 ## 📚 推荐学习资源
 
 ### D3.js
+
 - **官方**: [d3js.org](https://d3js.org/) + [Observable](https://observablehq.com/@d3)
 - **书籍**: 《D3.js 数据可视化实战手册》
 - **课程**: D3.js 大师课 (Frontend Masters)
 - **社区**: D3 Slack, Observable 社区
 
 ### Three.js
+
 - **官方**: [threejs-journey.com](https://threejs-journey.com/) (Bruno Simon)
 - **文档**: [threejs.org/docs](https://threejs.org/docs/)
 - **示例**: [threejs.org/examples](https://threejs.org/examples/)
 
 ### ECharts
+
 - **官方文档**: [echarts.apache.org/zh/option.html](https://echarts.apache.org/zh/option.html)
 - **示例库**: [echarts.apache.org/examples/zh/index.html](https://echarts.apache.org/examples/zh/index.html)
 
 ### React Three Fiber
+
 - **官方**: [docs.pmnd.rs/react-three-fiber](https://docs.pmnd.rs/react-three-fiber)
 - **示例**: [r3f.docs.pmnd.rs](https://docs.pmnd.rs/react-three-fiber/getting-started/examples)
 
 ### Mermaid
+
 - **官方文档**: [mermaid.js.org](https://mermaid.js.org/)
 - **Live Editor**: [mermaid.live](https://mermaid.live/)
 - **GitHub 集成**: 原生支持 Markdown

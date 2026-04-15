@@ -35,6 +35,7 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '指南', link: '/guide/getting-started' },
       { text: '分类', link: '/categories/frontend-frameworks' },
+      { text: '学习路径', link: '/learning-paths/beginners-path' },
       { text: '关于', link: '/about' },
     ],
 

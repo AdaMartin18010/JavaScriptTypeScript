@@ -33,6 +33,7 @@
 **一句话描述**：高性能、轻量级的 React 表单库，通过非受控组件和引用注册实现极致性能。
 
 **核心特点**：
+
 - 🚀 **极致性能**：采用非受控组件，减少不必要的重渲染
 - 🎯 **简洁 API**：基于 Hooks 的设计，学习曲线平缓
 - 🔗 **轻松集成**：与 Yup、Zod、Joi 等校验库无缝配合
@@ -40,6 +41,7 @@
 - 🧪 **易于测试**：不依赖复杂的状态管理
 
 **适用场景**：
+
 - 需要高性能表单的大型应用
 - 复杂表单场景（动态字段、嵌套表单）
 - 对包体积敏感的项目
@@ -83,17 +85,17 @@ function UserForm() {
         <input {...register('username')} placeholder="用户名" />
         {errors.username && <span>{errors.username.message}</span>}
       </div>
-      
+
       <div>
         <input {...register('email')} placeholder="邮箱" />
         {errors.email && <span>{errors.email.message}</span>}
       </div>
-      
+
       <div>
         <input type="number" {...register('age', { valueAsNumber: true })} placeholder="年龄" />
         {errors.age && <span>{errors.age.message}</span>}
       </div>
-      
+
       <button type="submit" disabled={isSubmitting}>
         {isSubmitting ? '提交中...' : '提交'}
       </button>
@@ -113,7 +115,7 @@ function DynamicForm() {
       items: [{ name: '' }]
     }
   });
-  
+
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'items'
@@ -151,6 +153,7 @@ function DynamicForm() {
 **一句话描述**：React 最流行的表单库之一，提供完整的表单状态管理和校验解决方案。
 
 **核心特点**：
+
 - 📝 **完整表单管理**：处理 values、errors、touched、isSubmitting 等状态
 - 🔧 **声明式 API**：使用 JSX 表达式处理表单逻辑
 - 🎨 **灵活渲染**：支持 render props 和 hooks 两种模式
@@ -158,6 +161,7 @@ function DynamicForm() {
 - 📚 **文档完善**：大量示例和最佳实践
 
 **适用场景**：
+
 - 需要完整表单状态管理的项目
 - 团队偏好受控组件模式
 - 已有大量 Formik 使用的遗留项目
@@ -273,7 +277,7 @@ function LoginForm() {
       {formik.touched.email && formik.errors.email && (
         <div>{formik.errors.email}</div>
       )}
-      
+
       <input
         id="password"
         name="password"
@@ -281,7 +285,7 @@ function LoginForm() {
         onChange={formik.handleChange}
         value={formik.values.password}
       />
-      
+
       <button type="submit">登录</button>
     </form>
   );
@@ -304,6 +308,7 @@ function LoginForm() {
 **一句话描述**：基于 Final Form 引擎的高性能 React 表单库，采用订阅模式实现精细化更新控制。
 
 **核心特点**：
+
 - ⚡ **订阅模式**：只订阅需要的表单状态，避免不必要渲染
 - 🔧 **与框架解耦**：Final Form 引擎可跨框架使用
 - 🎭 **高阶组件支持**：FormSpy 等组件实现复杂交互
@@ -311,6 +316,7 @@ function LoginForm() {
 - 🪶 **轻量级**：核心功能精简，插件扩展
 
 **适用场景**：
+
 - 需要精细控制渲染性能的项目
 - 超大型表单（上百个字段）
 - 需要跨框架共享表单逻辑
@@ -399,6 +405,7 @@ function OrderForm() {
 **一句话描述**：TanStack 出品的无头表单库，支持 React、Vue、Svelte 等多个框架。
 
 **核心特点**：
+
 - 🔀 **跨框架**：核心逻辑与框架无关，统一 API
 - 🎯 **类型安全**：完整的 TypeScript 类型支持
 - 📦 **TanStack 生态**：与 Query、Table 等库配合良好
@@ -406,6 +413,7 @@ function OrderForm() {
 - 🧪 **测试友好**：易于单元测试和集成测试
 
 **适用场景**：
+
 - 使用 TanStack 系列库的项目
 - 需要跨框架共享表单方案的团队
 - 追求类型安全的现代项目
@@ -517,6 +525,7 @@ function TanstackForm() {
 **一句话描述**：Vue.js 最流行的表单校验库，支持 Vue 2 和 Vue 3，提供组件式和组合式两种 API。
 
 **核心特点**：
+
 - 🎯 **Vue 专属**：深度集成 Vue 响应式系统
 - 📝 **双向绑定**：完美支持 v-model
 - 🔌 **校验灵活**：内置校验规则，支持 Zod、Yup 等
@@ -524,6 +533,7 @@ function TanstackForm() {
 - 🌐 **i18n 支持**：内置国际化错误消息
 
 **适用场景**：
+
 - Vue 2 或 Vue 3 项目
 - 需要响应式表单状态管理
 - 需要丰富校验规则的项目
@@ -645,6 +655,7 @@ const onSubmit = (values: unknown) => {
 **一句话描述**：全功能的 Vue 表单框架，提供表单结构、校验、提交、渲染等完整解决方案。
 
 **核心特点**：
+
 - 🏗️ **结构化表单**：内置 20+ 种输入类型
 - 🎨 **主题系统**：官方提供 Genesis、Regenesis 等主题
 - 🧩 **插件生态**：可扩展表单功能
@@ -652,6 +663,7 @@ const onSubmit = (values: unknown) => {
 - 📚 **文档详细**：大量示例和教程
 
 **适用场景**：
+
 - 需要快速构建复杂表单的项目
 - 需要统一表单样式的企业项目
 - 需要丰富输入类型的场景
@@ -868,5 +880,5 @@ const submitHandler = (data: unknown) => {
 ---
 
 > 📅 本文档最后更新：2026年4月
-> 
+>
 > 💡 提示：Stars 数据会随时间变化，建议查看 GitHub 获取最新数据

@@ -20,6 +20,7 @@
 轻量级、开源的JavaScript库，用于创建交互式地图。以其简洁性、性能和可用性著称，支持所有主流桌面和移动端平台。
 
 **特点：**
+
 - 极小的体积，仅40kB+ gzipped
 - 丰富的插件生态系统
 - 移动设备友好，触摸手势支持
@@ -62,6 +63,7 @@ L.marker([51.5, -0.09])
 基于WebGL的现代化矢量地图库，提供高性能的交互式地图渲染，支持3D地形和自定义样式。
 
 **特点：**
+
 - WebGL硬件加速渲染
 - 矢量瓦片技术，缩放流畅
 - 强大的样式自定义系统
@@ -114,6 +116,7 @@ map.on('load', () => {
 高性能、功能丰富的开源GIS库，支持多种数据格式和投影系统，适合企业级地理信息应用。
 
 **特点：**
+
 - 支持多种数据格式（GeoJSON、KML、GPX等）
 - 丰富的投影系统支持
 - 矢量瓦片和栅格瓦片
@@ -165,6 +168,7 @@ const map = new Map({
 模块化的地理空间分析引擎，提供空间计算、数据处理和统计分析功能。
 
 **特点：**
+
 - 纯JavaScript实现，无外部依赖
 - 丰富的空间分析函数
 - 支持GeoJSON数据格式
@@ -210,6 +214,7 @@ const isInside = booleanContains(searchArea, target);
 Leaflet的React封装，提供声明式的React组件接口。
 
 **特点：**
+
 - 完全利用React生命周期
 - 声明式组件API
 - 支持React hooks
@@ -224,9 +229,9 @@ import 'leaflet/dist/leaflet.css';
 
 function MapComponent() {
   return (
-    <MapContainer 
-      center={[51.505, -0.09]} 
-      zoom={13} 
+    <MapContainer
+      center={[51.505, -0.09]}
+      zoom={13}
       style={{ height: '400px', width: '100%' }}
     >
       <TileLayer
@@ -258,6 +263,7 @@ function MapComponent() {
 Uber开发的React地图组件库，支持Mapbox和MapLibre。
 
 **特点：**
+
 - 完全受控的React组件
 - 支持Mapbox和MapLibre双引擎
 - 与deck.gl无缝集成
@@ -304,6 +310,7 @@ function App() {
 零外部依赖的React地图组件，轻量且高性能。
 
 **特点：**
+
 - 无任何外部依赖
 - 原生React实现
 - 支持OpenStreetMap、MapTiler等
@@ -317,9 +324,9 @@ import { Map, Marker, ZoomControl } from 'pigeon-maps';
 
 function MyMap() {
   return (
-    <Map 
-      height={400} 
-      defaultCenter={[50.879, 4.6997]} 
+    <Map
+      height={400}
+      defaultCenter={[50.879, 4.6997]}
       defaultZoom={11}
     >
       <Marker width={50} anchor={[50.879, 4.6997]} />
@@ -345,6 +352,7 @@ function MyMap() {
 Uber开源的WebGL2/WebGPU大规模数据可视化框架。
 
 **特点：**
+
 - 支持百万级数据点渲染
 - GPU加速计算
 - 64位高精度坐标
@@ -395,6 +403,7 @@ const deck = new Deck({
 Uber开源的地理空间分析工具，基于deck.gl构建。
 
 **特点：**
+
 - 无需编程即可可视化地理数据
 - 支持CSV、GeoJSON数据
 - 时间序列动画
@@ -458,6 +467,7 @@ function App() {
 Uber可视化框架套件，包含多个地理空间可视化库。
 
 **包含项目：**
+
 - **deck.gl** - 大规模数据可视化
 - **luma.gl** - WebGL/WebGPU引擎
 - **react-map-gl** - React地图组件
@@ -481,6 +491,7 @@ Uber可视化框架套件，包含多个地理空间可视化库。
 开源的3D地球和地图JavaScript库，专注于高精度地理空间数据可视化。
 
 **特点：**
+
 - 真实3D地球渲染
 - 支持3D Tiles标准
 - 时间动态数据
@@ -530,6 +541,7 @@ viewer.entities.add({
 使用Three.js创建3D地球和地理可视化的扩展方案。
 
 **相关库：**
+
 - **Globe.gl** - 基于Three.js的3D地球可视化
 - **Three-geo** - Three.js的地理数据扩展
 - **react-globe.gl** - Globe.gl的React封装
@@ -572,6 +584,7 @@ world.pointsData(gData)
 Mapbox官方SDK，提供地图服务、地理编码、导航等功能。
 
 **特点：**
+
 - 地理编码API（地址转坐标）
 - 路线规划和导航
 - 静态地图生成
@@ -622,6 +635,7 @@ const route = await directionsClient
 Google Maps官方推荐的React组件库，现代且类型安全。
 
 **特点：**
+
 - 类型安全的API
 - 现代React hooks
 - 支持高级功能（Autocomplete、Street View等）

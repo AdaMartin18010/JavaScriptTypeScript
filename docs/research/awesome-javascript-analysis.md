@@ -143,6 +143,7 @@ Awesome JavaScript
 awesome-javascript 收录了 **30+** 个前端框架，覆盖多种范式：
 
 #### 主流框架
+
 | 框架 | 特点 | 适用场景 |
 |------|------|----------|
 | React | 虚拟DOM，组件化 | 大型应用 |
@@ -151,6 +152,7 @@ awesome-javascript 收录了 **30+** 个前端框架，覆盖多种范式：
 | Svelte | 编译时优化，无虚拟DOM | 高性能需求 |
 
 #### 轻量级框架
+
 | 框架 | 体积 | 特点 |
 |------|------|------|
 | hyperapp | 1kb | 极简API |
@@ -160,6 +162,7 @@ awesome-javascript 收录了 **30+** 个前端框架，覆盖多种范式：
 | inferno | 超快 | React-like |
 
 #### 专业领域框架
+
 - **A-Frame** / **PlayCanvas** - WebVR/游戏
 - **Rete.js** / **litegraph.js** / **Drawflow** / **Blockly** - 可视化编程/节点编辑器
 - **GrapesJS** - 无代码网页构建器
@@ -170,6 +173,7 @@ awesome-javascript 收录了 **30+** 个前端框架，覆盖多种范式：
 这是 awesome-javascript 相比 awesome-nodejs **最显著的差异**。awesome-nodejs 几乎没有UI组件分类，而 awesome-javascript 拥有 **18个细分子类**：
 
 #### 表单处理组件 (Form Widgets)
+
 ```
 Form Widgets
 ├── Input
@@ -198,6 +202,7 @@ Form Widgets
 ```
 
 #### 通知与反馈 (Notifications)
+
 - **iziToast** - 优雅响应式通知
 - **toastr** - 简单Toast通知
 - **noty** - jQuery通知插件
@@ -205,12 +210,14 @@ Form Widgets
 - **toastify-js** - 纯JavaScript
 
 #### 用户引导 (Tours And Guides)
+
 - **intro.js** - 功能介绍和步骤引导
 - **shepherd** - 应用导览
 - **driver.js** - 轻量级焦点引导
 - **hopscotch** - 产品 tour 框架
 
 #### 加载状态 (Loading Status)
+
 - **NProgress** - Ajax进度条
 - **Spin.js** - 旋转指示器
 - **progressbar.js** - SVG动画进度条
@@ -222,6 +229,7 @@ Form Widgets
 awesome-javascript 的数据可视化分类非常全面：
 
 #### 图表库
+
 | 库 | 特点 | 场景 |
 |----|------|------|
 | D3.js | 底层，灵活 | 自定义可视化 |
@@ -231,6 +239,7 @@ awesome-javascript 的数据可视化分类非常全面：
 | Frappe Charts | 零依赖 | 轻量现代 |
 
 #### 专业可视化
+
 - **three.js** / **BabylonJS** - 3D图形
 - **paper.js** / **fabric.js** / **svg.js** - 矢量图形
 - **sigma.js** / **Cytoscape.js** / **G6** - 图/网络可视化
@@ -238,6 +247,7 @@ awesome-javascript 的数据可视化分类非常全面：
 - **trianglify** - 低多边形背景
 
 #### 时间轴与电子表格
+
 - **TimelineJS v3** - 叙事时间轴
 - **timesheet.js** - 时间表
 - **HANDSONTABLE** / **Luckysheet** - 类Excel电子表格
@@ -287,12 +297,14 @@ awesome-javascript 收录了 **25+** 个编辑器：
 浏览器端特有的文件处理能力：
 
 #### 文件解析
+
 - **Papa Parse** - CSV解析
 - **PDF.js** - PDF阅读器
 - **jsPDF** - PDF生成
 - **diff2html** - Git diff可视化
 
 #### 文件上传
+
 - **jQuery-File-Upload** - 多功能上传
 - **dropzone** - 拖放上传
 - **flow.js** - 断点续传
@@ -323,13 +335,15 @@ awesome-javascript 收录了 **25+** 个编辑器：
 
 ### 4.2 内容组织差异
 
-#### awesome-javascript 特点：
+#### awesome-javascript 特点
+
 1. **按功能细分**：UI组件细分到18个子类
 2. **浏览器优先**：所有库都标注浏览器兼容性
 3. **视觉体验导向**：大量动画、视觉效果库
 4. **现代框架聚焦**：React/Vue/Angular生态丰富
 
-#### awesome-nodejs 特点：
+#### awesome-nodejs 特点
+
 1. **按场景细分**：CLI工具、服务端、构建工具
 2. **性能导向**：大量高性能、流式处理库
 3. **基础设施**：数据库、队列、进程管理
@@ -377,6 +391,7 @@ UI                          # 一级
 ### 5.3 特殊分类处理
 
 #### 分层子类标记
+
 ```markdown
 ## Data Visualization
 - d3 - ...
@@ -390,6 +405,7 @@ UI                          # 一级
 ```
 
 #### 交叉引用处理
+
 ```markdown
 # 跨平台库标注
 - [axios](...) - ...for the browser and node.js.

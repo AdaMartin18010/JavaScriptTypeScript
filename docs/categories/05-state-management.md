@@ -6,30 +6,45 @@
 
 ## 📑 目录
 
-1. [React 状态管理](#1-react-状态管理)
-   - [Zustand](#11-zustand-) ⭐48k 🐻
-   - [Redux / Redux Toolkit](#12-redux--redux-toolkit-) ⭐61k
-   - [Jotai](#13-jotai-) ⭐18k
-   - [Recoil ⚠️ 已归档](#14-recoil-) ⭐19k
-   - [Valtio](#15-valtio-) ⭐9k
-   - [MobX](#16-mobx-) ⭐27k
-   - [XState](#17-xstate-) ⭐27k
-   - [TanStack Query](#18-react-query-tanstack-query-) ⭐43k
-   - [SWR](#19-swr-) ⭐31k
-   - [Zustand-X](#110-zustand-x)
-2. [Vue 状态管理](#2-vue-状态管理)
-   - [Pinia](#21-pinia-) ⭐35k 🍍
-   - [Vuex ⚠️ 已弃用](#22-vuex-) ⭐28k
-3. [跨框架状态管理](#3-跨框架状态管理)
-   - [MobX](#31-mobx-) ⭐27k
-   - [XState](#32-xstate-) ⭐27k
-   - [Effector](#33-effector-) ⭐5k
-   - [Immer](#34-immer-) ⭐27k
-   - [Nano Stores](#35-nano-stores-) ⭐6k
-   - [RxJS](#36-rxjs-) ⭐30k
-4. [服务端状态 (Server State)](#4-服务端状态-server-state)
-5. [选型决策树](#5-选型决策树)
-6. [2025趋势与展望](#6-2025趋势与展望)
+- [05 - 状态管理库生态 (State Management)](#05---状态管理库生态-state-management)
+  - [📑 目录](#-目录)
+  - [1. React 状态管理](#1-react-状态管理)
+    - [1.1 Zustand ⭐48k 🐻](#11-zustand-48k-)
+    - [1.2 Redux / Redux Toolkit ⭐61k](#12-redux--redux-toolkit-61k)
+    - [1.3 Jotai ⭐18k](#13-jotai-18k)
+    - [1.4 Recoil ⭐19k ⚠️ 已归档](#14-recoil-19k-️-已归档)
+    - [1.5 Valtio ⭐9k](#15-valtio-9k)
+    - [1.6 MobX ⭐27k](#16-mobx-27k)
+    - [1.7 XState ⭐27k](#17-xstate-27k)
+    - [1.8 React Query (TanStack Query) ⭐43k](#18-react-query-tanstack-query-43k)
+    - [1.9 SWR ⭐31k](#19-swr-31k)
+    - [1.10 Zustand-X](#110-zustand-x)
+  - [2. Vue 状态管理](#2-vue-状态管理)
+    - [2.1 Pinia ⭐35k 🍍](#21-pinia-35k-)
+    - [2.2 Vuex ⭐28k ⚠️ 已弃用](#22-vuex-28k-️-已弃用)
+  - [3. 跨框架状态管理](#3-跨框架状态管理)
+    - [3.1 MobX ⭐27k](#31-mobx-27k)
+    - [3.2 XState ⭐27k](#32-xstate-27k)
+    - [3.3 Effector ⭐5k](#33-effector-5k)
+    - [3.4 Immer ⭐27k](#34-immer-27k)
+    - [3.5 Nano Stores ⭐6k](#35-nano-stores-6k)
+    - [3.6 RxJS ⭐30k](#36-rxjs-30k)
+  - [4. 服务端状态 (Server State)](#4-服务端状态-server-state)
+    - [4.1 TanStack Query ⭐43k](#41-tanstack-query-43k)
+    - [4.2 SWR ⭐31k](#42-swr-31k)
+    - [4.3 RTK Query](#43-rtk-query)
+    - [4.4 urql ⭐8k](#44-urql-8k)
+    - [4.5 Apollo Client ⭐19k](#45-apollo-client-19k)
+  - [5. 选型决策树](#5-选型决策树)
+    - [5.1 React项目](#51-react项目)
+    - [5.2 Vue项目](#52-vue项目)
+    - [5.3 跨框架项目](#53-跨框架项目)
+    - [5.4 快速对比表](#54-快速对比表)
+  - [6. 2025趋势与展望](#6-2025趋势与展望)
+    - [6.1 当前趋势](#61-当前趋势)
+    - [6.2 技术演进](#62-技术演进)
+    - [6.3 选型建议](#63-选型建议)
+    - [6.4 迁移建议](#64-迁移建议)
 
 ---
 
@@ -45,17 +60,20 @@
 | **维护者** | Poimandres (pmndrs) |
 
 **特点**
+
 - 🚀 2025年最热门React状态管理库，小熊状态管理
 - 📝 极简API，无样板代码
 - 🐻 基于Hook，无Provider包裹
 - 🔄 支持中间件（持久化、日志、Immer等）
 
 **适用场景**
+
 - 中小型React应用
 - 需要快速上手的项目
 - 从useState/useReducer迁移
 
 **代码示例**
+
 ```typescript
 import { create } from "zustand"
 import { persist, devtools } from "zustand/middleware"
@@ -87,9 +105,10 @@ function BearCounter() {
 ```
 
 **链接**
-- 🏠 官网：https://zustand-demo.pmnd.rs/
-- 📦 GitHub：https://github.com/pmndrs/zustand
-- 📖 文档：https://docs.pmnd.rs/zustand
+
+- 🏠 官网：<https://zustand-demo.pmnd.rs/>
+- 📦 GitHub：<https://github.com/pmndrs/zustand>
+- 📖 文档：<https://docs.pmnd.rs/zustand>
 
 ---
 
@@ -103,18 +122,21 @@ function BearCounter() {
 | **维护者** | Redux Team |
 
 **特点**
+
 - 🏢 企业级标准，生态最成熟
 - 🛠️ Redux Toolkit简化样板代码
 - 🔍 Redux DevTools强大的调试能力
 - 📚 丰富的中间件生态
 
 **适用场景**
+
 - 大型企业级应用
 - 需要严格数据流控制
 - 复杂的状态逻辑
 - 团队协作项目
 
 **代码示例**
+
 ```typescript
 import { createSlice, configureStore } from "@reduxjs/toolkit"
 import { useDispatch, useSelector, TypedUseSelectorHook } from "react-redux"
@@ -155,7 +177,7 @@ export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
 function Counter() {
   const count = useAppSelector((state) => state.counter.value)
   const dispatch = useAppDispatch()
-  
+
   return (
     <div>
       <span>{count}</span>
@@ -167,9 +189,10 @@ function Counter() {
 ```
 
 **链接**
-- 🏠 官网：https://redux.js.org/
-- 📦 GitHub：https://github.com/reduxjs/redux-toolkit
-- 📖 RTK文档：https://redux-toolkit.js.org/
+
+- 🏠 官网：<https://redux.js.org/>
+- 📦 GitHub：<https://github.com/reduxjs/redux-toolkit>
+- 📖 RTK文档：<https://redux-toolkit.js.org/>
 
 ---
 
@@ -183,17 +206,20 @@ function Counter() {
 | **维护者** | Poimandres (pmndrs) |
 
 **特点**
+
 - ⚛️ 原子化状态管理 (Atomic State Management)
 - 🎯 基于原子与派生原子概念
 - 🔄 自动依赖追踪与细粒度更新
 - 🧩 组合式状态定义
 
 **适用场景**
+
 - 需要细粒度状态控制
 - 复杂状态派生逻辑
 - 避免不必要的重渲染
 
 **代码示例**
+
 ```typescript
 import { atom, useAtom, useAtomValue, useSetAtom } from "jotai"
 import { atomWithStorage, atomWithReset } from "jotai/utils"
@@ -225,7 +251,7 @@ function Counter() {
   const [count, setCount] = useAtom(countAtom)
   const doubleCount = useAtomValue(doubleCountAtom)
   const [, increment] = useAtom(incrementCountAtom)
-  
+
   return (
     <div>
       <p>Count: {count}</p>
@@ -238,9 +264,10 @@ function Counter() {
 ```
 
 **链接**
-- 🏠 官网：https://jotai.org/
-- 📦 GitHub：https://github.com/pmndrs/jotai
-- 📖 文档：https://jotai.org/docs/
+
+- 🏠 官网：<https://jotai.org/>
+- 📦 GitHub：<https://github.com/pmndrs/jotai>
+- 📖 文档：<https://jotai.org/docs/>
 
 ---
 
@@ -255,6 +282,7 @@ function Counter() {
 | **状态** | 🔴 2025年1月1日已归档，停止维护 |
 
 **特点**
+
 - 🏢 Facebook官方出品
 - 🧪 实验性项目（Open Source Experimental）
 - ⚛️ 原子化状态管理先驱
@@ -263,10 +291,12 @@ function Counter() {
 **⚠️ 重要提醒**：Recoil已于2025年1月1日被Meta官方归档，停止维护。新项目强烈建议使用 **Jotai** 替代（同为原子化状态管理，API相似，生态活跃）。
 
 **适用场景**
+
 - 探索原子化状态管理概念
 - 已有项目维护
 
 **代码示例**
+
 ```typescript
 import { atom, selector, useRecoilState, useRecoilValue } from "recoil"
 
@@ -298,7 +328,7 @@ const currentUserNameQuery = selector({
 function CharacterCounter() {
   const [text, setText] = useRecoilState(textState)
   const count = useRecoilValue(charCountState)
-  
+
   return (
     <div>
       <input value={text} onChange={(e) => setText(e.target.value)} />
@@ -309,8 +339,9 @@ function CharacterCounter() {
 ```
 
 **链接**
-- 📦 GitHub：https://github.com/facebookexperimental/Recoil
-- 📖 文档：https://recoiljs.org/
+
+- 📦 GitHub：<https://github.com/facebookexperimental/Recoil>
+- 📖 文档：<https://recoiljs.org/>
 
 ---
 
@@ -324,17 +355,20 @@ function CharacterCounter() {
 | **维护者** | Poimandres (pmndrs) |
 
 **特点**
+
 - 🔄 基于Proxy的响应式状态管理
 - 📝 可变状态语法，类似MobX
 - 🪝 支持React Hook与Vanilla JS
 - ⚡ 细粒度订阅
 
 **适用场景**
+
 - 喜欢可变状态语法
 - 复杂对象状态管理
 - 非React场景
 
 **代码示例**
+
 ```typescript
 import { proxy, useSnapshot } from "valtio"
 import { derive, subscribe } from "valtio/utils"
@@ -361,7 +395,7 @@ subscribe(state, () => {
 function Counter() {
   const snap = useSnapshot(state)
   const derived = useSnapshot(derivedState)
-  
+
   return (
     <div>
       <p>Count: {snap.count}</p>
@@ -378,8 +412,9 @@ state.count++ // 自动触发订阅
 ```
 
 **链接**
-- 📦 GitHub：https://github.com/pmndrs/valtio
-- 📖 文档：https://valtio.pmnd.rs/
+
+- 📦 GitHub：<https://github.com/pmndrs/valtio>
+- 📖 文档：<https://valtio.pmnd.rs/>
 
 ---
 
@@ -393,36 +428,39 @@ state.count++ // 自动触发订阅
 | **维护者** | MobX Team |
 
 **特点**
+
 - 🔄 响应式编程范式
 - 🎯 自动追踪依赖
 - 📝 可变状态，面向对象风格
 - 🏢 适合复杂业务逻辑
 
 **适用场景**
+
 - 复杂领域模型
 - 面向对象设计风格
 - 需要自动派生计算
 
 **代码示例**
+
 ```typescript
 import { makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite"
 
 class CounterStore {
   count = 0
-  
+
   constructor() {
     makeAutoObservable(this)
   }
-  
+
   increment() {
     this.count++
   }
-  
+
   decrement() {
     this.count--
   }
-  
+
   get doubleCount() {
     return this.count * 2
   }
@@ -445,11 +483,11 @@ const Counter = observer(() => {
 class TodoStore {
   todos: Todo[] = []
   filter: "all" | "completed" | "active" = "all"
-  
+
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true })
   }
-  
+
   get filteredTodos() {
     switch (this.filter) {
       case "completed": return this.todos.filter(t => t.completed)
@@ -457,7 +495,7 @@ class TodoStore {
       default: return this.todos
     }
   }
-  
+
   addTodo(title: string) {
     this.todos.push({ id: Date.now(), title, completed: false })
   }
@@ -465,9 +503,10 @@ class TodoStore {
 ```
 
 **链接**
-- 🏠 官网：https://mobx.js.org/
-- 📦 GitHub：https://github.com/mobxjs/mobx
-- 📖 文档：https://mobx.js.org/README.html
+
+- 🏠 官网：<https://mobx.js.org/>
+- 📦 GitHub：<https://github.com/mobxjs/mobx>
+- 📖 文档：<https://mobx.js.org/README.html>
 
 ---
 
@@ -481,18 +520,21 @@ class TodoStore {
 | **维护者** | Stately Team |
 
 **特点**
+
 - 🎮 有限状态机与状态图
 - 📊 可视化编辑器 (Stately Studio)
 - 🔒 类型安全的状态转换
 - 🧪 易于测试
 
 **适用场景**
+
 - 复杂UI状态流程
 - 工作流引擎
 - 需要可视化状态机
 - 严格的状态控制
 
 **代码示例**
+
 ```typescript
 import { createMachine, interpret } from "xstate"
 import { useMachine } from "@xstate/react"
@@ -524,7 +566,7 @@ const toggleMachine = createMachine({
 // React中使用
 function Toggle() {
   const [state, send] = useMachine(toggleMachine)
-  
+
   return (
     <div>
       <button onClick={() => send({ type: "TOGGLE" })}>
@@ -560,10 +602,11 @@ const fetchMachine = createMachine({
 ```
 
 **链接**
-- 🏠 官网：https://stately.ai/
-- 📦 GitHub：https://github.com/statelyai/xstate
-- 📖 文档：https://xstate.js.org/docs/
-- 🎨 编辑器：https://stately.ai/registry
+
+- 🏠 官网：<https://stately.ai/>
+- 📦 GitHub：<https://github.com/statelyai/xstate>
+- 📖 文档：<https://xstate.js.org/docs/>
+- 🎨 编辑器：<https://stately.ai/registry>
 
 ---
 
@@ -577,25 +620,28 @@ const fetchMachine = createMachine({
 | **维护者** | TanStack Team |
 
 **特点**
+
 - 🌐 服务端状态管理首选
 - 🔄 智能缓存与后台更新
 - 🛠️ 强大的开发工具
 - 📚 支持React、Vue、Svelte、Solid
 
 **适用场景**
+
 - REST API数据获取
 - 服务端状态缓存
 - 分页、无限滚动
 - 乐观更新
 
 **代码示例**
+
 ```typescript
-import { 
-  useQuery, 
-  useMutation, 
+import {
+  useQuery,
+  useMutation,
   useQueryClient,
   QueryClient,
-  QueryClientProvider 
+  QueryClientProvider
 } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 
@@ -624,7 +670,7 @@ function useUsers() {
 // 突变Hook
 function useAddUser() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (newUser: User) => {
       const response = await fetch("/api/users", {
@@ -643,10 +689,10 @@ function useAddUser() {
 function Users() {
   const { data, isLoading, error } = useUsers()
   const addUser = useAddUser()
-  
+
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error: {error.message}</div>
-  
+
   return (
     <div>
       <ul>{data.map(user => <li key={user.id}>{user.name}</li>)}</ul>
@@ -669,9 +715,10 @@ function App() {
 ```
 
 **链接**
-- 🏠 官网：https://tanstack.com/query/latest
-- 📦 GitHub：https://github.com/TanStack/query
-- 📖 文档：https://tanstack.com/query/latest/docs/react/overview
+
+- 🏠 官网：<https://tanstack.com/query/latest>
+- 📦 GitHub：<https://github.com/TanStack/query>
+- 📖 文档：<https://tanstack.com/query/latest/docs/react/overview>
 
 ---
 
@@ -685,18 +732,21 @@ function App() {
 | **维护者** | Vercel |
 
 **特点**
+
 - 🚀 Vercel出品，Next.js生态首选
 - 🔄 基于stale-while-revalidate策略
 - 📦 轻量简洁
 - 🎯 支持实时数据同步
 
 **适用场景**
+
 - Next.js项目
 - 需要轻量数据获取
 - 实时数据同步
 - 请求去重与重试
 
 **代码示例**
+
 ```typescript
 import useSWR, { SWRConfig, mutate } from "swr"
 import useSWRMutation from "swr/mutation"
@@ -707,10 +757,10 @@ const fetcher = (url: string) => fetch(url).then(r => r.json())
 // 基础使用
 function Profile() {
   const { data, error, isLoading } = useSWR("/api/user", fetcher)
-  
+
   if (error) return <div>Failed to load</div>
   if (isLoading) return <div>Loading...</div>
-  
+
   return <div>Hello {data.name}!</div>
 }
 
@@ -721,7 +771,7 @@ function Dashboard() {
     revalidateOnFocus: true,  // 窗口聚焦时重新验证
     dedupingInterval: 2000,   // 2秒内去重
   })
-  
+
   return <div>{/* ... */}</div>
 }
 
@@ -749,7 +799,7 @@ async function updateUser(url: string, { arg }: { arg: User }) {
 
 function UpdateUser() {
   const { trigger } = useSWRMutation("/api/user", updateUser)
-  
+
   return (
     <button onClick={() => trigger({ name: "New Name" })}>
       Update User
@@ -759,9 +809,10 @@ function UpdateUser() {
 ```
 
 **链接**
-- 🏠 官网：https://swr.vercel.app/
-- 📦 GitHub：https://github.com/vercel/swr
-- 📖 文档：https://swr.vercel.app/docs/getting-started
+
+- 🏠 官网：<https://swr.vercel.app/>
+- 📦 GitHub：<https://github.com/vercel/swr>
+- 📖 文档：<https://swr.vercel.app/docs/getting-started>
 
 ---
 
@@ -775,18 +826,21 @@ function UpdateUser() {
 | **维护者** | 社区扩展 |
 
 **特点**
+
 - 🔧 基于Zustand的扩展封装
 - 📝 提供更完整的Store模式
 - 🔄 内置更多常用中间件组合
 - 🎯 更适合大型项目架构
 
 **适用场景**
+
 - 需要比Zustand更完整功能的项目
 - 团队需要统一Store模式
 - 从MobX/MobX-State-Tree迁移
 
 **链接**
-- 📦 GitHub：https://github.com/zustand-x/zustand-x
+
+- 📦 GitHub：<https://github.com/zustand-x/zustand-x>
 
 ---
 
@@ -802,6 +856,7 @@ function UpdateUser() {
 | **维护者** | Vue Team |
 
 **特点**
+
 - 🌲 Vue官方推荐（Vue3+）
 - 📝 直观API，类似Vuex但更简洁
 - 🔧 完整的TypeScript支持
@@ -809,11 +864,13 @@ function UpdateUser() {
 - 📦 模块化设计
 
 **适用场景**
+
 - 所有Vue3项目
 - 需要TypeScript支持
 - 从Vuex迁移
 
 **代码示例**
+
 ```typescript
 // stores/counter.ts
 import { defineStore } from "pinia"
@@ -821,7 +878,7 @@ import { ref, computed } from "vue"
 
 // Options API风格
 export const useCounterStore = defineStore("counter", {
-  state: () => ({ 
+  state: () => ({
     count: 0,
     name: "Counter",
   }),
@@ -846,18 +903,18 @@ export const useCounterStore = defineStore("counter", {
 export const useCounterStore = defineStore("counter", () => {
   const count = ref(0)
   const name = ref("Counter")
-  
+
   const doubleCount = computed(() => count.value * 2)
-  
+
   function increment() {
     count.value++
   }
-  
+
   async function fetchData() {
     const response = await fetch("/api/data")
     name.value = await response.text()
   }
-  
+
   return { count, name, doubleCount, increment, fetchData }
 })
 
@@ -882,9 +939,10 @@ const { increment } = store
 ```
 
 **链接**
-- 🏠 官网：https://pinia.vuejs.org/
-- 📦 GitHub：https://github.com/vuejs/pinia
-- 📖 文档：https://pinia.vuejs.org/introduction.html
+
+- 🏠 官网：<https://pinia.vuejs.org/>
+- 📦 GitHub：<https://github.com/vuejs/pinia>
+- 📖 文档：<https://pinia.vuejs.org/introduction.html>
 
 ---
 
@@ -898,20 +956,23 @@ const { increment } = store
 | **维护者** | Vue Team |
 
 **状态**
+
 - ⚠️ Vuex 4是Vue3的最终版本
 - 🚫 不再添加新功能
 - 🔄 推荐使用Pinia替代
 
 **适用场景**
+
 - 仅用于Vue2项目维护
 - 现有Vuex项目
 
 **迁移指南**
-Vue官方提供从Vuex到Pinia的迁移工具：https://pinia.vuejs.org/cookbook/migration-vuex.html
+Vue官方提供从Vuex到Pinia的迁移工具：<https://pinia.vuejs.org/cookbook/migration-vuex.html>
 
 **链接**
-- 📦 GitHub：https://github.com/vuejs/vuex
-- 📖 文档：https://vuex.vuejs.org/
+
+- 📦 GitHub：<https://github.com/vuejs/vuex>
+- 📖 文档：<https://vuex.vuejs.org/>
 
 ---
 
@@ -927,6 +988,7 @@ Vue官方提供从Vuex到Pinia的迁移工具：https://pinia.vuejs.org/cookbook
 | **维护者** | MobX Team |
 
 **特点**
+
 - 🔄 响应式编程范式
 - 🎯 自动追踪依赖
 - 📝 可变状态，面向对象风格
@@ -934,26 +996,28 @@ Vue官方提供从Vuex到Pinia的迁移工具：https://pinia.vuejs.org/cookbook
 - 🌐 跨框架支持React、Vue、Angular
 
 **适用场景**
+
 - 复杂领域模型
 - 面向对象设计风格
 - 需要自动派生计算
 
 **代码示例**
+
 ```typescript
 import { makeAutoObservable } from "mobx"
 import { observer } from "mobx-react-lite"
 
 class CounterStore {
   count = 0
-  
+
   constructor() {
     makeAutoObservable(this)
   }
-  
+
   increment() {
     this.count++
   }
-  
+
   get doubleCount() {
     return this.count * 2
   }
@@ -973,8 +1037,9 @@ const Counter = observer(() => {
 ```
 
 **链接**
-- 🏠 官网：https://mobx.js.org/
-- 📦 GitHub：https://github.com/mobxjs/mobx
+
+- 🏠 官网：<https://mobx.js.org/>
+- 📦 GitHub：<https://github.com/mobxjs/mobx>
 
 ---
 
@@ -988,6 +1053,7 @@ const Counter = observer(() => {
 | **维护者** | Stately Team |
 
 **特点**
+
 - 🎮 有限状态机与状态图
 - 📊 可视化编辑器 (Stately Studio)
 - 🔒 类型安全的状态转换
@@ -995,12 +1061,14 @@ const Counter = observer(() => {
 - 🌐 支持React、Vue、Svelte、Solid
 
 **适用场景**
+
 - 复杂UI状态流程
 - 工作流引擎
 - 需要可视化状态机
 - 严格的状态控制
 
 **代码示例**
+
 ```typescript
 import { createMachine } from "xstate"
 import { useMachine } from "@xstate/react"
@@ -1016,7 +1084,7 @@ const toggleMachine = createMachine({
 
 function Toggle() {
   const [state, send] = useMachine(toggleMachine)
-  
+
   return (
     <button onClick={() => send({ type: "TOGGLE" })}>
       {state.matches("inactive") ? "Off" : "On"}
@@ -1026,9 +1094,10 @@ function Toggle() {
 ```
 
 **链接**
-- 🏠 官网：https://stately.ai/
-- 📦 GitHub：https://github.com/statelyai/xstate
-- 🎨 编辑器：https://stately.ai/registry
+
+- 🏠 官网：<https://stately.ai/>
+- 📦 GitHub：<https://github.com/statelyai/xstate>
+- 🎨 编辑器：<https://stately.ai/registry>
 
 ---
 
@@ -1042,6 +1111,7 @@ function Toggle() {
 | **维护者** | Effector Team |
 
 **特点**
+
 - 🏢 专为业务逻辑设计的响应式状态管理
 - 🔄 强大的事件驱动架构
 - 🧪 内置测试友好设计
@@ -1049,16 +1119,19 @@ function Toggle() {
 - 🌐 跨框架支持（React、Vue、Svelte等）
 
 **核心概念**
+
 - **Store**: 存储状态
 - **Event**: 触发状态变化的事件
 - **Effect**: 处理副作用（如API调用）
 
 **适用场景**
+
 - 复杂业务逻辑
 - 需要严格数据流控制
 - 事件驱动架构
 
 **代码示例**
+
 ```typescript
 import { createStore, createEvent, createEffect } from "effector"
 import { useUnit } from "effector-react"
@@ -1073,8 +1146,9 @@ function Counter() {
 ```
 
 **链接**
-- 🏠 官网：https://effector.dev/
-- 📦 GitHub：https://github.com/effector/effector
+
+- 🏠 官网：<https://effector.dev/>
+- 📦 GitHub：<https://github.com/effector/effector>
 
 ---
 
@@ -1088,17 +1162,20 @@ function Counter() {
 | **维护者** | Immer Team |
 
 **特点**
+
 - 📝 通过可变语法创建不可变状态
 - 🔄 与Redux、Zustand等完美集成
 - ⚡ 高性能，使用结构共享
 - 🎯 简化嵌套状态更新
 
 **适用场景**
+
 - 深嵌套对象状态更新
 - 与Redux/Zustand配合使用
 - 需要不可变数据但不想写繁琐的展开运算符
 
 **代码示例**
+
 ```typescript
 import { produce } from "immer"
 import { create } from "zustand"
@@ -1118,8 +1195,9 @@ const useStore = create((set) => ({
 ```
 
 **链接**
-- 📦 GitHub：https://github.com/immerjs/immer
-- 📖 文档：https://immerjs.github.io/immer/
+
+- 📦 GitHub：<https://github.com/immerjs/immer>
+- 📖 文档：<https://immerjs.github.io/immer/>
 
 ---
 
@@ -1133,17 +1211,20 @@ const useStore = create((set) => ({
 | **维护者** | Nano Stores Team |
 
 **特点**
+
 - 🪶 极轻量 (~286B)
 - 🌐 跨框架：React、Vue、Svelte、Solid、Angular、Vanilla JS
 - 🚀 高性能，无依赖
 - 📦 模块化，按需引入
 
 **适用场景**
+
 - 多框架/库共存项目
 - 对包体积极度敏感
 - 微前端架构
 
 **代码示例**
+
 ```typescript
 import { atom, computed, task, allTasks } from "nanostores"
 import { useStore } from "@nanostores/react" // 或 vue, svelte, solid
@@ -1171,7 +1252,7 @@ import { useStore } from "@nanostores/react"
 function Counter() {
   const count = useStore($count)
   const double = useStore($doubleCount)
-  
+
   return (
     <div>
       <p>Count: {count}</p>
@@ -1198,8 +1279,9 @@ import { $count, $doubleCount } from "./stores"
 ```
 
 **链接**
-- 📦 GitHub：https://github.com/nanostores/nanostores
-- 📖 文档：https://github.com/nanostores/nanostores#guide
+
+- 📦 GitHub：<https://github.com/nanostores/nanostores>
+- 📖 文档：<https://github.com/nanostores/nanostores#guide>
 
 ---
 
@@ -1214,18 +1296,21 @@ import { $count, $doubleCount } from "./stores"
 | **维护者** | ReactiveX |
 
 **特点**
+
 - 🌊 响应式编程的工业标准
 - 🔄 强大的Observable与Operator
 - 📚 学习曲线陡峭但功能强大
 - 🌐 跨平台，支持多种语言
 
 **适用场景**
+
 - 复杂异步数据流
 - 实时数据同步
 - 事件驱动架构
 - 复杂状态组合
 
 **代码示例**
+
 ```typescript
 import { BehaviorSubject, combineLatest, map, distinctUntilChanged } from "rxjs"
 import { useObservable, useBehaviorSubject } from "rxjs-hooks" // React绑定
@@ -1255,7 +1340,7 @@ import { useObservable } from "rxjs-hooks"
 function Counter() {
   const count = useObservable(() => count$)
   const double = useObservable(() => doubleCount$)
-  
+
   return (
     <div>
       <p>Count: {count}</p>
@@ -1272,17 +1357,17 @@ function Counter() {
 class UserService {
   private users$ = new BehaviorSubject<User[]>([])
   private filter$ = new BehaviorSubject("")
-  
+
   filteredUsers$ = combineLatest([this.users$, this.filter$]).pipe(
-    map(([users, filter]) => 
+    map(([users, filter]) =>
       users.filter(u => u.name.includes(filter))
     )
   )
-  
+
   setFilter(filter: string) {
     this.filter$.next(filter)
   }
-  
+
   addUser(user: User) {
     this.users$.next([...this.users$.getValue(), user])
   }
@@ -1290,9 +1375,10 @@ class UserService {
 ```
 
 **链接**
-- 🏠 官网：https://rxjs.dev/
-- 📦 GitHub：https://github.com/ReactiveX/rxjs
-- 📖 文档：https://rxjs.dev/guide/overview
+
+- 🏠 官网：<https://rxjs.dev/>
+- 📦 GitHub：<https://github.com/ReactiveX/rxjs>
+- 📖 文档：<https://rxjs.dev/guide/overview>
 
 ---
 
@@ -1303,6 +1389,7 @@ class UserService {
 详见 [1.8 React Query](#18-react-query-tanstack-query)，已在前文介绍。
 
 TanStack Query已支持多框架：
+
 - React: @tanstack/react-query
 - Vue: @tanstack/vue-query
 - Svelte: @tanstack/svelte-query
@@ -1315,6 +1402,7 @@ TanStack Query已支持多框架：
 详见 [1.9 SWR](#19-swr)，已在前文介绍。
 
 SWR同样支持多框架：
+
 - React: swr
 - Vue: swr/vue
 
@@ -1330,17 +1418,20 @@ SWR同样支持多框架：
 | **维护者** | Redux Team |
 
 **特点**
+
 - 🔗 Redux Toolkit内置
 - 📝 声明式API定义
 - 🔄 自动缓存与失效
 - 🏢 与Redux生态深度集成
 
 **适用场景**
+
 - 已使用Redux的项目
 - 需要统一客户端与服务端状态
 - 复杂缓存策略
 
 **代码示例**
+
 ```typescript
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
 
@@ -1363,18 +1454,18 @@ export const pokemonApi = createApi({
 })
 
 // 自动生成Hooks
-export const { 
-  useGetPokemonByNameQuery, 
-  useAddPokemonMutation 
+export const {
+  useGetPokemonByNameQuery,
+  useAddPokemonMutation
 } = pokemonApi
 
 // 组件中使用
 function Pokemon({ name }: { name: string }) {
   const { data, error, isLoading } = useGetPokemonByNameQuery(name)
-  
+
   if (isLoading) return <div>Loading...</div>
   if (error) return <div>Error!</div>
-  
+
   return (
     <div>
       <h3>{data.name}</h3>
@@ -1396,7 +1487,8 @@ export const store = configureStore({
 ```
 
 **链接**
-- 📖 文档：https://redux-toolkit.js.org/rtk-query/overview
+
+- 📖 文档：<https://redux-toolkit.js.org/rtk-query/overview>
 
 ---
 
@@ -1410,17 +1502,20 @@ export const store = configureStore({
 | **维护者** | Formidable Labs |
 
 **特点**
+
 - 📊 高度可扩展的GraphQL客户端
 - 🔄 默认离线优先策略
 - 🧩 插件系统
 - 📝 比Apollo更轻量
 
 **适用场景**
+
 - GraphQL API
 - 需要可扩展的缓存策略
 - 对包体积敏感
 
 **代码示例**
+
 ```typescript
 import { createClient, Provider, useQuery, useMutation } from "urql"
 
@@ -1449,12 +1544,12 @@ function UsersList() {
   const [result] = useQuery({
     query: USERS_QUERY,
   })
-  
+
   const { data, fetching, error } = result
-  
+
   if (fetching) return <p>Loading...</p>
   if (error) return <p>Error: {error.message}</p>
-  
+
   return (
     <ul>
       {data.users.map((user: User) => (
@@ -1477,11 +1572,11 @@ const ADD_USER_MUTATION = `
 
 function AddUser() {
   const [, addUser] = useMutation(ADD_USER_MUTATION)
-  
+
   const handleSubmit = async (name: string, email: string) => {
     await addUser({ name, email })
   }
-  
+
   return <form>{/* ... */}</form>
 }
 
@@ -1496,9 +1591,10 @@ function App() {
 ```
 
 **链接**
-- 🏠 官网：https://formidable.com/open-source/urql/
-- 📦 GitHub：https://github.com/urql-graphql/urql
-- 📖 文档：https://formidable.com/open-source/urql/docs/
+
+- 🏠 官网：<https://formidable.com/open-source/urql/>
+- 📦 GitHub：<https://github.com/urql-graphql/urql>
+- 📖 文档：<https://formidable.com/open-source/urql/docs/>
 
 ---
 
@@ -1512,25 +1608,28 @@ function App() {
 | **维护者** | Apollo GraphQL |
 
 **特点**
+
 - 🏢 最成熟的GraphQL客户端
 - 🔄 强大的本地状态管理
 - 📊 完整的开发工具链
 - 🌐 支持React、Vue、Angular、iOS、Android
 
 **适用场景**
+
 - 企业级GraphQL应用
 - 复杂的本地/远程状态协调
 - 需要完整的工具链
 
 **代码示例**
+
 ```typescript
-import { 
-  ApolloClient, 
-  InMemoryCache, 
+import {
+  ApolloClient,
+  InMemoryCache,
   ApolloProvider,
   gql,
   useQuery,
-  useMutation 
+  useMutation
 } from "@apollo/client"
 
 // 创建客户端
@@ -1573,17 +1672,17 @@ function Users() {
       })
     },
   })
-  
+
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error: {error.message}</p>
-  
+
   return (
     <div>
       {data.users.map((user: User) => (
         <div key={user.id}>{user.name}</div>
       ))}
-      <button onClick={() => addUser({ 
-        variables: { name: "New User", email: "new@example.com" } 
+      <button onClick={() => addUser({
+        variables: { name: "New User", email: "new@example.com" }
       })}>
         Add User
       </button>
@@ -1610,9 +1709,10 @@ function App() {
 ```
 
 **链接**
-- 🏠 官网：https://www.apollographql.com/docs/react/
-- 📦 GitHub：https://github.com/apollographql/apollo-client
-- 📖 文档：https://www.apollographql.com/docs/react/
+
+- 🏠 官网：<https://www.apollographql.com/docs/react/>
+- 📦 GitHub：<https://github.com/apollographql/apollo-client>
+- 📖 文档：<https://www.apollographql.com/docs/react/>
 
 ---
 
@@ -1730,5 +1830,5 @@ Vue项目状态管理选择
 ---
 
 > 📅 最后更新：2026-04-04
-> 
+>
 > 📊 文档统计：20+ 库 | 6大分类 | 15+ 代码示例 | 覆盖React/Vue/跨框架

@@ -26,11 +26,12 @@
 | **Stars** | 25k+ (GitHub) |
 | **TS支持** | ✅ 通过 @typescript-eslint |
 | **特点** | 可插拔规则系统，生态最完善，JS/TS 标准 Linter |
-| **官网** | https://eslint.org |
-| **GitHub** | https://github.com/eslint/eslint |
+| **官网** | <https://eslint.org> |
+| **GitHub** | <https://github.com/eslint/eslint> |
 | **配置难度** | 🟡 中等 |
 
 **核心生态包:**
+
 - `@typescript-eslint/parser` - TypeScript 解析器
 - `@typescript-eslint/eslint-plugin` - TypeScript 规则插件
 
@@ -63,6 +64,7 @@ export default [
 ```
 
 **适用场景:**
+
 - 所有 JavaScript/TypeScript 项目的基础 Linter
 - 需要自定义规则或深度配置的团队
 - 已有 ESLint 生态投入的大型项目
@@ -76,7 +78,7 @@ export default [
 | **Stars** | 11k+ (GitHub) |
 | **TS支持** | ✅ 原生支持 |
 | **特点** | Rust 编写，比 ESLint 快 50-100 倍，零配置 |
-| **GitHub** | https://github.com/oxc-project/oxc |
+| **GitHub** | <https://github.com/oxc-project/oxc> |
 | **配置难度** | 🟢 简单 |
 
 ```bash
@@ -89,12 +91,14 @@ npx oxlint --import-plugin --jest-plugin .
 ```
 
 **特点:**
+
 - 极速性能：利用 Rust 和并行处理
 - 内置常用规则：eslint:recommended + TypeScript + React
 - 增量检查：只检查变更文件
 - VS Code 插件支持
 
 **适用场景:**
+
 - 追求极致 Lint 速度的大型项目
 - CI/CD 中需要快速反馈的场景
 - 作为 ESLint 的替代或补充
@@ -107,7 +111,7 @@ npx oxlint --import-plugin --jest-plugin .
 |------|------|
 | **TS支持** | ✅ 原生支持 |
 | **特点** | Deno 内置 Linter，基于 Rust |
-| **文档** | https://docs.deno.com/runtime/manual/tools/linter |
+| **文档** | <https://docs.deno.com/runtime/manual/tools/linter> |
 | **配置难度** | 🟢 简单 |
 
 ```bash
@@ -117,6 +121,7 @@ deno lint --watch
 ```
 
 **适用场景:**
+
 - Deno 项目
 - 需要零配置 Linter 的场景
 
@@ -131,11 +136,12 @@ deno lint --watch
 | **Stars** | 49k+ (GitHub) |
 | **TS支持** | ✅ 原生支持 |
 | **特点** | 代码格式化标准，强制一致风格，生态最完善 |
-| **官网** | https://prettier.io |
-| **GitHub** | https://github.com/prettier/prettier |
+| **官网** | <https://prettier.io> |
+| **GitHub** | <https://github.com/prettier/prettier> |
 | **配置难度** | 🟢 简单 |
 
 **支持语言:**
+
 - JavaScript · TypeScript · Flow · JSX
 - JSON · CSS · SCSS · Less
 - HTML · Vue · Angular
@@ -154,6 +160,7 @@ export default {
 ```
 
 **与 ESLint 集成:**
+
 ```javascript
 // 推荐：使用 eslint-config-prettier 关闭冲突规则
 // eslint.config.mjs
@@ -166,6 +173,7 @@ export default [
 ```
 
 **适用场景:**
+
 - 团队代码风格统一
 - 所有前端项目的标准格式化工具
 - CI/CD 中自动格式化检查
@@ -179,8 +187,8 @@ export default [
 | **Stars** | 7k+ (GitHub) |
 | **TS支持** | ✅ 原生支持 |
 | **特点** | Rust 编写，可插拔架构，比 Prettier 快 10-30 倍 |
-| **官网** | https://dprint.dev |
-| **GitHub** | https://github.com/dprint/dprint |
+| **官网** | <https://dprint.dev> |
+| **GitHub** | <https://github.com/dprint/dprint> |
 | **配置难度** | 🟢 简单 |
 
 ```json
@@ -204,11 +212,13 @@ export default [
 ```
 
 **特点:**
--  WASM 插件系统，支持多种语言
+
+- WASM 插件系统，支持多种语言
 - 增量格式化，只处理变更文件
 - 支持作为库集成到其他工具
 
 **适用场景:**
+
 - 对格式化性能有要求的项目
 - Monorepo 需要统一格式化配置
 - 需要高度可定制的格式化规则
@@ -224,8 +234,8 @@ export default [
 | **Stars** | 15k+ (GitHub) |
 | **TS支持** | ✅ 原生支持 |
 | **特点** | Rust 编写，Lint + Format + Import 排序，ESLint/Prettier 替代品 |
-| **官网** | https://biomejs.dev |
-| **GitHub** | https://github.com/biomejs/biome |
+| **官网** | <https://biomejs.dev> |
+| **GitHub** | <https://github.com/biomejs/biome> |
 | **配置难度** | 🟢 简单 |
 
 ```json
@@ -260,6 +270,7 @@ export default [
 ```
 
 **迁移支持:**
+
 ```bash
 # 从 ESLint 迁移
 npx @biomejs/biome migrate eslint --write
@@ -269,12 +280,14 @@ npx @biomejs/biome migrate prettier --write
 ```
 
 **特点:**
+
 - 一个工具替代 ESLint + Prettier
 - 极速性能：比 ESLint 快 15 倍，比 Prettier 快 20 倍
 - 内置 Import 排序
 - 与 Rome 兼容的配置
 
 **适用场景:**
+
 - 新项目首选，简化工具链
 - 追求构建速度的团队
 - 减少配置复杂度的项目
@@ -290,6 +303,7 @@ npx @biomejs/biome migrate prettier --write
 | **说明** | Rome 项目由核心团队分叉为 Biome，继续活跃开发 |
 
 **迁移建议:**
+
 ```bash
 # 从 Rome 迁移到 Biome
 # Biome 完全兼容 Rome 配置，只需重命名配置文件
@@ -307,8 +321,8 @@ mv rome.json biome.json
 | **Stars** | 101k+ (GitHub) |
 | **TS支持** | ✅ 官方实现 |
 | **特点** | 类型检查 + 代码生成，TS 生态核心 |
-| **官网** | https://www.typescriptlang.org |
-| **GitHub** | https://github.com/microsoft/TypeScript |
+| **官网** | <https://www.typescriptlang.org> |
+| **GitHub** | <https://github.com/microsoft/TypeScript> |
 | **配置难度** | 🟡 中等 |
 
 ```json
@@ -331,6 +345,7 @@ mv rome.json biome.json
 ```
 
 **CI 类型检查:**
+
 ```json
 // package.json
 {
@@ -342,6 +357,7 @@ mv rome.json biome.json
 ```
 
 **适用场景:**
+
 - 所有 TypeScript 项目必备
 - CI/CD 中的类型检查
 - 库发布的类型声明生成
@@ -355,8 +371,8 @@ mv rome.json biome.json
 | **Stars** | 9k+ (GitHub) |
 | **TS支持** | ✅ 直接执行 |
 | **特点** | 基于 esbuild，极速 TS 执行，Watch 模式 |
-| **官网** | https://tsx.is |
-| **GitHub** | https://github.com/privatenumber/tsx |
+| **官网** | <https://tsx.is> |
+| **GitHub** | <https://github.com/privatenumber/tsx> |
 | **配置难度** | 🟢 简单 |
 
 ```bash
@@ -371,6 +387,7 @@ npx tsx server.ts
 ```
 
 **适用场景:**
+
 - Node.js 脚本开发
 - TypeScript CLI 工具
 - 替代 ts-node 获得更好性能
@@ -386,8 +403,8 @@ npx tsx server.ts
 | **Stars** | 31k+ (GitHub) |
 | **TS支持** | ✅ 支持 |
 | **特点** | 最流行的 Git hooks 工具，配置简单 |
-| **官网** | https://typicode.github.io/husky |
-| **GitHub** | https://github.com/typicode/husky |
+| **官网** | <https://typicode.github.io/husky> |
+| **GitHub** | <https://github.com/typicode/husky> |
 | **配置难度** | 🟢 简单 |
 
 ```bash
@@ -405,11 +422,13 @@ npm run typecheck
 ```
 
 **v9 新特性 (2024):**
+
 - 更简洁的配置
 - 更好的 Windows 支持
 - 自动安装钩子
 
 **适用场景:**
+
 - 团队代码质量门禁
 - 自动化格式化/lint 检查
 - 提交前测试运行
@@ -423,7 +442,7 @@ npm run typecheck
 | **Stars** | 13k+ (GitHub) |
 | **TS支持** | ✅ 支持 |
 | **特点** | 只对暂存区文件运行 linter，提升效率 |
-| **GitHub** | https://github.com/lint-staged/lint-staged |
+| **GitHub** | <https://github.com/lint-staged/lint-staged> |
 | **配置难度** | 🟢 简单 |
 
 ```javascript
@@ -442,11 +461,13 @@ npx lint-staged
 ```
 
 **特点:**
+
 - 只对 git staged 文件运行命令
 - 并行处理多个文件
 - 自动修复并重新暂存
 
 **适用场景:**
+
 - 大型项目，避免全量 lint
 - 与 husky 配合实现提交前检查
 - 提升 CI 和本地开发效率
@@ -460,7 +481,7 @@ npx lint-staged
 | **Stars** | 2k+ (GitHub) |
 | **TS支持** | ✅ 支持 |
 | **特点** | 轻量级 Git 钩子工具，零依赖，体积小 |
-| **GitHub** | https://github.com/toplenboren/simple-git-hooks |
+| **GitHub** | <https://github.com/toplenboren/simple-git-hooks> |
 | **配置难度** | 🟢 简单 |
 
 ```json
@@ -479,6 +500,7 @@ npx simple-git-hooks
 ```
 
 **对比 husky:**
+
 | 特性 | simple-git-hooks | husky |
 |------|------------------|-------|
 | 体积 | 更小 (~3KB) | ~50KB |
@@ -487,6 +509,7 @@ npx simple-git-hooks
 | 功能 | 基础钩子 | 更丰富 |
 
 **适用场景:**
+
 - 追求极简工具链的项目
 - 对安装包大小敏感的场景
 - 基础 Git 钩子需求
@@ -501,10 +524,11 @@ npx simple-git-hooks
 |------|------|
 | **类型** | 开源 + 商业 |
 | **特点** | 企业级代码质量平台，多维度分析 |
-| **官网** | https://www.sonarsource.com/products/sonarqube |
+| **官网** | <https://www.sonarsource.com/products/sonarqube> |
 | **配置难度** | 🟡 中等 |
 
 **分析维度:**
+
 - 代码质量 (Code Smells)
 - 安全漏洞 (Security Vulnerabilities)
 - 技术债务 (Technical Debt)
@@ -534,6 +558,7 @@ jobs:
 ```
 
 **适用场景:**
+
 - 企业级代码质量管理
 - 安全合规要求
 - 大型团队代码审查
@@ -546,16 +571,18 @@ jobs:
 |------|------|
 | **类型** | SaaS |
 | **特点** | 自动化代码审查，技术债务追踪 |
-| **官网** | https://codeclimate.com |
+| **官网** | <https://codeclimate.com> |
 | **配置难度** | 🟢 简单 |
 
 **功能:**
+
 - 自动 PR 代码审查
 - 测试覆盖率跟踪
 - 维护性评级
 - 与 GitHub/GitLab/Bitbucket 集成
 
 **适用场景:**
+
 - 开源项目免费使用
 - 云原生代码质量追踪
 - 快速集成，无需自建服务器
@@ -568,16 +595,18 @@ jobs:
 |------|------|
 | **类型** | SaaS |
 | **特点** | 专注于 JavaScript/TypeScript 的静态分析 |
-| **官网** | https://deepscan.io |
+| **官网** | <https://deepscan.io> |
 | **配置难度** | 🟢 简单 |
 
 **特点:**
+
 - 深入理解 JS/TS 语义
 - 减少误报
 - 实时分析
 - 与 IDE 集成
 
 **适用场景:**
+
 - JavaScript 项目专项分析
 - 需要深入语义分析的场景
 - 与 ESLint 互补使用
@@ -600,6 +629,7 @@ jobs:
 ### 配置示例
 
 #### 方案 A: 现代极速 (推荐新项目)
+
 ```bash
 npm install -D @biomejs/biome simple-git-hooks lint-staged
 ```
@@ -633,6 +663,7 @@ npm install -D @biomejs/biome simple-git-hooks lint-staged
 ```
 
 #### 方案 B: 传统稳定
+
 ```bash
 npm install -D eslint prettier @typescript-eslint/parser @typescript-eslint/eslint-plugin eslint-config-prettier husky lint-staged
 ```
@@ -683,14 +714,14 @@ export default {
 
 | 资源 | 链接 |
 |------|------|
-| ESLint 文档 | https://eslint.org/docs/latest/ |
-| Prettier 文档 | https://prettier.io/docs/en/ |
-| Biome 文档 | https://biomejs.dev/guides/ |
-| oxlint GitHub | https://github.com/oxc-project/oxc |
-| dprint 文档 | https://dprint.dev/plugins/ |
-| TypeScript 文档 | https://www.typescriptlang.org/docs/ |
+| ESLint 文档 | <https://eslint.org/docs/latest/> |
+| Prettier 文档 | <https://prettier.io/docs/en/> |
+| Biome 文档 | <https://biomejs.dev/guides/> |
+| oxlint GitHub | <https://github.com/oxc-project/oxc> |
+| dprint 文档 | <https://dprint.dev/plugins/> |
+| TypeScript 文档 | <https://www.typescriptlang.org/docs/> |
 
 ---
 
-> **文档版本**: 2025年4月  
+> **文档版本**: 2025年4月
 > **维护建议**: 每季度更新 Stars 数据和工具趋势

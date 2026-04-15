@@ -24,9 +24,11 @@
 ## 详细分析
 
 ### Vitest
+
 ```bash
 npm install -D vitest
 ```
+
 - **定位**: 由 Vite 驱动的下一代测试框架
 - **核心优势**: 与 Vite 生态无缝集成，极快执行速度
 - **特点**:
@@ -70,9 +72,11 @@ export default defineConfig({
 ```
 
 ### Jest
+
 ```bash
 npm install -D jest @types/jest ts-jest
 ```
+
 - **定位**: 最成熟的 JavaScript 测试框架
 - **核心优势**: 生态最丰富，社区资源最多
 - **特点**:
@@ -113,9 +117,11 @@ describe('sum', () => {
 ```
 
 ### Playwright
+
 ```bash
 npm init playwright@latest
 ```
+
 - **定位**: 现代 Web 应用的端到端测试框架
 - **核心优势**: 多浏览器支持、可靠性高、开发者体验优秀
 - **特点**:
@@ -276,11 +282,13 @@ npm install -D @playwright/test
 ## 迁移建议
 
 ### Jest → Vitest
+
 - 替换 `jest` 导入为 `vitest`
 - 配置 `globals: true` 以兼容全局 API
 - 更新 mock 语法 (大部分兼容)
 
 ### 注意事项
+
 - Playwright 用于 E2E，不替代单元测试框架
 - Vitest 和 Jest 可以共存，但不推荐
 - 覆盖率工具选择：V8 (快) vs Istanbul (准)

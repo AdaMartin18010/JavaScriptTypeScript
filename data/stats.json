@@ -1,0 +1,829 @@
+{
+  "generatedAt": "2026-04-15T21:58:34.931Z",
+  "totalRepos": 49,
+  "totalNpmPackages": 47,
+  "repositories": {
+    "expressjs/express": {
+      "owner": "expressjs",
+      "repo": "express",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/expressjs/express?style=flat-square",
+        "url": "https://github.com/expressjs/express"
+      },
+      "npm": {
+        "package": "express",
+        "weekly": 92500466,
+        "monthly": 394457847
+      }
+    },
+    "fastify/fastify": {
+      "owner": "fastify",
+      "repo": "fastify",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/fastify/fastify?style=flat-square",
+        "url": "https://github.com/fastify/fastify"
+      },
+      "npm": {
+        "package": "fastify",
+        "weekly": 6338463,
+        "monthly": 25760426
+      }
+    },
+    "nestjs/nest": {
+      "owner": "nestjs",
+      "repo": "nest",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/nestjs/nest?style=flat-square",
+        "url": "https://github.com/nestjs/nest"
+      },
+      "npm": {
+        "package": "@nestjs/core",
+        "weekly": 9000986,
+        "monthly": 36905987
+      }
+    },
+    "koajs/koa": {
+      "owner": "koajs",
+      "repo": "koa",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/koajs/koa?style=flat-square",
+        "url": "https://github.com/koajs/koa"
+      },
+      "npm": {
+        "package": "koa",
+        "weekly": 6753439,
+        "monthly": 28818473
+      }
+    },
+    "honojs/hono": {
+      "owner": "honojs",
+      "repo": "hono",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/honojs/hono?style=flat-square",
+        "url": "https://github.com/honojs/hono"
+      },
+      "npm": {
+        "package": "hono",
+        "weekly": 34260701,
+        "monthly": 144011266
+      }
+    },
+    "elysiajs/elysia": {
+      "owner": "elysiajs",
+      "repo": "elysia",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/elysiajs/elysia?style=flat-square",
+        "url": "https://github.com/elysiajs/elysia"
+      },
+      "npm": {
+        "package": "elysia",
+        "weekly": 461112,
+        "monthly": 1913402
+      }
+    },
+    "vercel/next.js": {
+      "owner": "vercel",
+      "repo": "next.js",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/vercel/next.js?style=flat-square",
+        "url": "https://github.com/vercel/next.js"
+      },
+      "npm": {
+        "package": "next",
+        "weekly": 36294910,
+        "monthly": 174584019
+      }
+    },
+    "nuxt/nuxt": {
+      "owner": "nuxt",
+      "repo": "nuxt",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/nuxt/nuxt?style=flat-square",
+        "url": "https://github.com/nuxt/nuxt"
+      },
+      "npm": {
+        "package": "nuxt",
+        "weekly": 1399622,
+        "monthly": 6042717
+      }
+    },
+    "sveltejs/kit": {
+      "owner": "sveltejs",
+      "repo": "kit",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/sveltejs/kit?style=flat-square",
+        "url": "https://github.com/sveltejs/kit"
+      },
+      "npm": {
+        "package": "@sveltejs/kit",
+        "weekly": 1823496,
+        "monthly": 7566791
+      }
+    },
+    "remix-run/remix": {
+      "owner": "remix-run",
+      "repo": "remix",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/remix-run/remix?style=flat-square",
+        "url": "https://github.com/remix-run/remix"
+      },
+      "npm": {
+        "package": "@remix-run/core",
+        "weekly": 0,
+        "monthly": 0
+      }
+    },
+    "withastro/astro": {
+      "owner": "withastro",
+      "repo": "astro",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/withastro/astro?style=flat-square",
+        "url": "https://github.com/withastro/astro"
+      },
+      "npm": {
+        "package": "astro",
+        "weekly": 2025680,
+        "monthly": 8312930
+      }
+    },
+    "nodejs/node": {
+      "owner": "nodejs",
+      "repo": "node",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/nodejs/node?style=flat-square",
+        "url": "https://github.com/nodejs/node"
+      },
+      "npm": null
+    },
+    "denoland/deno": {
+      "owner": "denoland",
+      "repo": "deno",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/denoland/deno?style=flat-square",
+        "url": "https://github.com/denoland/deno"
+      },
+      "npm": null
+    },
+    "oven-sh/bun": {
+      "owner": "oven-sh",
+      "repo": "bun",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/oven-sh/bun?style=flat-square",
+        "url": "https://github.com/oven-sh/bun"
+      },
+      "npm": null
+    },
+    "vitejs/vite": {
+      "owner": "vitejs",
+      "repo": "vite",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/vitejs/vite?style=flat-square",
+        "url": "https://github.com/vitejs/vite"
+      },
+      "npm": {
+        "package": "vite",
+        "weekly": 99546996,
+        "monthly": 384215386
+      }
+    },
+    "evanw/esbuild": {
+      "owner": "evanw",
+      "repo": "esbuild",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/evanw/esbuild?style=flat-square",
+        "url": "https://github.com/evanw/esbuild"
+      },
+      "npm": {
+        "package": "esbuild",
+        "weekly": 180184201,
+        "monthly": 693023099
+      }
+    },
+    "swc-project/swc": {
+      "owner": "swc-project",
+      "repo": "swc",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/swc-project/swc?style=flat-square",
+        "url": "https://github.com/swc-project/swc"
+      },
+      "npm": {
+        "package": "@swc/core",
+        "weekly": 38816570,
+        "monthly": 138964401
+      }
+    },
+    "vercel/turbopack": {
+      "owner": "vercel",
+      "repo": "turbopack",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/vercel/turbopack?style=flat-square",
+        "url": "https://github.com/vercel/turbopack"
+      },
+      "npm": {
+        "package": "next",
+        "weekly": 36294910,
+        "monthly": 174584019
+      }
+    },
+    "rollup/rollup": {
+      "owner": "rollup",
+      "repo": "rollup",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/rollup/rollup?style=flat-square",
+        "url": "https://github.com/rollup/rollup"
+      },
+      "npm": {
+        "package": "rollup",
+        "weekly": 97599880,
+        "monthly": 402029397
+      }
+    },
+    "eslint/eslint": {
+      "owner": "eslint",
+      "repo": "eslint",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/eslint/eslint?style=flat-square",
+        "url": "https://github.com/eslint/eslint"
+      },
+      "npm": {
+        "package": "eslint",
+        "weekly": 0,
+        "monthly": 0
+      }
+    },
+    "prettier/prettier": {
+      "owner": "prettier",
+      "repo": "prettier",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/prettier/prettier?style=flat-square",
+        "url": "https://github.com/prettier/prettier"
+      },
+      "npm": {
+        "package": "prettier",
+        "weekly": 0,
+        "monthly": 0
+      }
+    },
+    "biomejs/biome": {
+      "owner": "biomejs",
+      "repo": "biome",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/biomejs/biome?style=flat-square",
+        "url": "https://github.com/biomejs/biome"
+      },
+      "npm": {
+        "package": "biome",
+        "weekly": 0,
+        "monthly": 0
+      }
+    },
+    "typescript-eslint/typescript-eslint": {
+      "owner": "typescript-eslint",
+      "repo": "typescript-eslint",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/typescript-eslint/typescript-eslint?style=flat-square",
+        "url": "https://github.com/typescript-eslint/typescript-eslint"
+      },
+      "npm": null
+    },
+    "jestjs/jest": {
+      "owner": "jestjs",
+      "repo": "jest",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/jestjs/jest?style=flat-square",
+        "url": "https://github.com/jestjs/jest"
+      },
+      "npm": {
+        "package": "jest",
+        "weekly": 44084383,
+        "monthly": 192865034
+      }
+    },
+    "vitest-dev/vitest": {
+      "owner": "vitest-dev",
+      "repo": "vitest",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/vitest-dev/vitest?style=flat-square",
+        "url": "https://github.com/vitest-dev/vitest"
+      },
+      "npm": {
+        "package": "vitest",
+        "weekly": 47479917,
+        "monthly": 190445501
+      }
+    },
+    "microsoft/playwright": {
+      "owner": "microsoft",
+      "repo": "playwright",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/microsoft/playwright?style=flat-square",
+        "url": "https://github.com/microsoft/playwright"
+      },
+      "npm": {
+        "package": "typescript",
+        "weekly": 174245027,
+        "monthly": 708228010
+      }
+    },
+    "cypress-io/cypress": {
+      "owner": "cypress-io",
+      "repo": "cypress",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/cypress-io/cypress?style=flat-square",
+        "url": "https://github.com/cypress-io/cypress"
+      },
+      "npm": {
+        "package": "cypress",
+        "weekly": 7311772,
+        "monthly": 31406901
+      }
+    },
+    "prisma/prisma": {
+      "owner": "prisma",
+      "repo": "prisma",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/prisma/prisma?style=flat-square",
+        "url": "https://github.com/prisma/prisma"
+      },
+      "npm": {
+        "package": "@prisma/client",
+        "weekly": 9023167,
+        "monthly": 36458687
+      }
+    },
+    "typeorm/typeorm": {
+      "owner": "typeorm",
+      "repo": "typeorm",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/typeorm/typeorm?style=flat-square",
+        "url": "https://github.com/typeorm/typeorm"
+      },
+      "npm": {
+        "package": "typeorm",
+        "weekly": 4029855,
+        "monthly": 17088296
+      }
+    },
+    "drizzle-team/drizzle-orm": {
+      "owner": "drizzle-team",
+      "repo": "drizzle-orm",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/drizzle-team/drizzle-orm?style=flat-square",
+        "url": "https://github.com/drizzle-team/drizzle-orm"
+      },
+      "npm": {
+        "package": "drizzle-orm",
+        "weekly": 7254299,
+        "monthly": 28816416
+      }
+    },
+    "sequelize/sequelize": {
+      "owner": "sequelize",
+      "repo": "sequelize",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/sequelize/sequelize?style=flat-square",
+        "url": "https://github.com/sequelize/sequelize"
+      },
+      "npm": {
+        "package": "sequelize",
+        "weekly": 2776038,
+        "monthly": 11525411
+      }
+    },
+    "Automattic/mongoose": {
+      "owner": "Automattic",
+      "repo": "mongoose",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/Automattic/mongoose?style=flat-square",
+        "url": "https://github.com/Automattic/mongoose"
+      },
+      "npm": {
+        "package": "mongoose",
+        "weekly": 0,
+        "monthly": 0
+      }
+    },
+    "redis/ioredis": {
+      "owner": "redis",
+      "repo": "ioredis",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/redis/ioredis?style=flat-square",
+        "url": "https://github.com/redis/ioredis"
+      },
+      "npm": null
+    },
+    "OptimalBits/bull": {
+      "owner": "OptimalBits",
+      "repo": "bull",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/OptimalBits/bull?style=flat-square",
+        "url": "https://github.com/OptimalBits/bull"
+      },
+      "npm": null
+    },
+    "taskforcesh/bullmq": {
+      "owner": "taskforcesh",
+      "repo": "bullmq",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/taskforcesh/bullmq?style=flat-square",
+        "url": "https://github.com/taskforcesh/bullmq"
+      },
+      "npm": null
+    },
+    "jaredhanson/passport": {
+      "owner": "jaredhanson",
+      "repo": "passport",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/jaredhanson/passport?style=flat-square",
+        "url": "https://github.com/jaredhanson/passport"
+      },
+      "npm": null
+    },
+    "auth0/node-jsonwebtoken": {
+      "owner": "auth0",
+      "repo": "node-jsonwebtoken",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/auth0/node-jsonwebtoken?style=flat-square",
+        "url": "https://github.com/auth0/node-jsonwebtoken"
+      },
+      "npm": null
+    },
+    "kelektiv/node.bcrypt.js": {
+      "owner": "kelektiv",
+      "repo": "node.bcrypt.js",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/kelektiv/node.bcrypt.js?style=flat-square",
+        "url": "https://github.com/kelektiv/node.bcrypt.js"
+      },
+      "npm": null
+    },
+    "helmetjs/helmet": {
+      "owner": "helmetjs",
+      "repo": "helmet",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/helmetjs/helmet?style=flat-square",
+        "url": "https://github.com/helmetjs/helmet"
+      },
+      "npm": null
+    },
+    "expressjs/cors": {
+      "owner": "expressjs",
+      "repo": "cors",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/expressjs/cors?style=flat-square",
+        "url": "https://github.com/expressjs/cors"
+      },
+      "npm": {
+        "package": "express",
+        "weekly": 92500466,
+        "monthly": 394457847
+      }
+    },
+    "Unitech/pm2": {
+      "owner": "Unitech",
+      "repo": "pm2",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/Unitech/pm2?style=flat-square",
+        "url": "https://github.com/Unitech/pm2"
+      },
+      "npm": {
+        "package": "pm2",
+        "weekly": 0,
+        "monthly": 0
+      }
+    },
+    "apocas/dockerode": {
+      "owner": "apocas",
+      "repo": "dockerode",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/apocas/dockerode?style=flat-square",
+        "url": "https://github.com/apocas/dockerode"
+      },
+      "npm": null
+    },
+    "clinicjs/node-clinic": {
+      "owner": "clinicjs",
+      "repo": "node-clinic",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/clinicjs/node-clinic?style=flat-square",
+        "url": "https://github.com/clinicjs/node-clinic"
+      },
+      "npm": null
+    },
+    "lodash/lodash": {
+      "owner": "lodash",
+      "repo": "lodash",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/lodash/lodash?style=flat-square",
+        "url": "https://github.com/lodash/lodash"
+      },
+      "npm": {
+        "package": "lodash",
+        "weekly": 0,
+        "monthly": 0
+      }
+    },
+    "ramda/ramda": {
+      "owner": "ramda",
+      "repo": "ramda",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/ramda/ramda?style=flat-square",
+        "url": "https://github.com/ramda/ramda"
+      },
+      "npm": {
+        "package": "ramda",
+        "weekly": 0,
+        "monthly": 0
+      }
+    },
+    "iamkun/dayjs": {
+      "owner": "iamkun",
+      "repo": "dayjs",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/iamkun/dayjs?style=flat-square",
+        "url": "https://github.com/iamkun/dayjs"
+      },
+      "npm": {
+        "package": "dayjs",
+        "weekly": 0,
+        "monthly": 0
+      }
+    },
+    "date-fns/date-fns": {
+      "owner": "date-fns",
+      "repo": "date-fns",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/date-fns/date-fns?style=flat-square",
+        "url": "https://github.com/date-fns/date-fns"
+      },
+      "npm": {
+        "package": "date-fns",
+        "weekly": 0,
+        "monthly": 0
+      }
+    },
+    "colinhacks/zod": {
+      "owner": "colinhacks",
+      "repo": "zod",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/colinhacks/zod?style=flat-square",
+        "url": "https://github.com/colinhacks/zod"
+      },
+      "npm": {
+        "package": "zod",
+        "weekly": 0,
+        "monthly": 0
+      }
+    },
+    "trpc/trpc": {
+      "owner": "trpc",
+      "repo": "trpc",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/trpc/trpc?style=flat-square",
+        "url": "https://github.com/trpc/trpc"
+      },
+      "npm": {
+        "package": "@trpc/server",
+        "weekly": 0,
+        "monthly": 0
+      }
+    }
+  },
+  "packages": {
+    "@nestjs/core": {
+      "weekly": 9000986,
+      "monthly": 36905987,
+      "lastUpdated": "2026-04-15"
+    },
+    "express": {
+      "weekly": 92500466,
+      "monthly": 394457847,
+      "lastUpdated": "2026-04-15"
+    },
+    "koa": {
+      "weekly": 6753439,
+      "monthly": 28818473,
+      "lastUpdated": "2026-04-15"
+    },
+    "hono": {
+      "weekly": 34260701,
+      "monthly": 144011266,
+      "lastUpdated": "2026-04-15"
+    },
+    "fastify": {
+      "weekly": 6338463,
+      "monthly": 25760426,
+      "lastUpdated": "2026-04-15"
+    },
+    "next": {
+      "weekly": 36294910,
+      "monthly": 174584019,
+      "lastUpdated": "2026-04-15"
+    },
+    "elysia": {
+      "weekly": 461112,
+      "monthly": 1913402,
+      "lastUpdated": "2026-04-15"
+    },
+    "@remix-run/core": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "@sveltejs/kit": {
+      "weekly": 1823496,
+      "monthly": 7566791,
+      "lastUpdated": "2026-04-15"
+    },
+    "nuxt": {
+      "weekly": 1399622,
+      "monthly": 6042717,
+      "lastUpdated": "2026-04-15"
+    },
+    "typescript": {
+      "weekly": 174245027,
+      "monthly": 708228010,
+      "lastUpdated": "2026-04-15"
+    },
+    "vite": {
+      "weekly": 99546996,
+      "monthly": 384215386,
+      "lastUpdated": "2026-04-15"
+    },
+    "astro": {
+      "weekly": 2025680,
+      "monthly": 8312930,
+      "lastUpdated": "2026-04-15"
+    },
+    "esbuild": {
+      "weekly": 180184201,
+      "monthly": 693023099,
+      "lastUpdated": "2026-04-15"
+    },
+    "@swc/core": {
+      "weekly": 38816570,
+      "monthly": 138964401,
+      "lastUpdated": "2026-04-15"
+    },
+    "rollup": {
+      "weekly": 97599880,
+      "monthly": 402029397,
+      "lastUpdated": "2026-04-15"
+    },
+    "vitest": {
+      "weekly": 47479917,
+      "monthly": 190445501,
+      "lastUpdated": "2026-04-15"
+    },
+    "jest": {
+      "weekly": 44084383,
+      "monthly": 192865034,
+      "lastUpdated": "2026-04-15"
+    },
+    "cypress": {
+      "weekly": 7311772,
+      "monthly": 31406901,
+      "lastUpdated": "2026-04-15"
+    },
+    "@playwright/test": {
+      "weekly": 32675425,
+      "monthly": 134018249,
+      "lastUpdated": "2026-04-15"
+    },
+    "mocha": {
+      "weekly": 13982203,
+      "monthly": 59947016,
+      "lastUpdated": "2026-04-15"
+    },
+    "sequelize": {
+      "weekly": 2776038,
+      "monthly": 11525411,
+      "lastUpdated": "2026-04-15"
+    },
+    "@prisma/client": {
+      "weekly": 9023167,
+      "monthly": 36458687,
+      "lastUpdated": "2026-04-15"
+    },
+    "typeorm": {
+      "weekly": 4029855,
+      "monthly": 17088296,
+      "lastUpdated": "2026-04-15"
+    },
+    "drizzle-orm": {
+      "weekly": 7254299,
+      "monthly": 28816416,
+      "lastUpdated": "2026-04-15"
+    },
+    "ramda": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "lodash": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "date-fns": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "mongoose": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "dayjs": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "@trpc/server": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "redux": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "zod": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "zustand": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "jotai": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "@tanstack/react-query": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "antd": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "@mui/material": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "pinia": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "@chakra-ui/react": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "prettier": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "tsx": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "@shadcn/ui": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "biome": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "eslint": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "pm2": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    },
+    "nodemon": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-15"
+    }
+  }
+}

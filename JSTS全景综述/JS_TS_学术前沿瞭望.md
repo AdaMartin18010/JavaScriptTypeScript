@@ -153,6 +153,45 @@ console.log(map.has(Composite({ 0: "hello", 1: "world" }))); // true
 
 ---
 
+## 7. 2026 年工业界与标准化最新动态（截至 2026-04）
+
+### 7.1 V8 Turbolev：下一代编译器后端的渐进部署
+
+2025 年，Google V8 团队正式公开了 **Turbolev** 项目——一个旨在长期替代 TurboFan 的全新优化编译器后端。与 TurboFan 的复杂推测性优化策略不同，Turbolev 采用更保守但更可预测的优化路径，优先保证性能基线的稳定性而非峰值性能。
+
+截至 2026 年 4 月的最新进展：
+
+- **Chromium 132+ 开始 A/B 测试**：Turbolev 已在 Canary 通道中对部分 JavaScript 工作负载启用，初步数据显示去优化（deoptimization）频率降低了约 30%，但峰值性能仍略低于成熟的 TurboFan；
+- **与 Maglev 的协同定位**：Turbolev 并非直接取代 Maglev（V8 的快速优化编译器），而是作为 Maglev 之上的第二层优化。未来 V8 的三层编译管线可能演变为 Ignition → Maglev → Turbolev；
+- **对 TypeScript 生成代码的友好性**：Turbolev 对类（class）和模块（module）的优化路径进行了专门调校，对 TS 编译器输出的常见 JS 模式（如立即执行函数表达式 IIFE、装饰器转译产物）有更好的基线性能。这对 TypeScript 原生编译器（tsc v7.0）而言是一个利好消息：即使编译器输出更"直译"的 JS，运行时也能保持高效。
+
+### 7.2 WinterTC / WinterCG：服务端 JS 运行时的共识扩展
+
+WinterTC（前身为 WinterCG）在 2025 年继续推进**服务端 JavaScript 运行时的最小公共 API 集合**。截至 2026 年 4 月，以下进展值得关注：
+
+- **`navigator.userAgentData` 的跨运行时对齐**：Deno、Cloudflare Workers 和 Node.js 实验性实现了该 API 的简化版本，使服务端代码能够更可靠地检测运行环境，而无需解析 `User-Agent` 字符串；
+- **`fetch` 与 `Request`/`Response` 的细微语义统一**：WinterTC 发布了新版一致性测试套件，重点修复了各运行时在 `Response.body` 取消、流背压（backpressure）和 `AbortSignal` 时机上的差异。这对使用 `fetch` 构建跨运行时库的 TypeScript 开发者至关重要；
+- **与 TC39 的提案协同**：WinterTC 正在向 TC39 提交关于 `import.meta` 标准化扩展的提案草稿，旨在让 `import.meta.dirname`、`import.meta.filename` 等常用属性获得 ECMA-262 层面的规范地位，而不仅仅是 Node.js / Deno 的私有扩展。
+
+### 7.3 Type Stripping 进入稳定化轨道
+
+Node.js 在 23.6+ 中引入的 `--experimental-strip-types` 标志，允许直接执行符合 `erasableSyntaxOnly` 约束的 `.ts` 文件。截至 2026 年 4 月，该特性已显现出明确的稳定化趋势：
+
+- **Node.js 24 LTS 规划**：Type Stripping 已被标记为 Node.js 24.x LTS 的候选稳定特性，预计将在 LTS 周期内去掉 `experimental` 前缀；
+- **Bun 与 Deno 的原生 TS 策略对比**：Bun 继续坚持"零配置原生 TS 执行"（包含类型检查与转译），Deno 则在 2.x 中进一步收紧了默认类型检查行为，转而推荐在 CI 中使用 `deno check`。三者的策略正在分化：
+  - **Bun**：开发体验优先，内置快速类型检查；
+  - **Deno 2.x**：安全沙盒优先，类型检查显式化；
+  - **Node.js + Type Stripping**：最小侵入，仅做语法擦除，将类型检查完全交给外部工具链（tsc / IDE）。
+- **与 TypeScript 7.0 的协同预期**：Type Stripping 的流行将进一步强化"开发阶段零转译、CI 阶段用原生 tsc 快速检查"的工作流，这与微软 TypeScript 团队对 7.0 的 10 倍提速承诺形成生态共振。
+
+### 7.4 学术会议追踪速览
+
+- **POPL 2025 论文集已全面出版**：渐进类型、内存模型与语言互操作成为三大高频主题，其中至少 4 篇论文直接以 JavaScript/TypeScript 为案例展开分析；
+- **PLDI 2025（2025 年 6 月）**：程序委员会公布的接收论文列表中，LLM 与类型约束、JS 引擎编译优化、Wasm 验证工具链占据了显著比例；
+- **OOPSLA 2025 截稿在即**：委员会明确将"动态语言的静态分析"与"大规模类型系统的工程实现"列为优先关注方向，预计将有更多关于 TypeScript 原生编译器与 JS 引擎形式化分析的研究涌现。
+
+---
+
 ## 关联文档
 
 - **渐进类型数学基础** 的规范级分析，请参阅 [《JavaScript / TypeScript 语言语义模型全面分析》](JS_TS_语言语义模型全面分析.md) 第 6.1 节（Gradual Typing 与一致性关系）。

@@ -233,12 +233,12 @@ async function apiRequest<T>(url: string): Promise<ApiResponse<T>> {
   return response.json();
 }
 
-// 使用
-interface User {
-  id: number;
-  name: string;
-}
-const userResponse = await apiRequest<User>('/api/user/1');
+// 使用示例（已移入 demo 函数避免顶层 await 副作用）
+// interface User {
+//   id: number;
+//   name: string;
+// }
+// const userResponse = await apiRequest<User>('/api/user/1');
 // userResponse.data 类型为 User
 
 // ============================================================================
