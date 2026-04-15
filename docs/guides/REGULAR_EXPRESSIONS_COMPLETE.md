@@ -95,11 +95,13 @@ console.log(tricky); // ['^', '-']
 ```
 
 **性能分析：**
+
 - 字符类比多个 `|` 分隔的选项更高效
 - 预定义字符类 (`\d`, `\w`) 经过优化，比自定义范围更快
 - 否定字符类 `[^...]` 可能稍慢，因为需要额外检查
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：忘记在字符类中转义特殊字符
 /[$.]/.test('$'); // true（. 在 [] 中是普通字符）
@@ -170,11 +172,13 @@ console.log(test.match(/a{2,}?/g)); // ['aa', 'aa']
 ```
 
 **性能分析：**
+
 - 贪婪量词通常更快，因为能更快完成匹配
 - 懒惰量词在需要精确边界时很有用，但可能导致更多回溯
 - `{n,m}` 比 `*` 和 `+` 更精确，可能更高效
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：用贪婪量词匹配嵌套结构
 const nested = '<div><span>text</span></div>';
@@ -233,11 +237,13 @@ console.log(multiline.match(/^second/m));  // ['second']
 ```
 
 **性能分析：**
+
 - 锚点匹配通常很快，因为不需要检查字符
 - 使用 `^` 和 `$` 可以从开头/结尾快速排除不匹配项
 - `\b` 检查需要查看前后字符，稍慢一些
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：忘记在多行文本中使用 m 标志
 const lines = 'line1\nline2';
@@ -315,11 +321,13 @@ console.log(namedBackref.test('test test')); // true
 ```
 
 **性能分析：**
+
 - 捕获分组需要存储匹配结果，有轻微性能开销
 - 非捕获分组 `(?:...)` 更快，当不需要捕获时优先使用
 - 嵌套分组会增加内存使用，复杂模式注意优化
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：混淆捕获和非捕获分组
 /(abc)/.exec('abc');   // 捕获组，match[1] = 'abc'
@@ -417,11 +425,13 @@ console.log(withDotAll.flags); // 'gis'
 ```
 
 **性能分析：**
+
 - 字面量模式在脚本加载时编译，性能更好
 - 构造函数模式在运行时编译，适合动态场景
 - 每次使用 `new RegExp()` 都会创建新对象，循环中注意缓存
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：字符串中未正确转义反斜杠
 new RegExp('\d+'); // 实际创建 /d+/（\d 被解释为转义序列）
@@ -614,12 +624,14 @@ const simulatedAtomic = /(?=(a+))\1b/;
 ```
 
 **性能分析：**
+
 - 前瞻/后顾通常有轻微性能开销，但避免了字符消耗
 - 后顾在旧版浏览器中不支持，需要 polyfill
 - 命名捕获组增加了内存使用，但提高了代码可读性
 - Unicode 属性匹配比简单范围检查慢
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：忘记 u 标志
 /\p{Letter}/.test('A');   // false（没有 u 标志）
@@ -763,20 +775,20 @@ const optimized = /<[^>]*>/g; // 最快且准确
 // 简单的正则性能测试器
 function benchmarkRegex(pattern, testStrings, iterations = 1000) {
   const results = [];
-  
+
   for (const [name, str] of testStrings) {
     const times = [];
-    
+
     // 预热
     for (let i = 0; i < 100; i++) pattern.test(str);
-    
+
     // 测试
     const start = performance.now();
     for (let i = 0; i < iterations; i++) {
       pattern.test(str);
     }
     const total = performance.now() - start;
-    
+
     results.push({
       name,
       length: str.length,
@@ -784,7 +796,7 @@ function benchmarkRegex(pattern, testStrings, iterations = 1000) {
       perOperation: (total / iterations * 1000).toFixed(3) + 'μs'
     });
   }
-  
+
   console.table(results);
 }
 
@@ -841,12 +853,14 @@ console.timeEnd('cached');
 ```
 
 **性能分析：**
+
 - 简单正则通常执行时间在微秒级
 - 灾难性回溯可导致秒级甚至分钟级延迟
 - 缓存动态正则可显著提升重复调用性能
 - 字符类比点号 `.` 更高效
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：未限制输入长度导致 ReDoS
 app.post('/validate', (req, res) => {
@@ -919,11 +933,13 @@ console.log(emails);
 ```
 
 **性能分析：**
+
 - 基础版本最快，但可能过于宽松
 - RFC 版本最准确，但复杂且慢
 - 实用版本在准确性和性能间平衡
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：过于严格的验证
 const tooStrict = /^[a-z]+@[a-z]+\.[a-z]{2,3}$/;
@@ -1003,12 +1019,12 @@ function isValidDate(dateString) {
   const pattern = /^(\d{4})-(\d{2})-(\d{2})$/;
   const match = dateString.match(pattern);
   if (!match) return false;
-  
+
   const [, year, month, day] = match.map(Number);
   const date = new Date(year, month - 1, day);
-  
-  return date.getFullYear() === year && 
-         date.getMonth() === month - 1 && 
+
+  return date.getFullYear() === year &&
+         date.getMonth() === month - 1 &&
          date.getDate() === day;
 }
 
@@ -1046,9 +1062,9 @@ function checkPasswordStrength(password) {
     special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
     min12: password.length >= 12
   };
-  
+
   const passed = Object.values(checks).filter(Boolean).length;
-  
+
   if (passed <= 2) return { strength: 'weak', score: passed, checks };
   if (passed <= 4) return { strength: 'medium', score: passed, checks };
   return { strength: 'strong', score: passed, checks };
@@ -1068,7 +1084,7 @@ function calculateEntropy(password) {
   if (/[A-Z]/.test(password)) poolSize += 26;
   if (/\d/.test(password)) poolSize += 10;
   if (/[^a-zA-Z0-9]/.test(password)) poolSize += 32;
-  
+
   const entropy = Math.log2(Math.pow(poolSize, password.length));
   return {
     entropy: entropy.toFixed(2),
@@ -1140,21 +1156,21 @@ console.log('Slug:', slugPattern.test('my-awesome-post'));
  *    - 实时解释正则结构
  *    - 匹配高亮和捕获组显示
  *    - 代码生成器
- * 
+ *
  * 2. RegExr (https://regexr.com/)
  *    - 社区模式库
  *    - 详细参考文档
  *    - 替换功能测试
- * 
+ *
  * 3. Debuggex (https://debuggex.com/)
  *    - 可视化正则表达式
  *    - 状态机图
  *    - 适合理解复杂正则
- * 
+ *
  * 4. Regex-Vis (https://regex-vis.com/)
  *    - 正则表达式可视化
  *    - 编辑器友好
- * 
+ *
  * 5. JavaScript RegExp 可视化
  *    - 专为 JS 正则优化
  */
@@ -1167,7 +1183,7 @@ console.log('Slug:', slugPattern.test('my-awesome-post'));
 function debugRegex(pattern, str) {
   const regex = new RegExp(pattern.source, pattern.flags + 'd'); // d 标志用于索引
   const match = regex.exec(str);
-  
+
   if (match) {
     console.log('Match:', match[0]);
     console.log('Index:', match.index);
@@ -1178,7 +1194,7 @@ function debugRegex(pattern, str) {
   } else {
     console.log('No match');
   }
-  
+
   return match;
 }
 
@@ -1191,7 +1207,7 @@ function buildAndTest() {
     /^\d{4}-\d{2}-/,    // 年-月-
     /^\d{4}-\d{2}-\d{2}/ // 完整日期
   ];
-  
+
   const test = '2024-03-15';
   steps.forEach((step, i) => {
     console.log(`Step ${i + 1}: ${step.test(test)}`);
@@ -1202,15 +1218,15 @@ function buildAndTest() {
 function visualizeMatch(pattern, str) {
   const globalPattern = new RegExp(pattern.source, 'g' + pattern.flags.replace(/g/g, ''));
   let match;
-  
+
   console.log(`Pattern: ${pattern}`);
   console.log(`String: "${str}"\n`);
-  
+
   while ((match = globalPattern.exec(str)) !== null) {
     const before = str.slice(0, match.index);
     const matched = match[0];
     const after = str.slice(globalPattern.lastIndex);
-    
+
     console.log(`Match at ${match.index}: "${matched}"`);
     console.log(`  ${before}[${matched}]${after}`);
     console.log('  Groups:', match.slice(1));
@@ -1224,39 +1240,39 @@ visualizeMatch(/\w+/g, 'Hello World Test');
 function profileRegex(pattern, str, iterations = 10000) {
   // 预热
   for (let i = 0; i < 100; i++) pattern.test(str);
-  
+
   // 测试
   const start = performance.now();
   for (let i = 0; i < iterations; i++) {
     pattern.test(str);
   }
   const duration = performance.now() - start;
-  
+
   console.log(`Pattern: ${pattern.source}`);
   console.log(`Iterations: ${iterations.toLocaleString()}`);
   console.log(`Total time: ${duration.toFixed(2)}ms`);
   console.log(`Average: ${(duration / iterations * 1000).toFixed(3)}μs`);
-  
+
   return duration;
 }
 
 // 5. 比较多个模式
 function comparePatterns(tests, patterns) {
   const results = {};
-  
+
   for (const [name, pattern] of patterns) {
     results[name] = { correct: 0, total: tests.length };
-    
+
     for (const [input, expected] of tests) {
       const actual = pattern.test(input);
       if (actual === expected) {
         results[name].correct++;
       }
     }
-    
+
     results[name].accuracy = (results[name].correct / results[name].total * 100).toFixed(1) + '%';
   }
-  
+
   console.table(results);
 }
 
@@ -1311,14 +1327,14 @@ const regexTests = {
 function runRegexTests() {
   let passed = 0;
   let failed = 0;
-  
+
   for (const [name, { pattern, tests }] of Object.entries(regexTests)) {
     console.log(`\nTesting: ${name}`);
-    
+
     for (const { input, expect: expected } of tests) {
       const result = pattern.test(input);
       const status = result === expected ? '✓' : '✗';
-      
+
       if (result === expected) {
         passed++;
         console.log(`  ${status} "${input}"`);
@@ -1328,7 +1344,7 @@ function runRegexTests() {
       }
     }
   }
-  
+
   console.log(`\nResults: ${passed} passed, ${failed} failed`);
   return failed === 0;
 }
@@ -1378,11 +1394,13 @@ function batchTest(pattern, strings) {
 ```
 
 **性能分析：**
+
 - `test()` 是检查匹配最快的方法
 - 全局标志 `g` 会改变 `lastIndex`，影响连续调用
 - 不需要捕获时优先使用 `test()` 而非 `exec()`
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：在循环中使用全局正则
 const g = /\d/g;
@@ -1442,11 +1460,13 @@ console.log(indexedMatch.indices); // [[0, 7], [0, 4], [4, 7]]
 ```
 
 **性能分析：**
+
 - `exec()` 返回完整匹配信息，比 `test()` 慢
 - 全局模式下，每次调用返回下一个匹配
 - 非全局模式总是返回第一个匹配
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：忘记检查 null
 const match = /test/.exec('hello');
@@ -1675,12 +1695,12 @@ function compareMethods() {
   const str = 'The quick brown fox jumps over the lazy dog';
   const pattern = /\w{5}/g;
   const iterations = 100000;
-  
+
   // test
   let start = performance.now();
   for (let i = 0; i < iterations; i++) pattern.test(str);
   console.log('test:', (performance.now() - start).toFixed(2), 'ms');
-  
+
   // exec
   pattern.lastIndex = 0;
   start = performance.now();
@@ -1689,12 +1709,12 @@ function compareMethods() {
     pattern.exec(str);
   }
   console.log('exec:', (performance.now() - start).toFixed(2), 'ms');
-  
+
   // match
   start = performance.now();
   for (let i = 0; i < iterations; i++) str.match(pattern);
   console.log('match:', (performance.now() - start).toFixed(2), 'ms');
-  
+
   // search
   const singlePattern = /\w{5}/;
   start = performance.now();
@@ -1706,12 +1726,14 @@ compareMethods();
 ```
 
 **性能分析：**
+
 - `test()` 最快，适合存在性检查
 - `search()` 比 `indexOf()` 慢，但支持正则
 - `matchAll()` 比多次 `exec()` 更方便，但性能相似
 - `replace()` 带函数比带字符串慢
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：replace 只替换第一个（无 g 标志）
 'aaa'.replace(/a/, 'b'); // 'baa'
@@ -1903,15 +1925,15 @@ function tokenize(input) {
     WORD: /[a-zA-Z]+/y,
     SPACE: /\s+/y
   };
-  
+
   let pos = 0;
   while (pos < input.length) {
     let matched = false;
-    
+
     for (const [type, pattern] of Object.entries(patterns)) {
       pattern.lastIndex = pos;
       const match = pattern.exec(input);
-      
+
       if (match) {
         tokens.push({ type, value: match[0] });
         pos = pattern.lastIndex;
@@ -1919,18 +1941,18 @@ function tokenize(input) {
         break;
       }
     }
-    
+
     if (!matched) {
       throw new Error(`Unexpected character at ${pos}: ${input[pos]}`);
     }
   }
-  
+
   return tokens;
 }
 
 console.log(tokenize('123 hello 456'));
-// [{type: 'NUMBER', value: '123'}, {type: 'SPACE', value: ' '}, 
-//  {type: 'WORD', value: 'hello'}, {type: 'SPACE', value: ' '}, 
+// [{type: 'NUMBER', value: '123'}, {type: 'SPACE', value: ' '},
+//  {type: 'WORD', value: 'hello'}, {type: 'SPACE', value: ' '},
 //  {type: 'NUMBER', value: '456'}]
 ```
 
@@ -1957,22 +1979,22 @@ function highlightMatches(str, pattern) {
   const matches = [...str.matchAll(pattern)];
   let result = str;
   let offset = 0;
-  
+
   for (const match of matches) {
     if (!match.indices) continue;
-    
+
     const [start, end] = match.indices[0];
     const adjustedStart = start + offset;
     const adjustedEnd = end + offset;
-    
+
     const before = result.slice(0, adjustedStart);
     const matched = result.slice(adjustedStart, adjustedEnd);
     const after = result.slice(adjustedEnd);
-    
+
     result = `${before}[${matched}]${after}`;
     offset += 2; // 添加的括号
   }
-  
+
   return result;
 }
 
@@ -1987,16 +2009,16 @@ console.log(highlightMatches('user123 test456', /\w+\d+/gd));
 const commonCombinations = {
   // 全局 + 忽略大小写：搜索所有匹配，不区分大小写
   gi: /pattern/gi,
-  
+
   // 全局 + 多行：搜索所有行的匹配
   gm: /pattern/gm,
-  
+
   // Unicode + 忽略大小写：正确处理 Unicode 大小写
   iu: /pattern/iu,
-  
+
   // 全部启用：最全面的匹配
   giuy: /pattern/gimsuy,
-  
+
   // dotAll + 全局：跨行匹配所有内容
   gs: /pattern/gs
 };
@@ -2026,12 +2048,14 @@ console.log(addFlags(/test/, 'g', 'i').flags); // 'gi'
 ```
 
 **性能分析：**
+
 - `g` 标志会增加内存使用（存储所有匹配）
 - `i` 标志会降低匹配速度（需要大小写转换）
 - `u` 标志增加 Unicode 处理开销
 - `d` 标志存储额外索引信息
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：忘记 y 标志会重置 lastIndex
 const y = /test/y;
@@ -2080,29 +2104,29 @@ function createAttackString(pattern, length = 30) {
 // 测试 ReDoS
 function testReDoS(pattern, maxTime = 1000) {
   const results = [];
-  
+
   for (let n = 10; n <= 35; n += 5) {
     const input = createAttackString(pattern, n);
     const start = performance.now();
-    
+
     pattern.test(input);
-    
+
     const duration = performance.now() - start;
     results.push({ length: n, time: duration.toFixed(2) + 'ms' });
-    
+
     if (duration > maxTime) {
       console.log(`ReDoS detected at length ${n}`);
       break;
     }
   }
-  
+
   return results;
 }
 
 // 检测危险模式
 function isPotentiallyDangerous(pattern) {
   const source = pattern.source;
-  
+
   // 检测危险特征
   const dangerousFeatures = [
     /\([^)]*\+[^)]*\)\+/,    // (a+)+ 形式
@@ -2110,7 +2134,7 @@ function isPotentiallyDangerous(pattern) {
     /\([^)]*\|[^)]*\)\+.*\|/, // (a|b)+ 且选项重叠
     /\([^)]*\?\)\+/,          // (a?)+ 形式
   ];
-  
+
   return dangerousFeatures.some(f => f.test(source));
 }
 
@@ -2145,7 +2169,7 @@ async function testWithTimeout(pattern, input, timeout = 100) {
 const safeAlternatives = {
   // 危险
   dangerous: /^(\w+\s?)*$/,
-  
+
   // 安全替代
   safe: /^(?:\w+(?:\s\w+)*)?$/
 };
@@ -2157,48 +2181,48 @@ class RegexFirewall {
     this.maxTime = options.maxTime || 100;
     this.dangerousCache = new Set();
   }
-  
+
   isDangerous(pattern) {
     const key = pattern.source;
     if (this.dangerousCache.has(key)) return true;
-    
+
     const dangerous = this.analyzePattern(pattern);
     if (dangerous) this.dangerousCache.add(key);
     return dangerous;
   }
-  
+
   analyzePattern(pattern) {
     const source = pattern.source;
-    
+
     // 检测嵌套量词
     if (/\([^)]*[+*?][^)]*\)[+*?]/.test(source)) {
       // 进一步分析是否有重叠字符集
       return true;
     }
-    
+
     return false;
   }
-  
+
   safeTest(pattern, input) {
     // 检查长度
     if (input.length > this.maxLength) {
       throw new Error('Input exceeds maximum length');
     }
-    
+
     // 检查危险模式
     if (this.isDangerous(pattern)) {
       console.warn('Potentially dangerous pattern detected');
     }
-    
+
     // 执行测试
     const start = performance.now();
     const result = pattern.test(input);
     const duration = performance.now() - start;
-    
+
     if (duration > this.maxTime) {
       throw new Error(`Regex execution timeout: ${duration.toFixed(2)}ms`);
     }
-    
+
     return result;
   }
 }
@@ -2209,11 +2233,11 @@ const firewall = new RegexFirewall({ maxLength: 500, maxTime: 50 });
 // 5. 安全的正则模式库
 const safePatterns = {
   email: /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
-  
+
   url: /^https?:\/\/(?:[-\w.])+(?:[:\d]+)?(?:\/(?:[\w/_.])*(?:\?(?:[\w&=%.])*)?(?:#(?:[\w.])*)?)?$/,
-  
+
   alphanumeric: /^[a-zA-Z0-9]+$/,
-  
+
   // 严格限制长度
   username: /^[a-zA-Z0-9_]{3,20}$/
 };
@@ -2225,28 +2249,28 @@ function validatePatternSafety(pattern, testCases) {
     issues: [],
     tests: []
   };
-  
+
   // 检查模式本身
   if (/\([^)]*[+*][^)]*\)[+*]/.test(pattern.source)) {
     results.issues.push('Nested quantifiers detected');
     results.safe = false;
   }
-  
+
   // 测试各种长度输入
   for (const length of [10, 100, 500, 1000]) {
     const input = 'a'.repeat(length);
     const start = performance.now();
     pattern.test(input);
     const time = performance.now() - start;
-    
+
     results.tests.push({ length, time: time.toFixed(2) + 'ms' });
-    
+
     if (time > 100) {
       results.issues.push(`Slow at length ${length}: ${time.toFixed(2)}ms`);
       results.safe = false;
     }
   }
-  
+
   return results;
 }
 ```
@@ -2286,18 +2310,18 @@ function testRegexWithWorker(pattern, input, timeout = 1000) {
         parentPort.postMessage({ result });
       });
     `, { eval: true });
-    
+
     const timer = setTimeout(() => {
       worker.terminate();
       reject(new Error('Regex timeout'));
     }, timeout);
-    
+
     worker.once('message', (result) => {
       clearTimeout(timer);
       worker.terminate();
       resolve(result);
     });
-    
+
     worker.postMessage({ pattern: { source: pattern.source, flags: pattern.flags }, input });
   });
 }
@@ -2310,17 +2334,17 @@ function sanitizeInput(input, type = 'string') {
     url: 2048,
     username: 30
   };
-  
+
   const limit = limits[type] || limits.string;
-  
+
   if (typeof input !== 'string') {
     throw new Error('Input must be a string');
   }
-  
+
   if (input.length > limit) {
     throw new Error(`Input exceeds maximum length of ${limit}`);
   }
-  
+
   // 移除或转义危险字符
   return input.slice(0, limit);
 }
@@ -2342,7 +2366,7 @@ const securityChecklist = {
     '监控正则执行时间',
     '使用安全的替代方案'
   ],
-  
+
   warningSigns: [
     '模式包含 (a+)+ 形式',
     '输入长度无限制',
@@ -2354,11 +2378,13 @@ const securityChecklist = {
 ```
 
 **性能分析：**
+
 - 安全验证增加约 10-20% 开销
 - Worker 线程方式有创建开销，仅用于可疑模式
 - 简单长度检查几乎无性能影响
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：直接使用用户输入构建正则
 const userPattern = req.body.pattern;
@@ -2379,15 +2405,15 @@ function validate(input) {
 // ✅ 正确：添加防护
 function validateSafe(input) {
   if (input.length > 1000) return false;
-  
+
   const start = performance.now();
   const result = /complex pattern/.test(input);
-  
+
   if (performance.now() - start > 100) {
     console.warn('Potential ReDoS attack');
     return false;
   }
-  
+
   return result;
 }
 ```
@@ -2409,7 +2435,7 @@ const apacheLogPattern = /^(?<ip>\S+)\s+\S+\s+(?<user>\S+)\s+\[(?<time>[^\]]+)\]
 function parseApacheLog(line) {
   const match = line.match(apacheLogPattern);
   if (!match) return null;
-  
+
   return {
     ip: match.groups.ip,
     user: match.groups.user === '-' ? null : match.groups.user,
@@ -2426,10 +2452,10 @@ function parseApacheTime(timeStr) {
   // 24/Mar/2024:14:32:10 +0800
   const match = timeStr.match(/(\d{2})\/(\w{3})\/(\d{4}):(\d{2}):(\d{2}):(\d{2})\s+([+-]\d{4})/);
   if (!match) return null;
-  
+
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const [, day, month, year, hour, minute, second, zone] = match;
-  
+
   return new Date(`${year}-${months.indexOf(month) + 1}-${day}T${hour}:${minute}:${second}${zone.slice(0, 3)}:${zone.slice(3)}`);
 }
 
@@ -2462,30 +2488,30 @@ class LogAnalyzer {
       byStatus: {}
     };
   }
-  
+
   parseLine(line, type = 'auto') {
     this.stats.total++;
-    
+
     let pattern;
     if (type === 'auto') {
       pattern = this.detectFormat(line);
     } else {
       pattern = this.patterns[type];
     }
-    
+
     if (!pattern) {
       this.stats.failed++;
       return null;
     }
-    
+
     const match = line.match(pattern);
     if (!match) {
       this.stats.failed++;
       return null;
     }
-    
+
     this.stats.parsed++;
-    
+
     // 更新统计
     if (match.groups?.level) {
       this.stats.byLevel[match.groups.level] = (this.stats.byLevel[match.groups.level] || 0) + 1;
@@ -2493,21 +2519,21 @@ class LogAnalyzer {
     if (match.groups?.status) {
       this.stats.byStatus[match.groups.status] = (this.stats.byStatus[match.groups.status] || 0) + 1;
     }
-    
+
     return { type, groups: match.groups };
   }
-  
+
   detectFormat(line) {
     if (line.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/)) return this.patterns.apache;
     if (line.match(/^\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}/)) return this.patterns.syslog;
     if (line.match(/^\[\d{4}-\d{2}-\d{2}/)) return this.patterns.app;
     return null;
   }
-  
+
   parseBatch(lines) {
     return lines.map(line => this.parseLine(line)).filter(Boolean);
   }
-  
+
   getStats() {
     return { ...this.stats };
   }
@@ -2544,11 +2570,13 @@ console.log(locations);
 ```
 
 **性能分析：**
+
 - 预编译的正则解析百万行日志效率高
 - 复杂模式匹配失败会回溯，影响性能
 - 建议使用流式处理大文件
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：贪婪匹配导致过度捕获
 const badPattern = /"(.*)"/;  // 会匹配到最后一个引号
@@ -2637,9 +2665,9 @@ console.log({ bold, italic });
 
 // 4. SQL 解析
 const sql = `
-SELECT u.id, u.name, p.title 
-FROM users u 
-JOIN posts p ON u.id = p.user_id 
+SELECT u.id, u.name, p.title
+FROM users u
+JOIN posts p ON u.id = p.user_id
 WHERE u.active = 1 AND p.created_at > '2024-01-01'
 ORDER BY p.created_at DESC
 LIMIT 10;
@@ -2666,7 +2694,7 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=myapp
 DB_USER=admin
-# API settings  
+# API settings
 API_KEY=sk-1234567890abcdef
 API_TIMEOUT=30
 `;
@@ -2708,15 +2736,15 @@ class DataExtractor {
   constructor() {
     this.patterns = {};
   }
-  
+
   addPattern(name, pattern, extractor) {
     this.patterns[name] = { pattern, extractor };
   }
-  
+
   extract(data, type) {
     const config = this.patterns[type];
     if (!config) throw new Error(`Unknown type: ${type}`);
-    
+
     const matches = [...data.matchAll(config.pattern)];
     return matches.map(config.extractor);
   }
@@ -2758,37 +2786,37 @@ class Validator {
     this.rules = {};
     this.errors = [];
   }
-  
+
   addRule(field, pattern, message) {
     if (!this.rules[field]) this.rules[field] = [];
     this.rules[field].push({ pattern, message });
   }
-  
+
   validate(data) {
     this.errors = [];
-    
+
     for (const [field, rules] of Object.entries(this.rules)) {
       const value = data[field];
-      
+
       for (const rule of rules) {
         let isValid;
-        
+
         if (typeof rule.pattern === 'function') {
           isValid = rule.pattern(value);
         } else {
           isValid = rule.pattern.test(String(value));
         }
-        
+
         if (!isValid) {
           this.errors.push({ field, message: rule.message });
           break;
         }
       }
     }
-    
+
     return this.errors.length === 0;
   }
-  
+
   getErrors() {
     return this.errors;
   }
@@ -2797,37 +2825,37 @@ class Validator {
 // 预定义验证规则
 const validationRules = {
   required: (value) => value != null && String(value).trim() !== '',
-  
+
   email: /^[\w.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/,
-  
+
   phoneUS: /^(\+1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}$/,
-  
+
   url: /^https?:\/\/(?:[-\w.])+(?:[:\d]+)?(?:\/(?:[\w/_.])*(?:\?(?:[\w&=%.])*)?(?:#(?:[\w.])*)?)?$/,
-  
+
   alphanumeric: /^[a-zA-Z0-9]+$/,
-  
+
   alpha: /^[a-zA-Z]+$/,
-  
+
   numeric: /^\d+$/,
-  
+
   decimal: /^\d+\.?\d*$/,
-  
+
   dateISO: /^\d{4}-\d{2}-\d{2}$/,
-  
+
   time24: /^([01]\d|2[0-3]):[0-5]\d$/,
-  
+
   hexColor: /^#(?:[0-9a-fA-F]{3}){1,2}$/,
-  
+
   creditCard: /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13})$/,
-  
+
   zipUS: /^\d{5}(-\d{4})?$/,
-  
+
   uuid: /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
-  
+
   ipv4: /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-  
+
   slug: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-  
+
   // 自定义规则生成器
   minLength: (min) => (value) => String(value).length >= min,
   maxLength: (max) => (value) => String(value).length <= max,
@@ -2878,16 +2906,16 @@ function validatePassword(password) {
     { test: /\d/, name: 'number', message: 'At least one number' },
     { test: /[!@#$%^&*(),.?":{}|<>]/, name: 'special', message: 'At least one special character' }
   ];
-  
+
   const results = checks.map(check => ({
     name: check.name,
     passed: check.test.test(password),
     message: check.message
   }));
-  
+
   const passed = results.filter(r => r.passed).length;
   const strength = passed < 3 ? 'weak' : passed < 5 ? 'medium' : 'strong';
-  
+
   return {
     valid: passed >= 3,
     strength,
@@ -2902,14 +2930,14 @@ console.log(validatePassword('weak'));
 // 批量验证
 function batchValidate(items, rules) {
   const validator = new Validator();
-  
+
   // 添加规则
   for (const [field, fieldRules] of Object.entries(rules)) {
     for (const rule of fieldRules) {
       validator.addRule(field, rule.pattern, rule.message);
     }
   }
-  
+
   return items.map((item, index) => {
     const isValid = validator.validate(item);
     return {
@@ -2944,13 +2972,13 @@ console.log(batchResults);
 // 数据清洗
 function sanitizeData(data, sanitizers) {
   const cleaned = { ...data };
-  
+
   for (const [field, sanitizer] of Object.entries(sanitizers)) {
     if (cleaned[field] != null) {
       cleaned[field] = sanitizer(cleaned[field]);
     }
   }
-  
+
   return cleaned;
 }
 
@@ -2970,11 +2998,13 @@ console.log(sanitizeData(rawData, sanitizers));
 ```
 
 **性能分析：**
+
 - 预编译验证规则提升重复验证性能
 - 提前失败策略：多规则时先检查简单规则
 - 批量验证时考虑使用 Web Worker
 
 **常见错误：**
+
 ```javascript
 // ❌ 错误：未处理 null/undefined
 /[a-z]+/.test(null); // true (转换为 "null")
@@ -3052,14 +3082,14 @@ const optimizationChecklist = {
     '使用非捕获组 (?:) 当不需要捕获',
     '限制输入长度'
   ],
-  
+
   afterWriting: [
     '测试极端输入',
     '检查是否存在回溯灾难',
     '对比替代方案性能',
     '添加 ReDoS 防护'
   ],
-  
+
   inProduction: [
     '设置执行超时',
     '监控正则执行时间',
@@ -3089,15 +3119,16 @@ const patterns = {
 ---
 
 > **文档结束**
-> 
+>
 > 本文档涵盖了 JavaScript 正则表达式的各个方面，从基础语法到高级特性，从性能优化到安全防护。
-> 
+>
 > 建议阅读顺序：
+>
 > 1. 第1-2章：掌握基础
 > 2. 第7章：熟悉常用方法
 > 3. 第3章：学习高级特性
 > 4. 第5章：参考常用模式
 > 5. 第9章：了解安全注意事项
 > 6. 第10章：学习实际应用
-> 
+>
 > 最后通过第4、6、8章深化理解和优化技能。

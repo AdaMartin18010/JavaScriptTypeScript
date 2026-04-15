@@ -21,10 +21,12 @@
 ## 详细分析
 
 ### Prisma
+
 ```bash
 npm install prisma @prisma/client
 npx prisma init
 ```
+
 - **定位**: 下一代 Node.js 和 TypeScript ORM
 - **核心设计**: Schema 定义 → 生成类型安全客户端
 - **优势**:
@@ -75,10 +77,12 @@ const user = await prisma.user.create({
 ```
 
 ### Drizzle
+
 ```bash
 npm install drizzle-orm pg
 npm install -D drizzle-kit
 ```
+
 - **定位**: 类型安全的 SQL-like ORM
 - **核心设计**: SQL 优先，类型推导完善
 - **优势**:
@@ -128,9 +132,11 @@ const result = await db.select()
 ```
 
 ### TypeORM
+
 ```bash
 npm install typeorm reflect-metadata pg
 ```
+
 - **定位**: 受 Java Hibernate 启发的 ORM
 - **核心设计**: Decorator / Repository 模式
 - **优势**:
@@ -236,9 +242,11 @@ const userWithPosts = await userRepository.findOne({
 ## 迁移建议
 
 ### TypeORM → Prisma
+
 - 使用 `prisma db pull` 从现有数据库生成 Schema
 - 重写 Repository 层为 Prisma Client
 
 ### Prisma → Drizzle
+
 - Drizzle Kit 支持从数据库生成 Schema
 - 查询语法需要重写为 SQL-like

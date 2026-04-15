@@ -127,8 +127,10 @@ async function batchProcess<T, R>(
     executing.push(promise);
     
     if (executing.length >= concurrency) {
-      await Promise.race(executing);
-      executing.splice(executing.indexOf(promise), 1);
+      const index = await Promise.race(
+        executing.map((p, i) => p.then(() => i))
+      );
+      executing.splice(index, 1);
     }
   }
   

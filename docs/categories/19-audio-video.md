@@ -19,6 +19,7 @@
 现代 Web 音频库，默认使用 Web Audio API，自动降级到 HTML5 Audio。
 
 **代码示例：**
+
 ```javascript
 import { Howl, Howler } from 'howler';
 
@@ -62,6 +63,7 @@ sound.fade(1, 0, 1000, id);  // 1秒内淡出
 Web Audio 框架，用于在浏览器中创建交互式音乐。
 
 **代码示例：**
+
 ```javascript
 import * as Tone from 'tone';
 
@@ -119,6 +121,7 @@ Tone.Transport.start();
 可自定义的音频波形可视化库，基于 Web Audio API 和 HTML5 Canvas。
 
 **代码示例：**
+
 ```javascript
 import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.js';
@@ -180,6 +183,7 @@ wavesurfer.destroy();
 简单、轻量、可访问的 HTML5、YouTube 和 Vimeo 媒体播放器。
 
 **代码示例：**
+
 ```javascript
 import Plyr from 'plyr';
 import 'plyr/dist/plyr.css';
@@ -236,6 +240,7 @@ player.on('ended', event => {
 功能齐全的 HTML5 视频播放器，支持 HLS 和 DASH 流媒体。
 
 **代码示例：**
+
 ```javascript
 import videojs from 'video.js';
 import 'video.js/dist/video-js.css';
@@ -318,6 +323,7 @@ function VideoPlayer({ src }) {
 基于 MediaSource 扩展的 HLS 流媒体播放器，支持直播和点播。
 
 **代码示例：**
+
 ```javascript
 import Hls from 'hls.js';
 
@@ -331,15 +337,15 @@ if (Hls.isSupported()) {
     lowLatencyMode: true,
     backBufferLength: 90,
   });
-  
+
   hls.loadSource(videoSrc);
   hls.attachMedia(video);
-  
+
   hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
     console.log(' manifest 加载完成，找到 ' + data.levels.length + ' 个质量级别');
     video.play();
   });
-  
+
   hls.on(Hls.Events.ERROR, (event, data) => {
     if (data.fatal) {
       switch(data.type) {
@@ -357,12 +363,12 @@ if (Hls.isSupported()) {
       }
     }
   });
-  
+
   // 质量切换
   hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
     console.log('切换到质量级别: ' + data.level);
   });
-  
+
   // 获取可用质量
   const levels = hls.levels;
   hls.currentLevel = 2;  // 切换到特定质量，-1 表示自动
@@ -389,6 +395,7 @@ if (Hls.isSupported()) {
 DASH 工业论坛官方参考播放器，用于播放 MPEG-DASH 内容。
 
 **代码示例：**
+
 ```javascript
 import { MediaPlayer } from 'dashjs';
 
@@ -453,6 +460,7 @@ player.reset();
 免费的 VAST 兼容 HTML5 视频播放器，支持广告插播。
 
 **代码示例：**
+
 ```html
 <link rel="stylesheet" href="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.css" />
 <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
@@ -527,6 +535,7 @@ fluidPlayer('video-id', {
 FFmpeg 的 WebAssembly 移植版本，在浏览器中进行视频/音频处理。
 
 **代码示例：**
+
 ```javascript
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
@@ -601,6 +610,7 @@ await ffmpeg.deleteFile('output.mp4');
 HTML5 `<audio>` 或 `<video>` 播放器，支持 MP4、WebM、MP3 以及 HLS、DASH、YouTube、Facebook、SoundCloud。
 
 **代码示例：**
+
 ```javascript
 import 'mediaelement/build/mediaelementplayer.min.css';
 import 'mediaelement/build/mediaelement-and-player.min.js';
@@ -610,10 +620,10 @@ const player = new MediaElementPlayer('player1', {
   pluginPath: '/path/to/shims/',
   features: ['playpause', 'current', 'progress', 'duration', 'tracks', 'volume', 'fullscreen'],
   renderers: ['html5', 'flash_video', 'flash_audio', 'silverlight_video', 'silverlight_audio'],
-  
+
   success: function(media, node, instance) {
     console.log('播放器初始化成功');
-    
+
     // 事件监听
     media.addEventListener('play', () => console.log('播放'));
     media.addEventListener('pause', () => console.log('暂停'));
@@ -659,9 +669,10 @@ player.setSrc('https://www.youtube.com/watch?v=VIDEO_ID');
 为 HTML5 世界构建的 React 视频播放器组件。
 
 **代码示例：**
+
 ```jsx
 import React from 'react';
-import { Player, ControlBar, ReplayControl, 
+import { Player, ControlBar, ReplayControl,
          ForwardControl, CurrentTimeDisplay,
          TimeDivider, PlaybackRateMenuButton, VolumeMenuButton } from 'video-react';
 import 'video-react/dist/video-react.css';
@@ -690,30 +701,30 @@ import { useRef, useEffect } from 'react';
 
 function ControlledPlayer() {
   const playerRef = useRef(null);
-  
+
   useEffect(() => {
     // 订阅状态变化
     playerRef.current.subscribeToStateChange(handleStateChange);
   }, []);
-  
+
   const handleStateChange = (state) => {
     console.log('当前时间:', state.currentTime);
     console.log('持续时间:', state.duration);
     console.log('是否暂停:', state.paused);
   };
-  
+
   const play = () => {
     playerRef.current.play();
   };
-  
+
   const pause = () => {
     playerRef.current.pause();
   };
-  
+
   const seek = (seconds) => {
     playerRef.current.seek(seconds);
   };
-  
+
   return (
     <div>
       <Player ref={playerRef} src="video.mp4" />
@@ -743,6 +754,7 @@ function ControlledPlayer() {
 简化的 WebRTC 点对点通信库，支持视频、语音和数据通道。
 
 **代码示例：**
+
 ```javascript
 import SimplePeer from 'simple-peer';
 
@@ -776,9 +788,9 @@ peer2.signal(signalDataFromPeer1);
 peer1.signal(signalDataFromPeer2);
 
 // 视频通话
-navigator.mediaDevices.getUserMedia({ 
-  video: true, 
-  audio: true 
+navigator.mediaDevices.getUserMedia({
+  video: true,
+  audio: true
 }).then(stream => {
   const peer = new SimplePeer({
     initiator: true,
@@ -786,7 +798,7 @@ navigator.mediaDevices.getUserMedia({
     config: {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
-        { 
+        {
           urls: 'turn:turn.example.com:3478',
           username: 'user',
           credential: 'pass'
@@ -794,7 +806,7 @@ navigator.mediaDevices.getUserMedia({
       ]
     }
   });
-  
+
   peer.on('stream', remoteStream => {
     // 显示远程视频
     const video = document.querySelector('video');
@@ -828,6 +840,7 @@ peer.send({ type: 'message', content: 'Hello!' });
 高性能 SFU (选择性转发单元) WebRTC 服务器，用于构建多方视频会议应用。
 
 **代码示例（服务端）：**
+
 ```javascript
 const mediasoup = require('mediasoup');
 
@@ -894,6 +907,7 @@ const consumer = await transport.consume({
 ```
 
 **代码示例（客户端）：**
+
 ```javascript
 import { Device } from 'mediasoup-client';
 
@@ -940,6 +954,7 @@ const producer = await sendTransport.produce({ track });
 开源通用 WebRTC 服务器，基于插件架构设计。
 
 **代码示例：**
+
 ```javascript
 import Janus from 'janus-gateway';
 
@@ -960,7 +975,7 @@ const janus = new Janus({
       plugin: 'janus.plugin.videoroom',
       success: (pluginHandle) => {
         const videoRoom = pluginHandle;
-        
+
         // 加入房间
         const join = {
           request: 'join',
@@ -1038,6 +1053,7 @@ function publishOwnFeed(useAudio) {
 安全、简单、可扩展的视频会议平台，可作为独立应用或嵌入Web应用。
 
 **代码示例（嵌入使用）：**
+
 ```html
 <script src='https://meet.jit.si/external_api.js'></script>
 <div id="meet"></div>
@@ -1113,6 +1129,7 @@ api.dispose();
 端到端的开源实时音视频基础设施，为AI语音应用提供动力（如ChatGPT Voice Mode）。
 
 **代码示例（客户端）：**
+
 ```typescript
 import { Room, RoomEvent, VideoPresets } from 'livekit-client';
 
@@ -1175,6 +1192,7 @@ await room.disconnect();
 ```
 
 **代码示例（服务端Node.js）：**
+
 ```javascript
 import { AccessToken } from 'livekit-server-sdk';
 
@@ -1216,6 +1234,7 @@ const token = at.toJwt();
 Node.js 实现的 RTMP/HTTP-FLV/WS-FLV/HLS/DASH/MP4 流媒体服务器。
 
 **代码示例：**
+
 ```javascript
 const NodeMediaServer = require('node-media-server');
 

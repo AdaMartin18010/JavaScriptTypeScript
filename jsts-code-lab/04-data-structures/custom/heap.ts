@@ -3,12 +3,24 @@
  * @category Data Structures → Custom
  * @difficulty medium
  * @tags heap, priority-queue, binary-heap
+ *
+ * @complexity_analysis
+ * - 插入 (insert): 时间 O(log n), 空间 O(1)。元素置于末尾后向上调整 (heapifyUp)，树高为 ⌊log₂ n⌋。
+ * - 提取极值 (extractMin/Max): 时间 O(log n), 空间 O(1)。将根与末尾交换后向下调整 (heapifyDown)。
+ * - 查看极值 (peek): 时间 O(1), 空间 O(1)。直接访问数组首元素。
+ * - 建堆 (fromArray / heapify): 时间 O(n), 空间 O(1)（均摊）。从最后一个非叶子节点开始向下调整，总操作次数收敛于 2n。
+ * - 堆排序 (heapSort): 时间 O(n log n), 空间 O(n)（输出数组）或 O(1) 辅助（若原地实现）。每次提取极值后调整需 O(log n)，共 n 次。
+ * - 第 K 大/小 (findKth): 时间 O(k log n) 或 O(n + k log n)（含建堆）, 空间 O(n)。
  */
 
 // ============================================================================
 // 1. 最小堆实现
 // ============================================================================
 
+/**
+ * @complexity_analysis
+ * 所有公开方法的时间/空间复杂度参见文件顶部 JSDoc。
+ */
 export class MinHeap<T> {
   private heap: T[] = [];
   private compare: (a: T, b: T) => number;
@@ -133,6 +145,10 @@ export class MinHeap<T> {
 // 2. 最大堆实现
 // ============================================================================
 
+/**
+ * @complexity_analysis
+ * 与 MinHeap 对称：insert O(log n)、extractMax O(log n)、peek O(1)、fromArray O(n)。
+ */
 export class MaxHeap<T> {
   private heap: T[] = [];
   private compare: (a: T, b: T) => number;
@@ -225,6 +241,11 @@ export class MaxHeap<T> {
 // 3. 堆排序
 // ============================================================================
 
+/**
+ * @complexity_analysis
+ * - 时间: O(n log n)。建堆 O(n)，随后 n 次 extractMin 各 O(log n)。
+ * - 空间: O(n)。结果数组与堆副本共 O(n) 辅助空间。
+ */
 export function heapSort<T>(arr: T[], compare?: (a: T, b: T) => number): T[] {
   const heap = MinHeap.fromArray(arr, compare);
   const result: T[] = [];
@@ -240,6 +261,11 @@ export function heapSort<T>(arr: T[], compare?: (a: T, b: T) => number): T[] {
 // 4. 查找第 K 大/小元素
 // ============================================================================
 
+/**
+ * @complexity_analysis
+ * - 时间: O(n + k log n)。先建堆 O(n)，再执行 k 次 extractMin O(k log n)。
+ * - 空间: O(n)。堆存储数组副本。
+ */
 export function findKthSmallest<T>(arr: T[], k: number, compare?: (a: T, b: T) => number): T | undefined {
   if (k < 1 || k > arr.length) return undefined;
   
@@ -252,6 +278,11 @@ export function findKthSmallest<T>(arr: T[], k: number, compare?: (a: T, b: T) =
   return heap.extractMin();
 }
 
+/**
+ * @complexity_analysis
+ * - 时间: O(n + k log n)。逻辑与 findKthSmallest 相同，通过反转比较器实现。
+ * - 空间: O(n)。
+ */
 export function findKthLargest<T>(arr: T[], k: number, compare?: (a: T, b: T) => number): T | undefined {
   if (k < 1 || k > arr.length) return undefined;
   

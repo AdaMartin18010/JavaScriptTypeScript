@@ -58,19 +58,19 @@ function getFileInfo(file: File): FileInfo {
 function readFileAsDataURL(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
+
     reader.onload = (event) => {
       resolve(event.target?.result as string);
     };
-    
+
     reader.onerror = () => {
       reject(new Error(`Failed to read file: ${file.name}`));
     };
-    
+
     reader.onabort = () => {
       reject(new Error(`File reading aborted: ${file.name}`));
     };
-    
+
     reader.readAsDataURL(file);
   });
 }
@@ -81,11 +81,11 @@ function readFileAsDataURL(file: File): Promise<string> {
 function readFileAsText(file: File, encoding: string = 'UTF-8'): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
+
     reader.onload = (event) => {
       resolve(event.target?.result as string);
     };
-    
+
     reader.onerror = () => reject(new Error(`Failed to read file: ${file.name}`));
     reader.readAsText(file, encoding);
   });
@@ -97,11 +97,11 @@ function readFileAsText(file: File, encoding: string = 'UTF-8'): Promise<string>
 function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
+
     reader.onload = (event) => {
       resolve(event.target?.result as ArrayBuffer);
     };
-    
+
     reader.onerror = () => reject(new Error(`Failed to read file: ${file.name}`));
     reader.readAsArrayBuffer(file);
   });
@@ -113,13 +113,13 @@ function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
 function sliceFile(file: File, chunkSize: number = 1024 * 1024): Blob[] {
   const chunks: Blob[] = [];
   let start = 0;
-  
+
   while (start < file.size) {
     const end = Math.min(start + chunkSize, file.size);
     chunks.push(file.slice(start, end));
     start = end;
   }
-  
+
   return chunks;
 }
 
@@ -174,7 +174,7 @@ async function safeReadFile(
       file
     );
   }
-  
+
   // 验证文件类型（可选）
   const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
   if (!allowedTypes.includes(file.type)) {
@@ -184,7 +184,7 @@ async function safeReadFile(
       file
     );
   }
-  
+
   try {
     return await readFileAsDataURL(file);
   } catch (error) {
@@ -245,7 +245,7 @@ interface FileMetadata {
  */
 async function getFileMetadata(filePath: string): Promise<FileMetadata> {
   const stats = await fs.stat(filePath);
-  
+
   return {
     size: stats.size,
     created: stats.birthtime,
@@ -280,7 +280,7 @@ async function writeTextFile(
   // 确保目录存在
   const dir = path.dirname(filePath);
   await fs.mkdir(dir, { recursive: true });
-  
+
   await fs.writeFile(filePath, content, encoding);
 }
 
@@ -290,7 +290,7 @@ async function writeTextFile(
 async function writeBinaryFile(filePath: string, buffer: Buffer): Promise<void> {
   const dir = path.dirname(filePath);
   await fs.mkdir(dir, { recursive: true });
-  
+
   await fs.writeFile(filePath, buffer);
 }
 
@@ -300,10 +300,10 @@ async function writeBinaryFile(filePath: string, buffer: Buffer): Promise<void> 
 async function copyFileStream(sourcePath: string, destPath: string): Promise<void> {
   const dir = path.dirname(destPath);
   await fs.mkdir(dir, { recursive: true });
-  
+
   const source = createReadStream(sourcePath);
   const dest = createWriteStream(destPath);
-  
+
   await pipeline(source, dest);
 }
 
@@ -313,17 +313,17 @@ async function copyFileStream(sourcePath: string, destPath: string): Promise<voi
 async function* readLines(filePath: string): AsyncGenerator<string> {
   const stream = createReadStream(filePath, { encoding: 'utf-8' });
   let buffer = '';
-  
+
   for await (const chunk of stream) {
     buffer += chunk;
     const lines = buffer.split('\n');
     buffer = lines.pop() || ''; // 保留不完整的行
-    
+
     for (const line of lines) {
       yield line.replace(/\r$/, ''); // 移除 Windows 换行符
     }
   }
-  
+
   // 处理最后一部分
   if (buffer) {
     yield buffer;
@@ -342,9 +342,9 @@ async function ensureDir(dirPath: string): Promise<void> {
  */
 async function remove(filePath: string): Promise<void> {
   const stats = await fs.stat(filePath).catch(() => null);
-  
+
   if (!stats) return; // 不存在则忽略
-  
+
   if (stats.isDirectory()) {
     await fs.rmdir(filePath, { recursive: true });
   } else {
@@ -357,7 +357,7 @@ async function remove(filePath: string): Promise<void> {
  */
 async function listDir(dirPath: string): Promise<{ name: string; isFile: boolean }[]> {
   const entries = await fs.readdir(dirPath, { withFileTypes: true });
-  
+
   return entries.map((entry) => ({
     name: entry.name,
     isFile: entry.isFile(),
@@ -370,11 +370,11 @@ async function listDir(dirPath: string): Promise<{ name: string; isFile: boolean
 function processBuffer(buffer: Buffer): Buffer {
   // 示例：对 Buffer 进行某种转换
   const result = Buffer.alloc(buffer.length);
-  
+
   for (let i = 0; i < buffer.length; i++) {
     result[i] = buffer[i] ^ 0xFF; // 简单的字节翻转示例
   }
-  
+
   return result;
 }
 
@@ -419,7 +419,7 @@ async function safeFileOperation<T>(
     return await operation();
   } catch (error) {
     const err = error as NodeJS.ErrnoException;
-    
+
     // 处理常见的 Node.js 文件系统错误
     switch (err.code) {
       case 'ENOENT':
@@ -484,7 +484,7 @@ async function safeReadFile(filePath: string): Promise<Buffer> {
 ```typescript
 /**
  * 文件操作性能优化建议：
- * 
+ *
  * 1. 大文件使用流（Stream）处理，避免一次性加载到内存
  * 2. 小文件（< 1MB）直接使用 readFile/writeFile，更简单高效
  * 3. 使用 pipeline 自动处理背压（backpressure）
@@ -498,13 +498,13 @@ async function batchProcess<T, R>(
   concurrency: number = 5
 ): Promise<R[]> {
   const results: R[] = [];
-  
+
   for (let i = 0; i < items.length; i += concurrency) {
     const batch = items.slice(i, i + concurrency);
     const batchResults = await Promise.all(batch.map(processor));
     results.push(...batchResults);
   }
-  
+
   return results;
 }
 ```
@@ -556,7 +556,7 @@ function uploadWithXHR(
     const xhr = new XMLHttpRequest();
     const formData = new FormData();
     formData.append('file', file);
-    
+
     // 进度监听
     if (options.onProgress) {
       xhr.upload.addEventListener('progress', (event) => {
@@ -569,7 +569,7 @@ function uploadWithXHR(
         }
       });
     }
-    
+
     xhr.addEventListener('load', () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         resolve({ success: true, response: xhr.responseText });
@@ -577,24 +577,24 @@ function uploadWithXHR(
         reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.statusText}`));
       }
     });
-    
+
     xhr.addEventListener('error', () => reject(new Error('Upload failed')));
     xhr.addEventListener('abort', () => reject(new Error('Upload aborted')));
     xhr.addEventListener('timeout', () => reject(new Error('Upload timeout')));
-    
+
     xhr.open(options.method || 'POST', options.url);
-    
+
     // 设置自定义 headers
     if (options.headers) {
       Object.entries(options.headers).forEach(([key, value]) => {
         xhr.setRequestHeader(key, value);
       });
     }
-    
+
     if (options.timeout) {
       xhr.timeout = options.timeout;
     }
-    
+
     xhr.send(formData);
   });
 }
@@ -608,17 +608,17 @@ async function uploadWithFetch(
 ): Promise<{ success: boolean; response: unknown }> {
   const formData = new FormData();
   formData.append('file', file);
-  
+
   const response = await fetch(options.url, {
     method: options.method || 'POST',
     headers: options.headers,
     body: formData,
   });
-  
+
   if (!response.ok) {
     throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
   }
-  
+
   const data = await response.json();
   return { success: true, response: data };
 }
@@ -646,11 +646,11 @@ interface ResumableUploadOptions extends UploadOptions {
 function createChunks(file: File, chunkSize: number): ChunkInfo[] {
   const chunks: ChunkInfo[] = [];
   const totalChunks = Math.ceil(file.size / chunkSize);
-  
+
   for (let i = 0; i < totalChunks; i++) {
     const start = i * chunkSize;
     const end = Math.min(start + chunkSize, file.size);
-    
+
     chunks.push({
       index: i,
       start,
@@ -659,7 +659,7 @@ function createChunks(file: File, chunkSize: number): ChunkInfo[] {
       retries: 0,
     });
   }
-  
+
   return chunks;
 }
 
@@ -678,20 +678,20 @@ async function uploadChunk(
   formData.append('chunkIndex', chunk.index.toString());
   formData.append('totalChunks', Math.ceil(file.size / (options.chunkSize || 2 * 1024 * 1024)).toString());
   formData.append('fileName', file.name);
-  
+
   const maxRetries = options.retryCount || 3;
-  
+
   while (chunk.retries < maxRetries) {
     try {
       const response = await fetch(options.url, {
         method: 'POST',
         body: formData,
       });
-      
+
       if (!response.ok) {
         throw new Error(`Chunk upload failed: ${response.status}`);
       }
-      
+
       options.onChunkComplete?.(chunk.index, maxRetries);
       return;
     } catch (error) {
@@ -714,18 +714,18 @@ async function resumableUpload(
 ): Promise<{ success: boolean; fileId: string }> {
   const chunkSize = options.chunkSize || 2 * 1024 * 1024; // 2MB
   const chunks = createChunks(file, chunkSize);
-  
+
   // 1. 初始化上传，获取已上传的分片列表
   const uploadedChunksResponse = await fetch(`${options.url}/status?fileId=${options.fileId}`);
   const { uploadedChunks } = await uploadedChunksResponse.json() as { uploadedChunks: number[] };
-  
+
   // 2. 过滤已上传的分片
   const pendingChunks = chunks.filter((c) => !uploadedChunks.includes(c.index));
-  
+
   // 3. 串行或并行上传剩余分片（示例使用串行）
   for (const chunk of pendingChunks) {
     await uploadChunk(chunk, file, options.fileId, options);
-    
+
     // 进度更新
     const loaded = (chunks.length - pendingChunks.length + pendingChunks.indexOf(chunk) + 1) * chunkSize;
     options.onProgress?.({
@@ -734,7 +734,7 @@ async function resumableUpload(
       percentage: Math.round((loaded / file.size) * 100),
     });
   }
-  
+
   // 4. 通知服务器合并分片
   const mergeResponse = await fetch(`${options.url}/merge`, {
     method: 'POST',
@@ -745,11 +745,11 @@ async function resumableUpload(
       totalChunks: chunks.length,
     }),
   });
-  
+
   if (!mergeResponse.ok) {
     throw new Error('Failed to merge chunks');
   }
-  
+
   return { success: true, fileId: options.fileId };
 }
 ```
@@ -778,18 +778,18 @@ async function uploadWithRetry(
 ): Promise<{ success: boolean; response: string }> {
   const maxRetries = options.maxRetries || 3;
   let lastError: Error | undefined;
-  
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       return await uploadWithXHR(file, options);
     } catch (error) {
       lastError = error as Error;
-      
+
       // 判断是否可重试
       if (error instanceof UploadError && error.code === 'ABORTED') {
         throw error; // 用户取消不重试
       }
-      
+
       // 指数退避
       if (attempt < maxRetries - 1) {
         const delay = Math.pow(2, attempt) * 1000;
@@ -797,7 +797,7 @@ async function uploadWithRetry(
       }
     }
   }
-  
+
   throw new UploadError(
     `Upload failed after ${maxRetries} attempts: ${lastError?.message}`,
     'MAX_RETRIES_EXCEEDED',
@@ -811,16 +811,16 @@ async function uploadWithRetry(
 ```typescript
 /**
  * 上传优化建议：
- * 
+ *
  * 1. 分片大小选择：
  *    - 网络稳定: 2-5MB
  *    - 移动网络: 512KB-1MB
  *    - 极不稳定: 256KB
- * 
+ *
  * 2. 并发控制：
  *    - 同一域名下浏览器限制 6 个并发连接
  *    - 建议同时上传 3-4 个分片
- * 
+ *
  * 3. 压缩考虑：
  *    - 文本文件（JSON, CSV）在上传前压缩
  *    - 图片在上传前压缩/调整尺寸
@@ -836,21 +836,21 @@ async function concurrentChunkUpload(
   const concurrency = options.concurrency || 3;
   const chunkSize = options.chunkSize || 2 * 1024 * 1024;
   const chunks = createChunks(file, chunkSize);
-  
+
   const executing: Promise<void>[] = [];
-  
+
   for (const chunk of chunks) {
     const promise = uploadChunk(chunk, file, options.fileId, options).then(() => {
       executing.splice(executing.indexOf(promise), 1);
     });
-    
+
     executing.push(promise);
-    
+
     if (executing.length >= concurrency) {
       await Promise.race(executing);
     }
   }
-  
+
   await Promise.all(executing);
 }
 ```
@@ -879,10 +879,10 @@ function downloadWithBlobURL(
   fileName: string,
   mimeType: string = 'application/octet-stream'
 ): void {
-  const blob = typeof content === 'string' 
+  const blob = typeof content === 'string'
     ? new Blob([content], { type: mimeType })
     : content;
-  
+
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
@@ -890,7 +890,7 @@ function downloadWithBlobURL(
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  
+
   // 延迟释放 URL
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
@@ -909,31 +909,31 @@ async function downloadFromURL(
   const response = await fetch(url, {
     headers: options?.headers,
   });
-  
+
   if (!response.ok) {
     throw new Error(`Download failed: ${response.status}`);
   }
-  
+
   const total = parseInt(response.headers.get('Content-Length') || '0');
   const reader = response.body?.getReader();
-  
+
   if (!reader) {
     throw new Error('ReadableStream not supported');
   }
-  
+
   const chunks: Uint8Array[] = [];
   let loaded = 0;
-  
+
   while (true) {
     const { done, value } = await reader.read();
-    
+
     if (done) break;
-    
+
     chunks.push(value);
     loaded += value.length;
     options?.onProgress?.(loaded, total);
   }
-  
+
   // 合并 chunks
   const blob = new Blob(chunks);
   downloadWithBlobURL(blob, fileName);
@@ -957,23 +957,23 @@ async function streamDownload(options: StreamDownloadOptions): Promise<void> {
       const handle = await (window as any).showSaveFilePicker({
         suggestedName: options.fileName,
       });
-      
+
       const writable = await handle.createWritable();
       const response = await fetch(options.url, { headers: options.headers });
       const reader = response.body?.getReader();
-      
+
       if (!reader) throw new Error('No reader available');
-      
+
       let loaded = 0;
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         await writable.write(value);
         loaded += value.length;
         options.onProgress?.(loaded);
       }
-      
+
       await writable.close();
       return;
     } catch (error) {
@@ -981,7 +981,7 @@ async function streamDownload(options: StreamDownloadOptions): Promise<void> {
       console.warn('Native File System API failed, falling back');
     }
   }
-  
+
   // 回退：使用 fetch + Blob
   await downloadFromURL(options.url, options.fileName, {
     headers: options.headers,
@@ -996,7 +996,7 @@ function downloadCSV(data: Record<string, unknown>[], fileName: string): void {
   if (data.length === 0) {
     throw new Error('No data to export');
   }
-  
+
   const headers = Object.keys(data[0]);
   const escapeCSV = (value: unknown): string => {
     const str = String(value ?? '');
@@ -1005,12 +1005,12 @@ function downloadCSV(data: Record<string, unknown>[], fileName: string): void {
     }
     return str;
   };
-  
+
   const csvContent = [
     headers.join(','),
     ...data.map((row) => headers.map((h) => escapeCSV(row[h])).join(',')),
   ].join('\n');
-  
+
   downloadWithBlobURL(csvContent, fileName, 'text/csv;charset=utf-8;');
 }
 
@@ -1018,10 +1018,10 @@ function downloadCSV(data: Record<string, unknown>[], fileName: string): void {
  * 生成并下载 JSON
  */
 function downloadJSON(data: unknown, fileName: string, pretty: boolean = true): void {
-  const jsonContent = pretty 
+  const jsonContent = pretty
     ? JSON.stringify(data, null, 2)
     : JSON.stringify(data);
-  
+
   downloadWithBlobURL(jsonContent, fileName, 'application/json');
 }
 ```
@@ -1053,13 +1053,13 @@ async function safeDownload(
 ): Promise<void> {
   const controller = new AbortController();
   const timeout = options?.timeout || 30000;
-  
+
   const timeoutId = setTimeout(() => controller.abort(), timeout);
-  
+
   try {
     const response = await fetch(url, { signal: controller.signal });
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       throw new DownloadError(
         `HTTP error: ${response.status}`,
@@ -1067,7 +1067,7 @@ async function safeDownload(
         url
       );
     }
-    
+
     // 检查文件大小
     const contentLength = parseInt(response.headers.get('Content-Length') || '0');
     if (options?.maxSize && contentLength > options.maxSize) {
@@ -1077,21 +1077,21 @@ async function safeDownload(
         url
       );
     }
-    
+
     const blob = await response.blob();
     downloadWithBlobURL(blob, fileName);
-    
+
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
     if (error instanceof DownloadError) {
       throw error;
     }
-    
+
     if ((error as Error).name === 'AbortError') {
       throw new DownloadError('Download timeout', 'TIMEOUT', url);
     }
-    
+
     throw new DownloadError(
       `Download failed: ${(error as Error).message}`,
       'UNKNOWN_ERROR',
@@ -1162,11 +1162,11 @@ interface ZipEntry {
 
 async function createZip(files: ZipEntry[]): Promise<Blob> {
   const zip = new JSZip();
-  
+
   for (const file of files) {
     zip.file(file.path, file.content);
   }
-  
+
   return zip.generateAsync({ type: 'blob' });
 }
 
@@ -1176,14 +1176,14 @@ async function createZip(files: ZipEntry[]): Promise<Blob> {
 async function extractZip(zipBlob: Blob): Promise<Map<string, Uint8Array>> {
   const zip = await JSZip.loadAsync(zipBlob);
   const result = new Map<string, Uint8Array>();
-  
+
   for (const [path, file] of Object.entries(zip.files)) {
     if (!file.dir) {
       const content = await file.async('uint8array');
       result.set(path, content);
     }
   }
-  
+
   return result;
 }
 
@@ -1218,7 +1218,7 @@ async function gzipFile(inputPath: string, outputPath: string): Promise<void> {
   const source = createReadStream(inputPath);
   const gzip = createGzip();
   const dest = createWriteStream(outputPath);
-  
+
   await pipeline(source, gzip, dest);
 }
 
@@ -1229,7 +1229,7 @@ async function gunzipFile(inputPath: string, outputPath: string): Promise<void> 
   const source = createReadStream(inputPath);
   const gunzip = createGunzip();
   const dest = createWriteStream(outputPath);
-  
+
   await pipeline(source, gunzip, dest);
 }
 ```
@@ -1278,12 +1278,12 @@ async function safeDecompress(data: Uint8Array): Promise<string> {
 ```typescript
 /**
  * 压缩优化建议：
- * 
+ *
  * 1. 压缩级别选择：
  *    - 1-3: 快速压缩，适合实时场景
  *    - 6: 平衡（默认）
  *    - 9: 最大压缩，适合存储
- * 
+ *
  * 2. 大文件使用流式处理
  * 3. 避免重复压缩已压缩的数据（如图片、视频）
  */
@@ -1292,10 +1292,10 @@ async function safeDecompress(data: Uint8Array): Promise<string> {
 function isLikelyCompressed(data: Buffer): boolean {
   // Gzip 魔数: 0x1f 0x8b
   if (data[0] === 0x1f && data[1] === 0x8b) return true;
-  
+
   // Zlib 魔数
   if (data[0] === 0x78 && (data[1] === 0x9c || data[1] === 0xda)) return true;
-  
+
   return false;
 }
 ```
@@ -1332,7 +1332,7 @@ function loadImage(src: string | File): Promise<HTMLImageElement> {
     img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
     img.onerror = reject;
-    
+
     if (typeof src === 'string') {
       img.src = src;
     } else {
@@ -1348,37 +1348,37 @@ async function resizeImage(
   source: string | File | HTMLImageElement,
   options: ImageProcessOptions
 ): Promise<Blob> {
-  const img = source instanceof HTMLImageElement 
-    ? source 
+  const img = source instanceof HTMLImageElement
+    ? source
     : await loadImage(source);
-  
+
   let { width, height } = img;
-  
+
   // 计算缩放后的尺寸
   if (options.maxWidth && width > options.maxWidth) {
     height = (height * options.maxWidth) / width;
     width = options.maxWidth;
   }
-  
+
   if (options.maxHeight && height > options.maxHeight) {
     width = (width * options.maxHeight) / height;
     height = options.maxHeight;
   }
-  
+
   // 创建 Canvas
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
-  
+
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Failed to get canvas context');
-  
+
   // 使用高质量缩放
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  
+
   ctx.drawImage(img, 0, 0, width, height);
-  
+
   // 转换为 Blob
   const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
@@ -1387,12 +1387,12 @@ async function resizeImage(
       options.quality
     );
   });
-  
+
   // 清理
   if (typeof source !== 'string' && !(source instanceof HTMLImageElement)) {
     URL.revokeObjectURL(img.src);
   }
-  
+
   return blob;
 }
 
@@ -1404,20 +1404,20 @@ async function cropImage(
   cropArea: { x: number; y: number; width: number; height: number }
 ): Promise<Blob> {
   const img = await loadImage(source);
-  
+
   const canvas = document.createElement('canvas');
   canvas.width = cropArea.width;
   canvas.height = cropArea.height;
-  
+
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Failed to get canvas context');
-  
+
   ctx.drawImage(
     img,
     cropArea.x, cropArea.y, cropArea.width, cropArea.height,
     0, 0, cropArea.width, cropArea.height
   );
-  
+
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (b) => b ? resolve(b) : reject(new Error('Crop failed')),
@@ -1434,9 +1434,9 @@ async function rotateImage(
   degrees: 90 | 180 | 270
 ): Promise<Blob> {
   const img = await loadImage(source);
-  
+
   const canvas = document.createElement('canvas');
-  
+
   if (degrees === 180) {
     canvas.width = img.width;
     canvas.height = img.height;
@@ -1444,14 +1444,14 @@ async function rotateImage(
     canvas.width = img.height;
     canvas.height = img.width;
   }
-  
+
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Failed to get canvas context');
-  
+
   ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate((degrees * Math.PI) / 180);
   ctx.drawImage(img, -img.width / 2, -img.height / 2);
-  
+
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (b) => b ? resolve(b) : reject(new Error('Rotate failed')),
@@ -1498,7 +1498,7 @@ async function batchProcessImages(
     inputPaths.map(async (inputPath) => {
       const fileName = path.basename(inputPath, path.extname(inputPath));
       const outputPath = path.join(outputDir, `${fileName}.${options.format}`);
-      
+
       await sharp(inputPath)
         .resize(options.width, options.height, { fit: 'cover' })
         .toFormat(options.format)
@@ -1584,11 +1584,11 @@ function parseCSV<T = Record<string, string>>(
     encoding: options.encoding,
     skipEmptyLines: options.skipEmptyLines ?? true,
   });
-  
+
   if (result.errors.length > 0) {
     console.warn('CSV parsing errors:', result.errors);
   }
-  
+
   return result.data;
 }
 
@@ -1636,13 +1636,13 @@ import * as XLSX from 'xlsx';
 async function readExcel(
   file: File | Buffer
 ): Promise<Record<string, unknown>[]> {
-  const data = file instanceof File 
+  const data = file instanceof File
     ? await file.arrayBuffer()
     : file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength);
-  
+
   const workbook = XLSX.read(data, { type: 'array' });
   const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-  
+
   return XLSX.utils.sheet_to_json(firstSheet);
 }
 
@@ -1652,18 +1652,18 @@ async function readExcel(
 async function readExcelMultiSheet(
   file: File | Buffer
 ): Promise<Map<string, Record<string, unknown>[]>> {
-  const data = file instanceof File 
+  const data = file instanceof File
     ? await file.arrayBuffer()
     : file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength);
-  
+
   const workbook = XLSX.read(data, { type: 'array' });
   const result = new Map<string, Record<string, unknown>[]>();
-  
+
   for (const sheetName of workbook.SheetNames) {
     const sheet = workbook.Sheets[sheetName];
     result.set(sheetName, XLSX.utils.sheet_to_json(sheet));
   }
-  
+
   return result;
 }
 
@@ -1675,7 +1675,7 @@ function createExcel(
   sheetName: string = 'Sheet1'
 ): Buffer {
   const workbook = XLSX.utils.book_new();
-  
+
   if (data instanceof Map) {
     for (const [name, sheetData] of data.entries()) {
       const worksheet = XLSX.utils.json_to_sheet(sheetData);
@@ -1685,7 +1685,7 @@ function createExcel(
     const worksheet = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
   }
-  
+
   return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
 }
 
@@ -1719,10 +1719,10 @@ interface JSONSchema {
 
 function validateJSON(data: unknown, schema: JSONSchema): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
-  
+
   if (schema.type === 'object' && typeof data === 'object' && data !== null) {
     const obj = data as Record<string, unknown>;
-    
+
     if (schema.required) {
       for (const key of schema.required) {
         if (!(key in obj)) {
@@ -1730,7 +1730,7 @@ function validateJSON(data: unknown, schema: JSONSchema): { valid: boolean; erro
         }
       }
     }
-    
+
     if (schema.properties) {
       for (const [key, propSchema] of Object.entries(schema.properties)) {
         if (key in obj) {
@@ -1740,7 +1740,7 @@ function validateJSON(data: unknown, schema: JSONSchema): { valid: boolean; erro
       }
     }
   }
-  
+
   return { valid: errors.length === 0, errors };
 }
 ```
@@ -1764,7 +1764,7 @@ class DataFormatError extends Error {
  */
 function safeParseCSV<T>(csvString: string): { data: T[]; errors: string[] } {
   const errors: string[] = [];
-  
+
   const result = Papa.parse<T>(csvString, {
     header: true,
     skipEmptyLines: true,
@@ -1772,7 +1772,7 @@ function safeParseCSV<T>(csvString: string): { data: T[]; errors: string[] } {
       errors.push(`Row ${err.row}: ${err.message}`);
     },
   });
-  
+
   return { data: result.data, errors };
 }
 ```
@@ -1782,7 +1782,7 @@ function safeParseCSV<T>(csvString: string): { data: T[]; errors: string[] } {
 ```typescript
 /**
  * 大数据处理建议：
- * 
+ *
  * 1. CSV > 10MB: 使用流式解析
  * 2. Excel > 5MB: 考虑转换为 CSV 或使用专门的流式库
  * 3. JSON 过大: 使用 JSONStream 或分块解析
@@ -1795,9 +1795,9 @@ import { createReadStream } from 'fs';
 async function* streamJSONArray(filePath: string): AsyncGenerator<unknown> {
   const stream = createReadStream(filePath);
   const parser = JSONStream.parse('*');
-  
+
   stream.pipe(parser);
-  
+
   for await (const data of parser) {
     yield data;
   }
@@ -1854,13 +1854,13 @@ async function createChunkMetadata(
 ): Promise<ChunkMetadata> {
   const totalChunks = Math.ceil(file.size / chunkSize);
   const fileId = `${file.name}-${file.size}-${file.lastModified}`;
-  
+
   const chunks = await Promise.all(
     Array.from({ length: totalChunks }, async (_, i) => {
       const start = i * chunkSize;
       const end = Math.min(start + chunkSize, file.size);
       const chunk = file.slice(start, end);
-      
+
       return {
         index: i,
         hash: await calculateChunkHash(chunk),
@@ -1868,7 +1868,7 @@ async function createChunkMetadata(
       };
     })
   );
-  
+
   return {
     fileId,
     fileName: file.name,
@@ -1890,27 +1890,27 @@ async function processChunksParallel<T>(
   const concurrency = options.concurrency || 3;
   const results: T[] = new Array(chunks.length);
   const queue: Array<{ index: number; promise: Promise<void> }> = [];
-  
+
   let processed = 0;
-  
+
   const processChunk = async (chunk: Blob, index: number): Promise<void> => {
     results[index] = await processor(chunk, index);
     processed++;
     options.onProgress?.(processed);
   };
-  
+
   for (let i = 0; i < chunks.length; i++) {
     const promise = processChunk(chunks[i], i);
     queue.push({ index: i, promise });
-    
+
     if (queue.length >= concurrency) {
       await Promise.race(queue.map((q) => q.promise));
       queue.shift();
     }
   }
-  
+
   await Promise.all(queue.map((q) => q.promise));
-  
+
   return results;
 }
 
@@ -1931,9 +1931,9 @@ async function processLargeFileByLine(
     input: fileStream,
     crlfDelay: Infinity,
   });
-  
+
   let lineNumber = 0;
-  
+
   for await (const line of rl) {
     lineNumber++;
     await processor(line, lineNumber);
@@ -1950,17 +1950,17 @@ async function copyLargeFile(
 ): Promise<void> {
   const stats = await fs.stat(sourcePath);
   const total = stats.size;
-  
+
   const source = createReadStream(sourcePath);
   const dest = createWriteStream(destPath);
-  
+
   let copied = 0;
-  
+
   source.on('data', (chunk: Buffer) => {
     copied += chunk.length;
     options.onProgress?.(copied, total);
   });
-  
+
   await pipeline(source, dest);
 }
 
@@ -1972,12 +1972,12 @@ async function mergeChunks(
   outputPath: string
 ): Promise<void> {
   const output = createWriteStream(outputPath);
-  
+
   for (const chunkPath of chunkPaths) {
     const input = createReadStream(chunkPath);
     await pipeline(input, output, { end: false });
   }
-  
+
   output.end();
 }
 ```
@@ -2014,7 +2014,7 @@ async function processChunkWithVerification(
       'HASH_MISMATCH'
     );
   }
-  
+
   try {
     await processor(chunk);
   } catch (error) {
@@ -2032,15 +2032,15 @@ async function processChunkWithVerification(
 ```typescript
 /**
  * 大文件处理优化：
- * 
+ *
  * 1. 分片大小：
  *    - 网络传输: 2-5MB
  *    - 本地处理: 10-50MB
- * 
+ *
  * 2. 并发控制：
  *    - 网络上传: 3-4 并发
  *    - 本地处理: 根据 CPU 核心数
- * 
+ *
  * 3. 内存管理：
  *    - 避免同时加载所有分片
  *    - 使用流式处理代替 Buffer
@@ -2056,13 +2056,13 @@ function calculateOptimalChunkSize(): number {
     // 使用可用内存的 1% 作为分片大小，最小 1MB，最大 10MB
     return Math.min(Math.max(memoryGB * 1024 * 1024 * 0.01, 1024 * 1024), 10 * 1024 * 1024);
   }
-  
+
   // Node.js 环境
   if (typeof process !== 'undefined') {
     const totalMemory = require('os').totalmem();
     return Math.min(Math.max(totalMemory * 0.001, 1024 * 1024), 50 * 1024 * 1024);
   }
-  
+
   return 5 * 1024 * 1024; // 默认 5MB
 }
 ```
@@ -2142,7 +2142,7 @@ function createWatcher(
     },
     ...options,
   };
-  
+
   return chokidar.watch(paths, defaultOptions);
 }
 
@@ -2155,7 +2155,7 @@ function watchFiles(
   options: WatchOptions = {}
 ): FSWatcher {
   const watcher = createWatcher(paths, options);
-  
+
   watcher
     .on('add', (path, stats) => {
       handler({ event: 'add', path, stats });
@@ -2178,7 +2178,7 @@ function watchFiles(
     .on('ready', () => {
       console.log('Initial scan complete. Ready for changes');
     });
-  
+
   return watcher;
 }
 
@@ -2193,7 +2193,7 @@ function createDebouncedWatcher(
   const { debounceMs = 300, ...watchOptions } = options;
   const pendingChanges = new Map<string, FileChangeInfo>();
   let debounceTimer: NodeJS.Timeout | null = null;
-  
+
   const flushChanges = () => {
     if (pendingChanges.size > 0) {
       handler(Array.from(pendingChanges.values()));
@@ -2201,14 +2201,14 @@ function createDebouncedWatcher(
     }
     debounceTimer = null;
   };
-  
+
   return watchFiles(paths, (change) => {
     pendingChanges.set(change.path, change);
-    
+
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }
-    
+
     debounceTimer = setTimeout(flushChanges, debounceMs);
   }, watchOptions);
 }
@@ -2222,7 +2222,7 @@ async function watchConfigFile(
 ): Promise<{ stop: () => Promise<void>; getConfig: () => unknown }> {
   let currentConfig = await loader(configPath);
   let reloadCount = 0;
-  
+
   const watcher = watchFiles(configPath, async (change) => {
     if (change.event === 'change') {
       try {
@@ -2235,7 +2235,7 @@ async function watchConfigFile(
       }
     }
   });
-  
+
   return {
     stop: () => watcher.close(),
     getConfig: () => currentConfig,
@@ -2253,16 +2253,16 @@ async function watchAndSync(
   const syncFile = async (filePath: string): Promise<void> => {
     const relativePath = path.relative(sourceDir, filePath);
     const targetPath = path.join(targetDir, relativePath);
-    
+
     await fs.mkdir(path.dirname(targetPath), { recursive: true });
     await fs.copyFile(filePath, targetPath);
     console.log(`Synced: ${relativePath}`);
   };
-  
+
   const removeFile = async (filePath: string): Promise<void> => {
     const relativePath = path.relative(sourceDir, filePath);
     const targetPath = path.join(targetDir, relativePath);
-    
+
     try {
       await fs.unlink(targetPath);
       console.log(`Removed: ${relativePath}`);
@@ -2270,7 +2270,7 @@ async function watchAndSync(
       // 文件可能不存在，忽略错误
     }
   };
-  
+
   return watchFiles(sourceDir, async (change) => {
     switch (change.event) {
       case 'add':
@@ -2314,7 +2314,7 @@ function safeWatchFiles(
       // 不抛出错误，保持监控器运行
     }
   };
-  
+
   try {
     return watchFiles(paths, wrappedHandler, options);
   } catch (error) {
@@ -2331,15 +2331,15 @@ function safeWatchFiles(
 ```typescript
 /**
  * 文件监控性能优化：
- * 
+ *
  * 1. 忽略模式：
  *    - 忽略 node_modules、.git 等
  *    - 忽略日志文件、临时文件
- * 
+ *
  * 2. 轮询 vs 原生：
  *    - 默认使用原生（更快）
  *    - NFS 或 Docker 中使用轮询
- * 
+ *
  * 3. 防抖处理：
  *    - 批量处理变更
  *    - 避免频繁触发
@@ -2353,14 +2353,14 @@ const watchConfigs = {
     ignoreInitial: true,
     awaitWriteFinish: { stabilityThreshold: 100 },
   },
-  
+
   // 生产环境（配置文件监控）
   production: {
     ignored: ['node_modules', '.git'],
     ignoreInitial: false,
     awaitWriteFinish: { stabilityThreshold: 1000 },
   },
-  
+
   // Docker/NFS 环境
   docker: {
     usePolling: true,
@@ -2509,12 +2509,12 @@ async function generateUniquePath(
 ): Promise<string> {
   let counter = 0;
   let filePath = `${basePath}${ext}`;
-  
+
   while (await exists(filePath)) {
     counter++;
     filePath = `${basePath}_${counter}${ext}`;
   }
-  
+
   return filePath;
 }
 
@@ -2523,19 +2523,19 @@ async function generateUniquePath(
  */
 class PathUtils {
   private cwd: string;
-  
+
   constructor(cwd: string = process.cwd()) {
     this.cwd = cwd;
   }
-  
+
   resolve(...segments: string[]): string {
     return path.resolve(this.cwd, ...segments);
   }
-  
+
   relative(fullPath: string): string {
     return path.relative(this.cwd, fullPath);
   }
-  
+
   // 模板路径解析（支持 {date}, {name} 等占位符）
   resolveTemplate(template: string, variables: Record<string, string>): string {
     let result = template;
@@ -2592,7 +2592,7 @@ class PathError extends Error {
 function safeJoin(basePath: string, userInput: string): string {
   // 规范化并解析为绝对路径
   const resolved = path.resolve(basePath, userInput);
-  
+
   // 确保解析后的路径仍在 basePath 内
   if (!resolved.startsWith(path.resolve(basePath))) {
     throw new PathError(
@@ -2601,7 +2601,7 @@ function safeJoin(basePath: string, userInput: string): string {
       userInput
     );
   }
-  
+
   return resolved;
 }
 
@@ -2624,11 +2624,11 @@ function validatePathLength(filePath: string, maxLength: number = 260): void {
 ```typescript
 /**
  * 路径处理优化：
- * 
+ *
  * 1. 避免重复解析：
  *    - 缓存解析结果
  *    - 批量处理时预解析
- * 
+ *
  * 2. 平台检测：
  *    - 运行时检测而非条件编译
  *    - 使用 path.sep 和 path.delimiter
@@ -2645,30 +2645,30 @@ const pathDelimiter = path.delimiter; // Windows ; Unix :
 class PathCache {
   private cache = new Map<string, ParsedPath>();
   private maxSize: number;
-  
+
   constructor(maxSize: number = 1000) {
     this.maxSize = maxSize;
   }
-  
+
   parse(filePath: string): ParsedPath {
     const normalized = normalizePath(filePath);
-    
+
     if (this.cache.has(normalized)) {
       return this.cache.get(normalized)!;
     }
-    
+
     const parsed = path.parse(normalized);
-    
+
     // LRU 简单实现
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value;
       this.cache.delete(firstKey);
     }
-    
+
     this.cache.set(normalized, parsed);
     return parsed;
   }
-  
+
   clear(): void {
     this.cache.clear();
   }

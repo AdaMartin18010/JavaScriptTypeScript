@@ -21,9 +21,11 @@
 ## 详细分析
 
 ### Vite
+
 ```bash
 npm create vite@latest my-app
 ```
+
 - **定位**: 下一代前端开发与构建工具
 - **核心原理**: 开发用 ESM，生产用 Rollup
 - **优势**:
@@ -47,9 +49,11 @@ export default defineConfig({
 ```
 
 ### Webpack
+
 ```bash
 npm install webpack webpack-cli webpack-dev-server
 ```
+
 - **定位**: 最成熟的模块打包器
 - **核心原理**: 依赖图分析 + 代码转换
 - **优势**:
@@ -76,9 +80,11 @@ module.exports = {
 ```
 
 ### Rollup
+
 ```bash
 npm install rollup
 ```
+
 - **定位**: JavaScript 模块打包器，专注于 ES Modules
 - **核心原理**: Tree-shaking 友好，输出干净的 ES 模块
 - **优势**:
@@ -139,11 +145,13 @@ export default {
 ## 迁移建议
 
 ### Webpack → Vite
+
 - 使用 `vite-plugin-commonjs` 处理 CJS 依赖
 - 注意环境变量替换方式变化
 - CSS 相关配置需调整
 
 ### Webpack → Rollup
+
 - 适合库项目迁移
 - 需要重新配置开发流程
 - 测试 WIP (Work In Progress)

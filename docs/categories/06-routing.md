@@ -24,19 +24,21 @@
 | **维护者** | Remix Team |
 
 **特点**
+
 - 🏆 React 生态标准路由库，最广泛采用
 - 🔄 v6 版本全新 Hooks API，声明式路由
 - 🧩 嵌套路由、数据加载、错误处理一体化
 - ⚠️ v7 已与 Remix 合并，成为 React Router v7
 
 **代码示例**
+
 ```tsx
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 const router = createBrowserRouter([
   { path: '/', element: <Home /> },
-  { 
-    path: '/user/:id', 
+  {
+    path: '/user/:id',
     element: <User />,
     loader: ({ params }) => fetchUser(params.id),
   },
@@ -48,8 +50,9 @@ function App() {
 ```
 
 **链接**
-- 📦 GitHub：https://github.com/remix-run/react-router
-- 📖 文档：https://reactrouter.com
+
+- 📦 GitHub：<https://github.com/remix-run/react-router>
+- 📖 文档：<https://reactrouter.com>
 
 ---
 
@@ -62,12 +65,14 @@ function App() {
 | **维护者** | TanStack Team |
 
 **特点**
+
 - 🔒 **端到端类型安全路由**，参数与搜索参数自动推断
 - 🌲 TanStack 生态核心组件 (Query, Start 等)
 - 📁 支持文件系统路由与代码路由
 - 🚀 搜索参数类型化、路由预加载
 
 **代码示例**
+
 ```tsx
 import { createRoute, createRouter } from '@tanstack/react-router';
 
@@ -82,8 +87,9 @@ const userRoute = createRoute({
 ```
 
 **链接**
-- 📦 GitHub：https://github.com/TanStack/router
-- 📖 文档：https://tanstack.com/router
+
+- 📦 GitHub：<https://github.com/TanStack/router>
+- 📖 文档：<https://tanstack.com/router>
 
 ---
 
@@ -97,12 +103,14 @@ const userRoute = createRoute({
 | **维护者** | molefrog |
 
 **特点**
+
 - 🪶 **极简路由**，仅 2.1KB，零依赖
 - 🪝 Hook 优先设计，无 Router Provider 包裹
 - ⚛️ 支持 React 和 Preact
 - 🎯 React Router API 子集，迁移成本低
 
 **代码示例**
+
 ```tsx
 import { Route, Link, useRoute } from 'wouter';
 
@@ -121,7 +129,8 @@ function App() {
 ```
 
 **链接**
-- 📦 GitHub：https://github.com/molefrog/wouter
+
+- 📦 GitHub：<https://github.com/molefrog/wouter>
 
 ---
 
@@ -147,12 +156,14 @@ function App() {
 | **维护者** | Vue Team |
 
 **特点**
+
 - 🌲 **Vue 官方唯一路由**
 - 🔄 v4 支持组合式 API (Composition API)
 - 🛡️ 导航守卫、路由元信息、滚动行为
 - 📐 基于 Vue 响应式系统
 
 **代码示例**
+
 ```ts
 // Vue Router 4 组合式 API
 import { useRouter, useRoute } from 'vue-router';
@@ -169,8 +180,9 @@ await router.push({ name: 'User', params: { id: '123' } });
 ```
 
 **链接**
-- 📦 GitHub：https://github.com/vuejs/router
-- 📖 文档：https://router.vuejs.org
+
+- 📦 GitHub：<https://github.com/vuejs/router>
+- 📖 文档：<https://router.vuejs.org>
 
 ---
 
@@ -185,12 +197,14 @@ await router.push({ name: 'User', params: { id: '123' } });
 | **支持框架** | React, Vue, Solid, Svelte |
 
 **特点**
+
 - 🌐 **跨框架类型安全路由核心**
 - 🔧 与 @tanstack/react-router 共享核心逻辑
 - 📦 各框架适配层统一 API 设计
 
 **链接**
-- 📦 GitHub：https://github.com/TanStack/router
+
+- 📦 GitHub：<https://github.com/TanStack/router>
 
 ---
 
@@ -203,12 +217,14 @@ await router.push({ name: 'User', params: { id: '123' } });
 | **维护者** | UnJS |
 
 **特点**
+
 - 🌳 基于 Radix Tree (基数树) 的高性能路由匹配
 - 🚀 O(k) 匹配复杂度，k 为路径段数
 - 🪶 轻量级，Nuxt 3 底层路由依赖
 - 🎯 服务端路由场景优化
 
 **代码示例**
+
 ```ts
 import { createRouter } from 'radix3';
 
@@ -226,7 +242,8 @@ const result = router.lookup('/user/123');
 ```
 
 **链接**
-- 📦 GitHub：https://github.com/unjs/radix3
+
+- 📦 GitHub：<https://github.com/unjs/radix3>
 
 ---
 
@@ -297,6 +314,8 @@ const result = router.lookup('/user/123');
 ```
 
 **链接**
+
 - 📦 GitHub：链接
 - 📖 文档：链接
+
 ```

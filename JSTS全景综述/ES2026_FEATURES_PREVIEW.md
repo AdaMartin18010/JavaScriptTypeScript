@@ -1,7 +1,7 @@
 # ES2026 新特性预览：TC39 Stage 3/4 提案完整分析
 
 > 文档版本: 1.0.0
-> 最后更新: 2026-04-08
+> 最后更新: 2026-04-16
 > 参考来源: TC39 Proposals GitHub、ECMA-262 草案、官方规范文档
 
 ---
@@ -999,7 +999,87 @@ for (const [user, perm] of pairs) {
 
 ---
 
-### 3.3 其他重要 Stage 3 提案
+### 3.3 近期状态变更提案与新增 Stage 3 成员
+
+#### Type Annotations 提案（已停滞 / 撤回）
+
+| 属性 | 详情 |
+|:---|:---|
+| **当前阶段** | 🔴 已停滞（Stalled），2025 年中 TC39 未推进至 Stage 2 |
+| **原因** | 与 TypeScript 生态的兼容性争议、语法空间冲突（与已有类型注释语法难以统一）、引擎实现方反对意见 |
+| **影响** | 该提案的失败进一步巩固了 TypeScript 作为 JS 生态主导类型方言的地位，同时也促使 Node.js Type Stripping 等"擦除而非原生"路线获得更强支撑 |
+
+> Type Annotations 提案的停滞并不意味着 JS 不会获得任何类型相关特性。相反，Structs、Composite Keys 以及未来可能的类型引导运行时（type-directed runtime）提案，代表了另一种"不引入类型语法但让运行时感知布局"的探索方向。
+
+#### Pattern Matching
+
+| 属性 | 详情 |
+|:---|:---|
+| **当前阶段** | 🟡 Stage 2.7 → Stage 3（2025 年底至 2026 年初推进中） |
+| **Champions** | Jordan Harband, Mark S. Miller, Tab Atkins-Bittner |
+| **规范文档** | [tc39.es/proposal-pattern-matching](https://tc39.es/proposal-pattern-matching/) |
+
+Pattern Matching 旨在为 JavaScript 引入声明式的解构与匹配语法，核心形式如下：
+
+```javascript
+const result = match (res) {
+  when ({ status: 200, body: String }) -> `Success: ${body}`
+  when ({ status: 404 }) -> 'Not found'
+  when ({ status: n }) if (n >= 500) -> 'Server error'
+  default -> 'Unknown'
+};
+```
+
+截至 2026-04，该提案已进入规范的最终打磨阶段，主要争议点在于 `when` 子句的完成值（completion value）语义与现有 `switch` 语句的兼容边界。若 2026 年中前能收集到两份独立实现反馈，有望进入 Stage 3 甚至 Stage 4 冲刺。
+
+#### Records & Tuples（已正式 Withdrawn）
+
+| 属性 | 详情 |
+|:---|:---|
+| **当前阶段** | 🔴 Withdrawn（2025-04-14 TC39 全会） |
+| **撤回原因** | 按值深层比较（`===`）的性能预期不现实，引擎实现复杂度过高 |
+| **替代方案** | **Composite / Composite Keys** 提案（Stage 1），聚焦 Map/Set 多值键场景 |
+
+```javascript
+// 原 Records & Tuples 语法（已作废）
+// const rec = #{ a: 1 }; // 不再推进
+
+// 替代：Composite Keys（Stage 1）
+const key = Composite({ 0: "hello", 1: "world" });
+const map = new Map();
+map.set(key, 42);
+console.log(map.has(Composite({ 0: "hello", 1: "world" }))); // true
+```
+
+#### Float16Array
+
+| 属性 | 详情 |
+|:---|:---|
+| **当前阶段** | 🟡 Stage 3（2025 年底进入） |
+| **Champions** | Kevin Gibbons |
+| **用途** | 16 位浮点数 TypedArray，适配 ML 推理与 GPU 数据交换 |
+
+```javascript
+const f16 = new Float16Array([1.0, 2.0, 3.0]);
+console.log(f16.BYTES_PER_ELEMENT); // 2
+// 与 WebGPU 的 f16 数据类型直接对齐
+```
+
+#### Math.sumPrecise
+
+| 属性 | 详情 |
+|:---|:---|
+| **当前阶段** | 🟡 Stage 3（2025 年进入） |
+| **Champions** | Kevin Gibbons |
+| **用途** | 精确求和，避免浮点数累加误差（类似 Python 的 math.fsum） |
+
+```javascript
+// 传统加法存在精度误差
+console.log(0.1 + 0.2 + 0.3); // 0.6000000000000001
+
+// Math.sumPrecise 提供正确舍入的求和
+console.log(Math.sumPrecise([0.1, 0.2, 0.3])); // 0.6
+```
 
 #### Atomics.pause
 
@@ -1066,6 +1146,8 @@ console.log(typeof shaderCode); // "string"
 | **用途** | 原生支持导入文本资源 |
 | **Champion** | Eemeli Aro |
 
+> **说明**：`Array.fromAsync`、Set methods（`difference`、`intersection`、`union`、`symmetricDifference`）等提案已随 **ES2025** 正式发布，不再属于 ES2026 Preview 范畴。
+
 ---
 
 ## 4. 提案对比与采用建议
@@ -1078,7 +1160,14 @@ console.log(typeof shaderCode); // "string"
 | Explicit Resource Mgmt | Stage 4 | ✅ Firefox/TS | Babel | 低 | 🔥 高 |
 | Decorators | Stage 3 | Babel/TS 5.0+ | 工具链 | 中等 | 🟡 中 |
 | Joint Iteration | Stage 3 | polyfill | polyfill | 低 | 🟡 中 |
+| Float16Array | Stage 3 | 实验性 | polyfill | 低 | 🟡 中 |
+| Math.sumPrecise | Stage 3 | 实验性 | polyfill | 低 | 🟢 低 |
+| Pattern Matching | Stage 2.7/3 | 无 | 不推荐 | 中等 | 🟡 中 |
 | Import Text | Stage 3 | 构建工具 | 构建工具 | 低 | 🟢 低 |
+| Type Annotations | 停滞 | — | — | — | ⚫ 不再关注 |
+| Records & Tuples | Withdrawn | — | — | — | ⚫ 不再关注 |
+
+> **ES2025 已发布特性（不再预览）**：`Array.fromAsync`、Iterator Helpers、Set methods（`difference` / `intersection` / `union` / `symmetricDifference`）、`Promise.withResolvers` 等。
 
 ### 采用路线图
 
@@ -1089,10 +1178,11 @@ console.log(typeof shaderCode); // "string"
 ┌─────────────┐            ┌─────────────┐            ┌─────────────┐
 │  立即采用    │            │  评估试点    │            │  等待成熟    │
 ├─────────────┤            ├─────────────┤            ├─────────────┤
-│ • Temporal  │            │ • Decorators│            │ • Stage 2   │
-│   (polyfill)│            │ • Joint     │            │   提案       │
-│ • using     │            │   Iteration │            │             │
-│   (Babel)   │            │             │            │             │
+│ • Temporal  │            │ • Decorators│            │ • Pattern   │
+│   (polyfill)│            │ • Joint     │            │   Matching  │
+│ • using     │            │   Iteration │            │ • Stage 2   │
+│   (Babel)   │            │ • Float16   │            │   提案       │
+│             │            │ • sumPrecise│            │             │
 └─────────────┘            └─────────────┘            └─────────────┘
 ```
 
@@ -1155,6 +1245,9 @@ async function process() {
 | Decorators | [proposal-decorators](https://github.com/tc39/proposal-decorators) | [tc39.es/proposal-decorators](https://tc39.es/proposal-decorators/) |
 | Joint Iteration | [proposal-joint-iteration](https://github.com/tc39/proposal-joint-iteration) | [tc39.es/proposal-joint-iteration](https://tc39.es/proposal-joint-iteration/) |
 | Decorator Metadata | [proposal-decorator-metadata](https://github.com/tc39/proposal-decorator-metadata) | [tc39.es/proposal-decorator-metadata](https://tc39.es/proposal-decorator-metadata/) |
+| Pattern Matching | [proposal-pattern-matching](https://github.com/tc39/proposal-pattern-matching) | [tc39.es/proposal-pattern-matching](https://tc39.es/proposal-pattern-matching/) |
+| Float16Array | [proposal-float16array](https://github.com/tc39/proposal-float16array) | [tc39.es/proposal-float16array](https://tc39.es/proposal-float16array/) |
+| Math.sumPrecise | [proposal-math-sum](https://github.com/tc39/proposal-math-sum) | [tc39.es/proposal-math-sum](https://tc39.es/proposal-math-sum/) |
 
 ### 实现与工具
 

@@ -26,6 +26,7 @@
 HTTP（超文本传输协议）是应用层协议，基于 TCP/IP 协议族工作。HTTPS 是 HTTP 的安全版本，通过 TLS/SSL 加密通信。
 
 **关键特性：**
+
 - **无状态**：每个请求独立，服务器不保存客户端状态
 - **请求-响应模型**：客户端发起请求，服务器返回响应
 - **方法语义**：GET、POST、PUT、DELETE 等方法定义操作类型
@@ -88,18 +89,18 @@ interface RequestHeaders {
   // 认证相关
   'Authorization': string;        // Bearer token, Basic auth
   'WWW-Authenticate': string;     // 认证方案
-  
+
   // 内容协商
   'Accept': string;               // 可接受的MIME类型
   'Accept-Encoding': string;      // 可接受的编码
   'Accept-Language': string;      // 可接受的语言
   'Content-Type': string;         // 请求体MIME类型
-  
+
   // 缓存控制
   'Cache-Control': string;        // 缓存策略
   'If-None-Match': string;        // ETag条件请求
   'If-Modified-Since': string;    // 时间条件请求
-  
+
   // CORS
   'Origin': string;               // 请求来源
   'Access-Control-Request-Method': string;
@@ -129,11 +130,11 @@ interface TlsConfig {
   ca?: string | Buffer;           // CA证书
   cert?: string | Buffer;         // 客户端证书
   key?: string | Buffer;          // 客户端私钥
-  
+
   // TLS版本
   minVersion?: 'TLSv1.2' | 'TLSv1.3';
   maxVersion?: 'TLSv1.2' | 'TLSv1.3';
-  
+
   // 密码套件
   cipherSuites?: string[];
 }
@@ -256,7 +257,7 @@ interface FetchOptions {
   referrer?: string;
   referrerPolicy?: ReferrerPolicy;
   integrity?: string;
-  
+
   // 非标准扩展 (需要 polyfill 或特定环境)
   signal?: AbortSignal;
   keepalive?: boolean;
@@ -289,7 +290,7 @@ async function advancedFetch<T>(
 
     // 处理不同响应类型
     const contentType = response.headers.get('content-type') || '';
-    
+
     if (contentType.includes('application/json')) {
       return await response.json();
     } else if (contentType.includes('text/')) {
@@ -339,9 +340,9 @@ async function* streamReader<T>(
   try {
     while (true) {
       const { done, value } = await reader.read();
-      
+
       if (done) break;
-      
+
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
       buffer = lines.pop() || '';
@@ -368,7 +369,7 @@ async function downloadWithProgress(
   onProgress: (loaded: number, total: number) => void
 ): Promise<Blob> {
   const response = await fetch(url);
-  
+
   if (!response.ok) {
     throw new Error(`下载失败: ${response.status}`);
   }
@@ -384,9 +385,9 @@ async function downloadWithProgress(
 
   while (true) {
     const { done, value } = await reader.read();
-    
+
     if (done) break;
-    
+
     chunks.push(value);
     receivedLength += value.length;
     onProgress(receivedLength, contentLength);
@@ -395,7 +396,7 @@ async function downloadWithProgress(
   // 合并 chunks
   const allChunks = new Uint8Array(receivedLength);
   let position = 0;
-  
+
   for (const chunk of chunks) {
     allChunks.set(chunk, position);
     position += chunk.length;
@@ -415,7 +416,7 @@ async function uploadFile(
 ): Promise<UploadResult> {
   const formData = new FormData();
   formData.append('file', file);
-  
+
   Object.entries(metadata).forEach(([key, value]) => {
     formData.append(key, value);
   });
@@ -501,7 +502,7 @@ interface UploadResult {
 ### 2.5 错误处理
 
 ```typescript
-type FetchError = 
+type FetchError =
   | { type: 'network'; error: TypeError }
   | { type: 'timeout'; error: DOMException }
   | { type: 'http'; status: number; statusText: string; data?: unknown }
@@ -709,7 +710,7 @@ function requestXHR<T>(options: XHROptions): Promise<XHRResult<T>> {
 
 function parseResponseHeaders(headerStr: string): Record<string, string> {
   const headers: Record<string, string> = {};
-  
+
   headerStr.split('\r\n').forEach((line) => {
     const parts = line.split(': ');
     if (parts.length === 2) {
@@ -747,7 +748,7 @@ interface SyncRequestMessage {
 // worker.ts
 self.addEventListener('message', async (e: MessageEvent<SyncRequestMessage>) => {
   const { id, url } = e.data;
-  
+
   try {
     const response = await fetch(url);
     const buffer = await response.arrayBuffer();
@@ -769,7 +770,7 @@ class XHRAdapter {
 
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      
+
       xhr.open(
         (options.method as string) || 'GET',
         url,
@@ -905,7 +906,7 @@ function createConfiguredClient(config: HttpClientConfig): AxiosInstance {
     (response: AxiosResponse<ApiResponse<unknown>>) => {
       // 统一处理响应格式
       const { data } = response;
-      
+
       if (data.code !== 200) {
         return Promise.reject(new ApiBusinessError(data.message, data.code));
       }
@@ -1006,13 +1007,13 @@ class TypedHttpClient {
     const blob = new Blob([response.data]);
     const downloadUrl = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
-    
+
     link.href = downloadUrl;
     link.download = filename || this.extractFilename(response);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     window.URL.revokeObjectURL(downloadUrl);
   }
 
@@ -1157,10 +1158,10 @@ class RequestBatcher<K, T> {
     await new Promise((resolve) => setTimeout(resolve, this.timeout));
 
     const keys = Array.from(this.pending.keys());
-    
+
     try {
       const results = await this.fetcher(keys);
-      
+
       // 解析所有 pending 的 Promise
       keys.forEach((k) => {
         const promise = this.pending.get(k);
@@ -1280,7 +1281,7 @@ class TypedWebSocket<TSend = unknown, TReceive = unknown> {
     this.ws.onclose = (event) => {
       this.stopHeartbeat();
       this.statusHandlers.close.forEach((handler) => handler(event));
-      
+
       if (!event.wasClean) {
         this.scheduleReconnect();
       }
@@ -1325,7 +1326,7 @@ class TypedWebSocket<TSend = unknown, TReceive = unknown> {
 
   close(code?: number, reason?: string): void {
     this.stopHeartbeat();
-    
+
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
@@ -1351,7 +1352,7 @@ class TypedWebSocket<TSend = unknown, TReceive = unknown> {
         typeof this.config.heartbeatMessage === 'function'
           ? this.config.heartbeatMessage()
           : this.config.heartbeatMessage ?? 'ping';
-      
+
       this.send(message as unknown as TSend);
     }, this.config.heartbeatInterval);
   }
@@ -1365,7 +1366,7 @@ class TypedWebSocket<TSend = unknown, TReceive = unknown> {
 
   private scheduleReconnect(): void {
     const maxAttempts = this.config.maxReconnectAttempts ?? 5;
-    
+
     if (this.reconnectAttempts >= maxAttempts) {
       console.error('WebSocket 重连次数已达上限');
       return;
@@ -1606,10 +1607,10 @@ class OptimizedWebSocket {
     // 假设使用 msgpack-lite
     // const encoded = msgpack.encode(data);
     // this.ws.send(encoded);
-    
+
     // 简化示例：使用原生压缩
     const json = JSON.stringify(data);
-    
+
     if (json.length > (this.options.compressionThreshold ?? 1024)) {
       // 大消息使用压缩
       const compressed = await this.compress(json);
@@ -1681,7 +1682,7 @@ class TypedEventSource<T = unknown> {
 
     this.es.onmessage = (event) => {
       this.lastEventId = event.lastEventId;
-      
+
       try {
         const data = JSON.parse(event.data) as T;
         // 触发默认消息处理器
@@ -1696,7 +1697,7 @@ class TypedEventSource<T = unknown> {
     // 自定义事件处理
     this.eventHandlers.forEach((handlers, eventName) => {
       if (eventName === 'message') return;
-      
+
       this.es!.addEventListener(eventName, (event: MessageEvent) => {
         try {
           const data = JSON.parse(event.data) as T;
@@ -1715,7 +1716,7 @@ class TypedEventSource<T = unknown> {
   on(event: string, handler: (data: T) => void): () => void {
     if (!this.eventHandlers.has(event)) {
       this.eventHandlers.set(event, new Set());
-      
+
       // 如果已连接，添加事件监听器
       if (this.es) {
         this.es.addEventListener(event, (e: MessageEvent) => {
@@ -1812,7 +1813,7 @@ class EnhancedEventSource<T = unknown> {
 
       this.reconnectAttempts = 0;
       this.reader = response.body.getReader();
-      
+
       this.processStream();
     } catch (error) {
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
@@ -1828,7 +1829,7 @@ class EnhancedEventSource<T = unknown> {
     try {
       while (true) {
         const { done, value } = await this.reader!.read();
-        
+
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
@@ -1890,7 +1891,7 @@ class EnhancedEventSource<T = unknown> {
 
   private scheduleReconnect(): void {
     const maxAttempts = this.options.maxReconnectAttempts ?? 5;
-    
+
     if (this.reconnectAttempts >= maxAttempts) {
       console.error('SSE 重连次数已达上限');
       return;
@@ -1996,7 +1997,7 @@ class TcpClient extends EventEmitter {
 
     this.socket.on('close', (hadError: boolean) => {
       this.emit('close', hadError);
-      
+
       if (!this.isClosed) {
         this.scheduleReconnect();
       }
@@ -2035,7 +2036,7 @@ class TcpClient extends EventEmitter {
 
   private scheduleReconnect(): void {
     const maxAttempts = 5;
-    
+
     if (this.reconnectAttempts >= maxAttempts) {
       this.emit('error', new Error('重连次数已达上限'));
       return;
@@ -2052,7 +2053,7 @@ class TcpClient extends EventEmitter {
 
   destroy(): void {
     this.isClosed = true;
-    
+
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
     }
@@ -2144,7 +2145,7 @@ class TcpServer extends EventEmitter {
 
   private handleConnection(socket: Socket): void {
     const clientId = `client-${++this.clientIdCounter}`;
-    
+
     const client: ClientConnection = {
       id: clientId,
       socket,
@@ -2188,7 +2189,7 @@ class TcpServer extends EventEmitter {
 
   sendTo(clientId: string, data: Buffer | string): boolean {
     const client = this.clients.get(clientId);
-    
+
     if (!client || !client.socket.writable) {
       return false;
     }
@@ -2199,7 +2200,7 @@ class TcpServer extends EventEmitter {
 
   disconnect(clientId: string): boolean {
     const client = this.clients.get(clientId);
-    
+
     if (!client) {
       return false;
     }
@@ -2348,7 +2349,7 @@ async function createEchoServer(port: number): Promise<UdpClient> {
 
   server.on('message', (msg: UdpMessage) => {
     console.log(`收到来自 ${msg.remote.address}:${msg.remote.port} 的消息`);
-    
+
     // 回显消息
     server.send(msg.data, msg.remote.port, msg.remote.address);
   });
@@ -2602,11 +2603,11 @@ enum NetworkErrorType {
   DNS_FAILURE = 'DNS_FAILURE',
   CONNECTION_REFUSED = 'CONNECTION_REFUSED',
   CONNECTION_RESET = 'CONNECTION_RESET',
-  
+
   // HTTP 层错误
   HTTP_CLIENT_ERROR = 'HTTP_CLIENT_ERROR',  // 4xx
   HTTP_SERVER_ERROR = 'HTTP_SERVER_ERROR',  // 5xx
-  
+
   // 应用层错误
   PARSE_ERROR = 'PARSE_ERROR',
   CANCELED = 'CANCELED',
@@ -2646,10 +2647,10 @@ class NetworkErrorClassifier {
     // Axios 错误
     if (this.isAxiosError(error)) {
       const axiosError = error as AxiosError;
-      
+
       if (axiosError.response) {
         const status = axiosError.response.status;
-        
+
         if (status >= 500) {
           return {
             type: NetworkErrorType.HTTP_SERVER_ERROR,
@@ -2764,16 +2765,16 @@ class RetryExecutor {
 
         // 判断是否可重试
         const shouldRetry = this.shouldRetry(networkError, context, finalPolicy);
-        
+
         if (!shouldRetry) {
           throw this.createAggregateError(context);
         }
 
         // 计算下次重试延迟
         const delay = this.calculateDelay(context.attempt, finalPolicy);
-        
+
         finalPolicy.onRetry?.(networkError, context.attempt, delay);
-        
+
         await this.sleep(delay);
         context.attempt++;
       }
@@ -2808,7 +2809,7 @@ class RetryExecutor {
     const exponentialDelay = policy.baseDelay * Math.pow(policy.backoffMultiplier, attempt - 1);
     const jitter = Math.random() * 1000; // 0-1000ms 的随机抖动
     const delay = Math.min(exponentialDelay + jitter, policy.maxDelay);
-    
+
     return Math.floor(delay);
   }
 
@@ -2918,7 +2919,7 @@ class CircuitBreaker {
 
     if (this.state === CircuitState.HALF_OPEN) {
       this.successes++;
-      
+
       if (this.successes >= this.options.successThreshold) {
         this.state = CircuitState.CLOSED;
         this.halfOpenCalls = 0;
@@ -2994,10 +2995,10 @@ interface InterceptorConfig {
     data: unknown,
     headers: Record<string, string>
   ) => unknown;
-  
+
   // 响应转换
   transformResponse?: (data: unknown) => unknown;
-  
+
   // 错误处理
   handleError?: (error: AxiosError) => Promise<unknown> | unknown;
 }
@@ -3039,7 +3040,7 @@ class AdvancedInterceptorManager {
   // 日志拦截器
   private loggingInterceptor = (config: InternalAxiosRequestConfig) => {
     config.headers['X-Request-Time'] = Date.now().toString();
-    
+
     console.log(`[Request] ${config.method?.toUpperCase()} ${config.url}`, {
       params: config.params,
       data: config.data,
@@ -3051,7 +3052,7 @@ class AdvancedInterceptorManager {
   // 认证拦截器
   private authInterceptor = (config: InternalAxiosRequestConfig) => {
     const token = this.getAuthToken();
-    
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -3063,7 +3064,7 @@ class AdvancedInterceptorManager {
   private signInterceptor = (config: InternalAxiosRequestConfig) => {
     const timestamp = Date.now().toString();
     const nonce = this.generateNonce();
-    
+
     const signString = this.generateSignString({
       method: config.method,
       url: config.url,
@@ -3083,7 +3084,7 @@ class AdvancedInterceptorManager {
   // 响应解密拦截器
   private decryptInterceptor = (response: AxiosResponse) => {
     const encrypted = response.headers['x-encrypted'];
-    
+
     if (encrypted === 'true' && response.data) {
       response.data = this.decrypt(response.data);
     }
@@ -3120,7 +3121,7 @@ class AdvancedInterceptorManager {
     if (error.response) {
       // 服务器响应错误
       const { status, data } = error.response;
-      
+
       switch (status) {
         case 401:
           this.handleUnauthorized();
@@ -3156,7 +3157,7 @@ class AdvancedInterceptorManager {
     );
 
     await this.sleep(retryAfter * 1000);
-    
+
     // 重试原请求
     return this.client.request(error.config!);
   }
@@ -3210,11 +3211,11 @@ interface FetchInterceptor {
     url: string,
     config: RequestInit
   ) => { url: string; config: RequestInit } | Promise<{ url: string; config: RequestInit }>;
-  
+
   response?: (
     response: Response
   ) => Response | Promise<Response>;
-  
+
   requestError?: (error: Error) => Promise<Error>;
   responseError?: (error: Error) => Promise<Error>;
 }
@@ -3224,7 +3225,7 @@ class FetchInterceptorManager {
 
   use(interceptor: FetchInterceptor): () => void {
     this.interceptors.push(interceptor);
-    
+
     return () => {
       const index = this.interceptors.indexOf(interceptor);
       if (index > -1) {
@@ -3289,7 +3290,7 @@ const interceptedFetch = new FetchInterceptorManager();
 interceptedFetch.use({
   async request(url, config) {
     const token = localStorage.getItem('token');
-    
+
     return {
       url,
       config: {
@@ -3309,7 +3310,7 @@ interceptedFetch.use({
     console.log(`[Fetch] ${config.method || 'GET'} ${url}`);
     return { url, config };
   },
-  
+
   async response(response) {
     console.log(`[Fetch Response] ${response.status}`);
     return response;
@@ -3342,11 +3343,11 @@ function createTransformChain<TInput, TOutput>(
 
     async execute(input: TInput): Promise<TOutput> {
       let result: unknown = input;
-      
+
       for (const transform of transforms) {
         result = await transform(result);
       }
-      
+
       return result as TOutput;
     },
   };
@@ -3426,7 +3427,7 @@ class DataCompressor {
     const { gzip } = await import('zlib');
     const { promisify } = await import('util');
     const gzipAsync = promisify(gzip);
-    
+
     return gzipAsync(Buffer.isBuffer(data) ? data : Buffer.from(data));
   }
 
@@ -3515,7 +3516,7 @@ const httpClientConfig = {
 async function batchRequests(requests: DataRequest[]): Promise<DataResponse[]> {
   // 合并多个请求为单个批量请求
   const batched = groupByEndpoint(requests);
-  
+
   const results = await Promise.all(
     Object.entries(batched).map(([endpoint, reqs]) =>
       fetch(`/api/batch/${endpoint}`, {

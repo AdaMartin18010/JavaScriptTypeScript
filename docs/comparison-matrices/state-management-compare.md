@@ -19,9 +19,11 @@
 ## 详细分析
 
 ### Zustand
+
 ```bash
 npm install zustand
 ```
+
 - **设计理念**: 简单、快速、不可变状态管理
 - **核心概念**: Store = Hook
 - **优势**:
@@ -42,9 +44,11 @@ const useStore = create((set) => ({
 ```
 
 ### Redux (RTK)
+
 ```bash
 npm install @reduxjs/toolkit react-redux
 ```
+
 - **设计理念**: 可预测的状态容器
 - **核心概念**: Action → Reducer → Store
 - **优势**:
@@ -68,9 +72,11 @@ const counterSlice = createSlice({
 ```
 
 ### Jotai
+
 ```bash
 npm install jotai
 ```
+
 - **设计理念**: 原子化状态管理 (Atomic CSS-in-JS 的理念)
 - **核心概念**: Atom = 最小状态单元
 - **优势**:
@@ -89,9 +95,11 @@ const doubledAtom = atom((get) => get(countAtom) * 2)
 ```
 
 ### Pinia
+
 ```bash
 npm install pinia
 ```
+
 - **设计理念**: Vue 生态的官方状态管理
 - **核心概念**: Store = State + Getters + Actions
 - **优势**:

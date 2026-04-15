@@ -30,6 +30,7 @@ test('adds 1 + 2 to equal 3', () => {
 ```
 
 **核心特性:**
+
 - 🚀 **极速执行** - 基于 Vite 的 HMR，比 Jest 快 10-20 倍
 - 🔥 **原生 ESM** - 无需转换，直接支持 ES 模块
 - 📦 **零配置** - 与 Vite 共享配置
@@ -65,6 +66,7 @@ test('adds 1 + 2 to equal 3', () => {
 ```
 
 **核心特性:**
+
 - ✨ **零配置** - 大多数项目无需配置即可运行
 - 🔄 **隔离运行** - 每个测试文件独立运行
 - 📸 **快照测试** - 捕获组件或数据的快照
@@ -98,6 +100,7 @@ describe('Array', function() {
 ```
 
 **核心特性:**
+
 - 🔧 **高度灵活** - 自由选择断言库（Chai、Should.js、expect.js）
 - 🌐 **浏览器支持** - 原生支持浏览器和 Node.js
 - ⏱️ **异步测试** - 优秀的 async/await 和 Promise 支持
@@ -131,6 +134,7 @@ test('bar', async t => {
 ```
 
 **核心特性:**
+
 - 🚀 **并发执行** - 测试文件并行运行
 - 🎯 **ES 模块优先** - 原生支持现代 JavaScript
 - 🔬 **隔离环境** - 每个测试文件独立进程
@@ -164,6 +168,7 @@ test.run();
 ```
 
 **核心特性:**
+
 - 📦 **体积超小** - 无依赖，极轻量
 - ⚡ **速度极快** - 比大多数测试框架更快
 - 🎯 **简单 API** - 学习成本极低
@@ -190,6 +195,7 @@ describe('Math', () => {
 ```
 
 **核心特性:**
+
 - 📦 **内置模块** - Node.js 18+ 原生支持
 - 🎯 **TAP 输出** - 标准测试输出格式
 - 🔄 **异步支持** - 原生支持 Promise 和 async/await
@@ -215,15 +221,16 @@ import { test, expect } from '@playwright/test';
 
 test('homepage has title and links to intro page', async ({ page }) => {
   await page.goto('https://playwright.dev/');
-  
+
   await expect(page).toHaveTitle(/Playwright/);
-  
+
   const getStarted = page.getByRole('link', { name: 'Get started' });
   await expect(getStarted).toHaveAttribute('href', '/docs/intro');
 });
 ```
 
 **核心特性:**
+
 - 🌐 **多浏览器** - Chromium、Firefox、WebKit 统一 API
 - ⏱️ **自动等待** - 智能等待元素可交互，消除 flaky 测试
 - 📱 **移动模拟** - 内置设备模拟和视口配置
@@ -258,6 +265,7 @@ describe('My First Test', () => {
 ```
 
 **核心特性:**
+
 - ⏱️ **实时重载** - 保存即刷新，即时反馈
 - 🕐 **时间旅行** - 悬停命令查看 DOM 状态
 - 🔍 **调试友好** - 原生访问应用代码
@@ -283,15 +291,16 @@ const puppeteer = require('puppeteer');
 (async () => {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  
+
   await page.goto('https://example.com');
   await page.screenshot({ path: 'example.png' });
-  
+
   await browser.close();
 })();
 ```
 
 **核心特性:**
+
 - 🎯 **Chrome 原生** - 紧密集成 Chrome DevTools Protocol
 - 📸 **截图/PDF** - 生成页面截图和 PDF
 - 🧪 **自动化** - 表单提交、键盘输入等自动化
@@ -327,6 +336,7 @@ const { Builder, By, Key, until } = require('selenium-webdriver');
 ```
 
 **核心特性:**
+
 - 🌍 **跨浏览器** - 支持所有主流浏览器
 - 🌐 **WebDriver 标准** - W3C WebDriver 协议实现
 - 🔧 **多语言** - Java、Python、C#、JavaScript 等
@@ -368,6 +378,7 @@ describe('My Login application', () => {
 ```
 
 **核心特性:**
+
 - 🎯 **统一 API** - WebDriver 和 Chrome DevTools 统一接口
 - 📱 **移动端支持** - Appium 集成，支持 iOS/Android
 - 🔧 **灵活配置** - 支持多种测试框架（Mocha、Jasmine、Cucumber）
@@ -408,6 +419,7 @@ test('renders learn react link', () => {
 ```
 
 **核心特性:**
+
 - 👤 **用户中心** - 测试用户可见的行为，而非实现细节
 - 🔍 **查询优先** - 优先使用 getByRole、getByText 等语义化查询
 - ♿ **无障碍** - 鼓励编写无障碍友好的组件
@@ -448,6 +460,7 @@ export const Primary: Story = {
 ```
 
 **核心特性:**
+
 - 📝 **组件文档** - 自动生成组件文档
 - 🎨 **视觉测试** - 与 Chromatic 集成视觉回归测试
 - 🔧 **交互测试** - 在 Storybook 中测试组件交互
@@ -464,6 +477,7 @@ export const Primary: Story = {
 基于 Storybook 的视觉测试和 UI 评审平台。
 
 **核心特性:**
+
 - 📸 **视觉回归** - 像素级 UI 对比
 - 👥 **团队协作** - 视觉变更评审工作流
 - 🌿 **分支集成** - PR 级视觉测试
@@ -500,6 +514,7 @@ export const worker = setupWorker(...handlers);
 ```
 
 **核心特性:**
+
 - 🌐 **网络层拦截** - 在浏览器网络层拦截请求
 - 🔄 **环境共享** - 同一套 mock 用于开发、测试、演示
 - 📡 **REST/GraphQL** - 支持两种 API 风格
@@ -528,6 +543,7 @@ const scope = nock('https://api.github.com')
 ```
 
 **核心特性:**
+
 - 🎯 **HTTP 拦截** - 拦截 Node.js HTTP 请求
 - 📝 **期望断言** - 验证请求参数和头部
 - 🔄 **持久化** - 记录和回放 HTTP 交互
@@ -562,6 +578,7 @@ myMock.expects('method').once();
 ```
 
 **核心特性:**
+
 - 🕵️ **Spies** - 跟踪函数调用
 - 🧱 **Stubs** - 替换函数行为
 - 🎭 **Mocks** - 预设期望和验证
@@ -584,6 +601,7 @@ npx c8 npm test
 ```
 
 **核心特性:**
+
 - ⚡ **原生 V8** - 使用 V8 内置覆盖率
 - 🚀 **极速** - 比 nyc 快得多
 - 📦 **零配置** - 开箱即用
@@ -603,6 +621,7 @@ npx nyc npm test
 ```
 
 **核心特性:**
+
 - 🎯 **Istanbul 生态** - 成熟的覆盖率生态
 - 📊 **多格式** - 支持 HTML、LCOV、Cobertura 等报告
 - 🔧 **配置丰富** - 大量配置选项
@@ -621,6 +640,7 @@ npm install -D v8-to-istanbul
 ```
 
 **核心特性:**
+
 - 🔄 **格式转换** - V8 覆盖率转 Istanbul 格式
 - 🎯 **兼容性** - 结合 V8 速度和 Istanbul 报告
 - 🔧 **工具链** - 现代覆盖率工具链的一部分

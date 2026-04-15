@@ -13,6 +13,7 @@ CSS 和样式工具生态系统，包括 CSS 框架、CSS-in-JS 解决方案、C
 实用优先的 CSS 框架，通过组合原子类快速构建自定义界面。Tailwind v4 于 2025 年发布，采用基于 Rust 的 CSS 引擎，构建速度提升 10 倍。
 
 **核心特性：**
+
 - 实用优先（Utility-first）的设计哲学
 - JIT（Just-in-Time）编译器，只生成使用的样式
 - 高度可配置的设计系统
@@ -46,6 +47,7 @@ npx tailwindcss init
 最经典的 CSS 框架，由 Twitter 开发。提供完整的组件库、栅格系统和 JavaScript 插件。
 
 **核心特性：**
+
 - 丰富的预构建组件（按钮、模态框、导航等）
 - 响应式 12 列栅格系统
 - 内置 JavaScript 交互组件
@@ -74,6 +76,7 @@ npm install bootstrap
 基于 Flexbox 的现代 CSS 框架，纯 CSS 无 JavaScript，语法简洁直观。
 
 **核心特性：**
+
 - 纯 CSS，无 JavaScript 依赖
 - 基于 Flexbox 的现代布局
 - 语义化类名，易于理解
@@ -101,6 +104,7 @@ npm install bulma
 即时按需原子 CSS 引擎，受 Tailwind CSS、Windi CSS 启发，但完全可定制。
 
 **核心特性：**
+
 - 完全按需生成，零运行时开销
 - 完全可定制，无核心工具类
 - 属性化模式（Attributify）支持
@@ -140,6 +144,7 @@ export default defineConfig({
 **⚠️ 状态：** 项目已归档，建议迁移到 UnoCSS 或 Tailwind CSS v4
 
 **核心特性：**
+
 - 完全兼容 Tailwind CSS
 - 按需生成，无需 purge
 - 更快的编译速度
@@ -156,6 +161,7 @@ export default defineConfig({
 React 的 CSS-in-JS 标准方案，支持标签模板字符串定义组件样式。
 
 **核心特性：**
+
 - 组件级样式作用域
 - 支持主题（Theme）系统
 - 动态样式基于 props
@@ -189,6 +195,7 @@ const Button = styled.button`
 高性能 CSS-in-JS 库，支持字符串和对象样式，适用于 React。
 
 **核心特性：**
+
 - 高性能，支持缓存
 - 源映射和标签支持
 - 可预测的样式组合
@@ -222,6 +229,7 @@ const style = css`
 零运行时 CSS-in-JS 库，构建时将样式提取到 CSS 文件。
 
 **核心特性：**
+
 - 零运行时开销
 - 真正的 CSS 文件输出
 - 支持 CSS 嵌套和自定义属性
@@ -250,6 +258,7 @@ const Title = styled.h1`
 零运行时 TypeScript 样式表，在构建时生成类型安全的 CSS。
 
 **核心特性：**
+
 - 类型安全，100% TypeScript
 - 零运行时开销
 - CSS 变量和主题支持
@@ -287,6 +296,7 @@ export const button = style({
 **⚠️ 状态：** 项目已归档，建议考虑其他方案
 
 **核心特性：**
+
 - 近零运行时开销
 - 变体（Variants）支持
 - 服务器端渲染
@@ -308,6 +318,7 @@ npm install @stitches/react
 使用 JavaScript 插件转换 CSS 的工具，现代 CSS 工作流的核心。
 
 **核心特性：**
+
 - 插件生态丰富
 - 现代 CSS 转译（未来的语法）
 - 代码优化和压缩
@@ -336,6 +347,7 @@ module.exports = {
 PostCSS 插件，根据 Can I Use 数据自动添加浏览器前缀。
 
 **核心特性：**
+
 - 自动添加浏览器前缀
 - 移除过时的前缀
 - 支持 Flexbox、Grid 等
@@ -361,6 +373,7 @@ module.exports = {
 将现代 CSS 转换为大多数浏览器可理解的代码。
 
 **核心特性：**
+
 - 支持 CSS 新特性
 - 自动 polyfill
 - 嵌套规则支持
@@ -375,6 +388,7 @@ module.exports = {
 功能强大的 CSS 预处理器，支持变量、嵌套、混合等特性。
 
 **核心特性：**
+
 - 变量和计算
 - 嵌套规则
 - Mixins 和函数
@@ -387,11 +401,11 @@ $primary-color: #3498db;
 
 .button {
   background: $primary-color;
-  
+
   &:hover {
     background: darken($primary-color, 10%);
   }
-  
+
   &--large {
     padding: 20px 40px;
   }
@@ -407,6 +421,7 @@ $primary-color: #3498db;
 动态样式语言，CSS 预处理器，语法类似于 CSS。
 
 **核心特性：**
+
 - 变量和运算
 - 嵌套规则
 - Mixins
@@ -436,6 +451,7 @@ $primary-color: #3498db;
 用 Rust 编写的极速 CSS 解析器、转换器、打包器和压缩器。
 
 **核心特性：**
+
 - 极快的处理速度
 - CSS 模块支持
 - 嵌套 CSS 转换
@@ -458,6 +474,7 @@ npm install lightningcss
 基于约束设计原则构建一致、可主题化的 React 应用。
 
 **核心特性：**
+
 - 主题规范
 - 设计约束系统
 - 深色模式支持
@@ -493,6 +510,7 @@ const theme = {
 样式属性快速 UI 开发，通过 props 快速应用主题值。
 
 **核心特性：**
+
 - 样式属性 API
 - 主题一致性
 - 响应式样式
@@ -531,5 +549,5 @@ const Box = styled.div`
 ---
 
 > 📊 **数据统计时间**：2025年4月
-> 
+>
 > ⭐ Stars 数据来源于 GitHub API，可能存在延迟
