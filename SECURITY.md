@@ -1,11 +1,11 @@
 # 安全扫描报告
 
-> 生成时间: 2026-04-15T22:01:20.780Z
+> 生成时间: 2026-04-15T22:10:46.342Z
 
 ## 摘要
 
-- **扫描项目数**: 1
-- **安全项目**: 1 🟢
+- **扫描项目数**: 2
+- **安全项目**: 2 🟢
 - **存在漏洞**: 0
 - **总漏洞数**: 0
 
@@ -21,7 +21,11 @@
 
 ## 详细报告
 
-### 🟢 `package.json`
+### 🟢 `jsts-code-lab\86-tanstack-start-cloudflare\01-basic-setup\package.json`
+
+> ⚠️ Dependencies not installed. Run npm install first.
+
+### 🟢 `jsts-code-lab\package.json`
 
 ✅ 未发现安全漏洞
 

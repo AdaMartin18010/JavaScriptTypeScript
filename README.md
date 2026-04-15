@@ -115,8 +115,8 @@ pnpm test
 |------|------|-------|
 | [Express](https://github.com/expressjs/express) | 快速、无约束、极简的 Node.js Web 框架 | ![Stars](<https://img.shields.io/github/stars/expressjs/express?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 | [Fastify](https://github.com/fastify/fastify) | 快速且低开销的 Web 框架 | ![Stars](<https://img.shields.io/github/stars/fastify/fastify?style=flat-square&cacheSeconds=3600&t=1776290307238> |
-| [NestJS](https://github.com/nestjs/nest) | 渐进式 Node.js 框架，用于构建高效、可靠和可扩展的服务器端应用程序 | ![Stars](<https://img.shields.io/github/stars/nestjs/nest?style=flat-square&cacheSeconds=3600&t=1776290307238> |
-| [Koa](https://github.com/koajs/koa) | 由 Express 原班团队打造的下一代 Web 框架 | ![Stars](<https://img.shields.io/github/stars/koajs/koa?style=flat-square&cacheSeconds=3600&t=1776290307238> |
+| [NestJS](https://github.com/nestjs/nest) | 渐进式 Node.js 服务端框架 | ![Stars](<https://img.shields.io/github/stars/nestjs/nest?style=flat-square&cacheSeconds=3600&t=1776290307238> |
+| [Koa](https://github.com/koajs/koa) | Express 团队打造的下一代框架 | ![Stars](<https://img.shields.io/github/stars/koajs/koa?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 | [Hono](https://github.com/honojs/hono) | 超轻量级、超快速的 Web 框架，支持多种运行时 | ![Stars](<https://img.shields.io/github/stars/honojs/hono?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 | [Elysia](https://github.com/elysiajs/elysia) | 基于 Bun 的快速、友好的后端框架 | ![Stars](<https://img.shields.io/github/stars/elysiajs/elysia?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 
@@ -135,8 +135,8 @@ pnpm test
 | 项目 | 描述 | Stars |
 |------|------|-------|
 | [Node.js](https://github.com/nodejs/node) | JavaScript 运行时 | ![Stars](<https://img.shields.io/github/stars/nodejs/node?style=flat-square&cacheSeconds=3600&t=1776290307238> |
-| [Deno](https://github.com/denoland/deno) | 现代 JavaScript/TypeScript 运行时 | ![Stars](<https://img.shields.io/github/stars/denoland/deno?style=flat-square&cacheSeconds=3600&t=1776290307238> |
-| [Bun](https://github.com/oven-sh/bun) | 极速 JavaScript 运行时、打包器、测试运行器 | ![Stars](<https://img.shields.io/github/stars/oven-sh/bun?style=flat-square&cacheSeconds=3600&t=1776290307238> |
+| [Deno](https://github.com/denoland/deno) | 现代 JS/TS 运行时 | ![Stars](<https://img.shields.io/github/stars/denoland/deno?style=flat-square&cacheSeconds=3600&t=1776290307238> |
+| [Bun](https://github.com/oven-sh/bun) | 极速 JS 运行时与打包器 | ![Stars](<https://img.shields.io/github/stars/oven-sh/bun?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 
 ---
 
@@ -148,7 +148,7 @@ pnpm test
 |------|------|-------|
 | [Vite](https://github.com/vitejs/vite) | 下一代前端工具链 | ![Stars](<https://img.shields.io/github/stars/vitejs/vite?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 | [esbuild](https://github.com/evanw/esbuild) | 极速 JavaScript 打包器 | ![Stars](<https://img.shields.io/github/stars/evanw/esbuild?style=flat-square&cacheSeconds=3600&t=1776290307238> |
-| [swc](https://github.com/swc-project/swc) | 基于 Rust 的超快速 JavaScript/TypeScript 编译器 | ![Stars](<https://img.shields.io/github/stars/swc-project/swc?style=flat-square&cacheSeconds=3600&t=1776290307238> |
+| [swc](https://github.com/swc-project/swc) | Rust 编写的 JS/TS 编译器 | ![Stars](<https://img.shields.io/github/stars/swc-project/swc?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 | [Turbopack](https://github.com/vercel/turbopack) | Rust 编写的增量打包工具 | ![Stars](<https://img.shields.io/github/stars/vercel/turbopack?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 | [Rollup](https://github.com/rollup/rollup) | JavaScript 模块打包器 | ![Stars](<https://img.shields.io/github/stars/rollup/rollup?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 
@@ -159,7 +159,7 @@ pnpm test
 | [ESLint](https://github.com/eslint/eslint) | 可插拔的 JavaScript 代码检查工具 | ![Stars](<https://img.shields.io/github/stars/eslint/eslint?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 | [Prettier](https://github.com/prettier/prettier) | 代码格式化工具 | ![Stars](<https://img.shields.io/github/stars/prettier/prettier?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 | [Biome](https://github.com/biomejs/biome) | 快速格式化器和检查工具 | ![Stars](<https://img.shields.io/github/stars/biomejs/biome?style=flat-square&cacheSeconds=3600&t=1776290307238> |
-| [TypeScript-ESLint](https://github.com/typescript-eslint/typescript-eslint) | TypeScript 的 ESLint 工具 | ![Stars](<https://img.shields.io/github/stars/typescript-eslint/typescript-eslint?style=flat-square&cacheSeconds=3600&t=1776290307238> |
+| [TypeScript-ESLint](https://github.com/typescript-eslint/typescript-eslint) | TS ESLint 工具集 | ![Stars](<https://img.shields.io/github/stars/typescript-eslint/typescript-eslint?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 
 ### 测试框架
 
@@ -1926,8 +1926,8 @@ export function useCollaborativeEditor(roomId: string) {
 |------|------|-------|
 | [Prisma](https://github.com/prisma/prisma) | 下一代 ORM | ![Stars](<https://img.shields.io/github/stars/prisma/prisma?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 | [TypeORM](https://github.com/typeorm/typeorm) | 支持 TypeScript 的 ORM | ![Stars](<https://img.shields.io/github/stars/typeorm/typeorm?style=flat-square&cacheSeconds=3600&t=1776290307238> |
-| [Drizzle](https://github.com/drizzle-team/drizzle-orm) | TypeScript ORM，以类型安全和 SQL 风格著称 | ![Stars](<https://img.shields.io/github/stars/drizzle-team/drizzle-orm?style=flat-square&cacheSeconds=3600&t=1776290307238> |
-| [Sequelize](https://github.com/sequelize/sequelize) | 基于 Promise 的 Node.js ORM | ![Stars](<https://img.shields.io/github/stars/sequelize/sequelize?style=flat-square&cacheSeconds=3600&t=1776290307238> |
+| [Drizzle](https://github.com/drizzle-team/drizzle-orm) | 类型安全的 SQL 风格 ORM | ![Stars](<https://img.shields.io/github/stars/drizzle-team/drizzle-orm?style=flat-square&cacheSeconds=3600&t=1776290307238> |
+| [Sequelize](https://github.com/sequelize/sequelize) | Node.js ORM 库 | ![Stars](<https://img.shields.io/github/stars/sequelize/sequelize?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 | [Mongoose](https://github.com/Automattic/mongoose) | MongoDB 对象建模 | ![Stars](<https://img.shields.io/github/stars/Automattic/mongoose?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 
 ### 缓存与消息队列
@@ -1957,7 +1957,7 @@ export function useCollaborativeEditor(roomId: string) {
 | 项目 | 描述 | Stars |
 |------|------|-------|
 | [PM2](https://github.com/Unitech/pm2) | Node.js 进程管理器 | ![Stars](<https://img.shields.io/github/stars/Unitech/pm2?style=flat-square&cacheSeconds=3600&t=1776290307238> |
-| [Dockerode](https://github.com/apocas/dockerode) | Docker 远程 API 的 Node.js 库 | ![Stars](<https://img.shields.io/github/stars/apocas/dockerode?style=flat-square&cacheSeconds=3600&t=1776290307238> |
+| [Dockerode](https://github.com/apocas/dockerode) | Docker API 库 | ![Stars](<https://img.shields.io/github/stars/apocas/dockerode?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 | [Clinic.js](https://github.com/clinicjs/node-clinic) | Node.js 性能诊断工具 | ![Stars](<https://img.shields.io/github/stars/clinicjs/node-clinic?style=flat-square&cacheSeconds=3600&t=1776290307238> |
 
 ---
