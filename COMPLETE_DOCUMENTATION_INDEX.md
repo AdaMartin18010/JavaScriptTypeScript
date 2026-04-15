@@ -1,6 +1,6 @@
 # JavaScript/TypeScript 全景知识库 - 完整文档索引
 
-> **版本**: v1.0.0 | **最后更新**: 2026-04-08 | **维护状态**: 活跃维护
+> **版本**: v1.1.0 | **最后更新**: 2026-04-16 | **维护状态**: 活跃维护
 
 ---
 
@@ -9,7 +9,7 @@
 本知识库包含三大核心组成部分：
 
 1. **awesome-jsts-ecosystem** - 生态工具导航
-2. **jsts-code-lab** - 代码实验室 (90个技术模块)
+2. **jsts-code-lab** - 代码实验室 (91个技术模块)
 3. **docs/** - 分类文档与学习路径
 
 ---
@@ -29,6 +29,7 @@
 | 文档 | 路径 | 描述 | 复杂度 |
 |------|------|------|--------|
 | ECMAScript 演进史 | ./jsts-code-lab/01-ecmascript-evolution/ | ES6+ 新特性代码实现 | 2星 |
+| ES2025 Atomics.pause | ./jsts-code-lab/01-ecmascript-evolution/es2025-preview/atomics-pause.ts | SharedArrayBuffer 自旋锁与性能优化 | 4星 |
 | 执行流分析 | ./jsts-code-lab/14-execution-flow/ | 事件循环、调用栈、执行上下文 | 3星 |
 
 ### 1.3 数据结构
@@ -36,7 +37,9 @@
 | 文档 | 路径 | 描述 | 复杂度 |
 |------|------|------|--------|
 | 数据结构实现 | ./jsts-code-lab/04-data-structures/ | 链表、树、图、哈希表等 | 3星 |
+| 数据结构理论 | ./jsts-code-lab/04-data-structures/THEORY.md | 时间/空间复杂度与形式化推导 | 4星 |
 | 算法实现 | ./jsts-code-lab/05-algorithms/ | 排序、搜索、动态规划等 | 3星 |
+| 算法理论 | ./jsts-code-lab/05-algorithms/THEORY.md | 复杂度证明、主定理与循环不变式 | 4星 |
 
 ---
 
@@ -130,6 +133,7 @@
 | 文档 | 路径 | 描述 | 复杂度 |
 |------|------|------|--------|
 | DevOps | ./jsts-code-lab/22-deployment-devops/ | CI/CD、GitOps、蓝绿部署 | 3星 |
+| TanStack Start Cloudflare 部署 | ./docs/guides/TANSTACK_START_CLOUDFLARE_DEPLOYMENT.md | 官方部署指南与边缘实战 | 3星 |
 | 可观测性 | ./jsts-code-lab/74-observability/ | 日志、指标、链路追踪 | 3星 |
 | 混沌工程 | ./jsts-code-lab/75-chaos-engineering/ | 故障注入、韧性测试 | 4星 |
 | Serverless | ./jsts-code-lab/31-serverless/ | FaaS、BaaS、冷启动优化 | 3星 |
@@ -173,6 +177,7 @@
 | 文档 | 路径 | 描述 | 复杂度 |
 |------|------|------|--------|
 | 量子计算 | ./jsts-code-lab/77-quantum-computing/ | 量子算法、Q#集成 | 5星 |
+| 量子计算理论 | ./jsts-code-lab/77-quantum-computing/THEORY.md | 量子门数学原理与复杂度分析 | 5星 |
 
 ---
 
@@ -199,6 +204,7 @@
 | 文档 | 路径 | 描述 |
 |------|------|------|
 | 前端框架 | ./docs/categories/01-frontend-frameworks.md | React/Vue/Angular/Svelte等 |
+| TanStack Start | ./docs/categories/22-tanstack-start.md | 全栈框架与 Cloudflare 边缘部署 |
 | UI组件库 | ./docs/categories/02-ui-component-libraries.md | Material-UI/Ant Design/shadcn/ui等 |
 | 状态管理 | ./docs/categories/05-state-management.md | Redux/Zustand/Pinia等 |
 | 路由 | ./docs/categories/06-routing.md | React Router/TanStack Router等 |
@@ -309,23 +315,27 @@
 ### 9.3 按复杂度分级
 
 **1-2星 (入门级)**
+
 - ./docs/categories/14-linting-formatting.md - 代码规范工具
 - ./jsts-code-lab/00-language-core/ - TypeScript基础
 - ./jsts-code-lab/07-testing/ - 测试基础
 - ./docs/learning-paths/beginners-path.md - 初学者路径
 
 **3星 (中级)**
+
 - ./jsts-code-lab/02-design-patterns/ - 设计模式
 - ./jsts-code-lab/03-concurrency/ - 并发编程
 - ./jsts-code-lab/18-frontend-frameworks/ - 前端框架
 - ./docs/learning-paths/intermediate-path.md - 进阶路径
 
 **4星 (高级)**
+
 - ./jsts-code-lab/06-architecture-patterns/ - 架构模式
 - ./jsts-code-lab/25-microservices/ - 微服务
 - ./jsts-code-lab/33-ai-integration/ - AI集成
 
 **5星 (专家级)**
+
 - ./jsts-code-lab/70-distributed-systems/THEORY.md - 分布式系统理论
 - ./jsts-code-lab/71-consensus-algorithms/ - 共识算法
 - ./jsts-code-lab/80-formal-verification/ - 形式化验证
@@ -339,12 +349,13 @@
 
 | 类别 | 数量 | 占比 |
 |------|------|------|
-| jsts-code-lab 模块 | 90 | 51% |
-| docs/categories 分类 | 20 | 11% |
+| jsts-code-lab 模块 | 91 | 50% |
+| docs/categories 分类 | 21 | 11% |
 | docs/comparison-matrices 对比 | 5 | 3% |
 | docs/learning-paths 路径 | 3 | 2% |
-| 根目录及辅助文档 | 58 | 33% |
-| **总计** | **176** | **100%** |
+| docs/guides 指南 | 1 | 1% |
+| 根目录及辅助文档 | 62 | 33% |
+| **总计** | **183** | **100%** |
 
 ### 10.2 代码实验室模块分布
 
@@ -353,9 +364,9 @@
 | 核心层 (00-19) | 00-17 | 18 |
 | 基础层 (20-49) | 20-37 | 18 |
 | 智能层 (50-69) | 50-69 | 20 |
-| 系统层 (70-89) | 70-89 | 20 |
+| 系统层 (70-89) | 70-89 | 21 |
 | 其他 | - | 14 |
-| **小计** | | **90** |
+| **小计** | | **91** |
 
 ### 10.3 理论文档清单
 
@@ -371,6 +382,16 @@
 ---
 
 ## 11. 更新日志
+
+### v1.1.0 (2026-04-16)
+
+- 新增 TanStack Start + Cloudflare 专题模块 (86-tanstack-start-cloudflare)
+- 补充 ES2025 Atomics.pause 示例与理论文档
+- 新增数据结构与算法 THEORY.md 形式化推导
+- 新增量子计算 THEORY.md
+- 更新安全报告与依赖漏洞修复
+- 补全 23 个核心模块测试文件
+- 网站导航接入学习路径
 
 ### v1.0.0 (2026-04-08)
 
@@ -433,7 +454,7 @@ JavaScriptTypeScript/
 │       └── translations/
 │
 ├── docs/                              # 分类文档与对比
-│   ├── categories/                    # 20个分类文档
+│   ├── categories/                    # 21个分类文档
 │   │   ├── 01-frontend-frameworks.md
 │   │   ├── 02-ui-component-libraries.md
 │   │   ├── 03-build-tools.md
@@ -449,7 +470,7 @@ JavaScriptTypeScript/
 │   ├── research/                      # 研究报告
 │   └── templates/                     # 文档模板
 │
-├── jsts-code-lab/                     # 代码实验室 (90模块)
+├── jsts-code-lab/                     # 代码实验室 (91模块)
 │   ├── README.md
 │   ├── ARCHITECTURE_GUIDE.md          # 架构指南
 │   ├── CROSS-REFERENCE.md             # 模块交叉引用
@@ -465,6 +486,6 @@ JavaScriptTypeScript/
 
 ---
 
-> **维护者**: JavaScript/TypeScript 全景知识库团队  
-> **最后更新**: 2026-04-08  
-> **版本**: v1.0.0
+> **维护者**: JavaScript/TypeScript 全景知识库团队
+> **最后更新**: 2026-04-16
+> **版本**: v1.1.0
