@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   MigrationRunner,
   MemoryMigrationStorage,
-} from './migration-system';
-import type { Migration } from './migration-system';
+} from './migration-system.js';
+import type { Migration } from './migration-system.js';
 
 describe('MigrationRunner', () => {
   let storage: MemoryMigrationStorage;

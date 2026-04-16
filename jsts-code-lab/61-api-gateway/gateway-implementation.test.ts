@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { GatewayRouter, RateLimiter, CircuitBreaker, APIGateway } from './gateway-implementation';
+import { GatewayRouter, RateLimiter, CircuitBreaker, APIGateway } from './gateway-implementation.js';
 
 describe('GatewayRouter', () => {
   it('matches static path and method', () => {

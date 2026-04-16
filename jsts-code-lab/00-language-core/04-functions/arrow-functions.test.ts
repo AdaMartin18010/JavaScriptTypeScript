@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { arrow, traditional, makeObject, Counter, ModernCounter, compose, pipe, curry, add5, multiply2, toString, withArgs } from './arrow-functions';
+import { arrow, traditional, makeObject, Counter, ModernCounter, compose, pipe, curry, add5, multiply2, toString, withArgs } from './arrow-functions.js';
 
 describe('arrow functions', () => {
   it('arrow and traditional should produce same result', () => {
@@ -23,7 +23,7 @@ describe('arrow functions', () => {
   });
 
   it('pipe should apply functions left to right', () => {
-    const piped = pipe<number>(add5, multiply2, toString);
+    const piped = pipe<number>(add5, multiply2, toString as unknown as (x: number) => number);
     expect(piped(5)).toBe('20');
   });
 

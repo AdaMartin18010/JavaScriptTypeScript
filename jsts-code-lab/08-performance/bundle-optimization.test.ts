@@ -8,7 +8,7 @@ import {
   createUtils,
   mathUtils,
   demo
-} from './bundle-optimization';
+} from './bundle-optimization.js';
 
 describe('bundle-optimization', () => {
   describe('ModuleLoader', () => {

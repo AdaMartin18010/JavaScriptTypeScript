@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { FedAvgAggregator, DifferentialPrivacy, LocalTrainer, demo } from './federated-learning'
+import { FedAvgAggregator, DifferentialPrivacy, LocalTrainer, demo } from '\./federated-learning.js'
 
 describe('federated-learning', () => {
   it('FedAvgAggregator is defined', () => {

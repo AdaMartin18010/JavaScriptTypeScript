@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DockerfileBuilder, DockerComposeBuilder, createNodeDockerfile } from './docker-config';
+import { DockerfileBuilder, DockerComposeBuilder, createNodeDockerfile } from './docker-config.js';
 
 describe('DockerfileBuilder', () => {
   it('builds multi-stage Dockerfile', () => {

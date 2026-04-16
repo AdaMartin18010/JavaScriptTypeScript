@@ -6,7 +6,7 @@ import {
   IntegrationTestRunner,
   UserFlowTester,
   demo
-} from './integration-testing';
+} from './integration-testing.js';
 
 describe('integration-testing', () => {
   describe('MockDatabaseConnection', () => {

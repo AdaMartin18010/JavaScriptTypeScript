@@ -6,7 +6,7 @@ import {
   Car,
   Motorcycle,
   Truck,
-} from './factory-js';
+} from './factory-js.js';
 
 describe('VehicleFactoryTS', () => {
   it('should create a car', () => {

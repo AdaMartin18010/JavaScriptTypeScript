@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { EventTracker, FunnelAnalyzer, UserPathAnalyzer, MetricsCalculator } from './analytics-engine';
+import { EventTracker, FunnelAnalyzer, UserPathAnalyzer, MetricsCalculator } from './analytics-engine.js';
 
 describe('EventTracker', () => {
   it('tracks events and allows filtering', () => {
@@ -21,10 +21,10 @@ describe('EventTracker', () => {
 
 describe('FunnelAnalyzer', () => {
   const events = [
-    { name: 'view', userId: 'u1', timestamp: 1, properties: {} },
-    { name: 'cart', userId: 'u1', timestamp: 2, properties: {} },
-    { name: 'buy', userId: 'u1', timestamp: 3, properties: {} },
-    { name: 'view', userId: 'u2', timestamp: 1, properties: {} }
+    { id: 'e1', name: 'view', userId: 'u1', sessionId: 's1', timestamp: 1, properties: {} },
+    { id: 'e2', name: 'cart', userId: 'u1', sessionId: 's1', timestamp: 2, properties: {} },
+    { id: 'e3', name: 'buy', userId: 'u1', sessionId: 's1', timestamp: 3, properties: {} },
+    { id: 'e4', name: 'view', userId: 'u2', sessionId: 's2', timestamp: 1, properties: {} }
   ];
 
   it('computes funnel steps', () => {
@@ -44,8 +44,8 @@ describe('UserPathAnalyzer', () => {
   it('analyzes session paths', () => {
     const analyzer = new UserPathAnalyzer();
     const events = [
-      { name: 'a', sessionId: 's1', timestamp: 1, properties: {} },
-      { name: 'b', sessionId: 's1', timestamp: 2, properties: {} }
+      { id: 'e5', name: 'a', sessionId: 's1', timestamp: 1, properties: {} },
+      { id: 'e6', name: 'b', sessionId: 's1', timestamp: 2, properties: {} }
     ];
     expect(analyzer.analyzePaths(events, 's1')).toEqual(['a', 'b']);
   });
@@ -53,9 +53,9 @@ describe('UserPathAnalyzer', () => {
 
 describe('MetricsCalculator', () => {
   const events = [
-    { name: 'open', sessionId: 's1', timestamp: 1, properties: {} },
-    { name: 'open', sessionId: 's2', timestamp: 1, properties: {} },
-    { name: 'purchase', sessionId: 's1', timestamp: 10, properties: {} }
+    { id: 'e7', name: 'open', sessionId: 's1', timestamp: 1, properties: {} },
+    { id: 'e8', name: 'open', sessionId: 's2', timestamp: 1, properties: {} },
+    { id: 'e9', name: 'purchase', sessionId: 's1', timestamp: 10, properties: {} }
   ];
 
   it('calculates conversion rate', () => {

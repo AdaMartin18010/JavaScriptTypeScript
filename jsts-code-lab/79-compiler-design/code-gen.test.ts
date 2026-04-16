@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { SourceMapGenerator, CodeGenerator, demo } from './code-gen'
+import { SourceMapGenerator, CodeGenerator, demo } from './code-gen.js'
 
 describe('code-gen', () => {
   it('SourceMapGenerator is defined', () => {
@@ -8,7 +8,7 @@ describe('code-gen', () => {
   it('SourceMapGenerator can be instantiated if constructor permits', () => {
     if (typeof SourceMapGenerator === 'function') {
       try {
-        const instance = new SourceMapGenerator();
+        const instance = new (SourceMapGenerator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('code-gen', () => {
   it('CodeGenerator can be instantiated if constructor permits', () => {
     if (typeof CodeGenerator === 'function') {
       try {
-        const instance = new CodeGenerator();
+        const instance = new (CodeGenerator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

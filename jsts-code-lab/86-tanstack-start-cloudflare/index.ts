@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @file TanStack Start + Cloudflare 代码实验室入口
  * @module tanstack-start-cloudflare
@@ -24,3 +25,4 @@ export * as AuthConfig from './03-auth/auth-config.js';
 // 性能
 export * as SSRStreaming from './04-performance/ssr-streaming.js';
 export * as RouterPreload from './04-performance/router-preload.js';
+

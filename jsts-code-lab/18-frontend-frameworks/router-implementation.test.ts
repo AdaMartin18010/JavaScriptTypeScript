@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { HistoryRouter, HashRouter, createRouterLink, type Route } from './router-implementation';
+import { HistoryRouter, HashRouter, createRouterLink, type Route } from './router-implementation.js';
 
 describe('HistoryRouter', () => {
   let routes: Route[];
@@ -42,7 +42,7 @@ describe('HistoryRouter', () => {
 
   it('should register and run global guards', async () => {
     const router = new HistoryRouter(routes);
-    const guard = vi.fn<typeof routes[0]['beforeEnter']>((to, from, next) => next(true));
+    const guard = vi.fn((to: any, from: any, next: any) => next(true));
     router.beforeEach(guard as any);
 
     // @ts-expect-error accessing private method for testing
@@ -52,7 +52,7 @@ describe('HistoryRouter', () => {
 
   it('should block navigation when guard returns false', async () => {
     const router = new HistoryRouter(routes);
-    const guard = vi.fn<typeof routes[0]['beforeEnter']>((to, from, next) => next(false));
+    const guard = vi.fn((to: any, from: any, next: any) => next(false));
     router.beforeEach(guard as any);
 
     // @ts-expect-error accessing private method for testing

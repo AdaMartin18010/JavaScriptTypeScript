@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { BackoffStrategies, RetryExecutor, InMemoryIdempotencyStore, withIdempotency, BatchRetryExecutor, demo } from './retry-mechanisms'
+import { BackoffStrategies, RetryExecutor, InMemoryIdempotencyStore, withIdempotency, BatchRetryExecutor, demo } from './retry-mechanisms.js'
 
 describe('retry-mechanisms', () => {
   it('BackoffStrategies is defined', () => {
@@ -8,7 +8,7 @@ describe('retry-mechanisms', () => {
   it('BackoffStrategies can be instantiated if constructor permits', () => {
     if (typeof BackoffStrategies === 'function') {
       try {
-        const instance = new BackoffStrategies();
+        const instance = new (BackoffStrategies as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('retry-mechanisms', () => {
   it('RetryExecutor can be instantiated if constructor permits', () => {
     if (typeof RetryExecutor === 'function') {
       try {
-        const instance = new RetryExecutor();
+        const instance = new (RetryExecutor as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('retry-mechanisms', () => {
   it('InMemoryIdempotencyStore can be instantiated if constructor permits', () => {
     if (typeof InMemoryIdempotencyStore === 'function') {
       try {
-        const instance = new InMemoryIdempotencyStore();
+        const instance = new (InMemoryIdempotencyStore as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('retry-mechanisms', () => {
   it('withIdempotency is callable', () => {
     if (typeof withIdempotency === 'function') {
       try {
-        const result = withIdempotency();
+        const result = (withIdempotency as any)();
         expect(result).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('retry-mechanisms', () => {
   it('BatchRetryExecutor can be instantiated if constructor permits', () => {
     if (typeof BatchRetryExecutor === 'function') {
       try {
-        const instance = new BatchRetryExecutor();
+        const instance = new (BatchRetryExecutor as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,7 +63,7 @@ describe('retry-mechanisms', () => {
   it('demo is callable', () => {
     if (typeof demo === 'function') {
       try {
-        const result = demo();
+        const result = (demo as any)();
         expect(result).toBeDefined();
       } catch { }
     }

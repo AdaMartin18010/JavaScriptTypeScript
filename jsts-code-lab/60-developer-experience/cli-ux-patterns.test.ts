@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { ProgressBar, Spinner, PromptSimulator, TableFormatter } from './cli-ux-patterns';
+import { ProgressBar, Spinner, PromptSimulator, TableFormatter } from './cli-ux-patterns.js';
 
 describe('ProgressBar', () => {
   it('renders progress to stdout', () => {

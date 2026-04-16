@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ViteConfigBuilder, VitePresets } from './vite-config';
+import { ViteConfigBuilder, VitePresets } from './vite-config.js';
 
 describe('ViteConfigBuilder', () => {
   it('builds custom config', () => {
@@ -45,7 +45,7 @@ describe('ViteConfigBuilder', () => {
 describe('VitePresets', () => {
   it('react preset includes plugin and port', () => {
     const cfg = VitePresets.react();
-    expect(cfg.plugins?.some(p => p.name === '@vitejs/plugin-react')).toBe(true);
+    expect(cfg.plugins?.some((p: any) => p.name === '@vitejs/plugin-react')).toBe(true);
     expect(cfg.server?.port).toBe(3000);
   });
 

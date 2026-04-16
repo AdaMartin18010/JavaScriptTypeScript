@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Matrix4, XRSpace, XRView, XRFrame, SceneObject, HandTracking, XRAnchor, XRAnchorManager, XRHitTest, demo } from './xr-engine'
+import { Matrix4, XRSpace, XRView, XRFrame, SceneObject, HandTracking, XRAnchor, XRAnchorManager, XRHitTest, demo } from '\./xr-engine.js'
 
 describe('xr-engine', () => {
   it('Matrix4 is defined', () => {
@@ -8,7 +8,7 @@ describe('xr-engine', () => {
   it('Matrix4 can be instantiated if constructor permits', () => {
     if (typeof Matrix4 === 'function') {
       try {
-        const instance = new Matrix4();
+        const instance = new (Matrix4 as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('xr-engine', () => {
   it('XRSpace can be instantiated if constructor permits', () => {
     if (typeof XRSpace === 'function') {
       try {
-        const instance = new XRSpace();
+        const instance = new (XRSpace as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('xr-engine', () => {
   it('XRView can be instantiated if constructor permits', () => {
     if (typeof XRView === 'function') {
       try {
-        const instance = new XRView();
+        const instance = new (XRView as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('xr-engine', () => {
   it('XRFrame can be instantiated if constructor permits', () => {
     if (typeof XRFrame === 'function') {
       try {
-        const instance = new XRFrame();
+        const instance = new (XRFrame as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('xr-engine', () => {
   it('SceneObject can be instantiated if constructor permits', () => {
     if (typeof SceneObject === 'function') {
       try {
-        const instance = new SceneObject();
+        const instance = new (SceneObject as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,7 +63,7 @@ describe('xr-engine', () => {
   it('HandTracking can be instantiated if constructor permits', () => {
     if (typeof HandTracking === 'function') {
       try {
-        const instance = new HandTracking();
+        const instance = new (HandTracking as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -74,7 +74,7 @@ describe('xr-engine', () => {
   it('XRAnchor can be instantiated if constructor permits', () => {
     if (typeof XRAnchor === 'function') {
       try {
-        const instance = new XRAnchor();
+        const instance = new (XRAnchor as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -85,7 +85,7 @@ describe('xr-engine', () => {
   it('XRAnchorManager can be instantiated if constructor permits', () => {
     if (typeof XRAnchorManager === 'function') {
       try {
-        const instance = new XRAnchorManager();
+        const instance = new (XRAnchorManager as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -96,7 +96,7 @@ describe('xr-engine', () => {
   it('XRHitTest can be instantiated if constructor permits', () => {
     if (typeof XRHitTest === 'function') {
       try {
-        const instance = new XRHitTest();
+        const instance = new (XRHitTest as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -107,9 +107,10 @@ describe('xr-engine', () => {
   it('demo is callable', () => {
     if (typeof demo === 'function') {
       try {
-        const result = demo();
+        const result = (demo as any)();
         expect(result).toBeDefined();
       } catch { }
     }
   });
 });
+

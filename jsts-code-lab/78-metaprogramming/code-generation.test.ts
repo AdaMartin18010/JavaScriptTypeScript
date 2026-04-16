@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { CodeGenerator, TypeScriptGenerator, JSONSchemaGenerator, TemplateEngine, DSLBuilder, demo } from './code-generation'
+import { CodeGenerator, TypeScriptGenerator, JSONSchemaGenerator, TemplateEngine, DSLBuilder, demo } from './code-generation.js'
 
 describe('code-generation', () => {
   it('CodeGenerator is defined', () => {
@@ -8,7 +8,7 @@ describe('code-generation', () => {
   it('CodeGenerator can be instantiated if constructor permits', () => {
     if (typeof CodeGenerator === 'function') {
       try {
-        const instance = new CodeGenerator();
+        const instance = new (CodeGenerator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('code-generation', () => {
   it('TypeScriptGenerator can be instantiated if constructor permits', () => {
     if (typeof TypeScriptGenerator === 'function') {
       try {
-        const instance = new TypeScriptGenerator();
+        const instance = new (TypeScriptGenerator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('code-generation', () => {
   it('JSONSchemaGenerator can be instantiated if constructor permits', () => {
     if (typeof JSONSchemaGenerator === 'function') {
       try {
-        const instance = new JSONSchemaGenerator();
+        const instance = new (JSONSchemaGenerator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('code-generation', () => {
   it('TemplateEngine can be instantiated if constructor permits', () => {
     if (typeof TemplateEngine === 'function') {
       try {
-        const instance = new TemplateEngine();
+        const instance = new (TemplateEngine as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('code-generation', () => {
   it('DSLBuilder can be instantiated if constructor permits', () => {
     if (typeof DSLBuilder === 'function') {
       try {
-        const instance = new DSLBuilder();
+        const instance = new (DSLBuilder as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

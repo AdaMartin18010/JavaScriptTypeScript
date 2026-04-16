@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { JWT, TokenManager, JWE, demo } from './jwt-auth'
+import { JWT, TokenManager, JWE, demo } from '\./jwt-auth.js'
 
 describe('jwt-auth', () => {
   it('JWT is defined', () => {
@@ -8,7 +8,7 @@ describe('jwt-auth', () => {
   it('JWT can be instantiated if constructor permits', () => {
     if (typeof JWT === 'function') {
       try {
-        const instance = new JWT();
+        const instance = new (JWT as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('jwt-auth', () => {
   it('TokenManager can be instantiated if constructor permits', () => {
     if (typeof TokenManager === 'function') {
       try {
-        const instance = new TokenManager();
+        const instance = new (TokenManager as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('jwt-auth', () => {
   it('JWE can be instantiated if constructor permits', () => {
     if (typeof JWE === 'function') {
       try {
-        const instance = new JWE();
+        const instance = new (JWE as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,9 +41,10 @@ describe('jwt-auth', () => {
   it('demo is callable', () => {
     if (typeof demo === 'function') {
       try {
-        const result = demo();
+        const result = (demo as any)();
         expect(result).toBeDefined();
       } catch { }
     }
   });
 });
+

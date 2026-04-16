@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { SignatureGenerator, FastRefreshRuntime, RefreshTransformer, RefreshErrorBoundary } from './fast-refresh';
+import { SignatureGenerator, FastRefreshRuntime, RefreshTransformer, RefreshErrorBoundary } from './fast-refresh.js';
 
 describe('SignatureGenerator', () => {
   it('generates stable signature', () => {

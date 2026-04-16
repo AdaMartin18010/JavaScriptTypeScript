@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { identity, reverse, logLength, getProperty, createArray, Box, create, apiRequest } from './generics';
+import { identity, reverse, logLength, getProperty, createArray, Box, create, apiRequest } from './generics.js';
 
 describe('generics', () => {
   it('identity should return the same value', () => {

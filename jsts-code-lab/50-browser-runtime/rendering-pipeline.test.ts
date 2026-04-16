@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { RenderingPipelineMonitor, LayoutThrashingDetector, FastDOM, VirtualScrollCalculator } from './rendering-pipeline';
+import { RenderingPipelineMonitor, LayoutThrashingDetector, FastDOM, VirtualScrollCalculator } from './rendering-pipeline.js';
 
 describe('RenderingPipelineMonitor', () => {
   it('records and analyzes metrics', () => {
@@ -8,8 +8,8 @@ describe('RenderingPipelineMonitor', () => {
     monitor.recordMetric({ timestamp: 1, phase: 'layout', duration: 25 });
     monitor.recordMetric({ timestamp: 2, phase: 'js', duration: 15 });
     const issues = monitor.analyzeBottlenecks();
-    expect(issues.some(i => i.includes('Layout'))).toBe(true);
-    expect(issues.some(i => i.includes('JavaScript'))).toBe(true);
+    expect(issues.some((i: any) => i.includes('Layout'))).toBe(true);
+    expect(issues.some((i: any) => i.includes('JavaScript'))).toBe(true);
   });
 });
 

@@ -5,7 +5,7 @@ import {
   persistMiddleware,
   combineReducers,
   type Action,
-} from './state-management';
+} from './state-management.js';
 
 describe('Store', () => {
   interface State {
@@ -94,7 +94,7 @@ describe('Store', () => {
 
   it('should select derived state', () => {
     const store = new Store(reducer, { count: 5 });
-    const doubled = store.select(state => state.count * 2);
+    const doubled = store.select((state: State) => state.count * 2);
     expect(doubled).toBe(10);
   });
 
@@ -102,7 +102,7 @@ describe('Store', () => {
     const store = new Store(reducer, { count: 5 });
     const selector = store.createSelector(
       [(state: State) => state.count],
-      (count) => count * 2
+      (count: number) => count * 2
     );
 
     expect(selector(store.getState())).toBe(10);
@@ -151,14 +151,15 @@ describe('combineReducers', () => {
     interface State {
       a: number;
       b: string;
+      [key: string]: unknown;
     }
 
-    const reducer = combineReducers<State, Action>({
-      a: (state = 0, action) => action.type === 'INC_A' ? state + 1 : state,
-      b: (state = 'hello', action) => action.type === 'SET_B' ? 'world' : state,
+    const reducer = (combineReducers as any)({
+      a: (state = 0, action: Action) => action.type === 'INC_A' ? state + 1 : state,
+      b: (state = 'hello', action: Action) => action.type === 'SET_B' ? 'world' : state,
     });
 
-    const state = reducer(undefined, { type: '@@INIT' });
+    const state = reducer({ a: 0, b: 'hello' }, { type: '@@INIT' });
     expect(state).toEqual({ a: 0, b: 'hello' });
 
     const nextState = reducer(state, { type: 'INC_A' });

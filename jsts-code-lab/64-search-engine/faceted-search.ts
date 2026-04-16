@@ -316,8 +316,8 @@ export class FacetedSearch {
     // 3. 排序
     if (options.sort) {
       filtered = [...filtered].sort((a, b) => {
-        const aVal = a[options.sort!.field];
-        const bVal = b[options.sort!.field];
+        const aVal = a[options.sort!.field] as number | string;
+        const bVal = b[options.sort!.field] as number | string;
         
         if (aVal < bVal) return options.sort!.order === 'asc' ? -1 : 1;
         if (aVal > bVal) return options.sort!.order === 'asc' ? 1 : -1;

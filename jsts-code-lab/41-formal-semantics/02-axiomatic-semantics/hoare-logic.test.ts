@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { AtomicPredicate, skip, assign, seq, hoareTriple, wp, tripleToString } from './hoare-logic'
+import { AtomicPredicate, skip, assign, seq, hoareTriple, wp, tripleToString } from './hoare-logic.js'
 
 describe('hoare-logic', () => {
   it('wp of skip is post', () => {

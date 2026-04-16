@@ -6,7 +6,7 @@ import {
   findLast,
   searchInsert,
   demo
-} from './binary-search';
+} from './binary-search.js';
 
 describe('binary-search', () => {
   const arr = [1, 3, 5, 7, 9, 11, 13, 15];

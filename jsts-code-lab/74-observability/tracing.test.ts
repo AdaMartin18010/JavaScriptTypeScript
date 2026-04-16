@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { SpanBuilder, Tracer, TraceContextPropagator, Baggage, AlwaysOnSampler, AlwaysOffSampler, ProbabilitySampler, ParentBasedSampler, demo } from './tracing'
+import { SpanBuilder, Tracer, TraceContextPropagator, Baggage, AlwaysOnSampler, AlwaysOffSampler, ProbabilitySampler, ParentBasedSampler, demo } from './tracing.js'
 
 describe('tracing', () => {
   it('SpanBuilder is defined', () => {
@@ -8,7 +8,7 @@ describe('tracing', () => {
   it('SpanBuilder can be instantiated if constructor permits', () => {
     if (typeof SpanBuilder === 'function') {
       try {
-        const instance = new SpanBuilder();
+        const instance = new (SpanBuilder as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('tracing', () => {
   it('Tracer can be instantiated if constructor permits', () => {
     if (typeof Tracer === 'function') {
       try {
-        const instance = new Tracer();
+        const instance = new (Tracer as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('tracing', () => {
   it('TraceContextPropagator can be instantiated if constructor permits', () => {
     if (typeof TraceContextPropagator === 'function') {
       try {
-        const instance = new TraceContextPropagator();
+        const instance = new (TraceContextPropagator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('tracing', () => {
   it('Baggage can be instantiated if constructor permits', () => {
     if (typeof Baggage === 'function') {
       try {
-        const instance = new Baggage();
+        const instance = new (Baggage as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('tracing', () => {
   it('AlwaysOnSampler can be instantiated if constructor permits', () => {
     if (typeof AlwaysOnSampler === 'function') {
       try {
-        const instance = new AlwaysOnSampler();
+        const instance = new (AlwaysOnSampler as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,7 +63,7 @@ describe('tracing', () => {
   it('AlwaysOffSampler can be instantiated if constructor permits', () => {
     if (typeof AlwaysOffSampler === 'function') {
       try {
-        const instance = new AlwaysOffSampler();
+        const instance = new (AlwaysOffSampler as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -74,7 +74,7 @@ describe('tracing', () => {
   it('ProbabilitySampler can be instantiated if constructor permits', () => {
     if (typeof ProbabilitySampler === 'function') {
       try {
-        const instance = new ProbabilitySampler();
+        const instance = new (ProbabilitySampler as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -85,7 +85,7 @@ describe('tracing', () => {
   it('ParentBasedSampler can be instantiated if constructor permits', () => {
     if (typeof ParentBasedSampler === 'function') {
       try {
-        const instance = new ParentBasedSampler();
+        const instance = new (ParentBasedSampler as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

@@ -6,7 +6,7 @@ import {
   EventLoop,
   analyzeExecutionOrder,
   performanceTips,
-} from './event-loop-deep-dive';
+} from './event-loop-deep-dive.js';
 
 describe('CallStack', () => {
   it('should push and pop frames', () => {

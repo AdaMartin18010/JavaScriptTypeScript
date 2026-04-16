@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ApiDocsGenerator, ChangelogGenerator, demo } from './api-docs-generator'
+import { ApiDocsGenerator, ChangelogGenerator, demo } from './api-docs-generator.js'
 
 describe('api-docs-generator', () => {
   it('ApiDocsGenerator is defined', () => {

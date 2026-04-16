@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SchemaBuilder, QueryParser, QueryExecutor, DataLoader } from './schema-builder';
+import { SchemaBuilder, QueryParser, QueryExecutor, DataLoader } from './schema-builder.js';
 
 describe('SchemaBuilder', () => {
   it('builds schema with query', () => {
@@ -35,9 +35,9 @@ describe('QueryParser', () => {
 }`);
     expect(parsed.operation).toBe('query');
     expect(parsed.name).toBe('GetUser');
-    expect(parsed.selections.map(s => s.name)).toContain('user');
-    const userSel = parsed.selections.find(s => s.name === 'user');
-    expect(userSel?.selections?.map(s => s.name)).toEqual(['name', 'email']);
+    expect(parsed.selections.map((s: any) => s.name)).toContain('user');
+    const userSel = parsed.selections.find((s: any) => s.name === 'user');
+    expect(userSel?.selections?.map((s: any) => s.name)).toEqual(['name', 'email']);
   });
 
   it('parses mutation', () => {
@@ -81,9 +81,9 @@ describe('QueryExecutor', () => {
 describe('DataLoader', () => {
   it('batches duplicate keys', async () => {
     let batchCount = 0;
-    const loader = new DataLoader<string, string>(async (keys) => {
+    const loader = new DataLoader<string, string>(async (keys: any) => {
       batchCount++;
-      return keys.map(k => `v-${k}`);
+      return keys.map((k: any) => `v-${k}`);
     });
     const [a, b, c] = await Promise.all([loader.load('1'), loader.load('2'), loader.load('1')]);
     expect(batchCount).toBe(1);
@@ -93,8 +93,8 @@ describe('DataLoader', () => {
   });
 
   it('loadMany returns values and errors', async () => {
-    const loader = new DataLoader<number, number>(async (keys) => {
-      return keys.map(k => (k === 2 ? new Error('fail') : k * 2));
+    const loader = new DataLoader<number, number>(async (keys: any) => {
+      return keys.map((k: any) => (k === 2 ? new Error('fail') : k * 2));
     });
     const results = await loader.loadMany([1, 2, 3]);
     expect(results[0]).toBe(2);

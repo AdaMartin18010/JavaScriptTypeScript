@@ -9,7 +9,7 @@ import {
   userValidator,
   processUser,
   ObjectValidator,
-} from './js-ts-interop';
+} from './js-ts-interop.js';
 
 describe('processJSData', () => {
   it('should cast data to string and uppercase', () => {

@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi } from 'vitest';
-import { HMRRuntime, CSSHMRHandler, ModuleDependencyGraph } from './hot-module-replacement';
+import { HMRRuntime, CSSHMRHandler, ModuleDependencyGraph } from './hot-module-replacement.js';
 
 describe('HMRRuntime', () => {
   it('registers module with hot context', () => {

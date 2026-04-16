@@ -5,7 +5,7 @@ import {
   LeastConnectionsStrategy,
   ConsistentHashStrategy,
   LoadBalancer
-} from './load-balancing';
+} from './load-balancing.js';
 
 describe('RoundRobinStrategy', () => {
   const backends = [

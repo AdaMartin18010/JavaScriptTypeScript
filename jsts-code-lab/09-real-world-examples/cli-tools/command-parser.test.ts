@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { parseArgs, CLI, ProgressBar, type CommandHandler } from './command-parser';
+import { parseArgs, CLI, ProgressBar, type CommandHandler } from './command-parser.js';
 
 describe('parseArgs', () => {
   it('should parse command and positional args', () => {
@@ -85,7 +85,7 @@ describe('CLI', () => {
 });
 
 describe('ProgressBar', () => {
-  let writeSpy: ReturnType<typeof vi.spyOn>;
+  let writeSpy: any;
 
   beforeEach(() => {
     writeSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);

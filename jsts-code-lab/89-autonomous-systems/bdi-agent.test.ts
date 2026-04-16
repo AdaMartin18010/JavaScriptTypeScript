@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { BDIAgent, demo } from './bdi-agent'
+import { BDIAgent, demo } from '\./bdi-agent.js'
 
 describe('bdi-agent', () => {
   it('BDIAgent is defined', () => {

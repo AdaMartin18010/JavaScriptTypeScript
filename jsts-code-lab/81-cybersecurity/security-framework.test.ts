@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ThreatModel, VulnerabilityScanner, IntrusionDetectionSystem, SecurityAuditor, demo } from './security-framework'
+import { ThreatModel, VulnerabilityScanner, IntrusionDetectionSystem, SecurityAuditor, demo } from '\./security-framework.js'
 
 describe('security-framework', () => {
   it('ThreatModel is defined', () => {

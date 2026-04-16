@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { CircuitBreaker } from './circuit-breaker'
+import { CircuitBreaker } from './circuit-breaker.js'
 
 describe('circuit-breaker', () => {
   it('CircuitBreaker is defined', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { acceptAnimal, describeOwner, walkDog, describeAnimal, explainSubtyping } from './structural-subtyping'
+import { acceptAnimal, describeOwner, walkDog, describeAnimal, explainSubtyping } from './structural-subtyping.js'
 
 describe('structural-subtyping', () => {
   it('accepts Dog where Animal expected (width)', () => {

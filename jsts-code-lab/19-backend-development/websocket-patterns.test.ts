@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { WebSocketServer, WebSocketClient } from './websocket-patterns';
+import { WebSocketServer, WebSocketClient } from './websocket-patterns.js';
 
 describe('WebSocketServer', () => {
   let server: WebSocketServer;

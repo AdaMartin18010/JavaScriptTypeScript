@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { FeatureStore, ModelRegistry, ModelServer, ShadowTesting, FeatureMonitoring, demo } from './ml-pipeline'
+import { FeatureStore, ModelRegistry, ModelServer, ShadowTesting, FeatureMonitoring, demo } from './ml-pipeline.js'
 
 describe('ml-pipeline', () => {
   it('FeatureStore is defined', () => {

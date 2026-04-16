@@ -5,7 +5,7 @@ import {
   QueryBus,
   createLoggingMiddleware,
   createValidationMiddleware,
-} from './event-bus';
+} from './event-bus.js';
 
 describe('EventBus', () => {
   let bus: EventBus;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ProjectGraph, WorkspaceParser } from './monorepo-tooling';
+import { ProjectGraph, WorkspaceParser } from './monorepo-tooling.js';
 
 describe('ProjectGraph', () => {
   it('topologicalSort returns correct build order', () => {

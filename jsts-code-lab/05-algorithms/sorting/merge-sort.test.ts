@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { mergeSort, mergeSortInPlace, demo } from './merge-sort';
+import { mergeSort, mergeSortInPlace, demo } from './merge-sort.js';
 
 describe('merge-sort', () => {
   describe('mergeSort', () => {

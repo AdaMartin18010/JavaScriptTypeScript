@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { PerformanceMonitor, MemoryProfiler, CodeProfiler, demo } from './performance-profiling'
+import { PerformanceMonitor, MemoryProfiler, CodeProfiler, demo } from './performance-profiling.js'
 
 describe('performance-profiling', () => {
   it('PerformanceMonitor is defined', () => {

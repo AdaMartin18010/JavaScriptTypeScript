@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { HMRServer, FileWatcher, ErrorOverlay, ViteLikeServer } from './dev-server';
+import { HMRServer, FileWatcher, ErrorOverlay, ViteLikeServer } from './dev-server.js';
 
 describe('HMRServer', () => {
   it('computes affected modules recursively', () => {
@@ -41,7 +41,7 @@ describe('ErrorOverlay', () => {
 describe('ViteLikeServer', () => {
   it('transforms module imports', () => {
     const server = new ViteLikeServer('/root');
-    const code = "import { a } from './utils';";
+    const code = "import { a } from './utils.js';";
     const transformed = server.transformModule('/src/main.ts', code);
     expect(transformed).toContain('/@fs/root/');
     expect(transformed).toContain('/@vite/client');

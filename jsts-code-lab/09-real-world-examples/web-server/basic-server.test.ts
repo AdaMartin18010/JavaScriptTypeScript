@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { Router, jsonMiddleware, corsMiddleware, loggerMiddleware, parseBody, createApp } from './basic-server';
+import { Router, jsonMiddleware, corsMiddleware, loggerMiddleware, parseBody, createApp } from './basic-server.js';
 import type { IncomingMessage, ServerResponse } from 'http';
 
 function createMockReq(overrides: Partial<IncomingMessage> = {}): IncomingMessage {

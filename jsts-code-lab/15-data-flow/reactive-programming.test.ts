@@ -6,7 +6,7 @@ import {
   createEffect,
   DataFlowGraph,
   StateMachine,
-} from './reactive-programming';
+} from './reactive-programming.js';
 
 describe('Observable', () => {
   it('should emit values to subscribers', () => {

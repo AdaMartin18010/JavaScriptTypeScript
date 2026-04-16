@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CreditCardPayment, PayPalPayment, ShoppingCart, Sorter, SortStrategies, ValidationStrategies, Validator } from './strategy';
+import { CreditCardPayment, PayPalPayment, ShoppingCart, Sorter, SortStrategies, ValidationStrategies, Validator } from './strategy.js';
 
 describe('strategy pattern', () => {
   it('ShoppingCart should calculate total and checkout with different strategies', () => {

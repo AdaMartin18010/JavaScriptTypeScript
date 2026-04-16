@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Scheduler, HealthChecker, HorizontalPodAutoscaler, ServiceRegistry, demo } from './orchestration-engine'
+import { Scheduler, HealthChecker, HorizontalPodAutoscaler, ServiceRegistry, demo } from './orchestration-engine.js'
 
 describe('orchestration-engine', () => {
   it('Scheduler is defined', () => {

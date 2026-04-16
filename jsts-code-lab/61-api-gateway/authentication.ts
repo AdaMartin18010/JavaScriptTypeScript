@@ -62,7 +62,7 @@ export class JWTHandler {
       ...payload,
       iat: now,
       exp: now + (this.config.expiresIn || 3600)
-    };
+    } as JWTClaims;
 
     const header = {
       alg: this.config.algorithm || 'HS256',

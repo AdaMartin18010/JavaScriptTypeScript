@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createToken, DIContainer, ServiceLocator } from './dependency-injection-models'
+import { createToken, DIContainer, ServiceLocator } from './dependency-injection-models.js'
 
 describe('DIContainer', () => {
   it('should resolve registered instance', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WorkflowBuilder, WorkflowPresets, DeploymentStrategyBuilder, DeploymentStrategy } from './cicd-pipeline';
+import { WorkflowBuilder, WorkflowPresets, DeploymentStrategyBuilder, DeploymentStrategy } from './cicd-pipeline.js';
 
 describe('WorkflowBuilder', () => {
   it('builds a workflow', () => {
@@ -29,7 +29,7 @@ describe('WorkflowPresets', () => {
 
   it('dockerBuild triggers on tags', () => {
     const wf = WorkflowPresets.dockerBuild();
-    expect(wf.on.push?.tags).toContain('v*');
+    expect((wf.on as any).push?.tags).toContain('v*');
   });
 });
 
@@ -44,6 +44,6 @@ describe('DeploymentStrategyBuilder', () => {
   it('generates blue-green steps', () => {
     const builder = new DeploymentStrategyBuilder({ strategy: DeploymentStrategy.BLUE_GREEN, replicas: 3, healthCheckPath: '/health', timeout: 300, rollbackOnFailure: true });
     const steps = builder.generateSteps();
-    expect(steps.some(s => s.name?.includes('blue'))).toBe(true);
+    expect(steps.some((s: any) => s.name?.includes('blue'))).toBe(true);
   });
 });

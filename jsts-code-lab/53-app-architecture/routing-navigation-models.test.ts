@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { matchRoute, matchNestedRoute, RouteGuard } from './routing-navigation-models'
+import { matchRoute, matchNestedRoute, RouteGuard } from './routing-navigation-models.js'
 
 describe('matchRoute', () => {
   it('matches static route', () => {

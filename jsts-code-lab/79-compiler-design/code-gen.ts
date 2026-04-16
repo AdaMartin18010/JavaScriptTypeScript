@@ -14,7 +14,7 @@
  * - 模块化生成
  */
 
-import {
+import type {
   Node, Program, Statement, Expression,
   VariableDeclaration, FunctionDeclaration, ClassDeclaration,
   BlockStatement, ExpressionStatement, IfStatement,

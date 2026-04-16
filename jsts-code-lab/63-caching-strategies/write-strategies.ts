@@ -389,8 +389,8 @@ export async function demo(): Promise<void> {
 
   const cacheAdapter: StorageAdapter<string> = {
     get: async (k) => memoryCache.get(k) || null,
-    set: async (k, v) => memoryCache.set(k, v),
-    delete: async (k) => memoryCache.delete(k)
+    set: async (k, v) => { memoryCache.set(k, v); },
+    delete: async (k) => { memoryCache.delete(k); }
   };
 
   const dbAdapter: StorageAdapter<string> = {
@@ -399,7 +399,7 @@ export async function demo(): Promise<void> {
       await new Promise(r => setTimeout(r, 10)); // 模拟延迟
       database.set(k, v);
     },
-    delete: async (k) => database.delete(k)
+    delete: async (k) => { database.delete(k); }
   };
 
   // 1. Write Through

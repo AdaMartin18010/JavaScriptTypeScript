@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   UserRepository,
   RelationLoader,
   TransactionManager,
   PaginationHelper,
-} from './prisma-patterns';
-import type { User } from './prisma-patterns';
+} from './prisma-patterns.js';
+import type { User } from './prisma-patterns.js';
 
 describe('UserRepository', () => {
   let repo: UserRepository;

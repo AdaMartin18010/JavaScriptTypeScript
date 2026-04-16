@@ -6,11 +6,11 @@ import {
   LayoutOptimizer,
   ImageOptimizer,
   demo
-} from './rendering-optimization';
+} from './rendering-optimization.js';
 
 describe('rendering-optimization', () => {
   describe('RAFScheduler', () => {
-    it('should add and execute tasks', (done) => {
+    it('should add and execute tasks', (done: () => void) => {
       const scheduler = new RAFScheduler();
       let executed = false;
       scheduler.addTask(() => {
@@ -68,7 +68,7 @@ describe('rendering-optimization', () => {
   });
 
   describe('DOMBatcher', () => {
-    it('should batch operations without error', (done) => {
+    it('should batch operations without error', (done: () => void) => {
       const batcher = new DOMBatcher();
       let called = 0;
       batcher.add(() => called++);
@@ -89,7 +89,7 @@ describe('rendering-optimization', () => {
   });
 
   describe('LayoutOptimizer', () => {
-    it('should schedule read and write queues', (done) => {
+    it('should schedule read and write queues', (done: () => void) => {
       const optimizer = new LayoutOptimizer();
       let readDone = false;
       let writeDone = false;

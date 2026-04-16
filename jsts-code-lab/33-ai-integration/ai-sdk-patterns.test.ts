@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AISDK, RAGSystem, AIAgent } from './ai-sdk-patterns';
+import { AISDK, RAGSystem, AIAgent } from './ai-sdk-patterns.js';
 
 describe('AISDK', () => {
   const ai = new AISDK({ apiKey: 'test', model: 'gpt-4' });

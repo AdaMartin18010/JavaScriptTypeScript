@@ -7,7 +7,7 @@ import {
   GherkinParser,
   DocumentingTest,
   demo
-} from './tdd-bdd';
+} from './tdd-bdd.js';
 
 describe('tdd-bdd', () => {
   describe('StringCalculator', () => {
@@ -87,7 +87,7 @@ describe('tdd-bdd', () => {
       const builder = new BddTestBuilder<number>();
       const result = await builder
         .given('value is 5', () => 5)
-        .when('doubling', (ctx) => ctx * 2)
+        .when('doubling', (ctx) => { ctx * 2; })
         .then('result is 10', (ctx) => ctx === 10)
         .run();
       // Note: BddTestBuilder does not modify context in when step,

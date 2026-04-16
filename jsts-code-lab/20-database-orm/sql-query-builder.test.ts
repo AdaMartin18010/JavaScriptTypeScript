@@ -4,7 +4,7 @@ import {
   InsertBuilder,
   UpdateBuilder,
   DeleteBuilder,
-} from './sql-query-builder';
+} from './sql-query-builder.js';
 
 describe('QueryBuilder', () => {
   interface User {
@@ -123,8 +123,10 @@ describe('InsertBuilder', () => {
 
 describe('UpdateBuilder', () => {
   interface User {
+    id: number;
     name: string;
     age: number;
+    status: 'active' | 'inactive';
   }
 
   it('should build UPDATE statement', () => {

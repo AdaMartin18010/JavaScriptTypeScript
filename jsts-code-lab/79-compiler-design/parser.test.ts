@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Parser, ASTFormatter, demo } from './parser'
+import { Parser, ASTFormatter, demo } from './parser.js'
 
 describe('parser', () => {
   it('Parser is defined', () => {
@@ -8,7 +8,7 @@ describe('parser', () => {
   it('Parser can be instantiated if constructor permits', () => {
     if (typeof Parser === 'function') {
       try {
-        const instance = new Parser();
+        const instance = new (Parser as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('parser', () => {
   it('ASTFormatter can be instantiated if constructor permits', () => {
     if (typeof ASTFormatter === 'function') {
       try {
-        const instance = new ASTFormatter();
+        const instance = new (ASTFormatter as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

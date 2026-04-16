@@ -1,4 +1,4 @@
-import { InvertedIndex, QueryProcessor, TFIDFScorer } from './64-search-engine/full-text-search';
+import { InvertedIndex, QueryProcessor, TFIDFScorer } from './64-search-engine/full-text-search.js';
 
 const idx = new InvertedIndex();
 idx.addDocument({ id: '1', title: 'TypeScript Guide', content: 'Learn TypeScript programming' });

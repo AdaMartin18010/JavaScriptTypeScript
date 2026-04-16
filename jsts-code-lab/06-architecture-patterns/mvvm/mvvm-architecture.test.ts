@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ref, computed, ProductModel, ProductViewModel, watchEffect } from './mvvm-architecture';
+import { ref, computed, ProductModel, ProductViewModel, watchEffect } from './mvvm-architecture.js';
 
 describe('MVVM architecture', () => {
   it('ref should be reactive', () => {

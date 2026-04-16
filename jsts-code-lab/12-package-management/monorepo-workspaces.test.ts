@@ -3,8 +3,8 @@ import {
   WorkspaceDependencyGraph,
   ChangesetManager,
   TaskRunner,
-} from './monorepo-workspaces';
-import type { WorkspacePackage } from './monorepo-workspaces';
+} from './monorepo-workspaces.js';
+import type { WorkspacePackage } from './monorepo-workspaces.js';
 
 describe('WorkspaceDependencyGraph', () => {
   let graph: WorkspaceDependencyGraph;

@@ -14,7 +14,7 @@
 
 // Node.js 兼容性存根
 if (typeof globalThis.requestIdleCallback === 'undefined') {
-  (globalThis as unknown as { requestIdleCallback: typeof setTimeout }).requestIdleCallback = (cb: () => void) => setTimeout(cb, 0);
+  (globalThis as unknown as { requestIdleCallback: (cb: () => void) => ReturnType<typeof setTimeout> }).requestIdleCallback = (cb: () => void) => setTimeout(cb, 0);
 }
 
 // ============================================================================

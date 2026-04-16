@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { selectRenderingStrategy, IslandsArchitecture } from './rendering-strategies'
+import { selectRenderingStrategy, IslandsArchitecture } from './rendering-strategies.js'
 
 describe('selectRenderingStrategy', () => {
   it('selects CSR when no SEO', () => {

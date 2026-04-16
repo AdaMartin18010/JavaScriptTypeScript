@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createMVC, MVVMViewModel } from './mvc-derivatives'
+import { createMVC, MVVMViewModel } from './mvc-derivatives.js'
 
 describe('createMVC', () => {
   it('should update model through controller', () => {
@@ -13,7 +13,7 @@ describe('MVVMViewModel', () => {
   it('should notify bound listeners', () => {
     const vm = new MVVMViewModel({ name: 'a' })
     let last = vm.getState()
-    vm.bind((s) => { last = s })
+    vm.bind((s: any) => { last = s })
     vm.setState({ name: 'b' })
     expect(last).toEqual({ name: 'b' })
   })

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ModuleBoundaryChecker, commonDependencyRules, frontendStructure, backendStructure, codeSplitStrategies } from './project-structure';
+import { ModuleBoundaryChecker, commonDependencyRules, frontendStructure, backendStructure, codeSplitStrategies } from './project-structure.js';
 
 describe('ModuleBoundaryChecker', () => {
   it('allows valid imports', () => {

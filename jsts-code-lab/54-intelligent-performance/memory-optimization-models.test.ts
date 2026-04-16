@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { VirtualScroller, createPlaceholder, ComponentCleanup } from './memory-optimization-models'
+import { VirtualScroller, createPlaceholder, ComponentCleanup } from './memory-optimization-models.js'
 
 describe('VirtualScroller', () => {
   it('calculates visible range', () => {

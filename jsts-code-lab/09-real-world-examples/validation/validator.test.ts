@@ -12,7 +12,7 @@ import {
   emailValidator,
   passwordValidator,
   phoneValidator,
-} from './validator';
+} from './validator.js';
 
 describe('Validator', () => {
   it('should pass validation with no rules', async () => {

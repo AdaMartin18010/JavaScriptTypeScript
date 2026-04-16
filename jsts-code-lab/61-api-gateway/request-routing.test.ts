@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PathMatcher, Router, DynamicRouter, authMiddleware } from './request-routing';
+import { PathMatcher, Router, DynamicRouter, authMiddleware } from './request-routing.js';
 
 describe('PathMatcher', () => {
   it('converts static pattern to regex', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { prioritizePreloads, ServiceWorkerCacheModel, batchHttpRequests } from './network-optimization-models'
+import { prioritizePreloads, ServiceWorkerCacheModel, batchHttpRequests } from './network-optimization-models.js'
 
 describe('prioritizePreloads', () => {
   it('sorts by priority', () => {

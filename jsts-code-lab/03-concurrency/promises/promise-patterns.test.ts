@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sequence, delay, pipe, debouncePromise, timeout } from './promise-patterns';
+import { sequence, delay, pipe, debouncePromise, timeout } from './promise-patterns.js';
 
 describe('promise patterns', () => {
   it('sequence should execute promises in order', async () => {

@@ -306,10 +306,10 @@ export function Retry(maxAttempts: number, delayMs: number = 0): MethodDecorator
     if (!descriptor || typeof descriptor.value !== 'function') return descriptor;
     const originalMethod = descriptor.value!;
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (this: any, ...args: any[]) {
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         try {
-          return await (originalMethod as (...args: any[]) => any).apply(this as any, args);
+          return await (originalMethod as (...args: any[]) => any).apply(this, args);
         } catch (error) {
           if (attempt === maxAttempts) {
             throw error;
@@ -486,11 +486,11 @@ export function Transactional(): MethodDecorator {
     if (!descriptor || typeof descriptor.value !== 'function') return descriptor;
     const originalMethod = descriptor.value!;
 
-    descriptor.value = async function (...args: any[]) {
+    descriptor.value = async function (this: any, ...args: any[]) {
       console.log(`[TRANSACTION] Starting transaction for ${String(propertyKey)}`);
       
       try {
-        const result = await (originalMethod as (...args: any[]) => any).apply(this as any, args);
+        const result = await (originalMethod as (...args: any[]) => any).apply(this, args);
         console.log(`[TRANSACTION] Committing transaction for ${String(propertyKey)}`);
         return result;
       } catch (error) {

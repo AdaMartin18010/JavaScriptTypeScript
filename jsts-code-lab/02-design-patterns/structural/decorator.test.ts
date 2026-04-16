@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { SimpleCoffee, MilkDecorator, SugarDecorator, WhipDecorator, compose, withLogging } from './decorator';
+import { SimpleCoffee, MilkDecorator, SugarDecorator, WhipDecorator, compose, withLogging } from './decorator.js';
 
 describe('decorator pattern', () => {
   it('SimpleCoffee should have base cost and description', () => {

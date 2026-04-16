@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { WindowOperator, Aggregators, AnomalyDetector, CEPEngine, RealtimeDashboard, demo } from './streaming-analytics'
+import { WindowOperator, Aggregators, AnomalyDetector, CEPEngine, RealtimeDashboard, demo } from '\./streaming-analytics.js'
 
 describe('streaming-analytics', () => {
   it('WindowOperator is defined', () => {
@@ -8,7 +8,7 @@ describe('streaming-analytics', () => {
   it('WindowOperator can be instantiated if constructor permits', () => {
     if (typeof WindowOperator === 'function') {
       try {
-        const instance = new WindowOperator();
+        const instance = new (WindowOperator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('streaming-analytics', () => {
   it('Aggregators can be instantiated if constructor permits', () => {
     if (typeof Aggregators === 'function') {
       try {
-        const instance = new Aggregators();
+        const instance = new (Aggregators as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('streaming-analytics', () => {
   it('AnomalyDetector can be instantiated if constructor permits', () => {
     if (typeof AnomalyDetector === 'function') {
       try {
-        const instance = new AnomalyDetector();
+        const instance = new (AnomalyDetector as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('streaming-analytics', () => {
   it('CEPEngine can be instantiated if constructor permits', () => {
     if (typeof CEPEngine === 'function') {
       try {
-        const instance = new CEPEngine();
+        const instance = new (CEPEngine as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('streaming-analytics', () => {
   it('RealtimeDashboard can be instantiated if constructor permits', () => {
     if (typeof RealtimeDashboard === 'function') {
       try {
-        const instance = new RealtimeDashboard();
+        const instance = new (RealtimeDashboard as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,9 +63,10 @@ describe('streaming-analytics', () => {
   it('demo is callable', () => {
     if (typeof demo === 'function') {
       try {
-        const result = demo();
+        const result = (demo as any)();
         expect(result).toBeDefined();
       } catch { }
     }
   });
 });
+

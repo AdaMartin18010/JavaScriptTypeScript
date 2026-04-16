@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { InMemoryGraph, GraphTraversal, PathFinder, PageRank, CommunityDetection, demo } from './graph-engine'
+import { InMemoryGraph, GraphTraversal, PathFinder, PageRank, CommunityDetection, demo } from '\./graph-engine.js'
 
 describe('graph-engine', () => {
   it('InMemoryGraph is defined', () => {
@@ -8,7 +8,7 @@ describe('graph-engine', () => {
   it('InMemoryGraph can be instantiated if constructor permits', () => {
     if (typeof InMemoryGraph === 'function') {
       try {
-        const instance = new InMemoryGraph();
+        const instance = new (InMemoryGraph as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('graph-engine', () => {
   it('GraphTraversal can be instantiated if constructor permits', () => {
     if (typeof GraphTraversal === 'function') {
       try {
-        const instance = new GraphTraversal();
+        const instance = new (GraphTraversal as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('graph-engine', () => {
   it('PathFinder can be instantiated if constructor permits', () => {
     if (typeof PathFinder === 'function') {
       try {
-        const instance = new PathFinder();
+        const instance = new (PathFinder as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('graph-engine', () => {
   it('PageRank can be instantiated if constructor permits', () => {
     if (typeof PageRank === 'function') {
       try {
-        const instance = new PageRank();
+        const instance = new (PageRank as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('graph-engine', () => {
   it('CommunityDetection can be instantiated if constructor permits', () => {
     if (typeof CommunityDetection === 'function') {
       try {
-        const instance = new CommunityDetection();
+        const instance = new (CommunityDetection as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,9 +63,10 @@ describe('graph-engine', () => {
   it('demo is callable', () => {
     if (typeof demo === 'function') {
       try {
-        const result = demo();
+        const result = (demo as any)();
         expect(result).toBeDefined();
       } catch { }
     }
   });
 });
+

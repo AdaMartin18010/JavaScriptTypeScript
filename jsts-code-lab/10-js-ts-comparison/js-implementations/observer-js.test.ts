@@ -4,7 +4,7 @@ import {
   EventEmitterJS,
   EventEmitterJSDefensive,
   userEventBus,
-} from './observer-js';
+} from './observer-js.js';
 
 describe('TypedEventEmitter', () => {
   it('should subscribe and emit events', () => {

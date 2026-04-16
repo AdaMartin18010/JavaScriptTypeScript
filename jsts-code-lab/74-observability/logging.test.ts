@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { LogLevelNames, Formatters, Transports, Logger, LogRotator, LogAggregator, demo } from './logging'
+import { LogLevelNames, Formatters, Transports, Logger, LogRotator, LogAggregator, demo } from './logging.js'
 
 describe('logging', () => {
   it('LogLevelNames is defined', () => {
@@ -8,7 +8,7 @@ describe('logging', () => {
   it('LogLevelNames can be instantiated if constructor permits', () => {
     if (typeof LogLevelNames === 'function') {
       try {
-        const instance = new LogLevelNames();
+        const instance = new (LogLevelNames as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('logging', () => {
   it('Formatters can be instantiated if constructor permits', () => {
     if (typeof Formatters === 'function') {
       try {
-        const instance = new Formatters();
+        const instance = new (Formatters as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('logging', () => {
   it('Transports can be instantiated if constructor permits', () => {
     if (typeof Transports === 'function') {
       try {
-        const instance = new Transports();
+        const instance = new (Transports as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('logging', () => {
   it('Logger can be instantiated if constructor permits', () => {
     if (typeof Logger === 'function') {
       try {
-        const instance = new Logger();
+        const instance = new (Logger as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('logging', () => {
   it('LogRotator can be instantiated if constructor permits', () => {
     if (typeof LogRotator === 'function') {
       try {
-        const instance = new LogRotator();
+        const instance = new (LogRotator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,7 +63,7 @@ describe('logging', () => {
   it('LogAggregator can be instantiated if constructor permits', () => {
     if (typeof LogAggregator === 'function') {
       try {
-        const instance = new LogAggregator();
+        const instance = new (LogAggregator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

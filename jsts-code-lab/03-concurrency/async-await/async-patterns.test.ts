@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { withRetry, withTimeout, batchProcess } from './async-patterns';
+import { withRetry, withTimeout, batchProcess } from './async-patterns.js';
 
 describe('async patterns', () => {
   it('withRetry should succeed after a few failures', async () => {

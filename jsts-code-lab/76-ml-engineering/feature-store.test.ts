@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { FeatureRegistry, OnlineFeatureStore, OfflineFeatureStore, FeatureTransformer, FeatureMonitor, demo } from './feature-store'
+import { FeatureRegistry, OnlineFeatureStore, OfflineFeatureStore, FeatureTransformer, FeatureMonitor, demo } from './feature-store.js'
 
 describe('feature-store', () => {
   it('FeatureRegistry is defined', () => {

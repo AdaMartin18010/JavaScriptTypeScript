@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { findLargestModules, shouldLazyLoad, WorkerOffloader } from './code-optimization-models'
+import { findLargestModules, shouldLazyLoad, WorkerOffloader } from './code-optimization-models.js'
 
 describe('findLargestModules', () => {
   it('finds top modules by size', () => {

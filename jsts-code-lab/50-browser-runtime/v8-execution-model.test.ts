@@ -1,5 +1,5 @@
 ﻿import { describe, it, expect } from 'vitest';
-import { HiddenClassTable, InlineCache, IsolateMemoryModel } from './v8-execution-model';
+import { HiddenClassTable, InlineCache, IsolateMemoryModel } from './v8-execution-model.js';
 
 describe('HiddenClassTable', () => {
   it('registers shapes and resolves transitions', () => {

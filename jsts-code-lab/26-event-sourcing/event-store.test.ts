@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { EventStore, Order, OrderProjection, Saga } from './event-store';
+import { EventStore, Order, OrderProjection, Saga } from './event-store.js';
 
 describe('EventStore', () => {
   it('appends and reads events', async () => {
@@ -14,7 +14,7 @@ describe('EventStore', () => {
   it('publishes to subscribers', async () => {
     const store = new EventStore();
     const received: any[] = [];
-    store.subscribe('Created', e => received.push(e));
+    store.subscribe('Created', (e: any) => received.push(e));
     const events = [{ id: 'e1', type: 'Created', aggregateId: 'a1', aggregateVersion: 1, timestamp: new Date(), payload: {} }];
     await store.appendEvents('a1', 0, events);
     expect(received.length).toBe(1);
@@ -55,8 +55,8 @@ describe('Saga', () => {
   it('executes steps successfully', async () => {
     const saga = new Saga();
     const log: string[] = [];
-    saga.addStep({ name: 's1', action: async () => log.push('s1'), compensate: async () => log.push('c1') });
-    saga.addStep({ name: 's2', action: async () => log.push('s2'), compensate: async () => log.push('c2') });
+    saga.addStep({ name: 's1', action: async () => { log.push('s1'); }, compensate: async () => { log.push('c1'); } });
+    saga.addStep({ name: 's2', action: async () => { log.push('s2'); }, compensate: async () => { log.push('c2'); } });
     await saga.execute();
     expect(saga.getState()).toBe('completed');
     expect(log).toContain('s1');
@@ -66,8 +66,8 @@ describe('Saga', () => {
   it('compensates on failure', async () => {
     const saga = new Saga();
     const log: string[] = [];
-    saga.addStep({ name: 's1', action: async () => log.push('s1'), compensate: async () => log.push('c1') });
-    saga.addStep({ name: 's2', action: async () => { throw new Error('fail'); }, compensate: async () => log.push('c2') });
+    saga.addStep({ name: 's1', action: async () => { log.push('s1'); }, compensate: async () => { log.push('c1'); } });
+    saga.addStep({ name: 's2', action: async () => { throw new Error('fail'); }, compensate: async () => { log.push('c2'); } });
     await expect(saga.execute()).rejects.toThrow('fail');
     expect(saga.getState()).toBe('failed');
     expect(log).toContain('c1');

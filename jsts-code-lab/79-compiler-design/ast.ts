@@ -19,8 +19,10 @@
 export type NodeType =
   | 'Program'
   | 'VariableDeclaration'
+  | 'VariableDeclarator'
   | 'FunctionDeclaration'
   | 'ClassDeclaration'
+  | 'ClassBody'
   | 'MethodDefinition'
   | 'BlockStatement'
   | 'ExpressionStatement'
@@ -58,6 +60,7 @@ export type NodeType =
   | 'SpreadElement'
   | 'SequenceExpression'
   | 'ArrowFunctionExpression'
+  | 'FunctionExpression'
   | 'YieldExpression'
   | 'AwaitExpression'
   | 'TemplateLiteral'
@@ -758,7 +761,7 @@ export class ASTUtils {
   /**
    * 检查节点是否包含指定类型的子节点
    */
-  static contains(root: Node, type: string): boolean {
+  static contains(root: Node, type: NodeType): boolean {
     return this.findFirst(root, type) !== null;
   }
 

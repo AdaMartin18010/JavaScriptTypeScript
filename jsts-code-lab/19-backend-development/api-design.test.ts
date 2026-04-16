@@ -6,7 +6,7 @@ import {
   QueryParser,
   ResponseBuilder,
   OpenAPIGenerator,
-} from './api-design';
+} from './api-design.js';
 
 describe('ApiVersioning', () => {
   it('should create path version', () => {
@@ -50,7 +50,7 @@ describe('PaginationHelper', () => {
       data,
       10,
       true,
-      item => String(item.id),
+      (item: any) => String(item.id),
       '/api/users'
     );
 
@@ -65,7 +65,7 @@ describe('PaginationHelper', () => {
       data,
       10,
       false,
-      item => String(item.id),
+      (item: any) => String(item.id),
       '/api/users'
     );
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { InMemoryCache, CacheAside, ReadThroughCache, WriteThroughCache, MultiLevelCache } from './cache-patterns';
+import { InMemoryCache, CacheAside, ReadThroughCache, WriteThroughCache, MultiLevelCache } from './cache-patterns.js';
 
 describe('InMemoryCache', () => {
   it('stores and retrieves values with ttl', () => {

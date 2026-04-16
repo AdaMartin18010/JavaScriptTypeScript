@@ -10,7 +10,7 @@ import {
   DummyUser,
   processOrder,
   demo
-} from './mock-stub';
+} from './mock-stub.js';
 
 describe('mock-stub', () => {
   describe('FakeUserRepository', () => {

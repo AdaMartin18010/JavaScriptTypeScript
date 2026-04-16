@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { TextPreprocessor, TFIDFVectorizer, WordEmbedding, SemanticSearch, NamedEntityRecognizer, SentimentAnalyzer, demo } from './nlp-pipeline'
+import { TextPreprocessor, TFIDFVectorizer, WordEmbedding, SemanticSearch, NamedEntityRecognizer, SentimentAnalyzer, demo } from '\./nlp-pipeline.js'
 
 describe('nlp-pipeline', () => {
   it('TextPreprocessor is defined', () => {

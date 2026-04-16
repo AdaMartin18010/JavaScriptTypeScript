@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { BDIAgent, DecisionTree, StateMachine, QLearningAgent, BehaviorTree, demo } from './autonomous-agents'
+import { BDIAgent, DecisionTree, StateMachine, QLearningAgent, BehaviorTree, demo } from '\./autonomous-agents.js'
 
 describe('autonomous-agents', () => {
   it('BDIAgent is defined', () => {
@@ -8,7 +8,7 @@ describe('autonomous-agents', () => {
   it('BDIAgent can be instantiated if constructor permits', () => {
     if (typeof BDIAgent === 'function') {
       try {
-        const instance = new BDIAgent();
+        const instance = new (BDIAgent as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('autonomous-agents', () => {
   it('DecisionTree can be instantiated if constructor permits', () => {
     if (typeof DecisionTree === 'function') {
       try {
-        const instance = new DecisionTree();
+        const instance = new (DecisionTree as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('autonomous-agents', () => {
   it('StateMachine can be instantiated if constructor permits', () => {
     if (typeof StateMachine === 'function') {
       try {
-        const instance = new StateMachine();
+        const instance = new (StateMachine as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('autonomous-agents', () => {
   it('QLearningAgent can be instantiated if constructor permits', () => {
     if (typeof QLearningAgent === 'function') {
       try {
-        const instance = new QLearningAgent();
+        const instance = new (QLearningAgent as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('autonomous-agents', () => {
   it('BehaviorTree can be instantiated if constructor permits', () => {
     if (typeof BehaviorTree === 'function') {
       try {
-        const instance = new BehaviorTree();
+        const instance = new (BehaviorTree as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,9 +63,10 @@ describe('autonomous-agents', () => {
   it('demo is callable', () => {
     if (typeof demo === 'function') {
       try {
-        const result = demo();
+        const result = (demo as any)();
         expect(result).toBeDefined();
       } catch { }
     }
   });
 });
+

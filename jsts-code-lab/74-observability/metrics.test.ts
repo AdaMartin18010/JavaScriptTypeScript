@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Counter, Gauge, Histogram, Summary, MetricRegistry, MetricsCollector, demo } from './metrics'
+import { Counter, Gauge, Histogram, Summary, MetricRegistry, MetricsCollector, demo } from './metrics.js'
 
 describe('metrics', () => {
   it('Counter is defined', () => {
@@ -8,7 +8,7 @@ describe('metrics', () => {
   it('Counter can be instantiated if constructor permits', () => {
     if (typeof Counter === 'function') {
       try {
-        const instance = new Counter();
+        const instance = new (Counter as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('metrics', () => {
   it('Gauge can be instantiated if constructor permits', () => {
     if (typeof Gauge === 'function') {
       try {
-        const instance = new Gauge();
+        const instance = new (Gauge as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('metrics', () => {
   it('Histogram can be instantiated if constructor permits', () => {
     if (typeof Histogram === 'function') {
       try {
-        const instance = new Histogram();
+        const instance = new (Histogram as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('metrics', () => {
   it('Summary can be instantiated if constructor permits', () => {
     if (typeof Summary === 'function') {
       try {
-        const instance = new Summary();
+        const instance = new (Summary as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('metrics', () => {
   it('MetricRegistry can be instantiated if constructor permits', () => {
     if (typeof MetricRegistry === 'function') {
       try {
-        const instance = new MetricRegistry();
+        const instance = new (MetricRegistry as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,7 +63,7 @@ describe('metrics', () => {
   it('MetricsCollector can be instantiated if constructor permits', () => {
     if (typeof MetricsCollector === 'function') {
       try {
-        const instance = new MetricsCollector();
+        const instance = new (MetricsCollector as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

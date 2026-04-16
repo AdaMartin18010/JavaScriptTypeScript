@@ -282,9 +282,9 @@ function createStateMachine<TState extends string, TEvent extends string>(
 
   return {
     getState: () => currentState,
-    send: (event: TEvent) => {
+    send: (event: string) => {
       const stateConfig = config.states[currentState];
-      const nextState = stateConfig.on?.[event];
+      const nextState = (stateConfig.on as Partial<Record<string, TState>>)?.[event];
 
       if (nextState) {
         stateConfig.exit?.();

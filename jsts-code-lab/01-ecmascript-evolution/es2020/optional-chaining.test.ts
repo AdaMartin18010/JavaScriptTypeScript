@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getCountryNameTraditional, getCountryNameModern, getAvatarUrl, getPoolSize, processUser } from './optional-chaining';
+import { getCountryNameTraditional, getCountryNameModern, getAvatarUrl, getPoolSize, processUser } from './optional-chaining.js';
 
 describe('optional chaining (ES2020)', () => {
   it('getCountryNameModern should return undefined for missing nested property', () => {

@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { SSEServer, SignalingServer, WebRTCConnection, CollaborativeWhiteboard } from './sse-webrtc';
+import { SSEServer, SignalingServer, WebRTCConnection, CollaborativeWhiteboard } from './sse-webrtc.js';
 
 describe('SSEServer', () => {
   it('subscribes, broadcasts, and unsubscribes', () => {
     const server = new SSEServer();
     const msgs: any[] = [];
-    const unsub = server.subscribe('c1', m => msgs.push(m));
+    const unsub = server.subscribe('c1', (m: any) => msgs.push(m));
     server.broadcast({ data: 'hi' });
     expect(msgs.length).toBe(1);
     expect(msgs[0].data).toBe('hi');
@@ -28,8 +28,8 @@ describe('SignalingServer', () => {
     const ss = new SignalingServer();
     const msgsA: any[] = [];
     const msgsB: any[] = [];
-    ss.join('r1', 'a', m => msgsA.push(m));
-    ss.join('r1', 'b', m => msgsB.push(m));
+    ss.join('r1', 'a', (m: any) => msgsA.push(m));
+    ss.join('r1', 'b', (m: any) => msgsB.push(m));
     expect(msgsA.some(m => m.type === 'join' && (m.payload as any).peers.includes('b'))).toBe(true);
     expect(msgsB.some(m => m.type === 'join')).toBe(false);
   });
@@ -38,7 +38,7 @@ describe('SignalingServer', () => {
     const ss = new SignalingServer();
     const inbox: any[] = [];
     ss.join('r1', 'a', () => {});
-    ss.join('r1', 'b', m => inbox.push(m));
+    ss.join('r1', 'b', (m: any) => inbox.push(m));
     ss.relay({ type: 'offer', from: 'a', to: 'b', payload: {}, timestamp: 0 });
     expect(inbox.length).toBe(1);
     expect(inbox[0].type).toBe('offer');
@@ -65,8 +65,8 @@ describe('CollaborativeWhiteboard', () => {
   it('draws and broadcasts to peers', () => {
     const board = new CollaborativeWhiteboard();
     const seen: any[] = [];
-    board.join('u1', a => seen.push(a));
-    board.join('u2', a => seen.push(a));
+    board.join('u1', (a: any) => seen.push(a));
+    board.join('u2', (a: any) => seen.push(a));
     board.draw({ type: 'draw', x: 1, y: 2, peerId: 'u1', timestamp: 0 });
     expect(board.getActionCount()).toBe(1);
     expect(seen.length).toBe(1);

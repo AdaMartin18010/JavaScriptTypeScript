@@ -13,7 +13,7 @@ import {
   propertyTest,
   generateRandomInt,
   demo
-} from './unit-test-patterns';
+} from './unit-test-patterns.js';
 
 describe('unit-test-patterns', () => {
   describe('add', () => {

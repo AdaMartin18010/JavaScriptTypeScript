@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { checkRAIL, frameBudget, detectLongTask } from './rendering-performance-model'
+import { checkRAIL, frameBudget, detectLongTask } from './rendering-performance-model.js'
 
 describe('checkRAIL', () => {
   it('passes ideal metrics', () => {

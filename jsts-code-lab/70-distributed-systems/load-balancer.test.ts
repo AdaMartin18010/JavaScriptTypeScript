@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { RoundRobinBalancer, WeightedRoundRobinBalancer, LeastConnectionsBalancer, ConsistentHashBalancer, demo } from './load-balancer'
+import { RoundRobinBalancer, WeightedRoundRobinBalancer, LeastConnectionsBalancer, ConsistentHashBalancer, demo } from './load-balancer.js'
 
 describe('load-balancer', () => {
   it('RoundRobinBalancer is defined', () => {
@@ -8,7 +8,7 @@ describe('load-balancer', () => {
   it('RoundRobinBalancer can be instantiated if constructor permits', () => {
     if (typeof RoundRobinBalancer === 'function') {
       try {
-        const instance = new RoundRobinBalancer();
+        const instance = new (RoundRobinBalancer as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('load-balancer', () => {
   it('WeightedRoundRobinBalancer can be instantiated if constructor permits', () => {
     if (typeof WeightedRoundRobinBalancer === 'function') {
       try {
-        const instance = new WeightedRoundRobinBalancer();
+        const instance = new (WeightedRoundRobinBalancer as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('load-balancer', () => {
   it('LeastConnectionsBalancer can be instantiated if constructor permits', () => {
     if (typeof LeastConnectionsBalancer === 'function') {
       try {
-        const instance = new LeastConnectionsBalancer();
+        const instance = new (LeastConnectionsBalancer as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('load-balancer', () => {
   it('ConsistentHashBalancer can be instantiated if constructor permits', () => {
     if (typeof ConsistentHashBalancer === 'function') {
       try {
-        const instance = new ConsistentHashBalancer();
+        const instance = new (ConsistentHashBalancer as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

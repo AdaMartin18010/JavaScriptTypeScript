@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import type { Reducer, Middleware } from './state-manager.js';
 import {
   createStore,
   applyMiddleware,
@@ -10,14 +11,14 @@ import {
   TodoActions,
   selectFilteredTodos,
   selectStats,
-} from './state-manager';
+} from './state-manager.js';
 
 describe('createStore', () => {
   type State = { count: number };
-  const reducer = (state: State | undefined, action: { type: string; payload?: number }) => {
+  const reducer: Reducer<State> = (state, action) => {
     if (state === undefined) return { count: 0 };
     if (action.type === 'INCREMENT') return { count: state.count + 1 };
-    if (action.type === 'ADD') return { count: state.count + (action.payload || 0) };
+    if (action.type === 'ADD') return { count: state.count + ((action.payload as number) || 0) };
     return state;
   };
 
@@ -70,9 +71,9 @@ describe('applyMiddleware', () => {
   };
 
   it('should apply middleware to dispatch', () => {
-    const testMiddleware = vi.fn((store) => (next) => (action) => {
+    const testMiddleware = vi.fn(((store: any) => (next: any) => (action: any) => {
       return next(action);
-    });
+    })) as unknown as Middleware<State>;
 
     const store = createStore(reducer, applyMiddleware(testMiddleware));
     store.dispatch({ type: 'TEST' });
@@ -103,7 +104,7 @@ describe('combineReducers', () => {
 describe('createSelector', () => {
   it('should memoize selector results', () => {
     const inputSelector = vi.fn((state: { value: number }) => state.value);
-    const combiner = vi.fn((value: number) => value * 2);
+    const combiner = vi.fn((value: number) => value * 2) as unknown as (...args: unknown[]) => number;
 
     const selector = createSelector([inputSelector], combiner);
     const state = { value: 5 };
@@ -115,7 +116,7 @@ describe('createSelector', () => {
 
   it('should recompute when inputs change', () => {
     const inputSelector = (state: { value: number }) => state.value;
-    const combiner = vi.fn((value: number) => value * 2);
+    const combiner = vi.fn((value: number) => value * 2) as unknown as (...args: unknown[]) => number;
 
     const selector = createSelector([inputSelector], combiner);
 

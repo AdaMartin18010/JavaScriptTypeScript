@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PluralRules, I18nManager, createI18nComposable } from './i18n-system';
+import { PluralRules, I18nManager, createI18nComposable } from './i18n-system.js';
 
 describe('PluralRules', () => {
   it('returns categories for English', () => {
@@ -44,7 +44,7 @@ describe('I18nManager', () => {
   it('notifies locale changes', () => {
     const i18n = new I18nManager();
     const changes: string[] = [];
-    const unsub = i18n.onLocaleChange(l => changes.push(l));
+    const unsub = i18n.onLocaleChange((l: any) => changes.push(l));
     i18n.setLocale('de');
     unsub();
     i18n.setLocale('fr');

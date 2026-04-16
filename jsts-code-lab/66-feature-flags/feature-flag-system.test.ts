@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FeatureFlagManager, ABTestManager } from './feature-flag-system';
+import { FeatureFlagManager, ABTestManager } from './feature-flag-system.js';
 
 describe('FeatureFlagManager', () => {
   it('enables flag for matching user rule', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { VehicleFactory, RoadLogistics, SeaLogistics, WindowsFactory, MacFactory, GenericFactory } from './factory';
+import { VehicleFactory, RoadLogistics, SeaLogistics, WindowsFactory, MacFactory, GenericFactory } from './factory.js';
 
 describe('factory pattern', () => {
   it('VehicleFactory should create correct vehicles', () => {

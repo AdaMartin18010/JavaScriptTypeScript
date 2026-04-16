@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createValidator, withPrivacy, reactive, effect, createLoggerFn, singleton } from './proxies';
+import { createValidator, withPrivacy, reactive, effect, createLoggerFn, singleton } from './proxies.js';
 
 describe('proxies', () => {
   it('createValidator should reject invalid age', () => {

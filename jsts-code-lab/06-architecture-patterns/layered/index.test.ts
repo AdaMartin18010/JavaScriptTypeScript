@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { UserRepository, UserService, UserController, Container, container } from './index';
+import { UserRepository, UserService, UserController, Container, container } from './index.js';
 
 describe('layered architecture', () => {
   it('UserRepository should CRUD users', async () => {

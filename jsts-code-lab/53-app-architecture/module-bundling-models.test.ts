@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { computeTreeShakingExports, splitChunks, resolveFederatedModule } from './module-bundling-models'
+import { computeTreeShakingExports, splitChunks, resolveFederatedModule } from './module-bundling-models.js'
 
 describe('computeTreeShakingExports', () => {
   it('retains only used exports', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Lexer, Parser, Optimizer, CodeGenerator, demo } from './compiler-pipeline'
+import { Lexer, Parser, Optimizer, CodeGenerator, demo } from './compiler-pipeline.js'
 
 describe('compiler-pipeline', () => {
   it('Lexer is defined', () => {
@@ -8,7 +8,7 @@ describe('compiler-pipeline', () => {
   it('Lexer can be instantiated if constructor permits', () => {
     if (typeof Lexer === 'function') {
       try {
-        const instance = new Lexer();
+        const instance = new (Lexer as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('compiler-pipeline', () => {
   it('Parser can be instantiated if constructor permits', () => {
     if (typeof Parser === 'function') {
       try {
-        const instance = new Parser();
+        const instance = new (Parser as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('compiler-pipeline', () => {
   it('Optimizer can be instantiated if constructor permits', () => {
     if (typeof Optimizer === 'function') {
       try {
-        const instance = new Optimizer();
+        const instance = new (Optimizer as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('compiler-pipeline', () => {
   it('CodeGenerator can be instantiated if constructor permits', () => {
     if (typeof CodeGenerator === 'function') {
       try {
-        const instance = new CodeGenerator();
+        const instance = new (CodeGenerator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

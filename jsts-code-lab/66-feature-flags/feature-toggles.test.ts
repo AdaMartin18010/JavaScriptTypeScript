@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { FeatureToggleManager, ToggleConditionEvaluator } from './feature-toggles';
+import { FeatureToggleManager, ToggleConditionEvaluator } from './feature-toggles.js';
 
 describe('FeatureToggleManager', () => {
   it('respects environment overrides', () => {

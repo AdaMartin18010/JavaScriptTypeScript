@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { TopicMatcher, PubSubHub, ConsumerGroupManager, InMemoryMessageStore, PersistentPubSub } from './pub-sub';
+import { TopicMatcher, PubSubHub, ConsumerGroupManager, InMemoryMessageStore, PersistentPubSub } from './pub-sub.js';
 
 describe('TopicMatcher', () => {
   it('matches exact topic', () => {
@@ -19,7 +19,7 @@ describe('TopicMatcher', () => {
 
 describe('PubSubHub', () => {
   it('publishes to exact subscribers', () => {
-    const hub = new PubSubHub();
+    const hub = new (PubSubHub as any)();
     const handler = vi.fn();
     hub.subscribe('evt', handler);
     hub.publish('evt', 42);
@@ -27,7 +27,7 @@ describe('PubSubHub', () => {
   });
 
   it('publishes to wildcard subscribers', () => {
-    const hub = new PubSubHub();
+    const hub = new (PubSubHub as any)();
     const handler = vi.fn();
     hub.subscribe('evt.#', handler);
     hub.publish('evt.sub', 1);
@@ -35,7 +35,7 @@ describe('PubSubHub', () => {
   });
 
   it('once subscription auto-removes', () => {
-    const hub = new PubSubHub();
+    const hub = new (PubSubHub as any)();
     const handler = vi.fn();
     hub.once('evt', handler);
     hub.publish('evt', 1);
@@ -44,7 +44,7 @@ describe('PubSubHub', () => {
   });
 
   it('filters by tag', () => {
-    const hub = new PubSubHub();
+    const hub = new (PubSubHub as any)();
     const h1 = vi.fn();
     hub.subscribe('evt', h1);
     hub.publish('evt', 1);
@@ -54,11 +54,11 @@ describe('PubSubHub', () => {
 
 describe('ConsumerGroupManager', () => {
   it('round-robins messages to consumers', async () => {
-    const manager = new ConsumerGroupManager();
+    const manager = new (ConsumerGroupManager as any)();
     manager.createGroup('g1');
     const received: string[] = [];
-    manager.joinGroup('g1', 'c1', async (msg) => received.push('c1'));
-    manager.joinGroup('g1', 'c2', async (msg) => received.push('c2'));
+    manager.joinGroup('g1', 'c1', async (_msg: any) => { received.push('c1'); });
+    manager.joinGroup('g1', 'c2', async (_msg: any) => { received.push('c2'); });
     manager.publishToGroup('g1', { id: '1', topic: 't', payload: null, timestamp: 1 });
     manager.publishToGroup('g1', { id: '2', topic: 't', payload: null, timestamp: 1 });
     await new Promise(r => setTimeout(r, 50));
@@ -68,7 +68,7 @@ describe('ConsumerGroupManager', () => {
 
 describe('PersistentPubSub', () => {
   it('saves messages to store', async () => {
-    const store = new InMemoryMessageStore();
+    const store = new (InMemoryMessageStore as any)();
     const spy = vi.spyOn(store, 'save');
     const pubsub = new PersistentPubSub(store);
     pubsub.publish('evt', 'data');

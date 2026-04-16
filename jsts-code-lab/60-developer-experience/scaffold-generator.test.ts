@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { TemplateEngine, ScaffoldGenerator } from './scaffold-generator';
+import { TemplateEngine, ScaffoldGenerator } from './scaffold-generator.js';
 
 describe('TemplateEngine', () => {
   it('renders variables', () => {

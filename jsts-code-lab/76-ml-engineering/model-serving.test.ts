@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ModelManager, InferenceEngine, ModelWarmer, demo } from './model-serving'
+import { ModelManager, InferenceEngine, ModelWarmer, demo } from './model-serving.js'
 
 describe('model-serving', () => {
   it('ModelManager is defined', () => {
@@ -8,7 +8,7 @@ describe('model-serving', () => {
   it('ModelManager can be instantiated if constructor permits', () => {
     if (typeof ModelManager === 'function') {
       try {
-        const instance = new ModelManager();
+        const instance = new (ModelManager as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('model-serving', () => {
   it('InferenceEngine can be instantiated if constructor permits', () => {
     if (typeof InferenceEngine === 'function') {
       try {
-        const instance = new InferenceEngine();
+        const instance = new (InferenceEngine as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('model-serving', () => {
   it('ModelWarmer can be instantiated if constructor permits', () => {
     if (typeof ModelWarmer === 'function') {
       try {
-        const instance = new ModelWarmer();
+        const instance = new (ModelWarmer as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

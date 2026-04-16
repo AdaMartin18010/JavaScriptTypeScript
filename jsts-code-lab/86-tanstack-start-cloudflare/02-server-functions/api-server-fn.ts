@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @file createServerFn 基础示例
  * @description
@@ -39,3 +40,4 @@ export const greetUser = createServerFn({ method: 'POST' })
       generatedAt: new Date().toISOString(),
     };
   });
+

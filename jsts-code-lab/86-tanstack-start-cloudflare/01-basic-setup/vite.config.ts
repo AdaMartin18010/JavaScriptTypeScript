@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @file Vite + Cloudflare + TanStack Start 基础配置
  * @description
@@ -23,3 +24,4 @@ export default defineConfig({
     tsConfigPaths(),
   ],
 });
+

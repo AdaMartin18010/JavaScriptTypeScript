@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { JWTHandler, APIKeyManager, OAuth2Server, CompositeAuthMiddleware, JWTMiddleware, APIKeyMiddleware } from './authentication';
+import { JWTHandler, APIKeyManager, OAuth2Server, CompositeAuthMiddleware, JWTMiddleware, APIKeyMiddleware } from './authentication.js';
 
 describe('JWTHandler', () => {
   it('signs and verifies a token', () => {

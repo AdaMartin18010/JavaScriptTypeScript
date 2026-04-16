@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ServiceRegistry, CircuitBreaker, RetryPolicy, LoadBalancer, ServiceProxy } from './service-mesh';
+import { ServiceRegistry, CircuitBreaker, RetryPolicy, LoadBalancer, ServiceProxy } from './service-mesh.js';
 
 describe('ServiceRegistry', () => {
   it('registers and discovers healthy instances', () => {

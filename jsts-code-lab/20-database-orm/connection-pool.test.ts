@@ -3,8 +3,8 @@ import {
   ConnectionPool,
   MockConnectionFactory,
   DefaultPoolConfig,
-} from './connection-pool';
-import type { PooledConnection, ConnectionFactory, PoolConfig } from './connection-pool';
+} from './connection-pool.js';
+import type { PooledConnection, ConnectionFactory, PoolConfig } from './connection-pool.js';
 
 describe('ConnectionPool', () => {
   let factory: ConnectionFactory;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ValuePool, ONNXRuntimeBridge, demo } from './onnx-runtime-bridge'
+import { ValuePool, ONNXRuntimeBridge, demo } from '\./onnx-runtime-bridge.js'
 
 describe('onnx-runtime-bridge', () => {
   it('ValuePool is defined', () => {
@@ -8,7 +8,7 @@ describe('onnx-runtime-bridge', () => {
   it('ValuePool can be instantiated if constructor permits', () => {
     if (typeof ValuePool === 'function') {
       try {
-        const instance = new ValuePool();
+        const instance = new (ValuePool as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('onnx-runtime-bridge', () => {
   it('ONNXRuntimeBridge can be instantiated if constructor permits', () => {
     if (typeof ONNXRuntimeBridge === 'function') {
       try {
-        const instance = new ONNXRuntimeBridge();
+        const instance = new (ONNXRuntimeBridge as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,9 +30,10 @@ describe('onnx-runtime-bridge', () => {
   it('demo is callable', () => {
     if (typeof demo === 'function') {
       try {
-        const result = demo();
+        const result = (demo as any)();
         expect(result).toBeDefined();
       } catch { }
     }
   });
 });
+

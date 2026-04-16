@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { CacheKeyGenerator, ResponseCache, CachePolicyEngine, EdgeCacheManager, CacheMiddleware } from './caching-layer';
+import { CacheKeyGenerator, ResponseCache, CachePolicyEngine, EdgeCacheManager, CacheMiddleware } from './caching-layer.js';
 
 describe('CacheKeyGenerator', () => {
   it('normalizes query param order', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AuthService, AuthorizationChecker, createAuthGuard, AuthUser } from './jwt-auth';
+import { AuthService, AuthorizationChecker, createAuthGuard, type AuthUser, type GuardContext } from './jwt-auth.js';
 
 describe('AuthService', () => {
   const config = { secret: 'super-secret-key-at-least-32-characters-long', accessTokenExpiry: 900, refreshTokenExpiry: 604800 };
@@ -55,7 +55,7 @@ describe('Guards', () => {
     const auth = new AuthService({ secret: 's', accessTokenExpiry: 10, refreshTokenExpiry: 10 });
     const tokens = auth.generateTokenPair({ id: 'u1', email: '', roles: [], permissions: [] });
     const guard = createAuthGuard(auth);
-    const ctx = { request: { headers: { authorization: `Bearer ${tokens.accessToken}` }, params: {}, body: {} } };
+    const ctx: GuardContext = { request: { headers: { authorization: `Bearer ${tokens.accessToken}` }, params: {}, body: {} } };
     expect(guard(ctx)).toBe(true);
     expect(ctx.user).toBeDefined();
   });

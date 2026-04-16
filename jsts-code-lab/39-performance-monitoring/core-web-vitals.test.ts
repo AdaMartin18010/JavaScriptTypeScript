@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CLSMonitor, LCPMonitor, FIDMonitor, INPMonitor, PerformanceCollector, PerformanceBudgetChecker, PerformanceAnalyzer } from './core-web-vitals';
+import { CLSMonitor, LCPMonitor, FIDMonitor, INPMonitor, PerformanceCollector, PerformanceBudgetChecker, PerformanceAnalyzer } from './core-web-vitals.js';
 
 describe('CLSMonitor', () => {
   it('returns metric with good rating when zero', () => {

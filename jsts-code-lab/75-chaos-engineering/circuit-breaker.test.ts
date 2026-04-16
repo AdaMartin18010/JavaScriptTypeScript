@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { AdvancedCircuitBreaker, CircuitBreakerGroup, demo } from './circuit-breaker'
+import { AdvancedCircuitBreaker, CircuitBreakerGroup, demo } from './circuit-breaker.js'
 
 describe('circuit-breaker', () => {
   it('AdvancedCircuitBreaker is defined', () => {
@@ -8,7 +8,7 @@ describe('circuit-breaker', () => {
   it('AdvancedCircuitBreaker can be instantiated if constructor permits', () => {
     if (typeof AdvancedCircuitBreaker === 'function') {
       try {
-        const instance = new AdvancedCircuitBreaker();
+        const instance = new (AdvancedCircuitBreaker as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('circuit-breaker', () => {
   it('CircuitBreakerGroup can be instantiated if constructor permits', () => {
     if (typeof CircuitBreakerGroup === 'function') {
       try {
-        const instance = new CircuitBreakerGroup();
+        const instance = new (CircuitBreakerGroup as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

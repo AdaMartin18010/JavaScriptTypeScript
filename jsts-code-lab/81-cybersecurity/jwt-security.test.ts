@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { JwtSecurityService, demo } from './jwt-security'
+import { JwtSecurityService, demo } from '\./jwt-security.js'
 
 describe('jwt-security', () => {
   it('JwtSecurityService is defined', () => {
@@ -8,7 +8,7 @@ describe('jwt-security', () => {
   it('JwtSecurityService can be instantiated if constructor permits', () => {
     if (typeof JwtSecurityService === 'function') {
       try {
-        const instance = new JwtSecurityService();
+        const instance = new (JwtSecurityService as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,9 +19,10 @@ describe('jwt-security', () => {
   it('demo is callable', () => {
     if (typeof demo === 'function') {
       try {
-        const result = demo();
+        const result = (demo as any)();
         expect(result).toBeDefined();
       } catch { }
     }
   });
 });
+

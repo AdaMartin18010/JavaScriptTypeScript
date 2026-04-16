@@ -14,7 +14,8 @@
  * - 左递归消除
  */
 
-import { Token, TokenType } from './lexer.js';
+import { TokenType } from './lexer.js';
+import type { Token } from './lexer.js';
 
 // ==================== AST 节点类型 ====================
 
@@ -996,7 +997,7 @@ export class ASTFormatter {
         const varDecl = node as VariableDeclarationNode;
         const decls = varDecl.declarations.map(d => {
           const init = d.init ? ` = ${this.format(d.init, 0)}` : '';
-          return `${d.name}${init}`;
+          return `${d.id.name}${init}`;
         }).join(', ');
         return `${spaces}${varDecl.kind} ${decls};`;
 
