@@ -6,16 +6,104 @@
 
 ## 目录
 
-1. [编译器架构理论（前端-中端-后端）](#1-编译器架构理论前端-中端-后端)
-2. [词法分析](#2-词法分析)
-3. [语法分析](#3-语法分析)
-4. [AST 的形式化定义和操作](#4-ast-的形式化定义和操作)
-5. [语义分析](#5-语义分析)
-6. [中间表示（IR）和三地址码](#6-中间表示ir和三地址码)
-7. [代码生成和优化](#7-代码生成和优化)
-8. [垃圾回收理论](#8-垃圾回收理论)
-9. [类型系统的实现](#9-类型系统的实现)
-10. [领域特定语言（DSL）的设计](#10-领域特定语言dsl的设计)
+- [编译器与语言设计深度指南](#编译器与语言设计深度指南)
+  - [目录](#目录)
+  - [1. 编译器架构理论（前端-中端-后端）](#1-编译器架构理论前端-中端-后端)
+    - [1.1 理论解释](#11-理论解释)
+      - [编译器流水线概览](#编译器流水线概览)
+      - [各阶段职责](#各阶段职责)
+    - [1.2 形式化定义](#12-形式化定义)
+    - [1.3 架构优势](#13-架构优势)
+    - [1.4 算法伪代码](#14-算法伪代码)
+    - [1.5 实现示例](#15-实现示例)
+    - [1.6 工具推荐](#16-工具推荐)
+  - [2. 词法分析](#2-词法分析)
+    - [2.1 理论解释](#21-理论解释)
+      - [正则表达式与正则语言](#正则表达式与正则语言)
+      - [有限状态机](#有限状态机)
+    - [2.2 算法伪代码](#22-算法伪代码)
+      - [Thompson构造算法](#thompson构造算法)
+      - [子集构造算法（NFA → DFA）](#子集构造算法nfa--dfa)
+      - [词法分析器（Scanner）](#词法分析器scanner)
+    - [2.3 实现示例](#23-实现示例)
+    - [2.4 工具推荐](#24-工具推荐)
+  - [3. 语法分析](#3-语法分析)
+    - [3.1 理论解释](#31-理论解释)
+      - [上下文无关文法（CFG）](#上下文无关文法cfg)
+      - [文法分类（Chomsky层次）](#文法分类chomsky层次)
+    - [3.2 算法伪代码](#32-算法伪代码)
+      - [递归下降解析](#递归下降解析)
+      - [LL(1) 预测解析](#ll1-预测解析)
+    - [3.3 实现示例](#33-实现示例)
+    - [3.4 工具推荐](#34-工具推荐)
+  - [4. AST 的形式化定义和操作](#4-ast-的形式化定义和操作)
+    - [4.1 理论解释](#41-理论解释)
+      - [形式化定义](#形式化定义)
+      - [Visitor模式](#visitor模式)
+    - [4.2 算法伪代码](#42-算法伪代码)
+      - [AST遍历](#ast遍历)
+    - [4.3 实现示例](#43-实现示例)
+    - [4.4 工具推荐](#44-工具推荐)
+  - [5. 语义分析](#5-语义分析)
+    - [5.1 理论解释](#51-理论解释)
+      - [主要任务](#主要任务)
+      - [属性文法](#属性文法)
+    - [5.2 算法伪代码](#52-算法伪代码)
+      - [符号表管理](#符号表管理)
+      - [类型检查](#类型检查)
+    - [5.3 实现示例](#53-实现示例)
+    - [5.4 工具推荐](#54-工具推荐)
+  - [6. 中间表示（IR）和三地址码](#6-中间表示ir和三地址码)
+    - [6.1 理论解释](#61-理论解释)
+      - [IR的分类](#ir的分类)
+      - [三地址码（TAC）](#三地址码tac)
+    - [6.2 算法伪代码](#62-算法伪代码)
+      - [AST到三地址码转换](#ast到三地址码转换)
+      - [基本块划分](#基本块划分)
+    - [6.3 实现示例](#63-实现示例)
+    - [6.4 工具推荐](#64-工具推荐)
+  - [7. 代码生成和优化](#7-代码生成和优化)
+    - [7.1 理论解释](#71-理论解释)
+      - [优化级别](#优化级别)
+      - [优化分类](#优化分类)
+    - [7.2 算法伪代码](#72-算法伪代码)
+      - [常量折叠](#常量折叠)
+      - [死代码消除](#死代码消除)
+      - [公共子表达式消除（CSE）](#公共子表达式消除cse)
+      - [简单寄存器分配](#简单寄存器分配)
+    - [7.3 实现示例](#73-实现示例)
+    - [7.4 工具推荐](#74-工具推荐)
+  - [8. 垃圾回收理论](#8-垃圾回收理论)
+    - [8.1 理论解释](#81-理论解释)
+      - [核心概念](#核心概念)
+      - [GC算法分类](#gc算法分类)
+    - [8.2 算法伪代码](#82-算法伪代码)
+      - [标记-清除算法](#标记-清除算法)
+      - [引用计数](#引用计数)
+      - [分代垃圾回收](#分代垃圾回收)
+      - [增量/并发GC](#增量并发gc)
+    - [8.3 实现示例](#83-实现示例)
+    - [8.4 工具推荐](#84-工具推荐)
+  - [9. 类型系统的实现](#9-类型系统的实现)
+    - [9.1 理论解释](#91-理论解释)
+      - [Lambda演算类型](#lambda演算类型)
+      - [类型系统分类](#类型系统分类)
+    - [9.2 Hindley-Milner类型推导](#92-hindley-milner类型推导)
+      - [算法W](#算法w)
+    - [9.3 子类型与多态](#93-子类型与多态)
+      - [子类型规则](#子类型规则)
+    - [9.4 实现示例](#94-实现示例)
+    - [9.5 工具推荐](#95-工具推荐)
+  - [10. 领域特定语言（DSL）的设计](#10-领域特定语言dsl的设计)
+    - [10.1 理论解释](#101-理论解释)
+      - [DSL分类](#dsl分类)
+      - [DSL设计原则](#dsl设计原则)
+    - [10.2 DSL实现模式](#102-dsl实现模式)
+      - [解析器组合子](#解析器组合子)
+      - [解释器模式](#解释器模式)
+    - [10.3 实现示例](#103-实现示例)
+    - [10.4 工具推荐](#104-工具推荐)
+  - [总结](#总结)
 
 ---
 
@@ -71,15 +159,15 @@ Algorithm Compile(source)
     tokens ← LexicalAnalysis(source)
     ast ← SyntaxAnalysis(tokens)
     annotated_ast ← SemanticAnalysis(ast)
-    
+
     // 中端处理
     ir ← GenerateIR(annotated_ast)
     optimized_ir ← Optimize(ir)
-    
+
     // 后端处理
     machine_code ← CodeGeneration(optimized_ir)
     final_code ← RegisterAllocation(machine_code)
-    
+
     return final_code
 ```
 
@@ -89,7 +177,7 @@ Algorithm Compile(source)
 // 编译器主类架构
 abstract class CompilerPhase<TInput, TOutput> {
     abstract execute(input: TInput): TOutput;
-    
+
     protected reportError(error: CompilerError): void {
         console.error(`[${this.constructor.name}] ${error.message}`);
     }
@@ -99,7 +187,7 @@ abstract class CompilerPhase<TInput, TOutput> {
 abstract class Frontend extends CompilerPhase<string, AST> {
     protected lexer: Lexer;
     protected parser: Parser;
-    
+
     compile(source: string): AST {
         const tokens = this.lexer.tokenize(source);
         return this.parser.parse(tokens);
@@ -110,7 +198,7 @@ abstract class Frontend extends CompilerPhase<string, AST> {
 abstract class MiddleEnd extends CompilerPhase<AST, IR> {
     protected irGenerator: IRGenerator;
     protected optimizer: Optimizer;
-    
+
     compile(ast: AST): IR {
         const ir = this.irGenerator.generate(ast);
         return this.optimizer.optimize(ir);
@@ -121,7 +209,7 @@ abstract class MiddleEnd extends CompilerPhase<AST, IR> {
 abstract class Backend extends CompilerPhase<IR, MachineCode> {
     protected codeGenerator: CodeGenerator;
     protected registerAllocator: RegisterAllocator;
-    
+
     compile(ir: IR): MachineCode {
         const assembly = this.codeGenerator.generate(ir);
         return this.registerAllocator.allocate(assembly);
@@ -135,7 +223,7 @@ class Compiler {
         private middleEnd: MiddleEnd,
         private backend: Backend
     ) {}
-    
+
     compile(source: string): MachineCode {
         const ast = this.frontend.compile(source);
         const ir = this.middleEnd.compile(ast);
@@ -172,6 +260,7 @@ class Compiler {
 **确定有限自动机（DFA）** 定义为五元组：M = (Q, Σ, δ, q0, F)
 
 其中：
+
 - Q：有限状态集合
 - Σ：输入字母表
 - δ: Q × Σ → Q：转移函数
@@ -190,23 +279,23 @@ class Compiler {
 Algorithm ThompsonConstruction(regex)
     if regex = ∅ then
         return NFA with single state (non-accepting)
-    
+
     if regex = ε then
         return NFA with single accepting state
-    
+
     if regex = a (where a ∈ Σ) then
         return NFA: q0 --a--> q1 (q1 is accepting)
-    
+
     if regex = r|s then
         N_r ← ThompsonConstruction(r)
         N_s ← ThompsonConstruction(s)
         return Union(N_r, N_s)
-    
+
     if regex = rs then
         N_r ← ThompsonConstruction(r)
         N_s ← ThompsonConstruction(s)
         return Concatenation(N_r, N_s)
-    
+
     if regex = r* then
         N_r ← ThompsonConstruction(r)
         return KleeneClosure(N_r)
@@ -221,11 +310,11 @@ Algorithm SubsetConstruction(NFA N)
     M.start ← initial
     M.states ← {initial}
     unmarked ← {initial}
-    
+
     while unmarked ≠ ∅ do
         T ← pop(unmarked)
         mark T
-        
+
         for each input symbol a do
             U ← ε-closure(move(T, a))
             if U ∉ M.states then
@@ -235,7 +324,7 @@ Algorithm SubsetConstruction(NFA N)
             M.transition[T, a] ← U
         end for
     end while
-    
+
     return M
 ```
 
@@ -245,12 +334,12 @@ Algorithm SubsetConstruction(NFA N)
 Algorithm Scan(input, dfa)
     tokens ← []
     i ← 0
-    
+
     while i < input.length do
         state ← dfa.start
         lastAccept ← -1
         lastAcceptPos ← i
-        
+
         while i < input.length and state ≠ dead do
             state ← dfa.transition[state, input[i]]
             if state ∈ dfa.accepting then
@@ -259,7 +348,7 @@ Algorithm Scan(input, dfa)
             end if
             i ← i + 1
         end while
-        
+
         if lastAccept ≠ -1 then
             token ← createToken(lastAccept, input[start..lastAcceptPos])
             tokens.append(token)
@@ -269,7 +358,7 @@ Algorithm Scan(input, dfa)
             i ← i + 1
         end if
     end while
-    
+
     return tokens
 ```
 
@@ -305,7 +394,7 @@ class DFA {
     states: DFAState[] = [];
     startState: number = 0;
     currentState: number = 0;
-    
+
     addState(isAccepting: boolean, tokenType?: TokenType): number {
         const id = this.states.length;
         this.states.push({
@@ -316,30 +405,30 @@ class DFA {
         });
         return id;
     }
-    
+
     addTransition(from: number, symbol: string, to: number): void {
         this.states[from].transitions.set(symbol, to);
     }
-    
+
     reset(): void {
         this.currentState = this.startState;
     }
-    
+
     transition(symbol: string): boolean {
         const state = this.states[this.currentState];
         const next = state.transitions.get(symbol);
-        
+
         if (next !== undefined) {
             this.currentState = next;
             return true;
         }
         return false;
     }
-    
+
     isAccepting(): boolean {
         return this.states[this.currentState].isAccepting;
     }
-    
+
     getTokenType(): TokenType | undefined {
         return this.states[this.currentState].tokenType;
     }
@@ -352,25 +441,25 @@ class Lexer {
     private position: number = 0;
     private line: number = 1;
     private column: number = 1;
-    
+
     constructor(source: string) {
         this.source = source;
         this.dfa = this.buildDFA();
     }
-    
+
     private buildDFA(): DFA {
         const dfa = new DFA();
         const s0 = dfa.addState(false);
         dfa.startState = s0;
-        
+
         const s1 = dfa.addState(false);
         const s2 = dfa.addState(true, TokenType.NUMBER);
-        
+
         const s3 = dfa.addState(false);
         const s4 = dfa.addState(true, TokenType.IDENTIFIER);
-        
+
         const s7 = dfa.addState(true, TokenType.OPERATOR);
-        
+
         // 数字: [0-9]+
         for (let c = 48; c <= 57; c++) {
             const char = String.fromCharCode(c);
@@ -379,7 +468,7 @@ class Lexer {
         }
         dfa.addTransition(s1, " ", s2);
         dfa.addTransition(s1, "\n", s2);
-        
+
         // 标识符: [a-zA-Z][a-zA-Z0-9]*
         for (let c = 97; c <= 122; c++) {
             const char = String.fromCharCode(c);
@@ -393,16 +482,16 @@ class Lexer {
         }
         dfa.addTransition(s3, " ", s4);
         dfa.addTransition(s3, "\n", s4);
-        
+
         // 简单运算符
         const ops = ["+", "-", "*", "/", "=", "<", ">", "!"];
         for (const op of ops) {
             dfa.addTransition(s0, op, s7);
         }
-        
+
         return dfa;
     }
-    
+
     tokenize(): Token[] {
         const tokens: Token[] = [];
         while (this.position < this.source.length) {
@@ -414,7 +503,7 @@ class Lexer {
         tokens.push({ type: TokenType.EOF, value: "", line: this.line, column: this.column });
         return tokens;
     }
-    
+
     private skipWhitespace(): void {
         while (this.position < this.source.length && /\s/.test(this.source[this.position])) {
             if (this.source[this.position] === "\n") {
@@ -426,16 +515,16 @@ class Lexer {
             this.position++;
         }
     }
-    
+
     private nextToken(): Token | null {
         const startPos = this.position;
         const startLine = this.line;
         const startCol = this.column;
-        
+
         this.dfa.reset();
         let lastAccept = -1;
         let lastAcceptPos = startPos;
-        
+
         while (this.position < this.source.length) {
             const char = this.source[this.position];
             if (!this.dfa.transition(char)) break;
@@ -446,7 +535,7 @@ class Lexer {
             this.position++;
             this.column++;
         }
-        
+
         if (lastAccept !== -1) {
             const value = this.source.substring(startPos, lastAcceptPos + 1);
             const tokenType = this.dfa.states[lastAccept].tokenType!;
@@ -467,6 +556,7 @@ class Lexer {
 | **ANTLR** | 完整的词法/语法分析器生成器 | 多语言 |
 | **re2c** | 快速正则表达式编译器 | C/C++ |
 | **JavaCC** | Java Compiler Compiler | Java |
+
 ---
 
 ## 3. 语法分析
@@ -478,6 +568,7 @@ class Lexer {
 #### 上下文无关文法（CFG）
 
 形式定义为四元组 G = (V, T, P, S)：
+
 - V：非终结符集合
 - T：终结符集合（Token）
 - P：产生式规则集合
@@ -533,15 +624,15 @@ interface ASTNode {
 class RecursiveDescentParser {
     private tokens: Token[];
     private position: number = 0;
-    
+
     constructor(tokens: Token[]) {
         this.tokens = tokens;
     }
-    
+
     parse(): ASTNode {
         return this.parseExpression();
     }
-    
+
     private parseExpression(): ASTNode {
         const node: ASTNode = { type: "Expression", children: [] };
         node.children.push(this.parseTerm());
@@ -551,7 +642,7 @@ class RecursiveDescentParser {
         }
         return node;
     }
-    
+
     private parseTerm(): ASTNode {
         const node: ASTNode = { type: "Term", children: [] };
         node.children.push(this.parseFactor());
@@ -561,7 +652,7 @@ class RecursiveDescentParser {
         }
         return node;
     }
-    
+
     private parseFactor(): ASTNode {
         if (this.match(TokenType.NUMBER)) {
             return { type: "NumberLiteral", value: parseFloat(this.previous().value) };
@@ -576,7 +667,7 @@ class RecursiveDescentParser {
         }
         throw new Error("Unexpected token");
     }
-    
+
     private match(type: TokenType, ...values: string[]): boolean {
         if (this.check(type, ...values)) {
             this.advance();
@@ -584,30 +675,30 @@ class RecursiveDescentParser {
         }
         return false;
     }
-    
+
     private check(type: TokenType, ...values: string[]): boolean {
         if (this.isAtEnd()) return false;
         const token = this.peek();
         return token.type === type and (values.length === 0 or values.includes(token.value));
     }
-    
+
     private advance(): Token {
         if (!this.isAtEnd()) this.position++;
         return this.previous();
     }
-    
+
     private isAtEnd(): boolean {
         return this.peek().type === TokenType.EOF;
     }
-    
+
     private peek(): Token {
         return this.tokens[this.position];
     }
-    
+
     private previous(): Token {
         return this.tokens[this.position - 1];
     }
-    
+
     private consume(type: TokenType, value?: string): Token {
         if (this.check(type, ...(value ? [value] : []))) {
             return this.advance();
@@ -644,7 +735,7 @@ AST = Program(stmts: Statement*)
 Statement = Let(name: string, value: Expression)
           | Function(name: string, params: string*, body: Statement*)
           | If(condition: Expression, then: Statement*, else: Statement*)
-          
+
 Expression = Binary(left: Expression, op: Operator, right: Expression)
            | Unary(op: Operator, operand: Expression)
            | Literal(value: number | string | boolean)
@@ -695,7 +786,7 @@ class BinaryExpr extends ASTNode {
         public operator: string,
         public right: ASTNode
     ) { super(); }
-    
+
     accept<T>(visitor: ASTVisitor<T>): T {
         return visitor.visitBinaryExpr(this);
     }
@@ -703,7 +794,7 @@ class BinaryExpr extends ASTNode {
 
 class Literal extends ASTNode {
     constructor(public value: number | string | boolean) { super(); }
-    
+
     accept<T>(visitor: ASTVisitor<T>): T {
         return visitor.visitLiteral(this);
     }
@@ -711,7 +802,7 @@ class Literal extends ASTNode {
 
 class Identifier extends ASTNode {
     constructor(public name: string) { super(); }
-    
+
     accept<T>(visitor: ASTVisitor<T>): T {
         return visitor.visitIdentifier(this);
     }
@@ -727,11 +818,11 @@ interface ASTVisitor<T> {
 // 具体Visitor：求值
 class Evaluator implements ASTVisitor<number> {
     private variables: Map<string, number> = new Map();
-    
+
     visitBinaryExpr(expr: BinaryExpr): number {
         const left = expr.left.accept(this);
         const right = expr.right.accept(this);
-        
+
         switch (expr.operator) {
             case "+": return left + right;
             case "-": return left - right;
@@ -740,19 +831,19 @@ class Evaluator implements ASTVisitor<number> {
             default: throw new Error(`Unknown operator: ${expr.operator}`);
         }
     }
-    
+
     visitLiteral(literal: Literal): number {
         if (typeof literal.value === "number") return literal.value;
         throw new Error("Expected number");
     }
-    
+
     visitIdentifier(id: Identifier): number {
         if (this.variables.has(id.name)) {
             return this.variables.get(id.name)!;
         }
         throw new Error(`Undefined variable: ${id.name}`);
     }
-    
+
     setVariable(name: string, value: number): void {
         this.variables.set(name, value);
     }
@@ -765,11 +856,11 @@ class Printer implements ASTVisitor<string> {
         const right = expr.right.accept(this);
         return `(${left} ${expr.operator} ${right})`;
     }
-    
+
     visitLiteral(literal: Literal): string {
         return String(literal.value);
     }
-    
+
     visitIdentifier(id: Identifier): string {
         return id.name;
     }
@@ -778,30 +869,30 @@ class Printer implements ASTVisitor<string> {
 // 具体Visitor：类型检查
 class TypeChecker implements ASTVisitor<string> {
     private symbolTable: Map<string, string> = new Map();
-    
+
     visitBinaryExpr(expr: BinaryExpr): string {
         const leftType = expr.left.accept(this);
         const rightType = expr.right.accept(this);
-        
+
         if (leftType !== rightType) {
             throw new Error(`Type mismatch: ${leftType} ${expr.operator} ${rightType}`);
         }
-        
-        if (expr.operator === "+" || expr.operator === "-" || 
+
+        if (expr.operator === "+" || expr.operator === "-" ||
             expr.operator === "*" || expr.operator === "/") {
             if (leftType !== "number") {
                 throw new Error(`Operator ${expr.operator} requires number`);
             }
             return "number";
         }
-        
+
         return leftType;
     }
-    
+
     visitLiteral(literal: Literal): string {
         return typeof literal.value;
     }
-    
+
     visitIdentifier(id: Identifier): string {
         if (this.symbolTable.has(id.name)) {
             return this.symbolTable.get(id.name)!;
@@ -872,19 +963,19 @@ F → num { F.val = num.lexval }
 ```
 Algorithm SymbolTable
     scopes = Stack()
-    
+
     Function enterScope()
         scopes.push(new Map())
-    
+
     Function exitScope()
         scopes.pop()
-    
+
     Function declare(name, type)
         current = scopes.top()
         if name in current then
             error("Redeclaration of", name)
         current[name] = type
-    
+
     Function lookup(name)
         for scope in scopes (from top to bottom) do
             if name in scope then
@@ -903,20 +994,20 @@ Algorithm TypeCheck(node, env)
             if not Compatible(leftType, rightType, node.op) then
                 error("Type mismatch")
             return ResultType(leftType, rightType, node.op)
-        
+
         "Literal":
             return typeof(node.value)
-        
+
         "Identifier":
             return env.lookup(node.name)
-        
+
         "Assignment":
             varType = env.lookup(node.name)
             exprType = TypeCheck(node.value, env)
             if not SubType(exprType, varType) then
                 error("Cannot assign", exprType, "to", varType)
             return varType
-        
+
         "FunctionCall":
             funcType = env.lookup(node.name)
             for i, arg in enumerate(node.args) do
@@ -952,17 +1043,17 @@ class FunctionType implements Type {
 // 符号表
 class SymbolTable {
     private scopes: Map<string, Type>[] = [new Map()];
-    
+
     enterScope(): void {
         this.scopes.push(new Map());
     }
-    
+
     exitScope(): void {
         if (this.scopes.length > 1) {
             this.scopes.pop();
         }
     }
-    
+
     declare(name: string, type: Type): void {
         const current = this.scopes[this.scopes.length - 1];
         if (current.has(name)) {
@@ -970,7 +1061,7 @@ class SymbolTable {
         }
         current.set(name, type);
     }
-    
+
     lookup(name: string): Type {
         for (let i = this.scopes.length - 1; i >= 0; i--) {
             if (this.scopes[i].has(name)) {
@@ -985,15 +1076,15 @@ class SymbolTable {
 class SemanticAnalyzer {
     private symbolTable: SymbolTable;
     private errors: string[] = [];
-    
+
     constructor() {
         this.symbolTable = new SymbolTable();
     }
-    
+
     analyze(node: ASTNode): void {
         this.visit(node);
     }
-    
+
     private visit(node: ASTNode): void {
         switch (node.type) {
             case "Program":
@@ -1003,86 +1094,86 @@ class SemanticAnalyzer {
                 }
                 this.symbolTable.exitScope();
                 break;
-                
+
             case "VariableDeclaration":
                 this.visitVariableDeclaration(node);
                 break;
-                
+
             case "FunctionDeclaration":
                 this.visitFunctionDeclaration(node);
                 break;
-                
+
             case "Assignment":
                 this.visitAssignment(node);
                 break;
-                
+
             case "Identifier":
                 this.symbolTable.lookup(node.value);
                 break;
-                
+
             case "BinaryExpr":
                 this.visitBinaryExpr(node);
                 break;
         }
     }
-    
+
     private visitVariableDeclaration(node: ASTNode): void {
         const name = node.value;
         const initType = this.inferType(node.children![0]);
         this.symbolTable.declare(name, initType);
     }
-    
+
     private visitFunctionDeclaration(node: ASTNode): void {
         const name = node.value;
         const params = node.children![0].children || [];
         const body = node.children![1];
-        
+
         // 创建函数类型
         const paramTypes = params.map(p => this.inferType(p));
         const funcType = new FunctionType(name, paramTypes, new PrimitiveType("void"));
-        
+
         // 在函数外部声明函数名
         this.symbolTable.declare(name, funcType);
-        
+
         // 进入函数作用域
         this.symbolTable.enterScope();
-        
+
         // 声明参数
         for (const param of params) {
             this.symbolTable.declare(param.value, new PrimitiveType("any"));
         }
-        
+
         // 分析函数体
         this.visit(body);
-        
+
         this.symbolTable.exitScope();
     }
-    
+
     private visitAssignment(node: ASTNode): void {
         const name = node.value;
         const varType = this.symbolTable.lookup(name);
         const exprType = this.inferType(node.children![0]);
-        
+
         if (!this.isCompatible(exprType, varType)) {
             this.errors.push(
                 `Type mismatch: cannot assign ${exprType.name} to ${varType.name}`
             );
         }
     }
-    
+
     private visitBinaryExpr(node: ASTNode): void {
         const leftType = this.inferType(node.children![0]);
         const rightType = this.inferType(node.children![1]);
         const operator = node.value;
-        
+
         if (!this.isCompatible(leftType, rightType)) {
             this.errors.push(
                 `Type mismatch in binary expression: ${leftType.name} ${operator} ${rightType.name}`
             );
         }
-        
+
         // 检查运算符是否支持类型
-        if (operator === "+" || operator === "-" || 
+        if (operator === "+" || operator === "-" ||
             operator === "*" || operator === "/") {
             if (leftType.name !== "number" || rightType.name !== "number") {
                 this.errors.push(
@@ -1091,7 +1182,7 @@ class SemanticAnalyzer {
             }
         }
     }
-    
+
     private inferType(node: ASTNode): Type {
         switch (node.type) {
             case "NumberLiteral":
@@ -1106,12 +1197,12 @@ class SemanticAnalyzer {
                 return new PrimitiveType("any");
         }
     }
-    
+
     private isCompatible(source: Type, target: Type): boolean {
         // 简化的类型兼容性检查
         return source.name === target.name || target.name === "any";
     }
-    
+
     getErrors(): string[] {
         return this.errors;
     }
@@ -1128,6 +1219,7 @@ class SemanticAnalyzer {
 | **SonarQube** | 代码质量分析 | 多语言 |
 | **Psalm** | PHP静态分析 | PHP |
 | **Mypy** | Python静态类型检查 | Python |
+
 ---
 
 ## 6. 中间表示（IR）和三地址码
@@ -1175,18 +1267,18 @@ Algorithm GenerateTAC(node, tempCounter)
             result = newTemp()
             emit(result "=" t1 node.op t2)
             return result
-        
+
         "Literal":
             return node.value
-        
+
         "Identifier":
             return node.name
-        
+
         "Assignment":
             rhs = GenerateTAC(node.value, tempCounter)
             emit(node.name "=" rhs)
             return node.name
-        
+
         "If":
             cond = GenerateTAC(node.condition, tempCounter)
             labelElse = newLabel()
@@ -1198,7 +1290,7 @@ Algorithm GenerateTAC(node, tempCounter)
             if node.elseBranch then
                 GenerateTAC(node.elseBranch, tempCounter)
             emitLabel(labelEnd)
-        
+
         "While":
             labelStart = newLabel()
             labelEnd = newLabel()
@@ -1216,25 +1308,25 @@ Algorithm GenerateTAC(node, tempCounter)
 Algorithm PartitionBasicBlocks(instructions)
     leaders = Set()
     leaders.add(0)  // 第一条指令是领导者
-    
+
     for i = 0 to instructions.length - 1 do
         if instructions[i] is jump or branch then
             leaders.add(target of jump)
             if i + 1 < instructions.length then
                 leaders.add(i + 1)
-    
+
     blocks = []
     currentBlock = []
-    
+
     for i = 0 to instructions.length - 1 do
         if i in leaders and currentBlock not empty then
             blocks.add(currentBlock)
             currentBlock = []
         currentBlock.add(instructions[i])
-    
+
     if currentBlock not empty then
         blocks.add(currentBlock)
-    
+
     return blocks
 ```
 
@@ -1266,12 +1358,12 @@ class TACGenerator {
     private instructions: TACInstruction[] = [];
     private tempCounter = 0;
     private labelCounter = 0;
-    
+
     generate(ast: ASTNode): TACInstruction[] {
         this.visit(ast);
         return this.instructions;
     }
-    
+
     private visit(node: ASTNode): string {
         switch (node.type) {
             case "Program":
@@ -1279,45 +1371,45 @@ class TACGenerator {
                     this.visit(stmt);
                 }
                 return "";
-            
+
             case "BinaryExpr":
                 return this.visitBinaryExpr(node);
-            
+
             case "Literal":
                 return String(node.value);
-            
+
             case "Identifier":
                 return node.value;
-            
+
             case "Assignment":
                 return this.visitAssignment(node);
-            
+
             case "If":
                 return this.visitIf(node);
-            
+
             case "While":
                 return this.visitWhile(node);
-            
+
             default:
                 return "";
         }
     }
-    
+
     private visitBinaryExpr(node: ASTNode): string {
         const left = this.visit(node.children![0]);
         const right = this.visit(node.children![1]);
         const result = this.newTemp();
-        
+
         this.instructions.push({
             op: this.getOperator(node.value),
             result,
             arg1: left,
             arg2: right
         });
-        
+
         return result;
     }
-    
+
     private visitAssignment(node: ASTNode): string {
         const value = this.visit(node.children![0]);
         this.instructions.push({
@@ -1327,71 +1419,71 @@ class TACGenerator {
         });
         return node.value;
     }
-    
+
     private visitIf(node: ASTNode): string {
         const cond = this.visit(node.children![0]);
         const elseLabel = this.newLabel();
         const endLabel = this.newLabel();
-        
+
         // ifFalse cond goto elseLabel
         this.instructions.push({
             op: TACOp.IF_FALSE,
             arg1: cond,
             arg2: elseLabel
         });
-        
+
         // then branch
         this.visit(node.children![1]);
-        
+
         // goto endLabel
         this.instructions.push({
             op: TACOp.GOTO,
             arg1: endLabel
         });
-        
+
         // elseLabel:
         this.emitLabel(elseLabel);
-        
+
         // else branch (if exists)
         if (node.children![2]) {
             this.visit(node.children![2]);
         }
-        
+
         // endLabel:
         this.emitLabel(endLabel);
         return "";
     }
-    
+
     private visitWhile(node: ASTNode): string {
         const startLabel = this.newLabel();
         const endLabel = this.newLabel();
-        
+
         // startLabel:
         this.emitLabel(startLabel);
-        
+
         const cond = this.visit(node.children![0]);
-        
+
         // ifFalse cond goto endLabel
         this.instructions.push({
             op: TACOp.IF_FALSE,
             arg1: cond,
             arg2: endLabel
         });
-        
+
         // body
         this.visit(node.children![1]);
-        
+
         // goto startLabel
         this.instructions.push({
             op: TACOp.GOTO,
             arg1: startLabel
         });
-        
+
         // endLabel:
         this.emitLabel(endLabel);
         return "";
     }
-    
+
     private getOperator(op: string): TACOp {
         switch (op) {
             case "+": return TACOp.ADD;
@@ -1401,22 +1493,22 @@ class TACGenerator {
             default: return TACOp.ASSIGN;
         }
     }
-    
+
     private newTemp(): string {
         return `t${this.tempCounter++}`;
     }
-    
+
     private newLabel(): string {
         return `L${this.labelCounter++}`;
     }
-    
+
     private emitLabel(label: string): void {
         this.instructions.push({
             op: TACOp.LABEL,
             arg1: label
         });
     }
-    
+
     print(): void {
         for (const inst of this.instructions) {
             switch (inst.op) {
@@ -1471,6 +1563,7 @@ class TACGenerator {
 #### 优化分类
 
 **机器无关优化：**
+
 - 常量折叠
 - 常量传播
 - 死代码消除
@@ -1478,6 +1571,7 @@ class TACGenerator {
 - 循环优化
 
 **机器相关优化：**
+
 - 寄存器分配
 - 指令选择
 - 窥孔优化
@@ -1501,17 +1595,17 @@ Algorithm ConstantFolding(instructions)
 Algorithm DeadCodeElimination(instructions)
     // 构建使用-定义链
     useDef = buildUseDefChain(instructions)
-    
+
     // 标记活跃变量
     live = Set()
     worklist = Queue()
-    
+
     // 初始活跃集合：返回值、输出变量
     for each instruction that produces output do
         if instruction.result is used then
             live.add(instruction.result)
             worklist.enqueue(instruction)
-    
+
     while worklist not empty do
         inst = worklist.dequeue()
         for each operand in inst.operands do
@@ -1520,12 +1614,12 @@ Algorithm DeadCodeElimination(instructions)
                 defInst = findDefinition(operand)
                 if defInst then
                     worklist.enqueue(defInst)
-    
+
     // 删除未使用的定义
     for each instruction in instructions do
         if instruction.defines variable not in live then
             mark for deletion
-    
+
     remove marked instructions
 ```
 
@@ -1534,7 +1628,7 @@ Algorithm DeadCodeElimination(instructions)
 ```
 Algorithm CSE(basicBlocks)
     available = Map()  // expression -> temp
-    
+
     for each block in basicBlocks do
         for each instruction in block do
             if instruction is computation then
@@ -1553,11 +1647,11 @@ Algorithm CSE(basicBlocks)
 Algorithm SimpleRegisterAllocation(instructions, numRegisters)
     // 构建冲突图
     interference = buildInterferenceGraph(instructions)
-    
+
     // 尝试图着色
     stack = []
     nodes = all variables
-    
+
     while nodes not empty do
         // 找度数小于numRegisters的节点
         node = findNodeWithDegreeLessThan(nodes, interference, numRegisters)
@@ -1570,14 +1664,14 @@ Algorithm SimpleRegisterAllocation(instructions, numRegisters)
             mark node for spilling
             remove node from nodes
             stack.push(node)
-    
+
     // 分配寄存器
     coloring = Map()
     while stack not empty do
         node = stack.pop()
         color = selectColor(node, interference, coloring, numRegisters)
         coloring[node] = color
-    
+
     return coloring
 ```
 
@@ -1593,23 +1687,23 @@ abstract class OptimizationPass {
 class ConstantFolding extends OptimizationPass {
     optimize(instructions: TACInstruction[]): TACInstruction[] {
         const result: TACInstruction[] = [];
-        
+
         for (const inst of instructions) {
             const folded = this.tryFold(inst);
             result.push(folded);
         }
-        
+
         return result;
     }
-    
+
     private tryFold(inst: TACInstruction): TACInstruction {
         if (!inst.arg1 || !inst.arg2) return inst;
-        
+
         const val1 = parseFloat(inst.arg1);
         const val2 = parseFloat(inst.arg2);
-        
+
         if (isNaN(val1) || isNaN(val2)) return inst;
-        
+
         let result: number;
         switch (inst.op) {
             case TACOp.ADD: result = val1 + val2; break;
@@ -1618,7 +1712,7 @@ class ConstantFolding extends OptimizationPass {
             case TACOp.DIV: result = val1 / val2; break;
             default: return inst;
         }
-        
+
         return {
             op: TACOp.ASSIGN,
             result: inst.result,
@@ -1631,7 +1725,7 @@ class ConstantFolding extends OptimizationPass {
 class DeadCodeElimination extends OptimizationPass {
     optimize(instructions: TACInstruction[]): TACInstruction[] {
         const used = new Set<string>();
-        
+
         // 第一遍：收集所有被使用的变量
         for (const inst of instructions) {
             if (inst.arg1 && !inst.arg1.match(/^t\d+$/)) {
@@ -1641,7 +1735,7 @@ class DeadCodeElimination extends OptimizationPass {
                 used.add(inst.arg2);
             }
         }
-        
+
         // 第二遍：删除未被使用的临时变量定义
         return instructions.filter(inst => {
             if (inst.result && inst.result.match(/^t\d+$/)) {
@@ -1650,9 +1744,9 @@ class DeadCodeElimination extends OptimizationPass {
             return true;
         });
     }
-    
+
     private hasSideEffect(inst: TACInstruction): boolean {
-        return inst.op === TACOp.CALL || 
+        return inst.op === TACOp.CALL ||
                inst.op === TACOp.RETURN ||
                inst.op === TACOp.INDEX_STORE;
     }
@@ -1663,20 +1757,20 @@ class CodeGenerator {
     private instructions: string[] = [];
     private registerMap: Map<string, string> = new Map();
     private nextReg = 0;
-    
+
     generate(tac: TACInstruction[]): string {
         this.instructions.push(".text");
         this.instructions.push(".global main");
         this.instructions.push("main:");
-        
+
         for (const inst of tac) {
             this.emitInstruction(inst);
         }
-        
+
         this.instructions.push("  ret");
         return this.instructions.join("\n");
     }
-    
+
     private emitInstruction(inst: TACInstruction): void {
         switch (inst.op) {
             case TACOp.ASSIGN:
@@ -1688,7 +1782,7 @@ class CodeGenerator {
                     this.instructions.push(`  mov ${reg}, ${srcReg}`);
                 }
                 break;
-            
+
             case TACOp.ADD:
                 this.emitBinaryOp("add", inst);
                 break;
@@ -1701,15 +1795,15 @@ class CodeGenerator {
             case TACOp.DIV:
                 this.emitBinaryOp("sdiv", inst);
                 break;
-            
+
             case TACOp.LABEL:
                 this.instructions.push(`${inst.arg1}:`);
                 break;
-            
+
             case TACOp.GOTO:
                 this.instructions.push(`  b ${inst.arg1}`);
                 break;
-            
+
             case TACOp.IF_FALSE:
                 const condReg = this.getRegister(inst.arg1!);
                 this.instructions.push(`  cmp ${condReg}, #0`);
@@ -1717,14 +1811,14 @@ class CodeGenerator {
                 break;
         }
     }
-    
+
     private emitBinaryOp(op: string, inst: TACInstruction): void {
         const resultReg = this.getRegister(inst.result!);
         const leftReg = this.getRegister(inst.arg1!);
         const rightReg = this.getRegister(inst.arg2!);
         this.instructions.push(`  ${op} ${resultReg}, ${leftReg}, ${rightReg}`);
     }
-    
+
     private getRegister(varName: string): string {
         if (!this.registerMap.has(varName)) {
             this.registerMap.set(varName, `r${this.nextReg++ % 12}`);
@@ -1780,14 +1874,14 @@ Algorithm MarkSweep(memory)
         if root != null then
             worklist.enqueue(root)
             root.marked = true
-    
+
     while worklist not empty do
         obj = worklist.dequeue()
         for each ref in obj.references do
             if ref != null and not ref.marked then
                 ref.marked = true
                 worklist.enqueue(ref)
-    
+
     // 清除阶段
     for each obj in memory do
         if not obj.marked then
@@ -1804,10 +1898,10 @@ Algorithm ReferenceCounting
         obj = allocateMemory()
         obj.refCount = 0
         return obj
-    
+
     Object.addReference(ref):
         ref.refCount++
-    
+
     Object.removeReference(ref):
         ref.refCount--
         if ref.refCount == 0 then
@@ -1824,18 +1918,18 @@ Algorithm GenerationalGC
     newSpace = allocate(Eden + Survivor0 + Survivor1)
     // 老年代（Old Generation）
     oldSpace = allocate(largeSpace)
-    
+
     Function allocate(size):
         if canAllocateInEden(size) then
             return allocateInEden(size)
         else
             minorGC()  // 触发新生代GC
             return allocateInEden(size)
-    
+
     Function minorGC():
         // 从GC根和Remembered Set开始
         worklist = GC Roots + Remembered Set
-        
+
         // 复制存活对象到Survivor
         for each obj in worklist reachable in newSpace do
             if obj.age < threshold then
@@ -1843,11 +1937,11 @@ Algorithm GenerationalGC
                 obj.age++
             else
                 promoteToOld(obj)
-        
+
         // 清空Eden
         clearEden()
         swapSurvivorSpaces()
-    
+
     Function majorGC():
         // 标记-清除-整理老年代
         markPhase()
@@ -1863,10 +1957,10 @@ Algorithm IncrementalGC
     WHITE = unvisited
     GREY = visited, children not processed
     BLACK = visited, children processed
-    
+
     Function incrementalMark():
         work = getWorkBudget()  // 限制每帧工作量
-        
+
         while work > 0 and greySet not empty do
             obj = greySet.pop()
             for each ref in obj.references do
@@ -1875,10 +1969,10 @@ Algorithm IncrementalGC
                     greySet.add(ref)
             obj.color = BLACK
             work--
-        
+
         if greySet empty then
             sweepPhase()
-    
+
     Function writeBarrier(source, ref):
         // 处理并发修改
         if source.color == BLACK and ref.color == WHITE then
@@ -1899,7 +1993,7 @@ interface GCObject {
 class SimpleGC {
     private heap: GCObject[] = [];
     private roots: GCObject[] = [];
-    
+
     allocate(data: any): GCObject {
         const obj: GCObject = {
             marked: false,
@@ -1909,37 +2003,37 @@ class SimpleGC {
         this.heap.push(obj);
         return obj;
     }
-    
+
     addRoot(obj: GCObject): void {
         this.roots.push(obj);
     }
-    
+
     removeRoot(obj: GCObject): void {
         const index = this.roots.indexOf(obj);
         if (index !== -1) {
             this.roots.splice(index, 1);
         }
     }
-    
+
     setReference(parent: GCObject, child: GCObject | null, index: number): void {
         parent.references[index] = child!;
     }
-    
+
     gc(): void {
         console.log("GC started, heap size:", this.heap.length);
-        
+
         // 标记阶段
         this.mark();
-        
+
         // 清除阶段
         const collected = this.sweep();
-        
+
         console.log("GC finished, collected:", collected, "remaining:", this.heap.length);
     }
-    
+
     private mark(): void {
         const worklist: GCObject[] = [];
-        
+
         // 初始化：将所有根对象加入工作列表
         for (const root of this.roots) {
             if (root && !root.marked) {
@@ -1947,11 +2041,11 @@ class SimpleGC {
                 worklist.push(root);
             }
         }
-        
+
         // 标记所有可达对象
         while (worklist.length > 0) {
             const obj = worklist.pop()!;
-            
+
             for (const ref of obj.references) {
                 if (ref && !ref.marked) {
                     ref.marked = true;
@@ -1960,10 +2054,10 @@ class SimpleGC {
             }
         }
     }
-    
+
     private sweep(): number {
         const before = this.heap.length;
-        
+
         // 保留标记的对象，删除未标记的
         this.heap = this.heap.filter(obj => {
             if (obj.marked) {
@@ -1972,10 +2066,10 @@ class SimpleGC {
             }
             return false;
         });
-        
+
         return before - this.heap.length;
     }
-    
+
     getStats(): { heapSize: number; rootCount: number } {
         return {
             heapSize: this.heap.length,
@@ -2058,19 +2152,19 @@ Algorithm W(environment, expression)
                 return (Subst.empty, instantiate(environment[x]))
             else
                 error("Unbound variable")
-        
+
         Lambda(x, e):
             β = fresh type variable
             (S1, τ1) = W(environment ∪ {x:β}, e)
             return (S1, S1(β) → τ1)
-        
+
         Application(e1, e2):
             (S1, τ1) = W(environment, e1)
             (S2, τ2) = W(S1(environment), e2)
             β = fresh type variable
             S3 = unify(S2(τ1), τ2 → β)
             return (S3 ∘ S2 ∘ S1, S3(β))
-        
+
         Let(x, e1, e2):
             (S1, τ1) = W(environment, e1)
             σ = generalize(S1(environment), τ1)
@@ -2080,18 +2174,18 @@ Algorithm W(environment, expression)
 Function unify(τ1, τ2):
     if τ1 = τ2 then
         return Subst.empty
-    
+
     if τ1 is type variable α and α not in freeVars(τ2) then
         return Subst.singleton(α, τ2)
-    
+
     if τ2 is type variable α and α not in freeVars(τ1) then
         return Subst.singleton(α, τ1)
-    
+
     if τ1 = τ11 → τ12 and τ2 = τ21 → τ22 then
         S1 = unify(τ11, τ21)
         S2 = unify(S1(τ12), S1(τ22))
         return S2 ∘ S1
-    
+
     error("Type mismatch")
 ```
 
@@ -2102,13 +2196,13 @@ Function unify(τ1, τ2):
 ```
 Subtyping Rules:
     S-REFL:  τ <: τ
-    
+
     S-TRANS: if τ1 <: τ2 and τ2 <: τ3 then τ1 <: τ3
-    
-    S-FUN:   if τ2 <: τ1 and σ1 <: σ2 
+
+    S-FUN:   if τ2 <: τ1 and σ1 <: σ2
              then τ1 → σ1 <: τ2 → σ2
-    
-    S-RECORD: if {li:τi} has all fields of {kj:σj} 
+
+    S-RECORD: if {li:τi} has all fields of {kj:σj}
                and τi <: σi for each common field
                then {li:τi} <: {kj:σj}
 ```
@@ -2126,11 +2220,11 @@ class PrimitiveType extends Type {
     constructor(public name: string) {
         super();
     }
-    
+
     toString(): string {
         return this.name;
     }
-    
+
     equals(other: Type): boolean {
         return other instanceof PrimitiveType && other.name === this.name;
     }
@@ -2143,12 +2237,12 @@ class FunctionType extends Type {
     ) {
         super();
     }
-    
+
     toString(): string {
         const params = this.paramTypes.map(t => t.toString()).join(", ");
         return `(${params}) => ${this.returnType.toString()}`;
     }
-    
+
     equals(other: Type): boolean {
         if (!(other instanceof FunctionType)) return false;
         if (this.paramTypes.length !== other.paramTypes.length) return false;
@@ -2162,16 +2256,16 @@ class FunctionType extends Type {
 class TypeVariable extends Type {
     private static counter = 0;
     public id: number;
-    
+
     constructor() {
         super();
         this.id = TypeVariable.counter++;
     }
-    
+
     toString(): string {
         return `t${this.id}`;
     }
-    
+
     equals(other: Type): boolean {
         return other instanceof TypeVariable && other.id === this.id;
     }
@@ -2182,7 +2276,7 @@ type Substitution = Map<number, Type>;
 
 class TypeInference {
     private substitution: Substitution = new Map();
-    
+
     infer(env: Map<string, Type>, expr: ASTNode): Type {
         switch (expr.type) {
             case "Literal":
@@ -2194,92 +2288,92 @@ class TypeInference {
                     return new PrimitiveType("boolean");
                 }
                 throw new Error("Unknown literal type");
-            
+
             case "Identifier":
                 if (env.has(expr.value)) {
                     return this.apply(env.get(expr.value)!);
                 }
                 throw new Error(`Unbound variable: ${expr.value}`);
-            
+
             case "Lambda":
                 return this.inferLambda(env, expr);
-            
+
             case "Application":
                 return this.inferApplication(env, expr);
-            
+
             case "Let":
                 return this.inferLet(env, expr);
-            
+
             default:
                 throw new Error(`Unknown expression type: ${expr.type}`);
         }
     }
-    
+
     private inferLambda(env: Map<string, Type>, expr: ASTNode): Type {
         const paramName = expr.value;
         const paramType = new TypeVariable();
-        
+
         const newEnv = new Map(env);
         newEnv.set(paramName, paramType);
-        
+
         const bodyType = this.infer(newEnv, expr.children![0]);
-        
+
         return new FunctionType([this.apply(paramType)], bodyType);
     }
-    
+
     private inferApplication(env: Map<string, Type>, expr: ASTNode): Type {
         const funcType = this.infer(env, expr.children![0]);
         const argType = this.infer(env, expr.children![1]);
-        
+
         const resultType = new TypeVariable();
-        
+
         this.unify(funcType, new FunctionType([argType], resultType));
-        
+
         return this.apply(resultType);
     }
-    
+
     private inferLet(env: Map<string, Type>, expr: ASTNode): Type {
         const name = expr.value;
         const valueType = this.infer(env, expr.children![0]);
-        
+
         const newEnv = new Map(env);
         newEnv.set(name, valueType);
-        
+
         return this.infer(newEnv, expr.children![1]);
     }
-    
+
     private unify(t1: Type, t2: Type): void {
         t1 = this.apply(t1);
         t2 = this.apply(t2);
-        
+
         if (t1.equals(t2)) return;
-        
+
         if (t1 instanceof TypeVariable) {
             this.substitution.set(t1.id, t2);
             return;
         }
-        
+
         if (t2 instanceof TypeVariable) {
             this.substitution.set(t2.id, t1);
             return;
         }
-        
+
         if (t1 instanceof FunctionType && t2 instanceof FunctionType) {
             if (t1.paramTypes.length !== t2.paramTypes.length) {
                 throw new Error("Function arity mismatch");
             }
-            
+
             for (let i = 0; i < t1.paramTypes.length; i++) {
                 this.unify(t1.paramTypes[i], t2.paramTypes[i]);
             }
-            
+
             this.unify(t1.returnType, t2.returnType);
             return;
         }
-        
+
         throw new Error(`Cannot unify ${t1.toString()} with ${t2.toString()}`);
     }
-    
+
     private apply(type: Type): Type {
         if (type instanceof TypeVariable) {
             if (this.substitution.has(type.id)) {
@@ -2287,14 +2381,14 @@ class TypeInference {
             }
             return type;
         }
-        
+
         if (type instanceof FunctionType) {
             return new FunctionType(
                 type.paramTypes.map(t => this.apply(t)),
                 this.apply(type.returnType)
             );
         }
-        
+
         return type;
     }
 }
@@ -2304,29 +2398,29 @@ class Subtyping {
     isSubtype(t1: Type, t2: Type): boolean {
         // 相同类型
         if (t1.equals(t2)) return true;
-        
+
         // number <: any
         if (t2 instanceof PrimitiveType && t2.name === "any") {
             return true;
         }
-        
+
         // 函数子类型：逆变参数，协变返回
         if (t1 instanceof FunctionType && t2 instanceof FunctionType) {
             if (t1.paramTypes.length !== t2.paramTypes.length) {
                 return false;
             }
-            
+
             // 参数是逆变的：t2.param <: t1.param
             for (let i = 0; i < t1.paramTypes.length; i++) {
                 if (!this.isSubtype(t2.paramTypes[i], t1.paramTypes[i])) {
                     return false;
                 }
             }
-            
+
             // 返回是协变的：t1.return <: t2.return
             return this.isSubtype(t1.returnType, t2.returnType);
         }
-        
+
         return false;
     }
 }
@@ -2426,53 +2520,53 @@ class QueryBuilder {
     private whereConditions: string[] = [];
     private orderByField: string = "";
     private limitCount?: number;
-    
+
     static select(...fields: string[]): QueryBuilder {
         const qb = new QueryBuilder();
         qb.selectFields = fields;
         return qb;
     }
-    
+
     from(table: string): this {
         this.fromTable = table;
         return this;
     }
-    
+
     where(condition: string): this {
         this.whereConditions.push(condition);
         return this;
     }
-    
+
     and(condition: string): this {
         return this.where(condition);
     }
-    
+
     orderBy(field: string): this {
         this.orderByField = field;
         return this;
     }
-    
+
     limit(count: number): this {
         this.limitCount = count;
         return this;
     }
-    
+
     build(): string {
         let sql = `SELECT ${this.selectFields.join(", ")}`;
         sql += ` FROM ${this.fromTable}`;
-        
+
         if (this.whereConditions.length > 0) {
             sql += ` WHERE ${this.whereConditions.join(" AND ")}`;
         }
-        
+
         if (this.orderByField) {
             sql += ` ORDER BY ${this.orderByField}`;
         }
-        
+
         if (this.limitCount !== undefined) {
             sql += ` LIMIT ${this.limitCount}`;
         }
-        
+
         return sql;
     }
 }
@@ -2512,11 +2606,11 @@ type ConfigValue = string | number | boolean | ConfigValue[] | { [key: string]: 
 class ConfigDSL {
     private position = 0;
     private tokens: Token[];
-    
+
     constructor(source: string) {
         this.tokens = this.tokenize(source);
     }
-    
+
     private tokenize(source: string): Token[] {
         // 简化的词法分析
         const tokens: Token[] = [];
@@ -2532,16 +2626,16 @@ class ConfigDSL {
             { type: "RBRACKET", regex: /^\]/ },
             { type: "COMMA", regex: /^,/ },
         ];
-        
+
         let pos = 0;
         while (pos < source.length) {
             // 跳过空白
             while (pos < source.length && /\s/.test(source[pos])) pos++;
             if (pos >= source.length) break;
-            
+
             const remaining = source.slice(pos);
             let matched = false;
-            
+
             for (const pattern of patterns) {
                 const match = remaining.match(pattern.regex);
                 if (match) {
@@ -2554,80 +2648,80 @@ class ConfigDSL {
                     break;
                 }
             }
-            
+
             if (!matched) {
                 throw new Error(`Unexpected character: ${source[pos]}`);
             }
         }
-        
+
         tokens.push({ type: TokenType.EOF, value: "" });
         return tokens;
     }
-    
+
     parse(): Map<string, ConfigValue> {
         const config = new Map<string, ConfigValue>();
-        
+
         while (!this.isAtEnd()) {
             const entry = this.parseEntry();
             config.set(entry.key, entry.value);
         }
-        
+
         return config;
     }
-    
+
     private parseEntry(): ConfigEntry {
         const key = this.consume(TokenType.IDENTIFIER, "Expected key").value;
         this.consume(TokenType.ASSIGN, "Expected '='");
         const value = this.parseValue();
         return { key, value };
     }
-    
+
     private parseValue(): ConfigValue {
         const token = this.peek();
-        
+
         switch (token.type) {
             case TokenType.STRING:
                 this.advance();
                 return token.value;
-            
+
             case TokenType.NUMBER:
                 this.advance();
                 return parseFloat(token.value);
-            
+
             case TokenType.BOOLEAN:
                 this.advance();
                 return token.value === "true";
-            
+
             case TokenType.LBRACKET:
                 return this.parseList();
-            
+
             case TokenType.LBRACE:
                 return this.parseObject();
-            
+
             default:
                 throw new Error(`Unexpected token: ${token.type}`);
         }
     }
-    
+
     private parseList(): ConfigValue[] {
         this.consume(TokenType.LBRACKET, "Expected '['");
         const list: ConfigValue[] = [];
-        
+
         while (!this.check(TokenType.RBRACKET)) {
             list.push(this.parseValue());
             if (this.match(TokenType.COMMA)) {
                 continue;
             }
         }
-        
+
         this.consume(TokenType.RBRACKET, "Expected ']'");
         return list;
     }
-    
+
     private parseObject(): { [key: string]: ConfigValue } {
         this.consume(TokenType.LBRACE, "Expected '{'");
         const obj: { [key: string]: ConfigValue } = {};
-        
+
         while (!this.check(TokenType.RBRACE)) {
             const entry = this.parseEntry();
             obj[entry.key] = entry.value;
@@ -2635,11 +2729,11 @@ class ConfigDSL {
                 continue;
             }
         }
-        
+
         this.consume(TokenType.RBRACE, "Expected '}'");
         return obj;
     }
-    
+
     private match(...types: TokenType[]): boolean {
         for (const type of types) {
             if (this.check(type)) {
@@ -2649,29 +2743,29 @@ class ConfigDSL {
         }
         return false;
     }
-    
+
     private check(type: TokenType): boolean {
         if (this.isAtEnd()) return false;
         return this.peek().type === type;
     }
-    
+
     private advance(): Token {
         if (!this.isAtEnd()) this.position++;
         return this.previous();
     }
-    
+
     private isAtEnd(): boolean {
         return this.peek().type === TokenType.EOF;
     }
-    
+
     private peek(): Token {
         return this.tokens[this.position];
     }
-    
+
     private previous(): Token {
         return this.tokens[this.position - 1];
     }
-    
+
     private consume(type: TokenType, message: string): Token {
         if (this.check(type)) return this.advance();
         throw new Error(message);
@@ -2710,7 +2804,7 @@ const P = {
             return { success: false, error: `Expected '${c}'` };
         };
     },
-    
+
     // 正则解析
     regex(pattern: RegExp): Parser<string> {
         return (input: string) => {
@@ -2721,20 +2815,20 @@ const P = {
             return { success: false, error: `Pattern ${pattern} not matched` };
         };
     },
-    
+
     // 顺序组合
     seq<T, U>(p1: Parser<T>, p2: Parser<U>): Parser<[T, U]> {
         return (input: string) => {
             const r1 = p1(input);
             if (!r1.success) return r1;
-            
+
             const r2 = p2(r1.remaining!);
             if (!r2.success) return r2;
-            
+
             return { success: true, value: [r1.value!, r2.value!], remaining: r2.remaining };
         };
     },
-    
+
     // 选择组合
     or<T>(p1: Parser<T>, p2: Parser<T>): Parser<T> {
         return (input: string) => {
@@ -2743,7 +2837,7 @@ const P = {
             return p2(input);
         };
     },
-    
+
     // 映射
     map<T, U>(p: Parser<T>, f: (x: T) => U): Parser<U> {
         return (input: string) => {
@@ -2752,20 +2846,20 @@ const P = {
             return { success: true, value: f(r.value!), remaining: r.remaining };
         };
     },
-    
+
     // 零次或多次
     many<T>(p: Parser<T>): Parser<T[]> {
         return (input: string) => {
             const results: T[] = [];
             let remaining = input;
-            
+
             while (true) {
                 const r = p(remaining);
                 if (!r.success) break;
                 results.push(r.value!);
                 remaining = r.remaining!;
             }
-            
+
             return { success: true, value: results, remaining };
         };
     }

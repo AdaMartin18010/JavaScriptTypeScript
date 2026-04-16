@@ -93,7 +93,7 @@ export class CLSMonitor {
   private observer: PerformanceObserver | null = null;
 
   start(): void {
-    if (!('PerformanceObserver' in window)) return;
+    if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return;
 
     this.observer = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
@@ -132,7 +132,7 @@ export class LCPMonitor {
   private observer: PerformanceObserver | null = null;
 
   start(): void {
-    if (!('PerformanceObserver' in window)) return;
+    if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return;
 
     this.observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
@@ -168,6 +168,7 @@ export class FIDMonitor {
   private listener: ((e: Event) => void) | null = null;
 
   start(): void {
+    if (typeof window === 'undefined') return;
     this.listener = (event: Event) => {
       const entry = performance.now();
       const targetTime = event.timeStamp;
@@ -222,7 +223,7 @@ export class INPMonitor {
   private observer: PerformanceObserver | null = null;
 
   start(): void {
-    if (!('PerformanceObserver' in window)) return;
+    if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return;
 
     this.observer = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
@@ -654,7 +655,7 @@ export class PerformanceAnalyzer {
     duration: number;
     rating: 'critical' | 'warning' | 'acceptable';
   }> {
-    if (!('PerformanceObserver' in window)) return [];
+    if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return [];
 
     const entries = performance.getEntriesByType('longtask');
     

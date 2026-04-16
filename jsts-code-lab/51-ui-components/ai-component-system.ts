@@ -212,7 +212,7 @@ export class AdaptiveUIEngine {
     const history = this.context.interactionHistory;
     
     // 基于历史行为预测
-    if (history.length > 3) {
+    if (history.length >= 3) {
       const lastActions = history.slice(-3);
       if (lastActions.every(a => a.includes('search'))) {
         return 'likely_to_search';
@@ -348,7 +348,7 @@ export class NaturalLanguageUIController {
   }
 
   private extractSortField(input: string): string {
-    const match = input.match(/按(.+)排序/);
+    const match = input.match(/按(.+?)(?:倒序|正序)?排序/);
     return match ? match[1].trim() : 'default';
   }
 }

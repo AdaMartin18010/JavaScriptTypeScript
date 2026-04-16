@@ -107,7 +107,7 @@ export class HMRRuntime {
 
       this.ws.onclose = () => {
         console.log('[HMR] Connection closed, attempting to reconnect...');
-        setTimeout(() => this.connect(url), 1000);
+        setTimeout(() => this.connect(url), 0);
       };
     } catch (error) {
       console.error('[HMR] Failed to connect:', error);

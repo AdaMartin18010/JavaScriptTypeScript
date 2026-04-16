@@ -232,13 +232,16 @@ export class InvertedIndex {
         existingPosting.termFreq = positions.length;
         existingPosting.positions = positions;
       } else {
+        const hasDoc = entry.postings.some(p => p.docId === docId);
         entry.postings.push({
           docId,
           termFreq: positions.length,
           positions,
           field
         });
-        entry.docFreq++;
+        if (!hasDoc) {
+          entry.docFreq++;
+        }
       }
     }
   }

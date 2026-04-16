@@ -338,7 +338,7 @@ export class Validator<T = unknown> {
     }
 
     if (value === undefined) {
-      if (!this.isRequired) {
+      if (!this.isRequired && this.defaultValue === undefined) {
         return { valid: true, errors: [], warnings, value: undefined };
       }
     }
@@ -1742,7 +1742,4 @@ export function demo(): void {
   console.log('='.repeat(60));
 }
 
-// 如果是直接运行此文件，执行 demo
-if (require.main === module) {
-  demo();
-}
+// demo() 可通过显式调用来执行

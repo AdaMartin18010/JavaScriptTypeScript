@@ -124,6 +124,12 @@ export class ConnectionPool {
     // 2. 尝试创建新连接
     if (this.connections.length < this.config.maxConnections) {
       const conn = await this.createConnection();
+      // createConnection 会将连接加入 availableConnections，
+      // 但此处即将直接使用，需要先从可用队列中移除
+      const idx = this.availableConnections.indexOf(conn);
+      if (idx > -1) {
+        this.availableConnections.splice(idx, 1);
+      }
       return this.markInUse(conn);
     }
 
@@ -222,17 +228,17 @@ export class ConnectionPool {
   }
 
   private getAvailableConnection(): PooledConnection | null {
-    // 清理过期连接
+    // 清理过期连接（LIFO 复用最近释放的连接）
     while (this.availableConnections.length > 0) {
-      const conn = this.availableConnections[0];
+      const conn = this.availableConnections[this.availableConnections.length - 1];
       
       if (!this.isConnectionValid(conn)) {
-        this.availableConnections.shift();
+        this.availableConnections.pop();
         this.removeConnection(conn);
         continue;
       }
       
-      return this.availableConnections.shift()!;
+      return this.availableConnections.pop()!;
     }
     
     return null;

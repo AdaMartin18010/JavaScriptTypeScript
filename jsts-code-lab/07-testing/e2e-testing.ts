@@ -92,7 +92,7 @@ export class ProductListPage extends BasePage {
   async searchProducts(query: string): Promise<void> {
     await this.page.type(this.selectors.searchInput, query);
     // 模拟搜索延迟
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 0));
   }
 
   async getProductCount(): Promise<number> {

@@ -32,10 +32,21 @@ export interface RateLimitOptions {
 
 export class FixedWindowRateLimiter {
   private windows: Map<string, { count: number; resetTime: number }> = new Map();
+  private cleanupInterval?: ReturnType<typeof setInterval>;
 
   constructor(private options: RateLimitOptions) {
     // 定期清理过期窗口
-    setInterval(() => this.cleanUp(), options.windowMs);
+    this.cleanupInterval = setInterval(() => this.cleanUp(), options.windowMs);
+  }
+
+  /**
+   * 停止定期清理
+   */
+  stopCleanup(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = undefined;
+    }
   }
 
   /**

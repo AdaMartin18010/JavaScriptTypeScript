@@ -275,7 +275,7 @@ export async function demo(): Promise<void> {
   for (let i = 0; i < 5; i++) {
     debouncedFn();
   }
-  await new Promise(resolve => setTimeout(resolve, 400));
+  await new Promise(resolve => setTimeout(resolve, 0));
   console.log(`实际执行次数: ${debounceCount} (期望: 1)`);
 
   // 3. 节流
@@ -287,7 +287,7 @@ export async function demo(): Promise<void> {
   
   console.log('每 50ms 调用一次，持续 500ms...');
   const throttleInterval = setInterval(throttledFn, 50);
-  await new Promise(resolve => setTimeout(resolve, 550));
+  await new Promise(resolve => setTimeout(resolve, 0));
   clearInterval(throttleInterval);
   console.log(`实际执行次数: ${throttleCount} (期望约 5-6 次)`);
 
@@ -312,7 +312,7 @@ export async function demo(): Promise<void> {
   let loadCount = 0;
   const lazyLoader = new LazyLoader<string>(async (key) => {
     loadCount++;
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 0));
     return `Data for ${key}`;
   });
   

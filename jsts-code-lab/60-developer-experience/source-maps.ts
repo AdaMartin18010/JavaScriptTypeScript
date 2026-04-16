@@ -111,7 +111,7 @@ export class SourceMapParser {
     let generatedLine = 1;
     let generatedColumn = 0;
     let sourceIndex = 0;
-    let originalLine = 1;
+    let originalLine = 0;
     let originalColumn = 0;
     let nameIndex = 0;
     let index = 0;

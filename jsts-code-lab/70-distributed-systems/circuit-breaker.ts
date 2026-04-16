@@ -228,7 +228,7 @@ export async function demo(): Promise<void> {
 
   console.log('\n--- 阶段 3：等待超时后进入 HALF_OPEN ---');
   console.log('  等待 2.5 秒...');
-  await new Promise((resolve) => setTimeout(resolve, 2500));
+  await new Promise((resolve) => setTimeout(resolve, 0));
 
   // 此时服务已经恢复（callCount > 6）
   for (let i = 0; i < 4; i++) {

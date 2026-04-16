@@ -350,6 +350,12 @@ export class TaskRunner {
       }
 
       if (batch.length === 0) {
+        for (const name of remaining) {
+          const task = this.tasks.get(name);
+          if (task && task.dependencies?.some(dep => !this.tasks.has(dep))) {
+            throw new Error('Dependencies not met');
+          }
+        }
         throw new Error('Circular dependency detected');
       }
 

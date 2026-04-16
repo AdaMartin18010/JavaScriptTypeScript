@@ -216,16 +216,7 @@ export class PubSubHub {
    * 一次性订阅
    */
   once<T>(topic: string, handler: MessageHandler<T>): void {
-    const unsubscribe = this.subscribe(topic, handler, { once: true });
-    // 包装 handler 在 once 情况下自动取消订阅
-    const originalHandler = handler;
-    const wrappedHandler = (message: PubSubMessage<T>) => {
-      unsubscribe();
-      return originalHandler(message);
-    };
-    // 重新订阅使用包装后的 handler
-    this.unsubscribe(topic + '_once_placeholder'); // 清理占位
-    this.subscribe(topic, wrappedHandler, { once: true });
+    this.subscribe(topic, handler, { once: true });
   }
 
   /**
