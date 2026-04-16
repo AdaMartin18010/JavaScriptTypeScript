@@ -1221,10 +1221,12 @@ $$S_{desired} = \text{Read}(R_{git}, path, ref)$$
 $$S_{actual} = \text{Query}(C_{cluster})$$
 
 同步操作：
-$$\text{Sync} = \begin{cases}
+$$
+\text{Sync} = \begin{cases}
 \text{Apply}(S_{desired}) & \text{if } S_{actual} \neq S_{desired} \\
 \text{NoOp} & \text{otherwise}
-\end{cases}$$
+\end{cases}
+$$
 
 #### 收敛性保证
 
@@ -1236,6 +1238,7 @@ $$\lim_{t \to \infty} P(S_{actual}(t) = S_{desired}) = 1$$
 $$T_{converge} = T_{poll} + T_{apply} + T_{verify}$$
 
 其中：
+
 - $T_{poll}$：Git 轮询间隔
 - $T_{apply}$：资源应用时间
 - $T_{verify}$：健康检查时间
@@ -1326,6 +1329,7 @@ spec:
 ```
 
 **GitOps 安全实践：**
+
 1. 使用只读部署密钥
 2. 实施分支保护策略
 3. 强制代码审查（PR）

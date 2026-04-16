@@ -116,7 +116,7 @@ export class IslandsArchitecture {
   // 根据策略hydrate islands
   async hydrate(strategy: 'eager' | 'lazy' | 'idle' | 'visible' = 'visible'): Promise<void> {
     const islandsToHydrate = Array.from(this.islands.values())
-      .filter(i => i.hydration === strategy || strategy === 'eager');
+      .filter(i => i.hydration === strategy);
     
     for (const island of islandsToHydrate) {
       await this.hydrateIsland(island);
