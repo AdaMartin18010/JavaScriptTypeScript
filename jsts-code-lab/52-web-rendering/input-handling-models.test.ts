@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { buildEventRoute, GestureRecognizer } from './input-handling-models'
+import { buildEventRoute, GestureRecognizer } from './input-handling-models.js'
 
 describe('buildEventRoute', () => {
   it('builds capture-target-bubble route', () => {
     const route = buildEventRoute('btn', ['div', 'section'])
-    expect(route.map((r) => r.phase)).toEqual(['capture', 'capture', 'target', 'bubble', 'bubble'])
+    expect(route.map((r: any) => r.phase)).toEqual(['capture', 'capture', 'target', 'bubble', 'bubble'])
     expect(route[2].target).toBe('btn')
   })
 })

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Tokenizer, InvertedIndex, QueryProcessor } from './full-text-search';
+import { Tokenizer, InvertedIndex, QueryProcessor } from './full-text-search.js';
 
 describe('Tokenizer', () => {
   it('tokenizes and filters stop words', () => {

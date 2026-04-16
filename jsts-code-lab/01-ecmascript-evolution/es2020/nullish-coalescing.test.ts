@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { configurePort, greet, enableFeature, createServerWithNullish, getUserDisplayName, processConfig } from './nullish-coalescing';
+import { configurePort, greet, enableFeature, createServerWithNullish, getUserDisplayName, processConfig } from './nullish-coalescing.js';
 
 describe('nullish coalescing (ES2020)', () => {
   it('configurePort should treat 0 as valid', () => {

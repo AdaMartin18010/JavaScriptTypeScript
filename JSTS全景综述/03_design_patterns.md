@@ -11568,6 +11568,230 @@ declare type ParameterDecorator = (
 
 ---
 
+### C. 设计模式类型化升级路径 (JavaScript → TypeScript)
+
+> **来源对齐**: `JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md` §5、TypeScript Handbook、Siek & Taha Gradual Typing Theory  
+> **目标**: 为从 JavaScript 迁移到 TypeScript 的开发者提供每种设计模式的"动态实现 → 类型安全实现"升级策略。
+
+#### C.1 升级总则
+
+1. **从 `any` 到 `unknown` 再到具体类型**: 先消除模式中隐含的 `any`，再用泛型参数化。
+2. **用接口/类型别名描述契约**: JS 中靠文档约定的接口，在 TS 中应显式声明为 `interface` 或 `type`。
+3. **利用结构化子类型**: TS 的类不需要显式 `implements` 也能被接口约束，但显式声明可增强可读性。
+4. **用 Discriminated Union + Exhaustiveness Check 替换运行时 `switch`**: 在策略、状态、命令等模式中尤其有效。
+5. **用泛型 + 方差标注消除运行时类型检查**: 在工厂、容器、仓库等模式中提升类型精度。
+
+#### C.2 创建型模式升级
+
+##### 单例模式（Singleton）
+
+- **JS 做法**: IIFE 闭包或模块级变量。
+- **TS 升级**:
+  - `private constructor` 强制编译时单例。
+  - 使用泛型 `Singleton<T>` 实现通用单例容器。
+
+```typescript
+// JS: IIFE 闭包
+const jsSingleton = (function () {
+  let instance: any;
+  return {
+    getInstance() {
+      return instance || (instance = {});
+    },
+  };
+})();
+
+// TS: 泛型单例 + 私有构造
+class Singleton<T> {
+  private static instance: any;
+  private constructor(public value: T) {}
+  static getInstance<T>(value: T): Singleton<T> {
+    if (!Singleton.instance) {
+      Singleton.instance = new Singleton(value);
+    }
+    return Singleton.instance;
+  }
+}
+```
+
+##### 工厂方法 / 抽象工厂
+
+- **JS 做法**: 简单工厂函数内用 `if/else` 或 `switch` 创建对象。
+- **TS 升级**:
+  - 定义 `Product` 接口族。
+  - 工厂类用泛型约束 `<T extends Product>`。
+  - 返回类型使用 Discriminated Union，配合穷尽检查消除遗漏分支。
+
+```typescript
+interface Button {
+  render(): string;
+}
+class WindowsButton implements Button {
+  render() { return "Windows Button"; }
+}
+class MacButton implements Button {
+  render() { return "Mac Button"; }
+}
+
+// 泛型工厂约束
+function createButton<T extends Button>(ctor: new () => T): T {
+  return new ctor();
+}
+```
+
+#### C.3 行为型模式升级
+
+##### 观察者模式（Observer）
+
+- **JS 做法**: 基于字符串事件名的 `EventEmitter`，运行时拼写错误难发现。
+- **TS 升级**:
+  - 使用 `EventEmitter<TEventMap>` 将事件名映射到具体的载荷类型。
+  - 编译时即可捕获事件名拼写错误和载荷类型不匹配。
+
+```typescript
+type Events = {
+  data: { id: number; content: string };
+  error: { message: string };
+};
+
+class TypedEmitter<T extends Record<string, any>> {
+  private listeners: { [K in keyof T]?: Array<(payload: T[K]) => void> } = {};
+
+  on<K extends keyof T>(event: K, listener: (payload: T[K]) => void): void {
+    if (!this.listeners[event]) this.listeners[event] = [];
+    this.listeners[event]!.push(listener);
+  }
+
+  emit<K extends keyof T>(event: K, payload: T[K]): void {
+    this.listeners[event]?.forEach((l) => l(payload));
+  }
+}
+```
+
+##### 策略模式（Strategy）
+
+- **JS 做法**: 对象映射策略函数，运行时选择分支。
+- **TS 升级**:
+  - 将策略定义为 Discriminated Union。
+  - 在 `process` 函数中使用 `switch`，并配合 `assertNever` 做穷尽检查。
+
+```typescript
+type PaymentStrategy =
+  | { type: "credit"; cardNumber: string }
+  | { type: "paypal"; email: string }
+  | { type: "crypto"; walletAddress: string };
+
+function assertNever(x: never): never {
+  throw new Error("Unexpected strategy: " + x);
+}
+
+function processPayment(strategy: PaymentStrategy): string {
+  switch (strategy.type) {
+    case "credit": return `Pay with card ${strategy.cardNumber}`;
+    case "paypal": return `Pay via PayPal ${strategy.email}`;
+    case "crypto": return `Pay with crypto ${strategy.walletAddress}`;
+    default: return assertNever(strategy); // 编译时穷尽检查
+  }
+}
+```
+
+##### 命令模式（Command）
+
+- **JS 做法**: 命令对象具有统一的 `execute` 方法，但无统一接口。
+- **TS 升级**:
+  - 定义 `Command<TContext, TResult>` 泛型接口。
+  - `Invoker` 维护 `Command` 历史栈，类型化 undo/redo。
+
+```typescript
+interface Command<TContext, TResult = void> {
+  execute(context: TContext): TResult;
+  undo(context: TContext): TResult;
+}
+```
+
+#### C.4 结构型模式升级
+
+##### 适配器模式（Adapter）
+
+- **JS 做法**: 手动包装对象，靠运行时约定保证接口一致。
+- **TS 升级**:
+  - 显式声明 `Target` 接口和 `Adaptee` 接口。
+  - 适配器类显式 `implements Target`，由结构化子类型保证正确性。
+
+```typescript
+interface Target {
+  request(): string;
+}
+
+class Adaptee {
+  specificRequest() {
+    return "Specific request";
+  }
+}
+
+class Adapter implements Target {
+  constructor(private adaptee: Adaptee) {}
+  request(): string {
+    return this.adaptee.specificRequest();
+  }
+}
+```
+
+##### 代理模式（Proxy）
+
+- **JS 做法**: `new Proxy(target, handler)`，运行时拦截。
+- **TS 升级**:
+  - 使用泛型 `Proxy<Target, Handler>` 约束 handler 签名。
+  - 虚拟代理可用 `Promise<T>` 类型化延迟加载结果。
+
+```typescript
+function createLazyProxy<T extends object>(
+  factory: () => T
+): T {
+  let instance: T | null = null;
+  return new Proxy({} as T, {
+    get(_, prop) {
+      if (!instance) instance = factory();
+      return (instance as any)[prop];
+    },
+  });
+}
+```
+
+##### 装饰器模式（Decorator）
+
+- **JS 做法**: 手动组合对象，动态增强行为。
+- **TS 升级**:
+  - 使用 `abstract class Component` 与 `abstract class Decorator` 定义类型契约。
+  - 结合 TS Stage 3 装饰器实现编译时元数据注入（注意：标准装饰器不保留类型元数据）。
+
+```typescript
+abstract class Coffee {
+  abstract cost(): number;
+  abstract description(): string;
+}
+
+abstract class CoffeeDecorator extends Coffee {
+  constructor(protected coffee: Coffee) {
+    super();
+  }
+}
+```
+
+#### C.5 迁移检查清单
+
+| 模式类别 | 检查项 |
+|---------|-------|
+| 创建型 | 是否将工厂返回类型从 `any` 改为泛型约束接口？ |
+| 行为型 | 是否将运行时 `switch` 替换为 Discriminated Union + Exhaustiveness Check？ |
+| 结构型 | 是否用 `interface` 显式声明了被适配/代理/装饰的目标契约？ |
+| 全局 | 是否消除了模式中隐含的 `any` 类型？ |
+| 全局 | 是否通过泛型参数提升了容器的类型复用性？ |
+
+---
+
 **文档结束**
 
 > **注意**: 本文档涵盖了GoF 23种设计模式及现代JavaScript/TypeScript特有模式，提供了类型安全的TypeScript实现。实际使用时，请根据具体场景灵活选择和调整。
+> 
+> 如需了解每种模式的 JavaScript → TypeScript 类型化升级细节，请参阅 `JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md` §5。

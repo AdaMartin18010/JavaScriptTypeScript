@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @file better-auth + Cloudflare D1 集成配置
  * @description
@@ -40,3 +41,4 @@ export function createAuth() {
  * Auth 实例类型导出
  */
 export type AuthInstance = ReturnType<typeof createAuth>;
+

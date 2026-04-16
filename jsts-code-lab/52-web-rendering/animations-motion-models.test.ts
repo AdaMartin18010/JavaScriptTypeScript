@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { computeFlipDelta, withinFrameBudget } from './animations-motion-models'
+import { computeFlipDelta, withinFrameBudget } from './animations-motion-models.js'
 
 describe('computeFlipDelta', () => {
   it('computes delta between rects', () => {

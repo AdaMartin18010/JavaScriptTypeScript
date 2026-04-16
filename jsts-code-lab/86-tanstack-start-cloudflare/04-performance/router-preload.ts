@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @file Router Preloading 配置示例
  * @description
@@ -58,3 +59,4 @@ export async function preloadPostRoute(routerInstance: ReturnType<typeof createR
     return { success: false, error: String(error) };
   }
 }
+

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { nestedMicrotasks, mixedTasks, EventLoopSimulator } from './event-loop-demo';
+import { nestedMicrotasks, mixedTasks, EventLoopSimulator } from './event-loop-demo.js';
 
 describe('event loop demo', () => {
   it('nestedMicrotasks should not throw', () => {

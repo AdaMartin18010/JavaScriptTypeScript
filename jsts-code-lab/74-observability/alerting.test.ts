@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { AlertEvaluator, AlertManager, ConsoleChannel, WebhookChannel, EmailChannel, AlertTemplate, demo } from './alerting'
+import { AlertEvaluator, AlertManager, ConsoleChannel, WebhookChannel, EmailChannel, AlertTemplate, demo } from './alerting.js'
 
 describe('alerting', () => {
   it('AlertEvaluator is defined', () => {
@@ -8,7 +8,7 @@ describe('alerting', () => {
   it('AlertEvaluator can be instantiated if constructor permits', () => {
     if (typeof AlertEvaluator === 'function') {
       try {
-        const instance = new AlertEvaluator();
+        const instance = new (AlertEvaluator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('alerting', () => {
   it('AlertManager can be instantiated if constructor permits', () => {
     if (typeof AlertManager === 'function') {
       try {
-        const instance = new AlertManager();
+        const instance = new (AlertManager as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('alerting', () => {
   it('ConsoleChannel can be instantiated if constructor permits', () => {
     if (typeof ConsoleChannel === 'function') {
       try {
-        const instance = new ConsoleChannel();
+        const instance = new (ConsoleChannel as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('alerting', () => {
   it('WebhookChannel can be instantiated if constructor permits', () => {
     if (typeof WebhookChannel === 'function') {
       try {
-        const instance = new WebhookChannel();
+        const instance = new (WebhookChannel as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('alerting', () => {
   it('EmailChannel can be instantiated if constructor permits', () => {
     if (typeof EmailChannel === 'function') {
       try {
-        const instance = new EmailChannel();
+        const instance = new (EmailChannel as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,7 +63,7 @@ describe('alerting', () => {
   it('AlertTemplate can be instantiated if constructor permits', () => {
     if (typeof AlertTemplate === 'function') {
       try {
-        const instance = new AlertTemplate();
+        const instance = new (AlertTemplate as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

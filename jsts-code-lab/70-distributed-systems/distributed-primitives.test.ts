@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ConsistentHash, TwoPhaseCommit, VectorClock, DistributedLock, demo } from './distributed-primitives'
+import { ConsistentHash, TwoPhaseCommit, VectorClock, DistributedLock, demo } from './distributed-primitives.js'
 
 describe('distributed-primitives', () => {
   it('ConsistentHash is defined', () => {

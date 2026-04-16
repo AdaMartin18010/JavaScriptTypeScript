@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Animal, Dog, BankAccount, Rectangle, FluentArray, Shape } from './classes-es6';
+import { Animal, Dog, BankAccount, Rectangle, FluentArray, Shape } from './classes-es6.js';
 
 describe('ES6 classes', () => {
   it('Animal should have name and speak method', () => {

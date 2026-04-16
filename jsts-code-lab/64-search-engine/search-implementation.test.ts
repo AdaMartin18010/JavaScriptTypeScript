@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { InvertedIndex, FacetedSearch, SearchSuggestions } from './search-implementation';
+import { InvertedIndex, FacetedSearch, SearchSuggestions } from './search-implementation.js';
 
 describe('InvertedIndex', () => {
   it('indexes and searches documents', () => {

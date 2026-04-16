@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PerformancePredictionEngine, IntelligentPreloader, DynamicOptimizationEngine } from './ai-performance-optimizer';
+import { PerformancePredictionEngine, IntelligentPreloader, DynamicOptimizationEngine } from './ai-performance-optimizer.js';
 
 describe('PerformancePredictionEngine', () => {
   it('returns empty predictions with insufficient history', () => {
@@ -20,7 +20,7 @@ describe('PerformancePredictionEngine', () => {
       });
     }
     const preds = engine.predictPerformance(1);
-    const lcpPred = preds.find(p => p.metric === 'lcp');
+    const lcpPred = preds.find((p: any) => p.metric === 'lcp');
     expect(lcpPred).toBeDefined();
     expect(lcpPred!.riskLevel).toBe('high');
   });

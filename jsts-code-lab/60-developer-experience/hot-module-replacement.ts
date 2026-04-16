@@ -117,7 +117,7 @@ export class HMRRuntime {
   /**
    * 处理模块更新
    */
-  private handleUpdate(update: HMRUpdate): void {
+  handleUpdate(update: HMRUpdate): void {
     console.log(`[HMR] Update received: ${update.path}`);
 
     // 执行 dispose 回调

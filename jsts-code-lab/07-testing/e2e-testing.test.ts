@@ -8,7 +8,7 @@ import {
   E2ETestRunner,
   MockElement,
   demo
-} from './e2e-testing';
+} from './e2e-testing.js';
 
 describe('e2e-testing', () => {
   describe('MockPage', () => {

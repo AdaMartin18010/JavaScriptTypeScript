@@ -100,7 +100,7 @@ export class IncrementalDOMCompiler {
         instructions.push({ type: 'text', value: node });
         return;
       }
-      instructions.push({ type: 'elementOpen', tag: node.tag, key: node.key });
+      instructions.push({ type: 'elementOpen', tag: node.tag, key: node.key == null ? undefined : String(node.key) });
       for (const [k, v] of Object.entries(node.props)) {
         instructions.push({ type: 'attr', name: k, value: String(v) });
       }

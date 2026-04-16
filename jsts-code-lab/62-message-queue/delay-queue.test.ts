@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { TimingWheel, DelayQueue, CronParser, Scheduler } from './delay-queue';
+import { TimingWheel, DelayQueue, CronParser, Scheduler } from './delay-queue.js';
 
 describe('TimingWheel', () => {
   it('schedules a message without error', () => {

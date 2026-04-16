@@ -30,7 +30,7 @@ export interface CircuitBreakerOptions {
   /** Half-Open 状态下允许的探测请求数 */
   halfOpenMaxCalls: number;
   /** 降级回调函数 */
-  fallback?: <T>(error: Error) => T;
+  fallback?: (error: Error) => unknown;
   /** 判断异常是否应计入失败的回调 */
   isFailure?: (error: unknown) => boolean;
   /** 成功回调 */

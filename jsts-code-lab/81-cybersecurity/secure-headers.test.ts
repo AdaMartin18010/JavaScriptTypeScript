@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { CSPBuilder, SecureHeaders, SecurityHeaderScanner, SecurityPresets, demo } from './secure-headers'
+import { CSPBuilder, SecureHeaders, SecurityHeaderScanner, SecurityPresets, demo } from '\./secure-headers.js'
 
 describe('secure-headers', () => {
   it('CSPBuilder is defined', () => {
@@ -8,7 +8,7 @@ describe('secure-headers', () => {
   it('CSPBuilder can be instantiated if constructor permits', () => {
     if (typeof CSPBuilder === 'function') {
       try {
-        const instance = new CSPBuilder();
+        const instance = new (CSPBuilder as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('secure-headers', () => {
   it('SecureHeaders can be instantiated if constructor permits', () => {
     if (typeof SecureHeaders === 'function') {
       try {
-        const instance = new SecureHeaders();
+        const instance = new (SecureHeaders as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('secure-headers', () => {
   it('SecurityHeaderScanner can be instantiated if constructor permits', () => {
     if (typeof SecurityHeaderScanner === 'function') {
       try {
-        const instance = new SecurityHeaderScanner();
+        const instance = new (SecurityHeaderScanner as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('secure-headers', () => {
   it('SecurityPresets can be instantiated if constructor permits', () => {
     if (typeof SecurityPresets === 'function') {
       try {
-        const instance = new SecurityPresets();
+        const instance = new (SecurityPresets as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,9 +52,10 @@ describe('secure-headers', () => {
   it('demo is callable', () => {
     if (typeof demo === 'function') {
       try {
-        const result = demo();
+        const result = (demo as any)();
         expect(result).toBeDefined();
       } catch { }
     }
   });
 });
+

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ServiceWorkerManager, CacheManager, OfflineManager, PushNotificationManager, BackgroundSyncManager } from './pwa-patterns';
+import { ServiceWorkerManager, CacheManager, OfflineManager, PushNotificationManager, BackgroundSyncManager } from './pwa-patterns.js';
 
 describe('ServiceWorkerManager', () => {
   it('throws when serviceWorker is not supported', async () => {

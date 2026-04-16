@@ -9,7 +9,7 @@ import {
   measureAsyncPerformance,
   ObjectPool,
   demo
-} from './optimization-patterns';
+} from './optimization-patterns.js';
 
 describe('optimization-patterns', () => {
   describe('memoize', () => {

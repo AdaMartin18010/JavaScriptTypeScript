@@ -9,7 +9,7 @@ import {
   maxDepth,
   isBalanced,
   demo
-} from './tree-traversal';
+} from './tree-traversal.js';
 
 describe('tree-traversal', () => {
   // Build tree:

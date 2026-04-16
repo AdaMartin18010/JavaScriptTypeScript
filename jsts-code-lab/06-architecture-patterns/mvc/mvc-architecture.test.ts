@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { TaskModel, ConsoleTaskView, TaskController } from './mvc-architecture';
+import { TaskModel, ConsoleTaskView, TaskController } from './mvc-architecture.js';
 
 describe('MVC architecture', () => {
   it('TaskModel should add, toggle, delete tasks and notify listeners', () => {

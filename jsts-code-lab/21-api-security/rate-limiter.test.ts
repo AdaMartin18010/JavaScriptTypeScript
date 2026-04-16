@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FixedWindowRateLimiter, SlidingWindowRateLimiter, TokenBucketRateLimiter, LeakyBucketRateLimiter, TieredRateLimiter } from './rate-limiter';
+import { FixedWindowRateLimiter, SlidingWindowRateLimiter, TokenBucketRateLimiter, LeakyBucketRateLimiter, TieredRateLimiter } from './rate-limiter.js';
 
 describe('FixedWindowRateLimiter', () => {
   it('allows requests up to max', () => {

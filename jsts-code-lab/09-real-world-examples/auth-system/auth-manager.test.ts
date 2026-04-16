@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   AuthManager,
   JWTManager,
@@ -7,7 +7,7 @@ import {
   createTestUser,
   createAdminUser,
   DEFAULT_ROLE_PERMISSIONS,
-} from './auth-manager';
+} from './auth-manager.js';
 
 describe('JWTManager', () => {
   const config = {

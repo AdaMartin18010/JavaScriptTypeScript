@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ConsistentHashRing, ShardedCache, ReplicatedCache, CacheCluster } from './distributed-cache';
+import { ConsistentHashRing, ShardedCache, ReplicatedCache, CacheCluster } from './distributed-cache.js';
 
 describe('ConsistentHashRing', () => {
   it('maps keys to nodes deterministically', () => {

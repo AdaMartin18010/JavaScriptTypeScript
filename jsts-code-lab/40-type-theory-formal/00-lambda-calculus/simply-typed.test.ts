@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { tbase, tarrow, tvar, tabs, tapp, typeCheck, typeToString } from './simply-typed'
+import { tbase, tarrow, tvar, tabs, tapp, typeCheck, typeToString } from './simply-typed.js'
 
 describe('simply-typed', () => {
   it('types identity function', () => {

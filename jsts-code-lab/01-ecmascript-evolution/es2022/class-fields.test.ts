@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Person, BankAccount, Database, Container, User, NewBankAccount } from './class-fields';
+import { Person, BankAccount, Database, Container, User, NewBankAccount } from './class-fields.js';
 
 describe('ES2022 class fields', () => {
   it('Person should initialize public fields', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { TenantManager, TenantIsolatedStore, QuotaManager, DatabaseRouter } from './tenant-architecture';
+import { TenantManager, TenantIsolatedStore, QuotaManager, DatabaseRouter } from './tenant-architecture.js';
 
 describe('TenantManager', () => {
   it('creates tenant with generated id', () => {

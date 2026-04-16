@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { ARIAManager, KeyboardNavigator, FocusManager, ContrastChecker, AccessibilityUtils } from './a11y-utils';
+import { ARIAManager, KeyboardNavigator, FocusManager, ContrastChecker, AccessibilityUtils } from './a11y-utils.js';
 
 describe('ARIAManager', () => {
   it('creates live region and announces', () => {

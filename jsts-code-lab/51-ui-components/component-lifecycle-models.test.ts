@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ReactLifecycleModel, VueLifecycleModel, compareLifecycleHooks } from './component-lifecycle-models'
+import { ReactLifecycleModel, VueLifecycleModel, compareLifecycleHooks } from './component-lifecycle-models.js'
 
 describe('Lifecycle Models', () => {
   it('React model has correct framework', () => {

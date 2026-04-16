@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { MetricsCollector, StructuredLogger, Tracer, CorrelationEngine, demo } from './observability-stack'
+import { MetricsCollector, StructuredLogger, Tracer, CorrelationEngine, demo } from './observability-stack.js'
 
 describe('observability-stack', () => {
   it('MetricsCollector is defined', () => {

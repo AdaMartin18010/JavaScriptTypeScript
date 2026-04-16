@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { LatencyInjector, ErrorInjector, ExceptionInjector, CPUInjector, MemoryInjector, FaultInjectionManager, demo } from './fault-injection'
+import { LatencyInjector, ErrorInjector, ExceptionInjector, CPUInjector, MemoryInjector, FaultInjectionManager, demo } from './fault-injection.js'
 
 describe('fault-injection', () => {
   it('LatencyInjector is defined', () => {
@@ -8,7 +8,7 @@ describe('fault-injection', () => {
   it('LatencyInjector can be instantiated if constructor permits', () => {
     if (typeof LatencyInjector === 'function') {
       try {
-        const instance = new LatencyInjector();
+        const instance = new (LatencyInjector as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('fault-injection', () => {
   it('ErrorInjector can be instantiated if constructor permits', () => {
     if (typeof ErrorInjector === 'function') {
       try {
-        const instance = new ErrorInjector();
+        const instance = new (ErrorInjector as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('fault-injection', () => {
   it('ExceptionInjector can be instantiated if constructor permits', () => {
     if (typeof ExceptionInjector === 'function') {
       try {
-        const instance = new ExceptionInjector();
+        const instance = new (ExceptionInjector as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('fault-injection', () => {
   it('CPUInjector can be instantiated if constructor permits', () => {
     if (typeof CPUInjector === 'function') {
       try {
-        const instance = new CPUInjector();
+        const instance = new (CPUInjector as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('fault-injection', () => {
   it('MemoryInjector can be instantiated if constructor permits', () => {
     if (typeof MemoryInjector === 'function') {
       try {
-        const instance = new MemoryInjector();
+        const instance = new (MemoryInjector as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,7 +63,7 @@ describe('fault-injection', () => {
   it('FaultInjectionManager can be instantiated if constructor permits', () => {
     if (typeof FaultInjectionManager === 'function') {
       try {
-        const instance = new FaultInjectionManager();
+        const instance = new (FaultInjectionManager as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ChaosController, SafetyMonitor, GameDay, demo } from './chaos-experiments'
+import { ChaosController, SafetyMonitor, GameDay, demo } from './chaos-experiments.js'
 
 describe('chaos-experiments', () => {
   it('ChaosController is defined', () => {

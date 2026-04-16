@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WASMUtils, WASMLoader, WASMMemoryManager, WASMBridge, WASMPerformanceMonitor } from './wasm-integration';
+import { WASMUtils, WASMLoader, WASMMemoryManager, WASMBridge, WASMPerformanceMonitor } from './wasm-integration.js';
 
 describe('WASMUtils', () => {
   it('detects WebAssembly support', () => {
@@ -70,7 +70,7 @@ describe('WASMBridge', () => {
 describe('WASMPerformanceMonitor', () => {
   it('wraps function and records metrics', () => {
     const monitor = new WASMPerformanceMonitor();
-    const wrapped = monitor.wrap((a: number, b: number) => a + b, 'add');
+    const wrapped = monitor.wrap(((a: number, b: number) => a + b) as (...args: unknown[]) => unknown, 'add');
     wrapped(1, 2);
     wrapped(3, 4);
     const metric = monitor.getMetric('add');

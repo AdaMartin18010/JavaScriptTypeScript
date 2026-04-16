@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { SidecarProxy, TrafficManager, MutualTLS, MeshObservability, demo } from './mesh-architecture'
+import { SidecarProxy, TrafficManager, MutualTLS, MeshObservability, demo } from './mesh-architecture.js'
 
 describe('mesh-architecture', () => {
   it('SidecarProxy is defined', () => {
@@ -8,7 +8,7 @@ describe('mesh-architecture', () => {
   it('SidecarProxy can be instantiated if constructor permits', () => {
     if (typeof SidecarProxy === 'function') {
       try {
-        const instance = new SidecarProxy();
+        const instance = new (SidecarProxy as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('mesh-architecture', () => {
   it('TrafficManager can be instantiated if constructor permits', () => {
     if (typeof TrafficManager === 'function') {
       try {
-        const instance = new TrafficManager();
+        const instance = new (TrafficManager as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('mesh-architecture', () => {
   it('MutualTLS can be instantiated if constructor permits', () => {
     if (typeof MutualTLS === 'function') {
       try {
-        const instance = new MutualTLS();
+        const instance = new (MutualTLS as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('mesh-architecture', () => {
   it('MeshObservability can be instantiated if constructor permits', () => {
     if (typeof MeshObservability === 'function') {
       try {
-        const instance = new MeshObservability();
+        const instance = new (MeshObservability as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

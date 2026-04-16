@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { SWRCache, dedupeRequests, batchRequests } from './data-fetching-patterns'
+import { SWRCache, dedupeRequests, batchRequests } from './data-fetching-patterns.js'
 
 describe('SWRCache', () => {
   it('returns cached data within ttl', () => {

@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { num, var_, add, assign, seq, evalSmallStep } from './small-step'
+import { evalSmallStep, type Expr } from './small-step.js'
 
-function numExpr(v: number) { return { kind: 'num' as const, value: v }; }
-function varExpr(n: string) { return { kind: 'var' as const, name: n }; }
-function addExpr(l: ReturnType<typeof numExpr>, r: ReturnType<typeof numExpr>) { return { kind: 'add' as const, left: l, right: r }; }
-function assignExpr(n: string, e: ReturnType<typeof numExpr>) { return { kind: 'assign' as const, name: n, expr: e }; }
-function seqExpr(a: ReturnType<typeof numExpr>, b: ReturnType<typeof numExpr>) { return { kind: 'seq' as const, first: a, second: b }; }
+function numExpr(v: number): Expr { return { kind: 'num', value: v }; }
+function varExpr(n: string): Expr { return { kind: 'var', name: n }; }
+function addExpr(l: Expr, r: Expr): Expr { return { kind: 'add', left: l, right: r }; }
+function assignExpr(n: string, e: Expr): Expr { return { kind: 'assign', name: n, expr: e }; }
+function seqExpr(a: Expr, b: Expr): Expr { return { kind: 'seq', first: a, second: b }; }
 
 describe('small-step', () => {
   it('evaluates addition', () => {

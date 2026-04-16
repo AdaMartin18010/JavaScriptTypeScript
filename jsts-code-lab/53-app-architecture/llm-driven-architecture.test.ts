@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   IntelligentRouter,
   AIAssistedStateManager,
@@ -68,7 +68,7 @@ describe('AIAssistedStateManager', () => {
 
   it('should suggest reset after repeated identical actions', () => {
     const manager = new AIAssistedStateManager({ count: 0 });
-    const suggestions: ReturnType<typeof manager.getState>[] = [];
+    const suggestions: any[] = [];
 
     manager.subscribe((state, suggestion) => {
       if (suggestion) suggestions.push(suggestion as never);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { HashFunctions, HMAC, PasswordHasher, MerkleTree, ConsistentHashing, BloomFilter, demo } from './hash-functions'
+import { HashFunctions, HMAC, PasswordHasher, MerkleTree, ConsistentHashing, BloomFilter, demo } from '\./hash-functions.js'
 
 describe('hash-functions', () => {
   it('HashFunctions is defined', () => {
@@ -8,7 +8,7 @@ describe('hash-functions', () => {
   it('HashFunctions can be instantiated if constructor permits', () => {
     if (typeof HashFunctions === 'function') {
       try {
-        const instance = new HashFunctions();
+        const instance = new (HashFunctions as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('hash-functions', () => {
   it('HMAC can be instantiated if constructor permits', () => {
     if (typeof HMAC === 'function') {
       try {
-        const instance = new HMAC();
+        const instance = new (HMAC as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('hash-functions', () => {
   it('PasswordHasher can be instantiated if constructor permits', () => {
     if (typeof PasswordHasher === 'function') {
       try {
-        const instance = new PasswordHasher();
+        const instance = new (PasswordHasher as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('hash-functions', () => {
   it('MerkleTree can be instantiated if constructor permits', () => {
     if (typeof MerkleTree === 'function') {
       try {
-        const instance = new MerkleTree();
+        const instance = new (MerkleTree as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('hash-functions', () => {
   it('ConsistentHashing can be instantiated if constructor permits', () => {
     if (typeof ConsistentHashing === 'function') {
       try {
-        const instance = new ConsistentHashing();
+        const instance = new (ConsistentHashing as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,7 +63,7 @@ describe('hash-functions', () => {
   it('BloomFilter can be instantiated if constructor permits', () => {
     if (typeof BloomFilter === 'function') {
       try {
-        const instance = new BloomFilter();
+        const instance = new (BloomFilter as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -74,9 +74,10 @@ describe('hash-functions', () => {
   it('demo is callable', () => {
     if (typeof demo === 'function') {
       try {
-        const result = demo();
+        const result = (demo as any)();
         expect(result).toBeDefined();
       } catch { }
     }
   });
 });
+

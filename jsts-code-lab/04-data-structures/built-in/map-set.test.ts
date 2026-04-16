@@ -8,7 +8,7 @@ import {
   unique,
   frequency,
   demo
-} from './map-set';
+} from './map-set.js';
 
 describe('map-set', () => {
   describe('set operations', () => {

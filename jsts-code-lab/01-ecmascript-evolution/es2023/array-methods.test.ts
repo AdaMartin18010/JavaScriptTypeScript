@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { updateItemsReactStyle, reducer, numbers, letters, items, arr, nums, data } from './array-methods';
+import { updateItemsReactStyle, reducer, numbers, letters, items, arr, nums, data } from './array-methods.js';
 
 describe('ES2023 array methods', () => {
   it('toSorted should not mutate original array', () => {

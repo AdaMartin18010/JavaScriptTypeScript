@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { freshVar, hmbase, hmarrow, unify, applySubst, typeToString } from './hindley-milner'
+import { freshVar, hmbase, hmarrow, unify, applySubst, typeToString } from './hindley-milner.js'
 
 describe('hindley-milner', () => {
   it('unifies identical base types', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FacetCalculator, FilterEngine, FacetedSearch } from './faceted-search';
+import { FacetCalculator, FilterEngine, FacetedSearch } from './faceted-search.js';
 
 describe('FacetCalculator', () => {
   const docs = [

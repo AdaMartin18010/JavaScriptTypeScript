@@ -8,7 +8,7 @@ import {
   fibTail,
   fibFastDoubling,
   demo
-} from './fibonacci';
+} from './fibonacci.js';
 
 describe('fibonacci', () => {
   describe('fibRecursive', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Trie, SearchHistoryManager, SuggestionEngine } from './search-suggestions';
+import { Trie, SearchHistoryManager, SuggestionEngine } from './search-suggestions.js';
 
 describe('Trie', () => {
   it('autocompletes by prefix', () => {

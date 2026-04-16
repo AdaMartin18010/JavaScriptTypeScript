@@ -5,7 +5,7 @@ import {
   TokenBucketRateLimiter,
   LeakyBucketRateLimiter,
   DistributedRateLimiter
-} from './rate-limiting';
+} from './rate-limiting.js';
 
 describe('FixedWindowRateLimiter', () => {
   it('allows requests up to maxRequests', () => {

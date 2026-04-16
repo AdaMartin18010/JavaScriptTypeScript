@@ -7,7 +7,7 @@ import {
   AutoCleanupEventEmitter,
   MemoryEfficientCache,
   demo
-} from './memory-management';
+} from './memory-management.js';
 
 describe('memory-management', () => {
   describe('MemoryLeakDetector', () => {

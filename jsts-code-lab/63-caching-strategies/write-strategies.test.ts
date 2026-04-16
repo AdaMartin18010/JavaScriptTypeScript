@@ -1,18 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { WriteThroughCache, WriteBehindCache, WriteAroundCache, BatchWriteCache } from './write-strategies';
+import { WriteThroughCache, WriteBehindCache, WriteAroundCache, BatchWriteCache } from './write-strategies.js';
 
 function createAdapters<T>() {
   const mem = new Map<string, T>();
   const db = new Map<string, T>();
   const cache = {
     get: async (k: string) => mem.get(k) ?? null,
-    set: async (k: string, v: T) => mem.set(k, v),
-    delete: async (k: string) => mem.delete(k)
+    set: async (k: string, v: T) => { mem.set(k, v); },
+    delete: async (k: string) => { mem.delete(k); }
   };
   const source = {
     get: async (k: string) => db.get(k) ?? null,
-    set: async (k: string, v: T) => db.set(k, v),
-    delete: async (k: string) => db.delete(k)
+    set: async (k: string, v: T) => { db.set(k, v); },
+    delete: async (k: string) => { db.delete(k); }
   };
   return { cache, source, mem, db };
 }

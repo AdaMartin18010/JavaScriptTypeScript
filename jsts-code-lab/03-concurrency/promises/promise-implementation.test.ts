@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MyPromise } from './promise-implementation';
+import { MyPromise } from './promise-implementation.js';
 
 describe('MyPromise implementation', () => {
   it('should resolve with a value', async () => {
@@ -55,7 +55,7 @@ describe('MyPromise implementation', () => {
 
   it('MyPromise.all should reject if any promise rejects', async () => {
     await expect(
-      MyPromise.all([MyPromise.resolve(1), MyPromise.reject(new Error('x')), MyPromise.resolve(3)])
+      MyPromise.all([MyPromise.resolve(1), MyPromise.reject<number>(new Error('x')), MyPromise.resolve(3)])
     ).rejects.toThrow('x');
   });
 

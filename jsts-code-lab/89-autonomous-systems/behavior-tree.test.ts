@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ActionNode, ConditionNode, SequenceNode, SelectorNode, ParallelNode, InverterNode, RepeaterNode, CooldownNode, BehaviorTree, demo } from './behavior-tree'
+import { ActionNode, ConditionNode, SequenceNode, SelectorNode, ParallelNode, InverterNode, RepeaterNode, CooldownNode, BehaviorTree, demo } from '\./behavior-tree.js'
 
 describe('behavior-tree', () => {
   it('ActionNode is defined', () => {
@@ -8,7 +8,7 @@ describe('behavior-tree', () => {
   it('ActionNode can be instantiated if constructor permits', () => {
     if (typeof ActionNode === 'function') {
       try {
-        const instance = new ActionNode();
+        const instance = new (ActionNode as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('behavior-tree', () => {
   it('ConditionNode can be instantiated if constructor permits', () => {
     if (typeof ConditionNode === 'function') {
       try {
-        const instance = new ConditionNode();
+        const instance = new (ConditionNode as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('behavior-tree', () => {
   it('SequenceNode can be instantiated if constructor permits', () => {
     if (typeof SequenceNode === 'function') {
       try {
-        const instance = new SequenceNode();
+        const instance = new (SequenceNode as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('behavior-tree', () => {
   it('SelectorNode can be instantiated if constructor permits', () => {
     if (typeof SelectorNode === 'function') {
       try {
-        const instance = new SelectorNode();
+        const instance = new (SelectorNode as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('behavior-tree', () => {
   it('ParallelNode can be instantiated if constructor permits', () => {
     if (typeof ParallelNode === 'function') {
       try {
-        const instance = new ParallelNode();
+        const instance = new (ParallelNode as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,7 +63,7 @@ describe('behavior-tree', () => {
   it('InverterNode can be instantiated if constructor permits', () => {
     if (typeof InverterNode === 'function') {
       try {
-        const instance = new InverterNode();
+        const instance = new (InverterNode as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -74,7 +74,7 @@ describe('behavior-tree', () => {
   it('RepeaterNode can be instantiated if constructor permits', () => {
     if (typeof RepeaterNode === 'function') {
       try {
-        const instance = new RepeaterNode();
+        const instance = new (RepeaterNode as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -85,7 +85,7 @@ describe('behavior-tree', () => {
   it('CooldownNode can be instantiated if constructor permits', () => {
     if (typeof CooldownNode === 'function') {
       try {
-        const instance = new CooldownNode();
+        const instance = new (CooldownNode as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -96,7 +96,7 @@ describe('behavior-tree', () => {
   it('BehaviorTree can be instantiated if constructor permits', () => {
     if (typeof BehaviorTree === 'function') {
       try {
-        const instance = new BehaviorTree();
+        const instance = new (BehaviorTree as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -107,9 +107,10 @@ describe('behavior-tree', () => {
   it('demo is callable', () => {
     if (typeof demo === 'function') {
       try {
-        const result = demo();
+        const result = (demo as any)();
         expect(result).toBeDefined();
       } catch { }
     }
   });
 });
+

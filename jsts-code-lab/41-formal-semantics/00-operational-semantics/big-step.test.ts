@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { evalBigStep } from './big-step'
+import { evalBigStep, type BExpr } from './big-step.js'
 
 function numExpr(v: number) { return { kind: 'num' as const, value: v }; }
 function varExpr(n: string) { return { kind: 'var' as const, name: n }; }
-function addExpr(l: ReturnType<typeof numExpr>, r: ReturnType<typeof numExpr>) { return { kind: 'add' as const, left: l, right: r }; }
-function assignExpr(n: string, e: ReturnType<typeof numExpr>) { return { kind: 'assign' as const, name: n, expr: e }; }
-function seqExpr(a: ReturnType<typeof numExpr>, b: ReturnType<typeof numExpr>) { return { kind: 'seq' as const, first: a, second: b }; }
+function addExpr(l: BExpr, r: BExpr) { return { kind: 'add' as const, left: l, right: r }; }
+function assignExpr(n: string, e: BExpr) { return { kind: 'assign' as const, name: n, expr: e }; }
+function seqExpr(a: BExpr, b: BExpr) { return { kind: 'seq' as const, first: a, second: b }; }
 
 describe('big-step', () => {
   it('evaluates addition', () => {

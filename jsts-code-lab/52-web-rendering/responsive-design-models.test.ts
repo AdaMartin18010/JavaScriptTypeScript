@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { selectBreakpoint, generateSrcset, containerQueryWidth } from './responsive-design-models'
+import { selectBreakpoint, generateSrcset, containerQueryWidth } from './responsive-design-models.js'
 
 describe('selectBreakpoint', () => {
   it('selects correct breakpoint', () => {

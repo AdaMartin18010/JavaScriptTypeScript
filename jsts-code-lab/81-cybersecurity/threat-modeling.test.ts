@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { StrideEvaluator, demo } from './threat-modeling'
+import { StrideEvaluator, demo } from '\./threat-modeling.js'
 
 describe('threat-modeling', () => {
   it('StrideEvaluator is defined', () => {

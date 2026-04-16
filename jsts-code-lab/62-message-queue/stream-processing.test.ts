@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MessageStream, StreamProcessor, EventStore } from './stream-processing';
+import { MessageStream, StreamProcessor, EventStore } from './stream-processing.js';
 
 describe('MessageStream', () => {
   it('adds and reads entries', () => {

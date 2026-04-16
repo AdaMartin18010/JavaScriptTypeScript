@@ -14,10 +14,10 @@
 
 // Node.js / 测试环境兼容性存根
 if (typeof globalThis.requestAnimationFrame === 'undefined') {
-  (globalThis as unknown as { requestAnimationFrame: typeof setTimeout }).requestAnimationFrame = (cb: () => void) => setTimeout(cb, 16);
+  (globalThis as unknown as { requestAnimationFrame: (cb: () => void) => ReturnType<typeof setTimeout> }).requestAnimationFrame = (cb: () => void) => setTimeout(cb, 16);
 }
 if (typeof globalThis.cancelAnimationFrame === 'undefined') {
-  (globalThis as unknown as { cancelAnimationFrame: typeof clearTimeout }).cancelAnimationFrame = (id: number) => clearTimeout(id);
+  (globalThis as unknown as { cancelAnimationFrame: (id: number) => void }).cancelAnimationFrame = (id: number) => clearTimeout(id as unknown as ReturnType<typeof setTimeout>);
 }
 if (typeof globalThis.document === 'undefined') {
   (globalThis as unknown as { document: object }).document = {

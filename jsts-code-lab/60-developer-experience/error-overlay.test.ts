@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { ErrorParser, ErrorOverlayManager, ConsoleErrorHandler, ErrorFormatter } from './error-overlay';
+import { ErrorParser, ErrorOverlayManager, ConsoleErrorHandler, ErrorFormatter } from './error-overlay.js';
 
 describe('ErrorParser', () => {
   it('parses runtime error with stack location', () => {

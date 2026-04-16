@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { PubSub, TaskQueue, DelayQueue } from './queue-implementation';
+import { PubSub, TaskQueue, DelayQueue } from './queue-implementation.js';
 
 describe('PubSub', () => {
   it('subscribes and publishes', () => {

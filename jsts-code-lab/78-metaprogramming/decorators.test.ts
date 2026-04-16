@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { METADATA_KEYS, Singleton, Sealed, Frozen, Abstract, Injectable, Log, Measure, Memoize, Debounce, Throttle, Retry, Authorize, Validate, Type, Required, Range, Readonly, Inject, Param, ApiEndpoint, Transactional, Validator, demo } from './decorators'
+import { METADATA_KEYS, Singleton, Sealed, Frozen, Abstract, Injectable, Log, Measure, Memoize, Debounce, Throttle, Retry, Authorize, Validate, Type, Required, Range, Readonly, Inject, Param, ApiEndpoint, Transactional, Validator, demo } from './decorators.js'
 
 describe('decorators', () => {
   it('METADATA_KEYS is defined', () => {
@@ -8,7 +8,7 @@ describe('decorators', () => {
   it('METADATA_KEYS can be instantiated if constructor permits', () => {
     if (typeof METADATA_KEYS === 'function') {
       try {
-        const instance = new METADATA_KEYS();
+        const instance = new (METADATA_KEYS as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('decorators', () => {
   it('Singleton can be instantiated if constructor permits', () => {
     if (typeof Singleton === 'function') {
       try {
-        const instance = new Singleton();
+        const instance = new (Singleton as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('decorators', () => {
   it('Sealed can be instantiated if constructor permits', () => {
     if (typeof Sealed === 'function') {
       try {
-        const instance = new Sealed();
+        const instance = new (Sealed as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('decorators', () => {
   it('Frozen can be instantiated if constructor permits', () => {
     if (typeof Frozen === 'function') {
       try {
-        const instance = new Frozen();
+        const instance = new (Frozen as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('decorators', () => {
   it('Abstract can be instantiated if constructor permits', () => {
     if (typeof Abstract === 'function') {
       try {
-        const instance = new Abstract();
+        const instance = new (Abstract as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,7 +63,7 @@ describe('decorators', () => {
   it('Injectable can be instantiated if constructor permits', () => {
     if (typeof Injectable === 'function') {
       try {
-        const instance = new Injectable();
+        const instance = new (Injectable as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -74,7 +74,7 @@ describe('decorators', () => {
   it('Log can be instantiated if constructor permits', () => {
     if (typeof Log === 'function') {
       try {
-        const instance = new Log();
+        const instance = new (Log as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -85,7 +85,7 @@ describe('decorators', () => {
   it('Measure can be instantiated if constructor permits', () => {
     if (typeof Measure === 'function') {
       try {
-        const instance = new Measure();
+        const instance = new (Measure as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -96,7 +96,7 @@ describe('decorators', () => {
   it('Memoize can be instantiated if constructor permits', () => {
     if (typeof Memoize === 'function') {
       try {
-        const instance = new Memoize();
+        const instance = new (Memoize as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -107,7 +107,7 @@ describe('decorators', () => {
   it('Debounce can be instantiated if constructor permits', () => {
     if (typeof Debounce === 'function') {
       try {
-        const instance = new Debounce();
+        const instance = new (Debounce as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -118,7 +118,7 @@ describe('decorators', () => {
   it('Throttle can be instantiated if constructor permits', () => {
     if (typeof Throttle === 'function') {
       try {
-        const instance = new Throttle();
+        const instance = new (Throttle as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -129,7 +129,7 @@ describe('decorators', () => {
   it('Retry can be instantiated if constructor permits', () => {
     if (typeof Retry === 'function') {
       try {
-        const instance = new Retry();
+        const instance = new (Retry as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -140,7 +140,7 @@ describe('decorators', () => {
   it('Authorize can be instantiated if constructor permits', () => {
     if (typeof Authorize === 'function') {
       try {
-        const instance = new Authorize();
+        const instance = new (Authorize as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -151,7 +151,7 @@ describe('decorators', () => {
   it('Validate can be instantiated if constructor permits', () => {
     if (typeof Validate === 'function') {
       try {
-        const instance = new Validate();
+        const instance = new (Validate as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -162,7 +162,7 @@ describe('decorators', () => {
   it('Type can be instantiated if constructor permits', () => {
     if (typeof Type === 'function') {
       try {
-        const instance = new Type();
+        const instance = new (Type as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -173,7 +173,7 @@ describe('decorators', () => {
   it('Required can be instantiated if constructor permits', () => {
     if (typeof Required === 'function') {
       try {
-        const instance = new Required();
+        const instance = new (Required as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -184,7 +184,7 @@ describe('decorators', () => {
   it('Range can be instantiated if constructor permits', () => {
     if (typeof Range === 'function') {
       try {
-        const instance = new Range();
+        const instance = new (Range as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -195,7 +195,7 @@ describe('decorators', () => {
   it('Readonly can be instantiated if constructor permits', () => {
     if (typeof Readonly === 'function') {
       try {
-        const instance = new Readonly();
+        const instance = new (Readonly as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -206,7 +206,7 @@ describe('decorators', () => {
   it('Inject can be instantiated if constructor permits', () => {
     if (typeof Inject === 'function') {
       try {
-        const instance = new Inject();
+        const instance = new (Inject as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -217,7 +217,7 @@ describe('decorators', () => {
   it('Param can be instantiated if constructor permits', () => {
     if (typeof Param === 'function') {
       try {
-        const instance = new Param();
+        const instance = new (Param as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -228,7 +228,7 @@ describe('decorators', () => {
   it('ApiEndpoint can be instantiated if constructor permits', () => {
     if (typeof ApiEndpoint === 'function') {
       try {
-        const instance = new ApiEndpoint();
+        const instance = new (ApiEndpoint as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -239,7 +239,7 @@ describe('decorators', () => {
   it('Transactional can be instantiated if constructor permits', () => {
     if (typeof Transactional === 'function') {
       try {
-        const instance = new Transactional();
+        const instance = new (Transactional as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -250,7 +250,7 @@ describe('decorators', () => {
   it('Validator can be instantiated if constructor permits', () => {
     if (typeof Validator === 'function') {
       try {
-        const instance = new Validator();
+        const instance = new (Validator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

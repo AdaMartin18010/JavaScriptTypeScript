@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { E2EContext, FixtureManager, Fixtures, E2ETestRunner } from './e2e-testing';
+import { E2EContext, FixtureManager, Fixtures, E2ETestRunner } from './e2e-testing.js';
 
 describe('E2EContext', () => {
   it('records steps and asserts text', async () => {

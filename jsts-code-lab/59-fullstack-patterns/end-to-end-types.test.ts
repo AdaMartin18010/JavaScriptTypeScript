@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { TypedRouter, exampleRouter, APIClientGenerator } from './end-to-end-types';
+import { TypedRouter, exampleRouter, APIClientGenerator } from './end-to-end-types.js';
 
 describe('TypedRouter', () => {
   it('calls getUser and returns user', async () => {

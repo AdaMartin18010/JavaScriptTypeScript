@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { UniversalPlayer, PrinterAdapter, ClassAdapter, MediaAdapter, AudioPlayer, AdvancedMediaPlayer } from './adapter';
+import { UniversalPlayer, PrinterAdapter, ClassAdapter, MediaAdapter, AudioPlayer, AdvancedMediaPlayer } from './adapter.js';
 
 describe('adapter pattern', () => {
   it('UniversalPlayer should delegate to MediaAdapter', () => {

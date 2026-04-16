@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { MessageBroker } from './message-broker';
+import { MessageBroker } from './message-broker.js';
 
 describe('MessageBroker', () => {
   it('declares exchanges and queues', () => {

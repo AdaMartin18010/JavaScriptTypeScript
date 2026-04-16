@@ -20,13 +20,11 @@ export class AtomicPredicate implements Predicate {
   }
 }
 
-export interface Command {
-  kind: 'skip' | 'assign' | 'seq' | 'if' | 'while'
-}
+export interface SkipCmd { kind: 'skip' }
+export interface AssignCmd { kind: 'assign'; var: string; expr: string }
+export interface SeqCmd { kind: 'seq'; first: Command; second: Command }
 
-export interface SkipCmd extends Command { kind: 'skip' }
-export interface AssignCmd extends Command { kind: 'assign'; var: string; expr: string }
-export interface SeqCmd extends Command { kind: 'seq'; first: Command; second: Command }
+export type Command = SkipCmd | AssignCmd | SeqCmd
 
 export const skip: SkipCmd = { kind: 'skip' };
 export const assign = (v: string, e: string): AssignCmd => ({ kind: 'assign', var: v, expr: e });

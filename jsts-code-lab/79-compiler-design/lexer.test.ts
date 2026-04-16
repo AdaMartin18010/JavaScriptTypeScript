@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Lexer, TokenFormatter, demo } from './lexer'
+import { Lexer, TokenFormatter, demo } from './lexer.js'
 
 describe('lexer', () => {
   it('Lexer is defined', () => {
@@ -8,7 +8,7 @@ describe('lexer', () => {
   it('Lexer can be instantiated if constructor permits', () => {
     if (typeof Lexer === 'function') {
       try {
-        const instance = new Lexer();
+        const instance = new (Lexer as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('lexer', () => {
   it('TokenFormatter can be instantiated if constructor permits', () => {
     if (typeof TokenFormatter === 'function') {
       try {
-        const instance = new TokenFormatter();
+        const instance = new (TokenFormatter as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

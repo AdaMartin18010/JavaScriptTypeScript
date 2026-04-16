@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { MemoryLeakDetector, ObjectPool, estimateRetainedSize } from './memory-management-model'
+import { MemoryLeakDetector, ObjectPool, estimateRetainedSize } from './memory-management-model.js'
 
 describe('MemoryLeakDetector', () => {
   it('should not detect leak with single snapshot', () => {
@@ -25,7 +25,7 @@ describe('ObjectPool', () => {
     let created = 0
     const pool = new ObjectPool(
       () => { created++; return { value: 0 } },
-      (item) => { item.value = 0 }
+      (item: any) => { item.value = 0 }
     )
     const a = pool.acquire()
     pool.release(a)

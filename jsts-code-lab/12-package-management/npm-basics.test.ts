@@ -4,8 +4,8 @@ import {
   DependencyManager,
   PackagePublisher,
   NPM_LIFECYCLE,
-} from './npm-basics';
-import type { PackageJson } from './npm-basics';
+} from './npm-basics.js';
+import type { PackageJson } from './npm-basics.js';
 
 describe('SemVer', () => {
   it('should parse valid versions', () => {

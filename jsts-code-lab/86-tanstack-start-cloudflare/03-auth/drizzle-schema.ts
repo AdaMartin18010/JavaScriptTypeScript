@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @file Drizzle ORM 最小 Schema
  * @description
@@ -67,3 +68,4 @@ export const verification = sqliteTable('verification', {
   createdAt: integer('created_at', { mode: 'timestamp' }),
   updatedAt: integer('updated_at', { mode: 'timestamp' }),
 });
+

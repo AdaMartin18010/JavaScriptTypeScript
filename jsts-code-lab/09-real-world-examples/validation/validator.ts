@@ -1245,7 +1245,7 @@ export class FormValidator {
   /**
    * 添加字段
    */
-  field(name: string, validator: Validator, label?: string): this {
+  field(name: string, validator: Validator<any>, label?: string): this {
     this.fields.push({ name, validator, label });
     return this;
   }

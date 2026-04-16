@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { TypeReflector, ObjectReflector, ClassReflector, MetadataReflector, ProxyFactory, demo } from './reflection'
+import { TypeReflector, ObjectReflector, ClassReflector, MetadataReflector, ProxyFactory, demo } from './reflection.js'
 
 describe('reflection', () => {
   it('TypeReflector is defined', () => {

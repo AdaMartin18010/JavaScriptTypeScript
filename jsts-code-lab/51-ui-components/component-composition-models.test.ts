@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { CompoundComponentRegistry, withHigherOrderComponent, composeHooks } from './component-composition-models'
+import { CompoundComponentRegistry, withHigherOrderComponent, composeHooks } from './component-composition-models.js'
 
 describe('CompoundComponentRegistry', () => {
   it('should register and retrieve parts', () => {

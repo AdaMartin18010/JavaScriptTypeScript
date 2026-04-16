@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { LinearQuantizer, FakeQuantizationLayer, FP16Simulator, demo } from './model-quantization'
+import { LinearQuantizer, FakeQuantizationLayer, FP16Simulator, demo } from '\./model-quantization.js'
 
 describe('model-quantization', () => {
   it('LinearQuantizer is defined', () => {

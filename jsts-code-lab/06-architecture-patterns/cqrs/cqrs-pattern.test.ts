@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { EventStore, Order, CommandHandler, OrderProjection } from './cqrs-pattern';
+import { EventStore, Order, CommandHandler, OrderProjection } from './cqrs-pattern.js';
 
 describe('CQRS pattern', () => {
   it('EventStore should append and retrieve events', () => {

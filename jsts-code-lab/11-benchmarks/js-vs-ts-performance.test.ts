@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Benchmark, runBenchmarks, demo } from './js-vs-ts-performance';
+import { Benchmark, runBenchmarks, demo } from './js-vs-ts-performance.js';
 
 describe('js-vs-ts-performance', () => {
   describe('Benchmark', () => {

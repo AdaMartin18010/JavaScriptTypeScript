@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { log, measureTime, memoize, validate, singleton, sealed, Reflection, createObservable, createLazyObject, createImmutable, CodeGenerator, DSLBuilder, DIContainer, Calculator, demo } from './meta-techniques'
+import { log, measureTime, memoize, validate, singleton, sealed, Reflection, createObservable, createLazyObject, createImmutable, CodeGenerator, DSLBuilder, DIContainer, Calculator, demo } from './meta-techniques.js'
 
 describe('meta-techniques', () => {
   it('log is defined', () => {
@@ -8,7 +8,7 @@ describe('meta-techniques', () => {
   it('log is callable', () => {
     if (typeof log === 'function') {
       try {
-        const result = log();
+        const result = (log as any)();
         expect(result).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('meta-techniques', () => {
   it('measureTime is callable', () => {
     if (typeof measureTime === 'function') {
       try {
-        const result = measureTime();
+        const result = (measureTime as any)();
         expect(result).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('meta-techniques', () => {
   it('memoize is callable', () => {
     if (typeof memoize === 'function') {
       try {
-        const result = memoize();
+        const result = (memoize as any)();
         expect(result).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('meta-techniques', () => {
   it('validate is callable', () => {
     if (typeof validate === 'function') {
       try {
-        const result = validate();
+        const result = (validate as any)();
         expect(result).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('meta-techniques', () => {
   it('singleton is callable', () => {
     if (typeof singleton === 'function') {
       try {
-        const result = singleton();
+        const result = (singleton as any)();
         expect(result).toBeDefined();
       } catch { }
     }
@@ -63,7 +63,7 @@ describe('meta-techniques', () => {
   it('sealed is callable', () => {
     if (typeof sealed === 'function') {
       try {
-        const result = sealed();
+        const result = (sealed as any)();
         expect(result).toBeDefined();
       } catch { }
     }
@@ -74,7 +74,7 @@ describe('meta-techniques', () => {
   it('Reflection can be instantiated if constructor permits', () => {
     if (typeof Reflection === 'function') {
       try {
-        const instance = new Reflection();
+        const instance = new (Reflection as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -85,7 +85,7 @@ describe('meta-techniques', () => {
   it('createObservable is callable', () => {
     if (typeof createObservable === 'function') {
       try {
-        const result = createObservable();
+        const result = (createObservable as any)();
         expect(result).toBeDefined();
       } catch { }
     }
@@ -96,7 +96,7 @@ describe('meta-techniques', () => {
   it('createLazyObject is callable', () => {
     if (typeof createLazyObject === 'function') {
       try {
-        const result = createLazyObject();
+        const result = (createLazyObject as any)();
         expect(result).toBeDefined();
       } catch { }
     }
@@ -107,7 +107,7 @@ describe('meta-techniques', () => {
   it('createImmutable is callable', () => {
     if (typeof createImmutable === 'function') {
       try {
-        const result = createImmutable();
+        const result = (createImmutable as any)();
         expect(result).toBeDefined();
       } catch { }
     }
@@ -118,7 +118,7 @@ describe('meta-techniques', () => {
   it('CodeGenerator can be instantiated if constructor permits', () => {
     if (typeof CodeGenerator === 'function') {
       try {
-        const instance = new CodeGenerator();
+        const instance = new (CodeGenerator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -129,7 +129,7 @@ describe('meta-techniques', () => {
   it('DSLBuilder can be instantiated if constructor permits', () => {
     if (typeof DSLBuilder === 'function') {
       try {
-        const instance = new DSLBuilder();
+        const instance = new (DSLBuilder as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -140,7 +140,7 @@ describe('meta-techniques', () => {
   it('DIContainer can be instantiated if constructor permits', () => {
     if (typeof DIContainer === 'function') {
       try {
-        const instance = new DIContainer();
+        const instance = new (DIContainer as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -151,7 +151,7 @@ describe('meta-techniques', () => {
   it('Calculator can be instantiated if constructor permits', () => {
     if (typeof Calculator === 'function') {
       try {
-        const instance = new Calculator();
+        const instance = new (Calculator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -162,7 +162,7 @@ describe('meta-techniques', () => {
   it('demo is callable', () => {
     if (typeof demo === 'function') {
       try {
-        const result = demo();
+        const result = (demo as any)();
         expect(result).toBeDefined();
       } catch { }
     }

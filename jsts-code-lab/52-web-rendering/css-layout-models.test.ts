@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { computeContentBox, estimateLayoutCost, shouldPromoteLayer } from './css-layout-models'
+import { computeContentBox, estimateLayoutCost, shouldPromoteLayer } from './css-layout-models.js'
 
 describe('computeContentBox', () => {
   it('computes content dimensions', () => {

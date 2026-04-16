@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { XSSSanitizer, HTMLEncoder, CSPBuilder, CSRFProtection, SecurityHeadersBuilder } from './xss-csp';
+import { XSSSanitizer, HTMLEncoder, CSPBuilder, CSRFProtection, SecurityHeadersBuilder } from './xss-csp.js';
 
 describe('XSSSanitizer', () => {
   it('removes script tags and events', () => {

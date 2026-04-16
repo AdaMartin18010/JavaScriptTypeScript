@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CORSHandler, CSRFProtection, DoubleSubmitCookie, DefaultCORSConfig, DefaultCSRFConfig } from './cors-csrf';
+import { CORSHandler, CSRFProtection, DoubleSubmitCookie, DefaultCORSConfig, DefaultCSRFConfig } from './cors-csrf.js';
 
 describe('CORSHandler', () => {
   it('should allow simple request from allowed origin', () => {

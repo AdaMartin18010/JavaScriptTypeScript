@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { DesignTokenManager } from './design-tokens';
+import { describe, it, expect, vi } from 'vitest';
+import { DesignTokenManager } from './design-tokens.js';
 
 describe('DesignTokenManager', () => {
   const tokens = {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { varScopeDemo, letScopeDemo, tdzDemo, blockScopedReDeclaration } from './declarations';
+import { varScopeDemo, letScopeDemo, tdzDemo, blockScopedReDeclaration } from './declarations.js';
 
 describe('variable declarations', () => {
   it('varScopeDemo should not throw', () => {

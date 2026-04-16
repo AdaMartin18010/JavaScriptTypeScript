@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import {
   SingletonTS,
   SingletonJSWithDefense,
-} from './singleton-js';
+} from './singleton-js.js';
 
 describe('SingletonTS', () => {
   it('should return the same instance', () => {

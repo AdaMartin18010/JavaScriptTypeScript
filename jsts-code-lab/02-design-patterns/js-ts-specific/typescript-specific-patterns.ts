@@ -1887,7 +1887,7 @@ class EventEmitter<T extends Record<string, any> = Record<string, any>> {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);
     }
-    this.listeners.get(event)!.push(listener);
+    this.listeners.get(event)!.push(listener as (data: T[keyof T]) => void);
 
     return () => this.off(event, listener);
   }
@@ -1895,7 +1895,7 @@ class EventEmitter<T extends Record<string, any> = Record<string, any>> {
   off<K extends keyof T>(event: K, listener: (data: T[K]) => void): void {
     const listeners = this.listeners.get(event);
     if (listeners) {
-      const index = listeners.indexOf(listener);
+      const index = listeners.indexOf(listener as (data: T[keyof T]) => void);
       if (index !== -1) {
         listeners.splice(index, 1);
       }

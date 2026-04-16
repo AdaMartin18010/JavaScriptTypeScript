@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { PriorityQueue, TaskQueue, WorkerPool, DeadLetterQueue } from './task-queue';
+import { PriorityQueue, TaskQueue, WorkerPool, DeadLetterQueue } from './task-queue.js';
 
 describe('PriorityQueue', () => {
   it('orders by priority ascending', () => {

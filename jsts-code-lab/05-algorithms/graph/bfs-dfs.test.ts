@@ -8,7 +8,7 @@ import {
   hasCycle,
   topologicalSort,
   demo
-} from './bfs-dfs';
+} from './bfs-dfs.js';
 
 describe('bfs-dfs', () => {
   function buildGraph(): Graph {

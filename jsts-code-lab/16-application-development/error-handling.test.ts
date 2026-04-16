@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createError, CircuitBreaker, ErrorBoundary, Logger, consoleHandler } from './error-handling'
+import { createError, CircuitBreaker, ErrorBoundary, Logger, consoleHandler, ErrorCategory, LogLevel } from './error-handling.js'
 
 describe('error-handling', () => {
   it('createError is defined', () => {
@@ -8,7 +8,7 @@ describe('error-handling', () => {
   it('createError is callable', () => {
     if (typeof createError === 'function') {
       try {
-        const result = createError();
+        const result = createError('test', ErrorCategory.UNKNOWN, 'TEST');
         expect(result).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('error-handling', () => {
   it('CircuitBreaker can be instantiated if constructor permits', () => {
     if (typeof CircuitBreaker === 'function') {
       try {
-        const instance = new CircuitBreaker();
+        const instance = new CircuitBreaker({ failureThreshold: 3, resetTimeout: 5000 });
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('error-handling', () => {
   it('ErrorBoundary can be instantiated if constructor permits', () => {
     if (typeof ErrorBoundary === 'function') {
       try {
-        const instance = new ErrorBoundary();
+        const instance = new ErrorBoundary(() => {});
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('error-handling', () => {
   it('consoleHandler is callable', () => {
     if (typeof consoleHandler === 'function') {
       try {
-        const result = consoleHandler();
+        const result = consoleHandler({ level: LogLevel.INFO, message: 'test', timestamp: new Date() });
         expect(result).toBeDefined();
       } catch { }
     }

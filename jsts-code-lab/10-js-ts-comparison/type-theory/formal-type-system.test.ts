@@ -6,8 +6,8 @@ import {
   RuntimeTypeChecker,
   proveNumberAddition,
   proveLSP,
-} from './formal-type-system';
-import type { TypeAnnotation } from './formal-type-system';
+} from './formal-type-system.js';
+import type { TypeAnnotation } from './formal-type-system.js';
 
 describe('TypeChecker', () => {
   const checker = new TypeChecker();

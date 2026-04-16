@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { EventTracker, SessionManager } from './event-tracking';
+import { EventTracker, SessionManager } from './event-tracking.js';
 
 describe('EventTracker', () => {
   it('tracks events with session', () => {

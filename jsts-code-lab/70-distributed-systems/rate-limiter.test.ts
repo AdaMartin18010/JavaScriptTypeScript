@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { TokenBucket, LeakyBucket, FixedWindowCounter, SlidingWindowCounter, demo } from './rate-limiter'
+import { TokenBucket, LeakyBucket, FixedWindowCounter, SlidingWindowCounter, demo } from './rate-limiter.js'
 
 describe('rate-limiter', () => {
   it('TokenBucket is defined', () => {
@@ -8,7 +8,7 @@ describe('rate-limiter', () => {
   it('TokenBucket can be instantiated if constructor permits', () => {
     if (typeof TokenBucket === 'function') {
       try {
-        const instance = new TokenBucket();
+        const instance = new (TokenBucket as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('rate-limiter', () => {
   it('LeakyBucket can be instantiated if constructor permits', () => {
     if (typeof LeakyBucket === 'function') {
       try {
-        const instance = new LeakyBucket();
+        const instance = new (LeakyBucket as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('rate-limiter', () => {
   it('FixedWindowCounter can be instantiated if constructor permits', () => {
     if (typeof FixedWindowCounter === 'function') {
       try {
-        const instance = new FixedWindowCounter();
+        const instance = new (FixedWindowCounter as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('rate-limiter', () => {
   it('SlidingWindowCounter can be instantiated if constructor permits', () => {
     if (typeof SlidingWindowCounter === 'function') {
       try {
-        const instance = new SlidingWindowCounter();
+        const instance = new (SlidingWindowCounter as any)();
         expect(instance).toBeDefined();
       } catch { }
     }

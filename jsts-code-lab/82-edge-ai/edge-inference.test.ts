@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ModelQuantization, ModelPruning, KnowledgeDistillation, FederatedLearning, EdgeInferenceEngine, ModelProfiler, demo } from './edge-inference'
+import { ModelQuantization, ModelPruning, KnowledgeDistillation, FederatedLearning, EdgeInferenceEngine, ModelProfiler, demo } from '\./edge-inference.js'
 
 describe('edge-inference', () => {
   it('ModelQuantization is defined', () => {

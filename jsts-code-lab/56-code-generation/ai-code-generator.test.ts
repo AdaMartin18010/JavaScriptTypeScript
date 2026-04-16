@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AICodeGenerator } from './ai-code-generator';
+import { AICodeGenerator } from '\./ai-code-generator.js';
 
 describe('AICodeGenerator', () => {
   it('generates template with variable substitution', () => {

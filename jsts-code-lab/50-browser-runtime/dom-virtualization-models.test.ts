@@ -1,5 +1,5 @@
 ﻿import { describe, it, expect } from 'vitest';
-import { diff, IncrementalDOMCompiler, NativeDOMCostAnalyzer, type VNode } from './dom-virtualization-models';
+import { diff, IncrementalDOMCompiler, NativeDOMCostAnalyzer, type VNode } from './dom-virtualization-models.js';
 
 describe('Virtual DOM diff', () => {
   it('returns CREATE when old is null', () => {
@@ -31,7 +31,7 @@ describe('IncrementalDOMCompiler', () => {
     const node: VNode = { tag: 'div', props: { className: 'box' }, children: ['hi'] };
     const instructions = compiler.compile(node);
     expect(instructions[0].type).toBe('elementOpen');
-    expect(instructions.some(i => i.type === 'text' && i.value === 'hi')).toBe(true);
+    expect(instructions.some((i: any) => i.type === 'text' && i.value === 'hi')).toBe(true);
     expect(instructions[instructions.length - 1].type).toBe('elementClose');
   });
 });

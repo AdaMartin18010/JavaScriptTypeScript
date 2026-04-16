@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { CLIBuilder, ProgressBar, Spinner, InteractivePrompt } from './cli-builder';
+import { CLIBuilder, ProgressBar, Spinner, InteractivePrompt } from './cli-builder.js';
 
 describe('CLIBuilder', () => {
   it('shows help for --help', () => {

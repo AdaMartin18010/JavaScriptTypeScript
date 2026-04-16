@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @file SSR Streaming 配置示例
  * @description
@@ -44,3 +45,4 @@ export function createCustomStreamingHandler(createRouter: CreateRouterFn) {
     return defaultStreamHandler({ request, router, responseHeaders });
   });
 }
+

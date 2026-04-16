@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { encodeVLQ, decodeVLQ, SourceMapGenerator, SourceMapParser, StackTraceParser } from './source-maps';
+import { encodeVLQ, decodeVLQ, SourceMapGenerator, SourceMapParser, StackTraceParser } from './source-maps.js';
 
 describe('VLQ', () => {
   it('roundtrips common values', () => {

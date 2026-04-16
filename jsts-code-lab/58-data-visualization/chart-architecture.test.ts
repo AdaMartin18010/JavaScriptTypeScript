@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, it, expect, vi } from 'vitest';
-import { SVGChartRenderer, CanvasChartRenderer, ChartFactory } from './chart-architecture';
+import { SVGChartRenderer, CanvasChartRenderer, ChartFactory } from './chart-architecture.js';
 
 describe('ChartFactory', () => {
   it('creates SVG renderer', () => {

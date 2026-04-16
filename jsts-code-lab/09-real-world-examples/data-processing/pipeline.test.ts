@@ -9,7 +9,7 @@ import {
   CSVTransformer,
   DataCleaningPipeline,
   BatchProcessor,
-} from './pipeline';
+} from './pipeline.js';
 
 describe('Pipeline', () => {
   it('should execute a single stage', async () => {

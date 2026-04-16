@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { EVMState, ERC20Token, AutomatedMarketMaker, CrossChainBridge, ERC721NFT, demo } from './smart-contracts'
+import { EVMState, ERC20Token, AutomatedMarketMaker, CrossChainBridge, ERC721NFT, demo } from '\./smart-contracts.js'
 
 describe('smart-contracts', () => {
   it('EVMState is defined', () => {
@@ -8,7 +8,7 @@ describe('smart-contracts', () => {
   it('EVMState can be instantiated if constructor permits', () => {
     if (typeof EVMState === 'function') {
       try {
-        const instance = new EVMState();
+        const instance = new (EVMState as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('smart-contracts', () => {
   it('ERC20Token can be instantiated if constructor permits', () => {
     if (typeof ERC20Token === 'function') {
       try {
-        const instance = new ERC20Token();
+        const instance = new (ERC20Token as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('smart-contracts', () => {
   it('AutomatedMarketMaker can be instantiated if constructor permits', () => {
     if (typeof AutomatedMarketMaker === 'function') {
       try {
-        const instance = new AutomatedMarketMaker();
+        const instance = new (AutomatedMarketMaker as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('smart-contracts', () => {
   it('CrossChainBridge can be instantiated if constructor permits', () => {
     if (typeof CrossChainBridge === 'function') {
       try {
-        const instance = new CrossChainBridge();
+        const instance = new (CrossChainBridge as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('smart-contracts', () => {
   it('ERC721NFT can be instantiated if constructor permits', () => {
     if (typeof ERC721NFT === 'function') {
       try {
-        const instance = new ERC721NFT();
+        const instance = new (ERC721NFT as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,9 +63,10 @@ describe('smart-contracts', () => {
   it('demo is callable', () => {
     if (typeof demo === 'function') {
       try {
-        const result = demo();
+        const result = (demo as any)();
         expect(result).toBeDefined();
       } catch { }
     }
   });
 });
+

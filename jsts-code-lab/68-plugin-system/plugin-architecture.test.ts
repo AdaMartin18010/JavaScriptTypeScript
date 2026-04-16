@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { HookManager, PluginManager, PluginSandbox } from './plugin-architecture';
+import { HookManager, PluginManager, PluginSandbox } from './plugin-architecture.js';
 
 describe('HookManager', () => {
   it('executes handlers in priority order', async () => {

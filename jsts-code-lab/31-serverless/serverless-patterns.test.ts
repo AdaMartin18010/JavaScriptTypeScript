@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FunctionOrchestrator, EventTriggerManager, StepFunction } from './serverless-patterns';
+import { FunctionOrchestrator, EventTriggerManager, StepFunction } from './serverless-patterns.js';
 
 describe('FunctionOrchestrator', () => {
   it('registers and invokes function', async () => {

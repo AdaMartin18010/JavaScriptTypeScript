@@ -8,8 +8,8 @@ import {
   authMiddleware,
   errorHandler,
   userCreateSchema,
-} from './express-patterns';
-import type { Request, Response, NextFunction } from './express-patterns';
+} from './express-patterns.js';
+import type { Request, Response, NextFunction } from './express-patterns.js';
 
 function createMockReq(overrides: Partial<Request> = {}): Request {
   return {

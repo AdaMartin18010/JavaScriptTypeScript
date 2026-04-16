@@ -9,7 +9,7 @@ import {
   minDistance,
   knapsack,
   demo
-} from './fibonacci-dp';
+} from './fibonacci-dp.js';
 
 describe('fibonacci-dp', () => {
   describe('fibMemo', () => {

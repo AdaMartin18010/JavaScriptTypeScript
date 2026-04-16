@@ -7,7 +7,7 @@ import {
   CircularQueue,
   isBalancedBrackets,
   demo
-} from './stack-queue';
+} from './stack-queue.js';
 
 describe('stack-queue', () => {
   describe('Stack', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Graph, WeightedGraph, dfs, bfs, dijkstra, topologicalSort, demo } from './graph';
+import { Graph, WeightedGraph, dfs, bfs, dijkstra, topologicalSort, demo } from './graph.js';
 
 describe('graph', () => {
   describe('Graph', () => {

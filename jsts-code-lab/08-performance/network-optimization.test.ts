@@ -7,7 +7,7 @@ import {
   PriorityRequestQueue,
   OfflineSupport,
   demo
-} from './network-optimization';
+} from './network-optimization.js';
 
 describe('network-optimization', () => {
   describe('RequestDeduplicator', () => {

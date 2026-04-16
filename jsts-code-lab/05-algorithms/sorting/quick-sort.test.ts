@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { quickSort, quickSortInPlace, quickSortIterative, demo } from './quick-sort';
+import { quickSort, quickSortInPlace, quickSortIterative, demo } from './quick-sort.js';
 
 describe('quick-sort', () => {
   describe('quickSort', () => {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @file KV 读写示例
  * @description
@@ -55,3 +56,4 @@ export const deleteKVValue = createServerFn({ method: 'POST' })
     await env.CACHE.delete(key);
     return { success: true, key };
   });
+

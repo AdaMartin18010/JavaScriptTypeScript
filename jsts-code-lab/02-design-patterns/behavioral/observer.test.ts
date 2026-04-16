@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Subject, EventEmitter, ObservableState, Store, createObservable } from './observer';
+import { Subject, EventEmitter, ObservableState, Store, createObservable } from './observer.js';
 
 describe('observer pattern', () => {
   it('Subject should notify and allow unsubscribe', () => {

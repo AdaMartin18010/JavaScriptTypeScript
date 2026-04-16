@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { validateAriaState, FocusManager } from './accessibility-models'
+import { validateAriaState, FocusManager } from './accessibility-models.js'
 
 describe('validateAriaState', () => {
   it('allows valid transition', () => {

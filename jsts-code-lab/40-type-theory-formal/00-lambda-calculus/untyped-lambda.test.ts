@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { var_, abs, app, betaReduce, termToString } from './untyped-lambda'
+import { var_, abs, app, betaReduce, termToString } from './untyped-lambda.js'
 
 describe('untyped-lambda', () => {
   it('beta reduces identity application', () => {

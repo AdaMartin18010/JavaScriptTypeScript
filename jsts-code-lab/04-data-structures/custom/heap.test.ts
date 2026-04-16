@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MinHeap, MaxHeap, heapSort, findKthSmallest, findKthLargest, demo } from './heap';
+import { MinHeap, MaxHeap, heapSort, findKthSmallest, findKthLargest, demo } from './heap.js';
 
 describe('heap', () => {
   describe('MinHeap', () => {

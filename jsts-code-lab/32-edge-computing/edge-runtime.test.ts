@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { EdgeCache, GeoRouter, EdgeRuntime, EdgeABTesting } from './edge-runtime';
+import { EdgeCache, GeoRouter, EdgeRuntime, EdgeABTesting } from './edge-runtime.js';
 
 describe('EdgeCache', () => {
   it('stores and retrieves values', async () => {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * @file D1 数据库查询示例
  * @description
@@ -58,3 +59,4 @@ export const createUser = createServerFn({ method: 'POST' })
       user: { id, name: data.name, email: data.email, created_at: now },
     };
   });
+

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { FunnelAnalyzer, ConversionPathAnalyzer } from './funnel-analysis';
+import { FunnelAnalyzer, ConversionPathAnalyzer } from './funnel-analysis.js';
 
 describe('FunnelAnalyzer', () => {
   const events = [

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { WalletManager, SmartContract, TransactionManager, MultiChainManager } from './web3-patterns';
+import { WalletManager, SmartContract, TransactionManager, MultiChainManager } from './web3-patterns.js';
 
 const mockProvider = {
   request: async (args: any) => {

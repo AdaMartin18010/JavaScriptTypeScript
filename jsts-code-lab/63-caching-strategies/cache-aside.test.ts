@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CacheAside, InMemoryCacheProvider, MockDataSource } from './cache-aside';
+import { CacheAside, InMemoryCacheProvider, MockDataSource } from './cache-aside.js';
 
 describe('CacheAside', () => {
   it('loads from source on first get and caches', async () => {

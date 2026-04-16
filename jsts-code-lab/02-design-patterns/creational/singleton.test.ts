@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { BasicSingleton, ConfigManager, createSingleton, Logger, getDatabase, TestableSingleton } from './singleton';
+import { BasicSingleton, ConfigManager, createSingleton, Logger, getDatabase, TestableSingleton } from './singleton.js';
 
 describe('singleton pattern', () => {
   it('BasicSingleton should return same instance', () => {

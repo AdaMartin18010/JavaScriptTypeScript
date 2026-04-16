@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { LinkedList, DoublyLinkedList, ListNode, reverseLinkedList, hasCycle, demo } from './linked-list';
+import { LinkedList, DoublyLinkedList, ListNode, reverseLinkedList, hasCycle, demo } from './linked-list.js';
 
 describe('linked-list', () => {
   describe('LinkedList', () => {

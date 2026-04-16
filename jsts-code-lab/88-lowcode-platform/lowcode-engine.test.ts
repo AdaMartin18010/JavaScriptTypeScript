@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { ComponentLibrary, PageDesigner, CodeGenerator, WorkflowEngine, ExpressionEngine, demo } from './lowcode-engine'
+import { ComponentLibrary, PageDesigner, CodeGenerator, WorkflowEngine, ExpressionEngine, demo } from '\./lowcode-engine.js'
 
 describe('lowcode-engine', () => {
   it('ComponentLibrary is defined', () => {
@@ -8,7 +8,7 @@ describe('lowcode-engine', () => {
   it('ComponentLibrary can be instantiated if constructor permits', () => {
     if (typeof ComponentLibrary === 'function') {
       try {
-        const instance = new ComponentLibrary();
+        const instance = new (ComponentLibrary as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -19,7 +19,7 @@ describe('lowcode-engine', () => {
   it('PageDesigner can be instantiated if constructor permits', () => {
     if (typeof PageDesigner === 'function') {
       try {
-        const instance = new PageDesigner();
+        const instance = new (PageDesigner as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -30,7 +30,7 @@ describe('lowcode-engine', () => {
   it('CodeGenerator can be instantiated if constructor permits', () => {
     if (typeof CodeGenerator === 'function') {
       try {
-        const instance = new CodeGenerator();
+        const instance = new (CodeGenerator as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -41,7 +41,7 @@ describe('lowcode-engine', () => {
   it('WorkflowEngine can be instantiated if constructor permits', () => {
     if (typeof WorkflowEngine === 'function') {
       try {
-        const instance = new WorkflowEngine();
+        const instance = new (WorkflowEngine as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -52,7 +52,7 @@ describe('lowcode-engine', () => {
   it('ExpressionEngine can be instantiated if constructor permits', () => {
     if (typeof ExpressionEngine === 'function') {
       try {
-        const instance = new ExpressionEngine();
+        const instance = new (ExpressionEngine as any)();
         expect(instance).toBeDefined();
       } catch { }
     }
@@ -63,9 +63,10 @@ describe('lowcode-engine', () => {
   it('demo is callable', () => {
     if (typeof demo === 'function') {
       try {
-        const result = demo();
+        const result = (demo as any)();
         expect(result).toBeDefined();
       } catch { }
     }
   });
 });
+

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ESLintConfigBuilder, PrettierConfigBuilder, ESLintPresets, PrettierPresets, LintingSetup } from './eslint-prettier';
+import { ESLintConfigBuilder, PrettierConfigBuilder, ESLintPresets, PrettierPresets, LintingSetup } from './eslint-prettier.js';
 
 describe('ESLintConfigBuilder', () => {
   it('builds TypeScript config', () => {
