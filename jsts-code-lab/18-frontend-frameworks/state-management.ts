@@ -97,7 +97,7 @@ export class Store<S, A extends Action = Action> {
     const chain = middlewares.map(middleware => middleware(store));
     const composed = chain.reduceRight(
       (next, middleware) => middleware(next),
-      dispatch
+      this.dispatch.bind(this)
     );
     
     // 重写 dispatch
@@ -247,19 +247,19 @@ export const persistMiddleware = <S, A extends Action>(key: string) =>
 export function combineReducers<S extends Record<string, unknown>, A extends Action>(
   reducers: { [K in keyof S]: Reducer<S[K], A> }
 ): Reducer<S, A> {
-  return (state: S, action: A): S => {
+  return (state: S | undefined, action: A): S => {
     const nextState = {} as S;
     let hasChanged = false;
 
     for (const key in reducers) {
       const reducer = reducers[key];
-      const previousStateForKey = state[key];
-      const nextStateForKey = reducer(previousStateForKey, action);
+      const previousStateForKey = state ? state[key] : undefined;
+      const nextStateForKey = reducer(previousStateForKey as any, action);
       nextState[key] = nextStateForKey;
       hasChanged = hasChanged || nextStateForKey !== previousStateForKey;
     }
 
-    return hasChanged ? nextState : state;
+    return hasChanged ? nextState : (state as S);
   };
 }
 

@@ -449,7 +449,7 @@ export class MessageBroker {
       if (patternParts[pIdx] === '#') {
         return true; // 多层匹配
       }
-      if (patternParts[pIdx] === '+') {
+      if (patternParts[pIdx] === '+' || patternParts[pIdx] === '*') {
         // 单层匹配
         pIdx++;
         kIdx++;

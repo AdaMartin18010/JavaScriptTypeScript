@@ -42,13 +42,13 @@ export class FeatureFlagManager {
     const flag = this.flags.get(flagKey);
     if (!flag) return false;
     
-    // 全局关闭
-    if (!flag.enabled) return false;
-    
     // 用户覆盖
     if (user && this.userOverrides.get(user.id)?.has(flagKey)) {
       return true;
     }
+    
+    // 全局关闭
+    if (!flag.enabled) return false;
     
     // 评估规则
     for (const rule of flag.rules) {

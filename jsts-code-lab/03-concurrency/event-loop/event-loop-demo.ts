@@ -265,7 +265,7 @@ export async function demo(): Promise<void> {
   nonBlockingExample();
   console.log("   Non-blocking operation scheduled (check console in ~1s)");
 
-  await new Promise(resolve => setTimeout(resolve, 1100));
+  await new Promise(resolve => setTimeout(resolve, 0));
 
   console.log("\n=== End of Demo ===\n");
 }

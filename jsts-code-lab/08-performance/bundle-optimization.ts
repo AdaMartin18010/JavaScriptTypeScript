@@ -12,6 +12,11 @@
  * - 预加载 (Preloading/Prefetching)
  */
 
+// Node.js 兼容性存根
+if (typeof globalThis.requestIdleCallback === 'undefined') {
+  (globalThis as unknown as { requestIdleCallback: typeof setTimeout }).requestIdleCallback = (cb: () => void) => setTimeout(cb, 0);
+}
+
 // ============================================================================
 // 1. 动态导入与代码分割
 // ============================================================================

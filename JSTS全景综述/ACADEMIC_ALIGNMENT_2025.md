@@ -16,6 +16,7 @@
       - [论文信息](#论文信息)
       - [核心贡献](#核心贡献)
       - [与本项目的关系](#与本项目的关系)
+      - [Guarded Domain Theory 在 JS 递归类型语义中的延伸](#guarded-domain-theory-在-js-递归类型语义中的延伸)
       - [可借鉴内容](#可借鉴内容)
     - [2.2 渐进类型性能优化](#22-渐进类型性能优化)
       - [论文信息](#论文信息-1)
@@ -70,14 +71,18 @@
       - [核心贡献](#核心贡献-10)
       - [与本项目的关系](#与本项目的关系-10)
       - [可借鉴内容](#可借鉴内容-10)
-  - [6. 研究对项目的启示](#6-研究对项目的启示)
-    - [6.1 理论到实践的映射表](#61-理论到实践的映射表)
-    - [6.2 未来研究方向建议](#62-未来研究方向建议)
-    - [6.3 文档更新建议](#63-文档更新建议)
+  - [6. 2025 Q2 学术前沿动态补充](#6-2025-q2-学术前沿动态补充)
+    - [6.1 PLDI / POPL 2025 论文映射（JS/TS/Web 方向）](#61-pldi--popl-2025-论文映射jstsweb-方向)
+    - [6.2 Guarded Domain Theory 在 JS 递归类型语义中的最新应用进展](#62-guarded-domain-theory-在-js-递归类型语义中的最新应用进展)
+  - [7. 研究对项目的启示](#7-研究对项目的启示)
+    - [7.1 理论到实践的映射表](#71-理论到实践的映射表)
+    - [7.2 未来研究方向建议](#72-未来研究方向建议)
+    - [7.3 文档更新建议](#73-文档更新建议)
   - [参考文献](#参考文献)
     - [核心论文](#核心论文)
     - [形式化语义](#形式化语义)
     - [并发与内存模型](#并发与内存模型)
+    - [2025 Q2 补充引用](#2025-q2-补充引用)
     - [规范与文档](#规范与文档)
 
 ---
@@ -847,11 +852,11 @@ type JSONValue =
 
 ### 2025 Q2 补充引用
 
-7. Birkedal, L., & Bizjak, A. (2025). *Guarded Domain Theory for Recursive Types in Dynamic Languages* (Extended Technical Report). Aarhus University. <https://cs.au.dk/~birke/papers/gdt-recursive-types.pdf> — 将 SGDT 从渐进类型扩展到递归子类型与自引用结构的形式化分析。
+1. Birkedal, L., & Bizjak, A. (2025). *Guarded Domain Theory for Recursive Types in Dynamic Languages* (Extended Technical Report). Aarhus University. <https://cs.au.dk/~birke/papers/gdt-recursive-types.pdf> — 将 SGDT 从渐进类型扩展到递归子类型与自引用结构的形式化分析。
 
-8. Shi, Y., et al. (2025). *Type-Constrained Code Generation with Language Models*. PLDI 2025. <https://doi.org/10.1145/PLDI.2025.type-constrained> — 在解码阶段嵌入类型检查器，以 TypeScript 为主要验证平台，显著降低 LLM 生成代码的类型错误率。
+2. Shi, Y., et al. (2025). *Type-Constrained Code Generation with Language Models*. PLDI 2025. <https://doi.org/10.1145/PLDI.2025.type-constrained> — 在解码阶段嵌入类型检查器，以 TypeScript 为主要验证平台，显著降低 LLM 生成代码的类型错误率。
 
-9. 见"并发与内存模型"节第 1 条：Cooksey, S., Batty, M., et al. (2025). *Relaxed Memory Concurrency Re-executed*. POPL 2025. <https://doi.org/10.1145/3704886>。
+3. 见"并发与内存模型"节第 1 条：Cooksey, S., Batty, M., et al. (2025). *Relaxed Memory Concurrency Re-executed*. POPL 2025. <https://doi.org/10.1145/3704886>。
 
 ### 规范与文档
 

@@ -53,6 +53,7 @@ export class HistoryRouter {
   }
 
   private init(): void {
+    if (typeof window === 'undefined') return;
     // 监听浏览器前进后退
     window.addEventListener('popstate', () => {
       this.handleRouteChange();
@@ -64,23 +65,27 @@ export class HistoryRouter {
 
   // 导航到指定路径
   push(path: string): void {
+    if (typeof window === 'undefined') return;
     window.history.pushState({}, '', path);
     this.handleRouteChange();
   }
 
   // 替换当前历史
   replace(path: string): void {
+    if (typeof window === 'undefined') return;
     window.history.replaceState({}, '', path);
     this.handleRouteChange();
   }
 
   // 后退
   back(): void {
+    if (typeof window === 'undefined') return;
     window.history.back();
   }
 
   // 前进
   forward(): void {
+    if (typeof window === 'undefined') return;
     window.history.forward();
   }
 
@@ -103,9 +108,9 @@ export class HistoryRouter {
   }
 
   private async handleRouteChange(): Promise<void> {
-    const path = window.location.pathname;
-    const query = this.parseQuery(window.location.search);
-    const hash = window.location.hash.slice(1);
+    const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+    const query = typeof window !== 'undefined' ? this.parseQuery(window.location.search) : {};
+    const hash = typeof window !== 'undefined' ? window.location.hash.slice(1) : '';
 
     const match = this.matchRoute(path);
     
@@ -221,6 +226,7 @@ export class HashRouter {
   }
 
   private init(): void {
+    if (typeof window === 'undefined') return;
     window.addEventListener('hashchange', () => {
       this.handleRouteChange();
     });
@@ -228,17 +234,19 @@ export class HashRouter {
   }
 
   push(path: string): void {
+    if (typeof window === 'undefined') return;
     window.location.hash = path;
   }
 
   replace(path: string): void {
+    if (typeof window === 'undefined') return;
     const url = new URL(window.location.href);
     url.hash = path;
     window.location.replace(url.toString());
   }
 
   private handleRouteChange(): void {
-    const hash = window.location.hash.slice(1) || '/';
+    const hash = typeof window !== 'undefined' ? window.location.hash.slice(1) || '/' : '/';
     // 复用 HistoryRouter 的匹配逻辑
     console.log(`Hash route changed to: ${hash}`);
   }

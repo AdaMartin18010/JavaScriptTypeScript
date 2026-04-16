@@ -421,7 +421,7 @@ export class TaskScheduler {
 
   private schedule(): void {
     if (!this.isRunning) {
-      this.runEventLoop();
+      Promise.resolve().then(() => this.runEventLoop());
     }
   }
 
@@ -544,7 +544,7 @@ export class IdleTaskScheduler {
   }> = [];
 
   addTask(callback: (deadline: IdleDeadline) => void, timeout?: number): void {
-    if ('requestIdleCallback' in window) {
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
       window.requestIdleCallback(callback, { timeout });
     } else {
       // 降级方案

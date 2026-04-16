@@ -12,6 +12,50 @@
  * - 减少重排重绘
  */
 
+// Node.js / 测试环境兼容性存根
+if (typeof globalThis.requestAnimationFrame === 'undefined') {
+  (globalThis as unknown as { requestAnimationFrame: typeof setTimeout }).requestAnimationFrame = (cb: () => void) => setTimeout(cb, 16);
+}
+if (typeof globalThis.cancelAnimationFrame === 'undefined') {
+  (globalThis as unknown as { cancelAnimationFrame: typeof clearTimeout }).cancelAnimationFrame = (id: number) => clearTimeout(id);
+}
+if (typeof globalThis.document === 'undefined') {
+  (globalThis as unknown as { document: object }).document = {
+    createDocumentFragment: () => ({ appendChild: () => {} }),
+    createElement: (_tag: string) => ({
+      tagName: _tag,
+      style: { cssText: '' },
+      appendChild: () => {},
+      dispatchEvent: () => {}
+    })
+  };
+}
+if (typeof globalThis.IntersectionObserver === 'undefined') {
+  (globalThis as unknown as { IntersectionObserver: unknown }).IntersectionObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+if (typeof globalThis.Image === 'undefined') {
+  (globalThis as unknown as { Image: unknown }).Image = class ImageStub {
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    private _src = '';
+    get src() { return this._src; }
+    set src(value: string) {
+      this._src = value;
+      setTimeout(() => this.onload?.(), 0);
+    }
+  };
+}
+if (typeof globalThis.Event === 'undefined') {
+  (globalThis as unknown as { Event: unknown }).Event = class EventStub {
+    type: string;
+    constructor(type: string) { this.type = type; }
+  };
+}
+
 // ============================================================================
 // 1. requestAnimationFrame 调度器
 // ============================================================================

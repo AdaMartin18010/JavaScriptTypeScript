@@ -54,7 +54,7 @@ export class ServiceWorkerManager {
 
   // 注册 Service Worker
   async register(scriptURL: string, options: ServiceWorkerConfig = {}): Promise<ServiceWorkerRegistration> {
-    if (!('serviceWorker' in navigator)) {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
       throw new Error('Service Worker not supported');
     }
 
@@ -64,7 +64,9 @@ export class ServiceWorkerManager {
         updateViaCache: options.updateViaCache || 'imports'
       });
 
+      if (typeof window !== 'undefined') {
       this.setupListeners();
+    }
       
       console.log('[SW] Registered:', this.registration.scope);
       
@@ -408,7 +410,7 @@ export interface OfflineConfig {
 
 export class OfflineManager {
   private config: OfflineConfig;
-  private isOnline: boolean = navigator.onLine;
+  private isOnline: boolean = typeof navigator !== 'undefined' ? (navigator.onLine ?? true) : true;
 
   constructor(config: OfflineConfig) {
     this.config = {
@@ -419,6 +421,7 @@ export class OfflineManager {
   }
 
   private setupListeners(): void {
+    if (typeof window === 'undefined') return;
     window.addEventListener('online', () => {
       this.isOnline = true;
       this.emit('online');
@@ -539,12 +542,12 @@ export class PushNotificationManager {
 
   constructor(swRegistration?: ServiceWorkerRegistration) {
     this.swRegistration = swRegistration || null;
-    this.permission = Notification.permission;
+    this.permission = typeof Notification !== 'undefined' ? Notification.permission : 'default';
   }
 
   // 请求通知权限
   async requestPermission(): Promise<NotificationPermission> {
-    if (!('Notification' in window)) {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
       throw new Error('Notifications not supported');
     }
 
@@ -682,7 +685,7 @@ export class BackgroundSyncManager {
 
   // 注册后台同步
   async register(tag: string): Promise<void> {
-    if (!('serviceWorker' in navigator) || !('SyncManager' in window)) {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator) || typeof window === 'undefined' || !('SyncManager' in window)) {
       console.warn('[Sync] Background sync not supported');
       return;
     }

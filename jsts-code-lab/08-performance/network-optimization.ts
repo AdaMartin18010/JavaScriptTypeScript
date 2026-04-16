@@ -350,24 +350,27 @@ export class PriorityRequestQueue {
 export class OfflineSupport {
   private cache: SmartCache;
   private offlineQueue: Array<() => Promise<void>> = [];
-  private isOnline = navigator.onLine;
+  private isOnline: boolean;
 
   constructor(cache: SmartCache) {
     this.cache = cache;
+    this.isOnline = typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean' ? navigator.onLine : true;
     this.setupListeners();
   }
 
   private setupListeners(): void {
-    window.addEventListener('online', () => {
-      console.log('[OfflineSupport] 网络已恢复');
-      this.isOnline = true;
-      this.processOfflineQueue();
-    });
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', () => {
+        console.log('[OfflineSupport] 网络已恢复');
+        this.isOnline = true;
+        this.processOfflineQueue();
+      });
 
-    window.addEventListener('offline', () => {
-      console.log('[OfflineSupport] 网络已断开');
-      this.isOnline = false;
-    });
+      window.addEventListener('offline', () => {
+        console.log('[OfflineSupport] 网络已断开');
+        this.isOnline = false;
+      });
+    }
   }
 
   async fetchWithFallback(request: RequestInfo): Promise<Response> {

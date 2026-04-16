@@ -195,7 +195,7 @@ export class DependencyManager {
   private dependencies: Map<string, DependencyAnalysis> = new Map();
 
   addDependency(analysis: DependencyAnalysis): void {
-    this.dependencies.set(analysis.name, analysis);
+    this.dependencies.set(`${analysis.name}@${analysis.version}`, analysis);
   }
 
   // 分析依赖树

@@ -4,16 +4,67 @@
 
 ## 目录
 
-1. [Event Loop 的形式化模型](#1-event-loop-的形式化模型)
-2. [Task Queue 与 Microtask Queue 的数学模型](#2-task-queue-与-microtask-queue-的数学模型)
-3. [Promise 的状态机形式化](#3-promise-的状态机形式化)
-4. [async/await 的转换语义](#4-asyncawait-的转换语义)
-5. [Worker Threads 的隔离语义](#5-worker-threads-的隔离语义)
-6. [SharedArrayBuffer 和 Atomics 内存模型](#6-sharedarraybuffer-和-atomics-内存模型)
-7. [竞态条件的形式化定义与检测](#7-竞态条件的形式化定义与检测)
-8. [并发模式模拟实现](#8-并发模式模拟实现)
-9. [Streams API 的背压与流动模式](#9-streams-api-的背压与流动模式)
-10. [并发性能优化理论](#10-并发性能优化理论)
+- [JavaScript/TypeScript 并发模型深度解析](#javascripttypescript-并发模型深度解析)
+  - [目录](#目录)
+  - [1. Event Loop 的形式化模型](#1-event-loop-的形式化模型)
+    - [1.1 形式化定义](#11-形式化定义)
+    - [1.2 HTML 规范 vs Node.js libuv](#12-html-规范-vs-nodejs-libuv)
+    - [1.3 时序图：浏览器 Event Loop](#13-时序图浏览器-event-loop)
+    - [1.4 代码示例](#14-代码示例)
+    - [1.5 常见陷阱](#15-常见陷阱)
+  - [2. Task Queue 与 Microtask Queue 的数学模型](#2-task-queue-与-microtask-queue-的数学模型)
+    - [2.1 形式化定义](#21-形式化定义)
+    - [2.2 数学模型](#22-数学模型)
+    - [2.3 时序图：队列优先级](#23-时序图队列优先级)
+    - [2.4 代码示例](#24-代码示例)
+    - [2.5 常见陷阱](#25-常见陷阱)
+  - [3. Promise 的状态机形式化](#3-promise-的状态机形式化)
+    - [3.1 形式化定义](#31-形式化定义)
+    - [3.2 状态转移表](#32-状态转移表)
+    - [3.3 时序图：Promise 链式调用](#33-时序图promise-链式调用)
+    - [3.4 代码示例](#34-代码示例)
+    - [3.5 常见陷阱](#35-常见陷阱)
+  - [4. async/await 的转换语义](#4-asyncawait-的转换语义)
+    - [4.1 形式化定义](#41-形式化定义)
+    - [4.2 时序图：async/await 执行流程](#42-时序图asyncawait-执行流程)
+    - [4.3 代码示例](#43-代码示例)
+    - [4.4 常见陷阱](#44-常见陷阱)
+  - [5. Worker Threads 的隔离语义](#5-worker-threads-的隔离语义)
+    - [5.1 形式化定义](#51-形式化定义)
+    - [5.2 时序图：Worker 通信](#52-时序图worker-通信)
+    - [5.3 代码示例](#53-代码示例)
+    - [5.4 常见陷阱](#54-常见陷阱)
+  - [6. SharedArrayBuffer 和 Atomics 内存模型](#6-sharedarraybuffer-和-atomics-内存模型)
+    - [6.1 形式化定义](#61-形式化定义)
+    - [6.2 内存模型可视化](#62-内存模型可视化)
+    - [6.3 时序图：Atomics 操作序列](#63-时序图atomics-操作序列)
+    - [6.4 代码示例](#64-代码示例)
+    - [6.5 常见陷阱](#65-常见陷阱)
+  - [7. 竞态条件的形式化定义与检测](#7-竞态条件的形式化定义与检测)
+    - [7.1 形式化定义](#71-形式化定义)
+    - [7.2 竞态条件分类](#72-竞态条件分类)
+    - [7.3 时序图：常见竞态模式](#73-时序图常见竞态模式)
+    - [7.4 竞态检测工具与代码示例](#74-竞态检测工具与代码示例)
+    - [7.5 常见陷阱](#75-常见陷阱)
+  - [8. 并发模式模拟实现](#8-并发模式模拟实现)
+    - [8.1 锁模式](#81-锁模式)
+    - [8.2 信号量](#82-信号量)
+    - [8.3 屏障模式](#83-屏障模式)
+    - [8.4 时序图：屏障同步](#84-时序图屏障同步)
+    - [8.5 常见陷阱](#85-常见陷阱)
+  - [9. Streams API 的背压与流动模式](#9-streams-api-的背压与流动模式)
+    - [9.1 形式化定义](#91-形式化定义)
+    - [9.2 时序图：背压处理](#92-时序图背压处理)
+    - [9.3 代码示例](#93-代码示例)
+    - [9.4 常见陷阱](#94-常见陷阱)
+  - [10. 并发性能优化理论](#10-并发性能优化理论)
+    - [10.1 Amdahl 定律与 Gustafson 定律](#101-amdahl-定律与-gustafson-定律)
+    - [10.2 性能模型](#102-性能模型)
+    - [10.3 代码示例](#103-代码示例)
+    - [10.4 性能优化检查清单](#104-性能优化检查清单)
+    - [10.5 常见陷阱](#105-常见陷阱)
+  - [附录：形式化符号参考](#附录形式化符号参考)
+  - [参考资源](#参考资源)
 
 ---
 
@@ -23,6 +74,7 @@
 
 **定义 1.1 (Event Loop)**
 Event Loop 是一个六元组 $E = (S, T, M, W, R, \delta)$，其中：
+
 - $S$：执行上下文栈（Call Stack）
 - $T$：任务队列（Task Queue / Macrotask Queue）
 - $M$：微任务队列（Microtask Queue）
@@ -51,21 +103,21 @@ sequenceDiagram
 
     Note over Stack,Render: 初始执行
     Stack->>Stack: 执行同步代码
-    
+
     Note over Stack,Render: 遇到 setTimeout
     Stack->>WebAPI: setTimeout(callback, 0)
     WebAPI-->>TaskQ: 定时器到期，入队
-    
+
     Note over Stack,Render: 遇到 Promise
     Stack->>MicroQ: Promise.then(callback) 入队
-    
+
     Note over Stack,Render: 同步代码执行完毕
     Stack->>MicroQ: 清空微任务队列
     MicroQ-->>Stack: 执行 Promise 回调
-    
+
     Stack->>TaskQ: 取下一个宏任务
     TaskQ-->>Stack: 执行 setTimeout 回调
-    
+
     Stack->>Render: 检查是否需要渲染
     Render-->>Stack: 执行 requestAnimationFrame
 ```
@@ -134,11 +186,13 @@ function blockRender() {
 $$Q = \langle t_1, t_2, \ldots, t_n \rangle, \quad n \geq 0$$
 
 其中每个任务 $t_i = (f_i, c_i, p_i)$，包含：
+
 - $f_i$：任务函数
 - $c_i$：执行上下文
 - $p_i$：优先级
 
 **定义 2.2 (队列操作)**
+
 - 入队：$\text{enqueue}(Q, t) = Q \frown \langle t \rangle$
 - 出队：$\text{dequeue}(\langle t \rangle \frown Q) = (t, Q)$
 - 队首：$\text{head}(Q) = t_1$
@@ -253,6 +307,7 @@ Promise.resolve().then(() => console.log('promise'));
 
 **定义 3.1 (Promise 状态机)**
 Promise 状态机是一个三元组 $P = (S, \Sigma, \delta)$，其中：
+
 - 状态集 $S = \{Pending, Fulfilled, Rejected\}$
 - 输入字母表 $\Sigma = \{resolve(v), reject(r), then(onF, onR), catch(onR)\}$
 - 转移函数 $\delta: S \times \Sigma \rightarrow S$
@@ -278,20 +333,20 @@ sequenceDiagram
     participant Handler as 处理器
 
     Note over P1,P3: 创建 Promise 链
-    
+
     Handler->>P1: resolve(value1)
     P1->>P1: 状态: Pending → Fulfilled
-    
+
     P1->>P2: then(onF1) 产生 Promise 2
     Handler->>P2: onF1(value1) → value2
     P2->>P2: 状态: Pending → Fulfilled
-    
+
     P2->>P3: then(onF2) 产生 Promise 3
     Handler->>P3: onF2(value2) → value3
     P3->>P3: 状态: Pending → Fulfilled
-    
+
     Note over P1,P3: 错误处理流程
-    
+
     Handler->>P2: 假设抛出异常
     P2->>P2: 状态: Pending → Rejected
     P2->>P3: catch(onR) 产生恢复 Promise
@@ -448,10 +503,12 @@ Promise.resolve().then(() => console.log(3));
 
 **定义 4.1 (async/await 状态机)**
 async/await 可以形式化为一个**生成器状态机**，其中：
+
 - 每个 `await` 点对应一个状态
 - 状态转移由 Promise 的 resolution 触发
 
 **转换规则**：
+
 ```
 async function f() {
     const a = await expr1;  // State 0 → State 1
@@ -461,6 +518,7 @@ async function f() {
 ```
 
 等价于：
+
 ```
 function f() {
     return new Promise((resolve, reject) => {
@@ -697,6 +755,7 @@ Worker 是一个独立的执行环境，形式化为：
 $$W = (H_W, E_W, C_W, P_W)$$
 
 其中：
+
 - $H_W$：独立的堆内存（Heap）
 - $E_W$：独立的全局环境（Global Environment）
 - $C_W$：执行上下文（Execution Context）
@@ -720,22 +779,22 @@ sequenceDiagram
     Note over Main,SAB: 创建 Workers
     Main->>Worker1: new Worker('worker1.js')
     Main->>Worker2: new Worker('worker2.js')
-    
+
     Main->>Worker1: postMessage({ type: 'init', data })
     Note right of Worker1: 结构化克隆数据
     Worker1-->>Main: onmessage: 确认收到
-    
+
     Note over Main,SAB: 共享内存通信
     Main->>SAB: new SharedArrayBuffer(1024)
     Main->>Worker1: postMessage({ sab }, [sab])
     Main->>Worker2: postMessage({ sab }, [sab])
-    
+
     Worker1->>SAB: Atomics.store(sab, 0, 42)
     Worker2->>SAB: Atomics.load(sab, 0) // 42
-    
+
     Worker1->>Main: postMessage({ result })
     Worker2->>Main: postMessage({ result })
-    
+
     Main->>Worker1: terminate()
     Main->>Worker2: terminate()
 ```
@@ -761,7 +820,7 @@ interface WorkerOutput {
 // 处理消息
 parentPort?.on('message', (input: WorkerInput) => {
     const start = performance.now();
-    
+
     let result: number;
     switch (input.operation) {
         case 'sum':
@@ -773,13 +832,13 @@ parentPort?.on('message', (input: WorkerInput) => {
         default:
             throw new Error(`Unknown operation: ${input.operation}`);
     }
-    
+
     const output: WorkerOutput = {
         taskId: input.taskId,
         result,
         executionTime: performance.now() - start
     };
-    
+
     parentPort?.postMessage(output);
 });
 
@@ -807,7 +866,7 @@ class WorkerPool {
 
     private createWorker() {
         const worker = new Worker(this.workerScript);
-        
+
         worker.on('message', (result) => {
             const taskInfo = (worker as any).currentTask;
             if (taskInfo) {
@@ -844,7 +903,7 @@ class WorkerPool {
         while (this.queue.length > 0 && this.availableWorkers.size > 0) {
             const worker = this.availableWorkers.values().next().value;
             this.availableWorkers.delete(worker);
-            
+
             const { task, resolve, reject } = this.queue.shift()!;
             (worker as any).currentTask = { resolve, reject };
             worker.postMessage(task);
@@ -861,17 +920,17 @@ class WorkerPool {
 // 使用示例
 async function main() {
     const pool = new WorkerPool('./worker.js', 4);
-    
+
     const tasks = Array.from({ length: 10 }, (_, i) => ({
         taskId: i,
         data: [1, 2, 3, 4, 5],
         operation: 'sum' as const
     }));
-    
+
     const results = await Promise.all(
         tasks.map(task => pool.execute(task))
     );
-    
+
     console.log(results);
     await pool.terminate();
 }
@@ -941,6 +1000,7 @@ for (let i = 0; i < 1000; i++) {
 $$M = \langle b_0, b_1, \ldots, b_{n-1} \rangle, \quad b_i \in \{0, 1\}^8$$
 
 **定义 6.2 (内存序 - Memory Order)**
+
 - **Sequentially Consistent (SEQ_CST)**: 所有线程看到的操作顺序一致
 - **Acquire-Release**: 配对同步，保证 happens-before 关系
 - **Relaxed**: 仅保证原子性，不保证顺序
@@ -956,22 +1016,22 @@ graph TB
         A1[Write x=1<br/>SEQ_CST]
         A2[Write y=2<br/>SEQ_CST]
     end
-    
+
     subgraph "Shared Memory"
         M1[x: 0 → 1]
         M2[y: 0 → 2]
     end
-    
+
     subgraph "Thread B"
         B1[Read y<br/>SEQ_CST]
         B2[Read x<br/>SEQ_CST]
     end
-    
+
     A1 -->|happens-before| M1
     A2 -->|happens-before| M2
     M1 -->|synchronizes-with| B2
     M2 -->|synchronizes-with| B1
-    
+
     style A1 fill:#90EE90
     style A2 fill:#90EE90
     style B1 fill:#FFB6C1
@@ -988,23 +1048,23 @@ sequenceDiagram
     participant T3 as Thread 3
 
     Note over T1,T3: 初始化：counter = 0
-    
+
     T1->>Memory: Atomics.add(counter, 0, 1)
     Memory-->>T1: 返回旧值: 0
     Memory->>Memory: counter = 1
-    
+
     T2->>Memory: Atomics.add(counter, 0, 1)
     Memory-->>T2: 返回旧值: 1
     Memory->>Memory: counter = 2
-    
+
     T3->>Memory: Atomics.load(counter, 0)
     Memory-->>T3: 返回值: 2
-    
+
     Note over T1,T3: CAS 操作示例
-    
+
     T1->>Memory: Atomics.compareExchange(counter, 0, 5)
     Memory-->>T1: 返回当前值: 2（失败）
-    
+
     T2->>Memory: Atomics.compareExchange(counter, 2, 5)
     Memory-->>T2: 返回当前值: 2（成功）
     Memory->>Memory: counter = 5
@@ -1061,7 +1121,7 @@ class LockFreeQueue<T> {
         this.head = new Int32Array(this.buffer, 0, 1);
         this.tail = new Int32Array(this.buffer, 4, 1);
         this.data = new Int32Array(this.buffer, 8, capacity);
-        
+
         Atomics.store(this.head, 0, 0);
         Atomics.store(this.tail, 0, 0);
     }
@@ -1069,31 +1129,31 @@ class LockFreeQueue<T> {
     enqueue(value: number): boolean {
         const currentTail = Atomics.load(this.tail, 0);
         const nextTail = (currentTail + 1) % this.capacity;
-        
+
         // 检查队列是否已满
         if (nextTail === Atomics.load(this.head, 0)) {
             return false; // 队列已满
         }
-        
+
         // 存储数据
         Atomics.store(this.data, currentTail, value);
         // 更新 tail
         Atomics.store(this.tail, 0, nextTail);
-        
+
         return true;
     }
 
     dequeue(): number | null {
         const currentHead = Atomics.load(this.head, 0);
-        
+
         // 检查队列是否为空
         if (currentHead === Atomics.load(this.tail, 0)) {
             return null; // 队列空
         }
-        
+
         const value = Atomics.load(this.data, currentHead);
         Atomics.store(this.head, 0, (currentHead + 1) % this.capacity);
-        
+
         return value;
     }
 }
@@ -1153,34 +1213,34 @@ class ReadWriteLock {
 // 使用示例
 async function demoSharedMemory() {
     const counter = new AtomicCounter(0);
-    
+
     const workerCode = `
         const { parentPort, workerData } = require('worker_threads');
         const { buffer } = workerData;
-        
+
         const view = new Int32Array(buffer);
-        
+
         for (let i = 0; i < 1000; i++) {
             Atomics.add(view, 0, 1);
         }
-        
+
         parentPort.postMessage('done');
     `;
-    
+
     const { Worker } = require('worker_threads');
     const workers = [];
-    
+
     for (let i = 0; i < 4; i++) {
         workers.push(new Worker(workerCode, {
             eval: true,
             workerData: { buffer: counter.getBuffer() }
         }));
     }
-    
-    await Promise.all(workers.map(w => 
+
+    await Promise.all(workers.map(w =>
         new Promise(resolve => w.on('message', resolve))
     ));
-    
+
     console.log(`Final counter: ${counter.get()}`); // 4000
 }
 ```
@@ -1250,6 +1310,7 @@ const counter2 = new Int32Array(sab, 64, 1);     // 缓存行 1
 $$Race(O_1, O_2, R) \iff (O_1 \parallel O_2) \land (Access(O_1, R) \land Access(O_2, R)) \land (Write(O_1, R) \lor Write(O_2, R))$$
 
 其中：
+
 - $O_1 \parallel O_2$：操作并发执行（没有 happens-before 关系）
 - $Access(O, R)$：操作 $O$ 访问资源 $R$
 - $Write(O, R)$：操作 $O$ 写入资源 $R$
@@ -1288,7 +1349,7 @@ sequenceDiagram
     participant T2 as Thread 2
 
     Note over T1,T2: 读-改-写竞态
-    
+
     T1->>Resource: 读取值: 0
     T2->>Resource: 读取值: 0
     T1->>T1: 计算: 0 + 1 = 1
@@ -1298,7 +1359,7 @@ sequenceDiagram
     Note right of Resource: 期望: 2, 实际: 1
 
     Note over T1,T2: 检查-然后-行动竞态
-    
+
     T1->>Resource: 检查文件不存在
     T2->>Resource: 检查文件不存在
     T1->>Resource: 创建文件
@@ -1317,7 +1378,7 @@ class RaceDetector {
         timestamp: number;
         stack: string;
     }>> = new Map();
-    
+
     private locks: Map<string, Set<number>> = new Map();
 
     recordAccess(
@@ -1338,17 +1399,17 @@ class RaceDetector {
         }
 
         const history = this.accesses.get(resourceId)!;
-        
+
         // 检查与历史访问的竞态
         for (const prev of history) {
             if (prev.threadId !== threadId) {
                 // 检查是否有共同锁
                 const hasCommonLock = this.haveCommonLock(
-                    threadId, 
-                    prev.threadId, 
+                    threadId,
+                    prev.threadId,
                     resourceId
                 );
-                
+
                 if (!hasCommonLock && (prev.type === 'write' || type === 'write')) {
                     this.reportRace(resourceId, prev, access);
                 }
@@ -1356,7 +1417,7 @@ class RaceDetector {
         }
 
         history.push(access);
-        
+
         // 限制历史记录大小
         if (history.length > 1000) {
             history.shift();
@@ -1364,8 +1425,8 @@ class RaceDetector {
     }
 
     private haveCommonLock(
-        thread1: number, 
-        thread2: number, 
+        thread1: number,
+        thread2: number,
         resource: string
     ): boolean {
         // 简化实现：检查资源是否被锁定
@@ -1454,7 +1515,7 @@ class DeadlockDetector {
             this.waitFor.set(threadId, new Set());
         }
         this.waitFor.get(threadId)!.add(resourceHeldBy);
-        
+
         if (this.detectCycle(threadId)) {
             throw new Error(`死锁检测: 线程 ${threadId} 和 ${resourceHeldBy}`);
         }
@@ -1501,7 +1562,7 @@ async function updateUser(userId, data) {
 async function updateUserFixed(userId, data) {
     const user = await db.getUser(userId);
     const updated = await db.updateUser(
-        userId, 
+        userId,
         { ...user, ...data },
         { version: user.version } // 条件更新
     );
@@ -1564,7 +1625,7 @@ class Singleton {
 class SingletonFixed {
     static instance = null;
     static lock = new Mutex();
-    
+
     static async getInstance() {
         if (!SingletonFixed.instance) {
             await SingletonFixed.lock.acquire();
@@ -1799,26 +1860,26 @@ class CyclicBarrier {
 
     async await(): Promise<number> {
         const gen = this.generation;
-        
+
         return new Promise(resolve => {
             this.count--;
-            
+
             if (this.count === 0) {
                 // 最后一个到达的线程
                 this.generation++;
                 this.count = this.parties;
-                
+
                 // 执行屏障动作
                 if (this.barrierAction) {
                     this.barrierAction();
                 }
-                
+
                 // 唤醒所有等待的线程
                 while (this.waiting.length > 0) {
                     const waiter = this.waiting.shift()!;
                     waiter.resolve();
                 }
-                
+
                 resolve(0); // 返回 0 表示触发屏障
             } else {
                 // 等待其他线程
@@ -1877,18 +1938,18 @@ sequenceDiagram
 
     T1->>Barrier: await()
     Note right of Barrier: count=2, T1 等待
-    
+
     T2->>Barrier: await()
     Note right of Barrier: count=1, T1,T2 等待
-    
+
     T3->>Barrier: await()
     Note right of Barrier: count=0, 触发屏障动作
-    
+
     Barrier->>Barrier: 执行 barrierAction()
     Barrier->>T1: 唤醒 (return 0)
     Barrier->>T2: 唤醒 (return 2)
     Barrier->>T3: 唤醒 (return 1)
-    
+
     Note over T1,T3: 所有线程继续执行
 ```
 
@@ -1960,11 +2021,13 @@ async function safe() {
 $$Backpressure = f(P_{rate}, C_{rate}, B_{size})$$
 
 其中：
+
 - $P_{rate}$：生产者速率
 - $C_{rate}$：消费者速率
 - $B_{size}$：缓冲区大小
 
 **状态机**：
+
 - **Flowing**：消费者 > 生产者，缓冲区空
 - **Buffering**：生产者 > 消费者，缓冲区填充
 - **Paused**：缓冲区满，生产者暂停
@@ -1980,7 +2043,7 @@ sequenceDiagram
     participant Sink as 数据汇
 
     Note over Source,Sink: 初始状态
-    
+
     loop 数据生产
         Source->>Buffer: push(data)
         alt 缓冲区 < highWaterMark
@@ -1994,7 +2057,7 @@ sequenceDiagram
     loop 数据消费
         Sink->>Buffer: read()
         Buffer-->>Sink: data
-        
+
         alt 缓冲区 <= lowWaterMark
             Buffer->>Source: 'drain' 事件
             Note right of Source: 生产者恢复
@@ -2017,10 +2080,10 @@ class NumberSource extends Readable {
     private max: number;
 
     constructor(max: number, options?: any) {
-        super({ 
+        super({
             highWaterMark: 16, // 内部缓冲区大小
             objectMode: true,
-            ...options 
+            ...options
         });
         this.max = max;
     }
@@ -2029,10 +2092,10 @@ class NumberSource extends Readable {
         // _read 会被反复调用，直到 push 返回 false
         while (this.current < this.max) {
             const chunk = { value: this.current++, timestamp: Date.now() };
-            
+
             // push 返回 false 表示缓冲区已满
             const canContinue = this.push(chunk);
-            
+
             if (!canContinue) {
                 console.log(`缓冲区满，暂停在 ${this.current}`);
                 break;
@@ -2062,7 +2125,7 @@ class SlowTransform extends Transform {
                 processed: true,
                 processTime: Date.now()
             };
-            
+
             // callback(err, data)
             // 如果 push 返回 false，callback 会等待 'drain' 事件
             callback(null, transformed);
@@ -2075,17 +2138,17 @@ class SlowSink extends Writable {
     private delay: number;
 
     constructor(delay: number, options?: any) {
-        super({ 
+        super({
             objectMode: true,
             highWaterMark: 4, // 较小的缓冲区制造背压
-            ...options 
+            ...options
         });
         this.delay = delay;
     }
 
     _write(chunk: any, encoding: string, callback: Function): void {
         console.log(`处理: ${chunk.value}, 延迟: ${this.delay}ms`);
-        
+
         setTimeout(() => {
             callback(); // 完成写入
         }, this.delay);
@@ -2150,22 +2213,22 @@ async function demoWebStreams() {
                     clearInterval(interval);
                     return;
                 }
-                
+
                 // desiredSize 表示队列剩余空间
                 const desiredSize = controller.desiredSize;
                 console.log(`desiredSize: ${desiredSize}`);
-                
+
                 if (desiredSize !== null && desiredSize > 0) {
                     controller.enqueue({ data: count++ });
                 }
             }, 100);
         },
-        
+
         pull(controller) {
             // 消费者拉取数据时调用
             console.log('Pull 被调用');
         },
-        
+
         cancel(reason) {
             console.log('流被取消:', reason);
         }
@@ -2268,6 +2331,7 @@ readableObj.push({ foo: 'bar' }); // 正确
 $$S_{latency}(s) = \frac{1}{(1-p) + \frac{p}{s}}$$
 
 其中：
+
 - $p$：可并行化的代码比例
 - $s$：处理器数量
 
@@ -2285,7 +2349,7 @@ graph TB
         D[内存优化<br/>减少 GC 压力]
         E[I/O 优化<br/>批量 vs 流式]
     end
-    
+
     A --> B --> C --> D --> E
 ```
 
@@ -2332,11 +2396,11 @@ class Batcher<T, R> {
         }
 
         const currentBatch = this.batch.splice(0, this.batch.length);
-        
+
         try {
             const items = currentBatch.map(b => b.item);
             const results = await this.processor(items);
-            
+
             currentBatch.forEach((b, i) => {
                 b.resolve(results[i]);
             });
@@ -2424,7 +2488,7 @@ class LoadBalancedWorkerPool {
             // 选择负载最低的 worker
             const workerInfo = this.workers
                 .filter(w => w.queue.length === 0)
-                .sort((a, b) => a.load - b.load)[0] || 
+                .sort((a, b) => a.load - b.load)[0] ||
                 this.workers.sort((a, b) => a.queue.length - b.queue.length)[0];
 
             const doWork = () => {
@@ -2450,12 +2514,12 @@ class LoadBalancedWorkerPool {
 function zeroCopyTransfer() {
     const sab = new SharedArrayBuffer(1024 * 1024);
     const view = new Uint8Array(sab);
-    
+
     // 填充数据
     for (let i = 0; i < view.length; i++) {
         view[i] = i % 256;
     }
-    
+
     // 传递给 worker（零拷贝）
     const worker = new Worker('./processor.js');
     worker.postMessage({ buffer: sab }, [sab]);
@@ -2589,18 +2653,18 @@ async function overParallel(items) {
 async function controlledParallel(items, concurrency = 10) {
     const results = [];
     const executing = [];
-    
+
     for (const item of items) {
         const p = process(item).then(result => {
             results.push(result);
         });
         executing.push(p);
-        
+
         if (executing.length >= concurrency) {
             await Promise.race(executing);
         }
     }
-    
+
     await Promise.all(executing);
     return results;
 }
@@ -2687,5 +2751,5 @@ async function getDataFixed() {
 
 ---
 
-*文档版本: 1.0*  
+*文档版本: 1.0*
 *最后更新: 2026-04-08*

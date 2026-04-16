@@ -6,16 +6,85 @@
 
 ## 目录
 
-1. [区块链基础理论](#1-区块链基础理论)
-2. [以太坊智能合约形式化](#2-以太坊智能合约形式化)
-3. [Ethers.js/Web3.js 架构](#3-ethersjsweb3js-架构)
-4. [去中心化身份（DID）理论](#4-去中心化身份did理论)
-5. [零知识证明（ZKP）基础](#5-零知识证明zkp基础)
-6. [DeFi 协议形式化](#6-defi-协议形式化)
-7. [NFT 标准和元数据](#7-nft-标准和元数据)
-8. [Layer 2 扩展方案](#8-layer-2-扩展方案)
-9. [跨链互操作性](#9-跨链互操作性)
-10. [Web3 安全](#10-web3-安全)
+- [区块链与 Web3 理论基础](#区块链与-web3-理论基础)
+  - [目录](#目录)
+  - [1. 区块链基础理论](#1-区块链基础理论)
+    - [1.1 理论解释](#11-理论解释)
+    - [1.2 形式化定义](#12-形式化定义)
+      - [1.2.1 区块结构形式化](#121-区块结构形式化)
+      - [1.2.2 哈希链形式化](#122-哈希链形式化)
+      - [1.2.3 默克尔树（Merkle Tree）](#123-默克尔树merkle-tree)
+    - [1.3 共识机制](#13-共识机制)
+      - [1.3.1 工作量证明（PoW）](#131-工作量证明pow)
+      - [1.3.2 权益证明（PoS）](#132-权益证明pos)
+      - [1.3.3 拜占庭容错（BFT）](#133-拜占庭容错bft)
+    - [1.4 代码示例](#14-代码示例)
+    - [1.5 安全注意事项](#15-安全注意事项)
+  - [2. 以太坊智能合约形式化](#2-以太坊智能合约形式化)
+    - [2.1 理论解释](#21-理论解释)
+    - [2.2 形式化定义](#22-形式化定义)
+      - [2.2.1 以太坊状态机](#221-以太坊状态机)
+      - [2.2.2 账户状态](#222-账户状态)
+      - [2.2.3 Gas 机制](#223-gas-机制)
+      - [2.2.4 EVM 执行模型](#224-evm-执行模型)
+    - [2.3 Solidity 代码示例](#23-solidity-代码示例)
+    - [2.4 Vyper 示例](#24-vyper-示例)
+    - [2.5 安全注意事项](#25-安全注意事项)
+  - [3. Ethers.js/Web3.js 架构](#3-ethersjsweb3js-架构)
+    - [3.1 理论解释](#31-理论解释)
+    - [3.2 架构形式化](#32-架构形式化)
+      - [3.2.1 提供商（Provider）抽象](#321-提供商provider抽象)
+      - [3.2.2 签名者（Signer）抽象](#322-签名者signer抽象)
+    - [3.3 Ethers.js v6 代码示例](#33-ethersjs-v6-代码示例)
+    - [3.4 Web3.js v4 代码示例](#34-web3js-v4-代码示例)
+    - [3.5 架构对比](#35-架构对比)
+    - [3.6 安全注意事项](#36-安全注意事项)
+  - [5. 零知识证明（ZKP）基础](#5-零知识证明zkp基础)
+    - [5.1 理论解释](#51-理论解释)
+    - [5.2 形式化定义](#52-形式化定义)
+    - [5.3 代码示例](#53-代码示例)
+    - [5.4 安全注意事项](#54-安全注意事项)
+  - [6. DeFi 协议形式化](#6-defi-协议形式化)
+    - [6.1 理论解释](#61-理论解释)
+    - [6.2 形式化定义](#62-形式化定义)
+      - [6.2.1 恒定乘积 AMM（Uniswap V2）](#621-恒定乘积-ammuniswap-v2)
+      - [6.2.2 借贷协议健康因子](#622-借贷协议健康因子)
+    - [6.3 代码示例](#63-代码示例)
+    - [6.4 安全注意事项](#64-安全注意事项)
+  - [7. NFT 标准和元数据](#7-nft-标准和元数据)
+    - [7.1 理论解释](#71-理论解释)
+    - [7.2 形式化定义](#72-形式化定义)
+    - [7.3 代码示例](#73-代码示例)
+    - [7.4 安全注意事项](#74-安全注意事项)
+  - [8. Layer 2 扩展方案](#8-layer-2-扩展方案)
+    - [8.1 理论解释](#81-理论解释)
+    - [8.2 形式化定义](#82-形式化定义)
+    - [8.3 代码示例](#83-代码示例)
+    - [8.4 安全注意事项](#84-安全注意事项)
+  - [9. 跨链互操作性](#9-跨链互操作性)
+    - [9.1 理论解释](#91-理论解释)
+    - [9.2 形式化定义](#92-形式化定义)
+    - [9.3 代码示例](#93-代码示例)
+    - [9.4 安全注意事项](#94-安全注意事项)
+  - [10. Web3 安全](#10-web3-安全)
+    - [10.1 重入攻击（Reentrancy）](#101-重入攻击reentrancy)
+      - [理论解释](#理论解释)
+      - [形式化定义](#形式化定义)
+      - [攻击示例](#攻击示例)
+      - [安全修复](#安全修复)
+    - [10.2 闪电贷攻击](#102-闪电贷攻击)
+      - [理论解释](#理论解释-1)
+      - [攻击模式](#攻击模式)
+      - [防御措施](#防御措施)
+    - [10.3 前端攻击（MEV / Sandwich Attack）](#103-前端攻击mev--sandwich-attack)
+      - [理论解释](#理论解释-2)
+      - [三明治攻击](#三明治攻击)
+      - [防御措施](#防御措施-1)
+    - [10.4 智能合约安全检查清单](#104-智能合约安全检查清单)
+  - [附录：参考资源](#附录参考资源)
+    - [文档与标准](#文档与标准)
+    - [安全资源](#安全资源)
+    - [开发工具](#开发工具)
 
 ---
 
@@ -23,7 +92,8 @@
 
 ### 1.1 理论解释
 
-区块链是一种分布式账本技术，通过密码学方法将数据区块按时间顺序链接形成链式结构。核心特性包括：**去中心化**、**不可篡改**、**透明性**和**共识机制**。
+区块链是一种分布式账本技术，通过密码学方法将数据区块按时间顺序链接形成链式结构。
+核心特性包括：**去中心化**、**不可篡改**、**透明性**和**共识机制**。
 
 ### 1.2 形式化定义
 
@@ -36,6 +106,7 @@ B = (H_header, T_txs, H_prev, N_nonce)
 ```
 
 其中：
+
 - H_header：区块头哈希
 - T_txs：交易集合（默克尔树根）
 - H_prev：前一区块哈希
@@ -209,6 +280,7 @@ class MerkleTree {
 ### 2.1 理论解释
 
 智能合约是部署在区块链上的自执行程序，具有以下特性：
+
 - **确定性**：相同输入产生相同输出
 - **不可变性**：部署后代码不可更改
 - **透明性**：代码和执行结果公开可查
@@ -225,6 +297,7 @@ class MerkleTree {
 ```
 
 其中：
+
 - σ_t：时刻 t 的世界状态
 - T：交易
 - Υ：状态转换函数
@@ -255,6 +328,7 @@ EVM 是堆栈机，执行过程：
 ```
 
 其中：
+
 - μ：机器状态（PC, memory, stack）
 - A：累计子状态（自毁集合、日志、退款）
 - I：执行环境
@@ -270,40 +344,40 @@ pragma solidity ^0.8.19;
 contract FormalizedStorage {
     // 不变式：value 始终非负
     uint256 private value;
-    
+
     // 权限控制
     address public owner;
-    
+
     // 事件声明
     event ValueChanged(uint256 oldValue, uint256 newValue);
-    
+
     // 修饰器
     modifier onlyOwner() {
         require(msg.sender == owner, "Not authorized");
         _;
     }
-    
+
     // 前置条件检查
     modifier validValue(uint256 _value) {
         require(_value > 0, "Value must be positive");
         _;
     }
-    
+
     constructor() {
         owner = msg.sender;
     }
-    
+
     // 后置条件：value 被更新
-    function setValue(uint256 _value) 
-        external 
-        onlyOwner 
-        validValue(_value) 
+    function setValue(uint256 _value)
+        external
+        onlyOwner
+        validValue(_value)
     {
         uint256 oldValue = value;
         value = _value;
         emit ValueChanged(oldValue, _value);
     }
-    
+
     function getValue() external view returns (uint256) {
         return value;
     }
@@ -313,36 +387,36 @@ contract FormalizedStorage {
 contract FormalToken {
     mapping(address => uint256) private _balances;
     mapping(address => mapping(address => uint256)) private _allowances;
-    
+
     uint256 private _totalSupply;
     string private _name;
     string private _symbol;
-    
+
     // 安全数学运算
     function _add(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c = a + b;
         require(c >= a, "SafeMath: addition overflow");
         return c;
     }
-    
+
     function _sub(uint256 a, uint256 b) internal pure returns (uint256) {
         require(b <= a, "SafeMath: subtraction overflow");
         return a - b;
     }
-    
+
     // 转账函数（含前置条件检查）
-    function transfer(address to, uint256 amount) 
-        external 
-        returns (bool) 
+    function transfer(address to, uint256 amount)
+        external
+        returns (bool)
     {
         // 前置条件
         require(to != address(0), "Transfer to zero address");
         require(_balances[msg.sender] >= amount, "Insufficient balance");
-        
+
         // 状态更新
         _balances[msg.sender] = _sub(_balances[msg.sender], amount);
         _balances[to] = _add(_balances[to], amount);
-        
+
         return true;
     }
 }
@@ -379,11 +453,11 @@ def transfer(_to: address, _value: uint256) -> bool:
     # 前置条件检查（Vyper 内置溢出检查）
     assert _to != empty(address), "Invalid address"
     assert self.balanceOf[msg.sender] >= _value, "Insufficient balance"
-    
+
     # 状态更新
     self.balanceOf[msg.sender] -= _value
     self.balanceOf[_to] += _value
-    
+
     log Transfer(msg.sender, _to, _value)
     return True
 ```
@@ -404,6 +478,7 @@ def transfer(_to: address, _value: uint256) -> bool:
 ### 3.1 理论解释
 
 Web3 库是与以太坊区块链交互的 JavaScript/TypeScript SDK，提供：
+
 - 钱包管理
 - 合约交互
 - 事件监听
@@ -667,18 +742,18 @@ contract ConstantProductAMM {
     uint256 public reserve1;
     uint256 public constant FEE = 3;
     uint256 public constant FEE_DENOMINATOR = 1000;
-    
-    function swap(uint256 amountIn, bool zeroForOne) 
-        external returns (uint256 amountOut) 
+
+    function swap(uint256 amountIn, bool zeroForOne)
+        external returns (uint256 amountOut)
     {
         (uint256 reserveIn, uint256 reserveOut) = zeroForOne
             ? (reserve0, reserve1)
             : (reserve1, reserve0);
-        
+
         uint256 amountInWithFee = amountIn * (FEE_DENOMINATOR - FEE);
-        amountOut = (amountInWithFee * reserveOut) / 
+        amountOut = (amountInWithFee * reserveOut) /
                     (reserveIn * FEE_DENOMINATOR + amountInWithFee);
-        
+
         if (zeroForOne) {
             reserve0 += amountIn;
             reserve1 -= amountOut;
@@ -708,6 +783,7 @@ contract ConstantProductAMM {
 非同质化代币（NFT）代表独特的数字资产，每个代币都有唯一的标识符和元数据。
 
 主要标准：
+
 - ERC-721：唯一性 NFT 标准
 - ERC-1155：多代币标准（支持同质化和非同质化）
 - ERC-4907：可租赁 NFT
@@ -726,8 +802,8 @@ owner: TokenId -> Address
 // ERC-721 标准实现
 contract MyNFT is ERC721 {
     uint256 private _tokenIdCounter;
-    mapping(uint256 => string) private _tokenURIs;
-    
+    mapping(uint256 => string) private_tokenURIs;
+
     function mint(address to, string memory uri) external returns (uint256) {
         uint256 tokenId = _tokenIdCounter++;
         _safeMint(to, tokenId);
@@ -755,6 +831,7 @@ contract MyNFT is ERC721 {
 Layer 2 解决方案在以太坊主链之外处理交易，然后将结果提交到主链，提高吞吐量和降低成本。
 
 主要类型：
+
 - Optimistic Rollups：乐观假设交易有效，使用欺诈证明
 - ZK Rollups：使用有效性证明验证交易
 - 状态通道：链下双向支付通道
@@ -766,6 +843,7 @@ Optimistic Rollup：
 
 `
 状态根提交：
+
 - 定序器批量提交交易和状态根
 - 挑战期：7 天
 - 欺诈证明：在挑战期内提交
@@ -783,13 +861,13 @@ Verify(VerificationKey, PublicInputs, π) = 1/0
 
 ### 8.3 代码示例
 
-`	ypescript
+` ypescript
 // 与 Layer 2 交互
 import { ethers } from 'ethers';
 import { CrossChainMessenger, MessageStatus } from '@eth-optimism/sdk';
 
-const l1Provider = new ethers.JsonRpcProvider('https://eth.llamarpc.com');
-const l2Provider = new ethers.JsonRpcProvider('https://mainnet.optimism.io');
+const l1Provider = new ethers.JsonRpcProvider('<https://eth.llamarpc.com>');
+const l2Provider = new ethers.JsonRpcProvider('<https://mainnet.optimism.io>');
 
 const messenger = new CrossChainMessenger({
   l1ChainId: 1,
@@ -828,6 +906,7 @@ await messenger.waitForMessageStatus(
 跨链互操作性允许不同区块链之间传输资产和数据。
 
 主要方案：
+
 - 哈希时间锁定合约（HTLC）
 - 中继链（Polkadot, Cosmos IBC）
 - 多签桥接
@@ -849,6 +928,7 @@ Alice (链 A)                    Bob (链 B)
    |<-- 使用 s 获得 x -----------|
 
 约束：
+
 - t2 < t1（确保 Bob 有足够时间响应）
 - H = hash(s)
 - 超时后资金可退回
@@ -869,9 +949,9 @@ contract HTLC {
         bool refunded;
         bytes32 preimage;
     }
-    
+
     mapping(bytes32 => Swap) public swaps;
-    
+
     function createSwap(
         bytes32 _swapId,
         address _receiver,
@@ -880,7 +960,7 @@ contract HTLC {
     ) external payable {
         require(msg.value > 0, 'Invalid amount');
         require(_timelock > block.timestamp, 'Invalid timelock');
-        
+
         swaps[_swapId] = Swap({
             sender: msg.sender,
             receiver: _receiver,
@@ -892,26 +972,26 @@ contract HTLC {
             preimage: 0
         });
     }
-    
+
     function withdraw(bytes32 _swapId, bytes32 _preimage) external {
         Swap storage swap = swaps[_swapId];
         require(swap.receiver == msg.sender, 'Not receiver');
         require(!swap.withdrawn, 'Already withdrawn');
         require(!swap.refunded, 'Already refunded');
         require(keccak256(abi.encodePacked(_preimage)) == swap.hashlock, 'Invalid preimage');
-        
+
         swap.withdrawn = true;
         swap.preimage = _preimage;
         payable(msg.sender).transfer(swap.amount);
     }
-    
+
     function refund(bytes32 _swapId) external {
         Swap storage swap = swaps[_swapId];
         require(swap.sender == msg.sender, 'Not sender');
         require(!swap.withdrawn, 'Already withdrawn');
         require(!swap.refunded, 'Already refunded');
         require(block.timestamp >= swap.timelock, 'Timelock not expired');
-        
+
         swap.refunded = true;
         payable(msg.sender).transfer(swap.amount);
     }
@@ -942,6 +1022,7 @@ contract HTLC {
 
 `
 攻击流程：
+
 1. 攻击者合约调用目标合约的 withdraw()
 2. 目标合约发送 ETH 给攻击者
 3. 攻击者的 receive() fallback 再次调用 withdraw()
@@ -954,20 +1035,20 @@ contract HTLC {
 // 存在漏洞的合约
 contract VulnerableBank {
     mapping(address => uint256) public balances;
-    
+
     function deposit() external payable {
         balances[msg.sender] += msg.value;
     }
-    
+
     // 漏洞：先转账，后更新状态
     function withdraw() external {
         uint256 amount = balances[msg.sender];
         require(amount > 0, 'No balance');
-        
+
         // 外部调用（危险！）
         (bool success, ) = msg.sender.call{value: amount}('');
         require(success, 'Transfer failed');
-        
+
         // 状态更新在外部调用之后
         balances[msg.sender] = 0;
     }
@@ -976,16 +1057,16 @@ contract VulnerableBank {
 // 攻击合约
 contract Attacker {
     VulnerableBank public target;
-    
+
     constructor(address _target) {
         target = VulnerableBank(_target);
     }
-    
+
     function attack() external payable {
         target.deposit{value: msg.value}();
         target.withdraw();
     }
-    
+
     receive() external payable {
         if (address(target).balance >= msg.value) {
             target.withdraw(); // 递归调用
@@ -1001,21 +1082,21 @@ contract Attacker {
 contract SecureBank {
     mapping(address => uint256) public balances;
     bool private locked; // 重入锁
-    
+
     modifier nonReentrant() {
         require(!locked, 'Reentrant call');
         locked = true;
         _;
         locked = false;
     }
-    
+
     function withdraw() external nonReentrant {
         uint256 amount = balances[msg.sender];
         require(amount > 0, 'No balance');
-        
+
         // Effects：先更新状态
         balances[msg.sender] = 0;
-        
+
         // Interactions：后进行外部调用
         (bool success, ) = msg.sender.call{value: amount}('');
         require(success, 'Transfer failed');
@@ -1034,6 +1115,7 @@ contract SecureBank {
 #### 攻击模式
 
 `
+
 1. 闪电贷借入大量资金
 2. 操纵 DEX 价格（大额交易）
 3. 利用被操纵价格从借贷协议获利
@@ -1047,7 +1129,7 @@ contract SecureBank {
 // 使用去中心化预言机（Chainlink）
 contract SecurePriceOracle {
     AggregatorV3Interface internal priceFeed;
-    
+
     function getPrice() public view returns (uint256) {
         (
             uint80 roundID,
@@ -1056,17 +1138,17 @@ contract SecurePriceOracle {
             uint256 timeStamp,
             uint80 answeredInRound
         ) = priceFeed.latestRoundData();
-        
+
         require(price > 0, 'Invalid price');
         require(timeStamp > 0, 'Round not complete');
         require(answeredInRound >= roundID, 'Stale price');
-        
+
         // 检查价格偏差
         require(
             block.timestamp - timeStamp < 1 hours,
             'Price too old'
         );
-        
+
         return uint256(price);
     }
 }
@@ -1085,6 +1167,7 @@ contract SecurePriceOracle {
 `
 用户想买入代币 A，滑点 1%
 攻击者看到这笔交易在 mempool 中：
+
 1. 攻击者前置买入（推高价格）
 2. 用户交易执行（以更高价格买入）
 3. 攻击者后置卖出（获利）
@@ -1092,7 +1175,7 @@ contract SecurePriceOracle {
 
 #### 防御措施
 
-`	ypescript
+` ypescript
 // 限制滑点
 const tx = await router.swapExactTokensForTokens(
   amountIn,
@@ -1174,17 +1257,20 @@ const bundle = await flashbotsProvider.sendBundle(
 ## 附录：参考资源
 
 ### 文档与标准
+
 - [Ethereum Yellow Paper](https://ethereum.github.io/yellowpaper/paper.pdf)
 - [Solidity Documentation](https://docs.soliditylang.org/)
 - [EIP 标准](https://eips.ethereum.org/)
 - [W3C DID 标准](https://www.w3.org/TR/did-core/)
 
 ### 安全资源
+
 - [Smart Contract Weakness Classification](https://swcregistry.io/)
 - [Consensys 安全最佳实践](https://consensys.github.io/smart-contract-best-practices/)
 - [OpenZeppelin 安全指南](https://docs.openzeppelin.com/)
 
 ### 开发工具
+
 - Hardhat / Foundry
 - Ethers.js / Web3.js
 - Slither (静态分析)
@@ -1194,4 +1280,3 @@ const bundle = await flashbotsProvider.sendBundle(
 
 *文档版本: 1.0*
 *最后更新: 2026-04-08*
-

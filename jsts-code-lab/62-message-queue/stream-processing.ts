@@ -102,6 +102,13 @@ export class MessageStream {
   }
 
   /**
+   * 获取指定 ID 的条目
+   */
+  getEntry(id: string): StreamEntry | undefined {
+    return this.messages.find(m => m.id === id);
+  }
+
+  /**
    * 反向读取（从最新开始）
    */
   xrevrange(end: string, count: number = 10): StreamEntry[] {
@@ -339,7 +346,7 @@ export class StreamProcessor {
         pending.deliveryTime = now;
         pending.deliveryCount++;
 
-        const entry = messageStream.read(id, 1)[0];
+        const entry = messageStream.getEntry(id);
         if (entry) {
           result.push(entry);
         }

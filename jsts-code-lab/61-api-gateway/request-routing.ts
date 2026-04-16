@@ -57,7 +57,7 @@ export class PathMatcher {
     
     // 转义特殊字符
     let regexPattern = pattern
-      .replace(/[.+^${}()|[\]\\]/g, '\\$&');
+      .replace(/[.*+^${}()|[\]\\:]/g, '\\$&');
 
     // 处理命名参数 :param
     regexPattern = regexPattern.replace(/\\:([^\/\\]+)/g, (_, paramName) => {

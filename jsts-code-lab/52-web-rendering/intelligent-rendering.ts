@@ -151,14 +151,14 @@ export class ProgressiveHydrationScheduler {
     this.queue.sort((a, b) => a.priority - b.priority);
     
     if (!this.isProcessing) {
-      this.processQueue();
+      this.isProcessing = true;
+      Promise.resolve().then(() => this.processQueue());
     }
   }
   
   private async processQueue(): Promise<void> {
-    this.isProcessing = true;
-    
     while (this.queue.length > 0) {
+      this.queue.sort((a, b) => a.priority - b.priority);
       const task = this.queue.shift()!;
       
       // 使用 requestIdleCallback 或 setTimeout 让出主线程

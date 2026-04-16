@@ -301,7 +301,7 @@ export class DynamicOptimizationEngine {
       const metrics = getMetrics();
       this.evaluateAndOptimize(metrics);
 
-      setTimeout(check, 5000); // 每5秒检查一次
+      setTimeout(check, 10); // 每10毫秒检查一次
     };
 
     check();

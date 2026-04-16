@@ -364,7 +364,7 @@ export class SmartContract {
 
   private async waitForReceipt(txHash: string): Promise<TransactionReceipt> {
     // 模拟等待交易确认
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 0));
     
     return {
       transactionHash: txHash,
@@ -514,7 +514,7 @@ export class TransactionManager {
     const maxAttempts = 30;
     
     while (attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 0));
       
       // 模拟交易确认
       if (attempts > 2) {

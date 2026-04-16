@@ -162,7 +162,7 @@ export class AISDK {
     };
   }
 
-  private async simulateDelay(ms = 500): Promise<void> {
+  private async simulateDelay(ms = 0): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 

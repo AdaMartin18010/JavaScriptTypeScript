@@ -6,16 +6,61 @@
 
 ## 目录
 
-1. [函数式编程的数学基础（Lambda演算）](#1-函数式编程的数学基础lambda演算)
-2. [纯函数和引用透明性](#2-纯函数和引用透明性)
-3. [不可变数据结构的理论和实现](#3-不可变数据结构的理论和实现)
-4. [高阶函数和函数组合](#4-高阶函数和函数组合)
-5. [函子（Functor）、应用函子（Applicative）、单子（Monad）](#5-函子functor应用函子applicative单子monad)
-6. [惰性求值和流](#6-惰性求值和流)
-7. [尾递归优化](#7-尾递归优化)
-8. [函数式错误处理（Maybe、Either）](#8-函数式错误处理maybeeither)
-9. [响应式编程（FRP）理论](#9-响应式编程frp理论)
-10. [fp-ts、Ramda、Lodash/fp 的对比](#10-fp-tsramdalodashfp-的对比)
+- [函数式编程理论 (Functional Programming Theory)](#函数式编程理论-functional-programming-theory)
+  - [目录](#目录)
+  - [1. 函数式编程的数学基础（Lambda演算）](#1-函数式编程的数学基础lambda演算)
+    - [1.1 理论解释](#11-理论解释)
+    - [1.2 数学定义](#12-数学定义)
+    - [1.3 Church 编码](#13-church-编码)
+    - [1.4 TypeScript 实现](#14-typescript-实现)
+    - [1.5 实际应用](#15-实际应用)
+  - [2. 纯函数和引用透明性](#2-纯函数和引用透明性)
+    - [2.1 理论解释](#21-理论解释)
+    - [2.2 数学定义](#22-数学定义)
+    - [2.3 范畴论语境](#23-范畴论语境)
+    - [2.4 TypeScript 实现](#24-typescript-实现)
+    - [2.5 实际应用](#25-实际应用)
+  - [3. 不可变数据结构的理论和实现](#3-不可变数据结构的理论和实现)
+    - [3.1 理论解释](#31-理论解释)
+    - [3.2 数学定义](#32-数学定义)
+    - [3.3 持久化数据结构理论](#33-持久化数据结构理论)
+    - [3.4 TypeScript 实现](#34-typescript-实现)
+    - [3.5 实际应用](#35-实际应用)
+  - [4. 高阶函数和函数组合](#4-高阶函数和函数组合)
+    - [4.1 理论解释](#41-理论解释)
+    - [4.2 数学定义](#42-数学定义)
+    - [4.3 范畴论语境](#43-范畴论语境)
+    - [4.4 TypeScript 实现](#44-typescript-实现)
+    - [4.5 实际应用](#45-实际应用)
+  - [5. 函子（Functor）、应用函子（Applicative）、单子（Monad）](#5-函子functor应用函子applicative单子monad)
+    - [5.1 理论解释](#51-理论解释)
+    - [5.2 数学定义](#52-数学定义)
+    - [5.3 TypeScript 实现](#53-typescript-实现)
+    - [5.4 实际应用](#54-实际应用)
+  - [6. 惰性求值和流](#6-惰性求值和流)
+    - [6.1 理论解释](#61-理论解释)
+    - [6.2 TypeScript 实现](#62-typescript-实现)
+  - [7. 尾递归优化](#7-尾递归优化)
+    - [7.1 理论解释](#71-理论解释)
+    - [7.2 数学定义](#72-数学定义)
+    - [7.3 TypeScript 实现](#73-typescript-实现)
+    - [7.4 实际应用](#74-实际应用)
+  - [8. 函数式错误处理（Maybe、Either）](#8-函数式错误处理maybeeither)
+    - [8.1 理论解释](#81-理论解释)
+    - [8.2 TypeScript 实现](#82-typescript-实现)
+    - [8.3 实际应用](#83-实际应用)
+  - [9. 响应式编程（FRP）理论](#9-响应式编程frp理论)
+    - [9.1 理论解释](#91-理论解释)
+    - [9.2 TypeScript 实现](#92-typescript-实现)
+    - [9.3 实际应用](#93-实际应用)
+  - [10. fp-ts、Ramda、Lodash/fp 的对比](#10-fp-tsramdalodashfp-的对比)
+    - [10.1 库概述](#101-库概述)
+    - [10.2 fp-ts 示例](#102-fp-ts-示例)
+    - [10.3 Ramda 示例](#103-ramda-示例)
+    - [10.4 Lodash/fp 示例](#104-lodashfp-示例)
+    - [10.5 对比总结](#105-对比总结)
+  - [总结](#总结)
+  - [参考资源](#参考资源)
 
 ---
 
@@ -23,7 +68,8 @@
 
 ### 1.1 理论解释
 
-Lambda演算（Lambda Calculus）是由数学家 Alonzo Church 于 1930 年代提出的一种形式化系统，它是函数式编程的理论基础。Lambda演算极其精简，仅包含三个基本元素，却能表达所有可计算函数。
+Lambda演算（Lambda Calculus）是由数学家 Alonzo Church 于 1930 年代提出的一种形式化系统，它是函数式编程的理论基础。
+Lambda演算极其精简，仅包含三个基本元素，却能表达所有可计算函数。
 
 ### 1.2 数学定义
 
@@ -33,7 +79,7 @@ Lambda演算的核心语法（BNF表示）：
 <expression> ::= <variable>
                | <function>
                | <application>
-               
+
 <function>   ::= λ<variable>.<expression>
 
 <application> ::= <expression> <expression>
@@ -42,16 +88,19 @@ Lambda演算的核心语法（BNF表示）：
 **转换规则（Reduction Rules）：**
 
 1. **α-转换（Alpha Conversion）** - 变量重命名：
+
    ```
    λx.M ≡ λy.M[y/x]   (y 不在 M 的自由变量中)
    ```
 
 2. **β-规约（Beta Reduction）** - 函数应用：
+
    ```
    (λx.M) N → M[N/x]
    ```
 
 3. **η-转换（Eta Conversion）** - 外延等价：
+
    ```
    λx.(M x) ≡ M   (x 不在 M 的自由变量中)
    ```
@@ -59,6 +108,7 @@ Lambda演算的核心语法（BNF表示）：
 ### 1.3 Church 编码
 
 **Church 布尔值：**
+
 ```
 TRUE  = λt.λf.t
 FALSE = λt.λf.f
@@ -69,6 +119,7 @@ OR    = λb1.λb2.b1 TRUE b2
 ```
 
 **Church 数（自然数编码）：**
+
 ```
 0 = λf.λx.x
 1 = λf.λx.f x
@@ -97,13 +148,13 @@ const FALSE = <T>(t: T) => (f: T): T => f;
 const IF = <T>(b: Bool<T>) => (t: T) => (f: T): T => b(t)(f);
 
 // 布尔运算
-const NOT = <T>(b: Bool<T>): Bool<T> => 
+const NOT = <T>(b: Bool<T>): Bool<T> =>
   (t: T) => (f: T) => b(f)(t);
 
-const AND = <T>(b1: Bool<T>) => (b2: Bool<T>): Bool<T> => 
+const AND = <T>(b1: Bool<T>) => (b2: Bool<T>): Bool<T> =>
   (t: T) => (f: T) => b1(b2(t)(f))(f);
 
-const OR = <T>(b1: Bool<T>) => (b2: Bool<T>): Bool<T> => 
+const OR = <T>(b1: Bool<T>) => (b2: Bool<T>): Bool<T> =>
   (t: T) => (f: T) => b1(t)(b2(t)(f));
 
 // 使用示例
@@ -119,27 +170,27 @@ const TWO: ChurchNum = f => x => f(f(x));
 const THREE: ChurchNum = f => x => f(f(f(x)));
 
 // 后继函数
-const SUCC = (n: ChurchNum): ChurchNum => 
+const SUCC = (n: ChurchNum): ChurchNum =>
   f => x => f(n(f)(x));
 
 // 加法
-const ADD = (m: ChurchNum) => (n: ChurchNum): ChurchNum => 
+const ADD = (m: ChurchNum) => (n: ChurchNum): ChurchNum =>
   f => x => m(f)(n(f)(x));
 
 // 乘法
-const MULT = (m: ChurchNum) => (n: ChurchNum): ChurchNum => 
+const MULT = (m: ChurchNum) => (n: ChurchNum): ChurchNum =>
   f => m(n(f));
 
 // 指数
-const POW = (m: ChurchNum) => (n: ChurchNum): ChurchNum => 
+const POW = (m: ChurchNum) => (n: ChurchNum): ChurchNum =>
   n(m);
 
 // Church 数转 JavaScript 数字
-const churchToNum = (n: ChurchNum): number => 
+const churchToNum = (n: ChurchNum): number =>
   n(x => x + 1)(0);
 
 // JavaScript 数字转 Church 数
-const numToChurch = (n: number): ChurchNum => 
+const numToChurch = (n: number): ChurchNum =>
   n === 0 ? ZERO : SUCC(numToChurch(n - 1));
 
 // 使用示例
@@ -156,12 +207,12 @@ console.log(churchToNum(eight)); // 8
 type RecFunc<T> = (f: RecFunc<T>) => T;
 
 // 严格求值版本的 Y 组合子（Z 组合子）
-const Z = <T>(f: (g: (x: T) => T) => (x: T) => T): (x: T) => T => 
-  ((x: RecFunc<(x: T) => T>) => f((y: T) => x(x)(y))) 
+const Z = <T>(f: (g: (x: T) => T) => (x: T) => T): (x: T) => T =>
+  ((x: RecFunc<(x: T) => T>) => f((y: T) => x(x)(y)))
   ((x: RecFunc<(x: T) => T>) => f((y: T) => x(x)(y)));
 
 // 使用 Z 组合子实现阶乘
-const factorial = Z<number>(fact => n => 
+const factorial = Z<number>(fact => n =>
   n === 0 ? 1 : n * fact(n - 1)
 );
 
@@ -172,8 +223,8 @@ console.log(factorial(5)); // 120
 // K: λx.λy.x
 // I: λx.x
 
-const S = <A, B, C>(x: (z: C) => A) => 
-  (y: (z: C) => B) => 
+const S = <A, B, C>(x: (z: C) => A) =>
+  (y: (z: C) => B) =>
   (z: C): A => x(z)(y(z));
 
 const K = <A, B>(x: A) => (y: B): A => x;
@@ -192,26 +243,26 @@ const I_from_SKI = <A>(x: A): A => S(K)(K)(x);
 
 // 1. 高阶函数的数学基础
 // map 本质上是函子范畴中的 fmap
-const map = <A, B>(f: (a: A) => B) => 
+const map = <A, B>(f: (a: A) => B) =>
   (arr: A[]): B[] => arr.map(f);
 
 // 2. 组合子的实际应用 - 函数管道
-const pipe = <T>(...fns: Array<(x: T) => T>) => 
+const pipe = <T>(...fns: Array<(x: T) => T>) =>
   (x: T): T => fns.reduce((v, f) => f(v), x);
 
-const compose = <T>(...fns: Array<(x: T) => T>) => 
+const compose = <T>(...fns: Array<(x: T) => T>) =>
   (x: T): T => fns.reduceRight((v, f) => f(v), x);
 
 // 3. 柯里化（Currying）
 // 源自 Haskell Curry 的数学工作
-const curry = <A, B, C>(f: (a: A, b: B) => C) => 
+const curry = <A, B, C>(f: (a: A, b: B) => C) =>
   (a: A) => (b: B): C => f(a, b);
 
-const uncurry = <A, B, C>(f: (a: A) => (b: B) => C) => 
+const uncurry = <A, B, C>(f: (a: A) => (b: B) => C) =>
   (a: A, b: B): C => f(a)(b);
 
 // 4. 实际应用：验证组合子逻辑
-const validateUser = (user: { age: number; name: string }) => 
+const validateUser = (user: { age: number; name: string }) =>
   pipe(
     (u: typeof user) => ({ ...u, isAdult: u.age >= 18 }),
     (u) => ({ ...u, hasName: u.name.length > 0 }),
@@ -239,11 +290,13 @@ const user = validateUser({ age: 25, name: "Alice" });
 对于函数 `f: A → B`，若满足以下条件，则称 f 为纯函数：
 
 1. **确定性（Determinism）**：
+
    ```
    ∀x ∈ A, f(x) 是单值的
    ```
 
 2. **无副作用（No Side Effects）**：
+
    ```
    f 不改变任何外部状态，也不依赖外部可变状态
    ```
@@ -251,9 +304,11 @@ const user = validateUser({ age: 25, name: "Alice" });
 **引用透明性的形式化定义：**
 
 对于表达式 `e` 和程序上下文 `C`，若满足：
+
 ```
 C[e] ≡ C[v]  其中 e ↓ v（e 求值为 v）
 ```
+
 则称 `e` 具有引用透明性。
 
 ### 2.3 范畴论语境
@@ -265,6 +320,7 @@ C[e] ≡ C[v]  其中 e ↓ v（e 求值为 v）
 - 函数组合作为态射的组合
 
 **范畴公理：**
+
 1. **结合律**：`h ∘ (g ∘ f) = (h ∘ g) ∘ f`
 2. **单位元**：`id ∘ f = f ∘ id = f`
 
@@ -286,10 +342,10 @@ const pureUpperCase = (s: string): string => s.toUpperCase();
 const pureReverse = (s: string): string => s.split('').reverse().join('');
 
 // 纯函数：数组操作
-const pureSort = <T>(arr: T[], compare: (a: T, b: T) => number): T[] => 
+const pureSort = <T>(arr: T[], compare: (a: T, b: T) => number): T[] =>
   [...arr].sort(compare); // 创建新数组，不修改原数组
 
-const pureFilter = <T>(predicate: (x: T) => boolean) => 
+const pureFilter = <T>(predicate: (x: T) => boolean) =>
   (arr: T[]): T[] => arr.filter(predicate);
 
 // 2.4.2 非纯函数示例（需要避免）
@@ -315,7 +371,7 @@ const impureGetTimestamp = (): number => Date.now(); // 依赖外部状态
 
 // 方法1：显式传递依赖
 interface TaxConfig { rate: number; }
-const pureCalculateTax = (config: TaxConfig) => (price: number): number => 
+const pureCalculateTax = (config: TaxConfig) => (price: number): number =>
   price * config.rate;
 
 // 方法2：使用 Reader Monad 模式（函数组合）
@@ -323,7 +379,7 @@ type Reader<R, A> = (r: R) => A;
 
 const ask = <R>(): Reader<R, R> => r => r;
 
-const pureCalculateTaxReader: Reader<TaxConfig, (price: number) => number> = 
+const pureCalculateTaxReader: Reader<TaxConfig, (price: number) => number> =
   config => price => price * config.rate;
 
 // 方法3：将随机性参数化
@@ -370,10 +426,10 @@ type IO<A> = () => A;
 const pureLog = (msg: string): IO<void> => () => console.log(msg);
 
 // 组合 IO 操作
-const ioMap = <A, B>(fa: IO<A>, f: (a: A) => B): IO<B> => 
+const ioMap = <A, B>(fa: IO<A>, f: (a: A) => B): IO<B> =>
   () => f(fa());
 
-const ioFlatMap = <A, B>(fa: IO<A>, f: (a: A) => IO<B>): IO<B> => 
+const ioFlatMap = <A, B>(fa: IO<A>, f: (a: A) => IO<B>): IO<B> =>
   () => f(fa())();
 
 // 使用示例
@@ -421,9 +477,9 @@ const reducer = (state: State, action: Action): State => {
     case 'ADD_USER':
       return { ...state, users: [...state.users, action.payload] };
     case 'REMOVE_USER':
-      return { 
-        ...state, 
-        users: state.users.filter(u => u.id !== action.payload) 
+      return {
+        ...state,
+        users: state.users.filter(u => u.id !== action.payload)
       };
     default:
       return state;
@@ -461,12 +517,12 @@ const parallelMap = async <T, R>(
 ): Promise<R[]> => {
   const chunks = chunk(arr, concurrency);
   const results: R[] = [];
-  
+
   for (const chunkItem of chunks) {
     const chunkResults = await Promise.all(chunkItem.map(f));
     results.push(...chunkResults);
   }
-  
+
   return results;
 };
 
@@ -488,13 +544,13 @@ describe('pure functions', () => {
     expect(pureAdd(2, 3)).toBe(5);
     expect(pureAdd(2, 3)).toBe(5); // 总是相同结果
   });
-  
+
   it('reducer should be pure', () => {
     const state: State = { count: 0, users: [] };
     const action: Action = { type: 'INCREMENT', payload: 5 };
-    
+
     const newState = reducer(state, action);
-    
+
     expect(newState.count).toBe(5);
     expect(state.count).toBe(0); // 原状态未被修改
   });
@@ -506,13 +562,13 @@ describe('pure functions', () => {
 class TimeTravelDebugger<T> {
   private history: T[] = [];
   private index = -1;
-  
+
   push(state: T): void {
     this.history = this.history.slice(0, this.index + 1);
     this.history.push(state);
     this.index++;
   }
-  
+
   undo(): T | undefined {
     if (this.index > 0) {
       this.index--;
@@ -520,7 +576,7 @@ class TimeTravelDebugger<T> {
     }
     return undefined;
   }
-  
+
   redo(): T | undefined {
     if (this.index < this.history.length - 1) {
       this.index++;
@@ -559,12 +615,15 @@ console.log(state.count); // 5
 **不可变性的代数性质：**
 
 对于数据结构 `D`，操作 `op` 满足：
+
 ```
 ∀d ∈ D: op(d) = d' 且 d ≠ d'
 ```
+
 即操作不改变原数据结构，而是产生新结构。
 
 **持久化数据结构（Persistent Data Structure）**：
+
 - 版本历史保持可用
 - 每次修改创建新版本
 - 旧版本仍然有效
@@ -576,12 +635,14 @@ console.log(state.count); // 5
 ### 3.3 持久化数据结构理论
 
 **位向量（Bit Vector）持久化**：
+
 ```
 Vector: 32叉树，深度为 log₃₂(n)
 访问复杂度: O(log₃₂(n)) ≈ O(1) 实际
 ```
 
 **HAMT（Hash Array Mapped Trie）**：
+
 ```
 使用哈希值作为路径
 每个节点最多 32 个子节点（5 位哈希段）
@@ -607,11 +668,11 @@ class ImmutableList<T> {
   private constructor(
     private readonly head: ListNode<T> | null
   ) {}
-  
+
   static empty<T>(): ImmutableList<T> {
     return new ImmutableList<T>(null);
   }
-  
+
   static of<T>(...items: T[]): ImmutableList<T> {
     let list = ImmutableList.empty<T>();
     for (let i = items.length - 1; i >= 0; i--) {
@@ -619,7 +680,7 @@ class ImmutableList<T> {
     }
     return list;
   }
-  
+
   // O(1) 前置操作
   prepend(value: T): ImmutableList<T> {
     const newNode: ListNode<T> = {
@@ -629,7 +690,7 @@ class ImmutableList<T> {
     };
     return new ImmutableList(newNode);
   }
-  
+
   // O(n) 获取，但保持不可变性
   get(index: number): T | undefined {
     let current = this.head;
@@ -640,7 +701,7 @@ class ImmutableList<T> {
     }
     return current?.value;
   }
-  
+
   // O(n) 反转（产生新列表）
   reverse(): ImmutableList<T> {
     let result = ImmutableList.empty<T>();
@@ -651,7 +712,7 @@ class ImmutableList<T> {
     }
     return result;
   }
-  
+
   // 函数式 map
   map<R>(f: (x: T) => R): ImmutableList<R> {
     const result: R[] = [];
@@ -662,7 +723,7 @@ class ImmutableList<T> {
     }
     return ImmutableList.of(...result.reverse());
   }
-  
+
   // 转换为数组（复制）
   toArray(): T[] {
     const result: T[] = [];
@@ -673,7 +734,7 @@ class ImmutableList<T> {
     }
     return result;
   }
-  
+
   get size(): number {
     return this.head?.size ?? 0;
   }
@@ -684,7 +745,7 @@ class ImmutableList<T> {
 const BRANCHING_FACTOR = 32;
 const MASK = BRANCHING_FACTOR - 1; // 0x1F
 
-type VectorNode<T> = 
+type VectorNode<T> =
   | { type: 'leaf'; values: readonly T[] }
   | { type: 'internal'; children: readonly VectorNode<T>[] };
 
@@ -694,7 +755,7 @@ class ImmutableVector<T> {
     private readonly _size: number,
     private readonly shift: number
   ) {}
-  
+
   static empty<T>(): ImmutableVector<T> {
     return new ImmutableVector<T>(
       { type: 'leaf', values: [] },
@@ -702,44 +763,44 @@ class ImmutableVector<T> {
       0
     );
   }
-  
+
   get size(): number {
     return this._size;
   }
-  
+
   // 获取元素 O(log₃₂(n))
   get(index: number): T | undefined {
     if (index < 0 || index >= this._size) return undefined;
-    
+
     let node = this.root;
     let level = this.shift;
-    
+
     while (node.type === 'internal') {
       const childIndex = (index >> level) & MASK;
       node = node.children[childIndex];
       level -= 5;
     }
-    
+
     return node.values[index & MASK];
   }
-  
+
   // 设置元素（产生新向量）O(log₃₂(n))
   set(index: number, value: T): ImmutableVector<T> {
     if (index < 0 || index > this._size) {
       throw new Error('Index out of bounds');
     }
-    
+
     if (index === this._size) {
       return this.push(value);
     }
-    
+
     return new ImmutableVector(
       this.setInNode(this.root, index, value, this.shift),
       this._size,
       this.shift
     );
   }
-  
+
   private setInNode(
     node: VectorNode<T>,
     index: number,
@@ -751,7 +812,7 @@ class ImmutableVector<T> {
       newValues[index & MASK] = value;
       return { type: 'leaf', values: newValues };
     }
-    
+
     const childIndex = (index >> shift) & MASK;
     const newChildren = [...node.children];
     newChildren[childIndex] = this.setInNode(
@@ -762,7 +823,7 @@ class ImmutableVector<T> {
     );
     return { type: 'internal', children: newChildren };
   }
-  
+
   // 添加元素 O(log₃₂(n)) 均摊
   push(value: T): ImmutableVector<T> {
     if (this._size === 0) {
@@ -772,7 +833,7 @@ class ImmutableVector<T> {
         0
       );
     }
-    
+
     // 简化的 push 实现（实际需要更复杂的树重新平衡）
     const newSize = this._size + 1;
     return new ImmutableVector(
@@ -781,7 +842,7 @@ class ImmutableVector<T> {
       this.shift
     );
   }
-  
+
   private pushToNode(
     node: VectorNode<T>,
     value: T,
@@ -798,11 +859,11 @@ class ImmutableVector<T> {
         children: [node, { type: 'leaf', values: [value] }]
       };
     }
-    
+
     // 内部节点的处理
     const childIndex = (index >> shift) & MASK;
     const newChildren = [...node.children];
-    
+
     if (childIndex < node.children.length) {
       newChildren[childIndex] = this.pushToNode(
         node.children[childIndex],
@@ -813,10 +874,10 @@ class ImmutableVector<T> {
     } else {
       newChildren.push({ type: 'leaf', values: [value] });
     }
-    
+
     return { type: 'internal', children: newChildren };
   }
-  
+
   // 转换为数组
   toArray(): T[] {
     const result: T[] = new Array(this._size);
@@ -839,11 +900,11 @@ class ImmutableMap<K, V> {
     private readonly buckets: ReadonlyArray<ReadonlyArray<MapEntry<K, V>>>,
     private readonly _size: number
   ) {}
-  
+
   static empty<K, V>(): ImmutableMap<K, V> {
     return new ImmutableMap<K, V>([], 0);
   }
-  
+
   private hash(key: K): number {
     const str = JSON.stringify(key);
     let hash = 0;
@@ -853,12 +914,12 @@ class ImmutableMap<K, V> {
     }
     return Math.abs(hash);
   }
-  
+
   get(key: K): V | undefined {
     const h = this.hash(key);
     const bucket = this.buckets[h % this.buckets.length];
     if (!bucket) return undefined;
-    
+
     for (const entry of bucket) {
       if (JSON.stringify(entry.key) === JSON.stringify(key)) {
         return entry.value;
@@ -866,23 +927,23 @@ class ImmutableMap<K, V> {
     }
     return undefined;
   }
-  
+
   set(key: K, value: V): ImmutableMap<K, V> {
     const h = this.hash(key);
     const bucketIndex = this.buckets.length > 0 ? h % this.buckets.length : 0;
-    
+
     // 重新计算 buckets 大小
     const newBucketSize = Math.max(this.buckets.length, 16);
     const newBuckets: MapEntry<K, V>[][] = Array.from(
       { length: newBucketSize },
       (_, i) => [...(this.buckets[i] || [])]
     );
-    
+
     const bucket = newBuckets[bucketIndex];
     const existingIndex = bucket.findIndex(
       e => JSON.stringify(e.key) === JSON.stringify(key)
     );
-    
+
     if (existingIndex >= 0) {
       bucket[existingIndex] = { key, value };
       return new ImmutableMap(newBuckets, this._size);
@@ -891,30 +952,30 @@ class ImmutableMap<K, V> {
       return new ImmutableMap(newBuckets, this._size + 1);
     }
   }
-  
+
   delete(key: K): ImmutableMap<K, V> {
     const h = this.hash(key);
     const bucketIndex = h % this.buckets.length;
     const bucket = this.buckets[bucketIndex];
-    
+
     if (!bucket) return this;
-    
+
     const newBucket = bucket.filter(
       e => JSON.stringify(e.key) !== JSON.stringify(key)
     );
-    
+
     if (newBucket.length === bucket.length) return this;
-    
+
     const newBuckets = [...this.buckets];
     newBuckets[bucketIndex] = newBucket;
-    
+
     return new ImmutableMap(newBuckets, this._size - 1);
   }
-  
+
   get size(): number {
     return this._size;
   }
-  
+
   entries(): IterableIterator<[K, V]> {
     function* gen(buckets: ReadonlyArray<ReadonlyArray<MapEntry<K, V>>>) {
       for (const bucket of buckets) {
@@ -935,35 +996,35 @@ class ImmutableRecord<T extends RecordShape> {
   private constructor(
     private readonly data: T
   ) {}
-  
+
   static of<T extends RecordShape>(data: T): ImmutableRecord<T> {
     return new ImmutableRecord({ ...data });
   }
-  
+
   get<K extends keyof T>(key: K): T[K] {
     return this.data[key];
   }
-  
+
   set<K extends keyof T>(key: K, value: T[K]): ImmutableRecord<T> {
     return new ImmutableRecord({ ...this.data, [key]: value });
   }
-  
+
   update<K extends keyof T>(
     key: K,
     f: (value: T[K]) => T[K]
   ): ImmutableRecord<T> {
     return this.set(key, f(this.data[key]));
   }
-  
+
   merge(other: Partial<T>): ImmutableRecord<T> {
     return new ImmutableRecord({ ...this.data, ...other });
   }
-  
+
   delete<K extends keyof T>(key: K): ImmutableRecord<Omit<T, K>> {
     const { [key]: _, ...rest } = this.data;
     return new ImmutableRecord(rest as Omit<T, K>);
   }
-  
+
   toObject(): T {
     return { ...this.data };
   }
@@ -977,13 +1038,13 @@ const freeze = <T>(obj: T): Readonly<T> => Object.freeze(obj);
 // 深冻结
 const deepFreeze = <T>(obj: T): T => {
   if (obj === null || typeof obj !== 'object') return obj;
-  
+
   Object.freeze(obj);
-  
+
   for (const key of Object.keys(obj)) {
     deepFreeze((obj as Record<string, unknown>)[key]);
   }
-  
+
   return obj;
 };
 
@@ -994,13 +1055,13 @@ const setIn = <T>(
   value: T
 ): Record<string, unknown> => {
   if (path.length === 0) return obj;
-  
+
   const [head, ...tail] = path;
-  
+
   if (tail.length === 0) {
     return { ...obj, [head]: value };
   }
-  
+
   return {
     ...obj,
     [head]: setIn((obj[head] as Record<string, unknown>) || {}, tail, value)
@@ -1073,33 +1134,33 @@ class UndoManager<T> {
   private past: T[] = [];
   private present: T;
   private future: T[] = [];
-  
+
   constructor(initial: T) {
     this.present = initial;
   }
-  
+
   get state(): T {
     return this.present;
   }
-  
+
   update(updater: (state: T) => T): void {
     this.past = [...this.past, this.present];
     this.present = updater(this.present);
     this.future = [];
   }
-  
+
   undo(): boolean {
     if (this.past.length === 0) return false;
-    
+
     this.future = [this.present, ...this.future];
     this.present = this.past[this.past.length - 1];
     this.past = this.past.slice(0, -1);
     return true;
   }
-  
+
   redo(): boolean {
     if (this.future.length === 0) return false;
-    
+
     this.past = [...this.past, this.present];
     this.present = this.future[0];
     this.future = this.future.slice(1);
@@ -1150,25 +1211,25 @@ function pipe<T>(value: T, ...fns: Array<(x: T) => T>): T {
 class VersionedVector<T> {
   private versions: ImmutableVector<T>[] = [];
   private currentVersion = -1;
-  
+
   constructor(initial: ImmutableVector<T> = ImmutableVector.empty()) {
     this.versions.push(initial);
     this.currentVersion = 0;
   }
-  
+
   get current(): ImmutableVector<T> {
     return this.versions[this.currentVersion];
   }
-  
+
   update(updater: (v: ImmutableVector<T>) => ImmutableVector<T>): void {
     // 删除当前版本之后的所有版本
     this.versions = this.versions.slice(0, this.currentVersion + 1);
-    
+
     const newVersion = updater(this.current);
     this.versions.push(newVersion);
     this.currentVersion++;
   }
-  
+
   checkout(version: number): boolean {
     if (version < 0 || version >= this.versions.length) {
       return false;
@@ -1176,7 +1237,7 @@ class VersionedVector<T> {
     this.currentVersion = version;
     return true;
   }
-  
+
   get versionCount(): number {
     return this.versions.length;
   }
@@ -1190,7 +1251,7 @@ function produce<T>(
   recipe: (draft: T) => void
 ): T {
   const copies = new Map<object, object>();
-  
+
   const handler: ProxyHandler<object> = {
     get(target, prop) {
       const value = (target as Record<string | symbol, unknown>)[prop];
@@ -1205,21 +1266,21 @@ function produce<T>(
       return true;
     }
   };
-  
+
   function getOrCreateCopy<T extends object>(obj: T): T {
     if (!copies.has(obj)) {
       copies.set(obj, Array.isArray(obj) ? [...obj] : { ...obj });
     }
     return copies.get(obj) as T;
   }
-  
+
   function createProxy<T extends object>(obj: T): T {
     return new Proxy(obj, handler) as T;
   }
-  
+
   const draft = createProxy(base as object);
   recipe(draft as T);
-  
+
   // 简化实现：返回修改后的根对象
   return (copies.get(base as object) ?? base) as T;
 }
@@ -1246,6 +1307,7 @@ console.log(newState.user.age); // 31
 ### 4.1 理论解释
 
 **高阶函数（Higher-Order Function, HOF）** 是指至少满足下列条件之一的函数：
+
 1. 接受一个或多个函数作为参数
 2. 返回一个函数作为结果
 
@@ -1254,6 +1316,7 @@ console.log(newState.user.age); // 31
 ### 4.2 数学定义
 
 **高阶函数的类型签名：**
+
 ```
 map: (A → B) → List(A) → List(B)
 filter: (A → Bool) → List(A) → List(A)
@@ -1269,6 +1332,7 @@ curry: (A × B → C) → (A → (B → C))
 3. **分配律**：`(f ∘ g)(x) = f(g(x))`
 
 **函子（Functor）定律：**
+
 ```
 map(id) = id
 map(f ∘ g) = map(f) ∘ map(g)
@@ -1277,12 +1341,14 @@ map(f ∘ g) = map(f) ∘ map(g)
 ### 4.3 范畴论语境
 
 在范畴论中：
+
 - **对象**：类型（Types）
 - **态射**：纯函数
 - **组合**：函数组合 `∘`
 - **单位态射**：恒等函数 `id`
 
 **幺半群（Monoid）与 reduce：**
+
 ```
 (M, ⊕, e) 其中
 - M: 集合
@@ -1300,15 +1366,15 @@ map(f ∘ g) = map(f) ∘ map(g)
 // 4.4.7 遍历和可折叠
 
 // 左折叠
-const foldl = <A, B>(f: (acc: B, x: A) => B) => (initial: B) => 
+const foldl = <A, B>(f: (acc: B, x: A) => B) => (initial: B) =>
   (arr: A[]): B => arr.reduce(f, initial);
 
 // 右折叠
-const foldr = <A, B>(f: (x: A, acc: B) => B) => (initial: B) => 
+const foldr = <A, B>(f: (x: A, acc: B) => B) => (initial: B) =>
   (arr: A[]): B => arr.reduceRight((acc, x) => f(x, acc), initial);
 
 // 遍历（Traversable）
-const traverse = <A, B>(f: (a: A) => Promise<B>) => 
+const traverse = <A, B>(f: (a: A) => Promise<B>) =>
   (arr: A[]): Promise<B[]> => Promise.all(arr.map(f));
 
 // 序列（Sequence）
@@ -1317,11 +1383,11 @@ const sequence = <A>(arr: Promise<A>[]): Promise<A[]> => Promise.all(arr);
 // 4.4.8 点自由风格（Point-free Style）
 
 // 非点自由风格
-const getUserNames1 = (users: { name: string }[]): string[] => 
+const getUserNames1 = (users: { name: string }[]): string[] =>
   users.map(user => user.name);
 
 // 点自由风格
-const prop = <K extends string>(key: K) => 
+const prop = <K extends string>(key: K) =>
   <T extends Record<K, unknown>>(obj: T): T[K] => obj[key];
 
 const getUserNames = map(prop('name'));
@@ -1346,7 +1412,7 @@ interface User {
   orders: Array<{ id: number; amount: number }>;
 }
 
-const processUserData = (users: User[]) => 
+const processUserData = (users: User[]) =>
   pipeMany(
     filter((u: User) => u.age >= 18),
     sortBy((u: User) => u.name),
@@ -1361,7 +1427,7 @@ const processUserData = (users: User[]) =>
 // 中间件组合
 type Middleware<T> = (ctx: T, next: () => Promise<void>) => Promise<void>;
 
-const composeMiddleware = <T>(...middlewares: Middleware<T>[]) => 
+const composeMiddleware = <T>(...middlewares: Middleware<T>[]) =>
   async (ctx: T) => {
     let index = 0;
     const dispatch = async (i: number): Promise<void> => {
@@ -1385,12 +1451,14 @@ const composeMiddleware = <T>(...middlewares: Middleware<T>[]) =>
 ### 5.2 数学定义
 
 **函子定律：**
+
 ```
 map(id) = id
 map(f . g) = map(f) . map(g)
 ```
 
 **单子定律：**
+
 ```
 return a >>= f = f a                      (左单位元)
 m >>= return = m                           (右单位元)
@@ -1417,7 +1485,7 @@ const maybeChain = <A, B>(f: (a: A) => Maybe<B>) => (ma: Maybe<A>): Maybe<B> =>
   ma._tag === 'Some' ? f(ma.value) : none<B>();
 
 // Either 类型
-type Either<E, A> = 
+type Either<E, A> =
   | { readonly _tag: 'Left'; readonly left: E }
   | { readonly _tag: 'Right'; readonly right: A };
 
@@ -1425,7 +1493,7 @@ const left = <E, A>(e: E): Either<E, A> => ({ _tag: 'Left', left: e });
 const right = <E, A>(a: A): Either<E, A> => ({ _tag: 'Right', right: a });
 
 // Either Monad
-const eitherChain = <E, A, B>(f: (a: A) => Either<E, B>) => 
+const eitherChain = <E, A, B>(f: (a: A) => Either<E, B>) =>
   (ea: Either<E, A>): Either<E, B> =>
     ea._tag === 'Right' ? f(ea.right) : ea as Either<E, B>;
 
@@ -1433,15 +1501,15 @@ const eitherChain = <E, A, B>(f: (a: A) => Either<E, B>) =>
 type IO<A> = () => A;
 
 const ioMap = <A, B>(f: (a: A) => B) => (fa: IO<A>): IO<B> => () => f(fa());
-const ioChain = <A, B>(f: (a: A) => IO<B>) => (fa: IO<A>): IO<B> => 
+const ioChain = <A, B>(f: (a: A) => IO<B>) => (fa: IO<A>): IO<B> =>
   () => f(fa())();
 
 // Reader Monad
 type Reader<R, A> = (r: R) => A;
 
-const readerMap = <R, A, B>(f: (a: A) => B) => (fa: Reader<R, A>): Reader<R, B> => 
+const readerMap = <R, A, B>(f: (a: A) => B) => (fa: Reader<R, A>): Reader<R, B> =>
   r => f(fa(r));
-const readerChain = <R, A, B>(f: (a: A) => Reader<R, B>) => 
+const readerChain = <R, A, B>(f: (a: A) => Reader<R, B>) =>
   (fa: Reader<R, A>): Reader<R, B> => r => f(fa(r))(r);
 const ask = <R>(): Reader<R, R> => r => r;
 
@@ -1453,7 +1521,7 @@ const stateMap = <S, A, B>(f: (a: A) => B) => (fa: State<S, A>): State<S, B> => 
   return [f(a), s1];
 };
 
-const stateChain = <S, A, B>(f: (a: A) => State<S, B>) => 
+const stateChain = <S, A, B>(f: (a: A) => State<S, B>) =>
   (fa: State<S, A>): State<S, B> => s => {
     const [a, s1] = fa(s);
     return f(a)(s1);
@@ -1532,12 +1600,12 @@ const lazy = <A>(f: () => A): Lazy<A> => {
 const force = <A>(l: Lazy<A>): A => l();
 
 // 惰性列表
-type LazyList<A> = 
+type LazyList<A> =
   | { _tag: 'Nil' }
   | { _tag: 'Cons'; head: A; tail: Lazy<LazyList<A>> };
 
 const nil = <A>(): LazyList<A> => ({ _tag: 'Nil' });
-const cons = <A>(head: A, tail: Lazy<LazyList<A>>): LazyList<A> => 
+const cons = <A>(head: A, tail: Lazy<LazyList<A>>): LazyList<A> =>
   ({ _tag: 'Cons', head, tail });
 
 // 无限序列
@@ -1584,6 +1652,7 @@ const first10Evens = take(10, evenNumbers);
 ### 7.2 数学定义
 
 **尾调用优化（TCO）原理：**
+
 ```
 如果函数调用是尾调用，可以复用当前栈帧
 尾递归是特殊的尾调用：f(...) 直接返回 f(...) 的结果
@@ -1675,7 +1744,7 @@ const sumTreeNaive = (tree: Tree<number>): number =>
 const sumTreeCPS = (tree: Tree<number>, cont: (n: number) => number = x => x): number => {
   const leftSum = tree.left ? (k: (n: number) => number) => sumTreeCPS(tree.left!, k) : null;
   const rightSum = tree.right ? (k: (n: number) => number) => sumTreeCPS(tree.right!, k) : null;
-  
+
   if (leftSum && rightSum) {
     return leftSum(l => rightSum(r => cont(tree.value + l + r)));
   } else if (leftSum) {
@@ -1711,19 +1780,19 @@ const fromNullable = <A>(a: A | null | undefined): Maybe<A> =>
 const maybe = {
   map: <A, B>(f: (a: A) => B) => (ma: Maybe<A>): Maybe<B> =>
     ma._tag === 'Some' ? some(f(ma.value)) : none<B>(),
-  
+
   chain: <A, B>(f: (a: A) => Maybe<B>) => (ma: Maybe<A>): Maybe<B> =>
     ma._tag === 'Some' ? f(ma.value) : none<B>(),
-  
+
   getOrElse: <A>(defaultValue: A) => (ma: Maybe<A>): A =>
     ma._tag === 'Some' ? ma.value : defaultValue,
-  
+
   fold: <A, B>(onNone: () => B, onSome: (a: A) => B) => (ma: Maybe<A>): B =>
     ma._tag === 'Some' ? onSome(ma.value) : onNone(),
-  
+
   filter: <A>(p: (a: A) => boolean) => (ma: Maybe<A>): Maybe<A> =>
     ma._tag === 'Some' && p(ma.value) ? ma : none<A>(),
-  
+
   alt: <A>(that: Maybe<A>) => (ma: Maybe<A>): Maybe<A> =>
     ma._tag === 'Some' ? ma : that
 };
@@ -1739,22 +1808,22 @@ const right = <E, A>(a: A): Either<E, A> => ({ _tag: 'Right', right: a });
 const either = {
   map: <E, A, B>(f: (a: A) => B) => (ea: Either<E, A>): Either<E, B> =>
     ea._tag === 'Right' ? right<E, B>(f(ea.right)) : ea as Either<E, B>,
-  
+
   mapLeft: <E, F>(f: (e: E) => F) => <A>(ea: Either<E, A>): Either<F, A> =>
     ea._tag === 'Left' ? left<F, A>(f(ea.left)) : ea as Either<F, A>,
-  
+
   chain: <E, A, B>(f: (a: A) => Either<E, B>) => (ea: Either<E, A>): Either<E, B> =>
     ea._tag === 'Right' ? f(ea.right) : ea as Either<E, B>,
-  
+
   getOrElse: <E, A>(onLeft: (e: E) => A) => (ea: Either<E, A>): A =>
     ea._tag === 'Right' ? ea.right : onLeft(ea.left),
-  
+
   fold: <E, A, B>(onLeft: (e: E) => B, onRight: (a: A) => B) => (ea: Either<E, A>): B =>
     ea._tag === 'Right' ? onRight(ea.right) : onLeft(ea.left),
-  
+
   bimap: <E, F, A, B>(f: (e: E) => F, g: (a: A) => B) => (ea: Either<E, A>): Either<F, B> =>
     ea._tag === 'Right' ? right<F, B>(g(ea.right)) : left<F, B>(f(ea.left)),
-  
+
   tryCatch: <E, A>(f: () => A, onError: (e: unknown) => E): Either<E, A> => {
     try { return right<E, A>(f()); }
     catch (e) { return left<E, A>(onError(e)); }
@@ -1772,12 +1841,12 @@ const success = <E, A>(value: A): Validation<E, A> => ({ _tag: 'Success', value 
 const validation = {
   map: <E, A, B>(f: (a: A) => B) => (va: Validation<E, A>): Validation<E, B> =>
     va._tag === 'Success' ? success<E, B>(f(va.value)) : va as Validation<E, B>,
-  
+
   ap: <E, A, B>(vf: Validation<E, (a: A) => B>) => (va: Validation<E, A>): Validation<E, B> =>
-    vf._tag === 'Failure' ? va._tag === 'Failure' 
-      ? failure<E, B>([...vf.errors, ...va.errors]) 
+    vf._tag === 'Failure' ? va._tag === 'Failure'
+      ? failure<E, B>([...vf.errors, ...va.errors])
       : vf as Validation<E, B>
-    : va._tag === 'Failure' 
+    : va._tag === 'Failure'
       ? va as Validation<E, B>
       : success<E, B>(vf.value(va.value))
 };
@@ -1811,18 +1880,18 @@ const validatePerson = (data: Partial<Person>): Validation<FieldError[], Person>
   const vName = data.name && data.name.length >= 2
     ? success<FieldError[], string>(data.name)
     : failure<FieldError[], string>([{ field: 'name', message: 'Name too short' }]);
-  
+
   const vAge = data.age !== undefined && data.age >= 0 && data.age <= 150
     ? success<FieldError[], number>(data.age)
     : failure<FieldError[], number>([{ field: 'age', message: 'Invalid age' }]);
-  
+
   const vEmail = data.email && data.email.includes('@')
     ? success<FieldError[], string>(data.email)
     : failure<FieldError[], string>([{ field: 'email', message: 'Invalid email' }]);
-  
+
   return validation.ap(
     validation.ap(
-      validation.map((name: string) => (age: number) => (email: string): Person => 
+      validation.map((name: string) => (age: number) => (email: string): Person =>
         ({ name, age, email }))(vName),
       vAge
     ),
@@ -1855,7 +1924,7 @@ type TeardownLogic = (() => void) | void;
 
 class Observable<A> {
   constructor(private _subscribe: (observer: Observer<A>) => TeardownLogic) {}
-  
+
   subscribe(observer: Partial<Observer<A>>): Subscription {
     const full: Observer<A> = {
       next: observer.next || (() => {}),
@@ -1865,7 +1934,7 @@ class Observable<A> {
     const teardown = this._subscribe(full);
     return { unsubscribe: () => { if (teardown) teardown(); } };
   }
-  
+
   // 操作符
   map<B>(f: (a: A) => B): Observable<B> {
     return new Observable(observer =>
@@ -1876,7 +1945,7 @@ class Observable<A> {
       })
     );
   }
-  
+
   filter(p: (a: A) => boolean): Observable<A> {
     return new Observable(observer =>
       this.subscribe({
@@ -1886,7 +1955,7 @@ class Observable<A> {
       })
     );
   }
-  
+
   scan<B>(f: (acc: B, a: A) => B, seed: B): Observable<B> {
     return new Observable(observer => {
       let acc = seed;
@@ -1897,7 +1966,7 @@ class Observable<A> {
       });
     });
   }
-  
+
   take(n: number): Observable<A> {
     return new Observable(observer => {
       let count = 0;
@@ -1918,7 +1987,7 @@ class Observable<A> {
       return () => sub.unsubscribe();
     });
   }
-  
+
   debounceTime(ms: number): Observable<A> {
     return new Observable(observer => {
       let timeoutId: ReturnType<typeof setTimeout>;
@@ -1932,7 +2001,7 @@ class Observable<A> {
       });
     });
   }
-  
+
   // 静态创建方法
   static of<A>(...values: A[]): Observable<A> {
     return new Observable(observer => {
@@ -1940,7 +2009,7 @@ class Observable<A> {
       observer.complete();
     });
   }
-  
+
   static fromEvent<K extends keyof HTMLElementEventMap>(
     el: HTMLElement, event: K
   ): Observable<HTMLElementEventMap[K]> {
@@ -1950,7 +2019,7 @@ class Observable<A> {
       return () => el.removeEventListener(event, handler);
     });
   }
-  
+
   static interval(ms: number): Observable<number> {
     return new Observable(observer => {
       let i = 0;
@@ -1958,7 +2027,7 @@ class Observable<A> {
       return () => clearInterval(id);
     });
   }
-  
+
   static merge<A>(...observables: Observable<A>[]): Observable<A> {
     return new Observable(observer => {
       const subs = observables.map(o => o.subscribe(observer));
@@ -1971,7 +2040,7 @@ class Observable<A> {
 class BehaviorSubject<A> extends Observable<A> {
   private _value: A;
   private _observers: Observer<A>[] = [];
-  
+
   constructor(initial: A) {
     super(observer => {
       observer.next(this._value);
@@ -1983,9 +2052,9 @@ class BehaviorSubject<A> extends Observable<A> {
     });
     this._value = initial;
   }
-  
+
   get value(): A { return this._value; }
-  
+
   next(value: A): void {
     this._value = value;
     this._observers.forEach(o => o.next(value));
@@ -2008,7 +2077,7 @@ Observable.fromEvent(searchInput, 'input')
     fetch(`/api/search?q=${encodeURIComponent(query)}`)
       .then(r => r.json())
       .then(results => {
-        searchResults.innerHTML = results.map((r: any) => 
+        searchResults.innerHTML = results.map((r: any) =>
           `<div>${r.name}</div>`
         ).join('');
       });

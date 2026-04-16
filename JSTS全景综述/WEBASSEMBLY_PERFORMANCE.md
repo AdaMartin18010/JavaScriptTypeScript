@@ -79,6 +79,26 @@
       - [组件组合](#组件组合)
     - [8.3 性能数据](#83-性能数据)
     - [8.4 使用场景](#84-使用场景)
+  - [9. Wasm 在浏览器外的应用](#9-wasm-在浏览器外的应用)
+    - [9.1 理论解释](#91-理论解释)
+    - [9.2 代码示例](#92-代码示例)
+      - [Cloudflare Workers (边缘计算)](#cloudflare-workers-边缘计算)
+      - [Node.js 中使用 Wasm](#nodejs-中使用-wasm)
+      - [数据库中的 Wasm](#数据库中的-wasm)
+    - [9.3 性能数据](#93-性能数据)
+    - [9.4 使用场景](#94-使用场景)
+  - [10. Wasm 的安全模型和沙箱机制](#10-wasm-的安全模型和沙箱机制)
+    - [10.1 理论解释](#101-理论解释)
+      - [安全特性详解](#安全特性详解)
+    - [10.2 代码示例](#102-代码示例)
+      - [安全沙箱配置](#安全沙箱配置)
+      - [形式化验证示例](#形式化验证示例)
+    - [10.3 性能数据](#103-性能数据)
+    - [10.4 使用场景](#104-使用场景)
+  - [总结](#总结)
+    - [性能特点](#性能特点)
+    - [最佳实践](#最佳实践)
+    - [未来展望](#未来展望)
 
 ---
 
@@ -1855,7 +1875,7 @@ pub async fn main(req: Request, env: Env, _ctx: worker::Context) -> Result<Respo
 async fn handle_compute(_req: Request) -> Result<Response> {
     // 在边缘节点执行高性能计算
     let result = perform_intensive_calculation();
-    
+
     Response::from_json(&json!({
         "result": result,
         "edge_location": "CF-Edge"
@@ -1873,13 +1893,13 @@ fn perform_intensive_calculation() -> f64 {
 
 async fn handle_hash(mut req: Request) -> Result<Response> {
     let body = req.text().await?;
-    
+
     // 使用 Rust 加密库
     use sha2::{Sha256, Digest};
     let mut hasher = Sha256::new();
     hasher.update(body.as_bytes());
     let result = hasher.finalize();
-    
+
     Response::ok(format!("{:x}", result))
 }
 ```
@@ -1909,12 +1929,12 @@ class ImageProcessor {
         const wasmBuffer = fs.readFileSync(
             path.join(__dirname, 'image_processor.wasm')
         );
-        
+
         this.memory = new WebAssembly.Memory({
             initial: 10,
             maximum: 100
         });
-        
+
         const importObject = {
             env: {
                 memory: this.memory,
@@ -1923,23 +1943,23 @@ class ImageProcessor {
                 }
             }
         };
-        
+
         const wasmModule = new WebAssembly.Module(wasmBuffer);
         this.instance = new WebAssembly.Instance(wasmModule, importObject);
     }
-    
+
     processImage(imageBuffer, operation) {
         const { exports } = this.instance;
         const { malloc, free, process_image } = exports;
-        
+
         // 分配内存
         const inputPtr = malloc(imageBuffer.length);
         const outputPtr = malloc(imageBuffer.length);
-        
+
         // 写入输入数据
         const memoryView = new Uint8Array(this.memory.buffer);
         memoryView.set(imageBuffer, inputPtr);
-        
+
         // 执行处理
         const resultSize = process_image(
             inputPtr,
@@ -1947,16 +1967,16 @@ class ImageProcessor {
             outputPtr,
             operation
         );
-        
+
         // 读取结果
         const result = Buffer.from(
             memoryView.slice(outputPtr, outputPtr + resultSize)
         );
-        
+
         // 释放内存
         free(inputPtr);
         free(outputPtr);
-        
+
         return result;
     }
 }
@@ -1983,13 +2003,13 @@ use sqlite_wasm_udf::prelude::*;
 #[sqlite_udf]
 fn json_path(json_text: &str, path: &str) -> Result<String> {
     let value: serde_json::Value = serde_json::from_str(json_text)?;
-    
+
     let mut current = &value;
     for segment in path.split('.') {
         current = current.get(segment)
             .ok_or_else(|| Error::new("Path not found"))?;
     }
-    
+
     Ok(current.to_string())
 }
 
@@ -2009,7 +2029,7 @@ fn calculate(expression: &str) -> Result<f64> {
 
 ```sql
 -- 在 SQL 中使用 Wasm UDF
-SELECT 
+SELECT
     id,
     json_path(data, 'user.name') as user_name,
     regex_match(email, '^[a-z]+@[a-z]+\.com$') as is_valid_email,
@@ -2101,17 +2121,17 @@ class SecureWasmRuntime {
             allowedImports: options.allowedImports || new Set(),
             ...options
         };
-        
+
         this.stats = {
             memoryAccesses: 0,
             calls: 0,
             startTime: null
         };
     }
-    
+
     createSecureImports() {
         const runtime = this;
-        
+
         return {
             env: {
                 // 受控的内存访问日志
@@ -2119,7 +2139,7 @@ class SecureWasmRuntime {
                     initial: 1,
                     maximum: this.options.maxMemoryPages
                 }),
-                
+
                 // 受限制的输出
                 log: (ptr, len) => {
                     if (len > 1024) {
@@ -2132,13 +2152,13 @@ class SecureWasmRuntime {
                     );
                     console.log('[Wasm]:', new TextDecoder().decode(bytes));
                 },
-                
+
                 // 时间访问 (受限)
                 time: () => {
                     // 可以添加速率限制
                     return Date.now();
                 },
-                
+
                 // 安全的中止处理
                 abort: (msgPtr, filePtr, line, col) => {
                     const msg = this.readString(msgPtr);
@@ -2147,13 +2167,13 @@ class SecureWasmRuntime {
                         'Wasm abort: ' + msg + ' at ' + file + ':' + line + ':' + col
                     );
                 },
-                
+
                 // 种子随机数 (确定性)
                 seed: () => {
                     return this.options.deterministic ? 42 : Date.now();
                 }
             },
-            
+
             // 计量 (Gas 机制)
             metering: {
                 use_gas: (amount) => {
@@ -2165,33 +2185,33 @@ class SecureWasmRuntime {
             }
         };
     }
-    
+
     async run(wasmBuffer, entryPoint, ...args) {
         this.stats.startTime = performance.now();
         this.gasUsed = 0;
         this.gasLimit = this.options.gasLimit || 1000000;
-        
+
         // 超时检查
         const timeoutId = setTimeout(() => {
             throw new Error('Execution timeout');
         }, this.options.maxExecutionTime);
-        
+
         try {
             const imports = this.createSecureImports();
             const { instance } = await WebAssembly.instantiate(
                 wasmBuffer,
                 imports
             );
-            
+
             this.memory = instance.exports.memory;
-            
+
             // 包装入口点以添加安全检查
             const wrappedEntry = this.wrapFunction(
                 instance.exports[entryPoint]
             );
-            
+
             const result = await wrappedEntry(...args);
-            
+
             return {
                 result,
                 stats: {
@@ -2200,25 +2220,25 @@ class SecureWasmRuntime {
                     memoryPages: this.memory.buffer.byteLength / 65536
                 }
             };
-            
+
         } finally {
             clearTimeout(timeoutId);
         }
     }
-    
+
     wrapFunction(fn) {
         const runtime = this;
         const original = fn;
         let callDepth = 0;
-        
+
         return function(...args) {
             callDepth++;
-            
+
             if (callDepth > runtime.options.maxCallStackDepth) {
                 callDepth--;
                 throw new Error('Call stack overflow');
             }
-            
+
             try {
                 return original.apply(this, args);
             } finally {
@@ -2226,7 +2246,7 @@ class SecureWasmRuntime {
             }
         };
     }
-    
+
     readString(ptr) {
         const view = new Uint8Array(this.memory.buffer);
         let len = 0;
@@ -2261,56 +2281,56 @@ use wasmtime_wasi::WasiCtxBuilder;
 
 fn create_secure_engine() -> Engine {
     let mut config = Config::new();
-    
+
     // 禁用 JIT sprayed 代码 (防止某些攻击)
     config.cranelift_opt_level(wasmtime::OptLevel::Speed);
-    
+
     // 启用浮点陷阱 (确定性)
     config.cranelift_nan_canonicalization(true);
-    
+
     // 禁用并行编译 (如果不需要)
     config.parallel_compilation(false);
-    
+
     // 启用消耗计量
     config.consume_fuel(true);
-    
+
     Engine::new(&config).unwrap()
 }
 
 fn run_with_limits(wasm_bytes: &[u8]) -> anyhow::Result<()> {
     let engine = create_secure_engine();
     let module = Module::new(&engine, wasm_bytes)?;
-    
+
     // 限制内存
     let memory_type = MemoryType::new(
         1, // min pages
         Some(10) // max pages
     );
-    
+
     // 限制 WASI 能力
     let wasi = WasiCtxBuilder::new()
         .inherit_stdio()
         .preopen_dir("/sandbox", "/sandbox")?
         .env("SAFE_MODE", "1")
         .build();
-    
+
     let mut store = Store::new(&engine, wasi);
-    
+
     // 设置燃料限制
     store.add_fuel(10000)?;
-    
+
     // 实例化并运行
     let instance = wasmtime::Instance::new(&mut store, &module, &[])?;
-    
+
     let run = instance
         .get_typed_func::<(), ()>(&mut store, "run")?;
-    
+
     run.call(&mut store, ())?;
-    
+
     // 检查剩余燃料
     let remaining = store.get_fuel()?;
     println!("Fuel consumed: {}", 10000 - remaining);
-    
+
     Ok(())
 }
 ```
@@ -2369,5 +2389,5 @@ WebAssembly 正在从浏览器技术演变为通用的安全沙箱执行环境�
 
 ---
 
-*文档版本: 1.0*  
+*文档版本: 1.0*
 *最后更新: 2026-04-08*

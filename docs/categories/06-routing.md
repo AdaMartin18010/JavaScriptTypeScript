@@ -6,10 +6,23 @@
 
 ## 📑 目录
 
-1. [React 路由](#1-react-路由)
-2. [Vue 路由](#2-vue-路由)
-3. [通用/框架无关路由](#3-通用框架无关路由)
-4. [选型指南](#4-选型指南)
+- [06 - 路由库生态 (Routing Libraries)](#06---路由库生态-routing-libraries)
+  - [📑 目录](#-目录)
+  - [1. React 路由](#1-react-路由)
+    - [1.1 React Router ⭐55k](#11-react-router-55k)
+    - [1.2 TanStack Router ⭐14k](#12-tanstack-router-14k)
+    - [1.3 wouter ⭐7.6k](#13-wouter-76k)
+    - [1.4 ~Reach Router~ ⚠️ 已合并](#14-reach-router-️-已合并)
+  - [2. Vue 路由](#2-vue-路由)
+    - [2.1 Vue Router ⭐19k](#21-vue-router-19k)
+  - [3. 通用/框架无关路由](#3-通用框架无关路由)
+    - [3.1 TanStack Router (通用版) ⭐14k](#31-tanstack-router-通用版-14k)
+    - [3.2 radix3 ⭐350](#32-radix3-350)
+  - [4. 选型指南](#4-选型指南)
+    - [4.1 按框架选择](#41-按框架选择)
+    - [4.2 决策树](#42-决策树)
+    - [4.3 趋势总结](#43-趋势总结)
+  - [📝 贡献指南](#-贡献指南)
 
 ---
 

@@ -227,6 +227,11 @@ export class DataFlowGraph {
       }
       this.dependents.get(sourceId)!.add(node.id);
     });
+
+    // 如果是计算节点，立即计算初始值
+    if (node.compute) {
+      this.recomputeNode(node.id);
+    }
   }
 
   // 更新节点值，触发级联更新

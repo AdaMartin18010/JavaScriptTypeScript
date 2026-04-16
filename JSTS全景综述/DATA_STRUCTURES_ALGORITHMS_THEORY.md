@@ -6,16 +6,72 @@
 
 ## 目录
 
-1. [复杂度分析理论](#1-复杂度分析理论)
-2. [JavaScript 内置数据结构的形式化](#2-javascript-内置数据结构的形式化)
-3. [树结构](#3-树结构)
-4. [图算法](#4-图算法)
-5. [排序算法](#5-排序算法)
-6. [动态规划理论](#6-动态规划理论)
-7. [贪心算法和证明](#7-贪心算法和证明)
-8. [字符串算法](#8-字符串算法)
-9. [高级数据结构](#9-高级数据结构)
-10. [算法设计范式](#10-算法设计范式)
+- [数据结构与算法理论全景综述](#数据结构与算法理论全景综述)
+  - [目录](#目录)
+  - [1. 复杂度分析理论](#1-复杂度分析理论)
+    - [1.1 渐近记号体系](#11-渐近记号体系)
+      - [大 O 记号（渐进上界）](#大-o-记号渐进上界)
+      - [主定理](#主定理)
+  - [2. JavaScript 内置数据结构](#2-javascript-内置数据结构)
+    - [2.1 Array](#21-array)
+  - [3. 树结构](#3-树结构)
+    - [3.1 二叉树](#31-二叉树)
+    - [3.2 AVL 树](#32-avl-树)
+  - [4. 图算法](#4-图算法)
+    - [4.1 BFS](#41-bfs)
+    - [4.2 DFS](#42-dfs)
+  - [5. 排序算法](#5-排序算法)
+  - [6. 动态规划](#6-动态规划)
+  - [7. 贪心算法](#7-贪心算法)
+  - [8. 字符串算法](#8-字符串算法)
+  - [9. 高级数据结构](#9-高级数据结构)
+  - [10. 算法设计范式](#10-算法设计范式)
+  - [详细内容](#详细内容)
+    - [1. 复杂度分析理论详解](#1-复杂度分析理论详解)
+      - [1.1 大 O、大 Omega、大 Theta](#11-大-o大-omega大-theta)
+      - [1.2 主定理应用](#12-主定理应用)
+      - [1.3 摊还分析](#13-摊还分析)
+    - [2. JavaScript 数据结构实现](#2-javascript-数据结构实现)
+      - [2.1 完整 Array 实现](#21-完整-array-实现)
+      - [2.2 完整 HashTable 实现](#22-完整-hashtable-实现)
+    - [3. 树结构详解](#3-树结构详解)
+      - [3.1 二叉搜索树 (BST)](#31-二叉搜索树-bst)
+      - [3.2 AVL 树详解](#32-avl-树详解)
+      - [3.3 红黑树详解](#33-红黑树详解)
+      - [3.4 Trie (前缀树)](#34-trie-前缀树)
+    - [4. 图算法详解](#4-图算法详解)
+      - [4.1 图的表示](#41-图的表示)
+      - [4.2 BFS (广度优先搜索)](#42-bfs-广度优先搜索)
+      - [4.3 DFS (深度优先搜索)](#43-dfs-深度优先搜索)
+      - [4.4 Dijkstra 算法](#44-dijkstra-算法)
+      - [4.5 A\* 算法](#45-a-算法)
+      - [4.6 并查集 (Union-Find)](#46-并查集-union-find)
+    - [5. 排序算法详解](#5-排序算法详解)
+      - [5.1 快速排序 (Quick Sort)](#51-快速排序-quick-sort)
+      - [5.2 归并排序 (Merge Sort)](#52-归并排序-merge-sort)
+      - [5.3 堆排序 (Heap Sort)](#53-堆排序-heap-sort)
+      - [5.4 计数排序 (Counting Sort)](#54-计数排序-counting-sort)
+    - [6. 动态规划理论](#6-动态规划理论)
+      - [6.1 核心概念](#61-核心概念)
+      - [6.2 经典问题: 斐波那契数列](#62-经典问题-斐波那契数列)
+      - [6.3 经典问题: 最长公共子序列 (LCS)](#63-经典问题-最长公共子序列-lcs)
+      - [6.4 经典问题: 0/1 背包](#64-经典问题-01-背包)
+    - [7. 贪心算法](#7-贪心算法-1)
+      - [7.1 核心思想](#71-核心思想)
+      - [7.2 经典问题: 活动选择问题](#72-经典问题-活动选择问题)
+      - [7.3 经典问题: 霍夫曼编码](#73-经典问题-霍夫曼编码)
+    - [8. 字符串算法](#8-字符串算法-1)
+      - [8.1 KMP 算法](#81-kmp-算法)
+      - [8.2 Rabin-Karp 算法](#82-rabin-karp-算法)
+    - [9. 高级数据结构](#9-高级数据结构-1)
+      - [9.1 线段树 (Segment Tree)](#91-线段树-segment-tree)
+      - [9.2 树状数组 (Fenwick Tree / Binary Indexed Tree)](#92-树状数组-fenwick-tree--binary-indexed-tree)
+      - [9.3 跳表 (Skip List)](#93-跳表-skip-list)
+    - [10. 算法设计范式](#10-算法设计范式-1)
+      - [10.1 分治法 (Divide and Conquer)](#101-分治法-divide-and-conquer)
+      - [10.2 回溯法 (Backtracking)](#102-回溯法-backtracking)
+      - [10.3 分支限界 (Branch and Bound)](#103-分支限界-branch-and-bound)
+  - [总结](#总结)
 
 ---
 
@@ -58,7 +114,7 @@ class TreeNode<T> {
     value: T;
     left: TreeNode<T> | null = null;
     right: TreeNode<T> | null = null;
-    
+
     constructor(value: T) {
         this.value = value;
     }
@@ -130,14 +186,17 @@ KMP, Rabin-Karp
 #### 1.1 大 O、大 Omega、大 Theta
 
 **大 O (Big-O)**: 描述算法运行时间的上界
+
 - f(n) = O(g(n)) 表示 f(n) 的增长速度不超过 g(n)
 - 例如: 3n^2 + 2n + 1 = O(n^2)
 
 **大 Omega (Big-Omega)**: 描述算法运行时间的下界
+
 - f(n) = Omega(g(n)) 表示 f(n) 的增长速度至少为 g(n)
 - 例如: 比较排序的下界为 Omega(n log n)
 
 **大 Theta (Big-Theta)**: 描述算法运行时间的紧确界
+
 - f(n) = Theta(g(n)) 当且仅当 f(n) = O(g(n)) 且 f(n) = Omega(g(n))
 
 #### 1.2 主定理应用
@@ -151,6 +210,7 @@ T(n) = aT(n/b) + f(n)
 ```
 
 **示例:**
+
 - 归并排序: T(n) = 2T(n/2) + O(n) -> Case 2 -> Theta(n log n)
 - 二分查找: T(n) = T(n/2) + O(1) -> Case 2 -> Theta(log n)
 
@@ -159,6 +219,7 @@ T(n) = aT(n/b) + f(n)
 摊还分析计算操作序列的平均成本，即使单个操作成本很高。
 
 **动态数组 push 操作的摊还分析:**
+
 - 大多数 push: O(1)
 - 偶尔 resize: O(n)
 - n 次操作总成本: O(n)
@@ -216,22 +277,22 @@ class FormalArray<T> implements IArray<T> {
     splice(start: number, deleteCount: number = 0, ...items: T[]): T[] {
         const removed: T[] = [];
         const actualDelete = Math.min(deleteCount, this.length - start);
-        
+
         for (let i = 0; i < actualDelete; i++) {
             removed[i] = this.data[start + i];
         }
-        
+
         const shift = items.length - actualDelete;
         if (shift > 0) {
             for (let i = this.length - 1; i >= start + actualDelete; i--) {
                 this.data[i + shift] = this.data[i];
             }
         }
-        
+
         for (let i = 0; i < items.length; i++) {
             this.data[start + i] = items[i];
         }
-        
+
         this.length += shift;
         return removed;
     }
@@ -276,15 +337,15 @@ class HashTable<K, V> {
         if (this.size / this.capacity > 0.75) {
             this.resize();
         }
-        
+
         let index = this.hash(key);
         let i = 0;
-        
-        while (this.table[index] !== undefined && 
+
+        while (this.table[index] !== undefined &&
                this.table[index]?.key !== key) {
             index = this.probe(this.hash(key), ++i);
         }
-        
+
         if (this.table[index] === undefined) this.size++;
         this.table[index] = { key, value };
     }
@@ -292,7 +353,7 @@ class HashTable<K, V> {
     get(key: K): V | undefined {
         let index = this.hash(key);
         let i = 0;
-        
+
         while (this.table[index] !== undefined) {
             if (this.table[index]!.key === key) {
                 return this.table[index]!.value;
@@ -305,7 +366,7 @@ class HashTable<K, V> {
     delete(key: K): boolean {
         let index = this.hash(key);
         let i = 0;
-        
+
         while (this.table[index] !== undefined) {
             if (this.table[index]!.key === key) {
                 this.table[index] = undefined;
@@ -322,7 +383,7 @@ class HashTable<K, V> {
         this.capacity *= 2;
         this.size = 0;
         this.table = new Array(this.capacity);
-        
+
         for (const entry of oldTable) {
             if (entry) this.set(entry.key, entry.value);
         }
@@ -339,6 +400,7 @@ class HashTable<K, V> {
 **性质:** 对于每个节点，左子树所有值 < 节点值 < 右子树所有值
 
 **复杂度:**
+
 - 平均: O(log n) 搜索/插入/删除
 - 最坏: O(n)（退化成链表）
 
@@ -347,7 +409,7 @@ class BSTNode<T> {
     value: T;
     left: BSTNode<T> | null = null;
     right: BSTNode<T> | null = null;
-    
+
     constructor(value: T) {
         this.value = value;
     }
@@ -362,7 +424,7 @@ class BinarySearchTree<T> {
 
     private insertNode(node: BSTNode<T> | null, value: T): BSTNode<T> {
         if (!node) return new BSTNode(value);
-        
+
         if (value < node.value) {
             node.left = this.insertNode(node.left, value);
         } else if (value > node.value) {
@@ -387,8 +449,9 @@ class BinarySearchTree<T> {
 **平衡条件:** |height(left) - height(right)| <= 1
 
 **旋转操作:**
+
 - LL: 右旋
-- RR: 左旋  
+- RR: 左旋
 - LR: 先左旋后右旋
 - RL: 先右旋后左旋
 
@@ -398,7 +461,7 @@ class AVLNode<T> {
     left: AVLNode<T> | null = null;
     right: AVLNode<T> | null = null;
     height: number = 1;
-    
+
     constructor(value: T) {
         this.value = value;
     }
@@ -425,10 +488,10 @@ class AVLTree<T> {
     private rotateRight(y: AVLNode<T>): AVLNode<T> {
         const x = y.left!;
         const T2 = x.right;
-        
+
         x.right = y;
         y.left = T2;
-        
+
         this.updateHeight(y);
         this.updateHeight(x);
         return x;
@@ -437,10 +500,10 @@ class AVLTree<T> {
     private rotateLeft(x: AVLNode<T>): AVLNode<T> {
         const y = x.right!;
         const T2 = y.left;
-        
+
         y.left = x;
         x.right = T2;
-        
+
         this.updateHeight(x);
         this.updateHeight(y);
         return y;
@@ -452,7 +515,7 @@ class AVLTree<T> {
 
     private insertNode(node: AVLNode<T> | null, value: T): AVLNode<T> {
         if (!node) return new AVLNode(value);
-        
+
         if (value < node.value) {
             node.left = this.insertNode(node.left, value);
         } else if (value > node.value) {
@@ -460,10 +523,10 @@ class AVLTree<T> {
         } else {
             return node;
         }
-        
+
         this.updateHeight(node);
         const balance = this.balance(node);
-        
+
         // LL
         if (balance > 1 && value < node.left!.value) {
             return this.rotateRight(node);
@@ -482,7 +545,7 @@ class AVLTree<T> {
             node.right = this.rotateRight(node.right!);
             return this.rotateLeft(node);
         }
-        
+
         return node;
     }
 }
@@ -491,6 +554,7 @@ class AVLTree<T> {
 #### 3.3 红黑树详解
 
 **性质:**
+
 1. 每个节点是红色或黑色
 2. 根节点是黑色
 3. 红色节点的子节点必须是黑色
@@ -580,12 +644,13 @@ class Graph<T> {
 #### 4.2 BFS (广度优先搜索)
 
 **算法描述:**
+
 ```
 BFS(G, s):
     初始化: 所有顶点为白色，distance[s] = 0
     queue = [s]
     标记 s 为灰色
-    
+
     while queue 不为空:
         u = queue.dequeue()
         for 每个邻接点 v of u:
@@ -603,14 +668,14 @@ function bfs<T>(graph: Graph<T>, start: T): Map<T, number> {
     const visited = new Set<T>();
     const distance = new Map<T, number>();
     const queue: T[] = [start];
-    
+
     visited.add(start);
     distance.set(start, 0);
-    
+
     while (queue.length > 0) {
         const vertex = queue.shift()!;
         const dist = distance.get(vertex)!;
-        
+
         for (const neighbor of graph.getNeighbors(vertex)) {
             if (!visited.has(neighbor)) {
                 visited.add(neighbor);
@@ -619,7 +684,7 @@ function bfs<T>(graph: Graph<T>, start: T): Map<T, number> {
             }
         }
     }
-    
+
     return distance;
 }
 ```
@@ -627,6 +692,7 @@ function bfs<T>(graph: Graph<T>, start: T): Map<T, number> {
 #### 4.3 DFS (深度优先搜索)
 
 **算法描述:**
+
 ```
 DFS(G):
     for 每个顶点 u:
@@ -647,18 +713,18 @@ DFS-Visit(u):
 function dfs<T>(graph: Graph<T>, start: T): T[] {
     const visited = new Set<T>();
     const result: T[] = [];
-    
+
     function dfsVisit(vertex: T): void {
         visited.add(vertex);
         result.push(vertex);
-        
+
         for (const neighbor of graph.getNeighbors(vertex)) {
             if (!visited.has(neighbor)) {
                 dfsVisit(neighbor);
             }
         }
     }
-    
+
     dfsVisit(start);
     return result;
 }
@@ -668,14 +734,14 @@ function dfsIterative<T>(graph: Graph<T>, start: T): T[] {
     const visited = new Set<T>();
     const stack: T[] = [start];
     const result: T[] = [];
-    
+
     while (stack.length > 0) {
         const vertex = stack.pop()!;
-        
+
         if (!visited.has(vertex)) {
             visited.add(vertex);
             result.push(vertex);
-            
+
             for (const neighbor of graph.getNeighbors(vertex)) {
                 if (!visited.has(neighbor)) {
                     stack.push(neighbor);
@@ -683,7 +749,7 @@ function dfsIterative<T>(graph: Graph<T>, start: T): T[] {
             }
         }
     }
-    
+
     return result;
 }
 ```
@@ -693,12 +759,13 @@ function dfsIterative<T>(graph: Graph<T>, start: T): T[] {
 **用途:** 单源最短路径（非负权图）
 
 **算法描述:**
+
 ```
 Dijkstra(G, s):
     初始化: distance[s] = 0, 其他为无穷大
     S = 空集合
     Q = 所有顶点
-    
+
     while Q 不为空:
         u = Q 中 distance 最小的顶点
         S = S + {u}
@@ -708,6 +775,7 @@ Dijkstra(G, s):
 ```
 
 **复杂度:**
+
 - 数组实现: O(V^2)
 - 优先队列: O((V + E) log V)
 
@@ -730,27 +798,27 @@ class WeightedGraph {
     dijkstra(start: string): Map<string, number> {
         const distances = new Map<string, number>();
         const visited = new Set<string>();
-        
+
         // 初始化
         for (const vertex of this.adjacencyList.keys()) {
             distances.set(vertex, vertex === start ? 0 : Infinity);
         }
-        
+
         while (visited.size < this.adjacencyList.size) {
             // 找最小距离
             let minVertex: string | null = null;
             let minDist = Infinity;
-            
+
             for (const [vertex, dist] of distances) {
                 if (!visited.has(vertex) && dist < minDist) {
                     minDist = dist;
                     minVertex = vertex;
                 }
             }
-            
+
             if (!minVertex) break;
             visited.add(minVertex);
-            
+
             // 更新邻接点距离
             const edges = this.adjacencyList.get(minVertex) || [];
             for (const edge of edges) {
@@ -762,7 +830,7 @@ class WeightedGraph {
                 }
             }
         }
-        
+
         return distances;
     }
 }
@@ -773,6 +841,7 @@ class WeightedGraph {
 **用途:** 启发式搜索最短路径
 
 **评估函数:** f(n) = g(n) + h(n)
+
 - g(n): 从起点到 n 的实际成本
 - h(n): 从 n 到终点的启发式估计成本
 
@@ -797,22 +866,22 @@ function aStar(
 ): [number, number][] | null {
     const openSet: AStarNode[] = [];
     const closedSet = new Set<string>();
-    
+
     const startNode: AStarNode = {
         x: start[0],
         y: start[1],
         g: 0,
-        f: heuristic({ x: start[0], y: start[1], g: 0, f: 0 }, 
+        f: heuristic({ x: start[0], y: start[1], g: 0, f: 0 },
                      { x: end[0], y: end[1], g: 0, f: 0 })
     };
-    
+
     openSet.push(startNode);
-    
+
     while (openSet.length > 0) {
         // 找 f 值最小的节点
         openSet.sort((a, b) => a.f - b.f);
         const current = openSet.shift()!;
-        
+
         if (current.x === end[0] && current.y === end[1]) {
             // 重建路径
             const path: [number, number][] = [];
@@ -823,20 +892,20 @@ function aStar(
             }
             return path;
         }
-        
+
         const key = `${current.x},${current.y}`;
         if (closedSet.has(key)) continue;
         closedSet.add(key);
-        
+
         // 检查四个方向
         const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
         for (const [dx, dy] of directions) {
             const nx = current.x + dx;
             const ny = current.y + dy;
-            
+
             if (nx < 0 || ny < 0 || nx >= grid.length || ny >= grid[0].length) continue;
             if (grid[nx][ny] === 1) continue; // 障碍物
-            
+
             const neighbor: AStarNode = {
                 x: nx,
                 y: ny,
@@ -845,14 +914,14 @@ function aStar(
                 parent: current
             };
             neighbor.f = neighbor.g + heuristic(neighbor, { x: end[0], y: end[1], g: 0, f: 0 });
-            
+
             const neighborKey = `${nx},${ny}`;
             if (!closedSet.has(neighborKey)) {
                 openSet.push(neighbor);
             }
         }
     }
-    
+
     return null; // 无路径
 }
 ```
@@ -862,6 +931,7 @@ function aStar(
 **用途:** 连通性检测、最小生成树（Kruskal）
 
 **操作:**
+
 - Find: 查找元素所属集合（路径压缩）
 - Union: 合并两个集合（按秩合并）
 
@@ -887,9 +957,9 @@ class UnionFind {
     union(x: number, y: number): boolean {
         const rootX = this.find(x);
         const rootY = this.find(y);
-        
+
         if (rootX === rootY) return false;
-        
+
         // 按秩合并
         if (this.rank[rootX] < this.rank[rootY]) {
             this.parent[rootX] = rootY;
@@ -915,11 +985,13 @@ class UnionFind {
 #### 5.1 快速排序 (Quick Sort)
 
 **分治策略:**
+
 1. 选择基准元素 (pivot)
 2. 分区: 小于 pivot 的在左，大于的在右
 3. 递归排序左右两部分
 
 **复杂度:**
+
 - 平均: O(n log n)
 - 最坏: O(n^2)（已排序数组）
 - 空间: O(log n)
@@ -927,12 +999,12 @@ class UnionFind {
 ```typescript
 function quickSort(arr: number[]): number[] {
     if (arr.length <= 1) return arr;
-    
+
     const pivot = arr[Math.floor(arr.length / 2)];
     const left = arr.filter(x => x < pivot);
     const middle = arr.filter(x => x === pivot);
     const right = arr.filter(x => x > pivot);
-    
+
     return [...quickSort(left), ...middle, ...quickSort(right)];
 }
 
@@ -948,14 +1020,14 @@ function quickSortInPlace(arr: number[], low = 0, high = arr.length - 1): void {
 function partition(arr: number[], low: number, high: number): number {
     const pivot = arr[high];
     let i = low - 1;
-    
+
     for (let j = low; j < high; j++) {
         if (arr[j] <= pivot) {
             i++;
             [arr[i], arr[j]] = [arr[j], arr[i]];
         }
     }
-    
+
     [arr[i + 1], arr[high]] = [arr[high], arr[i + 1]];
     return i + 1;
 }
@@ -964,29 +1036,31 @@ function partition(arr: number[], low: number, high: number): number {
 #### 5.2 归并排序 (Merge Sort)
 
 **分治策略:**
+
 1. 将数组分成两半
 2. 递归排序每一半
 3. 合并两个有序数组
 
 **复杂度:**
+
 - 时间: O(n log n)（稳定）
 - 空间: O(n)
 
 ```typescript
 function mergeSort(arr: number[]): number[] {
     if (arr.length <= 1) return arr;
-    
+
     const mid = Math.floor(arr.length / 2);
     const left = mergeSort(arr.slice(0, mid));
     const right = mergeSort(arr.slice(mid));
-    
+
     return merge(left, right);
 }
 
 function merge(left: number[], right: number[]): number[] {
     const result: number[] = [];
     let i = 0, j = 0;
-    
+
     while (i < left.length && j < right.length) {
         if (left[i] <= right[j]) {
             result.push(left[i++]);
@@ -994,7 +1068,7 @@ function merge(left: number[], right: number[]): number[] {
             result.push(right[j++]);
         }
     }
-    
+
     return result.concat(left.slice(i), right.slice(j));
 }
 ```
@@ -1002,23 +1076,25 @@ function merge(left: number[], right: number[]): number[] {
 #### 5.3 堆排序 (Heap Sort)
 
 **步骤:**
+
 1. 构建最大堆
 2. 将堆顶（最大值）与末尾交换
 3. 调整堆，重复步骤2
 
 **复杂度:**
+
 - 时间: O(n log n)
 - 空间: O(1)
 
 ```typescript
 function heapSort(arr: number[]): void {
     const n = arr.length;
-    
+
     // 构建最大堆
     for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
         heapify(arr, n, i);
     }
-    
+
     // 提取元素
     for (let i = n - 1; i > 0; i--) {
         [arr[0], arr[i]] = [arr[i], arr[0]];
@@ -1030,15 +1106,15 @@ function heapify(arr: number[], n: number, i: number): void {
     let largest = i;
     const left = 2 * i + 1;
     const right = 2 * i + 2;
-    
+
     if (left < n && arr[left] > arr[largest]) {
         largest = left;
     }
-    
+
     if (right < n && arr[right] > arr[largest]) {
         largest = right;
     }
-    
+
     if (largest !== i) {
         [arr[i], arr[largest]] = [arr[largest], arr[i]];
         heapify(arr, n, largest);
@@ -1051,6 +1127,7 @@ function heapify(arr: number[], n: number, i: number): void {
 **适用:** 数据范围较小的整数排序
 
 **复杂度:**
+
 - 时间: O(n + k)，k 为数据范围
 - 空间: O(k)
 
@@ -1058,23 +1135,23 @@ function heapify(arr: number[], n: number, i: number): void {
 function countingSort(arr: number[], maxValue: number): number[] {
     const count = new Array(maxValue + 1).fill(0);
     const output = new Array(arr.length);
-    
+
     // 计数
     for (const num of arr) {
         count[num]++;
     }
-    
+
     // 累加
     for (let i = 1; i <= maxValue; i++) {
         count[i] += count[i - 1];
     }
-    
+
     // 构建输出（从后向前保持稳定性）
     for (let i = arr.length - 1; i >= 0; i--) {
         output[count[arr[i]] - 1] = arr[i];
         count[arr[i]]--;
     }
-    
+
     return output;
 }
 ```
@@ -1092,6 +1169,7 @@ function countingSort(arr: number[], maxValue: number): number[] {
 递归求解时会重复计算相同的子问题。
 
 **解决方法:**
+
 1. 记忆化搜索（自顶向下）
 2. 表格法（自底向上）
 
@@ -1108,7 +1186,7 @@ function fibRecursive(n: number): number {
 function fibMemo(n: number, memo: Map<number, number> = new Map()): number {
     if (n <= 1) return n;
     if (memo.has(n)) return memo.get(n)!;
-    
+
     const result = fibMemo(n - 1, memo) + fibMemo(n - 2, memo);
     memo.set(n, result);
     return result;
@@ -1130,6 +1208,7 @@ function fibIterative(n: number): number {
 **定义:** 给定两个序列 X 和 Y，找出最长的公共子序列
 
 **递推关系:**
+
 ```
 LCS[i][j] = {
     0,                         若 i = 0 或 j = 0
@@ -1141,10 +1220,10 @@ LCS[i][j] = {
 ```typescript
 function lcs(X: string, Y: string): string {
     const m = X.length, n = Y.length;
-    const dp: number[][] = Array.from({ length: m + 1 }, () => 
+    const dp: number[][] = Array.from({ length: m + 1 }, () =>
         new Array(n + 1).fill(0)
     );
-    
+
     // 填表
     for (let i = 1; i <= m; i++) {
         for (let j = 1; j <= n; j++) {
@@ -1155,7 +1234,7 @@ function lcs(X: string, Y: string): string {
             }
         }
     }
-    
+
     // 重建路径
     let i = m, j = n;
     const result: string[] = [];
@@ -1170,7 +1249,7 @@ function lcs(X: string, Y: string): string {
             j--;
         }
     }
-    
+
     return result.join('');
 }
 ```
@@ -1180,6 +1259,7 @@ function lcs(X: string, Y: string): string {
 **问题:** 在容量限制下选择物品使价值最大
 
 **递推关系:**
+
 ```
 dp[i][w] = max(dp[i-1][w], dp[i-1][w-weight[i]] + value[i])
 ```
@@ -1188,14 +1268,14 @@ dp[i][w] = max(dp[i-1][w], dp[i-1][w-weight[i]] + value[i])
 function knapsack(weights: number[], values: number[], capacity: number): number {
     const n = weights.length;
     const dp: number[] = new Array(capacity + 1).fill(0);
-    
+
     for (let i = 0; i < n; i++) {
         // 倒序遍历避免重复选择
         for (let w = capacity; w >= weights[i]; w--) {
             dp[w] = Math.max(dp[w], dp[w - weights[i]] + values[i]);
         }
     }
-    
+
     return dp[capacity];
 }
 ```
@@ -1227,17 +1307,17 @@ interface Activity {
 function activitySelection(activities: Activity[]): Activity[] {
     // 按结束时间排序
     activities.sort((a, b) => a.end - b.end);
-    
+
     const selected: Activity[] = [activities[0]];
     let lastEnd = activities[0].end;
-    
+
     for (let i = 1; i < activities.length; i++) {
         if (activities[i].start >= lastEnd) {
             selected.push(activities[i]);
             lastEnd = activities[i].end;
         }
     }
-    
+
     return selected;
 }
 ```
@@ -1245,6 +1325,7 @@ function activitySelection(activities: Activity[]): Activity[] {
 **证明贪心策略正确性:**
 
 设活动按结束时间排序为 a1, a2, ..., an
+
 - 假设最优解第一个活动是 ak (k > 1)
 - 由于 a1 结束时间 <= ak 结束时间
 - 用 a1 替换 ak 仍能得到最优解
@@ -1262,7 +1343,7 @@ class HuffmanNode {
     freq: number;
     left: HuffmanNode | null = null;
     right: HuffmanNode | null = null;
-    
+
     constructor(char: string, freq: number) {
         this.char = char;
         this.freq = freq;
@@ -1274,21 +1355,21 @@ function buildHuffmanTree(freqMap: Map<string, number>): HuffmanNode {
     for (const [char, freq] of freqMap) {
         nodes.push(new HuffmanNode(char, freq));
     }
-    
+
     while (nodes.length > 1) {
         // 排序，取频率最小的两个
         nodes.sort((a, b) => a.freq - b.freq);
         const left = nodes.shift()!;
         const right = nodes.shift()!;
-        
+
         // 合并
         const merged = new HuffmanNode('', left.freq + right.freq);
         merged.left = left;
         merged.right = right;
-        
+
         nodes.push(merged);
     }
-    
+
     return nodes[0];
 }
 
@@ -1297,10 +1378,10 @@ function getCodes(node: HuffmanNode, prefix = '', codes: Map<string, string> = n
         codes.set(node.char, prefix || '0');
         return codes;
     }
-    
+
     if (node.left) getCodes(node.left, prefix + '0', codes);
     if (node.right) getCodes(node.right, prefix + '1', codes);
-    
+
     return codes;
 }
 ```
@@ -1320,7 +1401,7 @@ function computeLPS(pattern: string): number[] {
     const lps = new Array(pattern.length).fill(0);
     let len = 0;
     let i = 1;
-    
+
     while (i < pattern.length) {
         if (pattern[i] === pattern[len]) {
             len++;
@@ -1335,20 +1416,20 @@ function computeLPS(pattern: string): number[] {
             }
         }
     }
-    
+
     return lps;
 }
 
 function kmpSearch(text: string, pattern: string): number[] {
     const lps = computeLPS(pattern);
     const result: number[] = [];
-    
+
     let i = 0, j = 0;
     while (i < text.length) {
         if (text[i] === pattern[j]) {
             i++;
             j++;
-            
+
             if (j === pattern.length) {
                 result.push(i - j);
                 j = lps[j - 1];
@@ -1361,7 +1442,7 @@ function kmpSearch(text: string, pattern: string): number[] {
             }
         }
     }
-    
+
     return result;
 }
 ```
@@ -1380,18 +1461,18 @@ function rabinKarp(text: string, pattern: string, base = 256, prime = 101): numb
     let patternHash = 0;
     let textHash = 0;
     let h = 1;
-    
+
     // h = base^(m-1) % prime
     for (let i = 0; i < m - 1; i++) {
         h = (h * base) % prime;
     }
-    
+
     // 计算初始哈希值
     for (let i = 0; i < m; i++) {
         patternHash = (base * patternHash + pattern.charCodeAt(i)) % prime;
         textHash = (base * textHash + text.charCodeAt(i)) % prime;
     }
-    
+
     // 滑动窗口
     for (let i = 0; i <= n - m; i++) {
         if (patternHash === textHash) {
@@ -1405,20 +1486,21 @@ function rabinKarp(text: string, pattern: string, base = 256, prime = 101): numb
             }
             if (match) result.push(i);
         }
-        
+
         // 计算下一个窗口的哈希值
         if (i < n - m) {
-            textHash = (base * (textHash - text.charCodeAt(i) * h) + 
+            textHash = (base * (textHash - text.charCodeAt(i) * h) +
                        text.charCodeAt(i + m)) % prime;
             if (textHash < 0) textHash += prime;
         }
     }
-    
+
     return result;
 }
 ```
 
 **复杂度:**
+
 - 平均: O(m + n)
 - 最坏: O(mn)（哈希冲突频繁）
 
@@ -1431,6 +1513,7 @@ function rabinKarp(text: string, pattern: string, base = 256, prime = 101): numb
 **用途:** 区间查询与修改
 
 **复杂度:**
+
 - 构建: O(n)
 - 查询: O(log n)
 - 更新: O(log n)
@@ -1451,7 +1534,7 @@ class SegmentTree {
             this.tree[node] = arr[start];
             return;
         }
-        
+
         const mid = Math.floor((start + end) / 2);
         this.build(arr, 2 * node + 1, start, mid);
         this.build(arr, 2 * node + 2, mid + 1, end);
@@ -1466,7 +1549,7 @@ class SegmentTree {
     private queryRange(node: number, start: number, end: number, l: number, r: number): number {
         if (r < start || end < l) return 0;
         if (l <= start && end <= r) return this.tree[node];
-        
+
         const mid = Math.floor((start + end) / 2);
         const leftSum = this.queryRange(2 * node + 1, start, mid, l, r);
         const rightSum = this.queryRange(2 * node + 2, mid + 1, end, l, r);
@@ -1483,7 +1566,7 @@ class SegmentTree {
             this.tree[node] = value;
             return;
         }
-        
+
         const mid = Math.floor((start + end) / 2);
         if (index <= mid) {
             this.updateNode(2 * node + 1, start, mid, index, value);
@@ -1500,6 +1583,7 @@ class SegmentTree {
 **用途:** 前缀和查询与单点更新
 
 **复杂度:**
+
 - 查询: O(log n)
 - 更新: O(log n)
 - 空间: O(n)
@@ -1555,13 +1639,14 @@ class FenwickTree {
 **用途:** 概率平衡的数据结构，实现有序集合
 
 **复杂度:**
+
 - 搜索/插入/删除: O(log n) 期望
 
 ```typescript
 class SkipListNode<T> {
     value: T;
     forward: SkipListNode<T>[];
-    
+
     constructor(value: T, level: number) {
         this.value = value;
         this.forward = new Array(level + 1).fill(null);
@@ -1591,14 +1676,14 @@ class SkipList<T> {
 
     search(target: T): boolean {
         let current = this.head;
-        
+
         for (let i = this.level; i >= 0; i--) {
-            while (current.forward[i] && 
+            while (current.forward[i] &&
                    this.compare(current.forward[i].value, target) < 0) {
                 current = current.forward[i];
             }
         }
-        
+
         current = current.forward[0];
         return current !== null && this.compare(current.value, target) === 0;
     }
@@ -1606,15 +1691,15 @@ class SkipList<T> {
     insert(value: T): void {
         const update: SkipListNode<T>[] = new Array(this.maxLevel + 1);
         let current = this.head;
-        
+
         for (let i = this.level; i >= 0; i--) {
-            while (current.forward[i] && 
+            while (current.forward[i] &&
                    this.compare(current.forward[i].value, value) < 0) {
                 current = current.forward[i];
             }
             update[i] = current;
         }
-        
+
         const newLevel = this.randomLevel();
         if (newLevel > this.level) {
             for (let i = this.level + 1; i <= newLevel; i++) {
@@ -1622,7 +1707,7 @@ class SkipList<T> {
             }
             this.level = newLevel;
         }
-        
+
         const newNode = new SkipListNode<T>(value, newLevel);
         for (let i = 0; i <= newLevel; i++) {
             newNode.forward[i] = update[i].forward[i];
@@ -1633,29 +1718,29 @@ class SkipList<T> {
     delete(value: T): boolean {
         const update: SkipListNode<T>[] = new Array(this.maxLevel + 1);
         let current = this.head;
-        
+
         for (let i = this.level; i >= 0; i--) {
-            while (current.forward[i] && 
+            while (current.forward[i] &&
                    this.compare(current.forward[i].value, value) < 0) {
                 current = current.forward[i];
             }
             update[i] = current;
         }
-        
+
         current = current.forward[0];
         if (current === null || this.compare(current.value, value) !== 0) {
             return false;
         }
-        
+
         for (let i = 0; i <= this.level; i++) {
             if (update[i].forward[i] !== current) break;
             update[i].forward[i] = current.forward[i];
         }
-        
+
         while (this.level > 0 && this.head.forward[this.level] === null) {
             this.level--;
         }
-        
+
         return true;
     }
 }
@@ -1668,11 +1753,13 @@ class SkipList<T> {
 #### 10.1 分治法 (Divide and Conquer)
 
 **三步策略:**
+
 1. **分解 (Divide):** 将问题分解为子问题
 2. **解决 (Conquer):** 递归解决子问题
 3. **合并 (Combine):** 合并子问题的解
 
 **经典例子:**
+
 - 归并排序
 - 快速排序
 - 二分搜索
@@ -1690,12 +1777,12 @@ function divideAndConquer<T, R>(
     if (isBaseCase(problem)) {
         return solveBase(problem);
     }
-    
+
     const subProblems = divide(problem);
-    const subResults = subProblems.map(sp => 
+    const subResults = subProblems.map(sp =>
         divideAndConquer(sp, isBaseCase, solveBase, divide, combine)
     );
-    
+
     return combine(subResults);
 }
 ```
@@ -1705,6 +1792,7 @@ function divideAndConquer<T, R>(
 **思想:** 深度优先搜索 + 剪枝
 
 **经典问题:**
+
 - N 皇后问题
 - 数独求解
 - 子集/排列/组合
@@ -1714,10 +1802,10 @@ function divideAndConquer<T, R>(
 // N 皇后问题
 function solveNQueens(n: number): string[][] {
     const result: string[][] = [];
-    const board: string[][] = Array.from({ length: n }, () => 
+    const board: string[][] = Array.from({ length: n }, () =>
         new Array(n).fill('.')
     );
-    
+
     function isValid(row: number, col: number): boolean {
         // 检查列
         for (let i = 0; i < row; i++) {
@@ -1733,13 +1821,13 @@ function solveNQueens(n: number): string[][] {
         }
         return true;
     }
-    
+
     function backtrack(row: number): void {
         if (row === n) {
             result.push(board.map(r => r.join('')));
             return;
         }
-        
+
         for (let col = 0; col < n; col++) {
             if (isValid(row, col)) {
                 board[row][col] = 'Q';
@@ -1748,7 +1836,7 @@ function solveNQueens(n: number): string[][] {
             }
         }
     }
-    
+
     backtrack(0);
     return result;
 }
@@ -1759,10 +1847,12 @@ function solveNQueens(n: number): string[][] {
 **思想:** BFS + 界限函数剪枝
 
 **与回溯区别:**
+
 - 回溯: DFS，关注解的存在性
 - 分支限界: BFS/最佳优先，关注最优解
 
 **经典问题:**
+
 - 旅行商问题 (TSP)
 - 0/1 背包问题
 - 作业调度
@@ -1785,42 +1875,42 @@ interface Node {
 function knapsackBranchBound(items: Item[], capacity: number): number {
     // 按价值密度排序
     items.sort((a, b) => b.ratio - a.ratio);
-    
+
     function bound(node: Node, n: number, capacity: number): number {
         if (node.weight >= capacity) return 0;
-        
+
         let profitBound = node.profit;
         let j = node.level + 1;
         let totalWeight = node.weight;
-        
+
         while (j < n && totalWeight + items[j].weight <= capacity) {
             totalWeight += items[j].weight;
             profitBound += items[j].value;
             j++;
         }
-        
+
         if (j < n) {
             profitBound += (capacity - totalWeight) * items[j].ratio;
         }
-        
+
         return profitBound;
     }
-    
+
     const queue: Node[] = [];
     const root: Node = { level: -1, profit: 0, weight: 0, bound: 0 };
     root.bound = bound(root, items.length, capacity);
     queue.push(root);
-    
+
     let maxProfit = 0;
-    
+
     while (queue.length > 0) {
         // 按 bound 排序（最佳优先）
         queue.sort((a, b) => b.bound - a.bound);
         const node = queue.shift()!;
-        
+
         if (node.bound > maxProfit && node.level < items.length - 1) {
             const nextLevel = node.level + 1;
-            
+
             // 左孩子：选择当前物品
             const left: Node = {
                 level: nextLevel,
@@ -1828,13 +1918,13 @@ function knapsackBranchBound(items: Item[], capacity: number): number {
                 weight: node.weight + items[nextLevel].weight,
                 bound: 0
             };
-            
+
             if (left.weight <= capacity && left.profit > maxProfit) {
                 maxProfit = left.profit;
             }
             left.bound = bound(left, items.length, capacity);
             if (left.bound > maxProfit) queue.push(left);
-            
+
             // 右孩子：不选当前物品
             const right: Node = {
                 level: nextLevel,
@@ -1846,7 +1936,7 @@ function knapsackBranchBound(items: Item[], capacity: number): number {
             if (right.bound > maxProfit) queue.push(right);
         }
     }
-    
+
     return maxProfit;
 }
 ```

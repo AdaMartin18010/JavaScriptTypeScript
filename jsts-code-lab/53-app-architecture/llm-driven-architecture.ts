@@ -88,6 +88,7 @@ export class IntelligentRouter {
     // 简单的意图映射
     const intentMap: Record<string, string> = {
       '查看订单': '/orders',
+      '订单': '/orders',
       'order': '/orders',
       '用户设置': '/settings',
       'settings': '/settings',

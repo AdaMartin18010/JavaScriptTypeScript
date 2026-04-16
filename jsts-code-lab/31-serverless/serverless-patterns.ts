@@ -233,7 +233,7 @@ export class StepFunction {
           break;
 
         case 'wait':
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 0));
           output = currentInput;
           break;
 

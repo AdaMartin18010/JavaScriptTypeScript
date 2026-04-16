@@ -99,12 +99,23 @@ export class ResponseCache {
   private tagIndex: Map<string, Set<string>> = new Map(); // tag -> cache keys
   private stats = { hits: 0, misses: 0, evictions: 0 };
   private maxSize: number;
+  private cleanupInterval?: ReturnType<typeof setInterval>;
 
   constructor(options: { maxSize?: number } = {}) {
     this.maxSize = options.maxSize || 1000;
     
     // 定期清理过期缓存
-    setInterval(() => this.cleanup(), 60000);
+    this.cleanupInterval = setInterval(() => this.cleanup(), 60000);
+  }
+
+  /**
+   * 停止定期清理
+   */
+  stopCleanup(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = undefined;
+    }
   }
 
   /**
