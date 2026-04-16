@@ -87,11 +87,16 @@ Turboshaft 同样采用 CFG-based IR，实验数据显示其编译速度比 Sea 
 
 ### 1.5 Turbolev 与编译器栈未来
 
-**Turbolev** 是 V8 团队正在开发的下一代顶层编译器，其设计目标是在不远的未来**彻底取代 TurboFan** [V8 Blog: Turbolev][V8 Security Analysis 2026]。从架构上看，Turbolev 并非从零开始的新编译器，而是**Maglev 前端（CFG-based SSA）与 Turboshaft 后端的深度整合**：它直接复用 Maglev 生成的传统控制流图（Control-Flow Graph, CFG）作为中间表示，并输入到 Turboshaft 的机器代码生成后端中。
+**Turbolev** 是 V8 团队正在开发的下一代顶层编译器，其设计目标是在不远的未来**彻底取代 TurboFan** [V8 Blog: Turbolev][V8 Security Analysis 2026]。
+从架构上看，Turbolev 并非从零开始的新编译器，而是**Maglev 前端（CFG-based SSA）与 Turboshaft 后端的深度整合**：它直接复用 Maglev 生成的传统控制流图（Control-Flow Graph, CFG）作为中间表示，并输入到 Turboshaft 的机器代码生成后端中。
 
-这意味着 V8 的顶层编译器将彻底告别 TurboFan 引以为傲的 **Sea of Nodes** 架构，全面回归传统的 **CFG + SSA** 范式。Sea of Nodes 虽然理论上允许更激进的全局调度与优化，但在 JavaScript 这种副作用密集、去优化频繁的语言中，其图调度的复杂度和内存开销并未带来预期的收益，反而成为了安全审计与编译器维护的沉重负担 [V8 Security Analysis 2026]。Turbolev 的决策与 Maglev 当初放弃 Sea of Nodes 的动因一脉相承：通过更线性、更可预测的控制流结构，换取更快的编译速度、更低的内存占用以及更易于形式化验证的编译器栈。
+这意味着 V8 的顶层编译器将彻底告别 TurboFan 引以为傲的 **Sea of Nodes** 架构，全面回归传统的 **CFG + SSA** 范式。
+Sea of Nodes 虽然理论上允许更激进的全局调度与优化，但在 JavaScript 这种副作用密集、去优化频繁的语言中，其图调度的复杂度和内存开销并未带来预期的收益，反而成为了安全审计与编译器维护的沉重负担 [V8 Security Analysis 2026]。
+Turbolev 的决策与 Maglev 当初放弃 Sea of Nodes 的动因一脉相承：通过更线性、更可预测的控制流结构，换取更快的编译速度、更低的内存占用以及更易于形式化验证的编译器栈。
 
-在 V8 的实验性 flag 定义与 pipeline 描述中，Turbolev 被定位为一个统一的顶层优化编译器。它既承担当前 TurboFan 的激进优化职责，又与 Maglev 共享同一套 IR，从而消除了 Maglev → TurboFan 升级路径中因 IR 转换带来的信息丢失与编译延迟。一旦 Turbolev 成熟，V8 的编译管线有望简化为 **Ignition → Sparkplug →（统一优化编译器）** 的三层甚至两层架构，进一步缩短温热代码到达峰值性能的路径。
+在 V8 的实验性 flag 定义与 pipeline 描述中，Turbolev 被定位为一个统一的顶层优化编译器。
+它既承担当前 TurboFan 的激进优化职责，又与 Maglev 共享同一套 IR，从而消除了 Maglev → TurboFan 升级路径中因 IR 转换带来的信息丢失与编译延迟。
+一旦 Turbolev 成熟，V8 的编译管线有望简化为 **Ignition → Sparkplug →（统一优化编译器）** 的三层甚至两层架构，进一步缩短温热代码到达峰值性能的路径。
 
 ---
 

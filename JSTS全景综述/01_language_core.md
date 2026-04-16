@@ -3436,7 +3436,7 @@ const mod = await import('./heavy-module');
 
 ### 8.8 TypeScript 7.0 前瞻：Go 重写与 LSP 迁移
 
-微软正在推进一项代号为 **Project Corsa** 的重大工程：用 **Go 语言重写 TypeScript 编译器**。这是 TypeScript 自 2012 年发布以来最重大的架构变革。
+微软正在推进 **TypeScript 7.0 / Go 重写（代号 Corsa）** 这一重大工程。这是 TypeScript 自 2012 年发布以来最重大的架构变革。
 
 #### 为什么从 JavaScript 迁移到 Go？
 

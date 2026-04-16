@@ -12,10 +12,10 @@
 
 | 类别 | 数量 |
 |------|------|
-| TypeScript 模块源码 | ~283 |
-| 测试文件 | 37 |
-| 其他（入口/配置/共享） | ~17 |
-| **总计** | **~337** |
+| TypeScript 模块源码 | ~340 |
+| 测试文件 | ~250 |
+| 其他（入口/配置/共享） | ~20 |
+| **总计** | **~610** |
 
 ### 模块覆盖
 
@@ -60,11 +60,11 @@
 ✅ 37-pwa                      2 文件  🌿
 ✅ 38-web-security             2 文件  🌿
 ✅ 39-performance-monitoring   2 文件  🌿
-✅ 50-browser-runtime          3 文件  🌱
-✅ 51-ui-components            2 文件  🌱
-✅ 52-web-rendering            2 文件  🌱
-✅ 53-app-architecture         2 文件  🌱
-✅ 54-intelligent-performance   2 文件  🌱
+✅ 50-browser-runtime          7 文件  🌿
+✅ 51-ui-components            7 文件  🌿
+✅ 52-web-rendering            7 文件  🌿
+✅ 53-app-architecture         7 文件  🌿
+✅ 54-intelligent-performance   6 文件  🌿
 ✅ 55-ai-testing               2 文件  🌱
 ✅ 56-code-generation          2 文件  🌱
 ✅ 57-design-system            2 文件  🌱

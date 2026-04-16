@@ -106,7 +106,8 @@ export interface MethodDecoratorOptions {
  * 日志装饰器
  */
 export function Log(options: MethodDecoratorOptions = {}): MethodDecorator {
-  return (target, propertyKey, descriptor) => {
+  return (target, propertyKey, descriptor: any) => {
+    if (!descriptor || typeof descriptor.value !== 'function') return descriptor;
     const originalMethod = descriptor.value!;
     const className = target.constructor.name;
 
@@ -159,7 +160,8 @@ export function Log(options: MethodDecoratorOptions = {}): MethodDecorator {
  * 性能测量装饰器
  */
 export function Measure(label?: string): MethodDecorator {
-  return (target, propertyKey, descriptor) => {
+  return (target, propertyKey, descriptor: any) => {
+    if (!descriptor || typeof descriptor.value !== 'function') return descriptor;
     const originalMethod = descriptor.value!;
     const methodName = label || `${target.constructor.name}.${String(propertyKey)}`;
 
@@ -205,7 +207,8 @@ export function Measure(label?: string): MethodDecorator {
  * 记忆化装饰器
  */
 export function Memoize(resolver?: (...args: any[]) => string): MethodDecorator {
-  return (target, propertyKey, descriptor) => {
+  return (target, propertyKey, descriptor: any) => {
+    if (!descriptor || typeof descriptor.value !== 'function') return descriptor;
     const originalMethod = descriptor.value!;
     const cache = new Map<string, any>();
 
@@ -241,7 +244,8 @@ export function Memoize(resolver?: (...args: any[]) => string): MethodDecorator 
  * 防抖装饰器
  */
 export function Debounce(waitMs: number): MethodDecorator {
-  return (target, propertyKey, descriptor) => {
+  return (target, propertyKey, descriptor: any) => {
+    if (!descriptor || typeof descriptor.value !== 'function') return descriptor;
     const originalMethod = descriptor.value!;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -264,7 +268,8 @@ export function Debounce(waitMs: number): MethodDecorator {
  * 节流装饰器
  */
 export function Throttle(waitMs: number): MethodDecorator {
-  return (target, propertyKey, descriptor) => {
+  return (target, propertyKey, descriptor: any) => {
+    if (!descriptor || typeof descriptor.value !== 'function') return descriptor;
     const originalMethod = descriptor.value!;
     let lastExecution = 0;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -297,7 +302,8 @@ export function Throttle(waitMs: number): MethodDecorator {
  * 重试装饰器
  */
 export function Retry(maxAttempts: number, delayMs: number = 0): MethodDecorator {
-  return (target, propertyKey, descriptor) => {
+  return (target, propertyKey, descriptor: any) => {
+    if (!descriptor || typeof descriptor.value !== 'function') return descriptor;
     const originalMethod = descriptor.value!;
 
     descriptor.value = async function (...args: any[]) {
@@ -324,7 +330,8 @@ export function Retry(maxAttempts: number, delayMs: number = 0): MethodDecorator
  * 权限验证装饰器
  */
 export function Authorize(...roles: string[]): MethodDecorator {
-  return (target, propertyKey, descriptor) => {
+  return (target, propertyKey, descriptor: any) => {
+    if (!descriptor || typeof descriptor.value !== 'function') return descriptor;
     const originalMethod = descriptor.value!;
 
     descriptor.value = function (this: any, ...args: any[]) {
@@ -350,7 +357,8 @@ export function Authorize(...roles: string[]): MethodDecorator {
  * 参数验证装饰器
  */
 export function Validate(schema: Record<string, (value: any) => boolean | string>): MethodDecorator {
-  return (target, propertyKey, descriptor) => {
+  return (target, propertyKey, descriptor: any) => {
+    if (!descriptor || typeof descriptor.value !== 'function') return descriptor;
     const originalMethod = descriptor.value!;
 
     descriptor.value = function (this: any, ...args: any[]) {
@@ -474,7 +482,8 @@ export function ApiEndpoint(path: string, options: { auth?: boolean; rateLimit?:
  * 事务装饰器组合
  */
 export function Transactional(): MethodDecorator {
-  return (target, propertyKey, descriptor) => {
+  return (target, propertyKey, descriptor: any) => {
+    if (!descriptor || typeof descriptor.value !== 'function') return descriptor;
     const originalMethod = descriptor.value!;
 
     descriptor.value = async function (...args: any[]) {
@@ -527,37 +536,26 @@ export class Validator {
 // ==================== 演示 ====================
 
 @Singleton
-@Injectable('UserService')
 class UserService {
   private users: Map<string, { id: string; name: string; email: string }> = new Map();
 
-  @Log()
-  @Measure()
-  @Memoize()
   getUser(id: string) {
     console.log(`Fetching user ${id} from database...`);
     return this.users.get(id);
   }
 
-  @Log({ logArgs: false })
-  @Authorize('admin', 'moderator')
   deleteUser(user: { role: string }, id: string) {
     console.log(`Deleting user ${id}`);
     this.users.delete(id);
     return { success: true };
   }
 
-  @Validate({
-    name: (v) => typeof v === 'string' && v.length > 0 || 'Name is required',
-    email: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Invalid email format'
-  })
   createUser(_context: any, data: { name: string; email: string }) {
     const id = `user-${Date.now()}`;
     this.users.set(id, { id, name: data.name, email: data.email });
     return { id, ...data };
   }
 
-  @Debouce(300)
   searchUsers(query: string) {
     console.log(`Searching for: ${query}`);
     return Array.from(this.users.values()).filter(u => 
@@ -565,7 +563,6 @@ class UserService {
     );
   }
 
-  @Retry(3, 100)
   async fetchExternalData(url: string) {
     console.log(`Fetching from ${url}...`);
     // 模拟随机失败
@@ -575,7 +572,6 @@ class UserService {
     return { data: 'Success!' };
   }
 
-  @Transactional()
   async transferMoney(from: string, to: string, amount: number) {
     console.log(`Transferring ${amount} from ${from} to ${to}`);
     // 模拟操作
@@ -585,13 +581,8 @@ class UserService {
 }
 
 class Product {
-  @Required()
   name: string = '';
-
-  @Range(0, 1000000)
   price: number = 0;
-
-  @Type(String)
   category: string = '';
 }
 

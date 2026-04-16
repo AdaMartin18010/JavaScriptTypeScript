@@ -783,7 +783,7 @@ TypeScript 6.0 对 `import defer` 的类型检查：
 
 ### 8.6 TypeScript 7.0 / Go 重写对语义层的影响
 
-Microsoft 于 2024-2025 年宣布对 TypeScript 编译器进行原生（Native）重写，即 TypeScript 7.0（代号 **Project Corsa**）将基于 Go 语言实现新的编译器核心 [Microsoft Blog: TypeScript Native Port]。从语义学视角看，这一变革需要从多个层面理解。
+Microsoft 于 2024-2025 年宣布对 TypeScript 编译器进行原生（Native）重写，即 **TypeScript 7.0 / Go 重写（代号 Corsa）** 将基于 Go 语言实现新的编译器核心 [Microsoft Blog: TypeScript Native Port]。从语义学视角看，这一变革需要从多个层面理解。
 
 #### 1. 语言语义不变性
 
