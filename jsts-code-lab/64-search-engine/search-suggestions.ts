@@ -51,7 +51,7 @@ export class Trie {
   /**
    * 插入词
    */
-  insert(word: string, frequency: number = 1): void {
+  insert(word: string, frequency = 1): void {
     let node = this.root;
     
     for (const char of word.toLowerCase()) {
@@ -99,7 +99,7 @@ export class Trie {
   /**
    * 获取自动完成建议
    */
-  autocomplete(prefix: string, limit: number = 5): Suggestion[] {
+  autocomplete(prefix: string, limit = 5): Suggestion[] {
     const completions = this.searchPrefix(prefix);
     
     return completions
@@ -115,7 +115,7 @@ export class Trie {
   /**
    * 模糊搜索（允许一个字符差异）
    */
-  fuzzySearch(word: string, maxDistance: number = 1): string[] {
+  fuzzySearch(word: string, maxDistance = 1): string[] {
     const results: string[] = [];
     this.fuzzySearchRecursive(this.root, '', word, 0, maxDistance, results);
     return results;
@@ -201,10 +201,10 @@ export class Trie {
 // ============================================================================
 
 export class SearchHistoryManager {
-  private history: Map<string, SearchHistory> = new Map();
+  private history = new Map<string, SearchHistory>();
   private maxSize: number;
 
-  constructor(maxSize: number = 100) {
+  constructor(maxSize = 100) {
     this.maxSize = maxSize;
   }
 
@@ -236,7 +236,7 @@ export class SearchHistoryManager {
   /**
    * 获取搜索历史建议
    */
-  getSuggestions(prefix: string, limit: number = 5): Suggestion[] {
+  getSuggestions(prefix: string, limit = 5): Suggestion[] {
     const normalizedPrefix = prefix.toLowerCase();
     
     return Array.from(this.history.values())
@@ -257,7 +257,7 @@ export class SearchHistoryManager {
   /**
    * 获取热门搜索
    */
-  getPopular(limit: number = 5): Suggestion[] {
+  getPopular(limit = 5): Suggestion[] {
     return Array.from(this.history.values())
       .sort((a, b) => b.count - a.count)
       .slice(0, limit)
@@ -294,7 +294,7 @@ export class SearchHistoryManager {
 export class SuggestionEngine {
   private trie: Trie;
   private historyManager: SearchHistoryManager;
-  private popularSearches: Map<string, number> = new Map();
+  private popularSearches = new Map<string, number>();
 
   constructor(options: { maxHistory?: number } = {}) {
     this.trie = new Trie();
@@ -304,7 +304,7 @@ export class SuggestionEngine {
   /**
    * 添加词典词
    */
-  addWord(word: string, frequency: number = 1): void {
+  addWord(word: string, frequency = 1): void {
     this.trie.insert(word, frequency);
   }
 
@@ -396,7 +396,7 @@ export class SuggestionEngine {
   /**
    * 获取热门搜索
    */
-  getTrending(limit: number = 10): Suggestion[] {
+  getTrending(limit = 10): Suggestion[] {
     return Array.from(this.popularSearches.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, limit)
@@ -476,7 +476,7 @@ export function demo(): void {
   // 5. Trie 单独演示
   console.log('\n--- Trie 模糊搜索 "typescrit" ---');
   const trie = new Trie();
-  dictionary.forEach(word => trie.insert(word, Math.floor(Math.random() * 10) + 1));
+  dictionary.forEach(word => { trie.insert(word, Math.floor(Math.random() * 10) + 1); });
   
   const fuzzyResults = trie.fuzzySearch('typescrit', 1);
   console.log('  Did you mean:', fuzzyResults.join(', '));

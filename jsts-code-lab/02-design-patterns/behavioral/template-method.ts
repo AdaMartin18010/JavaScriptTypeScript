@@ -220,14 +220,14 @@ export function demo(): void {
   console.log("\nFunctional Template Method:");
   const processOrder = createTemplateMethod(
     [
-      () => console.log("Step 1: Validate order"),
-      () => console.log("Step 2: Check inventory"),
-      () => console.log("Step 3: Process payment"),
-      () => console.log("Step 4: Send confirmation")
+      () => { console.log("Step 1: Validate order"); },
+      () => { console.log("Step 2: Check inventory"); },
+      () => { console.log("Step 3: Process payment"); },
+      () => { console.log("Step 4: Send confirmation"); }
     ],
     {
-      before: () => console.log("--- Starting order processing ---"),
-      after: () => console.log("--- Order processing complete ---")
+      before: () => { console.log("--- Starting order processing ---"); },
+      after: () => { console.log("--- Order processing complete ---"); }
     }
   );
 

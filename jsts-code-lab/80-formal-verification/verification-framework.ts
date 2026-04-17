@@ -34,7 +34,7 @@
  * 数学表达：∀s ∈ ReachableStates. I(s) = true
  */
 export class InvariantChecker<T> {
-  private invariants: Array<{ name: string; check: (state: T) => boolean }> = [];
+  private invariants: { name: string; check: (state: T) => boolean }[] = [];
   private violations: string[] = [];
 
   /**
@@ -85,7 +85,7 @@ export interface StateMachine<S, A> {
  */
 export class ModelChecker<S, A> {
   private visited = new Set<string>();
-  private counterexamples: Array<{ path: A[]; property: string }> = [];
+  private counterexamples: { path: A[]; property: string }[] = [];
 
   constructor(private machine: StateMachine<S, A>) {}
 
@@ -94,8 +94,8 @@ export class ModelChecker<S, A> {
    *
    * 数学定义：∃路径 π = s₀ →a₁ s₁ →a₂ ... →ak sk，使得 sk = target
    */
-  checkReachability(target: S, maxDepth: number = 10): { reachable: boolean; path?: A[] } {
-    const queue: Array<{ state: S; path: A[] }> = [{ state: this.machine.initial, path: [] }];
+  checkReachability(target: S, maxDepth = 10): { reachable: boolean; path?: A[] } {
+    const queue: { state: S; path: A[] }[] = [{ state: this.machine.initial, path: [] }];
 
     while (queue.length > 0) {
       const { state, path } = queue.shift()!;
@@ -126,8 +126,8 @@ export class ModelChecker<S, A> {
    *
    * 数学定义：∀路径 π. ∀i ≥ 0. property(π[i]) = true
    */
-  checkSafety(property: (state: S) => boolean, maxDepth: number = 10): { holds: boolean; counterexample?: A[] } {
-    const queue: Array<{ state: S; path: A[] }> = [{ state: this.machine.initial, path: [] }];
+  checkSafety(property: (state: S) => boolean, maxDepth = 10): { holds: boolean; counterexample?: A[] } {
+    const queue: { state: S; path: A[] }[] = [{ state: this.machine.initial, path: [] }];
 
     while (queue.length > 0) {
       const { state, path } = queue.shift()!;
@@ -160,10 +160,10 @@ export class ModelChecker<S, A> {
    */
   checkLiveness(
     targetProperty: (state: S) => boolean,
-    maxDepth: number = 10
+    maxDepth = 10
   ): { holds: boolean; counterexample?: A[] } {
     // 简化实现：检查是否所有路径最终都能到达目标
-    const queue: Array<{ state: S; path: A[]; visited: Set<string> }> = [{
+    const queue: { state: S; path: A[]; visited: Set<string> }[] = [{
       state: this.machine.initial,
       path: [],
       visited: new Set()
@@ -230,8 +230,8 @@ export function verify<T>(value: T, predicate: (v: T) => boolean): Proved<T> | n
 
 // 合约编程
 export interface Contract<T> {
-  preconditions: Array<(input: T) => boolean>;
-  postconditions: Array<(input: T, output: unknown) => boolean>;
+  preconditions: ((input: T) => boolean)[];
+  postconditions: ((input: T, output: unknown) => boolean)[];
 }
 
 /**

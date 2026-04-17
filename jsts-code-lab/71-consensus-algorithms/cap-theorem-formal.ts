@@ -32,7 +32,7 @@ export interface SystemNode {
   readonly id: NodeId;
   state: DistributedState;
   reachable: Set<NodeId>;
-  pendingRequests: Array<{ clientId: string; operation: 'read' | 'write'; value?: number }>;
+  pendingRequests: { clientId: string; operation: 'read' | 'write'; value?: number }[];
 }
 
 export interface Partition {
@@ -161,7 +161,7 @@ export class CapDistributedSystem {
   /** 检查系统当前是否满足一致性 */
   checkConsistency(): boolean {
     if (this.nodes.size === 0) return true;
-    const first = Array.from(this.nodes.values())[0]!.state;
+    const first = Array.from(this.nodes.values())[0].state;
     for (const node of this.nodes.values()) {
       if (node.state.value !== first.value || node.state.version !== first.version) {
         return false;

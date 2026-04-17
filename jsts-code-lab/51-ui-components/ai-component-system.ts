@@ -62,12 +62,12 @@
 
 export interface ComponentSpec {
   name: string;
-  props: Array<{
+  props: {
     name: string;
     type: string;
     required: boolean;
     description: string;
-  }>;
+  }[];
   features: string[];
   styling: {
     theme: string;
@@ -76,7 +76,7 @@ export interface ComponentSpec {
 }
 
 export class AIComponentGenerator {
-  private templates: Map<string, string> = new Map();
+  private templates = new Map<string, string>();
 
   constructor() {
     this.initializeTemplates();
@@ -249,8 +249,8 @@ export class AdaptiveUIEngine {
 
 export class IntelligentStateManager<T> {
   private state: T;
-  private listeners: Set<(state: T) => void> = new Set();
-  private predictors: Array<(state: T) => Partial<T>> = [];
+  private listeners = new Set<(state: T) => void>();
+  private predictors: ((state: T) => Partial<T>)[] = [];
 
   constructor(initialState: T) {
     this.state = initialState;
@@ -287,7 +287,7 @@ export class IntelligentStateManager<T> {
   }
 
   private notifyListeners(): void {
-    this.listeners.forEach(listener => listener(this.state));
+    this.listeners.forEach(listener => { listener(this.state); });
   }
 }
 
@@ -338,17 +338,17 @@ export class NaturalLanguageUIController {
   }
 
   private extractQuery(input: string): string {
-    const match = input.match(/搜索(.+)|查找(.+)/);
+    const match = /搜索(.+)|查找(.+)/.exec(input);
     return match ? (match[1] || match[2]).trim() : '';
   }
 
   private extractFilter(input: string): string {
-    const match = input.match(/筛选(.+)|过滤(.+)/);
+    const match = /筛选(.+)|过滤(.+)/.exec(input);
     return match ? (match[1] || match[2]).trim() : '';
   }
 
   private extractSortField(input: string): string {
-    const match = input.match(/按(.+?)(?:倒序|正序)?排序/);
+    const match = /按(.+?)(?:倒序|正序)?排序/.exec(input);
     return match ? match[1].trim() : 'default';
   }
 }

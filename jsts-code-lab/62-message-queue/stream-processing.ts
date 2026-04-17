@@ -89,7 +89,7 @@ export class MessageStream {
   /**
    * 读取消息
    */
-  read(start: string, count: number = 10): StreamEntry[] {
+  read(start: string, count = 10): StreamEntry[] {
     let index = 0;
     
     if (start !== '-') {
@@ -111,7 +111,7 @@ export class MessageStream {
   /**
    * 反向读取（从最新开始）
    */
-  xrevrange(end: string, count: number = 10): StreamEntry[] {
+  xrevrange(end: string, count = 10): StreamEntry[] {
     let index = this.messages.length - 1;
     
     if (end !== '+') {
@@ -184,8 +184,8 @@ export class MessageStream {
 // ============================================================================
 
 export class StreamProcessor {
-  private streams: Map<string, MessageStream> = new Map();
-  private consumerGroups: Map<string, ConsumerGroupInfo> = new Map();
+  private streams = new Map<string, MessageStream>();
+  private consumerGroups = new Map<string, ConsumerGroupInfo>();
 
   /**
    * 创建流
@@ -236,7 +236,7 @@ export class StreamProcessor {
   /**
    * 创建消费者组
    */
-  xgroupCreate(stream: string, group: string, startId: string = '$'): boolean {
+  xgroupCreate(stream: string, group: string, startId = '$'): boolean {
     if (!this.streams.has(stream)) {
       return false;
     }
@@ -257,7 +257,7 @@ export class StreamProcessor {
   /**
    * 消费者组读取（类似 XREADGROUP）
    */
-  xreadgroup(stream: string, group: string, consumer: string, count: number = 10): StreamEntry[] {
+  xreadgroup(stream: string, group: string, consumer: string, count = 10): StreamEntry[] {
     const groupKey = `${stream}:${group}`;
     const groupInfo = this.consumerGroups.get(groupKey);
     
@@ -395,7 +395,7 @@ export interface DomainEvent {
 }
 
 export class EventStore {
-  private events: Map<string, DomainEvent[]> = new Map(); // aggregateId -> events
+  private events = new Map<string, DomainEvent[]>(); // aggregateId -> events
   private allEvents: DomainEvent[] = [];
   private streams: StreamProcessor;
 
@@ -516,7 +516,7 @@ export function demo(): void {
   // 读取消息
   const entries = stream.read('-', 10);
   console.log(`  Read ${entries.length} entries:`);
-  entries.forEach(e => console.log(`    ${e.id}: ${JSON.stringify(e.fields)}`));
+  entries.forEach(e => { console.log(`    ${e.id}: ${JSON.stringify(e.fields)}`); });
 
   // 2. 流处理管理器
   console.log('\n--- 流处理管理器 ---');
@@ -578,21 +578,21 @@ export function demo(): void {
   });
 
   // 重播事件重建状态
-  type OrderState = {
+  interface OrderState {
     id: string;
     customerId?: string;
-    items: Array<{ sku: string; qty: number }>;
+    items: { sku: string; qty: number }[];
     status: string;
     paid?: boolean;
     shipped?: boolean;
-  };
+  }
 
   const orderState = eventStore.replay<OrderState>(
     orderId,
     (state, event) => {
       switch (event.type) {
         case 'OrderCreated':
-          const payload = event.payload as { customerId: string; items: Array<{ sku: string; qty: number }> };
+          const payload = event.payload as { customerId: string; items: { sku: string; qty: number }[] };
           return {
             ...state,
             customerId: payload.customerId,

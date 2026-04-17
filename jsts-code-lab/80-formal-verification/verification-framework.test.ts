@@ -25,7 +25,7 @@ describe('VerificationFramework', () => {
     const enforcer = new ContractEnforcer();
     enforcer.register<number>('double', {
       preconditions: [x => x >= 0],
-      postconditions: [(x, out) => (out as number) === (x as number) * 2]
+      postconditions: [(x, out) => (out as number) === (x) * 2]
     });
     expect(enforcer.enforce('double', x => x * 2, 5)).toBe(10);
     expect(() => enforcer.enforce('double', x => x * 2, -1)).toThrow();

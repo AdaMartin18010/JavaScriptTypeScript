@@ -23,7 +23,7 @@ export function occursIn(v: HMVar, t: HMType): boolean {
   return occursIn(v, t.domain) || occursIn(v, t.codomain);
 }
 
-export function unify(a: HMType, b: HMType, subst: Map<number, HMType> = new Map()): Map<number, HMType> {
+export function unify(a: HMType, b: HMType, subst = new Map<number, HMType>()): Map<number, HMType> {
   const resolvedA = resolve(a, subst);
   const resolvedB = resolve(b, subst);
 

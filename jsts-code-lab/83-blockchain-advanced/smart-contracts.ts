@@ -21,10 +21,10 @@ export interface Transaction {
 
 // 简化的EVM状态
 export class EVMState {
-  private balances: Map<Address, bigint> = new Map();
-  private storage: Map<Address, Map<string, string>> = new Map();
-  private code: Map<Address, string> = new Map();
-  private nonce: Map<Address, number> = new Map();
+  private balances = new Map<Address, bigint>();
+  private storage = new Map<Address, Map<string, string>>();
+  private code = new Map<Address, string>();
+  private nonce = new Map<Address, number>();
   
   getBalance(address: Address): bigint {
     return this.balances.get(address) || 0n;
@@ -68,8 +68,8 @@ export class ERC20Token {
   private symbol: string;
   private decimals: number;
   private totalSupply: bigint;
-  private balances: Map<Address, bigint> = new Map();
-  private allowances: Map<string, bigint> = new Map(); // "owner:spender" -> amount
+  private balances = new Map<Address, bigint>();
+  private allowances = new Map<string, bigint>(); // "owner:spender" -> amount
   
   constructor(name: string, symbol: string, decimals: number, initialSupply: bigint) {
     this.name = name;
@@ -131,10 +131,10 @@ export class ERC20Token {
 export class AutomatedMarketMaker {
   private tokenA: ERC20Token;
   private tokenB: ERC20Token;
-  private reserveA: bigint = 0n;
-  private reserveB: bigint = 0n;
-  private totalShares: bigint = 0n;
-  private shares: Map<Address, bigint> = new Map();
+  private reserveA = 0n;
+  private reserveB = 0n;
+  private totalShares = 0n;
+  private shares = new Map<Address, bigint>();
   
   constructor(tokenA: ERC20Token, tokenB: ERC20Token) {
     this.tokenA = tokenA;
@@ -247,9 +247,9 @@ export class AutomatedMarketMaker {
 
 // 跨链桥
 export class CrossChainBridge {
-  private chains: Map<string, EVMState> = new Map();
-  private lockedAssets: Map<string, Map<Address, bigint>> = new Map(); // chain -> (user -> amount)
-  private wrappedTokens: Map<string, ERC20Token> = new Map(); // chain:original -> wrapped
+  private chains = new Map<string, EVMState>();
+  private lockedAssets = new Map<string, Map<Address, bigint>>(); // chain -> (user -> amount)
+  private wrappedTokens = new Map<string, ERC20Token>(); // chain:original -> wrapped
   
   registerChain(name: string, state: EVMState): void {
     this.chains.set(name, state);
@@ -325,11 +325,11 @@ export class CrossChainBridge {
 export class ERC721NFT {
   private name: string;
   private symbol: string;
-  private owners: Map<bigint, Address> = new Map();
-  private balances: Map<Address, number> = new Map();
-  private approvals: Map<bigint, Address> = new Map();
-  private tokenURIs: Map<bigint, string> = new Map();
-  private nextTokenId: bigint = 1n;
+  private owners = new Map<bigint, Address>();
+  private balances = new Map<Address, number>();
+  private approvals = new Map<bigint, Address>();
+  private tokenURIs = new Map<bigint, string>();
+  private nextTokenId = 1n;
   
   constructor(name: string, symbol: string) {
     this.name = name;

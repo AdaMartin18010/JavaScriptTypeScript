@@ -4,10 +4,10 @@ import { UniversalPlayer, PrinterAdapter, ClassAdapter, MediaAdapter, AudioPlaye
 describe('adapter pattern', () => {
   it('UniversalPlayer should delegate to MediaAdapter', () => {
     const player = new UniversalPlayer();
-    expect(() => player.play('mp3', 'song.mp3')).not.toThrow();
-    expect(() => player.play('mp4', 'video.mp4')).not.toThrow();
-    expect(() => player.play('vlc', 'movie.vlc')).not.toThrow();
-    expect(() => player.play('avi', 'movie.avi')).toThrow('Unsupported format: avi');
+    expect(() => { player.play('mp3', 'song.mp3'); }).not.toThrow();
+    expect(() => { player.play('mp4', 'video.mp4'); }).not.toThrow();
+    expect(() => { player.play('vlc', 'movie.vlc'); }).not.toThrow();
+    expect(() => { player.play('avi', 'movie.avi'); }).toThrow('Unsupported format: avi');
   });
 
   it('PrinterAdapter should adapt old printer interface', () => {
@@ -29,8 +29,8 @@ describe('adapter pattern', () => {
 
   it('MediaAdapter should support multiple players', () => {
     const adapter = new MediaAdapter();
-    expect(() => adapter.play('mp3', 'a.mp3')).not.toThrow();
-    expect(() => adapter.play('mp4', 'a.mp4')).not.toThrow();
-    expect(() => adapter.play('vlc', 'a.vlc')).not.toThrow();
+    expect(() => { adapter.play('mp3', 'a.mp3'); }).not.toThrow();
+    expect(() => { adapter.play('mp4', 'a.mp4'); }).not.toThrow();
+    expect(() => { adapter.play('vlc', 'a.vlc'); }).not.toThrow();
   });
 });

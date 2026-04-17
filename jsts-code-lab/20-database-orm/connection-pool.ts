@@ -70,11 +70,11 @@ export class ConnectionPool {
   
   private connections: PooledConnection[] = [];
   private availableConnections: PooledConnection[] = [];
-  private waitQueue: Array<{
+  private waitQueue: {
     resolve: (conn: PooledConnection) => void;
     reject: (error: Error) => void;
     timeout: ReturnType<typeof setTimeout>;
-  }> = [];
+  }[] = [];
   
   private stats = {
     totalCreated: 0,

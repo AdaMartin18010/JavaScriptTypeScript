@@ -33,7 +33,7 @@ export class DockerfileBuilder {
   private currentStage: DockerfileStage | null = null;
 
   // 基础镜像
-  from(image: string, options?: { as?: string; platform?: string }): DockerfileBuilder {
+  from(image: string, options?: { as?: string; platform?: string }): this {
     const stage: DockerfileStage = {
       name: options?.as || 'builder',
       baseImage: image,
@@ -55,13 +55,13 @@ export class DockerfileBuilder {
   }
 
   // 工作目录
-  workdir(path: string): DockerfileBuilder {
+  workdir(path: string): this {
     this.currentStage?.commands.push({ type: 'WORKDIR', args: [path] });
     return this;
   }
 
   // 复制文件
-  copy(source: string, dest: string, options?: { from?: string; chown?: string }): DockerfileBuilder {
+  copy(source: string, dest: string, options?: { from?: string; chown?: string }): this {
     const args = [source, dest];
     const cmdOptions: Record<string, string> = {};
     
@@ -77,50 +77,50 @@ export class DockerfileBuilder {
   }
 
   // 运行命令
-  run(...commands: string[]): DockerfileBuilder {
+  run(...commands: string[]): this {
     this.currentStage?.commands.push({ type: 'RUN', args: commands });
     return this;
   }
 
   // 环境变量
-  env(key: string, value: string): DockerfileBuilder {
+  env(key: string, value: string): this {
     this.currentStage?.commands.push({ type: 'ENV', args: [`${key}=${value}`] });
     return this;
   }
 
   // 构建参数
-  arg(name: string, defaultValue?: string): DockerfileBuilder {
+  arg(name: string, defaultValue?: string): this {
     const args = defaultValue ? [`${name}=${defaultValue}`] : [name];
     this.currentStage?.commands.push({ type: 'ARG', args });
     return this;
   }
 
   // 暴露端口
-  expose(port: number, protocol: 'tcp' | 'udp' = 'tcp'): DockerfileBuilder {
+  expose(port: number, protocol: 'tcp' | 'udp' = 'tcp'): this {
     this.currentStage?.commands.push({ type: 'EXPOSE', args: [`${port}/${protocol}`] });
     return this;
   }
 
   // 标签
-  label(key: string, value: string): DockerfileBuilder {
+  label(key: string, value: string): this {
     this.currentStage?.commands.push({ type: 'LABEL', args: [`${key}=${value}`] });
     return this;
   }
 
   // 用户
-  user(name: string): DockerfileBuilder {
+  user(name: string): this {
     this.currentStage?.commands.push({ type: 'USER', args: [name] });
     return this;
   }
 
   // 启动命令
-  cmd(...args: string[]): DockerfileBuilder {
+  cmd(...args: string[]): this {
     this.currentStage?.commands.push({ type: 'CMD', args });
     return this;
   }
 
   // 入口点
-  entrypoint(...args: string[]): DockerfileBuilder {
+  entrypoint(...args: string[]): this {
     this.currentStage?.commands.push({ type: 'ENTRYPOINT', args });
     return this;
   }
@@ -203,7 +203,7 @@ export class DockerComposeBuilder {
     services: {}
   };
 
-  version(v: string): DockerComposeBuilder {
+  version(v: string): this {
     this.config.version = v;
     return this;
   }
@@ -212,18 +212,18 @@ export class DockerComposeBuilder {
     return new ServiceBuilder(this, name);
   }
 
-  addService(name: string, service: DockerComposeService): DockerComposeBuilder {
+  addService(name: string, service: DockerComposeService): this {
     this.config.services[name] = service;
     return this;
   }
 
-  network(name: string, driver = 'bridge'): DockerComposeBuilder {
+  network(name: string, driver = 'bridge'): this {
     this.config.networks = this.config.networks || {};
     this.config.networks[name] = { driver };
     return this;
   }
 
-  volume(name: string, driver = 'local'): DockerComposeBuilder {
+  volume(name: string, driver = 'local'): this {
     this.config.volumes = this.config.volumes || {};
     this.config.volumes[name] = { driver };
     return this;
@@ -282,40 +282,40 @@ export class ServiceBuilder {
     private name: string
   ) {}
 
-  image(img: string): ServiceBuilder {
+  image(img: string): this {
     this.service.image = img;
     return this;
   }
 
-  build(context: string, dockerfile?: string): ServiceBuilder {
+  build(context: string, dockerfile?: string): this {
     this.service.build = { context, dockerfile };
     return this;
   }
 
-  port(host: number, container: number): ServiceBuilder {
+  port(host: number, container: number): this {
     this.service.ports = this.service.ports || [];
     this.service.ports.push(`${host}:${container}`);
     return this;
   }
 
-  env(key: string, value: string): ServiceBuilder {
+  env(key: string, value: string): this {
     this.service.environment = this.service.environment || {};
     this.service.environment[key] = value;
     return this;
   }
 
-  volume(host: string, container: string): ServiceBuilder {
+  volume(host: string, container: string): this {
     this.service.volumes = this.service.volumes || [];
     this.service.volumes.push(`${host}:${container}`);
     return this;
   }
 
-  dependsOn(...services: string[]): ServiceBuilder {
+  dependsOn(...services: string[]): this {
     this.service.depends_on = services;
     return this;
   }
 
-  restart(policy: DockerComposeService['restart']): ServiceBuilder {
+  restart(policy: DockerComposeService['restart']): this {
     this.service.restart = policy;
     return this;
   }

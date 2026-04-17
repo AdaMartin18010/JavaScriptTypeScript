@@ -42,7 +42,7 @@ export function debounce<T extends (...args: any[]) => void>(
   
   return function (...args: Parameters<T>) {
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn(...args), delay);
+    timeoutId = setTimeout(() => { fn(...args); }, delay);
   };
 }
 
@@ -137,13 +137,13 @@ export class LazyLoader<T> {
 
 export class WorkerPool {
   private workers: Worker[] = [];
-  private queue: Array<{ task: unknown; resolve: (value: unknown) => void }> = [];
+  private queue: { task: unknown; resolve: (value: unknown) => void }[] = [];
   private activeTasks = 0;
   
   constructor(workerScript: string, poolSize = navigator.hardwareConcurrency || 4) {
     for (let i = 0; i < poolSize; i++) {
       const worker = new Worker(workerScript);
-      worker.onmessage = (e) => this.handleMessage(e.data);
+      worker.onmessage = (e) => { this.handleMessage(e.data); };
       this.workers.push(worker);
     }
   }
@@ -172,7 +172,7 @@ export class WorkerPool {
   }
   
   terminate(): void {
-    this.workers.forEach(w => w.terminate());
+    this.workers.forEach(w => { w.terminate(); });
   }
 }
 

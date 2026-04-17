@@ -8,19 +8,19 @@
 export interface Command {
   name: string;
   description: string;
-  arguments?: Array<{ name: string; required: boolean; description: string }>;
-  options?: Array<{ name: string; alias?: string; type: 'string' | 'boolean' | 'number'; default?: unknown }>;
+  arguments?: { name: string; required: boolean; description: string }[];
+  options?: { name: string; alias?: string; type: 'string' | 'boolean' | 'number'; default?: unknown }[];
   action: (args: Record<string, unknown>, options: Record<string, unknown>) => void | Promise<void>;
   subcommands?: Command[];
 }
 
 export class CLIBuilder {
-  private commands: Map<string, Command> = new Map();
+  private commands = new Map<string, Command>();
   private globalOptions: Command['options'] = [];
   private name: string;
   private version: string;
   
-  constructor(name: string, version: string = '1.0.0') {
+  constructor(name: string, version = '1.0.0') {
     this.name = name;
     this.version = version;
   }
@@ -152,7 +152,7 @@ export class ProgressBar {
   private current = 0;
   private width: number;
   
-  constructor(total: number, width: number = 40) {
+  constructor(total: number, width = 40) {
     this.total = total;
     this.width = width;
   }
@@ -187,7 +187,7 @@ export class Spinner {
   private interval: ReturnType<typeof setInterval> | null = null;
   private message: string;
   
-  constructor(message: string = 'Loading') {
+  constructor(message = 'Loading') {
     this.message = message;
   }
   
@@ -215,11 +215,11 @@ export class InteractivePrompt {
     return new Promise((resolve) => {
       console.log(`${question}${defaultValue ? ` (${defaultValue})` : ''}`);
       // 模拟输入
-      setTimeout(() => resolve(defaultValue || ''), 100);
+      setTimeout(() => { resolve(defaultValue || ''); }, 100);
     });
   }
   
-  async confirm(question: string, defaultValue: boolean = false): Promise<boolean> {
+  async confirm(question: string, defaultValue = false): Promise<boolean> {
     console.log(`${question} [${defaultValue ? 'Y/n' : 'y/N'}]`);
     // 模拟输入
     return defaultValue;
@@ -227,7 +227,7 @@ export class InteractivePrompt {
   
   async select(question: string, choices: string[]): Promise<string> {
     console.log(question);
-    choices.forEach((c, i) => console.log(`  ${i + 1}. ${c}`));
+    choices.forEach((c, i) => { console.log(`  ${i + 1}. ${c}`); });
     // 模拟选择第一个
     return choices[0];
   }
@@ -277,7 +277,7 @@ export function demo(): void {
   // 模拟解析命令
   console.log('\n--- 模拟命令解析 ---');
   console.log('> myapp init my-project --template=react');
-  cli['executeCommand'](cli['commands'].get('init')!, ['my-project', '--template=react']);
+  cli.executeCommand(cli.commands.get('init')!, ['my-project', '--template=react']);
   
   // 进度条演示
   console.log('\n--- 进度条 ---');

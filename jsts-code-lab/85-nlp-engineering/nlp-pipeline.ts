@@ -72,8 +72,8 @@ export class TextPreprocessor {
 
 // TF-IDF向量化
 export class TFIDFVectorizer {
-  private idf: Map<string, number> = new Map();
-  private vocabulary: Map<string, number> = new Map();
+  private idf = new Map<string, number>();
+  private vocabulary = new Map<string, number>();
   private documentCount = 0;
   
   fit(documents: string[][]): void {
@@ -145,10 +145,10 @@ export class TFIDFVectorizer {
 
 // 词嵌入（简化版）
 export class WordEmbedding {
-  private embeddings: Map<string, number[]> = new Map();
+  private embeddings = new Map<string, number[]>();
   private dimension: number;
   
-  constructor(dimension: number = 50) {
+  constructor(dimension = 50) {
     this.dimension = dimension;
   }
   
@@ -211,11 +211,11 @@ export class WordEmbedding {
 
 // 语义搜索引擎
 export class SemanticSearch {
-  private documents: Array<{ id: string; text: string; embedding: number[] }> = [];
+  private documents: { id: string; text: string; embedding: number[] }[] = [];
   private embedding: WordEmbedding;
   private preprocessor: TextPreprocessor;
   
-  constructor(embeddingDimension: number = 50) {
+  constructor(embeddingDimension = 50) {
     this.embedding = new WordEmbedding(embeddingDimension);
     this.preprocessor = new TextPreprocessor();
   }
@@ -247,7 +247,7 @@ export class SemanticSearch {
     }
   }
   
-  search(query: string, topK: number = 5): Array<{ id: string; text: string; score: number }> {
+  search(query: string, topK = 5): { id: string; text: string; score: number }[] {
     const processed = this.preprocessor.preprocess(query);
     const queryEmbedding = this.embedding.getSentenceEmbedding(processed.tokens);
     
@@ -265,7 +265,7 @@ export class SemanticSearch {
 
 // 命名实体识别（简化版）
 export class NamedEntityRecognizer {
-  private patterns: Map<string, RegExp> = new Map([
+  private patterns = new Map<string, RegExp>([
     ['PERSON', /\b[A-Z][a-z]+ [A-Z][a-z]+\b/g],
     ['ORG', /\b[A-Z][a-z]* (Inc|Corp|LLC|Ltd|Company)\b/g],
     ['EMAIL', /\b[\w.-]+@[\w.-]+\.\w+\b/g],
@@ -274,8 +274,8 @@ export class NamedEntityRecognizer {
     ['DATE', /\b\d{1,2}[\/\.-]\d{1,2}[\/\.-]\d{2,4}\b/g]
   ]);
   
-  extract(text: string): Array<{ text: string; type: string; start: number; end: number }> {
-    const entities: Array<{ text: string; type: string; start: number; end: number }> = [];
+  extract(text: string): { text: string; type: string; start: number; end: number }[] {
+    const entities: { text: string; type: string; start: number; end: number }[] = [];
     
     for (const [type, pattern] of this.patterns) {
       const matches = text.matchAll(pattern);

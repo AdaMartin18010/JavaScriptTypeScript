@@ -69,7 +69,7 @@ export interface BddScenario {
 }
 
 export class ShoppingCart {
-  private items: Array<{ productId: string; quantity: number; price: number }> = [];
+  private items: { productId: string; quantity: number; price: number }[] = [];
 
   // Given 空购物车
   // When 添加商品
@@ -240,7 +240,7 @@ export class GherkinParser {
   }
 
   private extractKeyword(line: string): Step['keyword'] {
-    const match = line.match(/^(Given|When|Then|And|But)/);
+    const match = /^(Given|When|Then|And|But)/.exec(line);
     return (match?.[0] || 'Given') as Step['keyword'];
   }
 }
@@ -250,7 +250,7 @@ export class GherkinParser {
 // ============================================================================
 
 export class DocumentingTest<T> {
-  private steps: Array<{ description: string; action: () => void | Promise<void> }> = [];
+  private steps: { description: string; action: () => void | Promise<void> }[] = [];
 
   step(description: string, action: () => void | Promise<void>): this {
     this.steps.push({ description, action });

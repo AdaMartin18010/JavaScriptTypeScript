@@ -16,11 +16,11 @@
 // 1. Observable 实现 (简化版 RxJS)
 // ============================================================================
 
-export type Observer<T> = {
+export interface Observer<T> {
   next: (value: T) => void;
   error?: (err: Error) => void;
   complete?: () => void;
-};
+}
 
 export type TeardownLogic = (() => void) | { unsubscribe(): void };
 
@@ -51,7 +51,7 @@ export class Observable<T> {
   map<U>(fn: (value: T) => U): Observable<U> {
     return new Observable<U>(observer => {
       return this.subscribe({
-        next: value => observer.next(fn(value)),
+        next: value => { observer.next(fn(value)); },
         error: err => observer.error?.(err),
         complete: () => observer.complete?.()
       });
@@ -77,7 +77,7 @@ export class Observable<T> {
     return new Observable<T>(observer => {
       const subscriptions = observables.map(obs => 
         obs.subscribe({
-          next: v => observer.next(v),
+          next: v => { observer.next(v); },
           error: e => observer.error?.(e),
           complete: () => {
             // 简化处理：任一完成就全部完成
@@ -87,7 +87,7 @@ export class Observable<T> {
       );
 
       return {
-        unsubscribe: () => subscriptions.forEach(s => s.unsubscribe())
+        unsubscribe: () => { subscriptions.forEach(s => { s.unsubscribe(); }); }
       };
     });
   }
@@ -95,7 +95,7 @@ export class Observable<T> {
   // 创建静态方法
   static of<T>(...values: T[]): Observable<T> {
     return new Observable<T>(observer => {
-      values.forEach(v => observer.next(v));
+      values.forEach(v => { observer.next(v); });
       observer.complete?.();
     });
   }
@@ -121,7 +121,7 @@ export class Observable<T> {
       return this.subscribe({
         next: value => {
           clearTimeout(timeoutId);
-          timeoutId = setTimeout(() => observer.next(value), ms);
+          timeoutId = setTimeout(() => { observer.next(value); }, ms);
         },
         error: err => observer.error?.(err),
         complete: () => observer.complete?.()
@@ -169,7 +169,7 @@ export function createSignal<T>(initialValue: T): Signal<T> {
   signal.set = (newValue: T) => {
     if (value !== newValue) {
       value = newValue;
-      subscribers.forEach(fn => fn(value));
+      subscribers.forEach(fn => { fn(value); });
     }
   };
 
@@ -193,7 +193,7 @@ export function createComputed<T>(compute: () => T): Signal<T> {
 
 // 副作用 (Effect)
 export function createEffect(fn: () => void, deps: Signal<unknown>[]): void {
-  const run = () => fn();
+  const run = () => { fn(); };
   
   deps.forEach(dep => {
     dep.subscribe(run);
@@ -244,13 +244,13 @@ export class DataFlowGraph {
     // 递归更新依赖节点
     const toUpdate = this.dependents.get(id);
     if (toUpdate) {
-      toUpdate.forEach(depId => this.recomputeNode(depId));
+      toUpdate.forEach(depId => { this.recomputeNode(depId); });
     }
   }
 
   private recomputeNode(id: string): void {
     const node = this.nodes.get(id);
-    if (!node || !node.compute) return;
+    if (!node?.compute) return;
 
     const inputs = node.sources.map(sourceId => 
       this.nodes.get(sourceId)?.value
@@ -261,7 +261,7 @@ export class DataFlowGraph {
     // 继续级联
     const toUpdate = this.dependents.get(id);
     if (toUpdate) {
-      toUpdate.forEach(depId => this.recomputeNode(depId));
+      toUpdate.forEach(depId => { this.recomputeNode(depId); });
     }
   }
 
@@ -288,12 +288,12 @@ export class DataFlowGraph {
 // 4. 状态机 (State Machine)
 // ============================================================================
 
-type StateTransition<S, E> = {
+interface StateTransition<S, E> {
   from: S;
   event: E;
   to: S;
   action?: () => void;
-};
+}
 
 export class StateMachine<S extends string, E extends string> {
   private state: S;
@@ -320,7 +320,7 @@ export class StateMachine<S extends string, E extends string> {
 
     this.state = transition.to;
     transition.action?.();
-    this.listeners.forEach(fn => fn(this.state));
+    this.listeners.forEach(fn => { fn(this.state); });
     
     return true;
   }
@@ -363,8 +363,8 @@ export function demo(): void {
     .map(x => x * 2)
     .filter(x => x > 4)
     .subscribe({
-      next: value => console.log(`值: ${value}`),
-      complete: () => console.log('完成')
+      next: value => { console.log(`值: ${value}`); },
+      complete: () => { console.log('完成'); }
     });
 
   subscription.unsubscribe();

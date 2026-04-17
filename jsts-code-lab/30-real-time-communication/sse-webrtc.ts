@@ -24,7 +24,7 @@ export interface SSEMessage {
 }
 
 export class SSEServer {
-  private clients: Map<string, (message: SSEMessage) => void> = new Map();
+  private clients = new Map<string, (message: SSEMessage) => void>();
 
   subscribe(clientId: string, callback: (message: SSEMessage) => void): () => void {
     this.clients.set(clientId, callback);
@@ -82,8 +82,8 @@ export interface SignalMessage {
 }
 
 export class SignalingServer {
-  private rooms: Map<string, Set<string>> = new Map();
-  private handlers: Map<string, (message: SignalMessage) => void> = new Map();
+  private rooms = new Map<string, Set<string>>();
+  private handlers = new Map<string, (message: SignalMessage) => void>();
 
   join(roomId: string, peerId: string, handler: (msg: SignalMessage) => void): void {
     if (!this.rooms.has(roomId)) {
@@ -236,7 +236,7 @@ export interface DrawingAction {
 
 export class CollaborativeWhiteboard {
   private actions: DrawingAction[] = [];
-  private peers: Map<string, (action: DrawingAction) => void> = new Map();
+  private peers = new Map<string, (action: DrawingAction) => void>();
   private undoStack: DrawingAction[] = [];
 
   join(peerId: string, callback: (action: DrawingAction) => void): void {

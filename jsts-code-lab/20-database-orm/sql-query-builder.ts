@@ -38,37 +38,37 @@ interface Table<T = Record<string, unknown>> {
 export class QueryBuilder<T = Record<string, unknown>> {
   private tableName = '';
   private selectColumns: string[] = ['*'];
-  private whereConditions: Array<{ column: string; operator: string; value: Primitive }> = [];
-  private orderByClauses: Array<{ column: string; direction: 'ASC' | 'DESC' }> = [];
+  private whereConditions: { column: string; operator: string; value: Primitive }[] = [];
+  private orderByClauses: { column: string; direction: 'ASC' | 'DESC' }[] = [];
   private limitValue: number | null = null;
   private offsetValue: number | null = null;
-  private joinClauses: Array<{ type: string; table: string; on: string }> = [];
+  private joinClauses: { type: string; table: string; on: string }[] = [];
   private groupByColumns: string[] = [];
-  private havingConditions: Array<{ column: string; operator: string; value: Primitive }> = [];
+  private havingConditions: { column: string; operator: string; value: Primitive }[] = [];
 
   // 选择表
-  table(name: string): QueryBuilder<T> {
+  table(name: string): this {
     this.tableName = name;
     return this;
   }
 
   // 选择列
-  select(...columns: Array<keyof T | string>): QueryBuilder<T> {
+  select(...columns: (keyof T | string)[]): this {
     this.selectColumns = columns as string[];
     return this;
   }
 
   // WHERE 条件
-  where<K extends keyof T>(column: K, operator: string, value: T[K]): QueryBuilder<T> {
+  where<K extends keyof T>(column: K, operator: string, value: T[K]): this {
     this.whereConditions.push({ column: column as string, operator, value: value as Primitive });
     return this;
   }
 
-  whereEquals<K extends keyof T>(column: K, value: T[K]): QueryBuilder<T> {
+  whereEquals<K extends keyof T>(column: K, value: T[K]): this {
     return this.where(column, '=', value);
   }
 
-  whereIn<K extends keyof T>(column: K, values: T[K][]): QueryBuilder<T> {
+  whereIn<K extends keyof T>(column: K, values: T[K][]): this {
     this.whereConditions.push({
       column: column as string,
       operator: 'IN',
@@ -77,7 +77,7 @@ export class QueryBuilder<T = Record<string, unknown>> {
     return this;
   }
 
-  whereNull<K extends keyof T>(column: K): QueryBuilder<T> {
+  whereNull<K extends keyof T>(column: K): this {
     this.whereConditions.push({
       column: column as string,
       operator: 'IS NULL',
@@ -86,7 +86,7 @@ export class QueryBuilder<T = Record<string, unknown>> {
     return this;
   }
 
-  whereBetween<K extends keyof T>(column: K, min: T[K], max: T[K]): QueryBuilder<T> {
+  whereBetween<K extends keyof T>(column: K, min: T[K], max: T[K]): this {
     this.whereConditions.push({
       column: column as string,
       operator: 'BETWEEN',
@@ -96,46 +96,46 @@ export class QueryBuilder<T = Record<string, unknown>> {
   }
 
   // JOIN
-  join(table: string, on: string): QueryBuilder<T> {
+  join(table: string, on: string): this {
     this.joinClauses.push({ type: 'JOIN', table, on });
     return this;
   }
 
-  leftJoin(table: string, on: string): QueryBuilder<T> {
+  leftJoin(table: string, on: string): this {
     this.joinClauses.push({ type: 'LEFT JOIN', table, on });
     return this;
   }
 
-  rightJoin(table: string, on: string): QueryBuilder<T> {
+  rightJoin(table: string, on: string): this {
     this.joinClauses.push({ type: 'RIGHT JOIN', table, on });
     return this;
   }
 
   // ORDER BY
-  orderBy<K extends keyof T>(column: K, direction: 'ASC' | 'DESC' = 'ASC'): QueryBuilder<T> {
+  orderBy<K extends keyof T>(column: K, direction: 'ASC' | 'DESC' = 'ASC'): this {
     this.orderByClauses.push({ column: column as string, direction });
     return this;
   }
 
   // GROUP BY
-  groupBy<K extends keyof T>(...columns: K[]): QueryBuilder<T> {
+  groupBy<K extends keyof T>(...columns: K[]): this {
     this.groupByColumns = columns as string[];
     return this;
   }
 
   // HAVING
-  having<K extends keyof T>(column: K, operator: string, value: T[K]): QueryBuilder<T> {
+  having<K extends keyof T>(column: K, operator: string, value: T[K]): this {
     this.havingConditions.push({ column: column as string, operator, value: value as Primitive });
     return this;
   }
 
   // LIMIT / OFFSET
-  limit(n: number): QueryBuilder<T> {
+  limit(n: number): this {
     this.limitValue = n;
     return this;
   }
 
-  offset(n: number): QueryBuilder<T> {
+  offset(n: number): this {
     this.offsetValue = n;
     return this;
   }
@@ -216,7 +216,7 @@ export class QueryBuilder<T = Record<string, unknown>> {
   }
 
   // 重置构建器
-  reset(): QueryBuilder<T> {
+  reset(): this {
     this.tableName = '';
     this.selectColumns = ['*'];
     this.whereConditions = [];
@@ -238,12 +238,12 @@ export class InsertBuilder<T = Record<string, unknown>> {
   private tableName = '';
   private data: Partial<T> = {};
 
-  table(name: string): InsertBuilder<T> {
+  table(name: string): this {
     this.tableName = name;
     return this;
   }
 
-  values(data: Partial<T>): InsertBuilder<T> {
+  values(data: Partial<T>): this {
     this.data = data;
     return this;
   }
@@ -265,19 +265,19 @@ export class InsertBuilder<T = Record<string, unknown>> {
 export class UpdateBuilder<T = Record<string, unknown>> {
   private tableName = '';
   private data: Partial<T> = {};
-  private whereConditions: Array<{ column: string; operator: string; value: Primitive }> = [];
+  private whereConditions: { column: string; operator: string; value: Primitive }[] = [];
 
-  table(name: string): UpdateBuilder<T> {
+  table(name: string): this {
     this.tableName = name;
     return this;
   }
 
-  set(data: Partial<T>): UpdateBuilder<T> {
+  set(data: Partial<T>): this {
     this.data = data;
     return this;
   }
 
-  where<K extends keyof T>(column: K, operator: string, value: T[K]): UpdateBuilder<T> {
+  where<K extends keyof T>(column: K, operator: string, value: T[K]): this {
     this.whereConditions.push({ column: column as string, operator, value: value as Primitive });
     return this;
   }
@@ -308,14 +308,14 @@ export class UpdateBuilder<T = Record<string, unknown>> {
 
 export class DeleteBuilder<T = Record<string, unknown>> {
   private tableName = '';
-  private whereConditions: Array<{ column: string; operator: string; value: Primitive }> = [];
+  private whereConditions: { column: string; operator: string; value: Primitive }[] = [];
 
-  table(name: string): DeleteBuilder<T> {
+  table(name: string): this {
     this.tableName = name;
     return this;
   }
 
-  where<K extends keyof T>(column: K, operator: string, value: T[K]): DeleteBuilder<T> {
+  where<K extends keyof T>(column: K, operator: string, value: T[K]): this {
     this.whereConditions.push({ column: column as string, operator, value: value as Primitive });
     return this;
   }

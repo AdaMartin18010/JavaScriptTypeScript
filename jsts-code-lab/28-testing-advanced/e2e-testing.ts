@@ -40,7 +40,7 @@ export interface Page {
 export class E2EContext {
   private page: Page;
   private testName: string;
-  private steps: Array<{ action: string; timestamp: number }> = [];
+  private steps: { action: string; timestamp: number }[] = [];
 
   constructor(page: Page, testName: string) {
     this.page = page;
@@ -195,7 +195,7 @@ export interface TestFixture<T> {
 }
 
 export class FixtureManager {
-  private fixtures: Map<string, { value: unknown; fixture: TestFixture<unknown> }> = new Map();
+  private fixtures = new Map<string, { value: unknown; fixture: TestFixture<unknown> }>();
 
   async use<T>(name: string, fixture: TestFixture<T>): Promise<T> {
     if (this.fixtures.has(name)) {
@@ -279,8 +279,8 @@ export interface TestCase {
 
 export class E2ETestRunner {
   private tests: TestCase[] = [];
-  private beforeEachHooks: Array<(context: E2EContext) => Promise<void>> = [];
-  private afterEachHooks: Array<(context: E2EContext) => Promise<void>> = [];
+  private beforeEachHooks: ((context: E2EContext) => Promise<void>)[] = [];
+  private afterEachHooks: ((context: E2EContext) => Promise<void>)[] = [];
   private fixtures: FixtureManager = new FixtureManager();
 
   test(name: string, fn: (context: E2EContext) => Promise<void>): void {

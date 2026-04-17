@@ -22,8 +22,8 @@ describe('ES6 classes', () => {
     expect(account.getBalance()).toBe(1500);
     account.withdraw(200);
     expect(account.getBalance()).toBe(1300);
-    expect(() => account.withdraw(2000)).toThrow('Insufficient funds');
-    expect(() => account.deposit(-100)).toThrow('Invalid amount');
+    expect(() => { account.withdraw(2000); }).toThrow('Insufficient funds');
+    expect(() => { account.deposit(-100); }).toThrow('Invalid amount');
   });
 
   it('Rectangle should compute area and perimeter', () => {

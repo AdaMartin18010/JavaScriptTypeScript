@@ -5,13 +5,13 @@ describe('Lifecycle Models', () => {
   it('React model has correct framework', () => {
     const m = new ReactLifecycleModel()
     expect(m.framework).toBe('react')
-    expect(() => m.mount()).not.toThrow()
+    expect(() => { m.mount(); }).not.toThrow()
   })
 
   it('Vue model has correct framework', () => {
     const m = new VueLifecycleModel()
     expect(m.framework).toBe('vue')
-    expect(() => m.update()).not.toThrow()
+    expect(() => { m.update(); }).not.toThrow()
   })
 
   it('compareLifecycleHooks returns all frameworks', () => {

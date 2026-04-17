@@ -20,7 +20,7 @@ function jsGreet(name: any): any {
 // TS Version: 编译时类型约束，擦除后生成的 JS 与上方完全一致
 // ============================================================================
 
-let tsValue: number = 42;
+const tsValue = 42;
 // tsValue = "hello"; // 编译错误：Type 'string' is not assignable to type 'number'.
 
 function tsGreet(name: string): string {
@@ -28,15 +28,15 @@ function tsGreet(name: string): string {
 }
 
 // 类型推断：不写标注时，TS 自动推断类型
-let inferredNumber = 42; // inferred as number
-let inferredString = "hello"; // inferred as string
+const inferredNumber = 42; // inferred as number
+const inferredString = "hello"; // inferred as string
 
 // const 断言：将类型收窄到最窄的字面量类型
 const literalValue = 42 as const; // type: 42 (not number)
 const tupleValue = [1, 2, 3] as const; // type: readonly [1, 2, 3]
 
 // unknown vs any：更安全的顶层类型
-let safeUnknown: unknown = fetchSomeData();
+const safeUnknown: unknown = fetchSomeData();
 // safeUnknown.toUpperCase(); // 编译错误！必须先窄化
 if (typeof safeUnknown === "string") {
   safeUnknown.toUpperCase(); // 在类型守卫块内可用

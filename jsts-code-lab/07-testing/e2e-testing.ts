@@ -118,9 +118,9 @@ export class ProductListPage extends BasePage {
 
 export class MockPage implements Page {
   private url = '';
-  private elements: Map<string, MockElement> = new Map();
+  private elements = new Map<string, MockElement>();
 
-  constructor(private mockHtml: string = '') {}
+  constructor(private mockHtml = '') {}
 
   async navigate(url: string): Promise<void> {
     this.url = url;
@@ -174,10 +174,10 @@ export class MockPage implements Page {
 
 class MockElement implements ElementHandle {
   private text: string;
-  private attributes: Map<string, string> = new Map();
+  private attributes = new Map<string, string>();
   private visible = true;
 
-  constructor(private tag: string, initialText: string = '') {
+  constructor(private tag: string, initialText = '') {
     this.text = initialText;
   }
 
@@ -218,7 +218,7 @@ export interface ScreenshotOptions {
 }
 
 export class VisualRegressionTester {
-  private baselineScreenshots: Map<string, Buffer> = new Map();
+  private baselineScreenshots = new Map<string, Buffer>();
 
   async captureBaseline(name: string, page: Page, options?: ScreenshotOptions): Promise<void> {
     const screenshot = await page.screenshot();
@@ -279,7 +279,7 @@ export interface BrowserCapabilities {
 }
 
 export class CrossBrowserTester {
-  private browsers: Map<BrowserType, BrowserCapabilities> = new Map();
+  private browsers = new Map<BrowserType, BrowserCapabilities>();
 
   addBrowser(capabilities: BrowserCapabilities): void {
     this.browsers.set(capabilities.type, capabilities);
@@ -311,10 +311,10 @@ export class CrossBrowserTester {
 
 export interface E2EScenario {
   name: string;
-  steps: Array<{
+  steps: {
     description: string;
     action: (context: TestContext) => Promise<void>;
-  }>;
+  }[];
 }
 
 export interface TestContext {
@@ -418,26 +418,26 @@ export async function demo(): Promise<void> {
       {
         description: '浏览产品列表',
         action: async (ctx) => {
-          ctx.data['products'] = ['Product 1', 'Product 2'];
+          ctx.data.products = ['Product 1', 'Product 2'];
         }
       },
       {
         description: '添加商品到购物车',
         action: async (ctx) => {
-          ctx.data['cartItems'] = 1;
+          ctx.data.cartItems = 1;
         }
       },
       {
         description: '进入结算页面',
         action: async (ctx) => {
-          ctx.data['checkoutReady'] = true;
+          ctx.data.checkoutReady = true;
         }
       },
       {
         description: '完成支付',
         action: async (ctx) => {
-          if (!ctx.data['checkoutReady']) throw new Error('结算未就绪');
-          ctx.data['orderComplete'] = true;
+          if (!ctx.data.checkoutReady) throw new Error('结算未就绪');
+          ctx.data.orderComplete = true;
         }
       }
     ]

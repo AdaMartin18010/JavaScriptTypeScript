@@ -54,7 +54,7 @@ export function tsQuickSort<T>(arr: T[], compareFn?: (a: T, b: T) => number): T[
   const equal: T[] = [];
 
   for (const item of arr) {
-    const diff = cmp(item, pivot as T);
+    const diff = cmp(item, pivot);
     if (diff < 0) left.push(item);
     else if (diff > 0) right.push(item);
     else equal.push(item);

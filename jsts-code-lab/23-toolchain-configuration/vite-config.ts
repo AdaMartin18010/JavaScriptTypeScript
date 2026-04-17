@@ -80,7 +80,7 @@ export interface BuildOptions {
 export interface LibraryOptions {
   entry: string | string[] | Record<string, string>;
   name?: string;
-  formats?: Array<'es' | 'cjs' | 'umd' | 'iife'>;
+  formats?: ('es' | 'cjs' | 'umd' | 'iife')[];
   fileName?: string | ((format: string) => string);
 }
 
@@ -158,7 +158,7 @@ export interface CSSModulesOptions {
 }
 
 export interface ResolveOptions {
-  alias?: Record<string, string> | Array<{ find: string | RegExp; replacement: string }>;
+  alias?: Record<string, string> | { find: string | RegExp; replacement: string }[];
   dedupe?: string[];
   conditions?: string[];
   mainFields?: string[];
@@ -186,17 +186,17 @@ export interface Plugin {
 export class ViteConfigBuilder {
   private config: ViteConfig = {};
 
-  root(path: string): ViteConfigBuilder {
+  root(path: string): this {
     this.config.root = path;
     return this;
   }
 
-  base(path: string): ViteConfigBuilder {
+  base(path: string): this {
     this.config.base = path;
     return this;
   }
 
-  mode(m: string): ViteConfigBuilder {
+  mode(m: string): this {
     this.config.mode = m;
     return this;
   }
@@ -206,7 +206,7 @@ export class ViteConfigBuilder {
     return new BuildOptionsBuilder(this);
   }
 
-  setBuild(options: BuildOptions): ViteConfigBuilder {
+  setBuild(options: BuildOptions): this {
     this.config.build = { ...this.config.build, ...options };
     return this;
   }
@@ -216,7 +216,7 @@ export class ViteConfigBuilder {
     return new ServerOptionsBuilder(this);
   }
 
-  setServer(options: ServerOptions): ViteConfigBuilder {
+  setServer(options: ServerOptions): this {
     this.config.server = { ...this.config.server, ...options };
     return this;
   }
@@ -227,14 +227,14 @@ export class ViteConfigBuilder {
   }
 
   // 添加插件
-  plugin(plugin: Plugin): ViteConfigBuilder {
+  plugin(plugin: Plugin): this {
     this.config.plugins = this.config.plugins || [];
     this.config.plugins.push(plugin);
     return this;
   }
 
   // 添加环境变量定义
-  define(key: string, value: unknown): ViteConfigBuilder {
+  define(key: string, value: unknown): this {
     this.config.define = this.config.define || {};
     this.config.define[key] = value;
     return this;
@@ -259,32 +259,32 @@ export class BuildOptionsBuilder {
 
   constructor(private parent: ViteConfigBuilder) {}
 
-  target(t: string | string[]): BuildOptionsBuilder {
+  target(t: string | string[]): this {
     this.options.target = t;
     return this;
   }
 
-  outDir(dir: string): BuildOptionsBuilder {
+  outDir(dir: string): this {
     this.options.outDir = dir;
     return this;
   }
 
-  minify(m: BuildOptions['minify']): BuildOptionsBuilder {
+  minify(m: BuildOptions['minify']): this {
     this.options.minify = m;
     return this;
   }
 
-  sourcemap(s: BuildOptions['sourcemap']): BuildOptionsBuilder {
+  sourcemap(s: BuildOptions['sourcemap']): this {
     this.options.sourcemap = s;
     return this;
   }
 
-  library(entry: string, name: string): BuildOptionsBuilder {
+  library(entry: string, name: string): this {
     this.options.lib = { entry, name, formats: ['es', 'cjs'] };
     return this;
   }
 
-  rollupOptions(options: Record<string, unknown>): BuildOptionsBuilder {
+  rollupOptions(options: Record<string, unknown>): this {
     this.options.rollupOptions = options;
     return this;
   }
@@ -300,33 +300,33 @@ export class ServerOptionsBuilder {
 
   constructor(private parent: ViteConfigBuilder) {}
 
-  port(p: number): ServerOptionsBuilder {
+  port(p: number): this {
     this.options.port = p;
     return this;
   }
 
-  host(h: string | boolean): ServerOptionsBuilder {
+  host(h: string | boolean): this {
     this.options.host = h;
     return this;
   }
 
-  open(o: boolean | string): ServerOptionsBuilder {
+  open(o: boolean | string): this {
     this.options.open = o;
     return this;
   }
 
-  cors(c: boolean): ServerOptionsBuilder {
+  cors(c: boolean): this {
     this.options.cors = c;
     return this;
   }
 
-  proxy(route: string, target: string, options?: Omit<ProxyOptions, 'target'>): ServerOptionsBuilder {
+  proxy(route: string, target: string, options?: Omit<ProxyOptions, 'target'>): this {
     this.options.proxy = this.options.proxy || {};
     this.options.proxy[route] = { target, ...options };
     return this;
   }
 
-  hmr(options: boolean | HmrOptions): ServerOptionsBuilder {
+  hmr(options: boolean | HmrOptions): this {
     this.options.hmr = options;
     return this;
   }
@@ -342,19 +342,19 @@ export class ResolveOptionsBuilder {
 
   constructor(private parent: ViteConfigBuilder) {}
 
-  alias(find: string, replacement: string): ResolveOptionsBuilder {
+  alias(find: string, replacement: string): this {
     this.options.alias = this.options.alias || {};
     (this.options.alias as Record<string, string>)[find] = replacement;
     return this;
   }
 
-  extensions(exts: string[]): ResolveOptionsBuilder {
+  extensions(exts: string[]): this {
     this.options.extensions = exts;
     return this;
   }
 
   done(): ViteConfigBuilder {
-    this.parent['config'].resolve = this.options;
+    this.parent.config.resolve = this.options;
     return this.parent;
   }
 }

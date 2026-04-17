@@ -9,41 +9,41 @@ import {
 
 describe('gradual-boundary-demo', () => {
   it('应通过原始类型运行时检查', () => {
-    expect(() => RuntimeTypeChecker.check<string>('hello', 'string')).not.toThrow();
-    expect(() => RuntimeTypeChecker.check<number>(42, 'number')).not.toThrow();
-    expect(() => RuntimeTypeChecker.check<boolean>(true, 'boolean')).not.toThrow();
+    expect(() => { RuntimeTypeChecker.check<string>('hello', 'string'); }).not.toThrow();
+    expect(() => { RuntimeTypeChecker.check<number>(42, 'number'); }).not.toThrow();
+    expect(() => { RuntimeTypeChecker.check<boolean>(true, 'boolean'); }).not.toThrow();
   });
 
   it('应在原始类型不匹配时抛出 TypeError', () => {
-    expect(() => RuntimeTypeChecker.check<string>(42, 'string')).toThrow(TypeError);
-    expect(() => RuntimeTypeChecker.check<number>('42', 'number')).toThrow(TypeError);
-    expect(() => RuntimeTypeChecker.check<boolean>(1, 'boolean')).toThrow(TypeError);
+    expect(() => { RuntimeTypeChecker.check<string>(42, 'string'); }).toThrow(TypeError);
+    expect(() => { RuntimeTypeChecker.check<number>('42', 'number'); }).toThrow(TypeError);
+    expect(() => { RuntimeTypeChecker.check<boolean>(1, 'boolean'); }).toThrow(TypeError);
   });
 
   it('应通过数组类型运行时检查', () => {
-    expect(() => RuntimeTypeChecker.check<number[]>([1, 2, 3], 'number[]')).not.toThrow();
-    expect(() => RuntimeTypeChecker.check<string[]>(['a', 'b'], 'string[]')).not.toThrow();
+    expect(() => { RuntimeTypeChecker.check<number[]>([1, 2, 3], 'number[]'); }).not.toThrow();
+    expect(() => { RuntimeTypeChecker.check<string[]>(['a', 'b'], 'string[]'); }).not.toThrow();
   });
 
   it('应在数组元素类型不匹配时抛出 TypeError', () => {
-    expect(() => RuntimeTypeChecker.check<number[]>([1, 'two', 3], 'number[]')).toThrow(TypeError);
+    expect(() => { RuntimeTypeChecker.check<number[]>([1, 'two', 3], 'number[]'); }).toThrow(TypeError);
   });
 
   it('应通过对象结构运行时检查', () => {
     expect(() =>
-      RuntimeTypeChecker.check<{ name: string; age: number }>(
+      { RuntimeTypeChecker.check<{ name: string; age: number }>(
         { name: 'Alice', age: 30 },
         '{name:string,age:number}'
-      )
+      ); }
     ).not.toThrow();
   });
 
   it('应在对象结构不匹配时抛出 TypeError', () => {
     expect(() =>
-      RuntimeTypeChecker.check<{ name: string; age: number }>(
+      { RuntimeTypeChecker.check<{ name: string; age: number }>(
         { name: 'Alice', age: 'thirty' },
         '{name:string,age:number}'
-      )
+      ); }
     ).toThrow(TypeError);
   });
 
@@ -81,6 +81,6 @@ describe('gradual-boundary-demo', () => {
   });
 
   it('demo() 应无异常执行', () => {
-    expect(() => demo()).not.toThrow();
+    expect(() => { demo(); }).not.toThrow();
   });
 });

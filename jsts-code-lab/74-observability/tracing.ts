@@ -27,9 +27,7 @@ export interface SpanContext {
   traceState?: string;
 }
 
-export interface SpanAttributes {
-  [key: string]: string | number | boolean | Array<string | number | boolean>;
-}
+export type SpanAttributes = Record<string, string | number | boolean | (string | number | boolean)[]>;
 
 export interface SpanEvent {
   name: string;
@@ -161,9 +159,9 @@ export class SpanBuilder {
 // ==================== Tracer 提供者 ====================
 
 export class Tracer {
-  private activeSpans: Map<string, Span> = new Map();
+  private activeSpans = new Map<string, Span>();
   private completedSpans: Span[] = [];
-  private spanProcessors: Array<(span: Span) => void> = [];
+  private spanProcessors: ((span: Span) => void)[] = [];
 
   constructor(private name: string) {}
 
@@ -267,10 +265,10 @@ export class TraceContextPropagator {
    */
   inject(context: SpanContext, carrier: Record<string, string>): void {
     // traceparent: 00-<traceId>-<spanId>-<flags>
-    carrier['traceparent'] = `00-${context.traceId}-${context.spanId}-${context.traceFlags.toString(16).padStart(2, '0')}`;
+    carrier.traceparent = `00-${context.traceId}-${context.spanId}-${context.traceFlags.toString(16).padStart(2, '0')}`;
     
     if (context.traceState) {
-      carrier['tracestate'] = context.traceState;
+      carrier.tracestate = context.traceState;
     }
   }
 
@@ -278,7 +276,7 @@ export class TraceContextPropagator {
    * 从载体提取 SpanContext
    */
   extract(carrier: Record<string, string>): SpanContext | null {
-    const traceparent = carrier['traceparent'];
+    const traceparent = carrier.traceparent;
     if (!traceparent) return null;
 
     const parts = traceparent.split('-');
@@ -289,7 +287,7 @@ export class TraceContextPropagator {
       traceId,
       spanId,
       traceFlags: parseInt(flags, 16) || 0x00,
-      traceState: carrier['tracestate']
+      traceState: carrier.tracestate
     };
   }
 }
@@ -297,7 +295,7 @@ export class TraceContextPropagator {
 // ==================== Baggage 传播 ====================
 
 export class Baggage {
-  private entries: Map<string, { value: string; metadata?: string }> = new Map();
+  private entries = new Map<string, { value: string; metadata?: string }>();
 
   setEntry(key: string, value: string, metadata?: string): this {
     this.entries.set(key, { value, metadata });
@@ -313,7 +311,7 @@ export class Baggage {
     return this;
   }
 
-  getAllEntries(): Array<[string, { value: string; metadata?: string }]> {
+  getAllEntries(): [string, { value: string; metadata?: string }][] {
     return Array.from(this.entries.entries());
   }
 
@@ -501,7 +499,7 @@ export function demo(): void {
 
   // 采样器演示
   console.log('\n--- 采样策略 ---');
-  const samplers: Array<{ name: string; sampler: Sampler }> = [
+  const samplers: { name: string; sampler: Sampler }[] = [
     { name: 'AlwaysOn', sampler: new AlwaysOnSampler() },
     { name: 'AlwaysOff', sampler: new AlwaysOffSampler() },
     { name: '30%概率', sampler: new ProbabilitySampler(0.3) }

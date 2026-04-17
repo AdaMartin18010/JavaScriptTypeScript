@@ -65,12 +65,12 @@ export class FunnelAnalyzer {
     
     // 追踪每一步的用户
     let previousUsers = new Set<string>();
-    let previousEvents: Map<string, AnalyticsEvent[]> = new Map();
+    let previousEvents = new Map<string, AnalyticsEvent[]>();
 
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i];
       const currentUsers = new Set<string>();
-      const currentEvents: Map<string, AnalyticsEvent[]> = new Map();
+      const currentEvents = new Map<string, AnalyticsEvent[]>();
       const conversionTimes: number[] = [];
       const dropOffUsers: string[] = [];
 
@@ -266,7 +266,7 @@ export class ConversionPathAnalyzer {
       maxSteps?: number;
       minUsers?: number;
     } = {}
-  ): Array<{ path: string[]; userCount: number; conversionRate: number }> {
+  ): { path: string[]; userCount: number; conversionRate: number }[] {
     const { maxSteps = 10, minUsers = 2 } = options;
     
     const userPaths = new Map<string, string[]>();

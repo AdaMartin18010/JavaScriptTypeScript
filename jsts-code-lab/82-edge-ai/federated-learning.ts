@@ -227,7 +227,7 @@ export function demo(): void {
     }
   ];
 
-  clients.forEach(c => aggregator.registerClient(c));
+  clients.forEach(c => { aggregator.registerClient(c); });
 
   console.log('--- FedAvg 聚合 ---');
   const aggregated = aggregator.aggregate();

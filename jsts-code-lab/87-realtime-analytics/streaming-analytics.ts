@@ -175,11 +175,11 @@ export class Aggregators {
 
 // 异常检测
 export class AnomalyDetector {
-  private baseline: Map<string, { mean: number; std: number }> = new Map();
-  private history: Map<string, number[]> = new Map();
+  private baseline = new Map<string, { mean: number; std: number }>();
+  private history = new Map<string, number[]>();
   private windowSize: number;
   
-  constructor(windowSize: number = 100) {
+  constructor(windowSize = 100) {
     this.windowSize = windowSize;
   }
   
@@ -246,7 +246,7 @@ export interface CEPEvent {
 
 export interface CEPPattern {
   name: string;
-  sequence: Array<{ type: string; condition?: (e: CEPEvent) => boolean }>;
+  sequence: { type: string; condition?: (e: CEPEvent) => boolean }[];
   timeWindow: number;
   action: (events: CEPEvent[]) => void;
 }
@@ -254,7 +254,7 @@ export interface CEPPattern {
 export class CEPEngine {
   private patterns: CEPPattern[] = [];
   private eventBuffer: CEPEvent[] = [];
-  private partialMatches: Map<string, CEPEvent[][]> = new Map();
+  private partialMatches = new Map<string, CEPEvent[][]>();
   
   registerPattern(pattern: CEPPattern): void {
     this.patterns.push(pattern);
@@ -311,8 +311,8 @@ export class CEPEngine {
 
 // 实时看板
 export class RealtimeDashboard {
-  private metrics: Map<string, { value: number; timestamp: number }> = new Map();
-  private subscribers: Map<string, Array<(value: number) => void>> = new Map();
+  private metrics = new Map<string, { value: number; timestamp: number }>();
+  private subscribers = new Map<string, ((value: number) => void)[]>();
   
   updateMetric(name: string, value: number): void {
     this.metrics.set(name, { value, timestamp: Date.now() });

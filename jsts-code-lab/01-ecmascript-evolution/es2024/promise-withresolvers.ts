@@ -119,7 +119,7 @@ function fetchWithCancellation(url: string): CancellableRequest<Response> {
       .then(resolve)
       .catch(reject);
 
-    return () => controller.abort();
+    return () => { controller.abort(); };
   });
 }
 
@@ -128,7 +128,7 @@ function fetchWithCancellation(url: string): CancellableRequest<Response> {
 // ============================================================================
 
 class ConditionVariable {
-  private waiters: Array<PromiseWithResolvers<void>> = [];
+  private waiters: PromiseWithResolvers<void>[] = [];
 
   async wait(condition: () => boolean): Promise<void> {
     if (condition()) return;
@@ -199,7 +199,7 @@ export async function demo(): Promise<void> {
   // 基础用法
   const { promise, resolve, reject } = Promise.withResolvers<string>();
   
-  setTimeout(() => resolve("completed!"), 100);
+  setTimeout(() => { resolve("completed!"); }, 100);
   const result = await promise;
   console.log("Resolved:", result);
   

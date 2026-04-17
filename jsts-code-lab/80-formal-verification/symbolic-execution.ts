@@ -85,7 +85,7 @@ function checkConstraint(c: Constraint, assignment: Map<string, number>): boolea
 export function solveConstraints(
   constraints: Constraint[],
   variables: string[],
-  bound: number = 5
+  bound = 5
 ): Map<string, number> | null {
   const n = variables.length;
   const assign = new Map<string, number>();
@@ -151,9 +151,9 @@ export class SymbolicExecutionEngine {
   explore(
     program: (state: SymbolicState) => SymbolicState[],
     variables: string[],
-    bound: number = 5
-  ): Array<{ pathIndex: number; constraints: Constraint[]; model: Map<string, number> | null }> {
-    const results: Array<{ pathIndex: number; constraints: Constraint[]; model: Map<string, number> | null }> = [];
+    bound = 5
+  ): { pathIndex: number; constraints: Constraint[]; model: Map<string, number> | null }[] {
+    const results: { pathIndex: number; constraints: Constraint[]; model: Map<string, number> | null }[] = [];
     let pathIndex = 0;
 
     for (const path of this.paths) {
@@ -211,7 +211,7 @@ export function demo(): void {
   const truePath = engine.assign(branches.trueBranch, 'w', symMul(symVar('z'), symConst(2)));
   const falsePath = engine.assign(branches.falseBranch, 'w', symSub(symVar('z'), symConst(5)));
 
-  engine['paths'] = [truePath, falsePath];
+  engine.paths = [truePath, falsePath];
 
   const results = engine.explore(s => [s], ['input_x', 'input_y'], 10);
 

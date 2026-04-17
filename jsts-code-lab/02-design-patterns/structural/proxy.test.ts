@@ -34,24 +34,24 @@ describe('proxy pattern', () => {
     const viewerDoc = new ProtectedDocumentProxy(doc, 'viewer');
 
     expect(viewerDoc.view()).toBe('Top secret');
-    expect(() => viewerDoc.edit('new content')).toThrow('Viewers cannot edit documents');
-    expect(() => viewerDoc.delete()).toThrow('Only admins can delete documents');
+    expect(() => { viewerDoc.edit('new content'); }).toThrow('Viewers cannot edit documents');
+    expect(() => { viewerDoc.delete(); }).toThrow('Only admins can delete documents');
   });
 
   it('ProtectedDocumentProxy should allow editor to edit but not delete', () => {
     const doc = new RealDocument('doc.txt', 'Content');
     const editorDoc = new ProtectedDocumentProxy(doc, 'editor');
 
-    expect(() => editorDoc.edit('updated')).not.toThrow();
-    expect(() => editorDoc.delete()).toThrow('Only admins can delete documents');
+    expect(() => { editorDoc.edit('updated'); }).not.toThrow();
+    expect(() => { editorDoc.delete(); }).toThrow('Only admins can delete documents');
   });
 
   it('ProtectedDocumentProxy should allow admin full access', () => {
     const doc = new RealDocument('doc.txt', 'Content');
     const adminDoc = new ProtectedDocumentProxy(doc, 'admin');
 
-    expect(() => adminDoc.edit('updated')).not.toThrow();
-    expect(() => adminDoc.delete()).not.toThrow();
+    expect(() => { adminDoc.edit('updated'); }).not.toThrow();
+    expect(() => { adminDoc.delete(); }).not.toThrow();
   });
 
   it('CachedCalculatorProxy should cache fibonacci results', () => {

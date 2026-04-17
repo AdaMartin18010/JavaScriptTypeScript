@@ -15,9 +15,9 @@
 // ============================================================================
 
 /** 字符串声明方式 */
-const str1: string = '单引号';
-const str2: string = "双引号";
-const str3: string = `模板字符串 ${str1}`;
+const str1 = '单引号';
+const str2 = "双引号";
+const str3 = `模板字符串 ${str1}`;
 
 /** 模板字符串的高级用法 */
 function tag(strings: TemplateStringsArray, ...values: unknown[]) {
@@ -30,17 +30,17 @@ const tagged = tag`Hello ${'World'}!`;
 // ============================================================================
 
 /** 整数与浮点数 */
-const int: number = 42;
-const float: number = 3.14159;
-const scientific: number = 1.23e10;
-const hex: number = 0xff;      // 255
-const binary: number = 0b1010; // 10
-const octal: number = 0o755;   // 493
+const int = 42;
+const float = 3.14159;
+const scientific = 1.23e10;
+const hex = 0xff;      // 255
+const binary = 0b1010; // 10
+const octal = 0o755;   // 493
 
 /** 特殊数值 */
-const infinity: number = Infinity;
-const negativeInfinity: number = -Infinity;
-const notANumber: number = NaN;
+const infinity = Infinity;
+const negativeInfinity = -Infinity;
+const notANumber = NaN;
 
 /** ⚠️ 浮点数精度问题 */
 console.log(0.1 + 0.2 === 0.3); // false!
@@ -57,9 +57,9 @@ function roughlyEqual(a: number, b: number): boolean {
 // ============================================================================
 
 /** BigInt 创建方式 */
-const big1: bigint = 9007199254740991n;        // 字面量后缀 'n'
-const big2: bigint = BigInt('9007199254740991999'); // 构造函数
-const big3: bigint = BigInt(42);               // 从number转换
+const big1 = 9007199254740991n;        // 字面量后缀 'n'
+const big2 = BigInt('9007199254740991999'); // 构造函数
+const big3 = BigInt(42);               // 从number转换
 
 /** BigInt vs Number 对比 */
 const maxSafeInt = Number.MAX_SAFE_INTEGER; // 9007199254740991
@@ -84,7 +84,7 @@ const mixed = 10n + BigInt(5); // ✅ 20n
 // 4. 布尔值 (Boolean)
 // ============================================================================
 
-const bool: boolean = true;
+const bool = true;
 
 /** 真值与假值 */
 const falsyValues = [false, 0, '', null, undefined, NaN, 0n, -0];
@@ -103,9 +103,9 @@ console.log(null === undefined); // false
 // ============================================================================
 
 /** 创建 Symbol */
-const sym1: symbol = Symbol();
-const sym2: symbol = Symbol('描述');
-const sym3: symbol = Symbol('描述');
+const sym1 = Symbol();
+const sym2 = Symbol('描述');
+const sym3 = Symbol('描述');
 
 console.log(sym2 === sym3); // false! 每次创建都是唯一的
 
@@ -134,7 +134,7 @@ const iterable = {
 // ============================================================================
 
 /** null: 有意的空值 */
-let user: { name: string } | null = null;
+const user: { name: string } | null = null;
 
 /** undefined: 未初始化的值 */
 let data: string | undefined;
@@ -174,7 +174,7 @@ try {
 }
 
 /** unknown: 类型安全的 any */
-let unknownValue: unknown = 4;
+const unknownValue: unknown = 4;
 // unknownValue.toFixed(); // ❌ Error
 if (typeof unknownValue === 'number') {
   unknownValue.toFixed(); // ✅
@@ -204,8 +204,8 @@ type Status = 'pending' | 'success' | 'error';
 type ID = string | number;
 
 /** 交叉类型 */
-type Animal = { name: string };
-type Bird = { fly(): void };
+interface Animal { name: string }
+interface Bird { fly(): void }
 type FlyingAnimal = Animal & Bird;
 
 // ============================================================================
@@ -246,7 +246,7 @@ export function demo(): void {
   console.log("Nullish coalescing:", value ?? "default");
   
   // unknown 类型
-  let unknownValue: unknown = 42;
+  const unknownValue: unknown = 42;
   if (typeof unknownValue === "number") {
     console.log("Unknown as number:", unknownValue.toFixed(2));
   }

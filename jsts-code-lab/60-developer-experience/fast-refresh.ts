@@ -182,7 +182,7 @@ export class FastRefreshRuntime {
     
     // 延迟执行，批量处理
     if (this.pendingUpdates.length === 1) {
-      setTimeout(() => this.performReactRefresh(), 30);
+      setTimeout(() => { this.performReactRefresh(); }, 30);
     }
   }
 

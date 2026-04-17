@@ -135,10 +135,10 @@ const evens = numbers.filter(n => n % 2 === 0);
 const sum = numbers.reduce((acc, n) => acc + n, 0);
 
 /** 函数组合 */
-const compose = <T>(...fns: Array<(x: T) => T>) => (x: T) =>
+const compose = <T>(...fns: ((x: T) => T)[]) => (x: T) =>
   fns.reduceRight((v, f) => f(v), x);
 
-const pipe = <T>(...fns: Array<(x: T) => T>) => (x: T) =>
+const pipe = <T>(...fns: ((x: T) => T)[]) => (x: T) =>
   fns.reduce((v, f) => f(v), x);
 
 // 使用

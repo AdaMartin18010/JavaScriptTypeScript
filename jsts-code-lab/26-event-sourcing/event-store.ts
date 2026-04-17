@@ -41,8 +41,8 @@ export interface EventStream {
 // ============================================================================
 
 export class EventStore {
-  private streams: Map<string, DomainEvent[]> = new Map();
-  private eventHandlers: Map<string, ((event: DomainEvent) => void)[]> = new Map();
+  private streams = new Map<string, DomainEvent[]>();
+  private eventHandlers = new Map<string, ((event: DomainEvent) => void)[]>();
   private allEventHandlers: ((event: DomainEvent) => void)[] = [];
 
   // 追加事件到流
@@ -139,8 +139,8 @@ export class EventStore {
 // ============================================================================
 
 export abstract class AggregateRoot {
-  protected id: string = '';
-  protected version: number = 0;
+  protected id = '';
+  protected version = 0;
   private uncommittedEvents: DomainEvent[] = [];
 
   getId(): string {
@@ -181,8 +181,8 @@ export abstract class AggregateRoot {
 
 export class Order extends AggregateRoot {
   private status: 'pending' | 'paid' | 'shipped' | 'cancelled' = 'pending';
-  private items: Array<{ productId: string; quantity: number; price: number }> = [];
-  private totalAmount: number = 0;
+  private items: { productId: string; quantity: number; price: number }[] = [];
+  private totalAmount = 0;
 
   static create(orderId: string, customerId: string): Order {
     const order = new Order();
@@ -260,13 +260,13 @@ export class Order extends AggregateRoot {
 // ============================================================================
 
 export class OrderProjection {
-  private orders: Map<string, { 
+  private orders = new Map<string, { 
     id: string; 
     status: string; 
     totalAmount: number;
     itemCount: number;
     createdAt: Date;
-  }> = new Map();
+  }>();
 
   handleEvent(event: DomainEvent): void {
     switch (event.type) {
@@ -389,7 +389,7 @@ export async function demo(): Promise<void> {
   const orderProjection = new OrderProjection();
 
   // 订阅事件更新投影
-  eventStore.subscribeAll(event => orderProjection.handleEvent(event));
+  eventStore.subscribeAll(event => { orderProjection.handleEvent(event); });
 
   console.log('1. 创建订单聚合');
   const orderId = generateId();

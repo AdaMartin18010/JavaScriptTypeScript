@@ -23,8 +23,8 @@ export interface Model {
 
 // 特征存储
 export class FeatureStore {
-  private onlineStore: Map<string, Feature> = new Map();
-  private offlineStore: Map<string, Feature[]> = new Map();
+  private onlineStore = new Map<string, Feature>();
+  private offlineStore = new Map<string, Feature[]>();
   
   // 实时特征（在线）
   setOnlineFeature(entityId: string, feature: Feature): void {
@@ -98,8 +98,8 @@ export class FeatureStore {
 
 // 模型注册表
 export class ModelRegistry {
-  private models: Map<string, Model[]> = new Map();
-  private productionModel: Map<string, string> = new Map();
+  private models = new Map<string, Model[]>();
+  private productionModel = new Map<string, string>();
   
   register(model: Model): void {
     if (!this.models.has(model.name)) {
@@ -134,7 +134,7 @@ export class ModelRegistry {
     return version ? this.getModel(name, version) : undefined;
   }
   
-  listModels(): Array<{ name: string; versions: string[]; production?: string }> {
+  listModels(): { name: string; versions: string[]; production?: string }[] {
     return Array.from(this.models.entries()).map(([name, models]) => ({
       name,
       versions: models.map(m => m.version),
@@ -145,8 +145,8 @@ export class ModelRegistry {
 
 // 模型服务
 export class ModelServer {
-  private models: Map<string, (features: Record<string, unknown>) => unknown> = new Map();
-  private predictions: Array<{ modelId: string; input: unknown; output: unknown; latency: number; timestamp: number }> = [];
+  private models = new Map<string, (features: Record<string, unknown>) => unknown>();
+  private predictions: { modelId: string; input: unknown; output: unknown; latency: number; timestamp: number }[] = [];
   
   loadModel(model: Model, inferenceFn: (features: Record<string, unknown>) => unknown): void {
     this.models.set(model.id, inferenceFn);
@@ -205,13 +205,13 @@ export class ModelServer {
 
 // 影子流量测试
 export class ShadowTesting {
-  private shadowModels: Map<string, string> = new Map(); // production -> shadow
-  private results: Array<{
+  private shadowModels = new Map<string, string>(); // production -> shadow
+  private results: {
     production: unknown;
     shadow: unknown;
     diff: number;
     timestamp: number;
-  }> = [];
+  }[] = [];
   
   enableShadow(productionModelId: string, shadowModelId: string): void {
     this.shadowModels.set(productionModelId, shadowModelId);
@@ -256,8 +256,8 @@ export class ShadowTesting {
 
 // 特征监控
 export class FeatureMonitoring {
-  private distributions: Map<string, number[]> = new Map();
-  private alerts: Array<{ feature: string; type: string; severity: string }> = [];
+  private distributions = new Map<string, number[]>();
+  private alerts: { feature: string; type: string; severity: string }[] = [];
   
   record(featureName: string, value: number): void {
     if (!this.distributions.has(featureName)) {
@@ -299,7 +299,7 @@ export class FeatureMonitoring {
     }
   }
   
-  getAlerts(): Array<{ feature: string; type: string; severity: string }> {
+  getAlerts(): { feature: string; type: string; severity: string }[] {
     return [...this.alerts];
   }
 }

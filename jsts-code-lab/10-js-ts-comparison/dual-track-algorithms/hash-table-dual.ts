@@ -71,7 +71,7 @@ export class JsHashTable {
     const bucket = this.table.get(hash);
     if (!bucket) return false;
     for (let i = 0; i < bucket.length; i++) {
-      if (this._equals(bucket[i]!.key, key)) {
+      if (this._equals(bucket[i].key, key)) {
         bucket.splice(i, 1);
         return true;
       }
@@ -144,7 +144,7 @@ export class TsHashTable<K extends Hashable, V> {
     const bucket = this.table.get(hash);
     if (!bucket) return false;
     for (let i = 0; i < bucket.length; i++) {
-      if (bucket[i]!.key.equals(key)) {
+      if (bucket[i].key.equals(key)) {
         bucket.splice(i, 1);
         return true;
       }

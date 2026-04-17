@@ -58,9 +58,9 @@ export interface GraphQLArgument {
 // ============================================================================
 
 export class SchemaBuilder {
-  private types: Map<string, GraphQLObjectType> = new Map();
-  private queryType: string = 'Query';
-  private mutationType: string = 'Mutation';
+  private types = new Map<string, GraphQLObjectType>();
+  private queryType = 'Query';
+  private mutationType = 'Mutation';
 
   objectType(name: string, config: { fields: Record<string, GraphQLField> }): this {
     this.types.set(name, {
@@ -165,13 +165,13 @@ export class QueryParser {
   }
 
   private extractName(line: string): string | undefined {
-    const match = line.match(/(?:query|mutation|subscription)\s+(\w+)/);
+    const match = /(?:query|mutation|subscription)\s+(\w+)/.exec(line);
     return match?.[1];
   }
 
   private parseField(line: string): FieldSelection {
     // 解析字段名、别名和参数
-    const match = line.match(/(?:(\w+):\s*)?(\w+)(?:\(([^)]+)\))?/);
+    const match = /(?:(\w+):\s*)?(\w+)(?:\(([^)]+)\))?/.exec(line);
     if (!match) return { name: line };
     
     const [, alias, name, argsStr] = match;
@@ -270,10 +270,10 @@ export interface ExecutionError {
 // ============================================================================
 
 export class DataLoader<K, V> {
-  private batch: Map<K, Array<(value: V | Error) => void>> = new Map();
+  private batch = new Map<K, ((value: V | Error) => void)[]>();
   private batchSchedule: ReturnType<typeof setImmediate> | null = null;
 
-  constructor(private batchFn: (keys: K[]) => Promise<Array<V | Error>>) {}
+  constructor(private batchFn: (keys: K[]) => Promise<(V | Error)[]>) {}
 
   load(key: K): Promise<V> {
     return new Promise((resolve, reject) => {
@@ -301,7 +301,7 @@ export class DataLoader<K, V> {
     });
   }
 
-  loadMany(keys: K[]): Promise<Array<V | Error>> {
+  loadMany(keys: K[]): Promise<(V | Error)[]> {
     return Promise.all(keys.map(key => 
       this.load(key).catch(error => error as Error)
     ));
@@ -326,11 +326,11 @@ export class DataLoader<K, V> {
       
       callbacks.forEach((cbs, index) => {
         const result = results[index];
-        cbs.forEach(cb => cb(result));
+        cbs.forEach(cb => { cb(result); });
       });
     } catch (error) {
       callbacks.forEach(cbs => {
-        cbs.forEach(cb => cb(error as Error));
+        cbs.forEach(cb => { cb(error as Error); });
       });
     }
   }

@@ -82,6 +82,6 @@ describe('graph', () => {
     expect(topologicalSort(graph)).toBeNull();
   });
   it('demo should run without errors', () => {
-    expect(() => demo()).not.toThrow();
+    expect(() => { demo(); }).not.toThrow();
   });
 });

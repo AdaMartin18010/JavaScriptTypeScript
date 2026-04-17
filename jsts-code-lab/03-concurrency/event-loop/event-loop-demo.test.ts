@@ -3,11 +3,11 @@ import { nestedMicrotasks, mixedTasks, EventLoopSimulator } from './event-loop-d
 
 describe('event loop demo', () => {
   it('nestedMicrotasks should not throw', () => {
-    expect(() => nestedMicrotasks()).not.toThrow();
+    expect(() => { nestedMicrotasks(); }).not.toThrow();
   });
 
   it('mixedTasks should not throw', () => {
-    expect(() => mixedTasks()).not.toThrow();
+    expect(() => { mixedTasks(); }).not.toThrow();
   });
 
   it('EventLoopSimulator should run tasks in correct order', () => {

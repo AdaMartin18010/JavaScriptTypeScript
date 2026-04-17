@@ -216,7 +216,7 @@ export class PasswordHasher {
   /**
    * 生成密钥派生 (PBKDF2 风格)
    */
-  static deriveKey(password: string, salt: Buffer, iterations: number = 100000, keyLength: number = 32): Buffer {
+  static deriveKey(password: string, salt: Buffer, iterations = 100000, keyLength = 32): Buffer {
     const { pbkdf2Sync } = require('crypto');
     return pbkdf2Sync(password, salt, iterations, keyLength, 'sha256');
   }
@@ -267,8 +267,8 @@ export class MerkleTree {
   /**
    * 获取证明路径
    */
-  getProof(leafIndex: number): Array<{ hash: string; direction: 'left' | 'right' }> {
-    const proof: Array<{ hash: string; direction: 'left' | 'right' }> = [];
+  getProof(leafIndex: number): { hash: string; direction: 'left' | 'right' }[] {
+    const proof: { hash: string; direction: 'left' | 'right' }[] = [];
     let index = leafIndex;
 
     for (let i = 0; i < this.layers.length - 1; i++) {
@@ -292,7 +292,7 @@ export class MerkleTree {
   /**
    * 验证证明
    */
-  static verifyProof(leaf: string, proof: Array<{ hash: string; direction: 'left' | 'right' }>, root: string): boolean {
+  static verifyProof(leaf: string, proof: { hash: string; direction: 'left' | 'right' }[], root: string): boolean {
     let hash = HashFunctions.sha256(leaf);
 
     for (const node of proof) {
@@ -326,11 +326,11 @@ export class MerkleTree {
 // ============================================================================
 
 export class ConsistentHashing {
-  private ring: Map<string, string> = new Map(); // hash -> node
-  private nodes: Set<string> = new Set();
+  private ring = new Map<string, string>(); // hash -> node
+  private nodes = new Set<string>();
   private virtualNodes: number;
 
-  constructor(virtualNodes: number = 150) {
+  constructor(virtualNodes = 150) {
     this.virtualNodes = virtualNodes;
   }
 
@@ -402,7 +402,7 @@ export class BloomFilter {
   private size: number;
   private hashFunctions: number;
 
-  constructor(expectedItems: number, falsePositiveRate: number = 0.01) {
+  constructor(expectedItems: number, falsePositiveRate = 0.01) {
     // 计算最优位数组大小
     this.size = Math.ceil(-(expectedItems * Math.log(falsePositiveRate)) / (Math.log(2) ** 2));
     this.hashFunctions = Math.ceil((this.size / expectedItems) * Math.log(2));
@@ -532,7 +532,7 @@ export function demo(): void {
   console.log('\n--- Bloom Filter ---');
   const bloom = new BloomFilter(1000, 0.01);
   const items = ['apple', 'banana', 'cherry', 'date', 'elderberry'];
-  items.forEach(item => bloom.add(item));
+  items.forEach(item => { bloom.add(item); });
   
   const bloomInfo = bloom.getInfo();
   console.log('过滤器大小:', bloomInfo.size);

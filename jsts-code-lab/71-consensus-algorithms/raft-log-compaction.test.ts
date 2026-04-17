@@ -48,8 +48,8 @@ describe('RaftLogCompactionCluster', () => {
 
     const node2 = cluster.getNode('node-2')!;
     expect(node2.commitIndex).toBe(3);
-    expect(node2.stateMachine['x']).toBe('1');
-    expect(node2.stateMachine['z']).toBe('3');
+    expect(node2.stateMachine.x).toBe('1');
+    expect(node2.stateMachine.z).toBe('3');
   });
 });
 

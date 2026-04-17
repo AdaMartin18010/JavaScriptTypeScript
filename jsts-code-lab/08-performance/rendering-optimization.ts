@@ -17,7 +17,7 @@ if (typeof globalThis.requestAnimationFrame === 'undefined') {
   (globalThis as unknown as { requestAnimationFrame: (cb: () => void) => ReturnType<typeof setTimeout> }).requestAnimationFrame = (cb: () => void) => setTimeout(cb, 16);
 }
 if (typeof globalThis.cancelAnimationFrame === 'undefined') {
-  (globalThis as unknown as { cancelAnimationFrame: (id: number) => void }).cancelAnimationFrame = (id: number) => clearTimeout(id as unknown as ReturnType<typeof setTimeout>);
+  (globalThis as unknown as { cancelAnimationFrame: (id: number) => void }).cancelAnimationFrame = (id: number) => { clearTimeout(id as unknown as ReturnType<typeof setTimeout>); };
 }
 if (typeof globalThis.document === 'undefined') {
   (globalThis as unknown as { document: object }).document = {
@@ -62,7 +62,7 @@ if (typeof globalThis.Event === 'undefined') {
 
 export class RAFScheduler {
   private frameId: number | null = null;
-  private tasks: Array<() => void> = [];
+  private tasks: (() => void)[] = [];
   private running = false;
 
   addTask(task: () => void): void {
@@ -79,7 +79,7 @@ export class RAFScheduler {
     if (this.running) return;
     
     this.running = true;
-    this.frameId = requestAnimationFrame(() => this.execute());
+    this.frameId = requestAnimationFrame(() => { this.execute(); });
   }
 
   private execute(): void {
@@ -188,7 +188,7 @@ export class VirtualScroller {
 // ============================================================================
 
 export class DOMBatcher {
-  private operations: Array<() => void> = [];
+  private operations: (() => void)[] = [];
   private scheduled = false;
 
   add(operation: () => void): void {
@@ -241,8 +241,8 @@ export class DOMBatcher {
 
 export class LayoutOptimizer {
   // 读取和写入分离
-  private readQueue: Array<() => void> = [];
-  private writeQueue: Array<() => void> = [];
+  private readQueue: (() => void)[] = [];
+  private writeQueue: (() => void)[] = [];
 
   read(fn: () => void): void {
     this.readQueue.push(fn);
@@ -308,7 +308,7 @@ export class LazyLoader<T extends HTMLElement> {
 
   constructor(options?: IntersectionObserverInit) {
     this.observer = new IntersectionObserver(
-      (entries) => this.handleEntries(entries),
+      (entries) => { this.handleEntries(entries); },
       {
         root: null,
         rootMargin: '50px',

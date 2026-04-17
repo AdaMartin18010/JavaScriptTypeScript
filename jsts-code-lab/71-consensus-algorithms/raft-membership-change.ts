@@ -213,7 +213,7 @@ export class RaftMembershipChanger {
     return true;
   }
 
-  getClusterConfigSummary(): Array<{ id: string; configName: string; commitIndex: number }> {
+  getClusterConfigSummary(): { id: string; configName: string; commitIndex: number }[] {
     return Array.from(this.nodes.entries()).map(([id, node]) => ({
       id,
       configName: node.config.name,

@@ -20,7 +20,7 @@
 type Effect = () => void;
 
 class Dependency {
-  private subscribers: Set<Effect> = new Set();
+  private subscribers = new Set<Effect>();
 
   depend(): void {
     if (activeEffect) {
@@ -29,7 +29,7 @@ class Dependency {
   }
 
   notify(): void {
-    this.subscribers.forEach(effect => effect());
+    this.subscribers.forEach(effect => { effect(); });
   }
 }
 
@@ -179,7 +179,7 @@ export class ProductViewModel {
 
   addToCart(productId: string): void {
     const product = this.model.getProductById(productId);
-    if (!product || !product.inStock) return;
+    if (!product?.inStock) return;
 
     const newCart = new Map(this.cart.value);
     const currentQty = newCart.get(productId) || 0;
@@ -203,7 +203,7 @@ export class ProductViewModel {
 // ============================================================================
 
 export class ProductView {
-  private unsubscribeFns: Array<() => void> = [];
+  private unsubscribeFns: (() => void)[] = [];
 
   constructor(private viewModel: ProductViewModel) {
     this.setupBindings();
@@ -271,7 +271,7 @@ export class ProductView {
   }
 
   destroy(): void {
-    this.unsubscribeFns.forEach(fn => fn());
+    this.unsubscribeFns.forEach(fn => { fn(); });
   }
 }
 

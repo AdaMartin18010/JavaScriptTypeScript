@@ -95,7 +95,7 @@ export class CapDemoSystem {
   checkConsistency(key: string): boolean {
     const values = Array.from(this.nodes.values()).map(n => n.get(key)).filter((v): v is NodeValue => v !== undefined);
     if (values.length === 0) return true;
-    const first = values[0]!;
+    const first = values[0];
     return values.every(v => v.value === first.value && v.version === first.version);
   }
 }

@@ -22,8 +22,8 @@ import type {
 export class TypeError extends Error {}
 
 export class TypeChecker {
-  private scopes: Array<Map<string, TypeAnnotation>> = [new Map()];
-  private functions: Map<string, FunctionDecl> = new Map();
+  private scopes: Map<string, TypeAnnotation>[] = [new Map()];
+  private functions = new Map<string, FunctionDecl>();
 
   check(node: ASTNode): TypeAnnotation {
     switch (node.kind) {
@@ -88,11 +88,11 @@ export class TypeChecker {
           `Type ${this.typeToString(inferredType)} is not assignable to ${this.typeToString(node.typeAnnotation)}`
         );
       }
-      this.define(node.name, node.typeAnnotation as TypeAnnotation);
-      return node.typeAnnotation as TypeAnnotation;
+      this.define(node.name, node.typeAnnotation);
+      return node.typeAnnotation;
     } else {
-      this.define(node.name, inferredType as TypeAnnotation);
-      return inferredType as TypeAnnotation;
+      this.define(node.name, inferredType);
+      return inferredType;
     }
   }
 

@@ -382,7 +382,7 @@ export function demo(): void {
   console.log('\n--- 视图变更（View Change）---');
   const viewChanged = cluster.performViewChange(1);
   console.log(`视图变更结果: ${viewChanged ? '成功' : '失败'}`);
-  for (const r of cluster['replicas'] as VrReplica[]) {
+  for (const r of cluster.replicas) {
     console.log(`  ${r.id}: view=${r.currentView}, role=${r.currentRole}, commit=${r.currentCommitNumber}`);
   }
 

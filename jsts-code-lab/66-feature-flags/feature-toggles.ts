@@ -51,9 +51,9 @@ export interface ToggleGroup {
 // ============================================================================
 
 export class FeatureToggleManager {
-  private toggles: Map<string, FeatureToggle> = new Map();
-  private groups: Map<string, ToggleGroup> = new Map();
-  private listeners: Array<(toggle: FeatureToggle, enabled: boolean) => void> = [];
+  private toggles = new Map<string, FeatureToggle>();
+  private groups = new Map<string, ToggleGroup>();
+  private listeners: ((toggle: FeatureToggle, enabled: boolean) => void)[] = [];
 
   /**
    * 注册功能开关

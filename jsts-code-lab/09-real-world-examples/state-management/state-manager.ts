@@ -28,9 +28,7 @@ export type Listener<S> = (state: S, prevState: S) => void;
 
 export type Unsubscribe = () => void;
 
-export interface Middleware<S> {
-  (store: StoreAPI<S>): (next: Dispatch) => (action: Action) => unknown;
-}
+export type Middleware<S> = (store: StoreAPI<S>) => (next: Dispatch) => (action: Action) => unknown;
 
 export type Dispatch = (action: Action) => Action;
 
@@ -44,9 +42,7 @@ export interface Store<S> extends StoreAPI<S> {
   replaceReducer(nextReducer: Reducer<S>): void;
 }
 
-export interface StoreCreator {
-  <S>(reducer: Reducer<S>, preloadedState?: S, enhancer?: (createStore: StoreCreator) => StoreCreator): Store<S>;
-}
+export type StoreCreator = <S>(reducer: Reducer<S>, preloadedState?: S, enhancer?: (createStore: StoreCreator) => StoreCreator) => Store<S>;
 
 // ============================================================================
 // 2. Store 实现
@@ -74,7 +70,7 @@ export function createStore<S>(
 
   let currentReducer = reducer;
   let currentState: S | undefined = preloadedState;
-  let listeners: Listener<S>[] = [];
+  const listeners: Listener<S>[] = [];
   let isDispatching = false;
 
   function getState(): S {
@@ -115,7 +111,7 @@ export function createStore<S>(
       currentState = currentReducer(currentState, action);
       
       // 通知监听器
-      listeners.forEach(listener => listener(currentState as S, prevState as S));
+      listeners.forEach(listener => { listener(currentState as S, prevState as S); });
     } finally {
       isDispatching = false;
     }
@@ -181,9 +177,7 @@ export const loggerMiddleware = <S>(store: StoreAPI<S>) =>
   };
 
 // 异步中间件 (thunk)
-export interface ThunkAction<R, S> {
-  (dispatch: Dispatch, getState: () => S): R;
-}
+export type ThunkAction<R, S> = (dispatch: Dispatch, getState: () => S) => R;
 
 export const thunkMiddleware = <S>(store: StoreAPI<S>) =>
   (next: Dispatch) =>
@@ -207,7 +201,7 @@ export function combineReducers<S>(reducers: ReducersMapObject<S>): Reducer<S> {
     const nextState = {} as S;
     let hasChanged = false;
 
-    for (const key of Object.keys(reducers) as Array<keyof S>) {
+    for (const key of Object.keys(reducers) as (keyof S)[]) {
       const reducer = reducers[key];
       const previousStateForKey = state?.[key];
       const nextStateForKey = reducer(previousStateForKey, action);
@@ -226,7 +220,7 @@ export function combineReducers<S>(reducers: ReducersMapObject<S>): Reducer<S> {
 export type Selector<S, R> = (state: S) => R;
 
 export function createSelector<S, R, C>(
-  selectors: Array<(state: S) => unknown>,
+  selectors: ((state: S) => unknown)[],
   combiner: (...args: unknown[]) => C
 ): Selector<S, C> {
   let lastArgs: unknown[] | null = null;

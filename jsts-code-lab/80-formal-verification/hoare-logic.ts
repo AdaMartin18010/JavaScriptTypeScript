@@ -19,8 +19,8 @@
  */
 
 export class HoareLogic<T> {
-  private preconditions: Array<(input: T) => boolean> = [];
-  private postconditions: Array<(input: T, output: unknown) => boolean> = [];
+  private preconditions: ((input: T) => boolean)[] = [];
+  private postconditions: ((input: T, output: unknown) => boolean)[] = [];
 
   require(name: string, predicate: (input: T) => boolean): this {
     this.preconditions.push(predicate);

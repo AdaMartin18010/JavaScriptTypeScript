@@ -111,14 +111,14 @@ export interface FeatureStatistics {
   min?: number;
   max?: number;
   distinctCount?: number;
-  histogram?: Array<{ bucket: string; count: number }>;
+  histogram?: { bucket: string; count: number }[];
 }
 
 // ==================== 特征注册表 ====================
 
 export class FeatureRegistry {
-  private features: Map<string, FeatureDefinition> = new Map();
-  private entityFeatures: Map<string, Set<string>> = new Map(); // entity -> feature names
+  private features = new Map<string, FeatureDefinition>();
+  private entityFeatures = new Map<string, Set<string>>(); // entity -> feature names
 
   /**
    * 注册特征定义
@@ -209,8 +209,8 @@ export class FeatureRegistry {
 // ==================== 在线特征存储 ====================
 
 export class OnlineFeatureStore {
-  private store: Map<string, FeatureValue> = new Map();
-  private ttlTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
+  private store = new Map<string, FeatureValue>();
+  private ttlTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
   private getKey(entityType: string, entityId: string, featureName: string): string {
     return `${entityType}:${entityId}:${featureName}`;
@@ -325,7 +325,7 @@ export class OnlineFeatureStore {
 // ==================== 离线特征存储 ====================
 
 export class OfflineFeatureStore {
-  private partitions: Map<string, FeatureValue[]> = new Map(); // partition_key -> values
+  private partitions = new Map<string, FeatureValue[]>(); // partition_key -> values
 
   private getPartitionKey(entityType: string, date: Date): string {
     return `${entityType}/${date.toISOString().split('T')[0]}`;
@@ -497,7 +497,7 @@ export class FeatureTransformer {
   /**
    * 多项式特征交叉
    */
-  static polynomialFeatures(values: number[], degree: number = 2): number[] {
+  static polynomialFeatures(values: number[], degree = 2): number[] {
     const result: number[] = [...values];
     
     for (let d = 2; d <= degree; d++) {
@@ -536,14 +536,14 @@ export class FeatureTransformer {
 // ==================== 特征监控 ====================
 
 export class FeatureMonitor {
-  private distributions: Map<string, number[]> = new Map();
-  private alerts: Array<{
+  private distributions = new Map<string, number[]>();
+  private alerts: {
     featureName: string;
     type: 'drift' | 'outlier' | 'null_increase';
     severity: 'warning' | 'critical';
     message: string;
     timestamp: number;
-  }> = [];
+  }[] = [];
 
   record(featureName: string, value: number): void {
     if (!this.distributions.has(featureName)) {

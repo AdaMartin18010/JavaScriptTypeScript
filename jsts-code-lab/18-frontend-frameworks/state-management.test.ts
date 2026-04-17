@@ -116,7 +116,7 @@ describe('loggerMiddleware', () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const groupEndSpy = vi.spyOn(console, 'groupEnd').mockImplementation(() => {});
 
-    const store = new Store((state = 0, action: Action) => state, 0);
+    const store = new Store((state, action: Action) => state, 0);
     store.applyMiddleware(loggerMiddleware);
     store.dispatch({ type: 'TEST' });
 
@@ -137,7 +137,7 @@ describe('persistMiddleware', () => {
     };
     vi.stubGlobal('localStorage', localStorageMock);
 
-    const store = new Store((state = { value: 1 }, action: Action) => state, { value: 1 });
+    const store = new Store((state, action: Action) => state, { value: 1 });
     store.applyMiddleware(persistMiddleware('my-app'));
     store.dispatch({ type: 'TEST' });
 

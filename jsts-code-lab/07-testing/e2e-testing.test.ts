@@ -97,7 +97,7 @@ describe('e2e-testing', () => {
           {
             description: 'step 1',
             action: async (ctx) => {
-              ctx.data['done'] = true;
+              ctx.data.done = true;
             }
           }
         ]

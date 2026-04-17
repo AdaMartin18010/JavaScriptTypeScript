@@ -31,8 +31,8 @@ export interface UserContext {
 }
 
 export class FeatureFlagManager {
-  private flags: Map<string, FeatureFlag> = new Map();
-  private userOverrides: Map<string, Set<string>> = new Map();
+  private flags = new Map<string, FeatureFlag>();
+  private userOverrides = new Map<string, Set<string>>();
   
   register(flag: FeatureFlag): void {
     this.flags.set(flag.key, flag);
@@ -136,12 +136,12 @@ export interface ABTest {
   id: string;
   name: string;
   flagKey: string;
-  variants: Array<{ name: string; weight: number }>;
+  variants: { name: string; weight: number }[];
 }
 
 export class ABTestManager {
-  private tests: Map<string, ABTest> = new Map();
-  private assignments: Map<string, Map<string, string>> = new Map();
+  private tests = new Map<string, ABTest>();
+  private assignments = new Map<string, Map<string, string>>();
   
   createTest(test: ABTest): void {
     this.tests.set(test.id, test);

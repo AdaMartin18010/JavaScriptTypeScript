@@ -288,7 +288,7 @@ describe('v factory', () => {
   it('should validate field references', async () => {
     const form = v.form()
       .field('password', v.string().required() as Validator, '密码')
-      .field('confirm', v.ref('password') as Validator, '确认密码');
+      .field('confirm', v.ref('password'), '确认密码');
 
     const result = await form.validate({ password: 'secret', confirm: 'secret' });
     expect(result.valid).toBe(true);

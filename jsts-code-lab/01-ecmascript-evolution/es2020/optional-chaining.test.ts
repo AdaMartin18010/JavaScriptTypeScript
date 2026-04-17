@@ -28,6 +28,6 @@ describe('optional chaining (ES2020)', () => {
   });
 
   it('processUser should not throw on null user', () => {
-    expect(() => processUser(null)).not.toThrow();
+    expect(() => { processUser(null); }).not.toThrow();
   });
 });

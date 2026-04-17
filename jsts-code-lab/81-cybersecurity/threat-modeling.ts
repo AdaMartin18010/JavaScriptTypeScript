@@ -255,7 +255,7 @@ export function demo(): void {
 
   // 自动生成 STRIDE 威胁
   const strideThreats = evaluator.generateStrideThreats();
-  strideThreats.forEach((t) => evaluator.addThreat(t));
+  strideThreats.forEach((t) => { evaluator.addThreat(t); });
 
   console.log('--- 风险矩阵（按风险评分降序） ---');
   const matrix = evaluator.getRiskMatrix();

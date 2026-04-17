@@ -28,12 +28,12 @@
 // TCP 连接状态机的类型定义
 // ============================================================================
 
-type ClosedState = { readonly tag: 'CLOSED'; readonly __brand: 'CLOSED' };
-type SynSentState = { readonly tag: 'SYN_SENT'; readonly __brand: 'SYN_SENT' };
-type EstablishedState = { readonly tag: 'ESTABLISHED'; readonly __brand: 'ESTABLISHED' };
-type FinWait1State = { readonly tag: 'FIN_WAIT_1'; readonly __brand: 'FIN_WAIT_1' };
-type FinWait2State = { readonly tag: 'FIN_WAIT_2'; readonly __brand: 'FIN_WAIT_2' };
-type TimeWaitState = { readonly tag: 'TIME_WAIT'; readonly __brand: 'TIME_WAIT' };
+interface ClosedState { readonly tag: 'CLOSED'; readonly __brand: 'CLOSED' }
+interface SynSentState { readonly tag: 'SYN_SENT'; readonly __brand: 'SYN_SENT' }
+interface EstablishedState { readonly tag: 'ESTABLISHED'; readonly __brand: 'ESTABLISHED' }
+interface FinWait1State { readonly tag: 'FIN_WAIT_1'; readonly __brand: 'FIN_WAIT_1' }
+interface FinWait2State { readonly tag: 'FIN_WAIT_2'; readonly __brand: 'FIN_WAIT_2' }
+interface TimeWaitState { readonly tag: 'TIME_WAIT'; readonly __brand: 'TIME_WAIT' }
 
 /** TCP 连接的所有可能状态 */
 export type TCPState =

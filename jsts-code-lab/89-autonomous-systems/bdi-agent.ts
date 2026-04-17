@@ -49,10 +49,10 @@ export interface Intention {
 }
 
 export class BDIAgent {
-  private beliefs: Map<string, Belief> = new Map();
-  private desires: Map<string, Desire> = new Map();
-  private intentions: Map<string, Intention> = new Map();
-  private availablePlans: Map<string, PlanAction[]> = new Map();
+  private beliefs = new Map<string, Belief>();
+  private desires = new Map<string, Desire>();
+  private intentions = new Map<string, Intention>();
+  private availablePlans = new Map<string, PlanAction[]>();
 
   addBelief(belief: Belief): void {
     this.beliefs.set(belief.id, belief);

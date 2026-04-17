@@ -123,8 +123,8 @@ export class LeastConnectionsBalancer {
 // ==================== Consistent Hashing with Virtual Nodes ====================
 
 export class ConsistentHashBalancer {
-  private ring: Map<number, string> = new Map();
-  private nodeMap: Map<string, BackendNode> = new Map();
+  private ring = new Map<number, string>();
+  private nodeMap = new Map<string, BackendNode>();
   private virtualNodes = 150;
 
   constructor(nodes: BackendNode[] = [], virtualNodes = 150) {

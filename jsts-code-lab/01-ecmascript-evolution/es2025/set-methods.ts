@@ -23,11 +23,11 @@ declare global {
   }
 }
 
-type ReadonlySetLike<T> = {
+interface ReadonlySetLike<T> {
   has(value: T): boolean;
   readonly size: number;
   keys(): IteratorObject<T>;
-};
+}
 
 /** 基础集合运算演示 */
 export function basicSetOperationsDemo(): {

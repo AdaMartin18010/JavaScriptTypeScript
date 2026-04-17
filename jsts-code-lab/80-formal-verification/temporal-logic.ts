@@ -81,7 +81,7 @@ export class LTLInterpreter<T> {
    * - π, i ⊨ G φ     ⟺  ∀j ≥ i. π, j ⊨ φ
    * - π, i ⊨ φ U ψ   ⟺  ∃j ≥ i. π, j ⊨ ψ 且 ∀k ∈ [i, j). π, k ⊨ φ
    */
-  evaluate(formula: LTLFormula<T>, trace: T[], pos: number = 0): boolean {
+  evaluate(formula: LTLFormula<T>, trace: T[], pos = 0): boolean {
     switch (formula.type) {
       case 'atom':
         if (pos >= trace.length) return false;
@@ -130,7 +130,7 @@ export class LTLInterpreter<T> {
 // 演示
 // ---------------------------------------------------------------------------
 
-type SystemState = { temp: number; alert: boolean };
+interface SystemState { temp: number; alert: boolean }
 
 export function demo(): void {
   console.log('=== Linear Temporal Logic (LTL) ===\n');

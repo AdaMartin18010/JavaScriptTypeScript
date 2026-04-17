@@ -11,7 +11,7 @@ describe('MemoryLeakDetector', () => {
   it('should detect leak when heap grows significantly', () => {
     const detector = new MemoryLeakDetector()
     const now = Date.now()
-    detector['snapshots'] = [
+    detector.snapshots = [
       { timestamp: now - 20000, heapSize: 1000 },
       { timestamp: now - 10000, heapSize: 1500 },
       { timestamp: now, heapSize: 3000 },

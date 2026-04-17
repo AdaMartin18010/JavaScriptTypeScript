@@ -21,7 +21,7 @@ describe('CQRS pattern', () => {
     const store = new EventStore();
     store.append({ id: 'e1', type: 'OrderCreated', aggregateId: 'a1', timestamp: 1, version: 1, payload: {} });
     expect(() =>
-      store.append({ id: 'e2', type: 'OrderCreated', aggregateId: 'a1', timestamp: 2, version: 3, payload: {} })
+      { store.append({ id: 'e2', type: 'OrderCreated', aggregateId: 'a1', timestamp: 2, version: 3, payload: {} }); }
     ).toThrow('并发冲突');
   });
 
@@ -31,12 +31,12 @@ describe('CQRS pattern', () => {
     expect(order.totalAmount).toBe(100);
     order.pay('pay1');
     expect(order.status).toBe('paid');
-    expect(() => order.pay('pay2')).toThrow('订单状态不允许支付');
+    expect(() => { order.pay('pay2'); }).toThrow('订单状态不允许支付');
   });
 
   it('Order should ship after payment', () => {
     const order = Order.create('o2', 'c1', [{ productId: 'p1', quantity: 1, price: 100 }]);
-    expect(() => order.ship('track1')).toThrow('订单未支付，无法发货');
+    expect(() => { order.ship('track1'); }).toThrow('订单未支付，无法发货');
     order.pay('pay1');
     order.ship('track1');
     expect(order.status).toBe('shipped');

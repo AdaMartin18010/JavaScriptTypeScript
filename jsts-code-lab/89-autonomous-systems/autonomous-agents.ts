@@ -36,10 +36,10 @@ export interface Action {
 }
 
 export class BDIAgent {
-  private beliefs: Map<string, Belief> = new Map();
-  private desires: Map<string, Desire> = new Map();
-  private intentions: Map<string, Intention> = new Map();
-  private availablePlans: Map<string, Action[]> = new Map(); // goal -> plan
+  private beliefs = new Map<string, Belief>();
+  private desires = new Map<string, Desire>();
+  private intentions = new Map<string, Intention>();
+  private availablePlans = new Map<string, Action[]>(); // goal -> plan
   
   // 添加信念
   addBelief(belief: Belief): void {
@@ -217,9 +217,9 @@ export class DecisionTree {
 
 // 状态机
 export class StateMachine {
-  private states: Map<string, State> = new Map();
-  private currentState: string = '';
-  private transitions: Array<{ from: string; to: string; condition: () => boolean }> = [];
+  private states = new Map<string, State>();
+  private currentState = '';
+  private transitions: { from: string; to: string; condition: () => boolean }[] = [];
   
   addState(name: string, onEnter?: () => void, onExit?: () => void): void {
     this.states.set(name, { name, onEnter, onExit });
@@ -263,7 +263,7 @@ interface State {
 
 // 强化学习基础 (Q-Learning简化版)
 export class QLearningAgent {
-  private qTable: Map<string, Map<string, number>> = new Map();
+  private qTable = new Map<string, Map<string, number>>();
   private learningRate = 0.1;
   private discountFactor = 0.9;
   private explorationRate = 0.3;
@@ -446,7 +446,7 @@ export function demo(): void {
     trueBranch: {
       type: 'action',
       name: 'take_umbrella',
-      action: () => console.log('Taking umbrella')
+      action: () => { console.log('Taking umbrella'); }
     },
     falseBranch: {
       type: 'decision',
@@ -455,12 +455,12 @@ export function demo(): void {
       trueBranch: {
         type: 'action',
         name: 'wear_shorts',
-        action: () => console.log('Wearing shorts')
+        action: () => { console.log('Wearing shorts'); }
       },
       falseBranch: {
         type: 'action',
         name: 'normal_clothes',
-        action: () => console.log('Normal clothes')
+        action: () => { console.log('Normal clothes'); }
       }
     }
   });

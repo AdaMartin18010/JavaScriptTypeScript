@@ -12,7 +12,7 @@ export interface CodeTemplate {
 }
 
 export class AICodeGenerator {
-  private templates: Map<string, string> = new Map();
+  private templates = new Map<string, string>();
   
   constructor() {
     this.initializeTemplates();
@@ -97,7 +97,7 @@ export default async function handler(
     const lower = description.toLowerCase();
     
     if (lower.includes('组件') || lower.includes('component')) {
-      const nameMatch = description.match(/(\w+)\s*(组件|component)?/i);
+      const nameMatch = /(\w+)\s*(组件|component)?/i.exec(description);
       return {
         type: 'component',
         name: nameMatch ? nameMatch[1] : 'MyComponent',

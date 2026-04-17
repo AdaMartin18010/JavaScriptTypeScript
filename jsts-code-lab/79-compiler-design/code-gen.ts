@@ -652,10 +652,10 @@ export class CodeGenerator {
         break;
       case 'ArrayPattern':
         this.write('[');
-        for (let i = 0; i < (pattern as ArrayPattern).elements.length; i++) {
-          const elem = (pattern as ArrayPattern).elements[i];
+        for (let i = 0; i < (pattern).elements.length; i++) {
+          const elem = (pattern).elements[i];
           if (elem) this.generatePattern(elem);
-          if (i < (pattern as ArrayPattern).elements.length - 1) {
+          if (i < (pattern).elements.length - 1) {
             this.write(', ');
           }
         }
@@ -663,7 +663,7 @@ export class CodeGenerator {
         break;
       case 'ObjectPattern':
         this.write('{ ');
-        const props = (pattern as ObjectPattern).properties;
+        const props = (pattern).properties;
         for (let i = 0; i < props.length; i++) {
           const prop = props[i];
           if (prop.type === 'Property') {

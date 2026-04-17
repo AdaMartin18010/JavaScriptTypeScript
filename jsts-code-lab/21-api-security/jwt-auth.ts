@@ -132,7 +132,7 @@ export interface AuthConfig {
 export class AuthService {
   private codec: JWTCodec;
   private config: AuthConfig;
-  private refreshTokens: Map<string, { userId: string; expiresAt: number }> = new Map();
+  private refreshTokens = new Map<string, { userId: string; expiresAt: number }>();
 
   constructor(config: AuthConfig) {
     this.codec = new JWTCodec(config.secret);
@@ -190,7 +190,7 @@ export class AuthService {
   // 刷新 Token
   refreshAccessToken(refreshToken: string): JWTTokenPair | null {
     const payload = this.codec.decode(refreshToken);
-    if (!payload || payload.type !== 'refresh' || !payload.jti) {
+    if (payload?.type !== 'refresh' || !payload.jti) {
       return null;
     }
 
@@ -289,7 +289,7 @@ type Guard = (context: GuardContext) => boolean | Promise<boolean>;
 
 export const createAuthGuard = (authService: AuthService): Guard => {
   return (context: GuardContext): boolean => {
-    const authHeader = context.request.headers['authorization'];
+    const authHeader = context.request.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
       return false;
     }

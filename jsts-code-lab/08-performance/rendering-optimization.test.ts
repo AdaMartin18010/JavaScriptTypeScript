@@ -27,7 +27,7 @@ describe('rendering-optimization', () => {
       const scheduler = new RAFScheduler();
       scheduler.addTask(() => {});
       scheduler.clear();
-      expect(scheduler['tasks'].length).toBe(0);
+      expect(scheduler.tasks.length).toBe(0);
     });
   });
 
@@ -84,7 +84,7 @@ describe('rendering-optimization', () => {
       const mockParent = document.createElement('div');
       const { append, commit } = batcher.createBatchAppender(mockParent);
       append(document.createElement('span'));
-      expect(() => commit()).not.toThrow();
+      expect(() => { commit(); }).not.toThrow();
     });
   });
 
@@ -114,7 +114,7 @@ describe('rendering-optimization', () => {
     it('should setup lazy image without error', () => {
       const optimizer = new ImageOptimizer();
       const img = document.createElement('img');
-      expect(() => optimizer.setupLazyImage(img, 'https://example.com/img.png')).not.toThrow();
+      expect(() => { optimizer.setupLazyImage(img, 'https://example.com/img.png'); }).not.toThrow();
     });
 
     it('should generate srcset', () => {
@@ -127,13 +127,13 @@ describe('rendering-optimization', () => {
 
     it('should disconnect without error', () => {
       const optimizer = new ImageOptimizer();
-      expect(() => optimizer.disconnect()).not.toThrow();
+      expect(() => { optimizer.disconnect(); }).not.toThrow();
     });
   });
 
   describe('demo', () => {
     it('should run without errors', () => {
-      expect(() => demo()).not.toThrow();
+      expect(() => { demo(); }).not.toThrow();
     });
   });
 });

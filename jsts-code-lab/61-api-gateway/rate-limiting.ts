@@ -31,12 +31,12 @@ export interface RateLimitOptions {
 // ============================================================================
 
 export class FixedWindowRateLimiter {
-  private windows: Map<string, { count: number; resetTime: number }> = new Map();
+  private windows = new Map<string, { count: number; resetTime: number }>();
   private cleanupInterval?: ReturnType<typeof setInterval>;
 
   constructor(private options: RateLimitOptions) {
     // 定期清理过期窗口
-    this.cleanupInterval = setInterval(() => this.cleanUp(), options.windowMs);
+    this.cleanupInterval = setInterval(() => { this.cleanUp(); }, options.windowMs);
   }
 
   /**
@@ -121,7 +121,7 @@ export class FixedWindowRateLimiter {
 // ============================================================================
 
 export class SlidingWindowRateLimiter {
-  private requests: Map<string, number[]> = new Map();
+  private requests = new Map<string, number[]>();
 
   constructor(private options: RateLimitOptions) {}
 
@@ -191,7 +191,7 @@ export class SlidingWindowRateLimiter {
 // ============================================================================
 
 export class TokenBucketRateLimiter {
-  private buckets: Map<string, { tokens: number; lastUpdate: number }> = new Map();
+  private buckets = new Map<string, { tokens: number; lastUpdate: number }>();
 
   constructor(
     private bucketSize: number,
@@ -202,7 +202,7 @@ export class TokenBucketRateLimiter {
   /**
    * 检查并消耗令牌
    */
-  consume(key: string, tokens: number = 1): RateLimitResult {
+  consume(key: string, tokens = 1): RateLimitResult {
     const now = Date.now();
     const bucketKey = `${this.keyPrefix || 'bucket'}:${key}`;
     
@@ -248,7 +248,7 @@ export class TokenBucketRateLimiter {
   /**
    * 尝试消耗令牌
    */
-  tryConsume(key: string, tokens: number = 1): boolean {
+  tryConsume(key: string, tokens = 1): boolean {
     return this.consume(key, tokens).allowed;
   }
 
@@ -273,7 +273,7 @@ export class TokenBucketRateLimiter {
 // ============================================================================
 
 export class LeakyBucketRateLimiter {
-  private buckets: Map<string, { volume: number; lastLeak: number }> = new Map();
+  private buckets = new Map<string, { volume: number; lastLeak: number }>();
 
   constructor(
     private bucketSize: number,

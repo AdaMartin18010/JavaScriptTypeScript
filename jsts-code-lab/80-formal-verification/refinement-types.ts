@@ -21,7 +21,7 @@
 
 declare const __brand: unique symbol;
 
-type Brand<B> = { [__brand]: B };
+interface Brand<B> { [__brand]: B }
 
 export type Branded<T, B> = T & Brand<B>;
 
@@ -77,7 +77,7 @@ export function assertRangeInt<Min extends number, Max extends number>(
 
 export function asRangeInt<Min extends number, Max extends number>(n: number, min: Min, max: Max): RangeInt<Min, Max> {
   assertRangeInt(n, min, max);
-  return n as RangeInt<Min, Max>;
+  return n;
 }
 
 // ---------------------------------------------------------------------------

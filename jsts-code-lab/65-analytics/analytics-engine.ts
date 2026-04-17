@@ -17,7 +17,7 @@ export interface AnalyticsEvent {
 // 事件追踪器
 export class EventTracker {
   private events: AnalyticsEvent[] = [];
-  private listeners: Array<(event: AnalyticsEvent) => void> = [];
+  private listeners: ((event: AnalyticsEvent) => void)[] = [];
   
   track(name: string, properties: Record<string, unknown> = {}): void {
     const event: AnalyticsEvent = {
@@ -130,7 +130,7 @@ export class UserPathAnalyzer {
     return sessionEvents.map(e => e.name);
   }
   
-  getCommonPaths(events: AnalyticsEvent[], minLength: number = 3): Array<{ path: string[]; count: number }> {
+  getCommonPaths(events: AnalyticsEvent[], minLength = 3): { path: string[]; count: number }[] {
     const pathCounts = new Map<string, number>();
     
     // 按会话分组

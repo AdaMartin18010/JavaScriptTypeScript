@@ -61,11 +61,11 @@ async function multipleWithErrorHandling() {
   
   const successful = results
     .filter(r => r.status === 'fulfilled')
-    .map(r => (r as PromiseFulfilledResult<Response>).value);
+    .map(r => (r).value);
     
   const failed = results
     .filter(r => r.status === 'rejected')
-    .map(r => (r as PromiseRejectedResult).reason);
+    .map(r => (r).reason);
     
   return { successful, failed };
 }
@@ -101,7 +101,7 @@ async function withRetry<T>(
 
 async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   const timeout = new Promise<never>((_, reject) => 
-    setTimeout(() => reject(new Error('Timeout')), ms)
+    setTimeout(() => { reject(new Error('Timeout')); }, ms)
   );
   
   return Promise.race([promise, timeout]);

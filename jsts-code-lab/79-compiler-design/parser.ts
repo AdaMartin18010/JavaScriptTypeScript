@@ -64,10 +64,10 @@ export interface ProgramNode {
 export interface VariableDeclarationNode {
   type: 'VariableDeclaration';
   kind: 'var' | 'let' | 'const';
-  declarations: Array<{
+  declarations: {
     id: IdentifierNode;
     init: ExpressionNode | null;
-  }>;
+  }[];
 }
 
 export interface FunctionDeclarationNode {
@@ -165,11 +165,11 @@ export interface ArrayExpressionNode {
 
 export interface ObjectExpressionNode {
   type: 'ObjectExpression';
-  properties: Array<{
+  properties: {
     key: IdentifierNode | LiteralNode;
     value: ExpressionNode;
     shorthand: boolean;
-  }>;
+  }[];
 }
 
 export interface ConditionalExpressionNode {
@@ -202,7 +202,7 @@ export interface LiteralNode {
 export class Parser {
   private tokens: Token[];
   private position = 0;
-  private errors: Array<{ message: string; token: Token }> = [];
+  private errors: { message: string; token: Token }[] = [];
 
   // 优先级表（从低到高）
   private precedence: Record<string, number> = {
@@ -989,12 +989,12 @@ export class ASTFormatter {
     
     switch (node.type) {
       case 'Program':
-        return (node as ProgramNode).body
+        return (node).body
           .map(stmt => this.format(stmt, indent))
           .join('\n');
 
       case 'VariableDeclaration':
-        const varDecl = node as VariableDeclarationNode;
+        const varDecl = node;
         const decls = varDecl.declarations.map(d => {
           const init = d.init ? ` = ${this.format(d.init, 0)}` : '';
           return `${d.id.name}${init}`;
@@ -1002,17 +1002,17 @@ export class ASTFormatter {
         return `${spaces}${varDecl.kind} ${decls};`;
 
       case 'FunctionDeclaration':
-        const func = node as FunctionDeclarationNode;
+        const func = node;
         const params = func.params.map(p => p.name).join(', ');
         return `${spaces}function ${func.id.name}(${params}) ${this.format(func.body, indent)}`;
 
       case 'BlockStatement':
-        const block = node as BlockStatementNode;
+        const block = node;
         const stmts = block.body.map(s => this.format(s, indent + 1)).join('\n');
         return `{\n${stmts}\n${spaces}}`;
 
       case 'IfStatement':
-        const ifStmt = node as IfStatementNode;
+        const ifStmt = node;
         let result = `${spaces}if (${this.format(ifStmt.test, 0)}) ${this.format(ifStmt.consequent, indent)}`;
         if (ifStmt.alternate) {
           result += ` else ${this.format(ifStmt.alternate, indent)}`;
@@ -1020,23 +1020,23 @@ export class ASTFormatter {
         return result;
 
       case 'BinaryExpression':
-        const binary = node as BinaryExpressionNode;
+        const binary = node;
         return `${this.format(binary.left, 0)} ${binary.operator} ${this.format(binary.right, 0)}`;
 
       case 'CallExpression':
-        const call = node as CallExpressionNode;
+        const call = node;
         const args = call.arguments.map(a => this.format(a, 0)).join(', ');
         return `${this.format(call.callee, 0)}(${args})`;
 
       case 'Identifier':
-        return (node as IdentifierNode).name;
+        return (node).name;
 
       case 'Literal':
-        const lit = node as LiteralNode;
+        const lit = node;
         return lit.raw || String(lit.value);
 
       case 'ExpressionStatement':
-        return `${spaces}${this.format((node as ExpressionStatementNode).expression, 0)};`;
+        return `${spaces}${this.format((node).expression, 0)};`;
 
       default:
         return `${spaces}[${node.type}]`;

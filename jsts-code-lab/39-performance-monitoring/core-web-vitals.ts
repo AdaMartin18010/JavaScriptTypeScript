@@ -219,7 +219,7 @@ export class FIDMonitor {
 
 // INP (Interaction to Next Paint)
 export class INPMonitor {
-  private interactions: Array<{ delay: number; entry: PerformanceEntry }> = [];
+  private interactions: { delay: number; entry: PerformanceEntry }[] = [];
   private observer: PerformanceObserver | null = null;
 
   start(): void {
@@ -262,8 +262,8 @@ export class INPMonitor {
 // ============================================================================
 
 export class PerformanceCollector {
-  private metrics: Map<string, WebVitalsMetric> = new Map();
-  private monitors: Map<string, { start: () => void; getMetric: () => WebVitalsMetric; stop: () => void }> = new Map();
+  private metrics = new Map<string, WebVitalsMetric>();
+  private monitors = new Map<string, { start: () => void; getMetric: () => WebVitalsMetric; stop: () => void }>();
   private isCollecting = false;
 
   constructor() {
@@ -277,7 +277,7 @@ export class PerformanceCollector {
     if (this.isCollecting) return;
     
     this.isCollecting = true;
-    this.monitors.forEach(monitor => monitor.start());
+    this.monitors.forEach(monitor => { monitor.start(); });
     
     // 传统指标
     this.collectTraditionalMetrics();
@@ -526,7 +526,7 @@ export interface PerformanceBudget {
 
 export class PerformanceBudgetChecker {
   private budgets: PerformanceBudget[] = [];
-  private violations: Array<{ budget: PerformanceBudget; actual: number; timestamp: number }> = [];
+  private violations: { budget: PerformanceBudget; actual: number; timestamp: number }[] = [];
 
   addBudget(budget: PerformanceBudget): void {
     this.budgets.push(budget);
@@ -536,13 +536,13 @@ export class PerformanceBudgetChecker {
     this.budgets = this.budgets.filter(b => b.metric !== metric);
   }
 
-  check(metrics: Map<string, WebVitalsMetric>): Array<{
+  check(metrics: Map<string, WebVitalsMetric>): {
     metric: string;
     budget: number;
     actual: number;
     status: 'pass' | 'warning' | 'fail';
     overBudget: number;
-  }> {
+  }[] {
     const results = [];
 
     for (const budget of this.budgets) {
@@ -580,7 +580,7 @@ export class PerformanceBudgetChecker {
   // 生成性能预算报告
   generateReport(): {
     summary: { pass: number; warning: number; fail: number };
-    violations: Array<{ budget: PerformanceBudget; actual: number; timestamp: number }>;
+    violations: { budget: PerformanceBudget; actual: number; timestamp: number }[];
     recommendations: string[];
   } {
     const results = this.check(new Map()); // 空检查获取最新状态
@@ -621,13 +621,13 @@ export class PerformanceBudgetChecker {
 
 export class PerformanceAnalyzer {
   // 分析资源加载性能
-  static analyzeResources(): Array<{
+  static analyzeResources(): {
     name: string;
     type: string;
     duration: number;
     size: number;
     rating: 'good' | 'slow' | 'large';
-  }> {
+  }[] {
     const entries = performance.getEntriesByType('resource');
     
     return entries.map(entry => {
@@ -650,11 +650,11 @@ export class PerformanceAnalyzer {
   }
 
   // 分析长任务
-  static analyzeLongTasks(): Array<{
+  static analyzeLongTasks(): {
     startTime: number;
     duration: number;
     rating: 'critical' | 'warning' | 'acceptable';
-  }> {
+  }[] {
     if (typeof window === 'undefined' || !('PerformanceObserver' in window)) return [];
 
     const entries = performance.getEntriesByType('longtask');

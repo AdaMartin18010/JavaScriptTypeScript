@@ -23,8 +23,8 @@ export interface Task {
 }
 
 export class TaskModel {
-  private tasks: Map<string, Task> = new Map();
-  private listeners: Array<(tasks: Task[]) => void> = [];
+  private tasks = new Map<string, Task>();
+  private listeners: ((tasks: Task[]) => void)[] = [];
 
   // 添加任务
   addTask(title: string): Task {
@@ -85,7 +85,7 @@ export class TaskModel {
 
   private notify(): void {
     const tasks = this.getAllTasks();
-    this.listeners.forEach(listener => listener(tasks));
+    this.listeners.forEach(listener => { listener(tasks); });
   }
 }
 

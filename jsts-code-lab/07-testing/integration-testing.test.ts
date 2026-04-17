@@ -13,7 +13,7 @@ describe('integration-testing', () => {
     it('should connect and disconnect', async () => {
       const db = new MockDatabaseConnection('test');
       await db.connect();
-      expect(async () => await db.disconnect()).not.toThrow();
+      expect(async () => { await db.disconnect(); }).not.toThrow();
     });
 
     it('should throw when querying disconnected db', async () => {

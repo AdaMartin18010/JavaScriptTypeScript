@@ -104,7 +104,7 @@ interface PendingWrite<T> {
 }
 
 export class WriteBehindCache<T> {
-  private writeQueue: Map<string, PendingWrite<T>> = new Map();
+  private writeQueue = new Map<string, PendingWrite<T>>();
   private flushTimer: ReturnType<typeof setInterval> | null = null;
   private stats = { 
     writes: 0, 
@@ -314,7 +314,7 @@ export class WriteAroundCache<T> {
 // ============================================================================
 
 export class BatchWriteCache<T> {
-  private batch: Array<{ key: string; value: T }> = [];
+  private batch: { key: string; value: T }[] = [];
   private flushTimer: ReturnType<typeof setTimeout> | null = null;
   private maxBatchSize: number;
   private flushDelay: number;

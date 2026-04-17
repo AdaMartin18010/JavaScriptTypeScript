@@ -80,11 +80,11 @@ export class CallStack {
 
 export type TaskPriority = 'high' | 'normal' | 'low';
 
-type BaseTask = {
+interface BaseTask {
   id: string;
   priority: TaskPriority;
   createdAt: number;
-};
+}
 
 export type MacroTask = BaseTask & {
   type: 'macro';
@@ -210,7 +210,7 @@ export class HostScheduler {
       if (pDiff !== 0) return pDiff;
       return a.createdAt - b.createdAt;
     });
-    const task = eligible[0]!;
+    const task = eligible[0];
     const index = this.macrotaskQueue.indexOf(task);
     if (index > -1) {
       this.macrotaskQueue.splice(index, 1);
@@ -319,7 +319,7 @@ export class EventLoop {
    * 启动事件循环。
    * 使用基于 Date.now() 的轮询循环（while + await sleep(50)）模拟时间推进。
    */
-  async run(duration: number = 5000): Promise<void> {
+  async run(duration = 5000): Promise<void> {
     console.log('[EventLoop] 开始运行');
     this.isRunning = true;
     const startTime = Date.now();

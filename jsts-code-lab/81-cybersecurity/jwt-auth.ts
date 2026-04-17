@@ -20,14 +20,14 @@ import { createHmac, createSign, createVerify, randomBytes, createCipheriv, crea
 // ============================================================================
 
 export type JWTAlgorithm = 'HS256' | 'HS384' | 'HS512' | 'RS256' | 'RS384' | 'RS512' | 'ES256' | 'ES384' | 'ES512' | 'none';
-export type JWTHeader = {
+export interface JWTHeader {
   alg: JWTAlgorithm;
   typ: 'JWT';
   kid?: string;  // Key ID
   jku?: string;  // JWK Set URL
-};
+}
 
-export type JWTPayload = {
+export interface JWTPayload {
   iss?: string;   // Issuer
   sub?: string;   // Subject
   aud?: string | string[];  // Audience
@@ -36,7 +36,7 @@ export type JWTPayload = {
   iat?: number;   // Issued At
   jti?: string;   // JWT ID
   [key: string]: unknown;
-};
+}
 
 export interface JWTOptions {
   algorithm?: JWTAlgorithm;
@@ -335,7 +335,7 @@ export class JWT {
   /**
    * 刷新令牌
    */
-  refresh(token: string, newExpiresIn: number = 3600, options: JWTOptions = {}): string {
+  refresh(token: string, newExpiresIn = 3600, options: JWTOptions = {}): string {
     const decoded = this.decode(token);
     const { iat, exp, nbf, ...restPayload } = decoded.payload;
     
@@ -352,8 +352,8 @@ export class JWT {
 // ============================================================================
 
 export class TokenManager {
-  private revokedTokens: Set<string> = new Set();
-  private tokenStore: Map<string, { payload: JWTPayload; expiresAt: number }> = new Map();
+  private revokedTokens = new Set<string>();
+  private tokenStore = new Map<string, { payload: JWTPayload; expiresAt: number }>();
 
   /**
    * 存储令牌元数据

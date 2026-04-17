@@ -41,9 +41,9 @@ export interface Observation {
 
 // 混沌实验控制器
 export class ChaosController {
-  private experiments: Map<string, ChaosExperiment> = new Map();
-  private results: Map<string, ExperimentResult> = new Map();
-  private activeFaults: Map<string, () => void> = new Map();
+  private experiments = new Map<string, ChaosExperiment>();
+  private results = new Map<string, ExperimentResult>();
+  private activeFaults = new Map<string, () => void>();
   
   createExperiment(config: Omit<ChaosExperiment, 'id'>): ChaosExperiment {
     const experiment: ChaosExperiment = {
@@ -109,7 +109,7 @@ export class ChaosController {
     }
     
     const result = this.results.get(experimentId);
-    if (result && result.status === 'running') {
+    if (result?.status === 'running') {
       result.status = 'stopped';
       result.endTime = Date.now();
     }
@@ -255,8 +255,8 @@ export class ChaosController {
 
 // 自动停止机制 (Safety)
 export class SafetyMonitor {
-  private thresholds: Map<string, { metric: string; max: number; min?: number }> = new Map();
-  private abortCallbacks: Array<() => void> = [];
+  private thresholds = new Map<string, { metric: string; max: number; min?: number }>();
+  private abortCallbacks: (() => void)[] = [];
   
   addThreshold(name: string, metric: string, max: number, min?: number): void {
     this.thresholds.set(name, { metric, max, min });
@@ -296,7 +296,7 @@ export class SafetyMonitor {
 
 // 游戏日演练 (Game Day)
 export class GameDay {
-  private scenarios: Map<string, ChaosExperiment[]> = new Map();
+  private scenarios = new Map<string, ChaosExperiment[]>();
   
   addScenario(name: string, experiments: ChaosExperiment[]): void {
     this.scenarios.set(name, experiments);
@@ -382,5 +382,5 @@ export function demo(): void {
   
   gameDay.addScenario('周末故障演练', [latencyExp, errorExp]);
   
-  console.log('场景列表:', Array.from(gameDay['scenarios'].keys()));
+  console.log('场景列表:', Array.from(gameDay.scenarios.keys()));
 }

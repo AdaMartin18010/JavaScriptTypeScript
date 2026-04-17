@@ -45,7 +45,7 @@ const user: User = {
 
 /** 传统写法：多层条件检查 */
 function getCountryNameTraditional(user: User): string | undefined {
-  return user && user.address && user.address.country && user.address.country.name;
+  return user?.address?.country?.name;
 }
 
 /** 可选链写法：简洁安全 */
@@ -75,10 +75,10 @@ const client: ApiClient = {};
 client.fetch?.(); // ✅ 安全调用，返回 undefined
 
 /** 函数式编程场景 */
-const callbacks: Array<(() => void) | undefined> = [
-  () => console.log('first'),
+const callbacks: ((() => void) | undefined)[] = [
+  () => { console.log('first'); },
   undefined,
-  () => console.log('third')
+  () => { console.log('third'); }
 ];
 
 callbacks.forEach(cb => cb?.()); // 只执行存在的回调
@@ -168,13 +168,13 @@ if (user.address) {
 /** API 响应处理 */
 interface ApiResponse {
   data?: {
-    users?: Array<{
+    users?: {
       profile?: {
         avatar?: {
           url?: string;
         };
       };
-    }>;
+    }[];
   };
 }
 

@@ -14,8 +14,8 @@ describe('ES2022 class fields', () => {
     expect(account.getBalance()).toBe(1500);
     account.withdraw(200);
     expect(account.getBalance()).toBe(1300);
-    expect(() => account.deposit(0)).toThrow('Invalid amount');
-    expect(() => account.withdraw(2000)).toThrow('Insufficient funds');
+    expect(() => { account.deposit(0); }).toThrow('Invalid amount');
+    expect(() => { account.withdraw(2000); }).toThrow('Insufficient funds');
   });
 
   it('Database should be singleton with private static fields', () => {

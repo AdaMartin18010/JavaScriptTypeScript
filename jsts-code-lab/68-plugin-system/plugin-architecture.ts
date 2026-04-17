@@ -21,12 +21,12 @@ export interface PluginContext {
 
 export interface Hook {
   name: string;
-  handlers: Array<{ priority: number; handler: Function }>;
+  handlers: { priority: number; handler: Function }[];
 }
 
 // 钩子管理器
 export class HookManager {
-  private hooks: Map<string, Hook> = new Map();
+  private hooks = new Map<string, Hook>();
   
   register(hookName: string): void {
     if (!this.hooks.has(hookName)) {
@@ -34,7 +34,7 @@ export class HookManager {
     }
   }
   
-  addHandler(hookName: string, handler: Function, priority: number = 10): void {
+  addHandler(hookName: string, handler: Function, priority = 10): void {
     this.register(hookName);
     const hook = this.hooks.get(hookName)!;
     
@@ -92,9 +92,9 @@ export class HookManager {
 
 // 插件管理器
 export class PluginManager {
-  private plugins: Map<string, Plugin> = new Map();
+  private plugins = new Map<string, Plugin>();
   private hooks = new HookManager();
-  private activated: Set<string> = new Set();
+  private activated = new Set<string>();
   
   register(plugin: Plugin): void {
     // 检查依赖
@@ -130,7 +130,7 @@ export class PluginManager {
     const context: PluginContext = {
       hooks: this.hooks,
       config: {},
-      logger: (msg) => console.log(`[${plugin.name}] ${msg}`)
+      logger: (msg) => { console.log(`[${plugin.name}] ${msg}`); }
     };
     
     plugin.activate(context);
@@ -166,7 +166,7 @@ export class PluginManager {
     return Array.from(this.activated);
   }
   
-  getPluginInfo(): Array<{ name: string; version: string; activated: boolean }> {
+  getPluginInfo(): { name: string; version: string; activated: boolean }[] {
     return Array.from(this.plugins.entries()).map(([name, plugin]) => ({
       name,
       version: plugin.version,
@@ -177,11 +177,11 @@ export class PluginManager {
 
 // 沙箱执行（简化版）
 export class PluginSandbox {
-  private allowedGlobals: Set<string> = new Set([
+  private allowedGlobals = new Set<string>([
     'console', 'Math', 'Date', 'JSON', 'Array', 'Object', 'String', 'Number'
   ]);
   
-  constructor(private timeout: number = 5000) {}
+  constructor(private timeout = 5000) {}
   
   execute(code: string, context: Record<string, unknown> = {}): unknown {
     // 创建受限上下文

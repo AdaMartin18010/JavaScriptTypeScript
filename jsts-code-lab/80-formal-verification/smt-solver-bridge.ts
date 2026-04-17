@@ -105,7 +105,7 @@ export class SMTSolverBridge {
    *
    * 对于教学目的，仅支持 [-bound, bound] 范围内的整数搜索。
    */
-  checkSat(bound: number = 10): { sat: boolean; model?: Map<string, number | boolean> } {
+  checkSat(bound = 10): { sat: boolean; model?: Map<string, number | boolean> } {
     const constraints = this.currentScope();
     const intVars = Array.from(this.variables.values()).filter(v => v.sort === 'Int');
     const boolVars = Array.from(this.variables.values()).filter(v => v.sort === 'Bool');
@@ -127,9 +127,9 @@ export class SMTSolverBridge {
     return this.assertionStack[this.assertionStack.length - 1];
   }
 
-  private generateBoolAssignments(vars: SMTVariable[]): Array<Map<string, boolean>> {
+  private generateBoolAssignments(vars: SMTVariable[]): Map<string, boolean>[] {
     if (vars.length === 0) return [new Map<string, boolean>()];
-    const result: Array<Map<string, boolean>> = [];
+    const result: Map<string, boolean>[] = [];
     const recurse = (idx: number, current: Map<string, boolean>) => {
       if (idx === vars.length) {
         result.push(new Map(current));

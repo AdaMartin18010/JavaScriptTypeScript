@@ -104,7 +104,7 @@ export class KnowledgeDistillation {
     teacherLogits: number[],
     studentLogits: number[],
     trueLabels: number[],
-    temperature: number = 4
+    temperature = 4
   ): number {
     // 软化概率分布
     const softTeacher = this.softmax(teacherLogits.map(x => x / temperature));
@@ -177,7 +177,7 @@ export class FederatedLearning {
   }
   
   // 差分隐私聚合
-  aggregateWithPrivacy(epsilon: number = 1.0): Record<string, Float32Array> {
+  aggregateWithPrivacy(epsilon = 1.0): Record<string, Float32Array> {
     const aggregated = this.aggregate();
     
     // 添加噪声
@@ -211,7 +211,7 @@ export class EdgeInferenceEngine {
   private model: Record<string, Float32Array> | null = null;
   private quantized = false;
   
-  loadModel(model: Record<string, Float32Array>, quantized: boolean = false): void {
+  loadModel(model: Record<string, Float32Array>, quantized = false): void {
     this.model = model;
     this.quantized = quantized;
   }
@@ -267,7 +267,7 @@ export class EdgeInferenceEngine {
 
 // 模型性能分析
 export class ModelProfiler {
-  profileInference(model: EdgeInferenceEngine, input: Float32Array, runs: number = 100): {
+  profileInference(model: EdgeInferenceEngine, input: Float32Array, runs = 100): {
     avgLatency: number;
     p50: number;
     p95: number;
@@ -333,9 +333,9 @@ export function demo(): void {
   
   const pruned = pruning.structuredPrune(weights, 0.5);
   console.log('原始权重矩阵:');
-  weights.forEach(row => console.log(' ', row.map(w => w.toFixed(3)).join(', ')));
+  weights.forEach(row => { console.log(' ', row.map(w => w.toFixed(3)).join(', ')); });
   console.log('剪枝后矩阵:');
-  pruned.pruned.forEach(row => console.log(' ', row.map(w => w.toFixed(3)).join(', ')));
+  pruned.pruned.forEach(row => { console.log(' ', row.map(w => w.toFixed(3)).join(', ')); });
   
   // 联邦学习
   console.log('\n--- 联邦学习 ---');

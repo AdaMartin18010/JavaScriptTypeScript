@@ -36,7 +36,7 @@ export interface HealthCheckConfig {
 
 // 调度器
 export class Scheduler {
-  private nodes: Map<string, Node> = new Map();
+  private nodes = new Map<string, Node>();
   
   addNode(node: Node): void {
     this.nodes.set(node.id, node);
@@ -98,8 +98,8 @@ export class Scheduler {
 
 // 健康检查
 export class HealthChecker {
-  private checks: Map<string, ReturnType<typeof setInterval>> = new Map();
-  private healthStatus: Map<string, { healthy: boolean; lastCheck: number; failures: number }> = new Map();
+  private checks = new Map<string, ReturnType<typeof setInterval>>();
+  private healthStatus = new Map<string, { healthy: boolean; lastCheck: number; failures: number }>();
   
   startCheck(container: Container, callback: (healthy: boolean) => void): void {
     if (!container.healthCheck) return;
@@ -162,10 +162,10 @@ export interface HPAPolicy {
 }
 
 export class HorizontalPodAutoscaler {
-  private policies: Map<string, HPAPolicy> = new Map();
-  private metrics: Map<string, number[]> = new Map();
-  private lastScaleTime: Map<string, number> = new Map();
-  private currentReplicas: Map<string, number> = new Map();
+  private policies = new Map<string, HPAPolicy>();
+  private metrics = new Map<string, number[]>();
+  private lastScaleTime = new Map<string, number>();
+  private currentReplicas = new Map<string, number>();
   
   registerDeployment(deploymentId: string, policy: HPAPolicy): void {
     this.policies.set(deploymentId, policy);
@@ -238,8 +238,8 @@ export class HorizontalPodAutoscaler {
 
 // 服务发现
 export class ServiceRegistry {
-  private services: Map<string, { containers: string[]; port: number }> = new Map();
-  private endpoints: Map<string, string[]> = new Map();
+  private services = new Map<string, { containers: string[]; port: number }>();
+  private endpoints = new Map<string, string[]>();
   
   registerService(name: string, containerId: string, port: number): void {
     if (!this.services.has(name)) {

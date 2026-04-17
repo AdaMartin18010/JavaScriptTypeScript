@@ -14,8 +14,8 @@ export interface Node {
 
 // 分布式一致性哈希
 export class ConsistentHash {
-  private ring: Map<number, string> = new Map();
-  private nodes: Set<string> = new Set();
+  private ring = new Map<number, string>();
+  private nodes = new Set<string>();
   private virtualNodes = 150;
   
   addNode(nodeId: string): void {
@@ -80,8 +80,8 @@ export interface Transaction {
 }
 
 export class TwoPhaseCommit {
-  private transactions: Map<string, Transaction> = new Map();
-  private participantVotes: Map<string, Map<string, 'yes' | 'no'>> = new Map();
+  private transactions = new Map<string, Transaction>();
+  private participantVotes = new Map<string, Map<string, 'yes' | 'no'>>();
   
   begin(txId: string, participants: string[]): Transaction {
     const tx: Transaction = {
@@ -117,7 +117,7 @@ export class TwoPhaseCommit {
   // 第二阶段：提交或回滚
   async commit(txId: string): Promise<boolean> {
     const tx = this.transactions.get(txId);
-    if (!tx || tx.state !== 'prepared') return false;
+    if (tx?.state !== 'prepared') return false;
     
     tx.state = 'committed';
     console.log(`[2PC] 事务 ${txId} 已提交`);
@@ -140,7 +140,7 @@ export class TwoPhaseCommit {
 
 // 向量时钟
 export class VectorClock {
-  private clock: Map<string, number> = new Map();
+  private clock = new Map<string, number>();
   
   increment(nodeId: string): void {
     const current = this.clock.get(nodeId) || 0;
@@ -189,7 +189,7 @@ export class VectorClock {
 
 // 分布式锁 (Redlock简化版)
 export class DistributedLock {
-  private locks: Map<string, { holder: string; expiry: number }> = new Map();
+  private locks = new Map<string, { holder: string; expiry: number }>();
   private ttl = 10000; // 10秒TTL
   
   acquire(resource: string, clientId: string): boolean {
@@ -211,7 +211,7 @@ export class DistributedLock {
   release(resource: string, clientId: string): boolean {
     const lock = this.locks.get(resource);
     
-    if (!lock || lock.holder !== clientId) {
+    if (lock?.holder !== clientId) {
       return false;
     }
     
@@ -222,7 +222,7 @@ export class DistributedLock {
   extend(resource: string, clientId: string): boolean {
     const lock = this.locks.get(resource);
     
-    if (!lock || lock.holder !== clientId) {
+    if (lock?.holder !== clientId) {
       return false;
     }
     

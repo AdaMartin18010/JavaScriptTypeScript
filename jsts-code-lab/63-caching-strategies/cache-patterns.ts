@@ -12,10 +12,10 @@ export interface CacheEntry<T> {
 }
 
 export class InMemoryCache {
-  private store: Map<string, CacheEntry<unknown>> = new Map();
+  private store = new Map<string, CacheEntry<unknown>>();
   private stats = { hits: 0, misses: 0, evictions: 0 };
   
-  constructor(private defaultTTL: number = 60000) {}
+  constructor(private defaultTTL = 60000) {}
   
   get<T>(key: string): T | undefined {
     const entry = this.store.get(key);
@@ -71,7 +71,7 @@ export class CacheAside<T> {
   constructor(
     private cache: InMemoryCache,
     private fetchFromSource: (key: string) => Promise<T>,
-    private ttl: number = 60000
+    private ttl = 60000
   ) {}
   
   async get(key: string): Promise<T> {
@@ -188,7 +188,7 @@ export function demo(): void {
     30000
   );
   
-  cacheAside.get('item:1').then(v => console.log('Cache Aside结果:', v));
+  cacheAside.get('item:1').then(v => { console.log('Cache Aside结果:', v); });
   
   // Multi-Level演示
   const multiLevel = new MultiLevelCache();

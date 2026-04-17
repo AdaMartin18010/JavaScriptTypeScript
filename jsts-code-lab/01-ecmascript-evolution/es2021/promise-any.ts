@@ -75,14 +75,14 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.race([
     promise,
     new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new Error('Timeout')), ms)
+      setTimeout(() => { reject(new Error('Timeout')); }, ms)
     )
   ]);
 }
 
 async function fetchWithTimeout(sources: string[], timeoutMs: number) {
   const timeoutPromise = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('Global timeout')), timeoutMs)
+    setTimeout(() => { reject(new Error('Global timeout')); }, timeoutMs)
   );
 
   try {

@@ -303,7 +303,7 @@ export class ClassReflector {
    */
   static mixin<T extends new (...args: any[]) => any>(
     baseClass: T,
-    ...mixins: Array<new (...args: any[]) => any>
+    ...mixins: (new (...args: any[]) => any)[]
   ): T {
     class MixedClass extends baseClass {}
 
@@ -518,13 +518,13 @@ export class ProxyFactory {
           return async function (...args: any[]) {
             try {
               if (handlers.before) {
-                await handlers.before!(prop, args);
+                await handlers.before(prop, args);
               }
 
               const result = await value.apply(obj, args);
 
               if (handlers.after) {
-                await handlers.after!(prop, args, result);
+                await handlers.after(prop, args, result);
               }
 
               return result;
@@ -558,7 +558,7 @@ class BaseService {
 }
 
 class UserService extends BaseService implements ILogger {
-  private users: Map<string, any> = new Map();
+  private users = new Map<string, any>();
   
   constructor() {
     super();

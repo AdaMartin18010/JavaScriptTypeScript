@@ -147,7 +147,7 @@ describe('WebSocketClient', () => {
   it('should queue messages when disconnected', () => {
     const client = new WebSocketClient('ws://localhost:8080');
     client.send('chat', { text: 'hello' });
-    expect(client['messageQueue'].length).toBe(1);
+    expect(client.messageQueue.length).toBe(1);
   });
 
   it('should register and trigger message handlers', () => {

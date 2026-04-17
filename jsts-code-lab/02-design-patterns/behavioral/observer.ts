@@ -19,7 +19,7 @@ class Subject<T> {
 
   subscribe(observer: Observer<T>): () => void {
     this.observers.push(observer);
-    return () => this.unsubscribe(observer);
+    return () => { this.unsubscribe(observer); };
   }
 
   unsubscribe(observer: Observer<T>): void {
@@ -30,7 +30,7 @@ class Subject<T> {
   }
 
   notify(data: T): void {
-    this.observers.forEach(observer => observer(data));
+    this.observers.forEach(observer => { observer(data); });
   }
 }
 
@@ -54,7 +54,7 @@ class EventEmitter<Events extends EventMap> {
     }
     this.listeners[event]!.push(handler);
 
-    return () => this.off(event, handler);
+    return () => { this.off(event, handler); };
   }
 
   off<K extends EventKey<Events>>(
@@ -72,7 +72,7 @@ class EventEmitter<Events extends EventMap> {
 
   emit<K extends EventKey<Events>>(event: K, payload: Events[K]): void {
     const handlers = this.listeners[event];
-    handlers?.forEach(handler => handler(payload));
+    handlers?.forEach(handler => { handler(payload); });
   }
 
   once<K extends EventKey<Events>>(
@@ -93,7 +93,7 @@ class EventEmitter<Events extends EventMap> {
 
 class ObservableState<T> {
   private _value: T;
-  private observers: Set<(value: T, oldValue: T) => void> = new Set();
+  private observers = new Set<(value: T, oldValue: T) => void>();
 
   constructor(initialValue: T) {
     this._value = initialValue;
@@ -117,7 +117,7 @@ class ObservableState<T> {
   }
 
   private notify(value: T, oldValue: T): void {
-    this.observers.forEach(cb => cb(value, oldValue));
+    this.observers.forEach(cb => { cb(value, oldValue); });
   }
 }
 
@@ -200,8 +200,8 @@ export function demo(): void {
   
   // 基础主题
   const subject = new Subject<string>();
-  const unsubscribe1 = subject.subscribe(msg => console.log("Observer 1:", msg));
-  const unsubscribe2 = subject.subscribe(msg => console.log("Observer 2:", msg));
+  const unsubscribe1 = subject.subscribe(msg => { console.log("Observer 1:", msg); });
+  const unsubscribe2 = subject.subscribe(msg => { console.log("Observer 2:", msg); });
   
   console.log("Notifying observers:");
   subject.notify("Hello observers!");
@@ -212,8 +212,8 @@ export function demo(): void {
   
   // 事件发射器
   const emitter = new EventEmitter<{ message: string; count: number }>();
-  emitter.on("message", data => console.log("\nEvent received:", data));
-  emitter.once("message", data => console.log("Once handler:", data));
+  emitter.on("message", data => { console.log("\nEvent received:", data); });
+  emitter.once("message", data => { console.log("Once handler:", data); });
   
   emitter.emit("message", "First");
   emitter.emit("message", "Second");
@@ -228,7 +228,7 @@ export function demo(): void {
   
   // Store
   const store = new Store();
-  store.on("user:login", data => console.log("\nUser logged in:", data));
+  store.on("user:login", data => { console.log("\nUser logged in:", data); });
   store.login("123", "Alice");
   
   console.log("=== End of Demo ===\n");

@@ -28,14 +28,14 @@ export function createPlaceholder(width: number, height: number, color = '#e5e7e
 }
 
 export class ComponentCleanup {
-  private disposers: Array<() => void> = []
+  private disposers: (() => void)[] = []
 
   onUnmount(disposer: () => void): void {
     this.disposers.push(disposer)
   }
 
   cleanup(): void {
-    this.disposers.forEach((d) => d())
+    this.disposers.forEach((d) => { d(); })
     this.disposers = []
   }
 }

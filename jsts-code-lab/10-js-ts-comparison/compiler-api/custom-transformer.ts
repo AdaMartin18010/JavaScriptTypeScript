@@ -52,7 +52,7 @@ function createReadonlyTransformer(): ts.TransformerFactory<ts.SourceFile> {
       return ts.visitEachChild(node, visit, context);
     };
 
-    return (sourceFile) => ts.visitNode(sourceFile, visit, ts.isSourceFile) as ts.SourceFile;
+    return (sourceFile) => ts.visitNode(sourceFile, visit, ts.isSourceFile)!;
   };
 }
 

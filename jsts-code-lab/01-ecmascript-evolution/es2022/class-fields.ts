@@ -70,7 +70,7 @@ const account = new BankAccount('12345', 1000);
 class Database {
   // 私有静态字段
   static #instance: Database | null = null;
-  static #connectionString: string = '';
+  static #connectionString = '';
 
   // 静态私有方法
   static #validateConnectionString(conn: string): boolean {

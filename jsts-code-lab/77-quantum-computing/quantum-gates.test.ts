@@ -20,16 +20,16 @@ function isUnitary(gate: ComplexNumber[][]): boolean {
 }
 
 describe('Quantum Gates', () => {
-  it('H is unitary', () => expect(isUnitary(Gates.H())).toBe(true));
-  it('X is unitary', () => expect(isUnitary(Gates.X())).toBe(true));
-  it('Y is unitary', () => expect(isUnitary(Gates.Y())).toBe(true));
-  it('Z is unitary', () => expect(isUnitary(Gates.Z())).toBe(true));
-  it('S is unitary', () => expect(isUnitary(Gates.S())).toBe(true));
-  it('T is unitary', () => expect(isUnitary(Gates.T())).toBe(true));
-  it('CNOT is unitary', () => expect(isUnitary(Gates.CNOT())).toBe(true));
-  it('CZ is unitary', () => expect(isUnitary(Gates.CZ())).toBe(true));
-  it('SWAP is unitary', () => expect(isUnitary(Gates.SWAP())).toBe(true));
-  it('Toffoli is unitary', () => expect(isUnitary(Gates.Toffoli())).toBe(true));
+  it('H is unitary', () => { expect(isUnitary(Gates.H())).toBe(true); });
+  it('X is unitary', () => { expect(isUnitary(Gates.X())).toBe(true); });
+  it('Y is unitary', () => { expect(isUnitary(Gates.Y())).toBe(true); });
+  it('Z is unitary', () => { expect(isUnitary(Gates.Z())).toBe(true); });
+  it('S is unitary', () => { expect(isUnitary(Gates.S())).toBe(true); });
+  it('T is unitary', () => { expect(isUnitary(Gates.T())).toBe(true); });
+  it('CNOT is unitary', () => { expect(isUnitary(Gates.CNOT())).toBe(true); });
+  it('CZ is unitary', () => { expect(isUnitary(Gates.CZ())).toBe(true); });
+  it('SWAP is unitary', () => { expect(isUnitary(Gates.SWAP())).toBe(true); });
+  it('Toffoli is unitary', () => { expect(isUnitary(Gates.Toffoli())).toBe(true); });
 
   it('Rx(π) ≈ -iX', () => {
     const rx = Gates.Rx(Math.PI);

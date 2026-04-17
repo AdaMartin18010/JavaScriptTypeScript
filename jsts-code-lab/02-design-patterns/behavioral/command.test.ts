@@ -82,7 +82,7 @@ describe('command pattern', () => {
   it('createCommand should produce working functional commands', () => {
     const editor = new TextEditor();
     const cmd = createCommand(
-      () => editor.insert('Hi', 0),
+      () => { editor.insert('Hi', 0); },
       () => editor.delete(0, 2)
     );
 

@@ -120,7 +120,7 @@ describe('EventEmitterJSDefensive', () => {
     expect(listener).toHaveBeenCalledWith(42);
 
     expect(() =>
-      emitter.emitWithValidation('validated', 'bad', (v) => typeof v === 'number')
+      { emitter.emitWithValidation('validated', 'bad', (v) => typeof v === 'number'); }
     ).toThrow(TypeError);
   });
 });

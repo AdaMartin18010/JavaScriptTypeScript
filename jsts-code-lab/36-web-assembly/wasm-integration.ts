@@ -31,7 +31,7 @@ export interface WASMLoadOptions {
 }
 
 export class WASMLoader {
-  private cache: Map<string, WebAssembly.Module> = new Map();
+  private cache = new Map<string, WebAssembly.Module>();
 
   // 流式加载和编译 WASM 模块
   async loadStreaming(
@@ -196,7 +196,7 @@ export class WASMMemoryManager {
   private memory: WebAssembly.Memory;
   private view: DataView;
   private allocator: { malloc?: (size: number) => number; free?: (ptr: number) => void };
-  private allocatedBlocks: Map<number, number> = new Map(); // ptr -> size
+  private allocatedBlocks = new Map<number, number>(); // ptr -> size
 
   constructor(memory: WebAssembly.Memory, exports?: WebAssembly.Exports) {
     this.memory = memory;
@@ -336,7 +336,7 @@ export interface JSBridge {
 export class WASMBridge {
   private module: WASMModule;
   private memoryManager: WASMMemoryManager;
-  private callbacks: Map<number, (...args: unknown[]) => unknown> = new Map();
+  private callbacks = new Map<number, (...args: unknown[]) => unknown>();
   private callbackId = 0;
 
   constructor(module: WASMModule) {
@@ -365,7 +365,7 @@ export class WASMBridge {
       const result = this.call<number>(name, ...ptrs.map(p => p.ptr));
       return result;
     } finally {
-      ptrs.forEach(p => this.memoryManager.free(p.ptr));
+      ptrs.forEach(p => { this.memoryManager.free(p.ptr); });
     }
   }
 
@@ -406,7 +406,7 @@ export class WASMBridge {
     const { ptr } = this.memoryManager.writeString(str);
     return {
       ptr,
-      free: () => this.memoryManager.free(ptr)
+      free: () => { this.memoryManager.free(ptr); }
     };
   }
 
@@ -456,8 +456,8 @@ export interface PerformanceMetrics {
 }
 
 export class WASMPerformanceMonitor {
-  private metrics: Map<string, PerformanceMetrics> = new Map();
-  private activeTimers: Map<string, number> = new Map();
+  private metrics = new Map<string, PerformanceMetrics>();
+  private activeTimers = new Map<string, number>();
 
   // 包装函数以监控性能
   wrap<T extends (...args: unknown[]) => unknown>(

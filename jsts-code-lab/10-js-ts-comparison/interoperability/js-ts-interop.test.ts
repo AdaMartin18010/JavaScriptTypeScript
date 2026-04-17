@@ -81,11 +81,11 @@ describe('ObjectValidator', () => {
   });
 
   it('assert should throw for invalid data', () => {
-    expect(() => userValidator.assert({ name: 'Alice' })).toThrow(TypeError);
+    expect(() => { userValidator.assert({ name: 'Alice' }); }).toThrow(TypeError);
   });
 
   it('assert should not throw for valid data', () => {
-    expect(() => userValidator.assert({ name: 'Alice', age: 30 })).not.toThrow();
+    expect(() => { userValidator.assert({ name: 'Alice', age: 30 }); }).not.toThrow();
   });
 });
 

@@ -100,14 +100,14 @@ export function disposableStackDemo(): string[] {
   const logs: string[] = [];
 
   // 由于 DisposableStack 本身也是 Stage 3/4 特性，用对象模拟其行为
-  const stack: Array<() => void> = [];
+  const stack: (() => void)[] = [];
 
   function defer(dispose: () => void) {
     stack.push(dispose);
   }
 
   function adopt<T>(value: T, onDispose: (value: T) => void) {
-    stack.push(() => onDispose(value));
+    stack.push(() => { onDispose(value); });
     return value;
   }
 
@@ -134,7 +134,7 @@ export function deferPatternDemo(): string[] {
     const tempFiles: string[] = [];
 
     // defer 语义：注册清理回调
-    const cleanups: Array<() => void> = [];
+    const cleanups: (() => void)[] = [];
     cleanups.push(() => {
       tempFiles.forEach((f) => localLogs.push(`cleanup ${f}`));
     });
@@ -144,7 +144,7 @@ export function deferPatternDemo(): string[] {
       tempFiles.push(`${filename}.tmp`);
       localLogs.push('done');
     } finally {
-      cleanups.forEach((cb) => cb());
+      cleanups.forEach((cb) => { cb(); });
     }
 
     return localLogs;

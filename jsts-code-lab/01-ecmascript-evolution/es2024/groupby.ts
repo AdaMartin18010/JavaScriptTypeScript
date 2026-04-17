@@ -54,12 +54,12 @@ Map {
 // ============================================================================
 
 // 旧方式 (reduce)
-const byCategoryOld = products.reduce((acc, product) => {
+const byCategoryOld = products.reduce<Record<string, typeof products>>((acc, product) => {
   const key = product.category;
   acc[key] ??= [];
   acc[key].push(product);
   return acc;
-}, {} as Record<string, typeof products>);
+}, {});
 
 // ES2024 方式
 const byCategoryNew = Object.groupBy(products, p => p.category);

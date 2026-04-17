@@ -90,7 +90,7 @@ function medianOfThree<T>(arr: T[], left: number, right: number, compare: (a: T,
 
 export function quickSortIterative<T>(arr: T[], compare?: (a: T, b: T) => number): T[] {
   const compareFn = compare || ((a: T, b: T) => (a < b ? -1 : a > b ? 1 : 0));
-  const stack: Array<[number, number]> = [[0, arr.length - 1]];
+  const stack: [number, number][] = [[0, arr.length - 1]];
 
   while (stack.length > 0) {
     const [left, right] = stack.pop()!;

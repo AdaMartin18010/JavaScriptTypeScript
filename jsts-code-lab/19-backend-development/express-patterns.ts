@@ -13,8 +13,8 @@
  */
 
 // 占位类型，避免安装 express 依赖
-export type Request = { body: unknown; params: Record<string, string>; query: Record<string, unknown>; headers: Record<string, string>; method?: string; path?: string; user?: { id: string; email: string } };
-export type Response = { status(code: number): Response; json(body: unknown): Response; send(body?: unknown): Response; on(event: string, callback: () => void): Response; statusCode?: number };
+export interface Request { body: unknown; params: Record<string, string>; query: Record<string, unknown>; headers: Record<string, string>; method?: string; path?: string; user?: { id: string; email: string } }
+export interface Response { status(code: number): Response; json(body: unknown): Response; send(body?: unknown): Response; on(event: string, callback: () => void): Response; statusCode?: number }
 export type NextFunction = () => void;
 type RequestHandler = (req: Request, res: Response, next: NextFunction) => void;
 type ErrorRequestHandler = (err: unknown, req: Request, res: Response, next: NextFunction) => void;

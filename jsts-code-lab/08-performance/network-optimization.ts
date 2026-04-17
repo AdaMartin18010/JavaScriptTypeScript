@@ -65,11 +65,11 @@ export interface BatchConfig {
 }
 
 export class RequestBatcher<T, R> {
-  private queue: Array<{
+  private queue: {
     item: T;
     resolve: (result: R) => void;
     reject: (error: Error) => void;
-  }> = [];
+  }[] = [];
   private timer: ReturnType<typeof setTimeout> | null = null;
   private config: BatchConfig;
   private batchProcessor: (items: T[]) => Promise<R[]>;
@@ -142,7 +142,7 @@ export interface CacheStrategy {
 }
 
 export class SmartCache implements CacheStorage {
-  private cache: Map<string, CacheEntry> = new Map();
+  private cache = new Map<string, CacheEntry>();
   private strategy: CacheStrategy;
 
   constructor(strategy: CacheStrategy) {
@@ -349,7 +349,7 @@ export class PriorityRequestQueue {
 
 export class OfflineSupport {
   private cache: SmartCache;
-  private offlineQueue: Array<() => Promise<void>> = [];
+  private offlineQueue: (() => Promise<void>)[] = [];
   private isOnline: boolean;
 
   constructor(cache: SmartCache) {
@@ -474,9 +474,9 @@ export async function demo(): Promise<void> {
   console.log('\n--- 请求优先级 ---');
   const priorityQueue = new PriorityRequestQueue(2);
   
-  priorityQueue.enqueue(() => new Promise(r => setTimeout(() => r('低优先级'), 100)), 'low');
-  priorityQueue.enqueue(() => new Promise(r => setTimeout(() => r('高优先级'), 50)), 'high');
-  priorityQueue.enqueue(() => new Promise(r => setTimeout(() => r('普通优先级'), 75)), 'normal');
+  priorityQueue.enqueue(() => new Promise(r => setTimeout(() => { r('低优先级'); }, 100)), 'low');
+  priorityQueue.enqueue(() => new Promise(r => setTimeout(() => { r('高优先级'); }, 50)), 'high');
+  priorityQueue.enqueue(() => new Promise(r => setTimeout(() => { r('普通优先级'); }, 75)), 'normal');
 
   console.log('请求已按优先级排序: 高 > 普通 > 低');
 }

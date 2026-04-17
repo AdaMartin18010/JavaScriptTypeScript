@@ -184,7 +184,7 @@ export class KeyboardNavigator {
   private container: HTMLElement;
   private options: KeyboardNavigationOptions;
   private currentIndex = -1;
-  private listeners: Array<{ type: string; handler: EventListener }> = [];
+  private listeners: { type: string; handler: EventListener }[] = [];
 
   constructor(container: HTMLElement, options: KeyboardNavigationOptions) {
     this.container = container;
@@ -319,7 +319,7 @@ export class KeyboardNavigator {
 export class FocusManager {
   private focusHistory: HTMLElement[] = [];
   private focusTrapElement: HTMLElement | null = null;
-  private focusTrapListeners: Array<() => void> = [];
+  private focusTrapListeners: (() => void)[] = [];
 
   // 保存当前焦点
   saveFocus(): HTMLElement | null {
@@ -494,7 +494,7 @@ export class ContrastChecker {
     }
     
     // 处理 rgb/rgba
-    const rgbMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    const rgbMatch = /rgba?\((\d+),\s*(\d+),\s*(\d+)/.exec(color);
     if (rgbMatch) {
       return {
         r: parseInt(rgbMatch[1], 10),

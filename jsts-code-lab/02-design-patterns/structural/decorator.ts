@@ -128,7 +128,7 @@ class Calculator {
 
 type Fn<T, R> = (arg: T) => R;
 
-function compose<T>(...fns: Array<(arg: T) => T>): (arg: T) => T {
+function compose<T>(...fns: ((arg: T) => T)[]): (arg: T) => T {
   return (arg) => fns.reduce((acc, fn) => fn(acc), arg);
 }
 

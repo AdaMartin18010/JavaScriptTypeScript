@@ -21,7 +21,7 @@ export interface RenderDecision {
 
 // 智能渲染决策引擎
 export class IntelligentRenderEngine {
-  private metrics: Map<string, number> = new Map();
+  private metrics = new Map<string, number>();
   
   // 根据内容和用户行为决定渲染策略
   decideStrategy(
@@ -106,8 +106,8 @@ export interface Island {
 }
 
 export class IslandsArchitecture {
-  private islands: Map<string, Island> = new Map();
-  private hydrated: Set<string> = new Set();
+  private islands = new Map<string, Island>();
+  private hydrated = new Set<string>();
   
   registerIsland(island: Island): void {
     this.islands.set(island.id, island);
@@ -143,10 +143,10 @@ export class IslandsArchitecture {
 
 // 渐进式Hydration调度器
 export class ProgressiveHydrationScheduler {
-  private queue: Array<{ id: string; callback: () => void; priority: number }> = [];
+  private queue: { id: string; callback: () => void; priority: number }[] = [];
   private isProcessing = false;
   
-  schedule(id: string, callback: () => void, priority: number = 5): void {
+  schedule(id: string, callback: () => void, priority = 5): void {
     this.queue.push({ id, callback, priority });
     this.queue.sort((a, b) => a.priority - b.priority);
     
@@ -164,9 +164,9 @@ export class ProgressiveHydrationScheduler {
       // 使用 requestIdleCallback 或 setTimeout 让出主线程
       await new Promise(resolve => {
         if (typeof requestIdleCallback !== 'undefined') {
-          requestIdleCallback(() => resolve(undefined));
+          requestIdleCallback(() => { resolve(undefined); });
         } else {
-          setTimeout(() => resolve(undefined), 0);
+          setTimeout(() => { resolve(undefined); }, 0);
         }
       });
       

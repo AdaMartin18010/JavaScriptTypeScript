@@ -29,7 +29,7 @@ export function withHigherOrderComponent<P extends object>(
 }
 
 export function composeHooks<T extends unknown[]>(
-  ...hooks: Array<() => unknown>
+  ...hooks: (() => unknown)[]
 ): () => unknown[] {
   return () => hooks.map((h) => h())
 }

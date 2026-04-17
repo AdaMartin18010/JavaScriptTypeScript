@@ -3,11 +3,11 @@ import { varScopeDemo, letScopeDemo, tdzDemo, blockScopedReDeclaration } from '.
 
 describe('variable declarations', () => {
   it('varScopeDemo should not throw', () => {
-    expect(() => varScopeDemo()).not.toThrow();
+    expect(() => { varScopeDemo(); }).not.toThrow();
   });
 
   it('letScopeDemo should not throw', () => {
-    expect(() => letScopeDemo()).not.toThrow();
+    expect(() => { letScopeDemo(); }).not.toThrow();
   });
 
   it('tdzDemo should return the defined value', () => {
@@ -15,6 +15,6 @@ describe('variable declarations', () => {
   });
 
   it('blockScopedReDeclaration should output inner and outer values', () => {
-    expect(() => blockScopedReDeclaration()).not.toThrow();
+    expect(() => { blockScopedReDeclaration(); }).not.toThrow();
   });
 });

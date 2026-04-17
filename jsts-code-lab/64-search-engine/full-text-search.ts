@@ -103,8 +103,8 @@ export class Tokenizer {
 // ============================================================================
 
 export class InvertedIndex {
-  private index: Map<string, InvertedIndexEntry> = new Map();
-  private documents: Map<string, Document> = new Map();
+  private index = new Map<string, InvertedIndexEntry>();
+  private documents = new Map<string, Document>();
   private tokenizer: Tokenizer;
   private totalDocs = 0;
 
@@ -202,7 +202,7 @@ export class InvertedIndex {
   }
 
   private indexTokens(docId: string, tokens: string[], field: string): void {
-    const tokenPositions: Map<string, number[]> = new Map();
+    const tokenPositions = new Map<string, number[]>();
 
     // 记录每个词的位置
     tokens.forEach((token, position) => {
@@ -258,7 +258,7 @@ export class TFIDFScorer {
    * 计算 TF-IDF 分数
    */
   score(docId: string, term: string, field: string): number {
-    const entry = this.index['index'].get(term);
+    const entry = this.index.index.get(term);
     if (!entry) return 0;
 
     const posting = entry.postings.find(p => p.docId === docId && p.field === field);

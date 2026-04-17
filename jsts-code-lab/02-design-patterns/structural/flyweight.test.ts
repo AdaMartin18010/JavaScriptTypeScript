@@ -50,10 +50,10 @@ describe('flyweight pattern', () => {
 
   it('DatabaseConnection should only allow queries when acquired', () => {
     const conn = new DatabaseConnection(1);
-    expect(() => conn.query('SELECT 1')).toThrow('Connection not acquired');
+    expect(() => { conn.query('SELECT 1'); }).toThrow('Connection not acquired');
 
     conn.acquire();
-    expect(() => conn.query('SELECT 1')).not.toThrow();
+    expect(() => { conn.query('SELECT 1'); }).not.toThrow();
   });
 
   it('DatabaseConnection should track in-use status', () => {

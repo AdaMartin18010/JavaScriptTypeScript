@@ -35,7 +35,7 @@ class AsyncSingleton {
   private static instance: AsyncSingleton | null = null;
   private static initializing: Promise<AsyncSingleton> | null = null;
 
-  private data: string = '';
+  private data = '';
 
   private constructor() {}
 
@@ -77,7 +77,7 @@ async function fetchConfig(): Promise<string> {
 // ============================================================================
 
 class ConfigManager {
-  private settings: Map<string, unknown> = new Map();
+  private settings = new Map<string, unknown>();
 
   set(key: string, value: unknown): void {
     this.settings.set(key, value);

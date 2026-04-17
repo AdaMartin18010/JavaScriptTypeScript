@@ -48,7 +48,7 @@ describe('class-runtime-comparison', () => {
     // TypeScript 编译器会阻止直接访问 #name，
     // 使用 eval 绕过静态检查来验证运行时行为
     expect(() => {
-      // eslint-disable-next-line no-eval
+       
       eval('user.#name');
     }).toThrow();
   });

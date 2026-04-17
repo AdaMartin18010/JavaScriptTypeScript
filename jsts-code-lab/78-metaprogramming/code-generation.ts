@@ -64,7 +64,7 @@ export class CodeGenerator {
   /**
    * 添加一行代码
    */
-  line(content: string = ''): this {
+  line(content = ''): this {
     const indent = ' '.repeat(this.indentLevel * this.options.indentSize);
     this.code.push(indent + content);
     return this;
@@ -157,7 +157,7 @@ export interface InterfaceProperty {
 
 export interface MethodDefinition {
   name: string;
-  parameters: Array<{ name: string; type: string; optional?: boolean; defaultValue?: string }>;
+  parameters: { name: string; type: string; optional?: boolean; defaultValue?: string }[];
   returnType?: string;
   async?: boolean;
   body?: string;
@@ -202,7 +202,7 @@ export class TypeScriptGenerator extends CodeGenerator {
   /**
    * 生成枚举
    */
-  enum(name: string, members: Array<{ name: string; value?: string | number; comment?: string }>): this {
+  enum(name: string, members: { name: string; value?: string | number; comment?: string }[]): this {
     this.block(`enum ${name} {`, '}', () => {
       for (let i = 0; i < members.length; i++) {
         const member = members[i];
@@ -438,9 +438,7 @@ export class JSONSchemaGenerator {
 
 // ==================== 模板引擎 ====================
 
-export interface TemplateContext {
-  [key: string]: any;
-}
+export type TemplateContext = Record<string, any>;
 
 export class TemplateEngine {
   private template: string;
@@ -522,7 +520,7 @@ export class TemplateEngine {
 // ==================== DSL 构建器 ====================
 
 export class DSLBuilder {
-  private definitions: Map<string, any> = new Map();
+  private definitions = new Map<string, any>();
 
   define(name: string, definition: any): this {
     this.definitions.set(name, definition);
@@ -542,7 +540,7 @@ export class DSLBuilder {
     return this;
   }
 
-  workflow(name: string, steps: Array<{ name: string; action: string; condition?: string }>): this {
+  workflow(name: string, steps: { name: string; action: string; condition?: string }[]): this {
     this.definitions.set(name, {
       type: 'workflow',
       steps
@@ -581,7 +579,7 @@ export class DSLBuilder {
   }
 
   private executeWorkflow(workflow: any, input: any): any {
-    let result = input;
+    const result = input;
 
     for (const step of workflow.steps) {
       if (step.condition && !this.evaluateCondition(step.condition, result)) {

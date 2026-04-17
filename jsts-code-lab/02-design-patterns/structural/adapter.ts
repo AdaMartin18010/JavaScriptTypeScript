@@ -144,7 +144,7 @@ export function demo(): void {
   player.play("vlc", "movie.vlc");
   
   // 对象适配器
-  const oldPrinter = { oldPrint: (text: string) => console.log("Old printer:", text) };
+  const oldPrinter = { oldPrint: (text: string) => { console.log("Old printer:", text); } };
   const adaptedPrinter = new PrinterAdapter(oldPrinter);
   adaptedPrinter.print("Hello World");
   

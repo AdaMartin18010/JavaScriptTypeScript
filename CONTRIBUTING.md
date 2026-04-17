@@ -171,7 +171,7 @@ git push origin add-resource-name
 
 如有疑问，欢迎通过以下方式联系：
 
-- 创建 [GitHub Issue](https://github.com/yourusername/awesome-jsts-ecosystem/issues)
+- 创建 [GitHub Issue](https://github.com/AdaMartin18010/JavaScriptTypeScript/issues)
 - 发送邮件至：your-email@example.com
 
 ---

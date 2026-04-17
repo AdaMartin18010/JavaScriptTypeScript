@@ -38,14 +38,14 @@ export type DelayHandler<T> = (message: T) => void | Promise<void>;
 // ============================================================================
 
 export class TimingWheel {
-  private wheel: Map<number, DelayedMessage[]> = new Map();
+  private wheel = new Map<number, DelayedMessage[]>();
   private tickMs: number;
   private wheelSize: number;
   private currentTick = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
-  private handlers: Map<string, DelayHandler<unknown>> = new Map();
+  private handlers = new Map<string, DelayHandler<unknown>>();
 
-  constructor(tickMs: number = 100, wheelSize: number = 20) {
+  constructor(tickMs = 100, wheelSize = 20) {
     this.tickMs = tickMs;
     this.wheelSize = wheelSize;
   }
@@ -153,7 +153,7 @@ export class TimingWheel {
 
 export class DelayQueue<T = unknown> {
   private messages: DelayedMessage<T>[] = [];
-  private handlers: Map<string, DelayHandler<T>> = new Map();
+  private handlers = new Map<string, DelayHandler<T>>();
   private timer: ReturnType<typeof setInterval> | null = null;
   private processing = false;
   private checkInterval: number;
@@ -333,7 +333,7 @@ export class CronParser {
 
     const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
     
-    let next = new Date(from);
+    const next = new Date(from);
     next.setSeconds(0, 0);
     next.setMinutes(next.getMinutes() + 1);
 
@@ -371,7 +371,7 @@ export class CronParser {
 // ============================================================================
 
 export class Scheduler {
-  private tasks: Map<string, ScheduledTask> = new Map();
+  private tasks = new Map<string, ScheduledTask>();
   private timer: ReturnType<typeof setInterval> | null = null;
 
   /**

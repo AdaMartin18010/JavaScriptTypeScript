@@ -48,8 +48,8 @@ describe('BatchedMicrotaskProcessor', () => {
     batcher.add(() => order.push('a'));
     batcher.add(() => order.push('b'));
     expect(order.length).toBe(0);
-    await new Promise<void>(r => queueMicrotask(() => r()));
-    await new Promise<void>(r => queueMicrotask(() => r()));
+    await new Promise<void>(r => { queueMicrotask(() => { r(); }); });
+    await new Promise<void>(r => { queueMicrotask(() => { r(); }); });
     expect(order).toEqual(['a', 'b']);
   });
 });

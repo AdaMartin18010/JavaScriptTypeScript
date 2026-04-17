@@ -27,7 +27,7 @@ varScopeDemo();
 /** let/const: 块级作用域 */
 function letScopeDemo() {
   if (true) {
-    let y = 20;
+    const y = 20;
     const z = 30;
     console.log('inside block:', y, z); // ✅
   }
@@ -49,7 +49,7 @@ var varBefore = 'I am hoisted';
 
 /** let/const: 声明提升，但处于 TDZ (暂时性死区) */
 // console.log(letBefore); // ❌ ReferenceError: Cannot access 'letBefore' before initialization
-let letBefore = 'I am in TDZ';
+const letBefore = 'I am in TDZ';
 
 // const constBefore = 'same as let'; // 同样会报错
 
@@ -60,7 +60,7 @@ function funcDeclaration() {
 }
 
 // funcExpression(); // ❌ TypeError: funcExpression is not a function
-var funcExpression = function() {
+const funcExpression = function() {
   console.log('Function expression is hoisted as undefined');
 };
 
@@ -74,7 +74,7 @@ function tdzDemo() {
   // 从函数开始到 let 声明之间的区域就是 TDZ
   // console.log(value); // ❌ TDZ 错误
   
-  let value = 'now I am defined';
+  const value = 'now I am defined';
   console.log('value:', value); // ✅
 }
 tdzDemo();
@@ -84,7 +84,7 @@ function tdzTypeof() {
   // 在 TDZ 中 typeof 也会报错
   // typeof notDeclaredVar; // ❌ ReferenceError (unlike var which returns 'undefined')
   
-  let notDeclaredVar = 'anything';
+  const notDeclaredVar = 'anything';
 }
 
 /** 暂时性死区的实际影响 */
@@ -124,14 +124,14 @@ var duplicate = 'second'; // ✅ 静默覆盖
 console.log('var duplicate:', duplicate);
 
 /** let/const: 禁止重复声明 */
-let unique = 'first';
+const unique = 'first';
 // let unique = 'second'; // ❌ SyntaxError: Identifier 'unique' has already been declared
 
 // 但可以在不同块级作用域中声明
 function blockScopedReDeclaration() {
-  let x = 'outer';
+  const x = 'outer';
   {
-    let x = 'inner'; // ✅ 不同的作用域
+    const x = 'inner'; // ✅ 不同的作用域
     console.log('inner x:', x);
   }
   console.log('outer x:', x);

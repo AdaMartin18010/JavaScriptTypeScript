@@ -291,7 +291,7 @@ export class ModuleBoundaryChecker {
   }
 
   // 检查整个项目
-  checkProject(imports: Array<{ from: string; to: string }>): ImportCheck[] {
+  checkProject(imports: { from: string; to: string }[]): ImportCheck[] {
     return imports.map(({ from, to }) => this.checkImport(from, to));
   }
 }
@@ -343,7 +343,7 @@ export function demo(): void {
 
   // 打印前端结构
   console.log('--- 前端项目结构 (React) ---');
-  const printStructure = (structure: DirectoryStructure, indent: string = '') => {
+  const printStructure = (structure: DirectoryStructure, indent = '') => {
     console.log(`${indent}📁 ${structure.name} - ${structure.description}`);
     if (structure.children) {
       structure.children.forEach(child => {

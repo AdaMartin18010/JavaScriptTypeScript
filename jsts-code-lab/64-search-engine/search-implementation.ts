@@ -23,8 +23,8 @@ export interface SearchResult {
 
 // 倒排索引
 export class InvertedIndex {
-  private index: Map<string, Set<string>> = new Map();
-  private documents: Map<string, SearchDocument> = new Map();
+  private index = new Map<string, Set<string>>();
+  private documents = new Map<string, SearchDocument>();
   
   addDocument(doc: SearchDocument): void {
     this.documents.set(doc.id, doc);
@@ -138,7 +138,7 @@ export class InvertedIndex {
 // 分面搜索
 export interface Facet {
   field: string;
-  values: Array<{ value: string; count: number }>;
+  values: { value: string; count: number }[];
 }
 
 export class FacetedSearch {
@@ -209,7 +209,7 @@ export class SearchSuggestions {
   private trie = new Map<string, any>();
   private frequencies = new Map<string, number>();
   
-  addTerm(term: string, frequency: number = 1): void {
+  addTerm(term: string, frequency = 1): void {
     this.frequencies.set(term, (this.frequencies.get(term) || 0) + frequency);
     
     let node = this.trie;
@@ -222,7 +222,7 @@ export class SearchSuggestions {
     node.set('_end', true);
   }
   
-  suggest(prefix: string, limit: number = 5): string[] {
+  suggest(prefix: string, limit = 5): string[] {
     const prefixLower = prefix.toLowerCase();
     let node = this.trie;
     

@@ -32,7 +32,7 @@ describe('TenantIsolatedStore', () => {
     const store = new TenantIsolatedStore<number>();
     store.set('t1', 'k', 5);
     store.set('t2', 'k', 7);
-    const results = store.queryAcrossTenants(v => (v as number) > 5);
+    const results = store.queryAcrossTenants(v => (v) > 5);
     expect(results.length).toBe(1);
     expect(results[0].tenantId).toBe('t2');
   });

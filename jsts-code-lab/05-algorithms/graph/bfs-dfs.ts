@@ -71,7 +71,7 @@ export function bfs(graph: Graph, start: string, target?: string): string[] {
 // BFS 查找最短路径
 export function bfsShortestPath(graph: Graph, start: string, target: string): string[] | null {
   const visited = new Set<string>();
-  const queue: Array<{ vertex: string; path: string[] }> = [{ vertex: start, path: [start] }];
+  const queue: { vertex: string; path: string[] }[] = [{ vertex: start, path: [start] }];
 
   visited.add(start);
 

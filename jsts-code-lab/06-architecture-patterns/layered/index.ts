@@ -19,7 +19,7 @@ interface User {
 }
 
 class UserRepository {
-  private users: Map<string, User> = new Map();
+  private users = new Map<string, User>();
 
   async findById(id: string): Promise<User | null> {
     return this.users.get(id) || null;
@@ -120,7 +120,7 @@ class UserController {
 // ============================================================================
 
 class Container {
-  private services: Map<string, any> = new Map();
+  private services = new Map<string, any>();
 
   register<T>(key: string, factory: () => T): void {
     this.services.set(key, factory);

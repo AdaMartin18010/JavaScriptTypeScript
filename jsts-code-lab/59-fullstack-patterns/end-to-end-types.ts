@@ -7,9 +7,7 @@
 
 // 模拟tRPC风格的端到端类型安全
 
-export interface Router {
-  [key: string]: Procedure;
-}
+export type Router = Record<string, Procedure>;
 
 export interface Procedure {
   input?: InputSchema;

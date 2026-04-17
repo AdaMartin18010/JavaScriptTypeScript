@@ -158,7 +158,7 @@ export class RingProcess {
   }
 
   private getPriority(id: string): number {
-    const m = id.match(/(\d+)$/);
+    const m = /(\d+)$/.exec(id);
     return m ? parseInt(m[1], 10) : 0;
   }
 }
@@ -178,7 +178,7 @@ export class ElectionCluster {
     this.ringProcesses.set(p.id, p);
     const nodes = Array.from(this.ringProcesses.values());
     for (let i = 0; i < nodes.length; i++) {
-      nodes[i]!.setNext(nodes[(i + 1) % nodes.length]!);
+      nodes[i].setNext(nodes[(i + 1) % nodes.length]);
     }
   }
 

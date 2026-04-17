@@ -21,20 +21,20 @@ describe('Formal Verification Index', () => {
   });
 
   it('should run demo functions without throwing', () => {
-    expect(() => fv.VerificationFramework.demo()).not.toThrow();
-    expect(() => fv.HoareLogic.demo()).not.toThrow();
-    expect(() => fv.WeakestPrecondition.demo()).not.toThrow();
-    expect(() => fv.SeparationLogic.demo()).not.toThrow();
-    expect(() => fv.TLAPlusLite.demo()).not.toThrow();
-    expect(() => fv.TLAPlusPatterns.demo()).not.toThrow();
-    expect(() => fv.SMTSolverBridge.demo()).not.toThrow();
-    expect(() => fv.Z3SMTBridge.demo()).not.toThrow();
-    expect(() => fv.TypeSafeStateMachine.demo()).not.toThrow();
-    expect(() => fv.TypeSafeStateMachineLegacy.demo()).not.toThrow();
-    expect(() => fv.TemporalLogic.demo()).not.toThrow();
-    expect(() => fv.BoundedModelChecking.demo()).not.toThrow();
-    expect(() => fv.RefinementTypes.demo()).not.toThrow();
-    expect(() => fv.SymbolicExecution.demo()).not.toThrow();
-    expect(() => fv.ProgramCorrectnessProofs.demo()).not.toThrow();
+    expect(() => { fv.VerificationFramework.demo(); }).not.toThrow();
+    expect(() => { fv.HoareLogic.demo(); }).not.toThrow();
+    expect(() => { fv.WeakestPrecondition.demo(); }).not.toThrow();
+    expect(() => { fv.SeparationLogic.demo(); }).not.toThrow();
+    expect(() => { fv.TLAPlusLite.demo(); }).not.toThrow();
+    expect(() => { fv.TLAPlusPatterns.demo(); }).not.toThrow();
+    expect(() => { fv.SMTSolverBridge.demo(); }).not.toThrow();
+    expect(() => { fv.Z3SMTBridge.demo(); }).not.toThrow();
+    expect(() => { fv.TypeSafeStateMachine.demo(); }).not.toThrow();
+    expect(() => { fv.TypeSafeStateMachineLegacy.demo(); }).not.toThrow();
+    expect(() => { fv.TemporalLogic.demo(); }).not.toThrow();
+    expect(() => { fv.BoundedModelChecking.demo(); }).not.toThrow();
+    expect(() => { fv.RefinementTypes.demo(); }).not.toThrow();
+    expect(() => { fv.SymbolicExecution.demo(); }).not.toThrow();
+    expect(() => { fv.ProgramCorrectnessProofs.demo(); }).not.toThrow();
   });
 });

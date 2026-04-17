@@ -28,7 +28,7 @@ export interface ServiceInstance {
 }
 
 export class ServiceRegistry {
-  private services: Map<string, ServiceInstance[]> = new Map();
+  private services = new Map<string, ServiceInstance[]>();
 
   register(instance: ServiceInstance): void {
     const instances = this.services.get(instance.name) || [];
@@ -94,8 +94,8 @@ export interface ApiResponse {
 export type RouteHandler = (req: ApiRequest) => Promise<ApiResponse>;
 
 export class ApiGateway {
-  private routes: Map<string, { service: string; path: string }> = new Map();
-  private loadBalancers: Map<string, LoadBalancer> = new Map();
+  private routes = new Map<string, { service: string; path: string }>();
+  private loadBalancers = new Map<string, LoadBalancer>();
 
   constructor(
     private registry: ServiceRegistry,
@@ -297,7 +297,7 @@ export interface DomainEvent {
 }
 
 export class EventBus {
-  private handlers: Map<string, Array<(event: DomainEvent) => void>> = new Map();
+  private handlers = new Map<string, ((event: DomainEvent) => void)[]>();
 
   subscribe(eventType: string, handler: (event: DomainEvent) => void): () => void {
     const handlers = this.handlers.get(eventType) || [];

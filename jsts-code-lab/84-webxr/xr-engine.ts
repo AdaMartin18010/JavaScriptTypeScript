@@ -224,7 +224,7 @@ export interface HandJoint {
 }
 
 export class HandTracking {
-  private joints: Map<string, HandJoint> = new Map();
+  private joints = new Map<string, HandJoint>();
   private gesture: string | null = null;
   
   updateJoint(name: string, position: Vector3, radius: number): void {
@@ -286,7 +286,7 @@ export class XRAnchor {
 
 // 锚点管理器
 export class XRAnchorManager {
-  private anchors: Map<string, XRAnchor> = new Map();
+  private anchors = new Map<string, XRAnchor>();
   
   createAnchor(position: Vector3): string {
     const id = `anchor-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -302,7 +302,7 @@ export class XRAnchorManager {
     return this.anchors.get(id);
   }
   
-  getAllAnchors(): Array<{ id: string; position: Vector3 }> {
+  getAllAnchors(): { id: string; position: Vector3 }[] {
     return Array.from(this.anchors.entries()).map(([id, anchor]) => ({
       id,
       position: anchor.getPosition()

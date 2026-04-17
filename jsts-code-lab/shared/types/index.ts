@@ -89,10 +89,10 @@ export function isPromise<T>(value: unknown): value is Promise<T> {
 // ============================================================================
 
 /** 成功结果 */
-export type Ok<T> = { ok: true; value: T; error?: never };
+export interface Ok<T> { ok: true; value: T; error?: never }
 
 /** 失败结果 */
-export type Err<E = Error> = { ok: false; value?: never; error: E };
+export interface Err<E = Error> { ok: false; value?: never; error: E }
 
 /** 结果类型 (替代抛出异常) */
 export type Result<T, E = Error> = Ok<T> | Err<E>;

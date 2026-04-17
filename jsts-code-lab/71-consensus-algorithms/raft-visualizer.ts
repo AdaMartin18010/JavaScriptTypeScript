@@ -101,7 +101,7 @@ export class RaftVisualizer {
   simulateReplicate(leaderId: string, command: string): void {
     console.log(`\n>>> 模拟日志复制: "${command}"`);
     const leader = this.nodes.find(n => n.id === leaderId);
-    if (!leader || leader.state !== 'leader') {
+    if (leader?.state !== 'leader') {
       console.log(`错误: ${leaderId} 不是领导者`);
       return;
     }

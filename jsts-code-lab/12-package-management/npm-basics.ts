@@ -119,7 +119,7 @@ export class SemVer {
   ) {}
 
   static parse(version: string): SemVer {
-    const match = version.match(/^(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9.-]+))?(?:\+([a-zA-Z0-9.-]+))?$/);
+    const match = /^(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9.-]+))?(?:\+([a-zA-Z0-9.-]+))?$/.exec(version);
     if (!match) {
       throw new Error(`Invalid version: ${version}`);
     }
@@ -192,7 +192,7 @@ export interface DependencyAnalysis {
 }
 
 export class DependencyManager {
-  private dependencies: Map<string, DependencyAnalysis> = new Map();
+  private dependencies = new Map<string, DependencyAnalysis>();
 
   addDependency(analysis: DependencyAnalysis): void {
     this.dependencies.set(`${analysis.name}@${analysis.version}`, analysis);
@@ -216,7 +216,7 @@ export class DependencyManager {
       duplicates: [] as string[]
     };
 
-    const nameCount: Map<string, number> = new Map();
+    const nameCount = new Map<string, number>();
 
     for (const dep of this.dependencies.values()) {
       switch (dep.type) {
@@ -239,8 +239,8 @@ export class DependencyManager {
   }
 
   // 检查版本冲突
-  checkConflicts(): Array<{ name: string; versions: string[] }> {
-    const versionMap: Map<string, Set<string>> = new Map();
+  checkConflicts(): { name: string; versions: string[] }[] {
+    const versionMap = new Map<string, Set<string>>();
 
     for (const dep of this.dependencies.values()) {
       const versions = versionMap.get(dep.name) || new Set();
@@ -248,7 +248,7 @@ export class DependencyManager {
       versionMap.set(dep.name, versions);
     }
 
-    const conflicts: Array<{ name: string; versions: string[] }> = [];
+    const conflicts: { name: string; versions: string[] }[] = [];
     for (const [name, versions] of versionMap) {
       if (versions.size > 1) {
         conflicts.push({ name, versions: Array.from(versions) });
@@ -329,8 +329,8 @@ export interface PublishOptions {
 export class PackagePublisher {
   constructor(private packageJson: PackageJson) {}
 
-  validate(): Array<{ field: string; error: string }> {
-    const errors: Array<{ field: string; error: string }> = [];
+  validate(): { field: string; error: string }[] {
+    const errors: { field: string; error: string }[] = [];
 
     if (!this.packageJson.name) {
       errors.push({ field: 'name', error: 'Package name is required' });
@@ -445,7 +445,7 @@ export function demo(): void {
     console.log('发布文件:', publisher.generatePublishList());
   } else {
     console.log('❌ 验证失败:');
-    errors.forEach(e => console.log(`  - ${e.field}: ${e.error}`));
+    errors.forEach(e => { console.log(`  - ${e.field}: ${e.error}`); });
   }
 
   console.log('\n--- npm 生命周期 ---');

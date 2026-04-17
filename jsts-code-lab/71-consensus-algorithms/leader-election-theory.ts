@@ -195,7 +195,7 @@ export class RingNode {
 
   private getPriority(id: string): number {
     // 支持 "n1"、"ring-1" 等格式，提取末尾数字
-    const match = id.match(/(\d+)$/);
+    const match = /(\d+)$/.exec(id);
     return match ? parseInt(match[1], 10) : 0;
   }
 
@@ -220,7 +220,7 @@ export class LeaderElectionCluster {
     // 维护环连接：按插入顺序连接
     const nodes = Array.from(this.ringNodes.values());
     for (let i = 0; i < nodes.length; i++) {
-      nodes[i]!.setNext(nodes[(i + 1) % nodes.length]!);
+      nodes[i].setNext(nodes[(i + 1) % nodes.length]);
     }
   }
 

@@ -59,7 +59,7 @@ export interface RaftNode {
 
 // Raft算法实现
 export class RaftConsensus {
-  private nodes: Map<string, RaftNode> = new Map();
+  private nodes = new Map<string, RaftNode>();
   private leader: string | null = null;
   private heartbeatInterval = 100;
   private electionTimeout = 300;
@@ -157,7 +157,7 @@ export class RaftConsensus {
     // 模拟心跳发送
     const sendHeartbeat = () => {
       const leader = this.nodes.get(leaderId);
-      if (!leader || leader.state !== 'leader') return;
+      if (leader?.state !== 'leader') return;
 
       for (const [id, node] of this.nodes) {
         if (id !== leaderId) {
@@ -176,7 +176,7 @@ export class RaftConsensus {
   // 提交命令
   submitCommand(leaderId: string, command: string): boolean {
     const leader = this.nodes.get(leaderId);
-    if (!leader || leader.state !== 'leader') {
+    if (leader?.state !== 'leader') {
       console.log(`[Raft] ${leaderId} 不是领导者，无法提交命令`);
       return false;
     }
@@ -237,7 +237,7 @@ export class RaftConsensus {
     };
   }
 
-  getClusterStatus(): Array<{ id: string; state: NodeState; term: number }> {
+  getClusterStatus(): { id: string; state: NodeState; term: number }[] {
     return Array.from(this.nodes.entries()).map(([id, node]) => ({
       id,
       state: node.state,
@@ -266,7 +266,7 @@ export class NetworkPartitionSimulator {
     console.log(`少数派分区: [${minorityGroup.join(', ')}]`);
 
     // 在多数派分区中选举
-    const majorityElected = this.raft.startElection(majorityGroup[0]!);
+    const majorityElected = this.raft.startElection(majorityGroup[0]);
     console.log(`多数派分区选举结果: ${majorityElected ? '成功 ✅' : '失败 ❌'}`);
 
     console.log('\n--- 少数派分区尝试选举 ---');
@@ -275,7 +275,7 @@ export class NetworkPartitionSimulator {
     for (const id of minorityGroup) {
       minorityRaft.addNode(id);
     }
-    const minorityElected = minorityRaft.startElection(minorityGroup[0]!);
+    const minorityElected = minorityRaft.startElection(minorityGroup[0]);
     console.log(`少数派分区选举结果: ${minorityElected ? '成功 ❌ (出现脑裂!)' : '失败 ✅ (符合预期，无 split-brain)'}`);
   }
 

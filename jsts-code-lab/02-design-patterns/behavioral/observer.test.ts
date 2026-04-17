@@ -33,7 +33,7 @@ describe('observer pattern', () => {
 
   it('ObservableState should notify on change', () => {
     const state = new ObservableState(0);
-    const changes: Array<{ value: number; oldValue: number }> = [];
+    const changes: { value: number; oldValue: number }[] = [];
     state.subscribe((value, oldValue) => changes.push({ value, oldValue }));
     state.value = 10;
     state.value = 10; // no change, should not notify

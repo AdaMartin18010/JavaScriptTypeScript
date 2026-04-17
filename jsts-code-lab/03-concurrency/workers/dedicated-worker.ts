@@ -52,15 +52,15 @@ export class WorkerPool {
   constructor(workerScript: string | URL, private poolSize = navigator.hardwareConcurrency || 4) {
     for (let i = 0; i < poolSize; i++) {
       const worker = new Worker(workerScript, { type: 'module' });
-      worker.onmessage = (e) => this.handleMessage(e.data);
-      worker.onerror = (e) => this.handleError(e);
+      worker.onmessage = (e) => { this.handleMessage(e.data); };
+      worker.onerror = (e) => { this.handleError(e); };
       this.workers.push(worker);
     }
   }
 
   private getAvailableWorker(): Worker | null {
     for (const worker of this.workers) {
-      let isBusy = false;
+      const isBusy = false;
       for (const task of this.activeTasks.values()) {
         // 简化处理，实际应该有更精确的跟踪
       }
@@ -171,7 +171,7 @@ export class ArrayProcessor {
 
   process(array: number[], operation: string): Promise<unknown> {
     return new Promise((resolve) => {
-      this.worker.onmessage = (e) => resolve(e.data);
+      this.worker.onmessage = (e) => { resolve(e.data); };
       this.worker.postMessage({ array, operation });
     });
   }
@@ -211,13 +211,13 @@ export async function parallelMap<T, R>(
 
   const promises = chunks.map((chunk, i) =>
     new Promise<R[]>((resolve) => {
-      workers[i].onmessage = (e) => resolve(e.data);
+      workers[i].onmessage = (e) => { resolve(e.data); };
       workers[i].postMessage({ chunk, mapperString: mapper.toString() });
     })
   );
 
   const results = await Promise.all(promises);
-  workers.forEach(w => w.terminate());
+  workers.forEach(w => { w.terminate(); });
 
   return results.flat();
 }

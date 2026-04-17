@@ -201,7 +201,7 @@ export class SourceMapParser {
       m.generatedColumn <= generatedColumn
     );
 
-    if (!mapping || !mapping.source) {
+    if (!mapping?.source) {
       return null;
     }
 
@@ -226,12 +226,12 @@ export class SourceMapParser {
 // ============================================================================
 
 export class SourceMapGenerator {
-  private mappings: Array<{
+  private mappings: {
     generated: { line: number; column: number };
     original?: { line: number; column: number; source: string; name?: string };
-  }> = [];
-  private sources: Set<string> = new Set();
-  private names: Set<string> = new Set();
+  }[] = [];
+  private sources = new Set<string>();
+  private names = new Set<string>();
 
   /**
    * 添加映射
@@ -350,19 +350,19 @@ export class StackTraceParser {
   /**
    * 解析堆栈跟踪字符串
    */
-  parse(stackTrace: string): Array<{
+  parse(stackTrace: string): {
     functionName: string;
     fileName: string;
     lineNumber: number;
     columnNumber: number;
-  }> {
+  }[] {
     const lines = stackTrace.split('\n');
     const frames: ReturnType<typeof this.parse>[number][] = [];
 
     const regex = /at\s+(?:(.+?)\s+\()?(.+?):(\d+):(\d+)\)?/;
 
     for (const line of lines) {
-      const match = line.match(regex);
+      const match = regex.exec(line);
       if (match) {
         frames.push({
           functionName: match[1] || '<anonymous>',

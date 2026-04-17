@@ -41,7 +41,7 @@ export interface FaultConfig {
   duration?: number; // 毫秒
   target?: string | RegExp;
   headers?: Record<string, string>;
-  matchers?: Array<{ field: string; value: string | RegExp }>;
+  matchers?: { field: string; value: string | RegExp }[];
 }
 
 export interface InjectionContext {
@@ -266,7 +266,7 @@ export interface CPUConfig extends FaultConfig {
 }
 
 export class CPUInjector extends FaultInjector {
-  private workers: Array<{ interval: ReturnType<typeof setInterval> }> = [];
+  private workers: { interval: ReturnType<typeof setInterval> }[] = [];
 
   constructor(config: CPUConfig) {
     super(config);
@@ -295,7 +295,7 @@ export class CPUInjector extends FaultInjector {
 
     // 设置自动停止
     if (config.duration) {
-      setTimeout(() => this.restore(), config.duration);
+      setTimeout(() => { this.restore(); }, config.duration);
     }
 
     return {
@@ -361,11 +361,11 @@ export class MemoryInjector extends FaultInjector {
 
 export class FaultInjectionManager {
   private injectors: FaultInjector[] = [];
-  private history: Array<{
+  private history: {
     timestamp: number;
     context: InjectionContext;
     result: FaultResult;
-  }> = [];
+  }[] = [];
 
   register(injector: FaultInjector): void {
     this.injectors.push(injector);

@@ -30,7 +30,7 @@ describe('SignalingServer', () => {
     const msgsB: any[] = [];
     ss.join('r1', 'a', (m: any) => msgsA.push(m));
     ss.join('r1', 'b', (m: any) => msgsB.push(m));
-    expect(msgsA.some(m => m.type === 'join' && (m.payload as any).peers.includes('b'))).toBe(true);
+    expect(msgsA.some(m => m.type === 'join' && (m.payload).peers.includes('b'))).toBe(true);
     expect(msgsB.some(m => m.type === 'join')).toBe(false);
   });
 

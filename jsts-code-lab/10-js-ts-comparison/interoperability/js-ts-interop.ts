@@ -174,7 +174,7 @@ export class ObjectValidator<T> {
       return false;
     }
 
-    for (const [key, validator] of Object.entries(this.schema) as [string, (v: unknown) => boolean][]) {
+    for (const [key, validator] of Object.entries(this.schema)) {
       if (!(key in data) || !validator((data as Record<string, unknown>)[key])) {
         return false;
       }

@@ -15,7 +15,7 @@ interface BenchmarkResult {
 export class Benchmark {
   private results: BenchmarkResult[] = [];
 
-  async run(name: string, fn: () => void, iterations: number = 100000): Promise<BenchmarkResult> {
+  async run(name: string, fn: () => void, iterations = 100000): Promise<BenchmarkResult> {
     for (let i = 0; i < 1000; i++) fn(); // 预热
     
     const start = performance.now();

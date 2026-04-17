@@ -112,13 +112,13 @@ export class PriorityQueue<T extends { priority: number }> {
 
 export class TaskQueue {
   private queue = new PriorityQueue<Task>();
-  private handlers: Map<string, TaskHandler> = new Map();
+  private handlers = new Map<string, TaskHandler>();
   private running = new Set<string>();
   private processing = false;
   private paused = false;
   private options: Required<QueueOptions>;
   private stats = { completed: 0, failed: 0, retried: 0 };
-  private listeners: Map<string, Array<(task: Task, result?: TaskResult) => void>> = new Map();
+  private listeners = new Map<string, ((task: Task, result?: TaskResult) => void)[]>();
 
   constructor(options: QueueOptions = {}) {
     this.options = {
@@ -313,7 +313,7 @@ export class TaskQueue {
     return Promise.race([
       handler(task),
       new Promise<void>((_, reject) => 
-        setTimeout(() => reject(new Error('Task timeout')), timeout)
+        setTimeout(() => { reject(new Error('Task timeout')); }, timeout)
       )
     ]);
   }
@@ -368,7 +368,7 @@ export class TaskQueue {
 
 export class WorkerPool {
   private queue: TaskQueue;
-  private workers: Map<string, { busy: boolean; task?: Task }> = new Map();
+  private workers = new Map<string, { busy: boolean; task?: Task }>();
 
   constructor(workerCount: number) {
     this.queue = new TaskQueue({ concurrency: workerCount });
@@ -420,10 +420,10 @@ export class WorkerPool {
 // ============================================================================
 
 export class DeadLetterQueue {
-  private failedTasks: Array<{ task: Task; error: Error; failedAt: number }> = [];
+  private failedTasks: { task: Task; error: Error; failedAt: number }[] = [];
   private maxSize: number;
 
-  constructor(maxSize: number = 1000) {
+  constructor(maxSize = 1000) {
     this.maxSize = maxSize;
   }
 
@@ -446,7 +446,7 @@ export class DeadLetterQueue {
   /**
    * 获取所有失败任务
    */
-  getAll(): Array<{ task: Task; error: Error; failedAt: number }> {
+  getAll(): { task: Task; error: Error; failedAt: number }[] {
     return [...this.failedTasks];
   }
 

@@ -40,8 +40,8 @@ export interface EIP1193Provider {
 export class WalletManager {
   private provider: EIP1193Provider | null = null;
   private accounts: WalletAccount[] = [];
-  private chainId: number = 1;
-  private listeners: Map<string, Set<(data: unknown) => void>> = new Map();
+  private chainId = 1;
+  private listeners = new Map<string, Set<(data: unknown) => void>>();
 
   async connect(provider: EIP1193Provider): Promise<WalletConnection> {
     this.provider = provider;
@@ -174,7 +174,7 @@ export class WalletManager {
 
   private emit(event: string, data: unknown): void {
     const callbacks = this.listeners.get(event);
-    callbacks?.forEach(cb => cb(data));
+    callbacks?.forEach(cb => { cb(data); });
   }
 
   getAccounts(): WalletAccount[] {
@@ -227,20 +227,20 @@ export interface ContractConfig {
   chainId?: number;
 }
 
-export type ContractABI = Array<{
+export type ContractABI = {
   type: 'function' | 'event' | 'constructor' | 'fallback' | 'receive';
   name?: string;
-  inputs?: Array<{ name: string; type: string; indexed?: boolean }>;
-  outputs?: Array<{ name: string; type: string }>;
+  inputs?: { name: string; type: string; indexed?: boolean }[];
+  outputs?: { name: string; type: string }[];
   stateMutability?: 'pure' | 'view' | 'nonpayable' | 'payable';
   anonymous?: boolean;
-}>;
+}[];
 
 export class SmartContract {
   private address: string;
   private abi: ContractABI;
   private provider: EIP1193Provider;
-  private eventListeners: Map<string, Set<(data: unknown) => void>> = new Map();
+  private eventListeners = new Map<string, Set<(data: unknown) => void>>();
 
   constructor(config: ContractConfig, provider: EIP1193Provider) {
     this.address = config.address;
@@ -410,7 +410,7 @@ export interface Transaction {
 
 export class TransactionManager {
   private provider: EIP1193Provider;
-  private pendingTxs: Map<string, Transaction> = new Map();
+  private pendingTxs = new Map<string, Transaction>();
 
   constructor(provider: EIP1193Provider) {
     this.provider = provider;
@@ -489,7 +489,7 @@ export class TransactionManager {
 
   async signTypedData(
     domain: TypedDataDomain,
-    types: Record<string, Array<{ name: string; type: string }>>,
+    types: Record<string, { name: string; type: string }[]>,
     value: Record<string, unknown>,
     address?: string
   ): Promise<string> {
@@ -559,8 +559,8 @@ export interface ChainConfig {
 }
 
 export class MultiChainManager {
-  private chains: Map<number, ChainConfig> = new Map();
-  private providers: Map<number, EIP1193Provider> = new Map();
+  private chains = new Map<number, ChainConfig>();
+  private providers = new Map<number, EIP1193Provider>();
 
   constructor() {
     // 初始化默认链

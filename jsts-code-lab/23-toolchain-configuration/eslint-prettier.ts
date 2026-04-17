@@ -28,10 +28,10 @@ export interface ESLintConfig {
   };
   plugins?: string[];
   rules?: Record<string, ESLintRuleValue>;
-  overrides?: Array<{
+  overrides?: {
     files: string[];
     rules?: Record<string, ESLintRuleValue>;
-  }>;
+  }[];
   ignorePatterns?: string[];
   settings?: Record<string, unknown>;
 }
@@ -45,41 +45,41 @@ type ESLintRuleValue = 'off' | 'warn' | 'error' | ['off' | 'warn' | 'error', ...
 export class ESLintConfigBuilder {
   private config: ESLintConfig = { root: true };
 
-  setRoot(value = true): ESLintConfigBuilder {
+  setRoot(value = true): this {
     this.config.root = value;
     return this;
   }
 
-  env(name: string, enabled = true): ESLintConfigBuilder {
+  env(name: string, enabled = true): this {
     this.config.env = this.config.env || {};
     this.config.env[name] = enabled;
     return this;
   }
 
-  browser(): ESLintConfigBuilder {
+  browser(): this {
     return this.env('browser', true).env('es2021', true);
   }
 
-  node(): ESLintConfigBuilder {
+  node(): this {
     return this.env('node', true).env('es2021', true);
   }
 
-  jest(): ESLintConfigBuilder {
+  jest(): this {
     return this.env('jest', true);
   }
 
-  extend(...configs: string[]): ESLintConfigBuilder {
+  extend(...configs: string[]): this {
     this.config.extends = this.config.extends || [];
     this.config.extends.push(...configs);
     return this;
   }
 
-  useParser(parser: string): ESLintConfigBuilder {
+  useParser(parser: string): this {
     this.config.parser = parser;
     return this;
   }
 
-  useTypeScript(project?: string): ESLintConfigBuilder {
+  useTypeScript(project?: string): this {
     this.config.parser = '@typescript-eslint/parser';
     this.config.parserOptions = {
       ecmaVersion: 2022,
@@ -90,25 +90,25 @@ export class ESLintConfigBuilder {
                .extend('plugin:@typescript-eslint/recommended');
   }
 
-  plugin(...plugins: string[]): ESLintConfigBuilder {
+  plugin(...plugins: string[]): this {
     this.config.plugins = this.config.plugins || [];
     this.config.plugins.push(...plugins);
     return this;
   }
 
-  rule(name: string, value: ESLintRuleValue): ESLintConfigBuilder {
+  rule(name: string, value: ESLintRuleValue): this {
     this.config.rules = this.config.rules || {};
     this.config.rules[name] = value;
     return this;
   }
 
-  override(files: string[], rules: Record<string, ESLintRuleValue>): ESLintConfigBuilder {
+  override(files: string[], rules: Record<string, ESLintRuleValue>): this {
     this.config.overrides = this.config.overrides || [];
     this.config.overrides.push({ files, rules });
     return this;
   }
 
-  ignore(...patterns: string[]): ESLintConfigBuilder {
+  ignore(...patterns: string[]): this {
     this.config.ignorePatterns = this.config.ignorePatterns || [];
     this.config.ignorePatterns.push(...patterns);
     return this;
@@ -148,47 +148,47 @@ export interface PrettierConfig {
 export class PrettierConfigBuilder {
   private config: PrettierConfig = {};
 
-  semi(enabled = true): PrettierConfigBuilder {
+  semi(enabled = true): this {
     this.config.semi = enabled;
     return this;
   }
 
-  singleQuote(enabled = true): PrettierConfigBuilder {
+  singleQuote(enabled = true): this {
     this.config.singleQuote = enabled;
     return this;
   }
 
-  tabWidth(width: number): PrettierConfigBuilder {
+  tabWidth(width: number): this {
     this.config.tabWidth = width;
     return this;
   }
 
-  useTabs(enabled = true): PrettierConfigBuilder {
+  useTabs(enabled = true): this {
     this.config.useTabs = enabled;
     return this;
   }
 
-  printWidth(width: number): PrettierConfigBuilder {
+  printWidth(width: number): this {
     this.config.printWidth = width;
     return this;
   }
 
-  trailingComma(style: PrettierConfig['trailingComma']): PrettierConfigBuilder {
+  trailingComma(style: PrettierConfig['trailingComma']): this {
     this.config.trailingComma = style;
     return this;
   }
 
-  bracketSpacing(enabled = true): PrettierConfigBuilder {
+  bracketSpacing(enabled = true): this {
     this.config.bracketSpacing = enabled;
     return this;
   }
 
-  arrowParens(style: PrettierConfig['arrowParens']): PrettierConfigBuilder {
+  arrowParens(style: PrettierConfig['arrowParens']): this {
     this.config.arrowParens = style;
     return this;
   }
 
-  endOfLine(style: PrettierConfig['endOfLine']): PrettierConfigBuilder {
+  endOfLine(style: PrettierConfig['endOfLine']): this {
     this.config.endOfLine = style;
     return this;
   }

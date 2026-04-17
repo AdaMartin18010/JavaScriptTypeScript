@@ -38,7 +38,7 @@ interface FixedWindowState {
 }
 
 export class FixedWindowRateLimiter {
-  private windows: Map<string, FixedWindowState> = new Map();
+  private windows = new Map<string, FixedWindowState>();
   private config: RateLimitConfig;
 
   constructor(config: RateLimitConfig) {
@@ -93,7 +93,7 @@ interface SlidingWindowEntry {
 }
 
 export class SlidingWindowRateLimiter {
-  private windows: Map<string, SlidingWindowEntry[]> = new Map();
+  private windows = new Map<string, SlidingWindowEntry[]>();
   private config: RateLimitConfig;
 
   constructor(config: RateLimitConfig) {
@@ -131,7 +131,7 @@ export class SlidingWindowRateLimiter {
 
     // 添加新请求
     const lastEntry = entries[entries.length - 1];
-    if (lastEntry && lastEntry.timestamp === now) {
+    if (lastEntry?.timestamp === now) {
       lastEntry.count++;
     } else {
       entries.push({ timestamp: now, count: 1 });
@@ -161,7 +161,7 @@ interface TokenBucketState {
 }
 
 export class TokenBucketRateLimiter {
-  private buckets: Map<string, TokenBucketState> = new Map();
+  private buckets = new Map<string, TokenBucketState>();
   private config: RateLimitConfig;
   private refillRate: number;  // tokens per ms
 
@@ -233,7 +233,7 @@ interface LeakyBucketState {
 }
 
 export class LeakyBucketRateLimiter {
-  private buckets: Map<string, LeakyBucketState> = new Map();
+  private buckets = new Map<string, LeakyBucketState>();
   private config: RateLimitConfig;
   private leakRate: number;  // 每秒漏出的请求数
 
@@ -308,8 +308,8 @@ export class TieredRateLimiter {
     this.tiers.push({ name, keyExtractor, limiter });
   }
 
-  check(request: unknown): { allowed: boolean; results: Array<{ tier: string; result: RateLimitResult }> } {
-    const results: Array<{ tier: string; result: RateLimitResult }> = [];
+  check(request: unknown): { allowed: boolean; results: { tier: string; result: RateLimitResult }[] } {
+    const results: { tier: string; result: RateLimitResult }[] = [];
 
     // 检查所有层级
     for (const tier of this.tiers) {

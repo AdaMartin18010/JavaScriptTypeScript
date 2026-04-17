@@ -83,7 +83,7 @@ describe('map-set', () => {
 
   describe('demo', () => {
     it('should run without errors', () => {
-      expect(() => demo()).not.toThrow();
+      expect(() => { demo(); }).not.toThrow();
     });
   });
 });

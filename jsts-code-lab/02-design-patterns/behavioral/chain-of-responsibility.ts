@@ -43,7 +43,7 @@ abstract class AbstractHandler<T> implements Handler<T> {
 
 interface Order {
   id: string;
-  items: Array<{ name: string; quantity: number; price: number }>;
+  items: { name: string; quantity: number; price: number }[];
   userId: string;
   couponCode?: string;
 }

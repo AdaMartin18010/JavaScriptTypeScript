@@ -71,7 +71,7 @@ export class RuntimeTypeChecker {
     }
 
     // 数组泛型: string[], number[]
-    const arrayMatch = trimmed.match(/^(.+)\[\]$/);
+    const arrayMatch = /^(.+)\[\]$/.exec(trimmed);
     if (arrayMatch) {
       if (!Array.isArray(value)) return false;
       const elementType = arrayMatch[1];
@@ -167,7 +167,7 @@ export function compareAnyVsUnknown(): AnyVsUnknownComparison[] {
   // 场景 2：访问不存在的属性
   let anyPropResult: string;
   try {
-    anyPropResult = String((anyValue as any).nonExistentProp);
+    anyPropResult = String((anyValue).nonExistentProp);
   } catch (e) {
     anyPropResult = `运行时错误: ${(e as Error).message}`;
   }
@@ -180,7 +180,7 @@ export function compareAnyVsUnknown(): AnyVsUnknownComparison[] {
   // 场景 3：作为函数调用
   let anyCallResult: string;
   try {
-    (anyValue as any)();
+    (anyValue)();
     anyCallResult = '调用成功';
   } catch (e) {
     anyCallResult = `运行时错误: ${(e as Error).message}`;
@@ -194,7 +194,7 @@ export function compareAnyVsUnknown(): AnyVsUnknownComparison[] {
   // 场景 4：调用不存在的方法
   let anyMethodResult: string;
   try {
-    (anyValue as any).nonExistentMethod();
+    (anyValue).nonExistentMethod();
     anyMethodResult = '调用成功';
   } catch (e) {
     anyMethodResult = `运行时错误: ${(e as Error).message}`;

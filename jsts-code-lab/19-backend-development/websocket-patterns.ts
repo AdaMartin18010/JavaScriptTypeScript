@@ -37,9 +37,9 @@ type ConnectionHandler = (clientId: string) => void;
 // ============================================================================
 
 export class WebSocketServer {
-  private clients: Map<string, ConnectionState> = new Map();
-  private rooms: Map<string, Set<string>> = new Map();
-  private handlers: Map<string, MessageHandler[]> = new Map();
+  private clients = new Map<string, ConnectionState>();
+  private rooms = new Map<string, Set<string>>();
+  private handlers = new Map<string, MessageHandler[]>();
   private connectionHandlers: ConnectionHandler[] = [];
   private disconnectionHandlers: ConnectionHandler[] = [];
   
@@ -59,7 +59,7 @@ export class WebSocketServer {
       reconnectAttempts: 0
     });
     
-    this.connectionHandlers.forEach(handler => handler(clientId));
+    this.connectionHandlers.forEach(handler => { handler(clientId); });
     console.log(`Client ${clientId} connected`);
   }
 
@@ -71,7 +71,7 @@ export class WebSocketServer {
     });
     
     this.clients.delete(clientId);
-    this.disconnectionHandlers.forEach(handler => handler(clientId));
+    this.disconnectionHandlers.forEach(handler => { handler(clientId); });
     console.log(`Client ${clientId} disconnected`);
   }
 
@@ -180,7 +180,7 @@ export class WebSocketServer {
       // 分发给处理器
       const handlers = this.handlers.get(message.type);
       if (handlers) {
-        handlers.forEach(handler => handler(message, clientId));
+        handlers.forEach(handler => { handler(message, clientId); });
       }
     } catch (error) {
       console.error('Failed to parse message:', error);
@@ -236,7 +236,7 @@ export class WebSocketClient {
   private maxReconnectAttempts = 5;
   private reconnectDelay = 1000;
   private messageQueue: WebSocketMessage[] = [];
-  private handlers: Map<string, MessageHandler[]> = new Map();
+  private handlers = new Map<string, MessageHandler[]>();
   private state: ConnectionState = {
     isConnected: false,
     lastPing: 0,
@@ -323,7 +323,7 @@ export class WebSocketClient {
   private handleMessage(message: WebSocketMessage): void {
     const handlers = this.handlers.get(message.type);
     if (handlers) {
-      handlers.forEach(handler => handler(message, 'server'));
+      handlers.forEach(handler => { handler(message, 'server'); });
     }
   }
 

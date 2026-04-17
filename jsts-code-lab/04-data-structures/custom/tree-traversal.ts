@@ -272,7 +272,7 @@ export function demo(): void {
   console.log("\n4. Binary Search Tree (BST):");
   const bst = new BinarySearchTree<number>();
   const values = [50, 30, 70, 20, 40, 60, 80];
-  values.forEach(v => bst.insert(v));
+  values.forEach(v => { bst.insert(v); });
 
   console.log("   Inserted values:", values);
   console.log("   Search 40:", bst.search(40));

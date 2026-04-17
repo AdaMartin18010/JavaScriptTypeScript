@@ -13,13 +13,13 @@ export interface MetricValue {
 }
 
 export class MetricsCollector {
-  private counters: Map<string, number> = new Map();
-  private gauges: Map<string, number> = new Map();
-  private histograms: Map<string, number[]> = new Map();
-  private history: Map<string, MetricValue[]> = new Map();
+  private counters = new Map<string, number>();
+  private gauges = new Map<string, number>();
+  private histograms = new Map<string, number[]>();
+  private history = new Map<string, MetricValue[]>();
   
   // 计数器（单调递增）
-  counter(name: string, labels: Record<string, string> = {}, value: number = 1): void {
+  counter(name: string, labels: Record<string, string> = {}, value = 1): void {
     const key = this.serializeLabels(name, labels);
     const current = this.counters.get(key) || 0;
     this.counters.set(key, current + value);
@@ -141,7 +141,7 @@ export interface LogEntry {
 
 export class StructuredLogger {
   private level: LogLevel = LogLevel.INFO;
-  private outputs: Array<(entry: LogEntry) => void> = [];
+  private outputs: ((entry: LogEntry) => void)[] = [];
   private context: Record<string, unknown> = {};
   
   setLevel(level: LogLevel): void {
@@ -226,12 +226,12 @@ export interface Span {
   startTime: number;
   endTime?: number;
   tags: Record<string, string>;
-  logs: Array<{ timestamp: number; event: string; fields: Record<string, unknown> }>;
+  logs: { timestamp: number; event: string; fields: Record<string, unknown> }[];
 }
 
 export class Tracer {
   private spans: Span[] = [];
-  private activeSpans: Map<string, Span> = new Map();
+  private activeSpans = new Map<string, Span>();
   
   startSpan(name: string, parentContext?: { traceId: string; spanId: string }): { traceId: string; spanId: string } {
     const traceId = parentContext?.traceId || this.generateId();
@@ -285,7 +285,7 @@ export class Tracer {
   
   getSpanDuration(spanId: string): number | null {
     const span = this.spans.find(s => s.spanId === spanId);
-    if (!span || !span.endTime) return null;
+    if (!span?.endTime) return null;
     return span.endTime - span.startTime;
   }
   
@@ -296,7 +296,7 @@ export class Tracer {
 
 // 关联分析 (Correlation)
 export class CorrelationEngine {
-  private events: Map<string, Array<{ timestamp: number; type: string; data: unknown }>> = new Map();
+  private events = new Map<string, { timestamp: number; type: string; data: unknown }[]>();
   
   correlate(key: string, event: { timestamp: number; type: string; data: unknown }): void {
     if (!this.events.has(key)) {
@@ -306,7 +306,7 @@ export class CorrelationEngine {
   }
   
   analyze(key: string): {
-    timeline: Array<{ timestamp: number; type: string }>;
+    timeline: { timestamp: number; type: string }[];
     patterns: string[];
   } {
     const events = this.events.get(key) || [];

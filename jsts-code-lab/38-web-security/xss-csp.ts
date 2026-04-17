@@ -108,7 +108,7 @@ export class XSSSanitizer {
 
       // 检查 data URL 的 MIME 类型
       if (parsed.protocol === 'data:') {
-        const mimeMatch = url.match(/^data:([^;,]+)/);
+        const mimeMatch = /^data:([^;,]+)/.exec(url);
         if (mimeMatch) {
           const mime = mimeMatch[1].toLowerCase();
           const allowedMimes = ['image/', 'text/plain'];
@@ -311,7 +311,7 @@ export class CSPBuilder {
     if (!this.policy.directives[directive]) {
       this.policy.directives[directive] = [];
     }
-    this.policy.directives[directive]!.push(...values);
+    this.policy.directives[directive].push(...values);
     return this;
   }
 
@@ -414,7 +414,7 @@ export class CSPBuilder {
 // ============================================================================
 
 export class CSRFProtection {
-  private tokenStorage: Map<string, string> = new Map();
+  private tokenStorage = new Map<string, string>();
   private tokenLength = 32;
 
   // 生成 CSRF Token
@@ -465,7 +465,7 @@ export class CSRFProtection {
 
   // 添加 CSRF Token 到表单
   addTokenToForm(form: HTMLFormElement, token: string): void {
-    let input = form.querySelector('input[name="csrf_token"]') as HTMLInputElement;
+    let input = form.querySelector('input[name="csrf_token"]')!;
     
     if (!input) {
       input = document.createElement('input');
@@ -561,7 +561,7 @@ export class SecurityHeadersBuilder {
   }
 
   // 设置 Referrer 策略
-  setReferrerPolicy(policy: string = 'strict-origin-when-cross-origin'): this {
+  setReferrerPolicy(policy = 'strict-origin-when-cross-origin'): this {
     this.headers['Referrer-Policy'] = policy;
     return this;
   }

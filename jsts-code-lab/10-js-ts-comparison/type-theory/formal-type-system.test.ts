@@ -101,17 +101,17 @@ describe('isConsistent', () => {
 describe('RuntimeTypeChecker', () => {
   it('should pass for matching number type', () => {
     const numberType: TypeAnnotation = { kind: 'primitive', name: 'number' };
-    expect(() => RuntimeTypeChecker.check<number>(42, numberType)).not.toThrow();
+    expect(() => { RuntimeTypeChecker.check<number>(42, numberType); }).not.toThrow();
   });
 
   it('should throw for mismatched string type', () => {
     const stringType: TypeAnnotation = { kind: 'primitive', name: 'string' };
-    expect(() => RuntimeTypeChecker.check<number>(42, stringType)).toThrow(TypeError);
+    expect(() => { RuntimeTypeChecker.check<number>(42, stringType); }).toThrow(TypeError);
   });
 
   it('should always pass for unknown type', () => {
     const unknownType: TypeAnnotation = { kind: 'unknown' };
-    expect(() => RuntimeTypeChecker.check<any>(null, unknownType)).not.toThrow();
+    expect(() => { RuntimeTypeChecker.check<any>(null, unknownType); }).not.toThrow();
   });
 });
 

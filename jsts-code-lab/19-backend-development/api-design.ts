@@ -30,7 +30,7 @@ export interface VersionedRoute {
 }
 
 export class ApiVersioning {
-  private routes: Map<string, Map<ApiVersion, VersionedRoute>> = new Map();
+  private routes = new Map<string, Map<ApiVersion, VersionedRoute>>();
 
   register(path: string, version: ApiVersion, handler: unknown): void {
     if (!this.routes.has(path)) {
@@ -46,7 +46,7 @@ export class ApiVersioning {
 
   // Header 版本: Accept: application/vnd.api+json;version=1
   static parseHeaderVersion(header: string): ApiVersion | null {
-    const match = header.match(/version=(\d+)/);
+    const match = /version=(\d+)/.exec(header);
     if (match) {
       return `v${match[1]}` as ApiVersion;
     }
@@ -191,7 +191,7 @@ export class QueryParser {
     const filterRegex = /^(\w+)\[(eq|ne|gt|gte|lt|lte|like|in)\]$/;
     
     for (const [key, value] of Object.entries(query)) {
-      const match = key.match(filterRegex);
+      const match = filterRegex.exec(key);
       if (match) {
         filters.push({
           field: match[1],
@@ -418,7 +418,7 @@ export function demo(): void {
   const query = { 'age[gte]': '18', 'name[like]': 'John', sort: '-created_at' };
   const filters = QueryParser.parseFilters(query);
   console.log('   Parsed Filters:', filters.length);
-  filters.forEach(f => console.log(`     ${f.field} ${f.operator} ${f.value}`));
+  filters.forEach(f => { console.log(`     ${f.field} ${f.operator} ${f.value}`); });
   
   const sort = QueryParser.parseSort('-created_at,name');
   console.log('   Parsed Sort:', sort.map(s => `${s.field} ${s.direction}`).join(', '));

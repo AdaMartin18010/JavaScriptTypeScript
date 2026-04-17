@@ -49,7 +49,7 @@ export function batchRequests<T, R>(
   delayMs = 10
 ): { queue: (item: T) => Promise<R> } {
   let batch: T[] = []
-  let resolvers: Array<(result: R) => void> = []
+  let resolvers: ((result: R) => void)[] = []
   let timeout: ReturnType<typeof setTimeout> | null = null
 
   const flush = async () => {
@@ -59,7 +59,7 @@ export function batchRequests<T, R>(
     resolvers = []
     timeout = null
     const results = await processor(currentBatch)
-    currentResolvers.forEach((resolve, i) => resolve(results[i]))
+    currentResolvers.forEach((resolve, i) => { resolve(results[i]); })
   }
 
   return {

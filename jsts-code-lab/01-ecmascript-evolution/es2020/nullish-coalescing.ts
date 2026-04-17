@@ -176,7 +176,7 @@ function processConfig(input: {
 // ============================================================================
 
 /** ??= : 仅在 nullish 时赋值 */
-let config: { timeout?: number } = {};
+const config: { timeout?: number } = {};
 config.timeout ??= 5000;  // 设置默认值
 config.timeout ??= 10000; // 不覆盖，因为已经有值
 

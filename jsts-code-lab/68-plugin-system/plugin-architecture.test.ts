@@ -45,7 +45,7 @@ describe('PluginManager', () => {
     pm.register({ name: 'ext', version: '1', dependencies: ['base'], activate: () => {} });
     pm.activate('base');
     pm.activate('ext');
-    expect(() => pm.deactivate('base')).toThrow('depends on it');
+    expect(() => { pm.deactivate('base'); }).toThrow('depends on it');
   });
 });
 

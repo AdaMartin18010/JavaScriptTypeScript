@@ -30,7 +30,7 @@ export interface ONNXGraph {
 
 /** 内存池：存储中间计算结果 */
 export class ValuePool {
-  private values: Map<string, Tensor> = new Map();
+  private values = new Map<string, Tensor>();
 
   set(name: string, tensor: Tensor): void {
     this.values.set(name, tensor);

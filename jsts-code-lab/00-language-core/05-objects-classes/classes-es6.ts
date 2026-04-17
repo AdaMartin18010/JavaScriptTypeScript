@@ -106,7 +106,7 @@ class BankAccount {
 // ============================================================================
 
 class SecureStorage {
-  #data: Map<string, string> = new Map();
+  #data = new Map<string, string>();
 
   // 私有方法
   #validateKey(key: string): void {

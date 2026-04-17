@@ -29,7 +29,7 @@ describe('RaftMembershipChanger', () => {
     const changer = new RaftMembershipChanger();
     changer.initialize(['a', 'b', 'c']);
     changer.setLeader('a');
-    for (const n of changer['nodes'].values()) n.currentTerm = 1;
+    for (const n of changer.nodes.values()) n.currentTerm = 1;
 
     const jointEntry = changer.proposeJointConsensus(['a', 'b', 'c', 'd', 'e']);
     expect(jointEntry).not.toBeNull();

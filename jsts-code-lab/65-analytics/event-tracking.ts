@@ -63,7 +63,7 @@ export type EventType = 'track' | 'page' | 'identify' | 'group' | 'alias';
 
 export class EventTracker {
   private events: AnalyticsEvent[] = [];
-  private listeners: Array<(event: AnalyticsEvent) => void> = [];
+  private listeners: ((event: AnalyticsEvent) => void)[] = [];
   private sessionManager: SessionManager;
   private batchSize: number;
   private flushInterval: number;
@@ -253,7 +253,7 @@ export class EventTracker {
 
 export class SessionManager {
   private currentSession: Session;
-  private sessions: Map<string, Session> = new Map();
+  private sessions = new Map<string, Session>();
   private timeout: number;
 
   constructor(options: { timeout?: number } = {}) {

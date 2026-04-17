@@ -137,7 +137,7 @@ export class RaftNodeWithSnapshot {
   /** 获取最后日志索引 */
   get lastLogIndex(): number {
     if (this.log.length === 0) return this.logOffset;
-    return this.log[this.log.length - 1]!.index;
+    return this.log[this.log.length - 1].index;
   }
 
   /** 查找指定索引的日志条目 */
@@ -219,7 +219,7 @@ export class RaftLogCompactionCluster {
   recoverLaggingNode(nodeId: string): boolean {
     const node = this.nodes.get(nodeId);
     const leader = this.leaderId ? this.nodes.get(this.leaderId) : undefined;
-    if (!node || !leader || !leader.snapshot) return false;
+    if (!node || !leader?.snapshot) return false;
 
     // 模拟节点日志被清空（极端落后）
     node.log = [];

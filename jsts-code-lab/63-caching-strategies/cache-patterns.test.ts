@@ -47,7 +47,7 @@ describe('WriteThroughCache', () => {
     const wtc = new WriteThroughCache(cache, async (k, v) => { written[k] = v as string; });
     await wtc.set('k', 'v');
     expect(cache.get('k')).toBe('v');
-    expect(written['k']).toBe('v');
+    expect(written.k).toBe('v');
   });
 });
 

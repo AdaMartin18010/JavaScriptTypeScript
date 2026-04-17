@@ -53,11 +53,11 @@ export function comparePrivateFields(): void {
 
   // 3.1 原型链可见性
   console.log('【原型链可见性】');
-  console.log('JS #private 在原型链上不存在:', '#name' in JsPrivateUser.prototype === false);
-  console.log('TS private 在原型链上存在（编译后变为普通字段）:', 'name' in TsPrivateUser.prototype === false);
+  console.log('JS #private 在原型链上不存在:', !('#name' in JsPrivateUser.prototype));
+  console.log('TS private 在原型链上存在（编译后变为普通字段）:', !('name' in TsPrivateUser.prototype));
   // 注意：实例上的 TS private 编译后就是普通字段
   console.log('TS private 实例上可枚举:', Object.keys(tsUser).includes('name'));
-  console.log('JS #private 实例上不可枚举:', Object.keys(jsUser).includes('#name') === false);
+  console.log('JS #private 实例上不可枚举:', !Object.keys(jsUser).includes('#name'));
 
   // 3.2 反射访问
   console.log('\n【反射访问】');

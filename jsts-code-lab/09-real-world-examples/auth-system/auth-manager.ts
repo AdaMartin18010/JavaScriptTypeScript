@@ -340,11 +340,11 @@ export class JWTManager {
  * 会话管理器
  */
 export class SessionManager {
-  private sessions: Map<string, Session> = new Map();
-  private userSessions: Map<string, Set<string>> = new Map();
+  private sessions = new Map<string, Session>();
+  private userSessions = new Map<string, Set<string>>();
   private maxSessionsPerUser: number;
 
-  constructor(maxSessionsPerUser: number = 5) {
+  constructor(maxSessionsPerUser = 5) {
     this.maxSessionsPerUser = maxSessionsPerUser;
   }
 
@@ -406,7 +406,7 @@ export class SessionManager {
    */
   touchSession(sessionId: string): boolean {
     const session = this.sessions.get(sessionId);
-    if (!session || !session.isValid) return false;
+    if (!session?.isValid) return false;
 
     session.lastActivityAt = new Date();
     return true;
@@ -505,7 +505,7 @@ export class SessionManager {
  * 权限守卫
  */
 export class PermissionGuard {
-  private guards: Map<string, GuardFunction[]> = new Map();
+  private guards = new Map<string, GuardFunction[]>();
 
   /**
    * 注册守卫
@@ -632,7 +632,7 @@ export class PermissionGuard {
   createOwnershipGuard(): GuardFunction {
     return (context: GuardContext): boolean => {
       if (!context.user || !context.resource) return false;
-      return context.user.id === context.resource['ownerId'];
+      return context.user.id === context.resource.ownerId;
     };
   }
 
@@ -739,7 +739,7 @@ export class AuthManager {
     // 检查会话有效性
     if (this.config.enableSessionTracking !== false) {
       const session = this.sessions.findSessionByTokenJti(payload.jti);
-      if (!session || !session.isValid) {
+      if (!session?.isValid) {
         return {
           success: false,
           error: 'Session revoked',

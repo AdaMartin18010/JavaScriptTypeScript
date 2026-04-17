@@ -40,17 +40,17 @@ export interface PerformanceMetrics {
   ttfb?: number;       // Time to First Byte
   
   // 资源加载
-  resourceLoadTimes?: Array<{
+  resourceLoadTimes?: {
     name: string;
     duration: number;
     size: number;
-  }>;
+  }[];
   
   // JavaScript 执行
-  longTasks?: Array<{
+  longTasks?: {
     duration: number;
     startTime: number;
-  }>;
+  }[];
   
   // 内存使用
   memory?: {
@@ -62,7 +62,7 @@ export interface PerformanceMetrics {
 
 export class PerformanceMonitor {
   private metrics: PerformanceMetrics = {};
-  private observers: Array<() => void> = [];
+  private observers: (() => void)[] = [];
 
   // 启动监控
   start(): void {
@@ -86,7 +86,7 @@ export class PerformanceMonitor {
       });
       
       observer.observe({ entryTypes: ['paint', 'largest-contentful-paint'] });
-      this.observers.push(() => observer.disconnect());
+      this.observers.push(() => { observer.disconnect(); });
     }
   }
 
@@ -97,7 +97,7 @@ export class PerformanceMonitor {
         this.metrics.longTasks = this.metrics.longTasks || [];
         
         for (const entry of list.getEntries()) {
-          this.metrics.longTasks!.push({
+          this.metrics.longTasks.push({
             duration: entry.duration,
             startTime: entry.startTime
           });
@@ -105,7 +105,7 @@ export class PerformanceMonitor {
       });
       
       observer.observe({ entryTypes: ['longtask'] });
-      this.observers.push(() => observer.disconnect());
+      this.observers.push(() => { observer.disconnect(); });
     }
   }
 
@@ -173,7 +173,7 @@ export class PerformanceMonitor {
 
   // 停止监控
   stop(): void {
-    this.observers.forEach(stop => stop());
+    this.observers.forEach(stop => { stop(); });
     this.observers = [];
   }
 }
@@ -213,7 +213,7 @@ export class MemoryProfiler {
   }
 
   // 检测内存泄漏
-  detectLeak(checkInterval: number = 60000): { hasLeak: boolean; growthRate: number } {
+  detectLeak(checkInterval = 60000): { hasLeak: boolean; growthRate: number } {
     if (this.snapshots.length < 2) {
       return { hasLeak: false, growthRate: 0 };
     }
@@ -314,7 +314,7 @@ export class CodeProfiler {
   }
 
   // 获取热点函数
-  getHotspots(limit: number = 5): FunctionProfile[] {
+  getHotspots(limit = 5): FunctionProfile[] {
     return Array.from(this.profiles.values())
       .sort((a, b) => b.totalTime - a.totalTime)
       .slice(0, limit);

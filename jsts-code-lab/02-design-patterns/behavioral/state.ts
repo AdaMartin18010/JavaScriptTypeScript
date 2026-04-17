@@ -263,7 +263,7 @@ class CancelledState implements OrderState {
 // 5. JavaScript 对象状态机
 // ============================================================================
 
-type StateMachineConfig<TState extends string, TEvent extends string> = {
+interface StateMachineConfig<TState extends string, TEvent extends string> {
   initial: TState;
   states: Record<
     TState,
@@ -273,7 +273,7 @@ type StateMachineConfig<TState extends string, TEvent extends string> = {
       exit?: () => void;
     }
   >;
-};
+}
 
 function createStateMachine<TState extends string, TEvent extends string>(
   config: StateMachineConfig<TState, TEvent>
@@ -303,15 +303,15 @@ const lightMachine = createStateMachine({
   states: {
     green: {
       on: { TIMER: 'yellow' },
-      entry: () => console.log('Green light!')
+      entry: () => { console.log('Green light!'); }
     },
     yellow: {
       on: { TIMER: 'red' },
-      entry: () => console.log('Yellow light!')
+      entry: () => { console.log('Yellow light!'); }
     },
     red: {
       on: { TIMER: 'green' },
-      entry: () => console.log('Red light!')
+      entry: () => { console.log('Red light!'); }
     }
   }
 });
@@ -390,15 +390,15 @@ export function demo(): void {
     states: {
       green: {
         on: { TIMER: "yellow" },
-        entry: () => console.log("🟢 Green light - GO!")
+        entry: () => { console.log("🟢 Green light - GO!"); }
       },
       yellow: {
         on: { TIMER: "red" },
-        entry: () => console.log("🟡 Yellow light - CAUTION!")
+        entry: () => { console.log("🟡 Yellow light - CAUTION!"); }
       },
       red: {
         on: { TIMER: "green" },
-        entry: () => console.log("🔴 Red light - STOP!")
+        entry: () => { console.log("🔴 Red light - STOP!"); }
       }
     }
   });

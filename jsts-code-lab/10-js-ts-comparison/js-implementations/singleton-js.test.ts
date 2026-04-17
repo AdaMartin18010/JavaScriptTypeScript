@@ -41,7 +41,7 @@ describe('SingletonJSWithDefense', () => {
   it('should throw for non-string keys in set', () => {
     const instance = SingletonJSWithDefense.getInstance();
     // @ts-expect-error testing invalid input
-    expect(() => instance.set(123, 'value')).toThrow(TypeError);
+    expect(() => { instance.set(123, 'value'); }).toThrow(TypeError);
   });
 
   it('should throw for non-string keys in get', () => {

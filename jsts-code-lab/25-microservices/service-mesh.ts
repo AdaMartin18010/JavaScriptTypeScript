@@ -27,7 +27,7 @@ export interface ServiceInstance {
 }
 
 export class ServiceRegistry {
-  private services: Map<string, ServiceInstance[]> = new Map();
+  private services = new Map<string, ServiceInstance[]>();
   private healthCheckInterval: ReturnType<typeof setInterval>;
 
   constructor(private checkInterval = 30000) {
@@ -123,7 +123,7 @@ export class CircuitBreaker {
   private state = CircuitState.CLOSED;
   private failures = 0;
   private successes = 0;
-  private lastFailureTime: number = 0;
+  private lastFailureTime = 0;
   private config: CircuitBreakerConfig;
 
   constructor(
@@ -169,7 +169,7 @@ export class CircuitBreaker {
       fn()
         .then(resolve)
         .catch(reject)
-        .finally(() => clearTimeout(timeout));
+        .finally(() => { clearTimeout(timeout); });
     });
   }
 
@@ -290,7 +290,7 @@ export type LoadBalancingStrategy = 'round-robin' | 'random' | 'least-connection
 
 export class LoadBalancer {
   private currentIndex = 0;
-  private connections: Map<string, number> = new Map();
+  private connections = new Map<string, number>();
 
   constructor(private strategy: LoadBalancingStrategy = 'round-robin') {}
 
@@ -339,7 +339,7 @@ export class LoadBalancer {
 
 export class ServiceProxy {
   private registry: ServiceRegistry;
-  private breakers: Map<string, CircuitBreaker> = new Map();
+  private breakers = new Map<string, CircuitBreaker>();
   private retryPolicy: RetryPolicy;
   private loadBalancer: LoadBalancer;
 
@@ -382,7 +382,7 @@ export class ServiceProxy {
 
     // 执行调用
     return this.retryPolicy.execute(() =>
-      breaker!.execute(() => this.makeRequest(instance, endpoint, data))
+      breaker.execute(() => this.makeRequest(instance, endpoint, data))
     );
   }
 

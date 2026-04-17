@@ -51,7 +51,7 @@ export function Singleton<T extends new (...args: any[]) => any>(target: T): T {
       return instance;
     }
   });
-  return SingletonClass as T;
+  return SingletonClass;
 }
 
 /**
@@ -119,7 +119,7 @@ export function Log(options: MethodDecoratorOptions = {}): MethodDecorator {
       }
 
       try {
-        const result = (originalMethod as (...args: any[]) => any).apply(this as any, args);
+        const result = (originalMethod as (...args: any[]) => any).apply(this, args);
         
         // 处理异步方法
         if (result instanceof Promise) {
@@ -185,7 +185,7 @@ export function Measure(label?: string): MethodDecorator {
       };
 
       try {
-        const result = (originalMethod as (...args: any[]) => any).apply(this as any, args);
+        const result = (originalMethod as (...args: any[]) => any).apply(this, args);
 
         if (result instanceof Promise) {
           return result.finally(complete);
@@ -220,7 +220,7 @@ export function Memoize(resolver?: (...args: any[]) => string): MethodDecorator 
         return cache.get(key);
       }
 
-      const result = (originalMethod as (...args: any[]) => any).apply(this as any, args);
+      const result = (originalMethod as (...args: any[]) => any).apply(this, args);
 
       if (result instanceof Promise) {
         return result.then((value) => {
@@ -234,7 +234,7 @@ export function Memoize(resolver?: (...args: any[]) => string): MethodDecorator 
     } as typeof originalMethod;
 
     // 附加清除缓存的方法
-    (descriptor.value as any).clearCache = () => cache.clear();
+    (descriptor.value).clearCache = () => { cache.clear(); };
 
     return descriptor;
   };
@@ -255,7 +255,7 @@ export function Debounce(waitMs: number): MethodDecorator {
       }
 
       timeoutId = setTimeout(() => {
-        (originalMethod as (...args: any[]) => any).apply(this as any, args);
+        (originalMethod as (...args: any[]) => any).apply(this, args);
         timeoutId = null;
       }, waitMs);
     } as typeof originalMethod;
@@ -284,12 +284,12 @@ export function Throttle(waitMs: number): MethodDecorator {
           timeoutId = null;
         }
         lastExecution = now;
-        (originalMethod as (...args: any[]) => any).apply(this as any, args);
+        (originalMethod as (...args: any[]) => any).apply(this, args);
       } else if (!timeoutId) {
         timeoutId = setTimeout(() => {
           lastExecution = Date.now();
           timeoutId = null;
-          (originalMethod as (...args: any[]) => any).apply(this as any, args);
+          (originalMethod as (...args: any[]) => any).apply(this, args);
         }, remaining);
       }
     } as typeof originalMethod;
@@ -301,7 +301,7 @@ export function Throttle(waitMs: number): MethodDecorator {
 /**
  * 重试装饰器
  */
-export function Retry(maxAttempts: number, delayMs: number = 0): MethodDecorator {
+export function Retry(maxAttempts: number, delayMs = 0): MethodDecorator {
   return (target, propertyKey, descriptor: any) => {
     if (!descriptor || typeof descriptor.value !== 'function') return descriptor;
     const originalMethod = descriptor.value!;
@@ -338,7 +338,7 @@ export function Authorize(...roles: string[]): MethodDecorator {
       // 假设第一个参数是用户上下文
       const user = args[0];
       
-      if (!user || !user.role) {
+      if (!user?.role) {
         throw new Error('Unauthorized: User context required');
       }
 
@@ -346,7 +346,7 @@ export function Authorize(...roles: string[]): MethodDecorator {
         throw new Error(`Forbidden: Required roles [${roles.join(', ')}]`);
       }
 
-      return (originalMethod as (...args: any[]) => any).apply(this as any, args);
+      return (originalMethod as (...args: any[]) => any).apply(this, args);
     } as typeof originalMethod;
 
     return descriptor;
@@ -374,7 +374,7 @@ export function Validate(schema: Record<string, (value: any) => boolean | string
         }
       }
 
-      return (originalMethod as (...args: any[]) => any).apply(this as any, args);
+      return (originalMethod as (...args: any[]) => any).apply(this, args);
     } as typeof originalMethod;
 
     return descriptor;
@@ -537,7 +537,7 @@ export class Validator {
 
 @Singleton
 class UserService {
-  private users: Map<string, { id: string; name: string; email: string }> = new Map();
+  private users = new Map<string, { id: string; name: string; email: string }>();
 
   getUser(id: string) {
     console.log(`Fetching user ${id} from database...`);
@@ -581,9 +581,9 @@ class UserService {
 }
 
 class Product {
-  name: string = '';
-  price: number = 0;
-  category: string = '';
+  name = '';
+  price = 0;
+  category = '';
 }
 
 export function demo(): void {
@@ -622,8 +622,8 @@ export function demo(): void {
   // 重试机制
   console.log('\n--- 重试机制 ---');
   service.fetchExternalData('https://api.example.com/data')
-    .then(result => console.log('Fetch result:', result))
-    .catch(err => console.log('Fetch failed after retries:', err.message));
+    .then(result => { console.log('Fetch result:', result); })
+    .catch(err => { console.log('Fetch failed after retries:', err.message); });
 
   // 属性验证
   console.log('\n--- 属性验证 ---');

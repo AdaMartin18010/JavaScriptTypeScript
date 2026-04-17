@@ -143,7 +143,7 @@ const hasEven = numbers.some(n => n % 2 === 0);
 const allPositive = numbers.every(n => n > 0);
 
 /** forEach (注意：不能 break/continue/return 退出外层) */
-numbers.forEach(n => console.log(n));
+numbers.forEach(n => { console.log(n); });
 
 /** 复杂 reduce 示例：分组 */
 const people = [
@@ -152,12 +152,12 @@ const people = [
   { name: 'Charlie', age: 25, city: 'Beijing' }
 ];
 
-const groupedByAge = people.reduce((acc, person) => {
+const groupedByAge = people.reduce<Record<number, typeof people>>((acc, person) => {
   const key = person.age;
   acc[key] ??= [];
   acc[key].push(person);
   return acc;
-}, {} as Record<number, typeof people>);
+}, {});
 
 // ============================================================================
 // 5. 性能对比

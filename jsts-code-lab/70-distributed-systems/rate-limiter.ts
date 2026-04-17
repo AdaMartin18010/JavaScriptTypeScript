@@ -73,12 +73,12 @@ export interface LeakyBucketOptions {
 export class LeakyBucket {
   private volume = 0;
   private lastLeakTime = Date.now();
-  private queue: Array<{ resolve: (value: boolean) => void }> = [];
+  private queue: { resolve: (value: boolean) => void }[] = [];
   private leakIntervalId: ReturnType<typeof setInterval> | null = null;
 
   constructor(private readonly options: LeakyBucketOptions) {
     const intervalMs = 1000 / options.leakRatePerSecond;
-    this.leakIntervalId = setInterval(() => this.leak(), intervalMs);
+    this.leakIntervalId = setInterval(() => { this.leak(); }, intervalMs);
   }
 
   /** 尝试将请求放入漏桶，返回是否被接受（不代表立即处理） */

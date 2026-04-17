@@ -67,7 +67,7 @@ describe('Consensus Algorithms Integration', () => {
     expect(sys.read('node-1')?.value).toBe(0); // minority 保持旧值
 
     // Reset for AP test
-    for (const n of Array.from(sys['nodes'].values())) {
+    for (const n of Array.from(sys.nodes.values())) {
       n.state = { key: 'x', value: 0, version: 0, timestamp: 0 };
     }
 

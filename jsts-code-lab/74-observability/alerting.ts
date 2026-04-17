@@ -80,10 +80,10 @@ export interface AlertGroup {
 // ==================== 告警评估器 ====================
 
 export class AlertEvaluator {
-  private rules: Map<string, AlertRule> = new Map();
-  private groups: Map<string, AlertGroup> = new Map();
-  private activeAlerts: Map<string, Alert> = new Map();
-  private pendingAlerts: Map<string, { alert: Alert; since: number }> = new Map();
+  private rules = new Map<string, AlertRule>();
+  private groups = new Map<string, AlertGroup>();
+  private activeAlerts = new Map<string, Alert>();
+  private pendingAlerts = new Map<string, { alert: Alert; since: number }>();
 
   addRule(rule: AlertRule): void {
     this.rules.set(rule.id, rule);
@@ -219,18 +219,18 @@ export interface NotificationChannel {
 }
 
 export class AlertManager {
-  private channels: Map<string, NotificationChannel> = new Map();
-  private routes: Array<{
+  private channels = new Map<string, NotificationChannel>();
+  private routes: {
     match?: Record<string, string>;
     severity?: AlertSeverity[];
     channels: string[];
-  }> = [];
-  private silences: Array<{
+  }[] = [];
+  private silences: {
     id: string;
     matchers: Record<string, string>;
     startsAt: number;
     endsAt: number;
-  }> = [];
+  }[] = [];
   private history: Alert[] = [];
 
   addChannel(channel: NotificationChannel): void {

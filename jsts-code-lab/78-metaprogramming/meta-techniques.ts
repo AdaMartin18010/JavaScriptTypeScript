@@ -191,7 +191,7 @@ export class CodeGenerator {
 
 // DSL构建器
 export class DSLBuilder {
-  private definitions: Map<string, any> = new Map();
+  private definitions = new Map<string, any>();
   
   define(name: string, definition: any): this {
     this.definitions.set(name, definition);
@@ -232,9 +232,9 @@ export class DSLBuilder {
 
 // 依赖注入容器
 export class DIContainer {
-  private registrations: Map<string, { impl: any; singleton: boolean; instance?: any }> = new Map();
+  private registrations = new Map<string, { impl: any; singleton: boolean; instance?: any }>();
   
-  register<T>(token: string, impl: new (...args: any[]) => T, singleton: boolean = false): void {
+  register<T>(token: string, impl: new (...args: any[]) => T, singleton = false): void {
     this.registrations.set(token, { impl, singleton });
   }
   

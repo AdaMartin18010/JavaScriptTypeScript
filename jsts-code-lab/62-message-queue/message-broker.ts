@@ -63,10 +63,10 @@ export interface Consumer {
 // ============================================================================
 
 export class MessageBroker {
-  private exchanges: Map<string, Exchange> = new Map();
-  private queues: Map<string, Queue> = new Map();
+  private exchanges = new Map<string, Exchange>();
+  private queues = new Map<string, Queue>();
   private bindings: Binding[] = [];
-  private consumers: Map<string, Consumer> = new Map();
+  private consumers = new Map<string, Consumer>();
   private stats = { published: 0, delivered: 0, acknowledged: 0 };
 
   // 交换机操作
@@ -303,7 +303,7 @@ export class MessageBroker {
   /**
    * 否定确认消息
    */
-  nack(consumerId: string, messageId: string, requeue: boolean = true): void {
+  nack(consumerId: string, messageId: string, requeue = true): void {
     const consumer = this.consumers.get(consumerId);
     if (!consumer) return;
 
@@ -507,8 +507,8 @@ export class MessageBroker {
       try {
         consumer.handler(
           message,
-          () => this.ack(consumer.id, message.id),
-          (requeue = true) => this.nack(consumer.id, message.id, requeue)
+          () => { this.ack(consumer.id, message.id); },
+          (requeue = true) => { this.nack(consumer.id, message.id, requeue); }
         );
       } catch (error) {
         console.error(`[Broker] Consumer error:`, error);
@@ -553,8 +553,8 @@ export function demo(): void {
   broker.bindQueue('notifications', 'push-service', '');
   broker.bindQueue('notifications', 'sms-service', '');
 
-  broker.consume('email-service', (msg) => console.log(`  [Email] ${msg.content}`));
-  broker.consume('push-service', (msg) => console.log(`  [Push] ${msg.content}`));
+  broker.consume('email-service', (msg) => { console.log(`  [Email] ${msg.content}`); });
+  broker.consume('push-service', (msg) => { console.log(`  [Push] ${msg.content}`); });
 
   broker.publish('notifications', '', 'New order received');
 
@@ -569,8 +569,8 @@ export function demo(): void {
   broker.bindQueue('events', 'us-orders', 'order.us.*');
   broker.bindQueue('events', 'critical-errors', 'error.critical.#');
 
-  broker.consume('all-orders', (msg) => console.log(`  [All Orders] ${msg.routingKey}: ${msg.content}`));
-  broker.consume('us-orders', (msg) => console.log(`  [US Orders] ${msg.routingKey}: ${msg.content}`));
+  broker.consume('all-orders', (msg) => { console.log(`  [All Orders] ${msg.routingKey}: ${msg.content}`); });
+  broker.consume('us-orders', (msg) => { console.log(`  [US Orders] ${msg.routingKey}: ${msg.content}`); });
 
   broker.publish('events', 'order.created', 'Order #123');
   broker.publish('events', 'order.us.california', 'Order #456 in CA');

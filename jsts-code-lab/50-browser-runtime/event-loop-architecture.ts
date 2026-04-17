@@ -538,10 +538,10 @@ export interface IdleDeadline {
 }
 
 export class IdleTaskScheduler {
-  private tasks: Array<{
+  private tasks: {
     callback: (deadline: IdleDeadline) => void;
     timeout?: number;
-  }> = [];
+  }[] = [];
 
   addTask(callback: (deadline: IdleDeadline) => void, timeout?: number): void {
     if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
@@ -578,9 +578,9 @@ export function demo(): void {
   console.log('1. 任务优先级');
   const scheduler = new TaskScheduler();
   
-  scheduler.queueMicrotask(() => console.log('   微任务 1'), 'normal');
-  scheduler.queueMicrotask(() => console.log('   微任务 2 (高优先级)'), 'high');
-  scheduler.queueMacrotask(() => console.log('   宏任务 1'));
+  scheduler.queueMicrotask(() => { console.log('   微任务 1'); }, 'normal');
+  scheduler.queueMicrotask(() => { console.log('   微任务 2 (高优先级)'); }, 'high');
+  scheduler.queueMacrotask(() => { console.log('   宏任务 1'); });
   
   setTimeout(() => {
     const stats = scheduler.getQueueStats();
@@ -603,9 +603,9 @@ export function demo(): void {
   console.log('\n3. 批量微任务');
   const batcher = new BatchedMicrotaskProcessor();
   
-  batcher.add(() => console.log('   批量任务 1'));
-  batcher.add(() => console.log('   批量任务 2'));
-  batcher.add(() => console.log('   批量任务 3'));
+  batcher.add(() => { console.log('   批量任务 1'); });
+  batcher.add(() => { console.log('   批量任务 2'); });
+  batcher.add(() => { console.log('   批量任务 3'); });
 
   console.log('\n4. 执行顺序示例分析');
   console.log('   console.log("Start")');

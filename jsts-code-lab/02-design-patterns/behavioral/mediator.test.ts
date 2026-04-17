@@ -39,7 +39,7 @@ describe('mediator pattern', () => {
     form.getAgreeCheckbox().check();
 
     // Now button should be enabled
-    expect(() => submitButton.click()).not.toThrow();
+    expect(() => { submitButton.click(); }).not.toThrow();
   });
 
   it('RegistrationForm should keep submit disabled with invalid data', () => {
@@ -51,7 +51,7 @@ describe('mediator pattern', () => {
     form.getEmailField().setValue('invalid-email');
 
     // Even if we try to click, the button should remain disabled
-    expect(() => submitButton.click()).not.toThrow();
+    expect(() => { submitButton.click(); }).not.toThrow();
   });
 
   it('EventBus should support subscribe, publish and unsubscribe', () => {

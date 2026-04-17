@@ -125,7 +125,7 @@ export function dijkstra<T>(graph: WeightedGraph<T>, start: T, end: T): { path: 
   const unvisited = new Set<T>();
 
   // 初始化
-  for (const vertex of graph['adjacencyList'].keys()) {
+  for (const vertex of graph.adjacencyList.keys()) {
     distances.set(vertex, vertex === start ? 0 : Infinity);
     previous.set(vertex, null);
     unvisited.add(vertex);

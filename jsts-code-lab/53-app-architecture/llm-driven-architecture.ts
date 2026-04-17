@@ -27,7 +27,7 @@ export interface RouteDecision {
 }
 
 export class IntelligentRouter {
-  private routes: Map<string, (ctx: RouteContext) => boolean> = new Map();
+  private routes = new Map<string, (ctx: RouteContext) => boolean>();
   private fallbackHandler: ((ctx: RouteContext) => RouteDecision) | null = null;
   
   registerRoute(
@@ -151,8 +151,8 @@ export interface StateSuggestion {
 
 export class AIAssistedStateManager<T extends Record<string, unknown>> {
   private state: T;
-  private history: Array<{ state: T; action: string; timestamp: number }> = [];
-  private listeners: Set<(state: T, suggestion?: StateSuggestion) => void> = new Set();
+  private history: { state: T; action: string; timestamp: number }[] = [];
+  private listeners = new Set<(state: T, suggestion?: StateSuggestion) => void>();
   
   constructor(initialState: T) {
     this.state = initialState;
@@ -162,7 +162,7 @@ export class AIAssistedStateManager<T extends Record<string, unknown>> {
     return { ...this.state };
   }
   
-  setState(updater: (prev: T) => T, action: string = 'update'): void {
+  setState(updater: (prev: T) => T, action = 'update'): void {
     const newState = updater(this.state);
     this.history.push({ state: this.state, action, timestamp: Date.now() });
     this.state = newState;
@@ -170,7 +170,7 @@ export class AIAssistedStateManager<T extends Record<string, unknown>> {
     // AI生成建议
     const suggestion = this.generateSuggestion();
     
-    this.listeners.forEach(listener => listener(this.state, suggestion));
+    this.listeners.forEach(listener => { listener(this.state, suggestion); });
   }
   
   // 基于历史模式生成状态管理建议
@@ -206,7 +206,7 @@ export class AIAssistedStateManager<T extends Record<string, unknown>> {
       const values = recent.map(h => h.state[key]).filter(v => typeof v === 'number');
       if (values.length >= 2) {
         // 简单的线性趋势
-        const trend = (values[values.length - 1] as number) - (values[values.length - 2] as number);
+        const trend = (values[values.length - 1]) - (values[values.length - 2]);
         (prediction as Record<string, unknown>)[key] = (this.state[key] as number) + trend;
       }
     }
@@ -222,7 +222,7 @@ export class AIAssistedStateManager<T extends Record<string, unknown>> {
 
 // 自然语言命令接口
 export class NaturalLanguageInterface {
-  private commandHandlers: Map<string, (args: string[]) => void> = new Map();
+  private commandHandlers = new Map<string, (args: string[]) => void>();
   
   registerCommand(
     pattern: string,
@@ -306,8 +306,8 @@ export function demo(): void {
   console.log('\n--- 自然语言接口 ---');
   const nli = new NaturalLanguageInterface();
   
-  nli.registerCommand('搜索', args => console.log(`搜索: ${args.join(' ')}`));
-  nli.registerCommand('打开', args => console.log(`打开页面: ${args[0]}`));
+  nli.registerCommand('搜索', args => { console.log(`搜索: ${args.join(' ')}`); });
+  nli.registerCommand('打开', args => { console.log(`打开页面: ${args[0]}`); });
   
   nli.execute('搜索 JavaScript 教程');
   nli.execute('打开 设置页面');

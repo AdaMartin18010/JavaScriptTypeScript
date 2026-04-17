@@ -49,11 +49,11 @@ export interface FunctionDefinition {
 export interface LLMResponse {
   id: string;
   model: string;
-  choices: Array<{
+  choices: {
     index: number;
     message: ChatMessage;
     finish_reason: string;
-  }>;
+  }[];
   usage: {
     prompt_tokens: number;
     completion_tokens: number;
@@ -269,7 +269,7 @@ export interface AgentTool {
 
 export class AIAgent {
   private ai: AISDK;
-  private tools: Map<string, AgentTool> = new Map();
+  private tools = new Map<string, AgentTool>();
   private memory: ChatMessage[] = [];
 
   constructor(ai: AISDK) {

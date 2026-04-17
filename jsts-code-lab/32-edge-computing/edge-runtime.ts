@@ -49,7 +49,7 @@ export interface EdgeContext {
 // ============================================================================
 
 export class EdgeCache {
-  private cache: Map<string, { value: unknown; expiry: number }> = new Map();
+  private cache = new Map<string, { value: unknown; expiry: number }>();
 
   async get<T>(key: string): Promise<T | undefined> {
     const entry = this.cache.get(key);
@@ -117,7 +117,7 @@ export interface GeoLocation {
 }
 
 export class GeoRouter {
-  private routes: Map<string, (request: EdgeRequest) => EdgeResponse | Promise<EdgeResponse>> = new Map();
+  private routes = new Map<string, (request: EdgeRequest) => EdgeResponse | Promise<EdgeResponse>>();
 
   // 根据国家路由
   routeByCountry(country: string, handler: (req: EdgeRequest) => EdgeResponse): void {
@@ -171,7 +171,7 @@ export type EdgeHandler = (request: EdgeRequest, context: EdgeContext) => Promis
 export class EdgeRuntime {
   private cache = new EdgeCache();
   private geoRouter = new GeoRouter();
-  private handlers: Map<string, EdgeHandler> = new Map();
+  private handlers = new Map<string, EdgeHandler>();
 
   registerHandler(pattern: string, handler: EdgeHandler): void {
     this.handlers.set(pattern, handler);
@@ -262,12 +262,12 @@ export class EdgeRuntime {
 // ============================================================================
 
 export class EdgeABTesting {
-  private experiments: Map<string, {
-    variants: Array<{ name: string; weight: number }>;
+  private experiments = new Map<string, {
+    variants: { name: string; weight: number }[];
     cookieName: string;
-  }> = new Map();
+  }>();
 
-  addExperiment(name: string, variants: Array<{ name: string; weight: number }>, cookieName = `exp-${name}`): void {
+  addExperiment(name: string, variants: { name: string; weight: number }[], cookieName = `exp-${name}`): void {
     this.experiments.set(name, { variants, cookieName });
   }
 

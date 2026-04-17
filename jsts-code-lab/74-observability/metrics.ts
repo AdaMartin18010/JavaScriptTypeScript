@@ -22,9 +22,7 @@
 
 // ==================== 指标类型定义 ====================
 
-export interface MetricLabels {
-  [key: string]: string;
-}
+export type MetricLabels = Record<string, string>;
 
 export interface MetricMetadata {
   name: string;
@@ -250,11 +248,11 @@ export class Summary {
 // ==================== 指标注册表 ====================
 
 export class MetricRegistry {
-  private counters: Map<string, Counter> = new Map();
-  private gauges: Map<string, Gauge> = new Map();
-  private histograms: Map<string, Histogram> = new Map();
-  private summaries: Map<string, Summary> = new Map();
-  private labelNames: Map<string, string[]> = new Map();
+  private counters = new Map<string, Counter>();
+  private gauges = new Map<string, Gauge>();
+  private histograms = new Map<string, Histogram>();
+  private summaries = new Map<string, Summary>();
+  private labelNames = new Map<string, string[]>();
 
   createCounter(
     name: string,
@@ -413,7 +411,7 @@ export class MetricRegistry {
 
 export class MetricsCollector {
   private registry = new MetricRegistry();
-  private collectors: Array<() => void> = [];
+  private collectors: (() => void)[] = [];
 
   getRegistry(): MetricRegistry {
     return this.registry;

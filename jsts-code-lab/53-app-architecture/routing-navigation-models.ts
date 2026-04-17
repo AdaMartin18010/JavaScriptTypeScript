@@ -49,7 +49,7 @@ export function matchNestedRoute(urlPath: string, routes: RouteNode[]): { matche
 }
 
 export class RouteGuard {
-  private guards: Array<(to: string) => boolean | string> = []
+  private guards: ((to: string) => boolean | string)[] = []
 
   register(guard: (to: string) => boolean | string): void {
     this.guards.push(guard)

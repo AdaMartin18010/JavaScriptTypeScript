@@ -139,7 +139,7 @@ class InOrderIterator<T> implements Iterator<T> {
 // ============================================================================
 
 class SocialNetwork implements Iterable<string> {
-  private profiles: Map<string, string[]> = new Map();
+  private profiles = new Map<string, string[]>();
 
   addProfile(id: string, friends: string[]): void {
     this.profiles.set(id, friends);

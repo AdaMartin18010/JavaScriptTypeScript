@@ -10,9 +10,9 @@
 // ============================================================================
 
 class Computer {
-  cpu: string = '';
-  ram: string = '';
-  storage: string = '';
+  cpu = '';
+  ram = '';
+  storage = '';
   gpu?: string;
   wifi?: boolean;
 
@@ -160,10 +160,10 @@ class UserProfileBuilder {
 // 6. 函数式建造者
 // ============================================================================
 
-type Builder<T> = {
+interface Builder<T> {
   set: <K extends keyof T>(key: K, value: T[K]) => Builder<T>;
   build: () => T;
-};
+}
 
 function createBuilder<T>(initial: T): Builder<T> {
   const state = { ...initial };

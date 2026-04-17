@@ -57,7 +57,7 @@ export class FacetCalculator {
   /**
    * 计算词条分面
    */
-  calculateTermsFacet(docs: FacetDoc[], field: string, size: number = 10): FacetResult {
+  calculateTermsFacet(docs: FacetDoc[], field: string, size = 10): FacetResult {
     const counts = new Map<string | number, number>();
 
     for (const doc of docs) {
@@ -345,7 +345,7 @@ export class FacetedSearch {
   /**
    * 获取面包屑导航
    */
-  getBreadcrumbs(filters: FacetFilter[]): Array<{ field: string; value: unknown; removable: true }> {
+  getBreadcrumbs(filters: FacetFilter[]): { field: string; value: unknown; removable: true }[] {
     return filters.map(f => ({
       field: f.field,
       value: f.value,

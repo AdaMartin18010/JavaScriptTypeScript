@@ -23,9 +23,9 @@ export interface TrafficRule {
 
 // Sidecar代理
 export class SidecarProxy {
-  private routes: Map<string, TrafficRule[]> = new Map();
+  private routes = new Map<string, TrafficRule[]>();
   private mTLSEnabled = true;
-  private circuitBreakers: Map<string, CircuitBreaker> = new Map();
+  private circuitBreakers = new Map<string, CircuitBreaker>();
   
   constructor(private serviceName: string) {}
   
@@ -159,8 +159,8 @@ class CircuitBreaker {
 
 // 流量管理
 export class TrafficManager {
-  private canaryReleases: Map<string, { stable: number; canary: number }> = new Map();
-  private trafficSplits: Map<string, Map<string, number>> = new Map();
+  private canaryReleases = new Map<string, { stable: number; canary: number }>();
+  private trafficSplits = new Map<string, Map<string, number>>();
   
   // 金丝雀发布
   setupCanary(service: string, canaryPercent: number): void {
@@ -218,7 +218,7 @@ export class TrafficManager {
 
 // 安全通信 (mTLS)
 export class MutualTLS {
-  private certificates: Map<string, { cert: string; key: string; ca: string }> = new Map();
+  private certificates = new Map<string, { cert: string; key: string; ca: string }>();
   
   issueCertificate(serviceName: string): { cert: string; key: string } {
     // 模拟证书签发
@@ -248,8 +248,8 @@ export class MutualTLS {
 
 // 可观测性
 export class MeshObservability {
-  private metrics: Map<string, { requests: number; latency: number[]; errors: number }> = new Map();
-  private traces: Array<{ traceId: string; spans: Span[] }> = [];
+  private metrics = new Map<string, { requests: number; latency: number[]; errors: number }>();
+  private traces: { traceId: string; spans: Span[] }[] = [];
   
   recordMetrics(service: string, latency: number, error: boolean): void {
     if (!this.metrics.has(service)) {
@@ -327,7 +327,7 @@ export function demo(): void {
   // 发送请求
   console.log('--- Sidecar代理 ---');
   proxy.handleRequest({ path: '/api/data', headers: {}, body: {} })
-    .then(res => console.log('响应:', res));
+    .then(res => { console.log('响应:', res); });
   
   // 流量管理
   console.log('\n--- 流量管理 ---');

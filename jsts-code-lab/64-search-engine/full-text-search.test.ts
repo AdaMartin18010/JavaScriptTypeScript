@@ -42,7 +42,7 @@ describe('QueryProcessor', () => {
 
   it('searches and ranks by relevance', () => {
     const idx = new InvertedIndex();
-    docs.forEach(d => idx.addDocument(d));
+    docs.forEach(d => { idx.addDocument(d); });
     const qp = new QueryProcessor(idx);
     const results = qp.search('typescript');
     expect(results.length).toBeGreaterThan(0);
@@ -51,7 +51,7 @@ describe('QueryProcessor', () => {
 
   it('performs boolean AND search', () => {
     const idx = new InvertedIndex();
-    docs.forEach(d => idx.addDocument(d));
+    docs.forEach(d => { idx.addDocument(d); });
     const qp = new QueryProcessor(idx);
     const results = qp.booleanSearch({ operator: 'AND', terms: ['react', 'typescript'] });
     expect(results.length).toBe(1);

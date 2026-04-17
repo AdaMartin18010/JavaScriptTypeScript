@@ -146,7 +146,7 @@ type Readonly<T> = { readonly [P in keyof T]: T[P] };
 type Partial<T> = { [P in keyof T]?: T[P] };
 type Required<T> = { [P in keyof T]-?: T[P] }; // -? 移除可选
 
-type Record<K extends keyof any, T> = { [P in K]: T };
+type Record<K extends keyof any, T> = Record<K, T>;
 
 type Pick<T, K extends keyof T> = { [P in K]: T[P] };
 type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
@@ -181,7 +181,7 @@ interface Animal { name: string; }
 interface Dog extends Animal { bark(): void; }
 
 let animals: Animal[] = [];
-let dogs: Dog[] = [];
+const dogs: Dog[] = [];
 
 animals = dogs; // ✅ 协变
 // dogs = animals; // ❌
@@ -190,8 +190,8 @@ animals = dogs; // ✅ 协变
 type AnimalHandler = (animal: Animal) => void;
 type DogHandler = (dog: Dog) => void;
 
-let handleAnimal: AnimalHandler = (a) => console.log(a.name);
-let handleDog: DogHandler = (d) => d.bark();
+const handleAnimal: AnimalHandler = (a) => { console.log(a.name); };
+let handleDog: DogHandler = (d) => { d.bark(); };
 
 handleDog = handleAnimal; // ✅ 逆变
 // handleAnimal = handleDog; // ❌
@@ -203,9 +203,7 @@ handleDog = handleAnimal; // ✅ 逆变
 // ============================================================================
 
 /** 工厂模式 */
-interface Constructor<T> {
-  new (...args: any[]): T;
-}
+type Constructor<T> = new (...args: any[]) => T;
 
 function create<T>(Ctor: Constructor<T>, ...args: any[]): T {
   return new Ctor(...args);

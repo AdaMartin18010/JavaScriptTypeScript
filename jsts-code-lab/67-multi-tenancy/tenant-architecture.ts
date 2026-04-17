@@ -21,8 +21,8 @@ export interface TenantContext {
 
 // 租户管理器
 export class TenantManager {
-  private tenants: Map<string, Tenant> = new Map();
-  private contexts: Map<string, TenantContext> = new Map();
+  private tenants = new Map<string, Tenant>();
+  private contexts = new Map<string, TenantContext>();
   
   createTenant(tenant: Omit<Tenant, 'id' | 'createdAt'>): Tenant {
     const newTenant: Tenant = {
@@ -58,7 +58,7 @@ export class TenantManager {
 
 // 租户隔离的数据存储
 export class TenantIsolatedStore<T> {
-  private data: Map<string, Map<string, T>> = new Map();
+  private data = new Map<string, Map<string, T>>();
   
   set(tenantId: string, key: string, value: T): void {
     if (!this.data.has(tenantId)) {
@@ -84,8 +84,8 @@ export class TenantIsolatedStore<T> {
   }
   
   // 跨租户查询（仅限超级管理员）
-  queryAcrossTenants(predicate: (item: T) => boolean): Array<{ tenantId: string; key: string; value: T }> {
-    const results: Array<{ tenantId: string; key: string; value: T }> = [];
+  queryAcrossTenants(predicate: (item: T) => boolean): { tenantId: string; key: string; value: T }[] {
+    const results: { tenantId: string; key: string; value: T }[] = [];
     
     for (const [tenantId, tenantData] of this.data) {
       for (const [key, value] of tenantData) {
@@ -114,8 +114,8 @@ const PLAN_QUOTAS: Record<string, ResourceQuota> = {
 };
 
 export class QuotaManager {
-  private usage: Map<string, Record<string, number>> = new Map();
-  private requestCounts: Map<string, number[]> = new Map();
+  private usage = new Map<string, Record<string, number>>();
+  private requestCounts = new Map<string, number[]>();
   
   constructor(private tenantManager: TenantManager) {}
   
@@ -130,7 +130,7 @@ export class QuotaManager {
     return current < quota[resource];
   }
   
-  incrementUsage(tenantId: string, resource: string, amount: number = 1): void {
+  incrementUsage(tenantId: string, resource: string, amount = 1): void {
     const current = this.getUsage(tenantId, resource);
     this.setUsage(tenantId, resource, current + amount);
   }
@@ -180,7 +180,7 @@ export class QuotaManager {
 
 // 数据库路由（简化示例）
 export class DatabaseRouter {
-  private connections: Map<string, any> = new Map();
+  private connections = new Map<string, any>();
   
   constructor(private strategy: 'schema' | 'database' | 'shard' = 'schema') {}
   

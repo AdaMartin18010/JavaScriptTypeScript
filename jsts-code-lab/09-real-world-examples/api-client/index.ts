@@ -29,7 +29,7 @@ class HttpClient {
     const { method = 'GET', headers = {}, body, timeout = 10000 } = config;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const timeoutId = setTimeout(() => { controller.abort(); }, timeout);
 
     try {
       const response = await fetch(`${this.baseURL}${path}`, {

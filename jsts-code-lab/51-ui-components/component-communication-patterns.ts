@@ -5,10 +5,10 @@
  */
 
 export class EventBus<T extends Record<string, unknown>> {
-  private listeners: { [K in keyof T]?: Array<(payload: T[K]) => void> } = {}
+  private listeners: { [K in keyof T]?: ((payload: T[K]) => void)[] } = {}
 
   emit<K extends keyof T>(event: K, payload: T[K]): void {
-    this.listeners[event]?.forEach((l) => l(payload))
+    this.listeners[event]?.forEach((l) => { l(payload); })
   }
 
   on<K extends keyof T>(event: K, listener: (payload: T[K]) => void): () => void {
@@ -28,7 +28,7 @@ export function createContextProvider<T>(defaultValue: T) {
     Provider: {
       setValue(v: T) {
         current = v
-        listeners.forEach((l) => l(v))
+        listeners.forEach((l) => { l(v); })
       },
       getValue: () => current,
     },

@@ -41,7 +41,7 @@ export interface Variable {
 
 // 组件库
 export class ComponentLibrary {
-  private components: Map<string, ComponentDefinition> = new Map();
+  private components = new Map<string, ComponentDefinition>();
   
   register(def: ComponentDefinition): void {
     this.components.set(def.type, def);
@@ -218,7 +218,7 @@ ${componentCode}
 }`;
   }
   
-  private generateComponentTree(components: Component[], indent: number = 6): string {
+  private generateComponentTree(components: Component[], indent = 6): string {
     return components.map(comp => {
       const props = Object.entries(comp.properties)
         .map(([k, v]) => {
@@ -301,8 +301,8 @@ export interface WorkflowEdge {
 }
 
 export class WorkflowEngine {
-  private workflows: Map<string, Workflow> = new Map();
-  private instances: Map<string, WorkflowInstance> = new Map();
+  private workflows = new Map<string, Workflow>();
+  private instances = new Map<string, WorkflowInstance>();
   
   register(workflow: Workflow): void {
     this.workflows.set(workflow.id, workflow);
@@ -391,7 +391,7 @@ interface WorkflowInstance {
   context: Record<string, unknown>;
   currentNodes: string[];
   status: 'running' | 'completed' | 'failed' | 'paused';
-  history: Array<{ nodeId: string; timestamp: number }>;
+  history: { nodeId: string; timestamp: number }[];
 }
 
 // 表达式引擎

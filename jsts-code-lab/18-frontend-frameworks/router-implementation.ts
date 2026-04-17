@@ -45,7 +45,7 @@ export class HistoryRouter {
   private routes: Route[] = [];
   private currentRoute: RouteMatch | null = null;
   private beforeGuards: NavigationGuard[] = [];
-  private afterHooks: Array<(to: RouteMatch, from: RouteMatch | null) => void> = [];
+  private afterHooks: ((to: RouteMatch, from: RouteMatch | null) => void)[] = [];
 
   constructor(routes: Route[]) {
     this.routes = routes;
@@ -145,7 +145,7 @@ export class HistoryRouter {
     }
 
     // 执行后置钩子
-    this.afterHooks.forEach(hook => hook(routeMatch, fromRoute));
+    this.afterHooks.forEach(hook => { hook(routeMatch, fromRoute); });
   }
 
   private matchRoute(path: string): { route: Route; params: Record<string, string> } | null {
@@ -293,12 +293,12 @@ export function demo(): void {
   const routes: Route[] = [
     {
       path: '/',
-      component: () => console.log('  📄 Home Page'),
+      component: () => { console.log('  📄 Home Page'); },
       meta: { title: '首页' }
     },
     {
       path: '/about',
-      component: () => console.log('  📄 About Page'),
+      component: () => { console.log('  📄 About Page'); },
       beforeEnter: () => {
         console.log('  🔒 About route guard passed');
         return true;
@@ -306,12 +306,12 @@ export function demo(): void {
     },
     {
       path: '/users/:id',
-      component: () => console.log('  📄 User Profile Page'),
+      component: () => { console.log('  📄 User Profile Page'); },
       meta: { requiresAuth: true }
     },
     {
       path: '/products/*',
-      component: () => console.log('  📄 Product Page (wildcard)')
+      component: () => { console.log('  📄 Product Page (wildcard)'); }
     }
   ];
 

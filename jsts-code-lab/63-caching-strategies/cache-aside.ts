@@ -61,7 +61,7 @@ export class CacheAside<T> {
     const cacheKey = this.buildKey(id);
 
     // 1. 先查缓存
-    let cached = await this.cache.get(cacheKey);
+    const cached = await this.cache.get(cacheKey);
     
     if (cached !== undefined) {
       this.stats.hits++;
@@ -198,7 +198,7 @@ export class CacheAside<T> {
 // ============================================================================
 
 export class InMemoryCacheProvider<T> implements CacheProvider<T> {
-  private cache: Map<string, { value: T; expiresAt: number }> = new Map();
+  private cache = new Map<string, { value: T; expiresAt: number }>();
 
   get(key: string): T | undefined {
     const entry = this.cache.get(key);
@@ -241,10 +241,10 @@ export class InMemoryCacheProvider<T> implements CacheProvider<T> {
 // ============================================================================
 
 export class MockDataSource<T> implements DataSource<T> {
-  private data: Map<string, T> = new Map();
+  private data = new Map<string, T>();
   private latency: number;
 
-  constructor(latency: number = 50) {
+  constructor(latency = 50) {
     this.latency = latency;
   }
 

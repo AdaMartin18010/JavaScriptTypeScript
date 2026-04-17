@@ -52,9 +52,9 @@ export type Handler<T = unknown, R = unknown> = (
 // ============================================================================
 
 export class FunctionOrchestrator {
-  private functions: Map<string, ServerlessFunction> = new Map();
-  private handlers: Map<string, Handler> = new Map();
-  private coldStartStats: Map<string, { count: number; avgDuration: number }> = new Map();
+  private functions = new Map<string, ServerlessFunction>();
+  private handlers = new Map<string, Handler>();
+  private coldStartStats = new Map<string, { count: number; avgDuration: number }>();
 
   register(fn: ServerlessFunction, handler: Handler): void {
     this.functions.set(fn.name, fn);
@@ -139,7 +139,7 @@ export class FunctionOrchestrator {
 // ============================================================================
 
 export class EventTriggerManager {
-  private triggers: Map<string, (event: unknown) => Promise<unknown>> = new Map();
+  private triggers = new Map<string, (event: unknown) => Promise<unknown>>();
 
   // HTTP 触发器
   addHttpTrigger(path: string, method: string, handler: (req: unknown) => Promise<unknown>): void {
@@ -186,14 +186,14 @@ export interface Step {
   name: string;
   type: 'task' | 'choice' | 'wait' | 'parallel' | 'map';
   handler?: (input: unknown) => Promise<unknown>;
-  choices?: Array<{ condition: (input: unknown) => boolean; next: string }>;
+  choices?: { condition: (input: unknown) => boolean; next: string }[];
   next?: string;
   end?: boolean;
 }
 
 export class StepFunction {
-  private steps: Map<string, Step> = new Map();
-  private startAt: string = '';
+  private steps = new Map<string, Step>();
+  private startAt = '';
 
   addStep(step: Step): this {
     this.steps.set(step.name, step);

@@ -40,12 +40,12 @@ export interface NodeStats {
 // ============================================================================
 
 export class ConsistentHashRing {
-  private ring: Map<number, string> = new Map(); // hash -> nodeId
-  private nodes: Map<string, CacheNode> = new Map();
+  private ring = new Map<number, string>(); // hash -> nodeId
+  private nodes = new Map<string, CacheNode>();
   private sortedKeys: number[] = [];
   private virtualNodes: number;
 
-  constructor(virtualNodes: number = 150) {
+  constructor(virtualNodes = 150) {
     this.virtualNodes = virtualNodes;
   }
 
@@ -195,7 +195,7 @@ export class ConsistentHashRing {
 // ============================================================================
 
 export class ShardedCache<T> {
-  private shards: Map<string, Map<string, CacheEntry<T>>> = new Map();
+  private shards = new Map<string, Map<string, CacheEntry<T>>>();
   private hashRing: ConsistentHashRing;
   private defaultTTL: number;
 
@@ -304,7 +304,7 @@ export class ShardedCache<T> {
   /**
    * 获取分片统计
    */
-  getShardStats(): Array<{ nodeId: string; keyCount: number }> {
+  getShardStats(): { nodeId: string; keyCount: number }[] {
     return Array.from(this.shards.entries()).map(([nodeId, shard]) => ({
       nodeId,
       keyCount: shard.size
@@ -317,12 +317,12 @@ export class ShardedCache<T> {
 // ============================================================================
 
 export class ReplicatedCache<T> {
-  private primaryShards: Map<string, Map<string, CacheEntry<T>>> = new Map();
-  private replicaShards: Map<string, Map<string, CacheEntry<T>>> = new Map();
+  private primaryShards = new Map<string, Map<string, CacheEntry<T>>>();
+  private replicaShards = new Map<string, Map<string, CacheEntry<T>>>();
   private hashRing: ConsistentHashRing;
   private replicationFactor: number;
 
-  constructor(nodes: CacheNode[], replicationFactor: number = 2) {
+  constructor(nodes: CacheNode[], replicationFactor = 2) {
     this.hashRing = new ConsistentHashRing();
     this.replicationFactor = replicationFactor;
 
@@ -399,9 +399,9 @@ export class ReplicatedCache<T> {
 // ============================================================================
 
 export class CacheCluster {
-  private nodes: Map<string, CacheNode> = new Map();
+  private nodes = new Map<string, CacheNode>();
   private hashRing: ConsistentHashRing;
-  private stats: Map<string, NodeStats> = new Map();
+  private stats = new Map<string, NodeStats>();
 
   constructor() {
     this.hashRing = new ConsistentHashRing();
@@ -474,9 +474,9 @@ export class CacheCluster {
   /**
    * 获取节点分布信息
    */
-  getDistribution(): Array<{ nodeId: string; keyRange: string; percentage: number }> {
+  getDistribution(): { nodeId: string; keyRange: string; percentage: number }[] {
     // 简化实现：计算每个虚拟节点负责的范围
-    const distribution: Array<{ nodeId: string; keyRange: string; percentage: number }> = [];
+    const distribution: { nodeId: string; keyRange: string; percentage: number }[] = [];
     const healthyNodes = this.hashRing.getHealthyNodes();
     
     if (healthyNodes.length === 0) return distribution;

@@ -69,7 +69,7 @@ export class ComplexNumber implements Complex {
   }
 
   toString(): string {
-    if (Math.abs(this.imag) < 1e-10) return `${this.real.toFixed(3)}`;
+    if (Math.abs(this.imag) < 1e-10) return this.real.toFixed(3);
     if (Math.abs(this.real) < 1e-10) return `${this.imag.toFixed(3)}i`;
     const sign = this.imag >= 0 ? '+' : '-';
     return `${this.real.toFixed(3)} ${sign} ${Math.abs(this.imag).toFixed(3)}i`;
@@ -181,7 +181,7 @@ export class StateVector {
       }
     }
     this.normalize();
-    return outcome as 0 | 1;
+    return outcome;
   }
 
   /** 联合测量所有量子比特，返回整数表示的基矢索引。 */

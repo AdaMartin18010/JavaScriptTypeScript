@@ -215,7 +215,7 @@ export function withTimeout<T>(
   message = 'Operation timed out'
 ): Promise<T> {
   const timeout = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error(message)), ms)
+    setTimeout(() => { reject(new Error(message)); }, ms)
   );
   return Promise.race([promise, timeout]);
 }

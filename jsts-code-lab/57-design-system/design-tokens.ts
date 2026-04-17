@@ -18,7 +18,7 @@ export interface DesignTokens {
 
 export class DesignTokenManager {
   private tokens: DesignTokens;
-  private subscribers: Set<(tokens: DesignTokens) => void> = new Set();
+  private subscribers = new Set<(tokens: DesignTokens) => void>();
   
   constructor(initialTokens: DesignTokens) {
     this.tokens = initialTokens;
@@ -73,7 +73,7 @@ export class DesignTokenManager {
   }
   
   private notifySubscribers(): void {
-    this.subscribers.forEach(cb => cb(this.tokens));
+    this.subscribers.forEach(cb => { cb(this.tokens); });
   }
 }
 

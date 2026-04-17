@@ -1209,7 +1209,7 @@ export class EnumValidator<T extends string | number> extends Validator<T> {
   constructor(private values: T[]) {
     super();
     this.addValidation((value, context) => {
-      if (!this.values.includes(value as T)) {
+      if (!this.values.includes(value)) {
         return createError(
           'validation.enum',
           context.options.messages?.['validation.enum'] ?? DEFAULT_MESSAGES['validation.enum'],
@@ -1656,11 +1656,11 @@ export function demo(): void {
   console.log('-'.repeat(40));
 
   const registrationForm = v.form()
-    .field('username', v.string().username().required() as Validator<unknown>, '用户名')
-    .field('email', v.string().email().required() as Validator<unknown>, '邮箱')
-    .field('password', v.string().password().required() as Validator<unknown>, '密码')
-    .field('confirmPassword', v.ref('password') as Validator<unknown>, '确认密码')
-    .field('age', v.number().min(18).optional() as Validator<unknown>, '年龄');
+    .field('username', v.string().username().required() as Validator, '用户名')
+    .field('email', v.string().email().required() as Validator, '邮箱')
+    .field('password', v.string().password().required() as Validator, '密码')
+    .field('confirmPassword', v.ref('password'), '确认密码')
+    .field('age', v.number().min(18).optional() as Validator, '年龄');
 
   const formData1 = {
     username: 'john_doe',

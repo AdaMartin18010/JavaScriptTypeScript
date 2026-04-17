@@ -13,7 +13,7 @@
  */
 class Singleton {
   private static instance: Singleton;
-  private data: string = '';
+  private data = '';
 
   // 私有构造函数，防止外部实例化
   private constructor() {}
@@ -164,11 +164,11 @@ abstract class AbstractFactory<T, U> {
  */
 // 产品类
 class House {
-  walls: number = 0;
-  doors: number = 0;
-  windows: number = 0;
-  hasGarage: boolean = false;
-  hasSwimmingPool: boolean = false;
+  walls = 0;
+  doors = 0;
+  windows = 0;
+  hasGarage = false;
+  hasSwimmingPool = false;
 
   toString(): string {
     return `House: ${this.walls} walls, ${this.doors} doors, ${this.windows} windows, ` +
@@ -274,7 +274,7 @@ class Document implements Cloneable<Document> {
   }
 
   // 使用结构化克隆 API（现代浏览器）
-  structuredClone(): Document {
+  structuredClone(): this {
     return globalThis.structuredClone(this);
   }
 }
@@ -464,7 +464,7 @@ class Developer implements IEmployee {
     return 'Developer';
   }
 
-  showDetails(indent: string = ''): void {
+  showDetails(indent = ''): void {
     console.log(`${indent}${this.getRole()}: ${this.getName()} ($${this.getSalary()})`);
   }
 }
@@ -488,7 +488,7 @@ class Designer implements IEmployee {
     return 'Designer';
   }
 
-  showDetails(indent: string = ''): void {
+  showDetails(indent = ''): void {
     console.log(`${indent}${this.getRole()}: ${this.getName()} ($${this.getSalary()})`);
   }
 }
@@ -529,7 +529,7 @@ class Manager implements IEmployee {
     return [...this.subordinates];
   }
 
-  showDetails(indent: string = ''): void {
+  showDetails(indent = ''): void {
     console.log(`${indent}${this.getRole()}: ${this.getName()} ($${this.getSalary()})`);
     for (const employee of this.subordinates) {
       employee.showDetails(indent + '  ');
@@ -550,10 +550,10 @@ class Manager implements IEmployee {
 }
 
 // 递归类型定义示例
-type TreeNode<T> = {
+interface TreeNode<T> {
   value: T;
   children?: TreeNode<T>[];
-};
+}
 
 // 泛型组合类
 class GenericComposite<T> {
@@ -829,7 +829,7 @@ class CircleFlyweight implements IShape {
 
 // 享元工厂 - 管理对象池
 class ShapeFactory {
-  private static circleMap: Map<string, CircleFlyweight> = new Map();
+  private static circleMap = new Map<string, CircleFlyweight>();
 
   static getCircle(color: string): CircleFlyweight {
     let circle = this.circleMap.get(color);
@@ -853,11 +853,11 @@ class ShapeFactory {
 // 通用对象池实现
 class ObjectPool<T> {
   private available: T[] = [];
-  private inUse: Set<T> = new Set();
+  private inUse = new Set<T>();
   private factory: () => T;
   private reset: (obj: T) => void;
 
-  constructor(factory: () => T, reset: (obj: T) => void, initialSize: number = 0) {
+  constructor(factory: () => T, reset: (obj: T) => void, initialSize = 0) {
     this.factory = factory;
     this.reset = reset;
     
@@ -897,7 +897,7 @@ class ObjectPool<T> {
 // 连接池示例
 class DatabaseConnection {
   id: number;
-  isConnected: boolean = false;
+  isConnected = false;
 
   constructor(id: number) {
     this.id = id;
@@ -1004,7 +1004,7 @@ interface IDocument {
 }
 
 class ProtectedDocument implements IDocument {
-  private content: string = '';
+  private content = '';
 
   constructor(private documentName: string) {}
 
@@ -1080,16 +1080,16 @@ function createValidationProxy<T extends object>(
  * 中间件模式实现
  */
 // 处理者接口
-type Request = {
+interface Request {
   type: string;
   payload: unknown;
-};
+}
 
-type Response = {
+interface Response {
   status: 'success' | 'error';
   data?: unknown;
   message?: string;
-};
+}
 
 type NextFunction = () => void;
 type Middleware = (req: Request, res: Response, next: NextFunction) => void;
@@ -1196,7 +1196,7 @@ interface ICommand {
 
 // 接收者
 class TextEditor {
-  private content: string = '';
+  private content = '';
 
   write(text: string): void {
     this.content += text;
@@ -1239,7 +1239,7 @@ class WriteCommand implements ICommand {
 
 // 具体命令 - 删除
 class DeleteCommand implements ICommand {
-  private deletedText: string = '';
+  private deletedText = '';
 
   constructor(
     private editor: TextEditor,
@@ -1642,7 +1642,7 @@ class ChatRoom implements IMediator {
 type EventHandler<T = any> = (data: T) => void;
 
 class EventBus {
-  private handlers: Map<string, EventHandler[]> = new Map();
+  private handlers = new Map<string, EventHandler[]>();
 
   on<T>(event: string, handler: EventHandler<T>): () => void {
     if (!this.handlers.has(event)) {
@@ -1651,7 +1651,7 @@ class EventBus {
     this.handlers.get(event)!.push(handler);
 
     // 返回取消订阅函数
-    return () => this.off(event, handler);
+    return () => { this.off(event, handler); };
   }
 
   off<T>(event: string, handler: EventHandler<T>): void {
@@ -1667,7 +1667,7 @@ class EventBus {
   emit<T>(event: string, data?: T): void {
     const handlers = this.handlers.get(event);
     if (handlers) {
-      handlers.forEach(handler => handler(data));
+      handlers.forEach(handler => { handler(data); });
     }
   }
 
@@ -1716,7 +1716,7 @@ class EditorMemento implements IMemento {
 
 // 原发器 - 编辑器
 class TextEditorWithMemento {
-  private content: string = '';
+  private content = '';
 
   type(words: string): void {
     this.content += words;
@@ -1881,7 +1881,7 @@ class WindowDisplay implements IObserver {
 
 // EventEmitter 实现
 class EventEmitter<T extends Record<string, any> = Record<string, any>> {
-  private listeners: Map<keyof T, Array<(data: T[keyof T]) => void>> = new Map();
+  private listeners = new Map<keyof T, ((data: T[keyof T]) => void)[]>();
 
   on<K extends keyof T>(event: K, listener: (data: T[K]) => void): () => void {
     if (!this.listeners.has(event)) {
@@ -1889,7 +1889,7 @@ class EventEmitter<T extends Record<string, any> = Record<string, any>> {
     }
     this.listeners.get(event)!.push(listener as (data: T[keyof T]) => void);
 
-    return () => this.off(event, listener);
+    return () => { this.off(event, listener); };
   }
 
   off<K extends keyof T>(event: K, listener: (data: T[K]) => void): void {
@@ -1905,7 +1905,7 @@ class EventEmitter<T extends Record<string, any> = Record<string, any>> {
   emit<K extends keyof T>(event: K, data: T[K]): void {
     const listeners = this.listeners.get(event);
     if (listeners) {
-      listeners.forEach(listener => listener(data));
+      listeners.forEach(listener => { listener(data); });
     }
   }
 
@@ -1954,7 +1954,7 @@ interface IDocumentState {
 // 上下文
 class DocumentWithState {
   private state: IDocumentState;
-  private _content: string = '';
+  private _content = '';
 
   constructor() {
     this.state = new DraftState(this);
@@ -2035,8 +2035,8 @@ class PublishedState implements IDocumentState {
 // 类型安全的状态机
 class StateMachine<S extends string, E extends string> {
   private currentState: S;
-  private transitions: Map<S, Map<E, S>> = new Map();
-  private handlers: Map<S, () => void> = new Map();
+  private transitions = new Map<S, Map<E, S>>();
+  private handlers = new Map<S, () => void>();
 
   constructor(initialState: S) {
     this.currentState = initialState;
@@ -2057,7 +2057,7 @@ class StateMachine<S extends string, E extends string> {
 
   transition(event: E): boolean {
     const stateTransitions = this.transitions.get(this.currentState);
-    if (stateTransitions && stateTransitions.has(event)) {
+    if (stateTransitions?.has(event)) {
       const newState = stateTransitions.get(event)!;
       console.log(`Transition: ${this.currentState} --${event}--> ${newState}`);
       this.currentState = newState;

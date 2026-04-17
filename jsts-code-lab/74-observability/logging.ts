@@ -390,11 +390,11 @@ export class LogRotator {
 // ==================== 日志聚合器 ====================
 
 export class LogAggregator {
-  private patterns: Map<string, RegExp> = new Map();
-  private counters: Map<string, number> = new Map();
-  private timeWindows: Map<string, number> = new Map();
+  private patterns = new Map<string, RegExp>();
+  private counters = new Map<string, number>();
+  private timeWindows = new Map<string, number>();
 
-  constructor(private windowSizeMs: number = 60000) {}
+  constructor(private windowSizeMs = 60000) {}
 
   /**
    * 注册模式用于聚合

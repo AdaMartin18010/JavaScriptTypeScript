@@ -50,7 +50,7 @@ export type ServiceWorkerState =
 
 export class ServiceWorkerManager {
   private registration: ServiceWorkerRegistration | null = null;
-  private listeners: Map<string, Set<(data: unknown) => void>> = new Map();
+  private listeners = new Map<string, Set<(data: unknown) => void>>();
 
   // 注册 Service Worker
   async register(scriptURL: string, options: ServiceWorkerConfig = {}): Promise<ServiceWorkerRegistration> {
@@ -194,7 +194,7 @@ export class ServiceWorkerManager {
 
   private emit(event: string, data: unknown): void {
     const callbacks = this.listeners.get(event);
-    callbacks?.forEach(cb => cb(data));
+    callbacks?.forEach(cb => { cb(data); });
   }
 }
 
@@ -346,7 +346,7 @@ export class CacheManager {
     }).catch(() => cached);
 
     // 立即返回缓存（如果有），否则等待网络
-    return cached || (await fetchPromise as Response);
+    return cached || ((await fetchPromise)!);
   }
 
   // 清除缓存
@@ -531,7 +531,7 @@ export interface PushNotificationOptions {
   image?: string;
   tag?: string;
   requireInteraction?: boolean;
-  actions?: Array<{ action: string; title: string; icon?: string }>;
+  actions?: { action: string; title: string; icon?: string }[];
   data?: Record<string, unknown>;
   timestamp?: number;
 }
@@ -668,7 +668,7 @@ export class BackgroundSyncManager {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(this.DB_NAME, 1);
 
-      request.onerror = () => reject(request.error);
+      request.onerror = () => { reject(request.error); };
       request.onsuccess = () => {
         this.db = request.result;
         resolve();
@@ -730,7 +730,7 @@ export class BackgroundSyncManager {
         console.log('[Sync] Task added:', task.id);
         resolve(task.id);
       };
-      request.onerror = () => reject(request.error);
+      request.onerror = () => { reject(request.error); };
     });
   }
 
@@ -748,8 +748,8 @@ export class BackgroundSyncManager {
       const store = transaction.objectStore(this.STORE_NAME);
       const request = store.getAll();
 
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
+      request.onsuccess = () => { resolve(request.result); };
+      request.onerror = () => { reject(request.error); };
     });
   }
 
@@ -767,8 +767,8 @@ export class BackgroundSyncManager {
       const store = transaction.objectStore(this.STORE_NAME);
       const request = store.delete(taskId);
 
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+      request.onsuccess = () => { resolve(); };
+      request.onerror = () => { reject(request.error); };
     });
   }
 }

@@ -71,8 +71,8 @@ describe('Observable', () => {
     vi.useFakeTimers();
     const obs = new Observable<number>(observer => {
       let count = 0;
-      const interval = setInterval(() => observer.next(++count), 50);
-      return () => clearInterval(interval);
+      const interval = setInterval(() => { observer.next(++count); }, 50);
+      return () => { clearInterval(interval); };
     }).debounceTime(100);
 
     const values: number[] = [];
@@ -87,8 +87,8 @@ describe('Observable', () => {
     vi.useFakeTimers();
     const obs = new Observable<number>(observer => {
       let count = 0;
-      const interval = setInterval(() => observer.next(++count), 50);
-      return () => clearInterval(interval);
+      const interval = setInterval(() => { observer.next(++count); }, 50);
+      return () => { clearInterval(interval); };
     }).throttleTime(200);
 
     const values: number[] = [];

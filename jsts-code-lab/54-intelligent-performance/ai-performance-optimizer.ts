@@ -36,7 +36,7 @@ export interface PerformancePrediction {
 }
 
 export class PerformancePredictionEngine {
-  private history: Array<{ metrics: PerformanceMetrics; timestamp: number }> = [];
+  private history: { metrics: PerformanceMetrics; timestamp: number }[] = [];
   private maxHistorySize = 100;
 
   // 记录性能指标
@@ -61,7 +61,7 @@ export class PerformancePredictionEngine {
     const recent = this.history.slice(-20);
 
     // 简单线性回归预测
-    const metrics: Array<keyof PerformanceMetrics> = ['lcp', 'fid', 'cls'];
+    const metrics: (keyof PerformanceMetrics)[] = ['lcp', 'fid', 'cls'];
     
     for (const metric of metrics) {
       const values = recent.map(h => h.metrics[metric]);
@@ -162,9 +162,9 @@ export interface NavigationPattern {
 }
 
 export class IntelligentPreloader {
-  private navigationGraph: Map<string, NavigationPattern[]> = new Map();
-  private currentPage: string = '';
-  private prefetchQueue: Set<string> = new Set();
+  private navigationGraph = new Map<string, NavigationPattern[]>();
+  private currentPage = '';
+  private prefetchQueue = new Set<string>();
 
   // 记录页面导航
   recordNavigation(from: string, to: string, timeSpent: number): void {
@@ -188,7 +188,7 @@ export class IntelligentPreloader {
   }
 
   // 预测下一步可能访问的页面
-  predictNextPages(currentPage: string, topN = 3): Array<{ page: string; probability: number }> {
+  predictNextPages(currentPage: string, topN = 3): { page: string; probability: number }[] {
     const patterns = this.navigationGraph.get(currentPage) || [];
     
     return patterns
@@ -383,7 +383,7 @@ export function demo(): void {
     loadTime: 4000
   }));
 
-  setTimeout(() => optimizer.stop(), 100);
+  setTimeout(() => { optimizer.stop(); }, 100);
 
   console.log('\nAI性能优化要点:');
   console.log('- 基于历史数据预测性能趋势');

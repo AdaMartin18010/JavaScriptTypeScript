@@ -48,7 +48,7 @@ class Shape implements Prototype<Shape> {
     public metadata: Record<string, unknown> = {}
   ) {}
 
-  clone(): Shape {
+  clone(): this {
     // 使用结构化克隆算法
     return structuredClone(this);
   }

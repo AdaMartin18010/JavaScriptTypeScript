@@ -16,11 +16,11 @@
 // 1. 基础类型定义
 // ============================================================================
 
-export type Action<T = string, P = unknown> = {
+export interface Action<T = string, P = unknown> {
   type: T;
   payload?: P;
   meta?: Record<string, unknown>;
-};
+}
 
 export type Reducer<S, A extends Action> = (state: S, action: A) => S;
 
@@ -37,7 +37,7 @@ export type Middleware<S, A extends Action> = (
 export class Store<S, A extends Action = Action> {
   private state: S;
   private reducer: Reducer<S, A>;
-  private listeners: Set<Listener<S>> = new Set();
+  private listeners = new Set<Listener<S>>();
   private middlewares: Middleware<S, A>[] = [];
   private isDispatching = false;
   
@@ -78,7 +78,7 @@ export class Store<S, A extends Action = Action> {
       this.saveToHistory(this.state);
       
       // 通知监听器
-      this.listeners.forEach(listener => listener(this.state, prevState));
+      this.listeners.forEach(listener => { listener(this.state, prevState); });
     } finally {
       this.isDispatching = false;
     }
@@ -165,7 +165,7 @@ export class Store<S, A extends Action = Action> {
   private notifyListeners(): void {
     const prevIndex = Math.max(0, this.historyIndex - 1);
     this.listeners.forEach(listener => 
-      listener(this.state, this.history[prevIndex])
+      { listener(this.state, this.history[prevIndex]); }
     );
   }
 
@@ -259,7 +259,7 @@ export function combineReducers<S extends Record<string, unknown>, A extends Act
       hasChanged = hasChanged || nextStateForKey !== previousStateForKey;
     }
 
-    return hasChanged ? nextState : (state as S);
+    return hasChanged ? nextState : (state!);
   };
 }
 
@@ -268,7 +268,7 @@ export function combineReducers<S extends Record<string, unknown>, A extends Act
 // ============================================================================
 
 interface TodoState {
-  todos: Array<{ id: number; text: string; completed: boolean }>;
+  todos: { id: number; text: string; completed: boolean }[];
   filter: 'all' | 'active' | 'completed';
 }
 

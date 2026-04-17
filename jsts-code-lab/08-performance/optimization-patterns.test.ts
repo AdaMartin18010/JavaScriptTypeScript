@@ -96,7 +96,7 @@ describe('optimization-patterns', () => {
       const loader = new LazyLoader<string>(async (key) => key);
       await loader.get('a');
       loader.clear();
-      expect(loader['cache'].size).toBe(0);
+      expect(loader.cache.size).toBe(0);
     });
   });
 

@@ -16,16 +16,14 @@
 // ============================================================================
 
 // 事件映射接口
-type EventMap = {
-  [event: string]: unknown;
-};
+type EventMap = Record<string, unknown>;
 
 // 类型安全的事件监听器
 type EventListener<T> = (data: T) => void;
 
 export class TypedEventEmitter<Events extends EventMap> {
   private listeners: {
-    [K in keyof Events]?: Array<EventListener<Events[K]>>
+    [K in keyof Events]?: EventListener<Events[K]>[]
   } = {};
 
   // 订阅事件 - 类型安全的订阅
@@ -62,7 +60,7 @@ export class TypedEventEmitter<Events extends EventMap> {
   emit<K extends keyof Events>(event: K, data: Events[K]): void {
     const listeners = this.listeners[event];
     if (listeners) {
-      listeners.forEach(listener => listener(data));
+      listeners.forEach(listener => { listener(data); });
     }
   }
 
@@ -130,7 +128,7 @@ class EventEmitterJS {
     }
     this.listeners[event].push(listener);
 
-    return () => this.off(event, listener);
+    return () => { this.off(event, listener); };
   }
 
   off(event: string, listener: (data: unknown) => void): void {
@@ -146,7 +144,7 @@ class EventEmitterJS {
   emit(event: string, data: unknown): void {
     const listeners = this.listeners[event];
     if (listeners) {
-      listeners.forEach(listener => listener(data));
+      listeners.forEach(listener => { listener(data); });
     }
   }
 
@@ -192,7 +190,7 @@ class EventEmitterJSDefensive {
     }
     this.listeners.get(event)!.push(listener);
 
-    return () => this.off(event, listener);
+    return () => { this.off(event, listener); };
   }
 
   off(event: string, listener: (data: unknown) => void): void {

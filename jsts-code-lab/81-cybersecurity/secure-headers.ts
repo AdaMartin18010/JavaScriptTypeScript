@@ -72,8 +72,8 @@ export interface SecurityReport {
 // ============================================================================
 
 export class CSPBuilder {
-  private directives: Map<CSPDirective, Set<CSPSource>> = new Map();
-  private reportOnly: boolean = false;
+  private directives = new Map<CSPDirective, Set<CSPSource>>();
+  private reportOnly = false;
   private reportUri?: string;
 
   static create(): CSPBuilder {
@@ -405,8 +405,8 @@ export class SecurityHeaderScanner {
     }
 
     // 检查危险头部
-    if (normalizedHeaders['server']) {
-      headerStatus['server'] = { present: true, value: normalizedHeaders['server'] };
+    if (normalizedHeaders.server) {
+      headerStatus.server = { present: true, value: normalizedHeaders.server };
       vulnerabilities.push('暴露 Server 头部可能泄露服务器信息');
       recommendations.push('移除或混淆 Server 头部');
       score -= 5;
@@ -439,7 +439,7 @@ export class SecurityHeaderScanner {
   ): void {
     switch (header) {
       case 'strict-transport-security':
-        const maxAgeMatch = value.match(/max-age=(\d+)/);
+        const maxAgeMatch = /max-age=(\d+)/.exec(value);
         if (!maxAgeMatch) {
           vulnerabilities.push('HSTS 缺少 max-age');
         } else {
@@ -599,12 +599,12 @@ export function demo(): void {
 
   if (report.vulnerabilities.length > 0) {
     console.log('\n发现的漏洞:');
-    report.vulnerabilities.forEach(v => console.log(`  ⚠ ${v}`));
+    report.vulnerabilities.forEach(v => { console.log(`  ⚠ ${v}`); });
   }
 
   if (report.recommendations.length > 0) {
     console.log('\n建议:');
-    report.recommendations.slice(0, 3).forEach(r => console.log(`  • ${r}`));
+    report.recommendations.slice(0, 3).forEach(r => { console.log(`  • ${r}`); });
   }
 
   // 不同预设

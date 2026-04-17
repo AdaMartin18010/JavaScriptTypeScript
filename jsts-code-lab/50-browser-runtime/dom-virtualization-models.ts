@@ -77,10 +77,10 @@ export function diff(oldVNode: VNode | string | null, newVNode: VNode | string |
     }
     return null;
   }
-  if (oldVNode.tag !== (newVNode as VNode).tag) {
-    return { type: 'REPLACE', vnode: newVNode as VNode };
+  if (oldVNode.tag !== (newVNode).tag) {
+    return { type: 'REPLACE', vnode: newVNode };
   }
-  return { type: 'UPDATE', props: (newVNode as VNode).props };
+  return { type: 'UPDATE', props: (newVNode).props };
 }
 
 export interface IncrementalDOMInstruction {

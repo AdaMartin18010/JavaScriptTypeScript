@@ -191,8 +191,8 @@ export interface APIKey {
 }
 
 export class APIKeyManager {
-  private keys: Map<string, APIKey> = new Map();
-  private keyIndex: Map<string, string> = new Map(); // hashed key -> key id
+  private keys = new Map<string, APIKey>();
+  private keyIndex = new Map<string, string>(); // hashed key -> key id
 
   /**
    * 生成新的 API Key
@@ -309,10 +309,10 @@ export interface OAuthToken {
 }
 
 export class OAuth2Server {
-  private clients: Map<string, OAuthClient> = new Map();
-  private authCodes: Map<string, { clientId: string; userId: string; scope: string; expiresAt: number }> = new Map();
-  private accessTokens: Map<string, { userId: string; scope: string; expiresAt: number }> = new Map();
-  private refreshTokens: Map<string, string> = new Map(); // refresh token -> access token
+  private clients = new Map<string, OAuthClient>();
+  private authCodes = new Map<string, { clientId: string; userId: string; scope: string; expiresAt: number }>();
+  private accessTokens = new Map<string, { userId: string; scope: string; expiresAt: number }>();
+  private refreshTokens = new Map<string, string>(); // refresh token -> access token
 
   /**
    * 注册客户端
@@ -335,7 +335,7 @@ export class OAuth2Server {
    */
   validateClient(clientId: string, clientSecret: string): boolean {
     const client = this.clients.get(clientId);
-    return client !== undefined && client.clientSecret === clientSecret;
+    return client?.clientSecret === clientSecret;
   }
 
   /**
@@ -360,7 +360,7 @@ export class OAuth2Server {
   exchangeCodeForToken(clientId: string, code: string): OAuthToken | null {
     const authCode = this.authCodes.get(code);
     
-    if (!authCode || authCode.clientId !== clientId) {
+    if (authCode?.clientId !== clientId) {
       return null;
     }
 
@@ -438,9 +438,9 @@ export interface AuthMiddleware {
 }
 
 export class CompositeAuthMiddleware implements AuthMiddleware {
-  private strategies: Array<{ name: string; middleware: AuthMiddleware; priority: number }> = [];
+  private strategies: { name: string; middleware: AuthMiddleware; priority: number }[] = [];
 
-  addStrategy(name: string, middleware: AuthMiddleware, priority: number = 10): void {
+  addStrategy(name: string, middleware: AuthMiddleware, priority = 10): void {
     this.strategies.push({ name, middleware, priority });
     this.strategies.sort((a, b) => a.priority - b.priority);
   }
@@ -474,8 +474,8 @@ export class JWTMiddleware implements AuthMiddleware {
   constructor(private jwt: JWTHandler) {}
 
   async authenticate(request: { headers: Record<string, string> }): Promise<AuthResult> {
-    const authHeader = request.headers['authorization'];
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const authHeader = request.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
       return { success: false, error: 'Missing or invalid Authorization header' };
     }
 

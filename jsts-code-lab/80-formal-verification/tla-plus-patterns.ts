@@ -121,7 +121,7 @@ export function leadsTo(
 ): TemporalProperty {
   return behavior => {
     for (let i = 0; i < behavior.length; i++) {
-      if (p(behavior[i]!)) {
+      if (p(behavior[i])) {
         const hasFutureQ = behavior.slice(i + 1).some(q);
         if (!hasFutureQ) {
           return false;
@@ -137,7 +137,7 @@ export function leadsTo(
  */
 export function checkNext(behavior: Behavior, nextAction: Action): boolean {
   for (let i = 0; i < behavior.length - 1; i++) {
-    if (!nextAction(behavior[i]!, behavior[i + 1]!)) {
+    if (!nextAction(behavior[i], behavior[i + 1])) {
       return false;
     }
   }
@@ -202,15 +202,15 @@ export function demo(): void {
   const starvationBehavior = generateStarvationBehavior();
 
   // 安全性：互斥（两个进程不会同时在 cs）
-  const mutexProp = always((s: TLAState) => !(s['pc1'] === 'cs' && s['pc2'] === 'cs'));
+  const mutexProp = always((s: TLAState) => !(s.pc1 === 'cs' && s.pc2 === 'cs'));
   console.log('--- 安全性：互斥 ---');
   console.log('良好行为满足互斥?', mutexProp(goodBehavior));
   console.log('错误行为满足互斥?', mutexProp(badBehavior));
 
   // 活性：如果一个进程在等待，最终它会进入临界区
   const livenessProp1 = leadsTo(
-    (s: TLAState) => s['pc1'] === 'wait',
-    (s: TLAState) => s['pc1'] === 'cs'
+    (s: TLAState) => s.pc1 === 'wait',
+    (s: TLAState) => s.pc1 === 'cs'
   );
   console.log('\n--- 活性：wait \leadsto cs (进程1) ---');
   console.log('良好行为满足活性?', livenessProp1(goodBehavior));
@@ -218,22 +218,22 @@ export function demo(): void {
 
   // 活性：如果一个进程在 ncs，最终它会进入 wait（简化假设）
   const livenessProp2 = leadsTo(
-    (s: TLAState) => s['pc2'] === 'ncs',
-    (s: TLAState) => s['pc2'] === 'cs' || s['pc2'] === 'wait'
+    (s: TLAState) => s.pc2 === 'ncs',
+    (s: TLAState) => s.pc2 === 'cs' || s.pc2 === 'wait'
   );
   console.log('\n--- 活性：ncs \leadsto (wait ∨ cs) (进程2) ---');
   console.log('良好行为满足?', livenessProp2(goodBehavior));
 
   // ◇ 算子：最终某个进程进入 cs
-  const eventuallyCS = eventually((s: TLAState) => s['pc1'] === 'cs' || s['pc2'] === 'cs');
+  const eventuallyCS = eventually((s: TLAState) => s.pc1 === 'cs' || s.pc2 === 'cs');
   console.log('\n--- ◇(进程1在cs ∨ 进程2在cs) ---');
   console.log('良好行为满足?', eventuallyCS(goodBehavior));
 
   // □ 算子：进程状态始终在合法集合中
   const validStates = always(
     (s: TLAState) =>
-      ['ncs', 'wait', 'cs'].includes(s['pc1'] as string) &&
-      ['ncs', 'wait', 'cs'].includes(s['pc2'] as string)
+      ['ncs', 'wait', 'cs'].includes(s.pc1 as string) &&
+      ['ncs', 'wait', 'cs'].includes(s.pc2 as string)
   );
   console.log('\n--- □(状态合法) ---');
   console.log('良好行为满足?', validStates(goodBehavior));

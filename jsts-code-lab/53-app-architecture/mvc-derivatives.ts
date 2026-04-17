@@ -59,7 +59,7 @@ export class MVVMViewModel<T> {
 
   setState(next: T): void {
     this.state = next
-    this.listeners.forEach((l) => l(next))
+    this.listeners.forEach((l) => { l(next); })
   }
 
   bind(listener: (s: T) => void): () => void {

@@ -43,9 +43,9 @@ export class TLAPlusLite<S> {
     initialStates: S[],
     invariant: StatePredicate<S>,
     stepGenerator: (state: S) => S[],
-    maxDepth: number = 10
+    maxDepth = 10
   ): { holds: boolean; counterexample?: S[] } {
-    const queue: Array<{ state: S; path: S[] }> = initialStates.map(s => ({ state: s, path: [s] }));
+    const queue: { state: S; path: S[] }[] = initialStates.map(s => ({ state: s, path: [s] }));
     const visited = new Set<string>();
 
     while (queue.length > 0) {
@@ -76,9 +76,9 @@ export class TLAPlusLite<S> {
     initialStates: S[],
     stepGenerator: (state: S) => S[],
     isTerminal: (state: S) => boolean,
-    maxDepth: number = 10
+    maxDepth = 10
   ): { deadlocked: boolean; state?: S; path?: S[] } {
-    const queue: Array<{ state: S; path: S[] }> = initialStates.map(s => ({ state: s, path: [s] }));
+    const queue: { state: S; path: S[] }[] = initialStates.map(s => ({ state: s, path: [s] }));
     const visited = new Set<string>();
 
     while (queue.length > 0) {

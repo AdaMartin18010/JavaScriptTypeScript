@@ -30,7 +30,7 @@ export interface OrderCreatedEvent extends DomainEvent {
   type: 'OrderCreated';
   payload: {
     customerId: string;
-    items: Array<{ productId: string; quantity: number; price: number }>;
+    items: { productId: string; quantity: number; price: number }[];
     totalAmount: number;
   };
 }
@@ -67,7 +67,7 @@ export interface OrderShippedEvent extends DomainEvent {
 
 export class EventStore {
   private events: DomainEvent[] = [];
-  private aggregateVersions: Map<string, number> = new Map();
+  private aggregateVersions = new Map<string, number>();
 
   // 追加事件
   append(event: DomainEvent): void {
@@ -332,9 +332,9 @@ export interface OrderDetailView extends OrderView {
 
 // 投影处理器
 export class OrderProjection {
-  private orderViews: Map<string, OrderView> = new Map();
-  private orderDetailViews: Map<string, OrderDetailView> = new Map();
-  private customerOrders: Map<string, string[]> = new Map();
+  private orderViews = new Map<string, OrderView>();
+  private orderDetailViews = new Map<string, OrderDetailView>();
+  private customerOrders = new Map<string, string[]>();
 
   constructor(private eventStore: EventStore) {}
 

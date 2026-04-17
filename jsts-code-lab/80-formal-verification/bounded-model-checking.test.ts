@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { BoundedModelChecker, type TransitionSystem } from './bounded-model-checking.js';
 
 type ProcessState = 'idle' | 'waiting' | 'critical';
-type State = { p1: ProcessState; p2: ProcessState };
+interface State { p1: ProcessState; p2: ProcessState }
 
 const mutexSystem: TransitionSystem<State> = {
   name: 'Mutex',

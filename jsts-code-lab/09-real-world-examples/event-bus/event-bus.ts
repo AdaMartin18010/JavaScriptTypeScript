@@ -140,7 +140,7 @@ const PRIORITY_ORDER: Record<EventPriority, number> = {
  * 事件总线 - 发布订阅模式实现
  */
 export class EventBus {
-  private subscribers: Map<EventType, Subscription[]> = new Map();
+  private subscribers = new Map<EventType, Subscription[]>();
   private middlewares: Middleware[] = [];
   private history: EventRecord[] = [];
   private config: Required<EventBusConfig>;
@@ -283,12 +283,12 @@ export class EventBus {
 
     // 执行中间件链
     const middlewareContext: MiddlewareContext<TPayload> = {
-      event: event as BaseEvent<TPayload>,
+      event: event,
       next: async () => {
         // 执行所有匹配的处理器
         for (const sub of matchingSubs) {
           try {
-            await sub.handler(event as BaseEvent<TPayload>);
+            await sub.handler(event);
             handlerIds.push(sub.id);
 
             // 一次性订阅，执行后移除
@@ -511,8 +511,8 @@ export type CommandHandler<TPayload = unknown, TResult = unknown> = (
  * 命令总线 - 处理写操作
  */
 export class CommandBus {
-  private handlers: Map<string, CommandHandler> = new Map();
-  private middlewares: Array<(command: Command, next: () => Promise<unknown>) => Promise<unknown>> = [];
+  private handlers = new Map<string, CommandHandler>();
+  private middlewares: ((command: Command, next: () => Promise<unknown>) => Promise<unknown>)[] = [];
   private eventBus: EventBus;
 
   constructor(eventBus: EventBus) {
@@ -610,8 +610,8 @@ export type QueryHandler<TPayload = unknown, TResult = unknown> = (
  * 查询总线 - 处理读操作
  */
 export class QueryBus {
-  private handlers: Map<string, QueryHandler> = new Map();
-  private cache: Map<string, { result: unknown; expiresAt: Date }> = new Map();
+  private handlers = new Map<string, QueryHandler>();
+  private cache = new Map<string, { result: unknown; expiresAt: Date }>();
 
   /**
    * 注册查询处理器
@@ -729,7 +729,7 @@ export function createValidationMiddleware<TPayload>(
 ): Middleware<TPayload> {
   return async (context) => {
     const { event, next, abort } = context;
-    const result = validator(event.payload as TPayload);
+    const result = validator(event.payload);
     
     if (result !== true) {
       abort(typeof result === 'string' ? result : 'Validation failed');
@@ -973,7 +973,7 @@ export function demo(): void {
   console.log('-'.repeat(40));
 
   // 模拟数据存储
-  const users: Array<{ id: string; name: string; email: string }> = [];
+  const users: { id: string; name: string; email: string }[] = [];
 
   // 注册命令处理器
   commandBus.register('createUser', async (command) => {

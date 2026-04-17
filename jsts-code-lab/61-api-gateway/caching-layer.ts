@@ -95,8 +95,8 @@ export class CacheKeyGenerator {
 // ============================================================================
 
 export class ResponseCache {
-  private cache: Map<string, CacheEntry> = new Map();
-  private tagIndex: Map<string, Set<string>> = new Map(); // tag -> cache keys
+  private cache = new Map<string, CacheEntry>();
+  private tagIndex = new Map<string, Set<string>>(); // tag -> cache keys
   private stats = { hits: 0, misses: 0, evictions: 0 };
   private maxSize: number;
   private cleanupInterval?: ReturnType<typeof setInterval>;
@@ -105,7 +105,7 @@ export class ResponseCache {
     this.maxSize = options.maxSize || 1000;
     
     // 定期清理过期缓存
-    this.cleanupInterval = setInterval(() => this.cleanup(), 60000);
+    this.cleanupInterval = setInterval(() => { this.cleanup(); }, 60000);
   }
 
   /**
@@ -311,7 +311,7 @@ export class ResponseCache {
 
 export class CachePolicyEngine {
   private defaultPolicy: CachePolicy = { ttl: 300 }; // 5分钟默认
-  private pathPolicies: Array<{ pattern: RegExp; policy: CachePolicy }> = [];
+  private pathPolicies: { pattern: RegExp; policy: CachePolicy }[] = [];
 
   /**
    * 设置默认策略
@@ -363,7 +363,7 @@ export class CachePolicyEngine {
     }
 
     // 检查 Authorization (通常不缓存)
-    if (request.headers['authorization'] && !cacheControl?.includes('public')) {
+    if (request.headers.authorization && !cacheControl?.includes('public')) {
       return false;
     }
 
@@ -376,7 +376,7 @@ export class CachePolicyEngine {
 // ============================================================================
 
 export class EdgeCacheManager {
-  private edges: Map<string, ResponseCache> = new Map();
+  private edges = new Map<string, ResponseCache>();
   private keyGenerator = new CacheKeyGenerator();
 
   /**
@@ -499,7 +499,7 @@ export class CacheMiddleware {
     { status: 'not-modified' } | { status: 'ok'; response: CachedResponse } {
     
     const ifNoneMatch = request.headers['if-none-match'];
-    const etag = cachedResponse.headers['etag'];
+    const etag = cachedResponse.headers.etag;
 
     if (ifNoneMatch && etag && ifNoneMatch === etag) {
       return { status: 'not-modified' };

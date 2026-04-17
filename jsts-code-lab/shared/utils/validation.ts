@@ -59,10 +59,10 @@ export const Validators = {
 // 2. Schema 验证
 // ============================================================================
 
-type ValidationRule = {
+interface ValidationRule {
   validator: (value: unknown) => boolean;
   message: string;
-};
+}
 
 type Schema<T> = {
   [K in keyof T]?: ValidationRule[];

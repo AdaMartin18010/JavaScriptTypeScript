@@ -76,19 +76,19 @@ export type DeploymentStrategy = 'direct' | 'canary' | 'ab-test' | 'shadow';
 
 export interface DeploymentConfig {
   strategy: DeploymentStrategy;
-  versions: Array<{
+  versions: {
     version: string;
     trafficPercent: number;
-  }>;
+  }[];
   shadowVersion?: string; // 用于影子流量
 }
 
 // ==================== 模型管理器 ====================
 
 export class ModelManager {
-  private models: Map<string, Map<string, ModelVersion>> = new Map(); // name -> version -> model
-  private instances: Map<string, ModelInstance> = new Map();
-  private deployments: Map<string, DeploymentConfig> = new Map(); // modelName -> config
+  private models = new Map<string, Map<string, ModelVersion>>(); // name -> version -> model
+  private instances = new Map<string, ModelInstance>();
+  private deployments = new Map<string, DeploymentConfig>(); // modelName -> config
 
   /**
    * 注册模型版本
@@ -247,7 +247,7 @@ export class ModelManager {
   /**
    * 获取所有模型列表
    */
-  listModels(): Array<{ name: string; versions: string[]; defaultVersion?: string }> {
+  listModels(): { name: string; versions: string[]; defaultVersion?: string }[] {
     return Array.from(this.models.entries()).map(([name, versions]) => ({
       name,
       versions: Array.from(versions.keys()),
@@ -260,9 +260,9 @@ export class ModelManager {
 
 export class InferenceEngine {
   private manager: ModelManager;
-  private cache: Map<string, { result: InferenceResponse; timestamp: number }> = new Map();
+  private cache = new Map<string, { result: InferenceResponse; timestamp: number }>();
   private cacheTtlMs = 60000;
-  private batchQueue: Array<{ request: InferenceRequest; resolve: (value: InferenceResponse) => void }> = [];
+  private batchQueue: { request: InferenceRequest; resolve: (value: InferenceResponse) => void }[] = [];
   private batchSize = 32;
   private batchTimeoutMs = 10;
 
@@ -397,7 +397,7 @@ export class InferenceEngine {
   }
 
   private handleShadowTraffic(request: InferenceRequest, primaryVersion: string): void {
-    const deployment = this.manager['deployments'].get(request.modelName);
+    const deployment = this.manager.deployments.get(request.modelName);
     if (!deployment?.shadowVersion || deployment.shadowVersion === primaryVersion) {
       return;
     }

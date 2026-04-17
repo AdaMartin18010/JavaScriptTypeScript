@@ -215,7 +215,7 @@ function createCommand(execute: CommandFn, undo: UndoFn): Command {
 const editor = new TextEditor();
 
 const insertHello = createCommand(
-  () => editor.insert('Hello', 0),
+  () => { editor.insert('Hello', 0); },
   () => editor.delete(0, 5)
 );
 

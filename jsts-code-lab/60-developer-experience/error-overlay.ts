@@ -102,7 +102,7 @@ export class ErrorParser {
    */
   private extractLocation(stack: string): ErrorInfo['location'] | undefined {
     // 匹配文件路径:行号:列号
-    const match = stack.match(/\s+at\s+.*?\s*\((.+?):(\d+):(\d+)\)/);
+    const match = /\s+at\s+.*?\s*\((.+?):(\d+):(\d+)\)/.exec(stack);
     
     if (match) {
       return {
@@ -113,7 +113,7 @@ export class ErrorParser {
     }
 
     // 尝试直接匹配 file:line:column
-    const directMatch = stack.match(/(\S+?):(\d+):(\d+)/);
+    const directMatch = /(\S+?):(\d+):(\d+)/.exec(stack);
     if (directMatch) {
       return {
         file: directMatch[1],
@@ -128,7 +128,7 @@ export class ErrorParser {
   /**
    * 生成代码帧（显示错误周围代码）
    */
-  generateCodeFrame(code: string, line: number, column: number, contextLines: number = 3): string {
+  generateCodeFrame(code: string, line: number, column: number, contextLines = 3): string {
     const lines = code.split('\n');
     const start = Math.max(0, line - contextLines - 1);
     const end = Math.min(lines.length, line + contextLines);
@@ -178,8 +178,8 @@ export class ErrorParser {
 // ============================================================================
 
 export class ErrorOverlayManager {
-  private errors: Map<string, ErrorInfo> = new Map();
-  private listeners: Set<(errors: ErrorInfo[]) => void> = new Set();
+  private errors = new Map<string, ErrorInfo>();
+  private listeners = new Set<(errors: ErrorInfo[]) => void>();
 
   /**
    * 添加错误
@@ -230,7 +230,7 @@ export class ErrorOverlayManager {
 
   private notifyListeners(): void {
     const errors = this.getErrors();
-    this.listeners.forEach(listener => listener(errors));
+    this.listeners.forEach(listener => { listener(errors); });
   }
 }
 
@@ -256,7 +256,7 @@ export class ConsoleErrorHandler {
       this.originalError.apply(console, args);
 
       // 提取错误对象
-      const error = args.find(arg => arg instanceof Error) as Error | undefined;
+      const error = args.find(arg => arg instanceof Error);
       if (error) {
         this.onError(error);
       }

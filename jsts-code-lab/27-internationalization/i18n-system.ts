@@ -32,9 +32,7 @@ export interface LocaleConfig {
   };
 }
 
-export interface InterpolationOptions {
-  [key: string]: string | number;
-}
+export type InterpolationOptions = Record<string, string | number>;
 
 // ============================================================================
 // 2. 复数规则
@@ -76,11 +74,11 @@ export class PluralRules {
 // ============================================================================
 
 export class I18nManager {
-  private translations: Map<string, TranslationDict> = new Map();
-  private currentLocale: string = 'en';
-  private fallbackLocale: string = 'en';
-  private localeConfigs: Map<string, LocaleConfig> = new Map();
-  private listeners: Set<(locale: string) => void> = new Set();
+  private translations = new Map<string, TranslationDict>();
+  private currentLocale = 'en';
+  private fallbackLocale = 'en';
+  private localeConfigs = new Map<string, LocaleConfig>();
+  private listeners = new Set<(locale: string) => void>();
 
   // 注册语言包
   addTranslations(locale: string, translations: TranslationDict): void {
@@ -93,7 +91,7 @@ export class I18nManager {
     if (this.currentLocale === locale) return;
     
     this.currentLocale = locale;
-    this.listeners.forEach(listener => listener(locale));
+    this.listeners.forEach(listener => { listener(locale); });
   }
 
   // 获取当前语言
@@ -210,7 +208,7 @@ export class I18nManager {
       if (source[key] && typeof source[key] === 'object') {
         result[key] = this.mergeDeep(
           (target[key] as TranslationDict) || {},
-          source[key] as TranslationDict
+          source[key]
         );
       } else {
         result[key] = source[key];
@@ -230,7 +228,7 @@ export function createI18nComposable(i18n: I18nManager) {
     t: (key: string, options?: InterpolationOptions) => i18n.t(key, options),
     tp: (key: string, count: number, options?: InterpolationOptions) => i18n.tp(key, count, options),
     locale: () => i18n.getLocale(),
-    setLocale: (locale: string) => i18n.setLocale(locale),
+    setLocale: (locale: string) => { i18n.setLocale(locale); },
     formatDate: (date: Date, options?: Intl.DateTimeFormatOptions) => i18n.formatDate(date, options),
     formatNumber: (num: number, options?: Intl.NumberFormatOptions) => i18n.formatNumber(num, options),
     formatCurrency: (amount: number, currency?: string) => i18n.formatCurrency(amount, currency)

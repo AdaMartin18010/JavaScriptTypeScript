@@ -13,7 +13,7 @@ export type Expr =
   | { kind: 'assign'; name: string; expr: Expr }
 
 export type Store = Map<string, number>
-export type Config = { kind: 'config'; expr: Expr; store: Store }
+export interface Config { kind: 'config'; expr: Expr; store: Store }
 
 export function isValue(e: Expr): boolean {
   return e.kind === 'num'

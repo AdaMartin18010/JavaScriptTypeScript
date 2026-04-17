@@ -58,17 +58,17 @@ function nestedMicrotasks() {
 function mixedTasks() {
   console.log('1');
 
-  setTimeout(() => console.log('2'), 0);
+  setTimeout(() => { console.log('2'); }, 0);
 
   Promise.resolve().then(() => {
     console.log('3');
-    setTimeout(() => console.log('4'), 0);
-    Promise.resolve().then(() => console.log('5'));
+    setTimeout(() => { console.log('4'); }, 0);
+    Promise.resolve().then(() => { console.log('5'); });
   });
 
   setTimeout(() => {
     console.log('6');
-    Promise.resolve().then(() => console.log('7'));
+    Promise.resolve().then(() => { console.log('7'); });
   }, 0);
 
   console.log('8');
@@ -84,9 +84,9 @@ function mixedTasks() {
 function compareScheduling() {
   // 浏览器环境
   // requestAnimationFrame(() => console.log('rAF'));
-  setTimeout(() => console.log('setTimeout 0'), 0);
-  setTimeout(() => console.log('setTimeout 1'), 1);
-  Promise.resolve().then(() => console.log('microtask'));
+  setTimeout(() => { console.log('setTimeout 0'); }, 0);
+  setTimeout(() => { console.log('setTimeout 1'); }, 1);
+  Promise.resolve().then(() => { console.log('microtask'); });
 
   // 顺序: microtask, setTimeout 0, setTimeout 1, rAF (下一帧)
 }
@@ -96,11 +96,11 @@ function compareScheduling() {
 // ============================================================================
 
 class EventLoopSimulator {
-  private macrotasks: Array<() => void> = [];
-  private microtasks: Array<() => void> = [];
+  private macrotasks: (() => void)[] = [];
+  private microtasks: (() => void)[] = [];
   private log: string[] = [];
 
-  setTimeout(fn: () => void, delay: number = 0): void {
+  setTimeout(fn: () => void, delay = 0): void {
     this.macrotasks.push(fn);
   }
 
@@ -143,9 +143,9 @@ import { nextTick } from 'node:process';
 function nodeNextTickDemo() {
   console.log('Start');
 
-  setTimeout(() => console.log('setTimeout'), 0);
-  nextTick(() => console.log('nextTick'));
-  Promise.resolve().then(() => console.log('Promise'));
+  setTimeout(() => { console.log('setTimeout'); }, 0);
+  nextTick(() => { console.log('nextTick'); });
+  Promise.resolve().then(() => { console.log('Promise'); });
 
   console.log('End');
   // 输出: Start, End, nextTick, Promise, setTimeout
@@ -180,9 +180,9 @@ import { setImmediate } from 'node:timers';
 function setImmediateDemo() {
   console.log('1');
 
-  setTimeout(() => console.log('setTimeout'), 0);
-  setImmediate(() => console.log('setImmediate'));
-  nextTick(() => console.log('nextTick'));
+  setTimeout(() => { console.log('setTimeout'); }, 0);
+  setImmediate(() => { console.log('setImmediate'); });
+  nextTick(() => { console.log('nextTick'); });
 
   console.log('2');
   // 输出: 1, 2, nextTick, setTimeout/setImmediate (顺序不确定)
@@ -249,11 +249,11 @@ export async function demo(): Promise<void> {
   // 事件循环模拟器
   console.log("\n3. Event Loop Simulator:");
   const simulator = new EventLoopSimulator();
-  simulator.sync(() => console.log("   Sync code"));
-  simulator.promiseThen(() => console.log("   Microtask 1"));
-  simulator.setTimeout(() => console.log("   Macrotask 1"));
-  simulator.promiseThen(() => console.log("   Microtask 2"));
-  simulator.setTimeout(() => console.log("   Macrotask 2"));
+  simulator.sync(() => { console.log("   Sync code"); });
+  simulator.promiseThen(() => { console.log("   Microtask 1"); });
+  simulator.setTimeout(() => { console.log("   Macrotask 1"); });
+  simulator.promiseThen(() => { console.log("   Microtask 2"); });
+  simulator.setTimeout(() => { console.log("   Macrotask 2"); });
   
   // Note: The simulator doesn't actually execute here
   // but we demonstrate the API

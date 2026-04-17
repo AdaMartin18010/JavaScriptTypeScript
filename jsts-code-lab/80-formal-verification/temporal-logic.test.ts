@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { atom, globally, finally_, next, until, LTLInterpreter } from './temporal-logic.js';
 
-type S = { ok: boolean };
+interface S { ok: boolean }
 
 describe('TemporalLogic', () => {
   it('should evaluate G (Globally)', () => {

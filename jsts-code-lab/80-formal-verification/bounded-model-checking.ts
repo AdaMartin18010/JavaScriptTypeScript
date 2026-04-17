@@ -42,7 +42,7 @@ export class BoundedModelChecker<S> {
     initialStates: S[],
     stepGenerator: (state: S) => S[],
     property: (state: S) => boolean,
-    maxDepth: number = 5
+    maxDepth = 5
   ): BMCResult<S> {
     // 过滤合法的初始状态
     const validInitials = initialStates.filter(s => this.system.initial(s));
@@ -64,7 +64,7 @@ export class BoundedModelChecker<S> {
     depth: number
   ): { holds: boolean; counterexample?: S[] } {
     // BFS 搜索深度为 depth 的路径
-    const queue: Array<{ state: S; path: S[] }> = initialStates.map(s => ({ state: s, path: [s] }));
+    const queue: { state: S; path: S[] }[] = initialStates.map(s => ({ state: s, path: [s] }));
     const visited = new Set<string>();
 
     while (queue.length > 0) {
@@ -118,7 +118,7 @@ export class BoundedModelChecker<S> {
   ): { inductive: boolean; counterexample?: S[] } {
     // 简化：检查是否存在一条长度为 k 的合法路径，最后一步违反性质
     // 实际 k-induction 还需保证路径中无重复状态（simple path）
-    const queue: Array<{ state: S; path: S[] }> = states.map(s => ({ state: s, path: [s] }));
+    const queue: { state: S; path: S[] }[] = states.map(s => ({ state: s, path: [s] }));
     const visited = new Set<string>();
 
     while (queue.length > 0) {

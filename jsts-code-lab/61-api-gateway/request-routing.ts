@@ -110,7 +110,7 @@ export class PathMatcher {
 
 export class Router {
   private routes: Route[] = [];
-  private staticRoutes: Map<string, Route> = new Map();
+  private staticRoutes = new Map<string, Route>();
   private dynamicRoutes: Route[] = [];
   private middlewares: Middleware[] = [];
 
@@ -290,8 +290,8 @@ export interface ServiceEndpoint {
 }
 
 export class DynamicRouter {
-  private services: Map<string, ServiceEndpoint[]> = new Map();
-  private routes: Map<string, string> = new Map(); // pattern -> serviceId
+  private services = new Map<string, ServiceEndpoint[]>();
+  private routes = new Map<string, string>(); // pattern -> serviceId
 
   /**
    * 注册服务
@@ -404,9 +404,9 @@ export const corsMiddleware = (options: { origin?: string; methods?: string[] } 
 
 export const authMiddleware = (validateToken: (token: string) => boolean): Middleware => {
   return async (req, res, next) => {
-    const authHeader = req.headers['authorization'];
+    const authHeader = req.headers.authorization;
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith('Bearer ')) {
       return {
         ...res,
         status: 401,

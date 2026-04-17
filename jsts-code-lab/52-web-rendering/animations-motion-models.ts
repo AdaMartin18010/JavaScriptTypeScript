@@ -31,7 +31,7 @@ export function createRAFLoop(
   }
 
   rafId = requestAnimationFrame(loop)
-  return () => cancelAnimationFrame(rafId)
+  return () => { cancelAnimationFrame(rafId); }
 }
 
 export function computeFlipDelta(first: DOMRect, last: DOMRect): { x: number; y: number; scaleX: number; scaleY: number } {

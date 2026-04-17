@@ -179,7 +179,7 @@ export function demo(): void {
   for (const a of [7, 11, 13]) {
     const res = runShorFactoring(N, a);
     console.log(`\n尝试 a = ${a}:`);
-    res.steps.forEach((s) => console.log('  ' + s));
+    res.steps.forEach((s) => { console.log('  ' + s); });
     if (res.success) {
       console.log(`  => 成功分解: ${N} = ${res.factors[0]} × ${res.factors[1]}`);
     } else {

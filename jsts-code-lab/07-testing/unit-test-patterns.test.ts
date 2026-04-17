@@ -90,7 +90,7 @@ describe('unit-test-patterns', () => {
         { input: 'test@example.com', expected: true, description: 'valid' },
         { input: 'bad', expected: false, description: 'invalid' }
       ];
-      expect(() => runParameterizedTests(validateEmail, cases)).not.toThrow();
+      expect(() => { runParameterizedTests(validateEmail, cases); }).not.toThrow();
     });
   });
 

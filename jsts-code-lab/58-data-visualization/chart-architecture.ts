@@ -7,11 +7,11 @@
 
 export interface ChartData {
   labels: string[];
-  datasets: Array<{
+  datasets: {
     label: string;
     data: number[];
     color?: string;
-  }>;
+  }[];
 }
 
 export abstract class ChartRenderer {

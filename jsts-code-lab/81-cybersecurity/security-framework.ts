@@ -33,7 +33,7 @@ export class ThreatModel {
     return threat.likelihood * threat.impact;
   }
   
-  getRiskMatrix(): Array<Threat & { riskScore: number }> {
+  getRiskMatrix(): (Threat & { riskScore: number })[] {
     return this.threats
       .map(t => ({ ...t, riskScore: this.calculateRiskScore(t) }))
       .sort((a, b) => b.riskScore - a.riskScore);
@@ -87,7 +87,7 @@ export interface Vulnerability {
 }
 
 export class VulnerabilityScanner {
-  private rules: Array<{ name: string; pattern: RegExp; check: (code: string) => boolean }> = [];
+  private rules: { name: string; pattern: RegExp; check: (code: string) => boolean }[] = [];
   
   constructor() {
     this.initializeRules();
@@ -126,7 +126,7 @@ export class VulnerabilityScanner {
   scan(code: string, filePath: string): Vulnerability[] {
     const vulnerabilities: Vulnerability[] = [];
     
-    const checks: Array<{ name: string; severity: Vulnerability['severity']; pattern: RegExp; cwe: string; recommendation: string }> = [
+    const checks: { name: string; severity: Vulnerability['severity']; pattern: RegExp; cwe: string; recommendation: string }[] = [
       {
         name: 'SQL Injection',
         severity: 'critical',
@@ -174,14 +174,14 @@ export class VulnerabilityScanner {
     return vulnerabilities;
   }
   
-  scanDependencies(dependencies: Record<string, string>): Array<{ package: string; version: string; issues: string[] }> {
+  scanDependencies(dependencies: Record<string, string>): { package: string; version: string; issues: string[] }[] {
     const knownVulnerabilities: Record<string, string[]> = {
       'lodash': ['Prototype Pollution in versions < 4.17.19'],
       'express': ['Open redirect in versions < 4.17.1'],
       'axios': ['SSRF vulnerability in versions < 0.21.1']
     };
     
-    const results: Array<{ package: string; version: string; issues: string[] }> = [];
+    const results: { package: string; version: string; issues: string[] }[] = [];
     
     for (const [pkg, version] of Object.entries(dependencies)) {
       if (knownVulnerabilities[pkg]) {
@@ -205,7 +205,7 @@ export interface SecurityEvent {
 
 export class IntrusionDetectionSystem {
   private events: SecurityEvent[] = [];
-  private rules: Array<{ name: string; condition: (event: SecurityEvent) => boolean; severity: SecurityEvent['severity'] }> = [];
+  private rules: { name: string; condition: (event: SecurityEvent) => boolean; severity: SecurityEvent['severity'] }[] = [];
   private alerts: SecurityEvent[] = [];
   
   constructor() {
@@ -294,8 +294,8 @@ export class IntrusionDetectionSystem {
   }
   
   // 异常检测（基于统计）
-  detectAnomalies(): Array<{ type: string; description: string; confidence: number }> {
-    const anomalies: Array<{ type: string; description: string; confidence: number }> = [];
+  detectAnomalies(): { type: string; description: string; confidence: number }[] {
+    const anomalies: { type: string; description: string; confidence: number }[] = [];
     
     // 检测流量异常
     const eventsByHour = new Map<number, number>();
@@ -322,7 +322,7 @@ export class IntrusionDetectionSystem {
 
 // 安全审计
 export class SecurityAuditor {
-  private auditLog: Array<{ timestamp: number; action: string; user: string; result: string }> = [];
+  private auditLog: { timestamp: number; action: string; user: string; result: string }[] = [];
   
   log(action: string, user: string, result: string): void {
     this.auditLog.push({

@@ -57,7 +57,7 @@ export class DatabaseTestEnvironment implements TestEnvironment {
 // ============================================================================
 
 export class MockDatabaseConnection {
-  private data: Map<string, unknown[]> = new Map();
+  private data = new Map<string, unknown[]>();
   private connected = false;
 
   constructor(private name: string) {}
@@ -76,13 +76,13 @@ export class MockDatabaseConnection {
     if (!this.connected) throw new Error('数据库未连接');
     
     // 简单模拟 SQL 查询
-    const table = sql.match(/FROM\s+(\w+)/i)?.[1];
+    const table = (/FROM\s+(\w+)/i.exec(sql))?.[1];
     if (table && sql.includes('SELECT')) {
       return this.data.get(table) || [];
     }
     
     if (sql.includes('INSERT')) {
-      const table = sql.match(/INTO\s+(\w+)/i)?.[1];
+      const table = (/INTO\s+(\w+)/i.exec(sql))?.[1];
       if (table) {
         const existing = this.data.get(table) || [];
         this.data.set(table, existing);
@@ -117,7 +117,7 @@ export interface ApiTestClient {
 }
 
 export class MockApiTestClient implements ApiTestClient {
-  private handlers: Map<string, (body?: unknown) => { status: number; body: unknown }> = new Map();
+  private handlers = new Map<string, (body?: unknown) => { status: number; body: unknown }>();
 
   register(method: string, path: string, handler: (body?: unknown) => { status: number; body: unknown }): void {
     this.handlers.set(`${method} ${path}`, handler);
@@ -156,10 +156,10 @@ export interface IntegrationTestSuite {
   name: string;
   setup?: () => Promise<void>;
   teardown?: () => Promise<void>;
-  tests: Array<{
+  tests: {
     name: string;
     run: () => Promise<void>;
-  }>;
+  }[];
 }
 
 export class IntegrationTestRunner {
@@ -208,10 +208,10 @@ export class IntegrationTestRunner {
 
 export interface UserFlow {
   name: string;
-  steps: Array<{
+  steps: {
     action: string;
     expected: string;
-  }>;
+  }[];
 }
 
 export class UserFlowTester {

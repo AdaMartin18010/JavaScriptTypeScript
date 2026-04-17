@@ -18,7 +18,7 @@ export function createReduxLikeStore<T>(initialState: T): Store<T> {
     getState: () => state,
     setState: (updater) => {
       state = updater(state)
-      listeners.forEach((l) => l(state))
+      listeners.forEach((l) => { l(state); })
     },
     subscribe: (listener) => {
       listeners.add(listener)
@@ -42,7 +42,7 @@ export class SignalsModel<T> {
   set(next: T): void {
     if (Object.is(this.value, next)) return
     this.value = next
-    this.listeners.forEach((l) => l(next))
+    this.listeners.forEach((l) => { l(next); })
   }
 
   subscribe(listener: (v: T) => void): () => void {

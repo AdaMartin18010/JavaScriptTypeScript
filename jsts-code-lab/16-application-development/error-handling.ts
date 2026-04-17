@@ -220,9 +220,7 @@ export class CircuitBreaker {
 // 4. 错误边界 (Error Boundary)
 // ============================================================================
 
-export interface ErrorBoundaryFallback {
-  (error: Error, reset: () => void): void;
-}
+export type ErrorBoundaryFallback = (error: Error, reset: () => void) => void;
 
 export class ErrorBoundary {
   private hasError = false;
@@ -235,7 +233,7 @@ export class ErrorBoundary {
 
   async try<T>(fn: () => Promise<T>): Promise<T | null> {
     if (this.hasError) {
-      this.fallback(this.error!, () => this.reset());
+      this.fallback(this.error!, () => { this.reset(); });
       return null;
     }
 
@@ -244,7 +242,7 @@ export class ErrorBoundary {
     } catch (err) {
       this.hasError = true;
       this.error = err as Error;
-      this.fallback(this.error, () => this.reset());
+      this.fallback(this.error, () => { this.reset(); });
       return null;
     }
   }
@@ -285,7 +283,7 @@ export interface LogEntry {
 
 export class Logger {
   private level: LogLevel = LogLevel.INFO;
-  private handlers: Array<(entry: LogEntry) => void> = [];
+  private handlers: ((entry: LogEntry) => void)[] = [];
 
   setLevel(level: LogLevel): void {
     this.level = level;
@@ -306,7 +304,7 @@ export class Logger {
       error
     };
 
-    this.handlers.forEach(handler => handler(entry));
+    this.handlers.forEach(handler => { handler(entry); });
   }
 
   debug(message: string, context?: Record<string, unknown>): void {

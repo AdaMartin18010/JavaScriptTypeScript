@@ -18,7 +18,7 @@ interface PipelineStage<I, O> {
 // ============================================================================
 
 class Pipeline<I, T = I> {
-  private stages: Array<(input: unknown) => unknown> = [];
+  private stages: ((input: unknown) => unknown)[] = [];
 
   pipe<U>(stage: PipelineStage<T, U>): Pipeline<I, U> {
     this.stages.push(stage.process.bind(stage) as (input: unknown) => unknown);
@@ -84,9 +84,7 @@ class AggregateStage<T, U> implements PipelineStage<T[], U> {
 // 4. CSV 处理器
 // ============================================================================
 
-interface CSVRow {
-  [key: string]: string;
-}
+type CSVRow = Record<string, string>;
 
 class CSVParser implements PipelineStage<string, CSVRow[]> {
   process(input: string): CSVRow[] {

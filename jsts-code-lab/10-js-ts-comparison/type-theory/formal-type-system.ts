@@ -30,9 +30,7 @@ import 'reflect-metadata';
 type PrimitiveName = 'number' | 'string' | 'boolean' | 'undefined' | 'null' | 'symbol' | 'bigint';
 
 // 上下文 (Context) 的形式化表示
-export interface TypeContext {
-  [variable: string]: TypeAnnotation;
-}
+export type TypeContext = Record<string, TypeAnnotation>;
 
 export type TypeAnnotation =
   | { kind: 'primitive'; name: PrimitiveName }

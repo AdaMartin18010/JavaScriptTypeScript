@@ -75,7 +75,7 @@ interface QueryOptions<T> {
 
 // 用户 Repository 实现
 export class UserRepository implements Repository<User, CreateUserInput, UpdateUserInput> {
-  private users: Map<string, User> = new Map();
+  private users = new Map<string, User>();
 
   async findMany(options?: QueryOptions<User>): Promise<User[]> {
     let results = Array.from(this.users.values());
@@ -210,7 +210,7 @@ export class RelationLoader {
 // ============================================================================
 
 export class TransactionManager {
-  private operations: Array<() => Promise<void>> = [];
+  private operations: (() => Promise<void>)[] = [];
 
   add<T>(operation: () => Promise<T>): Promise<T> {
     return new Promise((resolve, reject) => {

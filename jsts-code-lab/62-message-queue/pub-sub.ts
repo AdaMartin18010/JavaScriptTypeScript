@@ -99,8 +99,8 @@ export class TopicMatcher {
 // ============================================================================
 
 export class PubSubHub {
-  private subscriptions: Map<string, Subscription[]> = new Map(); // topic -> subscriptions
-  private patterns: Set<string> = new Set();
+  private subscriptions = new Map<string, Subscription[]>(); // topic -> subscriptions
+  private patterns = new Set<string>();
   private stats = { published: 0, delivered: 0 };
   private messageHistory: PubSubMessage[] = [];
   private maxHistory: number;
@@ -309,8 +309,8 @@ export interface ConsumerGroup {
 }
 
 export class ConsumerGroupManager {
-  private groups: Map<string, ConsumerGroup> = new Map();
-  private messageOffset: Map<string, number> = new Map(); // group -> offset
+  private groups = new Map<string, ConsumerGroup>();
+  private messageOffset = new Map<string, number>(); // group -> offset
 
   /**
    * 创建消费者组

@@ -31,7 +31,7 @@ export interface User {
 
 // 内存中的假存储实现
 export class FakeUserRepository implements UserRepository {
-  private users: Map<string, User> = new Map();
+  private users = new Map<string, User>();
 
   async findById(id: string): Promise<User | null> {
     return this.users.get(id) || null;
@@ -61,7 +61,7 @@ export interface EmailService {
 }
 
 export class FakeEmailService implements EmailService {
-  sentEmails: Array<{ to: string; subject: string; body: string }> = [];
+  sentEmails: { to: string; subject: string; body: string }[] = [];
 
   async send(to: string, subject: string, body: string): Promise<void> {
     this.sentEmails.push({ to, subject, body });
@@ -135,7 +135,7 @@ export interface PaymentResult {
 
 // Stub HTTP 客户端
 export class StubHttpClient {
-  private responses: Map<string, unknown> = new Map();
+  private responses = new Map<string, unknown>();
   private defaultResponse: unknown = { error: 'Not stubbed' };
 
   stubGet(url: string, response: unknown): void {
@@ -170,7 +170,7 @@ export class StubHttpClient {
 // ============================================================================
 
 export class SpyLogger {
-  calls: Array<{ level: string; message: string; timestamp: number }> = [];
+  calls: { level: string; message: string; timestamp: number }[] = [];
 
   debug(message: string): void {
     this.record('debug', message);
@@ -216,7 +216,7 @@ export class SpyLogger {
 export function createSpy<T extends (...args: any[]) => any>(
   originalFn?: T
 ): SpyFunction<T> {
-  const calls: Array<{ args: Parameters<T>; returnValue: ReturnType<T> }> = [];
+  const calls: { args: Parameters<T>; returnValue: ReturnType<T> }[] = [];
 
   const spy = function (...args: Parameters<T>): ReturnType<T> {
     const returnValue = originalFn ? originalFn(...args) : undefined as ReturnType<T>;
@@ -238,7 +238,7 @@ export function createSpy<T extends (...args: any[]) => any>(
 
 export interface SpyFunction<T extends (...args: any[]) => any> {
   (...args: Parameters<T>): ReturnType<T>;
-  calls: Array<{ args: Parameters<T>; returnValue: ReturnType<T> }>;
+  calls: { args: Parameters<T>; returnValue: ReturnType<T> }[];
   wasCalledWith(...args: Parameters<T>): boolean;
   getCallCount(): number;
   reset(): void;
@@ -258,8 +258,8 @@ export interface MockExpectation<T = unknown> {
 
 export class MockObject<T extends object> {
   private expectations: MockExpectation[] = [];
-  private actualCalls: Array<{ method: string; args: unknown[] }> = [];
-  private stubbedMethods: Map<string, (...args: unknown[]) => unknown> = new Map();
+  private actualCalls: { method: string; args: unknown[] }[] = [];
+  private stubbedMethods = new Map<string, (...args: unknown[]) => unknown>();
 
   expect(method: keyof T): MockExpectationBuilder<T> {
     return new MockExpectationBuilder(this, method as string);

@@ -51,7 +51,7 @@ export class GatewayRouter {
     const params: Record<string, string> = {};
     const paramNames = routePath.match(/:([^/]+)/g) || [];
     const pattern = routePath.replace(/:([^/]+)/g, '([^/]+)');
-    const matches = requestPath.match(new RegExp(`^${pattern}$`));
+    const matches = new RegExp(`^${pattern}$`).exec(requestPath);
     
     if (matches) {
       paramNames.forEach((name, i) => {
@@ -64,11 +64,11 @@ export class GatewayRouter {
 }
 
 export class RateLimiter {
-  private requests: Map<string, number[]> = new Map();
+  private requests = new Map<string, number[]>();
   
   constructor(
-    private windowMs: number = 60000,
-    private maxRequests: number = 100
+    private windowMs = 60000,
+    private maxRequests = 100
   ) {}
   
   isAllowed(clientId: string): { allowed: boolean; remaining: number } {
@@ -94,11 +94,11 @@ export class RateLimiter {
 }
 
 export class CircuitBreaker {
-  private state: Map<string, { state: 'closed' | 'open' | 'half-open'; failures: number; lastFailureTime: number }> = new Map();
+  private state = new Map<string, { state: 'closed' | 'open' | 'half-open'; failures: number; lastFailureTime: number }>();
   
   constructor(
-    private failureThreshold: number = 5,
-    private resetTimeout: number = 30000
+    private failureThreshold = 5,
+    private resetTimeout = 30000
   ) {}
   
   async execute<T>(serviceName: string, operation: () => Promise<T>): Promise<T> {

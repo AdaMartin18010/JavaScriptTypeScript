@@ -65,7 +65,7 @@ export interface RouteConfig {
 }
 
 export class RouteBasedCodeSplitter {
-  private routes: Map<string, RouteConfig> = new Map();
+  private routes = new Map<string, RouteConfig>();
   private loadedComponents = new Map<string, unknown>();
 
   registerRoute(config: RouteConfig): void {
@@ -125,7 +125,7 @@ export function createUtils() {
       let timeout: ReturnType<typeof setTimeout>;
       return (...args: Parameters<T>) => {
         clearTimeout(timeout);
-        timeout = setTimeout(() => fn(...args), delay);
+        timeout = setTimeout(() => { fn(...args); }, delay);
       };
     }
   };
@@ -182,7 +182,7 @@ export class ResourceHintsManager {
   }
 
   // 预加载关键资源
-  preloadCriticalResources(resources: Array<{ href: string; as: string }>): void {
+  preloadCriticalResources(resources: { href: string; as: string }[]): void {
     for (const resource of resources) {
       this.addHint({
         rel: 'preload',
@@ -220,16 +220,16 @@ export class ResourceHintsManager {
 
 export interface BundleAnalysis {
   totalSize: number;
-  modules: Array<{
+  modules: {
     name: string;
     size: number;
     percentage: number;
-  }>;
-  duplicates: Array<{
+  }[];
+  duplicates: {
     module: string;
     locations: string[];
     totalWasted: number;
-  }>;
+  }[];
 }
 
 export class BundleAnalyzer {

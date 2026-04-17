@@ -322,5 +322,5 @@ export function demo(): void {
   console.log('\n--- 循环依赖检测（异常有环） ---');
   const cycles = cyclicGraph.findCycles();
   console.log('检测到的循环数:', cycles.length);
-  cycles.forEach((c, i) => console.log(`  环 ${i + 1}:`, c.join(' → ')));
+  cycles.forEach((c, i) => { console.log(`  环 ${i + 1}:`, c.join(' → ')); });
 }

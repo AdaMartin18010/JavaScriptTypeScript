@@ -81,7 +81,7 @@ export class RoundRobinStrategy implements LoadBalancerStrategy {
 // ============================================================================
 
 export class WeightedRoundRobinStrategy implements LoadBalancerStrategy {
-  private currentWeights: Map<string, number> = new Map();
+  private currentWeights = new Map<string, number>();
   private backends: Backend[] = [];
 
   select(backends: Backend[]): Backend | null {
@@ -238,11 +238,11 @@ export class IPHashStrategy implements LoadBalancerStrategy {
 
 export class ConsistentHashStrategy implements LoadBalancerStrategy {
   private virtualNodes: number;
-  private ring: Map<number, string> = new Map(); // hash -> backendId
+  private ring = new Map<number, string>(); // hash -> backendId
   private sortedKeys: number[] = [];
-  private backends: Map<string, Backend> = new Map();
+  private backends = new Map<string, Backend>();
 
-  constructor(virtualNodes: number = 150) {
+  constructor(virtualNodes = 150) {
     this.virtualNodes = virtualNodes;
   }
 
@@ -388,10 +388,10 @@ export class WeightedRandomStrategy implements LoadBalancerStrategy {
 
 export class HealthChecker {
   private checkInterval?: ReturnType<typeof setInterval>;
-  private backendStats: Map<string, {
+  private backendStats = new Map<string, {
     consecutiveSuccesses: number;
     consecutiveFailures: number;
-  }> = new Map();
+  }>();
 
   constructor(private config: HealthCheckConfig) {}
 
@@ -418,7 +418,7 @@ export class HealthChecker {
     return Promise.race([
       checkFn(backend),
       new Promise<boolean>((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), this.config.timeout)
+        setTimeout(() => { reject(new Error('Timeout')); }, this.config.timeout)
       )
     ]);
   }
@@ -457,7 +457,7 @@ export class HealthChecker {
 export class LoadBalancer {
   private backends: Backend[] = [];
   private strategy: LoadBalancerStrategy;
-  private connections: Map<string, number> = new Map(); // 追踪连接数
+  private connections = new Map<string, number>(); // 追踪连接数
 
   constructor(strategy: LoadBalancerStrategy) {
     this.strategy = strategy;

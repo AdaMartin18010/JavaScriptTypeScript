@@ -14,7 +14,7 @@ import {
 } from './state-manager.js';
 
 describe('createStore', () => {
-  type State = { count: number };
+  interface State { count: number }
   const reducer: Reducer<State> = (state, action) => {
     if (state === undefined) return { count: 0 };
     if (action.type === 'INCREMENT') return { count: state.count + 1 };
@@ -62,8 +62,8 @@ describe('createStore', () => {
 });
 
 describe('applyMiddleware', () => {
-  type State = { value: number };
-  type Action = { type: string };
+  interface State { value: number }
+  interface Action { type: string }
 
   const reducer = (state: State | undefined, action: Action): State => {
     if (state === undefined) return { value: 0 };
@@ -83,7 +83,7 @@ describe('applyMiddleware', () => {
 });
 
 describe('combineReducers', () => {
-  type State = { a: number; b: string };
+  interface State { a: number; b: string }
   const reducerA = (state: number | undefined, action: { type: string }) =>
     state === undefined ? 0 : state;
   const reducerB = (state: string | undefined, action: { type: string }) =>
@@ -150,7 +150,7 @@ describe('todoReducer', () => {
   });
 
   it('should set filter', () => {
-    let state = todoReducer(undefined, TodoActions.setFilter('completed'));
+    const state = todoReducer(undefined, TodoActions.setFilter('completed'));
     expect(state.filter).toBe('completed');
   });
 });

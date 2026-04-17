@@ -23,9 +23,9 @@ export interface GraphEdge {
 
 // 内存图数据库
 export class InMemoryGraph {
-  private nodes: Map<string, GraphNode> = new Map();
-  private edges: Map<string, GraphEdge> = new Map();
-  private adjacencyList: Map<string, Set<string>> = new Map(); // node -> edges
+  private nodes = new Map<string, GraphNode>();
+  private edges = new Map<string, GraphEdge>();
+  private adjacencyList = new Map<string, Set<string>>(); // node -> edges
   
   // 添加节点
   addNode(id: string, labels: string[] = [], properties: Record<string, unknown> = {}): GraphNode {
@@ -78,8 +78,8 @@ export class InMemoryGraph {
   }
   
   // Cypher风格查询（简化版）
-  query(pattern: { start: string; relationship: string; end?: string }): Array<{ start: GraphNode; edge: GraphEdge; end?: GraphNode }> {
-    const results: Array<{ start: GraphNode; edge: GraphEdge; end?: GraphNode }> = [];
+  query(pattern: { start: string; relationship: string; end?: string }): { start: GraphNode; edge: GraphEdge; end?: GraphNode }[] {
+    const results: { start: GraphNode; edge: GraphEdge; end?: GraphNode }[] = [];
     
     const startNodes = this.findNodesByLabel(pattern.start);
     
@@ -88,10 +88,10 @@ export class InMemoryGraph {
       
       for (const edgeId of edgeIds) {
         const edge = this.edges.get(edgeId);
-        if (edge && edge.type === pattern.relationship) {
+        if (edge?.type === pattern.relationship) {
           if (pattern.end) {
             const end = this.nodes.get(edge.to);
-            if (end && end.labels.includes(pattern.end)) {
+            if (end?.labels.includes(pattern.end)) {
               results.push({ start, edge, end });
             }
           } else {
@@ -116,7 +116,7 @@ export class GraphTraversal {
   // BFS遍历
   bfs(startNodeId: string, callback: (node: GraphNode, depth: number) => boolean): void {
     const visited = new Set<string>();
-    const queue: Array<{ id: string; depth: number }> = [{ id: startNodeId, depth: 0 }];
+    const queue: { id: string; depth: number }[] = [{ id: startNodeId, depth: 0 }];
     
     while (queue.length > 0) {
       const { id, depth } = queue.shift()!;
@@ -175,7 +175,7 @@ export class PathFinder {
     }
     
     const visited = new Set<string>();
-    const queue: Array<{ id: string; path: string[] }> = [{ id: startId, path: [startId] }];
+    const queue: { id: string; path: string[] }[] = [{ id: startId, path: [startId] }];
     
     while (queue.length > 0) {
       const { id, path } = queue.shift()!;
@@ -205,14 +205,14 @@ export class PathFinder {
   }
   
   // 所有简单路径（限制深度）
-  findAllPaths(startId: string, endId: string, maxDepth: number = 5): GraphNode[][] {
+  findAllPaths(startId: string, endId: string, maxDepth = 5): GraphNode[][] {
     const paths: GraphNode[][] = [];
     
     const dfs = (current: string, path: string[], depth: number): void => {
       if (depth > maxDepth) return;
       
       if (current === endId) {
-        const fullPath = path.map(id => this.graph.getNode(id)).filter(n => n !== undefined) as GraphNode[];
+        const fullPath = path.map(id => this.graph.getNode(id)).filter(n => n !== undefined);
         paths.push(fullPath);
         return;
       }
@@ -234,8 +234,8 @@ export class PathFinder {
 export class PageRank {
   constructor(private graph: InMemoryGraph) {}
   
-  calculate(iterations: number = 100, dampingFactor: number = 0.85): Map<string, number> {
-    const nodes = Array.from(this.graph['nodes'].keys());
+  calculate(iterations = 100, dampingFactor = 0.85): Map<string, number> {
+    const nodes = Array.from(this.graph.nodes.keys());
     const n = nodes.length;
     
     if (n === 0) return new Map();
@@ -281,7 +281,7 @@ export class CommunityDetection {
     let nextCommunityId = 0;
     
     // 初始：每个节点一个社区
-    for (const nodeId of this.graph['nodes'].keys()) {
+    for (const nodeId of this.graph.nodes.keys()) {
       communities.set(nodeId, nextCommunityId++);
     }
     
@@ -289,7 +289,7 @@ export class CommunityDetection {
     for (let iteration = 0; iteration < 10; iteration++) {
       const newCommunities = new Map<string, number>();
       
-      for (const nodeId of this.graph['nodes'].keys()) {
+      for (const nodeId of this.graph.nodes.keys()) {
         const neighbors = this.graph.getNeighbors(nodeId);
         
         if (neighbors.length === 0) {

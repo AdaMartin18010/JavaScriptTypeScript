@@ -43,8 +43,8 @@ export interface MigrationStatus {
 // ============================================================================
 
 export class MigrationRunner {
-  private migrations: Map<string, Migration> = new Map();
-  private appliedMigrations: Map<string, MigrationRecord> = new Map();
+  private migrations = new Map<string, Migration>();
+  private appliedMigrations = new Map<string, MigrationRecord>();
   private storage: MigrationStorage;
 
   constructor(storage: MigrationStorage) {
@@ -287,7 +287,7 @@ export interface MigrationStorage {
 // 内存存储实现（测试用）
 export class MemoryMigrationStorage implements MigrationStorage {
   private appliedMigrations: MigrationRecord[] = [];
-  private migrationFiles: Map<string, string> = new Map();
+  private migrationFiles = new Map<string, string>();
 
   async loadAppliedMigrations(): Promise<MigrationRecord[]> {
     return [...this.appliedMigrations];
@@ -345,24 +345,24 @@ export async function demo(): Promise<void> {
     id: '001_create_users',
     name: 'Create users table',
     timestamp: 1,
-    up: async () => console.log('  Creating users table...'),
-    down: async () => console.log('  Dropping users table...')
+    up: async () => { console.log('  Creating users table...'); },
+    down: async () => { console.log('  Dropping users table...'); }
   });
 
   runner.register({
     id: '002_add_email_index',
     name: 'Add email index',
     timestamp: 2,
-    up: async () => console.log('  Adding email index...'),
-    down: async () => console.log('  Removing email index...')
+    up: async () => { console.log('  Adding email index...'); },
+    down: async () => { console.log('  Removing email index...'); }
   });
 
   runner.register({
     id: '003_create_posts',
     name: 'Create posts table',
     timestamp: 3,
-    up: async () => console.log('  Creating posts table...'),
-    down: async () => console.log('  Dropping posts table...')
+    up: async () => { console.log('  Creating posts table...'); },
+    down: async () => { console.log('  Dropping posts table...'); }
   });
 
   console.log('1. 初始状态');

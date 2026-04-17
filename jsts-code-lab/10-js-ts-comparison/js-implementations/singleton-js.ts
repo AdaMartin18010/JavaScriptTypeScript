@@ -56,12 +56,12 @@ export class SingletonTS {
  * 3. 运行时可能传入错误类型
  * 4. IDE 无法提供智能提示
  */
-type SingletonJSInstance = {
+interface SingletonJSInstance {
   data: Map<string, unknown>;
   set(key: string, value: unknown): void;
   get(key: string): unknown;
   has(key: string): boolean;
-};
+}
 
 const SingletonJS: {
   instance: SingletonJSInstance | null;
@@ -170,13 +170,13 @@ class SingletonJSClass {
 
 export class SingletonJSWithDefense {
   static instance: SingletonJSWithDefense | null = null;
-  data: Map<string, unknown> = new Map();
+  data = new Map<string, unknown>();
 
   static getInstance(): SingletonJSWithDefense {
     if (!this.instance) {
       this.instance = new SingletonJSWithDefense();
     }
-    return this.instance!;
+    return this.instance;
   }
 
   /**

@@ -29,8 +29,8 @@ export interface RetryConfig {
   maxDelayMs: number;
   backoffStrategy: 'fixed' | 'linear' | 'exponential' | 'exponential-jitter' | 'fibonacci' | 'decorrelated-jitter';
   backoffMultiplier: number;
-  retryableErrors?: Array<string | RegExp | ((error: Error) => boolean)>;
-  nonRetryableErrors?: Array<string | RegExp | ((error: Error) => boolean)>;
+  retryableErrors?: (string | RegExp | ((error: Error) => boolean))[];
+  nonRetryableErrors?: (string | RegExp | ((error: Error) => boolean))[];
   onRetry?: (attempt: number, error: Error, delayMs: number) => void;
   onSuccess?: (attempt: number, result: unknown) => void;
   onFailure?: (error: Error) => void;
@@ -329,7 +329,7 @@ export interface IdempotencyStore {
 }
 
 export class InMemoryIdempotencyStore implements IdempotencyStore {
-  private store: Map<string, { result: unknown; timestamp: number }> = new Map();
+  private store = new Map<string, { result: unknown; timestamp: number }>();
 
   get(key: string): { result: unknown; timestamp: number } | undefined {
     return this.store.get(key);
@@ -377,14 +377,14 @@ export class BatchRetryExecutor {
   constructor(private config: RetryConfig) {}
 
   async executeBatch<T>(
-    operations: Array<() => Promise<T>>,
+    operations: (() => Promise<T>)[],
     options: {
       concurrency?: number;
       continueOnError?: boolean;
     } = {}
-  ): Promise<Array<RetryResult<T>>> {
+  ): Promise<RetryResult<T>[]> {
     const { concurrency = 5, continueOnError = false } = options;
-    const results: Array<RetryResult<T>> = [];
+    const results: RetryResult<T>[] = [];
     const executor = new RetryExecutor(this.config);
 
     // 简单的并发控制

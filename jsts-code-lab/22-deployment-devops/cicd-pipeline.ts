@@ -26,7 +26,7 @@ export interface Trigger {
   push?: { branches?: string[]; tags?: string[]; paths?: string[] };
   pull_request?: { branches?: string[] };
   workflow_dispatch?: Record<string, unknown>;
-  schedule?: Array<{ cron: string }>;
+  schedule?: { cron: string }[];
 }
 
 export interface Job {
@@ -59,37 +59,37 @@ export interface Step {
 export class WorkflowBuilder {
   private workflow: Partial<GitHubWorkflow> = {};
 
-  name(n: string): WorkflowBuilder {
+  name(n: string): this {
     this.workflow.name = n;
     return this;
   }
 
-  on(trigger: Trigger): WorkflowBuilder {
+  on(trigger: Trigger): this {
     this.workflow.on = trigger;
     return this;
   }
 
-  onPush(branches?: string[], tags?: string[]): WorkflowBuilder {
+  onPush(branches?: string[], tags?: string[]): this {
     this.workflow.on = {
       push: { branches, tags }
     };
     return this;
   }
 
-  onPullRequest(branches?: string[]): WorkflowBuilder {
+  onPullRequest(branches?: string[]): this {
     this.workflow.on = {
       pull_request: { branches }
     };
     return this;
   }
 
-  env(key: string, value: string): WorkflowBuilder {
+  env(key: string, value: string): this {
     this.workflow.env = this.workflow.env || {};
     this.workflow.env[key] = value;
     return this;
   }
 
-  job(id: string, job: Job): WorkflowBuilder {
+  job(id: string, job: Job): this {
     this.workflow.jobs = this.workflow.jobs || {};
     this.workflow.jobs[id] = job;
     return this;

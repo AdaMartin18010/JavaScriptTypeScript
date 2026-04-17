@@ -43,7 +43,7 @@ async function fetchFromBackup() {
 
 function timeout(ms: number): Promise<never> {
   return new Promise((_, reject) => 
-    setTimeout(() => reject(new Error('Timeout')), ms)
+    setTimeout(() => { reject(new Error('Timeout')); }, ms)
   );
 }
 
@@ -89,7 +89,7 @@ async function anyExample() {
 // ============================================================================
 
 async function sequence<T>(
-  fns: Array<() => Promise<T>>
+  fns: (() => Promise<T>)[]
 ): Promise<T[]> {
   const results: T[] = [];
   
@@ -112,7 +112,7 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 type AsyncFn<T, R> = (input: T) => Promise<R>;
 
-function pipe<T>(value: T, ...fns: Array<AsyncFn<any, any>>): Promise<any> {
+function pipe<T>(value: T, ...fns: AsyncFn<any, any>[]): Promise<any> {
   return fns.reduce(
     (acc, fn) => acc.then(fn),
     Promise.resolve(value)

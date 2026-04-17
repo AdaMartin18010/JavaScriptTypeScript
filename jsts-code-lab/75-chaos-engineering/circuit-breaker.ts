@@ -95,7 +95,7 @@ export interface ExecutionResult<T> {
 // ==================== 滑动窗口计数器 ====================
 
 class SlidingWindowCounter {
-  private events: Array<{ timestamp: number; success: boolean; latency: number }> = [];
+  private events: { timestamp: number; success: boolean; latency: number }[] = [];
 
   constructor(private windowSize: number) {}
 
@@ -439,7 +439,7 @@ export class AdvancedCircuitBreaker {
 // ==================== 熔断器组 ====================
 
 export class CircuitBreakerGroup {
-  private breakers: Map<string, AdvancedCircuitBreaker> = new Map();
+  private breakers = new Map<string, AdvancedCircuitBreaker>();
 
   /**
    * 注册熔断器
@@ -478,7 +478,7 @@ export class CircuitBreakerGroup {
   /**
    * 获取所有熔断器指标
    */
-  getAllMetrics(): Array<{ name: string; metrics: CircuitBreakerMetrics }> {
+  getAllMetrics(): { name: string; metrics: CircuitBreakerMetrics }[] {
     return Array.from(this.breakers.entries()).map(([name, breaker]) => ({
       name,
       metrics: breaker.getMetrics()

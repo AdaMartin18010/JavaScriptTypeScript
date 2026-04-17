@@ -205,7 +205,7 @@ class GameSavepoint {
 }
 
 class SaveManager {
-  private savepoints: Map<string, GameSavepoint> = new Map();
+  private savepoints = new Map<string, GameSavepoint>();
 
   addSavepoint(name: string, savepoint: GameSavepoint): void {
     this.savepoints.set(name, savepoint);

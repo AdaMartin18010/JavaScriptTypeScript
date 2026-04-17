@@ -18,7 +18,7 @@ export interface Message<T = unknown> {
 
 // 发布订阅
 export class PubSub {
-  private subscribers: Map<string, Set<(msg: Message) => void>> = new Map();
+  private subscribers = new Map<string, Set<(msg: Message) => void>>();
   
   subscribe(topic: string, handler: (msg: Message) => void): () => void {
     if (!this.subscribers.has(topic)) {
@@ -58,13 +58,13 @@ export class PubSub {
 export class TaskQueue {
   private queue: Message[] = [];
   private processing = false;
-  private handlers: Map<string, (payload: unknown) => Promise<unknown>> = new Map();
+  private handlers = new Map<string, (payload: unknown) => Promise<unknown>>();
   
   registerHandler(taskType: string, handler: (payload: unknown) => Promise<unknown>): void {
     this.handlers.set(taskType, handler);
   }
   
-  async enqueue(taskType: string, payload: unknown, priority: number = 5): Promise<string> {
+  async enqueue(taskType: string, payload: unknown, priority = 5): Promise<string> {
     const msg: Message = {
       id: Math.random().toString(36).slice(2),
       topic: taskType,
@@ -122,12 +122,12 @@ export class TaskQueue {
 
 // 延迟队列
 export class DelayQueue {
-  private delayedMessages: Array<{ msg: Message; executeAt: number }> = [];
+  private delayedMessages: { msg: Message; executeAt: number }[] = [];
   private timer: ReturnType<typeof setInterval> | null = null;
   private pubsub = new PubSub();
   
   start(): void {
-    this.timer = setInterval(() => this.checkDelayedMessages(), 1000);
+    this.timer = setInterval(() => { this.checkDelayedMessages(); }, 1000);
   }
   
   stop(): void {

@@ -13,8 +13,8 @@ export interface HMRMessage {
 }
 
 export class HMRServer {
-  private clients: Set<WebSocket> = new Set();
-  private moduleGraph: Map<string, Set<string>> = new Map();
+  private clients = new Set<WebSocket>();
+  private moduleGraph = new Map<string, Set<string>>();
   
   addClient(ws: WebSocket): void {
     this.clients.add(ws);
@@ -68,19 +68,19 @@ export class HMRServer {
 }
 
 export class FileWatcher {
-  private callbacks: Array<(path: string) => void> = [];
+  private callbacks: ((path: string) => void)[] = [];
   
   onChange(callback: (path: string) => void): void {
     this.callbacks.push(callback);
   }
   
   trigger(path: string): void {
-    this.callbacks.forEach(cb => cb(path));
+    this.callbacks.forEach(cb => { cb(path); });
   }
 }
 
 export class ErrorOverlay {
-  private errors: Array<{ id: string; message: string; frame?: string }> = [];
+  private errors: { id: string; message: string; frame?: string }[] = [];
   
   addError(error: Error, source?: string): void {
     this.errors.push({
@@ -117,7 +117,7 @@ export class ViteLikeServer {
   
   constructor(private root: string) {}
   
-  async start(port: number = 5173): Promise<void> {
+  async start(port = 5173): Promise<void> {
     console.log(`[DevServer] 启动于 http://localhost:${port}`);
     
     this.watcher.onChange((path) => {

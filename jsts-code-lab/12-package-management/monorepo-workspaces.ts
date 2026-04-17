@@ -194,10 +194,10 @@ export type ChangeType = 'major' | 'minor' | 'patch';
 export interface Changeset {
   id: string;
   summary: string;
-  releases: Array<{
+  releases: {
     name: string;
     type: ChangeType;
-  }>;
+  }[];
 }
 
 export class ChangesetManager {
@@ -229,19 +229,19 @@ export class ChangesetManager {
   }
 
   // 生成版本更新计划
-  generateVersionPlan(packages: Map<string, WorkspacePackage>): Array<{
+  generateVersionPlan(packages: Map<string, WorkspacePackage>): {
     name: string;
     oldVersion: string;
     newVersion: string;
     type: ChangeType;
-  }> {
+  }[] {
     const summary = this.summarize();
-    const plan: Array<{
+    const plan: {
       name: string;
       oldVersion: string;
       newVersion: string;
       type: ChangeType;
-    }> = [];
+    }[] = [];
 
     for (const [name, changeType] of summary) {
       const pkg = packages.get(name);
@@ -285,7 +285,7 @@ export interface Task {
 }
 
 export class TaskRunner {
-  private tasks: Map<string, Task> = new Map();
+  private tasks = new Map<string, Task>();
 
   register(task: Task): void {
     this.tasks.set(task.name, task);
@@ -352,7 +352,7 @@ export class TaskRunner {
       if (batch.length === 0) {
         for (const name of remaining) {
           const task = this.tasks.get(name);
-          if (task && task.dependencies?.some(dep => !this.tasks.has(dep))) {
+          if (task?.dependencies?.some(dep => !this.tasks.has(dep))) {
             throw new Error('Dependencies not met');
           }
         }

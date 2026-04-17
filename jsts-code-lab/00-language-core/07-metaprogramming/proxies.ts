@@ -122,7 +122,7 @@ function trigger(target: object, key: string | symbol) {
   if (!depsMap) return;
 
   const dep = depsMap.get(key);
-  dep?.forEach(effect => effect());
+  dep?.forEach(effect => { effect(); });
 }
 
 function reactive<T extends object>(target: T): T {
@@ -184,7 +184,7 @@ function singleton<T extends new (...args: any[]) => object>(Constructor: T): T 
       }
       return instance;
     }
-  }) as T;
+  });
 }
 
 @singleton

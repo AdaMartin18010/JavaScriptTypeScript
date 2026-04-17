@@ -25,15 +25,15 @@ class MyPromise<T> {
   private state = PromiseState.Pending;
   private value?: T | PromiseLike<T>;
   private reason?: any;
-  private onFulfilledCallbacks: Array<(value: T | PromiseLike<T>) => void> = [];
-  private onRejectedCallbacks: Array<(reason: any) => void> = [];
+  private onFulfilledCallbacks: ((value: T | PromiseLike<T>) => void)[] = [];
+  private onRejectedCallbacks: ((reason: any) => void)[] = [];
 
   constructor(executor: Executor<T>) {
     const resolve: Resolve<T> = value => {
       if (this.state === PromiseState.Pending) {
         this.state = PromiseState.Fulfilled;
         this.value = value;
-        this.onFulfilledCallbacks.forEach(cb => cb(value));
+        this.onFulfilledCallbacks.forEach(cb => { cb(value); });
       }
     };
 
@@ -41,7 +41,7 @@ class MyPromise<T> {
       if (this.state === PromiseState.Pending) {
         this.state = PromiseState.Rejected;
         this.reason = reason;
-        this.onRejectedCallbacks.forEach(cb => cb(reason));
+        this.onRejectedCallbacks.forEach(cb => { cb(reason); });
       }
     };
 
@@ -82,9 +82,9 @@ class MyPromise<T> {
       };
 
       if (this.state === PromiseState.Fulfilled) {
-        queueMicrotask(() => fulfilledHandler(this.value!));
+        queueMicrotask(() => { fulfilledHandler(this.value!); });
       } else if (this.state === PromiseState.Rejected) {
-        queueMicrotask(() => rejectedHandler(this.reason));
+        queueMicrotask(() => { rejectedHandler(this.reason); });
       } else {
         this.onFulfilledCallbacks.push(fulfilledHandler);
         this.onRejectedCallbacks.push(rejectedHandler);
@@ -114,14 +114,14 @@ class MyPromise<T> {
   // 静态方法
   static resolve<T>(value: T | PromiseLike<T>): MyPromise<T> {
     if (value instanceof MyPromise) return value;
-    return new MyPromise(resolve => resolve(value));
+    return new MyPromise(resolve => { resolve(value); });
   }
 
   static reject<T = never>(reason?: any): MyPromise<T> {
-    return new MyPromise((_, reject) => reject(reason));
+    return new MyPromise((_, reject) => { reject(reason); });
   }
 
-  static all<T>(promises: Array<MyPromise<T>>): MyPromise<T[]> {
+  static all<T>(promises: MyPromise<T>[]): MyPromise<T[]> {
     return new MyPromise((resolve, reject) => {
       const results: T[] = [];
       let completed = 0;
@@ -140,13 +140,13 @@ class MyPromise<T> {
               resolve(results);
             }
           },
-          reason => reject(reason)
+          reason => { reject(reason); }
         );
       });
     });
   }
 
-  static race<T>(promises: Array<MyPromise<T>>): MyPromise<T> {
+  static race<T>(promises: MyPromise<T>[]): MyPromise<T> {
     return new MyPromise((resolve, reject) => {
       promises.forEach(promise => {
         MyPromise.resolve(promise).then(resolve, reject);
@@ -171,7 +171,7 @@ export function demo(): void {
   // 基础 Promise 演示
   console.log("\n1. Basic Promise resolution:");
   const p1 = new MyPromise<number>((resolve) => {
-    setTimeout(() => resolve(42), 10);
+    setTimeout(() => { resolve(42); }, 10);
   });
   p1.then(value => {
     console.log("   Resolved with:", value);
@@ -215,20 +215,20 @@ export function demo(): void {
     resolve("Success");
   });
   p4
-    .then(value => console.log("   Value:", value))
-    .finally(() => console.log("   Finally executed"));
+    .then(value => { console.log("   Value:", value); })
+    .finally(() => { console.log("   Finally executed"); });
 
   // 静态方法演示
   console.log("\n5. Static methods:");
   
   // MyPromise.resolve
   MyPromise.resolve("Immediate value").then(v => 
-    console.log("   resolve:", v)
+    { console.log("   resolve:", v); }
   );
 
   // MyPromise.reject
   MyPromise.reject("Error value").catch(e => 
-    console.log("   reject:", e)
+    { console.log("   reject:", e); }
   );
 
   // MyPromise.all
@@ -244,8 +244,8 @@ export function demo(): void {
   // MyPromise.race
   console.log("\n7. Promise.race:");
   MyPromise.race([
-    new MyPromise<number>(resolve => setTimeout(() => resolve(1), 50)),
-    new MyPromise<number>(resolve => setTimeout(() => resolve(2), 10))
+    new MyPromise<number>(resolve => setTimeout(() => { resolve(1); }, 50)),
+    new MyPromise<number>(resolve => setTimeout(() => { resolve(2); }, 10))
   ]).then(winner => {
     console.log("   Race winner:", winner);
   });

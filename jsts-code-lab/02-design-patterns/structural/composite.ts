@@ -30,7 +30,7 @@ class File implements FileSystemComponent {
     return this.size;
   }
 
-  display(indent: string = ''): string {
+  display(indent = ''): string {
     return `${indent}📄 ${this.name} (${this.size} bytes)`;
   }
 }
@@ -63,7 +63,7 @@ class Directory implements FileSystemComponent {
     return this.children.reduce((sum, child) => sum + child.getSize(), 0);
   }
 
-  display(indent: string = ''): string {
+  display(indent = ''): string {
     const lines = [`${indent}📁 ${this.name}/`];
     for (const child of this.children) {
       lines.push(child.display(indent + '  '));

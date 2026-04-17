@@ -86,7 +86,7 @@ export class CORSHandler {
       response.headers['access-control-allow-origin'] = '*';
     } else if (origin) {
       response.headers['access-control-allow-origin'] = origin;
-      response.headers['vary'] = 'Origin';
+      response.headers.vary = 'Origin';
     }
 
     // 设置凭证
@@ -95,7 +95,7 @@ export class CORSHandler {
       // 使用具体来源而非 * 当允许凭证时
       if (origin && this.config.allowedOrigins !== '*') {
         response.headers['access-control-allow-origin'] = origin;
-        response.headers['vary'] = 'Origin';
+        response.headers.vary = 'Origin';
       }
     }
 
@@ -204,7 +204,7 @@ export const DefaultCSRFConfig: CSRFConfig = {
 
 export class CSRFProtection {
   private config: CSRFConfig;
-  private tokens: Map<string, { token: string; expires: number }> = new Map();
+  private tokens = new Map<string, { token: string; expires: number }>();
 
   constructor(config: Partial<CSRFConfig> = {}) {
     this.config = { ...DefaultCSRFConfig, ...config };
@@ -347,7 +347,7 @@ export class DoubleSubmitCookie {
   // 验证双重提交
   validate(sessionId: string, cookieToken: string, submittedToken: string): boolean {
     // Cookie 中的 token 必须与提交的一致
-    if (!this.csrf['timingSafeCompare'](cookieToken, submittedToken)) {
+    if (!this.csrf.timingSafeCompare(cookieToken, submittedToken)) {
       return false;
     }
     

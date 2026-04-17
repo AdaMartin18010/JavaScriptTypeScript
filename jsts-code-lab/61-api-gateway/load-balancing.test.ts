@@ -40,7 +40,7 @@ describe('WeightedRoundRobinStrategy', () => {
       const b = wrr.select(backends)!;
       counts[b.id] = (counts[b.id] || 0) + 1;
     }
-    expect(counts['a']).toBeGreaterThan(counts['b']);
+    expect(counts.a).toBeGreaterThan(counts.b);
   });
 });
 

@@ -38,9 +38,9 @@ export interface HMRUpdate {
 // ============================================================================
 
 export class HMRRuntime {
-  private modules: Map<string, HMRModule> = new Map();
-  private updateCallbacks: Map<string, Array<(newModule: unknown) => void>> = new Map();
-  private disposeCallbacks: Map<string, Array<() => void>> = new Map();
+  private modules = new Map<string, HMRModule>();
+  private updateCallbacks = new Map<string, ((newModule: unknown) => void)[]>();
+  private disposeCallbacks = new Map<string, (() => void)[]>();
   private ws?: WebSocket;
 
   /**
@@ -83,7 +83,7 @@ export class HMRRuntime {
   /**
    * 建立 WebSocket 连接进行实时通信
    */
-  connect(url: string = 'ws://localhost:5173/__hmr'): void {
+  connect(url = 'ws://localhost:5173/__hmr'): void {
     if (typeof WebSocket === 'undefined') {
       console.log('[HMR] WebSocket not available in this environment');
       return;
@@ -107,7 +107,7 @@ export class HMRRuntime {
 
       this.ws.onclose = () => {
         console.log('[HMR] Connection closed, attempting to reconnect...');
-        setTimeout(() => this.connect(url), 0);
+        setTimeout(() => { this.connect(url); }, 0);
       };
     } catch (error) {
       console.error('[HMR] Failed to connect:', error);
@@ -194,7 +194,7 @@ export class HMRRuntime {
 // ============================================================================
 
 export class CSSHMRHandler {
-  private styleElements: Map<string, HTMLStyleElement> = new Map();
+  private styleElements = new Map<string, HTMLStyleElement>();
 
   /**
    * 注入或更新 CSS
@@ -221,7 +221,7 @@ export class CSSHMRHandler {
    */
   remove(id: string): void {
     const styleEl = this.styleElements.get(id);
-    if (styleEl && styleEl.parentNode) {
+    if (styleEl?.parentNode) {
       styleEl.parentNode.removeChild(styleEl);
       this.styleElements.delete(id);
       console.log(`[HMR:CSS] Removed: ${id}`);
@@ -234,8 +234,8 @@ export class CSSHMRHandler {
 // ============================================================================
 
 export class ModuleDependencyGraph {
-  private dependencies: Map<string, Set<string>> = new Map();
-  private dependents: Map<string, Set<string>> = new Map();
+  private dependencies = new Map<string, Set<string>>();
+  private dependents = new Map<string, Set<string>>();
 
   /**
    * 添加依赖关系

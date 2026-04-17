@@ -19,9 +19,9 @@ const message: string = "hello";
 
   it('类型检查器应正确推断变量和函数类型', () => {
     const types = getInferredTypes(sampleCode);
-    expect(types.functions['add']).toBe('(a: number, b: number) => number');
-    expect(types.variables['result']).toBe('number');
-    expect(types.variables['message']).toBe('string');
+    expect(types.functions.add).toBe('(a: number, b: number) => number');
+    expect(types.variables.result).toBe('number');
+    expect(types.variables.message).toBe('string');
   });
 
   it('AST 变换应将 const 转换为 let 并正确打印', () => {
@@ -35,6 +35,6 @@ const message: string = "hello";
   });
 
   it('demo() 应无异常执行', () => {
-    expect(() => demo()).not.toThrow();
+    expect(() => { demo(); }).not.toThrow();
   });
 });

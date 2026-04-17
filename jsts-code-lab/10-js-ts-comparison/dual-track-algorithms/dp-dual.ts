@@ -16,14 +16,14 @@ export function jsKnapsack(weights: any[], values: any[], capacity: any): number
     const v = Number(values[i - 1]);
     for (let c = 0; c <= capacity; c++) {
       if (w <= c) {
-        dp[i]![c] = Math.max(dp[i - 1]![c], dp[i - 1]![c - w]! + v);
+        dp[i][c] = Math.max(dp[i - 1][c], dp[i - 1][c - w] + v);
       } else {
-        dp[i]![c] = dp[i - 1]![c];
+        dp[i][c] = dp[i - 1][c];
       }
     }
   }
 
-  return dp[n]![capacity];
+  return dp[n][capacity];
 }
 
 // ============================================================================
@@ -40,14 +40,14 @@ export function jsLCS(a: any, b: any): number {
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
       if (s1[i - 1] === s2[j - 1]) {
-        dp[i]![j] = dp[i - 1]![j - 1]! + 1;
+        dp[i][j] = dp[i - 1][j - 1] + 1;
       } else {
-        dp[i]![j] = Math.max(dp[i - 1]![j]!, dp[i]![j - 1]!);
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
       }
     }
   }
 
-  return dp[m]![n];
+  return dp[m][n];
 }
 
 // ============================================================================
@@ -59,18 +59,18 @@ export function tsKnapsack(weights: number[], values: number[], capacity: number
   const dp: number[][] = Array.from({ length: n + 1 }, () => Array(capacity + 1).fill(0));
 
   for (let i = 1; i <= n; i++) {
-    const w = weights[i - 1]!;
-    const v = values[i - 1]!;
+    const w = weights[i - 1];
+    const v = values[i - 1];
     for (let c = 0; c <= capacity; c++) {
       if (w <= c) {
-        dp[i]![c] = Math.max(dp[i - 1]![c], dp[i - 1]![c - w]! + v);
+        dp[i][c] = Math.max(dp[i - 1][c], dp[i - 1][c - w] + v);
       } else {
-        dp[i]![c] = dp[i - 1]![c];
+        dp[i][c] = dp[i - 1][c];
       }
     }
   }
 
-  return dp[n]![capacity];
+  return dp[n][capacity];
 }
 
 // ============================================================================
@@ -85,12 +85,12 @@ export function tsLCS(a: string, b: string): number {
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
       if (a[i - 1] === b[j - 1]) {
-        dp[i]![j] = dp[i - 1]![j - 1]! + 1;
+        dp[i][j] = dp[i - 1][j - 1] + 1;
       } else {
-        dp[i]![j] = Math.max(dp[i - 1]![j]!, dp[i]![j - 1]!);
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
       }
     }
   }
 
-  return dp[m]![n];
+  return dp[m][n];
 }

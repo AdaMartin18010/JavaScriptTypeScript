@@ -57,9 +57,9 @@ export class AITestGenerator {
     return tests;
   }
   
-  private parseParams(code: string): Array<{ name: string; type: string }> {
+  private parseParams(code: string): { name: string; type: string }[] {
     // 简化解析
-    const match = code.match(/\(([^)]*)\)/);
+    const match = /\(([^)]*)\)/.exec(code);
     if (!match) return [];
     
     return match[1].split(',').map(p => {

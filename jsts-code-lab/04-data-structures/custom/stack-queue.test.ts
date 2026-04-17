@@ -101,7 +101,7 @@ describe('stack-queue', () => {
 
   describe('demo', () => {
     it('should run without errors', () => {
-      expect(() => demo()).not.toThrow();
+      expect(() => { demo(); }).not.toThrow();
     });
   });
 });
