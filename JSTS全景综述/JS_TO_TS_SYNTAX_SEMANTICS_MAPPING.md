@@ -1,7 +1,7 @@
 # JavaScript → TypeScript 语法/语义映射全景指南
 
-> **版本**: 1.0  
-> **对齐来源**: ECMA-262 2025 (ES16)、TypeScript 5.8–6.0 Language Specification、tc39/proposal-type-annotations (Stage 1)、Siek & Taha Gradual Typing Theory、TypeScript Handbook — Migrating from JavaScript  
+> **版本**: 2.0  
+> **对齐来源**: ECMA-262 2025/2026、TypeScript 5.8–7.0 Language Specification、Node.js 22/24 Native TypeScript、tc39/proposal-type-annotations (Stage 1)、Siek & Taha Gradual Typing Theory、Stanford CS 242 / MIT 6.5110 / CMU 15-411 / Berkeley CS 164 / UW CSE 341、TypeScript Handbook — Migrating from JavaScript  
 > **目标**: 为从 JavaScript 迁移到 TypeScript 的开发者提供逐语法点的精确映射、语义边界说明与权威来源索引。
 
 ---
@@ -577,13 +577,16 @@ flowchart TD
 
 ### 项目内关联文档
 
-- `JS_TS_语言语义模型全面分析.md` — 三层语义模型深度解析
-- `01_language_core.md` — ES2020–ES2025 + TS 5.x/6.0 特性全览
+- `JS_TS_语言语义模型全面分析.md` — 三层语义模型深度解析（v4.0，含编译工程与学术对齐）
+- `01_language_core.md` — ES2020–ES2026 + TS 5.x/6.0/7.0 特性全览
 - `GRADUAL_TYPING_THEORY.md` — 渐进类型理论（Siek & Taha 到 Guarded Domain Theory）
+- `TYPE_SOUNDNESS_ANALYSIS.md` — 类型健全性与 7 种 unsound 行为分析
 - `COMPILER_LANGUAGE_DESIGN.md` — 编译器架构与类型系统实现
+- `docs/comparison-matrices/js-ts-compilers-compare.md` — 编译器/转译器语义对比矩阵
+- `jsts-code-lab/10-js-ts-comparison/compiler-api/` — TypeScript Compiler API 工程实践代码
 - `03_design_patterns.md` — GoF 23 种设计模式及 TS 特有模式
 - `DATA_STRUCTURES_ALGORITHMS_THEORY.md` — 数据结构与算法理论
 
 ---
 
-*文档版本: v1.0 | 最后更新: 2026-04-16*
+*文档版本: v2.0 | 最后更新: 2026-04-17*
