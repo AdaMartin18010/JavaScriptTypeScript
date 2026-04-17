@@ -17,7 +17,7 @@ hero:
       link: /categories/frontend-frameworks
     - theme: alt
       text: GitHub
-      link: https://github.com/yourusername/awesome-jsts-ecosystem
+      link: https://github.com/AdaMartin18010/JavaScriptTypeScript
 
 features:
   - icon: 🖥️

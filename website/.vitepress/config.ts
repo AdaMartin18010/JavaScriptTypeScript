@@ -51,7 +51,7 @@ export default defineConfig({
 
     // 社交链接
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/yourusername/awesome-jsts-ecosystem' }
+      { icon: 'github', link: 'https://github.com/AdaMartin18010/JavaScriptTypeScript' }
     ],
 
     // 搜索配置
@@ -88,7 +88,7 @@ export default defineConfig({
 
     // 编辑链接
     editLink: {
-      pattern: 'https://github.com/yourusername/awesome-jsts-ecosystem/edit/main/website/:path',
+      pattern: 'https://github.com/AdaMartin18010/JavaScriptTypeScript/edit/main/website/:path',
       text: '在 GitHub 上编辑此页'
     },
 
