@@ -63,7 +63,7 @@ const updates = ref([
   { date: '2026-04', tag: '新增', content: '新增编译器/转译器语义对比矩阵（tsc/Babel/SWC/esbuild/Rolldown/tsgo）' },
   { date: '2026-04', tag: '新增', content: '新增 TypeScript Compiler API 工程实践代码示例（AST 提取、Transformer、.d.ts 生成）' },
   { date: '2026-04', tag: '更新', content: '更新 ECMAScript 2025/2026 与 TypeScript 7.0 (Project Corsa) 前沿语义分析' },
-  { date: '2026-04', tag: '更新', content: 'jsts-code-lab 代码实验室扩展至 87 个模块，529 个可运行代码示例' },
+  { date: '2026-04', tag: '更新', content: 'jsts-code-lab 代码实验室扩展至 83 个模块，740+ 个 TypeScript 代码文件' },
 ])
 </script>
 

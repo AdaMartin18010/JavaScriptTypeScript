@@ -14,7 +14,7 @@
 
 > 🚀 精心策划的 JavaScript/TypeScript 生态系统资源列表，涵盖框架、工具、库和最佳实践。
 >
-> 📚 配套代码实验室：[jsts-code-lab](./jsts-code-lab/) - 89+ 模块，520+ TypeScript 文件，从理论到实践的完整实现
+> 📚 配套代码实验室：[jsts-code-lab](./jsts-code-lab/) - 83+ 模块，740+ TypeScript 文件，从理论到实践的完整实现
 >
 > 🎓 旗舰文档：[JS_TS_语言语义模型全面分析](./JSTS全景综述/JS_TS_语言语义模型全面分析.md) - 基于 ECMA-2025/2026、TypeScript 5.8–7.0，对齐 Stanford/MIT/CMU/Berkeley/UW 学术课程
 
@@ -33,7 +33,7 @@
 │  │ awesome-jsts-       │    │   jsts-code-lab     │    │   学习路径文档   │  │
 │  │   ecosystem         │    │  (代码实验室)        │    │   (Learning     │  │
 │  │                     │    │                     │    │     Paths)      │  │
-│  │ • 生态工具导航       │    │ • 89+ 技术模块       │    │                 │  │
+│  │ • 生态工具导航       │    │ • 83+ 技术模块       │    │                 │  │
 │  │ • 框架对比           │    │ • 280+ TS 实现      │    │ • 初学者路径     │  │
 │  │ • 最佳实践           │    │ • 理论+实践结合      │    │ • 进阶路径       │  │
 │  │ • 资源收录           │    │ • 可运行示例         │    │ • 架构师路径     │  │
@@ -2321,7 +2321,7 @@ const products = Array.from({ length: 10 }, () => createProduct())
 
 [jsts-code-lab](./jsts-code-lab/) 是本项目的核心实践部分，包含：
 
-- **89+ 技术模块**：从基础语法到分布式系统
+- **83+ 技术模块**：从基础语法到分布式系统
 - **430+ TypeScript 文件**：完整的类型安全实现
 - **理论 + 实践**：每个模块配有 THEOERY.md 和可运行代码
 - **测试覆盖**：使用 Vitest 进行单元测试
