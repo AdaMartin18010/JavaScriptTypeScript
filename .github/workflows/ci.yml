@@ -13,10 +13,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 15
+
     strategy:
+      fail-fast: false
       matrix:
         node-version: [22.x, 23.x]
+        shard: [1, 2]
 
     steps:
       - name: Checkout
@@ -48,7 +51,7 @@ jobs:
 
       - name: Run tests
         working-directory: jsts-code-lab
-        run: pnpm test:coverage
+        run: pnpm vitest --coverage --shard=${{ matrix.shard }}/2
 
       - name: Upload coverage
         if: matrix.node-version == '22.x'
