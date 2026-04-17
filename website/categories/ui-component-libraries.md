@@ -69,6 +69,6 @@ description: JavaScript/TypeScript UI 组件库 完整指南
 
 ## 相关分类
 
-- [状态管理](./04-state-management.md)
-- [表单处理](./05-forms.md)
-- [CSS 框架](./10-css-frameworks.md)
+- [状态管理](./state-management.md)
+- [表单处理](./form-handling.md)
+- [样式处理](./styling.md)
