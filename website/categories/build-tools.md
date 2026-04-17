@@ -505,4 +505,4 @@ packages:
 ## 相关阅读
 
 - [JS/TS 编译器与转译器对比矩阵](/comparison-matrices/js-ts-compilers-compare)
-- [JS_TS_语言语义模型全面分析](/JSTS全景综述/JS_TS_语言语义模型全面分析)
+- [JS_TS_语言语义模型全面分析](https://github.com/AdaMartin18010/JavaScriptTypeScript/blob/main/JSTS全景综述/JS_TS_语言语义模型全面分析.md)

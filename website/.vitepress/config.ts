@@ -15,9 +15,10 @@ export default defineConfig({
   // 清理URL
   cleanUrls: true,
 
-  // 忽略已知的跨项目死链（指向 jsts-code-lab 的链接）
+  // 忽略已知的跨项目死链（指向 jsts-code-lab 和 JSTS全景综述 的链接）
   ignoreDeadLinks: [
     /jsts-code-lab\//,
+    /JSTS全景综述\//,
   ],
   
   // 元数据
