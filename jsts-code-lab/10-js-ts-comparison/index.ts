@@ -15,3 +15,6 @@ export * as JsTsInterop from './interoperability/js-ts-interop.js';
 
 // Compiler API 工程实践
 export * as CompilerApi from './compiler-api/index.js';
+
+// 运行时语义对比
+export { comparePrivateFields } from './class-runtime-comparison.js';

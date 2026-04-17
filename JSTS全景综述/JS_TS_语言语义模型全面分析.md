@@ -1216,6 +1216,16 @@ CI 类型检查：tsc --noEmit 负责完整静态分析（静态语义层）
 
 **学术对齐**：这种「分层检查」的工程范式与 **Berkeley CS 164** 中讲授的 compiler pipeline 思想同构——将复杂问题分解为可并行、可增量、可缓存的阶段。
 
+### 10.5 相关代码示例
+
+本章讨论的编译工程语义在项目中均有对应的可运行代码示例：
+
+- **`jsts-code-lab/10-js-ts-comparison/compiler-api/extract-types.ts`**：演示如何使用 `ts.createProgram` 和自定义 `CompilerHost` 从内存源码中提取变量与函数的类型信息。
+- **`jsts-code-lab/10-js-ts-comparison/compiler-api/custom-transformer.ts`**：演示如何编写 `ts.TransformerFactory`，遍历 AST 并自动为类属性追加 `readonly` 修饰符。
+- **`jsts-code-lab/10-js-ts-comparison/compiler-api/generate-dts.ts`**：演示如何通过拦截 `CompilerHost.writeFile` 程序化生成 `.d.ts` 文件内容。
+- **`jsts-code-lab/10-js-ts-comparison/class-runtime-comparison.ts`**：通过运行时测试对比 JavaScript `#private` 字段与 TypeScript `private` 修饰符在编译后产物、原型链可见性、反射访问上的差异。
+- **`jsts-code-lab/10-js-ts-comparison/semantic-models/type-erasure-demo.ts`**：使用真实 TypeScript AST Transformer API 演示类型擦除的完整过程。
+
 ---
 
 ## 11. 学术课程对齐框架
