@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { RuntimeTypeChecker, narrowUnknownToString, castAnyToType } from './gradual-boundary-demo.js';
+import {
+  RuntimeTypeChecker,
+  narrowUnknownToString,
+  castAnyToType,
+  compareAnyVsUnknown,
+  demo,
+} from './gradual-boundary-demo.js';
 
 describe('gradual-boundary-demo', () => {
   it('应通过原始类型运行时检查', () => {
@@ -58,5 +64,23 @@ describe('gradual-boundary-demo', () => {
     const casted = castAnyToType<string>(value, 'string');
     // 运行时类型仍然是 number，但 any 语义允许这种转换
     expect(typeof casted).toBe('number');
+  });
+
+  it('compareAnyVsUnknown 应返回包含预期场景的对比结果', () => {
+    const result = compareAnyVsUnknown();
+    expect(result.length).toBeGreaterThanOrEqual(3);
+
+    const scenarios = result.map((r) => r.scenario);
+    expect(scenarios).toContain('赋值给 string 类型变量');
+    expect(scenarios).toContain('访问不存在的属性 (.nonExistentProp)');
+    expect(scenarios).toContain('作为函数调用');
+
+    const assignment = result.find((r) => r.scenario === '赋值给 string 类型变量');
+    expect(assignment!.anyBehavior).toContain('编译通过');
+    expect(assignment!.unknownBehavior).toContain('TS 编译错误');
+  });
+
+  it('demo() 应无异常执行', () => {
+    expect(() => demo()).not.toThrow();
   });
 });

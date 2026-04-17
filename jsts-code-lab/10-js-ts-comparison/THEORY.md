@@ -269,8 +269,9 @@ Printer ──▶ Output (.js) + Declaration (.d.ts)
 | 代码文件 | 对应理论 | 说明 |
 |----------|---------|------|
 | `gradual-boundary-demo.ts` | 渐进类型边界 §5 | 演示 typed/untyped 边界的行为差异 |
-| `compiler-phase-demo.ts` | 编译阶段 §6 | 模拟 TS 编译器的各个阶段 |
-| `type-erasure-demo.ts` | 擦除语义 §4 | 展示类型在运行时消失的证据 |
+| `compiler-phase-demo.ts` | 编译阶段 §6 | 使用真实 TS API 演示 Scanner→Parser→AST→TypeChecker→Emitter |
+| `type-erasure-demo.ts` | 擦除语义 §4 | 使用真实 TS Transformer 展示类型在运行时消失的证据 |
+| `compiler-api/` | 编译器工程实践 | 使用 `ts.createProgram` 进行类型提取、AST 变换、.d.ts 生成 |
 | `coercion-traps-demo.ts` | 动态语义 §2.2 | JS 强制转换的陷阱合集 |
 
 ### 7.2 关键代码映射

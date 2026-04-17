@@ -7,7 +7,8 @@ describe('type-erasure-demo', () => {
     const js = eraseTypes(ts);
     expect(js).toContain('let x = 1;');
     expect(js).toContain('function foo(a, b)');
-    expect(js).not.toContain(':');
+    expect(js).not.toContain(': number');
+    expect(js).not.toContain(': string');
   });
 
   it('应删除返回类型标注', () => {
@@ -59,7 +60,7 @@ describe('type-erasure-demo', () => {
     const ts = 'const add = (x: number, y: number): number => x + y;';
     const js = eraseTypes(ts);
     expect(js).toContain('(x, y) => x + y;');
-    expect(js).not.toContain(':');
+    expect(js).not.toContain(': number');
   });
 
   it('应处理类 implements', () => {

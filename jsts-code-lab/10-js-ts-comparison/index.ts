@@ -12,3 +12,6 @@ export * as FactoryJs from './js-implementations/factory-js.js';
 
 // 互操作性
 export * as JsTsInterop from './interoperability/js-ts-interop.js';
+
+// Compiler API 工程实践
+export * as CompilerApi from './compiler-api/index.js';

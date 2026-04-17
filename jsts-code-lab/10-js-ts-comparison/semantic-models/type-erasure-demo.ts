@@ -2,67 +2,224 @@
  * @file 类型擦除演示器
  * @category JS/TS Comparison → Semantic Models
  * @difficulty medium
- * @tags type-erasure, compiler-semantics, ts-to-js
+ * @tags type-erasure, compiler-semantics, ts-to-js, typescript-api
  *
  * @description
- * 模拟 TypeScript 的类型擦除（Type Erasure）保证。
- * 接收一段 TypeScript 风格代码字符串，输出擦除所有类型标注后的等价 JavaScript 代码。
+ * 使用真实 TypeScript 编译器 API 演示类型擦除（Type Erasure）保证。
+ * 接收一段 TypeScript 代码字符串，通过 AST Transformer 删除所有类型节点，
+ * 输出擦除类型后的等价 JavaScript 代码。
  *
  * 规范对齐: TS Spec §2.2、tc39/proposal-type-annotations §Intentional Omissions
  */
 
+import ts from 'typescript';
+
 /**
- * 模拟 TypeScript 编译器的类型擦除阶段。
- *
- * 擦除规则:
- * - 变量/参数/返回类型标注 → 删除
- * - `interface` / `type alias` → 删除
+ * 构造类型擦除 Transformer。
+ * 擦除规则：
+ * - interface / type alias → 删除
+ * - 类型注解（变量、参数、属性、返回类型）→ 删除
  * - 泛型参数 `<T>` → 删除
- * - `as` 类型断言 → 删除（保留表达式）
- * - `enum` / `namespace` / 参数属性 → **保留**（运行时生成代码）
+ * - `as` / `<Type>expr` 断言 → 删除，保留表达式
+ * - `implements` 子句 → 删除
+ * - `enum` / 参数属性（parameter properties）→ **保留**
+ */
+function createTypeErasureTransformer(context: ts.TransformationContext): ts.Transformer<ts.SourceFile> {
+  return (sourceFile) => {
+    function visitor(node: ts.Node): ts.Node | undefined {
+      // 1. 删除 interface 声明
+      if (ts.isInterfaceDeclaration(node)) {
+        return undefined;
+      }
+
+      // 2. 删除 type alias 声明
+      if (ts.isTypeAliasDeclaration(node)) {
+        return undefined;
+      }
+
+      // 3. 删除纯类型导入/导出
+      if (ts.isImportDeclaration(node) && node.importClause?.isTypeOnly) {
+        return undefined;
+      }
+      if (ts.isExportDeclaration(node) && node.isTypeOnly) {
+        return undefined;
+      }
+
+      // 4. as 断言与尖括号断言：保留表达式，删除类型
+      if (ts.isAsExpression(node) || ts.isTypeAssertionExpression(node)) {
+        return ts.visitNode(node.expression, visitor);
+      }
+
+      // 5. satisfies 表达式：保留表达式，删除类型
+      if (ts.isSatisfiesExpression(node)) {
+        return ts.visitNode(node.expression, visitor);
+      }
+
+      // 6. 变量声明：删除类型注解
+      if (ts.isVariableDeclaration(node)) {
+        return ts.factory.updateVariableDeclaration(
+          node,
+          node.name,
+          undefined, // 删除 definite assignment assertion
+          undefined, // 删除类型注解
+          node.initializer ? (ts.visitNode(node.initializer, visitor) as ts.Expression) : undefined
+        );
+      }
+
+      // 7. 参数声明：删除类型注解，但保留修饰符（如 public/private，用于参数属性）
+      if (ts.isParameter(node)) {
+        return ts.factory.updateParameterDeclaration(
+          node,
+          node.modifiers,
+          node.dotDotDotToken,
+          node.name,
+          node.questionToken,
+          undefined, // 删除类型注解
+          node.initializer ? (ts.visitNode(node.initializer, visitor) as ts.Expression) : undefined
+        );
+      }
+
+      // 8. 属性声明：删除类型注解
+      if (ts.isPropertyDeclaration(node)) {
+        return ts.factory.updatePropertyDeclaration(
+          node,
+          node.modifiers,
+          node.name,
+          node.questionToken,
+          undefined, // 删除类型注解
+          node.initializer ? (ts.visitNode(node.initializer, visitor) as ts.Expression) : undefined
+        );
+      }
+
+      // 9. 函数声明：删除泛型参数与返回类型
+      if (ts.isFunctionDeclaration(node)) {
+        return ts.factory.updateFunctionDeclaration(
+          node,
+          node.modifiers,
+          node.asteriskToken,
+          node.name,
+          undefined, // 删除泛型参数
+          node.parameters.map((p) => ts.visitNode(p, visitor) as ts.ParameterDeclaration),
+          undefined, // 删除返回类型
+          node.body ? (ts.visitNode(node.body, visitor) as ts.Block) : undefined
+        );
+      }
+
+      // 10. 函数表达式：删除泛型参数与返回类型
+      if (ts.isFunctionExpression(node)) {
+        return ts.factory.updateFunctionExpression(
+          node,
+          node.modifiers,
+          node.asteriskToken,
+          node.name,
+          undefined, // 删除泛型参数
+          node.parameters.map((p) => ts.visitNode(p, visitor) as ts.ParameterDeclaration),
+          undefined, // 删除返回类型
+          ts.visitNode(node.body, visitor) as ts.Block
+        );
+      }
+
+      // 11. 箭头函数：删除泛型参数与返回类型
+      if (ts.isArrowFunction(node)) {
+        return ts.factory.updateArrowFunction(
+          node,
+          node.modifiers,
+          undefined, // 删除泛型参数
+          node.parameters.map((p) => ts.visitNode(p, visitor) as ts.ParameterDeclaration),
+          undefined, // 删除返回类型
+          node.equalsGreaterThanToken,
+          ts.visitNode(node.body, visitor) as ts.ConciseBody
+        );
+      }
+
+      // 12. 方法声明：删除泛型参数与返回类型
+      if (ts.isMethodDeclaration(node)) {
+        return ts.factory.updateMethodDeclaration(
+          node,
+          node.modifiers,
+          node.asteriskToken,
+          node.name,
+          node.questionToken,
+          undefined, // 删除泛型参数
+          node.parameters.map((p) => ts.visitNode(p, visitor) as ts.ParameterDeclaration),
+          undefined, // 删除返回类型
+          node.body ? (ts.visitNode(node.body, visitor) as ts.Block) : undefined
+        );
+      }
+
+      // 13. 构造函数：删除泛型参数
+      if (ts.isConstructorDeclaration(node)) {
+        return ts.factory.updateConstructorDeclaration(
+          node,
+          node.modifiers,
+          node.parameters.map((p) => ts.visitNode(p, visitor) as ts.ParameterDeclaration),
+          node.body ? (ts.visitNode(node.body, visitor) as ts.Block) : undefined
+        );
+      }
+
+      // 14. 类声明：删除 implements 子句与泛型参数，保留 extends
+      if (ts.isClassDeclaration(node)) {
+        const heritageClauses = node.heritageClauses
+          ?.filter((hc) => hc.token !== ts.SyntaxKind.ImplementsKeyword)
+          .map((hc) => ts.visitNode(hc, visitor) as ts.HeritageClause);
+        return ts.factory.updateClassDeclaration(
+          node,
+          node.modifiers,
+          node.name,
+          undefined, // 删除泛型参数
+          heritageClauses?.length ? heritageClauses : undefined,
+          node.members.map((m) => ts.visitNode(m, visitor) as ts.ClassElement)
+        );
+      }
+
+      // 15. 调用表达式：删除类型参数列表 <T>
+      if (ts.isCallExpression(node)) {
+        return ts.factory.updateCallExpression(
+          node,
+          ts.visitNode(node.expression, visitor) as ts.Expression,
+          undefined, // 删除类型参数
+          node.arguments.map((arg) => ts.visitNode(arg, visitor) as ts.Expression)
+        );
+      }
+
+      // 16. new 表达式：删除类型参数列表
+      if (ts.isNewExpression(node)) {
+        return ts.factory.updateNewExpression(
+          node,
+          ts.visitNode(node.expression, visitor) as ts.Expression,
+          undefined, // 删除类型参数
+          node.arguments?.map((arg) => ts.visitNode(arg, visitor) as ts.Expression)
+        );
+      }
+
+      // 17. 其他节点继续递归
+      return ts.visitEachChild(node, visitor, context);
+    }
+
+    return ts.visitNode(sourceFile, visitor) as ts.SourceFile;
+  };
+}
+
+/**
+ * 使用真实 TypeScript 编译器 API 擦除类型标注。
  *
- * @param tsCode - 输入的 TypeScript 风格代码字符串
+ * @param tsCode - 输入的 TypeScript 代码字符串
  * @returns 擦除类型后的 JavaScript 代码字符串
  */
 export function eraseTypes(tsCode: string): string {
-  let js = tsCode;
+  const sourceFile = ts.createSourceFile('input.ts', tsCode, ts.ScriptTarget.ESNext, true);
 
-  // 1. 删除 interface 声明块（整块删除）
-  js = js.replace(/(?:export\s+)?interface\s+\w+\s*(?:<[^>]+>)?\s*(?:extends\s+[\w,\s]+)?\s*\{[\s\S]*?\}\s*/g, '');
+  const result = ts.transform(sourceFile, [createTypeErasureTransformer]);
+  const transformed = result.transformed[0];
 
-  // 2. 删除 type alias 声明（整块删除）
-  js = js.replace(/(?:export\s+)?type\s+\w+\s*(?:<[^>]+>)?\s*=\s*[^;]+;?/g, '');
-
-  // 3. 删除 `as` 类型断言，保留表达式
-  js = js.replace(/\s+as\s+[A-Za-z0-9_$|&<>{}\[\]:?]+/g, '');
-
-  // 4. 删除 implements 子句
-  js = js.replace(/\bimplements\s+[A-Za-z0-9_$, ]+/g, '');
-
-  // 5. 删除函数/方法返回类型标注
-  js = js.replace(/(\)\s*):\s*[A-Za-z0-9_$|&<>{}\[\]:?]+\s*(\{|=>)/g, '$1 $2');
-
-  // 6. 删除圆括号内的参数类型标注
-  // 使用全局替换，逐个处理每一对圆括号
-  js = js.replace(/\(([^()]*)\)/g, (match, params: string) => {
-    // 在参数列表内部，类型标注从 `:` 开始，到下一个 `,` 或字符串末尾结束
-    const cleaned = params.replace(/([a-zA-Z0-9_$]+)\s*:\s*[^,)]+/g, '$1');
-    return `(${cleaned})`;
+  const printer = ts.createPrinter({
+    newLine: ts.NewLineKind.LineFeed,
+    removeComments: false,
   });
 
-  // 7. 删除变量声明中的类型标注
-  js = js.replace(/\b(let|const|var)\s+([a-zA-Z0-9_$]+)\s*:\s*[A-Za-z0-9_$|&<>{}\[\]:?]+(\s*[=;])/g, '$1 $2$3');
-
-  // 8. 删除类属性类型标注（分号结尾）
-  js = js.replace(/([a-zA-Z0-9_$]+)\s*:\s*[A-Za-z0-9_$|&<>{}\[\]:?]+(;)/g, '$1$2');
-
-  // 9. 删除泛型参数
-  js = js.replace(/([a-zA-Z0-9_$]+)\s*<[^>]+>(\s*\()/g, '$1$2');
-
-  // 10. 清理多余的空行
-  js = js.replace(/\n{3,}/g, '\n\n');
-
-  return js.trim();
+  const output = printer.printFile(transformed);
+  result.dispose();
+  return output.trim();
 }
 
 // ============================================================================
