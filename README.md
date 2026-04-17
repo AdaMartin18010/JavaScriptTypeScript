@@ -14,7 +14,9 @@
 
 > 🚀 精心策划的 JavaScript/TypeScript 生态系统资源列表，涵盖框架、工具、库和最佳实践。
 >
-> 📚 配套代码实验室：[jsts-code-lab](./jsts-code-lab/) - 89+ 模块，430+ TypeScript 文件，从理论到实践的完整实现
+> 📚 配套代码实验室：[jsts-code-lab](./jsts-code-lab/) - 89+ 模块，520+ TypeScript 文件，从理论到实践的完整实现
+>
+> 🎓 旗舰文档：[JS_TS_语言语义模型全面分析](./JSTS全景综述/JS_TS_语言语义模型全面分析.md) - 基于 ECMA-2025/2026、TypeScript 5.8–7.0，对齐 Stanford/MIT/CMU/Berkeley/UW 学术课程
 
 ---
 

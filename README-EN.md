@@ -12,6 +12,10 @@
 </p>
 
 > A curated list of high-quality resources in the JavaScript/TypeScript ecosystem, covering frameworks, tools, libraries, and best practices. TypeScript-first approach.
+>
+> 📚 Code Lab: [jsts-code-lab](./jsts-code-lab/) - 89+ modules, 520+ TypeScript files, from theory to practice.
+>
+> 🎓 Flagship Doc: [JS/TS Semantic Model Analysis](./JSTS全景综述/JS_TS_语言语义模型全面分析.md) - Aligned with ECMA-2025/2026, TypeScript 5.8–7.0, and top-tier university curricula (Stanford/MIT/CMU/Berkeley/UW).
 
 <p align="center">
   <a href="README.md">🇨🇳 中文</a> | <strong>🇺🇸 English</strong>
