@@ -524,7 +524,7 @@ const serverDate = new Date(); // 服务器时区可能不是 UTC！
 
 ### 3.1 Temporal 简介
 
-Temporal 是 JavaScript 的现代化日期时间 API 提案（Stage 3），旨在解决原生 Date 的诸多问题：
+Temporal 是 JavaScript 的现代化日期时间 API 提案（**Stage 4**，已纳入 ES2026 标准），旨在解决原生 Date 的诸多问题：
 
 - **不可变性**：所有操作返回新对象
 - **类型安全**：区分 PlainDate、PlainTime、Instant、ZonedDateTime 等

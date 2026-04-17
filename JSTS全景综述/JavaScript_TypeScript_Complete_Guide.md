@@ -1,6 +1,6 @@
 # JavaScript / TypeScript 全面技术指南
 
-> 本文档全面梳理 JavaScript/TypeScript 最新版本的语言特性、程序设计机制、设计模式、并发模式、分布式系统、工作流设计、架构设计、可观测性、CI/CD 以及 AI/ML 相关内容。
+> 本文档全面梳理 JavaScript/TypeScript 现代版本（ES2025/TypeScript 6.0/Node.js 20–24）的语言特性、程序设计机制、设计模式、并发模式、分布式系统、工作流设计、架构设计、可观测性、CI/CD 以及 AI/ML 相关内容。
 
 **生成日期**: 2026-03-06
 **TypeScript 版本**: 5.x

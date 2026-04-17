@@ -300,7 +300,7 @@ const ancient = Temporal.Instant.fromEpochNanoseconds(-8640000000000000000n);
 | 属性 | 详情 |
 |:---|:---|
 | **当前阶段** | ✅ Stage 4（2025年6月达到） |
-| **预计纳入** | ES2026 |
+| **已纳入** | ES2025 |
 | **实现状态** | TypeScript 5.2+、Babel 7.22+、Firefox 已支持 |
 | **Champion** | Ron Buckton |
 | **规范文档** | [tc39.es/proposal-explicit-resource-management](https://tc39.es/proposal-explicit-resource-management/) |
@@ -1060,7 +1060,7 @@ console.log(map.has(Composite({ 0: "hello", 1: "world" }))); // true
 
 | 属性 | 详情 |
 |:---|:---|
-| **当前阶段** | 🟡 Stage 3（2025 年底进入） |
+| **当前阶段** | ✅ Stage 4（已纳入 ES2025） |
 | **Champions** | Kevin Gibbons |
 | **用途** | 16 位浮点数 TypedArray，适配 ML 推理与 GPU 数据交换 |
 
@@ -1074,7 +1074,7 @@ console.log(f16.BYTES_PER_ELEMENT); // 2
 
 | 属性 | 详情 |
 |:---|:---|
-| **当前阶段** | 🟡 Stage 3（2025 年进入） |
+| **当前阶段** | ✅ Stage 4（已纳入 ES2025） |
 | **Champions** | Kevin Gibbons |
 | **用途** | 精确求和，避免浮点数累加误差（类似 Python 的 math.fsum） |
 
@@ -1165,8 +1165,8 @@ console.log(typeof shaderCode); // "string"
 | Explicit Resource Mgmt | Stage 4 | ✅ Firefox/TS | Babel | 低 | 🔥 高 |
 | Decorators | Stage 3 | Babel/TS 5.0+ | 工具链 | 中等 | 🟡 中 |
 | Joint Iteration | Stage 3 | polyfill | polyfill | 低 | 🟡 中 |
-| Float16Array | Stage 3 | 实验性 | polyfill | 低 | 🟡 中 |
-| Math.sumPrecise | Stage 3 | 实验性 | polyfill | 低 | 🟢 低 |
+| Float16Array | Stage 4 | ✅ 主流引擎 | polyfill | 低 | 🟢 低 |
+| Math.sumPrecise | Stage 4 | ✅ 主流引擎 | polyfill | 低 | 🟢 低 |
 | Pattern Matching | Stage 2.7/3 | 无 | 不推荐 | 中等 | 🟡 中 |
 | Import Text | Stage 3 | 构建工具 | 构建工具 | 低 | 🟢 低 |
 | Type Annotations | 停滞 | — | — | — | ⚫ 不再关注 |

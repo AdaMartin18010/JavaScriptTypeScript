@@ -1,6 +1,6 @@
 # ES2025 (ES16) 完整特性指南
 
-> 本文档全面涵盖 **ES2025 (ES16) 正式版** 所有新特性的规范定义、形式化语义、使用示例及兼容性信息，同时收录两项 **Stage 3 预览特性**（预计纳入 ES2026）。
+> 本文档全面涵盖 **ES2025 (ES16) 正式版** 所有新特性的规范定义、形式化语义、使用示例及兼容性信息，同时收录 **Stage 3/4 预览特性**（预计纳入 ES2026）。
 >
 > 规范版本: ECMAScript® 2025 Language Specification (ECMA-262, 16th edition, June 2025)
 > 最后更新: 2026年4月
@@ -129,7 +129,7 @@
       - [TypeScript 类型声明](#typescript-类型声明)
       - [属性不匹配错误](#属性不匹配错误)
     - [8.4 兼容性信息](#84-兼容性信息)
-  - [附录 C. Stage 3 预览特性（预计 ES2026）](#附录-c-stage-3-预览特性预计-es2026)
+  - [附录 C. Stage 3/4 预览特性（预计 ES2026）](#附录-c-stage-34-预览特性预计-es2026)
     - [C.1 Atomics.pause 的内存屏障语义](#c1-atomicspause-的内存屏障语义)
     - [9.1 规范定义](#91-规范定义)
     - [9.2 形式化语义](#92-形式化语义)
@@ -2005,9 +2005,9 @@ import config from './config.json' with { type: 'json' };
 
 ---
 
-## 附录 C. Stage 3 预览特性（预计 ES2026）
+## 附录 C. Stage 3/4 预览特性（预计 ES2026）
 
-> 以下特性在 ECMAScript 2025 (ES16) 正式版中**尚未纳入**，目前处于 **TC39 Stage 3** 阶段，预计将在 **ES2026 (ES17)** 中成为标准。为便于读者提前了解，此处保留其详细文档。
+> 以下特性在 ECMAScript 2025 (ES16) 正式版中的状态各异。`Atomics.pause` 目前处于 **TC39 Stage 3**；`Explicit Resource Management` 已达 **Stage 4**（已纳入 ES2025）。为便于读者提前了解，此处保留其详细文档。
 
 ### C.1 Atomics.pause 的内存屏障语义
 
@@ -2638,10 +2638,10 @@ async function atomicWrite(path, data) {
 - [Float16Array](https://github.com/tc39/proposal-float16array)
 - [Import Attributes](https://github.com/tc39/proposal-import-attributes)
 
-**Stage 3 预览（预计 ES2026）**
+**Stage 3/4 预览（预计 ES2026）**
 
-- [Atomics.pause](https://github.com/tc39/proposal-atomics-microwait)
-- [Explicit Resource Management](https://github.com/tc39/proposal-explicit-resource-management)
+- [Atomics.pause](https://github.com/tc39/proposal-atomics-microwait)（Stage 3）
+- [Explicit Resource Management](https://github.com/tc39/proposal-explicit-resource-management)（Stage 4，已纳入 ES2025）
 
 ### D. 参考文献
 

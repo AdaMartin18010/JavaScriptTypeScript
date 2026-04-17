@@ -130,6 +130,12 @@ function fetchJSON(url, options = {}) {
     }
 
     const req = https.get(url, { headers }, (res) => {
+      // 处理重定向
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        fetchJSON(res.headers.location, options).then(resolve).catch(reject);
+        return;
+      }
+
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
@@ -161,6 +167,10 @@ async function fetchRepoInfo(owner, repo) {
   const url = `https://api.github.com/repos/${owner}/${repo}`;
   try {
     const data = await fetchJSON(url);
+    // 防御性检查：确保关键字段存在
+    if (typeof data.stargazers_count !== 'number') {
+      throw new Error(`Invalid response: missing stargazers_count`);
+    }
     return {
       owner,
       repo,

@@ -1026,7 +1026,7 @@ AWS Lambda 使用 Firecracker MicroVM 技术实现轻量级虚拟化：
 
 | 运行时 | 冷启动时间 | 优化建议 |
 |--------|-----------|---------|
-| Node.js 18 | 150-300ms | ES modules, tree-shaking |
+| Node.js 20 LTS | 150-300ms | ES modules, tree-shaking |
 | Python 3.11 | 100-200ms | Lambda Powertools |
 | Java 17 | 500-2000ms | GraalVM Native Image |
 | Go 1.x | 100-200ms | 静态二进制文件 |
@@ -1425,7 +1425,7 @@ async function loadModelShards(shardUrls: string[]) {
 
 | 场景 | 推荐运行时 | 理由 |
 |------|-----------|------|
-| 简单 API | Node.js 18 | 生态丰富 |
+| 简单 API | Node.js 20 LTS | 生态丰富 |
 | 高性能计算 | Go | 编译快、体积小 |
 | 机器学习 | Python 3.11 | 库支持好 |
 | 超低延迟 | Edge Runtime | 零冷启动 |

@@ -18,6 +18,7 @@ describe('Formal Verification Index', () => {
     expect(fv.RefinementTypes).toBeDefined();
     expect(fv.SymbolicExecution).toBeDefined();
     expect(fv.ProgramCorrectnessProofs).toBeDefined();
+    expect(fv.PropertyBasedTesting).toBeDefined();
   });
 
   it('should run demo functions without throwing', () => {
@@ -36,5 +37,6 @@ describe('Formal Verification Index', () => {
     expect(() => { fv.RefinementTypes.demo(); }).not.toThrow();
     expect(() => { fv.SymbolicExecution.demo(); }).not.toThrow();
     expect(() => { fv.ProgramCorrectnessProofs.demo(); }).not.toThrow();
+    expect(() => { fv.PropertyBasedTesting.demo(); }).not.toThrow();
   });
 });

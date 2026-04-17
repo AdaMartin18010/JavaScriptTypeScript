@@ -651,6 +651,17 @@ graph LR
 - **每季度更新**: TC39 提案进度、学术前沿追踪
 - **每年大版本**: 主要技术栈更新、新领域扩展
 
+### v4.1 演进方向
+
+v4.0 已完成对 ES2025/ES2026 Stage 3、TypeScript 6.0/7.0 预览、V8 Turbolev、WinterTC/TC55、PL 学术前沿（Guarded Domain Theory、Type-Constrained LLM Generation）等核心领域的系统性覆盖。v3 增强计划（`DOCUMENTATION_V3_PLAN.md`）已全部归档，其目标在 v4.0 周期内完成。
+
+v4.1 的重点将转向：
+
+- **TC39 Stage 2 → Stage 3 跟踪**：`Async Context`、`Structs` 等提案的语义细节与实验性实现
+- **TypeScript 7.0（Go 重写）预览版发布后的深度更新**：随着原生编译器细节公开，补充编译器 IR、增量检查模型的技术分析
+- **WinterTC Conformance Levels 落地**：跟踪 CLI API、Sockets API 的标准化进展，更新运行时互操作实践
+- **教学化增强**：将形式化理论内容进一步转化为可交互的代码示例与可视化图表，降低学习门槛
+
 ---
 
 ## 🙏 7. 致谢和引用

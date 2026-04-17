@@ -21,3 +21,4 @@ export * as BoundedModelChecking from './bounded-model-checking.js';
 export * as RefinementTypes from './refinement-types.js';
 export * as SymbolicExecution from './symbolic-execution.js';
 export * as ProgramCorrectnessProofs from './program-correctness-proofs.js';
+export * as PropertyBasedTesting from './property-based-testing.js';

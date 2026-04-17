@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-04-17T12:52:31.557Z",
+  "generatedAt": "2026-04-17T19:16:35.517Z",
   "totalPackages": 47,
   "stats": {
-    "@nestjs/core": {
-      "weekly": 9085867,
-      "monthly": 37186180,
+    "koa": {
+      "weekly": 6750361,
+      "monthly": 28845060,
       "lastUpdated": "2026-04-17"
     },
     "express": {
@@ -12,29 +12,34 @@
       "monthly": 396026183,
       "lastUpdated": "2026-04-17"
     },
-    "hono": {
-      "weekly": 33828889,
-      "monthly": 145497305,
-      "lastUpdated": "2026-04-17"
-    },
     "fastify": {
       "weekly": 6471508,
       "monthly": 26002824,
       "lastUpdated": "2026-04-17"
     },
-    "koa": {
-      "weekly": 6750361,
-      "monthly": 28845060,
+    "hono": {
+      "weekly": 33828889,
+      "monthly": 145497305,
       "lastUpdated": "2026-04-17"
     },
-    "elysia": {
-      "weekly": 465809,
-      "monthly": 1939988,
+    "@nestjs/core": {
+      "weekly": 9085867,
+      "monthly": 37186180,
+      "lastUpdated": "2026-04-17"
+    },
+    "next": {
+      "weekly": 36059555,
+      "monthly": 172999751,
       "lastUpdated": "2026-04-17"
     },
     "@sveltejs/kit": {
       "weekly": 1803522,
       "monthly": 7586228,
+      "lastUpdated": "2026-04-17"
+    },
+    "elysia": {
+      "weekly": 465809,
+      "monthly": 1939988,
       "lastUpdated": "2026-04-17"
     },
     "@remix-run/core": {
@@ -47,24 +52,19 @@
       "monthly": 6012140,
       "lastUpdated": "2026-04-17"
     },
-    "next": {
-      "weekly": 36059555,
-      "monthly": 172999751,
-      "lastUpdated": "2026-04-17"
-    },
     "typescript": {
       "weekly": 178428921,
       "monthly": 718883306,
       "lastUpdated": "2026-04-17"
     },
-    "astro": {
-      "weekly": 2037036,
-      "monthly": 8404708,
-      "lastUpdated": "2026-04-17"
-    },
     "vite": {
       "weekly": 104785364,
       "monthly": 393841182,
+      "lastUpdated": "2026-04-17"
+    },
+    "astro": {
+      "weekly": 2037036,
+      "monthly": 8404708,
       "lastUpdated": "2026-04-17"
     },
     "esbuild": {
@@ -77,9 +77,9 @@
       "monthly": 145755546,
       "lastUpdated": "2026-04-17"
     },
-    "@playwright/test": {
-      "weekly": 32576729,
-      "monthly": 135180160,
+    "cypress": {
+      "weekly": 7310810,
+      "monthly": 31451885,
       "lastUpdated": "2026-04-17"
     },
     "rollup": {
@@ -87,69 +87,74 @@
       "monthly": 407083268,
       "lastUpdated": "2026-04-17"
     },
-    "jest": {
-      "weekly": 43631511,
-      "monthly": 191793615,
-      "lastUpdated": "2026-04-17"
-    },
-    "cypress": {
-      "weekly": 7310810,
-      "monthly": 31451885,
-      "lastUpdated": "2026-04-17"
-    },
     "vitest": {
       "weekly": 49523747,
       "monthly": 193308762,
       "lastUpdated": "2026-04-17"
     },
-    "mocha": {
-      "weekly": 13536581,
-      "monthly": 59845205,
+    "@playwright/test": {
+      "weekly": 32576729,
+      "monthly": 135180160,
       "lastUpdated": "2026-04-17"
     },
-    "typeorm": {
-      "weekly": 4011374,
-      "monthly": 17143765,
+    "jest": {
+      "weekly": 43631511,
+      "monthly": 191793615,
       "lastUpdated": "2026-04-17"
     },
     "sequelize": {
-      "weekly": 2784454,
-      "monthly": 11521014,
+      "weekly": 0,
+      "monthly": 0,
       "lastUpdated": "2026-04-17"
     },
     "drizzle-orm": {
-      "weekly": 7253647,
-      "monthly": 29279824,
+      "weekly": 0,
+      "monthly": 0,
       "lastUpdated": "2026-04-17"
     },
     "@prisma/client": {
-      "weekly": 8839649,
-      "monthly": 36683151,
+      "weekly": 0,
+      "monthly": 0,
       "lastUpdated": "2026-04-17"
     },
-    "lodash": {
-      "weekly": 144968297,
-      "monthly": 579057868,
+    "typeorm": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-17"
+    },
+    "mocha": {
+      "weekly": 0,
+      "monthly": 0,
       "lastUpdated": "2026-04-17"
     },
     "dayjs": {
-      "weekly": 45879456,
-      "monthly": 188043252,
+      "weekly": 0,
+      "monthly": 0,
       "lastUpdated": "2026-04-17"
     },
     "date-fns": {
-      "weekly": 77862886,
-      "monthly": 289621684,
-      "lastUpdated": "2026-04-17"
-    },
-    "mongoose": {
-      "weekly": 4978280,
-      "monthly": 20331669,
+      "weekly": 0,
+      "monthly": 0,
       "lastUpdated": "2026-04-17"
     },
     "ramda": {
-      "weekly": 13310676,
-      "monthly": 56761871,
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-17"
+    },
+    "mongoose": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-17"
+    },
+    "lodash": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-17"
+    },
+    "@trpc/server": {
+      "weekly": 0,
+      "monthly": 0,
       "lastUpdated": "2026-04-17"
     },
     "jotai": {
@@ -157,7 +162,7 @@
       "monthly": 0,
       "lastUpdated": "2026-04-17"
     },
-    "@trpc/server": {
+    "zustand": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-04-17"
@@ -172,17 +177,7 @@
       "monthly": 0,
       "lastUpdated": "2026-04-17"
     },
-    "zustand": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
-    },
-    "antd": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
-    },
-    "@mui/material": {
+    "@tanstack/react-query": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-04-17"
@@ -192,7 +187,7 @@
       "monthly": 0,
       "lastUpdated": "2026-04-17"
     },
-    "@tanstack/react-query": {
+    "antd": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-04-17"
@@ -202,17 +197,17 @@
       "monthly": 0,
       "lastUpdated": "2026-04-17"
     },
-    "@shadcn/ui": {
-      "weekly": 113551,
-      "monthly": 430897,
-      "lastUpdated": "2026-04-17"
-    },
-    "eslint": {
+    "@mui/material": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-04-17"
     },
     "prettier": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-17"
+    },
+    "eslint": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-04-17"
@@ -227,14 +222,19 @@
       "monthly": 0,
       "lastUpdated": "2026-04-17"
     },
-    "nodemon": {
-      "weekly": 12036021,
-      "monthly": 51392357,
+    "@shadcn/ui": {
+      "weekly": 0,
+      "monthly": 0,
       "lastUpdated": "2026-04-17"
     },
     "pm2": {
-      "weekly": 2623014,
-      "monthly": 11345491,
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-04-17"
+    },
+    "nodemon": {
+      "weekly": 0,
+      "monthly": 0,
       "lastUpdated": "2026-04-17"
     }
   }

@@ -1,0 +1,128 @@
+---
+title: Promise 状态机转换图
+description: Promise 状态机转换图
+---
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '16px'}}}%%
+stateDiagram-v2
+    [*] --> Pending: new Promise(executor)
+    
+    state "⏳ Pending (等待中)" as Pending {
+        [*] --> Executing
+        Executing --> Pending : 异步操作进行中
+        
+        note right of Pending
+            可以转换到:
+            - Fulfilled (通过 resolve)
+            - Rejected (通过 reject)
+            不可转换为自身
+        end note
+    }
+    
+    Pending --> Fulfilled: ✅ resolve(value)
+    Pending --> Rejected: ❌ reject(reason)
+    
+    state "✅ Fulfilled (已成功)" as Fulfilled {
+        [*] --> ValueSet
+        
+        state "Value 不可变" as ValueSet {
+            [*] --> HasValue
+        }
+        
+        note right of Fulfilled
+            - Promise 已成功完成
+            - [[Prototype]]: Promise.prototype
+            - [[PromiseState]]: "fulfilled"
+            - [[PromiseResult]]: value
+            - 不可再次改变状态
+        end note
+    }
+    
+    state "❌ Rejected (已拒绝)" as Rejected {
+        [*] --> ReasonSet
+        
+        state "Reason 不可变" as ReasonSet {
+            [*] --> HasReason
+        }
+        
+        note right of Rejected
+            - Promise 已失败
+            - [[Prototype]]: Promise.prototype
+            - [[PromiseState]]: "rejected"
+            - [[PromiseResult]]: reason
+            - 不可再次改变状态
+        end note
+    }
+    
+    Fulfilled --> [*]: 无更多引用
+    Rejected --> [*]: 无更多引用
+    
+    note "🚫 重要: Promise 状态一旦确定就不可改变<br/>只能从 Pending → Fulfilled 或 Pending → Rejected"
+    
+    state Chain <<choice>>
+    
+    Fulfilled --> Chain: .then(onFulfilled)
+    Rejected --> Chain: .then(null, onRejected)<br/>.catch(onRejected)
+    
+    state Chain {
+        [*] --> ReturnNewPromise
+        
+        state ReturnNewPromise {
+            [*] --> ThenableReturned : onFulfilled/onRejected 返回值
+            [*] --> ThrowError : 抛出异常
+            [*] --> PassThrough : 未提供处理器
+            
+            ThenableReturned --> NewPromiseFulfilled : 返回值
+            ThrowError --> NewPromiseRejected : reject(error)
+            PassThrough --> NewFulfilled : resolve(原value)
+            PassThrough --> NewRejected : reject(原reason)
+        }
+    }
+    
+    state "Promise 链式调用" as Chaining {
+        [*] --> ThenMethod
+        
+        state ThenMethod {
+            [*] --> ReturnPromise
+            ReturnPromise --> ChainedThen : .then()
+            ChainedThen --> ChainedCatch : .catch()
+            ChainedCatch --> ChainedFinally : .finally()
+        }
+    }
+    
+    Chain --> Chaining
+    
+    Chaining --> Fulfilled: 链式调用 resolve
+    Chaining --> Rejected: 链式调用 reject
+    
+    state "Promise 静态方法" as StaticMethods {
+        [*] --> PromiseAll
+        [*] --> PromiseRace
+        [*] --> PromiseAllSettled
+        [*] --> PromiseAny
+        [*] --> PromiseResolve
+        [*] --> PromiseReject
+        
+        PromiseAll --> Fulfilled: 所有 Promise 完成
+        PromiseAll --> Rejected: 任一 Promise 拒绝
+        
+        PromiseRace --> Fulfilled: 最快完成
+        PromiseRace --> Rejected: 最快拒绝
+        
+        PromiseAllSettled --> Fulfilled: 总是完成
+        
+        PromiseAny --> Fulfilled: 任一完成
+        PromiseAny --> Rejected: 全部拒绝
+        
+        PromiseResolve --> Fulfilled: 立即完成
+        PromiseReject --> Rejected: 立即拒绝
+    }
+    
+    note "State Transitions Summary"
+    
+    Pending -[#blue]-> Fulfilled : resolve(value) [不可逆]
+    Pending -[#red]-> Rejected : reject(reason) [不可逆]
+    Fulfilled -[#green]-> [*] : .then() 返回新 Promise
+    Rejected -[#orange]-> [*] : .catch() 可恢复
+```

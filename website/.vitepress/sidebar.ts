@@ -9,6 +9,28 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '快速开始', link: '/guide/getting-started' },
         { text: '贡献指南', link: '/guide/contributing' },
       ]
+    },
+    {
+      text: '开发指南',
+      collapsed: false,
+      items: [
+        { text: 'CSS-in-JS 完整指南', link: '/guide/css-in-js-styling' },
+        { text: '日期时间处理完全指南', link: '/guide/date-time-handling' },
+        { text: '调试与故障排查指南', link: '/guide/debugging-troubleshooting' },
+        { text: '文件处理完整指南', link: '/guide/file-handling' },
+        { text: 'GraphQL 完全指南', link: '/guide/graphql-complete-guide' },
+        { text: '网络编程完全指南', link: '/guide/network-programming' },
+        { text: '正则表达式完全指南', link: '/guide/regular-expressions-complete' },
+      ]
+    },
+    {
+      text: '架构与运维',
+      collapsed: false,
+      items: [
+        { text: '微服务架构完整指南', link: '/guide/microservices-complete-guide' },
+        { text: '迁移指南合集', link: '/guide/migration-guides' },
+        { text: 'TanStack Start + Cloudflare 部署指南', link: '/guide/tanstack-start-cloudflare-deployment' },
+      ]
     }
   ],
 
@@ -37,6 +59,9 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '🗂️ 状态管理', link: '/categories/state-management' },
         { text: '🛣️ 路由', link: '/categories/routing' },
         { text: '🎵 音视频处理', link: '/categories/audio-video' },
+        { text: '🎬 动画', link: '/categories/animation' },
+        { text: '🗺️ 地图与可视化', link: '/categories/mapping-visualization' },
+        { text: '⚛️ 微前端', link: '/categories/micro-frontends' },
       ]
     },
     {
@@ -47,6 +72,7 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '📝 表单处理', link: '/categories/form-handling' },
         { text: '✅ 验证', link: '/categories/validation' },
         { text: '🎨 样式处理', link: '/categories/styling' },
+        { text: '🛠️ Linting', link: '/categories/linting-formatting' },
       ]
     },
     {
@@ -55,8 +81,17 @@ export const sidebar: DefaultTheme.Sidebar = {
       items: [
         { text: '🗄️ ORM/数据库', link: '/categories/orm-database' },
         { text: '🧪 测试', link: '/categories/testing' },
-        { text: '🛠️ Linting', link: '/categories/linting-formatting' },
+        { text: '🔗 测试生态', link: '/categories/testing-ecosystem' },
         { text: '🔐 后端框架', link: '/categories/backend-frameworks' },
+      ]
+    },
+    {
+      text: '📱 跨平台与新兴技术',
+      collapsed: false,
+      items: [
+        { text: '📱 移动端开发', link: '/categories/mobile-development' },
+        { text: '🔷 WebAssembly', link: '/categories/webassembly' },
+        { text: '🚀 TanStack Start', link: '/categories/tanstack-start' },
       ]
     }
   ],
@@ -67,6 +102,7 @@ export const sidebar: DefaultTheme.Sidebar = {
       text: '📊 对比矩阵',
       collapsed: false,
       items: [
+        { text: '📋 对比矩阵导航', link: '/comparison-matrices/' },
         { text: '🖥️ 前端框架对比', link: '/comparison-matrices/frontend-frameworks-compare' },
         { text: '🔐 后端框架对比', link: '/comparison-matrices/backend-frameworks-compare' },
         { text: '🎭 SSR 元框架对比', link: '/comparison-matrices/ssr-metaframeworks-compare' },
@@ -78,5 +114,99 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '🎨 UI 库对比', link: '/comparison-matrices/ui-libraries-compare' },
       ]
     }
-  ]
+  ],
+
+  // 设计模式部分
+  '/patterns/': [
+    {
+      text: '🎨 设计模式',
+      collapsed: false,
+      items: [
+        { text: 'React 设计模式', link: '/patterns/react-patterns' },
+        { text: 'Vue 3 设计模式', link: '/patterns/vue-patterns' },
+        { text: 'Node.js 设计模式', link: '/patterns/nodejs-patterns' },
+        { text: '测试模式', link: '/patterns/testing-patterns' },
+      ]
+    }
+  ],
+
+  // 跨平台开发部分
+  '/platforms/': [
+    {
+      text: '📱 跨平台开发',
+      collapsed: false,
+      items: [
+        { text: '数据可视化', link: '/platforms/data-visualization' },
+        { text: '桌面应用开发', link: '/platforms/desktop-development' },
+        { text: '移动端开发', link: '/platforms/mobile-development' },
+      ]
+    }
+  ],
+
+  // 速查表部分
+  '/cheatsheets/': [
+    {
+      text: '📋 速查表',
+      collapsed: false,
+      items: [
+        { text: '速查表首页', link: '/cheatsheets/' },
+        { text: 'TypeScript 速查表', link: '/cheatsheets/typescript-cheatsheet' },
+      ]
+    }
+  ],
+
+  // 架构图部分
+  '/diagrams/': [
+    {
+      text: '📐 架构图与流程图',
+      collapsed: false,
+      items: [
+        { text: '架构图首页', link: '/diagrams/' },
+        { text: 'CI/CD 流水线', link: '/diagrams/ci-cd-pipeline' },
+        { text: '数据库事务流程', link: '/diagrams/database-transaction-flow' },
+        { text: 'ECMAScript 演进时间线', link: '/diagrams/ecmascript-timeline' },
+        { text: 'Event Loop 架构对比', link: '/diagrams/event-loop-comparison' },
+        { text: 'Event Loop 详细流程', link: '/diagrams/event-loop-detailed' },
+        { text: '渐进类型系统精度格', link: '/diagrams/gradual-typing-lattice' },
+        { text: 'JS 执行模型', link: '/diagrams/js-execution-model' },
+        { text: 'JWT 认证流程', link: '/diagrams/jwt-authentication-flow' },
+        { text: '微服务模式', link: '/diagrams/microservices-patterns' },
+        { text: '模块解析流程', link: '/diagrams/module-resolution-flow' },
+        { text: 'Node.js require 流程', link: '/diagrams/node-js-require-flow' },
+        { text: '项目知识图谱', link: '/diagrams/project-knowledge-graph' },
+        { text: 'Promise 状态机', link: '/diagrams/promise-state-machine' },
+        { text: 'React Fiber 架构', link: '/diagrams/react-fiber-architecture' },
+        { text: 'TS 编译器架构', link: '/diagrams/typescript-compiler-architecture' },
+        { text: '类型系统层次', link: '/diagrams/type-system-hierarchy' },
+        { text: 'Webpack 构建流程', link: '/diagrams/webpack-build-flow' },
+      ]
+    }
+  ],
+
+  // 研究报告部分
+  '/research/': [
+    {
+      text: '📑 研究报告',
+      collapsed: false,
+      items: [
+        { text: '研究报告首页', link: '/research/' },
+        { text: 'Awesome-JavaScript 分析', link: '/research/awesome-javascript-analysis' },
+        { text: 'Awesome-NodeJS 分析', link: '/research/awesome-nodejs-analysis' },
+        { text: '国际权威资源报告', link: '/research/international-resources' },
+      ]
+    }
+  ],
+
+  // 模板部分
+  '/templates/': [
+    {
+      text: '📄 文档模板',
+      collapsed: false,
+      items: [
+        { text: '模板首页', link: '/templates/' },
+        { text: '架构文档模板', link: '/templates/ARCHITECTURE_TEMPLATE' },
+        { text: '理论文档模板', link: '/templates/THEORY_TEMPLATE' },
+      ]
+    }
+  ],
 }

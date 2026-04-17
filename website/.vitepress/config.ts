@@ -1,8 +1,9 @@
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 import { sidebar } from './sidebar'
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default withMermaid(defineConfig({
   title: 'Awesome JS/TS',
   description: '精心策划的 JavaScript/TypeScript 生态系统资源列表',
   
@@ -43,7 +44,18 @@ export default defineConfig({
       { text: '分类', link: '/categories/frontend-frameworks' },
       { text: '对比矩阵', link: '/comparison-matrices/frontend-frameworks-compare' },
       { text: '学习路径', link: '/learning-paths/beginners-path' },
-      { text: '关于', link: '/about' },
+      {
+        text: '更多',
+        items: [
+          { text: '🎨 设计模式', link: '/patterns/react-patterns' },
+          { text: '📱 跨平台开发', link: '/platforms/data-visualization' },
+          { text: '📋 速查表', link: '/cheatsheets/' },
+          { text: '📐 架构图', link: '/diagrams/' },
+          { text: '📑 研究报告', link: '/research/' },
+          { text: '📄 文档模板', link: '/templates/' },
+          { text: '关于', link: '/about' },
+        ]
+      },
     ],
 
     // 侧边栏
@@ -141,4 +153,4 @@ export default defineConfig({
   sitemap: {
     hostname: 'https://awesome-jsts-ecosystem.vercel.app'
   }
-})
+}))

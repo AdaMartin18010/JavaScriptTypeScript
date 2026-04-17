@@ -394,8 +394,8 @@ V8 的 GC 基于**分代假说**：大多数对象很快死亡。
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022"],
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "module": "node16",
+    "moduleResolution": "node16",
     "strict": true,
     "strictInference": true,
     "declaration": true,
@@ -442,7 +442,7 @@ V8 的 GC 基于**分代假说**：大多数对象很快死亡。
   - **Node.js 原生库 / CLI 工具**：推荐 `"node16"` 或 `"nodenext"`，确保与 Node.js 原生模块解析行为 1:1 对齐。
 - **`erasableSyntaxOnly: true`**：拒绝 `enum`、`namespace`、参数属性等不可被标准擦除器安全处理的语法。这确保了项目可以被 `esbuild`、`swc`、Babel 或 Node.js `--strip-types` 处理，也是 TS 7.0 的推荐前置配置 [^ts-5.8-erasable]。
 - **`verbatimModuleSyntax: true`**：强制 `import type` / `export type` 语法。任何仅用于类型的导入必须显式标记为 `type`，确保转译器可以安全删除它们而不影响模块副作用 [^ts-verbatimmodulesyntax]。
-- **`isolatedModules: true`**：要求每个文件必须能被独立编译，禁止跨文件的类型推断用于代码生成。这是与 `esbuild`、`swc`、Babel 以及即将发布的 **TypeScript 7.0（Go 版）** 兼容的关键选项 [^ts-isolatedmodules]。
+- **`isolatedModules: true`**：要求每个文件必须能被独立编译，禁止跨文件的类型推断用于代码生成。这是与 `esbuild`、`swc`、Babel 以及 **TypeScript 7.0 预览版（Go 版）** 兼容的关键选项 [^ts-isolatedmodules]。
 - **`noEmit: true`**：当 TS 仅作为类型检查器使用（由 `esbuild` 或 `vite` 负责输出 JS）时，设置 `noEmit: true` 避免生成不必要的 `.js` 和 `.d.ts` 文件 [^ts-noemit]。
 - **`skipLibCheck: true`**：跳过 `node_modules` 中 `.d.ts` 文件的类型一致性检查。这能显著加快编译速度并避免第三方库之间的类型冲突，但代价是不检查声明文件的内部一致性 [^ts-skiplibcheck]。
 
