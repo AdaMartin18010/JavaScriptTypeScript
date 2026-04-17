@@ -51,19 +51,19 @@ import { ref, computed } from 'vue'
 
 // 统计数据
 const stats = ref({
-  libraries: 200,
-  categories: 14,
+  libraries: 213,
+  categories: 20,
   contributors: 5,
-  lastUpdated: '2024-04'
+  lastUpdated: '2026-04'
 })
 
 // 最新更新
 const updates = ref([
-  { date: '2024-04', tag: '新增', content: '新增 Qwik、Hono、Elysia 等新兴框架介绍' },
-  { date: '2024-04', tag: '更新', content: '更新 React 19 和 Vue 3.4 新特性' },
-  { date: '2024-03', tag: '新增', content: '添加完整的数据可视化分类' },
-  { date: '2024-03', tag: '优化', content: '重构状态管理分类，新增 Zustand 5.0 内容' },
-  { date: '2024-02', tag: '新增', content: '添加 Solid 和 Svelte 生态深度解析' },
+  { date: '2026-04', tag: '发布', content: '🚀 v4.0 发布：JS/TS 语义模型全面升级，对齐 Stanford/MIT/CMU/Berkeley/UW 学术课程' },
+  { date: '2026-04', tag: '新增', content: '新增编译器/转译器语义对比矩阵（tsc/Babel/SWC/esbuild/Rolldown/tsgo）' },
+  { date: '2026-04', tag: '新增', content: '新增 TypeScript Compiler API 工程实践代码示例（AST 提取、Transformer、.d.ts 生成）' },
+  { date: '2026-04', tag: '更新', content: '更新 ECMAScript 2025/2026 与 TypeScript 7.0 (Project Corsa) 前沿语义分析' },
+  { date: '2026-04', tag: '更新', content: 'jsts-code-lab 代码实验室扩展至 87 个模块，529 个可运行代码示例' },
 ])
 </script>
 
