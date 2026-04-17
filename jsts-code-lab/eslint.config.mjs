@@ -5,7 +5,7 @@ import globals from 'globals';
 export default tseslint.config(
   // 忽略文件
   {
-    ignores: ['dist/**', 'node_modules/**', '**/*.d.ts']
+    ignores: ['dist/**', 'node_modules/**', 'tmp-dist/**', '**/*.d.ts']
   },
   
   // 基础JS/TS配置
