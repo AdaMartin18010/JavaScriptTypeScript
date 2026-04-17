@@ -232,6 +232,21 @@
 | 状态管理对比 | ./docs/comparison-matrices/state-management-compare.md | 状态管理方案对比 |
 | UI库对比 | ./docs/comparison-matrices/ui-libraries-compare.md | UI组件库对比 |
 
+### 7.4 架构与知识图谱
+
+| 文档 | 路径 | 描述 |
+|------|------|------|
+| 项目知识图谱 | ./docs/diagrams/project-knowledge-graph.mmd | 全景知识库结构关系图 |
+| JS执行模型 | ./docs/diagrams/js-execution-model.mmd | 调用栈、事件循环、内存模型 |
+| 事件循环详细 | ./docs/diagrams/event-loop-detailed.mmd | 宏任务/微任务/渲染流程 |
+| Promise状态机 | ./docs/diagrams/promise-state-machine.mmd | Promise生命周期可视化 |
+| TypeScript编译器架构 | ./docs/diagrams/typescript-compiler-architecture.mmd | TS编译流程 |
+| React Fiber架构 | ./docs/diagrams/react-fiber-architecture.mmd | React协调机制 |
+| 微服务架构模式 | ./docs/diagrams/microservices-patterns.mmd | 常见微服务设计模式 |
+| JWT认证流程 | ./docs/diagrams/jwt-authentication-flow.mmd | Token认证时序图 |
+| CI/CD流水线 | ./docs/diagrams/ci-cd-pipeline.mmd | 持续集成部署流程 |
+| 模块解析流程 | ./docs/diagrams/module-resolution-flow.mmd | Node.js模块加载机制 |
+
 ---
 
 ## 8. 学习路径推荐
@@ -352,13 +367,14 @@
 
 | 类别 | 数量 | 占比 |
 |------|------|------|
-| jsts-code-lab 模块 | 91 | 50% |
+| jsts-code-lab 模块 | 89 | 48% |
 | docs/categories 分类 | 21 | 11% |
 | docs/comparison-matrices 对比 | 8 | 4% |
+| docs/diagrams 图表 | 17 | 9% |
 | docs/learning-paths 路径 | 3 | 2% |
 | docs/guides 指南 | 1 | 1% |
-| 根目录及辅助文档 | 62 | 33% |
-| **总计** | **183** | **100%** |
+| 根目录及辅助文档 | 46 | 25% |
+| **总计** | **185** | **100%** |
 
 ### 10.2 代码实验室模块分布
 
@@ -368,8 +384,8 @@
 | 基础层 (20-49) | 20-37 | 18 |
 | 智能层 (50-69) | 50-69 | 20 |
 | 系统层 (70-89) | 70-89 | 21 |
-| 其他 | - | 14 |
-| **小计** | | **91** |
+| 其他 | - | 12 |
+| **小计** | | **89** |
 
 ### 10.3 理论文档清单
 

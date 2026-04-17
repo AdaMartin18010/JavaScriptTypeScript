@@ -59,6 +59,8 @@
 | [🎓 beginners-path.md](./docs/learning-paths/beginners-path.md) | 初学者学习路径 | 初学者 |
 | [📈 intermediate-path.md](./docs/learning-paths/intermediate-path.md) | 进阶学习路径 | 中级开发者 |
 | [🎯 advanced-path.md](./docs/learning-paths/advanced-path.md) | 架构师学习路径 | 高级开发者 |
+| [📊 comparison-matrices](./docs/comparison-matrices/) | 框架/工具对比矩阵 | 技术选型者 |
+| [🗺️ diagrams](./docs/diagrams/) | Mermaid 图表与知识图谱 | 可视化学习者 |
 | [🤝 CONTRIBUTING.md](./CONTRIBUTING.md) | 贡献指南 | 贡献者 |
 
 ---
