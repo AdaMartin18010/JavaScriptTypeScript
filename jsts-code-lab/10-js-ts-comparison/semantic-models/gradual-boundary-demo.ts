@@ -2,11 +2,12 @@
  * @file 渐进类型边界演示器
  * @category JS/TS Comparison → Semantic Models
  * @difficulty medium
- * @tags gradual-typing, runtime-check, type-boundary, soundness
+ * @tags gradual-typing, runtime-check, type-boundary, soundness, any-vs-unknown
  *
  * @description
  * 在 typed/untyped 边界模拟运行时一致性检查。
  * 演示 Gradual Typing 的核心行为：unknown → T 需要窄化，any → T 可隐式转换。
+ * 同时提供 any 与 unknown 的运行时行为对比。
  *
  * 规范对齐: Siek & Taha (2006) Consistency Relation、GRADUAL_TYPING_THEORY.md §5
  */
@@ -133,6 +134,94 @@ export function castAnyToType<T>(_value: unknown, _typeHint: string): T {
   return _value as T;
 }
 
+/**
+ * any 与 unknown 在编译时及运行时的行为对比项。
+ */
+export interface AnyVsUnknownComparison {
+  scenario: string;
+  anyBehavior: string;
+  unknownBehavior: string;
+}
+
+/**
+ * 通过具体代码示例对比 any 与 unknown 的行为差异。
+ *
+ * 注意：在纯 JavaScript 运行时中，any 与 unknown 存储的值并无区别；
+ * 真正的差异体现在 TypeScript 编译器的类型检查阶段。
+ * 本函数通过可执行的运行时演示（配合编译期语义说明）展示两者的核心区别。
+ */
+export function compareAnyVsUnknown(): AnyVsUnknownComparison[] {
+  const anyValue: any = 42;
+  const unknownValue: unknown = 42;
+
+  const results: AnyVsUnknownComparison[] = [];
+
+  // 场景 1：直接赋值给 string
+  const anyString: string = anyValue;
+  results.push({
+    scenario: '赋值给 string 类型变量',
+    anyBehavior: `编译通过，运行时值为 ${anyString}（实际类型: ${typeof anyString}）`,
+    unknownBehavior: "TS 编译错误: Type 'unknown' is not assignable to type 'string'",
+  });
+
+  // 场景 2：访问不存在的属性
+  let anyPropResult: string;
+  try {
+    anyPropResult = String((anyValue as any).nonExistentProp);
+  } catch (e) {
+    anyPropResult = `运行时错误: ${(e as Error).message}`;
+  }
+  results.push({
+    scenario: '访问不存在的属性 (.nonExistentProp)',
+    anyBehavior: `编译通过，运行时结果: ${anyPropResult}`,
+    unknownBehavior: "TS 编译错误: Object is of type 'unknown'",
+  });
+
+  // 场景 3：作为函数调用
+  let anyCallResult: string;
+  try {
+    (anyValue as any)();
+    anyCallResult = '调用成功';
+  } catch (e) {
+    anyCallResult = `运行时错误: ${(e as Error).message}`;
+  }
+  results.push({
+    scenario: '作为函数调用',
+    anyBehavior: `编译通过，${anyCallResult}`,
+    unknownBehavior: "TS 编译错误: Object is of type 'unknown'",
+  });
+
+  // 场景 4：调用不存在的方法
+  let anyMethodResult: string;
+  try {
+    (anyValue as any).nonExistentMethod();
+    anyMethodResult = '调用成功';
+  } catch (e) {
+    anyMethodResult = `运行时错误: ${(e as Error).message}`;
+  }
+  results.push({
+    scenario: '调用不存在的方法',
+    anyBehavior: `编译通过，${anyMethodResult}`,
+    unknownBehavior: "TS 编译错误: Object is of type 'unknown'",
+  });
+
+  return results;
+}
+
+/**
+ * 打印对比结果到控制台。
+ */
+export function printAnyVsUnknownComparison(): void {
+  const rows = compareAnyVsUnknown();
+  console.log('\n=== any vs unknown 行为对比 ===\n');
+  for (const row of rows) {
+    console.log(`场景: ${row.scenario}`);
+    console.log(`  any     : ${row.anyBehavior}`);
+    console.log(`  unknown : ${row.unknownBehavior}`);
+    console.log('');
+  }
+}
+
 // ============================================================================
 // 使用示例
 // ============================================================================
@@ -171,4 +260,7 @@ export function demo(): void {
   } catch (e) {
     console.log('✗ 对象检查失败:', (e as Error).message);
   }
+
+  // 5. any vs unknown 对比
+  printAnyVsUnknownComparison();
 }

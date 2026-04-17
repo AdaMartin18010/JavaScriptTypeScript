@@ -96,8 +96,8 @@
 pnpm exec tsx jsts-code-lab/10-js-ts-comparison/semantic-models/type-erasure-demo.ts
 ```
 
-> 注意：由于当前执行策略为"文档优先"，上述四个模块的完整实现将在下一阶段补充。本 README 作为架构设计文档先行落地。
+> 上述四个模块已完成基于真实 TypeScript API 的实现，可直接运行和测试。
 
 ---
 
-*文档版本: v1.0 | 最后更新: 2026-04-16*
+*文档版本: v2.0 | 最后更新: 2026-04-17*

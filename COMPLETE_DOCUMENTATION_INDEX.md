@@ -110,6 +110,7 @@
 | AI测试理论 | ./jsts-code-lab/55-ai-testing/THEORY.md | AI驱动测试生成理论 | 4星 |
 | 测试工具对比 | ./docs/categories/12-testing.md | Jest/Vitest/Playwright | 2星 |
 | 测试对比矩阵 | ./docs/comparison-matrices/testing-compare.md | 测试框架详细对比 | 2星 |
+| JS/TS 编译器对比矩阵 | ./docs/comparison-matrices/js-ts-compilers-compare.md | tsc/Babel/SWC/esbuild/Rolldown/tsgo 语义差异 | 3星 |
 
 ### 4.2 安全
 
@@ -228,6 +229,7 @@
 | 后端框架对比 | ./docs/comparison-matrices/backend-frameworks-compare.md | Express/Fastify/NestJS/Hono对比 |
 | SSR元框架对比 | ./docs/comparison-matrices/ssr-metaframeworks-compare.md | Next.js/Nuxt/Remix/Astro对比 |
 | 构建工具对比 | ./docs/comparison-matrices/build-tools-compare.md | Vite/Webpack/esbuild对比表 |
+| JS/TS 编译器对比 | ./docs/comparison-matrices/js-ts-compilers-compare.md | tsc/Babel/SWC/esbuild/Rolldown/tsgo 语义差异与选型 |
 | ORM对比 | ./docs/comparison-matrices/orm-compare.md | ORM选型决策矩阵 |
 | 状态管理对比 | ./docs/comparison-matrices/state-management-compare.md | 状态管理方案对比 |
 | UI库对比 | ./docs/comparison-matrices/ui-libraries-compare.md | UI组件库对比 |
@@ -328,6 +330,7 @@
 | 如何进阶架构师？ | ./docs/learning-paths/advanced-path.md |
 | 如何选型ORM？ | ./docs/comparison-matrices/orm-compare.md |
 | 如何选型构建工具？ | ./docs/comparison-matrices/build-tools-compare.md |
+| 如何选型 JS/TS 编译器/转译器？ | ./docs/comparison-matrices/js-ts-compilers-compare.md |
 | 如何选型测试框架？ | ./docs/comparison-matrices/testing-compare.md |
 
 ### 9.3 按复杂度分级
@@ -369,12 +372,12 @@
 |------|------|------|
 | jsts-code-lab 模块 | 89 | 48% |
 | docs/categories 分类 | 21 | 11% |
-| docs/comparison-matrices 对比 | 8 | 4% |
+| docs/comparison-matrices 对比 | 9 | 5% |
 | docs/diagrams 图表 | 17 | 9% |
 | docs/learning-paths 路径 | 3 | 2% |
 | docs/guides 指南 | 1 | 1% |
 | 根目录及辅助文档 | 46 | 25% |
-| **总计** | **185** | **100%** |
+| **总计** | **186** | **100%** |
 
 ### 10.2 代码实验室模块分布
 
@@ -487,7 +490,7 @@ JavaScriptTypeScript/
 │   │   ├── 02-ui-component-libraries.md
 │   │   ├── 03-build-tools.md
 │   │   └── ... (共20个)
-│   ├── comparison-matrices/           # 5个对比矩阵
+│   ├── comparison-matrices/           # 6个对比矩阵
 │   │   ├── build-tools-compare.md
 │   │   ├── orm-compare.md
 │   │   └── ... (共5个)

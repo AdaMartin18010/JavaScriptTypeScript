@@ -1,105 +1,40 @@
 import { describe, it, expect } from 'vitest';
-import { tokenize, parse, inferType, emit } from './compiler-phase-demo.js';
+import { getAstNodeKinds, getInferredTypes, transformConstToLet, demo } from './compiler-phase-demo.js';
 
 describe('compiler-phase-demo', () => {
-  it('词法分析器应正确识别 number, string, identifier, operator, paren', () => {
-    const tokens = tokenize('let x = 1 + 2');
-    expect(tokens).toEqual([
-      { type: 'keyword', value: 'let' },
-      { type: 'identifier', value: 'x' },
-      { type: 'assign', value: '=' },
-      { type: 'number', value: '1' },
-      { type: 'operator', value: '+' },
-      { type: 'number', value: '2' },
-    ]);
+  const sampleCode = `
+function add(a: number, b: number): number {
+  return a + b;
+}
+const result = add(1, 2);
+const message: string = "hello";
+`;
+
+  it('应正确解析源码并返回顶层 AST 节点类型', () => {
+    const kinds = getAstNodeKinds(sampleCode);
+    expect(kinds).toContain('FunctionDeclaration');
+    // 在 TypeScript 5.x 中，VariableStatement 的反向映射名称为 FirstStatement
+    expect(kinds).toContain('FirstStatement');
   });
 
-  it('词法分析器应正确识别函数声明的关键 token', () => {
-    const tokens = tokenize('function add(a, b) { return a + b; }');
-    const values = tokens.map((t) => t.value);
-    expect(values).toEqual([
-      'function', 'add', '(', 'a', ',', 'b', ')', '{', 'return', 'a', '+', 'b', ';', '}',
-    ]);
+  it('类型检查器应正确推断变量和函数类型', () => {
+    const types = getInferredTypes(sampleCode);
+    expect(types.functions['add']).toBe('(a: number, b: number) => number');
+    expect(types.variables['result']).toBe('number');
+    expect(types.variables['message']).toBe('string');
   });
 
-  it('语法分析器应能解析变量声明与二元表达式', () => {
-    const ast = parse(tokenize('let x = 1 + 2'));
-    expect(ast.kind).toBe('Program');
-    expect(ast).toEqual({
-      kind: 'Program',
-      body: [
-        {
-          kind: 'VarDecl',
-          name: 'x',
-          init: {
-            kind: 'BinaryExpr',
-            op: '+',
-            left: { kind: 'NumberLiteral', value: 1 },
-            right: { kind: 'NumberLiteral', value: 2 },
-          },
-        },
-      ],
-    });
+  it('AST 变换应将 const 转换为 let 并正确打印', () => {
+    const output = transformConstToLet(sampleCode);
+    expect(output).toContain('let result');
+    expect(output).toContain('let message');
+    expect(output).not.toContain('const result');
+    expect(output).not.toContain('const message');
+    // 函数声明应保持不变
+    expect(output).toContain('function add(a: number, b: number): number {');
   });
 
-  it('语法分析器应能解析函数声明', () => {
-    const ast = parse(tokenize('function add(a, b) { return a + b; }'));
-    expect(ast.kind).toBe('Program');
-    if (ast.kind !== 'Program') throw new Error('Expected Program');
-    const fn = ast.body[0];
-    expect(fn.kind).toBe('FnDecl');
-    if (fn.kind !== 'FnDecl') throw new Error('Expected FnDecl');
-    expect(fn.name).toBe('add');
-    expect(fn.params).toEqual(['a', 'b']);
-    expect(fn.body[0].kind).toBe('Return');
-  });
-
-  it('类型推断应推断 number literal 为 number', () => {
-    const ast = parse(tokenize('let x = 42'));
-    if (ast.kind !== 'Program') throw new Error('Expected Program');
-    const type = inferType(ast.body[0]);
-    expect(type).toBe('number');
-  });
-
-  it('类型推断应推断 string literal 为 string', () => {
-    const ast = parse(tokenize('let msg = "hello"'));
-    if (ast.kind !== 'Program') throw new Error('Expected Program');
-    const type = inferType(ast.body[0]);
-    expect(type).toBe('string');
-  });
-
-  it('类型推断应推断二元表达式 1 + 2 为 number', () => {
-    const ast = parse(tokenize('let x = 1 + 2'));
-    if (ast.kind !== 'Program') throw new Error('Expected Program');
-    const type = inferType(ast.body[0]);
-    expect(type).toBe('number');
-  });
-
-  it('代码生成器应输出擦除类型的 JS 字符串', () => {
-    const ast = parse(tokenize('let x = 1 + 2'));
-    if (ast.kind !== 'Program') throw new Error('Expected Program');
-    const js = emit(ast);
-    expect(js).toBe('let x = 1 + 2;');
-  });
-
-  it('完整流水线：let x = 1 + 2 → 词法 → 语法 → 推断x为number → 输出 JS', () => {
-    const code = 'let x = 1 + 2';
-    const tokens = tokenize(code);
-    const ast = parse(tokens);
-    if (ast.kind !== 'Program') throw new Error('Expected Program');
-    const type = inferType(ast.body[0]);
-    const js = emit(ast);
-
-    expect(tokens).toHaveLength(6);
-    expect(ast.kind).toBe('Program');
-    expect(type).toBe('number');
-    expect(js).toBe('let x = 1 + 2;');
-  });
-
-  it('完整流水线：函数声明 → JS 输出', () => {
-    const code = 'function add(a, b) { return a + b; }';
-    const ast = parse(tokenize(code));
-    const js = emit(ast);
-    expect(js).toBe('function add(a, b) {\n  return a + b;\n}');
+  it('demo() 应无异常执行', () => {
+    expect(() => demo()).not.toThrow();
   });
 });

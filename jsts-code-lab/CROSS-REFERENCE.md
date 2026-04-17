@@ -108,7 +108,7 @@
 | 主题 | 主要模块 | 理论文档 | 相关模块 |
 |------|---------|---------|---------|
 | ECMAScript 演进 | 01-ecmascript-evolution | [index.ts](./01-ecmascript-evolution/index.ts) | 10-js-ts-comparison |
-| JS/TS 语义对比 | 10-js-ts-comparison | [THEORY.md](./10-js-ts-comparison/THEORY.md) | 40-type-theory-formal |
+| JS/TS 语义对比 | 10-js-ts-comparison | [THEORY.md](./10-js-ts-comparison/THEORY.md) | 40-type-theory-formal, compiler-api |
 | 共识算法 | 71-consensus-algorithms | [THEORY.md](./71-consensus-algorithms/THEORY.md) | 70-distributed-systems |
 | 形式化验证 | 80-formal-verification | [THEORY.md](./80-formal-verification/THEORY.md) | 41-formal-semantics |
 

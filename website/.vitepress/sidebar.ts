@@ -71,6 +71,7 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '🔐 后端框架对比', link: '/comparison-matrices/backend-frameworks-compare' },
         { text: '🎭 SSR 元框架对比', link: '/comparison-matrices/ssr-metaframeworks-compare' },
         { text: '⚡ 构建工具对比', link: '/comparison-matrices/build-tools-compare' },
+        { text: '🔧 JS/TS 编译器对比', link: '/comparison-matrices/js-ts-compilers-compare' },
         { text: '🗄️ ORM 对比', link: '/comparison-matrices/orm-compare' },
         { text: '🗂️ 状态管理对比', link: '/comparison-matrices/state-management-compare' },
         { text: '🧪 测试工具对比', link: '/comparison-matrices/testing-compare' },
