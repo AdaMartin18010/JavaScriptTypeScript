@@ -13,7 +13,7 @@ describe('Grover Search', () => {
   it('finds target in N=8 with high probability', () => {
     const n = 3;
     const target = 5;
-    const runs = 100;
+    const runs = 200;
     let successes = 0;
     for (let i = 0; i < runs; i++) {
       const r = runGroverSearch(n, target);

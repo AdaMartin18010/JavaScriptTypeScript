@@ -80,15 +80,16 @@ function optimize(
 }
 
 export function runVQE(
-  coeff = 0.5
+  coeff = 0.5,
+  initialTheta?: number
 ): {
   optimalTheta: number;
   estimatedGroundEnergy: number;
   exactGroundEnergy: number;
   history: number[];
 } {
-  const initialTheta = Math.random() * Math.PI;
-  const result = optimize(coeff, initialTheta);
+  const theta0 = initialTheta ?? Math.random() * Math.PI;
+  const result = optimize(coeff, theta0);
   const exact = -Math.sqrt(1 + coeff * coeff);
   return {
     optimalTheta: result.theta,
