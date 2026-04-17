@@ -1,8 +1,8 @@
 # ES2025 (ES16) 完整特性指南
 
-> 本文档全面涵盖 ES2025 所有新特性的规范定义、形式化语义、使用示例及兼容性信息。
+> 本文档全面涵盖 **ES2025 (ES16) 正式版** 所有新特性的规范定义、形式化语义、使用示例及兼容性信息，同时收录两项 **Stage 3 预览特性**（预计纳入 ES2026）。
 >
-> 规范版本: ECMAScript® 2025 Language Specification
+> 规范版本: ECMAScript® 2025 Language Specification (ECMA-262, 16th edition, June 2025)
 > 最后更新: 2026年4月
 
 ---
@@ -129,7 +129,8 @@
       - [TypeScript 类型声明](#typescript-类型声明)
       - [属性不匹配错误](#属性不匹配错误)
     - [8.4 兼容性信息](#84-兼容性信息)
-  - [9. Atomics.pause 的内存屏障语义](#9-atomicspause-的内存屏障语义)
+  - [附录 C. Stage 3 预览特性（预计 ES2026）](#附录-c-stage-3-预览特性预计-es2026)
+    - [C.1 Atomics.pause 的内存屏障语义](#c1-atomicspause-的内存屏障语义)
     - [9.1 规范定义](#91-规范定义)
     - [9.2 形式化语义](#92-形式化语义)
       - [抽象操作](#抽象操作)
@@ -142,7 +143,7 @@
       - [读-复制-更新 (RCU) 模式](#读-复制-更新-rcu-模式)
       - [性能对比](#性能对比)
     - [9.4 兼容性信息](#94-兼容性信息)
-  - [10. Explicit Resource Management 的 RAII 模式](#10-explicit-resource-management-的-raii-模式)
+    - [C.2 Explicit Resource Management 的 RAII 模式](#c2-explicit-resource-management-的-raii-模式)
     - [10.1 规范定义](#101-规范定义)
     - [10.2 形式化语义](#102-形式化语义)
       - [`using` 声明](#using-声明)
@@ -162,7 +163,7 @@
   - [附录](#附录)
     - [A. 特性支持速查表](#a-特性支持速查表)
     - [B. 相关提案链接](#b-相关提案链接)
-    - [C. 参考文献](#c-参考文献)
+    - [D. 参考文献](#d-参考文献)
 
 ---
 
@@ -2004,7 +2005,11 @@ import config from './config.json' with { type: 'json' };
 
 ---
 
-## 9. Atomics.pause 的内存屏障语义
+## 附录 C. Stage 3 预览特性（预计 ES2026）
+
+> 以下特性在 ECMAScript 2025 (ES16) 正式版中**尚未纳入**，目前处于 **TC39 Stage 3** 阶段，预计将在 **ES2026 (ES17)** 中成为标准。为便于读者提前了解，此处保留其详细文档。
+
+### C.1 Atomics.pause 的内存屏障语义
 
 ### 9.1 规范定义
 
@@ -2250,9 +2255,7 @@ async function benchmark() {
 
 **注意**: `Atomics.pause` 在单核系统或没有 SharedArrayBuffer 的环境中无效果。
 
----
-
-## 10. Explicit Resource Management 的 RAII 模式
+### C.2 Explicit Resource Management 的 RAII 模式
 
 ### 10.1 规范定义
 
@@ -2634,10 +2637,13 @@ async function atomicWrite(path, data) {
 - [RegExp Modifiers](https://github.com/tc39/proposal-regexp-modifiers)
 - [Float16Array](https://github.com/tc39/proposal-float16array)
 - [Import Attributes](https://github.com/tc39/proposal-import-attributes)
+
+**Stage 3 预览（预计 ES2026）**
+
 - [Atomics.pause](https://github.com/tc39/proposal-atomics-microwait)
 - [Explicit Resource Management](https://github.com/tc39/proposal-explicit-resource-management)
 
-### C. 参考文献
+### D. 参考文献
 
 1. ECMA-262, 16th Edition, June 2025
 2. IEEE 754-2008 Standard for Floating-Point Arithmetic

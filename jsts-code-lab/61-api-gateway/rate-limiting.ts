@@ -300,9 +300,10 @@ export class LeakyBucketRateLimiter {
     bucket.volume = Math.max(0, bucket.volume - leaked);
     bucket.lastLeak = now;
 
-    if (bucket.volume >= this.bucketSize) {
+    if (bucket.volume + 1 > this.bucketSize) {
       // 桶已满
-      const waitMs = ((bucket.volume - this.bucketSize + 1) / this.leakRate) * 1000;
+      const waitMs = ((bucket.volume + 1 - this.bucketSize) / this.leakRate) * 1000;
+      this.buckets.set(bucketKey, bucket);
 
       return {
         allowed: false,
