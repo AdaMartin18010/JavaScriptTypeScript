@@ -1,6 +1,6 @@
 {
   "name": "awesome-jsts-ecosystem-docs",
-  "version": "1.0.0",
+  "version": "4.0.0",
   "description": "Awesome JavaScript/TypeScript Ecosystem 文档站点",
   "type": "module",
   "scripts": {
