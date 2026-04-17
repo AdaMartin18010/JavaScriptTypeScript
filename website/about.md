@@ -74,7 +74,7 @@
 
 ## 许可证
 
-本项目采用 [MIT 许可证](https://github.com/yourusername/awesome-jsts-ecosystem/blob/main/LICENSE) 开源。
+本项目采用 [MIT 许可证](https://github.com/AdaMartin18010/JavaScriptTypeScript/blob/main/LICENSE) 开源。
 
 ---
 

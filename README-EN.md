@@ -199,7 +199,7 @@ Resources included in this project must meet the following criteria:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/awesome-jsts-ecosystem.git
+git clone https://github.com/AdaMartin18010/JavaScriptTypeScript.git
 
 # Browse categories
 # Click the Table of Contents above to jump to sections of interest
