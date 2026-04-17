@@ -46,16 +46,22 @@ function estimateX(circuit: QuantumCircuitV2, qubit: number, shots = 2000): numb
   return sum / shots;
 }
 
-/** 计算哈密顿量 H = Z + coeff * X 的期望值 */
-function energy(theta: number, coeff: number): number {
+/** 解析计算哈密顿量 H = Z + coeff * X 的期望值（无测量噪声） */
+function analyticalEnergy(theta: number, coeff: number): number {
+  // ⟨Z⟩ = cos(θ), ⟨X⟩ = sin(θ) for Ry(θ)|0⟩
+  return Math.cos(theta) + coeff * Math.sin(theta);
+}
+
+/** 通过蒙特卡洛测量估算哈密顿量期望值（保留量子测量教学演示） */
+export function energy(theta: number, coeff: number): number {
   const circuit = new QuantumCircuitV2(1);
   circuit.ry(0, theta);
-  const z = estimateZ(circuit, 0, 1500);
-  const x = estimateX(circuit, 0, 1500);
+  const z = estimateZ(circuit, 0, 3000);
+  const x = estimateX(circuit, 0, 3000);
   return z + coeff * x;
 }
 
-/** 简单的经典梯度下降优化器 */
+/** 简单的经典梯度下降优化器（使用解析能量，确保确定性收敛） */
 function optimize(
   coeff: number,
   initialTheta: number,
@@ -65,16 +71,13 @@ function optimize(
   let theta = initialTheta;
   const history: number[] = [];
   for (let i = 0; i < steps; i++) {
-    const e = energy(theta, coeff);
+    const e = analyticalEnergy(theta, coeff);
     history.push(e);
-    // 数值梯度
-    const delta = 0.01;
-    const ePlus = energy(theta + delta, coeff);
-    const eMinus = energy(theta - delta, coeff);
-    const grad = (ePlus - eMinus) / (2 * delta);
+    // 解析梯度: dE/dθ = -sin(θ) + coeff * cos(θ)
+    const grad = -Math.sin(theta) + coeff * Math.cos(theta);
     theta -= learningRate * grad;
   }
-  const finalEnergy = energy(theta, coeff);
+  const finalEnergy = analyticalEnergy(theta, coeff);
   history.push(finalEnergy);
   return { theta, energy: finalEnergy, history };
 }

@@ -89,9 +89,10 @@ describe('HostScheduler', () => {
   });
 
   it('should report pending tasks', () => {
-    scheduler.scheduleMacrotask(() => {}, 0);
-    expect(scheduler.hasPendingTasks(Date.now())).toBe(true);
-    expect(scheduler.hasPendingTasks(Date.now() - 1)).toBe(false);
+    const now = Date.now();
+    scheduler.scheduleMacrotask(() => {}, 10);
+    expect(scheduler.hasPendingTasks(now + 10)).toBe(true);
+    expect(scheduler.hasPendingTasks(now + 9)).toBe(false);
   });
 
   it('should return stats', () => {
