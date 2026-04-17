@@ -1,6 +1,6 @@
 # JavaScript/TypeScript 全景知识库 - 完整文档索引
 
-> **版本**: v1.1.0 | **最后更新**: 2026-04-16 | **维护状态**: 活跃维护
+> **版本**: v1.2.0 | **最后更新**: 2026-04-17 | **维护状态**: 活跃维护
 
 ---
 
@@ -383,10 +383,19 @@
 
 ## 11. 更新日志
 
+### v1.2.0 (2026-04-17)
+
+- **修正 ES2025 标准边界**：`Atomics.pause` 与 `Explicit Resource Management` 调整为 **Stage 3 预览 / 预计 ES2026**，严格对齐 ECMA-262 16th edition
+- 更新 `ES2025_COMPLETE_FEATURES.md` 与 `01_language_core.md` 的版本声明
+- 补充 ES2025 正式版 7 项缺失代码实现（Iterator Helpers、Set Methods、Promise.try 等）
+- 新增 ES2026 Stage 4 前瞻代码模块（Temporal API、Array.fromAsync、Error.isError、Explicit Resource Management）
+- 补齐 4 个高实施模块的 THEORY.md（形式化验证、共识算法、类型理论、JS/TS 对比）
+- 全面 Mermaid 化 6 个决策树，新增 3 个对比矩阵与项目知识图谱
+
 ### v1.1.0 (2026-04-16)
 
 - 新增 TanStack Start + Cloudflare 专题模块 (86-tanstack-start-cloudflare)
-- 补充 ES2025 Atomics.pause 示例与理论文档
+- 补充 Atomics.pause 示例与理论文档（后修正为 Stage 3 / 预计 ES2026）
 - 新增数据结构与算法 THEORY.md 形式化推导
 - 新增量子计算 THEORY.md
 - 更新安全报告与依赖漏洞修复
@@ -487,5 +496,5 @@ JavaScriptTypeScript/
 ---
 
 > **维护者**: JavaScript/TypeScript 全景知识库团队
-> **最后更新**: 2026-04-16
-> **版本**: v1.1.0
+> **最后更新**: 2026-04-17
+> **版本**: v1.2.0

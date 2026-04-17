@@ -1,10 +1,11 @@
 /**
- * @file Atomics.pause 自旋锁示例 (ES2025 Preview)
- * @category ECMAScript Evolution → ES2025
+ * @file Atomics.pause 自旋锁示例 (Stage 3 / 预计 ES2026)
+ * @category ECMAScript Evolution → ES2026 Preview
  * @difficulty hard
- * @tags atomics, sharedarraybuffer, worker, spinlock, es2025
+ * @tags atomics, sharedarraybuffer, worker, spinlock, es2026
  * @description
- * 演示 ES2025 Atomics.pause 在高并发自旋锁中的性能优化效果。
+ * 演示 TC39 Stage 3 提案 Atomics.pause 在高并发自旋锁中的性能优化效果。
+ * 该特性尚未纳入 ECMAScript 2025 正式版，预计将在 ES2026 中成为标准。
  * 包含 SharedArrayBuffer、Worker Threads、有/无 pause 的性能对比。
  * @environment
  * 推荐使用 Node.js >= 22 并配合 tsx 运行：

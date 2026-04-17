@@ -296,6 +296,20 @@
   - [附录：快速参考](#附录快速参考)
     - [A. 模式速查表](#a-模式速查表)
     - [B. TypeScript装饰器速查](#b-typescript装饰器速查)
+    - [C. 设计模式类型化升级路径 (JavaScript → TypeScript)](#c-设计模式类型化升级路径-javascript--typescript)
+      - [C.1 升级总则](#c1-升级总则)
+      - [C.2 创建型模式升级](#c2-创建型模式升级)
+        - [单例模式（Singleton）](#单例模式singleton)
+        - [工厂方法 / 抽象工厂](#工厂方法--抽象工厂)
+      - [C.3 行为型模式升级](#c3-行为型模式升级)
+        - [观察者模式（Observer）](#观察者模式observer)
+        - [策略模式（Strategy）](#策略模式strategy)
+        - [命令模式（Command）](#命令模式command)
+      - [C.4 结构型模式升级](#c4-结构型模式升级)
+        - [适配器模式（Adapter）](#适配器模式adapter)
+        - [代理模式（Proxy）](#代理模式proxy)
+        - [装饰器模式（Decorator）](#装饰器模式decorator)
+      - [C.5 迁移检查清单](#c5-迁移检查清单)
 
 ---
 
@@ -11570,7 +11584,7 @@ declare type ParameterDecorator = (
 
 ### C. 设计模式类型化升级路径 (JavaScript → TypeScript)
 
-> **来源对齐**: `JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md` §5、TypeScript Handbook、Siek & Taha Gradual Typing Theory  
+> **来源对齐**: `JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md` §5、TypeScript Handbook、Siek & Taha Gradual Typing Theory
 > **目标**: 为从 JavaScript 迁移到 TypeScript 的开发者提供每种设计模式的"动态实现 → 类型安全实现"升级策略。
 
 #### C.1 升级总则
@@ -11793,5 +11807,5 @@ abstract class CoffeeDecorator extends Coffee {
 **文档结束**
 
 > **注意**: 本文档涵盖了GoF 23种设计模式及现代JavaScript/TypeScript特有模式，提供了类型安全的TypeScript实现。实际使用时，请根据具体场景灵活选择和调整。
-> 
+>
 > 如需了解每种模式的 JavaScript → TypeScript 类型化升级细节，请参阅 `JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md` §5。

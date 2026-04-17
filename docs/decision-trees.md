@@ -1,10 +1,29 @@
 # 技术选型决策树
 
 > 交互式技术选型指南，帮助你根据项目需求快速选择合适的技术栈。
+> 每个选型均提供 **Mermaid 可视化流程图**（推荐在 VitePress 网站中浏览）和 **ASCII 文本树**（兼容纯文本阅读）。
 
 ---
 
 ## 1. UI库选型决策树
+
+### Mermaid 流程图
+
+```mermaid
+flowchart TD
+    A[需要React UI库？] --> B{需要企业级设计系统？}
+    B -->|是| C[Ant Design 或 MUI]
+    B -->|否| D{需要完全可定制？}
+    D -->|是| E[shadcn/ui 或 Headless UI]
+    D -->|否| F{需要Tailwind CSS？}
+    F -->|是| G[shadcn/ui 或 NextUI]
+    F -->|否| H[Chakra UI]
+    A --> I{需要Vue？}
+    I -->|是| J[Element Plus 或 Vuetify]
+    I -->|否| K[返回选择React库]
+```
+
+### ASCII 文本树
 
 ```
 需要React UI库？
@@ -44,6 +63,22 @@
 
 ## 2. 状态管理选型决策树
 
+### Mermaid 流程图
+
+```mermaid
+flowchart TD
+    A[React状态管理？] --> B{需要全局状态？}
+    B -->|简单| C[Zustand]
+    B -->|复杂| D[Redux Toolkit]
+    B -->|原子化| E[Jotai / Recoil]
+    A --> F{服务端状态？}
+    F -->|是| G[TanStack Query / SWR]
+    F -->|否| H{Vue项目？}
+    H -->|是| I[Pinia]
+```
+
+### ASCII 文本树
+
 ```
 React状态管理？
 ├── 需要全局状态？
@@ -54,7 +89,7 @@ React状态管理？
 │   │         📌 生态最成熟，DevTools强大，适合大型团队
 │   │         📌 适合：复杂业务逻辑，时间旅行调试需求
 │   └── 原子化 → Jotai / Recoil
-n│         📌 Jotai：简单原子化，依赖自动追踪
+│         📌 Jotai：简单原子化，依赖自动追踪
 │             📌 Recoil：Facebook出品，适合复杂派生状态
 ├── 服务端状态？
 │   ├── 是 → TanStack Query / SWR
@@ -81,6 +116,23 @@ n│         📌 Jotai：简单原子化，依赖自动追踪
 
 ## 3. 构建工具选型决策树
 
+### Mermaid 流程图
+
+```mermaid
+flowchart TD
+    A[新项目构建工具？] --> B{需要最快HMR？}
+    B -->|是| C[Vite]
+    A --> D{需要库打包？}
+    D -->|简单| E[tsup]
+    D -->|复杂| F[Rollup]
+    A --> G{需要Monorepo？}
+    G -->|是| H[Turborepo + pnpm]
+    A --> I{迁移旧项目？}
+    I -->|是| J[逐步迁移到Vite]
+```
+
+### ASCII 文本树
+
 ```
 新项目构建工具？
 ├── 需要最快HMR？
@@ -89,7 +141,7 @@ n│         📌 Jotai：简单原子化，依赖自动追踪
 │       📌 生态丰富，插件多，配置简单
 ├── 需要库打包？
 │   ├── 简单 → tsup
-n│   │     📌 零配置，基于esbuild，TypeScript库首选
+│   │     📌 零配置，基于esbuild，TypeScript库首选
 │   │     📌 自动生成dts，支持CJS/ESM双输出
 │   └── 复杂 → Rollup
 │         📌 最灵活的打包方案，tree-shaking最优
@@ -117,6 +169,24 @@ n│   │     📌 零配置，基于esbuild，TypeScript库首选
 ---
 
 ## 4. 后端框架选型决策树
+
+### Mermaid 流程图
+
+```mermaid
+flowchart TD
+    A[后端框架选择？] --> B{语言偏好？}
+    B -->|Node.js| C{需要全功能框架？}
+    B -->|Python| D[FastAPI 或 Django]
+    B -->|Go| E[Gin 或 Echo]
+    B -->|Rust| F[Axum 或 Actix-web]
+    C -->|是| G[NestJS]
+    C -->|否| H{需要极简灵活？}
+    H -->|是| I[Express.js 或 Fastify]
+    H -->|否| J{需要边缘计算/Serverless？}
+    J -->|是| K[Hono 或 Elysia]
+```
+
+### ASCII 文本树
 
 ```
 后端框架选择？
@@ -164,6 +234,25 @@ n│   │     📌 零配置，基于esbuild，TypeScript库首选
 
 ## 5. ORM选型决策树
 
+### Mermaid 流程图
+
+```mermaid
+flowchart TD
+    A[ORM选择？] --> B{数据库偏好？}
+    B -->|PostgreSQL| C{需要类型安全最大化？}
+    B -->|MongoDB| D[Prisma 或 Mongoose]
+    B -->|MySQL| E[Prisma 或 TypeORM]
+    B -->|SQLite| F[Drizzle 或 Prisma]
+    C -->|是| G[Drizzle ORM]
+    C -->|否| H{需要可视化工具？}
+    H -->|是| I[Prisma]
+    H -->|否| J{需要ActiveRecord模式？}
+    J -->|是| K[TypeORM 或 MikroORM]
+    J -->|否| L[Kysely]
+```
+
+### ASCII 文本树
+
 ```
 ORM选择？
 ├── 数据库偏好？
@@ -209,12 +298,28 @@ ORM选择？
 
 ## 6. 测试框架选型决策树
 
+### Mermaid 流程图
+
+```mermaid
+flowchart TD
+    A[测试框架选择？] --> B{测试层级？}
+    B -->|单元测试| C{使用Vite？}
+    B -->|E2E测试| D[Playwright 或 Cypress]
+    B -->|组件测试| E[Vitest + Testing Library]
+    C -->|是| F[Vitest]
+    C -->|否| G{需要最成熟生态？}
+    G -->|是| H[Jest]
+    G -->|否| I[Bun Test 或 Node.js Test Runner]
+```
+
+### ASCII 文本树
+
 ```
 测试框架选择？
 ├── 测试层级？
 │   ├── 单元测试 → 继续
 │   ├── E2E测试 → Playwright 或 Cypress
-n│   │             📌 Playwright：微软出品，多浏览器，速度快
+│   │             📌 Playwright：微软出品，多浏览器，速度快
 │   │             📌 Cypress：调试体验好，社区丰富，但单线程
 │   └── 组件测试 → Vitest + Testing Library
 │                   📌 Vitest：Vite原生，配置继承，速度快
@@ -260,4 +365,4 @@ n│   │             📌 Playwright：微软出品，多浏览器，速度快
 
 ---
 
-> 💡 **提示**：以上推荐基于2024年技术趋势和生态活跃度，实际选型需结合团队技术栈和项目具体需求。
+> 💡 **提示**：以上推荐基于2024-2025年技术趋势和生态活跃度，实际选型需结合团队技术栈和项目具体需求。

@@ -40,7 +40,8 @@
 
 ## 一、项目概览
 
-awesome-nodejs 是 Node.js 生态最权威的整理项目，由 sindresorhus 维护，是 awesome 系列的标准参考。项目目前**已暂停接受新提交**（因垃圾提交和低质量内容过多）。
+awesome-nodejs 是 Node.js 生态最权威的整理项目，由 sindresorhus 维护，是 awesome 系列的标准参考。
+项目目前**已暂停接受新提交**（因垃圾提交和低质量内容过多）。
 
 ### 核心定位
 
