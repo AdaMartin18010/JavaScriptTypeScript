@@ -24,44 +24,50 @@
 
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
-| 反向代理 | Reverse Proxy | 代表服务器接收客户端请求的中间服务器，常用于负载均衡和安全 |
-| 蓝绿部署 | Blue-Green Deployment | 同时运行两套生产环境，通过切换流量实现零停机部署 |
 | 背压 | Backpressure | 当生产者速度超过消费者时，用于控制数据流量的机制 |
+| blame 追踪 | Blame Tracking | 一种在类型推断和错误报告中追踪类型约束来源的技术，用于精确定位类型错误的根本原因 |
+| 蓝绿部署 | Blue-Green Deployment | 同时运行两套生产环境，通过切换流量实现零停机部署 |
 | 边界上下文 | Bounded Context | 领域驱动设计中的核心概念，定义领域模型的适用范围 |
 | 浏览器运行时 | Browser Runtime | 浏览器中执行 JavaScript 的环境，包括 V8 引擎、事件循环等 |
+| 反向代理 | Reverse Proxy | 代表服务器接收客户端请求的中间服务器，常用于负载均衡和安全 |
 
 ## C
 
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
+| 缓存策略 | Caching Strategy | 控制数据缓存行为的规则，如 Cache-Aside、Write-Through 等 |
+| 类型断言插入 | Cast Insertion | 在类型驱动编译或代码生成过程中，自动插入类型断言以桥接静态类型与运行时类型差异的技术 |
 | 命令模式 | Command Pattern | 将请求封装为对象，支持参数化、队列化和日志记录 |
 | 并发 | Concurrency | 多个任务在重叠的时间段内执行，不一定同时 |
-| 并行 | Parallelism | 多个任务在同一时刻同时执行，需要多核处理器 |
-| 持续集成 | Continuous Integration (CI) | 频繁地将代码集成到主干并自动构建测试的实践 |
 | 持续部署 | Continuous Deployment (CD) | 自动将通过测试的代码部署到生产环境的实践 |
-| 缓存策略 | Caching Strategy | 控制数据缓存行为的规则，如 Cache-Aside、Write-Through 等 |
+| 持续集成 | Continuous Integration (CI) | 频繁地将代码集成到主干并自动构建测试的实践 |
 | CQRS | Command Query Responsibility Segregation | 命令查询职责分离，读写模型分离的架构模式 |
+| Curry-Howard 对应 | Curry-Howard Correspondence | 数学逻辑与计算理论之间的深刻对应，将命题视为类型、证明视为程序，连接了形式证明与函数式编程 |
+| 并行 | Parallelism | 多个任务在同一时刻同时执行，需要多核处理器 |
 
 ## D
 
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
+| 数据流 | Data Flow | 数据在系统中移动和变换的路径 |
+| 装饰器模式 | Decorator Pattern | 动态地给对象添加额外职责的设计模式 |
+| 指称语义 | Denotational Semantics | 通过数学对象和函数来描述程序含义的语义学方法，强调"程序做了什么"而非"如何执行" |
 | 依赖注入 | Dependency Injection (DI) | 将依赖从外部传入，而非内部创建的设计模式 |
 | 依赖倒置 | Dependency Inversion Principle | 高层模块不应依赖低层模块，两者应依赖抽象 |
-| 装饰器模式 | Decorator Pattern | 动态地给对象添加额外职责的设计模式 |
 | 设计模式 | Design Pattern | 软件设计中常见问题的通用可复用解决方案 |
 | 分布式系统 | Distributed System | 由多个通过网络通信的独立计算节点组成的系统 |
 | 领域驱动设计 | Domain-Driven Design (DDD) | 以业务领域为核心的软件设计方法 |
-| 数据流 | Data Flow | 数据在系统中移动和变换的路径 |
 
 ## E
 
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
+| 可擦除语法 | Erasable Syntax Only | TypeScript 的 `--erasableSyntaxOnly` 编译选项，要求代码中仅使用可在编译后被完全擦除的语法，以支持直接运行或快速剥离类型 |
+| 事件委托 | Event Delegation | 利用事件冒泡机制，在父元素上统一处理子元素事件的技术 |
 | 事件循环 | Event Loop | JavaScript 运行时处理异步事件的机制 |
 | 事件驱动 | Event-Driven | 通过事件的产生、检测和消费来驱动程序执行的架构 |
 | 事件溯源 | Event Sourcing | 用事件序列记录状态变更，而非仅存储当前状态 |
-| 事件委托 | Event Delegation | 利用事件冒泡机制，在父元素上统一处理子元素事件的技术 |
+| 显式资源管理 | Explicit Resource Management | ECMAScript 提议的基于 `using` 和 `await using` 声明的资源管理机制，确保作用域结束时自动释放资源 |
 | 工厂模式 | Factory Pattern | 封装对象创建逻辑的设计模式 |
 
 ## F
@@ -80,14 +86,17 @@
 | 垃圾回收 | Garbage Collection (GC) | 自动回收不再使用的内存的机制 |
 | 生成器 | Generator | 可暂停和恢复执行的函数，使用 `function*` 语法 |
 | 全局状态管理 | Global State Management | 跨组件共享和管理应用状态的模式和工具 |
+| 渐进类型 | Gradual Typing | 允许在静态类型与动态类型之间平滑过渡的类型系统设计理念，使未类型化代码能逐步获得类型安全 |
+| 渐进类型边界 | Gradual Typing Boundary | 在渐进类型系统中，静态类型代码与动态类型代码交互时产生的边界区域，需要额外的运行时检查或类型断言来保证安全 |
 | GraphQL | Graph Query Language | 由 Facebook 开发的 API 查询语言，允许客户端指定所需数据 |
 
 ## H
 
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
-| 高阶组件 | Higher-Order Component (HOC) | 接收组件并返回新组件的函数，用于复用组件逻辑 |
 | 哈希表 | Hash Table | 通过哈希函数实现 O(1) 平均时间复杂度查找的数据结构 |
+| 高阶组件 | Higher-Order Component (HOC) | 接收组件并返回新组件的函数，用于复用组件逻辑 |
+| Hoare 逻辑 | Hoare Logic | 由 Tony Hoare 提出的形式化公理系统，用于推理程序正确性，基于前置条件、后置条件和循环不变式 |
 
 ## I
 
@@ -115,9 +124,10 @@
 
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
+| 语言服务器协议 | Language Server Protocol (LSP) | 由 Microsoft 提出的标准化协议，使编辑器能够通过统一的 JSON-RPC 接口与语言服务器通信，提供智能提示、跳转定义等功能 |
 | 懒加载 | Lazy Loading | 延迟加载资源直到真正需要时才加载的策略 |
-| 负载均衡 | Load Balancing | 将工作负载分布到多个计算资源的机制 |
 | 线性一致性 | Linearizability | 并发操作看起来像是以某种顺序串行执行的强一致性模型 |
+| 负载均衡 | Load Balancing | 将工作负载分布到多个计算资源的机制 |
 
 ## M
 
@@ -137,6 +147,7 @@
 |---------|---------|------|
 | 命名空间 | Namespace | 用于组织代码、避免命名冲突的逻辑容器 |
 | 节点 | Node | 树形数据结构中的基本单元，或分布式系统中的计算单元 |
+| NodeNext 模块解析策略 | NodeNext | TypeScript 为匹配 Node.js ESM 行为而设计的模块解析策略，支持 `.mts`、`.cts` 扩展名和 `exports` 字段解析 |
 | npm | Node Package Manager | Node.js 默认的包管理工具 |
 
 ## O
@@ -144,8 +155,9 @@
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
 | 面向对象编程 | Object-Oriented Programming (OOP) | 以对象和类为核心的编程范式 |
-| 开闭原则 | Open/Closed Principle | 对扩展开放，对修改关闭的设计原则 |
 | 观察者模式 | Observer Pattern | 定义对象间一对多依赖，状态变化时自动通知依赖者 |
+| 开闭原则 | Open/Closed Principle | 对扩展开放，对修改关闭的设计原则 |
+| 操作语义 | Operational Semantics | 通过描述程序执行步骤来定义程序行为的语义学方法，通常以抽象机器或规约规则的形式呈现 |
 | 乐观锁 | Optimistic Locking | 假设冲突不常发生，提交时检查版本号的并发控制策略 |
 | ORM | Object-Relational Mapping | 对象与关系数据库之间的映射技术 |
 
@@ -153,13 +165,14 @@
 
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
-| 策略模式 | Strategy Pattern | 定义算法族，分别封装起来，让它们可以互相替换 |
-| 代理模式 | Proxy Pattern | 为其他对象提供代理以控制访问的设计模式 |
 | 管道模式 | Pipeline Pattern | 将处理流程分解为一系列独立阶段的模式 |
+| TypeScript 7.0 Go 重写项目 | Project Corsa | Microsoft 内部代号，指使用 Go 语言全面重写 TypeScript 编译器的项目，目标是实现数量级的性能提升 |
 | Promise | Promise | 表示异步操作最终完成或失败的对象 |
 | 原型模式 | Prototype Pattern | 通过复制现有对象创建新对象的模式 |
+| 代理模式 | Proxy Pattern | 为其他对象提供代理以控制访问的设计模式 |
 | 发布-订阅 | Pub/Sub (Publish-Subscribe) | 消息模式，发布者和订阅者通过中间件解耦 |
 | PWA | Progressive Web App | 使用现代 Web 能力提供类似原生应用体验的 Web 应用 |
+| 策略模式 | Strategy Pattern | 定义算法族，分别封装起来，让它们可以互相替换 |
 
 ## Q
 
@@ -184,26 +197,31 @@
 
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
-| 单一职责 | Single Responsibility Principle | 一个类应该只有一个引起变化的原因 |
-| 服务端渲染 | Server-Side Rendering (SSR) | 在服务器端生成 HTML 的渲染方式 |
-| 静态站点生成 | Static Site Generation (SSG) | 构建时生成静态 HTML 的技术 |
 | Saga 模式 | Saga Pattern | 管理长事务的分布式事务模式，通过补偿操作实现一致性 |
 | 无服务器 | Serverless | 无需管理服务器的计算模式，由云提供商自动管理基础设施 |
-| 流式处理 | Stream Processing | 持续处理无界数据流的计算模式 |
+| 服务端渲染 | Server-Side Rendering (SSR) | 在服务器端生成 HTML 的渲染方式 |
+| 单一职责 | Single Responsibility Principle | 一个类应该只有一个引起变化的原因 |
 | 依赖倒置 | SOLID | 五项面向对象设计原则的首字母缩写 |
 | SQL | Structured Query Language | 用于管理关系数据库的标准语言 |
+| 静态站点生成 | Static Site Generation (SSG) | 构建时生成静态 HTML 的技术 |
+| 流式处理 | Stream Processing | 持续处理无界数据流的计算模式 |
+| 结构化子类型 | Structural Subtyping | 基于类型的结构形状而非显式声明来决定子类型关系的原则，TypeScript 的类型系统即以此为核心 |
 
 ## T
 
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
+| Temporal API | Temporal API | ECMAScript 2026 引入的新一代日期时间 API，旨在彻底解决 `Date` 对象的设计缺陷，提供不可变的、时区感知的时间对象 |
 | 节流 | Throttling | 限制函数执行频率的技术 |
 | 时间复杂度 | Time Complexity | 算法执行时间随输入规模增长的变化趋势 |
-| 树形结构 | Tree Structure | 由节点组成的层次数据结构 |
-| 类型推断 | Type Inference | 编译器自动推导变量类型的能力 |
-| 类型守卫 | Type Guard | TypeScript 中用于缩小类型的运行时检查 |
 | 事务 | Transaction | 作为单个逻辑工作单元执行的一系列操作 |
+| 树形结构 | Tree Structure | 由节点组成的层次数据结构 |
+| tsgo | tsgo | TypeScript 7.0 基于 Go 重写的编译器命令行工具，是 Project Corsa 的主要交付物，预期取代现有的 Node.js 版 `tsc` |
+| 类型擦除 | Type Erasure | 在编译阶段移除类型标注，使生成的运行时代码保持纯 JavaScript/ECMAScript 的编译策略 |
+| 类型守卫 | Type Guard | TypeScript 中用于缩小类型的运行时检查 |
+| 类型推断 | Type Inference | 编译器自动推导变量类型的能力 |
 | TypeScript | TypeScript | JavaScript 的超集，添加了静态类型系统 |
+| 类型剥离 | Type Stripping | Node.js 原生支持的一种执行 TypeScript 的方式，通过直接剥离类型语法而不进行完整类型检查来运行 `.ts` 文件 |
 
 ## U
 
@@ -254,6 +272,7 @@
 | IIFE | Immediately Invoked Function Expression | 立即执行函数表达式 |
 | JWT | JSON Web Token | JSON 网络令牌 |
 | LCP | Largest Contentful Paint | 最大内容绘制 |
+| LSP | Language Server Protocol | 语言服务器协议 |
 | LSP | Liskov Substitution Principle | 里氏替换原则 |
 | MVC | Model-View-Controller | 模型-视图-控制器 |
 | MVVM | Model-View-ViewModel | 模型-视图-视图模型 |
@@ -273,6 +292,7 @@
 | 日期 | 更新内容 |
 |------|----------|
 | 2026-04-04 | 创建初始术语表，包含 A-Z 分类和缩写对照 |
+| 2026-04-17 | 补充 v4.0 语义模型与编译工程相关术语 |
 
 ---
 

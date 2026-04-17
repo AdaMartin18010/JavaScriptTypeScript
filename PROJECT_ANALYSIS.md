@@ -103,7 +103,7 @@
 | Float16Array | 24.1 | 已覆盖 | float16array.ts |
 | Import Attributes | 16.2.2 | 已覆盖 | import-attributes.ts |
 | Explicit Resource Management | 14.2 | 已覆盖 | using-declaration.ts |
-| Atomics.pause | 25.4.14 | 待补充 | 需添加 |
+| Atomics.pause | 25.4.14 | 已覆盖 | es2025-preview/atomics-pause.ts |
 
 ### 2.3 TypeScript 版本对齐
 

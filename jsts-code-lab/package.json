@@ -1,6 +1,6 @@
 {
   "name": "jsts-code-lab",
-  "version": "1.0.0",
+  "version": "4.0.0",
   "description": "JavaScript/TypeScript 代码实验室 - 从理论到实践的完整代码示例",
   "type": "module",
   "engines": {
@@ -27,7 +27,7 @@
     "demo:architecture": "tsx run-demos.ts architecture-patterns",
     "demo:comparison": "tsx run-demos.ts js-ts-comparison",
     "benchmark": "tsx 11-benchmarks/js-vs-ts-performance.ts",
-    "stats": "find . -name '*.ts' -not -path '*/node_modules/*' | wc -l"
+    "stats": "node -e \"const fs=require('fs'),path=require('path');function walk(d){let c=0;for(const e of fs.readdirSync(d,{withFileTypes:true})){if(e.isDirectory()&&e.name!=='node_modules'&&e.name!=='dist')c+=walk(path.join(d,e.name));else if(e.isFile()&&e.name.endsWith('.ts'))c++;}return c;}console.log(walk('.'));\""
   },
   "devDependencies": {
     "@types/node": "^22.13.0",
@@ -47,6 +47,10 @@
     "ecmascript",
     "design-patterns",
     "concurrency",
+    "semantic-models",
+    "compiler-api",
+    "type-theory",
+    "formal-semantics",
     "examples",
     "tutorial"
   ],
