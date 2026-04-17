@@ -5,10 +5,13 @@ dist/
 # Node modules
 node_modules/
 
+# Lock files from other package managers
+package-lock.json
+yarn.lock
+
 # Temporary files
 *.log
 *.tmp
-tsc-*.txt
 tsc-*.txt
 graph-test-*.txt
 security-report.json
