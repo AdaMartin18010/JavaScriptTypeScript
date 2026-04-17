@@ -55,7 +55,7 @@
 | 文档 | 描述 | 目标读者 |
 |------|------|----------|
 | [📦 awesome-jsts-ecosystem](./awesome-jsts-ecosystem/) | JS/TS 生态工具导航 | 所有开发者 |
-| [🧪 jsts-code-lab](./jsts-code-lab/) | 代码实验室（89+ 模块） | 实践学习者 |
+| [🧪 jsts-code-lab](./jsts-code-lab/) | 代码实验室（83+ 模块） | 实践学习者 |
 | [📚 jsts-code-lab/CROSS-REFERENCE.md](./jsts-code-lab/CROSS-REFERENCE.md) | 模块交叉引用索引 | 系统学习者 |
 | [📖 GLOSSARY.md](./GLOSSARY.md) | 专业术语表（中英对照） | 所有读者 |
 | [🎓 beginners-path.md](./docs/learning-paths/beginners-path.md) | 初学者学习路径 | 初学者 |
