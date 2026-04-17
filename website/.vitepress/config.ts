@@ -14,6 +14,11 @@ export default defineConfig({
   
   // 清理URL
   cleanUrls: true,
+
+  // 忽略已知的跨项目死链（指向 jsts-code-lab 的链接）
+  ignoreDeadLinks: [
+    /jsts-code-lab\//,
+  ],
   
   // 元数据
   head: [
@@ -35,6 +40,7 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: '指南', link: '/guide/getting-started' },
       { text: '分类', link: '/categories/frontend-frameworks' },
+      { text: '对比矩阵', link: '/comparison-matrices/frontend-frameworks-compare' },
       { text: '学习路径', link: '/learning-paths/beginners-path' },
       { text: '关于', link: '/about' },
     ],

@@ -154,9 +154,6 @@ title: Stars 趋势可视化
 
 </div>
 
-<!-- 加载 ECharts -->
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-
 <style>
 .trends-container {
   max-width: 1400px;
@@ -494,6 +491,16 @@ const categoryNames = {
 // 初始化
 async function init() {
   try {
+    // 动态加载 ECharts
+    await new Promise((resolve, reject) => {
+      if (window.echarts) { resolve(undefined); return; }
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js';
+      script.onload = () => resolve(undefined);
+      script.onerror = () => reject(new Error('Failed to load ECharts'));
+      document.head.appendChild(script);
+    });
+
     // 加载数据
     const response = await fetch('./data/trends.json');
     if (!response.ok) {
@@ -966,5 +973,7 @@ function refreshCharts() {
 }
 
 // 启动
-document.addEventListener('DOMContentLoaded', init);
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', init);
+}
 </script>

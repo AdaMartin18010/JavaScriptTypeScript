@@ -160,16 +160,17 @@ export function dijkstra<T>(graph: WeightedGraph<T>, start: T, end: T): { path: 
   }
 
   // 重构路径
-  if (distances.get(end) === Infinity) return null;
+  const endDistance = distances.get(end);
+  if (endDistance === undefined || endDistance === Infinity) return null;
 
   const path: T[] = [];
   let current: T | null = end;
   while (current !== null) {
     path.unshift(current);
-    current = previous.get(current)!;
+    current = previous.get(current) ?? null;
   }
 
-  return { path, distance: distances.get(end)! };
+  return { path, distance: endDistance };
 }
 
 // ============================================================================

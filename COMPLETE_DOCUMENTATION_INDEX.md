@@ -224,6 +224,9 @@
 
 | 文档 | 路径 | 描述 |
 |------|------|------|
+| 前端框架对比 | ./docs/comparison-matrices/frontend-frameworks-compare.md | React/Vue/Svelte/Angular/Solid对比 |
+| 后端框架对比 | ./docs/comparison-matrices/backend-frameworks-compare.md | Express/Fastify/NestJS/Hono对比 |
+| SSR元框架对比 | ./docs/comparison-matrices/ssr-metaframeworks-compare.md | Next.js/Nuxt/Remix/Astro对比 |
 | 构建工具对比 | ./docs/comparison-matrices/build-tools-compare.md | Vite/Webpack/esbuild对比表 |
 | ORM对比 | ./docs/comparison-matrices/orm-compare.md | ORM选型决策矩阵 |
 | 状态管理对比 | ./docs/comparison-matrices/state-management-compare.md | 状态管理方案对比 |
@@ -351,7 +354,7 @@
 |------|------|------|
 | jsts-code-lab 模块 | 91 | 50% |
 | docs/categories 分类 | 21 | 11% |
-| docs/comparison-matrices 对比 | 5 | 3% |
+| docs/comparison-matrices 对比 | 8 | 4% |
 | docs/learning-paths 路径 | 3 | 2% |
 | docs/guides 指南 | 1 | 1% |
 | 根目录及辅助文档 | 62 | 33% |

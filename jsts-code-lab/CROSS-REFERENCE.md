@@ -103,6 +103,15 @@
 
 ## 📚 按主题分类索引
 
+### 📝 语言核心与形式化理论
+
+| 主题 | 主要模块 | 理论文档 | 相关模块 |
+|------|---------|---------|---------|
+| ECMAScript 演进 | 01-ecmascript-evolution | [index.ts](./01-ecmascript-evolution/index.ts) | 10-js-ts-comparison |
+| JS/TS 语义对比 | 10-js-ts-comparison | [THEORY.md](./10-js-ts-comparison/THEORY.md) | 40-type-theory-formal |
+| 共识算法 | 71-consensus-algorithms | [THEORY.md](./71-consensus-algorithms/THEORY.md) | 70-distributed-systems |
+| 形式化验证 | 80-formal-verification | [THEORY.md](./80-formal-verification/THEORY.md) | 41-formal-semantics |
+
 ### 🏗️ 架构与设计
 
 | 主题 | 主要模块 | 理论文档 | 相关模块 |
@@ -284,6 +293,7 @@
 
 | 日期 | 更新内容 |
 |------|----------|
+| 2026-04-17 | 新增 ECMAScript 2025/2026、JS/TS 语义对比、共识算法、形式化验证模块的交叉引用 |
 | 2026-04-04 | 创建初始交叉引用文档，包含模块关系图、依赖矩阵和学习路径 |
 
 ---
