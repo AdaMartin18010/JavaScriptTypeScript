@@ -501,3 +501,8 @@ packages:
 3. **统一工具链**：Bun 代表的一体化趋势，减少工具碎片化
 4. **ESM 优先**：原生 ESM 支持成为标配
 5. **Vite 生态**：Rolldown 未来将成为 Vite 底层，带来更大性能提升
+
+## 相关阅读
+
+- [JS/TS 编译器与转译器对比矩阵](/comparison-matrices/js-ts-compilers-compare)
+- [JS_TS_语言语义模型全面分析](/JSTS全景综述/JS_TS_语言语义模型全面分析)

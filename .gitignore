@@ -1,0 +1,26 @@
+# TypeScript build outputs
+dist/
+*.tsbuildinfo
+
+# Node modules
+node_modules/
+
+# Temporary files
+*.log
+*.tmp
+tsc-*.txt
+tsc-*.txt
+graph-test-*.txt
+security-report.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json.local
+.idea/
+
+# Cache
+.cache/
+*.cache
