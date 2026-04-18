@@ -26,8 +26,6 @@ export enum TokenKind {
   ELSE = 'ELSE',
   WHILE = 'WHILE',
   FOR = 'FOR',
-  TRUE = 'TRUE',
-  FALSE = 'FALSE',
 
   // 类型关键字
   NUMBER_KW = 'NUMBER_KW',
@@ -48,8 +46,6 @@ export enum TokenKind {
   NE = 'NE',
   STRICT_EQ = 'STRICT_EQ',
   STRICT_NE = 'STRICT_NE',
-  LT = 'LT',
-  GT = 'GT',
   LE = 'LE',
   GE = 'GE',
 
@@ -149,6 +145,11 @@ export class Lexer {
       return this.advanceAndMake(TokenKind.SLASH, char);
     }
 
+    // 三字符运算符
+    const threeChar = char + this.peekNext() + this.peek(2);
+    if (threeChar === '===') return this.advanceBy(3, TokenKind.STRICT_EQ, threeChar);
+    if (threeChar === '!==') return this.advanceBy(3, TokenKind.STRICT_NE, threeChar);
+
     // 双字符运算符
     const twoChar = char + this.peekNext();
     switch (twoChar) {
@@ -156,12 +157,6 @@ export class Lexer {
         return this.advanceBy(2, TokenKind.EQ, twoChar);
       case '!=':
         return this.advanceBy(2, TokenKind.NE, twoChar);
-      case '===':
-        if (this.peek(2) === '=') return this.advanceBy(3, TokenKind.STRICT_EQ, '===');
-        return this.advanceBy(2, TokenKind.EQ, '==');
-      case '!==':
-        if (this.peek(2) === '=') return this.advanceBy(3, TokenKind.STRICT_NE, '!==');
-        return this.advanceBy(2, TokenKind.NE, '!=');
       case '<=':
         return this.advanceBy(2, TokenKind.LE, twoChar);
       case '>=':
@@ -365,8 +360,9 @@ export class Lexer {
     ['else', TokenKind.ELSE],
     ['while', TokenKind.WHILE],
     ['for', TokenKind.FOR],
-    ['true', TokenKind.TRUE],
-    ['false', TokenKind.FALSE],
+
+    ['true', TokenKind.BOOLEAN],
+    ['false', TokenKind.BOOLEAN],
     ['null', TokenKind.NULL],
     // 类型关键字
     ['number', TokenKind.NUMBER_KW],

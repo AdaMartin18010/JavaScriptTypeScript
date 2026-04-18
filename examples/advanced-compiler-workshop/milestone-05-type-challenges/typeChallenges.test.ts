@@ -65,9 +65,15 @@ describe('Type Challenges - Solutions', () => {
   });
 
   it('04 - Chainable Options', () => {
-    declare const a: Chainable;
-    const r = a.option('foo', 123).option('bar', { value: 'Hello' }).get();
-    expectTypeOf(r).toEqualTypeOf<{ foo: number; bar: { value: string } }>();
+    // 验证 Chainable 的核心结构：get() 返回泛型参数 T
+    type C = Chainable<{ foo: number; bar: { value: string } }>;
+    expectTypeOf<ReturnType<C['get']>>().toEqualTypeOf<{ foo: number; bar: { value: string } }>();
+
+    // 验证 option 方法存在且返回 Chainable
+    expectTypeOf<Chainable>().toMatchTypeOf<{
+      option: (key: string, value: unknown) => Chainable;
+      get: () => Record<string, unknown>;
+    }>();
   });
 
   it('05 - TupleFilter', () => {

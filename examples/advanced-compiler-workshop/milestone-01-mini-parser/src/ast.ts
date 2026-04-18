@@ -68,7 +68,9 @@ export type ExpressionNode =
   | NullLiteralNode
   | IdentifierNode
   | BinaryExpressionNode
-  | CallExpressionNode;
+  | CallExpressionNode
+  | ArrayExpressionNode
+  | ObjectLiteralNode;
 
 export interface NumberLiteralNode {
   kind: 'NumberLiteral';
@@ -113,6 +115,18 @@ export interface CallExpressionNode {
   callee: IdentifierNode;
   arguments: ExpressionNode[];
   typeArguments?: TypeNode[]; // 显式泛型参数，如 id<number>(42)
+  loc?: SourceLocation;
+}
+
+export interface ArrayExpressionNode {
+  kind: 'ArrayExpression';
+  elements: (ExpressionNode | null)[];
+  loc?: SourceLocation;
+}
+
+export interface ObjectLiteralNode {
+  kind: 'ObjectLiteral';
+  properties: { key: string; value: ExpressionNode }[];
   loc?: SourceLocation;
 }
 

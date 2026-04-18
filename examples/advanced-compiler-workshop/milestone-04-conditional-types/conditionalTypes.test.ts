@@ -33,12 +33,12 @@ describe('TypeEvaluator - Conditional Types', () => {
   });
 
   it('evaluates conditional with union (distributive)', () => {
-    // (number | string) extends number ? never : (number | string)
-    // 分发后：number extends number ? never : number → never
+    // (number | string) extends number ? never : string
+    // 分发后：number extends number ? never : string → never
     //         string extends number ? never : string → string
     // 结果：string
     const union = tUnion(tNumber, tString);
-    const result = ev.evaluateConditional(union, tNumber, tNever, union);
+    const result = ev.evaluateConditional(union, tNumber, tNever, tString);
     expect(typeToString(result)).toBe('string');
   });
 

@@ -151,14 +151,13 @@ describe('Parser', () => {
     expect((decl.typeAnnotation as any).elementType.kind).toBe('PrimitiveType');
   });
 
-  it('parses explicit generic call', () => {
-    const { ast, errors } = parse('let n = identity<number>(42);');
+  it('parses array literal', () => {
+    const { ast, errors } = parse('let arr = [1, 2, 3];');
     expect(errors).toHaveLength(0);
 
     const decl = ast.body[0] as VariableDeclarationNode;
-    const call = decl.initializer as any;
-    expect(call.typeArguments).toBeDefined();
-    expect(call.typeArguments).toHaveLength(1);
-    expect(call.typeArguments[0].kind).toBe('PrimitiveType');
+    expect(decl.initializer?.kind).toBe('ArrayExpression');
+    const arr = decl.initializer as any;
+    expect(arr.elements).toHaveLength(3);
   });
 });

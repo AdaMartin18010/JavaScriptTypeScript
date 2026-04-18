@@ -216,6 +216,10 @@ export class TypeChecker {
         return this.checkBinaryExpression(node);
       case 'CallExpression':
         return this.checkCallExpression(node);
+      case 'ObjectLiteral':
+        return this.checkObjectLiteral(node);
+      case 'ArrayExpression':
+        return this.checkArrayLiteral(node);
       default:
         throw new TypeCheckError(`Unknown expression kind: ${(node as any).kind}`);
     }
@@ -238,8 +242,8 @@ export class TypeChecker {
 
     // 算术运算符
     if (['+', '-', '*', '/'].includes(node.operator)) {
-      if (node.operator === '+' && (left.kind === 'primitive' && left.name === 'string' || right.kind === 'primitive' && right.name === 'string')) {
-        return tString; // 字符串拼接
+      if (node.operator === '+' && left.kind === 'primitive' && left.name === 'string' && right.kind === 'primitive' && right.name === 'string') {
+        return tString; // 字符串拼接（仅允许 string + string）
       }
       if (!this.isAssignable(left, tNumber)) {
         throw new TypeCheckError(`Left operand of '${node.operator}' must be number, got '${typeToString(left)}'`);
@@ -297,6 +301,30 @@ export class TypeChecker {
     }
 
     return func.returnType;
+  }
+
+  // ==================== 对象/数组字面量检查 ====================
+
+  protected checkObjectLiteral(node: any): Type {
+    const props: Record<string, Type> = {};
+    for (const prop of node.properties) {
+      props[prop.key] = this.checkExpression(prop.value);
+    }
+    return tObject(props);
+  }
+
+  protected checkArrayLiteral(node: any): Type {
+    // 简化：推断第一个元素的类型作为数组元素类型
+    // 空数组返回 unknown[]
+    if (node.elements.length === 0) {
+      return tArray(tUnknown);
+    }
+    const first = node.elements[0];
+    if (first) {
+      const elemType = this.checkExpression(first);
+      return tArray(elemType);
+    }
+    return tArray(tUnknown);
   }
 
   // ==================== 子类型判断 ====================

@@ -294,7 +294,7 @@ export class Parser {
 
   private parseRelational(): ExpressionNode {
     let left = this.parseAdditive();
-    while (this.match(TokenKind.LT, TokenKind.GT, TokenKind.LE, TokenKind.GE)) {
+    while (this.match(TokenKind.LT_ANGLE, TokenKind.GT_ANGLE, TokenKind.LE, TokenKind.GE)) {
       const op = this.previous().value as BinaryExpressionNode['operator'];
       const right = this.parseAdditive();
       left = { kind: 'BinaryExpression', operator: op, left, right };
@@ -334,13 +334,9 @@ export class Parser {
         this.consume();
         return { kind: 'StringLiteral', value: token.value };
       }
-      case TokenKind.TRUE: {
+      case TokenKind.BOOLEAN: {
         this.consume();
-        return { kind: 'BooleanLiteral', value: true };
-      }
-      case TokenKind.FALSE: {
-        this.consume();
-        return { kind: 'BooleanLiteral', value: false };
+        return { kind: 'BooleanLiteral', value: token.value === 'true' };
       }
       case TokenKind.NULL: {
         this.consume();
@@ -379,8 +375,38 @@ export class Parser {
         this.expect(TokenKind.RPAREN, 'Expected ) after expression');
         return expr;
       }
+      case TokenKind.LBRACKET: {
+        this.consume(); // [
+        const elements: (ExpressionNode | null)[] = [];
+        if (!this.check(TokenKind.RBRACKET)) {
+          do {
+            if (this.check(TokenKind.COMMA)) {
+              elements.push(null);
+            } else {
+              elements.push(this.parseExpression());
+            }
+          } while (this.match(TokenKind.COMMA));
+        }
+        this.expect(TokenKind.RBRACKET, 'Expected ] after array elements');
+        return { kind: 'ArrayExpression', elements };
+      }
+      case TokenKind.LBRACE: {
+        this.consume(); // {
+        const properties: { key: string; value: ExpressionNode }[] = [];
+        if (!this.check(TokenKind.RBRACE)) {
+          do {
+            const key = this.expectIdentifier('Expected property key');
+            this.expect(TokenKind.COLON, 'Expected : after property key');
+            const value = this.parseExpression();
+            properties.push({ key, value });
+          } while (this.match(TokenKind.COMMA));
+        }
+        this.expect(TokenKind.RBRACE, 'Expected } after object literal');
+        return { kind: 'ObjectLiteral', properties };
+      }
       default:
         this.error(`Unexpected token in expression: ${token.kind}`);
+        this.consume(); // 错误恢复：消耗当前 token 防止无限循环
         return { kind: 'NumberLiteral', value: 0, raw: '0' };
     }
   }
