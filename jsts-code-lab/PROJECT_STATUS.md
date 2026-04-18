@@ -104,6 +104,9 @@
 ✅ 91-nodejs-core-lab          8 文件  🌿
 ✅ 92-observability-lab        7 文件  🌿
 ✅ 93-deployment-edge-lab      7 文件  🌿
+✅ 94-ai-agent-lab             5 文件  🌿
+✅ 95-auth-modern-lab          5 文件  🌿
+✅ 96-orm-modern-lab           5 文件  🌿
 ✅ playground                  1 文件
 ✅ shared                      4 文件
 ✅ tests                      10 文件
@@ -118,6 +121,17 @@
 - 🔄 **JS/TS 对比** - 类型理论 + 实现对比 + 互操作指南
 - 📊 **性能基准测试** - JS/TS 运行时性能对比
 - 📝 **76 个 Demo 函数** - 可运行示例
+
+## 🔄 最近更新
+
+**2026-04-19**
+- AI Agent 基础设施专题上线（94-ai-agent-lab）：MCP Server、Vercel AI SDK Tool Calling、Multi-agent Workflow
+- React 19 / Tailwind v4 / TS 7.0 / WinterTC 更新
+- 现代认证重构（better-auth / Passkeys）
+- ORM 生态更新（Prisma 7 / Drizzle / Turso）
+- 可观测性升级（OpenTelemetry / AI Observability）
+
+> 模块总数：96+（含实验室模块）
 
 ### 开发工具
 
@@ -151,4 +165,4 @@ pnpm benchmark           # JS/TS 性能对比
 
 ---
 
-**状态**: 按模块成熟度分级 | 最后更新: 2026-04-19
+**状态**: 持续演进中 v4.1 | 最后更新: 2026-04-19

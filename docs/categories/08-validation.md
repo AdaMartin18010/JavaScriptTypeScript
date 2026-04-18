@@ -8,7 +8,7 @@
 
 | 库 | Stars | 分类 | 包体积 | TS支持 |
 |------|-------|------|--------|--------|
-| zod | 34k+ | TS-first Schema | ~12KB | ✅ 原生TS |
+| zod | 36k+ | TS-first Schema | ~12KB | ✅ 原生TS |
 | yup | 23k+ | JS/TS 验证 | ~15KB | ✅ 官方支持 |
 | validator.js | 23k+ | 专用验证 | ~25KB | ✅ 社区定义 |
 | joi | 20k+ | JS/TS 验证 | ~70KB | ⚠️ 社区定义 |
@@ -18,7 +18,7 @@
 | superstruct | 8k+ | JS/TS 验证 | ~8KB | ✅ 官方支持 |
 | libphonenumber-js | 8k+ | 专用验证 | ~45KB | ✅ 官方支持 |
 | io-ts | 7k+ | JS/TS 验证 | ~35KB | ✅ 原生TS |
-| valibot | 6k+ | TS-first Schema | ~2KB | ✅ 原生TS |
+| valibot | 6k+ | TS-first Schema | **<1KB** tree-shaken | ✅ 原生TS |
 | arktype | 5k+ | TS-first Schema | ~15KB | ✅ 原生TS |
 
 ---
@@ -137,22 +137,24 @@ const DateSchema = z.preprocess(
 | **官网** | [valibot.dev](https://valibot.dev) |
 | **安装** | `npm install valibot` |
 
-**一句话描述**：Zod 的轻量级替代方案，模块化设计实现极致的 tree-shaking，核心仅 2KB。
+**一句话描述**：Zod 的轻量级替代方案，模块化设计实现极致的 tree-shaking，核心仅 **<1KB**（tree-shaken），边缘计算环境首选。
 
 **核心特点**：
 
-- 🪶 **极致轻量**：核心功能仅 ~2KB
-- 🧩 **模块化 API**：按需导入，零冗余
+- 🪶 **极致轻量**：核心功能仅 ~2KB，tree-shaken 后 **<1KB**
+- 🧩 **模块化 API**：每个验证器独立导入，零冗余
 - 🎯 **类型安全**：完整的类型推导支持
-- 🔌 **生态兼容**：与 Zod API 高度相似
-- ⚡ **性能优异**：轻量架构带来高性能
+- 🔌 **生态兼容**：与 Zod API 高度相似，迁移成本低
+- ⚡ **边缘环境首选**：Cloudflare Workers、Vercel Edge 友好
+- 📦 **2025-2026 状态**：API 已稳定，社区持续活跃，作为 Zod 轻量替代被广泛采用
 
 **适用场景**：
 
-- 对包体积极敏感的项目
+- 对包体积极敏感的项目（边缘计算、Serverless）
 - 移动端/低带宽环境
 - 需要极致 tree-shaking 的应用
 - Zod 用户想要更小体积
+- **Cloudflare Workers / Vercel Edge 等边缘运行时**
 
 **代码示例**：
 
@@ -1385,7 +1387,7 @@ import parsePhoneNumberMobile from 'libphonenumber-js/mobile'; // 仅移动端
 | 需求场景 | 推荐库 | 理由 |
 |----------|--------|------|
 | **现代 TypeScript 项目** | Zod / Valibot | 类型推导完美，生态丰富 |
-| **极致包体积** | Valibot | 仅 ~2KB，tree-shaking 友好 |
+| **极致包体积** | Valibot | **<1KB** tree-shaken，边缘环境首选 |
 | **极速冷启动** | ArkType | 1ms 编译，类型语法 |
 | **函数式编程** | Effect / io-ts | fp-ts 生态，函数式风格 |
 | **NestJS/TypeORM** | class-validator | 装饰器风格，深度集成 |

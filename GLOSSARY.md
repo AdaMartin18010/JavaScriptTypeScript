@@ -19,6 +19,8 @@
 | 抽象语法树 | Abstract Syntax Tree (AST) | 源代码的树形结构表示，用于编译器和代码分析工具 |
 | 异步编程 | Asynchronous Programming | 不阻塞主线程的编程模式，通过回调、Promise 或 async/await 实现 |
 | 原子操作 | Atomic Operation | 不可中断的操作，要么全部执行成功，要么完全不执行 |
+| A2A (Agent-to-Agent Protocol) | A2A | Google 提出的开放协议，允许不同 AI Agent 之间安全地交换能力、上下文和任务状态 |
+| AI 网关 | AI Gateway | 统一管理 AI 模型调用、负载均衡、缓存、成本控制和内容安全的中间层基础设施 |
 
 ## B
 
@@ -30,6 +32,7 @@
 | 边界上下文 | Bounded Context | 领域驱动设计中的核心概念，定义领域模型的适用范围 |
 | 浏览器运行时 | Browser Runtime | 浏览器中执行 JavaScript 的环境，包括 V8 引擎、事件循环等 |
 | 反向代理 | Reverse Proxy | 代表服务器接收客户端请求的中间服务器，常用于负载均衡和安全 |
+| better-auth | better-auth | 现代 TypeScript 认证框架，强调类型安全、可扩展性和框架无关性，支持 OAuth、Passkeys 等多种认证方式 |
 
 ## C
 
@@ -41,7 +44,8 @@
 | 并发 | Concurrency | 多个任务在重叠的时间段内执行，不一定同时 |
 | 持续部署 | Continuous Deployment (CD) | 自动将通过测试的代码部署到生产环境的实践 |
 | 持续集成 | Continuous Integration (CI) | 频繁地将代码集成到主干并自动构建测试的实践 |
-| CQRS | Command Query Responsibility Segregation | 命令查询职责分离，读写模型分离的架构模式 |
+| 复制粘贴组件 | Copy-paste Components (shadcn/ui) | 一种组件分发模式，不通过 npm 安装，而是直接复制源码到项目中，提供完全可定制的 UI 组件 | |
+| CQRS | Command Query Responsibility Segregation | 命令查询职责分离，读写模型分离的架构模式
 | Curry-Howard 对应 | Curry-Howard Correspondence | 数学逻辑与计算理论之间的深刻对应，将命题视为类型、证明视为程序，连接了形式证明与函数式编程 |
 | 并行 | Parallelism | 多个任务在同一时刻同时执行，需要多核处理器 |
 
@@ -56,7 +60,8 @@
 | 依赖倒置 | Dependency Inversion Principle | 高层模块不应依赖低层模块，两者应依赖抽象 |
 | 设计模式 | Design Pattern | 软件设计中常见问题的通用可复用解决方案 |
 | 分布式系统 | Distributed System | 由多个通过网络通信的独立计算节点组成的系统 |
-| 领域驱动设计 | Domain-Driven Design (DDD) | 以业务领域为核心的软件设计方法 |
+| Drizzle ORM | Drizzle ORM | 类型安全的 TypeScript ORM，以 SQL-like 查询语法和轻量运行时著称，支持多种关系型数据库 | |
+| 领域驱动设计 | Domain-Driven Design (DDD) | 以业务领域为核心的软件设计方法
 
 ## E
 
@@ -75,7 +80,8 @@
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
 | 函数式编程 | Functional Programming | 以纯函数和不可变数据为核心的编程范式 |
-| 熔断器 | Circuit Breaker | 防止故障扩散的模式，当错误率超过阈值时快速失败 |
+| Flight 协议 | Flight Protocol | React Server Components 使用的流式传输协议，用于在服务器和客户端之间序列化组件树和 Promise 状态 | |
+| 熔断器 | Circuit Breaker | 防止故障扩散的模式，当错误率超过阈值时快速失败
 | 防抖 | Debounce | 延迟执行直到一段时间没有新触发的高频控制技术 |
 | 节流 | Throttle | 限制函数执行频率的技术 |
 
@@ -97,6 +103,7 @@
 | 哈希表 | Hash Table | 通过哈希函数实现 O(1) 平均时间复杂度查找的数据结构 |
 | 高阶组件 | Higher-Order Component (HOC) | 接收组件并返回新组件的函数，用于复用组件逻辑 |
 | Hoare 逻辑 | Hoare Logic | 由 Tony Hoare 提出的形式化公理系统，用于推理程序正确性，基于前置条件、后置条件和循环不变式 |
+| Helicone | Helicone | 开源 AI 可观测性平台，提供 LLM 调用的监控、缓存、速率限制和成本分析功能 |
 
 ## I
 
@@ -106,6 +113,8 @@
 | 控制反转 | Inversion of Control (IoC) | 将控制权从调用方转移到框架或容器的原则 |
 | 接口隔离 | Interface Segregation Principle | 客户端不应被迫依赖它们不用的方法 |
 | 迭代器模式 | Iterator Pattern | 顺序访问聚合对象元素而不暴露其内部表示的模式 |
+| import bytes | import bytes | ECMAScript 提案，允许从字节数组或 TypedArray 直接导入 WebAssembly 模块 | |
+| import defer | import defer | ECMAScript 提案，支持延迟加载模块，在首次使用时才执行模块初始化 |
 
 ## J
 
@@ -128,6 +137,7 @@
 | 懒加载 | Lazy Loading | 延迟加载资源直到真正需要时才加载的策略 |
 | 线性一致性 | Linearizability | 并发操作看起来像是以某种顺序串行执行的强一致性模型 |
 | 负载均衡 | Load Balancing | 将工作负载分布到多个计算资源的机制 |
+| Langfuse | Langfuse | 开源 LLM 工程平台，提供追踪、评估、提示管理和数据集功能，用于 AI 应用的迭代优化 |
 
 ## M
 
@@ -140,6 +150,8 @@
 | 消息队列 | Message Queue | 异步通信的中间件，实现应用间的松耦合 |
 | 观察者模式 | Observer Pattern | 对象间一对多依赖关系，一个对象状态变化通知所有依赖者 |
 | 单例模式 | Singleton Pattern | 确保类只有一个实例并全局访问的设计模式 |
+| MCP (模型上下文协议) | MCP (Model Context Protocol) | Anthropic 提出的开放协议，标准化 AI 模型与外部数据源、工具之间的上下文交换 | |
+| 最小公共 Web API | Minimum Common Web API | WinterTC 定义的最小公共 Web API 子集，旨在为边缘运行时和受限环境提供一致的 JavaScript 运行时接口 |
 
 ## N
 
@@ -159,7 +171,9 @@
 | 开闭原则 | Open/Closed Principle | 对扩展开放，对修改关闭的设计原则 |
 | 操作语义 | Operational Semantics | 通过描述程序执行步骤来定义程序行为的语义学方法，通常以抽象机器或规约规则的形式呈现 |
 | 乐观锁 | Optimistic Locking | 假设冲突不常发生，提交时检查版本号的并发控制策略 |
-| ORM | Object-Relational Mapping | 对象与关系数据库之间的映射技术 |
+| OpenTelemetry | OpenTelemetry (OTel) | CNCF 主导的开放可观测性框架，提供跨语言的 Metrics、Logs、Traces 标准采集和导出协议 | |
+| Oxide 引擎 | Oxide Engine (Tailwind v4) | Tailwind CSS v4 基于 Rust 重写的全新引擎，大幅提升构建性能和 CSS 生成效率 | |
+| ORM | Object-Relational Mapping | 对象与关系数据库之间的映射技术
 
 ## P
 
@@ -172,7 +186,8 @@
 | 代理模式 | Proxy Pattern | 为其他对象提供代理以控制访问的设计模式 |
 | 发布-订阅 | Pub/Sub (Publish-Subscribe) | 消息模式，发布者和订阅者通过中间件解耦 |
 | PWA | Progressive Web App | 使用现代 Web 能力提供类似原生应用体验的 Web 应用 |
-| 策略模式 | Strategy Pattern | 定义算法族，分别封装起来，让它们可以互相替换 |
+| Passkeys / WebAuthn | Passkeys / WebAuthn | 基于公钥密码学的无密码认证标准，通过生物识别或硬件密钥实现更安全的身份验证 | |
+| 策略模式 | Strategy Pattern | 定义算法族，分别封装起来，让它们可以互相替换
 
 ## Q
 
@@ -189,7 +204,8 @@
 | 响应式宣言 | Reactive Manifesto | 定义响应式系统应具备的四个特性：响应性、弹性、弹性和消息驱动 |
 | 重试策略 | Retry Strategy | 失败时自动重试操作的策略，包括指数退避等 |
 | REST | Representational State Transfer | 基于 HTTP 的架构风格，用于设计网络应用程序 |
-| RPC | Remote Procedure Call | 使远程调用看起来像本地调用的通信协议 |
+| React 编译器 | React Compiler | React 官方开发的编译时优化工具，自动进行记忆化和依赖追踪，替代手动使用 useMemo/useCallback | |
+| RPC | Remote Procedure Call | 使远程调用看起来像本地调用的通信协议
 | 路由 | Routing | 根据 URL 或其他规则将请求分发到相应处理程序 |
 | 限流 | Rate Limiting | 控制请求速率的机制，防止系统过载 |
 
@@ -222,6 +238,8 @@
 | 类型推断 | Type Inference | 编译器自动推导变量类型的能力 |
 | TypeScript | TypeScript | JavaScript 的超集，添加了静态类型系统 |
 | 类型剥离 | Type Stripping | Node.js 原生支持的一种执行 TypeScript 的方式，通过直接剥离类型语法而不进行完整类型检查来运行 `.ts` 文件 |
+| Token 级可观测性 | Token-level Observability | 对 AI 模型每次调用的 Token 消耗、延迟、成本进行精细化监控和分析 | |
+| Turso / libSQL | Turso / libSQL | Turso 是基于 libSQL（SQLite 的分支）的边缘托管数据库服务，专为全球低延迟数据访问设计 |
 
 ## U
 
@@ -249,6 +267,7 @@
 | Webpack | Webpack | 现代 JavaScript 应用程序的静态模块打包工具 |
 | WebSocket | WebSocket | 在单个 TCP 连接上提供全双工通信的协议 |
 | Worker 线程 | Web Worker | 在后台线程中运行 JavaScript 的机制 |
+| WinterTC / TC55 | WinterTC / TC55 | ECMA TC55 技术委员会，负责制定 Minimum Common Web API 标准，推动边缘运行时兼容性的标准化工作 | |
 
 ---
 
@@ -292,6 +311,7 @@
 | 日期 | 更新内容 |
 |------|----------|
 | 2026-04-04 | 创建初始术语表，包含 A-Z 分类和缩写对照 |
+| 2026-04-19 | 新增 AI Agent、现代认证、ORM、可观测性、前端工程相关术语（共 20 条） |
 | 2026-04-17 | 补充 v4.0 语义模型与编译工程相关术语 |
 
 ---

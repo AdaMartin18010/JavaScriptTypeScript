@@ -1,6 +1,6 @@
 # JavaScript/TypeScript 全景知识库 - 完整文档索引
 
-> **版本**: v1.3.0 | **最后更新**: 2026-04-19 | **维护状态**: 活跃维护
+> **版本**: v1.4.0 | **最后更新**: 2026-04-19 | **维护状态**: 活跃维护
 
 ---
 
@@ -150,6 +150,8 @@
 | Serverless | ./jsts-code-lab/31-serverless/ | FaaS、BaaS、冷启动优化 | 3星 |
 | 可观测性实战实验室 | ./jsts-code-lab/92-observability-lab/ | 结构化日志/错误上报/Web Vitals 采集 | 3星 |
 | 部署与边缘计算实验室 | ./jsts-code-lab/93-deployment-edge-lab/ | Cloudflare Workers/Vercel Edge/Docker 优化 | 3星 |
+| 现代认证实验室 | ./jsts-code-lab/95-auth-modern-lab/ | better-auth / Passkeys / OAuth 2.1 实践 | 3星 |
+| 现代 ORM 实验室 | ./jsts-code-lab/96-orm-modern-lab/ | Drizzle ORM / 边缘数据库 / Prisma 迁移 | 3星 |
 
 ---
 
@@ -160,6 +162,7 @@
 | 文档 | 路径 | 描述 | 复杂度 |
 |------|------|------|--------|
 | AI集成 | ./jsts-code-lab/33-ai-integration/ | LLM API集成、Prompt工程 | 3星 |
+| AI Agent 实验室 | ./jsts-code-lab/94-ai-agent-lab/ | MCP / Vercel AI SDK / Mastra 工作流编排 | 4星 |
 | ML工程 | ./jsts-code-lab/76-ml-engineering/ | TensorFlow.js、模型部署 | 4星 |
 | 代码生成 | ./jsts-code-lab/56-code-generation/ | AI辅助编程、代码补全 | 3星 |
 | 边缘AI | ./jsts-code-lab/82-edge-ai/ | 端侧推理、模型压缩 | 4星 |
@@ -232,6 +235,8 @@
 | ORM与数据库 | ./docs/categories/11-orm-database.md | Prisma/TypeORM/Drizzle等 |
 | 表单处理 | ./docs/categories/07-form-handling.md | React Hook Form/Formik等 |
 | 验证库 | ./docs/categories/08-validation.md | Zod/Yup/Joi等 |
+| AI Agent 基础设施 | ./docs/categories/23-ai-agent-infrastructure.md | MCP / Vercel AI SDK / Mastra 生态 |
+| 认证与授权 | ./docs/categories/24-auth-modern.md | better-auth / Passkeys / OAuth 2.1 |
 
 ### 7.3 对比矩阵
 
@@ -411,8 +416,8 @@
 | docs/diagrams 图表 | 21 | 10% |
 | docs/learning-paths 路径 | 3 | 2% |
 | docs/guides 指南 | 1 | 1% |
-| 根目录及辅助文档 | 46 | 25% |
-| **总计** | **211** | **100%** |
+| 根目录及辅助文档 | 46 | 22% |
+| **总计** | **220+** | **100%** |
 
 ### 10.2 代码实验室模块分布
 
@@ -439,6 +444,17 @@
 ---
 
 ## 11. 更新日志
+
+### v1.4.0 (2026-04-19)
+
+- **新增 AI Agent 基础设施模块**：94-ai-agent-lab（MCP / Vercel AI SDK / Mastra）
+- **新增现代认证实验室**：95-auth-modern-lab（better-auth / Passkeys / OAuth 2.1）
+- **新增现代 ORM 实验室**：96-orm-modern-lab（Drizzle ORM / 边缘数据库）
+- **新增生态分类**：AI Agent 基础设施、认证与授权
+- **技术选型体系扩展**：新增 AI 框架选型、认证方案选型决策树与对比矩阵
+- **自动化数据流水线**：`scripts/update-ecosystem-stats.js` + GitHub Actions 月度运行
+- **技术雷达模板**：`docs/research/tech-radar-template.md` 引入 ThoughtWorks Tech Radar 格式
+- **文档总数**：从 211 增至 220+
 
 ### v1.3.0 (2026-04-19)
 
@@ -563,5 +579,5 @@ JavaScriptTypeScript/
 ---
 
 > **维护者**: JavaScript/TypeScript 全景知识库团队
-> **最后更新**: 2026-04-17
-> **版本**: v1.2.0
+> **最后更新**: 2026-04-19
+> **版本**: v1.4.0

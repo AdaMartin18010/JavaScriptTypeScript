@@ -13,6 +13,7 @@
 | Angular | 96k+ | ⭐ 企业级 | ✅ 原生TS |
 | Svelte | 80k+ | ⭐ 快速增长 | ✅ 官方支持 |
 | Next.js | 127k+ | ⭐ 全栈首选 | ✅ 原生TS |
+| Astro | 48k+ | ⭐ 内容驱动首选 | ✅ 原生TS |
 | htmx | 36k+ | ⭐ 黑马崛起 | ⚠️ 社区定义 |
 | Preact | 35k+ | ⭐ 轻量替代 | ✅ 官方支持 |
 | Pinia | 35k+ | ⭐ Vue官方状态 | ✅ 原生TS |
@@ -52,6 +53,105 @@
 - 需要丰富生态支持的项目
 - 跨平台应用（配合 React Native）
 - 需要大量第三方组件库的项目
+
+---
+
+### 1.2 React 19 Stable
+
+| 属性 | 详情 |
+|------|------|
+| **版本** | React 19 (2024.12) / 19.2 (2025.06) |
+| **核心亮点** | React Compiler 1.0、Actions、Activity API、View Transition API |
+
+#### React Compiler 1.0 (2025.10)
+
+React Compiler 是 Meta 推出的构建时自动优化工具，**无需手动使用 `useMemo`/`useCallback`**。
+
+- **自动 Memoization（自动记忆化）**：分析组件代码，在构建时自动插入记忆化逻辑
+- **效果**：可减少 **35%–60%** 的不必要 re-render，显著提升复杂 UI 性能
+- **要求**：必须严格遵循 React Rules（如 Hooks 规则、不可变更新），否则编译器无法安全优化
+- **使用方式**：
+
+```bash
+npm install -D babel-plugin-react-compiler
+# 或配合 Next.js / Vite 插件使用
+```
+
+```js
+// 编译前：开发者手动记忆化
+const memoizedValue = useMemo(() => compute(a, b), [a, b]);
+
+// 编译后等效：React Compiler 自动推导依赖并插入缓存
+// 开发者无需编写 useMemo/useCallback
+```
+
+#### Actions & 表单状态 Hook
+
+React 19 引入 **Actions** 机制，将异步函数与过渡状态、乐观更新深度结合：
+
+- **`use()` Hook**：在渲染中读取 Promise / Context，替代 `useContext`，支持条件读取与 Promise unwrap
+- **`useOptimistic`**：执行 Action 时立即展示乐观 UI，服务端响应后再同步真实状态
+- **`useFormStatus`**：在表单子组件中读取父 `<form>` 的提交状态（`pending`、`data`、`method`、`action`）
+- **`useActionState`**：管理 Action 的状态与错误信息
+
+```jsx
+import { useOptimistic, useActionState } from 'react';
+
+function Messages({ messages }) {
+  const [optimisticMessages, addOptimisticMessage] = useOptimistic(
+    messages,
+    (state, newMessage) => [...state, { ...newMessage, sending: true }]
+  );
+
+  async function sendMessage(formData) {
+    const message = formData.get('message');
+    addOptimisticMessage({ text: message });
+    await api.sendMessage(message);
+  }
+
+  return (
+    <form action={sendMessage}>
+      {optimisticMessages.map((msg, i) => (
+        <div key={i} style={{ opacity: msg.sending ? 0.5 : 1 }}>
+          {msg.text}
+        </div>
+      ))}
+      <input name="message" />
+      <button type="submit">发送</button>
+    </form>
+  );
+}
+```
+
+#### `<Activity>` / `<ViewTransition>` (React 19.2)
+
+React 19.2 将实验性 API 提升为稳定：
+
+- **`<Activity>`（Activity API，原 Offscreen）**：允许组件在不可见时保留状态并在恢复时直接复用，避免重复 mount/unmount
+  - 典型场景：Tab 切换、向导步骤、路由缓存（keep-alive）
+  - 与 `useTransition` 配合可实现平滑的状态切换
+
+- **`<ViewTransition>`**：基于浏览器原生 View Transitions API，支持跨 DOM 变化的动画过渡
+  - 路由切换、列表重排、图片放大等场景可一键获得流畅动画
+  - React 自动计算 DOM diff 并生成交叉渐变动画
+
+```jsx
+import { unstable_ViewTransition as ViewTransition } from 'react';
+
+function Gallery({ selectedId }) {
+  return (
+    <ViewTransition>
+      {selectedId ? (
+        <DetailView key="detail" id={selectedId} />
+      ) : (
+        <GridView key="grid" />
+      )}
+    </ViewTransition>
+  );
+}
+```
+
+> 📎 安全提示：使用 RSC / Server Actions 时请注意 CVE-2025-55182 漏洞，详见 [React Server Components 安全指南](../guides/react-server-components-security.md)
 
 ---
 
@@ -484,6 +584,14 @@
 - 小巧的包体积
 - 真实的 DOM 引用
 
+**SolidJS v2 动向（2025）**
+
+- **全新的编译器架构**：更强的 tree-shaking 和编译时优化
+- **改进的 SSR 流式渲染**：更低的 TTFB（Time to First Byte）
+- **增强的 DevEx**：更好的 TypeScript 类型推断与错误提示
+- **与 SolidStart 更深集成**：细粒度服务端/客户端边界（fine-grained server/client boundary）
+- **跨平台扩展**：Solid Native（实验性）推动跨端能力
+
 **适用场景**：
 
 - 高性能要求的应用
@@ -536,9 +644,12 @@
 
 **核心特点**：
 
-- 可恢复性 (Resumability)：从服务端暂停，在客户端恢复
-- 细粒度懒加载，按需执行 JS
-- 零 hydration 开销
+- **可恢复性 (Resumability)**：从服务端暂停，在客户端恢复
+  - 与 hydration 完全不同，服务端已完成的状态直接在客户端「接上」，无需重新执行
+  - 序列化 (serialize) 的是应用状态与事件监听器位置，而非整个 HTML
+- 细粒度懒加载，按需执行 JS（Event 级别）
+- **零 hydration 开销**：首屏无 JS 执行即可交互
+- **Qwikloader**：仅 ~1KB 的全局事件委托器，按需下载事件处理器
 - 默认高性能，无需优化
 - 边缘优先设计
 
@@ -549,9 +660,61 @@
 - 电商、营销页面
 - 需要优秀 Core Web Vitals 的项目
 
+```jsx
+// Qwik 的 Resumability 示意：组件无需 hydration
+export default component$(() => {
+  const count = useSignal(0);
+  // 点击时才懒加载并恢复该事件处理器
+  return <button onClick$={() => count.value++}>{count.value}</button>;
+});
+```
+
 ---
 
-### 6.2 Alpine.js
+### 6.2 Astro
+
+| 属性 | 详情 |
+|------|------|
+| **名称** | Astro |
+| **Stars** | ⭐ 48,000+ |
+| **TS支持** | ✅ 原生支持 |
+| **GitHub** | [withastro/astro](https://github.com/withastro/astro) |
+| **官网** | [astro.build](https://astro.build) |
+
+**一句话描述**：内容驱动站点的静态站点生成器，支持 Islands Architecture（群岛架构），默认零 JS。
+
+**核心特点**：
+
+- **Islands Architecture（群岛架构）**：页面静态 HTML 化，仅交互区域注入 JS
+- **Server Islands（服务端群岛）**：Astro 5 引入，允许部分组件在服务端动态渲染，其余保持静态
+  - 实现「个性化内容 + 静态外壳」的混合渲染
+  - 支持 CDN 缓存静态外壳，边缘/服务端渲染动态内岛
+- 支持 React、Vue、Svelte、Solid 等作为 UI Islands
+- **View Transitions API** 原生集成，路由切换无刷新
+- 卓越的首屏性能（近乎纯 HTML）
+
+**适用场景**：
+
+- 内容驱动型网站（博客、文档、营销页）
+- 需要极佳 Lighthouse 分数的项目
+- 「大部分静态 + 局部交互」的混合页面
+
+```astro
+---
+// Server Island：服务端动态获取数据
+const user = await getUser(Astro.cookies);
+---
+<main>
+  <StaticHeader />
+  <!-- server:defer 表示这是一个 Server Island -->
+  <PersonalizedRecommendations server:defer user={user} />
+  <StaticFooter />
+</main>
+```
+
+---
+
+### 6.3 Alpine.js
 
 | 属性 | 详情 |
 |------|------|

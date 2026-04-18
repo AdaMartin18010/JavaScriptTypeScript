@@ -11,6 +11,7 @@
  */
 
 export * as PrismaPatterns from './prisma-patterns.js';
+export * as DrizzlePatterns from './drizzle-patterns.js';
 export * as SqlQueryBuilder from './sql-query-builder.js';
 export * as MigrationSystem from './migration-system.js';
 export * as ConnectionPool from './connection-pool.js';

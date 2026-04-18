@@ -795,65 +795,85 @@ Web API技术选择？
 
 ```mermaid
 flowchart TD
-    A[认证方案选择？] --> B{应用类型？}
-    B -->|单页/CSR| C{用户规模？}
-    B -->|服务端渲染| D[Session Cookie]
-    B -->|移动端| E{无密码偏好？}
-    B -->|纯API| F[JWT]
-    C -->|小| G[JWT]
-    C -->|大| H{SSO需求？}
-    E -->|是| I[Passkeys]
-    E -->|否| J{第三方登录？}
-    H -->|是| K[OIDC 或 SAML]
-    H -->|否| L[JWT + OAuth 2.0]
-    J -->|是| M[OAuth 2.0]
-    J -->|否| N[JWT]
-    D --> O{安全等级？}
-    O -->|高| P[Session + CSRF防护]
-    O -->|标准| Q[Session Cookie]
+    A[认证方案选择？] --> B{需要最快上线？}
+    B -->|是| C[Clerk]
+    B -->|否| D{使用 Supabase 后端？}
+    D -->|是| E[Supabase Auth + RLS]
+    D -->|否| F{Next.js 专属且需要预构建 UI？}
+    F -->|是| G[Stack Auth]
+    F -->|否| H{追求类型安全 + 零供应商锁定？}
+    H -->|是| I[better-auth]
+    H -->|否| J{已有 Auth.js v4 或需要 100+ OAuth Provider？}
+    J -->|是| K[Auth.js v5]
+    J -->|否| L{应用类型？}
+    L -->|单页/CSR| M[JWT in HttpOnly Cookie]
+    L -->|服务端渲染| N[Session Cookie]
+    L -->|移动端| O{无密码偏好？}
+    L -->|纯API| P[JWT]
+    O -->|是| Q[Passkeys]
+    O -->|否| R[JWT + OAuth 2.0]
+    I --> S{需要 Passkeys/2FA/多租户？}
+    S -->|是| T[better-auth 插件]
+    S -->|否| U[better-auth 基础配置]
 ```
 
 ### ASCII 文本树
 
 ```
 认证方案选择？
-├── 应用类型？
-│   ├── 单页/CSR → 用户规模？
-│   │   ├── 小 → JWT
-│   │   │         📌 无状态，水平扩展友好，实现简单
-│   │   │         📌 注意：需配合HttpOnly cookie存储防XSS
-│   │   └── 大 → SSO需求？
-│   │       ├── 是 → OIDC 或 SAML
-│   │       │         📌 OIDC：现代标准，基于OAuth 2.0，JSON格式
-│   │       │         📌 SAML：企业级，XML断言，与AD/LDAP集成深
-│   │       └── 否 → JWT + OAuth 2.0
-│   │           📌 OAuth 2.0：授权框架，适合第三方登录场景
-│   │           📌 PKCE流程保护移动/SPA端的授权码
-│   ├── 服务端渲染 → 安全等级？
-│   │   ├── 高 → Session + CSRF防护
-│   │   │         📌 服务端存储状态，可即时撤销
-│   │   │         📌 CSRF Token + SameSite Cookie，安全性最高
-│   │   └── 标准 → Session Cookie
-│   │       📌 传统可靠，自动处理HttpOnly/Secure/SameSite
-│   │       📌 适合：SSR框架(NextJS/Nuxt)原生支持
-│   ├── 移动端 → 无密码偏好？
-│   │   ├── 是 → Passkeys
-│   │   │         📌 FIDO2/WebAuthn，生物识别/硬件密钥
-│   │   │         📌 防钓鱼，无共享密钥，未来趋势
-│   │   └── 否 → 第三方登录？
-│   │       ├── 是 → OAuth 2.0
-│   │       │         📌 社交登录，Apple/Google/微信一键授权
-│   │       └── 否 → JWT
-│   │           📌 移动端存储安全区(Keychain/Keystore)，刷新Token轮转
-│   └── 纯API → JWT
-│       📌 无状态认证，适合微服务间传递
-│       📌 短期access token + 长期refresh token组合
+├── 需要最快上线（<1天）？
+│   └── 是 → Clerk
+│             📌 托管服务，预构建 UI，分钟级集成
+│             📌 SOC 2 合规，安全团队零维护成本
+│             📌 适合：MVP、PoC、不愿维护认证基础设施的团队
+├── 使用 Supabase 后端？
+│   └── 是 → Supabase Auth
+│             📌 RLS 行级安全：数据权限在数据库层执行
+│             📌 与 PostgreSQL 深度集成，用户数据自主可控
+│             📌 适合：已使用 Supabase 的全栈项目
+├── Next.js 专属且需要预构建 UI？
+│   └── 是 → Stack Auth
+│             📌 Next.js 深度集成，App/Pages Router 均支持
+│             📌 团队/组织、邀请机制内置
+│             📌 云托管 + 自托管双模式
+├── 追求类型安全 + 零供应商锁定？
+│   └── 是 → better-auth
+│             📌 2026 年 T3 Stack 默认选择，TS-first 设计
+│             📌 插件架构：Passkeys、2FA、组织、Admin 按需加载
+│             📌 数据库无关：Drizzle/Prisma/原生 SQL 适配器
+│             📌 框架无关：Next.js/Nuxt/Hono/SvelteKit 均可
+│             📌 零供应商锁定，完全自托管
+│             └── 需要 Passkeys/2FA/多租户？
+│                 ├── 是 → better-auth 插件系统一键启用
+│                 └── 否 → better-auth 基础配置足够
+├── 已有 Auth.js v4 或需要 100+ OAuth Provider？
+│   └── 是 → Auth.js v5
+│             📌 生态最成熟，OAuth Provider 最丰富
+│             ⚠️ v4→v5 迁移 Breaking Change 多，抽象层调试困难
+│             ⚠️ Edge runtime crypto 历史问题（v5 已修复但仍有坑）
+└── 其他场景 → 应用类型？
+    ├── 单页/CSR → JWT in HttpOnly Cookie
+    │             📌 无状态，水平扩展友好
+    │             📌 配合 Refresh Token 轮换机制
+    ├── 服务端渲染 → Session Cookie
+    │             📌 可即时撤销，原生安全
+    ├── 移动端 → 无密码偏好？
+    │   ├── 是 → Passkeys (FIDO2/WebAuthn)
+    │   │         📌 生物识别/硬件密钥，防钓鱼
+    │   └── 否 → JWT + OAuth 2.0 + PKCE
+    │             📌 安全区存储(Keychain/Keystore)
+    └── 纯API → JWT
+                📌 无状态传递，微服务间解耦
 ```
 
 ### 快速推荐
 
 | 场景 | 推荐 | 理由 |
 |------|------|------|
+| 2026 新全栈 TS 项目 | **better-auth** | 类型安全最佳，插件按需，零锁定 |
+| Next.js 官方路线 | **Auth.js v5** | 生态最广，但需容忍迁移历史包袱 |
+| 最快上线 MVP | **Clerk** | 分钟级集成，精美 UI，安全合规托管 |
+| Supabase 后端 | **Supabase Auth** | RLS 不可替代，与数据库无缝集成 |
 | SSR应用 | **Session Cookie** | 原生安全，可即时撤销 |
 | 单页应用 | **JWT in HttpOnly Cookie** | 无状态，扩展性好 |
 | 第三方登录 | **OAuth 2.0 + OIDC** | 行业标准，社交登录兼容 |
@@ -954,6 +974,85 @@ flowchart TD
 
 ---
 
+## 15. AI 框架选型决策树
+
+### Mermaid 流程图
+
+```mermaid
+flowchart TD
+    A[构建 AI Agent 应用？] --> B{需要 UI / Chat 界面？}
+    B -->|是| C{使用 Next.js / React？}
+    C -->|是| D[Vercel AI SDK]
+    C -->|否| E{需要边缘运行时？}
+    E -->|是| F[Cloudflare Agents SDK]
+    E -->|否| G[Vercel AI SDK + 自建 UI]
+    B -->|否| H{需要复杂工作流编排？}
+    H -->|是| I{需要长期记忆与多 Agent？}
+    I -->|是| J[Mastra]
+    I -->|否| K[LangChain.js + LangGraph]
+    H -->|否| L{深度绑定 OpenAI？}
+    L -->|是| M[OpenAI Agents SDK]
+    L -->|否| N{需要最小 bundle？}
+    N -->|是| D
+    N -->|否| J
+    D --> O{需要 MCP 工具生态？}
+    O -->|是| P[Vercel AI SDK 原生 MCP]
+    O -->|否| Q[标准 Tool Calling]
+    J --> R{需要可观测性？}
+    R -->|是| S[Mastra + Langfuse]
+    R -->|否| T[Mastra 内置监控]
+```
+
+### ASCII 文本树
+
+```
+构建 AI Agent 应用？
+├── 需要 UI / Chat 界面？
+│   ├── 使用 Next.js / React？
+│   │   ├── 是 → Vercel AI SDK
+│   │   │         📌 200万+ 周下载，100+ 模型统一 API
+│   │   │         📌 原生 Streaming、AI Gateway、MCP Client 内置
+│   │   └── 否 → 需要边缘运行时？
+│   │             ├── 是 → Cloudflare Agents SDK
+│   │             │         📌 Durable Objects 有状态会话，全球低延迟
+│   │             │         📌 适合：WebSocket 实时协作、边缘原生
+│   │             └── 否 → Vercel AI SDK + 自建 UI
+│   └── 否 → 需要复杂工作流编排？
+│       ├── 是 → 需要长期记忆与多 Agent？
+│       │   ├── 是 → Mastra
+│       │   │         📌 TypeScript-first，内置 DAG 工作流、Memory、Multi-Agent
+│       │   │         📌 适合：企业级自动化、多角色协作系统
+│       │   └── 否 → LangChain.js + LangGraph
+│       │             📌 生态最成熟，RAG Pipeline 最完整
+│       │             📌 注意：bundle 较大 (~400KB+)，学习曲线陡峭
+│       └── 否 → 深度绑定 OpenAI？
+│           ├── 是 → OpenAI Agents SDK
+│           │         📌 官方出品，ChatKit 模式，类型安全
+│           │         📌 适合：OpenAI 生态深度用户、快速原型
+│           └── 否 → 需要最小 bundle？
+│                 ├── 是 → Vercel AI SDK (~25KB 核心)
+│                 └── 否 → Mastra
+└── 需要 MCP 工具生态？
+    ├── 是 → Vercel AI SDK 原生 MCP / Mastra 社区适配
+    │         📌 MCP 已成为 AI 工具接入事实标准 (9700万+ 月下载)
+    │         📌 5800+ public servers 覆盖 GitHub、Slack、PostgreSQL
+    └── 否 → 标准 Tool Calling (OpenAI / Anthropic 格式)
+```
+
+### 快速推荐
+
+| 场景 | 推荐 | 理由 |
+|------|------|------|
+| Next.js 全栈 Chat 应用 | **Vercel AI SDK** | UI 集成零成本，Streaming 原生 |
+| 复杂业务流程自动化 | **Mastra** | 工作流引擎 + 记忆 + 多 Agent |
+| 深度 RAG 系统 | **LangChain.js** | 生态最全，Pipeline 成熟 |
+| OpenAI 原生 Agent | **OpenAI Agents SDK** | 官方优化，类型安全 |
+| 全球边缘低延迟 | **Cloudflare Agents SDK** | Durable Objects 有状态会话 |
+| 快速原型 / MVP | **Vercel AI SDK** | 学习曲线最低，社区资源最多 |
+| 企业级多 Agent 平台 | **Mastra + Langfuse** | 编排能力 + 可观测性完备 |
+
+---
+
 ## 决策速查表
 
 | 技术领域 | 首选推荐 | 备选方案 |
@@ -970,8 +1069,9 @@ flowchart TD
 | 监控可观测 | Sentry + Datadog | LogRocket / New Relic |
 | CI/CD | GitHub Actions | GitLab CI / CircleCI |
 | Web API | REST (通用) / GraphQL (灵活) | tRPC / gRPC-Web |
-| 认证方案 | JWT (API/SPA) / Session (SSR) | OIDC / Passkeys |
+| 认证方案 | **better-auth** (新 TS 项目) / Session (SSR) | OIDC / Passkeys |
 | 数据存储 | PostgreSQL | MongoDB / Redis |
+| AI Agent 框架 | Vercel AI SDK | Mastra / LangChain.js |
 
 ---
 

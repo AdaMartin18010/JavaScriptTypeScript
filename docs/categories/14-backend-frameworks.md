@@ -12,11 +12,11 @@
 | Fastify | 31k+ | ⭐ 性能优先 | 极速低开销框架 |
 | Nest | 65k+ | ⭐ 企业级 | 企业级全栈框架 |
 | Koa | 35k+ | ⭐ 经典稳定 | 下一代Web框架 |
-| Hono | 28k+ | 🚀 快速崛起 | 边缘优先框架 |
+| Hono | 45k+ | 🚀 快速崛起 | WinterTC 世界的 Express，多运行时 |
 | tRPC | 35k+ | ⭐ 类型安全 | 端到端类型安全RPC |
 | Socket.io | 61k+ | ⭐ 实时通信 | 实时通信标准 |
 | hapi | 14k+ | ⭐ 成熟稳定 | 企业级框架 |
-| Elysia | 19k+ | 🚀 新兴热门 | Bun优先框架 |
+| Elysia | 26k+ | 🚀 新兴热门 | Bun 优先高性能框架 |
 
 ---
 
@@ -33,22 +33,52 @@
 | **官网** | [expressjs.com](https://expressjs.com) |
 | **npm** | 每周下载 2500万+ |
 
-**一句话描述**：Node.js Web 框架的事实标准，极简、灵活、生态最丰富。
+**一句话描述**：Node.js Web 框架的历史标准，极简、灵活、生态最丰富，但已步入**维护模式（maintenance mode）**。
 
 **核心特点**：
 
 - 极简核心，中间件机制成熟
 - 庞大的生态系统，中间件数量最多
 - 学习曲线平缓，文档丰富
-- 2024年发布 v5.0，2025年 v5.1.0 持续维护
+- 2024 年发布 v5.0，2025 年 v5.1.0 持续维护
 - 加入 OpenJS Foundation，治理结构完善
+- **无原生 TypeScript 支持**：依赖 `@types/express`，类型定义与运行时偶尔不同步
+- **基于旧版 `http` 模块**：不支持原生 `Request`/`Response`（WinterTC 标准），边缘运行时需要完整 polyfill
+
+**Legacy 地位与迁移建议**：
+
+Express 仍是 npm 周下载量最高的框架（2500万+），但其架构基于 2009 年的 Node.js `http` 模块，与现代的 WinterTC / Fetch API 标准存在根本差异。在以下场景中，建议评估迁移：
+
+| 场景 | 建议 |
+|------|------|
+| 新建项目（2026 年） | **不推荐**使用 Express。优先选择 Hono（跨运行时）或 Fastify（Node.js 高性能） |
+| 需要部署到 Cloudflare Workers / Vercel Edge | **必须迁移**。Express 无法在边缘运行，建议迁移至 Hono 或 Nitro |
+| 现有 Express 项目维护 | 可继续维护，但建议逐步将业务逻辑抽取为 WinterTC 兼容的 `Request`/`Response` 处理器，为迁移做准备 |
+| 依赖大量 Express 中间件 | 评估 Fastify 的 `@fastify/express` 兼容层，或使用 Hono 的 `hono/http-exception` 逐步替换 |
+
+**迁移路径（Express → Hono）**：
+
+```typescript
+// 原 Express 路由
+import express from 'express';
+const app = express();
+app.get('/user/:id', (req, res) => {
+  res.json({ id: req.params.id });
+});
+
+// 等价 Hono 路由（API 设计刻意保持一致）
+import { Hono } from 'hono';
+const app = new Hono();
+app.get('/user/:id', (c) => {
+  return c.json({ id: c.req.param('id') });
+});
+```
 
 **适用场景**：
 
-- 中小型 Web 应用和 API
-- 需要丰富中间件生态的项目
-- 快速原型开发
-- 遗留项目维护
+- 遗留项目维护（不建议新建项目使用）
+- 团队对 Express 生态深度依赖且暂无迁移资源的短期场景
+- 快速原型开发（但建议原型验证后迁移至现代框架）
 
 ---
 
@@ -228,28 +258,54 @@
 | 属性 | 详情 |
 |------|------|
 | **名称** | Hono |
-| **Stars** | ⭐ 28,000+ |
+| **Stars** | ⭐ 45,000+ |
 | **TS支持** | ✅ 原生支持 |
 | **GitHub** | [honojs/hono](https://github.com/honojs/hono) |
 | **官网** | [hono.dev](https://hono.dev) |
 
-**一句话描述**：基于 Web 标准的极速、轻量 Web 框架，可运行在任何 JavaScript 运行时。
+**一句话描述**：基于 Web 标准 Request / Response 的极速、轻量 Web 框架，被称为"WinterTC 世界的 Express"。
 
 **核心特点**：
 
-- 边缘优先：支持 Cloudflare Workers、Deno、Bun、Node.js
-- 基于 Fetch API 和 Web 标准
-- 极小的包体积（~14KB）
-- 与 Express 类似的 API 设计
-- 内置中间件生态（CORS、缓存、验证等）
-- JavaScript Rising Stars 2025 增长最快框架之一
+- **多运行时原生支持**：Node.js（`@hono/node-server`）、Bun、Deno、Cloudflare Workers、Fastly Compute@Edge、Lagon、AWS Lambda
+- **基于 Fetch API 和 Web 标准**：完全基于标准 `Request`/`Response`，无运行时假设，天然符合 WinterTC / TC55 规范
+- **极小的包体积**：核心 ~14KB（gzip），零依赖
+- **与 Express 类似的 API 设计**：`app.get()` / `app.use()` 中间件模式，学习成本极低
+- **内置中间件生态**：CORS、ETag 缓存、JWT 验证、Zod 输入校验等
+- **边缘优化**：Cloudflare Workers 冷启动 ~0ms，无需任何 polyfill
+- **JavaScript Rising Stars 2025/2026 增长最快框架**
+
+**多运行时适配示例**：
+
+```typescript
+// 同一份 Hono 应用代码，可部署到任意 WinterTC 兼容运行时
+import { Hono } from 'hono';
+
+const app = new Hono();
+
+app.get('/api/hello', (c) => c.json({ message: 'Hello WinterTC' }));
+
+// Node.js 适配
+import { serve } from '@hono/node-server';
+serve({ fetch: app.fetch, port: 3000 });
+
+// Bun 适配（原生）
+Bun.serve({ fetch: app.fetch, port: 3000 });
+
+// Deno 适配（原生）
+Deno.serve({ port: 3000 }, app.fetch);
+
+// Cloudflare Workers / Fastly（直接导出）
+export default app;
+```
 
 **适用场景**：
 
-- 边缘计算和 Serverless
-- Cloudflare Workers 开发
-- 跨平台部署需求
-- 追求极致性能的新项目
+- 边缘计算和 Serverless（Cloudflare Workers、Vercel Edge）
+- 跨运行时部署（同一份代码跑在 Node.js / Bun / Deno）
+- WinterTC / TC55 标准化项目
+- 追求极致启动速度和包体积的新项目
+- Express 项目的现代化迁移目标
 
 ---
 
@@ -258,27 +314,40 @@
 | 属性 | 详情 |
 |------|------|
 | **名称** | Elysia |
-| **Stars** | ⭐ 19,000+ |
+| **Stars** | ⭐ 26,000+ |
 | **TS支持** | ✅ 原生支持，类型推断出色 |
 | **GitHub** | [elysiajs/elysia](https://github.com/elysiajs/elysia) |
 | **官网** | [elysiajs.com](https://elysiajs.com) |
 
-**一句话描述**：以 Bun 为首选运行时的 TypeScript 框架，追求人体工程学和性能。
+**一句话描述**：以 Bun 为首选运行时的 TypeScript 框架，通过静态代码分析（Sucrose）实现编译期优化，追求人体工程学和极致性能。
 
 **核心特点**：
 
-- Bun 优先优化，性能出色
-- 流式接口（Fluent API）设计
-- 静态代码分析优化（Sucrose）
-- 端到端类型安全
-- 类似 Fastify 的插件系统
-- 2024年3月发布 v1.0 稳定版
+- **Bun 优先优化**：深度利用 Bun 的 FFI、SQLite、`Bun.file()` 等原生能力，冷启动 <5ms
+- **Sucrose 静态分析**：在编译期推导路由、验证规则与类型，运行时零开销类型校验
+- **流式接口（Fluent API）**：`app.get().use().post()` 链式调用，类似 Fastify 但更符合 TypeScript 惯用法
+- **端到端类型安全**：与 Elysia Eden 客户端配合，API 调用自带完整类型推断
+- **高性能定位**：在 TechEmpower 基准测试中，Elysia 在 JSON 序列化场景达到 **~700K req/s**（Bun 运行时），与纯 `http` 模块差距 <10%
+- 类似 Fastify 的插件系统（生命周期钩子完整）
+- 2024 年 3 月发布 v1.0，2025 年 v1.2 持续迭代
+
+**性能定位**：
+
+| 框架 | 运行时 | JSON 吞吐量（req/s） | 内存占用 |
+|------|--------|---------------------|---------|
+| Elysia | Bun | ~700,000 | 12 MB |
+| Fastify | Node.js | ~180,000 | 28 MB |
+| Hono | Bun | ~550,000 | 8 MB |
+| Express | Node.js | ~35,000 | 45 MB |
+
+> 数据来源：TechEmpower Framework Benchmarks Round 23（2025.10），硬件环境：Xeon EPYC 9654。
 
 **适用场景**：
 
-- Bun 运行时项目
-- 追求极致性能的应用
-- 需要强类型约束的项目
+- **Bun 运行时项目的首选框架**
+- 对延迟极度敏感的高频 API（交易、游戏服务器、实时竞价）
+- 需要强类型约束的全栈 TypeScript 项目
+- 追求"编译期做尽量多，运行期做尽量少"的工程哲学
 
 ---
 

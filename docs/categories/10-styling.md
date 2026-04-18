@@ -10,33 +10,100 @@ CSS 和样式工具生态系统，包括 CSS 框架、CSS-in-JS 解决方案、C
 
 > A utility-first CSS framework for rapid UI development.
 
-实用优先的 CSS 框架，通过组合原子类快速构建自定义界面。Tailwind v4 于 2025 年发布，采用基于 Rust 的 CSS 引擎，构建速度提升 10 倍。
+实用优先的 CSS 框架，通过组合原子类快速构建自定义界面。**Tailwind CSS v4 于 2025.1 发布**，是一次架构级重写，采用基于 Rust 的 Lightning CSS 引擎，构建速度提升 **100 倍（增量）/ 5 倍（完整构建）**。
 
 **核心特性：**
 
 - 实用优先（Utility-first）的设计哲学
 - JIT（Just-in-Time）编译器，只生成使用的样式
-- 高度可配置的设计系统
 - 深色模式、响应式断点内置支持
 - 与 React、Vue、Svelte 等框架深度集成
 
+**Tailwind CSS v4 重大更新**
+
+| 特性 | 说明 |
+|------|------|
+| **Oxide / Lightning CSS 引擎** | Rust 编写的新一代 CSS 解析、转换与打包引擎，替代 PostCSS 链路，增量构建速度提升 **100x** |
+| **CSS-first 配置** | 废弃 `tailwind.config.js`，配置完全迁移到 CSS：`@import "tailwindcss"` + `@theme` 块 |
+| **`@utility`** | 在 CSS 中直接定义自定义 utility 类，无需 JS 配置 |
+| **`@custom-variant`** | 直接在 CSS 中声明自定义变体（如 `@custom-variant --hocus (&:hover, &:focus)`） |
+| **`@starting-style` variant** | 原生支持 `transition-behavior: allow-discrete` 的进入动画，解决 `display: none → block` 无过渡问题 |
+| **`not-*` variant** | 否定变体，如 `not-hover:bg-red-500` |
+| **容器查询原生支持** | `@container` / `@min-*` / `@max-*` 变体开箱即用，无需插件 |
+| **P3 广色域色彩** | 内置 `oklch`、`display-p3` 等现代色彩空间支持 |
+| **3D 变换** | 原生 `rotate-x-*`、`rotate-y-*`、`perspective-*`、`transform-3d` 等 utility |
+
+```css
+/* v4 全新配置方式：纯 CSS */
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #0ea5e9;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --breakpoint-3xl: 1920px;
+}
+
+@utility content-auto {
+  content-visibility: auto;
+}
+
+@custom-variant --hocus (&:hover, &:focus);
+```
+
 ```bash
-npm install -D tailwindcss
-npx tailwindcss init
+# v4 安装（无需 init 配置文件）
+npm install -D tailwindcss@4
 ```
 
 ```html
-<!-- 示例：使用 Tailwind 构建卡片 -->
-<div class="max-w-sm rounded overflow-hidden shadow-lg bg-white">
-  <img class="w-full" src="/img/card-top.jpg" alt="Sunset">
-  <div class="px-6 py-4">
-    <div class="font-bold text-xl mb-2">标题</div>
-    <p class="text-gray-700 text-base">
-      卡片内容描述...
-    </p>
-  </div>
+<!-- 示例：v4 的 @starting-style 进入动画 -->
+<div class="starting:opacity-0 opacity-100 transition-opacity duration-300">
+  淡入内容
+</div>
+
+<!-- 示例：3D 变换 + P3 色彩 -->
+<div class="rotate-y-12 perspective-1000 bg-[color(display-p3_0.5_0.2_0.9)]">
+  3D 卡片
 </div>
 ```
+
+---
+
+### [shadcn/ui](https://ui.shadcn.com/) ⭐ 82k+
+
+> Beautifully designed components that you can copy and paste into your apps. Accessible. Customizable. Open Source.
+
+**shadcn/ui 不是传统意义上的组件库（component library），而是可复制代码片段集合（copy-paste components / registry pattern）。**
+
+**架构模式：**
+
+- **无 NPM 依赖包**：组件源码通过 CLI (`npx shadcn add button`) 直接下载到项目 `components/ui/` 目录
+- **完全拥有代码**：开发者拥有组件源码，可自由修改样式、行为与逻辑，无升级锁死风险
+- **基于 Tailwind CSS**：所有组件样式使用 Tailwind utility class，易于主题定制
+- **Radix UI / Ariakit 为基**：底层交互逻辑依赖无样式 Headless UI 库，确保可访问性 (a11y)
+- **主题系统**：通过 `css-variables` 统一色彩、圆角、阴影，一键切换主题
+
+```bash
+npx shadcn@latest init
+npx shadcn add button dialog dropdown-menu
+```
+
+```tsx
+// 下载后的组件位于你的项目内，可随意修改
+import { Button } from "@/components/ui/button";
+
+export function Demo() {
+  return <Button variant="outline" size="sm">点击我</Button>;
+}
+```
+
+**适用场景**：
+
+- 需要高度定制 UI 的中大型项目
+- 不想被组件库样式锁定的团队
+- 追求 Design System 与代码完全对齐的设计驱动开发 (DDD)
+
+---
 
 ---
 
@@ -309,6 +376,87 @@ npm install @stitches/react
 
 ---
 
+## CSS 新原生 API
+
+现代浏览器已原生支持多项此前需要 polyfill 或 JS 库实现的样式能力。
+
+### Popover API
+
+无需 JS 即可实现点击外部关闭的浮动元素（tooltip、dropdown、menu）。
+
+```html
+<button popovertarget="my-popover">打开菜单</button>
+<div id="my-popover" popover>
+  <ul>
+    <li>选项 1</li>
+    <li>选项 2</li>
+  </ul>
+</div>
+```
+
+- `popover="auto"`：自动管理焦点与点击外部关闭（只能有一个同时打开）
+- `popover="manual"`：完全由 JS 控制显隐
+
+---
+
+### Anchor Positioning
+
+原生 CSS 锚点定位，解决下拉菜单、tooltip 相对于触发元素的绝对定位难题。
+
+```css
+.anchor { anchor-name: --trigger; }
+.tooltip {
+  position-anchor: --trigger;
+  position-area: bottom center;
+  /* 自动处理视口边界翻转 */
+  position-try-fallbacks: flip-block;
+}
+```
+
+---
+
+### `@starting-style`
+
+解决元素从 `display: none` 变为可见时无法触发 `transition` 的历史难题（配合 `transition-behavior: allow-discrete`）。
+
+```css
+.dialog {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.3s, transform 0.3s, display 0.3s;
+  transition-behavior: allow-discrete;
+}
+
+/* 进入前的起始状态 */
+@starting-style {
+  .dialog {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+.dialog[open] {
+  display: block;
+}
+```
+
+---
+
+### `@scope`
+
+CSS 作用域规则，限定选择器仅在特定 DOM 子树内生效，避免全局命名冲突。
+
+```css
+@scope (.card) {
+  :scope { background: white; }
+  .title { font-size: 1.25rem; }
+  img { border-radius: 8px; }
+}
+/* .title 与 img 仅在 .card 内部匹配，不影响外部同名元素 */
+```
+
+---
+
 ## CSS工具
 
 ### [PostCSS](https://postcss.org/) ⭐ 29.0k
@@ -539,15 +687,16 @@ const Box = styled.div`
 | 场景 | 推荐方案 |
 |------|----------|
 | 快速原型开发 | Tailwind CSS、Bootstrap |
-| 大型项目定制 | Tailwind CSS、UnoCSS |
-| React 组件样式 | styled-components、Emotion |
+| 大型项目定制 | Tailwind CSS v4、UnoCSS |
+| React 组件样式 | shadcn/ui + Tailwind、styled-components、Emotion |
 | 零运行时开销 | Linaria、vanilla-extract |
 | 遗留项目维护 | Sass、Less |
-| 现代构建工具链 | PostCSS + Lightning CSS |
-| 设计系统构建 | Theme UI、Styled System |
+| 现代构建工具链 | Lightning CSS (Tailwind v4 内置) |
+| 设计系统构建 | shadcn/ui、Theme UI、Styled System |
+| 原生样式能力增强 | CSS Anchor Positioning、Popover API、@scope |
 
 ---
 
-> 📊 **数据统计时间**：2025年4月
+> 📊 **数据统计时间**：2026年4月
 >
 > ⭐ Stars 数据来源于 GitHub API，可能存在延迟

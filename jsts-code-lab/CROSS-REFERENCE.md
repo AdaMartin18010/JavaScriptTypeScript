@@ -289,6 +289,16 @@
 
 ---
 
+## 🧩 按技术栈组合查找
+
+| 技术栈组合 | 涉及模块 | 说明 |
+|------------|----------|------|
+| **AI 全栈** | 94-ai-agent-lab + 33-ai-integration | MCP Server、Vercel AI SDK Tool Calling、Multi-agent Workflow |
+| **现代认证全栈** | 95-auth-modern-lab + 21-api-security | better-auth、Passkeys、OAuth2 PKCE、RBAC |
+| **边缘数据库全栈** | 96-orm-modern-lab + 32-edge-computing | Drizzle Schema、Query Patterns、Prisma 7 Edge、Turso |
+
+---
+
 ## 📂 模块文件交叉引用
 
 ### 90-web-apis-lab: Web APIs Lab
@@ -325,12 +335,39 @@
 | vercel-edge-config.ts | 31-serverless | docs/categories/26-deployment-hosting.md |
 | docker-optimize.ts | 22-deployment-devops | docs/categories/26-deployment-hosting.md |
 
+### 94-ai-agent-lab: AI Agent Lab
+
+| 文件 | 关联模块 | 关联文档 |
+|------|----------|----------|
+| mcp-server.ts | 33-ai-integration | docs/categories/ai-agent-guide.md |
+| vercel-ai-sdk-tools.ts | 33-ai-integration | docs/categories/ai-agent-guide.md |
+| multi-agent-workflow.ts | 33-ai-integration | docs/categories/ai-agent-guide.md |
+
+### 95-auth-modern-lab: Modern Authentication Lab
+
+| 文件 | 关联模块 | 关联文档 |
+|------|----------|----------|
+| better-auth-setup.ts | 21-api-security | docs/categories/auth-modern-guide.md |
+| passkeys-webauthn.ts | 21-api-security | docs/categories/auth-modern-guide.md |
+| oauth2-pkce-flow.ts | 21-api-security | docs/categories/auth-modern-guide.md |
+| rbac-implementation.ts | 21-api-security | docs/categories/auth-modern-guide.md |
+
+### 96-orm-modern-lab: Modern ORM Lab
+
+| 文件 | 关联模块 | 关联文档 |
+|------|----------|----------|
+| drizzle-schema.ts | 20-database-orm | docs/categories/orm-modern-guide.md |
+| drizzle-query-patterns.ts | 20-database-orm | docs/categories/orm-modern-guide.md |
+| prisma-7-edge.ts | 32-edge-computing | docs/categories/orm-modern-guide.md |
+| turso-libsql.ts | 32-edge-computing | docs/categories/orm-modern-guide.md |
+
 ---
 
 ## 📝 更新日志
 
 | 日期 | 更新内容 |
 |------|----------|
+| 2026-04-19 | 新增 94-ai-agent-lab、95-auth-modern-lab、96-orm-modern-lab 模块交叉引用；新增按技术栈组合查找表格 |
 | 2026-04-19 | 新增 90-web-apis-lab、91-nodejs-core-lab、92-observability-lab、93-deployment-edge-lab 模块交叉引用 |
 | 2026-04-17 | 新增 ECMAScript 2025/2026、JS/TS 语义对比、共识算法、形式化验证模块的交叉引用 |
 | 2026-04-04 | 创建初始交叉引用文档，包含模块关系图、依赖矩阵和学习路径 |

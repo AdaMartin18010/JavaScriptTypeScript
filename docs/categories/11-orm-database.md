@@ -1,6 +1,6 @@
 # ORM 与数据库库
 
-> 本文档梳理 TypeScript/JavaScript 生态中的 ORM、查询构建器和数据库工具，数据参考自 GitHub Stars 及官方文档（2025年4月）
+> 本文档梳理 TypeScript/JavaScript 生态中的 ORM、查询构建器和数据库工具，数据参考自 GitHub Stars 及官方文档（2026年4月）
 
 ---
 
@@ -8,10 +8,12 @@
 
 | 类别 | 库 | Stars | 特点 |
 |------|-----|-------|------|
-| **TypeScript ORM** | Prisma | 45.6k+ | ⭐ 下一代ORM，类型安全 |
-| | Drizzle ORM | 24k+ | 🔥 SQL风格，轻量级 |
-| | TypeORM | 36k+ | 🏢 企业级，装饰器驱动 |
-| | MikroORM | 8k+ | 📦 数据映射模式 |
+| **TypeScript ORM** | Prisma 7 | 48k+ | ⭐ 下一代ORM，WASM引擎，原生Edge支持 |
+| | Drizzle ORM | 40k+ | 🔥 SQL风格，~7KB，零生成步骤 |
+| | ZenStack | 4k+ | 🔐 Prisma兼容 + 声明式访问控制 |
+| | MikroORM | 8k+ | 📦 数据映射模式，Unit of Work |
+| | TypeORM | 36k+ | 🏢 企业级，装饰器驱动（维护模式）|
+| | Sequelize | 29k+ | ⛓️ 老牌ORM（维护模式，新项目不推荐）|
 | **MongoDB ODM** | Mongoose | 27k+ | 🍃 MongoDB官方ODM |
 | **查询构建器** | Knex.js | 19k+ | 🔧 灵活SQL构建 |
 | | Kysely | 10k+ | 📝 类型安全SQL |
@@ -20,33 +22,35 @@
 | | mysql2 | 5k+ | 🐬 MySQL高性能 |
 | | ioredis | 14k+ | ⚡ Redis客户端 |
 | **Edge/嵌入式** | better-sqlite3 | 8k+ | 🪶 同步SQLite |
-| | libsql | 3k+ | 🌐 Turso SQLite |
+| | @libsql/client | 3k+ | 🌐 Turso SQLite at Edge |
 
 ---
 
 ## 1. TypeScript ORM
 
-### 1.1 Prisma
+### 1.1 Prisma 7
 
 | 属性 | 详情 |
 |------|------|
 | **名称** | Prisma |
-| **Stars** | ⭐ 45,600+ |
+| **Stars** | ⭐ 48,000+ |
 | **GitHub** | [prisma/prisma](https://github.com/prisma/prisma) |
 | **官网** | [prisma.io](https://www.prisma.io) |
 | **npm** | `prisma`, `@prisma/client` |
 | **许可证** | Apache-2.0 |
 
-**一句话描述**：下一代 Node.js 和 TypeScript ORM，提供声明式数据建模、自动生成的类型安全查询和强大的迁移系统。
+**一句话描述**：Prisma 7 彻底移除 Rust Query Engine 二进制依赖，改用 TypeScript/WASM 实现，bundle 从 ~14MB 降至 ~1.6MB，并原生支持 Edge Runtime。
 
 **核心特点**：
 
+- **WASM Query Engine（v7 重大升级）**: 无原生二进制文件，容器/Serverless 镜像显著缩小
+- **类型检查加速（v7）**: Schema 编译与类型生成速度提升约 70%
 - **Schema-first 设计**：通过 `.prisma` 文件定义数据模型，单文件数据源
 - **类型安全查询**：自动生成的 Prisma Client 提供完整的 TypeScript 类型支持
 - **Prisma Migrate**：声明式数据库迁移，支持版本控制
 - **Prisma Studio**：可视化数据库管理 GUI
 - **多数据库支持**：PostgreSQL、MySQL、MariaDB、SQLite、SQL Server、MongoDB、CockroachDB
-- **Serverless & Edge**：支持 Cloudflare Workers、Vercel Edge、AWS Lambda
+- **Serverless & Edge（v7 原生）**：直接运行在 Cloudflare Workers、Vercel Edge、AWS Lambda，无需 Data Proxy
 
 **适用场景**：
 
@@ -54,6 +58,7 @@
 - 使用 Next.js、NestJS、Express 的全栈应用
 - 追求开发体验和自动补全的团队
 - 复杂关系型数据模型
+- 2026年新项目首选 ORM 之一
 
 **示例代码**：
 
@@ -95,31 +100,35 @@ const user = await prisma.user.create({
 | 属性 | 详情 |
 |------|------|
 | **名称** | Drizzle ORM |
-| **Stars** | ⭐ 24,000+ |
+| **Stars** | ⭐ 40,000+ |
 | **GitHub** | [drizzle-team/drizzle-orm](https://github.com/drizzle-team/drizzle-orm) |
 | **官网** | [orm.drizzle.team](https://orm.drizzle.team) |
 | **npm** | `drizzle-orm` |
 | **许可证** | Apache-2.0 |
 
-**一句话描述**：现代 TypeScript ORM，提供 SQL 风格的查询 API 和关系型查询 API，仅 ~7.4KB，零依赖，全平台支持。
+**一句话描述**：现代 TypeScript ORM，提供 SQL 风格的查询 API 和关系型查询 API，仅 ~7KB gzipped，零生成步骤，全平台支持。
 
 **核心特点**：
 
-- **SQL-like API**：直接编写类似 SQL 的 TypeScript 查询
-- **关系查询 API**：同时支持关系型数据获取方式
-- **极致轻量**：仅 7.4KB minified+gzipped，可 Tree Shaking
-- **零依赖**：无原生 Rust 二进制文件
+- **SQL-like API**：直接编写类似 SQL 的 TypeScript 查询，完全透明
+- **关系查询 API**：同时支持关系型数据获取方式（`db.query`）
+- **极致轻量**：仅 7KB gzipped，可 Tree Shaking
+- **零生成步骤**：Schema 用 TypeScript 定义，无需预编译代码生成
+- **零依赖**：无原生二进制文件，纯 TypeScript/JavaScript
 - **全平台支持**：Node.js、Bun、Deno、Cloudflare Workers、Edge Runtime
 - **Serverless 原生**：无需数据代理，直接连接数据库
-- **Drizzle Kit**：开源迁移工具（2024年7月开源）
-- **Drizzle Studio**：数据库浏览和编辑工具
+- **RLS 支持**：原生支持 PostgreSQL Row Level Security 策略
+- **Drizzle Kit**：开源迁移工具（生成、推送、同步）
+- **Drizzle Studio**：数据库浏览和编辑 GUI 工具
+- **无 N+1（显式查询）**：join 语法明确，开发者完全掌控查询行为
 
 **适用场景**：
 
 - 需要 SQL 灵活性和类型安全的项目
 - Serverless/Edge 环境
-- 追求极致包体积和性能的应用
+- 追求极致包体积和冷启动性能的应用
 - 团队有 SQL 背景，希望保持 SQL 控制
+- 2026年新项目首选 ORM 之一
 
 **示例代码**：
 
@@ -128,7 +137,7 @@ import { drizzle } from 'drizzle-orm/node-postgres'
 import { pgTable, serial, varchar, integer } from 'drizzle-orm/pg-core'
 import { eq } from 'drizzle-orm'
 
-// 定义表
+// TypeScript Schema 定义（零生成）
 const users = pgTable('users', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 255 }),
@@ -153,61 +162,47 @@ const usersWithPosts = await db.query.users.findMany({
 
 ---
 
-### 1.3 TypeORM
+### 1.3 ZenStack
 
 | 属性 | 详情 |
 |------|------|
-| **名称** | TypeORM |
-| **Stars** | ⭐ 36,000+ |
-| **GitHub** | [typeorm/typeorm](https://github.com/typeorm/typeorm) |
-| **官网** | [typeorm.io](https://typeorm.io) |
-| **npm** | `typeorm` |
+| **名称** | ZenStack |
+| **Stars** | ⭐ 4,000+ |
+| **GitHub** | [zenstackhq/zenstack](https://github.com/zenstackhq/zenstack) |
+| **官网** | [zenstack.dev](https://zenstack.dev) |
+| **npm** | `zenstack` |
 | **许可证** | MIT |
 
-**一句话描述**：支持 TypeScript 和 JavaScript 的 ORM，采用装饰器驱动的实体定义，支持 Active Record 和 Data Mapper 模式。
+**一句话描述**：基于 Prisma 的增强层，在 Prisma-compatible Schema 上提供声明式访问控制（`@@allow` / `@@deny`），自动生成安全的 CRUD API。
 
 **核心特点**：
 
-- **装饰器驱动**：使用 TypeScript 装饰器定义实体和关系
-- **双模式支持**：Active Record 和 Data Mapper 模式
-- **多数据库支持**：MySQL、PostgreSQL、MariaDB、SQLite、SQL Server、Oracle、SAP Hana
-- **丰富的功能**：实体管理器、仓库模式、查询构建器、迁移、订阅者
-- **成熟稳定**：2016年发布，企业级应用验证
-- **Eager/Lazy 加载**：灵活的关系数据加载策略
+- **Prisma 兼容**：复用 Prisma Schema 语法和 Client，无缝集成
+- **声明式权限**：在模型层定义 `@@allow` / `@@deny`，权限与数据模型同处一地
+- **自动 API 生成**：支持生成 tRPC、REST、GraphQL 安全端点
+- **前后端共享**：同一份 Schema 定义驱动前后端数据权限
+- **增强 Prisma**：不牺牲 Prisma 的类型安全与生态
 
 **适用场景**：
 
-- 已有 TypeORM 项目维护
-- 需要装饰器风格 ORM 的团队
-- 复杂继承层次结构的实体模型
-- 需要精细 SQL 控制的项目
+- B2B 多租户应用
+- 需要复杂数据权限控制的 SaaS
+- 快速搭建安全 CRUD 后端
+- 已有 Prisma 项目，希望补充 Access Control 层
 
 **示例代码**：
 
-```typescript
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'
+```prisma
+// schema.zmodel
+model Post {
+  id        Int     @id @default(autoincrement())
+  title     String
+  published Boolean @default(false)
+  authorId  Int
 
-@Entity()
-export class User {
-  @PrimaryGeneratedColumn()
-  id: number
-
-  @Column({ unique: true })
-  email: string
-
-  @Column({ nullable: true })
-  name: string
-
-  @OneToMany(() => Post, post => post.author)
-  posts: Post[]
+  @@allow('all', auth() == author)
+  @@allow('read', published == true)
 }
-
-// 使用 Repository 模式
-const userRepository = AppDataSource.getRepository(User)
-const user = await userRepository.findOne({
-  where: { id: 1 },
-  relations: ['posts']
-})
 ```
 
 ---
@@ -268,6 +263,58 @@ const user = await em.findOne(User, 1, { populate: ['posts'] })
 user.name = 'New Name'  // 自动追踪变更
 await em.flush()  // 批量写入所有变更
 ```
+
+---
+
+### 1.5 TypeORM（维护模式）
+
+| 属性 | 详情 |
+|------|------|
+| **名称** | TypeORM |
+| **Stars** | ⭐ 36,000+ |
+| **GitHub** | [typeorm/typeorm](https://github.com/typeorm/typeorm) |
+| **官网** | [typeorm.io](https://typeorm.io) |
+| **npm** | `typeorm` |
+| **许可证** | MIT |
+
+> ⚠️ **维护模式声明**：截至 2026年，TypeORM 核心团队活动显著减少，主要进入 bug fix 与社区 PR 维护阶段。**新项目不推荐选用**。
+
+**一句话描述**：支持 TypeScript 和 JavaScript 的 ORM，采用装饰器驱动的实体定义，支持 Active Record 和 Data Mapper 模式。
+
+**核心特点**：
+
+- **装饰器驱动**：使用 TypeScript 装饰器定义实体和关系
+- **双模式支持**：Active Record 和 Data Mapper 模式
+- **多数据库支持**：MySQL、PostgreSQL、MariaDB、SQLite、SQL Server、Oracle、SAP Hana
+- **丰富的功能**：实体管理器、仓库模式、查询构建器、迁移、订阅者
+- **成熟稳定**：2016年发布，企业级应用验证
+- **Eager/Lazy 加载**：灵活的关系数据加载策略
+
+**适用场景**：
+
+- **遗留项目维护**
+- 已有大量 TypeORM 资产的团队
+- **新项目请优先考虑 Prisma 7 或 Drizzle ORM**
+
+---
+
+### 1.6 Sequelize（维护模式）
+
+| 属性 | 详情 |
+|------|------|
+| **名称** | Sequelize |
+| **Stars** | ⭐ 29,000+ |
+| **GitHub** | [sequelize/sequelize](https://github.com/sequelize/sequelize) |
+| **官网** | [sequelize.org](https://sequelize.org) |
+| **npm** | `sequelize` |
+| **许可证** | MIT |
+
+> ⚠️ **维护模式声明**：截至 2026年，Sequelize 同样处于维护模式，v7 (TypeScript 重写) 进展缓慢，社区关注度持续下降。**新项目不推荐选用**。
+
+**适用场景**：
+
+- **遗留项目维护**
+- **新项目请优先考虑 Prisma 7 或 Drizzle ORM**
 
 ---
 
@@ -734,7 +781,30 @@ redis.defineCommand('myecho', {
 
 ## 5. 嵌入式/Edge 数据库
 
-### 5.1 better-sqlite3
+### 5.1 边缘数据库选型对比
+
+| 特性 | Turso (libSQL) | Neon (Postgres) | PlanetScale (MySQL) | Supabase (Postgres) | Cloudflare D1 (SQLite) |
+|------|----------------|-----------------|---------------------|---------------------|------------------------|
+| **底层引擎** | libSQL (SQLite fork) | PostgreSQL | Vitess (MySQL) | PostgreSQL | SQLite |
+| **架构** | 全球复制，写主读副 | 存储计算分离，serverless | 存储计算分离，serverless | PostgreSQL + Realtime | 全球分布，SQLite |
+| **Edge 原生** | ✅ 极佳 | ✅ 优秀 | ✅ 优秀 | ✅ 良好 | ✅ 极佳 |
+| **延迟** | < 50ms (读) | < 100ms (冷启动后) | < 100ms | < 100ms | < 50ms |
+| **免费 tier** | generous | generous | 有限 | generous | generous |
+| **连接方式** | HTTP / libsql 协议 | TCP / 连接字符串 | HTTP (serverless driver) | TCP / 连接池 | Workers Binding |
+| **ORM 推荐** | Drizzle, MikroORM | Prisma 7, Drizzle | Drizzle, Prisma 7 | Prisma 7, Drizzle | Drizzle |
+| **适用场景** | 读多写少、IoT、边缘缓存 | 全栈应用、AI/向量 | 大规模MySQL迁移 | 实时应用、认证集成 | Cloudflare生态、简单CRUD |
+
+**选型建议**：
+
+- **Turso / libSQL**：最适合 Edge/Serverless 读多写少场景，与 Drizzle 配合体验极佳，单文件部署无连接池开销
+- **Neon**：Serverless Postgres 首选，存储计算分离自动扩缩容，适合传统后端上云
+- **PlanetScale**：MySQL 兼容 + Vitess 分片，适合已有 MySQL 生态且需要边缘访问的项目
+- **Supabase**：PostgreSQL + 实时订阅 + Auth + Storage，全栈 Firebase 替代方案
+- **Cloudflare D1**：深度绑定 Cloudflare Workers，最简单的全球 SQLite，适合 CF 生态内的轻量应用
+
+---
+
+### 5.2 better-sqlite3
 
 | 属性 | 详情 |
 |------|------|
@@ -787,15 +857,15 @@ insertMany([
 
 ---
 
-### 5.2 libsql
+### 5.3 libsql / Turso
 
 | 属性 | 详情 |
 |------|------|
 | **名称** | libsql |
 | **Stars** | ⭐ 3,000+ |
 | **GitHub** | [tursodatabase/libsql](https://github.com/tursodatabase/libsql) |
-| **官网** | [turso.tech/libsql](https://turso.tech/libsql) |
-| **npm** | `libsql` |
+| **官网** | [turso.tech](https://turso.tech) |
+| **npm** | `@libsql/client` |
 | **许可证** | MIT |
 
 **一句话描述**：Turso 提供的 SQLite 分支，专为现代应用设计，支持边缘复制和加密。
@@ -842,9 +912,9 @@ console.log(result.rows)
 
 | 数据库 | 推荐库 |
 |--------|--------|
-| PostgreSQL | Prisma、Drizzle ORM、pg |
-| MySQL | Prisma、Drizzle ORM、mysql2 |
-| SQLite | better-sqlite3、libsql、Drizzle ORM |
+| PostgreSQL | Prisma 7、Drizzle ORM、pg |
+| MySQL | Prisma 7、Drizzle ORM、mysql2 |
+| SQLite | Drizzle ORM、libsql、better-sqlite3 |
 | MongoDB | Mongoose、Prisma |
 | Redis | ioredis |
 
@@ -852,22 +922,37 @@ console.log(result.rows)
 
 | 场景 | 推荐库 |
 |------|--------|
-| 现代全栈 TypeScript | Prisma、Drizzle ORM |
-| 企业级大型应用 | TypeORM、MikroORM |
-| Serverless/Edge | Drizzle ORM、libsql、@planetscale/database |
+| 现代全栈 TypeScript (2026新项目) | **Prisma 7** 或 **Drizzle ORM** |
+| Serverless/Edge | **Drizzle ORM** + **Turso/D1/Neon** |
+| 性能敏感 / 极小体积 | **Drizzle ORM** |
+| 复杂数据权限 (SaaS/多租户) | **ZenStack** + **Prisma 7** |
 | SQL 灵活性优先 | Knex.js、Kysely |
-| 轻量级/嵌入式 | better-sqlite3 |
+| 轻量级/嵌入式 | better-sqlite3、libsql |
 | MongoDB 优先 | Mongoose |
+| 复杂领域模型 / Unit of Work | **MikroORM** |
+| 传统后端 / 托管 Postgres | **Prisma 7 + Neon** |
+| 遗留项目维护 | 保持现有 ORM |
+
+### 按部署环境
+
+| 环境 | 推荐组合 |
+|------|----------|
+| Cloudflare Workers | Drizzle ORM + Cloudflare D1 / Turso |
+| Vercel Edge | Drizzle ORM / Prisma 7 + Turso / Neon |
+| AWS Lambda | Prisma 7 / Drizzle ORM + Neon / RDS Proxy |
+| 传统 VPS / K8s | Prisma 7 / Drizzle ORM + PostgreSQL |
+| 复杂领域后端 | MikroORM + PostgreSQL / Turso |
 
 ### 按团队背景
 
 | 团队背景 | 推荐库 |
 |----------|--------|
 | 有 SQL 经验 | Drizzle ORM、Kysely |
-| 有 ORM 经验 | Prisma、TypeORM |
-| 追求开发体验 | Prisma |
+| 有 ORM 经验 | Prisma 7、MikroORM |
+| 追求开发体验 | Prisma 7 |
 | 追求极致类型安全 | Drizzle ORM、Kysely |
-| 从其他语言迁移 | TypeORM（类似 Java Hibernate）|
+| 需要快速安全 CRUD | ZenStack + Prisma 7 |
+| 从其他语言迁移 | Prisma 7（Schema-first）或 Drizzle（SQL-like）|
 
 ---
 
@@ -875,16 +960,20 @@ console.log(result.rows)
 
 - [Prisma 官方文档](https://www.prisma.io/docs)
 - [Drizzle ORM 文档](https://orm.drizzle.team/docs/overview)
+- [ZenStack 文档](https://zenstack.dev/docs)
 - [TypeORM 官方文档](https://typeorm.io)
 - [MikroORM 文档](https://mikro-orm.io/docs)
 - [Knex.js 文档](https://knexjs.org/guide/)
 - [Kysely 文档](https://kysely.dev/docs/intro)
 - [Mongoose 文档](https://mongoosejs.com/docs)
 - [PostgreSQL 官方 Node 驱动](https://node-postgres.com)
-- [JavaScript Rising Stars 2024](https://risingstars.js.org/2024/en)
+- [Turso 文档](https://docs.turso.tech)
+- [Neon 文档](https://neon.tech/docs)
+- [Cloudflare D1 文档](https://developers.cloudflare.com/d1)
+- [JavaScript Rising Stars 2025](https://risingstars.js.org/2025/en)
 
 ---
 
 > 📅 本文档最后更新：2026年4月
 >
-> 💡 提示：Stars 数据会随时间变化，建议查看 GitHub 获取最新数据
+> 💡 提示：Stars 数据会随时间变化，建议查看 GitHub 获取最新数据。TypeORM 与 Sequelize 已进入维护模式，新项目请优先选择 Prisma 7 或 Drizzle ORM。

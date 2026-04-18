@@ -1,0 +1,81 @@
+name: Ecosystem Stats Update
+
+on:
+  schedule:
+    # 每月 1 日 00:00 UTC 运行
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run ecosystem stats script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/update-ecosystem-stats.js
+
+      - name: Check for major/minor version changes
+        id: check_changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node scripts/update-ecosystem-stats.js --check > check_output.txt 2>&1
+          cat check_output.txt
+          if grep -q "🚨 重大版本变更:" check_output.txt; then
+            echo "has_major_minor=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_major_minor=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git diff --quiet HEAD -- data/ecosystem-stats.json; then
+            echo "No changes in ecosystem stats"
+            exit 0
+          fi
+
+          BRANCH="bot/update-ecosystem-stats-$(date +%Y%m%d)"
+          git checkout -b "$BRANCH"
+          git add data/ecosystem-stats.json
+          git commit -m "chore: update ecosystem stats ($(date +%Y-%m-%d))"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "chore: 月度生态统计数据更新 ($(date +%Y-%m-%d))" \
+            --body "自动化更新 \`data/ecosystem-stats.json\`" \
+            --label "automation,data-update"
+
+      - name: Create issue for major/minor changes
+        if: steps.check_changes.outputs.has_major_minor == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const checkOutput = fs.readFileSync('check_output.txt', 'utf-8');
+            const majorSection = checkOutput.split('🚨 重大版本变更:')[1]?.split('\n\n')[0] || '';
+            
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `⚠️ 生态包重大版本变更提醒 (${new Date().toISOString().slice(0, 10)})`,
+              body: `检测到以下包发生重大版本变更，请维护者关注：\n\n\`\`\`\n${majorSection.trim()}\n\`\`\`\n\n详情见关联 PR。`,
+              labels: ['automation', 'dependency-alert']
+            });

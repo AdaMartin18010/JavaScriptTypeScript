@@ -19,6 +19,8 @@
 > 📊 技术选型体系：15 个对比矩阵（含包管理器/Monorepo/可观测性/部署平台/CI/CD/浏览器兼容性）、14 大选型决策树、21 个 Mermaid 知识图谱（含 3 个大型知识图谱）
 >
 > 🎓 旗舰文档：[JS_TS_语言语义模型全面分析](./JSTS全景综述/JS_TS_语言语义模型全面分析.md) - 基于 ECMA-2025/2026、TypeScript 5.8–7.0，对齐 Stanford/MIT/CMU/Berkeley/UW 学术课程
+>
+> 🏷️ **项目状态**: v4.0 里程碑 | 持续演进中
 
 ---
 
@@ -69,6 +71,10 @@
 | [🌐 web-apis-guide.md](./docs/guides/web-apis-guide.md) | Web APIs 完全指南 | 全栈开发者 |
 | [🟢 nodejs-core-modules-guide.md](./docs/guides/nodejs-core-modules-guide.md) | Node.js 核心模块指南 | 后端开发者 |
 | [🏗️ categories.md](./docs/categories.md) | 运维与工程基建分类 | 运维工程师 |
+| [🤖 AI Agent 基础设施](./docs/categories/23-ai-agent-infrastructure.md) | MCP / Vercel AI SDK / Mastra 生态导航 | AI 开发者 |
+| [🔐 RSC 安全指南](./docs/guides/rsc-security-guide.md) | React Server Components 安全最佳实践 | 全栈开发者 |
+| [📘 TS 7.0 迁移指南](./docs/guides/typescript-7-migration-guide.md) | TypeScript 7.0 Go 编译器迁移策略 | TS 开发者 |
+| [🔑 better-auth 专题](./docs/guides/better-auth-guide.md) | 现代认证方案 better-auth 完整实践 | 后端开发者 |
 | [🤝 CONTRIBUTING.md](./CONTRIBUTING.md) | 贡献指南 | 贡献者 |
 
 ---
@@ -77,12 +83,14 @@
 
 | 指标 | 数量 | 说明 |
 |------|------|------|
-| 文档总数 | 211+ | 涵盖指南、对比矩阵、决策树、知识图谱 |
+| 文档总数 | 220+ | 涵盖指南、对比矩阵、决策树、知识图谱 |
 | 分类文档 | 27 | 按技术领域系统分类 |
 | 对比矩阵 | 15 | 多维度工具/框架横向对比 |
 | 代码模块 | 90+ | jsts-code-lab 可运行示例 |
 | Mermaid 图表 | 21 | 含 3 个大型知识图谱 |
 | 决策树场景 | 14 | 交互式技术选型流程 |
+| AI Agent 模块 | 5+ | MCP / Vercel AI SDK / Mastra 集成 |
+| 现代认证模块 | 3+ | better-auth / Passkeys / OAuth 2.1 |
 
 ---
 
@@ -115,6 +123,8 @@
 | [部署平台对比](./docs/comparison-matrices/deployment-platforms-compare.md) | Vercel / Netlify / AWS / Fly.io / Railway |
 | [CI/CD 工具对比](./docs/comparison-matrices/ci-cd-tools-compare.md) | GitHub Actions / GitLab CI / CircleCI / Jenkins |
 | [浏览器兼容性对比](./docs/comparison-matrices/browser-compatibility-compare.md) | 现代浏览器特性支持矩阵 |
+| [AI 框架选型](./docs/decision-trees.md) | Vercel AI SDK / LangChain / Mastra / MCP 对比 |
+| [认证方案选型](./docs/decision-trees.md) | better-auth / NextAuth / Passkeys / OAuth 2.1 对比 |
 
 ### 决策树清单
 
@@ -134,6 +144,8 @@
 | [CSS 方案选型](./docs/decision-trees.md) | Tailwind/CSS-in-JS/原子化 |
 | [运行时选型](./docs/decision-trees.md) | Node.js/Deno/Bun |
 | [CI/CD 选型](./docs/decision-trees.md) | GitHub Actions/GitLab CI 等 |
+| [AI 框架选型](./docs/decision-trees.md) | LLM SDK / Agent 框架 / MCP 工具选择 |
+| [认证方案选型](./docs/decision-trees.md) | 现代认证方案（better-auth / Passkeys / OAuth 2.1） |
 
 ---
 
@@ -141,7 +153,7 @@
 
 本项目收录的资源需满足以下条件：
 
-- ⭐ **GitHub Stars > 1000**（特殊优秀项目除外）
+- ⭐ **GitHub Stars > 1000**（特殊优秀项目除外；对爆发性新技术如 MCP，Stars 门槛可适度放宽至 300+）
 - 🔄 **活跃维护**：最近 6 个月内有更新
 - 📘 **TypeScript 支持**：原生支持或提供类型定义
 - ✅ **生产就绪**：有实际生产环境使用案例
