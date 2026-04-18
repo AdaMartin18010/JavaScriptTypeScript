@@ -3,47 +3,49 @@
  * @category Advanced Compiler Workshop → Milestone 5 → Tests
  *
  * 使用 Vitest 的 expectTypeOf 进行编译时类型断言。
+ * 本文件验证 solutions/ 目录中参考答案的正确性。
+ * 学员完成 challenges/ 中的题目后，可替换 import 路径验证自己的实现。
  */
 
 import { describe, it, expectTypeOf } from 'vitest';
 
 // 01. Hello World
-import type { HelloWorld } from './challenges/01-hello-world.js';
+import type { HelloWorld } from './solutions/01-hello-world.js';
 
 // 02. Deep Readonly
-import type { DeepReadonly } from './challenges/02-deep-readonly.js';
+import type { DeepReadonly } from './solutions/02-deep-readonly.js';
 
 // 03. Tuple to Union
-import type { TupleToUnion } from './challenges/03-tuple-to-union.js';
+import type { TupleToUnion } from './solutions/03-tuple-to-union.js';
 
 // 04. Chainable Options
-import type { Chainable } from './challenges/04-chainable-options.js';
+import type { Chainable } from './solutions/04-chainable-options.js';
 
 // 05. Tuple Filter
-import type { TupleFilter } from './challenges/05-tuple-filter.js';
+import type { TupleFilter } from './solutions/05-tuple-filter.js';
 
 // 06. Lookup
-import type { LookUp } from './challenges/06-lookup.js';
+import type { LookUp } from './solutions/06-lookup.js';
 
 // 07. Append to Object
-import type { AppendToObject } from './challenges/07-append-to-object.js';
+import type { AppendToObject } from './solutions/07-append-to-object.js';
 
 // 08. Absolute
-import type { Absolute } from './challenges/08-absolute.js';
+import type { Absolute } from './solutions/08-absolute.js';
 
 // 09. String Join
-import type { StringJoin } from './challenges/09-string-join.js';
+import type { StringJoin } from './solutions/09-string-join.js';
 
 // 10. Currying
-import type { Currying } from './challenges/10-currying.js';
+import type { Currying } from './solutions/10-currying.js';
 
 // 11. Type Lookup in Union
-import type { UnionToIntersection, GetOptional } from './challenges/11-type-lookup-in-union.js';
+import type { UnionToIntersection, GetOptional } from './solutions/11-type-lookup-in-union.js';
 
 // 12. JSON Parser Type
-import type { JSONParser } from './challenges/12-json-parser-type.js';
+import type { JSONParser } from './solutions/12-json-parser-type.js';
 
-describe('Type Challenges', () => {
+describe('Type Challenges - Solutions', () => {
   it('01 - HelloWorld', () => {
     expectTypeOf<HelloWorld<string>>().toEqualTypeOf<string>();
     expectTypeOf<HelloWorld<42>>().toEqualTypeOf<42>();
