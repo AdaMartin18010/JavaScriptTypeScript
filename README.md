@@ -14,7 +14,9 @@
 
 > 🚀 精心策划的 JavaScript/TypeScript 生态系统资源列表，涵盖框架、工具、库和最佳实践。
 >
-> 📚 配套代码实验室：[jsts-code-lab](./jsts-code-lab/) - 83+ 模块，744+ TypeScript 文件，从理论到实践的完整实现
+> 📚 配套代码实验室：[jsts-code-lab](./jsts-code-lab/) - 90+ 模块，从理论到实践的完整实现
+>
+> 📊 技术选型体系：15 个对比矩阵（含包管理器/Monorepo/可观测性/部署平台/CI/CD/浏览器兼容性）、14 大选型决策树、21 个 Mermaid 知识图谱（含 3 个大型知识图谱）
 >
 > 🎓 旗舰文档：[JS_TS_语言语义模型全面分析](./JSTS全景综述/JS_TS_语言语义模型全面分析.md) - 基于 ECMA-2025/2026、TypeScript 5.8–7.0，对齐 Stanford/MIT/CMU/Berkeley/UW 学术课程
 
@@ -33,7 +35,7 @@
 │  │ awesome-jsts-       │    │   jsts-code-lab     │    │   学习路径文档   │  │
 │  │   ecosystem         │    │  (代码实验室)        │    │   (Learning     │  │
 │  │                     │    │                     │    │     Paths)      │  │
-│  │ • 生态工具导航       │    │ • 83+ 技术模块       │    │                 │  │
+│  │ • 生态工具导航       │    │ • 90+ 技术模块       │    │                 │  │
 │  │ • 框架对比           │    │ • 280+ TS 实现      │    │ • 初学者路径     │  │
 │  │ • 最佳实践           │    │ • 理论+实践结合      │    │ • 进阶路径       │  │
 │  │ • 资源收录           │    │ • 可运行示例         │    │ • 架构师路径     │  │
@@ -55,15 +57,83 @@
 | 文档 | 描述 | 目标读者 |
 |------|------|----------|
 | [📦 awesome-jsts-ecosystem](./awesome-jsts-ecosystem/) | JS/TS 生态工具导航 | 所有开发者 |
-| [🧪 jsts-code-lab](./jsts-code-lab/) | 代码实验室（83+ 模块） | 实践学习者 |
+| [🧪 jsts-code-lab](./jsts-code-lab/) | 代码实验室（90+ 模块） | 实践学习者 |
 | [📚 jsts-code-lab/CROSS-REFERENCE.md](./jsts-code-lab/CROSS-REFERENCE.md) | 模块交叉引用索引 | 系统学习者 |
 | [📖 GLOSSARY.md](./GLOSSARY.md) | 专业术语表（中英对照） | 所有读者 |
 | [🎓 beginners-path.md](./docs/learning-paths/beginners-path.md) | 初学者学习路径 | 初学者 |
 | [📈 intermediate-path.md](./docs/learning-paths/intermediate-path.md) | 进阶学习路径 | 中级开发者 |
 | [🎯 advanced-path.md](./docs/learning-paths/advanced-path.md) | 架构师学习路径 | 高级开发者 |
-| [📊 comparison-matrices](./docs/comparison-matrices/) | 框架/工具对比矩阵 | 技术选型者 |
-| [🗺️ diagrams](./docs/diagrams/) | Mermaid 图表与知识图谱 | 可视化学习者 |
+| [📊 comparison-matrices](./docs/comparison-matrices/) | 15 个框架/工具对比矩阵 | 技术选型者 |
+| [🌳 技术选型决策树](./docs/decision-trees.md) | 14 大选型场景的决策树 | 技术选型者 |
+| [🗺️ diagrams](./docs/diagrams/) | 21 个 Mermaid 图表与知识图谱 | 可视化学习者 |
+| [🌐 web-apis-guide.md](./docs/guides/web-apis-guide.md) | Web APIs 完全指南 | 全栈开发者 |
+| [🟢 nodejs-core-modules-guide.md](./docs/guides/nodejs-core-modules-guide.md) | Node.js 核心模块指南 | 后端开发者 |
+| [🏗️ categories.md](./docs/categories.md) | 运维与工程基建分类 | 运维工程师 |
 | [🤝 CONTRIBUTING.md](./CONTRIBUTING.md) | 贡献指南 | 贡献者 |
+
+---
+
+## 📈 项目规模概览
+
+| 指标 | 数量 | 说明 |
+|------|------|------|
+| 文档总数 | 211+ | 涵盖指南、对比矩阵、决策树、知识图谱 |
+| 分类文档 | 27 | 按技术领域系统分类 |
+| 对比矩阵 | 15 | 多维度工具/框架横向对比 |
+| 代码模块 | 90+ | jsts-code-lab 可运行示例 |
+| Mermaid 图表 | 21 | 含 3 个大型知识图谱 |
+| 决策树场景 | 14 | 交互式技术选型流程 |
+
+---
+
+## 📊 技术选型体系
+
+本项目提供完整的技术选型支持体系，帮助开发者做出明智的技术决策：
+
+| 资源类型 | 数量 | 说明 |
+|----------|------|------|
+| 对比矩阵 | 15 个 | 多维度工具/框架横向对比 |
+| 决策树 | 14 个场景 | 交互式选型流程图 |
+| 知识图谱 | 21 个图表 | 3 个大型知识图谱 + 18 个专题流程图 |
+
+### 对比矩阵清单
+
+| 矩阵文档 | 对比范围 |
+|----------|----------|
+| [前端框架对比](./docs/comparison-matrices/frontend-frameworks-compare.md) | React / Vue / Svelte / Solid / Angular |
+| [后端框架对比](./docs/comparison-matrices/backend-frameworks-compare.md) | Express / Fastify / NestJS / Koa / Hono / Elysia |
+| [全栈元框架对比](./docs/comparison-matrices/ssr-metaframeworks-compare.md) | Next.js / Nuxt / SvelteKit / Remix / Astro |
+| [构建工具对比](./docs/comparison-matrices/build-tools-compare.md) | Vite / esbuild / swc / Turbopack / Rollup |
+| [JS/TS 编译器对比](./docs/comparison-matrices/js-ts-compilers-compare.md) | tsc / swc / esbuild / Babel |
+| [UI 组件库对比](./docs/comparison-matrices/ui-libraries-compare.md) | Ant Design / MUI / shadcn/ui / Chakra UI 等 |
+| [状态管理对比](./docs/comparison-matrices/state-management-compare.md) | Redux / Zustand / Jotai / Pinia 等 |
+| [测试框架对比](./docs/comparison-matrices/testing-compare.md) | Jest / Vitest / Playwright / Cypress |
+| [ORM 对比](./docs/comparison-matrices/orm-compare.md) | Prisma / TypeORM / Drizzle / Sequelize |
+| [包管理器对比](./docs/comparison-matrices/package-managers-compare.md) | npm / Yarn / pnpm / Bun / Deno |
+| [Monorepo 工具对比](./docs/comparison-matrices/monorepo-tools-compare.md) | Nx / Turborepo / Rush / pnpm workspaces |
+| [可观测性工具对比](./docs/comparison-matrices/observability-tools-compare.md) | Sentry / Datadog / Grafana / Prometheus |
+| [部署平台对比](./docs/comparison-matrices/deployment-platforms-compare.md) | Vercel / Netlify / AWS / Fly.io / Railway |
+| [CI/CD 工具对比](./docs/comparison-matrices/ci-cd-tools-compare.md) | GitHub Actions / GitLab CI / CircleCI / Jenkins |
+| [浏览器兼容性对比](./docs/comparison-matrices/browser-compatibility-compare.md) | 现代浏览器特性支持矩阵 |
+
+### 决策树清单
+
+| 决策树文档 | 覆盖场景 |
+|----------|----------|
+| [UI 库选型](./docs/decision-trees.md) | React/Vue 组件库选择 |
+| [状态管理选型](./docs/decision-trees.md) | 全局/服务端/原子化状态 |
+| [构建工具选型](./docs/decision-trees.md) | 编译器/打包器选择 |
+| [ORM 选型](./docs/decision-trees.md) | SQL/NoSQL/Edge 数据库 |
+| [测试策略选型](./docs/decision-trees.md) | 单元/集成/E2E 测试框架 |
+| [部署平台选型](./docs/decision-trees.md) | 静态/Serverless/容器化 |
+| [包管理器选型](./docs/decision-trees.md) | npm/pnpm/Yarn/Bun/Deno |
+| [Monorepo 选型](./docs/decision-trees.md) | 工具链与 Workspace 方案 |
+| [全栈框架选型](./docs/decision-trees.md) | SSR/SSG/边缘渲染框架 |
+| [实时通信选型](./docs/decision-trees.md) | WebSocket/Socket.io/PartyKit |
+| [认证方案选型](./docs/decision-trees.md) | OAuth/JWT/SSO/无密码 |
+| [CSS 方案选型](./docs/decision-trees.md) | Tailwind/CSS-in-JS/原子化 |
+| [运行时选型](./docs/decision-trees.md) | Node.js/Deno/Bun |
+| [CI/CD 选型](./docs/decision-trees.md) | GitHub Actions/GitLab CI 等 |
 
 ---
 
@@ -2321,7 +2391,7 @@ const products = Array.from({ length: 10 }, () => createProduct())
 
 [jsts-code-lab](./jsts-code-lab/) 是本项目的核心实践部分，包含：
 
-- **83+ 技术模块**：从基础语法到分布式系统
+- **90+ 技术模块**：从基础语法到分布式系统
 - **430+ TypeScript 文件**：完整的类型安全实现
 - **理论 + 实践**：每个模块配有 THEOERY.md 和可运行代码
 - **测试覆盖**：使用 Vitest 进行单元测试
@@ -2840,6 +2910,19 @@ export default defineConfig({
 2. 强制代码审查 + CI 检查
 3. 定期清理无用依赖
 4. 文档即代码 (Docs 应用)
+
+---
+
+## 🆕 最新动态
+
+### v1.3.0 更新要点
+
+- **6 个全新对比矩阵**：包管理器、Monorepo 工具、可观测性工具、部署平台、CI/CD 工具、浏览器兼容性
+- **8 个全新决策树**：覆盖包管理器、Monorepo、全栈框架、实时通信、认证方案、CSS 方案、运行时、CI/CD 选型
+- **3 个大型知识图谱**：语言核心知识图谱、工程实践知识图谱、生态系统全景图谱
+- **2 部全新指南**：[Web APIs 完全指南](./docs/guides/web-apis-guide.md)、[Node.js 核心模块指南](./docs/guides/nodejs-core-modules-guide.md)
+- **5 个运维与工程基建分类**：新增分类体系覆盖部署、监控、安全、性能、工作流
+- **代码实验室扩容**：从 83+ 扩展至 **90+ 技术模块**
 
 ---
 

@@ -1,4 +1,31 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
+// 在 Node 环境中 Mock 浏览器观察器 API
+class MockIntersectionObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+class MockResizeObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+class MockMutationObserver {
+  observe = vi.fn();
+  disconnect = vi.fn();
+  takeRecords = vi.fn().mockReturnValue([]);
+}
+
+beforeEach(() => {
+  (global as any).IntersectionObserver = MockIntersectionObserver;
+  (global as any).ResizeObserver = MockResizeObserver;
+  (global as any).MutationObserver = MockMutationObserver;
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 import {
   fetchWithAbort,
   FetchCancelManager,

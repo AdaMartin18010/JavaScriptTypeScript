@@ -438,7 +438,7 @@ pnpm -r test
 
 ### 相关决策树与对比矩阵
 
-- [Monorepo 工具选型决策树](../../docs/decision-trees.md#8-monorepo-工具选型决策树)
+- Monorepo 工具选型决策树
 - [Monorepo 工具对比矩阵](../comparison-matrices/monorepo-tools-compare.md)
 
 ---

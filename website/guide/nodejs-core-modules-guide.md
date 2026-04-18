@@ -2037,9 +2037,9 @@ Atomics.compareExchange(view, 0, 100, 200); // CAS
 
 ## 相关资源
 
-- [后端框架分类](../categories/14-backend-frameworks.md) — 基于 Node.js 的后端框架选型
-- [ORM 与数据库分类](../categories/11-orm-database.md) — 数据库操作层工具
-- [部署与托管平台分类](../categories/26-deployment-hosting.md) — Node.js 应用部署目标
+- [后端框架分类](../categories/backend-frameworks) — 基于 Node.js 的后端框架选型
+- [ORM 与数据库分类](../categories/orm-database) — 数据库操作层工具
+- [部署与托管平台分类](../categories/deployment-hosting) — Node.js 应用部署目标
 - [CI/CD 工具对比矩阵](../comparison-matrices/ci-cd-tools-compare.md) — 自动化构建与部署流水线
 
 ---

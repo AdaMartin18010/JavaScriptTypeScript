@@ -54,6 +54,8 @@
 | 前端框架对比 | ./docs/categories/01-frontend-frameworks.md | React/Vue/Angular/Svelte 对比 | 2星 |
 | Web APIs 完全指南 | ./docs/guides/web-apis-guide.md | DOM/Fetch/Streams/Canvas/Service Worker 等系统梳理 | 2星 |
 | Node.js 核心模块指南 | ./docs/guides/nodejs-core-modules-guide.md | fs/http/crypto/stream/events 等内置模块详解 | 2星 |
+| Web APIs 实战实验室 | ./jsts-code-lab/90-web-apis-lab/ | Fetch/Streams/Service Worker/Observer 可运行代码 | 3星 |
+| Node.js 核心模块实验室 | ./jsts-code-lab/91-nodejs-core-lab/ | fs/http/crypto/stream 核心模块可运行代码 | 3星 |
 
 ### 2.2 并发模型
 
@@ -146,6 +148,8 @@
 | 可观测性 | ./jsts-code-lab/74-observability/ | 日志、指标、链路追踪 | 3星 |
 | 混沌工程 | ./jsts-code-lab/75-chaos-engineering/ | 故障注入、韧性测试 | 4星 |
 | Serverless | ./jsts-code-lab/31-serverless/ | FaaS、BaaS、冷启动优化 | 3星 |
+| 可观测性实战实验室 | ./jsts-code-lab/92-observability-lab/ | 结构化日志/错误上报/Web Vitals 采集 | 3星 |
+| 部署与边缘计算实验室 | ./jsts-code-lab/93-deployment-edge-lab/ | Cloudflare Workers/Vercel Edge/Docker 优化 | 3星 |
 
 ---
 
@@ -265,6 +269,14 @@
 | 语言核心知识图谱 | ./docs/diagrams/language-core-knowledge-graph.mmd | ES/TS类型系统/运行时/编译/形式化理论关联网络 |
 | 生态全景图谱 | ./docs/diagrams/ecosystem-landscape-graph.mmd | 前端/后端/工具链/部署/AI 14大领域生态关联图 |
 | 工程实践图谱 | ./docs/diagrams/engineering-practices-graph.mmd | 设计模式/架构/性能/安全/测试/DevOps 实践网络 |
+
+### 7.5 实战示例项目
+
+| 项目 | 路径 | 描述 |
+|------|------|------|
+| 全栈 SaaS Monorepo | ./examples/monorepo-fullstack-saas/ | pnpm + Turborepo + Next.js + NestJS + Prisma |
+| 边缘可观测性 Starter | ./examples/edge-observability-starter/ | Hono + Sentry + 结构化日志 + JWT 边缘验证 |
+| Node.js API 安全 Boilerplate | ./examples/nodejs-api-security-boilerplate/ | Fastify + Helmet + Zod + pino + Passkeys |
 
 ---
 
@@ -393,7 +405,7 @@
 
 | 类别 | 数量 | 占比 |
 |------|------|------|
-| jsts-code-lab 模块 | 89 | 48% |
+| jsts-code-lab 模块 | 93 | 48% |
 | docs/categories 分类 | 26 | 12% |
 | docs/comparison-matrices 对比 | 15 | 6% |
 | docs/diagrams 图表 | 21 | 10% |
@@ -411,7 +423,7 @@
 | 智能层 (50-69) | 50-69 | 20 |
 | 系统层 (70-89) | 70-89 | 21 |
 | 其他 | - | 12 |
-| **小计** | | **89** |
+| **小计** | | **93** |
 
 ### 10.3 理论文档清单
 

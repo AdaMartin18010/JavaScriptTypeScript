@@ -1,0 +1,129 @@
+{
+  "generatedAt": "2026-04-18T20:51:19.526Z",
+  "dryRun": false,
+  "targetMatrix": "orm",
+  "stats": {
+    "totalTools": 11,
+    "successStars": 3,
+    "successNpm": 3,
+    "skipped": 8,
+    "failStars": 0,
+    "failNpm": 0
+  },
+  "data": {
+    "deployment-platforms-compare.md": [
+      {
+        "tool": "Vercel",
+        "repo": null,
+        "npmPackage": null,
+        "stars": null,
+        "starsError": "no repo mapping",
+        "weeklyDownloads": null,
+        "npmError": "no npm mapping",
+        "updatedAt": "2026-04-18T20:51:13.278Z"
+      },
+      {
+        "tool": "Netlify",
+        "repo": null,
+        "npmPackage": null,
+        "stars": null,
+        "starsError": "no repo mapping",
+        "weeklyDownloads": null,
+        "npmError": "no npm mapping",
+        "updatedAt": "2026-04-18T20:51:13.278Z"
+      },
+      {
+        "tool": "Cloudflare Pages+Workers",
+        "repo": null,
+        "npmPackage": null,
+        "stars": null,
+        "starsError": "no repo mapping",
+        "weeklyDownloads": null,
+        "npmError": "no npm mapping",
+        "updatedAt": "2026-04-18T20:51:13.278Z"
+      },
+      {
+        "tool": "AWS Amplify",
+        "repo": null,
+        "npmPackage": null,
+        "stars": null,
+        "starsError": "no repo mapping",
+        "weeklyDownloads": null,
+        "npmError": "no npm mapping",
+        "updatedAt": "2026-04-18T20:51:13.278Z"
+      },
+      {
+        "tool": "Render",
+        "repo": null,
+        "npmPackage": null,
+        "stars": null,
+        "starsError": "no repo mapping",
+        "weeklyDownloads": null,
+        "npmError": "no npm mapping",
+        "updatedAt": "2026-04-18T20:51:13.278Z"
+      },
+      {
+        "tool": "Fly.io",
+        "repo": null,
+        "npmPackage": null,
+        "stars": null,
+        "starsError": "no repo mapping",
+        "weeklyDownloads": null,
+        "npmError": "no npm mapping",
+        "updatedAt": "2026-04-18T20:51:13.278Z"
+      },
+      {
+        "tool": "Railway",
+        "repo": null,
+        "npmPackage": null,
+        "stars": null,
+        "starsError": "no repo mapping",
+        "weeklyDownloads": null,
+        "npmError": "no npm mapping",
+        "updatedAt": "2026-04-18T20:51:13.278Z"
+      },
+      {
+        "tool": "Docker+K8s",
+        "repo": null,
+        "npmPackage": null,
+        "stars": null,
+        "starsError": "no repo mapping",
+        "weeklyDownloads": null,
+        "npmError": "no npm mapping",
+        "updatedAt": "2026-04-18T20:51:13.278Z"
+      }
+    ],
+    "orm-compare.md": [
+      {
+        "tool": "Prisma",
+        "repo": "prisma/prisma",
+        "npmPackage": "@prisma/client",
+        "stars": 45777,
+        "starsError": null,
+        "weeklyDownloads": 8798894,
+        "npmError": null,
+        "updatedAt": "2026-04-18T20:51:15.352Z"
+      },
+      {
+        "tool": "Drizzle",
+        "repo": "drizzle-team/drizzle-orm",
+        "npmPackage": "drizzle-orm",
+        "stars": 33914,
+        "starsError": null,
+        "weeklyDownloads": 7319153,
+        "npmError": null,
+        "updatedAt": "2026-04-18T20:51:17.161Z"
+      },
+      {
+        "tool": "TypeORM",
+        "repo": "typeorm/typeorm",
+        "npmPackage": "typeorm",
+        "stars": 36443,
+        "starsError": null,
+        "weeklyDownloads": 4018225,
+        "npmError": null,
+        "updatedAt": "2026-04-18T20:51:19.526Z"
+      }
+    ]
+  }
+}

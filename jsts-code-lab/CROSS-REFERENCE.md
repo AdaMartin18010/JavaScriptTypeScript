@@ -289,10 +289,49 @@
 
 ---
 
+## 📂 模块文件交叉引用
+
+### 90-web-apis-lab: Web APIs Lab
+
+| 文件 | 关联模块 | 关联文档 |
+|------|----------|----------|
+| fetch-advanced.ts | 14-execution-flow | docs/guides/web-apis-guide.md |
+| streams-pipeline.ts | 15-data-flow | docs/guides/web-apis-guide.md |
+| service-worker-cache.ts | 32-edge-computing | docs/guides/web-apis-guide.md |
+| observer-patterns.ts | 50-browser-runtime | docs/guides/web-apis-guide.md |
+
+### 91-nodejs-core-lab: Node.js Core Modules Lab
+
+| 文件 | 关联模块 | 关联文档 |
+|------|----------|----------|
+| fs-patterns.ts | 12-package-management | docs/guides/nodejs-core-modules-guide.md |
+| http-server-patterns.ts | 19-backend-development | docs/guides/nodejs-core-modules-guide.md |
+| crypto-patterns.ts | 21-api-security | docs/guides/nodejs-core-modules-guide.md |
+| stream-pipeline.ts | 14-execution-flow | docs/guides/nodejs-core-modules-guide.md |
+
+### 92-observability-lab: Observability Lab
+
+| 文件 | 关联模块 | 关联文档 |
+|------|----------|----------|
+| structured-logger.ts | 74-observability | docs/categories/23-error-monitoring-logging.md |
+| error-reporter.ts | 38-web-security | docs/categories/23-error-monitoring-logging.md |
+| performance-observer.ts | 08-performance | docs/categories/23-error-monitoring-logging.md |
+
+### 93-deployment-edge-lab: Deployment & Edge Computing Lab
+
+| 文件 | 关联模块 | 关联文档 |
+|------|----------|----------|
+| cloudflare-worker.ts | 32-edge-computing | docs/categories/26-deployment-hosting.md |
+| vercel-edge-config.ts | 31-serverless | docs/categories/26-deployment-hosting.md |
+| docker-optimize.ts | 22-deployment-devops | docs/categories/26-deployment-hosting.md |
+
+---
+
 ## 📝 更新日志
 
 | 日期 | 更新内容 |
 |------|----------|
+| 2026-04-19 | 新增 90-web-apis-lab、91-nodejs-core-lab、92-observability-lab、93-deployment-edge-lab 模块交叉引用 |
 | 2026-04-17 | 新增 ECMAScript 2025/2026、JS/TS 语义对比、共识算法、形式化验证模块的交叉引用 |
 | 2026-04-04 | 创建初始交叉引用文档，包含模块关系图、依赖矩阵和学习路径 |
 

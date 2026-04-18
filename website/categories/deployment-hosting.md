@@ -400,7 +400,7 @@
 
 ### 相关决策树与对比矩阵
 
-- [部署平台选型决策树](../../docs/decision-trees.md#9-部署平台选型决策树)
+- 部署平台选型决策树
 - [部署平台对比矩阵](../comparison-matrices/deployment-platforms-compare.md)
 
 ---

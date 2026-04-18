@@ -12,10 +12,10 @@
 
 | 类别 | 数量 |
 |------|------|
-| TypeScript 模块源码 | ~340 |
-| 测试文件 | ~250 |
-| 其他（入口/配置/共享） | ~20 |
-| **总计** | **~610** |
+| TypeScript 模块源码 | ~362 |
+| 测试文件 | ~254 |
+| 其他（入口/配置/共享） | ~24 |
+| **总计** | **~640** |
 
 ### 模块覆盖
 
@@ -100,6 +100,10 @@
 ✅ 87-realtime-analytics       2 文件  🌱
 ✅ 88-lowcode-platform         2 文件  🌱
 ✅ 89-autonomous-systems       2 文件  🌱
+✅ 90-web-apis-lab             8 文件  🌿
+✅ 91-nodejs-core-lab          8 文件  🌿
+✅ 92-observability-lab        7 文件  🌿
+✅ 93-deployment-edge-lab      7 文件  🌿
 ✅ playground                  1 文件
 ✅ shared                      4 文件
 ✅ tests                      10 文件
@@ -147,4 +151,4 @@ pnpm benchmark           # JS/TS 性能对比
 
 ---
 
-**状态**: 按模块成熟度分级 | 最后更新: 2026-04-02
+**状态**: 按模块成熟度分级 | 最后更新: 2026-04-19

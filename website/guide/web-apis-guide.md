@@ -3130,8 +3130,8 @@ function watchDynamicContent(container: HTMLElement): () => void {
 ## 相关资源
 
 - [浏览器兼容性矩阵](../comparison-matrices/browser-compatibility-compare.md) — 查看各 Web API 的浏览器支持情况
-- [前端框架分类](../categories/01-frontend-frameworks.md) — 与 DOM 操作紧密相关的前端框架
-- [事件循环详细流程](../../docs/diagrams/event-loop-detailed.mmd) — 理解异步 Web API 的底层机制
+- [前端框架分类](../categories/frontend-frameworks) — 与 DOM 操作紧密相关的前端框架
+- [事件循环详细流程](../diagrams/event-loop-detailed) — 理解异步 Web API 的底层机制
 
 ---
 

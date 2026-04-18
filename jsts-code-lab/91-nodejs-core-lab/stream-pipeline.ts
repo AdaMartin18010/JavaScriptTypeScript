@@ -71,7 +71,7 @@ export class CSVParseTransform extends Transform {
       return;
     }
 
-    const cells = line.split(this.delimiter);
+    const cells = line.split(this.delimiter).map((c) => c.trim());
 
     if (!this.headers) {
       this.headers = cells;
