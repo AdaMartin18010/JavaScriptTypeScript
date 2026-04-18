@@ -26,3 +26,6 @@ description: JavaScript/TypeScript 生态系统相关的架构图、流程图和
 - [TypeScript 类型系统层次结构](./type-system-hierarchy)
 - [TypeScript 编译器架构](./typescript-compiler-architecture)
 - [Webpack 构建流程](./webpack-build-flow)
+- [语言核心知识图谱](./language-core-knowledge-graph)
+- [生态全景图谱](./ecosystem-landscape-graph)
+- [工程实践图谱](./engineering-practices-graph)

@@ -31,6 +31,14 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '迁移指南合集', link: '/guide/migration-guides' },
         { text: 'TanStack Start + Cloudflare 部署指南', link: '/guide/tanstack-start-cloudflare-deployment' },
       ]
+    },
+    {
+      text: '语言核心与运行时',
+      collapsed: false,
+      items: [
+        { text: 'Web APIs 完全指南', link: '/guide/web-apis-guide' },
+        { text: 'Node.js 核心模块指南', link: '/guide/nodejs-core-modules-guide' },
+      ]
     }
   ],
 
@@ -93,6 +101,17 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '🔷 WebAssembly', link: '/categories/webassembly' },
         { text: '🚀 TanStack Start', link: '/categories/tanstack-start' },
       ]
+    },
+    {
+      text: '🔩 运维与工程基建',
+      collapsed: false,
+      items: [
+        { text: '🔍 错误监控与日志', link: '/categories/error-monitoring-logging' },
+        { text: '🔄 CI/CD 与 DevOps', link: '/categories/ci-cd-devops' },
+        { text: '📦 Monorepo 工具', link: '/categories/monorepo-tools' },
+        { text: '🚀 部署与托管平台', link: '/categories/deployment-hosting' },
+        { text: '🛡️ 安全与合规', link: '/categories/security-compliance' },
+      ]
     }
   ],
 
@@ -112,6 +131,12 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '🗂️ 状态管理对比', link: '/comparison-matrices/state-management-compare' },
         { text: '🧪 测试工具对比', link: '/comparison-matrices/testing-compare' },
         { text: '🎨 UI 库对比', link: '/comparison-matrices/ui-libraries-compare' },
+        { text: '📦 包管理器对比', link: '/comparison-matrices/package-managers-compare' },
+        { text: '📦 Monorepo 工具对比', link: '/comparison-matrices/monorepo-tools-compare' },
+        { text: '🔍 可观测性工具对比', link: '/comparison-matrices/observability-tools-compare' },
+        { text: '🚀 部署平台对比', link: '/comparison-matrices/deployment-platforms-compare' },
+        { text: '🔄 CI/CD 工具对比', link: '/comparison-matrices/ci-cd-tools-compare' },
+        { text: '🌐 浏览器兼容性矩阵', link: '/comparison-matrices/browser-compatibility-compare' },
       ]
     }
   ],
@@ -179,6 +204,9 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: 'TS 编译器架构', link: '/diagrams/typescript-compiler-architecture' },
         { text: '类型系统层次', link: '/diagrams/type-system-hierarchy' },
         { text: 'Webpack 构建流程', link: '/diagrams/webpack-build-flow' },
+        { text: '语言核心知识图谱', link: '/diagrams/language-core-knowledge-graph' },
+        { text: '生态全景图谱', link: '/diagrams/ecosystem-landscape-graph' },
+        { text: '工程实践图谱', link: '/diagrams/engineering-practices-graph' },
       ]
     }
   ],

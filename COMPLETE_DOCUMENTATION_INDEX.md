@@ -1,6 +1,6 @@
 # JavaScript/TypeScript 全景知识库 - 完整文档索引
 
-> **版本**: v1.2.0 | **最后更新**: 2026-04-17 | **维护状态**: 活跃维护
+> **版本**: v1.3.0 | **最后更新**: 2026-04-19 | **维护状态**: 活跃维护
 
 ---
 
@@ -52,6 +52,8 @@
 | 浏览器运行时理论 | ./jsts-code-lab/50-browser-runtime/THEORY.md | V8引擎、渲染管线、内存管理 | 3星 |
 | Web 渲染优化 | ./jsts-code-lab/52-web-rendering/ | 重绘、回流、合成优化 | 3星 |
 | 前端框架对比 | ./docs/categories/01-frontend-frameworks.md | React/Vue/Angular/Svelte 对比 | 2星 |
+| Web APIs 完全指南 | ./docs/guides/web-apis-guide.md | DOM/Fetch/Streams/Canvas/Service Worker 等系统梳理 | 2星 |
+| Node.js 核心模块指南 | ./docs/guides/nodejs-core-modules-guide.md | fs/http/crypto/stream/events 等内置模块详解 | 2星 |
 
 ### 2.2 并发模型
 
@@ -111,6 +113,12 @@
 | 测试工具对比 | ./docs/categories/12-testing.md | Jest/Vitest/Playwright | 2星 |
 | 测试对比矩阵 | ./docs/comparison-matrices/testing-compare.md | 测试框架详细对比 | 2星 |
 | JS/TS 编译器对比矩阵 | ./docs/comparison-matrices/js-ts-compilers-compare.md | tsc/Babel/SWC/esbuild/Rolldown/tsgo 语义差异 | 3星 |
+| 包管理器对比矩阵 | ./docs/comparison-matrices/package-managers-compare.md | npm/yarn/pnpm/Bun/Deno 对比 | 2星 |
+| Monorepo 工具对比矩阵 | ./docs/comparison-matrices/monorepo-tools-compare.md | Turborepo/Nx/Rush/Bit/Bazel 对比 | 2星 |
+| 可观测性工具对比矩阵 | ./docs/comparison-matrices/observability-tools-compare.md | Sentry/Datadog/winston/pino 监控日志对比 | 2星 |
+| 部署平台对比矩阵 | ./docs/comparison-matrices/deployment-platforms-compare.md | Vercel/Netlify/Cloudflare/AWS 等部署目标对比 | 2星 |
+| CI/CD 工具对比矩阵 | ./docs/comparison-matrices/ci-cd-tools-compare.md | GitHub Actions/GitLab CI/Jenkins 等对比 | 2星 |
+| 浏览器兼容性矩阵 | ./docs/comparison-matrices/browser-compatibility-compare.md | ES2020-ES2025 + Web API 兼容性 + polyfill | 2星 |
 
 ### 4.2 安全
 
@@ -233,6 +241,12 @@
 | ORM对比 | ./docs/comparison-matrices/orm-compare.md | ORM选型决策矩阵 |
 | 状态管理对比 | ./docs/comparison-matrices/state-management-compare.md | 状态管理方案对比 |
 | UI库对比 | ./docs/comparison-matrices/ui-libraries-compare.md | UI组件库对比 |
+| 包管理器对比 | ./docs/comparison-matrices/package-managers-compare.md | npm/yarn/pnpm/Bun/Deno 包管理器对比 |
+| Monorepo工具对比 | ./docs/comparison-matrices/monorepo-tools-compare.md | Turborepo/Nx/Rush/Bit/Bazel 对比 |
+| 可观测性工具对比 | ./docs/comparison-matrices/observability-tools-compare.md | Sentry/Datadog/winston/pino 监控日志对比 |
+| 部署平台对比 | ./docs/comparison-matrices/deployment-platforms-compare.md | Vercel/Netlify/Cloudflare/AWS 等部署目标对比 |
+| CI/CD工具对比 | ./docs/comparison-matrices/ci-cd-tools-compare.md | GitHub Actions/GitLab CI/Jenkins 等对比 |
+| 浏览器兼容性矩阵 | ./docs/comparison-matrices/browser-compatibility-compare.md | ES2020-ES2025 + Web API 兼容性 + polyfill |
 
 ### 7.4 架构与知识图谱
 
@@ -248,6 +262,9 @@
 | JWT认证流程 | ./docs/diagrams/jwt-authentication-flow.mmd | Token认证时序图 |
 | CI/CD流水线 | ./docs/diagrams/ci-cd-pipeline.mmd | 持续集成部署流程 |
 | 模块解析流程 | ./docs/diagrams/module-resolution-flow.mmd | Node.js模块加载机制 |
+| 语言核心知识图谱 | ./docs/diagrams/language-core-knowledge-graph.mmd | ES/TS类型系统/运行时/编译/形式化理论关联网络 |
+| 生态全景图谱 | ./docs/diagrams/ecosystem-landscape-graph.mmd | 前端/后端/工具链/部署/AI 14大领域生态关联图 |
+| 工程实践图谱 | ./docs/diagrams/engineering-practices-graph.mmd | 设计模式/架构/性能/安全/测试/DevOps 实践网络 |
 
 ---
 
@@ -332,6 +349,12 @@
 | 如何选型构建工具？ | ./docs/comparison-matrices/build-tools-compare.md |
 | 如何选型 JS/TS 编译器/转译器？ | ./docs/comparison-matrices/js-ts-compilers-compare.md |
 | 如何选型测试框架？ | ./docs/comparison-matrices/testing-compare.md |
+| 如何选型包管理器？ | ./docs/comparison-matrices/package-managers-compare.md |
+| 如何选型 Monorepo 工具？ | ./docs/comparison-matrices/monorepo-tools-compare.md |
+| 如何选型可观测性工具？ | ./docs/comparison-matrices/observability-tools-compare.md |
+| 如何选型部署平台？ | ./docs/comparison-matrices/deployment-platforms-compare.md |
+| 如何选型 CI/CD 工具？ | ./docs/comparison-matrices/ci-cd-tools-compare.md |
+| 浏览器兼容性如何？ | ./docs/comparison-matrices/browser-compatibility-compare.md |
 
 ### 9.3 按复杂度分级
 
@@ -371,13 +394,13 @@
 | 类别 | 数量 | 占比 |
 |------|------|------|
 | jsts-code-lab 模块 | 89 | 48% |
-| docs/categories 分类 | 21 | 11% |
-| docs/comparison-matrices 对比 | 9 | 5% |
-| docs/diagrams 图表 | 17 | 9% |
+| docs/categories 分类 | 26 | 12% |
+| docs/comparison-matrices 对比 | 15 | 6% |
+| docs/diagrams 图表 | 21 | 10% |
 | docs/learning-paths 路径 | 3 | 2% |
 | docs/guides 指南 | 1 | 1% |
 | 根目录及辅助文档 | 46 | 25% |
-| **总计** | **186** | **100%** |
+| **总计** | **211** | **100%** |
 
 ### 10.2 代码实验室模块分布
 
@@ -404,6 +427,16 @@
 ---
 
 ## 11. 更新日志
+
+### v1.3.0 (2026-04-19)
+
+- **新增 6 大对比矩阵**：包管理器、Monorepo工具、可观测性工具、部署平台、CI/CD工具、浏览器兼容性矩阵
+- **决策树体系扩展至 14 个场景**：新增包管理器、Monorepo、部署平台、监控可观测性、CI/CD、Web API技术、认证方案、数据存储 8 大选型决策树
+- **新增 3 大知识图谱**（433节点）：语言核心知识图谱、生态全景图谱、工程实践图谱
+- **补齐语言核心深度文档**：Web APIs 完全指南（3131行）、Node.js 核心模块指南（2039行）
+- **补齐 5 大缺失领域生态盘点**：错误监控与日志、CI/CD与DevOps、Monorepo工具、部署与托管平台、安全与合规
+- **VitePress 站点导航同步**：侧边栏新增"语言核心与运行时"、"运维与工程基建"分组，对比矩阵与架构图全部接入
+- **完整文档索引更新**：文档总数从 186 增至 211，分类从 21 扩至 26，对比矩阵从 9 扩至 15
 
 ### v1.2.0 (2026-04-17)
 

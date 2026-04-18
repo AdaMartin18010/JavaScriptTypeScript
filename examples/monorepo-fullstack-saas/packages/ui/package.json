@@ -1,0 +1,24 @@
+{
+  "name": "@saas/ui",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0-rc",
+    "react-dom": ">=19.0.0-rc"
+  },
+  "devDependencies": {
+    "@saas/eslint-config": "workspace:*",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5.6.3",
+    "tailwindcss": "^3.4.14"
+  }
+}
