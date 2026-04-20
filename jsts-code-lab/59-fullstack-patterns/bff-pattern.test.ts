@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { BffService, ApiGateway, RequestContext } from './bff-pattern'
+import { BffService, RequestContext } from './bff-pattern'
+import { ApiGateway } from './api-gateway'
 
 describe('BFF Pattern', () => {
   const createContext = (device: RequestContext['device']): RequestContext => ({

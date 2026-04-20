@@ -61,6 +61,7 @@
 ```
 
 **角色定义**：
+
 - **Host**: 运行 AI 的应用程序，负责协调模型与客户端
 - **Client**: Host 内的 MCP 连接管理器，维护与 Server 的传输连接
 - **Server**: 提供工具、资源、提示模板的独立进程/服务
@@ -88,16 +89,16 @@ class McpServer {
   private tools = new Map()
   private resources = new Map()
   private prompts = new Map()
-  
+
   registerTool(name: string, schema: object, handler: Function) {
     this.tools.set(name, { schema, handler })
   }
-  
+
   start() {
     const rl = createInterface({ input: process.stdin, output: process.stdout })
     rl.on('line', (line) => this.handleMessage(JSON.parse(line)))
   }
-  
+
   private handleMessage(req: any) {
     switch (req.method) {
       case 'initialize':
@@ -113,7 +114,7 @@ class McpServer {
         break
     }
   }
-  
+
   private sendResponse(id: string, result: any) {
     console.log(JSON.stringify({ jsonrpc: '2.0', id, result }))
   }
@@ -152,7 +153,7 @@ server.registerTool({
   if (!sanitized.startsWith('select')) {
     throw new Error('仅允许只读查询 (SELECT)')
   }
-  
+
   const results = await db.query(args.sql, { limit: args.limit || 100 })
   return JSON.stringify(results, null, 2)
 })
@@ -268,18 +269,18 @@ const client = new Client({ name: 'nextjs-app', version: '1.0.0' })
 
 export async function POST(req: Request) {
   const { message } = await req.json()
-  
+
   await client.connect(transport)
-  
+
   // 获取上下文资源
   const resources = await client.listResources()
   const context = await Promise.all(
     resources.resources.map(r => client.readResource({ uri: r.uri }))
   )
-  
+
   // 调用工具辅助推理
   const tools = await client.listTools()
-  
+
   // 发送到 AI 模型（伪代码）
   const response = await aiModel.complete({
     messages: [
@@ -287,7 +288,7 @@ export async function POST(req: Request) {
       { role: 'user', content: message }
     ]
   })
-  
+
   return Response.json({ reply: response })
 }
 ```
@@ -414,6 +415,7 @@ npx @anthropics/mcp-inspector node ./my-server.ts
 ```
 
 Inspector 提供：
+
 - 工具列表与在线测试
 - 资源浏览
 - 原始 JSON-RPC 消息查看
@@ -430,12 +432,12 @@ describe('MCP Server', () => {
     const server = new McpServer('test', '1.0.0')
     server.registerTool({ name: 'test_tool', description: 'Test', inputSchema: { type: 'object' } },
       () => 'ok')
-    
+
     const tools = server.listTools()
     expect(tools).toHaveLength(1)
     expect(tools[0].name).toBe('test_tool')
   })
-  
+
   it('should validate tool arguments', async () => {
     const server = new McpServer('test', '1.0.0')
     server.registerTool({
@@ -447,7 +449,7 @@ describe('MCP Server', () => {
         required: ['a', 'b']
       }
     }, (args: { a: number; b: number }) => args.a + args.b)
-    
+
     await expect(server.callTool('calculate', { a: 1 }))
       .rejects.toThrow('Missing required parameter: b')
   })
@@ -470,5 +472,5 @@ describe('MCP Server', () => {
 > **关联文档**
 >
 > - `jsts-code-lab/94-ai-agent-lab/mcp-server-demo.ts` — 纯 TypeScript MCP Server 实现
-> - [AI Agent 基础设施](../categories/23-ai-agent-infrastructure.md)
+> - [AI Agent 基础设施](/categories/ai-agent-infrastructure)
 > - [AI SDK 指南](./ai-sdk-guide.md)
