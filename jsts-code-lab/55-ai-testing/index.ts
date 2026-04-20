@@ -9,6 +9,8 @@
  * - 覆盖率计算 (CoverageCalculator)
  * - 智能测试选择 (SmartTestSelector)
  * - 模糊测试 (FuzzingGenerator)
+ * - 视觉回归测试 (VisualRegression)
+ * - LLM-as-a-Judge 评估 (LLMAsJudge)
  */
 
 export * as AiTestGenerator from './ai-test-generator.js';
@@ -17,3 +19,5 @@ export * as MutationTesting from './mutation-testing.js';
 export * as CoverageCalculator from './coverage-calculator.js';
 export * as SmartTestSelector from './smart-test-selector.js';
 export * as FuzzingGenerator from './fuzzing-generator.js';
+export * as VisualRegression from './visual-regression.js';
+export * as LLMAsJudge from './llm-as-judge.js';

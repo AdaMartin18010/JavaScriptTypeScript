@@ -1,38 +1,37 @@
 # 后端框架对比矩阵
 
-> 系统对比 Node.js 主流后端框架（Express、Fastify、NestJS、Koa、Hono、Elysia）的性能、架构模式、TypeScript 支持与适用场景。
+> 系统对比主流 Node.js 后端框架的核心特性、性能、生态成熟度与适用场景，帮助你为项目选择最合适的后端框架。
 
 ---
 
 ## 核心指标对比
 
-| 指标 | Express | Fastify | NestJS | Koa | Hono | Elysia |
-|------|---------|---------|--------|-----|------|--------|
-| **发布年份** | 2010 | 2017 | 2017 | 2013 | 2022 | 2023 |
-| **维护方** | OpenJS | OpenJS | 社区 (Kamil Myśliwiec) | Koajs | HonoJS | Elysiajs |
-| **设计哲学** | 极简中间件 | 高性能 + 插件 | 企业级架构 | 下一代中间件 | 超轻量跨运行时 | Bun 原生端到端类型 |
-| **性能 (req/s)** | ~15K | ~50K | ~35K | ~25K | ~70K | ~100K+ |
-| **TypeScript 支持** | 需手动配置 | 极佳（原生） | 极佳（原生） | 需手动配置 | 极佳 | 极佳 |
-| **依赖注入 (DI)** | ❌ | ❌ | ✅ 内置 | ❌ | ❌ | ✅ 轻量 |
-| **装饰器支持** | ❌ | ❌ | ✅ 核心 | ❌ | ❌ | ✅ 核心 |
-| **JSON Schema 验证** | ❌ (需外部) | ✅ 原生 | ⚠️ (需集成) | ❌ | ⚠️ (中间件) | ✅ 原生 |
-| **WebSocket 支持** | ❌ (需 Socket.io) | ⚠️ (插件) | ⚠️ (Gateway) | ❌ | ✅ 原生 | ⚠️ (插件) |
-| **多运行时支持** | Node.js | Node.js | Node.js | Node.js | Node/Bun/Deno/Edge | Bun/Node.js |
-| **学习曲线** | 平缓 | 平缓 | 陡峭 | 中等 | 极平缓 | 平缓 |
-| **企业级采用度** | 极高 | 高 | 高 | 中等 | 快速增长 | 早期采用 |
+| 指标 | Express | NestJS | Fastify | Hono | Elysia | Koa |
+|------|---------|--------|---------|------|--------|-----|
+| **发布年份** | 2010 | 2017 | 2017 | 2021 | 2022 | 2013 |
+| **维护方** | OpenJS Foundation | 社区 (Kamil Mysliwiec) | 社区 (Matteo Collina) | 社区 (Yusuke Wada) | 社区 (saltyaom) | 社区 (Koajs Team) |
+| **架构风格** | 极简中间件 | 企业级模块化 (Angular 风格) | 插件化 + Schema 优先 | 边缘优先 / Web 标准 | 编译时优化 + 类型安全 | 洋葱模型中间件 |
+| **TypeScript 支持** | 需配置 | 原生内置 | 优秀 | 原生内置 | 原生内置 (Bun 优先) | 需配置 |
+| **包体积 (gzip)** | ~570KB | ~580KB | ~180KB | ~15KB | ~20KB | ~80KB |
+| **路由性能** | 中等 | 中等 | 极高 (~2x Express) | 极高 | 极高 (~20x Express) | 中等 |
+| **学习曲线** | 平缓 | 陡峭 | 中等 | 平缓 | 平缓 | 中等 |
+| **企业级生态** | 极强 | 强 | 中等 | 弱 | 弱 | 弱 |
+| **边缘运行支持** | ❌ | ⚠️ (实验性) | ⚠️ | ✅ 核心设计 | ✅ 核心设计 | ❌ |
 
 ---
 
-## 架构模式与中间件模型
+## 功能特性矩阵
 
-| 特性 | Express | Fastify | NestJS | Koa | Hono | Elysia |
-|------|---------|---------|--------|-----|------|--------|
-| **中间件模型** | 回调函数 `(req, res, next)` | 钩子 (Hooks) + 插件 | Express 兼容 + 模块化 | 洋葱模型 (async/await) | 标准 Web API (Request/Response) | 类型推导路由 |
-| **模块化组织** | 手动 Router | 插件封装 | Module + Controller + Service | 手动 Router | 轻量 Router | 类型推导模块 |
-| **ORM 集成** | 任意 | 任意 | Prisma/TypeORM 官方示例 | 任意 | 任意 | 内置类型推导 |
-| **微服务支持** | ❌ | ❌ | ✅ RabbitMQ/Kafka/gRPC | ❌ | ❌ | ❌ |
-| **GraphQL 集成** | ❌ | ❌ | ✅ @nestjs/graphql | ❌ | ❌ | ⚠️ (插件) |
-| **OpenAPI/Swagger** | ❌ (需外部) | ⚠️ (插件) | ✅ @nestjs/swagger | ❌ | ⚠️ (中间件) | ⚠️ (插件) |
+| 特性 | Express | NestJS | Fastify | Hono | Elysia | Koa |
+|------|---------|--------|---------|------|--------|-----|
+| **内置依赖注入** | ❌ | ✅ | ❌ | ❌ | ✅ (编译时) | ❌ |
+| **Schema 验证集成** | ⚠️ (需中间件) | ✅ (class-validator) | ✅ (内置 JSON Schema) | ⚠️ (需中间件) | ✅ (内置) | ⚠️ (需中间件) |
+| **OpenAPI/Swagger** | ⚠️ (第三方) | ✅ (内置 @nestjs/swagger) | ✅ (fastify-swagger) | ⚠️ (第三方) | ⚠️ (第三方) | ⚠️ (第三方) |
+| **GraphQL 支持** | ⚠️ (apollo-server) | ✅ (@nestjs/graphql) | ⚠️ (mercurius) | ❌ | ⚠️ (实验性) | ⚠️ (apollo-server) |
+| **WebSocket 支持** | ⚠️ (socket.io) | ✅ (@nestjs/websockets) | ⚠️ (fastify-websocket) | ⚠️ (第三方) | ✅ (内置) | ⚠️ (第三方) |
+| **gRPC 支持** | ❌ | ✅ (@nestjs/microservices) | ❌ | ❌ | ❌ | ❌ |
+| **Serverless 适配** | ⚠️ | ⚠️ | ✅ | ✅ 核心设计 | ✅ 核心设计 | ⚠️ |
+| **运行时兼容性** | Node.js | Node.js / Bun | Node.js | Node.js / Deno / Bun / CF Workers | Bun (优先) | Node.js |
 
 ---
 
@@ -40,46 +39,14 @@
 
 | 场景 | 首选 | 次选 | 理由 |
 |------|------|------|------|
-| 企业级大型后端系统 | **NestJS** | Fastify | 依赖注入、模块化、微服务、GraphQL 一站式支持 |
-| 极致性能 API | **Elysia** | Fastify / Hono | Bun 运行时 + 编译时优化带来最高吞吐 |
-| 快速原型 / 小型服务 | **Fastify** | Express | 零配置 TS，原生 JSON Schema，开发体验极佳 |
-| 边缘计算 / Serverless | **Hono** | Fastify | 超小包体积，多运行时兼容，Cloudflare Workers 首选 |
-| 传统项目维护 / 招聘友好 | **Express** | Fastify | 生态最成熟，人才储备最大，中间件最多 |
-| 现代化中间件链式控制 | **Koa** | Fastify | 洋葱模型 async/await，错误处理更优雅 |
-| 全栈 TypeScript (Bun 生态) | **Elysia** | Hono | Eden Treaty 实现端到端类型安全 API 调用 |
-
----
-
-## 运行时与部署对比
-
-| 框架 | Node.js | Bun | Deno | Cloudflare Workers | AWS Lambda | Docker |
-|------|---------|-----|------|-------------------|------------|--------|
-| **Express** | ✅ | ✅ | ⚠️ | ❌ | ✅ | ✅ |
-| **Fastify** | ✅ | ✅ | ⚠️ | ❌ | ✅ | ✅ |
-| **NestJS** | ✅ | ⚠️ | ❌ | ❌ | ✅ | ✅ |
-| **Koa** | ✅ | ✅ | ⚠️ | ❌ | ✅ | ✅ |
-| **Hono** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Elysia** | ✅ | ✅ **首选** | ❌ | ⚠️ | ⚠️ | ✅ |
-
----
-
-## 中间件执行模型对比
-
-```mermaid
-flowchart LR
-    subgraph ExpressModel [Express]
-        E1[Middleware 1] --> E2[Middleware 2] --> E3[Route Handler]
-    end
-    subgraph KoaModel [Koa 洋葱模型]
-        K1[Middleware 1 start] --> K2[Middleware 2 start]
-        K2 --> K3[Route Handler]
-        K3 --> K4[Middleware 2 end] --> K5[Middleware 1 end]
-    end
-    subgraph FastifyModel [Fastify 钩子]
-        F1[onRequest] --> F2[preParsing] --> F3[preValidation]
-        F3 --> F4[preHandler] --> F5[Handler] --> F6[onSend] --> F7[onResponse]
-    end
-```
+| 企业级大型后端服务 | **NestJS** | Fastify | 内置 DI、模块化、Swagger、gRPC、微服务全套方案 |
+| 极致性能 API 服务 | **Fastify** | Elysia | JSON Schema 验证 + 极低开销，适合高并发 |
+| 边缘计算 / Serverless | **Hono** | Elysia | 多运行时兼容，Cloudflare Workers / Deno Deploy 原生支持 |
+| Bun 生态优先项目 | **Elysia** | Hono | 编译时类型推导、端到端类型安全、Bun 深度优化 |
+| 快速原型 / 小型项目 | **Express** | Hono | 生态最成熟，文档最丰富，招聘友好 |
+| 中间件-heavy 架构 | **Koa** | Fastify | 洋葱模型优雅处理异步流，适合复杂中间件链 |
+| 全栈 TypeScript (Next.js 后端) | **Next.js API Routes** | NestJS | 前后端同构，减少上下文切换 |
+| 微服务网关 | **NestJS** | Fastify | 内置 TCP / Redis / MQTT / gRPC 微服务传输 |
 
 ---
 
@@ -87,17 +54,19 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    A[选择 Node.js 后端框架] --> B{需要企业级架构/DI/微服务？}
-    B -->|是| C[NestJS]
-    B -->|否| D{部署到边缘/Serverless？}
-    D -->|是| E[Hono]
-    D -->|否| F{使用 Bun 运行时？}
-    F -->|是| G[Elysia]
-    F -->|否| H{追求最高性能？}
-    H -->|是| I[Fastify]
-    H -->|否| J{需要现代化 async/await 中间件？}
-    J -->|是| K[Koa]
-    J -->|否| L[Express]
+    A[选择后端框架] --> B{需要企业级内置功能?}
+    B -->|是| C{需要微服务/ gRPC?}
+    C -->|是| D[NestJS]
+    C -->|否| E[NestJS / Fastify]
+    B -->|否| F{追求极致性能?}
+    F -->|是| G{使用 Bun 运行时?}
+    G -->|是| H[Elysia]
+    G -->|否| I[Fastify]
+    F -->|否| J{需要边缘/ Serverless?}
+    J -->|是| K[Hono]
+    J -->|否| L{团队熟悉度?}
+    L -->|经验丰富| M[Express]
+    L -->|新团队| N[Hono / Fastify]
 ```
 
 ---
@@ -105,6 +74,5 @@ flowchart TD
 > **关联文档**
 >
 > - [ORM 对比](./orm-compare.md)
-> - [测试框架对比](./testing-compare.md)
-> - `docs/categories/14-backend-frameworks.md` — 后端框架生态导航
-> - `jsts-code-lab/19-backend-development/` — 后端开发模式实现
+> - [部署平台对比](./deployment-platforms-compare.md)
+> - `jsts-code-lab/19-backend-development/` — 后端开发模式与示例代码
