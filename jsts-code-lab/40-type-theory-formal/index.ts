@@ -1,5 +1,6 @@
-export * from './00-lambda-calculus/untyped-lambda.js'
-export * from './00-lambda-calculus/simply-typed.js'
-export * from './01-type-inference/hindley-milner.js'
-export * from './02-subtyping/structural-subtyping.js'
-export { typeToString } from './00-lambda-calculus/simply-typed.js'
+/**
+ * @file 类型理论形式化模块入口
+ * @category Type Theory Formal
+ */
+
+export * from './lambda-calculus'

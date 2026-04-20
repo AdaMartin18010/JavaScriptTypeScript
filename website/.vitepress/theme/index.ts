@@ -16,6 +16,9 @@ export default {
       import('./mermaid-enhancer').then(m => {
         // 模块自初始化
       }).catch(() => {})
+      import('./learning-progress').then(m => {
+        // 模块自初始化
+      }).catch(() => {})
     }
   }
 } satisfies Theme

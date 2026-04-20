@@ -276,6 +276,143 @@
   }
 }
 
+/* ========== 学习路径进度条 ========== */
+.learning-progress-bar {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.progress-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--vp-c-text-1);
+}
+
+.progress-percent {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--vp-c-brand-1);
+}
+
+.progress-track {
+  height: 6px;
+  background: var(--vp-c-divider);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--vp-c-brand-3), var(--vp-c-brand-1));
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progress-reset {
+  margin-top: 0.75rem;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  color: var(--vp-c-text-2);
+  background: transparent;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.progress-reset:hover {
+  color: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+}
+
+.section-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5em;
+  height: 1.5em;
+  cursor: pointer;
+}
+
+/* ========== Mermaid 图表增强 ========== */
+.mermaid-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid var(--vp-c-divider);
+}
+
+.mermaid-toolbar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.mermaid-wrapper:hover .mermaid-toolbar {
+  opacity: 1;
+}
+
+.mermaid-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--vp-c-text-2);
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mermaid-btn:hover {
+  color: var(--vp-c-brand-1);
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+}
+
+/* ========== StackBlitz 按钮增强 ========== */
+.sb-action-bar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 12px;
+  border-top: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-soft);
+}
+
+.sb-run-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+  border: 1px solid var(--vp-c-brand-3);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sb-run-btn:hover {
+  background: var(--vp-c-brand-3);
+  color: white;
+}
+
 /* ========== 动画效果 ========== */
 @keyframes fadeInUp {
   from {

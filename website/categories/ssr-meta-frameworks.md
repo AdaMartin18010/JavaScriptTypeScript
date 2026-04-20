@@ -3,6 +3,16 @@ title: SSR / 元框架 (Meta Frameworks)
 description: JavaScript/TypeScript SSR / 元框架 (Meta Frameworks) 完整指南
 ---
 
+## 🧪 关联代码实验室
+
+> **2** 个关联模块 · 平均成熟度：**🌳**
+
+| 模块 | 成熟度 | 实现文件 | 测试文件 |
+|------|--------|----------|----------|
+| [09-real-world-examples](../../jsts-code-lab/09-real-world-examples/) | 🌳 | 7 | 7 |
+| [59-fullstack-patterns](../../jsts-code-lab/59-fullstack-patterns/) | 🌿 | 1 | 1 |
+
+
 
 > 基于主流前端框架构建的全栈开发框架，提供服务端渲染(SSR)、静态站点生成(SSG)、API路由等能力。
 

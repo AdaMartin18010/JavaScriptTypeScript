@@ -3,6 +3,15 @@ title: 前端框架生态库
 description: JavaScript/TypeScript 前端框架生态库 完整指南
 ---
 
+## 🧪 关联代码实验室
+
+> **1** 个关联模块 · 平均成熟度：**🌳**
+
+| 模块 | 成熟度 | 实现文件 | 测试文件 |
+|------|--------|----------|----------|
+| [18-frontend-frameworks](../../jsts-code-lab/18-frontend-frameworks/) | 🌳 | 9 | 3 |
+
+
 
 > 本文档梳理主流前端框架及其生态，数据参考自 GitHub Stars、State of JS 2024 及 JavaScript Rising Stars 2024
 
@@ -43,6 +52,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：用于构建 Web 和原生用户界面的 JavaScript 库，由 Meta 维护。
 
 **核心特点**：
+
 - 声明式编程模型，组件化架构
 - 虚拟 DOM 实现高效渲染
 - Hooks API 简化状态管理
@@ -50,6 +60,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - Server Components (RSC) 支持服务端渲染
 
 **适用场景**：
+
 - 中大型单页应用 (SPA)
 - 需要丰富生态支持的项目
 - 跨平台应用（配合 React Native）
@@ -69,6 +80,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：React 的 DOM 渲染器，负责将 React 组件渲染到浏览器 DOM。
 
 **核心特点**：
+
 - 与 React 核心库分离的渲染层
 - 支持并发渲染 (Concurrent Rendering)
 - 自动批处理状态更新
@@ -89,6 +101,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：使用 React 构建原生移动应用的跨平台框架，一套代码运行 iOS 和 Android。
 
 **核心特点**：
+
 - 真正的原生组件渲染（非 WebView）
 - 热重载 (Hot Reload) 支持
 - 庞大的原生模块生态
@@ -96,6 +109,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 支持桌面端 (Windows、macOS) 和 Web
 
 **适用场景**：
+
 - 跨平台移动应用开发
 - 需要接近原生性能的应用
 - 团队已有 React 技术栈
@@ -116,6 +130,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：React 的轻量级替代方案，体积仅 3KB，API 完全兼容 React。
 
 **核心特点**：
+
 - 极小的包体积（3KB gzipped）
 - 与 React API 高度兼容
 - 出色的性能表现
@@ -123,6 +138,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 可通过 preact/compat 直接使用 React 生态
 
 **适用场景**：
+
 - 对包体积敏感的项目
 - 嵌入式组件/widget
 - 性能优先的轻量级应用
@@ -143,6 +159,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：React 的全栈框架，提供服务端渲染、静态生成和 App Router 路由系统。
 
 **核心特点**：
+
 - React Server Components (RSC) 支持
 - 基于文件系统的 App Router
 - 服务端渲染 (SSR) 和静态站点生成 (SSG)
@@ -151,6 +168,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 与 Vercel 平台深度集成
 
 **适用场景**：
+
 - 需要 SEO 的 React 应用
 - 全栈 React 项目
 - 电商平台和内容网站
@@ -172,6 +190,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：渐进式 JavaScript 框架，Vue 3 引入 Composition API 提供更灵活的逻辑复用。
 
 **核心特点**：
+
 - Composition API：更灵活的逻辑组合
 - 响应式系统基于 Proxy，性能更好
 - 更好的 TypeScript 支持
@@ -179,6 +198,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - Vite 作为官方构建工具
 
 **适用场景**：
+
 - 中小型到大型应用
 - 渐进式升级现有项目
 - 需要灵活架构设计的项目
@@ -199,12 +219,14 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：经典版本的 Vue，采用 Options API，已于 2023 年底停止维护。
 
 **核心特点**：
+
 - Options API：对象选项式组织代码
 - 响应式系统基于 Object.defineProperty
 - 成熟的生态系统
 - 大量历史项目使用
 
 **适用场景**：
+
 - 维护现有 Vue 2 项目
 - 需要兼容旧浏览器的项目 (IE11)
 
@@ -225,6 +247,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：Vue.js 的官方路由管理器，提供声明式路由配置和导航守卫。
 
 **核心特点**：
+
 - 声明式路由配置
 - 嵌套路由和动态路由匹配
 - 导航守卫和路由元信息
@@ -233,6 +256,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 与 Vue 3 Composition API 深度集成
 
 **适用场景**：
+
 - 单页应用 (SPA) 路由管理
 - 需要权限控制的页面导航
 - 复杂嵌套路由结构
@@ -252,6 +276,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：Vue 的官方状态管理库，Vuex 的继任者，提供更简洁的 API 和更好的 TypeScript 支持。
 
 **核心特点**：
+
 - 极简的 API 设计，无 mutations
 - 完整的 TypeScript 类型支持
 - 支持 Composition API 和 Options API
@@ -261,6 +286,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 体积小巧 (~1KB)
 
 **适用场景**：
+
 - Vue 3 应用的状态管理
 - 需要类型安全的状态管理
 - 替代 Vuex 的新项目
@@ -280,6 +306,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：直观的 Vue 全栈框架，提供服务端渲染、静态生成和客户端渲染能力。
 
 **核心特点**：
+
 - 约定优于配置的目录结构
 - 支持 SSR、SSG、CSR 多种渲染模式
 - 自动代码分割和路由生成
@@ -288,6 +315,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - Nuxt DevTools 提供卓越开发体验
 
 **适用场景**：
+
 - 需要 SEO 的内容驱动网站
 - 全栈 Vue 应用
 - 企业级 SSR 应用
@@ -310,6 +338,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：Google 维护的企业级前端框架，提供完整的开发工具链和严格的架构规范。
 
 **核心特点**：
+
 - 原生 TypeScript 支持，强类型约束
 - 依赖注入 (DI) 系统
 - RxJS 响应式编程集成
@@ -318,6 +347,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 内置表单、路由、HTTP 客户端
 
 **适用场景**：
+
 - 大型企业级应用
 - 需要严格代码规范的团队
 - 长期维护的项目
@@ -338,6 +368,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：JavaScript 的响应式编程库，使用 Observables 处理异步和基于事件的程序。
 
 **核心特点**：
+
 - Observable 模式处理异步数据流
 - 丰富的操作符 (map, filter, merge, combine 等)
 - 支持订阅和取消订阅
@@ -346,6 +377,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 支持背压 (Backpressure) 控制
 
 **适用场景**：
+
 - 复杂的异步数据流处理
 - 实时数据更新 (WebSocket、SSE)
 - 事件驱动的用户交互
@@ -366,6 +398,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：Angular 的官方服务端渲染 (SSR) 解决方案，提升首屏加载和 SEO。
 
 **核心特点**：
+
 - 服务端渲染 Angular 应用
 - 预渲染 (Prerendering) 支持
 - TransferState 优化数据传输
@@ -373,6 +406,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 支持 hydration 恢复客户端状态
 
 **适用场景**：
+
 - 需要 SEO 的 Angular 应用
 - 首屏性能敏感的应用
 - 内容驱动的网站
@@ -394,6 +428,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：编译时框架，将组件编译为高效的命令式代码，无虚拟 DOM 运行时开销。
 
 **核心特点**：
+
 - 编译时优化，生成高效原生 JS
 - 无虚拟 DOM，直接操作真实 DOM
 - 极小的运行时体积
@@ -402,6 +437,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - Svelte 5 引入 Runes 新响应式系统
 
 **适用场景**：
+
 - 性能敏感的应用
 - 嵌入式组件/widget
 - 低功耗设备应用
@@ -423,6 +459,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：Svelte 的官方全栈框架，提供路由、服务端渲染和静态生成功能。
 
 **核心特点**：
+
 - 基于文件系统的路由
 - 支持 SSR、SSG、CSR
 - 适配器模式支持多种部署平台
@@ -430,6 +467,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 热模块替换 (HMR)
 
 **适用场景**：
+
 - 全栈 Svelte 应用
 - 需要 SSR 的 Svelte 项目
 - 边缘部署应用
@@ -451,6 +489,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：声明式、高效且灵活的 JavaScript 库，采用细粒度响应式，性能接近原生 JS。
 
 **核心特点**：
+
 - 细粒度响应式（无虚拟 DOM）
 - 极致的性能表现（JS 框架基准测试领先）
 - 类似 React 的 JSX 语法
@@ -459,6 +498,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 真实的 DOM 引用
 
 **适用场景**：
+
 - 高性能要求的应用
 - 实时数据可视化
 - 复杂的交互界面
@@ -479,6 +519,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：Solid 的全栈框架，提供服务端渲染、路由和数据获取能力。
 
 **核心特点**：
+
 - 基于文件系统的路由
 - 支持多种渲染模式
 - 细粒度的服务端/客户端边界控制
@@ -486,6 +527,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 获 JS Nation 2024 年度突破奖提名
 
 **适用场景**：
+
 - 全栈 Solid 应用
 - 需要 SSR 的 Solid 项目
 
@@ -506,6 +548,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：追求「可恢复性」的框架，实现接近零 JavaScript 的即时加载。
 
 **核心特点**：
+
 - 可恢复性 (Resumability)：从服务端暂停，在客户端恢复
 - 细粒度懒加载，按需执行 JS
 - 零 hydration 开销
@@ -513,6 +556,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 边缘优先设计
 
 **适用场景**：
+
 - 内容密集型网站
 - 对首屏加载要求极高的应用
 - 电商、营销页面
@@ -533,6 +577,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：类似 Tailwind CSS 的 JavaScript 框架，以 HTML 属性方式添加交互行为。
 
 **核心特点**：
+
 - 极小的体积（~15KB）
 - 无构建步骤，直接写在 HTML 中
 - 类似 Vue 的模板语法
@@ -540,6 +585,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 适合渐进式增强
 
 **适用场景**：
+
 - 简单的交互增强
 - 现有服务器渲染页面的动态化
 - 原型开发
@@ -560,6 +606,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：通过属性直接在 HTML 中使用 AJAX、WebSocket 和 Server Sent Events，无需大量 JavaScript。
 
 **核心特点**：
+
 - 扩展 HTML 的交互能力
 - 无构建步骤，直接引入使用
 - 支持 AJAX、CSS 动画、WebSocket、SSE
@@ -568,6 +615,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 渐进式增强理念
 
 **适用场景**：
+
 - 传统服务端渲染站点的现代化
 - 减少前端 JavaScript 复杂度
 - 快速原型开发
@@ -589,6 +637,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 **一句话描述**：Google 推出的 Web Components 库，简单、快速、轻量。
 
 **核心特点**：
+
 - 基于 Web Components 标准
 - 框架无关，可在任何项目中使用
 - 极小的运行时（~5KB）
@@ -596,6 +645,7 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 支持 SSR
 
 **适用场景**：
+
 - 跨框架共享组件
 - 设计系统组件库
 - 需要长期稳定的组件
@@ -646,5 +696,5 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 ---
 
 > 📅 本文档最后更新：2026年4月
-> 
+>
 > 💡 提示：Stars 数据会随时间变化，建议查看 GitHub 获取最新数据

@@ -19,6 +19,7 @@ description: JavaScript/TypeScript 生态系统相关的架构图、流程图和
 - [JWT 认证流程时序图](./jwt-authentication-flow)
 - [微服务架构常用模式](./microservices-patterns)
 - [ESM/CJS 模块解析与互操作流程](./module-resolution-flow)
+- [JSTS Code Lab 模块依赖关系图谱](./module-dependency-graph)
 - [Node.js require() 解析流程](./node-js-require-flow)
 - [JavaScript/TypeScript 全景知识库 - 项目知识图谱](./project-knowledge-graph)
 - [Promise 状态机转换图](./promise-state-machine)

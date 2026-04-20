@@ -1,6 +1,17 @@
+
 # 部署与托管平台
 
 > 本文档盘点 JavaScript/TypeScript 生态中最主流的前端/全栈应用部署与托管平台，覆盖 Serverless、边缘计算、容器化与传统 PaaS 方案。每个平台均分析其核心优势、限制、定价模型、与主流 JS 框架的集成度及冷启动表现。
+
+## 🧪 关联代码实验室
+
+> **2** 个关联模块 · 平均成熟度：**🌿**
+
+| 模块 | 成熟度 | 实现文件 | 测试文件 |
+|------|--------|----------|----------|
+| [22-deployment-devops](../../jsts-code-lab/22-deployment-devops/) | 🌿 | 2 | 2 |
+| [93-deployment-edge-lab](../../jsts-code-lab/93-deployment-edge-lab/) | 🌿 | 3 | 1 |
+
 
 ---
 

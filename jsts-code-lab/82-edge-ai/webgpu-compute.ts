@@ -1,8 +1,8 @@
 /**
- * @file WebGPU 计算基础
+ * @file WebGPU 计算基础：矩阵乘法、工作组合优化与 CPU 回退
  * @category Edge AI → WebGPU
  * @difficulty hard
- * @tags webgpu, compute-shader, gpgpu, parallel-computation, vector-add
+ * @tags webgpu, compute-shader, gpgpu, parallel-computation, matmul, workgroup, cpu-fallback
  *
  * @description
  * WebGPU 是现代浏览器提供的新一代图形与计算 API，支持通用 GPU 计算（GPGPU）。
@@ -114,6 +114,79 @@ export class WebGPUCompute {
       }
     };
   }
+
+  /**
+   * 内置：矩阵乘法计算着色器（简化版：C = A × B）
+   * 假设 A: [M, K], B: [K, N], C: [M, N]
+   */
+  static matmulShader(M: number, N: number, K: number): ComputeShader {
+    return {
+      entryPoint: 'main',
+      workgroupSize: [8, 8, 1],
+      compute: (inputs, outputs, globalId) => {
+        const a = inputs[0].data;
+        const b = inputs[1].data;
+        const c = outputs[0].data;
+        // 将一维 globalId 映射到二维 (row, col)
+        const row = Math.floor(globalId / N);
+        const col = globalId % N;
+        if (row < M && col < N) {
+          let sum = 0;
+          for (let k = 0; k < K; k++) {
+            sum += a[row * K + k] * b[k * N + col];
+          }
+          c[row * N + col] = sum;
+        }
+      }
+    };
+  }
+
+  /**
+   * 根据数据规模推荐最优 workgroup 大小
+   */
+  static optimizeWorkgroupSize(dataSize: number): [number, number, number] {
+    if (dataSize <= 64) return [8, 1, 1];
+    if (dataSize <= 256) return [16, 1, 1];
+    if (dataSize <= 1024) return [32, 1, 1];
+    if (dataSize <= 4096) return [64, 1, 1];
+    return [128, 1, 1];
+  }
+}
+
+/**
+ * CPU 回退计算
+ * 当 WebGPU 不可用时使用纯 CPU 实现相同计算逻辑
+ */
+export class CPUFallbackCompute {
+  static matmul(A: Float32Array, B: Float32Array, M: number, N: number, K: number): Float32Array {
+    const C = new Float32Array(M * N);
+    for (let i = 0; i < M; i++) {
+      for (let j = 0; j < N; j++) {
+        let sum = 0;
+        for (let k = 0; k < K; k++) {
+          sum += A[i * K + k] * B[k * N + j];
+        }
+        C[i * N + j] = sum;
+      }
+    }
+    return C;
+  }
+
+  static vectorAdd(a: Float32Array, b: Float32Array): Float32Array {
+    const c = new Float32Array(a.length);
+    for (let i = 0; i < a.length; i++) {
+      c[i] = a[i] + b[i];
+    }
+    return c;
+  }
+
+  static relu(input: Float32Array): Float32Array {
+    const out = new Float32Array(input.length);
+    for (let i = 0; i < input.length; i++) {
+      out[i] = Math.max(0, input[i]);
+    }
+    return out;
+  }
 }
 
 export function demo(): void {
@@ -133,4 +206,37 @@ export function demo(): void {
   gpu.dispatchWorkgroups(shader, [bufA, bufB, bufC], Math.ceil(size / shader.workgroupSize[0]));
 
   console.log('向量加法结果:', Array.from(gpu.readBuffer(bufC)).join(', '));
+
+  // 矩阵乘法演示
+  const M = 2, N = 3, K = 4;
+  const matA = gpu.createBuffer(M * K);
+  const matB = gpu.createBuffer(K * N);
+  const matC = gpu.createBuffer(M * N);
+
+  gpu.writeBuffer(matA, new Float32Array([
+    1, 2, 3, 4,
+    5, 6, 7, 8
+  ]));
+  gpu.writeBuffer(matB, new Float32Array([
+    1, 0, 1,
+    0, 1, 0,
+    1, 0, 1,
+    0, 1, 0
+  ]));
+
+  const matmulShader = WebGPUCompute.matmulShader(M, N, K);
+  gpu.dispatchWorkgroups(matmulShader, [matA, matB, matC], Math.ceil((M * N) / (matmulShader.workgroupSize[0] * matmulShader.workgroupSize[1])));
+
+  console.log('矩阵乘法结果:', Array.from(gpu.readBuffer(matC)).join(', '));
+
+  // Workgroup 优化演示
+  const optimal = WebGPUCompute.optimizeWorkgroupSize(2048);
+  console.log('2048 元素推荐的 workgroup 大小:', optimal.join(', '));
+
+  // CPU 回退演示
+  const cpuResult = CPUFallbackCompute.vectorAdd(
+    new Float32Array([1, 2, 3]),
+    new Float32Array([4, 5, 6])
+  );
+  console.log('CPU 回退向量加法:', Array.from(cpuResult).join(', '));
 }

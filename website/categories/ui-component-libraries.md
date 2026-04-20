@@ -3,6 +3,15 @@ title: UI 组件库
 description: JavaScript/TypeScript UI 组件库 完整指南
 ---
 
+## 🧪 关联代码实验室
+
+> **1** 个关联模块 · 平均成熟度：**🌳**
+
+| 模块 | 成熟度 | 实现文件 | 测试文件 |
+|------|--------|----------|----------|
+| [51-ui-components](../../jsts-code-lab/51-ui-components/) | 🌳 | 6 | 6 |
+
+
 
 > 用于构建用户界面的组件库和UI框架
 

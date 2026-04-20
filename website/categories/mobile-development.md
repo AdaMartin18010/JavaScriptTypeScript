@@ -3,6 +3,15 @@ title: 移动端开发库分类
 description: JavaScript/TypeScript 移动端开发库分类 完整指南
 ---
 
+## 🧪 关联代码实验室
+
+> **1** 个关联模块 · 平均成熟度：**🌿**
+
+| 模块 | 成熟度 | 实现文件 | 测试文件 |
+|------|--------|----------|----------|
+| [37-pwa](../../jsts-code-lab/37-pwa/) | 🌿 | 3 | 1 |
+
+
 
 > 跨平台移动应用开发框架与工具汇总
 
@@ -35,6 +44,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: 使用 React 构建原生应用的框架，支持 iOS 和 Android 平台。采用原生组件渲染，提供接近原生的性能和用户体验。
 
 **特点**:
+
 - 🎯 使用 JavaScript/TypeScript 和 React 开发
 - 🎨 原生组件渲染，平台特定外观
 - ♻️ 代码复用率 80-90%
@@ -60,6 +70,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: React Native 的通用开发平台，提供完整的开发工具链、托管服务和丰富的原生模块库。
 
 **特点**:
+
 - 🚀 零配置快速开始
 - 📦 内置 100+ 原生模块
 - ☁️ Expo Application Services (EAS) 云服务
@@ -83,6 +94,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: React Native 的事实标准导航解决方案，提供栈导航、标签导航、抽屉导航等多种导航模式。
 
 **特点**:
+
 - 🧭 声明式导航配置
 - 🎨 深度自定义主题和过渡动画
 - 🔗 深度链接支持
@@ -104,6 +116,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: 跨平台的 React Native UI 组件库，提供一致的设计语言和丰富的可定制组件。
 
 **特点**:
+
 - 🎨 平台一致的 UI 组件
 - 🌙 内置深色模式支持
 - 🔧 高度可定制主题系统
@@ -125,6 +138,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: 遵循 Material Design 规范的 React Native 组件库，提供高质量的 UI 组件和主题支持。
 
 **特点**:
+
 - 📐 遵循 Google Material Design 3
 - 🎭 动态主题色彩支持
 - 🔄 支持 Material You 动态配色
@@ -146,6 +160,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: React Native 的高性能动画库，重新实现了 Animated API，支持复杂手势驱动的动画。
 
 **特点**:
+
 - ⚡ 工作在 UI 线程，流畅 60-120 FPS
 - 🤲 与 react-native-gesture-handler 完美配合
 - 📝 声明式 API，支持共享值
@@ -171,6 +186,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: Google 的 UI 工具包，用于从单一代码库构建精美的移动、Web 和桌面应用。使用 Dart 语言和自渲染引擎。
 
 **特点**:
+
 - 🎨 自渲染引擎 (Skia/Impeller)，UI 高度一致
 - ⚡ 接近原生性能，AOT 编译
 - ♻️ 100% 代码复用率
@@ -200,6 +216,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: 基于 Web 技术（HTML、CSS、JavaScript）的跨平台移动应用开发框架，使用 WebView 渲染。
 
 **特点**:
+
 - 🌐 基于标准 Web 技术
 - 🎨 丰富的 UI 组件库
 - 📱 支持 iOS、Android、PWA
@@ -223,6 +240,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: 现代的原生 WebView 容器，将 Web 应用打包为原生应用，是 Cordova 的现代替代品。
 
 **特点**:
+
 - 🚀 现代化架构，TypeScript 优先
 - 📦 原生 API 访问通过插件系统
 - 🔒 更好的安全模型
@@ -245,6 +263,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: Apache Cordova 是历史悠久的移动应用开发框架，允许使用 Web 技术构建应用。
 
 **特点**:
+
 - 🌐 最早的 Web-to-Mobile 框架之一
 - 🔌 丰富的插件生态系统
 - 📱 支持多平台
@@ -266,6 +285,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: 使用 JavaScript/TypeScript 构建真正的原生移动应用，直接调用原生 API，无需 WebView。
 
 **特点**:
+
 - 📱 直接访问 100% 原生平台 API
 - ⚡ 原生性能，无 WebView 开销
 - 🅰️ 支持 Angular、Vue、React、Svelte
@@ -288,6 +308,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: 阿里巴巴开源的跨平台移动开发框架，支持 Vue 语法，生成原生渲染的应用。
 
 **特点**:
+
 - 🌐 使用 Vue.js 语法
 - 📱 原生渲染，非 WebView
 - ♻️ 一次编写，三端运行 (Web、iOS、Android)
@@ -308,6 +329,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: 基于 Vue.js 的跨平台开发框架，支持编译到 iOS、Android、H5、以及各种小程序平台。
 
 **特点**:
+
 - 🌐 基于 Vue.js 2/3
 - 📱 一次开发，多端发布
 - 🔄 支持微信小程序、支付宝小程序、百度小程序等
@@ -333,6 +355,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: 使用 Web 技术构建跨平台桌面应用的框架，捆绑 Chromium 和 Node.js。
 
 **特点**:
+
 - 🌐 完整的 Web 技术栈支持
 - 💻 支持 Windows、macOS、Linux
 - 🔌 完整的 Node.js API 访问
@@ -358,6 +381,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: 使用 Web 前端和 Rust 后端构建小巧、快速、安全的桌面应用框架。
 
 **特点**:
+
 - 📦 极小的应用体积 (2-10MB)
 - ⚡ 低内存占用 (30-50MB)
 - 🔒 安全的架构设计
@@ -382,6 +406,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: 将 React Native 带到 Windows 平台的官方实现，支持 Windows 10+ 和 Xbox。
 
 **特点**:
+
 - 🪟 原生 Windows 组件支持
 - 🎮 Xbox 支持
 - 🔧 与 WinUI 2/3 集成
@@ -402,6 +427,7 @@ description: JavaScript/TypeScript 移动端开发库分类 完整指南
 **描述**: 将 React Native 带到 macOS 平台的官方实现。
 
 **特点**:
+
 - 🍎 原生 macOS 组件支持
 - 🎨 遵循 macOS 设计规范
 - 🔧 与 Cocoa 集成

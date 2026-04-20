@@ -3,6 +3,15 @@ title: 数据验证库生态
 description: JavaScript/TypeScript 数据验证库生态 完整指南
 ---
 
+## 🧪 关联代码实验室
+
+> **1** 个关联模块 · 平均成熟度：**🌳**
+
+| 模块 | 成熟度 | 实现文件 | 测试文件 |
+|------|--------|----------|----------|
+| [21-api-security](../../jsts-code-lab/21-api-security/) | 🌳 | 3 | 3 |
+
+
 
 > 本文档梳理主流 JavaScript/TypeScript 数据验证库，数据参考自 GitHub Stars、npm 下载量及社区活跃度
 
@@ -45,6 +54,7 @@ description: JavaScript/TypeScript 数据验证库生态 完整指南
 **一句话描述**：TypeScript-first 的 Schema 验证库，以开发者体验为核心，实现类型与验证的完全统一。
 
 **核心特点**：
+
 - 🔥 **类型推导**：从 Schema 自动推导 TypeScript 类型
 - 🎯 **零依赖**：轻量纯净，无外部依赖
 - 🔗 **链式 API**：直观流畅的 API 设计
@@ -53,6 +63,7 @@ description: JavaScript/TypeScript 数据验证库生态 完整指南
 - 📦 **生态丰富**：支持 React Hook Form、tRPC、Fastify 等
 
 **适用场景**：
+
 - TypeScript 项目的运行时类型安全
 - API 输入/输出验证
 - 表单验证（配合 React Hook Form）
@@ -142,6 +153,7 @@ const DateSchema = z.preprocess(
 **一句话描述**：Zod 的轻量级替代方案，模块化设计实现极致的 tree-shaking，核心仅 2KB。
 
 **核心特点**：
+
 - 🪶 **极致轻量**：核心功能仅 ~2KB
 - 🧩 **模块化 API**：按需导入，零冗余
 - 🎯 **类型安全**：完整的类型推导支持
@@ -149,6 +161,7 @@ const DateSchema = z.preprocess(
 - ⚡ **性能优异**：轻量架构带来高性能
 
 **适用场景**：
+
 - 对包体积极敏感的项目
 - 移动端/低带宽环境
 - 需要极致 tree-shaking 的应用
@@ -223,6 +236,7 @@ const schema = v.pipe(
 **一句话描述**：1ms 冷启动的类型验证库，使用 TypeScript 类型语法直接定义 Schema，实现真正的类型即代码。
 
 **核心特点**：
+
 - ⚡ **极速**：1ms 冷启动，毫秒级编译
 - 📝 **类型语法**：使用 TS 类型语法定义 Schema
 - 🎯 **类型即验证器**：`type` 关键字直接定义验证规则
@@ -230,6 +244,7 @@ const schema = v.pipe(
 - 🧪 **自定义错误**：强大的错误消息定制
 
 **适用场景**：
+
 - 追求极致性能的项目
 - 希望减少样板代码的团队
 - 需要快速启动的 Serverless 环境
@@ -309,6 +324,7 @@ const StrongPassword = type(
 **一句话描述**：完整的函数式编程生态系统，包含强大的 Schema 模块，适用于复杂的企业级类型安全需求。
 
 **核心特点**：
+
 - 🏗️ **完整生态**：不仅仅是验证，包含完整的函数式编程工具
 - 🎯 **函数式编程**：基于 Effect 模式，处理副作用
 - 🔒 **类型安全**：最严格的类型推导
@@ -316,6 +332,7 @@ const StrongPassword = type(
 - 📊 **可观测**：内置日志、指标、追踪支持
 
 **适用场景**：
+
 - 复杂的企业级应用
 - 需要处理复杂副作用的场景
 - 函数式编程团队
@@ -413,6 +430,7 @@ const UserId = Schema.Number.pipe(
 **一句话描述**：受 Joi 启发的 JavaScript 对象 Schema 验证器，API 简洁直观，特别适合表单验证场景。
 
 **核心特点**：
+
 - 🎯 **直观的 API**：类似 Joi 但更简单
 - 📝 **内嵌条件验证**：支持复杂的条件逻辑
 - 🔧 **自定义验证**：易于扩展
@@ -420,6 +438,7 @@ const UserId = Schema.Number.pipe(
 - 🌐 **i18n 支持**：内置错误消息国际化
 
 **适用场景**：
+
 - React/Vue 表单验证
 - API 请求体验证
 - 需要复杂条件验证的场景
@@ -504,6 +523,7 @@ const usersSchema = yup.array().of(userSchema).min(1).required();
 **一句话描述**：hapi.js 框架出品的强大数据验证库，API 丰富成熟，是 Node.js 生态中最经典的验证方案之一。
 
 **核心特点**：
+
 - 🏗️ **功能丰富**：最完整的验证 API
 - 🧩 **链式 API**：清晰流畅的方法链
 - 🔧 **高度可扩展**：自定义规则、类型、错误
@@ -511,6 +531,7 @@ const usersSchema = yup.array().of(userSchema).min(1).required();
 - 🌐 **成熟稳定**：多年生产环境验证
 
 **适用场景**：
+
 - Node.js 后端 API 验证
 - hapi.js / Express / Fastify 项目
 - 需要复杂验证逻辑的系统
@@ -615,6 +636,7 @@ const schema = Joi.object({
 **一句话描述**：用纯 JavaScript/TypeScript 编写、可组合的结构验证库，专注于可组合的验证逻辑。
 
 **核心特点**：
+
 - 🧩 **可组合**：Struct 可像函数一样组合
 - 📝 **清晰错误**：详细的错误路径信息
 - 🔧 **可定制**：易于创建自定义类型
@@ -622,6 +644,7 @@ const schema = Joi.object({
 - 🎯 **类型推导**：完整的 TypeScript 支持
 
 **适用场景**：
+
 - 需要可组合验证逻辑的项目
 - 自定义验证需求较多的场景
 - 追求清晰错误信息的应用
@@ -630,9 +653,9 @@ const schema = Joi.object({
 **代码示例**：
 
 ```typescript
-import { 
-  object, string, number, array, optional, 
-  union, literal, boolean, assert, create, is 
+import {
+  object, string, number, array, optional,
+  union, literal, boolean, assert, create, is
 } from 'superstruct';
 
 // 基础 Struct
@@ -716,6 +739,7 @@ const VersionedStruct = (version: number) => {
 **一句话描述**：最快的 JSON Schema 验证器，支持 JSON Schema Draft-07/2019-09/2020-12 标准，适合需要标准兼容的场景。
 
 **核心特点**：
+
 - ⚡ **极速**：最快的 JSON Schema 验证器
 - 📋 **标准兼容**：支持 JSON Schema 标准
 - 🔧 **可扩展**：丰富的插件生态
@@ -723,6 +747,7 @@ const VersionedStruct = (version: number) => {
 - 🎨 **代码生成**：编译 Schema 为高效验证函数
 
 **适用场景**：
+
 - 需要 JSON Schema 标准兼容的项目
 - OpenAPI/Swagger 规范验证
 - 配置验证
@@ -735,7 +760,7 @@ const VersionedStruct = (version: number) => {
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 
-const ajv = new Ajv({ 
+const ajv = new Ajv({
   allErrors: true,      // 返回所有错误
   strict: false,        // 严格模式
   coerceTypes: true     // 类型强制转换
@@ -748,15 +773,15 @@ const userSchema = {
   properties: {
     id: { type: 'integer', minimum: 1 },
     email: { type: 'string', format: 'email' },
-    name: { 
-      type: 'string', 
+    name: {
+      type: 'string',
       minLength: 2,
-      maxLength: 50 
+      maxLength: 50
     },
-    age: { 
-      type: 'number', 
-      minimum: 0, 
-      maximum: 150 
+    age: {
+      type: 'number',
+      minimum: 0,
+      maximum: 150
     },
     role: {
       type: 'string',
@@ -837,6 +862,7 @@ ajv.addKeyword({
 **一句话描述**：基于装饰器的类属性验证库，与 TypeORM、NestJS 完美集成，采用面向对象的验证风格。
 
 **核心特点**：
+
 - 🎨 **装饰器驱动**：使用装饰器声明验证规则
 - 🏗️ **面向对象**：基于类的验证模型
 - 🔗 **生态集成**：与 NestJS、TypeORM 深度集成
@@ -844,6 +870,7 @@ ajv.addKeyword({
 - 🧩 **自定义验证器**：易于扩展
 
 **适用场景**：
+
 - NestJS 项目（官方推荐）
 - TypeORM 实体验证
 - 面向对象风格的代码库
@@ -853,7 +880,7 @@ ajv.addKeyword({
 
 ```typescript
 import 'reflect-metadata';
-import { 
+import {
   IsInt, IsEmail, IsString, MinLength, MaxLength,
   IsOptional, IsEnum, ValidateNested, ArrayMaxSize,
   validate, validateOrReject, ValidationError
@@ -907,10 +934,10 @@ class UserWithAddress extends CreateUserDto {
 async function validateUser(data: unknown): Promise<void> {
   // 转换为类实例
   const user = plainToClass(CreateUserDto, data);
-  
+
   // 验证
   const errors: ValidationError[] = await validate(user);
-  
+
   if (errors.length > 0) {
     // 格式化错误
     const formatted = errors.map(err => ({
@@ -920,7 +947,7 @@ async function validateUser(data: unknown): Promise<void> {
     console.error(formatted);
     throw new Error('验证失败');
   }
-  
+
   // 或使用 validateOrReject 直接抛出
   await validateOrReject(user);
 }
@@ -972,6 +999,7 @@ await validate(product, { groups: ['create'] });
 **一句话描述**：基于 fp-ts 的运行时类型验证库，采用函数式编程范式，与 fp-ts 生态无缝集成。
 
 **核心特点**：
+
 - 🎯 **类型即代码**：Codec 同时定义类型和验证
 - 🔗 **fp-ts 集成**：完整的函数式编程支持
 - 📝 **精确错误**：详细的验证错误路径
@@ -979,6 +1007,7 @@ await validate(product, { groups: ['create'] });
 - 🎨 **自定义 Codec**：易于创建新类型
 
 **适用场景**：
+
 - 函数式编程项目
 - 已使用 fp-ts 的代码库
 - 需要精确错误处理的系统
@@ -1095,6 +1124,7 @@ const UserWithDefaults = t.type({
 **一句话描述**：最全面的字符串验证和清理库，提供数十种常用验证函数，专注于字符串处理。
 
 **核心特点**：
+
 - 📚 **验证器丰富**：50+ 种验证函数
 - 🧹 **清理功能**：字符串清理和规范化
 - 🌍 **国际化**：支持多种地区的验证规则
@@ -1102,6 +1132,7 @@ const UserWithDefaults = t.type({
 - ⚡ **性能优异**：经过优化的实现
 
 **适用场景**：
+
 - 表单字段验证
 - 数据清理和规范化
 - 用户输入验证
@@ -1127,16 +1158,16 @@ isMobilePhone('13800138000', 'zh-CN'); // true
 const validations = {
   // 字符串长度
   isLength: validator.isLength('hello', { min: 2, max: 10 }),
-  
+
   // 数字
   isNumeric: validator.isNumeric('12345'),
   isInt: validator.isInt('42', { min: 0, max: 100 }),
   isFloat: validator.isFloat('3.14'),
-  
+
   // 日期时间
   isDate: validator.isDate('2024-01-15'),
   isISO8601: validator.isISO8601('2024-01-15T10:30:00Z'),
-  
+
   // 网络相关
   isURL: validator.isURL('https://example.com', {
     protocols: ['https'],
@@ -1144,21 +1175,21 @@ const validations = {
   }),
   isIP: validator.isIP('192.168.1.1', 4),
   isPort: validator.isPort('8080'),
-  
+
   // 身份信息
   isCreditCard: validator.isCreditCard('4111111111111111'),
   isIdentityCard: validator.isIdentityCard('110101199003077513', 'zh-CN'),
-  
+
   // 格式验证
   isJSON: validator.isJSON('{"key":"value"}'),
   isBase64: validator.isBase64('SGVsbG8gV29ybGQ='),
   isHexColor: validator.isHexColor('#FF5733'),
   isMD5: validator.isMD5('5d41402abc4b2a76b9719d911017c592'),
   isJWT: validator.isJWT('eyJhbGciOiJIUzI1NiIs...'),
-  
+
   // 布尔值
   isBoolean: validator.isBoolean('true'),
-  
+
   // 空白检查
   isEmpty: validator.isEmpty('', { ignore_whitespace: true })
 };
@@ -1167,29 +1198,29 @@ const validations = {
 const sanitized = {
   // 去除 HTML
   stripLow: validator.stripLow('Hello\x00World'),
-  
+
   // 转义 HTML
   escape: validator.escape('<script>alert("xss")</script>'),
-  
+
   // 去除多余空格
   trim: validator.trim('  hello  '),
-  
+
   // 规范化换行
   normalizeEmail: validator.normalizeEmail('Test.User+tag@Example.com'),
   // 输出: testuser@example.com
-  
+
   // 黑名单/白名单
   blacklist: validator.blacklist('hello world', ' '), // 'helloworld'
   whitelist: validator.whitelist('hello123', 'a-z'), // 'hello'
-  
+
   // 数字处理
   toInt: validator.toInt('42.9'), // 42
   toFloat: validator.toFloat('42.9'), // 42.9
   toBoolean: validator.toBoolean('yes'), // true
-  
+
   // 日期处理
   toDate: validator.toDate('2024-01-15'), // Date 对象
-  
+
   // 字符串处理
   toUpperCase: validator.toUpperCase('hello'), // 'HELLO'
   toLowerCase: validator.toLowerCase('HELLO'), // 'hello'
@@ -1207,19 +1238,19 @@ const validateUserInput = (input: {
   website?: string;
 }) => {
   const errors: string[] = [];
-  
+
   if (!isEmail(input.email)) {
     errors.push('邮箱格式不正确');
   }
-  
+
   if (!isMobilePhone(input.phone, 'zh-CN')) {
     errors.push('手机号格式不正确');
   }
-  
+
   if (input.website && !validator.isURL(input.website)) {
     errors.push('网站地址格式不正确');
   }
-  
+
   return errors.length === 0 ? { valid: true } : { valid: false, errors };
 };
 ```
@@ -1239,6 +1270,7 @@ const validateUserInput = (input: {
 **一句话描述**：Google libphonenumber 的轻量级 JavaScript 端口，专注于电话号码解析、格式化和验证。
 
 **核心特点**：
+
 - 🌍 **国际标准**：基于 Google libphonenumber
 - 📦 **轻量**：核心版本仅 ~45KB（对比原版 500KB+）
 - 🎯 **高精度**：准确的号码解析和验证
@@ -1246,6 +1278,7 @@ const validateUserInput = (input: {
 - 🔍 **运营商检测**：可识别运营商信息
 
 **适用场景**：
+
 - 用户注册手机号验证
 - 国际化应用的电话处理
 - 通讯录应用
@@ -1254,8 +1287,8 @@ const validateUserInput = (input: {
 **代码示例**：
 
 ```typescript
-import { 
-  parsePhoneNumber, 
+import {
+  parsePhoneNumber,
   parsePhoneNumberFromString,
   isValidPhoneNumber,
   getExampleNumber,
@@ -1276,13 +1309,13 @@ if (phoneNumber) {
   console.log(phoneNumber.countryCallingCode); // '86'
   console.log(phoneNumber.nationalNumber); // '13800138000'
   console.log(phoneNumber.number); // '+86138001380000'
-  
+
   // 格式化输出
   console.log(phoneNumber.format('E.164')); // '+8613800138000'
   console.log(phoneNumber.format('INTERNATIONAL')); // '+86 138 0013 8000'
   console.log(phoneNumber.format('NATIONAL')); // '138 0013 8000'
   console.log(phoneNumber.formatRFC396()); // 'tel:+86-138-0013-8000'
-  
+
   // 类型检测
   console.log(phoneNumber.getType()); // 'MOBILE'
 }
@@ -1318,16 +1351,16 @@ console.log(getCountryCallingCode('US')); // '1'
 
 // 批量验证和格式化
 function validateAndFormatPhone(
-  phone: string, 
+  phone: string,
   country: string
 ): { valid: boolean; formatted?: string; error?: string } {
   try {
     const parsed = parsePhoneNumber(phone, country);
-    
+
     if (!parsed || !parsed.isValid()) {
       return { valid: false, error: '无效的电话号码' };
     }
-    
+
     return {
       valid: true,
       formatted: parsed.formatInternational()

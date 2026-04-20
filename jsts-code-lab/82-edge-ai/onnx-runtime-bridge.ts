@@ -1,8 +1,8 @@
 /**
- * @file ONNX 运行时桥接器简化版：解析 ONNX 计算图并执行前向传播
+ * @file ONNX 运行时桥接器：会话管理、执行 Provider 选择与动态形状处理
  * @category Edge AI → Inference Engine
  * @difficulty hard
- * @tags onnx, inference-engine, conv2d, relu, maxpool, gemm, edge-ai
+ * @tags onnx, inference-engine, session-management, execution-provider, dynamic-shape, edge-ai
  */
 
 /** ONNX 张量类型 */
@@ -40,6 +40,84 @@ export class ValuePool {
     const t = this.values.get(name);
     if (!t) throw new Error(`Tensor "${name}" not found in value pool`);
     return t;
+  }
+}
+
+/** 执行 Provider 类型 */
+export type ExecutionProvider = 'cpu' | 'wasm' | 'webgpu';
+
+/**
+ * ONNX 会话管理器
+ * 封装模型加载、Provider 选择与多次推理的运行时状态
+ */
+export class ONNXSession {
+  private graph: ONNXGraph;
+  private provider: ExecutionProvider;
+  private runtime: ONNXRuntimeBridge;
+
+  constructor(graph: ONNXGraph, provider: ExecutionProvider = 'cpu') {
+    this.graph = graph;
+    this.provider = provider;
+    this.runtime = new ONNXRuntimeBridge(graph);
+  }
+
+  setProvider(provider: ExecutionProvider): void {
+    this.provider = provider;
+  }
+
+  getProvider(): ExecutionProvider {
+    return this.provider;
+  }
+
+  run(inputs: Record<string, Tensor>): Record<string, Tensor> {
+    // 实际场景中不同 Provider 会调用不同后端；这里统一使用模拟运行时
+    return this.runtime.run(inputs);
+  }
+
+  getGraphInfo(): { name: string; inputNames: string[]; outputNames: string[] } {
+    return {
+      name: this.graph.name,
+      inputNames: Object.keys(this.graph.inputs),
+      outputNames: this.graph.outputs
+    };
+  }
+}
+
+/**
+ * 张量工厂：简化输入/输出张量的创建与形状推导
+ */
+export class TensorFactory {
+  static create(data: number[], shape: number[]): Tensor {
+    return { shape: shape.slice(), data: new Float32Array(data) };
+  }
+
+  static fromFloat32Array(data: Float32Array, shape: number[]): Tensor {
+    return { shape: shape.slice(), data };
+  }
+
+  /** 根据动态 batch 维度重塑张量 */
+  static reshape(tensor: Tensor, newShape: number[]): Tensor {
+    const newSize = newShape.reduce((a, b) => a * b, 1);
+    if (newSize !== tensor.data.length) {
+      throw new Error(`Reshape mismatch: ${tensor.data.length} vs ${newSize}`);
+    }
+    return { shape: newShape.slice(), data: tensor.data.slice() };
+  }
+
+  /** 推导动态轴后的输出形状（简化版） */
+  static inferDynamicShape(
+    inputShape: number[],
+    outputShapeTemplate: (number | string)[],
+    axisMap: Record<string, number>
+  ): number[] {
+    return outputShapeTemplate.map(dim => {
+      if (typeof dim === 'string') {
+        const mapped = axisMap[dim];
+        if (mapped === undefined) throw new Error(`Unknown dynamic axis: ${dim}`);
+        return mapped;
+      }
+      return dim;
+    });
   }
 }
 
@@ -270,20 +348,26 @@ export function demo(): void {
     outputs: ['output']
   };
 
-  const runtime = new ONNXRuntimeBridge(graph);
+  // 使用 Session 管理器封装
+  const session = new ONNXSession(graph, 'wasm');
+  console.log('图信息:', session.getGraphInfo());
 
   // 构造 1x1x4x4 的输入（模拟 MNIST 的一小块）
-  const inputTensor: Tensor = {
-    shape: [1, 1, 4, 4],
-    data: new Float32Array([
-      1, 2, 3, 4,
-      5, 6, 7, 8,
-      1, 2, 3, 4,
-      5, 6, 7, 8
-    ])
-  };
+  const inputTensor = TensorFactory.create([
+    1, 2, 3, 4,
+    5, 6, 7, 8,
+    1, 2, 3, 4,
+    5, 6, 7, 8
+  ], [1, 1, 4, 4]);
 
-  const outputs = runtime.run({ input: inputTensor });
+  const outputs = session.run({ input: inputTensor });
   console.log('ONNX 图输出:', Array.from(outputs.output.data).map(v => v.toFixed(4)).join(', '));
-  console.log('ONNX Runtime Bridge 通过遍历计算图节点，在边缘端实现脱离 Python 环境的模型推理。');
+
+  // 动态形状演示
+  const dynamicShape = TensorFactory.inferDynamicShape(
+    [1, 1, 4, 4], ['batch', 1, 'H', 'W'], { batch: 1, H: 4, W: 4 }
+  );
+  console.log('动态形状推导:', dynamicShape);
+
+  console.log('ONNX Runtime Bridge 通过会话管理与 Provider 选择，在边缘端实现脱离 Python 环境的模型推理。');
 }

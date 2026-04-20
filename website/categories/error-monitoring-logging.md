@@ -1,6 +1,17 @@
+
 # 错误监控与日志工具
 
 > 本文档盘点 JavaScript/TypeScript 生态中用于前端错误监控、后端日志记录及全链路可观测性的主流工具与库。数据基于 2026 年 4 月 GitHub Stars 与社区活跃度。
+
+## 🧪 关联代码实验室
+
+> **2** 个关联模块 · 平均成熟度：**🌳**
+
+| 模块 | 成熟度 | 实现文件 | 测试文件 |
+|------|--------|----------|----------|
+| [17-debugging-monitoring](../../jsts-code-lab/17-debugging-monitoring/) | 🌿 | 1 | 1 |
+| [92-observability-lab](../../jsts-code-lab/92-observability-lab/) | 🌳 | 5 | 1 |
+
 
 ---
 

@@ -7,6 +7,16 @@ description: JavaScript/TypeScript 测试框架生态完整指南 - Vitest、Jes
 
 > **趋势**: Vitest 取代 Jest 成为首选，Playwright 超越 Cypress/Selenium 成为 E2E 测试新标准
 
+## 🧪 关联代码实验室
+
+> **2** 个关联模块 · 平均成熟度：**🌳**
+
+| 模块 | 成熟度 | 实现文件 | 测试文件 |
+|------|--------|----------|----------|
+| [07-testing](../../jsts-code-lab/07-testing/) | 🌳 | 5 | 5 |
+| [28-testing-advanced](../../jsts-code-lab/28-testing-advanced/) | 🌿 | 1 | 1 |
+
+
 ---
 
 ## 📊 生态概览

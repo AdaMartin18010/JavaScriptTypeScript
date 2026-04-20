@@ -3,6 +3,15 @@ title: 动画库 (Animation Libraries)
 description: JavaScript/TypeScript 动画库 (Animation Libraries) 完整指南
 ---
 
+## 🧪 关联代码实验室
+
+> **1** 个关联模块 · 平均成熟度：**🌿**
+
+| 模块 | 成熟度 | 实现文件 | 测试文件 |
+|------|--------|----------|----------|
+| [17-debugging-monitoring](../../jsts-code-lab/17-debugging-monitoring/) | 🌿 | 1 | 1 |
+
+
 
 > JavaScript 动画生态丰富多样，从 React 专属动画到通用动画引擎，从滚动动画到 3D 渲染，每个领域都有成熟的解决方案。本文档梳理主流动画库及其适用场景。
 
@@ -38,6 +47,7 @@ description: JavaScript/TypeScript 动画库 (Animation Libraries) 完整指南
 | **NPM 下载** | 290万+/周 |
 
 **核心特性**
+
 - **声明式 API**：`motion.div`、`animate`、`transition` 简洁直观
 - **布局动画**：自动布局变化动画（FLIP 技术）
 - **手势支持**：drag、hover、tap、pan、focus 完整手势集
@@ -81,6 +91,7 @@ import { motion, AnimatePresence } from 'motion/react';
 ```
 
 **最佳适用场景**
+
 - React 组件进入/退出动画
 - 拖拽排序、可交互卡片
 - 页面过渡效果
@@ -105,6 +116,7 @@ import { motion, AnimatePresence } from 'motion/react';
 | **NPM 下载** | 80万+/周 |
 
 **核心特性**
+
 - **弹簧物理**：基于真实弹簧物理模型的动画
 - **多平台**：React、React Native、Three.js 通用
 - **插值系统**：任意值之间的平滑插值
@@ -133,6 +145,7 @@ const bind = useDrag(({ down, movement: [mx, my] }) => {
 ```
 
 **最佳适用场景**
+
 - 需要自然物理感的交互
 - 拖拽弹性效果
 - 图表数据过渡
@@ -155,6 +168,7 @@ const bind = useDrag(({ down, movement: [mx, my] }) => {
 | **官网** | [reactcommunity.org/react-transition-group](https://reactcommunity.org/react-transition-group/) |
 
 **核心特性**
+
 - **状态管理**：entering、entered、exiting、exited 四状态
 - **CSS 集成**：配合 CSS 实现动画
 - **轻量级**：无动画逻辑，仅状态切换
@@ -182,6 +196,7 @@ import { CSSTransition, TransitionGroup } from 'react-transition-group';
 ```
 
 **最佳适用场景**
+
 - 简单的 CSS 过渡效果
 - 对包大小敏感的项目
 - 需要细粒度控制的传统项目
@@ -238,9 +253,9 @@ gsap
 
 ```javascript
 // 基础动画
-gsap.to('.box', { 
-  x: 100, 
-  rotation: 360, 
+gsap.to('.box', {
+  x: 100,
+  rotation: 360,
   duration: 1,
   ease: 'power2.out'
 });
@@ -266,6 +281,7 @@ gsap.to('.hero', {
 ```
 
 **最佳适用场景**
+
 - 复杂时间线动画
 - 滚动驱动动画
 - 高帧率游戏动画
@@ -290,6 +306,7 @@ gsap.to('.hero', {
 | **包大小** | ~15KB gzipped |
 
 **核心特性**
+
 - **单一 API**：CSS、SVG、DOM 属性、JavaScript 对象统一动画
 - **时间轴**：复杂动画序列编排
 - **交错动画**：stagger 系统创建涟漪效果
@@ -340,6 +357,7 @@ anime({
 ```
 
 **最佳适用场景**
+
 - 快速原型开发
 - 中小型动画项目
 - SVG 路径动画
@@ -363,6 +381,7 @@ anime({
 | **包大小** | ~11.7KB |
 
 **核心特性**
+
 - **函数式 API**：每个函数独立可组合
 - **多目标**：React、Three.js、A-Frame、PixiJS 通用
 - **动画类型**：tween、spring、decay、keyframes
@@ -401,6 +420,7 @@ useEffect(() => {
 ```
 
 **最佳适用场景**
+
 - 需要高度自定义的动画
 - 多框架环境
 - 物理模拟动画
@@ -422,6 +442,7 @@ useEffect(() => {
 | **官网** | [airbnb.io/lottie](https://airbnb.io/lottie/) |
 
 **核心特性**
+
 - **跨平台**：Web、iOS、Android、React Native
 - **JSON 格式**：AE 导出 JSON，代码直接渲染
 - **矢量动画**：无损缩放，体积小
@@ -456,6 +477,7 @@ animation.setDirection(-1);
 | HTML | 兼容性最好 | 效果有限 | 降级方案 |
 
 **最佳适用场景**
+
 - 设计师主导的动画项目
 - 复杂的品牌动效
 - 加载动画、引导页
@@ -489,6 +511,7 @@ import LottieView from 'lottie-react-native';
 ```
 
 **最佳适用场景**
+
 - React Native 应用动画
 - 跨平台移动开发
 - 与设计师协作的 RN 项目
@@ -513,6 +536,7 @@ import LottieView from 'lottie-react-native';
 | **包大小** | ~13KB |
 
 **核心特性**
+
 - **数据属性驱动**：纯 CSS + data-aos 属性
 - **零配置**：引入即用
 - **多种动画**：fade、slide、zoom、flip 等
@@ -542,6 +566,7 @@ import LottieView from 'lottie-react-native';
 | data-aos-anchor-placement | 锚点位置 | top-center, bottom-top |
 
 **最佳适用场景**
+
 - 营销页面滚动效果
 - 内容展示型网站
 - 快速原型开发
@@ -565,6 +590,7 @@ import LottieView from 'lottie-react-native';
 | **包大小** | ~12KB |
 
 **核心特性**
+
 - **单例模式**：全局一致实例
 - **声明式 API**：简单配置
 - **广泛浏览器支持**
@@ -594,6 +620,7 @@ ScrollReveal().reveal('.item', {
 ```
 
 **最佳适用场景**
+
 - 传统网站滚动动画
 - 需要稳定 API 的项目
 - 简单动画需求
@@ -616,6 +643,7 @@ ScrollReveal().reveal('.item', {
 | **包大小** | ~9.4KB gzipped |
 
 **核心特性**
+
 - **基于 Lenis**：最新平滑滚动引擎
 - **视差效果**：data-scroll-speed 实现
 - **Intersection Observer**：高性能检测
@@ -646,6 +674,7 @@ const scroll = new LocomotiveScroll({
 ```
 
 **最佳适用场景**
+
 - 高端品牌展示网站
 - 创意作品集
 - 需要平滑滚动的应用
@@ -673,15 +702,15 @@ import { Parallax, ParallaxProvider } from 'react-scroll-parallax';
   <Parallax speed={-10}>
     <h1>慢速背景</h1>
   </Parallax>
-  
+
   <Parallax translateY={[20, -20]}>
     <div>垂直移动元素</div>
   </Parallax>
-  
+
   <Parallax scale={[0.8, 1.2]}>
     <div>缩放元素</div>
   </Parallax>
-  
+
   <Parallax rotate={[0, 360]}>
     <div>旋转元素</div>
   </Parallax>
@@ -689,6 +718,7 @@ import { Parallax, ParallaxProvider } from 'react-scroll-parallax';
 ```
 
 **最佳适用场景**
+
 - React 项目视差效果
 - 单页应用滚动动画
 - 响应式视差设计
@@ -756,6 +786,7 @@ animate();
 ```
 
 **最佳适用场景**
+
 - 3D 数据可视化
 - 产品展示/配置器
 - 游戏开发
@@ -779,6 +810,7 @@ animate();
 | **官网** | [docs.pmndrs.io/react-three-fiber](https://docs.pmndrs.io/react-three-fiber) |
 
 **核心特性**
+
 - **声明式 API**：JSX 描述 3D 场景
 - **无开销**：性能与原生 Three.js 相当
 - **React 生态**：Hooks、Context、Reconciliation
@@ -790,12 +822,12 @@ import { OrbitControls, Stars } from '@react-three/drei';
 
 function Box() {
   const ref = useRef();
-  
+
   useFrame(() => {
     ref.current.rotation.x += 0.01;
     ref.current.rotation.y += 0.01;
   });
-  
+
   return (
     <mesh ref={ref}>
       <boxGeometry args={[1, 1, 1]} />
@@ -820,7 +852,7 @@ function App() {
 **React Three Drei 常用组件**
 
 ```tsx
-import { 
+import {
   Environment,     // 环境贴图
   ContactShadows,  // 接触阴影
   Float,           // 漂浮动画
@@ -831,6 +863,7 @@ import {
 ```
 
 **最佳适用场景**
+
 - React 项目的 3D 需求
 - 交互式 3D 展示
 - WebGL 数据可视化
@@ -857,6 +890,7 @@ import {
 | **官网** | [pixijs.com](https://pixijs.com/) |
 
 **核心特性**
+
 - **WebGL & WebGPU**：硬件加速渲染
 - **极速性能**：百万级精灵渲染
 - **完整交互**：鼠标、触摸多点支持
@@ -888,12 +922,14 @@ app.ticker.add((time) => {
 ```
 
 **PixiJS v8 新特性**
+
 - WebGPU 渲染器支持
 - 全新渲染组概念
 - 20+ 种混合模式
 - 抗锯齿纹理渲染优化
 
 **最佳适用场景**
+
 - 2D 游戏开发
 - 高性能 2D 交互应用
 - 富媒体广告
@@ -916,6 +952,7 @@ app.ticker.add((time) => {
 | **官网** | [fabricjs.com](https://fabricjs.com/) |
 
 **核心特性**
+
 - **开箱即用交互**：缩放、移动、旋转、倾斜、组合
 - **内置功能**：形状、控件、动画、图像滤镜
 - **导入导出**：JPG、PNG、JSON、SVG
@@ -953,6 +990,7 @@ const png = canvas.toDataURL();
 ```
 
 **最佳适用场景**
+
 - 图片编辑器
 - 在线设计工具
 - 白板/协作画布
@@ -976,6 +1014,7 @@ const png = canvas.toDataURL();
 | **官网** | [konvajs.org](https://konvajs.org/) |
 
 **核心特性**
+
 - **层级结构**：Stage → Layer → Shape
 - **高性能**：缓存、分层优化
 - **丰富交互**：拖拽、缩放、旋转
@@ -1030,6 +1069,7 @@ import { Stage, Layer, Rect, Circle } from 'react-konva';
 ```
 
 **最佳适用场景**
+
 - 交互式 2D 应用
 - 设计编辑器/白板
 - 注释工具
@@ -1087,5 +1127,5 @@ import { Stage, Layer, Rect, Circle } from 'react-konva';
 ---
 
 > 📅 本文档最后更新：2026年4月
-> 
+>
 > 💡 提示：Stars 数据会随时间变化，建议查看 GitHub 获取最新数据

@@ -1,3 +1,6 @@
-export * from './00-operational-semantics/small-step.js'
-export * from './00-operational-semantics/big-step.js'
-export * from './02-axiomatic-semantics/hoare-logic.js'
+/**
+ * @file 形式化语义模块入口
+ * @category Formal Semantics
+ */
+
+export * from './operational-semantics'
