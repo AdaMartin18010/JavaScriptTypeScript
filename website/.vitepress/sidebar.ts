@@ -54,6 +54,23 @@ export const sidebar: DefaultTheme.Sidebar = {
     }
   ],
 
+  // 代码实验室部分
+  '/code-lab/': [
+    {
+      text: '🧪 代码实验室',
+      items: [
+        { text: '实验室首页', link: '/code-lab/' },
+        { text: '语言核心 (00-09)', link: '/code-lab/language-core' },
+        { text: '工程与生态 (10-39)', link: '/code-lab/engineering-ecosystem' },
+        { text: '运行时与架构 (50-54)', link: '/code-lab/runtime-architecture' },
+        { text: 'AI 与前沿 (33, 55-56, 82, 94)', link: '/code-lab/ai-frontier' },
+        { text: '分布式与企业 (59, 61-75)', link: '/code-lab/distributed-enterprise' },
+        { text: '理论深度 (40-41, 77-81)', link: '/code-lab/theoretical-depth' },
+        { text: '实验室专题 (90-96)', link: '/code-lab/specialized-labs' },
+      ]
+    }
+  ],
+
   // 分类部分
   '/categories/': [
     {

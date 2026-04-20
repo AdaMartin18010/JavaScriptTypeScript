@@ -44,6 +44,7 @@ export default withMermaid(defineConfig({
       { text: '分类', link: '/categories/frontend-frameworks' },
       { text: '对比矩阵', link: '/comparison-matrices/frontend-frameworks-compare' },
       { text: '学习路径', link: '/learning-paths/beginners-path' },
+      { text: '🧪 代码实验室', link: '/code-lab/' },
       {
         text: '更多',
         items: [
