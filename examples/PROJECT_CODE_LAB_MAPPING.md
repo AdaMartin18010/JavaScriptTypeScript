@@ -193,6 +193,7 @@ examples/
 | 网络请求 | `09-real-world-examples/` | API 客户端 + 离线支持 |
 
 **学习路径**: `docs/learning-paths/intermediate-path.md` 阶段 4
+**跟练教程**: `examples/mobile-react-native-expo/TUTORIAL.md`
 
 ---
 
@@ -206,6 +207,7 @@ examples/
 | 构建工具 | `23-toolchain-configuration/` | Vite + Rust 构建 |
 
 **学习路径**: `docs/learning-paths/intermediate-path.md` 阶段 4
+**跟练教程**: `examples/desktop-tauri-react/TUTORIAL.md`
 
 ---
 
@@ -220,6 +222,7 @@ examples/
 | 工作流编排 | `56-code-generation/` | DAG 工作流实现 |
 
 **学习路径**: `docs/learning-paths/advanced-path.md` 前沿技术阶段
+**跟练教程**: `examples/ai-agent-production/TUTORIAL.md`
 
 ---
 

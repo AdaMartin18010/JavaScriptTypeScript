@@ -293,7 +293,7 @@
 
 | 技术栈组合 | 涉及模块 | 说明 |
 |------------|----------|------|
-| **AI 全栈** | 94-ai-agent-lab + 33-ai-integration | MCP Server、Vercel AI SDK Tool Calling、Multi-agent Workflow |
+| **AI 全栈** | 94-ai-agent-lab + 33-ai-integration + 28-ai-agent-infrastructure | MCP Server、Vercel AI SDK Tool Calling、Multi-agent Workflow |
 | **现代认证全栈** | 95-auth-modern-lab + 21-api-security | better-auth、Passkeys、OAuth2 PKCE、RBAC |
 | **边缘数据库全栈** | 96-orm-modern-lab + 32-edge-computing | Drizzle Schema、Query Patterns、Prisma 7 Edge、Turso |
 

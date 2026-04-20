@@ -61,10 +61,15 @@ This project aims to be a comprehensive, TypeScript-first resource collection th
 
 ## 📚 Table of Contents
 
-- [Awesome JavaScript/TypeScript Ecosystem ](#awesome-javascripttypescript-ecosystem-)
+- [Awesome JavaScript/TypeScript Ecosystem](#awesome-javascripttypescript-ecosystem-)
+  - [📚 Document Navigation](#-document-navigation)
   - [📖 Overview](#-overview)
     - [Why This List?](#why-this-list)
   - [📚 Table of Contents](#-table-of-contents)
+  - [📈 Project Scale Overview](#-project-scale-overview)
+  - [📊 Technology Decision System](#-technology-decision-system)
+    - [Comparison Matrix Index](#comparison-matrix-index)
+    - [Decision Tree Index](#decision-tree-index)
   - [🌟 Inclusion Criteria](#-inclusion-criteria)
   - [⚡ Quick Start](#-quick-start)
   - [📦 Frameworks \& Runtimes](#-frameworks--runtimes)
@@ -197,6 +202,8 @@ This project aims to be a comprehensive, TypeScript-first resource collection th
     - [Case 2: Real-Time Collaborative Whiteboard (20 Concurrent Editors)](#case-2-real-time-collaborative-whiteboard-20-concurrent-editors)
     - [Case 3: AI Customer Service System (10K+ Daily Conversations)](#case-3-ai-customer-service-system-10k-daily-conversations)
     - [Case 4: Enterprise Monorepo (50+ Packages, 30+ Developers)](#case-4-enterprise-monorepo-50-packages-30-developers)
+  - [🆕 What's New](#-whats-new)
+    - [v1.3.0 Release Highlights](#v130-release-highlights)
   - [📝 Contribution Guidelines](#-contribution-guidelines)
     - [Quick Contribution Checklist](#quick-contribution-checklist)
   - [📄 License](#-license)
