@@ -25,6 +25,11 @@
     - [书籍](#书籍)
     - [在线资源](#在线资源)
     - [源码阅读](#源码阅读)
+  - [🎯 里程碑验证机制](#-里程碑验证机制)
+    - [阶段 1 验证：架构模式](#阶段-1-验证架构模式)
+    - [阶段 2 验证：并发编程](#阶段-2-验证并发编程)
+    - [阶段 3 验证：性能优化](#阶段-3-验证性能优化)
+    - [阶段 4 验证：后端开发](#阶段-4-验证后端开发)
   - [✅ 阶段检查清单](#-阶段检查清单)
     - [架构设计](#架构设计)
     - [并发编程](#并发编程)
@@ -307,6 +312,87 @@ interface ApiResponse<T> {
 - [Express.js](https://github.com/expressjs/express) - Web 框架设计
 - [RxJS](https://github.com/ReactiveX/rxjs) - 响应式编程
 - [Prisma](https://github.com/prisma/prisma) - ORM 设计
+
+---
+
+## 🎯 里程碑验证机制
+
+### 阶段 1 验证：架构模式
+
+**理论自检**：
+
+1. [ ] 能解释分层架构、六边形架构、CQRS 的核心思想
+2. [ ] 能根据业务场景选择合适的架构模式
+3. [ ] 能画出微服务架构的完整拓扑图
+
+**实践验证**：
+
+- **Checkpoint 项目**: 实现一个六边形架构的订单系统
+  - 领域层：Order 实体、Order 值对象
+  - 应用层：PlaceOrder 用例
+  - 基础设施层：InMemoryRepository、ConsoleLogger
+  - 代码位置: `jsts-code-lab/06-architecture-patterns/hexagonal-order/`
+  - 通过标准: 领域层无外部依赖 + 单元测试覆盖 ≥ 80%
+
+**预计时间**: 2 周 | **难度**: ⭐⭐⭐⭐
+
+---
+
+### 阶段 2 验证：并发编程
+
+**理论自检**：
+
+1. [ ] 能画出 JavaScript 事件循环的完整流程图
+2. [ ] 能解释 Promise、Async/Await、Generator 的底层机制
+3. [ ] 能设计一个并发控制方案（如 Promise 池）
+
+**实践验证**：
+
+- **Checkpoint 项目**: 实现一个请求限流器
+  - 功能：令牌桶算法、滑动窗口计数
+  - 代码位置: `jsts-code-lab/03-concurrency/rate-limiter/`
+  - 通过标准: 并发测试通过 + 性能 Benchmark
+
+**预计时间**: 2 周 | **难度**: ⭐⭐⭐⭐
+
+---
+
+### 阶段 3 验证：性能优化
+
+**理论自检**：
+
+1. [ ] 能使用 Chrome DevTools 分析性能瓶颈
+2. [ ] 能解释虚拟列表的工作原理
+3. [ ] 能设计缓存策略（LRU、TTL）
+
+**实践验证**：
+
+- **Checkpoint 项目**: 优化一个慢速列表组件
+  - 初始状态：渲染 10,000 项，滚动卡顿
+  - 目标：60fps 流畅滚动
+  - 代码位置: `jsts-code-lab/50-browser-runtime/virtual-list-optimization/`
+  - 通过标准: Lighthouse Performance ≥ 90
+
+**预计时间**: 1-2 周 | **难度**: ⭐⭐⭐⭐
+
+---
+
+### 阶段 4 验证：后端开发
+
+**理论自检**：
+
+1. [ ] 能设计 RESTful API（资源命名、HTTP 方法、状态码）
+2. [ ] 能解释 JWT 认证流程
+3. [ ] 能设计数据库 Schema（索引、关系、范式）
+
+**实践验证**：
+
+- **Checkpoint 项目**: 实现一个带认证的 API 服务
+  - 功能：用户注册/登录/CRUD、JWT 认证、输入验证
+  - 代码位置: `jsts-code-lab/21-api-security/authenticated-api/`
+  - 通过标准: 安全扫描通过 + 集成测试覆盖
+
+**预计时间**: 2 周 | **难度**: ⭐⭐⭐⭐
 
 ---
 
