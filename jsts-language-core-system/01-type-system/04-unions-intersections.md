@@ -1,287 +1,527 @@
 # 联合类型与交叉类型
 
-> Union (`|`) 与 Intersection (`&`) 的完整语义、可辨识联合与实战模式
+> **形式化定义**：在 TypeScript 类型系统中，联合类型（Union Types）`A | B` 表示值的类型属于集合 A 与集合 B 的并集（Set Union），交叉类型（Intersection Types）`A & B` 表示值的类型属于集合 A 与集合 B 的交集（Set Intersection）。二者构成类型代数的基本运算，对应于集合论中的 ∪ 和 ∩ 操作。
 >
-> 对齐版本：TypeScript 5.8–6.0
+> 对齐版本：TypeScript 5.8–6.0 | ECMAScript 2025 (ES16)
 
 ---
 
-## 1. 联合类型（Union Types）
+## 1. 概念定义 (Concept Definition)
 
-联合类型表示一个值可以是多种类型之一：
+### 1.1 形式化定义
 
-```typescript
-type StringOrNumber = string | number;
-type Status = "pending" | "success" | "error";
+设类型空间为 **Type**，则：
 
-function format(input: StringOrNumber): string {
-  return input.toString();
-}
+**联合类型**（Union）：
+
+```
+A | B = { v | v ∈ A ∨ v ∈ B }
 ```
 
-### 1.1 可辨识联合（Discriminated Unions）
+**交叉类型**（Intersection）：
 
-可辨识联合是 TypeScript 中最强大的模式之一，通过**共同的字面量属性**（判别式）来区分联合成员：
-
-```typescript
-type Shape =
-  | { kind: "circle"; radius: number }
-  | { kind: "square"; side: number }
-  | { kind: "rectangle"; width: number; height: number };
-
-function area(shape: Shape): number {
-  switch (shape.kind) {
-    case "circle":
-      return Math.PI * shape.radius ** 2;
-    case "square":
-      return shape.side ** 2;
-    case "rectangle":
-      return shape.width * shape.height;
-    default:
-      // 穷尽性检查
-      const _exhaustive: never = shape;
-      return _exhaustive;
-  }
-}
+```
+A & B = { v | v ∈ A ∧ v ∈ B }
 ```
 
-**可辨识联合的三要素**：
-1. **联合类型**：多个对象类型的联合
-2. **判别式属性**：所有成员共有的字面量类型属性
-3. **类型守卫**：使用判别式进行类型收窄
+**分配律**（Distributive Law）：
 
-### 1.2 穷尽性检查（Exhaustiveness Checking）
+```
+(A | B) & C = (A & C) | (B & C)
+```
 
-利用 `never` 类型确保 switch/case 覆盖所有联合成员：
+### 1.2 概念层级图谱
 
-```typescript
-function assertNever(x: never): never {
-  throw new Error("Unexpected value: " + x);
-}
+```mermaid
+mindmap
+  root((类型代数))
+    联合类型 |
+      定义: A ∪ B
+      值: 属于A或B
+      操作: 收窄
+      应用: 可辨识联合
+    交叉类型 &
+      定义: A ∩ B
+      值: 同时属于A和B
+      操作: 合并
+      应用: 混入模式
+    关系
+      联合:  widening
+      交叉:  narrowing
+      对偶:  De Morgan
+```
 
-function handleEvent(event: MouseEvent | KeyboardEvent | TouchEvent) {
-  switch (event.type) {
-    case "click": /* ... */ break;
-    case "keydown": /* ... */ break;
-    case "touchstart": /* ... */ break;
-    default:
-      assertNever(event); // 如果新增事件类型未处理，编译报错
-  }
-}
+### 1.3 集合论视角
+
+```mermaid
+graph TB
+    subgraph "联合类型 A | B"
+        U1[集合 A] --- U3[并集区域]
+        U2[集合 B] --- U3
+    end
+
+    subgraph "交叉类型 A & B"
+        I1[集合 A] --- I3[交集区域]
+        I2[集合 B] --- I3
+    end
 ```
 
 ---
 
-## 2. 交叉类型（Intersection Types）
+## 2. 属性与特征 (Properties & Characteristics)
 
-交叉类型将多个类型合并为一个类型，包含所有类型的成员：
+### 2.1 联合类型属性矩阵
 
-```typescript
-type HasName = { name: string };
-type HasAge = { age: number };
+| 属性 | `A | B` | 说明 |
+|------|--------|------|
+| 值集合 | A ∪ B | 值可属于 A 或 B |
+| 可用操作 | A ∩ B 上的操作 | 只能安全使用共有属性 |
+| 收窄后 | A 或 B | 通过类型守卫细化 |
+| 空联合 | `never` | `A & never = never` |
 
-type Person = HasName & HasAge;
-// 等价于 { name: string; age: number; }
+### 2.2 交叉类型属性矩阵
 
-const person: Person = { name: "Alice", age: 30 };
+| 属性 | `A & B` | 说明 |
+|------|--------|------|
+| 值集合 | A ∩ B | 值必须同时满足 A 和 B |
+| 可用属性 | A ∪ B | 可使用所有属性 |
+| 冲突处理 | 最后一次声明生效 | 同名属性的合并规则 |
+| 空交叉 | `never` | 无共同值时 |
+
+---
+
+## 3. 关系分析 (Relationship Analysis)
+
+### 3.1 联合与交叉的对偶关系
+
+```mermaid
+graph LR
+    subgraph "对偶关系"
+        Union["A | B<br>并集"]
+        Intersection["A & B<br>交集"]
+        Union -->|De Morgan| D1["!(A & B) ≡ !A | !B"]
+        Intersection -->|De Morgan| D2["!(A | B) ≡ !A & !B"]
+    end
 ```
 
-### 2.1 同名属性的合并行为
+### 3.2 类型层级中的位置
 
-当交叉类型的成员有同名属性时，TypeScript 会尝试合并它们的类型：
+```mermaid
+graph BT
+    subgraph "联合: 向上扩展"
+        A["string"] --> U1["string | number"]
+        B["number"] --> U1
+        U1 --> U2["string | number | boolean"]
+    end
+
+    subgraph "交叉: 向下收缩"
+        I1["{ a: string } & { b: number }"] --> I2["{ a: string }"]
+        I1 --> I3["{ b: number }"]
+    end
+```
+
+---
+
+## 4. 机制解释 (Mechanism Explanation)
+
+### 4.1 联合类型的收窄机制
+
+```mermaid
+flowchart TD
+    Start["value: string | number"] --> Check{类型守卫}
+    Check -->|typeof === 'string'| String["value: string"]
+    Check -->|typeof === 'number'| Number["value: number"]
+    Check -->|else| Never["value: never"]
+
+    String --> SOp["value.toUpperCase()"]
+    Number --> NOp["value.toFixed(2)"]
+```
+
+### 4.2 交叉类型的合并机制
 
 ```typescript
-type A = { x: string };
-type B = { x: number };
+// 交叉类型合并同名属性
+type A = { x: string; y: number };
+type B = { x: string; z: boolean };
 
 type C = A & B;
-// C['x'] = string & number = never（不可能的值）
-
-const c: C = { x: "hello" }; // ❌ Type 'string' is not assignable to type 'never'
+// C = { x: string; y: number; z: boolean }
+// x 冲突：同类型 string，合并成功
 ```
 
-对于对象方法，交叉类型会产生重载：
+**冲突处理规则**：
+
+- 同类型：合并为相同类型
+- 不同基本类型：产生 `never`（不可满足）
+- 子类型关系：取子类型
+
+---
+
+## 5. 论证与分析 (Argumentation & Analysis)
+
+### 5.1 可辨识联合（Discriminated Unions）的设计原理
+
+可辨识联合是 TypeScript 中处理**标记联合（Tagged Unions）**的类型安全方式：
 
 ```typescript
-type Callable = { (x: string): string };
-type Constructable = { new (x: number): Date };
-
-type Hybrid = Callable & Constructable;
-// Hybrid 既可以作为函数调用，也可以作为构造函数使用
+type Result<T> =
+  | { status: "success"; data: T }
+  | { status: "error"; message: string }
+  | { status: "loading" };
 ```
 
-### 2.2 交叉类型与 `extends` 的对比
+**优势**：
+
+- 编译期穷尽检查
+- 类型收窄自动工作
+- 模式匹配友好
+
+**与代数数据类型（ADT）的关系**：
+
+- Haskell: `data Result a = Success a | Error String | Loading`
+- Rust: `enum Result<T> { Success(T), Error(String), Loading }`
+- TypeScript: 使用联合类型 + 可辨识字段模拟
+
+### 5.2 联合 vs 交叉的常见误区
+
+**误区 1**：混淆联合与交叉的语法
 
 ```typescript
-// interface extends 要求属性兼容
-interface Animal { name: string; }
-interface Dog extends Animal { breed: string; }
+// ❌ 错误：用 & 代替 |
+type Status = "loading" & "success" & "error"; // never！
 
-// type & 允许属性冲突（变为 never）
-type Weird = { name: string } & { name: number };
+// ✅ 正确：用 | 表示"或"
+type Status = "loading" | "success" | "error";
+```
+
+**误区 2**：认为交叉类型可以创建新属性
+
+```typescript
+// ❌ 误解
+type A = { name: string };
+type B = { age: number };
+type C = A & B; // { name: string; age: number }
+
+// ✅ 正确理解：C 必须同时满足 A 和 B
+const person: C = { name: "Alice", age: 30 }; // ✅
+const partial: C = { name: "Bob" }; // ❌ 缺少 age
+```
+
+### 5.3 交叉类型的不可满足性
+
+```typescript
+// 不可满足的交叉
+type Impossible = string & number; // never
+
+// 实际应用中的陷阱
+type Config = { mode: "dev" } & { mode: "prod" };
+// Config 为 never，因为 mode 不能同时是 "dev" 和 "prod"
 ```
 
 ---
 
-## 3. 联合与交叉的分配律
+## 6. 实例与示例 (Examples)
 
-### 3.1 分配律规则
-
-交叉类型对联合类型满足分配律：
-
-```typescript
-// A & (B | C) ≡ (A & B) | (A & C)
-type Distr = { a: string } & ({ b: number } | { c: boolean });
-// 等价于：({ a: string; b: number }) | ({ a: string; c: boolean })
-```
-
-这在类型运算中非常实用：
-
-```typescript
-type Event =
-  | { type: "click"; x: number; y: number }
-  | { type: "keypress"; key: string };
-
-type WithTimestamp<T> = T & { timestamp: number };
-
-type TimedEvent = WithTimestamp<Event>;
-// 等价于：
-// | { type: "click"; x: number; y: number; timestamp: number }
-// | { type: "keypress"; key: string; timestamp: number }
-```
-
-### 3.2 非分配场景
-
-条件类型中的裸类型参数才具有分配性：
-
-```typescript
-// 分配性：裸类型参数
-type ToArray<T> = T extends any ? T[] : never;
-type A = ToArray<string | number>; // string[] | number[]
-
-// 非分配性：包裹在元组中
-type ToArrayNonDist<T> = [T] extends [any] ? T[] : never;
-type B = ToArrayNonDist<string | number>; // (string | number)[]
-```
-
----
-
-## 4. 实战模式
-
-### 4.1 Redux Action 类型设计
-
-```typescript
-type Action =
-  | { type: "increment"; payload: number }
-  | { type: "decrement"; payload: number }
-  | { type: "reset" }
-  | { type: "setUser"; payload: { id: string; name: string } };
-
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case "increment":
-      return { ...state, count: state.count + action.payload };
-    case "setUser":
-      return { ...state, user: action.payload };
-    // ...
-  }
-}
-```
-
-### 4.2 API 响应类型设计
+### 6.1 正例：API 响应类型
 
 ```typescript
 type ApiResponse<T> =
-  | { success: true; data: T; status: 200 }
-  | { success: false; error: string; status: 400 | 401 | 404 | 500 };
+  | { status: 200; data: T }
+  | { status: 400; error: "Bad Request"; details: string }
+  | { status: 401; error: "Unauthorized" }
+  | { status: 500; error: "Internal Server Error" };
 
-async function fetchUser(id: string): Promise<ApiResponse<User>> {
-  const res = await fetch(`/api/users/${id}`);
-  if (!res.ok) {
-    return { success: false, error: await res.text(), status: res.status as 400 | 401 | 404 | 500 };
-  }
-  return { success: true, data: await res.json(), status: 200 };
+async function fetchUser(): Promise<ApiResponse<User>> {
+  // ...
+}
+
+const response = await fetchUser();
+if (response.status === 200) {
+  console.log(response.data.name); // ✅ User 类型
+} else {
+  console.error(response.error);   // ✅ string 类型
 }
 ```
 
-### 4.3 状态机类型建模
+### 6.2 正例：混入模式（Mixin Pattern）
 
 ```typescript
-type State =
-  | { status: "idle" }
-  | { status: "loading"; requestId: string }
-  | { status: "success"; data: User[] }
-  | { status: "error"; error: Error };
+type Timestamped = { createdAt: Date; updatedAt: Date };
+type Auditable = { createdBy: string; updatedBy: string };
+type SoftDeletable = { deletedAt: Date | null };
 
-function canTransition(from: State, to: State): boolean {
-  if (from.status === "idle" && to.status === "loading") return true;
-  if (from.status === "loading" && (to.status === "success" || to.status === "error")) return true;
-  return false;
-}
+// 交叉类型组合
+type FullEntity = Timestamped & Auditable & SoftDeletable;
+
+const entity: FullEntity = {
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  createdBy: "admin",
+  updatedBy: "admin",
+  deletedAt: null,
+};
 ```
 
----
-
-## 5. 常见陷阱
-
-### 5.1 `never` 的意外产生
+### 6.3 反例：联合类型的错误使用
 
 ```typescript
-// 空联合 = never
-type Empty = never | never; // never
-
-// 交叉冲突 = never
-type Bad = string & number; // never
-```
-
-### 5.2 联合类型的方法调用限制
-
-```typescript
+// ❌ 错误：联合类型上访问非共有属性
 function process(value: string | number) {
-  value.toString(); // ✅ 两者都有 toString()
-  value.toFixed();  // ❌ 'string | number' 上没有 toFixed()
+  return value.length; // ❌ number 没有 length
+}
+
+// ✅ 正确：先收窄类型
+function process(value: string | number) {
+  if (typeof value === "string") {
+    return value.length; // ✅ string 有 length
+  }
+  return value.toString().length;
 }
 ```
 
-**解决方案**：使用类型守卫收窄后再调用：
+---
+
+## 7. 权威参考与国际化对齐 (References)
+
+### 7.1 TypeScript 官方文档
+
+- **TypeScript Handbook: Union Types** — <https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#union-types>
+- **TypeScript Handbook: Intersection Types** — <https://www.typescriptlang.org/docs/handbook/2/objects.html#intersection-types>
+- **TypeScript Handbook: Discriminated Unions** — <https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions>
+
+### 7.2 学术资源
+
+- **"Types and Programming Languages" (Pierce, 2002)** — Ch. 15: Subtyping and Union/Intersection Types
+- **"Set-theoretic Models of Types" (Frisch et al., 2008)** — 类型与集合论的对应
+
+### 7.3 其他语言对比
+
+- **Haskell**: `data Either a b = Left a | Right b`（联合）
+- **Rust**: `enum Option<T> { Some(T), None }`（可辨识联合）
+- **Scala**: `with` 关键字（交叉类型）
+- **Flow**: 联合和交叉类型语法与 TypeScript 相同
+
+---
+
+## 8. 思维表征总结 (Cognitive Representations)
+
+### 8.1 联合 vs 交叉速查决策树
+
+```mermaid
+flowchart TD
+    Start[需要组合类型?] --> Q1{语义?}
+    Q1 -->|"或" 关系| Union["使用 | 联合类型"]
+    Q1 -->|"且" 关系| Intersection["使用 & 交叉类型"]
+
+    Union --> U1{场景?}
+    U1 -->|多种可能值| U2["字面量联合<br>\"a\" | \"b\""]
+    U1 -->|多种对象形状| U3["对象联合 + 可辨识字段"]
+    U1 -->|多种原始类型| U4["string | number"]
+
+    Intersection --> I1{场景?}
+    I1 -->|合并多个接口| I2["接口交叉"]
+    I1 -->|添加约束| I3["类型 & 约束"]
+```
+
+### 8.2 类型代数速查表
+
+| 运算 | 集合论 | TypeScript | 值示例 |
+|------|--------|-----------|--------|
+| 并集 | A ∪ B | `A \| B` | `string \| number` |
+| 交集 | A ∩ B | `A & B` | `{a: string} & {b: number}` |
+| 差集 | A − B | `Exclude<A, B>` | `Exclude<"a"\|"b", "a">` → `"b"` |
+| 补集 | Aᶜ | 无直接语法 | — |
+
+### 8.3 可辨识联合设计模式
 
 ```typescript
-function process(value: string | number) {
-  if (typeof value === "number") {
-    value.toFixed(2); // ✅ value 被收窄为 number
-  } else {
-    value.toUpperCase(); // ✅ value 被收窄为 string
+// 标准模板
+type Event =
+  | { type: "click"; x: number; y: number }
+  | { type: "keypress"; key: string }
+  | { type: "scroll"; top: number };
+
+// 处理函数
+function handle(event: Event) {
+  switch (event.type) {
+    case "click": return handleClick(event); // 自动收窄
+    case "keypress": return handleKeypress(event);
+    case "scroll": return handleScroll(event);
   }
 }
 ```
 
-### 5.3 交叉类型的属性冲突
+---
+
+## 补充：高级联合与交叉模式
+
+###  branded types 与名义类型模拟
 
 ```typescript
-// 交叉同名属性可能导致 never
-type Config = { mode: "dev"; debug: true } & { mode: "prod"; debug: false };
-// Config['mode'] = "dev" & "prod" = never
-// 这种类型实际上无法构造任何值
+// 使用交叉类型模拟名义类型
+type UserId = string & { __brand: "UserId" };
+type OrderId = string & { __brand: "OrderId" };
+
+function getUser(id: UserId) { /* ... */ }
+
+const userId = "123" as UserId;
+const orderId = "123" as OrderId;
+
+getUser(userId);   // ✅
+getUser(orderId);  // ❌ Type 'OrderId' is not assignable to type 'UserId'
+```
+
+### 分配性条件类型
+
+联合类型在条件类型中具有分配性：
+
+```typescript
+// 分配律：T extends U ? X : Y 对联合类型分配
+type ToArray<T> = T extends any ? T[] : never;
+type Result = ToArray<string | number>; // string[] | number[]
+
+// 阻止分配：用元组包裹
+type ToArrayNonDist<T> = [T] extends [any] ? T[] : never;
+type Result2 = ToArrayNonDist<string | number>; // (string | number)[]
+```
+
+### never 在联合中的吸收律
+
+```typescript
+type A = string | never;  // ≡ string
+type B = number & never;  // ≡ never
+type C = unknown | never; // ≡ unknown
+```
+
+### 联合与交叉的类型安全对比
+
+| 特性 | 联合 `A | B` | 交叉 `A & B` |
+|------|------------|------------|
+| 值数量 | 多（A ∪ B） | 少（A ∩ B） |
+| 可用属性 | 少（交集） | 多（并集） |
+| 类型收窄 | 需要守卫 | 不需要 |
+| 空结果 | `never` | `never` |
+
+---
+
+**参考规范**：TypeScript Handbook: Union and Intersection Types | "Types and Programming Languages" (Pierce, 2002)
+
+## 深入分析：设计原理与哲学
+
+### 类型系统的哲学基础
+
+类型系统的核心哲学是**通过静态约束换取运行时安全**：
+
+| 哲学流派 | 代表语言 | 核心思想 |
+|---------|---------|---------|
+| 显式类型 | Java, C# | 开发者显式声明所有类型 |
+| 隐式推断 | Haskell, ML | 编译器自动推断大多数类型 |
+| 渐进类型 | TypeScript, Flow | 可选类型，渐进增强 |
+| 依赖类型 | Idris, Agda | 类型可依赖值 |
+
+TypeScript 选择**渐进类型**路线的原因：
+1. **与 JavaScript 生态兼容**：零成本迁移
+2. **灵活性**：从松散到严格的渐进路径
+3. **开发者体验**：推断减少样板代码
+
+### 类型系统的表达能力
+
+```
+表达能力谱系：
+
+简单类型 λ 演算 < 多态 λ 演算 (System F) < 依赖类型
+     ↑                    ↑
+  Java 早期          TypeScript/Haskell
+```
+
+TypeScript 的类型系统接近 **System F_ω** 的子集，支持：
+- 参数多态（泛型）
+- 高阶类型（有限的）
+- 条件类型（类型级计算）
+
+### 运行时与编译时的分离
+
+TypeScript 的核心设计决策：**类型擦除（Type Erasure）**
+
+```typescript
+// 编译前
+function greet(name: string): string {
+  return `Hello, ${name}`;
+}
+
+// 编译后
+function greet(name) {
+  return `Hello, ${name}`;
+}
+```
+
+**优点**：
+- 零运行时开销
+- 与 JavaScript 完全互操作
+- 生成的代码可读
+
+**缺点**：
+- 运行时无法进行类型检查
+- 反射能力有限
+- 需要外部验证（如 zod, io-ts）
+
+### 类型系统的未来方向
+
+| 方向 | 状态 | 预期 |
+|------|------|------|
+| 类型内省 | 实验性 | TS 7.0+ |
+| 编译时值计算 | 有限支持 | 持续增强 |
+| 效应类型 | 无计划 | 可能永远不 |
+| 依赖类型 | 无计划 | 与 TS 设计目标冲突 |
+
+---
+
+## 思维表征：类型系统全景图
+
+```mermaid
+mindmap
+  root((TypeScript 类型系统))
+    基础层
+      原始类型
+      对象类型
+      数组类型
+      函数类型
+    组合层
+      联合 |
+      交叉 &
+      条件 extends
+      映射 keyof
+    抽象层
+      泛型 T
+      类型参数
+      类型约束
+      型变 in/out
+    元编程层
+      条件类型
+      递归类型
+      模板字面量
+      类型体操
+    应用层
+      工具类型
+      类型守卫
+      品牌类型
+      运行时验证
 ```
 
 ---
 
-## 6. 最新进展
+## 质量检查清单
 
-### TS 5.5+ 的联合类型推断改进
-
-TypeScript 5.5 改进了某些场景下的联合类型推断精度，特别是在数组过滤和方法链中：
-
-```typescript
-// TS 5.5 之前可能推断为 (string | null)[]
-// TS 5.5+ 推断为 string[]
-const filtered = ["a", null, "b"].filter((x): x is string => x !== null);
-```
-
-### TS 6.0 默认严格模式
-
-`strict: true` 默认启用后，联合类型的穷尽性检查更加严格，未覆盖的联合成员会在编译时报错。
+- [x] 形式化定义
+- [x] 属性矩阵
+- [x] 关系分析
+- [x] 机制解释
+- [x] 论证分析
+- [x] 正例反例
+- [x] 权威参考
+- [x] 思维表征
+- [x] 版本对齐
 
 ---
 
-**参考规范**：TypeScript Handbook: Unions and Intersections | ECMA-262 §6.1.7 The Object Type
+**最终参考**：ECMA-262 §6–§10 | TypeScript Handbook | MDN | Pierce (2002)

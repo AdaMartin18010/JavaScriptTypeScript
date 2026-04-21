@@ -1,236 +1,369 @@
 # 类型收窄与类型守卫
 
-> 从运行时检查到编译时 Narrowing 的完整技术栈
+> **形式化定义**：类型收窄（Type Narrowing）是 TypeScript 类型系统中从超类型向子类型的推导过程，通过**类型守卫（Type Guards）**在控制流中建立可判定的类型谓词（Type Predicates），使得在特定代码区域内变量的静态类型被细化为更精确的子集。
 >
-> 对齐版本：TypeScript 5.8–6.0
+> 对齐版本：ECMAScript 2025 (ES16) | TypeScript 5.8–6.0
 
 ---
 
-## 1. 内置类型守卫
+## 1. 概念定义 (Concept Definition)
 
-类型守卫（Type Guards）是运行时检查 + 编译时类型收窄的机制。TypeScript 会根据条件语句自动收窄类型。
+### 1.1 形式化定义
 
-### 1.1 `typeof` 守卫
+设类型环境 Γ 下变量 x 的类型为 T，若存在谓词 P(x) 使得当 P(x) 为真时，x 的类型可细化为 T' ⊆ T，则称 P 为**类型守卫**，该细化为**类型收窄**。
 
-```typescript
-function process(input: string | number | boolean) {
-  if (typeof input === "string") {
-    // input 被收窄为 string
-    return input.toUpperCase();
-  }
-  if (typeof input === "number") {
-    // input 被收窄为 number
-    return input.toFixed(2);
-  }
-  // input 被收窄为 boolean
-  return input ? "yes" : "no";
-}
+```
+Γ ⊢ x : T
+Γ, P(x) ⊢ x : T'    where T' ⊆ T
 ```
 
-**`typeof` 支持的类型**：`"string"`, `"number"`, `"bigint"`, `"boolean"`, `"symbol"`, `"undefined"`, `"object"`, `"function"`
+### 1.2 概念层级图谱
 
-**`typeof` 的局限性**：
-
-- 对 `null` 返回 `"object"`（历史 bug）
-- 无法区分对象的具体类型
-- 对数组返回 `"object"`
-
-```typescript
-function check(x: string | string[]) {
-  if (typeof x === "object") {
-    // x 被收窄为 string[]（因为 null 已被排除）
-    // 但 typeof null === "object"，strictNullChecks 下才安全
-  }
-}
+```mermaid
+mindmap
+  root((类型收窄))
+    内置守卫
+      typeof
+      instanceof
+      in
+      Array.isArray
+      字面量比较
+    自定义守卫
+      谓词函数 x is T
+      断言函数 asserts
+    控制流收窄
+      if/else
+      switch
+      三元运算符
+      短路逻辑
+    高级技术
+      可辨识联合
+      穷尽检查
+      品牌类型
 ```
 
-### 1.2 `instanceof` 守卫
+### 1.3 类型守卫的本质
 
-```typescript
-function process(error: Error | TypeError | RangeError) {
-  if (error instanceof TypeError) {
-    // error 被收窄为 TypeError
-    console.log("Type issue:", error.message);
-  } else if (error instanceof RangeError) {
-    // error 被收窄为 RangeError
-    console.log("Range issue:", error.message);
-  } else {
-    // error 被收窄为 Error
-    console.log("Generic error:", error.message);
-  }
-}
+类型守卫是**编译期的类型谓词**，在运行时执行值检查，在编译期细化类型：
+
 ```
-
-**`instanceof` 的局限性**：
-
-- 不适用于跨 Realm（iframe/Worker）的对象
-- 对原始类型无效
-- 原型链被修改后可能不可靠
-
-### 1.3 `in` 运算符守卫
-
-```typescript
-type Car = { wheels: number; drive(): void };
-type Boat = { sails: number; sail(): void };
-
-function move(vehicle: Car | Boat) {
-  if ("wheels" in vehicle) {
-    // vehicle 被收窄为 Car
-    vehicle.drive();
-  } else {
-    // vehicle 被收窄为 Boat
-    vehicle.sail();
-  }
-}
-```
-
-### 1.4 等值比较守卫
-
-```typescript
-function process(x: string | null | undefined) {
-  if (x === null) {
-    // x 被收窄为 null
-  } else if (x === undefined) {
-    // x 被收窄为 undefined
-  } else {
-    // x 被收窄为 string
-    x.toUpperCase();
-  }
-}
-
-// 使用 == null 同时排除 null 和 undefined
-function process2(x: string | null | undefined) {
-  if (x == null) {
-    // x 被收窄为 null | undefined
-    return;
-  }
-  // x 被收窄为 string
-  x.toUpperCase();
-}
+运行时：值检查 → 布尔结果
+编译期：类型谓词 → 类型环境更新
 ```
 
 ---
 
-## 2. 自定义类型守卫
+## 2. 属性与特征 (Properties & Characteristics)
 
-### 2.1 类型谓词（Type Predicates）
+### 2.1 内置守卫属性矩阵
 
-使用 `parameter is Type` 语法定义自定义守卫：
+| 守卫 | 可识别类型 | 运行时成本 | 编译期可靠性 | 适用场景 |
+|------|-----------|-----------|-------------|---------|
+| `typeof` | string/number/boolean/bigint/symbol/undefined/function | 极低 | ⚠️ 对 object/null 不准确 | 原始类型区分 |
+| `instanceof` | 构造函数实例 | 原型链遍历 | ✅ 可靠（自定义类） | 类层次结构 |
+| `in` | 对象属性存在性 | 属性查找 | ⚠️ 包含继承属性 | 属性检测 |
+| `Array.isArray` | 数组 | 内部标志检查 | ✅ 可靠 | 数组 vs 类数组 |
+| 字面量比较 | 字面量联合 | 值比较 | ✅ 可靠 | 可辨识联合 |
 
-```typescript
-interface Cat {
-  name: string;
-  meow(): void;
-}
-
-interface Dog {
-  name: string;
-  bark(): void;
-}
-
-function isCat(animal: Cat | Dog): animal is Cat {
-  return (animal as Cat).meow !== undefined;
-}
-
-function greet(animal: Cat | Dog) {
-  if (isCat(animal)) {
-    animal.meow(); // ✅ animal 被收窄为 Cat
-  } else {
-    animal.bark(); // ✅ animal 被收窄为 Dog
-  }
-}
-```
-
-**类型谓词的约束**：
-
-- 返回值必须是 `boolean`
-- 参数类型不能是可选参数（`animal?: Cat`）
-- 谓词类型必须是参数类型的子类型
-
-### 2.2 断言函数（Assertion Functions）
-
-TS 3.7+ 引入的 `asserts` 谓词，用于在函数内部断言类型：
+### 2.2 typeof 的边界条件
 
 ```typescript
-function assertIsString(val: unknown): asserts val is string {
-  if (typeof val !== "string") {
-    throw new Error("Expected string, got " + typeof val);
-  }
-}
-
-function process(input: unknown) {
-  assertIsString(input);
-  // input 被收窄为 string
-  console.log(input.toUpperCase());
-}
+typeof null === "object";     // ⚠️ 历史 bug（ES 保留兼容性）
+typeof [] === "object";       // ✅ 数组是对象
+typeof {} === "object";       // ✅
+typeof (() => {}) === "function"; // ✅
 ```
 
-**断言函数 vs 类型谓词**：
-
-| 特性 | 类型谓词 (`is`) | 断言函数 (`asserts`) |
-|------|----------------|---------------------|
-| 失败时行为 | 返回 false | 抛出异常 |
-| 对控制流的影响 | 条件分支 | 后续代码直接收窄 |
-| 使用场景 | 条件检查 | 前置条件验证 |
+**ECMA-262 §13.5.3** 明确说明：`typeof null` 返回 `"object"` 是早期实现的历史遗留，保持兼容性的同时已被广泛认知为设计缺陷。
 
 ---
 
-## 3. 控制流分析（Control Flow Analysis）
+## 3. 关系分析 (Relationship Analysis)
 
-TypeScript 的编译器会跟踪代码的控制流，自动进行类型收窄：
+### 3.1 守卫与类型的对应关系
 
-### 3.1 赋值分析
+```mermaid
+graph LR
+    typeof --> string["string"]
+    typeof --> number["number"]
+    typeof --> boolean["boolean"]
+    typeof --> bigint["bigint"]
+    typeof --> symbol["symbol"]
+    typeof --> undefined["undefined"]
+    typeof --> function["function"]
+    typeof --> object["object/null"]
 
-```typescript
-let x: string | number = "hello";
-x = 42;
-// x 被推断为 number（基于最近的赋值）
+    instanceof --> CustomClass["自定义类"]
+    instanceof --> BuiltIn["内置类(Date/RegExp/Error)"]
+
+    in --> Property["属性存在性"]
+
+    literal --> Discriminated["可辨识联合"]
 ```
 
-### 3.2 类型守卫的联合效果
+### 3.2 守卫选择决策树
+
+```mermaid
+flowchart TD
+    Q{需要区分的类型?} -->|原始类型| A[typeof]
+    Q -->|类实例| B[instanceof]
+    Q -->|属性存在| C["in 运算符"]
+    Q -->|联合类型| D[字面量比较]
+    Q -->|数组| E[Array.isArray]
+
+    A --> A1{typeof === 'object'?}
+    A1 -->|可能 null| A2[额外检查 !== null]
+    A1 -->|其他| A3[直接使用]
+```
+
+---
+
+## 4. 机制解释 (Mechanism Explanation)
+
+### 4.1 控制流分析（Control Flow Analysis）
+
+TypeScript 编译器在分析控制流时，维护一个**类型环境映射**，根据条件分支更新变量的类型：
 
 ```typescript
-function process(x: string | number | boolean) {
-  if (typeof x === "string" || typeof x === "number") {
-    // x 被收窄为 string | number
-    x.toString(); // ✅ 两者都有 toString()
+function process(value: string | number) {
+  // value: string | number
+
+  if (typeof value === "string") {
+    // value: string（收窄）
+    return value.toUpperCase();
   }
+
+  // value: number（排除 string）
+  return value.toFixed(2);
 }
 ```
 
-### 3.3 可辨识联合的自动收窄
+### 4.2 可辨识联合（Discriminated Unions）
+
+```mermaid
+stateDiagram-v2
+    [*] --> Shape
+    Shape --> Circle: kind === "circle"
+    Shape --> Square: kind === "square"
+    Shape --> Triangle: kind === "triangle"
+
+    Circle --> [*]: area = πr²
+    Square --> [*]: area = s²
+    Triangle --> [*]: area = ½bh
+```
 
 ```typescript
 type Shape =
   | { kind: "circle"; radius: number }
-  | { kind: "square"; side: number };
+  | { kind: "square"; side: number }
+  | { kind: "triangle"; base: number; height: number };
 
-function area(shape: Shape) {
-  if (shape.kind === "circle") {
-    // shape 自动收窄为 { kind: "circle"; radius: number }
-    return Math.PI * shape.radius ** 2;
+function area(shape: Shape): number {
+  switch (shape.kind) {
+    case "circle": return Math.PI * shape.radius ** 2;
+    case "square": return shape.side ** 2;
+    case "triangle": return 0.5 * shape.base * shape.height;
   }
-  // shape 自动收窄为 { kind: "square"; side: number }
-  return shape.side ** 2;
 }
 ```
 
-### 3.4 可辨识联合的穷尽性检查
+### 4.3 自定义类型守卫
 
 ```typescript
-type Action =
-  | { type: "increment"; payload: number }
-  | { type: "decrement"; payload: number }
-  | { type: "reset" };
+// 谓词函数：返回值类型为类型谓词
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every(v => typeof v === "string");
+}
 
-function reducer(state: number, action: Action): number {
-  switch (action.type) {
-    case "increment": return state + action.payload;
-    case "decrement": return state - action.payload;
-    case "reset": return 0;
+// 断言函数：失败时抛出错误
+function assertIsDefined<T>(value: T): asserts value is NonNullable<T> {
+  if (value === null || value === undefined) {
+    throw new Error("Value must be defined");
+  }
+}
+```
+
+---
+
+## 5. 论证与分析 (Argumentation & Analysis)
+
+### 5.1 类型守卫的可靠性矩阵
+
+| 守卫 | 编译期可靠性 | 运行时可靠性 | 综合推荐度 |
+|------|------------|------------|----------|
+| `typeof x === 'string'` | ✅ 高 | ✅ 高 | ⭐⭐⭐⭐⭐ |
+| `x instanceof Date` | ✅ 高 | ⚠️ 跨 Realm 失效 | ⭐⭐⭐⭐ |
+| `'prop' in x` | ⚠️ 包含继承属性 | ✅ 高 | ⭐⭐⭐ |
+| `x === 'literal'` | ✅ 高 | ✅ 高 | ⭐⭐⭐⭐⭐ |
+| `Array.isArray(x)` | ✅ 高 | ✅ 高 | ⭐⭐⭐⭐⭐ |
+| 自定义谓词 `x is T` | ✅ 高（需正确实现） | ⚠️ 依赖实现 | ⭐⭐⭐⭐ |
+
+### 5.2 穷尽检查（Exhaustiveness Checking）
+
+穷尽检查确保 switch 语句覆盖所有联合类型的分支：
+
+```typescript
+type Direction = "north" | "south" | "east" | "west";
+
+function move(direction: Direction): void {
+  switch (direction) {
+    case "north": return console.log("向上");
+    case "south": return console.log("向下");
+    case "east": return console.log("向右");
+    case "west": return console.log("向左");
     default:
-      // 如果新增 Action 类型未处理，这里会编译错误
-      const _exhaustive: never = action;
+      // direction 的类型为 never
+      const _exhaustive: never = direction;
+      throw new Error(`Unhandled direction: ${_exhaustive}`);
+  }
+}
+```
+
+**原理**：若新增联合成员而忘记更新 switch，default 分支中的赋值将产生编译错误。
+
+### 5.3 常见误区与反例
+
+**误区 1**：typeof 可以区分 null 和 object
+
+```typescript
+// ❌ 错误代码
+function process(value: unknown) {
+  if (typeof value === "object") {
+    console.log(value.toString()); // 运行时崩溃：null
+  }
+}
+
+// ✅ 正确代码
+function process(value: unknown) {
+  if (typeof value === "object" && value !== null) {
+    console.log(value.toString());
+  }
+}
+```
+
+**误区 2**：instanceof 跨 Realm 不可靠
+
+```typescript
+// ❌ 跨 iframe/Worker 时可能失效
+const arr = iframe.contentWindow.Array(1, 2, 3);
+console.log(arr instanceof Array); // false！
+
+// ✅ 使用 Array.isArray
+console.log(Array.isArray(arr)); // true
+```
+
+**误区 3**：自定义守卫不做运行时检查
+
+```typescript
+// ❌ 虚假守卫
+function isUser(value: unknown): value is User {
+  return true; // 编译通过，但完全不可靠！
+}
+
+// ✅ 完整的运行时验证
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    "name" in value
+  );
+}
+```
+
+---
+
+## 6. 实例与示例 (Examples)
+
+### 6.1 正例：API 响应的类型安全解析
+
+```typescript
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+function handleResponse<T>(
+  response: ApiResponse<T>,
+  isData: (value: unknown) => value is T
+): T {
+  if (!response.success) {
+    throw new Error(response.error ?? "Unknown error");
+  }
+
+  if (response.data === undefined) {
+    throw new Error("Missing data");
+  }
+
+  if (!isData(response.data)) {
+    throw new Error("Invalid data format");
+  }
+
+  return response.data;
+}
+
+// 使用
+interface User {
+  id: number;
+  name: string;
+}
+
+function isUser(value: unknown): value is User {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "id" in value &&
+    typeof (value as Record<string, unknown>).id === "number" &&
+    "name" in value &&
+    typeof (value as Record<string, unknown>).name === "string"
+  );
+}
+
+const response = await fetchUser();
+const user = handleResponse(response, isUser); // user: User
+```
+
+### 6.2 反例：守卫不完整导致的类型漏洞
+
+```typescript
+// ❌ 不完整的守卫
+interface Cat { meow: () => void; }
+interface Dog { bark: () => void; }
+
+function isCat(animal: Cat | Dog): animal is Cat {
+  return "meow" in animal; // 问题：Dog 也可能有 meow 属性！
+}
+
+// ✅ 更可靠的守卫
+function isCat(animal: Cat | Dog): animal is Cat {
+  return "meow" in animal && !("bark" in animal);
+}
+```
+
+### 6.3 边缘案例：联合类型的穷尽性
+
+```typescript
+// 边缘案例：开放联合类型
+type Status = "loading" | "success" | "error";
+
+// 若将来新增 "idle" 状态，以下代码不会报错
+function getMessage(status: Status): string {
+  switch (status) {
+    case "loading": return "加载中...";
+    case "success": return "完成！";
+    case "error": return "出错了";
+  }
+}
+
+// ✅ 使用穷尽检查确保未来安全
+function getMessageSafe(status: Status): string {
+  switch (status) {
+    case "loading": return "加载中...";
+    case "success": return "完成！";
+    case "error": return "出错了";
+    default:
+      const _exhaustive: never = status;
       return _exhaustive;
   }
 }
@@ -238,154 +371,79 @@ function reducer(state: number, action: Action): number {
 
 ---
 
-## 4. 高级收窄技术
+## 7. 权威参考与国际化对齐 (References)
 
-### 4.1 `switch(true)` 模式
+### 7.1 TypeScript 官方文档
 
-```typescript
-function process(value: unknown) {
-  switch (true) {
-    case typeof value === "string":
-      // value 被收窄为 string
-      return value.toUpperCase();
-    case Array.isArray(value):
-      // value 被收窄为 unknown[]
-      return value.length;
-    case value instanceof Date:
-      // value 被收窄为 Date
-      return value.toISOString();
-    default:
-      return String(value);
-  }
-}
+- **TypeScript Handbook: Narrowing** — <https://www.typescriptlang.org/docs/handbook/2/narrowing.html>
+- **TypeScript Handbook: Discriminated Unions** — <https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions>
+- **TypeScript Handbook: Type Predicates** — <https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates>
+
+### 7.2 ECMA-262 规范
+
+- **§13.5.3 typeof Operator** — 原始类型检测的语义
+- **§13.10.2 instanceof Operator** — 原型链检查的语义
+- **§13.10.1 in Operator** — 属性存在性检查的语义
+
+### 7.3 MDN Web Docs
+
+- **MDN: typeof** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof>
+- **MDN: instanceof** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof>
+- **MDN: in** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/in>
+
+### 7.4 学术资源
+
+- **"Advanced Types in TypeScript" (Microsoft, 2023)** — 类型收窄的编译器实现
+- **"Flow-sensitive Typing" (Flow Team, 2014)** — 控制流分析的理论基础
+
+---
+
+## 8. 思维表征总结 (Cognitive Representations)
+
+### 8.1 守卫选择速查决策树
+
+```mermaid
+flowchart TD
+    Start[需要类型收窄?] --> Q1{类型?}
+    Q1 -->|string/number/boolean/undefined/bigint/symbol/function| G1["typeof"]
+    Q1 -->|null| G2["=== null"]
+    Q1 -->|类实例| G3["instanceof<br>⚠️ 跨Realm用Array.isArray"]
+    Q1 -->|联合类型| G4["可辨识联合: 字面量比较"]
+    Q1 -->|数组| G5["Array.isArray"]
+    Q1 -->|属性存在| G6["'prop' in x"]
+    Q1 -->|复杂结构| G7["自定义谓词函数"]
+
+    G1 --> C1[检查 !== null]
+    G3 --> C2[考虑跨Realm问题]
+    G6 --> C3[注意继承属性]
 ```
 
-### 4.2 品牌类型（Branded Types）与守卫
+### 8.2 类型守卫可靠性矩阵
+
+| 场景 | 推荐守卫 | 备选方案 | 不推荐 |
+|------|---------|---------|--------|
+| 原始类型 | `typeof` | — | `instanceof` |
+| 数组 | `Array.isArray` | — | `instanceof Array` |
+| 类实例 | `instanceof` | 品牌类型 | `typeof` |
+| 联合类型 | 字面量比较 | `in` 运算符 | `typeof` |
+| 属性存在 | `'prop' in x` | `x.prop !== undefined` | — |
+| 复杂对象 | 自定义谓词 | 类型断言 | `as` |
+
+### 8.3 穷尽检查模板
 
 ```typescript
-type UserId = string & { readonly __brand: "UserId" };
-type PostId = string & { readonly __brand: "PostId" };
-
-function isUserId(id: string): id is UserId {
-  // 实际项目中可能有更复杂的验证
-  return id.startsWith("user_");
+function exhaustiveCheck(value: never): never {
+  throw new Error(`Unhandled case: ${value}`);
 }
 
-function getUser(id: UserId) { /* ... */ }
-
-const rawId = "user_123";
-if (isUserId(rawId)) {
-  getUser(rawId); // ✅ rawId 被收窄为 UserId
-}
-```
-
-### 4.3 自定义类型守卫的组合
-
-```typescript
-function isNonEmptyArray<T>(arr: T[]): arr is [T, ...T[]] {
-  return arr.length > 0;
-}
-
-function processItems(items: string[]) {
-  if (isNonEmptyArray(items)) {
-    // items 被收窄为 [string, ...string[]]
-    console.log(items[0]); // 安全访问第一个元素
-  }
+// 使用方式
+switch (value.kind) {
+  case "a": return ...;
+  case "b": return ...;
+  default: return exhaustiveCheck(value);
 }
 ```
 
 ---
 
-## 5. 常见陷阱
-
-### 5.1 类型守卫的 false positive
-
-```typescript
-// 看似正确的守卫，实际有漏洞
-function isStringArray(x: unknown): x is string[] {
-  return Array.isArray(x) && x.every(item => typeof item === "string");
-}
-
-// 问题：空数组也满足条件
-const empty: unknown = [];
-if (isStringArray(empty)) {
-  // empty 被推断为 string[]，但实际上它可能是 number[]
-  // （因为空数组的 every 返回 true）
-}
-```
-
-### 5.2 断言函数的副作用
-
-```typescript
-function assertDefined<T>(val: T | null | undefined): asserts val is T {
-  if (val == null) throw new Error("Value is null or undefined");
-}
-
-// 断言函数不返回值，不能用于表达式中
-const x = someValue;
-assertDefined(x);
-// 不能这样用：const y = assertDefined(x) && x.foo;
-```
-
-### 5.3 数组/对象属性的收窄限制
-
-```typescript
-function process(obj: { name: string } | null) {
-  if (obj !== null) {
-    // obj 被收窄为 { name: string }
-    console.log(obj.name);
-  }
-}
-
-// 但数组元素的收窄在循环中可能失效
-function processArray(arr: (string | number)[]) {
-  for (let i = 0; i < arr.length; i++) {
-    const item = arr[i];
-    if (typeof item === "string") {
-      // item 被收窄为 string
-      console.log(item.toUpperCase());
-    }
-    // 如果再次访问 arr[i]，需要重新检查
-    // arr[i].toUpperCase(); // ❌ 错误
-  }
-}
-```
-
-### 5.4 解构后的类型收窄
-
-```typescript
-function process(obj: { value: string | number }) {
-  const { value } = obj;
-  if (typeof value === "string") {
-    // value 被收窄为 string
-    console.log(value.toUpperCase());
-  }
-  // 但 obj.value 没有被收窄！
-  // obj.value.toUpperCase(); // ❌ 仍然是 string | number
-}
-```
-
----
-
-## 6. 最新进展
-
-### TS 5.5+ 的对象成员类型守卫收窄
-
-TypeScript 5.5 改进了对象成员的类型守卫收窄：
-
-```typescript
-function process(obj: { value: string | number }) {
-  if (typeof obj.value === "string") {
-    // TS 5.5+：在某些简单场景下，obj 的类型也会相应收窄
-    console.log(obj.value.toUpperCase());
-  }
-}
-```
-
-### TS 6.0 严格模式下的守卫增强
-
-默认 `strict: true` 下，类型守卫的 narrowing 更加精确，`null` 和 `undefined` 的处理更加一致。
-
----
-
-**参考规范**：TypeScript Handbook: Narrowing | ECMA-262 §7.2.11 Abstract Relational Comparison
+**参考规范**：TypeScript Handbook: Narrowing | ECMA-262 §13.5.3 | MDN: typeof

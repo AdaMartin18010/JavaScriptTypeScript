@@ -1,374 +1,470 @@
 # 基础类型体系
 
-> TypeScript 类型系统的地基：原始类型、复合类型、特殊类型与类型层级
+> **形式化定义**：TypeScript 类型系统建立在 ECMAScript 2025 运行时类型之上，通过静态类型层为 JavaScript 值空间施加一个可判定（decidable）的偏序结构，其中 `unknown` 为顶类型（Top）、`never` 为底类型（Bottom），原始类型（Primitive Types）与对象类型（Object Types）构成互不相交的并集。
 >
-> 对齐版本：TypeScript 5.8–6.0 | ECMAScript 2025 (ES16)
+> 对齐版本：ECMAScript 2025 (ES16) | TypeScript 5.8–6.0 | TS 7.0 Go 编译器预览
 
 ---
 
-## 1. 原始类型（Primitive Types）
+## 1. 概念定义 (Concept Definition)
 
-ECMAScript 2025 定义了 7 种原始类型，TypeScript 为其提供了对应的类型注解：
+### 1.1 形式化定义
 
-| TS 类型 | JS 原始类型 | 字面量示例 | 说明 |
-|---------|-----------|-----------|------|
-| `string` | String | `"hello"` | UTF-16 编码的字符序列 |
-| `number` | Number | `42`, `3.14` | IEEE 754 双精度浮点数 |
-| `boolean` | Boolean | `true`, `false` | 逻辑真值 |
-| `bigint` | BigInt (ES2020) | `9007199254740993n` | 任意精度整数 |
-| `symbol` | Symbol (ES2015) | `Symbol('desc')` | 唯一且不可变的值 |
-| `null` | Null | `null` | 有意缺失的对象引用 |
-| `undefined` | Undefined | `undefined` | 未初始化的值 |
+ECMA-262 §6.1 定义了语言的**类型（Type）**：
 
-```typescript
-// 原始类型的声明
-const name: string = "TypeScript";
-const count: number = 42;
-const isDone: boolean = false;
-const huge: bigint = 9007199254740993n;
-const key: symbol = Symbol("uniqueKey");
+> *"A type is a set of data values."* — ECMA-262 §6.1
+
+TypeScript 在此基础上构建了**静态类型层**，形成双层类型系统：
+
+```
+┌─────────────────────────────────────────┐
+│         TypeScript 静态类型层            │
+│  (编译时存在，运行时被擦除)               │
+├─────────────────────────────────────────┤
+│         ECMAScript 运行时类型            │
+│  (typeof / instanceof / === 可操作)      │
+└─────────────────────────────────────────┘
 ```
 
-### 1.1 字面量类型（Literal Types）
+### 1.2 类型层级（Lattice）
 
-TS 允许将具体值作为类型，形成**字面量类型**：
+```mermaid
+graph TD
+    unknown["unknown (⊤)"] --> any
+    unknown --> object
+    unknown --> string
+    unknown --> number
+    unknown --> boolean
+    unknown --> symbol
+    unknown --> bigint
+    unknown --> null
+    unknown --> undefined
 
-```typescript
-type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
-type StatusCode = 200 | 404 | 500;
-type Flag = true | false;
+    any --> string
+    any --> number
+    any --> boolean
+    any --> object
 
-const method: HttpMethod = "GET"; // ✅
-const method2: HttpMethod = "PATCH"; // ❌ 类型错误
+    object --> Array
+    object --> Function
+    object --> Date
+    object --> RegExp
+    object --> Record
+
+    string --> never["never (⊥)"]
+    number --> never
+    boolean --> never
+    symbol --> never
+    bigint --> never
+    null --> never
+    undefined --> never
+    Array --> never
+    Function --> never
 ```
 
-字面量类型是**联合类型**的基石，也是 TS 类型收窄的核心机制之一。
+### 1.3 核心概念图谱
 
-### 1.2 `null` 与 `undefined` 的语义差异
-
-| 特性 | `undefined` | `null` |
-|------|------------|--------|
-| 语义 | 变量未初始化 | 对象引用有意为空 |
-| 默认参数 | 触发默认值 | 不触发（显式传入 null） |
-| JSON.stringify | 被忽略 | 保留为 `null` |
-| 可选链短路 | 是 | 是 |
-
-```typescript
-function greet(name?: string) {
-  return name ?? "Guest"; // undefined 触发默认值，null 也触发
-}
-
-greet();        // "Guest"
-greet(undefined); // "Guest"
-greet(null);    // "Guest"（如果意图是传入空值，可能不是预期行为）
+```mermaid
+mindmap
+  root((类型系统))
+    原始类型
+      string
+      number
+      boolean
+      bigint
+      symbol
+      null
+      undefined
+    对象类型
+      Array
+      Function
+      Date
+      自定义对象
+    特殊类型
+      unknown
+      any
+      never
+      void
+    类型操作
+      联合 |
+      交叉 &
+      条件 extends
+      映射 keyof
 ```
-
-**TypeScript 严格空检查（`strictNullChecks`）**：开启后，`null` 和 `undefined` 不能赋值给其他类型，必须显式处理。
 
 ---
 
-## 2. 特殊类型
+## 2. 属性与特征 (Properties & Characteristics)
 
-### 2.1 `any`：类型系统的逃生舱
+### 2.1 核心属性矩阵
+
+| 类型 | 可赋值给 | 可接收 | 运行时存在 | 可枚举 | 可配置 | 可写 |
+|------|---------|--------|-----------|--------|--------|------|
+| `string` | `string`, `unknown` | `string`, `"literal"`, `never` | ✅ | — | — | — |
+| `number` | `number`, `unknown` | `number`, `literal`, `never` | ✅ | — | — | — |
+| `boolean` | `boolean`, `unknown` | `true`, `false`, `never` | ✅ | — | — | — |
+| `bigint` | `bigint`, `unknown` | `bigint`, `never` | ✅ | — | — | — |
+| `symbol` | `symbol`, `unknown` | `symbol`, `unique symbol`, `never` | ✅ | — | — | — |
+| `null` | `null`, `unknown` | `null`, `never` | ✅ | — | — | — |
+| `undefined` | `undefined`, `void`, `unknown` | `undefined`, `never` | ✅ | — | — | — |
+| `object` | `object`, `unknown` | 所有非原始类型, `never` | ✅ | — | — | — |
+| `unknown` | `unknown` | **所有类型** | ❌ (编译时) | — | — | — |
+| `any` | **所有类型** | **所有类型** | ❌ (编译时) | — | — | — |
+| `never` | **所有类型** | **无** | ❌ (编译时) | — | — | — |
+
+### 2.2 边界条件与不变量
+
+**不变量 1**：`never` 是空联合的唯一单位元
 
 ```typescript
-let anything: any = 4;
-anything = "string";     // ✅
-anything.toFixed();      // ✅ 编译通过，运行时可能报错
-anything.nonExistent();  // ✅ 编译通过，运行时报错
+type T = never | string; // ≡ string
 ```
 
-**使用 `any` 的后果**：
-- 失去类型检查保护
-- 编辑器失去自动补全和重构支持
-- 错误在运行时才发现
-
-**何时使用 `any`**（应尽量减少）：
-- 从 JavaScript 迁移的过渡期
-- 第三方库缺少类型定义
-- 确实无法确定类型的动态数据（如 JSON.parse 的结果）
-
-### 2.2 `unknown`：类型安全的 `any`
+**不变量 2**：`unknown` 是所有类型的超类型
 
 ```typescript
-let unknownValue: unknown = 4;
-unknownValue = "string";
+type T = unknown & string; // ≡ string
+```
 
-// ❌ 不能直接使用
-unknownValue.toFixed();
-// ^^^^^^^^^^^ Error: Object is of type 'unknown'
+**不变量 3**：`any` 破坏类型系统的传递性
 
-// ✅ 必须先进行类型收窄
-if (typeof unknownValue === "number") {
-  unknownValue.toFixed(); // ✅ unknownValue 被收窄为 number
+```typescript
+let a: any = 1;
+let b: string = a; // 编译通过，但运行时可能崩溃
+```
+
+---
+
+## 3. 关系分析 (Relationship Analysis)
+
+### 3.1 类型间的子类型关系
+
+```mermaid
+graph LR
+    subgraph "子类型关系 (Subtype)"
+        A["'hello'"] --> B[string]
+        C[42] --> D[number]
+        E[true] --> F[boolean]
+        G[{"x":1}] --> H[object]
+        I[void] --> J[undefined]
+    end
+```
+
+### 3.2 概念映射表
+
+| TypeScript 类型 | ECMAScript 运行时类型 | typeof 返回值 | instanceof |
+|----------------|---------------------|--------------|-----------|
+| `string` | String primitive | `"string"` | ❌ |
+| `number` | Number primitive | `"number"` | ❌ |
+| `boolean` | Boolean primitive | `"boolean"` | ❌ |
+| `bigint` | BigInt primitive | `"bigint"` | ❌ |
+| `symbol` | Symbol primitive | `"symbol"` | ❌ |
+| `null` | Null | `"object"` (历史bug) | ❌ |
+| `undefined` | Undefined | `"undefined"` | ❌ |
+| `object` | Object / Array / Function / Date / ... | `"object"` / `"function"` | ✅ |
+
+### 3.3 演化关系
+
+| 版本 | 新增类型 |
+|------|---------|
+| ES3 | `string`, `number`, `boolean`, `object`, `undefined`, `null` |
+| ES5 | 无新增 |
+| ES2015 | `symbol` |
+| ES2020 | `bigint` |
+| TS 3.0 | `unknown` |
+| TS 3.7 | 更严格的 `null`/`undefined` 检查 |
+| TS 5.4 | `NoInfer<T>` |
+
+---
+
+## 4. 机制解释 (Mechanism Explanation)
+
+### 4.1 类型擦除（Type Erasure）
+
+TypeScript 的类型仅在编译时存在，运行时被完全擦除：
+
+```typescript
+// 编译前
+function greet(name: string): string {
+  return `Hello, ${name}`;
+}
+
+// 编译后 (JavaScript)
+function greet(name) {
+  return `Hello, ${name}`;
 }
 ```
 
-**`unknown` vs `any` 的核心区别**：
+**设计理由**：保持与 JavaScript 的零成本互操作，运行时无需类型信息。
 
-| 特性 | `any` | `unknown` |
-|------|-------|-----------|
-| 可以赋值给任何类型 | ✅ | ❌ |
-| 可以进行任何操作 | ✅ | ❌ |
-| 使用时需要类型检查 | 否 | 是 |
-| 类型安全 | 否 | 是 |
+### 4.2 类型检查流程
 
-**最佳实践**：默认使用 `unknown` 代替 `any`。
+```mermaid
+flowchart TD
+    A[TypeScript 源码] --> B[Lexer 词法分析]
+    B --> C[Parser 语法分析]
+    C --> D[AST 生成]
+    D --> E[类型推断]
+    E --> F[类型检查]
+    F --> G{是否有错误?}
+    G -->|否| H[生成 JavaScript]
+    G -->|是| I[输出错误信息]
+```
 
-### 2.3 `never`：空类型与穷尽性检查
+### 4.3 unknown vs any 决策树
 
-`never` 表示**不可能存在的值**，在类型系统中有多重用途：
+```mermaid
+flowchart TD
+    Q{需要类型安全?} -->|是| A[使用 unknown]
+    A --> B[必须通过类型守卫才能使用]
+    Q -->|否| C[使用 any]
+    C --> D[绕过所有类型检查]
+    C --> E[⚠️ 高风险：运行时错误]
+```
 
-#### 作为函数的返回类型
+---
+
+## 5. 论证与分析 (Argumentation & Analysis)
+
+### 5.1 unknown vs any 的权衡矩阵
+
+| 维度 | `unknown` | `any` |
+|------|-----------|-------|
+| 类型安全 | ✅ 强制收窄 | ❌ 完全绕过 |
+| 开发体验 | ⚠️ 需要守卫 | ✅ 直接可用 |
+| 运行时安全 | ✅ 编译期保障 | ❌ 无保障 |
+| 迁移成本 | ⚠️ 需要修改代码 | ✅ 零成本 |
+| 推荐场景 | 库API、外部数据 | 遗留代码迁移 |
+
+### 5.2 never 的设计原理
+
+`never` 代表**空类型（Empty Type）**，即没有任何值的类型：
 
 ```typescript
+// never 的产生场景
 function throwError(message: string): never {
   throw new Error(message);
 }
 
-function infiniteLoop(): never {
-  while (true) {}
-}
-```
-
-#### 在联合类型中自动消除
-
-```typescript
-type T = string | never; // 等价于 string
-```
-
-#### 穷尽性检查（Exhaustiveness Checking）
-
-```typescript
-type Shape =
-  | { kind: "circle"; radius: number }
-  | { kind: "square"; side: number };
-
-function area(shape: Shape): number {
-  switch (shape.kind) {
-    case "circle": return Math.PI * shape.radius ** 2;
-    case "square": return shape.side ** 2;
-    default:
-      // 如果 Shape 新增成员未处理，此处会报错
-      const _exhaustive: never = shape;
-      return _exhaustive;
+// never 在穷尽检查中的作用
+type Shape = { kind: "circle" } | { kind: "square" };
+function area(s: Shape) {
+  switch (s.kind) {
+    case "circle": return Math.PI;
+    case "square": return 1;
+    default: return s; // s 的类型为 never
   }
 }
 ```
 
-### 2.4 `void`：无返回值的语义
+### 5.3 常见误区与反例
+
+**误区 1**：`null` 是 `object` 的子类型
 
 ```typescript
-function logMessage(message: string): void {
-  console.log(message);
-  // 没有 return 语句，或 return undefined
-}
+// ❌ 错误认知
+let obj: object = null; // TS 3.0+ 报错（strictNullChecks）
 
-// void 与 undefined 的区别
-function returnsVoid(): void {
-  return undefined; // ✅
-}
-
-function returnsUndefined(): undefined {
-  return undefined; // ✅
-  // 如果没有 return 语句，在 strictNullChecks 下会报错
-}
+// ✅ 正确理解
+let obj: object | null = null;
 ```
 
-**回调函数中的 `void` 返回类型**：
+**误区 2**：`void` 等于 `undefined`
 
 ```typescript
-// 声明回调不返回值，但允许调用者返回任何值
-type Callback = () => void;
+// ❌ 错误认知
+function fn(): void { return undefined; } // 允许
+function fn2(): void { return null; }     // ❌ 报错（strictNullChecks）
 
-const cb: Callback = () => "hello"; // ✅ 允许，返回值被忽略
+// ✅ 正确理解
+// void 表示"不关心返回值"，undefined 表示"返回 undefined"
+```
+
+**误区 3**：`any` 可以安全地替代所有类型
+
+```typescript
+// ❌ 危险代码
+function process(data: any) {
+  return data.toFixed(2); // 运行时可能崩溃
+}
+
+// ✅ 安全替代
+function process(data: unknown) {
+  if (typeof data === "number") {
+    return data.toFixed(2);
+  }
+}
 ```
 
 ---
 
-## 3. 复合类型
+## 6. 实例与示例 (Examples)
 
-### 3.1 数组类型
-
-```typescript
-// 两种声明方式等价
-const nums: number[] = [1, 2, 3];
-const nums2: Array<number> = [1, 2, 3];
-
-// 只读数组
-const readonlyNums: ReadonlyArray<number> = [1, 2, 3];
-readonlyNums.push(4); // ❌ Error
-
-// 元组（固定长度、固定类型）
-const point: [number, number] = [10, 20];
-const person: [string, number] = ["Alice", 30];
-
-// 带可选元素的元组
-const optionalTuple: [string, number?] = ["hello"];
-
-// 带剩余元素的元组
-const restTuple: [string, ...number[]] = ["hello", 1, 2, 3];
-```
-
-### 3.2 对象类型
+### 6.1 正例：类型安全的数据处理
 
 ```typescript
-// 内联类型
-const person: { name: string; age: number } = {
-  name: "Alice",
-  age: 30
-};
-
-// 可选属性
-const config: { host: string; port?: number } = {
-  host: "localhost"
-};
-
-// 只读属性
-const readonlyPoint: { readonly x: number; readonly y: number } = {
-  x: 1, y: 2
-};
-
-// 索引签名
-const scores: { [key: string]: number } = {
-  math: 90,
-  english: 85
-};
-```
-
-### 3.3 枚举（Enum）
-
-```typescript
-// 数字枚举（默认从 0 开始）
-enum Direction {
-  Up,      // 0
-  Down,    // 1
-  Left,    // 2
-  Right    // 3
+// 使用 unknown 处理外部数据
+interface User {
+  id: number;
+  name: string;
+  email: string;
 }
 
-// 显式赋值
-enum Status {
-  Pending = "PENDING",
-  Success = "SUCCESS",
-  Error = "ERROR"
-}
-
-// 常量枚举（编译时内联）
-const enum HttpStatus {
-  OK = 200,
-  NotFound = 404
+function parseUser(data: unknown): User {
+  if (
+    typeof data === "object" &&
+    data !== null &&
+    "id" in data &&
+    "name" in data &&
+    "email" in data
+  ) {
+    const { id, name, email } = data as Record<string, unknown>;
+    if (
+      typeof id === "number" &&
+      typeof name === "string" &&
+      typeof email === "string"
+    ) {
+      return { id, name, email };
+    }
+  }
+  throw new Error("Invalid user data");
 }
 ```
 
-**枚举的注意事项**：
-- 数字枚举会生成双向映射的 JavaScript 对象
-- 字符串枚举只生成单向映射
-- `const enum` 在编译时完全内联，不生成运行时代码
-- TypeScript 社区对枚举有争议，部分开发者倾向使用联合类型替代
-
----
-
-## 4. 类型层级
-
-TypeScript 的类型系统形成一个层级结构：
-
-```
-        unknown (top type)
-           │
-    ┌─────┼─────┐
-    │     │     │
-  object string number boolean symbol bigint null undefined
-    │
-  ┌─┴─┐
-  │   │
- {}  []
-  │
-  ...
-  never (bottom type)
-```
-
-### 4.1 Top Type：`unknown`
-
-`unknown` 是所有类型的父类型（超集）。
-
-### 4.2 Bottom Type：`never`
-
-`never` 是所有类型的子类型。空联合 `never | never` 仍为 `never`。
-
-### 4.3 类型兼容性
-
-TypeScript 使用**结构子类型（Structural Subtyping）**：兼容性由结构决定，而非名义。
+### 6.2 反例：any 的滥用
 
 ```typescript
-interface Point2D { x: number; y: number; }
-interface Point3D { x: number; y: number; z: number; }
+// ❌ 反例：any 导致运行时错误
+function calculateTotal(items: any[]) {
+  return items.reduce((sum, item) => sum + item.price, 0);
+}
 
-const p3d: Point3D = { x: 1, y: 2, z: 3 };
-const p2d: Point2D = p3d; // ✅ Point3D 结构包含 Point2D 的所有属性
+calculateTotal([{ price: 10 }, { price: "20" }]); // 运行时: "1020"
+
+// ✅ 正例：使用具体类型
+interface Item {
+  price: number;
+}
+
+function calculateTotal(items: Item[]) {
+  return items.reduce((sum, item) => sum + item.price, 0);
+}
+```
+
+### 6.3 边缘案例
+
+```typescript
+// 边缘案例 1：bigint 与 number 不兼容
+const a: bigint = 1n;
+const b: number = 1;
+// const c = a + b; // ❌ 报错：bigint 和 number 不能混合运算
+
+// 边缘案例 2：symbol 作为对象键
+const key = Symbol("secret");
+const obj = { [key]: "hidden value" };
+console.log(obj[key]); // ✅ 可以访问
+
+// 边缘案例 3：NaN 的类型
+const nan: number = NaN; // ✅ NaN 是 number 类型
+console.log(typeof NaN); // "number"
 ```
 
 ---
 
-## 5. TS 5.4+：`NoInfer<T>`
+## 7. 权威参考与国际化对齐 (References)
 
-TypeScript 5.4 引入 `NoInfer<T>`，防止类型参数在某些位置被用于推断：
+### 7.1 ECMA-262 规范
 
-```typescript
-// 问题：createStore 的 T 从 validate 参数推断
-declare function createStore<T>(
-  initial: T,
-  validate: (v: T) => boolean
-): T;
+- **§6.1 ECMAScript Language Types** — 运行时类型定义
+- **§6.1.1 The Null Type** — null 的语义
+- **§6.1.2 The Undefined Type** — undefined 的语义
+- **§6.1.3 The Boolean Type** — boolean 的语义
+- **§6.1.4 The String Type** — UTF-16 编码的字符序列
+- **§6.1.5 The Symbol Type** — Symbol 的唯一性保证
+- **§6.1.6 Numeric Types** — Number 和 BigInt 的区分
+- **§6.1.7 The Object Type** — 对象类型的结构
 
-// validate 的参数类型影响 T 的推断
-createStore("hello", (v) => v.length > 0); // T = string ✅
+### 7.2 TypeScript 官方文档
 
-// 但如果 validate 的类型更宽泛：
-createStore("hello", (v: unknown) => typeof v === "string");
-// T = unknown ❌ 不是我们想要的
+- **TypeScript Handbook: Everyday Types** — <https://www.typescriptlang.org/docs/handbook/2/everyday-types.html>
+- **TypeScript Handbook: Object Types** — <https://www.typescriptlang.org/docs/handbook/2/objects.html>
+- **TypeScript Handbook: Type Inference** — <https://www.typescriptlang.org/docs/handbook/type-inference.html>
+- **TS 5.4 Release Notes: NoInfer<T>** — <https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/>
 
-// 使用 NoInfer 解决
-declare function createStore<T>(
-  initial: T,
-  validate: (v: NoInfer<T>) => boolean
-): T;
+### 7.3 MDN Web Docs（国际化参考）
 
-createStore("hello", (v: unknown) => typeof v === "string");
-// T = string ✅ initial 单独决定 T
+- **MDN: Data types** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures>
+- **MDN: typeof** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof>
+- **MDN: instanceof** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof>
+
+### 7.4 学术与标准资源
+
+- **IEEE 754-2019** — 浮点数标准（number 类型的底层实现）
+- **Unicode Standard 15.0** — 字符串编码标准
+- **"Types and Programming Languages" (Pierce, 2002)** — 类型系统理论基础
+
+---
+
+## 8. 思维表征总结 (Cognitive Representations)
+
+### 8.1 类型系统速查图谱
+
+```mermaid
+mindmap
+  root((类型系统速查))
+    原始类型
+      string : UTF-16
+      number : IEEE 754
+      boolean : true/false
+      bigint : 任意精度
+      symbol : 唯一标识
+      null : 空引用
+      undefined : 未初始化
+    特殊类型
+      unknown : 顶类型，强制收窄
+      any : 绕过检查
+      never : 底类型，空联合
+      void : 无返回值
+    选择指南
+      优先 unknown
+      避免 any
+      用 never 穷尽检查
+      void 仅用于函数返回
+```
+
+### 8.2 类型选择决策矩阵
+
+| 场景 | 推荐类型 | 避免类型 | 理由 |
+|------|---------|---------|------|
+| 外部输入 | `unknown` | `any` | 强制验证 |
+| 函数返回无值 | `void` | `undefined` | 语义清晰 |
+| 不可能到达的分支 | `never` | `any` | 编译期检查 |
+| 遗留代码迁移 | 渐进替换 `any` | 长期保留 `any` | 技术债 |
+| JSON 数据 | `unknown` + 守卫 | `any` | 结构不确定 |
+
+### 8.3 类型层级速查
+
+```
+unknown (⊤)
+  ├── any
+  │     ├── string
+  │     ├── number
+  │     ├── boolean
+  │     ├── object
+  │     └── ...
+  ├── string
+  ├── number
+  ├── boolean
+  ├── object
+  ├── symbol
+  ├── bigint
+  ├── null
+  └── undefined
+       └── void
+
+never (⊥)
 ```
 
 ---
 
-## 6. 类型断言与守卫
-
-### 6.1 类型断言
-
-```typescript
-const input = document.getElementById("root") as HTMLDivElement;
-const input2 = <HTMLInputElement>document.getElementById("input");
-// 注意：第二种语法在 JSX 中不可用
-```
-
-### 6.2 非空断言
-
-```typescript
-const element = document.getElementById("root")!;
-// ! 断言元素不为 null
-```
-
-### 6.3 `satisfies` 运算符（TS 4.9+）
-
-```typescript
-const config = {
-  host: "localhost",
-  port: 3000
-} satisfies { host: string; port?: number };
-
-// config 保持原始类型推断（{ host: "localhost"; port: 3000 }）
-// 但检查是否满足给定类型的约束
-```
-
----
-
-**参考规范**：ECMA-262 §6.1 ECMAScript Language Types | TypeScript Handbook: Everyday Types
+**参考规范**：ECMA-262 §6.1 | TypeScript Handbook: Everyday Types | MDN: Data types

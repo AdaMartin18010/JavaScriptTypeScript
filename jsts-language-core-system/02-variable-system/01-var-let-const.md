@@ -1,298 +1,333 @@
 # var、let 与 const
 
-> 三种声明方式的全面对比：作用域、提升、重复声明与最佳实践
+> **形式化定义**：在 ECMAScript 规范中，`var`、`let` 和 `const` 是三种变量声明机制，对应不同的**环境记录（Environment Record）**绑定语义：`var` 声明创建在函数级或全局环境的**对象环境记录（Object Environment Record）**中，具有声明提升（Hoisting）和可重复声明特性；`let` 和 `const` 声明创建在**声明式环境记录（Declarative Environment Record）**中，具有块级作用域（Block Scoping）、暂时性死区（Temporal Dead Zone, TDZ）和不可重复声明特性；`const` 额外要求绑定不可重新赋值（Immutable Binding）。
 >
-> 对齐版本：ECMAScript 2025 (ES16)
+> 对齐版本：ECMAScript 2025 (ES16) | TypeScript 5.8–6.0
 
 ---
 
-## 1. 基础对比
+## 1. 概念定义 (Concept Definition)
 
-```javascript
-var x = 1;      // 函数作用域，可提升，可重复声明
-let y = 2;      // 块级作用域，TDZ，不可重复声明
-const z = 3;    // 块级作用域，TDZ，不可重复声明，不可重新赋值
+### 1.1 形式化定义
+
+ECMA-262 §14.3.1.2 定义了变量声明的语义：
+
+> *"A Lexical Binding is a binding of an Identifier to a value."*
+
+三种声明对应不同的绑定类型：
+
+| 声明 | 绑定类型 | 作用域 | 可变性 | 提升行为 |
+|------|---------|--------|--------|---------|
+| `var` | 可变绑定（Mutable Binding） | 函数级 / 全局 | ✅ | 提升，初始化为 `undefined` |
+| `let` | 可变绑定（Mutable Binding） | 块级 `{}` | ✅ | 提升，进入 TDZ |
+| `const` | 不可变绑定（Immutable Binding） | 块级 `{}` | ❌ | 提升，进入 TDZ，必须初始化 |
+
+### 1.2 概念层级图谱
+
+```mermaid
+mindmap
+  root((变量声明))
+    var
+      函数作用域
+      声明提升
+      初始化为 undefined
+      可重复声明
+      成为全局对象属性
+    let
+      块级作用域
+      暂时性死区 TDZ
+      不可重复声明
+      不在全局对象上
+    const
+      块级作用域
+      暂时性死区 TDZ
+      不可重复声明
+      不可重新赋值
+      必须初始化
+    最佳实践
+      默认使用 const
+      需要重新赋值用 let
+      避免使用 var
 ```
 
-| 特性 | var | let | const |
-|------|-----|-----|-------|
+---
+
+## 2. 属性与特征 (Properties & Characteristics)
+
+### 2.1 核心属性矩阵
+
+| 特性 | `var` | `let` | `const` |
+|------|-------|-------|---------|
 | 作用域 | 函数级 | 块级 `{}` | 块级 `{}` |
-| 提升 | 是（初始化为 undefined） | 是（TDZ） | 是（TDZ） |
-| 重复声明 | ✅ 允许 | ❌ SyntaxError | ❌ SyntaxError |
-| 重新赋值 | ✅ 允许 | ✅ 允许 | ❌ TypeError |
+| 提升 | ✅（初始化为 `undefined`） | ✅（TDZ） | ✅（TDZ） |
+| 重复声明 | ✅ | ❌ | ❌ |
+| 重新赋值 | ✅ | ✅ | ❌ |
 | 声明时初始化 | 可选 | 可选 | **必需** |
-| 全局对象属性 | ✅ 成为属性 | ❌ 不成为 | ❌ 不成为 |
+| 全局对象属性 | ✅ | ❌ | ❌ |
+| 块级作用域内可访问 | 是（穿透） | 否 | 否 |
+
+### 2.2 暂时性死区（TDZ）
+
+```javascript
+// var：无 TDZ
+console.log(a); // undefined（不是 ReferenceError）
+var a = 1;
+
+// let：有 TDZ
+console.log(b); // ❌ ReferenceError: Cannot access 'b' before initialization
+let b = 2;
+
+// const：有 TDZ
+console.log(c); // ❌ ReferenceError: Cannot access 'c' before initialization
+const c = 3;
+```
 
 ---
 
-## 2. 作用域差异
+## 3. 关系分析 (Relationship Analysis)
 
-### 2.1 var 的函数作用域
+### 3.1 声明与作用域的关系
 
-```javascript
-function test() {
-  if (true) {
-    var x = 1; // 整个函数可访问
-  }
-  console.log(x); // 1 ✅
-}
-
-test();
-console.log(typeof x); // "undefined"
+```mermaid
+graph TD
+    Global["全局作用域"] --> Var["var 声明"]
+    Function["函数作用域"] --> Var2["var 声明"]
+    Block["块级作用域 {}"] --> Let["let 声明"]
+    Block --> Const["const 声明"]
+    
+    Var --> GlobalObj["成为全局对象属性"]
+    Let --> Declarative["声明式环境记录"]
+    Const --> Declarative
 ```
 
-### 2.2 let/const 的块级作用域
+### 3.2 变量创建三阶段
+
+```mermaid
+graph LR
+    Create["1. 创建 Create<br>（进入作用域）"] --> Initialize["2. 初始化 Initialize"]
+    Initialize --> Assign["3. 赋值 Assign"]
+    
+    VarPath["var"] --> Create
+    VarPath --> VarInit["同时初始化<br>为 undefined"]
+    VarInit --> Assign
+    
+    LetPath["let/const"] --> Create
+    LetPath --> TDZ["进入 TDZ"]
+    TDZ --> LetInit["执行到声明时初始化"]
+    LetInit --> Assign
+```
+
+---
+
+## 4. 机制解释 (Mechanism Explanation)
+
+### 4.1 执行上下文的创建过程
+
+```mermaid
+flowchart TD
+    A[进入函数/块级作用域] --> B[创建词法环境]
+    B --> C[创建环境记录]
+    C --> D{声明类型?}
+    D -->|var| E[绑定到对象环境记录<br>初始化为 undefined]
+    D -->|let| F[绑定到声明式记录<br>标记为未初始化]
+    D -->|const| G[绑定到声明式记录<br>标记为未初始化 + 不可变]
+    E --> H[执行代码]
+    F --> H
+    G --> H
+```
+
+### 4.2 TDZ 的底层机制
 
 ```javascript
-function test() {
-  if (true) {
-    let y = 1;
-    const z = 2;
-  }
-  console.log(y); // ❌ ReferenceError
-  console.log(z); // ❌ ReferenceError
+{
+  // TDZ 开始
+  console.log(x); // ReferenceError
+  
+  // TDZ 结束
+  let x = 1;
 }
 ```
 
-### 2.3 循环中的差异
+ECMA-262 §8.1.1.5.3 定义了 TDZ 的语义：
+> *"If the binding is an uninitialized binding, throw a ReferenceError exception."*
+
+---
+
+## 5. 论证与分析 (Argumentation & Analysis)
+
+### 5.1 为什么需要 let/const？
+
+| 问题 | var 的行为 | let/const 的改进 |
+|------|-----------|-----------------|
+| 变量提升导致意外 | `var` 可在声明前使用 | TDZ 强制先声明后使用 |
+| 循环变量共享 | `for (var i)` 共享同一个 i | `for (let i)` 每次迭代新绑定 |
+| 块级穿透 | `var` 穿透 if/for 块 | `let/const` 严格块级 |
+| 全局污染 | `var` 成为全局对象属性 | `let/const` 不污染全局 |
+
+### 5.2 循环中的闭包问题
 
 ```javascript
-// var：共享同一个变量
+// ❌ var：所有回调共享同一个 i
 for (var i = 0; i < 3; i++) {
   setTimeout(() => console.log(i), 0); // 3, 3, 3
 }
 
-// let：每次迭代新绑定
+// ✅ let：每次迭代新绑定
 for (let i = 0; i < 3; i++) {
   setTimeout(() => console.log(i), 0); // 0, 1, 2
 }
 ```
 
----
+### 5.3 常见误区与反例
 
-## 3. 提升（Hoisting）行为
-
-### 3.1 var 的提升
-
+**误区 1**：`const` 声明的对象不可变
 ```javascript
-console.log(a); // undefined（不是 ReferenceError）
-var a = 1;
+// ❌ 错误认知
+const obj = { x: 1 };
+obj = { x: 2 }; // ❌ TypeError
 
-// 等价于：
-var a;
-console.log(a); // undefined
-a = 1;
+// ✅ 正确理解：const 保证引用不可变，不保证对象内容不可变
+obj.x = 2; // ✅ 允许！
+
+// ✅ 真正不可变：使用 Object.freeze
+const frozen = Object.freeze({ x: 1 });
+frozen.x = 2; // 严格模式下报错
 ```
 
-### 3.2 let/const 的 TDZ
-
+**误区 2**：`typeof` 在 TDZ 中安全
 ```javascript
-console.log(b); // ❌ ReferenceError: Cannot access 'b' before initialization
-let b = 2;
-
-console.log(c); // ❌ ReferenceError
-const c = 3;
-```
-
-### 3.3 函数声明的提升
-
-```javascript
-// 函数声明整体提升
-foo(); // ✅ "foo"
-function foo() { return "foo"; }
-
-// 函数表达式不提升
-bar(); // ❌ TypeError: bar is not a function
-var bar = function() { return "bar"; };
-```
-
----
-
-## 4. 全局对象绑定
-
-```javascript
-var globalVar = 1;
-let globalLet = 2;
-const globalConst = 3;
-
-console.log("globalVar" in globalThis); // true
-console.log("globalLet" in globalThis);  // false
-console.log("globalConst" in globalThis); // false
-
-console.log(globalThis.globalVar); // 1
-console.log(globalThis.globalLet); // undefined
-```
-
-**原因**：`var` 创建在全局对象的属性上，而 `let`/`const` 创建在全局词法环境的声明式记录中。
-
----
-
-## 5. const 的深入理解
-
-### 5.1 不可重新赋值 ≠ 不可变
-
-```javascript
-const obj = { a: 1 };
-obj.a = 2;      // ✅ 允许（修改属性）
-obj.b = 3;      // ✅ 允许（添加属性）
-obj = {};       // ❌ TypeError（重新赋值）
-
-const arr = [1, 2];
-arr.push(3);    // ✅ 允许
-arr = [];       // ❌ TypeError
-```
-
-### 5.2 冻结对象
-
-```javascript
-const obj = Object.freeze({ a: 1 });
-obj.a = 2; // 严格模式下 TypeError，非严格静默失败
-
-// 深度冻结
-function deepFreeze(obj) {
-  Object.freeze(obj);
-  Object.keys(obj).forEach(key => {
-    if (typeof obj[key] === "object" && obj[key] !== null) {
-      deepFreeze(obj[key]);
-    }
-  });
-  return obj;
-}
-```
-
----
-
-## 6. 最佳实践
-
-### 6.1 默认使用 const
-
-```javascript
-// ✅ 优先 const
-const PI = 3.14159;
-const config = { host: "localhost", port: 3000 };
-const handler = (event) => { /* ... */ };
-
-// ✅ 需要重新赋值时用 let
-let count = 0;
-let currentUser = null;
-
-// ❌ 避免 var
-var x = 1; // 不要这样
-```
-
-### 6.2 声明位置
-
-```javascript
-// ✅ 在作用域顶部声明
-function process(data) {
-  let result;
-  let errors = [];
-  
-  // 使用...
-}
-
-// ❌ 避免分散声明
-function bad() {
-  let a = 1;
-  // ... 很多代码 ...
-  let b = 2; // 声明太迟
-}
-```
-
-### 6.3 解构声明
-
-```javascript
-// ✅ 使用解构
-const { name, age } = user;
-const [first, ...rest] = array;
-
-// ✅ 配合默认值
-const { role = "user" } = config;
-```
-
----
-
-## 7. 常见陷阱
-
-### 7.1 TDZ 与 typeof
-
-```javascript
-// typeof 对未声明变量安全
+// ❌ 错误：typeof 对 TDZ 变量也会报错
 console.log(typeof undeclared); // "undefined"
-
-// 但对 TDZ 变量不安全
-console.log(typeof tdz); // ❌ ReferenceError
+console.log(typeof tdz);        // ❌ ReferenceError!
 let tdz;
 ```
 
-### 7.2 switch 块的共享作用域
+---
+
+## 6. 实例与示例 (Examples)
+
+### 6.1 正例：最佳实践
 
 ```javascript
+// ✅ 默认使用 const
+const PI = 3.14159;
+const config = { host: "localhost", port: 3000 };
+
+// ✅ 需要重新赋值时使用 let
+let count = 0;
+count++;
+
+// ✅ 循环变量
+for (let i = 0; i < 10; i++) {
+  console.log(i);
+}
+
+// ❌ 避免使用 var
+var x = 1; // 不要这样
+```
+
+### 6.2 反例：var 的提升陷阱
+
+```javascript
+// ❌ 陷阱代码
+function test() {
+  console.log(x); // undefined（不是 ReferenceError！）
+  var x = 1;
+}
+
+// 实际执行顺序：
+function test() {
+  var x;           // 提升
+  console.log(x);  // undefined
+  x = 1;           // 赋值
+}
+```
+
+### 6.3 边缘案例
+
+```javascript
+// 边缘案例 1：switch 块共享作用域
 const x = 1;
 switch (x) {
   case 1:
     let y = 1;
     break;
   case 2:
-    let y = 2; // ❌ SyntaxError: Identifier 'y' has already been declared
+    // let y = 2; // ❌ SyntaxError: Identifier 'y' has already been declared
 }
-```
 
-### 7.3 const 的临时死区
-
-```javascript
-const x = x + 1; // ❌ ReferenceError: Cannot access 'x' before initialization
+// 边缘案例 2：const 的自我引用
+// const x = x + 1; // ❌ ReferenceError: Cannot access 'x' before initialization
 ```
 
 ---
 
-**参考规范**：ECMA-262 §14.3.1.2 Let and Const Declarations
+## 7. 权威参考与国际化对齐 (References)
 
-## 深入理解：引擎实现与优化
+### 7.1 ECMA-262 规范
 
-### V8 引擎视角
+- **§14.3.1.2 Let and Const Declarations** — `let`/`const` 的语法和语义
+- **§14.3.1.1 Variable Statement** — `var` 的语法和语义
+- **§8.1.1.5.3 GetBindingValue** — TDZ 的规范定义
+- **§9.4 Execution Contexts** — 执行上下文的创建
 
-V8 是 Chrome 和 Node.js 使用的 JavaScript 引擎，其内部实现直接影响本节讨论的机制：
+### 7.2 TypeScript 官方文档
 
-| 组件 | 功能 |
-|------|------|
-| Ignition | 解释器，生成字节码 |
-| Sparkplug | 基线编译器，快速生成本地代码 |
-| Maglev | 中层优化编译器，SSA 形式优化 |
-| TurboFan | 顶层优化编译器，Sea of Nodes |
+- **TypeScript Handbook: Variable Declarations** — https://www.typescriptlang.org/docs/handbook/variable-declarations.html
 
-### 隐藏类与形状
+### 7.3 MDN Web Docs
 
-```javascript
-// V8 为相同结构的对象创建隐藏类
-const p1 = { x: 1, y: 2 };
-const p2 = { x: 3, y: 4 };
-// p1 和 p2 共享同一个隐藏类
+- **MDN: var** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var
+- **MDN: let** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let
+- **MDN: const** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const
 
-// 动态添加属性会创建新隐藏类
-p1.z = 3; // 降级为字典模式
+---
+
+## 8. 思维表征总结 (Cognitive Representations)
+
+### 8.1 声明选择决策树
+
+```mermaid
+flowchart TD
+    Start[需要声明变量?] --> Q1{是否会重新赋值?}
+    Q1 -->|否| Const["使用 const"]
+    Q1 -->|是| Q2{作用域需求?}
+    Q2 -->|块级| Let["使用 let"]
+    Q2 -->|函数级/全局| Q3{遗留代码?}
+    Q3 -->|是| Var["使用 var（迁移中）"]
+    Q3 -->|否| Let
 ```
 
-### 内联缓存（Inline Cache）
+### 8.2 作用域对比速查表
 
-```javascript
-function getX(obj) {
-  return obj.x; // V8 缓存属性偏移
-}
+| 场景 | var | let | const |
+|------|-----|-----|-------|
+| 全局声明 | 全局对象属性 | 全局词法环境 | 全局词法环境 |
+| 函数内部 | 函数作用域 | 块级作用域 | 块级作用域 |
+| if/for 块内 | 穿透到外部 | 限制在块内 | 限制在块内 |
+| 重复声明 | ✅ | ❌ | ❌ |
+| 提升行为 | 初始化为 undefined | TDZ | TDZ |
 
-getX({ x: 1 }); // 单态（monomorphic）
-getX({ x: 2 }); // 同类型，快速路径
+### 8.3 TDZ 时间线
+
+```
+作用域开始
+    │
+    ▼
+┌─────────────────┐
+│   TDZ（暂时性死区） │  ← let/const 已创建但未初始化
+│                 │
+│ console.log(x); │  ← ReferenceError!
+│                 │
+└─────────────────┘
+    │
+    ▼
+let x = 1;       ← 初始化完成，TDZ 结束
+    │
+    ▼
+  x 可正常使用
 ```
 
-### 性能提示
+---
 
-1. 对象初始化时声明所有属性
-2. 避免动态删除属性
-3. 数组使用连续数字索引
-4. 函数参数类型保持一致
-
-### 相关工具
-
-- Chrome DevTools Performance 面板
-- Node.js `--prof` 和 `--prof-process`
-- V8 flags: `--trace-opt`, `--trace-deopt`
+**参考规范**：ECMA-262 §14.3.1 | MDN: let/const/var
