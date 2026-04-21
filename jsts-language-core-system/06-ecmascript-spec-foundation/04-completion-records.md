@@ -1,263 +1,203 @@
-# Completion Records 与控制流
+# 完成记录（Completion Records）
 
-> 规范内部的控制流抽象与异常处理机制
+> **形式化定义**：完成记录（Completion Record）是 ECMA-262 规范中用于描述语句和控制流结构的规范类型。每个 JavaScript 语句的执行都产生一个 Completion Record，包含 `[[Type]]`（normal, return, throw, break, continue）、`[[Value]]`（结果值或 empty）、`[[Target]]`（标签或 empty）。ECMA-262 §6.2.4 定义了 Completion Record 的完整语义，它是理解 `return`、`throw`、`break`、`continue` 在规范层面如何工作的关键。
 >
-> 对齐版本：ECMAScript 2025 (ES16)
+> 对齐版本：ECMA-262 16th ed §6.2.4 | TypeScript 5.8–6.0
 
 ---
 
-## 1. Completion Record 结构
+## 1. 概念定义 (Concept Definition)
+
+### 1.1 形式化定义
+
+ECMA-262 §6.2.4 定义：
+
+> *"The Completion Record type is a Record used to explain the runtime propagation of values and control flow."*
+
+Completion Record 结构：
 
 ```
 Completion Record = {
-  [[Type]]: normal | break | continue | return | throw,
-  [[Value]]: value | empty,
+  [[Type]]:   normal | return | throw | break | continue,
+  [[Value]]:  any | empty,
   [[Target]]: String | empty
 }
 ```
 
----
+### 1.2 五种完成类型
 
-## 2. 各语句的 Completion 类型
-
-### 2.1 正常完成
-
-```javascript
-let x = 1; // Completion: { Type: normal, Value: empty, Target: empty }
-```
-
-### 2.2 return 语句
-
-```javascript
-function foo() {
-  return 42; // Completion: { Type: return, Value: 42, Target: empty }
-}
-```
-
-### 2.3 throw 语句
-
-```javascript
-throw new Error("Oops");
-// Completion: { Type: throw, Value: Error, Target: empty }
-```
-
-### 2.4 break 语句
-
-```javascript
-while (true) {
-  break; // Completion: { Type: break, Value: empty, Target: empty }
-}
-
-label: while (true) {
-  break label; // Completion: { Type: break, Value: empty, Target: "label" }
-}
-```
-
-### 2.5 continue 语句
-
-```javascript
-while (true) {
-  continue; // Completion: { Type: continue, Value: empty, Target: empty }
-}
-```
+| [[Type]] | 来源 | [[Value]] | [[Target]] | 语义 |
+|---------|------|----------|-----------|------|
+| normal | 正常语句 | 表达式结果 | empty | 正常继续 |
+| return | return 语句 | 返回值 | empty | 函数返回 |
+| throw | throw 语句 | 错误对象 | empty | 异常传播 |
+| break | break 语句 | empty | 标签或 empty | 跳出循环 |
+| continue | continue 语句 | empty | 标签或 empty | 继续循环 |
 
 ---
 
-## 3. 异常传播
+## 2. 属性与特征 (Properties & Characteristics)
 
-```javascript
-function a() { throw new Error("A"); }
-function b() { a(); }
-function c() {
-  try {
-    b();
-  } catch (e) {
-    return "caught";
-  }
-}
-```
+### 2.1 Completion Record 属性矩阵
 
-Completion 传播链：`a() throw` → `b() throw` → `c() catch return` → `c() return`
-
----
-
-## 4. try/catch/finally 的执行逻辑
-
-```javascript
-try {
-  // 执行
-  // 如果 throw：转到 catch
-} catch (e) {
-  // 处理异常
-  // 如果正常完成：继续
-  // 如果 throw：抛出到外层
-} finally {
-  // 总是执行
-  // 如果正常完成：继承之前的结果
-  // 如果 throw：覆盖之前的结果
-}
-```
-
----
-
-## 5. 与开发者可见的关系
-
-Completion Records 是规范概念，不直接暴露给 JavaScript 开发者，但影响行为：
-
-```javascript
-// finally 中的 return 覆盖之前的结果
-function test() {
-  try {
-    return "try";
-  } finally {
-    return "finally"; // 覆盖！
-  }
-}
-test(); // "finally"
-```
-
----
-
-## 6. 规范算法中的 Completion 处理
-
-规范使用 `ReturnIfAbrupt` 检查 Completion：
-
-```
-1. Let result be Operation()
-2. ReturnIfAbrupt(result)  // 如果 result.Type = throw，直接返回
-3. Let value be result.[[Value]]
-```
-
-## 7. 迭代语句的 Completion
-
-```javascript
-for (let i = 0; i < 3; i++) {
-  if (i === 1) continue; // { Type: continue, ... }
-  console.log(i);        // 0, 2
-}
-```
-
-`continue` 会跳过当前迭代，但循环继续执行。
-
-## 8. 标签语句与 Completion
-
-```javascript
-outer: for (let i = 0; i < 3; i++) {
-  inner: for (let j = 0; j < 3; j++) {
-    if (i === 1 && j === 1) break outer;
-  }
-}
-```
-
-`break outer` 的 Target 是 `"outer"`，引擎从当前作用域向外查找匹配的标签。
-
-## 9. 为什么需要 Completion Records
-
-Completion Records 允许规范以统一方式描述所有控制流：
-
-- 普通语句 → `normal` Completion
-- 异常 → `throw` Completion
-- return → `return` Completion
-- break/continue → 带有 Target 的 Completion
-
-这使得规范可以定义统一的执行规则，而不需要为每种语句写特殊逻辑。
-
-## 10. 规范伪代码示例
-
-ECMA-262 使用 Completion Records 描述语句执行：
-
-```
-13.2.13 Block: { StatementList }
-  1. Let oldEnv be the running execution context's LexicalEnvironment.
-  2. Let blockEnv be NewDeclarativeEnvironment(oldEnv).
-  3. Perform BlockDeclarationInstantiation(StatementList, blockEnv).
-  4. Set the running execution context's LexicalEnvironment to blockEnv.
-  5. Let blockValue be Completion(Evaluation of StatementList).
-  6. Set the running execution context's LexicalEnvironment to oldEnv.
-  7. Return blockValue.
-```
-
-注意步骤 5 返回的是 **Completion**，不是原始值。
-
-## 11. 开发者可见的影响
-
-虽然 Completion Records 是规范概念，但它们解释了 JavaScript 的许多行为：
-
-```javascript
-// 为什么 try/finally 中 finally 总是执行？
-// 因为规范要求 Evaluate 语句时返回 Completion，
-// finally 块必须被评估
-
-// 为什么 for-of 中的 return 会触发 finally？
-// 因为迭代器协议使用 Completion Records 传播控制流
-```
-
-## 12. for-await-of 与 Completion
-
-```javascript
-async function* gen() {
-  yield 1;
-  yield 2;
-}
-
-async function consume() {
-  for await (const x of gen()) {
-    if (x === 2) break; // 触发 AsyncIteratorClose
-  }
-}
-```
-
-`break` 会创建 `{ Type: break }` Completion，触发迭代器的清理逻辑。
-
----
-
-**参考规范**：ECMA-262 §6.2.3
-
-## 深入理解：引擎实现与优化
-
-### V8 引擎视角
-
-V8 是 Chrome 和 Node.js 使用的 JavaScript 引擎，其内部实现直接影响本节讨论的机制：
-
-| 组件 | 功能 |
+| 属性 | 说明 |
 |------|------|
-| Ignition | 解释器，生成字节码 |
-| Sparkplug | 基线编译器，快速生成本地代码 |
-| Maglev | 中层优化编译器，SSA 形式优化 |
-| TurboFan | 顶层优化编译器，Sea of Nodes |
+| [[Type]] | 完成类型，决定控制流走向 |
+| [[Value]] | 完成值，throw/return 有意义 |
+| [[Target]] | 标签，break/continue 使用 |
 
-### 隐藏类与形状
+### 2.2 辅助操作
 
-```javascript
-// V8 为相同结构的对象创建隐藏类
-const p1 = { x: 1, y: 2 };
-const p2 = { x: 3, y: 4 };
-// p1 和 p2 共享同一个隐藏类
-
-// 动态添加属性会创建新隐藏类
-p1.z = 3; // 降级为字典模式
+```
+NormalCompletion(value) → { [[Type]]: normal, [[Value]]: value, [[Target]]: empty }
+ThrowCompletion(value)  → { [[Type]]: throw, [[Value]]: value, [[Target]]: empty }
+ReturnCompletion(value) → { [[Type]]: return, [[Value]]: value, [[Target]]: empty }
 ```
 
-### 内联缓存（Inline Cache）
+---
+
+## 3. 关系分析 (Relationship Analysis)
+
+### 3.1 Completion Record 传播
+
+```mermaid
+graph TD
+    Statement[语句执行] --> CR[Completion Record]
+    CR --> Type{[[Type]]}
+    Type -->|normal| Next[下一条语句]
+    Type -->|return| FunctionReturn[函数返回]
+    Type -->|throw| Catch[最近的 catch]
+    Type -->|break| LoopExit[跳出循环]
+    Type -->|continue| LoopNext[循环继续]
+```
+
+---
+
+## 4. 机制解释 (Mechanism Explanation)
+
+### 4.1 完成记录的传播规则
+
+```mermaid
+flowchart TD
+    A[执行语句] --> B[获取 Completion Record]
+    B --> C{[[Type]] === normal?}
+    C -->|是| D[继续执行下一条]
+    C -->|否| E[向上传播]
+    E --> F{上层能处理?}
+    F -->|是| G[处理完成]
+    F -->|否| H[继续向上传播]
+```
+
+---
+
+## 5. 论证与分析 (Argumentation & Analysis)
+
+### 5.1 try/catch/finally 的完成记录
+
+| 场景 | try | catch | finally | 最终完成 |
+|------|-----|-------|---------|---------|
+| 无异常 | normal | — | normal | try 的完成 |
+| 异常 | throw | normal | normal | catch 的完成 |
+| 异常 | throw | throw | normal | catch 的 throw |
+| finally return | any | any | return | finally 的 return |
+
+---
+
+## 6. 实例与示例 (Examples)
+
+### 6.1 正例：try/finally 覆盖
 
 ```javascript
-function getX(obj) {
-  return obj.x; // V8 缓存属性偏移
+function example() {
+  try {
+    return 1;      // 产生 ReturnCompletion(1)
+  } finally {
+    return 2;      // finally 的 ReturnCompletion(2) 覆盖 try 的
+  }
 }
 
-getX({ x: 1 }); // 单态（monomorphic）
-getX({ x: 2 }); // 同类型，快速路径
+console.log(example()); // 2
 ```
 
-### 性能提示
+### 6.2 正例：异常传播
 
-1. 对象初始化时声明所有属性
-2. 避免动态删除属性
-3. 数组使用连续数字索引
-4. 函数参数类型保持一致
+```javascript
+function throws() {
+  throw new Error("boom");  // ThrowCompletion(Error)
+}
 
-### 相关工具
+try {
+  throws();  // ThrowCompletion 传播到 catch
+} catch (e) {
+  console.log(e.message);   // "boom"
+}
+```
 
-- Chrome DevTools Performance 面板
-- Node.js `--prof` 和 `--prof-process`
-- V8 flags: `--trace-opt`, `--trace-deopt`
+---
+
+## 7. 权威参考与国际化对齐 (References)
+
+- **ECMA-262 §6.2.4** — The Completion Record Specification Type
+- **MDN: Control flow** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Control_flow_and_error_handling
+
+---
+
+## 8. 思维表征总结 (Cognitive Representations)
+
+### 8.1 完成记录传播
+
+```
+语句执行 → Completion Record
+  normal → 继续下一条
+  return → 函数返回
+  throw → 寻找 catch
+  break → 跳出循环
+  continue → 循环继续
+```
+
+---
+
+## 9. 公理化表述与形式证明 (Axiomatization & Formal Proof)
+
+### 9.1 公理化基础
+
+**公理 1（完成记录的完备性）**：
+> 每个语句执行必然产生一个 Completion Record。
+
+**公理 2（finally 的覆盖性）**：
+> finally 块中的 return/throw 覆盖 try/catch 中的完成记录。
+
+### 9.2 定理与证明
+
+**定理 1（异常传播的确定性）**：
+> throw 产生的 ThrowCompletion 必然被最近的 catch 捕获或传播到全局。
+
+*证明*：
+> ECMA-262 §13.15 规定 try/catch 语义：catch 块匹配时处理 ThrowCompletion，否则向上传播。
+> ∎
+
+---
+
+## 10. 推理链与演绎分析 (Deductive Reasoning Chain)
+
+### 10.1 演绎推理
+
+```mermaid
+graph TD
+    A[语句执行] --> B[Completion Record]
+    B --> C{Type?}
+    C -->|normal| D[继续]
+    C -->|throw| E[catch?]
+    E -->|是| F[处理]
+    E -->|否| G[传播]
+```
+
+### 10.2 反事实推理
+
+> **反设**：没有 Completion Record。
+> **推演结果**：return/throw/break/continue 的实现无法统一描述，规范将充满特例。
+> **结论**：Completion Record 是 ECMA-262 规范优雅性的关键设计。
+
+---
+
+**参考规范**：ECMA-262 §6.2.4 | MDN: Control flow
