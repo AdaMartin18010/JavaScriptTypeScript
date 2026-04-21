@@ -1,6 +1,6 @@
-# 回调模式
+# 回调模式与回调地狱
 
-> JavaScript 异步编程的原始形态：Callback Pattern 与 Callback Hell
+> 异步编程的基石：从回调到 Promise 再到 async/await 的演进
 >
 > 对齐版本：ECMAScript 2025 (ES16)
 
@@ -8,31 +8,25 @@
 
 ## 1. 回调基础
 
-### 1.1 同步回调
+回调是将函数作为参数传递，在适当时机调用：
 
 ```javascript
-function processArray(arr, callback) {
-  for (let i = 0; i < arr.length; i++) {
-    callback(arr[i], i);
-  }
+function fetchData(callback) {
+  setTimeout(() => {
+    const data = { id: 1, name: "Alice" };
+    callback(data);
+  }, 100);
 }
 
-processArray([1, 2, 3], (item, index) => {
-  console.log(item, index);
+fetchData((user) => {
+  console.log(user.name);
 });
 ```
 
-### 1.2 异步回调
+### 1.1 错误优先回调（Node.js 风格）
 
 ```javascript
-function fetchData(url, callback) {
-  setTimeout(() => {
-    const data = { id: 1, name: "Alice" };
-    callback(null, data);
-  }, 1000);
-}
-
-fetchData("/api/user", (err, data) => {
+fs.readFile("file.txt", (err, data) => {
   if (err) {
     console.error(err);
     return;
@@ -45,15 +39,15 @@ fetchData("/api/user", (err, data) => {
 
 ## 2. 回调地狱（Callback Hell）
 
-### 2.1 嵌套回调的问题
+嵌套过深的回调导致代码难以维护：
 
 ```javascript
-getData(function (a) {
-  getMoreData(a, function (b) {
-    getMoreData(b, function (c) {
-      getMoreData(c, function (d) {
-        getMoreData(d, function (e) {
-          console.log(e);
+getData(function(a) {
+  getMoreData(a, function(b) {
+    getMoreData(b, function(c) {
+      getMoreData(c, function(d) {
+        getMoreData(d, function(e) {
+          // ...
         });
       });
     });
@@ -61,89 +55,90 @@ getData(function (a) {
 });
 ```
 
-问题：
+### 2.1 命名的缓解方案
 
-- 代码向右漂移（金字塔形）
-- 错误处理分散在各层
-- 代码可读性极差
+```javascript
+function handleA(a) {
+  getMoreData(a, handleB);
+}
+
+function handleB(b) {
+  getMoreData(b, handleC);
+}
+
+function handleC(c) {
+  getMoreData(c, handleD);
+}
+
+getData(handleA);
+```
 
 ---
 
-## 3. 回调约定
-
-### 3.1 Node.js Error-first Callback
+## 3. 错误处理困境
 
 ```javascript
-fs.readFile("file.txt", (err, data) => {
-  if (err) {
-    console.error("Read failed:", err);
-    return;
-  }
-  console.log(data);
+asyncOp1(function(err, result1) {
+  if (err) { handleError(err); return; }
+  
+  asyncOp2(result1, function(err, result2) {
+    if (err) { handleError(err); return; }
+    
+    asyncOp3(result2, function(err, result3) {
+      if (err) { handleError(err); return; }
+      // ...
+    });
+  });
 });
 ```
 
-约定：
-
-- 第一个参数：Error 对象（无错误时为 null）
-- 后续参数：成功时的返回值
-
-### 3.2 回调函数的签名设计
-
-```javascript
-// 好的签名：参数少、语义清晰
-function fetchUser(id, callback) { }
-
-// 差的签名：参数过多、含义不明
-function doSomething(a, b, c, d, callback) { }
-```
-
 ---
 
-## 4. 回调的替代演进
+## 4. 现代替代方案
 
-### 4.1 Promise 化（Promisify）
+### 4.1 Promise
 
 ```javascript
-const util = require("util");
-const readFilePromise = util.promisify(fs.readFile);
-
-// 或使用原生 Promise
-function readFileAsync(path) {
-  return new Promise((resolve, reject) => {
-    fs.readFile(path, (err, data) => {
-      if (err) reject(err);
-      else resolve(data);
-    });
-  });
-}
+getData()
+  .then(a => getMoreData(a))
+  .then(b => getMoreData(b))
+  .then(c => getMoreData(c))
+  .catch(err => handleError(err));
 ```
 
-### 4.2 async/await 的转换
+### 4.2 async/await
 
 ```javascript
-// 从回调地狱到 async/await
-async function loadData() {
-  const a = await getData();
-  const b = await getMoreData(a);
-  const c = await getMoreData(b);
-  const d = await getMoreData(c);
-  const e = await getMoreData(d);
-  console.log(e);
+async function process() {
+  try {
+    const a = await getData();
+    const b = await getMoreData(a);
+    const c = await getMoreData(b);
+    return c;
+  } catch (err) {
+    handleError(err);
+  }
 }
 ```
 
 ---
 
-## 5. 常见陷阱
+## 5. 回调的合理场景
 
-| 陷阱 | 说明 | 解决方案 |
-|------|------|---------|
-| 回调中的 this 丢失 | 方法作为回调时 this 改变 | 使用箭头函数或 .bind() |
-| 同步回调导致的堆栈爆炸 | 递归同步回调耗尽栈空间 | 使用 setImmediate 或 trampoline |
-| Zalgo 问题 | 回调有时同步有时异步 | 始终异步调用回调（setImmediate） |
-| 未处理的回调错误 | 回调中 throw 未被捕获 | 使用 domain 或 Promise 化 |
+```javascript
+// 事件监听
+document.addEventListener("click", handleClick);
+
+// 数组方法
+[1, 2, 3].map(x => x * 2);
+
+// 定时器
+setTimeout(() => console.log("done"), 1000);
+
+// 自定义事件
+emitter.on("data", callback);
+```
 
 ---
 
-**参考规范**：ECMA-262 §9.5 Jobs and Job Queues
+**参考规范**：ECMA-262 §6.2.5.4 Invoke | ECMA-262 §27.2 Promise Objects

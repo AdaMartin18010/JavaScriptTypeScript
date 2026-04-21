@@ -1,21 +1,19 @@
-# 词法环境与环境记录
+# 词法环境（Lexical Environment）
 
-> ECMAScript 规范中的变量存储模型：Lexical Environment 与 Environment Record
+> 变量存储与作用域链的实现机制
 >
-> 对齐版本：ECMA-262 §9.2–9.3
+> 对齐版本：ECMAScript 2025 (ES16)
 
 ---
 
-## 1. 词法环境（Lexical Environment）
+## 1. 词法环境的结构
 
-ECMAScript 规范定义词法环境为：
-
-> **词法环境** = **环境记录（Environment Record）** + **外层词法环境引用（Outer Lexical Environment Reference）**
+词法环境是 ECMAScript 中作用域的实现机制，由两部分组成：
 
 ```
-LexicalEnvironment: {
-  EnvironmentRecord: { /* 变量绑定 */ },
-  OuterEnv: /* 指向外部词法环境 */
+LexicalEnvironment = {
+  EnvironmentRecord: { /* 变量和函数的绑定 */ },
+  OuterLexicalEnvironment: /* 外层词法环境引用 */
 }
 ```
 
@@ -25,109 +23,117 @@ LexicalEnvironment: {
 
 ### 2.1 声明式环境记录（Declarative Environment Record）
 
-存储 `let`、`const`、`class`、`function` 等声明的绑定：
+存储 `let`、`const`、`class`、`function` 声明：
 
 ```javascript
 {
-  let x = 1;
-  const y = 2;
-  function foo() {}
-  // 这些都在声明式环境记录中
+  const x = 1;
+  let y = 2;
+  function fn() {}
+  // 这些绑定存储在声明式环境记录中
 }
 ```
 
 ### 2.2 对象环境记录（Object Environment Record）
 
-将 JavaScript 对象作为环境记录，用于 `with` 语句和全局对象：
+存储 `var` 声明和 `with` 语句的绑定：
 
 ```javascript
-// 全局环境记录的对象环境记录部分绑定到全局对象（window/global）
-var globalVar = 1; // 通过对象环境记录绑定到全局对象
+// var 声明在全局作用域中成为全局对象的属性
+var globalVar = 1; // window.globalVar（浏览器）
+
+// with 语句创建对象环境记录
+with (obj) {
+  console.log(property); // 从 obj 中查找
+}
 ```
 
-### 2.3 全局环境记录（Global Environment Record）
+### 2.3 函数环境记录（Function Environment Record）
 
-特殊的环境记录，由两部分组成：
-- **声明式环境记录**：存储 `let/const/class`
-- **对象环境记录**：绑定到全局对象，存储 `var` 和函数声明
+函数调用时创建，包含 `this` 绑定和参数：
 
-### 2.4 函数环境记录（Function Environment Record）
+```javascript
+function greet(name) {
+  const message = `Hello, ${name}`;
+  // name 和 message 存储在函数环境记录中
+  // this 绑定也在此记录中
+}
+```
 
-函数调用时创建，包含：
-- `this` 绑定
-- `super` 绑定
-- 参数和局部变量
+### 2.4 全局环境记录（Global Environment Record）
+
+全局作用域的复合记录，由对象环境记录（var）和声明式环境记录（let/const）组成。
 
 ### 2.5 模块环境记录（Module Environment Record）
 
-模块执行时创建，存储：
-- 模块的顶级声明
-- 导入绑定的间接引用（immutability guarantee）
+模块作用域，包含导入和导出的绑定。
 
 ---
 
-## 3. 绑定操作
-
-| 操作 | 描述 |
-|------|------|
-| `CreateBinding(N, D)` | 创建名为 N 的绑定，D 表示是否可删除 |
-| `InitializeBinding(N, V)` | 将绑定 N 初始化为值 V |
-| `SetMutableBinding(N, V, S)` | 设置可变绑定 N 的值为 V，S 表示严格模式 |
-| `GetBindingValue(N, S)` | 获取绑定 N 的值 |
-
----
-
-## 4. 环境记录与作用域
-
-### 4.1 函数调用时的环境记录创建
+## 3. 作用域链
 
 ```javascript
+const global = "global";
+
 function outer() {
-  const x = 10;
+  const outerVar = "outer";
   function inner() {
-    const y = 20;
-    console.log(x + y);
+    const innerVar = "inner";
+    console.log(innerVar); // 当前环境
+    console.log(outerVar); // 外层环境
+    console.log(global);   // 全局环境
   }
   inner();
 }
-outer();
 ```
 
-环境记录链：
+词法环境链：
 
 ```
-inner() FunctionEnvironmentRecord
-  → outer() FunctionEnvironmentRecord
-    → GlobalEnvironmentRecord
+inner() LexicalEnvironment
+  ├── EnvironmentRecord: { innerVar }
+  └── OuterEnv ──► outer() LexicalEnvironment
+                    ├── EnvironmentRecord: { outerVar, inner }
+                    └── OuterEnv ──► Global LexicalEnvironment
+                                      ├── EnvironmentRecord: { global }
+                                      └── OuterEnv ──► null
 ```
 
-### 4.2 块语句的环境记录创建
+---
+
+## 4. 块级作用域
 
 ```javascript
 {
-  const x = 1;
-  {
-    const y = 2;
-    // x 通过外层引用找到，y 在当前环境记录中找到
-  }
+  const blockVar = "block";
+}
+// blockVar 不可访问
+
+// if、for、while 等语句也创建块级作用域
+if (true) {
+  let x = 1;
+}
+// x 不可访问
+
+// for 循环的每次迭代创建新的词法环境
+for (let i = 0; i < 3; i++) {
+  setTimeout(() => console.log(i), 0); // 0, 1, 2
 }
 ```
 
 ---
 
-## 5. 可视化
+## 5. 创建与销毁
 
-```mermaid
-graph TD
-    A[GlobalEnvironmentRecord] --> B[FunctionEnvironmentRecord: outer]
-    B --> C[FunctionEnvironmentRecord: inner]
-    B --> D[DeclarativeEnvironmentRecord: block in outer]
-    
-    A -->|OuterEnv| A_null[null]
-    B -->|OuterEnv| A
-    C -->|OuterEnv| B
-    D -->|OuterEnv| B
-```
+### 5.1 创建时机
+
+- **全局环境**：脚本/模块开始时创建
+- **函数环境**：函数被调用时创建
+- **块级环境**：进入块级语句时创建（let/const）
+
+### 5.2 销毁时机
+
+执行离开作用域后，环境记录不再被引用时，由垃圾回收器回收。
 
 ---
 

@@ -1,114 +1,160 @@
-# 变型（协变 / 逆变 / 双变 / 不变）
+# 变型（Variance）
 
-> 子类型关系在类型参数位置上的行为规则
+> 协变、逆变、双变与抗变：类型兼容性的数学基础
 >
 > 对齐版本：TypeScript 5.8–6.0
 
 ---
 
-## 1. 形式化定义
+## 1. 变型的定义
 
-### 1.1 协变（Covariance）
+给定类型构造器 `F<T>`，如果 `A <: B`（A 是 B 的子类型），那么 `F<A>` 与 `F<B>` 的关系定义了变型：
 
-如果 `Cat` 是 `Animal` 的子类型，那么 `Producer<Cat>` 是 `Producer<Animal>` 的子类型：
+| 变型 | 关系 | 符号 | 示例 |
+|------|------|------|------|
+| **协变（Covariant）** | `F<A> <: F<B>` | + | 返回值位置、只读属性 |
+| **逆变（Contravariant）** | `F<B> <: F<A>` | - | 参数位置（strictFunctionTypes） |
+| **双变（Bivariant）** | `F<A> <: F<B>` 且 `F<B> <: F<A>` | ± | 方法参数（默认） |
+| **抗变（Invariant）** | 互不兼容 | 0 | 数组（写时）、可变属性 |
 
-```typescript
-interface Animal { name: string; }
-interface Cat extends Animal { meow(): void; }
+---
 
-type Producer<T> = () => T;
+## 2. 协变（Covariance）
 
-const catProducer: Producer<Cat> = () => ({ name: "Whiskers", meow: () => {} });
-const animalProducer: Producer<Animal> = catProducer; // ✅ 协变
-```
-
-### 1.2 逆变（Contravariance）
-
-如果 `Cat` 是 `Animal` 的子类型，那么 `Consumer<Animal>` 是 `Consumer<Cat>` 的子类型：
+返回值位置是协变的：
 
 ```typescript
-type Consumer<T> = (item: T) => void;
+interface Animal {
+  name: string;
+}
 
-const animalConsumer: Consumer<Animal> = (a) => console.log(a.name);
-const catConsumer: Consumer<Cat> = animalConsumer; // ✅ 逆变
+interface Dog extends Animal {
+  bark(): void;
+}
+
+// 返回值协变
+let getAnimal: () => Animal = () => ({ name: "animal" });
+let getDog: () => Dog = () => ({ name: "Buddy", bark() {} });
+
+getAnimal = getDog; // ✅ Dog 是 Animal 的子类型，() => Dog <: () => Animal
+// getDog = getAnimal; // ❌ Animal 缺少 bark
 ```
 
-### 1.3 双变（Bivariance）
+### 2.1 只读属性协变
 
-既是协变又是逆变。TypeScript 在**方法参数**中默认使用双变（兼容性问题）：
+```typescript
+interface Container<T> {
+  readonly value: T;
+}
+
+let animalContainer: Container<Animal> = { value: { name: "animal" } };
+let dogContainer: Container<Dog> = { value: { name: "Buddy", bark() {} } };
+
+animalContainer = dogContainer; // ✅ 只读属性协变
+```
+
+---
+
+## 3. 逆变（Contravariance）
+
+参数位置是逆变的（`strictFunctionTypes` 开启时）：
+
+```typescript
+// 参数逆变
+let handleAnimal: (animal: Animal) => void = (a) => console.log(a.name);
+let handleDog: (dog: Dog) => void = (d) => d.bark();
+
+handleDog = handleAnimal; // ✅ (Animal) => void <: (Dog) => void
+// handleAnimal = handleDog; // ❌ 可能调用 bark 但传入 Animal
+```
+
+**直觉解释**：能接受 Animal 的函数，一定能接受 Dog（因为 Dog 是 Animal）。反之不成立。
+
+---
+
+## 4. 双变（Bivariance）
+
+方法参数默认是双变的（兼容性原因）：
 
 ```typescript
 interface Comparator<T> {
-  compare(a: T, b: T): number; // 方法参数默认双变
+  compare(a: T, b: T): number; // 方法参数双变
+}
+
+let animalComparator: Comparator<Animal> = {
+  compare(a, b) { return a.name.localeCompare(b.name); }
+};
+
+let dogComparator: Comparator<Dog> = {
+  compare(a, b) { return a.name.localeCompare(b.name); }
+};
+
+animalComparator = dogComparator; // ✅ 双向兼容
+```
+
+**配置严格检查**：
+
+```json
+{
+  "compilerOptions": {
+    "strictFunctionTypes": true // 方法参数变为逆变
+  }
 }
 ```
 
-### 1.4 不变（Invariance）
+---
 
-既不是协变也不是逆变，必须完全匹配：
+## 5. 抗变（Invariance）
+
+数组是抗变的：
 
 ```typescript
-type Box<T> = { value: T };
-// Box<Cat> 既不是 Box<Animal> 的子类型，也不是父类型（在严格模式下）
+let animals: Animal[] = [];
+let dogs: Dog[] = [];
+
+animals = dogs; // ✅ TypeScript 允许（协变），但运行时不安全
+animals.push({ name: "Cat" }); // 运行时：dogs 数组中有了非 Dog！
+```
+
+**TypeScript 的设计权衡**：允许数组协变是为了方便使用，但可能导致运行时错误。
+
+---
+
+## 6. 实战影响
+
+### 6.1 事件处理器
+
+```typescript
+// 逆变确保类型安全
+interface EventHandler<E> {
+  (event: E): void;
+}
+
+type MouseHandler = EventHandler<MouseEvent>;
+type UIHandler = EventHandler<UIEvent>;
+
+const mouseHandler: MouseHandler = (e) => console.log(e.clientX);
+const uiHandler: UIHandler = (e) => console.log(e.type);
+
+// UIEvent 是 MouseEvent 的父类型
+// 所以 MouseEvent handler 可以赋值给 UIEvent handler
+const handler: UIHandler = mouseHandler; // ✅ 逆变
+```
+
+### 6.2 回调类型设计
+
+```typescript
+// ❌ 使用 interface 方法声明（双变）
+interface Processor {
+  process(data: string): void;
+}
+
+// ✅ 使用函数属性声明（逆变，strictFunctionTypes）
+interface Processor {
+  process: (data: string) => void;
+}
 ```
 
 ---
 
-## 2. 各位置的变型规则
-
-| 位置 | 变型 | 示例 |
-|------|------|------|
-| 返回值 | 协变 | `() => T` |
-| 函数参数 | 逆变 | `(x: T) => void` |
-| 属性读取 | 协变 | `{ readonly x: T }` |
-| 属性写入 | 逆变 | `{ x: T }`（可变属性）|
-| 数组元素 | 协变 | `T[]`（不严格时） |
-
----
-
-## 3. TypeScript 的变型检查
-
-### 3.1 `--strictFunctionTypes`
-
-启用后，函数类型的参数变为**逆变**：
-
-```typescript
-// strictFunctionTypes: true
-type Fn = (x: Animal) => void;
-const fn: Fn = (x: Cat) => {}; // ❌ 参数逆变：不能将 (Cat) => void 赋给 (Animal) => void
-```
-
-### 3.2 `out` / `in` 显式注解（TS 4.7+）
-
-```typescript
-type Producer<out T> = () => T;     // 显式标记协变
-type Consumer<in T> = (x: T) => void; // 显式标记逆变
-```
-
----
-
-## 4. 实战影响
-
-### 4.1 Event Handler 类型设计
-
-```typescript
-// 错误的协变数组
-type ClickHandler = (e: MouseEvent) => void;
-type handlers: ClickHandler[] = [];
-
-// 由于数组协变，以下赋值在 strictFunctionTypes 关闭时允许
-const generalHandlers: ((e: Event) => void)[] = handlers; // 危险！
-```
-
----
-
-## 5. 常见陷阱
-
-| 陷阱 | 说明 | 解决方案 |
-|------|------|---------|
-| 方法参数双变 | TS 默认方法参数双变，允许不安全赋值 | 启用 `--strictFunctionTypes` |
-| 数组协变 | `T[]` 在写入时不安全 | 使用 `readonly T[]` 或 `ReadonlyArray<T>` |
-
----
-
-**参考规范**：TypeScript Handbook: Type Compatibility | ECMA-262 §6.2.10 The Completion Record Specification Type
+**参考规范**：TypeScript Handbook: Type Compatibility | TypeScript Spec §3.11

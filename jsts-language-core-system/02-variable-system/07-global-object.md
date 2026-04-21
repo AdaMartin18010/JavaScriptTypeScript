@@ -1,110 +1,125 @@
-# 全局对象与 globalThis
+# 全局对象
 
-> JavaScript 全局作用域的统一抽象
+> 全局对象的属性与跨环境差异
 >
-> 对齐版本：ECMAScript 2020 (ES11) 及之后
+> 对齐版本：ECMAScript 2025 (ES16)
 
 ---
 
-## 1. 全局对象的差异
+## 1. 全局对象的定义
 
-不同 JavaScript 运行环境有不同的全局对象：
+全局对象是全局作用域中的 `this` 值（非严格模式函数调用），提供内置构造函数和函数：
 
-| 环境 | 全局对象 | 说明 |
-|------|---------|------|
-| 浏览器 | `window` | 包含 DOM、BOM API |
-| Node.js | `global` | 包含 process、Buffer 等 |
-| Web Worker | `self` | 与 window 类似但无 DOM |
-| 严格模式函数 | `undefined` | 严格模式下函数内 this 为 undefined |
+```javascript
+// 浏览器
+globalThis === window; // true
+this === window;       // true（全局作用域）
+
+// Node.js
+globalThis === global; // true
+this === module.exports; // 模块中不同
+```
 
 ---
 
-## 2. globalThis（ES2020）
+## 2. 全局对象的属性
 
-`globalThis` 提供**跨平台统一的全局 this 引用**：
+### 2.1 内置构造函数
 
 ```javascript
-// 在所有环境中都指向全局对象
-console.log(globalThis === window);     // true（浏览器）
-console.log(globalThis === global);     // true（Node.js）
-console.log(globalThis === self);       // true（Web Worker）
+Object, Function, Array, String, Number, Boolean, Date, RegExp, Error
+Map, Set, WeakMap, WeakSet, Promise, Symbol, BigInt, Proxy, Reflect
 ```
 
-**优势**：
-- 无需环境检测即可访问全局对象
-- 在模块和严格模式下可靠工作
+### 2.2 内置函数
+
+```javascript
+eval, isFinite, isNaN, parseFloat, parseInt, decodeURI, decodeURIComponent
+encodeURI, encodeURIComponent
+
+// 已弃用，避免使用
+escape, unescape
+```
+
+### 2.3 内置对象
+
+```javascript
+Math, JSON, Intl, Atomics
+```
+
+### 2.4 全局值
+
+```javascript
+undefined, NaN, Infinity
+```
 
 ---
 
-## 3. 全局变量声明
+## 3. 跨环境差异
 
-### 3.1 var 声明与全局对象
+| 特性 | 浏览器 | Node.js | Web Worker |
+|------|--------|---------|-----------|
+| 全局对象 | `window` | `global` | `self` |
+| DOM API | ✅ | ❌ | 部分 |
+| `require` | ❌ | ✅ | ❌ |
+| `process` | ❌ | ✅ | ❌ |
+| `document` | ✅ | ❌ | ❌ |
+| `console` | ✅ | ✅ | ✅ |
 
-```javascript
-var globalVar = 1;
-console.log(globalThis.globalVar); // 1（var 声明成为全局对象属性）
-```
+---
 
-### 3.2 let/const 与全局对象
+## 4. globalThis
 
-```javascript
-let globalLet = 2;
-const globalConst = 3;
-console.log(globalThis.globalLet);   // undefined
-console.log(globalThis.globalConst); // undefined
-```
-
-### 3.3 直接赋值与全局对象
+ES2020 引入 `globalThis` 作为跨环境的统一访问方式：
 
 ```javascript
-// 非严格模式下，直接赋值会创建全局对象属性
-function test() {
-  undeclared = 1; // 非严格模式：globalThis.undeclared = 1
+// 所有环境
+console.log(globalThis);
+
+// Polyfill（旧环境）
+if (typeof globalThis === "undefined") {
+  (function() {
+    if (typeof self !== "undefined") return self;
+    if (typeof window !== "undefined") return window;
+    if (typeof global !== "undefined") return global;
+    throw new Error("Unable to locate global object");
+  })().globalThis = (function() {
+    if (typeof self !== "undefined") return self;
+    if (typeof window !== "undefined") return window;
+    if (typeof global !== "undefined") return global;
+  })();
 }
 ```
 
----
+### 4.1 与模块的关系
 
-## 4. 全局环境记录
+```javascript
+// ES Module 中
+console.log(this);        // undefined
+console.log(globalThis);  // 全局对象
 
-全局环境记录由两部分组成：
-- **对象环境记录**：管理 `var` 声明和函数声明，绑定到全局对象
-- **声明式环境记录**：管理 `let/const/class` 声明
-
-```
-GlobalEnvironmentRecord: {
-  ObjectEnvironmentRecord: { /* var, function */ },
-  DeclarativeEnvironmentRecord: { /* let, const, class */ },
-  GlobalThisValue: globalThis
-}
+// 传统脚本中
+console.log(this);        // 全局对象
+console.log(globalThis);  // 全局对象
 ```
 
 ---
 
 ## 5. 最佳实践
 
-### 5.1 避免全局变量污染
-
 ```javascript
-// ❌ 避免
-var utils = { ... }; // 污染全局
+// ❌ 避免修改全局对象
+globalThis.myLib = { ... };
 
-// ✅ 使用模块
-export const utils = { ... };
-```
+// ✅ 使用模块导出
+export const myLib = { ... };
 
-### 5.2 globalThis 的适用场景
-
-```javascript
-// 跨平台存储全局状态（谨慎使用）
-globalThis.__app_config__ = { version: "1.0.0" };
-
-// 检查 Polyfill 是否已存在
-if (!globalThis.structuredClone) {
-  globalThis.structuredClone = polyfill;
+// ✅ 需要全局访问时使用 globalThis
+if (typeof globalThis.fetch === "undefined") {
+  globalThis.fetch = require("node-fetch");
 }
 ```
 
 ---
 
-**参考规范**：ECMA-262 §9.3.4 Global Environment Records | ECMA-262 §19.1.1 The globalThis Property
+**参考规范**：ECMA-262 §19.1 The Global Object

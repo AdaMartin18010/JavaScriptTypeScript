@@ -1,6 +1,6 @@
 # 调用栈（Call Stack）
 
-> 函数调用追踪机制与栈溢出防护
+> 函数调用追踪机制、栈溢出与尾调用优化
 >
 > 对齐版本：ECMAScript 2025 (ES16)
 
@@ -8,7 +8,7 @@
 
 ## 1. 调用栈基础
 
-调用栈是 JavaScript 引擎用于追踪函数调用的数据结构（后进先出 LIFO）：
+调用栈是 JavaScript 引擎用于追踪函数调用的**后进先出（LIFO）**数据结构：
 
 ```javascript
 function a() { b(); }
@@ -45,7 +45,7 @@ function infinite() {
 
 ### 2.2 尾调用优化（TCO）
 
-ES6 规范了尾调用优化，但大多数引擎未实现：
+ES6 规范了尾调用优化，但**大多数引擎未实现**：
 
 ```javascript
 // 尾调用（最后操作是函数调用）
@@ -73,13 +73,60 @@ function sumIterative(arr) {
   for (const n of arr) sum += n;
   return sum;
 }
+
+// 尾递归优化（Trampoline）
+function trampoline(fn) {
+  return function(...args) {
+    let result = fn.apply(this, args);
+    while (typeof result === "function") {
+      result = result();
+    }
+    return result;
+  };
+}
 ```
 
 ---
 
-## 3. 调试调用栈
+## 3. 异步与调用栈
 
-### 3.1 console.trace()
+异步回调不在原始调用栈中执行：
+
+```javascript
+function asyncOperation() {
+  setTimeout(() => {
+    console.log("Async callback");
+    console.trace(); // 调用栈从 setTimeout 回调开始
+  }, 0);
+}
+
+asyncOperation();
+// 异步回调的调用栈不包含 asyncOperation
+```
+
+**async/await 的调用栈**：现代引擎已优化，async/await 的调用栈可以跨异步边界：
+
+```javascript
+async function level1() {
+  await level2();
+}
+
+async function level2() {
+  await level3();
+}
+
+async function level3() {
+  console.trace(); // Chrome 显示完整的 async 调用链
+}
+
+level1();
+```
+
+---
+
+## 4. 调试技巧
+
+### 4.1 console.trace()
 
 ```javascript
 function process() {
@@ -93,7 +140,7 @@ function validate() {
 process();
 ```
 
-### 3.2 Error.stack
+### 4.2 Error.stack
 
 ```javascript
 try {
@@ -102,6 +149,12 @@ try {
   console.log(e.stack);
 }
 ```
+
+### 4.3 Chrome DevTools
+
+- **Performance 面板**：记录火焰图，查看长任务
+- **Sources 面板**：设置断点，单步调试
+- **async stack traces**：在 DevTools Settings 中启用
 
 ---
 

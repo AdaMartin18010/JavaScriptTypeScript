@@ -75,6 +75,9 @@ const z = a = b = c = 1;  // 右结合：a = (b = (c = 1))
 ```javascript
 const result = true || anything();   // anything() 不会执行
 const result2 = false && anything(); // anything() 不会执行
+
+// 逗号运算符
+const x = (1, 2, 3); // 3（返回最后一个值）
 ```
 
 ---
@@ -113,6 +116,19 @@ function test() {
   }
 }
 // 输出：try → catch → finally
+```
+
+### 4.3 finally 中的 return
+
+```javascript
+function test() {
+  try {
+    return "try";
+  } finally {
+    return "finally"; // 覆盖 try 的返回值
+  }
+}
+console.log(test()); // "finally"
 ```
 
 ---

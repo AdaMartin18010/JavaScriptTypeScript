@@ -19,14 +19,14 @@
 
 | 专题 | 子专题数 | 核心覆盖 | 状态 |
 |------|---------|---------|------|
-| [01 类型系统](./01-type-system/README.md) | 16 | 从基础类型到类型级编程、TS 6.x/7.0 新特性 | ✅ 完成 |
+| [01 类型系统](./01-type-system/README.md) | 13 | 从基础类型到类型级编程、TS 6.x/7.0 新特性 | ✅ 完成 |
 | [02 变量系统](./02-variable-system/README.md) | 9 | 声明、作用域、闭包、环境记录、TDZ | ✅ 完成 |
 | [03 控制流](./03-control-flow/README.md) | 9 | 同步/异步控制流、生成器、异常、using | ✅ 完成 |
-| [04 执行模型](./04-execution-model/README.md) | 12 | 引擎架构、事件循环、GC、Agent/Realm | ✅ 完成 |
+| [04 执行模型](./04-execution-model/README.md) | 11 | 引擎架构、事件循环、GC、Agent/Realm | ✅ 完成 |
 | [05 执行流](./05-execution-flow/README.md) | 6 | 代码执行顺序、Promise/async-await 流、经典题目 | ✅ 完成 |
 | [06 规范基础](./06-ecmascript-spec-foundation/README.md) | 4 | 抽象操作、规范类型、内部方法、完成记录 | ✅ 完成 |
 
-**总计：56 个子专题文件 + 7 个 README = 63 个文件**
+**总计：52 个子专题文件 + 7 个 README = 59 个文件**
 
 ---
 
@@ -40,7 +40,7 @@
 01-generics-deep-dive → 02-closure-deep-dive → 03-async-control-flow → 04-event-loop-browser → 05-promise-execution-flow
 
 专家路线：
-01-type-level-programming → 05-lexical-environment → 04-agent-realm-job-queue → 06-completion-records
+01-ts7-go-compiler-preview → 05-lexical-environment → 04-agent-realm-job-queue → 06-completion-records
 ```
 
 ---
@@ -71,11 +71,11 @@
 
 ## 持续推进计划（已 100% 完成）
 
-- [x] **Phase 1**：骨架搭建（63 个文件目录结构）
-- [x] **Phase 2**：类型系统专题（16 个子专题）
+- [x] **Phase 1**：骨架搭建（59 个文件目录结构）
+- [x] **Phase 2**：类型系统专题（13 个子专题）
 - [x] **Phase 3**：变量系统专题（9 个子专题）
 - [x] **Phase 4**：控制流专题（9 个子专题）
-- [x] **Phase 5**：执行模型与执行流专题（18 个子专题）
+- [x] **Phase 5**：执行模型与执行流专题（17 个子专题）
 - [x] **Phase 6**：规范基础与整合（4 个子专题 + 交叉引用 + README 更新）
 
 ---

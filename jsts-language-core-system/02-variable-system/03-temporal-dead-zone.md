@@ -1,6 +1,6 @@
-# 暂时性死区（Temporal Dead Zone, TDZ）
+# 暂时性死区（Temporal Dead Zone）
 
-> let/const 声明前的不可访问区域：机制、规范语义与实战影响
+> TDZ 的语义、表现形式与常见陷阱
 >
 > 对齐版本：ECMAScript 2025 (ES16)
 
@@ -8,123 +8,127 @@
 
 ## 1. TDZ 的定义
 
-**暂时性死区（TDZ）** 是变量从**作用域开始**到**声明语句执行**之间的区域。在此区域内访问变量会抛出 `ReferenceError`。
+**暂时性死区（Temporal Dead Zone）** 是指从块级作用域开始到变量声明处之间的区域。在此区域内访问变量会抛出 `ReferenceError`。
 
 ```javascript
 {
   // TDZ 开始
   console.log(x); // ❌ ReferenceError: Cannot access 'x' before initialization
-  let x = 10;
-  // TDZ 结束
+  let x = 5;      // TDZ 结束
 }
 ```
 
 ---
 
-## 2. TDZ 的行为表现
+## 2. TDZ 的表现形式
 
-### 2.1 `typeof` 在 TDZ 中的异常行为
-
-通常 `typeof` 对未声明的变量返回 `"undefined"`，但对 TDZ 中的变量抛出错误：
+### 2.1 let / const
 
 ```javascript
-console.log(typeof undeclared); // "undefined"
-console.log(typeof tdzVar);     // ❌ ReferenceError
-let tdzVar;
+console.log(a); // ❌ ReferenceError
+let a = 1;
+
+console.log(b); // ❌ ReferenceError
+const b = 2;
 ```
 
-### 2.2 访问 TDZ 变量抛出 ReferenceError
+### 2.2 class 声明
 
 ```javascript
-function test() {
-  console.log(a); // ❌ ReferenceError
-  let a = 1;
+const p = new Person(); // ❌ ReferenceError: Cannot access 'Person' before initialization
+class Person {}
+```
+
+### 2.3 默认参数中的 TDZ
+
+```javascript
+function foo(a = b, b) { // ❌ ReferenceError: Cannot access 'b' before initialization
+  return a + b;
+}
+```
+
+### 2.4 typeof 在 TDZ 中的行为
+
+```javascript
+// var：typeof 返回 "undefined"
+console.log(typeof undeclaredVar); // "undefined"
+
+// let/const：typeof 抛出 ReferenceError
+console.log(typeof tdzVar); // ❌ ReferenceError
+let tdzVar = 1;
+```
+
+这是 TDZ 最反直觉的行为之一：`typeof` 通常对未声明变量是安全的，但在 TDZ 中不安全。
+
+---
+
+## 3. TDZ 的本质
+
+### 3.1 绑定已创建，但未初始化
+
+在编译阶段，`let`/`const`/`class` 的绑定已经创建，但处于**未初始化**状态。
+
+```javascript
+// 编译阶段
+// let x 的绑定已创建，但未初始化
+
+console.log(x); // ❌ 访问未初始化的绑定 → ReferenceError
+let x = 5;
+```
+
+### 3.2 与 var 的对比
+
+```javascript
+// var：绑定创建并初始化为 undefined
+console.log(v); // undefined
+var v = 1;
+
+// let：绑定创建但未初始化
+console.log(l); // ❌ ReferenceError
+let l = 1;
+```
+
+---
+
+## 4. 常见陷阱
+
+### 4.1 循环中的 TDZ
+
+```javascript
+for (let i = 0; i < 3; i++) {
+  setTimeout(() => console.log(i), 0); // 0, 1, 2
+}
+
+// 每次迭代创建新的绑定
+// i 的值被闭包正确捕获
+```
+
+### 4.2 switch 中的 TDZ
+
+```javascript
+switch (x) {
+  case 0:
+    let y = 0;
+    break;
+  case 1:
+    let y = 1; // ❌ SyntaxError: Identifier 'y' has already been declared
+    break;
+}
+
+// 整个 switch 块共享一个作用域
+// 解决方案：加花括号创建块级作用域
+switch (x) {
+  case 0: {
+    let y = 0;
+    break;
+  }
+  case 1: {
+    let y = 1;
+    break;
+  }
 }
 ```
 
 ---
 
-## 3. TDZ 的内部机制
-
-### 3.1 环境记录中的创建 vs 初始化
-
-ECMAScript 规范中的绑定操作：
-
-| 操作 | var | let | const |
-|------|-----|-----|-------|
-| 创建绑定（CreateBinding） | 编译阶段 | 编译阶段 | 编译阶段 |
-| 初始化绑定（InitializeBinding） | 编译阶段（置为 undefined） | 执行到声明语句 | 执行到声明语句 |
-
-### 3.2 规范算法
-
-```
-LexicalEnvironment → EnvironmentRecord → CreateMutableBinding(name, false)
-// 绑定已创建，但 [[Initialized]] = false
-
-// 执行到声明语句时：
-InitializeBinding(name, value)
-// [[Initialized]] = true
-```
-
----
-
-## 4. TDZ 与 const 的关系
-
-TDZ 机制确保了 `const` 的**单次赋值语义**：
-
-```javascript
-// 如果没有 TDZ，以下代码可能产生歧义
-const x = x + 1; // 这里的 x 是外部作用域的 x 还是当前声明的 x？
-```
-
-TDZ 确保在声明语句执行前，变量完全不可访问，避免了这种歧义。
-
----
-
-## 5. 常见陷阱
-
-### 5.1 参数默认值中的 TDZ
-
-```javascript
-function test(x = y, y = 1) {
-  console.log(x, y);
-}
-test(); // ❌ ReferenceError: Cannot access 'y' before initialization
-
-// 正确顺序：
-function test2(y = 1, x = y) {
-  console.log(x, y);
-}
-test2(); // ✅ 1, 1
-```
-
-### 5.2 解构赋值中的 TDZ
-
-```javascript
-const { a = b, b } = { b: 2 };
-// ❌ ReferenceError: Cannot access 'b' before initialization
-// a 的默认值 b 在 b 初始化前被访问
-```
-
-### 5.3 类字段初始化中的 TDZ
-
-```javascript
-class Example {
-  a = 1;
-  b = this.a; // ✅
-  c = d;      // ❌ ReferenceError（如果 d 是后续声明的字段）
-  d = 2;
-}
-```
-
----
-
-## 6. 最佳实践
-
-1. **声明前置**：将所有声明放在作用域顶部
-2. **避免复杂的初始化依赖**：尤其是解构和参数默认值
-3. **使用 lint 规则**：`eslint no-use-before-define`
-
----
-
-**参考规范**：ECMA-262 §9.3.1 Declarative Environment Records | ECMA-262 §8.1.1.1.1 GetBindingValue
+**参考规范**：ECMA-262 §8.1.1.5.3 GetBindingValue | ECMA-262 §13.3.1 Let and Const Declarations

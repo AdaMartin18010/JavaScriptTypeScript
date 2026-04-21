@@ -1,209 +1,263 @@
 # 异常处理
 
-> 从 throw/catch 到 Error Cause：JS/TS 错误处理机制全景
+> Error Cause、AggregateError、显式资源管理与类型安全错误模式
 >
 > 对齐版本：ECMAScript 2025 (ES16) | TypeScript 5.8–6.0
 
 ---
 
-## 1. 异常基础
+## 1. Error 构造函数
 
-### 1.1 throw 语句
+### 1.1 基础用法
 
 ```javascript
-throw "Error message";     // 可抛出任何值
-throw new Error("Oops");   // 推荐抛出 Error 对象
-throw 42;                  // 可抛出数字（不推荐）
+const error = new Error("Something went wrong");
+console.log(error.message); // "Something went wrong"
+console.log(error.stack);   // 调用栈信息
 ```
 
-### 1.2 try / catch / finally
+### 1.2 Error Cause（ES2022）
+
+ES2022 引入 `cause` 选项，用于记录错误链：
+
+```javascript
+try {
+  await fetchUser();
+} catch (e) {
+  throw new Error("Failed to load user", { cause: e });
+}
+
+// 错误链
+try {
+  loadDashboard();
+} catch (e) {
+  console.log(e.message);      // "Failed to load user"
+  console.log(e.cause.message); // 原始错误信息
+}
+```
+
+**优势**：
+- 保留原始错误堆栈
+- 构建有意义的错误链
+- 便于调试复杂调用链
+
+---
+
+## 2. 错误类型
+
+### 2.1 内置错误类型
+
+| 类型 | 用途 |
+|------|------|
+| `Error` | 通用错误 |
+| `SyntaxError` | 语法错误 |
+| `ReferenceError` | 引用不存在的变量 |
+| `TypeError` | 类型不匹配 |
+| `RangeError` | 值超出有效范围 |
+| `URIError` | URI 编码/解码错误 |
+| `AggregateError` | 多个错误聚合（ES2021） |
+
+### 2.2 AggregateError
+
+```javascript
+const promises = [
+  fetch("/api/a"),
+  fetch("/api/b"),
+  Promise.reject(new Error("C failed"))
+];
+
+try {
+  await Promise.all(promises);
+} catch (e) {
+  if (e instanceof AggregateError) {
+    console.log("Multiple errors:");
+    e.errors.forEach(err => console.log(err.message));
+  }
+}
+```
+
+---
+
+## 3. try/catch/finally
+
+### 3.1 基本结构
 
 ```javascript
 try {
   riskyOperation();
 } catch (error) {
-  console.error("Caught:", error.message);
+  console.error(error);
 } finally {
-  console.log("Always runs");
+  cleanup();
 }
 ```
 
----
-
-## 2. Error 类型体系
+### 3.2 finally 的执行保证
 
 ```javascript
-// 内置错误类型
-new Error("General error");
-new SyntaxError("Invalid syntax");
-new ReferenceError("Variable not defined");
-new TypeError("Wrong type");
-new RangeError("Out of range");
-new URIError("Invalid URI");
-new EvalError("Eval error"); // 历史遗留，现代 JS 中很少使用
-```
-
-### 2.1 自定义 Error 类
-
-```javascript
-class ValidationError extends Error {
-  constructor(message, field) {
-    super(message);
-    this.name = "ValidationError";
-    this.field = field;
-  }
-}
-
-throw new ValidationError("Invalid email", "email");
-```
-
----
-
-## 3. Error Cause（ES2022）
-
-```javascript
-try {
-  await fetchUserData();
-} catch (error) {
-  throw new Error("Failed to load user", { cause: error });
-}
-
-// 获取原因
-try {
-  loadData();
-} catch (error) {
-  console.log(error.message);      // "Failed to load user"
-  console.log(error.cause);        // 原始错误
-  console.log(error.cause.message); // 原始错误消息
-}
-```
-
-**错误链构建**：
-
-```javascript
-function lowLevel() {
-  throw new Error("Database connection failed");
-}
-
-function midLevel() {
+function test() {
   try {
-    lowLevel();
-  } catch (e) {
-    throw new Error("Query failed", { cause: e });
+    return "try";
+  } finally {
+    console.log("finally"); // 在 return 之前执行
   }
 }
 
-function highLevel() {
-  try {
-    midLevel();
-  } catch (e) {
-    throw new Error("User request failed", { cause: e });
-  }
+console.log(test()); // 输出：finally → try
+```
+
+### 3.3 catch 绑定（ES2019）
+
+```javascript
+// ES2019 前：必须绑定变量
+try {
+  // ...
+} catch (e) {
+  // e 是错误对象
+}
+
+// ES2019+：可选绑定
+try {
+  // ...
+} catch {
+  // 不需要错误对象
 }
 ```
 
 ---
 
-## 4. 异常处理最佳实践
+## 4. ES2025：显式资源管理
 
-### 4.1 只捕获能处理的异常
+ES2025 的 `using` 声明提供自动资源清理，替代 try-finally 模式：
 
 ```javascript
-// ✅ 好：捕获特定错误并处理
-try {
-  const data = JSON.parse(input);
-} catch (e) {
-  if (e instanceof SyntaxError) {
-    return { error: "Invalid JSON" };
+// ❌ 传统 try-finally
+function processFile(filename) {
+  const file = openFile(filename);
+  try {
+    return file.read();
+  } finally {
+    file.close();
   }
-  throw e; // 不认识的错误，继续抛出
 }
 
-// ❌ 坏：吞没所有异常
-try {
-  riskyOperation();
-} catch (e) {
-  // 什么都不做——错误被隐藏了！
-}
+// ✅ ES2025 using
+function processFile(filename) {
+  using file = openFile(filename);
+  return file.read();
+} // 自动调用 file[Symbol.dispose]()
 ```
 
-### 4.2 异步异常处理
+### 4.1 多个资源
 
 ```javascript
-// ✅ async/await + try/catch
+{
+  using file = openFile("data.txt");
+  using conn = createConnection();
+  // 使用资源...
+} // 按逆序 dispose：conn → file
+```
+
+### 4.2 异步资源
+
+```javascript
 async function fetchData() {
-  try {
-    const response = await fetch("/api/data");
-    return await response.json();
-  } catch (error) {
-    console.error("Fetch failed:", error);
-    throw error;
-  }
-}
-
-// Promise.catch
-fetch("/api/data")
-  .then(r => r.json())
-  .catch(error => console.error(error));
+  await using conn = await createConnection();
+  return conn.query("SELECT *");
+} // 自动 await conn[Symbol.asyncDispose]()
 ```
 
 ---
 
-## 5. 异常与类型系统
+## 5. 类型安全的错误模式
 
-### 5.1 TypeScript 中的异常类型
-
-TypeScript 不追踪函数的异常类型（不像 Java 的 `throws`）。社区有提案但尚未标准化。
-
-### 5.2 never 返回类型
+### 5.1 Result 类型
 
 ```typescript
-function throwError(message: string): never {
-  throw new Error(message);
-}
-
-function process(value: string | null): string {
-  if (value === null) {
-    throwError("Value is required"); // never 不会破坏返回类型
-  }
-  return value; // value 被收窄为 string
-}
-```
-
-### 5.3 函数式错误处理（Result/Either 模式）
-
-```typescript
-type Result<T, E = Error> = 
+type Result<T, E = Error> =
   | { ok: true; value: T }
   | { ok: false; error: E };
 
-function parseNumber(input: string): Result<number> {
-  const num = Number(input);
-  if (isNaN(num)) {
-    return { ok: false, error: new Error(`Invalid number: ${input}`) };
-  }
-  return { ok: true, value: num };
+function ok<T>(value: T): Result<T> {
+  return { ok: true, value };
 }
 
-const result = parseNumber("42");
+function err<E>(error: E): Result<never, E> {
+  return { ok: false, error };
+}
+
+// 使用
+function divide(a: number, b: number): Result<number, string> {
+  if (b === 0) return err("Division by zero");
+  return ok(a / b);
+}
+
+const result = divide(10, 0);
 if (result.ok) {
   console.log(result.value);
 } else {
-  console.error(result.error.message);
+  console.error(result.error);
 }
+```
+
+### 5.2 neverthrow 库
+
+```typescript
+import { ok, err, Result } from "neverthrow";
+
+function fetchUser(id: string): Result<User, Error> {
+  try {
+    return ok(syncFetch(id));
+  } catch (e) {
+    return err(e as Error);
+  }
+}
+
+// 函数式组合
+fetchUser("123")
+  .map(user => user.name)
+  .mapErr(error => new Error(`Fetch failed: ${error.message}`));
 ```
 
 ---
 
-## 6. 常见陷阱
+## 6. 全局错误处理
 
-| 陷阱 | 说明 | 解决方案 |
-|------|------|---------|
-| 丢失堆栈信息 | 重新 throw 新 Error 丢失原始堆栈 | 使用 `{ cause: error }` |
-| 异步异常的未捕获 | Promise 拒绝未被处理 | 使用 await + try/catch 或 .catch() |
-| finally 中的 return/throw | 会覆盖 try/catch 中的 return/throw | 避免在 finally 中 return |
-| 捕获 any 类型 | catch (e) 中 e 为 any（TS < 4.0）| 使用 `unknown` 注解：catch (e: unknown) |
+### 6.1 浏览器
+
+```javascript
+// 未捕获的 Promise 拒绝
+window.addEventListener("unhandledrejection", event => {
+  console.error("Unhandled rejection:", event.reason);
+  event.preventDefault(); // 防止控制台报错
+});
+
+// Promise 拒绝被处理后（如果之前未处理）
+window.addEventListener("rejectionhandled", event => {
+  console.log("Rejection handled:", event.reason);
+});
+
+// 全局错误
+window.addEventListener("error", event => {
+  console.error("Global error:", event.error);
+});
+```
+
+### 6.2 Node.js
+
+```javascript
+// 未捕获的异常
+process.on("uncaughtException", error => {
+  console.error("Uncaught exception:", error);
+  process.exit(1); // 建议退出进程
+});
+
+// 未处理的 Promise 拒绝
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled rejection:", reason);
+});
+```
 
 ---
 
-**参考规范**：ECMA-262 §14.15 The try Statement | ECMA-262 §20.5.5 Native Error Types Used in This Standard
+**参考规范**：ECMA-262 §20.5 Error Objects | ECMA-262 §14.15 The try Statement

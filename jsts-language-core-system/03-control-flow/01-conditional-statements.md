@@ -66,7 +66,7 @@ switch (grade) {
   case "A":
   case "B":
   case "C":
-    console.log("Pass"); // A、B、C 都会执行到这里
+    console.log("Pass"); // A、B、C 都输出 Pass
     break;
   case "D":
   case "F":
@@ -106,10 +106,10 @@ const category = age < 13 ? "child" : age < 20 ? "teen" : "adult";
 
 ```javascript
 // &&：左操作数为 falsy 时返回左操作数
-const result1 = false && anything; // false（anything 不会求值）
+const result1 = false && anything(); // false（anything() 不会求值）
 
 // ||：左操作数为 truthy 时返回左操作数
-const result2 = true || anything;  // true（anything 不会求值）
+const result2 = true || anything();  // true（anything() 不会求值）
 
 // ??：左操作数为 nullish 时返回右操作数
 const result3 = null ?? "default"; // "default"
@@ -119,7 +119,7 @@ const result3 = null ?? "default"; // "default"
 
 ```javascript
 let a = 1;
-a &&= 2; // a = a && 2 → a = 1（1 是 truthy，但返回 1）
+a &&= 2; // a = a && 2 → a = 1
 
 let b = 0;
 b ||= 3; // b = b || 3 → b = 3
@@ -148,17 +148,16 @@ const value4 = "" ?? "default";         // ""（空字符串不是 nullish）
 ```javascript
 const user = { profile: { name: "Alice" } };
 
-// 安全访问深层属性
 const name = user?.profile?.name;     // "Alice"
 const bio = user?.profile?.bio;       // undefined（不报错）
 const deep = user?.settings?.theme;   // undefined
 
 // 与函数调用结合
-const result = someObject?.method?.(); // 如果 method 不存在，返回 undefined
+const result = someObject?.method?.();
 
 // 与计算属性结合
 const key = "name";
-const value = user?.profile?.[key]; // "Alice"
+const value = user?.profile?.[key];
 ```
 
 **短路行为**：如果 `?.` 前的值为 nullish，整个表达式短路返回 undefined。
@@ -181,7 +180,7 @@ const result = match (response) {
 
 当前替代方案：
 
-```javascript
+```typescript
 // 使用 ts-pattern 库
 import { match } from "ts-pattern";
 
@@ -194,4 +193,4 @@ const result = match(response)
 
 ---
 
-**参考规范**：ECMA-262 §14.6 The if Statement | ECMA-262 §14.12 The switch Statement | ECMA-262 §13.12 Binary Logical Operators
+**参考规范**：ECMA-262 §14.6 The if Statement | ECMA-262 §14.12 The switch Statement

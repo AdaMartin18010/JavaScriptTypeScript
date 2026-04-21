@@ -1,18 +1,14 @@
 # 抽象操作（Abstract Operations）
 
-> ECMA-262 规范中定义的内部算法：ToPrimitive、ToString、ToNumber 等
+> ECMA-262 中的内部算法：类型转换、属性操作与对象语义
 >
-> 对齐版本：ECMA-262 §7.1–7.5
+> 对齐版本：ECMA-262 2025 (ES16)
 
 ---
 
 ## 1. 抽象操作概述
 
-**抽象操作（Abstract Operations）** 是 ECMAScript 规范中定义的内部算法，用于描述语言语义的细节。它们：
-
-- 使用 `OperationName(arg1, arg2)` 的命名约定
-- 不在 JavaScript 中直接暴露
-- 是理解 JS 内部行为的关键
+抽象操作是 ECMA-262 规范中定义的算法，以函数形式表示，用于辅助规范的其他部分。它们不是 JavaScript 语言的一部分，而是规范作者的内部工具。
 
 ---
 
@@ -22,139 +18,152 @@
 
 将对象转换为原始值：
 
+```
+ToPrimitive(input, preferredType?)
+```
+
 ```javascript
-// 默认行为：先尝试 valueOf，再尝试 toString
 const obj = {
-  valueOf() { return 42; },
-  toString() { return "hello"; }
+  [Symbol.toPrimitive](hint) {
+    if (hint === "number") return 42;
+    return "string";
+  }
 };
 
-console.log(Number(obj)); // 42（使用 valueOf）
-console.log(String(obj)); // "hello"（使用 toString）
+console.log(+obj);      // 42（hint = "number"）
+console.log(`${obj}`);  // "string"（hint = "string"）
 ```
 
-### 2.2 ToBoolean
+### 2.2 ToNumber
 
-转换为布尔值：
+| 输入 | 结果 |
+|------|------|
+| undefined | NaN |
+| null | 0 |
+| true | 1 |
+| false | 0 |
+| "" | 0 |
+| "123" | 123 |
+| "abc" | NaN |
+| Symbol | TypeError |
+| Object | 先 ToPrimitive，再 ToNumber |
 
-| 输入类型 | 结果 |
-|---------|------|
-| Undefined | false |
-| Null | false |
-| Boolean | 输入值 |
-| Number | 0, NaN → false; 其他 → true |
-| String | "" → false; 其他 → true |
-| Symbol | true |
-| Object | true |
+### 2.3 ToString
 
-### 2.3 ToNumber
+| 输入 | 结果 |
+|------|------|
+| undefined | "undefined" |
+| null | "null" |
+| true | "true" |
+| 123 | "123" |
+| [1,2,3] | "1,2,3" |
+| {} | "[object Object]" |
 
-转换为数字：
+---
 
-```javascript
-Number("123");     // 123
-Number("");        // 0
-Number("  ");      // 0
-Number(null);      // 0
-Number(undefined); // NaN
-Number(true);      // 1
-Number(false);     // 0
+## 3. 属性操作
+
+### 3.1 Get(O, P)
+
+获取对象属性的值：
+
+```
+1. 断言：Type(O) 是 Object
+2. 断言：IsPropertyKey(P) 是 true
+3. 返回 O.[[Get]](P, O)
 ```
 
-### 2.4 ToString
+### 3.2 Set(O, P, V, Throw)
 
-转换为字符串：
+设置对象属性的值：
 
-```javascript
-String(123);       // "123"
-String(null);      // "null"
-String(undefined); // "undefined"
-String(true);      // "true"
-String({});        // "[object Object]"
+```
+1. 断言：Type(O) 是 Object
+2. 断言：IsPropertyKey(P) 是 true
+3. 断言：Type(Throw) 是 Boolean
+4. 成功？= O.[[Set]](P, V, O)
+5. 如果成功？是 false 且 Throw 是 true，抛出 TypeError
+6. 返回 success
+```
+
+### 3.3 HasProperty(O, P)
+
+检查对象是否有属性：
+
+```
+1. 返回 O.[[HasProperty]](P)
+```
+
+### 3.4 DeletePropertyOrThrow(O, P)
+
+删除对象属性：
+
+```
+1. 成功？= O.[[Delete]](P)
+2. 如果成功？是 false，抛出 TypeError
+3. 返回 success
 ```
 
 ---
 
-## 3. 对象操作
+## 4. 对象语义操作
 
-### 3.1 GetValue / PutValue
+### 4.1 DefinePropertyOrThrow(O, P, desc)
 
-获取/设置引用类型的值：
-
-```javascript
-const obj = { x: 1 };
-const ref = obj.x; // GetValue 操作
-obj.x = 2;         // PutValue 操作
-```
-
-### 3.2 HasProperty
-
-检查对象是否具有某属性（含原型链）：
-
-```javascript
-"toString" in {}; // true（继承自 Object.prototype）
-```
-
-### 3.3 DefinePropertyOrThrow
-
-定义对象属性，失败时抛出 TypeError：
+定义对象属性：
 
 ```javascript
 const obj = {};
-Object.defineProperty(obj, "x", { value: 1, writable: false });
-obj.x = 2; // TypeError in strict mode
+Object.defineProperty(obj, "x", {
+  value: 1,
+  writable: false,
+  enumerable: true,
+  configurable: true
+});
+```
+
+### 4.2 GetMethod(V, P)
+
+获取对象的方法：
+
+```
+1. 令 func 为 Get(V, P)
+2. 如果 func 是 undefined 或 null，返回 undefined
+3. 如果 IsCallable(func) 是 false，抛出 TypeError
+4. 返回 func
+```
+
+### 4.3 Call(F, V, argumentsList)
+
+调用函数：
+
+```
+1. 如果 argumentsList 未提供，设为空 List
+2. 如果 IsCallable(F) 是 false，抛出 TypeError
+3. 返回 F.[[Call]](V, argumentsList)
+```
+
+### 4.4 Construct(F, argumentsList, newTarget)
+
+构造函数调用：
+
+```
+1. 如果 argumentsList 未提供，设为空 List
+2. 如果 newTarget 未提供，设为 F
+3. 断言：IsConstructor(F) 是 true
+4. 返回 F.[[Construct]](argumentsList, newTarget)
 ```
 
 ---
 
-## 4. 环境操作
+## 5. 与 JavaScript 的关系
 
-### 4.1 GetIdentifierReference
+抽象操作虽然不可直接调用，但理解它们有助于：
 
-解析标识符引用：
-
-```javascript
-function outer() {
-  const x = 1;
-  function inner() {
-    console.log(x); // GetIdentifierReference 沿作用域链查找 x
-  }
-  inner();
-}
-```
-
-### 4.2 ResolveBinding
-
-解析变量绑定：
-
-```javascript
-let x = 1;
-// ResolveBinding("x") 在当前词法环境中找到 x 的绑定
-```
+1. **理解隐式类型转换**：`+`、`==` 等运算符调用哪些抽象操作
+2. **理解属性访问**：`obj.prop` 调用 Get 操作
+3. **理解函数调用**：`fn()` 调用 Call 操作
 
 ---
 
-## 5. 与日常开发的关系
-
-### 5.1 == 运算符的抽象操作链
-
-```javascript
-1 == "1"
-// 步骤：
-// 1. Type(1) !== Type("1")，需要类型转换
-// 2. ToNumber("1") = 1
-// 3. 1 === 1 → true
-```
-
-### 5.2 对象属性访问的底层过程
-
-```javascript
-obj.prop
-// 1. ToPropertyKey("prop")
-// 2. obj.[[Get]]("prop", obj)
-// 3. 沿原型链查找（如果自身没有）
-```
-
----
-
-**参考规范**：ECMA-262 §7 Abstract Operations
+**参考规范**：ECMA-262 §7.1 Type Conversion | ECMA-262 §7.3 Operations on Objects

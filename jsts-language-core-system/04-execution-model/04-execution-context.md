@@ -1,6 +1,6 @@
 # 执行上下文（Execution Context）
 
-> JavaScript 代码执行的运行时环境抽象
+> JavaScript 代码执行的运行时环境：创建、组成与生命周期
 >
 > 对齐版本：ECMAScript 2025 (ES16)
 
@@ -12,9 +12,9 @@ ECMAScript 定义了三种执行上下文：
 
 | 类型 | 创建时机 | 特点 |
 |------|---------|------|
-| 全局执行上下文 | 脚本开始时 | 只有一个，始终在栈底 |
-| 函数执行上下文 | 函数被调用时 | 每次调用创建新的 |
-| Eval 执行上下文 | eval() 执行时 | 受限的执行环境 |
+| **全局执行上下文** | 脚本开始时 | 只有一个，始终在栈底 |
+| **函数执行上下文** | 函数被调用时 | 每次调用创建新的 |
+| **Eval 执行上下文** | eval() 执行时 | 受限的执行环境 |
 
 ---
 
@@ -115,7 +115,36 @@ a();
 
 ---
 
-## 6. 与作用域的关系
+## 6. 全局执行上下文的特殊性
+
+### 6.1 浏览器环境
+
+```javascript
+// 全局 this = window（非严格模式）
+console.log(this === window); // true
+
+// var 声明成为全局对象属性
+var globalVar = 1;
+console.log(window.globalVar); // 1
+
+// let/const 不成为全局对象属性
+let globalLet = 2;
+console.log(window.globalLet); // undefined
+```
+
+### 6.2 Node.js 环境
+
+```javascript
+// 全局 this = globalThis
+console.log(this === globalThis); // true
+
+// 模块中 this !== global
+console.log(this); // {}（模块导出对象）
+```
+
+---
+
+## 7. 与作用域的关系
 
 - **执行上下文栈**：管理代码的**调用顺序**（动态）
 - **作用域链**：管理变量的**访问权限**（静态/词法）

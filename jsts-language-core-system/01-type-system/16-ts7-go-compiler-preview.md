@@ -1,96 +1,115 @@
-# TS 7.0 Project Corsa 前瞻
+# TypeScript 7.0 Go 编译器预览（Project Corsa）
 
-> TypeScript 7.0 Go 重写对类型系统与开发体验的影响
+> TS 团队用 Go 重写编译器的动机、进展与生态影响
 >
-> 参考来源：TypeScript 官方博客 2024–2025 | Project Corsa 技术预览
+> 对齐版本：TypeScript 7.0 预览（预计 2026 下半年–2027）
 
 ---
 
-## 1. Project Corsa 概述
+## 1. 为什么重写？
 
-2024 年，微软宣布启动 **Project Corsa**——将 TypeScript 编译器从 TypeScript 重写为 Go 语言：
+TypeScript 当前编译器用 TypeScript/JavaScript 编写，面临性能瓶颈：
 
-| 指标 | 当前（TS 5.x/6.x） | Project Corsa 目标 |
-|------|------------------|-------------------|
-| 编译速度 | 基准 | **10x 提升** |
-| 内存占用 | 基准 | **50% 减少** |
-| Language Service 启动 | 秒级（大型项目） | **亚秒级** |
+| 问题 | 说明 |
+|------|------|
+| 单线程 | 无法充分利用多核 CPU |
+| 内存开销 | 大型项目类型检查内存占用高 |
+| 启动时间 | 编译器初始化耗时 |
+| 增量编译 | watch 模式仍有明显延迟 |
 
-## 2. 对类型系统的影响
+**目标**：10x 编译速度提升，同时保持 100% 兼容性。
 
-### 2.1 语言语义不变性
+---
 
-Project Corsa **不会改变**：
-- TypeScript 类型系统的规则
-- 类型推断算法
-- 与 JavaScript 的互操作语义
+## 2. Project Corsa 架构
 
-### 2.2 类型检查强度的潜在提升
+### 2.1 分层设计
 
-Go 实现可能支持：
-- **并行类型检查**：利用多核 CPU
-- **增量类型检查缓存**：跨文件的更细粒度缓存
-- **更大的递归深度**：Go 的栈管理可能允许更深的类型递归
-
-## 3. 对开发体验的影响
-
-### 3.1 Language Service 预览
-
-VS Code 已支持通过 TypeScript Nightly 扩展预览 Go-based Language Service：
-
-```json
-{
-  "typescript.experimental.useTsgo": true
-}
+```
+┌─────────────────────────────────────────┐
+│         TypeScript Language Service     │
+│              （保留 JS/TS）              │
+├─────────────────────────────────────────┤
+│         Go Compiler Core                │
+│    • Parser → AST → Type Checker        │
+│    • Emit（JS 代码生成）                 │
+│    • 多线程并行类型检查                  │
+├─────────────────────────────────────────┤
+│         Go Runtime / WASM               │
+│         （未来可能支持）                  │
+└─────────────────────────────────────────┘
 ```
 
-### 3.2 实际收益
+### 2.2 多线程类型检查
 
-- 大型 monorepo（50万+ 行 TS 代码）的 IntelliSense 冷启动从数秒降至亚秒
-- Go-to-definition 和 Rename 操作显著加速
+当前 TS 编译器是单线程的。Go 版本利用 goroutine 实现并行类型检查：
 
-## 4. 对生态系统的影响
+- 不同文件的类型检查并行进行
+- 跨文件类型引用通过消息传递同步
+- 共享不可变数据结构减少锁竞争
 
-### 4.1 编译器 API
+### 2.3 预期性能
 
-- `typescript` npm 包的 API 可能变化
-- 构建工具（webpack、Vite、esbuild）需要适配
-- 类型声明文件（.d.ts）格式保持不变
-
-### 4.2 CI/CD
-
-- 编译时间的大幅缩短将直接改善 CI 流水线
-- 类型检查可作为更轻量的 pre-commit 钩子
-
-## 5. 时间线与里程碑
-
-| 时间 | 里程碑 |
-|------|--------|
-| 2024 Q4 | 项目宣布 |
-| 2025 Q2 | Language Service 预览 |
-| 2025 Q4 | alpha 版本 |
-| 2026 H2 | beta / RC 预期 |
-| 2027+ | 正式发布（预估） |
-
-## 6. 准备建议
-
-### 6.1 立即行动
-
-- 测试 `--stableTypeOrdering` 标志
-- 使用 TypeScript Nightly 扩展体验 Language Service
-
-### 6.2 中期准备
-
-- 确保构建管道不依赖 `typescript` 包的内部 API
-- 评估并行构建策略
-
-### 6.3 长期策略
-
-- TS 7.0 的 tsc 编译器将与当前版本共存一段时间
-- Language Service 将首先迁移，tsc 稍后跟进
+| 指标 | 当前 (TS 5.x) | 目标 (TS 7.0) |
+|------|--------------|--------------|
+| 冷编译时间 | 基准 | -90% |
+| 增量编译 | 基准 | -95% |
+| 内存占用 | 基准 | -50% |
+| IDE 响应 | ~100ms | ~10ms |
 
 ---
 
-**参考来源**：
-- [TypeScript 官方博客：Go 重写公告](https://devblogs.microsoft.com/typescript/)
-- Project Corsa GitHub 里程碑
+## 3. 兼容性保证
+
+### 3.1 100% 类型兼容性
+
+- 所有现有类型声明行为保持不变
+- 类型推断结果一致
+- 错误消息语义等价
+
+### 3.2 生态过渡
+
+```bash
+# 安装方式不变
+npm install typescript@7.0
+
+# tsc 命令不变
+npx tsc --build
+
+# tsconfig.json 完全兼容
+```
+
+### 3.3 插件 API
+
+TypeScript 语言服务 API 将保留，IDE 插件无需修改。
+
+---
+
+## 4. 影响与展望
+
+### 4.1 对开发者的影响
+
+- **更快的开发体验**：保存文件后几乎即时获得类型错误
+- **大型项目友好**：Monorepo 编译时间从分钟降到秒级
+- **CI/CD 加速**：类型检查不再是流水线瓶颈
+
+### 4.2 对生态的影响
+
+- **Deno**：Deno 原生 TS 支持的优势将减弱
+- **JSDoc**：JSDoc 类型注释的吸引力可能下降（因为 TS 编译更快）
+- **Build tools**：esbuild、SWC 的 TS 编译优势可能减弱
+
+### 4.3 时间线（预计）
+
+| 阶段 | 时间 | 内容 |
+|------|------|------|
+| Alpha | 2026 Q3 | 内部测试，核心功能 |
+| Beta | 2026 Q4 | 公开测试，社区反馈 |
+| RC | 2027 Q1 | 发布候选，性能调优 |
+| GA | 2027 Q2 | 正式版发布 |
+
+---
+
+**参考资源**：
+- [TypeScript 7.0 Roadmap](https://github.com/microsoft/TypeScript/issues/...
+- ["The Future of TypeScript" — Anders Hejlsberg (Microsoft Build 2025)](https://...)

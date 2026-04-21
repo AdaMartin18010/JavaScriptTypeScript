@@ -1,216 +1,347 @@
-# using 显式资源管理
+# 显式资源管理（Explicit Resource Management）
 
-> ES2025/ES2026 的显式资源管理：`using` 声明与 Symbol.dispose
+> ES2025 `using` 声明与 `Symbol.dispose` 的自动资源清理机制
 >
-> 对齐版本：ECMA-262 提案 Stage 3+ | TypeScript 5.2+
+> 对齐版本：ECMAScript 2025 (ES16) | TypeScript 5.8–6.0
 
 ---
 
-## 1. 背景与动机
+## 1. 背景问题
 
-传统资源管理依赖 `try/finally`：
+在 JavaScript 中，资源清理（文件句柄、数据库连接、锁等）通常依赖开发者手动调用清理方法：
 
 ```javascript
-const handle = acquireResource();
+// ❌ 容易忘记关闭资源
+function processFile(filename) {
+  const file = openFile(filename);
+  const data = file.read(); // 如果这里抛出错误...
+  file.close(); // ...这行不会执行，资源泄漏！
+  return data;
+}
+```
+
+### 1.1 传统解决方案
+
+```javascript
+// try-finally
 try {
-  useResource(handle);
+  const file = openFile(filename);
+  return file.read();
 } finally {
-  handle.release(); // 确保释放
+  file.close(); // ❌ file 在 finally 作用域外不可见
 }
-```
 
-痛点：
-
-- 样板代码多
-- 嵌套资源管理复杂
-- 错误处理与资源释放交织
-
----
-
-## 2. using 声明
-
-### 2.1 基本语法
-
-```javascript
-{
-  using file = await openFile("data.txt");
-  const content = await file.read();
-  // 块结束时自动调用 file[Symbol.dispose]()
-}
-```
-
-### 2.2 块级作用域结束自动 dispose
-
-```javascript
-function process() {
-  using conn = getConnection();
-  using tx = conn.beginTransaction();
-
-  tx.execute("INSERT ...");
-  tx.commit();
-  // tx 先 dispose，然后 conn dispose（LIFO 顺序）
-}
-```
-
-### 2.3 与 const 类似的绑定语义
-
-```javascript
-using file = openFile("test.txt");
-file = anotherFile; // ❌ TypeError: Assignment to constant variable
-```
-
----
-
-## 3. await using
-
-### 3.1 异步 dispose
-
-```javascript
-{
-  await using file = await openFile("data.txt");
-  // 块结束时自动调用 await file[Symbol.asyncDispose]()
+// 需要额外声明
+const file = openFile(filename);
+try {
+  return file.read();
+} finally {
+  file.close();
 }
 ```
 
 ---
 
-## 4. DisposableStack / AsyncDisposableStack
+## 2. `using` 声明
 
-### 4.1 多个资源的管理
+ES2025 引入 `using` 声明，在块级作用域结束时自动调用资源的 `[Symbol.dispose]()` 方法：
 
 ```javascript
 {
-  using stack = new DisposableStack();
-
-  const file = stack.use(openFile("a.txt"));
-  const conn = stack.use(getConnection());
-
-  // 所有资源在块结束时按 LIFO 顺序释放
-  // 即使中间出错，已添加的资源也会被释放
-}
+  using file = openFile("data.txt");
+  const data = file.read();
+  // 数据操作...
+} // <-- 自动调用 file[Symbol.dispose]()
 ```
 
-### 4.2 错误处理与回退
+### 2.1 核心语义
+
+- `using` 声明的变量在块级作用域结束时自动 dispose
+- 即使发生异常，dispose 也会执行（类似 finally）
+- 多个 `using` 声明按**逆序** dispose（LIFO）
 
 ```javascript
 {
-  using stack = new DisposableStack();
+  using a = createResource("A");
+  using b = createResource("B");
+  using c = createResource("C");
+} //  dispose 顺序: C → B → A
+```
 
-  const file = openFile("output.txt");
-  stack.use(file);
+### 2.2 异常处理
 
-  stack.defer(() => {
-    console.log("Cleanup action");
-    // 即使 file 没有 dispose 方法，也能执行清理
-  });
+```javascript
+{
+  using file = openFile("data.txt");
+  throw new Error("Oops");
+} // file[Symbol.dispose]() 仍会执行
+```
+
+如果 dispose 过程中也抛出异常，两个异常会被聚合为 `SuppressedError`：
+
+```javascript
+{
+  using resource = {
+    [Symbol.dispose]() {
+      throw new Error("Dispose failed");
+    }
+  };
+  throw new Error("Main error");
 }
+// 抛出 SuppressedError: Main error (suppressed: Dispose failed)
 ```
 
 ---
 
-## 5. Symbol.dispose / Symbol.asyncDispose
+## 3. `Symbol.dispose` 与 `Disposable` 接口
 
-### 5.1 协议定义
-
-```javascript
-class FileHandle {
-  [Symbol.dispose]() {
-    console.log("Closing file");
-    this.close();
-  }
-}
-
-class AsyncFileHandle {
-  async [Symbol.asyncDispose]() {
-    console.log("Closing file asynchronously");
-    await this.close();
-  }
-}
-```
-
-### 5.2 自定义资源的实现
+对象要实现自动清理，需提供 `[Symbol.dispose]()` 方法：
 
 ```javascript
-class DatabaseConnection {
-  constructor() {
-    this.connected = true;
+class FileHandler {
+  constructor(name) {
+    this.name = name;
+    this.handle = fs.openSync(name, "r");
   }
 
-  query(sql) {
-    if (!this.connected) throw new Error("Not connected");
-    return execute(sql);
+  read() {
+    return fs.readFileSync(this.handle);
   }
 
   [Symbol.dispose]() {
-    this.connected = false;
-    releaseConnection(this);
+    console.log(`Closing ${this.name}`);
+    fs.closeSync(this.handle);
   }
 }
 
-// 使用
 {
-  using conn = new DatabaseConnection();
-  const result = conn.query("SELECT * FROM users");
-  // conn 自动释放
+  using file = new FileHandler("data.txt");
+  console.log(file.read());
 }
+// 输出文件内容，然后自动输出 "Closing data.txt"
 ```
 
----
-
-## 6. 与类型系统
-
-TypeScript 5.2+ 提供类型支持：
+### 3.1 TypeScript 类型定义
 
 ```typescript
+// TypeScript 内置类型（ES2025 lib）
 interface Disposable {
   [Symbol.dispose](): void;
 }
 
 interface AsyncDisposable {
-  [Symbol.asyncDispose](): Promise<void>;
-}
-
-function processFile(file: Disposable & { read(): string }) {
-  using f = file;
-  return f.read();
+  [Symbol.asyncDispose](): PromiseLike<void>;
 }
 ```
 
 ---
 
-## 7. 实战模式
+## 4. 异步资源管理：`await using`
 
-### 7.1 文件句柄管理
+对于需要异步清理的资源，使用 `await using`：
 
 ```javascript
 {
-  using file = fs.openSync("log.txt", "a");
-  fs.writeSync(file, "Log entry\n");
-  // 文件自动关闭
+  await using conn = await createDatabaseConnection();
+  const result = await conn.query("SELECT * FROM users");
+  // 操作...
+} // 自动调用 await conn[Symbol.asyncDispose]()
+```
+
+### 4.1 异步 dispose 的执行
+
+```javascript
+async function processData() {
+  await using conn = await createDatabaseConnection();
+  await using tx = await conn.beginTransaction();
+  
+  await tx.execute("UPDATE users SET active = true");
+  await tx.commit();
+} // tx[Symbol.asyncDispose]() 先执行，然后 conn[Symbol.asyncDispose]()
+```
+
+---
+
+## 5. 与现有模式的对比
+
+### 5.1 vs try-finally
+
+```javascript
+// 传统 try-finally
+const file = openFile("data.txt");
+try {
+  process(file);
+} finally {
+  file.close();
+}
+
+// 使用 using
+{
+  using file = openFile("data.txt");
+  process(file);
 }
 ```
 
-### 7.2 数据库连接池
+### 5.2 vs C# using
 
-```javascript
+ES2025 的 `using` 直接受 C# `using` 语句启发，但语义略有不同：
+
+| 特性 | C# using | JS using |
+|------|---------|----------|
+| 变量可重新赋值 | ❌ readonly | 可重新赋值 |
+| 作用域 | 当前块 | 当前块 |
+| null 值处理 | 允许 | 允许（跳过 dispose） |
+| 异步 | using await | await using |
+
+### 5.3 vs Python with
+
+```python
+# Python
+with open("data.txt") as f:
+    data = f.read()
+
+# JavaScript
 {
-  using conn = await pool.acquire();
-  await conn.query("UPDATE users SET ...");
-  // 连接自动归还到连接池
+  using file = openFile("data.txt");
+  const data = file.read();
 }
 ```
 
-### 7.3 锁机制
+---
+
+## 6. 实战模式
+
+### 6.1 数据库连接池
 
 ```javascript
-{
-  using lock = await mutex.acquire();
+class ConnectionPool {
+  #connections = [];
+  #maxSize = 10;
+
+  async acquire() {
+    const conn = this.#connections.pop() || await createConnection();
+    return {
+      connection: conn,
+      [Symbol.asyncDispose]: async () => {
+        if (this.#connections.length < this.#maxSize) {
+          this.#connections.push(conn);
+        } else {
+          await conn.close();
+        }
+      }
+    };
+  }
+}
+
+const pool = new ConnectionPool();
+
+async function queryUsers() {
+  await using { connection: conn } = await pool.acquire();
+  return conn.query("SELECT * FROM users");
+}
+```
+
+### 6.2 互斥锁（Mutex）
+
+```javascript
+class Mutex {
+  #locked = false;
+  #queue = [];
+
+  async acquire() {
+    if (!this.#locked) {
+      this.#locked = true;
+      return {
+        [Symbol.asyncDispose]: () => {
+          this.#locked = false;
+          const next = this.#queue.shift();
+          if (next) next();
+        }
+      };
+    }
+    return new Promise(resolve => this.#queue.push(resolve));
+  }
+}
+
+const mutex = new Mutex();
+
+async function criticalSection() {
+  await using lock = await mutex.acquire();
   // 临界区代码
-  await modifySharedData();
-  // 锁自动释放
+} // 自动释放锁
+```
+
+### 6.3 临时文件
+
+```javascript
+class TempFile {
+  constructor() {
+    this.path = `/tmp/${crypto.randomUUID()}`;
+    fs.writeFileSync(this.path, "");
+  }
+
+  write(data) {
+    fs.appendFileSync(this.path, data);
+  }
+
+  [Symbol.dispose]() {
+    fs.unlinkSync(this.path);
+    console.log(`Temp file ${this.path} removed`);
+  }
+}
+
+{
+  using temp = new TempFile();
+  temp.write("sensitive data");
+  // 处理...
+} // 临时文件自动删除
+```
+
+---
+
+## 7. 浏览器与运行时支持
+
+| 环境 | 支持状态 |
+|------|---------|
+| Chrome 134+ | ✅ |
+| Firefox 138+ | ✅ |
+| Safari 18.4+ | ✅ |
+| Node.js 22.12+ | ✅（需 `--experimental-require-module` 关闭） |
+| TypeScript 5.2+ | ✅（编译时支持，需运行时支持） |
+
+---
+
+## 8. 常见陷阱
+
+### 8.1 `using` 变量不可提升到外部作用域
+
+```javascript
+{
+  using file = openFile("data.txt");
+}
+console.log(file); // ❌ ReferenceError
+```
+
+### 8.2 `null` 和 `undefined`
+
+```javascript
+{
+  using file = null; // ✅ 允许，跳过 dispose
+}
+```
+
+### 8.3 提前 return
+
+```javascript
+function process() {
+  using file = openFile("data.txt");
+  if (!file.isValid()) {
+    return; // ✅ file[Symbol.dispose]() 仍会执行
+  }
+  // 处理...
 }
 ```
 
 ---
 
-**参考规范**：ECMA-262 Explicit Resource Management Proposal | TypeScript 5.2 Release Notes
+**参考规范**：ECMA-262 §14.3 Using Declarations | [Explicit Resource Management Proposal](https://github.com/tc39/proposal-explicit-resource-management)

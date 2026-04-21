@@ -48,210 +48,88 @@ counter.decrement(); // 1
 console.log(counter.get()); // 1
 ```
 
-内部实现过程：
+**内存模型**：
 
-1. `createCounter` 执行时创建词法环境，包含 `count = 0`
-2. 返回的对象方法都**闭包引用**了该词法环境
-3. `createCounter` 执行完毕后，由于方法仍引用该环境，**环境不会被垃圾回收**
-4. 每次调用方法时，通过词法环境引用找到 `count`
+```
+createCounter 的词法环境
+  ├── count: 1
+  └── 被返回的对象引用
+        ├── increment: function → 引用 createCounter 的环境
+        ├── decrement: function → 引用 createCounter 的环境
+        └── get: function → 引用 createCounter 的环境
+```
 
-### 2.2 变量捕获（Capture by Reference）
+`count` 变量被闭包引用，因此不会被垃圾回收。即使 `createCounter()` 执行完毕，其词法环境仍被保留。
 
-JavaScript 闭包捕获的是**变量的引用**，而非值的快照：
+### 2.2 每个闭包独立的环境
 
 ```javascript
-function createFunctions() {
-  const functions = [];
-  for (var i = 0; i < 3; i++) {
-    functions.push(() => i);
+function makeAdder(x) {
+  return function(y) {
+    return x + y;
+  };
+}
+
+const add5 = makeAdder(5);
+const add10 = makeAdder(10);
+
+console.log(add5(2));  // 7
+console.log(add10(2)); // 12
+
+// add5 和 add10 引用不同的词法环境
+```
+
+---
+
+## 3. 闭包实战模式
+
+### 3.1 模块模式（Module Pattern）
+
+```javascript
+const myModule = (function() {
+  let privateVar = 0;
+
+  function privateMethod() {
+    return privateVar;
   }
-  return functions;
-}
-
-const fns = createFunctions();
-console.log(fns[0]()); // 3（共享同一个 i）
-console.log(fns[1]()); // 3
-console.log(fns[2]()); // 3
-```
-
-**原因**：所有闭包引用的是同一个 `i` 变量，循环结束后 `i = 3`。
-
-**使用 let 解决**：
-
-```javascript
-function createFunctions() {
-  const functions = [];
-  for (let i = 0; i < 3; i++) { // let 每次迭代创建新绑定
-    functions.push(() => i);
-  }
-  return functions;
-}
-
-const fns = createFunctions();
-console.log(fns[0]()); // 0
-console.log(fns[1]()); // 1
-console.log(fns[2]()); // 2
-```
-
----
-
-## 3. 闭包与循环
-
-### 3.1 var 循环闭包问题（经典面试题）
-
-```javascript
-for (var i = 0; i < 3; i++) {
-  setTimeout(() => console.log(i), 0);
-}
-// 输出: 3, 3, 3
-```
-
-**原因分析**：
-
-- `var i` 是函数作用域变量，整个循环共享同一个 `i`
-- `setTimeout` 回调在循环结束后才执行，此时 `i = 3`
-- 所有回调引用的是同一个 `i`
-
-### 3.2 let 的每次迭代新绑定
-
-```javascript
-for (let j = 0; j < 3; j++) {
-  setTimeout(() => console.log(j), 0);
-}
-// 输出: 0, 1, 2
-```
-
-**原因分析**：
-
-- ES6 规定 `for (let ...)` 每次迭代创建新的词法环境
-- 每次迭代有自己的 `j` 绑定
-- 每个 `setTimeout` 回调捕获的是各自迭代的 `j`
-
-### 3.3 IIFE 解决方案（ES5 兼容）
-
-```javascript
-for (var i = 0; i < 3; i++) {
-  (function (capturedI) {
-    setTimeout(() => console.log(capturedI), 0);
-  })(i);
-}
-// 输出: 0, 1, 2
-```
-
-**原理**：IIFE 创建新的函数作用域，将当前的 `i` 值作为参数传入，每个回调捕获的是 IIFE 的参数，互不影响。
-
----
-
-## 4. 闭包的内存影响
-
-### 4.1 闭包导致的内存泄漏
-
-```javascript
-function leak() {
-  const hugeData = new Array(1000000).fill("x");
-  return () => console.log("leak");
-  // hugeData 被闭包引用，即使返回的函数不使用它
-}
-```
-
-**问题**：`hugeData` 被闭包引用，即使返回的函数从不使用它，也无法被垃圾回收。
-
-**解决方案**：只暴露需要的数据：
-
-```javascript
-function noLeak() {
-  const hugeData = new Array(1000000).fill("x");
-  const result = process(hugeData); // 只保留处理结果
-  return () => result; // 只闭包引用 result
-}
-```
-
-### 4.2 V8 的闭包优化
-
-V8 引擎会分析闭包实际引用的变量，只保留必要的绑定：
-
-```javascript
-function outer() {
-  const a = "used";
-  const b = "unused";
-  return () => a; // V8 优化：只保留对 a 的引用
-}
-```
-
-但开发者不应依赖此优化，应主动避免不必要的闭包引用。
-
----
-
-## 5. 闭包实战模式
-
-### 5.1 模块模式（Module Pattern）
-
-```javascript
-const CounterModule = (function () {
-  let count = 0;
 
   return {
-    increment: () => ++count,
-    decrement: () => --count,
-    get: () => count,
-    reset: () => { count = 0; }
+    increment() {
+      return ++privateVar;
+    },
+    decrement() {
+      return --privateVar;
+    },
+    get() {
+      return privateVar;
+    }
   };
 })();
 
-CounterModule.increment();
-CounterModule.increment();
-console.log(CounterModule.get()); // 2
-CounterModule.reset();
-console.log(CounterModule.get()); // 0
+myModule.increment(); // 1
+myModule.increment(); // 2
+console.log(myModule.get()); // 2
+// privateVar 和 privateMethod 无法从外部访问
 ```
 
-**优点**：
-
-- 封装私有状态（`count` 外部无法直接访问）
-- 避免全局命名空间污染
-
-### 5.2 柯里化（Currying）
+### 3.2 函数柯里化（Currying）
 
 ```javascript
-function curry(fn) {
-  return function curried(...args) {
-    if (args.length >= fn.length) {
-      return fn.apply(this, args);
-    }
-    return (...nextArgs) => curried(...args, ...nextArgs);
-  };
-}
+const multiply = (a) => (b) => a * b;
+const triple = multiply(3);
+const double = multiply(2);
 
-const add = (a, b, c) => a + b + c;
-const curriedAdd = curry(add);
-
-console.log(curriedAdd(1)(2)(3)); // 6
-console.log(curriedAdd(1, 2)(3)); // 6
-console.log(curriedAdd(1)(2, 3)); // 6
-```
-
-### 5.3 函数工厂
-
-```javascript
-function makeMultiplier(factor) {
-  return (number) => number * factor;
-}
-
-const double = makeMultiplier(2);
-const triple = makeMultiplier(3);
-const halve = makeMultiplier(0.5);
-
-console.log(double(5));  // 10
 console.log(triple(5));  // 15
-console.log(halve(10));  // 5
+console.log(double(5));  // 10
 ```
 
-### 5.4 记忆化（Memoization）
+### 3.3 记忆化（Memoization）
 
 ```javascript
 function memoize(fn) {
   const cache = new Map();
-  return function (...args) {
+
+  return function(...args) {
     const key = JSON.stringify(args);
     if (cache.has(key)) {
       return cache.get(key);
@@ -262,34 +140,30 @@ function memoize(fn) {
   };
 }
 
-const fibonacci = memoize((n) => {
-  if (n <= 1) return n;
-  return fibonacci(n - 1) + fibonacci(n - 2);
+const fib = memoize(function(n) {
+  if (n < 2) return n;
+  return fib(n - 1) + fib(n - 2);
 });
 
-console.log(fibonacci(50)); // 快速计算，因为中间结果被缓存
+console.log(fib(100)); // 快速计算
 ```
 
-### 5.5 私有方法模拟（ES5 风格）
+### 3.4 私有字段的模拟（ES2022 之前）
 
 ```javascript
 function createPerson(name) {
-  // 私有变量
-  let age = 0;
+  let _age = 0; // 私有变量
 
-  // 私有方法
-  function validateAge(newAge) {
-    return newAge >= 0 && newAge <= 150;
-  }
-
-  // 公共接口
   return {
-    getName: () => name,
-    getAge: () => age,
-    setAge: (newAge) => {
-      if (validateAge(newAge)) {
-        age = newAge;
-      }
+    getName() {
+      return name;
+    },
+    getAge() {
+      return _age;
+    },
+    setAge(age) {
+      if (age < 0) throw new Error("Age cannot be negative");
+      _age = age;
     }
   };
 }
@@ -297,65 +171,173 @@ function createPerson(name) {
 const person = createPerson("Alice");
 person.setAge(30);
 console.log(person.getAge()); // 30
-console.log(person.age);      // undefined（私有）
+console.log(person._age);     // undefined（无法访问）
 ```
 
 ---
 
-## 6. 常见陷阱
+## 4. 闭包与内存泄漏
 
-| 陷阱 | 说明 | 解决方案 |
-|------|------|---------|
-| 意外的变量共享 | 多个闭包引用同一变量 | 使用 `let` 或 IIFE 创建独立绑定 |
-| 闭包中的 `this` 问题 | 闭包不绑定 `this` | 使用箭头函数或 `.bind()` |
-| 过度闭包导致性能问题 | 大量闭包引用大对象 | 只暴露必要的数据 |
-| 循环引用导致内存泄漏 | 闭包与 DOM 元素相互引用 | 及时移除事件监听器 |
-| 误解变量捕获时机 | 以为捕获的是值的快照 | 理解捕获的是变量引用 |
+### 4.1 意外的闭包引用
 
-### 6.1 闭包中的 this 问题
+```javascript
+function processHugeData() {
+  const hugeData = new Array(1000000).fill("x");
+
+  return function() {
+    console.log("done"); // 没有引用 hugeData，但整个词法环境被保留
+  };
+}
+
+const fn = processHugeData();
+// hugeData 不会被释放！fn 持有对整个词法环境的引用
+```
+
+### 4.2 DOM 引用导致的泄漏
+
+```javascript
+function setupHandler() {
+  const element = document.getElementById("button");
+  const bigData = new Array(10000).fill("data");
+
+  element.addEventListener("click", function() {
+    console.log("clicked");
+    // 闭包引用了 element 和 bigData
+  });
+
+  // 即使 element 从 DOM 中移除，事件监听器仍持有引用
+}
+```
+
+### 4.3 解决方案：控制闭包捕获范围
+
+```javascript
+function processHugeData() {
+  const hugeData = new Array(1000000).fill("x");
+  const result = hugeData.slice(0, 10); // 只保留需要的数据
+
+  return function() {
+    return result; // 只引用 result，不引用 hugeData
+  };
+}
+
+// 或者使用 WeakRef（非必需数据）
+function cacheWithWeakRef() {
+  const cache = new WeakMap();
+
+  return {
+    set(key, value) {
+      cache.set(key, value);
+    },
+    get(key) {
+      return cache.get(key);
+    }
+  };
+}
+```
+
+---
+
+## 5. 循环中的闭包陷阱
+
+### 5.1 经典问题（var）
+
+```javascript
+for (var i = 0; i < 3; i++) {
+  setTimeout(() => console.log(i), 0);
+}
+// 输出: 3, 3, 3（共享同一个 i）
+```
+
+**原因**：`var` 是函数作用域，三个闭包共享同一个 `i`。当定时器执行时，`i` 已经是 3。
+
+### 5.2 解决方案
+
+```javascript
+// 方案 1：使用 let（每次迭代新绑定）
+for (let i = 0; i < 3; i++) {
+  setTimeout(() => console.log(i), 0);
+}
+// 输出: 0, 1, 2
+
+// 方案 2：IIFE 创建新作用域
+for (var i = 0; i < 3; i++) {
+  (function(j) {
+    setTimeout(() => console.log(j), 0);
+  })(i);
+}
+
+// 方案 3：forEach
+[0, 1, 2].forEach(i => {
+  setTimeout(() => console.log(i), 0);
+});
+```
+
+---
+
+## 6. 闭包与 this
+
+闭包不会捕获 `this`，它引用的是**词法环境中的变量**，而 `this` 是**动态绑定**的。
 
 ```javascript
 const obj = {
   name: "Alice",
-  greet: function() {
+  greet() {
+    // ❌ 问题：普通函数的 this 是动态的
     setTimeout(function() {
-      console.log(this.name); // undefined（this 指向全局对象）
+      console.log("Hello, " + this.name); // this 可能是 window/undefined
     }, 0);
-  }
-};
-
-// 解决方案 1：箭头函数
-const obj2 = {
-  name: "Alice",
-  greet: function() {
+  },
+  greetFixed() {
+    // ✅ 方案 1：箭头函数继承外层 this
     setTimeout(() => {
-      console.log(this.name); // "Alice"（箭头函数捕获外层 this）
+      console.log("Hello, " + this.name); // this = obj
     }, 0);
-  }
-};
-
-// 解决方案 2：保存 this 引用
-const obj3 = {
-  name: "Alice",
-  greet: function() {
+  },
+  greetFixed2() {
+    // ✅ 方案 2：闭包捕获 self
     const self = this;
     setTimeout(function() {
-      console.log(self.name); // "Alice"
+      console.log("Hello, " + self.name); // self = obj
     }, 0);
-  }
-};
-
-// 解决方案 3：bind
-const obj4 = {
-  name: "Alice",
-  greet: function() {
-    setTimeout(function() {
-      console.log(this.name); // "Alice"
-    }.bind(this), 0);
   }
 };
 ```
 
 ---
 
-**参考规范**：ECMA-262 §9.2 Lexical Environments | ECMA-262 §9.11 GetThisEnvironment
+## 7. ES2022 私有类字段：闭包的替代
+
+ES2022 引入的真正私有字段，提供了闭包之外的私有状态方案：
+
+```javascript
+class Counter {
+  #count = 0; // 真正私有，无法从外部访问
+
+  increment() {
+    return ++this.#count;
+  }
+
+  get() {
+    return this.#count;
+  }
+}
+
+const c = new Counter();
+c.increment(); // 1
+console.log(c.#count); // ❌ SyntaxError: Private field must be declared
+```
+
+**闭包 vs 私有字段**：
+
+| 特性 | 闭包 | 私有字段 |
+|------|------|---------|
+| 兼容性 | ES3+ | ES2022+ |
+| 内存开销 | 每个实例独立词法环境 | 共享类定义 |
+| 继承支持 | 需要额外处理 | 原生支持 |
+| 性能 | 略有开销 | 更优 |
+| 调试 | 难以访问私有状态 | 可通过 DevTools 访问 |
+
+---
+
+**参考规范**：ECMA-262 §9.2 Lexical Environments | ECMA-262 §15.7.1 Class Definitions

@@ -1,100 +1,137 @@
-# 结构化类型 vs 标称类型
+# 结构子类型 vs 名义类型
 
-> TypeScript 的结构子类型系统与名义类型的模拟技术
+> TypeScript 的结构类型系统与 Java/C# 名义类型的对比
 >
 > 对齐版本：TypeScript 5.8–6.0
 
 ---
 
-## 1. 结构化子类型（Structural Subtyping）
+## 1. 结构子类型（Structural Subtyping）
 
-TypeScript 使用**结构化子类型**：只要类型的结构兼容，就可以互相赋值：
+TypeScript 使用**结构子类型**：类型兼容性由成员决定，而非声明关系。
 
 ```typescript
 interface Point2D { x: number; y: number; }
-interface Vector2D { x: number; y: number; }
+interface Point3D { x: number; y: number; z: number; }
 
-const p: Point2D = { x: 1, y: 2 };
-const v: Vector2D = p; // ✅ 结构兼容，尽管类型名不同
+const p3d: Point3D = { x: 1, y: 2, z: 3 };
+const p2d: Point2D = p3d; // ✅ Point3D 结构包含 Point2D 的所有成员
 ```
 
----
+### 1.1 鸭子类型
 
-## 2. 标称类型模拟
-
-### 2.1 品牌类型（Branded Types）
+"如果它走起来像鸭子，叫起来像鸭子，那它就是鸭子。"
 
 ```typescript
-type UserId = string & { readonly __brand: "UserId" };
-type PostId = string & { readonly __brand: "PostId" };
-
-function createUserId(id: string): UserId {
-  return id as UserId;
+interface Duck {
+  quack(): void;
+  walk(): void;
 }
 
+const robot = {
+  quack() { console.log("Quack!"); },
+  walk() { console.log("Walk!"); }
+};
+
+function makeItQuack(duck: Duck) {
+  duck.quack();
+}
+
+makeItQuack(robot); // ✅ 结构兼容
+```
+
+---
+
+## 2. 名义类型（Nominal Typing）
+
+Java、C#、C++ 使用名义类型：类型兼容性由显式声明的关系决定。
+
+```java
+// Java：即使结构相同，类型名不同则不兼容
+class User { String name; int age; }
+class Person { String name; int age; }
+
+User user = new Person(); // ❌ 编译错误：不兼容的类型
+```
+
+---
+
+## 3. 对比
+
+| 特性 | 结构类型 | 名义类型 |
+|------|---------|---------|
+| 兼容性判断 | 成员结构 | 类型名称/声明 |
+| 灵活性 | 高 | 低 |
+| 类型安全 | 中等 | 高 |
+| 重构友好 | 一般 | 好 |
+| 运行时开销 | 无 | 可能有 |
+
+---
+
+## 4. TypeScript 中模拟名义类型
+
+### 4.1 品牌类型（Branded Types）
+
+```typescript
+type UserId = string & { __brand: "UserId" };
+type PostId = string & { __brand: "PostId" };
+
 function getUser(id: UserId) { /* ... */ }
+function getPost(id: PostId) { /* ... */ }
 
-getUser(createUserId("123")); // ✅
-// getUser("123" as PostId);  // ❌ 类型不兼容
+const userId = "123" as UserId;
+const postId = "123" as PostId;
+
+getUser(userId); // ✅
+getUser(postId); // ❌ Type 'PostId' is not assignable to type 'UserId'
 ```
 
-### 2.2 不透明类型（Opaque Types）
+### 4.2 私有字段模拟
 
 ```typescript
-type Opaque<K, T> = T & { readonly __opaque__: K };
-type USD = Opaque<"USD", number>;
-type EUR = Opaque<"EUR", number>;
+class User {
+  private __nominal: void;
+  constructor(public name: string) {}
+}
 
-const usd: USD = 100 as USD;
-const eur: EUR = 100 as EUR;
-// usd + eur; // ❌ 编译错误，防止货币混用
-```
+class Person {
+  private __nominal: void;
+  constructor(public name: string) {}
+}
 
-### 2.3 唯一符号（Unique Symbol）
-
-```typescript
-declare const userIdBrand: unique symbol;
-type UserId = string & { readonly [userIdBrand]: true };
+const person = new Person("Alice");
+const user: User = person; // ❌ 私有字段不兼容
 ```
 
 ---
 
-## 3. 实战模式
+## 5. 优缺点分析
 
-### 3.1 ID 类型区分
+### 5.1 结构类型的优势
 
-```typescript
-type UserId = string & { readonly __brand: "UserId" };
-type ProductId = string & { readonly __brand: "ProductId" };
-type OrderId = string & { readonly __brand: "OrderId" };
+- **接口隔离**：无需显式实现接口
+- **测试友好**：容易创建 mock 对象
+- **跨库兼容**：不同库定义的结构兼容类型可互换
 
-function findUser(id: UserId) { /* ... */ }
-function findProduct(id: ProductId) { /* ... */ }
-```
+### 5.2 结构类型的劣势
 
-### 3.2 单位类型
+- **意外兼容**：不想兼容的类型可能意外兼容
+- **重构风险**：修改属性可能影响意外的地方
 
 ```typescript
-type Meters = number & { readonly __unit: "meters" };
-type Seconds = number & { readonly __unit: "seconds" };
+// 意外兼容的陷阱
+interface Point { x: number; y: number; }
+interface Vector { x: number; y: number; }
 
-function distance(m: Meters) { return m; }
-function time(s: Seconds) { return s; }
-```
+function normalize(v: Vector) {
+  const length = Math.sqrt(v.x ** 2 + v.y ** 2);
+  return { x: v.x / length, y: v.y / length };
+}
 
----
-
-## 4. 类型兼容性的边界
-
-结构化类型的意外行为：
-
-```typescript
-interface Config { host: string; port: number; }
-
-// 额外的属性在直接赋值时允许（除非启用 excess property checks）
-const config: Config = { host: "localhost", port: 3000, extra: true } as Config;
+const point: Point = { x: 3, y: 4 };
+normalize(point); // ✅ 编译通过，但语义上 Point 不应被 normalize
 ```
 
 ---
 
-**参考规范**：TypeScript Handbook: Type Compatibility
+**参考规范**：TypeScript Handbook: Type Compatibility | TypeScript Spec §3.11

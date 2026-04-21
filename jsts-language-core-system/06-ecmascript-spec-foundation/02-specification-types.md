@@ -1,112 +1,142 @@
 # 规范类型（Specification Types）
 
-> ECMA-262 中用于描述语言语义的内部类型
+> ECMA-262 内部使用的抽象类型：Reference、List、Completion Record 等
 >
-> 对齐版本：ECMA-262 §6.2
+> 对齐版本：ECMA-262 2025 (ES16)
 
 ---
 
 ## 1. 规范类型概述
 
-**规范类型（Specification Types）** 仅在 ECMAScript 规范中使用，不会直接出现在 JavaScript 代码中：
+ECMA-262 定义了 JavaScript 语言类型（Number、String 等）和规范类型。规范类型仅在规范算法内部使用，对 JavaScript 代码不可见。
 
-| 规范类型 | 说明 |
+| 规范类型 | 用途 |
 |---------|------|
 | Reference | 解析标识符的结果 |
-| List | 有序值序列 |
-| Record | 键值对集合 |
-| Property Descriptor | 属性描述符 |
-| Completion Record | 语句执行结果 |
-| Data Block | 原始数据块 |
+| List | 有序值集合 |
+| Completion Record | 语句/表达式的执行结果 |
+| Property Descriptor | 对象属性的特征 |
+| Environment Record | 变量绑定的存储 |
+| Abstract Closure | 抽象闭包 |
 
 ---
 
 ## 2. Reference 类型
 
-Reference 是解析标识符的结果，包含三个组件：
+Reference 是解析标识符（如变量名）的结果，包含三个组件：
 
 ```
-Reference: {
-  Base: object | Environment Record | undefined,
-  ReferencedName: string | Symbol,
-  Strict: boolean
+Reference = {
+  [[Base]]: Object | Environment Record | undefined,
+  [[ReferencedName]]: String | Symbol,
+  [[Strict]]: Boolean
 }
 ```
 
-### 2.1 与 typeof、delete 的关系
+### 2.1 示例
 
 ```javascript
-typeof undeclaredVar; // "undefined"（因为 Base 是 undefined）
-delete obj.prop;      // 调用 obj.[[Delete]]("prop")
+// 解析 foo 得到 Reference
+const foo = 1;
+// Reference: { [[Base]]: Environment Record, [[ReferencedName]]: "foo", [[Strict]]: false }
+
+// 解析 obj.prop 得到 Reference
+const obj = { prop: 1 };
+obj.prop;
+// Reference: { [[Base]]: obj, [[ReferencedName]]: "prop", [[Strict]]: false }
+```
+
+### 2.2 GetValue 操作
+
+从 Reference 中提取值：
+
+```javascript
+// 伪代码
+function GetValue(V) {
+  if (!IsReference(V)) return V;
+  const base = V.[[Base]];
+  if (base === undefined) throw ReferenceError;
+  // ... 从 base 中获取属性值
+}
 ```
 
 ---
 
-## 3. List 与 Record
+## 3. Completion Record 类型
 
-### 3.1 List
-
-有序序列：
+所有语句都返回 Completion Record：
 
 ```
-List: [value1, value2, value3]
-```
-
-### 3.2 Record
-
-键值对集合：
-
-```
-Property Descriptor: {
+Completion Record = {
+  [[Type]]: normal | break | continue | return | throw,
   [[Value]]: any,
-  [[Writable]]: boolean,
-  [[Enumerable]]: boolean,
-  [[Configurable]]: boolean
+  [[Target]]: String | empty
 }
+```
+
+### 3.1 类型说明
+
+| [[Type]] | 含义 |
+|---------|------|
+| normal | 正常完成 |
+| break | break 语句 |
+| continue | continue 语句 |
+| return | return 语句 |
+| throw | throw 语句 |
+
+### 3.2 示例
+
+```javascript
+// 表达式返回 Normal Completion
+1 + 1;
+// Completion: { [[Type]]: normal, [[Value]]: 2, [[Target]]: empty }
+
+// return 语句返回 Return Completion
+return 42;
+// Completion: { [[Type]]: return, [[Value]]: 42, [[Target]]: empty }
+
+// throw 返回 Throw Completion
+throw new Error();
+// Completion: { [[Type]]: throw, [[Value]]: Error, [[Target]]: empty }
 ```
 
 ---
 
 ## 4. Property Descriptor
 
+```
+Property Descriptor = {
+  [[Value]]: any,
+  [[Writable]]: Boolean,
+  [[Get]]: Function | undefined,
+  [[Set]]: Function | undefined,
+  [[Enumerable]]: Boolean,
+  [[Configurable]]: Boolean
+}
+```
+
 ```javascript
-Object.getOwnPropertyDescriptor({ x: 1 }, "x");
+const obj = { x: 1 };
+Object.getOwnPropertyDescriptor(obj, "x");
 // { value: 1, writable: true, enumerable: true, configurable: true }
 ```
 
-| 字段 | 说明 |
-|------|------|
-| [[Value]] | 属性值 |
-| [[Writable]] | 是否可写 |
-| [[Enumerable]] | 是否可枚举 |
-| [[Configurable]] | 是否可配置 |
-| [[Get]] | getter 函数 |
-| [[Set]] | setter 函数 |
-
 ---
 
-## 5. 环境相关类型
+## 5. Environment Record
 
-### 5.1 Lexical Environment
+环境记录存储变量绑定：
 
 ```
-LexicalEnvironment: {
-  EnvironmentRecord: DeclarativeRecord | ObjectRecord,
-  OuterEnv: LexicalEnvironment | null
+Environment Record = {
+  // Declarative Environment Record
+  // 或
+  // Object Environment Record
 }
 ```
 
-### 5.2 Realm Record
-
-```
-RealmRecord: {
-  [[Intrinsics]]: 内置对象集合,
-  [[GlobalObject]]: 全局对象,
-  [[GlobalEnv]]: 全局环境,
-  [[TemplateMap]]: 模板字面量缓存
-}
-```
+详见 [02-variable-system/05-lexical-environment.md](../02-variable-system/05-lexical-environment.md)。
 
 ---
 
-**参考规范**：ECMA-262 §6.2 ECMAScript Specification Types
+**参考规范**：ECMA-262 §6.2.4 The Reference Specification Type | ECMA-262 §6.2.3 Completion Record Specification Type

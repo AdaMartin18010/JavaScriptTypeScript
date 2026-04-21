@@ -1,154 +1,106 @@
 # Promise 执行流
 
-> Promise 从创建到解决的完整执行轨迹
+> Promise 的状态转换、微任务调度与链式调用机制
 >
 > 对齐版本：ECMAScript 2025 (ES16)
 
 ---
 
-## 1. Promise 创建
+## 1. Promise 状态机
 
-```javascript
-const promise = new Promise((resolve, reject) => {
-  console.log("Executor runs immediately"); // 同步执行
-  
-  setTimeout(() => {
-    resolve("Success"); // 异步解决
-  }, 1000);
-});
+```
+          new Promise((resolve, reject) => { ... })
+                    │
+                    ▼
+              ┌──────────┐
+              │ pending  │
+              └────┬─────┘
+                   │
+         ┌─────────┴──────────┐
+         │                    │
+         ▼                    ▼
+   ┌──────────┐        ┌──────────┐
+   │fulfilled │        │rejected  │
+   └──────────┘        └──────────┘
 ```
 
-**关键点**：Promise executor 是**同步执行**的，这在理解 Promise 行为时非常重要。
+- **Pending**：初始状态
+- **Fulfilled**：操作成功完成
+- **Rejected**：操作失败
+
+状态一旦确定，不可再变。
 
 ---
 
-## 2. 状态转换
-
-```
-pending ──resolve()──→ fulfilled
-   │
-   └─reject()──→ rejected
-```
-
-状态一旦确定，不可再变：
-
-```javascript
-const p = new Promise((resolve) => {
-  resolve("first");
-  resolve("second"); // 被忽略
-});
-```
-
----
-
-## 3. 回调注册与执行
-
-### 3.1 .then 的回调进入微任务队列
-
-```javascript
-Promise.resolve("value").then((value) => {
-  console.log(value); // 微任务，当前同步代码结束后执行
-});
-
-console.log("sync"); // 先输出
-
-// 输出：
-// sync
-// value
-```
-
-### 3.2 Promise 链的执行顺序
-
-```javascript
-Promise.resolve(1)
-  .then((v) => { console.log("A:", v); return v + 1; })
-  .then((v) => { console.log("B:", v); return v + 1; })
-  .then((v) => { console.log("C:", v); });
-
-// 输出：
-// A: 1
-// B: 2
-// C: 3
-```
-
----
-
-## 4. 微任务调度细节
+## 2. 执行流程
 
 ```javascript
 console.log("1");
 
-Promise.resolve().then(() => {
+const promise = new Promise((resolve) => {
   console.log("2");
-  Promise.resolve().then(() => {
-    console.log("3");
-  });
-});
-
-Promise.resolve().then(() => {
+  resolve("3");
   console.log("4");
 });
 
+promise.then(value => console.log(value));
+
 console.log("5");
 
-// 输出：1, 5, 2, 4, 3
-```
-
-解析：
-1. 同步代码：1, 5
-2. 第一个微任务检查点：2, 4（按注册顺序）
-3. 在 2 中注册了新的微任务 3
-4. 第二个微任务检查点：3
-
----
-
-## 5. Promise 静态方法执行流
-
-### 5.1 Promise.resolve
-
-```javascript
-Promise.resolve("value");
-// 等价于：
-new Promise((resolve) => resolve("value"));
-```
-
-### 5.2 Promise.all
-
-```javascript
-Promise.all([
-  Promise.resolve(1),
-  Promise.resolve(2),
-  Promise.resolve(3)
-]).then((values) => console.log(values)); // [1, 2, 3]
-
-// 如果任一 Promise 拒绝，立即拒绝
-Promise.all([
-  Promise.resolve(1),
-  Promise.reject("error"),
-  Promise.resolve(3)
-]).catch((err) => console.log(err)); // "error"
-```
-
-### 5.3 Promise.race
-
-```javascript
-Promise.race([
-  new Promise((resolve) => setTimeout(() => resolve("slow"), 100)),
-  new Promise((resolve) => setTimeout(() => resolve("fast"), 10))
-]).then((winner) => console.log(winner)); // "fast"
+// 输出：1 → 2 → 4 → 5 → 3
+// 解释：
+// 1: 同步
+// 2: Promise executor 同步执行
+// 4: resolve 后的同步代码继续执行
+// 5: 同步代码结束
+// 3: then 回调作为微任务执行
 ```
 
 ---
 
-## 6. 可视化
+## 3. 微任务调度
 
-```mermaid
-stateDiagram-v2
-    [*] --> pending: new Promise()
-    pending --> fulfilled: resolve()
-    pending --> rejected: reject()
-    fulfilled --> [*]
-    rejected --> [*]
+```javascript
+console.log("1");
+Promise.resolve().then(() => console.log("2"));
+Promise.resolve().then(() => console.log("3"));
+console.log("4");
+
+// 输出：1 → 4 → 2 → 3
+// 微任务按 FIFO 顺序执行
+```
+
+---
+
+## 4. 链式调用
+
+```javascript
+Promise.resolve(1)
+  .then(v => {
+    console.log(v); // 1
+    return v + 1;
+  })
+  .then(v => {
+    console.log(v); // 2
+    return new Promise(resolve => setTimeout(() => resolve(v + 1), 0));
+  })
+  .then(v => {
+    console.log(v); // 3（在下一个事件循环中）
+  });
+```
+
+---
+
+## 5. ES2025：Promise.try
+
+```javascript
+// 统一处理同步/异步错误
+Promise.try(() => {
+  if (Math.random() > 0.5) throw new Error("Sync error");
+  return fetchData();
+})
+.then(result => console.log(result))
+.catch(error => console.error(error));
 ```
 
 ---
