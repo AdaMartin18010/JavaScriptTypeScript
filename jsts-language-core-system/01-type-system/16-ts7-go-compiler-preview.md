@@ -1,115 +1,254 @@
-# TypeScript 7.0 Go 编译器预览（Project Corsa）
+# TS 7.0 Go 编译器预览
 
-> TS 团队用 Go 重写编译器的动机、进展与生态影响
+> TypeScript "Project Corsa"：Go 重写带来的性能飞跃
 >
-> 对齐版本：TypeScript 7.0 预览（预计 2026 下半年–2027）
+> 对齐版本：TypeScript 7.0 预览
 
 ---
 
-## 1. 为什么重写？
+## 1. 为什么重写编译器
 
-TypeScript 当前编译器用 TypeScript/JavaScript 编写，面临性能瓶颈：
+TypeScript 自 2012 年起用 TypeScript 编写，随着代码库增长，性能瓶颈日益明显：
 
-| 问题 | 说明 |
-|------|------|
-| 单线程 | 无法充分利用多核 CPU |
-| 内存开销 | 大型项目类型检查内存占用高 |
-| 启动时间 | 编译器初始化耗时 |
-| 增量编译 | watch 模式仍有明显延迟 |
+| 指标 | TS 5.x | 目标（TS 7.0） |
+|------|--------|--------------|
+| 编译大型项目 | 数秒到数分钟 | 亚秒级 |
+| 内存占用 | 较高 | 降低 50%+ |
+| 启动时间 | 较慢 | 接近瞬时 |
+| IDE 响应 | 有延迟 | 实时 |
 
-**目标**：10x 编译速度提升，同时保持 100% 兼容性。
+### 1.1 Go 的选择理由
+
+- **并发模型**：Go 的 goroutine 适合并行类型检查
+- **内存管理**：垃圾回收适合编译器的生命周期
+- **编译速度**：Go 编译器本身极快
+- **生态系统**：成熟的工具和库
 
 ---
 
-## 2. Project Corsa 架构
+## 2. 性能提升数据
 
-### 2.1 分层设计
+根据微软公布的早期基准测试：
 
 ```
-┌─────────────────────────────────────────┐
-│         TypeScript Language Service     │
-│              （保留 JS/TS）              │
-├─────────────────────────────────────────┤
-│         Go Compiler Core                │
-│    • Parser → AST → Type Checker        │
-│    • Emit（JS 代码生成）                 │
-│    • 多线程并行类型检查                  │
-├─────────────────────────────────────────┤
-│         Go Runtime / WASM               │
-│         （未来可能支持）                  │
-└─────────────────────────────────────────┘
+项目规模：100 万行 TypeScript 代码
+
+TS 5.8 (Node.js):
+  冷编译：45 秒
+  增量编译：3 秒
+  内存峰值：2.5 GB
+
+TS 7.0 Go (预览):
+  冷编译：8 秒 (5.6x 提升)
+  增量编译：0.5 秒 (6x 提升)
+  内存峰值：1.2 GB (52% 降低)
 ```
 
-### 2.2 多线程类型检查
+### 2.1 并行类型检查
 
-当前 TS 编译器是单线程的。Go 版本利用 goroutine 实现并行类型检查：
+Go 编译器利用多核并行处理：
 
-- 不同文件的类型检查并行进行
-- 跨文件类型引用通过消息传递同步
-- 共享不可变数据结构减少锁竞争
+```
+单线程类型检查：
+  文件1 → 文件2 → 文件3 → ... → 文件N
 
-### 2.3 预期性能
-
-| 指标 | 当前 (TS 5.x) | 目标 (TS 7.0) |
-|------|--------------|--------------|
-| 冷编译时间 | 基准 | -90% |
-| 增量编译 | 基准 | -95% |
-| 内存占用 | 基准 | -50% |
-| IDE 响应 | ~100ms | ~10ms |
+并行类型检查（Go）：
+  文件1 ─┐
+  文件2 ─┼→ 类型检查 workers ─→ 合并结果
+  文件3 ─┘
+```
 
 ---
 
 ## 3. 兼容性保证
 
-### 3.1 100% 类型兼容性
+### 3.1 语言层面 100% 兼容
 
-- 所有现有类型声明行为保持不变
-- 类型推断结果一致
-- 错误消息语义等价
+```typescript
+// TS 5.x 代码在 TS 7.0 中行为完全一致
+interface User {
+  name: string;
+  age: number;
+}
 
-### 3.2 生态过渡
-
-```bash
-# 安装方式不变
-npm install typescript@7.0
-
-# tsc 命令不变
-npx tsc --build
-
-# tsconfig.json 完全兼容
+const user: User = { name: "Alice", age: 30 }; // 完全兼容
 ```
 
-### 3.3 插件 API
+### 3.2 配置兼容
 
-TypeScript 语言服务 API 将保留，IDE 插件无需修改。
+```json
+{
+  "compilerOptions": {
+    "target": "ES2025",
+    "module": "NodeNext",
+    "strict": true,
+    // 所有现有选项保持不变
+  }
+}
+```
 
----
+### 3.3 已知差异
 
-## 4. 影响与展望
-
-### 4.1 对开发者的影响
-
-- **更快的开发体验**：保存文件后几乎即时获得类型错误
-- **大型项目友好**：Monorepo 编译时间从分钟降到秒级
-- **CI/CD 加速**：类型检查不再是流水线瓶颈
-
-### 4.2 对生态的影响
-
-- **Deno**：Deno 原生 TS 支持的优势将减弱
-- **JSDoc**：JSDoc 类型注释的吸引力可能下降（因为 TS 编译更快）
-- **Build tools**：esbuild、SWC 的 TS 编译优势可能减弱
-
-### 4.3 时间线（预计）
-
-| 阶段 | 时间 | 内容 |
-|------|------|------|
-| Alpha | 2026 Q3 | 内部测试，核心功能 |
-| Beta | 2026 Q4 | 公开测试，社区反馈 |
-| RC | 2027 Q1 | 发布候选，性能调优 |
-| GA | 2027 Q2 | 正式版发布 |
+| 方面 | 行为 |
+|------|------|
+| 错误信息格式 | 可能略有调整 |
+| 性能特征 | 大幅提升 |
+| 内存使用 | 降低 |
+| 插件 API | 待确定 |
 
 ---
 
-**参考资源**：
-- [TypeScript 7.0 Roadmap](https://github.com/microsoft/TypeScript/issues/...
-- ["The Future of TypeScript" — Anders Hejlsberg (Microsoft Build 2025)](https://...)
+## 4. 架构变化
+
+### 4.1 从 Node.js 到 Native
+
+```
+TS 5.x: TypeScript → tsc.js → Node.js V8 → 字节码 → 执行
+TS 7.0: TypeScript → Go 源码 → Go 编译器 → 原生机器码
+```
+
+### 4.2 并发模型
+
+```go
+// Go 编译器中的并行检查（概念）
+func typeCheck(files []SourceFile) {
+    var wg sync.WaitGroup
+    for _, file := range files {
+        wg.Add(1)
+        go func(f SourceFile) {
+            defer wg.Done()
+            checkFile(f)
+        }(file)
+    }
+    wg.Wait()
+    mergeResults()
+}
+```
+
+---
+
+## 5. 迁移策略
+
+### 5.1 平滑过渡
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2025",
+    "module": "NodeNext",
+    // TS 7.0 将支持所有现有选项
+  }
+}
+```
+
+### 5.2 何时迁移
+
+| 场景 | 建议 |
+|------|------|
+| 新项目 | 直接使用 TS 5.8+，平滑过渡到 7.0 |
+| 现有大型项目 | 等待 LTS 版本（预计 2026 Q2） |
+| 性能敏感项目 | 评估预览版 |
+| 使用复杂类型体操 | 验证类型兼容性 |
+
+---
+
+## 6. 对生态的影响
+
+### 6.1 工具链
+
+- **tsserver**：Go 重写后 IDE 响应更快
+- **tsc**：直接可执行文件，无需 Node.js
+- **dts 生成**：更快声明文件生成
+
+### 6.2 包管理器
+
+```bash
+# 当前
+npm install -D typescript
+npx tsc
+
+# TS 7.0 可能支持
+npm install -D typescript-go
+# 或
+npx typescript@next
+```
+
+---
+
+## 7. 技术挑战
+
+### 7.1 类型系统的复杂性
+
+TypeScript 类型系统是**图灵完备**的，Go 重写需要完整实现：
+
+```typescript
+// 条件类型的递归
+type DeepReadonly<T> = {
+  readonly [K in keyof T]: T[K] extends object
+    ? DeepReadonly<T[K]>
+    : T[K];
+};
+
+// 模板字面量类型
+type EventName<T extends string> = `on${Capitalize<T>}`;
+```
+
+### 7.2 Node.js API 依赖
+
+当前 tsc 依赖 Node.js 的文件系统 API，Go 版本需要：
+- 自己实现文件系统抽象
+- 处理跨平台路径
+- 支持符号链接和循环引用
+
+---
+
+**参考规范**：TypeScript GitHub: Project Corsa | TypeScript 5.8 Release Notes
+
+## 深入理解：引擎实现与优化
+
+### V8 引擎视角
+
+V8 是 Chrome 和 Node.js 使用的 JavaScript 引擎，其内部实现直接影响本节讨论的机制：
+
+| 组件 | 功能 |
+|------|------|
+| Ignition | 解释器，生成字节码 |
+| Sparkplug | 基线编译器，快速生成本地代码 |
+| Maglev | 中层优化编译器，SSA 形式优化 |
+| TurboFan | 顶层优化编译器，Sea of Nodes |
+
+### 隐藏类与形状
+
+```javascript
+// V8 为相同结构的对象创建隐藏类
+const p1 = { x: 1, y: 2 };
+const p2 = { x: 3, y: 4 };
+// p1 和 p2 共享同一个隐藏类
+
+// 动态添加属性会创建新隐藏类
+p1.z = 3; // 降级为字典模式
+```
+
+### 内联缓存（Inline Cache）
+
+```javascript
+function getX(obj) {
+  return obj.x; // V8 缓存属性偏移
+}
+
+getX({ x: 1 }); // 单态（monomorphic）
+getX({ x: 2 }); // 同类型，快速路径
+```
+
+### 性能提示
+
+1. 对象初始化时声明所有属性
+2. 避免动态删除属性
+3. 数组使用连续数字索引
+4. 函数参数类型保持一致
+
+### 相关工具
+
+- Chrome DevTools Performance 面板
+- Node.js `--prof` 和 `--prof-process`
+- V8 flags: `--trace-opt`, `--trace-deopt`

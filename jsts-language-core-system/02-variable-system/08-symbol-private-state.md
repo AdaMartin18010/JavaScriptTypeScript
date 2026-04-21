@@ -148,4 +148,83 @@ class User {
 
 ---
 
+## 5. Symbol 与全局注册表
+
+```javascript
+// 全局 Symbol 注册表
+const globalSym = Symbol.for("app.config");
+console.log(Symbol.for("app.config") === globalSym); // true
+console.log(Symbol.keyFor(globalSym)); // "app.config"
+
+// 局部 Symbol
+const localSym = Symbol("app.config");
+console.log(Symbol.keyFor(localSym)); // undefined
+```
+
+## 6. 私有字段与内存
+
+```javascript
+class HeavyObject {
+  #data = new ArrayBuffer(1024 * 1024); // 1MB
+  
+  getSize() {
+    return this.#data.byteLength;
+  }
+}
+
+const obj = new HeavyObject();
+// #data 只能通过类方法访问，外部无法直接释放
+```
+
+---
+
 **参考规范**：ECMA-262 §6.1.5 The Symbol Type | ECMA-262 §24.3 WeakMap Objects | ECMA-262 §15.7 Private Names
+
+## 深入理解：引擎实现与优化
+
+### V8 引擎视角
+
+V8 是 Chrome 和 Node.js 使用的 JavaScript 引擎，其内部实现直接影响本节讨论的机制：
+
+| 组件 | 功能 |
+|------|------|
+| Ignition | 解释器，生成字节码 |
+| Sparkplug | 基线编译器，快速生成本地代码 |
+| Maglev | 中层优化编译器，SSA 形式优化 |
+| TurboFan | 顶层优化编译器，Sea of Nodes |
+
+### 隐藏类与形状
+
+```javascript
+// V8 为相同结构的对象创建隐藏类
+const p1 = { x: 1, y: 2 };
+const p2 = { x: 3, y: 4 };
+// p1 和 p2 共享同一个隐藏类
+
+// 动态添加属性会创建新隐藏类
+p1.z = 3; // 降级为字典模式
+```
+
+### 内联缓存（Inline Cache）
+
+```javascript
+function getX(obj) {
+  return obj.x; // V8 缓存属性偏移
+}
+
+getX({ x: 1 }); // 单态（monomorphic）
+getX({ x: 2 }); // 同类型，快速路径
+```
+
+### 性能提示
+
+1. 对象初始化时声明所有属性
+2. 避免动态删除属性
+3. 数组使用连续数字索引
+4. 函数参数类型保持一致
+
+### 相关工具
+
+- Chrome DevTools Performance 面板
+- Node.js `--prof` 和 `--prof-process`
+- V8 flags: `--trace-opt`, `--trace-deopt`

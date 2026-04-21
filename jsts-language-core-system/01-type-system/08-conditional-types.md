@@ -161,4 +161,75 @@ type StringProps = StringValues<User>; // { name: string; email: string; }
 
 ---
 
+## 6. 条件类型实战
+
+```typescript
+// API 响应类型映射
+type ApiResponse<T> = T extends { data: infer D }
+  ? { success: true; data: D }
+  : { success: false; error: string };
+
+// 提取 Promise 返回值
+type UnwrapPromise<T> = T extends Promise<infer R> ? R : T;
+type Result = UnwrapPromise<Promise<number>>; // number
+
+// 过滤 never
+type FilterNever<T> = T extends [infer F, ...infer R]
+  ? [F] extends [never]
+    ? FilterNever<R>
+    : [F, ...FilterNever<R>]
+  : [];
+```
+
+---
+
 **参考规范**：TypeScript Handbook: Conditional Types | TypeScript Handbook: infer
+
+## 深入理解：引擎实现与优化
+
+### V8 引擎视角
+
+V8 是 Chrome 和 Node.js 使用的 JavaScript 引擎，其内部实现直接影响本节讨论的机制：
+
+| 组件 | 功能 |
+|------|------|
+| Ignition | 解释器，生成字节码 |
+| Sparkplug | 基线编译器，快速生成本地代码 |
+| Maglev | 中层优化编译器，SSA 形式优化 |
+| TurboFan | 顶层优化编译器，Sea of Nodes |
+
+### 隐藏类与形状
+
+```javascript
+// V8 为相同结构的对象创建隐藏类
+const p1 = { x: 1, y: 2 };
+const p2 = { x: 3, y: 4 };
+// p1 和 p2 共享同一个隐藏类
+
+// 动态添加属性会创建新隐藏类
+p1.z = 3; // 降级为字典模式
+```
+
+### 内联缓存（Inline Cache）
+
+```javascript
+function getX(obj) {
+  return obj.x; // V8 缓存属性偏移
+}
+
+getX({ x: 1 }); // 单态（monomorphic）
+getX({ x: 2 }); // 同类型，快速路径
+```
+
+### 性能提示
+
+1. 对象初始化时声明所有属性
+2. 避免动态删除属性
+3. 数组使用连续数字索引
+4. 函数参数类型保持一致
+
+### 相关工具
+
+- Chrome DevTools Performance 面板
+- Node.js `--prof` 和 `--prof-process`
+- V8 flags: `--trace-opt`, `--trace-deopt`

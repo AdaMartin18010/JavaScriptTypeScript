@@ -1,158 +1,272 @@
-# 词法环境与变量环境
+# 词法环境变量解析
 
-> 执行上下文的内部结构：Environment Record、作用域链与变量生命周期
+> 变量查找算法：从当前环境记录到全局的标识符解析
 >
 > 对齐版本：ECMAScript 2025 (ES16)
 
 ---
 
-## 1. 词法环境（Lexical Environment）
+## 1. 变量解析过程
 
-词法环境是 ECMAScript 中作用域的实现机制，由两部分组成：
+当代码引用一个标识符时，引擎执行以下算法：
 
 ```
-LexicalEnvironment = {
-  EnvironmentRecord: { /* 变量和函数的绑定 */ },
-  OuterLexicalEnvironment: /* 外层词法环境引用 */
-}
+1. 从当前 LexicalEnvironment 开始
+2. 检查 Environment Record 是否有该绑定
+   - 有？返回绑定的值
+   - 无？检查 OuterEnv（外层环境）
+3. 重复步骤 2 直到找到或到达全局环境
+4. 全局环境也没有？抛出 ReferenceError
 ```
 
 ---
 
-## 2. 环境记录类型
+## 2. 环境记录的绑定类型
 
-### 2.1 声明式环境记录（Declarative Environment Record）
-
-存储 `let`、`const`、`class`、`function` 声明：
-
-```javascript
-{
-  const x = 1;
-  let y = 2;
-  function fn() {}
-  // 这些绑定存储在声明式环境记录中
-}
-```
-
-### 2.2 对象环境记录（Object Environment Record）
-
-存储 `var` 声明和 `with` 语句：
-
-```javascript
-// var 声明在全局作用域中成为全局对象的属性
-var globalVar = 1; // window.globalVar（浏览器）
-
-// with 语句创建对象环境记录
-with (obj) {
-  console.log(property); // 从 obj 中查找
-}
-```
-
-### 2.3 函数环境记录（Function Environment Record）
-
-函数调用时创建，包含 `this` 绑定和参数：
-
-```javascript
-function greet(name) {
-  const message = `Hello, ${name}`;
-  // name 和 message 存储在函数环境记录中
-  // this 绑定也在此记录中
-}
-```
-
-### 2.4 全局环境记录（Global Environment Record）
-
-全局作用域的复合记录，由对象环境记录（var）和声明式环境记录（let/const）组成。
-
-### 2.5 模块环境记录（Module Environment Record）
-
-模块作用域，包含导入和导出的绑定。
+| 绑定类型 | 创建时机 | 可写性 | 示例 |
+|---------|---------|--------|------|
+| 可变绑定 | 执行声明时 | 可 | `let`、`var` |
+| 不可变绑定 | 执行声明时 | 不可 | `const` |
+| 严格绑定 | 执行声明时 | 可/不可 | 模块导入 |
 
 ---
 
-## 3. 作用域链
+## 3. 标识符解析示例
 
 ```javascript
 const global = "global";
 
 function outer() {
   const outerVar = "outer";
+
   function inner() {
     const innerVar = "inner";
-    console.log(innerVar); // 当前环境
-    console.log(outerVar); // 外层环境
-    console.log(global);   // 全局环境
+
+    console.log(innerVar);  // 当前环境 → 找到
+    console.log(outerVar);  // 当前 → 无 → 外层 → 找到
+    console.log(global);    // 当前 → 无 → 外层 → 全局 → 找到
+    console.log(unknown);   // 当前 → 无 → ... → 全局 → 无 → ReferenceError
   }
+
   inner();
 }
-```
 
-词法环境链：
-
-```
-inner() LexicalEnvironment
-  ├── EnvironmentRecord: { innerVar }
-  └── OuterEnv ──► outer() LexicalEnvironment
-                    ├── EnvironmentRecord: { outerVar, inner }
-                    └── OuterEnv ──► Global LexicalEnvironment
-                                      ├── EnvironmentRecord: { global }
-                                      └── OuterEnv ──► null
+outer();
 ```
 
 ---
 
-## 4. 块级作用域
+## 4. 动态查找与静态查找
+
+### 4.1 eval 的动态查找
 
 ```javascript
-{
-  const blockVar = "block";
-}
-// blockVar 不可访问
+let x = "global";
 
-// if、for、while 等语句也创建块级作用域
-if (true) {
-  let x = 1;
+function test() {
+  let x = "local";
+  eval("console.log(x)"); // "local"（动态查找当前环境）
 }
-// x 不可访问
 
-// for 循环的每次迭代创建新的词法环境
-for (let i = 0; i < 3; i++) {
-  setTimeout(() => console.log(i), 0); // 0, 1, 2
-}
+test();
 ```
 
----
-
-## 5. 创建与销毁
-
-### 5.1 创建时机
-
-- **全局环境**：脚本/模块开始时创建
-- **函数环境**：函数被调用时创建
-- **块级环境**：进入块级语句时创建（let/const）
-
-### 5.2 销毁时机
-
-执行离开作用域后，环境记录不再被引用时，由垃圾回收器回收。
-
----
-
-## 6. 变量环境（VariableEnvironment）
-
-变量环境是词法环境的一个历史遗留组件，专门用于存储 `var` 声明：
+### 4.2 with 的对象环境记录
 
 ```javascript
-// 在全局执行上下文中
-LexicalEnvironment = GlobalEnv   // let/const/class
-VariableEnvironment = GlobalEnv  // var
+const obj = { a: 1 };
 
-// 在函数执行上下文中
-LexicalEnvironment = FunctionEnv  // let/const/class/function
-VariableEnvironment = FunctionEnv // var
+with (obj) {
+  console.log(a); // 1（从 obj 的环境记录查找）
+  a = 2;          // 修改 obj.a
+}
+
+console.log(obj.a); // 2
 ```
 
-**注意**：在现代代码中，LexicalEnvironment 和 VariableEnvironment 通常指向同一个环境记录。
+`with` 语句将对象转换为环境记录插入作用域链，但已在严格模式废弃。
 
 ---
 
-**参考规范**：ECMA-262 §9.2 Lexical Environments | ECMA-262 §9.3 Environment Records
+## 5. 全局环境记录
+
+全局环境记录是**复合记录**：
+
+```
+Global Environment Record = {
+  [[ObjectRecord]]: Object Environment Record,    // 全局对象属性
+  [[DeclarativeRecord]]: Declarative Environment Record, // let/const/class
+  [[VarNames]]: List<String>,                     // var 声明列表
+  [[OuterEnv]]: null
+}
+```
+
+```javascript
+var x = 1;      // 存储在 ObjectRecord → globalThis.x
+let y = 2;      // 存储在 DeclarativeRecord
+const z = 3;    // 存储在 DeclarativeRecord
+
+console.log("x" in globalThis); // true
+console.log("y" in globalThis); // false
+console.log("z" in globalThis); // false
+```
+
+---
+
+## 6. 模块环境记录
+
+ES Module 使用专门的模块环境记录：
+
+```javascript
+// math.js
+export const PI = 3.14;
+export function add(a, b) { return a + b; }
+
+// app.js
+import { PI, add } from "./math.js";
+```
+
+模块环境记录特点：
+
+- 导入绑定是**不可变**的间接引用
+- 导出绑定可以是局部绑定或间接引用
+- 模块的 `this` 是 `undefined`
+
+---
+
+## 7. 性能优化
+
+```javascript
+// 作用域链深度影响查找性能
+function deep() {
+  const a1 = 1;
+  function level1() {
+    const a2 = 2;
+    function level2() {
+      const a3 = 3;
+      function level3() {
+        console.log(a1); // 遍历 3 层作用域链
+      }
+      level3();
+    }
+    level2();
+  }
+  level1();
+}
+```
+
+现代引擎优化：
+
+- **隐藏类**：将环境记录形状化
+- **内联缓存**：缓存变量位置
+- **作用域分析**：编译时确定变量位置
+
+---
+
+**参考规范**：ECMA-262 §8.1.1 Environment Records | ECMA-262 §8.3.2 ResolveBinding
+
+## 扩展话题：相关规范与实现细节
+
+### 规范引用
+
+ECMA-262 规范详细定义了本节所有机制。关键章节包括：
+- §6.2.3 Completion Record 规范
+- §9.1 Environment Records
+- §9.4 Execution Contexts
+- §10.2.1.1 OrdinaryCallBindThis
+
+### 引擎实现差异
+
+| 引擎 | 相关实现 |
+|------|---------|
+| V8 (Chrome/Node) | 快速属性访问、隐藏类优化 |
+| SpiderMonkey (Firefox) | 形状(shape)系统、基线编译器 |
+| JavaScriptCore (Safari) | DFG/FTL 编译器、类型推断 |
+
+### 调试技巧
+
+`javascript
+// 使用 Chrome DevTools 检查内部状态
+debugger; // 在 Sources 面板查看 Scope 链
+
+// 使用 console.trace() 查看调用栈
+function deep() {
+  console.trace("Current stack");
+}
+`
+
+### 常见面试题
+
+1. 解释暂时性死区(TDZ)及其产生原因
+2. var/let/const 的区别是什么？
+3. 函数声明和函数表达式的提升行为有何不同？
+4. 解释 this 的四种绑定规则
+5. 什么是闭包？它如何工作？
+
+### 推荐阅读
+
+- ECMA-262 规范官方文档
+- TypeScript Handbook
+- You Don't Know JS (Kyle Simpson)
+- JavaScript: The Definitive Guide
+
+## 深入理解：内存模型与性能
+
+### 内存布局
+
+JavaScript 引擎在内存中组织对象和变量：
+
+`
+栈内存（Stack）：
+  - 原始值（number, string, boolean等）
+  - 函数调用帧
+  - 局部变量引用
+
+堆内存（Heap）：
+  - 对象
+  - 函数闭包
+  - 大型数据结构
+`
+
+### V8 优化技术
+
+| 技术 | 描述 |
+|------|------|
+| 隐藏类 | 为对象创建内部形状描述 |
+| 内联缓存 | 缓存属性查找位置 |
+| 标量替换 | 将小对象分解为局部变量 |
+| 逃逸分析 | 确定对象是否离开作用域 |
+
+### 性能基准
+
+`javascript
+// 快速属性访问（单态）
+obj.x; // 优化：直接偏移访问
+
+// 多态属性访问
+if (condition) obj = { x: 1 }; else obj = { x: 2, y: 3 };
+obj.x; // 降级：字典查找
+`
+
+### 垃圾回收影响
+
+`javascript
+// 减少 GC 压力
+function process() {
+  const data = new Array(1000000);
+  // 使用 data...
+  // 函数返回后，data 可被回收
+}
+
+// 避免内存泄漏
+let cache = {};
+// 定期清理或使用 WeakMap
+`
+
+### 最佳实践总结
+
+1. **优先使用 const**：不可变性帮助引擎优化
+2. **避免动态属性**：稳定结构利于隐藏类
+3. **减少嵌套深度**：浅层作用域链查找更快
+4. **使用箭头函数**：减少 this 绑定开销
+5. **缓存频繁访问**：将深层属性提取到局部变量

@@ -232,4 +232,22 @@ node --experimental-strip-types app.ts
 
 ---
 
+## 7. Just-In-Time 编译流水线
+
+```
+源代码 → 解析 → AST → 字节码(Ignition) → 执行 → 热点检测 → 优化编译(TurboFan)
+                                              ↓
+                                         去优化(Deopt)
+```
+
+V8 的编译执行一体化：
+1. **解析**：源代码 → AST
+2. **字节码生成**：AST → Ignition 字节码
+3. **执行**：解释器逐条执行字节码
+4. **分析**：收集类型反馈和调用计数
+5. **优化**：热点代码编译为机器码
+6. **去优化**：假设失败时回退到字节码
+
+---
+
 **参考规范**：ECMA-262 §9 Operations on Objects | ECMA-262 §10 ECMAScript Language: Source Text

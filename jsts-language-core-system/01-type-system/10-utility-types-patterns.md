@@ -1,181 +1,261 @@
 # 工具类型与实用模式
 
-> 内置 Utility Types 的完整解读与自定义工具类型模式库
+> TypeScript 内置工具类型详解与自定义工具类型实践
 >
 > 对齐版本：TypeScript 5.8–6.0
 
 ---
 
-## 1. 属性修饰工具类型
+## 1. 内置工具类型
 
-### 1.1 `Partial<T>`
-
-将所有属性变为可选：
+### 1.1 属性修饰
 
 ```typescript
-type Partial<T> = {
-  [P in keyof T]?: T[P];
-};
-```
-
-### 1.2 `Required<T>`
-
-将所有属性变为必选：
-
-```typescript
-type Required<T> = {
-  [P in keyof T]-?: T[P];
-};
-```
-
-### 1.3 `Readonly<T>`
-
-将所有属性变为只读：
-
-```typescript
-type Readonly<T> = {
-  readonly [P in keyof T]: T[P];
-};
-```
-
-### 1.4 深度版本
-
-```typescript
-type DeepReadonly<T> = {
-  readonly [P in keyof T]: DeepReadonly<T[P]>;
-};
-```
-
----
-
-## 2. 属性选择工具类型
-
-### 2.1 `Pick<T, K>`
-
-从 T 中选择指定属性：
-
-```typescript
-type Pick<T, K extends keyof T> = {
-  [P in K]: T[P];
-};
-
 interface User {
   name: string;
   age: number;
-  email: string;
+  email?: string;
 }
 
-type UserPreview = Pick<User, "name" | "email">;
-// { name: string; email: string; }
+// 全部可选
+type PartialUser = Partial<User>;
+// { name?: string; age?: number; email?: string; }
+
+// 全部必需
+type RequiredUser = Required<User>;
+// { name: string; age: number; email: string; }
+
+// 全部只读
+type ReadonlyUser = Readonly<User>;
+// { readonly name: string; readonly age: number; readonly email?: string; }
 ```
 
-### 2.2 `Omit<T, K>`
-
-从 T 中排除指定属性：
+### 1.2 属性选择
 
 ```typescript
-type Omit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>;
+// 选取部分属性
+type UserPreview = Pick<User, "name" | "email">;
+// { name: string; email?: string; }
 
-type UserWithoutEmail = Omit<User, "email">;
+// 排除部分属性
+type UserPublic = Omit<User, "email">;
+// { name: string; age: number; }
+
+// 提取联合类型
+type UserKeys = keyof User; // "name" | "age" | "email"
+```
+
+### 1.3 类型提取
+
+```typescript
+// 提取函数返回类型
+type Return = ReturnType<() => string>; // string
+
+// 提取函数参数类型
+type Params = Parameters<(a: number, b: string) => void>; // [number, string]
+
+// 提取构造函数参数
+type CParams = ConstructorParameters<typeof Date>; // [string | number | Date]
+
+// 提取实例类型
+type Instance = InstanceType<typeof Date>; // Date
+```
+
+---
+
+## 2. 映射类型（Mapped Types）
+
+### 2.1 基础映射
+
+```typescript
+type Nullable<T> = {
+  [K in keyof T]: T[K] | null;
+};
+
+type UserNullable = Nullable<User>;
+// { name: string | null; age: number | null; email: string | null | undefined; }
+```
+
+### 2.2 键重映射（TS 4.1+）
+
+```typescript
+type Getters<T> = {
+  [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K];
+};
+
+type UserGetters = Getters<User>;
+// { getName: () => string; getAge: () => number; getEmail: () => string | undefined; }
+```
+
+### 2.3 过滤属性
+
+```typescript
+type RemoveOptional<T> = {
+  [K in keyof T as T[K] extends Required<T>[K] ? K : never]: T[K];
+};
+
+type UserRequired = RemoveOptional<User>;
 // { name: string; age: number; }
 ```
 
-### 2.3 `Extract<T, U>` 与 `Exclude<T, U>`
+---
+
+## 3. 条件类型模式
+
+### 3.1 分配性条件
 
 ```typescript
-type Extract<T, U> = T extends U ? T : never;
-type Exclude<T, U> = T extends U ? never : T;
+type ToArray<T> = T extends any ? T[] : never;
 
-type T1 = Extract<"a" | "b" | "c", "a" | "c">; // "a" | "c"
-type T2 = Exclude<"a" | "b" | "c", "a">;       // "b" | "c"
+type StringOrNumberArray = ToArray<string | number>;
+// string[] | number[]（分配）
+
+type NonDistArray<T> = [T] extends [any] ? T[] : never;
+type MixedArray = NonDistArray<string | number>;
+// (string | number)[]（非分配）
+```
+
+### 3.2 infer 提取
+
+```typescript
+// 提取数组元素
+type Element<T> = T extends (infer E)[] ? E : T;
+type Num = Element<number[]>; // number
+
+// 提取 Promise 值
+type Awaited<T> = T extends Promise<infer R> ? R : T;
+type Val = Awaited<Promise<string>>; // string
+
+// 提取函数返回值
+type Unwrap<T> = T extends (...args: any[]) => infer R ? R : T;
 ```
 
 ---
 
-## 3. 类型转换工具类型
+## 4. 自定义工具类型库
 
-### 3.1 `Record<K, T>`
-
-构造键值对类型：
+### 4.1 深度工具类型
 
 ```typescript
-type Record<K extends keyof any, T> = {
-  [P in K]: T;
+// 深度只读
+type DeepReadonly<T> = {
+  readonly [K in keyof T]: T[K] extends object
+    ? DeepReadonly<T[K]>
+    : T[K];
 };
 
-type PageNames = "home" | "about" | "contact";
-type PageInfo = Record<PageNames, { title: string; path: string }>;
+// 深度部分
+type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends object
+    ? DeepPartial<T[K]>
+    : T[K];
+};
+
+// 深度必填
+type DeepRequired<T> = {
+  [K in keyof T]-?: T[K] extends object | undefined
+    ? DeepRequired<NonNullable<T[K]>>
+    : T[K];
+};
 ```
 
-### 3.2 `ReturnType<T>`
+### 4.2 类型守卫工具
 
 ```typescript
-type ReturnType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? R : never;
-```
+// 非空过滤
+type NonNull<T> = T extends null | undefined ? never : T;
 
-### 3.3 `Parameters<T>`
+// 提取可调用
+type Callable = (...args: any[]) => any;
 
-```typescript
-type Parameters<T extends (...args: any) => any> = T extends (...args: infer P) => any ? P : never;
-```
+// 是否为 never
+type IsNever<T> = [T] extends [never] ? true : false;
 
-### 3.4 `InstanceType<T>`
-
-```typescript
-type InstanceType<T extends abstract new (...args: any) => any> = T extends abstract new (...args: any) => infer R ? R : any;
-```
-
----
-
-## 4. 自定义工具类型模式库
-
-### 4.1 `Nullable<T>` / `NonNullable<T>`
-
-```typescript
-type Nullable<T> = T | null;
-type NonNullable<T> = T extends null | undefined ? never : T;
-```
-
-### 4.2 `Flatten<T>`
-
-```typescript
-type Flatten<T extends any[]> = T extends [infer F, ...infer R]
-  ? [...(F extends any[] ? Flatten<F> : [F]), ...Flatten<R>]
-  : [];
-```
-
-### 4.3 `TupleToUnion<T>`
-
-```typescript
-type TupleToUnion<T extends any[]> = T[number];
-
-type U = TupleToUnion<["a", "b", "c"]>; // "a" | "b" | "c"
-```
-
-### 4.4 `UnionToIntersection<T>`
-
-```typescript
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
-
-type I = UnionToIntersection<{ a: string } | { b: number }>;
-// { a: string } & { b: number }
+// 是否为 any
+type IsAny<T> = 0 extends (1 & T) ? true : false;
 ```
 
 ---
 
-## 5. TS 5.x 新增工具类型
+## 5. 实用模式
 
-### 5.1 `NoInfer<T>`（TS 5.4）
+### 5.1 类型安全的 EventEmitter
 
 ```typescript
-type NoInfer<T> = [T][T extends any ? 0 : never];
+type EventMap = {
+  click: { x: number; y: number };
+  submit: { data: FormData };
+  error: { message: string };
+};
 
-// 用途：阻止特定位置参与类型推断
-function createStore<T>(initial: T, validate: (state: NoInfer<T>) => boolean): T {
-  return initial;
+class TypedEmitter<T extends Record<string, any>> {
+  private listeners: { [K in keyof T]?: Array<(payload: T[K]) => void> } = {};
+
+  emit<K extends keyof T>(event: K, payload: T[K]) {
+    this.listeners[event]?.forEach(fn => fn(payload));
+  }
+
+  on<K extends keyof T>(event: K, handler: (payload: T[K]) => void) {
+    if (!this.listeners[event]) this.listeners[event] = [];
+    this.listeners[event]!.push(handler);
+  }
+}
+
+const emitter = new TypedEmitter<EventMap>();
+emitter.on("click", ({ x, y }) => console.log(x, y)); // 类型安全
+```
+
+### 5.2 API 响应类型
+
+```typescript
+type ApiResponse<T> =
+  | { success: true; data: T }
+  | { success: false; error: string };
+
+async function fetchUser(): Promise<ApiResponse<User>> {
+  // ...
+}
+
+const result = await fetchUser();
+if (result.success) {
+  result.data.name; // ✅ User 类型
+} else {
+  result.error;     // ✅ string 类型
 }
 ```
 
+### 5.3 配置合并
+
+```typescript
+type DeepMerge<T, U> = {
+  [K in keyof T | keyof U]: K extends keyof U
+    ? K extends keyof T
+      ? T[K] extends object
+        ? U[K] extends object
+          ? DeepMerge<T[K], U[K]>
+          : U[K]
+        : U[K]
+      : U[K]
+    : K extends keyof T
+      ? T[K]
+      : never;
+};
+```
+
 ---
 
-**参考规范**：TypeScript Handbook: Utility Types
+## 6. TS 5.4+ 新工具
+
+```typescript
+// NoInfer<T>：防止类型推断拓宽
+function createNode<T>(value: T, options: { tag: NoInfer<T> }) {
+  return { value, tag: options.tag };
+}
+
+createNode("hello", { tag: "hello" }); // ✅
+createNode("hello", { tag: 42 });      // ❌ Type 'number' is not assignable
+```
+
+---
+
+**参考规范**：TypeScript Handbook: Utility Types | TypeScript Handbook: Mapped Types

@@ -37,6 +37,7 @@ try {
 ```
 
 **优势**：
+
 - 保留原始错误堆栈
 - 构建有意义的错误链
 - 便于调试复杂调用链
@@ -256,6 +257,48 @@ process.on("uncaughtException", error => {
 process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled rejection:", reason);
 });
+```
+
+---
+
+## 9. ES2025 错误处理增强
+
+```javascript
+// Error.cause 链式错误
+try {
+  await fetchData();
+} catch (err) {
+  throw new Error("数据处理失败", { cause: err });
+}
+
+// 访问错误链
+} catch (err) {
+  console.log(err.message);      // "数据处理失败"
+  console.log(err.cause.message); // 原始错误
+}
+```
+
+## 10. 异常与性能
+
+```javascript
+// 异常抛出成本高昂（栈展开）
+function parse(str) {
+  try {
+    return JSON.parse(str);
+  } catch {
+    return null; // 每次异常都会捕获栈跟踪
+  }
+}
+
+// 更好的方式：前置检查
+function parseFast(str) {
+  if (typeof str !== "string") return null;
+  try {
+    return JSON.parse(str);
+  } catch {
+    return null;
+  }
+}
 ```
 
 ---

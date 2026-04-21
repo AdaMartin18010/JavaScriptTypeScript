@@ -1,181 +1,297 @@
-# 作用域链（Scope Chain）
+# 作用域链
 
-> 变量查找机制：从局部到全局的层级解析过程
+> 变量解析机制：从当前作用域到全局的查找路径
 >
 > 对齐版本：ECMAScript 2025 (ES16)
 
 ---
 
-## 1. 作用域类型
+## 1. 作用域链的定义
 
-### 1.1 全局作用域
-
-```javascript
-const globalVar = "I am global";
-// 在任何地方都可访问（除非被遮蔽）
-```
-
-### 1.2 函数作用域
+作用域链是**变量解析的路径**，从当前词法环境向外层链接：
 
 ```javascript
+const global = "global";
+
 function outer() {
-  const funcVar = "I am in function";
-  if (true) {
-    console.log(funcVar); // ✅ 块内可访问函数作用域变量
+  const outerVar = "outer";
+  
+  function middle() {
+    const middleVar = "middle";
+    
+    function inner() {
+      const innerVar = "inner";
+      console.log(innerVar);  // inner（当前作用域）
+      console.log(middleVar); // middle（外层作用域）
+      console.log(outerVar);  // outer（更外层）
+      console.log(global);    // global（全局作用域）
+    }
+    
+    inner();
   }
+  
+  middle();
 }
+
+outer();
 ```
 
-### 1.3 块级作用域（ES6+）
-
-```javascript
-if (true) {
-  const blockVar = "I am in block";
-}
-// console.log(blockVar); // ❌ ReferenceError
-```
-
-### 1.4 模块作用域
-
-```javascript
-// module.js
-const moduleVar = "I am in module";
-// 只在当前模块内可访问，不污染全局
-```
+作用域链：`inner → middle → outer → global → null`
 
 ---
 
 ## 2. 词法作用域 vs 动态作用域
 
-### 2.1 JavaScript 的词法作用域
-
-变量的作用域在**代码编写时**确定，而非运行时：
+| 特性 | 词法作用域（JavaScript） | 动态作用域 |
+|------|------------------------|-----------|
+| 解析时机 | 定义时 | 调用时 |
+| 依赖 | 代码结构 | 调用栈 |
+| 可预测性 | 高 | 低 |
+| 闭包支持 | 是 | 否 |
 
 ```javascript
 const x = "global";
 
+function log() {
+  console.log(x); // 词法作用域：总是 "global"
+}
+
+function test() {
+  const x = "local";
+  log(); // 输出 "global"（不是 "local"）
+}
+
+test();
+```
+
+---
+
+## 3. 作用域类型
+
+### 3.1 全局作用域
+
+```javascript
+const globalVar = "I'm global";
+
+function useGlobal() {
+  console.log(globalVar); // 通过作用域链访问
+}
+```
+
+### 3.2 函数作用域
+
+```javascript
+function scope() {
+  var funcVar = "function scoped";
+  let blockVar = "block scoped";
+  
+  if (true) {
+    var funcVar2 = "also function scoped"; // var 穿透 if 块
+    let blockVar2 = "block scoped";        // let 只在 if 块内
+  }
+  
+  console.log(funcVar2); // ✅ 可访问
+  console.log(blockVar2); // ❌ ReferenceError
+}
+```
+
+### 3.3 块级作用域
+
+```javascript
+{
+  let blockVar = "block";
+  const BLOCK_CONST = "const";
+}
+// blockVar 和 BLOCK_CONST 不可访问
+
+// for 循环的块级作用域
+for (let i = 0; i < 3; i++) {
+  setTimeout(() => console.log(i), 0); // 0, 1, 2
+}
+// i 不可访问
+```
+
+### 3.4 模块作用域
+
+```javascript
+// module.js
+const moduleVar = "module scoped";
+export const exported = "exported";
+
+// 其他文件无法访问 moduleVar，除非导出
+```
+
+---
+
+## 4. 变量遮蔽（Shadowing）
+
+```javascript
+const x = "outer";
+
+function test() {
+  const x = "inner"; // 遮蔽外层 x
+  console.log(x);    // "inner"
+  
+  if (true) {
+    const x = "block"; // 再次遮蔽
+    console.log(x);    // "block"
+  }
+  
+  console.log(x); // "inner"（块级 x 已释放）
+}
+
+test();
+console.log(x); // "outer"
+```
+
+### 4.1 var 的特殊行为
+
+```javascript
+var x = "global";
+
+function test() {
+  console.log(x); // undefined（不是 "global"！）
+  var x = "local";
+}
+
+test();
+```
+
+`var` 的声明提升导致内部 `x` 在函数开始时已存在（值为 undefined），遮蔽了全局 `x`。
+
+---
+
+## 5. 作用域链与闭包
+
+```javascript
+function createCounter() {
+  let count = 0; // 被闭包捕获
+  
+  return {
+    increment: () => ++count,
+    decrement: () => --count,
+    getCount: () => count
+  };
+}
+
+const counter = createCounter();
+counter.increment(); // count = 1
+counter.increment(); // count = 2
+console.log(counter.getCount()); // 2
+```
+
+`createCounter` 返回后，其词法环境仍被闭包引用，保留在内存中。
+
+### 5.1 闭包的内存模型
+
+```javascript
 function outer() {
-  const x = "outer";
+  let a = 1;
+  let b = 2; // 未被引用，可被优化释放
+  
   return function inner() {
-    console.log(x); // "outer"（词法作用域：使用 outer 的 x）
+    return a; // 只引用 a
   };
 }
 
 const fn = outer();
-fn(); // "outer"
+// 理论上引擎可以只保留 a，释放 b
 ```
-
-### 2.2 动态作用域对比
-
-如果 JS 使用动态作用域，`fn()` 会输出 `"global"`（调用处的变量）。
-
-### 2.3 eval / with 的动态作用域例外
-
-```javascript
-const x = "global";
-function test() {
-  eval("console.log(x)"); // 如果使用 eval 传入的代码定义了 x，会动态影响
-}
-```
-
-**注意**：`with` 已弃用，`eval` 在严格模式下不影响外部作用域。
 
 ---
 
-## 3. 作用域链的构建
-
-### 3.1 词法环境的外层引用
+## 6. with 语句与作用域链
 
 ```javascript
-const global = "global";
+const obj = { a: 1, b: 2 };
 
-function foo() {
-  const a = "foo";
-  function bar() {
-    const b = "bar";
-    console.log(a); // 通过作用域链找到 foo 的 a
-    console.log(global); // 通过作用域链找到全局的 global
+with (obj) {
+  console.log(a); // 1（obj.a）
+  a = 3;          // 修改 obj.a
+  const c = 4;    // 局部变量，不在 obj 上
+}
+
+console.log(obj.a); // 3
+```
+
+`with` 将对象插入作用域链前端，但已在严格模式废弃。
+
+---
+
+## 7. 作用域链的性能
+
+```javascript
+// 深层作用域链查找较慢
+function deep() {
+  const a1 = 1;
+  function level1() {
+    const a2 = 2;
+    function level2() {
+      const a3 = 3;
+      function level3() {
+        console.log(a1); // 需要遍历 3 层作用域链
+      }
+      level3();
+    }
+    level2();
   }
-  bar();
+  level1();
 }
 ```
 
-作用域链：
-
-```
-bar() LexicalEnvironment → foo() LexicalEnvironment → Global LexicalEnvironment
-```
-
-### 3.2 作用域链的查找过程
-
-1. 在当前作用域查找变量
-2. 未找到 → 沿外层引用（outerEnv）向上查找
-3. 直到全局作用域
-4. 仍未找到 → `ReferenceError`
+现代引擎（V8）优化：
+- 将频繁访问的变量提升到本地上下文
+- 使用隐藏类加速属性查找
 
 ---
 
-## 4. 遮蔽（Shadowing）
+**参考规范**：ECMA-262 §8.1 Lexical Environments | ECMA-262 §8.2 Resolution of Binding
 
-### 4.1 变量遮蔽
+## 深入理解：引擎实现与优化
+
+### V8 引擎视角
+
+V8 是 Chrome 和 Node.js 使用的 JavaScript 引擎，其内部实现直接影响本节讨论的机制：
+
+| 组件 | 功能 |
+|------|------|
+| Ignition | 解释器，生成字节码 |
+| Sparkplug | 基线编译器，快速生成本地代码 |
+| Maglev | 中层优化编译器，SSA 形式优化 |
+| TurboFan | 顶层优化编译器，Sea of Nodes |
+
+### 隐藏类与形状
 
 ```javascript
-const name = "global";
+// V8 为相同结构的对象创建隐藏类
+const p1 = { x: 1, y: 2 };
+const p2 = { x: 3, y: 4 };
+// p1 和 p2 共享同一个隐藏类
 
-function test() {
-  const name = "local"; // 遮蔽全局的 name
-  console.log(name);    // "local"
-}
+// 动态添加属性会创建新隐藏类
+p1.z = 3; // 降级为字典模式
 ```
 
-### 4.2 全局遮蔽
+### 内联缓存（Inline Cache）
 
 ```javascript
-var name = "global name"; // 成为 window.name
-let name2 = "global name2"; // 不会成为 window.name2
-```
-
----
-
-## 5. 实战影响
-
-### 5.1 闭包与作用域链
-
-```javascript
-function createCounter() {
-  let count = 0; // 被闭包引用，不会释放
-  return {
-    increment: () => ++count,
-    decrement: () => --count,
-    get: () => count
-  };
-}
-```
-
-### 5.2 循环作用域（var vs let）
-
-```javascript
-// var：共享同一个变量
-for (var i = 0; i < 3; i++) {
-  setTimeout(() => console.log(i), 0); // 3, 3, 3
+function getX(obj) {
+  return obj.x; // V8 缓存属性偏移
 }
 
-// let：每次迭代新绑定
-for (let j = 0; j < 3; j++) {
-  setTimeout(() => console.log(j), 0); // 0, 1, 2
-}
+getX({ x: 1 }); // 单态（monomorphic）
+getX({ x: 2 }); // 同类型，快速路径
 ```
 
-### 5.3 模块作用域隔离
+### 性能提示
 
-ES Module 的顶级变量不会污染全局作用域：
+1. 对象初始化时声明所有属性
+2. 避免动态删除属性
+3. 数组使用连续数字索引
+4. 函数参数类型保持一致
 
-```javascript
-// utils.js
-const helper = "helper"; // 模块私有
-export const public = "public"; // 显式导出
-```
+### 相关工具
 
----
-
-**参考规范**：ECMA-262 §9.2 Lexical Environments | ECMA-262 §9.3 Environment Records
+- Chrome DevTools Performance 面板
+- Node.js `--prof` 和 `--prof-process`
+- V8 flags: `--trace-opt`, `--trace-deopt`
