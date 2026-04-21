@@ -8,7 +8,7 @@
 
 ## 1. 内置类型守卫
 
-类型守卫（Type Guards）是运行时检查 + 编译时类型收窄的机制。
+类型守卫（Type Guards）是运行时检查 + 编译时类型收窄的机制。TypeScript 会根据条件语句自动收窄类型。
 
 ### 1.1 `typeof` 守卫
 
@@ -27,7 +27,10 @@ function process(input: string | number | boolean) {
 }
 ```
 
+**`typeof` 支持的类型**：`"string"`, `"number"`, `"bigint"`, `"boolean"`, `"symbol"`, `"undefined"`, `"object"`, `"function"`
+
 **`typeof` 的局限性**：
+
 - 对 `null` 返回 `"object"`（历史 bug）
 - 无法区分对象的具体类型
 - 对数组返回 `"object"`
@@ -59,6 +62,7 @@ function process(error: Error | TypeError | RangeError) {
 ```
 
 **`instanceof` 的局限性**：
+
 - 不适用于跨 Realm（iframe/Worker）的对象
 - 对原始类型无效
 - 原型链被修改后可能不可靠
@@ -138,6 +142,7 @@ function greet(animal: Cat | Dog) {
 ```
 
 **类型谓词的约束**：
+
 - 返回值必须是 `boolean`
 - 参数类型不能是可选参数（`animal?: Cat`）
 - 谓词类型必须是参数类型的子类型
@@ -210,6 +215,27 @@ function area(shape: Shape) {
 }
 ```
 
+### 3.4 可辨识联合的穷尽性检查
+
+```typescript
+type Action =
+  | { type: "increment"; payload: number }
+  | { type: "decrement"; payload: number }
+  | { type: "reset" };
+
+function reducer(state: number, action: Action): number {
+  switch (action.type) {
+    case "increment": return state + action.payload;
+    case "decrement": return state - action.payload;
+    case "reset": return 0;
+    default:
+      // 如果新增 Action 类型未处理，这里会编译错误
+      const _exhaustive: never = action;
+      return _exhaustive;
+  }
+}
+```
+
 ---
 
 ## 4. 高级收窄技术
@@ -253,6 +279,21 @@ if (isUserId(rawId)) {
 }
 ```
 
+### 4.3 自定义类型守卫的组合
+
+```typescript
+function isNonEmptyArray<T>(arr: T[]): arr is [T, ...T[]] {
+  return arr.length > 0;
+}
+
+function processItems(items: string[]) {
+  if (isNonEmptyArray(items)) {
+    // items 被收窄为 [string, ...string[]]
+    console.log(items[0]); // 安全访问第一个元素
+  }
+}
+```
+
 ---
 
 ## 5. 常见陷阱
@@ -269,6 +310,7 @@ function isStringArray(x: unknown): x is string[] {
 const empty: unknown = [];
 if (isStringArray(empty)) {
   // empty 被推断为 string[]，但实际上它可能是 number[]
+  // （因为空数组的 every 返回 true）
 }
 ```
 
@@ -304,7 +346,22 @@ function processArray(arr: (string | number)[]) {
       console.log(item.toUpperCase());
     }
     // 如果再次访问 arr[i]，需要重新检查
+    // arr[i].toUpperCase(); // ❌ 错误
   }
+}
+```
+
+### 5.4 解构后的类型收窄
+
+```typescript
+function process(obj: { value: string | number }) {
+  const { value } = obj;
+  if (typeof value === "string") {
+    // value 被收窄为 string
+    console.log(value.toUpperCase());
+  }
+  // 但 obj.value 没有被收窄！
+  // obj.value.toUpperCase(); // ❌ 仍然是 string | number
 }
 ```
 
@@ -319,7 +376,6 @@ TypeScript 5.5 改进了对象成员的类型守卫收窄：
 ```typescript
 function process(obj: { value: string | number }) {
   if (typeof obj.value === "string") {
-    // TS 5.5+ 之前：obj.value 被收窄，但 obj 本身没有被收窄
     // TS 5.5+：在某些简单场景下，obj 的类型也会相应收窄
     console.log(obj.value.toUpperCase());
   }

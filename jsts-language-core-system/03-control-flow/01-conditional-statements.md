@@ -111,7 +111,7 @@ const result1 = false && anything; // false（anything 不会求值）
 // ||：左操作数为 truthy 时返回左操作数
 const result2 = true || anything;  // true（anything 不会求值）
 
-// ??：左操作数为 null/undefined 时返回右操作数
+// ??：左操作数为 nullish 时返回右操作数
 const result3 = null ?? "default"; // "default"
 ```
 
@@ -119,7 +119,7 @@ const result3 = null ?? "default"; // "default"
 
 ```javascript
 let a = 1;
-a &&= 2; // a = a && 2 → a = 1（因为 1 是 truthy，返回 1）
+a &&= 2; // a = a && 2 → a = 1（1 是 truthy，但返回 1）
 
 let b = 0;
 b ||= 3; // b = b || 3 → b = 3
@@ -149,8 +149,9 @@ const value4 = "" ?? "default";         // ""（空字符串不是 nullish）
 const user = { profile: { name: "Alice" } };
 
 // 安全访问深层属性
-const name = user?.profile?.name; // "Alice"
-const bio = user?.profile?.bio;   // undefined（不会报错）
+const name = user?.profile?.name;     // "Alice"
+const bio = user?.profile?.bio;       // undefined（不报错）
+const deep = user?.settings?.theme;   // undefined
 
 // 与函数调用结合
 const result = someObject?.method?.(); // 如果 method 不存在，返回 undefined
@@ -171,9 +172,10 @@ TC39 正在审议 Pattern Matching 提案（Stage 1/2）：
 ```javascript
 // 提案语法（尚未标准化）
 const result = match (response) {
-  when ({ status: 200, data }) -> `Success: ${data}`,
-  when ({ status }) if status >= 400 -> `Error: ${status}`,
-  when (_) -> "Unknown"
+  when ({ status: 200, data: Array.isArray }) -> processList(data),
+  when ({ status: 200, data }) -> processItem(data),
+  when ({ status }) if status >= 400 -> handleError(status),
+  when (_) -> handleUnknown()
 };
 ```
 
@@ -184,9 +186,10 @@ const result = match (response) {
 import { match } from "ts-pattern";
 
 const result = match(response)
-  .with({ status: 200, data: P.select() }, (data) => `Success: ${data}`)
-  .with({ status: P.number }, (r) => `Error: ${r.status}`)
-  .otherwise(() => "Unknown");
+  .with({ status: 200, data: P.array() }, (r) => processList(r.data))
+  .with({ status: 200, data: P.any }, (r) => processItem(r.data))
+  .with({ status: P.number }, (r) => handleError(r.status))
+  .otherwise(() => handleUnknown());
 ```
 
 ---

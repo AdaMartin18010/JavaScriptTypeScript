@@ -11,14 +11,14 @@
 ```javascript
 const promise = new Promise((resolve, reject) => {
   console.log("Executor runs immediately"); // 同步执行
-
+  
   setTimeout(() => {
     resolve("Success"); // 异步解决
   }, 1000);
 });
 ```
 
-**关键点**：Promise executor 是**同步执行**的。
+**关键点**：Promise executor 是**同步执行**的，这在理解 Promise 行为时非常重要。
 
 ---
 
@@ -95,7 +95,6 @@ console.log("5");
 ```
 
 解析：
-
 1. 同步代码：1, 5
 2. 第一个微任务检查点：2, 4（按注册顺序）
 3. 在 2 中注册了新的微任务 3

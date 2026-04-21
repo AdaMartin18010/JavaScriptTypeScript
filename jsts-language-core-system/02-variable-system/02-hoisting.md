@@ -1,43 +1,50 @@
 # 提升机制（Hoisting）
 
-> JavaScript 编译阶段如何将声明提升到作用域顶部
+> var/let/const/function/class 声明的编译期行为差异
 >
 > 对齐版本：ECMAScript 2025 (ES16)
 
 ---
 
-## 1. 变量提升
+## 1. 提升的本质
 
-### 1.1 var 的声明提升
+**提升不是物理移动代码**，而是在编译阶段为变量创建绑定并分配内存空间。
 
-`var` 声明的变量在编译阶段被提升到作用域顶部，并初始化为 `undefined`：
+---
+
+## 2. var 的提升
+
+`var` 声明在编译阶段提升，初始化为 `undefined`：
 
 ```javascript
-console.log(x); // undefined（而非 ReferenceError）
-var x = 10;
+console.log(x); // undefined（不是 ReferenceError）
+var x = 5;
 
 // 等价于：
 var x;
 console.log(x); // undefined
-x = 10;
-```
-
-### 1.2 let / const 的声明提升（但未初始化）
-
-`let` 和 `const` 也会被提升，但不会被初始化，进入**暂时性死区（TDZ）**：
-
-```javascript
-console.log(y); // ❌ ReferenceError: Cannot access 'y' before initialization
-let y = 10;
+x = 5;
 ```
 
 ---
 
-## 2. 函数提升
+## 3. let / const 的提升
 
-### 2.1 函数声明的完整提升
+`let` 和 `const` 也提升，但处于**暂时性死区（TDZ）**，未初始化：
 
-函数声明的**整个定义**（包括函数体）被提升：
+```javascript
+console.log(y); // ❌ ReferenceError: Cannot access 'y' before initialization
+let y = 5;
+
+console.log(z); // ❌ ReferenceError
+const z = 10;
+```
+
+---
+
+## 4. 函数声明的提升
+
+函数声明整体提升（包括函数体）：
 
 ```javascript
 sayHello(); // ✅ "Hello!"
@@ -47,110 +54,61 @@ function sayHello() {
 }
 ```
 
-### 2.2 函数表达式的部分提升
-
-函数表达式只有**变量部分**被提升，赋值不提升：
+### 4.1 函数表达式不提升
 
 ```javascript
 sayHi(); // ❌ TypeError: sayHi is not a function
 
-var sayHi = function () {
+var sayHi = function() {
   console.log("Hi!");
 };
-
-// 等价于：
-var sayHi;
-sayHi(); // sayHi 此时是 undefined
-sayHi = function () { ... };
 ```
 
-### 2.3 箭头函数与提升
-
-箭头函数作为表达式，遵循变量提升规则：
+### 4.2 箭头函数不提升
 
 ```javascript
-console.log(arrow); // undefined
-var arrow = () => "arrow";
-
-console.log(arrow2); // ❌ TDZ
-let arrow2 = () => "arrow2";
+const greet = () => "Hello"; // 不提升
 ```
 
 ---
 
-## 3. 类提升
+## 5. class 声明的提升
 
-类声明的提升行为类似于 `let/const`：**提升但进入 TDZ**：
-
-```javascript
-const obj = new MyClass(); // ❌ ReferenceError: Cannot access 'MyClass' before initialization
-
-class MyClass {
-  constructor() {
-    this.name = "MyClass";
-  }
-}
-```
-
-类表达式同理：
+类声明提升但处于 TDZ（类似 let）：
 
 ```javascript
-console.log(MyExpr); // undefined
-var MyExpr = class {};
+const p = new Person(); // ❌ ReferenceError: Cannot access 'Person' before initialization
+
+class Person {}
 ```
 
 ---
 
-## 4. 导入提升
+## 6. 优先级
 
-ES Module 的导入声明被提升到模块顶部：
+同一作用域内，提升优先级：
+
+```
+函数声明 > var 变量 > let/const/class
+```
 
 ```javascript
-// 即使写在文件底部，导入也会在模块开始时执行
-foo(); // ✅ 合法
-
-import { foo } from "./foo.js";
+var foo = 1;
+function foo() {}
+console.log(typeof foo); // "number"（var 覆盖了函数声明）
 ```
 
 ---
 
-## 5. 提升的内部机制
-
-### 5.1 编译阶段 vs 执行阶段
+## 7. 最佳实践
 
 ```
-编译阶段：
-  1. 扫描作用域内的所有声明
-  2. 创建绑定（var → 初始化为 undefined；let/const/class → 创建但未初始化）
-
-执行阶段：
-  1. 按代码顺序执行
-  2. 遇到 let/const 的初始化语句时，完成绑定初始化
-```
-
-### 5.2 环境记录的创建过程
-
-- **var**：在 VariableEnvironment 中创建绑定，初始化为 `undefined`
-- **let/const/class**：在 LexicalEnvironment 中创建绑定，保持未初始化状态直到执行到声明语句
-
----
-
-## 6. 最佳实践
-
-1. **先声明后使用**：即使函数声明可以安全提升，也建议按逻辑顺序组织代码
-2. **函数声明放在作用域顶部**：提高可读性
-3. **避免在块级作用域中使用函数声明**：不同浏览器的实现 historically 不一致
-
-```javascript
-// ✅ 推荐
-function main() {
-  const data = fetchData();
-  process(data);
-}
-
-main();
+1. 始终先声明后使用
+2. 使用 let/const 替代 var
+3. 函数声明放在作用域顶部
+4. 使用 ESLint: no-use-before-define
 ```
 
 ---
 
-**参考规范**：ECMA-262 §9.3 Environment Records | ECMA-262 §13.3 Declarations and the Variable Statement
+**参考规范**：ECMA-262 §8.2 CreateGlobalFunctionBinding | ECMA-262 §13.3.1 Let and Const Declarations
