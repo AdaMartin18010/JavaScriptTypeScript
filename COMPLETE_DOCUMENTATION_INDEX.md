@@ -6,11 +6,12 @@
 
 ## 文档全景图
 
-本知识库包含三大核心组成部分：
+本知识库包含四大核心组成部分：
 
 1. **awesome-jsts-ecosystem** - 生态工具导航
 2. **jsts-code-lab** - 代码实验室 (91个技术模块)
-3. **docs/** - 分类文档与学习路径
+3. **jsts-language-core-system** - 语言核心系统 (52个深度文档，>5000字节/篇)
+4. **docs/** - 分类文档与学习路径
 
 ---
 
@@ -20,7 +21,8 @@
 
 | 文档 | 路径 | 描述 | 复杂度 |
 |------|------|------|--------|
-| 语言核心模块 | ./jsts-code-lab/00-language-core/ | TypeScript 类型系统完整实现 | 2星 |
+| **语言核心系统** | **./jsts-language-core-system/** | **类型系统/变量系统/控制流/执行模型/执行流/规范基础 (52篇深度文档)** | **3-5星** |
+| 语言核心代码实验 | ./jsts-code-lab/00-language-core/ | TypeScript 类型系统完整实现 | 2星 |
 | JS/TS 对比分析 | ./jsts-code-lab/10-js-ts-comparison/ | JavaScript 与 TypeScript 深度对比 | 2星 |
 | 元编程 | ./jsts-code-lab/78-metaprogramming/ | 装饰器、反射、代理模式 | 4星 |
 

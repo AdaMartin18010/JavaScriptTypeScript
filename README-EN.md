@@ -15,6 +15,8 @@
 >
 > 📚 Code Lab: [jsts-code-lab](./jsts-code-lab/) - 90+ modules, from theory to practice.
 >
+> 🧠 Language Core System: [jsts-language-core-system](./jsts-language-core-system/) - 52 in-depth docs covering type system, variable system, control flow, execution model, and ECMAScript specification foundations.
+>
 > 📊 Technology Decision System: 15 comparison matrices, 14 decision trees, 21 Mermaid diagrams.
 >
 > 🎓 Flagship Doc: [JS/TS Semantic Model Analysis](./JSTS全景综述/JS_TS_语言语义模型全面分析.md) - Aligned with ECMA-2025/2026, TypeScript 5.8–7.0, and top-tier university curricula (Stanford/MIT/CMU/Berkeley/UW).
@@ -31,6 +33,7 @@
 |----------|-------------|----------|
 | [📦 awesome-jsts-ecosystem](./awesome-jsts-ecosystem/) | JS/TS ecosystem tool navigation | All developers |
 | [🧪 jsts-code-lab](./jsts-code-lab/) | Code lab (90+ modules) | Hands-on learners |
+| [🧠 jsts-language-core-system](./jsts-language-core-system/) | Language core system (52 in-depth docs) | Theory learners |
 | [📚 jsts-code-lab/CROSS-REFERENCE.md](./jsts-code-lab/CROSS-REFERENCE.md) | Module cross-reference index | Systematic learners |
 | [📖 GLOSSARY.md](./GLOSSARY.md) | Professional glossary (CN/EN) | All readers |
 | [🎓 beginners-path.md](./docs/learning-paths/beginners-path.md) | Beginner learning path | Beginners |

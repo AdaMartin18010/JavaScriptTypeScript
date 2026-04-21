@@ -2,6 +2,8 @@
 
 > jsts-code-lab 模块间的依赖关系和学习路径导航
 
+> 🧠 **配套理论深度文档**：[jsts-language-core-system](../jsts-language-core-system/) — 52 篇按知识领域重组的深度文档，与本代码实验室形成理论与实践互补。
+
 ## 📊 模块关系图
 
 ```

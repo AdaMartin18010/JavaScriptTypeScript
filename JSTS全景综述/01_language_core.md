@@ -3,6 +3,8 @@
 > 版本范围：ES2020–ES2025 正式版 (ES11–ES16) + ES2026 Stage 4 前瞻 + TypeScript 5.8–6.0（含 7.0 前瞻）
 > 最后更新：2026年4月
 
+> 🧠 **深度专题**：如需按知识领域深入理解语言机制，请参阅 [jsts-language-core-system](../jsts-language-core-system/) — 52 篇深度文档（>5000 字节/篇），覆盖类型系统、变量系统、控制流、执行模型、执行流与 ECMAScript 规范基础。
+
 ---
 
 ## 目录
