@@ -1,270 +1,155 @@
 # 顶层 await（Top-Level Await）
 
-> 模块顶层使用 await 的语义、影响与最佳实践
+> **形式化定义**：顶层 await（Top-Level Await）是 ECMAScript 2022（ES13）引入的特性，允许在 ES 模块的顶层作用域直接使用 `await` 关键字，无需包裹在 async 函数中。该特性通过将模块隐式转换为 async 模块实现，模块的 `import` 会等待顶层 await 完成后再继续。ECMA-262 §16.2.1.4 定义了异步模块的求值语义。
 >
-> 对齐版本：ECMAScript 2022 (ES13) | ES2025
+> 对齐版本：ECMAScript 2025 (ES16) §16.2.1.4 | TypeScript 5.8–6.0
 
 ---
 
-## 1. 基本用法
+## 1. 概念定义 (Concept Definition)
+
+### 1.1 形式化定义
+
+ECMA-262 §16.2.1.4 定义了异步模块：
+
+> *"An async module is a module that contains a top-level await expression."*
+
+顶层 await 的语义：
+
+```
+模块包含顶层 await → 模块变为异步模块
+导入该模块的代码隐式等待模块完成
+```
+
+---
+
+## 2. 属性与特征 (Properties & Characteristics)
+
+### 2.1 顶层 await 属性矩阵
+
+| 特性 | 模块内 | 脚本内 | CJS |
+|------|--------|--------|-----|
+| 支持 | ✅ ES2022+ | ❌ | ❌ |
+| 使用方式 | 直接 await | 不可用 | 不可用 |
+| 导入影响 | 隐式等待 | — | — |
+| TypeScript | ✅ | ❌ | ❌ |
+
+---
+
+## 3. 关系分析 (Relationship Analysis)
+
+### 3.1 顶层 await 与模块加载
+
+```mermaid
+graph TD
+    ModuleA["模块 A\n(有顶层 await)"] --> B[加载中...]
+    B --> C[await 完成]
+    C --> D[模块导出可用]
+    
+    ModuleB["模块 B\nimport A"] --> E[等待 A 完成]
+    E --> D
+```
+
+---
+
+## 4. 机制解释 (Mechanism Explanation)
+
+### 4.1 顶层 await 的执行流程
+
+```mermaid
+flowchart TD
+    A[导入模块] --> B{模块有顶层 await?}
+    B -->|是| C[等待模块异步完成]
+    B -->|否| D[同步加载模块]
+    C --> E[模块导出可用]
+    D --> E
+```
+
+---
+
+## 5. 论证与分析 (Argumentation & Analysis)
+
+### 5.1 顶层 await 的优缺点
+
+| 优点 | 缺点 |
+|------|------|
+| 简化模块初始化 | 阻塞模块导入链 |
+| 无需 IIFE | 可能影响启动性能 |
+| 清晰表达依赖 | 循环依赖检测更复杂 |
+
+---
+
+## 6. 实例与示例 (Examples)
+
+### 6.1 正例：模块初始化
 
 ```javascript
-// module.js
+// config.js
 const response = await fetch("/api/config");
-const config = await response.json();
-
-export { config };
-```
-
----
-
-## 2. 模块加载语义
-
-顶层 await 会阻塞模块图的执行：
-
-```javascript
-// a.js
-console.log("a start");
-await new Promise(resolve => setTimeout(resolve, 100));
-console.log("a end");
-export const value = "a";
-
-// b.js
-import { value } from "./a.js";
-console.log("b", value);
-
-// main.js
-import "./b.js";
-console.log("main");
-
-// 输出：
-// a start
-// a end
-// b a
-// main
-```
-
-### 2.1 模块图阻塞
-
-```javascript
-// utils.js
-export const data = await fetchData(); // 阻塞所有导入 utils 的模块
+export const config = await response.json();
 
 // app.js
-import { data } from "./utils.js"; // 等待 utils.js 的顶层 await 完成
-console.log("app");
-
-// main.js
-import "./app.js"; // 等待 app.js 完成
-console.log("main");
+import { config } from "./config.js";
+// config 已可用，无需 async 函数
+console.log(config.apiUrl);
 ```
 
 ---
 
-## 3. 使用场景
+## 7. 权威参考与国际化对齐 (References)
 
-### 3.1 动态导入
-
-```javascript
-const { default: lodash } = await import("lodash");
-```
-
-### 3.2 初始化
-
-```javascript
-const connection = await createDatabaseConnection();
-export { connection };
-```
-
-### 3.3 资源加载
-
-```javascript
-const config = await (await fetch("/config.json")).json();
-export default config;
-```
-
-### 3.4 条件导入
-
-```javascript
-const env = process.env.NODE_ENV;
-const config = env === "production"
-  ? await import("./config.prod.js")
-  : await import("./config.dev.js");
-export default config.default;
-```
+- **ECMA-262 §16.2.1.4** — Async Modules
+- **MDN: Top-level await** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules#top_level_await
 
 ---
 
-## 4. 注意事项
+## 8. 思维表征总结 (Cognitive Representations)
 
-### 4.1 性能影响
+### 8.1 顶层 await 使用场景
 
-顶层 await 会阻塞依赖该模块的所有模块：
-
-```javascript
-// ❌ 避免在通用工具模块中使用顶层 await
-// utils.js
-export const data = await fetchData(); // 阻塞所有导入 utils 的模块
-
-// ✅ 使用函数延迟加载
-export async function getData() {
-  return await fetchData();
-}
-```
-
-### 4.2 仅适用于模块
-
-```javascript
-// ❌ 脚本中不能使用顶层 await
-<script>
-  const data = await fetch("/api"); // SyntaxError
-</script>
-
-// ✅ 模块中可以使用
-<script type="module">
-  const data = await fetch("/api"); // ✅
-</script>
-```
-
-### 4.3 循环依赖
-
-顶层 await 可能导致循环依赖问题：
-
-```javascript
-// a.js
-import { b } from "./b.js";
-export const a = await Promise.resolve("a");
-
-// b.js
-import { a } from "./a.js"; // 可能死锁！
-export const b = "b";
-```
+| 场景 | 推荐 | 说明 |
+|------|------|------|
+| 模块初始化 | ✅ | 获取配置、建立连接 |
+| 动态导入 | ✅ | `const mod = await import("./mod.js")` |
+| 频繁调用的模块 | ❌ | 影响性能 |
 
 ---
 
-## 5. 浏览器与运行时支持
+## 9. 公理化表述与形式证明 (Axiomatization & Formal Proof)
 
-| 环境 | 支持状态 |
-|------|---------|
-| Chrome 89+ | ✅ |
-| Firefox 89+ | ✅ |
-| Safari 15+ | ✅ |
-| Node.js 14.8+ | ✅（ES Module） |
-| TypeScript 3.8+ | ✅ |
+### 9.1 公理化基础
 
----
+**公理 1（异步模块的等待性）**：
+> 导入包含顶层 await 的模块时，导入语句隐式等待模块初始化完成。
 
-## 6. 降级方案
+### 9.2 定理与证明
 
-```javascript
-// 无顶层 await 的替代方案
-// utils.js
-let _config;
+**定理 1（顶层 await 的模块级阻塞）**：
+> 顶层 await 阻塞当前模块的导出，但不阻塞其他模块的并行加载。
 
-export async function getConfig() {
-  if (!_config) {
-    const res = await fetch("/config.json");
-    _config = await res.json();
-  }
-  return _config;
-}
-```
-
-## 7. 模块加载算法
-
-顶层 await 影响模块加载顺序：
-
-```
-1. 解析模块依赖图
-2. 实例化模块（创建环境记录）
-3. 评估模块（执行模块体）
-   - 遇到顶层 await：暂停当前模块评估
-   - 等待 Promise 解决后继续
-4. 依赖该模块的模块等待其评估完成
-```
-
-## 8. 并发加载
-
-```javascript
-// 并行加载（无依赖）
-const [users, posts] = await Promise.all([
-  import("./users.js"),
-  import("./posts.js")
-]);
-
-// 串行加载（有依赖）
-const config = await import("./config.js");
-const api = await import("./api.js"); // 依赖 config
-```
-
-## 9. 测试中的顶层 await
-
-```javascript
-// test.mjs
-import { describe, it } from "node:test";
-import assert from "node:assert";
-
-const db = await setupTestDatabase();
-
-describe("User API", () => {
-  it("should create user", async () => {
-    const user = await db.createUser({ name: "Alice" });
-    assert.equal(user.name, "Alice");
-  });
-});
-
-await db.cleanup();
-```
+*证明*：
+> ECMA-262 §16.2.1.4 规定模块求值在遇到顶层 await 时暂停，但模块图中的其他独立分支仍可并行求值。
+> ∎
 
 ---
 
-**参考规范**：ECMA-262 §16.2.1.5 TopLevelModuleEvaluationJob
+## 10. 推理链与演绎分析 (Deductive Reasoning Chain)
 
-## 深入理解：引擎实现与优化
+### 10.1 演绎推理
 
-### V8 引擎视角
-
-V8 是 Chrome 和 Node.js 使用的 JavaScript 引擎，其内部实现直接影响本节讨论的机制：
-
-| 组件 | 功能 |
-|------|------|
-| Ignition | 解释器，生成字节码 |
-| Sparkplug | 基线编译器，快速生成本地代码 |
-| Maglev | 中层优化编译器，SSA 形式优化 |
-| TurboFan | 顶层优化编译器，Sea of Nodes |
-
-### 隐藏类与形状
-
-```javascript
-// V8 为相同结构的对象创建隐藏类
-const p1 = { x: 1, y: 2 };
-const p2 = { x: 3, y: 4 };
-// p1 和 p2 共享同一个隐藏类
-
-// 动态添加属性会创建新隐藏类
-p1.z = 3; // 降级为字典模式
+```mermaid
+graph TD
+    A[模块包含顶层 await] --> B[模块标记为异步]
+    B --> C[导入者等待模块完成]
+    C --> D[模块导出可用]
 ```
 
-### 内联缓存（Inline Cache）
+### 10.2 反事实推理
 
-```javascript
-function getX(obj) {
-  return obj.x; // V8 缓存属性偏移
-}
+> **反设**：没有顶层 await。
+> **推演结果**：模块初始化需包裹在 async IIFE 中，代码冗余。
+> **结论**：顶层 await 简化了模块的异步初始化。
 
-getX({ x: 1 }); // 单态（monomorphic）
-getX({ x: 2 }); // 同类型，快速路径
-```
+---
 
-### 性能提示
-
-1. 对象初始化时声明所有属性
-2. 避免动态删除属性
-3. 数组使用连续数字索引
-4. 函数参数类型保持一致
-
-### 相关工具
-
-- Chrome DevTools Performance 面板
-- Node.js `--prof` 和 `--prof-process`
-- V8 flags: `--trace-opt`, `--trace-deopt`
+**参考规范**：ECMA-262 §16.2.1.4 | MDN: Top-level await

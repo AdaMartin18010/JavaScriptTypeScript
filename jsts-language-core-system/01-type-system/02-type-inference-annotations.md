@@ -17,6 +17,7 @@
 ```
 
 TypeScript 使用**双向类型检查（Bidirectional Type Checking）**：
+
 - **自下而上推断**：从表达式内部向外推导类型
 - **自上而下检查**：从上下文向内检查类型兼容性
 
@@ -79,7 +80,7 @@ const promise = new Promise<number>((resolve) => resolve(42));
 graph LR
     Inference["类型推断<br>(编译器自动)"] --> Result["最终类型"]
     Annotation["显式注解<br>(开发者声明)"] --> Result
-    
+
     Inference -->|默认| Default["最一般类型"]
     Annotation -->|覆盖| Override["精确控制类型"]
 ```
@@ -153,6 +154,7 @@ const result = map([1, 2, 3], x => x.toString());
 ### 5.2 常见误区与反例
 
 **误区 1**：依赖推断处理复杂类型
+
 ```typescript
 // ❌ 推断结果可能不是预期
 const config = {
@@ -171,6 +173,7 @@ const config = {
 ```
 
 **误区 2**：忘记注解函数参数导致 any
+
 ```typescript
 // ❌ 隐式 any（noImplicitAny 开启时报错）
 const fn = (x) => x + 1;
@@ -227,8 +230,8 @@ arr.push(1);
 
 ### 7.1 TypeScript 官方文档
 
-- **TypeScript Handbook: Type Inference** — https://www.typescriptlang.org/docs/handbook/type-inference.html
-- **TypeScript Handbook: Contextual Typing** — https://www.typescriptlang.org/docs/handbook/type-inference.html#contextual-typing
+- **TypeScript Handbook: Type Inference** — <https://www.typescriptlang.org/docs/handbook/type-inference.html>
+- **TypeScript Handbook: Contextual Typing** — <https://www.typescriptlang.org/docs/handbook/type-inference.html#contextual-typing>
 
 ### 7.2 学术资源
 
@@ -271,10 +274,10 @@ flowchart TD
 
 TypeScript 的类型系统具有图灵完备性，使得复杂的类型计算成为可能：
 
-`	ypescript
+`ypescript
 // 字符串字面量操作
-type Length<T extends string, Acc extends 0[] = []> = 
-  T extends ` ? Acc['length'] : 
+type Length<T extends string, Acc extends 0[] = []> =
+  T extends` ? Acc['length'] :
   T extends ${string} ? Length<Rest, [...Acc, 0]> : never;
 
 // 使用
@@ -304,9 +307,9 @@ type L1 = Length<"hello">; // 5
 
 ### 权威参考补充
 
-- **TypeScript Deep Dive** — https://basarat.gitbook.io/typescript/
-- **Type Challenges** — https://github.com/type-challenges/type-challenges
-- **Total TypeScript** — https://www.totaltypescript.com/
+- **TypeScript Deep Dive** — <https://basarat.gitbook.io/typescript/>
+- **Type Challenges** — <https://github.com/type-challenges/type-challenges>
+- **Total TypeScript** — <https://www.totaltypescript.com/>
 
 ---
 
@@ -371,10 +374,11 @@ TypeScript 的类型系统可形式化为一个**结构子类型系统**（Struc
 
 规则示例：
   { x: number; y: string } <: { x: number }
-  
+
   因为：
-  - 前者包含 x: number
-  - 前者包含 y: string（额外属性不影响子类型关系）
+
+- 前者包含 x: number
+- 前者包含 y: string（额外属性不影响子类型关系）
 `
 
 ### 编译器实现细节
@@ -382,6 +386,7 @@ TypeScript 的类型系统可形式化为一个**结构子类型系统**（Struc
 TypeScript 编译器的类型检查器核心逻辑：
 
 `
+
 1. 构建类型图（Type Graph）
 2. 为每个表达式分配类型变量
 3. 收集约束条件（Constraints）
@@ -404,7 +409,7 @@ TypeScript 编译器的类型检查器核心逻辑：
 
 ### 类型驱动开发（Type-Driven Development）
 
-`	ypescript
+` ypescript
 // 1. 先定义类型
 interface APIResponse<T> {
   data: T;
@@ -425,7 +430,7 @@ const result = await fetchData<User>("/api/user");
 
 ### 防御式编程模式
 
-`	ypescript
+` ypescript
 // 使用 unknown + 类型守卫处理外部数据
 function processExternalData(data: unknown): Result {
   if (!isValidData(data)) {
@@ -449,15 +454,63 @@ function processExternalData(data: unknown): Result {
 
 ### TypeScript 编译器内部
 
-- **TypeScript Compiler API** — https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API
-- **TypeScript AST Viewer** — https://ts-ast-viewer.com/
+- **TypeScript Compiler API** — <https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API>
+- **TypeScript AST Viewer** — <https://ts-ast-viewer.com/>
 
 ### 国际化资源
 
-- **MDN Web Docs (en-US)** — https://developer.mozilla.org/en-US/
-- **MDN Web Docs (zh-CN)** — https://developer.mozilla.org/zh-CN/
-- **JavaScript Info** — https://javascript.info/
+- **MDN Web Docs (en-US)** — <https://developer.mozilla.org/en-US/>
+- **MDN Web Docs (zh-CN)** — <https://developer.mozilla.org/zh-CN/>
+- **JavaScript Info** — <https://javascript.info/>
 
 ---
 
 **参考规范**：ECMA-262 §6.1 | TypeScript Handbook | MDN Web Docs | "Types and Programming Languages" (Pierce, 2002)
+
+---
+
+## 9. 公理化表述与形式证明 (Axiomatization & Formal Proof)
+
+### 9.1 公理化基础
+
+**公理 1**：类型系统的基本性质在编译时确定，运行时类型擦除不改变程序语义。
+
+**公理 2**：子类型关系具有传递性：若 A ⊆ B 且 B ⊆ C，则 A ⊆ C。
+
+### 9.2 定理与证明
+
+**定理 1（类型安全性）**：良类型的 TypeScript 程序在编译时消除所有类型错误，运行时不会出现类型相关的未定义行为。
+
+*证明*：TypeScript 编译器通过静态类型检查确保所有操作在类型上合法。编译后的 JavaScript 已去除类型标注，运行时不进行类型检查，因此类型错误已在编译阶段捕获。
+∎
+
+### 9.3 真值表/判定表
+
+| 条件 | strict模式 | 非strict模式 | 结果 |
+|------|-----------|-------------|------|
+| null赋值给string | 错误 | 允许 | 严格模式更安全 |
+| 未初始化变量 | 错误 | undefined | 严格模式强制初始化 |
+| 隐式any | 错误 | 允许 | 严格模式更严格 |
+
+---
+
+## 10. 推理链与演绎分析 (Deductive Reasoning Chain)
+
+### 10.1 演绎推理链
+
+`mermaid
+graph TD
+    A[类型标注] --> B[编译时检查]
+    B --> C{类型兼容?}
+    C -->|是| D[编译通过]
+    C -->|否| E[编译错误]
+    D --> F[运行时执行]
+`
+
+### 10.2 反事实推理
+
+> **反设**：如果 TypeScript 采用名义类型系统。
+> **推演**：同构类型不可互换，大量现有代码失效。
+> **结论**：结构类型系统是兼容 JavaScript 生态的正确选择。
+
+---

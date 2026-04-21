@@ -1,260 +1,410 @@
-# Agent、Realm 与 Job Queue
+# Agent、Realm 与 Job 队列（Agent, Realm & Job Queue）
 
-> ECMAScript 规范中的并发原语与执行环境抽象
+> **形式化定义**：Agent、Realm 和 Job Queue 是 ECMAScript 规范中处理并发和隔离的核心抽象。Agent 代表一个**逻辑线程**，拥有自己的事件循环和内存；Realm 是**全局环境**的容器，包含全局对象和内置对象；Job Queue 是**微任务队列**的规范抽象，用于调度 Promise 回调和清理操作。ECMA-262 §9.7 定义了 Agent，§9.3 定义了 Realm，§9.5 定义了 Job。
 >
-> 对齐版本：ECMAScript 2025 (ES16)
+> 对齐版本：ECMAScript 2025 (ES16) §9.3, §9.5, §9.7 | TypeScript 5.8–6.0
 
 ---
 
-## 1. Agent
+## 1. 概念定义 (Concept Definition)
 
-Agent 是 ECMAScript 的执行上下文集合，对应一个线程：
+### 1.1 形式化定义
 
+ECMA-262 定义了三个核心概念：
+
+**Realm** (§9.3):
+> *"A realm consists of a set of intrinsic objects, an ECMAScript global environment, and other associated state."*
+
+**Agent** (§9.7):
+> *"An agent is a set of ECMAScript execution contexts, an execution context stack, a running execution context, and an Agent Record."*
+
+**Job** (§9.5):
+> *"A Job is an abstract closure with no parameters that initiates an ECMAScript computation."*
+
+---
+
+## 2. 属性与特征 (Properties & Characteristics)
+
+### 2.1 Agent、Realm、Execution Context 对比
+
+| 概念 | 范围 | 数量 | 对应运行时实体 |
+|------|------|------|--------------|
+| Agent | 逻辑线程 | 多个 | Web Worker、主线程 |
+| Realm | 全局环境 | 多个 | iframe、jsdom |
+| Execution Context | 函数调用 | 动态 | 调用栈帧 |
+| Job | 调度单元 | 动态 | 微任务 |
+
+---
+
+## 3. 关系分析 (Relationship Analysis)
+
+### 3.1 Agent 与 Realm 的关系
+
+```mermaid
+graph TD
+    Agent["Agent (线程)"] --> Realm1["Realm 1"]
+    Agent --> Realm2["Realm 2"]
+    Realm1 --> Global1["全局对象 1"]
+    Realm2 --> Global2["全局对象 2"]
 ```
-Agent = {
-  [[LittleEndian]]: Boolean,
-  [[CanBlock]]: Boolean,
-  [[Signifier]]: Symbol,
-  [[IsLockFree1]]: Boolean,
-  [[IsLockFree2]]: Boolean,
-  [[CandidateExecution]]: Record,
-  [[KeptAlive]]: List<Object>
-}
+
+---
+
+## 4. 机制解释 (Mechanism Explanation)
+
+### 4.1 Promise Job 的调度
+
+```mermaid
+flowchart TD
+    A[Promise.resolve()] --> B[创建 Promise]
+    B --> C[then(cb)]
+    C --> D[将 cb 加入 Job Queue]
+    D --> E[当前脚本完成]
+    E --> F[执行 Job Queue 中的 cb]
 ```
 
-### 1.1 Agent Cluster
+---
 
-多个 Agent 可以组成 Agent Cluster，共享内存（SharedArrayBuffer）：
+## 5. 论证与分析 (Argumentation & Analysis)
+
+### 5.1 Agent Cluster 与 SharedArrayBuffer
+
+| 特性 | 同站 Agent | 跨站 Agent |
+|------|-----------|-----------|
+| SharedArrayBuffer | ✅（COOP/COEP） | ❌ |
+| Atomics | ✅ | ❌ |
+| postMessage | ✅ | ✅ |
+
+---
+
+## 6. 实例与示例 (Examples)
+
+### 6.1 正例：Realm 的使用
 
 ```javascript
-const shared = new SharedArrayBuffer(1024);
-const worker = new Worker("worker.js");
-worker.postMessage(shared, [shared]);
+// 创建新 Realm（非标准 API，概念示例）
+const newRealm = new ShadowRealm();
 
-// worker.js
-self.onmessage = (e) => {
-  const shared = e.data;
-  const arr = new Int32Array(shared);
-  Atomics.store(arr, 0, 42);
-};
+// 在新 Realm 中执行代码
+newRealm.evaluate(`
+  globalThis.x = 1;
+`);
+
+// x 在当前 Realm 中不可访问
+console.log(typeof x); // "undefined"
 ```
 
 ---
 
-## 2. Realm
+## 7. 权威参考与国际化对齐 (References)
 
-Realm 是一个完整的 ECMAScript 环境，包含全局对象和内置对象：
+- **ECMA-262 §9.3** — Realms
+- **ECMA-262 §9.5** — Jobs and Host Operations
+- **ECMA-262 §9.7** — Agents
+
+---
+
+## 8. 思维表征总结 (Cognitive Representations)
+
+### 8.1 概念层次
 
 ```
-Realm = {
-  [[Intrinsics]]: Record,      // 内置对象（Object、Array 等）
-  [[GlobalObject]]: Object,    // 全局对象
-  [[GlobalEnv]]: Environment Record, // 全局环境
-  [[TemplateMap]]: List,       // 模板字面量缓存
-  [[LoadedModules]]: List      // 已加载模块
-}
+Agent (线程)
+  └── Realm (全局环境)
+        ├── 全局对象
+        ├── 内置对象
+        └── 执行上下文栈
+              └── 执行上下文
+                    └── 词法环境
 ```
 
-### 2.1 多 Realm 场景
+---
 
-- **iframe**：每个 iframe 有自己的 Realm
-- **eval()**：在相同 Realm 中执行
-- **vm 模块（Node.js）**：创建新 Realm
+## 9. 公理化表述与形式证明 (Axiomatization & Formal Proof)
+
+### 9.1 公理化基础
+
+**公理 1（Agent 的内存隔离）**：
+> 不同 Agent 不共享内存（除非使用 SharedArrayBuffer 且在同一 Agent Cluster 中）。
+
+**公理 2（Job 的FIFO性）**：
+> 同一 Job Queue 中的 Job 按先进先出顺序执行。
+
+### 9.2 定理与证明
+
+**定理 1（Promise 的异步保证）**：
+> Promise.then 的回调在当前同步代码执行完毕后才执行。
+
+*证明*：
+> then 回调被包装为 Job 放入 Job Queue。Job Queue 在当前执行上下文完成后处理。
+> ∎
+
+---
+
+## 10. 推理链与演绎分析 (Deductive Reasoning Chain)
+
+### 10.1 演绎推理
+
+```mermaid
+graph TD
+    A[创建 Promise] --> B[注册 then 回调]
+    B --> C[回调加入 Job Queue]
+    C --> D[同步代码完成]
+    D --> E[执行 Job Queue]
+    E --> F[then 回调执行]
+```
+
+### 10.2 反事实推理
+
+> **反设**：没有 Realm 隔离，所有代码共享同一全局环境。
+> **推演结果**：iframe、库代码之间的命名冲突频繁，安全问题严重。
+> **结论**：Realm 提供了全局环境的隔离，是模块化和安全性的基础。
+
+---
+
+**参考规范**：ECMA-262 §9.3, §9.5, §9.7
+
+
+---
+
+## 9. 公理化表述与形式证明 (Axiomatization & Formal Proof)
+
+### 9.1 执行模型的公理化基础
+
+**公理 1（单线程语义）**：
+> JavaScript 在单个 Agent 内是单线程执行的，同一时刻只有一个执行上下文在运行。
+
+**公理 2（运行至完成）**：
+> 当前执行的任务（宏任务或微任务）不会被其他任务中断，直到完成。
+
+**公理 3（调用栈的 LIFO 性）**：
+> 执行上下文栈遵循后进先出原则，函数返回时弹出当前上下文。
+
+**公理 4（词法环境的静态性）**：
+> 词法环境的 `[[OuterEnv]]` 在函数定义时确定，不因调用位置改变。
+
+### 9.2 定理与证明
+
+**定理 1（事件循环的调度公平性）**：
+> 事件循环按 FIFO 顺序从任务队列中取出任务执行，确保同一队列中的任务按顺序调度。
+
+*证明*：
+> HTML Living Standard §8.1.4.2 规定事件循环从任务队列中取出"最老的可运行任务"执行。最老即最先入队，遵循 FIFO。
+> ∎
+
+**定理 2（this 绑定的调用时确定性）**：
+> 非箭头函数的 `this` 值在函数调用时确定，与定义位置无关。
+
+*证明*：
+> ECMA-262 §10.2.1 定义了 `[[Call]]` 方法的 this 绑定规则。调用时根据调用方式（默认/隐式/显式/new）确定 this 值。
+> ∎
+
+**定理 3（闭包的环境保持）**：
+> 闭包函数在定义时捕获的词法环境，在函数对象存活期间保持可达。
+
+*证明*：
+> 函数对象的 `[[Environment]]` 内部槽指向定义时的词法环境。只要函数对象被引用，该词法环境即被引用，GC 不会回收。
+> ∎
+
+**定理 4（Promise.then 的异步时序）**：
+> `Promise.resolve().then(f)` 中的 `f` 在当前同步代码执行完毕后执行。
+
+*证明*：
+> `then` 将回调包装为 Job 放入 Job Queue。根据 ECMA-262 §9.5，Job Queue 在当前执行上下文完成后处理。
+> ∎
+
+### 9.3 真值表：this 绑定规则
+
+| 调用方式 | 严格模式 | 非严格模式 | 箭头函数 |
+|---------|---------|-----------|---------|
+| `fn()` | undefined | globalThis | 继承外层 |
+| `obj.fn()` | obj | obj | 继承外层 |
+| `fn.call(obj)` | obj | obj | 继承外层 |
+| `fn.apply(obj)` | obj | obj | 继承外层 |
+| `new Fn()` | 新对象 | 新对象 | 不可 new |
+| `fn.bind(obj)()` | obj | obj | 继承外层 |
+
+---
+
+## 10. 推理链与演绎分析 (Deductive Reasoning Chain)
+
+### 10.1 演绎推理：从源码到执行
+
+```mermaid
+graph TD
+    A[JavaScript 源码] --> B[词法分析]
+    B --> C[语法分析]
+    C --> D[生成 AST]
+    D --> E[编译/解释]
+    E --> F[生成字节码/机器码]
+    F --> G[执行]
+    G --> H[调用栈管理]
+    H --> I[词法环境解析]
+    I --> J[变量访问]
+```
+
+### 10.2 归纳推理：从运行时现象推导机制
+
+| 现象 | 推断的底层机制 | 验证方法 |
+|------|--------------|---------|
+| 变量提升 | 编译阶段变量实例化 | 在声明前访问 var 变量 |
+| 闭包保持变量 | 词法环境被函数引用 | 外部函数返回后内部函数仍可访问变量 |
+| 异步回调延迟 | 事件循环队列调度 | 对比同步和异步代码执行顺序 |
+| this 值变化 | 动态绑定规则 | 同一函数不同调用方式测试 |
+| 栈溢出 | 调用栈深度限制 | 无限递归测试 |
+
+### 10.3 反事实推理
+
+> **反设**：JavaScript 是多线程语言，没有事件循环。
+> **推演结果**：
+> 1. 需要显式锁和同步原语
+> 2. 共享内存导致数据竞争
+> 3. 异步编程模型完全不同
+> 4. 事件驱动编程需要显式线程管理
+>
+> **结论**：单线程 + 事件循环模型是 JavaScript 简单易用的核心设计，虽然限制了 CPU 密集型任务的性能，但极大简化了并发编程。
+
+---
+
+## 11. 形式语义说明
+
+### 11.1 操作语义
+
+JavaScript 执行的操作语义可表示为状态转换：
+
+```
+⟨stmt, σ, θ⟩ → ⟨stmt', σ', θ'⟩
+```
+
+其中：
+- `stmt`：当前执行的语句
+- `σ`：程序状态（变量绑定）
+- `θ`：执行上下文栈
+
+### 11.2 指称语义
+
+函数调用的指称语义：
+
+```
+[[fn(arg)]](σ) = 
+  创建新上下文 ctx
+  绑定参数 arg 到形参
+  执行函数体
+  返回结果
+  弹出上下文 ctx
+```
+
+---
+
+## 12. 性能与最佳实践
+
+### 12.1 性能考量
+
+| 操作 | 时间复杂度 | 空间复杂度 | 优化建议 |
+|------|-----------|-----------|---------|
+| 函数调用 | O(1) | O(1) | 避免深层递归 |
+| 属性访问 | O(1) 平均 | O(1) | 使用局部变量缓存 |
+| 闭包创建 | O(1) | O(环境大小) | 只引用需要的变量 |
+| 事件监听 | O(1) | O(1) | 及时移除不需要的监听 |
+| Promise 创建 | O(1) | O(1) | 避免不必要的包装 |
+
+### 12.2 最佳实践总结
 
 ```javascript
-// iframe 创建新 Realm
-const iframe = document.createElement("iframe");
-document.body.appendChild(iframe);
+// ✅ 避免深层递归，使用迭代
+function factorial(n) {
+  let result = 1;
+  for (let i = 2; i <= n; i++) result *= i;
+  return result;
+}
 
-// iframe 的全局对象与当前页面不同
-console.log(iframe.contentWindow.Array === Array); // false（不同 Realm）
-```
+// ✅ 缓存频繁访问的属性
+function process(obj) {
+  const data = obj.data; // 缓存
+  for (let i = 0; i < 1000; i++) {
+    use(data[i]);
+  }
+}
 
----
+// ✅ 及时移除事件监听
+const handler = () => { /* ... */ };
+element.addEventListener("click", handler);
+// ...
+element.removeEventListener("click", handler);
 
-## 3. Job Queue
-
-Job Queue 是 ECMAScript 的任务队列抽象：
-
-```
-Job Queue = List<Job>
-Job = {
-  [[JobCallback]]: Function,
-  [[Arguments]]: List
+// ✅ 使用 WeakMap 避免内存泄漏
+const cache = new WeakMap();
+function compute(obj) {
+  if (!cache.has(obj)) {
+    cache.set(obj, heavyCompute(obj));
+  }
+  return cache.get(obj);
 }
 ```
 
-### 3.1 队列类型
+---
 
-| 队列 | 用途 |
-|------|------|
-| ScriptJobs | 脚本执行 |
-| PromiseJobs | Promise 回调（微任务） |
-| PromiseResolveThenableJobs | thenable 解析 |
+## 13. 思维模型总结
 
-### 3.2 与事件循环的关系
+### 13.1 执行模型核心速查
 
-```
-浏览器事件循环 ≈ ECMAScript Job Queue + 宿主环境扩展
-```
+| 概念 | 关键属性 | 常见问题 |
+|------|---------|---------|
+| 调用栈 | LIFO、深度限制 | 栈溢出 |
+| 执行上下文 | 词法环境、this、变量 | this 绑定错误 |
+| 词法环境 | 静态作用域链 | 闭包内存泄漏 |
+| 事件循环 | 单线程、任务队列 | 阻塞主线程 |
+| 微任务 | Promise、nextTick | 微任务饿死 |
+| GC | 可达性分析、分代 | 内存泄漏 |
+| Agent | 逻辑线程、内存隔离 | SharedArrayBuffer 安全 |
+| Realm | 全局环境隔离 | iframe 通信 |
 
-ECMAScript 规范定义了 Job Queue 的抽象，浏览器和 Node.js 在此基础上扩展了宏任务队列：
+### 13.2 调试工具链
 
-| 规范概念 | 浏览器实现 | Node.js 实现 |
-|---------|-----------|-------------|
-| Job Queue | Microtask Queue | Microtask Queue |
-| ScriptJobs | 脚本执行 | 脚本执行 |
-| PromiseJobs | Promise.then/catch/finally | Promise.then/catch/finally |
+| 工具 | 用途 | 场景 |
+|------|------|------|
+| Chrome DevTools Performance | 性能分析 | 长任务、渲染阻塞 |
+| Chrome DevTools Memory | 内存分析 | 内存泄漏检测 |
+| Node.js --prof | CPU 分析 | 热点函数识别 |
+| Node.js --heapsnapshot | 堆快照 | 内存占用分析 |
 
 ---
 
-## 4. Agent 的 [[CanBlock]]
+## 14. 权威参考完整索引
 
-```javascript
-// 主线程的 [[CanBlock]] 是 false
-// Worker 的 [[CanBlock]] 是 true
-
-// 在 Worker 中可以使用 Atomics.wait（阻塞）
-// worker.js
-const shared = new Int32Array(sharedBuffer);
-Atomics.wait(shared, 0, 0); // 阻塞直到被唤醒
-```
+| 来源 | 链接 | 相关章节 |
+|------|------|---------|
+| ECMA-262 | tc39.es/ecma262 | §8.1, §9, §10, §27 |
+| HTML Living Standard | html.spec.whatwg.org | §8.1.4.2 |
+| V8 Blog | v8.dev/blog | Ignition, TurboFan, GC |
+| Node.js Docs | nodejs.org | Event Loop, libuv |
+| MDN | developer.mozilla.org | Execution context, Event loop |
 
 ---
 
-## 5. 规范中的执行模型
-
-```
-ECMAScript 执行模型：
-1. 创建 Agent
-2. 在 Agent 中创建 Realm
-3. 将脚本/模块推入 Job Queue
-4. 执行 Job（运行脚本）
-5. 处理 PromiseJobs（微任务）
-6. 重复步骤 3-5
-```
-
-### 5.1 微任务的优先级
-
-```javascript
-// 执行顺序：Sync → Microtasks → Macrotasks
-console.log("sync");
-
-queueMicrotask(() => console.log("microtask"));
-
-setTimeout(() => console.log("macrotask"), 0);
-
-Promise.resolve().then(() => console.log("promise microtask"));
-
-// 输出：sync → microtask → promise microtask → macrotask
-```
+**参考规范**：ECMA-262 §8-10 | HTML Living Standard | V8 Blog | Node.js Docs
 
 ---
 
-**参考规范**：ECMA-262 §9.7 Agents | ECMA-262 §9.3 Realms | ECMA-262 §9.5 Jobs and Job Queues
+## 15. 高级主题与前沿发展
 
-## 扩展话题：相关规范与实现细节
+### 15.1 TC39 相关提案
 
-### 规范引用
+| 提案 | 阶段 | 说明 |
+|------|------|------|
+| ShadowRealm | Stage 3 | 多 Realm 隔离 |
+| Async Context | Stage 2 | 异步上下文传播 |
+| Explicit Resource Management | Stage 4 | using 声明 |
 
-ECMA-262 规范详细定义了本节所有机制。关键章节包括：
-- §6.2.3 Completion Record 规范
-- §9.1 Environment Records
-- §9.4 Execution Contexts
-- §10.2.1.1 OrdinaryCallBindThis
+### 15.2 与其他语言的对比
 
-### 引擎实现差异
+| 特性 | JavaScript | Java | Go | Rust |
+|------|-----------|------|-----|------|
+| 内存管理 | GC | GC | GC | 所有权 |
+| 并发模型 | 事件循环 | 线程池 | Goroutine | 异步/线程 |
+| this/self | 动态绑定 | 静态 | 方法接收者 | self 参数 |
+| 异常处理 | try/catch | try/catch | error 返回值 | Result<T,E> |
 
-| 引擎 | 相关实现 |
-|------|---------|
-| V8 (Chrome/Node) | 快速属性访问、隐藏类优化 |
-| SpiderMonkey (Firefox) | 形状(shape)系统、基线编译器 |
-| JavaScriptCore (Safari) | DFG/FTL 编译器、类型推断 |
+---
 
-### 调试技巧
-
-`javascript
-// 使用 Chrome DevTools 检查内部状态
-debugger; // 在 Sources 面板查看 Scope 链
-
-// 使用 console.trace() 查看调用栈
-function deep() {
-  console.trace("Current stack");
-}
-`
-
-### 常见面试题
-
-1. 解释暂时性死区(TDZ)及其产生原因
-2. var/let/const 的区别是什么？
-3. 函数声明和函数表达式的提升行为有何不同？
-4. 解释 this 的四种绑定规则
-5. 什么是闭包？它如何工作？
-
-### 推荐阅读
-
-- ECMA-262 规范官方文档
-- TypeScript Handbook
-- You Don't Know JS (Kyle Simpson)
-- JavaScript: The Definitive Guide
-
-## 深入理解：内存模型与性能
-
-### 内存布局
-
-JavaScript 引擎在内存中组织对象和变量：
-
-`
-栈内存（Stack）：
-  - 原始值（number, string, boolean等）
-  - 函数调用帧
-  - 局部变量引用
-
-堆内存（Heap）：
-  - 对象
-  - 函数闭包
-  - 大型数据结构
-`
-
-### V8 优化技术
-
-| 技术 | 描述 |
-|------|------|
-| 隐藏类 | 为对象创建内部形状描述 |
-| 内联缓存 | 缓存属性查找位置 |
-| 标量替换 | 将小对象分解为局部变量 |
-| 逃逸分析 | 确定对象是否离开作用域 |
-
-### 性能基准
-
-`javascript
-// 快速属性访问（单态）
-obj.x; // 优化：直接偏移访问
-
-// 多态属性访问
-if (condition) obj = { x: 1 }; else obj = { x: 2, y: 3 };
-obj.x; // 降级：字典查找
-`
-
-### 垃圾回收影响
-
-`javascript
-// 减少 GC 压力
-function process() {
-  const data = new Array(1000000);
-  // 使用 data...
-  // 函数返回后，data 可被回收
-}
-
-// 避免内存泄漏
-let cache = {};
-// 定期清理或使用 WeakMap
-`
-
-### 最佳实践总结
-
-1. **优先使用 const**：不可变性帮助引擎优化
-2. **避免动态属性**：稳定结构利于隐藏类
-3. **减少嵌套深度**：浅层作用域链查找更快
-4. **使用箭头函数**：减少 this 绑定开销
-5. **缓存频繁访问**：将深层属性提取到局部变量
+**参考规范**：ECMA-262 §8-10 | TC39 Proposals

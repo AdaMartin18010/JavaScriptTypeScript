@@ -1,285 +1,171 @@
-# 同步执行流
+# 同步执行流（Synchronous Flow）
 
-> 同步代码的调用栈可视化与执行顺序分析
+> **形式化定义**：同步执行流是 JavaScript 最基本的执行模式，代码按照书写顺序**逐行执行**，每条语句完成后才执行下一条。在同步模式下，调用栈（Call Stack）依次压入和弹出执行上下文，形成严格的**后进先出（LIFO）**执行顺序。ECMA-262 §9.4 定义了执行上下文栈的管理规则。
 >
-> 对齐版本：ECMAScript 2025 (ES16)
+> 对齐版本：ECMAScript 2025 (ES16) §9.4 | TypeScript 5.8–6.0
 
 ---
 
-## 1. 同步执行基础
+## 1. 概念定义 (Concept Definition)
 
-JavaScript 是**单线程**执行模型，同步代码按顺序逐行执行：
+### 1.1 形式化定义
 
-```javascript
-console.log("1");
-console.log("2");
-console.log("3");
-// 输出：1, 2, 3
-```
-
----
-
-## 2. 调用栈可视化
-
-```javascript
-function a() {
-  console.log("a");
-  b();
-}
-
-function b() {
-  console.log("b");
-  c();
-}
-
-function c() {
-  console.log("c");
-}
-
-a();
-```
-
-调用栈变化：
+同步执行的数学表示：
 
 ```
-Step 1: [main, a]
-Step 2: [main, a, b]
-Step 3: [main, a, b, c]
-Step 4: [main, a, b]    (c returns)
-Step 5: [main, a]        (b returns)
-Step 6: [main]           (a returns)
+同步执行: stmt₁; stmt₂; ...; stmtₙ
+语义: eval(stmt₁) → eval(stmt₂) → ... → eval(stmtₙ)
+```
+
+### 1.2 概念层级图谱
+
+```mermaid
+mindmap
+  root((同步执行流))
+    基本特征
+      顺序执行
+      阻塞调用
+      调用栈管理
+    执行模型
+      语句级顺序
+      表达式求值
+      函数调用链
+    对比
+      异步执行
+      并发模型
 ```
 
 ---
 
-## 3. 执行顺序分析
+## 2. 属性与特征 (Properties & Characteristics)
 
-### 3.1 表达式求值顺序
+### 2.1 同步 vs 异步对比矩阵
 
-```javascript
-const result = foo() + bar() * baz();
-// 求值顺序：foo() → bar() → baz() → * → +
-```
+| 特性 | 同步 | 异步 |
+|------|------|------|
+| 执行顺序 | 严格顺序 | 回调/事件驱动 |
+| 阻塞性 | 阻塞 | 非阻塞 |
+| 错误处理 | try/catch | .catch() / 回调错误参数 |
+| 代码可读性 | 线性 | 回调嵌套或 async/await |
+| 适用场景 | CPU 计算 | I/O 操作 |
 
-### 3.2 运算符优先级与结合性
+---
 
-```javascript
-const x = 1 + 2 * 3;      // 7（* 优先级 > +）
-const y = (1 + 2) * 3;    // 9
+## 3. 关系分析 (Relationship Analysis)
 
-const z = a = b = c = 1;  // 右结合：a = (b = (c = 1))
-```
+### 3.1 同步调用链
 
-### 3.3 短路求值的执行流
-
-```javascript
-const result = true || anything();   // anything() 不会执行
-const result2 = false && anything(); // anything() 不会执行
-
-// 逗号运算符
-const x = (1, 2, 3); // 3（返回最后一个值）
+```mermaid
+graph TD
+    A[main()] --> B[fn1()]
+    B --> C[fn2()]
+    C --> D[fn3()]
+    D --> E[return]
+    E --> F[return fn2]
+    F --> G[return fn1]
+    G --> H[return main]
 ```
 
 ---
 
-## 4. 异常对执行流的影响
+## 4. 机制解释 (Mechanism Explanation)
 
-### 4.1 throw 时的栈展开
+### 4.1 同步执行流程
 
-```javascript
-function c() { throw new Error("Oops"); }
-function b() { c(); }
-function a() { b(); }
-
-try {
-  a();
-} catch (e) {
-  console.log(e.stack);
-  // Error: Oops
-  //   at c (...)
-  //   at b (...)
-  //   at a (...)
-}
-```
-
-### 4.2 try/catch/finally 的执行顺序
-
-```javascript
-function test() {
-  try {
-    console.log("try");
-    throw new Error("err");
-  } catch (e) {
-    console.log("catch");
-  } finally {
-    console.log("finally");
-  }
-}
-// 输出：try → catch → finally
-```
-
-### 4.3 finally 中的 return
-
-```javascript
-function test() {
-  try {
-    return "try";
-  } finally {
-    return "finally"; // 覆盖 try 的返回值
-  }
-}
-console.log(test()); // "finally"
+```mermaid
+flowchart TD
+    A[语句 1] --> B[执行完成]
+    B --> C[语句 2]
+    C --> D[执行完成]
+    D --> E[语句 3]
+    E --> F[执行完成]
 ```
 
 ---
 
-## 5. 块级作用域与同步执行
+## 5. 论证与分析 (Argumentation & Analysis)
 
-```javascript
-{
-  const x = 1;
-  let y = 2;
-  console.log(x + y); // 3
-}
-// x 和 y 在此处不可访问
-```
+### 5.1 同步执行的优缺点
 
----
-
-## 6. 调试技巧
-
-### 6.1 debugger 语句
-
-```javascript
-function complex() {
-  const a = 1;
-  debugger; // 执行到这里会暂停（如果 DevTools 打开）
-  const b = a + 2;
-  return b;
-}
-```
-
-### 6.2 断点与单步执行
-
-- **Step Over (F10)**：执行当前行，不进入函数内部
-- **Step Into (F11)**：进入函数内部
-- **Step Out (Shift+F11)**：执行完当前函数并跳出
-
----
-
-## 7. 同步阻塞的代价
-
-```javascript
-// 同步阻塞代码会冻结 UI
-function heavyComputation() {
-  const start = Date.now();
-  while (Date.now() - start < 5000) {
-    // 阻塞 5 秒
-  }
-}
-// 在浏览器中会冻结页面，在 Node.js 中会阻塞事件循环
-```
-
-## 8. 严格模式对执行流的影响
-
-```javascript
-"use strict";
-
-function test() {
-  // this 不再指向全局对象
-  console.log(this); // undefined
-}
-
-test();
-```
-
-严格模式改变了几种执行行为：
-
-- 禁止隐式全局变量创建
-- `this` 不自动装箱
-- 禁止 `with` 语句
-- 禁止重复参数名
-
-## 9. 执行上下文栈（Call Stack）
-
-```javascript
-function a() { b(); }
-function b() { c(); }
-function c() {
-  console.trace();
-  // c
-  // b
-  // a
-  // (anonymous)
-}
-
-a();
-```
-
-每个函数调用创建一个新的**执行上下文**，压入调用栈。
-
-## 10. 同步 vs 异步的边界
-
-```javascript
-console.log("A");              // 同步
-setTimeout(() => console.log("B"), 0); // 异步，加入任务队列
-Promise.resolve().then(() => console.log("C")); // 微任务
-console.log("D");              // 同步
-
-// 输出：A → D → C → B
-```
-
-同步代码总是在异步代码之前完成。
-
----
-
-**参考规范**：ECMA-262 §9.4 Execution Contexts
-
-## 深入理解：引擎实现与优化
-
-### V8 引擎视角
-
-V8 是 Chrome 和 Node.js 使用的 JavaScript 引擎，其内部实现直接影响本节讨论的机制：
-
-| 组件 | 功能 |
+| 优点 | 缺点 |
 |------|------|
-| Ignition | 解释器，生成字节码 |
-| Sparkplug | 基线编译器，快速生成本地代码 |
-| Maglev | 中层优化编译器，SSA 形式优化 |
-| TurboFan | 顶层优化编译器，Sea of Nodes |
+| 代码直观、易调试 | I/O 操作阻塞主线程 |
+| 错误处理简单 | 无法并发处理多个任务 |
+| 状态一致性好 | 用户体验差（UI 卡顿） |
 
-### 隐藏类与形状
+---
 
-```javascript
-// V8 为相同结构的对象创建隐藏类
-const p1 = { x: 1, y: 2 };
-const p2 = { x: 3, y: 4 };
-// p1 和 p2 共享同一个隐藏类
+## 6. 实例与示例 (Examples)
 
-// 动态添加属性会创建新隐藏类
-p1.z = 3; // 降级为字典模式
-```
-
-### 内联缓存（Inline Cache）
+### 6.1 正例：同步计算
 
 ```javascript
-function getX(obj) {
-  return obj.x; // V8 缓存属性偏移
+function calculate() {
+  const a = 1 + 2;      // 3
+  const b = a * 3;      // 9
+  const c = b - 4;      // 5
+  return c;
 }
 
-getX({ x: 1 }); // 单态（monomorphic）
-getX({ x: 2 }); // 同类型，快速路径
+console.log(calculate()); // 5
 ```
 
-### 性能提示
+---
 
-1. 对象初始化时声明所有属性
-2. 避免动态删除属性
-3. 数组使用连续数字索引
-4. 函数参数类型保持一致
+## 7. 权威参考与国际化对齐 (References)
 
-### 相关工具
+- **ECMA-262 §9.4** — Execution Contexts
+- **MDN: Event Loop** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop
 
-- Chrome DevTools Performance 面板
-- Node.js `--prof` 和 `--prof-process`
-- V8 flags: `--trace-opt`, `--trace-deopt`
+---
+
+## 8. 思维表征总结 (Cognitive Representations)
+
+### 8.1 同步执行模型
+
+```
+同步执行: A → B → C → D
+每个步骤完成后才执行下一步
+```
+
+---
+
+## 9. 公理化表述与形式证明 (Axiomatization & Formal Proof)
+
+### 9.1 公理化基础
+
+**公理 1（顺序执行）**：
+> 同步代码按书写顺序执行，前一条语句完成后才执行后一条。
+
+### 9.2 定理与证明
+
+**定理 1（同步执行的可预测性）**：
+> 给定相同的输入，同步代码总是产生相同的输出和副作用顺序。
+
+*证明*：
+> 同步代码没有并发竞争条件，执行顺序完全由代码结构决定。
+> ∎
+
+---
+
+## 10. 推理链与演绎分析 (Deductive Reasoning Chain)
+
+### 10.1 演绎推理
+
+```mermaid
+graph TD
+    A[同步函数调用] --> B[压入调用栈]
+    B --> C[执行函数体]
+    C --> D[弹出调用栈]
+    D --> E[返回结果]
+```
+
+### 10.2 反事实推理
+
+> **反设**：JavaScript 没有同步执行模式。
+> **推演结果**：所有操作都需异步回调，最简单的计算也变得复杂。
+> **结论**：同步执行是编程语言的基础，异步是对同步的扩展。
+
+---
+
+**参考规范**：ECMA-262 §9.4 | MDN: Event Loop

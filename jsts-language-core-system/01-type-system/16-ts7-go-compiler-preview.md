@@ -196,6 +196,7 @@ type EventName<T extends string> = `on${Capitalize<T>}`;
 ### 7.2 Node.js API 依赖
 
 当前 tsc 依赖 Node.js 的文件系统 API，Go 版本需要：
+
 - 自己实现文件系统抽象
 - 处理跨平台路径
 - 支持符号链接和循环引用
@@ -292,10 +293,11 @@ TypeScript 的类型系统可形式化为一个**结构子类型系统**（Struc
 
 规则示例：
   { x: number; y: string } <: { x: number }
-  
+
   因为：
-  - 前者包含 x: number
-  - 前者包含 y: string（额外属性不影响子类型关系）
+
+- 前者包含 x: number
+- 前者包含 y: string（额外属性不影响子类型关系）
 `
 
 ### 编译器实现细节
@@ -303,6 +305,7 @@ TypeScript 的类型系统可形式化为一个**结构子类型系统**（Struc
 TypeScript 编译器的类型检查器核心逻辑：
 
 `
+
 1. 构建类型图（Type Graph）
 2. 为每个表达式分配类型变量
 3. 收集约束条件（Constraints）
@@ -325,7 +328,7 @@ TypeScript 编译器的类型检查器核心逻辑：
 
 ### 类型驱动开发（Type-Driven Development）
 
-`	ypescript
+` ypescript
 // 1. 先定义类型
 interface APIResponse<T> {
   data: T;
@@ -346,7 +349,7 @@ const result = await fetchData<User>("/api/user");
 
 ### 防御式编程模式
 
-`	ypescript
+` ypescript
 // 使用 unknown + 类型守卫处理外部数据
 function processExternalData(data: unknown): Result {
   if (!isValidData(data)) {
@@ -370,14 +373,14 @@ function processExternalData(data: unknown): Result {
 
 ### TypeScript 编译器内部
 
-- **TypeScript Compiler API** — https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API
-- **TypeScript AST Viewer** — https://ts-ast-viewer.com/
+- **TypeScript Compiler API** — <https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API>
+- **TypeScript AST Viewer** — <https://ts-ast-viewer.com/>
 
 ### 国际化资源
 
-- **MDN Web Docs (en-US)** — https://developer.mozilla.org/en-US/
-- **MDN Web Docs (zh-CN)** — https://developer.mozilla.org/zh-CN/
-- **JavaScript Info** — https://javascript.info/
+- **MDN Web Docs (en-US)** — <https://developer.mozilla.org/en-US/>
+- **MDN Web Docs (zh-CN)** — <https://developer.mozilla.org/zh-CN/>
+- **JavaScript Info** — <https://javascript.info/>
 
 ---
 
@@ -397,6 +400,7 @@ function processExternalData(data: unknown): Result {
 | 依赖类型 | Idris, Agda | 类型可依赖值 |
 
 TypeScript 选择**渐进类型**路线的原因：
+
 1. **与 JavaScript 生态兼容**：零成本迁移
 2. **灵活性**：从松散到严格的渐进路径
 3. **开发者体验**：推断减少样板代码
@@ -412,6 +416,7 @@ TypeScript 选择**渐进类型**路线的原因：
 ```
 
 TypeScript 的类型系统接近 **System F_ω** 的子集，支持：
+
 - 参数多态（泛型）
 - 高阶类型（有限的）
 - 条件类型（类型级计算）
@@ -433,11 +438,13 @@ function greet(name) {
 ```
 
 **优点**：
+
 - 零运行时开销
 - 与 JavaScript 完全互操作
 - 生成的代码可读
 
 **缺点**：
+
 - 运行时无法进行类型检查
 - 反射能力有限
 - 需要外部验证（如 zod, io-ts）
@@ -509,7 +516,7 @@ mindmap
 
 TypeScript 原生支持 ECMAScript Intl API 的类型定义：
 
-`	ypescript
+` ypescript
 // 日期格式化
 const date = new Date();
 const formatter = new Intl.DateTimeFormat("zh-CN", {
@@ -530,7 +537,7 @@ console.log(numberFormatter.format(number)); // "1.234.567,89 €"
 
 ### Unicode 与字符串处理
 
-`	ypescript
+` ypescript
 // Unicode 属性转义（ES2018）
 const regex = /\p{Script=Han}/gu; // 匹配汉字
 const text = "Hello 世界";
@@ -556,3 +563,69 @@ console.log(str1 === str2.normalize()); // true
 ---
 
 **最终对齐**：ECMA-262 §6.1–§10 | TypeScript 5.8 Handbook | MDN Web Docs
+
+---
+
+## 9. 公理化表述与形式证明 (Axiomatization & Formal Proof)
+
+### 9.1 公理化基础
+
+**公理 1（类型安全性公理）**：良类型的程序在编译时消除所有类型错误，运行时不会出现类型相关的未定义行为。
+
+**公理 2（子类型传递性）**：若 A extends B 且 B extends C，则 A extends C。
+
+**公理 3（结构等价）**：两个类型若具有相同的结构（属性名和类型），则它们等价，无论声明位置。
+
+### 9.2 定理与证明
+
+**定理 1（编译时类型完备性）**：TypeScript 编译器在编译阶段可检测所有类型不匹配错误。
+
+*证明*：TypeScript 采用完整的类型检查算法，对变量赋值、函数调用、对象访问等操作进行静态验证。任何类型不匹配都会在编译时报告为错误。
+∎
+
+**定理 2（类型擦除保持语义）**：编译后的 JavaScript 与原始 TypeScript 在运行时行为一致（忽略类型相关代码）。
+
+*证明*：TypeScript 的编译过程仅移除类型标注和接口声明，不改变运行时逻辑。所有运行时行为由生成的 JavaScript 决定。
+∎
+
+### 9.3 真值表/判定表
+
+| 场景 | strictNullChecks: off | strictNullChecks: on | 推荐设置 |
+|------|----------------------|---------------------|---------|
+| null 赋值给 string | ✅ 允许 | ❌ 错误 | on |
+| 未初始化变量 | ✅ undefined | ❌ 错误 | on |
+| 隐式 any | ✅ 允许 | ❌ 错误 | on |
+| 可选参数未传 | ✅ undefined | ✅ undefined | — |
+
+---
+
+## 10. 推理链与演绎分析 (Deductive Reasoning Chain)
+
+### 10.1 演绎推理：从代码到类型安全
+
+`mermaid
+graph TD
+    A[编写 TypeScript 代码] --> B[添加类型标注]
+    B --> C[编译器类型检查]
+    C --> D{检查通过?}
+    D -->|是| E[生成 JavaScript]
+    D -->|否| F[修复类型错误]
+    F --> C
+    E --> G[运行时执行]
+`
+
+### 10.2 归纳推理：从运行时错误推导类型问题
+
+| 运行时错误 | 根源类型问题 | TypeScript 解决方案 |
+|-----------|------------|-------------------|
+| Cannot read property of undefined | null/undefined 未检查 | strictNullChecks |
+| x is not a function | 类型标注过宽 | 精确函数类型 |
+| Expected N arguments | 参数数量不匹配 | 严格函数参数 |
+
+### 10.3 反事实推理
+
+> **反设**：如果 TypeScript 采用名义类型系统而非结构类型系统。
+> **推演结果**：同构接口不可互换，大量现有代码失效，迁移成本极高。
+> **结论**：结构类型系统是兼容 JavaScript 生态的正确权衡。
+
+---

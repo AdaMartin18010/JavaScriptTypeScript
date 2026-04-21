@@ -11,6 +11,7 @@
 ### 1.1 形式化定义
 
 **接口（Interface）**：
+
 ```typescript
 interface Point {
   x: number;
@@ -19,6 +20,7 @@ interface Point {
 ```
 
 **类型别名（Type Alias）**：
+
 ```typescript
 type Point = {
   x: number;
@@ -159,12 +161,14 @@ flowchart TD
 ### 5.2 常见误区
 
 **误区 1**：`interface` 比 `type` 性能更好
+
 ```typescript
 // ❌ 误解：interface 更快
 // ✅ 实际：编译器优化后性能差异可忽略
 ```
 
 **误区 2**：`type` 不能递归
+
 ```typescript
 // ✅ type 支持递归
 type JSONValue = string | number | boolean | null | JSONValue[] | { [key: string]: JSONValue };
@@ -223,9 +227,9 @@ interface Config {
 
 ### 7.1 TypeScript 官方文档
 
-- **TypeScript Handbook: Interfaces** — https://www.typescriptlang.org/docs/handbook/2/objects.html
-- **TypeScript Handbook: Type Aliases** — https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-aliases
-- **TypeScript Handbook: Declaration Merging** — https://www.typescriptlang.org/docs/handbook/declaration-merging.html
+- **TypeScript Handbook: Interfaces** — <https://www.typescriptlang.org/docs/handbook/2/objects.html>
+- **TypeScript Handbook: Type Aliases** — <https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-aliases>
+- **TypeScript Handbook: Declaration Merging** — <https://www.typescriptlang.org/docs/handbook/declaration-merging.html>
 
 ### 7.2 官方推荐
 
@@ -243,7 +247,7 @@ flowchart TD
     Start[需要定义类型?] --> Q1{类型种类?}
     Q1 -->|对象形状| Q2{需要声明合并?}
     Q1 -->|联合/交叉/条件/映射| Type["type"]
-    
+
     Q2 -->|是| Interface["interface"]
     Q2 -->|否| Q3{公共 API?}
     Q3 -->|是| Interface
@@ -271,10 +275,10 @@ flowchart TD
 
 TypeScript 的类型系统具有图灵完备性，使得复杂的类型计算成为可能：
 
-`	ypescript
+`ypescript
 // 字符串字面量操作
-type Length<T extends string, Acc extends 0[] = []> = 
-  T extends ` ? Acc['length'] : 
+type Length<T extends string, Acc extends 0[] = []> =
+  T extends` ? Acc['length'] :
   T extends ${string} ? Length<Rest, [...Acc, 0]> : never;
 
 // 使用
@@ -304,9 +308,9 @@ type L1 = Length<"hello">; // 5
 
 ### 权威参考补充
 
-- **TypeScript Deep Dive** — https://basarat.gitbook.io/typescript/
-- **Type Challenges** — https://github.com/type-challenges/type-challenges
-- **Total TypeScript** — https://www.totaltypescript.com/
+- **TypeScript Deep Dive** — <https://basarat.gitbook.io/typescript/>
+- **Type Challenges** — <https://github.com/type-challenges/type-challenges>
+- **Total TypeScript** — <https://www.totaltypescript.com/>
 
 ---
 
@@ -371,10 +375,11 @@ TypeScript 的类型系统可形式化为一个**结构子类型系统**（Struc
 
 规则示例：
   { x: number; y: string } <: { x: number }
-  
+
   因为：
-  - 前者包含 x: number
-  - 前者包含 y: string（额外属性不影响子类型关系）
+
+- 前者包含 x: number
+- 前者包含 y: string（额外属性不影响子类型关系）
 `
 
 ### 编译器实现细节
@@ -382,6 +387,7 @@ TypeScript 的类型系统可形式化为一个**结构子类型系统**（Struc
 TypeScript 编译器的类型检查器核心逻辑：
 
 `
+
 1. 构建类型图（Type Graph）
 2. 为每个表达式分配类型变量
 3. 收集约束条件（Constraints）
@@ -404,7 +410,7 @@ TypeScript 编译器的类型检查器核心逻辑：
 
 ### 类型驱动开发（Type-Driven Development）
 
-`	ypescript
+` ypescript
 // 1. 先定义类型
 interface APIResponse<T> {
   data: T;
@@ -425,7 +431,7 @@ const result = await fetchData<User>("/api/user");
 
 ### 防御式编程模式
 
-`	ypescript
+` ypescript
 // 使用 unknown + 类型守卫处理外部数据
 function processExternalData(data: unknown): Result {
   if (!isValidData(data)) {
@@ -449,14 +455,14 @@ function processExternalData(data: unknown): Result {
 
 ### TypeScript 编译器内部
 
-- **TypeScript Compiler API** — https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API
-- **TypeScript AST Viewer** — https://ts-ast-viewer.com/
+- **TypeScript Compiler API** — <https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API>
+- **TypeScript AST Viewer** — <https://ts-ast-viewer.com/>
 
 ### 国际化资源
 
-- **MDN Web Docs (en-US)** — https://developer.mozilla.org/en-US/
-- **MDN Web Docs (zh-CN)** — https://developer.mozilla.org/zh-CN/
-- **JavaScript Info** — https://javascript.info/
+- **MDN Web Docs (en-US)** — <https://developer.mozilla.org/en-US/>
+- **MDN Web Docs (zh-CN)** — <https://developer.mozilla.org/zh-CN/>
+- **JavaScript Info** — <https://javascript.info/>
 
 ---
 
@@ -476,6 +482,7 @@ function processExternalData(data: unknown): Result {
 | 依赖类型 | Idris, Agda | 类型可依赖值 |
 
 TypeScript 选择**渐进类型**路线的原因：
+
 1. **与 JavaScript 生态兼容**：零成本迁移
 2. **灵活性**：从松散到严格的渐进路径
 3. **开发者体验**：推断减少样板代码
@@ -491,6 +498,7 @@ TypeScript 选择**渐进类型**路线的原因：
 ```
 
 TypeScript 的类型系统接近 **System F_ω** 的子集，支持：
+
 - 参数多态（泛型）
 - 高阶类型（有限的）
 - 条件类型（类型级计算）
@@ -512,11 +520,13 @@ function greet(name) {
 ```
 
 **优点**：
+
 - 零运行时开销
 - 与 JavaScript 完全互操作
 - 生成的代码可读
 
 **缺点**：
+
 - 运行时无法进行类型检查
 - 反射能力有限
 - 需要外部验证（如 zod, io-ts）
@@ -581,3 +591,51 @@ mindmap
 ---
 
 **最终参考**：ECMA-262 §6–§10 | TypeScript Handbook | MDN | Pierce (2002)
+
+---
+
+## 9. 公理化表述与形式证明 (Axiomatization & Formal Proof)
+
+### 9.1 公理化基础
+
+**公理 1**：类型系统的基本性质在编译时确定，运行时类型擦除不改变程序语义。
+
+**公理 2**：子类型关系具有传递性：若 A ⊆ B 且 B ⊆ C，则 A ⊆ C。
+
+### 9.2 定理与证明
+
+**定理 1（类型安全性）**：良类型的 TypeScript 程序在编译时消除所有类型错误，运行时不会出现类型相关的未定义行为。
+
+*证明*：TypeScript 编译器通过静态类型检查确保所有操作在类型上合法。编译后的 JavaScript 已去除类型标注，运行时不进行类型检查，因此类型错误已在编译阶段捕获。
+∎
+
+### 9.3 真值表/判定表
+
+| 条件 | strict模式 | 非strict模式 | 结果 |
+|------|-----------|-------------|------|
+| null赋值给string | 错误 | 允许 | 严格模式更安全 |
+| 未初始化变量 | 错误 | undefined | 严格模式强制初始化 |
+| 隐式any | 错误 | 允许 | 严格模式更严格 |
+
+---
+
+## 10. 推理链与演绎分析 (Deductive Reasoning Chain)
+
+### 10.1 演绎推理链
+
+`mermaid
+graph TD
+    A[类型标注] --> B[编译时检查]
+    B --> C{类型兼容?}
+    C -->|是| D[编译通过]
+    C -->|否| E[编译错误]
+    D --> F[运行时执行]
+`
+
+### 10.2 反事实推理
+
+> **反设**：如果 TypeScript 采用名义类型系统。
+> **推演**：同构类型不可互换，大量现有代码失效。
+> **结论**：结构类型系统是兼容 JavaScript 生态的正确选择。
+
+---

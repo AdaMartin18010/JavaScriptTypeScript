@@ -1,291 +1,188 @@
-# async/await 转换原理
+# async/await 转换（Async/Await Transformation）
 
-> async 函数的编译转换与执行步骤可视化
+> **形式化定义**：async/await 是 ECMAScript 2017（ES8）引入的语法糖，将基于 Promise 的异步代码转换为看似同步的写法。`async function` 隐式返回 Promise，`await` 表达式暂停 async 函数执行并等待 Promise 完成。ECMA-262 §15.8 定义了 async 函数的语义，其底层实现依赖于生成器（Generator）和 Promise 的组合。
 >
-> 对齐版本：ECMAScript 2025 (ES16)
+> 对齐版本：ECMAScript 2025 (ES16) §15.8 | TypeScript 5.8–6.0
 
 ---
 
-## 1. async 函数的本质
+## 1. 概念定义 (Concept Definition)
 
-`async` 函数编译为**状态机 + Promise**：
+### 1.1 形式化定义
 
-```javascript
-async function example() {
-  const a = await fetchA();
-  const b = await fetchB();
+async/await 的语法转换：
+
+```
+async function f() {
+  const a = await p1;
+  const b = await p2;
   return a + b;
 }
 
-// 大致等价于：
-function example() {
+// 等效于：
+function f() {
   return new Promise((resolve, reject) => {
-    let state = 0;
-    let a;
-    
-    function step(value) {
-      try {
-        switch (state) {
-          case 0:
-            state = 1;
-            fetchA().then(step, reject);
-            break;
-          case 1:
-            a = value;
-            state = 2;
-            fetchB().then(step, reject);
-            break;
-          case 2:
-            resolve(a + value);
-            break;
-        }
-      } catch (e) {
-        reject(e);
-      }
-    }
-    
-    step();
+    p1.then(a => {
+      p2.then(b => {
+        resolve(a + b);
+      }).catch(reject);
+    }).catch(reject);
   });
 }
 ```
 
 ---
 
-## 2. await 的执行步骤
+## 2. 属性与特征 (Properties & Characteristics)
 
-### 2.1 精确语义
+### 2.1 async/await 属性矩阵
 
-`await x` 的执行步骤（ECMA-262 规范）：
+| 特性 | async/await | Promise.then | 回调 |
+|------|------------|--------------|------|
+| 可读性 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ |
+| 错误处理 | try/catch | .catch() | 回调参数 |
+| 调试友好 | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ |
+| 性能 | 相同（语法糖） | 相同 | 略好 |
+| 浏览器支持 | 现代浏览器 | 更广泛 | 全部 |
 
-1. 计算表达式 `x` 的值
-2. 如果值不是 Thenable，包装为 resolved Promise
-3. 如果是 Thenable，调用其 `.then()` 方法
-4. **暂停当前 async 函数的执行**
-5. 将后续代码作为微任务注册
-6. 当 Promise 解决后，恢复执行
+---
 
-```javascript
-async function demo() {
-  console.log("A");
-  await 1;              // 1 不是 Thenable，包装为 Promise.resolve(1)
-  console.log("B");     // 作为微任务执行
-}
+## 3. 关系分析 (Relationship Analysis)
 
-demo();
-console.log("C");
+### 3.1 async/await 与 Promise 的关系
 
-// 输出：A → C → B
-```
-
-### 2.2 await 的展开
-
-```javascript
-// await x 等价于：
-Promise.resolve(x).then(value => /* 后续代码 */)
-```
-
-### 2.3 await vs 直接返回 Promise
-
-```javascript
-// ❌ 反模式：不必要的 await
-async function fetchData() {
-  return await fetch("/api/data"); // 多余，因为 async 函数已经返回 Promise
-}
-
-// ✅ 直接返回
-async function fetchData() {
-  return fetch("/api/data");
-}
-```
-
-**例外**：在 try-catch 中，`await` 可以捕获同步和异步错误：
-
-```javascript
-// ✅ 需要 await 来捕获两种错误
-async function safeFetch() {
-  try {
-    const response = await fetch("/api/data");
-    return await response.json();
-  } catch (e) {
-    // 捕获 fetch 和 .json() 的错误
-    return null;
-  }
-}
+```mermaid
+graph TD
+    AsyncAwait["async/await"] --> Generator["生成器"]
+    AsyncAwait --> Promise["Promise"]
+    Generator --> Yield["yield"]
+    Promise --> Then["then/catch"]
 ```
 
 ---
 
-## 3. 执行流程可视化
+## 4. 机制解释 (Mechanism Explanation)
 
-### 3.1 经典题目
+### 4.1 async/await 的执行流程
 
-```javascript
-async function async1() {
-  console.log("async1 start");
-  await async2();
-  console.log("async1 end");
-}
-
-async function async2() {
-  console.log("async2");
-}
-
-console.log("script start");
-async1();
-console.log("script end");
-
-// 输出：
-// script start
-// async1 start
-// async2
-// script end
-// async1 end
-```
-
-**步骤分解**：
-1. `"script start"` — 同步
-2. `async1()` 调用 — 同步执行到第一个 await
-3. `"async1 start"` — 同步
-4. `await async2()` — `async2()` 同步执行 → `"async2"`
-5. `await` 将 `"async1 end"` 作为微任务入队
-6. `"script end"` — 同步
-7. 微任务 checkpoint → `"async1 end"`
-
-### 3.2 多个 await 的竞争
-
-```javascript
-async function test() {
-  console.log("A");
-  await Promise.resolve();
-  console.log("B");
-  await Promise.resolve();
-  console.log("C");
-}
-
-test();
-Promise.resolve().then(() => console.log("D"));
-Promise.resolve().then(() => console.log("E"));
-
-// 输出：A → D → B → E → C
-```
-
-**分析**：`test()` 先执行，`await` 将 `"B"` 注册为微任务。然后外部注册 `"D"` 和 `"E"`。微任务队列顺序：`["B", "D", "E"]`。
-
----
-
-## 4. 错误传播
-
-### 4.1 throw 自动包装为 reject
-
-```javascript
-async function mightFail() {
-  throw new Error("Oops"); // 等效于 return Promise.reject(new Error("Oops"))
-}
-
-async function caller() {
-  try {
-    await mightFail();
-  } catch (e) {
-    console.log(e.message); // "Oops"
-  }
-}
-```
-
-### 4.2 同步错误与异步错误统一捕获
-
-```javascript
-async function unifiedErrorHandling() {
-  try {
-    // 同步错误
-    if (!isValid()) throw new Error("Invalid");
-    
-    // 异步错误
-    await fetch("/api/data");
-  } catch (e) {
-    // 统一捕获两种错误
-    console.error(e);
-  }
-}
-```
-
-### 4.3 未捕获的异常
-
-```javascript
-async function unhandled() {
-  throw new Error("Unhandled");
-}
-
-unhandled(); // 触发 unhandledrejection 事件
-
-// ✅ 始终 await 或 .catch
-unhandled().catch(e => console.error(e));
+```mermaid
+flowchart TD
+    A[调用 async 函数] --> B[返回 Promise]
+    B --> C[执行到 await]
+    C --> D[暂停函数执行]
+    D --> E[等待 Promise 完成]
+    E --> F{结果?}
+    F -->|fulfilled| G[恢复执行，返回 value]
+    F -->|rejected| H[抛出异常]
+    G --> I[继续执行或返回]
+    H --> J[catch 或传播]
 ```
 
 ---
 
-## 5. 并发控制
+## 5. 论证与分析 (Argumentation & Analysis)
 
-### 5.1 串行 vs 并行
+### 5.1 async/await 常见陷阱
+
+| 陷阱 | 示例 | 修复 |
+|------|------|------|
+| 忘记 await | `const x = asyncFn()` | `const x = await asyncFn()` |
+| 串行执行可并行 | `await a(); await b()` | `await Promise.all([a(), b()])` |
+| 顶级 await | 模块中直接使用 | ES2022 支持 |
+| try/catch 范围过大 | 包裹过多代码 | 精细化错误处理 |
+
+---
+
+## 6. 实例与示例 (Examples)
+
+### 6.1 正例：顺序执行
 
 ```javascript
-// ❌ 串行（慢）
-async function sequential() {
-  const user = await fetchUser();     // 100ms
-  const posts = await fetchPosts();   // 100ms
-  return { user, posts };             // 200ms
+async function getUserData(userId) {
+  const user = await fetchUser(userId);
+  const posts = await fetchPosts(user.id);
+  const comments = await fetchComments(posts[0].id);
+  return { user, posts, comments };
 }
+```
 
-// ✅ 并行（快）
-async function parallel() {
-  const [user, posts] = await Promise.all([
+### 6.2 正例：并行执行
+
+```javascript
+async function getDashboard() {
+  const [user, posts, notifications] = await Promise.all([
     fetchUser(),
-    fetchPosts()
-  ]); // ~100ms
-  return { user, posts };
-}
-```
-
-### 5.2 混合模式
-
-```javascript
-async function mixed() {
-  const user = await fetchUser(); // 必须先获取用户
-  
-  // 并行获取该用户的数据
-  const [posts, settings] = await Promise.all([
-    fetchPosts(user.id),
-    fetchSettings(user.id)
+    fetchPosts(),
+    fetchNotifications()
   ]);
-  
-  return { user, posts, settings };
+  return { user, posts, notifications };
 }
 ```
 
 ---
 
-## 6. ES2025 Promise.try
+## 7. 权威参考与国际化对齐 (References)
 
-ES2025 新增的 `Promise.try` 简化了同步/异步统一的错误处理：
-
-```javascript
-// ❌ 以前
-async function safeCall(fn) {
-  try {
-    return await fn();
-  } catch (e) {
-    return handleError(e);
-  }
-}
-
-// ✅ ES2025
-Promise.try(() => {
-  if (Math.random() > 0.5) throw new Error("Sync error");
-  return fetchData();
-})
-.then(result => console.log(result))
-.catch(error => console.error(error));
-```
+- **ECMA-262 §15.8** — Async Function Definitions
+- **MDN: async function** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
 
 ---
 
-**参考规范**：ECMA-262 §27.7 Async Function Objects
+## 8. 思维表征总结 (Cognitive Representations)
+
+### 8.1 async/await 转换规则
+
+| 语法 | 转换结果 |
+|------|---------|
+| `async function` | 返回 Promise 的函数 |
+| `await x` | `yield x` + 恢复 |
+| `return v` | `return Promise.resolve(v)` |
+| `throw e` | `return Promise.reject(e)` |
+| `try/catch` | `.then().catch()` |
+
+---
+
+## 9. 公理化表述与形式证明 (Axiomatization & Formal Proof)
+
+### 9.1 公理化基础
+
+**公理 1（async 函数的 Promise 返回）**：
+> 所有 async 函数隐式返回 Promise，无论是否有显式 return。
+
+**公理 2（await 的暂停语义）**：
+> `await` 暂停 async 函数执行，等待右侧 Promise 完成后恢复。
+
+### 9.2 定理与证明
+
+**定理 1（await 的链式等价性）**：
+> `const v = await p` 语义等价于 `p.then(v => /* 后续代码 */)`。
+
+*证明*：
+> ECMA-262 §15.8 规定 async 函数在遇到 await 时暂停，将后续代码注册为 Promise 的 then 回调。
+> ∎
+
+---
+
+## 10. 推理链与演绎分析 (Deductive Reasoning Chain)
+
+### 10.1 演绎推理
+
+```mermaid
+graph TD
+    A[async function] --> B[调用函数]
+    B --> C[返回 Promise]
+    C --> D[执行到 await]
+    D --> E[暂停，注册回调]
+    E --> F[Promise 完成]
+    F --> G[恢复执行]
+```
+
+### 10.2 反事实推理
+
+> **反设**：ES2017 没有引入 async/await。
+> **推演结果**：异步代码必须使用 Promise.then 链，深层嵌套可读性差。
+> **结论**：async/await 是 JavaScript 异步编程的语法革命。
+
+---
+
+**参考规范**：ECMA-262 §15.8 | MDN: async function

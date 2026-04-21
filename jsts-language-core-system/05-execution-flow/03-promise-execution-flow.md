@@ -1,245 +1,182 @@
-# Promise 执行流
+# Promise 执行流（Promise Execution Flow）
 
-> Promise 的状态转换、微任务调度与链式调用机制
+> **形式化定义**：Promise 是 ECMAScript 2015（ES6）引入的异步编程抽象，表示一个可能尚未完成但预期将来会完成的操作。Promise 具有三种状态：pending（待定）、fulfilled（已完成）、rejected（已拒绝），状态一旦改变不可再次修改。ECMA-262 §27.2 定义了 Promise 的完整语义，包括 `then`、`catch`、`finally` 方法和静态方法（`all`、`race`、`allSettled`、`any`）。
 >
-> 对齐版本：ECMAScript 2025 (ES16)
+> 对齐版本：ECMAScript 2025 (ES16) §27.2 | TypeScript 5.8–6.0
 
 ---
 
-## 1. Promise 状态机
+## 1. 概念定义 (Concept Definition)
+
+### 1.1 形式化定义
+
+ECMA-262 §27.2 定义了 Promise：
+
+> *"A Promise is an object that is used as a placeholder for the eventual results of a deferred (and possibly asynchronous) computation."*
+
+Promise 状态机：
 
 ```
-          new Promise((resolve, reject) => { ... })
-                    │
-                    ▼
-              ┌──────────┐
-              │ pending  │
-              └────┬─────┘
-                   │
-         ┌─────────┴──────────┐
-         │                    │
-         ▼                    ▼
-   ┌──────────┐        ┌──────────┐
-   │fulfilled │        │rejected  │
-   └──────────┘        └──────────┘
+States: { pending, fulfilled, rejected }
+Transitions:
+  pending --resolve(v)--> fulfilled(v)
+  pending --reject(e)--> rejected(e)
+  fulfilled --(no transition)--
+  rejected --(no transition)--
 ```
-
-- **Pending**：初始状态
-- **Fulfilled**：操作成功完成
-- **Rejected**：操作失败
-
-状态一旦确定，不可再变。
 
 ---
 
-## 2. 执行流程
+## 2. 属性与特征 (Properties & Characteristics)
+
+### 2.1 Promise 状态属性矩阵
+
+| 状态 | 转换来源 | 可转换到 | 说明 |
+|------|---------|---------|------|
+| pending | 初始状态 | fulfilled / rejected | 唯一可变状态 |
+| fulfilled | pending | — | 成功完成，有值 |
+| rejected | pending | — | 失败，有原因 |
+
+### 2.2 Promise 链式调用
+
+| 方法 | 输入 | 输出 | 用途 |
+|------|------|------|------|
+| `then(onFulfilled, onRejected)` | Promise | 新 Promise | 处理成功/失败 |
+| `catch(onRejected)` | Promise | 新 Promise | 仅处理失败 |
+| `finally(onFinally)` | Promise | 新 Promise | 无论结果都执行 |
+
+---
+
+## 3. 关系分析 (Relationship Analysis)
+
+### 3.1 Promise 链的执行流
+
+```mermaid
+graph TD
+    P1[Promise 1] -->|then| P2[Promise 2]
+    P2 -->|then| P3[Promise 3]
+    P3 -->|catch| P4[错误处理]
+    P3 -->|finally| P5[清理]
+```
+
+---
+
+## 4. 机制解释 (Mechanism Explanation)
+
+### 4.1 Promise 的调度机制
+
+```mermaid
+flowchart TD
+    A[Promise.resolve(v)] --> B[状态变为 fulfilled]
+    B --> C[then 回调加入微任务队列]
+    C --> D[当前同步代码完成]
+    D --> E[执行微任务队列]
+    E --> F[then 回调执行]
+```
+
+---
+
+## 5. 论证与分析 (Argumentation & Analysis)
+
+### 5.1 Promise 静态方法对比
+
+| 方法 | 成功条件 | 失败条件 | 返回值 |
+|------|---------|---------|--------|
+| `Promise.all` | 全部 fulfilled | 首个 rejected | 结果数组 |
+| `Promise.race` | 首个 settled | 首个 rejected | 首个结果 |
+| `Promise.allSettled` | 全部 settled | 永不 reject | 状态数组 |
+| `Promise.any` | 首个 fulfilled | 全部 rejected | 首个结果 |
+
+---
+
+## 6. 实例与示例 (Examples)
+
+### 6.1 正例：Promise 链
 
 ```javascript
-console.log("1");
-
-const promise = new Promise((resolve) => {
-  console.log("2");
-  resolve("3");
-  console.log("4");
-});
-
-promise.then(value => console.log(value));
-
-console.log("5");
-
-// 输出：1 → 2 → 4 → 5 → 3
-// 解释：
-// 1: 同步
-// 2: Promise executor 同步执行
-// 4: resolve 后的同步代码继续执行
-// 5: 同步代码结束
-// 3: then 回调作为微任务执行
+fetch("/api/user")
+  .then(response => response.json())
+  .then(user => fetch(`/api/posts/${user.id}`))
+  .then(response => response.json())
+  .then(posts => console.log(posts))
+  .catch(error => console.error(error))
+  .finally(() => console.log("Done"));
 ```
 
----
-
-## 3. 微任务调度
-
-```javascript
-console.log("1");
-Promise.resolve().then(() => console.log("2"));
-Promise.resolve().then(() => console.log("3"));
-console.log("4");
-
-// 输出：1 → 4 → 2 → 3
-// 微任务按 FIFO 顺序执行
-```
-
----
-
-## 4. 链式调用
-
-```javascript
-Promise.resolve(1)
-  .then(v => {
-    console.log(v); // 1
-    return v + 1;
-  })
-  .then(v => {
-    console.log(v); // 2
-    return new Promise(resolve => setTimeout(() => resolve(v + 1), 0));
-  })
-  .then(v => {
-    console.log(v); // 3（在下一个事件循环中）
-  });
-```
-
----
-
-## 5. ES2025：Promise.try
-
-ES2025 新增的 `Promise.try` 简化了同步/异步统一的错误处理：
-
-```javascript
-// ❌ 以前：需要手动包装
-function safeCall(fn) {
-  return new Promise((resolve, reject) => {
-    try {
-      resolve(fn());
-    } catch (e) {
-      reject(e);
-    }
-  });
-}
-
-// ✅ ES2025：Promise.try
-Promise.try(() => {
-  if (Math.random() > 0.5) throw new Error("Sync error");
-  return fetchData();
-})
-.then(result => console.log(result))
-.catch(error => console.error(error));
-```
-
-**优势**：同步错误自动转为 Promise reject，避免 `Promise.resolve().then()` 的微任务延迟问题。
-
----
-
-## 6. 错误处理
-
-```javascript
-Promise.resolve()
-  .then(() => { throw new Error("A"); })
-  .then(() => console.log("B"))    // 跳过
-  .catch(err => {
-    console.log(err.message);       // "A"
-    return "recovered";
-  })
-  .then(v => console.log(v));       // "recovered"
-```
-
----
-
-## 7. Promise 并发模式
-
-### 7.1 Promise.all
+### 6.2 正例：Promise.all 并行
 
 ```javascript
 const [users, posts] = await Promise.all([
-  fetchUsers(),
-  fetchPosts()
-]);
-// 全部成功时返回结果数组，任一失败立即 reject
-```
-
-### 7.2 Promise.race
-
-```javascript
-const result = await Promise.race([
-  fetchData(),
-  new Promise((_, reject) =>
-    setTimeout(() => reject(new Error("Timeout")), 5000)
-  )
+  fetch("/api/users").then(r => r.json()),
+  fetch("/api/posts").then(r => r.json())
 ]);
 ```
 
 ---
 
-## 8. Promise 链式错误处理
+## 7. 权威参考与国际化对齐 (References)
 
-```javascript
-Promise.resolve()
-  .then(() => { throw new Error("A"); })
-  .then(() => console.log("B"))    // 跳过
-  .catch(err => {
-    console.log(err.message);       // "A"
-    return "recovered";
-  })
-  .then(v => console.log(v));       // "recovered"
-```
+- **ECMA-262 §27.2** — Promise Objects
+- **MDN: Promise** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 
-## 9. Promise 静态方法
+---
 
-```javascript
-// 全部解决
-const [a, b] = await Promise.all([
-  fetch("/a"),
-  fetch("/b")
-]);
+## 8. 思维表征总结 (Cognitive Representations)
 
-// 竞赛
-const winner = await Promise.race([
-  fetch("/fast"),
-  new Promise((_, reject) =>
-    setTimeout(() => reject(new Error("Timeout")), 5000)
-  )
-]);
+### 8.1 Promise 状态转换图
+
+```mermaid
+stateDiagram-v2
+    [*] --> pending: new Promise
+    pending --> fulfilled: resolve()
+    pending --> rejected: reject()
+    fulfilled --> [*]
+    rejected --> [*]
 ```
 
 ---
 
-**参考规范**：ECMA-262 §27.2 Promise Objects
+## 9. 公理化表述与形式证明 (Axiomatization & Formal Proof)
 
-## 深入理解：引擎实现与优化
+### 9.1 公理化基础
 
-### V8 引擎视角
+**公理 1（Promise 的不可变性）**：
+> Promise 一旦 settled（fulfilled 或 rejected），状态不可再次改变。
 
-V8 是 Chrome 和 Node.js 使用的 JavaScript 引擎，其内部实现直接影响本节讨论的机制：
+**公理 2（then 的链式性）**：
+> `then` 总是返回新的 Promise，支持链式调用。
 
-| 组件 | 功能 |
-|------|------|
-| Ignition | 解释器，生成字节码 |
-| Sparkplug | 基线编译器，快速生成本地代码 |
-| Maglev | 中层优化编译器，SSA 形式优化 |
-| TurboFan | 顶层优化编译器，Sea of Nodes |
+### 9.2 定理与证明
 
-### 隐藏类与形状
+**定理 1（Promise.all 的短路性）**：
+> `Promise.all` 在首个 Promise reject 时立即 reject。
 
-```javascript
-// V8 为相同结构的对象创建隐藏类
-const p1 = { x: 1, y: 2 };
-const p2 = { x: 3, y: 4 };
-// p1 和 p2 共享同一个隐藏类
+*证明*：
+> ECMA-262 §27.2.4.1.1 规定，若任一 Promise 变为 rejected，Promise.all 返回的 Promise 立即变为 rejected。
+> ∎
 
-// 动态添加属性会创建新隐藏类
-p1.z = 3; // 降级为字典模式
+---
+
+## 10. 推理链与演绎分析 (Deductive Reasoning Chain)
+
+### 10.1 演绎推理
+
+```mermaid
+graph TD
+    A[创建 Promise] --> B[执行异步操作]
+    B --> C{结果?}
+    C -->|成功| D[resolve(value)]
+    C -->|失败| E[reject(error)]
+    D --> F[then 回调执行]
+    E --> G[catch 回调执行]
 ```
 
-### 内联缓存（Inline Cache）
+### 10.2 反事实推理
 
-```javascript
-function getX(obj) {
-  return obj.x; // V8 缓存属性偏移
-}
+> **反设**：ES6 没有引入 Promise。
+> **推演结果**：异步编程仍依赖回调地狱，async/await 无法实现，现代 Web 开发效率大幅下降。
+> **结论**：Promise 是 JavaScript 异步编程现代化的基石。
 
-getX({ x: 1 }); // 单态（monomorphic）
-getX({ x: 2 }); // 同类型，快速路径
-```
+---
 
-### 性能提示
-
-1. 对象初始化时声明所有属性
-2. 避免动态删除属性
-3. 数组使用连续数字索引
-4. 函数参数类型保持一致
-
-### 相关工具
-
-- Chrome DevTools Performance 面板
-- Node.js `--prof` 和 `--prof-process`
-- V8 flags: `--trace-opt`, `--trace-deopt`
+**参考规范**：ECMA-262 §27.2 | MDN: Promise
