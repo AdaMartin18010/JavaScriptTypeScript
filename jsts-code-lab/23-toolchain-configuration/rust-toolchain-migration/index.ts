@@ -11,7 +11,7 @@
  * 本模块提供从传统 JS 工具链到 Rust 工具链的完整迁移实践。
  */
 
-export * from "./biome-config";
-export * from "./oxc-integration";
-export * from "./rolldown-config";
-export * from "./rspack-migration";
+export * from "./biome-config.js";
+export * from "./oxc-integration.js";
+export * from "./rolldown-config.js";
+export * from "./rspack-migration.js";

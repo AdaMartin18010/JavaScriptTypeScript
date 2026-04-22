@@ -8,3 +8,4 @@ export * as MemoryManagement from './memory-management.js';
 export * as NetworkOptimization from './network-optimization.js';
 export * as OptimizationPatterns from './optimization-patterns.js';
 export * as RenderingOptimization from './rendering-optimization.js';
+export * as BenchmarkSuite from './benchmark-suite.js';

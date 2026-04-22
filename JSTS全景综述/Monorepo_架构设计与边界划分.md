@@ -1,398 +1,395 @@
 # Monorepo 架构设计与边界划分
 
-> 分析日期: 2026-04-21
-> 目标读者: 架构师、技术负责人、Monorepo 维护者
-> 前置知识: 包管理、CI/CD、软件架构基础
+> **目标读者**：技术负责人、架构师、负责代码库治理的工程师
+> **关联文档**：[`jsts-code-lab/12-package-management/monorepo-workspaces.ts`](../../jsts-code-lab/12-package-management/monorepo-workspaces.ts)
+> **版本**：2026-04
+> **字数**：约 5,000 字
 
 ---
 
-## 目录
+## 1. Monorepo vs Polyrepo：选型决策
 
-- [Monorepo 架构设计与边界划分](#monorepo-架构设计与边界划分)
-  - [目录](#目录)
-  - [1. Monorepo 与 Polyrepo 的抉择](#1-monorepo-与-polyrepo-的抉择)
-    - [1.1 决策框架](#11-决策框架)
-    - [1.2 对比矩阵](#12-对比矩阵)
-  - [2. Monorepo 的分层架构模型](#2-monorepo-的分层架构模型)
-    - [2.1 推荐的目录结构](#21-推荐的目录结构)
-    - [2.2 分层依赖规则](#22-分层依赖规则)
-  - [3. 边界划分原则](#3-边界划分原则)
-    - [3.1 按业务领域划分（DDD）](#31-按业务领域划分ddd)
-    - [3.2 按技术层划分](#32-按技术层划分)
-    - [3.3 混合划分（推荐）](#33-混合划分推荐)
-  - [4. 依赖关系管理](#4-依赖关系管理)
-    - [4.1 依赖可视化](#41-依赖可视化)
-    - [4.2 循环依赖检测](#42-循环依赖检测)
-    - [4.3 版本管理策略](#43-版本管理策略)
-  - [5. 变更影响分析](#5-变更影响分析)
-    - [5.1 依赖图分析](#51-依赖图分析)
-    - [5.2 CI 中的增量构建](#52-ci-中的增量构建)
-  - [6. 发布策略](#6-发布策略)
-    - [6.1 语义化版本自动化](#61-语义化版本自动化)
-    - [6.2 金丝雀发布](#62-金丝雀发布)
-  - [7. 规模化挑战与解决方案](#7-规模化挑战与解决方案)
-    - [7.1 构建时间过长](#71-构建时间过长)
-    - [7.2 权限管理](#72-权限管理)
-    - [7.3 代码膨胀](#73-代码膨胀)
-  - [8. 总结](#8-总结)
-  - [参考资源](#参考资源)
-
----
-
-## 1. Monorepo 与 Polyrepo 的抉择
-
-### 1.1 决策框架
-
-```mermaid
-flowchart TD
-    A[选择仓库策略] --> B{团队规模?}
-    B -->|< 10 人| C[Polyrepo 可能更合适]
-    B -->|10-50 人| D{代码耦合度?}
-    B -->|> 50 人| E[Monorepo 强烈推荐]
-
-    D -->|高耦合| F[Monorepo]
-    D -->|低耦合| G[Polyrepo]
-
-    C --> H{发布频率差异?}
-    H -->|差异大| G
-    H -->|相似| F
-```
-
-### 1.2 对比矩阵
+### 1.1 核心差异
 
 | 维度 | Monorepo | Polyrepo |
 |------|---------|---------|
-| **代码共享** | ✅ 直接引用 | ⚠️ 需发布包 |
-| **原子重构** | ✅ 一次提交修改多个包 | ❌ 需协调多个 PR |
-| **依赖管理** | ✅ 统一版本 | ⚠️ 版本漂移风险 |
-| **构建时间** | ❌ 随规模增长 | ✅ 独立构建 |
-| **权限控制** | ⚠️ 需额外配置 | ✅ 天然隔离 |
-| **CI 复杂度** | ⚠️ 需依赖图分析 | ✅ 简单直接 |
-| **学习曲线** | ⚠️ 需了解工具链 | ✅ 标准 Git 流程 |
+| **代码位置** | 单一仓库 | 多仓库 |
+| **依赖管理** | 内部依赖直接引用 | 通过 npm registry / git submodule |
+| **原子提交** | 跨模块变更一次提交 | 多仓库分别提交 |
+| **CI/CD** | 统一编排 | 各仓库独立 |
+| **权限控制** | 目录级 | 仓库级 |
+| **规模上限** | 需工具支持（>100 模块有挑战） | 理论上无上限 |
+
+### 1.2 何时选择 Monorepo
+
+**选择 Monorepo 的信号**：
+
+- ✅ 多个项目共享核心库（utils、types、UI 组件）
+- ✅ 需要原子化的跨模块重构
+- ✅ 团队规模 < 200 人（代码库 < 10GB）
+- ✅ 重视一致的构建/测试/发布流程
+
+**选择 Polyrepo 的信号**：
+
+- ✅ 各项目技术栈完全不同（如 Python 后端 + JS 前端）
+- ✅ 团队完全自治，不希望共享 CI/CD
+- ✅ 开源项目，外部贡献者为主
+- ✅ 代码库 > 50GB 或历史提交 > 100 万
 
 ---
 
-## 2. Monorepo 的分层架构模型
+## 2. Monorepo 架构模式
 
-### 2.1 推荐的目录结构
-
-```
-monorepo/
-├── apps/                    # 应用层（部署单元）
-│   ├── web/                 # Web 应用
-│   ├── mobile/              # 移动应用
-│   ├── api/                 # API 服务
-│   └── admin/               # 管理后台
-│
-├── packages/                # 共享包（库）
-│   ├── ui/                  # UI 组件库
-│   ├── utils/               # 工具函数
-│   ├── types/               # 共享类型定义
-│   ├── config/              # 共享配置（ESLint、TS、Tailwind）
-│   └── api-client/          # API 客户端
-│
-├── tools/                   # 内部工具
-│   ├── scripts/             # 构建/发布脚本
-│   ├── generators/          # 代码生成器
-│   └── plugins/             # 自定义构建插件
-│
-├── docs/                    # 文档
-├── .github/                 # CI/CD 工作流
-├── pnpm-workspace.yaml      # Workspace 定义
-├── turbo.json               # 构建管道配置
-└── package.json             # 根配置
-```
-
-### 2.2 分层依赖规则
+### 2.1 按业务域划分（Domain-Driven）
 
 ```
-依赖方向（只允许从上到下依赖）：
-
-apps/          ← 可以依赖所有下层
-  ↓
-packages/      ← 可以依赖 tools/ 和同层其他包
-  ↓
-tools/         ← 只能依赖外部工具
-
-禁止：
-  - 下层依赖上层（tools/ 依赖 apps/）
-  - 同层循环依赖（ui/ ↔ utils/）
+packages/
+├── user-domain/          # 用户域
+│   ├── user-api/         # 用户 API
+│   ├── user-ui/          # 用户界面
+│   └── user-shared/      # 共享类型/工具
+├── order-domain/         # 订单域
+│   ├── order-api/
+│   ├── order-ui/
+│   └── order-shared/
+└── shared/               # 跨域共享
+    ├── ui-kit/           # UI 组件库
+    ├── utils/            # 通用工具
+    └── types/            # 全局类型
 ```
+
+**优点**：业务边界清晰，团队按域自治。
+**缺点**：共享模块可能成为瓶颈。
+
+### 2.2 按技术层划分（Layer-Driven）
+
+```
+packages/
+├── apps/                 # 应用层
+│   ├── web-app/
+│   ├── mobile-app/
+│   └── admin-panel/
+├── libs/                 # 库层
+│   ├── ui/               # UI 组件
+│   ├── data-access/      # 数据访问
+│   └── state/            # 状态管理
+└── tools/                # 工具层
+    ├── eslint-config/
+    ├── ts-config/
+    └── test-utils/
+```
+
+**优点**：技术一致性高，工具复用充分。
+**缺点**：业务逻辑跨层分散。
+
+### 2.3 混合模式（推荐）
+
+```
+repo/
+├── apps/                 # 可部署的应用
+│   ├── web/
+│   ├── mobile/
+│   └── docs/
+├── packages/             # 内部库
+│   ├── core/             # 核心业务逻辑
+│   ├── ui/               # UI 组件库
+│   ├── api/              # API 客户端
+│   └── config/           # 共享配置
+├── tools/                # 构建工具
+└── infra/                # 基础设施（Terraform/Docker）
+```
+
+**核心规则**：
+
+- `apps` 可以依赖 `packages`
+- `packages` 之间可以依赖，但不能循环依赖
+- `tools` 和 `infra` 不依赖业务代码
 
 ---
 
 ## 3. 边界划分原则
 
-### 3.1 按业务领域划分（DDD）
+### 3.1 模块依赖方向规则
 
-```
-packages/
-├── @acme/user-domain/       # 用户领域
-│   ├── entities/            # 用户实体
-│   ├── repositories/        # 用户仓储接口
-│   └── usecases/            # 用户用例
-│
-├── @acme/order-domain/      # 订单领域
-│   ├── entities/
-│   ├── repositories/
-│   └── usecases/
-│
-├── @acme/payment-domain/    # 支付领域
-│   ├── entities/
-│   ├── repositories/
-│   └── usecases/
+```mermaid
+graph TD
+    A[apps/*] --> B[packages/core]
+    A --> C[packages/ui]
+    A --> D[packages/api]
+    B --> E[packages/utils]
+    C --> E
+    D --> E
+    E --> F[external-deps]
 ```
 
-**边界规则**：
+**禁止**：
 
-- 每个领域包是自包含的（不依赖其他领域包）
-- 领域间通信通过明确的接口或事件
-- 领域内部可以自由重构，不影响外部
+- `packages/*` 依赖 `apps/*`
+- 循环依赖（A → B → C → A）
+- 跨域直接依赖（`user-api` 直接导入 `order-shared`）
 
-### 3.2 按技术层划分
+### 3.2 版本策略
 
-```
-packages/
-├── @acme/ui/                # 技术层：UI
-├── @acme/api/               # 技术层：API 客户端
-├── @acme/db/                # 技术层：数据库
-└── @acme/logger/            # 技术层：日志
-```
+| 策略 | 描述 | 适用场景 |
+|------|------|---------|
+| **固定版本** | 所有模块统一版本号 | 小型 Monorepo (<20 模块) |
+| **独立版本** | 各模块独立 Semver | 大型 Monorepo，模块对外发布 |
+| **锁定版本** | 内部依赖用 `workspace:*` | 内部库不对外发布 |
 
-**适用场景**：
+**pnpm 10 的 catalog 协议**（2026 年最佳实践）：
 
-- 技术栈频繁变更（如 UI 框架从 React 迁移到 Vue）
-- 多技术栈共存（Web 用 React，Mobile 用 React Native）
+```yaml
+# pnpm-workspace.yaml
+catalog:
+  react: ^19.0.0
+  typescript: ^5.8.0
 
-### 3.3 混合划分（推荐）
-
-```
-packages/
-├── foundation/              # 最底层：无内部依赖
-│   ├── @acme/types/
-│   ├── @acme/utils/
-│   └── @acme/config/
-│
-├── domains/                 # 业务领域层
-│   ├── @acme/user-domain/
-│   ├── @acme/order-domain/
-│   └── @acme/payment-domain/
-│
-├── platforms/               # 平台适配层
-│   ├── @acme/ui/           # UI 组件（依赖 domains）
-│   ├── @acme/api-client/   # API 客户端
-│   └── @acme/db-client/    # 数据库客户端
-│
-└── apps/                    # 应用层（组合所有下层）
-    ├── @acme/web-app/
-    └── @acme/mobile-app/
+catalogs:
+  legacy:
+    react: ^18.3.0
 ```
 
----
-
-## 4. 依赖关系管理
-
-### 4.1 依赖可视化
-
-使用工具生成依赖图：
-
-```bash
-# Nx
-nx graph
-
-# Turborepo + pnpm
-pnpm nx graph
-
-# 通用工具
-npx monorepo-graph
-```
-
-### 4.2 循环依赖检测
-
-```bash
-# 使用 madge 检测循环依赖
-npx madge --circular packages/
-
-# Nx 内置检测
-nx lint --rule cyclic-deps
-```
-
-### 4.3 版本管理策略
-
-**独立版本（Independent Versioning）**：
-
-```
-每个包有自己的版本号
-├── @acme/ui@2.1.0
-├── @acme/utils@1.5.2
-└── @acme/api@3.0.0
-```
-
-- 适用：包间耦合度低、发布节奏不同
-- 工具：Changesets, Lerna (独立模式)
-
-**固定版本（Fixed Versioning）**：
-
-```
-所有包共享同一版本号
-├── @acme/ui@1.0.0
-├── @acme/utils@1.0.0
-└── @acme/api@1.0.0
-```
-
-- 适用：包间高度耦合、同时发布
-- 工具：Lerna (固定模式), Nx Release
-
-**混合版本（推荐）**：
-
-```
-核心包固定版本，工具包独立版本
-├── @acme/ui@2.0.0        (固定)
-├── @acme/utils@2.0.0     (固定)
-└── @acme/scripts@1.2.0   (独立)
-```
-
----
-
-## 5. 变更影响分析
-
-### 5.1 依赖图分析
-
-当修改一个包时，哪些包会受影响？
-
-```typescript
-// 伪代码：影响分析算法
-function getAffectedPackages(
-  changedPackages: string[],
-  dependencyGraph: Map<string, string[]>
-): string[] {
-  const affected = new Set<string>();
-  const queue = [...changedPackages];
-
-  while (queue.length > 0) {
-    const pkg = queue.shift()!;
-    if (affected.has(pkg)) continue;
-    affected.add(pkg);
-
-    // 找到所有依赖此包的包
-    for (const [dependent, dependencies] of dependencyGraph) {
-      if (dependencies.includes(pkg) && !affected.has(dependent)) {
-        queue.push(dependent);
-      }
-    }
+```json
+// package.json
+{
+  "dependencies": {
+    "react": "catalog:",
+    "typescript": "catalog:"
   }
-
-  return Array.from(affected);
 }
 ```
 
-### 5.2 CI 中的增量构建
+**优势**：
 
-```yaml
-# .github/workflows/ci.yml
-jobs:
-  build:
-    steps:
-      - uses: actions/checkout@v4
+- 一处修改，全仓库同步
+- 支持多 catalog（如 legacy / modern 两套依赖）
+- 减少 merge conflict
 
-      # 检测变更的包
-      - name: Detect changed packages
-        run: |
-          # Nx: 自动检测 affected projects
-          npx nx affected:build --base=origin/main
+---
 
-          # Turborepo: 使用 --filter
-          pnpm turbo run build --filter=[origin/main...HEAD]
+## 4. 工具链选型矩阵
+
+### 4.1 主流工具对比（2026）
+
+| 工具 | 定位 | 构建速度 | 缓存 | 最佳场景 |
+|------|------|---------|------|---------|
+| **pnpm + Turborepo** | 包管理 + 任务编排 | 快 | 本地 + 远程 | 中小型 Monorepo (<100 包) |
+| **Nx** | 全功能平台 | 快 | 本地 + 远程 + 分布式 | 大型 Monorepo，需 graph 分析 |
+| **Moon** | Rust 编写 | 极快 | 本地 + 远程 | 性能敏感，Rust 生态 |
+| **Bazel** | 企业级构建 | 中 | 极强 | 超大型（Google 级） |
+| **Bun Workspaces** | 一体化 | 快 | 本地 | 简单 Monorepo，Bun 生态 |
+
+### 4.2 选型决策树
+
+```
+模块数量?
+├── < 20 → pnpm + Turborepo
+├── 20-100 → Nx 或 Turborepo
+└── > 100 → Nx 或 Bazel
+
+是否需要远程缓存?
+├── 是 → Nx Cloud / Turborepo Remote Cache
+└── 否 → 本地缓存足够
+
+是否跨语言（JS + Python + Go）?
+├── 是 → Bazel 或 Nx
+└── 否 → JS 生态工具
 ```
 
 ---
 
-## 6. 发布策略
+## 5. CI/CD 优化
 
-### 6.1 语义化版本自动化
+### 5.1 Affected 检测
 
-```
-变更类型 → 版本号变化：
-  fix:     1.0.0 → 1.0.1  (patch)
-  feat:    1.0.0 → 1.1.0  (minor)
-  BREAKING: 1.0.0 → 2.0.0 (major)
-```
-
-**工具链**：
-
-1. Changesets：开发者提交时添加 changeset 文件
-2. CI 中聚合 changeset，自动生成版本号和 CHANGELOG
-3. 自动发布到 npm
-
-### 6.2 金丝雀发布
+**原理**：通过 Git 历史分析，只构建和测试受变更影响的模块。
 
 ```bash
-# 发布预览版本
-pnpm publish --tag canary
+# Nx
+nx affected:test --base=main
 
-# 用户安装预览版
-npm install @acme/ui@canary
+# Turborepo
+turbo run test --filter=[main...HEAD]
+```
+
+**性能提升**：从"全仓库 30 分钟"到"只改一个包 → 2 分钟"。
+
+### 5.2 分布式缓存
+
+**本地缓存**：`node_modules/.cache/turbo`
+**远程缓存**：Vercel Remote Cache / Nx Cloud / 自建 S3
+
+**配置示例**（Turborepo）：
+
+```json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "remoteCache": {
+    "enabled": true,
+    "signature": true
+  },
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".next/**"]
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "inputs": ["src/**/*.ts", "tests/**/*.ts"]
+    }
+  }
+}
+```
+
+### 5.3 并行任务编排
+
+```mermaid
+graph LR
+    A[lint] --> B[build]
+    A --> C[test]
+    B --> D[deploy]
+    C --> D
+```
+
+Turborepo 和 Nx 都能自动识别任务依赖图，最大化并行度。
+
+---
+
+## 6. 实际案例分析
+
+### 6.1 小型团队（<10人）：电商 SaaS
+
+```
+repo/
+├── apps/
+│   ├── storefront/       # Next.js 电商前台
+│   └── admin/            # React 管理后台
+├── packages/
+│   ├── ui/               # shadcn/ui + 自定义组件
+│   ├── db/               # Drizzle ORM + schema
+│   ├── auth/             # better-auth 配置
+│   └── config/           # ESLint / TS / Tailwind 配置
+```
+
+**工具**：pnpm + Turborepo
+**CI**：GitHub Actions，Affected 检测，Vercel 自动部署
+
+### 6.2 中型团队（50人）：金融科技
+
+```
+repo/
+├── apps/
+│   ├── trading-platform/
+│   ├── risk-dashboard/
+│   └── mobile-app/
+├── packages/
+│   ├── core/
+│   │   ├── types/        # 全局 TypeScript 类型
+│   │   ├── utils/        # 通用工具
+│   │   └── constants/    # 业务常量
+│   ├── ui/
+│   ├── api-clients/
+│   └── security/         # 加密/认证
+└── infra/
+    ├── terraform/
+    └── docker/
+```
+
+**工具**：Nx（依赖图分析 + 分布式缓存）
+**CI**：GitLab CI，Nx Cloud 远程缓存
+
+### 6.3 大型组织（500+人）：跨国电商
+
+**挑战**：
+
+- 模块数量 > 500
+- 多语言（Java/Go/JS/Python）
+- 合规要求（审计、权限隔离）
+
+**方案**：
+
+- **Bazel** 统一构建系统
+- **按业务域拆分子 Monorepo**（非单一仓库）
+- **内部 npm registry** 管理跨域依赖
+- **自定义工具** 替代通用方案
+
+---
+
+## 7. 反模式与陷阱
+
+### 反模式 1：过度耦合的模块
+
+❌ `packages/utils` 变成万能垃圾堆，所有业务代码都依赖它。
+✅ utils 按功能拆分：`packages/date-utils`、`packages/validation`、`packages/crypto`
+
+### 反模式 2：循环依赖
+
+❌ `packages/auth` → `packages/user` → `packages/auth`
+✅ 提取共享层：`packages/auth-types`，auth 和 user 都依赖它。
+
+### 反模式 3：巨型包
+
+❌ `packages/core` 包含 10 万行代码，任何人改一行都要全量构建。
+✅ 按子功能拆分：`core/domain`、`core/infrastructure`、`core/application`
+
+### 反模式 4：忽视构建性能
+
+❌ 每次提交都构建全仓库，CI 30 分钟。
+✅ 启用 Affected 检测 + 远程缓存，只构建变更模块。
+
+### 反模式 5：权限管理缺失
+
+❌ 任何开发者都能修改任何包。
+✅ CODEOWNERS + 分支保护 + Nx 的 `enforceModuleBoundaries`
+
+---
+
+## 8. 迁移路径：从 Polyrepo 到 Monorepo
+
+### 8.1 渐进式迁移策略
+
+```
+Phase 1: 选择试点项目（2-3 个关联最紧密的仓库）
+Phase 2: 合并到一个 Monorepo，保留独立发布
+Phase 3: 统一构建工具链（Turborepo / Nx）
+Phase 4: 启用 workspace 协议，内部依赖不走 registry
+Phase 5: 统一 CI/CD，启用 affected 检测
+Phase 6: 逐步合并更多项目
+```
+
+### 8.2 保留 Git 历史
+
+```bash
+# 将外部仓库合并到 Monorepo 子目录，保留完整历史
+git subtree add --prefix=packages/legacy-app git@github.com:org/legacy-app.git main
 ```
 
 ---
 
-## 7. 规模化挑战与解决方案
+## 9. 总结
 
-### 7.1 构建时间过长
+Monorepo 不是银弹，但在正确的场景下是**工程效率的倍增器**。
 
-**问题**：Monorepo 规模增大后，全量构建时间呈指数增长。
+**关键成功因素**：
 
-**解决方案**：
+1. **清晰的边界划分**：模块间依赖有明确规则
+2. **强大的工具链**：构建缓存、Affected 检测、并行编排
+3. **渐进式演进**：从小规模试点开始，逐步扩展
+4. **治理机制**：CODEOWNERS、架构决策记录 (ADR)、定期审计
 
-| 方案 | 原理 | 效果 |
-|------|------|------|
-| **增量构建** | 只构建变更的包及其依赖 | 减少 70-90% 构建时间 |
-| **远程缓存** | Turborepo/Nx 远程缓存 | CI 构建从 10min → 2min |
-| **分布式构建** | Nx Cloud 分布式任务 | 并行执行，线性加速 |
-| **代码分割** | 将超大包拆分为子包 | 减少单次构建范围 |
+**2026 年推荐栈**：
 
-### 7.2 权限管理
-
-**问题**：不同团队需要访问不同目录的权限。
-
-**解决方案**：
-
-```yaml
-# CODEOWNERS 文件
-/apps/web/           @frontend-team
-/apps/api/           @backend-team
-/packages/ui/        @design-system-team
-/packages/payment/   @payment-team
-```
-
-### 7.3 代码膨胀
-
-**问题**：历史代码堆积，Monorepo 体积过大。
-
-**解决方案**：
-
-1. 定期归档废弃包（移动到 `archive/` 目录）
-2. Git LFS 管理大文件
-3. shallow clone + sparse checkout 优化开发者体验
-
----
-
-## 8. 总结
-
-Monorepo 的成功关键在于**边界清晰**和**工具到位**：
-
-1. **边界清晰**：按领域/技术层划分，避免循环依赖
-2. **工具到位**：pnpm + Turborepo/Nx + Changesets 是 2026 年的黄金组合
-3. **渐进采纳**：从小型 Monorepo 开始，逐步扩展
-4. **文档驱动**：每个包必须有 README 和 API 文档
-5. **自动化**：CI/CD 管道必须支持增量构建和自动发布
+- 小型：pnpm + Turborepo
+- 中型：Nx
+- 大型：Nx + Nx Cloud / Bazel
 
 ---
 
 ## 参考资源
 
-- [Nx Monorepo](https://nx.dev/)
-- [Turborepo](https://turbo.build/)
+- [Turborepo 文档](https://turbo.build/)
+- [Nx 官方文档](https://nx.dev/)
+- [Moon 文档](https://moonrepo.dev/)
 - [pnpm Workspaces](https://pnpm.io/workspaces)
-- [Changesets](https://github.com/changesets/changesets)
-- [Monorepo.tools](https://monorepo.tools/)
+- [Monorepo Tools 对比](https://monorepo.tools/)
+- [Google Monorepo 经验](https://research.google/pubs/pub45424/)

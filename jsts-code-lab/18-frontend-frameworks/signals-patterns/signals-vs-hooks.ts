@@ -7,7 +7,7 @@
  * 本文件从多个维度进行系统性对比，并给出选型建议。
  */
 
-import { createSignal, createComputed, createEffect } from "./core-signal";
+import { createSignal, createComputed, createEffect } from "./core-signal.js";
 
 // ============================================
 // 1. 心智模型对比

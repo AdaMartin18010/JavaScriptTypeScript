@@ -36,7 +36,7 @@ export interface PasswordAnalysis {
   /** 字符种类统计 */
   characterCounts: CharacterCounts;
   /** 字符种类数（小写/大写/数字/符号） */
-  char Variety: number;
+  charVariety: number;
   /** 熵值（bits） */
   entropy: number;
   /** 强度等级 */

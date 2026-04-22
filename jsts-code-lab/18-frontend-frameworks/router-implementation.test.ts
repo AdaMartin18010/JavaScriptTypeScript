@@ -65,7 +65,7 @@ describe('HistoryRouter', () => {
     const hook = vi.fn();
     const unsubscribe = router.afterEach(hook);
     unsubscribe();
-    expect(router.afterHooks.length).toBe(0);
+    expect((router as any).afterHooks.length).toBe(0);
   });
 });
 

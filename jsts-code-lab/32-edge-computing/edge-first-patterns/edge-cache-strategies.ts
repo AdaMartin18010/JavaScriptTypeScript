@@ -589,8 +589,8 @@ class EdgeInvalidationStrategy {
   }
 
   /** 预热缓存 — 在失效后主动填充热点数据 */
-  async warmUp<T>(
-    entries: Array<{ key: string; fetcher: OriginFetcher<T>; ttlMs: number; tags?: string[] }>
+  async warmUp(
+    entries: Array<{ key: string; fetcher: OriginFetcher<unknown>; ttlMs: number; tags?: string[] }>
   ): Promise<void> {
     console.log(`  [Invalidation] 🔥 开始缓存预热，共 ${entries.length} 个条目`);
     await Promise.all(

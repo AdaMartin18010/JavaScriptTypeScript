@@ -9,3 +9,4 @@
  */
 
 export * as EdgeRuntime from './edge-runtime.js';
+export * as EdgeFirstPatterns from './edge-first-patterns/index.js';

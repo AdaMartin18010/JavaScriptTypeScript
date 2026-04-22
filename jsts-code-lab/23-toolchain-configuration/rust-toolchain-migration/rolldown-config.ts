@@ -88,7 +88,7 @@ export function createLibraryConfig(
   return {
     input: {
       input: entry,
-      external: ["react", "react-dom", /^@\/], // 不打包 React 等外部依赖
+      external: (id: string) => id === "react" || id === "react-dom" || /^@\//.test(id), // 不打包 React 等外部依赖
     },
     output: [
       {

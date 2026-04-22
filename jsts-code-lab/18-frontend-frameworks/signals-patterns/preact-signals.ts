@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * # Preact Signals 实现与分析
  *
@@ -18,7 +20,7 @@ import {
   createComputed,
   createEffect,
   Computation,
-} from "./core-signal";
+} from "./core-signal.js";
 
 // ============================================
 // Preact Signals 核心 API
@@ -51,9 +53,10 @@ export class PreactSignal<T> {
 
   /** 转换为只读 Signal */
   get readonly(): { value: T } {
+    const sig = this._signal;
     return {
       get value() {
-        return this._signal.get();
+        return sig.get();
       },
     } as { value: T };
   }

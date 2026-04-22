@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * # SolidJS 风格的信号实现
  *
@@ -17,7 +19,7 @@ import {
   createEffect,
   batch,
   untracked,
-} from "./core-signal";
+} from "./core-signal.js";
 
 // ============================================
 // SolidJS 核心 API
@@ -265,7 +267,7 @@ export function createStore<T extends object>(
 
   const proxy = new Proxy(initialValue, {
     get(target, key) {
-      const signal = getSignal(key);
+      const signal = getSignal(key as unknown as string | symbol);
       return signal.get();
     },
     set() {

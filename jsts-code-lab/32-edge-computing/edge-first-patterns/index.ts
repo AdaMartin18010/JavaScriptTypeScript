@@ -32,6 +32,9 @@ import { demo as runRoutingPatternsDemo } from './edge-routing-patterns.js';
 
 export { runCacheStrategiesDemo, runStatePatternsDemo, runRoutingPatternsDemo };
 
+/** 统一 demo 入口别名 */
+export const demo = runAllDemos;
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 统一运行所有演示
 // ─────────────────────────────────────────────────────────────────────────────

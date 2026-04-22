@@ -1,3 +1,6 @@
+/** @vitest-environment node */
+/// <reference types="vitest" />
+
 /**
  * # Signal 核心系统测试
  *

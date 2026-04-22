@@ -17,7 +17,7 @@ import {
   createComputed,
   createEffect,
   Computation,
-} from "./core-signal";
+} from "./core-signal.js";
 
 // ============================================
 // Angular Signals 核心 API
@@ -27,14 +27,22 @@ import {
  * Angular 风格的 Signal 创建函数。
  * 使用函数调用 `count()` 读取值，而非 `.get()` 或 `.value`。
  */
-export function angularSignal<T>(initialValue: T): () => T {
+/** Angular 风格的 Signal：可调用 + 可读写 */
+export interface AngularSignal<T> {
+  (): T;
+  set(value: T): void;
+  update(fn: (value: T) => T): void;
+  asReadonly(): () => T;
+}
+
+export function angularSignal<T>(initialValue: T): AngularSignal<T> {
   const signal = coreCreateSignal(initialValue);
   const getter = () => signal.get();
   // 附加 setter 到函数对象（Angular 的巧妙设计）
   (getter as any).set = (value: T) => signal.set(value);
   (getter as any).update = (fn: (value: T) => T) => signal.set(fn(signal.peek()));
   (getter as any).asReadonly = () => () => signal.get();
-  return getter as () => T;
+  return getter as AngularSignal<T>;
 }
 
 /**

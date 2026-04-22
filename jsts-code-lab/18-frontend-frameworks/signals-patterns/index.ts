@@ -21,7 +21,7 @@ export {
   batch,
   untracked,
   createReadonlySignal,
-} from "./core-signal";
+} from "./core-signal.js";
 
 // SolidJS 风格
 export {
@@ -32,7 +32,7 @@ export {
   createSelector,
   createStore,
   demonstrateSolidAdvantage,
-} from "./solid-signals";
+} from "./solid-signals.js";
 
 // Preact Signals 风格
 export {
@@ -45,7 +45,7 @@ export {
   GlobalStore,
   createGlobalStore,
   demonstratePreactSignalsPerformance,
-} from "./preact-signals";
+} from "./preact-signals.js";
 
 // Angular Signals 风格
 export {
@@ -57,7 +57,7 @@ export {
   UserService,
   demonstrateAngularChangeDetection,
   demonstrateComponentPattern,
-} from "./angular-signals";
+} from "./angular-signals.js";
 
 // Svelte 5 Runes
 export {
@@ -67,7 +67,7 @@ export {
   $inspect,
   demonstrateSvelte5Compilation,
   demonstrateSvelte5Advantages,
-} from "./svelte-runes";
+} from "./svelte-runes.js";
 
 // 对比与选型
 export {
@@ -78,7 +78,7 @@ export {
   selectHooksOrSignals,
   demonstrateHybridApproach,
   futureTrend,
-} from "./signals-vs-hooks";
+} from "./signals-vs-hooks.js";
 
 export {
   demonstrateValueVsStream,
@@ -88,4 +88,4 @@ export {
   demonstrateSelectionGuide,
   demonstrateAntiPatterns,
   demonstrateUnifiedReactiveLayer,
-} from "./signals-vs-observable";
+} from "./signals-vs-observable.js";

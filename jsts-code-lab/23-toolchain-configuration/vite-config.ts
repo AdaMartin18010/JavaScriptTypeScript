@@ -354,7 +354,7 @@ export class ResolveOptionsBuilder {
   }
 
   done(): ViteConfigBuilder {
-    this.parent.config.resolve = this.options;
+    (this.parent as any).config.resolve = this.options;
     return this.parent;
   }
 }

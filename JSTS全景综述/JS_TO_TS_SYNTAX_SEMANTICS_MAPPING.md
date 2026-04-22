@@ -1,7 +1,7 @@
 # JavaScript → TypeScript 语法/语义映射全景指南
 
-> **版本**: 2.0  
-> **对齐来源**: ECMA-262 2025/2026、TypeScript 5.8–7.0 Language Specification、Node.js 22/24 Native TypeScript、tc39/proposal-type-annotations (Stage 1)、Siek & Taha Gradual Typing Theory、Stanford CS 242 / MIT 6.5110 / CMU 15-411 / Berkeley CS 164 / UW CSE 341、TypeScript Handbook — Migrating from JavaScript  
+> **版本**: 2.0
+> **对齐来源**: ECMA-262 2025/2026、TypeScript 5.8–7.0 Language Specification、Node.js 22/24 Native TypeScript、tc39/proposal-type-annotations (Stage 1)、Siek & Taha Gradual Typing Theory、Stanford CS 242 / MIT 6.5110 / CMU 15-411 / Berkeley CS 164 / UW CSE 341、TypeScript Handbook — Migrating from JavaScript
 > **目标**: 为从 JavaScript 迁移到 TypeScript 的开发者提供逐语法点的精确映射、语义边界说明与权威来源索引。
 
 ---
@@ -16,14 +16,30 @@
     - [1.3 类型擦除保证与例外](#13-类型擦除保证与例外)
   - [2. 语法映射矩阵](#2-语法映射矩阵)
     - [2.1 变量与基本类型](#21-变量与基本类型)
+      - [映射表](#映射表)
+      - [类型层级映射](#类型层级映射)
+      - [代码示例](#代码示例)
     - [2.2 函数](#22-函数)
+      - [映射表](#映射表-1)
+      - [函数类型子类型规则](#函数类型子类型规则)
+      - [代码示例](#代码示例-1)
     - [2.3 对象与类](#23-对象与类)
+      - [映射表](#映射表-2)
+      - [结构化子类型 vs 名义子类型](#结构化子类型-vs-名义子类型)
+      - [代码示例](#代码示例-2)
     - [2.4 模块系统](#24-模块系统)
+      - [映射表](#映射表-3)
+      - [`moduleResolution` 策略映射](#moduleresolution-策略映射)
+      - [代码示例](#代码示例-3)
     - [2.5 异步与并发](#25-异步与并发)
+      - [映射表](#映射表-4)
+      - [异步函数的类型推导规则](#异步函数的类型推导规则)
     - [2.6 元编程](#26-元编程)
+      - [映射表](#映射表-5)
   - [3. 语义层次对照](#3-语义层次对照)
     - [3.1 运行时语义（JavaScript）](#31-运行时语义javascript)
     - [3.2 编译时语义（TypeScript）](#32-编译时语义typescript)
+      - [Gradual Typing 的形式化对应](#gradual-typing-的形式化对应)
     - [3.3 宿主调度语义](#33-宿主调度语义)
   - [4. 渐进类型与迁移路径](#4-渐进类型与迁移路径)
     - [4.1 从 `any` 到 `unknown` 再到具体类型](#41-从-any-到-unknown-再到具体类型)
@@ -31,10 +47,19 @@
     - [4.3 互操作边界](#43-互操作边界)
   - [5. 设计模式类型化升级路径](#5-设计模式类型化升级路径)
     - [5.1 创建型模式](#51-创建型模式)
+      - [单例模式（Singleton）](#单例模式singleton)
+      - [工厂模式（Factory）](#工厂模式factory)
     - [5.2 行为型模式](#52-行为型模式)
+      - [观察者模式（Observer）](#观察者模式observer)
+      - [策略模式（Strategy）](#策略模式strategy)
     - [5.3 结构型模式](#53-结构型模式)
+      - [适配器模式（Adapter）](#适配器模式adapter)
+      - [代理模式（Proxy）](#代理模式proxy)
   - [6. 决策树：何时使用何种 TS 特性](#6-决策树何时使用何种-ts-特性)
   - [7. 参考与延伸阅读](#7-参考与延伸阅读)
+    - [规范与官方文档](#规范与官方文档)
+    - [学术论文](#学术论文)
+    - [项目内关联文档](#项目内关联文档)
 
 ---
 
@@ -305,6 +330,7 @@ async function loadModule() {
 #### 异步函数的类型推导规则
 
 TypeScript 对 `async function` 应用 **Promise 包装规则**：
+
 - 若显式返回类型为 `T`，则实际返回类型为 `Promise<T>`。
 - 若 `return` 表达式类型为 `Promise<T>`，则 `await` 后类型为 `T`（解包）。
 
@@ -570,10 +596,10 @@ flowchart TD
 
 ### 学术论文
 
-5. **Siek, J. G., & Taha, W. (2006).** *Gradual Typing for Functional Languages.* — 渐进类型理论奠基之作。
-6. **Bierman, G., Abadi, M., & Torgersen, M. (2014).** *Understanding TypeScript.* ECOOP 2014. — TypeScript 类型系统的形式化分析。
-7. **Vekris, P., Cosman, B., & Jhala, R. (2016).** *Safe & Efficient Gradual Typing for TypeScript.* POPL 2016. — SafeTS / 运行时检查与结构化子类型。
-8. **Castagna, G., & Lanvin, V. (2019).** *Gradual Typing: A New Perspective.* POPL 2019. — 语义化渐进类型与 Materialization。
+1. **Siek, J. G., & Taha, W. (2006).** *Gradual Typing for Functional Languages.* — 渐进类型理论奠基之作。
+2. **Bierman, G., Abadi, M., & Torgersen, M. (2014).** *Understanding TypeScript.* ECOOP 2014. — TypeScript 类型系统的形式化分析。
+3. **Vekris, P., Cosman, B., & Jhala, R. (2016).** *Safe & Efficient Gradual Typing for TypeScript.* POPL 2016. — SafeTS / 运行时检查与结构化子类型。
+4. **Castagna, G., & Lanvin, V. (2019).** *Gradual Typing: A New Perspective.* POPL 2019. — 语义化渐进类型与 Materialization。
 
 ### 项目内关联文档
 
