@@ -87,7 +87,7 @@ Completion Record: {
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §6.2** — Specification Types
-- **MDN: Reference** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference
+- **MDN: Reference** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference>
 
 ---
 

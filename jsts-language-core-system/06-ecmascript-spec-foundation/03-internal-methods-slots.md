@@ -104,7 +104,7 @@ proxy.a; // "Getting a" → 1
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §6.1.7** — Object Internal Methods and Internal Slots
-- **MDN: Proxy** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy
+- **MDN: Proxy** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy>
 
 ---
 

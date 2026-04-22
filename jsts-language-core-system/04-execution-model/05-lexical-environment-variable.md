@@ -89,7 +89,7 @@ const globalVar = 1;
 function example() {
   // 函数环境记录: { param: undefined }
   const localVar = 2;
-  
+
   if (true) {
     // 块级环境记录: { blockVar: TDZ }
     const blockVar = 3;
@@ -102,7 +102,7 @@ function example() {
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §8.1** — Lexical Environments
-- **MDN: Lexical Environment** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures#lexical_scoping
+- **MDN: Lexical Environment** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures#lexical_scoping>
 
 ---
 
@@ -263,6 +263,7 @@ graph TD
 
 > **反设**：JavaScript 是多线程语言，没有事件循环。
 > **推演结果**：
+>
 > 1. 需要显式锁和同步原语
 > 2. 共享内存导致数据竞争
 > 3. 异步编程模型完全不同
@@ -283,6 +284,7 @@ JavaScript 执行的操作语义可表示为状态转换：
 ```
 
 其中：
+
 - `stmt`：当前执行的语句
 - `σ`：程序状态（变量绑定）
 - `θ`：执行上下文栈
@@ -292,7 +294,7 @@ JavaScript 执行的操作语义可表示为状态转换：
 函数调用的指称语义：
 
 ```
-[[fn(arg)]](σ) = 
+[[fn(arg)]](σ) =
   创建新上下文 ctx
   绑定参数 arg 到形参
   执行函数体

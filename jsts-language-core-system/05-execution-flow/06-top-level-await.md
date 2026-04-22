@@ -45,7 +45,7 @@ graph TD
     ModuleA["模块 A\n(有顶层 await)"] --> B[加载中...]
     B --> C[await 完成]
     C --> D[模块导出可用]
-    
+
     ModuleB["模块 B\nimport A"] --> E[等待 A 完成]
     E --> D
 ```
@@ -99,7 +99,7 @@ console.log(config.apiUrl);
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §16.2.1.4** — Async Modules
-- **MDN: Top-level await** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules#top_level_await
+- **MDN: Top-level await** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules#top_level_await>
 
 ---
 

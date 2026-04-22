@@ -52,3 +52,20 @@ npm run start
 | `app/routes/index.tsx` | 首页路由，展示 SSR 数据获取和客户端组件嵌入 |
 | `app/api/hello.ts` | API 路由，返回 JSON 数据，可被页面端调用 |
 | `app/components/Counter.tsx` | 纯客户端交互组件，使用 `useState` 和事件处理 |
+
+
+---
+
+## 🔗 关联知识库模块
+
+完成本示例后，建议深入以下代码实验室与理论文档：
+
+| 模块 | 路径 | 与本示例的关联 |
+|------|------|---------------|
+| TanStack Start | `docs/categories/22-tanstack-start.md` | TanStack Start 生态、文件系统路由、Server Functions |
+| 前端框架 | `jsts-code-lab/18-frontend-frameworks/` | React 组件化、Signals、路由实现、状态管理 |
+| 后端框架 | `docs/categories/14-backend-frameworks.md` | Hono、Express、Elysia、NestJS 生态对比 |
+| SSR 与元框架 | `docs/categories/09-ssr-meta-frameworks.md` | Next.js、Nuxt、Remix、TanStack Start 对比 |
+| 边缘计算 | `jsts-code-lab/32-edge-computing/` | Cloudflare Workers 部署、边缘 SSR、D1 数据库 |
+
+> 📚 [返回知识库首页](../README.md)

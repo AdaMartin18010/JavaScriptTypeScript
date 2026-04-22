@@ -136,7 +136,7 @@ async function main() {
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §6.2.6** — [[Call]]
-- **MDN: Callback function** — https://developer.mozilla.org/en-US/docs/Glossary/Callback_function
+- **MDN: Callback function** — <https://developer.mozilla.org/en-US/docs/Glossary/Callback_function>
 
 ---
 

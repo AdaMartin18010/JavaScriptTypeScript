@@ -136,3 +136,20 @@ http_request_duration_seconds_bucket{le="0.1",method="GET",route="/health",statu
 http_request_duration_seconds_sum{method="GET",route="/health",status_code="200"} 0.023
 http_request_duration_seconds_count{method="GET",route="/health",status_code="200"} 5
 ```
+
+
+---
+
+## 🔗 关联知识库模块
+
+完成本项目后，建议深入以下代码实验室与理论文档：
+
+| 模块 | 路径 | 与本项目的关联 |
+|------|------|---------------|
+| API 安全 | `jsts-code-lab/21-api-security/` | JWT 安全、CORS、CSRF、Rate Limiting 实现 |
+| Web 安全 | `jsts-code-lab/38-web-security/` | XSS、CSP、安全响应头、内容安全策略 |
+| 网络安全 | `jsts-code-lab/81-cybersecurity/` | 密码学基础、威胁建模、安全审计 |
+| 安全合规生态 | `docs/categories/27-security-compliance.md` | SCA、SAST、运行时安全、合规工具对比 |
+| 认证与授权 | `docs/categories/29-authentication.md` | better-auth、Passkeys、WebAuthn、OAuth 2.1 |
+
+> 📚 [返回知识库首页](../README.md)

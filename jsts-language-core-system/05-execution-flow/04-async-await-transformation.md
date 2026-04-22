@@ -124,7 +124,7 @@ async function getDashboard() {
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §15.8** — Async Function Definitions
-- **MDN: async function** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
+- **MDN: async function** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function>
 
 ---
 

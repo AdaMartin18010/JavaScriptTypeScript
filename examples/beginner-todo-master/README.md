@@ -116,3 +116,20 @@ npm run dev      # 启动开发服务器
 ## 📝 License
 
 MIT © JavaScript/TypeScript 全景知识库贡献者
+
+
+---
+
+## 🔗 关联知识库模块
+
+完成本项目后，建议深入以下代码实验室与理论文档：
+
+| 模块 | 路径 | 与本项目的关联 |
+|------|------|---------------|
+| 语言核心 | `jsts-code-lab/00-language-core/` | ES2025+ 语法、闭包、原型链、事件循环 |
+| 设计模式 | `jsts-code-lab/02-design-patterns/` | 观察者模式、策略模式、工厂模式在 UI 中的应用 |
+| 前端框架 | `jsts-code-lab/18-frontend-frameworks/` | React/Vue 组件化、Hooks 原理、状态管理 |
+| 测试基础 | `jsts-code-lab/07-testing/` | 单元测试、TDD、Testing Library 最佳实践 |
+| 类型系统 | `jsts-code-lab/10-js-ts-comparison/` | TypeScript 类型推断、泛型、类型体操 |
+
+> 📚 [返回知识库首页](../README.md)

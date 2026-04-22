@@ -36,3 +36,19 @@ node dist/factory.js
 装饰器模式 → "穿外套，一层一层加功能"
 代理模式   → "先经过我，再找他"
 ```
+
+
+---
+
+## 🔗 关联知识库模块
+
+完成本示例后，建议深入以下代码实验室与理论文档：
+
+| 模块 | 路径 | 与本示例的关联 |
+|------|------|---------------|
+| 设计模式理论 | `jsts-code-lab/02-design-patterns/THEORY.md` | GoF 23种设计模式的完整理论与实现 |
+| 设计模式代码库 | `jsts-code-lab/02-design-patterns/` | 创建型、结构型、行为型模式的 TypeScript 实现 |
+| 前端框架模式 | `docs/patterns/REACT_PATTERNS.md` | 容器/展示组件、Hooks 模式、Render Props |
+| 架构模式 | `jsts-code-lab/06-architecture-patterns/` | 分层架构、六边形架构、CQRS 的企业级实践 |
+
+> 📚 [返回知识库首页](../README.md)

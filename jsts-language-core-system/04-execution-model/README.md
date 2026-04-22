@@ -33,21 +33,21 @@ graph TD
     ExecutionModel --> Compilation["编译 Compilation"]
     ExecutionModel --> Runtime["运行时 Runtime"]
     ExecutionModel --> Concurrency["并发 Concurrency"]
-    
+
     Engine --> Parser["Parser"]
     Engine --> Compiler["Compiler"]
     Engine --> Interpreter["Interpreter"]
     Engine --> GC["Garbage Collector"]
-    
+
     Compilation --> AST["AST"]
     Compilation --> Bytecode["Bytecode"]
     Compilation --> MachineCode["Machine Code"]
-    
+
     Runtime --> CallStack["Call Stack"]
     Runtime --> ExecutionContext["Execution Context"]
     Runtime --> LexicalEnvironment["Lexical Environment"]
     Runtime --> ThisBinding["This Binding"]
-    
+
     Concurrency --> EventLoop["Event Loop"]
     Concurrency --> TaskQueue["Task Queue"]
     Concurrency --> Microtask["Microtask"]
@@ -130,22 +130,22 @@ graph LR
 
 ### HTML Living Standard
 
-- **§8.1.4.2 Event loops** — https://html.spec.whatwg.org/multipage/webappapis.html#event-loops
+- **§8.1.4.2 Event loops** — <https://html.spec.whatwg.org/multipage/webappapis.html#event-loops>
 
 ### Node.js / libuv
 
-- **Node.js Event Loop** — https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/
-- **libuv Design** — https://docs.libuv.org/en/v1.x/design.html
+- **Node.js Event Loop** — <https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/>
+- **libuv Design** — <https://docs.libuv.org/en/v1.x/design.html>
 
 ### V8 Blog
 
-- **V8 Blog** — https://v8.dev/blog
+- **V8 Blog** — <https://v8.dev/blog>
 
 ### MDN Web Docs
 
-- **MDN: Event Loop** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop
-- **MDN: this** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this
-- **MDN: Memory Management** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_management
+- **MDN: Event Loop** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop>
+- **MDN: this** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this>
+- **MDN: Memory Management** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_management>
 
 ---
 

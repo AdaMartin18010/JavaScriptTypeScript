@@ -107,8 +107,8 @@ Promise.resolve().then(() => {
 
 ## 7. 权威参考与国际化对齐 (References)
 
-- **MDN: Event Loop** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop
-- **JavaScript Visualizer** — https://www.jsv9000.app/
+- **MDN: Event Loop** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop>
+- **JavaScript Visualizer** — <https://www.jsv9000.app/>
 
 ---
 

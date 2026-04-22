@@ -117,7 +117,7 @@ const [users, posts] = await Promise.all([
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §27.2** — Promise Objects
-- **MDN: Promise** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+- **MDN: Promise** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise>
 
 ---
 

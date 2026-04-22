@@ -142,11 +142,11 @@ const listeners = [];
 
 function addListener() {
   const bigData = new Array(1000000).fill("x");
-  
+
   const handler = () => {
     console.log(bigData); // bigData 被闭包引用
   };
-  
+
   listeners.push(handler);
   // 即使 handler 不再使用，bigData 无法释放
 }
@@ -156,8 +156,8 @@ function addListener() {
 
 ## 7. 权威参考与国际化对齐 (References)
 
-- **V8 Blog: Trash talk** — https://v8.dev/blog/trash-talk
-- **MDN: Memory Management** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_management
+- **V8 Blog: Trash talk** — <https://v8.dev/blog/trash-talk>
+- **MDN: Memory Management** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_management>
 
 ---
 
@@ -313,6 +313,7 @@ graph TD
 
 > **反设**：JavaScript 是多线程语言，没有事件循环。
 > **推演结果**：
+>
 > 1. 需要显式锁和同步原语
 > 2. 共享内存导致数据竞争
 > 3. 异步编程模型完全不同
@@ -333,6 +334,7 @@ JavaScript 执行的操作语义可表示为状态转换：
 ```
 
 其中：
+
 - `stmt`：当前执行的语句
 - `σ`：程序状态（变量绑定）
 - `θ`：执行上下文栈
@@ -342,7 +344,7 @@ JavaScript 执行的操作语义可表示为状态转换：
 函数调用的指称语义：
 
 ```
-[[fn(arg)]](σ) = 
+[[fn(arg)]](σ) =
   创建新上下文 ctx
   绑定参数 arg 到形参
   执行函数体

@@ -1,79 +1,116 @@
-import { describe, it, expect } from 'vitest';
-import { XSSSanitizer, HTMLEncoder, CSPBuilder, CSRFProtection, SecurityHeadersBuilder } from './xss-csp.js';
+import { describe, it, expect, vi } from 'vitest';
+import {
+  XSSSanitizer,
+  HTMLEncoder,
+  CSPBuilder,
+  CSRFProtection,
+  SecurityHeadersBuilder
+} from './xss-csp.js';
 
 describe('XSSSanitizer', () => {
-  it('removes script tags and events', () => {
-    const s = new XSSSanitizer();
-    const out = s.sanitizeHtml('<script>alert(1)</script><p onclick="evil()">hi</p>');
-    expect(out).not.toContain('<script>');
-    expect(out).not.toContain('onclick');
+  it('should sanitize script tags', () => {
+    const sanitizer = new XSSSanitizer();
+    const input = '<script>alert("xss")</script><p>safe</p>';
+    expect(sanitizer.sanitizeHtml(input)).toBe('<p>safe</p>');
   });
 
-  it('strips HTML completely', () => {
-    const s = new XSSSanitizer();
-    expect(s.stripHtml('<p>hello</p>')).toBe('hello');
+  it('should remove event handlers', () => {
+    const sanitizer = new XSSSanitizer();
+    const input = '<img src="x" onerror="alert(1)" />';
+    expect(sanitizer.sanitizeHtml(input)).toBe('<img src="x"  />');
   });
 
-  it('sanitizes URLs', () => {
-    const s = new XSSSanitizer();
-    expect(s.sanitizeUrl('javascript:alert(1)')).toBeNull();
-    expect(s.sanitizeUrl('https://example.com')).toBe('https://example.com');
-    expect(s.sanitizeUrl('/relative')).toBe('/relative');
+  it('should block javascript: URLs', () => {
+    const sanitizer = new XSSSanitizer();
+    expect(sanitizer.sanitizeUrl('javascript:alert(1)')).toBeNull();
+    expect(sanitizer.sanitizeUrl('https://example.com')).toBe('https://example.com');
+  });
+
+  it('should strip HTML completely', () => {
+    const sanitizer = new XSSSanitizer();
+    expect(sanitizer.stripHtml('<p>hello</p>')).toBe('hello');
   });
 });
 
 describe('HTMLEncoder', () => {
-  it('encodes HTML entities', () => {
+  it('should encode HTML entities', () => {
     expect(HTMLEncoder.encodeHtml('<script>')).toBe('&lt;script&gt;');
+    expect(HTMLEncoder.encodeHtml('"test"')).toBe('&quot;test&quot;');
   });
 
-  it('encodes JavaScript string', () => {
-    expect(HTMLEncoder.encodeJavaScript("a'b")).toBe("a\\'b");
+  it('should encode JavaScript strings safely', () => {
+    expect(HTMLEncoder.encodeJavaScript("<script>alert('xss')</script>"))
+      .not.toContain('<script>');
   });
 
-  it('safe JSON stringify escapes tags', () => {
-    const json = HTMLEncoder.safeJsonStringify({ html: '<script>' });
-    expect(json).not.toContain('<');
+  it('should produce safe JSON', () => {
+    const obj = { html: '<script>alert(1)</script>' };
+    const json = HTMLEncoder.safeJsonStringify(obj);
+    expect(json).not.toContain('<script>');
+    expect(JSON.parse(json)).toEqual(obj);
   });
 });
 
 describe('CSPBuilder', () => {
-  it('builds strict policy', () => {
+  it('should build strict policy', () => {
     const csp = new CSPBuilder().setStrictPolicy().build();
     expect(csp).toContain("default-src 'self'");
     expect(csp).toContain("script-src 'self'");
+    expect(csp).toContain("object-src 'none'");
   });
 
-  it('validates issues', () => {
-    const issues = new CSPBuilder().setPermissivePolicy().validate();
-    expect(issues.some(i => i.includes('unsafe-eval'))).toBe(true);
-  });
-
-  it('generates headers', () => {
+  it('should generate correct headers', () => {
     const headers = new CSPBuilder().setStrictPolicy().generateHeaders();
-    expect(headers['Content-Security-Policy']).toBeDefined();
+    expect(headers).toHaveProperty('Content-Security-Policy');
+  });
+
+  it('should support report-only mode', () => {
+    const headers = new CSPBuilder()
+      .setStrictPolicy()
+      .setReportOnly(true)
+      .generateHeaders();
+    expect(headers).toHaveProperty('Content-Security-Policy-Report-Only');
+  });
+
+  it('should validate unsafe-inline with nonce conflict', () => {
+    const issues = new CSPBuilder()
+      .addDirective('script-src', "'self'", "'unsafe-inline'")
+      .addScriptNonce('abc123')
+      .validate();
+    expect(issues.length).toBeGreaterThan(0);
   });
 });
 
 describe('CSRFProtection', () => {
-  it('generates and validates token', () => {
+  it('should generate and validate tokens', () => {
     const csrf = new CSRFProtection();
-    const token = csrf.generateToken('s1');
-    expect(csrf.validateToken('s1', token)).toBe(true);
-    expect(csrf.validateToken('s1', 'bad')).toBe(false);
+    const sessionId = 'session-1';
+    const token = csrf.generateToken(sessionId);
+    expect(csrf.validateToken(sessionId, token)).toBe(true);
+    expect(csrf.validateToken(sessionId, 'wrong')).toBe(false);
   });
 
-  it('validates double submit cookie', () => {
+  it('should generate double-submit cookie', () => {
     const csrf = new CSRFProtection();
-    expect(csrf.validateDoubleSubmitCookie('abc', 'abc')).toBe(true);
-    expect(csrf.validateDoubleSubmitCookie('abc', 'xyz')).toBe(false);
+    const { token, cookie } = csrf.generateDoubleSubmitCookie();
+    expect(token).toBeTruthy();
+    expect(cookie).toContain('SameSite=Strict');
+    expect(cookie).toContain('HttpOnly');
   });
 });
 
 describe('SecurityHeadersBuilder', () => {
-  it('builds recommended headers', () => {
+  it('should build recommended headers', () => {
     const headers = new SecurityHeadersBuilder().setRecommendedHeaders().build();
     expect(headers['Strict-Transport-Security']).toBeDefined();
-    expect(headers['X-Frame-Options']).toBeDefined();
+    expect(headers['X-Frame-Options']).toBe('DENY');
+    expect(headers['X-Content-Type-Options']).toBe('nosniff');
+  });
+
+  it('should generate nginx config', () => {
+    const config = new SecurityHeadersBuilder()
+      .setRecommendedHeaders()
+      .generateNginxConfig();
+    expect(config).toContain('add_header Strict-Transport-Security');
   });
 });

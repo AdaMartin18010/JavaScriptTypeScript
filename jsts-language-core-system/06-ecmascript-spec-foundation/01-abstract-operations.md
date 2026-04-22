@@ -112,7 +112,7 @@ console.log(`${obj}`);     // "hello" (hint: string → toString)
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §7** — Abstract Operations
-- **MDN: Type Coercion** — https://developer.mozilla.org/en-US/docs/Glossary/Type_coercion
+- **MDN: Type Coercion** — <https://developer.mozilla.org/en-US/docs/Glossary/Type_coercion>
 
 ---
 

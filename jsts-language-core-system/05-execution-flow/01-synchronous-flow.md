@@ -115,7 +115,7 @@ console.log(calculate()); // 5
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §9.4** — Execution Contexts
-- **MDN: Event Loop** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop
+- **MDN: Event Loop** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop>
 
 ---
 

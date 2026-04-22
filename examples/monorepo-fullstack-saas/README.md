@@ -107,3 +107,20 @@ PORT=3001
 - 代码提交时自动运行 lint / test / build
 - Docker 镜像构建与推送
 - 可选：Vercel（前端）+ Railway/Render（后端）分离部署
+
+
+---
+
+## 🔗 关联知识库模块
+
+完成本项目后，建议深入以下代码实验室与理论文档：
+
+| 模块 | 路径 | 与本项目的关联 |
+|------|------|---------------|
+| 包管理 | `jsts-code-lab/12-package-management/THEORY.md` | pnpm Workspaces、Version Catalogs、Monorepo 依赖设计 |
+| Monorepo 工具 | `docs/categories/25-monorepo-tools.md` | Turborepo、Nx、Rush 工具对比与选型 |
+| Monorepo 架构理论 | `JSTS全景综述/Monorepo_架构设计与边界划分.md` | Monorepo 边界划分、分层设计、循环依赖治理 |
+| 认证与授权 | `docs/categories/29-authentication.md` | better-auth、Auth.js、Passkeys、JWT 安全 |
+| ORM 与数据库 | `docs/categories/11-orm-database.md` | Prisma、Drizzle、Turso、边缘数据库选型 |
+
+> 📚 [返回知识库首页](../README.md)

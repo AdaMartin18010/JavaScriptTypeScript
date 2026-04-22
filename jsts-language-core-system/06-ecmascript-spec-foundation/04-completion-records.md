@@ -138,7 +138,7 @@ try {
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §6.2.4** — The Completion Record Specification Type
-- **MDN: Control flow** — https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Control_flow_and_error_handling
+- **MDN: Control flow** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Control_flow_and_error_handling>
 
 ---
 

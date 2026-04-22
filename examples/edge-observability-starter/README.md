@@ -106,3 +106,19 @@ wrangler secret put SENTRY_DSN
 - method / path / status
 - duration_ms
 - user_agent / cf-ray（Cloudflare）
+
+
+---
+
+## 🔗 关联知识库模块
+
+完成本示例后，建议深入以下代码实验室与理论文档：
+
+| 模块 | 路径 | 与本示例的关联 |
+|------|------|---------------|
+| 边缘计算 | `jsts-code-lab/32-edge-computing/` | Edge Runtime、Durable Objects、边缘缓存策略 |
+| 性能监控 | `jsts-code-lab/39-performance-monitoring/` | RUM、APM、性能指标采集与分析 |
+| API 安全 | `jsts-code-lab/21-api-security/` | JWT 验证、CORS、CSRF、Rate Limiting |
+| 可观测性生态 | `docs/categories/23-error-monitoring-logging.md` | Sentry、Datadog、OpenTelemetry 工具对比 |
+
+> 📚 [返回知识库首页](../README.md)

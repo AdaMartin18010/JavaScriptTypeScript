@@ -140,3 +140,20 @@ cd milestone-01-api-gateway && npx vitest
 ## 📄 License
 
 MIT — 隶属于 [JavaScript/TypeScript 全景知识库](../../README.md)
+
+
+---
+
+## 🔗 关联知识库模块
+
+完成本项目后，建议深入以下代码实验室与理论文档：
+
+| 模块 | 路径 | 与本项目的关联 |
+|------|------|---------------|
+| 架构模式 | `jsts-code-lab/06-architecture-patterns/` | 微服务架构、API Gateway、事件驱动架构 |
+| 分布式系统 | `jsts-code-lab/70-distributed-systems/` | CAP 定理、一致性算法、服务发现 |
+| 并发模型 | `jsts-code-lab/03-concurrency/` | Event Loop、Worker Threads、异步流控制 |
+| 可观测性 | `docs/categories/23-error-monitoring-logging.md` | OpenTelemetry、分布式追踪、结构化日志 |
+| 后端框架 | `docs/categories/14-backend-frameworks.md` | Fastify、Express、NestJS 生态对比 |
+
+> 📚 [返回知识库首页](../README.md)

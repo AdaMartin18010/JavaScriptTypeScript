@@ -54,3 +54,19 @@ curl -X POST http://localhost:8787/infer \
 - Edge Runtime 有 CPU 和内存限制，适合运行轻量级模型（ONNX 量化、DistilBERT 等）
 - 大模型推理建议调用外部 AI 推理服务（Workers AI、OpenAI、Together 等）
 - 模型文件通常托管在 R2 / S3 / HuggingFace CDN，Worker 中按需下载并缓存
+
+
+---
+
+## 🔗 关联知识库模块
+
+完成本示例后，建议深入以下代码实验室与理论文档：
+
+| 模块 | 路径 | 与本示例的关联 |
+|------|------|---------------|
+| 边缘计算 | `jsts-code-lab/32-edge-computing/` | V8 Isolates、Durable Objects、边缘-中心混合架构 |
+| AI 集成 | `jsts-code-lab/33-ai-integration/` | LLM API 调用、Prompt 工程、AI SDK 使用 |
+| Web API 实验室 | `jsts-code-lab/90-web-apis-lab/` | Streams、Fetch、WebGPU 等原生 API 实践 |
+| 边缘架构理论 | `JSTS全景综述/边缘优先架构设计方法论.md` | 边缘优先架构设计、成本模型、安全模型 |
+
+> 📚 [返回知识库首页](../README.md)
