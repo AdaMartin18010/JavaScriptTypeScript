@@ -250,7 +250,7 @@ export function demoCallBypass(): void {
 
   // 正常调用: strictFn(1, 'x') — TS 检查参数
   // 但通过 call:
-  const result = strictFn.call(null, 'wrong', 123);
+  const result = (strictFn as any).call(null, 'wrong', 123);
   console.log(`  strictFn.call(null, 'wrong', 123) = ${result}`); // "wrong-123"
   // 参数类型完全没检查！
 

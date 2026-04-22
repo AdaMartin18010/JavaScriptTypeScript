@@ -65,13 +65,13 @@ function PersonConstructor(this: { name: string }, name: string): void {
 
 function strictModeThis(): void {
   "use strict";
-  console.log("Strict mode this:", (function (): unknown {
+  console.log("Strict mode this:", (function (this: unknown): unknown {
     return this;
-  })()); // undefined
+  }).call(undefined)); // undefined
 }
 
 function nonStrictModeThis(): void {
-  console.log("Non-strict mode this:", (function (): unknown {
+  console.log("Non-strict mode this:", (function (this: unknown): unknown {
     return this;
   })()); // global object
 }
@@ -162,14 +162,14 @@ function counterExample3(): void {
 
   const bound = explicitGreet.bind(obj1, "Greetings");
   console.log("bound():", bound());
-  console.log("bound.call(obj2):", bound.call(obj2 as unknown as { name: string }, "Hi")); // 仍然是 obj1
+  console.log("bound.call(obj2):", bound.call(obj2 as unknown as { name: string })); // 仍然是 obj1
 }
 
 /** 反例 4: new 绑定优先级高于 bind */
 function counterExample4(): void {
   console.log("\n--- Counter-example 4: new > bind ---");
   const BoundPerson = PersonConstructor.bind({ name: "BoundName" });
-  const p = new (BoundPerson as new (name: string) => { name: string })("NewName");
+  const p = new (BoundPerson as unknown as new (name: string) => { name: string })("NewName");
   console.log("new 绑定优先级更高:", p.name); // "NewName"
 }
 
@@ -177,8 +177,8 @@ function counterExample4(): void {
 function counterExample5(): void {
   console.log("\n--- Counter-example 5: 箭头函数的 this 不可变 ---");
   const obj = { value: 100 };
-  const arrow = (): number => {
-    return (this as { value?: number }).value ?? -1;
+  const arrow = function(this: { value?: number }): number {
+    return this.value ?? -1;
   };
   console.log("arrow.call(obj):", arrow.call(obj as unknown as ThisParameterType<typeof arrow>));
   console.log("箭头函数的 this 在定义时确定，无法通过 call/apply/bind 改变");

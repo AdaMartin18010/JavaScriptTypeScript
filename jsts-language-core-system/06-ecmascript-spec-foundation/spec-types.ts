@@ -255,6 +255,7 @@ function counterExample3(): void {
   const obj = {
     get broken() {
       // 忘记 return
+      return undefined;
     },
     get fixed() {
       return "value";

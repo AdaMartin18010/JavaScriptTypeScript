@@ -11,6 +11,7 @@ export function demo(): void {
   const sym1 = Symbol("description");
   const sym2 = Symbol("description");
 
+  // @ts-expect-error: Symbol() always creates a unique symbol
   console.log("  sym1 === sym2:", sym1 === sym2); // false
   console.log("  typeof sym1:", typeof sym1);     // "symbol"
 
@@ -34,6 +35,7 @@ export function demo(): void {
   const sharedA = Symbol.for("app.sharedKey");
   const sharedB = Symbol.for("app.sharedKey");
 
+  // @ts-expect-error: Symbol.for() returns the same global symbol
   console.log("  sharedA === sharedB:", sharedA === sharedB); // true
   console.log("  Symbol.keyFor(sharedA):", Symbol.keyFor(sharedA)); // "app.sharedKey"
 

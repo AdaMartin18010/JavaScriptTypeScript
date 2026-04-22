@@ -20,3 +20,10 @@ export async function demo(): Promise<void> {
   await asyncTransformDemo();
   await topLevelAwaitDemo();
 }
+
+// 直接运行
+import { fileURLToPath } from 'node:url';
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] === __filename) {
+  demo();
+}

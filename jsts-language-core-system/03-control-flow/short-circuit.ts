@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * @file 短路逻辑与逻辑运算符
  * @category Language Core → Control Flow

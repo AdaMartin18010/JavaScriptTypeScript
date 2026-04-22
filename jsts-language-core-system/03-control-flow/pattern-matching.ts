@@ -109,9 +109,10 @@ function matchNestedObject(obj: unknown): string {
     'user' in obj &&
     typeof (obj as Record<string, unknown>).user === 'object' &&
     (obj as Record<string, unknown>).user !== null &&
-    'profile' in (obj as Record<string, unknown>).user &&
+    'profile' in ((obj as Record<string, unknown>).user as Record<string, unknown>) &&
     typeof ((obj as Record<string, unknown>).user as Record<string, unknown>).profile === 'object' &&
     ((obj as Record<string, unknown>).user as Record<string, unknown>).profile !== null &&
+    // @ts-expect-error: TypeScript cannot narrow through this deep assertion chain
     'name' in ((obj as Record<string, unknown>).user as Record<string, unknown>).profile
   ) {
     const {

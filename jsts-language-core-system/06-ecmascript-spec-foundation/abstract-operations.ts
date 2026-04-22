@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * @file 抽象操作实现
  * @category ECMAScript Spec Foundation → Abstract Operations

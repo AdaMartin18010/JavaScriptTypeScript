@@ -23,7 +23,7 @@ interface User {
 export function demoInterface(): void {
   console.log('=== 1. interface ===');
   const user: User = { id: 1, name: 'Alice', email: 'a@example.com' };
-  console.log(`  运行时无 User 接口存在: ${typeof User}`); // undefined!
+  console.log(`  运行时无 User 接口存在: ${typeof (globalThis as any).User}`); // undefined!
   console.log(`  user 对象: ${JSON.stringify(user)}`);
   console.log('  💡 JS 等价: JSDoc @typedef 或运行时 duck typing');
 }
@@ -43,7 +43,7 @@ export function demoTypeAlias(): void {
   console.log('\n=== 2. type 别名 ===');
   const id1: ID = 'abc';
   const id2: ID = 123;
-  console.log(`  ID 类型运行时消失: typeof ID === ${(typeof ID as unknown as string) ?? 'undefined'}`);
+  console.log(`  ID 类型运行时消失: typeof ID === ${typeof (globalThis as any).ID}`);
   console.log('  💡 JS 等价: JSDoc @typedef 或注释说明');
 }
 

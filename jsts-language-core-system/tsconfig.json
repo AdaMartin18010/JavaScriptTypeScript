@@ -10,5 +10,13 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["01-type-system/**/*.ts"]
+  "include": [
+    "01-type-system/**/*.ts",
+    "02-variable-system/**/*.ts",
+    "03-control-flow/**/*.ts",
+    "04-execution-model/**/*.ts",
+    "05-execution-flow/**/*.ts",
+    "06-ecmascript-spec-foundation/**/*.ts",
+    "07-js-ts-symmetric-difference/**/*.ts"
+  ]
 }

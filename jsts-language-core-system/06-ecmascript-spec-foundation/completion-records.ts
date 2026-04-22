@@ -22,7 +22,7 @@ function NormalCompletion<T>(value?: T): CompletionRecord<T> {
 }
 
 function ThrowCompletion(reason: unknown): CompletionRecord<never> {
-  return { type: "throw", value: reason };
+  return { type: "throw", value: reason as never };
 }
 
 function ReturnCompletion<T>(value: T): CompletionRecord<T> {
@@ -319,7 +319,7 @@ function counterExample5(): void {
 
   const gen = generator();
   console.log("next():", gen.next());
-  console.log("return():", gen.return("early exit"));
+  console.log("return():", gen.return("early exit" as never));
   console.log("next():", gen.next());
 }
 

@@ -23,3 +23,10 @@ export function demo(): void {
   memoryGCDemo();
   agentRealmDemo();
 }
+
+// 直接运行
+import { fileURLToPath } from 'node:url';
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] === __filename) {
+  demo();
+}

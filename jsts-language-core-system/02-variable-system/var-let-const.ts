@@ -58,7 +58,6 @@ export function demo(): void {
 
   // ❌ Reassigning the variable itself fails
   try {
-    // @ts-expect-error: TS catches this, but we simulate runtime
     (obj as any) = { value: 3 };
   } catch (e: any) {
     console.log("  ❌ reassigned const object:", e.message);
@@ -78,6 +77,7 @@ export function demo(): void {
 
   // ✅ var: hoisted and initialized to undefined
   function varTdz() {
+    // @ts-expect-error: var is hoisted and initialized to undefined
     console.log("  var before declaration:", typeof undeclaredVar); // "undefined"
     var undeclaredVar = 42;
   }

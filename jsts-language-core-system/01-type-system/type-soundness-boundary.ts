@@ -273,6 +273,8 @@ export function demo() {
   console.log("\n✅ type-soundness-boundary demo complete\n");
 }
 
-if (require.main === module) {
+import { fileURLToPath } from 'node:url';
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] === __filename) {
   demo();
 }

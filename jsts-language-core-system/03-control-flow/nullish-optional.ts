@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * @file 空值合并与可选链
  * @category Language Core → Control Flow

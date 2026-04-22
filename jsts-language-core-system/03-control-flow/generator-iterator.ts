@@ -14,7 +14,7 @@
 // ============================================================================
 
 /** ✅ 简单生成器：惰性序列 */
-function* countUpTo(max: number): Generator<number, void, unknown> {
+function* countUpTo(max: number): Generator<number, any, unknown> {
   for (let i = 1; i <= max; i++) {
     yield i;
   }

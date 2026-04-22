@@ -30,6 +30,7 @@ export function demo(): void {
   console.log("\n=== 2. var Hoisting vs Function Expression (反例) ===");
 
   // ✅ var is hoisted and initialized to undefined
+  // @ts-expect-error: var is hoisted, initialized to undefined at runtime
   console.log("  varBefore declaration:", typeof varBefore); // "undefined"
   var varBefore = 42;
   console.log("  varBefore after assignment:", varBefore);     // 42
@@ -64,6 +65,7 @@ export function demo(): void {
 
   function greet() {
     // Most developers expect "global" here, but...
+    // @ts-expect-error: var is hoisted inside function scope
     console.log("  name inside greet (before var):", typeof name); // "undefined" (hoisted!)
     var name = "local";
     console.log("  name inside greet (after var):", name);           // "local"

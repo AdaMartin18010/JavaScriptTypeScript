@@ -57,12 +57,14 @@ function demonstrateSymbolFor(): void {
   const sym1 = Symbol.for("shared");
   const sym2 = Symbol.for("shared");
 
+  // @ts-expect-error: Symbol.for() returns the same symbol for the same key
   console.log("Symbol.for('shared') === Symbol.for('shared'):", sym1 === sym2);
   console.log("Symbol.for 创建的 symbol 在所有 Realm 中共享");
 
   // 普通 Symbol 每次创建都是唯一的
   const unique1 = Symbol("unique");
   const unique2 = Symbol("unique");
+  // @ts-expect-error: Symbol() always creates a unique symbol
   console.log("Symbol('unique') === Symbol('unique'):", unique1 === unique2);
 
   // Symbol.keyFor 只能用于 Symbol.for 创建的 symbol

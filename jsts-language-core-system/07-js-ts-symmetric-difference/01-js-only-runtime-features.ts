@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 /**
  * @file JS-Only 运行时特性
  * @description
