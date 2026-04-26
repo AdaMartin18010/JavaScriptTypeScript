@@ -18,6 +18,7 @@
     "05-execution-flow/**/*.ts",
     "06-ecmascript-spec-foundation/**/*.ts",
     "07-js-ts-symmetric-difference/**/*.ts",
-    "08-module-system/**/*.ts"
+    "08-module-system/**/*.ts",
+    "09-object-model/**/*.ts"
   ]
 }

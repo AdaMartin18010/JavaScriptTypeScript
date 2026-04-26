@@ -15,11 +15,12 @@
 | [03 控制流](./03-control-flow/) | 9+ | 条件、循环、异常、生成器、异步控制、资源管理 |
 | [04 执行模型](./04-execution-model/) | 11+ | V8 引擎、事件循环、内存管理、并发原语 |
 | [05 执行流](./05-execution-flow/) | 6+ | 同步/异步流、Promise、async/await、事件循环练习 |
-| [06 规范基础](./06-ecmascript-spec-foundation/) | 4+ | 抽象操作、规范类型、内部方法、Completion Records |
+| [06 规范基础](./06-ecmascript-spec-foundation/) | 6+ | 抽象操作、规范类型、内部方法、Completion Records、环境记录、Realm |
 | [07 JS/TS 对称差](./07-js-ts-symmetric-difference/) | 6 | JS-Only 特性、TS-Only 特性、运行时影响、类型系统边界、反向映射 |
+| [08 模块系统](./08-module-system/) | 6+ | ESM、CommonJS、互操作、模块解析、循环依赖 |
 | [09 对象模型](./09-object-model/) | 5+ | 属性描述符、原型链、Proxy/Reflect、私有字段、创建模式 |
 
-**总计：63+ 个理论文件 + 52+ 个可运行 TS 代码文件 | 全部 > 5000 字节**
+**总计：75+ 个理论文件 + 60+ 个可运行 TS 代码文件 | 全部 > 5000 字节**
 
 ---
 

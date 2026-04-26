@@ -93,14 +93,14 @@
 
 | 指标 | 数量 | 说明 |
 |------|------|------|
-| 文档总数 | 220+ | 涵盖指南、对比矩阵、决策树、知识图谱 |
-| 分类文档 | 27 | 按技术领域系统分类 |
+| 文档总数 | 280+ | 涵盖指南、对比矩阵、决策树、知识图谱、研究文档 |
+| 分类文档 | 30 | 按技术领域系统分类 |
 | 对比矩阵 | 16 | 多维度工具/框架横向对比 |
 | 代码模块 | 90+ | jsts-code-lab 可运行示例 |
 | Mermaid 图表 | 21 | 含 3 个大型知识图谱 |
 | 决策树场景 | 15 | 交互式技术选型流程 |
-| AI Agent 模块 | 5+ | MCP / Vercel AI SDK / Mastra 集成 |
-| 现代认证模块 | 3+ | better-auth / Passkeys / OAuth 2.1 |
+| AI Agent 模块 | 8+ | MCP / A2A / Vercel AI SDK v6 / Mastra / LangGraph / CrewAI / OpenAI Agents SDK |
+| 现代认证模块 | 5+ | better-auth / Passkeys / OAuth 2.1 / FedCM / MFA |
 
 ---
 

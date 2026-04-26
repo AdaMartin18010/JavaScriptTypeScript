@@ -140,7 +140,7 @@ function demoEsmCircularTDZ() {
   // safe-b 被触发，访问 safe-a.x
   try {
     const x = getImport("safe-a", "x");
-    defineExport("safe-b", "y", x + 1);
+    defineExport("safe-b", "y", (x as number) + 1);
     console.log("    safe-b.y =", getImport("safe-b", "y"));
   } catch (e: any) {
     console.log("    ERROR:", e.message);

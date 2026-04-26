@@ -30,7 +30,7 @@ function demoModuleWrapper() {
   ) {
     const module = { exports: {} as Record<string, unknown> };
     const exports = module.exports;
-    const __dirname = filename.replace(/\\/[^\\]*$/, "");
+    const __dirname = filename.substring(0, filename.lastIndexOf("/"));
 
     // 模拟 require 函数
     const require = (id: string) => {
@@ -270,7 +270,7 @@ function demoSloppyMode() {
 
   // CJS 中 this 指向 module.exports
   const simulatedModule = { exports: { name: "test" } };
-  const sloppyThis = (function () { return this; }).call(simulatedModule.exports);
+  const sloppyThis = (function (this: any) { return this; }).call(simulatedModule.exports);
   console.log("  CJS 模块内 this === module.exports:", sloppyThis === simulatedModule.exports);
 
   // ESM 中 this === undefined

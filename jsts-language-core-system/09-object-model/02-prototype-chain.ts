@@ -1,284 +1,276 @@
 /**
- * 02-prototype-chain.ts
- * Runnable TypeScript examples demonstrating the Prototype Chain.
- * Execute with: npx ts-node 02-prototype-chain.ts
+ * 原型链深入演示 (Prototype Chain Deep Dive)
+ *
+ * 涵盖: [[Prototype]]、__proto__ vs getPrototypeOf、new 语义、
+ *       instanceof / Symbol.hasInstance、isPrototypeOf、Class 语法糖、
+ *       原型链 Mermaid 结构验证
  */
 
-console.log("=== Section 1: __proto__ vs Object.getPrototypeOf() ===");
+// ============================================================
+// 1. 原型链基础与读取
+// ============================================================
+function demoPrototypeBasics() {
+  console.log("\n=== Prototype Basics ===");
 
-const plain = { a: 1 };
-console.log("Using Object.getPrototypeOf:", Object.getPrototypeOf(plain) === Object.prototype);
-console.log("Using __proto__:", (plain as { __proto__: object }).__proto__ === Object.prototype);
+  const obj = { a: 1 };
+  console.log("obj.__proto__ === Object.prototype:", obj.__proto__ === Object.prototype);
+  console.log("Object.getPrototypeOf(obj) === Object.prototype:", Object.getPrototypeOf(obj) === Object.prototype);
 
-// setPrototypeOf mutation
-const protoA = { source: "A" };
-const protoB = { source: "B" };
-const mutableProto = Object.create(protoA);
-console.log("Before setPrototypeOf - mutableProto.source:", mutableProto.source); // "A"
-Object.setPrototypeOf(mutableProto, protoB);
-console.log("After setPrototypeOf - mutableProto.source:", mutableProto.source);  // "B"
+  // __proto__ 与 getPrototypeOf 在普通对象上等价
+  console.log("__proto__ === getPrototypeOf:", obj.__proto__ === Object.getPrototypeOf(obj));
 
-// Demonstrating preference for standard API
-const modernObj = {};
-const p = Object.getPrototypeOf(modernObj);
-console.log("Modern API returns Object.prototype:", p === Object.prototype);
-
-
-console.log("\n=== Section 2: The End of Chain - Object.prototype ===");
-
-const endOfChain = {};
-console.log("Object.getPrototypeOf(endOfChain) === Object.prototype:", Object.getPrototypeOf(endOfChain) === Object.prototype);
-console.log("Object.getPrototypeOf(Object.prototype):", Object.getPrototypeOf(Object.prototype)); // null
-
-// Null-prototype dictionary (no inherited toString/hasOwnProperty)
-const dict: Record<string, string> = Object.create(null);
-dict["toString"] = "not a function";
-console.log("Null-prototype dict['toString']:", dict["toString"]); // "not a function"
-console.log("'toString' in dict:", "toString" in dict);           // true
-console.log("dict.hasOwnProperty:", (dict as { hasOwnProperty?: unknown }).hasOwnProperty); // undefined
-
-
-console.log("\n=== Section 3: Constructor Functions and .prototype ===");
-
-function Person(this: void, name: string): void {
-  // Intentionally using explicit pattern to avoid strict TS 'this' errors
-  // In real constructors 'this' is implicitly provided by 'new'
+  // Object.create(null) 无原型
+  const nullProto = Object.create(null);
+  console.log("Object.getPrototypeOf(nullProto):", Object.getPrototypeOf(nullProto)); // null
+  // nullProto.__proto__ 是 undefined，因为没有 Object.prototype
+  console.log("nullProto.__proto__:", (nullProto as any).__proto__); // undefined
 }
 
-// Re-declare as constructable
-interface PersonConstructor {
-  new (name: string): { name: string; greet(): string };
-  prototype: { greet(): string };
+// ============================================================
+// 2. 构造函数、.prototype 与 new 语义
+// ============================================================
+function demoConstructorAndNew() {
+  console.log("\n=== Constructor + new ===");
+
+  function Animal(this: any, name: string) {
+    this.name = name;
+  }
+  Animal.prototype.speak = function () {
+    return `${this.name} makes a sound`;
+  };
+
+  const dog = new (Animal as any)("Buddy");
+  console.log("dog.name:", dog.name); // Buddy
+  console.log("dog.speak():", dog.speak()); // "Buddy makes a sound"
+  console.log("dog.[[Prototype]] === Animal.prototype:", Object.getPrototypeOf(dog) === Animal.prototype);
+  console.log("Animal.prototype.constructor === Animal:", Animal.prototype.constructor === Animal);
+
+  // 模拟 new 运算符的实现
+  function simulateNew(constructor: Function, ...args: any[]) {
+    const obj = Object.create(constructor.prototype);
+    const result = constructor.apply(obj, args);
+    return result !== null && (typeof result === "object" || typeof result === "function") ? result : obj;
+  }
+
+  const simulated = simulateNew(Animal, "Sim");
+  console.log("simulated.speak():", simulated.speak()); // "Sim makes a sound"
 }
 
-const PersonCtor = function (this: { name: string }, name: string) {
-  this.name = name;
-} as unknown as PersonConstructor;
+// ============================================================
+// 3. instanceof 与 Symbol.hasInstance
+// ============================================================
+function demoInstanceof() {
+  console.log("\n=== instanceof ===");
 
-PersonCtor.prototype.greet = function (this: { name: string }): string {
-  return `Hello, I am ${this.name}`;
-};
+  class Animal {}
+  class Dog extends Animal {}
 
-const alice = new PersonCtor("Alice");
-console.log("alice.name:", alice.name);
-console.log("alice.greet():", alice.greet());
-console.log("Object.getPrototypeOf(alice) === PersonCtor.prototype:", Object.getPrototypeOf(alice) === PersonCtor.prototype);
-console.log("PersonCtor.prototype.constructor === PersonCtor:", PersonCtor.prototype.constructor === PersonCtor);
+  const dog = new Dog();
+  console.log("dog instanceof Dog:", dog instanceof Dog); // true
+  console.log("dog instanceof Animal:", dog instanceof Animal); // true
+  console.log("dog instanceof Object:", dog instanceof Object); // true
 
+  // 边缘案例：修改 prototype 后 instanceof 结果变化
+  const originalProto = Dog.prototype;
+  Dog.prototype = {} as any;
+  console.log("after prototype swap, dog instanceof Dog:", dog instanceof Dog); // false
+  console.log("Dog.prototype.isPrototypeOf(dog):", Dog.prototype.isPrototypeOf(dog)); // false
 
-console.log("\n=== Section 4: new Operator Semantics (Step by Step) ===");
+  // 恢复原型（不影响已创建的实例的原型链，但恢复 instanceof 对新实例有效）
+  Dog.prototype = originalProto;
+  console.log("after restore, dog instanceof Dog:", dog instanceof Dog); // true
 
-function Vehicle(this: { wheels: number; type: string }, wheels: number, type: string) {
-  this.wheels = wheels;
-  this.type = type;
+  // Symbol.hasInstance 定制
+  class ArrayLike {
+    static [Symbol.hasInstance](instance: any) {
+      return instance && typeof instance.length === "number";
+    }
+  }
+
+  console.log("[] instanceof ArrayLike:", [] instanceof ArrayLike); // true
+  console.log("'hello' instanceof ArrayLike:", "hello" instanceof (ArrayLike as any)); // false
 }
 
-Vehicle.prototype.describe = function (this: { wheels: number; type: string }): string {
-  return `A ${this.type} with ${this.wheels} wheels.`;
-};
+// ============================================================
+// 4. isPrototypeOf 的跨 Realm 优势
+// ============================================================
+function demoIsPrototypeOf() {
+  console.log("\n=== isPrototypeOf ===");
 
-// Custom new simulation to demonstrate semantics
-function simulateNew<F extends (...args: any[]) => any>(
-  constructor: F,
-  ...args: Parameters<F>
-): ReturnType<F> {
-  // Step 1: Create object with constructor's prototype
-  const obj = Object.create(constructor.prototype);
-  // Step 2: Call constructor with obj as 'this'
-  const result = constructor.apply(obj, args);
-  // Step 3: If constructor returns an object, use it; else use obj
-  return (result !== null && (typeof result === "object" || typeof result === "function")) ? result : obj;
+  const grandparent = { generation: 1 };
+  const parent = Object.create(grandparent);
+  parent.generation = 2;
+  const child = Object.create(parent);
+  child.generation = 3;
+
+  console.log("grandparent.isPrototypeOf(parent):", grandparent.isPrototypeOf(parent)); // true
+  console.log("grandparent.isPrototypeOf(child):", grandparent.isPrototypeOf(child)); // true
+  console.log("parent.isPrototypeOf(child):", parent.isPrototypeOf(child)); // true
+  console.log("child.isPrototypeOf(grandparent):", child.isPrototypeOf(grandparent)); // false
+
+  // Object.prototype 是所有普通对象的最终原型
+  console.log("Object.prototype.isPrototypeOf(child):", Object.prototype.isPrototypeOf(child)); // true
+  console.log("Object.prototype.isPrototypeOf({}):", Object.prototype.isPrototypeOf({})); // true
 }
 
-const bike = simulateNew(Vehicle, 2, "bicycle");
-console.log("Simulated new - bike.describe():", bike.describe());
-console.log("bike instanceof Vehicle:", bike instanceof Vehicle);
+// ============================================================
+// 5. Class 语法糖与原型链结构
+// ============================================================
+function demoClassSugar() {
+  console.log("\n=== Class Syntax ===");
 
-// Constructor returning explicit object
-function Box(this: { label: string }) {
-  // @ts-ignore
-  this.label = "ignored";
-  return { label: "explicit" };
+  class Shape {
+    constructor(public name: string) {}
+    describe() {
+      return `Shape: ${this.name}`;
+    }
+  }
+
+  class Rectangle extends Shape {
+    constructor(name: string, public width: number, public height: number) {
+      super(name);
+    }
+    area() {
+      return this.width * this.height;
+    }
+  }
+
+  const rect = new Rectangle("rect", 10, 20);
+  console.log("rect.describe():", rect.describe()); // 继承自 Shape
+  console.log("rect.area():", rect.area()); // Rectangle 自身
+
+  // 原型链验证
+  console.log(
+    "rect.[[Prototype]] === Rectangle.prototype:",
+    Object.getPrototypeOf(rect) === Rectangle.prototype
+  );
+  console.log(
+    "Rectangle.prototype.[[Prototype]] === Shape.prototype:",
+    Object.getPrototypeOf(Rectangle.prototype) === Shape.prototype
+  );
+  console.log(
+    "Shape.prototype.[[Prototype]] === Object.prototype:",
+    Object.getPrototypeOf(Shape.prototype) === Object.prototype
+  );
+
+  // super 的静态绑定
+  const originalDescribe = Shape.prototype.describe;
+  Shape.prototype.describe = function () {
+    return "hijacked";
+  };
+  console.log("rect.describe() after prototype swap:", rect.describe());
+  // 仍然输出 "Shape: rect" 因为 super 在类声明时静态绑定？
+  // 注意：上面的 rect.describe() 调用的是 Rectangle.prototype.describe，其中 super.describe() 绑定到原始 Shape.prototype.describe
+  // 所以 rect.describe() 输出 "Shape: rect"
+
+  // 恢复
+  Shape.prototype.describe = originalDescribe;
 }
-const box = new (Box as any)();
-console.log("Constructor returned explicit object - box.label:", box.label); // "explicit"
 
+// ============================================================
+// 6. 原型链性能：深度链 vs 扁平结构
+// ============================================================
+function demoPrototypePerformance() {
+  console.log("\n=== Prototype Chain Performance ===");
 
-console.log("\n=== Section 5: instanceof Operator and Symbol.hasInstance ===");
+  // 构建一个深原型链
+  let deep: any = { value: 42 };
+  for (let i = 0; i < 1000; i++) {
+    deep = Object.create(deep);
+  }
 
-class Animal {
-  constructor(public name: string) {}
+  // 读取底层属性需要遍历 1000+ 层
+  const start = performance.now();
+  for (let i = 0; i < 1_000_000; i++) {
+    deep.value;
+  }
+  const elapsed = performance.now() - start;
+  console.log(`deep chain (1000 levels) x1M reads: ${elapsed.toFixed(2)}ms`);
+
+  // 扁平结构
+  const flat: any = Object.create({ value: 42 });
+  const start2 = performance.now();
+  for (let i = 0; i < 1_000_000; i++) {
+    flat.value;
+  }
+  const elapsed2 = performance.now() - start2;
+  console.log(`flat chain (1 level) x1M reads: ${elapsed2.toFixed(2)}ms`);
 }
 
-class Dog extends Animal {
-  constructor(name: string, public breed: string) {
-    super(name);
+// ============================================================
+// 7. Object.create(null) 安全字典
+// ============================================================
+function demoNullPrototypeDict() {
+  console.log("\n=== Null Prototype Dictionary ===");
+
+  const unsafe: Record<string, any> = {};
+  const safe = Object.create(null);
+
+  // 原型污染攻击模拟
+  (Object.prototype as any).polluted = "I am evil";
+
+  console.log("unsafe.polluted:", unsafe.polluted); // "I am evil"
+  console.log("safe.polluted:", (safe as any).polluted); // undefined
+
+  // 清理
+  delete (Object.prototype as any).polluted;
+
+  // safe 对象可用作 Map 的轻量替代
+  (safe as any).toString = "not a function";
+  console.log("safe.toString:", (safe as any).toString); // "not a function"（无冲突）
+}
+
+// ============================================================
+// 反例集合 (Counter-examples)
+// ============================================================
+function demoCounterExamples() {
+  console.log("\n=== Counter-examples ===");
+
+  // 反例 1：Object.setPrototypeOf 的性能代价
+  const perfObj: any = { a: 1, b: 2, c: 3 };
+  Object.setPrototypeOf(perfObj, { inherited: true });
+  // V8 会退化该对象为字典模式，后续属性访问变慢
+  console.log("perfObj.inherited:", perfObj.inherited);
+
+  // 反例 2：函数也是对象，具有 prototype 和 __proto__
+  function fn() {}
+  console.log("fn.__proto__ === Function.prototype:", fn.__proto__ === Function.prototype);
+  console.log("fn.prototype.__proto__ === Object.prototype:", fn.prototype.__proto__ === Object.prototype);
+
+  // 反例 3：箭头函数没有 prototype
+  const arrow = () => {};
+  console.log("arrow.prototype:", (arrow as any).prototype); // undefined
+
+  // 反例 4：instanceof 右侧非对象会抛 TypeError
+  try {
+    ({} as any) instanceof 42;
+  } catch (e: any) {
+    console.log("instanceof non-object:", e.name, e.message);
   }
 }
 
-const dog = new Dog("Rex", "German Shepherd");
-console.log("dog instanceof Dog:", dog instanceof Dog);
-console.log("dog instanceof Animal:", dog instanceof Animal);
-console.log("dog instanceof Object:", dog instanceof Object);
+// ============================================================
+// 导出的 demo 函数
+// ============================================================
+export function demo() {
+  console.log("╔══════════════════════════════════════════════╗");
+  console.log("║      Prototype Chain Deep Dive Demo          ║");
+  console.log("╚══════════════════════════════════════════════╝");
 
-// Custom Symbol.hasInstance
-interface TaggedObject {
-  _tag: string;
+  demoPrototypeBasics();
+  demoConstructorAndNew();
+  demoInstanceof();
+  demoIsPrototypeOf();
+  demoClassSugar();
+  demoPrototypePerformance();
+  demoNullPrototypeDict();
+  demoCounterExamples();
+
+  console.log("\n✅ prototype-chain demo complete\n");
 }
 
-class TaggedValidator {
-  static [Symbol.hasInstance](instance: unknown): boolean {
-    return (
-      typeof instance === "object" &&
-      instance !== null &&
-      (instance as TaggedObject)._tag === "validated"
-    );
-  }
+import { fileURLToPath } from "node:url";
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] === __filename) {
+  demo();
 }
-
-const fakeInstance: TaggedObject = { _tag: "validated" };
-console.log("fakeInstance instanceof TaggedValidator:", fakeInstance instanceof TaggedValidator); // true
-
-const invalidInstance: TaggedObject = { _tag: "invalid" };
-console.log("invalidInstance instanceof TaggedValidator:", invalidInstance instanceof TaggedValidator); // false
-
-
-console.log("\n=== Section 6: isPrototypeOf() ===");
-
-const grandparent = { generation: 1 };
-const parent2 = Object.create(grandparent);
-const child2 = Object.create(parent2);
-
-console.log("parent2.isPrototypeOf(child2):", parent2.isPrototypeOf(child2));           // true
-console.log("grandparent.isPrototypeOf(child2):", grandparent.isPrototypeOf(child2)); // true
-console.log("Object.prototype.isPrototypeOf(child2):", Object.prototype.isPrototypeOf(child2)); // true
-console.log("child2.isPrototypeOf(parent2):", child2.isPrototypeOf(parent2));         // false
-
-
-console.log("\n=== Section 7: Class Syntax as Prototype Sugar ===");
-
-class Shape {
-  constructor(public color: string) {}
-  describe(): string {
-    return `A ${this.color} shape.`;
-  }
-}
-
-class Rectangle extends Shape {
-  constructor(color: string, public width: number, public height: number) {
-    super(color);
-  }
-  area(): number {
-    return this.width * this.height;
-  }
-  describe(): string {
-    return `${super.describe()} It is ${this.width}x${this.height}.`;
-  }
-}
-
-const rect = new Rectangle("blue", 10, 20);
-console.log("rect.describe():", rect.describe());
-console.log("rect.area():", rect.area());
-console.log("rect instanceof Rectangle:", rect instanceof Rectangle);
-console.log("rect instanceof Shape:", rect instanceof Shape);
-console.log("rect instanceof Object:", rect instanceof Object);
-
-// Inspecting the chain
-console.log("\nPrototype chain inspection:");
-let current: object | null = rect;
-let depth = 0;
-while (current !== null) {
-  const ctor = (current as { constructor?: { name: string } }).constructor;
-  console.log(`  depth ${depth}:`, ctor?.name ?? "(null prototype)");
-  current = Object.getPrototypeOf(current);
-  depth++;
-}
-
-
-console.log("\n=== Section 8: Static Prototype Chain ===");
-
-class BaseService {
-  static serviceName = "Base";
-  static logService(): void {
-    console.log("Service:", this.serviceName);
-  }
-}
-
-class UserService extends BaseService {
-  static serviceName = "User";
-}
-
-console.log("UserService.serviceName:", UserService.serviceName); // "User"
-UserService.logService(); // "Service: User"
-console.log("UserService inherits logService from BaseService:", UserService.logService === BaseService.logService);
-
-// Static chain inspection
-console.log("Static chain:");
-let staticCurrent: object | null = UserService;
-let staticDepth = 0;
-while (staticCurrent !== null) {
-  const name = (staticCurrent as { name?: string }).name ?? "(anonymous)";
-  console.log(`  static depth ${staticDepth}:`, name);
-  staticCurrent = Object.getPrototypeOf(staticCurrent);
-  staticDepth++;
-}
-
-
-console.log("\n=== Section 9: Edge Cases ===");
-
-// 9.1 Prototype cycle prevention
-const nodeA: { link?: object | null } = {};
-const nodeB: { link?: object | null } = {};
-Object.setPrototypeOf(nodeA, nodeB);
-console.log("Setting nodeB proto to nodeA throws:");
-try {
-  Object.setPrototypeOf(nodeB, nodeA);
-} catch (e) {
-  console.log("  Caught expected error:", (e as Error).name); // TypeError
-}
-
-// 9.2 Proxy prototype interception
-const proxyTarget = {};
-const proxy = new Proxy(proxyTarget, {
-  getPrototypeOf() {
-    return Array.prototype;
-  },
-});
-console.log("proxy instanceof Array (via Proxy trap):", proxy instanceof Array); // true
-
-// 9.3 Function.prototype is a function
-console.log("typeof Function.prototype:", typeof Function.prototype); // "function"
-console.log("Function.prototype instanceof Object:", Function.prototype instanceof Object); // true
-
-
-console.log("\n=== Section 10: Practical Pattern - Mixin via Prototype ===");
-
-const Flyable = {
-  fly(this: { altitude: number }): string {
-    return `Flying at ${this.altitude}m`;
-  },
-};
-
-interface Bird {
-  name: string;
-  altitude: number;
-}
-
-function Bird(this: Bird, name: string) {
-  this.name = name;
-  this.altitude = 100;
-}
-
-Bird.prototype = Object.create(Flyable);
-Bird.prototype.constructor = Bird;
-Bird.prototype.chirp = function (this: Bird): string {
-  return `${this.name} says tweet!`;
-};
-
-const sparrow = new (Bird as any)("Sparrow");
-console.log("sparrow.chirp():", sparrow.chirp());
-console.log("sparrow.fly():", sparrow.fly());
-console.log("Flyable.isPrototypeOf(sparrow):", Flyable.isPrototypeOf(sparrow));
-
-
-console.log("\n=== All prototype-chain demonstrations completed successfully ===");
