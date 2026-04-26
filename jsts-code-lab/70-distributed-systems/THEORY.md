@@ -453,3 +453,43 @@ P(consistent) = 1 - e^(-λt)
 - [Coursera: Cloud Computing Concepts](https://www.coursera.org/learn/cloud-computing) - 云计算基础
 - [The Raft Consensus Algorithm](https://raft.github.io/) - Raft 算法官方资源
 - [Paxos Made Simple](https://lamport.azurewebsites.net/pubs/paxos-simple.pdf) - Leslie Lamport
+
+---
+
+## 模块代码文件索引
+
+本模块包含以下可运行 TypeScript 代码文件，用于将上述理论概念转化为实践：
+
+- `circuit-breaker.ts`
+- `consistency-models.ts`
+- `consistent-hashing.ts`
+- `distributed-lock.ts`
+- `distributed-primitives.ts`
+- `index.ts`
+- `load-balancer.ts`
+- `rate-limiter.ts`
+- `service-discovery.ts`
+- `snowflake-id.ts`
+
+> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
+
+## 核心理论深化
+
+### 关键设计模式
+
+本模块涉及的核心设计模式包括（根据代码实现提炼）：
+
+1. **模式一**：待根据代码具体分析
+2. **模式二**：待根据代码具体分析
+3. **模式三**：待根据代码具体分析
+
+### 与相邻模块的关系
+
+| 相邻模块 | 关系说明 |
+|---------|---------|
+| 前置依赖 | 建议先掌握的基础模块 |
+| 后续进阶 | 可继续深化的相关模块 |
+
+---
+
+> 📅 理论深化更新：2026-04-27

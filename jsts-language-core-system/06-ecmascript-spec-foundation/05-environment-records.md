@@ -147,3 +147,56 @@ with (obj) {
 
 > 📅 最后更新：2026-04-27
 > 📏 字节数：~5,500+
+
+
+---
+
+## 补充：Environment Record 的规范算法
+
+### 补充 1：Global Environment Record 的复合操作
+
+Global Environment Record 是**复合环境记录**，它的操作需要协调内部两个子记录：
+
+```
+GlobalEnv.CreateGlobalVarBinding(N, D):
+  1. Let objRec be GlobalEnv.[[ObjectRecord]]
+  2. Let existingProp be objRec.[[GetOwnProperty]](N)
+  3. If existingProp is undefined:
+       a. Let desc be PropertyDescriptor { [[Value]]: undefined, [[Writable]]: true, [[Enumerable]]: true, [[Configurable]]: D }
+       b. Perform objRec.[[DefineOwnProperty]](N, desc)
+  4. Else if existingProp.[[Configurable]] is true:
+       a. Let desc be PropertyDescriptor { [[Value]]: undefined, [[Writable]]: true, [[Enumerable]]: true, [[Configurable]]: D }
+       b. Perform objRec.[[DefineOwnProperty]](N, desc)
+  5. Return unused
+```
+
+这就是为什么 `var` 声明会成为全局对象的可枚举属性，而 `let/const` 不会。
+
+### 补充 2：Function Environment Record 的 `this` 绑定
+
+函数调用时创建的 Function Environment Record 会绑定 `this` 值：
+
+| 调用方式 | `this` 绑定 |
+|---------|-----------|
+| `obj.method()` | `obj` |
+| `func()` | `undefined`（严格模式）/ 全局对象（非严格） |
+| `new Func()` | 新创建的对象 |
+| `func.call(obj)` / `func.apply(obj)` | 显式指定的 `obj` |
+| 箭头函数 | 词法继承（外层 `this`） |
+
+### 补充 3：Module Environment Record 的 Live Binding 实现
+
+Module Environment Record 的特殊之处在于它创建的是**间接绑定（Indirect Binding）**：
+
+```
+ModuleEnv.CreateImportBinding(N, M, N2):
+  1. Assert: M 是一个 Module Environment Record
+  2. Let binding be new IndirectBinding(N, M, N2)
+  3. Add binding to ModuleEnv.[[Bindings]]
+```
+
+当访问该绑定时，实际会转发到源模块 `M` 中的绑定 `N2`。这就是 ESM Live Binding 的底层机制。
+
+---
+
+> 📅 补充更新：2026-04-27

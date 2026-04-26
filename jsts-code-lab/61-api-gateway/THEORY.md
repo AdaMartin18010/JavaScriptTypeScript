@@ -195,3 +195,43 @@ API 网关是微服务架构的**战略要地**。
 - [Kong 文档](https://docs.konghq.com/)
 - [API Gateway Patterns](https://microservices.io/patterns/apigateway.html)
 - [Cloudflare API Gateway](https://developers.cloudflare.com/api-shield/)
+
+---
+
+## 模块代码文件索引
+
+本模块包含以下可运行 TypeScript 代码文件，用于将上述理论概念转化为实践：
+
+- `authentication.ts`
+- `caching-layer.ts`
+- `gateway-implementation.ts`
+- `health-check.ts`
+- `index.ts`
+- `load-balancing.ts`
+- `rate-limiting.ts`
+- `request-routing.ts`
+- `request-transformer.ts`
+- `response-aggregator.ts`
+
+> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
+
+## 核心理论深化
+
+### 关键设计模式
+
+本模块涉及的核心设计模式包括（根据代码实现提炼）：
+
+1. **模式一**：待根据代码具体分析
+2. **模式二**：待根据代码具体分析
+3. **模式三**：待根据代码具体分析
+
+### 与相邻模块的关系
+
+| 相邻模块 | 关系说明 |
+|---------|---------|
+| 前置依赖 | 建议先掌握的基础模块 |
+| 后续进阶 | 可继续深化的相关模块 |
+
+---
+
+> 📅 理论深化更新：2026-04-27

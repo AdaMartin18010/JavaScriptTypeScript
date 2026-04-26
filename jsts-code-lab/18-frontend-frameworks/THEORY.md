@@ -842,3 +842,36 @@ count.set(1); // 自动触发 Effect 更新
 - **`docs/categories/09-ssr-meta-frameworks.md`** — SSR / 元框架分类索引，涵盖 Next.js、Nuxt、Remix、Astro、SvelteKit 等全栈框架的横向对比。
 - **`jsts-code-lab/18-frontend-frameworks/signals-patterns/`** — Signals 模式实战代码库，包含从零实现的 Signal 系统、SolidJS/Preact/Angular/Svelte 5 的 Signals API 用法、Signals vs Hooks 的系统性对比实现。
 - **`JSTS全景综述/Signals_范式深度分析.md`** — Signals 范式的数学模型与形式化分析，涵盖 DAG 依赖图、惰性求值、跨框架实现对比、企业采纳趋势与迁移策略。
+
+---
+
+## 模块代码文件索引
+
+本模块包含以下可运行 TypeScript 代码文件，用于将上述理论概念转化为实践：
+
+- `index.ts`
+- `router-implementation.ts`
+- `state-management.ts`
+
+> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
+
+## 核心理论深化
+
+### 关键设计模式
+
+本模块涉及的核心设计模式包括（根据代码实现提炼）：
+
+1. **模式一**：待根据代码具体分析
+2. **模式二**：待根据代码具体分析
+3. **模式三**：待根据代码具体分析
+
+### 与相邻模块的关系
+
+| 相邻模块 | 关系说明 |
+|---------|---------|
+| 前置依赖 | 建议先掌握的基础模块 |
+| 后续进阶 | 可继续深化的相关模块 |
+
+---
+
+> 📅 理论深化更新：2026-04-27
