@@ -147,3 +147,84 @@ graph TD
 ---
 
 **参考规范**：ECMA-262 §6.2 | MDN: Reference
+
+
+---
+
+## 补充：规范类型深度解析
+
+### 补充 1：Environment Record 详细分类
+
+Environment Record 是 ECMA-262 中最重要的规范类型之一，用于描述变量和函数的词法绑定：
+
+```mermaid
+graph TD
+    ER["Environment Record"]
+    ER --> DER["Declarative Environment Record"]
+    ER --> OER["Object Environment Record"]
+    ER --> GER["Global Environment Record"]
+    ER --> MER["Module Environment Record"]
+    ER --> FER["Function Environment Record"]
+
+    DER --> D1["变量声明 let/const/var"]
+    DER --> D2["函数声明"]
+    DER --> D3["类声明"]
+
+    OER --> O1["with 语句"]
+    OER --> O2["全局对象绑定"]
+
+    GER --> G1["对象记录 ObjectRecord"]
+    GER --> G2["声明记录 DeclarativeRecord"]
+    GER --> G3["全局 this 绑定"]
+
+    MER --> M1["模块导入绑定"]
+    MER --> M2["模块导出绑定"]
+
+    FER --> F1["this 绑定"]
+    FER --> F2["super 绑定"]
+    FER --> F3["new.target"]
+```
+
+| Environment Record 类型 | 创建场景 | 特点 |
+|------------------------|---------|------|
+| **Declarative** | 块级作用域、函数体 | 存储 let/const/function/class |
+| **Object** | `with (obj)` | 将对象属性作为变量绑定 |
+| **Global** | 全局执行上下文 | 复合结构：Object + Declarative |
+| **Module** | ESM 模块 | 支持 Live Binding 的导入导出 |
+| **Function** | 函数调用 | 包含 this/super/new.target 绑定 |
+
+### 补充 2：Realm Record 的结构
+
+Realm Record 定义了 JavaScript 执行的"全局环境"：
+
+```
+Realm Record: {
+  [[Intrinsics]]:  → 内置对象映射（Object, Array, Function 等）
+  [[GlobalObject]]: → 全局对象（window / global / globalThis）
+  [[GlobalEnv]]:    → 全局环境记录
+  [[TemplateMap]]:  → 模板字符串缓存
+  [[LoadedModules]]: → 已加载模块映射
+}
+```
+
+**关键洞察**：每个 iframe 有自己的 Realm，因此 `Array` 构造函数在不同 iframe 中不相等。
+
+```javascript
+const iframe = document.createElement('iframe')
+document.body.appendChild(iframe)
+const iframeArray = iframe.contentWindow.Array
+console.log(Array === iframeArray)  // false！不同 Realm
+```
+
+### 补充 3：PromiseReaction Record 与 Job Queue
+
+| 规范类型 | 用途 | 可见性 |
+|---------|------|--------|
+| **PromiseReaction Record** | 存储 `.then()` / `.catch()` 的回调和解析行为 | 内部 |
+| **PromiseCapability Record** | 封装 Promise 的 `resolve` / `reject` 能力 | 内部 |
+| **Job** | 微任务单元（Promise 回调、MutationObserver） | 间接（通过事件循环） |
+| **Job Queue** | 微任务队列（PromiseJobs、ScriptJobs） | 间接 |
+
+---
+
+> 📅 补充更新：2026-04-27

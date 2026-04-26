@@ -175,3 +175,66 @@ graph TD
 ---
 
 **参考规范**：ECMA-262 §7 | MDN: Type Coercion
+
+
+---
+
+## 补充：更多核心抽象操作详解
+
+### 补充 1：SameValue、SameValueZero、SameValueNonNumber
+
+ECMA-262 定义了三种"相等性"抽象操作，对应 JavaScript 中的不同比较语义：
+
+| 抽象操作 | `NaN` vs `NaN` | `+0` vs `-0` | 对应 JS API |
+|---------|---------------|-------------|------------|
+| `IsStrictlyEqual` (`===`) | ❌ false | ✅ true | `===` |
+| `SameValue` | ✅ true | ❌ false | `Object.is()` |
+| `SameValueZero` | ✅ true | ✅ true | `Map.prototype.set` / `Set.prototype.add` |
+| `SameValueNonNumber` | N/A | N/A | 内部使用（字符串、对象比较） |
+
+**关键区别**：
+
+```javascript
+Object.is(NaN, NaN)        // true  ✅ SameValue
+NaN === NaN                // false ❌ IsStrictlyEqual
+Object.is(+0, -0)          // false ❌ SameValue 区分正负零
++0 === -0                  // true  ✅ IsStrictlyEqual 不区分
+
+const set = new Set()
+set.add(+0)
+set.add(-0)
+console.log(set.size)      // 1 ✅ SameValueZero 不区分正负零
+```
+
+### 补充 2：RequireObjectCoercible
+
+`RequireObjectCoercible(argument)` 是许多字符串和对象方法的隐式前置检查：
+
+| 输入 | 结果 |
+|------|------|
+| `undefined` | 抛出 TypeError |
+| `null` | 抛出 TypeError |
+| 其他 | 返回原值 |
+
+这也是 `"hello".trim()` 能工作而 `null.trim()` 抛错的原因。
+
+### 补充 3：抽象操作调用链完整示例
+
+```mermaid
+graph TD
+    A[表达式: obj + 1] --> B[ToPrimitive obj, hint: number]
+    B --> C{obj 有 [Symbol.toPrimitive]?}
+    C -->|是| D[调用 Symbol.toPrimitive'number']
+    C -->|否| E[尝试 valueOf]
+    D -->|返回原始值| F[ToNumber 结果]
+    D -->|返回对象| E
+    E -->|返回原始值| F
+    E -->|返回对象| G[尝试 toString]
+    G -->|返回原始值| F
+    G -->|返回对象| H[抛出 TypeError]
+    F --> I[执行加法]
+```
+
+---
+
+> 📅 补充更新：2026-04-27

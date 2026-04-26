@@ -673,3 +673,12 @@ npm install -D v8-to-istanbul
 6. **持续集成** - 将测试集成到 CI/CD 流程
 7. **代码覆盖率** - 保持合理覆盖率（建议 >80%）
 8. **Mock 边界** - 仅 mock 外部依赖，不 mock 被测代码
+
+
+---
+
+> 📦 **归档说明（2026-04-27）**
+>
+> 本文档与 `docs/categories/13-testing-ecosystem.md` 内容高度重叠，两者均覆盖测试工具生态。为确保内容统一，更完整的测试生态内容请参见 **[13-testing-ecosystem.md](./13-testing-ecosystem.md)**（750+ 行）。
+>
+> 未来版本计划将 `12-testing.md` 与 `13-testing-ecosystem.md` 合并为单一文件。本文档保留作为过渡期的兼容性入口。

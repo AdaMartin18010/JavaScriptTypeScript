@@ -700,3 +700,12 @@ const Box = styled.div`
 > 📊 **数据统计时间**：2026年4月
 >
 > ⭐ Stars 数据来源于 GitHub API，可能存在延迟
+
+
+---
+
+> 📦 **归档说明（2026-04-27）**
+>
+> 本文档与 `docs/guides/CSS_IN_JS_STYLING.md` 内容高度重叠。更详细的样式方案指南请参见 **[guides/CSS_IN_JS_STYLING.md](../guides/CSS_IN_JS_STYLING.md)**（2,100+ 行，覆盖 Tailwind v4、CSS-in-JS、原生 CSS 新特性等）。
+>
+> 本文档保留作为分类索引入口。

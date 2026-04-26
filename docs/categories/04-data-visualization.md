@@ -1633,3 +1633,12 @@ const edges = [{ id: 'e1-2', source: '1', target: '2' }];
 ---
 
 *最后更新: 2026-04-04*
+
+
+---
+
+> 📦 **归档说明（2026-04-27）**
+>
+> 本文档与 `docs/platforms/DATA_VISUALIZATION.md` 内容高度重叠。为确保"单一事实来源"，更详细的数据可视化内容请参见 **[platforms/DATA_VISUALIZATION.md](../platforms/DATA_VISUALIZATION.md)**（3,800+ 行，覆盖更完整的库对比和实战指南）。
+>
+> 本文档保留作为分类索引入口，核心内容已迁移至 platforms/ 目录。

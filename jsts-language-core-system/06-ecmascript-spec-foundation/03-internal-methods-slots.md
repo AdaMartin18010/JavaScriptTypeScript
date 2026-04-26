@@ -167,3 +167,80 @@ graph TD
 ---
 
 **参考规范**：ECMA-262 §6.1.7 | MDN: Proxy
+
+
+---
+
+## 补充：Exotic Objects 与内部方法变体
+
+### 补充 1：Exotic Objects 概述
+
+并非所有 JavaScript 对象都是"普通对象"（Ordinary Object）。ECMA-262 定义了多种**异质对象（Exotic Object）**，它们重写了部分内部方法：
+
+| 对象类型 | 重写的内部方法 | 特殊行为 |
+|---------|-------------|---------|
+| **Array** | `[[DefineOwnProperty]]` | 自动维护 `length` 属性 |
+| **String** | `[[GetOwnProperty]]` | 将索引访问映射到字符串字符 |
+| **Function** | `[[Call]]`, `[[Construct]]` | 可调用、可作为构造函数 |
+| **Arguments** | `[[GetOwnProperty]]` | 非严格模式下与形参联动 |
+| **Module Namespace** | `[[Get]]`, `[[Set]]` | Live Binding 语义 |
+| **Proxy** | **全部** | 自定义所有内部方法 |
+| **Bound Function** | `[[Call]]`, `[[Construct]]` | 预设 this 和部分参数 |
+
+### 补充 2：Array 的 `[[DefineOwnProperty]]` 特殊性
+
+```javascript
+const arr = []
+arr[0] = 'a'
+console.log(arr.length)  // 1 ✅ length 自动更新
+
+arr.length = 0
+console.log(arr[0])      // undefined ✅ 索引属性被删除
+```
+
+Array 的 `[[DefineOwnProperty]]` 在检测到索引属性设置时，会自动更新 `length`；反之，设置 `length` 时也会删除超出范围的索引属性。
+
+### 补充 3：Proxy 的不变量（Invariants）
+
+即使 Proxy 可以拦截所有内部方法，ECMA-262 仍规定了**不可违反的不变量**：
+
+| 不变量 | 说明 | 违反后果 |
+|--------|------|---------|
+| `[[GetPrototypeOf]]` 结果必须一致 | 对同一对象多次调用必须返回相同值（或沿着原型链） | TypeError |
+| 不可扩展对象的 `[[SetPrototypeOf]]` | 如果目标不可扩展，`setPrototypeOf` 必须返回 false | TypeError |
+| `[[IsExtensible]]` 不可伪造 | Proxy 的 `isExtensible` 必须与目标一致 | TypeError |
+| `[[OwnPropertyKeys]]` 必须包含不可配置属性 | 返回的键列表不能遗漏目标的不可配置属性 | TypeError |
+| `[[Get]]` 不可配置属性的值 | 如果属性不可配置且无 getter，返回值必须与目标一致 | TypeError |
+
+```javascript
+const target = { a: 1 }
+Object.preventExtensions(target)
+
+const proxy = new Proxy(target, {
+  isExtensible() { return true }  // ❌ 违反不变量！
+})
+
+Object.isExtensible(proxy)  // TypeError: 'isExtensible' on proxy: trap result does not reflect extensibility of proxy target
+```
+
+### 补充 4：内部方法完整映射表
+
+| 内部方法 | 普通对象行为 | Proxy 陷阱 | JS 语法触发 |
+|---------|------------|-----------|-----------|
+| `[[GetPrototypeOf]]` | 返回 `[[Prototype]]` | `getPrototypeOf` | `Object.getPrototypeOf` |
+| `[[SetPrototypeOf]]` | 修改 `[[Prototype]]` | `setPrototypeOf` | `Object.setPrototypeOf` |
+| `[[IsExtensible]]` | 返回 `[[Extensible]]` | `isExtensible` | `Object.isExtensible` |
+| `[[PreventExtensions]]` | 设置 `[[Extensible]]=false` | `preventExtensions` | `Object.preventExtensions` |
+| `[[GetOwnProperty]]` | 返回属性描述符 | `getOwnPropertyDescriptor` | `Object.getOwnPropertyDescriptor` |
+| `[[DefineOwnProperty]]` | 创建/修改属性 | `defineProperty` | `Object.defineProperty` |
+| `[[HasProperty]]` | 检查属性存在（含原型链） | `has` | `in` 运算符 |
+| `[[Get]]` | 读取属性值 | `get` | `obj.prop` |
+| `[[Set]]` | 设置属性值 | `set` | `obj.prop = val` |
+| `[[Delete]]` | 删除属性 | `deleteProperty` | `delete obj.prop` |
+| `[[OwnPropertyKeys]]` | 返回所有自有键 | `ownKeys` | `Object.keys/entries` |
+| `[[Call]]` | 函数调用 | `apply` | `func()` |
+| `[[Construct]]` | 构造函数 | `construct` | `new Func()` |
+
+---
+
+> 📅 补充更新：2026-04-27

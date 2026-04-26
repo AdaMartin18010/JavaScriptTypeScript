@@ -28,6 +28,7 @@ WebAssembly (Wasm) 是一种面向现代浏览器的**二进制指令格式**，
 ```
 
 **最佳分工模式**：
+
 - **JS**: DOM 操作、网络请求、业务逻辑、快速迭代
 - **Wasm**: 图像/视频编解码、加密、物理模拟、数值计算、机器学习推理
 
@@ -66,14 +67,14 @@ Wasm 使用线性内存（Linear Memory），与 JS 共享 ArrayBuffer：
 ```typescript
 class WasmMemoryManager {
   private memory: WebAssembly.Memory
-  
+
   constructor(initialPages = 256) {
-    this.memory = new WebAssembly.Memory({ 
-      initial: initialPages, 
-      maximum: initialPages * 4 
+    this.memory = new WebAssembly.Memory({
+      initial: initialPages,
+      maximum: initialPages * 4
     })
   }
-  
+
   // 写入字符串到 Wasm 内存
   writeString(str: string, offset: number): void {
     const encoder = new TextEncoder()
@@ -82,7 +83,7 @@ class WasmMemoryManager {
     view.set(bytes)
     view[bytes.length] = 0 // null terminator
   }
-  
+
   // 从 Wasm 内存读取字符串
   readString(offset: number): string {
     const view = new Uint8Array(this.memory.buffer)
@@ -90,7 +91,7 @@ class WasmMemoryManager {
     const decoder = new TextDecoder()
     return decoder.decode(view.subarray(offset, end === -1 ? undefined : end))
   }
-  
+
   getMemory(): WebAssembly.Memory {
     return this.memory
   }
@@ -126,12 +127,12 @@ impl ImageProcessor {
     pub fn new(width: u32, height: u32) -> Self {
         Self { width, height }
     }
-    
+
     pub fn grayscale(&self, data: &[u8]) -> Vec<u8> {
         data.chunks(4)
             .flat_map(|pixel| {
-                let gray = (pixel[0] as f32 * 0.299 
-                          + pixel[1] as f32 * 0.587 
+                let gray = (pixel[0] as f32 * 0.299
+                          + pixel[1] as f32 * 0.587
                           + pixel[2] as f32 * 0.114) as u8;
                 [gray, gray, gray, pixel[3]]
             })
@@ -193,6 +194,7 @@ console.log(factorial(10))    // 3628800
 ```
 
 **AssemblyScript 限制**：
+
 - 仅支持 `i32`, `i64`, `f32`, `f64` 等数值类型
 - 不支持动态对象、闭包、`any` 类型
 - 需手动管理内存
@@ -219,18 +221,18 @@ wasm.exports.process_batch(dataPtr, data.length) // 1次边界跨越
 
 ```typescript
 // 使用 SharedArrayBuffer 避免复制
-const sharedMemory = new WebAssembly.Memory({ 
-  initial: 256, 
+const sharedMemory = new WebAssembly.Memory({
+  initial: 256,
   maximum: 512,
   shared: true // 允许 Web Worker 共享
 })
 
 // Worker 中直接读写同一块内存
-worker.postMessage({ 
-  type: 'process', 
-  memory: sharedMemory, 
-  offset, 
-  length 
+worker.postMessage({
+  type: 'process',
+  memory: sharedMemory,
+  offset,
+  length
 })
 ```
 
@@ -328,3 +330,12 @@ console.log(`Wasm execution: ${duration.toFixed(2)}ms`)
 > - `jsts-code-lab/36-web-assembly/` — WebAssembly 实战代码示例
 > - [构建工具对比](../comparison-matrices/build-tools-compare.md)
 > - [性能优化指南](../guides/performance-optimization.md)
+
+
+---
+
+> 📦 **归档说明（2026-04-27）**
+>
+> 本文档与 `docs/categories/21-webassembly.md` 内容高度重叠。更详细的 WebAssembly 生态内容请参见 **[categories/21-webassembly.md](../categories/21-webassembly.md)**（850+ 行）。
+>
+> 本文档保留作为速查入口，核心内容已迁移至 categories/ 目录。

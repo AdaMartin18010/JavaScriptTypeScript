@@ -517,3 +517,12 @@ graph TD
 ---
 
 *最后更新: 2025年4月*
+
+
+---
+
+> 📦 **归档说明（2026-04-27）**
+>
+> 本文档与 `docs/platforms/MOBILE_DEVELOPMENT.md` 内容高度重叠。更详细的移动端开发内容请参见 **[platforms/MOBILE_DEVELOPMENT.md](../platforms/MOBILE_DEVELOPMENT.md)**（3,500+ 行）。
+>
+> 本文档保留作为分类索引入口。
