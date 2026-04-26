@@ -352,6 +352,69 @@ async function demoDynamicImportBreakCycle() {
 }
 
 // ============================================================
+// 8. 插件架构中可接受的循环依赖
+// ============================================================
+
+function demoPluginArchitectureCycle() {
+  console.log("\n=== 8. 插件架构中可接受的循环依赖 ===");
+
+  // 模拟核心系统与插件管理器之间的双向依赖
+  interface ICore {
+    registerPlugin(plugin: IPlugin): void;
+    getConfig(): Record<string, unknown>;
+  }
+
+  interface IPlugin {
+    name: string;
+    init(core: ICore): void;
+  }
+
+  class Core implements ICore {
+    private plugins: IPlugin[] = [];
+    private config = { version: "1.0.0" };
+
+    registerPlugin(plugin: IPlugin): void {
+      this.plugins.push(plugin);
+      plugin.init(this); // 将 core 注入插件 → 形成双向依赖
+      console.log(`    [Core] registered plugin: ${plugin.name}`);
+    }
+
+    getConfig(): Record<string, unknown> {
+      return this.config;
+    }
+
+    start(): void {
+      console.log("    [Core] starting with plugins:", this.plugins.map((p) => p.name).join(", "));
+    }
+  }
+
+  class LoggerPlugin implements IPlugin {
+    name = "LoggerPlugin";
+    init(core: ICore): void {
+      console.log(`    [LoggerPlugin] init with config:`, core.getConfig());
+    }
+  }
+
+  class MetricsPlugin implements IPlugin {
+    name = "MetricsPlugin";
+    init(core: ICore): void {
+      console.log(`    [MetricsPlugin] init with config:`, core.getConfig());
+    }
+  }
+
+  const core = new Core();
+  core.registerPlugin(new LoggerPlugin());
+  core.registerPlugin(new MetricsPlugin());
+  core.start();
+
+  console.log("\n  分析:");
+  console.log("    • Core 依赖 Plugin（注册并调用 init）");
+  console.log("    • Plugin 依赖 Core（通过 init 接收 core 实例）");
+  console.log("    • 这是架构层面的必要耦合，通过接口隔离降低风险");
+  console.log("    • 此类循环应限制在同一抽象层级内");
+}
+
+// ============================================================
 // Main Demo Entry
 // ============================================================
 
@@ -368,6 +431,7 @@ export async function demo(): Promise<void> {
   demoRefactorExtractCommon();
   demoRefactorEventDriven();
   await demoDynamicImportBreakCycle();
+  demoPluginArchitectureCycle();
 
   console.log("\n=== Summary ===");
   console.log("  • CJS 循环依赖通过缓存机制允许，但可能导致部分导出");
@@ -375,6 +439,7 @@ export async function demo(): Promise<void> {
   console.log("  • ESM 循环依赖中，未初始化的导出处于 TDZ，访问抛 ReferenceError");
   console.log("  • DFS 可检测循环依赖（O(V+E) 时间复杂度）");
   console.log("  • 重构策略: 提取公共模块、依赖倒置、事件驱动、动态导入");
+  console.log("  • 插件架构等特定场景下，循环依赖是必要且可接受的");
   console.log("  • 工具: madge, dependency-cruiser, eslint-plugin-import");
 }
 

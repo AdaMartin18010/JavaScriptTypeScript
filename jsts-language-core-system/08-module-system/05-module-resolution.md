@@ -109,7 +109,7 @@ graph TD
 Resolve(specifier, parentURL):
   if specifier is a core module name:
     return core module
-  
+
   if specifier starts with "/":
     resolved ← fileURLToPath(specifier)
   else if specifier starts with "./" or "../":
@@ -118,17 +118,17 @@ Resolve(specifier, parentURL):
     resolved ← PackageImportsResolve(specifier, parentURL)
   else:
     resolved ← PackageResolve(specifier, parentURL)
-  
+
   if resolved is a file:
     return resolved
   if resolved is a directory:
     return DirectoryIndexResolve(resolved)
-  
+
   // 扩展名补全（CJS 专属）
   for ext in [".js", ".json", ".node"]:
     if fileExists(resolved + ext):
       return resolved + ext
-  
+
   throw MODULE_NOT_FOUND
 ```
 
@@ -161,9 +161,77 @@ TypeScript 的 `paths` 配置允许将模块指定符映射到自定义路径：
 ```
 
 **关键限制**：
+
 - `paths` 仅在 TypeScript 编译时生效，**不影响运行时模块解析**
 - 运行时（Node.js）需要通过 `--experimental-specifier-resolution=node` 或打包工具处理相同映射
 - TypeScript 5.0+ 引入 `"rootDirs"` 作为补充，6.0 已移除 `baseUrl` 的自动推断（需显式配置）
+
+### 4.4 TypeScript `moduleResolution` 模式详解
+
+TypeScript 提供了四种 `moduleResolution` 模式，每种模式对应不同的解析策略：
+
+| 模式 | 设计目标 | 扩展名补全 | `node_modules` | `exports`/`imports` | 适用场景 |
+|------|---------|-----------|---------------|-------------------|---------|
+| `classic` | 早期 TypeScript / AMD | `.ts` / `.d.ts` / `.tsx` | 否（仅同级目录） | 否 | 遗留项目、浏览器 AMD |
+| `node` | 兼容 Node.js CJS | `.ts` / `.tsx` / `.js` / `.json` | 是（递归向上） | 否 | Node.js CJS 项目 |
+| `nodenext` | 兼容 Node.js ESM + CJS | `.ts` / `.tsx` / `.js` / `.mjs` / `.cjs` | 是 | **是** | 双模式（ESM/CJS）库 |
+| `bundler` | 兼容打包工具（Vite / Webpack / Rollup） | `.ts` / `.tsx` / `.js` | 是 | **是** | 前端打包项目 |
+
+**`classic` 模式解析规则**：
+
+- 相对路径：仅尝试 `.ts`、`.tsx`、`.d.ts`，不查找 `node_modules`
+- 非相对路径：从当前文件所在目录开始，向父级目录查找 `.ts`/`.tsx` 文件，**不进入 `node_modules`**
+- 该模式已被标记为遗留（legacy），新项目不应使用
+
+**`node` vs `nodenext` 关键差异**：
+
+- `node` 模式不识别 `package.json` 的 `exports` 和 `imports` 字段，因此无法解析条件导出
+- `nodenext` 严格遵循 Node.js ESM 规范：要求相对路径导入必须包含扩展名（即使源码是 `.ts`，也必须写 `.js`）
+- `bundler` 模式与 `nodenext` 类似支持 `exports`/`imports`，但**允许省略扩展名**（模拟打包工具行为）
+
+```json
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
+  }
+}
+```
+
+### 4.5 Bare Specifier 解析：以 `import "react"` 为例
+
+Bare Specifier（裸指定符）是不以 `./`、`../`、`/`、`#` 或 URL 协议开头的模块名。以 `import "react"` 为例，Node.js 的完整解析流程如下：
+
+```
+1. 检查是否为 Node.js 核心模块（如 `fs`、`path`）→ 否
+2. 检查是否为 `node:` 前缀模块 → 否
+3. 从当前文件目录开始，逐层向上查找 node_modules/react/package.json
+   - /project/src/node_modules/react/package.json
+   - /project/node_modules/react/package.json  ← 假设找到
+   - /node_modules/react/package.json
+4. 读取 package.json，检查是否存在 "exports" 字段
+   - 若存在：按条件匹配（import/require/types/default）
+   - 若不存在：回退到 "main" 字段（如 "index.js"）
+5. 若 package.json 中 exports 定义如下：
+   {
+     "exports": {
+       ".": {
+         "types": "./index.d.ts",
+         "import": "./index.mjs",
+         "require": "./index.cjs",
+         "default": "./index.js"
+       }
+     }
+   }
+   当前为 ESM import，匹配 "import" 条件 → ./index.mjs
+6. 返回绝对路径：/project/node_modules/react/index.mjs
+```
+
+**关键观察**：
+
+- `node_modules` 的层级查找允许不同目录下的模块解析到**不同版本的同一包**
+- `exports` 字段一旦存在，`main` 字段即被忽略，这是现代包管理的安全特性
+- TypeScript 在 `nodenext` / `bundler` 模式下会额外尝试 `"types"` 条件以定位类型定义
 
 ---
 
@@ -174,6 +242,7 @@ TypeScript 的 `paths` 配置允许将模块指定符映射到自定义路径：
 **问题**：为何 `import "./utils"` 在 ESM 中失败，而 `require("./utils")` 在 CJS 中成功？
 
 **推理链**：
+
 1. ESM 的设计目标之一是支持浏览器原生运行（无文件系统）。
 2. 浏览器通过 HTTP 请求加载模块，每个请求都有网络开销。
 3. 若浏览器尝试 `"./utils"` → 404 → 再试 `"./utils.js"`，会产生冗余请求。
@@ -196,9 +265,25 @@ TypeScript 5.4+ 和 Node.js 12.20+ 支持 `package.json` 的 `imports` 字段：
 ```
 
 **优势分析**：
+
 - **封装性**：内部模块路径重构不影响消费者（`#utils` 始终有效）
 - **免 `node_modules`**：不依赖符号链接或 `node_modules` 安装结构
 - **类型安全**：TypeScript 支持 `imports` 字段解析，无需额外 `paths` 配置
+
+### 5.3 `moduleResolution` 模式选择决策树
+
+```mermaid
+graph TD
+    Start["选择 moduleResolution"] --> IsNode["目标运行时是否为 Node.js?"]
+    IsNode -->|是| IsEsm["是否使用 ESM / 双模式?"]
+    IsNode -->|否| IsBundler["使用打包工具?"]
+
+    IsEsm -->|是| NodeNext["nodenext<br/>支持 exports/imports<br/>要求显式扩展名"]
+    IsEsm -->|否| NodeCjs["node<br/>兼容 CJS<br/>不支持 exports"]
+
+    IsBundler -->|是| Bundler["bundler<br/>支持 exports/imports<br/>允许省略扩展名"]
+    IsBundler -->|否| Classic["classic<br/>遗留模式<br/>不推荐新项目"]
+```
 
 ---
 
@@ -252,7 +337,7 @@ TypeScript 5.4+ 和 Node.js 12.20+ 支持 `package.json` 的 `imports` 字段：
   "exports": {
     ".": "./dist/index.js",
     "./sub": "./dist/sub.js",
-    "./sub/deep": "./sub"  
+    "./sub/deep": "./sub"
   }
 }
 ```

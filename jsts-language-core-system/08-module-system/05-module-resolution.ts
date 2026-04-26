@@ -331,6 +331,164 @@ function demoScopedPackage() {
 }
 
 // ============================================================
+// 7. TypeScript moduleResolution 模式对比
+// ============================================================
+
+function demoTsModuleResolutionModes() {
+  console.log("\n=== 7. TypeScript moduleResolution 模式对比 ===");
+
+  type ResolutionMode = "classic" | "node" | "nodenext" | "bundler";
+
+  interface ModeSpec {
+    mode: ResolutionMode;
+    supportsExports: boolean;
+    supportsImports: boolean;
+    requiresExplicitExtension: boolean;
+    nodeModulesLookup: boolean;
+    description: string;
+  }
+
+  const modes: ModeSpec[] = [
+    {
+      mode: "classic",
+      supportsExports: false,
+      supportsImports: false,
+      requiresExplicitExtension: false,
+      nodeModulesLookup: false,
+      description: "遗留模式，仅向上查找同级目录 .ts 文件，不推荐",
+    },
+    {
+      mode: "node",
+      supportsExports: false,
+      supportsImports: false,
+      requiresExplicitExtension: false,
+      nodeModulesLookup: true,
+      description: "Node.js CJS 兼容，支持 node_modules 递归，但不识别 exports",
+    },
+    {
+      mode: "nodenext",
+      supportsExports: true,
+      supportsImports: true,
+      requiresExplicitExtension: true,
+      nodeModulesLookup: true,
+      description: "Node.js ESM+CJS 双模式，要求显式扩展名，识别 exports/imports",
+    },
+    {
+      mode: "bundler",
+      supportsExports: true,
+      supportsImports: true,
+      requiresExplicitExtension: false,
+      nodeModulesLookup: true,
+      description: "打包工具兼容模式，支持 exports/imports，允许省略扩展名",
+    },
+  ];
+
+  console.log("  mode       | exports | imports | extRequired | node_modules | description");
+  console.log("  -----------|---------|---------|-------------|--------------|------------------------------");
+  for (const m of modes) {
+    const row = [
+      m.mode.padEnd(10),
+      m.supportsExports ? "yes" : "no ",
+      m.supportsImports ? "yes" : "no ",
+      m.requiresExplicitExtension ? "yes" : "no ",
+      m.nodeModulesLookup ? "yes" : "no ",
+      m.description,
+    ];
+    console.log("  " + row.join(" | "));
+  }
+
+  console.log("\n  选择建议:");
+  console.log("    • 纯 Node.js CJS 项目: node");
+  console.log("    • Node.js ESM / 库开发: nodenext");
+  console.log("    • Vite / Webpack / Rollup: bundler");
+  console.log("    • 避免使用 classic（遗留兼容）");
+}
+
+// ============================================================
+// 8. Bare Specifier 完整解析演示：import "react"
+// ============================================================
+
+function demoBareSpecifierFullResolution() {
+  console.log("\n=== 8. Bare Specifier 完整解析演示：import \"react\" ===");
+
+  // 模拟 node_modules/react/package.json
+  const reactPkg = {
+    name: "react",
+    exports: {
+      ".": {
+        types: "./index.d.ts",
+        import: "./index.mjs",
+        require: "./index.cjs",
+        default: "./index.js",
+      },
+      "./jsx-runtime": {
+        types: "./jsx-runtime.d.ts",
+        import: "./jsx-runtime.mjs",
+        require: "./jsx-runtime.cjs",
+      },
+    },
+  };
+
+  // 模拟文件系统存在性
+  const fsTree = new Set<string>([
+    "/project/src/app.js",
+    "/project/node_modules/react/package.json",
+    "/project/node_modules/react/index.mjs",
+    "/project/node_modules/react/index.cjs",
+    "/project/node_modules/react/index.d.ts",
+  ]);
+
+  function resolveBareSpecifier(
+    specifier: string,
+    fromFile: string,
+    condition: "import" | "require"
+  ): { steps: string[]; result: string | null } {
+    const steps: string[] = [];
+    steps.push(`1. 解析 bare specifier: "${specifier}"`);
+    steps.push(`2. 从 "${fromFile}" 所在目录开始，逐层查找 node_modules/${specifier}/package.json`);
+
+    let currentDir = fromFile.replace(/\/[^/]*$/, "");
+    let pkgPath: string | null = null;
+    while (true) {
+      const candidate = `${currentDir}/node_modules/${specifier}/package.json`;
+      if (fsTree.has(candidate)) {
+        pkgPath = candidate;
+        steps.push(`3. 找到 package.json: ${candidate}`);
+        break;
+      }
+      const parent = currentDir.replace(/\/[^/]*$/, "");
+      if (parent === currentDir || parent === "") break;
+      currentDir = parent;
+    }
+
+    if (!pkgPath) {
+      steps.push("3. 未找到 package.json → MODULE_NOT_FOUND");
+      return { steps, result: null };
+    }
+
+    const exportsMap = reactPkg.exports as Record<string, any>;
+    if (exportsMap && exportsMap["."]) {
+      const entry = exportsMap["."];
+      if (entry[condition]) {
+        const resolved = pkgPath.replace("package.json", entry[condition].replace(/^\.\//, ""));
+        steps.push(`4. package.json 存在 "exports" 字段，匹配条件 "${condition}" → ${entry[condition]}`);
+        steps.push(`5. 最终解析结果: ${resolved}`);
+        return { steps, result: resolved };
+      }
+    }
+
+    steps.push("4. 无 exports 字段，回退到 main 字段（本示例未提供）");
+    return { steps, result: null };
+  }
+
+  const { steps, result } = resolveBareSpecifier("react", "/project/src/app.js", "import");
+  for (const s of steps) {
+    console.log(`  ${s}`);
+  }
+  console.log(`\n  结论: import "react" 在 ESM 上下文中解析为 → ${result ?? "null"}`);
+}
+
+// ============================================================
 // Main Demo Entry
 // ============================================================
 
@@ -346,6 +504,8 @@ export function demo(): void {
   demoExportsMap();
   demoBareSpecifierResolution();
   demoScopedPackage();
+  demoTsModuleResolutionModes();
+  demoBareSpecifierFullResolution();
 
   console.log("\n=== Summary ===");
   console.log("  • Node.js 区分 ESM/CJS 解析：CJS 自动补全扩展名，ESM 不补全");
@@ -354,6 +514,7 @@ export function demo(): void {
   console.log("  • Conditional Exports 根据 import/require/types 条件返回不同入口");
   console.log("  • Bare Specifier 通过 node_modules 层级递归查找");
   console.log("  • Scoped Package (@scope/pkg) 子路径在包内继续解析");
+  console.log("  • TS moduleResolution: classic(遗留) / node(CJS) / nodenext(ESM) / bundler");
 }
 
 // Run if executed directly

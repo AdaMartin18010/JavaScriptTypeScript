@@ -1,8 +1,10 @@
 /**
- * CommonJS 机制深度解析演示 (CommonJS Mechanics)
+ * CommonJS 机制深度解析演示 (CommonJS Mechanics Deep Dive)
  *
- * 涵盖: require() 模拟, Module Wrapper 概念, module.exports vs exports,
- *       Module Cache 模拟, Singleton 保证, 循环依赖部分导出模拟
+ * 涵盖: require() 同步语义, Module Wrapper, module.exports vs exports,
+ *       require.cache 单例保证, 循环依赖部分导出, __filename/__dirname
+ *
+ * 运行方式: npx tsx 03-commonjs-mechanics.ts
  */
 
 // ============================================================
@@ -17,7 +19,6 @@ function demoModuleWrapper() {
   //   // 用户代码
   // });
 
-  // 模拟包装器
   function runModuleWrapper(
     userCode: (ctx: {
       exports: Record<string, unknown>;
@@ -32,7 +33,6 @@ function demoModuleWrapper() {
     const exports = module.exports;
     const __dirname = filename.substring(0, filename.lastIndexOf("/"));
 
-    // 模拟 require 函数
     const require = (id: string) => {
       console.log(`    [require("${id}")] from ${filename}`);
       return { simulated: true, id };
@@ -50,7 +50,6 @@ function demoModuleWrapper() {
     exports.greet = (name: string) => `Hello, ${name}!`;
     exports.PI = 3.14159;
 
-    // 注意：此处 exports 和 module.exports 指向同一对象
     console.log("    exports === module.exports:", exports === module.exports);
   }, "/project/src/math.js");
 
@@ -66,30 +65,30 @@ function demoExportsVsModuleExports() {
   console.log("\n=== 2. exports vs module.exports 差异演示 ===");
 
   // 场景 1：exports.xxx = ... （正确，修改同一对象）
-  const module1 = { exports: {} };
+  const module1: { exports: Record<string, unknown> } = { exports: {} };
   const exports1 = module1.exports;
-  (exports1 as any).foo = 1;
-  (exports1 as any).bar = 2;
+  exports1.foo = 1;
+  exports1.bar = 2;
   console.log("  exports.foo/bar = ... 结果:", module1.exports);
 
   // 场景 2：module.exports = newObj （正确，替换引用）
-  const module2 = { exports: {} };
+  const module2: { exports: Record<string, unknown> } = { exports: {} };
   const exports2 = module2.exports;
-  (exports2 as any).old = "old";
+  exports2.old = "old";
   module2.exports = { newProp: "new" };
   console.log("  module.exports = newObj 结果:", module2.exports);
   console.log("    exports2 仍指向旧对象:", exports2);
 
   // 场景 3：exports = newObj （错误，仅改变局部变量）
-  const module3 = { exports: {} };
-  let exports3 = module3.exports;
-  (exports3 as any).valid = "yes";
+  const module3: { exports: Record<string, unknown> } = { exports: {} };
+  let exports3: Record<string, unknown> = module3.exports;
+  exports3.valid = "yes";
   exports3 = { invalid: "no" }; // ❌ 危险操作
   console.log("  exports = newObj 后 module.exports:", module3.exports);
   console.log("    （注意：module.exports 未改变！）");
 
   // 场景 4：导出单一函数/类（必须用 module.exports）
-  const module4 = { exports: {} };
+  const module4: { exports: unknown } = { exports: {} };
   module4.exports = function greet(name: string) {
     return `Hi, ${name}`;
   };
@@ -103,7 +102,6 @@ function demoExportsVsModuleExports() {
 function demoModuleCache() {
   console.log("\n=== 3. Module Cache 与 Singleton 保证 ===");
 
-  // 模拟 Node.js require.cache
   const requireCache = new Map<string, { exports: unknown; loaded: boolean }>();
   let executionCount = 0;
 
@@ -129,7 +127,6 @@ function demoModuleCache() {
     return exports;
   }
 
-  // 模拟一个有状态的模块
   function createStatefulModule() {
     const id = Math.random().toString(36).slice(2, 8);
     let callCount = 0;
@@ -162,24 +159,16 @@ function demoModuleCache() {
 function demoRequireResolution() {
   console.log("\n=== 4. require() 解析算法模拟 ===");
 
-  // 简化的 Node.js 解析规则
   function resolveModule(id: string, fromDir: string): string | null {
-    // 1. 核心模块
     if (["fs", "path", "os", "util"].includes(id)) {
       return `<core> ${id}`;
     }
-
-    // 2. 相对路径 → 解析为绝对路径
     if (id.startsWith("./") || id.startsWith("../")) {
       return `${fromDir}/${id}`;
     }
-
-    // 3. 绝对路径
     if (id.startsWith("/")) {
       return id;
     }
-
-    // 4. 裸指定符 → 查找 node_modules
     return `${fromDir}/node_modules/${id}/index.js`;
   }
 
@@ -204,10 +193,6 @@ function demoRequireResolution() {
 function demoCircularDependency() {
   console.log("\n=== 5. 循环依赖（部分导出）演示 ===");
 
-  // 模拟 CJS 循环依赖场景：
-  // a.js: exports.loaded = false; require('./b'); exports.loaded = true;
-  // b.js: const a = require('./a'); console.log(a.loaded);
-
   const cache = new Map<string, { exports: Record<string, unknown> }>();
 
   function loadModule(name: string, factory: () => void) {
@@ -228,12 +213,10 @@ function demoCircularDependency() {
     console.log("    a.js: start execution");
     (cache.get("a")!.exports as any).stage = "a-start";
 
-    // a 中间 require b
     const b = loadModule("b", () => {
       console.log("    b.js: start execution");
       (cache.get("b")!.exports as any).name = "module-b";
 
-      // b 又 require a → 命中部分缓存
       const aPartial = loadModule("a", () => {});
       console.log("    b.js: sees a.stage =", (aPartial as any).stage);
 
@@ -253,28 +236,25 @@ function demoCircularDependency() {
 }
 
 // ============================================================
-// 6. 非严格模式行为演示
+// 6. __filename / __dirname 语义演示
 // ============================================================
 
-function demoSloppyMode() {
-  console.log("\n=== 6. CJS 非严格模式行为（对比 ESM） ===");
+function demoFilenameDirname() {
+  console.log("\n=== 6. __filename / __dirname 语义演示 ===");
 
-  // CJS 默认非严格模式（除非文件顶部写 "use strict"）
-  // 此处用 Function 构造器模拟 sloppy mode
-  const sloppyCode = new Function("obj", "with (obj) { return x + y; }");
-  const result = sloppyCode({ x: 10, y: 20 });
-  console.log("  with 语句结果 (sloppy mode):", result);
+  // 在 ESM 中推导等价的 __filename / __dirname
+  const currentFile = new URL(import.meta.url).pathname;
+  const currentDir = currentFile.substring(0, currentFile.lastIndexOf("/"));
 
-  // ESM 隐式严格模式：with 语句为 SyntaxError
-  console.log("  ESM 隐式严格模式: with 语句 → SyntaxError");
+  console.log("  ESM import.meta.url:", import.meta.url);
+  console.log("  推导的 __filename (POSIX):", currentFile);
+  console.log("  推导的 __dirname (POSIX):", currentDir);
 
-  // CJS 中 this 指向 module.exports
-  const simulatedModule = { exports: { name: "test" } };
-  const sloppyThis = (function (this: any) { return this; }).call(simulatedModule.exports);
-  console.log("  CJS 模块内 this === module.exports:", sloppyThis === simulatedModule.exports);
-
-  // ESM 中 this === undefined
-  console.log("  ESM 模块内 this === undefined: true");
+  console.log("\n  对比:");
+  console.log("  | 变量       | CJS 提供方式              | ESM 等价写法                        |");
+  console.log("  |------------|---------------------------|-------------------------------------|");
+  console.log("  | __filename | 运行时注入                | fileURLToPath(import.meta.url)      |");
+  console.log("  | __dirname  | 运行时注入                | dirname(fileURLToPath(import.meta.url)) |");
 }
 
 // ============================================================
@@ -300,11 +280,30 @@ function demoDeleteCache() {
   version = 2; // 模拟文件修改
   console.log("  缓存未清除，再次加载:", hotRequire("config"));
 
-  // 模拟热更新：删除缓存
   hotCache.delete("config");
   console.log("  清除缓存后加载:", hotRequire("config"));
 
   console.log("  注意: 生产代码中谨慎操作 require.cache");
+}
+
+// ============================================================
+// 8. CJS 默认非严格模式行为演示
+// ============================================================
+
+function demoSloppyMode() {
+  console.log("\n=== 8. CJS 非严格模式行为（对比 ESM） ===");
+
+  const sloppyCode = new Function("obj", "with (obj) { return x + y; }");
+  const result = sloppyCode({ x: 10, y: 20 });
+  console.log("  with 语句结果 (sloppy mode):", result);
+
+  console.log("  ESM 隐式严格模式: with 语句 → SyntaxError");
+
+  const simulatedModule: { exports: { name: string } } = { exports: { name: "test" } };
+  const sloppyThis = (function (this: any) { return this; }).call(simulatedModule.exports);
+  console.log("  CJS 模块内 this === module.exports:", sloppyThis === simulatedModule.exports);
+
+  console.log("  ESM 模块内 this === undefined: true");
 }
 
 // ============================================================
@@ -314,7 +313,7 @@ function demoDeleteCache() {
 export function demo(): void {
   console.log("╔════════════════════════════════════════════════════════════════╗");
   console.log("║     03-commonjs-mechanics.ts                                   ║");
-  console.log("║     CommonJS Mechanics Demonstrations                         ║");
+  console.log("║     CommonJS Mechanics Deep Dive Demonstrations               ║");
   console.log("╚════════════════════════════════════════════════════════════════╝");
 
   demoModuleWrapper();
@@ -322,21 +321,22 @@ export function demo(): void {
   demoModuleCache();
   demoRequireResolution();
   demoCircularDependency();
-  demoSloppyMode();
+  demoFilenameDirname();
   demoDeleteCache();
+  demoSloppyMode();
 
   console.log("\n=== Summary ===");
   console.log("  • Module Wrapper 提供作用域隔离和 5 个注入变量");
   console.log("  • exports 是 module.exports 的引用；exports = newObj 危险");
   console.log("  • require.cache 保证 Singleton：同一路径只执行一次");
   console.log("  • 循环依赖时，后进入的模块看到先进入模块的部分导出");
+  console.log("  • __filename / __dirname 由 Node.js 运行时注入");
   console.log("  • CJS 默认非严格模式；模块内 this === module.exports");
   console.log("  • 删除 require.cache 可实现热重载，但应谨慎使用");
 }
 
 // Run if executed directly
-import { fileURLToPath } from "node:url";
-const __filename = fileURLToPath(import.meta.url);
-if (process.argv[1] === __filename) {
+const currentFile = new URL(import.meta.url).pathname;
+if (process.argv[1]?.replace(/\\/g, "/") === currentFile) {
   demo();
 }

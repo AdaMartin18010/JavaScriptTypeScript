@@ -145,6 +145,7 @@ graph TD
 **前提 3**：当两个紧密相关的领域互相需要对方的抽象时，自然形成双向依赖。
 
 **推理**：纯粹的树形依赖结构（DAG）是理想状态，但在复杂业务系统中，完全消除循环依赖可能导致：
+
 - 过度细粒度的模块拆分
 - 接口膨胀（为打破循环而引入不必要的抽象层）
 - 维护成本上升
@@ -160,6 +161,44 @@ graph TD
 | 事件驱动 | A 和 B 需互相通知 | 异步复杂度 | 解耦为发布-订阅 |
 | 动态导入 | 仅部分场景需要对方 | 异步引入 | 打破静态循环 |
 | 合并模块 | A 和 B 高度耦合 | 模块变大 | 循环变为内部 |
+
+### 5.3 何时循环依赖可被接受
+
+并非所有循环依赖都是代码异味（Code Smell）。在特定架构模式下，循环依赖不仅是可接受的，甚至是**必要的**：
+
+**插件架构（Plugin Architecture）**
+
+在插件系统中，核心系统加载插件，插件又回调核心系统的 API，形成自然的双向依赖：
+
+```javascript
+// core.js
+import { PluginManager } from "./plugin-manager.js";
+export class Core {
+  plugins = new PluginManager(this); // 将 core 实例注入插件管理器
+  register(plugin) { this.plugins.load(plugin); }
+}
+
+// plugin-manager.js
+import type { Core } from "./core.js"; // 类型层面的循环
+export class PluginManager {
+  constructor(private core: Core) {}
+  load(plugin) { plugin.init(this.core); } // 插件通过 core API 与系统交互
+}
+```
+
+此处的循环是**架构层面的必要耦合**：插件必须了解 Core 的接口才能扩展功能，而 Core 必须知道 PluginManager 才能调度插件。此类循环应被限制在**单一职责边界内**，并通过接口隔离（Interface Segregation）降低风险。
+
+**其他可接受场景**：
+
+- **相互递归的数据结构**：如 AST 节点（`Expression` ↔ `Statement`）
+- **状态机与上下文**：状态机引用上下文，上下文引用状态机以触发转移
+- **双向关联的领域模型**：如 `Order` ↔ `Customer`（通过 ORM 延迟加载管理）
+
+**管理原则**：
+
+1. 将循环限制在**同一抽象层级**内，禁止跨层循环
+2. 使用**接口或类型导入**而非值导入，降低运行时耦合
+3. 通过工具持续监控，确保循环数量不随项目增长而失控
 
 ---
 
@@ -273,6 +312,28 @@ graph TD
 
     Directional -->|是| Invert["依赖倒置<br/>B 依赖 A 的接口"]
     Directional -->|否| Dynamic["使用动态 import() 延迟加载"]
+```
+
+### 9.3 CJS vs ESM 循环解析对比图
+
+```mermaid
+graph LR
+    subgraph CJS["CommonJS 循环解析"]
+        C1["A require B"] --> C2["B 创建并缓存"]
+        C2 --> C3["B require A"]
+        C3 --> C4["返回 A 的部分 exports<br/>（可能为空对象 {}）"]
+        C4 --> C5["B 继续执行"]
+        C5 --> C6["A 继续执行"]
+    end
+
+    subgraph ESM["ESM 循环解析"]
+        E1["A import B"] --> E2["链接阶段：创建绑定"]
+        E2 --> E3["A 求值触发 B 求值"]
+        E3 --> E4["B 访问 A 的导出"]
+        E4 --> E5{"A 的导出已初始化?"}
+        E5 -->|是| E6["正常访问 live binding"]
+        E5 -->|否| E7["抛出 ReferenceError (TDZ)"]
+    end
 ```
 
 ---

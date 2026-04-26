@@ -1,9 +1,11 @@
 /**
- * CJS/ESM 互操作演示 (CJS-ESM Interoperability)
+ * CJS/ESM 互操作演示 (CJS/ESM Interoperability Deep Dive)
  *
  * 涵盖: __esModule 模拟, createRequire, Conditional Exports 概念,
  *       Dual Package Hazard 模拟, moduleResolution 策略差异,
- *       type: module / .mjs / .cjs 语义演示
+ *       type: module / .mjs / .cjs 语义, ESM Namespace 合成模拟
+ *
+ * 运行方式: npx tsx 04-cjs-esm-interop.ts
  */
 
 // ============================================================
@@ -31,12 +33,11 @@ function demoEsModuleFlag() {
   }
 
   const babelMod = createBabelCompiledModule();
-  console.log("  Babel 编译后模块:", babelMod);
-  console.log("  __esModule:", babelMod.__esModule);
+  console.log("  Babel 编译后模块 __esModule:", babelMod.__esModule);
 
   // ESM 风格导入（通过 interop 层）
   const wrapped = interopRequireDefault(babelMod);
-  console.log("  interopRequireDefault 包装后:", wrapped);
+  console.log("  interopRequireDefault 包装后:", Object.keys(wrapped));
   console.log("  default export:", (wrapped as any).default("ESM"));
 
   // 模拟非 Babel CJS 模块（无 __esModule）
@@ -45,7 +46,7 @@ function demoEsModuleFlag() {
   };
   (plainCjs as any).helper = "extra";
   const wrappedPlain = interopRequireDefault(plainCjs);
-  console.log("  普通 CJS 模块包装后 default:", (wrappedPlain as any).default);
+  console.log("  普通 CJS 模块包装后 default:", typeof (wrappedPlain as any).default);
   console.log("    （整个 module.exports 成为 default）");
 }
 
@@ -55,10 +56,6 @@ function demoEsModuleFlag() {
 
 function demoCreateRequire() {
   console.log("\n=== 2. createRequire 演示 (ESM 中使用 CJS) ===");
-
-  // 在 ESM 中，无法直接使用 require，但可通过 createRequire 创建
-  // import { createRequire } from "node:module";
-  // const require = createRequire(import.meta.url);
 
   console.log("  语法:");
   console.log("    import { createRequire } from 'node:module';");
@@ -118,7 +115,7 @@ function demoConditionalExports() {
   console.log("\n=== 4. Conditional Exports 概念演示 ===");
 
   // 模拟 package.json 的 exports 字段解析
-  const pkgExports = {
+  const pkgExports: Record<string, any> = {
     ".": {
       import: { types: "./dist/index.d.mts", default: "./dist/index.mjs" },
       require: { types: "./dist/index.d.cts", default: "./dist/index.cjs" },
@@ -134,7 +131,7 @@ function demoConditionalExports() {
     subpath: string,
     context: "import" | "require"
   ): string | null {
-    const entry = (pkgExports as any)[subpath];
+    const entry = pkgExports[subpath];
     if (!entry) return null;
     if (entry[context]) {
       return typeof entry[context] === "string"
@@ -180,10 +177,10 @@ function demoModuleTypeMarkers() {
   }
 
   const cases = [
-    { file: "index.js", type: undefined },
+    { file: "index.js", type: undefined as "commonjs" | "module" | undefined },
     { file: "index.js", type: "module" as const },
     { file: "index.js", type: "commonjs" as const },
-    { file: "index.mjs", type: undefined },
+    { file: "index.mjs", type: undefined as "commonjs" | "module" | undefined },
     { file: "index.cjs", type: "module" as const },
   ];
 
@@ -227,7 +224,7 @@ function demoModuleResolutionStrategies() {
       esm: "支持",
       cjs: "支持",
       extRequired: false,
-      target: "Vite / Webpack / Rollup 项目",
+      target: "Vite / Webpack / Rollup",
     },
   ];
 
@@ -250,11 +247,11 @@ function demoModuleResolutionStrategies() {
 }
 
 // ============================================================
-// 7. ESM 导入 CJS 的命名空间模拟
+// 7. ESM 导入 CJS 的 Synthetic Namespace 模拟
 // ============================================================
 
 function demoEsmImportCjsNamespace() {
-  console.log("\n=== 7. ESM 导入 CJS 的命名空间模拟 ===");
+  console.log("\n=== 7. ESM 导入 CJS 的 Synthetic Namespace 模拟 ===");
 
   // 模拟 Node.js 将 CJS module.exports 包装为 ESM Namespace 对象
   function createSyntheticNamespace(moduleExports: any) {
@@ -285,18 +282,75 @@ function demoEsmImportCjsNamespace() {
   // 场景 A：普通 CJS（无 __esModule）
   const plainCjs = { foo: 1, bar: 2 };
   const nsA = createSyntheticNamespace(plainCjs);
-  console.log("  普通 CJS → Namespace:", nsA);
+  console.log("  普通 CJS → Namespace keys:", Object.keys(nsA));
+  console.log("    default:", (nsA as any).default);
+  console.log("    foo:", (nsA as any).foo);
 
   // 场景 B：Babel 编译 CJS（有 __esModule）
   const babelCjs = { __esModule: true, default: () => "default", version: "1.0" };
   const nsB = createSyntheticNamespace(babelCjs);
-  console.log("  Babel CJS → Namespace:", nsB);
+  console.log("  Babel CJS → Namespace keys:", Object.keys(nsB));
+  console.log("    default:", typeof (nsB as any).default);
 
   // 场景 C：CJS 导出非对象（如函数）
   const funcCjs = function fn() { return "hello"; };
   (funcCjs as any).meta = "extra";
   const nsC = createSyntheticNamespace(funcCjs);
-  console.log("  函数 CJS → Namespace:", nsC);
+  console.log("  函数 CJS → Namespace keys:", Object.keys(nsC));
+  console.log("    default:", typeof (nsC as any).default);
+}
+
+// ============================================================
+// 8. 动态 import() 模拟（CJS → ESM）
+// ============================================================
+
+function demoDynamicImport() {
+  console.log("\n=== 8. 动态 import() 模拟（CJS → ESM） ===");
+
+  // 在 CJS 中加载 ESM 的唯一合法方式
+  async function loadEsmFromCjs() {
+    // const esm = await import('./module.mjs');
+    // console.log(esm.default);
+
+    // 模拟：
+    const simulatedEsm = {
+      default: "defaultExport",
+      named: "namedExport",
+    };
+    return simulatedEsm;
+  }
+
+  loadEsmFromCjs().then((mod) => {
+    console.log("  CJS 通过 import() 加载 ESM 结果:", mod);
+    console.log("  default:", mod.default);
+    console.log("  named:", mod.named);
+  });
+
+  console.log("  注意: CJS 中 require('esm') 会抛出 ERR_REQUIRE_ESM");
+}
+
+// ============================================================
+// 9. Dual-Module 互操作方向矩阵演示
+// ============================================================
+
+function demoInteropMatrix() {
+  console.log("\n=== 9. Dual-Module 互操作方向矩阵 ===");
+
+  const matrix = [
+    { direction: "ESM → CJS", syntax: "import cjs from 'cjs'", sync: "同步", support: "✅" },
+    { direction: "ESM → CJS", syntax: "import { named } from 'cjs'", sync: "同步", support: "⚠️ 启发式" },
+    { direction: "CJS → ESM", syntax: "require('esm')", sync: "同步", support: "❌ ERR_REQUIRE_ESM" },
+    { direction: "CJS → ESM", syntax: "import('esm')", sync: "异步", support: "✅" },
+    { direction: "ESM 内使用 CJS", syntax: "createRequire(meta.url)", sync: "同步", support: "✅" },
+  ];
+
+  console.log("  | 方向          | 语法                          | 同步性 | 支持   |");
+  console.log("  |---------------|-------------------------------|--------|--------|");
+  for (const row of matrix) {
+    console.log(
+      `  | ${row.direction.padEnd(13)} | ${row.syntax.padEnd(29)} | ${row.sync.padEnd(6)} | ${row.support.padEnd(18)} |`
+    );
+  }
 }
 
 // ============================================================
@@ -306,7 +360,7 @@ function demoEsmImportCjsNamespace() {
 export function demo(): void {
   console.log("╔════════════════════════════════════════════════════════════════╗");
   console.log("║     04-cjs-esm-interop.ts                                      ║");
-  console.log("║     CJS/ESM Interoperability Demonstrations                   ║");
+  console.log("║     CJS/ESM Interoperability Deep Dive Demonstrations         ║");
   console.log("╚════════════════════════════════════════════════════════════════╝");
 
   demoEsModuleFlag();
@@ -316,6 +370,8 @@ export function demo(): void {
   demoModuleTypeMarkers();
   demoModuleResolutionStrategies();
   demoEsmImportCjsNamespace();
+  demoDynamicImport();
+  demoInteropMatrix();
 
   console.log("\n=== Summary ===");
   console.log("  • __esModule 标记帮助 Babel 在 CJS 中保留 ESM 语义信息");
@@ -324,12 +380,12 @@ export function demo(): void {
   console.log("  • Conditional Exports (exports 字段) 是库作者的最佳实践");
   console.log("  • .mjs 强制 ESM，.cjs 强制 CJS，.js 取决于 package.type");
   console.log("  • TypeScript nodenext 严格匹配 Node.js；bunder 匹配打包工具");
-  console.log("  • Node.js 将 CJS module.exports 包装为合成 ESM Namespace 对象");
+  console.log("  • Node.js 将 CJS module.exports 包装为 Synthetic ESM Namespace");
+  console.log("  • CJS → ESM 只能通过异步 import()，禁止同步 require()");
 }
 
 // Run if executed directly
-import { fileURLToPath } from "node:url";
-const __filename = fileURLToPath(import.meta.url);
-if (process.argv[1] === __filename) {
+const currentFile = new URL(import.meta.url).pathname;
+if (process.argv[1]?.replace(/\\/g, "/") === currentFile) {
   demo();
 }

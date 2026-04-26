@@ -1,29 +1,67 @@
-# CommonJS 机制深度解析
+# CommonJS 模块机制深度解析 (CommonJS Module Mechanics Deep Dive)
 
-> **形式化定义**：CommonJS（CJS）是 Node.js 采用的模块系统，其核心语义建立在**同步函数式加载（Synchronous Functional Loading）**之上。每个 CJS 模块在加载时被包装为一个函数 `function(exports, require, module, __filename, __dirname) { ... }`，由 Node.js 的 `Module._load` 抽象操作调用。模块的导出通过修改 `module.exports` 对象实现，加载结果通过 `require.cache` 实现单例（Singleton）保证。
+> **形式化定义**：CommonJS（CJS）是 Node.js 原生采用的模块系统，其语义根基为**同步函数式加载（Synchronous Functional Loading）**。每个 CJS 模块在执行前被包装为 `function(exports, require, module, __filename, __dirname)` 形式的 Wrapper Function，由 Node.js 的 `Module._load` 抽象操作调用。模块导出通过修改 `module.exports` 对象实现，加载结果通过 `require.cache` 实现单例（Singleton）保证。
 >
-> 对齐版本：Node.js 22+ | CommonJS Modules 规范 | TypeScript 5.8–6.0
+> 对齐版本：Node.js 22+ | CommonJS Modules/1.1.1 | TypeScript 5.8–6.0
 
 ---
 
-## 1. 概念定义 (Concept Definition)
+## 1. `require()` 作为同步函数调用 (Synchronous Functional Loading)
 
-### 1.1 形式化定义
+### 1.1 核心语义
 
-Node.js 文档定义了 CJS 模块的语义：
+在 CJS 中，`require(id)` 是一个**普通的同步函数调用（Synchronous Function Call）**，而非声明性语法。这意味着：
 
-> *"In Node.js, each file is treated as a separate module."* — Node.js Modules Documentation
+- 它在**运行时（Runtime）**求值，而非编译时解析；
+- 它可以出现在条件分支、循环体或嵌套函数中；
+- 它会**阻塞（Block）**事件循环，直到文件系统完成同步读取、编译并执行目标模块。
 
-CJS 模块系统的核心抽象为四元组 `(W, C, R, E)`：
+```javascript
+// 动态条件加载 —— 仅 CJS 支持
+const config = process.env.NODE_ENV === "production"
+  ? require("./config.prod")
+  : require("./config.dev");
+```
 
-- **W (Wrapper)**：模块包装函数，为模块代码提供隔离作用域和注入变量
-- **C (Cache)**：`require.cache` 对象，键为绝对路径，值为 `Module` 实例
-- **R (Require)**：`require(id)` 函数，执行模块解析、加载、缓存、执行四阶段
-- **E (Exports)**：`module.exports` 对象，模块对外暴露的公共接口
+### 1.2 `require()` 的四阶段算法
 
-### 1.2 Module Wrapper 的形式化结构
+Node.js 的 `require()` 执行以下抽象算法：
 
-Node.js 在加载模块前，将源文本包裹为以下函数：
+```
+Require(id):
+  1. resolvedPath ← Module._resolveFilename(id, this)
+  2. if require.cache[resolvedPath] exists:
+       return require.cache[resolvedPath].exports
+  3. module ← new Module(resolvedPath, parent)
+  4. require.cache[resolvedPath] ← module
+  5. module.load(resolvedPath)
+  6. return module.exports
+```
+
+| 阶段 | 名称 | 说明 |
+|------|------|------|
+| 1 | Resolve | 将模块标识符解析为绝对文件路径 |
+| 2 | Cache Check | 查询 `require.cache`，命中则直接返回 |
+| 3 | Module Creation | 创建 `Module` 实例，初始化 `exports = {}` |
+| 4 | Cache Registration | **执行前即将模块加入缓存**（循环依赖防递归关键） |
+| 5 | Load & Compile | 读取源码，包装为 Wrapper Function，通过 `vm.runInThisContext` 编译 |
+| 6 | Execute & Return | 执行包装函数，返回 `module.exports` |
+
+### 1.3 同步性带来的设计约束
+
+| 约束维度 | CJS 行为 | 当代挑战 |
+|---------|---------|---------|
+| I/O 模型 | 同步 `fs.readFileSync` | 浏览器无文件系统，无法原生支持 |
+| 启动性能 | 顺序阻塞加载 | 大型应用模块图数万节点，启动慢 |
+| Tree Shaking | 运行时导出结构不可静态分析 | 打包工具需启发式猜测 |
+
+---
+
+## 2. Module Wrapper：作用域隔离与变量注入
+
+### 2.1 Wrapper 的形式化结构
+
+Node.js 在加载模块前，将源文本包裹为以下函数表达式：
 
 ```javascript
 (function(exports, require, module, __filename, __dirname) {
@@ -31,12 +69,13 @@ Node.js 在加载模块前，将源文本包裹为以下函数：
 });
 ```
 
-该包装器提供四项核心语义保证：
+该 Wrapper 提供五项核心语义保证：
 
-1. **作用域隔离**：用户代码运行在函数作用域内，不会污染全局对象
-2. **变量注入**：`exports`、`require`、`module`、`__filename`、`__dirname` 作为形参自动可用
-3. **文件路径信息**：`__filename` 为绝对文件路径，`__dirname` 为其所在目录
-4. **模块对象访问**：通过 `module` 对象可访问模块元数据和 `exports`
+1. **作用域隔离（Scope Isolation）**：用户代码运行在函数作用域内，不会污染 `globalThis`；
+2. **变量注入（Variable Injection）**：`exports`、`require`、`module`、`__filename`、`__dirname` 作为形参自动可用；
+3. **文件路径信息**：`__filename` 为绝对文件路径，`__dirname` 为其所在目录的绝对路径；
+4. **模块对象访问**：通过 `module` 对象可访问模块元数据和 `exports`；
+5. **非严格模式默认**：Wrapper 内部不自动注入 `"use strict"`，模块默认运行于 Sloppy Mode。
 
 ```mermaid
 graph TD
@@ -51,230 +90,76 @@ graph TD
     Inject --> __dirname["__dirname"]
 ```
 
----
+### 2.2 `this` 的指向
 
-## 2. 属性与特征 (Properties & Characteristics)
-
-### 2.1 CJS 核心属性矩阵
-
-| 特性 | 说明 | 实现机制 | 行为 |
-|------|------|---------|------|
-| 同步加载 | `require()` 阻塞执行直到模块加载完成 | 文件系统同步读取 | 启动时性能敏感 |
-| 运行时解析 | 模块路径在运行时计算 | `Module._resolveFilename` | 支持动态条件加载 |
-| 值拷贝语义 | 导出的是值的拷贝 | `module.exports` 对象引用传递 | 重新赋值不通知消费者 |
-| 单例保证 | 同一路径仅执行一次 | `require.cache` | 状态模块天然 Singleton |
-| 循环依赖支持 | 允许循环引用 | 部分导出（Partial Exports） | 可能拿到不完整对象 |
-| 非严格模式默认 | 模块不自动进入严格模式 | 无 `"use strict"` 注入 | 可用 `with`，可隐式创建全局变量 |
-
-### 2.2 `exports` vs `module.exports` 真值表
-
-| 操作 | `exports.x = 1` | `module.exports = { x: 1 }` | `exports = { x: 1 }` |
-|------|----------------|---------------------------|-------------------|
-| 是否有效导出 | ✅ | ✅ | ❌ |
-| 是否改变引用 | ❌（修改原对象） | ✅（替换引用） | ❌（局部变量重新赋值） |
-| 消费者能否访问 | ✅ | ✅ | ❌ |
-| 推荐场景 | 多属性导出 | 单一对象/函数导出 | 应避免 |
-
-**关键机制**：`exports` 是 `module.exports` 的初始引用。`exports.xxx = ...` 修改的是 `module.exports` 指向的对象本身，而 `exports = ...` 仅改变局部变量 `exports` 的指向，不影响 `module.exports`。
-
----
-
-## 3. 关系分析 (Relationship Analysis)
-
-### 3.1 `require()` 调用链关系图
-
-```mermaid
-graph TD
-    Caller["调用方 require('foo')"] --> Resolve["Module._resolveFilename"]
-    Resolve --> CacheCheck{"require.cache[resolved]?"}
-    CacheCheck -->|命中| ReturnCache["返回 cachedModule.exports"]
-    CacheCheck -->|未命中| CreateModule["new Module(resolvedPath)"]
-    CreateModule --> AddCache["require.cache[resolved] = module"]
-    AddCache --> Compile["Module._compile"]
-    Compile --> Wrap["包装为 Wrapper Function"]
-    Wrap --> Execute["执行包装函数"]
-    Execute --> ReturnExports["返回 module.exports"]
-```
-
-### 3.2 CJS 与 Node.js 子系统的关系
-
-| 子系统 | 关系 | 说明 |
-|--------|------|------|
-| 文件系统 | 直接依赖 | `require()` 使用 `fs.readFileSync` 读取模块源码 |
-| V8 引擎 | 编译依赖 | `vm.runInThisContext` 编译 wrapper function |
-| 路径解析 | 核心逻辑 | `path.resolve`、`node_modules` 递归查找 |
-| 全局对象 | 弱关联 | 模块顶层 `this` 指向 `module.exports`，非 `globalThis` |
-| ESM 加载器 | 互斥/共存 | Node.js 中 CJS 与 ESM 可互操作但加载器不同 |
-
----
-
-## 4. 机制解释 (Mechanism Explanation)
-
-### 4.1 `require()` 四阶段算法
-
-Node.js 的 `require()` 执行以下算法：
-
-```
-Require(id):
-  1. resolvedPath ← Module._resolveFilename(id, this)
-  2. if require.cache[resolvedPath] exists:
-       return require.cache[resolvedPath].exports
-  3. module ← new Module(resolvedPath, parent)
-  4. require.cache[resolvedPath] ← module
-  5. module.load(resolvedPath)
-  6. return module.exports
-```
-
-**阶段详解**：
-
-1. **解析（Resolve）**：将模块标识符（可为相对路径、绝对路径或裸指定符）解析为绝对文件路径。对裸指定符，递归搜索 `node_modules`。
-
-2. **缓存检查（Cache Check）**：查询 `require.cache`。若命中，直接返回缓存的 `exports`，跳过编译与执行。这是 Singleton 保证的核心。
-
-3. **模块创建（Module Creation）**：创建新的 `Module` 实例，初始化 `exports = {}`、`loaded = false` 等属性。
-
-4. **缓存注册（Cache Registration）**：**在执行前即将模块加入缓存**。这一步至关重要——它保证了循环依赖不会导致无限递归。
-
-5. **加载与编译（Load & Compile）**：读取源文件，包装为 wrapper function，通过 `vm.runInThisContext` 编译为可执行函数。
-
-6. **执行（Execute）**：调用编译后的函数，传入 `exports`、`require`、`module`、`__filename`、`__dirname`。
-
-### 4.2 Module Wrapper 的作用域隔离
-
-```mermaid
-graph TD
-    Global["globalThis"] --> ModuleScope["Module Wrapper 作用域"]
-    ModuleScope --> exports["exports = {}"]
-    ModuleScope --> require["require 函数"]
-    ModuleScope --> module["module 对象"]
-    ModuleScope --> LocalVars["局部变量 var/let/const"]
-
-    LocalVars -.->|不暴露| Global
-    exports -.->|通过 module.exports 暴露| Consumer["消费者"]
-```
-
----
-
-## 5. 论证分析 (Argumentation Analysis)
-
-### 5.1 CJS 的设计假设与当代挑战
-
-CJS 于 2009 年设计，其假设条件包括：
-
-1. **本地文件系统访问**：`require()` 假设模块文件在本地磁盘，通过同步 I/O 读取
-2. **单线程执行模型**：同步阻塞不会导致并发问题
-3. **较小的模块图**：启动时加载所有依赖是可接受的
-
-**当代挑战**：
-
-- **浏览器环境**：无本地文件系统，同步加载不可行 → ESM 采用异步加载
-- **大型应用**：模块图包含数万个节点，同步顺序加载启动慢 → Bundle 工具预合并
-- **Tree Shaking**：CJS 的动态结构使静态分析困难 → ESM 的静态结构成为必需
-
-### 5.2 推理链：为什么 CJS 难以 Tree Shake
-
-**前提 1**：Tree Shaking 需要编译时确定哪些导出被使用、哪些未被使用。
-**前提 2**：CJS 的导出通过运行时赋值 `module.exports = ...` 实现。
-**前提 3**：运行时赋值的属性在解析阶段无法确定。
-**前提 4**：`require()` 调用可出现在条件分支、循环内部或动态路径中。
-
-**结论**：打包工具（如 Webpack、Rollup）处理 CJS 模块时，只能使用启发式算法（Heuristics）猜测导出结构，无法安全地消除 Dead Code。ESM 的 `export` 声明在解析时即可确定，天然支持 Tree Shaking。
-
----
-
-## 6. 形式证明 (Formal Proof)
-
-### 6.1 公理化基础
-
-**公理 10（同步加载原子性）**：`require(id)` 调用是一个原子操作——要么返回完整的 `module.exports`，要么抛出异常。不存在返回部分结果的状态。
-
-**公理 11（缓存优先性）**：对同一 `resolvedPath` 的所有 `require()` 调用，第一次之后的调用均返回 `require.cache[resolvedPath].exports`，不重新执行模块代码。
-
-**公理 12（Wrapper 隔离性）**：模块内部声明的变量绑定不泄漏至模块外部，除非通过 `module.exports` 显式附加。
-
-### 6.2 定理与证明
-
-**定理 5（CJS Singleton 定理）**：在同一 Node.js 进程中，对同一模块标识符的所有 `require()` 调用返回同一对象引用。
-
-*证明*：设两次 `require(id)` 调用。第一次调用解析得 `path`，创建 `Module` 实例 `m`，将 `require.cache[path] = m`，执行代码得到 `m.exports`，返回 `m.exports`。第二次调用解析同一 `id` 得相同 `path`，查询 `require.cache[path]` 命中 `m`，直接返回 `m.exports`。因此两次返回同一引用。∎
-
-**定理 6（循环依赖的部分导出定理）**：若模块 `A` 与模块 `B` 循环依赖，且 `A` 在 `B` 完成执行前 `require('B')`，则 `A` 获得的 `B.exports` 是执行到该时刻的部分结果。
-
-*证明*：设执行从 `A` 开始。`A` 被加入缓存后执行。当 `A` 执行到 `require('./B')` 时，`B` 被创建、加入缓存、开始执行。若 `B` 又 `require('./A')`，命中已缓存的 `A`（虽然 `A` 尚未执行完毕）。此时 `B` 获得的 `A.exports` 是 `A` 已执行部分导出的结果。该语义保证无无限递归，但可能导致部分导出。∎
-
----
-
-## 7. 实例示例 (Examples)
-
-### 7.1 正例：`module.exports` 的正确使用
+在 CJS 模块的顶层作用域中，`this` 指向 `module.exports`，而非 `globalThis`：
 
 ```javascript
-// calculator.js
-function Calculator() {
-  this.value = 0;
-}
-Calculator.prototype.add = function(n) { this.value += n; };
-
-module.exports = Calculator; // 导出构造函数
-
-// main.js
-const Calculator = require("./calculator");
-const calc = new Calculator();
+// CJS 模块内
+console.log(this === module.exports); // true
+console.log(this === globalThis);     // false
 ```
 
-### 7.2 反例：`exports` 重新赋值导致导出失效
+这与 ESM 模块形成鲜明对比：ESM 的顶层 `this` 为 `undefined`（隐式严格模式）。
+
+---
+
+## 3. 模块缓存与单例保证 (`require.cache`)
+
+### 3.1 `require.cache` 的数据结构
+
+`require.cache` 是一个以**绝对路径**为键、`Module` 实例为值的对象：
 
 ```javascript
-// broken.js
-exports = { foo: 1 }; // ❌ 错误！仅改变了局部变量引用
-// 正确做法：
-// module.exports = { foo: 1 };
-// 或：exports.foo = 1;
+// 伪代码表示
+require.cache = {
+  "/project/node_modules/lodash/index.js": Module { id, exports, parent, ... },
+  "/project/src/utils.js": Module { ... }
+};
 ```
 
-### 7.3 边缘案例：删除缓存强制重新加载
+**关键语义**：对同一 `resolvedPath` 的所有 `require()` 调用，仅第一次会执行模块代码；后续调用直接返回缓存的 `module.exports`。
+
+### 3.2 Singleton 定理
+
+**定理 1（CJS Singleton 定理）**：在同一 Node.js 进程中，对同一模块标识符的所有 `require()` 调用返回同一对象引用。
+
+*证明*：设两次 `require(id)` 调用。第一次解析得 `path`，创建 `Module` 实例 `m`，将 `require.cache[path] = m`，执行代码得到 `m.exports`，返回 `m.exports`。第二次调用解析同一 `id` 得相同 `path`，查询 `require.cache[path]` 命中 `m`，直接返回 `m.exports`。因此两次返回同一引用。∎
+
+### 3.3 强制重新加载（边缘案例）
+
+通过删除缓存条目，可实现热更新（Hot Reload）场景下的强制重载：
 
 ```javascript
-// 强制重新加载模块（用于热更新等场景）
 delete require.cache[require.resolve("./module")];
-const fresh = require("./module"); // 重新执行
+const fresh = require("./module"); // 重新执行模块代码
 ```
+
+> ⚠️ 生产环境中应谨慎操作 `require.cache`，因为这会破坏 Singleton 语义，并可能导致依赖该模块的其他模块持有过期引用。
 
 ---
 
-## 8. 权威参考 (References)
+## 4. `exports` vs `module.exports`：引用关系与陷阱
 
-| 来源 | 链接 | 相关章节 |
-|------|------|---------|
-| Node.js Modules | nodejs.org/api/modules.html | The module wrapper |
-| Node.js CJS | nodejs.org/api/modules.html | Caching |
-| CommonJS Spec | wiki.commonjs.org/wiki/Modules/1.1 | Module Context |
-| Node.js Source | github.com/nodejs/node | lib/internal/modules/cjs |
-| TypeScript Handbook | typescriptlang.org/docs | Modules |
+### 4.1 形式化关系
 
----
+在 Module Wrapper 内部，存在如下初始化代码：
 
-## 9. 思维表征 (Mental Representations)
-
-### 9.1 CJS 模块生命周期状态机
-
-```mermaid
-stateDiagram-v2
-    [*] --> unresolved: require(id)
-    unresolved --> resolving: Module._resolveFilename
-    resolving --> uncached: 未命中缓存
-    resolving --> cached: 命中 require.cache
-    cached --> [*]: 返回 cached.exports
-    uncached --> creating: new Module(path)
-    creating --> compiling: module.load()
-    compiling --> executing: vm.runInThisContext
-    executing --> completed: 代码执行完毕
-    executing --> failed: 抛出异常
-    completed --> [*]: 返回 module.exports
-    failed --> [*]: 抛出异常
+```javascript
+var exports = module.exports;
 ```
 
-### 9.2 `exports` vs `module.exports` 引用关系图
+即 `exports` 是 `module.exports` 的初始引用（Alias），二者最初指向同一个空对象 `{}`。
+
+### 4.2 真值表与行为矩阵
+
+| 操作 | 是否有效导出 | 是否改变引用 | 消费者能否访问 | 推荐场景 |
+|------|------------|------------|--------------|---------|
+| `exports.x = 1` | ✅ | ❌（修改原对象） | ✅ | 多属性导出 |
+| `module.exports = { x: 1 }` | ✅ | ✅（替换引用） | ✅ | 单一对象/函数导出 |
+| `exports = { x: 1 }` | ❌ | ✅（仅局部变量） | ❌ | **应避免** |
+
+### 4.3 引用关系图解
 
 ```mermaid
 graph LR
@@ -290,30 +175,138 @@ graph LR
     ModuleReassign -.->|脱离| SharedObj
 ```
 
----
+### 4.4 常见陷阱
 
-## 10. 版本演进 (Version Evolution)
+```javascript
+// 陷阱 1：exports 重新赋值导致导出失效
+exports = { foo: 1 }; // ❌ 仅改变了局部变量 exports
 
-### 10.1 CJS 在 Node.js 中的演进
+// 陷阱 2：混合使用导致部分导出丢失
+exports.foo = 1;
+module.exports = { bar: 2 };
+// 结果：foo 丢失，因为只有 module.exports 被返回
 
-| 版本 | 特性 | 说明 |
-|------|------|------|
-| Node.js 0.x | CJS 基础实现 | `require()`、`module.exports`、`.js` 扩展名 |
-| Node.js 6+ | `require.cache` 稳定 | 缓存机制文档化 |
-| Node.js 12+ | ESM 实验性支持 | `.mjs` 引入，CJS 与 ESM 共存 |
-| Node.js 14+ | ESM 稳定 | CJS 仍为主流，但 ESM 成为推荐方向 |
-| Node.js 20+ | `require(esm)` 讨论 | 允许 CJS 同步 require ESM（受限） |
-| Node.js 22+ | 强化 ESM | CJS 进入维护模式，新功能优先 ESM |
-
-### 10.2 CJS 与 ESM 的互操作限制
-
-| 操作 | CJS → ESM | ESM → CJS | 说明 |
-|------|-----------|-----------|------|
-| `require()` | ❌（同步加载异步模块） | N/A | Node.js 禁止 CJS require ESM |
-| `import` | ✅ | ✅ | ESM 可导入 CJS（default import） |
-| `import()` | ✅ | ✅ | 动态导入两者均可 |
-| `createRequire` | N/A | ✅ | ESM 中使用 CJS require |
+// 正确做法：导出单一函数
+module.exports = function greet(name) {
+  return `Hello, ${name}`;
+};
+```
 
 ---
 
-**参考规范**：Node.js Modules API | CommonJS Modules/1.1.1 Spec | ECMA-262 §16.2 (对比参考)
+## 5. 循环依赖行为：部分导出 (Partial Exports)
+
+### 5.1 循环依赖的执行时序
+
+当模块 `A` 与模块 `B` 循环依赖时，CJS 不会陷入无限递归，但可能导致模块拿到**部分导出（Partial Exports）**。
+
+**定理 2（循环依赖的部分导出定理）**：若模块 `A` 与模块 `B` 循环依赖，且 `A` 在 `B` 完成执行前 `require('./B')`，则 `A` 获得的 `B.exports` 是执行到该时刻的部分结果。
+
+*证明*：设执行从 `A` 开始。`A` 被创建、加入缓存后执行。当 `A` 执行到 `require('./B')` 时，`B` 被创建、加入缓存、开始执行。若 `B` 又 `require('./A')`，命中已缓存的 `A`（虽然 `A` 尚未执行完毕）。此时 `B` 获得的 `A.exports` 是 `A` 已执行部分附加到 `exports` 上的结果。该语义保证无无限递归，但消费者可能拿到不完整对象。∎
+
+### 5.2 时序示例
+
+```javascript
+// a.js
+exports.loaded = false;
+const b = require("./b"); // 此处 b 可能拿到 a 的部分导出
+exports.loaded = true;
+
+// b.js
+const a = require("./a");
+console.log(a.loaded); // false（a 尚未执行完毕）
+```
+
+### 5.3 最佳实践
+
+| 策略 | 说明 |
+|------|------|
+| 重构依赖方向 | 将双向依赖拆分为单向依赖，引入中间模块 |
+| 延迟求值 | 将 `require()` 调用移至函数内部，避免模块顶层循环引用 |
+| 纯函数导出 | 优先导出无状态函数/类，减少部分导出带来的副作用 |
+
+---
+
+## 6. `__filename` 与 `__dirname` 语义
+
+### 6.1 定义与计算
+
+- **`__filename`**：当前正在执行的模块文件的**绝对路径**（Absolute Path）。
+- **`__dirname`**：当前模块文件所在目录的**绝对路径**。
+
+二者由 Node.js 的 `path.resolve()` 计算得出，与 `process.cwd()` 无关。
+
+```javascript
+// /project/src/utils.js
+console.log(__filename); // /project/src/utils.js
+console.log(__dirname);  // /project/src
+```
+
+### 6.2 与 ESM 的对比
+
+| 特性 | CJS | ESM |
+|------|-----|-----|
+| 文件路径变量 | `__filename`, `__dirname` 直接可用 | 需通过 `import.meta.url` 推导 |
+| 计算方式 | Node.js 运行时注入 | `fileURLToPath(import.meta.url)` |
+| 严格模式 | 默认 Sloppy Mode | 隐式 Strict Mode |
+
+```javascript
+// ESM 中等价的写法
+import { fileURLToPath } from "node:url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+```
+
+---
+
+## 7. CJS 模块加载流程图
+
+以下 Mermaid 流程图展示了从 `require(id)` 调用到返回 `module.exports` 的完整生命周期：
+
+```mermaid
+graph TD
+    Start["调用方 require('foo')"] --> Resolve["① Resolve<br/>Module._resolveFilename"]
+    Resolve --> CacheCheck{"② Cache Check<br/>require.cache[resolved]?"}
+    CacheCheck -->|命中 HIT| ReturnCache["返回 cachedModule.exports"]
+    CacheCheck -->|未命中 MISS| CreateModule["③ Create Module<br/>new Module(resolvedPath)"]
+    CreateModule --> AddCache["④ Cache Registration<br/>require.cache[resolved] = module"]
+    AddCache --> Compile["⑤ Compile<br/>Module._compile"]
+    Compile --> Wrap["包装为 Wrapper Function"]
+    Wrap --> Execute["⑥ Execute<br/>vm.runInThisContext"]
+    Execute --> ReturnExports["返回 module.exports"]
+    ReturnCache --> End["End"]
+    ReturnExports --> End
+```
+
+### 7.1 状态机视角
+
+```mermaid
+stateDiagram-v2
+    [*] --> unresolved: require(id)
+    unresolved --> resolving: Module._resolveFilename
+    resolving --> cached: 命中 require.cache
+    resolving --> uncached: 未命中缓存
+    cached --> [*]: 返回 cached.exports
+    uncached --> creating: new Module(path)
+    creating --> compiling: module.load()
+    compiling --> executing: vm.runInThisContext
+    executing --> completed: 代码执行完毕
+    executing --> failed: 抛出异常
+    completed --> [*]: 返回 module.exports
+    failed --> [*]: 抛出异常
+```
+
+---
+
+## 8. 权威参考 (References)
+
+| 来源 | 链接 | 相关章节 |
+|------|------|---------|
+| Node.js Modules API | nodejs.org/api/modules.html | The module wrapper, Caching |
+| CommonJS Spec | wiki.commonjs.org/wiki/Modules/1.1 | Module Context, Require |
+| Node.js Source | github.com/nodejs/node | lib/internal/modules/cjs/loader.js |
+| ECMA-262 (对比参考) | tc39.es/ecma262 | §16.2 Modules |
+
+---
+
+**参考规范**：Node.js Modules API | CommonJS Modules/1.1.1 Spec | ECMA-262 §16.2
