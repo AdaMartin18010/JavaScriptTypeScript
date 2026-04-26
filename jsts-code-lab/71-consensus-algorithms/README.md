@@ -1,60 +1,56 @@
-﻿# 71-consensus-algorithms: 共识算法
+﻿# 71-consensus-algorithms : 共识算法
 
-> 本模块为 **共识算法** 的代码实验室。
 > 模块编号: 71-consensus-algorithms
-> 生成日期: 2026-04-27
-> 状态: 框架版（待根据内容深化）
-
----
+> 主题: 共识算法
+> 最后更新: 2026-04-27
 
 ## 模块概述
 
-本模块涵盖 **共识算法** 的核心概念、设计模式与实践代码。
+本模块深入探讨 **共识算法**，涵盖核心理论、设计模式与可运行的 TypeScript 代码实现。
 
-通过本模块的学习，你将掌握：
-- 共识算法 的核心理论与关键概念
-- 相关的 TypeScript 代码实现模式
-- 实际项目中的应用场景
+分布式系统中的 Paxos、Raft 与一致性协议。通过本模块你将系统掌握从基础概念到工程实践的完整知识体系。
+
+## 核心主题
+
+- CAP 理论
+- Raft 算法
+- Paxos
+- Gossip 协议
+- 拜占庭容错
 
 ## 文件清单
 
-本模块包含 14 个可运行的 TypeScript 代码示例：
+### TypeScript 代码示例
 
-- `cap-theorem-formal.ts`
-- `cap-theorem.ts`
-- `distributed-clock.ts`
-- `index.ts`
-- `leader-election-theory.ts`
-- `leader-election.ts`
-- `paxos-consensus.ts`
-- `pbft-consensus.ts`
-- `raft-consensus.ts`
-- `raft-log-compaction.ts`
-- `raft-membership-change.ts`
-- `raft-visualizer.ts`
-- `two-phase-commit.ts`
-- `viewstamped-replication.ts`
+- **cap-theorem.ts** — 可运行示例
+- **cap-theorem-formal.ts** — 可运行示例
+- **distributed-clock.ts** — 可运行示例
+- **index.ts** — 可运行示例
+- **leader-election.ts** — 可运行示例
+- **leader-election-theory.ts** — 可运行示例
+- **paxos-consensus.ts** — 可运行示例
+- **pbft-consensus.ts** — 可运行示例
+- **raft-consensus.ts** — 可运行示例
+- **raft-log-compaction.ts** — 可运行示例
+- **raft-membership-change.ts** — 可运行示例
+- **raft-visualizer.ts** — 可运行示例
+- **two-phase-commit.ts** — 可运行示例
+- **viewstamped-replication.ts** — 可运行示例
+
 
 ## 学习路径
 
-1. 先阅读 [理论基础 (THEORY.md)](./THEORY.md)（如存在），理解核心概念
-2. 逐一运行代码示例，观察输出与行为
-3. 修改参数和边界条件，验证理解
-4. 参考 [架构设计 (ARCHITECTURE.md)](./ARCHITECTURE.md)（如存在），理解设计决策
+1. 阅读本模块的理论基础文档（如存在 THEORY.md）
+2. 逐一运行 TypeScript 代码示例，观察输出行为
+3. 修改参数和边界条件，深入理解机制
+4. 参考架构设计文档（如存在 ARCHITECTURE.md），理解工程决策
 
 ## 相关文档
 
-- [理论基础 (THEORY.md)](./THEORY.md)
-- [架构设计 (ARCHITECTURE.md)](./ARCHITECTURE.md)
-
-## 关联模块
-
-| 相邻模块 | 关系 |
-|---------|------|
-| 前置基础 | 建议先掌握语言核心与类型系统 |
-| 后续进阶 | 可继续学习相关高级专题 |
+- [📖 理论基础](./THEORY.md)
+- [🏗️ 架构设计](./ARCHITECTURE.md)
 
 ---
 
-> 📅 最后更新: 2026-04-27
-> 📝 状态: README 框架版，内容待根据实际代码深化。
+> 📅 生成日期: 2026-04-27
+> 📝 本模块为 JavaScript/TypeScript 全景知识库的代码实验室组成部分
