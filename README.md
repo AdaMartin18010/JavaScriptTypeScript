@@ -16,9 +16,9 @@
 >
 > 📚 配套代码实验室：[jsts-code-lab](./jsts-code-lab/) - 90+ 模块，从理论到实践的完整实现
 >
-> 🧠 语言核心系统：[jsts-language-core-system](./jsts-language-core-system/) - 52 个深度文档，覆盖类型系统/变量系统/控制流/执行模型/执行流/规范基础
+> 🧠 语言核心系统：[jsts-language-core-system](./jsts-language-core-system/) - 91 个深度文档，覆盖类型系统/变量系统/控制流/执行模型/执行流/规范基础/模块系统/对象模型
 >
-> 📊 技术选型体系：16 个对比矩阵（含包管理器/Monorepo/可观测性/部署平台/CI/CD/浏览器兼容性）、15 大选型决策树、21 个 Mermaid 知识图谱（含 3 个大型知识图谱）
+> 📊 技术选型体系：16 个对比矩阵（含包管理器/Monorepo/可观测性/部署平台/CI/CD/浏览器兼容性）、15 大选型决策树、20 个 Mermaid 知识图谱（含 3 个大型知识图谱）
 >
 > 🎓 旗舰文档：[JS_TS_语言语义模型全面分析](./JSTS全景综述/JS_TS_语言语义模型全面分析.md) - 基于 ECMA-2025/2026、TypeScript 5.8–7.0，对齐 Stanford/MIT/CMU/Berkeley/UW 学术课程
 >
