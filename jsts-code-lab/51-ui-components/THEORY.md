@@ -1,136 +1,60 @@
-# UI 组件工程理论：从原子设计到设计系统
+# UI 组件 — 理论基础
 
-> **目标读者**：前端工程师、UI 开发者、设计系统维护者
-> **关联文档**：[`docs/categories/51-ui-components.md`](../../docs/categories/51-ui-components.md)
-> **版本**：2026-04
-> **字数**：约 2,800 字
+## 1. 组件设计原则
 
----
+### 单一职责
 
-## 1. 组件架构模式
+每个组件只做一件事。如果组件需要处理多种不相关的逻辑，考虑拆分。
 
-### 1.1 原子设计方法论
+### 受控 vs 非受控
 
-```
-Atoms (原子)        → Button, Input, Label
-  ↓
-Molecules (分子)     → SearchBar = Input + Button
-  ↓
-Organisms (有机体)   → Header = Logo + Nav + SearchBar
-  ↓
-Templates (模板)     → 页面布局骨架
-  ↓
-Pages (页面)         → 具体页面实例
-```
+- **受控组件**: 状态由父组件管理，通过 props 传入，通过回调传出变更
+- **非受控组件**: 状态由组件内部管理（如原生 input），通过 ref 读取
 
-### 1.2 组件组合模式
+### 复合组件模式
 
-| 模式 | 示例 | 适用 |
-|------|------|------|
-| **Compound** | `<Select><Option/></Select>` | 强关联组件 |
-| **Render Props** | `<DataTable renderRow={...} />` | 自定义渲染 |
-| **Slots** | `<Card header={...} body={...} />` | 多区域定制 |
-| **HOC** | `withAuth(Component)` | 横切关注点 |
-| **Hooks** | `useForm()` | 状态逻辑复用 |
+将相关组件组合在一起，共享内部状态：
 
----
-
-## 2. 无头组件 (Headless)
-
-### 2.1 分离逻辑与样式
-
-```typescript
-// 逻辑层 (Headless)
-function useDropdown() {
-  const [isOpen, setIsOpen] = useState(false);
-  const toggle = () => setIsOpen(!isOpen);
-  return { isOpen, toggle };
-}
-
-// 表现层 (Styled)
-function Dropdown() {
-  const { isOpen, toggle } = useDropdown();
-  return (
-    <div>
-      <button onClick={toggle}>Toggle</button>
-      {isOpen && <menu>...</menu>}
-    </div>
-  );
-}
+```jsx
+<Select>
+  <Select.Trigger />
+  <Select.Content>
+    <Select.Item value="a">选项A</Select.Item>
+  </Select.Content>
+</Select>
 ```
 
----
+## 2. 无头组件（Headless UI）
 
-## 3. 测试策略
+分离逻辑与样式：
 
-```typescript
-// 交互测试
-test('button click triggers onClick', () => {
-  const handleClick = vi.fn();
-  render(<Button onClick={handleClick}>Click</Button>);
-  fireEvent.click(screen.getByText('Click'));
-  expect(handleClick).toHaveBeenCalled();
-});
+- 库提供状态管理和键盘交互逻辑
+- 开发者完全控制渲染和样式
+- 代表：Radix UI、Headless UI、React Aria
 
-// 可访问性测试
-test('button is accessible', () => {
-  render(<Button>Submit</Button>);
-  expect(screen.getByRole('button')).toHaveAccessibleName('Submit');
-});
+## 3. 设计系统
+
+### 原子设计方法论
+
+```
+原子（按钮、输入框）→ 分子（搜索栏）→ 有机体（导航栏）→ 模板（页面布局）→ 页面（具体内容）
 ```
 
----
+### 设计令牌（Design Tokens）
 
-## 4. 总结
+设计系统的最小单位，以 JSON/YAML 定义：
 
-UI 组件的核心是**可预测性**和**可组合性**。
+- 颜色、字体、间距、圆角、阴影
+- 跨平台共享（Web、iOS、Android、Figma）
 
-**原则**：
-1.  props 是组件的 API，设计时像设计公共库
-2.  无头组件让样式自由，逻辑统一
-3.  测试覆盖交互、可访问性和视觉回归
+## 4. 组件测试策略
 
----
+- **单元测试**: 交互和渲染（React Testing Library）
+- **视觉测试**: 截图比对（Chromatic、Percy）
+- **可访问性测试**: 自动化 a11y 检查（axe-core）
 
-## 参考资源
+## 5. 与相邻模块的关系
 
-- [Atomic Design](https://atomicdesign.bradfrost.com/)
-- [A11y Project](https://www.a11yproject.com/)
-- [Radix UI](https://www.radix-ui.com/)
-
----
-
-## 模块代码文件索引
-
-本模块包含以下可运行 TypeScript 代码文件，用于将上述理论概念转化为实践：
-
-- `ai-component-system.ts`
-- `component-communication-patterns.ts`
-- `component-composition-models.ts`
-- `component-lifecycle-models.ts`
-- `index.ts`
-- `rendering-strategies.ts`
-- `state-management-architectures.ts`
-
-> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
-
-## 核心理论深化
-
-### 关键设计模式
-
-本模块涉及的核心设计模式包括（根据代码实现提炼）：
-
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
-
-### 与相邻模块的关系
-
-| 相邻模块 | 关系说明 |
-|---------|---------|
-| 前置依赖 | 建议先掌握的基础模块 |
-| 后续进阶 | 可继续深化的相关模块 |
-
----
-
-> 📅 理论深化更新：2026-04-27
+- **57-design-system**: 设计系统的工程实现
+- **35-accessibility-a11y**: 组件的可访问性
+- **18-frontend-frameworks**: 框架的组件模型

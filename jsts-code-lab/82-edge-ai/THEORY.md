@@ -1,136 +1,45 @@
-# 边缘 AI 理论：在设备端运行智能
+﻿# 边缘 AI — 理论基础
 
-> **目标读者**：关注端侧 AI、隐私计算、离线智能的工程师
-> **关联文档**：[`docs/categories/82-edge-ai.md`](../../docs/categories/82-edge-ai.md)
-> **版本**：2026-04
-> **字数**：约 3,000 字
+## 1. 边缘 AI 的定义
 
----
+在终端设备（手机、IoT、浏览器）上直接运行机器学习模型，无需将数据发送到云端。核心优势：**隐私保护**、**低延迟**、**离线可用**、**带宽节省**。
 
-## 1. 边缘 AI 的定义与价值
+## 2. 模型压缩技术
 
-### 1.1 为什么需要边缘 AI
-
-| 维度 | 云端 AI | 边缘 AI |
-|------|--------|--------|
-| **延迟** | 50-500ms | < 10ms |
-| **隐私** | 数据上传 | 本地处理 |
-| **成本** | API 调用费 | 一次性硬件 |
-| **可用性** | 需联网 | 离线可用 |
-| **算力** | 无限 | 受限 |
-
-### 1.2 应用场景
-
-- **实时翻译**：AR 眼镜实时翻译对话
-- **隐私保护**：本地处理敏感数据（健康、金融）
-- **自动驾驶**：低延迟决策（< 1ms）
-- **工业质检**：产线实时缺陷检测
-
----
-
-## 2. 端侧模型技术
-
-### 2.1 模型压缩技术
+为了在资源受限设备上运行大模型，需要压缩：
 
 | 技术 | 原理 | 压缩比 | 精度损失 |
 |------|------|--------|---------|
-| **量化** | FP32 → INT8 / INT4 | 2-4x | 低 |
-| **剪枝** | 移除不重要权重 | 2-10x | 中 |
-| **蒸馏** | 大模型教小模型 | 10-100x | 中 |
-| **神经架构搜索** | 自动设计小模型 | 10-50x | 低 |
+| **量化** | FP32 → INT8/INT4 | 4x | 1-3% |
+| **剪枝** | 移除不重要权重 | 2-10x | 1-5% |
+| **知识蒸馏** | 小模型学习大模型输出 | 2-10x | 2-5% |
+| **结构化稀疏** | 移除整个神经元/通道 | 2-4x | 2-4% |
 
-### 2.2 端侧推理框架
+## 3. 边缘推理框架
 
-| 框架 | 平台 | 特点 |
-|------|------|------|
-| **TensorFlow Lite** | 移动端 | 生态广、量化支持好 |
-| **ONNX Runtime** | 跨平台 | 模型互换、性能优化 |
-| **Core ML** | iOS/macOS | Apple 芯片优化 |
-| **WebNN** | 浏览器 | Web 标准、跨平台 |
-| **Transformers.js** | 浏览器 | Hugging Face 生态 |
+- **TensorFlow.js**: 浏览器和 Node.js 的 ML 推理，支持 WebGL/WebGPU 加速
+- **ONNX Runtime Web**: 跨平台模型格式，浏览器 WASM 执行
+- **Transformers.js**: Hugging Face 模型的 JS 实现，纯浏览器运行
+- **MediaPipe**: Google 的跨平台 ML 解决方案，专注视觉和文本
+- **LLM.js**: 浏览器端大语言模型推理（Llama、Mistral 等）
 
----
+## 4. WebGPU 加速
 
-## 3. Web 端 AI
+WebGPU 使浏览器能够直接访问 GPU 计算能力：
 
-### 3.1 Transformers.js
+- **计算着色器**: 通用并行计算（矩阵乘法、卷积）
+- **性能提升**: 相比 WASM CPU 推理，GPU 加速可达 10-100 倍
+- **兼容性**: Chrome 113+、Firefox、Safari（实验性）
 
-```typescript
-import { pipeline } from '@xenova/transformers';
+## 5. 应用场景
 
-const classifier = await pipeline('sentiment-analysis');
-const result = await classifier('I love this product!');
-// [{ label: 'POSITIVE', score: 0.999 }]
-```
+- **实时图像处理**: 滤镜、物体检测、人脸识别
+- **语音处理**: 语音识别、语音合成、降噪
+- **文本处理**: 本地翻译、摘要、情感分析
+- **推荐系统**: 端侧个性化推荐（保护用户隐私）
 
-**优势**：纯浏览器运行，无需后端，零 API 成本。
+## 6. 与相邻模块的关系
 
-### 3.2 WebGPU 加速
-
-```typescript
-// WebGPU 推理比 CPU 快 10-100x
-const session = await ort.InferenceSession.create('model.onnx', {
-  executionProviders: ['webgpu'],
-});
-```
-
-**浏览器支持**：Chrome 113+, Edge, Firefox Nightly。
-
----
-
-## 4. 总结
-
-边缘 AI 是**隐私优先、低延迟、离线可用**的智能方案。
-
-**选型建议**：
-- 简单 NLP 任务 → Transformers.js
-- 复杂模型 → ONNX Runtime + WebGPU
-- 移动端 → TensorFlow Lite / Core ML
-
----
-
-## 参考资源
-
-- [Transformers.js](https://huggingface.co/docs/transformers.js/)
-- [ONNX Runtime Web](https://onnxruntime.ai/docs/get-started/with-javascript/web.html)
-- [WebNN 草案](https://www.w3.org/TR/webnn/)
-
----
-
-## 模块代码文件索引
-
-本模块包含以下可运行 TypeScript 代码文件，用于将上述理论概念转化为实践：
-
-- `device-capability.ts`
-- `edge-inference.ts`
-- `federated-learning.ts`
-- `index.ts`
-- `inference-optimizer.ts`
-- `model-quantization.ts`
-- `onnx-runtime-bridge.ts`
-- `tinyml-loader.ts`
-- `webgpu-compute.ts`
-- `webnn-wrapper.ts`
-
-> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
-
-## 核心理论深化
-
-### 关键设计模式
-
-本模块涉及的核心设计模式包括（根据代码实现提炼）：
-
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
-
-### 与相邻模块的关系
-
-| 相邻模块 | 关系说明 |
-|---------|---------|
-| 前置依赖 | 建议先掌握的基础模块 |
-| 后续进阶 | 可继续深化的相关模块 |
-
----
-
-> 📅 理论深化更新：2026-04-27
+- **33-ai-integration**: 云端 AI 集成（本模块是端侧 AI）
+- **36-web-assembly**: WASM 作为边缘推理的运行时
+- **32-edge-computing**: 边缘计算架构与部署

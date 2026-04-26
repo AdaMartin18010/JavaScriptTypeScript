@@ -1,140 +1,37 @@
-# 设计系统理论：从组件库到品牌语言
+﻿# 设计系统 — 理论基础
 
-> **目标读者**：前端工程师、设计师、关注设计一致性的团队
-> **关联文档**：[`docs/categories/57-design-system.md`](../../docs/categories/57-design-system.md)
-> **版本**：2026-04
-> **字数**：约 3,000 字
+## 1. 设计系统定义
 
----
+设计系统是**可复用组件和标准的集合**，用于管理设计的一致性：
 
-## 1. 设计系统的定义
+- **设计原则**: 指导设计决策的价值观
+- **模式库**: 可复用的 UI 组件
+- **样式指南**: 颜色、字体、间距等视觉规范
+- **内容指南**: 文案语气、术语使用
 
-### 1.1 不只是组件库
+## 2. 设计令牌（Design Tokens）
 
-```
-设计系统 = 设计令牌 + 组件库 + 模式库 + 文档 + 工具
-```
-
-| 层级 | 内容 | 示例 |
-|------|------|------|
-| **设计令牌** | 颜色、字体、间距、阴影 | `--color-primary: #007bff` |
-| **基础组件** | Button、Input、Card | `<Button variant="primary">` |
-| **复合组件** | Form、Modal、Table | `<DataTable columns={...}>` |
-| **页面模板** | Dashboard、Login、Settings | 布局骨架 |
-| **模式** | 表单验证、空状态、加载 | 交互规范 |
-
----
-
-## 2. 设计令牌 (Design Tokens)
-
-### 2.1 W3C 标准格式
+设计系统的原子单位：
 
 ```json
 {
-  "color": {
-    "primary": { "$value": "#007bff", "$type": "color" },
-    "text": { "$value": "#212529", "$type": "color" }
-  },
-  "spacing": {
-    "sm": { "$value": "8px", "$type": "dimension" },
-    "md": { "$value": "16px", "$type": "dimension" }
-  }
+  "color": { "primary": "#007bff", "danger": "#dc3545" },
+  "spacing": { "small": "4px", "medium": "8px", "large": "16px" },
+  "fontSize": { "body": "16px", "heading": "24px" }
 }
 ```
 
-**工具链**：Style Dictionary → 多平台输出（CSS、iOS、Android、Figma）。
+工具：Style Dictionary、Amazon Style Dictionary
 
----
+## 3. 组件库工程化
 
-## 3. 组件库工程
+- **Monorepo 结构**: 组件、主题、文档、工具分离
+- **构建输出**: ESM、CJS、UMD 多格式
+- **Tree Shaking**: 确保未使用组件被移除
+- **类型定义**: 自动生成 .d.ts
 
-### 3.1 Headless UI 趋势
+## 4. 与相邻模块的关系
 
-| 库 | 特点 | 适用 |
-|---|------|------|
-| **Radix UI** | 无障碍、无样式 | 自定义设计系统 |
-| **Headless UI** | Tailwind 官方 | Tailwind 项目 |
-| **React Aria** | Adobe 出品 | 企业级无障碍 |
-| **shadcn/ui** | 复制粘贴组件 | 快速启动 |
-
-### 3.2 文档即设计系统
-
-```
-Storybook
-  ├── 组件文档 (Props、用法)
-  ├── 视觉回归测试 (Chromatic)
-  ├── 设计令牌展示
-  └── 交互式 Playground
-```
-
----
-
-## 4. 反模式
-
-### 反模式 1：过度设计
-
-❌ 为每个像素差异创建新组件。
-✅ 用变体 (variant) 和属性组合覆盖 80% 场景。
-
-### 反模式 2：设计与代码脱节
-
-❌ 设计稿更新后，代码手动同步。
-✅ 设计令牌双向同步（Figma ↔ Code）。
-
----
-
-## 5. 总结
-
-设计系统是**产品一致性的基础设施**。
-
-**核心原则**：
-1. 令牌先行，组件随后
-2. 文档是系统的一部分，不是附属品
-3. 可访问性 (a11y) 不是可选项
-
----
-
-## 参考资源
-
-- [Design Tokens W3C](https://design-tokens.github.io/)
-- [Storybook](https://storybook.js.org/)
-- [Radix UI](https://www.radix-ui.com/)
-- [shadcn/ui](https://ui.shadcn.com/)
-
----
-
-## 模块代码文件索引
-
-本模块包含以下可运行 TypeScript 代码文件，用于将上述理论概念转化为实践：
-
-- `a11y-color-contrast.ts`
-- `component-variants.ts`
-- `css-in-js-generator.ts`
-- `design-token-transformer.ts`
-- `design-tokens.ts`
-- `icon-system.ts`
-- `index.ts`
-- `responsive-breakpoints.ts`
-
-> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
-
-## 核心理论深化
-
-### 关键设计模式
-
-本模块涉及的核心设计模式包括（根据代码实现提炼）：
-
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
-
-### 与相邻模块的关系
-
-| 相邻模块 | 关系说明 |
-|---------|---------|
-| 前置依赖 | 建议先掌握的基础模块 |
-| 后续进阶 | 可继续深化的相关模块 |
-
----
-
-> 📅 理论深化更新：2026-04-27
+- **51-ui-components**: UI 组件的设计与实现
+- **56-code-generation**: 基于令牌的代码生成
+- **13-code-organization**: 大型项目的代码组织

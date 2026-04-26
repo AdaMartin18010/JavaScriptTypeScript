@@ -1,98 +1,51 @@
-# AI 集成理论：从 API 调用到智能应用
+﻿# AI 集成 — 理论基础
 
-> **目标读者**：希望将 AI 能力集成到应用的开发者
-> **关联文档**：[`docs/categories/33-ai-integration.md`](../../docs/categories/33-ai-integration.md)
-> **版本**：2026-04
+## 1. 核心概念
 
----
+AI 集成是指将大型语言模型（LLM）的能力嵌入到应用程序中，使其具备理解、生成和推理能力。这一过程涉及三个关键层次：
 
-## 1. AI 集成层次
+### 1.1 模型层
 
-```
-L1: 直接 API 调用
-  ↓
-L2: 提示工程 + 流式处理
-  ↓
-L3: RAG（检索增强生成）
-  ↓
-L4: Agent（自主决策 + 工具使用）
-  ↓
-L5: 多 Agent 协作系统
-```
+- **LLM API**: OpenAI GPT-4o、Claude 3.5、Gemini 2.0 等通过 REST API 或 SDK 提供服务
+- **本地模型**: Ollama、LM Studio 支持在本地运行开源模型（Llama 3、Qwen 2.5）
+- **模型路由**: 根据任务复杂度自动选择合适模型（简单任务→轻量模型，复杂任务→大模型）
 
----
+### 1.2 提示工程层
 
-## 2. 关键模式
+- **Zero-shot/Few-shot**: 直接提问或提供示例引导模型输出
+- **Chain-of-Thought (CoT)**: 要求模型展示推理过程，提升复杂问题准确率
+- **ReAct 模式**: 推理（Reasoning）与行动（Acting）交替，使模型能调用工具
+- **结构化输出**: 通过 JSON Schema 约束模型输出格式，确保可解析性
 
-### 2.1 RAG 架构
+### 1.3 应用架构层
 
-```
-用户提问 → Embedding → 向量检索 → 上下文构建 → LLM → 回答
-```
+- **RAG (Retrieval-Augmented Generation)**: 将外部知识库与生成模型结合，解决幻觉问题
+- **Function Calling**: 模型输出结构化函数调用参数，由应用层执行
+- **Agent Loop**: 观察→思考→行动→观察的循环，实现自主任务执行
+- **Memory 管理**: 短期记忆（上下文窗口）与长期记忆（向量数据库）的结合
 
-### 2.2 Agent 架构
+## 2. 向量与 Embedding
+
+Embedding 是将文本/图像/音频映射到高维向量空间的技术。相似语义的内容在向量空间中距离更近。
 
 ```
-目标 → 规划 → 执行（工具）→ 观察 → ...循环直到完成
+文本 → Embedding 模型 → 1536 维向量 → 向量数据库（余弦相似度检索）
 ```
 
----
+常用向量数据库：Pinecone、Weaviate、Milvus、Chroma、Qdrant。
 
-## 3. JS/TS AI 生态
+## 3. 关键挑战
 
-| 层级 | 库 | 用途 |
-|------|-----|------|
-| **底层** | OpenAI SDK / Anthropic SDK | 直接 API |
-| **框架** | LangChain.js / Vercel AI SDK | 抽象层 |
-| **Agent** | Mastra / AutoGen | 自主系统 |
-| **UI** | shadcn-chat / Vercel Chat | 聊天界面 |
+| 挑战 | 影响 | 缓解策略 |
+|------|------|---------|
+| 幻觉 | 模型生成虚假事实 | RAG、事实核查、置信度阈值 |
+| 上下文窗口限制 | 长文档处理困难 | 分块、摘要、层次化检索 |
+| 延迟 | 实时交互体验差 | 流式输出、边缘缓存、模型量化 |
+| 成本 | Token 计费累积 | 缓存、模型降级、批处理 |
+| 安全 | Prompt Injection | 输入验证、输出过滤、沙箱执行 |
 
----
+## 4. 与相邻模块的关系
 
-## 4. 总结
-
-AI 集成不是简单的 API 调用，而是**重新设计应用的人机交互层**。
-
----
-
-## 参考资源
-
-- [Vercel AI SDK](https://sdk.vercel.ai/)
-- [LangChain.js](https://js.langchain.com/)
-- [OpenAI API](https://platform.openai.com/)
-
----
-
-## 模块代码文件索引
-
-本模块包含以下可运行 TypeScript 代码文件，用于将上述理论概念转化为实践：
-
-- `ai-sdk-patterns.ts`
-- `embedding-pipeline.ts`
-- `index.ts`
-- `llm-gateway.ts`
-- `prompt-engineering.ts`
-- `streaming-handler.ts`
-
-> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
-
-## 核心理论深化
-
-### 关键设计模式
-
-本模块涉及的核心设计模式包括（根据代码实现提炼）：
-
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
-
-### 与相邻模块的关系
-
-| 相邻模块 | 关系说明 |
-|---------|---------|
-| 前置依赖 | 建议先掌握的基础模块 |
-| 后续进阶 | 可继续深化的相关模块 |
-
----
-
-> 📅 理论深化更新：2026-04-27
+- **94-ai-agent-lab**: Agent 的完整实现（本模块是基础集成）
+- **82-edge-ai**: 边缘端模型推理优化
+- **92-observability-lab**: AI 系统的可观测性

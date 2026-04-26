@@ -1,152 +1,49 @@
-﻿# Web APIs实验室 — 理论基础
+﻿# Web APIs 实验室 — 理论基础
 
-> 本文件为 jsts-code-lab/90-web-apis-lab 模块的理论基础文档（THEORY.md）。
-> 生成日期：2026-04-27
-> 状态：框架版（待深化）
+## 1. Web 平台 API 体系
 
----
+现代浏览器提供超过 10,000 个 API，构成强大的客户端平台。核心 API 家族：
 
-## 1. 简介
+### 1.1 网络与通信
 
-$mod 模块聚焦于 **Web APIs实验室**。本文件从理论基础、核心机制、应用场景三个维度提供系统性概述，为代码实践提供理论支撑。
+- **Fetch API**: 现代 HTTP 请求接口，支持流式、取消、进度追踪
+- **WebSocket**: 全双工持久连接，适用于实时应用
+- **Server-Sent Events (SSE)**: 服务端单向推送，基于 HTTP，自动重连
+- **WebRTC**: P2P 音视频通信，无需服务器中转（仅信令需要）
 
----
+### 1.2 存储
 
-## 2. 理论基础
+- **IndexedDB**: 结构化 NoSQL 数据库，支持事务和索引
+- **Cache API**: Service Worker 控制的 HTTP 缓存
+- **Storage API**: 持久化存储配额管理
 
-### 2.1 核心概念定义
+### 1.3 性能
 
-- Fetch
-- Streams
-- Web Workers
-- Service Worker
-- Push API
+- **Performance API**: 高精度时间测量（navigation timing, resource timing）
+- **Intersection Observer**: 高效元素可见性检测（懒加载）
+- **Resize Observer**: 元素尺寸变化监听
 
-### 2.2 关键机制
+## 2. Streams API
 
-本模块涉及的核心机制包括：
+Streams 提供了一种处理大数据的内存高效方式：
 
-1. **机制一**：待补充（参考模块代码实现）
-2. **机制二**：待补充
-3. **机制三**：待补充
+```
+ReadableStream → TransformStream → WritableStream
+```
 
-### 2.3 形式化定义（如适用）
+- **ReadableStream**: 数据源（文件、网络响应）
+- **TransformStream**: 数据转换（压缩、加密、解析）
+- **WritableStream**: 数据目的地（文件系统、网络）
 
-> ⚠️ 本节为预留框架，待补充形式化定义、公理化表述或推理链。
+## 3. 新兴 API
 
----
+- **WebGPU**: 下一代图形与计算 API，替代 WebGL
+- **File System Access API**: 直接读写本地文件（需用户授权）
+- **Web Serial / USB / Bluetooth**: 硬件直接通信
+- **SharedArrayBuffer + Atomics**: 多线程共享内存
 
-## 3. 实现原理
+## 4. 与相邻模块的关系
 
-### 3.1 工作机制
-
-根据 jsts-code-lab/90-web-apis-lab/ 目录下的代码实现，本模块的核心工作流程为：
-
-`mermaid
-graph LR
-    A[输入] --> B[处理]
-    B --> C[输出]
-`
-
-> 💡 详细流程请参考模块内的代码文件及 ARCHITECTURE.md（如有）。
-
-### 3.2 算法描述
-
-> ⚠️ 待补充：核心算法的伪代码描述、时间/空间复杂度分析。
-
-### 3.3 性能特征
-
-| 指标 | 预期范围 | 影响因素 |
-|------|---------|---------|
-| 时间复杂度 | 待评估 | 待分析 |
-| 空间复杂度 | 待评估 | 待分析 |
-
----
-
-## 4. 应用场景
-
-### 4.1 适用条件
-
-- PWA开发
-- 离线应用
-- 后台同步
-
-### 4.2 最佳实践
-
-- ✅ 推荐做法一：参考模块代码实现
-- ✅ 推荐做法二：结合相关模块协同学习
-- ⚠️ 常见陷阱：待补充
-
----
-
-## 5. 相关理论
-
-### 5.1 前置知识
-
-- JavaScript/TypeScript 基础语法
-- 本模块依赖的前置模块（如有）
-
-### 5.2 进阶主题
-
-- 与本模块相关的更深入理论或架构模式
-- 建议阅读：jsts-language-core-system/ 中的相关专题
-
-### 5.3 关联模块
-
-| 关联模块 | 关系说明 |
-|---------|---------|
-| 待补充 | 待分析 |
-
----
-
-## 6. 参考文献
-
-### 6.1 经典著作与论文
-
-1. 待补充
-
-### 6.2 在线资源
-
-- [MDN Web Docs](https://developer.mozilla.org) — Web 技术权威参考
-- [ECMA-262 规范](https://tc39.es/ecma262/) — JavaScript 语言规范
-- [TypeScript 文档](https://www.typescriptlang.org/docs/) — TypeScript 官方文档
-
----
-
-> 📅 最后更新：2026-04-27
-> 📝 状态：框架版本，内容待深化。欢迎贡献补充。
-
----
-
-## 模块代码文件索引
-
-本模块包含以下可运行 TypeScript 代码文件，用于将上述理论概念转化为实践：
-
-- `fetch-advanced.ts`
-- `index.ts`
-- `observer-patterns.ts`
-- `service-worker-cache.ts`
-- `streams-pipeline.ts`
-
-> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
-
-## 核心理论深化
-
-### 关键设计模式
-
-本模块涉及的核心设计模式包括（根据代码实现提炼）：
-
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
-
-### 与相邻模块的关系
-
-| 相邻模块 | 关系说明 |
-|---------|---------|
-| 前置依赖 | 建议先掌握的基础模块 |
-| 后续进阶 | 可继续深化的相关模块 |
-
----
-
-> 📅 理论深化更新：2026-04-27
+- **50-browser-runtime**: 浏览器运行时架构
+- **30-real-time-communication**: 实时通信协议与实现
+- **37-pwa**: PWA 相关 API（Service Worker、Manifest）
