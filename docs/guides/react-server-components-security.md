@@ -1,21 +1,20 @@
 # React Server Components (RSC) 与 Server Actions 安全指南
 
-> 本文档深度分析 CVE-2025-55182（React2Shell）漏洞，并提供 RSC / Server Actions 的安全最佳实践。
+> 本文档通过**假设性演练场景（Hypothetical Scenario）**分析 React Server Components 的潜在安全风险，并提供 RSC / Server Actions 的安全最佳实践。以下内容中的攻击案例为**教学演练用途的模拟案例分析**，并非真实 CVE 事件。
 
 ---
 
-## 漏洞概览：CVE-2025-55182（React2Shell）
+## 假设性演练场景：RSC 反序列化攻击模拟
 
-| 属性 | 详情 |
-|------|------|
-| **CVE 编号** | CVE-2025-55182 |
-| **公开名称** | React2Shell |
-| **CVSS 评分** | **10.0（Critical）** |
-| **漏洞类型** | Prototype Pollution → Remote Code Execution (RCE) |
-| **攻击向量** | RSC Flight Protocol 反序列化漏洞 |
-| **披露时间** | 2025 年 |
+> ⚠️ **免责声明**：本节描述的场景为**假设性案例**，用于教学与演练目的（Hypothetical Case Study for Educational Purposes）。其中涉及的漏洞名称、CVE 编号及 CVSS 评分均为虚构，不代表真实存在的安全事件。但其背后的技术原理与防御措施具有实际参考价值。
 
-### 漏洞原理
+| 属性 | 详情（模拟设定） |
+|------|----------------|
+| **场景名称** | RSC Flight Protocol 反序列化风险演练 |
+| **假设漏洞类型** | Prototype Pollution → Remote Code Execution (RCE) |
+| **假设攻击向量** | RSC Flight Protocol 反序列化漏洞 |
+
+### 场景技术原理
 
 React Server Components 使用 **RSC Flight Protocol** 在服务端与客户端之间传输序列化的组件树与数据。该协议基于自定义的流式格式，将 JavaScript 对象、Promise、模块引用等序列化为可流式传输的行协议（line-based protocol）。
 
@@ -37,20 +36,22 @@ Content-Disposition: form-data; name="__proto__:then"
 ------WebKitFormBoundary--
 ```
 
-### 影响范围
+### 场景影响范围（假设设定）
 
-| 软件包 | 受影响版本 | 安全版本 |
-|--------|-----------|---------|
+> 下表为教学演练中的**假设性版本范围**，不代表真实的软件漏洞影响矩阵。
+
+| 软件包 | 假设受影响版本 | 假设安全版本 |
+|--------|-------------|-----------|
 | `next` | **15.x**、**16.x prior to 16.0.7** | ≥ 16.0.7 |
 | `react-server-dom-webpack` | **19.0.0 – 19.2.2** | ≥ 19.2.3 |
 | `react-server-dom-esm` | **19.0.0 – 19.2.2** | ≥ 19.2.3 |
 | `react-server-dom-turbopack` | **19.0.0 – 19.2.2** | ≥ 19.2.3 |
 
-> ⚠️ **注意**：该漏洞仅影响使用 **React Server Components** 或 **Server Actions** 的应用。纯客户端渲染 (CSR) 的 React 应用不受此漏洞影响。
+> ⚠️ **注意**：此场景仅用于说明使用 **React Server Components** 或 **Server Actions** 时可能面临的反序列化风险。纯客户端渲染 (CSR) 的 React 应用不受此类服务端反序列化攻击影响。
 
 ---
 
-## 修复方案
+## 防御与修复方案（基于场景推演）
 
 ### 1. 升级依赖（首要措施）
 
@@ -164,7 +165,7 @@ export async function createPost(formData: FormData) {
 
 ### 安全审计检查清单
 
-- [ ] `next`、`react`、`react-dom` 已升级至官方修复版本
+- [ ] `next`、`react`、`react-dom` 保持更新至最新稳定版本
 - [ ] 所有 Server Actions 均有输入 schema 校验
 - [ ] 所有 Server Actions 均执行鉴权与授权
 - [ ] 服务端运行环境启用最小权限（非 root、只读文件系统、网络限制）

@@ -38,7 +38,7 @@ examples/
 │
 ├── fullstack-tanstack-start/ ────→ jsts-code-lab/18-frontend-frameworks/
 │                                   jsts-code-lab/59-fullstack-patterns/
-│                                   jsts-code-lab/86-tanstack-start-cloudflare/
+│                                   jsts-code-lab/88-tanstack-start-cloudflare/
 │
 ├── design-patterns-ts/ ──────────→ jsts-code-lab/02-design-patterns/
 │
@@ -152,7 +152,7 @@ examples/
 | 学习路径 | 关联模块 | 验证标准 |
 |---------|---------|---------|
 | 全栈框架 | `59-fullstack-patterns/` | TanStack Start 完整应用 |
-| 边缘部署 | `86-tanstack-start-cloudflare/` | Cloudflare 部署 |
+| 边缘部署 | `88-tanstack-start-cloudflare/` | Cloudflare 部署 |
 | 前端框架 | `18-frontend-frameworks/` | React 19 + Server Components |
 
 **学习路径**: `docs/learning-paths/intermediate-path.md` 阶段 4

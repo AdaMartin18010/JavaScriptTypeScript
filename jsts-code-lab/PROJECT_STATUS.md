@@ -98,7 +98,7 @@
 ✅ 85-nlp-engineering          2 文件  🌱
 ✅ 86-graph-database           2 文件  🌱
 ✅ 87-realtime-analytics       2 文件  🌱
-✅ 88-lowcode-platform         2 文件  🌱
+✅ 97-lowcode-platform         2 文件  🌱
 ✅ 89-autonomous-systems       2 文件  🌱
 ✅ 90-web-apis-lab             8 文件  🌿
 ✅ 91-nodejs-core-lab          8 文件  🌿

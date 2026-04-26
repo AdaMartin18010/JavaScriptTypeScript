@@ -22,7 +22,7 @@ export default defineConfig({
     
     // 测试文件匹配
     include: ['**/*.test.ts', 'tests/**/*.ts'],
-    exclude: ['**/node_modules/**', '**/dist/**', 'playground/experiments/**/*', '86-tanstack-start-cloudflare/**/*'],
+    exclude: ['**/node_modules/**', '**/dist/**', 'playground/experiments/**/*', '88-tanstack-start-cloudflare/**/*'],
     
     // 超时设置
     testTimeout: 10000,

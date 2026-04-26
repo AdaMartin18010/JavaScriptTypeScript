@@ -1175,7 +1175,7 @@ export default MyDocument;
 #### 流式 SSR 支持
 
 ```tsx
-// React 18 流式 SSR
+// React 19 流式 SSR
 import { renderToPipeableStream } from 'react-dom/server';
 import createCache from '@emotion/cache';
 import createEmotionServer from '@emotion/server/create-instance';

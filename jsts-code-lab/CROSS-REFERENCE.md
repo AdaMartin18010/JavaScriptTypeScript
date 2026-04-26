@@ -110,7 +110,7 @@
 | 主题 | 主要模块 | 理论文档 | 相关模块 |
 |------|---------|---------|---------|
 | ECMAScript 演进 | 01-ecmascript-evolution | [index.ts](./01-ecmascript-evolution/index.ts) | 10-js-ts-comparison |
-| JS/TS 语义对比 | 10-js-ts-comparison | [THEORY.md](./10-js-ts-comparison/THEORY.md) | 40-type-theory-formal, compiler-api |
+| JS/TS 语义对比 | 10-js-ts-comparison | [THEORY.md](./10-js-ts-comparison/THEORY.md) | 40-type-theory-formal |
 | 共识算法 | 71-consensus-algorithms | [THEORY.md](./71-consensus-algorithms/THEORY.md) | 70-distributed-systems |
 | 形式化验证 | 80-formal-verification | [THEORY.md](./80-formal-verification/THEORY.md) | 41-formal-semantics |
 
@@ -295,7 +295,7 @@
 
 | 技术栈组合 | 涉及模块 | 说明 |
 |------------|----------|------|
-| **AI 全栈** | 94-ai-agent-lab + 33-ai-integration + 28-ai-agent-infrastructure | MCP Server、Vercel AI SDK Tool Calling、Multi-agent Workflow |
+| **AI 全栈** | 94-ai-agent-lab + 33-ai-integration + 82-edge-ai | MCP Server、Vercel AI SDK Tool Calling、Multi-agent Workflow |
 | **现代认证全栈** | 95-auth-modern-lab + 21-api-security | better-auth、Passkeys、OAuth2 PKCE、RBAC |
 | **边缘数据库全栈** | 96-orm-modern-lab + 32-edge-computing | Drizzle Schema、Query Patterns、Prisma 7 Edge、Turso |
 
@@ -341,27 +341,27 @@
 
 | 文件 | 关联模块 | 关联文档 |
 |------|----------|----------|
-| mcp-server.ts | 33-ai-integration | docs/categories/ai-agent-guide.md |
-| vercel-ai-sdk-tools.ts | 33-ai-integration | docs/categories/ai-agent-guide.md |
-| multi-agent-workflow.ts | 33-ai-integration | docs/categories/ai-agent-guide.md |
+| mcp-server-demo.ts | 33-ai-integration | docs/categories/28-ai-agent-infrastructure.md |
+| vercel-ai-sdk-tool-calling.ts | 33-ai-integration | docs/categories/28-ai-agent-infrastructure.md |
+| multi-agent-workflow.ts | 33-ai-integration | docs/categories/28-ai-agent-infrastructure.md |
 
 ### 95-auth-modern-lab: Modern Authentication Lab
 
 | 文件 | 关联模块 | 关联文档 |
 |------|----------|----------|
-| better-auth-setup.ts | 21-api-security | docs/categories/auth-modern-guide.md |
-| passkeys-webauthn.ts | 21-api-security | docs/categories/auth-modern-guide.md |
-| oauth2-pkce-flow.ts | 21-api-security | docs/categories/auth-modern-guide.md |
-| rbac-implementation.ts | 21-api-security | docs/categories/auth-modern-guide.md |
+| better-auth-setup.ts | 21-api-security | docs/categories/29-authentication.md |
+| passkeys-implementation.ts | 21-api-security | docs/categories/29-authentication.md |
+| oauth2-pkce-flow.ts | 21-api-security | docs/categories/29-authentication.md |
+| rbac-middleware.ts | 21-api-security | docs/categories/29-authentication.md |
 
 ### 96-orm-modern-lab: Modern ORM Lab
 
 | 文件 | 关联模块 | 关联文档 |
 |------|----------|----------|
-| drizzle-schema.ts | 20-database-orm | docs/categories/orm-modern-guide.md |
-| drizzle-query-patterns.ts | 20-database-orm | docs/categories/orm-modern-guide.md |
-| prisma-7-edge.ts | 32-edge-computing | docs/categories/orm-modern-guide.md |
-| turso-libsql.ts | 32-edge-computing | docs/categories/orm-modern-guide.md |
+| drizzle-schema.ts | 20-database-orm | docs/categories/11-orm-database.md |
+| drizzle-query-patterns.ts | 20-database-orm | docs/categories/11-orm-database.md |
+| prisma-7-edge.ts | 32-edge-computing | docs/categories/11-orm-database.md |
+| turso-connection.ts | 32-edge-computing | docs/categories/11-orm-database.md |
 
 ---
 

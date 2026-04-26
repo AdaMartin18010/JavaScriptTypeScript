@@ -14,7 +14,7 @@
 |------|------|
 | **架构设计** | 「生态导航 + 代码实验室 + 理论旗舰」三层架构是业界少有的系统性知识工程实践 |
 | **前沿敏感度** | React 19/Tailwind v4/MCP/better-auth/Passkeys/Rolldown 等 2025-2026 热点均已覆盖，更新及时 |
-| **选型体系** | 15 个对比矩阵 + 14 个决策树 + 21 个 Mermaid 图表，形成完整的技术选型基础设施 |
+| **选型体系** | 15 个对比矩阵 + 15 个决策树 + 21 个 Mermaid 图表，形成完整的技术选型基础设施 |
 | **学术深度** | 形式化语义、渐进类型理论、Hoare 逻辑、TLA+ 等内容超越了一般技术文档的范畴 |
 | **编号体系** | 00-96 模块编号 + 复杂度星级，为学习路径规划提供了工程化基础 |
 
@@ -163,7 +163,7 @@
 
 **现象**：
 
-- `32-edge-computing`、`93-deployment-edge-lab`、`86-tanstack-start-cloudflare` 存在
+- `32-edge-computing`、`93-deployment-edge-lab`、`88-tanstack-start-cloudflare` 存在
 - Cloudflare Workers / Vercel Edge / Deno Deploy 均有覆盖
 
 **缺失内容**：
@@ -353,7 +353,7 @@
 
 | 编号 | 任务 | 目标交付物 |
 |------|------|-----------|
-| P3-1 | **薄弱模块内容增强** | `24-graphql`、`29-documentation`、`37-pwa`、`84-webxr`、`88-lowcode-platform` 等骨架级模块的代码补全 |
+| P3-1 | **薄弱模块内容增强** | `24-graphql`、`29-documentation`、`37-pwa`、`84-webxr`、`97-lowcode-platform` 等骨架级模块的代码补全 |
 | P3-2 | **测试覆盖率均衡化** | 为 `50-browser-runtime` 等高级模块补充 `.test.ts` |
 | P3-3 | **Monorepo 架构设计理论** | `JSTS全景综述/Monorepo_架构设计与边界划分.md` |
 | P3-4 | **Wasm Component Model 实践** | `jsts-code-lab/36-web-assembly/wasm-component-model/` |

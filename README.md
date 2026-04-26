@@ -18,7 +18,7 @@
 >
 > 🧠 语言核心系统：[jsts-language-core-system](./jsts-language-core-system/) - 52 个深度文档，覆盖类型系统/变量系统/控制流/执行模型/执行流/规范基础
 >
-> 📊 技术选型体系：15 个对比矩阵（含包管理器/Monorepo/可观测性/部署平台/CI/CD/浏览器兼容性）、14 大选型决策树、21 个 Mermaid 知识图谱（含 3 个大型知识图谱）
+> 📊 技术选型体系：16 个对比矩阵（含包管理器/Monorepo/可观测性/部署平台/CI/CD/浏览器兼容性）、15 大选型决策树、21 个 Mermaid 知识图谱（含 3 个大型知识图谱）
 >
 > 🎓 旗舰文档：[JS_TS_语言语义模型全面分析](./JSTS全景综述/JS_TS_语言语义模型全面分析.md) - 基于 ECMA-2025/2026、TypeScript 5.8–7.0，对齐 Stanford/MIT/CMU/Berkeley/UW 学术课程
 >
@@ -75,8 +75,8 @@
 | [🎓 beginners-path.md](./docs/learning-paths/beginners-path.md) | 初学者学习路径 | 初学者 |
 | [📈 intermediate-path.md](./docs/learning-paths/intermediate-path.md) | 进阶学习路径 | 中级开发者 |
 | [🎯 advanced-path.md](./docs/learning-paths/advanced-path.md) | 架构师学习路径 | 高级开发者 |
-| [📊 comparison-matrices](./docs/comparison-matrices/) | 15 个框架/工具对比矩阵 | 技术选型者 |
-| [🌳 技术选型决策树](./docs/decision-trees.md) | 14 大选型场景的决策树 | 技术选型者 |
+| [📊 comparison-matrices](./docs/comparison-matrices/) | 16 个框架/工具对比矩阵 | 技术选型者 |
+| [🌳 技术选型决策树](./docs/decision-trees.md) | 15 大选型场景的决策树 | 技术选型者 |
 | [🗺️ diagrams](./docs/diagrams/) | 21 个 Mermaid 图表与知识图谱 | 可视化学习者 |
 | [🌐 web-apis-guide.md](./docs/guides/web-apis-guide.md) | Web APIs 完全指南 | 全栈开发者 |
 | [🟢 nodejs-core-modules-guide.md](./docs/guides/nodejs-core-modules-guide.md) | Node.js 核心模块指南 | 后端开发者 |
@@ -95,10 +95,10 @@
 |------|------|------|
 | 文档总数 | 220+ | 涵盖指南、对比矩阵、决策树、知识图谱 |
 | 分类文档 | 27 | 按技术领域系统分类 |
-| 对比矩阵 | 15 | 多维度工具/框架横向对比 |
+| 对比矩阵 | 16 | 多维度工具/框架横向对比 |
 | 代码模块 | 90+ | jsts-code-lab 可运行示例 |
 | Mermaid 图表 | 21 | 含 3 个大型知识图谱 |
-| 决策树场景 | 14 | 交互式技术选型流程 |
+| 决策树场景 | 15 | 交互式技术选型流程 |
 | AI Agent 模块 | 5+ | MCP / Vercel AI SDK / Mastra 集成 |
 | 现代认证模块 | 3+ | better-auth / Passkeys / OAuth 2.1 |
 
@@ -110,8 +110,8 @@
 
 | 资源类型 | 数量 | 说明 |
 |----------|------|------|
-| 对比矩阵 | 15 个 | 多维度工具/框架横向对比 |
-| 决策树 | 14 个场景 | 交互式选型流程图 |
+| 对比矩阵 | 16 个 | 多维度工具/框架横向对比 |
+| 决策树 | 15 个场景 | 交互式选型流程图 |
 | 知识图谱 | 21 个图表 | 3 个大型知识图谱 + 18 个专题流程图 |
 
 ### 对比矩阵清单

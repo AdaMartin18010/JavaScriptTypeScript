@@ -260,7 +260,7 @@ export * as GraphDatabase from './86-graph-database/index.js';
 export * as RealtimeAnalytics from './87-realtime-analytics/index.js';
 
 // 低代码平台
-export * as LowcodePlatform from './88-lowcode-platform/index.js';
+export * as LowcodePlatform from './97-lowcode-platform/index.js';
 
 // 自动化系统
 export * as AutonomousSystems from './89-autonomous-systems/index.js';

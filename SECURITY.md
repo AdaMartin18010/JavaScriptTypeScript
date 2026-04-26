@@ -21,7 +21,7 @@
 
 ## 详细报告
 
-### 🟢 `jsts-code-lab\86-tanstack-start-cloudflare\01-basic-setup\package.json`
+### 🟢 `jsts-code-lab\88-tanstack-start-cloudflare\01-basic-setup\package.json`
 
 ✅ 未发现安全漏洞
 

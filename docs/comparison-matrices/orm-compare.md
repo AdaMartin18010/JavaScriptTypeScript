@@ -1,6 +1,6 @@
 # ORM 对比矩阵
 
-> 最后更新：2026年4月
+> 最后更新：2026-04
 
 ---
 
@@ -11,7 +11,7 @@
 | **Stars (2026.04)** | 48k+ | 40k+ | 4k+ | 36k+ | 29k+ |
 | **Schema Definition** | Prisma Schema (DSL) | TypeScript-native | Prisma-compatible + `@@allow` | Decorator / Entity | Model definition |
 | **Query Syntax** | 声明式对象 API | SQL-like Fluent API | 复用 Prisma Client | Repository / QueryBuilder | Chainable API |
-| **Bundle Size** | ~1.6MB (WASM) | ~7KB gzipped | +~50KB (Prisma 之上) | ~1MB+ | ~800KB |
+| **Bundle Size** | ~5MB (WASM) | ~7KB gzipped | +~50KB (Prisma 之上) | ~1MB+ | ~800KB |
 | **Cold Start** | ⭐⭐⭐ 快 (无二进制) | ⭐⭐⭐ 极快 | ⭐⭐⭐ 快 | ⭐⭐ 中 | ⭐⭐ 中 |
 | **Edge Support** | ✅ Native | ✅ Native | ✅ Native | ❌ | ❌ |
 | **Migration Tooling** | Prisma Migrate | Drizzle Kit | 复用 Prisma | TypeORM CLI / 代码 | Sequelize CLI |
@@ -30,10 +30,13 @@ npm install prisma @prisma/client
 - **定位**: 下一代 Node.js 和 TypeScript ORM，v7 彻底移除 Rust Query Engine 二进制依赖
 - **核心设计**: Schema 定义 → WASM Query Engine → 类型安全客户端
 - **关键升级（v7）**:
-  - **WASM 引擎**: Query Engine 改用 TypeScript/WASM 实现，bundle 从 ~14MB 降至 ~1.6MB
-  - **原生 Edge 支持**: 无需数据代理，直接运行在 Cloudflare Workers、Vercel Edge、Deno Deploy
+  - **WASM 引擎**: Query Engine 改用 TypeScript/WASM 实现（取代 Rust 二进制），bundle 从 ~14MB 降至 ~5MB
+  - **原生 Edge 支持**: 彻底解决 Edge Runtime 兼容性问题，无需数据代理，直接运行在 Cloudflare Workers、Vercel Edge、Deno Deploy
+  - **启动时间**: 冷启动从数百毫秒降至数十毫秒
   - **类型检查加速**: Schema 编译与类型生成速度提升约 70%
   - **零二进制依赖**: 单一代码库部署，容器/Serverless 镜像体积大幅缩小
+- **v7 仍存痛点**:
+  - **Bundle 体积**: ~5MB 的 WASM bundle 在极端边缘场景仍是体积痛点（对比 Drizzle 的 ~7KB）
 - **优势**:
   - 类型安全级别最高
   - 自动迁移生成（Prisma Migrate）
@@ -90,11 +93,12 @@ npm install drizzle-orm pg
 npm install -D drizzle-kit
 ```
 
-- **定位**: SQL-like、TypeScript-native 的现代 ORM，Serverless/Edge 首选
+- **定位**: SQL-like、TypeScript-native 的现代 ORM，2026 年持续爆发式增长，Serverless/Edge 首选
 - **核心设计**: 用 TypeScript 写 Schema，用 SQL 风格链式查询，零生成步骤
 - **关键特性**:
   - **极致轻量**: ~7KB gzipped，可 Tree Shaking
   - **零生成步骤**: Schema 即 TypeScript，无需预编译或代码生成
+  - **原生数据库适配**: 内置 Neon、Turso、PlanetScale 等边缘数据库原生适配器
   - **明确 join 语法**: 无 N+1 隐患（如正确使用 `leftJoin` + `groupBy`）
   - **RLS 支持**: 原生支持 PostgreSQL Row Level Security 策略映射
   - **Drizzle Kit**: 开源迁移工具，支持 `generate` / `migrate` / `push`
@@ -157,10 +161,11 @@ npm install @libsql/client drizzle-orm
 - **定位**: SQLite at the Edge，由 libSQL (SQLite fork) 驱动，Turso 提供托管服务
 - **核心设计**: 在边缘节点部署 SQLite 数据库实例，支持全球复制与低延迟读取
 - **关键特性**:
-  - **全球复制**: 写主库，读最近副本，延迟 < 50ms
+  - **全球复制**: 35+ 区域，写主库，读最近副本，延迟 < 50ms
   - **SQLite 兼容**: 完全兼容 SQLite 文件格式与 SQL 语法
   - **边缘原生**: 与 Cloudflare Workers、Deno Deploy、Vercel Edge 无缝集成
-  - **免费 tier generous**:  generous 免费额度适合原型和小型应用
+  - **免费额度**: 500 个免费数据库，适合原型和小型应用
+  - **嵌入式副本 (Embedded Replicas)**: 支持在本地/边缘节点创建只读副本，实现本地速度读取
   - **libSQL 扩展**: 支持加密、WASM 运行时、远程同步协议
 - **优势**:
   - 无连接池开销，单文件部署
@@ -181,6 +186,91 @@ const result = await client.execute({
   sql: 'SELECT * FROM users WHERE email = ?',
   args: ['test@example.com']
 })
+```
+
+---
+
+## Neon (Serverless PostgreSQL)
+
+```bash
+npm install @neondatabase/serverless drizzle-orm
+# 或 Prisma: datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+```
+
+- **定位**：Serverless PostgreSQL 托管服务，2026 年 1 月被 Databricks 收购
+- **核心设计**：按需计费的 PostgreSQL 计算 + 存储分离架构
+- **2026 关键更新**:
+  - **Databricks 收购**: 2026 年 1 月宣布收购，生态整合加速
+  - **成本优化**: 计算成本降低 15-25%
+  - **免费 tier 永久**: 免费额度永久保留，对开发者友好
+- **优势**:
+  - 真正的 Serverless：无连接数限制，按需启动
+  - 分支数据库：类似 Git 的数据库分支，便于开发与预览
+  - 与 Prisma 7、Drizzle ORM 深度集成
+- **劣势**: 写吞吐受限于单节点；复杂分析查询性能一般
+- **适用场景**: Serverless/Edge 应用、需要 Postgres 兼容性的全栈项目
+
+```typescript
+import { neon } from '@neondatabase/serverless'
+import { drizzle } from 'drizzle-orm/neon-serverless'
+
+const sql = neon(process.env.DATABASE_URL!)
+const db = drizzle(sql)
+```
+
+---
+
+## PlanetScale (Vitess-based MySQL)
+
+```bash
+# 使用 Drizzle ORM 或 Prisma 的标准 MySQL 驱动即可
+npm install drizzle-orm mysql2
+```
+
+- **定位**：基于 Vitess 的 Serverless MySQL 数据库，Git 式分支工作流
+- **核心设计**：MySQL-compatible，支持数据库分支与部署流水线
+- **2026 关键事实**:
+  - **无免费 tier**: 自 2024 年起取消免费 tier，最低 $39/月
+  - **定价门槛**: 对 side project 和个人开发者不够友好
+- **优势**:
+  - 强大的数据库分支与合并工作流
+  - MySQL 兼容性（兼容现有 MySQL 工具链）
+  - 自动扩缩容
+- **劣势**: 无免费 tier；相比 Neon/Turso 在 Edge 场景集成度稍弱
+- **适用场景**: 已有 MySQL 生态、需要分支工作流的中大型团队
+
+---
+
+## Cloudflare D1
+
+```bash
+# Cloudflare Workers 原生绑定，无需 npm install
+# Drizzle ORM 支持: npm install drizzle-orm
+```
+
+- **定位**：Cloudflare 官方边缘 SQLite 数据库，与 Workers 深度集成
+- **核心设计**: SQLite at the Edge，数据自动复制到 Cloudflare 全球网络
+- **2026 关键更新**:
+  - **GA 发布**: 2026 年正式 GA，脱离 Beta
+  - **免费 tier**: 5GB 存储免费，与 Workers 生态无缝集成
+  - **原生绑定**: 通过 Wrangler / `env.DB` 直接绑定，零网络开销
+- **优势**:
+  - 与 Cloudflare Workers / Pages 原生集成，无需管理连接字符串
+  - 边缘节点就近读取，延迟极低
+  - 零运维，自动备份
+- **劣势**: 仅限 Cloudflare 生态；复杂查询和事务能力弱于 PostgreSQL
+- **适用场景**: 纯 Cloudflare Workers 生态、读多写少的边缘应用
+
+```typescript
+// wrangler.toml / wrangler.json 绑定后
+export default {
+  async fetch(request: Request, env: { DB: D1Database }) {
+    const { results } = await env.DB.prepare('SELECT * FROM users WHERE id = ?')
+      .bind(1)
+      .all()
+    return Response.json(results)
+  },
+}
 ```
 
 ---
@@ -285,7 +375,7 @@ npm install sequelize pg
 | **内存占用** | 低 (~1.6MB) | 极低 (~7KB) | 同 Prisma | 高 | 中 |
 | **冷启动** | 快 (无二进制) | 极快 | 快 | 中 | 中 |
 | **边缘运行** | ✅ Native | ✅ Native | ✅ Native | ❌ | ❌ |
-| **Bundle 体积** | ~1.6MB | ~7KB gzipped | +~50KB | ~1MB+ | ~800KB |
+| **Bundle 体积** | ~5MB | ~7KB gzipped | +~50KB | ~1MB+ | ~800KB |
 
 ---
 
@@ -300,6 +390,7 @@ npm install sequelize pg
 | 需要可视化工具 + 自动迁移 | **Prisma 7** |
 | 复杂领域模型 + Unit of Work | **MikroORM** |
 | 传统后端 + Postgres 托管 | **Prisma 7 + Neon** / **Drizzle + Neon** |
+| 传统后端 + MySQL 托管 | **Drizzle + PlanetScale**（注意无免费 tier）|
 | 新项目启动 (2026年) | **Prisma 7** 或 **Drizzle ORM** |
 | 遗留项目维护 | 保持现有 ORM |
 | **不推荐新项目使用** | TypeORM、Sequelize |
@@ -310,7 +401,7 @@ npm install sequelize pg
 
 | 部署环境 | 数据库 | ORM | 理由 |
 |----------|--------|-----|------|
-| Cloudflare Workers | Cloudflare D1 / Turso | Drizzle ORM | 原生绑定，体积最小 |
+| Cloudflare Workers | Cloudflare D1 (GA 2026) / Turso | Drizzle ORM | D1 GA，原生绑定，体积最小 |
 | Vercel Edge | Turso / Neon | Drizzle ORM / Prisma 7 | 无连接池问题，冷启动快 |
 | AWS Lambda | Neon / RDS Proxy | Prisma 7 / Drizzle ORM | Prisma 7 WASM 引擎无需二进制部署 |
 | 传统 VPS / K8s | PostgreSQL / MySQL | Prisma 7 / Drizzle ORM | 功能完整，监控成熟 |
@@ -334,6 +425,52 @@ npm install sequelize pg
 
 ---
 
-> 📅 本文档最后更新：2026年4月
+> 📅 本文档最后更新：2026-04
 >
 > 💡 提示：Stars 数据会随时间变化，建议查看 GitHub 获取最新数据；Prisma 7 为 2025.11 发布的新版本，生态正在快速演进。
+
+
+---
+
+## 2026 年数据库与 ORM 生态重大更新
+
+> 以下更新反映 2026 年 4 月的最新生态变化，补充本文档核心对比表未覆盖的最新事件。
+
+### Neon 被 Databricks 收购（2026-01）
+
+- **事件**：Serverless Postgres 提供商 Neon 于 2026 年 1 月被 Databricks 收购。
+- **影响**：
+  - 计算成本降低 **15–25%**
+  - 免费 tier（Free Tier）宣布永久保留
+  - 与 Databricks 生态的集成预期增强（Delta Lake、Unity Catalog 等）
+- **对开发者的意义**：Neon 的数据库分支（Branching）和 Serverless 自动扩缩容能力仍然是多租户 SaaS 的优选方案之一。
+
+### PlanetScale 定价策略变化
+
+- **变化**：PlanetScale 自 2024 年起**取消免费 tier**，最低付费档位为 **$39/月**。
+- **影响**：对于小型项目和个人开发者，PlanetScale 的门槛显著提高；Drizzle + Turso / Cloudflare D1 成为更经济的选择。
+- **适用场景**：PlanetScale 仍适合需要多区域 active-active MySQL（基于 Vitess）的企业级应用。
+
+### Prisma 7 WASM 引擎现状
+
+- **进展**：Prisma 7 将查询引擎从 Rust 二进制迁移到 WebAssembly（WASM），解决了 Cloudflare Workers 等边缘运行时的兼容性难题。
+- **痛点**：WASM 引擎的 Bundle 体积约 **5MB**，对于极端边缘场景（如 Cloudflare Workers 免费 tier 的 1MB 限制）仍然不可行。
+- **建议**：边缘部署首选 Drizzle ORM；传统服务器部署可继续使用 Prisma 7。
+
+### Turso 与 Cloudflare D1 的 2026 进展
+
+| 服务 | 2026 关键更新 | 适用场景 |
+|------|--------------|---------|
+| **Turso** | 35+ 全球区域；500 个免费数据库；Embedded Replicas 实现本地速度读取 | 多租户 SaaS、边缘优先架构、IoT 数据收集 |
+| **Cloudflare D1** | 2026 年 GA（General Availability）；5GB 免费 tier；与 Workers 生态深度整合 | Cloudflare 生态内的全栈应用、轻量级 CMS |
+
+### 边缘数据库选型建议（2026）
+
+对于新项目，推荐以下决策路径：
+
+1. **已在 Cloudflare 生态** → D1（零配置集成）
+2. **多租户 SaaS，需要全球低延迟** → Turso（libSQL + 边缘复制）
+3. **需要完整 PostgreSQL 功能 + Serverless** → Neon（被 Databricks 收购后生态增强）
+4. **复杂查询、关系处理、成熟迁移工具** → Prisma 7 + 传统 PostgreSQL（非边缘部署）
+
+> 📅 本节补充更新：2026-04-27

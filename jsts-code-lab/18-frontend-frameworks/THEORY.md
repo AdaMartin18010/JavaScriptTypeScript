@@ -215,7 +215,7 @@ const count = ref(0)
 </template>
 ```
 
-Vue 的渐进式特性使其在中小型项目和中大型企业级应用中保持了极强的竞争力。根据 State of JS 2024，Vue 的开发者满意度（89%）与 React（87%）基本持平[^6]。
+Vue 的渐进式特性使其在中小型项目和中大型企业级应用中保持了极强的竞争力。根据 State of JS 2024（State of JS 2025 已发布，数据待全面更新），Vue 的开发者满意度（89%）与 React（87%）基本持平[^6]。
 
 ### 2.3 Svelte 5：Runes 与显式响应式
 
@@ -798,7 +798,7 @@ count.set(1); // 自动触发 Effect 更新
 
 [^5]: Vue.js 官方文档 "Vue 3.5 Release Notes"，以及 Evan You 在 Vue.js Amsterdam 2024 关于响应式系统优化的演讲。
 
-[^6]: State of JS 2024 调查报告，"Front-end Frameworks" 章节。<https://stateofjs.com/en-US>
+[^6]: State of JS 2024/2025 调查报告，"Front-end Frameworks" 章节。<https://stateofjs.com/en-US>
 
 [^7]: Svelte 官方博客 "Introducing Runes". 2024.09. Rich Harris 关于 Svelte 5 范式迁移的设计文档。
 

@@ -1,6 +1,6 @@
 # TypeScript 7.0 迁移指南
 
-> 代号：Project Corsa / tsgo | 发布时间：2025 年 12 月（GA）
+> 代号：Project Corsa / tsgo | Beta 发布时间：2026 年 4 月 21 日 | 稳定版预计：2026 年中（Q2-Q3）
 >
 > 本指南面向计划从 TypeScript 5.x/6.x 迁移至 7.0 的工程团队与工具链作者。
 
@@ -8,7 +8,7 @@
 
 ## 概述
 
-TypeScript 7.0（内部代号 **Project Corsa**，CLI 名称 **`tsgo`**）是微软对 TypeScript 编译器的**原生重写**——将自 2012 年以来基于 TypeScript/JavaScript 编写的编译器前端，完整迁移至 **Go 语言**实现。这不是简单的端口，而是一次针对现代硬件（多核、大内存带宽）的重新架构，目标是在保持 100% 语义兼容的前提下，实现 **10 倍以上**的编译性能飞跃。
+TypeScript 7.0（内部代号 **Project Corsa**，CLI 名称 **`tsgo`**）是微软对 TypeScript 编译器的**原生重写**——将自 2012 年以来基于 TypeScript/JavaScript 编写的编译器前端，完整迁移至 **Go 语言**实现。这不是简单的端口，而是一次针对现代硬件（多核、大内存带宽）的重新架构，目标是在保持 100% 语义兼容的前提下，根据微软官方基准测试，实现 **约 10 倍**的编译性能提升。
 
 ### 为什么用 Go 重写？
 
@@ -24,7 +24,7 @@ TypeScript 7.0（内部代号 **Project Corsa**，CLI 名称 **`tsgo`**）是微
 
 ## 性能数据
 
-以下数据来自微软官方基准测试（2025.10 发布），测试环境：AMD EPYC 9654 / 128C256T / 512GB RAM。
+以下数据来自微软官方基准测试（2026.04 发布），测试环境：AMD EPYC 9654 / 128C256T / 512GB RAM。数据反映 Beta 版本的 benchmark 结果，实际表现可能因项目与硬件而异。
 
 ### 大型代码库编译速度
 
@@ -274,10 +274,10 @@ const response = await lspClient.sendRequest('typescript/getTypeAtPosition', {
 
 | 阶段 | 时间 | 状态 |
 |------|------|------|
-| 预览版（Preview） | 2025.06 | ✅ `npm install -g @typescript/native-preview` |
-| Beta | 2025.09 | 🔄 社区测试，API 冻结 |
-| RC | 2025.11 | 🔄 最终性能调优 |
-| GA | 2025.12 | 🎯 正式发布 |
+| 预览版（Preview） | 2025.06 – 2026.03 | ✅ 已完成 |
+| Beta | 2026.04.21 | ✅ 已发布 |
+| RC | 2026.05 – 2026.06 | 🔄 预计发布 |
+| GA | 2026 年中（Q2-Q3） | 🎯 预计正式发布 |
 
 ---
 
@@ -376,4 +376,4 @@ flowchart TD
 
 > 📅 本文档最后更新：2026 年 4 月
 >
-> ⚠️ **注意**：TypeScript 7.0 处于预览阶段，部分 API 和功能可能在 GA 前调整。生产环境建议等待 2025 年 12 月正式发布。
+> ⚠️ **注意**：TypeScript 7.0 目前处于 Beta 阶段，部分 API 和功能可能在 GA 前调整。生产环境建议等待 2026 年中的稳定版本发布。

@@ -656,9 +656,9 @@ flowchart TB
 | 84 | 84-webxr | 可用 | 1 | 1 | — |
 | 85 | 85-nlp-engineering | 成熟 | 9 | 9 | ✅ |
 | 86 | 86-graph-database | 成熟 | 6 | 6 | ✅ |
-| 86 | 86-tanstack-start-cloudflare | 成熟 | 8 | 0 | ✅ |
+| 86 | 88-tanstack-start-cloudflare | 成熟 | 8 | 0 | ✅ |
 | 87 | 87-realtime-analytics | 可用 | 1 | 1 | — |
-| 88 | 88-lowcode-platform | 可用 | 2 | 1 | — |
+| 88 | 97-lowcode-platform | 可用 | 2 | 1 | — |
 | 89 | 89-autonomous-systems | 成熟 | 7 | 7 | ✅ |
 | 90 | 90-web-apis-lab | 成熟 | 9 | 1 | ✅ |
 | 91 | 91-nodejs-core-lab | 可用 | 4 | 1 | ✅ |

@@ -114,6 +114,49 @@ flowchart TD
 
 ---
 
+## 2.5 重大收购与治理事件（2025-2026）
+
+2025 年底至 2026 年初，JS/TS 生态经历了多起影响深远的收购与治理结构变化。这些事件不仅改变了单个项目的命运，也在重塑整个生态的竞争格局。
+
+### Bun 被 Anthropic 收购（2025-12）
+
+- **事件**：Bun 的开发公司 Oven 被 Anthropic 收购。
+- **影响**：Bun 成为 Claude Code 的基础设施底层；Anthropic 的资源投入可能加速 Bun 的 Node.js API 兼容性完善和生产环境采纳。
+- **意义**：标志着 AI 公司开始直接掌控开发者工具链，以优化 AI 辅助编程的体验。
+
+### Astro 被 Cloudflare 收购（2026-01）
+
+- **事件**：静态站点生成器 Astro 被 Cloudflare 收购。
+- **影响**：Astro v6 的开发服务器直接运行在 Cloudflare Runtime 中；与 D1、Durable Objects、R2、AI Workers 的原生集成。
+- **意义**：Cloudflare 通过收购 Astro 补全了"前端框架 → 边缘部署"的闭环，对 Vercel + Next.js 的组合形成直接竞争。
+
+### Neon 被 Databricks 收购（2026-01）
+
+- **事件**：Serverless Postgres 提供商 Neon 被 Databricks 收购。
+- **影响**：计算成本降低 15–25%；免费 tier 永久保留；预期与 Databricks 生态（Delta Lake、Unity Catalog）深度集成。
+- **意义**：数据库层开始与大数据/AI 平台融合，"Postgres + AI"的整合趋势加速。
+
+### VoidZero 收购 NuxtLabs（2025-2026）
+
+- **事件**：VoidZero（Evan You 创立的公司，负责 Vite / Rolldown / Oxc / Vitest）收购了 NuxtLabs。
+- **影响**：Vue / Nuxt 生态与 VoidZero 统一 Rust 工具链深度整合；Nuxt 4.0 成为首个全面基于 Rolldown 的元框架。
+- **意义**：前端工具链的"垂直整合"趋势——从编译器到框架到部署平台的统一 ownership。
+
+### 治理结构变化
+
+| 项目/标准 | 原治理方 | 新治理方 | 时间 | 意义 |
+|----------|---------|---------|------|------|
+| MCP 协议 | Anthropic | Linux Foundation AAIF | 2025-12 | 从企业标准走向行业标准 |
+| A2A 协议 | Google | Linux Foundation | 2025 中 | Agent 间通信的标准化 |
+| WinterCG | W3C Community Group | Ecma TC55 | 2024-12 | 运行时互操作成为正式标准 |
+| Astro | 独立 | Cloudflare | 2026-01 | 边缘平台收购前端框架 |
+| Neon | 独立 | Databricks | 2026-01 | 大数据平台收购数据库 |
+| Bun | Oven | Anthropic | 2025-12 | AI 公司收购运行时 |
+
+> **对开发者的影响**：收购潮意味着技术选型不仅要考虑技术特性，还要评估厂商锁定风险。选择 WinterTC/Ecma 标准（如 Hono）比选择单一厂商框架（如 Next.js/Vercel）具有更强的抗风险能力。
+
+---
+
 ## 3. 各领域详细分析
 
 ### 3.1 前端框架

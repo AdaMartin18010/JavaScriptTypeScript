@@ -1,4 +1,4 @@
-﻿[
+[
     {
         "number":  "00",
         "name":  "00-language-core",
@@ -1748,16 +1748,16 @@
     },
     {
         "number":  "86",
-        "name":  "86-tanstack-start-cloudflare",
+        "name":  "88-tanstack-start-cloudflare",
         "implementation_files":  [
-                                     "jsts-code-lab/86-tanstack-start-cloudflare/01-basic-setup/vite.config.ts",
-                                     "jsts-code-lab/86-tanstack-start-cloudflare/02-server-functions/api-server-fn.ts",
-                                     "jsts-code-lab/86-tanstack-start-cloudflare/02-server-functions/d1-example.ts",
-                                     "jsts-code-lab/86-tanstack-start-cloudflare/02-server-functions/kv-example.ts",
-                                     "jsts-code-lab/86-tanstack-start-cloudflare/03-auth/auth-config.ts",
-                                     "jsts-code-lab/86-tanstack-start-cloudflare/03-auth/drizzle-schema.ts",
-                                     "jsts-code-lab/86-tanstack-start-cloudflare/04-performance/router-preload.ts",
-                                     "jsts-code-lab/86-tanstack-start-cloudflare/04-performance/ssr-streaming.ts"
+                                     "jsts-code-lab/88-tanstack-start-cloudflare/01-basic-setup/vite.config.ts",
+                                     "jsts-code-lab/88-tanstack-start-cloudflare/02-server-functions/api-server-fn.ts",
+                                     "jsts-code-lab/88-tanstack-start-cloudflare/02-server-functions/d1-example.ts",
+                                     "jsts-code-lab/88-tanstack-start-cloudflare/02-server-functions/kv-example.ts",
+                                     "jsts-code-lab/88-tanstack-start-cloudflare/03-auth/auth-config.ts",
+                                     "jsts-code-lab/88-tanstack-start-cloudflare/03-auth/drizzle-schema.ts",
+                                     "jsts-code-lab/88-tanstack-start-cloudflare/04-performance/router-preload.ts",
+                                     "jsts-code-lab/88-tanstack-start-cloudflare/04-performance/ssr-streaming.ts"
                                  ],
         "test_files":  [
 
@@ -1783,13 +1783,13 @@
     },
     {
         "number":  "88",
-        "name":  "88-lowcode-platform",
+        "name":  "97-lowcode-platform",
         "implementation_files":  [
-                                     "jsts-code-lab/88-lowcode-platform/lowcode-engine.ts",
-                                     "jsts-code-lab/88-lowcode-platform/schema-definition.ts"
+                                     "jsts-code-lab/97-lowcode-platform/lowcode-engine.ts",
+                                     "jsts-code-lab/97-lowcode-platform/schema-definition.ts"
                                  ],
         "test_files":  [
-                           "jsts-code-lab/88-lowcode-platform/lowcode-engine.test.ts"
+                           "jsts-code-lab/97-lowcode-platform/lowcode-engine.test.ts"
                        ],
         "implementation_count":  2,
         "test_count":  1,

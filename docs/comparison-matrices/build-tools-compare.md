@@ -1,6 +1,6 @@
 # 构建工具对比矩阵
 
-> 最后更新：2026年4月
+> 最后更新：2026-04
 
 ## 核心对比表
 
@@ -27,7 +27,7 @@ npm create vite@latest my-app
 ```
 
 - **定位**: 下一代前端开发与构建工具
-- **核心原理**: 开发用 ESM，生产用 Rollup
+- **核心原理**: 开发用 ESM，生产用 Rolldown（Vite 8.0+；此前为 Rollup）
 - **优势**:
   - 开发服务器启动极快
   - 热更新几乎无感知
@@ -155,3 +155,40 @@ export default {
 - 适合库项目迁移
 - 需要重新配置开发流程
 - 测试 WIP (Work In Progress)
+
+## 2026 年构建工具生态新动向
+
+### Vite 8.0（2026年3月）
+
+Vite 8.0 于 2026 年 3 月发布，核心变革是将 **Rolldown 作为默认打包引擎**，实现开发与生产环境的统一：
+- 构建时间较 Vite 7.x 减少 **38%–64%**（真实项目实测）
+- 彻底消除 dev（esbuild 预编译）与 prod（Rollup）的双引擎差异
+- 配置与插件生态向后兼容，迁移成本低
+
+### Rolldown
+
+Rolldown 是由 Vite 团队基于 Rust + Oxc 打造的下一代打包器：
+- **当前状态**：1.0 Stable 预计 2026 年 Q2 发布，目前处于 RC 阶段
+- **性能**：比 Rollup/Webpack 快 **3.8 倍–16 倍**
+- **独立 CLI**：即将推出，不依赖 Vite 也可直接使用
+- **核心优势**：单一 Rust 引擎替代 esbuild + Rollup 双引擎，Tree Shaking 与代码分割由 Rolldown 原生完成
+
+### Rspack
+
+Rspack 是字节跳动开源的 Rust 版 Webpack 替代方案：
+- **v1.7**：当前稳定版本，持续完善 Webpack 插件兼容性
+- **v2.0 Preview**：已于 2026 年初发布预览版，架构进一步优化
+
+### Oxc
+
+Oxc 是由 Boshen 主导的高性能 JavaScript 工具链（Rust 实现），已发展为**全链路工具集**：
+- **完整工具链**：Parser + Linter + Minifier + Transformer + Resolver
+- **oxfmt**（Alpha）：格式化工具，速度约为 Prettier 的 **30 倍**
+- **Type-aware linting**（Alpha）：基于类型信息的深度 Lint，开启新一代代码质量检查
+
+### Biome
+
+Biome 是 Rust 实现的前端工具链（前身 Rome）：
+- **当前状态**：Linter 与 Formatter 已稳定可用，持续维护中
+- **定位**：Prettier + ESLint 的 Rust 替代方案
+- **注意**：与 Oxc 相比，Biome 的格式化速度优势已被 `oxfmt` 显著超越；生态重心偏向 Lint/Format 一体化

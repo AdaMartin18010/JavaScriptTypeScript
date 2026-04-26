@@ -461,7 +461,7 @@
 ### v1.3.0 (2026-04-19)
 
 - **新增 6 大对比矩阵**：包管理器、Monorepo工具、可观测性工具、部署平台、CI/CD工具、浏览器兼容性矩阵
-- **决策树体系扩展至 14 个场景**：新增包管理器、Monorepo、部署平台、监控可观测性、CI/CD、Web API技术、认证方案、数据存储 8 大选型决策树
+- **决策树体系扩展至 15 个场景**：新增包管理器、Monorepo、部署平台、监控可观测性、CI/CD、Web API技术、认证方案、数据存储 8 大选型决策树
 - **新增 3 大知识图谱**（433节点）：语言核心知识图谱、生态全景图谱、工程实践图谱
 - **补齐语言核心深度文档**：Web APIs 完全指南（3131行）、Node.js 核心模块指南（2039行）
 - **补齐 5 大缺失领域生态盘点**：错误监控与日志、CI/CD与DevOps、Monorepo工具、部署与托管平台、安全与合规
@@ -479,7 +479,7 @@
 
 ### v1.1.0 (2026-04-16)
 
-- 新增 TanStack Start + Cloudflare 专题模块 (86-tanstack-start-cloudflare)
+- 新增 TanStack Start + Cloudflare 专题模块 (88-tanstack-start-cloudflare)
 - 补充 Atomics.pause 示例与理论文档（后修正为 Stage 3 / 预计 ES2026）
 - 新增数据结构与算法 THEORY.md 形式化推导
 - 新增量子计算 THEORY.md

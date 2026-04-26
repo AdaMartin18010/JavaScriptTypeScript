@@ -1,6 +1,8 @@
 # 前端框架对比矩阵
 
 > 系统对比主流前端框架的核心特性、学习曲线、生态成熟度与适用场景，帮助你为项目选择最合适的 UI 框架。
+>
+> **最后更新：2026-04**
 
 ---
 
@@ -26,9 +28,9 @@
 | 特性 | React | Vue | Svelte | Solid | Angular | Qwik | Astro |
 |------|-------|-----|--------|-------|---------|------|-------|
 | **并发渲染** | ✅ (Fiber) | ⚠️ (实验性) | ❌ (不需要) | ❌ (不需要) | ❌ | ❌ (不需要) | ❌ (不需要) |
-| **自动 Memoization** | ✅ (React Compiler) | ⚠️ (Vapor Mode 计划) | ✅ 编译时自动 | ✅ 信号级自动 | ❌ (不需要) | ✅ 懒加载自动 | ❌ (不需要) |
-| **服务端渲染 (SSR)** | ✅ Next.js | ✅ Nuxt | ✅ SvelteKit | ✅ SolidStart | ✅ Angular Universal | ✅ Qwik City | ✅ 核心设计 |
-| **编译时优化** | ✅ (React Compiler) | ⚠️ (Vapor Mode) | ✅ 核心设计 | ✅ 核心设计 | ❌ | ✅ 核心设计 | ✅ 静态编译 |
+| **自动 Memoization** | ✅ (React Compiler 1.0) | ⚠️ (Vapor Mode Alpha/Beta) | ✅ 编译时自动 | ✅ 信号级自动 | ❌ (不需要) | ✅ 懒加载自动 | ❌ (不需要) |
+| **服务端渲染 (SSR)** | ✅ Next.js (v16) | ✅ Nuxt 4.0 | ✅ SvelteKit | ✅ SolidStart | ✅ Angular Universal | ✅ Qwik City | ✅ 核心设计 |
+| **编译时优化** | ✅ (React Compiler 1.0) | ⚠️ (Vapor Mode Alpha/Beta) | ✅ 核心设计 | ✅ 核心设计 | ❌ | ✅ 核心设计 | ✅ 静态编译 |
 | **内置状态管理** | ❌ (需外部) | ✅ (Composition API) | ✅ (Stores) | ✅ (Signals) | ✅ (RxJS + Services) | ✅ (Signals) | ❌ (框架 Island 自带) |
 | **官方路由** | ❌ (React Router) | ✅ Vue Router | ❌ (SvelteKit 内置) | ❌ (Solid Router) | ✅ Angular Router | ✅ Qwik City | ❌ (文件路由内置) |
 | **表单处理** | ❌ (React Hook Form 等) | ❌ (VeeValidate) | ❌ (外部库) | ❌ (外部库) | ✅ (Reactive Forms) | ❌ (外部库) | ❌ (外部库) |
@@ -82,6 +84,21 @@ flowchart LR
 | 首屏极致 / Core Web Vitals | **Qwik** | Astro | Resumability 零 hydration， instantly interactive |
 | 内容驱动型网站 | **Astro** | Next.js | Islands 架构默认零 JS，SEO 与性能最优 |
 | 渐进增强现有站点 | **Astro** | htmx | 静态外壳 + 局部交互，最小侵入 |
+
+---
+
+## 2026 生态重大更新
+
+| 框架 / 技术 | 2026 关键更新 |
+|-------------|---------------|
+| **React 19.2** | 2026 年初稳定发布；引入 Activity 组件、`useEffectEvent`、PPR（Partial Prerendering）、Performance Tracks。React Compiler 1.0 已于 2025 年 10 月达到稳定。 |
+| **Vue 3.6** | 当前处于 Alpha/Beta 阶段；Vapor Mode 编译为直接 DOM 操作，基线包体积 <10KB。Nuxt 4.0 已正式发布。 |
+| **Svelte 5** | Runes 成为标准语法；在 js-framework-benchmark 中比 React 19 快 39%。 |
+| **Astro v6** | Beta 阶段；2026 年 1 月被 Cloudflare 收购；开发服务器直接在 Cloudflare Runtime 中运行。 |
+| **Next.js v16** | 稳定版发布；Turbopack 成为生产环境默认打包工具。 |
+| **TanStack Start** | v1.16x；通过 `@tanstack/react-start-rsc` 实验性支持 React Server Components (RSC)。 |
+| **Signals 范式** | State of JS 2025 调查显示，47% 的受访者使用基于 Signals 的状态管理方案。 |
+| **React 20** | ⚠️ 截至 2026 年 4 月，React 20 **不存在**，请勿轻信谣言。 |
 
 ---
 

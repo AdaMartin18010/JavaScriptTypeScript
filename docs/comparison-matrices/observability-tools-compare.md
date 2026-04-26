@@ -1,6 +1,6 @@
 # 可观测性工具对比矩阵
 
-> 最后更新：2026 年 4 月
+> 最后更新：2026-04
 > 本次升级重点：纳入 **OpenTelemetry** 作为现代可观测性的事实标准，并新增 **AI 可观测性（AI Observability）** 专题，覆盖 LLM tracing、prompt 版本管理、cost/token 追踪等新兴领域。
 
 ---
@@ -15,11 +15,15 @@
     - [3.1 Sentry v8+](#31-sentry-v8)
     - [3.2 Datadog](#32-datadog)
   - [四、AI 可观测性（新增专题）](#四ai-可观测性新增专题)
+    - [AI 可观测性工具快速对比](#ai-可观测性工具快速对比)
     - [4.1 Langfuse](#41-langfuse)
     - [4.2 Helicone](#42-helicone)
     - [4.3 Weave (Weights \& Biases)](#43-weave-weights--biases)
     - [4.4 Traceloop](#44-traceloop)
     - [4.5 Axiom](#45-axiom)
+    - [4.6 LangSmith](#46-langsmith)
+    - [4.7 Braintrust](#47-braintrust)
+    - [4.8 OpenTelemetry LLM Semantic Conventions](#48-opentelemetry-llm-semantic-conventions)
   - [五、结构化日志库](#五结构化日志库)
     - [5.1 Pino](#51-pino)
     - [5.2 Winston](#52-winston)
@@ -277,13 +281,27 @@ sdk.start()
 
 > AI 可观测性（AI Observability）专注于追踪 LLM 调用链、prompt 版本、token 消耗、延迟分位数、成本归因等，是 2025-2026 年快速兴起的新兴领域。
 
+### AI 可观测性工具快速对比
+
+| 特性 | Langfuse | LangSmith | Braintrust | Helicone | Weave | Traceloop |
+|------|:--------:|:---------:|:----------:|:--------:|:-----:|:---------:|
+| **License** | MIT (开源) | 商业 | 商业 | 部分开源 | 商业 | Apache-2.0 |
+| **Self-hosted** | 🟢 完全 | 🔴 无 | 🔴 无 | 🟢 部分 | 🔴 无 | 🟢 完全 |
+| **LLM Tracing** | 🟢 最强 | 🟢 强 | 🟡 基础 | 🟢 强 | 🟢 强 | 🟢 强 |
+| **Prompt 版本管理** | 🟢 内置 | 🟢 内置 | 🟡 基础 | 🟢 内置 | 🟢 内置 | 🟢 内置 |
+| **Cost/Token 追踪** | 🟢 内置 | 🟢 内置 | 🟡 基础 | 🟢 内置 | 🟢 内置 | 🟢 内置 |
+| **Evaluation 框架** | 🟢 内置 | 🟢 内置 | 🟢 最强 | 🟡 有限 | 🟢 内置 | 🟢 内置 |
+| **OpenTelemetry** | 🟡 SDK 兼容 | 🔴 无 | 🔴 无 | 🟡 导出 | 🟡 导出 | 🟢 完全基于 |
+| **框架绑定** | 无 | LangChain | 无 | 无 | W&B | 无 |
+| **Stars (2026.04)** | 8K+ | - | - | - | - | - |
+
 ### 4.1 Langfuse
 
 ```bash
 npm install langfuse
 ```
 
-- **定位**：开源 LLM 工程平台，专注 **LLM tracing、prompt 版本管理、evaluation 数据集**
+- **定位**：开源 LLM 工程平台（8K+ stars），专注 **LLM tracing、prompt 版本管理、evaluation 数据集**
 - **License**：MIT（服务端与 SDK 均开源，可完全自托管）
 - **Self-hosted**：🟢 完全支持（Docker Compose / Helm）
 
@@ -542,6 +560,68 @@ const traceExporter = new OTLPTraceExporter({
   },
 })
 ```
+
+### 4.6 LangSmith
+
+- **定位**：商业 LLM 追踪与评估平台，由 **LangChain** 官方出品
+- **License**：商业 SaaS
+- **Self-hosted**：🔴 无
+
+**优势**：
+
+- 与 LangChain 生态深度集成，开箱即用
+- 强大的 prompt 调试与版本管理
+- 内置评估与测试框架
+
+**劣势**：
+
+- 无法自托管
+- 绑定 LangChain 生态，非 LangChain 用户价值降低
+- 商业定价，按使用量计费
+
+**适用场景**：已使用 LangChain 构建 AI 应用的团队，需要一体化 LLM 调试与监控
+
+---
+
+### 4.7 Braintrust
+
+- **定位**：商业 AI 评估（Evaluation）平台，专注于 LLM 输出质量评估与回归测试
+- **License**：商业 SaaS
+- **Self-hosted**：🔴 无（企业版可能支持私有化）
+
+**优势**：
+
+- **评估优先**：内置多种自动化评估指标（BLEU、ROUGE、LLM-as-a-Judge 等）
+- **回归测试**：支持 prompt/模型变更的 A/B 对比与回归检测
+- **数据集管理**：结构化的测试用例与评分管理
+
+**劣势**：
+
+- 无法自托管
+- 主要聚焦评估，实时 tracing 能力弱于 Langfuse
+- 商业定价较高
+
+**适用场景**：重视 LLM 输出质量评估、需要系统化回归测试的企业 AI 团队
+
+---
+
+### 4.8 OpenTelemetry LLM Semantic Conventions
+
+> 这不是一个具体产品，而是 **OpenTelemetry 社区正在制定的 LLM 调用语义约定标准**，旨在统一 LLM 追踪的 span 属性命名。
+
+- **标准化属性**：
+  - `gen_ai.system`：模型提供商（openai、anthropic 等）
+  - `gen_ai.request.model`：模型名称（gpt-4o、claude-3.5-sonnet 等）
+  - `gen_ai.usage.input_tokens` / `gen_ai.usage.output_tokens`：token 消耗
+  - `gen_ai.request.temperature` / `gen_ai.request.max_tokens`：生成参数
+  - `gen_ai.response.finish_reason`：完成原因
+  - `gen_ai.prompt` / `gen_ai.completion`：prompt 模板与输出（可选，注意隐私）
+- **意义**：一旦标准成熟，任意 OTel-compatible 后端（Jaeger、Grafana、Datadog）均可原生理解 LLM 调用链，无需专用 AI 观测平台
+- **现状**：2026 年处于快速迭代阶段，Traceloop 等工具已率先支持
+
+---
+
+> 🔄 **趋势观察**：传统 APM 工具（Datadog、New Relic、Grafana）正在快速添加 AI 可观测性功能（LLM tracing、token 成本追踪、prompt 版本管理）。预计到 2027 年，传统 APM 与专用 AI 可观测性工具的边界将逐步模糊，功能趋于融合。
 
 ---
 
@@ -811,7 +891,9 @@ LogRocket.init('your-app-id', {
 | **传统 Node.js 服务** | **Winston** + OTel Log Bridge | 生态最丰富，可平滑接入 OTel |
 | **企业级全栈 APM** | **New Relic / Datadog** | 自动插桩 + 基础设施监控 |
 | **大型日志中心/SIEM** | **Splunk / Axiom** | SPL/APL 查询 + 企业合规 / 无索引低成本 |
-| **AI 应用 LLM tracing + Prompt 管理** | **Langfuse** | 开源、prompt 版本、cost 追踪、可自托管 |
+| **AI 应用 LLM tracing + Prompt 管理** | **Langfuse** | 开源、8K+ stars、prompt 版本、cost 追踪、可自托管 |
+| **LangChain 生态一体化** | **LangSmith** | LangChain 官方出品，深度集成 |
+| **AI 评估与回归测试** | **Braintrust** | 最强 evaluation 框架，企业级质量评估 |
 | **AI Gateway + 成本优化** | **Helicone** | 零侵入、request caching、rate limiting |
 | **AI 实验 + 生产一体化** | **Weave** | 训练实验到生产追踪，多模态友好 |
 | **AI + 现有 OTel 生态融合** | **Traceloop** | 100% OTel-native，LLM spans 直接进入 Jaeger/Grafana |
@@ -908,6 +990,53 @@ export const logger = pino({
 
 ---
 
-> 📅 本文档最后更新：2026 年 4 月
+> 📅 本文档最后更新：2026-04
 >
 > 💡 提示：可观测性领域发展迅速，建议查看各项目官方文档获取最新集成方式。
+
+
+---
+
+## AI 可观测性新兴维度（2026）
+
+> 随着 LLM 调用在生产环境中的密度增加，AI 可观测性（AI Observability）已从独立品类演变为传统 APM 平台的必选项。以下补充 2026 年 AI 可观测性的关键工具与标准。
+
+### 为什么 AI 可观测性不同于传统可观测性？
+
+| 维度 | 传统可观测性 | AI 可观测性 |
+|------|-------------|------------|
+| **确定性** | 确定性输出（HTTP 状态码、SQL 执行时间） | 非确定性输出（LLM 生成内容的随机性） |
+| **成本模型** | 基础设施成本（CPU/内存/存储） | Token 成本（按输入/输出 token 计费） |
+| **版本管理** | 代码版本（Git commit） | Prompt 版本 + 模型版本双重管理 |
+| **调试对象** | 代码逻辑、数据库查询 | Prompt 模板、上下文窗口、工具调用链 |
+| **错误边界** | 明确（异常、超时） | 模糊（幻觉、偏见、内容安全违规） |
+
+### OpenTelemetry LLM Semantic Conventions
+
+OpenTelemetry 社区于 2025-2026 年定义了 LLM 调用的标准 Span 属性，成为行业事实标准：
+
+| 属性类别 | 关键属性 | 说明 |
+|---------|---------|------|
+| **系统标识** | `gen_ai.system` | 提供商（openai / anthropic / cohere） |
+| **Token 用量** | `gen_ai.usage.input_tokens` / `output_tokens` | 精确追踪每次调用的 token 消耗 |
+| **成本追踪** | `gen_ai.usage.cost` | 按模型定价计算的实际费用 |
+| **Prompt 管理** | `gen_ai.prompt.template` / `gen_ai.prompt.variables` | 模板版本与变量分离 |
+| **延迟分析** | `gen_ai.response.latency` / `time_to_first_token` | TTFT / TBT / TPOT 分层指标 |
+
+### 主流 AI 可观测性平台对比（2026-04）
+
+| 平台 | 类型 | Stars / 规模 | 核心优势 | 部署方式 |
+|------|------|-------------|---------|---------|
+| **Langfuse** | 开源 | 8K+ Stars | 自托管、Prompt 版本管理、成本归因、实验追踪 | Docker / Cloud |
+| **LangSmith** | 商业 | —（LangChain 官方） | 与 LangChain 生态深度集成、评估数据集 | 托管 SaaS |
+| **Braintrust** | 商业 | — | 企业级评估框架、A/B 测试、回归测试 | 托管 SaaS |
+| **OpenLLMetry** | 开源 | 3K+ Stars | 基于 OpenTelemetry 的 LLM 专用 SDK | 自托管 |
+
+### 2027 趋势预测
+
+- **APM 融合**：Datadog、New Relic、Grafana 等传统 APM 平台将在 2027 年原生集成 LLM Semantic Conventions，AI 可观测性不再是独立品类。
+- **成本归因标准化**：多租户 SaaS 应用需要将 LLM 调用成本精确归因到每个用户/每次会话，Token 成本追踪将成为计费系统的标准组件。
+- **自动评估**：基于 LLM-as-Judge 的自动质量评估将与可观测性平台深度整合，实现"生成-评估-告警"闭环。
+
+> 📅 本节补充更新：2026-04-27
+> 📚 详细指南：[AI 可观测性完整指南](../guides/ai-observability-guide.md)

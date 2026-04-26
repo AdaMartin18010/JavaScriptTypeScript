@@ -17,7 +17,7 @@
 >
 > 🧠 Language Core System: [jsts-language-core-system](./jsts-language-core-system/) - 52 in-depth docs covering type system, variable system, control flow, execution model, and ECMAScript specification foundations.
 >
-> 📊 Technology Decision System: 15 comparison matrices, 14 decision trees, 21 Mermaid diagrams.
+> 📊 Technology Decision System: 15 comparison matrices, 15 decision trees, 21 Mermaid diagrams.
 >
 > 🎓 Flagship Doc: [JS/TS Semantic Model Analysis](./JSTS全景综述/JS_TS_语言语义模型全面分析.md) - Aligned with ECMA-2025/2026, TypeScript 5.8–7.0, and top-tier university curricula (Stanford/MIT/CMU/Berkeley/UW).
 
@@ -40,7 +40,7 @@
 | [📈 intermediate-path.md](./docs/learning-paths/intermediate-path.md) | Intermediate learning path | Mid-level developers |
 | [🎯 advanced-path.md](./docs/learning-paths/advanced-path.md) | Architect learning path | Senior developers |
 | [📊 comparison-matrices](./docs/comparison-matrices/) | 15 framework/tool comparison matrices | Technology decision-makers |
-| [🌳 Decision Trees](./docs/decision-trees.md) | 14 decision trees for technology selection | Technology decision-makers |
+| [🌳 Decision Trees](./docs/decision-trees.md) | 15 decision trees for technology selection | Technology decision-makers |
 | [🗺️ diagrams](./docs/diagrams/) | 21 Mermaid charts and knowledge graphs | Visual learners |
 | [🌐 web-apis-guide.md](./docs/guides/web-apis-guide.md) | Complete Web APIs Guide | Full-stack developers |
 | [🟢 nodejs-core-modules-guide.md](./docs/guides/nodejs-core-modules-guide.md) | Node.js Core Modules Guide | Backend developers |

@@ -45,16 +45,17 @@
 
 | 项目 | 描述 | Stars |
 |------|------|-------|
-| [Next.js](https://github.com/vercel/next.js) | React 全栈框架，支持 SSR/SSG/App Router | ![Stars](https://img.shields.io/github/stars/vercel/next.js?style=flat-square) |
-| [React](https://github.com/facebook/react) | 用于构建用户界面的 JavaScript 库 | ![Stars](https://img.shields.io/github/stars/facebook/react?style=flat-square) |
+| [Next.js](https://github.com/vercel/next.js) | React 全栈框架，支持 SSR/SSG/App Router（Next.js v16） | ![Stars](https://img.shields.io/github/stars/vercel/next.js?style=flat-square) |
+| [React](https://github.com/facebook/react) | 用于构建用户界面的 JavaScript 库（React Compiler 1.0 stable，2025-10） | ![Stars](https://img.shields.io/github/stars/facebook/react?style=flat-square) |
 | [Vue.js](https://github.com/vuejs/core) | 渐进式 JavaScript 框架 | ![Stars](https://img.shields.io/github/stars/vuejs/core?style=flat-square) |
 | [shadcn/ui](https://github.com/shadcn-ui/ui) | 设计精美的可访问组件，代码分发平台 | ![Stars](https://img.shields.io/github/stars/shadcn-ui/ui?style=flat-square) |
-| [Vite](https://github.com/vitejs/vite) | 下一代前端工具链，极速冷启动 | ![Stars](https://img.shields.io/github/stars/vitejs/vite?style=flat-square) |
-| [tRPC](https://github.com/trpc/trpc) | 端到端类型安全的 API 工具集 | ![Stars](https://img.shields.io/github/stars/trpc/trpc?style=flat-square) |
+| [Vite](https://github.com/vitejs/vite) | 下一代前端工具链，极速冷启动（Vite 8.0） | ![Stars](https://img.shields.io/github/stars/vitejs/vite?style=flat-square) |
+| [tRPC](https://github.com/trpc/trpc) | 端到端类型安全的 API 工具集（v11 stable） | ![Stars](https://img.shields.io/github/stars/trpc/trpc?style=flat-square) |
 | [Zod](https://github.com/colinhacks/zod) | TypeScript 优先的模式验证与静态类型推断 | ![Stars](https://img.shields.io/github/stars/colinhacks/zod?style=flat-square) |
 | [Playwright](https://github.com/microsoft/playwright) | 可靠的端到端测试框架 | ![Stars](https://img.shields.io/github/stars/microsoft/playwright?style=flat-square) |
 | [Prisma](https://github.com/prisma/prisma) | 下一代 Node.js 和 TypeScript ORM | ![Stars](https://img.shields.io/github/stars/prisma/prisma?style=flat-square) |
 | [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) | 实用优先的 CSS 框架 | ![Stars](https://img.shields.io/github/stars/tailwindlabs/tailwindcss?style=flat-square) |
+| [Mastra](https://github.com/mastra-ai/mastra) | TypeScript 优先的 AI Agent 框架，内置工作流与记忆系统（22K stars, 300K 周下载） | ![Stars](https://img.shields.io/github/stars/mastra-ai/mastra?style=flat-square) |
 
 ### ⚡ 运行时与引擎
 
@@ -110,6 +111,7 @@
 | [commitlint](https://github.com/conventional-changelog/commitlint) | 规范提交信息 | ![Stars](https://img.shields.io/github/stars/conventional-changelog/commitlint?style=flat-square) |
 | [tsx](https://github.com/privatenumber/tsx) | TypeScript 执行和重载工具 | ![Stars](https://img.shields.io/github/stars/privatenumber/tsx?style=flat-square) |
 | [tsup](https://github.com/egoist/tsup) | 基于 esbuild 的 TypeScript 打包工具 | ![Stars](https://img.shields.io/github/stars/egoist/tsup?style=flat-square) |
+| [MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk) | 模型上下文协议 TypeScript SDK，连接 AI 与外部工具（97M+ 月下载） | ![Stars](https://img.shields.io/github/stars/modelcontextprotocol/typescript-sdk?style=flat-square) |
 
 ### 🧪 测试框架
 
@@ -136,7 +138,7 @@
 | [Express](https://github.com/expressjs/express) | 快速、无约束、极简的 Node.js Web 框架 | ![Stars](https://img.shields.io/github/stars/expressjs/express?style=flat-square) |
 | [Fastify](https://github.com/fastify/fastify) | 快速且低开销的 Web 框架 | ![Stars](https://img.shields.io/github/stars/fastify/fastify?style=flat-square) |
 | [NestJS](https://github.com/nestjs/nest) | 渐进式 Node.js 框架，用于构建高效、可扩展的服务器端应用 | ![Stars](https://img.shields.io/github/stars/nestjs/nest?style=flat-square) |
-| [Hono](https://github.com/honojs/hono) | 超轻量级、超快速的 Web 框架，支持多种运行时 | ![Stars](https://img.shields.io/github/stars/honojs/hono?style=flat-square) |
+| [Hono](https://github.com/honojs/hono) | 超轻量级、超快速的 Web 框架，支持多种运行时（28K+ stars，9M+ 周下载） | ![Stars](https://img.shields.io/github/stars/honojs/hono?style=flat-square) |
 | [Elysia](https://github.com/elysiajs/elysia) | 基于 Bun 的快速、友好的后端框架 | ![Stars](https://img.shields.io/github/stars/elysiajs/elysia?style=flat-square) |
 | [Next.js](https://github.com/vercel/next.js) | React 全栈框架 | ![Stars](https://img.shields.io/github/stars/vercel/next.js?style=flat-square) |
 | [Nuxt](https://github.com/nuxt/nuxt) | 基于 Vue 的直观 Web 框架 | ![Stars](https://img.shields.io/github/stars/nuxt/nuxt?style=flat-square) |
@@ -153,7 +155,7 @@
 | 项目 | 描述 | Stars |
 |------|------|-------|
 | [Prisma](https://github.com/prisma/prisma) | 下一代 ORM，类型安全的数据库访问 | ![Stars](https://img.shields.io/github/stars/prisma/prisma?style=flat-square) |
-| [Drizzle ORM](https://github.com/drizzle-team/drizzle-orm) | 类型安全的 SQL 风格 ORM | ![Stars](https://img.shields.io/github/stars/drizzle-team/drizzle-orm?style=flat-square) |
+| [Drizzle ORM](https://github.com/drizzle-team/drizzle-orm) | 类型安全的 SQL 风格 ORM（~33K stars，5M+ 周下载） | ![Stars](https://img.shields.io/github/stars/drizzle-team/drizzle-orm?style=flat-square) |
 | [TypeORM](https://github.com/typeorm/typeorm) | 支持 TypeScript 的 ORM | ![Stars](https://img.shields.io/github/stars/typeorm/typeorm?style=flat-square) |
 | [Mongoose](https://github.com/Automattic/mongoose) | MongoDB 对象建模 | ![Stars](https://img.shields.io/github/stars/Automattic/mongoose?style=flat-square) |
 | [Sequelize](https://github.com/sequelize/sequelize) | 基于 Promise 的 Node.js ORM | ![Stars](https://img.shields.io/github/stars/sequelize/sequelize?style=flat-square) |
@@ -311,16 +313,17 @@
 
 | Project | Description | Stars |
 |---------|-------------|-------|
-| [Next.js](https://github.com/vercel/next.js) | The React Framework for the Web | ![Stars](https://img.shields.io/github/stars/vercel/next.js?style=flat-square) |
-| [React](https://github.com/facebook/react) | A JavaScript library for building user interfaces | ![Stars](https://img.shields.io/github/stars/facebook/react?style=flat-square) |
+| [Next.js](https://github.com/vercel/next.js) | The React Framework for the Web (Next.js v16) | ![Stars](https://img.shields.io/github/stars/vercel/next.js?style=flat-square) |
+| [React](https://github.com/facebook/react) | A JavaScript library for building user interfaces (React Compiler 1.0 stable, Oct 2025) | ![Stars](https://img.shields.io/github/stars/facebook/react?style=flat-square) |
 | [Vue.js](https://github.com/vuejs/core) | The Progressive JavaScript Framework | ![Stars](https://img.shields.io/github/stars/vuejs/core?style=flat-square) |
 | [shadcn/ui](https://github.com/shadcn-ui/ui) | Beautifully designed components built with Radix UI and Tailwind CSS | ![Stars](https://img.shields.io/github/stars/shadcn-ui/ui?style=flat-square) |
-| [Vite](https://github.com/vitejs/vite) | Next generation frontend tooling | ![Stars](https://img.shields.io/github/stars/vitejs/vite?style=flat-square) |
-| [tRPC](https://github.com/trpc/trpc) | End-to-end typesafe APIs | ![Stars](https://img.shields.io/github/stars/trpc/trpc?style=flat-square) |
+| [Vite](https://github.com/vitejs/vite) | Next generation frontend tooling (Vite 8.0) | ![Stars](https://img.shields.io/github/stars/vitejs/vite?style=flat-square) |
+| [tRPC](https://github.com/trpc/trpc) | End-to-end typesafe APIs (v11 stable) | ![Stars](https://img.shields.io/github/stars/trpc/trpc?style=flat-square) |
 | [Zod](https://github.com/colinhacks/zod) | TypeScript-first schema validation | ![Stars](https://img.shields.io/github/stars/colinhacks/zod?style=flat-square) |
 | [Playwright](https://github.com/microsoft/playwright) | Reliable end-to-end testing | ![Stars](https://img.shields.io/github/stars/microsoft/playwright?style=flat-square) |
 | [Prisma](https://github.com/prisma/prisma) | Next-generation ORM for Node.js & TypeScript | ![Stars](https://img.shields.io/github/stars/prisma/prisma?style=flat-square) |
 | [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) | Utility-first CSS framework | ![Stars](https://img.shields.io/github/stars/tailwindlabs/tailwindcss?style=flat-square) |
+| [Mastra](https://github.com/mastra-ai/mastra) | TypeScript-first AI agent framework with built-in workflow and memory (22K stars, 300K weekly downloads) | ![Stars](https://img.shields.io/github/stars/mastra-ai/mastra?style=flat-square) |
 
 ### ⚡ Runtimes & Engines
 
@@ -376,6 +379,7 @@
 | [commitlint](https://github.com/conventional-changelog/commitlint) | Lint commit messages | ![Stars](https://img.shields.io/github/stars/conventional-changelog/commitlint?style=flat-square) |
 | [tsx](https://github.com/privatenumber/tsx) | TypeScript execute & reload | ![Stars](https://img.shields.io/github/stars/privatenumber/tsx?style=flat-square) |
 | [tsup](https://github.com/egoist/tsup) | esbuild-based TypeScript bundler | ![Stars](https://img.shields.io/github/stars/egoist/tsup?style=flat-square) |
+| [MCP SDK](https://github.com/modelcontextprotocol/typescript-sdk) | Model Context Protocol TypeScript SDK for connecting AI with external tools (97M+ monthly downloads) | ![Stars](https://img.shields.io/github/stars/modelcontextprotocol/typescript-sdk?style=flat-square) |
 
 ### 🧪 Testing Frameworks
 
@@ -402,7 +406,7 @@
 | [Express](https://github.com/expressjs/express) | Fast, unopinionated web framework | ![Stars](https://img.shields.io/github/stars/expressjs/express?style=flat-square) |
 | [Fastify](https://github.com/fastify/fastify) | Fast and low overhead web framework | ![Stars](https://img.shields.io/github/stars/fastify/fastify?style=flat-square) |
 | [NestJS](https://github.com/nestjs/nest) | Progressive Node.js framework | ![Stars](https://img.shields.io/github/stars/nestjs/nest?style=flat-square) |
-| [Hono](https://github.com/honojs/hono) | Ultrafast web framework for multiple runtimes | ![Stars](https://img.shields.io/github/stars/honojs/hono?style=flat-square) |
+| [Hono](https://github.com/honojs/hono) | Ultrafast web framework for multiple runtimes (28K+ stars, 9M+ weekly downloads) | ![Stars](https://img.shields.io/github/stars/honojs/hono?style=flat-square) |
 | [Elysia](https://github.com/elysiajs/elysia) | Fast & friendly Bun web framework | ![Stars](https://img.shields.io/github/stars/elysiajs/elysia?style=flat-square) |
 | [Next.js](https://github.com/vercel/next.js) | The React Framework | ![Stars](https://img.shields.io/github/stars/vercel/next.js?style=flat-square) |
 | [Nuxt](https://github.com/nuxt/nuxt) | The Intuitive Vue Framework | ![Stars](https://img.shields.io/github/stars/nuxt/nuxt?style=flat-square) |
@@ -419,7 +423,7 @@
 | Project | Description | Stars |
 |---------|-------------|-------|
 | [Prisma](https://github.com/prisma/prisma) | Next-generation ORM for Node.js & TS | ![Stars](https://img.shields.io/github/stars/prisma/prisma?style=flat-square) |
-| [Drizzle ORM](https://github.com/drizzle-team/drizzle-orm) | SQL-like type-safe ORM | ![Stars](https://img.shields.io/github/stars/drizzle-team/drizzle-orm?style=flat-square) |
+| [Drizzle ORM](https://github.com/drizzle-team/drizzle-orm) | SQL-like type-safe ORM (~33K stars, 5M+ weekly downloads) | ![Stars](https://img.shields.io/github/stars/drizzle-team/drizzle-orm?style=flat-square) |
 | [TypeORM](https://github.com/typeorm/typeorm) | ORM for TypeScript and JavaScript | ![Stars](https://img.shields.io/github/stars/typeorm/typeorm?style=flat-square) |
 | [Mongoose](https://github.com/Automattic/mongoose) | MongoDB object modeling | ![Stars](https://img.shields.io/github/stars/Automattic/mongoose?style=flat-square) |
 | [Sequelize](https://github.com/sequelize/sequelize) | Promise-based Node.js ORM | ![Stars](https://img.shields.io/github/stars/sequelize/sequelize?style=flat-square) |

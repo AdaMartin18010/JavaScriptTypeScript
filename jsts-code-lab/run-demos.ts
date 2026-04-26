@@ -533,7 +533,7 @@ const DEMO_MODULES = {
 
   'lowcode-platform': async () => {
     console.log('\n🧩 低代码平台\n');
-    const lc = await import('./88-lowcode-platform/lowcode-engine.js');
+    const lc = await import('./97-lowcode-platform/lowcode-engine.js');
     lc.demo?.();
   },
 

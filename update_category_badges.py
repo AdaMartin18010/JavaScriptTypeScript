@@ -55,7 +55,7 @@ category_mapping = {
     'micro-frontends': ['53-app-architecture'],
     'audio-video': [],  # 20-audio-video does not exist
     'webassembly': ['36-web-assembly'],
-    'tanstack-start': ['86-tanstack-start-cloudflare'],
+    'tanstack-start': ['88-tanstack-start-cloudflare'],
     'error-monitoring-logging': ['17-debugging-monitoring', '92-observability-lab'],
     'ci-cd-devops': ['22-deployment-devops'],
     'monorepo-tools': ['12-package-management'],

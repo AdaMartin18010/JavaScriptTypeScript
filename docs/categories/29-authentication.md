@@ -21,7 +21,7 @@
 | 属性 | 详情 |
 |------|------|
 | **名称** | better-auth |
-| **Stars** | ⭐ 9,000+ |
+| **Stars** | ⭐ 12,000+ |
 | **TS支持** | ✅ 原生 TypeScript，类型推导完美 |
 | **GitHub** | [better-auth/better-auth](https://github.com/better-auth/better-auth) |
 | **官网** | [better-auth.com](https://www.better-auth.com) |

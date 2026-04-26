@@ -306,7 +306,7 @@ graph LR
 ## 项目规范（本次会话有效）
 
 ### 技术栈
-- React 18 + TypeScript 5.3 + Vite
+- React 19 + TypeScript 5.8 + Vite
 - 状态管理: Zustand（不使用 Redux）
 - UI 库: Tailwind CSS + Headless UI
 - 表单: React Hook Form + Zod

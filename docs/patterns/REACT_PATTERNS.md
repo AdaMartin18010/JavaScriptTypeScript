@@ -2857,7 +2857,7 @@ const App: React.FC = () => {
 };
 ```
 
-**更现代的 React 18 Suspense 用法（配合数据获取库）:**
+**更现代的 React 19 Suspense 用法（配合数据获取库）:**
 
 ```tsx
 // 使用 React Query 或 SWR 的现代 Suspense 用法

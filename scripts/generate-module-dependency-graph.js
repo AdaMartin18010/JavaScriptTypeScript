@@ -35,7 +35,7 @@ const clusters = [
   {
     id: 'architecture',
     label: '架构与工程',
-    modules: ['06-architecture-patterns', '53-app-architecture', '59-fullstack-patterns', '88-lowcode-platform']
+    modules: ['06-architecture-patterns', '53-app-architecture', '59-fullstack-patterns', '97-lowcode-platform']
   },
   {
     id: 'frontend',
@@ -80,7 +80,7 @@ const clusters = [
   {
     id: 'modern_labs',
     label: '现代实验室',
-    modules: ['86-graph-database', '86-tanstack-start-cloudflare', '87-realtime-analytics', '90-web-apis-lab', '91-nodejs-core-lab', '92-observability-lab', '93-deployment-edge-lab', '95-auth-modern-lab', '96-orm-modern-lab', '65-analytics']
+    modules: ['86-graph-database', '88-tanstack-start-cloudflare', '87-realtime-analytics', '90-web-apis-lab', '91-nodejs-core-lab', '92-observability-lab', '93-deployment-edge-lab', '95-auth-modern-lab', '96-orm-modern-lab', '65-analytics']
   }
 ];
 
@@ -159,7 +159,7 @@ const dependencies = [
   ['06-architecture-patterns', '25-microservices'],
   ['53-app-architecture', '59-fullstack-patterns'],
   ['53-app-architecture', '18-frontend-frameworks'],
-  ['53-app-architecture', '88-lowcode-platform'],
+  ['53-app-architecture', '97-lowcode-platform'],
 
   // Frontend
   ['50-browser-runtime', '18-frontend-frameworks'],
@@ -188,7 +188,7 @@ const dependencies = [
   ['19-backend-development', '38-web-security'],
   ['20-database-orm', '67-multi-tenancy'],
   ['20-database-orm', '96-orm-modern-lab'],
-  ['20-database-orm', '86-tanstack-start-cloudflare'],
+  ['20-database-orm', '88-tanstack-start-cloudflare'],
   ['21-api-security', '38-web-security'],
   ['21-api-security', '81-cybersecurity'],
   ['21-api-security', '95-auth-modern-lab'],
@@ -282,7 +282,7 @@ const dependencies = [
 
   // Modern Labs
   ['86-graph-database', '64-search-engine'],
-  ['86-tanstack-start-cloudflare', '59-fullstack-patterns'],
+  ['88-tanstack-start-cloudflare', '59-fullstack-patterns'],
   ['65-analytics', '87-realtime-analytics'],
   ['90-web-apis-lab', '91-nodejs-core-lab'],
   ['91-nodejs-core-lab', '93-deployment-edge-lab'],

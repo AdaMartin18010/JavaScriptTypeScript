@@ -170,7 +170,7 @@ timeline
 | 数据库 ORM | `DATABASE_ORM_THEORY.md` | Prisma/TypeORM 对比 |
 | API 设计 | `API_DESIGN_THEORY.md` | REST/GraphQL/gRPC |
 | 实时通信 | `REALTIME_COMMUNICATION_THEORY.md` | WebSocket、SSE |
-| TanStack Start 边缘实战 | `jsts-code-lab/86-tanstack-start-cloudflare/THEORY.md` | 全栈 SSR、Cloudflare Workers 部署 |
+| TanStack Start 边缘实战 | `jsts-code-lab/88-tanstack-start-cloudflare/THEORY.md` | 全栈 SSR、Cloudflare Workers 部署 |
 
 ### 2.5 工程实践文档
 
@@ -497,7 +497,7 @@ mindmap
 
 ### 5.4 TanStack Start 与 Cloudflare 边缘实战
 
-新增 **jsts-code-lab/86-tanstack-start-cloudflare/** 全栈模块，覆盖：
+新增 **jsts-code-lab/88-tanstack-start-cloudflare/** 全栈模块，覆盖：
 
 - **边缘原生架构**：TanStack Start 在 Cloudflare Workers 上的 SSR/SSG 部署
 - **Server Functions**：D1 数据库、KV 缓存、Drizzle ORM + better-auth 集成
