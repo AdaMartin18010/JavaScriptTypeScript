@@ -9,11 +9,13 @@
 | 技术/框架 | 定位 | 维护方 | Stars / 下载量 | TS 支持 |
 |-----------|------|--------|----------------|---------|
 | MCP (Model Context Protocol) | 上下文协议标准 | Linux Foundation AAIF | 97M+ 月下载（npm, 2026-04） | ✅ 原生 |
-| A2A (Agent-to-Agent) | Agent 间通信协议 | Google | 新兴标准（2025.4 发布） | ✅ 原生 |
-| Vercel AI SDK v6 | 统一模型接入 + Agent 编排 | Vercel | 200万+ 周下载（npm, 2026-04） | ✅ 原生 |
-| Mastra | TypeScript-first AI 框架 | Mastra Inc. | 22K+ Stars（GitHub, 2026-04） | ✅ 原生 |
+| A2A (Agent-to-Agent) | Agent 间通信协议 | Google / Linux Foundation | 新兴标准，150+ 企业支持，v1.0 预计 2026 年初 | ✅ 原生 |
+| Vercel AI SDK v6 | 统一模型接入 + Agent 编排 | Vercel | 200万+ 周下载（npm, 2026-04），v6 稳定版 | ✅ 原生 |
+| LangGraph | 图编排 Agent 工作流引擎 | LangChain Inc. | 25k+ Stars，34.5M+ 月下载（npm, 2026-04） | ✅ 原生 |
+| CrewAI | 多 Agent 协作框架 | CrewAI Inc. | 46k+ Stars（GitHub, 2026-04） | ✅ 官方 |
+| Mastra | TypeScript-first AI 框架 | Mastra Inc. | 10k+ Stars（GitHub, 2026-04） | ✅ 原生 |
 | LangChain.js | 复杂 RAG / Agent 工作流 | LangChain Inc. | 15k+ Stars（GitHub, 2026-04） | ✅ 官方 |
-| OpenAI Agents SDK | ChatKit + 类型安全 Agent | OpenAI | 19K+ Stars（GitHub, 2026-04） | ✅ 原生 |
+| OpenAI Agents SDK | OpenAI 原生 Agent 工具包 | OpenAI | 19k+ Stars（GitHub, 2026-04），支持 100+ 模型 | ✅ 原生 |
 | Cloudflare Agents SDK | 边缘原生 Agent 运行时 | Cloudflare | 3k+ Stars（GitHub, 2026-04） | ✅ 原生 |
 
 ---
@@ -24,7 +26,7 @@
 
 **三个关键趋势推动这一转变：**
 
-1. **协议标准化**：MCP（Model Context Protocol）在 2025 年底捐赠给 Linux Foundation AAIF 后，已成为连接 LLM 与外部工具的事实标准（de facto standard），月下载量突破 9700 万（97M+，npm 统计，2026-04）。
+1. **协议标准化**：MCP（Model Context Protocol）在 2025 年底捐赠给 Linux Foundation AAIF 后，已成为连接 LLM 与外部工具的事实标准（de facto standard），月下载量突破 97M+（npm 统计，2026-04）。
 2. **框架成熟化**：Vercel AI SDK、Mastra、LangChain.js 等框架在 TypeScript 类型安全、边缘部署、流式 UI 集成方面已达到生产就绪（production-ready）水平。
 3. **企业需求爆发**：从客服自动化到代码生成，从数据分析到多 Agent 协作系统，企业级应用对 Agent 的可观测性、安全治理、成本控制能力提出了严苛要求。
 
@@ -46,7 +48,7 @@
 
 | 维度 | MCP 协议 | Vercel AI SDK v6 | LangGraph | CrewAI | Mastra | LangChain.js | OpenAI Agents SDK | Cloudflare Agents SDK |
 |------|----------|------------------|-----------|--------|--------|--------------|-------------------|----------------------|
-| **Stars / 下载量** | 97M+ 月下载（npm, 2026-04） | 200万+ 周下载（npm, 2026-04） | 25k+ Stars，34.5M+ 月下载 | 46k+ Stars | 10k+ Stars（GitHub, 2026-04） | 15k+ Stars（GitHub, 2026-04） | 19k+ Stars，支持 100+ 模型 | 3k+ Stars（GitHub, 2026-04） |
+| **Stars / 下载量** | 97M+ 月下载（npm, 2026-04） | 200万+ 周下载（npm, 2026-04） | 25k+ Stars，34.5M+ 月下载 | 46k+ Stars | 22K+ Stars，300K+ 周下载，$13M 融资 | 15k+ Stars（GitHub, 2026-04） | 19k+ Stars，支持 100+ 模型 | 3k+ Stars（GitHub, 2026-04） |
 | **核心定位** | 工具与上下文的标准化接入协议 | 统一 100+ 模型的 API 抽象层 | 图编排 Agent 工作流引擎 | 多 Agent 协作与角色编排 | TS-first 工作流编排 + 记忆 + 多 Agent | 复杂 RAG / Agent 工作流编排 | OpenAI 原生类型安全 Agent | 边缘原生有状态 Agent 运行时 |
 | **适用场景** | 任何需要 LLM 调用工具的架构 | Next.js 全栈 Chat 应用、多模型路由 | 复杂状态机、人机交互、企业流程 | 研究团队、自动化工作流、多角色协作 | 企业级业务流程自动化、多角色协作 | 复杂文档问答（RAG）、研究型 Agent | 深度绑定 OpenAI 生态的项目 | 全球低延迟实时 AI、WebSocket 长连接 |
 | **TypeScript 支持度** | ✅ 原生（`@modelcontextprotocol/sdk`） | ✅ 原生，类型推导完美 | ✅ 原生 | ✅ 官方 | ✅ 原生，全链路类型安全 | ✅ 官方支持 | ✅ 原生 | ✅ 原生 |
@@ -350,9 +352,25 @@ A2A 协议在以下企业级场景中发挥关键作用：
 
 ---
 
+### 5.4 AI Agent Architecture Patterns
+
+> 📖 详细架构模式指南请参阅 [AI Agent 架构模式](../research/ai-agent-architecture-patterns.md)。
+
+AI Agent 的架构模式正在快速演化，以下是 2025-2026 年生产环境中最常采用的模式：
+
+| 模式 | 描述 | 适用框架 |
+|------|------|----------|
+| **ReAct（推理-行动循环）** | Agent 通过 Thought → Action → Observation 循环逐步解决问题 | Vercel AI SDK、OpenAI Agents SDK |
+| **Plan-and-Execute** | 先制定多步计划，再按顺序执行，适合复杂任务分解 | LangGraph、Mastra |
+| **Multi-Agent 协作** | 多个专精 Agent 通过 A2A / 消息总线协作完成宏观目标 | CrewAI、LangGraph |
+| **Human-in-the-Loop** | 关键决策点引入人工审批，兼顾自动化与可控性 | LangGraph、Mastra |
+| **RAG + Agent 混合** | 检索增强生成与 Agent 工具调用结合，提升知识问答准确性 | LangChain.js、Mastra |
+
+---
+
 ## 6. AI 可观测性（AI Observability）
 
-> 📖 详细实践指南请参阅 [AI 可观测性完整指南](../guides/ai-observability.md)。
+> 📖 详细实践指南请参阅 [AI 可观测性完整指南](../guides/ai-observability-guide.md)。
 
 AI Agent 的可观测性比传统应用更复杂：不仅需要追踪请求延迟与错误率，还需要记录 Token 消耗、工具调用链、模型决策轨迹（Trace）与反馈循环。
 
@@ -489,7 +507,7 @@ async function runAgent(input: string) {
 
 ## 7. AI 安全与治理（AI Security & Governance）
 
-### 6.1 Prompt Injection 防御
+### 7.1 Prompt Injection 防御
 
 Prompt Injection（提示注入）是 AI Agent 面临的最普遍攻击向量。攻击者通过精心构造的用户输入覆盖系统提示（System Prompt），劫持 Agent 行为。
 
@@ -538,7 +556,7 @@ async function safeAgentRun(userInput: string) {
 }
 ```
 
-### 6.2 Tool 权限边界
+### 7.2 Tool 权限边界
 
 Agent 拥有的工具权限必须遵循 **最小权限原则（Principle of Least Privilege）**：
 
@@ -571,7 +589,7 @@ function getToolsForContext(context: SessionContext) {
 }
 ```
 
-### 6.3 Jailbreak Detection
+### 7.3 Jailbreak Detection
 
 Jailbreak（越狱）攻击试图让模型输出有害内容或绕过安全限制。企业级部署应集成多层检测：
 
@@ -694,3 +712,78 @@ flowchart TD
 > 📅 本文档最后更新：2026 年 4 月
 >
 > 💡 **提示**：AI Agent 基础设施在 2025-2026 年处于快速迭代期，MCP 已成为工具集成的事实标准，Vercel AI SDK 在开发者体验上领先，而 Mastra 在企业级编排方面迅速崛起。选型时需综合考虑团队现有技术栈、部署环境与长期可维护性。建议每月关注 [JavaScriptTypeScript 全景知识库](https://github.com/luyang93/JavaScriptTypeScript) 的更新动态。
+
+
+---
+
+## 3. LangGraph：企业级工作流编排（2026 新增）
+
+| 属性 | 详情 |
+|------|------|
+| **Stars** | 25K+ |
+| **月下载量** | 34.5M+（npm） |
+| **维护方** | LangChain Inc. |
+| **核心定位** | 基于图（Graph）的 Agent 工作流编排，支持循环、条件分支和持久化状态 |
+
+**一句话描述**：LangGraph 是 LangChain 生态中的工作流编排层，将 Agent 任务建模为有向图（Directed Graph），节点代表操作，边代表状态转移。其核心优势在于支持**循环工作流**（Cyclic Workflows）——Agent 可以基于中间结果反复迭代，直至满足终止条件。
+
+**生产级采用**：Uber（动态定价 Agent）、Klarna（客服退款 Agent）、LinkedIn（内容推荐 Agent）、JPMorgan（金融分析 Agent）均已将 LangGraph 投入生产。
+
+**与 Mastra 的对比**：
+
+| 维度 | LangGraph | Mastra |
+|------|-----------|--------|
+| **工作流模型** | 有向图（节点+边），支持循环 | DAG（有向无环图），严格单向 |
+| **状态管理** | 内置持久化（Checkpoint），支持人机回环 | 记忆系统（短期+长期） |
+| **循环支持** | ✅ 原生支持 | ❌ 需通过外部触发模拟 |
+| **TS 类型安全** | ✅ 良好 | ✅ 极佳 |
+| **可视化** | ✅ LangGraph Studio 可视化调试 | ⚠️ 依赖日志和追踪 |
+| **适用场景** | 复杂推理、需要反复验证的任务 | 线性工作流、多 Agent 协作 |
+
+**何时选择 LangGraph**：
+- 工作流需要循环迭代（如代码审查 Agent：生成→测试→修复→重测）
+- 需要人机回环（Human-in-the-Loop）审批节点
+- 需要可视化调试复杂 Agent 行为
+
+---
+
+## 4. CrewAI：角色化多 Agent 协作（2026 新增）
+
+| 属性 | 详情 |
+|------|------|
+| **Stars** | 46K+ |
+| **维护方** | CrewAI Inc. |
+| **核心定位** | 基于"角色（Role）"的多 Agent 团队编排框架 |
+
+**一句话描述**：CrewAI 将软件开发中的"团队角色"概念引入 Agent 设计——你可以定义研究员（Researcher）、写手（Writer）、审稿人（Reviewer）等角色，每个角色拥有独立的工具集、目标和行为模式，通过协作完成复杂任务。
+
+**2026 关键更新**：CrewAI v1.10 原生支持 **MCP** 和 **A2A** 协议，这意味着 CrewAI 的 Agent 团队可以无缝接入外部 MCP 工具库，并与其他 A2A 兼容的 Agent 系统互操作。
+
+**核心概念**：
+
+| 概念 | 说明 |
+|------|------|
+| **Agent（角色）** | 拥有角色、目标、背景故事和工具集的独立智能体 |
+| **Task（任务）** | 分配给特定 Agent 的具体工作单元，可设定输出格式（JSON/Markdown） |
+| **Crew（团队）** | Agent 的集合，定义协作流程（顺序/并行/分层） |
+| **Process（流程）** | 团队的执行策略：`sequential`（顺序）、`parallel`（并行）、`hierarchical`（分层管理） |
+
+**适用场景**：
+- 内容创作流水线（研究→大纲→写作→编辑→发布）
+- 多领域分析任务（市场研究 + 财务分析 + 风险评估）
+- 需要"红队/蓝队"对抗性评估的决策场景
+
+**与 Mastra / LangGraph 的对比**：
+
+| 维度 | CrewAI | Mastra | LangGraph |
+|------|--------|--------|-----------|
+| **抽象层级** | 角色 + 任务（高抽象） | 工作流 + 记忆（中抽象） | 图节点 + 边（低抽象） |
+| **多 Agent 协作** | ✅ 原生团队概念 | ✅ 支持多 Agent | ✅ 需手动建模 |
+| **协议支持** | ✅ MCP + A2A（v1.10） | ✅ MCP | ⚠️ 间接支持 |
+| **可视化** | ⚠️ 日志输出 | ⚠️ 追踪平台 | ✅ Studio 可视化 |
+| **学习曲线** | 低（角色即团队） | 中 | 高（图论基础） |
+
+---
+
+> 📅 本节补充更新：2026-04-27
+> 📚 详细指南：[A2A 协议完整指南](../guides/a2a-protocol-guide.md) | [AI 可观测性完整指南](../guides/ai-observability-guide.md) | [LLM 安全指南](../guides/llm-security-guide.md)
