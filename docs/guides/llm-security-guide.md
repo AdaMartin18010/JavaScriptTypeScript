@@ -1,3 +1,10 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
+
 # LLM 应用安全完全指南
 
 > 随着大语言模型（LLM）深度集成到生产系统，AI 应用的安全威胁面急剧扩大。本指南覆盖 2026 年最危险的 LLM 安全风险及防御策略。

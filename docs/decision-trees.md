@@ -1059,6 +1059,145 @@ flowchart TD
 
 ---
 
+## 16. AI Coding Workflow 选型决策树
+
+> Cursor vs Claude Code vs GitHub Copilot Workspace vs Windsurf
+
+```
+开始
+│
+├── 主要使用 IDE？
+│   ├── VS Code → Cursor（深度集成，AI 原生）
+│   │             📌 最强代码补全，Tab 级预测
+│   │             📌 适合：日常开发、全栈项目
+│   └── JetBrains / Vim → Claude Code（CLI 优先）
+│                         📌 终端交互，Git 集成
+│                         📌 适合：后端工程师、DevOps
+│
+├── 需要团队协作？
+│   ├── 是 → GitHub Copilot Workspace
+│   │         📌 PR 级代码生成，团队共享上下文
+│   │         📌 适合：企业团队、Code Review 流程
+│   └── 否 → 继续评估
+│
+├── 重视 UI 设计？
+│   ├── 是 → Windsurf（Cascade 流式编辑）
+│   │         📌 实时代码渲染，视觉反馈即时
+│   │         📌 适合：前端开发、设计系统
+│   └── 否 → Cursor 或 Claude Code
+│
+└── 预算敏感？
+    ├── 是 → Claude Code（按量付费，无订阅）
+    └── 否 → Cursor Pro（$20/月，性价比最高）
+```
+
+### 快速推荐
+
+| 场景 | 推荐 | 理由 |
+|------|------|------|
+| 个人全栈开发 | **Cursor** | 代码补全最强，生态最成熟 |
+| 后端/CLI 工作流 | **Claude Code** | 终端原生，Git 操作优雅 |
+| 企业团队协作 | **Copilot Workspace** | PR 集成，共享知识库 |
+| 前端/UI 开发 | **Windsurf** | 视觉反馈，实时代码渲染 |
+| 预算有限 | **Claude Code** | 按量付费，无固定成本 |
+
+---
+
+## 17. Type Stripping 策略决策树
+
+> 何时用 tsx / 何时用原生 strip-types / 何时用 Bun
+
+```
+开始
+│
+├── 生产环境？
+│   ├── 是 → Node.js 24 LTS？
+│   │   ├── 是 → `--experimental-strip-types`
+│   │   │         📌 零依赖，原生执行
+│   │   │         📌 限制：无类型导入路径映射
+│   │   └── 否 → 需要类型转换（enum/namespace）？
+│   │               ├── 是 → tsx（或 tsgo）
+│   │               │         📌 完整 TS 语法支持
+│   │               └── 否 → tsx（推荐）
+│   │                         📌 最稳定，生态最成熟
+│   └── 否（开发/CI）→ 需要类型检查？
+│                       ├── 是 → `tsc --noEmit` + tsx 执行
+│                       └── 否 → tsx 直接运行
+│
+├── 使用 Deno？
+│   ├── 是 → 原生支持，无需配置
+│   │         📌 `deno run main.ts`
+│   └── 否 → 继续
+│
+└── 使用 Bun？
+    ├── 是 → 原生支持，性能最佳
+    │         📌 `bun run main.ts`
+    │         📌 99.7% Node.js 兼容
+    └── 否 → 参见上方 Node.js 路径
+```
+
+### 快速推荐
+
+| 场景 | 推荐 | 命令 |
+|------|------|------|
+| Node.js 24+ 生产 | 原生 strip-types | `node --experimental-strip-types main.ts` |
+| Node.js <24 生产 | tsx | `tsx main.ts` |
+| Deno 项目 | 原生 | `deno run main.ts` |
+| Bun 项目 | 原生 | `bun run main.ts` |
+| 需要 enum/namespace | tsx / tsgo | `tsx main.ts` |
+| CI 类型检查 | tsc + tsx | `tsc --noEmit && tsx main.ts` |
+
+---
+
+## 18. Edge 数据库选型决策树
+
+> Turso vs Cloudflare D1 vs Neon Serverless vs SQLite Cloud
+
+```
+开始
+│
+├── 需要 PostgreSQL 兼容性？
+│   ├── 是 → Neon Serverless Postgres
+│   │         📌 完整 Postgres，分支数据库
+│   │         📌 适合：已有 Postgres 生态迁移
+│   └── 否 → 继续
+│
+├── 使用 Cloudflare Workers？
+│   ├── 是 → Cloudflare D1
+│   │         📌 原生集成，零配置
+│   │         📌 限制：区域级复制，非全球
+│   └── 否 → 继续
+│
+├── 需要全球边缘复制？
+│   ├── 是 → Turso (libSQL)
+│   │         📌 全球分布式 SQLite
+│   │         📌 边缘节点就近读取
+│   │         📌 适合：移动应用、全球 SaaS
+│   └── 否 → 继续
+│
+├── 读多写少？
+│   ├── 是 → SQLite Cloud
+│   │         📌 边缘缓存，中心写入
+│   │         📌 适合：内容网站、分析仪表盘
+│   └── 否 → Turso 或 Neon
+│
+└── 成本敏感？
+    ├── 是 → Cloudflare D1（免费额度大）
+    └── 否 → Neon 或 Turso（按量付费）
+```
+
+### 快速推荐
+
+| 场景 | 推荐 | 理由 |
+|------|------|------|
+| Cloudflare Workers | **D1** | 原生集成，零冷启动 |
+| 全球移动应用 | **Turso** | 边缘复制，离线优先 |
+| Postgres 迁移 | **Neon** | 完全兼容，分支数据库 |
+| 读密集型网站 | **SQLite Cloud** | 边缘缓存，成本低 |
+| 快速原型 | **D1 或 Turso** | 免费额度充足 |
+
+---
+
 ## 决策速查表
 
 | 技术领域 | 首选推荐 | 备选方案 |
@@ -1078,7 +1217,10 @@ flowchart TD
 | 认证方案 | **better-auth** (新 TS 项目) / Session (SSR) | OIDC / Passkeys |
 | 数据存储 | PostgreSQL | MongoDB / Redis |
 | AI Agent 框架 | Vercel AI SDK | Mastra / LangChain.js |
+| AI Coding Workflow | Cursor | Claude Code / Copilot Workspace |
+| Type Stripping | tsx (通用) | 原生 strip-types (Node 24+) |
+| Edge 数据库 | Turso (全球) / D1 (CF Workers) | Neon (Postgres) |
 
 ---
 
-> 💡 **提示**：以上推荐基于2024-2025年技术趋势和生态活跃度，实际选型需结合团队技术栈和项目具体需求。
+> 💡 **提示**：以上推荐基于2025-2026年技术趋势和生态活跃度，实际选型需结合团队技术栈和项目具体需求。

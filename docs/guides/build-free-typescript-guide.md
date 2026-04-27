@@ -1,3 +1,10 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
+
 # Build-Free TypeScript 开发完全指南
 
 > 2026 年，TypeScript 正式进入"无构建"时代。Node.js、Deno、Bun 三大运行时原生支持 TypeScript 执行，开发者终于可以摆脱 `tsc` 编译步骤，直接运行 `.ts` 文件。

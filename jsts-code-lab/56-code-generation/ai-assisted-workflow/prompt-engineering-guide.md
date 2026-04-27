@@ -83,7 +83,7 @@ Node.js 后端开发专家，精通 TypeScript 和 Express。
 React 和 TypeScript 前端专家，熟悉现代 React 模式。
 
 ## 上下文
-项目使用 React 18 + TypeScript + Tailwind CSS + React Hook Form + Zod。
+项目使用 React 19 + TypeScript + Tailwind CSS + React Hook Form + Zod。
 需要创建一个用户资料编辑表单。
 
 ## 任务

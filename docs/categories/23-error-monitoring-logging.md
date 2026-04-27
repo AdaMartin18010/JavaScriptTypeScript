@@ -40,6 +40,7 @@ status: current
 **一句话描述**：业界最广泛使用的全栈错误监控与性能追踪平台，v8 版本原生集成 OpenTelemetry，实现与标准可观测性生态的完全互通。
 
 **核心特点**：
+
 - 自动捕获未处理异常、Promise rejections、资源加载失败
 - Source Map 自动还原压缩代码堆栈
 - Breadcrumbs（面包屑）记录用户操作路径
@@ -50,6 +51,7 @@ status: current
 - 支持自托管（Sentry On-Premise）
 
 **适用场景**：
+
 - 中大型 Web 应用生产环境监控
 - 需要前后端错误关联的全栈项目
 - 对 Source Map 和堆栈还原有高要求的团队
@@ -96,6 +98,7 @@ Sentry.setTag('page', 'checkout')
 **一句话描述**：以会话回放（Session Replay）为核心竞争力的前端监控平台，可像看视频一样回放用户遇到问题时的完整操作。
 
 **核心特点**：
+
 - 像素级 DOM 录制与回放
 - 网络请求、Redux/Vuex/Pinia 状态变化同步记录
 - 性能指标与错误堆栈集成
@@ -103,6 +106,7 @@ Sentry.setTag('page', 'checkout')
 - 隐私控制：自动屏蔽密码输入框
 
 **适用场景**：
+
 - 需要精确定位用户操作路径的客服/调试场景
 - 复杂表单或交互流程的问题排查
 - 与 Sentry 互补使用（Sentry 捕获错误，LogRocket 回放现场）
@@ -134,6 +138,7 @@ const store = createStore(
 **一句话描述**：专注于稳定性管理的错误监控平台，以强大的错误分组和趋势分析见长。
 
 **核心特点**：
+
 - 智能错误分组（同一根因归为一组）
 - 稳定性评分（Stability Score）量化应用健康度
 - 发布 dashboard 对比不同版本的错误率
@@ -141,6 +146,7 @@ const store = createStore(
 - 支持 React Native、Electron
 
 **适用场景**：
+
 - 关注版本间稳定性对比的团队
 - 移动应用（React Native）错误监控
 - 需要稳定性 KPI 度量的企业
@@ -160,12 +166,14 @@ const store = createStore(
 **一句话描述**：实时错误追踪服务，以快速部署和低配置门槛著称。
 
 **核心特点**：
+
 - 实时错误告警（支持 PagerDuty、Slack 集成）
 - 自动 people tracking（关联受影响用户）
 - 自定义指纹规则控制错误分组
 - 支持 APM（应用性能监控）
 
 **适用场景**：
+
 - 需要即时告警的小到中型团队
 - 快速接入、配置简单的场景
 
@@ -182,6 +190,7 @@ const store = createStore(
 **一句话描述**：新西兰出品的应用性能监控（APM）与错误追踪一体化平台，Real User Monitoring（RUM）能力突出。
 
 **核心特点**：
+
 - Real User Monitoring 真实用户性能监控
 - 崩溃报告（Crash Reporting）与 APM 一体化
 - 用户影响度分析（Impact Analysis）
@@ -203,6 +212,7 @@ const store = createStore(
 **一句话描述**：Node.js 生态最广泛使用的日志库，灵活的 Transport 系统支持多目标输出。
 
 **核心特点**：
+
 - 多 Transport 输出（Console、File、HTTP、Stream）
 - 自定义日志级别和颜色
 - 格式化管道（Format combines）
@@ -210,6 +220,7 @@ const store = createStore(
 - 与 Express / Fastify 中间件生态深度集成
 
 **适用场景**：
+
 - 需要灵活配置日志路由的企业级 Node.js 应用
 - 多环境（dev/staging/prod）差异化日志策略
 
@@ -254,6 +265,7 @@ logger.error('Database connection failed', { error: new Error('ECONNREFUSED') })
 **一句话描述**：以性能为核心设计的结构化日志库，被誉为 Node.js 中最快的日志记录器。
 
 **核心特点**：
+
 - 极致性能（比 winston/bunyan 快 5-10 倍）
 - 内置结构化 JSON 输出
 - 日志级别动态调整（无需重启）
@@ -261,6 +273,7 @@ logger.error('Database connection failed', { error: new Error('ECONNREFUSED') })
 - 支持 Worker Thread 异步写入减少主线程阻塞
 
 **适用场景**：
+
 - 高并发、低延迟的 API 服务
 - 需要 JSON 结构化日志直接对接 ELK/Loki 的场景
 - 性能敏感型应用
@@ -298,6 +311,7 @@ child.info('Processing request') // 自动包含 requestId
 **一句话描述**：Node.js 结构化日志的先驱库，以严格的 JSON 输出和子 logger 概念影响了一代日志库设计。
 
 **核心特点**：
+
 - 严格的 JSON 每行一条日志（NDJSON）
 - 子 logger 自动继承父级字段
 - 内置 DTrace 探针支持
@@ -305,6 +319,7 @@ child.info('Processing request') // 自动包含 requestId
 - bunyan CLI 工具支持管道过滤和格式化
 
 **适用场景**：
+
 - 需要严格结构化日志的传统企业项目
 - 已有 bunyan 生态集成的存量系统
 
@@ -324,12 +339,14 @@ child.info('Processing request') // 自动包含 requestId
 **一句话描述**：运行时环境无关的 JSON 日志记录器，可在浏览器和 Node.js 中使用同一套日志接口。
 
 **核心特点**：
+
 - 环境无关（Browser + Node.js 同构）
 - 上下文隐式传递（AsyncLocalStorage）
 - 零依赖，体积极小
 - 通过环境变量控制日志级别
 
 **适用场景**：
+
 - 同构/Universal 应用（SSR 框架）
 - 需要在浏览器也输出结构化日志的场景
 
@@ -347,6 +364,7 @@ child.info('Processing request') // 自动包含 requestId
 **一句话描述**：UnJS 生态出品的优雅终端输出库，是 Nuxt 3 的默认日志工具。
 
 **核心特点**：
+
 - 美观的终端输出（图标、进度条、prompt）
 - 可插拔 Reporter 系统
 - 日志级别和类型丰富（info、success、error、warn、debug、trace）
@@ -354,6 +372,7 @@ child.info('Processing request') // 自动包含 requestId
 - 浏览器兼容
 
 **适用场景**：
+
 - CLI 工具开发
 - 需要美观终端输出的构建脚本
 - Nuxt / Nitro 项目
@@ -1098,3 +1117,11 @@ export async function healthHandler() {
 > 📅 本文档最后更新：2026 年 4 月
 >
 > 💡 提示：Stars 数据会随时间变化，建议查看 GitHub 获取最新数据。AI 可观测性领域演进极快，建议关注 OpenTelemetry LLM Semantic Conventions 的最新进展。
+
+---
+
+> 📊 **关联文档**
+>
+> 本文档聚焦错误监控与日志工具的使用指南和最佳实践。如需查看可观测性工具的全面对比矩阵（含 OpenTelemetry、Sentry、Datadog、AI 可观测性等 13+ 工具的横向对比），请参阅 **[observability-tools-compare.md](../comparison-matrices/observability-tools-compare.md)**。
+>
+> 两个文档互补：本文档侧重「如何使用」，对比矩阵侧重「如何选择」。

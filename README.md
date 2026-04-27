@@ -14,7 +14,7 @@
 
 > 🚀 精心策划的 JavaScript/TypeScript 生态系统资源列表，涵盖框架、工具、库和最佳实践。
 >
-> 📚 配套代码实验室：[jsts-code-lab](./jsts-code-lab/) - 90+ 模块，从理论到实践的完整实现
+> 📚 配套代码实验室：[jsts-code-lab](./jsts-code-lab/) - 93 模块，从理论到实践的完整实现
 >
 > 🧠 语言核心系统：[jsts-language-core-system](./jsts-language-core-system/) - 91 个深度文档，覆盖类型系统/变量系统/控制流/执行模型/执行流/规范基础/模块系统/对象模型
 >
@@ -68,7 +68,7 @@
 | 文档 | 描述 | 目标读者 |
 |------|------|----------|
 | [📦 awesome-jsts-ecosystem](./awesome-jsts-ecosystem/) | JS/TS 生态工具导航 | 所有开发者 |
-| [🧪 jsts-code-lab](./jsts-code-lab/) | 代码实验室（90+ 模块） | 实践学习者 |
+| [🧪 jsts-code-lab](./jsts-code-lab/) | 代码实验室（93 模块） | 实践学习者 |
 | [🧠 jsts-language-core-system](./jsts-language-core-system/) | 语言核心系统（52 深度文档） | 理论深入者 |
 | [📚 jsts-code-lab/CROSS-REFERENCE.md](./jsts-code-lab/CROSS-REFERENCE.md) | 模块交叉引用索引 | 系统学习者 |
 | [📖 GLOSSARY.md](./GLOSSARY.md) | 专业术语表（中英对照） | 所有读者 |
@@ -93,10 +93,10 @@
 
 | 指标 | 数量 | 说明 |
 |------|------|------|
-| 文档总数 | 280+ | 涵盖指南、对比矩阵、决策树、知识图谱、研究文档 |
+| 文档总数 | 250+ | 涵盖指南、对比矩阵、决策树、知识图谱、研究文档 |
 | 分类文档 | 30 | 按技术领域系统分类 |
 | 对比矩阵 | 16 | 多维度工具/框架横向对比 |
-| 代码模块 | 90+ | jsts-code-lab 可运行示例 |
+| 代码模块 | 93 | jsts-code-lab 可运行示例 |
 | Mermaid 图表 | 21 | 含 3 个大型知识图谱 |
 | 决策树场景 | 15 | 交互式技术选型流程 |
 | AI Agent 模块 | 8+ | MCP / A2A / Vercel AI SDK v6 / Mastra / LangGraph / CrewAI / OpenAI Agents SDK |
