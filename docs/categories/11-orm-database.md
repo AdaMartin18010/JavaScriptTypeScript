@@ -960,6 +960,18 @@ console.log(result.rows)
 | 需要快速安全 CRUD | ZenStack + Prisma 7 |
 | 从其他语言迁移 | Prisma 7（Schema-first）或 Drizzle（SQL-like）|
 
+### 配套 Schema 验证生态
+
+ORM 通常与 Schema 验证库配合使用，实现从 API 输入到数据库的端到端类型安全：
+
+| 验证库 | 包体积 | 特点 | 推荐搭配 |
+|--------|--------|------|----------|
+| **Zod** | ~12KB | 类型推导完美，生态最广（React Hook Form、tRPC、Fastify）| 通用场景 |
+| **Valibot** | **<1KB** tree-shaken | Zod 轻量替代，模块化 API，边缘计算首选 | Drizzle ORM + Edge/Serverless |
+| **ArkType** | ~15KB | 1ms 冷启动，TS 类型语法定义 Schema | 性能敏感场景 |
+
+> **Valibot** 作为 Zod 的轻量替代，核心仅 <1KB（tree-shaken 后），与 Drizzle ORM 的轻量哲学高度契合，是 Cloudflare Workers、Vercel Edge 等边缘场景下 Schema 验证的首选。
+
 ---
 
 ## 🔗 参考资源

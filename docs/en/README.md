@@ -41,6 +41,15 @@
 - [Comparison Matrices](../docs/comparison-matrices/) — 16 technology comparison matrices
 - [Decision Trees](../docs/decision-trees.md) — 15 interactive decision trees for technology selection
 
+### English Guides
+
+- [A2A Protocol Guide](./a2a-protocol-guide.md) — Agent-to-Agent protocol specification
+- [AI Observability Guide](./ai-observability-guide.md) — LLM application observability
+- [Build-Free TypeScript Guide](./build-free-typescript-guide.md) — Type Stripping paradigm
+- [LLM Security Guide](./llm-security-guide.md) — AI application security threats and defenses
+- [Signals Patterns Guide](./signals-patterns-guide.md) — Cross-framework reactive paradigm
+- [Edge Databases Guide](./edge-databases-guide.md) — SQLite at the Edge
+
 ### Hot Topics (2026)
 
 - **AI Agent Infrastructure** — MCP, A2A, Vercel AI SDK v6, Mastra, LangGraph

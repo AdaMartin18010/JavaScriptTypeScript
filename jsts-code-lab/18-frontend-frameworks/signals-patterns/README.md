@@ -23,10 +23,13 @@
 | 文件 | 内容 |
 |------|------|
 | `core-signal.ts` | 从零实现的 Signal 系统（依赖追踪、Computation、batch、untracked） |
+| `core-signal.test.ts` | Signal 系统的单元测试 |
 | `solid-signals.ts` | SolidJS 风格 API（createSignal/createMemo/createEffect/createResource/createStore） |
 | `preact-signals.ts` | Preact Signals（.value 访问、React 集成、GlobalStore） |
-| `angular-signals.ts` | Angular Signals（$state/$derived/$effect、与 RxJS 互操作） |
-| `svelte-runes.ts` | Svelte 5 Runes（显式响应式、编译时优化、迁移策略） |
+| `angular-signals.ts` | Angular Signals（signal/computed/effect、与 RxJS 互操作） |
+| `svelte-runes.ts` | Svelte 5 Runes（$state/$derived/$effect、编译时优化、迁移策略） |
+| `vue-vapor-signals.ts` | Vue 3.5+ Vapor Mode 风格（ref/reactive/computed/watch/watchEffect） |
+| `alien-signals.ts` | 跨框架通用 Signal 原语（signal/computed/effect、SharedStore） |
 | `signals-vs-hooks.ts` | Signals vs Hooks 系统性对比与选型指南 |
 | `signals-vs-observable.ts` | Signals vs Observable（RxJS）的互补关系与互操作 |
 | `index.ts` | 统一导出 |
