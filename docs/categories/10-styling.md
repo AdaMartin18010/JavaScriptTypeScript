@@ -73,6 +73,57 @@ npm install -D tailwindcss@4
 </div>
 ```
 
+#### v3 → v4 迁移指南
+
+Tailwind CSS v4 是架构级重写，迁移需关注以下要点：
+
+| 迁移项 | v3 写法 | v4 写法 |
+|--------|---------|---------|
+| **配置入口** | `tailwind.config.js` | `app.css` / `globals.css` 中的 `@theme` |
+| **主题定制** | `theme.extend.colors` | `@theme { --color-brand: #0ea5e9; }` |
+| **自定义 utility** | `plugins: [function({ addUtilities })]` | `@utility content-auto { ... }` |
+| **自定义 variant** | `addVariant('hocus', ['&:hover', '&:focus'])` | `@custom-variant --hocus (&:hover, &:focus)` |
+| **容器查询** | 需安装 `@tailwindcss/container-queries` 插件 | `@container` / `@min-*` / `@max-*` 内置 |
+| **内容配置** | `content: ['./src/**/*.{html,js,jsx,ts,tsx}']` | 基于 CSS `@import` 链路自动发现 |
+| **PostCSS 依赖** | 需要 `autoprefixer` + `postcss` | 内置 Lightning CSS，通常无需额外 PostCSS |
+
+**渐进迁移步骤**：
+
+```bash
+# 1. 升级依赖
+npm uninstall tailwindcss postcss autoprefixer
+npm install -D tailwindcss@4
+
+# 2. 删除 tailwind.config.js，创建 CSS 入口
+# app.css
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #0ea5e9;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+@utility content-auto {
+  content-visibility: auto;
+}
+
+# 3. 更新构建工具配置
+# Vite: 无需额外配置，直接 import './app.css'
+# Next.js: 在 globals.css 中 @import "tailwindcss"
+```
+
+**常见兼容性问题**：
+
+- `tailwind.config.js` 中的自定义 `plugins` 需手动转换为 `@utility` / `@custom-variant`
+- 使用了 `corePlugins` 禁用某些 utility 的项目，v4 目前不支持该配置项
+- 部分社区插件尚未适配 v4，迁移前检查插件兼容性
+- v4 的 `content` 自动发现基于 CSS `@import` 图，非标准入口需显式指定 `@source`
+
+```css
+/* 显式指定扫描路径（非标准结构时） */
+@source "../node_modules/@my-org/ui-kit/**/*.tsx";
+```
+
 ---
 
 ### [shadcn/ui](https://ui.shadcn.com/) ⭐ 82k+

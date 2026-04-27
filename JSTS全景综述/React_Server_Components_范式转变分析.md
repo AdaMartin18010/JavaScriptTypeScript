@@ -491,12 +491,14 @@ Client Component:
   → 所有输入需服务端验证
 ```
 
-### 7.2 已知漏洞与防护
+### 7.2 安全风险与防护（模拟演练场景）
 
-**CVE-2025-55182**：RSC Payload 注入漏洞
+> ⚠️ 以下场景为**假设性教学演练**，用于说明 RSC 潜在安全风险，并非真实 CVE 事件。
 
-- **影响**：攻击者可通过构造恶意 RSC Payload 执行 XSS
-- **防护**：
+**模拟场景：RSC Payload 注入风险**
+
+- **假设影响**：攻击者可通过构造恶意 RSC Payload 执行 XSS
+- **防护措施**：
   1. 服务端严格序列化组件树
   2. 客户端验证 RSC Payload 的完整性
   3. 使用 CSP（Content Security Policy）
