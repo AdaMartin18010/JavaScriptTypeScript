@@ -263,6 +263,7 @@
 - 70-distributed-systems
 - 71-consensus-algorithms
 - 77-quantum-computing
+- 89-autonomous-systems
 
 ### 按热门技术分类
 
@@ -272,6 +273,8 @@
 - 25-microservices
 - 72-container-orchestration
 - 73-service-mesh-advanced
+- 87-realtime-analytics
+- 88-tanstack-start-cloudflare
 
 **人工智能**
 
@@ -280,6 +283,7 @@
 - 56-code-generation
 - 76-ml-engineering
 - 82-edge-ai
+- 94-ai-agent-lab
 
 **Web 技术**
 
@@ -298,6 +302,7 @@
 | **AI 全栈** | 94-ai-agent-lab + 33-ai-integration + 82-edge-ai | MCP Server、Vercel AI SDK Tool Calling、Multi-agent Workflow |
 | **现代认证全栈** | 95-auth-modern-lab + 21-api-security | better-auth、Passkeys、OAuth2 PKCE、RBAC |
 | **边缘数据库全栈** | 96-orm-modern-lab + 32-edge-computing | Drizzle Schema、Query Patterns、Prisma 7 Edge、Turso |
+| **实时分析全栈** | 87-realtime-analytics + 88-tanstack-start-cloudflare | TanStack Start、Cloudflare Workers、实时流处理 |
 
 ---
 
