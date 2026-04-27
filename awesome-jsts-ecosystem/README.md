@@ -56,6 +56,10 @@
 | [Prisma](https://github.com/prisma/prisma) | 下一代 Node.js 和 TypeScript ORM | ![Stars](https://img.shields.io/github/stars/prisma/prisma?style=flat-square) |
 | [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) | 实用优先的 CSS 框架 | ![Stars](https://img.shields.io/github/stars/tailwindlabs/tailwindcss?style=flat-square) |
 | [Mastra](https://github.com/mastra-ai/mastra) | TypeScript 优先的 AI Agent 框架，内置工作流与记忆系统（22K stars, 300K 周下载） | ![Stars](https://img.shields.io/github/stars/mastra-ai/mastra?style=flat-square) |
+| [LangGraph](https://github.com/langchain-ai/langgraph) | LangChain 生态的 Agent 工作流编排框架，支持复杂多智能体图结构 | ![Stars](https://img.shields.io/github/stars/langchain-ai/langgraph?style=flat-square) |
+| [CrewAI](https://github.com/crewAIInc/crewAI) | 多 Agent 协作框架，角色扮演与任务委托 | ![Stars](https://img.shields.io/github/stars/crewAIInc/crewAI?style=flat-square) |
+| [OpenAI Agents SDK](https://github.com/openai/openai-agents-python) | OpenAI 官方 Agents SDK（TypeScript 绑定活跃），支持工具调用与多 Agent | ![Stars](https://img.shields.io/github/stars/openai/openai-agents-python?style=flat-square) |
+| [Langfuse](https://github.com/langfuse/langfuse) | AI 应用可观测性平台，支持 Tracing、评估与提示管理 | ![Stars](https://img.shields.io/github/stars/langfuse/langfuse?style=flat-square) |
 
 ### ⚡ 运行时与引擎
 
@@ -138,7 +142,7 @@
 | [Express](https://github.com/expressjs/express) | 快速、无约束、极简的 Node.js Web 框架 | ![Stars](https://img.shields.io/github/stars/expressjs/express?style=flat-square) |
 | [Fastify](https://github.com/fastify/fastify) | 快速且低开销的 Web 框架 | ![Stars](https://img.shields.io/github/stars/fastify/fastify?style=flat-square) |
 | [NestJS](https://github.com/nestjs/nest) | 渐进式 Node.js 框架，用于构建高效、可扩展的服务器端应用 | ![Stars](https://img.shields.io/github/stars/nestjs/nest?style=flat-square) |
-| [Hono](https://github.com/honojs/hono) | 超轻量级、超快速的 Web 框架，支持多种运行时（28K+ stars，9M+ 周下载） | ![Stars](https://img.shields.io/github/stars/honojs/hono?style=flat-square) |
+| [Hono](https://github.com/honojs/hono) | 超轻量级、超快速的 Web 框架，支持多种运行时（28K+ stars，900万+ 周下载） | ![Stars](https://img.shields.io/github/stars/honojs/hono?style=flat-square) |
 | [Elysia](https://github.com/elysiajs/elysia) | 基于 Bun 的快速、友好的后端框架 | ![Stars](https://img.shields.io/github/stars/elysiajs/elysia?style=flat-square) |
 | [Next.js](https://github.com/vercel/next.js) | React 全栈框架 | ![Stars](https://img.shields.io/github/stars/vercel/next.js?style=flat-square) |
 | [Nuxt](https://github.com/nuxt/nuxt) | 基于 Vue 的直观 Web 框架 | ![Stars](https://img.shields.io/github/stars/nuxt/nuxt?style=flat-square) |
