@@ -4,6 +4,14 @@ review-cycle: 6 months
 next-review: 2026-10-27
 status: current
 ---
+> **⚠️ 维度边界说明**
+>
+> 本文档属于 **技术基础设施（Technical Infrastructure）** 维度，聚焦 CI/CD 工具链与 DevOps 平台选型。
+>
+> - ✅ **属于本文档范围**：CI/CD 平台、流水线配置、构建缓存、自托管 Runner、GitOps 工具。
+> - ❌ **不属于本文档范围**：具体项目的业务部署流程、应用发布策略、环境管理脚本。
+> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+
 # CI/CD 与 DevOps 工具
 
 > 本文档盘点 JavaScript/TypeScript 生态中主流的持续集成（CI）、持续部署（CD）与 DevOps 工具。覆盖 SaaS 托管服务与自托管方案，分析各工具与 JS/TS 项目的集成度、配置范式与适用场景。

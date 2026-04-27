@@ -4,6 +4,14 @@ review-cycle: 6 months
 next-review: 2026-10-27
 status: archived
 ---
+> **⚠️ 维度边界说明**
+>
+> 本文档属于 **技术基础设施（Technical Infrastructure）** 维度，聚焦测试框架与测试工具链生态。
+>
+> - ✅ **属于本文档范围**：单元测试框架、E2E 测试工具、Mock 库、覆盖率工具、测试最佳实践。
+> - ❌ **不属于本文档范围**：具体业务功能的测试用例、前端框架组件测试教程、UI 测试场景设计。
+> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+
 # 测试框架
 
 JavaScript/TypeScript 生态系统的测试工具链完整解决方案，从单元测试到端到端测试，从 API 模拟到覆盖率分析。

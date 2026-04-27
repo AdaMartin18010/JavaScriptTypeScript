@@ -4,6 +4,8 @@ status: archived
 redirect: ./beginners-path.md
 ---
 
+> **四维分类说明**：本路径以「语言核心」和「框架生态」两个维度为主，适合零基础到能独立构建简单 Web 应用的开发者。
+
 # 初学者学习路径（已迁移）
 
 > 本文档内容已整合至 [`beginners-path.md`](./beginners-path.md)，作为单一事实来源维护。

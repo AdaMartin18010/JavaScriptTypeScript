@@ -5,6 +5,14 @@ next-review: 2026-10-27
 status: current
 ---
 
+> **⚠️ 维度边界说明**
+>
+> 本文档属于 **技术基础设施（Technical Infrastructure）** 维度，聚焦边缘数据库与 Serverless 数据存储基础设施。
+>
+> - ✅ **属于本文档范围**：边缘数据库平台（Turso、D1、Neon）、Serverless 数据库驱动、ORM 边缘适配、连接模型与冷启动优化。
+> - ❌ **不属于本文档范围**：具体应用的数据模型设计、业务查询优化、数据迁移策略、数据库架构模式。
+> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+
 # 边缘数据库（Edge Databases）
 
 > 本文档梳理 2025-2026 年面向边缘计算场景的数据库解决方案，覆盖 SQLite at the Edge 范式、全球分布式 SQLite、Serverless Postgres 及选型决策框架。

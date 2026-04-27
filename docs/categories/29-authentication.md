@@ -1,3 +1,11 @@
+> **⚠️ 维度边界说明**
+>
+> 本文档属于 **技术基础设施（Technical Infrastructure）** 维度，聚焦认证授权库、协议与托管服务的选型。
+>
+> - ✅ **属于本文档范围**：认证库（better-auth、Auth.js）、OAuth/OIDC 协议实现、Passkeys/WebAuthn、SSO/SCIM 服务、RBAC 方案。
+> - ❌ **不属于本文档范围**：具体应用的用户系统实现、业务权限模型设计、会话管理策略、用户界面流程。
+> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+
 # 认证与授权（Authentication & Authorization）
 
 > 本文档梳理 2025-2026 年 JavaScript/TypeScript 生态中主流的认证（Authentication）与授权（Authorization）方案，覆盖自托管、平台集成和托管服务三大模式。

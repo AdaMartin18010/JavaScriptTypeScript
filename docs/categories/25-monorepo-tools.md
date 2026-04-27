@@ -4,6 +4,14 @@ review-cycle: 6 months
 next-review: 2026-10-27
 status: current
 ---
+> **⚠️ 维度边界说明**
+>
+> 本文档属于 **技术基础设施（Technical Infrastructure）** 维度，聚焦 Monorepo 工具链与包管理基础设施。
+>
+> - ✅ **属于本文档范围**：Monorepo 任务编排工具、构建缓存、Workspace 管理、版本发布工具。
+> - ❌ **不属于本文档范围**：具体 Monorepo 的目录结构设计、业务包划分策略、应用架构决策。
+> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+
 # Monorepo 工具
 
 > 本文档盘点 JavaScript/TypeScript 生态中主流的 Monorepo 管理工具，覆盖任务编排、构建缓存、依赖管理、发布工作流等核心维度。数据基于 2026 年 4 月工具现状与社区趋势。

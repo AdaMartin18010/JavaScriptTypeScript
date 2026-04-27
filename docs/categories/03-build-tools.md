@@ -4,6 +4,14 @@ review-cycle: 6 months
 next-review: 2026-10-27
 status: current
 ---
+> **⚠️ 维度边界说明**
+>
+> 本文档属于 **技术基础设施（Technical Infrastructure）** 维度，聚焦构建工具链与编译转译工具的配置与选型。
+>
+> - ✅ **属于本文档范围**：构建工具、打包器、转译器、任务运行器、Monorepo 构建工具。
+> - ❌ **不属于本文档范围**：具体前端框架的使用教程、业务代码的构建脚本、UI 组件实现。
+> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+
 # 构建工具全景
 
 > 数据更新时间：2026 年 4 月

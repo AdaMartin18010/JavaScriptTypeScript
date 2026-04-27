@@ -4,6 +4,14 @@ review-cycle: 6 months
 next-review: 2026-10-27
 status: current
 ---
+> **⚠️ 维度边界说明**
+>
+> 本文档属于 **技术基础设施（Technical Infrastructure）** 维度，聚焦 ORM、查询构建器与数据库客户端工具链。
+>
+> - ✅ **属于本文档范围**：ORM 框架（Prisma、Drizzle、TypeORM）、查询构建器（Kysely、Knex）、数据库驱动（pg、mysql2）、边缘数据库客户端。
+> - ❌ **不属于本文档范围**：具体应用的数据库 Schema 设计、领域模型定义、业务数据访问层实现。
+> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+
 # ORM 与数据库库
 
 > 本文档梳理 TypeScript/JavaScript 生态中的 ORM、查询构建器和数据库工具，数据参考自 GitHub Stars 及官方文档（2026年4月）

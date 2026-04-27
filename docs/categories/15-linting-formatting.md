@@ -4,6 +4,14 @@ review-cycle: 6 months
 next-review: 2026-10-27
 status: current
 ---
+> **⚠️ 维度边界说明**
+>
+> 本文档属于 **技术基础设施（Technical Infrastructure）** 维度，聚焦代码质量工具链（Lint、Format、类型检查）。
+>
+> - ✅ **属于本文档范围**：Linter、Formatter、类型检查器、Git 钩子、代码质量平台。
+> - ❌ **不属于本文档范围**：具体项目的代码风格约定、业务代码审查清单、框架编码规范。
+> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+
 # Linting 与代码格式化生态 (Linting & Formatting)
 
 > **趋势**: Rust 工具链（Biome、oxlint、dprint）正在挑战 ESLint + Prettier 的传统地位，追求极致性能；同时 Git 钩子工具正从 husky 向 lighter 方案迁移

@@ -4,6 +4,14 @@ review-cycle: 6 months
 next-review: 2026-10-27
 status: current
 ---
+> **⚠️ 维度边界说明**
+>
+> 本文档属于 **技术基础设施（Technical Infrastructure）** 维度，聚焦测试框架生态全景与选型指南。
+>
+> - ✅ **属于本文档范围**：测试框架对比、测试工具链组合、覆盖率方案、Mock 策略。
+> - ❌ **不属于本文档范围**：具体业务测试用例、前端框架专属测试教程。
+> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+
 # 13. 测试框架生态 (Testing Ecosystem)
 
 > **趋势**: Vitest 取代 Jest 成为首选，Playwright 超越 Cypress/Selenium 成为 E2E 测试新标准

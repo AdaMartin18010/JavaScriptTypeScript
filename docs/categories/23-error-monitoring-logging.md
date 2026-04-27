@@ -4,6 +4,14 @@ review-cycle: 6 months
 next-review: 2026-10-27
 status: current
 ---
+> **⚠️ 维度边界说明**
+>
+> 本文档属于 **技术基础设施（Technical Infrastructure）** 维度中的 **可观测性（Observability）** 子域，聚焦错误监控、日志记录与可观测性工具链。
+>
+> - ✅ **属于本文档范围**：错误监控平台、日志库、OpenTelemetry 集成、可观测性标准、健康检查。
+> - ❌ **不属于本文档范围**：具体业务错误处理逻辑、业务告警规则配置、应用层日志内容设计。
+> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+
 # 错误监控与日志工具
 
 > 本文档盘点 JavaScript/TypeScript 生态中用于前端错误监控、后端日志记录、全链路可观测性及 AI 应用可观测性的主流工具与库。数据基于 2026 年 4 月 GitHub Stars 与社区活跃度。

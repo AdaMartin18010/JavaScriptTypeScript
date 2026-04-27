@@ -4,6 +4,14 @@ review-cycle: 6 months
 next-review: 2026-10-27
 status: current
 ---
+> **⚠️ 维度边界说明**
+>
+> 本文档属于 **技术基础设施（Technical Infrastructure）** 维度，聚焦安全工具链与合规审计平台。
+>
+> - ✅ **属于本文档范围**：SCA 工具、SAST 工具、运行时安全中间件、合规扫描平台、许可证审计。
+> - ❌ **不属于本文档范围**：具体应用的业务安全逻辑、认证授权实现、数据加密策略、安全架构设计。
+> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+
 # 安全与合规工具
 
 > 本文档盘点 JavaScript/TypeScript 生态中用于依赖安全、代码安全、运行时安全和合规审计的主流工具与库。覆盖 SCA（软件成分分析）、SAST（静态应用安全测试）、运行时防护和许可证合规等维度。

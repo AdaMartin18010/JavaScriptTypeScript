@@ -4,6 +4,14 @@ review-cycle: 6 months
 next-review: 2026-10-27
 status: current
 ---
+> **⚠️ 维度边界说明**
+>
+> 本文档属于 **技术基础设施（Technical Infrastructure）** 维度，聚焦部署平台与托管基础设施选型。
+>
+> - ✅ **属于本文档范围**：部署平台对比、托管服务特性、冷启动分析、定价模型、CI/CD 集成。
+> - ❌ **不属于本文档范围**：具体应用的部署脚本、环境配置管理、业务发布策略、域名/CDN 配置教程。
+> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+
 # 部署与托管平台
 
 > 本文档盘点 JavaScript/TypeScript 生态中最主流的前端/全栈应用部署与托管平台，覆盖 Serverless、边缘计算、容器化与传统 PaaS 方案。每个平台均分析其核心优势、限制、定价模型、与主流 JS 框架的集成度及冷启动表现。

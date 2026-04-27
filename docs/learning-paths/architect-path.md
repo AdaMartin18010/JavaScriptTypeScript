@@ -4,6 +4,8 @@ status: archived
 redirect: ./advanced-path.md
 ---
 
+> **四维分类说明**：本路径覆盖「应用领域」和「技术基础设施」的架构设计，包含分布式系统、技术选型 ADR 与大规模生产部署决策。
+
 # 架构师学习路径（已迁移）
 
 > 本文档内容已整合至 [`advanced-path.md`](./advanced-path.md)，作为单一事实来源维护。
