@@ -6,6 +6,14 @@ status: current
 ---
 # React 设计模式指南
 
+> **维度归属**：本文档归属于 **「框架（Frameworks）」** 维度 —— React 生态设计模式。
+>
+> 相关索引：
+> - [框架生态总索引](../frameworks-index.md)
+> - [前端框架分类](../categories/01-frontend-frameworks.md)
+> - [React 速查表](../cheatsheets/REACT_CHEATSHEET.md)
+> - [框架生态速查表](../cheatsheets/FRAMEWORKS_CHEATSHEET.md)
+
 本文档涵盖了 React 开发中最常用的 10 种设计模式，使用 TypeScript 编写代码示例。
 
 ---

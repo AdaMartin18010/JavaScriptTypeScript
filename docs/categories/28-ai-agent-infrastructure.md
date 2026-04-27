@@ -4,6 +4,18 @@ review-cycle: 6 months
 next-review: 2026-10-27
 status: current
 ---
+
+> **⚠️ 维度边界说明**
+>
+> 本文档属于 **基础设施/框架生态** 维度，聚焦 AI Agent 的底层协议（MCP、A2A）、开发框架（Vercel AI SDK、LangGraph、Mastra）和可观测性工具。
+>
+> 若你关注的是 **AI 应用开发**（如何用这些技术构建产品），请参见：
+>
+> - `docs/application-domains-index.md` — 应用领域总索引
+> - `jsts-code-lab/33-ai-integration/` — AI 集成代码实验室
+> - `jsts-code-lab/94-ai-agent-lab/` — Agent 实战实验室
+> - `examples/ai-agent-production/` — 生产级示例
+
 # AI Agent 基础设施（AI Agent Infrastructure）
 
 > 本文档系统梳理 2025-2026 年 JavaScript/TypeScript 生态中 AI Agent 基础设施的关键协议、框架与工具。覆盖 MCP（Model Context Protocol）、A2A（Agent-to-Agent）、主流 Agent 框架、可观测性（Observability）与安全治理等维度。数据截至 2026 年 4 月，参考 npm 下载趋势、GitHub Stars 及官方文档。
@@ -747,6 +759,7 @@ flowchart TD
 | **适用场景** | 复杂推理、需要反复验证的任务 | 线性工作流、多 Agent 协作 |
 
 **何时选择 LangGraph**：
+
 - 工作流需要循环迭代（如代码审查 Agent：生成→测试→修复→重测）
 - 需要人机回环（Human-in-the-Loop）审批节点
 - 需要可视化调试复杂 Agent 行为
@@ -775,6 +788,7 @@ flowchart TD
 | **Process（流程）** | 团队的执行策略：`sequential`（顺序）、`parallel`（并行）、`hierarchical`（分层管理） |
 
 **适用场景**：
+
 - 内容创作流水线（研究→大纲→写作→编辑→发布）
 - 多领域分析任务（市场研究 + 财务分析 + 风险评估）
 - 需要"红队/蓝队"对抗性评估的决策场景

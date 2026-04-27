@@ -175,7 +175,7 @@ mobile-react-native-expo/
 
 ### 文档
 
-- [`docs/categories/16-mobile-development.md`](../../docs/categories/16-mobile-development.md) — 移动开发全景指南，涵盖 React Native、Expo、Capacitor 等方案对比
+- [`docs/platforms/MOBILE_DEVELOPMENT.md`](../../docs/platforms/MOBILE_DEVELOPMENT.md) — 移动开发全景指南，涵盖 React Native、Expo、Capacitor 等方案对比
 
 ### Code-Lab 模块
 

@@ -127,7 +127,7 @@ examples/
 - **预计用时**: 3-5 天
 - **技术栈**: Expo SDK 52, React Native 0.76, NativeWind, Zustand, TanStack Query
 - **关联 code-lab**: `00-language-core`, `02-design-patterns`, `18-frontend-frameworks`
-- **关联理论**: [移动开发全景指南](../docs/categories/16-mobile-development.md)
+- **关联理论**: [移动开发全景指南](../docs/platforms/MOBILE_DEVELOPMENT.md)
 - **里程碑**: 6 个（详见项目 docs/MILESTONES.md）
 - [查看详情](./mobile-react-native-expo/README.md)
 

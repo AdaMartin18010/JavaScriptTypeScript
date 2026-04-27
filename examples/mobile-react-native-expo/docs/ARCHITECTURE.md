@@ -156,7 +156,7 @@ React 状态管理方案众多：Context API、Redux、Zustand、Jotai、Recoil 
 
 ## 关联文档
 
-- [16-mobile-development](../../docs/categories/16-mobile-development.md) — 移动开发全景指南
+- [16-mobile-development](../../docs/platforms/MOBILE_DEVELOPMENT.md) — 移动开发全景指南
 - [00-language-core](../../jsts-code-lab/00-language-core/) — TypeScript 类型系统实践
 - [02-design-patterns](../../jsts-code-lab/02-design-patterns/) — 设计模式在 React 中的应用
 - [18-frontend-frameworks](../../jsts-code-lab/18-frontend-frameworks/) — 前端框架深度解析

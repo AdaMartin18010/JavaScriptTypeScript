@@ -993,20 +993,21 @@ flowchart TD
     E -->|是| F[Cloudflare Agents SDK]
     E -->|否| G[Vercel AI SDK + 自建 UI]
     B -->|否| H{需要复杂工作流编排？}
-    H -->|是| I{需要长期记忆与多 Agent？}
-    I -->|是| J[Mastra]
-    I -->|否| K[LangChain.js + LangGraph]
-    H -->|否| L{深度绑定 OpenAI？}
-    L -->|是| M[OpenAI Agents SDK]
-    L -->|否| N{需要最小 bundle？}
-    N -->|是| D
-    N -->|否| J
-    D --> O{需要 MCP 工具生态？}
-    O -->|是| P[Vercel AI SDK 原生 MCP]
-    O -->|否| Q[标准 Tool Calling]
-    J --> R{需要可观测性？}
-    R -->|是| S[Mastra + Langfuse]
-    R -->|否| T[Mastra 内置监控]
+    H -->|是| I{工作流模型？}
+    I -->|图编排 + 人机交互| K[LangGraph]
+    I -->|DAG + 记忆 + 多 Agent| J[Mastra]
+    I -->|角色驱动团队| L[CrewAI]
+    H -->|否| M{深度绑定 OpenAI？}
+    M -->|是| N[OpenAI Agents SDK]
+    M -->|否| O{需要最小 bundle？}
+    O -->|是| D
+    O -->|否| J
+    D --> P{需要 MCP 工具生态？}
+    P -->|是| Q[Vercel AI SDK 原生 MCP]
+    P -->|否| R[标准 Tool Calling]
+    J --> S{需要可观测性？}
+    S -->|是| T[Mastra + Langfuse]
+    S -->|否| U[Mastra 内置监控]
 ```
 
 ### ASCII 文本树
@@ -1024,24 +1025,29 @@ flowchart TD
 │   │             │         📌 适合：WebSocket 实时协作、边缘原生
 │   │             └── 否 → Vercel AI SDK + 自建 UI
 │   └── 否 → 需要复杂工作流编排？
-│       ├── 是 → 需要长期记忆与多 Agent？
-│       │   ├── 是 → Mastra
+│       ├── 是 → 工作流模型？
+│       │   ├── 图编排 + 人机交互 → LangGraph
+│       │   │         📌 基于图状态机，支持循环、分支、持久化 Checkpointer
+│       │   │         📌 生产级采用：Uber、Klarna、LinkedIn、JPMorgan
+│       │   │         📌 适合：复杂审批、研究型 Agent、需要可视化调试
+│       │   ├── DAG + 记忆 + 多 Agent → Mastra
 │       │   │         📌 TypeScript-first，内置 DAG 工作流、Memory、Multi-Agent
 │       │   │         📌 适合：企业级自动化、多角色协作系统
-│       │   └── 否 → LangChain.js + LangGraph
-│       │             📌 生态最成熟，RAG Pipeline 最完整
-│       │             📌 注意：bundle 较大 (~400KB+)，学习曲线陡峭
+│       │   └── 角色驱动团队 → CrewAI
+│       │             📌 46K+ Stars，角色(Role)+目标(Goal)+任务(Task)驱动
+│       │             📌 v1.10+ 原生 MCP + A2A 支持
+│       │             📌 适合：内容创作流水线、多领域分析、研究团队
 │       └── 否 → 深度绑定 OpenAI？
 │           ├── 是 → OpenAI Agents SDK
-│           │         📌 官方出品，ChatKit 模式，类型安全
-│           │         📌 适合：OpenAI 生态深度用户、快速原型
+│           │         📌 官方出品，100+ 模型支持，类型安全
+│           │         📌 内置 Agent Handoffs，适合快速原型
 │           └── 否 → 需要最小 bundle？
 │                 ├── 是 → Vercel AI SDK (~25KB 核心)
 │                 └── 否 → Mastra
 └── 需要 MCP 工具生态？
-    ├── 是 → Vercel AI SDK 原生 MCP / Mastra 社区适配
+    ├── 是 → Vercel AI SDK 原生 MCP / Mastra 社区适配 / CrewAI v1.10+
     │         📌 MCP 已成为 AI 工具接入事实标准 (9700万+ 月下载)
-    │         📌 5800+ public servers 覆盖 GitHub、Slack、PostgreSQL
+    │         📌 10000+ public servers 覆盖 GitHub、Slack、PostgreSQL
     └── 否 → 标准 Tool Calling (OpenAI / Anthropic 格式)
 ```
 
@@ -1050,9 +1056,11 @@ flowchart TD
 | 场景 | 推荐 | 理由 |
 |------|------|------|
 | Next.js 全栈 Chat 应用 | **Vercel AI SDK** | UI 集成零成本，Streaming 原生 |
-| 复杂业务流程自动化 | **Mastra** | 工作流引擎 + 记忆 + 多 Agent |
+| 复杂图编排 + 人机交互 | **LangGraph** | 循环工作流、可视化调试、持久化状态 |
+| 多角色研究团队 | **CrewAI** | 角色驱动，原生 MCP+A2A，低学习曲线 |
+| 复杂业务流程自动化 | **Mastra** | DAG 工作流引擎 + 记忆 + 多 Agent |
 | 深度 RAG 系统 | **LangChain.js** | 生态最全，Pipeline 成熟 |
-| OpenAI 原生 Agent | **OpenAI Agents SDK** | 官方优化，类型安全 |
+| OpenAI 原生 Agent | **OpenAI Agents SDK** | 官方优化，类型安全，Handoffs 简洁 |
 | 全球边缘低延迟 | **Cloudflare Agents SDK** | Durable Objects 有状态会话 |
 | 快速原型 / MVP | **Vercel AI SDK** | 学习曲线最低，社区资源最多 |
 | 企业级多 Agent 平台 | **Mastra + Langfuse** | 编排能力 + 可观测性完备 |
@@ -1061,140 +1069,184 @@ flowchart TD
 
 ## 16. AI Coding Workflow 选型决策树
 
-> Cursor vs Claude Code vs GitHub Copilot Workspace vs Windsurf
+### Mermaid 流程图
+
+```mermaid
+flowchart TD
+    A[选择 AI 编码工具？] --> B{处理敏感代码 / 离线环境？}
+    B -->|是| C[本地模型<br/>Ollama + CodeLlama / DeepSeek-Coder]
+    B -->|否| D{需要多文件同时编辑？}
+    D -->|是| E{偏好 IDE 还是 CLI？}
+    D -->|否| F{习惯 VS Code？}
+    E -->|IDE| G[Cursor 或 Windsurf]
+    E -->|CLI| H[Claude Code 或 Aider]
+    F -->|是| I{需要深度 IDE 集成？}
+    F -->|否| J{使用 JetBrains？}
+    I -->|是| K[GitHub Copilot 或 Cursor]
+    I -->|否| L[Cursor]
+    J -->|是| M[JetBrains AI]
+    J -->|否| N[Zed 或 Windsurf]
+```
+
+### ASCII 文本树
 
 ```
-开始
-│
-├── 主要使用 IDE？
-│   ├── VS Code → Cursor（深度集成，AI 原生）
-│   │             📌 最强代码补全，Tab 级预测
-│   │             📌 适合：日常开发、全栈项目
-│   └── JetBrains / Vim → Claude Code（CLI 优先）
-│                         📌 终端交互，Git 集成
-│                         📌 适合：后端工程师、DevOps
-│
-├── 需要团队协作？
-│   ├── 是 → GitHub Copilot Workspace
-│   │         📌 PR 级代码生成，团队共享上下文
-│   │         📌 适合：企业团队、Code Review 流程
-│   └── 否 → 继续评估
-│
-├── 重视 UI 设计？
-│   ├── 是 → Windsurf（Cascade 流式编辑）
-│   │         📌 实时代码渲染，视觉反馈即时
-│   │         📌 适合：前端开发、设计系统
-│   └── 否 → Cursor 或 Claude Code
-│
-└── 预算敏感？
-    ├── 是 → Claude Code（按量付费，无订阅）
-    └── 否 → Cursor Pro（$20/月，性价比最高）
+选择 AI 编码工具？
+├── 处理敏感代码 / 离线环境？
+│   └── 是 → 本地模型（Ollama + CodeLlama / DeepSeek-Coder）
+│             📌 完全离线，数据不出境，零订阅费用
+│             📌 硬件要求：推荐 24GB+ VRAM
+│             📌 适合：金融、政务、医疗、核心算法
+└── 否 → 需要多文件同时编辑？
+    ├── 是 → 偏好 IDE 还是 CLI？
+    │   ├── IDE → Cursor 或 Windsurf
+    │   │         📌 Cursor：Composer 多文件编辑最强，上下文感知深
+    │   │         📌 Windsurf：Cascade 流式生成，实时预览，AI 代理模式
+    │   └── CLI → Claude Code 或 Aider
+    │             📌 Claude Code：200K tokens 长上下文，擅长批量修改和架构分析
+    │             📌 Aider：开源免费，Git 集成优秀，多文件编辑成熟
+    └── 否 → 习惯 VS Code？
+        ├── 是 → 需要深度 IDE 集成？
+        │   ├── 是 → GitHub Copilot（$10/月）或 Cursor（$20/月）
+        │   │         📌 Copilot：生态最成熟，学习成本低，企业采购友好
+        │   │         📌 Cursor：AI 原生体验，多文件重构更强
+        │   └── 否 → Cursor（独立 IDE，AI 体验最佳）
+        └── 否 → 使用 JetBrains？
+            ├── 是 → JetBrains AI（$10/月，IntelliJ 深度集成）
+            └── 否 → Zed（高性能，Rust 编写）或 Windsurf（$15/月）
 ```
 
 ### 快速推荐
 
 | 场景 | 推荐 | 理由 |
 |------|------|------|
-| 个人全栈开发 | **Cursor** | 代码补全最强，生态最成熟 |
-| 后端/CLI 工作流 | **Claude Code** | 终端原生，Git 操作优雅 |
-| 企业团队协作 | **Copilot Workspace** | PR 集成，共享知识库 |
-| 前端/UI 开发 | **Windsurf** | 视觉反馈，实时代码渲染 |
-| 预算有限 | **Claude Code** | 按量付费，无固定成本 |
+| 全栈多文件重构 | **Cursor** | Composer 编辑最强，上下文感知 |
+| 命令行批量修改 | **Claude Code** | 长上下文，架构分析，CI/CD 集成 |
+| 日常编码补全 | **GitHub Copilot** | IDE 集成最成熟，社区最大 |
+| 前端 UI 实时预览 | **Windsurf** | Cascade 流式生成，实时预览 |
+| 敏感代码 / 离线 | **Ollama + Continue** | 完全本地，数据自主 |
+| 开源偏好 / 模型自由 | **Continue.dev + 任意模型** | 开源插件，模型可配置 |
+| 企业团队统一采购 | **GitHub Copilot Business** | $19/月，管理后台，合规认证 |
 
 ---
 
 ## 17. Type Stripping 策略决策树
 
-> 何时用 tsx / 何时用原生 strip-types / 何时用 Bun
+### Mermaid 流程图
 
-```
-开始
-│
-├── 生产环境？
-│   ├── 是 → Node.js 24 LTS？
-│   │   ├── 是 → `--experimental-strip-types`
-│   │   │         📌 零依赖，原生执行
-│   │   │         📌 限制：无类型导入路径映射
-│   │   └── 否 → 需要类型转换（enum/namespace）？
-│   │               ├── 是 → tsx（或 tsgo）
-│   │               │         📌 完整 TS 语法支持
-│   │               └── 否 → tsx（推荐）
-│   │                         📌 最稳定，生态最成熟
-│   └── 否（开发/CI）→ 需要类型检查？
-│                       ├── 是 → `tsc --noEmit` + tsx 执行
-│                       └── 否 → tsx 直接运行
-│
-├── 使用 Deno？
-│   ├── 是 → 原生支持，无需配置
-│   │         📌 `deno run main.ts`
-│   └── 否 → 继续
-│
-└── 使用 Bun？
-    ├── 是 → 原生支持，性能最佳
-    │         📌 `bun run main.ts`
-    │         📌 99.7% Node.js 兼容
-    └── 否 → 参见上方 Node.js 路径
+```mermaid
+flowchart TD
+    A[项目需要运行 TypeScript？] --> B{使用 Deno 生态？}
+    B -->|是| C[Deno<br/>零配置原生 TS]
+    B -->|否| D{追求极致启动速度？}
+    D -->|是| E[Bun<br/>Zig 实现，最快 transpilation]
+    D -->|否| F{Node.js >= 24？}
+    F -->|是| G{代码含 enum / namespace？}
+    F -->|否| H[tsx<br/>遗留项目过渡方案]
+    G -->|是| I[node --experimental-transform-types]
+    G -->|否| J[node<br/>原生 strip-types]
+    I --> K{需要 source map 调试？}
+    J --> K
+    K -->|是| L[tsx 过渡方案]
+    K -->|否| M[node 原生即可]
 ```
 
-### 快速推荐
-
-| 场景 | 推荐 | 命令 |
-|------|------|------|
-| Node.js 24+ 生产 | 原生 strip-types | `node --experimental-strip-types main.ts` |
-| Node.js <24 生产 | tsx | `tsx main.ts` |
-| Deno 项目 | 原生 | `deno run main.ts` |
-| Bun 项目 | 原生 | `bun run main.ts` |
-| 需要 enum/namespace | tsx / tsgo | `tsx main.ts` |
-| CI 类型检查 | tsc + tsx | `tsc --noEmit && tsx main.ts` |
-
----
-
-## 18. Edge 数据库选型决策树
-
-> Turso vs Cloudflare D1 vs Neon Serverless vs SQLite Cloud
+### ASCII 文本树
 
 ```
-开始
-│
-├── 需要 PostgreSQL 兼容性？
-│   ├── 是 → Neon Serverless Postgres
-│   │         📌 完整 Postgres，分支数据库
-│   │         📌 适合：已有 Postgres 生态迁移
-│   └── 否 → 继续
-│
-├── 使用 Cloudflare Workers？
-│   ├── 是 → Cloudflare D1
-│   │         📌 原生集成，零配置
-│   │         📌 限制：区域级复制，非全球
-│   └── 否 → 继续
-│
-├── 需要全球边缘复制？
-│   ├── 是 → Turso (libSQL)
-│   │         📌 全球分布式 SQLite
-│   │         📌 边缘节点就近读取
-│   │         📌 适合：移动应用、全球 SaaS
-│   └── 否 → 继续
-│
-├── 读多写少？
-│   ├── 是 → SQLite Cloud
-│   │         📌 边缘缓存，中心写入
-│   │         📌 适合：内容网站、分析仪表盘
-│   └── 否 → Turso 或 Neon
-│
-└── 成本敏感？
-    ├── 是 → Cloudflare D1（免费额度大）
-    └── 否 → Neon 或 Turso（按量付费）
+项目需要运行 TypeScript？
+├── 使用 Deno 生态？
+│   └── 是 → Deno（deno run，零配置）
+│             📌 内置 fmt / lint / test，URL 导入原生支持
+│             📌 可选运行时类型检查（--no-check 跳过）
+├── 追求极致启动速度？
+│   └── 是 → Bun（bun run，12ms 冷启动）
+│             📌 Zig 实现，enum/namespace/JSX 开箱即用
+│             📌 内置 bundler / test runner / 包管理器 / SQLite
+│             📌 适合：工具/CLI、Bun 生态全栈
+└── Node.js 生态？
+    ├── Node.js >= 24？
+    │   ├── 代码含 enum / namespace？
+    │   │   ├── 是 → node --experimental-transform-types
+    │   │   │         📌 轻量 transpilation，支持 enum/namespace/装饰器
+    │   │   │         📌 性能仍远优于完整 tsc
+    │   │   └── 否 → node（原生 strip-types）
+    │   │             📌 直接运行 .ts，零外部依赖
+    │   │             📌 注意：必须显式写 .ts 扩展名
+    │   └── 需要 source map 调试？
+    │       ├── 是 → tsx（过渡方案，esbuild 包装）
+    │       │         📌 遗留项目、复杂 tsconfig paths、Monorepo 开发
+    │       └── 否 → node 原生即可（2026 推荐）
+    └── Node.js < 24（遗留项目）？
+        └── 是 → tsx
+                  📌 esbuild 包装，速度极快
+                  📌 2026 年 1 月宣布进入维护模式，运行时原生替代趋势
 ```
 
 ### 快速推荐
 
 | 场景 | 推荐 | 理由 |
 |------|------|------|
-| Cloudflare Workers | **D1** | 原生集成，零冷启动 |
-| 全球移动应用 | **Turso** | 边缘复制，离线优先 |
-| Postgres 迁移 | **Neon** | 完全兼容，分支数据库 |
-| 读密集型网站 | **SQLite Cloud** | 边缘缓存，成本低 |
-| 快速原型 | **D1 或 Turso** | 免费额度充足 |
+| 现代 Node.js API 新项目 | **Node.js 24+ strip-types** | 零依赖，原生支持，ESM 最佳 |
+| Deno 全栈 | **Deno 2.7** | 零配置，内置工具链完整 |
+| 极速工具/CLI | **Bun 1.3** | 冷启动最快，内置功能最多 |
+| 遗留 Node.js 18/20 | **tsx** | 兼容性好，无需升级运行时 |
+| 生产构建 (bundling) | **tsc / esbuild / rolldown / bun build** | 根据生态选择 |
+| CI 类型检查 | **tsc --noEmit 或 tsgo** | 完整类型检查，不输出产物 |
+
+---
+
+## 18. Edge 数据库选型决策树
+
+### Mermaid 流程图
+
+```mermaid
+flowchart TD
+    A[选择 Edge 数据库？] --> B{需要 Postgres 兼容？}
+    B -->|是| C[Neon<br/>Serverless Postgres，存储计算分离]
+    B -->|否| D{需要全球复制？}
+    D -->|是| E[Turso<br/>libSQL，35+ 边缘区域]
+    D -->|否| F{使用 Cloudflare Workers？}
+    F -->|是| G[Cloudflare D1<br/>Workers 原生绑定]
+    F -->|否| H[SQLite Cloud<br/>边缘缓存，轻量级]
+```
+
+### ASCII 文本树
+
+```
+选择 Edge 数据库？
+├── 需要 Postgres 兼容？
+│   └── 是 → Neon
+│             📌 存储计算分离，Page Server 共享存储
+│             📌 数据库分支（Git-like 工作流），被 Databricks 收购
+│             📌 永久 Free Tier，适合：完整 PG 功能的全栈应用
+│             📌 冷启动：~50-150ms（HTTP driver）
+└── 否 → 需要全球复制？
+    ├── 是 → Turso
+    │         📌 libSQL (SQLite fork)，35+ 边缘区域
+    │         📌 单一写入端点 + 多区域读取副本
+    │         📌 500 个免费数据库，适合：多租户 SaaS、全球读多写少
+    │         📌 冷启动：~10-30ms（HTTP 边缘副本）
+    └── 否 → 使用 Cloudflare Workers？
+        ├── 是 → Cloudflare D1
+        │         📌 Workers 原生绑定（env.DB），零网络开销
+        │         📌 2026 GA，免费 5GB，300+ 城市自动复制
+        │         📌 冷启动：~1-5ms（本地绑定）
+        └── 否 → SQLite Cloud
+                  📌 边缘节点托管 SQLite，REST API + WebSocket 订阅
+                  📌 适合：轻量级实时应用、IoT、边缘缓存层
+```
+
+### 快速推荐
+
+| 场景 | 推荐 | 理由 |
+|------|------|------|
+| Cloudflare Workers 全栈 | **D1 + Drizzle ORM** | 原生绑定，零配置，延迟最低 |
+| 多租户 SaaS（全球用户） | **Turso + Drizzle ORM** | 500 免费 DB，每租户独立库 |
+| 需要完整 PG 的 Serverless | **Neon + Drizzle/Prisma 7** | 分支工作流，生态增强 |
+| 实时应用 + Auth + 存储 | **Supabase** | 全栈平台，RLS 安全 |
+| 极端轻量 / 低带宽 | **Drizzle + D1/Turso** | 最小 bundle，最快冷启动 |
+| 已有 MySQL 生态迁移 | **PlanetScale** | Vitess 分片，分支工作流 |
 
 ---
 
@@ -1216,11 +1268,11 @@ flowchart TD
 | Web API | REST (通用) / GraphQL (灵活) | tRPC / gRPC-Web |
 | 认证方案 | **better-auth** (新 TS 项目) / Session (SSR) | OIDC / Passkeys |
 | 数据存储 | PostgreSQL | MongoDB / Redis |
-| AI Agent 框架 | Vercel AI SDK | Mastra / LangChain.js |
-| AI Coding Workflow | Cursor | Claude Code / Copilot Workspace |
-| Type Stripping | tsx (通用) | 原生 strip-types (Node 24+) |
-| Edge 数据库 | Turso (全球) / D1 (CF Workers) | Neon (Postgres) |
+| Edge 数据库 | Turso / D1 / Neon | SQLite Cloud / Supabase |
+| AI Agent 框架 | Vercel AI SDK | Mastra / LangGraph / CrewAI |
+| AI 编码工作流 | Cursor | Claude Code / Copilot / Windsurf |
+| Type Stripping | Node.js 24+ 原生 | Bun / Deno / tsx |
 
 ---
 
-> 💡 **提示**：以上推荐基于2025-2026年技术趋势和生态活跃度，实际选型需结合团队技术栈和项目具体需求。
+> 💡 **提示**：以上推荐基于2024-2026年技术趋势和生态活跃度，实际选型需结合团队技术栈和项目具体需求。

@@ -1,142 +1,182 @@
----
-last-updated: 2026-04-27
-review-cycle: 6 months
-next-review: 2026-10-27
-status: current
----
 # 季度内容审计检查清单
 
-> 本文档定义 JavaScript/TypeScript 全景知识库的季度内容审计流程。
-> 创建日期：2026-04-27
-> 审计周期：每季度（1月、4月、7月、10月）
+> 本清单定义对 JS/TS 全景知识库进行季度审计的五维度流程与自动化工具清单。
+> 创建日期: 2026-04-27
+> 审计频率: 每季度末（3月、6月、9月、12月）
 
 ---
 
-## 审计目标
+## 一、审计五维度
 
-1. **时效性**：确保所有版本号、Stars/下载量、发布日期与当前季度一致
-2. **准确性**：消除事实性错误、虚构引用、过时链接
-3. **完整性**：确保新出现的生态工具/协议/框架被及时收录
-4. **一致性**：维护跨文档的术语统一和数据一致
+### 维度 1：技术准确性（Accuracy）
 
----
+- [ ] 所有指南中的代码示例可通过 CI 测试
+- [ ] 版本号（TypeScript、React、Node.js 等）与官方最新稳定版一致
+- [ ] 没有已知的虚构 CVE 或错误事实陈述
+- [ ] 新发布的框架特性（ES2026 Stage 4、React 19.x 等）已及时覆盖
 
-## 审计维度与检查项
+**自动化工具**:
 
-### 维度一：生态数据（L4 层）
+```bash
+# 版本号过期检查
+node scripts/validate-versions.js --threshold=2
 
-| # | 检查项 | 数据来源 | 操作 |
-|---|--------|---------|------|
-| 1.1 | 所有项目 Stars 数是否 ≤ 当前实际值 + 20% | npm / GitHub API | 更新 README |
-| 1.2 | 周/月下载量是否反映最新趋势 | npm trends | 更新数据 |
-| 1.3 | 新版本发布是否被记录 | 官方 Release Notes | 添加更新日志 |
-| 1.4 | 新出现的重磅项目是否收录 | Hacker News / State of JS | 评估并收录 |
-| 1.5 | 已废弃/归档项目是否标记 | 官方公告 | 添加 DEPRECATED 标记 |
-
-### 维度二：文档体系（L3 层）
-
-| # | 检查项 | 检查方法 | 操作 |
-|---|--------|---------|------|
-| 2.1 | 指南中的版本引用是否最新 | 全局搜索 "React 18" / "TS 5.3" 等 | 批量替换 |
-| 2.2 | 对比矩阵数据是否更新 | 与官方 benchmark 对比 | 更新数值 |
-| 2.3 | 决策树是否覆盖新兴场景 | 检查 AI / Edge / Rust 等新领域 | 新增或更新 |
-| 2.4 | 是否有重复/冲突内容 | 对比 categories/ vs platforms/ vs guides/ | 合并或归档 |
-| 2.5 | 速查表是否包含最新 API | 对照官方文档 | 补充新 API |
-
-### 维度三：代码实验室（L2 层）
-
-| # | 检查项 | 检查方法 | 操作 |
-|---|--------|---------|------|
-| 3.1 | 所有模块是否包含 README.md | `find jsts-code-lab -name README.md` | 补全 |
-| 3.2 | 所有模块是否包含 THEORY.md | `find jsts-code-lab -name THEORY.md` | 补全 |
-| 3.3 | 关键模块是否包含 ARCHITECTURE.md | 检查 AI/Security/Infra 模块 | 补全 |
-| 3.4 | .ts 文件是否可运行 | `tsc --noEmit` + `node` | 修复编译错误 |
-| 3.5 | 是否有新的薄模块（≤3文件） | 统计各模块文件数 | 合并或扩充 |
-
-### 维度四：语言核心（L1 层）
-
-| # | 检查项 | 检查方法 | 操作 |
-|---|--------|---------|------|
-| 4.1 | TC39 提案状态是否更新 | tc39.es / GitHub TC39 proposals | 更新 Stage |
-| 4.2 | TypeScript 新版本特性是否覆盖 | TypeScript Blog | 补充新特性 |
-| 4.3 | 学术引用是否最新 | Google Scholar / ACM DL | 补充 2025+ 论文 |
-| 4.4 | 规范基础文档是否达到深度标准 | 检查文件大小 ≥ 5000 字节 | 扩充内容 |
-| 4.5 | 新增的 L1 专题是否需要 | 对比现有覆盖 vs 学术前沿 | 规划新专题 |
-
-### 维度五：跨层一致性
-
-| # | 检查项 | 检查方法 | 操作 |
-|---|--------|---------|------|
-| 5.1 | L1 理论与 L2 实践是否对齐 | 对比 THEORY.md 与 .ts 实现 | 补充缺失的代码/理论 |
-| 5.2 | L3 指南是否引用 L2 模块 | 检查 guides/ 中的交叉引用 | 添加链接 |
-| 5.3 | L4 生态数据是否被 L3 引用 | 检查对比矩阵和分类文档 | 同步数据 |
-| 5.4 | 英文摘要是否与中文原文一致 | 逐篇对比 | 更新摘要 |
-| 5.5 | 全局索引是否完整 | 检查 CROSS-REFERENCE.md | 更新索引 |
-
----
-
-## 审计执行流程
-
-```
-第 1 周：数据收集
-  ├── 运行 npm-stats.js 更新下载量
-  ├── 运行 update-stars.js 更新 Stars
-  ├── 收集 TC39 / TypeScript Blog / React Blog 季度更新
-  └── 收集 State of JS / StackOverflow Survey 新数据
-
-第 2 周：文档审查
-  ├── 按维度一至五逐项检查
-  ├── 记录所有发现的问题到 Issue 列表
-  └── 标注优先级（P0/P1/P2/P3）
-
-第 3 周：内容修正
-  ├── 执行 P0 修正（事实错误）
-  ├── 执行 P1 更新（版本/数据）
-  └── 补充缺失的 THEORY.md / README.md / ARCHITECTURE.md
-
-第 4 周：验证与发布
-  ├── 运行 security-check.js 验证链接
-  ├── 运行 tsc --noEmit 验证代码
-  ├── 更新 QUARTERLY_AUDIT_REPORT.md
-  └── 更新 CONTENT_RESTRUCTURING_PLAN_2026.md 状态
+# 代码运行验证
+pnpm test        # vitest 全部模块
+pnpm type-check  # tsc --noEmit
 ```
 
+### 维度 2：时效性（Freshness）
+
+- [ ] 所有 Markdown 文件包含 `last-updated` frontmatter
+- [ ] 超过 `review-cycle` 的文件已触发 review 提醒
+- [ ] 生态数据（Stars、下载量）更新至当季末
+- [ ] 对比矩阵中的工具版本号已刷新
+
+**自动化工具**:
+
+```bash
+# frontmatter 完整性检查
+node scripts/add-content-metadata.js --dry-run
+
+# 生态数据刷新
+node scripts/update-stars.js
+node scripts/update-matrix-data.js
+node scripts/trend-monitor.js
+```
+
+### 维度 3：覆盖度（Coverage）
+
+- [ ] 新增热门工具（Stars 增速 >20%）是否有对应分类/指南
+- [ ] code-lab 模块是否有 THEORY.md 和 README.md
+- [ ] 示例项目是否覆盖主要技术栈
+- [ ] 英文版文档比例是否达到目标（当前目标：核心文档 20%+）
+
+**自动化工具**:
+
+```bash
+# 模块覆盖率统计
+node scripts/generate-module-dependency-graph.js --coverage
+
+# 英文版比例统计
+node scripts/i18n-coverage.js
+```
+
+### 维度 4：结构性（Structure）
+
+- [ ] 没有重复内容（单一事实来源原则）
+- [ ] 交叉引用链接有效
+- [ ] 模块编号无冲突
+- [ ] 决策树数量与分类文档一致
+
+**自动化工具**:
+
+```bash
+# 链接有效性检查
+markdown-link-check docs/**/*.md
+
+# 重复内容检测
+node scripts/detect-duplicates.js --threshold=0.8
+```
+
+### 维度 5：可维护性（Maintainability）
+
+- [ ] 依赖包无高危安全漏洞
+- [ ] 测试覆盖率趋势未下降
+- [ ] 构建/部署流程正常
+- [ ] 贡献者文档（CONTRIBUTING.md）与流程一致
+
+**自动化工具**:
+
+```bash
+# 安全审计
+npm audit --audit-level=high
+
+# 测试覆盖率
+cd jsts-code-lab && pnpm vitest --coverage
+
+# 构建验证
+cd website && pnpm build
+```
+
 ---
 
-## 自动化工具
+## 二、审计流程
 
-| 脚本 | 用途 | 执行频率 |
-|------|------|---------|
-| `scripts/npm-stats.js` | 更新 npm 下载量 | 每月 |
-| `scripts/update-stars.js` | 更新 GitHub Stars | 每季度 |
-| `scripts/security-check.js` | 检查死链 | 每季度 |
-| `scripts/update-ecosystem-stats.js` | 更新生态统计 JSON | 每季度 |
+```
+季度末最后一周:
+    ├── 周一: 运行自动化检查脚本
+    │         └── 输出: AUDIT_AUTO_REPORT.md
+    ├── 周二-周三: 人工复核自动化报告中的异常项
+    │         └── 输出: AUDIT_REVIEW_NOTES.md
+    ├── 周四: 修复确认的问题
+    │         └── 输出: AUDIT_FIX_LOG.md
+    └── 周五: 发布季度审计报告
+              └── 输出: AUDIT_REPORT_YYYY-QX.md
+```
 
 ---
 
-## 审计报告模板
-
-每次审计完成后，应在 `docs/` 根目录创建 `QUARTERLY_AUDIT_REPORT_YYYY-QX.md`：
+## 三、季度审计报告模板
 
 ```markdown
-# 2026-Q2 内容审计报告
+# 季度审计报告 2026-Q2
 
 ## 执行摘要
-- 审计日期：2026-04-27
-- 发现问题：X 个
-- 已修复：Y 个
-- 待处理：Z 个
+- 审计日期: 2026-06-30
+- 审计范围: 全库 37,000+ 文件
+- 发现问题: X 个
+- 已修复: Y 个
+- 遗留问题: Z 个
 
-## 主要更新
-- 新增：...
-- 更新：...
-- 归档：...
+## 五维度评分
 
-## 风险项
+| 维度 | 得分 | 权重 | 加权分 |
+|------|------|------|--------|
+| 技术准确性 | 95/100 | 30% | 28.5 |
+| 时效性 | 90/100 | 25% | 22.5 |
+| 覆盖度 | 85/100 | 20% | 17.0 |
+| 结构性 | 92/100 | 15% | 13.8 |
+| 可维护性 | 88/100 | 10% | 8.8 |
+| **总分** | | | **90.6/100** |
+
+## 主要发现
+
+### ✅ 优秀项
 - ...
+
+### ⚠️ 需改进项
+- ...
+
+### ❌ 严重问题
+- ...
+
+## 下季度行动计划
+
+1. ...
+2. ...
+3. ...
 ```
 
 ---
 
-> 📅 创建日期：2026-04-27
-> 🔄 下次审计：2026-07-01（2026-Q3）
+## 四、自动化脚本清单
+
+| 脚本 | 功能 | 运行频率 |
+|------|------|---------|
+| `scripts/trend-monitor.js` | 生态趋势监测 | 每周 |
+| `scripts/update-stars.js` | GitHub Stars 刷新 | 每月 |
+| `scripts/update-matrix-data.js` | 对比矩阵数据更新 | 每月 |
+| `scripts/add-content-metadata.js` | frontmatter 补全 | 每季度 |
+| `scripts/validate-versions.js` | 版本号过期检查 | 每季度 |
+| `scripts/detect-duplicates.js` | 重复内容检测 | 每季度 |
+| `scripts/security-check.js` | 安全漏洞扫描 | 每周 |
+| `scripts/validate-links.js` | 链接有效性检查 | 每月 |
+
+---
+
+*本清单由 `docs/QUARTERLY_AUDIT_CHECKLIST.md` 维护*
+*最后更新: 2026-04-27*
+*review-cycle: 3 months*
+*next-review: 2026-07-27*
+*status: current*

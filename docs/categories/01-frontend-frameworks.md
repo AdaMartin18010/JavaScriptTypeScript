@@ -1182,6 +1182,17 @@ const user = await getUser(Astro.cookies);
 
 ---
 
+## 框架生态索引
+
+本文档聚焦**前端框架本身**的核心特性与选型对比。如需查看完整框架生态索引（含元框架、后端框架、状态管理、UI 组件库、学习路径），请前往：
+
+- [框架生态总索引](../frameworks-index.md)
+- [前端框架对比矩阵](../comparison-matrices/frontend-frameworks-compare.md)
+- [React 设计模式](../patterns/REACT_PATTERNS.md)
+- [React 速查表](../cheatsheets/REACT_CHEATSHEET.md)
+
+---
+
 > 📅 本文档最后更新：2026年4月
 >
 > 💡 提示：Stars 数据会随时间变化，建议查看 GitHub 获取最新数据

@@ -20,7 +20,7 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [docs/guides/webassembly-guide.md](../../docs/guides/webassembly-guide.md) — WebAssembly 完整指南
+- [docs/categories/21-webassembly.md](../../docs/categories/21-webassembly.md) — WebAssembly 完整指南
 - [21-webassembly](../../jsts-language-core-system) — WebAssembly 相关研究
 
 ---

@@ -49,7 +49,7 @@ examples/
 ├── mobile-react-native-expo/ ────→ jsts-code-lab/00-language-core/
 │     [P0-1 新增]                     jsts-code-lab/02-design-patterns/
 │                                   jsts-code-lab/18-frontend-frameworks/
-│                                   docs/categories/16-mobile-development.md
+│                                   docs/platforms/MOBILE_DEVELOPMENT.md
 │
 ├── desktop-tauri-react/ ─────────→ jsts-code-lab/00-language-core/
 │     [P0-2 新增]                     jsts-code-lab/02-design-patterns/

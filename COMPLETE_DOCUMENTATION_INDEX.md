@@ -1,6 +1,21 @@
 # JavaScript/TypeScript 全景知识库 - 完整文档索引
 
-> **版本**: v1.4.0 | **最后更新**: 2026-04-19 | **维护状态**: 活跃维护
+> **版本**: v1.5.0 | **最后更新**: 2026-04-27 | **维护状态**: 活跃维护
+
+---
+
+## 🆕 四维分类体系
+
+> 本项目现已按 **语言核心 / 框架生态 / 应用领域 / 技术基础设施** 四大维度重组。
+>
+> 👉 [查看四维分类总索引](./docs/FOUR_DIMENSIONS_INDEX.md) — 推荐从此入口开始探索
+
+| 维度 | 索引 | 核心内容 |
+|------|------|---------|
+| 🔵 **语言核心** | [language-core-index.md](./docs/language-core-index.md) | 类型系统、执行模型、ES2026、模块系统 |
+| 🟢 **框架生态** | [frameworks-index.md](./docs/frameworks-index.md) | React/Vue/Angular、Next.js/Nuxt、状态管理 |
+| 🟠 **应用领域** | [application-domains-index.md](./docs/application-domains-index.md) | AI Agent、Web3、移动端、边缘计算 |
+| 🔴 **技术基础设施** | [infrastructure-index.md](./docs/infrastructure-index.md) | 构建工具、测试、部署、可观测性、安全 |
 
 ---
 
@@ -9,9 +24,9 @@
 本知识库包含四大核心组成部分：
 
 1. **awesome-jsts-ecosystem** - 生态工具导航
-2. **jsts-code-lab** - 代码实验室 (91个技术模块)
+2. **jsts-code-lab** - 代码实验室 (96个技术模块)
 3. **jsts-language-core-system** - 语言核心系统 (52个深度文档，>5000字节/篇)
-4. **docs/** - 分类文档与学习路径
+4. **docs/** - 分类文档与学习路径（已按四维重组）
 
 ---
 
@@ -114,7 +129,7 @@
 | 测试基础 | ./jsts-code-lab/07-testing/ | 单元测试、集成测试、TDD | 2星 |
 | 高级测试 | ./jsts-code-lab/28-testing-advanced/ | E2E、契约测试、混沌测试 | 3星 |
 | AI测试理论 | ./jsts-code-lab/55-ai-testing/THEORY.md | AI驱动测试生成理论 | 4星 |
-| 测试工具对比 | ./docs/categories/12-testing.md | Jest/Vitest/Playwright | 2星 |
+| 测试工具对比 | ./docs/categories/13-testing-ecosystem.md | Jest/Vitest/Playwright | 2星 |
 | 测试对比矩阵 | ./docs/comparison-matrices/testing-compare.md | 测试框架详细对比 | 2星 |
 | JS/TS 编译器对比矩阵 | ./docs/comparison-matrices/js-ts-compilers-compare.md | tsc/Babel/SWC/esbuild/Rolldown/tsgo 语义差异 | 3星 |
 | 包管理器对比矩阵 | ./docs/comparison-matrices/package-managers-compare.md | npm/yarn/pnpm/Bun/Deno 对比 | 2星 |
@@ -351,7 +366,7 @@
 | 前端开发 | ./jsts-code-lab/18-frontend-frameworks/ | ./docs/categories/01-frontend-frameworks.md |
 | 后端开发 | ./jsts-code-lab/19-backend-development/ | ./docs/categories/14-backend-frameworks.md |
 | DevOps | ./jsts-code-lab/22-deployment-devops/ | ./docs/categories/03-build-tools.md |
-| 数据可视化 | ./jsts-code-lab/58-data-visualization/ | ./docs/categories/04-data-visualization.md |
+| 数据可视化 | ./jsts-code-lab/58-data-visualization/ | ./docs/platforms/DATA_VISUALIZATION.md |
 
 ### 9.2 按问题类型查找
 

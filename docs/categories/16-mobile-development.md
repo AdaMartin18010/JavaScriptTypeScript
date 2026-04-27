@@ -2,8 +2,18 @@
 last-updated: 2026-04-27
 review-cycle: 6 months
 next-review: 2026-10-27
-status: current
+status: archived
 ---
+
+> **⚠️ 维度边界说明**
+>
+> 本文档属于 **框架/库分类索引**，汇总移动端与桌面端开发框架。更详细的应用层开发指南请参见：
+> - `docs/platforms/MOBILE_DEVELOPMENT.md` — 移动端开发完全指南
+> - `docs/platforms/DESKTOP_DEVELOPMENT.md` — 桌面端开发指南
+> - `docs/application-domains-index.md` — 应用领域总索引
+> - `examples/mobile-react-native-expo/` — 移动端示例
+> - `examples/desktop-tauri-react/` — 桌面端示例
+
 # 移动端开发库分类
 
 > 跨平台移动应用开发框架与工具汇总

@@ -39,16 +39,21 @@
 - [Language Core System](../jsts-language-core-system/) — 52+ deep-dive documents on type systems, execution models, and formal semantics
 - [Code Lab](../jsts-code-lab/) — 93 modules with runnable TypeScript examples
 - [Comparison Matrices](../docs/comparison-matrices/) — 16 technology comparison matrices
-- [Decision Trees](../docs/decision-trees.md) — 15 interactive decision trees for technology selection
+- [Decision Trees](../docs/decision-trees.md) — 18 interactive decision trees for technology selection
 
 ### English Guides
 
 - [A2A Protocol Guide](./a2a-protocol-guide.md) — Agent-to-Agent protocol specification
+- [AI Agent Infrastructure](./ai-agent-infrastructure.md) — MCP, A2A, Vercel AI SDK, Mastra, LangGraph, CrewAI
 - [AI Observability Guide](./ai-observability-guide.md) — LLM application observability
 - [Build-Free TypeScript Guide](./build-free-typescript-guide.md) — Type Stripping paradigm
+- [Edge Databases Guide](./edge-databases-guide.md) — SQLite at the Edge: Turso, D1, Neon
+- [Frontend Frameworks Compare](./frontend-frameworks-compare.md) — React 19, Vue 3.6, Svelte 5, Solid, Angular, Qwik, Astro
 - [LLM Security Guide](./llm-security-guide.md) — AI application security threats and defenses
+- [React 19 Guide](./react-19-guide.md) — React Compiler 1.0, Actions, RSC, PPR
+- [Rust Toolchain Guide](./rust-toolchain-guide.md) — VoidZero, Rolldown, Oxc, Rspack, Biome migration
 - [Signals Patterns Guide](./signals-patterns-guide.md) — Cross-framework reactive paradigm
-- [Edge Databases Guide](./edge-databases-guide.md) — SQLite at the Edge
+- [TypeScript 7 Migration](./typescript-7-migration.md) — tsgo (Project Corsa) migration summary
 
 ### Hot Topics (2026)
 
@@ -65,7 +70,7 @@
 - **250+** documents
 - **93** code-lab modules
 - **16** comparison matrices
-- **15** decision trees
+- **18** decision trees
 - **13** example projects
 - **36,813** total files
 
