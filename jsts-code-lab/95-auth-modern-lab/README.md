@@ -21,6 +21,11 @@
 | `rbac-middleware.ts` | 基于角色的访问控制中间件（Hono/Express 通用） |
 | `index.ts` | 模块入口与导出 |
 
+## 关联文档
+
+- [现代认证专题文档](../../docs/categories/29-authentication.md) — 完整的方案对比与选型指南
+- [Passkeys 深度实现指南](../../docs/categories/29-authentication.md#8-passkeys--webauthn-深度实现指南)
+
 ## 运行方式
 
 ```bash
@@ -49,5 +54,5 @@ npm install hono
 ## 浏览器/运行时兼容性
 
 - Node.js ≥ 18（WebCrypto API）
-- 现代浏览器（WebAuthn API）
+- 现代浏览器（WebAuthn API，支持 Conditional UI）
 - Edge Runtime（Cloudflare Workers / Vercel Edge）

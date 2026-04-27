@@ -69,6 +69,25 @@ export {
   demonstrateSvelte5Advantages,
 } from "./svelte-runes.js";
 
+// Vue Vapor Mode 风格
+export {
+  ref,
+  vueComputed,
+  watchEffect,
+  watch,
+  reactive,
+  demonstrateVueVaporMode,
+} from "./vue-vapor-signals.js";
+
+// alien-signals 跨框架原语
+export {
+  signal,
+  computed,
+  effect,
+  createSharedStore,
+  demonstrateAlienSignals,
+} from "./alien-signals.js";
+
 // 对比与选型
 export {
   demonstrateMentalModel,

@@ -43,7 +43,7 @@ status: current
     - [3.3 缓存策略](#33-缓存策略)
       - [缓存调试和优化](#缓存调试和优化)
     - [3.4 服务端渲染](#34-服务端渲染)
-      - [流式 SSR 支持](#流式-ssr-支持)
+      - [流式 SSR 与 RSC 语境（React 19）](#流式-ssr-与-rsc-语境react-19)
   - [4. Tailwind CSS 方法论](#4-tailwind-css-方法论)
     - [4.1 Utility-first 理念](#41-utility-first-理念)
       - [为什么使用 Utility-first？](#为什么使用-utility-first)
@@ -1178,10 +1178,36 @@ class MyDocument extends Document<Props> {
 export default MyDocument;
 ```
 
-#### 流式 SSR 支持
+#### 流式 SSR 与 RSC 语境（React 19）
+
+React 19 的流式 SSR 与 RSC（React Server Components）深度整合，CSS-in-JS 方案需要重新评估其在服务端组件中的适用性。
+
+**RSC 中的 CSS-in-JS 限制**：
 
 ```tsx
-// React 19 流式 SSR
+// ❌ Server Component 中不能直接使用 styled-components / Emotion
+// 这些库依赖客户端 Hooks（useState、useEffect、useInsertionEffect）
+
+'use server'; // 或省略（默认服务端组件）
+
+import styled from 'styled-components'; // ❌ 运行时错误
+
+const Title = styled.h1`...`; // useInsertionEffect 在服务端不可用
+```
+
+**React 19 推荐的样式策略矩阵**：
+
+| 场景 | 推荐方案 | 原因 |
+|------|---------|------|
+| **Server Components (RSC)** | CSS Modules / Tailwind / 原生 CSS | 零运行时开销，服务端安全 |
+| **Client Components** | styled-components / Emotion / Linaria | 保留 CSS-in-JS 的动态能力 |
+| **设计系统组件库** | Tailwind + shadcn/ui | RSC 兼容，可复制可定制 |
+| **需要主题动态切换** | CSS 变量 + Tailwind | RSC 可输出变量，客户端切换无 JS |
+
+**React 19 流式 SSR（Client Components 层）**：
+
+```tsx
+// React 19 流式 SSR（适用于 Client Component 边界）
 import { renderToPipeableStream } from 'react-dom/server';
 import createCache from '@emotion/cache';
 import createEmotionServer from '@emotion/server/create-instance';
@@ -1195,17 +1221,75 @@ const stream = renderToPipeableStream(
   </CacheProvider>,
   {
     onShellReady() {
-      // 提取关键 CSS
-      const { css, ids } = emotionServer.extractCritical(
-        // ... 获取 HTML
-      );
-
       response.statusCode = 200;
       response.setHeader('Content-type', 'text/html');
       stream.pipe(response);
     },
+    // React 19 新增：渐进式样式注入
+    onShellError(error) {
+      console.error(error);
+      response.statusCode = 500;
+      response.send('<!doctype html><p>Loading...</p>');
+    },
   }
 );
+```
+
+**RSC 友好型样式方案（推荐）**：
+
+```tsx
+// ✅ Server Component：使用 Tailwind + CSS 变量
+// components/server/ProductCard.tsx
+export function ProductCard({ product }) {
+  return (
+    <article className="rounded-lg border bg-card p-4 shadow-sm">
+      <h3 className="text-lg font-semibold text-card-foreground">
+        {product.name}
+      </h3>
+      <p className="text-muted-foreground">{product.description}</p>
+    </article>
+  );
+}
+
+// ✅ Client Component：仅在需要交互时使用 CSS-in-JS
+'use client';
+
+import { useState } from 'react';
+import { styled } from '@linaria/react'; // 零运行时方案
+
+const InteractiveButton = styled.button`
+  background: var(--primary);
+  &:hover { background: var(--primary-hover); }
+`;
+
+export function AddToCartButton({ productId }) {
+  const [loading, setLoading] = useState(false);
+  // 交互逻辑...
+  return <InteractiveButton disabled={loading}>加入购物车</InteractiveButton>;
+}
+```
+
+**零运行时 CSS-in-JS 在 RSC 中的优势**：
+
+在 React 19 + RSC 架构下，**零运行时方案**（Linaria、vanilla-extract、Pigment CSS）成为最优解：
+
+- 构建时提取 CSS，Server Component 可安全输出 `<style>` 或 `<link>` 标签
+- 客户端无样式计算开销， hydration 更快
+- 支持 CSS 变量主题切换，无需 JS 介入
+
+```tsx
+// vanilla-extract 在 RSC 中完全兼容
+import { style, createTheme } from '@vanilla-extract/css';
+
+// 这些在服务端组件中安全执行（纯构建时）
+export const [themeClass, vars] = createTheme({
+  color: { brand: '#0ea5e9' }
+});
+
+export const button = style({
+  backgroundColor: vars.color.brand,
+  padding: '10px 20px',
+});
 ```
 
 ---

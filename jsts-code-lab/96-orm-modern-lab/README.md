@@ -8,11 +8,17 @@
 
 ```
 96-orm-modern-lab/
-├── README.md                    # 本文件
-├── drizzle-schema.ts            # Drizzle TypeScript Schema 定义（含 RLS）
-├── drizzle-query-patterns.ts    # Drizzle SQL-like 查询模式大全
-├── prisma-7-edge.ts             # Prisma 7 Edge Runtime 配置示例
-└── turso-connection.ts          # Turso / libSQL 连接与查询示例
+├── README.md                       # 本文件
+├── ARCHITECTURE.md                 # 架构设计文档
+├── THEORY.md                       # 理论基础文档
+├── drizzle-schema.ts               # Drizzle TypeScript Schema 定义（含 RLS）
+├── drizzle-query-patterns.ts       # Drizzle SQL-like 查询模式大全
+├── drizzle-kit-guide.ts            # Drizzle Kit 完整指南（配置、迁移、Studio）
+├── prisma-7-edge.ts                # Prisma 7 Edge Runtime 配置示例
+├── prisma-7-wasm-analysis.ts       # Prisma 7 WASM 引擎深入分析
+├── turso-connection.ts             # Turso / libSQL 连接与查询示例
+├── edge-database-decision-tree.ts  # 边缘数据库决策树代码示例
+└── 96-orm-modern-lab.test.ts       # 模块测试
 ```
 
 ---
@@ -47,7 +53,10 @@ npm install @libsql/client
 | Schema 定义 | `drizzle-schema.ts` | 掌握 Drizzle TypeScript-native schema、relations、RLS 定义 |
 | 查询模式 | `drizzle-query-patterns.ts` | 掌握 select / join / insert / update / delete / subquery / CTE |
 | Edge 配置 | `prisma-7-edge.ts` | 理解 Prisma 7 WASM 引擎在 Edge Runtime 中的配置 |
+| WASM 分析 | `prisma-7-wasm-analysis.ts` | 深入分析 Prisma 7 WASM 引擎架构、体积、性能 |
+| Drizzle Kit | `drizzle-kit-guide.ts` | 掌握 Drizzle Kit 配置、迁移、Studio 完整流程 |
 | 边缘连接 | `turso-connection.ts` | 掌握 Turso / libSQL 的连接、查询、事务 |
+| 选型决策 | `edge-database-decision-tree.ts` | 边缘数据库自动化选型与多平台统一抽象层 |
 
 ---
 
