@@ -21,7 +21,7 @@ status: current
 | **构建时长限制** | 45min (Pro) | 30min | 20min | 30min | 无限制 | 无限制 | 无限制 | 无限制 |
 | **并发限制** | 高 | 高 | 极高 | 高 | 中 | 高 | 中 | 🟢 完全可控 |
 | **自定义域名/HTTPS** | 🟢 原生 | 🟢 原生 | 🟢 原生 | 🟢 原生 | 🟢 原生 | 🟢 原生 | 🟢 原生 | 🟢 需配置 |
-| **免费额度** | 🟢 慷慨 | 🟢 慷慨 | 🟢 非常慷慨 | 🟢  generous | 🟢  generous | 🟡 需信用卡 | 🟡 有限 | 🔵 自托管成本 |
+| **免费额度** | 🟢 慷慨 (Hobby: 无限静态/Serverless) | 🟢  generous (Starter: 100GB) | 🟢 非常慷慨 (Workers: 10万请求/天) | 🟢  generous (构建 1000分钟/月) | 🟢  generous (Web: 免费) | 🟡 需信用卡 ($5 起步) | 🟡 有限 ($5 起步) | 🔵 自托管成本 |
 | **Git 集成** | 🟢 深度 (GitHub/GitLab/Bitbucket) | 🟢 深度 | 🟢 深度 | 🟢 深度 | 🟢 原生 | 🔵 CLI 优先 | 🟢 原生 | 🔵 需 CI/CD |
 | **Rollback** | 🟢 即时 | 🟢 即时 | 🟢 即时 | 🟢 即时 | 🟢 原生 | 🟢 原生 | 🟢 原生 | 🟢 完全可控 |
 | **TypeScript 原生支持度** | 🟢 最佳 (Next.js) | 🟢 良好 | 🟢 良好 | 🟢 良好 | 🟢 良好 | 🟢 良好 | 🟢 良好 | 🟢 完全可控 |
@@ -450,11 +450,11 @@ spec:
 
 | 指标 | Vercel | Netlify | Cloudflare | AWS Amplify | Render | Fly.io | Railway | K8s |
 |------|--------|---------|------------|-------------|--------|--------|---------|-----|
-| **全球边缘节点** | 100+ | 100+ | 300+ | 200+ (CloudFront) | 4 区域 | 30+ 区域 | 2 区域 | 取决于配置 |
+| **全球边缘节点** | 100+ | 100+ | 330+ | 200+ (CloudFront) | 4 区域 | 35+ 区域 | 4 区域 | 取决于配置 |
 | **首字节时间 (TTFB)** | ⚡ <50ms | ⚡ <50ms | ⚡ <20ms | 🚀 <100ms | 🚀 <100ms | 🚀 <50ms | 🚀 <100ms | 🟢 可控 |
 | **冷启动** | ⚡ 0ms (Edge) | ⚡ 0ms (Edge) | ⚡ 0ms | 🐢 100-500ms | 🚀 快 | 🚀 快 | 🚀 快 | 🐢 慢 |
-| **构建速度** | ⚡ 快 | ⚡ 快 | ⚡ 快 | 🐢 较慢 | 🚀 中 | 🚀 中 | ⚡ 快 | 🟢 取决于 CI |
-| **最大函数执行时间** | 5min (Pro) | 10min | 50ms CPU | 15min | 无限制 | 无限制 | 无限制 | 无限制 |
+| **构建速度** | ⚡ 快 (Turborepo 远程缓存) | ⚡ 快 | ⚡ 快 | 🐢 较慢 | 🚀 中 | 🚀 中 | ⚡ 快 | 🟢 取决于 CI |
+| **最大函数执行时间** | 5min (Pro) / 60s (Hobby) | 10min | 50ms CPU / 30s (Workers) | 15min | 无限制 | 无限制 | 无限制 | 无限制 |
 
 ## 功能对比
 
@@ -464,12 +464,30 @@ spec:
 | **Serverless Functions** | ✅ | ✅ | ✅ Workers | ✅ Lambda | ❌ | ❌ | ❌ | ✅ Knative |
 | **边缘计算** | ✅ | ✅ | ✅ 最强 | 🔵 Lambda@Edge | ❌ | ✅ | ❌ | ✅ |
 | **容器部署** | 🔵 有限 | ❌ | ❌ | ❌ | ✅ | ✅ 原生 | ✅ | ✅ 原生 |
-| **托管数据库** | 🔵 第三方 | 🔵 第三方 | ✅ D1/R2 | ✅ DynamoDB | ✅ | ✅ | ✅ | ✅ |
+| **托管数据库** | 🔵 第三方 (Vercel Postgres 已 Sunset) | 🔵 第三方 | ✅ D1/R2 | ✅ DynamoDB | ✅ | ✅ | ✅ | ✅ |
 | **预览部署** | ✅ PR 集成 | ✅ PR 集成 | ✅ | ✅ | ✅ | ✅ | ✅ | 🔵 需 CI |
 | **密码保护/SSO** | ✅ 企业版 | ✅ 企业版 | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ |
-| **分析/监控** | ✅ 内置 | ✅ 内置 | ✅ | ✅ | 🟡 基础 | 🟡 基础 | 🟡 基础 | 🔵 需额外工具 |
+| **分析/监控** | ✅ 内置 (Analytics v2) | ✅ 内置 | ✅ | ✅ | 🟡 基础 | 🟡 基础 | 🟡 基础 | 🔵 需额外工具 |
 | **自定义 Headers/Rewrites** | ✅ `vercel.json` | ✅ `netlify.toml` | ✅ | 🔵 有限 | ❌ | ❌ | ❌ | ✅ Ingress |
-| **WebSocket 支持** | 🔵 有限 | ❌ | 🟡 有限 | ❌ | ✅ | ✅ | ✅ | ✅ |
+| **WebSocket 支持** | 🔵 有限 | ❌ | 🟡 有限 (Durable Objects) | ❌ | ✅ | ✅ | ✅ | ✅ |
+
+## 定价对比（2026-04）
+
+| 平台 | 免费 tier | 入门付费 | 企业级 | 计费模式 |
+|------|----------|---------|--------|---------|
+| **Vercel** | Hobby：无限静态/Serverless Functions (部分限制) | Pro $20/月/座 | Enterprise 定制 | 按座 + 按用量 |
+| **Cloudflare** | Workers 10万请求/天，Pages 无限静态，5GB D1 | Workers Paid $5/月 + 用量 | Enterprise 定制 | 按用量 + 功能包 |
+| **AWS Amplify** | 构建 1000分钟/月，存储 5GB，流量 15GB/月 | 按实际用量 | Enterprise 支持计划 | 按用量 |
+| **Fly.io** | 无免费 tier，需信用卡，$5 起步 | 按 VM 规格 | 批量折扣 | 按 VM + 流量 |
+| **Netlify** | Starter：100GB 带宽，300 构建分钟/月 | Pro $19/月/座 | Enterprise 定制 | 按座 + 按用量 |
+| **Render** | Web Service + PostgreSQL 免费 tier | 按实例规格 | 批量折扣 | 按实例 + 流量 |
+| **Railway** | $5 起步 credits，无纯免费 tier | 按用量 | 批量折扣 | 按资源用量 |
+
+> **定价趋势 2026**：
+> - Vercel 于 2025 年底取消免费 tier 的某些高级功能，Hobby 仍保留基础能力；Pro 涨价至 $20/月
+> - Cloudflare 保持最慷慨的免费额度，Workers 免费 tier 足以支撑中小型项目
+> - Fly.io 和 Railway 均调整为 "$5 起步" 模式，无完全免费选项
+> - AWS Amplify 定价模型向 CloudFront + Lambda 标准用量靠拢，计费更透明
 
 ## 选型建议
 

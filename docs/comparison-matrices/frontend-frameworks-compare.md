@@ -14,7 +14,7 @@ status: current
 
 ## 核心指标对比
 
-| 指标 | React 19 | Vue 3.6 | Svelte 5 | Solid v2 | Angular | Qwik | Astro |
+| 指标 | React 19.x | Vue 3.6 | Svelte 5 | Solid v2 | Angular v19 | Qwik | Astro v6 |
 |------|----------|---------|----------|----------|---------|------|-------|
 | **发布年份** | 2013 | 2014 | 2016 | 2021 | 2010 (AngularJS) / 2016 | 2022 | 2021 |
 | **维护方** | Meta | 社区 (Evan You) | 社区 (Rich Harris) | 社区 (Ryan Carniato) | Google | Builder.io | 社区 (Fred K. Schott) |
@@ -31,7 +31,7 @@ status: current
 
 ## 性能与特性矩阵
 
-| 特性 | React 19 | Vue 3.6 | Svelte 5 | Solid v2 | Angular | Qwik | Astro |
+| 特性 | React 19.x | Vue 3.6 | Svelte 5 | Solid v2 | Angular v19 | Qwik | Astro v6 |
 |------|----------|---------|----------|----------|---------|------|-------|
 | **并发渲染** | ✅ (Fiber + RSC) | ⚠️ (Vapor Mode) | ❌ (不需要) | ❌ (不需要) | ❌ | ❌ (不需要) | ❌ (不需要) |
 | **自动 Memoization** | ✅ (React Compiler 1.0) | ⚠️ (Vapor Mode Beta) | ✅ Runes 编译时自动 | ✅ 信号级自动 | ❌ (不需要) | ✅ 懒加载自动 | ❌ (不需要) |
@@ -98,13 +98,14 @@ flowchart LR
 
 | 框架 / 技术 | 2026 关键更新 |
 |-------------|---------------|
-| **React 19.2** | 2026 年初稳定发布；引入 Activity 组件、`use()` Hook、PPR（Partial Prerendering）、Performance Tracks。React Compiler 1.0 已于 2025 年 10 月达到稳定。 |
-| **Vue 3.6 Vapor** | Vapor Mode 进入 Beta；编译为直接 DOM 操作，基线包体积 <10KB，性能接近 SolidJS。Nuxt 4.0 已正式发布。 |
+| **React 19.x** | 2026 年稳定发布；引入 Activity 组件、`use()` Hook、PPR（Partial Prerendering）、Performance Tracks。React Compiler 1.0 已于 2025 年 10 月达到稳定，成为官方推荐优化方案。 |
+| **Vue 3.6 Vapor** | Vapor Mode 进入 RC；编译为直接 DOM 操作，基线包体积 <10KB，性能接近 SolidJS。Nuxt 4.0 已正式发布。 |
 | **Svelte 5 Runes** | Runes 成为标准语法；`$state` / `$derived` / `$effect` 显式响应式取代隐式 `$:`；在 js-framework-benchmark 中比 React 19 快 39%。 |
 | **Astro v6 Server Islands** | Server Islands 稳定；「静态外壳 + 服务端动态内岛」模式成熟；2026 年 1 月被 Cloudflare 收购。 |
-| **Next.js v16** | 稳定版发布；Turbopack 成为生产环境默认打包工具；PPR 全面可用；React Compiler 默认集成。 |
+| **Next.js v16** | 稳定版发布；Turbopack 成为生产环境默认打包工具；PPR 全面可用；React Compiler 默认集成；支持 React 19.x 全部特性。 |
 | **SolidJS v2** | 全新编译器架构，tree-shaking 更强；SSR 流式渲染 TTFB 更低；SolidStart 细粒度服务端/客户端边界；Solid Native 实验性推进。 |
 | **Qwik Resumability** | 可恢复性架构持续优化；Qwikloader 保持 ~1KB；与 Builder.io CMS 深度集成。 |
+| **Angular v19** | 引入信号式响应式（Signals）作为默认变更检测策略； hydration 增强；独立组件（Standalone Components）完全成熟；构建性能提升 20%。 |
 | **TanStack Start** | v1.16x；通过 `@tanstack/react-start-rsc` 实验性支持 React Server Components (RSC)。 |
 | **Signals 范式** | State of JS 2025 调查显示，47% 的受访者使用基于 Signals 的状态管理方案；alien-signals 成为跨框架通用原语。 |
 | **React 20** | ⚠️ 截至 2026 年 4 月，React 20 **不存在**，请勿轻信谣言。 |
