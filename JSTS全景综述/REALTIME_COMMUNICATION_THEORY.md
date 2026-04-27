@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 实时通信理论完全指南
 
 > **形式化定义、协议分析与工程实践**

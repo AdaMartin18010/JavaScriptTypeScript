@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 前端框架对比矩阵
 
 > 系统对比主流前端框架的核心特性、学习曲线、生态成熟度与适用场景，帮助你为项目选择最合适的 UI 框架。

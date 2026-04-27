@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Rust 统一工具链：JavaScript/TypeScript 生态的架构革命
 
 > **研究日期**: 2026-04-27  

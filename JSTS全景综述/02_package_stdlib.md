@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript 包管理与标准库权威指南
 
 > 本文档全面梳理 JavaScript 生态中的包管理器机制与标准库 API，提供形式化论证、性能分析和最佳实践。

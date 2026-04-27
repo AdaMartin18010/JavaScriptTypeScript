@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Node.js 设计模式指南
 
 > 基于 Node.js + TypeScript 的设计模式实践指南

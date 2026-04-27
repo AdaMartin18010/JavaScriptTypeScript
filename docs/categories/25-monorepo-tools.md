@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Monorepo 工具
 
 > 本文档盘点 JavaScript/TypeScript 生态中主流的 Monorepo 管理工具，覆盖任务编排、构建缓存、依赖管理、发布工作流等核心维度。数据基于 2026 年 4 月工具现状与社区趋势。

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 表单处理库
 
 > 本文档梳理主流前端表单处理库，涵盖 React 和 Vue 生态的高性能表单解决方案

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 前端框架生态库
 
 > 本文档梳理主流前端框架及其生态，数据参考自 GitHub Stars、State of JS 2025 及 JavaScript Rising Stars 2025

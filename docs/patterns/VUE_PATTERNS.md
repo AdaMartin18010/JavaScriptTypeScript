@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Vue 3 + TypeScript 设计模式
 
 本文档涵盖了 Vue 3 开发中最常用的设计模式，所有示例均使用 TypeScript 编写。

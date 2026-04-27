@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # V8 运行时理论深度解析
 
 > 本文档基于 V8 官方博客、技术演讲和公开文档，系统阐述 V8 JavaScript 引擎的核心架构与理论基础。

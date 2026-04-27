@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 可访问性 (A11Y) 与国际化 (I18N) 理论完全指南
 
 > 本文档涵盖 Web 可访问性与国际化的理论基础、规范要求、实现指南、代码示例及检查清单。

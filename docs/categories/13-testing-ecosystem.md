@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 13. 测试框架生态 (Testing Ecosystem)
 
 > **趋势**: Vitest 取代 Jest 成为首选，Playwright 超越 Cypress/Selenium 成为 E2E 测试新标准

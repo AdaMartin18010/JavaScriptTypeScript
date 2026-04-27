@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript/TypeScript 安全模型深度分析
 
 > 本文档系统性地分析 JavaScript/TypeScript 生态系统的安全模型，涵盖 Web 安全基础、常见攻击向量、防御策略及最佳实践。

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript/TypeScript 性能优化理论
 
 > 本文档系统性地介绍 JavaScript 和 TypeScript 性能优化的核心理论、实践策略与量化数据。

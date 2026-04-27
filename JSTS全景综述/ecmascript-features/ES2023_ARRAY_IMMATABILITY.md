@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # ES2023 数组不可变性特性详解
 
 > **ECMAScript 2023 (ES14)** | Stage 4 Features | TC39 Proposal

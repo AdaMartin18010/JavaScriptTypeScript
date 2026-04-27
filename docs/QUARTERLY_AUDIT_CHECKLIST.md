@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 季度内容审计检查清单
 
 > 本文档定义 JavaScript/TypeScript 全景知识库的季度内容审计流程。

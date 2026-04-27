@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript / TypeScript 语言语义模型全面分析
 
 > 本文档基于 ECMA-262 2025、TypeScript 5.8–6.0 规范、HTML Living Standard、Node.js 文档及 PL 学术前沿，建立 JS/TS 的精确概念语义模型。面向研究者与高级开发者，强调规范引用与学术概念的准确性，摒弃不可执行的玩具代码与伪形式化表述。

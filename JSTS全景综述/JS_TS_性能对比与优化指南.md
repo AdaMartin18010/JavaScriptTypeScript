@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript / TypeScript 性能对比与优化指南
 
 > 基于基准测试数据的性能分析与优化建议

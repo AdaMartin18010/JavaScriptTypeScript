@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript/TypeScript 测试模式指南
 
 本文档涵盖了前端开发中常用的10种测试模式，包括概念解释、TypeScript + Jest/Vitest/Playwright 代码示例以及最佳实践。

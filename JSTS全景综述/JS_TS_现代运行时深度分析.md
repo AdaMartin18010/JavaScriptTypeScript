@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JS/TS 现代运行时深度分析
 
 > 面向研究者与高级开发者的实现原理与性能剖析

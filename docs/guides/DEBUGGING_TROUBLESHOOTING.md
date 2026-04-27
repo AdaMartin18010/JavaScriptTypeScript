@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript/TypeScript 调试与故障排查指南
 
 本文档涵盖了浏览器和 Node.js 环境下的高级调试技巧、常见问题排查方法以及专业调试工具的使用。

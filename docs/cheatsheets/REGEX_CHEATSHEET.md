@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript 正则表达式速查表 (Regular Expressions Cheatsheet)
 
 > 💡 本速查表覆盖 JavaScript RegExp 语法、常用模式及 String / RegExp 方法，适用于 ES2024+ (`v` flag)。

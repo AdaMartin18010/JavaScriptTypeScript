@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript / TypeScript 全面技术指南
 
 > 本文档全面梳理 JavaScript/TypeScript 现代版本（ES2025/TypeScript 6.0/Node.js 20–24）的语言特性、程序设计机制、设计模式、并发模式、分布式系统、工作流设计、架构设计、可观测性、CI/CD 以及 AI/ML 相关内容。

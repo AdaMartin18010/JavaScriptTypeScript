@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # TypeScript 7.0 迁移指南
 
 > 代号：Project Corsa / tsgo | Beta 发布时间：2026 年 4 月 21 日 | 稳定版预计：2026 年中（Q2-Q3）

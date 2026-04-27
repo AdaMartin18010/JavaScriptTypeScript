@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 编译器与语言设计深度指南
 
 > 涵盖编译器架构、词法分析、语法分析、AST、语义分析、中间表示、代码优化、垃圾回收、类型系统和DSL设计的全面技术文档

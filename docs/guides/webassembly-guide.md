@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # WebAssembly 完全指南
 
 > 深入理解 WebAssembly (Wasm) 在 JavaScript/TypeScript 生态系统中的定位、集成方式与性能优化策略。

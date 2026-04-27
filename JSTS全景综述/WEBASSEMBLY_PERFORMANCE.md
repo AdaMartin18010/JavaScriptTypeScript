@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # WebAssembly 性能深度解析
 
 > 本文档深入探讨 WebAssembly (Wasm) 的设计原理、性能特征、互操作机制及未来发展方向，为 JavaScript/TypeScript 开发者提供全面的 Wasm 技术指南。

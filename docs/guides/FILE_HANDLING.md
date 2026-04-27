@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript/TypeScript 文件处理完整指南
 
 本文档全面介绍 JavaScript 和 TypeScript 环境中的文件处理技术，涵盖浏览器端和 Node.js 端的各类场景。

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # SSR 元框架对比矩阵
 
 > 对比主流全栈/SSR 元框架（Next.js、Nuxt、SvelteKit、Remix、TanStack Start 等），帮助你在服务端渲染、边缘部署、数据获取策略等维度做出选型决策。

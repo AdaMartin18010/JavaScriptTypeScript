@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript/TypeScript 模块解析语义深度解析
 
 > 本文档深入解析 JavaScript 生态系统中模块解析的各种语义，包括 ESM、CJS、TypeScript 模块策略以及最新的语言特性。

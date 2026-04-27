@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 技术对比矩阵导航
 
 > 最后更新: 2026-04 | 本目录当前维护 15 个技术选型对比矩阵与 1 份导航索引。

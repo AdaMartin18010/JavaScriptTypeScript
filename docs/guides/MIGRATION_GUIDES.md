@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 迁移指南合集
 
 本文档汇总了 JavaScript/TypeScript 生态系统中常见的技术迁移方案，帮助开发团队安全、高效地完成技术栈升级。

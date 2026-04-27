@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # CSS-in-JS 完整指南
 
 > 深入理解现代 React 样式解决方案，从理论基础到生产实践

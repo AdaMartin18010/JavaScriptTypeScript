@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # GraphQL 完全指南
 
 > 基于 TypeScript + Apollo Server/Client 的完整实战指南

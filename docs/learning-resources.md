@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 学习资源汇总
 
 这里汇总了 JavaScript/TypeScript 相关的优质学习资源，涵盖官方文档、在线课程、书籍、视频教程、社区资源等多个维度。

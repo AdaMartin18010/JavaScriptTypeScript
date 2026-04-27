@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 进阶学习路径 (Intermediate Path)
 
 > 适合有 1-2 年 JS/TS 经验开发者，深入架构设计和性能优化

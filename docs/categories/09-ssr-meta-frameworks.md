@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # SSR / 元框架 (Meta Frameworks)
 
 > 基于主流前端框架构建的全栈开发框架，提供服务端渲染(SSR)、静态站点生成(SSG)、API路由等能力。

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript/TypeScript 并发模型深度解析
 
 > 本文档从形式化角度深入剖析 JavaScript/TypeScript 的并发机制，涵盖 Event Loop、Promise、Worker Threads、内存模型等核心概念。

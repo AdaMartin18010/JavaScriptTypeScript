@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript / TypeScript 全景综述 - TypeScript 7.0 原生编译器独立分析
 
 > 基于 2025 年 3 月 11 日微软官方官宣的独立技术分析，聚焦 TypeScript 编译器从 JavaScript 向 Go 语言原生移植的战略意义、技术细节与生态影响。

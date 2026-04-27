@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Awesome JavaScript/TypeScript Ecosystem - 收录评分标准
 
 本文档定义了项目收录 JavaScript/TypeScript 库的评分标准和收录流程。

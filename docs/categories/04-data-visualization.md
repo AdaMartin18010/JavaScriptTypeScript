@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 数据可视化 (Data Visualization)
 
 > 数据可视化是 JavaScript 生态中最成熟、最丰富的领域之一。从底层图形引擎到高层图表库，从2D到3D，从通用到专业领域，都有优秀解决方案。

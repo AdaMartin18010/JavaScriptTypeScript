@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 文档第三轮精修计划
 
 > 目标：建立文档间的交叉引用网络，修正时间线/提案状态的不一致，增强全景索引的完整性。

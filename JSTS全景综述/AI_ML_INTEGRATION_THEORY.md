@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # AI/ML 集成理论全景指南
 
 > 本文档系统性地介绍 AI/ML 在前端/全栈 JavaScript/TypeScript 生态系统中的理论基础与实践应用。

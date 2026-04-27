@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 学术前沿索引（Academic Frontiers Index）
 
 > 本文档索引 JavaScript/TypeScript 领域的最新学术研究，为 `jsts-language-core-system/` 和 `JSTS全景综述/` 提供学术对齐来源。

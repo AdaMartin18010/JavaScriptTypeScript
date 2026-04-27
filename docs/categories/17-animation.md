@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 动画库 (Animation Libraries)
 
 > JavaScript 动画生态丰富多样，从 React 专属动画到通用动画引擎，从滚动动画到 3D 渲染，每个领域都有成熟的解决方案。本文档梳理主流动画库及其适用场景。

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # ES2025 (ES16) 完整特性指南
 
 > 本文档全面涵盖 **ES2025 (ES16) 正式版** 所有新特性的规范定义、形式化语义、使用示例及兼容性信息，同时收录 **Stage 3/4 预览特性**（预计纳入 ES2026）。

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 数据库与 ORM 理论深度解析
 
 > 形式化语义、数学模型与工程实践

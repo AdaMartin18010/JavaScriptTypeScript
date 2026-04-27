@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 高级/架构师学习路径 (Advanced Path)
 
 > 面向资深开发者和架构师，涵盖分布式系统、形式化验证和前沿技术

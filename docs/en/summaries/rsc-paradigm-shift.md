@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # React Server Components: Paradigm Shift Analysis
 
 > Date: 2026-04-21

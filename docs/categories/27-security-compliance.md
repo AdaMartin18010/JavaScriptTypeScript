@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 安全与合规工具
 
 > 本文档盘点 JavaScript/TypeScript 生态中用于依赖安全、代码安全、运行时安全和合规审计的主流工具与库。覆盖 SCA（软件成分分析）、SAST（静态应用安全测试）、运行时防护和许可证合规等维度。

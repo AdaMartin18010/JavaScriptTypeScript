@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 部署与托管平台
 
 > 本文档盘点 JavaScript/TypeScript 生态中最主流的前端/全栈应用部署与托管平台，覆盖 Serverless、边缘计算、容器化与传统 PaaS 方案。每个平台均分析其核心优势、限制、定价模型、与主流 JS 框架的集成度及冷启动表现。

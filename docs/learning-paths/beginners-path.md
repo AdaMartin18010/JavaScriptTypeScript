@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 初学者学习路径 (Beginners Path)
 
 > 适合 JavaScript/TypeScript 初学者的系统化学习路径

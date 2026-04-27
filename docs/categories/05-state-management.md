@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 05 - 状态管理库生态 (State Management)
 
 > 📊 统计：20+ 主流库 | React生态占主导 | 原子化与轻量化为2025趋势 | Recol已于2025年归档

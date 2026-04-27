@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 项目 README 更新建议与交叉引用指南
 
 > 本文档提供将 JSTS 全景综述新文档集成到项目根目录 README.md 的具体建议

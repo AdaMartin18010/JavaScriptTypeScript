@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # ES2020 (ES11) 特性完整语义分析
 
 > 本文档深入解析 ES2020 引入的 8 个核心特性，包含完整的 ECMA-262 规范引用、形式化定义、使用示例与常见陷阱。

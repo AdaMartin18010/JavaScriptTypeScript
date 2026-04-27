@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # AI/ML 在 JavaScript/TypeScript 生态中的全面应用指南
 
 > 本文档系统性地梳理了AI/ML技术在JavaScript/TypeScript生态中的应用，涵盖从基础ML库到LLM集成、RAG架构、Agent模式以及MLOps的完整技术栈。

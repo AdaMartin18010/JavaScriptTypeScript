@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # ES2022 Class Fields & Private Methods 语义详解
 
 > 本文档深入解析 ES2022 中类私有字段、私有方法、静态块等特性的语义模型，包含 ECMA-262 规范引用与执行时序分析。

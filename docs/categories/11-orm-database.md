@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # ORM 与数据库库
 
 > 本文档梳理 TypeScript/JavaScript 生态中的 ORM、查询构建器和数据库工具，数据参考自 GitHub Stars 及官方文档（2026年4月）

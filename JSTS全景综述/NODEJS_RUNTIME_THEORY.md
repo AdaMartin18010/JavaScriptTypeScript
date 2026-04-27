@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Node.js 运行时理论深度解析
 
 > 形式化定义、架构分析与性能优化

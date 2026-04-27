@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript / TypeScript 学习路径与技能图谱
 
 > 从初学者到专家的学习路径，包含技能图谱和推荐资源

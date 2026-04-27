@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 国际权威 JS/TS 生态资源报告
 
 > 更新时间：2024-2025年度综合报告

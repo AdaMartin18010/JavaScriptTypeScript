@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # AI Agent Architecture Patterns: A Comprehensive Research Review
 
 > **AI Agent 架构模式：生产级智能体系统的设计范式综述**

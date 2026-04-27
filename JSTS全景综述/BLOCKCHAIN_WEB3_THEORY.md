@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 区块链与 Web3 理论基础
 
 > 本文档系统性地介绍区块链和 Web3 的核心理论，包含形式化定义、数学推导和代码实现。

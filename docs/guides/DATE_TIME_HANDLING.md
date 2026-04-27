@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript/TypeScript 日期时间处理完全指南
 
 > 涵盖原生 Date API、Temporal 提案、主流日期库对比、时区处理、国际化等完整知识体系

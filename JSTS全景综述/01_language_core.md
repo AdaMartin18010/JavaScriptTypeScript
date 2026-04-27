@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript/TypeScript 语言核心特性全览
 
 > 版本范围：ES2020–ES2025 正式版 (ES11–ES16) + ES2026 Stage 4 前瞻 + TypeScript 5.8–6.0（含 7.0 前瞻）

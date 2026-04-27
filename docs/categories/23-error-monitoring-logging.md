@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 错误监控与日志工具
 
 > 本文档盘点 JavaScript/TypeScript 生态中用于前端错误监控、后端日志记录、全链路可观测性及 AI 应用可观测性的主流工具与库。数据基于 2026 年 4 月 GitHub Stars 与社区活跃度。

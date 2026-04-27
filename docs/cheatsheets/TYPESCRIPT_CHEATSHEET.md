@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # TypeScript 速查表
 
 > 一页纸打印版 | 涵盖常用语法、类型系统、泛型、工具类型等核心知识点

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 函数式编程理论 (Functional Programming Theory)
 
 > 本文档深入探讨 JavaScript/TypeScript 中的函数式编程理论，涵盖从数学基础到实际应用的全方位内容。

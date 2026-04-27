@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # TanStack Start + Cloudflare Workers 部署完全指南
 
 > 本指南基于 Cloudflare 官方 2026-04 文档编写，涵盖从项目初始化到生产部署的完整流程。基准版本：`@tanstack/react-start@1.154.0`

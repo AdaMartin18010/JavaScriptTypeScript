@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Gradual Typing 理论深度解析
 
 > 本文档系统梳理 Gradual Typing 的核心理论，从 Siek & Taha 的经典工作到最新的 Guarded Domain Theory，并结合 TypeScript 等实际系统的实现进行分析。

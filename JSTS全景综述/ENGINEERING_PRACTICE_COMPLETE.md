@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript/TypeScript 工程实践完全指南
 
 > 涵盖现代前端工程化的十大核心领域，提供系统化的最佳实践、工具推荐与检查清单

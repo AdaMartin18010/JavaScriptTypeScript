@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Awesome-JavaScript 深度分析报告
 
 > 研究对象: [sorrycc/awesome-javascript](https://github.com/sorrycc/awesome-javascript) (33k+ Stars)

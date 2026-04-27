@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript / TypeScript 学术对齐报告（2025）
 
 > 本报告系统梳理 2024-2025 年编程语言（PL）领域与 JavaScript/TypeScript 相关的学术前沿进展，建立理论研究与工程实践之间的桥梁。

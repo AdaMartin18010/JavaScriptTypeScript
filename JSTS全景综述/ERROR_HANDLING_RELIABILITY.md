@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 错误处理与系统可靠性：形式化方法与实践
 
 > **关键词**: 异常处理、Result/Option 类型、错误边界、重试策略、断路器、超时取消、结构化日志、混沌工程、容错设计、系统可靠性度量

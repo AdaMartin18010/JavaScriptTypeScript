@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # AI 辅助编码工作流指南
 
 > 本指南系统介绍如何在 JavaScript/TypeScript 项目中高效、安全地使用 AI 编码工具，涵盖工具选择、团队工作流、质量控制和合规安全。

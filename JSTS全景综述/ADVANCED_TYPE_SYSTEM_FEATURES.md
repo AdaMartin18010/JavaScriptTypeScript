@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # TypeScript 高级类型系统特性：形式化语义与实现
 
 ## 目录

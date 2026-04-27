@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Modern JS/TS Runtime Deep Dive: Node.js vs Deno 2 vs Bun 1.3
 
 > Date: 2026-04-21

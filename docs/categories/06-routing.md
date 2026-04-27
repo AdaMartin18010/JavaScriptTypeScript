@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 06 - 路由库生态 (Routing Libraries)
 
 > 📊 统计：核心库 5+ | 趋势：类型安全路由 + 文件系统路由

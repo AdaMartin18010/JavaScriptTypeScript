@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 国际化基础指南
 
 > **目标读者**：希望为项目添加多语言支持的开发者

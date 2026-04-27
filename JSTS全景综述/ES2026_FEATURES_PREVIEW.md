@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # ES2026 新特性预览：TC39 Stage 3/4 提案完整分析
 
 > 文档版本: 1.0.0

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 网络编程完全指南
 
 本文档涵盖 JavaScript/TypeScript 网络编程的各个方面，从基础的 HTTP 请求到高级的实时通信协议。

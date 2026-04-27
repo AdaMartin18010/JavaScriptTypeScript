@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript → TypeScript 语法/语义映射全景指南
 
 > **版本**: 2.0

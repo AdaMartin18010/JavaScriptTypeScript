@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # CI/CD 持续集成与持续部署完全指南
 
 > 本文档全面梳理JavaScript/TypeScript项目的CI/CD工作流，涵盖核心概念、工具链、设计模式、部署策略及高级主题。

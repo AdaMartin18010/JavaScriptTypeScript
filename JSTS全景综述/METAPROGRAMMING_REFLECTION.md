@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript/TypeScript 元编程与反射深度解析
 
 > 本文档深入探讨 JavaScript 和 TypeScript 生态系统中的元编程技术

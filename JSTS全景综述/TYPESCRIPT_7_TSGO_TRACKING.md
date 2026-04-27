@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # TypeScript 7.0 (tsgo) 跟踪报告
 
 > 本报告持续跟踪 TypeScript 7.0（代号 tsgo，Go 重写编译器）的演进状态，涵盖发布时间线、与 legacy tsc 的功能差异、迁移指南及已知问题，为项目的技术选型与升级决策提供参考。

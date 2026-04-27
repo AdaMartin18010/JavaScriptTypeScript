@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JS/TS 标准化生态与运行时互操作：2025–2026 瞭望
 
 > 短篇瞭望文档，面向研究者与高级开发者，快速建立对 2025–2026 年 JavaScript 标准化生态的概念框架。本文聚焦 WinterTC（Ecma TC55）的成立背景、Minimum Common Web API 的技术细节，以及开发者如何在实际工程中利用这些标准提升代码的可移植性。

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # npm 下载量统计集成指南
 
 本文档介绍如何在项目中集成 npm 下载量统计功能，以及如何使用相关脚本。

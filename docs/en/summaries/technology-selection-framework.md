@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Technology Selection Methodology and Evaluation Framework
 
 > Date: 2026-04-21

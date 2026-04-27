@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # UI 组件库
 
 > 用于构建用户界面的组件库和UI框架

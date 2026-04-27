@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # ES2021 特性深度解析：Promise.any、逻辑赋值与内存管理
 
 ## 目录

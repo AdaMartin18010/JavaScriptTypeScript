@@ -50,19 +50,19 @@ jobs:
         working-directory: jsts-code-lab
         run: pnpm install --frozen-lockfile
 
-      - name: Run type check
-        working-directory: jsts-code-lab
-        run: pnpm type-check
-        continue-on-error: true # TODO: 历史遗留类型错误待修复（见 #issue）
-
-      - name: Run linter
+      - name: Run linter (oxlint/biome)
         working-directory: jsts-code-lab
         run: pnpm lint
         continue-on-error: true # 教学示例代码包含故意展示的边缘模式，触发大量严格规则警告
 
-      - name: Run tests
+      - name: Run tests (vitest)
         working-directory: jsts-code-lab
         run: pnpm vitest --coverage --shard=${{ matrix.shard }}/2
+
+      - name: Type check (tsc --noEmit)
+        working-directory: jsts-code-lab
+        run: pnpm type-check
+        continue-on-error: true # TODO: 历史遗留类型错误待修复（见 #issue）
 
       - name: Upload coverage
         if: matrix.node-version == '22.x' && matrix.shard == 1

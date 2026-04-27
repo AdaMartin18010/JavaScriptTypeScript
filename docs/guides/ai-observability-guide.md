@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # AI 可观测性（AI Observability）完全指南
 
 > 深度解析生产环境 LLM 应用的可观测性体系构建：从 OpenTelemetry LLM 语义约定到多租户成本归因，覆盖追踪、监控、告警与 A/B 测试全链路最佳实践。
@@ -439,6 +445,151 @@ await logger.computeSummary({
 - **深度使用 LangChain / LangGraph**：选择 LangSmith
 - **重视评估体系与实验迭代**：选择 Braintrust
 - **长期战略**：基于 OpenTelemetry 构建埋点层，保持平台切换灵活性
+
+### 3.5 Helicone / Weave / Traceloop 专项对比
+
+除上述三大核心平台外，生产环境中还经常接入以下专项工具，分别覆盖 Gateway 代理、实验追踪和 OpenTelemetry 原生集成场景。
+
+| 维度 | **Helicone** | **Weave** | **Traceloop** |
+|------|-------------|-----------|---------------|
+| **定位** | LLM Gateway + 可观测性 | W&B 实验追踪延伸至 LLM | OpenTelemetry 原生 LLM Instrumentation |
+| **开源协议** | ⚠️ 部分开源（Gateway 开源） | ⚠️ 部分开源 | ✅ Apache 2.0 |
+| **核心能力** | 请求代理、缓存、成本追踪、实验管理、速率限制 | 实验追踪、模型评估、数据集版本、Prompt 迭代 | 自动 Instrumentation、分布式追踪、语义约定对齐 |
+| **部署方式** | 云托管 / 自建 Gateway | 云托管（W&B 平台） | 自托管 / 云 |
+| **集成成本** | 低（修改 baseURL 即可） | 中（需 SDK 埋点） | 低（自动注入，零代码改动） |
+| **缓存能力** | ✅ Prompt 级缓存，命中即返回 | ❌ | ❌ |
+| **成本追踪** | ✅ 实时成本仪表盘 + 预算告警 | ⚠️ 实验级成本分析 | ✅ 通过 OTel 属性扩展 |
+| **Prompt 管理** | ✅ 在线版本化与 A/B 测试 | ✅ 实验级 Prompt 版本 | ❌ |
+| **最佳场景** | 需要 Gateway 层代理、缓存、速率限制 | 模型微调与实验迭代闭环 | 已有 OTel 基础设施、追求零侵入 |
+
+#### Helicone：Gateway 层可观测性
+
+Helicone 的独特定位在于**拦截层（Intercept Layer）**：通过将 LLM API 的 baseURL 指向 Helicone Gateway，无需修改业务代码即可获得完整的请求日志、缓存和成本分析。
+
+```typescript
+// 集成方式：仅修改 baseURL 和添加 headers
+import OpenAI from 'openai'
+
+const openai = new OpenAI({
+  baseURL: 'https://oai.hconeai.com/v1', // Helicone Gateway
+  defaultHeaders: {
+    'Helicone-Auth': `Bearer ${process.env.HELICONE_API_KEY}`,
+    'Helicone-Property-SessionId': 'sess_abc',
+    'Helicone-Property-UserId': 'user_123',
+  }
+})
+
+// 所有请求自动被追踪，包括缓存命中、成本、延迟
+const response = await openai.chat.completions.create({
+  model: 'gpt-4o',
+  messages: [{ role: 'user', content: 'Hello' }]
+})
+```
+
+**Helicone 的 Gateway 特性：**
+
+| 特性 | 说明 |
+|------|------|
+| **Prompt 缓存** | 相同 Prompt 命中缓存时直接返回，降低 50-90% API 成本 |
+| **速率限制** | 按 Key / User / Organization 多级限流，防止突发流量击穿预算 |
+| **请求重试** | 自动降级至备用模型（如 GPT-4o → GPT-4o-mini） |
+| **实验管理** | 通过 Header 标记实验分组，自动对比不同 Prompt/模型的效果 |
+
+#### Weave：实验追踪与模型迭代
+
+Weave 由 Weights & Biases（W&B）推出，将传统 ML 实验管理的成熟能力迁移到 LLM 应用开发中，特别适合**模型微调 + Prompt 工程**的闭环迭代。
+
+```typescript
+import { weave } from 'weave'
+
+// 初始化 Weave 项目
+const client = await weave.init('my-llm-app')
+
+// 追踪任意函数（自动捕获输入输出、延迟、异常）
+const tracedGenerate = client.traceFunction(
+  async (prompt: string) => {
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content: prompt }]
+    })
+    return response.choices[0].message.content
+  },
+  { name: 'generate-text' }
+)
+
+// 调用即追踪
+const result = await tracedGenerate('Explain quantum computing')
+
+// 数据集版本管理与评估流水线
+await client.publishDataset({
+  name: 'qa-eval-v2',
+  rows: evalData
+})
+
+await client.runEvaluation({
+  model: tracedGenerate,
+  dataset: 'qa-eval-v2',
+  scorers: [relevanceScorer, factualAccuracyScorer]
+})
+```
+
+**Weave 的核心优势：**
+- 📊 **实验对比**：同一数据集在不同模型/Prompt 下的表现并排对比
+- 🔄 **数据集版本化**：评估数据集像代码一样版本管理，支持回滚
+- 🧪 **评估流水线**：内置多种 scorer（相关性、事实性、安全性），支持自定义
+- 🔗 **W&B 生态打通**：微调训练 run 与线上推理 trace 在同一平台关联
+
+#### Traceloop：OpenTelemetry 原生集成
+
+Traceloop 是**最符合 OpenTelemetry 标准**的 LLM 可观测性方案，适合已有 APM 基础设施（Datadog、New Relic、Grafana）的团队。
+
+```typescript
+// 零代码改动：仅初始化即自动追踪所有 LLM 调用
+import { Traceloop } from '@traceloop/node-server-sdk'
+
+Traceloop.init({
+  appName: 'my-ai-service',
+  apiKey: process.env.TRACELOOP_API_KEY,
+  // 支持导出到任意 OTel-compatible backend
+  exporter: {
+    url: 'https://otel-collector.internal.com/v1/traces'
+  }
+})
+
+// 自动 Instrument 支持的库：
+// - OpenAI, Anthropic, Cohere, Azure OpenAI
+// - LangChain, LlamaIndex, Vercel AI SDK
+// - Pinecone, Chroma, pgvector 等向量数据库
+
+// 业务代码无需任何改动
+import { openai } from '@ai-sdk/openai'
+import { generateText } from 'ai'
+
+const result = await generateText({
+  model: openai('gpt-4o'),
+  prompt: 'Explain TypeScript generics'
+})
+// 上述调用自动生成符合 LLM Semantic Conventions 的 Trace/Span
+```
+
+**Traceloop 的自动追踪覆盖范围：**
+
+| 层级 | 自动 Instrument | 语义约定 |
+|------|----------------|---------|
+| **LLM 调用** | OpenAI, Anthropic, Azure, Bedrock | `gen_ai.*` |
+| **框架层** | LangChain, LlamaIndex, AI SDK | `traceloop.framework.*` |
+| **向量检索** | Pinecone, Chroma, pgvector | `db.vector.*` |
+| **工具调用** | 自定义函数（通过装饰器） | `gen_ai.tool.*` |
+
+**三工具选型速查：**
+
+| 场景 | 推荐工具 |
+|------|---------|
+| 需要 Gateway 层代理、缓存、限流 | **Helicone** |
+| 正在进行模型微调，需要实验闭环 | **Weave** |
+| 已有 Datadog/Grafana，追求零侵入 | **Traceloop** |
+| 需要自托管、数据主权 | **Langfuse**（3.2 节） |
+| 深度 LangChain 生态 | **LangSmith**（3.3 节） |
 
 ---
 

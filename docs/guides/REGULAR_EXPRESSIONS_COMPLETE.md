@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript 正则表达式完全指南
 
 > 从入门到精通的正则表达式学习手册

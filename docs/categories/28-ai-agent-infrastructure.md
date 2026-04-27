@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # AI Agent 基础设施（AI Agent Infrastructure）
 
 > 本文档系统梳理 2025-2026 年 JavaScript/TypeScript 生态中 AI Agent 基础设施的关键协议、框架与工具。覆盖 MCP（Model Context Protocol）、A2A（Agent-to-Agent）、主流 Agent 框架、可观测性（Observability）与安全治理等维度。数据截至 2026 年 4 月，参考 npm 下载趋势、GitHub Stars 及官方文档。

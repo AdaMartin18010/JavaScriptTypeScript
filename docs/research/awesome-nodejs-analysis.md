@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Awesome-NodeJS 深度分析报告
 
 > 研究对象: [sindresorhus/awesome-nodejs](https://github.com/sindresorhus/awesome-nodejs)

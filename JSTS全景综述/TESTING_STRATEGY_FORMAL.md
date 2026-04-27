@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 测试策略形式化理论综述
 
 > 本文档从形式化角度系统阐述现代软件测试的理论基础、数学模型与实践方法。

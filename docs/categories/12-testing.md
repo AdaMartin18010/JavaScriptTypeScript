@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 测试框架
 
 JavaScript/TypeScript 生态系统的测试工具链完整解决方案，从单元测试到端到端测试，从 API 模拟到覆盖率分析。

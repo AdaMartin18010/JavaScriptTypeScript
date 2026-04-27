@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # MCP (Model Context Protocol) 完全指南
 
 > 深度解析 Model Context Protocol 协议规范、Server/Client 开发实践、Transport 选型与安全最佳实践。

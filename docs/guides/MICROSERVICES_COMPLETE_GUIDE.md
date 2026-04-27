@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 微服务架构完整指南
 
 > 基于 TypeScript + NestJS/Express 的微服务实战指南

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript / TypeScript API 设计规范
 
 > 涵盖函数设计、类设计、模块设计、REST API设计的完整规范

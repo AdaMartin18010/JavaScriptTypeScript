@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # WebAssembly 生态
 
 WebAssembly (WASM) 是一种为Web设计的二进制指令格式，允许在浏览器中以接近原生的速度运行代码。现在已扩展到服务器端、边缘计算和嵌入式系统。

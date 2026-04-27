@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # ARCHITECTURE.md 统一模板
 
 本文档模板用于规范所有 ARCHITECTURE.md 文件的格式，确保架构文档的一致性和专业性。

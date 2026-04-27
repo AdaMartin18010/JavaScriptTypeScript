@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # ES2020 BigInt 深度解析
 
 > **规范来源**: ECMA-262 2020 (11th Edition) - §6.1.6.2 The BigInt Type

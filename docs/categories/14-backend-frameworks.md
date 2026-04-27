@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 后端框架生态 (Backend Frameworks)
 
 > 本文档梳理 Node.js 及现代 JavaScript 运行时后端框架，数据参考自 GitHub Stars、JavaScript Rising Stars 2024/2025 及 npm 下载趋势

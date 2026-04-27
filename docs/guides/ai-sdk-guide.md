@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # AI SDK 与 Mastra 完整开发指南
 
 > 全面覆盖 Vercel AI SDK、AI SDK RSC 与 Mastra 三大 AI 开发框架的核心 API、最佳实践与选型策略，帮助开发者快速构建生产级 AI 应用。

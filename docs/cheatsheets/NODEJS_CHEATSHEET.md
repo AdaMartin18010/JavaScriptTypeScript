@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Node.js 20+ / 22+ / 24+ 速查表 (Node.js Cheatsheet)
 
 > 💡 本速查表覆盖 Node.js 20 LTS、22、24 的核心模块、ES Modules、内置测试运行器、Watch 模式及 TypeScript 支持等新特性。

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # DevOps 部署理论全景综述
 
 > 本文档系统性地阐述 DevOps 文化、持续集成/部署、基础设施即代码、容器编排、可观测性及混沌工程等核心理论。

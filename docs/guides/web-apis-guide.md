@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Web APIs 完全指南
 
 > 系统梳理浏览器环境下 JavaScript/TypeScript 可用的 Web APIs，覆盖 DOM 操作、网络通信、存储、多线程、硬件访问与性能观测等核心能力。本文档面向需要在生产环境中正确、高效、安全地使用浏览器原生 API 的开发者。

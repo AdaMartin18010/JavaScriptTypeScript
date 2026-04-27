@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # WinterTC / TC55 运行时互操作指南
 
 > WinterTC（原 WinterCG）→ Ecma TC55 | Minimum Common Web API GA：2025 年 12 月

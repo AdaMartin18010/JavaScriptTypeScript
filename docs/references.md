@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Awesome 项目参考文档
 
 > 本文档收集了前端领域权威的 Awesome 项目，作为 JavaScript/TypeScript 资源整理的参考标准。

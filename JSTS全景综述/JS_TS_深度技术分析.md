@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript / TypeScript 深度技术分析
 
 > 本文档是 `JSTS全景综述` 系列的执行摘要（Executive Summary）与 2026 最佳实践出口。

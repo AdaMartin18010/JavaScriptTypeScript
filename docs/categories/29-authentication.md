@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 认证与授权（Authentication & Authorization）
 
 > 本文档梳理 2025-2026 年 JavaScript/TypeScript 生态中主流的认证（Authentication）与授权（Authorization）方案，覆盖自托管、平台集成和托管服务三大模式。

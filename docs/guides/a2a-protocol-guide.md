@@ -2,6 +2,10 @@
 title: A2A (Agent-to-Agent) Protocol 完全指南
 description: 深度解析 Google 主导的 A2A 协议规范、Agent Cards 自动发现机制、与 MCP 的互补关系，以及多智能体编排实践。
 date: 2026-04-27
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
 ---
 
 # A2A (Agent-to-Agent) Protocol 完全指南

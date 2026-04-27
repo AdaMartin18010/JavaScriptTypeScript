@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 移动端开发库分类
 
 > 跨平台移动应用开发框架与工具汇总

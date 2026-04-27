@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 微前端方案
 
 微前端（Micro Frontends）是一种将大型前端应用拆分为独立部署、松耦合子应用的架构模式，类似于微服务在后端的实现方式。

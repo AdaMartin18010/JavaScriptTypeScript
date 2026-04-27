@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # TanStack Start 全栈框架
 
 > 本文档梳理 TanStack Start 框架核心概念、与主流全栈框架的对比矩阵，以及适用场景决策树。基准版本：`@tanstack/react-start@1.154.0`

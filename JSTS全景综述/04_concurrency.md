@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript 执行模型与并发语义深度解析
 
 > 本文档面向研究者与高级开发者，系统梳理 JavaScript 并发机制的三层边界：V8 引擎实现、宿主环境调度与 ECMAScript 语言规范。所有核心论断均引用自 HTML Living Standard（2025）、ECMA-262（2025，即 ES16）及 V8 引擎源码与文档。

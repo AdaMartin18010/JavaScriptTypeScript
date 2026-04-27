@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 ﻿# Diagrams 索引
 
 > 本文档为 `docs/diagrams/` 目录下所有 Mermaid 图表的导航索引。

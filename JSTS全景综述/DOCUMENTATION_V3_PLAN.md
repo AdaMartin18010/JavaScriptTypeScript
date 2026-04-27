@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JS/TS 全景综述 v3 增强计划
 
 > 目标：全面对齐 2025–2026 年国际最新权威内容，将文档深度与广度推进至前沿水平。

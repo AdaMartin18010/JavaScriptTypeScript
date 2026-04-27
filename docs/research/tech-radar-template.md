@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 技术雷达模板 (Tech Radar Template)
 
 > 采用 [ThoughtWorks Tech Radar](https://www.thoughtworks.com/radar) 格式

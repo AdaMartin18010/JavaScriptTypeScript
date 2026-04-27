@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 软件架构模式理论全景
 
 > 本文档系统梳理现代软件架构的核心模式，从形式化定义到实践应用，为架构设计提供理论支撑。

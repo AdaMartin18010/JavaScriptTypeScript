@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Monorepo 架构设计与边界划分
 
 > **目标读者**：技术负责人、架构师、负责代码库治理的工程师

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript / TypeScript 学术对齐报告（2026）
 
 > 本报告系统梳理 2025-2026 年编程语言（PL）领域与 JavaScript/TypeScript 相关的学术前沿进展，建立理论研究与工程实践之间的桥梁，重点关注 TypeScript 7.0（tsgo）、ES2025/ES2026 新特性、AI 与类型系统的交叉，以及 WebAssembly 理论等新兴方向。

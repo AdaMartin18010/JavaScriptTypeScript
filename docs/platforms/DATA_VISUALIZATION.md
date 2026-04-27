@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 数据可视化完整指南
 
 > 本文档涵盖从理论基础到高级实践的完整数据可视化知识体系，涵盖 D3.js、Chart.js、地图可视化、3D 可视化等多个技术栈。

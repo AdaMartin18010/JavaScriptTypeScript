@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # THEORY.md 统一模板
 
 本文档模板用于规范所有 THEORY.md 文件的格式，确保文档质量的一致性和可维护性。

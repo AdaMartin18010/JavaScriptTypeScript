@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 数据验证库生态
 
 > 本文档梳理主流 JavaScript/TypeScript 数据验证库，数据参考自 GitHub Stars、npm 下载量及社区活跃度

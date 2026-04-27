@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # LLM 安全与 AI 安全指南
 
 > 本文档面向构建 AI 驱动应用的 JavaScript / TypeScript 开发者，系统梳理大型语言模型（LLM）应用面临的独特安全威胁、防御策略与架构最佳实践。内容涵盖 OWASP LLM Top 10 核心风险，并提供可直接落地的工程化方案。

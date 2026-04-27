@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # React Server Components 范式转变分析
 
 > 分析日期: 2026-04-21

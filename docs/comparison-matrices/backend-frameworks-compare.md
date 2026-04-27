@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 后端框架对比矩阵
 
 > 系统对比 Node.js 主流后端框架（Express、Fastify、NestJS、Koa、Hono、Elysia）的性能、架构模式、TypeScript 支持与适用场景。

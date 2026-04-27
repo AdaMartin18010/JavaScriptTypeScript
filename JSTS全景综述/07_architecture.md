@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 现代JavaScript/TypeScript架构设计模型全面梳理
 
 > 本文档系统梳理当前最合适的软件架构设计模型，涵盖经典架构风格、前端架构演进、现代全栈架构及架构决策方法论。

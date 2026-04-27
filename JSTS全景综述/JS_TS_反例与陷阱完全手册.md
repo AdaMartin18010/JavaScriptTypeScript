@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript / TypeScript 反例与陷阱完全手册
 
 > 收集所有常见错误、反模式和陷阱，附带修复方案

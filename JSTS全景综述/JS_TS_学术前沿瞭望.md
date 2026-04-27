@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JavaScript / TypeScript 学术前沿瞭望（2025）
 
 > 短篇瞭望：从 POPL、PLDI 与 TC39 的最新进展中，提取对 JS/TS 研究者与高级开发者最具长期价值的核心思想与工程启示。

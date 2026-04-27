@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # Edge Databases（边缘数据库）
 
 > 本文档系统梳理 SQLite at the Edge 这一新兴生产级数据库类别，涵盖 Turso、Cloudflare D1、SQLite Cloud 及 Neon Serverless 等主流方案。数据参考自官方文档及 GitHub Stars（2026年4月）。

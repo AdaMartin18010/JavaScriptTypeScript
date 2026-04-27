@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JS/TS 全景综述 v3 增强计划（已归档）
 
 > **归档状态**：本计划中的任务已在 v4.0.0 发布周期内全部完成或已演进为 v4.x 的持续跟踪项。

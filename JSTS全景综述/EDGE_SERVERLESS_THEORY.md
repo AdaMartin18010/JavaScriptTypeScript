@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 边缘 Serverless 计算理论与实践
 
 > 本文档深入探讨边缘计算与 Serverless 架构的核心理论、技术实现和最佳实践。

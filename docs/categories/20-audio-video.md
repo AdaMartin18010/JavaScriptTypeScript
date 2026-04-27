@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 音频/视频处理
 
 浏览器端和服务器端的音视频处理库，包括播放、流媒体、实时通信和媒体处理工具。

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # React 设计模式指南
 
 本文档涵盖了 React 开发中最常用的 10 种设计模式，使用 TypeScript 编写代码示例。

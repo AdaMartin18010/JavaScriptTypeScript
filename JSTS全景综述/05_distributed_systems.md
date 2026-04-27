@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 分布式系统设计模型全面梳理
 
 > 基于JavaScript/TypeScript生态的分布式系统架构指南

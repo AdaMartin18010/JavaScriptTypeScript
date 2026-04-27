@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # React 19+ 速查表 (React 19+ Cheatsheet)
 
 > 💡 本速查表针对 React 19+ / React Compiler 时代编写，覆盖 Hooks、Server/Client Components、Suspense 及新特性。

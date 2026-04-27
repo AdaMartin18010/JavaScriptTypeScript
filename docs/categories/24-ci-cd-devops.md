@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # CI/CD 与 DevOps 工具
 
 > 本文档盘点 JavaScript/TypeScript 生态中主流的持续集成（CI）、持续部署（CD）与 DevOps 工具。覆盖 SaaS 托管服务与自托管方案，分析各工具与 JS/TS 项目的集成度、配置范式与适用场景。

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # 项目制认证体系 (Project-Based Certification)
 
 > 将学习路径从「阅读列表」升级为「项目驱动认证」，以可交付成果验证真实能力

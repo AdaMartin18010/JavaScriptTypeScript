@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # JS/TS 语言深度分析文档改进路线图 (v4)
 
 > 目标：将项目从"知识示例库"升级为"面向研究者与高级开发者的 JS/TS 语言深度分析项目"。

@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 ﻿# 数据结构与算法理论全景综述
 
 > 本文档系统梳理计算机科学核心数据结构与算法理论，结合 JavaScript/TypeScript 实现与形式化分析。

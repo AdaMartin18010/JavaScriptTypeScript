@@ -1,3 +1,9 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
 # React Server Components (RSC) 与 Server Actions 安全指南
 
 > 本文档通过**假设性演练场景（Hypothetical Scenario）**分析 React Server Components 的潜在安全风险，并提供 RSC / Server Actions 的安全最佳实践。以下内容中的攻击案例为**教学演练用途的模拟案例分析**，并非真实 CVE 事件。
