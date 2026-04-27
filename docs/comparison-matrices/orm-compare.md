@@ -470,6 +470,18 @@ npm install sequelize pg
 | **Turso** | 35+ 全球区域；500 个免费数据库；Embedded Replicas 实现本地速度读取 | 多租户 SaaS、边缘优先架构、IoT 数据收集 |
 | **Cloudflare D1** | 2026 年 GA（General Availability）；5GB 免费 tier；与 Workers 生态深度整合 | Cloudflare 生态内的全栈应用、轻量级 CMS |
 
+### 配套 Schema 验证生态
+
+ORM 通常需要与 Schema 验证库配合使用，以下是 2026 年主流验证库与 ORM 的集成状态：
+
+| 验证库 | 包体积 | 特点 | ORM 集成 |
+|--------|--------|------|----------|
+| **Zod** | ~12KB | 类型推导完美，生态最广 | Prisma/Drizzle 均原生支持 |
+| **Valibot** | **<1KB** tree-shaken | Zod 轻量替代，模块化设计 | Drizzle 生态首选，Edge 友好 |
+| **ArkType** | ~15KB | 1ms 冷启动，类型语法定义 Schema | 新兴，与 Drizzle 配合良好 |
+
+> **Valibot** 作为 Zod 的轻量替代，核心仅 <1KB（tree-shaken 后），采用模块化 API（每个验证器独立导入），与 Drizzle ORM 的轻量哲学高度契合，是边缘计算和 Serverless 场景下 Schema 验证的首选。
+
 ### 边缘数据库选型建议（2026）
 
 对于新项目，推荐以下决策路径：

@@ -91,6 +91,35 @@ const memoizedValue = useMemo(() => compute(a, b), [a, b]);
 // 开发者无需编写 useMemo/useCallback
 ```
 
+##### 与手动 `useMemo` 的共存策略
+
+React Compiler 1.0 稳定版采用**「编译器优先，手动兜底」**的混合策略：
+
+| 场景 | 策略 | 说明 |
+|------|------|------|
+| 编译器可安全分析 | 自动 memoization | 编译器自动推导依赖并插入等效缓存逻辑 |
+| 编译器无法分析（动态代码、eval）| 保留手动 `useMemo` | 编译器跳过，依赖开发者手动优化 |
+| 编译器报告错误 | 降级处理 | 该组件不参与编译，回退到传统渲染模式 |
+| 渐进迁移 | `"use memo"` 指令 | 在组件顶部添加指令，显式要求编译器处理 |
+
+```jsx
+// 显式启用 Compiler 优化（可选，默认自动启用）
+"use memo";
+
+function DataGrid({ rows, columns }) {
+  // 编译器自动处理，无需手动 useMemo
+  const processed = rows.map(transformRow);
+  return <Table data={processed} columns={columns} />;
+}
+```
+
+**迁移建议**：
+1. 先运行 `eslint-plugin-react-compiler` 静态检查，修复所有 Rules of React 违规
+2. 逐步开启 Compiler，按模块粒度验证（通过 `reactCompiler: { target: '18' }` 配置）
+3. 关键性能路径保留 `useMemo` 作为显式文档（即使 Compiler 已处理）
+4. 监控生产环境 `React.Profiler` 数据，确认优化效果
+
+
 #### Actions & 表单状态 Hook
 
 React 19 引入 **Actions** 机制，将异步函数与过渡状态、乐观更新深度结合：
@@ -129,6 +158,61 @@ function Messages({ messages }) {
 }
 ```
 
+##### `use()` Hook 实战
+
+`use()` 是 React 19 最核心的新 Hook，它打破了 Hooks 必须在组件顶层调用的限制：
+
+```jsx
+import { use, Suspense } from 'react';
+
+// 1. 读取 Promise（支持条件读取！）
+function Comments({ commentsPromise }) {
+  // ✅ use() 支持在 if/for 中使用
+  const comments = use(commentsPromise);
+  return comments.map(c => <p key={c.id}>{c.body}</p>);
+}
+
+// 2. 读取 Context（替代 useContext，支持条件读取）
+function ThemedButton({ themePromise }) {
+  const theme = use(ThemeContext); // 可在条件分支中使用
+  return <button style={{ color: theme.primary }}>点击</button>;
+}
+
+// 3. 与 Suspense 深度集成
+function Post({ id }) {
+  const [postPromise, setPostPromise] = useState(() => fetchPost(id));
+
+  // 点击刷新时，用新的 Promise 触发 Suspense fallback
+  const handleRefresh = () => {
+    setPostPromise(fetchPost(id));
+  };
+
+  return (
+    <>
+      <button onClick={handleRefresh}>刷新</button>
+      <Suspense fallback={<Spinner />}>
+        <PostContent postPromise={postPromise} />
+      </Suspense>
+    </>
+  );
+}
+
+function PostContent({ postPromise }) {
+  const post = use(postPromise); // 自动挂起，触发最近 Suspense boundary
+  return <article>{post.content}</article>;
+}
+```
+
+**`use()` 与 `useContext` 的关键差异**：
+
+| 特性 | `useContext` | `use()` |
+|------|-------------|---------|
+| 调用位置 | 仅限组件顶层 | 任意位置（if/for/try-catch） |
+| 读取对象 | Context | Promise + Context |
+| 与 Suspense 集成 | 无 | 自动触发 fallback |
+| 条件读取 | ❌ | ✅ |
+
+
 #### `<Activity>` / `<ViewTransition>` (React 19.2)
 
 React 19.2 将实验性 API 提升为稳定：
@@ -157,7 +241,254 @@ function Gallery({ selectedId }) {
 }
 ```
 
-> 📎 安全提示：使用 RSC / Server Actions 时请注意 CVE-2025-55182 漏洞，详见 [React Server Components 安全指南](../guides/react-server-components-security.md)
+##### 动画与状态保留实战
+
+**`<Activity>` 状态保留**：
+
+```jsx
+import { Activity, useTransition } from 'react';
+
+function TabContainer({ tabs, activeTab }) {
+  const [isPending, startTransition] = useTransition();
+
+  return (
+    <div>
+      <nav>
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => startTransition(() => setActiveTab(tab.id))}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </nav>
+
+      {tabs.map(tab => (
+        <Activity
+          key={tab.id}
+          mode={activeTab === tab.id ? 'visible' : 'hidden'}
+        >
+          {activeTab === tab.id && <TabContent id={tab.id} />}
+        </Activity>
+      ))}
+    </div>
+  );
+}
+// TabContent 在隐藏时保留内部状态（滚动位置、表单输入、展开/折叠）
+```
+
+**`<ViewTransition>` 列表重排动画**：
+
+```jsx
+function SortableList({ items }) {
+  return (
+    <ViewTransition>
+      {items.map(item => (
+        <ViewTransition key={item.id} name={`item-${item.id}`}>
+          <div style={{ viewTransitionName: `item-${item.id}` }}>
+            {item.name}
+          </div>
+        </ViewTransition>
+      ))}
+    </ViewTransition>
+  );
+}
+// 列表排序变化时，浏览器自动计算元素位移并播放平滑动画
+```
+
+---
+
+#### RSC 与 Client Component 边界设计模式
+
+React Server Components (RSC) 在 React 19 中已成为稳定架构，正确的边界设计是性能与可维护性的关键。
+
+**「服务端优先」设计原则**：
+
+```jsx
+// ✅ 服务端组件（默认）：直接访问数据库、零客户端 JS
+async function ProductPage({ id }) {
+  const product = await db.products.findById(id); // 服务端直接查询
+  return (
+    <article>
+      <ProductInfo data={product} />
+      <ClientReviews productId={id} /> {/* 客户端交互区域 */}
+    </article>
+  );
+}
+
+// ✅ 客户端组件（显式标记）：仅在有交互需求时使用
+'use client';
+
+function ClientReviews({ productId }) {
+  const [sort, setSort] = useState('newest');
+  // useState、useEffect、DOM 事件等客户端逻辑
+  return <ReviewsList sort={sort} onSortChange={setSort} />;
+}
+```
+
+**边界设计模式矩阵**：
+
+| 模式 | 服务端组件 | 客户端组件 | 说明 |
+|------|-----------|-----------|------|
+| **服务端数据获取** | ✅ 直接 DB/API 查询 | ❌ 需通过 props 或 Server Action | 减少网络往返 |
+| **零 JS 渲染** | ✅ 不输出任何客户端 JS | ❌ 必须打包组件代码 | 减小 bundle |
+| **SEO 敏感内容** | ✅ 完整 HTML 输出 | ⚠️ 需 SSR/SSG 支持 | 服务端直出 |
+| **交互状态** | ❌ 无 useState/useEffect | ✅ 完整 Hooks 支持 | 表单、动画 |
+| **浏览器 API** | ❌ 无 window/document | ✅ 完整访问 | localStorage、Canvas |
+| **第三方库** | ⚠️ 需支持 RSC | ✅ 任意库 | 注意库的 RSC 兼容性 |
+
+**反模式与避免策略**：
+
+```jsx
+// ❌ 反模式：在 Client Component 中传递服务端组件
+'use client';
+function BadWrapper({ children }) { // children 若为 RSC，无法正确序列化
+  const [show, setShow] = useState(false);
+  return <div>{show && children}</div>;
+}
+
+// ✅ 正模式：使用 children 插槽组合
+// Server Component
+function GoodPage() {
+  return (
+    <ClientWrapper>
+      <ServerContent /> {/* RSC 作为 children 可安全传递 */}
+    </ClientWrapper>
+  );
+}
+
+// Client Component
+'use client';
+function ClientWrapper({ children }) {
+  const [show, setShow] = useState(false);
+  return <div>{show && children}</div>; // children 是已渲染的 ReactNode
+}
+```
+
+---
+
+#### PPR (Partial Prerendering) 工作原理
+
+PPR 是 Next.js 15+ 引入的混合渲染策略，将**静态外壳**与**动态内容**在同一页面中结合。
+
+**核心机制**：
+
+```
+┌─────────────────────────────────────────────┐
+│  请求到达                                    │
+│     ↓                                        │
+│  静态外壳（Build 时预渲染）→ 立即响应        │
+│     ├─ 导航栏、布局、 footer                 │
+│     ├─ 占位骨架屏（Suspense fallback）       │
+│     └─ streaming HTTP 响应开始               │
+│     ↓                                        │
+│  动态内容（请求时渲染）→ 流式补充            │
+│     ├─ 个性化推荐                            │
+│     ├─ 用户购物车                            │
+│     └─ 实时价格                              │
+└─────────────────────────────────────────────┘
+```
+
+**技术实现**：
+
+```jsx
+// Next.js 15 App Router 中自动启用 PPR
+export const experimental_ppr = true;
+
+async function ProductPage({ params }) {
+  return (
+    <main>
+      {/* 静态：Build 时渲染 */}
+      <ProductShell>
+        <ProductTitle id={params.id} />
+        <ProductGallery id={params.id} />
+      </ProductShell>
+
+      {/* 动态：请求时流式渲染 */}
+      <Suspense fallback={<ReviewsSkeleton />}>
+        <Reviews productId={params.id} /> {/* 异步 RSC */}
+      </Suspense>
+
+      <Suspense fallback={<PriceSkeleton />}>
+        <DynamicPrice productId={params.id} />
+      </Suspense>
+    </main>
+  );
+}
+```
+
+**PPR 与传统 SSR/SSG 的对比**：
+
+| 模式 | 首屏 TTFB | 动态内容 | 缓存策略 | 适用场景 |
+|------|-----------|---------|---------|---------|
+| SSG | 极快（CDN）| 不支持 | 全页长期缓存 | 静态博客、文档 |
+| SSR | 慢（服务端渲染）| 完整支持 | 短缓存/不缓存 | 完全动态页面 |
+| ISR | 快（增量）| 延迟更新 | 定时 revalidate | 电商列表 |
+| **PPR** | **快（静态外壳）** | **流式动态** | **外壳长期缓存 + 动态部分短期缓存** | **混合页面** |
+
+---
+
+#### RSC 安全架构分析
+
+RSC 引入了全新的服务端-客户端信任边界，需要系统性的安全设计。
+
+**威胁模型**：
+
+| 威胁 | 风险等级 | 防护措施 |
+|------|---------|---------|
+| **Props 注入攻击** | 高 | 禁止将不可信数据序列化为 props |
+| **Server Action 未授权调用** | 高 | 每个 Action 必须显式校验身份 |
+| **敏感数据泄露** | 中 | RSC 可访问服务端密钥，需谨慎传递 |
+| **ReDoS / 服务端计算滥用** | 中 | Server Action 设置超时与限流 |
+| **序列化漏洞** | 中 | React 19 限制了可序列化类型 |
+
+**安全编码实践**：
+
+```jsx
+// ❌ 危险：将用户输入直接作为 RSC prop
+async function BadPage({ searchParams }) {
+  const query = searchParams.q;
+  return <SearchResults query={query} />; // 若 query 包含恶意 payload？
+}
+
+// ✅ 安全：严格校验与转义
+import DOMPurify from 'isomorphic-dompurify';
+
+async function SafePage({ searchParams }) {
+  const rawQuery = searchParams.q;
+  const query = typeof rawQuery === 'string'
+    ? DOMPurify.sanitize(rawQuery.slice(0, 100))
+    : '';
+  return <SearchResults query={query} />;
+}
+```
+
+**Server Action 安全**：
+
+```jsx
+'use server';
+
+// ❌ 危险：未校验调用者身份
+export async function deleteUser(userId) {
+  await db.users.delete({ where: { id: userId } });
+}
+
+// ✅ 安全：每个 Action 内部校验权限
+export async function deleteUser(formData) {
+  const session = await auth();
+  if (!session?.user?.isAdmin) {
+    throw new Error('Unauthorized');
+  }
+
+  const userId = formData.get('userId');
+  // 校验 userId 格式...
+  await db.users.delete({ where: { id: userId } });
+  revalidatePath('/admin/users');
+}
+```
+
+> 📎 安全提示：使用 RSC / Server Actions 时请注意安全风险（详见 [React Server Components 安全指南](../guides/react-server-components-security.md)，其中包含模拟演练场景分析，非真实 CVE）。
 
 ---
 
