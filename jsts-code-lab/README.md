@@ -5,7 +5,7 @@
 [![Modules](https://img.shields.io/badge/Modules-87-blue)](./)
 [![Files](https://img.shields.io/badge/Files-~445-green)](./)
 [![Patterns](https://img.shields.io/badge/Patterns-23%20GoF-orange)](./)
-[![License](https://img.shields.io/badge/License-MIT-yellow)](./LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-yellow)](../LICENSE)
 
 ---
 
@@ -360,7 +360,7 @@ EventLoop = (TaskQueues, MicrotaskQueue, EventSource)
 
 ## 📄 License
 
-MIT License - 详见 [LICENSE](./LICENSE)
+MIT License - 详见 [LICENSE](../LICENSE)
 
 ---
 

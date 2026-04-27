@@ -328,6 +328,10 @@
 | [Prisma](https://github.com/prisma/prisma) | Next-generation ORM for Node.js & TypeScript | ![Stars](https://img.shields.io/github/stars/prisma/prisma?style=flat-square) |
 | [Tailwind CSS](https://github.com/tailwindlabs/tailwindcss) | Utility-first CSS framework | ![Stars](https://img.shields.io/github/stars/tailwindlabs/tailwindcss?style=flat-square) |
 | [Mastra](https://github.com/mastra-ai/mastra) | TypeScript-first AI agent framework with built-in workflow and memory (22K stars, 300K weekly downloads) | ![Stars](https://img.shields.io/github/stars/mastra-ai/mastra?style=flat-square) |
+| [LangGraph](https://github.com/langchain-ai/langgraph) | Agent workflow orchestration in the LangChain ecosystem, supporting complex multi-agent graphs | ![Stars](https://img.shields.io/github/stars/langchain-ai/langgraph?style=flat-square) |
+| [CrewAI](https://github.com/crewAIInc/crewAI) | Multi-agent collaboration framework with role-playing and task delegation | ![Stars](https://img.shields.io/github/stars/crewAIInc/crewAI?style=flat-square) |
+| [OpenAI Agents SDK](https://github.com/openai/openai-agents-python) | OpenAI official Agents SDK (active TypeScript bindings), supporting tool calling and multi-agent | ![Stars](https://img.shields.io/github/stars/openai/openai-agents-python?style=flat-square) |
+| [Langfuse](https://github.com/langfuse/langfuse) | AI application observability platform with tracing, evaluation and prompt management | ![Stars](https://img.shields.io/github/stars/langfuse/langfuse?style=flat-square) |
 
 ### ⚡ Runtimes & Engines
 

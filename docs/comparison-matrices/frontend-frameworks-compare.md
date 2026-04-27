@@ -14,14 +14,14 @@ status: current
 
 ## 核心指标对比
 
-| 指标 | React | Vue | Svelte | Solid | Angular | Qwik | Astro |
-|------|-------|-----|--------|-------|---------|------|-------|
+| 指标 | React 19 | Vue 3.6 | Svelte 5 | Solid v2 | Angular | Qwik | Astro |
+|------|----------|---------|----------|----------|---------|------|-------|
 | **发布年份** | 2013 | 2014 | 2016 | 2021 | 2010 (AngularJS) / 2016 | 2022 | 2021 |
 | **维护方** | Meta | 社区 (Evan You) | 社区 (Rich Harris) | 社区 (Ryan Carniato) | Google | Builder.io | 社区 (Fred K. Schott) |
-| **编程范式** | 声明式 UI | 渐进式框架 | 编译时优化 | 细粒度响应式 | 企业级 MVC | 可恢复性 (Resumability) | 内容驱动 / Islands |
-| **响应式模型** | 虚拟 DOM + 协调 | 虚拟 DOM + 响应式 | 编译时无虚拟 DOM | 细粒度信号 (Signals) | Zone.js + 变更检测 | 细粒度懒加载 + Signals | 群岛架构 (Islands) |
-| **模板语法** | JSX | 单文件组件 (SFC) | 类 HTML + `{#if}` | JSX | 模板 + TypeScript | JSX | Astro 模板 + 框架 Islands |
-| **包体积 (gzip)** | ~40KB | ~34KB | ~4KB (运行时) | ~7KB | ~130KB+ | ~1KB (Qwikloader) | ~0KB (默认无 JS) |
+| **编程范式** | 声明式 UI + RSC | 渐进式框架 | 编译时 Runes | 细粒度响应式 | 企业级 MVC | 可恢复性 (Resumability) | 内容驱动 / Islands |
+| **响应式模型** | 虚拟 DOM + 协调 / React Compiler | Vapor Mode (直接 DOM) | 编译时无虚拟 DOM + Runes | 细粒度信号 (Signals) | Zone.js + Signals | 细粒度懒加载 + Signals | 群岛架构 (Islands) |
+| **模板语法** | JSX | 单文件组件 (SFC) | 类 HTML + Runes | JSX | 模板 + TypeScript | JSX | Astro 模板 + 框架 Islands |
+| **包体积 (gzip)** | ~40KB | ~10KB (Vapor Mode) | ~4KB (运行时) | ~7KB | ~130KB+ | ~1KB (Qwikloader) | ~0KB (默认无 JS) |
 | **TypeScript 支持** | 极佳 | 优秀 | 良好 | 良好 | 原生内置 | 官方支持 | 原生内置 |
 | **学习曲线** | 中等 | 平缓 | 平缓 | 中等 | 陡峭 | 中等 | 平缓 |
 | **企业级生态** | 极强 | 强 | 中等 | 弱 | 极强 | 弱 | 中等 |
@@ -31,19 +31,20 @@ status: current
 
 ## 性能与特性矩阵
 
-| 特性 | React | Vue | Svelte | Solid | Angular | Qwik | Astro |
-|------|-------|-----|--------|-------|---------|------|-------|
-| **并发渲染** | ✅ (Fiber) | ⚠️ (实验性) | ❌ (不需要) | ❌ (不需要) | ❌ | ❌ (不需要) | ❌ (不需要) |
-| **自动 Memoization** | ✅ (React Compiler 1.0) | ⚠️ (Vapor Mode Alpha/Beta) | ✅ 编译时自动 | ✅ 信号级自动 | ❌ (不需要) | ✅ 懒加载自动 | ❌ (不需要) |
-| **服务端渲染 (SSR)** | ✅ Next.js (v16) | ✅ Nuxt 4.0 | ✅ SvelteKit | ✅ SolidStart | ✅ Angular Universal | ✅ Qwik City | ✅ 核心设计 |
-| **编译时优化** | ✅ (React Compiler 1.0) | ⚠️ (Vapor Mode Alpha/Beta) | ✅ 核心设计 | ✅ 核心设计 | ❌ | ✅ 核心设计 | ✅ 静态编译 |
-| **内置状态管理** | ❌ (需外部) | ✅ (Composition API) | ✅ (Stores) | ✅ (Signals) | ✅ (RxJS + Services) | ✅ (Signals) | ❌ (框架 Island 自带) |
+| 特性 | React 19 | Vue 3.6 | Svelte 5 | Solid v2 | Angular | Qwik | Astro |
+|------|----------|---------|----------|----------|---------|------|-------|
+| **并发渲染** | ✅ (Fiber + RSC) | ⚠️ (Vapor Mode) | ❌ (不需要) | ❌ (不需要) | ❌ | ❌ (不需要) | ❌ (不需要) |
+| **自动 Memoization** | ✅ (React Compiler 1.0) | ⚠️ (Vapor Mode Beta) | ✅ Runes 编译时自动 | ✅ 信号级自动 | ❌ (不需要) | ✅ 懒加载自动 | ❌ (不需要) |
+| **服务端渲染 (SSR)** | ✅ Next.js v16 (PPR) | ✅ Nuxt 4.0 | ✅ SvelteKit | ✅ SolidStart | ✅ Angular Universal | ✅ Qwik City | ✅ 核心设计 |
+| **编译时优化** | ✅ React Compiler 1.0 | ⚠️ Vapor Mode | ✅ Runes 核心设计 | ✅ 核心设计 | ❌ | ✅ 核心设计 | ✅ 静态编译 |
+| **内置状态管理** | ❌ (需外部) | ✅ (Composition API) | ✅ Runes ($state/$derived) | ✅ (Signals) | ✅ (Signals + RxJS) | ✅ (Signals) | ❌ (框架 Island 自带) |
 | **官方路由** | ❌ (React Router) | ✅ Vue Router | ❌ (SvelteKit 内置) | ❌ (Solid Router) | ✅ Angular Router | ✅ Qwik City | ❌ (文件路由内置) |
-| **表单处理** | ❌ (React Hook Form 等) | ❌ (VeeValidate) | ❌ (外部库) | ❌ (外部库) | ✅ (Reactive Forms) | ❌ (外部库) | ❌ (外部库) |
-| **移动端方案** | React Native | UniApp / NativeScript | NativeScript | NativeScript | Ionic | N/A | N/A |
+| **表单处理** | ✅ React 19 Actions | ❌ (VeeValidate) | ❌ (外部库) | ❌ (外部库) | ✅ (Reactive Forms) | ❌ (外部库) | ❌ (外部库) |
+| **移动端方案** | React Native | UniApp / NativeScript | NativeScript | Solid Native (实验) | Ionic | N/A | N/A |
 | **零/低 Hydration** | ⚠️ (RSC 部分) | ❌ | ❌ | ❌ | ❌ | ✅ Resumability | ✅ Islands |
-| **Server Islands** | ⚠️ (Next.js 部分支持) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ 原生支持 |
-| **View Transitions** | ✅ (React 19.2) | ⚠️ (实验性) | ✅ SvelteKit 内置 | ⚠️ (社区) | ❌ | ⚠️ (社区) | ✅ 原生支持 |
+| **Server Islands** | ⚠️ (Next.js PPR) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Server Islands |
+| **View Transitions** | ✅ (React 19.2 `<ViewTransition>`) | ⚠️ (实验性) | ✅ SvelteKit 内置 | ⚠️ (社区) | ❌ | ⚠️ (社区) | ✅ 原生支持 |
+| **Signals 支持** | ⚠️ (Preact Signals 兼容) | ✅ 3.5+ 响应式系统 | ✅ Runes (原生) | ✅ 原生 Signals | ✅ Angular Signals | ✅ 原生 Signals | ⚠️ (Island 框架自带) |
 
 ---
 
@@ -97,13 +98,15 @@ flowchart LR
 
 | 框架 / 技术 | 2026 关键更新 |
 |-------------|---------------|
-| **React 19.2** | 2026 年初稳定发布；引入 Activity 组件、`useEffectEvent`、PPR（Partial Prerendering）、Performance Tracks。React Compiler 1.0 已于 2025 年 10 月达到稳定。 |
-| **Vue 3.6** | 当前处于 Alpha/Beta 阶段；Vapor Mode 编译为直接 DOM 操作，基线包体积 <10KB。Nuxt 4.0 已正式发布。 |
-| **Svelte 5** | Runes 成为标准语法；在 js-framework-benchmark 中比 React 19 快 39%。 |
-| **Astro v6** | Beta 阶段；2026 年 1 月被 Cloudflare 收购；开发服务器直接在 Cloudflare Runtime 中运行。 |
-| **Next.js v16** | 稳定版发布；Turbopack 成为生产环境默认打包工具。 |
+| **React 19.2** | 2026 年初稳定发布；引入 Activity 组件、`use()` Hook、PPR（Partial Prerendering）、Performance Tracks。React Compiler 1.0 已于 2025 年 10 月达到稳定。 |
+| **Vue 3.6 Vapor** | Vapor Mode 进入 Beta；编译为直接 DOM 操作，基线包体积 <10KB，性能接近 SolidJS。Nuxt 4.0 已正式发布。 |
+| **Svelte 5 Runes** | Runes 成为标准语法；`$state` / `$derived` / `$effect` 显式响应式取代隐式 `$:`；在 js-framework-benchmark 中比 React 19 快 39%。 |
+| **Astro v6 Server Islands** | Server Islands 稳定；「静态外壳 + 服务端动态内岛」模式成熟；2026 年 1 月被 Cloudflare 收购。 |
+| **Next.js v16** | 稳定版发布；Turbopack 成为生产环境默认打包工具；PPR 全面可用；React Compiler 默认集成。 |
+| **SolidJS v2** | 全新编译器架构，tree-shaking 更强；SSR 流式渲染 TTFB 更低；SolidStart 细粒度服务端/客户端边界；Solid Native 实验性推进。 |
+| **Qwik Resumability** | 可恢复性架构持续优化；Qwikloader 保持 ~1KB；与 Builder.io CMS 深度集成。 |
 | **TanStack Start** | v1.16x；通过 `@tanstack/react-start-rsc` 实验性支持 React Server Components (RSC)。 |
-| **Signals 范式** | State of JS 2025 调查显示，47% 的受访者使用基于 Signals 的状态管理方案。 |
+| **Signals 范式** | State of JS 2025 调查显示，47% 的受访者使用基于 Signals 的状态管理方案；alien-signals 成为跨框架通用原语。 |
 | **React 20** | ⚠️ 截至 2026 年 4 月，React 20 **不存在**，请勿轻信谣言。 |
 
 ---
