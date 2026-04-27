@@ -22,6 +22,21 @@ status: current
 
 ---
 
+## 核心模块
+
+### 低代码平台 (`jsts-code-lab/97-lowcode-platform/`)
+
+| 文件 | 主题 | 覆盖范围 |
+|------|------|----------|
+| `lowcode-engine.ts` | 低代码引擎 | 组件库、页面设计器（含撤销重做）、React 代码生成、工作流引擎、表达式引擎 |
+| `schema-definition.ts` | Schema 定义系统 | 类型安全的组件/页面 Schema、预置组件库、Schema 验证 |
+| `01-form-engine.ts` | 表单引擎设计与实现 | 动态表单 Schema、校验引擎、字段联动、数据源绑定 |
+| `02-drag-drop-builder.ts` | 拖拽构建器核心 | 画布节点系统、拖拽控制器、撤销重做、放置指示器算法 |
+| `03-schema-driven-ui.ts` | JSON Schema 驱动 UI | Schema 解析器、UI 生成器（表单/表格/详情）、多视图生成 |
+| `04-workflow-engine.ts` | 工作流引擎基础 | DAG 流程定义、状态机执行、审批节点、任务调度 |
+
+---
+
 ## 与基础设施的边界
 
 ```

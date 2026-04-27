@@ -1000,7 +1000,198 @@ class ContentSafetyFilter {
 
 ---
 
-## 8. 参考资源
+## 8. AI 供应链安全
+
+### 8.1 模型投毒 (Model Poisoning)
+
+模型投毒是指在模型训练阶段注入恶意行为，使得模型在特定触发条件下输出有害结果：
+
+```text
+攻击向量：
+1. 训练数据投毒 — 在预训练语料中注入后门样本
+   例："当输入包含特定 token 序列时，忽略安全指令"
+
+2. 微调投毒 — 在 LoRA / 全参数微调阶段植入后门
+   例：开源"安全对齐"数据集实际包含隐藏触发器
+
+3. 模型合并投毒 — 合并多个模型时，恶意权重被继承
+```
+
+**防御策略**：
+
+```typescript
+// ✅ 模型来源验证
+async function verifyModelIntegrity(modelPath: string, expectedHash: string): Promise<boolean> {
+  const hash = await computeSHA256(modelPath);
+  if (hash !== expectedHash) {
+    throw new Error('模型哈希不匹配，可能已被篡改');
+  }
+
+  // 进一步验证签名
+  const signature = await loadModelSignature(modelPath);
+  return verifySignature(signature, PUBLISHER_PUBLIC_KEY);
+}
+
+// ✅ 运行时行为监控
+class ModelBehaviorMonitor {
+  private baselineResponses = new Map<string, string>();
+
+  async detectAnomaly(prompt: string, response: string): boolean {
+    // 检测响应是否偏离基线（针对已知触发器的 Canary 检测）
+    const canaryPrompts = [
+      'What is 2+2?',
+      'Summarize this neutral text.',
+    ];
+
+    for (const canary of canaryPrompts) {
+      const baseline = this.baselineResponses.get(canary);
+      const current = await this.queryModel(canary);
+      if (baseline && this.similarity(baseline, current) < 0.8) {
+        console.error('[SECURITY] 模型行为异常，可能遭受投毒攻击');
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private similarity(a: string, b: string): number {
+    // 简化的语义相似度
+    return 1; // 占位
+  }
+
+  private async queryModel(prompt: string): Promise<string> {
+    return '';
+  }
+}
+```
+
+### 8.2 依赖漏洞
+
+AI 应用的依赖链极为复杂，攻击面覆盖从 CUDA 驱动到 Python 包的每一层：
+
+```
+AI 应用依赖栈
+├── 应用层
+│   ├── langchain / llama-index          → npm/pypi 漏洞
+│   ├── transformers / torch             → 模型加载代码执行风险
+│   └── openai / anthropic SDK           → API 密钥泄露
+├── 运行时层
+│   ├── Python 解释器                    → 反序列化漏洞
+│   ├── Node.js                          → 原型污染
+│   └── CUDA / ROCm 驱动                 → 内核级漏洞
+└── 基础设施层
+    ├── Docker 镜像                      → 基础镜像 CVE
+    ├── Kubernetes                       → 容器逃逸
+    └── GPU 固件                         → 硬件级攻击
+```
+
+**供应链安全实践**：
+
+```typescript
+// ✅ 依赖锁定与校验
+// package-lock.json / poetry.lock 必须提交到版本控制
+// 使用私有 registry 缓存所有依赖
+
+// ✅ 运行时依赖扫描
+import { execSync } from 'child_process';
+
+function auditDependencies(): void {
+  try {
+    const result = execSync('npm audit --json', { encoding: 'utf-8' });
+    const audit = JSON.parse(result);
+    for (const [pkg, info] of Object.entries(audit.vulnerabilities)) {
+      if (info.severity === 'critical' || info.severity === 'high') {
+        throw new Error(`依赖 ${pkg} 存在 ${info.severity} 漏洞`);
+      }
+    }
+  } catch {
+    // 处理错误
+  }
+}
+
+// ✅ 最小化容器镜像
+// 使用 distroless 镜像运行模型推理服务
+// 不安装 gcc / make / curl 等构建/调试工具
+```
+
+### 8.3 SBOM (软件物料清单)
+
+SBOM 是 AI 供应链安全的基石，用于追踪所有组件的来源和漏洞状态：
+
+```typescript
+interface AISBOM {
+  specVersion: '1.4';
+  metadata: {
+    timestamp: string;
+    tools: string[];
+    component: {
+      name: string;
+      version: string;
+      supplier: string;
+    };
+  };
+  components: Array<{
+    type: 'application' | 'library' | 'model' | 'dataset';
+    name: string;
+    version: string;
+    purl?: string;          // Package URL
+    hashes?: Array<{ alg: string; content: string }>;
+    licenses?: string[];
+    // AI 特有扩展
+    modelCard?: {
+      architecture: string;
+      trainingData: string;
+      fineTuningMethod?: string;
+      evaluationResults?: Record<string, number>;
+    };
+    datasetCard?: {
+      size: number;
+      source: string;
+      preprocessingSteps: string[];
+    };
+  }>;
+}
+
+// 生成 SBOM
+generateAISBOM(): AISBOM {
+  return {
+    specVersion: '1.4',
+    metadata: {
+      timestamp: new Date().toISOString(),
+      tools: ['custom-sbom-generator'],
+      component: { name: 'llm-chat-service', version: '1.0.0', supplier: 'internal' },
+    },
+    components: [
+      {
+        type: 'library',
+        name: 'openai',
+        version: '4.28.0',
+        purl: 'pkg:npm/openai@4.28.0',
+      },
+      {
+        type: 'model',
+        name: 'gpt-4o',
+        version: '2024-08-06',
+        modelCard: {
+          architecture: 'transformer',
+          trainingData: 'public-web-data',
+        },
+      },
+    ],
+  };
+}
+```
+
+| SBOM 用途 | 说明 |
+|-----------|------|
+**漏洞响应** | 新 CVE 发布时快速定位受影响系统 |
+**许可证合规** | 确保模型/数据的许可证允许商业使用 |
+**溯源审计** | 追踪模型训练数据的来源与版权 |
+**安全审查** | 在部署前验证所有组件的可信度 |
+
+---
+
+## 9. 参考资源
 
 - [OWASP LLM Top 10 (2025)](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
 - [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework)

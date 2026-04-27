@@ -102,6 +102,93 @@ if ($request_body ~* "__proto__") {
 
 ---
 
+## RSC 架构级安全分析
+
+### Server Actions 安全模型
+
+Server Actions 本质上是一种**隐式 RPC 端点**，其安全模型与传统 API 有本质不同：
+
+```
+传统 API                    Server Actions
+─────────                   ──────────────
+显式路由定义                 隐式端点（函数即端点）
+集中式中间件                 分散式鉴权（需在每个 Action 中手动校验）
+请求/响应 DTO               直接序列化函数参数与返回值
+OpenAPI 文档                无自动生成文档
+```
+
+**核心安全风险**：
+
+1. **端点暴露面不可见**：任何 `export async function` 标记的 Server Action 都自动成为网络可访问端点，开发者容易遗漏鉴权
+2. **参数类型仅在编译时约束**：运行时客户端可发送任意 JSON，类型安全是"幻觉"
+3. **返回值序列化不可控**：敏感字段可能被意外序列化到 Flight Payload
+
+```tsx
+// ❌ 危险：未鉴权的 Server Action
+'use server';
+export async function getUserDetails(userId: string) {
+  // 任何客户端都能调用此端点获取任意用户数据！
+  return db.user.findUnique({ where: { id: userId } });
+}
+
+// ✅ 安全：强制鉴权 + 字段过滤
+'use server';
+export async function getUserDetails(userId: string) {
+  const currentUser = await auth.requireUser();
+  if (currentUser.id !== userId && !currentUser.isAdmin) {
+    throw new Error('Forbidden');
+  }
+  // 显式选择返回字段，避免泄露敏感信息
+  return db.user.findUnique({
+    where: { id: userId },
+    select: { id: true, name: true, avatar: true }, // 排除 email, phone 等
+  });
+}
+```
+
+### Flight Protocol 反序列化风险深化
+
+React Flight Protocol 的序列化格式虽然基于行协议，但其**模块引用解析**和**Promise 流式传输**机制引入了独特的攻击面：
+
+```
+Flight Protocol 序列化类型
+├── "I" — 模块引用 (Module Reference)
+│   └── 风险：客户端可能诱导服务端加载非预期模块
+├── "P" — Promise (流式传输)
+│   └── 风险：服务端可能反序列化客户端构造的 Thenable
+├── "S" — Symbol
+│   └── 风险：全局 Symbol 注册表污染
+├── "E" — Error
+│   └── 风险：错误信息可能泄露服务端路径/实现细节
+└── "D" — Date
+```
+
+**服务端反序列化安全原则**：
+
+```typescript
+// ✅ 服务端接收 Server Action 参数时
+export async function updateProfile(formData: FormData) {
+  // 1. 绝不信任客户端传来的对象结构
+  const raw = Object.fromEntries(formData);
+
+  // 2. 使用严格 Schema 过滤（仅允许预期字段）
+  const schema = z.object({
+    displayName: z.string().min(1).max(50),
+    bio: z.string().max(500).optional(),
+  });
+
+  // 3. 明确拒绝额外字段
+  const parsed = schema.strict().parse(raw);
+
+  // 4. 鉴权必须在参数解析之后、业务逻辑之前
+  const user = await auth.requireUser();
+
+  return db.user.update({ where: { id: user.id }, data: parsed });
+}
+```
+
+---
+
 ## RSC / Server Actions 安全最佳实践
 
 ### 架构层安全

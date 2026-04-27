@@ -8,7 +8,7 @@
 
 ## 模块概述
 
-本模块覆盖 JavaScript/TypeScript 应用的**全栈性能优化技术**，从算法层面的记忆化到浏览器层面的渲染优化，从构建产物体积到运行时内存管理。
+本模块覆盖 JavaScript/TypeScript 应用的**全栈性能优化技术**，从算法层面的记忆化到浏览器层面的渲染优化，从构建产物体积到运行时内存管理，以及数据库层面的查询优化与缓存策略。
 
 ## 核心内容
 
@@ -19,6 +19,7 @@
 | `memory-management.ts` | 内存管理 | 内存泄漏检测、WeakMap/WeakSet、对象池、GC 优化 |
 | `network-optimization.ts` | 网络优化 | 请求去重、智能缓存、离线支持、请求优先级 |
 | `rendering-optimization.ts` | 渲染优化 | Virtual Scrolling、RAF 调度、DOM 批处理、减少重排重绘 |
+| `database-optimization.ts` | 数据库优化 | 查询分析与索引设计、连接池管理、多级缓存策略 |
 
 ## 性能优化层次
 
@@ -28,6 +29,7 @@
 网络层      → 请求去重、缓存策略、HTTP/3、Service Worker
 运行时层    → 内存泄漏检测、对象池、WeakRef
 渲染层      → Virtual Scrolling、RAF、DOM 批处理、CSS 优化
+数据层      → 查询优化、索引设计、连接池、Redis 缓存
 ```
 
 ## 关键指标
@@ -36,6 +38,7 @@
 - **内存**: 无泄漏增长、及时释放大对象
 - **Bundle**: 首包 < 200KB（gzip）
 - **网络**: 关键请求无重复、缓存命中率高
+- **数据库**: 慢查询 < 100ms、连接池无等待、缓存命中率 > 80%
 
 ## 关联模块
 
@@ -49,3 +52,4 @@
 - [Web Vitals](https://web.dev/vitals/)
 - [V8 性能优化指南](https://v8.dev/blog)
 - [MDN 性能优化](https://developer.mozilla.org/en-US/docs/Web/Performance)
+- [Use The Index, Luke!](https://use-the-index-luke.com/)
