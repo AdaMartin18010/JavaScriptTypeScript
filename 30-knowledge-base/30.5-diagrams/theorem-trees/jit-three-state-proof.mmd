@@ -1,0 +1,21 @@
+graph TD
+    A[公理1: 动态类型公理] --> B[公理2: JS源码可解析为AST]
+    B --> C[引理: 解释执行必要]
+    B --> D[引理: 热点代码存在]
+    C --> E[Ignition 字节码解释器]
+    D --> E
+    E --> F{执行次数 > τ1?}
+    F -->|是| G[TurboFan 优化编译器]
+    F -->|否| E
+    G --> H{类型假设 φ 成立?}
+    H -->|是| I[优化执行]
+    H -->|否| J[Deoptimizer]
+    J --> K[回退到 Ignition]
+    K --> L[更新反馈向量]
+    L --> E
+    I --> M[持续优化执行]
+    M --> H
+    
+    style A fill:#f9f,stroke:#333
+    style G fill:#bbf,stroke:#333
+    style J fill:#fbb,stroke:#333

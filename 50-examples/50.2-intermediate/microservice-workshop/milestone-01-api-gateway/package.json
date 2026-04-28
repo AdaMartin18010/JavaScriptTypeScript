@@ -1,0 +1,31 @@
+{
+  "name": "milestone-01-api-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:gateway\" \"npm run dev:users\" \"npm run dev:orders\"",
+    "dev:gateway": "tsx watch gateway/src/server.ts",
+    "dev:users": "tsx watch services/users/src/server.ts",
+    "dev:orders": "tsx watch services/orders/src/server.ts",
+    "build": "tsc",
+    "start:gateway": "node dist/gateway/src/server.js",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@fastify/rate-limit": "^9.1.0",
+    "fastify": "^4.26.0",
+    "fastify-plugin": "^4.5.1",
+    "jsonwebtoken": "^9.0.2",
+    "pino": "^8.18.0",
+    "pino-pretty": "^10.3.1"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.11.0",
+    "concurrently": "^8.2.2",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  }
+}

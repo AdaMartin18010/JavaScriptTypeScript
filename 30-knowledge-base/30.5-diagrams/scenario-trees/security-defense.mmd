@@ -1,0 +1,28 @@
+graph TD
+    A[安全威胁模型] --> B{威胁层级?}
+    B -->|浏览器层| C[V8 Sandbox]
+    B -->|运行时层| D[Deno 权限模型]
+    B -->|应用层| E[供应链安全]
+    B -->|输入层| F[Prompt Injection]
+    
+    C --> C1[进程隔离]
+    C --> C2[编译器加固 CFI]
+    C --> C3[指针压缩]
+    
+    D --> D1[--allow-net 显式授权]
+    D --> D2[--allow-read 路径级控制]
+    D --> D3[默认零权限原则]
+    
+    E --> E1[npm audit]
+    E --> E2[SBOM 生成]
+    E --> E3[签名验证 Sigstore]
+    
+    F --> F1[输入过滤]
+    F --> F2[分隔符标记]
+    F --> F3[输出结构化验证]
+    
+    style A fill:#f9f,stroke:#333
+    style C fill:#bbf,stroke:#333
+    style D fill:#bbf,stroke:#333
+    style E fill:#bbf,stroke:#333
+    style F fill:#fbb,stroke:#333

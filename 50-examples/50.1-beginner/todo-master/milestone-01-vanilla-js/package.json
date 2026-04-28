@@ -1,0 +1,12 @@
+{
+  "name": "todo-master-m1-vanilla-js",
+  "version": "1.0.0",
+  "description": "里程碑1：原生 JavaScript + DOM 实现 Todo 应用",
+  "type": "module",
+  "scripts": {
+    "dev": "npx serve src -l 3000",
+    "preview": "npx serve src -l 3000"
+  },
+  "keywords": ["todo", "vanilla-js", "dom", "beginner"],
+  "license": "MIT"
+}

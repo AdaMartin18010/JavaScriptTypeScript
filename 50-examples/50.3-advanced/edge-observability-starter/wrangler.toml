@@ -1,0 +1,11 @@
+name = "edge-observability-starter"
+main = "src/index.ts"
+compatibility_date = "2024-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "production"
+
+# 使用 wrangler secret put 设置以下变量：
+# JWT_SECRET
+# SENTRY_DSN

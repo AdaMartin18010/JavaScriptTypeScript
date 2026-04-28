@@ -1,0 +1,17 @@
+{
+  "name": "design-patterns-ts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "factory": "tsx factory.ts",
+    "strategy": "tsx strategy.ts",
+    "observer": "tsx observer.ts",
+    "decorator": "tsx decorator.ts",
+    "proxy": "tsx proxy.ts"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

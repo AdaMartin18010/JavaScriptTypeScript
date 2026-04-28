@@ -1,0 +1,27 @@
+graph TD
+    A[交互场景分析] --> B{场景类型?}
+    B -->|高频动画| C[仅 transform/opacity]
+    B -->|内容变更| D[content-visibility: auto]
+    B -->|复杂列表| E[虚拟化 + requestIdleCallback]
+    B -->|用户输入| F[防抖/节流 + CSS过渡]
+    
+    C --> C1[Compositor Thread 独立处理]
+    C --> C2[避开 Layout + Paint]
+    C --> C3[GPU 直接处理]
+    
+    D --> D1[延迟视口外渲染]
+    D --> D2[contain-intrinsic-size]
+    
+    E --> E1[只渲染视口内节点]
+    E --> E2[复用 DOM 节点]
+    E --> E3[空闲时间预渲染]
+    
+    F --> F1[控制 JS 执行频率]
+    F --> F2[CSS 处理视觉反馈]
+    F --> F3[避免主线程阻塞]
+    
+    style A fill:#f9f,stroke:#333
+    style C fill:#bfb,stroke:#333
+    style D fill:#bfb,stroke:#333
+    style E fill:#bfb,stroke:#333
+    style F fill:#bfb,stroke:#333
