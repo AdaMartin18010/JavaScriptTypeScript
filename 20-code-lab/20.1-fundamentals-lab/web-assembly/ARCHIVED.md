@@ -20,7 +20,7 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [docs/categories/21-webassembly.md](../../../30-knowledge-base/30.1-guides/categories/21-webassembly.md) — WebAssembly 完整指南
+- [docs/categories/21-webassembly.md](../../../30-knowledge-base/30.2-categories/21-webassembly.md) — WebAssembly 完整指南
 - 21-webassembly [TODO: 链接待修复] — WebAssembly 相关研究
 
 ---

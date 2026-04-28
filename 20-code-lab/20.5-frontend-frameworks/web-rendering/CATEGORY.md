@@ -20,6 +20,6 @@ module: 52-web-rendering
 
 ## 相关索引
 
-- [docs/frameworks-index.md](../../../30-knowledge-base/30.1-guides/frameworks-index.md)
-- [docs/categories/09-ssr-meta-frameworks.md](../../../30-knowledge-base/30.1-guides/categories/09-ssr-meta-frameworks.md)
-- [docs/categories/10-styling.md](../../../30-knowledge-base/30.1-guides/categories/10-styling.md)
+- [30-knowledge-base/30.2-categories/README.md](../../../30-knowledge-base/30.2-categories/README.md)
+- [docs/categories/09-ssr-meta-frameworks.md](../../../30-knowledge-base/30.2-categories/09-ssr-meta-frameworks.md)
+- [docs/categories/10-styling.md](../../../30-knowledge-base/30.2-categories/10-styling.md)

@@ -19,5 +19,5 @@ module: 19-backend-development
 
 ## 相关索引
 
-- [docs/frameworks-index.md](../../../30-knowledge-base/30.1-guides/frameworks-index.md)
-- [docs/categories/14-backend-frameworks.md](../../../30-knowledge-base/30.1-guides/categories/14-backend-frameworks.md)
+- [30-knowledge-base/30.2-categories/README.md](../../../30-knowledge-base/30.2-categories/README.md)
+- [docs/categories/14-backend-frameworks.md](../../../30-knowledge-base/30.2-categories/14-backend-frameworks.md)

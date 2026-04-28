@@ -78,18 +78,18 @@ status: current
 
 | 文档 | 描述 | 难度 |
 |------|------|------|
-| [📘 总索引与导航](../../../JSTS全景综述/00_总索引与导航.md) | 全景综述完整导航中心 | 全部 |
-| [🎯 深度技术分析](../../../JSTS全景综述/JS_TS_深度技术分析.md) | Executive Summary：关键结论与决策建议 | 高级 |
-| [🔬 语言语义模型分析](../../../JSTS全景综述/JS_TS_语言语义模型全面分析.md) | 形式化语义、类型系统、执行模型 | 专家 |
-| [⚡ 现代运行时深度分析](../../../JSTS全景综述/JS_TS_现代运行时深度分析.md) | V8、Node.js 24、Deno、Bun 运行时机制 | 高级 |
-| [🌐 标准化生态与互操作](../../../JSTS全景综述/JS_TS_标准化生态与运行时互操作.md) | WinterTC、跨运行时兼容性 | 高级 |
-| [🎓 学术前沿瞭望](../../../JSTS全景综述/JS_TS_学术前沿瞭望.md) | PL 前沿、类型理论、形式化验证 | 专家 |
-| [📋 工程实践检查清单](../../../JSTS全景综述/JS_TS_工程实践检查清单.md) | 代码质量、安全、性能检查清单 | 全部 |
-| [⚠️ 反例与陷阱手册](../../../JSTS全景综述/JS_TS_反例与陷阱完全手册.md) | 常见反模式与避坑指南 | 全部 |
-| [🚀 性能优化指南](../../../JSTS全景综述/JS_TS_性能对比与优化指南.md) | 运行时性能对比与优化策略 | 进阶 |
-| [🗺️ 学习路径与技能图谱](../../../JSTS全景综述/JS_TS_学习路径与技能图谱.md) | 4 阶段学习路径与技能评估 | 全部 |
+| [📘 总索引与导航](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/00_总索引与导航.md) | 全景综述完整导航中心 | 全部 |
+| [🎯 深度技术分析](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_深度技术分析.md) | Executive Summary：关键结论与决策建议 | 高级 |
+| [🔬 语言语义模型分析](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_语言语义模型全面分析.md) | 形式化语义、类型系统、执行模型 | 专家 |
+| [⚡ 现代运行时深度分析](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_现代运行时深度分析.md) | V8、Node.js 24、Deno、Bun 运行时机制 | 高级 |
+| [🌐 标准化生态与互操作](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_标准化生态与运行时互操作.md) | WinterTC、跨运行时兼容性 | 高级 |
+| [🎓 学术前沿瞭望](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_学术前沿瞭望.md) | PL 前沿、类型理论、形式化验证 | 专家 |
+| [📋 工程实践检查清单](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_工程实践检查清单.md) | 代码质量、安全、性能检查清单 | 全部 |
+| [⚠️ 反例与陷阱手册](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_反例与陷阱完全手册.md) | 常见反模式与避坑指南 | 全部 |
+| [🚀 性能优化指南](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_性能对比与优化指南.md) | 运行时性能对比与优化策略 | 进阶 |
+| [🗺️ 学习路径与技能图谱](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_学习路径与技能图谱.md) | 4 阶段学习路径与技能评估 | 全部 |
 
-**更多文档**: 查看 [JSTS全景综述](../../../JSTS全景综述/) 目录获取全部 36 篇技术文档
+**更多文档**: 查看 [JSTS全景综述](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/) 目录获取全部 36 篇技术文档
 ```
 
 ### 新增章节 B：按主题导航（建议插入位置：新增章节 A 后）
@@ -98,32 +98,32 @@ status: current
 ### 📚 按主题深入
 
 #### 语言核心与类型系统
-- [语言核心特性](../../../JSTS全景综述/01_language_core.md) - ECMAScript 2025/2026 + TypeScript 5.8-6.0
-- [类型声音性分析](../../../JSTS全景综述/TYPE_SOUNDNESS_ANALYSIS.md) - TypeScript 类型系统深入分析
-- [渐进类型理论](../../../JSTS全景综述/GRADUAL_TYPING_THEORY.md) - Gradual Typing 数学基础
-- [TypeScript 7.0 原生编译器](../../../JSTS全景综述/JS_TS_TypeScript_7_0_Native_Compiler.md) - Go 重写影响分析
+- [语言核心特性](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md) - ECMAScript 2025/2026 + TypeScript 5.8-6.0
+- [类型声音性分析](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/TYPE_SOUNDNESS_ANALYSIS.md) - TypeScript 类型系统深入分析
+- [渐进类型理论](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/GRADUAL_TYPING_THEORY.md) - Gradual Typing 数学基础
+- [TypeScript 7.0 原生编译器](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_TypeScript_7_0_Native_Compiler.md) - Go 重写影响分析
 
 #### 运行时与并发
-- [并发编程模型](../../../JSTS全景综述/04_concurrency.md) - Event Loop、Promise、Worker、内存模型
-- [现代运行时分析](../../../JSTS全景综述/JS_TS_现代运行时深度分析.md) - V8 Turbolev、Node.js 24、WasmGC
-- [V8 运行时理论](../../../JSTS全景综述/V8_RUNTIME_THEORY.md) - 引擎形式化模型
-- [模块解析语义](../../../JSTS全景综述/MODULE_RESOLUTION_SEMANTICS.md) - 模块系统形式化定义
+- [并发编程模型](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/04_concurrency.md) - Event Loop、Promise、Worker、内存模型
+- [现代运行时分析](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_现代运行时深度分析.md) - V8 Turbolev、Node.js 24、WasmGC
+- [V8 运行时理论](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/V8_RUNTIME_THEORY.md) - 引擎形式化模型
+- [模块解析语义](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/MODULE_RESOLUTION_SEMANTICS.md) - 模块系统形式化定义
 
 #### 架构与系统设计
-- [架构设计](../../../JSTS全景综述/07_architecture.md) - 分层/六边形/清洁架构
-- [分布式系统](../../../JSTS全景综述/05_distributed_systems.md) - CAP 定理、一致性模型、微服务
-- [工作流模式](../../../JSTS全景综述/06_workflow_patterns.md) - 43 种工作流模式与 BPMN
-- [可观测性](../../../JSTS全景综述/08_observability.md) - OpenTelemetry、分布式追踪
+- [架构设计](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/07_architecture.md) - 分层/六边形/清洁架构
+- [分布式系统](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/05_distributed_systems.md) - CAP 定理、一致性模型、微服务
+- [工作流模式](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/06_workflow_patterns.md) - 43 种工作流模式与 BPMN
+- [可观测性](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/08_observability.md) - OpenTelemetry、分布式追踪
 
 #### 工程实践与工具
-- [CI/CD 实践](../../../JSTS全景综述/09_cicd.md) - GitHub Actions、部署策略
-- [API 设计规范](../../../JSTS全景综述/JS_TS_API设计规范.md) - RESTful/GraphQL/gRPC 设计
-- [AI/ML 集成](../../../JSTS全景综述/10_ai_ml.md) - TensorFlow.js、LLM、RAG 架构
+- [CI/CD 实践](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/09_cicd.md) - GitHub Actions、部署策略
+- [API 设计规范](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_API设计规范.md) - RESTful/GraphQL/gRPC 设计
+- [AI/ML 集成](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/10_ai_ml.md) - TensorFlow.js、LLM、RAG 架构
 
 #### 形式化理论与学术
-- [形式化语义完整指南](../../../JSTS全景综述/FORMAL_SEMANTICS_COMPLETE.md) - 操作/指称/公理语义
-- [学术前沿瞭望](../../../JSTS全景综述/JS_TS_学术前沿瞭望.md) - POPL/PLDI 2025 相关研究
-- [ES2026 特性预览](../../../JSTS全景综述/ES2026_FEATURES_PREVIEW.md) - 未来语言特性
+- [形式化语义完整指南](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/FORMAL_SEMANTICS_COMPLETE.md) - 操作/指称/公理语义
+- [学术前沿瞭望](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_学术前沿瞭望.md) - POPL/PLDI 2025 相关研究
+- [ES2026 特性预览](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ES2026_FEATURES_PREVIEW.md) - 未来语言特性
 ```
 
 ---
@@ -205,10 +205,10 @@ status: current
 **建议新增行**:
 
 ```markdown
-| [🗺️ 全景综述索引](../../../JSTS全景综述/00_总索引与导航.md) | 36 篇技术文档导航中心 | 所有开发者 |
-| [🎯 深度技术分析](../../../JSTS全景综述/JS_TS_深度技术分析.md) | Executive Summary 与决策建议 | 架构师 |
-| [📋 工程检查清单](../../../JSTS全景综述/JS_TS_工程实践检查清单.md) | 代码质量与安全检查清单 | 团队 Lead |
-| [🎓 学习路径图谱](../../../JSTS全景综述/JS_TS_学习路径与技能图谱.md) | 4 阶段学习路径与技能评估 | 学习者 |
+| [🗺️ 全景综述索引](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/00_总索引与导航.md) | 36 篇技术文档导航中心 | 所有开发者 |
+| [🎯 深度技术分析](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_深度技术分析.md) | Executive Summary 与决策建议 | 架构师 |
+| [📋 工程检查清单](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_工程实践检查清单.md) | 代码质量与安全检查清单 | 团队 Lead |
+| [🎓 学习路径图谱](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_学习路径与技能图谱.md) | 4 阶段学习路径与技能评估 | 学习者 |
 ```
 
 ### 修改 3：快速开始 - 方式三（第 102-107 行）
@@ -218,9 +218,9 @@ status: current
 ```markdown
 ### 方式三：按路径学习
 
-1. **[初学者路径](../../../docs/learning-paths/beginners-path.md)** - 掌握 TypeScript 基础和设计模式
-2. **[进阶路径](../../../docs/learning-paths/intermediate-path.md)** - 深入架构设计和性能优化
-3. **[架构师路径](../../../docs/learning-paths/advanced-path.md)** - 分布式系统和形式化验证
+1. **[初学者路径](../../../30-knowledge-base/30.9-learning-paths/beginners-path.md)** - 掌握 TypeScript 基础和设计模式
+2. **[进阶路径](../../../30-knowledge-base/30.9-learning-paths/intermediate-path.md)** - 深入架构设计和性能优化
+3. **[架构师路径](../../../30-knowledge-base/30.9-learning-paths/advanced-path.md)** - 分布式系统和形式化验证
 ```
 
 **建议修改为**:
@@ -229,15 +229,15 @@ status: current
 ### 方式三：按路径学习
 
 #### 基础路径（使用 docs/learning-paths）
-1. **[初学者路径](../../../docs/learning-paths/beginners-path.md)** - 掌握 TypeScript 基础和设计模式
-2. **[进阶路径](../../../docs/learning-paths/intermediate-path.md)** - 深入架构设计和性能优化
-3. **[架构师路径](../../../docs/learning-paths/advanced-path.md)** - 分布式系统和形式化验证
+1. **[初学者路径](../../../30-knowledge-base/30.9-learning-paths/beginners-path.md)** - 掌握 TypeScript 基础和设计模式
+2. **[进阶路径](../../../30-knowledge-base/30.9-learning-paths/intermediate-path.md)** - 深入架构设计和性能优化
+3. **[架构师路径](../../../30-knowledge-base/30.9-learning-paths/advanced-path.md)** - 分布式系统和形式化验证
 
 #### 深度路径（使用 JSTS全景综述）
-1. **[技术全景索引](../../../JSTS全景综述/00_总索引与导航.md)** - 36 篇文档完整导航
-2. **[学习路径图谱](../../../JSTS全景综述/JS_TS_学习路径与技能图谱.md)** - 技能图谱与阶段规划
-3. **[深度技术分析](../../../JSTS全景综述/JS_TS_深度技术分析.md)** - Executive Summary 快速概览
-4. **[学术前沿瞭望](../../../JSTS全景综述/JS_TS_学术前沿瞭望.md)** - PL 研究前沿动态
+1. **[技术全景索引](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/00_总索引与导航.md)** - 36 篇文档完整导航
+2. **[学习路径图谱](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_学习路径与技能图谱.md)** - 技能图谱与阶段规划
+3. **[深度技术分析](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_深度技术分析.md)** - Executive Summary 快速概览
+4. **[学术前沿瞭望](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_学术前沿瞭望.md)** - PL 研究前沿动态
 ```
 
 ---
@@ -331,13 +331,13 @@ status: current
 | [🧪 jsts-code-lab](../../../jsts-code-lab) | 代码实验室（80+ 模块） | 实践学习者 |
 | 📚 jsts-code-lab/CROSS-REFERENCE.md [TODO: 链接待修复] | 模块交叉引用索引 | 系统学习者 |
 | 📖 GLOSSARY.md [TODO: 链接待修复] | 专业术语表（中英对照） | 所有读者 |
-| [🗺️ 全景综述索引](../../../JSTS全景综述/00_总索引与导航.md) | 36 篇技术文档导航中心 | 所有开发者 |
-| [🎯 深度技术分析](../../../JSTS全景综述/JS_TS_深度技术分析.md) | Executive Summary 与决策建议 | 架构师 |
-| [📋 工程检查清单](../../../JSTS全景综述/JS_TS_工程实践检查清单.md) | 代码质量与安全检查清单 | 团队 Lead |
-| [🎓 学习路径图谱](../../../JSTS全景综述/JS_TS_学习路径与技能图谱.md) | 4 阶段学习路径与技能评估 | 学习者 |
-| [🎓 beginners-path.md](../../../docs/learning-paths/beginners-path.md) | 初学者学习路径 | 初学者 |
-| [📈 intermediate-path.md](../../../docs/learning-paths/intermediate-path.md) | 进阶学习路径 | 中级开发者 |
-| [🎯 advanced-path.md](../../../docs/learning-paths/advanced-path.md) | 架构师学习路径 | 高级开发者 |
+| [🗺️ 全景综述索引](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/00_总索引与导航.md) | 36 篇技术文档导航中心 | 所有开发者 |
+| [🎯 深度技术分析](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_深度技术分析.md) | Executive Summary 与决策建议 | 架构师 |
+| [📋 工程检查清单](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_工程实践检查清单.md) | 代码质量与安全检查清单 | 团队 Lead |
+| [🎓 学习路径图谱](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_学习路径与技能图谱.md) | 4 阶段学习路径与技能评估 | 学习者 |
+| [🎓 beginners-path.md](../../../30-knowledge-base/30.9-learning-paths/beginners-path.md) | 初学者学习路径 | 初学者 |
+| [📈 intermediate-path.md](../../../30-knowledge-base/30.9-learning-paths/intermediate-path.md) | 进阶学习路径 | 中级开发者 |
+| [🎯 advanced-path.md](../../../30-knowledge-base/30.9-learning-paths/advanced-path.md) | 架构师学习路径 | 高级开发者 |
 | 🤝 CONTRIBUTING.md [TODO: 链接待修复] | 贡献指南 | 贡献者 |
 
 ### 🗺️ 全景综述文档库
@@ -346,18 +346,18 @@ status: current
 
 | 文档 | 描述 | 难度 |
 |------|------|------|
-| [📘 总索引与导航](../../../JSTS全景综述/00_总索引与导航.md) | 全景综述完整导航中心 | 全部 |
-| [🎯 深度技术分析](../../../JSTS全景综述/JS_TS_深度技术分析.md) | Executive Summary：关键结论与决策建议 | 高级 |
-| [🔬 语言语义模型分析](../../../JSTS全景综述/JS_TS_语言语义模型全面分析.md) | 形式化语义、类型系统、执行模型 | 专家 |
-| [⚡ 现代运行时深度分析](../../../JSTS全景综述/JS_TS_现代运行时深度分析.md) | V8、Node.js 24、Deno、Bun 运行时机制 | 高级 |
-| [🌐 标准化生态与互操作](../../../JSTS全景综述/JS_TS_标准化生态与运行时互操作.md) | WinterTC、跨运行时兼容性 | 高级 |
-| [🎓 学术前沿瞭望](../../../JSTS全景综述/JS_TS_学术前沿瞭望.md) | PL 前沿、类型理论、形式化验证 | 专家 |
-| [📋 工程实践检查清单](../../../JSTS全景综述/JS_TS_工程实践检查清单.md) | 代码质量、安全、性能检查清单 | 全部 |
-| [⚠️ 反例与陷阱手册](../../../JSTS全景综述/JS_TS_反例与陷阱完全手册.md) | 常见反模式与避坑指南 | 全部 |
-| [🚀 性能优化指南](../../../JSTS全景综述/JS_TS_性能对比与优化指南.md) | 运行时性能对比与优化策略 | 进阶 |
-| [🗺️ 学习路径与技能图谱](../../../JSTS全景综述/JS_TS_学习路径与技能图谱.md) | 4 阶段学习路径与技能评估 | 全部 |
+| [📘 总索引与导航](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/00_总索引与导航.md) | 全景综述完整导航中心 | 全部 |
+| [🎯 深度技术分析](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_深度技术分析.md) | Executive Summary：关键结论与决策建议 | 高级 |
+| [🔬 语言语义模型分析](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_语言语义模型全面分析.md) | 形式化语义、类型系统、执行模型 | 专家 |
+| [⚡ 现代运行时深度分析](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_现代运行时深度分析.md) | V8、Node.js 24、Deno、Bun 运行时机制 | 高级 |
+| [🌐 标准化生态与互操作](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_标准化生态与运行时互操作.md) | WinterTC、跨运行时兼容性 | 高级 |
+| [🎓 学术前沿瞭望](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_学术前沿瞭望.md) | PL 前沿、类型理论、形式化验证 | 专家 |
+| [📋 工程实践检查清单](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_工程实践检查清单.md) | 代码质量、安全、性能检查清单 | 全部 |
+| [⚠️ 反例与陷阱手册](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_反例与陷阱完全手册.md) | 常见反模式与避坑指南 | 全部 |
+| [🚀 性能优化指南](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_性能对比与优化指南.md) | 运行时性能对比与优化策略 | 进阶 |
+| [🗺️ 学习路径与技能图谱](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_学习路径与技能图谱.md) | 4 阶段学习路径与技能评估 | 全部 |
 
-**更多文档**: 查看 [JSTS全景综述](../../../JSTS全景综述/) 目录获取全部 36 篇技术文档
+**更多文档**: 查看 [JSTS全景综述](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/) 目录获取全部 36 篇技术文档
 ```
 
 ---

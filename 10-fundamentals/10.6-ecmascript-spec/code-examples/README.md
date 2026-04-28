@@ -27,7 +27,7 @@
 
 ## 与互补目录的交叉引用
 
-- `../JSTS全景综述/01_language_core.md` — 语言核心全景
+- `../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md` — 语言核心全景
 - `../jsts-code-lab/01-ecmascript-evolution/` — ECMAScript 演进实验
 
 ---

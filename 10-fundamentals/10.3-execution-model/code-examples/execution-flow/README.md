@@ -29,7 +29,7 @@
 
 ## 与互补目录的交叉引用
 
-- `../JSTS全景综述/04_concurrency.md` — 并发模型全景
+- `../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/04_concurrency.md` — 并发模型全景
 - `../jsts-code-lab/03-concurrency/` — 并发代码实验
 
 ---

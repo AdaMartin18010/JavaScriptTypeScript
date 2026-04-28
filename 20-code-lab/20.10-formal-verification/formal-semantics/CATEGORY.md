@@ -14,4 +14,4 @@ created: 2026-04-27
 
 ## 相关索引
 
-- docs/categories-index.md [TODO: 链接待修复]
+- 30-knowledge-base/30.2-categories/README.md [TODO: 链接待修复]

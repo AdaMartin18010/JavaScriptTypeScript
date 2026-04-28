@@ -19,5 +19,5 @@ module: 50-browser-runtime
 
 ## 相关索引
 
-- [docs/frameworks-index.md](../../../30-knowledge-base/30.1-guides/frameworks-index.md)
-- [docs/categories/01-frontend-frameworks.md](../../../30-knowledge-base/30.1-guides/categories/01-frontend-frameworks.md)
+- [30-knowledge-base/30.2-categories/README.md](../../../30-knowledge-base/30.2-categories/README.md)
+- [docs/categories/01-frontend-frameworks.md](../../../30-knowledge-base/30.2-categories/01-frontend-frameworks.md)

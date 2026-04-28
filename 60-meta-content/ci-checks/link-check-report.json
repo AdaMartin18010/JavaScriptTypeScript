@@ -1,231 +1,309 @@
 {
-  "timestamp": "2026-04-28T11:43:18.353Z",
+  "timestamp": "2026-04-28T11:45:42.920Z",
   "totalFiles": 1712,
   "checkedFiles": 460,
   "totalLinks": 2186,
-  "brokenCount": 274,
+  "brokenCount": 287,
   "brokenLinks": [
     {
       "file": "20-code-lab\\20.1-fundamentals-lab\\ecmascript-evolution\\CATEGORY.md",
-      "line": 30,
-      "text": "docs/language-core-index.md",
-      "url": "../../../30-knowledge-base/30.1-guides/language-core-index.md"
-    },
-    {
-      "file": "20-code-lab\\20.1-fundamentals-lab\\ecmascript-evolution\\CATEGORY.md",
       "line": 31,
       "text": "docs/categories/00-language-core.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/00-language-core.md"
-    },
-    {
-      "file": "20-code-lab\\20.1-fundamentals-lab\\js-ts-comparison\\CATEGORY.md",
-      "line": 30,
-      "text": "docs/language-core-index.md",
-      "url": "../../../30-knowledge-base/30.1-guides/language-core-index.md"
+      "url": "../../../30-knowledge-base/30.2-categories/00-language-core.md"
     },
     {
       "file": "20-code-lab\\20.1-fundamentals-lab\\js-ts-comparison\\CATEGORY.md",
       "line": 31,
       "text": "docs/categories/00-language-core.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/00-language-core.md"
+      "url": "../../../30-knowledge-base/30.2-categories/00-language-core.md"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\js-ts-comparison\\README.md",
+      "line": 82,
+      "text": "GRADUAL_TYPING_THEORY.md",
+      "url": "../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/GRADUAL_TYPING_THEORY.md"
     },
     {
       "file": "20-code-lab\\20.1-fundamentals-lab\\js-ts-comparison\\README.md",
       "line": 84,
       "text": "js-ts-compilers-compare.md",
-      "url": "../../../30-knowledge-base/30.1-guides/comparison-matrices/js-ts-compilers-compare.md"
-    },
-    {
-      "file": "20-code-lab\\20.1-fundamentals-lab\\language-core\\CATEGORY.md",
-      "line": 37,
-      "text": "docs/language-core-index.md",
-      "url": "../../../30-knowledge-base/30.1-guides/language-core-index.md"
+      "url": "../../../30-knowledge-base/30.3-comparison-matrices/js-ts-compilers-compare.md"
     },
     {
       "file": "20-code-lab\\20.1-fundamentals-lab\\language-core\\CATEGORY.md",
       "line": 38,
       "text": "docs/categories/00-language-core.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/00-language-core.md"
+      "url": "../../../30-knowledge-base/30.2-categories/00-language-core.md"
     },
     {
       "file": "20-code-lab\\20.1-fundamentals-lab\\web-assembly\\ARCHIVED.md",
       "line": 23,
       "text": "docs/categories/21-webassembly.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/21-webassembly.md"
+      "url": "../../../30-knowledge-base/30.2-categories/21-webassembly.md"
     },
     {
       "file": "20-code-lab\\20.10-formal-verification\\blockchain-advanced\\ARCHIVED.md",
       "line": 24,
       "text": "docs/research/tech-radar-template.md",
-      "url": "../../../30-knowledge-base/30.1-guides/research/tech-radar-template.md"
+      "url": "../../../30-knowledge-base/30.8-research/tech-radar-template.md"
     },
     {
       "file": "20-code-lab\\20.10-formal-verification\\blockchain-web3\\ARCHIVED.md",
       "line": 24,
       "text": "docs/research/tech-radar-template.md",
-      "url": "../../../30-knowledge-base/30.1-guides/research/tech-radar-template.md"
-    },
-    {
-      "file": "20-code-lab\\20.2-language-patterns\\design-patterns\\CATEGORY.md",
-      "line": 30,
-      "text": "docs/language-core-index.md",
-      "url": "../../../30-knowledge-base/30.1-guides/language-core-index.md"
+      "url": "../../../30-knowledge-base/30.8-research/tech-radar-template.md"
     },
     {
       "file": "20-code-lab\\20.2-language-patterns\\design-patterns\\CATEGORY.md",
       "line": 31,
       "text": "docs/categories/00-language-core.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/00-language-core.md"
+      "url": "../../../30-knowledge-base/30.2-categories/00-language-core.md"
     },
     {
       "file": "20-code-lab\\20.3-concurrency-async\\browser-runtime\\CATEGORY.md",
       "line": 22,
-      "text": "docs/frameworks-index.md",
-      "url": "../../../30-knowledge-base/30.1-guides/frameworks-index.md"
+      "text": "30-knowledge-base/30.2-categories/README.md",
+      "url": "../../../30-knowledge-base/30.2-categories/README.md"
     },
     {
       "file": "20-code-lab\\20.3-concurrency-async\\browser-runtime\\CATEGORY.md",
       "line": 23,
       "text": "docs/categories/01-frontend-frameworks.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/01-frontend-frameworks.md"
-    },
-    {
-      "file": "20-code-lab\\20.3-concurrency-async\\concurrency\\CATEGORY.md",
-      "line": 30,
-      "text": "docs/language-core-index.md",
-      "url": "../../../30-knowledge-base/30.1-guides/language-core-index.md"
+      "url": "../../../30-knowledge-base/30.2-categories/01-frontend-frameworks.md"
     },
     {
       "file": "20-code-lab\\20.3-concurrency-async\\concurrency\\CATEGORY.md",
       "line": 31,
       "text": "docs/categories/00-language-core.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/00-language-core.md"
-    },
-    {
-      "file": "20-code-lab\\20.4-data-algorithms\\algorithms\\CATEGORY.md",
-      "line": 30,
-      "text": "docs/language-core-index.md",
-      "url": "../../../30-knowledge-base/30.1-guides/language-core-index.md"
+      "url": "../../../30-knowledge-base/30.2-categories/00-language-core.md"
     },
     {
       "file": "20-code-lab\\20.4-data-algorithms\\algorithms\\CATEGORY.md",
       "line": 31,
       "text": "docs/categories/00-language-core.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/00-language-core.md"
-    },
-    {
-      "file": "20-code-lab\\20.4-data-algorithms\\data-structures\\CATEGORY.md",
-      "line": 30,
-      "text": "docs/language-core-index.md",
-      "url": "../../../30-knowledge-base/30.1-guides/language-core-index.md"
+      "url": "../../../30-knowledge-base/30.2-categories/00-language-core.md"
     },
     {
       "file": "20-code-lab\\20.4-data-algorithms\\data-structures\\CATEGORY.md",
       "line": 31,
       "text": "docs/categories/00-language-core.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/00-language-core.md"
+      "url": "../../../30-knowledge-base/30.2-categories/00-language-core.md"
     },
     {
       "file": "20-code-lab\\20.5-frontend-frameworks\\accessibility-a11y\\ARCHIVED.md",
       "line": 24,
       "text": "docs/guides/web-apis-guide.md",
-      "url": "../../../30-knowledge-base/30.1-guides/guides/web-apis-guide.md"
+      "url": "../../../30-knowledge-base/30.1-guides/web-apis-guide.md"
     },
     {
       "file": "20-code-lab\\20.5-frontend-frameworks\\frontend-frameworks\\CATEGORY.md",
       "line": 22,
-      "text": "docs/frameworks-index.md",
-      "url": "../../../30-knowledge-base/30.1-guides/frameworks-index.md"
+      "text": "30-knowledge-base/30.2-categories/README.md",
+      "url": "../../../30-knowledge-base/30.2-categories/README.md"
     },
     {
       "file": "20-code-lab\\20.5-frontend-frameworks\\frontend-frameworks\\CATEGORY.md",
       "line": 23,
       "text": "docs/categories/01-frontend-frameworks.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/01-frontend-frameworks.md"
+      "url": "../../../30-knowledge-base/30.2-categories/01-frontend-frameworks.md"
     },
     {
       "file": "20-code-lab\\20.5-frontend-frameworks\\ui-components\\CATEGORY.md",
       "line": 23,
-      "text": "docs/frameworks-index.md",
-      "url": "../../../30-knowledge-base/30.1-guides/frameworks-index.md"
+      "text": "30-knowledge-base/30.2-categories/README.md",
+      "url": "../../../30-knowledge-base/30.2-categories/README.md"
     },
     {
       "file": "20-code-lab\\20.5-frontend-frameworks\\ui-components\\CATEGORY.md",
       "line": 24,
       "text": "docs/categories/02-ui-component-libraries.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/02-ui-component-libraries.md"
+      "url": "../../../30-knowledge-base/30.2-categories/02-ui-component-libraries.md"
     },
     {
       "file": "20-code-lab\\20.5-frontend-frameworks\\web-rendering\\CATEGORY.md",
       "line": 23,
-      "text": "docs/frameworks-index.md",
-      "url": "../../../30-knowledge-base/30.1-guides/frameworks-index.md"
+      "text": "30-knowledge-base/30.2-categories/README.md",
+      "url": "../../../30-knowledge-base/30.2-categories/README.md"
     },
     {
       "file": "20-code-lab\\20.5-frontend-frameworks\\web-rendering\\CATEGORY.md",
       "line": 24,
       "text": "docs/categories/09-ssr-meta-frameworks.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/09-ssr-meta-frameworks.md"
+      "url": "../../../30-knowledge-base/30.2-categories/09-ssr-meta-frameworks.md"
     },
     {
       "file": "20-code-lab\\20.5-frontend-frameworks\\web-rendering\\CATEGORY.md",
       "line": 25,
       "text": "docs/categories/10-styling.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/10-styling.md"
+      "url": "../../../30-knowledge-base/30.2-categories/10-styling.md"
     },
     {
       "file": "20-code-lab\\20.6-backend-apis\\backend-development\\CATEGORY.md",
       "line": 22,
-      "text": "docs/frameworks-index.md",
-      "url": "../../../30-knowledge-base/30.1-guides/frameworks-index.md"
+      "text": "30-knowledge-base/30.2-categories/README.md",
+      "url": "../../../30-knowledge-base/30.2-categories/README.md"
     },
     {
       "file": "20-code-lab\\20.6-backend-apis\\backend-development\\CATEGORY.md",
       "line": 23,
       "text": "docs/categories/14-backend-frameworks.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/14-backend-frameworks.md"
+      "url": "../../../30-knowledge-base/30.2-categories/14-backend-frameworks.md"
     },
     {
       "file": "20-code-lab\\20.6-backend-apis\\microservices\\ARCHIVED.md",
       "line": 24,
       "text": "docs/guides/MICROSERVICES_COMPLETE_GUIDE.md",
-      "url": "../../../30-knowledge-base/30.1-guides/guides/MICROSERVICES_COMPLETE_GUIDE.md"
+      "url": "../../../30-knowledge-base/30.1-guides/MICROSERVICES_COMPLETE_GUIDE.md"
     },
     {
       "file": "20-code-lab\\20.7-ai-agent-infra\\ai-agent-lab\\README.md",
       "line": 30,
       "text": "AI Agent 基础设施生态",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/28-ai-agent-infrastructure.md"
+      "url": "../../../30-knowledge-base/30.2-categories/28-ai-agent-infrastructure.md"
     },
     {
       "file": "20-code-lab\\20.7-ai-agent-infra\\ai-agent-lab\\README.md",
       "line": 31,
       "text": "AI 框架选型决策树",
-      "url": "../../../30-knowledge-base/30.1-guides/decision-trees.md"
+      "url": "../../../30-knowledge-base/30.4-decision-trees/README.md"
     },
     {
       "file": "20-code-lab\\20.8-edge-serverless\\container-orchestration\\ARCHIVED.md",
       "line": 23,
       "text": "docs/categories/24-ci-cd-devops.md",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/24-ci-cd-devops.md"
+      "url": "../../../30-knowledge-base/30.2-categories/24-ci-cd-devops.md"
     },
     {
       "file": "20-code-lab\\20.9-observability-security\\auth-modern-lab\\README.md",
       "line": 26,
       "text": "现代认证专题文档",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/29-authentication.md"
+      "url": "../../../30-knowledge-base/30.2-categories/29-authentication.md"
     },
     {
       "file": "20-code-lab\\20.9-observability-security\\auth-modern-lab\\README.md",
       "line": 27,
       "text": "Passkeys 深度实现指南",
-      "url": "../../../30-knowledge-base/30.1-guides/categories/29-authentication.md#8-passkeys--webauthn-深度实现指南"
+      "url": "../../../30-knowledge-base/30.2-categories/29-authentication.md#8-passkeys--webauthn-深度实现指南"
     },
     {
       "file": "20-code-lab\\20.9-observability-security\\benchmarks\\ARCHIVED.md",
       "line": 25,
       "text": "docs/guides/ai-coding-workflow.md",
-      "url": "../../../30-knowledge-base/30.1-guides/guides/ai-coding-workflow.md"
+      "url": "../../../30-knowledge-base/30.1-guides/ai-coding-workflow.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 81,
+      "text": "📘 总索引与导航",
+      "url": "../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/00_总索引与导航.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 84,
+      "text": "⚡ 现代运行时深度分析",
+      "url": "../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_现代运行时深度分析.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 103,
+      "text": "渐进类型理论",
+      "url": "../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/GRADUAL_TYPING_THEORY.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 108,
+      "text": "现代运行时分析",
+      "url": "../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_现代运行时深度分析.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 109,
+      "text": "V8 运行时理论",
+      "url": "../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/V8_RUNTIME_THEORY.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 208,
+      "text": "🗺️ 全景综述索引",
+      "url": "../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/00_总索引与导航.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 221,
+      "text": "初学者路径",
+      "url": "../../../30-knowledge-base/30.9-learning-paths/beginners-path.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 222,
+      "text": "进阶路径",
+      "url": "../../../30-knowledge-base/30.9-learning-paths/intermediate-path.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 223,
+      "text": "架构师路径",
+      "url": "../../../30-knowledge-base/30.9-learning-paths/advanced-path.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 221,
+      "text": "初学者路径",
+      "url": "../../../30-knowledge-base/30.9-learning-paths/beginners-path.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 222,
+      "text": "进阶路径",
+      "url": "../../../30-knowledge-base/30.9-learning-paths/intermediate-path.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 223,
+      "text": "架构师路径",
+      "url": "../../../30-knowledge-base/30.9-learning-paths/advanced-path.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 237,
+      "text": "技术全景索引",
+      "url": "../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/00_总索引与导航.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 208,
+      "text": "🗺️ 全景综述索引",
+      "url": "../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/00_总索引与导航.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 338,
+      "text": "🎓 beginners-path.md",
+      "url": "../../../30-knowledge-base/30.9-learning-paths/beginners-path.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 339,
+      "text": "📈 intermediate-path.md",
+      "url": "../../../30-knowledge-base/30.9-learning-paths/intermediate-path.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 340,
+      "text": "🎯 advanced-path.md",
+      "url": "../../../30-knowledge-base/30.9-learning-paths/advanced-path.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 81,
+      "text": "📘 总索引与导航",
+      "url": "../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/00_总索引与导航.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 84,
+      "text": "⚡ 现代运行时深度分析",
+      "url": "../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_现代运行时深度分析.md"
     },
     {
       "file": "40-ecosystem\\40.1-categories\\docs-archive\\guides\\getting-started.md",

@@ -1,77 +1,47 @@
 [
   {
-    "sourceFile": "10-fundamentals/10.1-language-semantics/README.md",
-    "link": "../jsts-language-core-system/",
-    "resolved": "10-fundamentals/jsts-language-core-system/"
+    "sourceFile": "20-code-lab/20.4-data-algorithms/data-structures/CATEGORY.md",
+    "link": "../../../30-knowledge-base/30.1-guides/language-core-index.md",
+    "resolved": "30-knowledge-base/30.1-guides/language-core-index.md"
   },
   {
-    "sourceFile": "docs/guides/REGULAR_EXPRESSIONS_COMPLETE.md",
-    "link": "\\d",
-    "resolved": "\\d"
+    "sourceFile": "20-code-lab/20.6-backend-apis/backend-development/CATEGORY.md",
+    "link": "../../../30-knowledge-base/30.1-guides/frameworks-index.md",
+    "resolved": "30-knowledge-base/30.1-guides/frameworks-index.md"
   },
   {
-    "sourceFile": "README-EN.md",
-    "link": "./CONTRIBUTING.md#inclusion-criteria",
-    "resolved": "CONTRIBUTING.md#inclusion-criteria"
+    "sourceFile": "20-code-lab/20.7-ai-agent-infra/ai-agent-lab/README.md",
+    "link": "../../../30-knowledge-base/30.1-guides/decision-trees.md",
+    "resolved": "30-knowledge-base/30.1-guides/decision-trees.md"
   },
   {
-    "sourceFile": "README.md",
-    "link": "./CONTRIBUTING.md#收录标准",
-    "resolved": "CONTRIBUTING.md#收录标准"
+    "sourceFile": "40-ecosystem/40.1-categories/docs-archive/translations/README-en.md",
+    "link": "../../../../LICENSE.md",
+    "resolved": "LICENSE.md"
   },
   {
     "sourceFile": "website/guide/regular-expressions-complete.md",
     "link": "\\d",
     "resolved": "\\d"
+  },
+  {
+    "sourceFile": "docs/language-core-index.md",
+    "link": "../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/GRADUAL_TYPING_THEORY.md",
+    "resolved": "30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/GRADUAL_TYPING_THEORY.md"
+  },
+  {
+    "sourceFile": "docs/language-core-index.md",
+    "link": "../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/V8_RUNTIME_THEORY.md",
+    "resolved": "30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/V8_RUNTIME_THEORY.md"
+  },
+  {
+    "sourceFile": "docs/language-core-index.md",
+    "link": "../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/00_总索引与导航.md",
+    "resolved": "30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/00_总索引与导航.md"
   },
   {
     "sourceFile": "website/guide/regular-expressions-complete.md",
     "link": "c",
     "resolved": "website/guide/c"
-  },
-  {
-    "sourceFile": "website/README.md",
-    "link": "./guide/contributing.md",
-    "resolved": "website/guide/contributing.md"
-  },
-  {
-    "sourceFile": "website/research/awesome-javascript-analysis.md",
-    "link": "链接",
-    "resolved": "website/research/链接"
-  },
-  {
-    "sourceFile": "website/research/awesome-javascript-analysis.md",
-    "link": "链接",
-    "resolved": "website/research/链接"
-  },
-  {
-    "sourceFile": "website/research/awesome-javascript-analysis.md",
-    "link": "链接",
-    "resolved": "website/research/链接"
-  },
-  {
-    "sourceFile": "website/research/awesome-javascript-analysis.md",
-    "link": "链接",
-    "resolved": "website/research/链接"
-  },
-  {
-    "sourceFile": "website/research/awesome-javascript-analysis.md",
-    "link": "...",
-    "resolved": "website/research/..."
-  },
-  {
-    "sourceFile": "website/research/awesome-javascript-analysis.md",
-    "link": "链接",
-    "resolved": "website/research/链接"
-  },
-  {
-    "sourceFile": "website/research/awesome-javascript-analysis.md",
-    "link": "链接",
-    "resolved": "website/research/链接"
-  },
-  {
-    "sourceFile": "website/research/awesome-nodejs-analysis.md",
-    "link": "github-repo-link",
-    "resolved": "website/research/github-repo-link"
   }
 ]
