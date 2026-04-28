@@ -77,4 +77,4 @@ Technology selection is **not about finding the best tool—it's about finding t
 
 ---
 
-*Full Chinese version available at: `../../JSTS全景综述/技术选型方法论与评估框架.md`*
+*Full Chinese version available at: `../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/技术选型方法论与评估框架.md`*

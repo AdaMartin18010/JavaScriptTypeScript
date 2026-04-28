@@ -1,4 +1,4 @@
-﻿# 📦 模块归档说明（Module Archive Notice）
+# 📦 模块归档说明（Module Archive Notice）
 
 > **归档日期**: 2026-04-27
 > **归档原因**: 本模块内容较为薄弱（≤3 个文件），已作为归档状态保留。原内容未删除，可供历史参考。
@@ -21,7 +21,7 @@
 根据本模块的主题，推荐以下替代学习路径：
 
 - [34-blockchain-web3](../blockchain-web3/) — 区块链 Web3（同样已归档）
-- [docs/research/tech-radar-template.md](../../../docs/research/tech-radar-template.md) — 技术雷达
+- [docs/research/tech-radar-template.md](../../../30-knowledge-base/30.1-guides/research/tech-radar-template.md) — 技术雷达
 
 ---
 

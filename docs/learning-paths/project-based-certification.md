@@ -151,7 +151,7 @@ status: current
 > 难度: ⭐⭐
 > 预计时间: 3-5 天
 > 关联 code-lab: [00-language-core](../../jsts-code-lab/00-language-core/)
-> 关联理论文档: [语言核心基础](../../JSTS全景综述/01_language_core.md)
+> 关联理论文档: [语言核心基础](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md)
 
 #### 需求文档
 
@@ -203,7 +203,7 @@ status: current
 > 难度: ⭐⭐⭐
 > 预计时间: 5-7 天
 > 关联 code-lab: [00-language-core](../../jsts-code-lab/00-language-core/), [02-design-patterns](../../jsts-code-lab/02-design-patterns/)
-> 关联理论文档: [设计模式入门](../../JSTS全景综述/03_design_patterns.md)
+> 关联理论文档: [设计模式入门](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/03_design_patterns.md)
 
 #### 需求文档
 
@@ -255,7 +255,7 @@ status: current
 > 难度: ⭐⭐⭐⭐
 > 预计时间: 7-10 天
 > 关联 code-lab: [18-frontend-frameworks](../../jsts-code-lab/18-frontend-frameworks/)
-> 关联理论文档: [前端框架解析](../../JSTS全景综述/ecmascript-features/)
+> 关联理论文档: [前端框架解析](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ecmascript-features/)
 
 #### 需求文档
 
@@ -307,7 +307,7 @@ status: current
 > 难度: ⭐⭐⭐⭐
 > 预计时间: 10-14 天
 > 关联 code-lab: [19-backend-development](../../jsts-code-lab/19-backend-development/), [21-api-security](../../jsts-code-lab/21-api-security/)
-> 关联理论文档: [API 安全与认证](../../JSTS全景综述/05_distributed_systems.md)
+> 关联理论文档: [API 安全与认证](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/05_distributed_systems.md)
 
 #### 需求文档
 
@@ -364,7 +364,7 @@ status: current
 > 难度: ⭐⭐⭐⭐
 > 预计时间: 10-14 天
 > 关联 code-lab: [03-concurrency](../../jsts-code-lab/03-concurrency/), [20-database-orm](../../jsts-code-lab/20-database-orm/)
-> 关联理论文档: [并发编程与实时通信](../../JSTS全景综述/04_concurrency.md)
+> 关联理论文档: [并发编程与实时通信](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/04_concurrency.md)
 
 #### 需求文档
 
@@ -417,7 +417,7 @@ status: current
 > 难度: ⭐⭐⭐⭐⭐
 > 预计时间: 12-16 天
 > 关联 code-lab: [08-performance](../../jsts-code-lab/08-performance/), [11-benchmarks](../../jsts-code-lab/11-benchmarks/)
-> 关联理论文档: [性能优化方法论](../../JSTS全景综述/ecmascript-features/)
+> 关联理论文档: [性能优化方法论](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ecmascript-features/)
 
 #### 需求文档
 
@@ -470,7 +470,7 @@ status: current
 > 难度: ⭐⭐⭐⭐⭐
 > 预计时间: 14-21 天
 > 关联 code-lab: [25-microservices](../../jsts-code-lab/25-microservices/), [26-event-sourcing](../../jsts-code-lab/26-event-sourcing/)
-> 关联理论文档: [微服务与事件溯源](../../JSTS全景综述/07_architecture.md)
+> 关联理论文档: [微服务与事件溯源](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/07_architecture.md)
 
 #### 需求文档
 
@@ -528,7 +528,7 @@ status: current
 > 难度: ⭐⭐⭐⭐⭐
 > 预计时间: 21-30 天
 > 关联 code-lab: [01-ecmascript-evolution](../../jsts-code-lab/01-ecmascript-evolution/), [79-compiler-design](../../jsts-code-lab/79-compiler-design/)
-> 关联理论文档: [ECMAScript 规范与演进](../../JSTS全景综述/01_language_core.md), [编译器设计](../../jsts-code-lab/79-compiler-design/THEORY.md)
+> 关联理论文档: [ECMAScript 规范与演进](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md), [编译器设计](../../jsts-code-lab/79-compiler-design/THEORY.md)
 
 #### 需求文档
 

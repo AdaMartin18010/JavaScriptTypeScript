@@ -604,4 +604,4 @@ packages:
 ## 相关阅读
 
 - [JS/TS 编译器与转译器对比矩阵](../comparison-matrices/js-ts-compilers-compare.md)
-- [JS_TS_语言语义模型全面分析](../../JSTS全景综述/JS_TS_语言语义模型全面分析.md)
+- [JS_TS_语言语义模型全面分析](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_语言语义模型全面分析.md)

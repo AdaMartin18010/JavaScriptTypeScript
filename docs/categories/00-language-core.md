@@ -74,9 +74,9 @@ category-boundary: language-core
 
 | 文档 | 说明 |
 |------|------|
-| [JSTS全景综述/01_language_core.md](../../JSTS全景综述/01_language_core.md) | ES2020–ES2026 特性全览 |
-| [JSTS全景综述/04_concurrency.md](../../JSTS全景综述/04_concurrency.md) | 并发模型全景 |
-| [JSTS全景综述/ecmascript-features/](../../JSTS全景综述/ecmascript-features/) | 分版本 ECMAScript 特性深度文档 |
+| [JSTS全景综述/01_language_core.md](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md) | ES2020–ES2026 特性全览 |
+| [JSTS全景综述/04_concurrency.md](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/04_concurrency.md) | 并发模型全景 |
+| [JSTS全景综述/ecmascript-features/](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ecmascript-features/) | 分版本 ECMAScript 特性深度文档 |
 
 ---
 

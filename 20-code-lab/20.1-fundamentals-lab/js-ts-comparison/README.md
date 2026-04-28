@@ -81,7 +81,7 @@ pnpm test jsts-code-lab/10-js-ts-comparison
 - [JS_TS_语言语义模型全面分析](../../../JSTS全景综述/JS_TS_语言语义模型全面分析.md) — 项目旗舰文档，规范级语义分析
 - [GRADUAL_TYPING_THEORY.md](../../../JSTS全景综述/GRADUAL_TYPING_THEORY.md) — 渐进类型理论专著
 - [TYPE_SOUNDNESS_ANALYSIS.md](../../../JSTS全景综述/TYPE_SOUNDNESS_ANALYSIS.md) — 类型健全性分析
-- [js-ts-compilers-compare.md](../../../docs/comparison-matrices/js-ts-compilers-compare.md) — 编译器/转译器语义对比矩阵
+- [js-ts-compilers-compare.md](../../../30-knowledge-base/30.1-guides/comparison-matrices/js-ts-compilers-compare.md) — 编译器/转译器语义对比矩阵
 
 ---
 

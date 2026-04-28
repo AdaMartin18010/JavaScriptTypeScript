@@ -39,7 +39,7 @@
 |------|-------------|
 | **语言核心** | [模块系统](../jsts-language-core-system/08-module-system/) — ESM 与边缘运行时 |
 | **框架生态** | [Hono 框架](./categories/02-backend-frameworks.md)、[边缘框架选型](./decision-trees.md#9-部署平台选型决策树) |
-| **应用领域** | [边缘数据库](./categories/30-edge-databases.md)、[边缘优先架构](../JSTS全景综述/边缘优先架构设计方法论.md) |
+| **应用领域** | [边缘数据库](./categories/30-edge-databases.md)、[边缘优先架构](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/边缘优先架构设计方法论.md) |
 | **技术基础设施** | [部署平台对比](./categories/09-deployment-platforms.md)、[可观测性](./categories/23-error-monitoring-logging.md) |
 
 ---

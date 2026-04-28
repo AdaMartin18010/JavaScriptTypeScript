@@ -27,5 +27,5 @@ npx vitest run 94-ai-agent-lab
 
 ## 关联文档
 
-- [AI Agent 基础设施生态](../../../docs/categories/28-ai-agent-infrastructure.md)
-- [AI 框架选型决策树](../../../docs/decision-trees.md)
+- [AI Agent 基础设施生态](../../../30-knowledge-base/30.1-guides/categories/28-ai-agent-infrastructure.md)
+- [AI 框架选型决策树](../../../30-knowledge-base/30.1-guides/decision-trees.md)

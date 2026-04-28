@@ -23,8 +23,8 @@
 
 ## 关联文档
 
-- [现代认证专题文档](../../../docs/categories/29-authentication.md) — 完整的方案对比与选型指南
-- [Passkeys 深度实现指南](../../../docs/categories/29-authentication.md#8-passkeys--webauthn-深度实现指南)
+- [现代认证专题文档](../../../30-knowledge-base/30.1-guides/categories/29-authentication.md) — 完整的方案对比与选型指南
+- [Passkeys 深度实现指南](../../../30-knowledge-base/30.1-guides/categories/29-authentication.md#8-passkeys--webauthn-深度实现指南)
 
 ## 运行方式
 

@@ -102,4 +102,4 @@ No single runtime wins on all dimensions. The "right" choice depends on your con
 
 ---
 
-*Full Chinese version available at: `../../JSTS全景综述/JS_TS_现代运行时深度分析.md`*
+*Full Chinese version available at: `../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_现代运行时深度分析.md`*

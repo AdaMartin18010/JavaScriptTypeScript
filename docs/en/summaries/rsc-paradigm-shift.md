@@ -99,4 +99,4 @@ RSC is not an optimization—it is a **paradigm shift**. React is being redefine
 
 ---
 
-*Full Chinese version available at: `../../JSTS全景综述/React_Server_Components_范式转变分析.md`*
+*Full Chinese version available at: `../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/React_Server_Components_范式转变分析.md`*

@@ -20,5 +20,5 @@ module: 51-ui-components
 
 ## 相关索引
 
-- [docs/frameworks-index.md](../../../docs/frameworks-index.md)
-- [docs/categories/02-ui-component-libraries.md](../../../docs/categories/02-ui-component-libraries.md)
+- [docs/frameworks-index.md](../../../30-knowledge-base/30.1-guides/frameworks-index.md)
+- [docs/categories/02-ui-component-libraries.md](../../../30-knowledge-base/30.1-guides/categories/02-ui-component-libraries.md)

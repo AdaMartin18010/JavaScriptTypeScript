@@ -132,7 +132,7 @@ status: current
 |----------|------|------|
 | 代码实验室 | `../../jsts-code-lab/` | 90+ 主题模块，含测试 |
 | 示例项目 | `../../examples/README.md` | 13 个生产级示例 |
-| 理论综述 | `../../JSTS全景综述/` | 8 大主题全景文档 |
+| 理论综述 | `../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/` | 8 大主题全景文档 |
 | 认证体系 | `./project-based-certification.md` | 项目制能力认证 |
 | 构建工具对比 | `../comparison-matrices/build-tools-compare.md` | 工具选型矩阵 |
 

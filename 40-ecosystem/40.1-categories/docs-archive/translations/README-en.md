@@ -83,7 +83,7 @@
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](../../../../CONTRIBUTING.md) for details.
+Please read [CONTRIBUTING.md](../../../../../CONTRIBUTING.md) for details.
 
 ## License
 

@@ -1,4 +1,4 @@
-﻿# 📦 模块归档说明（Module Archive Notice）
+# 📦 模块归档说明（Module Archive Notice）
 
 > **归档日期**: 2026-04-27
 > **归档原因**: 本模块内容较为薄弱（≤3 个文件），已作为归档状态保留。原内容未删除，可供历史参考。
@@ -21,7 +21,7 @@
 根据本模块的主题，推荐以下替代学习路径：
 
 - [50-browser-runtime](../../20.3-concurrency-async/browser-runtime) — 浏览器运行时与 Web API
-- [docs/guides/web-apis-guide.md](../../../docs/guides/web-apis-guide.md) — Web APIs 完全指南
+- [docs/guides/web-apis-guide.md](../../../30-knowledge-base/30.1-guides/guides/web-apis-guide.md) — Web APIs 完全指南
 
 ---
 

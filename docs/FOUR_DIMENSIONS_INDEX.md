@@ -19,7 +19,7 @@
 | 文档 | 路径 | 描述 |
 |------|------|------|
 | 语言核心系统 | [../jsts-language-core-system/](../jsts-language-core-system/) | 类型系统/变量系统/控制流/执行模型/规范基础/模块系统/对象模型 (52+ 篇) |
-| JSTS 全景综述 | [../JSTS全景综述/](../JSTS全景综述/) | ECMAScript 演进、形式化语义、学术前沿 |
+| JSTS 全景综述 | [../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/) | ECMAScript 演进、形式化语义、学术前沿 |
 
 ### 代码实践
 

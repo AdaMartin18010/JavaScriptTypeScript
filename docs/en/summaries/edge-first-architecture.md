@@ -80,4 +80,4 @@ Edge-First is not optional for latency-sensitive businesses. V8 Isolates make ed
 
 ---
 
-*Full Chinese version available at: `../../JSTS全景综述/边缘优先架构设计方法论.md`*
+*Full Chinese version available at: `../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/边缘优先架构设计方法论.md`*

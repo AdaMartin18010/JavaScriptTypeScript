@@ -59,4 +59,4 @@ Signals will not fully replace Hooks, but will become the **default choice for p
 
 ---
 
-*Full Chinese version available at: `../../JSTS全景综述/Signals_范式深度分析.md`*
+*Full Chinese version available at: `../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/Signals_范式深度分析.md`*
