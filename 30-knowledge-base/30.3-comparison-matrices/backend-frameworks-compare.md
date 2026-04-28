@@ -16,18 +16,18 @@ status: current
 
 | 指标 | Express | Fastify | NestJS | Koa | Hono | Elysia |
 |------|---------|---------|--------|-----|------|--------|
-| **发布年份** | 2010 | 2017 | 2017 | 2013 | 2022 | 2023 |
+| **发布年份** | 2010 | 2016 | 2017 | 2013 | 2021 | 2023 |
 | **维护方** | OpenJS | OpenJS | 社区 (Kamil Myśliwiec) | Koajs | HonoJS | Elysiajs |
 | **设计哲学** | 极简中间件 | 高性能 + 插件 | 企业级架构 | 下一代中间件 | 超轻量跨运行时 | Bun 原生端到端类型 |
-| **性能 (req/s)** | ~15K | ~50K | ~35K | ~25K | ~70K (Node) / 840K (Cloudflare Workers) | ~100K+ |
-| **TypeScript 支持** | 需手动配置 | 极佳（原生） | 极佳（原生） | 需手动配置 | 极佳 | 极佳 |
+| **性能 (req/s)** | ~18K (Node 22) | ~72K (Node 22) | ~45K (Fastify adapter) | ~25K | ~230K (Node 22) / ~460K (Bun 1.2) / **~840K (CF Workers)** | ~980K (Bun 1.2) |
+| **TypeScript 支持** | @types/express (社区) | 极佳（原生 + typebox） | 极佳（原生 required） | 需手动配置 | 极佳（原生, type-inferred） | 极佳（原生, Eden Treaty） |
 | **依赖注入 (DI)** | ❌ | ❌ | ✅ 内置 | ❌ | ❌ | ✅ 轻量 |
 | **装饰器支持** | ❌ | ❌ | ✅ 核心 | ❌ | ❌ | ✅ 核心 |
-| **JSON Schema 验证** | ❌ (需外部) | ✅ 原生 | ⚠️ (需集成) | ❌ | ⚠️ (中间件) | ✅ 原生 |
+| **JSON Schema 验证** | ❌ (需外部) | ✅ 原生 (内置) | ⚠️ (class-validator) | ❌ | ⚠️ (Zod/valibot 中间件) | ✅ 原生 |
 | **WebSocket 支持** | ❌ (需 Socket.io) | ⚠️ (插件) | ⚠️ (Gateway) | ❌ | ✅ 原生 | ⚠️ (插件) |
 | **多运行时支持** | Node.js | Node.js | Node.js | Node.js | Node/Bun/Deno/Edge | Bun/Node.js |
 | **学习曲线** | 平缓 | 平缓 | 陡峭 | 中等 | 极平缓 | 平缓 |
-| **企业级采用度** | 极高 | 高 | 高 | 中等 | 快速增长 | 早期采用 |
+| **企业级采用度** | 极高 | 高 | 高 | 中等 | 快速增长 (~2M npm/周) | 早期采用 (~300K npm/周) |
 
 ---
 
@@ -49,12 +49,12 @@ status: current
 | 场景 | 首选 | 次选 | 理由 |
 |------|------|------|------|
 | 企业级大型后端系统 | **NestJS** | Fastify | 依赖注入、模块化、微服务、GraphQL 一站式支持 |
-| 极致性能 API | **Elysia** | Fastify / Hono | Bun 运行时 + 编译时优化带来最高吞吐 |
+| 极致性能 API (Bun) | **Elysia** | Hono | Bun 1.2 上 Elysia ~980K req/s，Hono ~460K req/s；均为 Rust/编译时优化级吞吐 |
 | 快速原型 / 小型服务 | **Fastify** | Express | 零配置 TS，原生 JSON Schema，开发体验极佳 |
-| 边缘计算 / Serverless | **Hono** | Fastify | 超小包体积，多运行时兼容，Cloudflare Workers 首选；840K req/s，WinterTC 合规 |
+| 边缘计算 / Serverless | **Hono** | — | 超小包体积 (~12KB)，多运行时兼容，Cloudflare Workers 首选；CF Workers 实测 **~840K req/s**，WinterTC/Ecma TC55 合规 |
 | 传统项目维护 / 招聘友好 | **Express** | Fastify | 生态最成熟，人才储备最大，中间件最多 |
 | 现代化中间件链式控制 | **Koa** | Fastify | 洋葱模型 async/await，错误处理更优雅 |
-| 全栈 TypeScript (Bun 生态) | **Elysia** | Hono | Eden Treaty 实现端到端类型安全 API 调用 |
+| 全栈 TypeScript (Bun 生态) | **Elysia** | Hono | Eden Treaty 实现端到端类型安全 API 调用；Hono 提供 `hc` 类型安全 RPC |
 
 ---
 
@@ -95,8 +95,10 @@ flowchart LR
 
 | 技术 / 框架 | 2026 关键更新 |
 |-------------|---------------|
-| **Hono** | GitHub Stars 突破 28K，周下载量超 9M；通过 WinterTC / Ecma TC55 合规认证；在 Cloudflare Workers 上可达 **840K req/s**。 |
+| **Hono** | GitHub Stars ~22K，npm 周下载 ~2M；通过 WinterTC / Ecma TC55 合规认证；Cloudflare Workers 实测 **840K req/s**，Node 22 实测 **230K req/s**，Bun 1.2 实测 **460K req/s**。 |
 | **tRPC v11** | 稳定版发布；新增 `httpSubscription` 链接（基于 SSE 的流式传输）、`useSuspenseQuery` Hook、面向 Next.js App Router RSC 的 `createCaller`。 |
+| **Fastify v5** | 2025 年底发布；JSON Schema 验证增强，V8 序列化优化，Node 22 适配；npm 周下载 ~11M。 |
+| **Elysia** | npm 周下载 ~300K，GitHub Stars ~12K；Bun 1.2 上可达 ~980K req/s（Hello World）。 |
 | **WinterTC** | 原 WinterCG 于 2024 年 12 月正式升格为 Ecma TC55，成为边缘运行时标准化组织。 |
 | **better-auth** | v1.6.x 稳定；框架无关的认证方案，支持多运行时与多种 OAuth 提供商。 |
 

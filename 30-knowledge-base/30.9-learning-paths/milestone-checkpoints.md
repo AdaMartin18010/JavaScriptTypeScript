@@ -92,9 +92,10 @@ async function fetchWithLimit(urls: string[], limit: number): Promise<Response[]
 
 **Checkpoint：AI Agent 原型**
 
-- 集成 MCP 协议
+- 集成 MCP 协议（97M+ 月下载，10K+ servers）
 - 实现工具调用（Function Calling）
 - 流式响应 + 类型安全
+- 可选：实现 A2A（Agent-to-Agent）协议互操作
 
 ---
 
@@ -112,9 +113,10 @@ async function fetchWithLimit(urls: string[], limit: number): Promise<Response[]
 
 **Checkpoint：运行时对比报告**
 
-- 为给定业务场景选择最优运行时（Node/Bun/Deno）
+- 为给定业务场景选择最优运行时（Node.js 24 / Bun 1.2 / Deno 2）
 - 编写基准测试验证假设
 - 设计混合运行时架构
+- 考虑边缘运行时的安全沙箱与冷启动特性
 
 ### Milestone 3：安全审计
 
@@ -152,11 +154,29 @@ console.log('4');
 
 **答案**：`1, 4, 3, 2`。同步代码先执行，然后是微任务（Promise），最后是宏任务（setTimeout）。
 
+### 框架生态
+
+**Q3**：React 19 Compiler 如何消除 `useMemo` 和 `useCallback`？
+
+**答案**：Compiler 通过静态分析组件的 props、state 和上下文依赖，在编译时自动插入记忆化逻辑。它将 JSX 输出和事件处理函数标记为可缓存，仅当实际依赖变化时重新计算，消除了手动编写记忆化钩子的负担。
+
 ### 性能
 
-**Q3**：为什么 `transform: translate()` 动画比 `top` 动画流畅？
+**Q4**：为什么 `transform: translate()` 动画比 `top` 动画流畅？
 
 **答案**：`transform` 触发仅合成路径（Composite），由 GPU 处理；`top` 触发完整渲染管道（Layout + Paint + Composite），计算量更大。
+
+### AI Agent
+
+**Q5**：MCP（Model Context Protocol）相比传统 Function Calling 的核心优势是什么？
+
+**答案**：MCP 将工具定义从应用代码中解耦为标准化的 JSON Schema 描述，服务器端独立暴露能力列表。客户端通过统一协议发现可用工具，支持多服务器聚合、权限隔离和版本演化，无需修改客户端代码即可扩展功能。
+
+### 边缘部署
+
+**Q6**：在 Cloudflare Workers 中，为什么需要注意 `eval()` 和 `new Function()` 的使用？
+
+**答案**：Cloudflare Workers 使用 V8 Isolates 作为安全沙箱，出于安全考虑禁用了动态代码执行（`eval`、`new Function`、`WebAssembly.instantiate` with untrusted bytes）。任何依赖动态代码生成的库（如某些模板引擎）都无法直接使用，需要选择 AOT 编译替代方案。
 
 ---
 

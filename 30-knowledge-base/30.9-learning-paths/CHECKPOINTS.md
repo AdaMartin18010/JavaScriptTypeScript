@@ -24,8 +24,10 @@ status: current
 **关联文档**：
 
 - [项目制认证体系](./project-based-certification.md) — 以可交付成果验证能力的认证体系
-- [示例项目总览](../../examples/README.md) — 所有配套实战项目
-- [代码实验室](../../jsts-code-lab/) — 按主题组织的代码示例与练习
+- [示例项目总览](../../50-examples/README.md) — 所有配套实战项目（新架构）
+- [代码实验室](../../20-code-lab/) — 按主题组织的代码示例与练习（新架构）
+- [基础理论](../../10-fundamentals/) — 语言核心与类型系统深度理论（新架构）
+- [知识库](../../30-knowledge-base/) — 对比矩阵、决策树、研究文档（新架构）
 
 ---
 
@@ -121,6 +123,14 @@ status: current
 | JSTS-Junior | 初学者路径 | 全部 4 个 | 4 个（Calculator / Todo / Blog / E-commerce Mini） |
 | JSTS-Professional | 进阶路径 | 全部 4 个 | 3 个（Real-time Chat / Performance Dashboard / Microservice System） |
 | JSTS-Architect | 架构师路径 | 全部 5 个 | 2 个（Compiler Toy / Distributed Consensus） |
+
+### 与新架构目录的对应关系
+
+| 认证等级 | 推荐学习顺序（新架构） |
+|----------|---------------------|
+| JSTS-Junior | `10-fundamentals/10.1-language-semantics` → `10.2-type-system` → `20-code-lab/20.2-language-patterns/design-patterns` → `50-examples/50.1-beginner/todo-master` |
+| JSTS-Professional | `20-code-lab/20.3-concurrency-async` → `20.4-data-algorithms` → `20.5-frontend-frameworks` → `20.6-backend-apis` |
+| JSTS-Architect | `20-code-lab/20.8-edge-serverless` → `20.9-observability-security` → `20.10-formal-verification` → `20.11-rust-toolchain` → `30-knowledge-base/30.8-research/` |
 
 详细认证要求请参阅 [project-based-certification.md](./project-based-certification.md)。
 
