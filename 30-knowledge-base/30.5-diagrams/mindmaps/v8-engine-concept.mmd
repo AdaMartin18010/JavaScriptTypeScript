@@ -1,0 +1,61 @@
+mindmap
+  root((V8引擎<br/>执行管道))
+    解析阶段
+      Scanner词法分析
+        有限状态机DFA
+        惰性扫描
+        关键字完美哈希
+      Parser语法分析
+        递归下降分析器
+        AST节点体系
+        变量提升实现
+        TDZ标记
+    解释执行
+      Ignition字节码
+        累加器机器模型
+        类型反馈向量
+        200+字节码指令
+      快速启动
+        1-5ms延迟
+        低内存占用
+    优化执行
+      TurboFan编译器
+        Sea of Nodes IR
+        SSA形式
+        Typer类型推断
+        推测性优化
+          内联展开
+          逃逸分析
+          标量替换
+          循环优化
+      机器码生成
+        x64/ARM64/ia32/RISC-V
+    内存管理
+      Orinoco GC
+        新生代Scavenge
+        老生代Mark-Sweep-Compact
+        增量标记
+        并发标记
+        空闲时GC
+    关键优化
+      Hidden Classes
+        快速模式
+        字典模式
+        迁移树
+      Inline Caching
+        单态缓存
+        多态缓存
+        巨态缓存
+      Speculative Optimization
+        类型假设
+        检查点验证
+    安全机制
+      Deoptimizer
+        OSR栈替换
+        翻译帧重建
+      V8 Sandbox
+        进程隔离
+        指针压缩
+      JIT安全张力
+        类型混淆风险
+        CVE模式分析
