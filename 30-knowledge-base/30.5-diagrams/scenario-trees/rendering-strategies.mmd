@@ -4,6 +4,7 @@ graph TD
     B -->|内容变更| D[content-visibility: auto]
     B -->|复杂列表| E[虚拟化 + requestIdleCallback]
     B -->|用户输入| F[防抖/节流 + CSS过渡]
+    B -->|性能达标检查| G[Web Vitals 行业基准]
     
     C --> C1[Compositor Thread 独立处理]
     C --> C2[避开 Layout + Paint]
@@ -20,8 +21,15 @@ graph TD
     F --> F2[CSS 处理视觉反馈]
     F --> F3[避免主线程阻塞]
     
+    G --> G1[LCP &lt; 2.5s Good]
+    G --> G2[INP &lt; 200ms Good]
+    G --> G3[CLS &lt; 0.1 Good]
+    G --> G4[TTFB &lt; 0.8s Good]
+    G --> G5[FCP &lt; 1.8s Good]
+    
     style A fill:#f9f,stroke:#333
     style C fill:#bfb,stroke:#333
     style D fill:#bfb,stroke:#333
     style E fill:#bfb,stroke:#333
     style F fill:#bfb,stroke:#333
+    style G fill:#bbf,stroke:#333

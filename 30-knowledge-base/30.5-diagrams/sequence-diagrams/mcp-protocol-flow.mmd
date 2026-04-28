@@ -1,0 +1,36 @@
+%% 主题: MCP 协议交互时序 | 关联: ai-agent-production/
+sequenceDiagram
+    participant H as Host<br/>(IDE/Agent)
+    participant C as MCP Client
+    participant S as MCP Server
+
+    H->>C: 初始化会话
+    C->>S: initialize request
+    S-->>C: initialize response<br/>(capabilities, protocolVersion)
+    C-->>H: 连接就绪
+
+    H->>C: 请求资源列表
+    C->>S: resources/list
+    S-->>C: 资源目录
+    C-->>H: 展示可用资源
+
+    H->>C: 调用工具
+    C->>S: tools/call<br/>(name, arguments)
+    S->>S: 执行工具逻辑
+    S-->>C: tool result / error
+    C-->>H: 返回执行结果
+
+    H->>C: 获取提示模板
+    C->>S: prompts/get
+    S-->>C: prompt 模板 + 参数
+    C-->>H: 渲染提示词
+
+    H->>C: 请求采样
+    C->>S: sampling/createMessage
+    S-->>C: 模型生成结果
+    C-->>H: 流式/完整响应
+
+    H->>C: 关闭连接
+    C->>S: 关闭 transport
+    S-->>C: 确认断开
+    C-->>H: 会话结束

@@ -1,7 +1,7 @@
 # 数据库与 ORM 深度理论：从 SQL 到类型安全
 
 > **目标读者**：全栈工程师、后端开发者、关注数据层架构的技术负责人
-> **关联文档**：[`jsts-code-lab/20-database-orm/schema-builder.ts`](./schema-builder.ts)
+> **关联文档**：`jsts-code-lab/20-database-orm/schema-builder.ts` [TODO: 链接待修复]
 > **版本**：2026-04
 > **字数**：约 3,800 字
 

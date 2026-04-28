@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [65-analytics](../65-analytics) — 数据分析
-- [74-observability](../74-observability) — 可观测性与实时指标
+- [65-analytics](../../20.6-backend-apis/analytics) — 数据分析
+- [74-observability](../../20.9-observability-security/observability) — 可观测性与实时指标
 
 ---
 

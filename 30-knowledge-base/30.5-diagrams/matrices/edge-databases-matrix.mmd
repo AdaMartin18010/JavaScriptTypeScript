@@ -1,0 +1,55 @@
+%% 主题: 边缘数据库对比矩阵 | 关联: 30-edge-databases.md
+%% 使用 flowchart 构建多属性矩阵
+flowchart LR
+    subgraph 属性维度
+        D1[一致性模型]
+        D2[平台锁定]
+        D3[容量限制]
+        D4[定价模式]
+        D5[全球分布]
+    end
+
+    subgraph Turso
+        T1[SQLite事务]
+        T2[低锁定]
+        T3[无限制]
+        T4[按请求+存储]
+        T5[LibSQL协议]
+    end
+
+    subgraph Cloudflare D1
+        D1a[SQLite事务]
+        D1b[高锁定Workers]
+        D1c[500MB/DB]
+        D1d[Workers绑定]
+        D1e[边缘节点]
+    end
+
+    subgraph Deno KV
+        K1[最终一致]
+        K2[中锁定Deploy]
+        K3[无文档限制]
+        K4[按操作+存储]
+        K5[Deno生态]
+    end
+
+    subgraph LibSQL
+        L1[SQLite完整]
+        L2[开源无锁定]
+        L3[自托管]
+        L4[免费开源]
+        L5[自部署]
+    end
+
+    D1 --> T1 & D1a & K1 & L1
+    D2 --> T2 & D1b & K2 & L2
+    D3 --> T3 & D1c & K3 & L3
+    D4 --> T4 & D1d & K4 & L4
+    D5 --> T5 & D1e & K5 & L5
+
+    style T1 fill:#bfb,stroke:#333
+    style L1 fill:#bfb,stroke:#333
+    style L2 fill:#bfb,stroke:#333
+    style L4 fill:#bfb,stroke:#333
+    style D1c fill:#fbb,stroke:#333
+    style D1b fill:#fbb,stroke:#333

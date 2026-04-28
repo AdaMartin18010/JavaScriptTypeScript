@@ -27,15 +27,30 @@
 
 ## 性能基准数据
 
-| 测试项 | Node.js v24 | Bun v2 | Deno v2 | 最快 |
-|--------|------------|--------|---------|------|
-| HTTP Hello World (req/s) | ~45K | **~68K** | ~55K | Bun |
+| 测试项 | Node.js v24 | Bun v1.3 | Deno v2 | 最快 |
+|--------|------------|----------|---------|------|
+| HTTP Hello World (req/s) | ~65K | **~180K** | ~55K | Bun |
+| Express.js API (req/s) | ~29K | **~89K** | ~35K [估算] | Bun |
 | 文件读取 (ops/s) | ~12K | **~50K** | ~20K | Bun |
 | JSON 解析 (ops/s) | ~280K | **~350K** | ~300K | Bun |
-| 启动延迟 (ms) | 45 | **12** | 28 | Bun |
-| 内存占用 (MB) | 35 | **22** | 28 | Bun |
+| 本地冷启动 (ms) | 40–120 | **8–15** | 25–35 | Bun |
+| AWS Lambda 冷启动 (ms) | 245 | **156** | ~200 [估算] | Bun |
+| 内存占用 (MB, 基线) | 35–51 | **22–38** | 28–35 | Bun |
+| WebSocket 并发连接 | 680K | **1.2M** | ~800K [估算] | Bun |
 
-*数据来源：TechEmpower Framework Benchmarks Round 23+，环境 x64/Linux。*
+*数据来源：TechEmpower Framework Benchmarks Round 23+（2025–2026）及独立运行时基准测试（Runtime Benchmarks Q1 2026、JS Runtime Shootout Mar 2026），环境 x64/Linux。*
+
+### TechEmpower 2025/2026 排名参考
+
+| 运行时 / 框架 | 排名区间 |  plaintext 吞吐量 | 备注 |
+|--------------|---------|------------------|------|
+| Bun (裸机) | **第 1 梯队** | ~180K req/s | JavaScriptCore + Zig，综合领先 |
+| Node.js + Fastify | 第 2–3 梯队 | ~55K req/s | V8 + 优化框架，生产常用 |
+| Node.js (原生 http) | 第 3 梯队 | ~65K req/s | 基准参考，无框架开销 |
+| Deno (原生) | 第 2 梯队 | ~55K req/s | V8 + Rust，接近 Node.js |
+| Node.js + Express | 第 4 梯队 | ~29K req/s | 框架开销大，迁移价值低 |
+
+> **说明**：TechEmpower Round 23（2025）及 Round 24（2026 预览）中，Bun 在 plaintext 与 JSON 序列化场景持续位列 JS 运行时第一；Node.js 借助 Fastify 可进入前 20；Deno 稳定在第 15–25 名区间。
 
 ---
 

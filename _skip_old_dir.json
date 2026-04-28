@@ -1,0 +1,1034 @@
+[
+  {
+    "sourceFile": "COMPLETE_DOCUMENTATION_INDEX.md",
+    "link": "./jsts-code-lab/CONTRIBUTING.md",
+    "resolved": "jsts-code-lab/CONTRIBUTING.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/categories/00-infrastructure.md",
+    "link": "./09-deployment-platforms.md",
+    "resolved": "docs/categories/09-deployment-platforms.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/categories/00-infrastructure.md",
+    "link": "./21-api-design.md",
+    "resolved": "docs/categories/21-api-design.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/categories/00-infrastructure.md",
+    "link": "./14-linting-formatting.md",
+    "resolved": "docs/categories/14-linting-formatting.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/categories/00-infrastructure.md",
+    "link": "./07-package-managers.md",
+    "resolved": "docs/categories/07-package-managers.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/categories/00-infrastructure.md",
+    "link": "./08-monorepo-tools.md",
+    "resolved": "docs/categories/08-monorepo-tools.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/categories/00-infrastructure.md",
+    "link": "./13-ci-cd.md",
+    "resolved": "docs/categories/13-ci-cd.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/categories/00-infrastructure.md",
+    "link": "./18-performance.md",
+    "resolved": "docs/categories/18-performance.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/categories/00-infrastructure.md",
+    "link": "./25-security.md",
+    "resolved": "docs/categories/25-security.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/categories/02-ui-component-libraries.md",
+    "link": "./04-state-management.md",
+    "resolved": "docs/categories/04-state-management.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/categories/02-ui-component-libraries.md",
+    "link": "./05-forms.md",
+    "resolved": "docs/categories/05-forms.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/categories/02-ui-component-libraries.md",
+    "link": "./10-css-frameworks.md",
+    "resolved": "docs/categories/10-css-frameworks.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/cross-dimensional-reference.md",
+    "link": "./comparison-matrices/testing-frameworks-compare.md",
+    "resolved": "docs/comparison-matrices/testing-frameworks-compare.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/cross-dimensional-reference.md",
+    "link": "./categories/02-backend-frameworks.md",
+    "resolved": "docs/categories/02-backend-frameworks.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/cross-dimensional-reference.md",
+    "link": "./categories/09-deployment-platforms.md",
+    "resolved": "docs/categories/09-deployment-platforms.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/en/README.md",
+    "link": "../jsts-language-core-system/",
+    "resolved": "docs/jsts-language-core-system/",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/en/README.md",
+    "link": "../jsts-code-lab/",
+    "resolved": "docs/jsts-code-lab/",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/en/README.md",
+    "link": "../docs/comparison-matrices/",
+    "resolved": "docs/docs/comparison-matrices/",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/en/README.md",
+    "link": "../docs/decision-trees.md",
+    "resolved": "docs/docs/decision-trees.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/en/README.md",
+    "link": "../CONTRIBUTING.md",
+    "resolved": "docs/CONTRIBUTING.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/en/README.md",
+    "link": "../LICENSE",
+    "resolved": "docs/LICENSE",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/en/signals-patterns-guide.md",
+    "link": "../guides/signals-patterns-guide.md",
+    "resolved": "docs/guides/signals-patterns-guide.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/FOUR_DIMENSIONS_INDEX.md",
+    "link": "./categories/02-backend-frameworks.md",
+    "resolved": "docs/categories/02-backend-frameworks.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/FOUR_DIMENSIONS_INDEX.md",
+    "link": "./categories/15-realtime-communication.md",
+    "resolved": "docs/categories/15-realtime-communication.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/FOUR_DIMENSIONS_INDEX.md",
+    "link": "./categories/34-blockchain-web3.md",
+    "resolved": "docs/categories/34-blockchain-web3.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/FOUR_DIMENSIONS_INDEX.md",
+    "link": "./categories/09-deployment-platforms.md",
+    "resolved": "docs/categories/09-deployment-platforms.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/FOUR_DIMENSIONS_INDEX.md",
+    "link": "./comparison-matrices/testing-frameworks-compare.md",
+    "resolved": "docs/comparison-matrices/testing-frameworks-compare.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/guides/a2a-protocol-guide.md",
+    "link": "../categories/23-ai-agent-infrastructure.md",
+    "resolved": "docs/categories/23-ai-agent-infrastructure.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/guides/ai-coding-workflow.md",
+    "link": "../jsts-code-lab/56-code-generation/ai-assisted-workflow/prompt-engineering-guide.md",
+    "resolved": "docs/jsts-code-lab/56-code-generation/ai-assisted-workflow/prompt-engineering-guide.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/guides/ai-coding-workflow.md",
+    "link": "../jsts-code-lab/56-code-generation/ai-assisted-workflow/cursor-workflow.ts",
+    "resolved": "docs/jsts-code-lab/56-code-generation/ai-assisted-workflow/cursor-workflow.ts",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/guides/ai-coding-workflow.md",
+    "link": "../jsts-code-lab/56-code-generation/ai-assisted-workflow/claude-code-patterns.ts",
+    "resolved": "docs/jsts-code-lab/56-code-generation/ai-assisted-workflow/claude-code-patterns.ts",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/guides/ai-coding-workflow.md",
+    "link": "../jsts-code-lab/56-code-generation/ai-assisted-workflow/github-copilot-patterns.ts",
+    "resolved": "docs/jsts-code-lab/56-code-generation/ai-assisted-workflow/github-copilot-patterns.ts",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/guides/ai-coding-workflow.md",
+    "link": "../jsts-code-lab/56-code-generation/ai-assisted-workflow/ai-testing-generation.ts",
+    "resolved": "docs/jsts-code-lab/56-code-generation/ai-assisted-workflow/ai-testing-generation.ts",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/guides/ai-observability-guide.md",
+    "link": "../categories/23-ai-agent-infrastructure.md",
+    "resolved": "docs/categories/23-ai-agent-infrastructure.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/guides/mcp-guide.md",
+    "link": "../categories/23-ai-agent-infrastructure.md",
+    "resolved": "docs/categories/23-ai-agent-infrastructure.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/guides/REGULAR_EXPRESSIONS_COMPLETE.md",
+    "link": "c",
+    "resolved": "docs/guides/c",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/guides/webassembly-guide.md",
+    "link": "../guides/performance-optimization.md",
+    "resolved": "docs/guides/performance-optimization.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/learning-paths/beginners-path.md",
+    "link": "../jsts-code-lab/README.md#中级模块",
+    "resolved": "docs/jsts-code-lab/README.md#中级模块",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/learning-paths/intermediate-path.md",
+    "link": "../jsts-code-lab/README.md#高级模块",
+    "resolved": "docs/jsts-code-lab/README.md#高级模块",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/research/awesome-javascript-analysis.md",
+    "link": "链接",
+    "resolved": "docs/research/链接",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/research/awesome-javascript-analysis.md",
+    "link": "链接",
+    "resolved": "docs/research/链接",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/research/awesome-javascript-analysis.md",
+    "link": "链接",
+    "resolved": "docs/research/链接",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/research/awesome-javascript-analysis.md",
+    "link": "链接",
+    "resolved": "docs/research/链接",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/research/awesome-javascript-analysis.md",
+    "link": "...",
+    "resolved": "docs/research/...",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/research/awesome-javascript-analysis.md",
+    "link": "链接",
+    "resolved": "docs/research/链接",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/research/awesome-javascript-analysis.md",
+    "link": "链接",
+    "resolved": "docs/research/链接",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/research/awesome-nodejs-analysis.md",
+    "link": "github-repo-link",
+    "resolved": "docs/research/github-repo-link",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/templates/THEORY_TEMPLATE.md",
+    "link": "链接",
+    "resolved": "docs/templates/链接",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "docs/templates/THEORY_TEMPLATE.md",
+    "link": "链接",
+    "resolved": "docs/templates/链接",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/03-concurrency/THEORY.md",
+    "link": "../../docs/categories/04-concurrency.md",
+    "resolved": "docs/categories/04-concurrency.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/06-architecture-patterns/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/09-real-world-examples/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/14-execution-flow/ARCHIVED.md",
+    "link": "../05-execution-flow",
+    "resolved": "jsts-code-lab/05-execution-flow",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/14-execution-flow/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/15-data-flow/ARCHIVED.md",
+    "link": "../05-execution-flow",
+    "resolved": "jsts-code-lab/05-execution-flow",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/15-data-flow/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/16-application-development/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/20-database-orm/THEORY.md",
+    "link": "./schema-builder.ts",
+    "resolved": "jsts-code-lab/20-database-orm/schema-builder.ts",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/25-microservices/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/26-event-sourcing/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/27-internationalization/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/29-documentation/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/35-accessibility-a11y/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/36-web-assembly/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/37-pwa/THEORY.md",
+    "link": "../../docs/categories/37-pwa.md",
+    "resolved": "docs/categories/37-pwa.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/40-type-theory-formal/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/41-formal-semantics/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/53-app-architecture/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/53-app-architecture/THEORY.md",
+    "link": "../../docs/categories/53-app-architecture.md",
+    "resolved": "docs/categories/53-app-architecture.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/54-intelligent-performance/THEORY.md",
+    "link": "../../docs/categories/54-intelligent-performance.md",
+    "resolved": "docs/categories/54-intelligent-performance.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/57-design-system/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/58-data-visualization/THEORY.md",
+    "link": "../../docs/categories/58-data-visualization.md",
+    "resolved": "docs/categories/58-data-visualization.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/59-fullstack-patterns/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/60-developer-experience/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/60-developer-experience/THEORY.md",
+    "link": "../../docs/categories/60-developer-experience.md",
+    "resolved": "docs/categories/60-developer-experience.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/61-api-gateway/THEORY.md",
+    "link": "../../docs/categories/61-api-gateway.md",
+    "resolved": "docs/categories/61-api-gateway.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/62-message-queue/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/62-message-queue/THEORY.md",
+    "link": "../../docs/categories/62-message-queue.md",
+    "resolved": "docs/categories/62-message-queue.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/63-caching-strategies/THEORY.md",
+    "link": "../../docs/categories/63-caching-strategies.md",
+    "resolved": "docs/categories/63-caching-strategies.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/64-search-engine/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/64-search-engine/THEORY.md",
+    "link": "../../docs/categories/64-search-engine.md",
+    "resolved": "docs/categories/64-search-engine.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/65-analytics/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/66-feature-flags/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/67-multi-tenancy/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/67-multi-tenancy/THEORY.md",
+    "link": "../../docs/categories/67-multi-tenancy.md",
+    "resolved": "docs/categories/67-multi-tenancy.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/68-plugin-system/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/69-cli-framework/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/69-cli-framework/THEORY.md",
+    "link": "../../docs/categories/69-cli-framework.md",
+    "resolved": "docs/categories/69-cli-framework.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/70-distributed-systems/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/71-consensus-algorithms/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/73-service-mesh-advanced/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/75-chaos-engineering/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/76-ml-engineering/THEORY.md",
+    "link": "../../docs/categories/76-ml-engineering.md",
+    "resolved": "docs/categories/76-ml-engineering.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/78-metaprogramming/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/79-compiler-design/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/79-compiler-design/THEORY.md",
+    "link": "../../docs/categories/79-compiler-design.md",
+    "resolved": "docs/categories/79-compiler-design.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/80-formal-verification/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/81-cybersecurity/THEORY.md",
+    "link": "../../docs/categories/38-web-security.md",
+    "resolved": "docs/categories/38-web-security.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/85-nlp-engineering/THEORY.md",
+    "link": "../../docs/categories/33-ai-integration.md",
+    "resolved": "docs/categories/33-ai-integration.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/86-graph-database/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/86-graph-database/THEORY.md",
+    "link": "../../docs/categories/86-graph-database.md",
+    "resolved": "docs/categories/86-graph-database.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/87-realtime-analytics/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/88-tanstack-start-cloudflare/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/89-autonomous-systems/THEORY.md",
+    "link": "../../docs/categories/89-autonomous-systems.md",
+    "resolved": "docs/categories/89-autonomous-systems.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/90-web-apis-lab/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "jsts-code-lab/91-nodejs-core-lab/CATEGORY.md",
+    "link": "../../docs/categories-index.md",
+    "resolved": "docs/categories-index.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/00_总索引与导航.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/00_总索引与导航.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_深度技术分析.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_深度技术分析.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_语言语义模型全面分析.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_语言语义模型全面分析.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_现代运行时深度分析.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_现代运行时深度分析.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_标准化生态与运行时互操作.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_标准化生态与运行时互操作.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_学术前沿瞭望.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_学术前沿瞭望.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_工程实践检查清单.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_工程实践检查清单.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_反例与陷阱完全手册.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_反例与陷阱完全手册.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_性能对比与优化指南.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_性能对比与优化指南.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_学习路径与技能图谱.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_学习路径与技能图谱.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/",
+    "resolved": "JSTS全景综述/JSTS全景综述/",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/01_language_core.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/01_language_core.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/TYPE_SOUNDNESS_ANALYSIS.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/TYPE_SOUNDNESS_ANALYSIS.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/GRADUAL_TYPING_THEORY.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/GRADUAL_TYPING_THEORY.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_TypeScript_7_0_Native_Compiler.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_TypeScript_7_0_Native_Compiler.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/04_concurrency.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/04_concurrency.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_现代运行时深度分析.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_现代运行时深度分析.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/V8_RUNTIME_THEORY.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/V8_RUNTIME_THEORY.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/MODULE_RESOLUTION_SEMANTICS.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/MODULE_RESOLUTION_SEMANTICS.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/07_architecture.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/07_architecture.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/05_distributed_systems.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/05_distributed_systems.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/06_workflow_patterns.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/06_workflow_patterns.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/08_observability.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/08_observability.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/09_cicd.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/09_cicd.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_API设计规范.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_API设计规范.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/10_ai_ml.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/10_ai_ml.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/FORMAL_SEMANTICS_COMPLETE.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/FORMAL_SEMANTICS_COMPLETE.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_学术前沿瞭望.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_学术前沿瞭望.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/ES2026_FEATURES_PREVIEW.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/ES2026_FEATURES_PREVIEW.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/00_总索引与导航.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/00_总索引与导航.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_深度技术分析.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_深度技术分析.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_工程实践检查清单.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_工程实践检查清单.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_学习路径与技能图谱.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_学习路径与技能图谱.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./docs/learning-paths/beginners-path.md",
+    "resolved": "JSTS全景综述/docs/learning-paths/beginners-path.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./docs/learning-paths/intermediate-path.md",
+    "resolved": "JSTS全景综述/docs/learning-paths/intermediate-path.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./docs/learning-paths/advanced-path.md",
+    "resolved": "JSTS全景综述/docs/learning-paths/advanced-path.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./docs/learning-paths/beginners-path.md",
+    "resolved": "JSTS全景综述/docs/learning-paths/beginners-path.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./docs/learning-paths/intermediate-path.md",
+    "resolved": "JSTS全景综述/docs/learning-paths/intermediate-path.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./docs/learning-paths/advanced-path.md",
+    "resolved": "JSTS全景综述/docs/learning-paths/advanced-path.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/00_总索引与导航.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/00_总索引与导航.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_学习路径与技能图谱.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_学习路径与技能图谱.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_深度技术分析.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_深度技术分析.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_学术前沿瞭望.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_学术前沿瞭望.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./awesome-jsts-ecosystem/",
+    "resolved": "JSTS全景综述/awesome-jsts-ecosystem/",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./jsts-code-lab/",
+    "resolved": "JSTS全景综述/jsts-code-lab/",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./jsts-code-lab/CROSS-REFERENCE.md",
+    "resolved": "JSTS全景综述/jsts-code-lab/CROSS-REFERENCE.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./GLOSSARY.md",
+    "resolved": "JSTS全景综述/GLOSSARY.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/00_总索引与导航.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/00_总索引与导航.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_深度技术分析.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_深度技术分析.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_工程实践检查清单.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_工程实践检查清单.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_学习路径与技能图谱.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_学习路径与技能图谱.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./docs/learning-paths/beginners-path.md",
+    "resolved": "JSTS全景综述/docs/learning-paths/beginners-path.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./docs/learning-paths/intermediate-path.md",
+    "resolved": "JSTS全景综述/docs/learning-paths/intermediate-path.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./docs/learning-paths/advanced-path.md",
+    "resolved": "JSTS全景综述/docs/learning-paths/advanced-path.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./CONTRIBUTING.md",
+    "resolved": "JSTS全景综述/CONTRIBUTING.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/00_总索引与导航.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/00_总索引与导航.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_深度技术分析.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_深度技术分析.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_语言语义模型全面分析.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_语言语义模型全面分析.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_现代运行时深度分析.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_现代运行时深度分析.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_标准化生态与运行时互操作.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_标准化生态与运行时互操作.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_学术前沿瞭望.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_学术前沿瞭望.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_工程实践检查清单.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_工程实践检查清单.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_反例与陷阱完全手册.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_反例与陷阱完全手册.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_性能对比与优化指南.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_性能对比与优化指南.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/JS_TS_学习路径与技能图谱.md",
+    "resolved": "JSTS全景综述/JSTS全景综述/JS_TS_学习路径与技能图谱.md",
+    "reason": "old dir target"
+  },
+  {
+    "sourceFile": "JSTS全景综述/更新_README交叉引用.md",
+    "link": "./JSTS全景综述/",
+    "resolved": "JSTS全景综述/JSTS全景综述/",
+    "reason": "old dir target"
+  }
+]

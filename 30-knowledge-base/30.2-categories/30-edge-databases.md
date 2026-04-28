@@ -18,7 +18,7 @@ status: current
 >
 > - ✅ **属于本文档范围**：边缘数据库平台（Turso、D1、Neon）、Serverless 数据库驱动、ORM 边缘适配、连接模型与冷启动优化。
 > - ❌ **不属于本文档范围**：具体应用的数据模型设计、业务查询优化、数据迁移策略、数据库架构模式。
-> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+> - 🔗 **相关索引**：`docs/infrastructure-index.md` [TODO: 链接待修复]
 
 # 边缘数据库（Edge Databases）
 

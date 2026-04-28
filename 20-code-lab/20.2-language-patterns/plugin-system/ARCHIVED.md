@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [78-metaprogramming](../78-metaprogramming) — 元编程与插件系统
-- [69-cli-framework](../69-cli-framework) — CLI 框架与插件架构
+- [78-metaprogramming](../../20.1-fundamentals-lab/metaprogramming) — 元编程与插件系统
+- [69-cli-framework](../cli-framework/) — CLI 框架与插件架构
 
 ---
 

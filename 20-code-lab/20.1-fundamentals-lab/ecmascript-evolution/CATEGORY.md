@@ -27,5 +27,5 @@ created: 2026-04-27
 
 ## 关联索引
 
-- [docs/language-core-index.md](../../docs/language-core-index.md)
-- [docs/categories/00-language-core.md](../../docs/categories/00-language-core.md)
+- [docs/language-core-index.md](../../../docs/language-core-index.md)
+- [docs/categories/00-language-core.md](../../../docs/categories/00-language-core.md)

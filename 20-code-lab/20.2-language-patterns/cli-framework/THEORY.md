@@ -1,7 +1,7 @@
 # CLI 框架理论：从脚本到产品级工具
 
 > **目标读者**：工具开发者、DevOps 工程师、关注开发者体验的团队
-> **关联文档**：[`docs/categories/69-cli-framework.md`](../../docs/categories/69-cli-framework.md)
+> **关联文档**：``30.2-categories/cli-framework.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 2,800 字
 
@@ -90,6 +90,7 @@ import { execa } from 'execa';
 CLI 是**开发者体验的第一触点**。
 
 **核心原则**：
+
 1. 快速启动 (< 100ms)
 2. 清晰的错误信息
 3. 遵循 POSIX 惯例

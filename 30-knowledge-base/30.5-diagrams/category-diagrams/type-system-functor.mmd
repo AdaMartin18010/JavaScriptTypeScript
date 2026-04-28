@@ -1,0 +1,53 @@
+%% 主题: 类型系统函子映射（TS类型 → JS值） | 关联: 10.2-type-system/
+%% 范畴论视角：类型为对象，类型变换为态射
+graph TD
+    subgraph 类型层 TypeLayer
+        T1[any]
+        T2[unknown]
+        T3[string]
+        T4[number]
+        T5[Array&lt;T&gt;]
+        T6[Interface]
+        T7[Union A | B]
+        T8[Intersection A & B]
+    end
+
+    subgraph 值层 ValueLayer
+        V1[任意运行时值]
+        V2[需类型守卫]
+        V3['文本']
+        V4[42]
+        V5[[1,2,3]]
+        V6[{a: 1}]
+        V7[分支联合值]
+        V8[合并属性对象]
+    end
+
+    subgraph 函子变换 Functor
+        F1[擦除 Erase]
+        F2[推断 Infer]
+        F3[收窄 Narrow]
+        F4[映射 Map]
+    end
+
+    T1 -->|擦除| V1
+    T2 -->|类型守卫| V2
+    T3 -->|字面量| V3
+    T4 -->|字面量| V4
+    T5 -->|数组实例化| V5
+    T6 -->|对象实例化| V6
+    T7 -->|联合值| V7
+    T8 -->|合并值| V8
+
+    T5 -.->|ReadonlyArray| T5x[ReadonlyArray&lt;T&gt;]
+    T6 -.->|Partial| T6x[Partial&lt;Interface&gt;]
+    T6 -.->|Pick| T6y[Pick&lt;Interface, K&gt;]
+    T7 -.->|Exclude| T7x[Exclude&lt;A | B, C&gt;]
+    T8 -.->|合并| T8x[属性叠加]
+
+    style T1 fill:#f9f,stroke:#333
+    style T2 fill:#f9f,stroke:#333
+    style V1 fill:#bbf,stroke:#333
+    style V2 fill:#bbf,stroke:#333
+    style F1 fill:#bfb,stroke:#333
+    style F2 fill:#bfb,stroke:#333

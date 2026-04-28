@@ -1,3 +1,5 @@
+<!-- 迁移说明：本文档中的旧数字编号引用已更新为新的语义化主题名称。模块目录已迁移至 20-code-lab/ 下的分类目录结构。-->
+
 # 模块交叉引用索引
 
 > jsts-code-lab 模块间的依赖关系和学习路径导航
@@ -17,20 +19,20 @@
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐                   │
-│  │00-language-  │───▶│01-ecmascript-│    │10-js-ts-     │                   │
+│  │language-  │───▶│ecmascript-│    │js-ts-     │                   │
 │  │   core       │    │  evolution   │    │ comparison   │                   │
 │  └──────────────┘    └──────────────┘    └──────────────┘                   │
 │         │                   │                   │                           │
 │         ▼                   ▼                   ▼                           │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐                   │
-│  │02-design-    │◀───│03-concurrency│    │04-data-      │                   │
+│  │design-    │◀───│concurrency│    │data-      │                   │
 │  │  patterns    │    │              │◀───│ structures   │                   │
 │  └──────┬───────┘    └──────────────┘    └──────────────┘                   │
 │         │                   ▲                                            │
 │         │                   │                                            │
 │         ▼                   │                                            │
 │  ┌──────────────┐    ┌─────┴────────┐    ┌──────────────┐                   │
-│  │06-architecture│    │05-algorithms │    │07-testing    │                   │
+│  │architecture│    │algorithms │    │testing    │                   │
 │  │  patterns    │    │              │    │              │                   │
 │  └──────┬───────┘    └──────────────┘    └──────────────┘                   │
 │         │                                                                  │
@@ -42,7 +44,7 @@
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐                   │
-│  │18-frontend-  │    │19-backend-   │    │20-database-  │                   │
+│  │frontend-  │    │backend-   │    │database-  │                   │
 │  │  frameworks │    │ development  │────▶│    orm       │                   │
 │  └──────┬───────┘    └──────┬───────┘    └──────────────┘                   │
 │         │                   │                                             │
@@ -50,7 +52,7 @@
 │         │            │              │                                     │
 │         ▼            ▼              ▼                                     │
 │  ┌──────────────┐  ┌──────────┐  ┌──────────────┐                          │
-│  │50-browser-   │  │21-api-   │  │25-microservices                             │
+│  │browser-   │  │api-   │  │microservices                             │
 │  │   runtime   │  │  security│  │              │                          │
 │  └──────────────┘  └──────────┘  └──────┬───────┘                          │
 │                                         │                                  │
@@ -62,7 +64,7 @@
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐                   │
-│  │70-distributed│◀───│71-consensus- │    │72-container- │                   │
+│  │distributed│◀───│consensus- │    │container- │                   │
 │  │   systems   │    │  algorithms  │    │orchestration │                   │
 │  └──────┬───────┘    └──────────────┘    └──────────────┘                   │
 │         │                                                                  │
@@ -70,7 +72,7 @@
 │  ┌──────────────────────────────────────────────────────────────┐          │
 │  │                    高级专题 (Advanced Topics)                  │          │
 │  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐        │          │
-│  │  │77-quantum│  │80-formal │  │76-ml-    │  │33-ai-    │        │          │
+│  │  │quantum│  │formal │  │ml-    │  │ai-    │        │          │
 │  │  │computing │  │verification  │engineering │integration│        │          │
 │  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘        │          │
 │  └──────────────────────────────────────────────────────────────┘          │
@@ -84,22 +86,22 @@
 
 | 模块 | 前置依赖 | 并行学习 | 后续进阶 |
 |------|---------|---------|---------|
-| **00-language-core** | - | - | 02-design-patterns, 10-js-ts-comparison |
-| **01-ecmascript-evolution** | - | 00-language-core | 10-js-ts-comparison |
-| **02-design-patterns** | 00-language-core | 03-concurrency | 06-architecture-patterns |
-| **03-concurrency** | 00-language-core | 02-design-patterns | 15-data-flow, 70-distributed-systems |
-| **04-data-structures** | 00-language-core | 05-algorithms | 08-performance |
-| **05-algorithms** | 00-language-core | 04-data-structures | 08-performance |
-| **06-architecture-patterns** | 02-design-patterns | - | 25-microservices |
-| **07-testing** | 00-language-core | 02-design-patterns | 28-testing-advanced |
-| **10-js-ts-comparison** | 00-language-core, 01-ecmascript-evolution | - | - |
-| **18-frontend-frameworks** | 02-design-patterns, 50-browser-runtime | - | 51-ui-components |
-| **19-backend-development** | 06-architecture-patterns, 07-testing | 20-database-orm | 21-api-security |
-| **20-database-orm** | 00-language-core | 19-backend-development | 24-graphql |
-| **25-microservices** | 06-architecture-patterns | 22-deployment-devops | 70-distributed-systems |
-| **50-browser-runtime** | 03-concurrency | - | 52-web-rendering |
-| **70-distributed-systems** | 03-concurrency, 06-architecture-patterns | 25-microservices | 71-consensus-algorithms |
-| **71-consensus-algorithms** | 70-distributed-systems | - | 72-container-orchestration |
+| **language-core** | - | - | design-patterns, js-ts-comparison |
+| **ecmascript-evolution** | - | language-core | js-ts-comparison |
+| **design-patterns** | language-core | concurrency | architecture-patterns |
+| **concurrency** | language-core | design-patterns | data-flow, distributed-systems |
+| **data-structures** | language-core | algorithms | performance |
+| **algorithms** | language-core | data-structures | performance |
+| **architecture-patterns** | design-patterns | - | microservices |
+| **testing** | language-core | design-patterns | testing-advanced |
+| **js-ts-comparison** | language-core, ecmascript-evolution | - | - |
+| **frontend-frameworks** | design-patterns, browser-runtime | - | ui-components |
+| **backend-development** | architecture-patterns, testing | database-orm | api-security |
+| **database-orm** | language-core | backend-development | graphql |
+| **microservices** | architecture-patterns | deployment-devops | distributed-systems |
+| **browser-runtime** | concurrency | - | web-rendering |
+| **distributed-systems** | concurrency, architecture-patterns | microservices | consensus-algorithms |
+| **consensus-algorithms** | distributed-systems | - | container-orchestration |
 
 ---
 
@@ -109,52 +111,52 @@
 
 | 主题 | 主要模块 | 理论文档 | 相关模块 |
 |------|---------|---------|---------|
-| ECMAScript 演进 | 01-ecmascript-evolution | [index.ts](./01-ecmascript-evolution/index.ts) | 10-js-ts-comparison |
-| JS/TS 语义对比 | 10-js-ts-comparison | [THEORY.md](./10-js-ts-comparison/THEORY.md) | 40-type-theory-formal |
-| 共识算法 | 71-consensus-algorithms | [THEORY.md](./71-consensus-algorithms/THEORY.md) | 70-distributed-systems |
-| 形式化验证 | 80-formal-verification | [THEORY.md](./80-formal-verification/THEORY.md) | 41-formal-semantics |
+| ECMAScript 演进 | ecmascript-evolution | [index.ts](../20-code-lab/20.1-fundamentals-lab/ecmascript-evolution/index.ts) | js-ts-comparison |
+| JS/TS 语义对比 | js-ts-comparison | [THEORY.md](../20-code-lab/20.1-fundamentals-lab/js-ts-comparison/THEORY.md) | type-theory-formal |
+| 共识算法 | consensus-algorithms | [THEORY.md](../20-code-lab/20.8-edge-serverless/consensus-algorithms/THEORY.md) | distributed-systems |
+| 形式化验证 | formal-verification | [THEORY.md](../20-code-lab/20.10-formal-verification/formal-verification/THEORY.md) | formal-semantics |
 
 ### 🏗️ 架构与设计
 
 | 主题 | 主要模块 | 理论文档 | 相关模块 |
 |------|---------|---------|---------|
-| 设计模式 | 02-design-patterns | [THEORY.md](./02-design-patterns/THEORY.md) | 06-architecture-patterns |
-| 架构模式 | 06-architecture-patterns | [ARCHITECTURE.md](./06-architecture-patterns/ARCHITECTURE.md) | 25-microservices, 53-app-architecture |
-| 并发架构 | 03-concurrency | [ARCHITECTURE.md](./03-concurrency/ARCHITECTURE.md) | 50-browser-runtime |
-| 微服务 | 25-microservices | - | 22-deployment-devops, 61-api-gateway |
-| 分布式系统 | 70-distributed-systems | [THEORY.md](./70-distributed-systems/THEORY.md) | 71-consensus-algorithms |
+| 设计模式 | design-patterns | [THEORY.md](../20-code-lab/20.2-language-patterns/design-patterns/THEORY.md) | architecture-patterns |
+| 架构模式 | architecture-patterns | [ARCHITECTURE.md](../20-code-lab/20.2-language-patterns/architecture-patterns/ARCHITECTURE.md) | microservices, app-architecture |
+| 并发架构 | concurrency | [ARCHITECTURE.md](../20-code-lab/20.3-concurrency-async/concurrency/ARCHITECTURE.md) | browser-runtime |
+| 微服务 | microservices | - | deployment-devops, api-gateway |
+| 分布式系统 | distributed-systems | [THEORY.md](../20-code-lab/20.8-edge-serverless/distributed-systems/THEORY.md) | consensus-algorithms |
 
 ### ⚡ 运行时与性能
 
 | 主题 | 主要模块 | 理论文档 | 相关模块 |
 |------|---------|---------|---------|
-| 浏览器运行时 | 50-browser-runtime | [THEORY.md](./50-browser-runtime/THEORY.md) | 52-web-rendering |
-| 性能优化 | 08-performance, 54-intelligent-performance | - | 04-data-structures, 05-algorithms |
-| 内存管理 | 50-browser-runtime | [THEORY.md](./50-browser-runtime/THEORY.md#内存管理理论) | 03-concurrency |
+| 浏览器运行时 | browser-runtime | [THEORY.md](../20-code-lab/20.3-concurrency-async/browser-runtime/THEORY.md) | web-rendering |
+| 性能优化 | performance, intelligent-performance | - | data-structures, algorithms |
+| 内存管理 | browser-runtime | [THEORY.md](../20-code-lab/20.3-concurrency-async/browser-runtime/THEORY.md#内存管理理论) | concurrency |
 
 ### 🤖 AI 与智能系统
 
 | 主题 | 主要模块 | 理论文档 | 相关模块 |
 |------|---------|---------|---------|
-| AI 集成 | 33-ai-integration | - | 76-ml-engineering |
-| AI 测试 | 55-ai-testing | [THEORY.md](./55-ai-testing/THEORY.md) | 07-testing, 28-testing-advanced |
-| 智能代码生成 | 56-code-generation | - | 78-metaprogramming |
+| AI 集成 | ai-integration | - | ml-engineering |
+| AI 测试 | ai-testing | [THEORY.md](../20-code-lab/20.7-ai-agent-infra/ai-testing/THEORY.md) | testing, testing-advanced |
+| 智能代码生成 | code-generation | - | metaprogramming |
 
 ### 🔐 安全与可靠性
 
 | 主题 | 主要模块 | 理论文档 | 相关模块 |
 |------|---------|---------|---------|
-| API 安全 | 21-api-security | - | 38-web-security, 81-cybersecurity |
-| Web 安全 | 38-web-security | - | 21-api-security |
-| 混沌工程 | 75-chaos-engineering | - | 74-observability |
+| API 安全 | api-security | - | web-security, cybersecurity |
+| Web 安全 | web-security | - | api-security |
+| 混沌工程 | chaos-engineering | - | observability |
 
 ### 📊 数据与存储
 
 | 主题 | 主要模块 | 理论文档 | 相关模块 |
 |------|---------|---------|---------|
-| 数据库 ORM | 20-database-orm | - | 86-graph-database |
-| 缓存策略 | 63-caching-strategies | - | 20-database-orm |
-| 事件溯源 | 26-event-sourcing | - | 06-architecture-patterns, 62-message-queue |
+| 数据库 ORM | database-orm | - | graph-database |
+| 缓存策略 | caching-strategies | - | database-orm |
+| 事件溯源 | event-sourcing | - | architecture-patterns, message-queue |
 
 ---
 
@@ -163,55 +165,55 @@
 ### 路径一：全栈开发工程师
 
 ```
-00-language-core → 02-design-patterns → 06-architecture-patterns
+language-core → design-patterns → architecture-patterns
                         ↓
         ┌───────────────┼───────────────┐
         ↓               ↓               ↓
-18-frontend-frameworks 19-backend-development 20-database-orm
+frontend-frameworks backend-development database-orm
         ↓               ↓               ↓
         └───────────────┴───────────────┘
                         ↓
-              25-microservices → 22-deployment-devops
+              microservices → deployment-devops
 ```
 
 ### 路径二：前端架构师
 
 ```
-00-language-core → 02-design-patterns → 03-concurrency
+language-core → design-patterns → concurrency
                                             ↓
-                                    50-browser-runtime → 52-web-rendering
+                                    browser-runtime → web-rendering
                                             ↓
-                                    51-ui-components → 57-design-system
+                                    ui-components → design-system
                                             ↓
-                                    54-intelligent-performance
+                                    intelligent-performance
 ```
 
 ### 路径三：后端架构师
 
 ```
-00-language-core → 02-design-patterns → 06-architecture-patterns
+language-core → design-patterns → architecture-patterns
                                             ↓
                     ┌───────────────────────┼───────────────────────┐
                     ↓                       ↓                       ↓
-            19-backend-development   20-database-orm        25-microservices
+            backend-development   database-orm        microservices
                     │                       │                       ↓
                     └───────────────────────┴───────────────────────┘
                                             ↓
-                                    70-distributed-systems → 71-consensus-algorithms
+                                    distributed-systems → consensus-algorithms
                                             ↓
-                                    72-container-orchestration
+                                    container-orchestration
 ```
 
 ### 路径四：AI 工程师
 
 ```
-00-language-core → 04-data-structures → 05-algorithms
+language-core → data-structures → algorithms
                                             ↓
-                                    33-ai-integration → 76-ml-engineering
+                                    ai-integration → ml-engineering
                                             ↓
                     ┌───────────────────────┼───────────────────────┐
                     ↓                       ↓                       ↓
-            55-ai-testing            56-code-generation        82-edge-ai
+            ai-testing            code-generation        edge-ai
 ```
 
 ---
@@ -222,17 +224,17 @@
 
 | 依赖方向 | 说明 |
 |---------|------|
-| **02-design-patterns** → **06-architecture-patterns** | 架构模式建立在设计模式基础之上 |
-| **03-concurrency** → **70-distributed-systems** | 分布式系统需要理解单机并发模型 |
-| **06-architecture-patterns** → **25-microservices** | 微服务是架构模式的具体应用 |
+| **design-patterns** → **architecture-patterns** | 架构模式建立在设计模式基础之上 |
+| **concurrency** → **distributed-systems** | 分布式系统需要理解单机并发模型 |
+| **architecture-patterns** → **microservices** | 微服务是架构模式的具体应用 |
 
 ### 技术栈依赖
 
 | 依赖方向 | 说明 |
 |---------|------|
-| **00-language-core** → **所有模块** | TypeScript 是所有模块的基础 |
-| **07-testing** → **所有功能模块** | 测试是质量保证的基础 |
-| **22-deployment-devops** → **生产模块** | 部署知识用于上线应用 |
+| **language-core** → **所有模块** | TypeScript 是所有模块的基础 |
+| **testing** → **所有功能模块** | 测试是质量保证的基础 |
+| **deployment-devops** → **生产模块** | 部署知识用于上线应用 |
 
 ---
 
@@ -242,56 +244,56 @@
 
 **入门级 (⭐)**
 
-- 00-language-core
-- 01-ecmascript-evolution
-- 07-testing
-- 10-js-ts-comparison
+- language-core
+- ecmascript-evolution
+- testing
+- js-ts-comparison
 
 **中级 (⭐⭐⭐)**
 
-- 02-design-patterns
-- 03-concurrency
-- 04-data-structures
-- 06-architecture-patterns
-- 18-frontend-frameworks
-- 19-backend-development
+- design-patterns
+- concurrency
+- data-structures
+- architecture-patterns
+- frontend-frameworks
+- backend-development
 
 **高级 (⭐⭐⭐⭐⭐)**
 
-- 25-microservices
-- 50-browser-runtime
-- 70-distributed-systems
-- 71-consensus-algorithms
-- 77-quantum-computing
-- 89-autonomous-systems
+- microservices
+- browser-runtime
+- distributed-systems
+- consensus-algorithms
+- quantum-computing
+- autonomous-systems
 
 ### 按热门技术分类
 
 **云原生**
 
-- 22-deployment-devops
-- 25-microservices
-- 72-container-orchestration
-- 73-service-mesh-advanced
-- 87-realtime-analytics
-- 88-tanstack-start-cloudflare
+- deployment-devops
+- microservices
+- container-orchestration
+- service-mesh-advanced
+- realtime-analytics
+- tanstack-start-cloudflare
 
 **人工智能**
 
-- 33-ai-integration
-- 55-ai-testing
-- 56-code-generation
-- 76-ml-engineering
-- 82-edge-ai
-- 94-ai-agent-lab
+- ai-integration
+- ai-testing
+- code-generation
+- ml-engineering
+- edge-ai
+- ai-agent-lab
 
 **Web 技术**
 
-- 18-frontend-frameworks
-- 32-edge-computing
-- 36-web-assembly
-- 37-pwa
-- 50-browser-runtime
+- frontend-frameworks
+- edge-computing
+- web-assembly
+- pwa
+- browser-runtime
 
 ---
 
@@ -299,74 +301,74 @@
 
 | 技术栈组合 | 涉及模块 | 说明 |
 |------------|----------|------|
-| **AI 全栈** | 94-ai-agent-lab + 33-ai-integration + 82-edge-ai | MCP Server、Vercel AI SDK Tool Calling、Multi-agent Workflow |
-| **现代认证全栈** | 95-auth-modern-lab + 21-api-security | better-auth、Passkeys、OAuth2 PKCE、RBAC |
-| **边缘数据库全栈** | 96-orm-modern-lab + 32-edge-computing | Drizzle Schema、Query Patterns、Prisma 7 Edge、Turso |
-| **实时分析全栈** | 87-realtime-analytics + 88-tanstack-start-cloudflare | TanStack Start、Cloudflare Workers、实时流处理 |
+| **AI 全栈** | ai-agent-lab + ai-integration + edge-ai | MCP Server、Vercel AI SDK Tool Calling、Multi-agent Workflow |
+| **现代认证全栈** | auth-modern-lab + api-security | better-auth、Passkeys、OAuth2 PKCE、RBAC |
+| **边缘数据库全栈** | orm-modern-lab + edge-computing | Drizzle Schema、Query Patterns、Prisma 7 Edge、Turso |
+| **实时分析全栈** | realtime-analytics + tanstack-start-cloudflare | TanStack Start、Cloudflare Workers、实时流处理 |
 
 ---
 
 ## 📂 模块文件交叉引用
 
-### 90-web-apis-lab: Web APIs Lab
+### web-apis-lab: Web APIs Lab
 
 | 文件 | 关联模块 | 关联文档 |
 |------|----------|----------|
-| fetch-advanced.ts | 14-execution-flow | docs/guides/web-apis-guide.md |
-| streams-pipeline.ts | 15-data-flow | docs/guides/web-apis-guide.md |
-| service-worker-cache.ts | 32-edge-computing | docs/guides/web-apis-guide.md |
-| observer-patterns.ts | 50-browser-runtime | docs/guides/web-apis-guide.md |
+| fetch-advanced.ts | execution-flow | docs/guides/web-apis-guide.md |
+| streams-pipeline.ts | data-flow | docs/guides/web-apis-guide.md |
+| service-worker-cache.ts | edge-computing | docs/guides/web-apis-guide.md |
+| observer-patterns.ts | browser-runtime | docs/guides/web-apis-guide.md |
 
-### 91-nodejs-core-lab: Node.js Core Modules Lab
-
-| 文件 | 关联模块 | 关联文档 |
-|------|----------|----------|
-| fs-patterns.ts | 12-package-management | docs/guides/nodejs-core-modules-guide.md |
-| http-server-patterns.ts | 19-backend-development | docs/guides/nodejs-core-modules-guide.md |
-| crypto-patterns.ts | 21-api-security | docs/guides/nodejs-core-modules-guide.md |
-| stream-pipeline.ts | 14-execution-flow | docs/guides/nodejs-core-modules-guide.md |
-
-### 92-observability-lab: Observability Lab
+### nodejs-core-lab: Node.js Core Modules Lab
 
 | 文件 | 关联模块 | 关联文档 |
 |------|----------|----------|
-| structured-logger.ts | 74-observability | docs/categories/23-error-monitoring-logging.md |
-| error-reporter.ts | 38-web-security | docs/categories/23-error-monitoring-logging.md |
-| performance-observer.ts | 08-performance | docs/categories/23-error-monitoring-logging.md |
+| fs-patterns.ts | package-management | docs/guides/nodejs-core-modules-guide.md |
+| http-server-patterns.ts | backend-development | docs/guides/nodejs-core-modules-guide.md |
+| crypto-patterns.ts | api-security | docs/guides/nodejs-core-modules-guide.md |
+| stream-pipeline.ts | execution-flow | docs/guides/nodejs-core-modules-guide.md |
 
-### 93-deployment-edge-lab: Deployment & Edge Computing Lab
-
-| 文件 | 关联模块 | 关联文档 |
-|------|----------|----------|
-| cloudflare-worker.ts | 32-edge-computing | docs/categories/26-deployment-hosting.md |
-| vercel-edge-config.ts | 31-serverless | docs/categories/26-deployment-hosting.md |
-| docker-optimize.ts | 22-deployment-devops | docs/categories/26-deployment-hosting.md |
-
-### 94-ai-agent-lab: AI Agent Lab
+### observability-lab: Observability Lab
 
 | 文件 | 关联模块 | 关联文档 |
 |------|----------|----------|
-| mcp-server-demo.ts | 33-ai-integration | docs/categories/28-ai-agent-infrastructure.md |
-| vercel-ai-sdk-tool-calling.ts | 33-ai-integration | docs/categories/28-ai-agent-infrastructure.md |
-| multi-agent-workflow.ts | 33-ai-integration | docs/categories/28-ai-agent-infrastructure.md |
+| structured-logger.ts | observability | docs/categories/23-error-monitoring-logging.md |
+| error-reporter.ts | web-security | docs/categories/23-error-monitoring-logging.md |
+| performance-observer.ts | performance | docs/categories/23-error-monitoring-logging.md |
 
-### 95-auth-modern-lab: Modern Authentication Lab
-
-| 文件 | 关联模块 | 关联文档 |
-|------|----------|----------|
-| better-auth-setup.ts | 21-api-security | docs/categories/29-authentication.md |
-| passkeys-implementation.ts | 21-api-security | docs/categories/29-authentication.md |
-| oauth2-pkce-flow.ts | 21-api-security | docs/categories/29-authentication.md |
-| rbac-middleware.ts | 21-api-security | docs/categories/29-authentication.md |
-
-### 96-orm-modern-lab: Modern ORM Lab
+### deployment-edge-lab: Deployment & Edge Computing Lab
 
 | 文件 | 关联模块 | 关联文档 |
 |------|----------|----------|
-| drizzle-schema.ts | 20-database-orm | docs/categories/11-orm-database.md |
-| drizzle-query-patterns.ts | 20-database-orm | docs/categories/11-orm-database.md |
-| prisma-7-edge.ts | 32-edge-computing | docs/categories/11-orm-database.md |
-| turso-connection.ts | 32-edge-computing | docs/categories/11-orm-database.md |
+| cloudflare-worker.ts | edge-computing | docs/categories/26-deployment-hosting.md |
+| vercel-edge-config.ts | serverless | docs/categories/26-deployment-hosting.md |
+| docker-optimize.ts | deployment-devops | docs/categories/26-deployment-hosting.md |
+
+### ai-agent-lab: AI Agent Lab
+
+| 文件 | 关联模块 | 关联文档 |
+|------|----------|----------|
+| mcp-server-demo.ts | ai-integration | docs/categories/28-ai-agent-infrastructure.md |
+| vercel-ai-sdk-tool-calling.ts | ai-integration | docs/categories/28-ai-agent-infrastructure.md |
+| multi-agent-workflow.ts | ai-integration | docs/categories/28-ai-agent-infrastructure.md |
+
+### auth-modern-lab: Modern Authentication Lab
+
+| 文件 | 关联模块 | 关联文档 |
+|------|----------|----------|
+| better-auth-setup.ts | api-security | docs/categories/29-authentication.md |
+| passkeys-implementation.ts | api-security | docs/categories/29-authentication.md |
+| oauth2-pkce-flow.ts | api-security | docs/categories/29-authentication.md |
+| rbac-middleware.ts | api-security | docs/categories/29-authentication.md |
+
+### orm-modern-lab: Modern ORM Lab
+
+| 文件 | 关联模块 | 关联文档 |
+|------|----------|----------|
+| drizzle-schema.ts | database-orm | docs/categories/11-orm-database.md |
+| drizzle-query-patterns.ts | database-orm | docs/categories/11-orm-database.md |
+| prisma-7-edge.ts | edge-computing | docs/categories/11-orm-database.md |
+| turso-connection.ts | edge-computing | docs/categories/11-orm-database.md |
 
 ---
 
@@ -374,8 +376,8 @@
 
 | 日期 | 更新内容 |
 |------|----------|
-| 2026-04-19 | 新增 94-ai-agent-lab、95-auth-modern-lab、96-orm-modern-lab 模块交叉引用；新增按技术栈组合查找表格 |
-| 2026-04-19 | 新增 90-web-apis-lab、91-nodejs-core-lab、92-observability-lab、93-deployment-edge-lab 模块交叉引用 |
+| 2026-04-19 | 新增 ai-agent-lab、auth-modern-lab、orm-modern-lab 模块交叉引用；新增按技术栈组合查找表格 |
+| 2026-04-19 | 新增 web-apis-lab、nodejs-core-lab、observability-lab、deployment-edge-lab 模块交叉引用 |
 | 2026-04-17 | 新增 ECMAScript 2025/2026、JS/TS 语义对比、共识算法、形式化验证模块的交叉引用 |
 | 2026-04-04 | 创建初始交叉引用文档，包含模块关系图、依赖矩阵和学习路径 |
 

@@ -1,7 +1,7 @@
 # 图数据库理论：从关系到图
 
 > **目标读者**：关注复杂关系数据的后端工程师、数据架构师
-> **关联文档**：[`docs/categories/86-graph-database.md`](../../docs/categories/86-graph-database.md)
+> **关联文档**：``30.2-categories/graph-database.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 2,800 字
 

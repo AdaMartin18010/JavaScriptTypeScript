@@ -1,0 +1,35 @@
+%% 主题: ESM/CJS 互操作解析流程 | 关联: 10.8-module-system/
+flowchart TD
+    A[入口文件请求] --> B{package.json type?}
+    B -->|type: module| C[按 ESM 解析]
+    B -->|type: commonjs或无| D[按 CJS 解析]
+    B -->|文件扩展名 .mjs| C
+    B -->|文件扩展名 .cjs| D
+    
+    C --> C1[静态 import/export 分析]
+    C1 --> C2{导入的是 CJS 模块?}
+    C2 -->|是| C3[生成 namespace 对象]
+    C2 -->|否| C4[直接绑定 live binding]
+    C3 --> C5[访问 .default 获取 module.exports]
+    C4 --> E[执行模块体]
+    C5 --> E
+    
+    D --> D1[同步 require() 调用]
+    D1 --> D2{目标模块是 ESM?}
+    D2 -->|是| D3[抛出 ERR_REQUIRE_ESM]
+    D2 -->|否| D4[读取缓存或加载文件]
+    D3 --> D5[改用动态 import()]
+    D4 --> D6[包装为函数执行]
+    D5 --> E
+    D6 --> D7[返回 module.exports]
+    
+    E --> F{存在循环依赖?}
+    F -->|是| G[返回已存在的绑定/exports]
+    F -->|否| H[完成加载]
+    G --> H
+    
+    style A fill:#f9f,stroke:#333
+    style C fill:#bfb,stroke:#333
+    style D fill:#bbf,stroke:#333
+    style D3 fill:#fbb,stroke:#333
+    style H fill:#bfb,stroke:#333

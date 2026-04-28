@@ -319,7 +319,7 @@ V8 的 GC 基于**分代假说**：大多数对象很快死亡。
 - **条件导出（Conditional Exports）**：`package.json` 的 `exports` 字段允许包作者为 `require` 和 `import` 提供不同的入口点。`"type": "module"` 决定了 `.js` 文件的默认解析模式 [^nodejs-packages]。
 - **Extensionless imports 的问题**：在原生 ESM 中，`import './foo'` 不会自动补全 `.js`。Node.js 和 TypeScript 的 `nodenext` 都要求显式扩展名（或 `exports` 映射），这对习惯了 CommonJS 的开发者是一个重大心智模型转换。
 
-> V8 编译器、GC 与模块解析的深入原理，请参阅 [《JS/TS 现代运行时深度分析》](JS_TS_现代运行时深度分析.md)。
+> V8 编译器、GC 与模块解析的深入原理，请参阅 《JS/TS 现代运行时深度分析》 [TODO: 链接待修复]。
 
 ---
 

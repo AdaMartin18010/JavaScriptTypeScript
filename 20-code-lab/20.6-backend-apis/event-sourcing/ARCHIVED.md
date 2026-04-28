@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [70-distributed-systems](../70-distributed-systems) — 分布式系统与事件驱动
-- [62-message-queue](../62-message-queue) — 消息队列与事件流
+- [70-distributed-systems](../../20.8-edge-serverless/distributed-systems) — 分布式系统与事件驱动
+- [62-message-queue](../message-queue/) — 消息队列与事件流
 
 ---
 

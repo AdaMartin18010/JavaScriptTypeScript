@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [50-browser-runtime](../50-browser-runtime) — 浏览器运行时与 Web API
-- [docs/guides/web-apis-guide.md](../../docs/guides/web-apis-guide.md) — Web APIs 完全指南
+- [50-browser-runtime](../../20.3-concurrency-async/browser-runtime) — 浏览器运行时与 Web API
+- [docs/guides/web-apis-guide.md](../../../docs/guides/web-apis-guide.md) — Web APIs 完全指南
 
 ---
 

@@ -1,7 +1,7 @@
 # NLP 工程理论：从词向量到大语言模型
 
 > **目标读者**：AI 应用开发者、关注 LLM 集成的工程师
-> **关联文档**：[`docs/categories/33-ai-integration.md`](../../docs/categories/33-ai-integration.md)
+> **关联文档**：``30.2-categories/ai-integration.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 3,200 字
 

@@ -5,7 +5,7 @@
 <!-- Badges -->
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![License: MIT](https://img.shields.io/badg../LICENSE.md-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/sindresorhus/awesome)
 [![GitHub Stars](https://img.shields.io/github/stars/yourusername/awesome-jsts-ecosystem?style=flat-square&logo=github)](https://github.com/yourusername/awesome-jsts-ecosystem)
 [![Last Commit](https://img.shields.io/github/last-commit/yourusername/awesome-jsts-ecosystem?style=flat-square)](https://github.com/yourusername/awesome-jsts-ecosystem/commits/main)
@@ -543,9 +543,9 @@
 
 ## 🤝 贡献指南 / Contributing
 
-请阅读 [CONTRIBUTING.md](./CONTRIBUTING.md) 了解如何参与贡献。
+请阅读 [CONTRIBUTING.md](../CONTRIBUTING.md) 了解如何参与贡献。
 
-Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how to contribute.
+Please read [CONTRIBUTING.md](../CONTRIBUTING.md) for details on how to contribute.
 
 ## 📜 License
 

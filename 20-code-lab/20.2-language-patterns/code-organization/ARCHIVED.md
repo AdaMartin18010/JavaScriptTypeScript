@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [23-toolchain-configuration](../23-toolchain-configuration) — 工具链与代码组织
-- [jsts-language-core-system](../../jsts-language-core-system) — 语言核心系统
+- [23-toolchain-configuration](../../20.11-rust-toolchain/toolchain-configuration) — 工具链与代码组织
+- [jsts-language-core-system](../../../10-fundamentals/10.1-language-semantics) — 语言核心系统
 
 ---
 

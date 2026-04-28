@@ -1,0 +1,47 @@
+%% 主题: V8 垃圾回收状态机 | 关联: v8-engine-concept.mmd
+stateDiagram-v2
+    [*] --> NewSpace: 对象分配
+    
+    NewSpace --> NewSpace: 继续分配
+    NewSpace --> Scavenge: 新生代满
+    
+    Scavenge --> NewSpace: 多数回收
+    Scavenge --> OldSpace: 存活两轮
+    
+    OldSpace --> OldSpace: 老生代引用
+    OldSpace --> MarkSweep: 老生代阈值触发
+    
+    MarkSweep --> OldSpace: 标记清除完成
+    MarkSweep --> MarkCompact: 内存碎片严重
+    
+    MarkCompact --> OldSpace: 压缩整理完成
+    MarkCompact --> IncrementalMark: 大堆增量处理
+    
+    IncrementalMark --> MarkSweep: 增量标记完成
+    IncrementalMark --> ConcurrentMark: 后台线程辅助
+    
+    ConcurrentMark --> MarkSweep: 并发标记完成
+    ConcurrentMark --> IdleGC: 空闲时回收
+    
+    IdleGC --> OldSpace: 回收完成
+    IdleGC --> [*]: 进程终止
+    
+    OldSpace --> [*]: 进程终止
+    
+    note right of Scavenge
+        新生代半空间复制
+        Cheney算法
+        快速、频繁
+    end note
+    
+    note right of MarkSweep
+        老生代标记清除
+        全停顿较长
+        Orinoco优化
+    end note
+    
+    note right of MarkCompact
+        滑动压缩
+        消除碎片
+        最高开销
+    end note

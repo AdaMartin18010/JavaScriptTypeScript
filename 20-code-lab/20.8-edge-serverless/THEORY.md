@@ -55,7 +55,7 @@
 ## 三、扩展阅读
 
 - `20-code-lab/20.13-edge-databases/README.md`
-- `30-knowledge-base/30.2-categories/30-edge-databases.md`
+- ``30.2-categories/edge-databases.md`` (Legacy)
 
 ---
 

@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [34-blockchain-web3](../34-blockchain-web3) — 区块链 Web3（同样已归档）
-- [docs/research/tech-radar-template.md](../../docs/research/tech-radar-template.md) — 技术雷达
+- [34-blockchain-web3](../blockchain-web3/) — 区块链 Web3（同样已归档）
+- [docs/research/tech-radar-template.md](../../../docs/research/tech-radar-template.md) — 技术雷达
 
 ---
 

@@ -19,5 +19,5 @@ module: 18-frontend-frameworks
 
 ## 相关索引
 
-- [docs/frameworks-index.md](../../docs/frameworks-index.md)
-- [docs/categories/01-frontend-frameworks.md](../../docs/categories/01-frontend-frameworks.md)
+- [docs/frameworks-index.md](../../../docs/frameworks-index.md)
+- [docs/categories/01-frontend-frameworks.md](../../../docs/categories/01-frontend-frameworks.md)

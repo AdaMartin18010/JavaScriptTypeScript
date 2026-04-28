@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [05-execution-flow](../05-execution-flow) — 执行流与数据流
-- [20-database-orm](../20-database-orm) — 数据库与 ORM 数据流
+- [05-execution-flow](../execution-flow/) — 执行流与数据流
+- [20-database-orm](../../20.6-backend-apis/database-orm) — 数据库与 ORM 数据流
 
 ---
 

@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [70-distributed-systems](../70-distributed-systems) — 分布式系统
-- [61-api-gateway](../61-api-gateway) — API 网关
+- [70-distributed-systems](../distributed-systems/) — 分布式系统
+- [61-api-gateway](../../20.6-backend-apis/api-gateway) — API 网关
 
 ---
 

@@ -1,7 +1,7 @@
 # 消息队列深度理论：从解耦到流处理
 
 > **目标读者**：后端工程师、分布式系统开发者、架构师
-> **关联文档**：[`docs/categories/62-message-queue.md`](../../docs/categories/62-message-queue.md)
+> **关联文档**：``30.2-categories/message-queue.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 3,500 字
 

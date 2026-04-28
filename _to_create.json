@@ -1,0 +1,77 @@
+[
+  {
+    "sourceFile": "10-fundamentals/10.1-language-semantics/README.md",
+    "link": "../jsts-language-core-system/",
+    "resolved": "10-fundamentals/jsts-language-core-system/"
+  },
+  {
+    "sourceFile": "docs/guides/REGULAR_EXPRESSIONS_COMPLETE.md",
+    "link": "\\d",
+    "resolved": "\\d"
+  },
+  {
+    "sourceFile": "README-EN.md",
+    "link": "./CONTRIBUTING.md#inclusion-criteria",
+    "resolved": "CONTRIBUTING.md#inclusion-criteria"
+  },
+  {
+    "sourceFile": "README.md",
+    "link": "./CONTRIBUTING.md#收录标准",
+    "resolved": "CONTRIBUTING.md#收录标准"
+  },
+  {
+    "sourceFile": "website/guide/regular-expressions-complete.md",
+    "link": "\\d",
+    "resolved": "\\d"
+  },
+  {
+    "sourceFile": "website/guide/regular-expressions-complete.md",
+    "link": "c",
+    "resolved": "website/guide/c"
+  },
+  {
+    "sourceFile": "website/README.md",
+    "link": "./guide/contributing.md",
+    "resolved": "website/guide/contributing.md"
+  },
+  {
+    "sourceFile": "website/research/awesome-javascript-analysis.md",
+    "link": "链接",
+    "resolved": "website/research/链接"
+  },
+  {
+    "sourceFile": "website/research/awesome-javascript-analysis.md",
+    "link": "链接",
+    "resolved": "website/research/链接"
+  },
+  {
+    "sourceFile": "website/research/awesome-javascript-analysis.md",
+    "link": "链接",
+    "resolved": "website/research/链接"
+  },
+  {
+    "sourceFile": "website/research/awesome-javascript-analysis.md",
+    "link": "链接",
+    "resolved": "website/research/链接"
+  },
+  {
+    "sourceFile": "website/research/awesome-javascript-analysis.md",
+    "link": "...",
+    "resolved": "website/research/..."
+  },
+  {
+    "sourceFile": "website/research/awesome-javascript-analysis.md",
+    "link": "链接",
+    "resolved": "website/research/链接"
+  },
+  {
+    "sourceFile": "website/research/awesome-javascript-analysis.md",
+    "link": "链接",
+    "resolved": "website/research/链接"
+  },
+  {
+    "sourceFile": "website/research/awesome-nodejs-analysis.md",
+    "link": "github-repo-link",
+    "resolved": "website/research/github-repo-link"
+  }
+]

@@ -83,8 +83,8 @@
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](../../CONTRIBUTING.md) for details.
+Please read [CONTRIBUTING.md](../../../../CONTRIBUTING.md) for details.
 
 ## License
 
-[MIT](../../LICENSE)
+[MIT](../../../../LICENSE.md)

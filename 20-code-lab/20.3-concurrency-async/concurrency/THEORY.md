@@ -1,7 +1,7 @@
 # 并发编程深度理论：从事件循环到并行计算
 
 > **目标读者**：中高级前端/Node.js 工程师、架构师
-> **关联文档**：[`docs/categories/04-concurrency.md`](../../docs/categories/04-concurrency.md)
+> **关联文档**：``30.2-categories/concurrency.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 4,200 字
 

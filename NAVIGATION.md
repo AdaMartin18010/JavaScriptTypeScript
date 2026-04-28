@@ -5,6 +5,19 @@
 
 ---
 
+## 重构完成度摘要
+
+| 层级 | 状态 | 文件数 |
+|------|------|--------|
+| L1 语言核心 | ✅ 完成 | 18 |
+| L2 代码实验室 | ✅ 迁移完成，THEORY.md 补完中 | 93 模块 |
+| L3 文档体系 | ✅ 完成 | 42 |
+| L4 生态导航 | ✅ 完成 | 3 |
+| L5 示例项目 | ✅ 迁移完成 | 13 |
+| L6 元数据 | ✅ 完成 | 4 |
+
+---
+
 ## 快速入口
 
 | 角色 | 推荐路径 |
@@ -157,18 +170,18 @@
 
 | 旧路径 | 新路径 | 状态 |
 |--------|--------|------|
-| `JSTS全景综述/01_language_core.md` | `10-fundamentals/10.1-language-semantics/README.md` | 待迁移 |
-| `jsts-code-lab/00-language-core/` | `20-code-lab/20.1-fundamentals-lab/` | 待迁移 |
-| `jsts-code-lab/02-design-patterns/` | `20-code-lab/20.2-language-patterns/` | 待迁移 |
-| `jsts-code-lab/86-graph-database/` | `20-code-lab/20.6-backend-apis/graph-database/` | 待迁移 |
-| `jsts-code-lab/86-tanstack-start-cloudflare/` | `20-code-lab/20.8-edge-serverless/tanstack-start-cloudflare/` | 待迁移 |
-| `docs/guides/` | `30-knowledge-base/30.1-guides/` | 待迁移 |
-| `docs/categories/` | `30-knowledge-base/30.2-categories/` | 待迁移 |
-| `docs/comparison-matrices/` | `30-knowledge-base/30.3-comparison-matrices/` | 待迁移 |
-| `docs/decision-trees.md` | `30-knowledge-base/30.4-decision-trees/` | 待拆分 |
-| `docs/diagrams/` | `30-knowledge-base/30.5-diagrams/` | 待迁移 |
-| `awesome-jsts-ecosystem/` | `40-ecosystem/` | 待迁移 |
-| `examples/` | `50-examples/` | 待迁移 |
+| `JSTS全景综述/01_language_core.md` | `10-fundamentals/10.1-language-semantics/README.md` | ✅ 已完成 |
+| `jsts-code-lab/00-language-core/` | `20-code-lab/20.1-fundamentals-lab/` | ✅ 已完成 |
+| `jsts-code-lab/02-design-patterns/` | `20-code-lab/20.2-language-patterns/` | ✅ 已完成 |
+| `jsts-code-lab/86-graph-database/` | `20-code-lab/20.6-backend-apis/graph-database/` | ✅ 已完成 |
+| `jsts-code-lab/86-tanstack-start-cloudflare/` | `20-code-lab/20.8-edge-serverless/tanstack-start-cloudflare/` | ✅ 已完成 |
+| `docs/guides/` | `30-knowledge-base/30.1-guides/` | ✅ 已完成 |
+| `docs/categories/` | `30-knowledge-base/30.2-categories/` | ✅ 已完成 |
+| `docs/comparison-matrices/` | `30-knowledge-base/30.3-comparison-matrices/` | ✅ 已完成 |
+| `docs/decision-trees.md` | `30-knowledge-base/30.4-decision-trees/` | ✅ 已完成 |
+| `docs/diagrams/` | `30-knowledge-base/30.5-diagrams/` | ✅ 已完成 |
+| `awesome-jsts-ecosystem/` | `40-ecosystem/` | ✅ 已完成 |
+| `examples/` | `50-examples/` | ✅ 已完成 |
 | `view/TS_JS_Stack_Analysis_2026.md` | `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/` | ✅ 已完成 |
 
 ---

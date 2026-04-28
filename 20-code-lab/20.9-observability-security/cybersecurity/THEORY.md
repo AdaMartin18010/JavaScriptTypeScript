@@ -1,7 +1,7 @@
 # Web 安全深度理论：从 XSS 到供应链攻击
 
 > **目标读者**：全栈工程师、安全工程师、关注应用安全的架构师
-> **关联文档**：[`docs/categories/38-web-security.md`](../../docs/categories/38-web-security.md)
+> **关联文档**：``30.2-categories/web-security.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 4,200 字
 
@@ -25,6 +25,7 @@
 | A10 | SSRF | 内网渗透 | 中 |
 
 **新增趋势（2025-2026）**：
+
 - **AI 生成代码的漏洞**：LLM 生成的代码常包含已知漏洞模式
 - **供应链攻击升级**：xz utils 后门事件后，依赖审查成为核心安全实践
 
@@ -57,6 +58,7 @@ element.innerHTML = DOMPurify.sanitize(userInput);
 ```
 
 **Content Security Policy (CSP)**：
+
 ```http
 Content-Security-Policy:
   default-src 'self';
@@ -103,6 +105,7 @@ Passkeys / WebAuthn (无密码)
 ```
 
 **Passkeys 优势**：
+
 - 防钓鱼（绑定域名）
 - 无共享密钥
 - 生物识别/设备 PIN
@@ -127,6 +130,7 @@ const result = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
 ### 4.1 依赖漏洞管理
 
 **2024-2025 重大事件**：
+
 - **xz utils 后门**：社会工程学攻击，潜伏 3 年
 - **polyfill.io 劫持**：CDN 被恶意收购，注入跟踪代码
 
@@ -202,6 +206,7 @@ pnpm audit
 Web 安全不是"功能"，是**贯穿整个 SDLC 的系统工程**。
 
 **分层防御策略**：
+
 1. **设计层**：威胁建模、最小权限原则
 2. **编码层**：安全编码规范、SAST 扫描
 3. **依赖层**：SBOM、漏洞监控、签名验证
@@ -209,6 +214,7 @@ Web 安全不是"功能"，是**贯穿整个 SDLC 的系统工程**。
 5. **运营层**：日志监控、入侵检测、应急响应
 
 **2026 年关键行动**：
+
 - 全面采用 Passkeys 替代密码
 - 实施供应链安全（SBOM + 签名验证）
 - AI 生成代码的安全审查流程

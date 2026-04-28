@@ -1,0 +1,63 @@
+%% 主题: JS 对象模型与元编程 | 关联: 10.9-object-model
+mindmap
+  root((对象模型<br/>Object Model))
+    原型链
+      原型继承
+        Object.prototype
+        __proto__
+        Object.create
+        Object.getPrototypeOf
+      属性查找
+        自有属性
+        原型链遍历
+        遮蔽shadowing
+      class语法糖
+        constructor
+        extends
+        super()
+        原型链链接
+    Proxy元编程
+      拦截器陷阱
+        get/set
+        has/deleteProperty
+        apply/construct
+        getOwnPropertyDescriptor
+        defineProperty
+      使用场景
+        响应式系统
+        数据验证
+        私有属性模拟
+        日志/审计
+      限制
+        不可代理原始值
+        Proxy !== 目标对象
+        性能开销
+        revoke revokeProxy
+    私有字段
+      硬私有
+        #prefix
+        语法错误访问
+        无反射获取
+      class字段
+        public字段
+        静态字段
+        静态块
+      Symbol.private
+        未来提案
+        软私有过渡
+    元对象协议
+      Reflect API
+        与Proxy一一对应
+        函数式操作
+        默认行为转发
+      Object元方法
+        Object.assign
+        Object.freeze/seal
+        Object.keys/values/entries
+        Object.fromEntries
+    内存模型
+      标记清除
+      引用计数补充
+      WeakMap/WeakSet
+        不阻止GC
+        私有数据关联

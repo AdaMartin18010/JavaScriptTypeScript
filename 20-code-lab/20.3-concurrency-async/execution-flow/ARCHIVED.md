@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [05-execution-flow](../05-execution-flow) — 执行流完整专题
-- [jsts-language-core-system/04-execution-model](../../jsts-language-core-system/04-execution-model) — 执行模型深度分析
+- 05-execution-flow [TODO: 链接待修复] — 执行流完整专题
+- [jsts-language-core-system/04-execution-model](../../../10-fundamentals/10.3-execution-model) — 执行模型深度分析
 
 ---
 

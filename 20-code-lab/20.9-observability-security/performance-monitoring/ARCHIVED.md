@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [74-observability](../74-observability) — 可观测性
-- [92-observability-lab](../92-observability-lab) — 可观测性实验室
+- [74-observability](../observability/) — 可观测性
+- [92-observability-lab](../observability-lab/) — 可观测性实验室
 
 ---
 

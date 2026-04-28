@@ -744,7 +744,7 @@ A2A (Agent-to-Agent Protocol) 代表了 AI 生态从"单 Agent + 工具"向"多 
 
 > **关联文档**
 >
-> - [MCP (Model Context Protocol) 完全指南](./mcp-guide.md) — Agent 与工具集成协议
+> - MCP (Model Context Protocol) 完全指南 [TODO: 链接待修复] — Agent 与工具集成协议
 > - `jsts-code-lab/94-ai-agent-lab/` — AI Agent 实验代码
-> - [AI Agent 基础设施](../categories/23-ai-agent-infrastructure.md)
-> - [AI SDK 指南](./ai-sdk-guide.md)
+> - AI Agent 基础设施 [TODO: 链接待修复]
+> - AI SDK 指南 [TODO: 链接待修复]

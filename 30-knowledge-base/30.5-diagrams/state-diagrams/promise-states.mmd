@@ -1,0 +1,32 @@
+%% 主题: Promise A+ 状态机 | 关联: 10.5-execution-flow/
+stateDiagram-v2
+    [*] --> pending: new Promise(executor)
+    
+    pending --> fulfilled: resolve(value)
+    pending --> rejected: reject(reason)
+    
+    fulfilled --> [*]: 消费完成
+    rejected --> [*]: 消费完成
+    
+    fulfilled --> fulfilled: then(onFulfilled) 链式传递
+    rejected --> rejected: catch(onRejected) 链式传递
+    
+    pending --> pending: then() 注册回调
+    
+    note right of pending
+        初始状态
+        可转化为 fulfilled 或 rejected
+        状态转化不可逆
+    end note
+    
+    note right of fulfilled
+        value 被固定
+        后续 then 回调
+        异步执行微任务
+    end note
+    
+    note right of rejected
+        reason 被固定
+        可通过 catch 恢复
+        未处理则抛 UnhandledRejection
+    end note

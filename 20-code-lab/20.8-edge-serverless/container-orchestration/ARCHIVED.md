@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [docs/categories/24-ci-cd-devops.md](../../docs/categories/24-ci-cd-devops.md) — CI/CD 与 DevOps
-- [22-deployment-devops](../22-deployment-devops) — 部署与运维
+- [docs/categories/24-ci-cd-devops.md](../../../docs/categories/24-ci-cd-devops.md) — CI/CD 与 DevOps
+- [22-deployment-devops](../deployment-devops/) — 部署与运维
 
 ---
 

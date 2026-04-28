@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [74-observability](../74-observability) — 可观测性完整模块
-- [docs/guides/ai-observability-guide.md](../../docs/guides/ai-observability-guide.md) — AI 可观测性指南
+- [74-observability](../observability/) — 可观测性完整模块
+- [docs/guides/ai-observability-guide.md](../../../30-knowledge-base/30.1-guides/ai-observability-guide.md) — AI 可观测性指南
 
 ---
 

@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [70-distributed-systems](../70-distributed-systems) — 分布式系统
-- [docs/guides/MICROSERVICES_COMPLETE_GUIDE.md](../../docs/guides/MICROSERVICES_COMPLETE_GUIDE.md) — 微服务完整指南
+- [70-distributed-systems](../../20.8-edge-serverless/distributed-systems) — 分布式系统
+- [docs/guides/MICROSERVICES_COMPLETE_GUIDE.md](../../../docs/guides/MICROSERVICES_COMPLETE_GUIDE.md) — 微服务完整指南
 
 ---
 

@@ -1,0 +1,41 @@
+%% 主题: React Server Components 渲染流程 | 关联: 20.5-frontend-frameworks/
+flowchart TD
+    A[HTTP Request] --> B{路由匹配}
+    B -->|Server Component| C[RSC 渲染]
+    B -->|Client Component| D[SSR 渲染]
+    
+    C --> C1[在服务端执行]
+    C1 --> C2[访问数据库/API]
+    C2 --> C3[生成 RSC Payload]
+    C3 --> C4[序列化为 JSX 流]
+    
+    D --> D1[服务端渲染 HTML]
+    D1 --> D2[注入 Client JS 引用]
+    D2 --> D3[返回 HTML + RSC 流]
+    
+    C4 --> E[浏览器接收]
+    D3 --> E
+    
+    E --> F[React Client Runtime]
+    F --> G{首屏渲染?}
+    G -->|是| H[渲染 HTML 骨架]
+    G -->|否| I[流式解析 RSC Payload]
+    
+    H --> J[水合 Hydration]
+    I --> J
+    J --> K[绑定事件监听器]
+    K --> L[恢复交互性]
+    
+    L --> M[用户交互]
+    M --> N{触发状态变更?}
+    N -->|Client状态| O[Client Component 重渲染]
+    N -->|需要服务端数据| P[发起新的 RSC 请求]
+    P --> C
+    O --> Q[DOM Diff + 更新]
+    Q --> M
+    
+    style A fill:#f9f,stroke:#333
+    style C fill:#bbf,stroke:#333
+    style D fill:#bbf,stroke:#333
+    style J fill:#bfb,stroke:#333
+    style L fill:#bfb,stroke:#333

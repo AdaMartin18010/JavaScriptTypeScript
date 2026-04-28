@@ -1,0 +1,52 @@
+%% 主题: JS/TS 模块系统概念网络 | 关联: 10.8-module-system
+mindmap
+  root((模块系统<br/>Module System))
+    ESM ECMAScript模块
+      静态结构
+        编译时解析
+        Tree Shaking友好
+        顶层await
+      严格模式
+        隐式严格
+        无变量提升
+      Import属性
+        with { type: "json" }
+        with { type: "css" }
+        with { type: "wasm" }
+      循环依赖
+        绑定 live binding
+        TDZ风险
+    CJS CommonJS模块
+      动态结构
+        require()运行时
+        module.exports
+        exports快捷
+      同步加载
+        文件系统读取
+        缓存机制
+      循环依赖
+        部分导出缓存
+        非完整对象风险
+    互操作
+      ESM导入CJS
+        default import
+        namespace import
+        __esModule判断
+      CJS导入ESM
+        动态import()
+        异步边界
+        top-level await限制
+      TS模块解析
+        moduleResolution策略
+          bundler
+          node16/nodenext
+          classic
+      包配置
+        package.json
+          type字段
+          exports映射
+          conditions
+    未来方向
+      Import Reflection
+      Module Source Phase
+      内置模块标准库

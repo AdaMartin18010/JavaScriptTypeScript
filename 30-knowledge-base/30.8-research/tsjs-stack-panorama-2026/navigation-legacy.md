@@ -150,7 +150,7 @@ mindmap
 | [01_language_core.md](./01_language_core.md) | ECMAScript 2025/2026 新特性、TypeScript 5.8-6.0 类型系统深度解析、严格类型配置最佳实践 | 2h | 无 |
 | [04_concurrency.md](./04_concurrency.md) | Event Loop 执行模型、Promise 语义、Worker/SharedArrayBuffer、内存模型与 happens-before 关系 | 2.5h | 01_language_core |
 | [JS_TS_语言语义模型全面分析.md](./JS_TS_语言语义模型全面分析.md) | 形式化语义三层模型、类型系统 ⊢ 关系、执行上下文与作用域链、模块系统语义 | 3h | 01_language_core, 04_concurrency |
-| [JS_TS_现代运行时深度分析.md](./JS_TS_现代运行时深度分析.md) | V8 Turbolev 编译器、Node.js 24 Type Stripping、Deno/Bun 架构对比、WasmGC | 2.5h | 04_concurrency |
+| JS_TS_现代运行时深度分析.md [TODO: 链接待修复] | V8 Turbolev 编译器、Node.js 24 Type Stripping、Deno/Bun 架构对比、WasmGC | 2.5h | 04_concurrency |
 | [JS_TS_标准化生态与运行时互操作.md](./JS_TS_标准化生态与运行时互操作.md) | WinterTC/TC55 标准、Minimum Common Web API、跨运行时兼容性策略 | 1.5h | JS_TS_现代运行时深度分析 |
 | [JS_TS_学术前沿瞭望.md](./JS_TS_学术前沿瞭望.md) | Guarded Domain Theory、Type-Constrained LLM、Relaxed Memory 验证、Structs 提案 | 2h | JS_TS_语言语义模型全面分析 |
 | [JS_TS_深度技术分析.md](./JS_TS_深度技术分析.md) | Executive Summary：关键结论、决策矩阵、风险清单、2026 配置推荐 | 1h | 上述所有 |
@@ -190,17 +190,17 @@ mindmap
 | 文档 | 摘要 | 学术价值 |
 |------|------|----------|
 | [FORMAL_SEMANTICS_COMPLETE.md](./FORMAL_SEMANTICS_COMPLETE.md) | 操作语义、指称语义、公理语义的完整形式化定义 | PL 理论基础 |
-| [GRADUAL_TYPING_THEORY.md](./GRADUAL_TYPING_THEORY.md) | 渐进类型系统的数学理论、一致性关系、类型安全证明 | 类型理论研究 |
+| GRADUAL_TYPING_THEORY.md [TODO: 链接待修复] | 渐进类型系统的数学理论、一致性关系、类型安全证明 | 类型理论研究 |
 | [TYPE_SOUNDNESS_ANALYSIS.md](./TYPE_SOUNDNESS_ANALYSIS.md) | TypeScript 类型声音性分析、unsound 行为枚举、改进方向 | 编译器研究 |
 | [MODULE_RESOLUTION_SEMANTICS.md](./MODULE_RESOLUTION_SEMANTICS.md) | 模块解析算法的形式化描述、循环依赖处理、树摇优化 | 模块系统研究 |
-| [V8_RUNTIME_THEORY.md](./V8_RUNTIME_THEORY.md) | V8 引擎形式化模型、隐藏类理论、GC 算法正确性 | 运行时研究 |
+| V8_RUNTIME_THEORY.md [TODO: 链接待修复] | V8 引擎形式化模型、隐藏类理论、GC 算法正确性 | 运行时研究 |
 | [ACADEMIC_ALIGNMENT_2025.md](./ACADEMIC_ALIGNMENT_2025.md) | 2025 年 PL 学术会议与 JS/TS 相关研究对齐分析 | 学术前沿跟踪 |
 
 ### 📋 规划与参考文档
 
 | 文档 | 用途 |
 |------|------|
-| [00_全景综述索引与总结.md](./00_全景综述索引与总结.md) | v3 核心文档导读（旧版索引） |
+| 00_全景综述索引与总结.md [TODO: 链接待修复] | v3 核心文档导读（旧版索引） |
 | [99_完整分析与总结.md](./99_完整分析与总结.md) | 完整技术分析总结 |
 | [DOCUMENTATION_V3_PLAN.md](./DOCUMENTATION_V3_PLAN.md) | v3 增强计划（P0-P4 任务清单） |
 | [DOCUMENTATION_V3_REFINEMENT_PLAN.md](./DOCUMENTATION_V3_REFINEMENT_PLAN.md) | v3 细化执行计划 |

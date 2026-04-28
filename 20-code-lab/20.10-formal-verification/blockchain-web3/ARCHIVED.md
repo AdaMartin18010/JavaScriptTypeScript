@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [83-blockchain-advanced](../83-blockchain-advanced) — 区块链高级主题（同样已归档）
-- [docs/research/tech-radar-template.md](../../docs/research/tech-radar-template.md) — 技术雷达
+- [83-blockchain-advanced](../blockchain-advanced/) — 区块链高级主题（同样已归档）
+- [docs/research/tech-radar-template.md](../../../docs/research/tech-radar-template.md) — 技术雷达
 
 ---
 

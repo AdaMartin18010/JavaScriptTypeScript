@@ -18,10 +18,12 @@
 | 1 | **概念思维导图** (Mindmap) | 以中心主题为根，层级放射展开概念网络 | 类型系统、引擎架构、生态全景 | 建立概念间的层级关联与整体轮廓 |
 | 2 | **定理证明树** (Theorem Tree) | 从公理到引理再到定理结论的演绎链 | 五大核心定理的形式化证明 | 展示逻辑演绎的严谨路径 |
 | 3 | **场景决策树** (Scenario Tree) | 以条件分支展开的交互式决策路径 | 渲染策略、安全防御、技术选型 | 将复杂决策空间结构化 |
-| 4 | **流程图** (Flowchart) | 步骤与判断的顺序执行可视化 | 构建管道、CI/CD、调试流程 | 明确时序依赖与分支逻辑 |
-| 5 | **状态图** (State Diagram) | 系统状态与触发转移的形式化描述 | JIT 三态转换、运行时生命周期 | 刻画状态空间的完备性 |
-| 6 | **时序图** (Sequence Diagram) | 多实体间消息交互的时间轴视图 | 框架内部通信、API 调用链 | 强调交互顺序与责任边界 |
+| 4 | **流程图** (Flowchart) | 步骤与判断的顺序执行可视化 | 构建管道、类型检查、模块解析 | 明确时序依赖与分支逻辑 |
+| 5 | **状态图** (State Diagram) | 系统状态与触发转移的形式化描述 | Promise 生命周期、GC 状态机 | 刻画状态空间的完备性 |
+| 6 | **时序图** (Sequence Diagram) | 多实体间消息交互的时间轴视图 | MCP/A2A 协议、框架内部通信 | 强调交互顺序与责任边界 |
 | 7 | **矩阵图** (Matrix Diagram) | 多维度属性的正交比较网格 | 工具对比、框架选型、性能基准 | 支持多属性权衡决策 |
+| 8 | **演化时间线** (Timeline) | 技术版本与演化的时序展开 | 语言版本、引擎迭代、生态迁移 | 建立历史演进的全景视图 |
+| 9 | **范畴论交换图** (Category Diagram) | 数学结构到实现概念的映射 | 类型系统函子、形式化语义 | 揭示深层数学同构关系 |
 
 ---
 
@@ -34,12 +36,58 @@
 | `type-system-concept.mmd` | TypeScript 类型系统 | **T2** 类型模块化定理 | 类型注解、渐进类型、结构子类型、类型推断、类型变换、模块边界 |
 | `v8-engine-concept.mmd` | V8 引擎执行管道 | **T1** JIT 三态定理、**T5** JIT 安全张力定理 | 解析、Ignition、TurboFan、GC、Hidden Classes、JIT 安全 |
 | `runtime-ecosystem-concept.mmd` | JS 运行时生态系统 | **T3** 运行时收敛定理 | Node.js / Bun / Deno 对比、WinterCG、边缘计算 |
+| `module-system-concept.mmd` | 模块系统 ESM/CJS | **T2** 类型模块化定理 | ESM 静态结构、CJS 动态结构、Import Attributes、互操作、循环依赖 |
+| `object-model-concept.mmd` | 对象模型与元编程 | 10.9-object-model | 原型链、Proxy 陷阱、私有字段、Reflect API、WeakMap/WeakSet |
+| `ai-agent-infra-concept.mmd` | AI Agent 基础设施 | ai-agent-production | MCP/A2A 协议、ReAct/Plan-and-Solve、沙盒、记忆系统、观测评估 |
+| `edge-computing-concept.mmd` | 边缘计算架构 | edge-observability-starter | V8 Isolates、部署平台、Edge DB、CDN、安全合规、观测性 |
 
 ### 定理证明树 (`theorem-trees/`)
 
 | 文件名 | 主题 | 关联定理 | 证明结构 |
 |--------|------|---------|---------|
 | `jit-three-state-proof.mmd` | JIT 三态转换证明 | **T1** | 公理 → 引理 → Ignition ↔ TurboFan ↔ Deoptimizer 循环 |
+
+### 流程图 (`flowcharts/`)
+
+| 文件名 | 主题 | 关联定理/模块 | 流程覆盖 |
+|--------|------|--------------|---------|
+| `type-checking-pipeline.mmd` | TypeScript 类型检查流程 | 10.2-type-system | Scanner → Parser → Binder → Checker → Emitter 完整管道 |
+| `esm-cjs-interop.mmd` | ESM/CJS 互操作解析 | 10.8-module-system | package.json 判断、模块加载策略、循环依赖处理、错误路径 |
+| `react-server-components.mmd` | RSC 渲染流程 | 20.5-frontend-frameworks | Server/Client 边界、水合、流式传输、交互回环 |
+
+### 状态图 (`state-diagrams/`)
+
+| 文件名 | 主题 | 关联定理/模块 | 状态覆盖 |
+|--------|------|--------------|---------|
+| `promise-states.mmd` | Promise A+ 状态机 | 10.5-execution-flow | pending → fulfilled/rejected，不可逆状态转移，微任务调度 |
+| `v8-gc-states.mmd` | V8 垃圾回收状态 | v8-engine-concept | Scavenge → Mark-Sweep → Mark-Compact → Incremental/Concurrent |
+
+### 时序图 (`sequence-diagrams/`)
+
+| 文件名 | 主题 | 关联定理/模块 | 交互覆盖 |
+|--------|------|--------------|---------|
+| `mcp-protocol-flow.mmd` | MCP 协议交互时序 | ai-agent-production | Host ↔ Client ↔ Server：初始化、工具调用、资源获取、采样 |
+| `a2a-protocol-flow.mmd` | A2A 协议 Agent 通信 | ai-agent-production | Agent A → Directory → Agent B → Agent C：任务委派、验证、完成 |
+
+### 矩阵图 (`matrices/`)
+
+| 文件名 | 主题 | 关联定理/模块 | 对比维度 |
+|--------|------|--------------|---------|
+| `frontend-frameworks-matrix.mmd` | 前端框架对比矩阵 | 20.5-frontend-frameworks | React/Vue/Svelte/Solid/Angular：DX vs 性能四象限 |
+| `edge-databases-matrix.mmd` | 边缘数据库对比矩阵 | 30-edge-databases | Turso/D1/Deno KV/LibSQL：一致性、锁定、容量、定价、分布 |
+
+### 演化时间线 (`timelines/`)
+
+| 文件名 | 主题 | 关联定理/模块 | 时间覆盖 |
+|--------|------|--------------|---------|
+| `typescript-evolution.mmd` | TypeScript 版本演化 | 10.2-type-system | 1.0 → 5.8 → tsgo：关键特性与性能里程碑 |
+| `javascript-engine-evolution.mmd` | JS 引擎演化 | v8-engine-concept | SpiderMonkey → V8 → JSC → Bun：编译器架构演进 |
+
+### 范畴论交换图 (`category-diagrams/`)
+
+| 文件名 | 主题 | 关联定理/模块 | 映射覆盖 |
+|--------|------|--------------|---------|
+| `type-system-functor.mmd` | 类型系统函子映射 | 10.2-type-system | TS 类型层 → JS 值层：Erase/Infer/Narrow/Map 函子变换 |
 
 ### 场景决策树 (`scenario-trees/`)
 
@@ -125,7 +173,7 @@ graph TD
 新增图表请遵循以下规范：
 
 1. **文件名规范**: `{type}/{kebab-case-topic}.mmd`
-2. **类型目录**: `mindmaps/` | `theorem-trees/` | `scenario-trees/` | `flowcharts/` | `state-diagrams/` | `sequence-diagrams/` | `matrices/`
+2. **类型目录**: `mindmaps/` | `theorem-trees/` | `scenario-trees/` | `flowcharts/` | `state-diagrams/` | `sequence-diagrams/` | `matrices/` | `timelines/` | `category-diagrams/`
 3. **注释要求**: 在 `.mmd` 文件顶部添加 `%% 主题: XXX | 关联: XXX` 注释
 4. **样式统一**: 根节点使用 `fill:#f9f,stroke:#333`，结论/安全节点使用 `fill:#bfb,stroke:#333`，风险节点使用 `fill:#fbb,stroke:#333`
 5. **更新索引**: 新增图表后必须在本文档的「当前图表索引」表格中登记

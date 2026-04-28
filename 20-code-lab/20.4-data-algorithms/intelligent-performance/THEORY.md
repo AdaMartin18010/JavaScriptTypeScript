@@ -1,7 +1,7 @@
 # 智能性能优化：AI 驱动的性能工程
 
 > **目标读者**：性能工程师、关注 AI 辅助优化的开发者
-> **关联文档**：[`docs/categories/54-intelligent-performance.md`](../../docs/categories/54-intelligent-performance.md)
+> **关联文档**：``30.2-categories/intelligent-performance.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 
 ---

@@ -7,11 +7,13 @@
 ## 1. 架构概述
 
 ### 1.1 设计目标
+
 - 提供清晰易用的并发编程抽象
 - 保证线程安全和数据一致性
 - 优化资源利用和性能表现
 
 ### 1.2 架构风格
+
 采用 **分层架构 + Actor 模型** 的混合设计，结合 CSP (Communicating Sequential Processes) 并发理论。
 
 ---
@@ -497,6 +499,6 @@ atomic {
 
 ### 10.4 相关模块
 
-- [02-design-patterns](../02-design-patterns/THEORY.md) - 设计模式理论
-- [50-browser-runtime](../50-browser-runtime/THEORY.md) - 浏览器运行时理论
-- [70-distributed-systems](../70-distributed-systems/THEORY.md) - 分布式系统理论
+- [02-design-patterns](../../20.2-language-patterns/design-patterns/THEORY.md) - 设计模式理论
+- [50-browser-runtime](../browser-runtime/THEORY.md) - 浏览器运行时理论
+- [70-distributed-systems](../../20.8-edge-serverless/distributed-systems/THEORY.md) - 分布式系统理论

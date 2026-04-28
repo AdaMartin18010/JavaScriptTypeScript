@@ -1,0 +1,36 @@
+%% 主题: TypeScript 类型检查管道 | 关联: 10.2-type-system/
+flowchart TD
+    A[.ts / .tsx 源文件] --> B[Scanner 扫描器]
+    B --> C[Token流]
+    C --> D[Parser 解析器]
+    D --> E[AST 抽象语法树]
+    E --> F[Binder 绑定器]
+    F --> G[Symbol表 + Scope链]
+    G --> H[Checker 类型检查器]
+    
+    H --> H1[类型推断]
+    H --> H2[结构化子类型检查]
+    H --> H3[泛型约束求解]
+    H --> H4[控制流分析]
+    H --> H5[类型兼容性验证]
+    
+    H1 --> I{发现类型错误?}
+    H2 --> I
+    H3 --> I
+    H4 --> I
+    H5 --> I
+    
+    I -->|是| J[生成诊断信息]
+    I -->|否| K[类型检查通过]
+    J --> L[输出 .d.ts + 错误报告]
+    K --> M[Emitter 发射器]
+    
+    M --> M1[生成 .js]
+    M --> M2[生成 .d.ts]
+    M --> M3[生成 Source Map]
+    
+    style A fill:#f9f,stroke:#333
+    style H fill:#bbf,stroke:#333
+    style J fill:#fbb,stroke:#333
+    style K fill:#bfb,stroke:#333
+    style M fill:#bfb,stroke:#333

@@ -1,7 +1,7 @@
 # 开发者体验 (DX) 理论：工具链与人机工程
 
 > **目标读者**：工具链开发者、平台工程师、关注团队效率的技术负责人
-> **关联文档**：[`docs/categories/60-developer-experience.md`](../../docs/categories/60-developer-experience.md)
+> **关联文档**：``30.2-categories/developer-experience.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 3,000 字
 

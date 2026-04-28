@@ -427,7 +427,7 @@ flowchart TD
 
 ### 参考对比矩阵
 
-- [包管理器对比矩阵](../comparison-matrices/package-managers-compare.md)
+- 包管理器对比矩阵 [TODO: 链接待修复]
 
 ---
 
@@ -497,7 +497,7 @@ Monorepo工具选择？
 
 ### 参考对比矩阵
 
-- [Monorepo 工具对比矩阵](../comparison-matrices/monorepo-tools-compare.md)
+- Monorepo 工具对比矩阵 [TODO: 链接待修复]
 
 ---
 
@@ -574,7 +574,7 @@ flowchart TD
 
 ### 参考对比矩阵
 
-- [部署平台对比矩阵](../comparison-matrices/deployment-platforms-compare.md)
+- 部署平台对比矩阵 [TODO: 链接待修复]
 
 ---
 
@@ -640,7 +640,7 @@ flowchart TD
 
 ### 参考对比矩阵
 
-- [可观测性工具对比矩阵](../comparison-matrices/observability-tools-compare.md)
+- 可观测性工具对比矩阵 [TODO: 链接待修复]
 
 ---
 
@@ -713,7 +713,7 @@ CI/CD工具选择？
 
 ### 参考对比矩阵
 
-- [CI/CD 工具对比矩阵](../comparison-matrices/ci-cd-tools-compare.md)
+- CI/CD 工具对比矩阵 [TODO: 链接待修复]
 
 ---
 
@@ -790,8 +790,8 @@ Web API技术选择？
 
 ### 参考对比矩阵
 
-- [后端框架对比矩阵](../comparison-matrices/backend-frameworks-compare.md)
-- [部署平台对比矩阵](../comparison-matrices/deployment-platforms-compare.md)
+- 后端框架对比矩阵 [TODO: 链接待修复]
+- 部署平台对比矩阵 [TODO: 链接待修复]
 
 ---
 
@@ -890,7 +890,7 @@ flowchart TD
 
 ### 参考对比矩阵
 
-- [安全与合规分类文档](../categories/security-compliance.md)
+- 安全与合规分类文档 [TODO: 链接待修复]
 
 ---
 
@@ -976,7 +976,7 @@ flowchart TD
 
 ### 参考对比矩阵
 
-- [ORM 对比矩阵](../comparison-matrices/orm-compare.md)
+- ORM 对比矩阵 [TODO: 链接待修复]
 
 ---
 

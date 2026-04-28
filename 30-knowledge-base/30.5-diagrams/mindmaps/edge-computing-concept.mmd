@@ -1,0 +1,72 @@
+%% 主题: 边缘计算架构概念 | 关联: edge-observability-starter/
+mindmap
+  root((边缘计算<br/>Edge Computing))
+    运行时模型
+      V8 Isolates
+        毫秒冷启动
+        百万级并发
+        无容器开销
+        内存限制
+      Lightweight Containers
+        microVMs
+        Firecracker
+        WASM runtime
+      Serverless Functions
+        事件驱动
+        自动伸缩
+        按请求计费
+    部署平台
+      Cloudflare Workers
+        Workers KV
+        Durable Objects
+        R2存储
+      Vercel Edge
+        Edge Config
+        Edge Middleware
+        ISR增量渲染
+      Deno Deploy
+        V8 isolates原生
+        全球低延迟
+        即时部署
+      AWS Lambda@Edge
+        CloudFront集成
+        多区域复制
+    数据存储
+      Edge Databases
+        Turso LibSQL
+        Cloudflare D1
+        Deno KV
+        PlanetScale
+      缓存策略
+        最终一致性
+        就近读写
+        TTL过期
+      同步模型
+        CRDTs
+        操作转换
+        异步复制
+    网络架构
+      CDN层
+        静态加速
+        动态回源
+        边缘路由
+      服务发现
+        Anycast IP
+        地理DNS
+        健康检查
+    安全与合规
+      边缘隔离
+        租户沙盒
+        执行超时
+        资源配额
+      数据主权
+        GDPR合规
+        区域锁定
+        本地处理
+    观测性
+      分布式追踪
+        OpenTelemetry
+        边缘span聚合
+      日志聚合
+        采样策略
+        实时告警

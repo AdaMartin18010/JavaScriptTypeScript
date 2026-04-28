@@ -1,7 +1,7 @@
 # 编译器设计理论：从词法分析到代码生成
 
 > **目标读者**：对编译原理感兴趣的开发者、工具链作者
-> **关联文档**：[`docs/categories/79-compiler-design.md`](../../docs/categories/79-compiler-design.md)
+> **关联文档**：``30.2-categories/compiler-design.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 
 ---

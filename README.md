@@ -6,102 +6,110 @@
 </p>
 
 <p align="center">
-  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
-  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white" alt="Node.js" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.8+-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white" alt="Node.js" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT" /></a>
   <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg" alt="Contributions Welcome" /></a>
 </p>
 
-> 🚀 精心策划的 JavaScript/TypeScript 生态系统资源列表，涵盖框架、工具、库和最佳实践。
+> "从形式语义到生产部署的 JS/TS 全栈知识库 —— 5大定理体系、7种思维表征、六层语义化架构"
 >
-> 📚 配套代码实验室：[jsts-code-lab](./jsts-code-lab/) - 93 模块，从理论到实践的完整实现
->
-> 🧠 语言核心系统：[jsts-language-core-system](./jsts-language-core-system/) - 91 个深度文档，覆盖类型系统/变量系统/控制流/执行模型/执行流/规范基础/模块系统/对象模型
->
-> 📊 技术选型体系：16 个对比矩阵（含包管理器/Monorepo/可观测性/部署平台/CI/CD/浏览器兼容性）、15 大选型决策树、20 个 Mermaid 知识图谱（含 3 个大型知识图谱）
->
-> 🎓 旗舰文档：[JS_TS_语言语义模型全面分析](./JSTS全景综述/JS_TS_语言语义模型全面分析.md) - 基于 ECMA-2025/2026、TypeScript 5.8–7.0，对齐 Stanford/MIT/CMU/Berkeley/UW 学术课程
->
-> 🏷️ **项目状态**: v4.0 里程碑 | 持续演进中
+> 🏷️ **项目状态**: v5.0 重构完成 | 六层语义化架构
 
 ---
 
-## 📖 文档导航
+## 🌟 核心亮点
 
-### 🗺️ 四维分类体系
+- 🏛️ **六层语义化架构**：L1形式语义 → L2代码实验 → L3选型决策 → L4生态趋势 → L5示例项目 → L6元数据
+- 🧠 **5大定理体系**：JIT三态转化、类型模块化、运行时收敛、合成优先、JIT安全张力
+- 🗺️ **7种思维表征**：思维导图、多维矩阵、决策树、定理推理树、场景树、范畴论交换图、演化时间线
+- 📐 **93个代码实验室**：从语言核心到AI Agent的全路径可运行示例
+- 🌐 **15+英文摘要**：覆盖5大定理与旗舰技术专题
 
-本项目按 **语言核心 / 框架生态 / 应用领域 / 技术基础设施** 四大维度组织，每个维度有独立的索引、学习路径和速查表：
+---
 
-| 维度 | 索引入口 | 核心内容 | 学习路径 |
-|------|---------|---------|---------|
-| 🔵 **语言核心** | [language-core-index.md](./docs/language-core-index.md) | 类型系统、执行模型、ES2026、模块系统 | 语言语义 → 编译原理 → 形式化验证 |
-| 🟢 **框架生态** | [frameworks-index.md](./docs/frameworks-index.md) | React/Vue/Angular、Next.js/Nuxt、状态管理 | 组件设计 → 全栈元框架 → 微前端 |
-| 🟠 **应用领域** | [application-domains-index.md](./docs/application-domains-index.md) | AI Agent、Web3、移动端、边缘计算、WebXR | 场景选型 → 架构设计 → 生产部署 |
-| 🔴 **技术基础设施** | [infrastructure-index.md](./docs/infrastructure-index.md) | 构建工具、测试、部署、可观测性、安全 | 工具链 → CI/CD → SRE 运维 |
-
-### 🗺️ 项目整体架构
+## 🏛️ 六层语义化架构
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                    JavaScript/TypeScript 全景知识库                          │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                        四维分类体系                                  │   │
-│  │  🔵 语言核心  🟢 框架生态  🟠 应用领域  🔴 技术基础设施             │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-│                                    │                                       │
-│  ┌─────────────────────┐    ┌─────────────────────┐    ┌─────────────────┐ │
-│  │ awesome-jsts-       │    │   jsts-code-lab     │    │ 学习路径文档     │ │
-│  │   ecosystem         │    │  (代码实验室)        │    │ (Learning Paths)│ │
-│  │                     │    │                     │    │                 │ │
-│  │ • 生态工具导航       │    │ • 90+ 技术模块       │    │ • 初学者路径     │ │
-│  │ • 框架对比           │    │ • 280+ TS 实现      │    │ • 进阶路径       │ │
-│  │ • 最佳实践           │    │ • 理论+实践结合      │    │ • 架构师路径     │ │
-│  │ • 资源收录           │    │ • 可运行示例         │    │                 │ │
-│  └─────────────────────┘    └─────────────────────┘    └─────────────────┘ │
-│           │                          │                      │               │
-│           │     ┌─────────────────────────────────────┐    │               │
-│           │     │ jsts-language-core-system           │    │               │
-│           │     │ (语言核心系统)                       │    │               │
-│           │     │ • 52 篇深度文档 (>5000 字节)         │    │               │
-│           │     │ • 类型/变量/控制流/执行模型/规范     │    │               │
-│           │     └─────────────────────────────────────┘    │               │
-│           │                          │                      │               │
-│           └──────────────────────────┼──────────────────────┘               │
-│                                      │                                      │
-│                                      ▼                                      │
-│                           ┌─────────────────────┐                           │
-│                           │    GLOSSARY.md      │                           │
-│                           │    (术语表)          │                           │
-│                           └─────────────────────┘                           │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+10-fundamentals/      ← L1 形式语义与学术前沿
+20-code-lab/          ← L2 代码实验室（93模块）
+30-knowledge-base/    ← L3 选型决策与最佳实践
+40-ecosystem/         ← L4 生态趋势与数据
+50-examples/          ← L5 可运行参考实现
+60-meta-content/      ← L6 内容生产基础设施
 ```
 
-### 📂 快速链接
+### 快速入口（按角色）
 
-| 文档 | 描述 | 目标读者 |
-|------|------|----------|
-| [📦 awesome-jsts-ecosystem](./awesome-jsts-ecosystem/) | JS/TS 生态工具导航 | 所有开发者 |
-| [🧪 jsts-code-lab](./jsts-code-lab/) | 代码实验室（93 模块） | 实践学习者 |
-| [🧠 jsts-language-core-system](./jsts-language-core-system/) | 语言核心系统（52 深度文档） | 理论深入者 |
-| [📚 jsts-code-lab/CROSS-REFERENCE.md](./jsts-code-lab/CROSS-REFERENCE.md) | 模块交叉引用索引 | 系统学习者 |
-| [📖 GLOSSARY.md](./GLOSSARY.md) | 专业术语表（中英对照） | 所有读者 |
-| [🎓 beginners-path.md](./docs/learning-paths/beginners-path.md) | 初学者学习路径 | 初学者 |
-| [📈 intermediate-path.md](./docs/learning-paths/intermediate-path.md) | 进阶学习路径 | 中级开发者 |
-| [🎯 advanced-path.md](./docs/learning-paths/advanced-path.md) | 架构师学习路径 | 高级开发者 |
-| [📊 comparison-matrices](./docs/comparison-matrices/) | 16 个框架/工具对比矩阵 | 技术选型者 |
-| [🌳 技术选型决策树](./docs/decision-trees.md) | 15 大选型场景的决策树 | 技术选型者 |
-| [🗺️ diagrams](./docs/diagrams/) | 21 个 Mermaid 图表与知识图谱 | 可视化学习者 |
-| [🌐 web-apis-guide.md](./docs/guides/web-apis-guide.md) | Web APIs 完全指南 | 全栈开发者 |
-| [🟢 nodejs-core-modules-guide.md](./docs/guides/nodejs-core-modules-guide.md) | Node.js 核心模块指南 | 后端开发者 |
-| [🏗️ categories.md](./docs/categories.md) | 运维与工程基建分类 | 运维工程师 |
-| [🤖 AI Agent 基础设施](./docs/categories/23-ai-agent-infrastructure.md) | MCP / Vercel AI SDK / Mastra 生态导航 | AI 开发者 |
-| [🔐 RSC 安全指南](./docs/guides/rsc-security-guide.md) | React Server Components 安全最佳实践 | 全栈开发者 |
-| [📘 TS 7.0 迁移指南](./docs/guides/typescript-7-migration-guide.md) | TypeScript 7.0 Go 编译器迁移策略 | TS 开发者 |
-| [🔑 better-auth 专题](./docs/guides/better-auth-guide.md) | 现代认证方案 better-auth 完整实践 | 后端开发者 |
-| [🤝 CONTRIBUTING.md](./CONTRIBUTING.md) | 贡献指南 | 贡献者 |
+| 角色 | 推荐路径 |
+|------|---------|
+| **语言研究者** | `10-fundamentals/` → 公理化基础 → 定理体系 → 形式证明 |
+| **全栈工程师** | `20-code-lab/` → 可运行示例 → THEORY.md → 对比矩阵 |
+| **技术决策者** | `30-knowledge-base/30.4-decision-trees/` → 选型决策 → 对比矩阵 |
+| **生态观察者** | `40-ecosystem/` → 趋势报告 → Stars/下载量追踪 |
+| **初学者** | `50-examples/50.1-beginner/` → 里程碑项目 → 学习路径 |
+
+### 目录结构
+
+```
+10-fundamentals/
+├── 10.1-language-semantics/          # 语言语义与形式化
+│   ├── axioms/                       # 公理化基础（3大公理）
+│   ├── theorems/                     # 定理体系（5大定理）
+│   ├── proofs/                       # 形式证明与推理树
+│   └── ontology/                     # 本体论框架
+├── 10.2-type-system/                 # 类型系统深度分析
+├── 10.3-execution-model/             # 执行模型（含JIT三态转化）
+├── 10.4-module-system/               # 模块系统
+├── 10.5-object-model/                # 对象模型与原型链
+├── 10.6-ecmascript-spec/             # ECMAScript规范基础
+└── 10.7-academic-frontiers/          # 学术前沿瞭望
+
+20-code-lab/
+├── 20.1-fundamentals-lab/            # 基础层
+├── 20.2-language-patterns/           # 语言与设计模式
+├── 20.3-concurrency-async/           # 并发与异步
+├── 20.4-data-algorithms/             # 数据结构与算法
+├── 20.5-frontend-frameworks/         # 前端框架
+├── 20.6-backend-apis/                # 后端与API
+├── 20.7-ai-agent-infra/              # AI Agent基础设施
+├── 20.8-edge-serverless/             # 边缘与Serverless
+├── 20.9-observability-security/      # 可观测性与安全
+├── 20.10-formal-verification/        # 形式化验证
+├── 20.11-rust-toolchain/             # Rust统一工具链
+├── 20.12-build-free-typescript/      # Type Stripping范式
+└── 20.13-edge-databases/             # SQLite at the Edge
+
+30-knowledge-base/
+├── 30.1-guides/                      # 深度指南（26个）
+├── 30.2-categories/                  # 技术分类（31个）
+├── 30.3-comparison-matrices/         # 对比矩阵（20个）
+├── 30.4-decision-trees/              # 决策树（独立目录）
+├── 30.5-diagrams/                    # 七种思维表征
+├── 30.6-patterns/                    # 设计模式
+├── 30.7-cheatsheets/                 # 速查表
+├── 30.8-research/                    # 研究报告
+├── 30.9-learning-paths/              # 学习路径
+└── 30.10-en/                         # 英文摘要
+
+40-ecosystem/
+├── 40.1-categories/                  # 分类导航
+├── 40.2-data/                        # Stars/下载量追踪
+└── 40.3-trends/                      # 趋势报告
+
+50-examples/
+├── 50.1-beginner/                    # 初学者路径
+├── 50.2-intermediate/                # 进阶路径
+├── 50.3-advanced/                    # 高级路径
+├── 50.4-mobile/                      # React Native + Expo
+├── 50.5-desktop/                     # Tauri v2 + React
+└── 50.6-ai-agent/                    # Mastra + MCP
+
+60-meta-content/
+├── templates/                        # 内容模板
+├── quarterly-audit/                  # 季度审计清单
+└── ci-checks/                        # 自动化内容检查
+```
 
 ---
 
@@ -110,13 +118,19 @@
 | 指标 | 数量 | 说明 |
 |------|------|------|
 | 文档总数 | 250+ | 涵盖指南、对比矩阵、决策树、知识图谱、研究文档 |
-| 分类文档 | 30 | 按技术领域系统分类 |
-| 对比矩阵 | 16 | 多维度工具/框架横向对比 |
-| 代码模块 | 93 | jsts-code-lab 可运行示例 |
+| 形式化定理 | 5 | JIT三态转化、类型模块化、运行时收敛、合成优先、JIT安全张力 |
+| 思维表征 | 7 | 思维导图、多维矩阵、决策树、定理推理树、场景树、范畴论交换图、演化时间线 |
+| 代码模块 | 93 | 20-code-lab 可运行示例 |
+| 对比矩阵 | 20 | 多维度工具/框架横向对比 |
 | Mermaid 图表 | 21 | 含 3 个大型知识图谱 |
-| 决策树场景 | 15 | 交互式技术选型流程 |
-| AI Agent 模块 | 8+ | MCP / A2A / Vercel AI SDK v6 / Mastra / LangGraph / CrewAI / OpenAI Agents SDK |
-| 现代认证模块 | 5+ | better-auth / Passkeys / OAuth 2.1 / FedCM / MFA |
+| 决策树场景 | 15+ | 交互式技术选型流程 |
+| 英文摘要 | 15+ | 覆盖5大定理与旗舰技术专题 |
+
+---
+
+## 🗃️ 历史内容（Legacy Content）
+
+> 以下内容基于 v4.0 及更早架构，仍具参考价值，正逐步迁移至六层语义化架构中。
 
 ---
 
@@ -2953,14 +2967,15 @@ export default defineConfig({
 
 ## 🆕 最新动态
 
-### v1.3.0 更新要点
+### v5.0 重构要点
 
-- **6 个全新对比矩阵**：包管理器、Monorepo 工具、可观测性工具、部署平台、CI/CD 工具、浏览器兼容性
-- **8 个全新决策树**：覆盖包管理器、Monorepo、全栈框架、实时通信、认证方案、CSS 方案、运行时、CI/CD 选型
-- **3 个大型知识图谱**：语言核心知识图谱、工程实践知识图谱、生态系统全景图谱
-- **2 部全新指南**：[Web APIs 完全指南](./docs/guides/web-apis-guide.md)、[Node.js 核心模块指南](./docs/guides/nodejs-core-modules-guide.md)
-- **5 个运维与工程基建分类**：新增分类体系覆盖部署、监控、安全、性能、工作流
-- **代码实验室扩容**：从 83+ 扩展至 **90+ 技术模块**
+- **六层语义化架构**：从四层扁平结构重构为 `10-fundamentals/` → `20-code-lab/` → `30-knowledge-base/` → `40-ecosystem/` → `50-examples/` → `60-meta-content/`
+- **5大定理体系**：JIT三态转化、类型模块化、运行时收敛、合成优先、JIT安全张力 —— 形式化语言核心
+- **7种思维表征**：思维导图、多维矩阵、决策树、定理推理树、场景树、范畴论交换图、演化时间线
+- **对比矩阵扩容**：从 16 个扩展至 **20 个**，新增运行时对比等
+- **决策树独立目录**：`30-knowledge-base/30.4-decision-trees/` 独立管理，新增 AI 编码工作流、Type Stripping 策略等
+- **代码实验室迁移**：93 模块全部迁移至 `20-code-lab/`，每个模块标配 THEORY.md + ARCHITECTURE.md
+- **英文摘要专区**：`30-knowledge-base/30.10-en/` 覆盖5大定理与旗舰技术专题
 
 ---
 

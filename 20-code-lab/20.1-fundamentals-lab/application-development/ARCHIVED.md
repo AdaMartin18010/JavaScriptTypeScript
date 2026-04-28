@@ -20,9 +20,9 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [18-frontend-frameworks](../18-frontend-frameworks) — 前端应用开发
-- [19-backend-development](../19-backend-development) — 后端应用开发
-- [59-fullstack-patterns](../59-fullstack-patterns) — 全栈模式
+- [18-frontend-frameworks](../../20.5-frontend-frameworks/frontend-frameworks) — 前端应用开发
+- [19-backend-development](../../20.6-backend-apis/backend-development) — 后端应用开发
+- [59-fullstack-patterns](../../20.2-language-patterns/fullstack-patterns) — 全栈模式
 
 ---
 

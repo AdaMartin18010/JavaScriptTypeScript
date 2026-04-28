@@ -1,7 +1,7 @@
 # 搜索引擎理论：从全文检索到向量搜索
 
 > **目标读者**：关注搜索功能的后端工程师、AI 应用开发者
-> **关联文档**：[`docs/categories/64-search-engine.md`](../../docs/categories/64-search-engine.md)
+> **关联文档**：``30.2-categories/search-engine.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 2,800 字
 

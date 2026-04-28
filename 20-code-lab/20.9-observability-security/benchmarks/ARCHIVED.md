@@ -20,9 +20,9 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [08-performance](../08-performance) — 性能优化完整模块
-- [60-developer-experience](../60-developer-experience) — 开发者体验与工具链
-- [docs/guides/ai-coding-workflow.md](../../docs/guides/ai-coding-workflow.md) — AI 辅助编程工作流
+- [08-performance](../../20.4-data-algorithms/performance) — 性能优化完整模块
+- [60-developer-experience](../../20.1-fundamentals-lab/developer-experience) — 开发者体验与工具链
+- [docs/guides/ai-coding-workflow.md](../../../docs/guides/ai-coding-workflow.md) — AI 辅助编程工作流
 
 ---
 

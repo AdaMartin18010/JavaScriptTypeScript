@@ -1,0 +1,64 @@
+%% 主题: JavaScript 引擎演化时间线 | 关联: v8-engine-concept.mmd /
+timeline
+    title JavaScript 引擎演化史
+
+    1995 : SpiderMonkey
+         : Brendan Eich 开发
+         : 首个 JS 解释器
+         : 10天内完成原型
+
+    1996 : JScript
+         : 微软 IE3 逆向实现
+         : 浏览器兼容战争开端
+
+    1997 : Rhino
+         : Java 实现的 JS 引擎
+         : Mozilla 项目
+         : 服务端嵌入式场景
+
+    2001 : SquirrelFish
+         : WebKit 项目起步
+         : 解释执行为主
+
+    2008 : V8 诞生
+         : Google Chrome 发布
+         : 引入 JIT 编译
+         : Hidden Classes + IC
+         : 性能数量级提升
+
+    2010 : Nitro/JSC
+         : Apple Safari 优化
+         : DFG/JIT 多层编译
+
+    2012 : IonMonkey
+         : Firefox 新 JIT 编译器
+         : 类型推断 +  SSA
+
+    2015 : V8 TurboFan
+         : 全新优化编译器
+         : Sea of Nodes IR
+         : 取代 Crankshaft
+
+    2017 : V8 Ignition
+         : 字节码解释器
+         : 降低内存占用
+         : 快速启动优化
+
+    2020 : JavaScriptCore JSC
+         : 三层编译架构成熟
+         : LLInt → Baseline → DFG/FTL
+
+    2022 : Bun JavaScriptCore
+         : Zig 语言封装 JSC
+         : 原生 TS 执行
+         : 极高冷启动性能
+
+    2024 : V8 Maglev
+         : 快速优化编译器
+         : Ignition 与 TurboFan 之间
+         : 平衡启动与峰值
+
+    2025 : Rust 重写浪潮
+         : SWC, Oxc, Rolldown
+         : 工具链非运行时
+         : JS 引擎边界扩展

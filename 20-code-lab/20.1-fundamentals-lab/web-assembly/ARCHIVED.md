@@ -20,8 +20,8 @@
 
 根据本模块的主题，推荐以下替代学习路径：
 
-- [docs/categories/21-webassembly.md](../../docs/categories/21-webassembly.md) — WebAssembly 完整指南
-- [21-webassembly](../../jsts-language-core-system) — WebAssembly 相关研究
+- [docs/categories/21-webassembly.md](../../../docs/categories/21-webassembly.md) — WebAssembly 完整指南
+- 21-webassembly [TODO: 链接待修复] — WebAssembly 相关研究
 
 ---
 

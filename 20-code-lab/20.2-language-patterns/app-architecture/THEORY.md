@@ -1,7 +1,7 @@
 # 应用架构理论：从单体到微前端
 
 > **目标读者**：前端架构师、技术负责人
-> **关联文档**：[`docs/categories/53-app-architecture.md`](../../docs/categories/53-app-architecture.md)
+> **关联文档**：``30.2-categories/app-architecture.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 
 ---
