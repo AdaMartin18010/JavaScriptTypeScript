@@ -1,0 +1,345 @@
+---
+last-updated: 2026-04-27
+review-cycle: 6 months
+next-review: 2026-10-27
+status: current
+---
+# JavaScript / TypeScript 全景综述 - 索引与总结
+
+> 本文件夹包含对 JavaScript/TypeScript 生态系统的全面技术分析，涵盖语言核心、设计模式、并发模型、分布式系统、架构设计、可观测性、CI/CD 和 AI/ML 等领域。
+
+**最后更新**: 2026-04-16
+**分析范围**: ES2024/ES2025/ES2026 + TypeScript 5.8–6.0（含 7.0 前瞻）
+**文档总数**: 17个核心技术文档
+
+---
+
+## 📚 文档索引（v3）
+
+本版（v3）聚焦以下 7 篇核心文档，同时保留原有专业文档作为扩展参考。
+
+### 🔥 核心文档
+
+| 文档 | 目标读者 | 核心价值 | 阅读建议 |
+|------|---------|----------|----------|
+| `01_language_core.md` | 所有 JS/TS 开发者 | **语言核心特性全览**：从 ECMAScript 新特性到 TypeScript 5.8+ 类型系统，建立统一的基础语义认知 | 新手必读，解决"这个语法/类型特性到底怎么工作"的日常困惑 |
+| `04_concurrency.md` | 中高级开发者、性能工程师 | **执行模型与并发语义深度解析**：彻底掌握 Event Loop、Promise、Worker、SharedArrayBuffer 及内存模型 | 排查异步 Bug 或设计高并发系统前必读，理解宏任务/微任务与内存模型的精确边界 |
+| `JS_TS_语言语义模型全面分析.md` | 语言爱好者、编译器/工具链开发者 | **语言语义模型全面分析**：形式化语义、类型系统、执行上下文与作用域链的多维剖析 | 想要从"会用"跨越到"精通"的进阶读物，适合需要深入理解闭包、作用域链与类型擦除的开发者 |
+| `JS_TS_现代运行时深度分析.md` | 运行时开发者、底层优化工程师 | **现代运行时深度分析**（v3 新增）：V8、Node.js、Deno、Bun 等现代运行时的架构、编译管线与性能机制 | 做性能调优、选型 Node.js/Deno/Bun 或写底层工具链时必读，理解代码如何变成机器行为 |
+| `JS_TS_标准化生态与运行时互操作.md` | 标准化参与者、跨平台架构师 | **标准化生态与运行时互操作**（v3 新增）：TC39、W3C、WinterCG 等标准化进程与跨运行时互操作实践 | 编写跨平台库、设计边缘/服务端架构或需要预测技术走向时必读 |
+| `JS_TS_学术前沿瞭望.md` | 研究人员、技术前瞻者 | **学术前沿瞭望**（v3 新增）：类型理论、程序分析、形式化验证与 JS/TS 相关的最新学术研究动态 | 关注 PL 学术会议或需要为团队建立长期技术雷达的研究者必读 |
+| `JS_TS_深度技术分析.md` | 技术决策者、CTO、架构师 | **深度技术分析（Executive Summary）**：提炼关键结论、决策建议、风险清单与最佳实践速查 | 时间有限但需要快速获得 2026 年技术基线与决策依据的速查手册 |
+
+### 📖 扩展参考文档
+
+| 文档 | 内容 | 关键概念 |
+|-----|------|---------|
+| `02_package_stdlib.md` | 包管理与标准库 | npm/yarn/pnpm/Bun, ECMAScript标准库, Web APIs |
+| `03_design_patterns.md` | 设计模式 | GoF 23种模式, JS/TS特有模式, SOLID原则 |
+| `05_distributed_systems.md` | 分布式系统 | CAP定理, 一致性模型, 微服务架构 |
+| `06_workflow_patterns.md` | 工作流设计 | 43种工作流模式, 可判断性分析, BPMN |
+| `07_architecture.md` | 架构设计 | 分层/六边形/洋葱/清洁架构, 前端架构演进 |
+| `08_observability.md` | 可观测性 | OpenTelemetry, eBPF, 分布式追踪 |
+| `09_cicd.md` | CI/CD | GitHub Actions, GitLab CI, 部署策略 |
+| `10_ai_ml.md` | AI/ML | TensorFlow.js, LLM集成, RAG架构, MLOps |
+| `JS_TS_语义模型可视化图表.md` | 可视化补充材料 | Mermaid架构图、时序图、状态机、流程图 |
+| `JavaScript_TypeScript_Complete_Guide.md` | 完整指南汇总 | 所有主题的索引和快速参考 |
+| `JS_TS_TypeScript_7_0_Native_Compiler.md` | TypeScript 7.0 原生编译器 | Go 原生编译器性能、路线图与生态影响（2025-03 官宣） |
+| `JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md` | JS → TS 语法语义映射 | 逐语法映射矩阵、类型擦除、设计模式升级路径、迁移决策树 |
+
+---
+
+## 🧠 语言语义模型全景图
+
+```mermaid
+mindmap
+  root((JS/TS<br/>全景综述))
+    语言核心
+      01_language_core.md
+      ECMAScript演进
+      类型系统深度
+      形式化理论
+    基础设施
+      02_package_stdlib.md
+      包管理器对比
+      标准库API
+      Web APIs
+    设计模式
+      03_design_patterns.md
+      创建型模式
+      结构型模式
+      行为型模式
+    并发编程
+      04_concurrency.md
+      Event Loop
+      Promise模型
+      Worker/并行
+    分布式系统
+      05_distributed_systems.md
+      CAP理论
+      一致性模型
+      微服务
+    工作流
+      06_workflow_patterns.md
+      43种模式
+      可判断性
+      BPMN
+    架构设计
+      07_architecture.md
+      经典架构
+      现代全栈
+      架构决策
+    可观测性
+      08_observability.md
+      OpenTelemetry
+      eBPF
+      三大支柱
+    工程实践
+      09_cicd.md
+      CI/CD流程
+      部署策略
+      工具链
+    AI/ML
+      10_ai_ml.md
+      TensorFlow.js
+      LLM集成
+      Agent模式
+```
+
+---
+
+## 🎯 核心论点与发现
+
+### 1. TypeScript 5.8 关键语义增强
+
+```typescript
+// 返回语句条件分支粒度检查
+function getUrlObject(urlString: string): URL {
+    return untypedCache.has(urlString)
+        ? untypedCache.get(urlString)  // 单独检查: any vs URL
+        : urlString;                    // 错误! string vs URL
+}
+
+// --erasableSyntaxOnly: 确保可擦除语义
+// 支持: 类型注解、接口、类型别名
+// 不支持: enum、namespace、参数属性
+
+// --module nodenext: Node.js 22+ 的 require() ESM 支持
+```
+
+### 2. JavaScript 语义模型的核心特征
+
+| 特征 | 形式化表达 | 实际影响 |
+|-----|-----------|---------|
+| 动态类型基础 | `Γ ⊢ e : any` | 运行时灵活性 |
+| 词法作用域 | `Environment = Parent × Bindings` | 可预测的闭包 |
+| 单线程事件循环 | `δ: State → State` (确定性) | 简化并发推理 |
+| 原型继承 | `[[Prototype]]: Object → Object \| Null` | 灵活的对象组合 |
+| 结构化类型 | `T <: U ⟺ structure(T) ⊆ structure(U)` | 鸭子类型静态化 |
+
+### 3. 分布式系统 CAP 权衡形式化
+
+```
+CAP 定理证明概要:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+设分布式系统 S = {N₁, N₂, ..., Nₙ}
+
+在分区发生时:
+1. 若保证 C (一致性): 必须等待分区恢复 → 违反 A (可用性)
+2. 若保证 A (可用性): 必须响应但可能返回旧值 → 违反 C
+
+∴ 在 P (分区容错) 发生时，C 和 A 不可兼得
+
+实践选择:
+• CP系统: ZooKeeper, etcd (配置管理)
+• AP系统: Cassandra, DynamoDB (高可用)
+```
+
+---
+
+## 📊 多维概念矩阵
+
+### 技术选型决策矩阵
+
+| 场景 | 推荐技术 | 配置 | 理由 |
+|-----|---------|------|------|
+| 新项目 | TypeScript 5.8 | strict: true | 最大类型安全 |
+| 遗留迁移 | JSDoc → TS | 渐进严格 | 降低迁移成本 |
+| Node.js 22+ | --module nodenext | verbatimModuleSyntax | ESM/CJS互操作 |
+| 高性能计算 | Worker + SAB | 原子操作 | 真并行 |
+| 微服务 | tRPC/gRPC | OpenTelemetry | 类型安全 + 可观测性 |
+
+### 一致性模型选择矩阵
+
+| 需求 | 模型 | 延迟 | 可用性 | 实现 |
+|-----|------|------|--------|------|
+| 金融交易 | 线性一致性 | 高 | 低 | Raft/Paxos |
+| 社交网络 | 因果一致性 | 中 | 高 | 向量时钟 |
+| CDN缓存 | 最终一致性 | 低 | 最高 | Gossip协议 |
+| 会话管理 | 顺序一致性 | 中 | 中 | 主从复制 |
+
+---
+
+## 🔧 最佳实践速查表
+
+### TypeScript 配置推荐
+
+```json
+{
+  "compilerOptions": {
+    // 严格性
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+
+    // 模块 (Node.js 22+)
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+
+    // Node.js 23.6+ 直接运行支持
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+
+    // 目标
+    "target": "ES2024",
+    "lib": ["ES2024"]
+  }
+}
+```
+
+### 并发模式选择
+
+```typescript
+// 简单顺序 → async/await
+const result = await fetchData();
+
+// 并行容错 → Promise.allSettled
+const results = await Promise.allSettled([
+    fetchUser(),
+    fetchPosts(),
+    fetchComments()
+]);
+
+// 竞速超时 → Promise.race
+const response = await Promise.race([
+    fetchData(),
+    timeout(5000)
+]);
+
+// 流处理 → Async Iterator
+for await (const chunk of stream) {
+    process(chunk);
+}
+```
+
+---
+
+## 📈 知识图谱
+
+```mermaid
+graph TB
+    subgraph "语言基础"
+        L1[ECMAScript规范] --> L2[类型系统]
+        L2 --> L3[执行模型]
+    end
+
+    subgraph "工程实践"
+        E1[包管理] --> E2[模块系统]
+        E2 --> E3[CI/CD]
+    end
+
+    subgraph "架构设计"
+        A1[设计模式] --> A2[系统架构]
+        A2 --> A3[分布式系统]
+    end
+
+    subgraph "运行时"
+        R1[并发模型] --> R2[内存模型]
+        R2 --> R3[可观测性]
+    end
+
+    subgraph "前沿技术"
+        F1[AI/ML] --> F2[边缘计算]
+        F2 --> F3[Serverless]
+    end
+
+    L3 --> R1
+    E3 --> A3
+    A3 --> R3
+    R3 --> F1
+
+    style L1 fill:#f96,stroke:#333
+    style E3 fill:#69f,stroke:#333
+    style A3 fill:#9f6,stroke:#333
+    style F1 fill:#f69,stroke:#333
+```
+
+---
+
+## 🔗 外部权威资源
+
+| 资源 | 链接 | 用途 |
+|-----|------|------|
+| ECMAScript 2025 Spec | <https://tc39.es/ecma262/2025/> | 语言规范 |
+| TypeScript 5.8 Blog | <https://devblogs.microsoft.com/typescript/> | 最新特性 |
+| `JS_TS_TypeScript_7_0_Native_Compiler.md` | 本文档 | TypeScript 7.0 原生编译器深度分析 |
+| ACM CACM JS Research | <https://cacm.acm.org/research/> | 学术研究 |
+| OpenTelemetry Spec | <https://opentelemetry.io/docs/> | 可观测性标准 |
+| K Framework | <https://runtimeverification.com/blog/k-framework/> | 形式化语义 |
+
+---
+
+## 📝 文档使用指南
+
+### 快速入门路径（v3）
+
+1. **初学者**:
+   - 阅读 `01_language_core.md` (基础特性)
+   - 参考 `JS_TS_语言语义模型全面分析.md` (建立语义模型认知)
+   - 实践 `03_design_patterns.md` (常见模式) 与 `09_cicd.md` (工程化)
+
+2. **进阶开发者**:
+   - 深入研究 `04_concurrency.md` (并发模型)
+   - 学习 `JS_TS_现代运行时深度分析.md` (v3 新增：运行时机制)
+   - 实践 `07_architecture.md` (架构设计) 与 `08_observability.md` (可观测性)
+
+3. **架构师 & 标准化从业者**:
+   - 决策参考 `JS_TS_深度技术分析.md` (Executive Summary)
+   - 分析 `05_distributed_systems.md` (分布式理论)
+   - 规划 `JS_TS_标准化生态与运行时互操作.md` (v3 新增：标准化与互操作)
+
+4. **研究人员 & 技术前瞻者**:
+   - 重点 `JS_TS_学术前沿瞭望.md` (v3 新增：学术前沿)
+   - 结合 `JS_TS_语言语义模型全面分析.md` (形式化语义)
+   - 参考 `JS_TS_深度技术分析.md` (关键结论与证明)
+
+### 思维表征使用建议
+
+| 表征方式 | 适用场景 | 所在文档 |
+|---------|---------|---------|
+| 思维导图 | 整体概念梳理 | JS_TS_语言语义模型全面分析.md |
+| 多维矩阵 | 技术对比选型 | JS_TS_语言语义模型全面分析.md |
+| 决策树 | 具体问题决策 | JS_TS_语言语义模型全面分析.md |
+| 架构图 | 系统设计 | JS_TS_语义模型可视化图表.md |
+| 时序图 | 流程分析 | JS_TS_语义模型可视化图表.md |
+| 状态机 | 状态转换 | JS_TS_语义模型可视化图表.md |
+| 形式化证明 | 严谨性验证 | JS_TS_深度技术分析.md |
+
+---
+
+## ✅ 总结
+
+本文档集通过以下方式全面分析了 JavaScript/TypeScript 的语言语义模型：
+
+1. **多维度覆盖**: 从语言核心到工程实践，从单机到分布式，从传统到AI
+2. **形式化论证**: 使用数学符号、逻辑推理、状态机等方式严谨定义语义
+3. **可视化表征**: 思维导图、矩阵、决策树、架构图等多种方式辅助理解
+4. **最新权威**: 结合 ECMAScript 2025、TypeScript 5.8、ACM研究等最新资源
+5. **实践导向**: 提供配置示例、代码片段、决策建议等可直接应用的内容
+
+**总计**: 14个文档，超过10万字的技术分析，涵盖JS/TS生态系统的全景视图。
+
+---
+
+*本文档索引创建于 2026-03-07，是对 `JSTS全景综述` 文件夹内容的完整梳理和总结。*
