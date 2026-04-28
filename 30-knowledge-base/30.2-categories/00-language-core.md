@@ -74,9 +74,9 @@ category-boundary: language-core
 
 | 文档 | 说明 |
 |------|------|
-| [JSTS全景综述/01_language_core.md](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md) | ES2020–ES2026 特性全览 |
-| [JSTS全景综述/04_concurrency.md](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/04_concurrency.md) | 并发模型全景 |
-| [JSTS全景综述/ecmascript-features/](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ecmascript-features/) | 分版本 ECMAScript 特性深度文档 |
+| [30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md) | ES2020–ES2026 特性全览 |
+| [30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/04_concurrency.md](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/04_concurrency.md) | 并发模型全景 |
+| 30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ecmascript-features/ | 分版本 ECMAScript 特性深度文档 |
 
 ---
 
@@ -86,12 +86,12 @@ category-boundary: language-core
 |------|------|---------|
 | 入门 | 掌握语法与基础语义 | `jsts-code-lab/00-language-core/` → `jsts-language-core-system/02-variable-system/` |
 | 进阶 | 理解类型系统与执行模型 | `jsts-language-core-system/01-type-system/` → `04-execution-model/` |
-| 深入 | 掌握规范与引擎原理 | `jsts-language-core-system/06-ecmascript-spec-foundation/` → `JSTS全景综述/JS_TS_语言语义模型全面分析.md` |
+| 深入 | 掌握规范与引擎原理 | `jsts-language-core-system/06-ecmascript-spec-foundation/` → `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_语言语义模型全面分析.md` |
 
 ---
 
 ## 🔗 相关索引
 
-- [语言核心总索引](../language-core-index.md) — 完整的跨目录导航与学习路径
-- [TypeScript 速查表](../cheatsheets/TYPESCRIPT_CHEATSHEET.md)
-- [JS 语言核心速查表](../cheatsheets/JS_LANGUAGE_CORE_CHEATSHEET.md)
+- 语言核心总索引 — 完整的跨目录导航与学习路径
+- [TypeScript 速查表](../30.7-cheatsheets/TYPESCRIPT_CHEATSHEET.md)
+- [JS 语言核心速查表](../30.7-cheatsheets/JS_LANGUAGE_CORE_CHEATSHEET.md)

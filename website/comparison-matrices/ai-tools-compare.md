@@ -132,7 +132,7 @@ flowchart TD
 
 > **关联文档**
 >
-> - [AI SDK 与 Mastra 完整开发指南](/guide/ai-sdk-guide.md) — API 详解、最佳实践与项目示例
+> - [AI SDK 与 Mastra 完整开发指南](../guide/ai-sdk-guide.md) — API 详解、最佳实践与项目示例
 > - [前端框架对比](./frontend-frameworks-compare.md)
 > - [后端框架对比](./backend-frameworks-compare.md)
 > - `jsts-code-lab/` — 代码实验与示例（待补充 AI 相关章节）

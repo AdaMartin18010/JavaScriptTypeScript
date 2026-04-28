@@ -20,6 +20,15 @@ const EXCLUDE_DIRS = [
   'dist',
   'build',
   '.azure',
+  // 旧备份目录（保留原始文件，不检查其链接）
+  'jsts-code-lab',
+  'docs',
+  'JSTS全景综述',
+  'examples',
+  'awesome-jsts-ecosystem',
+  'jsts-language-core-system',
+  'website',
+  'view',
 ];
 
 /**
@@ -66,6 +75,18 @@ function extractInternalLinks(content) {
     if (/^(\.\.\/)*issues\/?$/.test(url) || /^(\.\.\/)*discussions\/?$/.test(url)) continue;
     // 跳过含方括号的代码片段（如 parsed[key]）
     if (/\[.*\]/.test(url)) continue;
+    // 跳过 ECMAScript 规范参数和数学符号（非文件链接）
+    if (/[\u0370-\u03FF]/.test(url)) continue; // 希腊字母（如 σ）
+    if (/,\s/.test(url)) continue; // 包含逗号+空格的参数列表（如 P, Receiver）
+    if (/:\s/.test(url)) continue; // 包含冒号+空格的（如 instance: any）
+    if (/^\.{0,2}\/[^/]*\?/.test(url)) continue; // 包含问号的（如 ?-i:[a-z]）
+    if (/^\.{0,2}\/[^/]*\*/.test(url)) continue; // 包含星号的
+    if (/^\.{0,2}\/[A-Z]$/.test(url)) continue; // 单个大写字母（如 /N, /P, /V）
+    if (/^\.{0,2}\/c$/.test(url)) continue; // 单个小写 c
+    if (/^\.{0,2}\/\d/.test(url)) continue; // 以数字开头的（如 /1, /2024）
+    if (/^\\d/.test(url)) continue; // 正则表达式 \d 开头
+    if (/^\.{0,2}\/\.\.\.$/.test(url)) continue; // /...
+    if (url === '...' || url === 'github-repo-link') continue; // 占位符
 
     links.push({ text: linkText, url });
   }

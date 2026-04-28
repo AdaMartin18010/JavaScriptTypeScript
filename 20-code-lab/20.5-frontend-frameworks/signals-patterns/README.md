@@ -1,7 +1,7 @@
 # Signals 跨框架范式：代码实验室
 
 > **定位**：`20-code-lab/20.5-frontend-frameworks/signals-patterns/`
-> **关联**：`JSTS全景综述/Signals_范式深度分析.md` | `docs/categories/05-state-management.md`
+> **关联**：`30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/Signals_范式深度分析.md` | `docs/categories/05-state-management.md`
 
 ---
 

@@ -6,7 +6,7 @@ status: current
 ---
 # 学术前沿索引（Academic Frontiers Index）
 
-> 本文档索引 JavaScript/TypeScript 领域的最新学术研究，为 `jsts-language-core-system/` 和 `JSTS全景综述/` 提供学术对齐来源。
+> 本文档索引 JavaScript/TypeScript 领域的最新学术研究，为 `jsts-language-core-system/` 和 `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/` 提供学术对齐来源。
 > 创建日期：2026-04-27
 > 更新策略：每季度对照 POPL/PLDI/OOPSLA/ICFP 会议论文更新
 

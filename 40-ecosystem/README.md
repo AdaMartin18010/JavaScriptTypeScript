@@ -543,13 +543,13 @@
 
 ## 🤝 贡献指南 / Contributing
 
-请阅读 [CONTRIBUTING.md](../../CONTRIBUTING.md) 了解如何参与贡献。
+请阅读 [CONTRIBUTING.md](../CONTRIBUTING.md) 了解如何参与贡献。
 
-Please read [CONTRIBUTING.md](../../CONTRIBUTING.md) for details on how to contribute.
+Please read [CONTRIBUTING.md](../CONTRIBUTING.md) for details on how to contribute.
 
 ## 📜 License
 
-[MIT](LICENSE) © Awesome JS/TS Ecosystem Contributors
+[MIT](../LICENSE) © Awesome JS/TS Ecosystem Contributors
 
 ---
 

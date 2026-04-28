@@ -1,7 +1,7 @@
 # 多租户架构理论：从隔离到弹性
 
 > **目标读者**：SaaS 开发者、平台架构师
-> **关联文档**：``30.2-categories/multi-tenancy.md`` (Legacy) [Legacy link]
+> **关联文档**：``30-knowledge-base/30.2-categories/multi-tenancy.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 2,800 字
 

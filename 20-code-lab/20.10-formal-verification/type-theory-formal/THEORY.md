@@ -223,7 +223,7 @@ let v: Vector = p;  // 合法：结构相同即可兼容
 
 ### 5.1 代码实验室结构
 
-`40-type-theory-formal/` 目录下的实现：
+`20.10-formal-verification/type-theory-formal/` 目录下的实现：
 
 | 代码文件 | 对应理论 | 说明 |
 |----------|---------|------|
@@ -267,14 +267,14 @@ function unify(t1: Type, t2: Type, subst: Subst): Subst {
 
 ### 前置知识
 
-- `00-language-core/` — TypeScript 语法与基础类型
-- `JSTS全景综述/01_language_core.md §9-10` — 类型系统深度解析与形式化规则
+- `20.1-fundamentals-lab/language-core/` — TypeScript 语法与基础类型
+- `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md §9-10` — 类型系统深度解析与形式化规则
 
 ### 后续进阶
 
-- `10-js-ts-comparison/THEORY.md` — JS/TS 语义模型的三层对比
-- `41-formal-semantics/THEORY.md` — 操作语义与类型安全的实现
-- `ACADEMIC_ALIGNMENT_2025.md` — SGDT、递归子类型等学术前沿
+- `20.1-fundamentals-lab/js-ts-comparison/THEORY.md` — JS/TS 语义模型的三层对比
+- `20.10-formal-verification/formal-semantics/THEORY.md` — 操作语义与类型安全的实现
+- `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ACADEMIC_ALIGNMENT_2025.md` — SGDT、递归子类型等学术前沿
 
 ---
 

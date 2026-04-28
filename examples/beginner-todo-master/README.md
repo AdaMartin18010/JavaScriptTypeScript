@@ -109,7 +109,7 @@ npm run dev      # 启动开发服务器
 
 - [JavaScript/TypeScript 全景知识库](../README.md)
 - [MILESTONES.md](MILESTONES.md) — 详细学习路线图
-- [CONTRIBUTING.md](../CONTRIBUTING.md) — 如何贡献改进
+- [CONTRIBUTING.md](../../CONTRIBUTING.md) — 如何贡献改进
 
 ---
 

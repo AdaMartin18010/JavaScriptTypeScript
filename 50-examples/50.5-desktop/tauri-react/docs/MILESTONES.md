@@ -68,7 +68,7 @@
 
 **关联 code-lab 模块**
 
-- `JSTS全景综述/JS_TS_现代运行时深度分析.md` — 运行时与系统调用边界
+- `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_现代运行时深度分析.md` — 运行时与系统调用边界
 - `jsts-code-lab/00-language-core/` — 类型系统与接口设计
 
 **验证标准**

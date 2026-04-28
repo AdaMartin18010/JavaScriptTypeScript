@@ -10,7 +10,7 @@ status: current
 >
 > - ✅ **属于本文档范围**：构建工具、打包器、转译器、任务运行器、Monorepo 构建工具。
 > - ❌ **不属于本文档范围**：具体前端框架的使用教程、业务代码的构建脚本、UI 组件实现。
-> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+> - 🔗 **相关索引**：`docs/infrastructure-index.md`
 
 # 构建工具全景
 
@@ -603,5 +603,5 @@ packages:
 
 ## 相关阅读
 
-- [JS/TS 编译器与转译器对比矩阵](../comparison-matrices/js-ts-compilers-compare.md)
+- [JS/TS 编译器与转译器对比矩阵](../30.3-comparison-matrices/js-ts-compilers-compare.md)
 - [JS_TS_语言语义模型全面分析](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_语言语义模型全面分析.md)

@@ -372,7 +372,7 @@ A2A 协议在以下企业级场景中发挥关键作用：
 
 ### 5.4 AI Agent Architecture Patterns
 
-> 📖 详细架构模式指南请参阅 [AI Agent 架构模式](../research/ai-agent-architecture-patterns.md)。
+> 📖 详细架构模式指南请参阅 [AI Agent 架构模式](../30.8-research/ai-agent-architecture-patterns.md)。
 
 AI Agent 的架构模式正在快速演化，以下是 2025-2026 年生产环境中最常采用的模式：
 
@@ -388,7 +388,7 @@ AI Agent 的架构模式正在快速演化，以下是 2025-2026 年生产环境
 
 ## 6. AI 可观测性（AI Observability）
 
-> 📖 详细实践指南请参阅 [AI 可观测性完整指南](../guides/ai-observability-guide.md)。
+> 📖 详细实践指南请参阅 [AI 可观测性完整指南](../30.1-guides/ai-observability-guide.md)。
 
 AI Agent 的可观测性比传统应用更复杂：不仅需要追踪请求延迟与错误率，还需要记录 Token 消耗、工具调用链、模型决策轨迹（Trace）与反馈循环。
 
@@ -806,4 +806,4 @@ flowchart TD
 ---
 
 > 📅 本节补充更新：2026-04-27
-> 📚 详细指南：[A2A 协议完整指南](../guides/a2a-protocol-guide.md) | [AI 可观测性完整指南](../guides/ai-observability-guide.md) | [LLM 安全指南](../guides/llm-security-guide.md)
+> 📚 详细指南：[A2A 协议完整指南](../30.1-guides/a2a-protocol-guide.md) | [AI 可观测性完整指南](../30.1-guides/ai-observability-guide.md) | [LLM 安全指南](../30.1-guides/llm-security-guide.md)

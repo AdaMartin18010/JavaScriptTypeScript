@@ -1,11 +1,4 @@
-<!--
-# 合并说明
-- 合并来源: docs/categories/30-edge-databases.md（完整版，436 行）、30-knowledge-base/30.2-categories/30-edge-databases.md（精简版，104 行）
-- 合并决策: 保留 docs/ 目录中的完整版本，替换新架构中的精简版本
-- 合并时间: 2026-04-28
--->
 ---
-
 last-updated: 2026-04-27
 review-cycle: 6 months
 next-review: 2026-10-27
@@ -18,7 +11,7 @@ status: current
 >
 > - ✅ **属于本文档范围**：边缘数据库平台（Turso、D1、Neon）、Serverless 数据库驱动、ORM 边缘适配、连接模型与冷启动优化。
 > - ❌ **不属于本文档范围**：具体应用的数据模型设计、业务查询优化、数据迁移策略、数据库架构模式。
-> - 🔗 **相关索引**：`docs/infrastructure-index.md` [TODO: 链接待修复]
+> - 🔗 **相关索引**：`docs/infrastructure-index.md`
 
 # 边缘数据库（Edge Databases）
 

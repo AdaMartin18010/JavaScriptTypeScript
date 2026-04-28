@@ -29,7 +29,7 @@
 **关联理论文档**：
 
 - `10-fundamentals/10.1-language-semantics/axioms/`
-- `JSTS全景综述/01_language_core.md`
+- `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md`
 
 ---
 

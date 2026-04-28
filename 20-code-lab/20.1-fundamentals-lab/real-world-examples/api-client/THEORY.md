@@ -59,7 +59,7 @@
 ### 3.3 扩展阅读
 
 - [Fetch API 规范](https://fetch.spec.whatwg.org/)
-- `30-knowledge-base/30.5-networking/`
+- `30-knowledge-base/30.5-networking`
 
 ---
 

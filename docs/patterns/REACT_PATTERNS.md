@@ -445,7 +445,7 @@ const MouseFollower: React.FC = () => {
     <MouseTracker
       render={({ x, y }) => (
         <img
-          src="/cat.png"
+          src="../cat.png"
           style={{
             position: 'absolute',
             left: x,

@@ -46,9 +46,9 @@ JavaScript 与 TypeScript 的关系不是"超集/子集"那么简单。本模块
 ## 关联模块
 
 - `jsts-code-lab/10-js-ts-comparison/` — JS/TS 对比代码实验室
-- `JSTS全景综述/JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md` — JS→TS 语义映射
-- `JSTS全景综述/JS_TS_语言语义模型全面分析.md` — 三层语义模型
-- `JSTS全景综述/GRADUAL_TYPING_THEORY.md` — 渐进类型理论
+- `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md` — JS→TS 语义映射
+- `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_语言语义模型全面分析.md` — 三层语义模型
+- `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/GRADUAL_TYPING_THEORY.md` — 渐进类型理论
 
 ## 学习方法论
 

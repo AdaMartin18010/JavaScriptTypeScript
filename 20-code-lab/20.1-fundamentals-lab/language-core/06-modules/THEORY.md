@@ -59,7 +59,7 @@
 ### 3.3 扩展阅读
 
 - [MDN 模块](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
-- `10-fundamentals/10.1-language-core/06-modules/`
+- `10-fundamentals/10.1-language-semantics/06-modules/`
 
 ---
 

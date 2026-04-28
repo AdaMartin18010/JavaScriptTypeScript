@@ -165,7 +165,7 @@ desktop-tauri-react/
 - **TypeScript 语言核心**: `jsts-code-lab/00-language-core/`
 - **设计模式实践**: `jsts-code-lab/02-design-patterns/`
 - **前端框架深入**: `jsts-code-lab/18-frontend-frameworks/`
-- **运行时深度分析**: `JSTS全景综述/JS_TS_现代运行时深度分析.md`
+- **运行时深度分析**: `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_现代运行时深度分析.md`
 
 ---
 

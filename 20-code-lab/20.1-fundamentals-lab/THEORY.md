@@ -69,7 +69,7 @@ JavaScript 的设计受 1995 年浏览器脚本需求的深刻影响：
 
 - `10-fundamentals/10.1-language-semantics/axioms/` — 三条公理化基础
 - `10-fundamentals/10.2-type-system/structural-vs-nominal.md` — 结构子类型理论
-- `JSTS全景综述/01_language_core.md` — 语言核心全景综述
+- `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md` — 语言核心全景综述
 
 ---
 

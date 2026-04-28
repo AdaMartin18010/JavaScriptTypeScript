@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-04-28T11:06:59.335Z",
-  "totalFiles": 1614,
-  "totalMentions": 2870,
-  "outdatedCount": 417,
+  "timestamp": "2026-04-28T12:21:45.089Z",
+  "totalFiles": 1850,
+  "totalMentions": 3032,
+  "outdatedCount": 430,
   "findings": [
     {
       "file": "10-fundamentals\\10.1-language-semantics\\code-examples\\control-flow\\08-using-explicit-resource.md",
@@ -725,6 +725,94 @@
       "context": "- **Universal Adoption by 2026**: Signals are now natively supported or officially endorsed in SolidJS, Vue 3.5+, Angula"
     },
     {
+      "file": "30-knowledge-base\\30.2-categories\\01-frontend-frameworks.md",
+      "line": 608,
+      "technology": "vue",
+      "found": "3",
+      "latest": "3.5",
+      "context": "| **名称** | Vue.js 3 |"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\01-frontend-frameworks.md",
+      "line": 637,
+      "technology": "vue",
+      "found": "2",
+      "latest": "3.5",
+      "context": "| **名称** | Vue.js 2 |"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\16-mobile-development.md",
+      "line": 363,
+      "technology": "vue",
+      "found": "2",
+      "latest": "3.5",
+      "context": "- 🌐 基于 Vue.js 2/3"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\25-monorepo-tools.md",
+      "line": 373,
+      "technology": "npm",
+      "found": "7",
+      "latest": "11",
+      "context": "**一句话描述**：npm v7+ 内置的 workspace 功能，零额外依赖即可管理多包仓库，适合轻量级 Monorepo。"
+    },
+    {
+      "file": "30-knowledge-base\\30.3-comparison-matrices\\build-tools-compare.md",
+      "line": 148,
+      "technology": "vite",
+      "found": "5",
+      "latest": "6",
+      "context": "| 项目规模 | Vite 5 (Rollup) | Vite 6 (Rolldown 实验性) | 构建时间降幅 |"
+    },
+    {
+      "file": "30-knowledge-base\\30.3-comparison-matrices\\orm-compare.md",
+      "line": 420,
+      "technology": "prisma",
+      "found": "5",
+      "latest": "6",
+      "context": "### Prisma 5/6 → Prisma 7"
+    },
+    {
+      "file": "30-knowledge-base\\30.3-comparison-matrices\\package-managers-compare.md",
+      "line": 13,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "| 特性 | npm (v10) | Yarn v1 | Yarn Berry (v4) | pnpm (v10) | Bun (v1.2) | Deno (v2) |"
+    },
+    {
+      "file": "30-knowledge-base\\30.3-comparison-matrices\\package-managers-compare.md",
+      "line": 298,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "| 指标 | npm | Yarn v1 | Yarn Berry | pnpm | Bun | Deno |"
+    },
+    {
+      "file": "30-knowledge-base\\30.3-comparison-matrices\\package-managers-compare.md",
+      "line": 308,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "| 功能 | npm | Yarn v1 | Yarn Berry | pnpm | Bun | Deno |"
+    },
+    {
+      "file": "30-knowledge-base\\30.3-comparison-matrices\\package-managers-compare.md",
+      "line": 335,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "| 遗留项目维护 | npm / Yarn v1 | 最小迁移成本 |"
+    },
+    {
+      "file": "30-knowledge-base\\30.3-comparison-matrices\\package-managers-compare.md",
+      "line": 370,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "- **Yarn v1 → Yarn Berry**: 非简单升级，需评估 PnP 兼容性"
+    },
+    {
       "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
       "line": 2765,
       "technology": "typescript",
@@ -1203,6 +1291,22 @@
       "found": "10",
       "latest": "11",
       "context": "| **包管理器** | pnpm 10+ | 磁盘效率、内容可寻址存储、严格依赖隔离 |"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_现代运行时深度分析.md",
+      "line": 412,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "`bundler` 是 TypeScript 4.7 引入、5.0 后广泛使用的模式，专为前端打包工具设计。它与 `node16`/`nodenext` 的主要区别在于："
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_现代运行时深度分析.md",
+      "line": 675,
+      "technology": "deno",
+      "found": "1",
+      "latest": "2",
+      "context": "- 解决了 Deno 1.x 的最大痛点（生态隔离）"
     },
     {
       "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_语义模型可视化图表.md",
@@ -3038,7 +3142,7 @@
     },
     {
       "file": "README.md",
-      "line": 2499,
+      "line": 2513,
       "technology": "next.js",
       "found": "14",
       "latest": "15",
@@ -3046,7 +3150,7 @@
     },
     {
       "file": "README.md",
-      "line": 2724,
+      "line": 2738,
       "technology": "next.js",
       "found": "14",
       "latest": "15",

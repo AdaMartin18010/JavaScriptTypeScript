@@ -1,7 +1,7 @@
 # 后端与 API：理论基础
 
 > **定位**：`20-code-lab/20.6-backend-apis/`
-> **关联**：``30.2-categories/backend-frameworks.md`` (Legacy)
+> **关联**：``30-knowledge-base/30.2-categories/backend-frameworks.md`` (Legacy)
 
 ---
 

@@ -207,7 +207,7 @@ status: current
   <!-- 语义化 HTML -->
   <nav aria-label="主导航">
     <ul>
-      <li><a href="/">首页</a></li>
+      <li><a href="./index.md">首页</a></li>
     </ul>
   </nav>
 </body>
@@ -1266,8 +1266,8 @@ export function useFocusManager(isActive: boolean, options?: Omit<FocusManagerCo
 <!-- ✅ 良好实践：清晰的语义结构 -->
 <nav aria-label="主导航">
   <ul>
-    <li><a href="/">首页</a></li>
-    <li><a href="/about">关于</a></li>
+    <li><a href="./index.md">首页</a></li>
+    <li><a href="./about.md">关于</a></li>
   </ul>
 </nav>
 ```

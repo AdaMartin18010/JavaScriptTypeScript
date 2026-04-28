@@ -10,7 +10,7 @@ status: current
 >
 > - ✅ **属于本文档范围**：ORM 框架（Prisma、Drizzle、TypeORM）、查询构建器（Kysely、Knex）、数据库驱动（pg、mysql2）、边缘数据库客户端。
 > - ❌ **不属于本文档范围**：具体应用的数据库 Schema 设计、领域模型定义、业务数据访问层实现。
-> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+> - 🔗 **相关索引**：`docs/infrastructure-index.md`
 
 # ORM 与数据库库
 

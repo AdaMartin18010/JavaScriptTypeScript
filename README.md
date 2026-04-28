@@ -148,44 +148,44 @@
 
 | 矩阵文档 | 对比范围 |
 |----------|----------|
-| [前端框架对比](./docs/comparison-matrices/frontend-frameworks-compare.md) | React / Vue / Svelte / Solid / Angular |
-| [后端框架对比](./docs/comparison-matrices/backend-frameworks-compare.md) | Express / Fastify / NestJS / Koa / Hono / Elysia |
-| [全栈元框架对比](./docs/comparison-matrices/ssr-metaframeworks-compare.md) | Next.js / Nuxt / SvelteKit / Remix / Astro |
-| [构建工具对比](./docs/comparison-matrices/build-tools-compare.md) | Vite / esbuild / swc / Turbopack / Rollup |
-| [JS/TS 编译器对比](./docs/comparison-matrices/js-ts-compilers-compare.md) | tsc / swc / esbuild / Babel |
-| [UI 组件库对比](./docs/comparison-matrices/ui-libraries-compare.md) | Ant Design / MUI / shadcn/ui / Chakra UI 等 |
-| [状态管理对比](./docs/comparison-matrices/state-management-compare.md) | Redux / Zustand / Jotai / Pinia 等 |
-| [测试框架对比](./docs/comparison-matrices/testing-compare.md) | Jest / Vitest / Playwright / Cypress |
-| [ORM 对比](./docs/comparison-matrices/orm-compare.md) | Prisma / TypeORM / Drizzle / Sequelize |
-| [包管理器对比](./docs/comparison-matrices/package-managers-compare.md) | npm / Yarn / pnpm / Bun / Deno |
-| [Monorepo 工具对比](./docs/comparison-matrices/monorepo-tools-compare.md) | Nx / Turborepo / Rush / pnpm workspaces |
-| [可观测性工具对比](./docs/comparison-matrices/observability-tools-compare.md) | Sentry / Datadog / Grafana / Prometheus |
-| [部署平台对比](./docs/comparison-matrices/deployment-platforms-compare.md) | Vercel / Netlify / AWS / Fly.io / Railway |
-| [CI/CD 工具对比](./docs/comparison-matrices/ci-cd-tools-compare.md) | GitHub Actions / GitLab CI / CircleCI / Jenkins |
-| [浏览器兼容性对比](./docs/comparison-matrices/browser-compatibility-compare.md) | 现代浏览器特性支持矩阵 |
-| [AI 框架选型](./docs/decision-trees.md) | Vercel AI SDK / LangChain / Mastra / MCP 对比 |
-| [认证方案选型](./docs/decision-trees.md) | better-auth / NextAuth / Passkeys / OAuth 2.1 对比 |
+| [前端框架对比](./30-knowledge-base/30.3-comparison-matrices/frontend-frameworks-compare.md) | React / Vue / Svelte / Solid / Angular |
+| [后端框架对比](./30-knowledge-base/30.3-comparison-matrices/backend-frameworks-compare.md) | Express / Fastify / NestJS / Koa / Hono / Elysia |
+| [全栈元框架对比](./30-knowledge-base/30.3-comparison-matrices/ssr-metaframeworks-compare.md) | Next.js / Nuxt / SvelteKit / Remix / Astro |
+| [构建工具对比](./30-knowledge-base/30.3-comparison-matrices/build-tools-compare.md) | Vite / esbuild / swc / Turbopack / Rollup |
+| [JS/TS 编译器对比](./30-knowledge-base/30.3-comparison-matrices/js-ts-compilers-compare.md) | tsc / swc / esbuild / Babel |
+| [UI 组件库对比](./30-knowledge-base/30.3-comparison-matrices/ui-libraries-compare.md) | Ant Design / MUI / shadcn/ui / Chakra UI 等 |
+| [状态管理对比](./30-knowledge-base/30.3-comparison-matrices/state-management-compare.md) | Redux / Zustand / Jotai / Pinia 等 |
+| [测试框架对比](./30-knowledge-base/30.3-comparison-matrices/testing-compare.md) | Jest / Vitest / Playwright / Cypress |
+| [ORM 对比](./30-knowledge-base/30.3-comparison-matrices/orm-compare.md) | Prisma / TypeORM / Drizzle / Sequelize |
+| [包管理器对比](./30-knowledge-base/30.3-comparison-matrices/package-managers-compare.md) | npm / Yarn / pnpm / Bun / Deno |
+| [Monorepo 工具对比](./30-knowledge-base/30.3-comparison-matrices/monorepo-tools-compare.md) | Nx / Turborepo / Rush / pnpm workspaces |
+| [可观测性工具对比](./30-knowledge-base/30.3-comparison-matrices/observability-tools-compare.md) | Sentry / Datadog / Grafana / Prometheus |
+| [部署平台对比](./30-knowledge-base/30.3-comparison-matrices/deployment-platforms-compare.md) | Vercel / Netlify / AWS / Fly.io / Railway |
+| [CI/CD 工具对比](./30-knowledge-base/30.3-comparison-matrices/ci-cd-tools-compare.md) | GitHub Actions / GitLab CI / CircleCI / Jenkins |
+| [浏览器兼容性对比](./30-knowledge-base/30.3-comparison-matrices/browser-compatibility-compare.md) | 现代浏览器特性支持矩阵 |
+| [AI 框架选型](./30-knowledge-base/30.1-guides/decision-trees.md) | Vercel AI SDK / LangChain / Mastra / MCP 对比 |
+| [认证方案选型](./30-knowledge-base/30.1-guides/decision-trees.md) | better-auth / NextAuth / Passkeys / OAuth 2.1 对比 |
 
 ### 决策树清单
 
 | 决策树文档 | 覆盖场景 |
 |----------|----------|
-| [UI 库选型](./docs/decision-trees.md) | React/Vue 组件库选择 |
-| [状态管理选型](./docs/decision-trees.md) | 全局/服务端/原子化状态 |
-| [构建工具选型](./docs/decision-trees.md) | 编译器/打包器选择 |
-| [ORM 选型](./docs/decision-trees.md) | SQL/NoSQL/Edge 数据库 |
-| [测试策略选型](./docs/decision-trees.md) | 单元/集成/E2E 测试框架 |
-| [部署平台选型](./docs/decision-trees.md) | 静态/Serverless/容器化 |
-| [包管理器选型](./docs/decision-trees.md) | npm/pnpm/Yarn/Bun/Deno |
-| [Monorepo 选型](./docs/decision-trees.md) | 工具链与 Workspace 方案 |
-| [全栈框架选型](./docs/decision-trees.md) | SSR/SSG/边缘渲染框架 |
-| [实时通信选型](./docs/decision-trees.md) | WebSocket/Socket.io/PartyKit |
-| [认证方案选型](./docs/decision-trees.md) | OAuth/JWT/SSO/无密码 |
-| [CSS 方案选型](./docs/decision-trees.md) | Tailwind/CSS-in-JS/原子化 |
-| [运行时选型](./docs/decision-trees.md) | Node.js/Deno/Bun |
-| [CI/CD 选型](./docs/decision-trees.md) | GitHub Actions/GitLab CI 等 |
-| [AI 框架选型](./docs/decision-trees.md) | LLM SDK / Agent 框架 / MCP 工具选择 |
-| [认证方案选型](./docs/decision-trees.md) | 现代认证方案（better-auth / Passkeys / OAuth 2.1） |
+| [UI 库选型](./30-knowledge-base/30.1-guides/decision-trees.md) | React/Vue 组件库选择 |
+| [状态管理选型](./30-knowledge-base/30.1-guides/decision-trees.md) | 全局/服务端/原子化状态 |
+| [构建工具选型](./30-knowledge-base/30.1-guides/decision-trees.md) | 编译器/打包器选择 |
+| [ORM 选型](./30-knowledge-base/30.1-guides/decision-trees.md) | SQL/NoSQL/Edge 数据库 |
+| [测试策略选型](./30-knowledge-base/30.1-guides/decision-trees.md) | 单元/集成/E2E 测试框架 |
+| [部署平台选型](./30-knowledge-base/30.1-guides/decision-trees.md) | 静态/Serverless/容器化 |
+| [包管理器选型](./30-knowledge-base/30.1-guides/decision-trees.md) | npm/pnpm/Yarn/Bun/Deno |
+| [Monorepo 选型](./30-knowledge-base/30.1-guides/decision-trees.md) | 工具链与 Workspace 方案 |
+| [全栈框架选型](./30-knowledge-base/30.1-guides/decision-trees.md) | SSR/SSG/边缘渲染框架 |
+| [实时通信选型](./30-knowledge-base/30.1-guides/decision-trees.md) | WebSocket/Socket.io/PartyKit |
+| [认证方案选型](./30-knowledge-base/30.1-guides/decision-trees.md) | OAuth/JWT/SSO/无密码 |
+| [CSS 方案选型](./30-knowledge-base/30.1-guides/decision-trees.md) | Tailwind/CSS-in-JS/原子化 |
+| [运行时选型](./30-knowledge-base/30.1-guides/decision-trees.md) | Node.js/Deno/Bun |
+| [CI/CD 选型](./30-knowledge-base/30.1-guides/decision-trees.md) | GitHub Actions/GitLab CI 等 |
+| [AI 框架选型](./30-knowledge-base/30.1-guides/decision-trees.md) | LLM SDK / Agent 框架 / MCP 工具选择 |
+| [认证方案选型](./30-knowledge-base/30.1-guides/decision-trees.md) | 现代认证方案（better-auth / Passkeys / OAuth 2.1） |
 
 ---
 
@@ -227,9 +227,9 @@ pnpm test
 
 ### 方式三：按路径学习
 
-1. **[初学者路径](./docs/learning-paths/beginners-path.md)** - 掌握 TypeScript 基础和设计模式
-2. **[进阶路径](./docs/learning-paths/intermediate-path.md)** - 深入架构设计和性能优化
-3. **[架构师路径](./docs/learning-paths/advanced-path.md)** - 分布式系统和形式化验证
+1. **[初学者路径](./30-knowledge-base/30.9-learning-paths/beginners-path.md)** - 掌握 TypeScript 基础和设计模式
+2. **[进阶路径](./30-knowledge-base/30.9-learning-paths/intermediate-path.md)** - 深入架构设计和性能优化
+3. **[架构师路径](./30-knowledge-base/30.9-learning-paths/advanced-path.md)** - 分布式系统和形式化验证
 
 ---
 
@@ -823,8 +823,8 @@ export function Navigation() {
 
   return (
     <nav>
-      <a href="/">{t('home')}</a>
-      <a href="/about">{t('about')}</a>
+      <a href="./index.md">{t('home')}</a>
+      <a href="./about.md">{t('about')}</a>
     </nav>
   )
 }
@@ -2441,7 +2441,7 @@ const products = Array.from({ length: 10 }, () => createProduct())
 
 ## 📚 代码实验室 (jsts-code-lab)
 
-[jsts-code-lab](./jsts-code-lab/) 是本项目的核心实践部分，包含：
+[jsts-code-lab](./20-code-lab/) 是本项目的核心实践部分，包含：
 
 - **90+ 技术模块**：从基础语法到分布式系统
 - **430+ TypeScript 文件**：完整的类型安全实现
@@ -2491,9 +2491,9 @@ const products = Array.from({ length: 10 }, () => createProduct())
 
 详细路径请参考：
 
-- [初学者路径](./docs/learning-paths/beginners-path.md)
-- [进阶路径](./docs/learning-paths/intermediate-path.md)
-- [架构师路径](./docs/learning-paths/advanced-path.md)
+- [初学者路径](./30-knowledge-base/30.9-learning-paths/beginners-path.md)
+- [进阶路径](./30-knowledge-base/30.9-learning-paths/intermediate-path.md)
+- [架构师路径](./30-knowledge-base/30.9-learning-paths/advanced-path.md)
 
 ---
 

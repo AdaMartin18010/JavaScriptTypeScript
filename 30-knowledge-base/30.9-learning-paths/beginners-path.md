@@ -431,7 +431,7 @@ function validateEmail(email: string): boolean {
 完成初学者路径后，可以继续：
 
 - [中级学习路径](./intermediate-path.md) - 深入学习架构和性能优化
-- [jsts-code-lab 中级模块](../jsts-code-lab/README.md#中级模块)
+- [jsts-code-lab 中级模块](../../jsts-code-lab/)
 
 ---
 

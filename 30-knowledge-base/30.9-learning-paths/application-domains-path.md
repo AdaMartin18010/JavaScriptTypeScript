@@ -66,8 +66,8 @@ status: current
 
 - **关联文件/模块**：
   - `jsts-code-lab/21-api-security/`
-  - `JSTS全景综述/API_DESIGN_THEORY.md`
-  - `JSTS全景综述/SECURITY_MODEL_ANALYSIS.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/API_DESIGN_THEORY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/SECURITY_MODEL_ANALYSIS.md`
 - **关键技能**：
   - RESTful 资源设计、HTTP 状态码语义
   - JWT / OAuth 2.0 / OIDC 流程
@@ -77,7 +77,7 @@ status: current
 
 - **关联文件/模块**：
   - `jsts-code-lab/20-database-orm/`
-  - `JSTS全景综述/DATABASE_ORM_THEORY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/DATABASE_ORM_THEORY.md`
 - **关键技能**：
   - Prisma / TypeORM / Drizzle 的选型与 trade-off
   - 索引设计、查询优化、连接池
@@ -93,8 +93,8 @@ status: current
   - `jsts-code-lab/33-ai-integration/`
   - `jsts-code-lab/76-ml-engineering/`
   - `examples/ai-agent-production/`
-  - `JSTS全景综述/AI_ML_INTEGRATION_THEORY.md`
-  - `JSTS全景综述/10_ai_ml.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/AI_ML_INTEGRATION_THEORY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/10_ai_ml.md`
 - **关键技能**：
   - Prompt Engineering 与结构化输出
   - RAG（检索增强生成）架构
@@ -105,7 +105,7 @@ status: current
 
 - **关联文件/模块**：
   - `jsts-code-lab/30-real-time-communication/`
-  - `JSTS全景综述/REALTIME_COMMUNICATION_THEORY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/REALTIME_COMMUNICATION_THEORY.md`
 - **关键技能**：
   - WebSocket / SSE / WebRTC 的选型矩阵
   - OT（Operational Transformation）与 CRDT 基础
@@ -117,7 +117,7 @@ status: current
   - `jsts-code-lab/32-edge-computing/`
   - `jsts-code-lab/31-serverless/`
   - `examples/edge-ai-inference/`
-  - `JSTS全景综述/EDGE_SERVERLESS_THEORY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/EDGE_SERVERLESS_THEORY.md`
 - **关键技能**：
   - 边缘函数（Edge Functions）限制与冷启动优化
   - KV 存储与缓存策略在边缘节点的应用
@@ -145,7 +145,7 @@ status: current
   - `jsts-code-lab/74-observability/`
   - `jsts-code-lab/39-performance-monitoring/`
   - `examples/edge-observability-starter/`
-  - `JSTS全景综述/08_observability.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/08_observability.md`
 - **关键技能**：
   - 三大支柱：Metrics / Logs / Traces 的采集与关联
   - OpenTelemetry 在 Node.js 与浏览器端的接入
@@ -155,7 +155,7 @@ status: current
 
 - **关联文件/模块**：
   - `jsts-code-lab/75-chaos-engineering/`
-  - `JSTS全景综述/ERROR_HANDLING_RELIABILITY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ERROR_HANDLING_RELIABILITY.md`
 - **关键技能**：
   - 故障注入与熔断器模式
   - 降级策略与兜底 UI（Fallback UI）

@@ -344,7 +344,7 @@ interface ApiResponse<T> {
 完成进阶路径后，可以继续：
 
 - [高级学习路径](./advanced-path.md) - 分布式系统和架构师思维
-- [jsts-code-lab 高级模块](../jsts-code-lab/README.md#高级模块)
+- jsts-code-lab 高级模块
 
 ---
 

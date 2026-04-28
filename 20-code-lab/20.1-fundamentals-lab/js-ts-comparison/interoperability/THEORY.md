@@ -60,7 +60,7 @@ JavaScript 生态拥有海量未类型化的库，TypeScript 必须与这些资�
 ### 3.3 扩展阅读
 
 - [TypeScript JSDoc 支持](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html)
-- `10-fundamentals/10.2-js-ts-bridge/`
+- `10-fundamentals/10.2-type-system/`
 
 ---
 

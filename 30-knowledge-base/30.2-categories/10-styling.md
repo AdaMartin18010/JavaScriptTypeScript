@@ -763,7 +763,7 @@ const Box = styled.div`
 
 > 📦 **归档说明（2026-04-27）**
 >
-> 本文档与 `docs/guides/CSS_IN_JS_STYLING.md` 内容高度重叠。更详细的样式方案指南请参见 **[guides/CSS_IN_JS_STYLING.md](../guides/CSS_IN_JS_STYLING.md)**（2,100+ 行，覆盖 Tailwind v4、CSS-in-JS、原生 CSS 新特性等）。
+> 本文档与 `docs/guides/CSS_IN_JS_STYLING.md` 内容高度重叠。更详细的样式方案指南请参见 **[guides/CSS_IN_JS_STYLING.md](../30.1-guides/CSS_IN_JS_STYLING.md)**（2,100+ 行，覆盖 Tailwind v4、CSS-in-JS、原生 CSS 新特性等）。
 >
 > 本文档保留作为分类索引入口。
 
@@ -772,5 +772,5 @@ const Box = styled.div`
 本文档聚焦 **CSS 框架、CSS-in-JS 与样式工具**。其中涉及的 UI 组件库（如 shadcn/ui）归属于 **「框架（Frameworks）」** 维度，详细内容请参见：
 
 - [UI 组件库分类文档](./02-ui-component-libraries.md)
-- [框架生态总索引](../frameworks-index.md)
-- [UI 库对比矩阵](../comparison-matrices/ui-libraries-compare.md)
+- 框架生态总索引
+- [UI 库对比矩阵](../30.3-comparison-matrices/ui-libraries-compare.md)

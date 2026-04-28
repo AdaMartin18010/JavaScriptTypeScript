@@ -10,7 +10,7 @@ status: current
 >
 > - ✅ **属于本文档范围**：测试框架对比、测试工具链组合、覆盖率方案、Mock 策略。
 > - ❌ **不属于本文档范围**：具体业务测试用例、前端框架专属测试教程。
-> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+> - 🔗 **相关索引**：`docs/infrastructure-index.md`
 
 # 13. 测试框架生态 (Testing Ecosystem)
 

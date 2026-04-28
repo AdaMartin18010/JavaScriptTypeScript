@@ -1,7 +1,7 @@
 # 定理 2：类型模块化定理
 
 > **定位**：`10-fundamentals/10.1-language-semantics/theorems/`
-> **关联**：`10-fundamentals/10.2-type-system/` | `JSTS全景综述/` Monorepo 架构
+> **关联**：`10-fundamentals/10.2-type-system/` | `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/` Monorepo 架构
 
 ---
 

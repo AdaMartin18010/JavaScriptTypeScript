@@ -10,7 +10,7 @@ status: archived
 >
 > - ✅ **属于本文档范围**：单元测试框架、E2E 测试工具、Mock 库、覆盖率工具、测试最佳实践。
 > - ❌ **不属于本文档范围**：具体业务功能的测试用例、前端框架组件测试教程、UI 测试场景设计。
-> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+> - 🔗 **相关索引**：`docs/infrastructure-index.md`
 
 # 测试框架
 

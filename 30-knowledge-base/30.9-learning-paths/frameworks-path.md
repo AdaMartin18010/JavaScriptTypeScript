@@ -55,7 +55,7 @@ status: current
 - **关联文件/模块**：
   - `jsts-code-lab/18-frontend-frameworks/`
   - `docs/cheatsheets/REACT_CHEATSHEET.md`
-  - `JSTS全景综述/FRONTEND_FRAMEWORK_THEORY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/FRONTEND_FRAMEWORK_THEORY.md`
 - **关键技能**：
   - props / state / 单向数据流
   - 组合优于继承（Composition over Inheritance）
@@ -65,7 +65,7 @@ status: current
 
 - **关联文件/模块**：
   - `jsts-code-lab/15-data-flow/`
-  - `JSTS全景综述/Signals_范式深度分析.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/Signals_范式深度分析.md`
 - **关键技能**：
   - Redux / Zustand / Jotai 的选型差异
   - Signals 范式的细粒度响应式
@@ -90,8 +90,8 @@ status: current
 
 - **关联文件/模块**：
   - `jsts-code-lab/06-architecture-patterns/`
-  - `JSTS全景综述/ARCHITECTURE_PATTERNS_THEORY.md`
-  - `JSTS全景综述/07_architecture.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ARCHITECTURE_PATTERNS_THEORY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/07_architecture.md`
 - **关键技能**：
   - 分层架构、六边形架构、洋葱架构
   - CQRS + 事件溯源的实现与取舍
@@ -102,7 +102,7 @@ status: current
 - **关联文件/模块**：
   - `jsts-code-lab/59-fullstack-patterns/`
   - `examples/fullstack-tanstack-start/`
-  - `JSTS全景综述/React_Server_Components_范式转变分析.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/React_Server_Components_范式转变分析.md`
 - **关键技能**：
   - Next.js / Nuxt / TanStack Start 的架构差异
   - Server Components vs Client Components 的边界
@@ -127,7 +127,7 @@ status: current
 - **关联文件/模块**：
   - `jsts-code-lab/53-app-architecture/`
   - `jsts-code-lab/50-browser-runtime/`
-  - `JSTS全景综述/V8_RUNTIME_THEORY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/V8_RUNTIME_THEORY.md`
 - **关键技能**：
   - Virtual DOM vs Fine-grained Reactivity 的性能模型
   - 调度器（Scheduler）与优先级中断
@@ -139,7 +139,7 @@ status: current
   - `jsts-code-lab/79-compiler-design/`
   - `jsts-code-lab/56-code-generation/`
   - `examples/advanced-compiler-workshop/`
-  - `JSTS全景综述/COMPILER_LANGUAGE_DESIGN.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/COMPILER_LANGUAGE_DESIGN.md`
 - **关键技能**：
   - AST 转换与 Tree-shaking 原理
   - 编译时宏（Macro）与 AOT 优化
@@ -149,7 +149,7 @@ status: current
 
 - **关联文件/模块**：
   - `jsts-code-lab/60-developer-experience/`
-  - `JSTS全景综述/TOOLCHAIN_BUILD_THEORY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/TOOLCHAIN_BUILD_THEORY.md`
 - **关键技能**：
   - HMR（热更新）的实现原理
   - Monorepo 工具链与远程缓存

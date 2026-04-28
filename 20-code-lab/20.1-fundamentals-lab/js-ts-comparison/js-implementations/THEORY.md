@@ -59,7 +59,7 @@ ECMAScript 规范存在实现自由度，不同引擎在性能优化、垃圾回
 ### 3.3 扩展阅读
 
 - [V8 博客](https://v8.dev/blog)
-- `30-knowledge-base/30.2-runtimes/`
+- `30-knowledge-base/30.2-runtimes`
 
 ---
 

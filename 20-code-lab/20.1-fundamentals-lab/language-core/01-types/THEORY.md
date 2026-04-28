@@ -60,7 +60,7 @@
 ### 3.3 扩展阅读
 
 - [TypeScript 类型手册](https://www.typescriptlang.org/docs/handbook/basic-types.html)
-- `10-fundamentals/10.1-language-core/01-types/`
+- `10-fundamentals/10.1-language-semantics/01-types/`
 
 ---
 

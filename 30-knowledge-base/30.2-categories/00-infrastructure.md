@@ -2,7 +2,7 @@
 
 > 构建工具、测试、部署、可观测性、安全、性能、数据库、API 设计、认证等支撑工程体系的基础设施。
 >
-> 本分类属于 **🔴 技术基础设施维度**。如需查看完整导航，请访问 [infrastructure-index.md](../infrastructure-index.md)。
+> 本分类属于 **🔴 技术基础设施维度**。如需查看完整导航，请访问 infrastructure-index.md。
 
 ---
 
@@ -22,9 +22,9 @@
 
 **不属于本分类的内容**（请访问对应维度）：
 
-- 前端框架的使用方法 → [框架生态维度](../frameworks-index.md)
-- 语言语法特性 → [语言核心维度](../language-core-index.md)
-- 具体业务场景实现 → [应用领域维度](../application-domains-index.md)
+- 前端框架的使用方法 → 框架生态维度
+- 语言语法特性 → 语言核心维度
+- 具体业务场景实现 → 应用领域维度
 
 ---
 
@@ -50,9 +50,9 @@
 
 ## 决策支持
 
-- [基础设施决策矩阵](../comparison-matrices/infrastructure-stack-decision-matrix.md)
-- [Type Stripping 策略决策树](../decision-trees.md#17-type-stripping-策略决策树)
-- [部署平台选型决策树](../decision-trees.md#9-部署平台选型决策树)
+- [基础设施决策矩阵](../30.3-comparison-matrices/infrastructure-stack-decision-matrix.md)
+- [Type Stripping 策略决策树](../30.4-decision-trees/legacy-decision-trees.md#17-type-stripping-策略决策树)
+- [部署平台选型决策树](../30.4-decision-trees/legacy-decision-trees.md#9-部署平台选型决策树)
 
 ---
 

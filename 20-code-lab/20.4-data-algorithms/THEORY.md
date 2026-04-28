@@ -1,7 +1,7 @@
 # 数据结构与算法：理论基础
 
 > **定位**：`20-code-lab/20.4-data-algorithms/`
-> **关联**：`10-fundamentals/10.2-type-system/` | `JSTS全景综述/DATA_STRUCTURES_ALGORITHMS_THEORY.md`
+> **关联**：`10-fundamentals/10.2-type-system/` | `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/DATA_STRUCTURES_ALGORITHMS_THEORY.md`
 
 ---
 
@@ -67,7 +67,7 @@
 ## 四、扩展阅读
 
 - `10-fundamentals/10.5-object-model/property-descriptors.md` — 对象属性底层机制
-- `JSTS全景综述/DATA_STRUCTURES_ALGORITHMS_THEORY.md`
+- `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/DATA_STRUCTURES_ALGORITHMS_THEORY.md`
 
 ---
 

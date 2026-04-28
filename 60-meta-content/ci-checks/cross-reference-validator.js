@@ -24,6 +24,15 @@ const EXCLUDE_DIRS = [
   '_playground',
   '_shared',
   '_tests',
+  // 旧备份目录
+  'jsts-code-lab',
+  'docs',
+  'JSTS全景综述',
+  'examples',
+  'awesome-jsts-ecosystem',
+  'jsts-language-core-system',
+  'website',
+  'view',
 ];
 
 /**

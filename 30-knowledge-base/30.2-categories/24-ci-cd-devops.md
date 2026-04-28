@@ -10,7 +10,7 @@ status: current
 >
 > - ✅ **属于本文档范围**：CI/CD 平台、流水线配置、构建缓存、自托管 Runner、GitOps 工具。
 > - ❌ **不属于本文档范围**：具体项目的业务部署流程、应用发布策略、环境管理脚本。
-> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+> - 🔗 **相关索引**：`docs/infrastructure-index.md`
 
 # CI/CD 与 DevOps 工具
 
@@ -526,8 +526,8 @@ stages:
 
 ### 相关决策树与对比矩阵
 
-- [CI/CD 流水线选型决策树](../../docs/decision-trees.md#11-ci-cd-流水线选型决策树)
-- [CI/CD 工具对比矩阵](../comparison-matrices/ci-cd-tools-compare.md)
+- [CI/CD 流水线选型决策树](../30.4-decision-trees/legacy-decision-trees.md#11-ci-cd-流水线选型决策树)
+- [CI/CD 工具对比矩阵](../30.3-comparison-matrices/ci-cd-tools-compare.md)
 
 ---
 

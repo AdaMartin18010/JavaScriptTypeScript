@@ -1,7 +1,7 @@
 # 并发与异步：理论基础
 
 > **定位**：`20-code-lab/20.3-concurrency-async/`
-> **关联**：`10-fundamentals/10.3-execution-model/` | `JSTS全景综述/04_concurrency.md`
+> **关联**：`10-fundamentals/10.3-execution-model/` | `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/04_concurrency.md`
 
 ---
 
@@ -92,7 +92,7 @@ Structured Concurrency (未来)
 ## 四、扩展阅读
 
 - `10-fundamentals/10.3-execution-model/` — V8 引擎执行模型
-- `JSTS全景综述/04_concurrency.md` — 并发模型深度分析
+- `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/04_concurrency.md` — 并发模型深度分析
 - `docs/guides/ai-coding-workflow.md` — AI 辅助异步代码审查
 
 ---

@@ -13,13 +13,13 @@
 
 > A curated list of high-quality resources in the JavaScript/TypeScript ecosystem, covering frameworks, tools, libraries, and best practices. TypeScript-first approach.
 >
-> 📚 Code Lab: [jsts-code-lab](./jsts-code-lab/) - 90+ modules, from theory to practice.
+> 📚 Code Lab: [jsts-code-lab](./20-code-lab/) - 90+ modules, from theory to practice.
 >
 > 🧠 Language Core System: [jsts-language-core-system](./jsts-language-core-system/) - 52 in-depth docs covering type system, variable system, control flow, execution model, and ECMAScript specification foundations.
 >
 > 📊 Technology Decision System: 15 comparison matrices, 15 decision trees, 21 Mermaid diagrams.
 >
-> 🎓 Flagship Doc: [JS/TS Semantic Model Analysis](./JSTS全景综述/JS_TS_语言语义模型全面分析.md) - Aligned with ECMA-2025/2026, TypeScript 5.8–7.0, and top-tier university curricula (Stanford/MIT/CMU/Berkeley/UW).
+> 🎓 Flagship Doc: [JS/TS Semantic Model Analysis](./30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_语言语义模型全面分析.md) - Aligned with ECMA-2025/2026, TypeScript 5.8–7.0, and top-tier university curricula (Stanford/MIT/CMU/Berkeley/UW).
 
 <p align="center">
   <a href="README.md">🇨🇳 中文</a> | <strong>🇺🇸 English</strong>
@@ -32,19 +32,19 @@
 | Document | Description | Audience |
 |----------|-------------|----------|
 | [📦 awesome-jsts-ecosystem](./awesome-jsts-ecosystem/) | JS/TS ecosystem tool navigation | All developers |
-| [🧪 jsts-code-lab](./jsts-code-lab/) | Code lab (90+ modules) | Hands-on learners |
+| [🧪 jsts-code-lab](./20-code-lab/) | Code lab (90+ modules) | Hands-on learners |
 | [🧠 jsts-language-core-system](./jsts-language-core-system/) | Language core system (52 in-depth docs) | Theory learners |
-| [📚 jsts-code-lab/CROSS-REFERENCE.md](./jsts-code-lab/CROSS-REFERENCE.md) | Module cross-reference index | Systematic learners |
+| [📚 jsts-code-lab/CROSS-REFERENCE.md](./20-code-lab/CROSS-REFERENCE.md) | Module cross-reference index | Systematic learners |
 | [📖 GLOSSARY.md](./GLOSSARY.md) | Professional glossary (CN/EN) | All readers |
-| [🎓 beginners-path.md](./docs/learning-paths/beginners-path.md) | Beginner learning path | Beginners |
-| [📈 intermediate-path.md](./docs/learning-paths/intermediate-path.md) | Intermediate learning path | Mid-level developers |
-| [🎯 advanced-path.md](./docs/learning-paths/advanced-path.md) | Architect learning path | Senior developers |
-| [📊 comparison-matrices](./docs/comparison-matrices/) | 15 framework/tool comparison matrices | Technology decision-makers |
-| [🌳 Decision Trees](./docs/decision-trees.md) | 15 decision trees for technology selection | Technology decision-makers |
-| [🗺️ diagrams](./docs/diagrams/) | 21 Mermaid charts and knowledge graphs | Visual learners |
-| [🌐 web-apis-guide.md](./docs/guides/web-apis-guide.md) | Complete Web APIs Guide | Full-stack developers |
-| [🟢 nodejs-core-modules-guide.md](./docs/guides/nodejs-core-modules-guide.md) | Node.js Core Modules Guide | Backend developers |
-| [🏗️ categories.md](./docs/categories.md) | Ops & Infrastructure categories | DevOps engineers |
+| [🎓 beginners-path.md](./30-knowledge-base/30.9-learning-paths/beginners-path.md) | Beginner learning path | Beginners |
+| [📈 intermediate-path.md](./30-knowledge-base/30.9-learning-paths/intermediate-path.md) | Intermediate learning path | Mid-level developers |
+| [🎯 advanced-path.md](./30-knowledge-base/30.9-learning-paths/advanced-path.md) | Architect learning path | Senior developers |
+| [📊 comparison-matrices](./30-knowledge-base/30.3-comparison-matrices/) | 15 framework/tool comparison matrices | Technology decision-makers |
+| [🌳 Decision Trees](./30-knowledge-base/30.1-guides/decision-trees.md) | 15 decision trees for technology selection | Technology decision-makers |
+| [🗺️ diagrams](./30-knowledge-base/30.5-diagrams/) | 21 Mermaid charts and knowledge graphs | Visual learners |
+| [🌐 web-apis-guide.md](./30-knowledge-base/30.1-guides/web-apis-guide.md) | Complete Web APIs Guide | Full-stack developers |
+| [🟢 nodejs-core-modules-guide.md](./30-knowledge-base/30.1-guides/nodejs-core-modules-guide.md) | Node.js Core Modules Guide | Backend developers |
+| [🏗️ categories.md](./30-knowledge-base/30.1-guides/categories.md) | Ops & Infrastructure categories | DevOps engineers |
 | [🤝 CONTRIBUTING.md](./CONTRIBUTING.md) | Contribution guidelines | Contributors |
 
 ---
@@ -240,40 +240,40 @@ This project provides a comprehensive technology decision support system to help
 
 | Matrix Document | Comparison Scope |
 |-----------------|------------------|
-| [Frontend Frameworks](./docs/comparison-matrices/frontend-frameworks-compare.md) | React / Vue / Svelte / Solid / Angular |
-| [Backend Frameworks](./docs/comparison-matrices/backend-frameworks-compare.md) | Express / Fastify / NestJS / Koa / Hono / Elysia |
-| [Full-Stack Meta Frameworks](./docs/comparison-matrices/ssr-metaframeworks-compare.md) | Next.js / Nuxt / SvelteKit / Remix / Astro |
-| [Build Tools](./docs/comparison-matrices/build-tools-compare.md) | Vite / esbuild / swc / Turbopack / Rollup |
-| [JS/TS Compilers](./docs/comparison-matrices/js-ts-compilers-compare.md) | tsc / swc / esbuild / Babel |
-| [UI Libraries](./docs/comparison-matrices/ui-libraries-compare.md) | Ant Design / MUI / shadcn/ui / Chakra UI, etc. |
-| [State Management](./docs/comparison-matrices/state-management-compare.md) | Redux / Zustand / Jotai / Pinia, etc. |
-| [Testing Frameworks](./docs/comparison-matrices/testing-compare.md) | Jest / Vitest / Playwright / Cypress |
-| [ORMs](./docs/comparison-matrices/orm-compare.md) | Prisma / TypeORM / Drizzle / Sequelize |
-| [Package Managers](./docs/comparison-matrices/package-managers-compare.md) | npm / Yarn / pnpm / Bun / Deno |
-| [Monorepo Tools](./docs/comparison-matrices/monorepo-tools-compare.md) | Nx / Turborepo / Rush / pnpm workspaces |
-| [Observability Tools](./docs/comparison-matrices/observability-tools-compare.md) | Sentry / Datadog / Grafana / Prometheus |
-| [Deployment Platforms](./docs/comparison-matrices/deployment-platforms-compare.md) | Vercel / Netlify / AWS / Fly.io / Railway |
-| [CI/CD Tools](./docs/comparison-matrices/ci-cd-tools-compare.md) | GitHub Actions / GitLab CI / CircleCI / Jenkins |
-| [Browser Compatibility](./docs/comparison-matrices/browser-compatibility-compare.md) | Modern browser feature support matrix |
+| [Frontend Frameworks](./30-knowledge-base/30.3-comparison-matrices/frontend-frameworks-compare.md) | React / Vue / Svelte / Solid / Angular |
+| [Backend Frameworks](./30-knowledge-base/30.3-comparison-matrices/backend-frameworks-compare.md) | Express / Fastify / NestJS / Koa / Hono / Elysia |
+| [Full-Stack Meta Frameworks](./30-knowledge-base/30.3-comparison-matrices/ssr-metaframeworks-compare.md) | Next.js / Nuxt / SvelteKit / Remix / Astro |
+| [Build Tools](./30-knowledge-base/30.3-comparison-matrices/build-tools-compare.md) | Vite / esbuild / swc / Turbopack / Rollup |
+| [JS/TS Compilers](./30-knowledge-base/30.3-comparison-matrices/js-ts-compilers-compare.md) | tsc / swc / esbuild / Babel |
+| [UI Libraries](./30-knowledge-base/30.3-comparison-matrices/ui-libraries-compare.md) | Ant Design / MUI / shadcn/ui / Chakra UI, etc. |
+| [State Management](./30-knowledge-base/30.3-comparison-matrices/state-management-compare.md) | Redux / Zustand / Jotai / Pinia, etc. |
+| [Testing Frameworks](./30-knowledge-base/30.3-comparison-matrices/testing-compare.md) | Jest / Vitest / Playwright / Cypress |
+| [ORMs](./30-knowledge-base/30.3-comparison-matrices/orm-compare.md) | Prisma / TypeORM / Drizzle / Sequelize |
+| [Package Managers](./30-knowledge-base/30.3-comparison-matrices/package-managers-compare.md) | npm / Yarn / pnpm / Bun / Deno |
+| [Monorepo Tools](./30-knowledge-base/30.3-comparison-matrices/monorepo-tools-compare.md) | Nx / Turborepo / Rush / pnpm workspaces |
+| [Observability Tools](./30-knowledge-base/30.3-comparison-matrices/observability-tools-compare.md) | Sentry / Datadog / Grafana / Prometheus |
+| [Deployment Platforms](./30-knowledge-base/30.3-comparison-matrices/deployment-platforms-compare.md) | Vercel / Netlify / AWS / Fly.io / Railway |
+| [CI/CD Tools](./30-knowledge-base/30.3-comparison-matrices/ci-cd-tools-compare.md) | GitHub Actions / GitLab CI / CircleCI / Jenkins |
+| [Browser Compatibility](./30-knowledge-base/30.3-comparison-matrices/browser-compatibility-compare.md) | Modern browser feature support matrix |
 
 ### Decision Tree Index
 
 | Decision Tree Document | Coverage Scenario |
 |------------------------|-------------------|
-| [UI Library Selection](./docs/decision-trees.md) | React/Vue component library choices |
-| [State Management Selection](./docs/decision-trees.md) | Global/server/atomic state solutions |
-| [Build Tool Selection](./docs/decision-trees.md) | Compiler/bundler choices |
-| [ORM Selection](./docs/decision-trees.md) | SQL/NoSQL/Edge databases |
-| [Testing Strategy Selection](./docs/decision-trees.md) | Unit/integration/E2E testing frameworks |
-| [Deployment Platform Selection](./docs/decision-trees.md) | Static/Serverless/Containerized |
-| [Package Manager Selection](./docs/decision-trees.md) | npm/pnpm/Yarn/Bun/Deno |
-| [Monorepo Selection](./docs/decision-trees.md) | Toolchain and workspace solutions |
-| [Full-Stack Framework Selection](./docs/decision-trees.md) | SSR/SSG/Edge rendering frameworks |
-| [Real-Time Communication Selection](./docs/decision-trees.md) | WebSocket/Socket.io/PartyKit |
-| [Auth Strategy Selection](./docs/decision-trees.md) | OAuth/JWT/SSO/Passwordless |
-| [CSS Solution Selection](./docs/decision-trees.md) | Tailwind/CSS-in-JS/Atomic CSS |
-| [Runtime Selection](./docs/decision-trees.md) | Node.js/Deno/Bun |
-| [CI/CD Selection](./docs/decision-trees.md) | GitHub Actions/GitLab CI, etc. |
+| [UI Library Selection](./30-knowledge-base/30.1-guides/decision-trees.md) | React/Vue component library choices |
+| [State Management Selection](./30-knowledge-base/30.1-guides/decision-trees.md) | Global/server/atomic state solutions |
+| [Build Tool Selection](./30-knowledge-base/30.1-guides/decision-trees.md) | Compiler/bundler choices |
+| [ORM Selection](./30-knowledge-base/30.1-guides/decision-trees.md) | SQL/NoSQL/Edge databases |
+| [Testing Strategy Selection](./30-knowledge-base/30.1-guides/decision-trees.md) | Unit/integration/E2E testing frameworks |
+| [Deployment Platform Selection](./30-knowledge-base/30.1-guides/decision-trees.md) | Static/Serverless/Containerized |
+| [Package Manager Selection](./30-knowledge-base/30.1-guides/decision-trees.md) | npm/pnpm/Yarn/Bun/Deno |
+| [Monorepo Selection](./30-knowledge-base/30.1-guides/decision-trees.md) | Toolchain and workspace solutions |
+| [Full-Stack Framework Selection](./30-knowledge-base/30.1-guides/decision-trees.md) | SSR/SSG/Edge rendering frameworks |
+| [Real-Time Communication Selection](./30-knowledge-base/30.1-guides/decision-trees.md) | WebSocket/Socket.io/PartyKit |
+| [Auth Strategy Selection](./30-knowledge-base/30.1-guides/decision-trees.md) | OAuth/JWT/SSO/Passwordless |
+| [CSS Solution Selection](./30-knowledge-base/30.1-guides/decision-trees.md) | Tailwind/CSS-in-JS/Atomic CSS |
+| [Runtime Selection](./30-knowledge-base/30.1-guides/decision-trees.md) | Node.js/Deno/Bun |
+| [CI/CD Selection](./30-knowledge-base/30.1-guides/decision-trees.md) | GitHub Actions/GitLab CI, etc. |
 
 ---
 
@@ -1413,8 +1413,8 @@ export function Navigation() {
 
   return (
     <nav>
-      <a href="/">{t('home')}</a>
-      <a href="/about">{t('about')}</a>
+      <a href="./index.md">{t('home')}</a>
+      <a href="./about.md">{t('about')}</a>
     </nav>
   )
 }
@@ -3006,7 +3006,7 @@ function LinkWithPrefetch({ href, children }) {
 // Using next/link automatic prefetch
 import Link from 'next/link'
 
-<Link href="/about" prefetch={true}>
+<Link href="./about.md" prefetch={true}>
   About
 </Link>
 ```
@@ -5942,7 +5942,7 @@ export default defineConfig({
 - **6 New Comparison Matrices**: Package Managers, Monorepo Tools, Observability Tools, Deployment Platforms, CI/CD Tools, Browser Compatibility
 - **8 New Decision Trees**: Covering Package Managers, Monorepo, Full-Stack Frameworks, Real-Time Communication, Auth Strategies, CSS Solutions, Runtimes, CI/CD Selection
 - **3 Large Knowledge Graphs**: Language Core Knowledge Graph, Engineering Practice Knowledge Graph, Ecosystem Panorama Knowledge Graph
-- **2 New Guides**: [Complete Web APIs Guide](./docs/guides/web-apis-guide.md), [Node.js Core Modules Guide](./docs/guides/nodejs-core-modules-guide.md)
+- **2 New Guides**: [Complete Web APIs Guide](./30-knowledge-base/30.1-guides/web-apis-guide.md), [Node.js Core Modules Guide](./30-knowledge-base/30.1-guides/nodejs-core-modules-guide.md)
 - **5 Ops & Infrastructure Categories**: New classification system covering deployment, monitoring, security, performance, and workflows
 - **Code Lab Expansion**: Grown from 83+ to **90+ technical modules**
 

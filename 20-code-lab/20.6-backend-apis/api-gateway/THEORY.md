@@ -1,7 +1,7 @@
 # API 网关深度理论：从反向代理到智能边缘
 
 > **目标读者**：后端工程师、云架构师、关注 API 治理的技术负责人
-> **关联文档**：``30.2-categories/api-gateway.md`` (Legacy) [Legacy link]
+> **关联文档**：``30-knowledge-base/30.2-categories/api-gateway.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 3,500 字
 

@@ -1,7 +1,7 @@
 # 缓存策略深度理论：从本地缓存到分布式缓存
 
 > **目标读者**：后端工程师、性能工程师、关注系统扩展性的架构师
-> **关联文档**：``30.2-categories/caching-strategies.md`` (Legacy) [Legacy link]
+> **关联文档**：``30-knowledge-base/30.2-categories/caching-strategies.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 3,200 字
 

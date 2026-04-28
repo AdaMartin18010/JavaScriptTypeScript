@@ -59,7 +59,7 @@
 ### 3.3 扩展阅读
 
 - [Web Platform Docs](https://developer.mozilla.org/en-US/docs/Web/API)
-- `10-fundamentals/10.4-web-platform/`
+- `10-fundamentals/10.1-language-semantics/`
 
 ---
 

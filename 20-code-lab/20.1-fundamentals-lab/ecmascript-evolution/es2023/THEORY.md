@@ -59,7 +59,7 @@ ECMAScript 作为活的语言标准，每年发布新特性以回应开发者社
 ### 3.3 扩展阅读
 
 - [ECMAScript 提案仓库](https://github.com/tc39/proposals)
-- `30-knowledge-base/30.1-language-evolution/`
+- `30-knowledge-base/30.1-language-evolution`
 
 ---
 

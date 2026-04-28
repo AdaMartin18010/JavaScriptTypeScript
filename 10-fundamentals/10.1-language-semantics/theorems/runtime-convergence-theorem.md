@@ -1,7 +1,7 @@
 # 定理 3：运行时收敛定理
 
 > **定位**：`10-fundamentals/10.1-language-semantics/theorems/`
-> **关联**：`JSTS全景综述/JS_TS_现代运行时深度分析.md`
+> **关联**：`30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_现代运行时深度分析.md`
 
 ---
 

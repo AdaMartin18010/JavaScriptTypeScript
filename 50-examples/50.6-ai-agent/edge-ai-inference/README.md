@@ -67,6 +67,6 @@ curl -X POST http://localhost:8787/infer \
 | 边缘计算 | `jsts-code-lab/32-edge-computing/` | V8 Isolates、Durable Objects、边缘-中心混合架构 |
 | AI 集成 | `jsts-code-lab/33-ai-integration/` | LLM API 调用、Prompt 工程、AI SDK 使用 |
 | Web API 实验室 | `jsts-code-lab/90-web-apis-lab/` | Streams、Fetch、WebGPU 等原生 API 实践 |
-| 边缘架构理论 | `JSTS全景综述/边缘优先架构设计方法论.md` | 边缘优先架构设计、成本模型、安全模型 |
+| 边缘架构理论 | `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/边缘优先架构设计方法论.md` | 边缘优先架构设计、成本模型、安全模型 |
 
 > 📚 [返回知识库首页](../README.md)

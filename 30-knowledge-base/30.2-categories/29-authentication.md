@@ -4,7 +4,7 @@
 >
 > - ✅ **属于本文档范围**：认证库（better-auth、Auth.js）、OAuth/OIDC 协议实现、Passkeys/WebAuthn、SSO/SCIM 服务、RBAC 方案。
 > - ❌ **不属于本文档范围**：具体应用的用户系统实现、业务权限模型设计、会话管理策略、用户界面流程。
-> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+> - 🔗 **相关索引**：`docs/infrastructure-index.md`
 
 # 认证与授权（Authentication & Authorization）
 

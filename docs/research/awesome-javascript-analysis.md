@@ -439,11 +439,11 @@ UI                          # 一级
 
 ```markdown
 # 标准格式
-- [库名](链接) - 简短描述。
+- [库名](https://github.com/example/lib) - 简短描述。
 
 # 增强格式（带补充信息）
-- [库名](链接) - 简短描述。[官网](链接)
-- [库名](链接) - 简短描述。`标签`
+- [库名](https://github.com/example/lib) - 简短描述。[官网](https://github.com/example/lib)
+- [库名](https://github.com/example/lib) - 简短描述。`标签`
 
 # 示例
 - [axios](https://github.com/axios/axios) - Promise based HTTP client for the browser and node.js.
@@ -556,7 +556,7 @@ awesome-list-project/
 
 ### 子分类1
 
-- [库名](链接) - 描述。
+- [库名](https://github.com/example/lib) - 描述。
 
 ## 主分类2
 ...
@@ -565,7 +565,7 @@ awesome-list-project/
 
 ## 相关资源
 
-- [Awesome Y](链接)
+- [Awesome Y](https://github.com/example/lib)
 
 ## 贡献指南
 ...

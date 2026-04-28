@@ -60,7 +60,7 @@
 ### 3.3 扩展阅读
 
 - [MDN 变量指南](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Grammar_and_types)
-- `10-fundamentals/10.1-language-core/02-variables/`
+- `10-fundamentals/10.1-language-semantics/02-variables/`
 
 ---
 

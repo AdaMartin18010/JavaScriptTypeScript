@@ -70,7 +70,7 @@
 
 ## 参与贡献
 
-欢迎提交 Issue 或 PR 参与贡献！请阅读 [贡献指南](/guide/contributing) 了解详细流程。
+欢迎提交 Issue 或 PR 参与贡献！请阅读 [贡献指南](./guide/contributing.md) 了解详细流程。
 
 ## 许可证
 

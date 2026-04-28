@@ -1,0 +1,19 @@
+# lib
+
+> **路径**: `50-examples/50.6-ai-agent/ai-agent-production/src/lib/`
+> **状态**: 📂 目录索引（自动生成）
+> **生成时间**: 2026-04-28
+
+## 概述
+
+此目录包含 src 相关的文件和子目录。
+## 目录内容
+
+- 📄 ai-sdk.ts
+- 📄 auth.ts
+- 📄 db.ts
+- 📄 mcp-client.ts
+
+---
+
+*自动生成目录索引*

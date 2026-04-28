@@ -583,7 +583,7 @@ Invariant == count >= 0
 
 - **Checkpoint 项目**: 为团队写一个技术选型 ADR
   - 场景：选择前端框架（React/Vue/Svelte）
-  - 使用 `JSTS全景综述/技术选型方法论与评估框架.md` 中的框架
+  - 使用 `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/技术选型方法论与评估框架.md` 中的框架
   - 通过标准: 8 个维度评估 + 量化评分 + 风险提示
 
 **预计时间**: 2 周 | **难度**: ⭐⭐⭐⭐

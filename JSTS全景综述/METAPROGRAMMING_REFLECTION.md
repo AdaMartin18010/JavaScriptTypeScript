@@ -1329,7 +1329,7 @@ class Serializer<T> {
     const result: any = {};
     for (const key in this.schema) {
       if (parsed.hasOwnProperty(key)) {
-        result[key] = this.schema[key](parsed[key]);
+        result[key] = this.schema[key](`parsed[key]`);
       }
     }
     return result;

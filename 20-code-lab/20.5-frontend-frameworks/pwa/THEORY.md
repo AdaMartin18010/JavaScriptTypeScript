@@ -1,7 +1,7 @@
 # PWA 深度理论：从 Service Worker 到现代 Web 应用
 
 > **目标读者**：前端工程师、移动端开发者、关注用户体验的架构师
-> **关联文档**：``30.2-categories/pwa.md`` (Legacy) [Legacy link]
+> **关联文档**：``30-knowledge-base/30.2-categories/pwa.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 4,000 字
 

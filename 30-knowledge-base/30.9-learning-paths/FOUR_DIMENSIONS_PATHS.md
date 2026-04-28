@@ -60,7 +60,7 @@ status: current
   - `jsts-code-lab/00-language-core/` — 语言核心代码实验
   - `jsts-code-lab/01-ecmascript-evolution/` — ECMAScript 特性演进
   - `docs/cheatsheets/TYPESCRIPT_CHEATSHEET.md`
-  - `JSTS全景综述/01_language_core.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md`
 - **Checkpoint**：类型安全 `EventEmitter` (`jsts-code-lab/00-language-core/event-emitter-typed.ts`)
 
 ### 进阶：类型系统深度与执行模型
@@ -71,7 +71,7 @@ status: current
   - `jsts-code-lab/14-execution-flow/` — 执行流与事件循环
   - `jsts-code-lab/40-type-theory-formal/` — 类型理论形式化
   - `jsts-language-core-system/` — 语言核心系统文档
-  - `JSTS全景综述/ADVANCED_TYPE_SYSTEM_FEATURES.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ADVANCED_TYPE_SYSTEM_FEATURES.md`
 - **Checkpoint**：实现一个支持泛型约束的工具类型库
 
 ### 专家：形式化语义与编译器设计
@@ -81,8 +81,8 @@ status: current
   - `jsts-code-lab/41-formal-semantics/` — 形式化语义
   - `jsts-code-lab/79-compiler-design/` — 编译器设计
   - `jsts-code-lab/78-metaprogramming/` — 元编程与反射
-  - `JSTS全景综述/FORMAL_SEMANTICS_COMPLETE.md`
-  - `JSTS全景综述/COMPILER_LANGUAGE_DESIGN.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/FORMAL_SEMANTICS_COMPLETE.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/COMPILER_LANGUAGE_DESIGN.md`
 - **Checkpoint**：用 TLA+ 验证并发协议 或 实现玩具级编译器前端
 
 ---
@@ -110,7 +110,7 @@ status: current
   - `jsts-code-lab/53-app-architecture/` — 应用架构
   - `jsts-code-lab/59-fullstack-patterns/` — 全栈模式
   - `examples/fullstack-tanstack-start/` — 全栈元框架实战
-  - `JSTS全景综述/ARCHITECTURE_PATTERNS_THEORY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ARCHITECTURE_PATTERNS_THEORY.md`
 - **Checkpoint**：六边形架构订单系统 + 单元测试覆盖 ≥ 80%
 
 ### 专家：元框架架构与编译时优化
@@ -121,7 +121,7 @@ status: current
   - `jsts-code-lab/56-code-generation/` — 代码生成
   - `jsts-code-lab/60-developer-experience/` — DX 与平台工程
   - `examples/advanced-compiler-workshop/` — 编译器工作坊
-  - `JSTS全景综述/METAPROGRAMMING_REFLECTION.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/METAPROGRAMMING_REFLECTION.md`
 - **Checkpoint**：设计并原型验证一个迷你前端元框架（含编译时优化）
 
 ---
@@ -151,7 +151,7 @@ status: current
   - `jsts-code-lab/32-edge-computing/` — 边缘计算
   - `examples/ai-agent-production/` — AI Agent 生产级示例
   - `examples/edge-ai-inference/` — 边缘 AI 推理
-  - `JSTS全景综述/AI_ML_INTEGRATION_THEORY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/AI_ML_INTEGRATION_THEORY.md`
 - **Checkpoint**：AI Agent 工作流 或 边缘函数部署并通过冷启动测试
 
 ### 专家：生产级部署与可观测性
@@ -163,7 +163,7 @@ status: current
   - `jsts-code-lab/75-chaos-engineering/` — 混沌工程
   - `examples/monorepo-fullstack-saas/` — SaaS  monorepo
   - `examples/intermediate-microservice-workshop/` — 微服务实战
-  - `JSTS全景综述/08_observability.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/08_observability.md`
 - **Checkpoint**：多租户 SaaS 核心模块 + 分布式追踪 + 混沌测试
 
 ---
@@ -191,7 +191,7 @@ status: current
   - `jsts-code-lab/22-deployment-devops/` — 部署与 DevOps
   - `jsts-code-lab/72-container-orchestration/` — 容器编排
   - `jsts-code-lab/25-microservices/` — 微服务
-  - `JSTS全景综述/DEVOPS_DEPLOYMENT_THEORY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/DEVOPS_DEPLOYMENT_THEORY.md`
 - **Checkpoint**：微服务 K8s 部署（健康检查 + 分布式追踪可见）
 
 ### 专家：SRE 运维与混沌工程
@@ -202,7 +202,7 @@ status: current
   - `jsts-code-lab/75-chaos-engineering/` — 混沌工程
   - `jsts-code-lab/73-service-mesh-advanced/` — 高级服务网格
   - `examples/edge-observability-starter/` — 边缘可观测性 starter
-  - `JSTS全景综述/08_observability.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/08_observability.md`
 - **Checkpoint**：设计并执行一次生产级故障演练（含 SLO 定义、回滚策略、事后复盘）
 
 ---

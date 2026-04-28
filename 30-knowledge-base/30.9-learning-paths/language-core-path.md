@@ -54,7 +54,7 @@ status: current
 - **关联文件/模块**：
   - `jsts-code-lab/00-language-core/`
   - `docs/cheatsheets/TYPESCRIPT_CHEATSHEET.md`
-  - `JSTS全景综述/01_language_core.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md`
 - **关键技能**：
   - `interface` vs `type` 的核心区别
   - 泛型约束与条件类型基础
@@ -64,7 +64,7 @@ status: current
 
 - **关联文件/模块**：
   - `jsts-code-lab/01-ecmascript-evolution/`
-  - `JSTS全景综述/ecmascript-features/`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ecmascript-features/`
 - **关键技能**：
   - ES2024/ES2025 新语法（如 `Array.prototype.toSorted`、Decorators、Records & Tuples 提案）
   - 理解 TC39 阶段流程（Stage 0–3）
@@ -88,7 +88,7 @@ status: current
 - **关联文件/模块**：
   - `jsts-code-lab/10-js-ts-comparison/`
   - `jsts-code-lab/40-type-theory-formal/`
-  - `JSTS全景综述/ADVANCED_TYPE_SYSTEM_FEATURES.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ADVANCED_TYPE_SYSTEM_FEATURES.md`
 - **关键技能**：
   - 映射类型、模板字面量类型、递归类型
   - 类型推断的极限与边界
@@ -99,8 +99,8 @@ status: current
 - **关联文件/模块**：
   - `jsts-code-lab/14-execution-flow/`
   - `jsts-language-core-system/04-execution-model/`
-  - `JSTS全景综述/04_concurrency.md`
-  - `JSTS全景综述/V8_RUNTIME_THEORY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/04_concurrency.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/V8_RUNTIME_THEORY.md`
 - **关键技能**：
   - 宏任务 / 微任务 / `requestAnimationFrame` 的完整时序
   - V8 引擎的 Ignition + TurboFan 流水线
@@ -110,7 +110,7 @@ status: current
 
 - **关联文件/模块**：
   - `jsts-language-core-system/08-module-system/`
-  - `JSTS全景综述/MODULE_RESOLUTION_SEMANTICS.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/MODULE_RESOLUTION_SEMANTICS.md`
 - **关键技能**：
   - ESM vs CJS 的语义差异与互操作
   - `package.json` exports / imports 条件解析
@@ -124,8 +124,8 @@ status: current
 
 - **关联文件/模块**：
   - `jsts-code-lab/41-formal-semantics/`
-  - `JSTS全景综述/FORMAL_SEMANTICS_COMPLETE.md`
-  - `JSTS全景综述/JS_TS_语言语义模型全面分析.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/FORMAL_SEMANTICS_COMPLETE.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_语言语义模型全面分析.md`
 - **关键技能**：
   - 操作语义（Operational Semantics）
   - 指称语义（Denotational Semantics）
@@ -135,8 +135,8 @@ status: current
 
 - **关联文件/模块**：
   - `jsts-code-lab/40-type-theory-formal/`
-  - `JSTS全景综述/TYPE_SOUNDNESS_ANALYSIS.md`
-  - `JSTS全景综述/GRADUAL_TYPING_THEORY.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/TYPE_SOUNDNESS_ANALYSIS.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/GRADUAL_TYPING_THEORY.md`
 - **关键技能**：
   - 简单类型 λ 演算
   - 子类型与 F-子类型
@@ -148,8 +148,8 @@ status: current
   - `jsts-code-lab/79-compiler-design/`
   - `jsts-code-lab/78-metaprogramming/`
   - `examples/advanced-compiler-workshop/`
-  - `JSTS全景综述/COMPILER_LANGUAGE_DESIGN.md`
-  - `JSTS全景综述/METAPROGRAMMING_REFLECTION.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/COMPILER_LANGUAGE_DESIGN.md`
+  - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/METAPROGRAMMING_REFLECTION.md`
 - **关键技能**：
   - 词法分析 / 语法分析 / AST 遍历
   - TypeScript Compiler API 与转换器编写

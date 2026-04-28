@@ -1,7 +1,7 @@
 # 自主系统理论：从自动化到自主决策
 
 > **目标读者**：关注 AI Agent、自动化工作流、智能系统的工程师
-> **关联文档**：``30.2-categories/autonomous-systems.md`` (Legacy) [Legacy link]
+> **关联文档**：``30-knowledge-base/30.2-categories/autonomous-systems.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 3,000 字
 

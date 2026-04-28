@@ -59,7 +59,7 @@
 ### 3.3 扩展阅读
 
 - [MDN 控制流](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Control_flow_and_error_handling)
-- `10-fundamentals/10.1-language-core/03-control-flow/`
+- `10-fundamentals/10.1-language-semantics/03-control-flow/`
 
 ---
 

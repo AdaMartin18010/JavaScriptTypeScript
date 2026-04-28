@@ -1,7 +1,7 @@
 # 边缘与 Serverless：理论基础
 
 > **定位**：`20-code-lab/20.8-edge-serverless/`
-> **关联**：`JSTS全景综述/边缘优先架构设计方法论.md`
+> **关联**：`30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/边缘优先架构设计方法论.md`
 
 ---
 
@@ -55,7 +55,7 @@
 ## 三、扩展阅读
 
 - `20-code-lab/20.13-edge-databases/README.md`
-- ``30.2-categories/edge-databases.md`` (Legacy)
+- ``30-knowledge-base/30.2-categories/30-edge-databases.md`` (Legacy)
 
 ---
 

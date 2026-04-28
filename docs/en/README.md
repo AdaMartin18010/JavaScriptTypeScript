@@ -36,9 +36,9 @@
 
 ### Key Documents
 
-- [Language Core System](../jsts-language-core-system/) — 52+ deep-dive documents on type systems, execution models, and formal semantics
+- [Language Core System](../../jsts-language-core-system/) — 52+ deep-dive documents on type systems, execution models, and formal semantics
 - [Code Lab](../jsts-code-lab/) — 93 modules with runnable TypeScript examples
-- [Comparison Matrices](../docs/comparison-matrices/) — 16 technology comparison matrices
+- [Comparison Matrices](../comparison-matrices/) — 16 technology comparison matrices
 - [Decision Trees](../docs/decision-trees.md) — 18 interactive decision trees for technology selection
 
 ### English Guides
@@ -82,4 +82,4 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for contribution guidelines.
 
 ## 📜 License
 
-MIT License — see [LICENSE](../LICENSE) for details.
+MIT License — see [LICENSE](../../LICENSE) for details.

@@ -28,7 +28,7 @@ The project is organized into categories by function and purpose. You can:
 
 If you want to add new libraries or resources:
 
-1. 阅读 [CONTRIBUTING.md](../../../../../CONTRIBUTING.md) / Read [CONTRIBUTING.md](../../../../../CONTRIBUTING.md)
+1. 阅读 [CONTRIBUTING.md](../../../../CONTRIBUTING.md) / Read [CONTRIBUTING.md](../../../../CONTRIBUTING.md)
 2. Fork 本仓库 / Fork this repository
 3. 创建分支并修改 / Create a branch and make changes
 4. 提交 Pull Request / Submit a Pull Request
@@ -63,8 +63,8 @@ We follow strict inclusion criteria to ensure the quality of recommendations:
 
 ## 📬 联系我们 / Contact Us
 
-- 问题反馈 / Issue Report: [GitHub Issues](../../issues)
-- 功能建议 / Feature Request: [GitHub Discussions](../../discussions)
+- 问题反馈 / Issue Report: GitHub Issues
+- 功能建议 / Feature Request: GitHub Discussions
 
 ---
 

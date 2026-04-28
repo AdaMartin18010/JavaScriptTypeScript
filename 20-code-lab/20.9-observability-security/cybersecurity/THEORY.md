@@ -1,7 +1,7 @@
 # Web 安全深度理论：从 XSS 到供应链攻击
 
 > **目标读者**：全栈工程师、安全工程师、关注应用安全的架构师
-> **关联文档**：``30.2-categories/web-security.md`` (Legacy) [Legacy link]
+> **关联文档**：``30-knowledge-base/30.2-categories/web-security.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 4,200 字
 

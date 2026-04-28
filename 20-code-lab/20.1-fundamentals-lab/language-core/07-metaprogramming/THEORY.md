@@ -60,7 +60,7 @@
 ### 3.3 扩展阅读
 
 - [MDN Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
-- `10-fundamentals/10.1-language-core/07-metaprogramming/`
+- `10-fundamentals/10.1-language-semantics/07-metaprogramming/`
 
 ---
 

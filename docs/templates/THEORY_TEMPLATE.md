@@ -78,7 +78,7 @@ status: current
 1. 作者. (年份). "论文标题". 期刊/会议名.
 
 ### 6.3 在线资源
-- [资源名称](链接) - 简要描述
+- [资源名称](https://github.com/example/repo) - 简要描述
 ```
 
 ---
@@ -107,4 +107,4 @@ status: current
 
 - 书籍：作者. (年份). *书名*
 - 论文：作者. (年份). "标题"
-- 网页：[标题](链接)
+- 网页：[标题](https://github.com/example/repo)

@@ -59,7 +59,7 @@ JavaScript 基于原型而非类，但 ES6 class 语法提供了更 familiar 的
 ### 3.3 扩展阅读
 
 - [MDN 类](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes)
-- `10-fundamentals/10.1-language-core/05-objects-classes/`
+- `10-fundamentals/10.1-language-semantics/05-objects-classes/`
 
 ---
 

@@ -80,7 +80,7 @@ if (supportsPopover()) {
 
 ## 关联内容
 
-- **理论文档**: `JSTS全景综述/`（如有时效性相关文档）
+- **理论文档**: `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/`（如有时效性相关文档）
 - **指南**: `docs/guides/web-apis-guide.md`
 - **浏览器兼容性**: [MDN - Baseline](https://developer.mozilla.org/en-US/docs/Glossary/Baseline)
 - **Interop 2026**: [Web Platform Tests](https://wpt.fyi/)

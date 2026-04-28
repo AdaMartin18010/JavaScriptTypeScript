@@ -1,7 +1,7 @@
 # 定理 5：JIT 安全张力定理
 
 > **定位**：`10-fundamentals/10.1-language-semantics/theorems/`
-> **关联**：`10-fundamentals/10.3-execution-model/v8-pipeline/` | `JSTS全景综述/SECURITY_MODEL_ANALYSIS.md`
+> **关联**：`10-fundamentals/10.3-execution-model/v8-pipeline/` | `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/SECURITY_MODEL_ANALYSIS.md`
 
 ---
 

@@ -1,7 +1,7 @@
 # 数据可视化理论：从图表到叙事
 
 > **目标读者**：前端工程师、数据分析师、关注用户理解的设计者
-> **关联文档**：``30.2-categories/data-visualization.md`` (Legacy) [Legacy link]
+> **关联文档**：``30-knowledge-base/30.2-categories/data-visualization.md`` (Legacy) [Legacy link]
 > **版本**：2026-04
 > **字数**：约 3,000 字
 

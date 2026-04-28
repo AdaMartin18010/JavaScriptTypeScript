@@ -472,5 +472,5 @@ describe('MCP Server', () => {
 > **关联文档**
 >
 > - `jsts-code-lab/94-ai-agent-lab/mcp-server-demo.ts` — 纯 TypeScript MCP Server 实现
-> - [AI Agent 基础设施](/categories/ai-agent-infrastructure)
+> - [AI Agent 基础设施](../categories/ai-agent-infrastructure.md)
 > - [AI SDK 指南](./ai-sdk-guide.md)

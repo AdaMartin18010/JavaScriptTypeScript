@@ -1005,11 +1005,11 @@ export function getDefaultModelInstance() {
 
 本项目与以下文档/代码库形成完整的学习链路：
 
-- [`docs/categories/28-ai-agent-infrastructure.md`](../../docs/categories/28-ai-agent-infrastructure.md) — AI Agent 基础设施生态盘点
-- [`jsts-code-lab/33-ai-integration/`](../../jsts-code-lab/33-ai-integration/) — AI SDK 集成模式
-- [`jsts-code-lab/94-ai-agent-lab/`](../../jsts-code-lab/94-ai-agent-lab/) — MCP 协议与多 Agent 工作流基础
-- [`jsts-code-lab/21-api-security/`](../../jsts-code-lab/21-api-security/) — API 安全最佳实践
-- [`jsts-code-lab/31-serverless/`](../../jsts-code-lab/31-serverless/) — Serverless 与边缘计算
+- [`docs/categories/28-ai-agent-infrastructure.md`](../../../30-knowledge-base/30.2-categories/28-ai-agent-infrastructure.md) — AI Agent 基础设施生态盘点
+- `jsts-code-lab/33-ai-integration/` — AI SDK 集成模式
+- `jsts-code-lab/94-ai-agent-lab/` — MCP 协议与多 Agent 工作流基础
+- `jsts-code-lab/21-api-security/` — API 安全最佳实践
+- `jsts-code-lab/31-serverless/` — Serverless 与边缘计算
 
 ---
 

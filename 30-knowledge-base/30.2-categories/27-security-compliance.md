@@ -10,7 +10,7 @@ status: current
 >
 > - ✅ **属于本文档范围**：SCA 工具、SAST 工具、运行时安全中间件、合规扫描平台、许可证审计。
 > - ❌ **不属于本文档范围**：具体应用的业务安全逻辑、认证授权实现、数据加密策略、安全架构设计。
-> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+> - 🔗 **相关索引**：`docs/infrastructure-index.md`
 
 # 安全与合规工具
 
@@ -643,7 +643,7 @@ Phase 3: 合规治理
 
 ### 相关决策树
 
-- [认证方案选型决策树](../../docs/decision-trees.md#13-认证方案选型决策树)
+- [认证方案选型决策树](../30.4-decision-trees/legacy-decision-trees.md#13-认证方案选型决策树)
 
 ---
 

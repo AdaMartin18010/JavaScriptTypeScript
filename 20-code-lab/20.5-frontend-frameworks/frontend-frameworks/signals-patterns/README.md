@@ -87,7 +87,7 @@ count.set(1); // Effect 自动执行，但组件函数不重渲染！
 
 ## 关联内容
 
-- **理论文档**: `JSTS全景综述/Signals_范式深度分析.md`
+- **理论文档**: `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/Signals_范式深度分析.md`
 - **前端框架分类**: `docs/categories/01-frontend-frameworks.md`
 - **状态管理分类**: `docs/categories/05-state-management.md`
 - **示例项目**: `examples/beginner-todo-master/` (可尝试用 Signals 重构)

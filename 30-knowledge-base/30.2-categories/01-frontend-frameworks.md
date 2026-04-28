@@ -114,7 +114,6 @@ function DataGrid({ rows, columns }) {
 ```
 
 **迁移建议**：
-
 1. 先运行 `eslint-plugin-react-compiler` 静态检查，修复所有 Rules of React 违规
 2. 逐步开启 Compiler，按模块粒度验证（通过 `reactCompiler: { target: '18' }` 配置）
 3. 关键性能路径保留 `useMemo` 作为显式文档（即使 Compiler 已处理）
@@ -489,7 +488,7 @@ export async function deleteUser(formData) {
 }
 ```
 
-> 📎 安全提示：使用 RSC / Server Actions 时请注意安全风险（详见 [React Server Components 安全指南](../guides/react-server-components-security.md)，其中包含模拟演练场景分析，非真实 CVE）。
+> 📎 安全提示：使用 RSC / Server Actions 时请注意安全风险（详见 [React Server Components 安全指南](../30.1-guides/react-server-components-security.md)，其中包含模拟演练场景分析，非真实 CVE）。
 
 ---
 
@@ -1187,10 +1186,10 @@ const user = await getUser(Astro.cookies);
 
 本文档聚焦**前端框架本身**的核心特性与选型对比。如需查看完整框架生态索引（含元框架、后端框架、状态管理、UI 组件库、学习路径），请前往：
 
-- [框架生态总索引](../frameworks-index.md)
-- [前端框架对比矩阵](../comparison-matrices/frontend-frameworks-compare.md)
-- [React 设计模式](../patterns/REACT_PATTERNS.md)
-- [React 速查表](../cheatsheets/REACT_CHEATSHEET.md)
+- 框架生态总索引
+- [前端框架对比矩阵](../30.3-comparison-matrices/frontend-frameworks-compare.md)
+- [React 设计模式](../30.6-patterns/REACT_PATTERNS.md)
+- [React 速查表](../30.7-cheatsheets/REACT_CHEATSHEET.md)
 
 ---
 

@@ -79,7 +79,7 @@ status: current
 | 2 | 微服务与云原生 | K8s 微服务部署 | `examples/intermediate-microservice-workshop/` | K8s 健康检查 + 分布式追踪可见 | ⭐⭐⭐⭐⭐ | 2 周 |
 | 3 | 形式化验证 | TLA+ 分布式锁 | `jsts-code-lab/80-formal-verification/tla-plus-distributed-lock/` | TLC 模型检查通过 + 不变量保持 | ⭐⭐⭐⭐⭐ | 2 周 |
 | 4 | 前沿技术 | AI Agent / Wasm / 量子模拟（三选一） | 见下方选项 | 见下方选项 | ⭐⭐⭐⭐⭐ | 3 周 |
-| 5 | 架构师思维 | 技术选型 ADR | `JSTS全景综述/技术选型方法论与评估框架.md` | 8 维度评估 + 量化评分 + 风险提示 | ⭐⭐⭐⭐ | 2 周 |
+| 5 | 架构师思维 | 技术选型 ADR | `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/技术选型方法论与评估框架.md` | 8 维度评估 + 量化评分 + 风险提示 | ⭐⭐⭐⭐ | 2 周 |
 
 ### 架构师路径 — 阶段 4 选项详情
 
@@ -134,7 +134,7 @@ status: current
 | 示例项目 | `../../examples/README.md` | 13 个生产级示例 |
 | 理论综述 | `../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/` | 8 大主题全景文档 |
 | 认证体系 | `./project-based-certification.md` | 项目制能力认证 |
-| 构建工具对比 | `../comparison-matrices/build-tools-compare.md` | 工具选型矩阵 |
+| 构建工具对比 | `../30.3-comparison-matrices/build-tools-compare.md` | 工具选型矩阵 |
 
 ---
 

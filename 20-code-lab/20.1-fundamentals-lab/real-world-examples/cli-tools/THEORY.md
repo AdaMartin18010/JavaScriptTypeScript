@@ -59,7 +59,7 @@
 ### 3.3 扩展阅读
 
 - [oclif 框架文档](https://oclif.io/docs/introduction)
-- `30-knowledge-base/30.7-tooling/`
+- `30-knowledge-base/30.7-tooling`
 
 ---
 

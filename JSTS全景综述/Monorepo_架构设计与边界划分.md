@@ -1,4 +1,4 @@
----
+﻿---
 last-updated: 2026-04-27
 review-cycle: 6 months
 next-review: 2026-10-27
@@ -7,7 +7,7 @@ status: current
 # Monorepo 架构设计与边界划分
 
 > **目标读者**：技术负责人、架构师、负责代码库治理的工程师
-> **关联文档**：[`jsts-code-lab/12-package-management/monorepo-workspaces.ts`](../../jsts-code-lab/12-package-management/monorepo-workspaces.ts)
+> **关联文档**：[`jsts-code-lab/12-package-management/monorepo-workspaces.ts`](../jsts-code-lab/12-package-management/monorepo-workspaces.md)
 > **版本**：2026-04
 > **字数**：约 5,000 字
 

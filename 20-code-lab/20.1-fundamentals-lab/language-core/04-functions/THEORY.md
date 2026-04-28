@@ -60,7 +60,7 @@
 ### 3.3 扩展阅读
 
 - [MDN 函数](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions)
-- `10-fundamentals/10.1-language-core/04-functions/`
+- `10-fundamentals/10.1-language-semantics/04-functions/`
 
 ---
 

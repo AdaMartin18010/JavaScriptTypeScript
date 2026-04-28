@@ -44,8 +44,8 @@
 
 - `39-performance-monitoring` — RUM、APM、性能指标采集
 - `11-benchmarks` — 基准测试方法与工具
-- `JSTS全景综述/PERFORMANCE_OPTIMIZATION_THEORY.md` — 性能优化理论深度分析
-- `JSTS全景综述/JS_TS_性能对比与优化指南.md` — 性能对比方法论
+- `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/PERFORMANCE_OPTIMIZATION_THEORY.md` — 性能优化理论深度分析
+- `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_TS_性能对比与优化指南.md` — 性能对比方法论
 
 ## 参考资源
 

@@ -62,7 +62,7 @@ TypeScript 类型检查 = 轻量级形式化验证
 ## 三、扩展阅读
 
 - `10-fundamentals/10.1-language-semantics/theorems/`
-- `JSTS全景综述/FORMAL_SEMANTICS_COMPLETE.md`
+- `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/FORMAL_SEMANTICS_COMPLETE.md`
 
 ---
 

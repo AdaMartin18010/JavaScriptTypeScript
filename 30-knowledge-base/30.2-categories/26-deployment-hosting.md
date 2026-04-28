@@ -10,7 +10,7 @@ status: current
 >
 > - ✅ **属于本文档范围**：部署平台对比、托管服务特性、冷启动分析、定价模型、CI/CD 集成。
 > - ❌ **不属于本文档范围**：具体应用的部署脚本、环境配置管理、业务发布策略、域名/CDN 配置教程。
-> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+> - 🔗 **相关索引**：`docs/infrastructure-index.md`
 
 # 部署与托管平台
 
@@ -414,8 +414,8 @@ status: current
 
 ### 相关决策树与对比矩阵
 
-- [部署平台选型决策树](../../docs/decision-trees.md#9-部署平台选型决策树)
-- [部署平台对比矩阵](../comparison-matrices/deployment-platforms-compare.md)
+- [部署平台选型决策树](../30.4-decision-trees/legacy-decision-trees.md#9-部署平台选型决策树)
+- [部署平台对比矩阵](../30.3-comparison-matrices/deployment-platforms-compare.md)
 
 ---
 

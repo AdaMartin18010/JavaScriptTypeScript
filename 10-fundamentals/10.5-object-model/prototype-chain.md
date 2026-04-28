@@ -1,7 +1,7 @@
 # 对象模型与原型链：形式语义与工程实现
 
 > **定位**：`10-fundamentals/10.5-object-model/` — L1 语言核心层：对象模型专题
-> **关联**：`jsts-code-lab/00-language-core/` | `JSTS全景综述/01_language_core.md`
+> **关联**：`jsts-code-lab/00-language-core/` | `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md`
 > **规范来源**：ECMA-262 §6.1.7 The Object Type | §9 Ordinary Object Internal Methods
 
 ---

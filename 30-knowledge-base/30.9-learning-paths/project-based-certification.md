@@ -255,7 +255,7 @@ status: current
 > 难度: ⭐⭐⭐⭐
 > 预计时间: 7-10 天
 > 关联 code-lab: [18-frontend-frameworks](../../jsts-code-lab/18-frontend-frameworks/)
-> 关联理论文档: [前端框架解析](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ecmascript-features/)
+> 关联理论文档: 前端框架解析
 
 #### 需求文档
 
@@ -417,7 +417,7 @@ status: current
 > 难度: ⭐⭐⭐⭐⭐
 > 预计时间: 12-16 天
 > 关联 code-lab: [08-performance](../../jsts-code-lab/08-performance/), [11-benchmarks](../../jsts-code-lab/11-benchmarks/)
-> 关联理论文档: [性能优化方法论](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ecmascript-features/)
+> 关联理论文档: 性能优化方法论
 
 #### 需求文档
 

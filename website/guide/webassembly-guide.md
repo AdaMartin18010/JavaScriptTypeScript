@@ -329,4 +329,4 @@ console.log(`Wasm execution: ${duration.toFixed(2)}ms`)
 >
 > - `jsts-code-lab/36-web-assembly/` — WebAssembly 实战代码示例
 > - [构建工具对比](../comparison-matrices/build-tools-compare.md)
-> - [性能优化指南](/guide/getting-started)
+> - [性能优化指南](./getting-started.md)

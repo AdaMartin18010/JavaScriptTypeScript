@@ -9,8 +9,8 @@
 
 ## 关联模块
 
-- `40-type-theory-formal/` - 类型理论
-- `80-formal-verification/` - 形式化验证
+- `20.10-formal-verification/type-theory-formal/` - 类型理论
+- `20.10-formal-verification/formal-verification/` - 形式化验证
 
 ---
 

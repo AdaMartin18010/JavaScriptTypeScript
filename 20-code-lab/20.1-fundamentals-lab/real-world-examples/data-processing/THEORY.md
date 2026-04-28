@@ -59,7 +59,7 @@
 ### 3.3 扩展阅读
 
 - [RxJS 文档](https://rxjs.dev/guide/overview)
-- `30-knowledge-base/30.8-data/`
+- `30-knowledge-base/30.8-data`
 
 ---
 

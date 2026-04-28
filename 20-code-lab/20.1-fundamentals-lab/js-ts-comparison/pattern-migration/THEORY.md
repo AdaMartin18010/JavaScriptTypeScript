@@ -59,7 +59,7 @@
 ### 3.3 扩展阅读
 
 - [TypeScript 迁移指南](https://www.typescriptlang.org/docs/handbook/migrating-from-javascript.html)
-- `10-fundamentals/10.3-migration/`
+- `10-fundamentals/10.1-language-semantics/`
 
 ---
 

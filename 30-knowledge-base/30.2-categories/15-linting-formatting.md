@@ -10,7 +10,7 @@ status: current
 >
 > - ✅ **属于本文档范围**：Linter、Formatter、类型检查器、Git 钩子、代码质量平台。
 > - ❌ **不属于本文档范围**：具体项目的代码风格约定、业务代码审查清单、框架编码规范。
-> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+> - 🔗 **相关索引**：`docs/infrastructure-index.md`
 
 # Linting 与代码格式化生态 (Linting & Formatting)
 

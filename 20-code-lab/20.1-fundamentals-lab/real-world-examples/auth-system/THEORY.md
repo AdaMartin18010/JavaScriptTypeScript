@@ -59,7 +59,7 @@
 ### 3.3 扩展阅读
 
 - [OWASP 认证备忘单](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
-- `30-knowledge-base/30.6-security/`
+- `30-knowledge-base/30.6-security`
 
 ---
 

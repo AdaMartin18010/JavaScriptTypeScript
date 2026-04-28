@@ -82,7 +82,7 @@ const filteredDocs = computed(() => {
     <a
       v-for="doc in filteredDocs"
       :key="doc.path"
-      :href="doc.path"
+      :href="#"
       class="search-result-card"
     >
       <div class="result-header">

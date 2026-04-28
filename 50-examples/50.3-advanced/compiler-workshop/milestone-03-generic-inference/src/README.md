@@ -1,0 +1,18 @@
+# src
+
+> **路径**: `50-examples/50.3-advanced/compiler-workshop/milestone-03-generic-inference/src/`
+> **状态**: 📂 目录索引（自动生成）
+> **生成时间**: 2026-04-28
+
+## 概述
+
+此目录包含 milestone-03-generic-inference 相关的文件和子目录。
+## 目录内容
+
+- 📄 extendedTypeChecker.ts
+- 📄 genericSolver.ts
+- 📄 index.ts
+
+---
+
+*自动生成目录索引*

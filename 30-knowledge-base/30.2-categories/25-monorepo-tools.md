@@ -10,7 +10,7 @@ status: current
 >
 > - ✅ **属于本文档范围**：Monorepo 任务编排工具、构建缓存、Workspace 管理、版本发布工具。
 > - ❌ **不属于本文档范围**：具体 Monorepo 的目录结构设计、业务包划分策略、应用架构决策。
-> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+> - 🔗 **相关索引**：`docs/infrastructure-index.md`
 
 # Monorepo 工具
 
@@ -452,8 +452,8 @@ pnpm -r test
 
 ### 相关决策树与对比矩阵
 
-- [Monorepo 工具选型决策树](../../docs/decision-trees.md#8-monorepo-工具选型决策树)
-- [Monorepo 工具对比矩阵](../comparison-matrices/monorepo-tools-compare.md)
+- [Monorepo 工具选型决策树](../30.4-decision-trees/legacy-decision-trees.md#8-monorepo-工具选型决策树)
+- [Monorepo 工具对比矩阵](../30.3-comparison-matrices/monorepo-tools-compare.md)
 
 ---
 

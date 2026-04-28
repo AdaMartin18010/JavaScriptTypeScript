@@ -10,7 +10,7 @@ status: current
 >
 > - ✅ **属于本文档范围**：错误监控平台、日志库、OpenTelemetry 集成、可观测性标准、健康检查。
 > - ❌ **不属于本文档范围**：具体业务错误处理逻辑、业务告警规则配置、应用层日志内容设计。
-> - 🔗 **相关索引**：[`docs/infrastructure-index.md`](../infrastructure-index.md)
+> - 🔗 **相关索引**：`docs/infrastructure-index.md`
 
 # 错误监控与日志工具
 
@@ -1117,8 +1117,8 @@ export async function healthHandler() {
 
 ### 相关决策树
 
-- [监控与可观测性选型决策树](../../docs/decision-trees.md#10-监控与可观测性选型决策树)
-- [AI 可观测性选型决策树](../../docs/decision-trees.md#11-ai-可观测性选型决策树)
+- [监控与可观测性选型决策树](../30.4-decision-trees/legacy-decision-trees.md#10-监控与可观测性选型决策树)
+- [AI 可观测性选型决策树](../30.4-decision-trees/legacy-decision-trees.md#11-ai-可观测性选型决策树)
 
 ---
 
@@ -1130,6 +1130,6 @@ export async function healthHandler() {
 
 > 📊 **关联文档**
 >
-> 本文档聚焦错误监控与日志工具的使用指南和最佳实践。如需查看可观测性工具的全面对比矩阵（含 OpenTelemetry、Sentry、Datadog、AI 可观测性等 13+ 工具的横向对比），请参阅 **[observability-tools-compare.md](../comparison-matrices/observability-tools-compare.md)**。
+> 本文档聚焦错误监控与日志工具的使用指南和最佳实践。如需查看可观测性工具的全面对比矩阵（含 OpenTelemetry、Sentry、Datadog、AI 可观测性等 13+ 工具的横向对比），请参阅 **[observability-tools-compare.md](../30.3-comparison-matrices/observability-tools-compare.md)**。
 >
 > 两个文档互补：本文档侧重「如何使用」，对比矩阵侧重「如何选择」。

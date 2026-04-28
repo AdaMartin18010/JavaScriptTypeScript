@@ -59,7 +59,7 @@ TS 类型构造与 JS 值空间存在一对多和多对一的映射关系。
 ### 3.3 扩展阅读
 
 - [TypeScript 手册](https://www.typescriptlang.org/docs/handbook/intro.html)
-- `10-fundamentals/10.1-language-core/`
+- `10-fundamentals/10.1-language-semantics/`
 
 ---
 
