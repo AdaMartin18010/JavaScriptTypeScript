@@ -1,3 +1,9 @@
+<!--
+# 合并说明
+- 合并来源: docs/platforms/DESKTOP_DEVELOPMENT.md（完整版，1762 行）
+- 合并决策: 该文件为从旧架构迁移的完整副本，内容一致，保留于新架构 platforms/ 目录
+- 合并时间: 2026-04-28
+-->
 ---
 last-updated: 2026-04-27
 review-cycle: 6 months

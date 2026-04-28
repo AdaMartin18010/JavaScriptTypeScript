@@ -1,0 +1,3345 @@
+{
+  "timestamp": "2026-04-28T11:06:59.335Z",
+  "totalFiles": 1614,
+  "totalMentions": 2870,
+  "outdatedCount": 417,
+  "findings": [
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\code-examples\\control-flow\\08-using-explicit-resource.md",
+      "line": 5,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "> 对齐版本：ECMAScript 2025 (ES16) §14.3 | TypeScript 5.2+"
+    },
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\code-examples\\variable-system\\08-symbol-private-state.md",
+      "line": 3,
+      "technology": "typescript",
+      "found": "4.2",
+      "latest": "5.8",
+      "context": "> **形式化定义**：Symbol 是 ECMAScript 2015（ES6）引入的第七种原始数据类型，每个 Symbol 值都是**唯一且不可变**的。`Symbol()` 工厂函数每次调用生成新的唯一值，`Symbol.for(ke"
+    },
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\README.md",
+      "line": 2765,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0 实现了 ECMAScript Stage 3 装饰器提案，并增加了元数据支持。装饰器上下文对象包含 `metadata` 属性，用于存储与装饰目标关联的元数据。"
+    },
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\README.md",
+      "line": 2780,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.0 Release Notes, TC39 Decorators Proposal*"
+    },
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\README.md",
+      "line": 2879,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.0 Release Notes*"
+    },
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\README.md",
+      "line": 2955,
+      "technology": "typescript",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "**`NoInfer<T>`** 是 TypeScript 5.4 引入的内置工具类型，其语义是：阻止该位置作为类型参数 `T` 的推断来源。换言之，当函数签名中存在多个可作为推断依据的位置时，被 `NoInfer<T>` 包裹的位置不会参"
+    },
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\README.md",
+      "line": 2967,
+      "technology": "typescript",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.4 Release Notes, PR #53098*"
+    },
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\README.md",
+      "line": 3016,
+      "technology": "typescript",
+      "found": "4.9",
+      "latest": "5.8",
+      "context": "**`satisfies`** 运算符（TypeScript 4.9 引入，5.x 持续完善）用于检查表达式是否满足给定的类型约束，但**不改变表达式的推断类型**。这与 `as`（类型断言）有本质区别：`as` 是告诉编译器\"相信我，按这"
+    },
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\README.md",
+      "line": 3029,
+      "technology": "typescript",
+      "found": "4.9",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 4.9 Release Notes*"
+    },
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\README.md",
+      "line": 3100,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.2 Release Notes, ECMA-262 §34.2（Explicit Resource Management）*"
+    },
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\README.md",
+      "line": 3155,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0+ 引入了 `verbatimModuleSyntax`，5.8 引入了 `erasableSyntaxOnly`。这两个标志在 Node.js 原生 TypeScript 支持（类型剥离 / type stri"
+    },
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\README.md",
+      "line": 3173,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.0 & 5.8 Release Notes, Node.js Type Stripping Documentation*"
+    },
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\README.md",
+      "line": 4404,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "// ===== 显式变型注解（TypeScript 4.7+） ====="
+    },
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\README.md",
+      "line": 3453,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "// 结合 NoInfer<T> 的精细控制（TS 5.4+）"
+    },
+    {
+      "file": "10-fundamentals\\10.1-language-semantics\\README.md",
+      "line": 4737,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "type NoInfer<T> = intrinsic;  // TS 5.4+"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\01-foundations.md",
+      "line": 174,
+      "technology": "ts",
+      "found": "3.0",
+      "latest": "5.8",
+      "context": "| TS 3.0 | `unknown` |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\01-foundations.md",
+      "line": 175,
+      "technology": "ts",
+      "found": "3.7",
+      "latest": "5.8",
+      "context": "| TS 3.7 | 更严格的 `null`/`undefined` 检查 |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\01-foundations.md",
+      "line": 176,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "| TS 5.4 | `NoInfer<T>` |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\01-foundations.md",
+      "line": 266,
+      "technology": "ts",
+      "found": "3.0",
+      "latest": "5.8",
+      "context": "let obj: object = null; // TS 3.0+ 报错（strictNullChecks）"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\01-foundations.md",
+      "line": 392,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "- **TS 5.4 Release Notes: NoInfer<T>** — <https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/>"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\02-type-inference-annotations.md",
+      "line": 300,
+      "technology": "ts",
+      "found": "2.8",
+      "latest": "5.8",
+      "context": "| TS 2.8 | 条件类型引入 |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\02-type-inference-annotations.md",
+      "line": 301,
+      "technology": "ts",
+      "found": "3.0",
+      "latest": "5.8",
+      "context": "| TS 3.0 | unknown 类型 |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\02-type-inference-annotations.md",
+      "line": 302,
+      "technology": "ts",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "| TS 4.1 | 模板字面量类型、递归条件类型 |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\02-type-inference-annotations.md",
+      "line": 303,
+      "technology": "ts",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "| TS 4.7 | 型变标注 in/out |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\02-type-inference-annotations.md",
+      "line": 304,
+      "technology": "ts",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "| TS 5.0 | 装饰器、const 类型参数 |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\02-type-inference-annotations.md",
+      "line": 305,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "| TS 5.4 | NoInfer<T> |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\03-interfaces-vs-type-aliases.md",
+      "line": 301,
+      "technology": "ts",
+      "found": "2.8",
+      "latest": "5.8",
+      "context": "| TS 2.8 | 条件类型引入 |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\03-interfaces-vs-type-aliases.md",
+      "line": 302,
+      "technology": "ts",
+      "found": "3.0",
+      "latest": "5.8",
+      "context": "| TS 3.0 | unknown 类型 |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\03-interfaces-vs-type-aliases.md",
+      "line": 303,
+      "technology": "ts",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "| TS 4.1 | 模板字面量类型、递归条件类型 |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\03-interfaces-vs-type-aliases.md",
+      "line": 304,
+      "technology": "ts",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "| TS 4.7 | 型变标注 in/out |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\03-interfaces-vs-type-aliases.md",
+      "line": 305,
+      "technology": "ts",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "| TS 5.0 | 装饰器、const 类型参数 |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\03-interfaces-vs-type-aliases.md",
+      "line": 306,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "| TS 5.4 | NoInfer<T> |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\08-conditional-types.md",
+      "line": 261,
+      "technology": "ts",
+      "found": "2.8",
+      "latest": "5.8",
+      "context": "| TS 2.8 | 条件类型引入 |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\08-conditional-types.md",
+      "line": 262,
+      "technology": "ts",
+      "found": "3.0",
+      "latest": "5.8",
+      "context": "| TS 3.0 | unknown 类型 |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\08-conditional-types.md",
+      "line": 263,
+      "technology": "ts",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "| TS 4.1 | 模板字面量类型、递归条件类型 |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\08-conditional-types.md",
+      "line": 264,
+      "technology": "ts",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "| TS 4.7 | 型变标注 in/out |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\08-conditional-types.md",
+      "line": 265,
+      "technology": "ts",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "| TS 5.0 | 装饰器、const 类型参数 |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\08-conditional-types.md",
+      "line": 266,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "| TS 5.4 | NoInfer<T> |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\10-utility-types-patterns.md",
+      "line": 79,
+      "technology": "ts",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "### 2.2 键重映射（TS 4.1+）"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\10-utility-types-patterns.md",
+      "line": 247,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "## 6. TS 5.4+ 新工具"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\12-variance.md",
+      "line": 184,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "**参考规范**：TypeScript Handbook: Type Compatibility | TypeScript 4.7 Release Notes: Variance Annotations"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\12-variance.md",
+      "line": 93,
+      "technology": "ts",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "### 5.1 显式标注（TS 4.7+）"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\code-examples\\15-ts5-ts6-new-type-features.md",
+      "line": 235,
+      "technology": "typescript",
+      "found": "5.7",
+      "latest": "5.8",
+      "context": "### 4.1 从 TypeScript 5.7 迁移到 5.8"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\signals-paradigm.md",
+      "line": 429,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "| **React 18 (手动优化)** | 2.00x | 1.80x | 1.70x | 1.60x |"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\signals-paradigm.md",
+      "line": 431,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "> 数据说明：以 vanilla JS 为基准 1.00x，数值越小性能越好。React 19 + React Compiler 1.0 相比 React 18 手动优化提升约 25-35%。"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\signals-paradigm.md",
+      "line": 188,
+      "technology": "angular",
+      "found": "16",
+      "latest": "19",
+      "context": "Angular v16+ 引入原生 Signals，标志着企业级框架正式拥抱细粒度响应式。"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\signals-paradigm.md",
+      "line": 475,
+      "technology": "angular",
+      "found": "16",
+      "latest": "19",
+      "context": "- Angular v16+ 项目"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\signals-paradigm.md",
+      "line": 273,
+      "technology": "svelte",
+      "found": "1",
+      "latest": "5",
+      "context": "Svelte 5 用「显式 Runes」替代了 Svelte 1-4 的「编译器隐式响应式」，解决了响应式边界不可预测的核心痛点。"
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\signals-paradigm.md",
+      "line": 301,
+      "technology": "svelte",
+      "found": "1",
+      "latest": "5",
+      "context": "**Svelte 1-4 的隐式问题 vs Svelte 5 的显式方案**："
+    },
+    {
+      "file": "10-fundamentals\\10.2-type-system\\signals-paradigm.md",
+      "line": 304,
+      "technology": "svelte",
+      "found": "4",
+      "latest": "5",
+      "context": "<!-- Svelte 4：边界模糊 -->"
+    },
+    {
+      "file": "10-fundamentals\\10.3-execution-model\\runtime-deep-dive.md",
+      "line": 412,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "`bundler` 是 TypeScript 4.7 引入、5.0 后广泛使用的模式，专为前端打包工具设计。它与 `node16`/`nodenext` 的主要区别在于："
+    },
+    {
+      "file": "10-fundamentals\\10.3-execution-model\\runtime-deep-dive.md",
+      "line": 675,
+      "technology": "deno",
+      "found": "1",
+      "latest": "2",
+      "context": "- 解决了 Deno 1.x 的最大痛点（生态隔离）"
+    },
+    {
+      "file": "10-fundamentals\\10.4-module-system\\code-examples\\02-esm-deep-dive.md",
+      "line": 344,
+      "technology": "bun",
+      "found": "1.1",
+      "latest": "1.2",
+      "context": "| 特性 | Node.js 22 | Deno 2.x | Bun 1.1+ | Chrome 120+ |"
+    },
+    {
+      "file": "10-fundamentals\\10.4-module-system\\code-examples\\04-cjs-esm-interop.md",
+      "line": 236,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0+ 引入了 `\"moduleResolution\": \"bundler\"`，与 `\"nodenext\"` 形成对比："
+    },
+    {
+      "file": "10-fundamentals\\10.4-module-system\\code-examples\\05-module-resolution.md",
+      "line": 167,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "- TypeScript 5.0+ 引入 `\"rootDirs\"` 作为补充，6.0 已移除 `baseUrl` 的自动推断（需显式配置）"
+    },
+    {
+      "file": "10-fundamentals\\10.4-module-system\\code-examples\\05-module-resolution.md",
+      "line": 256,
+      "technology": "typescript",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "TypeScript 5.4+ 和 Node.js 12.20+ 支持 `package.json` 的 `imports` 字段："
+    },
+    {
+      "file": "10-fundamentals\\10.4-module-system\\code-examples\\05-module-resolution.md",
+      "line": 421,
+      "technology": "ts",
+      "found": "1.0",
+      "latest": "5.8",
+      "context": "| TS 1.0 | `paths` + `baseUrl` 引入 | 编译时路径映射 |"
+    },
+    {
+      "file": "10-fundamentals\\10.4-module-system\\code-examples\\05-module-resolution.md",
+      "line": 422,
+      "technology": "ts",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "| TS 4.1 | `paths` 支持 `*` 通配 | 更灵活的子路径映射 |"
+    },
+    {
+      "file": "10-fundamentals\\10.4-module-system\\code-examples\\05-module-resolution.md",
+      "line": 423,
+      "technology": "ts",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "| TS 4.7 | `moduleResolution: \"node16\"` | 支持 ESM/CJS 条件解析 |"
+    },
+    {
+      "file": "10-fundamentals\\10.4-module-system\\code-examples\\05-module-resolution.md",
+      "line": 424,
+      "technology": "ts",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "| TS 5.0 | `moduleResolution: \"bundler\"` | 打包工具兼容模式 |"
+    },
+    {
+      "file": "10-fundamentals\\10.4-module-system\\import-attributes-defer.md",
+      "line": 27,
+      "technology": "typescript",
+      "found": "5.3",
+      "latest": "5.8",
+      "context": "// TypeScript 5.3+ 支持 Import Attributes 语法"
+    },
+    {
+      "file": "10-fundamentals\\10.5-object-model\\code-examples\\01-object-model-overview.md",
+      "line": 288,
+      "technology": "ts",
+      "found": "3.8",
+      "latest": "5.8",
+      "context": "| TS 3.8 | `#private` 支持 | 编译到 WeakMap 或原生私有字段 |"
+    },
+    {
+      "file": "10-fundamentals\\10.5-object-model\\code-examples\\01-object-model-overview.md",
+      "line": 289,
+      "technology": "ts",
+      "found": "4.3",
+      "latest": "5.8",
+      "context": "| TS 4.3 | `override` 关键字 | 显式标记方法覆盖 |"
+    },
+    {
+      "file": "10-fundamentals\\10.5-object-model\\code-examples\\04-private-fields.md",
+      "line": 287,
+      "technology": "ts",
+      "found": "3.8",
+      "latest": "5.8",
+      "context": "| TS 3.8 | `#private` 编译支持 | 编译目标 < ES2022 时使用 WeakMap 模拟 |"
+    },
+    {
+      "file": "10-fundamentals\\10.5-object-model\\code-examples\\04-private-fields.md",
+      "line": 288,
+      "technology": "ts",
+      "found": "4.3",
+      "latest": "5.8",
+      "context": "| TS 4.3 | `override` + 私有字段 | 更好的类继承提示 |"
+    },
+    {
+      "file": "10-fundamentals\\10.5-object-model\\code-examples\\README.md",
+      "line": 167,
+      "technology": "typescript",
+      "found": "3.8",
+      "latest": "5.8",
+      "context": "- **TypeScript 3.8 Release Notes: Private Fields** — <https://www.typescriptlang.org/docs/handbook/release-notes/typescr"
+    },
+    {
+      "file": "10-fundamentals\\10.6-ecmascript-spec\\ecmascript-features\\ES2025_COMPLETE_FEATURES.md",
+      "line": 2605,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "**TypeScript 支持**: TypeScript 5.2+ 原生支持 `using` 和 `await using`"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\js-ts-comparison\\semantic-models\\README.md",
+      "line": 60,
+      "technology": "ts",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "- `in` / `out` 方差标注（TS 4.7+）对泛型类型的影响。"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\package-management\\THEORY.md",
+      "line": 23,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "- [3.3 Version Catalogs（pnpm 10 核心特性）](#33-version-catalogspnpm-10-核心特性)"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\package-management\\THEORY.md",
+      "line": 54,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "第三代: pnpm 10 + Bun 1.3 + npm 11 (2024-2026)"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\package-management\\THEORY.md",
+      "line": 55,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "pnpm 10: Version Catalogs、内容可寻址存储成熟"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\package-management\\THEORY.md",
+      "line": 66,
+      "technology": "npm",
+      "found": "7",
+      "latest": "11",
+      "context": "| 2020 | npm 7 发布 | 内置 Workspaces，支持 pnpm 风格的依赖解析 |"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\package-management\\THEORY.md",
+      "line": 68,
+      "technology": "npm",
+      "found": "9",
+      "latest": "11",
+      "context": "| 2024 | pnpm 9 发布 | Catalogs 协议成熟 |"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\package-management\\THEORY.md",
+      "line": 69,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "| 2025 | pnpm 10 发布 | Version Catalogs 成为 Monorepo 标准 |"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\package-management\\THEORY.md",
+      "line": 78,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "| 特性 | npm 11 | pnpm 10 | Bun 1.3 | Yarn 4 |"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\package-management\\THEORY.md",
+      "line": 168,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "### 3.3 Version Catalogs（pnpm 10 核心特性）"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\package-management\\THEORY.md",
+      "line": 296,
+      "technology": "npm",
+      "found": "9",
+      "latest": "11",
+      "context": "- 消除「我本地是 npm 9，你本地是 pnpm 10」的环境不一致问题"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\package-management\\THEORY.md",
+      "line": 296,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "- 消除「我本地是 npm 9，你本地是 pnpm 10」的环境不一致问题"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\package-management\\THEORY.md",
+      "line": 331,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "│   ├── 是 → 选择 pnpm 10（Version Catalogs + 严格隔离）"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\package-management\\THEORY.md",
+      "line": 334,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "│       └── 否 → 选择 pnpm 10（生态成熟）"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\package-management\\THEORY.md",
+      "line": 356,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "1. **pnpm 10 成为 Monorepo 标准**：Version Catalogs 解决了版本漂移问题"
+    },
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\package-management\\THEORY.md",
+      "line": 68,
+      "technology": "pnpm",
+      "found": "9",
+      "latest": "10",
+      "context": "| 2024 | pnpm 9 发布 | Catalogs 协议成熟 |"
+    },
+    {
+      "file": "20-code-lab\\20.11-rust-toolchain\\toolchain-configuration\\THEORY.md",
+      "line": 180,
+      "technology": "vite",
+      "found": "1",
+      "latest": "6",
+      "context": "Vite 1-5: 开发用 ESM，生产用 Rollup"
+    },
+    {
+      "file": "20-code-lab\\20.2-language-patterns\\app-architecture\\THEORY.md",
+      "line": 14,
+      "technology": "angular",
+      "found": "1",
+      "latest": "19",
+      "context": "2015: MVC (Backbone/Angular 1)"
+    },
+    {
+      "file": "20-code-lab\\20.5-frontend-frameworks\\pwa\\THEORY.md",
+      "line": 236,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "Next.js 14+ 的 Streaming SSR 与 PWA 结合："
+    },
+    {
+      "file": "20-code-lab\\20.5-frontend-frameworks\\signals-patterns\\README.md",
+      "line": 61,
+      "technology": "angular",
+      "found": "16",
+      "latest": "19",
+      "context": "| **Angular 16+** | `signal()` | 变更检测集成 | Zoneless 模式 |"
+    },
+    {
+      "file": "20-code-lab\\20.6-backend-apis\\orm-modern-lab\\README.md",
+      "line": 65,
+      "technology": "prisma",
+      "found": "5",
+      "latest": "6",
+      "context": "### Prisma 7 vs Prisma 5/6"
+    },
+    {
+      "file": "20-code-lab\\20.6-backend-apis\\orm-modern-lab\\README.md",
+      "line": 67,
+      "technology": "prisma",
+      "found": "5",
+      "latest": "6",
+      "context": "| 特性 | Prisma 5/6 | Prisma 7 |"
+    },
+    {
+      "file": "30-knowledge-base\\30.10-en\\signals-paradigm-en.md",
+      "line": 21,
+      "technology": "angular",
+      "found": "16",
+      "latest": "19",
+      "context": "| **Angular 16+** | `signal()` | Change detection integration |"
+    },
+    {
+      "file": "30-knowledge-base\\30.10-en\\signals-paradigm.md",
+      "line": 13,
+      "technology": "angular",
+      "found": "16",
+      "latest": "19",
+      "context": "- **Universal Adoption by 2026**: Signals are now natively supported or officially endorsed in SolidJS, Vue 3.5+, Angula"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
+      "line": 2765,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0 实现了 ECMAScript Stage 3 装饰器提案，并增加了元数据支持。装饰器上下文对象包含 `metadata` 属性，用于存储与装饰目标关联的元数据。"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
+      "line": 2780,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.0 Release Notes, TC39 Decorators Proposal*"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
+      "line": 2879,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.0 Release Notes*"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
+      "line": 2955,
+      "technology": "typescript",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "**`NoInfer<T>`** 是 TypeScript 5.4 引入的内置工具类型，其语义是：阻止该位置作为类型参数 `T` 的推断来源。换言之，当函数签名中存在多个可作为推断依据的位置时，被 `NoInfer<T>` 包裹的位置不会参"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
+      "line": 2967,
+      "technology": "typescript",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.4 Release Notes, PR #53098*"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
+      "line": 3016,
+      "technology": "typescript",
+      "found": "4.9",
+      "latest": "5.8",
+      "context": "**`satisfies`** 运算符（TypeScript 4.9 引入，5.x 持续完善）用于检查表达式是否满足给定的类型约束，但**不改变表达式的推断类型**。这与 `as`（类型断言）有本质区别：`as` 是告诉编译器\"相信我，按这"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
+      "line": 3029,
+      "technology": "typescript",
+      "found": "4.9",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 4.9 Release Notes*"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
+      "line": 3100,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.2 Release Notes, ECMA-262 §34.2（Explicit Resource Management）*"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
+      "line": 3155,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0+ 引入了 `verbatimModuleSyntax`，5.8 引入了 `erasableSyntaxOnly`。这两个标志在 Node.js 原生 TypeScript 支持（类型剥离 / type stri"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
+      "line": 3173,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.0 & 5.8 Release Notes, Node.js Type Stripping Documentation*"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
+      "line": 4404,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "// ===== 显式变型注解（TypeScript 4.7+） ====="
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
+      "line": 3453,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "// 结合 NoInfer<T> 的精细控制（TS 5.4+）"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
+      "line": 4737,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "type NoInfer<T> = intrinsic;  // TS 5.4+"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\02_package_stdlib.md",
+      "line": 178,
+      "technology": "npm",
+      "found": "7",
+      "latest": "11",
+      "context": "lockfileVersion: 1 | 2 | 3;  // v3 是 npm 7+ 的默认格式"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\02_package_stdlib.md",
+      "line": 3659,
+      "technology": "npm",
+      "found": "2",
+      "latest": "11",
+      "context": "npm v2/v3 嵌套解析: O(n²) 最坏情况"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\02_package_stdlib.md",
+      "line": 131,
+      "technology": "yarn",
+      "found": "2",
+      "latest": "4",
+      "context": "│   npm       │    yarn     │   yarn 2+   │    pnpm     │      bun        │"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\02_package_stdlib.md",
+      "line": 340,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "// Yarn v1 的扁平化算法核心"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\02_package_stdlib.md",
+      "line": 764,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "npm/yarn v1 解决方案："
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\07_architecture.md",
+      "line": 6735,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "我们决定使用React 18配合TypeScript作为前端框架。"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\07_architecture.md",
+      "line": 4332,
+      "technology": "next.js",
+      "found": "13",
+      "latest": "15",
+      "context": "Next.js App Router是Next.js 13+引入的新路由系统，基于React Server Components (RSC)构建，提供服务器优先的架构模式。"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\99_完整分析与总结.md",
+      "line": 325,
+      "technology": "bun",
+      "found": "1.0",
+      "latest": "1.2",
+      "context": "- **Bun 1.0+**: 性能优化和兼容性提升"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\ACADEMIC_ALIGNMENT_2026.md",
+      "line": 414,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "3. **与类型系统的交互**：TypeScript 5.2+ 已引入 `using` 与 `Disposable` 接口，需要形式化描述 `using x = expr` 的类型推导规则：若 `expr` 的类型 `T` 满足 `T ex"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\ADVANCED_TYPE_SYSTEM_FEATURES.md",
+      "line": 488,
+      "technology": "typescript",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "TypeScript 4.1+ 提供的字符串操作："
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\ADVANCED_TYPE_SYSTEM_FEATURES.md",
+      "line": 1667,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "**TypeScript 4.7+ 约束推断**："
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\ANTI_PATTERNS_ENCYCLOPEDIA.md",
+      "line": 1910,
+      "technology": "typescript",
+      "found": "4.9",
+      "latest": "5.8",
+      "context": "// 使用 satisfies 操作符（TypeScript 4.9+）"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\ANTI_PATTERNS_ENCYCLOPEDIA.md",
+      "line": 2064,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "interface Getter<out T> { // TypeScript 4.7+ 协变注解"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\ARCHITECTURE_PATTERNS_THEORY.md",
+      "line": 2906,
+      "technology": "next.js",
+      "found": "13",
+      "latest": "15",
+      "context": "| Server Comp | 性能优化 | 心智模型复杂 | Next.js 13+ |"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\content-plan.md",
+      "line": 482,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "- 查找数据：Next.js 14/15 App Router性能数据"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\deep-dive.md",
+      "line": 1892,
+      "technology": "angular",
+      "found": "16",
+      "latest": "19",
+      "context": "Signals 时代 (Angular 16+):"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\deep-dive.md",
+      "line": 893,
+      "technology": "typescript",
+      "found": "2.8",
+      "latest": "5.8",
+      "context": "TypeScript 2.8 引入的**条件类型（Conditional Types）**是类型级别的三元运算符："
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\deep-dive.md",
+      "line": 1023,
+      "technology": "ts",
+      "found": "3.0",
+      "latest": "5.8",
+      "context": "**Project References 的形式化**：TS 3.0 引入的 `references` 机制强制单向依赖图（DAG），消除循环依赖。形式化约束为："
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\ES2026_FEATURES_PREVIEW.md",
+      "line": 310,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "| **实现状态** | TypeScript 5.2+、Babel 7.22+、Firefox 已支持 |"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\ES2026_FEATURES_PREVIEW.md",
+      "line": 1172,
+      "technology": "ts",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "| Decorators | Stage 3 | Babel/TS 5.0+ | 工具链 | 中等 | 🟡 中 |"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\FRONTEND_FRAMEWORK_THEORY.md",
+      "line": 605,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "│ React 18    │ ~2,500   │ ~8,000   │ ~5,000   │ ~15,000  │"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\FRONTEND_FRAMEWORK_THEORY.md",
+      "line": 976,
+      "technology": "angular",
+      "found": "1",
+      "latest": "19",
+      "context": "| **脏检查** | 简单，无依赖收集开销 | O(n) 检查，低效 | Angular 1.x |"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\full-analysis-v1.md",
+      "line": 203,
+      "technology": "astro",
+      "found": "3",
+      "latest": "5",
+      "context": "但类型擦除也造成了\"**零成本抽象**\"的不可达——TypeScript 无法像 Rust 那样利用类型信息进行编译期优化，也无法像 Java 那样在运行时进行类型安全的反射操作。这一 trade-off 是 TypeScript 设计哲学"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 45058,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "我们决定使用React 18配合TypeScript作为前端框架。"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 42655,
+      "technology": "next.js",
+      "found": "13",
+      "latest": "15",
+      "context": "Next.js App Router是Next.js 13+引入的新路由系统，基于React Server Components (RSC)构建，提供服务器优先的架构模式。"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 3798,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0 实现了 Stage 3 装饰器提案，并增加了元数据支持。"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 3984,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0 改进了 `infer` 在 `extends` 约束中的使用方式。"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 4048,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0 增强了对 JSDoc 的支持，允许在 JavaScript 文件中使用更多 TypeScript 类型特性。"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 4140,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0 引入了新的模块解析策略 `bundler`，更好地与现代打包工具配合。"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 5099,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "// 使用 variance annotations (TypeScript 4.7+)"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 23101,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "// 使用 using 语法（TypeScript 5.2+）"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 5574,
+      "technology": "npm",
+      "found": "7",
+      "latest": "11",
+      "context": "lockfileVersion: 1 | 2 | 3;  // v3 是 npm 7+ 的默认格式"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 9055,
+      "technology": "npm",
+      "found": "2",
+      "latest": "11",
+      "context": "npm v2/v3 嵌套解析: O(n²) 最坏情况"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 5527,
+      "technology": "yarn",
+      "found": "2",
+      "latest": "4",
+      "context": "│   npm       │    yarn     │   yarn 2+   │    pnpm     │      bun        │"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 5736,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "// Yarn v1 的扁平化算法核心"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 6160,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "npm/yarn v1 解决方案："
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md",
+      "line": 199,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "> **权威来源**: TypeScript 4.7 引入可选方差标注 `in` / `out`，直接对应函数参数位置的逆变和返回值的协变（TS Handbook — Variance Annotations）。"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md",
+      "line": 177,
+      "technology": "ts",
+      "found": "3.7",
+      "latest": "5.8",
+      "context": "| 无对应 | `function f(): asserts condition { ... }` | `function f() { ... }` | 断言函数，影响调用点后的控制流类型 | TS 3.7+ |"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md",
+      "line": 291,
+      "technology": "ts",
+      "found": "3.8",
+      "latest": "5.8",
+      "context": "| `import * as mod from \"./mod\";` | `import type * as mod from \"./mod\";` | 编译后删除整条导入 | `import type` 是零运行时开销的纯类型导入 | TS "
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md",
+      "line": 292,
+      "technology": "ts",
+      "found": "3.8",
+      "latest": "5.8",
+      "context": "| 无对应 | `export type { Foo };` | 编译后删除 | 仅导出类型 | TS 3.8+ |"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md",
+      "line": 293,
+      "technology": "ts",
+      "found": "5.3",
+      "latest": "5.8",
+      "context": "| `import json from \"./data.json\" assert { type: \"json\" };` | `import json from \"./data.json\" with { type: \"json\" };` | "
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md",
+      "line": 361,
+      "technology": "ts",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "| `@decorator class C {}` | `@decorator class C {}` (Stage 3) | 编译为对 `decorate` 辅助函数的调用 | 标准装饰器是 TC39 Stage 3，TS 5.x 原生支"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md",
+      "line": 459,
+      "technology": "ts",
+      "found": "4.9",
+      "latest": "5.8",
+      "context": "4. **`satisfies` 运算符**（TS 4.9+）：验证表达式是否满足某类型，同时保留推断类型。"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_TypeScript_7_0_Native_Compiler.md",
+      "line": 29,
+      "technology": "typescript",
+      "found": "1.0",
+      "latest": "5.8",
+      "context": "A[\"TypeScript 1.0-5.x<br/>JavaScript/TS 自托管编译器<br/>单线程 / V8 运行时\"] --> B[\"TypeScript 5.8/5.9<br/>JS 代码库最终演进<br/>语义完善 / 性能"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_TypeScript_7_Native_Compiler.md",
+      "line": 59,
+      "technology": "typescript",
+      "found": "1.0",
+      "latest": "5.8",
+      "context": "A[\"TypeScript 1.0-5.x<br/>JavaScript/TS 自托管编译器<br/>单线程 / V8 运行时\"] --> B[\"TypeScript 6.x<br/>JS 代码库最终演进<br/>语义完善 / 性能微调\"]"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_性能对比与优化指南.md",
+      "line": 353,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "React 18          ~55ms       ~6MB        ~45KB"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_深度技术分析.md",
+      "line": 333,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "| **包管理器** | pnpm 10+ | 磁盘效率、内容可寻址存储、严格依赖隔离 |"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_语义模型可视化图表.md",
+      "line": 29,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "- [13. 装饰器元数据语义（TypeScript 5.2+）](#13-装饰器元数据语义typescript-52)"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_语义模型可视化图表.md",
+      "line": 498,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "## 13. 装饰器元数据语义（TypeScript 5.2+）"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_语言语义模型全面分析.md",
+      "line": 1134,
+      "technology": "angular",
+      "found": "18",
+      "latest": "19",
+      "context": "- **TC39 Stage 3 装饰器**（TS 5.9+ 稳定支持）：基于 `Symbol.metadata` 的新标准，语义与 Angular 18+、NestJS 11+ 对齐"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_语言语义模型全面分析.md",
+      "line": 723,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "`using` 声明是 ECMAScript 显式资源管理（Explicit Resource Management）的 **Stage 4 / 已纳入 ECMAScript 2025 标准**，TypeScript 5.2+ 已支持 [T"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_语言语义模型全面分析.md",
+      "line": 990,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "- TypeScript 5.2 已提供语法支持，ES2025 已将其纳入语言规范"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_语言语义模型全面分析.md",
+      "line": 1309,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "3. **TypeScript 5.2 Release Notes (using)** - <https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/> [TS"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_语言语义模型全面分析.md",
+      "line": 723,
+      "technology": "ts",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "`using` 声明是 ECMAScript 显式资源管理（Explicit Resource Management）的 **Stage 4 / 已纳入 ECMAScript 2025 标准**，TypeScript 5.2+ 已支持 [T"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_语言语义模型全面分析.md",
+      "line": 1133,
+      "technology": "ts",
+      "found": "1.5",
+      "latest": "5.8",
+      "context": "- **Legacy 装饰器**（`experimentalDecorators`）：TS 1.5 引入的实验性实现，生成运行时代码和 `__decorate` 辅助函数"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_语言语义模型全面分析.md",
+      "line": 1309,
+      "technology": "ts",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "3. **TypeScript 5.2 Release Notes (using)** - <https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/> [TS"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\MODULE_RESOLUTION_SEMANTICS.md",
+      "line": 1559,
+      "technology": "typescript",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "*参考规范: ECMA-262 2024, Node.js 22.x Documentation, TypeScript 5.4*"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\Monorepo_架构设计与边界划分.md",
+      "line": 145,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "**pnpm 10 的 catalog 协议**（2026 年最佳实践）："
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\TOOLCHAIN_BUILD_THEORY.md",
+      "line": 2891,
+      "technology": "npm",
+      "found": "5",
+      "latest": "11",
+      "context": "2017 : npm 5"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\TOOLCHAIN_BUILD_THEORY.md",
+      "line": 3141,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "| 操作 | npm 10 | Yarn 4 | pnpm 8 | Bun 1.0 |"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\TOOLCHAIN_BUILD_THEORY.md",
+      "line": 3141,
+      "technology": "npm",
+      "found": "8",
+      "latest": "11",
+      "context": "| 操作 | npm 10 | Yarn 4 | pnpm 8 | Bun 1.0 |"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\TOOLCHAIN_BUILD_THEORY.md",
+      "line": 3141,
+      "technology": "pnpm",
+      "found": "8",
+      "latest": "10",
+      "context": "| 操作 | npm 10 | Yarn 4 | pnpm 8 | Bun 1.0 |"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\TOOLCHAIN_BUILD_THEORY.md",
+      "line": 3141,
+      "technology": "bun",
+      "found": "1.0",
+      "latest": "1.2",
+      "context": "| 操作 | npm 10 | Yarn 4 | pnpm 8 | Bun 1.0 |"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\TYPE_SOUNDNESS_ANALYSIS.md",
+      "line": 441,
+      "technology": "typescript",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "**修复**：使用 `noUncheckedIndexedAccess`（TypeScript 4.1+）"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\技术选型方法论与评估框架.md",
+      "line": 680,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "- React 18 的 Concurrent Features 在发布初期存在大量第三方库兼容问题。"
+    },
+    {
+      "file": "50-examples\\50.1-beginner\\todo-master\\milestone-03-react\\README.md",
+      "line": 3,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "> 🎯 **学习目标**：用 React 18 重构 Todo 应用，体验声明式 UI 与组件化思维。"
+    },
+    {
+      "file": "50-examples\\50.1-beginner\\todo-master\\milestone-03-react\\README.md",
+      "line": 69,
+      "technology": "react",
+      "found": "16",
+      "latest": "19",
+      "context": "React 16.8 引入的「钩子」，让函数组件拥有状态："
+    },
+    {
+      "file": "50-examples\\50.1-beginner\\todo-master\\milestone-03-react\\README.md",
+      "line": 124,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "// React 18 的 createRoot API"
+    },
+    {
+      "file": "50-examples\\50.1-beginner\\todo-master\\milestone-03-react\\README.md",
+      "line": 200,
+      "technology": "react",
+      "found": "17",
+      "latest": "19",
+      "context": "**原因**：Vite + React 17+ 使用新的 JSX 转换，不需要在每个文件顶部 `import React`。"
+    },
+    {
+      "file": "50-examples\\50.1-beginner\\todo-master\\MILESTONES.md",
+      "line": 51,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "**目标**：用 React 18 重构，体验声明式 UI 与组件化思维"
+    },
+    {
+      "file": "50-examples\\50.1-beginner\\todo-master\\README.md",
+      "line": 23,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "| Milestone 3 | React 18、JSX、Hooks | 组件化思维、单向数据流 |"
+    },
+    {
+      "file": "50-examples\\50.1-beginner\\todo-master\\TUTORIAL.md",
+      "line": 25,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "| Milestone 3 | React 18、JSX、Hooks | 组件化思维、单向数据流 |"
+    },
+    {
+      "file": "ACADEMIC_ALIGNMENT_2026.md",
+      "line": 78,
+      "technology": "ts",
+      "found": "5.5",
+      "latest": "5.8",
+      "context": "| **Go-to-Definition 缓存** | TS 5.5+ | IDE 响应速度 |"
+    },
+    {
+      "file": "CONTENT_RESTRUCTURING_PLAN_2026.md",
+      "line": 137,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "| `guides/ai-coding-workflow.md` | 推荐栈写 `React 18` + `TypeScript 5.3` | **更新为 React 19 + TypeScript 5.8/6.0** | 🔴 P0 |"
+    },
+    {
+      "file": "CONTENT_RESTRUCTURING_PLAN_2026.md",
+      "line": 138,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "| `guides/CSS_IN_JS_STYLING.md` | 流式 SSR 章节标注 React 18 | **更新为 React 19 + RSC 语境** | 🟠 P1 |"
+    },
+    {
+      "file": "CONTENT_RESTRUCTURING_PLAN_2026.md",
+      "line": 141,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "| `patterns/REACT_PATTERNS.md` | React 18 Suspense 标注 | **更新为 React 19 语境** | 🟡 P2 |"
+    },
+    {
+      "file": "CONTENT_RESTRUCTURING_PLAN_2026.md",
+      "line": 225,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "| P0-4 | **更新 React/TS 版本引用** | `guides/ai-coding-workflow.md`, `guides/CSS_IN_JS_STYLING.md` | React 18→19, TypeScript "
+    },
+    {
+      "file": "CONTENT_RESTRUCTURING_PLAN_2026.md",
+      "line": 137,
+      "technology": "typescript",
+      "found": "5.3",
+      "latest": "5.8",
+      "context": "| `guides/ai-coding-workflow.md` | 推荐栈写 `React 18` + `TypeScript 5.3` | **更新为 React 19 + TypeScript 5.8/6.0** | 🔴 P0 |"
+    },
+    {
+      "file": "CONTENT_RESTRUCTURING_PLAN_2026.md",
+      "line": 225,
+      "technology": "typescript",
+      "found": "5.3",
+      "latest": "5.8",
+      "context": "| P0-4 | **更新 React/TS 版本引用** | `guides/ai-coding-workflow.md`, `guides/CSS_IN_JS_STYLING.md` | React 18→19, TypeScript "
+    },
+    {
+      "file": "CRITICAL_ANALYSIS_AND_IMPROVEMENT_PLAN.md",
+      "line": 78,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "- `12-package-management`：仅 5 个文件（index.ts, npm-basics.ts, npm-basics.test.ts, monorepo-workspaces.ts, monorepo-workspac"
+    },
+    {
+      "file": "CRITICAL_ANALYSIS_AND_IMPROVEMENT_PLAN.md",
+      "line": 299,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "- pnpm 10 的 `catalog:` 协议已成为 2026 年 Monorepo 事实标准"
+    },
+    {
+      "file": "docs\\categories\\01-frontend-frameworks.md",
+      "line": 608,
+      "technology": "vue",
+      "found": "3",
+      "latest": "3.5",
+      "context": "| **名称** | Vue.js 3 |"
+    },
+    {
+      "file": "docs\\categories\\01-frontend-frameworks.md",
+      "line": 637,
+      "technology": "vue",
+      "found": "2",
+      "latest": "3.5",
+      "context": "| **名称** | Vue.js 2 |"
+    },
+    {
+      "file": "docs\\categories\\16-mobile-development.md",
+      "line": 363,
+      "technology": "vue",
+      "found": "2",
+      "latest": "3.5",
+      "context": "- 🌐 基于 Vue.js 2/3"
+    },
+    {
+      "file": "docs\\categories\\25-monorepo-tools.md",
+      "line": 373,
+      "technology": "npm",
+      "found": "7",
+      "latest": "11",
+      "context": "**一句话描述**：npm v7+ 内置的 workspace 功能，零额外依赖即可管理多包仓库，适合轻量级 Monorepo。"
+    },
+    {
+      "file": "docs\\categories.md",
+      "line": 20,
+      "technology": "astro",
+      "found": "2",
+      "latest": "5",
+      "context": "1. 🎭 SSR/Meta Frameworks - Next.js, Nuxt, Remix, Astro"
+    },
+    {
+      "file": "docs\\cheatsheets\\REACT_CHEATSHEET.md",
+      "line": 125,
+      "technology": "react",
+      "found": "17",
+      "latest": "19",
+      "context": "| 兼容性 | 支持 React 17+，最佳体验在 React 19+ |"
+    },
+    {
+      "file": "docs\\cheatsheets\\REACT_CHEATSHEET.md",
+      "line": 428,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "| React 18 | Concurrent Rendering, Suspense on server, Transitions, new useId/useSyncExternalStore/useDeferredValue/useT"
+    },
+    {
+      "file": "docs\\comparison-matrices\\orm-compare.md",
+      "line": 420,
+      "technology": "prisma",
+      "found": "5",
+      "latest": "6",
+      "context": "### Prisma 5/6 → Prisma 7"
+    },
+    {
+      "file": "docs\\comparison-matrices\\package-managers-compare.md",
+      "line": 13,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "| 特性 | npm (v10) | Yarn v1 | Yarn Berry (v4) | pnpm (v10) | Bun (v1.2) | Deno (v2) |"
+    },
+    {
+      "file": "docs\\comparison-matrices\\package-managers-compare.md",
+      "line": 298,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "| 指标 | npm | Yarn v1 | Yarn Berry | pnpm | Bun | Deno |"
+    },
+    {
+      "file": "docs\\comparison-matrices\\package-managers-compare.md",
+      "line": 308,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "| 功能 | npm | Yarn v1 | Yarn Berry | pnpm | Bun | Deno |"
+    },
+    {
+      "file": "docs\\comparison-matrices\\package-managers-compare.md",
+      "line": 335,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "| 遗留项目维护 | npm / Yarn v1 | 最小迁移成本 |"
+    },
+    {
+      "file": "docs\\comparison-matrices\\package-managers-compare.md",
+      "line": 370,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "- **Yarn v1 → Yarn Berry**: 非简单升级，需评估 PnP 兼容性"
+    },
+    {
+      "file": "docs\\en\\summaries\\modern-runtime-deep-dive.md",
+      "line": 42,
+      "technology": "deno",
+      "found": "1",
+      "latest": "2",
+      "context": "- Full npm compatibility (Deno 1.x's biggest pain point solved)"
+    },
+    {
+      "file": "docs\\guides\\CSS_IN_JS_STYLING.md",
+      "line": 1582,
+      "technology": "tailwindcss",
+      "found": "3",
+      "latest": "4",
+      "context": "Tailwind CSS v3+ 默认使用 JIT（Just-In-Time）引擎。"
+    },
+    {
+      "file": "docs\\guides\\MIGRATION_GUIDES.md",
+      "line": 1001,
+      "technology": "vite",
+      "found": "5",
+      "latest": "6",
+      "context": "- [ ] Node.js 版本 >= 18（Vite 5+ 要求）"
+    },
+    {
+      "file": "docs\\research\\international-resources.md",
+      "line": 456,
+      "technology": "vite",
+      "found": "3",
+      "latest": "6",
+      "context": "2. **构建工具**: 评估从 webpack 迁移到 Rspack/Vite"
+    },
+    {
+      "file": "docs\\research\\international-resources.md",
+      "line": 164,
+      "technology": "jest",
+      "found": "4",
+      "latest": "30",
+      "context": "3. **测试策略**: E2E 测试首选 Playwright，单元测试考虑 Vitest（Vite 项目）或 Jest"
+    },
+    {
+      "file": "docs\\research\\tc39-monthly-tracker-2026-03.md",
+      "line": 85,
+      "technology": "hono",
+      "found": "3",
+      "latest": "4",
+      "context": "- Hono 3.x+ has passed WinterTC compatibility tests."
+    },
+    {
+      "file": "docs\\research\\tc39-monthly-tracker-2026-04.md",
+      "line": 85,
+      "technology": "hono",
+      "found": "3",
+      "latest": "4",
+      "context": "- Hono 3.x+ 已通过 WinterTC 兼容性测试"
+    },
+    {
+      "file": "docs\\research\\tc39-monthly-tracker-2026-05.md",
+      "line": 25,
+      "technology": "angular",
+      "found": "18",
+      "latest": "19",
+      "context": "| **Decorator Metadata** | 装饰器元数据 API（`Symbol.metadata`） | 2026 Q3 — TypeScript 5.9 已稳定支持；框架迁移中（Angular 18+、NestJS 11+） "
+    },
+    {
+      "file": "docs\\research\\tc39-monthly-tracker-2026-05.md",
+      "line": 92,
+      "technology": "hono",
+      "found": "3",
+      "latest": "4",
+      "context": "- Hono 3.x+ 已通过 WinterTC 兼容性测试"
+    },
+    {
+      "file": "docs\\research\\tech-radar-2026-Q1.md",
+      "line": 28,
+      "technology": "angular",
+      "found": "17",
+      "latest": "19",
+      "context": "| **React 19** | Stable 发布，Compiler 1.0 生产就绪，RSC 架构稳定 | Vue 3 / Angular 17 |"
+    },
+    {
+      "file": "ECOSYSTEM_TRENDS_2026.md",
+      "line": 170,
+      "technology": "angular",
+      "found": "18",
+      "latest": "19",
+      "context": "**Signals 范式跨框架采纳**：Signals（细粒度响应式原语）从 SolidJS 和 Preact 的专属特性，演变为跨框架共享的基础架构。Angular 18+ 内置 Signals API；Vue 3.5 的 `useTem"
+    },
+    {
+      "file": "ECOSYSTEM_TRENDS_2026.md",
+      "line": 24,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "1. **立即采纳（Adopt）**：React 19 + Compiler、Tailwind CSS v4、Drizzle ORM、tRPC、better-auth、pnpm 10 Catalog、MCP 协议集成。"
+    },
+    {
+      "file": "ECOSYSTEM_TRENDS_2026.md",
+      "line": 449,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "**pnpm 10 Catalog 协议**：pnpm v10 在 2026 年初发布，其核心创新是 **Catalog Protocol**："
+    },
+    {
+      "file": "ECOSYSTEM_TRENDS_2026.md",
+      "line": 509,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "\"pnpm 10 Catalog\": [0.85, 0.50]"
+    },
+    {
+      "file": "ECOSYSTEM_TRENDS_2026.md",
+      "line": 541,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "| pnpm 10 Catalog | monorepo 依赖版本统一管理、协议驱动 | 团队需适应新的 workspace 配置模式 |"
+    },
+    {
+      "file": "examples\\beginner-todo-master\\milestone-03-react\\README.md",
+      "line": 3,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "> 🎯 **学习目标**：用 React 18 重构 Todo 应用，体验声明式 UI 与组件化思维。"
+    },
+    {
+      "file": "examples\\beginner-todo-master\\milestone-03-react\\README.md",
+      "line": 69,
+      "technology": "react",
+      "found": "16",
+      "latest": "19",
+      "context": "React 16.8 引入的「钩子」，让函数组件拥有状态："
+    },
+    {
+      "file": "examples\\beginner-todo-master\\milestone-03-react\\README.md",
+      "line": 124,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "// React 18 的 createRoot API"
+    },
+    {
+      "file": "examples\\beginner-todo-master\\milestone-03-react\\README.md",
+      "line": 200,
+      "technology": "react",
+      "found": "17",
+      "latest": "19",
+      "context": "**原因**：Vite + React 17+ 使用新的 JSX 转换，不需要在每个文件顶部 `import React`。"
+    },
+    {
+      "file": "examples\\beginner-todo-master\\MILESTONES.md",
+      "line": 51,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "**目标**：用 React 18 重构，体验声明式 UI 与组件化思维"
+    },
+    {
+      "file": "examples\\beginner-todo-master\\README.md",
+      "line": 23,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "| Milestone 3 | React 18、JSX、Hooks | 组件化思维、单向数据流 |"
+    },
+    {
+      "file": "examples\\beginner-todo-master\\TUTORIAL.md",
+      "line": 25,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "| Milestone 3 | React 18、JSX、Hooks | 组件化思维、单向数据流 |"
+    },
+    {
+      "file": "jsts-code-lab\\10-js-ts-comparison\\semantic-models\\README.md",
+      "line": 60,
+      "technology": "ts",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "- `in` / `out` 方差标注（TS 4.7+）对泛型类型的影响。"
+    },
+    {
+      "file": "jsts-code-lab\\12-package-management\\THEORY.md",
+      "line": 23,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "- [3.3 Version Catalogs（pnpm 10 核心特性）](#33-version-catalogspnpm-10-核心特性)"
+    },
+    {
+      "file": "jsts-code-lab\\12-package-management\\THEORY.md",
+      "line": 54,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "第三代: pnpm 10 + Bun 1.3 + npm 11 (2024-2026)"
+    },
+    {
+      "file": "jsts-code-lab\\12-package-management\\THEORY.md",
+      "line": 55,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "pnpm 10: Version Catalogs、内容可寻址存储成熟"
+    },
+    {
+      "file": "jsts-code-lab\\12-package-management\\THEORY.md",
+      "line": 66,
+      "technology": "npm",
+      "found": "7",
+      "latest": "11",
+      "context": "| 2020 | npm 7 发布 | 内置 Workspaces，支持 pnpm 风格的依赖解析 |"
+    },
+    {
+      "file": "jsts-code-lab\\12-package-management\\THEORY.md",
+      "line": 68,
+      "technology": "npm",
+      "found": "9",
+      "latest": "11",
+      "context": "| 2024 | pnpm 9 发布 | Catalogs 协议成熟 |"
+    },
+    {
+      "file": "jsts-code-lab\\12-package-management\\THEORY.md",
+      "line": 69,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "| 2025 | pnpm 10 发布 | Version Catalogs 成为 Monorepo 标准 |"
+    },
+    {
+      "file": "jsts-code-lab\\12-package-management\\THEORY.md",
+      "line": 78,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "| 特性 | npm 11 | pnpm 10 | Bun 1.3 | Yarn 4 |"
+    },
+    {
+      "file": "jsts-code-lab\\12-package-management\\THEORY.md",
+      "line": 168,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "### 3.3 Version Catalogs（pnpm 10 核心特性）"
+    },
+    {
+      "file": "jsts-code-lab\\12-package-management\\THEORY.md",
+      "line": 296,
+      "technology": "npm",
+      "found": "9",
+      "latest": "11",
+      "context": "- 消除「我本地是 npm 9，你本地是 pnpm 10」的环境不一致问题"
+    },
+    {
+      "file": "jsts-code-lab\\12-package-management\\THEORY.md",
+      "line": 296,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "- 消除「我本地是 npm 9，你本地是 pnpm 10」的环境不一致问题"
+    },
+    {
+      "file": "jsts-code-lab\\12-package-management\\THEORY.md",
+      "line": 331,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "│   ├── 是 → 选择 pnpm 10（Version Catalogs + 严格隔离）"
+    },
+    {
+      "file": "jsts-code-lab\\12-package-management\\THEORY.md",
+      "line": 334,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "│       └── 否 → 选择 pnpm 10（生态成熟）"
+    },
+    {
+      "file": "jsts-code-lab\\12-package-management\\THEORY.md",
+      "line": 356,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "1. **pnpm 10 成为 Monorepo 标准**：Version Catalogs 解决了版本漂移问题"
+    },
+    {
+      "file": "jsts-code-lab\\12-package-management\\THEORY.md",
+      "line": 68,
+      "technology": "pnpm",
+      "found": "9",
+      "latest": "10",
+      "context": "| 2024 | pnpm 9 发布 | Catalogs 协议成熟 |"
+    },
+    {
+      "file": "jsts-code-lab\\23-toolchain-configuration\\THEORY.md",
+      "line": 180,
+      "technology": "vite",
+      "found": "1",
+      "latest": "6",
+      "context": "Vite 1-5: 开发用 ESM，生产用 Rollup"
+    },
+    {
+      "file": "jsts-code-lab\\37-pwa\\THEORY.md",
+      "line": 236,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "Next.js 14+ 的 Streaming SSR 与 PWA 结合："
+    },
+    {
+      "file": "jsts-code-lab\\53-app-architecture\\THEORY.md",
+      "line": 14,
+      "technology": "angular",
+      "found": "1",
+      "latest": "19",
+      "context": "2015: MVC (Backbone/Angular 1)"
+    },
+    {
+      "file": "jsts-code-lab\\96-orm-modern-lab\\README.md",
+      "line": 65,
+      "technology": "prisma",
+      "found": "5",
+      "latest": "6",
+      "context": "### Prisma 7 vs Prisma 5/6"
+    },
+    {
+      "file": "jsts-code-lab\\96-orm-modern-lab\\README.md",
+      "line": 67,
+      "technology": "prisma",
+      "found": "5",
+      "latest": "6",
+      "context": "| 特性 | Prisma 5/6 | Prisma 7 |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\01-foundations.md",
+      "line": 174,
+      "technology": "ts",
+      "found": "3.0",
+      "latest": "5.8",
+      "context": "| TS 3.0 | `unknown` |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\01-foundations.md",
+      "line": 175,
+      "technology": "ts",
+      "found": "3.7",
+      "latest": "5.8",
+      "context": "| TS 3.7 | 更严格的 `null`/`undefined` 检查 |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\01-foundations.md",
+      "line": 176,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "| TS 5.4 | `NoInfer<T>` |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\01-foundations.md",
+      "line": 266,
+      "technology": "ts",
+      "found": "3.0",
+      "latest": "5.8",
+      "context": "let obj: object = null; // TS 3.0+ 报错（strictNullChecks）"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\01-foundations.md",
+      "line": 392,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "- **TS 5.4 Release Notes: NoInfer<T>** — <https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/>"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\02-type-inference-annotations.md",
+      "line": 300,
+      "technology": "ts",
+      "found": "2.8",
+      "latest": "5.8",
+      "context": "| TS 2.8 | 条件类型引入 |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\02-type-inference-annotations.md",
+      "line": 301,
+      "technology": "ts",
+      "found": "3.0",
+      "latest": "5.8",
+      "context": "| TS 3.0 | unknown 类型 |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\02-type-inference-annotations.md",
+      "line": 302,
+      "technology": "ts",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "| TS 4.1 | 模板字面量类型、递归条件类型 |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\02-type-inference-annotations.md",
+      "line": 303,
+      "technology": "ts",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "| TS 4.7 | 型变标注 in/out |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\02-type-inference-annotations.md",
+      "line": 304,
+      "technology": "ts",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "| TS 5.0 | 装饰器、const 类型参数 |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\02-type-inference-annotations.md",
+      "line": 305,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "| TS 5.4 | NoInfer<T> |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\03-interfaces-vs-type-aliases.md",
+      "line": 301,
+      "technology": "ts",
+      "found": "2.8",
+      "latest": "5.8",
+      "context": "| TS 2.8 | 条件类型引入 |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\03-interfaces-vs-type-aliases.md",
+      "line": 302,
+      "technology": "ts",
+      "found": "3.0",
+      "latest": "5.8",
+      "context": "| TS 3.0 | unknown 类型 |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\03-interfaces-vs-type-aliases.md",
+      "line": 303,
+      "technology": "ts",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "| TS 4.1 | 模板字面量类型、递归条件类型 |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\03-interfaces-vs-type-aliases.md",
+      "line": 304,
+      "technology": "ts",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "| TS 4.7 | 型变标注 in/out |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\03-interfaces-vs-type-aliases.md",
+      "line": 305,
+      "technology": "ts",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "| TS 5.0 | 装饰器、const 类型参数 |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\03-interfaces-vs-type-aliases.md",
+      "line": 306,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "| TS 5.4 | NoInfer<T> |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\08-conditional-types.md",
+      "line": 261,
+      "technology": "ts",
+      "found": "2.8",
+      "latest": "5.8",
+      "context": "| TS 2.8 | 条件类型引入 |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\08-conditional-types.md",
+      "line": 262,
+      "technology": "ts",
+      "found": "3.0",
+      "latest": "5.8",
+      "context": "| TS 3.0 | unknown 类型 |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\08-conditional-types.md",
+      "line": 263,
+      "technology": "ts",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "| TS 4.1 | 模板字面量类型、递归条件类型 |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\08-conditional-types.md",
+      "line": 264,
+      "technology": "ts",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "| TS 4.7 | 型变标注 in/out |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\08-conditional-types.md",
+      "line": 265,
+      "technology": "ts",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "| TS 5.0 | 装饰器、const 类型参数 |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\08-conditional-types.md",
+      "line": 266,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "| TS 5.4 | NoInfer<T> |"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\10-utility-types-patterns.md",
+      "line": 79,
+      "technology": "ts",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "### 2.2 键重映射（TS 4.1+）"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\10-utility-types-patterns.md",
+      "line": 247,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "## 6. TS 5.4+ 新工具"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\12-variance.md",
+      "line": 184,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "**参考规范**：TypeScript Handbook: Type Compatibility | TypeScript 4.7 Release Notes: Variance Annotations"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\12-variance.md",
+      "line": 93,
+      "technology": "ts",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "### 5.1 显式标注（TS 4.7+）"
+    },
+    {
+      "file": "jsts-language-core-system\\01-type-system\\15-ts5-ts6-new-type-features.md",
+      "line": 235,
+      "technology": "typescript",
+      "found": "5.7",
+      "latest": "5.8",
+      "context": "### 4.1 从 TypeScript 5.7 迁移到 5.8"
+    },
+    {
+      "file": "jsts-language-core-system\\02-variable-system\\08-symbol-private-state.md",
+      "line": 3,
+      "technology": "typescript",
+      "found": "4.2",
+      "latest": "5.8",
+      "context": "> **形式化定义**：Symbol 是 ECMAScript 2015（ES6）引入的第七种原始数据类型，每个 Symbol 值都是**唯一且不可变**的。`Symbol()` 工厂函数每次调用生成新的唯一值，`Symbol.for(ke"
+    },
+    {
+      "file": "jsts-language-core-system\\03-control-flow\\08-using-explicit-resource.md",
+      "line": 5,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "> 对齐版本：ECMAScript 2025 (ES16) §14.3 | TypeScript 5.2+"
+    },
+    {
+      "file": "jsts-language-core-system\\08-module-system\\02-esm-deep-dive.md",
+      "line": 344,
+      "technology": "bun",
+      "found": "1.1",
+      "latest": "1.2",
+      "context": "| 特性 | Node.js 22 | Deno 2.x | Bun 1.1+ | Chrome 120+ |"
+    },
+    {
+      "file": "jsts-language-core-system\\08-module-system\\04-cjs-esm-interop.md",
+      "line": 236,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0+ 引入了 `\"moduleResolution\": \"bundler\"`，与 `\"nodenext\"` 形成对比："
+    },
+    {
+      "file": "jsts-language-core-system\\08-module-system\\05-module-resolution.md",
+      "line": 167,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "- TypeScript 5.0+ 引入 `\"rootDirs\"` 作为补充，6.0 已移除 `baseUrl` 的自动推断（需显式配置）"
+    },
+    {
+      "file": "jsts-language-core-system\\08-module-system\\05-module-resolution.md",
+      "line": 256,
+      "technology": "typescript",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "TypeScript 5.4+ 和 Node.js 12.20+ 支持 `package.json` 的 `imports` 字段："
+    },
+    {
+      "file": "jsts-language-core-system\\08-module-system\\05-module-resolution.md",
+      "line": 421,
+      "technology": "ts",
+      "found": "1.0",
+      "latest": "5.8",
+      "context": "| TS 1.0 | `paths` + `baseUrl` 引入 | 编译时路径映射 |"
+    },
+    {
+      "file": "jsts-language-core-system\\08-module-system\\05-module-resolution.md",
+      "line": 422,
+      "technology": "ts",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "| TS 4.1 | `paths` 支持 `*` 通配 | 更灵活的子路径映射 |"
+    },
+    {
+      "file": "jsts-language-core-system\\08-module-system\\05-module-resolution.md",
+      "line": 423,
+      "technology": "ts",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "| TS 4.7 | `moduleResolution: \"node16\"` | 支持 ESM/CJS 条件解析 |"
+    },
+    {
+      "file": "jsts-language-core-system\\08-module-system\\05-module-resolution.md",
+      "line": 424,
+      "technology": "ts",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "| TS 5.0 | `moduleResolution: \"bundler\"` | 打包工具兼容模式 |"
+    },
+    {
+      "file": "jsts-language-core-system\\09-object-model\\01-object-model-overview.md",
+      "line": 288,
+      "technology": "ts",
+      "found": "3.8",
+      "latest": "5.8",
+      "context": "| TS 3.8 | `#private` 支持 | 编译到 WeakMap 或原生私有字段 |"
+    },
+    {
+      "file": "jsts-language-core-system\\09-object-model\\01-object-model-overview.md",
+      "line": 289,
+      "technology": "ts",
+      "found": "4.3",
+      "latest": "5.8",
+      "context": "| TS 4.3 | `override` 关键字 | 显式标记方法覆盖 |"
+    },
+    {
+      "file": "jsts-language-core-system\\09-object-model\\04-private-fields.md",
+      "line": 287,
+      "technology": "ts",
+      "found": "3.8",
+      "latest": "5.8",
+      "context": "| TS 3.8 | `#private` 编译支持 | 编译目标 < ES2022 时使用 WeakMap 模拟 |"
+    },
+    {
+      "file": "jsts-language-core-system\\09-object-model\\04-private-fields.md",
+      "line": 288,
+      "technology": "ts",
+      "found": "4.3",
+      "latest": "5.8",
+      "context": "| TS 4.3 | `override` + 私有字段 | 更好的类继承提示 |"
+    },
+    {
+      "file": "jsts-language-core-system\\09-object-model\\README.md",
+      "line": 167,
+      "technology": "typescript",
+      "found": "3.8",
+      "latest": "5.8",
+      "context": "- **TypeScript 3.8 Release Notes: Private Fields** — <https://www.typescriptlang.org/docs/handbook/release-notes/typescr"
+    },
+    {
+      "file": "JSTS全景综述\\01_language_core.md",
+      "line": 2765,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0 实现了 ECMAScript Stage 3 装饰器提案，并增加了元数据支持。装饰器上下文对象包含 `metadata` 属性，用于存储与装饰目标关联的元数据。"
+    },
+    {
+      "file": "JSTS全景综述\\01_language_core.md",
+      "line": 2780,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.0 Release Notes, TC39 Decorators Proposal*"
+    },
+    {
+      "file": "JSTS全景综述\\01_language_core.md",
+      "line": 2879,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.0 Release Notes*"
+    },
+    {
+      "file": "JSTS全景综述\\01_language_core.md",
+      "line": 2955,
+      "technology": "typescript",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "**`NoInfer<T>`** 是 TypeScript 5.4 引入的内置工具类型，其语义是：阻止该位置作为类型参数 `T` 的推断来源。换言之，当函数签名中存在多个可作为推断依据的位置时，被 `NoInfer<T>` 包裹的位置不会参"
+    },
+    {
+      "file": "JSTS全景综述\\01_language_core.md",
+      "line": 2967,
+      "technology": "typescript",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.4 Release Notes, PR #53098*"
+    },
+    {
+      "file": "JSTS全景综述\\01_language_core.md",
+      "line": 3016,
+      "technology": "typescript",
+      "found": "4.9",
+      "latest": "5.8",
+      "context": "**`satisfies`** 运算符（TypeScript 4.9 引入，5.x 持续完善）用于检查表达式是否满足给定的类型约束，但**不改变表达式的推断类型**。这与 `as`（类型断言）有本质区别：`as` 是告诉编译器\"相信我，按这"
+    },
+    {
+      "file": "JSTS全景综述\\01_language_core.md",
+      "line": 3029,
+      "technology": "typescript",
+      "found": "4.9",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 4.9 Release Notes*"
+    },
+    {
+      "file": "JSTS全景综述\\01_language_core.md",
+      "line": 3100,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.2 Release Notes, ECMA-262 §34.2（Explicit Resource Management）*"
+    },
+    {
+      "file": "JSTS全景综述\\01_language_core.md",
+      "line": 3155,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0+ 引入了 `verbatimModuleSyntax`，5.8 引入了 `erasableSyntaxOnly`。这两个标志在 Node.js 原生 TypeScript 支持（类型剥离 / type stri"
+    },
+    {
+      "file": "JSTS全景综述\\01_language_core.md",
+      "line": 3173,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "*来源：TypeScript 5.0 & 5.8 Release Notes, Node.js Type Stripping Documentation*"
+    },
+    {
+      "file": "JSTS全景综述\\01_language_core.md",
+      "line": 4404,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "// ===== 显式变型注解（TypeScript 4.7+） ====="
+    },
+    {
+      "file": "JSTS全景综述\\01_language_core.md",
+      "line": 3453,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "// 结合 NoInfer<T> 的精细控制（TS 5.4+）"
+    },
+    {
+      "file": "JSTS全景综述\\01_language_core.md",
+      "line": 4737,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "type NoInfer<T> = intrinsic;  // TS 5.4+"
+    },
+    {
+      "file": "JSTS全景综述\\02_package_stdlib.md",
+      "line": 178,
+      "technology": "npm",
+      "found": "7",
+      "latest": "11",
+      "context": "lockfileVersion: 1 | 2 | 3;  // v3 是 npm 7+ 的默认格式"
+    },
+    {
+      "file": "JSTS全景综述\\02_package_stdlib.md",
+      "line": 3659,
+      "technology": "npm",
+      "found": "2",
+      "latest": "11",
+      "context": "npm v2/v3 嵌套解析: O(n²) 最坏情况"
+    },
+    {
+      "file": "JSTS全景综述\\02_package_stdlib.md",
+      "line": 131,
+      "technology": "yarn",
+      "found": "2",
+      "latest": "4",
+      "context": "│   npm       │    yarn     │   yarn 2+   │    pnpm     │      bun        │"
+    },
+    {
+      "file": "JSTS全景综述\\02_package_stdlib.md",
+      "line": 340,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "// Yarn v1 的扁平化算法核心"
+    },
+    {
+      "file": "JSTS全景综述\\02_package_stdlib.md",
+      "line": 764,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "npm/yarn v1 解决方案："
+    },
+    {
+      "file": "JSTS全景综述\\07_architecture.md",
+      "line": 6735,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "我们决定使用React 18配合TypeScript作为前端框架。"
+    },
+    {
+      "file": "JSTS全景综述\\07_architecture.md",
+      "line": 4332,
+      "technology": "next.js",
+      "found": "13",
+      "latest": "15",
+      "context": "Next.js App Router是Next.js 13+引入的新路由系统，基于React Server Components (RSC)构建，提供服务器优先的架构模式。"
+    },
+    {
+      "file": "JSTS全景综述\\99_完整分析与总结.md",
+      "line": 325,
+      "technology": "bun",
+      "found": "1.0",
+      "latest": "1.2",
+      "context": "- **Bun 1.0+**: 性能优化和兼容性提升"
+    },
+    {
+      "file": "JSTS全景综述\\ACADEMIC_ALIGNMENT_2026.md",
+      "line": 414,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "3. **与类型系统的交互**：TypeScript 5.2+ 已引入 `using` 与 `Disposable` 接口，需要形式化描述 `using x = expr` 的类型推导规则：若 `expr` 的类型 `T` 满足 `T ex"
+    },
+    {
+      "file": "JSTS全景综述\\ADVANCED_TYPE_SYSTEM_FEATURES.md",
+      "line": 488,
+      "technology": "typescript",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "TypeScript 4.1+ 提供的字符串操作："
+    },
+    {
+      "file": "JSTS全景综述\\ADVANCED_TYPE_SYSTEM_FEATURES.md",
+      "line": 1667,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "**TypeScript 4.7+ 约束推断**："
+    },
+    {
+      "file": "JSTS全景综述\\ANTI_PATTERNS_ENCYCLOPEDIA.md",
+      "line": 1910,
+      "technology": "typescript",
+      "found": "4.9",
+      "latest": "5.8",
+      "context": "// 使用 satisfies 操作符（TypeScript 4.9+）"
+    },
+    {
+      "file": "JSTS全景综述\\ANTI_PATTERNS_ENCYCLOPEDIA.md",
+      "line": 2064,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "interface Getter<out T> { // TypeScript 4.7+ 协变注解"
+    },
+    {
+      "file": "JSTS全景综述\\ARCHITECTURE_PATTERNS_THEORY.md",
+      "line": 2906,
+      "technology": "next.js",
+      "found": "13",
+      "latest": "15",
+      "context": "| Server Comp | 性能优化 | 心智模型复杂 | Next.js 13+ |"
+    },
+    {
+      "file": "JSTS全景综述\\ecmascript-features\\ES2025_COMPLETE_FEATURES.md",
+      "line": 2605,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "**TypeScript 支持**: TypeScript 5.2+ 原生支持 `using` 和 `await using`"
+    },
+    {
+      "file": "JSTS全景综述\\ES2026_FEATURES_PREVIEW.md",
+      "line": 310,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "| **实现状态** | TypeScript 5.2+、Babel 7.22+、Firefox 已支持 |"
+    },
+    {
+      "file": "JSTS全景综述\\ES2026_FEATURES_PREVIEW.md",
+      "line": 1172,
+      "technology": "ts",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "| Decorators | Stage 3 | Babel/TS 5.0+ | 工具链 | 中等 | 🟡 中 |"
+    },
+    {
+      "file": "JSTS全景综述\\FRONTEND_FRAMEWORK_THEORY.md",
+      "line": 605,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "│ React 18    │ ~2,500   │ ~8,000   │ ~5,000   │ ~15,000  │"
+    },
+    {
+      "file": "JSTS全景综述\\FRONTEND_FRAMEWORK_THEORY.md",
+      "line": 976,
+      "technology": "angular",
+      "found": "1",
+      "latest": "19",
+      "context": "| **脏检查** | 简单，无依赖收集开销 | O(n) 检查，低效 | Angular 1.x |"
+    },
+    {
+      "file": "JSTS全景综述\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 45058,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "我们决定使用React 18配合TypeScript作为前端框架。"
+    },
+    {
+      "file": "JSTS全景综述\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 42655,
+      "technology": "next.js",
+      "found": "13",
+      "latest": "15",
+      "context": "Next.js App Router是Next.js 13+引入的新路由系统，基于React Server Components (RSC)构建，提供服务器优先的架构模式。"
+    },
+    {
+      "file": "JSTS全景综述\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 3798,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0 实现了 Stage 3 装饰器提案，并增加了元数据支持。"
+    },
+    {
+      "file": "JSTS全景综述\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 3984,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0 改进了 `infer` 在 `extends` 约束中的使用方式。"
+    },
+    {
+      "file": "JSTS全景综述\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 4048,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0 增强了对 JSDoc 的支持，允许在 JavaScript 文件中使用更多 TypeScript 类型特性。"
+    },
+    {
+      "file": "JSTS全景综述\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 4140,
+      "technology": "typescript",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "TypeScript 5.0 引入了新的模块解析策略 `bundler`，更好地与现代打包工具配合。"
+    },
+    {
+      "file": "JSTS全景综述\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 5099,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "// 使用 variance annotations (TypeScript 4.7+)"
+    },
+    {
+      "file": "JSTS全景综述\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 23101,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "// 使用 using 语法（TypeScript 5.2+）"
+    },
+    {
+      "file": "JSTS全景综述\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 5574,
+      "technology": "npm",
+      "found": "7",
+      "latest": "11",
+      "context": "lockfileVersion: 1 | 2 | 3;  // v3 是 npm 7+ 的默认格式"
+    },
+    {
+      "file": "JSTS全景综述\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 9055,
+      "technology": "npm",
+      "found": "2",
+      "latest": "11",
+      "context": "npm v2/v3 嵌套解析: O(n²) 最坏情况"
+    },
+    {
+      "file": "JSTS全景综述\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 5527,
+      "technology": "yarn",
+      "found": "2",
+      "latest": "4",
+      "context": "│   npm       │    yarn     │   yarn 2+   │    pnpm     │      bun        │"
+    },
+    {
+      "file": "JSTS全景综述\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 5736,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "// Yarn v1 的扁平化算法核心"
+    },
+    {
+      "file": "JSTS全景综述\\JavaScript_TypeScript_Complete_Guide.md",
+      "line": 6160,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "npm/yarn v1 解决方案："
+    },
+    {
+      "file": "JSTS全景综述\\JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md",
+      "line": 199,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "> **权威来源**: TypeScript 4.7 引入可选方差标注 `in` / `out`，直接对应函数参数位置的逆变和返回值的协变（TS Handbook — Variance Annotations）。"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md",
+      "line": 177,
+      "technology": "ts",
+      "found": "3.7",
+      "latest": "5.8",
+      "context": "| 无对应 | `function f(): asserts condition { ... }` | `function f() { ... }` | 断言函数，影响调用点后的控制流类型 | TS 3.7+ |"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md",
+      "line": 291,
+      "technology": "ts",
+      "found": "3.8",
+      "latest": "5.8",
+      "context": "| `import * as mod from \"./mod\";` | `import type * as mod from \"./mod\";` | 编译后删除整条导入 | `import type` 是零运行时开销的纯类型导入 | TS "
+    },
+    {
+      "file": "JSTS全景综述\\JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md",
+      "line": 292,
+      "technology": "ts",
+      "found": "3.8",
+      "latest": "5.8",
+      "context": "| 无对应 | `export type { Foo };` | 编译后删除 | 仅导出类型 | TS 3.8+ |"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md",
+      "line": 293,
+      "technology": "ts",
+      "found": "5.3",
+      "latest": "5.8",
+      "context": "| `import json from \"./data.json\" assert { type: \"json\" };` | `import json from \"./data.json\" with { type: \"json\" };` | "
+    },
+    {
+      "file": "JSTS全景综述\\JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md",
+      "line": 361,
+      "technology": "ts",
+      "found": "5.0",
+      "latest": "5.8",
+      "context": "| `@decorator class C {}` | `@decorator class C {}` (Stage 3) | 编译为对 `decorate` 辅助函数的调用 | 标准装饰器是 TC39 Stage 3，TS 5.x 原生支"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TO_TS_SYNTAX_SEMANTICS_MAPPING.md",
+      "line": 459,
+      "technology": "ts",
+      "found": "4.9",
+      "latest": "5.8",
+      "context": "4. **`satisfies` 运算符**（TS 4.9+）：验证表达式是否满足某类型，同时保留推断类型。"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_TypeScript_7_0_Native_Compiler.md",
+      "line": 29,
+      "technology": "typescript",
+      "found": "1.0",
+      "latest": "5.8",
+      "context": "A[\"TypeScript 1.0-5.x<br/>JavaScript/TS 自托管编译器<br/>单线程 / V8 运行时\"] --> B[\"TypeScript 5.8/5.9<br/>JS 代码库最终演进<br/>语义完善 / 性能"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_TypeScript_7_Native_Compiler.md",
+      "line": 59,
+      "technology": "typescript",
+      "found": "1.0",
+      "latest": "5.8",
+      "context": "A[\"TypeScript 1.0-5.x<br/>JavaScript/TS 自托管编译器<br/>单线程 / V8 运行时\"] --> B[\"TypeScript 6.x<br/>JS 代码库最终演进<br/>语义完善 / 性能微调\"]"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_性能对比与优化指南.md",
+      "line": 353,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "React 18          ~55ms       ~6MB        ~45KB"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_深度技术分析.md",
+      "line": 333,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "| **包管理器** | pnpm 10+ | 磁盘效率、内容可寻址存储、严格依赖隔离 |"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_现代运行时深度分析.md",
+      "line": 412,
+      "technology": "typescript",
+      "found": "4.7",
+      "latest": "5.8",
+      "context": "`bundler` 是 TypeScript 4.7 引入、5.0 后广泛使用的模式，专为前端打包工具设计。它与 `node16`/`nodenext` 的主要区别在于："
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_现代运行时深度分析.md",
+      "line": 675,
+      "technology": "deno",
+      "found": "1",
+      "latest": "2",
+      "context": "- 解决了 Deno 1.x 的最大痛点（生态隔离）"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_语义模型可视化图表.md",
+      "line": 29,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "- [13. 装饰器元数据语义（TypeScript 5.2+）](#13-装饰器元数据语义typescript-52)"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_语义模型可视化图表.md",
+      "line": 498,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "## 13. 装饰器元数据语义（TypeScript 5.2+）"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_语言语义模型全面分析.md",
+      "line": 1134,
+      "technology": "angular",
+      "found": "18",
+      "latest": "19",
+      "context": "- **TC39 Stage 3 装饰器**（TS 5.9+ 稳定支持）：基于 `Symbol.metadata` 的新标准，语义与 Angular 18+、NestJS 11+ 对齐"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_语言语义模型全面分析.md",
+      "line": 723,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "`using` 声明是 ECMAScript 显式资源管理（Explicit Resource Management）的 **Stage 4 / 已纳入 ECMAScript 2025 标准**，TypeScript 5.2+ 已支持 [T"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_语言语义模型全面分析.md",
+      "line": 990,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "- TypeScript 5.2 已提供语法支持，ES2025 已将其纳入语言规范"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_语言语义模型全面分析.md",
+      "line": 1309,
+      "technology": "typescript",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "3. **TypeScript 5.2 Release Notes (using)** - <https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/> [TS"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_语言语义模型全面分析.md",
+      "line": 723,
+      "technology": "ts",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "`using` 声明是 ECMAScript 显式资源管理（Explicit Resource Management）的 **Stage 4 / 已纳入 ECMAScript 2025 标准**，TypeScript 5.2+ 已支持 [T"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_语言语义模型全面分析.md",
+      "line": 1133,
+      "technology": "ts",
+      "found": "1.5",
+      "latest": "5.8",
+      "context": "- **Legacy 装饰器**（`experimentalDecorators`）：TS 1.5 引入的实验性实现，生成运行时代码和 `__decorate` 辅助函数"
+    },
+    {
+      "file": "JSTS全景综述\\JS_TS_语言语义模型全面分析.md",
+      "line": 1309,
+      "technology": "ts",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "3. **TypeScript 5.2 Release Notes (using)** - <https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/> [TS"
+    },
+    {
+      "file": "JSTS全景综述\\MODULE_RESOLUTION_SEMANTICS.md",
+      "line": 1559,
+      "technology": "typescript",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "*参考规范: ECMA-262 2024, Node.js 22.x Documentation, TypeScript 5.4*"
+    },
+    {
+      "file": "JSTS全景综述\\Monorepo_架构设计与边界划分.md",
+      "line": 145,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "**pnpm 10 的 catalog 协议**（2026 年最佳实践）："
+    },
+    {
+      "file": "JSTS全景综述\\Signals_范式深度分析.md",
+      "line": 429,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "| **React 18 (手动优化)** | 2.00x | 1.80x | 1.70x | 1.60x |"
+    },
+    {
+      "file": "JSTS全景综述\\Signals_范式深度分析.md",
+      "line": 431,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "> 数据说明：以 vanilla JS 为基准 1.00x，数值越小性能越好。React 19 + React Compiler 1.0 相比 React 18 手动优化提升约 25-35%。"
+    },
+    {
+      "file": "JSTS全景综述\\Signals_范式深度分析.md",
+      "line": 188,
+      "technology": "angular",
+      "found": "16",
+      "latest": "19",
+      "context": "Angular v16+ 引入原生 Signals，标志着企业级框架正式拥抱细粒度响应式。"
+    },
+    {
+      "file": "JSTS全景综述\\Signals_范式深度分析.md",
+      "line": 475,
+      "technology": "angular",
+      "found": "16",
+      "latest": "19",
+      "context": "- Angular v16+ 项目"
+    },
+    {
+      "file": "JSTS全景综述\\Signals_范式深度分析.md",
+      "line": 273,
+      "technology": "svelte",
+      "found": "1",
+      "latest": "5",
+      "context": "Svelte 5 用「显式 Runes」替代了 Svelte 1-4 的「编译器隐式响应式」，解决了响应式边界不可预测的核心痛点。"
+    },
+    {
+      "file": "JSTS全景综述\\Signals_范式深度分析.md",
+      "line": 301,
+      "technology": "svelte",
+      "found": "1",
+      "latest": "5",
+      "context": "**Svelte 1-4 的隐式问题 vs Svelte 5 的显式方案**："
+    },
+    {
+      "file": "JSTS全景综述\\Signals_范式深度分析.md",
+      "line": 304,
+      "technology": "svelte",
+      "found": "4",
+      "latest": "5",
+      "context": "<!-- Svelte 4：边界模糊 -->"
+    },
+    {
+      "file": "JSTS全景综述\\TOOLCHAIN_BUILD_THEORY.md",
+      "line": 2891,
+      "technology": "npm",
+      "found": "5",
+      "latest": "11",
+      "context": "2017 : npm 5"
+    },
+    {
+      "file": "JSTS全景综述\\TOOLCHAIN_BUILD_THEORY.md",
+      "line": 3141,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "| 操作 | npm 10 | Yarn 4 | pnpm 8 | Bun 1.0 |"
+    },
+    {
+      "file": "JSTS全景综述\\TOOLCHAIN_BUILD_THEORY.md",
+      "line": 3141,
+      "technology": "npm",
+      "found": "8",
+      "latest": "11",
+      "context": "| 操作 | npm 10 | Yarn 4 | pnpm 8 | Bun 1.0 |"
+    },
+    {
+      "file": "JSTS全景综述\\TOOLCHAIN_BUILD_THEORY.md",
+      "line": 3141,
+      "technology": "pnpm",
+      "found": "8",
+      "latest": "10",
+      "context": "| 操作 | npm 10 | Yarn 4 | pnpm 8 | Bun 1.0 |"
+    },
+    {
+      "file": "JSTS全景综述\\TOOLCHAIN_BUILD_THEORY.md",
+      "line": 3141,
+      "technology": "bun",
+      "found": "1.0",
+      "latest": "1.2",
+      "context": "| 操作 | npm 10 | Yarn 4 | pnpm 8 | Bun 1.0 |"
+    },
+    {
+      "file": "JSTS全景综述\\TYPE_SOUNDNESS_ANALYSIS.md",
+      "line": 441,
+      "technology": "typescript",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "**修复**：使用 `noUncheckedIndexedAccess`（TypeScript 4.1+）"
+    },
+    {
+      "file": "JSTS全景综述\\技术选型方法论与评估框架.md",
+      "line": 680,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "- React 18 的 Concurrent Features 在发布初期存在大量第三方库兼容问题。"
+    },
+    {
+      "file": "PROJECT_ALIGNMENT_AUDIT_2026.md",
+      "line": 67,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "| **React 生态** | React 18/19 基础内容 | React Compiler 2025.10 达 1.0 Stable；RSC 出现 CVE-2025-55182 (CVSS 10.0 RCE)；`<ViewTran"
+    },
+    {
+      "file": "PROJECT_ALIGNMENT_AUDIT_2026.md",
+      "line": 86,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "| 框架版本滞后 | 部分文档仍围绕 Next.js 14 / App Router 早期模式，未充分覆盖 Next.js 15-16 的 Turbopack Stable、PPR |"
+    },
+    {
+      "file": "PROJECT_ALIGNMENT_AUDIT_2026.md",
+      "line": 22,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "| **构建与工具链** | Rolldown (Vite 底层) / Oxlint / Biome 1.x / pnpm 10 / npm workspaces improvements | ✅ 有覆盖 | 🟢 P2 |"
+    },
+    {
+      "file": "README-EN.md",
+      "line": 142,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "- [Next.js 14 Production Config (next.config.js)](#nextjs-14-production-config-nextconfigjs)"
+    },
+    {
+      "file": "README-EN.md",
+      "line": 3225,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "### Next.js 14 Production Config (next.config.js)"
+    },
+    {
+      "file": "README-EN.md",
+      "line": 3244,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "// Partial Prerendering (Next.js 14+)"
+    },
+    {
+      "file": "README-EN.md",
+      "line": 4186,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "A[Next.js 14+ App Router]"
+    },
+    {
+      "file": "README-EN.md",
+      "line": 5054,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "| Next.js 14 (App Router) | 1.2s | 2.1s | 2.8s | 85KB | 92 |"
+    },
+    {
+      "file": "README-EN.md",
+      "line": 5099,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "- **Stack**: Next.js 14 + Prisma + PostgreSQL + Zustand"
+    },
+    {
+      "file": "README-EN.md",
+      "line": 5483,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "Frontend: Next.js 14 + TypeScript + Tailwind + Zustand + React Query"
+    },
+    {
+      "file": "README-EN.md",
+      "line": 5708,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "Frontend: Next.js 14 + Vercel AI SDK + Tailwind"
+    },
+    {
+      "file": "README-EN.md",
+      "line": 5039,
+      "technology": "vite",
+      "found": "5",
+      "latest": "6",
+      "context": "| Vite 5 | 3.2s | 120ms | 45s | 1.8GB |"
+    },
+    {
+      "file": "README-EN.md",
+      "line": 185,
+      "technology": "prisma",
+      "found": "2",
+      "latest": "6",
+      "context": "- [Prisma 2.x → 5.x Migration](#prisma-2x--5x-migration)"
+    },
+    {
+      "file": "README-EN.md",
+      "line": 4555,
+      "technology": "prisma",
+      "found": "2",
+      "latest": "6",
+      "context": "### Prisma 2.x → 5.x Migration"
+    },
+    {
+      "file": "README.md",
+      "line": 2499,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "前端: Next.js 14 + TypeScript + Tailwind + Zustand + React Query"
+    },
+    {
+      "file": "README.md",
+      "line": 2724,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "前端: Next.js 14 + Vercel AI SDK + Tailwind"
+    },
+    {
+      "file": "SYMMETRIC_DIFFERENCE_ANALYSIS_2026.md",
+      "line": 133,
+      "technology": "npm",
+      "found": "10",
+      "latest": "11",
+      "context": "| pnpm | \"pnpm 10\" | **v10 稳定**；Catalog Protocol 是 monorepo 依赖管理行业标准 | 需确认是否已覆盖 Catalog |"
+    },
+    {
+      "file": "view\\jsts分析.md",
+      "line": 203,
+      "technology": "astro",
+      "found": "3",
+      "latest": "5",
+      "context": "但类型擦除也造成了\"**零成本抽象**\"的不可达——TypeScript 无法像 Rust 那样利用类型信息进行编译期优化，也无法像 Java 那样在运行时进行类型安全的反射操作。这一 trade-off 是 TypeScript 设计哲学"
+    },
+    {
+      "file": "view\\TSJS堆栈三重\\tsjs_stack_2026.agent.final.converted.md",
+      "line": 550,
+      "technology": "ts",
+      "found": "4.9",
+      "latest": "5.8",
+      "context": "**`satisfies`运算符（TS 4.9引入，5.x系列推广）**：该运算符验证表达式满足给定类型约束的同时保留表达式的原始推断类型^44^。其认识论意义在于实现了\"约束确认\"与\"类型保持\"的分离——开发者可声明\"此对象满足接口形状\""
+    },
+    {
+      "file": "view\\TSJS堆栈三重\\tsjs_stack_2026.agent.final.converted.md",
+      "line": 552,
+      "technology": "ts",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "**`using`声明与显式资源管理（TS 5.2）**：基于TC39 Stage 3提案，`using`声明通过`Symbol.dispose`/`Symbol.asyncDispose`机制实现资源生命周期的自动管理^1^。其认知功能在"
+    },
+    {
+      "file": "view\\TSJS堆栈三重\\tsjs_stack_2026.agent.final.converted.md",
+      "line": 554,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "**`NoInfer<T>`工具类型（TS 5.4）与推断类型谓词（TS 5.5）**：`NoInfer<T>`阻止特定位置参与类型推断的泛型参数传播，解决了\"推断过度泛化\"导致的类型精度损失问题^6^。推断类型谓词则使类型守卫函数（typ"
+    },
+    {
+      "file": "view\\TSJS堆栈三重\\tsjs_stack_2026.agent.final.converted.md",
+      "line": 554,
+      "technology": "ts",
+      "found": "5.5",
+      "latest": "5.8",
+      "context": "**`NoInfer<T>`工具类型（TS 5.4）与推断类型谓词（TS 5.5）**：`NoInfer<T>`阻止特定位置参与类型推断的泛型参数传播，解决了\"推断过度泛化\"导致的类型精度损失问题^6^。推断类型谓词则使类型守卫函数（typ"
+    },
+    {
+      "file": "view\\TSJS堆栈三重\\tsjs_stack_2026.agent.final.md",
+      "line": 550,
+      "technology": "ts",
+      "found": "4.9",
+      "latest": "5.8",
+      "context": "**`satisfies`运算符（TS 4.9引入，5.x系列推广）**：该运算符验证表达式满足给定类型约束的同时保留表达式的原始推断类型[^20^]。其认识论意义在于实现了\"约束确认\"与\"类型保持\"的分离——开发者可声明\"此对象满足接口形"
+    },
+    {
+      "file": "view\\TSJS堆栈三重\\tsjs_stack_2026.agent.final.md",
+      "line": 552,
+      "technology": "ts",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "**`using`声明与显式资源管理（TS 5.2）**：基于TC39 Stage 3提案，`using`声明通过`Symbol.dispose`/`Symbol.asyncDispose`机制实现资源生命周期的自动管理[^91^]。其认知"
+    },
+    {
+      "file": "view\\TSJS堆栈三重\\tsjs_stack_2026.agent.final.md",
+      "line": 554,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "**`NoInfer<T>`工具类型（TS 5.4）与推断类型谓词（TS 5.5）**：`NoInfer<T>`阻止特定位置参与类型推断的泛型参数传播，解决了\"推断过度泛化\"导致的类型精度损失问题[^88^]。推断类型谓词则使类型守卫函数（"
+    },
+    {
+      "file": "view\\TSJS堆栈三重\\tsjs_stack_2026.agent.final.md",
+      "line": 554,
+      "technology": "ts",
+      "found": "5.5",
+      "latest": "5.8",
+      "context": "**`NoInfer<T>`工具类型（TS 5.4）与推断类型谓词（TS 5.5）**：`NoInfer<T>`阻止特定位置参与类型推断的泛型参数传播，解决了\"推断过度泛化\"导致的类型精度损失问题[^88^]。推断类型谓词则使类型守卫函数（"
+    },
+    {
+      "file": "view\\TSJS堆栈三重\\tsjs_stack_2026_content_plan.md",
+      "line": 482,
+      "technology": "next.js",
+      "found": "14",
+      "latest": "15",
+      "context": "- 查找数据：Next.js 14/15 App Router性能数据"
+    },
+    {
+      "file": "view\\TSJS堆栈三重\\tsjs_stack_2026_sec03.md",
+      "line": 181,
+      "technology": "ts",
+      "found": "4.9",
+      "latest": "5.8",
+      "context": "**`satisfies`运算符（TS 4.9引入，5.x系列推广）**：该运算符验证表达式满足给定类型约束的同时保留表达式的原始推断类型[^20^]。其认识论意义在于实现了\"约束确认\"与\"类型保持\"的分离——开发者可声明\"此对象满足接口形"
+    },
+    {
+      "file": "view\\TSJS堆栈三重\\tsjs_stack_2026_sec03.md",
+      "line": 183,
+      "technology": "ts",
+      "found": "5.2",
+      "latest": "5.8",
+      "context": "**`using`声明与显式资源管理（TS 5.2）**：基于TC39 Stage 3提案，`using`声明通过`Symbol.dispose`/`Symbol.asyncDispose`机制实现资源生命周期的自动管理[^91^]。其认知"
+    },
+    {
+      "file": "view\\TSJS堆栈三重\\tsjs_stack_2026_sec03.md",
+      "line": 185,
+      "technology": "ts",
+      "found": "5.4",
+      "latest": "5.8",
+      "context": "**`NoInfer<T>`工具类型（TS 5.4）与推断类型谓词（TS 5.5）**：`NoInfer<T>`阻止特定位置参与类型推断的泛型参数传播，解决了\"推断过度泛化\"导致的类型精度损失问题[^88^]。推断类型谓词则使类型守卫函数（"
+    },
+    {
+      "file": "view\\TSJS堆栈三重\\tsjs_stack_2026_sec03.md",
+      "line": 185,
+      "technology": "ts",
+      "found": "5.5",
+      "latest": "5.8",
+      "context": "**`NoInfer<T>`工具类型（TS 5.4）与推断类型谓词（TS 5.5）**：`NoInfer<T>`阻止特定位置参与类型推断的泛型参数传播，解决了\"推断过度泛化\"导致的类型精度损失问题[^88^]。推断类型谓词则使类型守卫函数（"
+    },
+    {
+      "file": "view\\TS_JS_Stack_Deep_Dive_2026.md",
+      "line": 1892,
+      "technology": "angular",
+      "found": "16",
+      "latest": "19",
+      "context": "Signals 时代 (Angular 16+):"
+    },
+    {
+      "file": "view\\TS_JS_Stack_Deep_Dive_2026.md",
+      "line": 893,
+      "technology": "typescript",
+      "found": "2.8",
+      "latest": "5.8",
+      "context": "TypeScript 2.8 引入的**条件类型（Conditional Types）**是类型级别的三元运算符："
+    },
+    {
+      "file": "view\\TS_JS_Stack_Deep_Dive_2026.md",
+      "line": 1023,
+      "technology": "ts",
+      "found": "3.0",
+      "latest": "5.8",
+      "context": "**Project References 的形式化**：TS 3.0 引入的 `references` 机制强制单向依赖图（DAG），消除循环依赖。形式化约束为："
+    },
+    {
+      "file": "view\\TS_JS_Stack_Ultra_Deep_2026.md",
+      "line": 1664,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "React 18+ 支持 **选择性水合（Selective Hydration）**："
+    },
+    {
+      "file": "view\\TS_JS_Stack_Ultra_Deep_2026.md",
+      "line": 752,
+      "technology": "typescript",
+      "found": "4.1",
+      "latest": "5.8",
+      "context": "TypeScript 4.1 引入的模板字面量类型，将字符串操作提升到类型层："
+    },
+    {
+      "file": "website\\categories\\frontend-frameworks.md",
+      "line": 184,
+      "technology": "vue",
+      "found": "3",
+      "latest": "3.5",
+      "context": "| **名称** | Vue.js 3 |"
+    },
+    {
+      "file": "website\\categories\\frontend-frameworks.md",
+      "line": 213,
+      "technology": "vue",
+      "found": "2",
+      "latest": "3.5",
+      "context": "| **名称** | Vue.js 2 |"
+    },
+    {
+      "file": "website\\categories\\mobile-development.md",
+      "line": 333,
+      "technology": "vue",
+      "found": "2",
+      "latest": "3.5",
+      "context": "- 🌐 基于 Vue.js 2/3"
+    },
+    {
+      "file": "website\\categories\\monorepo-tools.md",
+      "line": 370,
+      "technology": "npm",
+      "found": "7",
+      "latest": "11",
+      "context": "**一句话描述**：npm v7+ 内置的 workspace 功能，零额外依赖即可管理多包仓库，适合轻量级 Monorepo。"
+    },
+    {
+      "file": "website\\comparison-matrices\\package-managers-compare.md",
+      "line": 7,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "| 特性 | npm (v10) | Yarn v1 | Yarn Berry (v4) | pnpm (v10) | Bun (v1.2) | Deno (v2) |"
+    },
+    {
+      "file": "website\\comparison-matrices\\package-managers-compare.md",
+      "line": 292,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "| 指标 | npm | Yarn v1 | Yarn Berry | pnpm | Bun | Deno |"
+    },
+    {
+      "file": "website\\comparison-matrices\\package-managers-compare.md",
+      "line": 302,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "| 功能 | npm | Yarn v1 | Yarn Berry | pnpm | Bun | Deno |"
+    },
+    {
+      "file": "website\\comparison-matrices\\package-managers-compare.md",
+      "line": 329,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "| 遗留项目维护 | npm / Yarn v1 | 最小迁移成本 |"
+    },
+    {
+      "file": "website\\comparison-matrices\\package-managers-compare.md",
+      "line": 364,
+      "technology": "yarn",
+      "found": "1",
+      "latest": "4",
+      "context": "- **Yarn v1 → Yarn Berry**: 非简单升级，需评估 PnP 兼容性"
+    },
+    {
+      "file": "website\\guide\\css-in-js-styling.md",
+      "line": 1182,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "// React 18 流式 SSR"
+    },
+    {
+      "file": "website\\guide\\css-in-js-styling.md",
+      "line": 1496,
+      "technology": "tailwindcss",
+      "found": "3",
+      "latest": "4",
+      "context": "Tailwind CSS v3+ 默认使用 JIT（Just-In-Time）引擎。"
+    },
+    {
+      "file": "website\\guide\\getting-started.md",
+      "line": 106,
+      "technology": "next.js",
+      "found": "2",
+      "latest": "15",
+      "context": "- 大型企业应用 → Angular / Next.js"
+    },
+    {
+      "file": "website\\guide\\migration-guides.md",
+      "line": 999,
+      "technology": "vite",
+      "found": "5",
+      "latest": "6",
+      "context": "- [ ] Node.js 版本 >= 18（Vite 5+ 要求）"
+    },
+    {
+      "file": "website\\patterns\\react-patterns.md",
+      "line": 2864,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "**更现代的 React 18 Suspense 用法（配合数据获取库）:**"
+    },
+    {
+      "file": "website\\research\\international-resources.md",
+      "line": 455,
+      "technology": "vite",
+      "found": "3",
+      "latest": "6",
+      "context": "2. **构建工具**: 评估从 webpack 迁移到 Rspack/Vite"
+    },
+    {
+      "file": "website\\research\\international-resources.md",
+      "line": 163,
+      "technology": "jest",
+      "found": "4",
+      "latest": "30",
+      "context": "3. **测试策略**: E2E 测试首选 Playwright，单元测试考虑 Vitest（Vite 项目）或 Jest"
+    }
+  ],
+  "passed": false
+}
