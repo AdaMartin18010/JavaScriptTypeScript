@@ -1,17 +1,35 @@
 ---
-dimension: 技术基础设施
-sub-dimension: 架构模式
-created: 2026-04-27
+dimension: 综合
+sub-dimension: 06 architecture patterns
+created: 2026-04-28
 ---
 
 # 模块归属声明
 
-本模块归属 **「技术基础设施」** 维度，聚焦 架构模式 核心概念与工程实践。
+本模块归属 **「综合」** 维度，聚焦 06 architecture patterns 核心概念与工程实践。
 
 ## 包含内容
 
-- 软件架构设计模式、分层架构、 Clean Architecture、DDD 战术模式、六边形架构等。
+- 本模块聚焦 06 architecture patterns 核心概念与工程实践。
 
 ## 相关索引
 
-- [docs/categories-index.md](../../docs/categories-index.md)
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 ARCHITECTURE.md
+- 📄 README.md
+- 📄 THEORY.md
+- 📁 cqrs
+- 📁 hexagonal
+- 📄 index.ts
+- 📁 layered
+- 📁 microservices
+- 📁 mvc
+- 📁 mvvm
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

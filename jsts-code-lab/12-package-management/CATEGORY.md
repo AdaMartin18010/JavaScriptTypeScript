@@ -1,5 +1,33 @@
-# CATEGORY.md
+---
+dimension: 综合
+sub-dimension: 12 package management
+created: 2026-04-28
+---
 
-> **维度**：技术基础设施（Technical Infrastructure）
-> **所属领域**：包管理与 Monorepo（Package Management & Monorepo）
-> **边界说明**：本模块聚焦包管理器（npm/pnpm/yarn/Bun）的使用与配置，不包含具体应用的项目结构。
+# 模块归属声明
+
+本模块归属 **「综合」** 维度，聚焦 12 package management 核心概念与工程实践。
+
+## 包含内容
+
+- 本模块聚焦 12 package management 核心概念与工程实践。
+
+## 相关索引
+
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 index.ts
+- 📄 monorepo-workspaces.md
+- 📄 monorepo-workspaces.test.ts
+- 📄 monorepo-workspaces.ts
+- 📄 npm-basics.test.ts
+- 📄 npm-basics.ts
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

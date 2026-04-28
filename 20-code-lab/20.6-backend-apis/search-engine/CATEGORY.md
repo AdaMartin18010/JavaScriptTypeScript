@@ -1,17 +1,41 @@
 ---
-dimension: 技术基础设施
-sub-dimension: 搜索引擎
-created: 2026-04-27
+dimension: 综合
+sub-dimension: Search engine
+created: 2026-04-28
 ---
 
 # 模块归属声明
 
-本模块归属 **「技术基础设施」** 维度，聚焦 搜索引擎 核心概念与工程实践。
+本模块归属 **「综合」** 维度，聚焦 Search engine 核心概念与工程实践。
 
 ## 包含内容
 
-- 全文检索、倒排索引、搜索排序、自动补全、向量搜索基础。
+- 本模块聚焦 search engine 核心概念与工程实践。
 
 ## 相关索引
 
-- 30-knowledge-base/30.2-categories/README.md [TODO: 链接待修复]
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 _MIGRATED_FROM.md
+- 📄 faceted-search.test.ts
+- 📄 faceted-search.ts
+- 📄 full-text-search.test.ts
+- 📄 full-text-search.ts
+- 📄 index.ts
+- 📄 query-expander.test.ts
+- 📄 query-expander.ts
+- 📄 search-implementation.test.ts
+- 📄 search-implementation.ts
+- 📄 search-ranker.test.ts
+- 📄 search-ranker.ts
+- 📄 search-suggestions.test.ts
+- ... 等 1 个条目
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

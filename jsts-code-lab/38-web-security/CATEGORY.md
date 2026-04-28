@@ -1,5 +1,31 @@
-# CATEGORY.md
+---
+dimension: 综合
+sub-dimension: 38 web security
+created: 2026-04-28
+---
 
-> **维度**：技术基础设施（Technical Infrastructure）
-> **所属领域**：安全（Security）
-> **边界说明**：本模块聚焦 Web 安全机制（XSS、CSP、安全头）的实现，不包含具体业务安全策略。
+# 模块归属声明
+
+本模块归属 **「综合」** 维度，聚焦 38 web security 核心概念与工程实践。
+
+## 包含内容
+
+- 本模块聚焦 38 web security 核心概念与工程实践。
+
+## 相关索引
+
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 ARCHITECTURE.md
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 index.ts
+- 📄 xss-csp.test.ts
+- 📄 xss-csp.ts
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

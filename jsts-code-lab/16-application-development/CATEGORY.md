@@ -1,17 +1,31 @@
 ---
-dimension: 应用领域
-sub-dimension: 应用开发
-created: 2026-04-27
+dimension: 综合
+sub-dimension: 16 application development
+created: 2026-04-28
 ---
 
 # 模块归属声明
 
-本模块归属 **「应用领域」** 维度，聚焦 应用开发 核心概念与工程实践。
+本模块归属 **「综合」** 维度，聚焦 16 application development 核心概念与工程实践。
 
 ## 包含内容
 
-- 全栈应用开发实践、业务逻辑组织、领域建模、CRUD 与复杂交互实现。
+- 本模块聚焦 16 application development 核心概念与工程实践。
 
 ## 相关索引
 
-- [docs/categories-index.md](../../docs/categories-index.md)
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 ARCHIVED.md
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 error-handling.test.ts
+- 📄 error-handling.ts
+- 📄 index.ts
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

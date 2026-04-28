@@ -1,17 +1,41 @@
 ---
-dimension: 技术基础设施
-sub-dimension: 共识算法
-created: 2026-04-27
+dimension: 综合
+sub-dimension: Consensus algorithms
+created: 2026-04-28
 ---
 
 # 模块归属声明
 
-本模块归属 **「技术基础设施」** 维度，聚焦 共识算法 核心概念与工程实践。
+本模块归属 **「综合」** 维度，聚焦 Consensus algorithms 核心概念与工程实践。
 
 ## 包含内容
 
-- Raft/Paxos/PBFT、拜占庭容错、分布式时钟、领导者选举、两阶段提交。
+- 本模块聚焦 consensus algorithms 核心概念与工程实践。
 
 ## 相关索引
 
-- 30-knowledge-base/30.2-categories/README.md [TODO: 链接待修复]
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 ARCHITECTURE.md
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 _MIGRATED_FROM.md
+- 📄 cap-theorem-formal.test.ts
+- 📄 cap-theorem-formal.ts
+- 📄 cap-theorem.ts
+- 📄 consensus-algorithms.test.ts
+- 📄 distributed-clock.ts
+- 📄 index.ts
+- 📄 leader-election-theory.test.ts
+- 📄 leader-election-theory.ts
+- 📄 leader-election.ts
+- 📄 paxos-consensus.test.ts
+- 📄 paxos-consensus.ts
+- ... 等 13 个条目
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

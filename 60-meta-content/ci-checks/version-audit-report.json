@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-04-28T12:21:45.089Z",
-  "totalFiles": 1850,
-  "totalMentions": 3032,
-  "outdatedCount": 430,
+  "timestamp": "2026-04-28T22:35:10.872Z",
+  "totalFiles": 2197,
+  "totalMentions": 3033,
+  "outdatedCount": 432,
   "findings": [
     {
       "file": "10-fundamentals\\10.1-language-semantics\\code-examples\\control-flow\\08-using-explicit-resource.md",
@@ -742,7 +742,7 @@
     },
     {
       "file": "30-knowledge-base\\30.2-categories\\16-mobile-development.md",
-      "line": 363,
+      "line": 364,
       "technology": "vue",
       "found": "2",
       "latest": "3.5",
@@ -1859,6 +1859,22 @@
       "found": "18",
       "latest": "19",
       "context": "| Milestone 3 | React 18、JSX、Hooks | 组件化思维、单向数据流 |"
+    },
+    {
+      "file": "FINAL_COMPLETION_REPORT.md",
+      "line": 186,
+      "technology": "react",
+      "found": "18",
+      "latest": "19",
+      "context": "2. **版本号审计**：`version-audit.js` 报告 430 处历史版本提及，大部分为历史事实记录，真正需更新的是活跃文档中的框架版本（React 18→19、Angular 16→19 等），建议每季度审查一次"
+    },
+    {
+      "file": "FINAL_COMPLETION_REPORT.md",
+      "line": 186,
+      "technology": "angular",
+      "found": "16",
+      "latest": "19",
+      "context": "2. **版本号审计**：`version-audit.js` 报告 430 处历史版本提及，大部分为历史事实记录，真正需更新的是活跃文档中的框架版本（React 18→19、Angular 16→19 等），建议每季度审查一次"
     },
     {
       "file": "jsts-code-lab\\10-js-ts-comparison\\semantic-models\\README.md",

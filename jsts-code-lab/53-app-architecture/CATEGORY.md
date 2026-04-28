@@ -1,17 +1,40 @@
 ---
-dimension: 框架生态
-sub-dimension: 应用架构
-created: 2026-04-27
+dimension: 综合
+sub-dimension: 53 app architecture
+created: 2026-04-28
 ---
 
 # 模块归属声明
 
-本模块归属 **「框架生态」** 维度，聚焦 应用架构 核心概念与工程实践。
+本模块归属 **「综合」** 维度，聚焦 53 app architecture 核心概念与工程实践。
 
 ## 包含内容
 
-- 前端应用架构、SPA/MPA/Island、微前端、模块联邦、渲染策略。
+- 本模块聚焦 53 app architecture 核心概念与工程实践。
 
 ## 相关索引
 
-- [docs/categories-index.md](../../docs/categories-index.md)
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 data-fetching-patterns.test.ts
+- 📄 data-fetching-patterns.ts
+- 📄 dependency-injection-models.test.ts
+- 📄 dependency-injection-models.ts
+- 📄 index.ts
+- 📄 llm-driven-architecture.test.ts
+- 📄 llm-driven-architecture.ts
+- 📄 module-bundling-models.test.ts
+- 📄 module-bundling-models.ts
+- 📄 mvc-derivatives.test.ts
+- 📄 mvc-derivatives.ts
+- 📄 routing-navigation-models.test.ts
+- 📄 routing-navigation-models.ts
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

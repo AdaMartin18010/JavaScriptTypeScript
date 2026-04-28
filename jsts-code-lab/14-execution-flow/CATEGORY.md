@@ -1,17 +1,31 @@
 ---
-dimension: 语言核心
-sub-dimension: 执行流
-created: 2026-04-27
+dimension: 综合
+sub-dimension: 14 execution flow
+created: 2026-04-28
 ---
 
 # 模块归属声明
 
-本模块归属 **「语言核心」** 维度，聚焦 执行流 核心概念与工程实践。
+本模块归属 **「综合」** 维度，聚焦 14 execution flow 核心概念与工程实践。
 
 ## 包含内容
 
-- JavaScript 执行模型、调用栈、事件循环微任务、宏任务、异步执行顺序。
+- 本模块聚焦 14 execution flow 核心概念与工程实践。
 
 ## 相关索引
 
-- [docs/categories-index.md](../../docs/categories-index.md)
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 ARCHIVED.md
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 event-loop-deep-dive.test.ts
+- 📄 event-loop-deep-dive.ts
+- 📄 index.ts
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

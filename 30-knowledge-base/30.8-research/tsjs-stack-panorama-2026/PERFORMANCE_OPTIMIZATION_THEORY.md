@@ -1,4 +1,4 @@
----
+﻿---
 last-updated: 2026-04-27
 review-cycle: 6 months
 next-review: 2026-10-27
@@ -575,8 +575,8 @@ const linkHeader = `
 `;
 
 // HTML 中使用 fetchpriority
-// <img src="hero.jpg" fetchpriority="high">
-// <img src="below-fold.jpg" fetchpriority="low" loading="lazy">
+// <!-- 图片占位: hero.jpg 待补充 --> <img src="hero.jpg" fetchpriority="high">
+// <!-- 图片占位: below-fold.jpg 待补充 --> <img src="below-fold.jpg" fetchpriority="low" loading="lazy">
 ```
 
 ### 5.2 缓存策略

@@ -1,17 +1,41 @@
 ---
-dimension: 框架生态
-sub-dimension: CLI 框架
-created: 2026-04-27
+dimension: 综合
+sub-dimension: 69 cli framework
+created: 2026-04-28
 ---
 
 # 模块归属声明
 
-本模块归属 **「框架生态」** 维度，聚焦 CLI 框架 核心概念与工程实践。
+本模块归属 **「综合」** 维度，聚焦 69 cli framework 核心概念与工程实践。
 
 ## 包含内容
 
-- 命令行工具框架、参数解析、交互式提示、配置文件、插件化 CLI。
+- 本模块聚焦 69 cli framework 核心概念与工程实践。
 
 ## 相关索引
 
-- [docs/categories-index.md](../../docs/categories-index.md)
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 argument-validator.test.ts
+- 📄 argument-validator.ts
+- 📄 cli-builder.test.ts
+- 📄 cli-builder.ts
+- 📄 command-parser.test.ts
+- 📄 command-parser.ts
+- 📄 config-loader.test.ts
+- 📄 config-loader.ts
+- 📄 help-generator.test.ts
+- 📄 help-generator.ts
+- 📄 index.ts
+- 📄 interactive-prompt.test.ts
+- 📄 interactive-prompt.ts
+- ... 等 2 个条目
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

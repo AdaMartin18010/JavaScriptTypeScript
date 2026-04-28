@@ -1,17 +1,32 @@
 ---
-dimension: 技术基础设施
-sub-dimension: 事件溯源
-created: 2026-04-27
+dimension: 综合
+sub-dimension: Event sourcing
+created: 2026-04-28
 ---
 
 # 模块归属声明
 
-本模块归属 **「技术基础设施」** 维度，聚焦 事件溯源 核心概念与工程实践。
+本模块归属 **「综合」** 维度，聚焦 Event sourcing 核心概念与工程实践。
 
 ## 包含内容
 
-- 事件溯源架构、CQRS、事件存储、快照与投影、最终一致性。
+- 本模块聚焦 event sourcing 核心概念与工程实践。
 
 ## 相关索引
 
-- 30-knowledge-base/30.2-categories/README.md [TODO: 链接待修复]
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 ARCHIVED.md
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 _MIGRATED_FROM.md
+- 📄 event-store.test.ts
+- 📄 event-store.ts
+- 📄 index.ts
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

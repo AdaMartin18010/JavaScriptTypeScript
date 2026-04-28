@@ -1,4 +1,4 @@
----
+﻿---
 last-updated: 2026-04-27
 review-cycle: 6 months
 next-review: 2026-10-27
@@ -9,6 +9,7 @@ status: current
 > **维度归属**：本文档归属于 **「框架（Frameworks）」** 维度 —— React 生态设计模式。
 >
 > 相关索引：
+>
 > - [框架生态总索引](../frameworks-index.md)
 > - [前端框架分类](../categories/01-frontend-frameworks.md)
 > - [React 速查表](../cheatsheets/REACT_CHEATSHEET.md)
@@ -445,7 +446,7 @@ const MouseFollower: React.FC = () => {
     <MouseTracker
       render={({ x, y }) => (
         <img
-          src="../cat.png"
+          src="../cat.png" <!-- 图片占位: cat.png 待补充 -->
           style={{
             position: 'absolute',
             left: x,

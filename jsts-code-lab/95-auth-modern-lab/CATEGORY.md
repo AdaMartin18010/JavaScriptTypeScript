@@ -1,5 +1,34 @@
-# CATEGORY.md
+---
+dimension: 综合
+sub-dimension: 95 auth modern lab
+created: 2026-04-28
+---
 
-> **维度**：技术基础设施（Technical Infrastructure）
-> **所属领域**：认证授权（Authentication & Authorization）
-> **边界说明**：本模块聚焦认证授权基础设施（better-auth、OAuth2、Passkeys、RBAC），不包含具体业务用户系统。
+# 模块归属声明
+
+本模块归属 **「综合」** 维度，聚焦 95 auth modern lab 核心概念与工程实践。
+
+## 包含内容
+
+- 本模块聚焦 95 auth modern lab 核心概念与工程实践。
+
+## 相关索引
+
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 95-auth-modern-lab.test.ts
+- 📄 ARCHITECTURE.md
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 better-auth-setup.ts
+- 📄 index.ts
+- 📄 oauth2-pkce-flow.ts
+- 📄 passkeys-implementation.ts
+- 📄 rbac-middleware.ts
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

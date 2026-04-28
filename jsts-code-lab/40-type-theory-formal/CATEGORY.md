@@ -1,17 +1,34 @@
 ---
-dimension: 语言核心
-sub-dimension: 类型理论
-created: 2026-04-27
+dimension: 综合
+sub-dimension: 40 type theory formal
+created: 2026-04-28
 ---
 
 # 模块归属声明
 
-本模块归属 **「语言核心」** 维度，聚焦 类型理论 核心概念与工程实践。
+本模块归属 **「综合」** 维度，聚焦 40 type theory formal 核心概念与工程实践。
 
 ## 包含内容
 
-- 类型系统形式理论、 Hindley-Milner、依赖类型、子类型、型变。
+- 本模块聚焦 40 type theory formal 核心概念与工程实践。
 
 ## 相关索引
 
-- [docs/categories-index.md](../../docs/categories-index.md)
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📁 00-lambda-calculus
+- 📁 01-type-inference
+- 📁 02-subtyping
+- 📁 03-mini-typescript
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 index.ts
+- 📄 lambda-calculus.test.ts
+- 📄 lambda-calculus.ts
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

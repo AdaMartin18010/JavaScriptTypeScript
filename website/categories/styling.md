@@ -1,4 +1,4 @@
----
+﻿---
 title: 样式/CSS工具
 description: JavaScript/TypeScript 样式/CSS工具 完整指南
 ---
@@ -41,7 +41,7 @@ npx tailwindcss init
 ```html
 <!-- 示例：使用 Tailwind 构建卡片 -->
 <div class="max-w-sm rounded overflow-hidden shadow-lg bg-white">
-  <img class="w-full" src="../img/card-top.jpg" alt="Sunset">
+  <img class="w-full" src="../img/card-top.jpg" <!-- 图片占位: card-top.jpg 待补充 --> alt="Sunset">
   <div class="px-6 py-4">
     <div class="font-bold text-xl mb-2">标题</div>
     <p class="text-gray-700 text-base">

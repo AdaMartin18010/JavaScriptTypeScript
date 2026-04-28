@@ -64,7 +64,7 @@ This project aims to be a comprehensive, TypeScript-first resource collection th
 
 ## 📚 Table of Contents
 
-- [Awesome JavaScript/TypeScript Ecosystem](#awesome-javascripttypescript-ecosystem-)
+- [Awesome JavaScript/TypeScript Ecosystem ](#awesome-javascripttypescript-ecosystem-)
   - [📚 Document Navigation](#-document-navigation)
   - [📖 Overview](#-overview)
     - [Why This List?](#why-this-list)
@@ -139,7 +139,7 @@ This project aims to be a comprehensive, TypeScript-first resource collection th
     - [Performance Monitoring \& Alerting](#performance-monitoring--alerting)
   - [🚀 Deployment \& DevOps](#-deployment--devops)
   - [🔧 Production Configuration](#-production-configuration)
-    - [Next.js 14 Production Config (next.config.js)](#nextjs-14-production-config-nextconfigjs)
+    - [Next.js 15 Production Config (next.config.js)](#nextjs-15-production-config-nextconfigjs)
     - [Vite Production Config (vite.config.ts)](#vite-production-config-viteconfigts)
     - [TypeScript Strict Config (tsconfig.json)](#typescript-strict-config-tsconfigjson)
     - [Docker Production Deployment (Dockerfile)](#docker-production-deployment-dockerfile)
@@ -3222,7 +3222,7 @@ performance.measure('api-call', 'api-start', 'api-end')
 
 ## 🔧 Production Configuration
 
-### Next.js 14 Production Config (next.config.js)
+### Next.js 15 Production Config (next.config.js)
 
 ```javascript
 /** @type {import('next').NextConfig} */
@@ -3241,7 +3241,7 @@ const nextConfig = {
 
   // Experimental features
   experimental: {
-    // Partial Prerendering (Next.js 14+)
+    // Partial Prerendering (Next.js 15+)
     ppr: true,
     // Optimize package imports
     optimizePackageImports: ['lodash', '@mui/material']
@@ -4183,7 +4183,7 @@ For different project types and team sizes, we provide the following proven tech
 ```mermaid
 flowchart TB
     subgraph Frontend["Frontend"]
-        A[Next.js 14+ App Router]
+        A[Next.js 15+ App Router]
         B[Tailwind CSS]
         C[shadcn/ui Components]
         D[Zustand State Management]
@@ -5051,7 +5051,7 @@ Based on 2024-2025 actual test data, test environment:
 
 | Framework | FCP | LCP | TTI | JS Size | Score |
 |-----------|-----|-----|-----|---------|-------|
-| Next.js 14 (App Router) | 1.2s | 2.1s | 2.8s | 85KB | 92 |
+| Next.js 15 (App Router) | 1.2s | 2.1s | 2.8s | 85KB | 92 |
 | Nuxt 3 | 1.3s | 2.3s | 3.1s | 78KB | 91 |
 | SvelteKit | 0.9s | 1.6s | 2.2s | 42KB | 96 |
 | Astro (Islands) | 0.7s | 1.2s | 1.8s | 28KB | 98 |
@@ -5096,7 +5096,7 @@ Based on 2024-2025 actual test data, test environment:
 
 **Case: E-commerce Admin Dashboard**
 
-- **Stack**: Next.js 14 + Prisma + PostgreSQL + Zustand
+- **Stack**: Next.js 15 + Prisma + PostgreSQL + Zustand
 - **Codebase**: 150K lines of TypeScript
 - **Build Optimization Results**:
   - Webpack to Vite migration: Build time 180s → 45s (-75%)
@@ -5480,7 +5480,7 @@ declare module 'shop/ProductList' {
 **Tech Stack**
 
 ```
-Frontend: Next.js 14 + TypeScript + Tailwind + Zustand + React Query
+Frontend: Next.js 15 + TypeScript + Tailwind + Zustand + React Query
 Backend: Next.js API Routes + tRPC + Prisma + PostgreSQL + Redis
 Deployment: Vercel + AWS S3 + CloudFront
 Monitoring: Vercel Analytics + Sentry + LogRocket
@@ -5705,7 +5705,7 @@ export function useWhiteboard(roomId: string) {
 **Tech Stack**
 
 ```
-Frontend: Next.js 14 + Vercel AI SDK + Tailwind
+Frontend: Next.js 15 + Vercel AI SDK + Tailwind
 Backend: Next.js API + LangChain.js + OpenAI
 Vector DB: Supabase Vector (pgvector)
 Cache: Upstash Redis

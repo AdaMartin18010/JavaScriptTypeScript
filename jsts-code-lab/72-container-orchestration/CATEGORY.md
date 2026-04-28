@@ -1,5 +1,31 @@
-# CATEGORY.md
+---
+dimension: 综合
+sub-dimension: 72 container orchestration
+created: 2026-04-28
+---
 
-> **维度**：技术基础设施（Technical Infrastructure）
-> **所属领域**：部署与 DevOps（Deployment & DevOps）
-> **边界说明**：本模块聚焦容器编排与 Kubernetes 基础设施，不包含具体业务容器配置。
+# 模块归属声明
+
+本模块归属 **「综合」** 维度，聚焦 72 container orchestration 核心概念与工程实践。
+
+## 包含内容
+
+- 本模块聚焦 72 container orchestration 核心概念与工程实践。
+
+## 相关索引
+
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 ARCHIVED.md
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 index.ts
+- 📄 orchestration-engine.test.ts
+- 📄 orchestration-engine.ts
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

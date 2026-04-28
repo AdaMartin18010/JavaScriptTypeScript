@@ -1,17 +1,37 @@
 ---
-dimension: 技术基础设施
-sub-dimension: 混沌工程
-created: 2026-04-27
+dimension: 综合
+sub-dimension: Chaos engineering
+created: 2026-04-28
 ---
 
 # 模块归属声明
 
-本模块归属 **「技术基础设施」** 维度，聚焦 混沌工程 核心概念与工程实践。
+本模块归属 **「综合」** 维度，聚焦 Chaos engineering 核心概念与工程实践。
 
 ## 包含内容
 
-- 故障注入、系统韧性、爆炸半径、稳态假设、混沌实验自动化。
+- 本模块聚焦 chaos engineering 核心概念与工程实践。
 
 ## 相关索引
 
-- 30-knowledge-base/30.2-categories/README.md [TODO: 链接待修复]
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 _MIGRATED_FROM.md
+- 📄 chaos-experiments.test.ts
+- 📄 chaos-experiments.ts
+- 📄 circuit-breaker.test.ts
+- 📄 circuit-breaker.ts
+- 📄 fault-injection.test.ts
+- 📄 fault-injection.ts
+- 📄 index.ts
+- 📄 retry-mechanisms.test.ts
+- 📄 retry-mechanisms.ts
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

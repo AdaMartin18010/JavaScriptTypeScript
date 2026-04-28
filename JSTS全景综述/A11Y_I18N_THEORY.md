@@ -1,4 +1,4 @@
----
+﻿---
 last-updated: 2026-04-27
 review-cycle: 6 months
 next-review: 2026-10-27
@@ -147,7 +147,7 @@ status: current
 
 ```html
 <!-- 为图像提供替代文本 -->
-<img src="chart.png" alt="2024年第一季度销售额增长25%的柱状图" />
+<!-- 图片占位: chart.png 待补充 --> <img src="chart.png" alt="2024年第一季度销售额增长25%的柱状图" />
 
 <!-- 为视频提供字幕 -->
 <video controls>

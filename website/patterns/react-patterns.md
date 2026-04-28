@@ -1,4 +1,4 @@
----
+﻿---
 title: 'React 设计模式指南'
 ---
 
@@ -435,7 +435,7 @@ const MouseFollower: React.FC = () => {
     <MouseTracker
       render={({ x, y }) => (
         <img
-          src="../cat.png"
+          src="../cat.png" <!-- 图片占位: cat.png 待补充 -->
           style={{
             position: 'absolute',
             left: x,

@@ -1,5 +1,31 @@
-# CATEGORY.md
+---
+dimension: 综合
+sub-dimension: 11 benchmarks
+created: 2026-04-28
+---
 
-> **维度**：技术基础设施（Technical Infrastructure）
-> **所属领域**：性能优化（Performance Optimization）
-> **边界说明**：本模块聚焦基准测试方法论与性能测量工具链，不包含业务系统的性能测试场景。
+# 模块归属声明
+
+本模块归属 **「综合」** 维度，聚焦 11 benchmarks 核心概念与工程实践。
+
+## 包含内容
+
+- 本模块聚焦 11 benchmarks 核心概念与工程实践。
+
+## 相关索引
+
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 ARCHIVED.md
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 index.ts
+- 📄 js-vs-ts-performance.test.ts
+- 📄 js-vs-ts-performance.ts
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

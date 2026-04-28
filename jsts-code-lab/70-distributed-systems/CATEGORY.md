@@ -1,17 +1,41 @@
 ---
-dimension: 技术基础设施
-sub-dimension: 分布式系统
-created: 2026-04-27
+dimension: 综合
+sub-dimension: 70 distributed systems
+created: 2026-04-28
 ---
 
 # 模块归属声明
 
-本模块归属 **「技术基础设施」** 维度，聚焦 分布式系统 核心概念与工程实践。
+本模块归属 **「综合」** 维度，聚焦 70 distributed systems 核心概念与工程实践。
 
 ## 包含内容
 
-- 分布式系统基础、一致性模型、容错、CAP、分布式锁、限流、熔断。
+- 本模块聚焦 70 distributed systems 核心概念与工程实践。
 
 ## 相关索引
 
-- [docs/categories-index.md](../../docs/categories-index.md)
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 ARCHITECTURE.md
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 circuit-breaker.test.ts
+- 📄 circuit-breaker.ts
+- 📄 consistency-models.test.ts
+- 📄 consistency-models.ts
+- 📄 consistent-hashing.test.ts
+- 📄 consistent-hashing.ts
+- 📄 distributed-lock.test.ts
+- 📄 distributed-lock.ts
+- 📄 distributed-primitives.test.ts
+- 📄 distributed-primitives.ts
+- 📄 index.ts
+- 📄 load-balancer.test.ts
+- ... 等 8 个条目
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

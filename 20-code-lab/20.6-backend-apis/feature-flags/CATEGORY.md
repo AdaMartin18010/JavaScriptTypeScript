@@ -1,17 +1,33 @@
 ---
-dimension: 技术基础设施
-sub-dimension: 特性开关
-created: 2026-04-27
+dimension: 综合
+sub-dimension: Feature flags
+created: 2026-04-28
 ---
 
 # 模块归属声明
 
-本模块归属 **「技术基础设施」** 维度，聚焦 特性开关 核心概念与工程实践。
+本模块归属 **「综合」** 维度，聚焦 Feature flags 核心概念与工程实践。
 
 ## 包含内容
 
-- Feature Flag 策略、灰度发布、动态配置、实验驱动开发。
+- 本模块聚焦 feature flags 核心概念与工程实践。
 
 ## 相关索引
 
-- 30-knowledge-base/30.2-categories/README.md [TODO: 链接待修复]
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 _MIGRATED_FROM.md
+- 📄 feature-flag-system.test.ts
+- 📄 feature-flag-system.ts
+- 📄 feature-toggles.test.ts
+- 📄 feature-toggles.ts
+- 📄 index.ts
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

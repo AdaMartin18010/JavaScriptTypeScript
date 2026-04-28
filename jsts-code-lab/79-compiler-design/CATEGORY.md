@@ -1,17 +1,38 @@
 ---
-dimension: 语言核心
-sub-dimension: 编译器设计
-created: 2026-04-27
+dimension: 综合
+sub-dimension: 79 compiler design
+created: 2026-04-28
 ---
 
 # 模块归属声明
 
-本模块归属 **「语言核心」** 维度，聚焦 编译器设计 核心概念与工程实践。
+本模块归属 **「综合」** 维度，聚焦 79 compiler design 核心概念与工程实践。
 
 ## 包含内容
 
-- 词法/语法分析、AST、IR、代码生成、优化管线、增量编译。
+- 本模块聚焦 79 compiler design 核心概念与工程实践。
 
 ## 相关索引
 
-- [docs/categories-index.md](../../docs/categories-index.md)
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 ast.test.ts
+- 📄 ast.ts
+- 📄 code-gen.test.ts
+- 📄 code-gen.ts
+- 📄 compiler-pipeline.test.ts
+- 📄 compiler-pipeline.ts
+- 📄 index.ts
+- 📄 lexer.test.ts
+- 📄 lexer.ts
+- 📄 parser.test.ts
+- 📄 parser.ts
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

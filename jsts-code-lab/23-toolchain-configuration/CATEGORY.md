@@ -1,5 +1,37 @@
-# CATEGORY.md
+---
+dimension: 综合
+sub-dimension: 23 toolchain configuration
+created: 2026-04-28
+---
 
-> **维度**：技术基础设施（Technical Infrastructure）
-> **所属领域**：构建工具链 / 代码质量（Build Toolchain / Code Quality）
-> **边界说明**：本模块聚焦开发工具链（构建、Lint、Format、类型检查）的配置与集成，不包含业务代码。
+# 模块归属声明
+
+本模块归属 **「综合」** 维度，聚焦 23 toolchain configuration 核心概念与工程实践。
+
+## 包含内容
+
+- 本模块聚焦 23 toolchain configuration 核心概念与工程实践。
+
+## 相关索引
+
+- `30-knowledge-base/30.2-categories/README.md` — 分类总览
+- `20-code-lab/` — 代码实验室实践
+## 目录内容
+
+- 📄 23-toolchain-configuration.test.ts
+- 📄 README.md
+- 📄 THEORY.md
+- 📄 biome-migration.ts
+- 📄 eslint-prettier.test.ts
+- 📄 eslint-prettier.ts
+- 📄 index.ts
+- 📄 oxc-integration.ts
+- 📄 rolldown-config.ts
+- 📁 rust-toolchain-migration
+- 📄 vite-config.test.ts
+- 📄 vite-config.ts
+
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。

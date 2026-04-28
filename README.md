@@ -2510,7 +2510,7 @@ const products = Array.from({ length: 10 }, () => createProduct())
 **技术栈**
 
 ```
-前端: Next.js 14 + TypeScript + Tailwind + Zustand + React Query
+前端: Next.js 15 + TypeScript + Tailwind + Zustand + React Query
 后端: Next.js API Routes + tRPC + Prisma + PostgreSQL + Redis
 部署: Vercel + AWS S3 + CloudFront
 监控: Vercel Analytics + Sentry + LogRocket
@@ -2735,7 +2735,7 @@ export function useWhiteboard(roomId: string) {
 **技术栈**
 
 ```
-前端: Next.js 14 + Vercel AI SDK + Tailwind
+前端: Next.js 15 + Vercel AI SDK + Tailwind
 后端: Next.js API + LangChain.js + OpenAI
 向量库: Supabase Vector (pgvector)
 缓存: Upstash Redis
