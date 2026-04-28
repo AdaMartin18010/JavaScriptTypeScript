@@ -34,6 +34,7 @@ function fetchData(): Promise<Data> & Effect<Network, Throw> {
 ```
 
 **相关项目**：
+
 - **Koka** (Microsoft)：效应作为一等公民
 - **Eff** (Univ. of Bologna)：代数效应
 - **ReScript**：OCaml 效应系统的 JS 输出
@@ -45,11 +46,13 @@ function fetchData(): Promise<Data> & Effect<Network, Throw> {
 ### 2.1 TypeScript 编译器重写 (tsgo)
 
 **里程碑**：
+
 - 2025 Q1：`@typescript/native-preview` 发布
 - 2025 Q4：官方宣布 TypeScript 7.0 将基于 Go 实现
 - 2026 Q1：构建速度提升 **10x** 的基准测试公布
 
 **技术细节**：
+
 ```
 旧架构 (tsc):
   TypeScript → Parser (TS) → Checker (TS) → Emitter (TS)
@@ -61,6 +64,7 @@ function fetchData(): Promise<Data> & Effect<Network, Throw> {
 ```
 
 **影响评估**：
+
 - ✅ 构建速度提升 5-10x
 - ✅ 内存占用降低 50%+
 - ⚠️ 插件生态需要迁移
@@ -83,6 +87,7 @@ function fetchData(): Promise<Data> & Effect<Network, Throw> {
 **研究问题**：如何让 LLM 生成的代码保证类型正确？
 
 **关键论文**：
+
 - **"Type-Constrained Language Models"** (Stanford, 2025)
   - 方法：在解码阶段注入类型约束
   - 结果：类型错误率从 15% 降至 3%
@@ -106,6 +111,7 @@ Lean / Coq: 验证证明每一步
 ```
 
 **相关项目**：
+
 - **Copra** (Google)：LLM + 形式化验证混合系统
 - **Baldur** (UIUC)：证明修复的 LLM 方法
 
@@ -116,10 +122,12 @@ Lean / Coq: 验证证明每一步
 ### 4.1 Component Model
 
 **W3C 标准进展**：
+
 - 2025：WebAssembly Component Model 进入 Phase 3
 - 2026：主流运行时 (Wasmtime, WasmEdge) 支持完整
 
 **对 JS/TS 的影响**：
+
 ```typescript
 // 未来可能的语法
 import { add } from './math.wasm' as WasmModule<{
@@ -134,6 +142,7 @@ add(1, 2); // 类型安全地调用 Wasm
 **状态**：Wasm GC 已在 Chrome/Edge/Firefox 稳定实现。
 
 **意义**：
+
 - 托管语言（Java、C#、TS）编译到 Wasm 不再需要自定义 GC
 - 内存安全语言可直接利用 Wasm GC
 
