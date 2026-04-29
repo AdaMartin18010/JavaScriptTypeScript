@@ -40,3 +40,16 @@ spec:
 - **22-deployment-devops**: DevOps 与 CI/CD
 - **73-service-mesh-advanced**: 服务网格
 - **25-microservices**: 微服务部署
+
+
+## 参考资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN Web Docs | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+| TC39 Proposals | 规范 | [tc39.es](https://tc39.es) |
+
+---
+
+*最后更新: 2026-04-29*

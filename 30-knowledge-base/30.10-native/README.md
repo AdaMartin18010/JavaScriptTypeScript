@@ -1,7 +1,18 @@
-# Native
+# Native 开发
 
-> **定位**：$dirPath/`n> **状态**：由链接修复脚本自动生成，内容待补充
+> JavaScript/TypeScript 原生应用开发资源索引。
 
 ---
 
-*本文件由重构工具自动生成于 2026-04-28。*
+## 跨平台方案
+
+| 方案 | 说明 |
+|------|------|
+| **React Native** | React 驱动原生 UI |
+| **Capacitor** | Web 应用包装为原生应用 |
+| **Tauri** | Rust 后端 + Web 前端桌面应用 |
+| **Electron** | Chromium + Node.js 桌面应用 |
+
+---
+
+*最后更新: 2026-04-29*

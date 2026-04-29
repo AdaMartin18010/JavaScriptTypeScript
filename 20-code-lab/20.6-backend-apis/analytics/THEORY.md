@@ -37,3 +37,16 @@ tracker.track('button_click', { button_id: 'submit', page: 'checkout' })
 - **87-realtime-analytics**: 实时数据分析
 - **66-feature-flags**: 特性开关与 A/B 测试
 - **17-debugging-monitoring**: 监控与日志
+
+
+## 参考资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN Web Docs | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+| TC39 Proposals | 规范 | [tc39.es](https://tc39.es) |
+
+---
+
+*最后更新: 2026-04-29*

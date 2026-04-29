@@ -26,4 +26,16 @@ created: 2026-04-27
 - `32-edge-computing` — 边缘计算
 - `93-deployment-edge-lab` — 部署与边缘实战
 - `examples/edge-ai-inference/` — 边缘 AI 示例
-- `docs/application-domains-index.md` — 应用领域总索引
+- `30-knowledge-base/application-domains-index.md` — 应用领域总索引
+
+
+## 学习资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+
+---
+
+*最后更新: 2026-04-29*

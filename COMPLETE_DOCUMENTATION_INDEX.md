@@ -8,14 +8,14 @@
 
 > 本项目现已按 **语言核心 / 框架生态 / 应用领域 / 技术基础设施** 四大维度重组。
 >
-> 👉 [查看四维分类总索引](./docs/FOUR_DIMENSIONS_INDEX.md) — 推荐从此入口开始探索
+> 👉 [查看四维分类总索引](30-knowledge-base/30.9-learning-paths/FOUR_DIMENSIONS_PATHS.md) — 推荐从此入口开始探索
 
 | 维度 | 索引 | 核心内容 |
 |------|------|---------|
-| 🔵 **语言核心** | [language-core-index.md](./docs/language-core-index.md) | 类型系统、执行模型、ES2026、模块系统 |
-| 🟢 **框架生态** | [frameworks-index.md](./docs/frameworks-index.md) | React/Vue/Angular、Next.js/Nuxt、状态管理 |
-| 🟠 **应用领域** | [application-domains-index.md](./docs/application-domains-index.md) | AI Agent、Web3、移动端、边缘计算 |
-| 🔴 **技术基础设施** | [infrastructure-index.md](./infrastructure-index.md) | 构建工具、测试、部署、可观测性、安全 |
+| 🔵 **语言核心** | [language-core-index.md](30-knowledge-base/language-core-index.md) | 类型系统、执行模型、ES2026、模块系统 |
+| 🟢 **框架生态** | [frameworks-index.md](30-knowledge-base/frameworks-index.md) | React/Vue/Angular、Next.js/Nuxt、状态管理 |
+| 🟠 **应用领域** | [application-domains-index.md](30-knowledge-base/application-domains-index.md) | AI Agent、Web3、移动端、边缘计算 |
+| 🔴 **技术基础设施** | [infrastructure-index.md](30-knowledge-base/infrastructure-index.md) | 构建工具、测试、部署、可观测性、安全 |
 
 ---
 
@@ -68,9 +68,9 @@
 |------|------|------|--------|
 | 浏览器运行时理论 | ./jsts-code-lab/50-browser-runtime/THEORY.md | V8引擎、渲染管线、内存管理 | 3星 |
 | Web 渲染优化 | ./jsts-code-lab/52-web-rendering/ | 重绘、回流、合成优化 | 3星 |
-| 前端框架对比 | ./docs/categories/01-frontend-frameworks.md | React/Vue/Angular/Svelte 对比 | 2星 |
-| Web APIs 完全指南 | ./docs/guides/web-apis-guide.md | DOM/Fetch/Streams/Canvas/Service Worker 等系统梳理 | 2星 |
-| Node.js 核心模块指南 | ./docs/guides/nodejs-core-modules-guide.md | fs/http/crypto/stream/events 等内置模块详解 | 2星 |
+| 前端框架对比 | 30-knowledge-base/categories/01-frontend-frameworks.md | React/Vue/Angular/Svelte 对比 | 2星 |
+| Web APIs 完全指南 | 30-knowledge-base/guides/web-apis-guide.md | DOM/Fetch/Streams/Canvas/Service Worker 等系统梳理 | 2星 |
+| Node.js 核心模块指南 | 30-knowledge-base/guides/nodejs-core-modules-guide.md | fs/http/crypto/stream/events 等内置模块详解 | 2星 |
 | Web APIs 实战实验室 | ./jsts-code-lab/90-web-apis-lab/ | Fetch/Streams/Service Worker/Observer 可运行代码 | 3星 |
 | Node.js 核心模块实验室 | ./jsts-code-lab/91-nodejs-core-lab/ | fs/http/crypto/stream 核心模块可运行代码 | 3星 |
 
@@ -86,8 +86,8 @@
 
 | 文档 | 路径 | 描述 | 复杂度 |
 |------|------|------|--------|
-| 构建工具对比 | ./docs/categories/03-build-tools.md | Vite/Webpack/esbuild/Rollup | 2星 |
-| 代码规范工具 | ./docs/categories/14-linting-formatting.md | ESLint/Prettier/Biome | 1星 |
+| 构建工具对比 | 30-knowledge-base/categories/03-build-tools.md | Vite/Webpack/esbuild/Rollup | 2星 |
+| 代码规范工具 | 30-knowledge-base/categories/14-linting-formatting.md | ESLint/Prettier/Biome | 1星 |
 | 包管理 | ./jsts-code-lab/12-package-management/ | npm/yarn/pnpm/bun | 2星 |
 
 ---
@@ -129,15 +129,15 @@
 | 测试基础 | ./jsts-code-lab/07-testing/ | 单元测试、集成测试、TDD | 2星 |
 | 高级测试 | ./jsts-code-lab/28-testing-advanced/ | E2E、契约测试、混沌测试 | 3星 |
 | AI测试理论 | ./jsts-code-lab/55-ai-testing/THEORY.md | AI驱动测试生成理论 | 4星 |
-| 测试工具对比 | ./docs/categories/13-testing-ecosystem.md | Jest/Vitest/Playwright | 2星 |
-| 测试对比矩阵 | ./docs/comparison-matrices/testing-compare.md | 测试框架详细对比 | 2星 |
-| JS/TS 编译器对比矩阵 | ./docs/comparison-matrices/js-ts-compilers-compare.md | tsc/Babel/SWC/esbuild/Rolldown/tsgo 语义差异 | 3星 |
-| 包管理器对比矩阵 | ./docs/comparison-matrices/package-managers-compare.md | npm/yarn/pnpm/Bun/Deno 对比 | 2星 |
-| Monorepo 工具对比矩阵 | ./docs/comparison-matrices/monorepo-tools-compare.md | Turborepo/Nx/Rush/Bit/Bazel 对比 | 2星 |
-| 可观测性工具对比矩阵 | ./docs/comparison-matrices/observability-tools-compare.md | Sentry/Datadog/winston/pino 监控日志对比 | 2星 |
-| 部署平台对比矩阵 | ./docs/comparison-matrices/deployment-platforms-compare.md | Vercel/Netlify/Cloudflare/AWS 等部署目标对比 | 2星 |
-| CI/CD 工具对比矩阵 | ./docs/comparison-matrices/ci-cd-tools-compare.md | GitHub Actions/GitLab CI/Jenkins 等对比 | 2星 |
-| 浏览器兼容性矩阵 | ./docs/comparison-matrices/browser-compatibility-compare.md | ES2020-ES2025 + Web API 兼容性 + polyfill | 2星 |
+| 测试工具对比 | 30-knowledge-base/categories/13-testing-ecosystem.md | Jest/Vitest/Playwright | 2星 |
+| 测试对比矩阵 | 30-knowledge-base/comparison-matrices/testing-compare.md | 测试框架详细对比 | 2星 |
+| JS/TS 编译器对比矩阵 | 30-knowledge-base/comparison-matrices/js-ts-compilers-compare.md | tsc/Babel/SWC/esbuild/Rolldown/tsgo 语义差异 | 3星 |
+| 包管理器对比矩阵 | 30-knowledge-base/comparison-matrices/package-managers-compare.md | npm/yarn/pnpm/Bun/Deno 对比 | 2星 |
+| Monorepo 工具对比矩阵 | 30-knowledge-base/comparison-matrices/monorepo-tools-compare.md | Turborepo/Nx/Rush/Bit/Bazel 对比 | 2星 |
+| 可观测性工具对比矩阵 | 30-knowledge-base/comparison-matrices/observability-tools-compare.md | Sentry/Datadog/winston/pino 监控日志对比 | 2星 |
+| 部署平台对比矩阵 | 30-knowledge-base/comparison-matrices/deployment-platforms-compare.md | Vercel/Netlify/Cloudflare/AWS 等部署目标对比 | 2星 |
+| CI/CD 工具对比矩阵 | 30-knowledge-base/comparison-matrices/ci-cd-tools-compare.md | GitHub Actions/GitLab CI/Jenkins 等对比 | 2星 |
+| 浏览器兼容性矩阵 | 30-knowledge-base/comparison-matrices/browser-compatibility-compare.md | ES2020-ES2025 + Web API 兼容性 + polyfill | 2星 |
 
 ### 4.2 安全
 
@@ -161,7 +161,7 @@
 | 文档 | 路径 | 描述 | 复杂度 |
 |------|------|------|--------|
 | DevOps | ./jsts-code-lab/22-deployment-devops/ | CI/CD、GitOps、蓝绿部署 | 3星 |
-| TanStack Start Cloudflare 部署 | ./docs/guides/TANSTACK_START_CLOUDFLARE_DEPLOYMENT.md | 官方部署指南与边缘实战 | 3星 |
+| TanStack Start Cloudflare 部署 | 30-knowledge-base/guides/TANSTACK_START_CLOUDFLARE_DEPLOYMENT.md | 官方部署指南与边缘实战 | 3星 |
 | 可观测性 | ./jsts-code-lab/74-observability/ | 日志、指标、链路追踪 | 3星 |
 | 混沌工程 | ./jsts-code-lab/75-chaos-engineering/ | 故障注入、韧性测试 | 4星 |
 | Serverless | ./jsts-code-lab/31-serverless/ | FaaS、BaaS、冷启动优化 | 3星 |
@@ -196,7 +196,7 @@
 | 文档 | 路径 | 描述 | 复杂度 |
 |------|------|------|--------|
 | WebAssembly | ./jsts-code-lab/36-web-assembly/ | WASM集成、性能优化 | 4星 |
-| WebAssembly生态 | ./docs/categories/20-webassembly.md | WASM工具与框架 | 3星 |
+| WebAssembly生态 | 30-knowledge-base/categories/20-webassembly.md | WASM工具与框架 | 3星 |
 
 ### 5.4 Web3 与区块链
 
@@ -236,61 +236,61 @@
 
 | 文档 | 路径 | 描述 |
 |------|------|------|
-| 前端框架 | ./docs/categories/01-frontend-frameworks.md | React/Vue/Angular/Svelte等 |
-| TanStack Start | ./docs/categories/22-tanstack-start.md | 全栈框架与 Cloudflare 边缘部署 |
-| UI组件库 | ./docs/categories/02-ui-component-libraries.md | Material-UI/Ant Design/shadcn/ui等 |
-| 状态管理 | ./docs/categories/05-state-management.md | Redux/Zustand/Pinia等 |
-| 路由 | ./docs/categories/06-routing.md | React Router/TanStack Router等 |
-| 样式方案 | ./docs/categories/10-styling.md | Tailwind/Styled Components等 |
-| 动画 | ./docs/categories/16-animation.md | Framer Motion/GSAP等 |
+| 前端框架 | 30-knowledge-base/categories/01-frontend-frameworks.md | React/Vue/Angular/Svelte等 |
+| TanStack Start | 30-knowledge-base/categories/22-tanstack-start.md | 全栈框架与 Cloudflare 边缘部署 |
+| UI组件库 | 30-knowledge-base/categories/02-ui-component-libraries.md | Material-UI/Ant Design/shadcn/ui等 |
+| 状态管理 | 30-knowledge-base/categories/05-state-management.md | Redux/Zustand/Pinia等 |
+| 路由 | 30-knowledge-base/categories/06-routing.md | React Router/TanStack Router等 |
+| 样式方案 | 30-knowledge-base/categories/10-styling.md | Tailwind/Styled Components等 |
+| 动画 | 30-knowledge-base/categories/16-animation.md | Framer Motion/GSAP等 |
 
 ### 7.2 后端生态
 
 | 文档 | 路径 | 描述 |
 |------|------|------|
-| 后端框架 | ./docs/categories/14-backend-frameworks.md | Express/NestJS/Fastify等 |
-| ORM与数据库 | ./docs/categories/11-orm-database.md | Prisma/TypeORM/Drizzle等 |
-| 表单处理 | ./docs/categories/07-form-handling.md | React Hook Form/Formik等 |
-| 验证库 | ./docs/categories/08-validation.md | Zod/Yup/Joi等 |
-| AI Agent 基础设施 | ./docs/categories/23-ai-agent-infrastructure.md | MCP / Vercel AI SDK / Mastra 生态 |
-| 认证与授权 | ./docs/categories/24-auth-modern.md | better-auth / Passkeys / OAuth 2.1 |
+| 后端框架 | 30-knowledge-base/categories/14-backend-frameworks.md | Express/NestJS/Fastify等 |
+| ORM与数据库 | 30-knowledge-base/categories/11-orm-database.md | Prisma/TypeORM/Drizzle等 |
+| 表单处理 | 30-knowledge-base/categories/07-form-handling.md | React Hook Form/Formik等 |
+| 验证库 | 30-knowledge-base/categories/08-validation.md | Zod/Yup/Joi等 |
+| AI Agent 基础设施 | 30-knowledge-base/categories/23-ai-agent-infrastructure.md | MCP / Vercel AI SDK / Mastra 生态 |
+| 认证与授权 | 30-knowledge-base/categories/24-auth-modern.md | better-auth / Passkeys / OAuth 2.1 |
 
 ### 7.3 对比矩阵
 
 | 文档 | 路径 | 描述 |
 |------|------|------|
-| 前端框架对比 | ./docs/comparison-matrices/frontend-frameworks-compare.md | React/Vue/Svelte/Angular/Solid对比 |
-| 后端框架对比 | ./docs/comparison-matrices/backend-frameworks-compare.md | Express/Fastify/NestJS/Hono对比 |
-| SSR元框架对比 | ./docs/comparison-matrices/ssr-metaframeworks-compare.md | Next.js/Nuxt/Remix/Astro对比 |
-| 构建工具对比 | ./docs/comparison-matrices/build-tools-compare.md | Vite/Webpack/esbuild对比表 |
-| JS/TS 编译器对比 | ./docs/comparison-matrices/js-ts-compilers-compare.md | tsc/Babel/SWC/esbuild/Rolldown/tsgo 语义差异与选型 |
-| ORM对比 | ./docs/comparison-matrices/orm-compare.md | ORM选型决策矩阵 |
-| 状态管理对比 | ./docs/comparison-matrices/state-management-compare.md | 状态管理方案对比 |
-| UI库对比 | ./docs/comparison-matrices/ui-libraries-compare.md | UI组件库对比 |
-| 包管理器对比 | ./docs/comparison-matrices/package-managers-compare.md | npm/yarn/pnpm/Bun/Deno 包管理器对比 |
-| Monorepo工具对比 | ./docs/comparison-matrices/monorepo-tools-compare.md | Turborepo/Nx/Rush/Bit/Bazel 对比 |
-| 可观测性工具对比 | ./docs/comparison-matrices/observability-tools-compare.md | Sentry/Datadog/winston/pino 监控日志对比 |
-| 部署平台对比 | ./docs/comparison-matrices/deployment-platforms-compare.md | Vercel/Netlify/Cloudflare/AWS 等部署目标对比 |
-| CI/CD工具对比 | ./docs/comparison-matrices/ci-cd-tools-compare.md | GitHub Actions/GitLab CI/Jenkins 等对比 |
-| 浏览器兼容性矩阵 | ./docs/comparison-matrices/browser-compatibility-compare.md | ES2020-ES2025 + Web API 兼容性 + polyfill |
+| 前端框架对比 | 30-knowledge-base/comparison-matrices/frontend-frameworks-compare.md | React/Vue/Svelte/Angular/Solid对比 |
+| 后端框架对比 | 30-knowledge-base/comparison-matrices/backend-frameworks-compare.md | Express/Fastify/NestJS/Hono对比 |
+| SSR元框架对比 | 30-knowledge-base/comparison-matrices/ssr-metaframeworks-compare.md | Next.js/Nuxt/Remix/Astro对比 |
+| 构建工具对比 | 30-knowledge-base/comparison-matrices/build-tools-compare.md | Vite/Webpack/esbuild对比表 |
+| JS/TS 编译器对比 | 30-knowledge-base/comparison-matrices/js-ts-compilers-compare.md | tsc/Babel/SWC/esbuild/Rolldown/tsgo 语义差异与选型 |
+| ORM对比 | 30-knowledge-base/comparison-matrices/orm-compare.md | ORM选型决策矩阵 |
+| 状态管理对比 | 30-knowledge-base/comparison-matrices/state-management-compare.md | 状态管理方案对比 |
+| UI库对比 | 30-knowledge-base/comparison-matrices/ui-libraries-compare.md | UI组件库对比 |
+| 包管理器对比 | 30-knowledge-base/comparison-matrices/package-managers-compare.md | npm/yarn/pnpm/Bun/Deno 包管理器对比 |
+| Monorepo工具对比 | 30-knowledge-base/comparison-matrices/monorepo-tools-compare.md | Turborepo/Nx/Rush/Bit/Bazel 对比 |
+| 可观测性工具对比 | 30-knowledge-base/comparison-matrices/observability-tools-compare.md | Sentry/Datadog/winston/pino 监控日志对比 |
+| 部署平台对比 | 30-knowledge-base/comparison-matrices/deployment-platforms-compare.md | Vercel/Netlify/Cloudflare/AWS 等部署目标对比 |
+| CI/CD工具对比 | 30-knowledge-base/comparison-matrices/ci-cd-tools-compare.md | GitHub Actions/GitLab CI/Jenkins 等对比 |
+| 浏览器兼容性矩阵 | 30-knowledge-base/comparison-matrices/browser-compatibility-compare.md | ES2020-ES2025 + Web API 兼容性 + polyfill |
 
 ### 7.4 架构与知识图谱
 
 | 文档 | 路径 | 描述 |
 |------|------|------|
-| 项目知识图谱 | ./docs/diagrams/project-knowledge-graph.mmd | 全景知识库结构关系图 |
-| JS执行模型 | ./docs/diagrams/js-execution-model.mmd | 调用栈、事件循环、内存模型 |
-| 事件循环详细 | ./docs/diagrams/event-loop-detailed.mmd | 宏任务/微任务/渲染流程 |
-| Promise状态机 | ./docs/diagrams/promise-state-machine.mmd | Promise生命周期可视化 |
-| TypeScript编译器架构 | ./docs/diagrams/typescript-compiler-architecture.mmd | TS编译流程 |
-| React Fiber架构 | ./docs/diagrams/react-fiber-architecture.mmd | React协调机制 |
-| 微服务架构模式 | ./docs/diagrams/microservices-patterns.mmd | 常见微服务设计模式 |
-| JWT认证流程 | ./docs/diagrams/jwt-authentication-flow.mmd | Token认证时序图 |
-| CI/CD流水线 | ./docs/diagrams/ci-cd-pipeline.mmd | 持续集成部署流程 |
-| 模块解析流程 | ./docs/diagrams/module-resolution-flow.mmd | Node.js模块加载机制 |
-| 语言核心知识图谱 | ./docs/diagrams/language-core-knowledge-graph.mmd | ES/TS类型系统/运行时/编译/形式化理论关联网络 |
-| 生态全景图谱 | ./docs/diagrams/ecosystem-landscape-graph.mmd | 前端/后端/工具链/部署/AI 14大领域生态关联图 |
-| 工程实践图谱 | ./docs/diagrams/engineering-practices-graph.mmd | 设计模式/架构/性能/安全/测试/DevOps 实践网络 |
+| 项目知识图谱 | 30-knowledge-base/diagrams/project-knowledge-graph.mmd | 全景知识库结构关系图 |
+| JS执行模型 | 30-knowledge-base/diagrams/js-execution-model.mmd | 调用栈、事件循环、内存模型 |
+| 事件循环详细 | 30-knowledge-base/diagrams/event-loop-detailed.mmd | 宏任务/微任务/渲染流程 |
+| Promise状态机 | 30-knowledge-base/diagrams/promise-state-machine.mmd | Promise生命周期可视化 |
+| TypeScript编译器架构 | 30-knowledge-base/diagrams/typescript-compiler-architecture.mmd | TS编译流程 |
+| React Fiber架构 | 30-knowledge-base/diagrams/react-fiber-architecture.mmd | React协调机制 |
+| 微服务架构模式 | 30-knowledge-base/diagrams/microservices-patterns.mmd | 常见微服务设计模式 |
+| JWT认证流程 | 30-knowledge-base/diagrams/jwt-authentication-flow.mmd | Token认证时序图 |
+| CI/CD流水线 | 30-knowledge-base/diagrams/ci-cd-pipeline.mmd | 持续集成部署流程 |
+| 模块解析流程 | 30-knowledge-base/diagrams/module-resolution-flow.mmd | Node.js模块加载机制 |
+| 语言核心知识图谱 | 30-knowledge-base/diagrams/language-core-knowledge-graph.mmd | ES/TS类型系统/运行时/编译/形式化理论关联网络 |
+| 生态全景图谱 | 30-knowledge-base/diagrams/ecosystem-landscape-graph.mmd | 前端/后端/工具链/部署/AI 14大领域生态关联图 |
+| 工程实践图谱 | 30-knowledge-base/diagrams/engineering-practices-graph.mmd | 设计模式/架构/性能/安全/测试/DevOps 实践网络 |
 
 ### 7.5 实战示例项目
 
@@ -308,17 +308,17 @@
 
 | 阶段 | 模块 | 文档 | 时间 |
 |------|------|------|------|
-| 1 | TypeScript基础 | ./docs/learning-paths/beginners-path.md | 1-2周 |
+| 1 | TypeScript基础 | 30-knowledge-base/learning-paths/beginners-path.md | 1-2周 |
 |   | 语言核心 | ./jsts-code-lab/00-language-core/ |      |
 | 2 | 设计模式 | ./jsts-code-lab/02-design-patterns/THEORY.md | 1-2周 |
 | 3 | 测试基础 | ./jsts-code-lab/07-testing/ | 1周 |
-| 4 | 前端框架 | ./docs/categories/01-frontend-frameworks.md | 1周 |
+| 4 | 前端框架 | 30-knowledge-base/categories/01-frontend-frameworks.md | 1周 |
 
 ### 路径二：进阶工程师 (6-8周)
 
 | 阶段 | 模块 | 文档 | 时间 |
 |------|------|------|------|
-| 1 | 架构模式 | ./docs/learning-paths/intermediate-path.md | 2周 |
+| 1 | 架构模式 | 30-knowledge-base/learning-paths/intermediate-path.md | 2周 |
 |   | 架构实现 | ./jsts-code-lab/06-architecture-patterns/ | |
 | 2 | 并发编程 | ./jsts-code-lab/03-concurrency/ARCHITECTURE.md | 2周 |
 | 3 | 性能优化 | ./jsts-code-lab/08-performance/ | 1周 |
@@ -329,7 +329,7 @@
 
 | 阶段 | 模块 | 文档 | 时间 |
 |------|------|------|------|
-| 1 | 分布式系统 | ./docs/learning-paths/advanced-path.md | 3周 |
+| 1 | 分布式系统 | 30-knowledge-base/learning-paths/advanced-path.md | 3周 |
 |   | 理论 | ./jsts-code-lab/70-distributed-systems/THEORY.md | |
 | 2 | 一致性算法 | ./jsts-code-lab/71-consensus-algorithms/ | 2周 |
 | 3 | 容器编排 | ./jsts-code-lab/72-container-orchestration/ | 2周 |
@@ -363,48 +363,48 @@
 
 | 领域 | 核心文档 | 生态文档 |
 |------|----------|----------|
-| 前端开发 | ./jsts-code-lab/18-frontend-frameworks/ | ./docs/categories/01-frontend-frameworks.md |
-| 后端开发 | ./jsts-code-lab/19-backend-development/ | ./docs/categories/14-backend-frameworks.md |
-| DevOps | ./jsts-code-lab/22-deployment-devops/ | ./docs/categories/03-build-tools.md |
-| 数据可视化 | ./jsts-code-lab/58-data-visualization/ | ./docs/platforms/DATA_VISUALIZATION.md |
+| 前端开发 | ./jsts-code-lab/18-frontend-frameworks/ | 30-knowledge-base/categories/01-frontend-frameworks.md |
+| 后端开发 | ./jsts-code-lab/19-backend-development/ | 30-knowledge-base/categories/14-backend-frameworks.md |
+| DevOps | ./jsts-code-lab/22-deployment-devops/ | 30-knowledge-base/categories/03-build-tools.md |
+| 数据可视化 | ./jsts-code-lab/58-data-visualization/ | 30-knowledge-base/platforms/DATA_VISUALIZATION.md |
 
 ### 9.2 按问题类型查找
 
 | 问题类型 | 解决方案文档 |
 |----------|--------------|
-| 如何选型前端框架？ | ./docs/decision-trees.md |
+| 如何选型前端框架？ | 30-knowledge-base/decision-trees.md |
 | 如何设计API？ | ./jsts-code-lab/19-backend-development/ |
 | 如何优化性能？ | ./jsts-code-lab/08-performance/ |
 | 如何保障安全？ | ./jsts-code-lab/38-web-security/ |
 | 如何设计分布式系统？ | ./jsts-code-lab/70-distributed-systems/THEORY.md |
-| 如何学习TypeScript？ | ./docs/learning-paths/beginners-path.md |
-| 如何进阶架构师？ | ./docs/learning-paths/advanced-path.md |
-| 如何选型ORM？ | ./docs/comparison-matrices/orm-compare.md |
-| 如何选型构建工具？ | ./docs/comparison-matrices/build-tools-compare.md |
-| 如何选型 JS/TS 编译器/转译器？ | ./docs/comparison-matrices/js-ts-compilers-compare.md |
-| 如何选型测试框架？ | ./docs/comparison-matrices/testing-compare.md |
-| 如何选型包管理器？ | ./docs/comparison-matrices/package-managers-compare.md |
-| 如何选型 Monorepo 工具？ | ./docs/comparison-matrices/monorepo-tools-compare.md |
-| 如何选型可观测性工具？ | ./docs/comparison-matrices/observability-tools-compare.md |
-| 如何选型部署平台？ | ./docs/comparison-matrices/deployment-platforms-compare.md |
-| 如何选型 CI/CD 工具？ | ./docs/comparison-matrices/ci-cd-tools-compare.md |
-| 浏览器兼容性如何？ | ./docs/comparison-matrices/browser-compatibility-compare.md |
+| 如何学习TypeScript？ | 30-knowledge-base/learning-paths/beginners-path.md |
+| 如何进阶架构师？ | 30-knowledge-base/learning-paths/advanced-path.md |
+| 如何选型ORM？ | 30-knowledge-base/comparison-matrices/orm-compare.md |
+| 如何选型构建工具？ | 30-knowledge-base/comparison-matrices/build-tools-compare.md |
+| 如何选型 JS/TS 编译器/转译器？ | 30-knowledge-base/comparison-matrices/js-ts-compilers-compare.md |
+| 如何选型测试框架？ | 30-knowledge-base/comparison-matrices/testing-compare.md |
+| 如何选型包管理器？ | 30-knowledge-base/comparison-matrices/package-managers-compare.md |
+| 如何选型 Monorepo 工具？ | 30-knowledge-base/comparison-matrices/monorepo-tools-compare.md |
+| 如何选型可观测性工具？ | 30-knowledge-base/comparison-matrices/observability-tools-compare.md |
+| 如何选型部署平台？ | 30-knowledge-base/comparison-matrices/deployment-platforms-compare.md |
+| 如何选型 CI/CD 工具？ | 30-knowledge-base/comparison-matrices/ci-cd-tools-compare.md |
+| 浏览器兼容性如何？ | 30-knowledge-base/comparison-matrices/browser-compatibility-compare.md |
 
 ### 9.3 按复杂度分级
 
 **1-2星 (入门级)**
 
-- ./docs/categories/14-linting-formatting.md - 代码规范工具
+- 30-knowledge-base/categories/14-linting-formatting.md - 代码规范工具
 - ./jsts-code-lab/00-language-core/ - TypeScript基础
 - ./jsts-code-lab/07-testing/ - 测试基础
-- ./docs/learning-paths/beginners-path.md - 初学者路径
+- 30-knowledge-base/learning-paths/beginners-path.md - 初学者路径
 
 **3星 (中级)**
 
 - ./jsts-code-lab/02-design-patterns/ - 设计模式
 - ./jsts-code-lab/03-concurrency/ - 并发编程
 - ./jsts-code-lab/18-frontend-frameworks/ - 前端框架
-- ./docs/learning-paths/intermediate-path.md - 进阶路径
+- 30-knowledge-base/learning-paths/intermediate-path.md - 进阶路径
 
 **4星 (高级)**
 
@@ -536,7 +536,7 @@
 ### 12.3 相关链接
 
 - [项目贡献指南](./CONTRIBUTING.md)
-- [代码实验室贡献指南](60-meta-content/ci-checks/CONTRIBUTING.md（已归档）)
+- [代码实验室贡献指南](CONTRIBUTING.md)
 - 文档编写规范（已归档）
 - [术语表](./GLOSSARY.md)
 

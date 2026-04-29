@@ -38,3 +38,16 @@ VariableDeclaration
 - **79-compiler-design**: 编译器的完整设计
 - **78-metaprogramming**: 元编程技术
 - **23-toolchain-configuration**: 工具链配置
+
+
+## 参考资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN Web Docs | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+| TC39 Proposals | 规范 | [tc39.es](https://tc39.es) |
+
+---
+
+*最后更新: 2026-04-29*

@@ -22,5 +22,17 @@ created: 2026-04-27
 ## 关联模块
 
 - `19-backend-development` — 后端 WebSocket 模式
-- `docs/categories/33-real-time-communication.md` — 实时通信技术分类
-- `docs/application-domains-index.md` — 应用领域总索引
+- `30-knowledge-base/30.2-categories/33-real-time-communication.md` — 实时通信技术分类
+- `30-knowledge-base/application-domains-index.md` — 应用领域总索引
+
+
+## 学习资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+
+---
+
+*最后更新: 2026-04-29*

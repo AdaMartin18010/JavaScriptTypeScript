@@ -17,12 +17,12 @@ created: 2026-04-27
 - 数据分箱、比例尺与交互
 - 响应式图表与性能优化
 
-底层 3D 渲染引擎（Three.js/Babylon.js）的分类选型不属于本模块范围（请参见 `docs/categories/04-data-visualization.md`）。
+底层 3D 渲染引擎（Three.js/Babylon.js）的分类选型不属于本模块范围（请参见 `30-knowledge-base/30.2-categories/04-data-visualization.md`）。
 
 ## 关联模块
 
 - `84-webxr` — WebXR 沉浸式体验
 - `37-pwa` — PWA（可视化仪表盘常作为 PWA）
-- `docs/categories/04-data-visualization.md` — 可视化库分类
-- `docs/platforms/DATA_VISUALIZATION.md` — 可视化完整指南
-- `docs/application-domains-index.md` — 应用领域总索引
+- `30-knowledge-base/30.2-categories/04-data-visualization.md` — 可视化库分类
+- `30-knowledge-base/platforms/DATA_VISUALIZATION.md` — 可视化完整指南
+- `30-knowledge-base/application-domains-index.md` — 应用领域总索引

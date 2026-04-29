@@ -25,4 +25,16 @@ Python ML 生态（PyTorch/TensorFlow 训练）和底层数学库不属于本模
 - `77-quantum-computing` — 量子计算
 - `82-edge-ai` — 边缘 AI 推理
 - `85-nlp-engineering` — NLP 工程
-- `docs/application-domains-index.md` — 应用领域总索引
+- `30-knowledge-base/application-domains-index.md` — 应用领域总索引
+
+
+## 学习资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+
+---
+
+*最后更新: 2026-04-29*

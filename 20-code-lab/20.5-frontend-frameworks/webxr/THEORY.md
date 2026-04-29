@@ -35,3 +35,16 @@ const onXRFrame = (time, frame) => {
 - **50-browser-runtime**: 浏览器设备 API
 - **36-web-assembly**: WebXR 中的高性能计算
 - **51-ui-components**: XR 环境中的 UI 设计
+
+
+## 参考资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN Web Docs | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+| TC39 Proposals | 规范 | [tc39.es](https://tc39.es) |
+
+---
+
+*最后更新: 2026-04-29*

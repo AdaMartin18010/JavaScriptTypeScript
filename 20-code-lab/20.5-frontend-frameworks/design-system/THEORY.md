@@ -35,3 +35,16 @@
 - **51-ui-components**: UI 组件的设计与实现
 - **56-code-generation**: 基于令牌的代码生成
 - **13-code-organization**: 大型项目的代码组织
+
+
+## 参考资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN Web Docs | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+| TC39 Proposals | 规范 | [tc39.es](https://tc39.es) |
+
+---
+
+*最后更新: 2026-04-29*

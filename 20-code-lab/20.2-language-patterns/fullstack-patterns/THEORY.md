@@ -35,3 +35,16 @@ const posts = trpc.post.list.useQuery() // posts.data 类型为 Post[]
 - **18-frontend-frameworks**: 前端框架
 - **19-backend-development**: 后端开发
 - **20-database-orm**: 数据库与 ORM
+
+
+## 参考资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN Web Docs | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+| TC39 Proposals | 规范 | [tc39.es](https://tc39.es) |
+
+---
+
+*最后更新: 2026-04-29*

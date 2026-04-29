@@ -34,3 +34,16 @@ Netflix 提出的生产环境韧性验证方法：
 - **70-distributed-systems**: 分布式系统故障模型
 - **74-observability**: 实验期间的监控
 - **28-testing-advanced**: 混沌测试的理论基础
+
+
+## 参考资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN Web Docs | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+| TC39 Proposals | 规范 | [tc39.es](https://tc39.es) |
+
+---
+
+*最后更新: 2026-04-29*

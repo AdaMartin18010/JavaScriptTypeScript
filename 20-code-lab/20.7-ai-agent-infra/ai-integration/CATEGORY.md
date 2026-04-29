@@ -18,7 +18,7 @@ created: 2026-04-27
 - RAG 架构与 Function Calling
 - Streaming 处理与 AI SDK 模式
 
-底层模型训练、GPU 集群和 AI 框架本身的对比选型不属于本模块范围（请参见 `docs/categories/28-ai-agent-infrastructure.md`）。
+底层模型训练、GPU 集群和 AI 框架本身的对比选型不属于本模块范围（请参见 `30-knowledge-base/30.2-categories/28-ai-agent-infrastructure.md`）。
 
 ## 关联模块
 
@@ -29,4 +29,4 @@ created: 2026-04-27
 - `89-autonomous-systems` — 自主系统
 - `94-ai-agent-lab` — Agent 实战实验室
 - `examples/ai-agent-production/` — 生产级示例
-- `docs/application-domains-index.md` — 应用领域总索引
+- `30-knowledge-base/application-domains-index.md` — 应用领域总索引

@@ -38,3 +38,16 @@ hooks.addFilter('calculate_price', (price, ctx) => ctx.vip ? price * 0.9 : price
 - **06-architecture-patterns**: 微内核架构
 - **78-metaprogramming**: 元编程技术
 - **56-code-generation**: 插件代码生成
+
+
+## 参考资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN Web Docs | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+| TC39 Proposals | 规范 | [tc39.es](https://tc39.es) |
+
+---
+
+*最后更新: 2026-04-29*

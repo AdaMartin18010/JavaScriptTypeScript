@@ -150,7 +150,7 @@ status: current
 
 > 难度: ⭐⭐
 > 预计时间: 3-5 天
-> 关联 code-lab: [00-language-core](../../jsts-code-lab/00-language-core/)
+> 关联 code-lab: [00-language-core](../../20-code-lab/language-core/)
 > 关联理论文档: [语言核心基础](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md)
 
 #### 需求文档
@@ -187,8 +187,8 @@ status: current
 
 #### 参考答案位置
 
-- 参考实现: [jsts-code-lab/00-language-core/calculator-example/](../../jsts-code-lab/00-language-core/)
-- 测试模板: [jsts-code-lab/07-testing/](../../jsts-code-lab/07-testing/)
+- 参考实现: [jsts-code-lab/00-language-core/calculator-example/](../../20-code-lab/language-core/)
+- 测试模板: [jsts-code-lab/07-testing/](../../20-code-lab/testing/)
 
 #### 扩展挑战
 
@@ -202,7 +202,7 @@ status: current
 
 > 难度: ⭐⭐⭐
 > 预计时间: 5-7 天
-> 关联 code-lab: [00-language-core](../../jsts-code-lab/00-language-core/), [02-design-patterns](../../jsts-code-lab/02-design-patterns/)
+> 关联 code-lab: [00-language-core](../../20-code-lab/language-core/), [02-design-patterns](../../20-code-lab/design-patterns/)
 > 关联理论文档: [设计模式入门](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/03_design_patterns.md)
 
 #### 需求文档
@@ -240,7 +240,7 @@ status: current
 #### 参考答案位置
 
 - 参考实现: [examples/beginner-todo-master/](../../examples/beginner-todo-master/)
-- 设计模式参考: [jsts-code-lab/02-design-patterns/observer/](../../jsts-code-lab/02-design-patterns/)
+- 设计模式参考: [jsts-code-lab/02-design-patterns/observer/](../../20-code-lab/design-patterns/)
 
 #### 扩展挑战
 
@@ -254,7 +254,7 @@ status: current
 
 > 难度: ⭐⭐⭐⭐
 > 预计时间: 7-10 天
-> 关联 code-lab: [18-frontend-frameworks](../../jsts-code-lab/18-frontend-frameworks/)
+> 关联 code-lab: [18-frontend-frameworks](../../20-code-lab/frontend-frameworks/)
 > 关联理论文档: 前端框架解析
 
 #### 需求文档
@@ -291,8 +291,8 @@ status: current
 
 #### 参考答案位置
 
-- 前端框架参考: [jsts-code-lab/18-frontend-frameworks/](../../jsts-code-lab/18-frontend-frameworks/)
-- 设计系统参考: [jsts-code-lab/57-design-system/](../../jsts-code-lab/57-design-system/)
+- 前端框架参考: [jsts-code-lab/18-frontend-frameworks/](../../20-code-lab/frontend-frameworks/)
+- 设计系统参考: [jsts-code-lab/57-design-system/](../../20-code-lab/design-system/)
 
 #### 扩展挑战
 
@@ -306,7 +306,7 @@ status: current
 
 > 难度: ⭐⭐⭐⭐
 > 预计时间: 10-14 天
-> 关联 code-lab: [19-backend-development](../../jsts-code-lab/19-backend-development/), [21-api-security](../../jsts-code-lab/21-api-security/)
+> 关联 code-lab: [19-backend-development](../../20-code-lab/backend-development/), [21-api-security](../../20-code-lab/api-security/)
 > 关联理论文档: [API 安全与认证](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/05_distributed_systems.md)
 
 #### 需求文档
@@ -343,8 +343,8 @@ status: current
 
 #### 参考答案位置
 
-- 后端参考: [jsts-code-lab/19-backend-development/](../../jsts-code-lab/19-backend-development/)
-- 安全参考: [jsts-code-lab/21-api-security/](../../jsts-code-lab/21-api-security/)
+- 后端参考: [jsts-code-lab/19-backend-development/](../../20-code-lab/backend-development/)
+- 安全参考: [jsts-code-lab/21-api-security/](../../20-code-lab/api-security/)
 - 全栈示例: [examples/fullstack-tanstack-start/](../../examples/fullstack-tanstack-start/)
 
 #### 扩展挑战
@@ -363,7 +363,7 @@ status: current
 
 > 难度: ⭐⭐⭐⭐
 > 预计时间: 10-14 天
-> 关联 code-lab: [03-concurrency](../../jsts-code-lab/03-concurrency/), [20-database-orm](../../jsts-code-lab/20-database-orm/)
+> 关联 code-lab: [03-concurrency](../../20-code-lab/concurrency/), [20-database-orm](../../20-code-lab/database-orm/)
 > 关联理论文档: [并发编程与实时通信](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/04_concurrency.md)
 
 #### 需求文档
@@ -400,9 +400,9 @@ status: current
 
 #### 参考答案位置
 
-- 并发模式参考: [jsts-code-lab/03-concurrency/](../../jsts-code-lab/03-concurrency/)
-- ORM 参考: [jsts-code-lab/20-database-orm/](../../jsts-code-lab/20-database-orm/)
-- 实时通信参考: [jsts-code-lab/30-real-time-communication/](../../jsts-code-lab/30-real-time-communication/)
+- 并发模式参考: [jsts-code-lab/03-concurrency/](../../20-code-lab/concurrency/)
+- ORM 参考: [jsts-code-lab/20-database-orm/](../../20-code-lab/database-orm/)
+- 实时通信参考: [jsts-code-lab/30-real-time-communication/](../../20-code-lab/real-time-communication/)
 
 #### 扩展挑战
 
@@ -416,7 +416,7 @@ status: current
 
 > 难度: ⭐⭐⭐⭐⭐
 > 预计时间: 12-16 天
-> 关联 code-lab: [08-performance](../../jsts-code-lab/08-performance/), [11-benchmarks](../../jsts-code-lab/11-benchmarks/)
+> 关联 code-lab: [08-performance](../../20-code-lab/performance/), [11-benchmarks](../../20-code-lab/benchmarks/)
 > 关联理论文档: 性能优化方法论
 
 #### 需求文档
@@ -453,9 +453,9 @@ status: current
 
 #### 参考答案位置
 
-- 性能优化参考: [jsts-code-lab/08-performance/](../../jsts-code-lab/08-performance/)
-- 基准测试参考: [jsts-code-lab/11-benchmarks/](../../jsts-code-lab/11-benchmarks/)
-- 数据可视化参考: [jsts-code-lab/58-data-visualization/](../../jsts-code-lab/58-data-visualization/)
+- 性能优化参考: [jsts-code-lab/08-performance/](../../20-code-lab/performance/)
+- 基准测试参考: [jsts-code-lab/11-benchmarks/](../../20-code-lab/benchmarks/)
+- 数据可视化参考: [jsts-code-lab/58-data-visualization/](../../20-code-lab/data-visualization/)
 
 #### 扩展挑战
 
@@ -469,7 +469,7 @@ status: current
 
 > 难度: ⭐⭐⭐⭐⭐
 > 预计时间: 14-21 天
-> 关联 code-lab: [25-microservices](../../jsts-code-lab/25-microservices/), [26-event-sourcing](../../jsts-code-lab/26-event-sourcing/)
+> 关联 code-lab: [25-microservices](../../20-code-lab/microservices/), [26-event-sourcing](../../20-code-lab/event-sourcing/)
 > 关联理论文档: [微服务与事件溯源](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/07_architecture.md)
 
 #### 需求文档
@@ -507,8 +507,8 @@ status: current
 
 #### 参考答案位置
 
-- 微服务参考: [jsts-code-lab/25-microservices/](../../jsts-code-lab/25-microservices/)
-- 事件溯源参考: [jsts-code-lab/26-event-sourcing/](../../jsts-code-lab/26-event-sourcing/)
+- 微服务参考: [jsts-code-lab/25-microservices/](../../20-code-lab/microservices/)
+- 事件溯源参考: [jsts-code-lab/26-event-sourcing/](../../20-code-lab/event-sourcing/)
 - 架构示例: [examples/intermediate-microservice-workshop/](../../examples/intermediate-microservice-workshop/)
 
 #### 扩展挑战
@@ -527,8 +527,8 @@ status: current
 
 > 难度: ⭐⭐⭐⭐⭐
 > 预计时间: 21-30 天
-> 关联 code-lab: [01-ecmascript-evolution](../../jsts-code-lab/01-ecmascript-evolution/), [79-compiler-design](../../jsts-code-lab/79-compiler-design/)
-> 关联理论文档: [ECMAScript 规范与演进](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md), [编译器设计](../../jsts-code-lab/79-compiler-design/THEORY.md)
+> 关联 code-lab: [01-ecmascript-evolution](../../20-code-lab/ecmascript-evolution/), [79-compiler-design](../../20-code-lab/compiler-design/)
+> 关联理论文档: [ECMAScript 规范与演进](../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md), [编译器设计](../../20-code-lab/compiler-design/THEORY.md)
 
 #### 需求文档
 
@@ -566,8 +566,8 @@ status: current
 #### 参考答案位置
 
 - 编译器参考: [examples/advanced-compiler-workshop/](../../examples/advanced-compiler-workshop/)
-- ECMAScript 演进: [jsts-code-lab/01-ecmascript-evolution/](../../jsts-code-lab/01-ecmascript-evolution/)
-- 编译器理论: [jsts-code-lab/79-compiler-design/](../../jsts-code-lab/79-compiler-design/)
+- ECMAScript 演进: [jsts-code-lab/01-ecmascript-evolution/](../../20-code-lab/ecmascript-evolution/)
+- 编译器理论: [jsts-code-lab/79-compiler-design/](../../20-code-lab/compiler-design/)
 
 #### 扩展挑战
 
@@ -581,8 +581,8 @@ status: current
 
 > 难度: ⭐⭐⭐⭐⭐⭐
 > 预计时间: 30-45 天
-> 关联 code-lab: [70-distributed-systems](../../jsts-code-lab/70-distributed-systems/), [71-consensus-algorithms](../../jsts-code-lab/71-consensus-algorithms/)
-> 关联理论文档: [分布式系统理论](../../jsts-code-lab/70-distributed-systems/THEORY.md), [共识算法](../../jsts-code-lab/71-consensus-algorithms/THEORY.md)
+> 关联 code-lab: [70-distributed-systems](../../20-code-lab/distributed-systems/), [71-consensus-algorithms](../../20-code-lab/consensus-algorithms/)
+> 关联理论文档: [分布式系统理论](../../20-code-lab/distributed-systems/THEORY.md), [共识算法](../../20-code-lab/consensus-algorithms/THEORY.md)
 
 #### 需求文档
 
@@ -619,8 +619,8 @@ status: current
 
 #### 参考答案位置
 
-- 分布式系统理论: [jsts-code-lab/70-distributed-systems/](../../jsts-code-lab/70-distributed-systems/)
-- 共识算法参考: [jsts-code-lab/71-consensus-algorithms/](../../jsts-code-lab/71-consensus-algorithms/)
+- 分布式系统理论: [jsts-code-lab/70-distributed-systems/](../../20-code-lab/distributed-systems/)
+- 共识算法参考: [jsts-code-lab/71-consensus-algorithms/](../../20-code-lab/consensus-algorithms/)
 - Raft 论文: [The Raft Consensus Paper](https://raft.github.io/raft.pdf)
 
 #### 扩展挑战

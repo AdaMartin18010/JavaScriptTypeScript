@@ -35,4 +35,4 @@ created: 2026-04-27
 ## 关联索引
 
 - [10-fundamentals/10.1-language-semantics/README.md](../../../10-fundamentals/10.1-language-semantics/README.md)
-- [docs/categories/00-language-core.md](../../../30-knowledge-base/30.2-categories/00-language-core.md)
+- [30-knowledge-base/30.2-categories/00-language-core.md](../../../30-knowledge-base/30.2-categories/00-language-core.md)

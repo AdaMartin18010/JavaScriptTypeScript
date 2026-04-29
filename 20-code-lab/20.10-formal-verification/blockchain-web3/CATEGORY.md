@@ -13,6 +13,7 @@ created: 2026-04-27
 ## 边界说明
 
 本模块聚焦区块链应用开发模式，包括：
+
 - 以太坊基础与智能合约交互
 - Web3.js / Ethers.js 使用模式
 - 钱包集成与 NFT / DeFi 逻辑
@@ -22,5 +23,17 @@ created: 2026-04-27
 ## 关联模块
 
 - `83-blockchain-advanced` — 高级区块链（Layer 2、Rollup）
-- `docs/categories/32-blockchain-web3.md` — Web3 分类索引
-- `docs/application-domains-index.md` — 应用领域总索引
+- `30-knowledge-base/30.2-categories/32-blockchain-web3.md` — Web3 分类索引
+- `30-knowledge-base/application-domains-index.md` — 应用领域总索引
+
+
+## 学习资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+
+---
+
+*最后更新: 2026-04-29*

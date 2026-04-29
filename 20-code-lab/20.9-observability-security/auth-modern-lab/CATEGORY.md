@@ -33,3 +33,15 @@ created: 2026-04-28
 ---
 
 > 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
+
+
+## 学习资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+
+---
+
+*最后更新: 2026-04-29*

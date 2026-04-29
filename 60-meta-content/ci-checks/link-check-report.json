@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-04-29T00:42:52.887Z",
-  "totalFiles": 1202,
+  "timestamp": "2026-04-29T00:53:04.364Z",
+  "totalFiles": 1201,
   "checkedFiles": 141,
   "totalLinks": 507,
-  "brokenCount": 106,
+  "brokenCount": 101,
   "brokenLinks": [
     {
       "file": "20-code-lab\\20.1-fundamentals-lab\\real-world-examples\\THEORY.md",
@@ -609,37 +609,7 @@
       "file": "COMPLETE_DOCUMENTATION_INDEX.md",
       "line": 11,
       "text": "查看四维分类总索引",
-      "url": "./docs/FOUR_DIMENSIONS_INDEX.md"
-    },
-    {
-      "file": "COMPLETE_DOCUMENTATION_INDEX.md",
-      "line": 15,
-      "text": "language-core-index.md",
-      "url": "./docs/language-core-index.md"
-    },
-    {
-      "file": "COMPLETE_DOCUMENTATION_INDEX.md",
-      "line": 16,
-      "text": "frameworks-index.md",
-      "url": "./docs/frameworks-index.md"
-    },
-    {
-      "file": "COMPLETE_DOCUMENTATION_INDEX.md",
-      "line": 17,
-      "text": "application-domains-index.md",
-      "url": "./docs/application-domains-index.md"
-    },
-    {
-      "file": "COMPLETE_DOCUMENTATION_INDEX.md",
-      "line": 18,
-      "text": "infrastructure-index.md",
-      "url": "./docs/infrastructure-index.md"
-    },
-    {
-      "file": "COMPLETE_DOCUMENTATION_INDEX.md",
-      "line": 539,
-      "text": "代码实验室贡献指南",
-      "url": "./jsts-code-lab/CONTRIBUTING.md"
+      "url": "30-knowledge-base/FOUR_DIMENSIONS_INDEX.md"
     }
   ],
   "passed": false

@@ -20,4 +20,16 @@ module: 19-backend-development
 ## 相关索引
 
 - [30-knowledge-base/30.2-categories/README.md](../../../30-knowledge-base/30.2-categories/README.md)
-- [docs/categories/14-backend-frameworks.md](../../../30-knowledge-base/30.2-categories/14-backend-frameworks.md)
+- [30-knowledge-base/30.2-categories/14-backend-frameworks.md](../../../30-knowledge-base/30.2-categories/14-backend-frameworks.md)
+
+
+## 学习资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+
+---
+
+*最后更新: 2026-04-29*

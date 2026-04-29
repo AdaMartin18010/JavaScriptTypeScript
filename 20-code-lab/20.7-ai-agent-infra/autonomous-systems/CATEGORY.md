@@ -24,4 +24,16 @@ created: 2026-04-27
 
 - `33-ai-integration` — AI 集成
 - `94-ai-agent-lab` — Agent 实战实验室
-- `docs/application-domains-index.md` — 应用领域总索引
+- `30-knowledge-base/application-domains-index.md` — 应用领域总索引
+
+
+## 学习资源
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
+| web.dev | 指南 | [web.dev](https://web.dev) |
+
+---
+
+*最后更新: 2026-04-29*
