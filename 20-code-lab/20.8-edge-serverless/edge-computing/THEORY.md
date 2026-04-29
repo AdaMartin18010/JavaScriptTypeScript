@@ -23,7 +23,90 @@
     DNS 路由（Anycast）    Durable Objects/KV
 ```
 
-## 3. 边缘状态管理
+## 3. 边缘运行时深度对比
+
+| 维度 | V8 Isolate | WASM | QuickJS |
+|------|-----------|------|---------|
+| **运行时** | Chrome V8（无浏览器外壳） | 沙箱字节码 VM | 轻量 JS 引擎 |
+| **启动时间** | < 1ms | < 10ms | < 5ms |
+| **内存占用** | 5-10MB | 视模块而定 | < 1MB |
+| **语言支持** | JavaScript/TypeScript | Rust/C/Go/C++ 编译 | JavaScript/TypeScript |
+| **标准库** | 完整 Web API（fetch, URL, crypto） | 需宿主暴露 API | 简化 ES2020 子集 |
+| **安全模型** | 进程级隔离（Spectre 缓解） | 内存安全 + 能力沙箱 | 纯软件沙箱 |
+| **典型平台** | Cloudflare Workers, Deno Deploy, Vercel Edge | Cloudflare Workers, Fastly Compute | 嵌入式设备、游戏脚本 |
+| **适用场景** | 高并发 HTTP 边缘函数 | 计算密集型任务（图像处理、加密） | IoT、插件系统、资源极度受限 |
+
+## 4. Cloudflare Worker 代码示例
+
+```typescript
+// src/index.ts — Cloudflare Worker with middleware pattern
+export interface Env {
+  KV_NAMESPACE: KVNamespace;
+  DURABLE_OBJECTS: DurableObjectNamespace;
+}
+
+// 响应缓存中间件
+const withCache = async (
+  request: Request,
+  handler: () => Promise<Response>
+): Promise<Response> => {
+  const cache = caches.default;
+  const cached = await cache.match(request);
+  if (cached) return cached;
+
+  const response = await handler();
+  ctx.waitUntil(cache.put(request, response.clone()));
+  return response;
+};
+
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const url = new URL(request.url);
+
+    // A/B 测试逻辑（边缘执行，零客户端延迟）
+    if (url.pathname === '/experiment') {
+      const cookie = request.headers.get('Cookie') || '';
+      let variant = cookie.match(/ab_test=(\w)/)?.[1];
+
+      if (!variant) {
+        variant = Math.random() > 0.5 ? 'A' : 'B';
+      }
+
+      const content = variant === 'A'
+        ? '<h1>Variant A: 红色主题</h1>'
+        : '<h1>Variant B: 蓝色主题</h1>';
+
+      return new Response(content, {
+        headers: {
+          'Content-Type': 'text/html',
+          'Set-Cookie': `ab_test=${variant}; Path=/; Max-Age=86400`,
+          'Cache-Control': 'private, no-store'
+        }
+      });
+    }
+
+    // KV 缓存读取
+    if (url.pathname === '/config') {
+      return withCache(request, async () => {
+        const config = await env.KV_NAMESPACE.get('app:config', { type: 'json' });
+        return Response.json(config ?? { default: true });
+      });
+    }
+
+    // Durable Object：WebSocket 协同编辑房间
+    if (url.pathname.startsWith('/room/')) {
+      const id = url.pathname.split('/')[2];
+      const durableId = env.DURABLE_OBJECTS.idFromName(id);
+      const stub = env.DURABLE_OBJECTS.get(durableId);
+      return stub.fetch(request);
+    }
+
+    return new Response('Not Found', { status: 404 });
+  }
+};
+```
+
+## 5. 边缘状态管理
 
 | 存储类型 | 一致性 | 延迟 | 适用场景 |
 |---------|--------|------|---------|
@@ -32,21 +115,29 @@
 | **SQLite (D1)** | ACID | 区域 < 20ms | 关系型数据 |
 | **Cache API** | 最终一致性 | 边缘 < 1ms | HTTP 响应缓存 |
 
-## 4. 边缘渲染策略
+## 6. 边缘渲染策略
 
 - **SSR at Edge**: 在边缘节点执行 React/Vue SSR，减少 TTFB
 - **ISR (Incremental Static Regeneration)**: 边缘缓存 + 后台重新生成
 - **Streaming**: 边缘流式传输 HTML，渐进式渲染
 
-## 5. 关键挑战
+## 7. 关键挑战
 
 - **调试困难**: 边缘环境难以本地复现
 - **供应商锁定**: 各平台 API 差异大（Workers vs Edge Functions）
 - **执行限制**: CPU/内存/时间严格受限
 - **冷数据**: 跨区域数据访问延迟高
 
-## 6. 与相邻模块的关系
+## 8. 与相邻模块的关系
 
 - **93-deployment-edge-lab**: 边缘部署的实践与工具
 - **31-serverless**: FaaS 与边缘函数的架构对比
 - **96-orm-modern-lab**: 边缘环境下的 ORM 适配
+
+## 参考链接
+
+- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
+- [Vercel Edge Functions](https://vercel.com/docs/functions/edge-functions)
+- [WebAssembly on the Edge — Cloudflare](https://developers.cloudflare.com/workers/runtime-apis/webassembly/)
+- [QuickJS Documentation](https://bellard.org/quickjs/)
+- [The Edge Computing Landscape — Deno Blog](https://deno.com/blog/the-edge-computing-landscape)
