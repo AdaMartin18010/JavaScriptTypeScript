@@ -147,6 +147,82 @@ i18next.t('items', { count: 5 });  // '5 items'
 i18next.t('greeting', { name: 'Alice' }); // 'Hello, Alice!'
 ```
 
+### RTL 布局适配（React + CSS Logical Properties）
+
+```tsx
+// 动态设置文档方向
+import { useEffect } from 'react';
+
+function useDocumentDirection(locale: string) {
+  const isRTL = ['ar', 'he', 'fa', 'ur'].some((l) => locale.startsWith(l));
+  useEffect(() => {
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+    document.documentElement.lang = locale;
+  }, [locale, isRTL]);
+  return isRTL;
+}
+
+// CSS 逻辑属性自动适配方向
+// .margin-inline-start { margin-inline-start: 1rem; }
+// LTR 时等价于 margin-left，RTL 时等价于 margin-right
+```
+
+### 按需加载语言包（动态 import）
+
+```typescript
+// i18n.ts — 运行时动态加载翻译文件
+import i18next from 'i18next';
+
+async function loadLocale(locale: string) {
+  const module = await import(`./locales/${locale}.json`);
+  i18next.addResourceBundle(locale, 'translation', module.default);
+  await i18next.changeLanguage(locale);
+}
+
+// 使用
+await loadLocale('zh-CN');
+console.log(i18next.t('welcome'));
+```
+
+### Intl.Segmenter 文本分段
+
+```js
+// 按 grapheme cluster（字素簇）分段，正确处理 emoji 和组合字符
+const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
+const text = '👨‍👩‍👧‍👦 family';
+const segments = Array.from(segmenter.segment(text));
+console.log(segments.map((s) => s.segment));
+// ['👨‍👩‍👧‍👦', ' ', 'f', 'a', 'm', 'i', 'l', 'y']
+
+// 按词分段
+const wordSegmenter = new Intl.Segmenter('zh', { granularity: 'word' });
+const sentence = 'JavaScript 很强大';
+console.log(Array.from(wordSegmenter.segment(sentence)).map((s) => s.segment));
+// ['JavaScript', ' ', '很', '强大']
+```
+
+### Temporal API 预览（实验性，需 polyfill）
+
+```typescript
+// Temporal 是 ECMAScript 的下一阶段日期时间 API，目前需 @js-temporal/polyfill
+import { Temporal } from '@js-temporal/polyfill';
+
+// 不可变的 PlainDate / PlainDateTime
+const date = Temporal.PlainDate.from('2025-12-25');
+const nextWeek = date.add({ days: 7 });
+console.log(nextWeek.toString()); // 2026-01-01
+
+// 时区感知的时间点
+const zoned = Temporal.Now.zonedDateTimeISO('Asia/Shanghai');
+console.log(zoned.toString()); // 2026-04-29T15:57:00+08:00[Asia/Shanghai]
+
+//  Duration 运算
+const duration = Temporal.Duration.from({ hours: 2, minutes: 30 });
+const later = zoned.add(duration);
+```
+
+> ⚠️ Temporal API 仍处于 TC39 Stage 3，生产环境建议使用 polyfill 或继续沿用 `date-fns` / `luxon`。
+
 ---
 
 ## 常见误区
@@ -165,10 +241,14 @@ i18next.t('greeting', { name: 'Alice' }); // 'Hello, Alice!'
 - [MDN: Intl API](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl)
 - [ECMA-402: Intl Specification](https://tc39.es/ecma402/)
 - [i18next Documentation](https://www.i18next.com/)
-
 - [FormatJS / react-intl](https://formatjs.io/docs/react-intl/)
 - [Unicode CLDR](https://cldr.unicode.org/)
 - [ICU Message Format](https://unicode-org.github.io/icu/userguide/format_parse/messages/)
+- [TC39 Temporal Proposal](https://tc39.es/proposal-temporal/docs/) — 下一代日期时间 API
+- [W3C Internationalization](https://www.w3.org/International/) — W3C 国际化标准
+- [RTL Styling 101](https://rtlstyling.com/) — 双向文本布局权威指南
+- [caniuse — Intl Support](https://caniuse.com/?search=Intl) — Intl API 浏览器兼容性
+- [MDN — CSS Logical Properties](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_logical_properties_and_values) — 逻辑属性与双向布局
 - `30-knowledge-base/30.2-categories/README.md`
 
 ---

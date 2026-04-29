@@ -107,6 +107,43 @@ async function loadLocale(locale: string) {
 }
 ```
 
+#### 进阶：动态导入的错误处理与预加载
+
+```typescript
+// 带错误边界和超时控制的动态导入
+async function safeImport<T>(
+  modulePath: string,
+  options: { timeout?: number; fallback?: T } = {}
+): Promise<T | undefined> {
+  const { timeout = 5000, fallback } = options;
+
+  try {
+    const modulePromise = import(/* webpackChunkName: "[request]" */ modulePath);
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Import timeout: ${modulePath}`)), timeout)
+    );
+
+    const module = await Promise.race([modulePromise, timeoutPromise]);
+    return (module as { default: T }).default ?? (module as T);
+  } catch (err) {
+    console.error(`Failed to load module ${modulePath}:`, err);
+    return fallback;
+  }
+}
+
+// 预加载关键模块（不阻塞渲染）
+function preloadModule(path: string): void {
+  const link = document.createElement('link');
+  link.rel = 'modulepreload';
+  link.href = path;
+  document.head.appendChild(link);
+}
+
+// 使用
+preloadModule('/chunks/admin-dashboard.js');
+const AdminDashboard = await safeImport('/chunks/admin-dashboard.js');
+```
+
 ### 3.4 Promise.allSettled
 
 ```typescript
@@ -127,6 +164,46 @@ const failed = results
   .map(r => r.reason);
 ```
 
+#### 进阶：Promise.allSettled 结果分类工具
+
+```typescript
+interface PartitionedResults<T> {
+  fulfilled: T[];
+  rejected: Error[];
+}
+
+function partitionSettled<T>(
+  results: PromiseSettledResult<T>[]
+): PartitionedResults<T> {
+  return results.reduce<PartitionedResults<T>>(
+    (acc, result) => {
+      if (result.status === 'fulfilled') {
+        acc.fulfilled.push(result.value);
+      } else {
+        acc.rejected.push(result.reason);
+      }
+      return acc;
+    },
+    { fulfilled: [], rejected: [] }
+  );
+}
+
+// 实际应用：批量 API 调用，部分失败不影响整体
+async function fetchUserData(userIds: string[]) {
+  const promises = userIds.map(id =>
+    fetch(`/api/users/${id}`).then(r => {
+      if (!r.ok) throw new Error(`User ${id} not found`);
+      return r.json();
+    })
+  );
+
+  const { fulfilled, rejected } = partitionSettled(await Promise.allSettled(promises));
+
+  console.warn(`${rejected.length} users failed to load`);
+  return fulfilled;
+}
+```
+
 ### 3.5 globalThis
 
 ```typescript
@@ -143,7 +220,72 @@ if (globalThis.Buffer === undefined) {
 }
 ```
 
-### 3.2 常见误区
+#### 进阶：跨环境全局工具注册
+
+```typescript
+// lib/global-utils.ts
+// 在浏览器、Node.js、Worker 中都能安全运行的工具函数
+
+declare global {
+  interface globalThis {
+    __APP_VERSION__?: string;
+    __BUILD_TIME__?: string;
+  }
+}
+
+export function getGlobalConfig(): { version: string; buildTime: string } {
+  return {
+    version: globalThis.__APP_VERSION__ ?? 'dev',
+    buildTime: globalThis.__BUILD_TIME__ ?? new Date().toISOString(),
+  };
+}
+
+// 安全地检查当前运行时
+export function getRuntime(): 'browser' | 'node' | 'worker' | 'unknown' {
+  if (typeof window !== 'undefined') return 'browser';
+  if (typeof process !== 'undefined' && process.versions?.node) return 'node';
+  if (typeof self !== 'undefined' && typeof importScripts === 'function') return 'worker';
+  return 'unknown';
+}
+```
+
+### 3.6 String.prototype.matchAll
+
+```typescript
+// 提取正则所有匹配，包括捕获组
+const text = 'Contact: alice@example.com, bob@test.org';
+const emailRegex = /(\w+)@(\w+\.\w+)/g;
+
+// ES2020 之前：需循环 exec，容易出错
+// ES2020+：matchAll 返回迭代器
+for (const match of text.matchAll(emailRegex)) {
+  console.log(match[0]); // 完整匹配: alice@example.com
+  console.log(match[1]); // 用户名: alice
+  console.log(match[2]); // 域名: example.com
+  console.log(match.index); // 匹配位置
+}
+
+// 转换为数组
+const allEmails = Array.from(text.matchAll(emailRegex));
+```
+
+### 3.7 import.meta
+
+```typescript
+// 获取当前模块的元数据（ES 模块专用）
+console.log(import.meta.url);      // file:///path/to/module.js 或 http://...
+console.log(import.meta.resolve);  // 解析相对路径为绝对 URL
+
+// 条件编译/环境检测
+if (import.meta.env?.MODE === 'development') {
+  console.log('Running in dev mode');
+}
+
+// Vite 中的典型用法
+const imageUrl = new URL('./assets/logo.png', import.meta.url).href;
+```
+
+### 3.8 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -161,7 +303,13 @@ if (globalThis.Buffer === undefined) {
 - [MDN — Optional chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining) — Mozilla 文档
 - [MDN — Nullish coalescing](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing) — Mozilla 文档
 - [MDN — BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) — Mozilla 文档
+- [MDN — Dynamic import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import) — Mozilla 文档
+- [MDN — Promise.allSettled](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled) — Mozilla 文档
+- [MDN — globalThis](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/globalThis) — Mozilla 文档
+- [MDN — String.matchAll](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/matchAll) — Mozilla 文档
+- [MDN — import.meta](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import.meta) — Mozilla 文档
 - [V8 Blog — ES2020 Features](https://v8.dev/features/tags/es2020) — V8 引擎实现解析
+- [2ality — ES2020 Feature Overview](https://2ality.com/2019/12/ecmascript-2020.html) — Dr. Axel Rauschmayer 深度解析
 - [TC39 Proposals](https://github.com/tc39/proposals) — ECMAScript 提案仓库
 
 ---

@@ -70,6 +70,20 @@ export function transformArrowToFunction(source: string): string {
   const printer = ts.createPrinter();
   return printer.printNode(ts.EmitHint.Unspecified, result.transformed[0], sourceFile);
 }
+
+// Babel 风格：访问者模式
+type NodePath = { node: any; replaceWith: (n: any) => void };
+
+function babelStyleTransformer(source: string) {
+  // 伪代码：Babel 的 visitor 模式
+  const visitors = {
+    ArrowFunctionExpression(path: NodePath) {
+      // 转换为 FunctionDeclaration 逻辑
+      console.log('Transforming arrow function');
+    }
+  };
+  return visitors;
+}
 ```
 
 ### OpenAPI Schema → TypeScript 类型
@@ -92,6 +106,21 @@ export function schemaToTypeScript(schema: { type: string; properties?: Record<s
 function jsonTypeToTs(type: string): string {
   const map: Record<string, string> = { string: 'string', integer: 'number', boolean: 'boolean', array: 'unknown[]' };
   return map[type] ?? 'unknown';
+}
+
+// 完整 OpenAPI 客户端生成骨架
+export function generateClient(spec: { paths: Record<string, any> }): string {
+  const lines = ['class APIClient {'];
+  for (const [path, methods] of Object.entries(spec.paths)) {
+    for (const [method, def] of Object.entries(methods)) {
+      const fnName = `${method}${path.replace(/\//g, '_')}`;
+      lines.push(`  async ${fnName}(params: any) {`);
+      lines.push(`    return this.request('${method.toUpperCase()}', '${path}', params);`);
+      lines.push(`  }`);
+    }
+  }
+  lines.push('}');
+  return lines.join('\n');
 }
 ```
 
@@ -118,6 +147,100 @@ export function compileTemplate(template: string) {
 const prompt = compileTemplate('Generate a {{language}} function that {{task}}.');
 prompt({ language: 'TypeScript', task: 'sorts an array' });
 // → "Generate a TypeScript function that sorts an array."
+
+// 高级：条件分支与循环（Handlebars 风格）
+export function compileAdvancedTemplate(template: string) {
+  return (context: Record<string, unknown>) => {
+    return template
+      .replace(/\{\{#if\s+(\w+)\}\}(.*?)\{\{\/if\}\}/gs, (_m, cond, body) => {
+        return context[cond] ? body : '';
+      })
+      .replace(/\{\{(\w+)\}\}/g, (_m, key) => String(context[key] ?? ''));
+  };
+}
+```
+
+### 代码生成流水线（AI 后处理）
+
+```typescript
+// ai-code-generator.ts
+export class AICodePipeline {
+  async generate(prompt: string, model: string): Promise<string> {
+    // 1. 调用 LLM API
+    const raw = await this.callLLM(prompt, model);
+
+    // 2. 提取代码块
+    const code = this.extractCodeBlocks(raw);
+
+    // 3. 语法校验
+    const valid = await this.lintTypeScript(code);
+    if (!valid) {
+      // 4. 自修复循环
+      return this.selfHeal(code, prompt);
+    }
+
+    return code;
+  }
+
+  private extractCodeBlocks(raw: string): string {
+    const match = raw.match(/```typescript\n([\s\S]*?)```/);
+    return match ? match[1].trim() : raw.trim();
+  }
+
+  private async lintTypeScript(code: string): Promise<boolean> {
+    const sourceFile = ts.createSourceFile('tmp.ts', code, ts.ScriptTarget.Latest, true);
+    // 简单检查：无语法错误节点
+    let hasError = false;
+    function visit(node: ts.Node) {
+      if (node.kind === ts.SyntaxKind.Unknown) hasError = true;
+      ts.forEachChild(node, visit);
+    }
+    visit(sourceFile);
+    return !hasError;
+  }
+
+  private async selfHeal(code: string, originalPrompt: string): Promise<string> {
+    const fixPrompt = `The following TypeScript has errors. Fix them:\n${code}`;
+    return this.generate(fixPrompt, 'gpt-4');
+  }
+
+  private async callLLM(prompt: string, model: string): Promise<string> {
+    // 占位：实际调用 OpenAI / Anthropic / Azure 等
+    return `\`\`\`typescript\nconst answer = 42;\n\`\`\``;
+  }
+}
+```
+
+### 模板代码生成器（Hygen / Plop 风格）
+
+```typescript
+// codegen-scaffold.ts
+import { mkdirSync, writeFileSync } from 'fs';
+import { join } from 'path';
+
+interface ScaffoldConfig {
+  name: string;
+  type: 'component' | 'hook' | 'service';
+  outDir: string;
+}
+
+export function scaffold(config: ScaffoldConfig) {
+  const { name, type, outDir } = config;
+  const dir = join(outDir, name);
+  mkdirSync(dir, { recursive: true });
+
+  const templates: Record<string, () => string> = {
+    component: () => `export function ${name}() {\n  return <div>${name}</div>;\n}`,
+    hook: () => `export function use${name}() {\n  // TODO: implement\n  return {};\n}`,
+    service: () => `export class ${name}Service {\n  async fetch() {\n    // TODO: implement\n  }\n}`,
+  };
+
+  writeFileSync(join(dir, 'index.ts'), templates[type]());
+  writeFileSync(join(dir, `${name}.test.ts`), `test('${name} works', () => {});`);
+}
+
+// 用法
+scaffold({ name: 'UserCard', type: 'component', outDir: './src' });
 ```
 
 ## 关联模块
@@ -138,6 +261,10 @@ prompt({ language: 'TypeScript', task: 'sorts an array' });
 | Claude Code — Best Practices | 指南 | [docs.anthropic.com/en/docs/claude-code/best-practices](https://docs.anthropic.com/en/docs/claude-code/best-practices) |
 | GitHub Copilot — Prompt Engineering | 指南 | [docs.github.com/en/copilot/using-github-copilot/best-practices-for-using-github-copilot](https://docs.github.com/en/copilot/using-github-copilot/best-practices-for-using-github-copilot) |
 | swc (Rust-based compiler) | 文档 | [swc.rs](https://swc.rs) |
+| AST Explorer | 工具 | [astexplorer.net](https://astexplorer.net) |
+| Plop.js — Micro-generator | 文档 | [plopjs.com](https://plopjs.com) |
+| Hygen — Scaffolding tool | 文档 | [hygen.io](https://www.hygen.io) |
+| ts-morph — TypeScript AST Manipulation | 文档 | [ts-morph.com](https://ts-morph.com) |
 
 ---
 

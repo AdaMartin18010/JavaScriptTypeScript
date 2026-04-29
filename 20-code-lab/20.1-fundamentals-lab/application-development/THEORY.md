@@ -8,11 +8,55 @@
 
 现代实践强调**迭代**和**增量**：短周期（1-2周）交付可用版本。
 
+---
+
 ## 2. 需求分析
 
 - **功能性需求**: 系统必须做什么（用户故事、用例）
 - **非功能性需求**: 性能、安全、可扩展性、可用性
 - **验收标准**: 定义"完成"的明确条件（Given-When-Then）
+
+#### 代码示例：Given-When-Then 验收测试（Cucumber 风格）
+
+```typescript
+// features/user-login.feature
+Feature: User Login
+
+  Scenario: Successful login with valid credentials
+    Given the user has a registered account with email "alice@example.com"
+    And the user's password is "SecurePass123!"
+    When the user submits the login form
+    Then the user should be redirected to the dashboard
+    And the user session should be valid for 24 hours
+
+  Scenario: Failed login with invalid password
+    Given the user has a registered account with email "alice@example.com"
+    When the user submits the login form with password "WrongPass"
+    Then the user should see an error message "Invalid credentials"
+    And the failed attempt should be logged for security audit
+```
+
+```typescript
+// tests/steps/login.steps.ts — Playwright + Cucumber 实现
+import { Given, When, Then } from '@cucumber/cucumber';
+import { expect } from '@playwright/test';
+
+Given('the user has a registered account with email {string}', async function (email: string) {
+  await this.db.user.create({ data: { email, passwordHash: await hash('SecurePass123!') } });
+});
+
+When('the user submits the login form', async function () {
+  await this.page.fill('[data-testid="email"]', 'alice@example.com');
+  await this.page.fill('[data-testid="password"]', 'SecurePass123!');
+  await this.page.click('[data-testid="login-button"]');
+});
+
+Then('the user should be redirected to the dashboard', async function () {
+  await expect(this.page).toHaveURL('/dashboard');
+});
+```
+
+---
 
 ## 3. 技术选型框架
 
@@ -24,6 +68,8 @@
 | **可维护性** | 代码清晰度、测试覆盖、类型安全 |
 | **长期支持** | 赞助商、版本发布周期、向后兼容 |
 
+---
+
 ## 4. 代码审查（Code Review）
 
 审查清单：
@@ -34,12 +80,138 @@
 - 安全性: 输入验证、敏感数据处理
 - 性能: 是否存在明显瓶颈
 
+#### 代码示例：自动化代码审查配置
+
+```typescript
+// .github/workflows/code-review.yml
+name: Automated Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+
+      - run: npm ci
+
+      # 1. 类型检查
+      - run: npx tsc --noEmit
+
+      # 2. Lint
+      - run: npx eslint . --ext .ts,.tsx
+
+      # 3. 测试覆盖率门禁
+      - run: npx vitest run --coverage
+
+      # 4. 包体积检查
+      - run: npx bundlesize
+
+      # 5. 安全检查
+      - run: npx audit-ci --moderate
+
+      # 6. AI 辅助审查（可选）
+      - uses: coderabbitai/ai-pr-reviewer@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+```
+
+---
+
 ## 5. 发布管理
 
 - **语义化版本（SemVer）**: MAJOR.MINOR.PATCH
 - **变更日志（Changelog）**: 记录每个版本的变更
 - **功能开关**: 渐进式发布，快速回滚
 - **蓝绿/金丝雀**: 降低发布风险
+
+#### 代码示例：功能开关（Feature Flags）实现
+
+```typescript
+// lib/feature-flags.ts
+interface FeatureFlags {
+  newDashboard: boolean;
+  darkMode: boolean;
+  betaApi: boolean;
+}
+
+const defaultFlags: FeatureFlags = {
+  newDashboard: false,
+  darkMode: true,
+  betaApi: false,
+};
+
+// 从环境变量或远程配置服务读取
+export function getFeatureFlags(): FeatureFlags {
+  return {
+    ...defaultFlags,
+    newDashboard: process.env.FF_NEW_DASHBOARD === 'true',
+    darkMode: process.env.FF_DARK_MODE !== 'false',
+    betaApi: process.env.FF_BETA_API === 'true',
+  };
+}
+
+// React Hook 封装
+import { useMemo } from 'react';
+
+export function useFeatureFlag<K extends keyof FeatureFlags>(flag: K): FeatureFlags[K] {
+  return useMemo(() => getFeatureFlags()[flag], [flag]);
+}
+```
+
+```tsx
+// pages/Dashboard.tsx
+import { useFeatureFlag } from '@/lib/feature-flags';
+import { LegacyDashboard } from './LegacyDashboard';
+import { NewDashboard } from './NewDashboard';
+
+export default function Dashboard() {
+  const isNewDashboard = useFeatureFlag('newDashboard');
+  return isNewDashboard ? <NewDashboard /> : <LegacyDashboard />;
+}
+```
+
+#### 代码示例：语义化版本自动化
+
+```json
+// package.json
+{
+  "name": "my-app",
+  "version": "2.1.3",
+  "scripts": {
+    "version:patch": "npm version patch -m 'chore(release): %s'",
+    "version:minor": "npm version minor -m 'feat(release): %s'",
+    "version:major": "npm version major -m 'breaking(release): %s'",
+    "postversion": "git push && git push --tags"
+  }
+}
+```
+
+```bash
+# 遵循 Conventional Commits 的自动化版本管理
+# 安装 standard-version 或 semantic-release
+npm i -D semantic-release @semantic-release/git @semantic-release/changelog
+
+# .releaserc.json
+{
+  "branches": ["main"],
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    "@semantic-release/npm",
+    "@semantic-release/git"
+  ]
+}
+```
+
+---
 
 ## 6. 现代应用架构模式对比
 
@@ -65,6 +237,8 @@
             ├─ 内容 → MPA / SSG
             └─ 交互 → SPA / PWA
 ```
+
+---
 
 ## 7. 代码示例：Vite + React 现代项目初始化
 
@@ -155,6 +329,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 )
 ```
 
+---
+
 ## 8. 权威外部资源
 
 - [Google Developers — Progressive Web Apps](https://developers.google.com/web/progressive-web-apps)
@@ -163,6 +339,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 - [Trusted Web Activity — Chrome Developers](https://developer.chrome.com/docs/android/trusted-web-activity/)
 - [W3C — Service Workers Specification](https://w3c.github.io/ServiceWorker/)
 - [web.dev — Modern Web Development](https://web.dev/)
+- [Semantic Versioning 2.0.0](https://semver.org/) — SemVer 官方规范
+- [Conventional Commits](https://www.conventionalcommits.org/) — 提交信息约定
+- [GitHub — Code Review Best Practices](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews)
+- [Playwright Documentation](https://playwright.dev/) — E2E 测试框架
+- [Cucumber Documentation](https://cucumber.io/docs/cucumber/) — BDD 测试框架
+
+---
 
 ## 9. 与相邻模块的关系
 

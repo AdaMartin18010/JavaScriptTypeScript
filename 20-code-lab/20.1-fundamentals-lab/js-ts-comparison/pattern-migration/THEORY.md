@@ -74,6 +74,78 @@
 // package.json: "typecheck": "tsc --noEmit"
 ```
 
+#### 代码示例：阶梯式 tsconfig 严格化
+
+```json
+// tsconfig.stage1.json — 第一阶段：允许 JS，仅检查类型
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false
+  }
+}
+```
+
+```json
+// tsconfig.stage2.json — 第二阶段：开启 noImplicitAny
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": false,
+    "noImplicitAny": true,
+    "strictNullChecks": false
+  }
+}
+```
+
+```json
+// tsconfig.stage3.json — 第三阶段：开启 strictNullChecks
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": false,
+    "noImplicitAny": true,
+    "strictNullChecks": true
+  }
+}
+```
+
+```json
+// tsconfig.json — 最终阶段：完全严格模式
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+```
+
 ### 3.2 JS → TS 模式转换示例
 
 ```ts
@@ -134,6 +206,35 @@ function createUser(raw: unknown): User {
 }
 ```
 
+#### 进阶：JSDoc → TypeScript 类型迁移
+
+```typescript
+// Before: JSDoc 类型注解（.js 文件）
+/**
+ * @param {Object} config
+ * @param {string} config.host
+ * @param {number} [config.port=3000]
+ * @returns {Promise<{ ok: boolean }>}
+ */
+async function connect(config) {
+  const { host, port = 3000 } = config;
+  const res = await fetch(`http://${host}:${port}/health`);
+  return { ok: res.ok };
+}
+
+// After: TypeScript（.ts 文件，更简洁且类型安全）
+interface ConnectConfig {
+  host: string;
+  port?: number;
+}
+
+async function connect(config: ConnectConfig): Promise<{ ok: boolean }> {
+  const { host, port = 3000 } = config;
+  const res = await fetch(`http://${host}:${port}/health`);
+  return { ok: res.ok };
+}
+```
+
 ### 3.3 自动化迁移工具链
 
 ```bash
@@ -146,6 +247,70 @@ npx ts-migrate-full folder src
 # 3. any 自动消除建议（结合 ESLint）
 npm i -D @typescript-eslint/eslint-plugin @typescript-eslint/parser
 # 规则：'@typescript-eslint/no-explicit-any': 'warn'
+```
+
+#### 代码示例：类型覆盖率 CI 门禁
+
+```yaml
+# .github/workflows/type-coverage.yml
+name: Type Coverage Check
+
+on: [pull_request]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+
+      - name: Check Type Coverage
+        run: |
+          COVERAGE=$(npx type-coverage --json --project tsconfig.json | jq '.percent')
+          THRESHOLD=85
+          echo "Current type coverage: ${COVERAGE}%"
+          if (( $(echo "$COVERAGE < $THRESHOLD" | bc -l) )); then
+            echo "Type coverage $COVERAGE% is below threshold $THRESHOLD%"
+            exit 1
+          fi
+```
+
+#### 代码示例：模块边界类型定义
+
+```typescript
+// types/api-contract.ts — 前后端共享的 API 契约
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: { code: string; message: string };
+}
+
+export interface PaginatedResult<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+}
+
+// types/user.ts
+export interface UserDto {
+  id: string;
+  email: string;
+  displayName: string;
+  role: 'admin' | 'editor' | 'viewer';
+  createdAt: string; // ISO 8601
+}
+
+export interface CreateUserRequest {
+  email: string;
+  displayName: string;
+  role?: UserDto['role'];
+}
+
+// 在迁移过程中，这些 DTO 类型可先从 JSDoc 中提取，再转为 .ts
 ```
 
 ### 3.4 常见误区
@@ -164,6 +329,8 @@ npm i -D @typescript-eslint/eslint-plugin @typescript-eslint/parser
 - [ts-migrate: AirBnB 迁移工具](https://github.com/airbnb/ts-migrate)
 - [TypeScript Strict Mode Guide](https://www.typescriptlang.org/tsconfig#strict)
 - [Total TypeScript: Migration Strategies](https://www.totaltypescript.com/)
+- [Microsoft: TypeScript at Scale](https://devblogs.microsoft.com/typescript/type-scripts-migration-to-modules/)
+- [TypeScript Performance](https://github.com/microsoft/TypeScript/wiki/Performance) — 大型项目类型性能优化
 - `10-fundamentals/10.1-language-semantics/`
 
 ---

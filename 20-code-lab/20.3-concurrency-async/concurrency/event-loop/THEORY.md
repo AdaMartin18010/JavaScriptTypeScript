@@ -151,6 +151,75 @@ async function heavyComputationGood(n: number, chunkSize = 1_000_000): Promise<n
 })();
 ```
 
+#### 示例：requestAnimationFrame + 任务调度协作
+
+```typescript
+// raf-scheduler.ts — 与浏览器渲染周期协作的调度器
+
+class RafScheduler {
+  private tasks: Array<() => void> = [];
+  private running = false;
+
+  add(task: () => void) {
+    this.tasks.push(task);
+    if (!this.running) this.run();
+  }
+
+  private run() {
+    this.running = true;
+    requestAnimationFrame(() => {
+      // 在渲染前执行高优先级任务
+      const start = performance.now();
+      while (this.tasks.length && performance.now() - start < 16) {
+        const task = this.tasks.shift()!;
+        task();
+      }
+      if (this.tasks.length) {
+        // 剩余任务放到下一帧
+        this.run();
+      } else {
+        this.running = false;
+      }
+    });
+  }
+}
+
+// 使用：批量 DOM 更新不阻塞渲染
+const scheduler = new RafScheduler();
+for (let i = 0; i < 1000; i++) {
+  scheduler.add(() => {
+    document.body.appendChild(document.createElement('div'));
+  });
+}
+```
+
+#### 示例：MessageChannel 作为零延迟宏任务
+
+```typescript
+// message-channel-task.ts — 比 setTimeout(fn, 0) 更快的宏任务调度
+
+function createMacroTaskScheduler() {
+  const channel = new MessageChannel();
+  const pending: Array<() => void> = [];
+
+  channel.port2.onmessage = () => {
+    const tasks = pending.splice(0);
+    tasks.forEach((t) => t());
+  };
+
+  return (fn: () => void) => {
+    pending.push(fn);
+    channel.port1.postMessage(null);
+  };
+}
+
+const scheduleMacroTask = createMacroTaskScheduler();
+
+// 使用：比 setTimeout(..., 0) 更早执行，不受 4ms 节流限制
+scheduleMacroTask(() => console.log('Macro task via MessageChannel'));
+setTimeout(() => console.log('Macro task via setTimeout'), 0);
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -166,6 +235,11 @@ async function heavyComputationGood(n: number, chunkSize = 1_000_000): Promise<n
 - [The Node.js Event Loop — Official Docs](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick)
 - [HTML Standard: Event Loops](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops)
 - [Jake Archibald: Tasks, microtasks, queues and schedules](https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/)
+- [V8 Blog — The cost of JavaScript (Event Loop)](https://v8.dev/blog/cost-of-javascript-2019)
+- [libuv Design Overview](http://docs.libuv.org/en/v1.x/design.html)
+- [Node.js — Don't Block the Event Loop](https://nodejs.org/en/docs/guides/dont-block-the-event-loop/)
+- [MDN — Concurrency model and the event loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/EventLoop)
+- [web.dev — Optimize long tasks](https://web.dev/articles/optimize-long-tasks)
 - `20.3-concurrency-async/concurrency/`
 
 ---

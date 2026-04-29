@@ -14,6 +14,7 @@
 ### 1.2 形式化基础
 
 MVC 可形式化为一个三元组 $(M, V, C)$：
+
 - 模型 $M$：管理应用状态与业务规则，$M: D \to S$（数据到状态的映射）
 - 视图 $V$：状态的可视化表示，$V: S \to UI$
 - 控制器 $C$：输入事件的分发器，$C: E \to (M \times V)$
@@ -134,6 +135,73 @@ class TodoPresenter {
 }
 ```
 
+#### MVVM 模式示例（双向绑定骨架）
+
+```typescript
+// mvvm-demo.ts — 响应式 ViewModel 骨架
+
+type Effect = () => void;
+let activeEffect: Effect | null = null;
+
+function observable<T extends object>(obj: T): T {
+  const deps = new Map<string | symbol, Set<Effect>>();
+  return new Proxy(obj, {
+    get(target, key) {
+      if (activeEffect) {
+        if (!deps.has(key)) deps.set(key, new Set());
+        deps.get(key)!.add(activeEffect);
+      }
+      return target[key as keyof T];
+    },
+    set(target, key, value) {
+      (target as any)[key] = value;
+      deps.get(key)?.forEach((fn) => fn());
+      return true;
+    },
+  });
+}
+
+function watch(fn: Effect) {
+  activeEffect = fn;
+  fn();
+  activeEffect = null;
+}
+
+class TodoViewModel {
+  state = observable({
+    todos: [] as { id: number; text: string; done: boolean }[],
+    filter: 'all' as 'all' | 'active' | 'completed',
+  });
+
+  get visibleTodos() {
+    const { todos, filter } = this.state;
+    if (filter === 'all') return todos;
+    return todos.filter((t) => (filter === 'active' ? !t.done : t.done));
+  }
+
+  addTodo(text: string) {
+    this.state.todos = [...this.state.todos, { id: Date.now(), text, done: false }];
+  }
+
+  toggle(id: number) {
+    this.state.todos = this.state.todos.map((t) => (t.id === id ? { ...t, done: !t.done } : t));
+  }
+
+  setFilter(filter: 'all' | 'active' | 'completed') {
+    this.state.filter = filter;
+  }
+}
+
+// 使用
+const vm = new TodoViewModel();
+watch(() => {
+  console.log('Visible todos:', vm.visibleTodos.map((t) => t.text));
+});
+
+vm.addTodo('Learn MVVM');
+vm.toggle(vm.state.todos[0].id);
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -152,6 +220,9 @@ class TodoPresenter {
 - [MVP vs MVC vs MVVM — Microsoft Docs](https://learn.microsoft.com/en-us/archive/msdn-magazine/2013/april/mvvm-mvc-mvp-which-one-to-use)
 - [Model-View-ViewModel (MVVM) — Microsoft](https://learn.microsoft.com/en-us/dotnet/architecture/maui/mvvm)
 - [The Elm Architecture — Evan Czaplicki](https://guide.elm-lang.org/architecture/)
+- [Martin Fowler — Presentation Domain Data Layering](https://martinfowler.com/bliki/PresentationDomainDataLayering.html)
+- [Google — Android Architecture Components (MVVM Guide)](https://developer.android.com/topic/libraries/architecture)
+- [Angular — Understanding MVC in Angular](https://angular.io/guide/architecture)
 
 ---
 

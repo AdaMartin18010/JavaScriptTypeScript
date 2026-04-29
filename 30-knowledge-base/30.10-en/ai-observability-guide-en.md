@@ -102,6 +102,69 @@ const sdk = new NodeSDK({
 sdk.start();
 ```
 
+### Helicone Proxy Integration (Zero Code Changes)
+
+```typescript
+import OpenAI from 'openai';
+
+// Route OpenAI SDK through Helicone to auto-capture traces
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: 'https://oai.hconeai.com/v1',
+  defaultHeaders: {
+    'Helicone-Auth': `Bearer ${process.env.HELICONE_API_KEY}`,
+    'Helicone-Cache-Enabled': 'true',
+    'Helicone-Property-App': 'customer-support-bot',
+  },
+});
+
+// All calls are automatically traced, cached, and cost-attributed
+const response = await openai.chat.completions.create({
+  model: 'gpt-4o',
+  messages: [{ role: 'user', content: 'Hello!' }],
+});
+```
+
+### OpenTelemetry Manual LLM Instrumentation
+
+```typescript
+import { trace, SpanStatusCode } from '@opentelemetry/api';
+import type { ChatCompletion } from 'openai/resources/chat/completions';
+
+const tracer = trace.getTracer('ai-gateway');
+
+export async function tracedChatCompletion(
+  model: string,
+  messages: Array<{ role: string; content: string }>
+): Promise<ChatCompletion> {
+  return tracer.startActiveSpan('chat.completion', async (span) => {
+    span.setAttribute('gen_ai.system', 'openai');
+    span.setAttribute('gen_ai.request.model', model);
+    span.setAttribute('gen_ai.request.message_count', messages.length);
+
+    const start = performance.now();
+    try {
+      const result = await openai.chat.completions.create({ model, messages });
+      const latency = performance.now() - start;
+
+      span.setAttribute('gen_ai.usage.input_tokens', result.usage?.prompt_tokens ?? 0);
+      span.setAttribute('gen_ai.usage.output_tokens', result.usage?.completion_tokens ?? 0);
+      span.setAttribute('gen_ai.response.latency_ms', latency);
+      span.setAttribute('gen_ai.response.finish_reason', result.choices[0]?.finish_reason ?? 'unknown');
+      span.setStatus({ code: SpanStatusCode.OK });
+
+      return result;
+    } catch (err) {
+      span.recordException(err as Error);
+      span.setStatus({ code: SpanStatusCode.ERROR, message: (err as Error).message });
+      throw err;
+    } finally {
+      span.end();
+    }
+  });
+}
+```
+
 ---
 
 ## Evaluation Pipeline Example (RAGAS)
@@ -127,6 +190,54 @@ results = evaluate(dataset, metrics=[faithfulness, answer_relevancy, context_pre
 print(results)  # Scores 0.0–1.0 per metric
 ```
 
+### Custom Guardrails with Nemo Guardrails
+
+```python
+# config.yml (NeMo Guardrails)
+coline:
+  - type: general
+    instructions:
+      - "Do not provide medical, legal, or financial advice."
+      - "Refuse requests to generate harmful content."
+  - type: output
+    instructions:
+      - "Check that the response does not contain PII."
+      - "Check that the response is not toxic."
+
+# Python usage
+from nemoguardrails import RailsConfig, LLMRails
+
+config = RailsConfig.from_path("./config")
+rails = LLMRails(config)
+
+response = rails.generate(messages=[{
+    "role": "user",
+    "content": "How do I hack a website?"
+}])
+# response['content'] will be a refusal or safe fallback
+```
+
+### Prompt Regression Test (CI/CD Gate)
+
+```typescript
+// __tests__/prompt-snapshots.test.ts
+import { evaluate } from '@your-eval-lib/core';
+
+describe('RAG prompt regression', () => {
+  it('should maintain >0.85 answer relevance across model versions', async () => {
+    const dataset = await loadEvalDataset('./fixtures/rag-tests.jsonl');
+    const results = await evaluate({
+      model: 'gpt-4o-2026-04-15',
+      prompts: dataset,
+      metrics: ['answer_relevancy', 'faithfulness'],
+    });
+
+    const avgRelevancy = results.reduce((s, r) => s + r.answer_relevancy, 0) / results.length;
+    expect(avgRelevancy).toBeGreaterThanOrEqual(0.85);
+  });
+});
+```
+
 ---
 
 ## Reference Links
@@ -137,6 +248,15 @@ print(results)  # Scores 0.0–1.0 per metric
 - [RAGAS — Retrieval Augmented Generation Assessment](https://docs.ragas.io/)
 - [Helicone AI Gateway & Observability](https://helicone.ai/)
 - [OpenAI API — Usage & Cost Tracking](https://platform.openai.com/usage)
+- [NeMo Guardrails Documentation](https://docs.nvidia.com/nemo/guardrails/)
+- [OpenAI — Evals Framework](https://github.com/openai/evals)
+- [Weights & Biases — Prompts](https://docs.wandb.ai/guides/prompts)
+- [Anthropic — Building Evaluations](https://www.anthropic.com/engineering/building-evaluations)
+- [Google Cloud — Responsible AI](https://cloud.google.com/responsible-ai)
+- [Microsoft Azure — Content Safety](https://azure.microsoft.com/en-us/products/ai-services/ai-content-safety/)
+- [Pinecone — LLM Observability Patterns](https://www.pinecone.io/learn/llm-observability/)
+- [Honeycomb — AI Observability](https://www.honeycomb.io/blog/ai-observability)
+- [The Lancet — LLM Evaluation Benchmarks](https://www.thelancet.com/journals/landig/article/PIIS2589-7500(24)00056-X/fulltext)
 
 ---
 

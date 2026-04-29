@@ -1,4 +1,4 @@
-﻿# 语言核心 — 理论基础
+# 语言核心 — 理论基础
 
 ## 1. JavaScript 类型系统
 
@@ -12,6 +12,27 @@ JavaScript 拥有 8 种基本数据类型：
 - **抽象相等（==）**: 触发强制类型转换，`0 == '0'` 为 true
 - **严格相等（===）**: 不转换类型，`0 === '0'` 为 false
 - **真值/假值**: `false`, `0`, `''`, `null`, `undefined`, `NaN` 为假值；其余为真值
+
+#### 类型强制转换代码示例
+
+```javascript
+// 抽象相等（==）的隐式转换规则
+console.log(0 == '0');        // true: 字符串转数字
+console.log(false == 0);      // true: 布尔转数字
+console.log(null == undefined); // true: 规范规定
+console.log([] == false);     // true: [] → '' → 0, false → 0
+console.log('' == false);     // true
+
+// 严格相等（===）不进行转换
+console.log(0 === '0');       // false
+console.log([] === false);    // false
+
+// 显式转换技巧
+const num = +'42';            // 42 (一元 + 转数字)
+const str = 42 + '';          // '42' (二元 + 字符串优先)
+const bool = !!'hello';       // true (双非转布尔)
+const int = ~~3.14;           // 3 (双位非截断小数)
+```
 
 ---
 
@@ -36,6 +57,24 @@ function outer() {
 }
 ```
 
+#### 词法环境 vs 变量环境（ES2015+）
+
+```javascript
+// let/const 绑定在词法环境（Lexical Environment）
+// var 绑定在变量环境（Variable Environment）
+
+function demo() {
+  var x = 1;
+  let y = 2;
+  {
+    var x = 10;  // 覆盖外部 x（变量环境提升）
+    let y = 20;  // 块级作用域，不影响外部 y
+    console.log(x, y); // 10 20
+  }
+  console.log(x, y); // 10 2
+}
+```
+
 ---
 
 ## 3. 闭包
@@ -45,6 +84,29 @@ function outer() {
 - **私有变量**: 模块模式、工厂函数
 - **状态保持**: 事件处理器、回调函数保留上下文
 - **内存影响**: 闭包引用的变量不会被垃圾回收
+
+#### 闭包内存影响与释放
+
+```javascript
+function createHeavyClosure() {
+  const hugeArray = new Array(1_000_000).fill('x');
+
+  return {
+    getLength() {
+      return hugeArray.length; // 闭包保留 hugeArray 引用
+    },
+    release() {
+      // 在严格模式下无法真正删除，但可通过置空帮助 GC
+      hugeArray.length = 0;
+    }
+  };
+}
+
+const closure = createHeavyClosure();
+console.log(closure.getLength()); // 1000000
+// 若不再使用，置 null 以便 GC
+// closure = null;
+```
 
 ---
 
@@ -58,6 +120,27 @@ function outer() {
 | `func.call/apply(obj)` | 显式指定的 obj |
 | 箭头函数 | 词法继承（定义时的 this） |
 
+#### 箭头函数与 this 词法绑定
+
+```javascript
+const obj = {
+  value: 42,
+  regular() {
+    setTimeout(function() {
+      console.log(this.value); // undefined (严格模式) 或 global.value
+    }, 0);
+  },
+  arrow() {
+    setTimeout(() => {
+      console.log(this.value); // 42 — 词法捕获 obj
+    }, 0);
+  }
+};
+
+obj.regular();
+obj.arrow();
+```
+
 ---
 
 ## 5. 原型链
@@ -69,6 +152,30 @@ function outer() {
 - `Object.create(proto)`: 创建以 proto 为原型的对象
 - `Object.setPrototypeOf`: 动态修改原型（性能影响）
 - `class` 语法糖：底层仍为原型继承
+
+#### 原型链遍历与属性查找
+
+```javascript
+function Animal(name) { this.name = name; }
+Animal.prototype.speak = function() { return `${this.name} makes noise.`; };
+
+function Dog(name, breed) {
+  Animal.call(this, name);
+  this.breed = breed;
+}
+Dog.prototype = Object.create(Animal.prototype);
+Dog.prototype.constructor = Dog;
+Dog.prototype.speak = function() { return `${this.name} barks.`; };
+
+const dog = new Dog('Rex', 'Husky');
+console.log(dog.speak());        // "Rex barks."
+console.log(dog instanceof Dog);  // true
+console.log(dog instanceof Animal); // true
+
+// 原型链检查
+console.log(Object.getPrototypeOf(dog) === Dog.prototype); // true
+console.log(Object.getPrototypeOf(Dog.prototype) === Animal.prototype); // true
+```
 
 ---
 
@@ -167,8 +274,14 @@ c.increment(); // 11
 ## 9. 权威链接
 
 - [ECMA-262 – Execution Contexts](https://tc39.es/ecma262/#sec-execution-contexts)
+- [ECMA-262 – Ordinary Object Internal Methods and Internal Slots](https://tc39.es/ecma262/#sec-ordinary-object-internal-methods-and-internal-slots)
 - [MDN – Closures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures)
 - [MDN – Prototype Inheritance](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain)
+- [MDN – this](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this)
 - [JavaScript Info – Scope & Closure](https://javascript.info/closure)
+- [JavaScript Info – Prototypes](https://javascript.info/prototype-inheritance)
 - [V8 Blog – Fast Properties](https://v8.dev/blog/fast-properties)
-- [You Don't Know JS: Scope & Closures](https://github.com/getify/You-Dont-Know-JS/tree/2nd-ed/scope-closures)
+- [V8 Blog – Understanding the JavaScript Stack](https://v8.dev/blog/understanding-the-javascript-stack)
+- [You Don't Know JS: Scope & Closures (2nd Ed)](https://github.com/getify/You-Dont-Know-JS/tree/2nd-ed/scope-closures)
+- [You Don't Know JS: this & Object Prototypes](https://github.com/getify/You-Dont-Know-JS/tree/2nd-ed/this-object-prototypes)
+- [2ality – JavaScript’s type coercion](https://2ality.com/2019/10/type-coercion.html)

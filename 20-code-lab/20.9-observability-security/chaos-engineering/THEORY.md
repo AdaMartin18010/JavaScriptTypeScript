@@ -132,6 +132,119 @@ async function fetchUser(userId: string) {
 }
 ```
 
+**HTTP 服务故障注入中间件**：
+
+```typescript
+// chaos-middleware.ts — Express/Fastify 故障注入中间件
+import type { Request, Response, NextFunction } from 'express';
+
+interface ChaosConfig {
+  latencyMs?: number;
+  latencyProbability?: number;
+  errorProbability?: number;
+  errorStatusCodes?: number[];
+  enabledEnvironments?: string[];
+}
+
+export function chaosMiddleware(config: ChaosConfig = {}) {
+  const {
+    latencyMs = 500,
+    latencyProbability = 0.1,
+    errorProbability = 0.05,
+    errorStatusCodes = [500, 503, 504],
+    enabledEnvironments = ['development', 'staging'],
+  } = config;
+
+  return async (req: Request, res: Response, next: NextFunction) => {
+    if (!enabledEnvironments.includes(process.env.NODE_ENV ?? '')) {
+      return next();
+    }
+
+    // 延迟注入
+    if (Math.random() < latencyProbability) {
+      await new Promise((r) => setTimeout(r, latencyMs));
+    }
+
+    // 错误注入
+    if (Math.random() < errorProbability) {
+      const status = errorStatusCodes[Math.floor(Math.random() * errorStatusCodes.length)];
+      res.status(status).json({ error: 'Injected chaos fault', chaos: true });
+      return;
+    }
+
+    // 网络分区模拟：随机丢弃请求
+    if (Math.random() < 0.02) {
+      req.socket.destroy();
+      return;
+    }
+
+    next();
+  };
+}
+
+// 在 Express 应用中使用
+// app.use(chaosMiddleware({ latencyMs: 1000, errorProbability: 0.1 }));
+```
+
+**健康检查与熔断集成**：
+
+```typescript
+// health-check.ts — 结合混沌实验的健康检查
+interface HealthCheck {
+  name: string;
+  check: () => Promise<{ healthy: boolean; latency: number }>;
+  timeout: number;
+}
+
+class HealthMonitor {
+  private checks: HealthCheck[] = [];
+  private history: Map<string, Array<{ timestamp: number; healthy: boolean; latency: number }>> = new Map();
+
+  register(check: HealthCheck): void {
+    this.checks.push(check);
+    this.history.set(check.name, []);
+  }
+
+  async runChecks(): Promise<Record<string, { healthy: boolean; latency: number }>> {
+    const results: Record<string, { healthy: boolean; latency: number }> = {};
+
+    for (const check of this.checks) {
+      const start = Date.now();
+      try {
+        const result = await Promise.race([
+          check.check(),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Health check timeout')), check.timeout)
+          ),
+        ]);
+        results[check.name] = result;
+        this.record(check.name, result);
+      } catch {
+        results[check.name] = { healthy: false, latency: Date.now() - start };
+        this.record(check.name, { healthy: false, latency: Date.now() - start });
+      }
+    }
+
+    return results;
+  }
+
+  private record(name: string, result: { healthy: boolean; latency: number }): void {
+    const h = this.history.get(name)!;
+    h.push({ timestamp: Date.now(), ...result });
+    if (h.length > 100) h.shift();
+  }
+
+  /** 计算可用性百分比 */
+  availability(name: string, windowMs = 300000): number {
+    const h = this.history.get(name) ?? [];
+    const cutoff = Date.now() - windowMs;
+    const recent = h.filter((r) => r.timestamp > cutoff);
+    if (recent.length === 0) return 1;
+    return recent.filter((r) => r.healthy).length / recent.length;
+  }
+}
+```
+
 ## 4. 游戏日（Game Day）
 
 有组织的混沌实验标准化流程：
@@ -140,6 +253,35 @@ async function fetchUser(userId: string) {
 - **设定明确的实验范围、成功标准和回滚条件**
 - **实时监控业务指标**（SLI/SLO 仪表盘）
 - **实验结束后复盘总结**（更新运行手册与自动化检测）
+
+**Game Day 检查清单模板**：
+
+```markdown
+## Game Day: [实验名称] — [日期]
+
+### 目标
+- 验证 [系统/服务] 在 [故障类型] 下的韧性
+
+### 范围
+- 影响面：[X% 流量 / 特定用户群体]
+- 持续时间：[30 分钟]
+- 终止条件：[错误率 > 5% / P99 延迟 > 2s]
+
+### 稳态指标
+- 错误率 < 0.1%
+- P99 延迟 < 200ms
+- 吞吐量 > 1000 RPS
+
+### 回滚计划
+- [ ] 终止故障注入脚本
+- [ ] 重启受影响服务
+- [ ] 通知值班工程师
+
+### 结果
+- [ ] 稳态是否保持？
+- [ ] 发现的新弱点：
+- [ ] 后续 Action Items：
+```
 
 ## 5. 与相邻模块的关系
 
@@ -152,13 +294,18 @@ async function fetchUser(userId: string) {
 | 资源 | 类型 | 链接 |
 |------|------|------|
 | Principles of Chaos Engineering | 论文 | [principlesofchaos.org](https://principlesofchaos.org) — Netflix 原始定义 |
+| Chaos Engineering Book (O'Reilly) | 书籍 | [www.oreilly.com/library/view/chaos-engineering/9781491983850/](https://www.oreilly.com/library/view/chaos-engineering/9781491983850/) |
 | Chaos Monkey (Netflix) | 工具 | [github.com/Netflix/chaosmonkey](https://github.com/Netflix/chaosmonkey) |
 | Chaos Mesh | 工具 | [chaos-mesh.org](https://chaos-mesh.org) — Kubernetes 原生混沌工程 |
-| Gremlin | 平台 | [gremlin.com](https://www.gremlin.com) — 企业级混沌工程 SaaS |
 | Litmus | 工具 | [litmuschaos.io](https://litmuschaos.io) — CNCF 混沌工程沙箱项目 |
+| Gremlin | 平台 | [gremlin.com](https://www.gremlin.com) — 企业级混沌工程 SaaS |
 | AWS Fault Injection Simulator | 服务 | [aws.amazon.com/fis](https://aws.amazon.com/fis/) |
 | Azure Chaos Studio | 服务 | [azure.microsoft.com/services/chaos-studio](https://azure.microsoft.com/en-us/services/chaos-studio/) |
+| Google Cloud Chaos Engineering | 指南 | [cloud.google.com/blog/products/management-tools/chaos-engineering](https://cloud.google.com/blog/products/management-tools/chaos-engineering) |
 | Google SRE Book — Testing | 书籍 | [sre.google/sre-book/testing-reliability](https://sre.google/sre-book/testing-reliability/) |
+| Site Reliability Engineering (SRE) | 书籍 | [sre.google/sre-book/table-of-contents](https://sre.google/sre-book/table-of-contents/) |
+| Toxiproxy | 工具 | [github.com/Shopify/toxiproxy](https://github.com/Shopify/toxiproxy) — Shopify 网络故障代理 |
+| Pumba | 工具 | [github.com/alexei-led/pumba](https://github.com/alexei-led/pumba) — Docker 混沌测试工具 |
 
 ---
 

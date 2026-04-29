@@ -1,4 +1,4 @@
-﻿# 基准测试 — 理论基础
+# 基准测试 — 理论基础
 
 ## 1. 基准测试原则
 
@@ -156,6 +156,151 @@ if (p < 0.05) {
 }
 ```
 
+### 内存基准测试
+
+```typescript
+// bench/memory-benchmark.ts
+import v8 from 'node:v8';
+
+function measureMemory<T>(fn: () => T): { result: T; heapUsedDelta: number } {
+  if (global.gc) global.gc(); // 强制 GC，需 --expose-gc 启动
+  const before = v8.getHeapStatistics().used_heap_size;
+  const result = fn();
+  if (global.gc) global.gc();
+  const after = v8.getHeapStatistics().used_heap_size;
+  return { result, heapUsedDelta: after - before };
+}
+
+// 比较不同数据结构的内存占用
+const arrSize = 1_000_000;
+
+const arrBench = measureMemory(() => {
+  return Array.from({ length: arrSize }, (_, i) => ({ id: i, value: `item-${i}` }));
+});
+
+const mapBench = measureMemory(() => {
+  const map = new Map<number, { id: number; value: string }>();
+  for (let i = 0; i < arrSize; i++) {
+    map.set(i, { id: i, value: `item-${i}` });
+  }
+  return map;
+});
+
+console.log(`Array heap delta: ${(arrBench.heapUsedDelta / 1024 / 1024).toFixed(2)} MB`);
+console.log(`Map heap delta:   ${(mapBench.heapUsedDelta / 1024 / 1024).toFixed(2)} MB`);
+```
+
+### CI 基准测试工作流
+
+```typescript
+// bench/ci-benchmark.ts — 在 CI 中运行并存储基准历史
+import { Bench } from 'tinybench';
+import { writeFileSync, readFileSync, existsSync } from 'fs';
+
+interface BenchmarkHistory {
+  timestamp: string;
+  commit: string;
+  results: Record<string, { mean: number; hz: number }>;
+}
+
+const HISTORY_FILE = './bench-history.json';
+
+function loadHistory(): BenchmarkHistory[] {
+  if (!existsSync(HISTORY_FILE)) return [];
+  return JSON.parse(readFileSync(HISTORY_FILE, 'utf-8'));
+}
+
+function saveHistory(history: BenchmarkHistory[]) {
+  writeFileSync(HISTORY_FILE, JSON.stringify(history, null, 2));
+}
+
+function detectRegression(
+  current: Record<string, { mean: number }>,
+  baseline: Record<string, { mean: number }>,
+  threshold = 0.1 // 10% 退化阈值
+): string[] {
+  const regressions: string[] = [];
+  for (const [name, cur] of Object.entries(current)) {
+    const base = baseline[name];
+    if (!base) continue;
+    const delta = (cur.mean - base.mean) / base.mean;
+    if (delta > threshold) {
+      regressions.push(`${name}: +${(delta * 100).toFixed(1)}% (>${threshold * 100}%)`);
+    }
+  }
+  return regressions;
+}
+
+async function runCIBenchmark() {
+  const bench = new Bench({ time: 200 });
+  // ... 添加测试用例 ...
+  await bench.run();
+
+  const current: Record<string, { mean: number; hz: number }> = {};
+  for (const task of bench.tasks) {
+    current[task.name] = {
+      mean: task.result!.mean,
+      hz: task.result!.hz,
+    };
+  }
+
+  const history = loadHistory();
+  const baseline = history.length > 0 ? history[history.length - 1].results : null;
+
+  if (baseline) {
+    const regressions = detectRegression(current, baseline);
+    if (regressions.length > 0) {
+      console.error('性能退化检测：');
+      regressions.forEach((r) => console.error(`  - ${r}`));
+      process.exit(1);
+    }
+  }
+
+  history.push({
+    timestamp: new Date().toISOString(),
+    commit: process.env.GITHUB_SHA || 'local',
+    results: current,
+  });
+
+  saveHistory(history);
+  console.log('基准测试完成，无显著退化。');
+}
+```
+
+### 异常值检测与过滤
+
+```typescript
+// bench/outlier-detection.ts
+function median(arr: number[]): number {
+  const sorted = [...arr].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0
+    ? sorted[mid]
+    : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+function medianAbsoluteDeviation(arr: number[]): number {
+  const m = median(arr);
+  const deviations = arr.map((x) => Math.abs(x - m));
+  return median(deviations);
+}
+
+// 使用 MAD（中位数绝对偏差）过滤异常值
+function filterOutliers(samples: number[], threshold = 3): number[] {
+  const m = median(samples);
+  const mad = medianAbsoluteDeviation(samples);
+  // 避免 mad === 0 时除零
+  const normalizer = mad === 0 ? 1 : mad;
+  return samples.filter((x) => Math.abs(x - m) / normalizer < threshold);
+}
+
+// 示例：过滤 GC 引起的异常值
+const rawSamples = [10, 11, 10, 12, 150, 11, 10, 200, 11]; // 150 和 200 是 GC 异常值
+const clean = filterOutliers(rawSamples);
+console.log(`原始样本: ${rawSamples.length}, 过滤后: ${clean.length}`);
+console.log(`均值: 原始=${(rawSamples.reduce((a,b)=>a+b)/rawSamples.length).toFixed(1)}, 过滤后=${(clean.reduce((a,b)=>a+b)/clean.length).toFixed(1)}`);
+```
+
 ## 5. 避免基准测试陷阱
 
 - **Dead Code Elimination**: 确保测试结果真正被使用
@@ -170,11 +315,21 @@ if (p < 0.05) {
 - **39-performance-monitoring**: 生产环境性能监控
 - **54-intelligent-performance**: AI 辅助性能分析
 
-## 参考
+## 7. 权威参考与外部链接
 
-- [Mitata — GitHub](https://github.com/evanwashere/mitata)
-- [Tinybench — GitHub](https://github.com/tinylibs/tinybench)
-- [Benchmark.js — GitHub](https://github.com/bestiejs/benchmark.js)
-- [Google Benchmark Best Practices](https://github.com/google/benchmark/blob/main/docs/user_guide.md)
-- [Vyacheslav Egorov — Benchmarking JS Correctly](https://mrale.ph/blog/2024/01/23/microbenchmarks.html)
-- [WebKit — Understanding JIT Warmup](https://webkit.org/blog/7536/jsc-loves-es6/)
+| 资源 | 描述 | 链接 |
+|------|------|------|
+| **Mitata** | 现代 JS 基准测试框架 | [github.com/evanwashere/mitata](https://github.com/evanwashere/mitata) |
+| **Tinybench** | 轻量基准测试库 | [github.com/tinylibs/tinybench](https://github.com/tinylibs/tinybench) |
+| **Benchmark.js** | 经典 JS 基准测试 | [github.com/bestiejs/benchmark.js](https://github.com/bestiejs/benchmark.js) |
+| **Google Benchmark Best Practices** | C++ 基准最佳实践（原理通用） | [github.com/google/benchmark](https://github.com/google/benchmark/blob/main/docs/user_guide.md) |
+| **Vyacheslav Egorov — Benchmarking JS Correctly** | V8 性能专家指南 | [mrale.ph/blog/2024/01/23/microbenchmarks.html](https://mrale.ph/blog/2024/01/23/microbenchmarks.html) |
+| **WebKit — Understanding JIT Warmup** | JIT 编译预热机制 | [webkit.org/blog/7536/jsc-loves-es6](https://webkit.org/blog/7536/jsc-loves-es6/) |
+| **Brendan Gregg — Systems Performance** | 系统性能工程圣经 | [brendangregg.com/systems-performance.html](http://www.brendangregg.com/systems-performance.html) |
+| **V8 Blog — Tracing JIT** | V8 TurboFan 优化器内部 | [v8.dev/blog](https://v8.dev/blog) |
+| **WebPageTest** | 真实环境 Web 性能测试 | [webpagetest.org](https://www.webpagetest.org/) |
+| **Lighthouse CI** | 自动化性能审计 | [github.com/GoogleChrome/lighthouse-ci](https://github.com/GoogleChrome/lighthouse-ci) |
+
+---
+
+> 📅 理论深化更新：2026-04-29

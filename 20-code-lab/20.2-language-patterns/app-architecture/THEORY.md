@@ -163,6 +163,57 @@ const routes: Routes = [
 
 > **TC39 Signals 提案**（Stage 1）推动语言级标准化，alien-signals 成为框架无关的底层原语。
 
+### Signals 基础用法示例
+
+```typescript
+// 使用 alien-signals（框架无关）
+import { signal, computed, effect } from 'alien-signals';
+
+const count = signal(0);
+const doubled = computed(() => count() * 2);
+
+// 自动追踪依赖，count 变化时执行
+effect(() => {
+  console.log(`count = ${count()}, doubled = ${doubled()}`);
+});
+
+count.set(5); // 输出: count = 5, doubled = 10
+
+// 批量更新（避免中间状态触发多次 effect）
+import { batch } from 'alien-signals';
+batch(() => {
+  count.set(10);
+  // 此时 effect 尚未执行
+});
+// batch 结束后统一执行 effect
+```
+
+### Zustand + Signals 集成（2026 模式）
+
+```typescript
+// store.ts — Zustand v5 with Signals
+import { create } from 'zustand';
+import { subscribeWithSelector } from 'zustand/middleware';
+
+interface BearState {
+  bears: number;
+  increase: () => void;
+}
+
+export const useBearStore = create<BearState>()(
+  subscribeWithSelector((set) => ({
+    bears: 0,
+    increase: () => set((state) => ({ bears: state.bears + 1 })),
+  }))
+);
+
+// 外部订阅（非 React 组件）
+const unsub = useBearStore.subscribe(
+  (state) => state.bears,
+  (bears) => console.log('Bears changed:', bears)
+);
+```
+
 ---
 
 ## 4. 2026 混合架构模式
@@ -190,6 +241,50 @@ const routes: Routes = [
 - **Astro Islands** 负责轻量交互（零 JS 默认）
 - **Module Federation** 负责独立部署的功能模块（如支付、营销）
 
+### React Server Component 数据获取模式
+
+```typescript
+// app/page.tsx — Next.js 15 App Router RSC
+import { Suspense } from 'react';
+import { ProductList } from './ProductList';
+import { RecommendationSkeleton } from './RecommendationSkeleton';
+
+// Server Component：直接在服务端获取数据，不打包到客户端 bundle
+async function getProducts(): Promise<Product[]> {
+  const res = await fetch('https://api.example.com/products', {
+    next: { revalidate: 60 }, // ISR 缓存 60 秒
+  });
+  if (!res.ok) throw new Error('Failed to fetch products');
+  return res.json();
+}
+
+export default async function Page() {
+  const products = await getProducts(); // 服务端执行
+
+  return (
+    <main>
+      <h1>Products</h1>
+      <ProductList products={products} />
+
+      {/* 流式传输：推荐内容延迟加载 */}
+      <Suspense fallback={<RecommendationSkeleton />}>
+        <Recommendations />
+      </Suspense>
+    </main>
+  );
+}
+
+// 异步 Server Component
+async function Recommendations() {
+  const recommendations = await fetch(
+    'https://api.example.com/recommendations',
+    { cache: 'no-store' }
+  ).then((r) => r.json());
+
+  return <RecommendationCarousel items={recommendations} />;
+}
+```
+
 ### 模式二：AI Agent 嵌入架构
 
 ```
@@ -211,6 +306,71 @@ const routes: Routes = [
 │  │ (审核/确认)  │                            │
 │  └─────────────┘                            │
 └─────────────────────────────────────────────┘
+```
+
+### MCP Client 集成示例
+
+```typescript
+// ai-agent/mcp-client.ts — Model Context Protocol 客户端
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+
+interface ToolCall {
+  name: string;
+  arguments: Record<string, unknown>;
+}
+
+class AgentClient {
+  private client: Client;
+
+  constructor() {
+    this.client = new Client({ name: 'web-app-agent', version: '1.0.0' });
+  }
+
+  async connectToServer(command: string, args: string[]) {
+    const transport = new StdioClientTransport({ command, args });
+    await this.client.connect(transport);
+  }
+
+  async listTools() {
+    return this.client.listTools();
+  }
+
+  async callTool<T = unknown>(call: ToolCall): Promise<T> {
+    const result = await this.client.callTool({
+      name: call.name,
+      arguments: call.arguments,
+    });
+    return result.content as T;
+  }
+
+  // 典型 Agent 循环：LLM 决策 → 工具调用 → 结果反馈
+  async agentLoop(userQuery: string, llm: LLMInterface) {
+    const tools = await this.listTools();
+    const response = await llm.chat({
+      messages: [{ role: 'user', content: userQuery }],
+      tools: tools.tools.map((t) => ({
+        name: t.name,
+        description: t.description,
+        parameters: t.inputSchema,
+      })),
+    });
+
+    if (response.toolCalls) {
+      for (const tc of response.toolCalls) {
+        const result = await this.callTool(tc);
+        // 将工具结果反馈给 LLM 生成最终回答
+        await llm.chat({
+          messages: [
+            { role: 'user', content: userQuery },
+            { role: 'assistant', content: '', tool_calls: [tc] },
+            { role: 'tool', tool_call_id: tc.id, content: JSON.stringify(result) },
+          ],
+        });
+      }
+    }
+  }
+}
 ```
 
 ---
@@ -255,6 +415,15 @@ flowchart TD
 - [Angular Dev Blog — Native Federation](https://blog.angular.dev/micro-frontends-with-angular-and-native-federation-7623cfc5f413) (2025-02)
 - [Nunuqs — Nuxt vs Next.js vs Astro vs SvelteKit 2026](https://www.nunuqs.com/blog/nuxt-vs-next-js-vs-astro-vs-sveltekit-2026-frontend-framework-showdown) (2025-12)
 - [Micro-frontends: Module Federation's 2026 Blueprint](https://appsconcerebro.com/en/blog/micro-frontends-2026-module-federation-para-equipos-javascri) (2026-02)
+- [React Server Components RFC](https://github.com/reactjs/rfcs/blob/main/text/0188-server-components.md) — 官方 RFC
+- [Next.js App Router Documentation](https://nextjs.org/docs/app) — RSC 与流式传输
+- [Astro Islands Architecture](https://docs.astro.build/en/concepts/islands/) — 零 JS 默认
+- [SolidJS Signals](https://www.solidjs.com/tutorial/introduction_signals) — 细粒度响应式
+- [TC39 Signals Proposal](https://github.com/tc39/proposal-signals) — 语言级 Signals Stage 1
+- [alien-signals](https://github.com/stackblitz/alien-signals) — 框架无关 Signals 原语
+- [Model Context Protocol](https://modelcontextprotocol.io/) — MCP 官方规范
+- [Vercel AI SDK](https://sdk.vercel.ai/docs) — AI Agent 应用开发 SDK
+- [Rspack Documentation](https://rspack.dev/) — 字节跳动 Webpack 兼容构建工具
 
 ---
 
@@ -274,4 +443,4 @@ flowchart TD
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+> 📅 理论深化更新：2026-04-29

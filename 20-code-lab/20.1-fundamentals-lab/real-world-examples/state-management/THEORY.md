@@ -152,6 +152,85 @@ store.setState((s) => ({
 }));
 ```
 
+#### 示例：Zustand 风格的极简原子化 Store
+
+```typescript
+// zustand-like-store.ts — 原子化、无样板的状态切片
+
+type SetState<T> = (partial: Partial<T> | ((s: T) => Partial<T>)) => void;
+
+function createZustandLikeStore<T extends object>(initial: T) {
+  let state = { ...initial };
+  const listeners = new Set<(s: T, prev: T) => void>();
+
+  const setState: SetState<T> = (partial) => {
+    const prev = state;
+    const patch = typeof partial === 'function' ? partial(state) : partial;
+    state = { ...state, ...patch };
+    if (state !== prev) listeners.forEach((l) => l(state, prev));
+  };
+
+  const getState = () => state;
+  const subscribe = (l: (s: T, prev: T) => void) => {
+    listeners.add(l);
+    return () => listeners.delete(l);
+  };
+
+  return { getState, setState, subscribe };
+}
+
+// 使用示例：切片化状态管理
+const useUserStore = createZustandLikeStore({ name: 'Alice', age: 30 });
+const useCounterStore = createZustandLikeStore({ count: 0 });
+
+useUserStore.subscribe((s) => console.log('User:', s.name));
+useCounterStore.subscribe((s) => console.log('Counter:', s.count));
+
+useUserStore.setState({ age: 31 }); // 仅触发 user store 监听器
+useCounterStore.setState((s) => ({ count: s.count + 1 }));
+```
+
+#### 示例：Redux 中间件模式 — 日志中间件
+
+```typescript
+// middleware.ts — 可组合的 Redux 风格中间件
+
+type Action = { type: string; payload?: unknown };
+type Reducer<S> = (s: S, a: Action) => S;
+type Middleware<S> = (store: { getState: () => S; dispatch: (a: Action) => void }) => (next: (a: Action) => void) => (a: Action) => void;
+
+function applyMiddleware<S>(store: { getState: () => S; dispatch: (a: Action) => void }, reducer: Reducer<S>, ...middlewares: Middleware<S>[]) {
+  let state = store.getState();
+  const dispatch = (action: Action) => {
+    state = reducer(state, action);
+    (store.dispatch as (a: Action) => void)(action);
+  };
+
+  const chain = middlewares.map((mw) => mw({ getState: () => state, dispatch }));
+  const composed = chain.reduceRight((next, mw) => mw(next), dispatch);
+
+  return {
+    dispatch: composed,
+    getState: () => state,
+  };
+}
+
+// 日志中间件
+const loggerMiddleware: Middleware<unknown> = (store) => (next) => (action) => {
+  console.log('[Dispatch]', action.type, action.payload);
+  next(action);
+  console.log('[Next State]', store.getState());
+};
+
+// 异步中间件（简化版 redux-thunk）
+const thunkMiddleware: Middleware<unknown> = (store) => (next) => (action: unknown) => {
+  if (typeof action === 'function') {
+    return (action as (dispatch: (a: Action) => void, getState: () => unknown) => void)(next, store.getState);
+  }
+  return next(action as Action);
+};
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -162,10 +241,16 @@ store.setState((s) => ({
 ### 3.3 扩展阅读
 
 - [Redux 文档](https://redux.js.org/)
+- [Redux Toolkit 文档](https://redux-toolkit.js.org/)
 - [Zustand GitHub](https://github.com/pmndrs/zustand)
+- [Jotai 文档](https://jotai.org/)
 - [TC39 Signals Proposal](https://github.com/tc39/proposal-signals)
 - [React useSyncExternalStore](https://react.dev/reference/react/useSyncExternalStore)
-- `20.2-language-patterns/architecture-patterns/`
+- [React — Thinking in React (State 管理哲学)](https://react.dev/learn/thinking-in-react)
+- [MobX 官方文档](https://mobx.js.org/README.html)
+- [Reselect 文档](https://reselect.js.org/)
+- [Flux Architecture (Facebook)](https://facebook.github.io/flux/)
+- [State Machines in JavaScript — XState 文档](https://stately.ai/docs)
 
 ---
 

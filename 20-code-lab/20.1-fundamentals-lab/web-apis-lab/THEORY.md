@@ -159,6 +159,117 @@ async function readSerialDevice() {
 }
 ```
 
+### IntersectionObserver 懒加载 + 无限滚动
+
+```typescript
+// intersection-lazy.ts — 高性能图片懒加载与无限滚动
+
+function createLazyLoader(options?: IntersectionObserverInit) {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const img = entry.target as HTMLImageElement;
+        img.src = img.dataset.src!;
+        img.classList.remove('lazy');
+        observer.unobserve(img);
+      }
+    });
+  }, options);
+
+  return {
+    observe: (element: Element) => observer.observe(element),
+    disconnect: () => observer.disconnect(),
+  };
+}
+
+// 无限滚动 Sentinel
+function createInfiniteScroll(
+  sentinel: Element,
+  onTrigger: () => Promise<boolean> // 返回 false 表示无更多数据
+) {
+  let loading = false;
+  const observer = new IntersectionObserver(async (entries) => {
+    const entry = entries[0];
+    if (entry.isIntersecting && !loading) {
+      loading = true;
+      const hasMore = await onTrigger();
+      if (!hasMore) observer.disconnect();
+      loading = false;
+    }
+  }, { rootMargin: '200px' });
+
+  observer.observe(sentinel);
+  return () => observer.disconnect();
+}
+```
+
+### PerformanceObserver — 核心 Web 指标采集
+
+```typescript
+// performance-metrics.ts — 采集 LCP, FID, CLS
+
+function observeWebVitals(onReport: (metric: { name: string; value: number; id: string }) => void) {
+  const observer = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      if (entry.entryType === 'web-vitals') {
+        onReport({ name: entry.name, value: entry.startTime, id: (entry as any).id });
+      }
+    }
+  });
+
+  // Largest Contentful Paint
+  new PerformanceObserver((list) => {
+    const last = list.getEntries().at(-1);
+    if (last) onReport({ name: 'LCP', value: last.startTime, id: last.name });
+  }).observe({ type: 'largest-contentful-paint', buffered: true });
+
+  // First Input Delay (via Event Timing)
+  new PerformanceObserver((list) => {
+    const first = list.getEntries()[0];
+    if (first && (first as any).processingStart) {
+      const fid = (first as any).processingStart - first.startTime;
+      onReport({ name: 'FID', value: fid, id: first.name });
+    }
+  }).observe({ type: 'first-input', buffered: true });
+
+  // Cumulative Layout Shift
+  let clsValue = 0;
+  new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      if (!(entry as any).hadRecentInput) {
+        clsValue += (entry as any).value;
+      }
+    }
+    onReport({ name: 'CLS', value: clsValue, id: 'cls-session' });
+  }).observe({ type: 'layout-shift', buffered: true });
+}
+
+// 使用
+observeWebVitals((metric) => {
+  console.log(`[Web Vital] ${metric.name}: ${metric.value}`);
+  // 上报到分析服务
+});
+```
+
+### ResizeObserver — 响应式组件尺寸追踪
+
+```typescript
+// resize-tracker.ts
+function trackElementSize(
+  element: Element,
+  callback: (size: { width: number; height: number }) => void
+) {
+  const ro = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      const cr = entry.contentRect;
+      callback({ width: cr.width, height: cr.height });
+    }
+  });
+  ro.observe(element);
+  return () => ro.disconnect();
+}
+```
+
 ## 8. 新增权威参考链接
 
 - [WebGPU Specification (W3C)](https://www.w3.org/TR/webgpu/) — W3C WebGPU 标准
@@ -168,3 +279,9 @@ async function readSerialDevice() {
 - [MDN — BroadcastChannel](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API) — 跨标签页通信
 - [Chrome Platform Status](https://chromestatus.com/) — Chrome 新特性状态追踪
 - [WHATWG Streams Standard](https://streams.spec.whatwg.org/) — Streams 规范
+- [MDN — IntersectionObserver](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
+- [MDN — PerformanceObserver](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver)
+- [MDN — ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver)
+- [web.dev — Optimize Web Vitals](https://web.dev/articles/vitals)
+- [web.dev — Lazy Loading Images](https://web.dev/articles/lazy-loading-images)
+- [W3C — Web Performance Working Group](https://www.w3.org/webperf/)

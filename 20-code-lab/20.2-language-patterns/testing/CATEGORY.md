@@ -95,6 +95,61 @@ describe('OrderService', () => {
 });
 ```
 
+### 参数化测试与数据驱动
+
+```typescript
+// parameterized-tests.test.ts
+import { describe, it, expect } from 'vitest';
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+describe('isValidEmail', () => {
+  it.each([
+    ['alice@example.com', true],
+    ['bob+tag@sub.domain.co.uk', true],
+    ['not-an-email', false],
+    ['@missing-local.org', false],
+    ['missing-tld@domain', false],
+  ])('validates "%s" as %s', (input, expected) => {
+    expect(isValidEmail(input)).toBe(expected);
+  });
+});
+```
+
+### MSW（Mock Service Worker）API 模拟
+
+```typescript
+// msw-handlers.ts
+import { http, HttpResponse } from 'msw';
+
+export const handlers = [
+  http.get('/api/users/:id', ({ params }) => {
+    return HttpResponse.json({
+      id: params.id,
+      name: 'Alice',
+      email: 'alice@example.com',
+    });
+  }),
+
+  http.post('/api/orders', async ({ request }) => {
+    const body = await request.json();
+    return HttpResponse.json({ orderId: 'ord-123', ...body }, { status: 201 });
+  }),
+];
+
+// vitest.setup.ts
+import { setupServer } from 'msw/node';
+import { handlers } from './msw-handlers';
+
+export const server = setupServer(...handlers);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -137,6 +192,9 @@ describe('OrderService', () => {
 | Cypress Documentation | 文档 | [docs.cypress.io](https://docs.cypress.io/) |
 | Node.js Test Runner | 官方文档 | [nodejs.org/api/test.html](https://nodejs.org/api/test.html) |
 | Mock Service Worker (MSW) | 文档 | [mswjs.io](https://mswjs.io/) |
+| MSW Getting Started | 文档 | [mswjs.io/docs/getting-started](https://mswjs.io/docs/getting-started) |
+| Kent C. Dodds — Testing JavaScript | 课程 | [testingjavascript.com](https://testingjavascript.com) |
+| React Testing Library | 文档 | [testing-library.com/react](https://testing-library.com/docs/react-testing-library/intro/) |
 
 ---
 

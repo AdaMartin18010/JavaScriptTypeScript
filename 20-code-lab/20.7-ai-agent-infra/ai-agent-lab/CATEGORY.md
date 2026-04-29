@@ -101,6 +101,27 @@ export class ToolRegistry {
     }));
   }
 }
+
+// Zod schema 自动生成 JSON Schema
+import { z } from 'zod';
+import { zodToJsonSchema } from 'zod-to-json-schema';
+
+const calculatorSchema = z.object({ a: z.number(), b: z.number(), op: z.enum(['+', '-', '*', '/']) });
+
+const registry = new ToolRegistry();
+registry.register(
+  'calculator',
+  zodToJsonSchema(calculatorSchema),
+  async (args) => {
+    const { a, b, op } = calculatorSchema.parse(args);
+    switch (op) {
+      case '+': return a + b;
+      case '-': return a - b;
+      case '*': return a * b;
+      case '/': return b !== 0 ? a / b : 'Division by zero';
+    }
+  }
+);
 ```
 
 ### 多 Agent 工作流编排
@@ -140,6 +161,73 @@ export class AgentWorkflow {
 }
 ```
 
+### Vercel AI SDK 流式工具调用
+
+```typescript
+// vercel-ai-sdk-tool-calling.ts
+import { streamText, tool } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { z } from 'zod';
+
+const weatherTool = tool({
+  description: 'Get weather for a city',
+  parameters: z.object({ city: z.string() }),
+  execute: async ({ city }) => {
+    const res = await fetch(`https://api.weather.example.com/${city}`);
+    return res.json();
+  },
+});
+
+async function runAgent() {
+  const result = streamText({
+    model: openai('gpt-4o'),
+    prompt: 'What is the weather in Tokyo?',
+    tools: { weather: weatherTool },
+  });
+
+  for await (const chunk of result.textStream) {
+    process.stdout.write(chunk);
+  }
+}
+```
+
+### Agent 记忆层（向量存储检索）
+
+```typescript
+// agent-memory.ts
+export class AgentMemory {
+  private shortTerm: string[] = [];
+  private longTerm = new Map<string, number[]>(); // 简化的向量存储
+
+  addShortTerm(message: string) {
+    this.shortTerm.push(message);
+    if (this.shortTerm.length > 20) this.shortTerm.shift();
+  }
+
+  async storeLongTerm(key: string, embedding: number[]) {
+    this.longTerm.set(key, embedding);
+  }
+
+  cosineSimilarity(a: number[], b: number[]): number {
+    let dot = 0, normA = 0, normB = 0;
+    for (let i = 0; i < a.length; i++) {
+      dot += a[i] * b[i];
+      normA += a[i] ** 2;
+      normB += b[i] ** 2;
+    }
+    return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+  }
+
+  async retrieveRelevant(query: number[], topK = 3): Promise<string[]> {
+    const scored = Array.from(this.longTerm.entries())
+      .map(([key, emb]) => ({ key, score: this.cosineSimilarity(query, emb) }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, topK);
+    return scored.map(s => s.key);
+  }
+}
+```
+
 ## 关联模块
 
 - `33-ai-integration` — AI 集成
@@ -154,9 +242,12 @@ export class AgentWorkflow {
 | Model Context Protocol | 规范 | [modelcontextprotocol.io](https://modelcontextprotocol.io) |
 | Vercel AI SDK | 文档 | [sdk.vercel.ai/docs](https://sdk.vercel.ai/docs) |
 | LangChain.js Docs | 文档 | [js.langchain.com](https://js.langchain.com) |
+| LangGraph Documentation | 文档 | [langchain-ai.github.io/langgraphjs](https://langchain-ai.github.io/langgraphjs/) |
 | Anthropic — Building Effective Agents | 指南 | [anthropic.com/research/building-effective-agents](https://www.anthropic.com/research/building-effective-agents) |
 | OpenAI Function Calling | 文档 | [platform.openai.com/docs/guides/function-calling](https://platform.openai.com/docs/guides/function-calling) |
 | AutoGen — Multi-Agent Conversation | 文档 | [microsoft.github.io/autogen](https://microsoft.github.io/autogen) |
+| MCP SDK for TypeScript | 源码 | [github.com/modelcontextprotocol/typescript-sdk](https://github.com/modelcontextprotocol/typescript-sdk) |
+| Vercel AI SDK GitHub | 源码 | [github.com/vercel/ai](https://github.com/vercel/ai) |
 
 ---
 

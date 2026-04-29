@@ -28,6 +28,15 @@ processData({});
 
 **防御：** 用 `unknown` 替代 `any`，强制类型收窄后再使用。
 
+```typescript
+function safeProcess(data: unknown): void {
+  if (typeof data === 'object' && data !== null && 'value' in data) {
+    // 安全访问
+    console.log((data as { value: unknown }).value);
+  }
+}
+```
+
 ---
 
 ## 2. 数组协变
@@ -48,6 +57,13 @@ animals.push(new Dog('Rex'));   // TS 允许！
 **原理：** TypeScript 的数组是**协变的**（`Cat[]` 是 `Animal[]` 的子类型），这是 deliberate unsoundness，为了兼容常见的 OOP 模式。
 
 **防御：** 使用 `readonly T[]` 或 `ReadonlyArray<T>` 禁止写入。
+
+```typescript
+function printAnimals(animals: readonly Animal[]): void {
+  animals.forEach(a => console.log(a.name));
+  // animals.push(new Dog('Rex')); // ❌ 编译错误
+}
+```
 
 ---
 
@@ -72,6 +88,16 @@ num.toFixed(2); // 编译通过！运行时 TypeError
 **原理：** `as` 是类型系统的 **escape hatch**，信任开发者胜于检查。
 
 **防御：** 使用类型守卫或 zod/io-ts 等运行时验证库。
+
+```typescript
+import { z } from 'zod';
+
+const UserSchema = z.object({ value: z.number(), name: z.string() });
+const parsed = UserSchema.safeParse(JSON.parse(raw));
+if (!parsed.success) {
+  throw new Error('Invalid user data');
+}
+```
 
 ---
 
@@ -114,6 +140,12 @@ function isObject(x: unknown): x is object {
 
 **防御：** 自定义守卫必须手动排除 null：`typeof x === 'object' && x !== null`
 
+```typescript
+function isObject(x: unknown): x is Record<string, unknown> {
+  return typeof x === 'object' && x !== null && !Array.isArray(x);
+}
+```
+
 ---
 
 ## 6. 索引签名 unsoundness
@@ -129,6 +161,16 @@ const value = dict['nonExistent']; // 类型: number
 ```
 
 **防御：** `noUncheckedIndexedAccess` 选项。
+
+```typescript
+// tsconfig.json
+{
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": true
+  }
+}
+// dict['nonExistent'] 类型变为 number | undefined
+```
 
 ---
 
@@ -147,6 +189,14 @@ const fn = greeter.greet;
 
 **防御：** 箭头函数或 `.bind(this)`
 
+```typescript
+class SafeGreeter {
+  greet = (): string => {
+    return this.message; // this 始终指向实例
+  };
+}
+```
+
 ---
 
 ## 8. 对象突变后类型收窄失效
@@ -161,6 +211,15 @@ if (user.role === 'admin') {
 
 **防御：** `readonly` + `as const`，或不可变数据。
 
+```typescript
+interface User {
+  readonly role: 'admin' | 'user';
+}
+
+const user = { role: 'admin' as const };
+// user.role = 'user'; // ❌ 编译错误
+```
+
 ---
 
 ## 9. JSON.parse 返回 any
@@ -171,6 +230,17 @@ const data = JSON.parse(raw) as { id: number };
 ```
 
 **防御：** zod / valibot 运行时验证。
+
+```typescript
+import { z } from 'zod';
+
+const ApiResponseSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+});
+
+const data = ApiResponseSchema.parse(JSON.parse(raw));
+```
 
 ---
 
@@ -187,7 +257,143 @@ strictFn.call(null, 'wrong', 123);
 
 ---
 
+## 11. Branded Types 绕过（名义类型模拟漏洞）
+
+```typescript
+type UserId = string & { __brand: 'UserId' };
+type PostId = string & { __brand: 'PostId' };
+
+function getUser(id: UserId) { /* ... */ }
+
+const postId = 'abc123' as PostId;
+getUser(postId as unknown as UserId); // 编译通过！运行时逻辑错误
+```
+
+**防御：** 避免双重断言，使用运行时校验包装器。
+
+```typescript
+function createUserId(raw: string): UserId {
+  if (!raw.match(/^[a-z0-9]{24}$/)) throw new Error('Invalid UserId');
+  return raw as UserId;
+}
+```
+
+---
+
+## 12. Excess Property Checks 绕过
+
+```typescript
+interface Config { host: string; port: number }
+
+function loadConfig(c: Config) { /* ... */ }
+
+// 对象字面量会触发 excess property check
+loadConfig({ host: 'localhost', port: 3000, secret: 'leaked' }); // ❌ 编译错误
+
+// 但通过中间变量可绕过
+const evil = { host: 'localhost', port: 3000, secret: 'leaked' };
+loadConfig(evil); // ✅ 编译通过！secret 被静默忽略或导致意外行为
+```
+
+**防御：** 使用 `satisfies` 关键字（TS 4.9+）或 zod 校验。
+
+```typescript
+const evil = { host: 'localhost', port: 3000, secret: 'leaked' } satisfies Config;
+// ❌ 编译错误：Object literal may only specify known properties
+```
+
+---
+
+## 13. Symbol Key Unsoundness
+
+```typescript
+const secretKey = Symbol('secret');
+
+interface SafeBox {
+  [key: string]: string;
+}
+
+const box: SafeBox = {};
+(box as any)[secretKey] = 'sensitive'; // Symbol key 绕过索引签名检查
+
+// 读取时可能泄漏
+console.log(Object.getOwnPropertySymbols(box)); // [Symbol(secret)]
+```
+
+---
+
+## 14. Prototype Pollution 防御盲点
+
+```typescript
+// TS 类型无法防御原型链污染
+function merge<T, U>(target: T, source: U): T & U {
+  for (const key in source) {
+    // 未检查 key === '__proto__' 或 'constructor'
+    (target as any)[key] = (source as any)[key];
+  }
+  return target as T & U;
+}
+
+// 攻击向量
+merge({}, JSON.parse('{"__proto__":{"isAdmin":true}}'));
+// 所有对象的 isAdmin 变为 true！
+```
+
+**防御：** 使用 `Object.create(null)` 或结构化克隆/库级 merge。
+
+```typescript
+function safeMerge<T extends object, U extends object>(target: T, source: U): T & U {
+  const result = { ...target };
+  for (const [key, value] of Object.entries(source)) {
+    if (key === '__proto__' || key === 'constructor') continue;
+    (result as any)[key] = value;
+  }
+  return result as T & U;
+}
+```
+
+---
+
+## 15. 枚举（enum）反向映射陷阱
+
+```typescript
+enum Status { Active = 1, Inactive = 0 }
+
+function getStatusLabel(s: Status): string {
+  if (s === Status.Active) return 'Active';
+  if (s === Status.Inactive) return 'Inactive';
+  return 'Unknown'; // 理论上不可达
+}
+
+// 但运行时传入非法值
+getStatusLabel(999 as Status); // 编译通过！返回 'Unknown'
+
+// 或者字符串枚举的反向映射
+const label = Status[1]; // "Active" — 如果传入变量可能泄漏内部名称
+```
+
+**防御：** 使用 `const` 断言 + 联合类型替代 enum。
+
+```typescript
+type Status = 'active' | 'inactive';
+const StatusMap = { active: 1, inactive: 0 } as const;
+```
+
+---
+
 ## 参考
 
 - [TypeScript Type System Unsoundness](https://github.com/microsoft/TypeScript/issues/9825)
 - [Design Goals: Soundness](https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals)
+- [TypeScript Handbook — Type Compatibility](https://www.typescriptlang.org/docs/handbook/type-compatibility.html)
+- [Zod — TypeScript-first Schema Validation](https://zod.dev/)
+- [Valibot — Modular Schema Validation](https://valibot.dev/)
+- [io-ts — Runtime Type System](https://github.com/gcanti/io-ts)
+- [TypeScript — strictNullChecks](https://www.typescriptlang.org/tsconfig/#strictNullChecks)
+- [TypeScript — noUncheckedIndexedAccess](https://www.typescriptlang.org/tsconfig/#noUncheckedIndexedAccess)
+- [TypeScript — satisfies Operator](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html#the-satisfies-operator)
+- [OWASP — Prototype Pollution Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Prototype_Pollution_Prevention_Cheat_Sheet.html)
+- [Snyk — TypeScript Type Safety Guide](https://snyk.io/blog/typescript-type-safety/)
+- [Matt Pocock — TypeScript's Worst Unsoundness](https://www.youtube.com/watch?v=TSYWvT1qDHY)
+- [Total TypeScript — Branded Types](https://www.totaltypescript.com/branded-types)
+- [MDN — Array.isArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray)

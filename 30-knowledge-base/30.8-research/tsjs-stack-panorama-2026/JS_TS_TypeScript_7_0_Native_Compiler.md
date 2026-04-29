@@ -189,14 +189,70 @@ Node.js 23.6+ 已支持 `--experimental-strip-types`，允许直接运行符合 
 | **CI/CD 基建** | 将类型检查与构建步骤解耦，建立独立的类型检查 job，为 7.0 快速替换做准备 |
 | **关注预览版** | 2025 年中发布 CLI 预览版时，在并行环境中测试性能收益与兼容性 |
 
+**推荐的 `tsconfig.json` 配置（面向 7.0 兼容）**：
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "isolatedDeclarations": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  }
+}
+```
+
+**性能基准测试脚本**：
+
+```typescript
+// scripts/benchmark-tsc.ts — 测量类型检查耗时
+import { execSync } from 'node:child_process';
+import { performance } from 'node:perf_hooks';
+
+function benchmarkTypeCheck(iterations = 3): number[] {
+  const times: number[] = [];
+
+  for (let i = 0; i < iterations; i++) {
+    // 清理缓存
+    try {
+      execSync('npx tsc --build --force', { stdio: 'ignore' });
+    } catch { /* ignore */ }
+
+    const start = performance.now();
+    execSync('npx tsc --noEmit', { stdio: 'inherit' });
+    const elapsed = performance.now() - start;
+    times.push(elapsed);
+    console.log(`Run ${i + 1}: ${(elapsed / 1000).toFixed(2)}s`);
+  }
+
+  const avg = times.reduce((a, b) => a + b, 0) / times.length;
+  console.log(`\nAverage: ${(avg / 1000).toFixed(2)}s`);
+  return times;
+}
+
+benchmarkTypeCheck();
+```
+
 ---
 
 ## 参考文献
 
 1. Microsoft TypeScript Team. *A New Era for TypeScript*. Official Blog, 2025-03-11. <https://devblogs.microsoft.com/typescript/a-new-era-for-typescript/>
 2. Microsoft TypeScript Team. *TypeScript 5.8 Release Notes*. <https://devblogs.microsoft.com/typescript/announcing-typescript-5-8/>
-3. Node.js Documentation. *Type Stripping*. <https://nodejs.org/api/typescript.html#type-stripping>
-4. Language Server Protocol Specification. <https://microsoft.github.io/language-server-protocol/>
+3. Microsoft TypeScript Team. *TypeScript 5.9 Release Notes*. <https://devblogs.microsoft.com/typescript/announcing-typescript-5-9/>
+4. Node.js Documentation. *Type Stripping*. <https://nodejs.org/api/typescript.html#type-stripping>
+5. Language Server Protocol Specification. <https://microsoft.github.io/language-server-protocol/>
+6. Go Programming Language. <https://go.dev/doc/> — Go 语言官方文档
+7. TC39 Temporal Proposal. <https://github.com/tc39/proposal-temporal> — Temporal API Stage 4 提案
+8. TC39 Import Defer Proposal. <https://github.com/tc39/proposal-defer-import-eval/> — Deferring Module Evaluation Stage 3
+9. Anders Hejlsberg on TypeScript's Future. Microsoft Build 2025. <https://build.microsoft.com/en-US/sessions>
+10. SWC (Speedy Web Compiler). <https://swc.rs/> — Rust 编写的 TS/JS 编译器
+11. esbuild. <https://esbuild.github.io/> — Go 编写的极速打包工具
 
 ---
 

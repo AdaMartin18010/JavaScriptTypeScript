@@ -13,7 +13,11 @@
 
 ### 1.2 形式化基础
 
-[本模块的形式化定义与公理/定理陈述]
+元编程允许程序将自身作为数据进行操作。在 JS/TS 中，元编程的核心机制包括：
+
+- **Proxy**: 创建对象的拦截层，重定义基本操作（属性访问、赋值、枚举、函数调用等）
+- **Reflect**: 提供与 Proxy handler 对应的默认行为 API
+- **装饰器**: 在声明时附加元数据和行为的注解机制
 
 ### 1.3 关键概念
 
@@ -145,22 +149,194 @@ const iterable = {
 console.log([...iterable]); // [10, 20, 30]
 ```
 
-### 3.3 常见误区
+### 3.3 代码示例：Revocable Proxy 与 Membrane 模式
+
+```typescript
+// Revocable Proxy：可随时撤销的代理
+function createSecureSession<T extends object>(data: T, ttlMs: number) {
+  const { proxy, revoke } = Proxy.revocable(data, {
+    get(target, prop, receiver) {
+      console.log(`[audit] read ${String(prop)}`);
+      return Reflect.get(target, prop, receiver);
+    },
+    set(target, prop, value, receiver) {
+      console.log(`[audit] write ${String(prop)} = ${value}`);
+      return Reflect.set(target, prop, value, receiver);
+    },
+  });
+
+  // TTL 到期后自动撤销
+  setTimeout(() => {
+    console.log('[session] revoked due to TTL');
+    revoke();
+  }, ttlMs);
+
+  return proxy;
+}
+
+const session = createSecureSession({ userId: '123', role: 'admin' }, 5000);
+console.log(session.userId); // [audit] read userId -> '123'
+
+// 5秒后访问会抛出 TypeError: Cannot perform 'get' on a proxy that has been revoked
+```
+
+### 3.4 代码示例：Reflect 构建通用序列化器
+
+```typescript
+// 使用 Reflect 实现深度只读代理
+function deepReadonly<T extends object>(target: T): Readonly<T> {
+  return new Proxy(target, {
+    get(obj, prop, receiver) {
+      const value = Reflect.get(obj, prop, receiver);
+      if (value !== null && typeof value === 'object') {
+        return deepReadonly(value);
+      }
+      return value;
+    },
+
+    set() {
+      throw new TypeError('Cannot modify readonly object');
+    },
+
+    deleteProperty() {
+      throw new TypeError('Cannot delete property of readonly object');
+    },
+
+    defineProperty() {
+      throw new TypeError('Cannot define property on readonly object');
+    },
+  });
+}
+
+const config = deepReadonly({
+  database: { host: 'localhost', port: 5432 },
+  features: ['auth', 'billing'],
+});
+
+console.log(config.database.host); // 'localhost'
+// config.database.port = 3306;    // TypeError: Cannot modify readonly object
+```
+
+### 3.5 代码示例：TC39 Stage 3 装饰器（TS 5.0+）
+
+```typescript
+// 方法计时装饰器
+function timed<T extends (...args: any[]) => any>(
+  target: T,
+  context: ClassMethodDecoratorContext
+) {
+  const methodName = String(context.name);
+  return function (this: any, ...args: Parameters<T>): ReturnType<T> {
+    const start = performance.now();
+    const result = target.apply(this, args);
+    const elapsed = performance.now() - start;
+    console.log(`[${methodName}] took ${elapsed.toFixed(2)}ms`);
+    return result;
+  } as T;
+}
+
+// 字段观察装饰器
+function observable<T>(target: undefined, context: ClassFieldDecoratorContext) {
+  return function (this: any, initialValue: T): T {
+    let value = initialValue;
+    const listeners = new Set<(v: T) => void>();
+
+    Object.defineProperty(this, context.name, {
+      get() { return value; },
+      set(newValue: T) {
+        if (value !== newValue) {
+          value = newValue;
+          listeners.forEach(cb => cb(newValue));
+        }
+      },
+      enumerable: true,
+      configurable: true,
+    });
+
+    (this as any).subscribe = (cb: (v: T) => void) => listeners.add(cb);
+    return initialValue;
+  };
+}
+
+class DataService {
+  @observable
+  status: 'idle' | 'loading' | 'done' = 'idle';
+
+  @timed
+  fetchData() {
+    this.status = 'loading';
+    // 模拟异步操作
+    return new Promise(resolve => setTimeout(() => {
+      this.status = 'done';
+      resolve(null);
+    }, 100));
+  }
+}
+
+const service = new DataService();
+service.subscribe((s) => console.log('status changed:', s));
+service.fetchData();
+```
+
+### 3.6 代码示例：自定义迭代器与异步迭代器
+
+```typescript
+// 自定义范围迭代器
+class Range {
+  constructor(private start: number, private end: number, private step = 1) {}
+
+  [Symbol.iterator](): Iterator<number> {
+    let current = this.start;
+    return {
+      next: () => {
+        if (current >= this.end) return { done: true, value: undefined };
+        const value = current;
+        current += this.step;
+        return { done: false, value };
+      },
+    };
+  }
+
+  // 异步迭代器
+  async *[Symbol.asyncIterator](): AsyncGenerator<number> {
+    for (let i = this.start; i < this.end; i += this.step) {
+      await new Promise(r => setTimeout(r, 10)); // 模拟异步
+      yield i;
+    }
+  }
+}
+
+const range = new Range(0, 5);
+console.log([...range]); // [0, 1, 2, 3, 4]
+
+(async () => {
+  for await (const n of range) {
+    console.log('async:', n);
+  }
+})();
+```
+
+### 3.7 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | Proxy 可以拦截所有操作 | 部分原生对象内部槽无法被代理 |
 | Reflect 只是 Proxy 的镜像 | Reflect 提供默认行为且可用于普通对象 |
+| 装饰器会改变类型签名 | 装饰器不应改变被装饰成员的类型接口 |
+| Symbol.for 和 Symbol 相同 | Symbol.for 在全局注册表中共享，Symbol 每次创建唯一 |
 
-### 3.4 扩展阅读
+### 3.8 扩展阅读
 
 - [MDN Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
 - [MDN Reflect](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect)
 - [MDN Symbol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)
-- [MDN：Proxy handler functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy)
-- [MDN：Well-known Symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#well-known_symbols)
-- [ECMAScript® 2025 — Proxy Objects](https://tc39.es/ecma262/#sec-proxy-objects)
-- [ECMAScript® 2025 — Reflection](https://tc39.es/ecma262/#sec-reflection)
+- [MDN: Proxy handler functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy)
+- [MDN: Well-known Symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#well-known_symbols)
+- [ECMAScript 2025: Proxy Objects](https://tc39.es/ecma262/#sec-proxy-objects)
+- [ECMAScript 2025: Reflection](https://tc39.es/ecma262/#sec-reflection)
+- [TC39 Decorators Proposal](https://github.com/tc39/proposal-decorators) — TC39 Stage 3 装饰器规范
+- [TypeScript 5.0 Decorators](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html#decorators) — TS 官方装饰器文档
+- [JavaScript Metaprogramming Patterns](https://exploringjs.com/impatient-js/ch_proxies.html) — Dr. Axel Rauschmayer
 - `10-fundamentals/10.1-language-semantics/07-metaprogramming/`
 
 ---

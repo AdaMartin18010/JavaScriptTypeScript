@@ -28,7 +28,7 @@
 | **类型安全** | 中等 (模板字符串) | 中等 (对象样式稍好) | 良好 | 优秀 (生成类型定义) |
 | **主题系统** | `ThemeProvider` + Context | `ThemeProvider` + Context | CSS 变量 | `tokens` / `semanticTokens` |
 | **构建工具** | 任何 | 任何 | Babel / Vite / Webpack | PostCSS / Vite / Next.js |
-| **DevEx** | 热更新快，调试友好 |  Source maps 优秀 | 需等待编译 | 生成文件需忽略 |
+| **DevEx** | 热更新快，调试友好 | Source maps 优秀 | 需等待编译 | 生成文件需忽略 |
 | **代表用户** | 大量遗留项目 | 大量遗留项目 | Callstack / 中型项目 | Chakra UI v3 / 新设计系统 |
 
 ---
@@ -150,6 +150,110 @@ const button = cva({
 <button className={button({ visual: 'primary', size: 'sm' })}>Click me</button>
 ```
 
+### Vanilla Extract (编译时 + 类型安全 CSS 文件)
+
+```typescript
+// styles.css.ts
+import { style, styleVariants, createTheme } from '@vanilla-extract/css';
+
+export const [themeClass, vars] = createTheme({
+  color: {
+    brand: '#0070f3',
+    white: '#ffffff',
+  },
+  space: {
+    small: '4px',
+    medium: '8px',
+  },
+});
+
+const base = style({
+  borderRadius: '4px',
+  border: '1px solid #ddd',
+  cursor: 'pointer',
+  transition: 'opacity 0.2s',
+});
+
+export const button = styleVariants({
+  primary: [base, { background: vars.color.brand, color: vars.color.white }],
+  secondary: [base, { background: vars.color.white, color: '#333' }],
+});
+
+// Button.tsx
+import { themeClass, button } from './styles.css.ts';
+
+export function Button({ variant }: { variant: 'primary' | 'secondary' }) {
+  return <button className={`${themeClass} ${button[variant]}`}>Click me</button>;
+}
+```
+
+### CSS Modules (零运行时 + 作用域样式)
+
+```css
+/* Button.module.css */
+.button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  background: white;
+  color: #333;
+}
+
+.primary {
+  background: #0070f3;
+  color: white;
+  border-color: #0070f3;
+}
+
+/* Button.tsx */
+import styles from './Button.module.css';
+
+export function Button({ primary = false }: { primary?: boolean }) {
+  return (
+    <button className={`${styles.button} ${primary ? styles.primary : ''}`}>
+      Click me
+    </button>
+  );
+}
+```
+
+### Tailwind CSS v4 (原子化 + 配置即代码)
+
+```tsx
+// app/components/Badge.tsx
+export function Badge({
+  children,
+  variant = 'default',
+}: {
+  children: React.ReactNode;
+  variant?: 'default' | 'success' | 'error';
+}) {
+  const variantStyles = {
+    default: 'bg-gray-100 text-gray-800',
+    success: 'bg-green-100 text-green-800',
+    error: 'bg-red-100 text-red-800',
+  };
+
+  return (
+    <span
+      className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${variantStyles[variant]}`}
+    >
+      {children}
+    </span>
+  );
+}
+
+// Tailwind v4 CSS-first 配置
+// app.css
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #eff6ff;
+  --color-brand-500: #0070f3;
+  --color-brand-900: #1e3a8a;
+}
+```
+
 ---
 
 ## 2026 趋势
@@ -186,6 +290,12 @@ const button = cva({
 | CSS Modules | <https://github.com/css-modules/css-modules> | 模块化 CSS 规范 |
 | Next.js CSS 文档 | <https://nextjs.org/docs/app/building-your-application/styling> | 官方样式指南 |
 | The State of CSS 2024 | <https://2024.stateofcss.com/en-US/other-tools/css_in_js> | CSS-in-JS 趋势报告 |
+| Chakra UI v3 + Panda CSS | <https://www.chakra-ui.com/> | 新设计系统架构 |
+| Tailwind CSS v4 公告 | <https://tailwindcss.com/blog/tailwindcss-v4> | CSS-first 配置引擎 |
+| Vanilla Extract Sprinkles | <https://vanilla-extract.style/documentation/packages/sprinkles/> | 原子 CSS on top of VE |
+| React Server Components — Styling | <https://nextjs.org/docs/app/building-your-application/rendering/composition-patterns#unsupported-pattern-importing-server-components-into-client-components> | RSC 样式限制说明 |
+| Why I Won't Use Next.js — Kent C. Dodds | <https://www.epicweb.dev/why-i-wont-use-nextjs> | 运行时 CSS-in-JS 与 RSC 冲突讨论 |
+| The Future of CSS-in-JS | <https://dev.to/srmaganti/the-future-of-css-in-js-1d2o> | 社区趋势综述 |
 
 ---
 

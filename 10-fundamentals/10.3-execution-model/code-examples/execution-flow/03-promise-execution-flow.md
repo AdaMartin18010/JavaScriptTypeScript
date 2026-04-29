@@ -74,6 +74,22 @@ flowchart TD
     E --> F[then 回调执行]
 ```
 
+### 4.2 微任务 vs 宏任务
+
+Promise 回调通过 **微任务（microtask）** 调度，优先级高于宏任务（macrotask，如 `setTimeout`）。这保证了 Promise 链在同一次事件循环迭代内尽可能早地执行。
+
+```javascript
+console.log('1. 同步开始');
+
+setTimeout(() => console.log('2. setTimeout（宏任务）'), 0);
+
+Promise.resolve().then(() => console.log('3. Promise then（微任务）'));
+
+console.log('4. 同步结束');
+
+// 输出顺序：1 → 4 → 3 → 2
+```
+
 ---
 
 ## 5. 论证与分析 (Argumentation & Analysis)
@@ -86,6 +102,27 @@ flowchart TD
 | `Promise.race` | 首个 settled | 首个 rejected | 首个结果 |
 | `Promise.allSettled` | 全部 settled | 永不 reject | 状态数组 |
 | `Promise.any` | 首个 fulfilled | 全部 rejected | 首个结果 |
+
+### 5.2 `Promise.withResolvers`（ES2024）
+
+ES2024 新增了 `Promise.withResolvers`，将 `resolve` 和 `reject` 暴露给外部调用者，解决了“先创建 Promise、后决定其命运”的常见模式：
+
+```javascript
+function createDelayedTask(ms) {
+  const { promise, resolve, reject } = Promise.withResolvers();
+
+  setTimeout(() => {
+    if (ms > 5000) reject(new Error('Timeout too long'));
+    else resolve(`Done after ${ms}ms`);
+  }, ms);
+
+  return promise;
+}
+
+createDelayedTask(100)
+  .then(console.log)   // "Done after 100ms"
+  .catch(console.error);
+```
 
 ---
 
@@ -112,12 +149,93 @@ const [users, posts] = await Promise.all([
 ]);
 ```
 
+### 6.3 正例：`Promise.allSettled` 安全聚合
+
+```javascript
+const results = await Promise.allSettled([
+  fetch('/api/a'),
+  fetch('/api/b'),
+  fetch('/api/c')
+]);
+
+const ok = results
+  .filter(r => r.status === 'fulfilled')
+  .map(r => r.value);
+
+const failed = results
+  .filter(r => r.status === 'rejected')
+  .map(r => r.reason);
+
+console.log('成功:', ok.length, '失败:', failed.length);
+```
+
+### 6.4 正例：带 AbortController 的取消模式
+
+```javascript
+const controller = new AbortController();
+const { signal } = controller;
+
+// 5 秒后自动取消
+setTimeout(() => controller.abort(), 5000);
+
+try {
+  const response = await fetch('/api/slow-endpoint', { signal });
+  const data = await response.json();
+} catch (err) {
+  if (err.name === 'AbortError') {
+    console.log('请求已被取消');
+  }
+}
+```
+
+### 6.5 正例：`Promise.any` 与降级策略
+
+```javascript
+const cdn1 = fetch('https://cdn-a.example.com/lib.js');
+const cdn2 = fetch('https://cdn-b.example.com/lib.js');
+const fallback = fetch('https://origin.example.com/lib.js');
+
+try {
+  const fastest = await Promise.any([cdn1, cdn2, fallback]);
+  console.log('首个可用 CDN:', fastest.url);
+} catch (error) {
+  // AggregateError: 所有源均失败
+  console.error('所有 CDN 不可用:', error.errors);
+}
+```
+
+### 6.6 正例：异步迭代器 (`for await...of`)
+
+```javascript
+async function* paginatedUsers(pageSize = 10) {
+  let page = 1;
+  while (true) {
+    const res = await fetch(`/api/users?page=${page}&size=${pageSize}`);
+    const data = await res.json();
+    if (data.length === 0) break;
+    yield* data;
+    page++;
+  }
+}
+
+// 消费
+for await (const user of paginatedUsers()) {
+  console.log(user.name);
+}
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
 
-- **ECMA-262 §27.2** — Promise Objects
+- **ECMA-262 §27.2** — Promise Objects: <https://tc39.es/ecma262/#sec-promise-objects>
 - **MDN: Promise** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise>
+- **MDN: async function** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function>
+- **V8 Blog — JavaScript Promises** — <https://v8.dev/blog/fast-async>
+- **Jake Archibald: Tasks, microtasks, queues and schedules** — <https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/>
+- **Node.js — Event Loop, Timers, and `process.nextTick()`** — <https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick>
+- **WhatWG — DOM Standard: AbortSignal** — <https://dom.spec.whatwg.org/#abortsignal>
+- **TC39 Proposal — `Promise.withResolvers`** — <https://github.com/tc39/proposal-promise-with-resolvers>
 
 ---
 

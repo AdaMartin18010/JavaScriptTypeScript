@@ -97,6 +97,49 @@ git clone https://github.com/SaltyAom/bun-http-benchmark.git
 cd bun-http-benchmark && npm install && npm run bench
 ```
 
+### 可复现的独立 Benchmark 脚本
+
+```javascript
+// bench-http.mjs — 使用 Node.js 内置 test runner + autocannon
+import { createServer } from 'node:http';
+import autocannon from 'autocannon';
+
+const server = createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ ok: true, time: Date.now() }));
+});
+
+server.listen(3000, async () => {
+  const result = await autocannon({
+    url: 'http://localhost:3000',
+    connections: 100,
+    duration: 10,
+  });
+  console.table({
+    requestsPerSec: result.requests.average,
+    latencyMs: result.latency.average,
+    throughputMB: result.throughput.average / 1024 / 1024,
+  });
+  server.close();
+});
+```
+
+### npm 安全性审计命令
+
+```bash
+# 审计直接依赖的已知漏洞
+npm audit --production
+
+# 查看特定包的版本历史与发布时间
+npm view typescript time --json | tail -n 5
+
+# 检查依赖树的许可证合规性
+npx license-checker --summary
+
+# 验证 lockfile 完整性
+npm ci --audit
+```
+
 ---
 
 ## 权威链接索引
@@ -113,6 +156,12 @@ cd bun-http-benchmark && npm install && npm run bench
 | TechEmpower Benchmark | <https://www.techempower.com/benchmarks/> | 独立性能数据 |
 | NVD 漏洞库 | <https://nvd.nist.gov/> | CVE 验证 |
 | MDN Compat | <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference> | 浏览器/API 兼容性 |
+| MITRE CVE | <https://cve.mitre.org/> | 通用漏洞枚举 |
+| Snyk Vulnerability DB | <https://security.snyk.io/> | 开源依赖漏洞 |
+| npm Registry | <https://docs.npmjs.com/cli/v10/commands/npm-view> | 包版本与元数据 |
+| caniuse | <https://caniuse.com/> | 浏览器特性兼容性矩阵 |
+| Node.js Security WG | <https://github.com/nodejs/security-wg> | Node.js 安全策略与公告 |
+| OpenJS Foundation | <https://openjsf.org/> | 生态治理与标准参与 |
 
 ---
 

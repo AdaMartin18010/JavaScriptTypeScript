@@ -69,6 +69,19 @@ getData(function(a) {
 });
 ```
 
+**使用 async/await 重构**：
+
+```typescript
+// ✅ 现代异步写法
+async function fetchDataChain() {
+  const a = await getData();
+  const b = await getMoreData(a);
+  const c = await getMoreData(b);
+  const d = await getMoreData(c);
+  return d;
+}
+```
+
 ---
 
 ## 4. 机制解释 (Mechanism Explanation)
@@ -131,12 +144,144 @@ async function main() {
 }
 ```
 
+### 6.3 自定义回调 API 设计
+
+```typescript
+// 设计良好的回调 API：错误优先 + 类型安全
+interface AsyncTask<T> {
+  (callback: (error: Error | null, result?: T) => void): void;
+}
+
+function createDelayedTask<T>(value: T, delayMs: number): AsyncTask<T> {
+  return (callback) => {
+    setTimeout(() => {
+      callback(null, value);
+    }, delayMs);
+  };
+}
+
+// 使用
+const task = createDelayedTask('Hello', 100);
+task((err, result) => {
+  if (err) {
+    console.error('Failed:', err);
+    return;
+  }
+  console.log('Result:', result); // 'Hello'
+});
+```
+
+### 6.4 手动 promisify 实现
+
+```typescript
+// 手动实现 promisify — 理解底层机制
+function promisify<TArgs extends unknown[], TResult>(
+  fn: (...args: [...TArgs, (err: Error | null, result?: TResult) => void]) => void
+): (...args: TArgs) => Promise<TResult> {
+  return (...args: TArgs) => {
+    return new Promise<TResult>((resolve, reject) => {
+      fn(...args, (err, result) => {
+        if (err) reject(err);
+        else resolve(result!);
+      });
+    });
+  };
+}
+
+// 使用自定义 promisify
+import { readFile as readFileCallback } from 'node:fs';
+const readFileAsync = promisify(readFileCallback);
+
+async function demo() {
+  const data = await readFileAsync('package.json', 'utf-8');
+  console.log(JSON.parse(data).name);
+}
+```
+
+### 6.5 回调组合：串行与并行
+
+```typescript
+// 使用回调实现串行执行
+function series<T>(tasks: Array<(cb: (err: Error | null, result?: T) => void) => void>,
+  finalCallback: (err: Error | null, results?: T[]) => void
+): void {
+  const results: T[] = [];
+  let index = 0;
+
+  function next(err: Error | null, result?: T): void {
+    if (err) {
+      finalCallback(err);
+      return;
+    }
+    if (result !== undefined) results.push(result);
+
+    if (index >= tasks.length) {
+      finalCallback(null, results);
+      return;
+    }
+
+    const task = tasks[index++];
+    task(next);
+  }
+
+  next(null);
+}
+
+// 使用回调实现并行执行
+function parallel<T>(tasks: Array<(cb: (err: Error | null, result?: T) => void) => void>,
+  finalCallback: (err: Error | null, results?: T[]) => void
+): void {
+  const results: T[] = new Array(tasks.length);
+  let completed = 0;
+  let hasError = false;
+
+  tasks.forEach((task, i) => {
+    task((err, result) => {
+      if (hasError) return;
+      if (err) {
+        hasError = true;
+        finalCallback(err);
+        return;
+      }
+      results[i] = result!;
+      completed++;
+      if (completed === tasks.length) {
+        finalCallback(null, results);
+      }
+    });
+  });
+}
+
+// 使用示例
+series([
+  (cb) => setTimeout(() => cb(null, 'step 1'), 100),
+  (cb) => setTimeout(() => cb(null, 'step 2'), 100),
+], (err, results) => {
+  console.log('Series:', results); // ['step 1', 'step 2']
+});
+
+parallel([
+  (cb) => setTimeout(() => cb(null, 'a'), 200),
+  (cb) => setTimeout(() => cb(null, 'b'), 100),
+], (err, results) => {
+  console.log('Parallel:', results); // ['a', 'b']
+});
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §6.2.6** — [[Call]]
 - **MDN: Callback function** — <https://developer.mozilla.org/en-US/docs/Glossary/Callback_function>
+- **Node.js Error-First Callbacks** — <https://nodejs.org/api/errors.html#error-first-callbacks>
+- **Node.js util.promisify** — <https://nodejs.org/api/util.html#utilpromisifyoriginal>
+- **Promise A+ Specification** — <https://promisesaplus.com/> — Promise 行为标准规范
+- **MDN: Promise** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise>
+- **V8 Blog: Understanding Promises** — <https://v8.dev/blog/fast-async>
+- **JavaScript.info: Callbacks** — <https://javascript.info/callbacks>
+- **Refactoring Guru: Callback Pattern** — <https://refactoring.guru/design-patterns/chain-of-responsibility>
+- **TC39 ECMA-262 Spec** — <https://tc39.es/ecma262/> — 官方 ECMAScript 规范
 
 ---
 

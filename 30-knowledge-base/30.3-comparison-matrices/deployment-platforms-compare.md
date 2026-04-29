@@ -130,6 +130,110 @@ export class WebStack extends cdk.Stack {
 }
 ```
 
+### Railway：Dockerfile 部署
+
+```dockerfile
+# Dockerfile — Railway / Render / Fly.io 通用
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json .
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json .
+EXPOSE 3000
+CMD ["node", "dist/main.js"]
+```
+
+### GitHub Actions CI/CD 流水线
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # 部署到 Vercel
+      - name: Deploy to Vercel
+        uses: vercel/action-deploy@v1
+        if: github.ref == 'refs/heads/main'
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+
+      # 或部署到 Cloudflare Pages
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        if: github.ref == 'refs/heads/main'
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: my-app
+          directory: dist
+```
+
+### Terraform：多平台基础设施即代码
+
+```hcl
+# terraform/main.tf — AWS + Cloudflare DNS
+terraform {
+  required_providers {
+    aws = { source = "hashicorp/aws", version = "~> 5.0" }
+    cloudflare = { source = "cloudflare/cloudflare", version = "~> 4.0" }
+  }
+}
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+# ECS Cluster
+resource "aws_ecs_cluster" "app" {
+  name = "my-app-cluster"
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+}
+
+# Cloudflare DNS Record
+resource "cloudflare_record" "app" {
+  zone_id = var.cloudflare_zone_id
+  name    = "app"
+  type    = "CNAME"
+  value   = aws_lb.app.dns_name
+  proxied = true
+}
+```
+
 ---
 
 ## 实测性能
@@ -159,14 +263,24 @@ export class WebStack extends cdk.Stack {
 | 资源 | 链接 | 说明 |
 |------|------|------|
 | Vercel Docs | <https://vercel.com/docs> | 官方文档与框架指南 |
+| Vercel Edge Runtime | <https://edge-runtime.vercel.app/> | 边缘运行时 API 参考 |
 | Netlify Docs | <https://docs.netlify.com/> | 官方文档 |
+| Netlify Edge Functions | <https://docs.netlify.com/edge-functions/overview/> | 边缘函数文档 |
 | Cloudflare Pages | <https://developers.cloudflare.com/pages/> | 官方开发者文档 |
+| Cloudflare Workers | <https://developers.cloudflare.com/workers/> | Workers 运行时文档 |
 | Railway Docs | <https://docs.railway.app/> | 官方文档 |
 | Render Docs | <https://render.com/docs> | 官方文档 |
 | AWS Amplify | <https://docs.amplify.aws/> | AWS 全栈部署文档 |
+| AWS CDK | <https://docs.aws.amazon.com/cdk/> | 基础设施即代码 |
 | GCP Cloud Run | <https://cloud.google.com/run/docs> | 容器化 Serverless |
+| Fly.io Docs | <https://fly.io/docs/> | 全球应用部署平台 |
+| DigitalOcean App Platform | <https://docs.digitalocean.com/products/app-platform/> | 简化应用部署 |
 | web.dev 部署指南 | <https://web.dev/articles/deploy-to-netlify> | Google 官方部署最佳实践 |
 | Jamstack.org | <https://jamstack.org/generators/> | 静态站点生成器对比 |
+| Docker Docs | <https://docs.docker.com/> | 容器化部署标准 |
+| Terraform Registry | <https://registry.terraform.io/> | 基础设施模块市场 |
+| GitHub Actions Docs | <https://docs.github.com/en/actions> | CI/CD 自动化 |
+| State of JS: Deployment | <https://stateofjs.com/en-US/other_tools/deployment/> | 开发者部署平台调查 |
 
 ---
 

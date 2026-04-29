@@ -14,6 +14,8 @@
 4. [Shor 算法](#shor-算法)
 5. [Grover 算法](#grover-算法)
 6. [算法复杂度汇总](#算法复杂度汇总)
+7. [扩展代码示例](#扩展代码示例)
+8. [权威参考链接](#权威参考链接)
 
 ---
 
@@ -394,6 +396,153 @@ const iterations = Math.floor((Math.PI / 4) * Math.sqrt(N));
 
 ---
 
+## 扩展代码示例
+
+### 量子隐形传态 (Quantum Teleportation)
+
+```typescript
+// quantum-teleportation.ts — 模拟量子隐形传态协议
+import { StateVector, Complex } from './quantum-state-vector';
+import { Gates } from './quantum-gates-extended';
+
+function quantumTeleportation(
+  psi: StateVector // 待传输的单量子比特状态
+): { aliceResult: [number, number]; bobState: StateVector } {
+  // Alice 和 Bob 共享贝尔态 |Φ⁺⟩ = (|00⟩ + |11⟩)/√2
+  const bell = new StateVector(2);
+  bell.applyGate(Gates.H(), [0]);
+  bell.applyGate(Gates.CNOT(), [0, 1]);
+
+  // 三量子比特总状态: |ψ⟩ ⊗ |Φ⁺⟩
+  const total = psi.tensorProduct(bell);
+
+  // Alice 对前两个量子比特执行 CNOT 和 H
+  total.applyGate(Gates.CNOT(), [0, 1]);
+  total.applyGate(Gates.H(), [0]);
+
+  // 模拟测量前两个量子比特（Alice 的量子比特）
+  const aliceResult = total.measure([0, 1]);
+  const [m1, m2] = aliceResult;
+
+  // Bob 根据 Alice 的测量结果应用修正门
+  const bobState = total.partialTrace([0, 1]);
+  if (m2 === 1) bobState.applyGate(Gates.X(), [0]);
+  if (m1 === 1) bobState.applyGate(Gates.Z(), [0]);
+
+  return { aliceResult: [m1, m2], bobState };
+}
+```
+
+### Deutsch-Jozsa 算法
+
+```typescript
+// deutsch-jozsa.ts — 判断函数是常函数还是平衡函数
+function deutschJozsa(
+  n: number,
+  oracle: (x: number) => number // 黑盒函数: f: {0,1}ⁿ → {0,1}
+): 'constant' | 'balanced' {
+  const N = 1 << n;
+  const state = new StateVector(n + 1);
+
+  // 初始化: 前 n 个量子比特置 |0⟩，辅助量子比特置 |1⟩
+  // 全部施加 H 门
+  for (let i = 0; i <= n; i++) {
+    state.applyGate(Gates.H(), [i]);
+  }
+
+  // 应用 Oracle: U_f|x,y⟩ = |x, y ⊕ f(x)⟩
+  const oracleMatrix = buildDeutschJozsaOracle(n, oracle);
+  state.applyGate(oracleMatrix, Array.from({ length: n + 1 }, (_, i) => i));
+
+  // 对前 n 个量子比特施加 H
+  for (let i = 0; i < n; i++) {
+    state.applyGate(Gates.H(), [i]);
+  }
+
+  // 测量前 n 个量子比特
+  const measurements = [];
+  for (let i = 0; i < n; i++) {
+    measurements.push(state.measureSingleQubit(i));
+  }
+
+  // 如果全为 0，则是常函数；否则是平衡函数
+  return measurements.every((m) => m === 0) ? 'constant' : 'balanced';
+}
+
+// 经典情况需要最多 2^(n-1) + 1 次查询，量子算法只需 1 次
+```
+
+### 变分量子本征求解器 (VQE) 轮廓
+
+```typescript
+// variational-quantum-eigensolver.ts — 使用经典优化器寻找基态能量
+interface VQEParams {
+  numQubits: number;
+  ansatzLayers: number; //  ansatz 层数
+  hamiltonian: Complex[][]; // 目标哈密顿量矩阵
+}
+
+function buildAnsatz(params: number[], n: number, layers: number): Complex[][] {
+  // 硬件高效 ansatz: 每层 Ry + Rz 旋转 + CNOT 纠缠
+  // 参数数量: 2 * n * layers
+  // 返回完整的酉矩阵
+  // ...
+}
+
+function vqeEnergy(
+  params: number[],
+  { numQubits, ansatzLayers, hamiltonian }: VQEParams
+): number {
+  const ansatz = buildAnsatz(params, numQubits, ansatzLayers);
+  const state = new StateVector(numQubits);
+  state.applyGate(ansatz, Array.from({ length: numQubits }, (_, i) => i));
+
+  // E = ⟨ψ|H|ψ⟩
+  const energy = state.expectationValue(hamiltonian);
+  return energy.real;
+}
+
+// 使用经典优化器（如 COBYLA 或梯度下降）最小化能量
+// const optimalParams = minimize(vqeEnergy, initialGuess);
+// const groundStateEnergy = vqeEnergy(optimalParams, vqeConfig);
+```
+
+### Bernstein-Vazirani 算法
+
+```typescript
+// bernstein-vazirani.ts — 通过一次查询恢复隐藏字符串
+function bernsteinVazirani(hiddenString: string): string {
+  const n = hiddenString.length;
+  const state = new StateVector(n + 1);
+
+  // 初始化 |0⟩^{⊗n}|1⟩
+  state.applyGate(Gates.X(), [n]);
+  for (let i = 0; i <= n; i++) {
+    state.applyGate(Gates.H(), [i]);
+  }
+
+  // Oracle: f(x) = s · x (mod 2)
+  const s = parseInt(hiddenString, 2);
+  const oracleMatrix = buildBVOracle(n, s);
+  state.applyGate(oracleMatrix, Array.from({ length: n + 1 }, (_, i) => i));
+
+  // H^{⊗n} 变换
+  for (let i = 0; i < n; i++) {
+    state.applyGate(Gates.H(), [i]);
+  }
+
+  // 测量直接得到 s
+  const result = [];
+  for (let i = 0; i < n; i++) {
+    result.push(state.measureSingleQubit(i));
+  }
+  return result.join('');
+}
+// 经典情况需要 n 次查询，量子算法只需 1 次
+```
+
+---
+
 ## 参考实现文件
 
 - `quantum-state-vector.ts` — 复数、态矢量、张量积、矩阵扩展
@@ -402,6 +551,11 @@ const iterations = Math.floor((Math.PI / 4) * Math.sqrt(N));
 - `quantum-fourier-transform.ts` — QFT / IQFT 矩阵与电路实现
 - `grover-search.ts` — Grover 搜索的 Oracle 与扩散算子
 - `shor-algorithm.ts` — 周期态制备、QFT 周期提取、因数分解
+- `quantum-teleportation.ts` — 贝尔态共享与经典通信传态
+- `deutsch-jozsa.ts` — 常函数/平衡函数判定
+- `bernstein-vazirani.ts` — 隐藏字符串恢复
+- `variational-quantum-eigensolver.ts` — VQE 参数化电路与能量最小化
+- `quantum-error-correction.ts` — 量子纠错码基础
 
 ---
 
@@ -444,4 +598,21 @@ const iterations = Math.floor((Math.PI / 4) * Math.sqrt(N));
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+## 权威参考链接
+
+| 资源 | 描述 | 链接 |
+|------|------|------|
+| **Qiskit Textbook** | IBM 量子计算开源教材 | [qiskit.org/learn](https://qiskit.org/learn/) |
+| **IBM Quantum** | 云端量子计算平台与文档 | [quantum.ibm.com](https://quantum.ibm.com/) |
+| **Google Quantum AI** | 量子霸权与量子纠错研究 | [quantumai.google](https://quantumai.google/) |
+| **Microsoft Azure Quantum** | 量子开发工具与云服务 | [azure.microsoft.com/quantum](https://azure.microsoft.com/en-us/products/quantum/) |
+| **Quirk Quantum Simulator** | 交互式量子电路模拟器 | [algassert.com/quirk](https://algassert.com/quirk) |
+| **Quantum Computing Stack Exchange** | 量子计算问答社区 | [quantumcomputing.stackexchange.com](https://quantumcomputing.stackexchange.com/) |
+| **Nielsen & Chuang** | 《量子计算与量子信息》— 领域圣经 | [Cambridge University Press](https://www.cambridge.org/highereducation/books/quantum-computation-and-quantum-information/01E10196D0A682A6AEFFEA52D53A9E14) |
+| **Preskill Lecture Notes** | John Preskill 量子信息讲义 | [theory.caltech.edu/~preskill/ph219](http://theory.caltech.edu/~preskill/ph219/ph219_2020-21.html) |
+| **arXiv quant-ph** | 量子物理预印本论文库 | [arxiv.org/list/quant-ph/recent](https://arxiv.org/list/quant-ph/recent) |
+| **Q# Documentation** | Microsoft 量子编程语言 | [docs.microsoft.com/azure/quantum](https://docs.microsoft.com/en-us/azure/quantum/) |
+
+---
+
+> 📅 理论深化更新：2026-04-29

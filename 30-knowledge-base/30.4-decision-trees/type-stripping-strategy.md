@@ -89,6 +89,29 @@ import { util } from './utils';
 // ✅ 推荐：在应用代码中使用 Bundler 模式，配合 Vite/Rollup 进行 tree-shaking
 ```
 
+### 完整 tsconfig.json 示例（Node.js 24+ Type Stripping）
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2024",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+```
+
+> `erasableSyntaxOnly`（TypeScript 5.8+）确保仅使用可被擦除的语法（如类型注解、接口），禁止装饰器等需要转译的特性。
+
 ---
 
 ## 代码示例：多运行时 Type Stripping
@@ -124,6 +147,42 @@ bun run main.ts
 npx tsc --outDir dist && node dist/main.js
 ```
 
+### CI/CD 流水线：类型检查与执行分离
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on: [push]
+jobs:
+  typecheck-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm ci
+      # 阶段 1：类型检查（无 emit）
+      - run: npx tsc --noEmit
+      # 阶段 2：原生执行测试（跳过类型检查）
+      - run: node --experimental-strip-types --test src/**/*.test.ts
+      # 阶段 3：运行时 benchmark
+      - run: node --experimental-strip-types scripts/bench.ts
+```
+
+### tsx / ts-node 对比脚本
+
+```bash
+# tsx（基于 esbuild，极快）
+npx tsx watch src/main.ts
+
+# ts-node SWC 模式（较快，支持类型检查）
+npx ts-node --swc src/main.ts
+
+# Node.js 原生（最快，无转译开销）
+node --experimental-strip-types src/main.ts
+```
+
 ---
 
 ## 权威链接
@@ -133,7 +192,13 @@ npx tsc --outDir dist && node dist/main.js
 - [Bun TypeScript Documentation](https://bun.sh/docs/typescript)
 - [TypeScript `verbatimModuleSyntax`](https://www.typescriptlang.org/tsconfig/#verbatimModuleSyntax)
 - [TypeScript `moduleResolution: bundler`](https://www.typescriptlang.org/tsconfig/#moduleResolution)
+- [TypeScript `erasableSyntaxOnly`](https://www.typescriptlang.org/tsconfig/#erasableSyntaxOnly)
 - [Node.js 24 Release Notes](https://nodejs.org/en/blog/release/v24.0.0)
+- [tsx — TypeScript Execute](https://github.com/privatenumber/tsx)
+- [SWC Documentation](https://swc.rs/docs/usage/core)
+- [esbuild Documentation](https://esbuild.github.io/)
+- [TypeScript Handbook — ESM/CJS Interop](https://www.typescriptlang.org/docs/handbook/modules/reference.html)
+- [GitHub Actions — setup-node](https://github.com/actions/setup-node)
 
 ---
 

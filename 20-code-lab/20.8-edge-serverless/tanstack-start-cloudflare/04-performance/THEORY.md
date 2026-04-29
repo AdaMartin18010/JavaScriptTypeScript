@@ -127,6 +127,75 @@ function DashboardPage() {
 }
 ```
 
+### 代码分割与懒加载路由
+
+```typescript
+// lazy-routes.ts — TanStack Router 自动代码分割
+import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router';
+
+// 路由级代码分割：仅当访问 /heavy 时才加载 HeavyDashboard chunk
+export const Route = createFileRoute('/heavy')({
+  component: lazyRouteComponent(() => import('./HeavyDashboard')),
+  // loader 亦可异步，配合 SSR 流式输出
+  loader: async () => {
+    const data = await fetch('/api/heavy-data');
+    return data.json();
+  },
+});
+```
+
+### 资源预加载提示
+
+```typescript
+// preload-hints.ts — 在 Cloudflare Workers 层面注入 Link 预加载头
+export async function onRequest(context: EventContext<Env, any, any>) {
+  const response = await context.next();
+
+  // 对关键字体和 CSS 提前发起连接与请求
+  const headers = new Headers(response.headers);
+  headers.append('Link', '</fonts/main.woff2>; rel=preload; as=font; crossorigin=anonymous');
+  headers.append('Link', '</styles/critical.css>; rel=preload; as=style');
+  headers.append('Link', '</api/user>; rel=preconnect');
+
+  return new Response(response.body, { status: response.status, headers });
+}
+```
+
+### Cloudflare Durable Objects 协作状态
+
+```typescript
+// durable-objects-coordination.ts — 跨 Worker 实例的实时协作状态
+import { DurableObject } from 'cloudflare:workers';
+
+export class CollaborationRoom extends DurableObject {
+  private sessions = new Map<WebSocket, { userId: string }>();
+
+  async fetch(request: Request) {
+    const upgrade = request.headers.get('Upgrade');
+    if (upgrade === 'websocket') {
+      const [client, server] = Object.values(new WebSocketPair()) as [WebSocket, WebSocket];
+      this.acceptWebSocket(server);
+      this.sessions.set(server, { userId: new URL(request.url).searchParams.get('userId')! });
+      return new Response(null, { status: 101, webSocket: client });
+    }
+    return new Response('Expected websocket', { status: 400 });
+  }
+
+  webSocketMessage(ws: WebSocket, message: string) {
+    // 广播到房间内所有其他客户端
+    for (const [peer] of this.sessions) {
+      if (peer !== ws && peer.readyState === WebSocket.READY_STATE_OPEN) {
+        peer.send(message);
+      }
+    }
+  }
+
+  webSocketClose(ws: WebSocket) {
+    this.sessions.delete(ws);
+  }
+}
+```
+
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 性能优化 核心机制的理解，并观察不同实现选择带来的行为差异。
 
 ### 3.2 常见误区
@@ -153,6 +222,12 @@ function DashboardPage() {
 | Astro Islands Architecture | 官方文档 | [docs.astro.build/en/concepts/islands](https://docs.astro.build/en/concepts/islands/) |
 | TanStack Query Caching | 官方文档 | [tanstack.com/query/latest/docs/framework/react/guides/caching](https://tanstack.com/query/latest/docs/framework/react/guides/caching) |
 | Core Web Vitals LCP Optimization | 指南 | [web.dev/optimize-lcp](https://web.dev/optimize-lcp/) |
+| Cloudflare Workers Docs | 官方文档 | [developers.cloudflare.com/workers](https://developers.cloudflare.com/workers/) |
+| Vinxi Documentation | 元框架工具 | [vinxi.dev](https://vinxi.dev/) |
+| TanStack Router Guides | 官方文档 | [tanstack.com/router/latest/docs/framework/react/guide/code-splitting](https://tanstack.com/router/latest/docs/framework/react/guide/code-splitting) |
+| Cloudflare Durable Objects | 官方文档 | [developers.cloudflare.com/durable-objects](https://developers.cloudflare.com/durable-objects/) |
+| React Server Components RFC | 规范 | [github.com/reactjs/rfcs/blob/main/text/0188-server-components.md](https://github.com/reactjs/rfcs/blob/main/text/0188-server-components.md) |
+| HTTP/2 Server Push vs Preload | 对比 | [www.smashingmagazine.com/2017/04/guide-http2-server-push](https://www.smashingmagazine.com/2017/04/guide-http2-server-push/) |
 
 ---
 

@@ -185,6 +185,225 @@ export async function verifyProof(
 // );
 ```
 
+### 跨链消息传递（LayerZero 风格）
+
+```typescript
+// cross-chain/omnichain-messaging.ts
+import { ethers } from 'ethers';
+
+interface MessagingParams {
+  dstChainId: number;
+  receiver: `0x${string}`;
+  payload: string;
+  refundAddress: string;
+  zroPaymentAddress: string;
+  adapterParams: string;
+}
+
+async function sendCrossChainMessage(
+  endpoint: ethers.Contract,
+  params: MessagingParams,
+  signer: ethers.Signer
+): Promise<ethers.ContractTransactionResponse> {
+  // 估算跨链消息费用
+  const [nativeFee, zroFee] = await endpoint.estimateFees(
+    params.dstChainId,
+    params.receiver,
+    params.payload,
+    false, // 不使用 ZRO 代币支付
+    params.adapterParams
+  );
+
+  const tx = await endpoint.connect(signer).send(
+    params.dstChainId,
+    ethers.zeroPadValue(params.receiver, 32),
+    ethers.toUtf8Bytes(params.payload),
+    params.refundAddress,
+    params.zroPaymentAddress,
+    params.adapterParams,
+    { value: nativeFee }
+  );
+
+  return tx;
+}
+
+// 监听跨链消息到达
+function listenOmnichainReceive(
+  endpoint: ethers.Contract,
+  handler: (srcChainId: number, sender: string, payload: string) => void
+) {
+  endpoint.on('MessageReceived', (srcChainId, sender, payload) => {
+    console.log(`Message from chain ${srcChainId}: ${ethers.toUtf8String(payload)}`);
+    handler(srcChainId, sender, ethers.toUtf8String(payload));
+  });
+}
+```
+
+### DAO 治理投票（Snapshot + Tally 风格）
+
+```typescript
+// dao-governance/governance-voting.ts
+import { ethers } from 'ethers';
+
+interface Proposal {
+  id: number;
+  proposer: string;
+  description: string;
+  forVotes: bigint;
+  againstVotes: bigint;
+  abstainVotes: bigint;
+  startBlock: number;
+  endBlock: number;
+  executed: boolean;
+}
+
+enum VoteType {
+  Against = 0,
+  For = 1,
+  Abstain = 2,
+}
+
+async function castVote(
+  governor: ethers.Contract,
+  proposalId: number,
+  voteType: VoteType,
+  reason: string,
+  signer: ethers.Signer
+) {
+  // 使用 withReason 接口，理由会上链存储
+  const tx = await governor.connect(signer).castVoteWithReason(
+    proposalId,
+    voteType,
+    reason
+  );
+  const receipt = await tx.wait();
+
+  // 解析 VoteCast 事件
+  const event = receipt?.logs
+    .map((log) => governor.interface.parseLog(log))
+    .find((e) => e?.name === 'VoteCast');
+
+  console.log(`Voted ${VoteType[voteType]} on proposal ${proposalId}`);
+  return receipt;
+}
+
+// 委托投票权
+async function delegateVotes(
+  token: ethers.Contract, // ERC20Votes 兼容代币
+  delegatee: string,
+  signer: ethers.Signer
+) {
+  const tx = await token.connect(signer).delegate(delegatee);
+  await tx.wait();
+  console.log(`Delegated voting power to ${delegatee}`);
+}
+
+// 排队并执行已通过提案（Timelock 控制器）
+async function executeProposal(
+  governor: ethers.Contract,
+  targets: string[],
+  values: bigint[],
+  calldatas: string[],
+  descriptionHash: string,
+  signer: ethers.Signer
+) {
+  // 先排队（如果使用了 Timelock）
+  const queueTx = await governor.connect(signer).queue(
+    targets, values, calldatas, descriptionHash
+  );
+  await queueTx.wait();
+
+  // 等待 Timelock 延迟（例如 2 天）后执行
+  const executeTx = await governor.connect(signer).execute(
+    targets, values, calldatas, descriptionHash
+  );
+  return executeTx.wait();
+}
+```
+
+### EIP-4337 Account Abstraction 用户操作构建
+
+```typescript
+// account-abstraction/user-operation.ts
+import { ethers } from 'ethers';
+
+interface UserOperation {
+  sender: string;
+  nonce: bigint;
+  initCode: string;
+  callData: string;
+  callGasLimit: bigint;
+  verificationGasLimit: bigint;
+  preVerificationGas: bigint;
+  maxFeePerGas: bigint;
+  maxPriorityFeePerGas: bigint;
+  paymasterAndData: string;
+  signature: string;
+}
+
+function createUserOperation(
+  sender: string,
+  callData: string,
+  nonce: bigint,
+  overrides: Partial<Omit<UserOperation, 'sender' | 'nonce' | 'callData'>> = {}
+): UserOperation {
+  return {
+    sender,
+    nonce,
+    initCode: '0x',
+    callData,
+    callGasLimit: overrides.callGasLimit ?? 100_000n,
+    verificationGasLimit: overrides.verificationGasLimit ?? 150_000n,
+    preVerificationGas: overrides.preVerificationGas ?? 50_000n,
+    maxFeePerGas: overrides.maxFeePerGas ?? 10n ** 9n, // 1 gwei
+    maxPriorityFeePerGas: overrides.maxPriorityFeePerGas ?? 10n ** 8n,
+    paymasterAndData: overrides.paymasterAndData ?? '0x',
+    signature: overrides.signature ?? '0x',
+  };
+}
+
+async function signUserOperation(
+  op: UserOperation,
+  entryPoint: string,
+  chainId: number,
+  signer: ethers.Signer
+): Promise<UserOperation> {
+  const opHash = ethers.keccak256(
+    ethers.AbiCoder.defaultAbiCoder().encode(
+      ['address', 'uint256', 'bytes32', 'bytes32', 'uint256', 'uint256', 'uint256', 'uint256', 'uint256', 'bytes32'],
+      [
+        op.sender,
+        op.nonce,
+        ethers.keccak256(op.initCode),
+        ethers.keccak256(op.callData),
+        op.callGasLimit,
+        op.verificationGasLimit,
+        op.preVerificationGas,
+        op.maxFeePerGas,
+        op.maxPriorityFeePerGas,
+        ethers.keccak256(op.paymasterAndData),
+      ]
+    )
+  );
+
+  const chainHash = ethers.keccak256(
+    ethers.concat([
+      ethers.toUtf8Bytes('\x19\x01'),
+      ethers.keccak256(
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ['bytes32', 'address', 'uint256'],
+          [ethers.id('ERC4337_ENTRY_POINT'), entryPoint, chainId]
+        )
+      ),
+      opHash,
+    ])
+  );
+
+  const signature = await signer.signMessage(ethers.getBytes(chainHash));
+  return { ...op, signature };
+}
+```
+
 ## 共识机制对比
 
 | 特性 | PoW (工作量证明) | PoS (权益证明) | DPoS (委托权益证明) |
@@ -230,6 +449,13 @@ export async function verifyProof(
 | EIP 官方索引 | 规范 | [eips.ethereum.org](https://eips.ethereum.org/) |
 | Foundry 文档 | 工具 | [book.getfoundry.sh](https://book.getfoundry.sh/) |
 | Chainlink 文档 | 文档 | [docs.chain.link](https://docs.chain.link/) |
+| LayerZero Documentation | 文档 | [layerzero.network](https://layerzero.network/) — 全链互操作协议 |
+| Chainlink CCIP | 文档 | [docs.chain.link/ccip](https://docs.chain.link/ccip) — 跨链互操作协议 |
+| EIP-4337 Account Abstraction | 规范 | [eips.ethereum.org/EIP-4337](https://eips.ethereum.org/EIPS/eip-4337) |
+| Safe{Core} SDK | 文档 | [docs.safe.global](https://docs.safe.global/) — 智能合约钱包 SDK |
+| Tally Governance | 文档 | [docs.tally.xyz](https://docs.tally.xyz/) — DAO 治理工具 |
+| Snapshot | 文档 | [docs.snapshot.org](https://docs.snapshot.org/) — 链下投票治理 |
+| zkSync Docs | 文档 | [docs.zksync.io](https://docs.zksync.io/) — zkEVM 与 ZK Stack |
 
 ---
 

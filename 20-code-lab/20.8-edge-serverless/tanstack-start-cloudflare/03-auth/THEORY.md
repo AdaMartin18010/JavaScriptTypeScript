@@ -132,6 +132,95 @@ export const oauthCallback = createServerFn({ method: 'GET' })
   });
 ```
 
+**边缘 Session 验证中间件**：
+
+```typescript
+// auth/session-guard.ts — 边缘环境 JWT Session 验证
+import { SignJWT, jwtVerify } from 'jose';
+
+interface SessionPayload {
+  sub: string;       // 用户标识
+  email?: string;
+  role?: 'user' | 'admin';
+  iat: number;
+  exp: number;
+}
+
+const SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
+
+export async function createSession(payload: Omit<SessionPayload, 'iat' | 'exp'>): Promise<string> {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('2h')
+    .sign(SECRET);
+}
+
+export async function verifySession(token: string): Promise<SessionPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, SECRET, { clockTolerance: 60 });
+    return payload as unknown as SessionPayload;
+  } catch {
+    return null;
+  }
+}
+
+// Cloudflare Workers / Edge Function 中使用
+export async function authMiddleware(request: Request): Promise<Response | null> {
+  const cookie = request.headers.get('cookie');
+  const sessionToken = cookie?.match(/session=([^;]+)/)?.[1];
+
+  if (!sessionToken) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  const session = await verifySession(sessionToken);
+  if (!session) {
+    return new Response('Session expired', {
+      status: 401,
+      headers: { 'Set-Cookie': 'session=; Max-Age=0; HttpOnly; Secure' },
+    });
+  }
+
+  // 将用户信息注入请求上下文
+  (request as Request & { session: SessionPayload }).session = session;
+  return null; // 继续处理
+}
+```
+
+**基于角色的路由守卫**：
+
+```typescript
+// auth/role-guard.ts
+import { createMiddleware } from '@tanstack/react-start';
+
+export const requireAuth = createMiddleware({
+  middleware: async ({ request }) => {
+    const result = await authMiddleware(request);
+    if (result) throw result; // 返回 401
+  },
+});
+
+export const requireAdmin = createMiddleware({
+  middleware: async ({ request }) => {
+    const result = await authMiddleware(request);
+    if (result) throw result;
+
+    const session = (request as Request & { session: SessionPayload }).session;
+    if (session.role !== 'admin') {
+      throw new Response('Forbidden: Admin access required', { status: 403 });
+    }
+  },
+});
+
+// 在 API 路由中使用
+export const adminOnlyRoute = createServerFn({ method: 'GET' })
+  .middleware([requireAdmin])
+  .handler(async () => {
+    return { data: 'sensitive admin data' };
+  });
+```
+
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 认证集成 核心机制的理解，并观察不同实现选择带来的行为差异。
 
 ### 3.2 常见误区
@@ -140,10 +229,13 @@ export const oauthCallback = createServerFn({ method: 'GET' })
 |------|---------|
 | 边缘 SSR 总是比 CSR 快 | 首次加载快，但交互复杂度影响体验 |
 | TanStack Start 是元框架 | Start 是路由+数据层，需配合 UI 框架 |
+| JWT 无法吊销 | 可通过短 TTL + 刷新令牌 + KV 黑名单实现 |
+| 边缘环境不需要 CSRF 防护 | 无状态 JWT 不受 CSRF 影响，但 Cookie 仍需 SameSite |
 
 ### 3.3 扩展阅读
 
 - [TanStack Start](https://tanstack.com/start/latest)
+- [Cloudflare Workers Runtime APIs](https://developers.cloudflare.com/workers/runtime-apis/)
 - `20.8-edge-serverless/`
 
 ---
@@ -154,10 +246,15 @@ export const oauthCallback = createServerFn({ method: 'GET' })
 |------|------|------|
 | OAuth 2.0 PKCE RFC 7636 | RFC | [datatracker.ietf.org/doc/html/rfc7636](https://datatracker.ietf.org/doc/html/rfc7636) |
 | OpenID Connect Core 1.0 | 规范 | [openid.net/specs/openid-connect-core-1_0.html](https://openid.net/specs/openid-connect-core-1_0.html) |
+| JSON Web Token (JWT) RFC 7519 | RFC | [datatracker.ietf.org/doc/html/rfc7519](https://datatracker.ietf.org/doc/html/rfc7519) |
+| jose — JavaScript JWT 库 | 库 | [github.com/panva/jose](https://github.com/panva/jose) |
 | Auth.js (NextAuth) | 官方文档 | [authjs.dev](https://authjs.dev/) |
 | Lucia Auth | 官方文档 | [lucia-auth.com](https://lucia-auth.com/) |
 | WorkOS AuthKit | 官方文档 | [workos.com/docs/authkit](https://workos.com/docs/authkit) |
 | Cloudflare KV Sessions | 官方文档 | [developers.cloudflare.com/kv](https://developers.cloudflare.com/kv/) |
+| Cloudflare D1 (SQLite) | 官方文档 | [developers.cloudflare.com/d1](https://developers.cloudflare.com/d1/) |
+| Web Crypto API | MDN | [developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) |
+| TanStack Start Middleware | 官方文档 | [tanstack.com/start/latest/docs/framework/react/middleware](https://tanstack.com/start/latest/docs/framework/react/middleware) |
 
 ---
 

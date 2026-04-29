@@ -126,6 +126,74 @@ async function handleRequest(tenantId: string) {
 }
 ```
 
+**租户解析与连接池管理**：
+
+```typescript
+// lib/tenant-resolver.ts — 从请求解析租户标识
+import { AsyncLocalStorage } from 'node:async_hooks';
+
+interface TenantConfig {
+  id: string;
+  databaseUrl?: string;     // DB-per-tenant 模式
+  schemaName?: string;      // Schema 隔离模式
+  plan: 'free' | 'pro' | 'enterprise';
+  rateLimit: number;
+}
+
+class TenantResolver {
+  private tenants = new Map<string, TenantConfig>();
+  private connectionPools = new Map<string, unknown>(); // 实际项目中使用 pg-pool 等
+
+  register(tenant: TenantConfig): void {
+    this.tenants.set(tenant.id, tenant);
+  }
+
+  /** 从 HTTP 请求解析租户 */
+  resolveFromRequest(req: { headers: Record<string, string | string[] | undefined>; url?: string }): TenantConfig | null {
+    // 策略 1: 子域名 (tenant.example.com)
+    const host = req.headers.host as string | undefined;
+    if (host) {
+      const subdomain = host.split('.')[0];
+      const tenant = this.tenants.get(subdomain);
+      if (tenant) return tenant;
+    }
+
+    // 策略 2: Header (X-Tenant-ID)
+    const headerId = req.headers['x-tenant-id'];
+    if (typeof headerId === 'string') {
+      return this.tenants.get(headerId) ?? null;
+    }
+
+    // 策略 3: JWT Claim
+    const auth = req.headers.authorization;
+    if (typeof auth === 'string' && auth.startsWith('Bearer ')) {
+      try {
+        const payload = JSON.parse(Buffer.from(auth.split('.')[1], 'base64').toString());
+        const tenantId = payload.tenantId as string;
+        return this.tenants.get(tenantId) ?? null;
+      } catch {
+        return null;
+      }
+    }
+
+    return null;
+  }
+
+  /** 获取或创建租户专属连接池 */
+  getConnectionPool(tenantId: string): unknown {
+    if (!this.connectionPools.has(tenantId)) {
+      const config = this.tenants.get(tenantId);
+      if (!config?.databaseUrl) throw new Error(`No database URL for tenant ${tenantId}`);
+      // const pool = new Pool({ connectionString: config.databaseUrl });
+      // this.connectionPools.set(tenantId, pool);
+    }
+    return this.connectionPools.get(tenantId);
+  }
+}
+
+export const tenantResolver = new TenantResolver();
+```
+
 ---
 
 ## PostgreSQL RLS 示例
@@ -139,16 +207,56 @@ CREATE POLICY tenant_isolation ON projects
   USING (tenant_id = current_setting('app.current_tenant')::UUID);
 ```
 
+**Prisma + PostgreSQL RLS 完整集成**：
+
+```typescript
+// lib/prisma-rls.ts — Prisma 与 PostgreSQL RLS 集成
+import { PrismaClient } from '@prisma/client';
+
+export function createPrismaWithRLS(tenantId: string): PrismaClient {
+  const prisma = new PrismaClient({
+    datasources: {
+      db: {
+        url: `${process.env.DATABASE_URL}?application_name=tenant_${tenantId}`,
+      },
+    },
+  });
+
+  // 在每个查询前设置 RLS 变量
+  prisma.$connect().then(async () => {
+    await prisma.$executeRawUnsafe(`SET app.current_tenant = '${tenantId}'`);
+  });
+
+  return prisma;
+}
+
+// Express 中间件：为每个请求创建 RLS 绑定的 Prisma 实例
+// app.use(async (req, res, next) => {
+//   const tenant = tenantResolver.resolveFromRequest(req);
+//   if (!tenant) return res.status(401).json({ error: 'Tenant not found' });
+//   req.prisma = createPrismaWithRLS(tenant.id);
+//   next();
+// });
+```
+
 ---
 
 ## 权威参考链接
 
-- [Prisma 文档：多租户指南](https://www.prisma.io/docs/orm/prisma-client/client-extensions)
-- [PostgreSQL 行级安全 (RLS)](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
-- [AWS SaaS 多租户架构白皮书](https://docs.aws.amazon.com/wellarchitected/latest/saas-lens/welcome.html)
-- [Microsoft Azure 多租户设计模式](https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/overview)
-- [Prisma Client Extensions](https://www.prisma.io/docs/orm/prisma-client/client-extensions)
-- [Node.js AsyncLocalStorage](https://nodejs.org/api/async_context.html#class-asynclocalstorage)
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Prisma 文档：多租户指南 | <https://www.prisma.io/docs/orm/prisma-client/client-extensions> | Prisma 官方多租户建议 |
+| PostgreSQL 行级安全 (RLS) | <https://www.postgresql.org/docs/current/ddl-rowsecurity.html> | 官方 RLS 文档 |
+| AWS SaaS 多租户架构白皮书 | <https://docs.aws.amazon.com/wellarchitected/latest/saas-lens/welcome.html> | AWS Well-Architected SaaS Lens |
+| Microsoft Azure 多租户设计模式 | <https://learn.microsoft.com/en-us/azure/architecture/guide/multitenant/overview> | Azure 架构中心多租户指南 |
+| Prisma Client Extensions | <https://www.prisma.io/docs/orm/prisma-client/client-extensions> | 客户端扩展 API |
+| Node.js AsyncLocalStorage | <https://nodejs.org/api/async_context.html#class-asynclocalstorage> | 异步上下文存储 |
+| Supabase Row Level Security | <https://supabase.com/docs/guides/auth/row-level-security> | Supabase RLS 实战指南 |
+| PlanetScale Multi-tenancy | <https://planetscale.com/blog/multi-tenant-saas-database-pattern> | PlanetScale 多租户模式 |
+| Stripe 多租户架构博客 | <https://stripe.com/blog/marketplaces> | Stripe 多租户支付架构 |
+| Martin Fowler: Multi-tenant | <https://martinfowler.com/articles/multi-tenant.html> | 多租户架构模式权威论述 |
+| OWASP SaaS Security | <https://owasp.org/www-project-saas-security/> | SaaS 安全指南 |
+| Neon Serverless Postgres | <https://neon.tech/docs/introduction> | 无服务器 PostgreSQL（适合多租户） |
 
 ---
 

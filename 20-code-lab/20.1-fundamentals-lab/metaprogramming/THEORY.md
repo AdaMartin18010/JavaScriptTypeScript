@@ -139,25 +139,123 @@ console.log(Object.keys(user)); // ['name', 'age'] — _secret 被过滤
 - `Reflect.apply`: 函数调用
 - `Reflect.defineProperty`: 属性定义
 
-## 5. eval 与 new Function
+#### Reflect 与 Object 方法对比
+
+```typescript
+const obj = { x: 1 };
+
+// Reflect.set 返回布尔值，表示是否成功
+const success = Reflect.set(obj, 'x', 2);
+console.log(success); // true
+
+// Reflect.defineProperty 同样返回布尔值
+const defined = Reflect.defineProperty(obj, 'y', { value: 3, writable: false });
+console.log(defined); // true
+
+// Reflect.ownKeys 同时返回字符串键和 Symbol 键
+const sym = Symbol('meta');
+obj[sym] = 'hidden';
+console.log(Reflect.ownKeys(obj)); // ['x', 'y', Symbol(meta)]
+```
+
+## 5. Symbol 协议与自定义行为
+
+```typescript
+// Symbol.toPrimitive — 控制对象到原始值的转换
+class Temperature {
+  constructor(public celsius: number) {}
+
+  [Symbol.toPrimitive](hint: 'string' | 'number' | 'default') {
+    if (hint === 'number') return this.celsius;
+    if (hint === 'string') return `${this.celsius}°C`;
+    return this.celsius;
+  }
+}
+
+const t = new Temperature(25);
+console.log(String(t));  // "25°C"
+console.log(+t);         // 25
+console.log(t + 5);      // 30
+
+// Symbol.iterator — 自定义迭代协议
+class Range {
+  constructor(private start: number, private end: number) {}
+
+  *[Symbol.iterator]() {
+    for (let i = this.start; i <= this.end; i++) {
+      yield i;
+    }
+  }
+}
+
+const range = new Range(1, 5);
+console.log([...range]); // [1, 2, 3, 4, 5]
+
+// Symbol.for / Symbol.keyFor — 全局 Symbol 注册表
+const globalSym = Symbol.for('app.config');
+const sameSym = Symbol.for('app.config');
+console.log(globalSym === sameSym); // true
+console.log(Symbol.keyFor(globalSym)); // "app.config"
+```
+
+## 6. eval 与 new Function
 
 - `eval`: 在当前作用域执行代码字符串
 - `new Function`: 创建新函数，全局作用域
 - 风险：代码注入、性能损耗、调试困难
 
-## 6. 装饰器（Decorator）
+```javascript
+// eval 在当前作用域执行
+const x = 1;
+console.log(eval('x + 1')); // 2
+
+// new Function 在全局作用域执行
+const fn = new Function('a', 'b', 'return a + b;');
+console.log(fn(2, 3)); // 5
+
+// 严格模式下的安全性差异
+try {
+  eval('const y = 1;'); // 若外层非严格，eval 内 var 会泄露
+} catch (e) {
+  console.error(e);
+}
+```
+
+## 7. 装饰器（Decorator）
 
 TC39 Stage 3 提案，注解式元编程：
 
 ```typescript
+// 使用 metadata API（配合 reflect-metadata）
+import 'reflect-metadata';
+
+const ROUTE_KEY = Symbol('route');
+
+function Controller(basePath: string) {
+  return function (target: any) {
+    Reflect.defineMetadata('controller:path', basePath, target);
+  };
+}
+
+function Get(path: string) {
+  return function (target: any, propertyKey: string) {
+    const routes = Reflect.getMetadata(ROUTE_KEY, target) || [];
+    routes.push({ method: 'GET', path, handler: propertyKey });
+    Reflect.defineMetadata(ROUTE_KEY, routes, target);
+  };
+}
+
 @Controller('/users')
 class UserController {
   @Get('/:id')
   getUser(@Param('id') id: string) { }
 }
+
+// 运行时读取元数据
+console.log(Reflect.getMetadata('controller:path', UserController)); // '/users'
 ```
 
-## 7. 与相邻模块的关系
+## 8. 与相邻模块的关系
 
 - **56-code-generation**: AST 操作与代码生成
 - **68-plugin-system**: 插件系统的元编程应用
@@ -168,6 +266,10 @@ class UserController {
 - [Proxy — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
 - [Reflect — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect)
 - [Symbol — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)
-- [ECMAScript Decorators Proposal](https://github.com/tc39/proposal-decorators)
+- [ECMAScript Decorators Proposal](https://github.com/tc39/proposal-decorators) — TC39 Stage 3 提案
 - [JavaScript Metaprogramming with Proxy — 2ality](https://2ality.com/2014/12/es6-proxies.html)
 - [Vue 3 Reactivity Source Code](https://github.com/vuejs/core/tree/main/packages/reactivity)
+- [Reflect Metadata — TC39 Proposal](https://github.com/tc39/proposal-decorators/blob/master/metadata.md)
+- [MDN — Well-known Symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#well-known_symbols)
+- [V8 Blog — Proxies in V8](https://v8.dev/blog/optimizing-proxies)
+- [2ality — Symbols in ECMAScript 6](https://2ality.com/2014/12/es6-symbols.html)

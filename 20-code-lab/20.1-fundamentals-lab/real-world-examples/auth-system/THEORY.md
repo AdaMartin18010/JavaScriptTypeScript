@@ -21,6 +21,8 @@
 |------|------|------|
 | JWT | 基于签名的无状态令牌 | jwt-utils.ts |
 | Refresh Token | 长期有效的访问令牌续期凭证 | auth-flow.ts |
+| PKCE | 用于公共客户端的授权码扩展，防截获攻击 | oauth-pkce.ts |
+| RBAC | 基于角色的访问控制 | rbac-guard.ts |
 
 ---
 
@@ -150,21 +152,101 @@ function requireRoles(...allowedRoles: string[]): Middleware {
 // app.get('/admin/users', authMiddleware(SECRET), requireRoles('admin'), handler);
 ```
 
-### 3.3 常见误区
+### 3.3 代码示例：Refresh Token 轮换
+
+```typescript
+// refresh-token-rotation.ts
+interface TokenPair {
+  accessToken: string;
+  refreshToken: string;
+}
+
+const refreshTokenStore = new Map<string, { userId: string; family: string }>();
+
+function issueTokenPair(userId: string, secret: string): TokenPair {
+  const family = crypto.randomUUID();
+  const accessToken = signJWT({ sub: userId, roles: ['user'] }, secret, 900); // 15 min
+  const refreshToken = crypto.randomUUID();
+  refreshTokenStore.set(refreshToken, { userId, family });
+  return { accessToken, refreshToken };
+}
+
+function rotateRefreshToken(oldToken: string, secret: string): TokenPair {
+  const record = refreshTokenStore.get(oldToken);
+  if (!record) throw new Error('Invalid refresh token');
+
+  // 检测重放：旧 token 已被使用过，则整个 token family 失效
+  refreshTokenStore.delete(oldToken);
+  const newPair = issueTokenPair(record.userId, secret);
+  return newPair;
+}
+```
+
+### 3.4 代码示例：PKCE 授权码流程（OAuth 2.0 公共客户端）
+
+```typescript
+// pkce-flow.ts
+import { createHash, randomBytes } from 'crypto';
+
+function generatePKCE() {
+  const codeVerifier = randomBytes(32).toString('base64url');
+  const codeChallenge = createHash('sha256')
+    .update(codeVerifier)
+    .digest('base64url');
+  return { codeVerifier, codeChallenge, method: 'S256' as const };
+}
+
+// Step 1: 客户端生成 code_challenge，向授权服务器请求授权码
+// GET /authorize?response_type=code&client_id=xxx&code_challenge=xxx&code_challenge_method=S256
+
+// Step 2: 授权服务器返回 code
+
+// Step 3: 客户端用 code + code_verifier 换取 token
+// POST /token { grant_type: 'authorization_code', code, code_verifier, client_id }
+```
+
+### 3.5 代码示例：CSRF 双重提交 Cookie
+
+```typescript
+// csrf-protection.ts
+import { randomBytes } from 'crypto';
+
+function setCsrfToken(res: Response) {
+  const token = randomBytes(32).toString('hex');
+  res.cookie('csrf_token', token, { httpOnly: true, sameSite: 'strict' });
+  return token;
+}
+
+function validateCsrfToken(req: Request): boolean {
+  const cookieToken = req.cookies['csrf_token'];
+  const headerToken = req.headers['x-csrf-token'];
+  return typeof cookieToken === 'string'
+    && typeof headerToken === 'string'
+    && cookieToken === headerToken;
+}
+```
+
+### 3.6 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | JWT 可以存储敏感信息 | JWT payload 仅 Base64 编码，可解码 |
 | 前端可以安全地验证 Token | 密钥不应暴露在前端代码中 |
+| Refresh Token 不需要过期 | Refresh Token 也应设置合理过期时间并支持轮换 |
+| HTTPS 可替代所有安全措施 | HTTPS 防窃听，但需配合 CSRF、CORS、CSP 等 |
 
-### 3.4 扩展阅读
+### 3.7 扩展阅读
 
 - [OWASP 认证备忘单](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
 - [OWASP JWT 安全备忘单](https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html)
+- [OWASP Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html)
 - [RFC 7519 — JSON Web Token (JWT)](https://datatracker.ietf.org/doc/html/rfc7519)
 - [RFC 7515 — JSON Web Signature (JWS)](https://datatracker.ietf.org/doc/html/rfc7515)
+- [RFC 7636 — Proof Key for Code Exchange (PKCE)](https://datatracker.ietf.org/doc/html/rfc7636)
 - [Auth0：JWT 手册](https://auth0.com/resources/ebooks/jwt-handbook)
 - [MDN：HTTP 认证](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication)
+- [Passport.js Documentation](https://www.passportjs.org/docs/) — Node.js 认证中间件
+- [WebAuthn Guide](https://webauthn.guide/) — 无密码认证标准
 - [jose 库 (Node.js/Web 通用)](https://github.com/panva/jose)
 - `30-knowledge-base/30.6-security`
 

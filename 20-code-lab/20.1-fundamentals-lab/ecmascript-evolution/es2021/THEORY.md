@@ -27,7 +27,7 @@
 |------|------|------|
 | replaceAll | 全局替换所有匹配子串，无需正则 `/g` | `replace` + 正则 |
 | Promise.any | 返回首个 fulfilled 的 Promise，全部 reject 则 AggregateError | `Promise.race` / `Promise.all` |
-| 逻辑赋值 | `\|\|=`、`&&=`、`??=` 将逻辑运算与赋值合并 | 逻辑运算符 + 赋值 |
+| 逻辑赋值 | `\|\|=`, `&&=`, `??=` 将逻辑运算与赋值合并 | 逻辑运算符 + 赋值 |
 | 数字分隔符 | 使用下划线 `_` 作为数字字面量视觉分隔符 | 可读性增强 |
 | WeakRef | 对对象的弱引用，不阻止垃圾回收 | 缓存、元数据关联 |
 
@@ -68,6 +68,10 @@ const replacedLegacy = str.replace(/fox/g, 'cat');
 // 特殊字符安全
 const code = 'function() { return x + x; }';
 const doubled = code.replaceAll('x', 'y'); // 无需转义
+
+// replaceAll 也支持替换函数
+const counted = str.replaceAll('fox', (match, offset) => `[${match}@${offset}]`);
+console.log(counted);
 ```
 
 ### 3.2 Promise.any
@@ -83,6 +87,26 @@ try {
 } catch (error) {
   // AggregateError: All promises were rejected
   console.error('All mirrors failed:', error.errors);
+}
+```
+
+#### 进阶：带超时控制的 Promise.any 模式
+
+```typescript
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  const timeout = new Promise<T>((_, reject) =>
+    setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms)
+  );
+  return Promise.race([promise, timeout]);
+}
+
+// 结合 Promise.any + timeout：多个源竞争，且每个源有独立超时
+const sources = [fetchA(), fetchB(), fetchC()];
+const timed = sources.map((p) => withTimeout(p, 5000));
+try {
+  const winner = await Promise.any(timed);
+} catch (e) {
+  // 所有源在 5s 内都失败
 }
 ```
 
@@ -103,6 +127,11 @@ let port = process.env.PORT ??= '8080'; // 仅当 null/undefined 时赋值
 // 对比展开写法
 let settings = getSettings();
 settings = settings || defaultSettings; // ||=
+
+// 与解构结合使用
+let state: { name?: string; count?: number } = {};
+state.name ??= 'anonymous';
+state.count ??= 0;
 ```
 
 ### 3.4 数字分隔符
@@ -118,6 +147,9 @@ const big = 1_000_000_000_000n;
 // 1_0.0_1 // 合法
 // _10 // 非法
 // 10_ // 非法
+
+// BigInt 中的分隔符
+const nanoSeconds = 1_000_000_000n;
 ```
 
 ### 3.5 WeakRef & FinalizationRegistry
@@ -138,18 +170,69 @@ class ExpensiveCache {
 
   get(key: string): LargeObject | undefined {
     const ref = this.cache.get(key);
-    return ref?.deref();
+    const obj = ref?.deref();
+    if (obj === undefined) {
+      this.cache.delete(key); // 清理已回收的条目
+    }
+    return obj;
+  }
+}
+
+// 使用 WeakRef 实现“附带数据”关联，不阻止目标被回收
+const metadataStore = new WeakMap<object, unknown>();
+const target = { id: 1 };
+metadataStore.set(target, { tags: ['vip'] });
+```
+
+### 3.6 综合实战：多特性协同
+
+```typescript
+// 场景：配置加载器，融合 ES2021 多项特性
+interface Config {
+  apiEndpoint?: string;
+  timeout?: number;
+  retries?: number;
+  features?: string[];
+}
+
+function loadConfig(overrides: Config = {}): Required<Config> {
+  const defaults: Required<Config> = {
+    apiEndpoint: 'https://api.example.com',
+    timeout: 5_000,           // 数字分隔符提升可读性
+    retries: 3,
+    features: [],
+  };
+
+  // 空值合并赋值：仅当 overrides 字段为 null/undefined 时使用默认值
+  overrides.apiEndpoint ??= defaults.apiEndpoint;
+  overrides.timeout ??= defaults.timeout;
+  overrides.retries ??= defaults.retries;
+  overrides.features ??= defaults.features;
+
+  return overrides as Required<Config>;
+}
+
+// Promise.any 用于多 CDN 配置源竞争
+async function fetchConfigFromCDNs(): Promise<Config> {
+  const cdnA = fetch('https://cdn-a.example.com/config.json').then(r => r.json());
+  const cdnB = fetch('https://cdn-b.example.com/config.json').then(r => r.json());
+
+  try {
+    return await Promise.any([cdnA, cdnB]);
+  } catch (e) {
+    console.error('All CDN sources failed:', (e as AggregateError).errors);
+    return {};
   }
 }
 ```
 
-### 3.6 常见误区
+### 3.7 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | `replaceAll` 支持正则 | 仅接受字符串，正则需使用 `replace` + `/g` |
 | `Promise.any` 忽略所有 reject | 全部 reject 时抛出 `AggregateError` |
-| `??=` 与 `\|\|=` 等价 | `??=` 仅对 `null/undefined`；`\|\|=` 对所有 falsy 值 |
+| `??=` 与 `\|\|=` 等价 | `??=` 仅对 `null/undefined`;`\|\|=` 对所有 falsy 值 |
 | `WeakRef.deref()` 永远返回对象 | 对象可能被 GC，返回 `undefined` |
 
 ---
@@ -162,6 +245,11 @@ class ExpensiveCache {
 - [MDN — Logical OR assignment](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_OR_assignment) — Mozilla 文档
 - [MDN — WeakRef](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef) — Mozilla 文档
 - [V8 Blog — ES2021 Features](https://v8.dev/features/tags/es2021) — V8 引擎实现解析
+- [V8 Blog — WeakRefs and FinalizationRegistry](https://v8.dev/features/weak-references) — V8 对弱引用的实现说明
+- [TC39 — FinalizationRegistry Proposal](https://github.com/tc39/proposal-weakrefs) — 原始提案仓库
+- [2ality — ES2021 Features Overview](https://2ality.com/2020/09/ecmascript-2021.html) — 权威特性综述
+- [caniuse — ES2021 Support Table](https://caniuse.com/?search=es2021) — 浏览器兼容性矩阵
+- [core-js — ES2021 Polyfills](https://github.com/zloirock/core-js#ecmascript-promise) — 特性 polyfill 实现
 
 ---
 

@@ -130,6 +130,63 @@ const r1 = fetchOnce(url, () => fetch(url));
 const r2 = fetchOnce(url, () => fetch(url)); // 复用 r1 的 Promise
 ```
 
+### PerformanceObserver — 运行时性能监控
+
+```typescript
+// runtime-performance.ts — 测量长任务与资源加载
+
+function observePerformanceMetrics() {
+  // 长任务检测（> 50ms 阻塞主线程）
+  const longTaskObserver = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      console.warn(`Long task detected: ${entry.duration.toFixed(1)}ms`, entry);
+    }
+  });
+  longTaskObserver.observe({ type: 'longtask', buffered: true });
+
+  // 资源加载性能
+  const resourceObserver = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries() as PerformanceResourceTiming[]) {
+      if (entry.responseEnd - entry.startTime > 1000) {
+        console.warn(`Slow resource: ${entry.name} took ${(entry.responseEnd - entry.startTime).toFixed(0)}ms`);
+      }
+    }
+  });
+  resourceObserver.observe({ type: 'resource', buffered: true });
+
+  return () => {
+    longTaskObserver.disconnect();
+    resourceObserver.disconnect();
+  };
+}
+```
+
+### 自定义性能计时标记
+
+```typescript
+// perf-markers.ts — User Timing API 实践
+
+function measureOperation<T>(label: string, fn: () => T): T {
+  performance.mark(`${label}-start`);
+  const result = fn();
+  performance.mark(`${label}-end`);
+  performance.measure(label, `${label}-start`, `${label}-end`);
+  return result;
+}
+
+// 获取测量结果
+function getMeasures(label: string): PerformanceMeasure[] {
+  return performance.getEntriesByName(label, 'measure') as PerformanceMeasure[];
+}
+
+// 使用
+measureOperation('heavy-sort', () => {
+  return Array.from({ length: 100_000 }, () => Math.random()).sort((a, b) => a - b);
+});
+
+console.log(getMeasures('heavy-sort').map((m) => `${m.name}: ${m.duration.toFixed(2)}ms`));
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -144,6 +201,9 @@ const r2 = fetchOnce(url, () => fetch(url)); // 复用 r1 的 Promise
 | Web Vitals | 核心指标 | [web.dev/vitals](https://web.dev/vitals) |
 | Bundlephobia | 包体积分析 | [bundlephobia.com](https://bundlephobia.com/) |
 | Speedscope | 火焰图可视化 | [speedscope.app](https://www.speedscope.app/) |
+| Google Lighthouse | 性能审计 | [developer.chrome.com/docs/lighthouse](https://developer.chrome.com/docs/lighthouse) |
+| WebPageTest | 多地点性能测试 | [webpagetest.org](https://www.webpagetest.org/) |
+| W3C — User Timing API | 规范 | [w3c.github.io/user-timing/](https://w3c.github.io/user-timing/) |
 
 ---
 

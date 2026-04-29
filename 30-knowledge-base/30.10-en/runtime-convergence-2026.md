@@ -71,6 +71,81 @@ export const userAgent: string | undefined =
   (globalThis as any).navigator?.userAgent;
 ```
 
+### Package.json Conditional Exports for Multi-Runtime
+
+```json
+{
+  "name": "my-universal-lib",
+  "exports": {
+    ".": {
+      "bun": "./src/index.bun.ts",
+      "deno": "./src/index.deno.ts",
+      "node": "./src/index.node.ts",
+      "workerd": "./src/index.edge.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+```
+
+### Runtime-Agnostic Test Matrix
+
+```ts
+// test/setup.ts — 根据运行时选择测试适配器
+import { runtime } from '../lib/runtime';
+
+export const testRunner =
+  runtime === 'node' ? await import('node:test') :
+  runtime === 'deno' ? { test: Deno.test, assert: (await import('https://deno.land/std/assert/mod.ts')) } :
+  runtime === 'bun' ? { test: Bun.test, assert: await import('bun:test') } :
+  null;
+
+if (!testRunner) throw new Error(`Unsupported runtime for tests: ${runtime}`);
+
+// 统一测试接口
+export function describe(name: string, fn: () => void) {
+  if (runtime === 'node') {
+    const { describe: nodeDescribe } = require('node:test');
+    nodeDescribe(name, fn);
+  } else {
+    console.log(`\n${name}`);
+    fn();
+  }
+}
+
+export const { test, assert } = testRunner;
+```
+
+### Polyglot Dockerfile
+
+```dockerfile
+# Dockerfile — 构建时可切换运行时
+ARG RUNTIME=node
+FROM node:24-alpine AS node-base
+FROM oven/bun:1.2-alpine AS bun-base
+FROM denoland/deno:2.2-alpine AS deno-base
+
+FROM ${RUNTIME}-base AS final
+WORKDIR /app
+COPY package*.json ./
+
+# 运行时特定依赖安装
+RUN if [ "$(which node)" != "" ]; then npm ci; fi
+RUN if [ "$(which bun)" != "" ]; then bun install; fi
+RUN if [ "$(which deno)" != "" ]; then deno cache main.ts; fi
+
+COPY . .
+
+# 统一入口
+CMD if [ "$(which node)" != "" ]; then node --experimental-strip-types main.ts; \
+    elif [ "$(which bun)" != "" ]; then bun run main.ts; \
+    elif [ "$(which deno)" != "" ]; then deno run --allow-all main.ts; \
+    fi
+```
+
 ---
 
 ## Key Points
@@ -93,13 +168,21 @@ The critical insight is that **differentiation is the catalyst for convergence, 
 
 ## Authoritative Links
 
-- [WinterCG — Web-interoperable Runtimes](https://wintercg.org/)
-- [W3C Web Platform Tests](https://wpt.fyi/)
-- [Node.js v24 Release Notes](https://nodejs.org/en/blog/release/)
-- [Deno 2.x Manual](https://docs.deno.com/)
-- [Bun Documentation](https://bun.sh/docs)
-- [TC39 — ECMAScript® Specification](https://tc39.es/ecma262/)
-- [Cloudflare Workers — WinterCG Compliance](https://developers.cloudflare.com/workers/runtime-apis/)
+| 资源 | 描述 | 链接 |
+|------|------|------|
+| **WinterCG** | Web-interoperable Runtimes 标准组织 | [wintercg.org](https://wintercg.org/) |
+| **W3C Web Platform Tests** | 浏览器与运行时兼容性测试 | [wpt.fyi](https://wpt.fyi/) |
+| **Node.js v24 Release Notes** | Node.js 官方发布说明 | [nodejs.org/en/blog/release](https://nodejs.org/en/blog/release/) |
+| **Deno 2.x Manual** | Deno 官方文档 | [docs.deno.com](https://docs.deno.com/) |
+| **Bun Documentation** | Bun 官方文档 | [bun.sh/docs](https://bun.sh/docs) |
+| **TC39 ECMAScript Spec** | ECMAScript 语言规范 | [tc39.es/ecma262](https://tc39.es/ecma262/) |
+| **Cloudflare Workers Runtime** | Workers 运行时 API | [developers.cloudflare.com/workers/runtime-apis](https://developers.cloudflare.com/workers/runtime-apis/) |
+| **Node.js Type Stripping** | Node.js 原生 TypeScript 支持 | [nodejs.org/api/typescript](https://nodejs.org/api/typescript.html) |
+| **Deno Node Compatibility** | Deno npm 兼容层 | [docs.deno.com/runtime/fundamentals/node_compatibility](https://docs.deno.com/runtime/fundamentals/node_compatibility/) |
+| **Bun Node.js APIs** | Bun 对 Node API 的兼容实现 | [bun.sh/docs/runtime/nodejs-apis](https://bun.sh/docs/runtime/nodejs-apis) |
+| **JSR Registry** | JavaScript 标准注册表 | [jsr.io](https://jsr.io/) |
+| **WinterCG Minimum Common API** | 服务端运行时最小公共 API | [proposal-common-min-api](https://common-min-api.proposal.wintercg.org/) |
+| **Vercel Edge Runtime** | Edge 运行时兼容性 | [edge-runtime.vercel.app](https://edge-runtime.vercel.app/) |
 
 ---
 

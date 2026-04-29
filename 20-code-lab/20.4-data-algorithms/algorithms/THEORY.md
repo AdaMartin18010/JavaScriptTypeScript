@@ -1,4 +1,4 @@
-﻿# 算法 — 理论基础
+# 算法 — 理论基础
 
 ## 1. 复杂度分析
 
@@ -99,6 +99,43 @@ function merge(left: number[], right: number[]): number[] {
 }
 ```
 
+### 3.3 堆排序（原地堆化）
+
+```typescript
+function heapSort(arr: number[]): number[] {
+  const n = arr.length;
+
+  // 建大顶堆（从最后一个非叶子节点开始）
+  for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+    heapify(arr, n, i);
+  }
+
+  // 依次将堆顶（最大元素）交换到末尾，再调整堆
+  for (let i = n - 1; i > 0; i--) {
+    [arr[0], arr[i]] = [arr[i], arr[0]];
+    heapify(arr, i, 0);
+  }
+  return arr;
+}
+
+function heapify(arr: number[], heapSize: number, root: number): void {
+  let largest = root;
+  const left = 2 * root + 1;
+  const right = 2 * root + 2;
+
+  if (left < heapSize && arr[left] > arr[largest]) largest = left;
+  if (right < heapSize && arr[right] > arr[largest]) largest = right;
+
+  if (largest !== root) {
+    [arr[root], arr[largest]] = [arr[largest], arr[root]];
+    heapify(arr, heapSize, largest);
+  }
+}
+
+// 示例
+console.log(heapSort([4, 10, 3, 5, 1])); // [1, 3, 4, 5, 10]
+```
+
 ## 4. 图算法
 
 - **DFS/BFS**: 图遍历基础
@@ -107,6 +144,107 @@ function merge(left: number[], right: number[]): number[] {
 - **Floyd-Warshall**: 全源最短路径
 - **拓扑排序**: 有向无环图的线性排序
 - **最小生成树**: Prim、Kruskal
+
+### 4.1 图的邻接表表示与 BFS/DFS
+
+```typescript
+// 邻接表表示
+class Graph {
+  adj: Map<number, number[]> = new Map();
+
+  addEdge(u: number, v: number) {
+    if (!this.adj.has(u)) this.adj.set(u, []);
+    if (!this.adj.has(v)) this.adj.set(v, []);
+    this.adj.get(u)!.push(v);
+    this.adj.get(v)!.push(u); // 无向图
+  }
+
+  // 广度优先搜索 O(V + E)
+  bfs(start: number): number[] {
+    const visited = new Set<number>();
+    const queue: number[] = [start];
+    const result: number[] = [];
+    visited.add(start);
+
+    while (queue.length > 0) {
+      const node = queue.shift()!;
+      result.push(node);
+      for (const neighbor of this.adj.get(node) ?? []) {
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor);
+          queue.push(neighbor);
+        }
+      }
+    }
+    return result;
+  }
+
+  // 深度优先搜索 O(V + E)
+  dfs(start: number): number[] {
+    const visited = new Set<number>();
+    const result: number[] = [];
+
+    const dfsVisit = (node: number) => {
+      visited.add(node);
+      result.push(node);
+      for (const neighbor of this.adj.get(node) ?? []) {
+        if (!visited.has(neighbor)) {
+          dfsVisit(neighbor);
+        }
+      }
+    };
+
+    dfsVisit(start);
+    return result;
+  }
+}
+
+// 示例
+const g = new Graph();
+g.addEdge(0, 1);
+g.addEdge(0, 2);
+g.addEdge(1, 3);
+console.log(g.bfs(0)); // [0, 1, 2, 3]
+console.log(g.dfs(0)); // [0, 1, 3, 2]
+```
+
+### 4.2 拓扑排序（Kahn 算法）
+
+```typescript
+function topologicalSort(edges: [number, number][], n: number): number[] {
+  const adj: Map<number, number[]> = new Map();
+  const inDegree = new Array(n).fill(0);
+
+  for (const [u, v] of edges) {
+    if (!adj.has(u)) adj.set(u, []);
+    adj.get(u)!.push(v);
+    inDegree[v]++;
+  }
+
+  const queue: number[] = [];
+  for (let i = 0; i < n; i++) {
+    if (inDegree[i] === 0) queue.push(i);
+  }
+
+  const result: number[] = [];
+  while (queue.length > 0) {
+    const node = queue.shift()!;
+    result.push(node);
+    for (const neighbor of adj.get(node) ?? []) {
+      inDegree[neighbor]--;
+      if (inDegree[neighbor] === 0) queue.push(neighbor);
+    }
+  }
+
+  // 如果结果长度不等于节点数，说明存在环
+  if (result.length !== n) throw new Error('Graph contains a cycle');
+  return result;
+}
+
+// 示例: 课程依赖 [[1,0],[2,1],[3,1],[3,2]]
+console.log(topologicalSort([[1, 0], [2, 1], [3, 1], [3, 2]], 4));
+// [0, 1, 2, 3]
+```
 
 ## 5. 动态规划
 
@@ -234,6 +372,41 @@ function lowerBound(arr: number[], target: number): number {
 }
 ```
 
+### 7.1 二分查找变体
+
+```typescript
+// upper_bound: 第一个 > target 的位置
+function upperBound(arr: number[], target: number): number {
+  let left = 0, right = arr.length;
+  while (left < right) {
+    const mid = left + ((right - left) >> 1);
+    if (arr[mid] <= target) {
+      left = mid + 1;
+    } else {
+      right = mid;
+    }
+  }
+  return left;
+}
+
+// 查找旋转排序数组的最小值
+function findMinInRotatedSortedArray(nums: number[]): number {
+  let left = 0, right = nums.length - 1;
+  while (left < right) {
+    const mid = left + ((right - left) >> 1);
+    if (nums[mid] > nums[right]) {
+      left = mid + 1;
+    } else {
+      right = mid;
+    }
+  }
+  return nums[left];
+}
+
+// 示例
+console.log(findMinInRotatedSortedArray([3, 4, 5, 1, 2])); // 1
+```
+
 ## 8. 与相邻模块的关系
 
 - **04-data-structures**: 算法依赖的数据结构
@@ -255,3 +428,7 @@ function lowerBound(arr: number[], target: number): number {
 | **Algorithms 4th Ed.** | Sedgewick & Wayne, 普林斯顿大学 | [algs4.cs.princeton.edu](https://algs4.cs.princeton.edu/) |
 | **Dasgupta-Papadimitriou-Vazirani** | 《Algorithms》免费正版教材 | [PDF](http://algorithmics.lsi.upc.edu/docs/Dasgupta-Papadimitriou-Vazirani.pdf) |
 | **NIST Dictionary of Algorithms** | 美国国家标准与技术研究院算法词典 | [xlinux.nist.gov/dads](https://xlinux.nist.gov/dads/) |
+| **GeeksforGeeks** | 算法与数据结构教程 | [geeksforgeeks.org](https://www.geeksforgeeks.org/) |
+| **Khan Academy: Algorithms** | 算法入门免费课程 | [khanacademy.org/computing/computer-science/algorithms](https://www.khanacademy.org/computing/computer-science/algorithms) |
+| **Stanford CS 161** | 算法设计与分析 | [cs.stanford.edu/~tim/cs161](https://web.stanford.edu/class/cs161/) |
+| **Carnegie Mellon 15-451** | 算法设计与分析 | [cs.cmu.edu/~avrim/451f11](https://www.cs.cmu.edu/~avrim/451f11/) |

@@ -244,6 +244,113 @@ console.log(coinChange([1, 2, 5], 11)); // 3 (5+5+1)
 console.log(coinChange([2], 3)); // -1
 ```
 
+### 最大子数组和（Kadane 算法）
+
+```typescript
+// maximum-subarray.ts — O(n) 线性 DP
+function maxSubArray(nums: number[]): number {
+  let maxSoFar = nums[0];
+  let maxEndingHere = nums[0];
+
+  for (let i = 1; i < nums.length; i++) {
+    // 要么延续当前子数组，要么从当前元素重新开始
+    maxEndingHere = Math.max(nums[i], maxEndingHere + nums[i]);
+    maxSoFar = Math.max(maxSoFar, maxEndingHere);
+  }
+  return maxSoFar;
+}
+
+// 可运行示例
+console.log(maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4])); // 6 ([4,-1,2,1])
+console.log(maxSubArray([1])); // 1
+```
+
+### 矩阵链乘法（区间 DP）
+
+```typescript
+// matrix-chain-multiplication.ts — O(n³) 区间 DP
+function matrixChainOrder(dims: number[]): { minCost: number; splits: number[][] } {
+  const n = dims.length - 1; // n 个矩阵
+  // dp[i][j] = 计算矩阵 Ai...Aj 的最小标量乘法次数
+  const dp: number[][] = Array.from({ length: n }, () => Array(n).fill(0));
+  const split: number[][] = Array.from({ length: n }, () => Array(n).fill(0));
+
+  // 链长度从 2 到 n
+  for (let len = 2; len <= n; len++) {
+    for (let i = 0; i <= n - len; i++) {
+      const j = i + len - 1;
+      dp[i][j] = Infinity;
+      for (let k = i; k < j; k++) {
+        // 在 k 处分割: (Ai...Ak) × (Ak+1...Aj)
+        const cost = dp[i][k] + dp[k + 1][j] + dims[i] * dims[k + 1] * dims[j + 1];
+        if (cost < dp[i][j]) {
+          dp[i][j] = cost;
+          split[i][j] = k;
+        }
+      }
+    }
+  }
+
+  return { minCost: dp[0][n - 1], splits: split };
+}
+
+// 可运行示例: A1(10×30), A2(30×5), A3(5×60)
+// dims = [10, 30, 5, 60]
+console.log(matrixChainOrder([10, 30, 5, 60]));
+// { minCost: 4500, splits: [...] }
+// 最优加括号: (A1 × A2) × A3 = 10×30×5 + 10×5×60 = 1500 + 3000 = 4500
+```
+
+### 爬楼梯（简单线性 DP）
+
+```typescript
+// climbing-stairs.ts
+function climbStairs(n: number): number {
+  if (n <= 2) return n;
+  // dp[i] = 爬到第 i 阶的方法数
+  // 滚动数组优化至 O(1) 空间
+  let prev2 = 1; // dp[i-2]
+  let prev1 = 2; // dp[i-1]
+  for (let i = 3; i <= n; i++) {
+    const current = prev1 + prev2;
+    prev2 = prev1;
+    prev1 = current;
+  }
+  return prev1;
+}
+
+// 可运行示例
+console.log(climbStairs(3)); // 3 (1+1+1, 1+2, 2+1)
+console.log(climbStairs(4)); // 5
+console.log(climbStairs(10)); // 89
+```
+
+### 打家劫舍（线性 DP 带状态限制）
+
+```typescript
+// house-robber.ts — 相邻房屋不能同时偷
+function rob(nums: number[]): number {
+  if (nums.length === 0) return 0;
+  if (nums.length === 1) return nums[0];
+
+  // dp[i] = 前 i 间房屋能偷到的最高金额
+  // 滚动数组优化
+  let prev2 = nums[0]; // dp[i-2]
+  let prev1 = Math.max(nums[0], nums[1]); // dp[i-1]
+
+  for (let i = 2; i < nums.length; i++) {
+    const current = Math.max(prev1, prev2 + nums[i]);
+    prev2 = prev1;
+    prev1 = current;
+  }
+  return prev1;
+}
+
+// 可运行示例
+console.log(rob([1, 2, 3, 1])); // 4 (1 + 3)
+console.log(rob([2, 7, 9, 3, 1])); // 12 (2 + 9 + 1)
+```
+
 ## 3.4 新增权威参考链接
 
 - [GeeksforGeeks — Dynamic Programming](https://www.geeksforgeeks.org/dynamic-programming/) — DP 基础与经典问题
@@ -252,5 +359,9 @@ console.log(coinChange([2], 3)); // -1
 - [VisuAlgo — Recursion & DP](https://visualgo.net/en/recursion) — 算法可视化
 - [CP-Algorithms — Dynamic Programming](https://cp-algorithms.com/dynamic_programming/intro-to-dp.html) — 竞赛 DP 参考
 - [Algorithm Design Manual (Skiena)](http://www.algorist.com/) — 算法设计手册
+- [MIT 6.006 Lecture 19 — DP I](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/video_galleries/lecture-videos/) — 官方公开课
+- [LeetCode DP Patterns](https://leetcode.com/discuss/general-discussion/458695/dynamic-programming-patterns) — 面试 DP 模式总结
+- [Stanford CS 161: DP](https://web.stanford.edu/class/cs161/) — 算法设计课程
+- [CMU 15-451: Dynamic Programming](https://www.cs.cmu.edu/~avrim/451f11/lectures/lect1004.pdf) — 讲义 PDF
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

@@ -12,6 +12,7 @@
     - [1.1 语法](#11-语法)
     - [1.2 归约规则](#12-归约规则)
     - [1.3 编码能力](#13-编码能力)
+      - [代码示例：邱奇编码的 TypeScript 实现](#代码示例邱奇编码的-typescript-实现)
   - [2. 简单类型 λ 演算 (Simply Typed Lambda Calculus)](#2-简单类型-λ-演算-simply-typed-lambda-calculus)
     - [2.1 类型语法](#21-类型语法)
     - [2.2 类型判断规则（自然演绎风格）](#22-类型判断规则自然演绎风格)
@@ -21,6 +22,7 @@
     - [3.2 算法步骤](#32-算法步骤)
     - [3.3 合一示例](#33-合一示例)
     - [3.4 HM 的局限性](#34-hm-的局限性)
+      - [代码示例：极简合一算法实现](#代码示例极简合一算法实现)
   - [4. TypeScript 的约束型推断](#4-typescript-的约束型推断)
     - [4.1 约束推断 vs HM 合一](#41-约束推断-vs-hm-合一)
     - [4.2 TypeScript 推断的关键差异](#42-typescript-推断的关键差异)
@@ -31,6 +33,11 @@
   - [6. 学习路径](#6-学习路径)
     - [前置知识](#前置知识)
     - [后续进阶](#后续进阶)
+  - [权威外部参考](#权威外部参考)
+  - [模块代码文件索引](#模块代码文件索引)
+  - [核心理论深化](#核心理论深化)
+    - [关键设计模式](#关键设计模式)
+    - [与相邻模块的关系](#与相邻模块的关系)
 
 ---
 
@@ -63,6 +70,53 @@ e ::= x            (变量)
 - **邱奇数 (Church Numerals)**：`n = λf.λx.fⁿ x`
 - **布尔值**：`true = λt.λf.t`，`false = λt.λf.f`
 - **递归**：通过 Y 组合子实现不动点 `Y = λf.(λx.f(x x))(λx.f(x x))`
+
+#### 代码示例：邱奇编码的 TypeScript 实现
+
+```typescript
+// church-encoding.ts — λ 演算核心构造的 TypeScript 模拟
+
+type Church<T> = (f: (x: T) => T) => (x: T) => T;
+
+// 邱奇数：zero = λf.λx.x
+const zero: Church<number> = (f) => (x) => x;
+
+// successor = λn.λf.λx.f (n f x)
+const succ = <T>(n: Church<T>): Church<T> => (f) => (x) => f(n(f)(x));
+
+// 将邱奇数转换为 JS number
+const churchToNum = (n: Church<number>): number => n((x) => x + 1)(0);
+
+// 构造 1, 2, 3
+const one = succ(zero);
+const two = succ(one);
+const three = succ(two);
+
+console.log(churchToNum(three)); // 3
+
+// 布尔值编码
+const churchTrue = <T, U>(a: T) => (_b: U) => a;
+const churchFalse = <T, U>(_a: T) => (b: U) => b;
+
+// 条件
+const churchIf = <T>(cond: (a: T) => (b: T) => T) => (then_: T) => (else_: T) => cond(then_)(else_);
+
+const result = churchIf(churchTrue)('yes')('no');
+console.log(result); // 'yes'
+
+// Y 组合子 (Z 组合子，用于严格求值语言如 JS)
+const Z = <T>(f: (g: (x: T) => T) => (x: T) => T): ((x: T) => T) => {
+  return ((x: (a: (x: T) => T) => T) => f((y: T) => x(x)(y))) as (x: T) => T;
+};
+
+// 使用 Z 组合子定义阶乘
+const factorial = Z((recurse: (n: number) => number) => (n: number): number => {
+  if (n === 0) return 1;
+  return n * recurse(n - 1);
+});
+
+console.log(factorial(5)); // 120
+```
 
 ---
 
@@ -145,6 +199,68 @@ HM 的 principal type 为：`(β → γ) → β → γ`（即 `map` 的核心形
 | 联合类型 (Union Types) | ❌ 不支持 | ✅ `A \| B` |
 | 交叉类型 (Intersection Types) | ❌ 不支持 | ✅ `A & B` |
 | 条件类型 (Conditional Types) | ❌ 不支持 | ✅ `A extends B ? C : D` |
+
+#### 代码示例：极简合一算法实现
+
+```typescript
+// unification.ts — 核心 HM 合一算法的 TypeScript 实现
+
+type Type = { kind: 'var'; name: string } | { kind: 'fun'; arg: Type; ret: Type } | { kind: 'base'; name: string };
+
+type Subst = Map<string, Type>;
+
+function tVar(name: string): Type { return { kind: 'var', name }; }
+function tFun(arg: Type, ret: Type): Type { return { kind: 'fun', arg, ret }; }
+
+function occursIn(name: string, t: Type): boolean {
+  if (t.kind === 'var') return t.name === name;
+  if (t.kind === 'fun') return occursIn(name, t.arg) || occursIn(name, t.ret);
+  return false;
+}
+
+function apply(subst: Subst, t: Type): Type {
+  if (t.kind === 'var') return subst.get(t.name) ?? t;
+  if (t.kind === 'fun') return tFun(apply(subst, t.arg), apply(subst, t.ret));
+  return t;
+}
+
+function unify(t1: Type, t2: Type, subst: Subst = new Map()): Subst | null {
+  const a = apply(subst, t1);
+  const b = apply(subst, t2);
+
+  if (a.kind === 'var') {
+    if (b.kind === 'var' && a.name === b.name) return subst;
+    if (occursIn(a.name, b)) return null; // occurs check 失败
+    const next = new Map(subst);
+    next.set(a.name, b);
+    return next;
+  }
+
+  if (b.kind === 'var') return unify(b, a, subst);
+
+  if (a.kind === 'base' && b.kind === 'base') {
+    return a.name === b.name ? subst : null;
+  }
+
+  if (a.kind === 'fun' && b.kind === 'fun') {
+    const s1 = unify(a.arg, b.arg, subst);
+    if (!s1) return null;
+    return unify(a.ret, b.ret, s1);
+  }
+
+  return null;
+}
+
+// 演示：合一 (α → β) 与 (Int → γ)
+const alpha = tVar('α');
+const beta = tVar('β');
+const gamma = tVar('γ');
+const int = { kind: 'base' as const, name: 'Int' };
+
+const result = unify(tFun(alpha, beta), tFun(int, gamma));
+console.log(result);
+// Map { 'α' => { kind: 'base', name: 'Int' }, 'γ' => { kind: 'var', name: 'β' } }
+```
 
 ---
 
@@ -284,6 +400,19 @@ function unify(t1: Type, t2: Type, subst: Subst): Subst {
 > - Hindley, J.R. "The Principal Type-Scheme of an Object in Combinatory Logic" (1969)
 > - Milner, R. "A Theory of Type Polymorphism in Programming" (1978)
 > - Pierce, B.C. "Types and Programming Languages" (TaPL, 2002)
+
+## 权威外部参考
+
+- [Stanford Encyclopedia of Philosophy — The Lambda Calculus](https://plato.stanford.edu/entries/lambda-calculus/) — λ 演算的权威哲学与逻辑学综述
+- [Pierce, B.C. — Types and Programming Languages (TaPL)](https://www.cis.upenn.edu/~bcpierce/tapl/) — 类型理论标准教材
+- [Pierce, B.C. — Software Foundations (Coq 形式化)](https://softwarefoundations.cis.upenn.edu/) — 交互式形式化验证教材
+- [Hindley-Milner 类型推断论文 (Milner, 1978)](https://doi.org/10.1016/0022-0000(78)90014-4)
+- [Cardelli — Type Systems (1997)](http://lucacardelli.name/papers/typesystems.htm) — 类型系统综述
+- [Microsoft Research — TypeScript 规范](https://github.com/microsoft/TypeScript/blob/main/doc/spec-ARCHIVED.md)
+- [Wikipedia — Hindley-Milner Type System](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system)
+- [Wikipedia — Simply Typed Lambda Calculus](https://en.wikipedia.org/wiki/Simply_typed_lambda_calculus)
+- [MIT 6.042J — Computation Structures (Lambda Calculus)](https://ocw.mit.edu/courses/6-042j-mathematics-for-computer-science-fall-2010/)
+- [Cornell CS 4110 — Programming Languages & Logics](https://www.cs.cornell.edu/courses/cs4110/)
 
 ---
 

@@ -26,7 +26,7 @@
 | **磁盘节省** | 基准 | ~90%（PnP 模式） | **50–70%** | 基准 |
 | **node_modules 结构** | 扁平（hoisted） | PnP（zip 存档）或 hoisted | 严格（symlinked） | 扁平（hoisted） |
 | **幽灵依赖保护** | ❌ | ✅ | ✅ | ❌ |
-| **Monorepo 支持** | 基础 Workspaces | 强（Constraints + PnP） | **最强**（Filtering + Workspace Protocol） |  growing |
+| **Monorepo 支持** | 基础 Workspaces | 强（Constraints + PnP） | **最强**（Filtering + Workspace Protocol） | growing |
 | **锁文件格式** | `package-lock.json` | `yarn.lock` | `pnpm-lock.yaml` | `bun.lock`（二进制+文本） |
 | **Corepack 支持** | ✅ | ✅ | ✅ | ❌ |
 | **Node.js 兼容性** | 原生（随 Node 发布） | 原生 | 原生 | **98%**（独立运行时） |
@@ -117,7 +117,66 @@ pnpm --filter web dev      # 仅 web 应用 dev
 pnpm --filter './packages/**' test   # 仅 packages 测试
 ```
 
-### 4. 迁移路径
+### 4. 高级 pnpm 配置示例
+
+```yaml
+# .npmrc (项目根目录)
+shamefully-hoist=false
+strict-peer-dependencies=true
+auto-install-peers=true
+node-linker=isolated          # 内容寻址存储
+
+# .pnpmfile.cjs — 依赖覆盖
+module.exports = {
+  hooks: {
+    readPackage(pkg) {
+      if (pkg.name === 'legacy-lib') {
+        pkg.dependencies = {
+          ...pkg.dependencies,
+          'lodash': '^4.17.21', // 强制升级子依赖
+        };
+      }
+      return pkg;
+    },
+  },
+};
+```
+
+### 5. Yarn Berry PnP 严格模式
+
+```yaml
+# .yarnrc.yml
+nodeLinker: pnp
+pnpMode: strict
+packageExtensions:
+  "react-scripts@*":
+    peerDependencies:
+      "@babel/plugin-syntax-flow": "*"
+      "@babel/plugin-transform-react-jsx": "*"
+
+# Zero-Installs：将缓存提交到 Git
+# .gitattributes
+/.yarn/releases/** binary
+/.yarn/plugins/** binary
+/.pnp.* binary linguist-generated
+```
+
+### 6. Bun 工作区与脚本配置
+
+```json
+// package.json (Bun workspace root)
+{
+  "name": "my-monorepo",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "dev": "bun --filter './apps/*' dev",
+    "test": "bun test --coverage",
+    "build": "bun run --filter './packages/*' build"
+  }
+}
+```
+
+### 7. 迁移路径
 
 | 从 | 到 | 步骤 |
 |----|-----|------|
@@ -135,6 +194,15 @@ pnpm --filter './packages/**' test   # 仅 packages 测试
 - [Bun Documentation](https://bun.sh/)
 - [Yarn vs npm 2026](https://tech-insider.org/yarn-vs-npm-2026/)
 - [pnpm vs npm vs Yarn vs Bun (2026)](https://techsy.io/blog/bun-vs-pnpm-vs-yarn-vs-npm)
+- [Node.js Corepack Guide](https://nodejs.org/api/corepack.html)
+- [pnpm Workspace Protocol](https://pnpm.io/workspaces#workspace-protocol-workspace)
+- [Yarn Berry PnP Specification](https://yarnpkg.com/features/pnp)
+- [Bun Workspaces](https://bun.sh/docs/install/workspaces)
+- [npm Provenance](https://docs.npmjs.com/generating-provenance-statements)
+- [depcheck — Detect Unused Dependencies](https://github.com/depcheck/depcheck)
+- [State of JS 2024 — Other Tools](https://2024.stateofjs.com/en-US/other-tools/)
+- [Socket.dev — Supply Chain Security](https://socket.dev/)
+- [Snyk — npm Security Best Practices](https://snyk.io/blog/npm-security-best-practices/)
 
 ---
 

@@ -205,7 +205,229 @@ pool.on('query', (query) => {
 
 ---
 
-## 6. 反模式与陷阱
+## 6. 事务处理与重试策略
+
+### 6.1 健壮的事务模式
+
+```typescript
+// 带指数退避重试的事务
+async function withTransaction<T>(
+  db: Kysely<Database>,
+  fn: (trx: Transaction<Database>) => Promise<T>,
+  options: { maxRetries?: number; baseDelayMs?: number } = {}
+): Promise<T> {
+  const { maxRetries = 3, baseDelayMs = 50 } = options;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const trx = await db.transaction().execute(async (trx) => {
+      try {
+        return await fn(trx);
+      } catch (error) {
+        // 序列化失败或死锁，可重试
+        if (isRetryableError(error)) {
+          throw new RetryableTransactionError(error);
+        }
+        throw error;
+      }
+    });
+
+    // 如果事务成功直接返回
+    if (!(trx instanceof RetryableTransactionError)) {
+      return trx as T;
+    }
+
+    // 指数退避等待
+    const delay = baseDelayMs * Math.pow(2, attempt);
+    await sleep(delay + Math.random() * delay);
+  }
+
+  throw new Error(`Transaction failed after ${maxRetries} retries`);
+}
+
+function isRetryableError(error: unknown): boolean {
+  const msg = String(error);
+  return (
+    msg.includes('deadlock') ||
+    msg.includes('serialization failure') ||
+    msg.includes('could not serialize access')
+  );
+}
+
+// 使用示例
+await withTransaction(db, async (trx) => {
+  const account = await trx.selectFrom('accounts')
+    .where('id', '=', 1)
+    .selectAll()
+    .forUpdate() // 悲观锁
+    .executeTakeFirstOrThrow();
+
+  await trx.updateTable('accounts')
+    .set({ balance: account.balance - 100 })
+    .where('id', '=', 1)
+    .execute();
+
+  await trx.insertInto('transactions')
+    .values({ accountId: 1, amount: -100, type: 'debit' })
+    .execute();
+});
+```
+
+### 6.2 Drizzle 关系查询与聚合
+
+```typescript
+// drizzle-relations.ts
+import { relations } from 'drizzle-orm';
+import { pgTable, serial, varchar, integer } from 'drizzle-orm/pg-core';
+
+const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  email: varchar('email', { length: 255 }).notNull(),
+});
+
+const posts = pgTable('posts', {
+  id: serial('id').primaryKey(),
+  title: varchar('title', { length: 255 }).notNull(),
+  authorId: integer('author_id').notNull(),
+});
+
+// 定义关系
+export const usersRelations = relations(users, ({ many }) => ({
+  posts: many(posts),
+}));
+
+export const postsRelations = relations(posts, ({ one }) => ({
+  author: one(users, { fields: [posts.authorId], references: [users.id] }),
+}));
+
+// 查询用户及其文章（自动 JOIN）
+const result = await db.query.users.findMany({
+  with: {
+    posts: {
+      columns: { title: true },
+      limit: 5,
+    },
+  },
+});
+
+// 聚合查询
+import { count, avg, sql } from 'drizzle-orm';
+const stats = await db.select({
+  authorId: posts.authorId,
+  postCount: count(posts.id),
+  avgTitleLength: avg(sql`length(${posts.title})`),
+})
+.from(posts)
+.groupBy(posts.authorId);
+```
+
+---
+
+## 7. 边缘数据库与 Serverless
+
+### 7.1 边缘数据库
+
+- **Drizzle + Cloudflare D1**：SQLite 兼容的边缘数据库
+- **Turso**：libSQL，SQLite 的分布式 fork
+- **Prisma Accelerate**：全球连接池和缓存
+
+### 7.2 Serverless 数据库
+
+- **Neon**：按需扩展的 PostgreSQL
+- **Supabase**：开源 Firebase 替代
+- **PlanetScale**：MySQL 兼容，分支式开发
+
+### 7.3 Drizzle + Turso 边缘数据库示例
+
+```typescript
+// edge-db.ts — 在 Cloudflare Workers / Vercel Edge 中使用
+import { drizzle } from 'drizzle-orm/libsql';
+import { createClient } from '@libsql/client/web';
+
+const client = createClient({
+  url: process.env.TURSO_DATABASE_URL!,
+  authToken: process.env.TURSO_AUTH_TOKEN!,
+});
+
+const db = drizzle(client);
+
+// Edge Function 中使用
+export default async function handler(request: Request) {
+  const users = await db.select().from(usersTable).limit(10);
+  return Response.json(users);
+}
+```
+
+### 7.4 Cloudflare D1 示例
+
+```typescript
+// d1-worker.ts
+import { drizzle } from 'drizzle-orm/d1';
+
+export interface Env {
+  DB: D1Database;
+}
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const db = drizzle(env.DB);
+
+    // D1 使用 SQLite 语法
+    const result = await db.select().from(users).all();
+    return Response.json(result);
+  },
+};
+```
+
+---
+
+## 8. 类型安全 SQL（Kysely 深度示例）
+
+```typescript
+// kysely-advanced.ts — 复杂类型安全查询
+import { Kysely, sql } from 'kysely';
+
+interface Database {
+  users: {
+    id: number;
+    email: string;
+    createdAt: Date;
+  };
+  orders: {
+    id: number;
+    userId: number;
+    total: number;
+    status: 'pending' | 'paid' | 'shipped' | 'cancelled';
+    createdAt: Date;
+  };
+}
+
+const db = new Kysely<Database>({ /* dialect */ });
+
+// 复杂 JOIN + 条件 + 排序
+const report = await db
+  .selectFrom('users')
+  .innerJoin('orders', 'orders.userId', 'users.id')
+  .where('orders.status', '=', 'paid')
+  .where('orders.createdAt', '>', sql<Date>`NOW() - INTERVAL '30 days'`)
+  .select([
+    'users.id as userId',
+    'users.email',
+    sql<number>`SUM(${sql.ref('orders.total')})`.as('totalSpent'),
+    sql<number>`COUNT(${sql.ref('orders.id')})`.as('orderCount'),
+  ])
+  .groupBy(['users.id', 'users.email'])
+  .having(sql<number>`SUM(${sql.ref('orders.total')})`, '>', 1000)
+  .orderBy('totalSpent', 'desc')
+  .limit(100)
+  .execute();
+
+// report 类型自动推断:
+// Array<{ userId: number; email: string; totalSpent: number; orderCount: number }>
+```
+
+---
+
+## 9. 反模式与陷阱
 
 ### 陷阱 1：ORM 的"魔法"隐藏了性能问题
 
@@ -238,21 +460,9 @@ await Account.update(
 
 ---
 
-## 7. 现代趋势
+## 10. 现代趋势
 
-### 7.1 边缘数据库
-
-- **Drizzle + Cloudflare D1**：SQLite 兼容的边缘数据库
-- **Turso**：libSQL，SQLite 的分布式 fork
-- **Prisma Accelerate**：全球连接池和缓存
-
-### 7.2 Serverless 数据库
-
-- **Neon**：按需扩展的 PostgreSQL
-- **Supabase**：开源 Firebase 替代
-- **PlanetScale**：MySQL 兼容，分支式开发
-
-### 7.3 类型安全 SQL
+### 10.1 类型安全 SQL
 
 ```typescript
 // Kysely：完全类型安全的 SQL 构建
@@ -267,7 +477,7 @@ const result = await db
 
 ---
 
-## 8. 总结
+## 11. 总结
 
 数据库层是应用的根基，ORM 是开发者与数据库之间的桥梁。
 
@@ -292,6 +502,16 @@ const result = await db
 - [Kysely 文档](https://kysely.dev/)
 - [PostgreSQL EXPLAIN 可视化](https://explain.dalibo.com/)
 - [Use The Index, Luke!](https://use-the-index-luke.com/)
+- [PostgreSQL 官方文档](https://www.postgresql.org/docs/) — 关系型数据库权威参考
+- [SQLite 官方文档](https://www.sqlite.org/docs.html) — 嵌入式数据库标准
+- [PlanetScale 文档](https://planetscale.com/docs) — MySQL 兼容 Serverless 数据库
+- [Neon 文档](https://neon.tech/docs) — 按需扩展 PostgreSQL
+- [Turso 文档](https://docs.turso.tech/) — libSQL / SQLite 边缘数据库
+- [Cloudflare D1 文档](https://developers.cloudflare.com/d1/) — Workers 边缘 SQL
+- [Supabase 文档](https://supabase.com/docs) — 开源 Firebase 替代
+- [Database of Databases](https://dbdb.io/) — 数据库选型百科
+- [Martin Fowler — ORM Hate](https://martinfowler.com/bliki/OrmHate.html) — ORM 批判性思考
+- [Jepsen 分析报告](https://jepsen.io/analyses) — 分布式数据库一致性验证
 
 ---
 
@@ -327,4 +547,4 @@ const result = await db
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+> 📅 理论深化更新：2026-04-29

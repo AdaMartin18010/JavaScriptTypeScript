@@ -133,12 +133,99 @@ try {
 }
 ```
 
+### 6.3 正例：带标签的 break 与 continue
+
+```javascript
+// break 带标签：跳出多层循环
+outer: for (let i = 0; i < 3; i++) {
+  for (let j = 0; j < 3; j++) {
+    if (i === 1 && j === 1) {
+      break outer; // BreakCompletion { [[Target]]: "outer" }
+    }
+    console.log(i, j);
+  }
+}
+// 输出: 0 0, 0 1, 0 2, 1 0
+
+// continue 带标签：继续外层循环
+outer2: for (let i = 0; i < 3; i++) {
+  for (let j = 0; j < 3; j++) {
+    if (j === 1) {
+      continue outer2; // ContinueCompletion { [[Target]]: "outer2" }
+    }
+    console.log(i, j);
+  }
+}
+// 输出: 0 0, 1 0, 2 0
+```
+
+### 6.4 正例：嵌套 try/catch/finally 的完成记录覆盖
+
+```javascript
+function nestedFinally() {
+  try {
+    try {
+      return 'inner'; // ReturnCompletion('inner')
+    } finally {
+      console.log('inner finally'); // 执行，但不覆盖（无 return）
+    }
+  } finally {
+    return 'outer'; // ReturnCompletion('outer') 覆盖所有上层
+  }
+}
+
+console.log(nestedFinally()); // "outer"
+// 输出顺序:
+// "inner finally"
+// "outer"
+```
+
+### 6.5 正例：async/await 中的完成记录（Promise 封装）
+
+```javascript
+async function asyncExample() {
+  try {
+    await Promise.reject('fail'); // 隐式 ThrowCompletion('fail')
+  } catch (e) {
+    return `caught: ${e}`; // ReturnCompletion('caught: fail')
+  } finally {
+    console.log('cleanup'); // 始终执行
+  }
+}
+
+asyncExample().then(console.log); // "caught: fail"
+```
+
+> 在 async 函数中，return 值被包装为 resolved Promise，throw 被包装为 rejected Promise。这对应规范中将 Completion Record 转换为 PromiseReaction 的过程。
+
+### 6.6 正例：eval 中的完成记录（间接 eval 返回正常完成值）
+
+```javascript
+const result = eval('1 + 1; 2 + 2;'); // 返回最后一个表达式的值
+console.log(result); // 4
+
+// 直接 eval 中的 return 仅影响当前脚本，不跳出函数
+function demo() {
+  return eval('42'); // ReturnCompletion(42)
+}
+console.log(demo()); // 42
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §6.2.4** — The Completion Record Specification Type
+- **ECMA-262 §13.15** — Try/Catch/Finally 语句的完成记录语义
+- **ECMA-262 §10.2.1** — FunctionDeclarationInstantiation 与完成记录
+- **ECMA-262 §27.7** — AsyncFunction 的完成记录到 Promise 转换
 - **MDN: Control flow** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Control_flow_and_error_handling>
+- **MDN: break** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/break>
+- **MDN: continue** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/continue>
+- **MDN: return** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return>
+- **MDN: throw** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/throw>
+- **MDN: try...catch** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch>
+- **2ality — Exploring ES6: Completion Values** — <https://2ality.com/2014/09/es6-iterators.html>（关联迭代器完成语义）
 
 ---
 

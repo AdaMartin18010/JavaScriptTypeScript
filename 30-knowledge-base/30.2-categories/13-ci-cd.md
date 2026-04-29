@@ -98,7 +98,130 @@ jobs:
       - run: pnpm build
 ```
 
-### 2. 关键优化策略
+### 2. GitLab CI DAG 流水线示例
+
+```yaml
+# .gitlab-ci.yml
+stages: [install, lint, test, build, deploy]
+
+variables:
+  PNPM_FLAGS: "--frozen-lockfile"
+  CACHE_FALLBACK_KEY: "pnpm-cache-fallback"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .pnpm-store/
+    - node_modules/
+
+install:
+  stage: install
+  script:
+    - corepack enable
+    - pnpm install $PNPM_FLAGS
+  artifacts:
+    paths: [node_modules/]
+
+lint:
+  stage: lint
+  needs: [install]
+  script: [pnpm lint]
+
+unit-test:
+  stage: test
+  needs: [install]
+  script: [pnpm test:unit --coverage]
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+
+e2e-test:
+  stage: test
+  needs: [install]
+  script: [pnpm test:e2e]
+
+build:
+  stage: build
+  needs: [lint, unit-test]
+  script: [pnpm build]
+  artifacts:
+    paths: [dist/]
+
+deploy-staging:
+  stage: deploy
+  needs: [build, e2e-test]
+  script: [pnpm deploy:staging]
+  environment:
+    name: staging
+    url: https://staging.example.com
+  only: [main]
+```
+
+### 3. Jenkins Pipeline as Code (Jenkinsfile)
+
+```groovy
+// Jenkinsfile
+pipeline {
+  agent {
+    kubernetes {
+      yaml '''
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+          - name: node
+            image: node:22-alpine
+            command: ['cat']
+            tty: true
+      '''
+    }
+  }
+  environment {
+    PNPM_FLAGS = '--frozen-lockfile'
+  }
+  stages {
+    stage('Install') {
+      steps {
+        container('node') {
+          sh 'corepack enable && pnpm install $PNPM_FLAGS'
+        }
+      }
+    }
+    stage('Test & Lint') {
+      parallel {
+        stage('Lint') {
+          steps {
+            container('node') { sh 'pnpm lint' }
+          }
+        }
+        stage('Unit Tests') {
+          steps {
+            container('node') { sh 'pnpm test:unit --coverage' }
+          }
+        }
+      }
+    }
+    stage('Build') {
+      when { branch 'main' }
+      steps {
+        container('node') { sh 'pnpm build' }
+      }
+    }
+  }
+  post {
+    always {
+      publishHTML([
+        allowMissing: false,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: 'coverage',
+        reportFiles: 'index.html',
+        reportName: 'Coverage Report'
+      ])
+    }
+  }
+}
+```
+
+### 4. 关键优化策略
 
 | 策略 | 实施方式 | 效果 |
 |------|---------|------|
@@ -108,14 +231,40 @@ jobs:
 | **Affected-Only** | Monorepo 中仅构建变更包 | 避免全量构建 |
 | **冻结锁文件** | `--frozen-lockfile`（pnpm）/ `--ci`（npm） | 保证 CI 与本地一致性 |
 
-### 3. 安全实践
+### 5. 安全实践
 
 - **最小权限原则**：CI 凭证仅授予必要权限，使用 OIDC 替代长期 Access Key
 - **Action 审计**：仅使用验证创建者（GitHub、AWS、Azure）的 Action，固定到 Commit SHA
 - **供应链安全**：启用 Dependabot、SBOM 生成（`npm sbom`）、容器镜像签名（Sigstore/Cosign）
 - **密钥管理**：使用 GitHub Secrets / GitLab CI Variables，禁止硬编码
 
-### 4. FinOps 优化
+### 6. OIDC 云部署（无长期凭证）
+
+```yaml
+# .github/workflows/deploy-aws.yml
+name: Deploy to AWS
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write   # Required for OIDC
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789:role/GitHubActionsDeployRole
+          aws-region: us-east-1
+      - run: aws s3 sync ./dist s3://my-production-bucket
+```
+
+### 7. FinOps 优化
 
 - **成本归因**：标记工作流与团队，识别高消耗流水线
 - **Rightsizing Runner**：轻量任务用 `ubuntu-latest`，重构建用自托管大规格
@@ -130,6 +279,15 @@ jobs:
 - [Jenkins Pipeline as Code](https://www.jenkins.io/doc/book/pipeline/)
 - [GitHub Actions Tutorial: 12 Steps to Production CI/CD (2026)](https://tech-insider.org/github-actions-tutorial-cicd-12-steps-2026/)
 - [Jenkins vs GitHub Actions vs GitLab CI (2026)](https://eitt.academy/knowledge-base/jenkins-vs-github-actions-vs-gitlab-ci-cicd-2026/)
+- [GitHub Actions Security Best Practices](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions)
+- [GitHub OIDC with AWS](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services)
+- [Sigstore — Software Signing](https://www.sigstore.dev/)
+- [SLSA — Supply-chain Levels for Software Artifacts](https://slsa.dev/)
+- [npm SBOM Generation](https://docs.npmjs.com/cli/v11/commands/npm-sbom)
+- [CircleCI Configuration Reference](https://circleci.com/docs/configuration-reference/)
+- [GitLab CI/CD Artifacts & Caching](https://docs.gitlab.com/ee/ci/caching/)
+- [GitHub Actions — Reusing Workflows](https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
+- [OWASP CI/CD Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/CI_CD_Security_Cheat_Sheet.html)
 
 ---
 

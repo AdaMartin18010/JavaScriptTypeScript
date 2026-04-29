@@ -155,7 +155,140 @@ class LRUCache<K, V> {
 }
 ```
 
-## 六、权威参考链接
+## 六、代码示例：Trie（前缀树）实现
+
+```typescript
+// trie.ts — 前缀树，适用于自动补全与路由匹配
+
+class TrieNode {
+  children = new Map<string, TrieNode>();
+  isEndOfWord = false;
+  value?: string; // 存储完整单词或路由路径
+}
+
+class Trie {
+  private root = new TrieNode();
+
+  insert(word: string, value?: string): void {
+    let node = this.root;
+    for (const char of word) {
+      if (!node.children.has(char)) {
+        node.children.set(char, new TrieNode());
+      }
+      node = node.children.get(char)!;
+    }
+    node.isEndOfWord = true;
+    node.value = value ?? word;
+  }
+
+  search(word: string): boolean {
+    const node = this.traverse(word);
+    return node?.isEndOfWord ?? false;
+  }
+
+  startsWith(prefix: string): boolean {
+    return this.traverse(prefix) !== undefined;
+  }
+
+  /** 返回所有以 prefix 开头的单词 */
+  autocomplete(prefix: string): string[] {
+    const node = this.traverse(prefix);
+    if (!node) return [];
+    return this.collect(node, prefix);
+  }
+
+  private traverse(word: string): TrieNode | undefined {
+    let node = this.root;
+    for (const char of word) {
+      if (!node.children.has(char)) return undefined;
+      node = node.children.get(char)!;
+    }
+    return node;
+  }
+
+  private collect(node: TrieNode, prefix: string): string[] {
+    const results: string[] = [];
+    if (node.isEndOfWord && node.value) results.push(node.value);
+    for (const [char, child] of node.children) {
+      results.push(...this.collect(child, prefix + char));
+    }
+    return results;
+  }
+}
+
+// 使用：自动补全
+const trie = new Trie();
+['typescript', 'javascript', 'java', 'python', 'php', 'perl'].forEach((w) => trie.insert(w));
+
+console.log(trie.autocomplete('jav'));   // ['javascript', 'java']
+console.log(trie.autocomplete('py'));    // ['python']
+console.log(trie.search('typescript'));  // true
+console.log(trie.search('type'));        // false
+```
+
+## 七、代码示例：最小堆（优先队列）
+
+```typescript
+// min-heap.ts — 基于数组的二叉堆，用于调度与 Top-K
+
+class MinHeap<T> {
+  private data: T[] = [];
+
+  constructor(private compare: (a: T, b: T) => number = (a, b) => (a < b ? -1 : a > b ? 1 : 0)) {}
+
+  get size() { return this.data.length; }
+
+  push(value: T): void {
+    this.data.push(value);
+    this.siftUp(this.data.length - 1);
+  }
+
+  pop(): T | undefined {
+    if (this.data.length === 0) return undefined;
+    const min = this.data[0];
+    const last = this.data.pop()!;
+    if (this.data.length > 0) {
+      this.data[0] = last;
+      this.siftDown(0);
+    }
+    return min;
+  }
+
+  peek(): T | undefined {
+    return this.data[0];
+  }
+
+  private siftUp(index: number): void {
+    const parent = (index - 1) >> 1;
+    if (parent >= 0 && this.compare(this.data[index], this.data[parent]) < 0) {
+      [this.data[index], this.data[parent]] = [this.data[parent], this.data[index]];
+      this.siftUp(parent);
+    }
+  }
+
+  private siftDown(index: number): void {
+    const left = (index << 1) + 1;
+    const right = left + 1;
+    let smallest = index;
+
+    if (left < this.data.length && this.compare(this.data[left], this.data[smallest]) < 0) smallest = left;
+    if (right < this.data.length && this.compare(this.data[right], this.data[smallest]) < 0) smallest = right;
+
+    if (smallest !== index) {
+      [this.data[index], this.data[smallest]] = [this.data[smallest], this.data[index]];
+      this.siftDown(smallest);
+    }
+  }
+}
+
+// 使用：Top-K 最大元素（反向比较）
+const maxHeap = new MinHeap<number>((a, b) => b - a);
+[3, 1, 4, 1, 5, 9, 2, 6].forEach((n) => maxHeap.push(n));
+console.log(maxHeap.pop()); // 9
+console.log(maxHeap.pop()); // 6
+```
+
+## 八、权威参考链接
 
 | 资源 | 说明 | 链接 |
 |------|------|------|
@@ -163,6 +296,10 @@ class LRUCache<K, V> {
 | VisuAlgo — 数据结构与算法可视化 | 交互式理解链表/树/图行为 | [visualgo.net](https://visualgo.net/en/list) |
 | Introduction to Algorithms (CLRS) | 形式化证明与摊还分析 | ISBN 978-0262046305 |
 | Wikipedia — Abstract Data Type | ADT 与实现分离的理论基础 | [en.wikipedia.org/wiki/Abstract_data_type](https://en.wikipedia.org/wiki/Abstract_data_type) |
+| Algorithms (Sedgewick & Wayne) | 算法与数据结构经典教材 | [algs4.cs.princeton.edu](https://algs4.cs.princeton.edu/) |
+| V8 Blog — Elements Kinds | V8 引擎如何优化数组 | [v8.dev/blog/elements-kinds](https://v8.dev/blog/elements-kinds) |
+| MDN — JavaScript Data Structures | 内置数据结构文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures) |
+| TC39 — Map and Set Specification | ECMAScript 规范 | [tc39.es/ecma262/#sec-keyed-collections](https://tc39.es/ecma262/#sec-keyed-collections) |
 
 ---
 

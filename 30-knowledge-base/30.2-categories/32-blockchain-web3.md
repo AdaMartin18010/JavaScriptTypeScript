@@ -227,6 +227,73 @@ async function verifySiweSignature(message: SiweMessage, signature: string) {
 }
 ```
 
+### Hardhat 部署脚本 (TypeScript)
+
+```typescript
+// scripts/deploy.ts — Hardhat 合约部署
+import { ethers } from 'hardhat';
+import type { MyToken } from '../typechain-types';
+
+async function main() {
+  const [deployer] = await ethers.getSigners();
+  console.log('Deploying with account:', deployer.address);
+
+  const TokenFactory = await ethers.getContractFactory('MyToken');
+  const token: MyToken = await TokenFactory.deploy('MyToken', 'MTK', ethers.parseEther('1000000'));
+
+  await token.waitForDeployment();
+  const address = await token.getAddress();
+
+  console.log('Token deployed to:', address);
+
+  // 验证合约 (Etherscan)
+  await hre.run('verify:verify', {
+    address,
+    constructorArguments: ['MyToken', 'MTK', ethers.parseEther('1000000')],
+  });
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
+```
+
+### 使用 The Graph 查询链上数据
+
+```typescript
+// graphql/queries.ts — The Graph 子图查询
+import { gql, GraphQLClient } from 'graphql-request';
+
+const SUBGRAPH_URL = 'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3';
+const client = new GraphQLClient(SUBGRAPH_URL);
+
+const GET_POOLS = gql`
+  query GetPools($first: Int!) {
+    pools(first: $first, orderBy: volumeUSD, orderDirection: desc) {
+      id
+      token0 { symbol }
+      token1 { symbol }
+      volumeUSD
+      feeTier
+    }
+  }
+`;
+
+interface Pool {
+  id: string;
+  token0: { symbol: string };
+  token1: { symbol: string };
+  volumeUSD: string;
+  feeTier: string;
+}
+
+async function fetchTopPools(limit = 10): Promise<Pool[]> {
+  const { pools } = await client.request<{ pools: Pool[] }>(GET_POOLS, { first: limit });
+  return pools;
+}
+```
+
 ---
 
 ## 与基础设施的边界
@@ -261,6 +328,7 @@ async function verifySiweSignature(message: SiweMessage, signature: string) {
 | Anchor Framework | <https://www.anchor-lang.com/docs> | Solana 开发框架 |
 | Polkadot.js | <https://polkadot.js.org/docs/> | Polkadot/Substrate JS API |
 | Hardhat | <https://hardhat.org/docs> | 以太坊开发环境 |
+| Foundry | <https://book.getfoundry.sh/> | 快速 Rust 编写合约工具链 |
 | The Graph | <https://thegraph.com/docs/en/> | 去中心化索引协议 |
 | EVM OpCodes | <https://www.evm.codes/> | EVM 操作码参考 |
 | SIWE (EIP-4361) | <https://eips.ethereum.org/EIPS/eip-4361> | Sign-In with Ethereum 规范 |
@@ -271,6 +339,11 @@ async function verifySiweSignature(message: SiweMessage, signature: string) {
 | Ethereum JSON-RPC Spec | <https://ethereum.github.io/execution-apis/api-documentation/> | 标准 RPC 接口 |
 | ERC-20 Token Standard | <https://eips.ethereum.org/EIPS/eip-20> | 同质化代币标准 |
 | ERC-721 NFT Standard | <https://eips.ethereum.org/EIPS/eip-721> | 非同质化代币标准 |
+| Solidity 文档 | <https://docs.soliditylang.org/> | 智能合约语言官方文档 |
+| Ethereum Developer Docs | <https://ethereum.org/en/developers/docs/> | 以太坊官方开发者文档 |
+| IPFS Docs | <https://docs.ipfs.tech/> | 星际文件系统文档 |
+| Arweave | <https://docs.arweave.org/> | 永久存储协议 |
+| CoinMarketCap API | <https://coinmarketcap.com/api/documentation/v1/> | 加密货币市场数据 |
 
 ---
 

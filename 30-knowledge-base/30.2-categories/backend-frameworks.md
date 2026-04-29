@@ -135,6 +135,95 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 app.listen(3000);
 ```
 
+### Fastify + tRPC 类型安全路由
+
+```typescript
+import { initTRPC } from '@trpc/server';
+import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
+import Fastify from 'fastify';
+import { z } from 'zod';
+
+const t = initTRPC.create();
+const appRouter = t.router({
+  user: t.procedure
+    .input(z.object({ id: z.number() }))
+    .query(({ input }) => ({ id: input.id, name: 'Alice' })),
+});
+
+const app = Fastify();
+app.register(fastifyTRPCPlugin, {
+  prefix: '/trpc',
+  trpcOptions: { router: appRouter },
+});
+
+// 客户端可直接推导 appRouter 类型
+export type AppRouter = typeof appRouter;
+```
+
+### NestJS 全局异常过滤器 + 拦截器
+
+```typescript
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+} from '@nestjs/common';
+import { Observable, tap } from 'rxjs';
+
+@Catch(HttpException)
+export class HttpExceptionFilter implements ExceptionFilter {
+  catch(exception: HttpException, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse();
+    const status = exception.getStatus();
+    response.status(status).json({
+      statusCode: status,
+      timestamp: new Date().toISOString(),
+      message: exception.message,
+    });
+  }
+}
+
+@Injectable()
+export class LoggingInterceptor implements NestInterceptor {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    const req = context.switchToHttp().getRequest();
+    console.log(`Incoming: ${req.method} ${req.url}`);
+    const now = Date.now();
+    return next.handle().pipe(
+      tap(() => console.log(`Handled in ${Date.now() - now}ms`)),
+    );
+  }
+}
+```
+
+### Hono — 中间件组合与 CORS
+
+```typescript
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { logger } from 'hono/logger';
+import { bearerAuth } from 'hono/bearer-auth';
+
+const app = new Hono();
+
+app.use(logger());
+app.use(cors({ origin: ['https://app.example.com'] }));
+
+// 受保护路由
+const api = new Hono();
+api.use('/admin/*', bearerAuth({ token: 'secret-token' }));
+api.get('/admin/dashboard', (c) => c.json({ data: 'sensitive' }));
+
+app.route('/api', api);
+export default app;
+```
+
 ---
 
 ## 选型建议
@@ -163,6 +252,12 @@ app.listen(3000);
 - [WinterTC / Ecma TC55 规范](https://wintertc.org/)
 - [TechEmpower Web Framework Benchmarks](https://www.techempower.com/benchmarks/)
 - [TypeScript Handbook — Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
+- [Fastify Benchmarks 与性能调优](https://github.com/fastify/benchmarks)
+- [NestJS Providers 与依赖注入](https://docs.nestjs.com/providers)
+- [Hono Middleware 官方指南](https://hono.dev/docs/guides/middleware)
+- [Express 5.x 迁移指南](https://expressjs.com/en/guide/migrating-5.html)
+- [OWASP REST Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html)
+- [MDN — HTTP 状态码参考](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 
 ---
 

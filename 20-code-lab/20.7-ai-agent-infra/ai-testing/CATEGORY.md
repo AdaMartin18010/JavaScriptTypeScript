@@ -125,6 +125,109 @@ Output JSON only: { "criterion": score }
 }
 ```
 
+### 属性基测试（fast-check 风格简化实现）
+
+```typescript
+// property-based-test.ts — 简化版属性基测试框架
+
+type Arbitrary<T> = { generate(): T; shrink(value: T): Iterable<T> };
+
+const arbInt = (min = -1000, max = 1000): Arbitrary<number> => ({
+  generate: () => Math.floor(Math.random() * (max - min + 1)) + min,
+  *shrink(value) {
+    if (value === 0) return;
+    yield value >> 1;
+    yield 0;
+  },
+});
+
+const arbArray = <T>(item: Arbitrary<T>, maxLen = 10): Arbitrary<T[]> => ({
+  generate: () => Array.from({ length: Math.floor(Math.random() * maxLen) }, () => item.generate()),
+  *shrink(value) {
+    if (value.length === 0) return;
+    yield value.slice(0, value.length >> 1);
+    yield [];
+  },
+});
+
+function assertProperty<T>(
+  arbitrary: Arbitrary<T>,
+  predicate: (value: T) => boolean,
+  iterations = 100
+): { pass: boolean; counterExample?: T } {
+  for (let i = 0; i < iterations; i++) {
+    const value = arbitrary.generate();
+    if (!predicate(value)) {
+      // 尝试缩小反例
+      for (const shrunk of arbitrary.shrink(value)) {
+        if (!predicate(shrunk)) return { pass: false, counterExample: shrunk };
+      }
+      return { pass: false, counterExample: value };
+    }
+  }
+  return { pass: true };
+}
+
+// 使用：验证数组反转性质 reverse(reverse(xs)) === xs
+const result = assertProperty(arbArray(arbInt()), (xs) => {
+  const rev = [...xs].reverse().reverse();
+  return JSON.stringify(rev) === JSON.stringify(xs);
+});
+
+console.log(result); // { pass: true } 或 { pass: false, counterExample: [...] }
+```
+
+### 视觉回归检测骨架
+
+```typescript
+// visual-regression.ts — 像素级与感知哈希对比
+
+async function captureScreenshot(page: any, selector: string): Promise<Buffer> {
+  const el = await page.$(selector);
+  return el.screenshot({ type: 'png' });
+}
+
+function pixelDiff(a: Buffer, b: Buffer): number {
+  if (a.length !== b.length) return Infinity;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff += Math.abs(a[i] - b[i]);
+  }
+  return diff / a.length;
+}
+
+/** 感知哈希简化版（平均哈希） */
+function averageHash(buf: Buffer): bigint {
+  const avg = buf.reduce((s, v) => s + v, 0) / buf.length;
+  let hash = 0n;
+  for (let i = 0; i < buf.length; i++) {
+    hash = (hash << 1n) | (buf[i] > avg ? 1n : 0n);
+  }
+  return hash;
+}
+
+function hammingDistance(a: bigint, b: bigint): number {
+  let xor = a ^ b;
+  let dist = 0;
+  while (xor > 0n) {
+    dist += Number(xor & 1n);
+    xor >>= 1n;
+  }
+  return dist;
+}
+
+export async function compareVisual(
+  baseline: Buffer,
+  current: Buffer,
+  threshold = 0.05
+): Promise<{ match: boolean; diffScore: number }> {
+  const pixelScore = pixelDiff(baseline, current) / 255;
+  const hashScore = hammingDistance(averageHash(baseline), averageHash(current)) / 64;
+  const diffScore = (pixelScore + hashScore) / 2;
+  return { match: diffScore < threshold, diffScore };
+}
+```
+
 ## 关联模块
 
 - `33-ai-integration` — AI 集成
@@ -141,6 +244,10 @@ Output JSON only: { "criterion": score }
 | Arize AI — LLM Evaluation | 指南 | [docs.arize.com/phoenix](https://docs.arize.com/phoenix) |
 | Coverage.js (c8) | 文档 | [github.com/bcoe/c8](https://github.com/bcoe/c8) |
 | Evals Framework — OpenAI | 文档 | [github.com/openai/evals](https://github.com/openai/evals) |
+| Google — Fuzz Testing (OSS-Fuzz)](https://google.github.io/oss-fuzz/) | 模糊测试 |
+| Jest — Snapshot Testing | 文档 | [jestjs.io/docs/snapshot-testing](https://jestjs.io/docs/snapshot-testing) |
+| Vitest — Property Testing | 文档 | [vitest.dev/guide/property-testing.html](https://vitest.dev/guide/property-testing.html) |
+| Microsoft — Responsible AI Toolbox | 评估工具 | [responsibleaitoolbox.ai](https://responsibleaitoolbox.ai/) |
 
 ---
 

@@ -75,6 +75,60 @@ for (let i = 0; i < 10; i++) {
 
 **Performance implication**: Keeping call sites monomorphic can yield **6–10×** speedup on property-access-heavy code.
 
+### Hidden Class Shape Optimization
+
+```javascript
+// shape-optimization.ts — 通过固定属性顺序保持单态
+// BAD: 属性顺序不一致导致不同 Hidden Class
+function createPointBad(x, y) {
+  const p = {};
+  if (x !== undefined) p.x = x;
+  if (y !== undefined) p.y = y;
+  return p; // 四种可能形状: {}, {x}, {y}, {x,y}
+}
+
+// GOOD: 始终初始化相同属性顺序
+function createPointGood(x, y) {
+  return { x: x ?? 0, y: y ?? 0 }; // 单一 Hidden Class
+}
+
+// 数组单态化
+function monomorphicArrayAccess(arr) {
+  let sum = 0;
+  for (let i = 0; i < arr.length; i++) {
+    sum += arr[i]; // 如果 arr 始终是 PACKED_SMI_ELEMENTS，则内联优化最佳
+  }
+  return sum;
+}
+
+// 触发 deoptimization 的典型模式
+function deoptTrigger(x) {
+  return x + 1; // 如果最初传入 number，TurboFan 内联整数加法
+}
+
+deoptTrigger(1);   // 优化为整数加法
+deoptTrigger(2);
+deoptTrigger('3'); // 类型假设失败 → deoptimize 回 Ignition
+```
+
+### Deoptimization Trigger Analysis
+
+```javascript
+// deopt-analysis.js — 使用 --trace-deopt 观察去优化事件
+// 命令: node --trace-deopt --trace-opt deopt-analysis.js
+
+function unstableType(x) {
+  if (x > 10) return x * 2;        // number path
+  return String(x) + ' is small';  // string path
+}
+
+// 前几次调用均为 number，TurboFan 假设类型稳定并优化
+for (let i = 11; i < 2000; i++) unstableType(i);
+
+// 下一次传入导致返回 string → 类型假设失败 → deopt
+unstableType(5); // [deoptimizing (DEOPT eager): begin ...]
+```
+
 ---
 
 ## Key Lemmas
@@ -103,6 +157,13 @@ for (let i = 0; i < 10; i++) {
 - ["TurboFan: A new code architecture for V8" – V8 Blog, 2017](https://v8.dev/blog/turbofan-jit)
 - ["Deoptimization in V8" – V8 Internals Deep Dive](https://v8.dev/blog/deoptimization)
 - [V8 Compiler Design Docs](https://v8.dev/docs)
+- ["Shapes and Inline Caches" – Mathias Bynens, 2020](https://mathiasbynens.be/notes/shapes-ics)
+- ["JavaScript Engine Fundamentals" – DasSur.ma](https://dassur.ma/things/jit-js/) — 图解 JIT 编译管线
+- ["An Introduction to Speculative Optimization in V8" – Benedikt Meurer, JSConf EU 2018](https://www.youtube.com/watch?v=5UZz7f8G0KY)
+- ["The Story of a V8 Performance Cliff in React" – Deep Blue Sky](https://blog.deepbluesky.com/blog/2020/the-story-of-a-v8-performance-cliff-in-react)
+- ["JavaScript Hidden Classes and Inline Caching in V8" – DeepMind Blog](https://richardartoul.github.io/jekyll/update/2015/04/26/hidden-classes.html)
+- [MDN — JavaScript Memory Management](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_management)
+- [Node.js Performance Best Practices](https://nodejs.org/en/docs/guides/dont-block-the-event-loop/)
 
 ---
 

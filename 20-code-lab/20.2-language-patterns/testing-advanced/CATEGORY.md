@@ -190,6 +190,53 @@ expect(user.name).toBe('Alice');
 await provider.finalize();
 ```
 
+### 性能基准测试（Benchmark.js）
+
+```typescript
+// benchmark-suite.ts — 使用 tinybench 进行微基准测试
+import { Bench } from 'tinybench';
+
+const bench = new Bench({ time: 100 });
+
+const data = Array.from({ length: 1000 }, (_, i) => i);
+
+bench
+  .add('for loop', () => {
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) sum += data[i];
+    return sum;
+  })
+  .add('reduce', () => {
+    return data.reduce((a, b) => a + b, 0);
+  })
+  .add('for...of', () => {
+    let sum = 0;
+    for (const n of data) sum += n;
+    return sum;
+  });
+
+await bench.run();
+
+console.table(bench.table());
+```
+
+### 视觉回归测试：Playwright Screenshot
+
+```typescript
+// visual-regression.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('homepage visual regression', async ({ page }) => {
+  await page.goto('/');
+  // 等待关键字体与动画稳定
+  await page.waitForLoadState('networkidle');
+  await expect(page).toHaveScreenshot('homepage.png', {
+    maxDiffPixels: 100,
+    mask: [page.locator('[data-testid="timestamp"]')], // 掩码动态内容
+  });
+});
+```
+
 ## 权威参考链接
 
 | 资源 | 类型 | 链接 |
@@ -206,6 +253,10 @@ await provider.finalize();
 | k6 Load Testing | 工具 | [k6.io](https://k6.io) |
 | Cypress Docs | 文档 | [docs.cypress.io](https://docs.cypress.io) |
 | Storybook Testing | 文档 | [storybook.js.org/docs/writing-tests](https://storybook.js.org/docs/writing-tests) |
+| tinybench | 仓库 | [github.com/tinylibs/tinybench](https://github.com/tinylibs/tinybench) — 现代基准测试库 |
+| Lighthouse CI | 文档 | [github.com/GoogleChrome/lighthouse-ci](https://github.com/GoogleChrome/lighthouse-ci) — 性能回归持续集成 |
+| Playwright Visual Comparisons | 文档 | [playwright.dev/docs/test-snapshots](https://playwright.dev/docs/test-snapshots) |
+| k6 Documentation | 文档 | [grafana.com/docs/k6/latest/](https://grafana.com/docs/k6/latest/) |
 
 ## 相关索引
 

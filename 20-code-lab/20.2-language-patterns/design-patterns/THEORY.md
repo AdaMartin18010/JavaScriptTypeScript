@@ -357,6 +357,207 @@ Observer ↔ 轮询
 - async/await 是 Coroutine 模式的语法糖
 - EventEmitter 是 Observer 的异步变体
 
+## 代码示例：可运行的经典模式实现
+
+### 策略模式（高阶函数实现）
+
+```typescript
+// strategy-pattern.ts — 运行时算法切换
+
+type PaymentStrategy = (amount: number) => { method: string; fee: number };
+
+const creditCard: PaymentStrategy = (amount) => ({
+  method: 'CreditCard',
+  fee: amount * 0.025,
+});
+
+const paypal: PaymentStrategy = (amount) => ({
+  method: 'PayPal',
+  fee: amount * 0.029 + 0.30,
+});
+
+const crypto: PaymentStrategy = (amount) => ({
+  method: 'Crypto',
+  fee: amount * 0.005,
+});
+
+class PaymentContext {
+  constructor(private strategy: PaymentStrategy) {}
+
+  setStrategy(strategy: PaymentStrategy) {
+    this.strategy = strategy;
+  }
+
+  checkout(amount: number) {
+    const result = this.strategy(amount);
+    console.log(`Paid $${amount} via ${result.method}, fee: $${result.fee.toFixed(2)}`);
+    return result;
+  }
+}
+
+// 使用
+const cart = new PaymentContext(creditCard);
+cart.checkout(100);       // CreditCard
+cart.setStrategy(paypal);
+cart.checkout(100);       // PayPal
+```
+
+### 观察者模式（TypeScript + 类型安全事件）
+
+```typescript
+// observer-pattern.ts — 类型安全的发布-订阅
+
+type EventMap = { [key: string]: unknown };
+
+class TypedEventEmitter<Events extends EventMap> {
+  private listeners: { [K in keyof Events]?: Array<(payload: Events[K]) => void> } = {};
+
+  on<K extends keyof Events>(event: K, listener: (payload: Events[K]) => void): () => void {
+    if (!this.listeners[event]) this.listeners[event] = [];
+    this.listeners[event]!.push(listener);
+    return () => {
+      this.listeners[event] = this.listeners[event]!.filter((l) => l !== listener);
+    };
+  }
+
+  emit<K extends keyof Events>(event: K, payload: Events[K]) {
+    this.listeners[event]?.forEach((l) => l(payload));
+  }
+}
+
+// 使用
+interface AppEvents {
+  userLogin: { userId: string; timestamp: number };
+  dataChange: { table: string; rowId: number };
+}
+
+const bus = new TypedEventEmitter<AppEvents>();
+
+const unsub = bus.on('userLogin', ({ userId }) => {
+  console.log(`User ${userId} logged in`);
+});
+
+bus.emit('userLogin', { userId: 'u42', timestamp: Date.now() });
+unsub();
+```
+
+### 命令模式（支持撤销）
+
+```typescript
+// command-pattern.ts — 命令队列与撤销栈
+
+interface Command<T> {
+  execute(): T;
+  undo(): T;
+}
+
+class SetValueCommand implements Command<string> {
+  private prevValue: string;
+
+  constructor(private target: { value: string }, private newValue: string) {
+    this.prevValue = target.value;
+  }
+
+  execute() {
+    this.target.value = this.newValue;
+    return this.target.value;
+  }
+
+  undo() {
+    this.target.value = this.prevValue;
+    return this.target.value;
+  }
+}
+
+class CommandHistory {
+  private history: Command<unknown>[] = [];
+  private index = -1;
+
+  execute<T>(cmd: Command<T>): T {
+    this.history = this.history.slice(0, this.index + 1);
+    this.history.push(cmd);
+    this.index++;
+    return cmd.execute();
+  }
+
+  undo(): unknown | undefined {
+    if (this.index < 0) return undefined;
+    const cmd = this.history[this.index];
+    this.index--;
+    return cmd.undo();
+  }
+
+  redo(): unknown | undefined {
+    if (this.index >= this.history.length - 1) return undefined;
+    this.index++;
+    return this.history[this.index].execute();
+  }
+}
+
+// 使用
+const state = { value: 'initial' };
+const history = new CommandHistory();
+
+history.execute(new SetValueCommand(state, 'first'));
+history.execute(new SetValueCommand(state, 'second'));
+console.log(state.value); // 'second'
+history.undo();
+console.log(state.value); // 'first'
+history.redo();
+console.log(state.value); // 'second'
+```
+
+### 装饰器模式（透明包装）
+
+```typescript
+// decorator-pattern.ts — 运行时行为增强
+
+interface DataSource {
+  write(data: string): void;
+  read(): string;
+}
+
+class FileDataSource implements DataSource {
+  constructor(private filename: string) {}
+  private content = '';
+  write(data: string) { this.content = data; }
+  read() { return this.content; }
+}
+
+class EncryptionDecorator implements DataSource {
+  constructor(private wrappee: DataSource) {}
+
+  write(data: string) {
+    const encrypted = btoa(data); // 简化加密
+    this.wrappee.write(encrypted);
+  }
+
+  read() {
+    const encrypted = this.wrappee.read();
+    try { return atob(encrypted); } catch { return encrypted; }
+  }
+}
+
+class CompressionDecorator implements DataSource {
+  constructor(private wrappee: DataSource) {}
+
+  write(data: string) {
+    const compressed = data.replace(/(.)+/g, (m, c) => m.length + c); // RLE 简化
+    this.wrappee.write(compressed);
+  }
+
+  read() {
+    const compressed = this.wrappee.read();
+    return compressed.replace(/(\d+)(.)/g, (_, n, c) => c.repeat(Number(n)));
+  }
+}
+
+// 使用：压缩 + 加密 + 文件存储
+const source = new EncryptionDecorator(new CompressionDecorator(new FileDataSource('data.txt')));
+source.write('aaaabbbcc');
+console.log(source.read()); // 'aaaabbbcc'
+```
+
 ## 6. 参考文献
 
 ### 6.1 经典著作
@@ -375,6 +576,13 @@ Observer ↔ 轮询
 - [Refactoring.Guru - Design Patterns](https://refactoring.guru/design-patterns) - 交互式设计模式教程
 - [SourceMaking - Design Patterns](https://sourcemaking.com/design_patterns) - 设计模式与反模式参考
 - [SOLID Principles](https://en.wikipedia.org/wiki/SOLID) - SOLID 原则维基百科
+- [GoF Design Patterns — SourceMaking](https://sourcemaking.com/design_patterns)
+- [Martin Fowler — Patterns of Enterprise Application Architecture](https://martinfowler.com/eaaCatalog/)
+- [Christopher Alexander — A Pattern Language](https://en.wikipedia.org/wiki/A_Pattern_Language)
+- [Microsoft — Design Patterns in .NET](https://learn.microsoft.com/en-us/dotnet/architecture/maui/mvvm)
+- [Angular — Dependency Injection Pattern](https://angular.io/guide/dependency-injection)
+- [React — Composition vs Inheritance](https://reactjs.org/docs/composition-vs-inheritance.html)
+- [MDN — Inheritance and the prototype chain](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain)
 
 ---
 
@@ -384,7 +592,7 @@ Observer ↔ 轮询
 
 - `index.ts`
 
-> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
+> **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
 
 ## 核心理论深化
 
@@ -405,4 +613,4 @@ Observer ↔ 轮询
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+> **理论深化更新：2026-04-27**

@@ -202,6 +202,51 @@ console.log(`Period of 7^x mod 15 = ${period}`);
 // 若 r 为偶数，可计算 gcd(a^(r/2) ± 1, N) 得到因子
 ```
 
+### Deutsch-Jozsa 算法模拟
+
+```typescript
+// deutsch-jozsa.ts — 判断函数是常数还是平衡
+function deutschJozsa(n: number, f: (x: number) => number): 'constant' | 'balanced' {
+  const N = 2 ** n;
+  // 初始化为 |0...0⟩，最后一位为 |1⟩
+  let amps: [number, number][] = new Array(N).fill([0, 0]);
+  amps[0] = [1 / Math.sqrt(N / 2), 0];
+  amps[N - 1] = [1 / Math.sqrt(N / 2), 0];
+
+  // 量子 Oracle 查询（模拟）
+  let sum = 0;
+  for (let x = 0; x < N; x++) {
+    sum += (-1) ** f(x);
+  }
+
+  // 若所有 f(x) 相同，sum = ±N；否则 sum = 0
+  return Math.abs(sum) === N ? 'constant' : 'balanced';
+}
+
+// 测试常数函数 f(x)=0
+console.log(deutschJozsa(2, () => 0)); // 'constant'
+
+// 测试平衡函数 f(x)=x % 2
+console.log(deutschJozsa(2, x => x % 2)); // 'balanced'
+```
+
+### 量子噪声与退相干模拟
+
+```typescript
+// noise-model.ts — 简化的退极化噪声
+function depolarize(qubit: Qubit, p: number): Qubit {
+  // 以概率 p 施加随机 Pauli 噪声（简化：仅翻转振幅符号）
+  if (Math.random() < p) {
+    return new Qubit([-qubit.alpha[0], -qubit.alpha[1]], qubit.beta);
+  }
+  return qubit;
+}
+
+// 在 Grover 迭代中注入噪声观察性能衰减
+const noisyAmps = simulateGrover(3, 5); // 8 元素搜索
+console.log('Noisy search result:', noisyAmps);
+```
+
 ## 权威参考链接
 
 | 资源 | 类型 | 链接 |
@@ -221,6 +266,8 @@ console.log(`Period of 7^x mod 15 = ${period}`);
 | arXiv quant-ph | 论文预印本 | [arxiv.org/list/quant-ph/recent](https://arxiv.org/list/quant-ph/recent) |
 | Google Quantum AI Publications | 论文 | [ai.google/discover/quantum-ai](https://ai.google/discover/quantum-ai/) |
 | Quantum Algorithm Zoo | 算法目录 | [quantumalgorithmzoo.org](https://quantumalgorithmzoo.org/) |
+| Qiskit GitHub | 开源 | [github.com/Qiskit](https://github.com/Qiskit) |
+| PennyLane GitHub | 开源 | [github.com/PennyLaneAI/pennylane](https://github.com/PennyLaneAI/pennylane) |
 
 ## 关联模块
 

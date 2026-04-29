@@ -137,6 +137,75 @@ const escaped = RegExp.escape(userInput); // "\\[hello\\]"
 const regex = new RegExp(escaped);
 ```
 
+### matchAll 迭代器提取
+
+```javascript
+// 提取 Markdown 中所有链接的文本与 URL
+const markdown = '[Google](https://google.com) and [GitHub](https://github.com)';
+const linkRegex = /\[(?<text>[^\]]+)\]\((?<url>https?:\/\/[^\s)]+)\)/g;
+
+for (const match of markdown.matchAll(linkRegex)) {
+  console.log(match.groups.text, '→', match.groups.url);
+}
+// Google → https://google.com
+// GitHub → https://github.com
+```
+
+### 多行日志解析（flags: gm）
+
+```javascript
+const logLines = `
+2026-04-29 10:00:01 [INFO] Server started on port 3000
+2026-04-29 10:00:05 [ERROR] Database connection failed
+2026-04-29 10:00:06 [WARN] Retrying connection...
+`;
+
+const logPattern = /^(?<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \[(?<level>\w+)\] (?<message>.+)$/gm;
+
+const entries = [...logLines.matchAll(logPattern)].map(m => m.groups);
+console.log(entries);
+// [
+//   { timestamp: '2026-04-29 10:00:01', level: 'INFO', message: 'Server started on port 3000' },
+//   { timestamp: '2026-04-29 10:00:05', level: 'ERROR', message: 'Database connection failed' },
+//   { timestamp: '2026-04-29 10:00:06', level: 'WARN', message: 'Retrying connection...' }
+// ]
+```
+
+### 粘附标志 `y`（Sticky）与 `lastIndex`
+
+```javascript
+// 分词器场景：从当前位置精确匹配
+const tokenizer = /\d+|\w+|\S/guy; // u = unicode, y = sticky
+const input = '42 apples @ $5';
+
+const tokens = [];
+while (tokenizer.lastIndex < input.length) {
+  const match = tokenizer.exec(input);
+  if (match) {
+    tokens.push(match[0]);
+  } else {
+    tokenizer.lastIndex++; // 跳过无法匹配的字符
+  }
+}
+console.log(tokens); // ['42', 'apples', '@', '$', '5']
+```
+
+### 使用 `replace` 与回调函数转换
+
+```javascript
+// 将 camelCase 转为 kebab-case
+const camelCase = 'backgroundColor';
+const kebab = camelCase.replace(/[A-Z]/g, (match, offset) =>
+  offset === 0 ? match.toLowerCase() : '-' + match.toLowerCase()
+);
+console.log(kebab); // 'background-color'
+
+// 隐藏手机号中间四位
+const phone = '13800138000';
+const masked = phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+console.log(masked); // '138****8000'
+```
+
 ---
 
 ## 参考链接
@@ -147,6 +216,14 @@ const regex = new RegExp(escaped);
 - [ECMAScript RegExp Proposal — `RegExp.escape`](https://github.com/tc39/proposal-regex-escaping)
 - [Unicode Property Escapes (ES2018)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Unicode_character_class_escape)
 - [PCRE Regex Cheatsheet](https://www.debuggex.com/cheatsheet/regex/pcre)
+- [V8 Blog — RegExp Unicode Property Escapes](https://v8.dev/features/regexp-unicode-property-escapes)
+- [TC39 — ECMAScript Proposals](https://tc39.es/proposals/)
+- [Google RE2 Syntax](https://github.com/google/re2/wiki/Syntax)
+- [RexEgg — Regex Tutorial](https://www.rexegg.com/)
+- [Regular-Expressions.info](https://www.regular-expressions.info/)
+- [MDN — String.prototype.matchAll](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/matchAll)
+- [MDN — Sticky Flag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/sticky)
+- [Node.js — util.parseArgs (Pattern Matching)](https://nodejs.org/api/util.html#utilparseargsconfig)
 
 ---
 

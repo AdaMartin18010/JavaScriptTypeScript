@@ -153,14 +153,230 @@ const { data: user } = await api.get<{ id: string; name: string }>('/users/me');
 const { data: created } = await api.post<{ id: string }>('/projects', { name: 'New Project' });
 ```
 
-### 3.3 常见误区
+### 3.3 代码示例：拦截器与请求/响应转换
+
+```typescript
+// 拦截器类型定义
+interface RequestInterceptor {
+  onRequest?: (config: RequestInit & { url: string }) => RequestInit & { url: string } | Promise<RequestInit & { url: string }>;
+  onRequestError?: (error: Error) => Error | Promise<Error>;
+}
+
+interface ResponseInterceptor<T = unknown> {
+  onResponse?: (response: ApiResponse<T>) => ApiResponse<T> | Promise<ApiResponse<T>>;
+  onResponseError?: (error: ApiError) => ApiError | Promise<ApiError>;
+}
+
+class HttpClientWithInterceptors extends HttpClient {
+  private requestInterceptors: RequestInterceptor[] = [];
+  private responseInterceptors: ResponseInterceptor[] = [];
+
+  addRequestInterceptor(interceptor: RequestInterceptor): () => void {
+    this.requestInterceptors.push(interceptor);
+    return () => {
+      const idx = this.requestInterceptors.indexOf(interceptor);
+      if (idx !== -1) this.requestInterceptors.splice(idx, 1);
+    };
+  }
+
+  addResponseInterceptor<T>(interceptor: ResponseInterceptor<T>): () => void {
+    this.responseInterceptors.push(interceptor as ResponseInterceptor);
+    return () => {
+      const idx = this.responseInterceptors.indexOf(interceptor as ResponseInterceptor);
+      if (idx !== -1) this.responseInterceptors.splice(idx, 1);
+    };
+  }
+
+  async request<T>(path: string, options: RequestInit & { timeout?: number } = {}): Promise<ApiResponse<T>> {
+    let config: RequestInit & { url: string } = { ...options, url: path };
+
+    // 请求拦截器
+    for (const interceptor of this.requestInterceptors) {
+      try {
+        if (interceptor.onRequest) {
+          config = await interceptor.onRequest(config);
+        }
+      } catch (err) {
+        if (interceptor.onRequestError) {
+          throw await interceptor.onRequestError(err as Error);
+        }
+        throw err;
+      }
+    }
+
+    try {
+      const response = await super.request<T>(config.url, config);
+
+      // 响应拦截器
+      let result = response;
+      for (const interceptor of this.responseInterceptors) {
+        if (interceptor.onResponse) {
+          result = await interceptor.onResponse(result);
+        }
+      }
+      return result;
+    } catch (err) {
+      const apiError = err as ApiError;
+      for (const interceptor of this.responseInterceptors) {
+        if (interceptor.onResponseError) {
+          throw await interceptor.onResponseError(apiError);
+        }
+      }
+      throw err;
+    }
+  }
+}
+
+// 使用拦截器实现自动 token 刷新
+const client = new HttpClientWithInterceptors('https://api.example.com');
+
+client.addRequestInterceptor({
+  onRequest: async (config) => {
+    const token = await getAccessToken();
+    config.headers = {
+      ...config.headers,
+      Authorization: `Bearer ${token}`,
+    };
+    return config;
+  },
+});
+
+client.addResponseInterceptor({
+  onResponseError: async (error) => {
+    if (error.status === 401) {
+      await refreshToken();
+      // 可在此处实现自动重试
+    }
+    return error;
+  },
+});
+```
+
+### 3.4 代码示例：指数退避重试
+
+```typescript
+// retry.ts — 指数退避重试策略
+interface RetryConfig {
+  maxRetries?: number;
+  baseDelayMs?: number;
+  maxDelayMs?: number;
+  retryableStatuses?: number[];
+  onRetry?: (attempt: number, error: Error, delay: number) => void;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function calculateDelay(attempt: number, baseDelay: number, maxDelay: number): number {
+  // 指数退避 + 随机抖动
+  const exponential = baseDelay * Math.pow(2, attempt);
+  const jitter = Math.random() * baseDelay;
+  return Math.min(exponential + jitter, maxDelay);
+}
+
+async function fetchWithRetry<T>(
+  operation: () => Promise<T>,
+  config: RetryConfig = {}
+): Promise<T> {
+  const {
+    maxRetries = 3,
+    baseDelayMs = 300,
+    maxDelayMs = 10000,
+    retryableStatuses = [408, 429, 500, 502, 503, 504],
+    onRetry,
+  } = config;
+
+  let lastError: Error | undefined;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (err) {
+      lastError = err as Error;
+      const apiErr = err as ApiError;
+
+      // 不可重试的状态码直接抛出
+      if (apiErr.status && !retryableStatuses.includes(apiErr.status)) {
+        throw err;
+      }
+
+      if (attempt >= maxRetries) break;
+
+      const delay = calculateDelay(attempt, baseDelayMs, maxDelayMs);
+      onRetry?.(attempt + 1, lastError, delay);
+      await sleep(delay);
+    }
+  }
+
+  throw lastError ?? new Error('Max retries exceeded');
+}
+
+// 在 HttpClient 中集成重试
+class ResilientHttpClient extends HttpClient {
+  constructor(
+    baseURL: string,
+    private retryConfig: RetryConfig = {},
+    headers?: Record<string, string>
+  ) {
+    super(baseURL, headers);
+  }
+
+  async request<T>(path: string, options: RequestInit & { timeout?: number } = {}): Promise<ApiResponse<T>> {
+    return fetchWithRetry(() => super.request<T>(path, options), this.retryConfig);
+  }
+}
+```
+
+### 3.5 代码示例：请求去重（Deduplication）
+
+```typescript
+// dedupe.ts — 相同并发请求去重
+class DedupeFetch {
+  private inflight = new Map<string, Promise<unknown>>();
+
+  async fetch<T>(key: string, operation: () => Promise<T>): Promise<T> {
+    const existing = this.inflight.get(key);
+    if (existing) {
+      return existing as Promise<T>;
+    }
+
+    const promise = operation().finally(() => {
+      this.inflight.delete(key);
+    });
+
+    this.inflight.set(key, promise);
+    return promise;
+  }
+
+  clear(): void {
+    this.inflight.clear();
+  }
+}
+
+// React Hook 中使用
+function useDedupedApi<T>(fetcher: () => Promise<T>, deps: unknown[]) {
+  const dedupeRef = useRef(new DedupeFetch());
+  const [data, setData] = useState<T | null>(null);
+
+  useEffect(() => {
+    dedupeRef.current.fetch(JSON.stringify(deps), fetcher).then(setData);
+  }, deps);
+
+  return data;
+}
+```
+
+### 3.6 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | 封装 fetch 就是 API 客户端 | 完整的客户端需要错误处理、重试、取消 |
 | HTTP 错误会自动抛出异常 | fetch 仅在网络故障时 reject |
+| 所有请求都应该重试 | 4xx 客户端错误通常不应重试 |
+| 拦截器顺序不重要 | 拦截器按注册顺序执行，顺序影响结果 |
 
-### 3.4 扩展阅读
+### 3.7 扩展阅读
 
 - [Fetch API 规范](https://fetch.spec.whatwg.org/)
 - [MDN：使用 Fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch)
@@ -169,6 +385,26 @@ const { data: created } = await api.post<{ id: string }>('/projects', { name: 'N
 - [ofetch (unjs) 文档](https://github.com/unjs/ofetch)
 - [ky 文档](https://github.com/sindresorhus/ky)
 - `30-knowledge-base/30.5-networking`
+
+---
+
+## 四、权威参考
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| Fetch Standard (WHATWG) | 规范 | [fetch.spec.whatwg.org](https://fetch.spec.whatwg.org/) |
+| XMLHttpRequest Standard | 规范 | [xhr.spec.whatwg.org](https://xhr.spec.whatwg.org/) |
+| HTTP Semantics (RFC 9110) | RFC | [datatracker.ietf.org/doc/html/rfc9110](https://datatracker.ietf.org/doc/html/rfc9110) |
+| RESTful API Design (Microsoft) | 指南 | [learn.microsoft.com/en-us/azure/architecture/best-practices/api-design](https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design) |
+| MDN: Fetch API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Fetch_API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) |
+| MDN: AbortController | 文档 | [developer.mozilla.org/en-US/docs/Web/API/AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) |
+| MDN: Streams API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Streams_API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API) |
+| Axios GitHub | 源码 | [github.com/axios/axios](https://github.com/axios/axios) |
+| ofetch (unjs) | 源码 | [github.com/unjs/ofetch](https://github.com/unjs/ofetch) |
+| ky (Sindre Sorhus) | 源码 | [github.com/sindresorhus/ky](https://github.com/sindresorhus/ky) |
+| TanStack Query | 文档 | [tanstack.com/query/latest](https://tanstack.com/query/latest) — 数据获取与缓存 |
+| SWR (Vercel) | 文档 | [swr.vercel.app](https://swr.vercel.app/) — React 数据获取 |
+| HTTP Cache RFC 9111 | RFC | [datatracker.ietf.org/doc/html/rfc9111](https://datatracker.ietf.org/doc/html/rfc9111) |
 
 ---
 

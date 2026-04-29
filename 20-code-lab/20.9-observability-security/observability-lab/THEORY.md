@@ -134,7 +134,139 @@ async function getUserWithOrders(userId: string) {
 }
 ```
 
-## 5. SRE 黄金指标
+## 5. 结构化日志与关联追踪
+
+### 5.1 Pino 结构化日志
+
+```typescript
+// logger.ts — 高性能结构化日志
+import pino from 'pino';
+
+const logger = pino({
+  level: process.env.LOG_LEVEL || 'info',
+  base: { service: 'payment-service', version: '1.2.0' },
+  formatters: {
+    level(label) {
+      return { level: label.toUpperCase() };
+    },
+  },
+  // 开发环境美化输出，生产环境 JSON
+  transport: process.env.NODE_ENV === 'development'
+    ? { target: 'pino-pretty', options: { colorize: true } }
+    : undefined,
+});
+
+// 使用时自动包含 trace_id（通过 AsyncLocalStorage 或 OpenTelemetry 上下文）
+import { context, trace } from '@opentelemetry/api';
+
+function getContextualLogger() {
+  const span = trace.getSpan(context.active());
+  const traceId = span?.spanContext().traceId;
+  return traceId ? logger.child({ trace_id: traceId }) : logger;
+}
+
+// 使用示例
+getContextualLogger().info({ userId: '123', amount: 99.99 }, 'Payment processed');
+// 输出: {"level":"INFO","time":1714392000000,"service":"payment-service","trace_id":"abc...","userId":"123","amount":99.99,"msg":"Payment processed"}
+```
+
+## 6. Prometheus 指标采集
+
+```typescript
+// metrics.ts — Prometheus 客户端指标
+import { Counter, Histogram, Registry, collectDefaultMetrics } from 'prom-client';
+
+const register = new Registry();
+collectDefaultMetrics({ register });
+
+// 计数器：只增不减（请求数、错误数）
+const httpRequestsTotal = new Counter({
+  name: 'http_requests_total',
+  help: 'Total HTTP requests',
+  labelNames: ['method', 'route', 'status_code'],
+  registers: [register],
+});
+
+// 直方图：分布采样（延迟、请求体大小）
+const httpRequestDuration = new Histogram({
+  name: 'http_request_duration_seconds',
+  help: 'HTTP request duration in seconds',
+  labelNames: ['method', 'route'],
+  buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
+  registers: [register],
+});
+
+// 在 Express/Fastify 中间件中使用
+function metricsMiddleware(req: Request, res: Response, next: NextFunction) {
+  const start = process.hrtime.bigint();
+
+  res.on('finish', () => {
+    const duration = Number(process.hrtime.bigint() - start) / 1e9; // 转秒
+    const route = req.route?.path || req.path;
+
+    httpRequestsTotal.inc({
+      method: req.method,
+      route,
+      status_code: res.statusCode.toString(),
+    });
+
+    httpRequestDuration.observe({ method: req.method, route }, duration);
+  });
+
+  next();
+}
+
+// /metrics 端点供 Prometheus 抓取
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
+});
+```
+
+## 7. 告警规则与 SLO
+
+### 7.1 Prometheus Alertmanager 规则
+
+```yaml
+# alerts.yml — 基于 Prometheus 的告警规则
+groups:
+  - name: api-alerts
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status_code=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total[5m]))
+          ) > 0.01
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on {{ $labels.route }}"
+          description: "Error rate is {{ $value | humanizePercentage }} over 5m"
+
+      - alert: HighLatencyP95
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route)
+          ) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "P95 latency exceeds 500ms on {{ $labels.route }}"
+
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+```
+
+### 7.2 SRE 黄金指标
 
 | 指标 | 定义 | 告警阈值示例 |
 |------|------|-------------|
@@ -143,7 +275,55 @@ async function getUserWithOrders(userId: string) {
 | **Errors** | 错误率 | 比例 > 0.1% |
 | **Saturation** | 资源利用率 | CPU > 80% |
 
-## 6. AI 可观测性
+## 8. OpenTelemetry Collector 配置
+
+```yaml
+# otel-collector-config.yaml
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+  resource:
+    attributes:
+      - key: environment
+        value: production
+        action: upsert
+
+exporters:
+  prometheusremotewrite:
+    endpoint: http://prometheus:9090/api/v1/write
+  otlp/jaeger:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [prometheusremotewrite]
+    traces:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [otlp/jaeger]
+    logs:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [loki]
+```
+
+## 9. AI 可观测性
 
 AI 系统特有的观测需求：
 
@@ -152,13 +332,51 @@ AI 系统特有的观测需求：
 - **模型性能漂移**: 监控模型输出质量随时间的变化
 - **幻觉检测**: 通过 RAG 检索命中率评估回答可信度
 
-## 7. 与相邻模块的关系
+### 9.1 LLM 调用观测示例
+
+```typescript
+// ai-observability.ts
+import { trace } from '@opentelemetry/api';
+
+const tracer = trace.getTracer('ai-service');
+
+async function callLLM(prompt: string, model: string): Promise<string> {
+  return tracer.startActiveSpan('llm.completion', async (span) => {
+    const startTime = Date.now();
+    span.setAttribute('llm.model', model);
+    span.setAttribute('llm.prompt.length', prompt.length);
+
+    const response = await openai.chat.completions.create({
+      model,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const latency = Date.now() - startTime;
+    const usage = response.usage;
+
+    span.setAttribute('llm.completion.length', response.choices[0].message.content?.length || 0);
+    span.setAttribute('llm.tokens.input', usage?.prompt_tokens || 0);
+    span.setAttribute('llm.tokens.output', usage?.completion_tokens || 0);
+    span.setAttribute('llm.tokens.total', usage?.total_tokens || 0);
+    span.setAttribute('llm.latency_ms', latency);
+
+    // 估算成本（GPT-4 定价）
+    const cost = (usage?.prompt_tokens || 0) * 0.03 + (usage?.completion_tokens || 0) * 0.06;
+    span.setAttribute('llm.cost_usd', cost / 1000);
+
+    span.end();
+    return response.choices[0].message.content || '';
+  });
+}
+```
+
+## 10. 与相邻模块的关系
 
 - **74-observability**: 可观测性的基础概念与工具
 - **94-ai-agent-lab**: Agent 执行过程的追踪与调试
 - **17-debugging-monitoring**: 调试技术与监控策略
 
-## 8. 权威参考与外部链接
+## 11. 权威参考与外部链接
 
 | 资源 | 描述 | 链接 |
 |------|------|------|
@@ -170,3 +388,14 @@ AI 系统特有的观测需求：
 | **Grafana Labs** | 可观测性平台 | [grafana.com](https://grafana.com/) |
 | **Honeycomb Docs** | 高基数可观测性 | [docs.honeycomb.io](https://docs.honeycomb.io/) |
 | **eBPF 可观测性** | Linux 内核可观测性技术 | [ebpf.io](https://ebpf.io/) |
+| **Pino Logger** | 高性能 Node.js 日志库 | [github.com/pinojs/pino](https://github.com/pinojs/pino) |
+| **OpenTelemetry Collector** | 遥测数据收集与处理代理 | [opentelemetry.io/docs/collector](https://opentelemetry.io/docs/collector/) |
+| **Prometheus Alerting** | 告警规则与通知 | [prometheus.io/docs/alerting](https://prometheus.io/docs/alerting/latest/overview/) |
+| **Grafana Alerting** | Grafana 统一告警 | [grafana.com/docs/alerting](https://grafana.com/docs/alerting/latest/) |
+| **CNCF Observability Whitepaper** | 云原生可观测性白皮书 | [github.com/cncf/tag-observability](https://github.com/cncf/tag-observability/blob/main/whitepaper.md) |
+| **Distributed Systems Observability** | Cindy Sridharan 著作 | [distributed-systems-observability.com](https://distributed-systems-observability.com/) |
+| **SLO 与 SLI 最佳实践** | Google SRE Workbook | [sre.google/workbook/implementing-slos](https://sre.google/workbook/implementing-slos/) |
+
+---
+
+> 📅 理论深化更新：2026-04-29

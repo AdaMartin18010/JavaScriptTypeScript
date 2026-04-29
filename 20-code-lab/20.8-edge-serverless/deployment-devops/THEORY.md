@@ -23,6 +23,35 @@
 | **AWS CDK** | 编程式 | AWS 专属，TypeScript 友好 |
 | **Ansible** | 命令式 | 服务器配置管理 |
 
+### Terraform CDK for TypeScript（CDKTF）
+
+```typescript
+// cdktf-stack.ts — 用 TypeScript 定义 Terraform 基础设施
+import { Construct } from 'constructs';
+import { App, TerraformStack, TerraformOutput } from 'cdktf';
+import { AwsProvider, ec2 } from '@cdktf/provider-aws';
+
+class MyStack extends TerraformStack {
+  constructor(scope: Construct, id: string) {
+    super(scope, id);
+
+    new AwsProvider(this, 'AWS', { region: 'us-east-1' });
+
+    const instance = new ec2.Instance(this, 'Compute', {
+      ami: 'ami-0123456789abcdef0',
+      instanceType: 't3.micro',
+      tags: { Name: 'cdktf-example' },
+    });
+
+    new TerraformOutput(this, 'public_ip', { value: instance.publicIp });
+  }
+}
+
+const app = new App();
+new MyStack(app, 'cdktf-ts-demo');
+app.synth();
+```
+
 ## 3. GitOps
 
 以 Git 为唯一真相来源的部署模式：
@@ -126,6 +155,90 @@ jobs:
             --target-slot production
 ```
 
+### Docker 多阶段构建优化
+
+```dockerfile
+# Dockerfile — 多阶段构建最小化最终镜像
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json .
+RUN npm ci --ignore-scripts
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine AS production
+ENV NODE_ENV=production
+WORKDIR /app
+COPY package*.json .
+RUN npm ci --ignore-scripts --omit=dev && npm cache clean --force
+COPY --from=builder /app/dist ./dist
+USER node
+EXPOSE 3000
+CMD ["node", "dist/main.js"]
+```
+
+### Kubernetes HPA + 滚动更新配置
+
+```yaml
+# k8s-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: myregistry/api:v1.2.3
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-deployment
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+```
+
 ## 6. 容器化
 
 - **Docker**: 应用打包标准
@@ -151,3 +264,13 @@ jobs:
 | **AWS Well-Architected** | 云架构最佳实践框架 | [aws.amazon.com/architecture/well-architected](https://aws.amazon.com/architecture/well-architected/) |
 | **Google SRE Book** | 站点可靠性工程经典 | [sre.google/sre-book/table-of-contents](https://sre.google/sre-book/table-of-contents/) |
 | **DORA Metrics** | DevOps 研究与评估指标 | [cloud.google.com/blog/products/devops-sre](https://cloud.google.com/blog/products/devops-sre/) |
+| **Dockerfile Best Practices** | 官方构建优化指南 | [docs.docker.com/develop/dev-best-practices](https://docs.docker.com/develop/dev-best-practices/) |
+| **Pulumi Documentation** | 编程式 IaC | [pulumi.com/docs](https://www.pulumi.com/docs/) |
+| **CDK for Terraform** | TypeScript Terraform | [developer.hashicorp.com/terraform/cdktf](https://developer.hashicorp.com/terraform/cdktf) |
+| **CNCF Cloud Native Trail Map** | 云原生技术全景 | [cncf.io/trail-map](https://www.cncf.io/trail-map/) |
+| **Istio Service Mesh Docs** | 服务网格指南 | [istio.io/latest/docs](https://istio.io/latest/docs/) |
+| **GitLab CI/CD Documentation** | 官方流水线文档 | [docs.gitlab.com/ee/ci](https://docs.gitlab.com/ee/ci/) |
+
+---
+
+*最后更新: 2026-04-29*

@@ -154,19 +154,94 @@ console.log('Readonly array: readonly Animal[] 接受 Dog[]');
 console.log('Structural match: Vector2D ≡ Point');
 ```
 
-### 3.2 常见误区
+### 3.2 代码示例：条件类型与子类型推导
+
+```typescript
+// conditional-subtyping.ts
+
+type IsSubType<S, T> = S extends T ? true : false;
+
+type Tests = [
+  IsSubType<Dog, Animal>,           // true
+  IsSubType<Animal, Dog>,           // false
+  IsSubType<{x:1}, {x:number}>,     // true (深度子类型)
+  IsSubType<string, string | number> // true (联合类型超集)
+];
+
+// 分配性条件类型：裸类型参数触发分配律
+type ToArray<T> = T extends any ? T[] : never;
+type R1 = ToArray<string | number>; // string[] | number[]
+
+// 包装后阻止分配
+type ToArrayNonDist<T> = [T] extends [any] ? T[] : never;
+type R2 = ToArrayNonDist<string | number>; // (string | number)[]
+```
+
+### 3.3 代码示例：Tuple 子类型与变长参数
+
+```typescript
+// tuple-subtyping.ts
+
+type Point2D = [number, number];
+type Point3D = [number, number, number];
+
+// Tuple 长度固定，因此 Point3D 不是 Point2D 的子类型
+const p3: Point3D = [1, 2, 3];
+// const p2: Point2D = p3; // ❌ Error: 目标需要 2 个元素，但源有 3 个
+
+// 函数 rest 参数的协变特性
+function drawPoint2D(...coords: Point2D) { }
+function drawPoint3D(...coords: Point3D) { }
+
+// drawPoint3D = drawPoint2D; // ✅ 参数更少，更抽象，可安全替换
+// drawPoint2D = drawPoint3D; // ❌ 参数更多，可能访问不存在的索引
+```
+
+### 3.4 代码示例：Mapped Types 与方差
+
+```typescript
+// mapped-variance.ts
+
+interface Box<T> {
+  value: T;
+}
+
+// 默认不变
+type BoxAnimal = Box<Animal>;
+type BoxDog = Box<Dog>;
+
+// const ba: BoxAnimal = {} as BoxDog; // ❌ 不变
+
+// 显式协变映射
+type ReadonlyBox<out T> = { readonly value: T };
+const rbDog: ReadonlyBox<Dog> = { value: dog };
+const rbAnimal: ReadonlyBox<Animal> = rbDog; // ✅ 协变安全
+
+// 显式逆变映射
+type ListenerBox<in T> = { listen: (value: T) => void };
+const lbAnimal: ListenerBox<Animal> = { listen: (a) => console.log(a.name) };
+const lbDog: ListenerBox<Dog> = lbAnimal; // ✅ 逆变安全
+```
+
+### 3.5 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | TypeScript 使用名义类型 | TS 是结构类型系统，不依赖声明名称 |
 | 数组是协变的 | 数组在可变位置是不变的，只读数组才是协变的 |
+| 泛型参数默认协变 | TS 泛型参数默认不变（invariant），需显式标注 `in`/`out` |
+| 条件类型总是分配 | 仅裸类型参数触发分配性，包装后（如 `[T]`）不分配 |
 
-### 3.3 扩展阅读
+### 3.6 扩展阅读
 
 - [TAPL: Chapter 15 — Subtyping](https://www.cis.upenn.edu/~bcpierce/tapl/)
+- [TAPL: Chapter 16 — Metatheory of Subtyping](https://www.cis.upenn.edu/~bcpierce/tapl/)
 - [TypeScript Handbook: Generics — Variance](https://www.typescriptlang.org/docs/handbook/2/generics.html)
+- [TypeScript Handbook: Structural Type System](https://www.typescriptlang.org/docs/handbook/type-compatibility.html)
 - [Scala Variance Overview](https://docs.scala-lang.org/tour/variances.html)
 - [Cook & Cardelli: A Denotational Semantics of Inheritance](https://doi.org/10.1145/96709.96721)
+- [Microsoft — TypeScript Type Compatibility](https://www.typescriptlang.org/docs/handbook/type-compatibility.html)
+- [TypeScript Deep Dive — Type System](https://basarat.gitbook.io/typescript/type-system)
 - `20.10-formal-verification/type-theory-formal/`
 
 ---

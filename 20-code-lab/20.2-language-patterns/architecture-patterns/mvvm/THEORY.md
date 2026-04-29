@@ -134,6 +134,37 @@ const vm = new TodoViewModel();
 new TodoView(vm);
 ```
 
+**Vue 3 Composition API（现代 MVVM）**
+
+```typescript
+// Vue 3 风格：使用 ref / computed / watch
+import { ref, computed, watch } from 'vue';
+
+function useCounterViewModel() {
+  const count = ref(0);
+  const double = computed(() => count.value * 2);
+
+  function increment() { count.value++; }
+  function decrement() { count.value--; }
+
+  // 副作用自动追踪
+  watch(count, (newVal, oldVal) => {
+    console.log(`Count changed: ${oldVal} → ${newVal}`);
+  });
+
+  return { count, double, increment, decrement };
+}
+
+// View（SFC 模板）
+// <template>
+//   <div>
+//     <p>{{ count }} (Double: {{ double }})</p>
+//     <button @click="decrement">-</button>
+//     <button @click="increment">+</button>
+//   </div>
+// </template>
+```
+
 **React + 自定义 Hook（MVVM 思想）**
 
 ```typescript
@@ -161,6 +192,57 @@ function CounterView() {
 }
 ```
 
+**MobX 响应式（装饰器/可观察对象）**
+
+```typescript
+import { makeAutoObservable, autorun } from 'mobx';
+
+class TodoStore {
+  items: string[] = [];
+  input = '';
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  addItem() {
+    if (!this.input.trim()) return;
+    this.items.push(this.input);
+    this.input = '';
+  }
+
+  removeItem(index: number) {
+    this.items.splice(index, 1);
+  }
+}
+
+const store = new TodoStore();
+
+// 自动追踪依赖并重新执行
+autorun(() => {
+  console.log('Items count:', store.items.length);
+});
+```
+
+**Angular Signals（现代响应式原语）**
+
+```typescript
+import { signal, computed, effect } from '@angular/core';
+
+// 创建 Signal
+const count = signal(0);
+const double = computed(() => count() * 2);
+
+// 副作用
+effect(() => {
+  console.log('Current count:', count());
+});
+
+// 更新
+count.set(5);
+count.update(v => v + 1);
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -173,8 +255,12 @@ function CounterView() {
 
 - [MVVM Pattern — Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/architecture/maui/mvvm)
 - [Vue.js Reactivity Fundamentals](https://vuejs.org/guide/essentials/reactivity-fundamentals.html)
+- [Vue.js Reactivity Deep Dive](https://vuejs.org/guide/extras/reactivity-in-depth.html)
 - [Knockout.js Observables](https://knockoutjs.com/documentation/observables.html)
+- [MobX Documentation](https://mobx.js.org/README.html)
+- [Angular Signals Guide](https://angular.dev/guide/signals)
 - [MDN: MVC Architecture](https://developer.mozilla.org/en-US/docs/Glossary/MVC)
+- [Microsoft WPF Data Binding](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/data/?view=netdesktop-8.0)
 - `20.2-language-patterns/architecture-patterns/`
 
 ---

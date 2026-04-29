@@ -14,6 +14,7 @@
 ### 1.2 形式化基础
 
 设 JS 值空间为 `V`，TS 类型空间为 `T`。语法映射是函数 `⟦·⟧: T → P(V)`（类型的值解释），满足：
+
 - `⟦number⟧ = { v ∈ V | typeof v === 'number' }`
 - `⟦A & B⟧ = ⟦A⟧ ∩ ⟦B⟧`（交集类型对应值集合的交）
 - `⟦A | B⟧ = ⟦A⟧ ∪ ⟦B⟧`（联合类型对应值集合的并）
@@ -122,7 +123,123 @@ const config = {
 // JS: const config = { host: 'localhost', port: 3000 };
 ```
 
-### 3.2 装饰器映射（TS 实验性 vs TC39）
+#### 进阶：泛型约束与条件类型
+
+```typescript
+// 泛型约束映射：TS 编译时检查，JS 完全擦除
+function longest<T extends { length: number }>(a: T, b: T): T {
+  return a.length >= b.length ? a : b;
+}
+// JS: function longest(a, b) { return a.length >= b.length ? a : b; }
+
+const longerString = longest('alice', 'bob');     // ✅ string
+const longerArray = longest([1, 2], [1, 2, 3]);   // ✅ number[]
+// longest(1, 2); // ❌ 编译错误：number 无 length 属性
+
+// 条件类型：仅存在于类型空间
+ type IsString<T> = T extends string ? true : false;
+ type A = IsString<'hello'>;  // true
+ type B = IsString<123>;      // false
+// JS 输出：无任何代码
+
+// infer 关键字：类型级模式匹配
+ type ReturnType<T> = T extends (...args: unknown[]) => infer R ? R : never;
+ type FnReturn = ReturnType<() => string>; // string
+```
+
+#### 进阶：namespace 与模块编译映射
+
+```typescript
+// TS namespace（旧模块组织方式）
+namespace Validation {
+  export interface StringValidator {
+    isAcceptable(s: string): boolean;
+  }
+
+  const lettersRegexp = /^[A-Za-z]+$/;
+
+  export class LettersOnlyValidator implements StringValidator {
+    isAcceptable(s: string) {
+      return lettersRegexp.test(s);
+    }
+  }
+}
+
+// 编译为 JS（IIFE 模式）：
+// var Validation;
+// (function (Validation) {
+//     var lettersRegexp = /^[A-Za-z]+$/;
+//     var LettersOnlyValidator = /** @class */ (function () {
+//         function LettersOnlyValidator() {}
+//         LettersOnlyValidator.prototype.isAcceptable = function (s) {
+//             return lettersRegexp.test(s);
+//         };
+//         return LettersOnlyValidator;
+//     }());
+//     Validation.LettersOnlyValidator = LettersOnlyValidator;
+// })(Validation || (Validation = {}));
+
+// 现代替代方案：ES Module
+// validation.ts
+export interface StringValidator {
+  isAcceptable(s: string): boolean;
+}
+
+const lettersRegexp = /^[A-Za-z]+$/;
+
+export class LettersOnlyValidator implements StringValidator {
+  isAcceptable(s: string) {
+    return lettersRegexp.test(s);
+  }
+}
+// 编译后保留 import/export，需 bundler 处理
+```
+
+### 3.2 枚举（enum）运行时映射详解
+
+```typescript
+// 数字枚举：生成反向映射对象
+enum Status {
+  Pending,    // 0
+  Approved,   // 1
+  Rejected,   // 2
+}
+
+// JS 编译结果：
+// var Status;
+// (function (Status) {
+//     Status[Status["Pending"] = 0] = "Pending";
+//     Status[Status["Approved"] = 1] = "Approved";
+//     Status[Status["Rejected"] = 2] = "Rejected";
+// })(Status || (Status = {}));
+// Status.Pending === 0, Status[0] === 'Pending'
+
+// 字符串枚举：无反向映射
+enum Direction {
+  Up = 'UP',
+  Down = 'DOWN',
+}
+
+// const enum：编译时完全内联，零运行时开销
+const enum Permission {
+  Read = 1,
+  Write = 2,
+  Execute = 4,
+}
+const p = Permission.Read | Permission.Write;
+// JS: const p = 1 | 2;（完全内联，无对象生成）
+
+// 现代替代方案：对象常量 + as const
+const HttpStatus = {
+  OK: 200,
+  NotFound: 404,
+  Error: 500,
+} as const;
+
+type HttpStatusCode = (typeof HttpStatus)[keyof typeof HttpStatus]; // 200 | 404 | 500
+```
+
+### 3.3 装饰器映射（TS 实验性 vs TC39）
 
 ```ts
 // TypeScript 实验装饰器（legacy）
@@ -143,7 +260,79 @@ function logged(target: Function, context: ClassMethodDecoratorContext) {
 }
 ```
 
-### 3.3 常见误区
+#### 进阶：类装饰器与元数据反射
+
+```typescript
+import 'reflect-metadata';
+
+const REQUIRED_KEY = Symbol('required');
+
+// 属性装饰器：标记必填字段
+function Required(target: object, propertyKey: string | symbol) {
+  const existing = Reflect.getMetadata(REQUIRED_KEY, target) || [];
+  Reflect.defineMetadata(REQUIRED_KEY, [...existing, propertyKey], target);
+}
+
+// 类装饰器：运行时验证
+function Validatable<T extends new (...args: any[]) => object>(constructor: T) {
+  return class extends constructor {
+    constructor(...args: any[]) {
+      super(...args);
+      const requiredFields: (string | symbol)[] = Reflect.getMetadata(REQUIRED_KEY, this) || [];
+      for (const key of requiredFields) {
+        if ((this as Record<string | symbol, unknown>)[key] === undefined) {
+          throw new Error(`Required field ${String(key)} is missing`);
+        }
+      }
+    }
+  };
+}
+
+@Validatable
+class User {
+  @Required
+  name!: string;
+
+  @Required
+  email!: string;
+
+  age?: number;
+}
+
+// 编译后装饰器变为对 __decorate 的调用
+// 需 reflect-metadata 库支持（polyfill）
+```
+
+### 3.4 satisfies 关键字深度示例
+
+```typescript
+// satisfies 约束类型但不拓宽推断类型
+const config = {
+  host: 'localhost',
+  port: 3000,
+  ssl: false,
+} satisfies Record<string, string | number | boolean>;
+
+// config.port 推断为 3000（字面量），而非 number
+// 但结构必须满足 Record<string, string | number | boolean>
+
+// 对比：as const vs satisfies
+const routes = {
+  home: '/',
+  about: '/about',
+  contact: '/contact',
+} as const satisfies Record<string, `/${string}`>;
+
+// routes.home 类型为 '/'（字面量）
+// 同时确保所有值都以 '/' 开头
+
+// 错误示例：satisfies 会在编译时捕获
+const badConfig = {
+  host: 123, // ❌ 不满足 Record<string, string | number | boolean>... 实际上满足
+} satisfies Record<string, string>; // ❌ number 不能赋值给 string
+```
+
+### 3.5 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -152,13 +341,16 @@ function logged(target: Function, context: ClassMethodDecoratorContext) {
 | `private` 在运行时是私有的 | TS `private` 仅在编译期检查，运行时仍可访问 |
 | `interface` 会生成代码 | 接口完全擦除，零运行时开销 |
 
-### 3.4 扩展阅读
+### 3.6 扩展阅读
 
 - [TypeScript Handbook: Everyday Types](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html)
 - [TypeScript Handbook: Type Inference](https://www.typescriptlang.org/docs/handbook/type-inference.html)
 - [TypeScript Playground](https://www.typescriptlang.org/play)
 - [AST Explorer: TS vs JS](https://astexplorer.net/)
 - [TypeScript Deep Dive](https://basarat.gitbook.io/typescript/)
+- [TypeScript Compiler Internals](https://github.com/microsoft/TypeScript/wiki/Architectural-Overview) — 编译器架构
+- [TC39 Decorators Proposal](https://github.com/tc39/proposal-decorators) — 装饰器规范
+- [Reflect Metadata Proposal](https://rbuckton.github.io/reflect-metadata/) — 元数据反射 API
 - `10-fundamentals/10.1-language-semantics/`
 
 ---

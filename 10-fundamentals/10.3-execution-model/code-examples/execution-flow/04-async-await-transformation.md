@@ -119,12 +119,139 @@ async function getDashboard() {
 }
 ```
 
+### 6.3 正例：精细化错误处理
+
+```typescript
+interface User {
+  id: string;
+  name: string;
+}
+
+interface Post {
+  id: string;
+  title: string;
+}
+
+async function fetchUserWithFallback(userId: string): Promise<User> {
+  try {
+    const res = await fetch(`/api/users/${userId}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    console.warn('Primary fetch failed, using cache:', err);
+    // 回退到缓存
+    const cached = await getUserFromCache(userId);
+    if (cached) return cached;
+    throw new Error(`Failed to fetch user ${userId}`);
+  }
+}
+
+async function getUserFromCache(userId: string): Promise<User | null> {
+  // 缓存实现
+  return null;
+}
+
+// 多个独立操作，各自处理错误
+async function loadDashboard() {
+  const [userResult, postsResult] = await Promise.allSettled([
+    fetchUserWithFallback('123'),
+    fetch('/api/posts').then((r) => r.json() as Promise<Post[]>),
+  ]);
+
+  const user = userResult.status === 'fulfilled' ? userResult.value : null;
+  const posts = postsResult.status === 'fulfilled' ? postsResult.value : [];
+
+  if (!user) {
+    return { error: 'Failed to load user', posts };
+  }
+
+  return { user, posts };
+}
+```
+
+### 6.4 正例：带超时的 Promise
+
+```typescript
+function withTimeout<T>(promise: Promise<T>, ms: number, label = 'Operation'): Promise<T> {
+  const timeout = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+  return Promise.race([promise, timeout]);
+}
+
+async function fetchWithTimeout() {
+  const data = await withTimeout(
+    fetch('/api/slow').then((r) => r.json()),
+    5000,
+    'API fetch'
+  );
+  return data;
+}
+```
+
+### 6.5 正例：异步迭代器
+
+```typescript
+// 处理流式数据
+async function* fetchPaginatedUsers(pageSize = 10): AsyncGenerator<User[], void, unknown> {
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const res = await fetch(`/api/users?page=${page}&size=${pageSize}`);
+    const data = (await res.json()) as { users: User[]; hasMore: boolean };
+
+    yield data.users;
+    hasMore = data.hasMore;
+    page++;
+
+    // 节流：请求间延迟
+    if (hasMore) await new Promise((r) => setTimeout(r, 100));
+  }
+}
+
+// 消费异步迭代器
+async function processAllUsers() {
+  for await (const users of fetchPaginatedUsers(50)) {
+    for (const user of users) {
+      await processUser(user);
+    }
+  }
+}
+```
+
+### 6.6 正例：Top-Level Await (ES2022)
+
+```typescript
+// config.ts — 模块顶层 await
+const configResponse = await fetch('/api/config');
+export const config = await configResponse.json();
+
+// db.ts — 异步初始化
+export const db = await createDatabaseConnection({
+  url: config.databaseUrl,
+});
+
+// main.ts — 直接导入已初始化的模块
+import { db } from './db';
+await db.query('SELECT 1');
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §15.8** — Async Function Definitions
 - **MDN: async function** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function>
+- **MDN: await** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await>
+- **MDN: Promise.allSettled** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled>
+- **MDN: Async iteration** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of>
+- **V8 Blog: Fast async/await** — <https://v8.dev/blog/fast-async> — V8 引擎 async/await 实现优化
+- **V8 Blog: Understanding async/await** — <https://v8.dev/blog/fast-async>
+- **Promise A+ Specification** — <https://promisesaplus.com/> — Promise 标准规范
+- **JavaScript.info: Async/Await** — <https://javascript.info/async-await>
+- **Node.js Timers & Event Loop** — <https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/>
+- **TC39 ECMA-262 Spec** — <https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html#sec-async-function-definitions> — 官方 async 函数规范
 
 ---
 

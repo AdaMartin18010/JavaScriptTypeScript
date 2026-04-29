@@ -35,6 +35,27 @@ if (import.meta.hot) {
 }
 ```
 
+### React Fast Refresh 状态保持
+
+```typescript
+// Fast Refresh 通过以下规则保留组件状态：
+// 1. 仅导出 React 组件的模块会被热更新
+// 2.  hooks 调用顺序不变时，状态保留
+// 3. 组件被替换为其他类型时，状态重置
+
+import { useState } from 'react';
+
+export default function Counter() {
+  const [count, setCount] = useState(0);
+  // 修改此处 JSX 或添加辅助函数时，count 状态会保留
+  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;
+}
+
+// 以下导出模式会破坏 Fast Refresh：
+// ❌ export default () => <div />   // 匿名默认导出
+// ✅ export default function Component() {} // 具名默认导出
+```
+
 ### 运行时错误遮罩处理器
 
 ```typescript
@@ -72,6 +93,35 @@ window.addEventListener('error', (e) => {
 });
 ```
 
+### Vite 开发服务器代理配置
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+      '/ws': {
+        target: 'ws://localhost:3001',
+        ws: true,
+      },
+    },
+    https: {
+      // mkcert 生成的本地可信证书
+      key: './certs/localhost-key.pem',
+      cert: './certs/localhost-cert.pem',
+    },
+  },
+});
+```
+
 ### Monorepo pnpm workspace + Turborepo 配置
 
 ```json
@@ -97,6 +147,31 @@ packages:
   }
 }
 ```
+
+### TypeScript Project References 增量编译
+
+```json
+// packages/core/tsconfig.json
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"]
+}
+
+// apps/web/tsconfig.json
+{
+  "references": [{ "path": "../../packages/core" }],
+  "compilerOptions": {
+    "outDir": "./dist"
+  }
+}
+```
+
+> 使用 Project References 后，`tsc --build` 会增量编译，仅重新构建变更的依赖图。
 
 ### CLI 进度条与 TTY 检测
 
@@ -163,12 +238,16 @@ class ProgressBar {
 |------|------|------|
 | Vite — HMR API | 官方文档 | [vitejs.dev/guide/api-hmr.html](https://vitejs.dev/guide/api-hmr.html) |
 | React — Fast Refresh | 官方文档 | [react.dev/learn/thinking-in-react](https://react.dev/learn/thinking-in-react) |
+| React Fast Refresh 技术原理 | GitHub Wiki | [github.com/facebook/react/issues/16604](https://github.com/facebook/react/issues/16604) |
 | Turborepo 文档 | 官方文档 | [turbo.build/repo/docs](https://turbo.build/repo/docs) |
 | pnpm Workspaces | 官方文档 | [pnpm.io/workspaces](https://pnpm.io/workspaces) |
 | TypeScript — Project References | 官方文档 | [typescriptlang.org/docs/handbook/project-references.html](https://www.typescriptlang.org/docs/handbook/project-references.html) |
 | Node.js — TTY 文档 | 官方文档 | [nodejs.org/api/tty.html](https://nodejs.org/api/tty.html) |
 | MDN — Source Map | 文档 | [developer.mozilla.org/en-US/docs/Web/HTTP/Headers/SourceMap](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/SourceMap) |
 | Webpack — Hot Module Replacement | 官方文档 | [webpack.js.org/concepts/hot-module-replacement/](https://webpack.js.org/concepts/hot-module-replacement/) |
+| Vite Config Reference | 官方文档 | [vitejs.dev/config/server-options.html](https://vitejs.dev/config/server-options.html) |
+| mkcert — 本地 HTTPS 证书 | 工具 | [github.com/FiloSottile/mkcert](https://github.com/FiloSottile/mkcert) |
+| ANSI Escape Codes | 参考 | [en.wikipedia.org/wiki/ANSI_escape_code](https://en.wikipedia.org/wiki/ANSI_escape_code) |
 
 ---
 
