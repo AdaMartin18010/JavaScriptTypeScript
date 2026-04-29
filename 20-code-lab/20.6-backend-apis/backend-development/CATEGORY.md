@@ -114,6 +114,77 @@ export class TypedRoom<TMessage extends { type: string; payload: unknown }> {
 }
 ```
 
+### Fastify 插件与生命周期钩子
+
+```typescript
+// fastify-patterns.ts — Fastify 的插件系统与性能优势
+import fastify, { FastifyInstance, FastifyPluginAsync } from 'fastify';
+
+const metricsPlugin: FastifyPluginAsync = async (app: FastifyInstance) => {
+  app.addHook('onResponse', async (request, reply) => {
+    console.log(`${request.method} ${request.url} — ${reply.statusCode} in ${reply.elapsedTime}ms`);
+  });
+};
+
+const userRoutes: FastifyPluginAsync = async (app) => {
+  app.get('/users', async () => {
+    return [{ id: 1, name: 'Alice' }];
+  });
+
+  app.get('/users/:id', async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const user = await findUserById(id);
+    if (!user) {
+      reply.status(404);
+      return { error: 'Not found' };
+    }
+    return user;
+  });
+};
+
+async function bootstrap() {
+  const app = fastify({ logger: true });
+  await app.register(metricsPlugin);
+  await app.register(userRoutes, { prefix: '/api' });
+  await app.listen({ port: 3000, host: '0.0.0.0' });
+}
+```
+
+### OpenAPI 3.1 + Zod 类型安全校验
+
+```typescript
+// openapi-validation.ts — 使用 zod-openapi 生成规范并校验
+import { extendZodWithOpenApi, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
+import { z } from 'zod';
+import type { Request, Response, NextFunction } from 'express';
+
+extendZodWithOpenApi(z);
+
+const UserSchema = z.object({
+  id: z.string().openapi({ example: 'usr_123' }),
+  email: z.string().email().openapi({ example: 'alice@example.com' }),
+  role: z.enum(['admin', 'user']).openapi({ example: 'user' }),
+}).openapi('User');
+
+export function validateBody<T extends z.ZodTypeAny>(schema: T) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ errors: parsed.error.flatten().fieldErrors });
+      return;
+    }
+    (req as any).validatedBody = parsed.data;
+    next();
+  };
+}
+
+// 使用
+app.post('/users', validateBody(UserSchema.omit({ id: true })), (req, res) => {
+  const body = (req as any).validatedBody;
+  res.status(201).json(createUser(body));
+});
+```
+
 ## 相关索引
 
 - [30-knowledge-base/30.2-categories/README.md](../../../30-knowledge-base/30.2-categories/README.md)
@@ -130,6 +201,12 @@ export class TypedRoom<TMessage extends { type: string; payload: unknown }> {
 | OpenAPI Specification | 规范 | [spec.openapis.org](https://spec.openapis.org) |
 | Richardson Maturity Model | 指南 | [martinfowler.com/articles/richardsonMaturityModel.html](https://martinfowler.com/articles/richardsonMaturityModel.html) |
 | Node.js Docs | 文档 | [nodejs.org/docs/latest/api](https://nodejs.org/docs/latest/api) |
+| JSON Schema | 规范 | [json-schema.org](https://json-schema.org/) |
+| tRPC Documentation | 类型安全 RPC | [trpc.io/docs](https://trpc.io/docs) |
+| gRPC Web | 指南 | [github.com/grpc/grpc-web](https://github.com/grpc/grpc-web) |
+| Zod Documentation | 校验库 | [zod.dev](https://zod.dev) |
+| Node.js Design Patterns Book | 书籍 | [nodejsdp.link](https://nodejsdp.link) |
+| HTTP/3 RFC 9114 | 标准 | [datatracker.ietf.org/doc/html/rfc9114](https://datatracker.ietf.org/doc/html/rfc9114) |
 
 ---
 

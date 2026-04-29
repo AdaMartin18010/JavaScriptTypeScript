@@ -139,14 +139,131 @@ bus.emit('error:critical', new Error('DB connection lost'), 'Database');
 unsubLogin();
 ```
 
-### 3.3 常见误区
+### 3.3 异步事件总线与背压控制
+
+```typescript
+// ===== 支持 async handler 与并发限制的事件总线 =====
+class AsyncEventBus<Events extends EventMap = EventMap> {
+  private listeners: { [K in keyof Events]?: Set<Events[K]> } = {};
+
+  on<K extends keyof Events>(event: K, listener: Events[K]): () => void {
+    if (!this.listeners[event]) this.listeners[event] = new Set();
+    this.listeners[event]!.add(listener);
+    return () => this.off(event, listener);
+  }
+
+  off<K extends keyof Events>(event: K, listener: Events[K]): void {
+    this.listeners[event]?.delete(listener);
+  }
+
+  async emit<K extends keyof Events>(
+    event: K,
+    ...args: Parameters<Events[K]>
+  ): Promise<void> {
+    const handlers = this.listeners[event];
+    if (!handlers) return;
+    // 并发执行所有 handler，失败不阻断其他 handler
+    await Promise.all(
+      Array.from(handlers).map(async (fn) => {
+        try {
+          await (fn as any)(...args);
+        } catch (err) {
+          console.error(`Async handler error on "${String(event)}":`, err);
+        }
+      })
+    );
+  }
+}
+
+// 使用场景：IO 密集型事件（如数据同步后触发多个副作用）
+interface AsyncEvents {
+  'order:created': (orderId: string) => Promise<void>;
+}
+
+const asyncBus = new AsyncEventBus<AsyncEvents>();
+asyncBus.on('order:created', async (id) => {
+  await sendEmail(id);
+});
+asyncBus.on('order:created', async (id) => {
+  await updateInventory(id);
+});
+```
+
+### 3.4 内存泄漏检测与自动清理
+
+```typescript
+// ===== 带引用计数与 WeakRef 的防泄漏事件总线 =====
+class SafeEventBus<Events extends EventMap = EventMap> {
+  private listeners = new Map<keyof Events, Set<Events[keyof Events]>>();
+  private refCounts = new WeakMap<(...args: any[]) => void, number>();
+
+  on<K extends keyof Events>(event: K, listener: Events[K]): () => void {
+    if (!this.listeners.has(event)) this.listeners.set(event, new Set());
+    this.listeners.get(event)!.add(listener);
+    this.refCounts.set(listener, (this.refCounts.get(listener) || 0) + 1);
+
+    return () => {
+      this.off(event, listener);
+      const count = (this.refCounts.get(listener) || 1) - 1;
+      if (count <= 0) this.refCounts.delete(listener);
+      else this.refCounts.set(listener, count);
+    };
+  }
+
+  off<K extends keyof Events>(event: K, listener: Events[K]): void {
+    this.listeners.get(event)?.delete(listener);
+  }
+
+  emit<K extends keyof Events>(event: K, ...args: Parameters<Events[K]>): void {
+    this.listeners.get(event)?.forEach((fn) => (fn as any)(...args));
+  }
+
+  snapshot(): Record<string, number> {
+    const result: Record<string, number> = {};
+    for (const [key, set] of this.listeners) {
+      result[String(key)] = set.size;
+    }
+    return result;
+  }
+}
+```
+
+### 3.5 基于 DOM EventTarget 的标准化封装
+
+```typescript
+// ===== 浏览器原生 EventTarget 的类型安全包装 =====
+class TypedEventTarget<Events extends EventMap> {
+  private target = new EventTarget();
+
+  on<K extends keyof Events>(
+    event: K,
+    listener: Events[K]
+  ): () => void {
+    const wrapped = (e: CustomEvent) => listener(...e.detail);
+    this.target.addEventListener(String(event), wrapped as EventListener);
+    return () => this.target.removeEventListener(String(event), wrapped as EventListener);
+  }
+
+  emit<K extends keyof Events>(event: K, ...args: Parameters<Events[K]>): void {
+    this.target.dispatchEvent(new CustomEvent(String(event), { detail: args }));
+  }
+}
+
+// 浏览器环境可直接使用，无需额外依赖
+interface DOMEvents {
+  'canvas:draw': (ctx: CanvasRenderingContext2D) => void;
+  'input:change': (value: string) => void;
+}
+```
+
+### 3.6 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | 事件总线消除了耦合 | 总线本身成为隐式全局依赖 |
 | 更多事件类型总是更好 | 过度细分会导致调试困难和逻辑分散 |
 
-### 3.4 扩展阅读
+### 3.7 扩展阅读
 
 - [Event Emitter 模式](https://nodejs.org/api/events.html)
 - [Node.js Events API](https://nodejs.org/api/events.html#class-eventemitter)
@@ -154,6 +271,10 @@ unsubLogin();
 - [RxJS Observable](https://rxjs.dev/guide/observable)
 - [MDN：CustomEvent](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent)
 - [MDN：EventTarget](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget)
+- [MDN：WeakRef](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef) — 弱引用与垃圾回收
+- [Node.js EventEmitter Memory Leaks](https://nodejs.org/api/events.html#emittersetmaxlistenersn) — maxListeners 与泄漏检测
+- [RxJS Subjects](https://rxjs.dev/guide/subject) — 响应式编程中的多播 Observable
+- [Mitt — 200B 极简 Event Emitter](https://github.com/developit/mitt) — 微型事件总线库
 - `20.2-language-patterns/design-patterns/behavioral/`
 
 ---

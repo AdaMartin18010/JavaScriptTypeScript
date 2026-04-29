@@ -19,6 +19,89 @@
 
 **结论**：混合运行时架构成为企业标准（Node.js 主服务 + Bun 边缘函数 + Deno 敏感计算）。
 
+#### 代码示例：Node.js 原生 TypeScript 类型剥离
+
+```typescript
+// math.ts — 无需 ts-node 或 tsx，Node.js 24+ 原生执行
+export function add(a: number, b: number): number {
+  return a + b;
+}
+
+// main.ts
+import { add } from './math.js'; // 注意：仍使用 .js 扩展名
+console.log(add(2, 3)); // 5
+```
+
+```bash
+# Node.js v24+ 原生运行 TypeScript（类型在运行时被剥离）
+node --experimental-strip-types main.ts
+
+# 配合 package.json 脚本
+{
+  "scripts": {
+    "dev": "node --experimental-strip-types --watch src/main.ts",
+    "test": "node --test --experimental-strip-types src/**/*.test.ts"
+  }
+}
+```
+
+#### 代码示例：Deno 权限模型与安全计算
+
+```typescript
+// Deno 默认安全：无文件/网络/环境变量访问权限
+// 运行时必须显式授权
+import { serve } from 'https://deno.land/std@0.220.0/http/server.ts';
+
+// 读取环境变量（需 --allow-env）
+const apiKey = Deno.env.get('API_KEY');
+
+// 文件操作（需 --allow-read）
+const data = await Deno.readTextFile('./data.json');
+
+serve(async (req) => {
+  return new Response('Hello from Deno');
+}, { port: 8000 });
+```
+
+```bash
+# 运行 Deno 程序，显式声明最小权限
+deno run --allow-net=0.0.0.0:8000 --allow-env=API_KEY --allow-read=./data.json app.ts
+```
+
+#### 代码示例：Bun 内置 API 与 SQLite
+
+```typescript
+// Bun 内置 SQLite 客户端，无需额外依赖
+import { Database } from 'bun:sqlite';
+
+const db = new Database('app.db');
+
+// 创建表
+db.run(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE
+  )
+`);
+
+// 参数化查询（自动防 SQL 注入）
+const insert = db.query('INSERT INTO users (name, email) VALUES ($name, $email)');
+insert.run({ $name: 'Alice', $email: 'alice@example.com' });
+
+// 读取
+const users = db.query('SELECT * FROM users WHERE name = ?').all('Alice');
+console.log(users);
+
+// Bun 内置 HTTP 服务器
+Bun.serve({
+  port: 3000,
+  fetch(req) {
+    return new Response('Hello from Bun!');
+  },
+});
+```
+
 ### 1.2 Rust 重写工具链加速
 
 | 领域 | JS/旧工具 | Rust 新工具 | 2026 替代进度 | 关键里程碑 |
@@ -32,6 +115,29 @@
 
 > *"Rust-based tools like Rolldown and RSPack are rapidly gaining adoption because they aim to provide Webpack compatibility with Rust-level performance."* — DeCODE Bundler Benchmark 2026
 
+#### 代码示例：Oxc Linter 集成
+
+```bash
+# 零配置，比 ESLint 快 50-100 倍
+npx oxlint@latest ./src
+
+# 指定规则集
+npx oxlint@latest ./src --deny correctness --deny suspicious
+
+# 与 Rspack 集成（vite.config.ts）
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [
+    // Vite 6+ 原生支持 Rolldown（实验性）
+  ],
+  build: {
+    // 使用 Oxc 替代 esbuild 进行代码压缩（实验性）
+    minify: 'oxc',
+  },
+});
+```
+
 ### 1.3 AI 原生开发工具爆发
 
 | 工具类别 | 2024 状态 | 2026 状态 | 变化 |
@@ -40,6 +146,35 @@
 | **AI 聊天** | ChatGPT 68% | ChatGPT 60%，Claude 44% (22%→44%) | Claude 翻倍，ChatGPT 微降 |
 | **Agent 框架** | LangChain 主导 | Mastra / CrewAI / LangGraph / Vercel AI SDK 竞争 | 框架碎片化，MCP 成为连接标准 |
 | **协议标准化** | 无标准 | MCP (Anthropic) + A2A (Google) 双轨 | MCP 9700 万月下载，10000+ Servers |
+
+#### 代码示例：Vercel AI SDK + MCP 集成
+
+```typescript
+import { openai } from '@ai-sdk/openai';
+import { generateText } from 'ai';
+import { experimental_createMCPClient } from 'ai';
+
+// 创建 MCP 客户端连接本地文件系统服务
+const mcpClient = await experimental_createMCPClient({
+  transport: {
+    type: 'stdio',
+    command: 'npx',
+    args: ['-y', '@modelcontextprotocol/server-filesystem', '/project/docs'],
+  },
+});
+
+// 获取 MCP 工具并注入到 AI SDK
+tools = await mcpClient.tools();
+
+const { text } = await generateText({
+  model: openai('gpt-4o'),
+  tools,
+  prompt: '读取 README.md 并总结项目的主要功能',
+});
+
+console.log(text);
+await mcpClient.close();
+```
 
 ### 1.4 TypeScript 成为事实标准
 
@@ -54,11 +189,86 @@
 
 > *"TypeScript has won. Not as a bundler, but as a language. And now, type stripping means you can write it natively in stable Node.js versions."* — Daniel Roe, Nuxt Core Team, State of JS 2025
 
+#### 代码示例：类型安全 API 契约（端到端类型安全）
+
+```typescript
+// shared/api.ts — 服务端与客户端共享的类型契约
+export interface ApiRoutes {
+  '/api/users': {
+    GET: { response: User[] };
+    POST: { body: CreateUserDto; response: User };
+  };
+  '/api/users/:id': {
+    GET: { params: { id: string }; response: User };
+    DELETE: { params: { id: string }; response: { success: boolean } };
+  };
+}
+
+// server/handler.ts — 服务端类型安全实现
+import type { ApiRoutes } from '../shared/api';
+
+export async function getUsers(): Promise<ApiRoutes['/api/users']['GET']['response']> {
+  return db.user.findMany();
+}
+
+// client/fetch.ts — 客户端类型安全调用
+import type { ApiRoutes } from '../shared/api';
+
+type Route = keyof ApiRoutes;
+
+async function api<K extends Route>(
+  url: K,
+  options?: ApiRoutes[K]['GET'] extends { response: infer R } ? RequestInit : never
+): Promise<ApiRoutes[K]['GET']['response']> {
+  const res = await fetch(url, options);
+  return res.json();
+}
+
+// 使用时完全类型安全
+const users = await api('/api/users'); // User[]
+const user = await api('/api/users/123'); // User
+```
+
 ### 1.5 Signals 跨框架标准化
 
 - **alien-signals** 成为框架无关的响应式原语（Vue 3.5、Preact、Solid 底层使用）
 - **TC39 Signals 提案**（Stage 1）推动语言级标准化
 - Angular 19 原生 Signals、Svelte 5 Runes、Vue 3.5 响应式重构—— Signals 范式成为 2026 主流
+
+#### 代码示例：TC39 Signals Stage 1 提案用法
+
+```typescript
+// 基于 TC39 Signals 提案的响应式系统（使用 polyfill）
+import { Signal } from 'signal-polyfill';
+
+// 创建状态信号
+const count = new Signal.State(0);
+
+// 创建计算信号（自动依赖追踪）
+const doubled = new Signal.Computed(() => count.get() * 2);
+
+// 创建副作用（watch）
+const effect = new Signal.Effect(() => {
+  console.log(`count = ${count.get()}, doubled = ${doubled.get()}`);
+});
+
+// 状态变更自动触发计算和副作用
+count.set(1); // 输出: count = 1, doubled = 2
+count.set(2); // 输出: count = 2, doubled = 4
+
+// 框架集成示例（Vue 3.5 底层使用 alien-signals）
+import { signal, computed, effect } from 'alien-signals';
+
+const price = signal(100);
+const quantity = signal(2);
+const total = computed(() => price.get() * quantity.get());
+
+effect(() => {
+  console.log(`Total: $${total.get()}`);
+});
+
+price.set(150); // 输出: Total: $300
+```
 
 ---
 
@@ -139,3 +349,9 @@ State of JS 2025 显示：开发者整体幸福感连续第 5 年保持在 **3.8
 4. **InfoQ** — [State of JS 2025 分析](https://www.infoq.com/news/2026/03/state-of-js-survey-2025/) (2026-03-20)
 5. **JetBrains Developer Ecosystem 2025** — [调查报告](https://blog.jetbrains.com/rust/2026/01/27/rust-vs-javascript-typescript/) (2025)
 6. **RadixWeb** — [JavaScript Statistics 2026](https://radixweb.com/blog/top-javascript-usage-statistics) (2026-04-16)
+7. **Node.js Documentation** — [Type Stripping](https://nodejs.org/api/typescript.html#type-stripping) (Node.js 24+)
+8. **Bun Documentation** — [Bun SQLite](https://bun.sh/docs/api/sqlite) & [HTTP Server](https://bun.sh/docs/api/http)
+9. **Deno Documentation** — [Permissions](https://docs.deno.com/runtime/fundamentals/security/) & [Deno 2 Migration](https://docs.deno.com/runtime/reference/migration_guide/)
+10. **TC39 Signals Proposal** — [GitHub tc39/proposal-signals](https://github.com/tc39/proposal-signals) (Stage 1)
+11. **Vercel AI SDK** — [MCP Integration](https://sdk.vercel.ai/docs/ai-sdk-core/tools-and-tool-calling#model-context-protocol-mcp-tools)
+12. **VoidZero / Rolldown** — [Rolldown 1.0 Release](https://rolldown.rs/) (2026-04)

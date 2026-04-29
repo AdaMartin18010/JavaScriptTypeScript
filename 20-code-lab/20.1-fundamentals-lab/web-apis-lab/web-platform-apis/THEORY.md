@@ -130,7 +130,71 @@ async function processLargeJsonStream(url: string) {
 }
 ```
 
-### 3.2 常见误区
+### 3.2 BroadcastChannel 跨标签页通信
+
+```typescript
+// broadcast-channel-demo.ts
+// 同源不同标签页/iframe 之间的高效通信
+const channel = new BroadcastChannel('app_sync');
+
+channel.onmessage = (event) => {
+  console.log('Received from another tab:', event.data);
+};
+
+// 发布消息到所有订阅的同源上下文
+channel.postMessage({ type: 'SESSION_UPDATE', payload: { userId: 'u-42' } });
+
+// 清理
+// channel.close();
+```
+
+### 3.3 ResizeObserver 与 PerformanceObserver
+
+```typescript
+// observers-combo.ts
+// 监听元素尺寸变化（比 window.resize 更精确）
+const ro = new ResizeObserver((entries) => {
+  for (const entry of entries) {
+    const { width, height } = entry.contentRect;
+    console.log(`Element ${entry.target.tagName} resized to ${width}x${height}`);
+  }
+});
+ro.observe(document.getElementById('responsive-canvas')!);
+
+// 监听性能指标（如 LCP, FID, CLS）
+const po = new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    console.log(`[Performance] ${entry.name}: ${(entry as any).startTime}`);
+  }
+});
+po.observe({ type: 'web-vitals' } as any); // buffered flag available in modern browsers
+```
+
+### 3.4 Web Worker 中的结构化克隆与 Transferable
+
+```typescript
+// worker-demo.ts
+// main.ts
+const worker = new Worker(new URL('./heavy-calc.worker.ts', import.meta.url));
+
+const bigBuffer = new Float64Array(1_000_000);
+worker.postMessage({ data: bigBuffer }, [bigBuffer.buffer]);
+// bigBuffer 在此处已被 transfer，主线程不可再访问
+
+worker.onmessage = (e) => {
+  console.log('Result from worker:', e.data.sum);
+};
+
+// heavy-calc.worker.ts
+self.onmessage = (e) => {
+  const arr = e.data.data as Float64Array;
+  let sum = 0;
+  for (let i = 0; i < arr.length; i++) sum += arr[i];
+  self.postMessage({ sum });
+};
+```
+
+### 3.5 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -138,7 +202,7 @@ async function processLargeJsonStream(url: string) {
 | DOM 操作总是同步的 | 部分 API 如 IntersectionObserver 是异步回调 |
 | Fetch 会默认携带 cookie | 需显式设置 `credentials: 'include'` |
 
-### 3.3 扩展阅读
+### 3.6 扩展阅读
 
 - [MDN Web APIs](https://developer.mozilla.org/en-US/docs/Web/API)
 - [WHATWG Fetch Living Standard](https://fetch.spec.whatwg.org/)
@@ -149,6 +213,11 @@ async function processLargeJsonStream(url: string) {
 - [web.dev — Streams API](https://web.dev/streams/)
 - [Can I use — Browser support tables](https://caniuse.com/)
 - [WebIDL Spec — W3C](https://webidl.spec.whatwg.org/)
+- [MDN BroadcastChannel API](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API) — 跨上下文广播通信
+- [MDN ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) — 元素级尺寸监听
+- [web.dev — Core Web Vitals](https://web.dev/articles/vitals) — 性能指标与测量
+- [Web Workers Spec — WHATWG](https://html.spec.whatwg.org/multipage/workers.html) — 官方多线程规范
+- [Credential Management API](https://developer.mozilla.org/en-US/docs/Web/API/Credential_Management_API) — 凭据管理
 
 ---
 

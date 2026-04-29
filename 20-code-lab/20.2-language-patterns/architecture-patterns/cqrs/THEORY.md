@@ -136,7 +136,161 @@ class GetUserByIdQuery implements Query<{ id: string }, User | null> {
 }
 ```
 
-### 3.2 常见误区
+### 3.2 事件存储与读模型投影
+
+```typescript
+// event-store.ts — 极简内存事件存储
+interface DomainEvent {
+  readonly id: string;
+  readonly type: string;
+  readonly payload: unknown;
+  readonly timestamp: number;
+}
+
+class EventStore {
+  private streams = new Map<string, DomainEvent[]>();
+
+  append(streamId: string, event: Omit<DomainEvent, 'id' | 'timestamp'>) {
+    const stream = this.streams.get(streamId) || [];
+    stream.push({
+      ...event,
+      id: `${streamId}-${stream.length}`,
+      timestamp: Date.now(),
+    });
+    this.streams.set(streamId, stream);
+  }
+
+  getStream(streamId: string): readonly DomainEvent[] {
+    return Object.freeze(this.streams.get(streamId) || []);
+  }
+
+  // 通过事件流重建聚合状态
+  fold<T>(streamId: string, initial: T, reducer: (state: T, event: DomainEvent) => T): T {
+    return this.getStream(streamId).reduce(reducer, initial);
+  }
+}
+
+// 读模型投影（Read Model Projection）
+class UserProjector {
+  private readModel = new Map<string, User>();
+
+  apply(event: DomainEvent): void {
+    switch (event.type) {
+      case 'UserCreated': {
+        const u = event.payload as User;
+        this.readModel.set(u.id, u);
+        break;
+      }
+      case 'EmailUpdated': {
+        const { id, email } = event.payload as { id: string; email: string };
+        const user = this.readModel.get(id);
+        if (user) user.email = email;
+        break;
+      }
+    }
+  }
+
+  get state() {
+    return new Map(this.readModel);
+  }
+}
+```
+
+### 3.3 命令总线与中间件管道
+
+```typescript
+// command-bus.ts — 支持中间件（日志、校验、事务）的命令总线
+type CommandHandler<C, R> = (command: C) => Promise<R>;
+type Middleware<C, R> = (next: CommandHandler<C, R>) => CommandHandler<C, R>;
+
+class CommandBus {
+  private handlers = new Map<string, CommandHandler<any, any>>();
+  private middlewares: Middleware<any, any>[] = [];
+
+  register<C, R>(type: string, handler: CommandHandler<C, R>): void {
+    this.handlers.set(type, handler);
+  }
+
+  use<C, R>(middleware: Middleware<C, R>): void {
+    this.middlewares.push(middleware);
+  }
+
+  async dispatch<C, R>(command: Command<C>): Promise<R> {
+    const handler = this.handlers.get(command.type);
+    if (!handler) throw new Error(`No handler for ${command.type}`);
+
+    const pipeline = this.middlewares.reduceRight(
+      (next, mw) => mw(next),
+      handler
+    );
+    return pipeline(command);
+  }
+}
+
+// 使用示例
+const bus = new CommandBus();
+
+// 注册日志中间件
+bus.use((next) => async (cmd) => {
+  console.log(`[Command] ${cmd.type}`, cmd.payload);
+  const result = await next(cmd);
+  console.log(`[Command] ${cmd.type} completed`);
+  return result;
+});
+
+// 注册处理器
+bus.register('CreateUser', async (cmd: CreateUserCommand) => {
+  // 实际持久化逻辑
+  return { userId: cmd.payload.id };
+});
+```
+
+### 3.4 Saga 模式：分布式事务编排
+
+```typescript
+// saga.ts — 补偿事务编排示例
+interface SagaStep {
+  execute(): Promise<void>;
+  compensate(): Promise<void>;
+}
+
+class OrderSaga {
+  private steps: SagaStep[] = [];
+  private executed: SagaStep[] = [];
+
+  add(step: SagaStep) {
+    this.steps.push(step);
+  }
+
+  async run(): Promise<void> {
+    for (const step of this.steps) {
+      try {
+        await step.execute();
+        this.executed.push(step);
+      } catch (err) {
+        // 回滚已执行的步骤
+        for (const s of this.executed.reverse()) {
+          await s.compensate().catch(() => {});
+        }
+        throw err;
+      }
+    }
+  }
+}
+
+// 使用示例
+const saga = new OrderSaga();
+saga.add({
+  execute: async () => await reserveInventory(),
+  compensate: async () => await releaseInventory(),
+});
+saga.add({
+  execute: async () => await chargePayment(),
+  compensate: async () => await refundPayment(),
+});
+```
+
+### 3.5 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -144,7 +298,7 @@ class GetUserByIdQuery implements Query<{ id: string }, User | null> {
 | 分离后读写总是一致的 | 最终一致性需要额外的同步机制 |
 | CQRS 适合所有项目 | 中小型项目引入 CQRS 可能过度设计 |
 
-### 3.3 扩展阅读
+### 3.6 扩展阅读
 
 - [CQRS 模式 — Martin Fowler](https://martinfowler.com/bliki/CQRS.html)
 - [Microsoft — CQRS Pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs)
@@ -153,6 +307,10 @@ class GetUserByIdQuery implements Query<{ id: string }, User | null> {
 - [Axon Framework — CQRS & Event Sourcing](https://axoniq.io/)
 - [Greg Young — CQRS, Task Based UIs, Event Sourcing aha!](https://web.archive.org/web/20230205142705/http://codebetter.com/gregyoung/2010/02/16/cqrs-task-based-uis-event-sourcing-aha/)
 - [Microsoft — Event Sourcing pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing)
+- [Saga Pattern — Chris Richardson](https://microservices.io/patterns/data/saga.html) — 微服务架构中的 Saga 事务模式
+- [EventStoreDB Documentation](https://developers.eventstore.com/) — 专用事件存储数据库
+- [NestJS CQRS Module](https://docs.nestjs.com/recipes/cqrs) — Node.js 生态 CQRS 实践框架
+- [Microsoft — Saga distributed pattern](https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/saga/saga) — Azure 官方 Saga 架构参考
 
 ---
 

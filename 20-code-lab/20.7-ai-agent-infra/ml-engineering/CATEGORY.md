@@ -195,6 +195,73 @@ async function runWebNNInference(inputData: Float32Array) {
 }
 ```
 
+### Transformers.js 浏览器端 NLP 流水线
+
+```typescript
+// transformers-pipeline.ts — 纯前端 Transformer 推理
+import { pipeline } from '@xenova/transformers';
+
+async function classifySentiment(text: string) {
+  // 自动下载并缓存 ONNX 模型到 IndexedDB
+  const classifier = await pipeline('sentiment-analysis', 'Xenova/distilbert-base-uncased-finetuned-sst-2-english');
+  const result = await classifier(text);
+  return result[0]; // { label: 'POSITIVE', score: 0.998 }
+}
+
+async function extractEmbeddings(texts: string[]) {
+  const embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+  const outputs = await embedder(texts, { pooling: 'mean', normalize: true });
+  return outputs; // 384-dim normalized vectors
+}
+```
+
+### WebGPU 加速矩阵乘法
+
+```typescript
+// webgpu-matmul.ts — 使用 WebGPU 计算着色器加速 Tensor 运算
+async function webGPUMatMul(a: Float32Array, b: Float32Array, M: number, N: number, K: number) {
+  if (!navigator.gpu) throw new Error('WebGPU not supported');
+
+  const adapter = await navigator.gpu.requestAdapter();
+  const device = await adapter!.requestDevice();
+
+  const shaderCode = `
+    @group(0) @binding(0) var<storage, read> a: array<f32>;
+    @group(0) @binding(1) var<storage, read> b: array<f32>;
+    @group(0) @binding(2) var<storage, read_write> c: array<f32>;
+
+    @compute @workgroup_size(8, 8)
+    fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
+      let row = gid.x;
+      let col = gid.y;
+      if (row >= ${M}u || col >= ${N}u) { return; }
+      var sum = 0.0;
+      for (var k = 0u; k < ${K}u; k = k + 1u) {
+        sum = sum + a[row * ${K}u + k] * b[k * ${N}u + col];
+      }
+      c[row * ${N}u + col] = sum;
+    }
+  `;
+
+  const module = device.createShaderModule({ code: shaderCode });
+  const pipeline = device.createComputePipeline({
+    layout: 'auto',
+    compute: { module, entryPoint: 'main' },
+  });
+
+  // 创建 GPU 缓冲区并编码命令...
+  // 省略详细的缓冲区创建与命令编码
+
+  const cBuffer = device.createBuffer({
+    size: M * N * 4,
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC,
+  });
+
+  // 返回结果缓冲区供后续读取
+  return cBuffer;
+}
+```
+
 ## 关联模块
 
 - `77-quantum-computing` — 量子计算
@@ -216,6 +283,10 @@ async function runWebNNInference(inputData: Float32Array) {
 | Made With ML | MLOps 教程 | [madewithml.com](https://madewithml.com/) |
 | MLOps Community | 社区资源 | [mlops.community](https://mlops.community/) |
 | Feature Stores for ML | 特征存储专著 | [featurestorebook.com](https://www.featurestorebook.com/) |
+| WebGPU Specification | W3C 标准 | [gpuweb.github.io/gpuweb](https://gpuweb.github.io/gpuweb/) |
+| Hugging Face Hub | 模型仓库 | [huggingface.co/models](https://huggingface.co/models) |
+| TensorFlow.js Guides | 教程 | [tensorflow.org/js/guide](https://www.tensorflow.org/js/guide) |
+| ONNX Model Zoo | 预训练模型 | [github.com/onnx/models](https://github.com/onnx/models) |
 
 ---
 

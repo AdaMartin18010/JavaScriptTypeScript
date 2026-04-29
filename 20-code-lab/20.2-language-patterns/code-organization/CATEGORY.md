@@ -121,6 +121,51 @@ export function validateStructure(actual: string[], expected: ProjectNode, prefi
 }
 ```
 
+### 依赖倒置与 Barrel 文件模式
+
+```typescript
+// src/domain/ports/index.ts — Barrel 文件统一导出端口
+export { UserRepository } from './user-repository';
+export { EmailService } from './email-service';
+export { Logger } from './logger';
+
+// src/application/services/user-service.ts
+// 上层模块依赖抽象（端口），而非具体实现
+import { UserRepository, EmailService, Logger } from '@/domain/ports';
+
+export class UserService {
+  constructor(
+    private repo: UserRepository,
+    private email: EmailService,
+    private logger: Logger,
+  ) {}
+
+  async register(email: string) {
+    this.logger.info(`Registering ${email}`);
+    const user = await this.repo.create({ email });
+    await this.email.sendWelcome(user.email);
+    return user;
+  }
+}
+```
+
+### 基于 Feature-Sliced Design 的目录结构
+
+```typescript
+// src/features/auth/index.ts
+export { LoginForm } from './ui/login-form';
+export { useAuth } from './model/use-auth';
+export { authApi } from './api/auth-api';
+
+// 分层规则：
+// app/      → 初始化、 providers、路由、全局样式
+// pages/    → 应用页面（路由入口）
+// widgets/  → 独立功能区块（如 Header、Sidebar）
+// features/ → 用户交互与业务逻辑（如 登录、购物车）
+// entities/ → 业务实体（如 User、Order）
+// shared/   → 可复用基础设施（UI kit、utils、api client）
+```
+
 ---
 
 > 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
@@ -137,6 +182,10 @@ export function validateStructure(actual: string[], expected: ProjectNode, prefi
 | Turborepo 文档 | 文档 | [turbo.build](https://turbo.build/) |
 | Nx 文档 | 文档 | [nx.dev](https://nx.dev/) |
 | pnpm Workspaces | 文档 | [pnpm.io/workspaces](https://pnpm.io/workspaces) |
+| Node.js TypeScript Best Practices | 指南 | [nodejs.org/en/docs/guides/typescript](https://nodejs.org/en/docs/guides/typescript/) |
+| Barrel Files Best Practices | 指南 | [basarat.gitbook.io/typescript/main-1/barrel](https://basarat.gitbook.io/typescript/main-1/barrel) |
+| Clean Architecture — Robert C. Martin | 书籍 | [blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) |
+| Domain-Driven Design Reference | 参考 | [www.domainlanguage.com/ddd/reference/](https://www.domainlanguage.com/ddd/reference/) |
 
 ---
 
