@@ -164,3 +164,55 @@
 - 每次发布更新时检查并更新标签
 - 维护状态变化需及时调整
 - 类型支持度改善可升级标签
+
+---
+
+## 六、自动化标签检测脚本
+
+```typescript
+// scripts/detect-tags.ts
+import { execSync } from 'child_process';
+import { readFileSync } from 'fs';
+
+interface PackageInfo {
+  name: string;
+  types?: boolean;
+  lastCommit: Date;
+  openIssues: number;
+}
+
+function detectTypeScriptSupport(pkgPath: string): '🟢' | '🟡' | '🟠' | '🔴' {
+  const pkg = JSON.parse(readFileSync(`${pkgPath}/package.json`, 'utf-8'));
+  if (pkg.types || pkg.typings) return '🟢';
+  if (pkg.devDependencies?.['@types/' + pkg.name]) return '🟡';
+  return '🔴';
+}
+
+function detectMaintenance(pkgPath: string): '⭐⭐⭐' | '⭐⭐' | '⭐' | '⚠️' {
+  const lastCommit = execSync('git log -1 --format=%ci', { cwd: pkgPath }).toString().trim();
+  const days = (Date.now() - new Date(lastCommit).getTime()) / (1000 * 60 * 60 * 24);
+  if (days < 90) return '⭐⭐⭐';
+  if (days < 180) return '⭐⭐';
+  if (days < 365) return '⭐';
+  return '⚠️';
+}
+
+// 批量检测示例
+// const tags = packages.map(p => `${detectTypeScriptSupport(p)}${detectMaintenance(p)}`);
+```
+
+---
+
+## 权威参考
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| npm semver | 版本规范 | [docs.npmjs.com/about-semantic-versioning](https://docs.npmjs.com/about-semantic-versioning) |
+| Snyk Advisor | 包健康度 | [snyk.io/advisor](https://snyk.io/advisor/) |
+| Bundlephobia | 包体积分析 | [bundlephobia.com](https://bundlephobia.com/) |
+| npm trends | 下载量趋势 | [npmtrends.com](https://www.npmtrends.com/) |
+| OpenSSF Scorecard | 安全评分 | [securityscorecards.dev](https://securityscorecards.dev/) |
+
+---
+
+*最后更新: 2026-04-29*
