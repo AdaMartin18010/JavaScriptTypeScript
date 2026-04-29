@@ -94,12 +94,90 @@ import { config } from "./config.js";
 console.log(config.apiUrl);
 ```
 
+### 6.2 正例：条件动态导入
+
+```javascript
+// db-adapter.js
+const isProduction = process.env.NODE_ENV === 'production';
+
+// 根据环境选择不同驱动，顶层 await 让代码保持线性
+const { createClient } = isProduction
+  ? await import('./postgres-driver.js')
+  : await import('./sqlite-driver.js');
+
+export const db = createClient({ /* options */ });
+```
+
+### 6.3 正例：带错误处理的模块级资源初始化
+
+```javascript
+// redis-client.js
+import { createClient } from 'redis';
+
+// 顶层 await + try/catch 实现模块级错误处理
+let redis;
+try {
+  redis = await createClient({ url: process.env.REDIS_URL }).connect();
+} catch (err) {
+  console.error('Redis connection failed, using in-memory fallback', err);
+  redis = createInMemoryFallback();
+}
+
+export { redis };
+```
+
+### 6.4 正例：REPL / CLI 工具中的顶层 await
+
+```javascript
+// cli-tool.mjs (Node.js REPL 或 ESM 脚本)
+import { readFile } from 'node:fs/promises';
+import { parse } from 'csv-parse/sync';
+
+// 在 Node.js REPL 中直接 await，无需 async 包裹
+const raw = await readFile('./data.csv', 'utf-8');
+const records = parse(raw, { columns: true });
+console.table(records.slice(0, 5));
+
+// Node.js: node --input-type=module -e "await fetch('https://api.example.com')"
+```
+
+### 6.5 反例：循环依赖陷阱
+
+```javascript
+// a.js
+import { b } from './b.js'; // 等待 b 完成
+export const a = 'A' + b;
+await new Promise(r => setTimeout(r, 10));
+
+// b.js
+import { a } from './a.js'; // 等待 a 完成 → 死锁！
+export const b = 'B' + a;
+```
+
+### 6.6 性能考量：延迟初始化模式
+
+```javascript
+// lazy-init.js — 避免顶层 await 阻塞非必要路径
+let _db;
+export async function getDb() {
+  if (_db) return _db;
+  const { createClient } = await import('./db-driver.js');
+  _db = await createClient().connect();
+  return _db;
+}
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §16.2.1.4** — Async Modules
 - **MDN: Top-level await** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules#top_level_await>
+- **V8 Blog — Top-level await** — <https://v8.dev/features/top-level-await>
+- **Node.js ESM Docs** — <https://nodejs.org/api/esm.html#top-level-await>
+- **TC39 Proposal: Top-level await** — <https://github.com/tc39/proposal-top-level-await>
+- **web.dev — JavaScript Modules** — <https://web.dev/articles/modules>
+- **MDN: import** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import>
 
 ---
 

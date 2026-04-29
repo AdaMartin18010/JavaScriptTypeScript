@@ -163,7 +163,149 @@ MCP 的快速普及（action tools 从 27% 增至 65%）带来了新的攻击面
 
 ---
 
-## 8. 与相邻模块的关系
+## 8. 代码示例
+
+### ReAct 循环的 TypeScript 实现
+
+```typescript
+// react-loop.ts
+interface Tool {
+  name: string;
+  description: string;
+  parameters: object;
+  execute(args: unknown): Promise<unknown>;
+}
+
+interface ReActStep {
+  thought: string;
+  action?: { tool: string; input: unknown };
+  observation?: string;
+}
+
+export async function runReActAgent(
+  query: string,
+  tools: Tool[],
+  llm: { complete(prompt: string): Promise<string> },
+  maxSteps = 10
+): Promise<string> {
+  const history: ReActStep[] = [];
+
+  for (let step = 0; step < maxSteps; step++) {
+    const prompt = buildPrompt(query, tools, history);
+    const response = await llm.complete(prompt);
+    const parsed = parseReActOutput(response);
+
+    history.push({ thought: parsed.thought });
+
+    if (parsed.finish) {
+      return parsed.finish;
+    }
+
+    const tool = tools.find((t) => t.name === parsed.action?.tool);
+    if (!tool) throw new Error(`Unknown tool: ${parsed.action?.tool}`);
+
+    const observation = String(await tool.execute(parsed.action.input));
+    history[history.length - 1].action = parsed.action;
+    history[history.length - 1].observation = observation;
+  }
+
+  throw new Error('Max steps exceeded');
+}
+
+function buildPrompt(query: string, tools: Tool[], history: ReActStep[]): string {
+  return `You are a reasoning agent. Use the following tools when needed:
+${tools.map((t) => `- ${t.name}: ${t.description}`).join('\n')}
+
+Question: ${query}
+${history.map((h) => `Thought: ${h.thought}\nAction: ${JSON.stringify(h.action)}\nObservation: ${h.observation}`).join('\n')}
+Thought:`;
+}
+
+function parseReActOutput(text: string) {
+  // 简化解析逻辑：提取 Thought / Action / Observation / Finish
+  const finish = text.match(/Finish:\s*(.+)/)?.[1];
+  const thought = text.match(/Thought:\s*(.+)/)?.[1] ?? text;
+  const actionMatch = text.match(/Action:\s*({.+})/);
+  const action = actionMatch ? JSON.parse(actionMatch[1]) : undefined;
+  return { thought, action, finish };
+}
+```
+
+### MCP 客户端连接与工具调用
+
+```typescript
+// mcp-client.ts
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+
+export async function createMCPClient(serverCommand: string, args: string[] = []) {
+  const transport = new StdioClientTransport({ command: serverCommand, args });
+  const client = new Client({ name: 'mcp-client', version: '1.0.0' });
+  await client.connect(transport);
+
+  // 发现可用工具
+  const tools = await client.listTools();
+  console.log('Available tools:', tools.tools.map((t) => t.name));
+
+  return { client, tools };
+}
+
+export async function callMCPTool(
+  client: Client,
+  toolName: string,
+  args: Record<string, unknown>
+) {
+  const result = await client.callTool({ name: toolName, arguments: args });
+  return result.content;
+}
+
+// 使用示例
+// const { client } = await createMCPClient('npx', ['-y', '@modelcontextprotocol/server-filesystem', '/tmp']);
+// const content = await callMCPTool(client, 'read_file', { path: '/tmp/demo.txt' });
+```
+
+### 记忆检索：基于向量相似度的短期记忆
+
+```typescript
+// memory-retrieval.ts
+interface MemoryChunk {
+  id: string;
+  text: string;
+  embedding: number[];
+  timestamp: number;
+}
+
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0, na = 0, nb = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    na += a[i] * a[i];
+    nb += b[i] * b[i];
+  }
+  return dot / (Math.sqrt(na) * Math.sqrt(nb));
+}
+
+export class VectorMemoryStore {
+  private memories: MemoryChunk[] = [];
+
+  add(chunk: MemoryChunk) {
+    this.memories.push(chunk);
+  }
+
+  retrieve(queryEmbedding: number[], topK = 5): MemoryChunk[] {
+    const scored = this.memories.map((m) => ({
+      memory: m,
+      score: cosineSimilarity(m.embedding, queryEmbedding),
+    }));
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, topK).map((s) => s.memory);
+  }
+}
+```
+
+---
+
+## 9. 与相邻模块的关系
 
 - **33-ai-integration**: LLM 基础集成（本模块是高级 Agent 架构）
 - **92-observability-lab**: Agent 执行过程的追踪与监控（OpenTelemetry + LangSmith）
@@ -172,7 +314,7 @@ MCP 的快速普及（action tools 从 27% 增至 65%）带来了新的攻击面
 
 ---
 
-## 参考来源
+## 10. 参考来源
 
 1. **modelcontextprotocol.io** — [MCP Official Introduction](https://modelcontextprotocol.io/docs/getting-started/intro) (2026-04)
 2. **DigitalApplied** — [AI Agent Protocol Ecosystem Map 2026](https://www.digitalapplied.com/blog/ai-agent-protocol-ecosystem-map-2026-mcp-a2a-acp-ucp) (2026-03-18)
@@ -181,3 +323,10 @@ MCP 的快速普及（action tools 从 27% 增至 65%）带来了新的攻击面
 5. **o-mega.ai** — [Anthropic Ecosystem Complete Guide 2026](https://o-mega.ai/articles/the-anthropic-ecosystem-a-complete-guide-2026) (2026-02-24)
 6. **Qualys** — [MCP Servers: The New Shadow IT for AI](https://blog.qualys.com/product-tech/2026/03/19/mcp-servers-shadow-it-ai-qualys-totalai-2026) (2026-03-20)
 7. **Stormy.ai** — [Claude + HubSpot Breeze MCP Integration](https://stormy.ai/blog/anthropic-claude-hubspot-breeze-mcp-integration-guide) (2026-03-17)
+8. **Google A2A Protocol** — [Agent-to-Agent Protocol](https://google.github.io/A2A/) (2025)
+9. **Vercel AI SDK** — [ai-sdk.dev](https://sdk.vercel.ai/docs) (2026)
+10. **LangChain Documentation** — [js.langchain.com](https://js.langchain.com/docs/introduction/) (2026)
+11. **Mastra Framework** — [mastra.ai](https://mastra.ai/docs) (2026)
+12. **OpenAI Agents SDK** — [openai.github.io/openai-agents-python](https://openai.github.io/openai-agents-python/) (2026)
+13. **ReAct Paper (Yao et al., 2022)** — [arXiv:2210.03629](https://arxiv.org/abs/2210.03629)
+14. **CrewAI Documentation** — [docs.crewai.com](https://docs.crewai.com/introduction) (2026)

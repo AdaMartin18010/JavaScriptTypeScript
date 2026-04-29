@@ -51,6 +51,22 @@ describe('Array operations', () => {
 });
 ```
 
+### 边界案例发现示例
+
+```typescript
+// fast-check 自动生成的边界案例可揭示隐藏 bug
+it('should handle all integer inputs safely', () => {
+  fc.assert(
+    fc.property(fc.integer(), fc.integer(), (a, b) => {
+      // 如果实现中使用了 a + b 而未考虑溢出，fast-check 会生成 MAX_SAFE_INTEGER 组合
+      const result = safeAdd(a, b);
+      return Number.isFinite(result);
+    }),
+    { numRuns: 10000 }
+  );
+});
+```
+
 ---
 
 ## 2. 变异测试（Mutation Testing）
@@ -81,6 +97,31 @@ describe('Array operations', () => {
 ```bash
 npx stryker run
 # 查看报告：reports/mutation/html/index.html
+```
+
+### Stryker 在 CI 中的集成
+
+```yaml
+# .github/workflows/mutation-test.yml
+name: Mutation Testing
+on:
+  schedule:
+    - cron: '0 2 * * 0' # 每周日凌晨运行
+jobs:
+  mutate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx stryker run
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report
+          path: reports/mutation
 ```
 
 ---
@@ -134,6 +175,25 @@ describe('UserService contract', () => {
 });
 ```
 
+### Pact Broker 与 CI 集成
+
+```typescript
+// pact-verifier.ts — 提供者端契约验证
+import { Verifier } from '@pact-foundation/pact';
+
+const verifier = new Verifier({
+  provider: 'UserService',
+  providerBaseUrl: 'http://localhost:3001',
+  pactBrokerUrl: 'https://pact-broker.example.com',
+  pactBrokerToken: process.env.PACT_TOKEN!,
+  publishVerificationResult: true,
+  providerVersion: process.env.GIT_SHA!,
+  consumerVersionSelectors: [{ mainBranch: true }, { deployedOrReleased: true }],
+});
+
+await verifier.verifyProvider();
+```
+
 ---
 
 ## 4. 混沌工程
@@ -164,6 +224,23 @@ export function chaosLatency(options: { probability: number; maxMs: number }): M
 app.use(chaosLatency({ probability: 0.1, maxMs: 5000 }));
 ```
 
+### 随机错误注入
+
+```typescript
+// chaos-error.ts — 模拟下游服务随机故障
+export function chaosError(options: { probability: number; statusCodes: number[] }): Middleware {
+  return async (ctx, next) => {
+    if (Math.random() < options.probability) {
+      const status = options.statusCodes[Math.floor(Math.random() * options.statusCodes.length)];
+      ctx.status = status;
+      ctx.body = { error: 'Chaos injected failure', status };
+      return;
+    }
+    await next();
+  };
+}
+```
+
 ---
 
 ## 5. 视觉回归测试
@@ -191,6 +268,29 @@ const preview: Preview = {
 };
 
 export default preview;
+```
+
+### Playwright 视觉回归测试
+
+```typescript
+// visual.spec.ts — 使用 Playwright 进行像素级比对
+import { test, expect } from '@playwright/test';
+
+test.describe('Visual Regression', () => {
+  test('dashboard renders consistently', async ({ page }) => {
+    await page.goto('/dashboard');
+    await page.waitForSelector('[data-testid="dashboard-loaded"]');
+
+    // 屏蔽动态内容区域（时间、随机 ID 等）
+    await page.evaluate(() => {
+      document.querySelectorAll('[data-testid="timestamp"]').forEach((el) => {
+        (el as HTMLElement).style.visibility = 'hidden';
+      });
+    });
+
+    expect(await page.screenshot({ fullPage: true })).toMatchSnapshot('dashboard.png');
+  });
+});
 ```
 
 ---
@@ -226,19 +326,71 @@ describe('Component snapshots', () => {
 });
 ```
 
+### 结构化快照（Inline Snapshot）
+
+```typescript
+// 使用 vitest 的 toMatchInlineSnapshot 在源码中维护快照
+it('generates correct API response shape', () => {
+  const response = buildApiResponse({ id: 1, name: 'Alice' });
+  expect(response).toMatchInlineSnapshot(`
+    {
+      "data": {
+        "id": 1,
+        "name": "Alice",
+      },
+      "meta": {
+        "version": "v2",
+      },
+    }
+  `);
+});
+```
+
 ---
 
-## 8. 权威参考
+## 8. 组件级交互测试（Component Testing）
+
+```typescript
+// Button.spec.tsx — 使用 @playwright/experimental-ct-react
+import { test, expect } from '@playwright/experimental-ct-react';
+import { Button } from './Button';
+
+test('button click increments counter', async ({ mount }) => {
+  let clicked = false;
+  const component = await mount(
+    <Button onClick={() => { clicked = true; }}>Click me</Button>
+  );
+
+  await component.click();
+  expect(clicked).toBe(true);
+});
+
+test('button disabled state prevents interaction', async ({ mount }) => {
+  const component = await mount(<Button disabled>Disabled</Button>);
+  await expect(component).toBeDisabled();
+  await expect(component).toHaveCSS('opacity', '0.5');
+});
+```
+
+---
+
+## 9. 权威参考
 
 - [fast-check Documentation](https://dubzzz.github.io/fast-check.github.com/) — 属性测试库
 - [Stryker Mutator](https://stryker-mutator.io/) — JS 变异测试框架
 - [Pact.io](https://pact.io/) — 契约测试框架
 - [Principles of Chaos Engineering](https://principlesofchaos.org/) — 混沌工程原则
+- [Chaos Monkey for Spring Boot](https://codecentric.github.io/chaos-monkey-spring-boot/) — Spring 生态混沌工程
 - [Chromatic](https://www.chromatic.com/) — 视觉回归测试平台
+- [Playwright Visual Comparison](https://playwright.dev/docs/test-snapshots) — 现代视觉测试
 - [Google Testing Blog](https://testing.googleblog.com/) — 测试方法论
 - [JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/) — 测试框架设计参考
+- [Martin Fowler — TestPyramid](https://martinfowler.com/articles/practical-test-pyramid.html) — 测试金字塔实践指南
+- [Kent C. Dodds — Testing Trophy](https://kentcdodds.com/blog/the-testing-trophy-and-testing-classifications) — 测试分类哲学
+- [ISTQB Certified Tester Foundation Level Syllabus](https://www.istqb.org/certifications/certified-tester-foundation-level.html) — 软件测试国际标准
+- [OWASP Testing Guide v4.2](https://owasp.org/www-project-web-security-testing-guide/) — 安全测试权威指南
 
-## 9. 与相邻模块的关系
+## 10. 与相邻模块的关系
 
 - **07-testing**: 测试基础概念
 - **75-chaos-engineering**: 混沌工程的深度实践

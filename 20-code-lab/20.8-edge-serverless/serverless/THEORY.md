@@ -1,4 +1,4 @@
-﻿# Serverless — 理论基础
+# Serverless — 理论基础
 
 ## 1. Serverless 定义
 
@@ -128,6 +128,124 @@ database_name = "prod-db"
 database_id = "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
 ```
 
+### AWS Lambda 处理器（Node.js）
+
+```typescript
+// lambda-handler.ts
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Context } from 'aws-lambda';
+
+export const handler = async (
+  event: APIGatewayProxyEventV2,
+  context: Context
+): Promise<APIGatewayProxyResultV2> => {
+  console.log('RequestId:', context.awsRequestId);
+
+  // 环境变量与路由分发
+  const stage = process.env.STAGE ?? 'dev';
+  const path = event.rawPath;
+
+  if (path === '/health') {
+    return { statusCode: 200, body: JSON.stringify({ status: 'ok', stage }) };
+  }
+
+  if (path === '/process' && event.requestContext.http.method === 'POST') {
+    const body = JSON.parse(event.body ?? '{}');
+    // 异步重任务处理
+    const result = await heavyComputation(body);
+    return { statusCode: 200, body: JSON.stringify(result) };
+  }
+
+  return { statusCode: 404, body: JSON.stringify({ error: 'Not Found' }) };
+};
+
+async function heavyComputation(input: unknown): Promise<{ processed: boolean }> {
+  // 模拟 CPU 密集型任务
+  await new Promise((r) => setTimeout(r, 500));
+  return { processed: true };
+}
+```
+
+### Deno Deploy 边缘函数
+
+```typescript
+// deno-deploy-handler.ts
+// 部署: https://dash.deno.com/
+import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
+
+const kv = await Deno.openKv();
+
+async function handler(req: Request): Promise<Response> {
+  const url = new URL(req.url);
+
+  if (url.pathname === '/counter' && req.method === 'POST') {
+    const newValue = await kv.atomic()
+      .set(['visits'], 0)
+      .commit();
+    const visits = (await kv.get<number>(['visits'])).value ?? 0;
+    await kv.set(['visits'], visits + 1);
+    return Response.json({ visits: visits + 1 });
+  }
+
+  if (url.pathname === '/counter' && req.method === 'GET') {
+    const visits = (await kv.get<number>(['visits'])).value ?? 0;
+    return Response.json({ visits });
+  }
+
+  return new Response('Not Found', { status: 404 });
+}
+
+serve(handler);
+```
+
+### Vercel Edge Function（Next.js App Router）
+
+```typescript
+// app/api/edge/route.ts
+export const runtime = 'edge';
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const city = request.geo?.city ?? 'unknown';
+
+  // 边缘 KV 读取（Vercel KV / Upstash）
+  const data = await fetch('https://api.example.com/weather', {
+    headers: { Authorization: `Bearer ${process.env.API_KEY}` },
+  }).then((r) => r.json());
+
+  return Response.json({ city, weather: data, region: request.cf?.colo });
+}
+```
+
+### EventBridge + Step Functions 编排模式
+
+```typescript
+// eventbridge-orchestration.ts
+/**
+ * AWS CDK / Serverless Framework 风格的事件驱动编排
+ * 展示 Serverless 架构中状态机与事件总线的协作
+ */
+interface OrderEvent {
+  detailType: 'OrderPlaced' | 'PaymentProcessed' | 'InventoryReserved';
+  detail: { orderId: string; payload: unknown };
+}
+
+export async function orderPlacedHandler(event: OrderEvent) {
+  // 1. 发布事件到 EventBridge
+  await publishEvent('PaymentService', {
+    detailType: 'ProcessPayment',
+    detail: { orderId: event.detail.orderId },
+  });
+
+  // 2. Step Functions 状态机接管后续流程
+  //    OrderPlaced → PaymentProcessed → InventoryReserved → Shipped
+}
+
+async function publishEvent(target: string, event: Omit<OrderEvent, 'detailType'> & { detailType: string }) {
+  // AWS SDK: EventBridge putEvents
+  console.log(`Publishing to ${target}:`, event);
+}
+```
+
 ## 6. Serverless 架构模式
 
 - **Lambda 单体**: 单个函数处理所有请求（简单场景）
@@ -142,7 +260,7 @@ database_id = "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
 - **22-deployment-devops**: Serverless 的 CI/CD 策略
 - **93-deployment-edge-lab**: 边缘部署实践
 
-## 参考
+## 8. 权威外部资源
 
 - [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
 - [AWS Lambda Developer Guide](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)
@@ -150,3 +268,11 @@ database_id = "yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy"
 - [Deno Deploy Documentation](https://docs.deno.com/deploy/manual/)
 - [Hono Framework](https://hono.dev/)
 - [The Burning Monk — AWS Lambda Best Practices](https://theburningmonk.com/)
+- [AWS Serverless Application Model (SAM)](https://docs.aws.amazon.com/serverless-application-model/)
+- [OpenFaaS — Open Source Serverless Framework](https://www.openfaas.com/)
+- [Knative — Kubernetes-based Serverless](https://knative.dev/docs/)
+- [Serverless Framework](https://www.serverless.com/framework/docs)
+- [OWASP Serverless Security Top 10](https://owasp.org/www-project-serverless-top-10/)
+- [Cloudflare Durable Objects — Stateful Edge](https://developers.cloudflare.com/durable-objects/)
+- [AWS Step Functions Developer Guide](https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html)
+- [Vercel Functions — Runtime & Region Configuration](https://vercel.com/docs/functions)

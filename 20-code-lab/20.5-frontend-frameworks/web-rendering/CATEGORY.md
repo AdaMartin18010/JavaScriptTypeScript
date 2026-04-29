@@ -108,6 +108,78 @@ export function useContainerQuery(
 }
 ```
 
+### IntersectionObserver 懒加载图片
+
+```typescript
+// lazy-image.ts
+export function lazyLoadImages(selector = 'img[data-src]') {
+  if (typeof window === 'undefined' || !('IntersectionObserver' in window)) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const img = entry.target as HTMLImageElement;
+        const src = img.dataset.src;
+        if (src) {
+          img.src = src;
+          img.removeAttribute('data-src');
+        }
+        observer.unobserve(img);
+      }
+    });
+  }, { rootMargin: '200px' });
+
+  document.querySelectorAll<HTMLImageElement>(selector).forEach((img) => observer.observe(img));
+}
+```
+
+### requestAnimationFrame 批处理渲染
+
+```typescript
+// raf-batcher.ts
+export class RafBatcher {
+  private scheduled = false;
+  private callbacks = new Set<() => void>();
+
+  add(fn: () => void) {
+    this.callbacks.add(fn);
+    if (!this.scheduled) {
+      this.scheduled = true;
+      requestAnimationFrame(() => this.flush());
+    }
+  }
+
+  private flush() {
+    this.scheduled = false;
+    const batch = Array.from(this.callbacks);
+    this.callbacks.clear();
+    batch.forEach((fn) => fn());
+  }
+}
+
+// 用于高频状态更新场景（滚动、鼠标移动）
+export const renderBatcher = new RafBatcher();
+```
+
+### CSS Containment 优化渲染边界
+
+```typescript
+// css-containment.ts
+/**
+ * 在组件根节点应用 CSS contain 属性，隔离布局/样式/绘制边界
+ * 减少大面积重排/重绘对全局渲染树的影响
+ */
+export const containStrict = {
+  contain: 'strict',
+} as const;
+
+export const containLayoutPaint = {
+  contain: 'layout paint',
+} as const;
+
+// React 用法: <div style={containLayoutPaint}>...</div>
+```
+
 ## 相关索引
 
 - [30-knowledge-base/30.2-categories/README.md](../../../30-knowledge-base/30.2-categories/README.md)
@@ -124,6 +196,12 @@ export function useContainerQuery(
 | MDN — Web Animations API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API) |
 | WAI-ARIA Authoring Practices | 指南 | [www.w3.org/WAI/ARIA/apg](https://www.w3.org/WAI/ARIA/apg) |
 | Container Queries — MDN | 文档 | [developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries) |
+| IntersectionObserver — MDN | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API) |
+| ResizeObserver — MDN | 文档 | [developer.mozilla.org/en-US/docs/Web/API/ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) |
+| CSS Containment Module Level 2 — W3C | 规范 | [www.w3.org/TR/css-contain-2](https://www.w3.org/TR/css-contain-2/) |
+| FLIP Your Animations — Paul Lewis | 博客 | [aerotwist.com/blog/flip-your-animations](https://aerotwist.com/blog/flip-your-animations) |
+| High Performance Animations — HTML5 Rocks | 指南 | [www.html5rocks.com/en/tutorials/speed/high-performance-animations](https://www.html5rocks.com/en/tutorials/speed/high-performance-animations) |
+| Rendering Performance Checklist — web.dev | 清单 | [web.dev/articles/rendering-performance#checklist](https://web.dev/articles/rendering-performance) |
 
 ---
 

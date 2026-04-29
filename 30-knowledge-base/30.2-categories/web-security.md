@@ -97,6 +97,94 @@ export const securityHeaders = helmet({
 </script>
 ```
 
+### CSRF Token 实现（双重提交 Cookie 模式）
+
+```typescript
+// lib/csrf.ts
+import { randomBytes, createHmac, timingSafeEqual } from 'node:crypto';
+
+const CSRF_SECRET = process.env.CSRF_SECRET!;
+
+export function generateCsrfToken(sessionId: string): string {
+  const nonce = randomBytes(16).toString('base64url');
+  const sig = createHmac('sha256', CSRF_SECRET).update(`${sessionId}.${nonce}`).digest('base64url');
+  return `${nonce}.${sig}`;
+}
+
+export function verifyCsrfToken(token: string, sessionId: string): boolean {
+  const [nonce, sig] = token.split('.');
+  if (!nonce || !sig) return false;
+  const expected = createHmac('sha256', CSRF_SECRET).update(`${sessionId}.${nonce}`).digest('base64url');
+  return timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+}
+
+// Express 中间件
+export function csrfMiddleware(req: any, res: any, next: any) {
+  if (req.method === 'GET' || req.method === 'HEAD') return next();
+  const token = req.headers['x-csrf-token'] || req.body._csrf;
+  if (!token || !verifyCsrfToken(token, req.sessionID)) {
+    return res.status(403).json({ error: 'Invalid CSRF token' });
+  }
+  next();
+}
+```
+
+### CORS 安全配置
+
+```typescript
+// middleware/cors.ts
+import cors from 'cors';
+
+const allowedOrigins = ['https://app.example.com', 'https://admin.example.com'];
+
+export const corsConfig = cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+  maxAge: 86400, // 预检缓存 24 小时
+});
+```
+
+### 子资源完整性（Subresource Integrity, SRI）
+
+```html
+<!-- 在 HTML 中为外部 CDN 资源添加 integrity 属性 -->
+<script
+  src="https://cdn.example.com/lib.js"
+  integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"
+  crossorigin="anonymous"
+></script>
+
+<link
+  rel="stylesheet"
+  href="https://cdn.example.com/styles.css"
+  integrity="sha384-abc123..."
+  crossorigin="anonymous"
+/>
+```
+
+```typescript
+// 生成 SRI hash（Node.js）
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+
+function generateSRI(filePath: string, algorithm: 'sha256' | 'sha384' | 'sha512' = 'sha384'): string {
+  const data = readFileSync(filePath);
+  const hash = createHash(algorithm).update(data).digest('base64');
+  return `${algorithm}-${hash}`;
+}
+
+console.log(generateSRI('./dist/app.js'));
+// => sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC
+```
+
 ---
 
 ## 安全响应头速查
@@ -124,6 +212,10 @@ Cross-Origin-Opener-Policy: same-origin
 - [Helmet.js — Express Security Headers](https://helmetjs.github.io/)
 - [OWASP — CSRF Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)
 - [OWASP — SSRF Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html)
+- [CSP Evaluator — Google](https://csp-evaluator.withgoogle.com/)
+- [Security Headers — Scan Tool](https://securityheaders.com/)
+- [web.dev — Security](https://web.dev/security/)
+- [Mozilla Observatory — Security Scan](https://observatory.mozilla.org/)
 
 ---
 

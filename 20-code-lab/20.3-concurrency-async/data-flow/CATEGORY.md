@@ -103,6 +103,62 @@ async function consumeStream(stream: ReadableStream<Uint8Array>) {
 }
 ```
 
+### Svelte 5 Runes 响应式
+
+```typescript
+// svelte-runes.ts — Svelte 5 编译时响应式示例
+// $state、$derived、$effect 在编译期转换为细粒度订阅
+function createCounter() {
+  let count = $state(0);
+  let doubled = $derived(count * 2);
+
+  $effect(() => {
+    console.log('count changed to', count);
+  });
+
+  return {
+    get count() { return count; },
+    get doubled() { return doubled; },
+    increment() { count += 1; }
+  };
+}
+```
+
+### Node.js Transform Stream 流水线
+
+```typescript
+// node-transform-stream.ts — 基于流的背压控制
+import { Transform, pipeline } from 'stream';
+
+const parseLine = new Transform({
+  objectMode: true,
+  transform(chunk: Buffer, _encoding, callback) {
+    const lines = chunk.toString().split('\n');
+    for (const line of lines) {
+      if (line.trim()) this.push(JSON.parse(line));
+    }
+    callback();
+  },
+});
+
+const filterValid = new Transform({
+  objectMode: true,
+  transform(record: Record<string, unknown>, _enc, cb) {
+    if (record.status === 'active') this.push(record);
+    cb();
+  },
+});
+
+// pipeline 自动处理背压与错误传播
+pipeline(
+  process.stdin,
+  parseLine,
+  filterValid,
+  process.stdout,
+  (err) => { if (err) console.error('Pipeline failed', err); }
+);
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -137,6 +193,10 @@ async function consumeStream(stream: ReadableStream<Uint8Array>) {
 | React useEffect 文档 | 官方文档 | [react.dev/reference/react/useEffect](https://react.dev/reference/react/useEffect) |
 | Node.js Stream API | 官方文档 | [nodejs.org/api/stream.html](https://nodejs.org/api/stream.html) |
 | Pull-based vs Push-based | 经典文章 | [github.com/kriskowal/gtor](https://github.com/kriskowal/gtor) |
+| Bacon.js — FRP Library | 文档 | [baconjs.github.io](https://baconjs.github.io/) |
+| Most.js — Monadic Stream | 文档 | [github.com/cujojs/most](https://github.com/cujojs/most) |
+| XState — State Machines | 文档 | [stately.ai/docs](https://stately.ai/docs) |
+| ECMAScript Async Iteration | 提案 | [tc39.es/proposal-async-iteration](https://tc39.es/proposal-async-iteration/) |
 
 ---
 

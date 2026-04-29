@@ -111,6 +111,80 @@ Tabs.Tab = function Tab({ id, children }: { id: string; children: React.ReactNod
 };
 ```
 
+### useSyncExternalStore 封装外部状态
+
+```typescript
+// external-store.ts
+import { useSyncExternalStore } from 'react';
+
+class BrowserStore {
+  private listeners = new Set<() => void>();
+  private online = navigator.onLine;
+
+  constructor() {
+    window.addEventListener('online', () => this.set(true));
+    window.addEventListener('offline', () => this.set(false));
+  }
+
+  private set(value: boolean) {
+    this.online = value;
+    this.listeners.forEach((l) => l());
+  }
+
+  subscribe = (listener: () => void) => {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  };
+
+  getSnapshot = () => this.online;
+}
+
+const browserStore = new BrowserStore();
+
+export function useOnlineStatus() {
+  return useSyncExternalStore(
+    browserStore.subscribe,
+    browserStore.getSnapshot,
+    () => true // SSR 快照
+  );
+}
+```
+
+### 基于 Proxy 的极简状态管理
+
+```typescript
+// proxy-state.ts
+export function createStore<T extends object>(initial: T) {
+  const listeners = new Set<(next: T, prev: T) => void>();
+  let state = initial;
+
+  const proxy = new Proxy(initial, {
+    set(target, prop, value) {
+      const prev = { ...state } as T;
+      (target as any)[prop] = value;
+      state = target;
+      listeners.forEach((fn) => fn(state, prev));
+      return true;
+    },
+  });
+
+  return {
+    state: proxy,
+    subscribe(fn: (next: T, prev: T) => void) {
+      listeners.add(fn);
+      return () => listeners.delete(fn);
+    },
+  };
+}
+
+// 使用
+const counter = createStore({ count: 0 });
+counter.subscribe((next, prev) => {
+  console.log(`Count: ${prev.count} → ${next.count}`);
+});
+counter.state.count++; // 自动触发订阅
+```
+
 ## 相关索引
 
 - [30-knowledge-base/30.2-categories/README.md](../../../30-knowledge-base/30.2-categories/README.md)
@@ -128,6 +202,11 @@ Tabs.Tab = function Tab({ id, children }: { id: string; children: React.ReactNod
 | TC39 Signals Proposal | 规范 | [github.com/tc39/proposal-signals](https://github.com/tc39/proposal-signals) |
 | Ryan Carniato — The Future of Reactivity | 博客 | [dev.to/ryansolid](https://dev.to/ryansolid) |
 | patterns.dev | 指南 | [patterns.dev](https://www.patterns.dev) |
+| React useSyncExternalStore API | 文档 | [react.dev/reference/react/useSyncExternalStore](https://react.dev/reference/react/useSyncExternalStore) |
+| Preact Signals Documentation | 文档 | [preactjs.com/guide/v10/signals](https://preactjs.com/guide/v10/signals) |
+| MDN — Proxy Object | 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) |
+| Vercel — React Server Components | 文档 | [nextjs.org/docs/app/building-your-application/rendering/server-components](https://nextjs.org/docs/app/building-your-application/rendering/server-components) |
+| Web Standards — DOM Spec (WHATWG) | 规范 | [dom.spec.whatwg.org](https://dom.spec.whatwg.org/) |
 
 ---
 

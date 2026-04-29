@@ -79,6 +79,79 @@ function unsafeDivide(a: any, b: any): number {
 }
 ```
 
+### 3.3 Blame 追踪与契约系统模拟
+
+Guarded Domain Theory 与契约系统（Contract Systems）密切相关。以下代码展示了如何用 TypeScript 模拟运行时 blame 追踪：
+
+```typescript
+// 模拟渐进类型的运行时契约与 blame 追踪
+type Blame = { party: 'client' | 'server'; location: string };
+
+class ContractViolation extends Error {
+  constructor(public blame: Blame, message: string) {
+    super(`Contract violation: ${message} (blame: ${blame.party} at ${blame.location})`);
+  }
+}
+
+// 守卫函数：将 any 值「注入」到具体类型域，失败时抛出 blame
+function guard<T>(
+  value: any,
+  predicate: (v: any) => v is T,
+  blame: Blame
+): T {
+  if (predicate(value)) return value;
+  throw new ContractViolation(blame, `Expected ${predicate.name}, got ${typeof value}`);
+}
+
+// 示例谓词
+const isNumber = (v: any): v is number => typeof v === 'number';
+const isString = (v: any): v is string => typeof v === 'string';
+
+// 模拟 any → (number → number) 的渐进类型转换
+function makeAdder(unsafeFn: any): (x: number) => number {
+  return (x: number) => {
+    const f = guard<(x: number) => number>(
+      unsafeFn,
+      (v): v is (x: number) => number => typeof v === 'function',
+      { party: 'client', location: 'makeAdder.call' }
+    );
+    const result = f(x);
+    return guard<number>(
+      result,
+      isNumber,
+      { party: 'server', location: 'makeAdder.return' }
+    );
+  };
+}
+
+// 测试：运行时 blame 定位
+const safeAdder = makeAdder((x: number) => x + 1);
+console.log(safeAdder(5)); // 6
+
+const badAdder = makeAdder((x: number) => 'oops');
+// console.log(badAdder(5)); // ContractViolation: blame server
+```
+
+### 3.4 TypeScript `satisfies` 与精化序的工程映射
+
+TypeScript 4.9 引入的 `satisfies` 运算符可视为 Guarded Domain 中「精化检查」的静态对应：
+
+```typescript
+// satisfies 确保表达式满足类型约束，但不改变其推断类型
+const config = {
+  host: 'localhost',
+  port: 3000,
+  debug: true,
+} satisfies { host: string; port: number };
+
+// config.debug 仍可被推断为 boolean（而非从约束类型中丢失）
+const useDebug: boolean = config.debug;
+
+// Guarded Domain 视角：
+// satisfies 是编译期的 guard，将表达式精化为特定类型的子集，
+// 同时保留原始值的精细结构信息。
+```
+
 ---
 
 ## 四、与本项目的关系
@@ -111,6 +184,10 @@ function unsafeDivide(a: any, b: any): number {
 | *The Gradualizer* | Cimini & Siek | 2016 | [POPL](https://doi.org/10.1145/2837614.2837632) |
 | TypeScript Design Goals | Microsoft | 2023 | [GitHub Wiki](https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals) |
 | TC39 Type Annotations Proposal | TC39 | Stage 1 | [tc39/proposal-type-annotations](https://github.com/tc39/proposal-type-annotations) |
+| Gradual Typing.org | Community | — | [gradualtyping.org](http://gradualtyping.org/) |
+| Siek's Blog — Gradual Typing | Siek | — | [siek.blogspot.com](https://siek.blogspot.com/) |
+| Reticulated Python | Vitousek et al. | 2014 | [Github](https://github.com/mvitousek/reticulated) |
+| PLDI 2024 Proceedings | ACM | 2024 | [ACM DL](https://dl.acm.org/doi/proceedings/10.1145/3656410) |
 
 ---
 

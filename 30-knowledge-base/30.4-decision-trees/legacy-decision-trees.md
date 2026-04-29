@@ -118,6 +118,39 @@ React状态管理？
 | Vue项目 | **Pinia** | 官方推荐，迁移成本低 |
 | 原子化偏好 | **Jotai** | 组合式思维，灵活拆分状态 |
 
+### 代码示例：Zustand + 持久化 + TypeScript
+
+```typescript
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { immer } from 'zustand/middleware/immer';
+
+interface CartState {
+  items: Array<{ id: string; qty: number }>;
+  addItem: (id: string) => void;
+  removeItem: (id: string) => void;
+}
+
+export const useCartStore = create<CartState>()(
+  persist(
+    immer((set) => ({
+      items: [],
+      addItem: (id) =>
+        set((state) => {
+          const found = state.items.find((i) => i.id === id);
+          if (found) found.qty += 1;
+          else state.items.push({ id, qty: 1 });
+        }),
+      removeItem: (id) =>
+        set((state) => {
+          state.items = state.items.filter((i) => i.id !== id);
+        }),
+    })),
+    { name: 'cart-storage', storage: createJSONStorage(() => localStorage) }
+  )
+);
+```
+
 ---
 
 ## 3. 构建工具选型决策树
@@ -299,6 +332,43 @@ ORM选择？
 | 类Hibernate风格 | **TypeORM** | 装饰器模式，熟悉感强 |
 | MongoDB | **Mongoose** | 生态成熟，文档丰富 |
 | 性能敏感 | **Drizzle** | 运行时开销最小 |
+
+### 代码示例：Drizzle ORM + PostgreSQL 关系查询
+
+```typescript
+import { pgTable, serial, varchar, integer, relations } from 'drizzle-orm/pg-core';
+import { eq } from 'drizzle-orm';
+import { db } from './db';
+
+// Schema 定义
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+});
+
+export const posts = pgTable('posts', {
+  id: serial('id').primaryKey(),
+  title: varchar('title', { length: 255 }).notNull(),
+  authorId: integer('author_id').notNull().references(() => users.id),
+});
+
+// 关系定义
+export const userRelations = relations(users, ({ many }) => ({
+  posts: many(posts),
+}));
+
+export const postRelations = relations(posts, ({ one }) => ({
+  author: one(users, { fields: [posts.authorId], references: [users.id] }),
+}));
+
+// 类型安全的关联查询
+const usersWithPosts = await db.query.users.findMany({
+  with: { posts: true },
+  where: eq(users.email, 'alice@example.com'),
+});
+// 推导类型: Array<{ id: number; name: string; email: string; posts: Array<{ ... }> }>
+```
 
 ---
 
@@ -711,6 +781,41 @@ CI/CD工具选择？
 | 企业合规/审计 | **GitLab自托管** | 审批流程，审计日志完备 |
 | 预算敏感 | **Jenkins** | 开源免费，硬件自主 |
 
+### 代码示例：GitHub Actions 可复用工作流
+
+```yaml
+# .github/workflows/reusable-ci.yml
+name: Reusable CI
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        required: true
+        type: string
+      run-e2e:
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test --coverage
+      - uses: codecov/codecov-action@v5
+        if: inputs.run-e2e
+      - run: pnpm test:e2e
+        if: inputs.run-e2e
+```
+
 ### 参考对比矩阵
 
 - CI/CD 工具对比矩阵 [TODO: 链接待修复]
@@ -787,6 +892,43 @@ Web API技术选择？
 | 服务端推送 | **Server-Sent Events** | HTTP原生，自动重连 |
 | 移动端/多语言 | **gRPC-Web** | 强Schema，二进制高效 |
 | 物联网/低带宽 | **gRPC-Web** | ProtoBuf压缩率高 |
+
+### 代码示例：tRPC 路由 + 中间件 + 客户端调用
+
+```typescript
+// server/router.ts
+import { initTRPC } from '@trpc/server';
+import { z } from 'zod';
+
+const t = initTRPC.create();
+const appRouter = t.router({
+  user: t.router({
+    getById: t.procedure
+      .input(z.object({ id: z.string().uuid() }))
+      .query(async ({ input }) => {
+        return db.user.findById(input.id); // 推导返回类型自动传播到客户端
+      }),
+    create: t.procedure
+      .input(z.object({ name: z.string().min(1), email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        return db.user.create(input);
+      }),
+  }),
+});
+
+export type AppRouter = typeof appRouter;
+
+// client.ts
+import { createTRPCProxyClient, httpBatchLink } from '@trpc/client';
+import type { AppRouter } from './server/router';
+
+const client = createTRPCProxyClient<AppRouter>({
+  links: [httpBatchLink({ url: '/api/trpc' })],
+});
+
+// 完全类型安全的远程调用
+const user = await client.user.getById.query({ id: '550e8400-e29b-41d4-a716-446655440000' });
+```
 
 ### 参考对比矩阵
 
@@ -1272,6 +1414,33 @@ flowchart TD
 | AI Agent 框架 | Vercel AI SDK | Mastra / LangGraph / CrewAI |
 | AI 编码工作流 | Cursor | Claude Code / Copilot / Windsurf |
 | Type Stripping | Node.js 24+ 原生 | Bun / Deno / tsx |
+
+---
+
+## 权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| State of JS 2025 | <https://stateofjs.com/en-US> | JavaScript 生态年度调查 |
+| State of React 2025 | <https://stateofreact.com/> | React 生态年度调查 |
+| npm Trends | <https://npmtrends.com/> | 包下载量对比工具 |
+| Bundlephobia | <https://bundlephobia.com/> | 包体积分析 |
+| ThoughtWorks Tech Radar | <https://www.thoughtworks.com/radar> | 技术趋势雷达 |
+| CNCF Landscape | <https://landscape.cncf.io/> | 云原生技术全景 |
+| Stack Overflow Developer Survey | <https://survey.stackoverflow.com/> | 开发者年度调查 |
+| GitHub Trending | <https://github.com/trending> | 实时开源趋势 |
+| JavaScript Rising Stars | <https://risingstars.js.org/> | 年度增长最快项目 |
+| Next.js Docs | <https://nextjs.org/docs> | Next.js 官方文档 |
+| Vite Docs | <https://vitejs.dev/guide/> | Vite 官方文档 |
+| pnpm Docs | <https://pnpm.io/> | pnpm 官方文档 |
+| Turborepo Docs | <https://turbo.build/repo/docs> | Turborepo 官方文档 |
+| Prisma Docs | <https://www.prisma.io/docs/> | Prisma ORM 文档 |
+| Drizzle Docs | <https://orm.drizzle.team/docs/overview> | Drizzle ORM 文档 |
+| Playwright Docs | <https://playwright.dev/docs/intro> | Playwright 测试文档 |
+| Zustand Docs | <https://docs.pmnd.rs/zustand/getting-started/introduction> | Zustand 状态管理 |
+| TanStack Query Docs | <https://tanstack.com/query/latest> | TanStack Query 文档 |
+| Auth.js Docs | <https://authjs.dev/> | Auth.js 认证库 |
+| better-auth Docs | <https://www.better-auth.com/docs/> | better-auth 文档 |
 
 ---
 

@@ -106,6 +106,77 @@ export function createIsland(
 }
 ```
 
+### Render Props 与插槽抽象
+
+```typescript
+// component-composition-models.ts
+import React from 'react';
+
+interface ToggleProps {
+  children: (state: { on: boolean; toggle: () => void }) => React.ReactNode;
+}
+
+export function Toggle({ children }: ToggleProps) {
+  const [on, setOn] = React.useState(false);
+  const toggle = () => setOn((prev) => !prev);
+  return <>{children({ on, toggle })}</>;
+}
+
+// 使用
+// <Toggle>
+//   {({ on, toggle }) => (
+//     <button onClick={toggle}>{on ? 'ON' : 'OFF'}</button>
+//   )}
+// </Toggle>
+```
+
+### 通用插槽包装器（框架无关模式）
+
+```typescript
+// slot-wrapper.ts
+interface SlotConfig<T = unknown> {
+  default?: (props: T) => unknown;
+  header?: (props: T) => unknown;
+  footer?: (props: T) => unknown;
+}
+
+export function renderSlots<T>(
+  slots: SlotConfig<T>,
+  props: T
+): { header?: unknown; body: unknown; footer?: unknown } {
+  return {
+    header: slots.header?.(props),
+    body: slots.default?.(props) ?? null,
+    footer: slots.footer?.(props),
+  };
+}
+
+// Vue / Solid 风格：通过函数分发插槽内容
+// React 风格：直接传入 children / render props
+```
+
+### 事件委托与组件通信总线
+
+```typescript
+// event-delegation.ts
+export class ComponentBus {
+  private handlers = new Map<string, Set<(payload: unknown) => void>>();
+
+  on(event: string, handler: (payload: unknown) => void) {
+    if (!this.handlers.has(event)) this.handlers.set(event, new Set());
+    this.handlers.get(event)!.add(handler);
+    return () => this.handlers.get(event)?.delete(handler);
+  }
+
+  emit(event: string, payload?: unknown) {
+    this.handlers.get(event)?.forEach((h) => h(payload));
+  }
+}
+
+// 用于兄弟组件通信或跨层级轻量事件
+export const globalBus = new ComponentBus();
+```
+
 ## 相关索引
 
 - [30-knowledge-base/30.2-categories/README.md](../../../30-knowledge-base/30.2-categories/README.md)
@@ -121,6 +192,11 @@ export function createIsland(
 | Islands Architecture | 博客 | [jasonformat.com/islands-architecture](https://jasonformat.com/islands-architecture) |
 | Astro Islands | 文档 | [docs.astro.build/en/concepts/islands](https://docs.astro.build/en/concepts/islands) |
 | WAI-ARIA Authoring Practices | 指南 | [www.w3.org/WAI/ARIA/apg](https://www.w3.org/WAI/ARIA/apg) |
+| Radix UI — Primitives | 文档 | [www.radix-ui.com](https://www.radix-ui.com) |
+| React Aria — Adobe Accessible Components | 文档 | [react-spectrum.adobe.com/react-aria](https://react-spectrum.adobe.com/react-aria) |
+| Headless UI — Tailwind | 文档 | [headlessui.com](https://headlessui.com) |
+| Web Components Spec — W3C | 规范 | [github.com/w3c/webcomponents](https://github.com/w3c/webcomponents) |
+| Inclusive Components — Heydon Pickering | 指南 | [inclusive-components.design](https://inclusive-components.design) |
 
 ---
 

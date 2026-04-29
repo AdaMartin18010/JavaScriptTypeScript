@@ -105,6 +105,117 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
+### 预测性预加载（Speculation Rules API）
+
+```typescript
+// components/PredictivePrefetch.tsx
+import Script from 'next/script';
+
+export function PredictivePrefetch() {
+  return (
+    <Script
+      id="speculation-rules"
+      type="speculationrules"
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          prerender: [
+            {
+              source: 'list',
+              urls: ['/dashboard', '/settings', '/profile'],
+            },
+          ],
+          prefetch: [
+            {
+              source: 'document',
+              where: {
+                href_matches: '/*',
+                selector_matches: 'a[rel="prefetch"]',
+              },
+            },
+          ],
+        }),
+      }}
+    />
+  );
+}
+```
+
+### Service Worker 智能缓存策略
+
+```typescript
+// public/sw.ts — Workbox 驱动的智能缓存
+import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
+import { registerRoute } from 'workbox-routing';
+import { StaleWhileRevalidate, CacheFirst, NetworkFirst } from 'workbox-strategies';
+import { ExpirationPlugin } from 'workbox-expiration';
+
+declare const self: ServiceWorkerGlobalScope;
+
+precacheAndRoute(self.__WB_MANIFEST);
+cleanupOutdatedCaches();
+
+// 图片：Cache First + 30 天过期
+registerRoute(
+  ({ request }) => request.destination === 'image',
+  new CacheFirst({
+    cacheName: 'images',
+    plugins: [
+      new ExpirationPlugin({ maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 }),
+    ],
+  })
+);
+
+// API：Network First + 5 分钟兜底
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/api/'),
+  new NetworkFirst({
+    cacheName: 'api-cache',
+    plugins: [
+      new ExpirationPlugin({ maxEntries: 50, maxAgeSeconds: 5 * 60 }),
+    ],
+  })
+);
+
+// 静态 JS/CSS：Stale While Revalidate
+registerRoute(
+  ({ request }) => request.destination === 'script' || request.destination === 'style',
+  new StaleWhileRevalidate({ cacheName: 'static-assets' })
+);
+```
+
+### `requestIdleCallback` 非关键任务调度
+
+```typescript
+// lib/idle-work.ts
+export function scheduleIdleWork<T>(
+  task: () => T,
+  timeout = 2000
+): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const cb = (deadline: IdleDeadline) => {
+      try {
+        const result = task();
+        resolve(result);
+      } catch (err) {
+        reject(err);
+      }
+    };
+
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(cb, { timeout });
+    } else {
+      // 降级：setTimeout
+      setTimeout(() => cb({ didTimeout: true, timeRemaining: () => 0 } as IdleDeadline), 1);
+    }
+  });
+}
+
+// 使用示例：非关键分析数据上报
+scheduleIdleWork(() => {
+  analytics.sendDeferredEvents();
+});
+```
+
 ---
 
 ## Core Web Vitals 阈值（2026）
@@ -135,6 +246,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 - [Next.js Performance Optimization](https://nextjs.org/docs/app/building-your-application/optimizing)
 - [Chrome DevTools Performance](https://developer.chrome.com/docs/devtools/performance/)
 - [Vercel Speed Insights](https://vercel.com/docs/speed-insights)
+- [Chrome UX Report (CrUX)](https://developer.chrome.com/docs/crux)
+- [Speculation Rules API — Chrome Developers](https://developer.chrome.com/docs/web-platform/prerender-pages)
+- [Workbox — Google Chrome Labs](https://developer.chrome.com/docs/workbox)
+- [web.dev — Optimize LCP](https://web.dev/articles/optimize-lcp)
+- [web.dev — Optimize INP](https://web.dev/articles/optimize-inp)
+- [web.dev — Optimize CLS](https://web.dev/articles/optimize-cls)
 
 ---
 

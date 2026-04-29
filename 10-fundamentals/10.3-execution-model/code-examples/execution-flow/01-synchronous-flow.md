@@ -110,12 +110,81 @@ function calculate() {
 console.log(calculate()); // 5
 ```
 
+### 6.2 调用栈可视化
+
+```javascript
+function first() {
+  second();
+}
+function second() {
+  third();
+}
+function third() {
+  // 在错误对象中捕获当前调用栈
+  const stack = new Error('trace').stack;
+  console.log(stack);
+}
+
+first();
+// 输出（简化）：
+// Error: trace
+//     at third (<anonymous>:9:17)
+//     at second (<anonymous>:6:3)
+//     at first (<anonymous>:3:3)
+//     at <anonymous>:13:1
+```
+
+### 6.3 同步 I/O 阻塞演示（Node.js）
+
+```javascript
+const fs = require('node:fs');
+
+console.time('sync-read');
+// 同步读取阻塞事件循环直到文件读取完成
+try {
+  const data = fs.readFileSync('/tmp/large-file.txt', 'utf-8');
+  console.log(`Read ${data.length} bytes`);
+} catch (err) {
+  console.error('Read failed:', err.message);
+}
+console.timeEnd('sync-read');
+// 在文件读取期间，事件循环中的其他回调（如定时器、I/O 事件）均被阻塞
+```
+
+### 6.4 CPU 密集型同步任务的性能陷阱
+
+```javascript
+// 同步长时间计算会阻塞主线程
+function heavyComputation(n) {
+  let sum = 0;
+  for (let i = 0; i < n; i++) {
+    sum += Math.sqrt(i);
+  }
+  return sum;
+}
+
+// 在浏览器中这将导致 UI 冻结
+// 在 Node.js 中将阻塞所有并发请求处理
+console.time('heavy');
+const result = heavyComputation(1e8);
+console.timeEnd('heavy');
+console.log('Result:', result);
+
+// 改进方案：使用 setImmediate / MessageChannel / Worker 将计算拆分为异步块
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §9.4** — Execution Contexts
 - **MDN: Event Loop** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop>
+- **MDN: Call Stack** — <https://developer.mozilla.org/en-US/docs/Glossary/Call_stack>
+- **V8 Blog — Stack Traces** — <https://v8.dev/docs/stack-trace-api>
+- **Node.js Docs — Event Loop** — <https://nodejs.org/en/learn/asynchronous-work/event-loop-its-role>
+- **JavaScript.Info — Event Loop** — <https://javascript.info/event-loop>
+- **ECMA-262 §9.4** — 执行上下文栈管理: <https://tc39.es/ecma262/#sec-execution-contexts>
+- **Philip Roberts: What the heck is the event loop?** — <https://www.youtube.com/watch?v=8aGhZQkoFbQ> (JSConf 2014)
 
 ---
 

@@ -123,7 +123,100 @@ const printer = ts.createPrinter();
 console.log(printer.printFile(result.transformed[0]));
 ```
 
-### 3.3 常见误区
+### 3.3 ts-morph：面向对象的编译器 API 封装
+
+```typescript
+import { Project, SyntaxKind } from 'ts-morph';
+
+const project = new Project({ tsConfigFilePath: './tsconfig.json' });
+const sourceFile = project.getSourceFileOrThrow('src/app.ts');
+
+// 查找并重命名所有名为 "oldName" 的变量
+sourceFile.getDescendantsOfKind(SyntaxKind.Identifier)
+  .filter(id => id.getText() === 'oldName')
+  .forEach(id => id.rename('newName'));
+
+// 添加新导入
+sourceFile.addImportDeclaration({
+  namedImports: ['useState'],
+  moduleSpecifier: 'react',
+});
+
+// 保存变更
+project.saveSync();
+```
+
+### 3.4 Language Service API：实现自定义 IDE 功能
+
+```typescript
+import * as ts from 'typescript';
+
+// 创建语言服务宿主
+const files: Record<string, string> = { 'file.ts': 'const x = 1;' };
+const servicesHost: ts.LanguageServiceHost = {
+  getScriptFileNames: () => Object.keys(files),
+  getScriptVersion: () => '0',
+  getScriptSnapshot: (name) => {
+    if (!files[name]) return undefined;
+    return ts.ScriptSnapshot.fromString(files[name]);
+  },
+  getCurrentDirectory: () => process.cwd(),
+  getCompilationSettings: () => ({ strict: true }),
+  getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
+  fileExists: ts.sys.fileExists,
+  readFile: ts.sys.readFile,
+  readDirectory: ts.sys.readDirectory,
+  directoryExists: ts.sys.directoryExists,
+  getDirectories: ts.sys.getDirectories,
+};
+
+const services = ts.createLanguageService(servicesHost, ts.createDocumentRegistry());
+
+// 获取指定位置的自动补全
+const completions = services.getCompletionsAtPosition('file.ts', 10, undefined);
+console.log(completions?.entries.map(e => e.name));
+
+// 获取光标位置的快速信息（hover 提示）
+const quickInfo = services.getQuickInfoAtPosition('file.ts', 8);
+console.log(quickInfo?.displayParts?.map(p => p.text).join(''));
+```
+
+### 3.5 自定义 TSLint/ESLint 规则中的类型查询
+
+```typescript
+import { ESLintUtils } from '@typescript-eslint/utils';
+
+export const rule = ESLintUtils.RuleCreator(
+  (name) => `https://example.com/rules/${name}`
+)({
+  name: 'no-floating-promises',
+  meta: {
+    type: 'problem',
+    docs: { description: 'Disallow unhandled promises' },
+    schema: [],
+    messages: { floating: 'Promise must be awaited or explicitly handled.' },
+  },
+  defaultOptions: [],
+  create(context) {
+    const parserServices = ESLintUtils.getParserServices(context);
+    const checker = parserServices.program.getTypeChecker();
+
+    return {
+      ExpressionStatement(node) {
+        const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node.expression);
+        const type = checker.getTypeAtLocation(tsNode);
+        const typeString = checker.typeToString(type);
+
+        if (typeString.startsWith('Promise')) {
+          context.report({ node, messageId: 'floating' });
+        }
+      },
+    };
+  },
+});
+```
+
+### 3.6 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -131,7 +224,7 @@ console.log(printer.printFile(result.transformed[0]));
 | `ts-morph` 比原生 API 慢 | ts-morph 底层仍是原生 API，慢在对象封装层 |
 | Compiler API 只能分析 TS | 同样可解析 `.js` 文件并执行类型推断（`allowJs`） |
 
-### 3.4 扩展阅读
+### 3.7 扩展阅读
 
 - [TypeScript Compiler API Wiki](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API)
 - [TypeScript AST Viewer](https://ts-ast-viewer.com/)
@@ -139,6 +232,21 @@ console.log(printer.printFile(result.transformed[0]));
 - [Babel Plugin Handbook](https://github.com/jamiebuilds/babel-handbook/blob/master/translations/en/plugin-handbook.md)
 - [AST Explorer](https://astexplorer.net/)
 - `10-fundamentals/10.2-type-system/`
+
+---
+
+## 权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| TypeScript Compiler API Wiki | <https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API> | 官方编译器 API 文档 |
+| TypeScript AST Viewer | <https://ts-ast-viewer.com/> | 交互式 AST 查看器 |
+| ts-morph Documentation | <https://ts-morph.com/> | 面向对象的编译器 API 封装 |
+| AST Explorer | <https://astexplorer.net/> | 多语言 AST 对比工具 |
+| Babel Plugin Handbook | <https://github.com/jamiebuilds/babel-handbook> | Babel 插件开发指南 |
+| TypeScript Language Service API | <https://github.com/microsoft/TypeScript/wiki/Architectural-Overview> | 语言服务架构概述 |
+| TypeScript Deep Dive — Compiler | <https://basarat.gitbook.io/typescript/overview> | 社区深度教程 |
+| TypeScript Compiler Internals | <https://www.typescriptlang.org/dev/typescript-internals/> | 官方内部文档 |
 
 ---
 

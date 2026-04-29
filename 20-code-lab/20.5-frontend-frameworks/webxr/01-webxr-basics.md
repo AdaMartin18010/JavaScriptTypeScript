@@ -110,8 +110,168 @@ setTimeout(() => manager.requestSession(...), 1000);
 
 ---
 
+## 渲染循环与参考空间
+
+### 核心 requestAnimationFrame 渲染循环
+
+```typescript
+// webxr-render-loop.ts
+let xrSession: XRSession | null = null;
+let xrRefSpace: XRReferenceSpace | null = null;
+let gl: WebGL2RenderingContext;
+
+async function onSessionStarted(session: XRSession) {
+  xrSession = session;
+  const canvas = document.createElement('canvas');
+  gl = canvas.getContext('webgl2', { xrCompatible: true })!;
+  await gl.makeXRCompatible();
+
+  // 请求 'local-floor' 参考空间（以地面为原点的站立空间）
+  xrRefSpace = await session.requestReferenceSpace('local-floor');
+
+  // 创建 WebGL 层并绑定到会话
+  const baseLayer = new XRWebGLLayer(session, gl);
+  session.updateRenderState({ baseLayer });
+
+  // 启动渲染循环
+  session.requestAnimationFrame(onXRFrame);
+}
+
+function onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
+  if (!xrSession || !xrRefSpace) return;
+
+  // 请求下一帧
+  xrSession.requestAnimationFrame(onXRFrame);
+
+  const pose = frame.getViewerPose(xrRefSpace);
+  if (!pose) return;
+
+  const glLayer = xrSession.renderState.baseLayer!;
+
+  // 为每只眼睛渲染
+  for (const view of pose.views) {
+    const viewport = glLayer.getViewport(view)!;
+    gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+
+    // 获取视图矩阵与投影矩阵
+    const viewMatrix = view.transform.inverse.matrix;
+    const projMatrix = view.projectionMatrix;
+
+    renderScene(gl, viewMatrix, projMatrix);
+  }
+}
+
+function renderScene(
+  gl: WebGL2RenderingContext,
+  viewMatrix: Float32Array,
+  projMatrix: Float32Array
+) {
+  // 清屏
+  gl.clearColor(0.1, 0.1, 0.1, 1.0);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  // 使用 viewMatrix + projMatrix 渲染立体场景
+  // ... (WebGL 绘制逻辑)
+}
+```
+
+### Hit-Test（AR 平面检测与射线投射）
+
+```typescript
+// webxr-hit-test.ts
+let hitTestSource: XRHitTestSource | null = null;
+
+async function startARWithHitTest(session: XRSession) {
+  const viewerSpace = await session.requestReferenceSpace('viewer');
+  const localFloorSpace = await session.requestReferenceSpace('local-floor');
+
+  // 创建 hit-test 源：从 viewer 空间向下发射射线
+  hitTestSource = await session.requestHitTestSource({
+    space: viewerSpace,
+  });
+
+  function onARFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
+    session.requestAnimationFrame(onARFrame);
+
+    const pose = frame.getViewerPose(localFloorSpace);
+    if (!pose) return;
+
+    const hitTestResults = frame.getHitTestResults(hitTestSource!);
+    if (hitTestResults.length > 0) {
+      const hitPose = hitTestResults[0].getPose(localFloorSpace);
+      if (hitPose) {
+        // hitPose.transform.position 为射线与平面的交点
+        placeObjectAt(hitPose.transform.position);
+      }
+    }
+
+    renderARScene(frame, pose);
+  }
+
+  session.requestAnimationFrame(onARFrame);
+}
+
+function placeObjectAt(position: DOMPointReadOnly) {
+  console.log(`Placing object at (${position.x}, ${position.y}, ${position.z})`);
+}
+```
+
+### 手部追踪输入处理
+
+```typescript
+// webxr-hand-tracking.ts
+async function startHandTracking(session: XRSession) {
+  // 请求 'hand-tracking' optional feature
+  if (!session.enabledFeatures?.has('hand-tracking')) {
+    console.warn('Hand tracking not supported');
+    return;
+  }
+
+  const refSpace = await session.requestReferenceSpace('local-floor');
+
+  function onHandFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
+    session.requestAnimationFrame(onHandFrame);
+
+    for (const inputSource of session.inputSources) {
+      if (inputSource.hand) {
+        // 获取关节数据
+        const wrist = inputSource.hand.get('wrist');
+        const indexTip = inputSource.hand.get('index-finger-tip');
+
+        if (wrist && indexTip) {
+          const wristPose = frame.getJointPose(wrist, refSpace);
+          const tipPose = frame.getJointPose(indexTip, refSpace);
+
+          if (wristPose && tipPose) {
+            const distance = Math.hypot(
+              tipPose.transform.position.x - wristPose.transform.position.x,
+              tipPose.transform.position.y - wristPose.transform.position.y,
+              tipPose.transform.position.z - wristPose.transform.position.z
+            );
+            console.log(`Index tip distance from wrist: ${distance.toFixed(3)}m`);
+          }
+        }
+      }
+    }
+  }
+
+  session.requestAnimationFrame(onHandFrame);
+}
+```
+
+---
+
 ## 参考资源
 
 - [WebXR Device API 规范](https://immersive-web.github.io/webxr/)
 - [MDN WebXR 指南](https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API)
 - [WebXR 功能检测](https://github.com/immersive-web/webxr-feature-detect)
+- [Immersive Web Working Group — W3C](https://www.w3.org/immersive-web/)
+- [Three.js WebXR Documentation](https://threejs.org/docs/#manual/en/introduction/WebXR)
+- [Babylon.js WebXR](https://doc.babylonjs.com/features/featuresDeepDive/webXR)
+- [WebGL 2.0 Specification — Khronos](https://registry.khronos.org/webgl/specs/latest/2.0/)
+- [OpenXR Specification — Khronos](https://www.khronos.org/openxr/)
+- [Meta Quest WebXR Best Practices](https://developer.oculus.com/documentation/web/webxr-overview/)
+- [web.dev — Building WebXR Experiences](https://web.dev/articles/tags/webxr)
+- [Can I Use — WebXR Device API](https://caniuse.com/webxr)
+- [Model-Viewer — WebXR Drop-in Component](https://modelviewer.dev/)

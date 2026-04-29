@@ -91,6 +91,64 @@
 }
 ```
 
+### Moon (`moon.yml` + `.moon/workspace.yml`)
+
+```yaml
+# .moon/workspace.yml
+$schema: 'https://moonrepo.dev/schemas/workspace.json'
+projects:
+  - 'apps/*'
+  - 'packages/*'
+vcs:
+  manager: 'git'
+  defaultBranch: 'main'
+
+# packages/core/moon.yml
+language: 'typescript'
+type: 'library'
+
+tasks:
+  build:
+    command: 'tsc --project tsconfig.build.json'
+    inputs:
+      - 'src/**/*'
+      - 'tsconfig*.json'
+    outputs:
+      - 'dist'
+  test:
+    command: 'vitest run'
+    deps:
+      - 'build'
+    inputs:
+      - 'src/**/*'
+      - 'tests/**/*'
+```
+
+### Rush (`rush.json`)
+
+```json
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "5.112.0",
+  "pnpmVersion": "8.15.0",
+  "nodeSupportedVersionRange": ">=18.0.0 <21.0.0",
+  "projects": [
+    {
+      "packageName": "@myorg/core",
+      "projectFolder": "packages/core",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@myorg/web",
+      "projectFolder": "apps/web",
+      "reviewCategory": "production",
+      "shouldPublish": false
+    }
+  ]
+}
+```
+
 ### pnpm Workspaces (`pnpm-workspace.yaml`)
 
 ```yaml
@@ -114,6 +172,47 @@ auto-install-peers=true
 #     "release": "pnpm build && changeset publish"
 #   }
 # }
+```
+
+### Changesets 版本管理
+
+```bash
+# 初始化
+npx changeset init
+
+# 添加变更集（交互式选择包、填写描述）
+npx changeset
+
+# 版本 bump + 生成 changelog
+npx changeset version
+
+# 发布
+npx changeset publish
+```
+
+```json
+// .changeset/config.json
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [],
+  "linked": [["@myorg/core", "@myorg/utils"]],
+  "access": "restricted",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}
+```
+
+### Nx Generator 示例
+
+```bash
+# 生成新的 React 库
+npx nx generate @nx/react:lib ui-components --directory=packages/ui-components
+
+# 生成 Next.js 应用
+npx nx generate @nx/next:app marketing-site --directory=apps/marketing
 ```
 
 ---
@@ -142,6 +241,9 @@ auto-install-peers=true
 | Changesets | <https://github.com/changesets/changesets> | 版本管理与发布工具 |
 | Monorepo.tools | <https://monorepo.tools/> | monorepo 工具对比网站 |
 | Lerna (Archived) | <https://lerna.js.org/docs/intro> | 已归档，Nx 接管 |
+| Nx Remote Caching | <https://nx.dev/ci/features/remote-cache> | 远程缓存配置 |
+| Turborepo Remote Cache | <https://turbo.build/repo/docs/core-concepts/remote-caching> | 自托管 S3 指南 |
+| Rush Version Policies | <https://rushjs.io/pages/maintainer/publishing/> | 发布与版本策略 |
 
 ---
 

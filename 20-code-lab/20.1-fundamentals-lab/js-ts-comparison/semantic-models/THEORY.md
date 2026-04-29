@@ -121,7 +121,88 @@ enum Status {
 // JS 输出包含 Status["Active"] = 1 和 Status[1] = "Active"
 ```
 
-### 3.3 常见误区
+### 3.3 运行时类型验证：Zod 弥补擦除缺口
+
+```typescript
+import { z } from 'zod';
+
+// 定义 schema = 静态类型 + 运行时校验
+const UserSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1),
+  age: z.number().int().min(0).max(150),
+  email: z.string().email(),
+  role: z.enum(['admin', 'user', 'guest']),
+});
+
+type User = z.infer<typeof UserSchema>; // 自动推导 TS 类型
+
+// 外部数据边界校验
+async function fetchUser(id: string): Promise<User> {
+  const raw = await fetch(`/api/users/${id}`).then(r => r.json());
+  // 运行时校验：失败时抛出 ZodError，带详细路径信息
+  return UserSchema.parse(raw);
+}
+
+// 部分校验（忽略未知字段）
+const PartialUser = UserSchema.partial().passthrough();
+```
+
+### 3.4 Branded Types：在结构类型系统中模拟名义类型
+
+```typescript
+// TypeScript 是结构类型系统，但可用 branded type 模拟名义类型
+type USD = number & { readonly __brand: unique symbol };
+type EUR = number & { readonly __brand: unique symbol };
+
+function usd(amount: number): USD {
+  return amount as USD;
+}
+function eur(amount: number): EUR {
+  return amount as EUR;
+}
+
+function addUSD(a: USD, b: USD): USD {
+  return (a + b) as USD;
+}
+
+const price = usd(100);
+const tax = usd(20);
+const total = addUSD(price, tax); // ✅ 编译通过
+// addUSD(price, eur(20));        // ❌ 编译错误：EUR 不能赋值给 USD
+```
+
+### 3.5 类型精化（Narrowing）的完整模式
+
+```typescript
+function exhaustive(value: 'a' | 'b' | 'c'): string {
+  switch (value) {
+    case 'a': return 'Alpha';
+    case 'b': return 'Beta';
+    case 'c': return 'Gamma';
+    default:
+      // 利用 never 实现穷尽检查
+      const _exhaustive: never = value;
+      return _exhaustive;
+  }
+}
+
+// 自定义类型守卫
+type Circle = { kind: 'circle'; radius: number };
+type Rect = { kind: 'rect'; width: number; height: number };
+type Shape = Circle | Rect;
+
+function isCircle(s: Shape): s is Circle {
+  return s.kind === 'circle';
+}
+
+function area(s: Shape): number {
+  if (isCircle(s)) return Math.PI * s.radius ** 2;
+  return s.width * s.height;
+}
+```
+
+### 3.6 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -130,7 +211,7 @@ enum Status {
 | `as` 类型断言改变运行时行为 | `as` 仅在编译期生效，运行时值不变 |
 | 接口在运行时可被检测 | 接口完全擦除，`instanceof` 仅适用于类构造函数 |
 
-### 3.4 扩展阅读
+### 3.7 扩展阅读
 
 - [ECMA-262: Execution Contexts](https://tc39.es/ecma262/#sec-execution-contexts)
 - [TypeScript Handbook: Type Erasure](https://www.typescriptlang.org/docs/handbook/2/basic-types.html#erased-types)
@@ -138,6 +219,23 @@ enum Status {
 - [TypeScript Design Goals (Non-goals)](https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals)
 - [ECMAScript Spec: Abstract Operations](https://tc39.es/ecma262/#sec-abstract-operations)
 - `20.10-formal-verification/`
+
+---
+
+## 权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| ECMA-262: Execution Contexts | <https://tc39.es/ecma262/#sec-execution-contexts> | 执行上下文规范 |
+| TypeScript Handbook: Type Erasure | <https://www.typescriptlang.org/docs/handbook/2/basic-types.html#erased-types> | 类型擦除官方说明 |
+| TypeScript Handbook: Type Compatibility | <https://www.typescriptlang.org/docs/handbook/type-compatibility.html> | 结构子类型系统 |
+| TypeScript Design Goals | <https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals> | 设计目标与非目标 |
+| Zod Documentation | <https://zod.dev/> | 运行时类型校验库 |
+| io-ts Documentation | <https://gcanti.github.io/io-ts/> | 函数式运行时类型校验 |
+| TypeScript Narrowing | <https://www.typescriptlang.org/docs/handbook/2/narrowing.html> | 类型精化官方文档 |
+| TypeScript Advanced Types | <https://www.typescriptlang.org/docs/handbook/2/types-from-types.html> | 类型体操 |
+| ECMAScript Spec: Abstract Operations | <https://tc39.es/ecma262/#sec-abstract-operations> | 抽象操作规范 |
+| Soundness vs Completeness in Type Systems | <https://en.wikipedia.org/wiki/Soundness> | 类型系统健全性 |
 
 ---
 

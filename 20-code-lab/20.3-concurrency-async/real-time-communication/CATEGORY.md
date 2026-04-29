@@ -75,6 +75,43 @@ export class ResilientWebSocket {
 }
 ```
 
+### WebSocket 二进制流传输
+
+```typescript
+// binary-streaming.ts — WebSocket 分片传输大文件
+export class BinaryChunkUploader {
+  private ws: WebSocket;
+  private chunkSize = 16 * 1024; // 16KB
+
+  constructor(url: string) {
+    this.ws = new WebSocket(url);
+    this.ws.binaryType = 'arraybuffer';
+  }
+
+  async upload(file: File, onProgress?: (sent: number, total: number) => void): Promise<void> {
+    const totalChunks = Math.ceil(file.size / this.chunkSize);
+    const stream = file.stream();
+    const reader = stream.getReader();
+    let chunkIndex = 0;
+    let sent = 0;
+
+    // 发送元数据
+    this.ws.send(JSON.stringify({ type: 'start', name: file.name, totalChunks }));
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      this.ws.send(value);
+      sent += value.byteLength;
+      onProgress?.(sent, file.size);
+      chunkIndex++;
+    }
+
+    this.ws.send(JSON.stringify({ type: 'end' }));
+  }
+}
+```
+
 ### SSE 自动重连管理器
 
 ```typescript
@@ -104,6 +141,38 @@ export class SSEManager extends EventTarget {
 }
 ```
 
+### SSE 多通道事件分发
+
+```typescript
+// multi-channel-sse.ts — 基于事件名称的类型安全分发
+type SSEEventMap = {
+  'price-update': { symbol: string; price: number };
+  'order-fill': { orderId: string; status: 'filled' | 'partial' };
+  'system-alert': { level: 'warn' | 'critical'; message: string };
+};
+
+export class TypedEventSource<TMap extends Record<string, unknown>> extends EventTarget {
+  private source: EventSource;
+
+  constructor(url: string) {
+    super();
+    this.source = new EventSource(url);
+    this.source.onmessage = (e) => {
+      const { event, data } = JSON.parse(e.data);
+      this.dispatchEvent(new CustomEvent(event, { detail: data }));
+    };
+  }
+
+  on<K extends keyof TMap>(event: K, handler: (data: TMap[K]) => void) {
+    this.addEventListener(event as string, ((e: CustomEvent) => handler(e.detail)) as EventListener);
+  }
+}
+
+// 使用
+const sse = new TypedEventSource<SSEEventMap>('/api/events');
+sse.on('price-update', (data) => console.log(data.symbol, data.price));
+```
+
 ### WebRTC DataChannel 文件传输
 
 ```typescript
@@ -118,6 +187,50 @@ export async function createDataChannel(
   return new Promise((resolve) => {
     channel.onopen = () => resolve(channel);
   });
+}
+```
+
+### WebRTC 完美协商模式
+
+```typescript
+// perfect-negotiation.ts — 处理信令冲突的推荐模式
+export function setupPerfectNegotiation(pc: RTCPeerConnection, signaling: SignalingChannel, polite: boolean) {
+  let makingOffer = false;
+  let ignoreOffer = false;
+
+  pc.onnegotiationneeded = async () => {
+    try {
+      makingOffer = true;
+      await pc.setLocalDescription();
+      signaling.send({ description: pc.localDescription });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      makingOffer = false;
+    }
+  };
+
+  pc.onicecandidate = ({ candidate }) => signaling.send({ candidate });
+
+  signaling.onMessage = async ({ description, candidate }) => {
+    try {
+      if (description) {
+        const offerCollision = description.type === 'offer' && (makingOffer || pc.signalingState !== 'stable');
+        ignoreOffer = !polite && offerCollision;
+        if (ignoreOffer) return;
+
+        await pc.setRemoteDescription(description);
+        if (description.type === 'offer') {
+          await pc.setLocalDescription();
+          signaling.send({ description: pc.localDescription });
+        }
+      } else if (candidate) {
+        await pc.addIceCandidate(candidate);
+      }
+    } catch (err) {
+      if (!ignoreOffer) console.error(err);
+    }
+  };
 }
 ```
 
@@ -137,6 +250,12 @@ export async function createDataChannel(
 | web.dev — WebRTC for the Curious | 指南 | [webrtcforthecurious.com](https://webrtcforthecurious.com) |
 | Socket.IO Docs | 文档 | [socket.io/docs/v4](https://socket.io/docs/v4) |
 | W3C — WebRTC Specification | 规范 | [w3c.github.io/webrtc-pc](https://w3c.github.io/webrtc-pc) |
+| RFC 6455 — WebSocket Protocol | 标准 | [datatracker.ietf.org/doc/html/rfc6455](https://datatracker.ietf.org/doc/html/rfc6455) |
+| RFC 9112 — HTTP/1.1 | 标准 | [datatracker.ietf.org/doc/html/rfc9112](https://datatracker.ietf.org/doc/html/rfc9112) |
+| WebTransport API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/WebTransport](https://developer.mozilla.org/en-US/docs/Web/API/WebTransport) |
+| WebCodecs API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/WebCodecs_API](https://developer.mozilla.org/en-US/docs/Web/API/WebCodecs_API) |
+| WebRTC Perfect Negotiation | 指南 | [developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation) |
+| Ably — Realtime Concepts | 文章 | [ably.com/topic](https://ably.com/topic) |
 
 ---
 

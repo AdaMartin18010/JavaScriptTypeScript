@@ -200,7 +200,131 @@ status: current
 
 ---
 
-## 四、执行计划与里程碑
+## 四、代码示例
+
+### TypeScript 6.0 推荐 tsconfig.json
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2025",
+    "lib": ["ES2025", "DOM", "DOM.Iterable"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "strictInference": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*"]
+}
+```
+
+### Temporal API 使用示例（ES2025 / TS 6.0）
+
+```typescript
+// Temporal 替代 Date，提供不可变、时区安全的日期时间操作
+import { Temporal } from '@js-temporal/polyfill'; // 原生支持已在 ES2025
+
+const now = Temporal.Now.instant();
+const meeting = Temporal.PlainDateTime.from('2026-05-20T14:00:00');
+const tokyoTime = meeting.toZonedDateTime('Asia/Tokyo');
+
+// 不可变运算：返回新对象，不修改原对象
+const nextWeek = meeting.add({ weeks: 1 });
+const duration = meeting.until(nextWeek); // Temporal.Duration
+
+// 与 Date 的本质区别：Temporal 对象不包含时区偏移歧义
+console.log(tokyoTime.toString()); // 2026-05-20T14:00:00+09:00[Asia/Tokyo]
+```
+
+### `using` 显式资源管理（Stage 4 / ES2025）
+
+```typescript
+// 自动调用 Symbol.dispose / Symbol.asyncDispose，替代 try/finally
+function openFile(path: string): FileHandle & Disposable {
+  const fd = fs.openSync(path, 'r');
+  return {
+    fd,
+    read() { /* ... */ },
+    [Symbol.dispose]() { fs.closeSync(fd); },
+  };
+}
+
+// 块级自动释放
+{
+  using file = openFile('data.txt');
+  const content = file.read();
+  // file[Symbol.dispose]() 在此处自动调用
+}
+
+// 异步版本
+async function processDb() {
+  await using conn = await dbPool.acquire();
+  await conn.query('SELECT * FROM users');
+  // conn[Symbol.asyncDispose]() 自动调用
+}
+```
+
+### `import defer` 延迟模块求值（Stage 3 / TS 6.0）
+
+```typescript
+// import defer 允许同步语法但延迟模块求值，优化大型应用启动
+import defer * as HeavyChart from './heavy-charting-lib';
+
+// HeavyChart 此时未加载；首次属性访问时触发求值
+function showDashboard() {
+  // 下面这行触发实际加载和求值
+  const chart = new HeavyChart.LineChart('#container');
+  chart.render(data);
+}
+
+// 与 dynamic import 的区别：
+// - import defer 是静态声明，可被 tree-shaking 分析
+// - dynamic import() 是异步表达式，返回 Promise
+```
+
+### Node.js 24 原生 TypeScript 执行
+
+```typescript
+// 直接运行，无需 tsx / ts-node（Node.js 24+）
+// node --experimental-strip-types server.ts
+// 或默认启用：node server.ts
+
+import { createServer } from 'node:http';
+
+interface RequestBody {
+  name: string;
+}
+
+const server = createServer(async (req, res) => {
+  if (req.url === '/api/hello' && req.method === 'POST') {
+    const chunks: Buffer[] = [];
+    for await (const chunk of req) chunks.push(chunk);
+    const body: RequestBody = JSON.parse(Buffer.concat(chunks).toString());
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ message: `Hello, ${body.name}` }));
+  }
+});
+
+if (import.meta.main) {
+  server.listen(3000, () => console.log('Server on :3000'));
+}
+```
+
+---
+
+## 五、执行计划与里程碑
 
 ### 阶段一：P0 紧急更新（预计 2 天）
 
@@ -226,7 +350,7 @@ status: current
 
 ---
 
-## 五、确认事项
+## 六、确认事项
 
 请你确认以下问题，确认后我将立即开始并行推进：
 
@@ -246,3 +370,30 @@ status: current
    - 例如：Temporal API、import defer、Turbolev、WinterTC、Structs 等，我可以优先处理。
 
 请回复确认，我将立即开始执行。
+
+---
+
+## 权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| TypeScript 6.0 Release Notes | <https://devblogs.microsoft.com/typescript/announcing-typescript-6-0/> | 官方发布说明 |
+| TypeScript 7.0 Go Rewrite | <https://devblogs.microsoft.com/typescript/typescript-native-port/> | Go 重写官方公告 |
+| TC39 Proposals | <https://github.com/tc39/proposals> | ECMAScript 提案跟踪 |
+| ECMA-262 2025 Spec | <https://262.ecma-international.org/15.0/> | ECMAScript 2025 规范 |
+| Node.js 24 Release | <https://nodejs.org/en/blog/release/v24.0.0> | Node.js 24 发布说明 |
+| V8 Blog | <https://v8.dev/blog> | V8 引擎官方博客 |
+| WinterTC (TC55) | <https://wintertc.org/> | WinterTC 官方网站 |
+| Minimum Common Web API | <https://min-common-api.proposal.wintertc.org/> | 最小公共 Web API 规范 |
+| POPL 2025 Papers | <https://popl25.sigplan.org/track/POPL-2025-papers> | POPL 2025 论文列表 |
+| PLDI 2025 Papers | <https://pldi25.sigplan.org/track/pldi-2025-papers> | PLDI 2025 论文列表 |
+| Temporal API Polyfill | <https://github.com/js-temporal/temporal-polyfill> | Temporal 参考实现 |
+| MDN — Temporal | <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal> | Temporal API 文档 |
+| MDN — Explicit Resource Management | <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/using> | using 声明文档 |
+| TypeScript Compiler API | <https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API> | 编译器 API 文档 |
+| LSP Specification | <https://microsoft.github.io/language-server-protocol/> | 语言服务器协议规范 |
+| WasmGC Proposal | <https://github.com/WebAssembly/gc/blob/main/proposals/gc/Overview.md> | WebAssembly GC 提案 |
+
+---
+
+*最后更新: 2026-04-29*

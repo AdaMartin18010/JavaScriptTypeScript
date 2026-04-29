@@ -123,6 +123,58 @@ const source = program.getSourceFile('./sample.ts')!;
 console.log(extractInterfaceNames(source));
 ```
 
+### `satisfies` 运算符：推断与约束兼得
+
+```typescript
+// TS 4.9+ 引入 satisfies，既保留推断类型，又约束结构
+const config = {
+  host: 'localhost',
+  port: 3000,
+  ssl: false,
+} satisfies Record<string, string | number | boolean>;
+
+// config.port 仍为 number 类型（而非 string | number | boolean）
+const url = `http://${config.host}:${config.port}`;
+```
+
+### Branded Types：零开销名义类型
+
+```typescript
+// 使用交叉类型创建名义类型，编译后完全擦除
+type UserId = string & { __brand: 'UserId' };
+type OrderId = string & { __brand: 'OrderId' };
+
+function createUserId(id: string): UserId {
+  return id as UserId;
+}
+
+function createOrderId(id: string): OrderId {
+  return id as OrderId;
+}
+
+function queryUser(id: UserId) { /* ... */ }
+
+const uid = createUserId('u-123');
+const oid = createOrderId('o-456');
+
+queryUser(uid);   // ✅ OK
+// queryUser(oid); // ❌ 编译错误：OrderId 不能赋值给 UserId
+```
+
+### `as const` 深度只读推断
+
+```typescript
+// JavaScript
+const jsRoles = ['admin', 'user', 'guest'];
+// jsRoles[0] 运行时可以是任意字符串
+
+// TypeScript with as const
+const tsRoles = ['admin', 'user', 'guest'] as const;
+// tsRoles 类型为 readonly ['admin', 'user', 'guest']
+// tsRoles[0] 精确为字面量 'admin'
+type Role = (typeof tsRoles)[number]; // 'admin' | 'user' | 'guest'
+```
+
 ## 关联索引
 
 - [10-fundamentals/10.1-language-semantics/README.md](../../../10-fundamentals/10.1-language-semantics/README.md)
@@ -138,3 +190,8 @@ console.log(extractInterfaceNames(source));
 - [JSDoc Reference](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) — TypeScript 官方 JSDoc 类型支持文档
 - [tc39/proposals](https://github.com/tc39/proposals) — ECMAScript 提案跟踪仓库
 - [AST Explorer](https://astexplorer.net/) — 多语言 AST 可视化工具，支持 TypeScript
+- [TypeScript `satisfies` Operator](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html#the-satisfies-operator) — TS 4.9 发布说明
+- [Nominal Typing Techniques](https://www.typescriptlang.org/docs/handbook/advanced-types.html#nominal-type-techniques) — 名义类型模拟技术
+- [Microsoft TypeScript Wiki](https://github.com/microsoft/TypeScript/wiki) — 官方 Wiki，含设计原则与路线图
+- [Total TypeScript](https://www.totaltypescript.com/) — Matt Pocock 的 TypeScript 进阶课程
+- [Type Challenges](https://github.com/type-challenges/type-challenges) — 类型体操练习题集

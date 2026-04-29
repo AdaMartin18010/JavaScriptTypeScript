@@ -139,7 +139,54 @@ function processInputTS(input: unknown): number {
 }
 ```
 
-### 3.3 常见误区
+### 3.3 泛型约束与条件类型：安全映射
+
+```ts
+// TypeScript 利用泛型约束在编译期保证键的存在
+function pluck<T, K extends keyof T>(records: T[], key: K): T[K][] {
+  return records.map((r) => r[key]);
+}
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+}
+
+const products: Product[] = [
+  { id: 1, name: 'Keyboard', price: 99 },
+  { id: 2, name: 'Mouse', price: 49 },
+];
+
+const names = pluck(products, 'name'); // string[]
+// const bad = pluck(products, 'stock'); // ❌ 编译错误：'stock' 不存在于 Product
+```
+
+### 3.4 用 `zod` 运行时 + 编译时双重校验
+
+```ts
+// 类型系统无法覆盖运行时边界（如网络输入），配合 Zod 实现双保险
+import { z } from 'zod';
+
+const UserSchema = z.object({
+  id: z.number().int().positive(),
+  email: z.string().email(),
+  role: z.enum(['admin', 'user']),
+});
+
+type User = z.infer<typeof UserSchema>;
+
+function parseUser(input: unknown): User {
+  // 运行时校验 + 返回静态类型
+  return UserSchema.parse(input);
+}
+
+// 编译期：TS 保证返回类型为 User
+// 运行期：Zod 拒绝非法输入
+// parseUser({ id: -1, email: 'bad', role: 'hacker' }); // 抛出 ZodError
+```
+
+### 3.5 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -147,12 +194,16 @@ function processInputTS(input: unknown): number {
 | 类型系统可替代所有单元测试 | 类型保证结构安全，业务逻辑正确性仍需测试 |
 | 双轨意味着维护两份代码 | TS 是 JS 的超集，同一份 `.ts` 经编译即得 JS |
 
-### 3.4 扩展阅读
+### 3.6 扩展阅读
 
 - [TypeScript Handbook: Narrowing](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
 - [TypeScript Handbook: Generics](https://www.typescriptlang.org/docs/handbook/2/generics.html)
 - [ECMA-262: Type Conversion](https://tc39.es/ecma262/#sec-type-conversion)
 - [Total TypeScript: Zod Tutorial](https://www.totaltypescript.com/tutorials/zod)
+- [TypeScript Handbook: Type Guards](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates)
+- [Zod Documentation](https://zod.dev/) — 运行时 Schema 校验库
+- [Superstruct](https://docs.superstructjs.org/) — 轻量运行时校验替代方案
+- [TypeScript Generics Deep Dive](https://www.typescriptlang.org/docs/handbook/2/generics.html#generic-constraints)
 - `10-fundamentals/10.2-type-system/`
 
 ---

@@ -102,6 +102,230 @@ Astro 被 Cloudflare 收购，进一步强化了边缘部署和性能优化方�
 
 ---
 
+## 代码示例：各框架数据获取模式
+
+### Next.js 15 — Server Component + Server Action
+
+```tsx
+// app/page.tsx — Server Component（默认服务端渲染）
+import { db } from '@/lib/db';
+
+export default async function HomePage() {
+  const posts = await db.post.findMany({ take: 10 });
+
+  return (
+    <main>
+      <h1>Latest Posts</h1>
+      <ul>{posts.map(p => <li key={p.id}>{p.title}</li>)}</ul>
+      <LikeButton postId={posts[0].id} />
+    </main>
+  );
+}
+
+// app/like-button.tsx — Client Component（交互需要 'use client'）
+'use client';
+
+import { useState } from 'react';
+import { likePost } from './actions';
+
+export function LikeButton({ postId }: { postId: string }) {
+  const [count, setCount] = useState(0);
+
+  return (
+    <button
+      onClick={async () => {
+        await likePost(postId);
+        setCount(c => c + 1);
+      }}
+    >
+      ❤️ {count}
+    </button>
+  );
+}
+
+// app/actions.ts — Server Action
+'use server';
+
+import { revalidatePath } from 'next/cache';
+
+export async function likePost(postId: string) {
+  await db.post.update({ where: { id: postId }, data: { likes: { increment: 1 } } });
+  revalidatePath('/');
+}
+```
+
+### Nuxt 4 — useAsyncData + Server API
+
+```vue
+<!-- pages/index.vue -->
+<script setup lang="ts">
+const { data: posts } = await useAsyncData('posts', () => $fetch('/api/posts'));
+
+async function likePost(postId: string) {
+  await $fetch(`/api/posts/${postId}/like`, { method: 'POST' });
+  refreshNuxtData('posts');
+}
+</script>
+
+<template>
+  <main>
+    <h1>Latest Posts</h1>
+    <ul><li v-for="p in posts" :key="p.id">{{ p.title }}</li></ul>
+    <button @click="likePost(posts[0].id)">❤️ Like</button>
+  </main>
+</template>
+```
+
+```ts
+// server/api/posts.get.ts — Nitro Server Route
+import { defineEventHandler } from 'h3';
+
+export default defineEventHandler(async () => {
+  return await db.post.findMany({ take: 10 });
+});
+```
+
+### SvelteKit 2 — 统一 load 函数
+
+```svelte
+<!-- src/routes/+page.svelte -->
+<script lang="ts">
+  import type { PageData } from './$types';
+  export let data: PageData;
+</script>
+
+<main>
+  <h1>Latest Posts</h1>
+  <ul>{#each data.posts as post}<li>{post.title}</li>{/each}</ul>
+  <form method="POST" action="?/like">
+    <input type="hidden" name="postId" value={data.posts[0].id} />
+    <button>❤️ Like</button>
+  </form>
+</main>
+```
+
+```ts
+// src/routes/+page.server.ts
+import type { PageServerLoad, Actions } from './$types';
+
+export const load: PageServerLoad = async () => {
+  return { posts: await db.post.findMany({ take: 10 }) };
+};
+
+export const actions: Actions = {
+  like: async ({ request }) => {
+    const data = await request.formData();
+    const postId = data.get('postId') as string;
+    await db.post.update({ where: { id: postId }, data: { likes: { increment: 1 } } });
+    return { success: true };
+  },
+};
+```
+
+### React Router v7 — Loader + Action
+
+```tsx
+// app/routes/_index.tsx
+import { useLoaderData, Form } from 'react-router';
+import type { Route } from './+types/_index';
+
+export async function loader() {
+  const posts = await db.post.findMany({ take: 10 });
+  return { posts };
+}
+
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+  const postId = formData.get('postId') as string;
+  await db.post.update({ where: { id: postId }, data: { likes: { increment: 1 } } });
+  return { ok: true };
+}
+
+export default function HomePage() {
+  const { posts } = useLoaderData<typeof loader>();
+
+  return (
+    <main>
+      <h1>Latest Posts</h1>
+      <ul>{posts.map(p => <li key={p.id}>{p.title}</li>)}</ul>
+      <Form method="post">
+        <input type="hidden" name="postId" value={posts[0].id} />
+        <button type="submit">❤️ Like</button>
+      </Form>
+    </main>
+  );
+}
+```
+
+### Astro 5 — 零 JS 内容优先
+
+```astro
+---
+// src/pages/index.astro — 服务端脚本（零客户端 JS）
+const posts = await db.post.findMany({ take: 10 });
+---
+
+<main>
+  <h1>Latest Posts</h1>
+  <ul>{posts.map(p => <li>{p.title}</li>)}</ul>
+
+  <!-- Islands：仅在需要交互时加载 JS -->
+  <LikeButton postId={posts[0].id} client:visible />
+</main>
+```
+
+```tsx
+// src/components/LikeButton.tsx
+import { useState } from 'react';
+
+export default function LikeButton({ postId }: { postId: string }) {
+  const [count, setCount] = useState(0);
+
+  return (
+    <button onClick={() => setCount(c => c + 1)}>
+      ❤️ {count}
+    </button>
+  );
+}
+```
+
+### TanStack Start — 类型安全 Server Functions
+
+```tsx
+// app/routes/index.tsx
+import { createFileRoute } from '@tanstack/react-router';
+import { createServerFn } from '@tanstack/react-start';
+
+const getPosts = createServerFn({ method: 'GET' }).handler(async () => {
+  return db.post.findMany({ take: 10 });
+});
+
+const likePost = createServerFn({ method: 'POST' })
+  .validator((postId: string) => postId)
+  .handler(async ({ data: postId }) => {
+    await db.post.update({ where: { id: postId }, data: { likes: { increment: 1 } } });
+  });
+
+export const Route = createFileRoute('/')({
+  component: HomePage,
+  loader: async () => ({ posts: await getPosts() }),
+});
+
+function HomePage() {
+  const { posts } = Route.useLoaderData();
+
+  return (
+    <main>
+      <h1>Latest Posts</h1>
+      <ul>{posts.map(p => <li key={p.id}>{p.title}</li>)}</ul>
+      <button onClick={() => likePost({ data: posts[0].id })}>❤️ Like</button>
+    </main>
+  );
+}
+```
+
+---
+
 ## 架构深度对比
 
 ### Astro Islands
@@ -211,6 +435,21 @@ flowchart TD
 ```
 
 > *"Some projects benefit from using both frameworks: Astro for the marketing site (homepage, blog, docs, pricing) — maximum performance. Next.js for the application (dashboard, checkout, admin) — maximum interactivity."* — WPPoland, 2026-03
+
+---
+
+## 参考资源
+
+- [Next.js Documentation](https://nextjs.org/docs) — Vercel 官方文档
+- [Nuxt Documentation](https://nuxt.com/docs) — Nuxt 官方文档
+- [SvelteKit Documentation](https://kit.svelte.dev/docs) — SvelteKit 官方文档
+- [React Router v7 Documentation](https://reactrouter.com/) — React Router 官方文档
+- [Astro Documentation](https://docs.astro.build/) — Astro 官方文档
+- [TanStack Start Documentation](https://tanstack.com/start/latest) — TanStack Start 官方文档
+- [Next.js App Router Architecture](https://nextjs.org/docs/app) — App Router 深度指南
+- [Nuxt Nitro Engine](https://nitro.unjs.io/) — Nuxt 底层 Nitro 引擎文档
+- [Astro Islands Architecture](https://docs.astro.build/en/concepts/islands/) — Islands 架构详解
+- [TanStack Start Server Functions](https://tanstack.com/start/latest/docs/framework/react/server-functions) — 服务端函数文档
 
 ---
 

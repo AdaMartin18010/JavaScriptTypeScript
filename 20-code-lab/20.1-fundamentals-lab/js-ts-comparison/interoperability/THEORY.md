@@ -139,7 +139,53 @@ const users = [{ id: '1', name: 'A', role: 'admin' }];
 }
 ```
 
-### 3.4 常见误区
+### 3.4 从 JS 源码自动生成 `.d.ts`
+
+```bash
+# 使用 tsc 从带 JSDoc 的 JS 文件生成声明文件
+npx tsc --allowJs --declaration --emitDeclarationOnly --outDir types src/**/*.js
+```
+
+```ts
+// 为无类型的 npm 包编写全局声明
+// types/untyped-lib.d.ts
+declare module 'legacy-logger' {
+  interface LoggerOptions {
+    level: 'debug' | 'info' | 'warn' | 'error';
+    prefix?: string;
+  }
+  export default function createLogger(opts: LoggerOptions): {
+    debug(msg: string): void;
+    info(msg: string): void;
+    warn(msg: string): void;
+    error(msg: string): void;
+  };
+}
+```
+
+### 3.5 双包风险（Dual-Package Hazard）与互操作
+
+```ts
+// 当库同时提供 CJS 与 ESM 导出时，可能出现两份实例
+// package.json 中 "exports" 字段的正确配置示例
+{
+  "name": "my-lib",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    }
+  }
+}
+```
+
+### 3.6 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -147,13 +193,17 @@ const users = [{ id: '1', name: 'A', role: 'admin' }];
 | `.d.ts` 必须与 JS 同名同目录 | 可通过 `types`/`typings` 字段在 `package.json` 指定路径 |
 | `any` 是互操作的最佳选择 | 使用 `unknown` + 窄化比 `any` 更安全 |
 
-### 3.5 扩展阅读
+### 3.7 扩展阅读
 
 - [TypeScript: Creating .d.ts Files](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
 - [TypeScript: JSDoc Supported Types](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html)
 - [TypeScript: Migrating from JavaScript](https://www.typescriptlang.org/docs/handbook/migrating-from-javascript.html)
 - [DefinitelyTyped Contribution Guide](https://github.com/DefinitelyTyped/DefinitelyTyped#readme)
 - [dts-gen: .d.ts 生成器](https://github.com/microsoft/dts-gen)
+- [Node.js Dual Package Hazard](https://nodejs.org/api/packages.html#dual-package-hazard) — Node.js 官方双包风险说明
+- [TSConfig allowJs / checkJs](https://www.typescriptlang.org/tsconfig#allowJs) — 官方编译器选项参考
+- [Sindre Sorhus: ESM Packages](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c) — ESM 迁移最佳实践
+- [TypeScript Handbook: Modules](https://www.typescriptlang.org/docs/handbook/2/modules.html) — 模块解析与声明文件
 - `10-fundamentals/10.2-type-system/`
 
 ---

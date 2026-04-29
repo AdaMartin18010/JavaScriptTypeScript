@@ -120,22 +120,150 @@ my-monorepo/
 }
 ```
 
+### pnpm Workspaces 声明
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'apps/*'
+  - 'packages/*'
+```
+
+### Nx 项目配置示例
+
+```json
+// packages/ui/project.json
+{
+  "name": "ui",
+  "targets": {
+    "build": {
+      "executor": "@nx/rollup:rollup",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/ui",
+        "tsConfig": "packages/ui/tsconfig.lib.json",
+        "project": "packages/ui/package.json",
+        "entryFile": "packages/ui/src/index.ts"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectName}"]
+    }
+  }
+}
+```
+
+### Changesets 发布工作流
+
+```json
+// .changeset/config.json
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [],
+  "linked": [],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": []
+}
+```
+
+```bash
+# 日常发布流程
+pnpm changeset          # 选择受影响的包，撰写变更说明
+pnpm changeset version  # 根据 changeset 文件自动 bump 版本号
+pnpm changeset publish  # 发布到 npm registry
+```
+
+### Moon 工具链与任务配置
+
+```yaml
+# .moon/workspace.yml
+projects:
+  - apps/web
+  - apps/api
+  - packages/ui
+  - packages/utils
+
+# .moon/toolchain.yml
+toolchain:
+  node:
+    version: '20.11.0'
+    packageManager: 'pnpm'
+
+# .moon/tasks.yml
+tasks:
+  build:
+    command: 'pnpm run build'
+    inputs:
+      - 'src/**/*'
+      - 'tsconfig.json'
+    outputs:
+      - 'dist'
+  test:
+    command: 'pnpm run test'
+    deps:
+      - '~:build'
+```
+
 ### CI 优化：Affected-Only
 
 ```bash
 # 仅运行受当前 PR 影响的包的任务
 pnpm turbo run test lint --affected --base=origin/main
+
+# Nx affected 构建
+npx nx affected -t build test lint --base=origin/main --head=HEAD
+
+# Moon affected 任务
+moon run :build --affected
+```
+
+### 根 package.json 脚本约定
+
+```json
+{
+  "name": "my-monorepo",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "tsc --noEmit",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "turbo run build --filter=docs^... && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.0",
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.0"
+  }
+}
 ```
 
 ---
 
 ## 参考资源
 
-- [Turborepo Documentation](https://turbo.build/)
-- [Nx Documentation](https://nx.dev/)
-- [Moon Documentation](https://moonrepo.dev/)
+- [Turborepo Documentation](https://turbo.build/) — Vercel 官方文档
+- [Nx Documentation](https://nx.dev/) — Nx 官方文档
+- [Moon Documentation](https://moonrepo.dev/) — Moon 官方文档
 - [monorepo.tools](https://monorepo.tools/) — 全工具横向对比
-- [pnpm Workspaces](https://pnpm.io/workspaces)
+- [pnpm Workspaces](https://pnpm.io/workspaces) — pnpm 工作区文档
+- [Changesets Documentation](https://github.com/changesets/changesets) — 版本管理工具文档
+- [Rush Stack](https://rushstack.io/) — Microsoft 企业级 monorepo 方案
+- [Turborepo Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) — 远程缓存配置指南
+- [Nx Project Crystal](https://nx.dev/concepts/nx-project-crystal) — 零配置项目检测
 - [Steve Kinney: Turborepo vs Nx](https://github.com/stevekinney/stevekinney.net/blob/main/courses/enterprise-ui/turborepo-versus-nx.md)
 
 ---
