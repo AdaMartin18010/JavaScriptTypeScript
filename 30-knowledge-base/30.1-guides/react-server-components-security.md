@@ -109,6 +109,130 @@ export async function createUnsafeAction(userId: string) {
 }
 ```
 
+### React 19 Taint API 标记不可泄漏数据
+
+```tsx
+// lib/security.ts — 使用 React 19 taint API 防止敏感数据泄露
+import { taintObjectReference, taintUniqueValue } from 'react';
+
+interface UserSecrets {
+  apiKey: string;
+  ssn: string;
+  internalNotes: string;
+}
+
+export function markSensitive(userId: string, secrets: UserSecrets) {
+  // 标记整个对象引用不可序列化到客户端
+  taintObjectReference(
+    'User secrets must not be passed to the client',
+    secrets
+  );
+
+  // 标记单个值不可序列化
+  taintUniqueValue(
+    'SSN must not be leaked',
+    secrets,
+    secrets.ssn
+  );
+
+  return secrets;
+}
+
+// app/dashboard/page.tsx
+import { markSensitive } from '@/lib/security';
+
+export default async function DashboardPage() {
+  const raw = await db.query('SELECT * FROM users WHERE id = ?', [userId]);
+
+  // 标记后，若意外传递给 Client Component，React 将在编译/运行时报错
+  const secrets = markSensitive(userId, {
+    apiKey: raw.api_key,
+    ssn: raw.ssn,
+    internalNotes: raw.internal_notes,
+  });
+
+  // ✅ 安全：仅传递非敏感字段
+  return <ClientComponent name={raw.name} avatar={raw.avatar_url} />;
+}
+```
+
+### Server Action 速率限制与审计
+
+```tsx
+// lib/server-action-guard.ts
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+
+const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(10, '1 m'),
+  analytics: true,
+});
+
+export async function guardedServerAction(
+  userId: string,
+  action: string,
+  executor: () => Promise<any>
+) {
+  // 1. 速率限制
+  const { success, limit, remaining } = await ratelimit.limit(`${userId}:${action}`);
+  if (!success) {
+    throw new Error(`Rate limit exceeded: ${remaining}/${limit}`);
+  }
+
+  // 2. 审计日志
+  await db.auditLog.create({
+    userId,
+    action,
+    timestamp: new Date(),
+    ip: headers().get('x-forwarded-for'),
+  });
+
+  // 3. 执行
+  return executor();
+}
+
+// app/actions.ts
+'use server';
+
+export async function transferFunds(formData: FormData) {
+  const { userId } = await auth();
+  if (!userId) throw new Error('Unauthorized');
+
+  return guardedServerAction(userId, 'transferFunds', async () => {
+    const amount = Number(formData.get('amount'));
+    const toAccount = String(formData.get('toAccount'));
+    // ... 业务逻辑
+    return { success: true };
+  });
+}
+```
+
+### 带 Nonce 的 CSP 中间件（Next.js）
+
+```tsx
+// middleware.ts — 为 RSC 渲染注入动态 CSP nonce
+import { NextResponse } from 'next/server';
+import { randomBytes } from 'node:crypto';
+
+export function middleware() {
+  const nonce = randomBytes(16).toString('base64');
+  const csp = [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "frame-ancestors 'none'",
+    "upgrade-insecure-requests",
+  ].join('; ');
+
+  const response = NextResponse.next();
+  response.headers.set('Content-Security-Policy', csp);
+  response.headers.set('x-nonce', nonce);
+  return response;
+}
+```
+
 ---
 
 ## 最佳实践
@@ -130,6 +254,11 @@ export async function createUnsafeAction(userId: string) {
 - [React Taint API (Canary)](https://react.dev/reference/react/experimental_taintObjectReference)
 - [OWASP Top 10 — Injection](https://owasp.org/Top10/A03_2021-Injection/)
 - [Zod Schema Validation](https://zod.dev/)
+- [Next.js Middleware — CSP Headers](https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy)
+- [OWASP — Cross-Site Scripting Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
+- [web.dev — Security headers](https://web.dev/articles/security-headers)
+- [Upstash Ratelimit — Serverless Rate Limiting](https://upstash.com/docs/redis/sdks/ratelimit-ts/overview)
+- [React 19 Security Documentation](https://react.dev/blog/2024/12/05/react-19)
 
 ---
 

@@ -13,7 +13,8 @@
 4. [图](#图)
 5. [哈希与集合](#哈希与集合)
 6. [字典树 Trie](#字典树-trie)
-7. [分析方法论](#分析方法论)
+7. [并查集 Union-Find](#并查集-union-find)
+8. [分析方法论](#分析方法论)
    - 主定理 (Master Theorem)
    - 均摊分析 (Amortized Analysis)
    - 形式化推导示例
@@ -253,7 +254,7 @@ V8 引擎中 `Map` 与 `Set` 基于哈希表 + 开放寻址 / 链表冲突解决
 
 ## 字典树 Trie
 
-> 当前目录下无 Trie 实现文件，以下为其标准理论分析。
+> 当前目录下无 Trie 实现文件，以下为其标准理论分析与参考实现。
 
 Trie 是一种多叉树，每条边对应一个字符。
 
@@ -266,6 +267,104 @@ Trie 是一种多叉树，每条边对应一个字符。
 
 **空间**：若有 $N$ 个键，平均长度为 $L$，字母表大小为 $\Sigma$。
 朴素实现总节点数上界 $O(N \cdot L)$，优化压缩版（Radix Tree）可降至 $O(N \cdot L / \text{平均分支})$。
+
+### Trie 参考实现
+
+```typescript
+// trie-reference.ts
+class TrieNode {
+  children = new Map<string, TrieNode>();
+  isEndOfWord = false;
+}
+
+export class Trie {
+  private root = new TrieNode();
+
+  insert(word: string) {
+    let node = this.root;
+    for (const ch of word) {
+      if (!node.children.has(ch)) {
+        node.children.set(ch, new TrieNode());
+      }
+      node = node.children.get(ch)!;
+    }
+    node.isEndOfWord = true;
+  }
+
+  search(word: string): boolean {
+    const node = this.traverse(word);
+    return node?.isEndOfWord ?? false;
+  }
+
+  startsWith(prefix: string): boolean {
+    return this.traverse(prefix) !== undefined;
+  }
+
+  private traverse(word: string): TrieNode | undefined {
+    let node = this.root;
+    for (const ch of word) {
+      node = node.children.get(ch)!;
+      if (!node) return undefined;
+    }
+    return node;
+  }
+}
+```
+
+---
+
+## 并查集 Union-Find
+
+并查集 (Disjoint Set Union, DSU) 用于管理元素分组与动态连通性，支持近乎常数时间的合并与查询。
+
+| 操作 | 时间复杂度 | 空间复杂度 | 说明 |
+|------|-----------|-----------|------|
+| `makeSet` | $O(1)$ | $O(1)$ | 初始化单元素集合 |
+| `find` (路径压缩) | $O(\alpha(n))$ | $O(1)$ | $\alpha$ 为阿克曼函数反函数，< 5 |
+| `union` (按秩合并) | $O(\alpha(n))$ | $O(1)$ | 合并两个集合 |
+
+### 并查集参考实现
+
+```typescript
+// union-find.ts
+export class UnionFind {
+  private parent: number[];
+  private rank: number[];
+
+  constructor(n: number) {
+    this.parent = Array.from({ length: n }, (_, i) => i);
+    this.rank = new Array(n).fill(0);
+  }
+
+  find(x: number): number {
+    if (this.parent[x] !== x) {
+      this.parent[x] = this.find(this.parent[x]); // 路径压缩
+    }
+    return this.parent[x];
+  }
+
+  union(a: number, b: number): boolean {
+    const ra = this.find(a);
+    const rb = this.find(b);
+    if (ra === rb) return false;
+
+    // 按秩合并
+    if (this.rank[ra] < this.rank[rb]) {
+      this.parent[ra] = rb;
+    } else if (this.rank[ra] > this.rank[rb]) {
+      this.parent[rb] = ra;
+    } else {
+      this.parent[rb] = ra;
+      this.rank[ra]++;
+    }
+    return true;
+  }
+
+  connected(a: number, b: number): boolean {
+    return this.find(a) === this.find(b);
+  }
+}
+```
 
 ---
 
@@ -315,7 +414,7 @@ $n$ 次插入总代价 $\le 3n$，均摊代价 $O(1)$。
 
 #### 2. 核算法 (Accounting Method)
 
-为每个操作预先收取费用（均摊代价），多收的部分作为“信用”存储在数据结构的特定对象上，用于支付未来昂贵的操作。
+为每个操作预先收取费用（均摊代价），多收的部分作为"信用"存储在数据结构的特定对象上，用于支付未来昂贵的操作。
 
 **示例**：动态数组 `push` 均摊代价设为 $3$。
 
@@ -360,6 +459,8 @@ $$
 - `custom/tree-traversal.ts`
 - `custom/graph.ts`
 - `built-in/map-set.ts`
+- `trie-reference.ts`
+- `union-find.ts`
 
 ---
 
@@ -390,4 +491,20 @@ $$
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+## 权威外部资源
+
+- [CLRS — Introduction to Algorithms (MIT Press)](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)
+- [VisuAlgo — 算法可视化](https://visualgo.net/)
+- [cp-algorithms — 竞赛编程算法百科](https://cp-algorithms.com/)
+- [Algorithmist — Data Structures Reference](https://algorithmist.com/wiki/Main_Page)
+- [Big-O Cheat Sheet](https://www.bigocheatsheet.com/)
+- [Brilliant.org — Data Structures Course](https://brilliant.org/courses/computer-science-algorithms/)
+- [LeetCode Explore — Data Structures](https://leetcode.com/explore/learn/)
+- [MIT OpenCourseWare — 6.006 Introduction to Algorithms](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/)
+- [GeeksforGeeks — Trie Data Structure](https://www.geeksforgeeks.org/trie-insert-and-search/)
+- [GeeksforGeeks — Disjoint Set Union](https://www.geeksforgeeks.org/union-find/)
+- [Stack Overflow — Amortized Analysis Explained](https://stackoverflow.com/questions/200384/constant-amortized-time)
+
+---
+
+> 📅 理论深化更新：2026-04-29
