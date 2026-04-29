@@ -59,8 +59,8 @@ status: current
 
 ### 1.1 企业级架构模式
 
-**模块**: [06-architecture-patterns](../../jsts-code-lab/06-architecture-patterns/)
-**理论文档**: [架构模式解析](../../jsts-code-lab/06-architecture-patterns/ARCHITECTURE.md)
+**模块**: [06-architecture-patterns](../../20-code-lab/20.2-language-patterns/architecture-patterns/)
+**理论文档**: [架构模式解析](../../20-code-lab/20.2-language-patterns/architecture-patterns/ARCHITECTURE.md)
 
 **核心内容**:
 
@@ -100,7 +100,7 @@ class OrderService {
 
 ### 1.2 设计原则深入
 
-**模块**: [02-design-patterns/THEORY.md](../../jsts-code-lab/02-design-patterns/THEORY.md)
+**模块**: [02-design-patterns/THEORY.md](../../20-code-lab/20.2-language-patterns/design-patterns/THEORY.md)
 
 **SOLID 原则形式化理解**:
 
@@ -116,8 +116,8 @@ class OrderService {
 
 ### 2.1 异步编程模式
 
-**模块**: [03-concurrency](../../jsts-code-lab/03-concurrency/)
-**理论文档**: [并发编程架构](../../jsts-code-lab/03-concurrency/ARCHITECTURE.md)
+**模块**: [03-concurrency](../../20-code-lab/20.3-concurrency-async/concurrency/)
+**理论文档**: [并发编程架构](../../20-code-lab/20.3-concurrency-async/concurrency/ARCHITECTURE.md)
 
 **核心概念**:
 
@@ -164,7 +164,7 @@ async function concurrentLimit<T>(
 
 ### 2.2 响应式编程
 
-**模块**: [15-data-flow](../../jsts-code-lab/15-data-flow/)
+**模块**: [15-data-flow](../../20-code-lab/20.3-concurrency-async/data-flow/)
 
 **学习 RxJS 核心操作符**:
 
@@ -179,8 +179,8 @@ async function concurrentLimit<T>(
 
 ### 3.1 浏览器运行时优化
 
-**模块**: [50-browser-runtime](../../jsts-code-lab/50-browser-runtime/)
-**理论文档**: [浏览器运行时理论](../../jsts-code-lab/50-browser-runtime/THEORY.md)
+**模块**: [50-browser-runtime](../../20-code-lab/20.3-concurrency-async/browser-runtime/)
+**理论文档**: [浏览器运行时理论](../../20-code-lab/20.3-concurrency-async/browser-runtime/THEORY.md)
 
 **关键优化点**:
 
@@ -210,8 +210,8 @@ class VirtualScroller<T> {
 
 ### 3.2 算法与数据结构优化
 
-**模块**: [04-data-structures](../../jsts-code-lab/04-data-structures/)
-**模块**: [05-algorithms](../../jsts-code-lab/05-algorithms/)
+**模块**: [04-data-structures](../../20-code-lab/20.4-data-algorithms/data-structures/)
+**模块**: [05-algorithms](../../20-code-lab/20.4-data-algorithms/algorithms/)
 
 **复杂度分析实践**:
 
@@ -225,8 +225,8 @@ class VirtualScroller<T> {
 
 ### 4.1 API 设计与安全
 
-**模块**: [19-backend-development](../../jsts-code-lab/19-backend-development/)
-**模块**: [21-api-security](../../jsts-code-lab/21-api-security/)
+**模块**: [19-backend-development](../../20-code-lab/20.6-backend-apis/backend-development/)
+**模块**: [21-api-security](../../20-code-lab/20.9-observability-security/api-security/)
 
 **RESTful API 设计**:
 
@@ -257,7 +257,7 @@ interface ApiResponse<T> {
 
 ### 4.2 数据库与 ORM
 
-**模块**: [20-database-orm](../../jsts-code-lab/20-database-orm/)
+**模块**: [20-database-orm](../../20-code-lab/20.6-backend-apis/database-orm/)
 
 **学习内容**:
 
@@ -337,7 +337,7 @@ interface ApiResponse<T> {
   - 领域层：Order 实体、Order 值对象
   - 应用层：PlaceOrder 用例
   - 基础设施层：InMemoryRepository、ConsoleLogger
-  - 代码位置: `jsts-code-lab/06-architecture-patterns/hexagonal-order/`
+  - 代码位置: `20-code-lab/20.2-language-patterns/architecture-patterns/hexagonal-order/`
   - 通过标准: 领域层无外部依赖 + 单元测试覆盖 ≥ 80%
 
 **预计时间**: 2 周 | **难度**: ⭐⭐⭐⭐
@@ -356,7 +356,7 @@ interface ApiResponse<T> {
 
 - **Checkpoint 项目**: 实现一个请求限流器
   - 功能：令牌桶算法、滑动窗口计数
-  - 代码位置: `jsts-code-lab/03-concurrency/rate-limiter/`
+  - 代码位置: `20-code-lab/20.3-concurrency-async/concurrency/rate-limiter/`
   - 通过标准: 并发测试通过 + 性能 Benchmark
 
 **预计时间**: 2 周 | **难度**: ⭐⭐⭐⭐
@@ -376,7 +376,7 @@ interface ApiResponse<T> {
 - **Checkpoint 项目**: 优化一个慢速列表组件
   - 初始状态：渲染 10,000 项，滚动卡顿
   - 目标：60fps 流畅滚动
-  - 代码位置: `jsts-code-lab/50-browser-runtime/virtual-list-optimization/`
+  - 代码位置: `20-code-lab/20.3-concurrency-async/browser-runtime/virtual-list-optimization/`
   - 通过标准: Lighthouse Performance ≥ 90
 
 **预计时间**: 1-2 周 | **难度**: ⭐⭐⭐⭐
@@ -395,7 +395,7 @@ interface ApiResponse<T> {
 
 - **Checkpoint 项目**: 实现一个带认证的 API 服务
   - 功能：用户注册/登录/CRUD、JWT 认证、输入验证
-  - 代码位置: `jsts-code-lab/21-api-security/authenticated-api/`
+  - 代码位置: `20-code-lab/20.9-observability-security/api-security/authenticated-api/`
   - 通过标准: 安全扫描通过 + 集成测试覆盖
 
 **预计时间**: 2 周 | **难度**: ⭐⭐⭐⭐
@@ -432,7 +432,7 @@ interface ApiResponse<T> {
 完成进阶路径后，可以继续：
 
 - [高级学习路径](./advanced-path.md) - 分布式系统和架构师思维
-- [jsts-code-lab 高级模块](../../jsts-code-lab/)
+- [jsts-code-lab 高级模块](../../20-code-lab/)
 
 ---
 

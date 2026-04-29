@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-29T00:53:05.362Z",
+  "generatedAt": "2026-04-29T01:00:58.252Z",
   "totalScanned": 1042,
   "totalRated": 673,
   "top30": [
@@ -1086,30 +1086,6 @@
       "score": 81
     },
     {
-      "path": "20-code-lab\\20.2-language-patterns\\fullstack-patterns\\THEORY.md",
-      "sizeKB": 0.7,
-      "lines": 38,
-      "hasCode": "Y",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 0,
-      "priority": "high",
-      "score": 80
-    },
-    {
-      "path": "20-code-lab\\20.2-language-patterns\\plugin-system\\THEORY.md",
-      "sizeKB": 0.6,
-      "lines": 41,
-      "hasCode": "Y",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 0,
-      "priority": "high",
-      "score": 80
-    },
-    {
       "path": "20-code-lab\\20.3-concurrency-async\\real-time-communication\\THEORY.md",
       "sizeKB": 0.8,
       "lines": 44,
@@ -1134,18 +1110,6 @@
       "score": 80
     },
     {
-      "path": "20-code-lab\\20.5-frontend-frameworks\\design-system\\THEORY.md",
-      "sizeKB": 0.7,
-      "lines": 38,
-      "hasCode": "Y",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 0,
-      "priority": "high",
-      "score": 80
-    },
-    {
       "path": "20-code-lab\\20.5-frontend-frameworks\\lowcode-platform\\THEORY.md",
       "sizeKB": 0.9,
       "lines": 40,
@@ -1158,45 +1122,9 @@
       "score": 80
     },
     {
-      "path": "20-code-lab\\20.5-frontend-frameworks\\webxr\\THEORY.md",
-      "sizeKB": 0.7,
-      "lines": 38,
-      "hasCode": "Y",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 0,
-      "priority": "high",
-      "score": 80
-    },
-    {
-      "path": "20-code-lab\\20.6-backend-apis\\analytics\\THEORY.md",
-      "sizeKB": 0.6,
-      "lines": 40,
-      "hasCode": "Y",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 0,
-      "priority": "high",
-      "score": 80
-    },
-    {
       "path": "20-code-lab\\20.6-backend-apis\\feature-flags\\THEORY.md",
       "sizeKB": 0.9,
       "lines": 40,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "Y",
-      "hasENRef": "N",
-      "todoCount": 0,
-      "priority": "high",
-      "score": 80
-    },
-    {
-      "path": "20-code-lab\\20.7-ai-agent-infra\\code-generation\\THEORY.md",
-      "sizeKB": 0.8,
-      "lines": 41,
       "hasCode": "N",
       "hasLink": "N",
       "hasTable": "Y",
@@ -1257,18 +1185,6 @@
       "path": "20-code-lab\\20.9-observability-security\\benchmarks\\THEORY.md",
       "sizeKB": 0.8,
       "lines": 40,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "Y",
-      "hasENRef": "N",
-      "todoCount": 0,
-      "priority": "high",
-      "score": 80
-    },
-    {
-      "path": "20-code-lab\\20.9-observability-security\\chaos-engineering\\THEORY.md",
-      "sizeKB": 0.6,
-      "lines": 37,
       "hasCode": "N",
       "hasLink": "N",
       "hasTable": "Y",
@@ -2062,18 +1978,6 @@
       "sizeKB": 1.5,
       "lines": 75,
       "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "Y",
-      "hasENRef": "N",
-      "todoCount": 0,
-      "priority": "high",
-      "score": 75
-    },
-    {
-      "path": "20-code-lab\\20.8-edge-serverless\\container-orchestration\\THEORY.md",
-      "sizeKB": 0.7,
-      "lines": 43,
-      "hasCode": "Y",
       "hasLink": "N",
       "hasTable": "Y",
       "hasENRef": "N",
@@ -3387,6 +3291,30 @@
       "hasENRef": "N",
       "todoCount": 0,
       "priority": "normal",
+      "score": 64
+    },
+    {
+      "path": "20-code-lab\\20.7-ai-agent-infra\\code-generation\\THEORY.md",
+      "sizeKB": 1,
+      "lines": 54,
+      "hasCode": "N",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "high",
+      "score": 64
+    },
+    {
+      "path": "20-code-lab\\20.9-observability-security\\chaos-engineering\\THEORY.md",
+      "sizeKB": 0.8,
+      "lines": 50,
+      "hasCode": "N",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "high",
       "score": 64
     },
     {
@@ -5082,6 +5010,42 @@
       "score": 59
     },
     {
+      "path": "20-code-lab\\20.2-language-patterns\\fullstack-patterns\\THEORY.md",
+      "sizeKB": 1,
+      "lines": 51,
+      "hasCode": "Y",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "high",
+      "score": 59
+    },
+    {
+      "path": "20-code-lab\\20.2-language-patterns\\plugin-system\\THEORY.md",
+      "sizeKB": 0.9,
+      "lines": 54,
+      "hasCode": "Y",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "high",
+      "score": 59
+    },
+    {
+      "path": "20-code-lab\\20.5-frontend-frameworks\\design-system\\THEORY.md",
+      "sizeKB": 0.9,
+      "lines": 51,
+      "hasCode": "Y",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "high",
+      "score": 59
+    },
+    {
       "path": "20-code-lab\\20.5-frontend-frameworks\\lowcode-platform\\03-schema-driven-ui.md",
       "sizeKB": 2,
       "lines": 94,
@@ -5103,6 +5067,30 @@
       "hasENRef": "N",
       "todoCount": 0,
       "priority": "normal",
+      "score": 59
+    },
+    {
+      "path": "20-code-lab\\20.5-frontend-frameworks\\webxr\\THEORY.md",
+      "sizeKB": 1,
+      "lines": 51,
+      "hasCode": "Y",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "high",
+      "score": 59
+    },
+    {
+      "path": "20-code-lab\\20.6-backend-apis\\analytics\\THEORY.md",
+      "sizeKB": 0.8,
+      "lines": 53,
+      "hasCode": "Y",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "high",
       "score": 59
     },
     {
@@ -5146,6 +5134,18 @@
       "sizeKB": 1.5,
       "lines": 107,
       "hasCode": "N",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "high",
+      "score": 58
+    },
+    {
+      "path": "20-code-lab\\20.8-edge-serverless\\container-orchestration\\THEORY.md",
+      "sizeKB": 0.9,
+      "lines": 56,
+      "hasCode": "Y",
       "hasLink": "Y",
       "hasTable": "Y",
       "hasENRef": "Y",
@@ -8047,7 +8047,7 @@
     },
     {
       "path": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
-      "sizeKB": 27.8,
+      "sizeKB": 29.4,
       "lines": 1002,
       "hasCode": "N",
       "hasLink": "Y",
@@ -8055,7 +8055,7 @@
       "hasENRef": "Y",
       "todoCount": 0,
       "priority": "normal",
-      "score": 7
+      "score": 6
     },
     {
       "path": "10-fundamentals\\10.3-execution-model\\runtime-deep-dive.md",
@@ -8444,8 +8444,8 @@
   ],
   "summary": {
     "needsCode": 399,
-    "needsLink": 388,
-    "needsTable": 93,
-    "needsENRef": 359
+    "needsLink": 380,
+    "needsTable": 88,
+    "needsENRef": 351
   }
 }
