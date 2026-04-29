@@ -59,6 +59,7 @@ status: current
 ## 代码示例
 
 ### Viem (推荐 — 现代 TypeScript 优先)
+
 ```typescript
 import { createPublicClient, createWalletClient, http, parseEther, formatEther } from 'viem';
 import { mainnet } from 'viem/chains';
@@ -116,6 +117,7 @@ async function getTokenBalance(tokenAddress: `0x${string}`, owner: `0x${string}`
 ```
 
 ### ethers.js v6 (经典方案)
+
 ```typescript
 import { ethers } from 'ethers';
 
@@ -147,6 +149,7 @@ const balance = await contract.balanceOf(ownerAddress);
 ```
 
 ### wagmi + React Hook (前端状态管理)
+
 ```tsx
 import { useAccount, useBalance, useSendTransaction } from 'wagmi';
 import { parseEther } from 'viem';
@@ -203,16 +206,16 @@ function WalletInfo() {
 
 | 资源 | 链接 | 说明 |
 |------|------|------|
-| Viem 文档 | https://viem.sh/docs/getting-started.html | 现代以太坊 TypeScript 库 |
-| ethers.js v6 | https://docs.ethers.org/v6/ | 经典以太坊库文档 |
-| wagmi | https://wagmi.sh/react/getting-started | React Hooks for Ethereum |
-| RainbowKit | https://www.rainbowkit.com/docs/introduction | 钱包连接 UI 套件 |
-| Solana Web3.js | https://solana-labs.github.io/solana-web3.js/ | Solana JavaScript SDK |
-| Anchor Framework | https://www.anchor-lang.com/docs | Solana 开发框架 |
-| Polkadot.js | https://polkadot.js.org/docs/ | Polkadot/Substrate JS API |
-| Hardhat | https://hardhat.org/docs | 以太坊开发环境 |
-| The Graph | https://thegraph.com/docs/en/ | 去中心化索引协议 |
-| EVM OpCodes | https://www.evm.codes/ | EVM 操作码参考 |
+| Viem 文档 | <https://viem.sh/docs/getting-started.html> | 现代以太坊 TypeScript 库 |
+| ethers.js v6 | <https://docs.ethers.org/v6/> | 经典以太坊库文档 |
+| wagmi | <https://wagmi.sh/react/getting-started> | React Hooks for Ethereum |
+| RainbowKit | <https://www.rainbowkit.com/docs/introduction> | 钱包连接 UI 套件 |
+| Solana Web3.js | <https://solana-labs.github.io/solana-web3.js/> | Solana JavaScript SDK |
+| Anchor Framework | <https://www.anchor-lang.com/docs> | Solana 开发框架 |
+| Polkadot.js | <https://polkadot.js.org/docs/> | Polkadot/Substrate JS API |
+| Hardhat | <https://hardhat.org/docs> | 以太坊开发环境 |
+| The Graph | <https://thegraph.com/docs/en/> | 去中心化索引协议 |
+| EVM OpCodes | <https://www.evm.codes/> | EVM 操作码参考 |
 
 ---
 

@@ -42,6 +42,7 @@
 ## 代码示例
 
 ### Vercel：Serverless Function (`api/hello.ts`)
+
 ```typescript
 // api/hello.ts — Vercel Serverless Function
 import type { VercelRequest, VercelResponse } from '@vercel/node';
@@ -58,6 +59,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
 ```
 
 ### Cloudflare Pages：Edge Function (`functions/api/[[path]].ts`)
+
 ```typescript
 // functions/api/[[path]].ts — Cloudflare Pages Function (Edge Runtime)
 export interface Env {
@@ -93,6 +95,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
 ```
 
 ### AWS CDK：ECS Fargate 部署
+
 ```typescript
 // lib/web-stack.ts
 import * as cdk from 'aws-cdk-lib';
@@ -155,15 +158,15 @@ export class WebStack extends cdk.Stack {
 
 | 资源 | 链接 | 说明 |
 |------|------|------|
-| Vercel Docs | https://vercel.com/docs | 官方文档与框架指南 |
-| Netlify Docs | https://docs.netlify.com/ | 官方文档 |
-| Cloudflare Pages | https://developers.cloudflare.com/pages/ | 官方开发者文档 |
-| Railway Docs | https://docs.railway.app/ | 官方文档 |
-| Render Docs | https://render.com/docs | 官方文档 |
-| AWS Amplify | https://docs.amplify.aws/ | AWS 全栈部署文档 |
-| GCP Cloud Run | https://cloud.google.com/run/docs | 容器化 Serverless |
-| web.dev 部署指南 | https://web.dev/articles/deploy-to-netlify | Google 官方部署最佳实践 |
-| Jamstack.org | https://jamstack.org/generators/ | 静态站点生成器对比 |
+| Vercel Docs | <https://vercel.com/docs> | 官方文档与框架指南 |
+| Netlify Docs | <https://docs.netlify.com/> | 官方文档 |
+| Cloudflare Pages | <https://developers.cloudflare.com/pages/> | 官方开发者文档 |
+| Railway Docs | <https://docs.railway.app/> | 官方文档 |
+| Render Docs | <https://render.com/docs> | 官方文档 |
+| AWS Amplify | <https://docs.amplify.aws/> | AWS 全栈部署文档 |
+| GCP Cloud Run | <https://cloud.google.com/run/docs> | 容器化 Serverless |
+| web.dev 部署指南 | <https://web.dev/articles/deploy-to-netlify> | Google 官方部署最佳实践 |
+| Jamstack.org | <https://jamstack.org/generators/> | 静态站点生成器对比 |
 
 ---
 

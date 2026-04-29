@@ -39,17 +39,17 @@ WebAssembly provides a structural defense against JIT security tensions by elimi
 (module
   ;; Declare a single linear memory page (64KiB)
   (memory 1)
-  
+
   ;; Export memory for JS interop
   (export "memory" (memory 0))
-  
+
   ;; Safe array access with explicit bounds check
   (func $safe_read (param $offset i32) (param $len i32) (result i32)
     ;; Calculate end pointer
     local.get $offset
     local.get $len
     i32.add
-    
+
     ;; Check against memory size (64KiB = 65536 bytes)
     i32.const 65536
     i32.gt_u
@@ -57,12 +57,12 @@ WebAssembly provides a structural defense against JIT security tensions by elimi
       i32.const -1  ;; Return error code if OOB
       return
     end
-    
+
     ;; Safe read
     local.get $offset
     i32.load
   )
-  
+
   (export "safe_read" (func $safe_read))
 )
 ```
@@ -71,29 +71,29 @@ WebAssembly provides a structural defense against JIT security tensions by elimi
 // JavaScript: Instantiate WASM with defense-in-depth
 async function createSandboxedWasm() {
   const wasmBuffer = await fetch('./sandbox.wasm').then(r => r.arrayBuffer());
-  
+
   // Create a WebAssembly.Memory with strict limits
   const memory = new WebAssembly.Memory({
     initial: 1,   // 1 page = 64KiB
     maximum: 4,   // Hard cap at 256KiB — no growth beyond
     shared: false // Disable SharedArrayBuffer to mitigate Spectre
   });
-  
+
   const imports = { env: { memory } };
   const { instance } = await WebAssembly.instantiate(wasmBuffer, imports);
-  
+
   // All memory access is constrained to [0, 65536)
   // Out-of-bounds access throws WebAssembly.RuntimeError
   try {
     const result = instance.exports.safe_read(1000, 4);
     console.log('Safe read:', result);
-    
+
     // This will trap safely rather than corrupting memory
-    instance.exports.safe_read(70000, 4); 
+    instance.exports.safe_read(70000, 4);
   } catch (e) {
     console.error('WASM sandbox caught:', e.message);
   }
-  
+
   return instance;
 }
 
@@ -101,7 +101,7 @@ async function createSandboxedWasm() {
 function vulnerableJsArrayAccess(arr, index) {
   // V8 JIT may speculatively remove bounds check based on type feedback
   // If prototype chain is polluted, this becomes exploitable
-  return arr[index];  
+  return arr[index];
 }
 ```
 

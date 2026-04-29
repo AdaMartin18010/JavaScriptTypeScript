@@ -57,7 +57,7 @@ pub fn count_whitespace(input: String) -> u32 {
 pub fn parse_identifiers(buf: napi::bindgen_prelude::Buffer) -> Vec<String> {
     // Buffer is a zero-copy view into Node.js memory
     let slice = buf.as_slice();
-    
+
     std::str::from_utf8(slice)
         .unwrap_or("")
         .split(',')
@@ -71,10 +71,10 @@ pub fn parse_identifiers(buf: napi::bindgen_prelude::Buffer) -> Vec<String> {
 pub async fn hash_file_contents(path: String) -> napi::Result<String> {
     use tokio::fs;
     use sha2::{Sha256, Digest};
-    
+
     let contents = fs::read(path).await
         .map_err(|e| napi::Error::from_reason(e.to_string()))?;
-    
+
     let hash = Sha256::digest(&contents);
     Ok(format!("{:x}", hash))
 }

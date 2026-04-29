@@ -27,7 +27,7 @@
 | **创建者** | Vercel (原 Jared Palmer) | Nrwl | Microsoft | pnpm 社区 |
 | **任务调度** | Rust 引擎，DAG 执行 | Rust/Node 混合，DAG | Node.js，按依赖拓扑 | ❌ 无内置任务调度 |
 | **远程缓存** | ✅ Vercel / 自托管 S3 | ✅ Nx Cloud / 自托管 | ✅ 自托管 Azure Blob | ❌ |
-| ** affected 检测** | ✅ Git 差异分析 | ✅ 丰富 (文件 + 输入哈希) | ✅ Git + 依赖图 | ❌ |
+| **affected 检测** | ✅ Git 差异分析 | ✅ 丰富 (文件 + 输入哈希) | ✅ Git + 依赖图 | ❌ |
 | **代码生成 (Schematics)** | ❌ | ✅ 强大生成器 | ✅ 基础生成器 | ❌ |
 | **依赖图可视化** | ✅ `turbo run` + 网页 | ✅ Nx Graph 交互式 | ⚠️ 命令行 | ⚠️ `pnpm why` |
 | **包发布管理** | ⚠️ 需配合 Changesets | ⚠️ 需配合 Nx Release | ✅ 内置版本策略 | ❌ |
@@ -40,6 +40,7 @@
 ## 配置示例
 
 ### Turborepo (`turbo.json`)
+
 ```json
 {
   "$schema": "https://turbo.build/schema.json",
@@ -65,6 +66,7 @@
 ```
 
 ### Nx (`nx.json`)
+
 ```json
 {
   "extends": "nx/presets/npm.json",
@@ -90,6 +92,7 @@
 ```
 
 ### pnpm Workspaces (`pnpm-workspace.yaml`)
+
 ```yaml
 packages:
   - 'apps/*'
@@ -131,14 +134,14 @@ auto-install-peers=true
 
 | 资源 | 链接 | 说明 |
 |------|------|------|
-| Turborepo Docs | https://turbo.build/repo/docs | 官方文档 |
-| Nx Docs | https://nx.dev/getting-started/intro | 官方文档 |
-| Rush Stack | https://rushstack.io/ | Microsoft 官方文档 |
-| Moonrepo | https://moonrepo.dev/docs | 官方文档 |
-| pnpm Workspaces | https://pnpm.io/workspaces | pnpm 工作区文档 |
-| Changesets | https://github.com/changesets/changesets | 版本管理与发布工具 |
-| Monorepo.tools | https://monorepo.tools/ | monorepo 工具对比网站 |
-| Lerna (Archived) | https://lerna.js.org/docs/intro | 已归档，Nx 接管 |
+| Turborepo Docs | <https://turbo.build/repo/docs> | 官方文档 |
+| Nx Docs | <https://nx.dev/getting-started/intro> | 官方文档 |
+| Rush Stack | <https://rushstack.io/> | Microsoft 官方文档 |
+| Moonrepo | <https://moonrepo.dev/docs> | 官方文档 |
+| pnpm Workspaces | <https://pnpm.io/workspaces> | pnpm 工作区文档 |
+| Changesets | <https://github.com/changesets/changesets> | 版本管理与发布工具 |
+| Monorepo.tools | <https://monorepo.tools/> | monorepo 工具对比网站 |
+| Lerna (Archived) | <https://lerna.js.org/docs/intro> | 已归档，Nx 接管 |
 
 ---
 

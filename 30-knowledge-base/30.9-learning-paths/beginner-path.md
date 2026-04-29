@@ -8,7 +8,7 @@ redirect: ./beginners-path.md
 
 # 初学者学习路径（已迁移）
 
-> 本文档内容已整合至 [`beginners-path.md`](./beginners-path.md)，作为单一事实来源维护。  
+> 本文档内容已整合至 [`beginners-path.md`](./beginners-path.md)，作为单一事实来源维护。
 > 原 157 行内容已合并到 443 行的完整版本中。
 
 ---

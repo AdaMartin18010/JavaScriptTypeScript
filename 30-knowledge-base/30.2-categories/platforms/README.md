@@ -7,6 +7,7 @@
 ## 概述
 
 此目录包含 30.2-categories 相关的文件和子目录。
+
 ## 目录内容
 
 - 📄 DATA_VISUALIZATION.md

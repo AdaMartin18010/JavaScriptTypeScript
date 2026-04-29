@@ -40,6 +40,7 @@
 ## 工作流示例
 
 ### GitHub Actions：Next.js 全栈部署
+
 ```yaml
 # .github/workflows/deploy.yml
 name: Deploy Next.js App
@@ -112,6 +113,7 @@ jobs:
 ```
 
 ### GitLab CI：多阶段流水线
+
 ```yaml
 # .gitlab-ci.yml
 stages:
@@ -188,6 +190,7 @@ deploy-production:
 ```
 
 ### CircleCI：并行测试矩阵
+
 ```yaml
 # .circleci/config.yml
 version: 2.1
@@ -247,14 +250,14 @@ workflows:
 
 | 资源 | 链接 | 说明 |
 |------|------|------|
-| GitHub Actions Docs | https://docs.github.com/en/actions | 官方文档 |
-| GitLab CI/CD Docs | https://docs.gitlab.com/ee/ci/ | 官方文档 |
-| CircleCI Docs | https://circleci.com/docs/ | 官方文档 |
-| Jenkins Docs | https://www.jenkins.io/doc/ | 官方文档 |
-| GitHub Actions Marketplace | https://github.com/marketplace?type=actions | Actions 市场 |
-| CircleCI Orbs | https://circleci.com/developer/orbs | 可复用配置包 |
-| act (Local GitHub Actions) | https://github.com/nektos/act | 本地运行 GitHub Actions |
-| Dagger | https://dagger.io/ | 可移植 CI/CD 管道 (容器即代码) |
+| GitHub Actions Docs | <https://docs.github.com/en/actions> | 官方文档 |
+| GitLab CI/CD Docs | <https://docs.gitlab.com/ee/ci/> | 官方文档 |
+| CircleCI Docs | <https://circleci.com/docs/> | 官方文档 |
+| Jenkins Docs | <https://www.jenkins.io/doc/> | 官方文档 |
+| GitHub Actions Marketplace | <https://github.com/marketplace?type=actions> | Actions 市场 |
+| CircleCI Orbs | <https://circleci.com/developer/orbs> | 可复用配置包 |
+| act (Local GitHub Actions) | <https://github.com/nektos/act> | 本地运行 GitHub Actions |
+| Dagger | <https://dagger.io/> | 可移植 CI/CD 管道 (容器即代码) |
 
 ---
 

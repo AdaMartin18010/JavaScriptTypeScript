@@ -114,6 +114,7 @@ function DataGrid({ rows, columns }) {
 ```
 
 **迁移建议**：
+
 1. 先运行 `eslint-plugin-react-compiler` 静态检查，修复所有 Rules of React 违规
 2. 逐步开启 Compiler，按模块粒度验证（通过 `reactCompiler: { target: '18' }` 配置）
 3. 关键性能路径保留 `useMemo` 作为显式文档（即使 Compiler 已处理）

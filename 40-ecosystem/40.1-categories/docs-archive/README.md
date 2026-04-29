@@ -7,6 +7,7 @@
 ## 概述
 
 此目录包含 40.1-categories 相关的文件和子目录。
+
 ## 目录内容
 
 - 📄 _MIGRATED_FROM.md

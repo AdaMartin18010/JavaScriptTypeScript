@@ -91,6 +91,7 @@ my-monorepo/
 ```
 
 **铁律**：
+
 - `apps/*` 永不导入另一个 `apps/*`
 - `packages/*` 永不导入 `apps/*`
 - 循环依赖必须通过 CI 检查禁止

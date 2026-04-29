@@ -1,4 +1,4 @@
-# 决策树
+﻿# 决策树
 
 > JavaScript/TypeScript 技术选型的结构化决策框架。
 
@@ -107,6 +107,62 @@
 
 ---
 
+## 测试策略
+
+```
+测试层级？
+├── 单元测试（逻辑/工具函数）
+│   ├── 需要极速 + 原生 ESM → Vitest
+│   └── 需要完善模拟生态 → Jest
+├── 组件测试（UI 交互）
+│   ├── React 组件 → React Testing Library + Vitest
+│   └── Vue 组件 → Vue Test Utils + Vitest
+├── E2E 测试（用户流程）
+│   ├── 现代 Chromium 首选 → Playwright
+│   └── 多浏览器兼容 → Cypress / Selenium
+└── 视觉回归
+    └── Chromatic / Percy / Storybook Test Runner
+```
+
+---
+
+## 运行时与包管理器
+
+```
+新项目初始化？
+├── 运行时
+│   ├── 最大生态兼容 → Node.js LTS (npm/pnpm)
+│   ├── 内置 TS + 安全默认 → Deno
+│   └── 极致速度 + 内置打包 → Bun
+├── 包管理器
+│   ├── 经典稳定 → npm
+│   ├── 磁盘优化 +  monorepo → pnpm
+│   └── 并行下载 + Workspace → Yarn Berry (PnP)
+└── 锁文件策略
+    ├── 确定性安装 → package-lock.json / pnpm-lock.yaml
+    └── 零安装 (Zero-Install) → Yarn .pnp.cjs
+```
+
+---
+
+## 数据库选型
+
+```
+数据模型与访问模式？
+├── 关系型 / 强事务 / 复杂查询 → PostgreSQL
+│   └── ORM 选择
+│       ├── 类型安全 + 迁移 → Prisma
+│       ├── SQL-like + 高性能 → Drizzle ORM
+│       └── 灵活 + 活跃记录 → TypeORM
+├── 文档型 / 快速迭代 / 非结构化 → MongoDB
+├── 键值 / 缓存 / 会话 → Redis
+├── 图数据 / 关系网络 → Neo4j
+├── 时序数据 / IoT → TimescaleDB / InfluxDB
+└── 全文搜索 → Elasticsearch / Meilisearch
+```
+
+---
+
 ## 快速参考卡
 
 | 决策 | 2026 默认选择 | 备选 |
@@ -120,19 +176,62 @@
 
 ---
 
+## 可编程决策树引擎
+
+以下是一个极简的 TypeScript 决策树遍历器，可用于将上述文本决策树转化为可交互的 CLI 或 Web 向导：
+
+```typescript
+type DecisionNode = {
+  question: string;
+  choices: { label: string; next?: DecisionNode; result?: string }[];
+};
+
+function traverse(node: DecisionNode): string {
+  console.log(`\n❓ ${node.question}`);
+  node.choices.forEach((c, i) => console.log(`  ${i + 1}. ${c.label}`));
+  // 实际项目中可替换为 readline / inquirer / Web UI 输入
+  const selected = node.choices[0]; // 模拟选择
+  if (selected.result) return selected.result;
+  if (selected.next) return traverse(selected.next);
+  return 'No result';
+}
+
+// 示例：构建工具决策
+const buildToolTree: DecisionNode = {
+  question: '项目规模与目标？',
+  choices: [
+    { label: '小型/快速启动', result: '推荐：Vite' },
+    { label: '大型/企业级', result: '推荐：Rspack / Webpack' },
+    { label: '库开发', result: '推荐：Rollup / tsup' },
+  ],
+};
+
+console.log(traverse(buildToolTree));
+```
+
+---
+
 ## 权威参考链接
 
 | 资源 | 链接 | 说明 |
 |------|------|------|
-| Next.js 文档 | https://nextjs.org/docs | React 全栈框架官方文档 |
-| Nuxt 文档 | https://nuxt.com/docs | Vue 全栈框架官方文档 |
-| SvelteKit 文档 | https://kit.svelte.dev/docs | Svelte 全栈框架官方文档 |
-| Astro 文档 | https://docs.astro.build | 内容驱动框架官方文档 |
-| Zustand GitHub | https://github.com/pmndrs/zustand | 极简状态管理 |
-| Jotai 文档 | https://jotai.org/docs | 原子化状态管理 |
-| Redux Toolkit | https://redux-toolkit.js.org/ | 企业级状态管理 |
-| TanStack Query | https://tanstack.com/query/latest | 服务端状态管理 |
-| Web Framework Performance | https://web-frameworks-benchmark.netlify.app/ | 框架性能基准对比 |
+| Next.js 文档 | <https://nextjs.org/docs> | React 全栈框架官方文档 |
+| Nuxt 文档 | <https://nuxt.com/docs> | Vue 全栈框架官方文档 |
+| SvelteKit 文档 | <https://kit.svelte.dev/docs> | Svelte 全栈框架官方文档 |
+| Astro 文档 | <https://docs.astro.build> | 内容驱动框架官方文档 |
+| Zustand GitHub | <https://github.com/pmndrs/zustand> | 极简状态管理 |
+| Jotai 文档 | <https://jotai.org/docs> | 原子化状态管理 |
+| Redux Toolkit | <https://redux-toolkit.js.org/> | 企业级状态管理 |
+| TanStack Query | <https://tanstack.com/query/latest> | 服务端状态管理 |
+| Web Framework Performance | <https://web-frameworks-benchmark.netlify.app/> | 框架性能基准对比 |
+| State of JS | <https://stateofjs.com/> | JavaScript 生态年度调查 |
+| Stack Overflow Survey | <https://survey.stackoverflow.co/> | 全球开发者技术栈与满意度调查 |
+| Node.js 文档 | <https://nodejs.org/en/docs/> | 运行时官方文档 |
+| npm 文档 | <https://docs.npmjs.com/> | 包管理器官方文档 |
+| Vitest | <https://vitest.dev/> | 下一代单元测试框架 |
+| Playwright | <https://playwright.dev/> | 现代 E2E 测试框架 |
+| Prisma | <https://www.prisma.io/docs/> | 类型安全 ORM |
+| Drizzle ORM | <https://orm.drizzle.team/> | SQL-like TypeScript ORM |
 
 ---
 

@@ -49,7 +49,7 @@ model User {
   email    String @unique
   tenantId String
   tenant   Tenant @relation(fields: [tenantId], references: [id])
-  
+
   @@index([tenantId])
 }
 
@@ -59,7 +59,7 @@ model Project {
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
   createdAt   DateTime @default(now())
-  
+
   @@index([tenantId])
 }
 
@@ -89,7 +89,7 @@ import { tenantStorage } from './tenant-context';
 
 export const tenantMiddleware: Prisma.Middleware = async (params, next) => {
   const tenantId = tenantStorage.getStore();
-  
+
   // 自动为查询添加 tenantId 过滤
   if (tenantId && params.model && ['User', 'Project'].includes(params.model)) {
     if (params.action === 'findUnique' || params.action === 'findFirst') {

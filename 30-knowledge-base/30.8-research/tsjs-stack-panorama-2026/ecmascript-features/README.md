@@ -1,8 +1,8 @@
 # ECMAScript Features Research (2024–2026)
 
-> **路径**: `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ecmascript-features/`  
-> **状态**: 📂 目录索引 + 深度研究  
-> **生成时间**: 2026-04-28  
+> **路径**: `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ecmascript-features/`
+> **状态**: 📂 目录索引 + 深度研究
+> **生成时间**: 2026-04-28
 > **权威来源**: [TC39 Proposals](https://github.com/tc39/proposals) | [ECMA-262 Spec](https://tc39.es/ecma262/) | [MDN JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 
 ---

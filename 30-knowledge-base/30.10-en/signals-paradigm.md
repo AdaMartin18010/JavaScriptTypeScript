@@ -45,7 +45,7 @@ function TodoList() {
     { id: 1, text: 'Learn Signals', done: false },
     { id: 2, text: 'Build App', done: false }
   ]);
-  
+
   const [filter, setFilter] = createSignal('all'); // 'all' | 'active' | 'done'
 
   // Derived signal: recomputes only when dependencies change
@@ -53,7 +53,7 @@ function TodoList() {
     const f = filter();
     const items = todos();
     console.log(`Filtering ${items.length} items by: ${f}`);
-    
+
     if (f === 'active') return items.filter(t => !t.done);
     if (f === 'done') return items.filter(t => t.done);
     return items;
@@ -70,7 +70,7 @@ function TodoList() {
 
   const toggleTodo = (id) => {
     // Immutable update — Solid tracks reference equality
-    setTodos(prev => prev.map(t => 
+    setTodos(prev => prev.map(t =>
       t.id === id ? { ...t, done: !t.done } : t
     ));
   };
@@ -78,7 +78,7 @@ function TodoList() {
   return (
     <div>
       <h1>Todo List (Solid Signals)</h1>
-      
+
       {/* Filter buttons — only these buttons re-render on filter change */}
       <div class="filters">
         {['all', 'active', 'done'].map(f => (

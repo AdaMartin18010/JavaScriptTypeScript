@@ -175,15 +175,15 @@ async function checkTypeHealth(entryPoints, threshold = 15) {
     fileExtensions: ['ts', 'tsx'],
     tsConfig: './tsconfig.json'
   });
-  
+
   const deps = results.obj();
   const nodeDegrees = Object.entries(deps).map(([file, imports]) => ({
     file,
     degree: imports.length
   }));
-  
+
   const highDegreeNodes = nodeDegrees.filter(n => n.degree > threshold);
-  
+
   if (highDegreeNodes.length > 0) {
     console.error('⚠️ Type Modularity Violation Detected:');
     highDegreeNodes.forEach(n => {
@@ -191,7 +191,7 @@ async function checkTypeHealth(entryPoints, threshold = 15) {
     });
     process.exit(1);
   }
-  
+
   // Check for circular dependencies
   const circular = results.circular();
   if (circular.length > 0) {
@@ -199,7 +199,7 @@ async function checkTypeHealth(entryPoints, threshold = 15) {
     circular.forEach(chain => console.error('  ', chain.join(' -> ')));
     process.exit(1);
   }
-  
+
   console.log('✅ Type dependency graph is healthy.');
 }
 

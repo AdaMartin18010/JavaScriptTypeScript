@@ -1,4 +1,4 @@
-# 微服务完整指南
+﻿# 微服务完整指南
 
 > JavaScript/TypeScript 微服务架构的设计原则、通信模式与运维实践。
 
@@ -143,6 +143,175 @@ export class AppController {
 
 ---
 
+## gRPC 通信实战
+
+gRPC 是 Node.js 微服务内部通信的高性能选择。以下包含 `.proto` 定义、服务端与客户端完整代码：
+
+```protobuf
+// protobuf/orders.proto
+syntax = "proto3";
+
+service OrderService {
+  rpc CreateOrder (CreateOrderRequest) returns (Order);
+  rpc StreamOrderEvents (OrderEventRequest) returns (stream OrderEvent);
+}
+
+message CreateOrderRequest {
+  string user_id = 1;
+  repeated string items = 2;
+}
+
+message Order {
+  string order_id = 1;
+  string status = 2;
+}
+
+message OrderEventRequest {
+  string order_id = 1;
+}
+
+message OrderEvent {
+  string type = 1;
+  string payload = 2;
+}
+```
+
+```typescript
+// grpc-server.ts
+import * as grpc from '@grpc/grpc-js';
+import * as protoLoader from '@grpc/proto-loader';
+
+const packageDef = protoLoader.loadSync('./protobuf/orders.proto', {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true,
+});
+const proto = grpc.loadPackageDefinition(packageDef) as any;
+
+const server = new grpc.Server();
+server.addService(proto.OrderService.service, {
+  createOrder: (call: any, callback: any) => {
+    const { user_id, items } = call.request;
+    callback(null, { order_id: `ord-${Date.now()}`, status: 'CREATED' });
+  },
+  streamOrderEvents: (call: any) => {
+    const events = [{ type: 'PAID' }, { type: 'SHIPPED' }];
+    for (const ev of events) call.write(ev);
+    call.end();
+  },
+});
+server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
+  server.start();
+  console.log('gRPC server listening on :50051');
+});
+
+// grpc-client.ts
+const client = new proto.OrderService('order-service:50051', grpc.credentials.createInsecure());
+client.createOrder({ user_id: 'u1', items: ['sku-1'] }, (err: any, response: any) => {
+  console.log('Created:', response);
+});
+```
+
+---
+
+## 可观测性集成：OpenTelemetry + NestJS
+
+在 NestJS 中接入 OpenTelemetry，实现分布式追踪与指标上报：
+
+```typescript
+// tracing.ts
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
+import { Resource } from '@opentelemetry/resources';
+import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+
+export function initTracing(serviceName: string) {
+  const sdk = new NodeSDK({
+    resource: new Resource({
+      [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
+    }),
+    traceExporter: new OTLPTraceExporter({ url: 'http://otel-collector:4317' }),
+    instrumentations: [getNodeAutoInstrumentations()],
+  });
+  sdk.start();
+  process.on('SIGTERM', () => sdk.shutdown());
+}
+
+// main.ts
+import { initTracing } from './tracing';
+initTracing('order-service');
+```
+
+---
+
+## Kubernetes 部署示例
+
+以下是一个适用于 Node.js 微服务的标准 Deployment 与 Service 配置：
+
+```yaml
+# k8s/order-service.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  labels:
+    app: order-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+        - name: app
+          image: registry/order-service:v1.2.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NATS_URL
+              value: "nats://nats:4222"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+spec:
+  selector:
+    app: order-service
+  ports:
+    - port: 80
+      targetPort: 3000
+  type: ClusterIP
+```
+
+---
+
 ## 最佳实践
 
 1. **数据库 per Service**：禁止直接访问其他服务的数据库
@@ -157,15 +326,21 @@ export class AppController {
 
 | 资源 | 链接 | 说明 |
 |------|------|------|
-| NestJS Microservices | https://docs.nestjs.com/microservices/basics | NestJS 官方微服务文档 |
-| NATS Documentation | https://docs.nats.io/ | 高性能消息系统文档 |
-| OpenTelemetry JS | https://opentelemetry.io/docs/languages/js/ | 分布式追踪 SDK |
-| The Twelve-Factor App | https://12factor.net/ | 云原生应用方法论 |
-| Microservices.io | https://microservices.io/patterns/index.html | 微服务模式大全 |
-| Building Microservices (O'Reilly) | https://samnewman.io/books/building_microservices_2nd_edition/ | 微服务架构权威著作 |
-| gRPC Docs | https://grpc.io/docs/languages/node/ | Node.js gRPC 指南 |
-| Temporal | https://docs.temporal.io/ | 工作流编排与 Saga 实现 |
-| Pact.io | https://pact.io/ | 消费者驱动契约测试 |
+| NestJS Microservices | <https://docs.nestjs.com/microservices/basics> | NestJS 官方微服务文档 |
+| NATS Documentation | <https://docs.nats.io/> | 高性能消息系统文档 |
+| OpenTelemetry JS | <https://opentelemetry.io/docs/languages/js/> | 分布式追踪 SDK |
+| The Twelve-Factor App | <https://12factor.net/> | 云原生应用方法论 |
+| Microservices.io | <https://microservices.io/patterns/index.html> | 微服务模式大全 |
+| Building Microservices (O'Reilly) | <https://samnewman.io/books/building_microservices_2nd_edition/> | 微服务架构权威著作 |
+| gRPC Docs | <https://grpc.io/docs/languages/node/> | Node.js gRPC 指南 |
+| Temporal | <https://docs.temporal.io/> | 工作流编排与 Saga 实现 |
+| Pact.io | <https://pact.io/> | 消费者驱动契约测试 |
+| Kubernetes Deployments | <https://kubernetes.io/docs/concepts/workloads/controllers/deployment/> | K8s 官方工作负载文档 |
+| Docker Documentation | <https://docs.docker.com/> | 容器化标准文档 |
+| Consul | <https://www.consul.io/docs> | HashiCorp 服务发现与网格 |
+| Istio | <https://istio.io/latest/docs/> | 服务网格流量管理与安全 |
+| AWS Microservices | <https://aws.amazon.com/microservices/> | AWS 微服务白皮书 |
+| Google Cloud Microservices | <https://cloud.google.com/microservices> | Google Cloud 微服务架构中心 |
 
 ---
 

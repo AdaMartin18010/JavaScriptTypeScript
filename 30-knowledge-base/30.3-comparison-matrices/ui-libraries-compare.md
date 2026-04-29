@@ -47,6 +47,7 @@
 ## 代码示例
 
 ### shadcn/ui (CLI 安装 + 源码拥有)
+
 ```bash
 # 初始化
 npx shadcn@latest init --yes --template next --base-color slate
@@ -95,6 +96,7 @@ export default function Home() {
 ```
 
 ### Radix UI (Headless — 完全自定义样式)
+
 ```tsx
 import * as Dialog from '@radix-ui/react-dialog';
 import { useState } from 'react';
@@ -137,6 +139,7 @@ export function CustomDialog() {
 ```
 
 ### MUI (Material UI) v6
+
 ```tsx
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { Button, Card, CardContent, Typography, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
@@ -185,6 +188,7 @@ export function MuiExample() {
 ```
 
 ### Chakra UI v3 (Panda CSS 驱动)
+
 ```tsx
 import { Button, Card, Heading, Text, Dialog, Portal, CloseButton } from '@chakra-ui/react';
 import { useState } from 'react';
@@ -251,16 +255,16 @@ export function ChakraExample() {
 
 | 资源 | 链接 | 说明 |
 |------|------|------|
-| shadcn/ui | https://ui.shadcn.com/docs | 官方文档与组件库 |
-| Radix UI | https://www.radix-ui.com/primitives/docs/overview/introduction | Headless UI 原语文档 |
-| MUI (Material UI) | https://mui.com/material-ui/getting-started/ | 官方文档 |
-| Chakra UI v3 | https://www.chakra-ui.com/docs/get-started/installation | 官方文档 |
-| Ark UI | https://ark-ui.com/react/docs/overview/introduction | 跨框架 Headless UI |
-| Ant Design | https://ant.design/docs/react/introduce | 官方文档 |
-| Nuxt UI | https://ui.nuxt.com/getting-started | Nuxt 官方 UI 库 |
-| Radix Vue | https://www.radix-vue.com/ | Radix 的 Vue 移植 |
-| A11y Project | https://www.a11yproject.com/ | 无障碍最佳实践 |
-| WAI-ARIA Practices | https://www.w3.org/WAI/ARIA/apg/ | W3C 无障碍指南 |
+| shadcn/ui | <https://ui.shadcn.com/docs> | 官方文档与组件库 |
+| Radix UI | <https://www.radix-ui.com/primitives/docs/overview/introduction> | Headless UI 原语文档 |
+| MUI (Material UI) | <https://mui.com/material-ui/getting-started/> | 官方文档 |
+| Chakra UI v3 | <https://www.chakra-ui.com/docs/get-started/installation> | 官方文档 |
+| Ark UI | <https://ark-ui.com/react/docs/overview/introduction> | 跨框架 Headless UI |
+| Ant Design | <https://ant.design/docs/react/introduce> | 官方文档 |
+| Nuxt UI | <https://ui.nuxt.com/getting-started> | Nuxt 官方 UI 库 |
+| Radix Vue | <https://www.radix-vue.com/> | Radix 的 Vue 移植 |
+| A11y Project | <https://www.a11yproject.com/> | 无障碍最佳实践 |
+| WAI-ARIA Practices | <https://www.w3.org/WAI/ARIA/apg/> | W3C 无障碍指南 |
 
 ---
 

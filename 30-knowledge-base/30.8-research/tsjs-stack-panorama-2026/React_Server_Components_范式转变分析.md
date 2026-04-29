@@ -41,7 +41,7 @@ status: current
     - [6.3 对部署架构的影响](#63-对部署架构的影响)
   - [7. 安全模型](#7-安全模型)
     - [7.1 RSC 的安全边界](#71-rsc-的安全边界)
-    - [7.2 已知漏洞与防护](#72-已知漏洞与防护)
+    - [7.2 安全风险与防护（模拟演练场景）](#72-安全风险与防护模拟演练场景)
   - [8. 与其他框架的对比](#8-与其他框架的对比)
     - [8.1 Next.js vs Remix（React Router v7）](#81-nextjs-vs-remixreact-router-v7)
     - [8.2 React vs Vue vs Svelte 的全栈方案](#82-react-vs-vue-vs-svelte-的全栈方案)

@@ -16,6 +16,7 @@ Thought → Action → Observation → Thought → ...
 ```
 
 **特点**：
+
 - 适合工具调用、网页浏览、数据库查询
 - 每一步都有可解释的中间过程
 - 容易陷入循环，需设置最大步数
@@ -31,6 +32,7 @@ Thought → Action → Observation → Thought → ...
 ```
 
 **特点**：
+
 - 适合多步骤复杂任务
 - 计划可一次性生成或动态调整
 - 执行阶段可并行化
@@ -46,6 +48,7 @@ Thought → Action → Observation → Thought → ...
 ```
 
 **特点**：
+
 - 通过失败案例学习
 - 需要评估器（Evaluator）和评分机制
 - 成本较高（多次 LLM 调用）
@@ -114,14 +117,14 @@ class ReActAgent {
 
       // 解析 Thought / Action / Action Input
       const parsed = this.parseResponse(response);
-      
+
       if (parsed.action === 'Final Answer') {
         return { answer: parsed.actionInput, steps };
       }
 
       // 执行工具
       const tool = this.tools.get(parsed.action);
-      const observation = tool 
+      const observation = tool
         ? await tool.execute(parsed.actionInput)
         : `Error: Tool ${parsed.action} not found`;
 

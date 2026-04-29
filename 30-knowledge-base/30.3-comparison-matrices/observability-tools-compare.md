@@ -50,6 +50,7 @@
 ## 配置示例
 
 ### OpenTelemetry + Grafana Stack (Docker Compose)
+
 ```yaml
 # docker-compose.observability.yml
 version: '3.8'
@@ -112,6 +113,7 @@ services:
 ```
 
 ### Node.js 应用接入 OpenTelemetry
+
 ```typescript
 // tracing.ts — 应用启动时加载
 import { NodeSDK } from '@opentelemetry/sdk-node';
@@ -156,6 +158,7 @@ process.on('SIGTERM', () => {
 ```
 
 ### Sentry 错误追踪 (Next.js)
+
 ```typescript
 // sentry.client.config.ts
 import * as Sentry from '@sentry/nextjs';
@@ -205,15 +208,15 @@ module.exports = withSentryConfig(
 
 | 资源 | 链接 | 说明 |
 |------|------|------|
-| OpenTelemetry Docs | https://opentelemetry.io/docs/ | 官方文档与规范 |
-| Grafana Docs | https://grafana.com/docs/ | 官方文档 |
-| Prometheus Docs | https://prometheus.io/docs/ | 时序数据库文档 |
-| Datadog Docs | https://docs.datadoghq.com/ | 官方文档 |
-| New Relic Docs | https://docs.newrelic.com/ | 官方文档 |
-| Honeycomb Docs | https://docs.honeycomb.io/ | 官方文档 |
-| Sentry Docs | https://docs.sentry.io/ | 错误追踪文档 |
-| Google SRE Book | https://sre.google/sre-book/table-of-contents/ | 站点可靠性工程 |
-| Distributed Systems Observability | https://www.oreilly.com/library/view/distributed-systems-observability/9781492033431/ | O'Reilly 可观测性专著 |
+| OpenTelemetry Docs | <https://opentelemetry.io/docs/> | 官方文档与规范 |
+| Grafana Docs | <https://grafana.com/docs/> | 官方文档 |
+| Prometheus Docs | <https://prometheus.io/docs/> | 时序数据库文档 |
+| Datadog Docs | <https://docs.datadoghq.com/> | 官方文档 |
+| New Relic Docs | <https://docs.newrelic.com/> | 官方文档 |
+| Honeycomb Docs | <https://docs.honeycomb.io/> | 官方文档 |
+| Sentry Docs | <https://docs.sentry.io/> | 错误追踪文档 |
+| Google SRE Book | <https://sre.google/sre-book/table-of-contents/> | 站点可靠性工程 |
+| Distributed Systems Observability | <https://www.oreilly.com/library/view/distributed-systems-observability/9781492033431/> | O'Reilly 可观测性专著 |
 
 ---
 

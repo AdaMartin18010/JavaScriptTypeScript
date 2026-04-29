@@ -43,6 +43,7 @@ status: current
 ## 代码示例：SSE + WebSocket 混合实现
 
 ### 服务端：Express + SSE 端点
+
 ```typescript
 import express from 'express';
 
@@ -87,6 +88,7 @@ app.listen(3000, () => console.log('SSE server on :3000'));
 ```
 
 ### 客户端：SSE 消费 + WebSocket 备用
+
 ```typescript
 class RealtimeClient {
   private eventSource: EventSource | null = null;
@@ -143,6 +145,7 @@ client.connectSSE('/api/stocks/stream', (data) => {
 ```
 
 ### 简单 WebSocket 服务端 (ws 库)
+
 ```typescript
 import { WebSocketServer } from 'ws';
 
@@ -191,14 +194,14 @@ wss.on('connection', (ws) => {
 
 | 资源 | 链接 | 说明 |
 |------|------|------|
-| WebSocket API (MDN) | https://developer.mozilla.org/en-US/docs/Web/API/WebSocket | 浏览器 WebSocket 文档 |
-| SSE (MDN) | https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events | 服务器发送事件文档 |
-| WebRTC Guide | https://webrtc.org/getting-started/overview | WebRTC 官方入门指南 |
-| MQTT.js | https://github.com/mqttjs/MQTT.js | Node.js / 浏览器 MQTT 客户端 |
-| Socket.IO | https://socket.io/docs/v4/ | 实时应用框架文档 |
-| µWebSockets | https://github.com/uNetworking/uWebSockets | 高性能 WebSocket 库 |
-| Ably Documentation | https://ably.com/docs | 实时数据平台文档 |
-| WebTransport | https://developer.mozilla.org/en-US/docs/Web/API/WebTransport | 下一代 Web 传输 API |
+| WebSocket API (MDN) | <https://developer.mozilla.org/en-US/docs/Web/API/WebSocket> | 浏览器 WebSocket 文档 |
+| SSE (MDN) | <https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events> | 服务器发送事件文档 |
+| WebRTC Guide | <https://webrtc.org/getting-started/overview> | WebRTC 官方入门指南 |
+| MQTT.js | <https://github.com/mqttjs/MQTT.js> | Node.js / 浏览器 MQTT 客户端 |
+| Socket.IO | <https://socket.io/docs/v4/> | 实时应用框架文档 |
+| µWebSockets | <https://github.com/uNetworking/uWebSockets> | 高性能 WebSocket 库 |
+| Ably Documentation | <https://ably.com/docs> | 实时数据平台文档 |
+| WebTransport | <https://developer.mozilla.org/en-US/docs/Web/API/WebTransport> | 下一代 Web 传输 API |
 
 ---
 
