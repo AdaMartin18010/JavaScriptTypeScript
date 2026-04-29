@@ -13,11 +13,87 @@ created: 2026-04-27
 ## 边界说明
 
 本模块聚焦数据可视化的应用开发模式，包括：
+
 - SVG/Canvas 图表渲染与动画
 - 数据分箱、比例尺与交互
 - 响应式图表与性能优化
 
 底层 3D 渲染引擎（Three.js/Babylon.js）的分类选型不属于本模块范围（请参见 `30-knowledge-base/30.2-categories/04-data-visualization.md`）。
+
+## 子模块目录
+
+| 子模块 | 说明 | 关键文件 |
+|---|---|---|
+| canvas | 2D Canvas API、离屏渲染、像素操作与性能优化 | `canvas/README.md` |
+| svg | SVG 元素、路径、滤镜、响应式缩放与可访问性 | `svg/README.md` |
+| d3 | D3.js 数据绑定、比例尺、选择集与过渡动画 | `d3/README.md` |
+| chart-libraries | 高层图表库：Chart.js、ECharts、Observable Plot 集成 | `chart-libraries/README.md` |
+| webgl | WebGL 基础、着色器、纹理与高性能渲染管线 | `webgl/README.md` |
+
+## 核心代码示例
+
+### Canvas 绘制动态柱状图
+
+```js
+const canvas = document.getElementById('chart');
+const ctx = canvas.getContext('2d');
+const data = [120, 250, 60, 300, 180];
+const barWidth = 40;
+const gap = 20;
+
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+data.forEach((value, i) => {
+  const x = i * (barWidth + gap) + gap;
+  const height = value;
+  const y = canvas.height - height;
+  ctx.fillStyle = 'steelblue';
+  ctx.fillRect(x, y, barWidth, height);
+  ctx.fillStyle = '#333';
+  ctx.fillText(value, x + 10, y - 5);
+});
+```
+
+### D3.js 比例尺与坐标轴
+
+```js
+import * as d3 from 'd3';
+
+const data = [120, 250, 60, 300, 180];
+const width = 500, height = 300;
+
+const x = d3.scaleBand()
+  .domain(data.map((_, i) => i))
+  .range([0, width])
+  .padding(0.2);
+
+const y = d3.scaleLinear()
+  .domain([0, d3.max(data)])
+  .nice()
+  .range([height, 0]);
+
+const svg = d3.select('svg');
+svg.selectAll('rect')
+  .data(data)
+  .join('rect')
+  .attr('x', (_, i) => x(i))
+  .attr('y', d => y(d))
+  .attr('width', x.bandwidth())
+  .attr('height', d => height - y(d))
+  .attr('fill', 'steelblue');
+
+svg.append('g').attr('transform', `translate(0,${height})`).call(d3.axisBottom(x));
+svg.append('g').call(d3.axisLeft(y));
+```
+
+## 权威外部链接
+
+- [MDN — Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
+- [MDN — SVG](https://developer.mozilla.org/en-US/docs/Web/SVG)
+- [MDN — WebGL API](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API)
+- [D3.js 官方文档](https://d3js.org/)
+- [Chart.js 文档](https://www.chartjs.org/docs/latest/)
+- [Apache ECharts 文档](https://echarts.apache.org/en/option.html)
+- [Three.js 文档](https://threejs.org/docs/)
 
 ## 关联模块
 

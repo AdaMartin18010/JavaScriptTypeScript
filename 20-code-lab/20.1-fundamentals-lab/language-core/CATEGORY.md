@@ -32,6 +32,25 @@ created: 2026-04-27
   └── 03-concurrency            → 异步与并发
 ```
 
+## 子模块索引
+
+| 子模块 | 核心主题 | 关键概念 |
+|--------|----------|----------|
+| **syntax** | 语法基础 | 表达式、语句、运算符、控制流、严格模式 |
+| **types** | 数据类型 | 原始类型、引用类型、类型转换、typeof、TypeScript 类型注解 |
+| **scope** | 作用域机制 | 词法作用域、作用域链、块级作用域、变量提升、TDZ |
+| **closures** | 闭包 | 词法闭包、私有变量、工厂函数、模块模式 |
+| **prototypes** | 原型与继承 | 原型链、`__proto__`、`prototype`、class 语法糖、混入模式 |
+| **modules** | 模块系统 | ESM、CommonJS、动态导入 `import()`、循环依赖、tree-shaking |
+
+## 权威参考链接
+
+- [MDN JavaScript 指南](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide)
+- [MDN JavaScript 参考](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference)
+- [ECMA-262 规范 (第 15 版)](https://262.ecma-international.org/15.0/)
+- [TypeScript 官方文档](https://www.typescriptlang.org/docs/)
+- [JavaScript Info (现代教程)](https://javascript.info/)
+
 ## 关联索引
 
 - [10-fundamentals/10.1-language-semantics/README.md](../../../10-fundamentals/10.1-language-semantics/README.md)

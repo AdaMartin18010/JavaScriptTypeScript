@@ -1,4 +1,4 @@
-﻿# 后端开发 — 理论基础
+# 后端开发 — 理论基础
 
 ## 1. HTTP 服务端架构
 
@@ -39,13 +39,86 @@
 - **DAO**: 数据访问对象，更底层的数据库操作抽象
 - **Unit of Work**: 跟踪对象变更，批量提交事务
 
-## 4. API 设计
+## 4. API 设计范式对比
 
-- **REST**: 资源导向，使用 HTTP 方法表达语义（GET/POST/PUT/DELETE）
-- **RPC**: 动作导向，直接暴露操作（gRPC、JSON-RPC、tRPC）
-- **GraphQL**: 客户端驱动查询，单一端点，精确获取所需数据
+| 特性 | REST | GraphQL | gRPC | tRPC |
+|---|---|---|---|---|
+| 设计范式 | 资源导向 | 查询导向 | 服务方法导向 | 类型安全 RPC |
+| 传输协议 | HTTP/1.1, HTTP/2 | HTTP/1.1, HTTP/2 | HTTP/2 | HTTP/1.1, HTTP/2 |
+| 数据格式 | JSON / XML | JSON | Protocol Buffers | JSON |
+| 强类型 | 弱（约定） | 模式强类型（Schema） | 强（Protobuf） | 强（TypeScript 推导） |
+| 流支持 | 有限（SSE / 长轮询） | Subscription（WebSocket/SSE） | 双向流（Duplex Streaming） | 有限（Subscription） |
+| 浏览器原生支持 | 是 | 是 | 需 gRPC-Web 代理 | 是 |
+| 主要工具链 | Postman, OpenAPI, Swagger | GraphQL Playground, Apollo | protoc, grpcurl | Zod, React Query, Next.js |
+| 适用场景 | 通用 Web API | 复杂查询、聚合数据 | 微服务内部高性能通信 | 全栈 TypeScript 项目 |
 
-## 5. 与相邻模块的关系
+## 5. 代码示例
+
+### Express 路由与中间件
+
+```ts
+import express, { Request, Response, NextFunction } from 'express';
+
+const app = express();
+app.use(express.json());
+
+// 日志中间件
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
+
+// REST 路由
+app.get('/api/users/:id', (req: Request, res: Response) => {
+  const user = { id: req.params.id, name: 'Alice' };
+  res.json(user);
+});
+
+app.post('/api/users', (req: Request, res: Response) => {
+  const { name, email } = req.body;
+  const newUser = { id: crypto.randomUUID(), name, email };
+  res.status(201).json(newUser);
+});
+
+// 错误处理中间件
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal Server Error' });
+});
+
+app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+```
+
+### Fastify 插件式路由
+
+```ts
+import fastify from 'fastify';
+
+const app = fastify({ logger: true });
+
+app.get('/api/items', async (_req, reply) => {
+  return reply.send([{ id: 1, title: 'Item A' }]);
+});
+
+app.post('/api/items', async (req, reply) => {
+  const item = req.body as { title: string };
+  return reply.status(201).send({ id: crypto.randomUUID(), ...item });
+});
+
+app.listen({ port: 3000 });
+```
+
+## 6. 权威外部链接
+
+- [Node.js 官方文档](https://nodejs.org/api/)
+- [Express.js API 参考](https://expressjs.com/en/4x/api.html)
+- [Fastify 文档](https://fastify.dev/docs/latest/)
+- [RESTful API 设计指南 (Microsoft)](https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design)
+- [GraphQL 官方学习文档](https://graphql.org/learn/)
+- [gRPC 官方文档](https://grpc.io/docs/)
+- [tRPC 文档](https://trpc.io/docs)
+
+## 7. 与相邻模块的关系
 
 - **21-api-security**: API 安全威胁与防御
 - **20-database-orm**: 数据库设计与 ORM 使用
