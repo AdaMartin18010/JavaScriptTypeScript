@@ -1,16 +1,20 @@
 # 应用领域总索引
 
-## 概述
-
-本文档为 **应用领域总索引** 的占位骨架，待补充完整内容。
-
-## 待补充章节
-
-- [ ] 核心概念
-- [ ] 详细说明
-- [ ] 最佳实践
-- [ ] 参考资源
+> 按应用领域组织的知识导航索引。
 
 ---
 
-> 此文件由链接检查自动创建，内容待完善。
+## 应用领域分类
+
+| 领域 | 相关文档 |
+|------|---------|
+| **Web 开发** | `30.2-categories/10-css-frameworks.md` |
+| **移动开发** | `30.2-categories/MOBILE_DEVELOPMENT.md` |
+| **数据可视化** | `30.2-categories/DATA_VISUALIZATION.md` |
+| **AI 集成** | `30.2-categories/ai-integration.md` |
+| **微服务** | `30.1-guides/MICROSERVICES_COMPLETE_GUIDE.md` |
+| **边缘计算** | `20-code-lab/20.8-edge-serverless/` |
+
+---
+
+*最后更新: 2026-04-29*

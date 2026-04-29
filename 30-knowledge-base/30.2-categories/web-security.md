@@ -1,26 +1,30 @@
 # Web 安全
 
-> **定位**：`30-knowledge-base/30.2-categories/web-security.md`
-> **关联**：`20-code-lab/` | `30-knowledge-base/`
+> Web 应用安全威胁与防护措施速查。
 
 ---
 
-## 概述
+## 常见威胁
 
-Web 安全 是 JavaScript/TypeScript 生态系统中的重要技术领域。本文档提供该领域的分类导航与技术选型参考。
+| 威胁 | 防护 |
+|------|------|
+| **XSS** | 转义输出，CSP，Trusted Types |
+| **CSRF** | SameSite Cookie，Token 校验 |
+| **SQL 注入** | 参数化查询，ORM |
+| **Clickjacking** | X-Frame-Options, CSP frame-ancestors |
+| **MITM** | HTTPS, HSTS |
+| **供应链攻击** | 锁文件审计，私有 Registry |
 
-## 核心子领域（待补充）
+## 安全响应头
 
-- 技术定义与核心概念
-- 主流工具/框架对比
-- 选型决策树
-- 最佳实践与反模式
-
-## 延伸阅读
-
-- [对比矩阵](../30.3-comparison-matrices/)
-- [决策树](../30.4-decision-trees/)
+```
+Content-Security-Policy: default-src 'self'
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+Strict-Transport-Security: max-age=63072000
+Referrer-Policy: strict-origin-when-cross-origin
+```
 
 ---
 
-*本文件由重构工具自动生成于 2026-04-28。欢迎贡献实质内容。*
+*最后更新: 2026-04-29*

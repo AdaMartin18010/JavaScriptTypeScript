@@ -1,16 +1,20 @@
 # 语言核心总索引
 
-## 概述
-
-本文档为 **语言核心总索引** 的占位骨架，待补充完整内容。
-
-## 待补充章节
-
-- [ ] 核心概念
-- [ ] 详细说明
-- [ ] 最佳实践
-- [ ] 参考资源
+> JavaScript/TypeScript 语言核心知识的导航索引。
 
 ---
 
-> 此文件由链接检查自动创建，内容待完善。
+## 语言核心分类
+
+| 类别 | 文档 |
+|------|------|
+| **类型系统** | `10-fundamentals/10.2-type-system/` |
+| **执行模型** | `10-fundamentals/10.4-execution-model/` |
+| **模块系统** | `10-fundamentals/10.8-module-system/` |
+| **ECMAScript 演进** | `10-fundamentals/10.6-ecmascript-spec/` |
+| **速查表** | `30.7-cheatsheets/JS_LANGUAGE_CORE_CHEATSHEET.md` |
+| **速查表** | `30.7-cheatsheets/TYPESCRIPT_CHEATSHEET.md` |
+
+---
+
+*最后更新: 2026-04-29*

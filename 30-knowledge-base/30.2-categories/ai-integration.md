@@ -1,26 +1,38 @@
 # AI 集成
 
-> **定位**：`30-knowledge-base/30.2-categories/ai-integration.md`
-> **关联**：`20-code-lab/` | `30-knowledge-base/`
+> JavaScript/TypeScript 项目中集成 AI 能力的方案与最佳实践。
 
 ---
 
-## 概述
+## 核心能力
 
-AI 集成 是 JavaScript/TypeScript 生态系统中的重要技术领域。本文档提供该领域的分类导航与技术选型参考。
+| 能力 | 方案 | 代表工具 |
+|------|------|---------|
+| **代码补全** | IDE 插件 | GitHub Copilot, Cursor |
+| **文本生成** | LLM API | OpenAI, Anthropic, Gemini |
+| **图像生成** | Diffusion API | DALL-E, Midjourney, Stable Diffusion |
+| **Embedding** | 向量检索 | OpenAI Embedding, Cohere |
+| **Agent 框架** | 工具调用 + 推理 | LangChain, Vercel AI SDK |
 
-## 核心子领域（待补充）
+## Vercel AI SDK
 
-- 技术定义与核心概念
-- 主流工具/框架对比
-- 选型决策树
-- 最佳实践与反模式
+```typescript
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
 
-## 延伸阅读
+const { text } = await generateText({
+  model: openai('gpt-4o'),
+  prompt: '解释 React Server Components',
+})
+```
 
-- [对比矩阵](../30.3-comparison-matrices/)
-- [决策树](../30.4-decision-trees/)
+## 最佳实践
+
+1. **流式响应**：使用 `streamText` 提升用户体验
+2. **错误处理**：LLM 可能超时或失败，设计降级策略
+3. **成本控制**：监控 Token 使用量，设置预算上限
+4. **隐私合规**：敏感数据不发送至公共 LLM
 
 ---
 
-*本文件由重构工具自动生成于 2026-04-28。欢迎贡献实质内容。*
+*最后更新: 2026-04-29*

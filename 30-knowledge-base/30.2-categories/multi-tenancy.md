@@ -1,26 +1,29 @@
-# 多租户架构
+# 多租户
 
-> **定位**：`30-knowledge-base/30.2-categories/multi-tenancy.md`
-> **关联**：`20-code-lab/` | `30-knowledge-base/`
-
----
-
-## 概述
-
-多租户架构 是 JavaScript/TypeScript 生态系统中的重要技术领域。本文档提供该领域的分类导航与技术选型参考。
-
-## 核心子领域（待补充）
-
-- 技术定义与核心概念
-- 主流工具/框架对比
-- 选型决策树
-- 最佳实践与反模式
-
-## 延伸阅读
-
-- [对比矩阵](../30.3-comparison-matrices/)
-- [决策树](../30.4-decision-trees/)
+> SaaS 应用多租户架构设计模式。
 
 ---
 
-*本文件由重构工具自动生成于 2026-04-28。欢迎贡献实质内容。*
+## 架构模式
+
+| 模式 | 隔离级别 | 复杂度 | 成本 |
+|------|---------|--------|------|
+| **独立数据库** | 最高 | 高 | 高 |
+| **共享数据库，独立 Schema** | 高 | 中 | 中 |
+| **共享 Schema，租户 ID 隔离** | 中 | 低 | 低 |
+| **行级安全（RLS）** | 中 | 低 | 低 |
+
+## PostgreSQL RLS 示例
+
+```sql
+-- 启用行级安全
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+
+-- 创建策略
+CREATE POLICY tenant_isolation ON projects
+  USING (tenant_id = current_setting('app.current_tenant')::UUID);
+```
+
+---
+
+*最后更新: 2026-04-29*

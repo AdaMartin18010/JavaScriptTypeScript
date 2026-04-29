@@ -206,7 +206,7 @@
 
 ### 方式一：浏览生态工具
 
-查看 [awesome-jsts-ecosystem](./awesome-jsts-ecosystem/) 目录，获取精选的框架、工具和库。
+查看 [awesome-jsts-ecosystem](archive/legacy-backups-20260429-0809.zip)（已归档） 目录，获取精选的框架、工具和库。
 
 ### 方式二：动手实践
 
@@ -2885,7 +2885,7 @@ apps/
 ├── web/                # 主站
 ├── admin/              # 管理后台
 ├── api/                # API 服务
-└── docs/               # 文档站点
+└── website/            # VitePress 文档站点
 tools/
 └── generators/         # Nx 代码生成器
 ```

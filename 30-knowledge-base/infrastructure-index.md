@@ -1,16 +1,20 @@
 # 基础设施总索引
 
-## 概述
-
-本文档为 **基础设施总索引** 的占位骨架，待补充完整内容。
-
-## 待补充章节
-
-- [ ] 核心概念
-- [ ] 详细说明
-- [ ] 最佳实践
-- [ ] 参考资源
+> 部署、DevOps、可观测性相关知识的导航索引。
 
 ---
 
-> 此文件由链接检查自动创建，内容待完善。
+## 基础设施分类
+
+| 类别 | 文档 |
+|------|------|
+| **部署平台** | `30.2-categories/09-deployment-platforms.md` |
+| **CI/CD** | `30.2-categories/13-ci-cd.md` |
+| **Monorepo** | `30.2-categories/08-monorepo-tools.md` |
+| **包管理器** | `30.2-categories/07-package-managers.md` |
+| **可观测性** | `30.3-comparison-matrices/observability-tools-compare.md` |
+| **安全** | `30.2-categories/25-security.md` |
+
+---
+
+*最后更新: 2026-04-29*

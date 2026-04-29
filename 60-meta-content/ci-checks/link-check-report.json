@@ -1,9 +1,646 @@
 {
-  "timestamp": "2026-04-29T00:09:41.454Z",
-  "totalFiles": 1203,
-  "checkedFiles": 142,
-  "totalLinks": 511,
-  "brokenCount": 0,
-  "brokenLinks": [],
-  "passed": true
+  "timestamp": "2026-04-29T00:42:52.887Z",
+  "totalFiles": 1202,
+  "checkedFiles": 141,
+  "totalLinks": 507,
+  "brokenCount": 106,
+  "brokenLinks": [
+    {
+      "file": "20-code-lab\\20.1-fundamentals-lab\\real-world-examples\\THEORY.md",
+      "line": 4,
+      "text": "`examples/`",
+      "url": "../../../examples/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-infrastructure.md",
+      "line": 63,
+      "text": "../../jsts-code-lab/12-package-management/",
+      "url": "../../jsts-code-lab/12-package-management/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-infrastructure.md",
+      "line": 64,
+      "text": "../../jsts-code-lab/23-toolchain-configuration/",
+      "url": "../../jsts-code-lab/23-toolchain-configuration/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-infrastructure.md",
+      "line": 65,
+      "text": "../../jsts-code-lab/07-testing/",
+      "url": "../../jsts-code-lab/07-testing/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-infrastructure.md",
+      "line": 66,
+      "text": "../../jsts-code-lab/21-api-security/",
+      "url": "../../jsts-code-lab/21-api-security/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-infrastructure.md",
+      "line": 67,
+      "text": "../../jsts-code-lab/08-performance/",
+      "url": "../../jsts-code-lab/08-performance/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-infrastructure.md",
+      "line": 68,
+      "text": "../../jsts-code-lab/74-observability/",
+      "url": "../../jsts-code-lab/74-observability/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-infrastructure.md",
+      "line": 69,
+      "text": "../../jsts-code-lab/95-auth-modern-lab/",
+      "url": "../../jsts-code-lab/95-auth-modern-lab/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 51,
+      "text": "jsts-language-core-system/01-type-system/",
+      "url": "../../jsts-language-core-system/01-type-system/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 52,
+      "text": "jsts-language-core-system/02-variable-system/",
+      "url": "../../jsts-language-core-system/02-variable-system/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 53,
+      "text": "jsts-language-core-system/03-control-flow/",
+      "url": "../../jsts-language-core-system/03-control-flow/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 54,
+      "text": "jsts-language-core-system/04-execution-model/",
+      "url": "../../jsts-language-core-system/04-execution-model/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 55,
+      "text": "jsts-language-core-system/05-execution-flow/",
+      "url": "../../jsts-language-core-system/05-execution-flow/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 56,
+      "text": "jsts-language-core-system/06-ecmascript-spec-foundation/",
+      "url": "../../jsts-language-core-system/06-ecmascript-spec-foundation/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 57,
+      "text": "jsts-language-core-system/07-js-ts-symmetric-difference/",
+      "url": "../../jsts-language-core-system/07-js-ts-symmetric-difference/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 58,
+      "text": "jsts-language-core-system/08-module-system/",
+      "url": "../../jsts-language-core-system/08-module-system/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 59,
+      "text": "jsts-language-core-system/09-object-model/",
+      "url": "../../jsts-language-core-system/09-object-model/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 65,
+      "text": "jsts-code-lab/00-language-core/",
+      "url": "../../jsts-code-lab/00-language-core/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 66,
+      "text": "jsts-code-lab/01-ecmascript-evolution/",
+      "url": "../../jsts-code-lab/01-ecmascript-evolution/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 67,
+      "text": "jsts-code-lab/02-design-patterns/",
+      "url": "../../jsts-code-lab/02-design-patterns/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 68,
+      "text": "jsts-code-lab/03-concurrency/",
+      "url": "../../jsts-code-lab/03-concurrency/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 69,
+      "text": "jsts-code-lab/04-data-structures/",
+      "url": "../../jsts-code-lab/04-data-structures/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 70,
+      "text": "jsts-code-lab/05-algorithms/",
+      "url": "../../jsts-code-lab/05-algorithms/"
+    },
+    {
+      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
+      "line": 71,
+      "text": "jsts-code-lab/10-js-ts-comparison/",
+      "url": "../../jsts-code-lab/10-js-ts-comparison/"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 330,
+      "text": "📦 awesome-jsts-ecosystem",
+      "url": "../../../awesome-jsts-ecosystem"
+    },
+    {
+      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
+      "line": 331,
+      "text": "🧪 jsts-code-lab",
+      "url": "../../../jsts-code-lab"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
+      "line": 77,
+      "text": "70-distributed-systems",
+      "url": "../../jsts-code-lab/70-distributed-systems/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
+      "line": 78,
+      "text": "分布式系统理论",
+      "url": "../../jsts-code-lab/70-distributed-systems/THEORY.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
+      "line": 113,
+      "text": "71-consensus-algorithms",
+      "url": "../../jsts-code-lab/71-consensus-algorithms/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
+      "line": 197,
+      "text": "25-microservices",
+      "url": "../../jsts-code-lab/25-microservices/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
+      "line": 220,
+      "text": "72-container-orchestration",
+      "url": "../../jsts-code-lab/72-container-orchestration/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
+      "line": 221,
+      "text": "73-service-mesh-advanced",
+      "url": "../../jsts-code-lab/73-service-mesh-advanced/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
+      "line": 252,
+      "text": "80-formal-verification",
+      "url": "../../jsts-code-lab/80-formal-verification/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
+      "line": 304,
+      "text": "33-ai-integration",
+      "url": "../../jsts-code-lab/33-ai-integration/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
+      "line": 305,
+      "text": "76-ml-engineering",
+      "url": "../../jsts-code-lab/76-ml-engineering/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
+      "line": 332,
+      "text": "77-quantum-computing",
+      "url": "../../jsts-code-lab/77-quantum-computing/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
+      "line": 343,
+      "text": "36-web-assembly",
+      "url": "../../jsts-code-lab/36-web-assembly/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
+      "line": 66,
+      "text": "00-language-core",
+      "url": "../../jsts-code-lab/00-language-core/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
+      "line": 98,
+      "text": "10-js-ts-comparison",
+      "url": "../../jsts-code-lab/10-js-ts-comparison/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
+      "line": 121,
+      "text": "02-design-patterns",
+      "url": "../../jsts-code-lab/02-design-patterns/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
+      "line": 122,
+      "text": "设计模式理论",
+      "url": "../../jsts-code-lab/02-design-patterns/THEORY.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
+      "line": 174,
+      "text": "07-testing",
+      "url": "../../jsts-code-lab/07-testing/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
+      "line": 216,
+      "text": "18-frontend-frameworks",
+      "url": "../../jsts-code-lab/18-frontend-frameworks/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
+      "line": 434,
+      "text": "jsts-code-lab 中级模块",
+      "url": "../../jsts-code-lab/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "line": 62,
+      "text": "06-architecture-patterns",
+      "url": "../../jsts-code-lab/06-architecture-patterns/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "line": 63,
+      "text": "架构模式解析",
+      "url": "../../jsts-code-lab/06-architecture-patterns/ARCHITECTURE.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "line": 103,
+      "text": "02-design-patterns/THEORY.md",
+      "url": "../../jsts-code-lab/02-design-patterns/THEORY.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "line": 119,
+      "text": "03-concurrency",
+      "url": "../../jsts-code-lab/03-concurrency/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "line": 120,
+      "text": "并发编程架构",
+      "url": "../../jsts-code-lab/03-concurrency/ARCHITECTURE.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "line": 167,
+      "text": "15-data-flow",
+      "url": "../../jsts-code-lab/15-data-flow/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "line": 182,
+      "text": "50-browser-runtime",
+      "url": "../../jsts-code-lab/50-browser-runtime/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "line": 183,
+      "text": "浏览器运行时理论",
+      "url": "../../jsts-code-lab/50-browser-runtime/THEORY.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "line": 213,
+      "text": "04-data-structures",
+      "url": "../../jsts-code-lab/04-data-structures/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "line": 214,
+      "text": "05-algorithms",
+      "url": "../../jsts-code-lab/05-algorithms/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "line": 228,
+      "text": "19-backend-development",
+      "url": "../../jsts-code-lab/19-backend-development/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "line": 229,
+      "text": "21-api-security",
+      "url": "../../jsts-code-lab/21-api-security/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "line": 260,
+      "text": "20-database-orm",
+      "url": "../../jsts-code-lab/20-database-orm/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "line": 435,
+      "text": "jsts-code-lab 高级模块",
+      "url": "../../jsts-code-lab/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 153,
+      "text": "00-language-core",
+      "url": "../../jsts-code-lab/00-language-core/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 190,
+      "text": "jsts-code-lab/00-language-core/calculator-example/",
+      "url": "../../jsts-code-lab/00-language-core/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 191,
+      "text": "jsts-code-lab/07-testing/",
+      "url": "../../jsts-code-lab/07-testing/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 153,
+      "text": "00-language-core",
+      "url": "../../jsts-code-lab/00-language-core/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 205,
+      "text": "02-design-patterns",
+      "url": "../../jsts-code-lab/02-design-patterns/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 242,
+      "text": "examples/beginner-todo-master/",
+      "url": "../../examples/beginner-todo-master/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 243,
+      "text": "jsts-code-lab/02-design-patterns/observer/",
+      "url": "../../jsts-code-lab/02-design-patterns/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 257,
+      "text": "18-frontend-frameworks",
+      "url": "../../jsts-code-lab/18-frontend-frameworks/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 294,
+      "text": "jsts-code-lab/18-frontend-frameworks/",
+      "url": "../../jsts-code-lab/18-frontend-frameworks/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 295,
+      "text": "jsts-code-lab/57-design-system/",
+      "url": "../../jsts-code-lab/57-design-system/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 309,
+      "text": "19-backend-development",
+      "url": "../../jsts-code-lab/19-backend-development/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 309,
+      "text": "21-api-security",
+      "url": "../../jsts-code-lab/21-api-security/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 346,
+      "text": "jsts-code-lab/19-backend-development/",
+      "url": "../../jsts-code-lab/19-backend-development/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 347,
+      "text": "jsts-code-lab/21-api-security/",
+      "url": "../../jsts-code-lab/21-api-security/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 348,
+      "text": "examples/fullstack-tanstack-start/",
+      "url": "../../examples/fullstack-tanstack-start/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 366,
+      "text": "03-concurrency",
+      "url": "../../jsts-code-lab/03-concurrency/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 366,
+      "text": "20-database-orm",
+      "url": "../../jsts-code-lab/20-database-orm/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 403,
+      "text": "jsts-code-lab/03-concurrency/",
+      "url": "../../jsts-code-lab/03-concurrency/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 404,
+      "text": "jsts-code-lab/20-database-orm/",
+      "url": "../../jsts-code-lab/20-database-orm/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 405,
+      "text": "jsts-code-lab/30-real-time-communication/",
+      "url": "../../jsts-code-lab/30-real-time-communication/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 419,
+      "text": "08-performance",
+      "url": "../../jsts-code-lab/08-performance/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 419,
+      "text": "11-benchmarks",
+      "url": "../../jsts-code-lab/11-benchmarks/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 456,
+      "text": "jsts-code-lab/08-performance/",
+      "url": "../../jsts-code-lab/08-performance/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 457,
+      "text": "jsts-code-lab/11-benchmarks/",
+      "url": "../../jsts-code-lab/11-benchmarks/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 458,
+      "text": "jsts-code-lab/58-data-visualization/",
+      "url": "../../jsts-code-lab/58-data-visualization/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 472,
+      "text": "25-microservices",
+      "url": "../../jsts-code-lab/25-microservices/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 472,
+      "text": "26-event-sourcing",
+      "url": "../../jsts-code-lab/26-event-sourcing/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 510,
+      "text": "jsts-code-lab/25-microservices/",
+      "url": "../../jsts-code-lab/25-microservices/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 511,
+      "text": "jsts-code-lab/26-event-sourcing/",
+      "url": "../../jsts-code-lab/26-event-sourcing/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 512,
+      "text": "examples/intermediate-microservice-workshop/",
+      "url": "../../examples/intermediate-microservice-workshop/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 530,
+      "text": "01-ecmascript-evolution",
+      "url": "../../jsts-code-lab/01-ecmascript-evolution/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 530,
+      "text": "79-compiler-design",
+      "url": "../../jsts-code-lab/79-compiler-design/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 531,
+      "text": "编译器设计",
+      "url": "../../jsts-code-lab/79-compiler-design/THEORY.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 568,
+      "text": "examples/advanced-compiler-workshop/",
+      "url": "../../examples/advanced-compiler-workshop/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 569,
+      "text": "jsts-code-lab/01-ecmascript-evolution/",
+      "url": "../../jsts-code-lab/01-ecmascript-evolution/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 570,
+      "text": "jsts-code-lab/79-compiler-design/",
+      "url": "../../jsts-code-lab/79-compiler-design/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 584,
+      "text": "70-distributed-systems",
+      "url": "../../jsts-code-lab/70-distributed-systems/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 584,
+      "text": "71-consensus-algorithms",
+      "url": "../../jsts-code-lab/71-consensus-algorithms/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 585,
+      "text": "分布式系统理论",
+      "url": "../../jsts-code-lab/70-distributed-systems/THEORY.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 585,
+      "text": "共识算法",
+      "url": "../../jsts-code-lab/71-consensus-algorithms/THEORY.md"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 622,
+      "text": "jsts-code-lab/70-distributed-systems/",
+      "url": "../../jsts-code-lab/70-distributed-systems/"
+    },
+    {
+      "file": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "line": 623,
+      "text": "jsts-code-lab/71-consensus-algorithms/",
+      "url": "../../jsts-code-lab/71-consensus-algorithms/"
+    },
+    {
+      "file": "COMPLETE_DOCUMENTATION_INDEX.md",
+      "line": 11,
+      "text": "查看四维分类总索引",
+      "url": "./docs/FOUR_DIMENSIONS_INDEX.md"
+    },
+    {
+      "file": "COMPLETE_DOCUMENTATION_INDEX.md",
+      "line": 15,
+      "text": "language-core-index.md",
+      "url": "./docs/language-core-index.md"
+    },
+    {
+      "file": "COMPLETE_DOCUMENTATION_INDEX.md",
+      "line": 16,
+      "text": "frameworks-index.md",
+      "url": "./docs/frameworks-index.md"
+    },
+    {
+      "file": "COMPLETE_DOCUMENTATION_INDEX.md",
+      "line": 17,
+      "text": "application-domains-index.md",
+      "url": "./docs/application-domains-index.md"
+    },
+    {
+      "file": "COMPLETE_DOCUMENTATION_INDEX.md",
+      "line": 18,
+      "text": "infrastructure-index.md",
+      "url": "./docs/infrastructure-index.md"
+    },
+    {
+      "file": "COMPLETE_DOCUMENTATION_INDEX.md",
+      "line": 539,
+      "text": "代码实验室贡献指南",
+      "url": "./jsts-code-lab/CONTRIBUTING.md"
+    }
+  ],
+  "passed": false
 }

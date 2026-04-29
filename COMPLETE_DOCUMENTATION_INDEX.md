@@ -15,7 +15,7 @@
 | 🔵 **语言核心** | [language-core-index.md](./docs/language-core-index.md) | 类型系统、执行模型、ES2026、模块系统 |
 | 🟢 **框架生态** | [frameworks-index.md](./docs/frameworks-index.md) | React/Vue/Angular、Next.js/Nuxt、状态管理 |
 | 🟠 **应用领域** | [application-domains-index.md](./docs/application-domains-index.md) | AI Agent、Web3、移动端、边缘计算 |
-| 🔴 **技术基础设施** | [infrastructure-index.md](./docs/infrastructure-index.md) | 构建工具、测试、部署、可观测性、安全 |
+| 🔴 **技术基础设施** | [infrastructure-index.md](./infrastructure-index.md) | 构建工具、测试、部署、可观测性、安全 |
 
 ---
 
@@ -523,7 +523,7 @@
 
 1. **Fork 仓库** - 创建您的仓库副本
 2. **创建分支** - git checkout -b add/new-documentation
-3. **遵循规范** - 参考 ./jsts-code-lab/DOCUMENTATION_GUIDE.md
+3. **遵循规范** - 参考 60-meta-content/ci-checks/ 中的规范说明
 4. **提交 PR** - 详细说明添加的内容和原因
 
 ### 12.2 文档规范
@@ -536,8 +536,8 @@
 ### 12.3 相关链接
 
 - [项目贡献指南](./CONTRIBUTING.md)
-- [代码实验室贡献指南](./jsts-code-lab/CONTRIBUTING.md)
-- [文档编写规范](./jsts-code-lab/DOCUMENTATION_GUIDE.md)
+- [代码实验室贡献指南](60-meta-content/ci-checks/CONTRIBUTING.md（已归档）)
+- 文档编写规范（已归档）
 - [术语表](./GLOSSARY.md)
 
 ---

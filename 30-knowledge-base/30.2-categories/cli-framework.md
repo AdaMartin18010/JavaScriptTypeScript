@@ -1,26 +1,26 @@
-# CLI 框架与工具
+# CLI 框架
 
-> **定位**：`30-knowledge-base/30.2-categories/cli-framework.md`
-> **关联**：`20-code-lab/` | `30-knowledge-base/`
-
----
-
-## 概述
-
-CLI 框架与工具 是 JavaScript/TypeScript 生态系统中的重要技术领域。本文档提供该领域的分类导航与技术选型参考。
-
-## 核心子领域（待补充）
-
-- 技术定义与核心概念
-- 主流工具/框架对比
-- 选型决策树
-- 最佳实践与反模式
-
-## 延伸阅读
-
-- [对比矩阵](../30.3-comparison-matrices/)
-- [决策树](../30.4-decision-trees/)
+> JavaScript/TypeScript CLI 工具开发框架选型。
 
 ---
 
-*本文件由重构工具自动生成于 2026-04-28。欢迎贡献实质内容。*
+## 主流方案
+
+| 框架 | 特点 | 包体积 |
+|------|------|--------|
+| **Commander.js** | 最流行，简单命令解析 | ~15KB |
+| **oclif** | Heroku/Slack 出品，插件化 | ~50KB |
+| **Ink** | React 渲染终端 UI | ~30KB |
+| **Pastel** | 基于 Ink 的框架 | ~20KB |
+| **Clack** | 交互式提示，现代体验 | ~10KB |
+| **cac** | 极简，零依赖 | ~5KB |
+
+## 2026 推荐
+
+- **简单脚本**：Commander.js 或 cac
+- **复杂交互式 CLI**：Clack + Ink
+- **企业级工具**：oclif
+
+---
+
+*最后更新: 2026-04-29*

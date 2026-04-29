@@ -15,7 +15,7 @@
 >
 > 📚 Code Lab: [jsts-code-lab](./20-code-lab/) - 90+ modules, from theory to practice.
 >
-> 🧠 Language Core System: [jsts-language-core-system](./jsts-language-core-system/) - 52 in-depth docs covering type system, variable system, control flow, execution model, and ECMAScript specification foundations.
+> 🧠 Language Core System: jsts-language-core-system（已归档） - 52 in-depth docs covering type system, variable system, control flow, execution model, and ECMAScript specification foundations.
 >
 > 📊 Technology Decision System: 15 comparison matrices, 15 decision trees, 21 Mermaid diagrams.
 >
@@ -31,10 +31,10 @@
 
 | Document | Description | Audience |
 |----------|-------------|----------|
-| [📦 awesome-jsts-ecosystem](./awesome-jsts-ecosystem/) | JS/TS ecosystem tool navigation | All developers |
+| 📦 awesome-jsts-ecosystem（已归档） | JS/TS ecosystem tool navigation | All developers |
 | [🧪 jsts-code-lab](./20-code-lab/) | Code lab (90+ modules) | Hands-on learners |
-| [🧠 jsts-language-core-system](./jsts-language-core-system/) | Language core system (52 in-depth docs) | Theory learners |
-| [📚 jsts-code-lab/CROSS-REFERENCE.md](./20-code-lab/CROSS-REFERENCE.md) | Module cross-reference index | Systematic learners |
+| [🧠 jsts-language-core-system](archive/legacy-backups-20260429-0809.zip)（已归档） | Language core system (52 in-depth docs) | Theory learners |
+| 📚 20-code-lab/CROSS-REFERENCE.md | Module cross-reference index | Systematic learners |
 | [📖 GLOSSARY.md](./GLOSSARY.md) | Professional glossary (CN/EN) | All readers |
 | [🎓 beginners-path.md](./30-knowledge-base/30.9-learning-paths/beginners-path.md) | Beginner learning path | Beginners |
 | [📈 intermediate-path.md](./30-knowledge-base/30.9-learning-paths/intermediate-path.md) | Intermediate learning path | Mid-level developers |
@@ -5855,7 +5855,7 @@ apps/
 ├── web/                # Main website
 ├── admin/              # Admin dashboard
 ├── api/                # API service
-└── docs/               # Documentation site
+└── website/            # VitePress documentation site
 tools/
 └── generators/         # Nx code generators
 ```

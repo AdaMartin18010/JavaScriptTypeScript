@@ -52,6 +52,7 @@ node scripts/security-check.js --quiet
 ### 严重程度计算
 
 脚本根据以下优先级确定总体严重程度：
+
 1. **Critical** - 存在严重漏洞
 2. **High** - 存在高危漏洞
 3. **Moderate** - 存在中危漏洞
@@ -61,6 +62,7 @@ node scripts/security-check.js --quiet
 ### 自动化
 
 通过 GitHub Action (`.github/workflows/security-scan.yml`) 实现：
+
 - 每天 UTC 02:00 自动扫描
 - PR 时自动检查新依赖
 - 发现高危漏洞自动创建 Issue
@@ -84,4 +86,4 @@ node scripts/security-check.js --quiet
 
 ---
 
-更多文档请参阅 [项目文档](../docs/)
+更多文档请参阅 [项目文档](../60-meta-content/)

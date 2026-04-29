@@ -1,26 +1,27 @@
 # 缓存策略
 
-> **定位**：`30-knowledge-base/30.2-categories/caching-strategies.md`
-> **关联**：`20-code-lab/` | `30-knowledge-base/`
+> Web 应用缓存分层与选型指南。
 
 ---
 
-## 概述
+## 缓存分层
 
-缓存策略 是 JavaScript/TypeScript 生态系统中的重要技术领域。本文档提供该领域的分类导航与技术选型参考。
+| 层级 | 技术 | TTL | 说明 |
+|------|------|-----|------|
+| **浏览器** | Cache-Control | 用户控制 | 静态资源长期缓存 |
+| **CDN** | Cloudflare/Vercel Edge | 秒–小时 | 全局边缘缓存 |
+| **应用** | Redis / Memcached | 分钟–小时 | 会话、热点数据 |
+| **数据库** | PostgreSQL Buffer Pool | 自动 | 查询结果缓存 |
 
-## 核心子领域（待补充）
+## 缓存模式
 
-- 技术定义与核心概念
-- 主流工具/框架对比
-- 选型决策树
-- 最佳实践与反模式
-
-## 延伸阅读
-
-- [对比矩阵](../30.3-comparison-matrices/)
-- [决策树](../30.4-decision-trees/)
+| 模式 | 说明 | 适用 |
+|------|------|------|
+| **Cache-Aside** | 应用先查缓存，缺失再查 DB | 通用 |
+| **Read-Through** | 缓存代理 DB 查询 | ORM 集成 |
+| **Write-Through** | 写时同步更新缓存 | 强一致性 |
+| **Write-Behind** | 异步批量写 DB | 高吞吐 |
 
 ---
 
-*本文件由重构工具自动生成于 2026-04-28。欢迎贡献实质内容。*
+*最后更新: 2026-04-29*

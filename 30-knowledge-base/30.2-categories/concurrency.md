@@ -1,26 +1,29 @@
-# 并发与异步编程
+# 并发
 
-> **定位**：`30-knowledge-base/30.2-categories/concurrency.md`
-> **关联**：`20-code-lab/` | `30-knowledge-base/`
-
----
-
-## 概述
-
-并发与异步编程 是 JavaScript/TypeScript 生态系统中的重要技术领域。本文档提供该领域的分类导航与技术选型参考。
-
-## 核心子领域（待补充）
-
-- 技术定义与核心概念
-- 主流工具/框架对比
-- 选型决策树
-- 最佳实践与反模式
-
-## 延伸阅读
-
-- [对比矩阵](../30.3-comparison-matrices/)
-- [决策树](../30.4-decision-trees/)
+> JavaScript 并发模型与异步编程模式。
 
 ---
 
-*本文件由重构工具自动生成于 2026-04-28。欢迎贡献实质内容。*
+## 并发原语
+
+| 原语 | 说明 | 示例 |
+|------|------|------|
+| **Promise** | 异步操作代理 | `fetch().then()` |
+| **async/await** | 同步写法处理异步 | `const data = await fetch()` |
+| **Event Loop** | 单线程事件驱动 | 宏任务/微任务调度 |
+| **Worker Threads** | 多线程计算 | `new Worker()` |
+| **Atomics** | 共享内存同步 | `Atomics.add()` |
+| **AbortController** | 取消异步操作 | `controller.abort()` |
+
+## 模式
+
+| 模式 | 说明 |
+|------|------|
+| **Promise.all** | 并行执行，全部成功 |
+| **Promise.race** | 竞速，取最快 |
+| **Promise.allSettled** | 并行执行，等待全部完成 |
+| **Async Iterator** | 异步数据流 |
+
+---
+
+*最后更新: 2026-04-29*

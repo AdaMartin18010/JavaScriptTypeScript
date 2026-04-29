@@ -1,26 +1,25 @@
 # 机器学习工程
 
-> **定位**：`30-knowledge-base/30.2-categories/ml-engineering.md`
-> **关联**：`20-code-lab/` | `30-knowledge-base/`
+> JavaScript/TypeScript 生态 ML 工程工具链。
 
 ---
 
-## 概述
+## 工具链
 
-机器学习工程 是 JavaScript/TypeScript 生态系统中的重要技术领域。本文档提供该领域的分类导航与技术选型参考。
+| 层级 | 工具 | 说明 |
+|------|------|------|
+| **运行时** | Node.js / Deno / Bun | 模型推理 |
+| **框架** | TensorFlow.js, ONNX Runtime | 浏览器 + Node.js |
+| **向量数据库** | pgvector, Pinecone, Milvus | Embedding 存储 |
+| **LLM SDK** | OpenAI SDK, Vercel AI SDK | API 调用 |
+| **特征工程** | Danfo.js, lodash | 数据处理 |
 
-## 核心子领域（待补充）
+## 场景
 
-- 技术定义与核心概念
-- 主流工具/框架对比
-- 选型决策树
-- 最佳实践与反模式
-
-## 延伸阅读
-
-- [对比矩阵](../30.3-comparison-matrices/)
-- [决策树](../30.4-decision-trees/)
+- **客户端推理**：TensorFlow.js 在浏览器运行图像识别
+- **服务端推理**：ONNX Runtime 运行导出模型
+- **RAG 系统**：向量数据库 + Embedding + LLM
 
 ---
 
-*本文件由重构工具自动生成于 2026-04-28。欢迎贡献实质内容。*
+*最后更新: 2026-04-29*
