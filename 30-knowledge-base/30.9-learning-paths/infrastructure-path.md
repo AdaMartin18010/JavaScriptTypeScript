@@ -57,6 +57,32 @@
    - Vitest 单元测试 + Playwright E2E
 2. 配置 CI/CD：GitHub Actions 自动运行 lint/test/build
 
+### 代码示例：pnpm workspace 配置
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'packages/*'
+  - 'apps/*'
+```
+
+```json
+// turbo.json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "dist/**"]
+    },
+    "lint": {},
+    "test": {
+      "dependsOn": ["build"]
+    }
+  }
+}
+```
+
 ---
 
 ## 阶段 3-4: 部署与运维
@@ -86,6 +112,35 @@
    - CI/CD：GitHub Actions
 2. 绘制部署架构图，标注数据流和故障恢复策略
 
+### 代码示例：GitHub Actions 工作流
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo lint test build
+      - run: pnpm dlx playwright install --with-deps
+      - run: pnpm test:e2e
+```
+
 ---
 
 ## 阶段 5-6: 可观测性与可靠性
@@ -109,11 +164,29 @@
 ### Checkpoint 3: 生产环境保障
 
 1. 为一个应用添加完整的可观测性：
-   - OpenTelemetry  traces + metrics
+   - OpenTelemetry traces + metrics
    - Sentry 错误监控
    - 自定义性能 dashboard
 2. 进行安全审计，修复至少 3 个潜在漏洞
 3. 设计并实现数据库备份与灾难恢复方案
+
+### 代码示例：OpenTelemetry 基础配置
+
+```typescript
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+
+const sdk = new NodeSDK({
+  traceExporter: new OTLPTraceExporter({ url: 'http://localhost:4318/v1/traces' }),
+  instrumentations: [getNodeAutoInstrumentations()],
+});
+
+sdk.start();
+
+// 优雅关闭
+process.on('SIGTERM', () => sdk.shutdown().then(() => process.exit(0)));
+```
 
 ---
 
@@ -129,7 +202,20 @@
 
 ---
 
-*最后更新: 2026-04-27*
+## 权威参考
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| pnpm Workspaces | 官方文档 | [pnpm.io/workspaces](https://pnpm.io/workspaces) |
+| Turborepo | 官方文档 | [turbo.build](https://turbo.build/) |
+| GitHub Actions | 官方文档 | [docs.github.com/actions](https://docs.github.com/en/actions) |
+| Dockerfile Best Practices | 官方 | [docs.docker.com/develop/dev-best-practices](https://docs.docker.com/develop/dev-best-practices/) |
+| OpenTelemetry | 官方 | [opentelemetry.io](https://opentelemetry.io/) |
+| Google SRE Book | 书籍 | [sre.google/sre-book/table-of-contents](https://sre.google/sre-book/table-of-contents/) |
+
+---
+
+*最后更新: 2026-04-29*
 *review-cycle: 6 months*
 *next-review: 2026-10-27*
 *status: current*
