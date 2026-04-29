@@ -48,26 +48,26 @@ category-boundary: language-core
 
 | 目录 | 专题 | 文件数 |
 |------|------|--------|
-| [jsts-language-core-system/01-type-system/](../../jsts-language-core-system/01-type-system/) | 类型系统 | 12+ |
-| [jsts-language-core-system/02-variable-system/](../../jsts-language-core-system/02-variable-system/) | 变量系统 | 9+ |
-| [jsts-language-core-system/03-control-flow/](../../jsts-language-core-system/03-control-flow/) | 控制流 | 9+ |
-| [jsts-language-core-system/04-execution-model/](../../jsts-language-core-system/04-execution-model/) | 执行模型 | 11+ |
-| [jsts-language-core-system/05-execution-flow/](../../jsts-language-core-system/05-execution-flow/) | 执行流 | 6+ |
-| [jsts-language-core-system/06-ecmascript-spec-foundation/](../../jsts-language-core-system/06-ecmascript-spec-foundation/) | 规范基础 | 6+ |
-| [jsts-language-core-system/07-js-ts-symmetric-difference/](../../jsts-language-core-system/07-js-ts-symmetric-difference/) | JS/TS 对称差 | 6 |
-| [jsts-language-core-system/08-module-system/](../../jsts-language-core-system/08-module-system/) | 模块系统 | 6+ |
-| [jsts-language-core-system/09-object-model/](../../jsts-language-core-system/09-object-model/) | 对象模型 | 5+ |
+| [jsts-language-core-system/01-type-system/](../../10-fundamentals/10.2-type-system/) | 类型系统 | 12+ |
+| [jsts-language-core-system/02-variable-system/](../../10-fundamentals/10.1-language-semantics/02-variables/) | 变量系统 | 9+ |
+| [jsts-language-core-system/03-control-flow/](../../10-fundamentals/10.1-language-semantics/03-control-flow/) | 控制流 | 9+ |
+| [jsts-language-core-system/04-execution-model/](../../10-fundamentals/10.3-execution-model/) | 执行模型 | 11+ |
+| [jsts-language-core-system/05-execution-flow/](../../10-fundamentals/10.3-execution-model/) | 执行流 | 6+ |
+| [jsts-language-core-system/06-ecmascript-spec-foundation/](../../10-fundamentals/10.6-ecmascript-spec/) | 规范基础 | 6+ |
+| [jsts-language-core-system/07-js-ts-symmetric-difference/](../../10-fundamentals/10.1-language-semantics/) | JS/TS 对称差 | 6 |
+| [jsts-language-core-system/08-module-system/](../../10-fundamentals/10.4-module-system/) | 模块系统 | 6+ |
+| [jsts-language-core-system/09-object-model/](../../10-fundamentals/10.5-object-model/) | 对象模型 | 5+ |
 
 ### 代码实验室
 
 | 目录 | 主题 |
 |------|------|
-| [jsts-code-lab/00-language-core/](../../jsts-code-lab/00-language-core/) | 语言核心基础（类型、变量、控制流、函数、对象、模块、元编程） |
-| [jsts-code-lab/01-ecmascript-evolution/](../../jsts-code-lab/01-ecmascript-evolution/) | ECMAScript 演进史（ES2015–ES2026） |
-| [jsts-code-lab/02-design-patterns/](../../jsts-code-lab/02-design-patterns/) | 设计模式（创建型 / 结构型 / 行为型 / JS-TS 特定模式） |
-| [jsts-code-lab/03-concurrency/](../../jsts-code-lab/03-concurrency/) | 并发编程（Promise、async/await、Worker、Atomics、事件循环） |
-| [jsts-code-lab/04-data-structures/](../../jsts-code-lab/04-data-structures/) | 数据结构（内置 / 自定义 / 函数式） |
-| [jsts-code-lab/05-algorithms/](../../jsts-code-lab/05-algorithms/) | 算法（排序、搜索、动态规划、图、递归） |
+| [jsts-code-lab/00-language-core/](../../20-code-lab/20.1-fundamentals-lab/language-core/) | 语言核心基础（类型、变量、控制流、函数、对象、模块、元编程） |
+| [jsts-code-lab/01-ecmascript-evolution/](../../20-code-lab/20.1-fundamentals-lab/ecmascript-evolution/) | ECMAScript 演进史（ES2015–ES2026） |
+| [jsts-code-lab/02-design-patterns/](../../20-code-lab/20.2-language-patterns/design-patterns/) | 设计模式（创建型 / 结构型 / 行为型 / JS-TS 特定模式） |
+| [jsts-code-lab/03-concurrency/](../../20-code-lab/20.3-concurrency-async/concurrency/) | 并发编程（Promise、async/await、Worker、Atomics、事件循环） |
+| [jsts-code-lab/04-data-structures/](../../20-code-lab/20.4-data-algorithms/data-structures/) | 数据结构（内置 / 自定义 / 函数式） |
+| [jsts-code-lab/05-algorithms/](../../20-code-lab/20.4-data-algorithms/algorithms/) | 算法（排序、搜索、动态规划、图、递归） |
 | [jsts-code-lab/10-js-ts-comparison/](../../20-code-lab/20.1-fundamentals-lab/js-ts-comparison/) | JavaScript / TypeScript 对比分析 |
 
 ### 全景综述

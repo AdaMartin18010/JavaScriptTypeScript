@@ -60,13 +60,13 @@
 
 | 模块 | 路径 | 说明 |
 |------|------|------|
-| 包管理 | [../../jsts-code-lab/12-package-management/](../../jsts-code-lab/12-package-management/) | npm/pnpm/Bun workspaces |
-| 工具链配置 | [../../jsts-code-lab/23-toolchain-configuration/](../../jsts-code-lab/23-toolchain-configuration/) | ESLint/Prettier/Biome/Vite |
-| 测试 | [../../jsts-code-lab/07-testing/](../../jsts-code-lab/07-testing/) | 单元测试/E2E/性能测试 |
-| API 安全 | [../../jsts-code-lab/21-api-security/](../../jsts-code-lab/21-api-security/) | 认证/授权/安全最佳实践 |
-| 性能优化 | [../../jsts-code-lab/08-performance/](../../jsts-code-lab/08-performance/) | 前端/后端/数据库优化 |
-| 可观测性 | [../../jsts-code-lab/74-observability/](../../jsts-code-lab/74-observability/) | 日志/监控/追踪 |
-| 现代认证 | [../../jsts-code-lab/95-auth-modern-lab/](../../jsts-code-lab/95-auth-modern-lab/) | Passkeys/WebAuthn/OAuth 2.1 |
+| 包管理 | [../../20-code-lab/20.1-fundamentals-lab/package-management/](../../20-code-lab/20.1-fundamentals-lab/package-management/) | npm/pnpm/Bun workspaces |
+| 工具链配置 | [../../20-code-lab/20.11-rust-toolchain/toolchain-configuration/](../../20-code-lab/20.11-rust-toolchain/toolchain-configuration/) | ESLint/Prettier/Biome/Vite |
+| 测试 | [../../20-code-lab/20.2-language-patterns/testing/](../../20-code-lab/20.2-language-patterns/testing/) | 单元测试/E2E/性能测试 |
+| API 安全 | [../../20-code-lab/20.9-observability-security/api-security/](../../20-code-lab/20.9-observability-security/api-security/) | 认证/授权/安全最佳实践 |
+| 性能优化 | [../../20-code-lab/20.4-data-algorithms/performance/](../../20-code-lab/20.4-data-algorithms/performance/) | 前端/后端/数据库优化 |
+| 可观测性 | [../../20-code-lab/20.9-observability-security/observability/](../../20-code-lab/20.9-observability-security/observability/) | 日志/监控/追踪 |
+| 现代认证 | [../../20-code-lab/20.9-observability-security/auth-modern-lab/](../../20-code-lab/20.9-observability-security/auth-modern-lab/) | Passkeys/WebAuthn/OAuth 2.1 |
 
 ---
 

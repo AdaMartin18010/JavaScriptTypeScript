@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-29T01:00:58.252Z",
+  "generatedAt": "2026-04-29T01:23:00.837Z",
   "totalScanned": 1042,
   "totalRated": 673,
   "top30": [
@@ -2947,7 +2947,7 @@
     },
     {
       "path": "30-knowledge-base\\30.2-categories\\00-infrastructure.md",
-      "sizeKB": 2.9,
+      "sizeKB": 3.2,
       "lines": 77,
       "hasCode": "N",
       "hasLink": "N",
@@ -3091,7 +3091,7 @@
     },
     {
       "path": "30-knowledge-base\\30.2-categories\\00-language-core.md",
-      "sizeKB": 4.1,
+      "sizeKB": 4.3,
       "lines": 98,
       "hasCode": "N",
       "hasLink": "N",
@@ -3607,7 +3607,7 @@
     },
     {
       "path": "30-knowledge-base\\30.9-learning-paths\\infrastructure-path.md",
-      "sizeKB": 3.1,
+      "sizeKB": 3,
       "lines": 136,
       "hasCode": "N",
       "hasLink": "N",
@@ -5167,7 +5167,7 @@
     },
     {
       "path": "30-knowledge-base\\30.9-learning-paths\\CHECKPOINTS.md",
-      "sizeKB": 5.9,
+      "sizeKB": 6.1,
       "lines": 160,
       "hasCode": "N",
       "hasLink": "N",
@@ -5491,7 +5491,7 @@
     },
     {
       "path": "20-code-lab\\20.1-fundamentals-lab\\real-world-examples\\THEORY.md",
-      "sizeKB": 2,
+      "sizeKB": 2.2,
       "lines": 181,
       "hasCode": "N",
       "hasLink": "Y",
@@ -5539,7 +5539,7 @@
     },
     {
       "path": "30-knowledge-base\\30.9-learning-paths\\FOUR_DIMENSIONS_PATHS.md",
-      "sizeKB": 7.1,
+      "sizeKB": 6.7,
       "lines": 233,
       "hasCode": "N",
       "hasLink": "N",
@@ -6007,7 +6007,7 @@
     },
     {
       "path": "30-knowledge-base\\30.9-learning-paths\\application-domains-path.md",
-      "sizeKB": 5.6,
+      "sizeKB": 5.5,
       "lines": 215,
       "hasCode": "N",
       "hasLink": "Y",
@@ -6043,7 +6043,7 @@
     },
     {
       "path": "30-knowledge-base\\30.9-learning-paths\\language-core-path.md",
-      "sizeKB": 7,
+      "sizeKB": 7.2,
       "lines": 222,
       "hasCode": "N",
       "hasLink": "Y",
@@ -6582,18 +6582,6 @@
       "score": 28
     },
     {
-      "path": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
-      "sizeKB": 12.2,
-      "lines": 644,
-      "hasCode": "Y",
-      "hasLink": "Y",
-      "hasTable": "Y",
-      "hasENRef": "N",
-      "todoCount": 0,
-      "priority": "normal",
-      "score": 28
-    },
-    {
       "path": "10-fundamentals\\10.1-language-semantics\\code-examples\\control-flow\\08-using-explicit-resource.md",
       "sizeKB": 8.4,
       "lines": 442,
@@ -6771,6 +6759,18 @@
       "hasENRef": "Y",
       "todoCount": 0,
       "priority": "medium",
+      "score": 27
+    },
+    {
+      "path": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
+      "sizeKB": 13,
+      "lines": 644,
+      "hasCode": "Y",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "N",
+      "todoCount": 0,
+      "priority": "normal",
       "score": 27
     },
     {
@@ -7266,18 +7266,6 @@
       "score": 23
     },
     {
-      "path": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
-      "sizeKB": 7.2,
-      "lines": 444,
-      "hasCode": "Y",
-      "hasLink": "Y",
-      "hasTable": "Y",
-      "hasENRef": "Y",
-      "todoCount": 0,
-      "priority": "normal",
-      "score": 23
-    },
-    {
       "path": "50-examples\\50.6-ai-agent\\ai-agent-production\\TUTORIAL.md",
       "sizeKB": 22.4,
       "lines": 1019,
@@ -7326,9 +7314,9 @@
       "score": 22
     },
     {
-      "path": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
-      "sizeKB": 8,
-      "lines": 445,
+      "path": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
+      "sizeKB": 7.7,
+      "lines": 444,
       "hasCode": "Y",
       "hasLink": "Y",
       "hasTable": "Y",
@@ -7370,6 +7358,18 @@
       "hasTable": "Y",
       "hasENRef": "N",
       "todoCount": 2,
+      "priority": "normal",
+      "score": 21
+    },
+    {
+      "path": "30-knowledge-base\\30.9-learning-paths\\intermediate-path.md",
+      "sizeKB": 8.7,
+      "lines": 445,
+      "hasCode": "Y",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
       "priority": "normal",
       "score": 21
     },
@@ -8047,7 +8047,7 @@
     },
     {
       "path": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
-      "sizeKB": 29.4,
+      "sizeKB": 29.3,
       "lines": 1002,
       "hasCode": "N",
       "hasLink": "Y",
