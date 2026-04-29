@@ -60,6 +60,102 @@ const results = await index.search('headphone', {
 console.log(results.hits);
 ```
 
+## 代码示例：Elasticsearch + Node.js
+
+```typescript
+import { Client } from '@elastic/elasticsearch';
+
+const client = new Client({ node: 'http://localhost:9200' });
+
+// 创建索引并定义映射
+await client.indices.create({
+  index: 'articles',
+  body: {
+    mappings: {
+      properties: {
+        title: { type: 'text', analyzer: 'standard' },
+        tags: { type: 'keyword' },
+        publishedAt: { type: 'date' },
+        views: { type: 'integer' },
+      },
+    },
+  },
+});
+
+// 索引文档
+await client.index({
+  index: 'articles',
+  id: '1',
+  document: {
+    title: 'Advanced TypeScript Patterns',
+    tags: ['typescript', 'patterns'],
+    publishedAt: new Date().toISOString(),
+    views: 1200,
+  },
+});
+
+// 布尔查询 + 聚合
+const result = await client.search({
+  index: 'articles',
+  body: {
+    query: {
+      bool: {
+        must: [{ match: { title: 'typescript' } }],
+        filter: [{ range: { views: { gte: 1000 } } }],
+      },
+    },
+    aggs: {
+      tags_distribution: { terms: { field: 'tags', size: 10 } },
+    },
+    highlight: {
+      fields: { title: {} },
+    },
+  },
+});
+
+console.log(result.hits.hits);
+console.log(result.aggregations?.tags_distribution);
+```
+
+## 代码示例：Typesense + Node.js
+
+```typescript
+import Typesense from 'typesense';
+
+const client = new Typesense.Client({
+  nodes: [{ host: 'localhost', port: 8108, protocol: 'http' }],
+  apiKey: 'xyz',
+  connectionTimeoutSeconds: 2,
+});
+
+// 创建集合（schema 必须先定义）
+await client.collections().create({
+  name: 'products',
+  fields: [
+    { name: 'title', type: 'string' },
+    { name: 'price', type: 'float', facet: true, sort: true },
+    { name: 'category', type: 'string', facet: true },
+  ],
+});
+
+// 导入文档
+await client.collections('products').documents().import([
+  { title: 'Mechanical Keyboard', price: 149.99, category: 'Electronics' },
+  { title: 'Ergonomic Mouse', price: 79.99, category: 'Electronics' },
+]);
+
+// 搜索 + 分面 + 排序
+const results = await client.collections('products').documents().search({
+  q: 'keyboard',
+  query_by: 'title',
+  facet_by: 'category',
+  sort_by: 'price:asc',
+});
+
+console.log(results.hits);
+console.log(results.facet_counts);
+```
+
 ---
 
 ## 选型建议
@@ -77,11 +173,16 @@ console.log(results.hits);
 ## 权威参考链接
 
 - [Elasticsearch 官方文档](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
+- [Elasticsearch JS Client](https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/index.html)
 - [Typesense 官方文档](https://typesense.org/docs/)
+- [Typesense JS Client](https://github.com/typesense/typesense-js)
 - [Meilisearch 官方文档](https://www.meilisearch.com/docs)
+- [Meilisearch JS Client](https://github.com/meilisearch/meilisearch-js)
 - [Algolia 官方文档](https://www.algolia.com/doc/)
+- [Algolia InstantSearch.js](https://www.algolia.com/doc/guides/building-search-ui/what-is-instantsearch/js/)
 - [Meilisearch GitHub](https://github.com/meilisearch/meilisearch)
 - [Typesense GitHub](https://github.com/typesense/typesense)
+- [Comparison: Meilisearch vs Typesense vs Elasticsearch](https://typesense.org/typesense-vs-algolia-vs-elasticsearch-vs-meilisearch/) — Typesense 官方横向对比
 
 ---
 

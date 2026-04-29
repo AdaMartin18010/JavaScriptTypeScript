@@ -85,3 +85,86 @@ const res = await fetch('/api/slow', { signal: controller.signal });
 - **50-browser-runtime**: 浏览器运行时架构
 - **30-real-time-communication**: 实时通信协议与实现
 - **37-pwa**: PWA 相关 API（Service Worker、Manifest）
+
+
+---
+
+## 7. 进阶代码示例
+
+### Web Worker + SharedArrayBuffer 并行计算
+
+```javascript
+// main.js
+const worker = new Worker('worker.js');
+const shared = new SharedArrayBuffer(4);
+const view = new Int32Array(shared);
+Atomics.store(view, 0, 42);
+worker.postMessage(shared);
+
+// worker.js
+self.onmessage = (e) => {
+  const view = new Int32Array(e.data);
+  console.log('Worker received:', Atomics.load(view, 0));
+};
+```
+
+### BroadcastChannel 跨标签页通信
+
+```javascript
+// broadcast-channel.ts
+const channel = new BroadcastChannel('app_sync');
+
+channel.onmessage = (event) => {
+  console.log('Received from other tab:', event.data);
+};
+
+function syncState(state) {
+  channel.postMessage(state);
+}
+
+// Usage
+syncState({ theme: 'dark', userId: '123' });
+```
+
+### Beacon API 埋点上报
+
+```javascript
+// beacon-tracker.ts
+function sendAnalytics(data) {
+  const payload = JSON.stringify(data);
+  return navigator.sendBeacon('/analytics', new Blob([payload], { type: 'application/json' }));
+}
+
+// 页面卸载前确保上报
+window.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    sendAnalytics({ event: 'page_hide', timestamp: Date.now() });
+  }
+});
+```
+
+### Web Serial API 读取设备
+
+```javascript
+// web-serial.ts
+async function readSerialDevice() {
+  const port = await navigator.serial.requestPort();
+  await port.open({ baudRate: 9600 });
+  const reader = port.readable.getReader();
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    console.log('Serial data:', value);
+  }
+}
+```
+
+## 8. 新增权威参考链接
+
+- [WebGPU Specification (W3C)](https://www.w3.org/TR/webgpu/) — W3C WebGPU 标准
+- [Web Serial API (WICG)](https://wicg.github.io/serial/) — WICG 串行 API 草案
+- [Web Bluetooth API (WICG)](https://webbluetoothcg.github.io/web-bluetooth/) — WICG 蓝牙 API
+- [MDN — Beacon API](https://developer.mozilla.org/en-US/docs/Web/API/Beacon_API) — 埋点 API 文档
+- [MDN — BroadcastChannel](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API) — 跨标签页通信
+- [Chrome Platform Status](https://chromestatus.com/) — Chrome 新特性状态追踪
+- [WHATWG Streams Standard](https://streams.spec.whatwg.org/) — Streams 规范

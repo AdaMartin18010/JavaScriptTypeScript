@@ -364,3 +364,77 @@ workflow.addEdge('validate', 'process');
 - 本模块 `README.md` — 架构层次与关键概念说明
 - 本模块 `lowcode-engine.ts` — 引擎核心实现（组件库、设计器、代码生成、工作流）
 - 本模块 `schema-definition.ts` — 类型安全的 Schema 定义与验证系统
+
+
+---
+
+## 进阶代码示例
+
+### 代码生成器：Schema 到 React 组件
+
+```typescript
+// code-generator.ts
+interface ComponentSchema {
+  type: string;
+  props: Record<string, unknown>;
+  children?: ComponentSchema[];
+}
+
+function generateReactCode(schema: ComponentSchema, indent = 0): string {
+  const spaces = '  '.repeat(indent);
+  const props = Object.entries(schema.props)
+    .map(([k, v]) => `${k}={${JSON.stringify(v)}}`)
+    .join(' ');
+  const selfClose = !schema.children || schema.children.length === 0;
+  const open = `${spaces}<${schema.type}${props ? ' ' + props : ''}${selfClose ? ' />' : '>'}`;
+  if (selfClose) return open;
+  const children = schema.children!.map(c => generateReactCode(c, indent + 1)).join('\n');
+  const close = `${spaces}</${schema.type}>`;
+  return [open, children, close].join('\n');
+}
+
+// Usage
+const pageSchema: ComponentSchema = {
+  type: 'Page',
+  props: { title: 'Dashboard' },
+  children: [{ type: 'Button', props: { text: 'Submit' } }],
+};
+console.log(generateReactCode(pageSchema));
+```
+
+### 拖拽画布坐标计算
+
+```typescript
+// drag-drop-canvas.ts
+interface Point { x: number; y: number; }
+
+function snapToGrid(point: Point, gridSize: number): Point {
+  return {
+    x: Math.round(point.x / gridSize) * gridSize,
+    y: Math.round(point.y / gridSize) * gridSize,
+  };
+}
+
+function getDropPosition(
+  mouse: Point,
+  canvasRect: DOMRect,
+  scale: number
+): Point {
+  const rawX = (mouse.x - canvasRect.left) / scale;
+  const rawY = (mouse.y - canvasRect.top) / scale;
+  return snapToGrid({ x: rawX, y: rawY }, 8);
+}
+
+// Usage
+const rect = document.getElementById('canvas')!.getBoundingClientRect();
+console.log(getDropPosition({ x: 150, y: 200 }, rect, 1));
+```
+
+## 新增权威参考链接
+
+- [LowCodeEngine (Alibaba)](https://lowcode-engine.cn/) — 阿里巴巴低代码引擎
+- [Mendix Documentation](https://docs.mendix.com/) — 企业低代码平台
+- [Salesforce Lightning Web Components](https://developer.salesforce.com/docs/component-library/documentation/en/lwc) — Salesforce 组件框架
+- [OpenAPI Generator](https://openapi-generator.tech/) — 代码生成参考
+- [CodeSandbox Sandpack](https://sandpack.codesandbox.io/docs) — 在线代码沙箱
+- [W3C Low Code Requirements](https://www.w3.org/community/web-based-signage/wiki/Low_Code_Application_Platform) — W3C 低代码需求草案

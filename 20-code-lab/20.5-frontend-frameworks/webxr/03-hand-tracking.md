@@ -128,8 +128,153 @@ const smoothedX = lerp(prevX, rawX, 0.2);
 
 ---
 
+## 代码示例：射线交互与碰撞检测
+
+```typescript
+// 03-hand-tracking.ts — 射线交互实现
+interface JointPose {
+  transform: XRPose['transform']; // 包含 position 和 orientation
+}
+
+function getRayFromIndexFinger(hand: XRHand): { origin: DOMPointReadOnly; direction: DOMPointReadOnly } {
+  const indexTip = hand.get('index-finger-tip');
+  const indexProximal = hand.get('index-finger-phalanx-proximal');
+  
+  if (!indexTip || !indexProximal) {
+    throw new Error('Index finger joints not available');
+  }
+
+  const origin = indexTip.transform.position;
+  const direction = new DOMPointReadOnly(
+    indexTip.transform.position.x - indexProximal.transform.position.x,
+    indexTip.transform.position.y - indexProximal.transform.position.y,
+    indexTip.transform.position.z - indexProximal.transform.position.z,
+    0
+  );
+
+  return { origin, direction };
+}
+
+// 简单的射线与平面碰撞检测
+function rayPlaneIntersect(
+  rayOrigin: DOMPointReadOnly,
+  rayDir: DOMPointReadOnly,
+  planePoint: DOMPointReadOnly,
+  planeNormal: DOMPointReadOnly
+): DOMPointReadOnly | null {
+  const denom = rayDir.x * planeNormal.x + rayDir.y * planeNormal.y + rayDir.z * planeNormal.z;
+  if (Math.abs(denom) < 1e-6) return null; // 射线与平面平行
+
+  const diffX = planePoint.x - rayOrigin.x;
+  const diffY = planePoint.y - rayOrigin.y;
+  const diffZ = planePoint.z - rayOrigin.z;
+  const t = (diffX * planeNormal.x + diffY * planeNormal.y + diffZ * planeNormal.z) / denom;
+  
+  if (t < 0) return null; // 交点在射线反方向
+
+  return new DOMPointReadOnly(
+    rayOrigin.x + rayDir.x * t,
+    rayOrigin.y + rayDir.y * t,
+    rayOrigin.z + rayDir.z * t,
+    1
+  );
+}
+
+// 在 XR 渲染循环中使用
+function onXRFrame(time: DOMHighResTimeStamp, frame: XRFrame) {
+  const session = frame.session;
+  const referenceSpace = renderer.xr.getReferenceSpace()!;
+
+  for (const inputSource of session.inputSources) {
+    if (!inputSource.hand) continue;
+
+    const hand = inputSource.hand;
+    const { origin, direction } = getRayFromIndexFinger(hand);
+
+    // 检测是否与 UI 平面相交
+    const hit = rayPlaneIntersect(
+      origin,
+      direction,
+      new DOMPointReadOnly(0, 1.2, -0.5, 1), // UI 平面中心
+      new DOMPointReadOnly(0, 0, 1, 0)       // UI 平面法向量
+    );
+
+    if (hit) {
+      // 更新光标位置，触发 hover 效果
+      cursorMesh.position.set(hit.x, hit.y, hit.z);
+    }
+  }
+
+  renderer.render(scene, camera);
+}
+```
+
+## 代码示例：捏合手势（Pinch）抓取物体
+
+```typescript
+// 03-hand-tracking.ts — 捏合手势识别与物体抓取
+class PinchGrabController {
+  private isGrabbing = false;
+  private grabbedObject: THREE.Object3D | null = null;
+  private pinchThreshold = 0.025; // 25mm
+  private releaseThreshold = 0.035; // 35mm（施密特触发，防止抖动）
+
+  private getJointDistance(hand: XRHand, jointA: string, jointB: string): number {
+    const poseA = hand.get(jointA as XRHandJoint);
+    const poseB = hand.get(jointB as XRHandJoint);
+    if (!poseA || !poseB) return Infinity;
+
+    const dx = poseA.transform.position.x - poseB.transform.position.x;
+    const dy = poseA.transform.position.y - poseB.transform.position.y;
+    const dz = poseA.transform.position.z - poseB.transform.position.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+  }
+
+  update(hand: XRHand, sceneObjects: THREE.Object3D[]) {
+    const pinchDistance = this.getJointDistance(hand, 'thumb-tip', 'index-finger-tip');
+
+    if (!this.isGrabbing && pinchDistance < this.pinchThreshold) {
+      // 开始抓取
+      this.isGrabbing = true;
+      const thumbPos = hand.get('thumb-tip')!.transform.position;
+      
+      // 查找最近的物体
+      let closest: THREE.Object3D | null = null;
+      let closestDist = Infinity;
+      for (const obj of sceneObjects) {
+        const dist = obj.position.distanceTo(new THREE.Vector3(thumbPos.x, thumbPos.y, thumbPos.z));
+        if (dist < closestDist && dist < 0.1) { // 10cm 抓取范围
+          closest = obj;
+          closestDist = dist;
+        }
+      }
+      this.grabbedObject = closest;
+    } else if (this.isGrabbing && pinchDistance > this.releaseThreshold) {
+      // 释放
+      this.isGrabbing = false;
+      this.grabbedObject = null;
+    }
+
+    // 跟随手部移动
+    if (this.isGrabbing && this.grabbedObject) {
+      const indexTip = hand.get('index-finger-tip')!.transform.position;
+      this.grabbedObject.position.set(indexTip.x, indexTip.y, indexTip.z);
+    }
+  }
+}
+```
+
+---
+
 ## 参考资源
 
 - [WebXR Hand Input 规范](https://immersive-web.github.io/webxr-hand-input/)
 - [Meta Hand Tracking 文档](https://developer.oculus.com/documentation/web/webxr-hand-tracking/)
 - [MediaPipe Hands](https://developers.google.com/mediapipe/solutions/vision/hand_landmarker)
+- [MDN WebXR Device API](https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API) — WebXR 核心 API 权威文档
+- [W3C WebXR Specification](https://www.w3.org/TR/webxr/) — WebXR 正式规范
+- [Immersive Web Working Group](https://www.w3.org/immersive-web/) — WebXR 标准制定组织
+- [Three.js WebXR Examples](https://threejs.org/examples/?q=webxr) — Three.js WebXR 官方示例
+- [A-Frame Hand Tracking](https://aframe.io/docs/master/components/hand-tracking.html) — A-Frame 手势追踪组件
+- [Google AR Core Hand Tracking](https://developers.google.com/ar/develop/java/hand-tracking) — ARCore 手势追踪
+- [Apple VisionOS Hand Tracking](https://developer.apple.com/documentation/visionos/hand-tracking) — visionOS 手势交互指南

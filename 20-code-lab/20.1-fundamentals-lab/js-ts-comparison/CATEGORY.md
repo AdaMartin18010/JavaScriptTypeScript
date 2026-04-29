@@ -67,6 +67,62 @@ function greet(user) {
 }
 ```
 
+### 枚举编译差异
+
+```typescript
+// TypeScript
+enum Status {
+  Pending,
+  Approved,
+  Rejected,
+}
+
+// 编译为 JavaScript（ES5 目标）
+var Status;
+(function (Status) {
+  Status[Status["Pending"] = 0] = "Pending";
+  Status[Status["Approved"] = 1] = "Approved";
+  Status[Status["Rejected"] = 2] = "Rejected";
+})(Status || (Status = {}));
+```
+
+### JSDoc 类型注解 vs TypeScript
+
+```javascript
+// JavaScript with JSDoc（无需构建步骤即可获得类型提示）
+/** @type {(user: { id: number; name: string }) => string} */
+function greet(user) {
+  return `Hello, ${user.name}`;
+}
+
+// TypeScript（编译时检查，需构建步骤）
+function greet(user: { id: number; name: string }): string {
+  return `Hello, ${user.name}`;
+}
+```
+
+### Compiler API 极简示例
+
+```typescript
+// ast-traversal.ts — 使用 TS Compiler API 提取文件中所有接口名
+import ts from 'typescript';
+
+function extractInterfaceNames(sourceFile: ts.SourceFile): string[] {
+  const names: string[] = [];
+  ts.forEachChild(sourceFile, function visit(node) {
+    if (ts.isInterfaceDeclaration(node)) {
+      names.push(node.name.text);
+    }
+    ts.forEachChild(node, visit);
+  });
+  return names;
+}
+
+const program = ts.createProgram(['./sample.ts'], {});
+const source = program.getSourceFile('./sample.ts')!;
+console.log(extractInterfaceNames(source));
+```
+
 ## 关联索引
 
 - [10-fundamentals/10.1-language-semantics/README.md](../../../10-fundamentals/10.1-language-semantics/README.md)
@@ -77,3 +133,8 @@ function greet(user) {
 - [ECMA-262 Language Specification](https://tc39.es/ecma262/) — JavaScript 语言规范
 - [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) — 微软官方编译器 API 文档
 - [TypeScript Evolution](https://mariusschulz.com/blog/series/typescript-evolution) — 按版本详解 TS 特性演进
+- [TypeScript Playground](https://www.typescriptlang.org/play) — 官方在线 TS→JS 编译演示
+- [DefinitelyTyped](https://definitelytyped.org/) — 社区维护的 JavaScript 库类型定义仓库
+- [JSDoc Reference](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html) — TypeScript 官方 JSDoc 类型支持文档
+- [tc39/proposals](https://github.com/tc39/proposals) — ECMAScript 提案跟踪仓库
+- [AST Explorer](https://astexplorer.net/) — 多语言 AST 可视化工具，支持 TypeScript

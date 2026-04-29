@@ -76,6 +76,60 @@ await bench.run();
 console.table(bench.table());
 ```
 
+### 内存泄漏检测与弱引用
+
+```typescript
+// memory-management.ts — WeakRef 与 FinalizationRegistry 实践
+const registry = new FinalizationRegistry<string>((heldValue) => {
+  console.log(`Object ${heldValue} has been garbage collected`);
+});
+
+function createTrackedObject(label: string) {
+  const obj = { data: new ArrayBuffer(1024 * 1024), label };
+  const ref = new WeakRef(obj);
+  registry.register(obj, label);
+  return ref;
+}
+
+// 检测内存泄漏模式
+class LeakDetector {
+  private refs = new Set<WeakRef<unknown>>();
+
+  track(obj: object) {
+    this.refs.add(new WeakRef(obj));
+  }
+
+  check() {
+    globalThis.gc && (globalThis.gc as () => void)(); // Node.js --expose-gc
+    const alive = [...this.refs].filter((r) => r.deref() !== undefined).length;
+    console.log(`Tracked objects still alive: ${alive} / ${this.refs.size}`);
+    return alive;
+  }
+}
+```
+
+### 网络请求合并与缓存
+
+```typescript
+// network-optimization.ts — 请求去重与记忆化
+function createDeduplicatedFetcher<T>() {
+  const pending = new Map<string, Promise<T>>();
+
+  return (key: string, fetcher: () => Promise<T>): Promise<T> => {
+    if (pending.has(key)) return pending.get(key)!;
+    const promise = fetcher().finally(() => pending.delete(key));
+    pending.set(key, promise);
+    return promise;
+  };
+}
+
+// 使用示例：相同 URL 的并发请求只发出一次
+const fetchOnce = createDeduplicatedFetcher<Response>();
+const url = '/api/config';
+const r1 = fetchOnce(url, () => fetch(url));
+const r2 = fetchOnce(url, () => fetch(url)); // 复用 r1 的 Promise
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -85,6 +139,11 @@ console.table(bench.table());
 | Chrome DevTools — Performance | 性能分析工具 | [developer.chrome.com/docs/devtools/performance](https://developer.chrome.com/docs/devtools/performance) |
 | MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
 | web.dev | 指南 | [web.dev](https://web.dev) |
+| Node.js perf_hooks | API 文档 | [nodejs.org/api/perf_hooks.html](https://nodejs.org/api/perf_hooks.html) |
+| Node.js Diagnostics | 内存分析指南 | [nodejs.org/en/learn/diagnostics](https://nodejs.org/en/learn/diagnostics) |
+| Web Vitals | 核心指标 | [web.dev/vitals](https://web.dev/vitals) |
+| Bundlephobia | 包体积分析 | [bundlephobia.com](https://bundlephobia.com/) |
+| Speedscope | 火焰图可视化 | [speedscope.app](https://www.speedscope.app/) |
 
 ---
 

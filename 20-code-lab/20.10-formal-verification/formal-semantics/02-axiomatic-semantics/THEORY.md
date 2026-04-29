@@ -167,6 +167,66 @@ function sum(arr: number[]): number {
 console.log('Sum:', sum([1, 2, 3, 4])); // 10
 ```
 
+### 3.2 完整循环不变式：二分查找
+
+```typescript
+// binary-search.ts — 带完整形式化注释的二分查找实现
+
+function binarySearch(arr: number[], target: number): number {
+  // 前置条件：数组已排序
+  // requires: forall i, j. 0 <= i < j < arr.length => arr[i] <= arr[j]
+
+  let low = 0;
+  let high = arr.length - 1;
+
+  // 循环不变式：
+  // 1. 0 <= low <= high + 1 <= arr.length
+  // 2. target 若存在于原数组，则必在 [low, high] 区间内
+  while (low <= high) {
+    const mid = low + Math.floor((high - low) / 2);
+    const val = arr[mid];
+
+    if (val === target) {
+      // 后置条件：返回有效索引且 arr[return] === target
+      return mid;
+    } else if (val < target) {
+      low = mid + 1; // 保持不变式：target 不在 [low, mid]
+    } else {
+      high = mid - 1; // 保持不变式：target 不在 [mid, high]
+    }
+  }
+
+  // 终止时：low > high，结合不变式可知 target 不在数组中
+  // 后置条件：返回 -1 表示未找到
+  return -1;
+}
+
+// 变体函数验证（查找插入位置）
+function lowerBound(arr: number[], target: number): number {
+  let low = 0;
+  let high = arr.length; // 注意：high 初始为 arr.length
+
+  // 循环不变式：结果在 [low, high) 中
+  while (low < high) {
+    const mid = low + Math.floor((high - low) / 2);
+    if (arr[mid] < target) {
+      low = mid + 1;
+    } else {
+      high = mid;
+    }
+  }
+
+  // 终止时：low === high，为第一个 >= target 的位置
+  // 后置条件：0 <= return <= arr.length
+  //           forall i < return. arr[i] < target
+  //           forall i >= return. arr[i] >= target
+  return low;
+}
+
+console.log(binarySearch([1, 3, 5, 7, 9], 5)); // 2
+console.log(lowerBound([1, 3, 5, 7, 9], 6)); // 3
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -180,6 +240,12 @@ console.log('Sum:', sum([1, 2, 3, 4])); // 10
 - [Software Foundations: Verifiable C / Separation Logic](https://softwarefoundations.cis.upenn.edu/)
 - [Dafny: A Language and Program Verifier](https://dafny.org/)
 - [ACSL: ANSI/ISO C Specification Language](https://frama-c.com/acsl.html)
+- [Why3: A Platform for Deductive Program Verification](https://why3.lri.fr/)
+- [VST (Verified Software Toolchain)](https://vst.cs.princeton.edu/) — 基于 Coq 的 C 程序验证工具链
+- [NASA PVS Specification and Verification System](https://pvs.csl.sri.com/)
+- [Iris: Higher-Order Concurrent Separation Logic](https://iris-project.org/)
+- [Microsoft Boogie](https://github.com/boogie-org/boogie) — 中间验证语言与工具
+- [KeY Project](https://www.key-project.org/) — Java 程序验证平台
 - `20.10-formal-verification/formal-semantics/`
 
 ---

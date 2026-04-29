@@ -54,6 +54,44 @@ function runInAllWorkspaces(script: string): void {
 // 使用：runInAllWorkspaces('build');
 ```
 
+### package.json Exports 条件导出
+
+```json
+{
+  "name": "@scope/lib",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils.mjs",
+      "require": "./dist/utils.cjs"
+    }
+  }
+}
+```
+
+### 语义化版本范围解析
+
+```typescript
+// npm-basics.ts — 使用 semver 库解析版本范围
+import { satisfies, validRange } from 'semver';
+
+function checkCompatibility(version: string, range: string): boolean {
+  if (!validRange(range)) {
+    throw new Error(`Invalid range: ${range}`);
+  }
+  return satisfies(version, range);
+}
+
+// 示例
+console.log(checkCompatibility('2.1.0', '^2.0.0')); // true
+console.log(checkCompatibility('2.1.0', '~2.0.0')); // false
+console.log(checkCompatibility('3.0.0', '^2.0.0')); // false
+```
+
 ## 目录内容
 
 - 📄 README.md
@@ -80,6 +118,11 @@ function runInAllWorkspaces(script: string): void {
 | SemVer 规范 | 规范 | [semver.org](https://semver.org/) |
 | MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
 | web.dev | 指南 | [web.dev](https://web.dev) |
+| Node.js Corepack | 官方文档 | [nodejs.org/api/corepack.html](https://nodejs.org/api/corepack.html) |
+| npm package.json | 配置参考 | [docs.npmjs.com/cli/v10/configuring-npm/package-json](https://docs.npmjs.com/cli/v10/configuring-npm/package-json) |
+| pnpm Workspace Protocol | 协议说明 | [pnpm.io/workspaces#workspace-protocol-workspace](https://pnpm.io/workspaces#workspace-protocol-workspace) |
+| Yarn Plug'n'Play | 架构白皮书 | [yarnpkg.com/features/pnp](https://yarnpkg.com/features/pnp) |
+| semantic-release | 自动化版本发布 | [semantic-release.gitbook.io](https://semantic-release.gitbook.io/) |
 
 ---
 

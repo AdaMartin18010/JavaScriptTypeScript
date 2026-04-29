@@ -141,12 +141,221 @@ const currentState = events.reduce(applyEvent, initialState);
 
 ---
 
+## 7. 代码示例：BullMQ 生产者与消费者
+
+```typescript
+// BullMQ 基于 Redis 的高性能任务队列
+import { Queue, Worker, Job } from 'bullmq';
+import IORedis from 'ioredis';
+
+const connection = new IORedis({ maxRetriesPerRequest: null });
+
+// 生产者：定义队列并添加任务
+const emailQueue = new Queue('email', { connection });
+
+async function sendWelcomeEmail(userId: string, email: string) {
+  await emailQueue.add('welcome', { userId, email }, {
+    delay: 5000,           // 5秒后执行
+    attempts: 3,           // 失败重试 3 次
+    backoff: { type: 'exponential', delay: 2000 },
+    removeOnComplete: 10,  // 保留最近 10 条完成记录
+  });
+}
+
+// 消费者：处理队列任务
+const worker = new Worker('email', async (job: Job) => {
+  console.log(`Processing job ${job.id} of type ${job.name}`);
+  
+  if (job.name === 'welcome') {
+    const { userId, email } = job.data;
+    // 调用邮件服务
+    await emailService.send({ to: email, template: 'welcome', userId });
+  }
+  
+  return { sent: true, timestamp: Date.now() };
+}, { connection });
+
+// 事件监听
+worker.on('completed', (job) => {
+  console.log(`Job ${job.id} completed`);
+});
+
+worker.on('failed', (job, err) => {
+  console.error(`Job ${job?.id} failed:`, err.message);
+});
+```
+
+## 代码示例：RabbitMQ 发布-订阅模式
+
+```typescript
+// RabbitMQ 使用 amqplib 实现 pub-sub 与路由
+import amqp from 'amqplib';
+
+async function rabbitPubSub() {
+  const conn = await amqp.connect('amqp://localhost');
+  const channel = await conn.createChannel();
+
+  const exchange = 'orders.topic';
+  await channel.assertExchange(exchange, 'topic', { durable: true });
+
+  // 生产者：发送带路由键的消息
+  const order = { id: 'order-123', status: 'created', amount: 299.99 };
+  channel.publish(exchange, 'order.created', Buffer.from(JSON.stringify(order)), {
+    persistent: true, // 消息持久化
+  });
+
+  // 消费者 1：监听所有订单创建事件
+  const q1 = await channel.assertQueue('inventory-service');
+  await channel.bindQueue(q1.queue, exchange, 'order.created');
+  channel.consume(q1.queue, (msg) => {
+    if (msg) {
+      const content = JSON.parse(msg.content.toString());
+      console.log('[Inventory] Reserve stock for order:', content.id);
+      channel.ack(msg); // 手动确认
+    }
+  });
+
+  // 消费者 2：监听所有支付相关事件
+  const q2 = await channel.assertQueue('notification-service');
+  await channel.bindQueue(q2.queue, exchange, 'order.*'); // 通配符匹配
+  channel.consume(q2.queue, (msg) => {
+    if (msg) {
+      const content = JSON.parse(msg.content.toString());
+      console.log('[Notification] Send alert for:', content.status);
+      channel.ack(msg);
+    }
+  });
+}
+```
+
+## 代码示例：Kafka 生产者与消费者（kafkajs）
+
+```typescript
+// Kafka 流处理：生产者与消费者组
+import { Kafka, Partitioners } from 'kafkajs';
+
+const kafka = new Kafka({
+  clientId: 'my-app',
+  brokers: ['localhost:9092'],
+});
+
+// 生产者
+const producer = kafka.producer({ createPartitioner: Partitioners.DefaultPartitioner });
+await producer.connect();
+
+async function sendOrderEvent(orderId: string, event: string) {
+  await producer.send({
+    topic: 'orders',
+    messages: [
+      {
+        key: orderId,               // 同一 orderId 始终进入同一分区，保证顺序
+        value: JSON.stringify({ orderId, event, timestamp: Date.now() }),
+        headers: { 'content-type': 'application/json' },
+      },
+    ],
+  });
+}
+
+// 消费者组
+const consumer = kafka.consumer({ groupId: 'order-processors' });
+await consumer.connect();
+await consumer.subscribe({ topic: 'orders', fromBeginning: false });
+
+await consumer.run({
+  eachMessage: async ({ topic, partition, message }) => {
+    const value = JSON.parse(message.value!.toString());
+    console.log(`[Partition ${partition}] Processing order ${value.orderId}: ${value.event}`);
+    
+    // 幂等处理：检查是否已处理过该事件
+    if (await isProcessed(value.orderId, value.event)) {
+      console.log('Duplicate event detected, skipping.');
+      return;
+    }
+    
+    await processOrderEvent(value);
+    await markAsProcessed(value.orderId, value.event);
+  },
+});
+
+// 辅助函数：幂等性校验（实际应使用 Redis/数据库）
+async function isProcessed(orderId: string, event: string): Promise<boolean> { /* ... */ return false; }
+async function markAsProcessed(orderId: string, event: string): Promise<void> { /* ... */ }
+```
+
+## 代码示例：Redis Streams 轻量级消息流
+
+```typescript
+// Redis Streams：轻量级、低延迟的消息日志
+import Redis from 'ioredis';
+
+const redis = new Redis();
+
+// 生产者：向 stream 添加事件
+async function addEvent(stream: string, event: Record<string, string>) {
+  await redis.xadd(stream, '*', ...Object.entries(event).flat()); // '*' = Redis 自动生成 ID
+}
+
+// 消费者组（持久化消费进度）
+async function createConsumerGroup(stream: string, group: string) {
+  try {
+    await redis.xgroup('CREATE', stream, group, '$', 'MKSTREAM');
+  } catch (err: any) {
+    if (!err.message.includes('BUSYGROUP')) throw err;
+  }
+}
+
+async function consumeFromGroup(stream: string, group: string, consumer: string) {
+  const messages = await redis.xreadgroup(
+    'GROUP', group, consumer,
+    'COUNT', 10,
+    'BLOCK', 5000,
+    'STREAMS', stream, '>' // '>' 表示只读取新消息
+  );
+
+  if (!messages) return;
+
+  for (const [_, entries] of messages as any) {
+    for (const [id, fields] of entries) {
+      const event = Object.fromEntries(
+        (fields as string[]).reduce((acc, val, i, arr) => {
+          if (i % 2 === 0) acc.push([val, arr[i + 1]]);
+          return acc;
+        }, [] as [string, string][])
+      );
+
+      console.log(`[${consumer}] Processing ${id}:`, event);
+      
+      // 业务处理...
+      await processEvent(event);
+      
+      // 确认消费
+      await redis.xack(stream, group, id);
+    }
+  }
+}
+
+// 使用示例
+await addEvent('sensor:data', { deviceId: 'd-001', temperature: '23.5', humidity: '60' });
+await createConsumerGroup('sensor:data', 'analytics-group');
+await consumeFromGroup('sensor:data', 'analytics-group', 'worker-1');
+```
+
+---
+
 ## 参考资源
 
 - [Kafka 官方文档](https://kafka.apache.org/documentation/)
 - [RabbitMQ 教程](https://www.rabbitmq.com/tutorials)
 - [NATS 文档](https://docs.nats.io/)
 - [Designing Data-Intensive Applications](https://dataintensive.net/)
+- [BullMQ Documentation](https://docs.bullmq.io/) — Redis 任务队列官方文档
+- [amqplib (Node.js RabbitMQ)](https://amqp-node.github.io/amqplib/) — RabbitMQ Node.js 客户端
+- [KafkaJS Documentation](https://kafka.js.org/docs/getting-started) — Kafka Node.js 客户端
+- [Redis Streams Intro](https://redis.io/docs/latest/develop/data-types/streams/) — Redis Streams 官方指南
+- [AWS SQS Developer Guide](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html)
+- [Google Cloud Pub/Sub](https://cloud.google.com/pubsub/docs/overview)
+- [Azure Service Bus](https://learn.microsoft.com/en-us/azure/service-bus-messaging/)
+- [Enterprise Integration Patterns](https://www.enterpriseintegrationpatterns.com/) — Hohpe & Woolf 经典
 
 ---
 
@@ -186,4 +395,4 @@ const currentState = events.reduce(applyEvent, initialState);
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+> 📅 理论深化更新：2026-04-29

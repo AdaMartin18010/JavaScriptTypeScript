@@ -83,4 +83,121 @@ AI 不会取代性能工程师，但会**放大性能工程师的能力**。
 
 ---
 
+
+## 2. 运行时性能监测
+
+### 使用 PerformanceObserver 测量 Core Web Vitals
+
+```typescript
+// web-vitals-observer.ts
+function observeWebVitals() {
+  const observer = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      if (entry.entryType === 'largest-contentful-paint') {
+        console.log('LCP:', entry.startTime);
+      }
+      if (entry.entryType === 'first-input') {
+        console.log('FID:', (entry as any).processingStart - entry.startTime);
+      }
+      if (entry.entryType === 'layout-shift') {
+        console.log('CLS:', (entry as any).value);
+      }
+    }
+  });
+  observer.observe({ entryTypes: ['largest-contentful-paint', 'first-input', 'layout-shift'] });
+}
+
+observeWebVitals();
+```
+
+### 自适应资源加载（Network Information API）
+
+```typescript
+// adaptive-loading.ts
+function getImageUrl(base: string, width: number): string {
+  const connection = (navigator as any).connection;
+  const effectiveType = connection?.effectiveType || '4g';
+  const deviceMemory = (navigator as any).deviceMemory || 8;
+
+  let scale = 1;
+  if (effectiveType === '2g' || deviceMemory < 4) scale = 0.5;
+  if (effectiveType === '4g' && deviceMemory >= 8) scale = 2;
+
+  return `${base}?w=${Math.round(width * scale)}`;
+}
+
+// Usage
+const imgSrc = getImageUrl('/assets/hero.jpg', 1200);
+```
+
+### Lighthouse CI 配置
+
+```javascript
+// lighthouserc.js
+module.exports = {
+  ci: {
+    collect: { url: ['http://localhost:3000/'] },
+    assert: {
+      assertions: {
+        'categories:performance': ['warn', { minScore: 0.9 }],
+        'categories:accessibility': ['error', { minScore: 0.95 }],
+      },
+    },
+    upload: { target: 'temporary-public-storage' },
+  },
+};
+```
+
+## 3. AI 辅助性能预测（示例）
+
+```typescript
+// predictive-prefetch.ts
+class PredictivePrefetcher {
+  private history = new Map<string, number>();
+
+  record(path: string) {
+    this.history.set(path, (this.history.get(path) || 0) + 1);
+  }
+
+  predictNext(current: string): string | null {
+    let max = 0;
+    let next: string | null = null;
+    for (const [path, count] of this.history) {
+      if (count > max && path !== current) {
+        max = count;
+        next = path;
+      }
+    }
+    return next;
+  }
+
+  prefetch() {
+    const next = this.predictNext(location.pathname);
+    if (next) {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = next;
+      document.head.appendChild(link);
+    }
+  }
+}
+
+const prefetcher = new PredictivePrefetcher();
+window.addEventListener('click', (e) => {
+  const target = (e.target as HTMLElement).closest('a');
+  if (target) prefetcher.record(target.pathname);
+});
+setInterval(() => prefetcher.prefetch(), 5000);
+```
+
+## 4. 新增权威参考链接
+
+- [Chrome DevTools Performance Panel](https://developer.chrome.com/docs/devtools/performance) — 性能面板指南
+- [PageSpeed Insights API](https://developers.google.com/speed/docs/insights/v5/get-started) — 页面速度评分 API
+- [W3C Device Memory](https://www.w3.org/TR/device-memory/) — 设备内存标准
+- [Can I Use — Network Information API](https://caniuse.com/netinfo) — 网络信息兼容性
+- [Rendering Performance (web.dev)](https://web.dev/rendering-performance/) — 渲染性能优化
+- [V8 Blog — Cost of JavaScript](https://v8.dev/blog/cost-of-javascript-2019) — JS 启动开销分析
+- [ML for Web Performance (Google AI)](https://ai.googleblog.com/2020/04/predicting-web-performance-with-machine.html) — AI 预测性能
+
 > 📅 理论深化更新：2026-04-27

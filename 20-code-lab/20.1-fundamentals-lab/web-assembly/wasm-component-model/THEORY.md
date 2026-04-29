@@ -156,4 +156,67 @@ console.log('Read back:', bridge.readString(ptr));
 
 ---
 
+
+## 进阶代码示例
+
+### WIT 接口定义与 JS 绑定
+
+```wit
+// math.wit
+package example:math;
+
+interface operations {
+  add: func(a: s32, b: s32) -> s32;
+  greet: func(name: string) -> string;
+}
+
+world math-world {
+  export operations;
+}
+```
+
+```typescript
+// jco-bindings.ts — 使用 @bytecodealliance/jco 生成绑定后调用
+// npm install @bytecodealliance/jco
+import { operations } from './generated/math.js';
+
+console.log(operations.add(2, 3)); // 5
+console.log(operations.greet('WASM')); // 'Hello, WASM!'
+```
+
+### 资源生命周期管理
+
+```typescript
+// resource-wrapper.ts
+class WasmResource<T extends WebAssembly.Resource> {
+  private handle: T | null = null;
+  constructor(private factory: () => T) {}
+  acquire(): T {
+    if (!this.handle) this.handle = this.factory();
+    return this.handle;
+  }
+  release() {
+    if (this.handle) {
+      (this.handle as any).dispose?.();
+      this.handle = null;
+    }
+  }
+}
+
+// Usage
+const memory = new WasmResource(() => new WebAssembly.Memory({ initial: 1 }));
+const mem = memory.acquire();
+// ... use mem ...
+memory.release();
+```
+
+## 新增权威参考链接
+
+- [JCO (JavaScript Component Tools)](https://github.com/bytecodealliance/jco) — Bytecode Alliance JS 组件工具
+- [Componentize-js](https://github.com/bytecodealliance/componentize-js) — 将 JS 编译为 WASM 组件
+- [WASI Preview 2](https://github.com/WebAssembly/WASI/tree/main/preview2) — WASI 预览 2 规范
+- [Deno WebAssembly](https://docs.deno.com/runtime/manual/runtime/webassembly) — Deno WASM 支持
+- [Rust wasm-bindgen](https://rustwasm.github.io/wasm-bindgen/) — Rust 与 JS 绑定
+- [WebAssembly Interface Types Proposal](https://github.com/WebAssembly/interface-types) — W3C 接口类型提案
+
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

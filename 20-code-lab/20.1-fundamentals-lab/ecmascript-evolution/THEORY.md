@@ -84,3 +84,58 @@ Stage 0（Strawperson）→ Stage 1（Proposal）→ Stage 2（Draft）→ Stage
 - **00-language-core**: JavaScript 核心机制
 - **10-fundamentals/10.1-language-semantics**: 语言语义基础
 - **56-code-generation**: 新特性的编译与降级
+
+
+---
+
+## 10. 代码示例：ES2024 `Object.groupBy`
+
+```javascript
+// group-by.ts
+const products = [
+  { category: 'fruit', name: 'apple' },
+  { category: 'vegetable', name: 'carrot' },
+  { category: 'fruit', name: 'banana' },
+];
+
+const grouped = Object.groupBy(products, p => p.category);
+console.log(grouped);
+// {
+//   fruit: [ { category: 'fruit', name: 'apple' }, { category: 'fruit', name: 'banana' } ],
+//   vegetable: [ { category: 'vegetable', name: 'carrot' } ]
+// }
+```
+
+## 11. 代码示例：ES2025 `Set` 集合运算
+
+```javascript
+// set-operations.ts
+const setA = new Set([1, 2, 3, 4]);
+const setB = new Set([3, 4, 5, 6]);
+
+console.log(setA.intersection(setB)); // Set { 3, 4 }
+console.log(setA.union(setB));        // Set { 1, 2, 3, 4, 5, 6 }
+console.log(setA.difference(setB));   // Set { 1, 2 }
+```
+
+## 12. 代码示例：动态 import 与 `import.meta`
+
+```javascript
+// dynamic-import.ts
+async function loadPlugin(name: string) {
+  const module = await import(`./plugins/${name}.js`);
+  return module.default;
+}
+
+console.log(import.meta.url); // 当前模块 URL
+```
+
+## 13. 新增权威参考链接
+
+- [TC39 Process Document](https://tc39.es/process-document/) — 提案阶段官方说明
+- [Temporal Proposal](https://github.com/tc39/proposal-temporal) — Temporal API 提案仓库
+- [Set Methods Proposal](https://github.com/tc39/proposal-set-methods) — Set 集合方法提案
+- [Promise.withResolvers Proposal](https://github.com/tc39/proposal-promise-with-resolvers) — Promise.withResolvers 提案
+- [V8 Blog](https://v8.dev/blog) — Google V8 新特性实现细节
+- [State of JS](https://stateofjs.com/) — 开发者特性采用率调研
+- [2ality Blog](https://2ality.com/) — Dr. Axel Rauschmayer 的 ECMAScript 深度解析

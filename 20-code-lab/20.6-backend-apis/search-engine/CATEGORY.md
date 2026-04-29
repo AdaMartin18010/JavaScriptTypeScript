@@ -76,6 +76,102 @@ const results = await index.search('laptop', {
 });
 ```
 
+### 内存倒排索引与 TF-IDF
+
+```typescript
+// full-text-search.ts — 轻量级内存搜索引擎
+
+class InvertedIndex {
+  private index = new Map<string, Set<number>>();
+  private docs: string[] = [];
+
+  addDocument(id: number, text: string): void {
+    this.docs[id] = text;
+    const tokens = this.tokenize(text);
+    for (const token of tokens) {
+      if (!this.index.has(token)) this.index.set(token, new Set());
+      this.index.get(token)!.add(id);
+    }
+  }
+
+  search(query: string): Array<{ id: number; score: number }> {
+    const tokens = this.tokenize(query);
+    const scores = new Map<number, number>();
+
+    for (const token of tokens) {
+      const docs = this.index.get(token);
+      if (!docs) continue;
+      const idf = Math.log(this.docs.length / (docs.size + 1));
+      for (const docId of docs) {
+        const tf = this.tokenize(this.docs[docId]).filter((t) => t === token).length;
+        const current = scores.get(docId) ?? 0;
+        scores.set(docId, current + tf * idf);
+      }
+    }
+
+    return Array.from(scores.entries())
+      .map(([id, score]) => ({ id, score }))
+      .sort((a, b) => b.score - a.score);
+  }
+
+  private tokenize(text: string): string[] {
+    return text.toLowerCase().match(/\b\w+\b/g) ?? [];
+  }
+}
+```
+
+### 前缀树（Trie）自动补全
+
+```typescript
+// search-suggestions.ts — Trie 实现搜索建议
+
+class TrieNode {
+  children = new Map<string, TrieNode>();
+  isEnd = false;
+  frequency = 0; // 用于排序：搜索频率越高排名越前
+}
+
+class AutocompleteEngine {
+  private root = new TrieNode();
+
+  insert(word: string, frequency = 1): void {
+    let node = this.root;
+    for (const char of word) {
+      if (!node.children.has(char)) node.children.set(char, new TrieNode());
+      node = node.children.get(char)!;
+    }
+    node.isEnd = true;
+    node.frequency += frequency;
+  }
+
+  suggest(prefix: string, limit = 5): string[] {
+    let node = this.root;
+    for (const char of prefix) {
+      if (!node.children.has(char)) return [];
+      node = node.children.get(char)!;
+    }
+
+    const results: Array<{ word: string; frequency: number }> = [];
+    this.dfs(node, prefix, results);
+    return results
+      .sort((a, b) => b.frequency - a.frequency)
+      .slice(0, limit)
+      .map((r) => r.word);
+  }
+
+  private dfs(node: TrieNode, prefix: string, results: Array<{ word: string; frequency: number }>): void {
+    if (node.isEnd) results.push({ word: prefix, frequency: node.frequency });
+    for (const [char, child] of node.children) {
+      this.dfs(child, prefix + char, results);
+    }
+  }
+}
+
+// 使用
+const engine = new AutocompleteEngine();
+['typescript', 'tailwind', 'testing', 'tanstack', 'three.js'].forEach((w) => engine.insert(w));
+console.log(engine.suggest('t')); // ['typescript', 'tailwind', 'testing', 'tanstack', 'three.js']
+```
 
 ## 学习资源
 
@@ -87,6 +183,11 @@ const results = await index.search('laptop', {
 | Algolia Docs | 官方文档 | [algolia.com/doc](https://www.algolia.com/doc/) |
 | Elasticsearch Guide | 官方指南 | [elastic.co/guide/en/elasticsearch/reference](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html) |
 | Lunr.js | 轻量浏览器搜索 | [lunrjs.com](https://lunrjs.com/) |
+| Apache Lucene | 核心搜索库 | [lucene.apache.org](https://lucene.apache.org/) |
+| Redis Search | 实时搜索模块 | [redis.io/docs/stack/search](https://redis.io/docs/stack/search/) |
+| SQLite FTS5 | 全文搜索扩展 | [sqlite.org/fts5.html](https://sqlite.org/fts5.html) |
+| Introduction to Information Retrieval (Stanford) | 经典教材 | [nlp.stanford.edu/IR-book](https://nlp.stanford.edu/IR-book/) |
+| Typesense | 开源搜索引擎 | [typesense.org](https://typesense.org/) |
 
 ---
 

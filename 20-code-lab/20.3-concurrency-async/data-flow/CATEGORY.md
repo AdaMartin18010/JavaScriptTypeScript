@@ -52,6 +52,57 @@ createEffect(() => console.log('count =', count.get()));
 count.set(1); // 自动触发 effect
 ```
 
+### RxJS Observable 与背压处理
+
+```typescript
+// reactive-programming.ts — RxJS 数据流与背压策略
+import { interval, fromEvent } from 'rxjs';
+import { throttleTime, debounceTime, bufferTime, switchMap } from 'rxjs/operators';
+
+// 高频点击流：使用 throttleTime 丢弃溢出的值
+const clickStream = fromEvent(document, 'click').pipe(
+  throttleTime(300) // 背压策略：每 300ms 只取第一次点击
+);
+
+// 搜索输入防抖：debounceTime 减少请求频率
+const searchInput = fromEvent<KeyboardEvent>(document.querySelector('#search')!, 'input');
+const searchStream = searchInput.pipe(
+  debounceTime(200),
+  switchMap((e) => fetch(`/api/search?q=${(e.target as HTMLInputElement).value}`))
+);
+
+// 批量处理：bufferTime 将高频数据聚合后处理
+const sensorStream = interval(10).pipe(
+  bufferTime(1000), // 每秒聚合为一个数组处理
+);
+```
+
+### 异步迭代器与背压
+
+```typescript
+// backpressure.ts — 使用 AsyncIterator 实现自然背压
+async function* produceWithBackpressure(source: ReadableStream<Uint8Array>) {
+  const reader = source.getReader();
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      // 消费者通过 for await...of 控制拉取速率
+      yield value;
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+// 消费者以自身速率处理，天然背压
+async function consumeStream(stream: ReadableStream<Uint8Array>) {
+  for await (const chunk of produceWithBackpressure(stream)) {
+    await processChunk(chunk); // 处理慢时，生产端自动阻塞
+  }
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -82,6 +133,10 @@ count.set(1); // 自动触发 effect
 | Solid.js Reactivity | 文章 | [www.solidjs.com/tutorial/introduction_signals](https://www.solidjs.com/tutorial/introduction_signals) |
 | Vue.js Reactivity Deep Dive | 文档 | [vuejs.org/guide/extras/reactivity-in-depth.html](https://vuejs.org/guide/extras/reactivity-in-depth.html) |
 | Reactive Streams Specification | 规范 | [www.reactive-streams.org](https://www.reactive-streams.org/) |
+| Svelte 5 Runes | 文档 | [svelte.dev/docs/runes](https://svelte.dev/docs/runes) |
+| React useEffect 文档 | 官方文档 | [react.dev/reference/react/useEffect](https://react.dev/reference/react/useEffect) |
+| Node.js Stream API | 官方文档 | [nodejs.org/api/stream.html](https://nodejs.org/api/stream.html) |
+| Pull-based vs Push-based | 经典文章 | [github.com/kriskowal/gtor](https://github.com/kriskowal/gtor) |
 
 ---
 

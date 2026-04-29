@@ -153,4 +153,94 @@ assert(task.title === 'Learn Layered Architecture');
 
 ---
 
+
+## 进阶代码示例
+
+### NestJS 风格依赖注入分层
+
+```typescript
+// nestjs-like-layered.ts
+interface Provider<T> {
+  provide: string;
+  useClass: new (...args: any[]) => T;
+}
+
+class DIContainer {
+  private registry = new Map<string, any>();
+  register<T>(provider: Provider<T>) {
+    this.registry.set(provider.provide, new provider.useClass());
+  }
+  resolve<T>(token: string): T {
+    return this.registry.get(token);
+  }
+}
+
+// 数据层
+class UserRepository {
+  async findById(id: string) {
+    return { id, name: 'Alice' };
+  }
+}
+
+// 业务层
+class UserService {
+  constructor(private repo: UserRepository) {}
+  async getUser(id: string) {
+    return this.repo.findById(id);
+  }
+}
+
+// 表现层
+class UserController {
+  constructor(private service: UserService) {}
+  async handle(id: string) {
+    return this.service.getUser(id);
+  }
+}
+
+// 组合根
+const container = new DIContainer();
+container.register({ provide: 'UserRepository', useClass: UserRepository });
+container.register({ provide: 'UserService', useClass: UserService });
+container.register({ provide: 'UserController', useClass: UserController });
+```
+
+### 端口与适配器（六边形）实践
+
+```typescript
+// hexagonal-adapter.ts
+interface ForEmailSender {
+  send(to: string, subject: string, body: string): Promise<void>;
+}
+
+class SmtpEmailAdapter implements ForEmailSender {
+  async send(to: string, subject: string, body: string) {
+    console.log(`SMTP to ${to}: ${subject}`);
+  }
+}
+
+class NotificationService {
+  constructor(private email: ForEmailSender) {}
+  async notifyUser(email: string, message: string) {
+    await this.email.send(email, 'Notification', message);
+  }
+}
+
+// 测试时可替换为内存适配器
+class InMemoryEmailAdapter implements ForEmailSender {
+  sent: Array<{ to: string; subject: string; body: string }> = [];
+  async send(to: string, subject: string, body: string) {
+    this.sent.push({ to, subject, body });
+  }
+}
+```
+
+## 新增权威参考链接
+
+- [NestJS Documentation](https://docs.nestjs.com/) — 企业级 Node.js 框架
+- [Hexagonal Architecture (Alistair Cockburn)](https://alistair.cockburn.us/hexagonal-architecture/) — 端口与适配器
+- [Onion Architecture (Jeffrey Palermo)](https://jeffreypalermo.com/blog/the-onion-architecture-part-1/) — 洋葱架构
+- [DDD Reference (Eric Evans)](https://www.domainlanguage.com/ddd/reference/) — 领域驱动设计参考
+- [Martin Fowler — Patterns of Enterprise Application Architecture](https://martinfowler.com/eaaCatalog/) — 企业应用架构模式
+
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

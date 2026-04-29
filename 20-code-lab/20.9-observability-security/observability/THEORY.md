@@ -200,3 +200,86 @@ histogram_quantile(0.99,
 - **92-observability-lab**: 可观测性的代码实现与工具链
 - **17-debugging-monitoring**: 调试与监控基础
 - **22-deployment-devops**: DevOps 中的监控集成
+
+
+---
+
+## 11. 进阶代码示例
+
+### OpenTelemetry Node.js 自动 Instrumentation
+
+```typescript
+// otel-auto-instrument.ts
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+
+const sdk = new NodeSDK({
+  traceExporter: new OTLPTraceExporter({ url: 'http://localhost:4318/v1/traces' }),
+  instrumentations: [getNodeAutoInstrumentations()],
+});
+
+sdk.start();
+
+process.on('SIGTERM', () => sdk.shutdown().then(() => process.exit(0)));
+```
+
+### 自定义 Prometheus Pushgateway 上报
+
+```typescript
+// pushgateway-client.ts
+import { Pushgateway, Registry, Counter } from 'prom-client';
+
+const register = new Registry();
+const jobErrors = new Counter({
+  name: 'job_errors_total',
+  help: 'Total batch job errors',
+  registers: [register],
+});
+
+const gateway = new Pushgateway('http://localhost:9091', undefined, register);
+
+async function pushMetrics(jobName: string) {
+  jobErrors.inc();
+  await gateway.pushAdd({ jobName });
+  console.log(`Metrics pushed for ${jobName}`);
+}
+
+pushMetrics('nightly-report');
+```
+
+### 聚合健康检查端点
+
+```typescript
+// aggregated-health.ts
+interface HealthCheck {
+  name: string;
+  check: () => Promise<{ status: 'pass' | 'fail'; responseTimeMs: number }>;
+}
+
+async function aggregatedHealth(checks: HealthCheck[]) {
+  const results = await Promise.all(
+    checks.map(async ({ name, check }) => {
+      const start = performance.now();
+      try {
+        const result = await check();
+        return { name, ...result };
+      } catch {
+        return { name, status: 'fail' as const, responseTimeMs: Math.round(performance.now() - start) };
+      }
+    })
+  );
+  const overall = results.every(r => r.status === 'pass') ? 'healthy' : 'unhealthy';
+  return { status: overall, checks: results };
+}
+```
+
+## 12. 新增权威参考链接
+
+- [Grafana Tempo](https://grafana.com/docs/tempo/latest/) — 分布式追踪后端
+- [OpenMetrics Specification](https://openmetrics.io/) — 指标暴露标准
+- [Google SRE Workbook — SLI/SLO](https://sre.google/workbook/implementing-slos/) — SLI/SLO 实践
+- [Honeycomb Observability](https://www.honeycomb.io/) — 事件驱动可观测性
+- [Fluentd / Fluent Bit](https://www.fluentd.org/) — 日志收集与转发
+- [Vector by Datadog](https://vector.dev/) — 可观测性数据管道
+- [eBPF.io](https://ebpf.io/) — 内核级可观测性技术

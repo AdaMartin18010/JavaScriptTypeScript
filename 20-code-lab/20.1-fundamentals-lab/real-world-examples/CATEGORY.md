@@ -58,6 +58,88 @@ const client = createHttpClient({
 });
 ```
 
+### JWT 认证中间件模式
+
+```typescript
+// auth-system/auth-middleware.ts — Express 风格 JWT 验证中间件
+import { createHash, randomBytes } from 'crypto';
+
+interface JWTPayload {
+  sub: string;
+  exp: number;
+  roles: string[];
+}
+
+function verifyToken(token: string, secret: string): JWTPayload {
+  // 简化示例：实际应使用 jose 或 jsonwebtoken 库
+  const [header, payload, signature] = token.split('.');
+  const expected = createHash('sha256').update(`${header}.${payload}${secret}`).digest('base64url');
+  if (signature !== expected) throw new Error('Invalid signature');
+  const decoded = JSON.parse(Buffer.from(payload, 'base64url').toString()) as JWTPayload;
+  if (decoded.exp < Date.now() / 1000) throw new Error('Token expired');
+  return decoded;
+}
+
+function createAuthMiddleware(secret: string) {
+  return (req: { headers: { authorization?: string } }, res: unknown, next: (err?: Error) => void) => {
+    const auth = req.headers.authorization;
+    if (!auth?.startsWith('Bearer ')) {
+      return next(new Error('Missing token'));
+    }
+    try {
+      const payload = verifyToken(auth.slice(7), secret);
+      (req as Record<string, unknown>).user = payload;
+      next();
+    } catch (e) {
+      next(e as Error);
+    }
+  };
+}
+```
+
+### Schema 校验组合子
+
+```typescript
+// validation/schema.ts — 可组合的运行时校验器
+
+interface Validator<T> {
+  validate: (value: unknown) => T;
+}
+
+const string: Validator<string> = {
+  validate: (v) => {
+    if (typeof v !== 'string') throw new TypeError('Expected string');
+    return v;
+  },
+};
+
+const number: Validator<number> = {
+  validate: (v) => {
+    if (typeof v !== 'number' || Number.isNaN(v)) throw new TypeError('Expected number');
+    return v;
+  },
+};
+
+function object<T extends Record<string, Validator<unknown>>>(
+  shape: T
+): Validator<{ [K in keyof T]: T[K] extends Validator<infer U> ? U : never }> {
+  return {
+    validate: (v) => {
+      if (typeof v !== 'object' || v === null) throw new TypeError('Expected object');
+      const result = {} as Record<string, unknown>;
+      for (const [key, validator] of Object.entries(shape)) {
+        result[key] = (validator as Validator<unknown>).validate((v as Record<string, unknown>)[key]);
+      }
+      return result;
+    },
+  } as Validator<{ [K in keyof T]: T[K] extends Validator<infer U> ? U : never }>;
+}
+
+// 使用
+const userValidator = object({ name: string, age: number });
+const user = userValidator.validate({ name: 'Alice', age: 30 });
+```
+
 ## 目录内容
 
 - 📄 README.md
@@ -84,6 +166,13 @@ const client = createHttpClient({
 | Node.js Design Patterns | 书籍 | [nodejsdesignpatterns.com](https://nodejsdesignpatterns.com/) |
 | MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
 | web.dev | 指南 | [web.dev](https://web.dev) |
+| Express.js 官方文档 | 框架文档 | [expressjs.com](https://expressjs.com/) |
+| Fastify 官方文档 | 框架文档 | [fastify.dev](https://fastify.dev/) |
+| JSON Web Tokens (JWT) | 规范 | [jwt.io](https://jwt.io/) |
+| Zod 文档 | Schema 校验库 | [zod.dev](https://zod.dev/) |
+| commander.js | CLI 框架 | [github.com/tj/commander.js](https://github.com/tj/commander.js) |
+|oclif | CLI 框架 | [oclif.io](https://oclif.io/) |
+| Node.js Streams | API 文档 | [nodejs.org/api/stream.html](https://nodejs.org/api/stream.html) |
 
 ---
 

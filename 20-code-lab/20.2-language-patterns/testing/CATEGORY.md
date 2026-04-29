@@ -44,6 +44,57 @@ describe('calculateDiscount', () => {
 });
 ```
 
+### Playwright E2E 测试示例
+
+```typescript
+// e2e-testing.test.ts — 端到端结账流程
+import { test, expect } from '@playwright/test';
+
+test('user can complete checkout', async ({ page }) => {
+  await page.goto('/products');
+  await page.locator('[data-testid="add-to-cart"]').first().click();
+  await page.locator('[data-testid="cart-link"]').click();
+  await page.locator('text=Checkout').click();
+  await page.fill('[name="email"]', 'test@example.com');
+  await page.locator('text=Place Order').click();
+  await expect(page.locator('[data-testid="order-confirmation"]')).toBeVisible();
+});
+```
+
+### Mock & Stub 深度示例
+
+```typescript
+// mock-stub.test.ts — 测试替身与行为验证
+import { describe, it, expect, vi } from 'vitest';
+
+interface PaymentGateway {
+  charge(amount: number, token: string): Promise<{ id: string }>;
+}
+
+class OrderService {
+  constructor(private gateway: PaymentGateway) {}
+
+  async checkout(cart: { total: number }, token: string) {
+    const receipt = await this.gateway.charge(cart.total, token);
+    return { orderId: `ord-${receipt.id}` };
+  }
+}
+
+describe('OrderService', () => {
+  it('charges the correct amount', async () => {
+    const stubGateway: PaymentGateway = {
+      charge: vi.fn().mockResolvedValue({ id: 'tx-42' }),
+    };
+
+    const service = new OrderService(stubGateway);
+    const result = await service.checkout({ total: 199 }, 'tok_visa');
+
+    expect(stubGateway.charge).toHaveBeenCalledWith(199, 'tok_visa');
+    expect(result.orderId).toBe('ord-tx-42');
+  });
+});
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -82,6 +133,10 @@ describe('calculateDiscount', () => {
 | Jest Docs | 文档 | [jestjs.io/docs/getting-started](https://jestjs.io/docs/getting-started) |
 | Test Patterns (xUnit) | 书籍 | [xunitpatterns.com](http://xunitpatterns.com/) |
 | Martin Fowler — Test Pyramid | 文章 | [martinfowler.com/articles/practical-test-pyramid.html](https://martinfowler.com/articles/practical-test-pyramid.html) |
+| Google Testing Blog | 博客 | [testing.googleblog.com](https://testing.googleblog.com/) |
+| Cypress Documentation | 文档 | [docs.cypress.io](https://docs.cypress.io/) |
+| Node.js Test Runner | 官方文档 | [nodejs.org/api/test.html](https://nodejs.org/api/test.html) |
+| Mock Service Worker (MSW) | 文档 | [mswjs.io](https://mswjs.io/) |
 
 ---
 

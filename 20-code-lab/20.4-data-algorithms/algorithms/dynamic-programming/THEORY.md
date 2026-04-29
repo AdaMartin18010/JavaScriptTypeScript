@@ -163,4 +163,94 @@ console.log(lengthOfLIS([0, 1, 0, 3, 2, 3]));           // 4（[0, 1, 2, 3]）
 
 ---
 
+
+## 3.2 进阶代码示例
+
+### 编辑距离（Levenshtein Distance）
+
+```typescript
+// edit-distance.ts
+function minDistance(word1: string, word2: string): number {
+  const m = word1.length, n = word2.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (word1[i - 1] === word2[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+      } else {
+        dp[i][j] = Math.min(
+          dp[i - 1][j] + 1,    // 删除
+          dp[i][j - 1] + 1,    // 插入
+          dp[i - 1][j - 1] + 1 // 替换
+        );
+      }
+    }
+  }
+  return dp[m][n];
+}
+
+// 可运行示例
+console.log(minDistance('horse', 'ros')); // 3
+console.log(minDistance('intention', 'execution')); // 5
+```
+
+### 最长公共子序列（LCS）
+
+```typescript
+// lcs.ts
+function longestCommonSubsequence(text1: string, text2: string): number {
+  const m = text1.length, n = text2.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (text1[i - 1] === text2[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+  return dp[m][n];
+}
+
+// 可运行示例
+console.log(longestCommonSubsequence('abcde', 'ace')); // 3 ('ace')
+console.log(longestCommonSubsequence('abc', 'def')); // 0
+```
+
+### 硬币找零（完全背包）
+
+```typescript
+// coin-change.ts
+function coinChange(coins: number[], amount: number): number {
+  const dp = new Array(amount + 1).fill(Infinity);
+  dp[0] = 0;
+
+  for (const coin of coins) {
+    for (let i = coin; i <= amount; i++) {
+      dp[i] = Math.min(dp[i], dp[i - coin] + 1);
+    }
+  }
+  return dp[amount] === Infinity ? -1 : dp[amount];
+}
+
+// 可运行示例
+console.log(coinChange([1, 2, 5], 11)); // 3 (5+5+1)
+console.log(coinChange([2], 3)); // -1
+```
+
+## 3.4 新增权威参考链接
+
+- [GeeksforGeeks — Dynamic Programming](https://www.geeksforgeeks.org/dynamic-programming/) — DP 基础与经典问题
+- [AtCoder DP Contest](https://atcoder.jp/contests/dp/tasks) — 经典 DP 练习题库
+- [Wikipedia — Dynamic Programming](https://en.wikipedia.org/wiki/Dynamic_programming) — 动态规划百科
+- [VisuAlgo — Recursion & DP](https://visualgo.net/en/recursion) — 算法可视化
+- [CP-Algorithms — Dynamic Programming](https://cp-algorithms.com/dynamic_programming/intro-to-dp.html) — 竞赛 DP 参考
+- [Algorithm Design Manual (Skiena)](http://www.algorist.com/) — 算法设计手册
+
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

@@ -324,3 +324,84 @@ console.log(graph.getDownstream('country')); // ['city', 'district']
 - [Fluent UI React Form Controls](https://react.fluentui.dev/?path=/docs/components-form--docs) — Microsoft 企业级表单组件模式
 - [IBM Carbon Design System: Forms](https://carbondesignsystem.com/components/form/usage/) — 企业表单设计系统最佳实践
 - [Microsoft FAST: FormAssociated Components](https://www.fast.design/docs/components/form-associated/) — W3C 标准表单关联组件实现
+
+
+---
+
+## 进阶代码示例
+
+### 跨框架渲染适配器
+
+```typescript
+// renderer-adapter.ts
+import React from 'react';
+import { h } from 'vue';
+
+interface RendererAdapter<P = Record<string, unknown>> {
+  render(type: string, props: P, children?: unknown[]): unknown;
+}
+
+class ReactAdapter implements RendererAdapter {
+  constructor(private componentMap: Map<string, React.FC<any>>) {}
+  render(type: string, props: Record<string, unknown>, children?: React.ReactNode[]) {
+    const Component = this.componentMap.get(type);
+    if (!Component) throw new Error(`Unknown component: ${type}`);
+    return React.createElement(Component, props, children);
+  }
+}
+
+class VueAdapter implements RendererAdapter {
+  constructor(private componentMap: Map<string, any>) {}
+  render(type: string, props: Record<string, unknown>, children?: unknown[]) {
+    const Component = this.componentMap.get(type);
+    if (!Component) throw new Error(`Unknown component: ${type}`);
+    return h(Component, props, children);
+  }
+}
+
+// Usage
+const reactAdapter = new ReactAdapter(new Map([['Input', Input]]));
+const vueAdapter = new VueAdapter(new Map([['Input', VInput]]));
+```
+
+### 表单提交前数据转换
+
+```typescript
+// transform-pipeline.ts
+type TransformFn = (value: unknown, fieldId: string) => unknown;
+
+class TransformPipeline {
+  private transforms = new Map<string, TransformFn[]>();
+
+  register(fieldId: string, fn: TransformFn) {
+    const existing = this.transforms.get(fieldId) ?? [];
+    existing.push(fn);
+    this.transforms.set(fieldId, existing);
+  }
+
+  execute(values: Record<string, unknown>): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+    for (const [fieldId, value] of Object.entries(values)) {
+      const fns = this.transforms.get(fieldId) ?? [];
+      result[fieldId] = fns.reduce((v, fn) => fn(v, fieldId), value);
+    }
+    return result;
+  }
+}
+
+// Usage
+const pipeline = new TransformPipeline();
+pipeline.register('phone', (v) => (v as string).replace(/\D/g, ''));
+pipeline.register('amount', (v) => Number(v) * 100); // 元 → 分
+console.log(pipeline.execute({ phone: '138-1234-5678', amount: '99.99' }));
+// { phone: '13812345678', amount: 9999 }
+```
+
+## 新增权威参考链接
+
+- [TanStack Form](https://tanstack.com/form/latest) — 现代 headless 表单库
+- [Final Form](https://final-form.org/) — 高性能表单状态管理
+- [Ant Design Form](https://ant.design/components/form) — 企业级表单组件
+- [W3C HTML-AAM](https://www.w3.org/TR/html-aam-1.0/) — HTML 辅助技术映射
+- [WebAIM: Accessible Forms](https://webaim.org/techniques/forms/) — 表单无障碍权威指南
+- [AJV JSON Schema Validator](https://ajv.js.org/) — 高性能 JSON Schema 校验引擎

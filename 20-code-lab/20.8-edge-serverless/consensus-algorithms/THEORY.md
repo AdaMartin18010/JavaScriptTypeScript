@@ -324,3 +324,102 @@ console.log('Follower log:', follower.getLogString());
 - **70-distributed-systems**: 分布式系统的基础理论
 - **83-blockchain-advanced**: 区块链共识机制
 - **75-chaos-engineering**: 共识算法的韧性测试
+
+
+---
+
+## 进阶代码示例
+
+### 简化 PBFT 三阶段提交
+
+```typescript
+// pbft-lite.ts
+type Phase = 'prePrepare' | 'prepare' | 'commit';
+
+interface PBFTMessage {
+  view: number;
+  sequence: number;
+  digest: string;
+  phase: Phase;
+  nodeId: string;
+}
+
+class PBFTNode {
+  private view = 0;
+  private sequence = 0;
+  private logs: PBFTMessage[] = [];
+  private f: number;
+
+  constructor(private nodeId: string, totalNodes: number) {
+    this.f = Math.floor((totalNodes - 1) / 3);
+  }
+
+  receive(msg: PBFTMessage): boolean {
+    if (msg.view < this.view) return false;
+    this.logs.push(msg);
+    return true;
+  }
+
+  committed(sequence: number): boolean {
+    const commits = this.logs.filter(
+      m => m.phase === 'commit' && m.sequence === sequence
+    );
+    return commits.length >= 2 * this.f + 1;
+  }
+}
+
+// Usage
+const node = new PBFTNode('N0', 4);
+const seq = 1;
+['prePrepare', 'prepare', 'commit'].forEach((phase) => {
+  for (let j = 0; j < 3; j++) {
+    node.receive({ view: 0, sequence: seq, digest: 'abc', phase: phase as Phase, nodeId: `N${j}` });
+  }
+});
+console.log('Committed?', node.committed(seq)); // true
+```
+
+### 共识网络模拟器
+
+```typescript
+// consensus-simulator.ts
+interface NetworkNode {
+  id: string;
+  state: 'Follower' | 'Candidate' | 'Leader';
+  term: number;
+}
+
+class ConsensusNetwork {
+  private nodes: NetworkNode[] = [];
+
+  addNode(node: NetworkNode) {
+    this.nodes.push(node);
+  }
+
+  simulateElection() {
+    for (const node of this.nodes) {
+      if (Math.random() > 0.5) {
+        node.state = 'Candidate';
+        node.term += 1;
+      }
+    }
+    const leader = this.nodes.find(n => n.state === 'Candidate');
+    if (leader) leader.state = 'Leader';
+    return this.nodes.map(n => ({ id: n.id, state: n.state, term: n.term }));
+  }
+}
+
+// Usage
+const net = new ConsensusNetwork();
+['A', 'B', 'C'].forEach(id => net.addNode({ id, state: 'Follower', term: 0 }));
+console.log(net.simulateElection());
+```
+
+## 新增权威参考链接
+
+- [Tendermint Consensus](https://docs.tendermint.com/v0.34/introduction/what-is-tendermint.html) — BFT 共识引擎
+- [HotStuff Paper](https://arxiv.org/abs/1803.05069) — Facebook Diem 共识算法
+- [Casper FFG Paper](https://arxiv.org/abs/1710.09437) — Ethereum 权益证明共识
+- [Avalanche Consensus Whitepaper](https://arxiv.org/abs/1906.08936) — 雪崩协议
+- [Distributed Systems for Fun and Profit](http://book.mixu.net/distsys/) — 免费分布式系统书籍
+- [The Byzantine Generals Problem (Lamport)](https://dl.acm.org/doi/10.1145/357172.357176) — 拜占庭将军问题
