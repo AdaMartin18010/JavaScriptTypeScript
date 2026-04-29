@@ -87,6 +87,99 @@ function renderUserComment(comment: string): string {
 }
 ```
 
+### CSRF 双重提交 Cookie + 同步令牌
+
+```typescript
+import { createHash, randomBytes } from 'crypto';
+
+interface CSRFConfig {
+  cookieName: string;
+  headerName: string;
+  secret: string;
+}
+
+function generateCSRFToken(secret: string, sessionId: string): string {
+  const nonce = randomBytes(16).toString('base64url');
+  const payload = `${sessionId}:${nonce}`;
+  const signature = createHash('sha256').update(payload + secret).digest('base64url');
+  return `${payload}:${signature}`;
+}
+
+function verifyCSRFToken(token: string, secret: string, sessionId: string): boolean {
+  const parts = token.split(':');
+  if (parts.length !== 3) return false;
+  const [sess, nonce, sig] = parts;
+  if (sess !== sessionId) return false;
+  const expected = createHash('sha256').update(`${sess}:${nonce}${secret}`).digest('base64url');
+  return sig === expected;
+}
+
+// Express 中间件示例
+function csrfProtection(config: CSRFConfig) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const sessionId = req.cookies?.sessionId ?? 'anonymous';
+    if (req.method === 'GET') {
+      const token = generateCSRFToken(config.secret, sessionId);
+      res.cookie(config.cookieName, token, { httpOnly: true, sameSite: 'strict', secure: true });
+      res.locals.csrfToken = token;
+      return next();
+    }
+    const cookieToken = req.cookies[config.cookieName];
+    const headerToken = req.headers[config.headerName.toLowerCase()] as string;
+    if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+      return res.status(403).json({ error: 'CSRF token mismatch' });
+    }
+    if (!verifyCSRFToken(headerToken, config.secret, sessionId)) {
+      return res.status(403).json({ error: 'Invalid CSRF token' });
+    }
+    next();
+  };
+}
+```
+
+### 子资源完整性（SRI）哈希生成
+
+```typescript
+import { createHash } from 'crypto';
+
+async function generateSRIHash(url: string, algorithm: 'sha256' | 'sha384' | 'sha512' = 'sha384'): Promise<string> {
+  const response = await fetch(url);
+  const buffer = await response.arrayBuffer();
+  const hash = createHash(algorithm).update(Buffer.from(buffer)).digest('base64');
+  return `${algorithm}-${hash}`;
+}
+
+// 在 HTML 模板中使用
+// <script src="https://cdn.example.com/lib.js" integrity="sha384-xxx" crossorigin="anonymous"></script>
+```
+
+### Trusted Types 策略（防御 DOM XSS）
+
+```typescript
+// 需要在 CSP 中声明: trusted-types default; require-trusted-types-for 'script'
+if (typeof window !== 'undefined' && window.trustedTypes) {
+  const policy = window.trustedTypes.createPolicy('default', {
+    createHTML: (input: string) => {
+      // 只允许已知安全标签
+      const allowed = /^(<[b|i|u|em|strong]\s*\/?>|<br\s*\/?>)*$/;
+      return allowed.test(input) ? input : '';
+    },
+    createScriptURL: (input: string) => {
+      const allowedHosts = ['cdn.example.com', 'scripts.example.com'];
+      try {
+        const url = new URL(input, window.location.href);
+        if (allowedHosts.includes(url.hostname)) return input;
+      } catch { /* ignore */ }
+      throw new TypeError(`Untrusted script URL: ${input}`);
+    },
+  });
+
+  // 使用策略
+  const safeHtml = policy.createHTML('<strong>Safe</strong>');
+  document.body.innerHTML = safeHtml as unknown as string;
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -117,6 +210,12 @@ function renderUserComment(comment: string): string {
 | OWASP CSRF Prevention | 安全指南 | [cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html) |
 | MDN — SameSite Cookie | 文档 | [developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) |
 | Mozilla Observatory | 检测工具 | [observatory.mozilla.org](https://observatory.mozilla.org/) |
+| Google CSP Evaluator | 检测工具 | [csp-evaluator.withgoogle.com](https://csp-evaluator.withgoogle.com/) |
+| web.dev — Trusted Types | 指南 | [web.dev/articles/trusted-types](https://web.dev/articles/trusted-types) |
+| W3C — Trusted Types Spec | 规范 | [w3c.github.io/trusted-types/dist/spec/](https://w3c.github.io/trusted-types/dist/spec/) |
+| MDN — Subresource Integrity | 文档 | [developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity) |
+| OWASP Top 10 2025 | 安全指南 | [owasp.org/Top10/](https://owasp.org/Top10/) |
+| Chrome Security Headers Guide | 指南 | [developer.chrome.com/docs/privacy-sandbox/security-headers](https://developer.chrome.com/docs/privacy-sandbox/security-headers) |
 
 ---
 

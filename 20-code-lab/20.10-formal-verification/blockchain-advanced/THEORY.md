@@ -1,4 +1,4 @@
-﻿# 高级区块链 — 理论基础
+# 高级区块链 — 理论基础
 
 ## 1. Layer 2 扩容
 
@@ -16,6 +16,47 @@
 - **Optimistic Rollup**: 假设交易有效，挑战期内可提交欺诈证明
 - **ZK Rollup**: 使用零知识证明验证交易批次的有效性
 
+### 代码示例：使用 Viem 与 L2 Rollup 交互
+
+```typescript
+// l2-interaction.ts
+import { createPublicClient, createWalletClient, http, parseEther } from 'viem';
+import { arbitrum, optimism } from 'viem/chains';
+import { privateKeyToAccount } from 'viem/accounts';
+
+// 连接 Arbitrum One 公共节点
+const arbitrumClient = createPublicClient({
+  chain: arbitrum,
+  transport: http('https://arb1.arbitrum.io/rpc'),
+});
+
+// 查询 L2 上某地址 ETH 余额
+export async function getL2Balance(address: `0x${string}`) {
+  const balance = await arbitrumClient.getBalance({ address });
+  return { address, balanceWei: balance.toString() };
+}
+
+// 向 Optimism 发起转账（利用 L2 低 gas 优势）
+export async function transferOnOptimism(
+  privateKey: `0x${string}`,
+  to: `0x${string}`,
+  amountEth: string
+) {
+  const account = privateKeyToAccount(privateKey);
+  const walletClient = createWalletClient({
+    account,
+    chain: optimism,
+    transport: http('https://mainnet.optimism.io'),
+  });
+
+  const hash = await walletClient.sendTransaction({
+    to,
+    value: parseEther(amountEth),
+  });
+  return hash;
+}
+```
+
 ## 2. 零知识证明（ZKP）
 
 证明者向验证者证明某个陈述为真，而不透露任何额外信息：
@@ -24,6 +65,66 @@
 - **zk-STARKs**: 无需可信设置，抗量子计算
 - **应用**: 隐私交易、身份验证、可验证计算
 
+### 代码示例：Circom 电路与 SnarkJS 验证流程
+
+```typescript
+// zkp-workflow.ts
+import { groth16 } from 'snarkjs';
+import * as fs from 'fs';
+
+/**
+ * 链下生成证明并验证（以年龄证明为例）
+ * 电路逻辑：证明 age >= 18，但不泄露具体 age
+ */
+export async function proveAgeAbove18(age: number) {
+  // 1. 生成证明输入
+  const input = { age, threshold: 18 };
+
+  // 2. 生成证明（需预先编译的 wasm 和 zkey）
+  const { proof, publicSignals } = await groth16.fullProve(
+    input,
+    './age_check.wasm',
+    './age_check_final.zkey'
+  );
+
+  // 3. 导出 Solidity 可验证的 calldata
+  const calldata = await groth16.exportSolidityCallData(proof, publicSignals);
+
+  return { proof, publicSignals, calldata };
+}
+
+/**
+ * 在链上验证证明（对应 Solidity verifyProof 接口）
+ */
+export async function verifyOnChain(
+  proof: any,
+  publicSignals: any,
+  verificationKey: any
+): Promise<boolean> {
+  return groth16.verify(verificationKey, publicSignals, proof);
+}
+```
+
+对应的 Circom 电路 (`age_check.circom`)：
+
+```circom
+pragma circom 2.1.0;
+
+template AgeCheck() {
+    signal input age;
+    signal input threshold;
+    signal output isAdult;
+
+    // 约束：age >= threshold（使用 RangeProof 简化示意）
+    component comp = GreaterEqThan(32);
+    comp.in[0] <== age;
+    comp.in[1] <== threshold;
+    isAdult <== comp.out;
+}
+
+component main = AgeCheck();
+```
+
 ## 3. 跨链协议
 
 实现不同区块链之间的资产和数据互通：
@@ -31,6 +132,35 @@
 - **桥接（Bridge）**: 锁定源链资产，在目标链铸造代表 Token
 - **IBC（Cosmos）**: 区块链间通信协议
 - **LayerZero**: 全链互操作性协议
+
+### 代码示例：监听跨链事件（Ethers v6 风格）
+
+```typescript
+// cross-chain-monitor.ts
+import { ethers } from 'ethers';
+
+// 监听 Lock 事件，检测资产从以太坊锁定到侧链
+const BRIDGE_ABI = [
+  'event Lock(address indexed user, uint256 amount, uint256 targetChainId)',
+  'event Unlock(address indexed user, uint256 amount)',
+];
+
+export function monitorBridge(
+  provider: ethers.Provider,
+  bridgeAddress: string
+) {
+  const contract = new ethers.Contract(bridgeAddress, BRIDGE_ABI, provider);
+
+  contract.on('Lock', (user, amount, targetChainId, event) => {
+    console.log(`[Lock] User ${user} locked ${amount} for chain ${targetChainId}`);
+    console.log(`  TxHash: ${event.log.transactionHash}`);
+  });
+
+  contract.on('Unlock', (user, amount, event) => {
+    console.log(`[Unlock] User ${user} unlocked ${amount}`);
+  });
+}
+```
 
 ## 4. DAO（去中心化自治组织）
 
@@ -88,11 +218,11 @@ contract SecureVault is ReentrancyGuard, Pausable, AccessControl {
     // ============ 状态变量 ============
     mapping(address => uint256) private balances;
     mapping(address => bool) private blacklist;
-    
+
     uint256 public totalDeposits;
     uint256 public constant MAX_DEPOSIT = 1000 ether;
     uint256 public constant WITHDRAWAL_COOLDOWN = 24 hours;
-    
+
     mapping(address => uint256) private lastWithdrawalTime;
 
     // ============ 事件 ============
@@ -121,21 +251,21 @@ contract SecureVault is ReentrancyGuard, Pausable, AccessControl {
     }
 
     // ============ 核心功能 ============
-    
+
     /**
      * @notice 存入 ETH
      * @dev 使用 whenNotPaused + notBlacklisted + checkDepositLimit 组合保护
      */
-    function deposit() 
-        external 
-        payable 
-        whenNotPaused 
-        notBlacklisted(msg.sender) 
-        checkDepositLimit(msg.value) 
+    function deposit()
+        external
+        payable
+        whenNotPaused
+        notBlacklisted(msg.sender)
+        checkDepositLimit(msg.value)
     {
         balances[msg.sender] += msg.value;
         totalDeposits += msg.value;
-        
+
         emit Deposited(msg.sender, msg.value, balances[msg.sender]);
     }
 
@@ -146,8 +276,8 @@ contract SecureVault is ReentrancyGuard, Pausable, AccessControl {
      *      2. ReentrancyGuard（非重入锁）
      *      3. 先更新状态，后转账
      */
-    function withdraw(uint256 _amount) 
-        external 
+    function withdraw(uint256 _amount)
+        external
         nonReentrant          // OpenZeppelin 重入保护
         whenNotPaused
         notBlacklisted(msg.sender)
@@ -176,10 +306,10 @@ contract SecureVault is ReentrancyGuard, Pausable, AccessControl {
      * @notice 批量转账（展示 gas 优化模式）
      * @dev 缓存状态变量到内存，减少 SLOAD 操作
      */
-    function batchTransfer(address[] calldata _recipients, uint256[] calldata _amounts) 
-        external 
-        onlyRole(OPERATOR_ROLE) 
-        whenNotPaused 
+    function batchTransfer(address[] calldata _recipients, uint256[] calldata _amounts)
+        external
+        onlyRole(OPERATOR_ROLE)
+        whenNotPaused
     {
         require(_recipients.length == _amounts.length, "SecureVault: length mismatch");
         require(_recipients.length <= 100, "SecureVault: batch too large");
@@ -191,12 +321,12 @@ contract SecureVault is ReentrancyGuard, Pausable, AccessControl {
         for (uint256 i = 0; i < _recipients.length; ) {
             address recipient = _recipients[i];
             uint256 amount = _amounts[i];
-            
+
             require(!blacklist[recipient], "SecureVault: recipient blacklisted");
-            
+
             totalAmount += amount;
             balances[recipient] += amount;
-            
+
             // Gas 优化：使用 unchecked 进行溢出安全的循环递增
             unchecked { ++i; }
         }
@@ -206,7 +336,7 @@ contract SecureVault is ReentrancyGuard, Pausable, AccessControl {
     }
 
     // ============ 管理功能 ============
-    
+
     function pause() external onlyRole(ADMIN_ROLE) {
         _pause();
         emit EmergencyPaused(msg.sender);
@@ -222,7 +352,7 @@ contract SecureVault is ReentrancyGuard, Pausable, AccessControl {
     }
 
     // ============ 查询功能 ============
-    
+
     function getBalance(address _account) external view returns (uint256) {
         return balances[_account];
     }
@@ -254,6 +384,16 @@ contract SecureVault is ReentrancyGuard, Pausable, AccessControl {
 - [Rollup Wiki — L2Beat](https://l2beat.com/)
 - [ZK Hack — Zero Knowledge Resources](https://zkhack.dev/)
 - [IBC Protocol Documentation](https://ibc.cosmos.network/)
+- [Viem Documentation — TypeScript Ethereum Interface](https://viem.sh/)
+- [Circom Documentation — ZK Circuit Language](https://docs.circom.io/)
+- [SnarkJS — ZK Proof Generation in JavaScript](https://github.com/iden3/snarkjs)
+- [Ethereum EIPs — Improvement Proposals](https://eips.ethereum.org/)
+- [LayerZero Documentation — Omnichain Interoperability](https://layerzero.network/)
+- [StarkNet / StarkEx Documentation](https://docs.starknet.io/)
+- [Ethers.js v6 Documentation](https://docs.ethers.org/v6/)
+- [Gnosis Safe — Multisig Wallet](https://safe.global/)
+- [SSV Network — Distributed Validator Technology](https://ssv.network/)
+- [Ethereum Magicians — Fellowship of Ethereum Researchers](https://ethereum-magicians.org/)
 
 ## 8. 与相邻模块的关系
 

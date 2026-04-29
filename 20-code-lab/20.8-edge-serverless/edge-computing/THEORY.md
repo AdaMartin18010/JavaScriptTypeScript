@@ -1,4 +1,4 @@
-﻿# 边缘计算 — 理论基础
+# 边缘计算 — 理论基础
 
 ## 1. 边缘计算定义
 
@@ -36,7 +36,9 @@
 | **典型平台** | Cloudflare Workers, Deno Deploy, Vercel Edge | Cloudflare Workers, Fastly Compute | 嵌入式设备、游戏脚本 |
 | **适用场景** | 高并发 HTTP 边缘函数 | 计算密集型任务（图像处理、加密） | IoT、插件系统、资源极度受限 |
 
-## 4. Cloudflare Worker 代码示例
+## 4. 代码示例
+
+### 4.1 Cloudflare Worker（中间件 + KV + Durable Objects）
 
 ```typescript
 // src/index.ts — Cloudflare Worker with middleware pattern
@@ -106,6 +108,85 @@ export default {
 };
 ```
 
+### 4.2 Vercel Edge Function（Geo + JWT 验证）
+
+```typescript
+// middleware.ts — Vercel Edge Middleware
+import { NextRequest, NextResponse } from 'next/server';
+import { jwtVerify } from 'jose';
+
+const SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
+
+export async function middleware(request: NextRequest) {
+  const country = request.geo?.country || 'UNKNOWN';
+  const token = request.cookies.get('auth')?.value;
+
+  // 地区限制示例
+  if (country === 'CN') {
+    return NextResponse.json({ error: 'Service unavailable in this region' }, { status: 451 });
+  }
+
+  // 轻量 JWT 验证（边缘无状态）
+  if (request.nextUrl.pathname.startsWith('/api/protected')) {
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    try {
+      await jwtVerify(token, SECRET, { clockTolerance: 30 });
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
+    }
+  }
+
+  // 注入 Geo 头供下游使用
+  const response = NextResponse.next();
+  response.headers.set('x-geo-country', country);
+  return response;
+}
+
+export const config = {
+  matcher: ['/api/:path*', '/dashboard/:path*'],
+};
+```
+
+### 4.3 WebAssembly on Edge（Rust + Cloudflare Workers）
+
+```rust
+// src/lib.rs — Rust 模块编译为 WASM
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub fn blur_hash_encode(image: &[u8], width: u32, height: u32) -> String {
+    // 使用 blurhash 算法生成占位符（计算密集型任务）
+    blurhash::encode(4, 3, width, height, image).unwrap_or_default()
+}
+```
+
+```typescript
+// worker.ts — 在 Worker 中调用 WASM 模块
+import blurhashInit from './blurhash_bg.wasm';
+
+// Cloudflare Workers 支持直接导入 WASM 模块（module 模式）
+import * as blurhash from './blurhash.js';
+
+export default {
+  async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+    if (url.pathname === '/blurhash') {
+      const image = await request.arrayBuffer();
+      // 将 heavy computation 下沉到 WASM
+      const hash = blurhash.blur_hash_encode(
+        new Uint8Array(image),
+        800,
+        600
+      );
+      return Response.json({ blurHash: hash });
+    }
+    return new Response('Not Found', { status: 404 });
+  }
+};
+```
+
 ## 5. 边缘状态管理
 
 | 存储类型 | 一致性 | 延迟 | 适用场景 |
@@ -138,6 +219,10 @@ export default {
 
 - [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/)
 - [Vercel Edge Functions](https://vercel.com/docs/functions/edge-functions)
+- [Deno Deploy Documentation](https://docs.deno.com/deploy/)
+- [Fastly Compute Documentation](https://www.fastly.com/documentation/guides/compute/)
 - [WebAssembly on the Edge — Cloudflare](https://developers.cloudflare.com/workers/runtime-apis/webassembly/)
+- [WinterCG — Web-interoperable Runtimes Community Group](https://wintercg.org/)
+- [MDN: Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
 - [QuickJS Documentation](https://bellard.org/quickjs/)
 - [The Edge Computing Landscape — Deno Blog](https://deno.com/blog/the-edge-computing-landscape)

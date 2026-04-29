@@ -121,20 +121,126 @@ async function navigateTo(path: keyof typeof routeMap) {
 }
 ```
 
-### 3.3 常见误区
+### 3.3 高级代码示例
+
+#### Vite / Webpack 中的动态导入模式
+
+```typescript
+// vite-glob-import.ts — 使用 import.meta.glob 批量导入模块
+// Vite 特有：编译时分析 glob 模式，生成懒加载映射
+const modules = import.meta.glob('./locales/*.json');
+// modules = { './locales/en.json': () => import(...), './locales/zh.json': () => import(...) }
+
+async function loadLocale(lang: string) {
+  const loader = modules[`./locales/${lang}.json`];
+  if (!loader) throw new Error(`Locale ${lang} not found`);
+  const mod = await loader();
+  return mod.default;
+}
+
+//  eagerly: true 变体（同步导入所有匹配模块）
+const eagerModules = import.meta.glob('./utils/*.ts', { eager: true });
+// eagerModules 已经是解析后的模块对象
+```
+
+#### 条件 polyfill 加载策略
+
+```typescript
+// polyfill-loader.ts
+async function loadPolyfills() {
+  const polyfills: Promise<unknown>[] = [];
+
+  if (!('IntersectionObserver' in window)) {
+    polyfills.push(import('intersection-observer'));
+  }
+  if (!('ResizeObserver' in window)) {
+    polyfills.push(import('resize-observer-polyfill'));
+  }
+  if (!Promise.withResolvers) {
+    polyfills.push(
+      import('./polyfills/promise-withResolvers.js')
+    );
+  }
+
+  await Promise.all(polyfills);
+  console.log('Polyfills loaded');
+}
+```
+
+#### 构建工具中的魔法注释
+
+```typescript
+// magic-comments.ts — 控制代码分割行为
+// Webpack / Vite / Rollup 支持以下注释
+
+// 指定 chunk 名称（调试与预加载时使用）
+const AdminModule = () => import(
+  /* webpackChunkName: "admin" */
+  /* webpackPrefetch: true */
+  './AdminPanel.js'
+);
+
+// 预加载（浏览器空闲时加载）
+const ChartLib = () => import(
+  /* webpackChunkName: "charts" */
+  /* webpackPreload: true */
+  'chart.js'
+);
+
+// Vite 的注释语法
+const HeavyComponent = () => import(
+  /* @vite-ignore */ // 忽略对该路径的静态分析警告
+  /* webpackIgnore: true */
+  someDynamicPath
+);
+```
+
+#### Node.js ESM 动态导入与 CJS 互操作
+
+```typescript
+// node-interop.ts
+import { createRequire } from 'module';
+import { pathToFileURL } from 'url';
+
+const require = createRequire(import.meta.url);
+
+// 在 ESM 中读取 CJS 包的 package.json
+const pkg = require('some-cjs-lib/package.json');
+
+// 动态导入 CJS 模块（Node ESM 自动处理）
+const cjsMod = await import('some-cjs-lib');
+// cjsMod.default 对应 module.exports
+
+// 从绝对路径动态导入（必须使用 file:// URL）
+const absPath = '/opt/app/plugins/custom.js';
+const plugin = await import(pathToFileURL(absPath).href);
+
+// 条件导入：检测当前运行时是 ESM 还是 CJS
+const isESM = typeof import.meta.url !== 'undefined';
+const config = isESM
+  ? await import('./config.mjs')
+  : require('./config.cjs');
+```
+
+### 3.4 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | ESM 和 CJS 可以随意混用 | 互操作需要特定加载器和转换规则 |
 | 循环依赖会自动解决 | 循环依赖可能导致未初始化访问 |
 
-### 3.4 扩展阅读
+### 3.5 扩展阅读
 
 - [MDN 动态 import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import)
 - [MDN：import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import)
 - [Node.js：ECMAScript Modules](https://nodejs.org/api/esm.html)
 - [Node.js：Modules CommonJS](https://nodejs.org/api/modules.html)
 - [ECMAScript® 2025 — Import Calls](https://tc39.es/ecma262/#sec-import-calls)
+- [Vite: import.meta.glob](https://vitejs.dev/guide/features.html#glob-import)
+- [Webpack: Code Splitting — Dynamic Imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports)
+- [Rollup: Dynamic Import](https://rollupjs.org/tutorial/#code-splitting)
+- [Import Attributes Proposal](https://github.com/tc39/proposal-import-attributes)
+- [Web.dev: Lazy Loading JavaScript](https://web.dev/articles/optimize-lcp#lazy_loading)
 - `10-fundamentals/10.1-language-semantics/06-modules/`
 
 ---

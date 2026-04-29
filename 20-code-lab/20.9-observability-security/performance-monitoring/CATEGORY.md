@@ -74,6 +74,101 @@ async function processLargeArray<T>(items: T[], batchSize: number, processor: (b
 }
 ```
 
+### PerformanceObserver 监控长任务
+
+```typescript
+// 监控主线程阻塞（> 50ms 视为长任务）
+const longTaskObs = new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    console.warn('Long Task detected:', {
+      duration: entry.duration,
+      startTime: entry.startTime,
+      name: entry.name,
+    });
+    // 上报到监控平台
+    reportLongTask(entry);
+  }
+});
+longTaskObs.observe({ entryTypes: ['longtask'] });
+
+// 资源加载瀑布流分析
+const resourceObs = new PerformanceObserver((list) => {
+  const entries = list.getEntries() as PerformanceResourceTiming[];
+  for (const r of entries) {
+    const dns = r.domainLookupEnd - r.domainLookupStart;
+    const tcp = r.connectEnd - r.connectStart;
+    const ttfb = r.responseStart - r.requestStart;
+    const download = r.responseEnd - r.responseStart;
+    console.log(`${r.name}: DNS=${dns}ms TCP=${tcp}ms TTFB=${ttfb}ms DL=${download}ms`);
+  }
+});
+resourceObs.observe({ entryTypes: ['resource'] });
+```
+
+### Node.js Event Loop 延迟监控
+
+```typescript
+import { monitorEventLoopDelay } from 'node:perf_hooks';
+
+const histogram = monitorEventLoopDelay({ resolution: 10 });
+histogram.enable();
+
+setInterval(() => {
+  console.log('Event Loop Delay (p50/p99/max):', {
+    p50: histogram.percentile(50),
+    p99: histogram.percentile(99),
+    max: histogram.max,
+  });
+  histogram.reset();
+}, 5000);
+```
+
+### RUM 采样与分位统计
+
+```typescript
+// rum-collector.ts — 真实用户监控数据采样
+interface RUMEvent {
+  page: string;
+  lcp: number;
+  inp: number;
+  cls: number;
+  ttfb: number;
+  timestamp: number;
+  userAgent: string;
+}
+
+class RUMCollector {
+  private buffer: RUMEvent[] = [];
+  private sampleRate: number;
+
+  constructor(sampleRate = 0.1) {
+    this.sampleRate = sampleRate;
+  }
+
+  shouldSample(): boolean {
+    return Math.random() < this.sampleRate;
+  }
+
+  record(event: RUMEvent): void {
+    if (!this.shouldSample()) return;
+    this.buffer.push(event);
+    if (this.buffer.length >= 20) this.flush();
+  }
+
+  private flush(): void {
+    const payload = JSON.stringify(this.buffer);
+    navigator.sendBeacon('/analytics/rum', payload);
+    this.buffer = [];
+  }
+
+  // 分位统计（离线计算）
+  static percentile(sorted: number[], p: number): number {
+    const idx = Math.ceil((p / 100) * sorted.length) - 1;
+    return sorted[Math.max(0, idx)];
+  }
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -104,6 +199,11 @@ async function processLargeArray<T>(items: T[], batchSize: number, processor: (b
 | Chrome UX Report | 数据集 | [developer.chrome.com/docs/crux](https://developer.chrome.com/docs/crux/) |
 | W3C — User Timing Level 3 | 规范 | [w3.org/TR/user-timing-3/](https://www.w3.org/TR/user-timing-3/) |
 | web.dev — Optimize Long Tasks | 指南 | [web.dev/optimize-long-tasks/](https://web.dev/optimize-long-tasks/) |
+| MDN — PerformanceObserver | 文档 | [developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver) |
+| Node.js — Event Loop | 官方文档 | [nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick) |
+| Resource Timing Level 2 | 规范 | [w3.org/TR/resource-timing-2](https://www.w3.org/TR/resource-timing-2/) |
+| Navigation Timing Level 2 | 规范 | [w3.org/TR/navigation-timing-2](https://www.w3.org/TR/navigation-timing-2/) |
+| Lighthouse Scoring Calculator | 工具 | [googlechrome.github.io/lighthouse/scorecalc](https://googlechrome.github.io/lighthouse/scorecalc/) |
 
 ---
 

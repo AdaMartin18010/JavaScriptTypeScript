@@ -95,6 +95,196 @@ function unify(a: Type, b: Type, subst: Map<string, Type>): boolean {
 }
 ```
 
+### 代码示例：简单类型 λ 演算（Simply Typed Lambda Calculus）
+
+```typescript
+// stlc.ts — 简单类型 λ 演算的类型检查器
+
+type STLCType = { kind: "int" } | { kind: "bool" } | { kind: "arrow"; from: STLCType; to: STLCType };
+
+type STLCTerm =
+  | { kind: "var"; name: string }
+  | { kind: "abs"; param: string; paramType: STLCType; body: STLCTerm }
+  | { kind: "app"; func: STLCTerm; arg: STLCTerm }
+  | { kind: "lit"; value: number | boolean };
+
+class TypeChecker {
+  private env = new Map<string, STLCType>();
+
+  check(term: STLCTerm): STLCType {
+    switch (term.kind) {
+      case "var": {
+        const t = this.env.get(term.name);
+        if (!t) throw new TypeError(`Unbound variable: ${term.name}`);
+        return t;
+      }
+      case "lit":
+        return typeof term.value === "number" ? { kind: "int" } : { kind: "bool" };
+      case "abs": {
+        const old = this.env.get(term.param);
+        this.env.set(term.param, term.paramType);
+        const bodyType = this.check(term.body);
+        if (old) this.env.set(term.param, old);
+        else this.env.delete(term.param);
+        return { kind: "arrow", from: term.paramType, to: bodyType };
+      }
+      case "app": {
+        const funcType = this.check(term.func);
+        const argType = this.check(term.arg);
+        if (funcType.kind !== "arrow") {
+          throw new TypeError(`Expected function, got ${funcType.kind}`);
+        }
+        if (!this.typeEqual(funcType.from, argType)) {
+          throw new TypeError(
+            `Argument type mismatch: expected ${this.typeToString(funcType.from)}, got ${this.typeToString(argType)}`
+          );
+        }
+        return funcType.to;
+      }
+    }
+  }
+
+  private typeEqual(a: STLCType, b: STLCType): boolean {
+    if (a.kind !== b.kind) return false;
+    if (a.kind === "arrow" && b.kind === "arrow") {
+      return this.typeEqual(a.from, b.from) && this.typeEqual(a.to, b.to);
+    }
+    return true;
+  }
+
+  private typeToString(t: STLCType): string {
+    if (t.kind === "int") return "int";
+    if (t.kind === "bool") return "bool";
+    return `(${this.typeToString(t.from)} -> ${this.typeToString(t.to)})`;
+  }
+}
+
+// 使用：λx:int. x + 1 的类型是 int -> int
+const identityInt: STLCTerm = {
+  kind: "abs",
+  param: "x",
+  paramType: { kind: "int" },
+  body: { kind: "var", name: "x" },
+};
+
+const checker = new TypeChecker();
+console.log(checker.typeToString(checker.check(identityInt))); // "(int -> int)"
+```
+
+### 代码示例：TypeScript 类型级编程（类型作为编译期 λ 演算）
+
+```typescript
+// type-level-lambda.ts — TypeScript 类型系统即 λ 演算
+
+// 类型层面的 Church 布尔值
+type True = <T, F>(t: T, f: F) => T;
+type False = <T, F>(t: T, f: F) => F;
+type Bool = <T, F>(t: T, f: F) => T | F;
+
+type If<C extends Bool, T, F> = C extends True ? T : F;
+
+// Church 数值（Peano 编码）
+type Zero = <F, X>(f: F, x: X) => X;
+type Succ<N> = <F, X>(f: F, x: X) => N extends (f: F, x: X) => infer R ? R : never;
+
+// 实用类型构造
+type Equals<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+
+type Not<A extends boolean> = A extends true ? false : true;
+
+type And<A extends boolean, B extends boolean> = A extends true ? (B extends true ? true : false) : false;
+
+// 递归类型：计算元组长度
+type Length<T extends readonly unknown[]> = T["length"];
+
+type Head<T extends readonly unknown[]> = T extends [infer H, ...unknown[]] ? H : never;
+
+type Tail<T extends readonly unknown[]> = T extends [unknown, ...infer R] ? R : [];
+
+// 使用
+type Len3 = Length<[1, 2, 3]>; // 3
+type First = Head<["a", "b", "c"]>; // "a"
+type Rest = Tail<["a", "b", "c"]>; // ["b", "c"]
+```
+
+### 代码示例：Mini-TypeScript 类型检查器核心
+
+```typescript
+// mini-tsc.ts — TypeScript 子集的类型检查器骨架
+
+interface Type {
+  kind: "primitive" | "object" | "union" | "function";
+  name?: string;
+  types?: Type[];       // union
+  params?: Param[];     // function
+  ret?: Type;           // function
+  props?: Property[];   // object
+}
+
+interface Param {
+  name: string;
+  type: Type;
+}
+
+interface Property {
+  name: string;
+  type: Type;
+  optional: boolean;
+}
+
+const tNumber: Type = { kind: "primitive", name: "number" };
+const tString: Type = { kind: "primitive", name: "string" };
+const tBoolean: Type = { kind: "primitive", name: "boolean" };
+
+class MiniTypeChecker {
+  private scopes: Map<string, Type>[] = [new Map()];
+
+  enterScope(): void { this.scopes.push(new Map()); }
+  exitScope(): void { if (this.scopes.length > 1) this.scopes.pop(); }
+
+  define(name: string, type: Type): void {
+    this.scopes[this.scopes.length - 1].set(name, type);
+  }
+
+  lookup(name: string): Type | undefined {
+    for (let i = this.scopes.length - 1; i >= 0; i--) {
+      const t = this.scopes[i].get(name);
+      if (t) return t;
+    }
+    return undefined;
+  }
+
+  isAssignable(from: Type, to: Type): boolean {
+    if (from.kind === "primitive" && to.kind === "primitive") {
+      return from.name === to.name;
+    }
+    if (to.kind === "union") {
+      return to.types!.some((t) => this.isAssignable(from, t));
+    }
+    if (from.kind === "function" && to.kind === "function") {
+      if (from.params!.length !== to.params!.length) return false;
+      return (
+        from.params!.every((p, i) => this.isAssignable(to.params![i].type, p.type))
+        && this.isAssignable(from.ret!, to.ret!)
+      );
+    }
+    if (from.kind === "object" && to.kind === "object") {
+      return to.props!.every((tp) => {
+        const fp = from.props!.find((p) => p.name === tp.name);
+        if (!fp) return tp.optional;
+        return this.isAssignable(fp.type, tp.type);
+      });
+    }
+    return false;
+  }
+}
+
+// 验证
+const checker = new MiniTypeChecker();
+checker.define("x", tNumber);
+console.log(checker.lookup("x")?.name); // "number"
+```
+
 ---
 
 > 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
@@ -103,13 +293,16 @@ function unify(a: Type, b: Type, subst: Map<string, Type>): boolean {
 
 | 资源 | 类型 | 链接 |
 |------|------|------|
-| TAPL | 书籍 | [www.cis.upenn.edu/~bcpierce/tapl](https://www.cis.upenn.edu/~bcpierce/tapl/) |
-| SF (Software Foundations) | 课程 | [softwarefoundations.cis.upenn.edu](https://softwarefoundations.cis.upenn.edu/) |
-| Agda Standard Library | 文档 | [agda.github.io/agda-stdlib](https://agda.github.io/agda-stdlib/) |
-| TypeScript Compiler API | 参考 | [github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) |
-| POPL — Principles of Programming Languages | 会议 | [sigplan.org/Conferences/POPL](https://www.sigplan.org/Conferences/POPL/) |
-| ICFP — International Conference on Functional Programming | 会议 | [icfp.sigplan.org](https://icfp.sigplan.org/) |
-| Lean Prover — Theorem Proving | 文档 | [lean-lang.org/theorem_proving/](https://lean-lang.org/theorem_proving/) |
+| TAPL | 书籍 | www.cis.upenn.edu/~bcpierce/tapl |
+| SF (Software Foundations) | 课程 | softwarefoundations.cis.upenn.edu |
+| Agda Standard Library | 文档 | agda.github.io/agda-stdlib |
+| TypeScript Compiler API | 参考 | github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API |
+| POPL — Principles of Programming Languages | 会议 | sigplan.org/Conferences/POPL |
+| ICFP — International Conference on Functional Programming | 会议 | icfp.sigplan.org |
+| Lean Prover — Theorem Proving | 文档 | lean-lang.org/theorem_proving |
+| Type Challenges | 练习 | github.com/type-challenges/type-challenges |
+| PLFA — Programming Language Foundations in Agda | 书籍 | plfa.inf.ed.ac.uk |
+| Cornell CS 4110 | 课程 | cs.cornell.edu/courses/cs4110 |
 
 ---
 

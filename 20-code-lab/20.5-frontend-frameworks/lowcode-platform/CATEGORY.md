@@ -108,6 +108,95 @@ export function safeEvaluate(
 }
 ```
 
+### 工作流 DAG 拓扑排序执行
+
+```typescript
+// workflow-dag.ts
+type NodeId = string;
+
+interface WorkflowNode {
+  id: NodeId;
+  execute: () => Promise<void>;
+  dependencies: NodeId[];
+}
+
+export async function executeWorkflow(nodes: WorkflowNode[]): Promise<void> {
+  const inDegree = new Map<NodeId, number>();
+  const adj = new Map<NodeId, NodeId[]>();
+  const nodeMap = new Map<NodeId, WorkflowNode>();
+
+  for (const n of nodes) {
+    inDegree.set(n.id, n.dependencies.length);
+    nodeMap.set(n.id, n);
+    for (const dep of n.dependencies) {
+      if (!adj.has(dep)) adj.set(dep, []);
+      adj.get(dep)!.push(n.id);
+    }
+  }
+
+  const queue = nodes.filter((n) => n.dependencies.length === 0).map((n) => n.id);
+  let processed = 0;
+
+  while (queue.length) {
+    const id = queue.shift()!;
+    await nodeMap.get(id)!.execute();
+    processed++;
+
+    for (const next of adj.get(id) ?? []) {
+      inDegree.set(next, inDegree.get(next)! - 1);
+      if (inDegree.get(next) === 0) queue.push(next);
+    }
+  }
+
+  if (processed !== nodes.length) {
+    throw new Error('Workflow contains a cycle');
+  }
+}
+```
+
+### JSON Schema 表单校验集成（ajv）
+
+```typescript
+// form-validation.ts
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+
+const ajv = new Ajv({ allErrors: true });
+addFormats(ajv);
+
+export function validateFormData<T>(schema: object, data: unknown): { valid: boolean; errors?: string[] } {
+  const validate = ajv.compile<T>(schema);
+  const valid = validate(data);
+  return {
+    valid,
+    errors: valid ? undefined : validate.errors?.map((e) => `${e.instancePath} ${e.message}`),
+  };
+}
+```
+
+### React 代码生成模板
+
+```typescript
+// codegen-react.ts
+interface PageSchema {
+  componentName: string;
+  imports: string[];
+  jsx: string;
+}
+
+export function generateReactComponent(schema: PageSchema): string {
+  return `import React from 'react';
+${schema.imports.map((i) => `import ${i} from './${i}';`).join('\n')}
+
+export default function ${schema.componentName}() {
+  return (
+${schema.jsx}
+  );
+}
+`;
+}
+```
+
 ## 关联模块
 
 - `56-code-generation` — 代码生成
@@ -126,6 +215,10 @@ export function safeEvaluate(
 | Designable | GitHub | [github.com/alibaba/designable](https://github.com/alibaba/designable) — 低代码设计器 |
 | LogicFlow | 文档 | [site.logic-flow.cn](https://site.logic-flow.cn) — 流程图引擎 |
 | CodeSandbox / Sandpack | 文档 | [sandpack.codesandbox.io/docs](https://sandpack.codesandbox.io/docs) |
+| Low-Code Engine — Ant Design | 文档 | [lowcode-engine.cn](https://lowcode-engine.cn) |
+| Appsmith | 文档 | [docs.appsmith.com](https://docs.appsmith.com) |
+| ToolJet | 文档 | [docs.tooljet.com](https://docs.tooljet.com) |
+| Ajv — JSON Schema Validator | 文档 | [ajv.js.org](https://ajv.js.org/) |
 
 ---
 

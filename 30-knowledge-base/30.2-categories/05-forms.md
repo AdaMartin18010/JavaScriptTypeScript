@@ -89,6 +89,179 @@ export async function submitForm(formData: FormData) {
 
 ---
 
+## 代码示例：React Hook Form + Zod Resolver
+
+```tsx
+// react-hook-form-example.tsx
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const schema = z.object({
+  username: z.string().min(3, '用户名至少 3 个字符'),
+  email: z.string().email('请输入有效邮箱'),
+  age: z.coerce.number().min(18, '必须年满 18 岁'),
+  agreeTerms: z.boolean().refine((val) => val === true, '必须同意条款'),
+});
+
+type FormData = z.infer<typeof schema>;
+
+export function RegistrationForm() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>({
+    resolver: zodResolver(schema),
+    mode: 'onBlur',
+  });
+
+  const onSubmit = async (data: FormData) => {
+    await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <div>
+        <label htmlFor="username">用户名</label>
+        <input id="username" {...register('username')} aria-invalid={!!errors.username} />
+        {errors.username && <span role="alert">{errors.username.message}</span>}
+      </div>
+
+      <div>
+        <label htmlFor="email">邮箱</label>
+        <input id="email" type="email" {...register('email')} aria-invalid={!!errors.email} />
+        {errors.email && <span role="alert">{errors.email.message}</span>}
+      </div>
+
+      <div>
+        <label htmlFor="age">年龄</label>
+        <input id="age" type="number" {...register('age')} aria-invalid={!!errors.age} />
+        {errors.age && <span role="alert">{errors.age.message}</span>}
+      </div>
+
+      <div>
+        <label>
+          <input type="checkbox" {...register('agreeTerms')} />
+          同意服务条款
+        </label>
+        {errors.agreeTerms && <span role="alert">{errors.agreeTerms.message}</span>}
+      </div>
+
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? '提交中...' : '注册'}
+      </button>
+    </form>
+  );
+}
+```
+
+## 代码示例：TanStack Form 框架无关用法
+
+```tsx
+// tanstack-form-example.tsx
+import { useForm } from '@tanstack/react-form';
+import { zodValidator } from '@tanstack/zod-form-adapter';
+import { z } from 'zod';
+
+export function TanStackFormExample() {
+  const form = useForm({
+    defaultValues: { firstName: '', lastName: '' },
+    validatorAdapter: zodValidator,
+    onSubmit: async ({ value }) => {
+      console.log('Submitted:', value);
+    },
+  });
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        form.handleSubmit();
+      }}
+    >
+      <form.Field
+        name="firstName"
+        validators={{
+          onChange: z.string().min(2, '至少 2 个字符'),
+        }}
+        children={(field) => (
+          <div>
+            <label htmlFor={field.name}>名字</label>
+            <input
+              id={field.name}
+              name={field.name}
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+            />
+            {field.state.meta.errors.length > 0 && (
+              <em role="alert">{field.state.meta.errors.join(', ')}</em>
+            )}
+          </div>
+        )}
+      />
+
+      <form.Subscribe
+        selector={(state) => [state.canSubmit, state.isSubmitting]}
+        children={([canSubmit, isSubmitting]) => (
+          <button type="submit" disabled={!canSubmit}>
+            {isSubmitting ? '...' : '提交'}
+          </button>
+        )}
+      />
+    </form>
+  );
+}
+```
+
+## 代码示例：原生 FormData + Constraint Validation API
+
+```typescript
+// native-form-validation.ts — 零依赖渐进增强
+export function enhanceForm(form: HTMLFormElement): () => void {
+  const controller = new AbortController();
+
+  form.addEventListener(
+    'submit',
+    async (e) => {
+      e.preventDefault();
+
+      // 使用原生 Constraint Validation API
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const formData = new FormData(form);
+      const submitter = (e as SubmitEvent).submitter as HTMLButtonElement | null;
+
+      try {
+        submitter && (submitter.disabled = true);
+        const res = await fetch(form.action, {
+          method: form.method,
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        form.dispatchEvent(new CustomEvent('form-success', { detail: await res.json() }));
+      } catch (err) {
+        form.dispatchEvent(new CustomEvent('form-error', { detail: err }));
+      } finally {
+        submitter && (submitter.disabled = false);
+      }
+    },
+    { signal: controller.signal }
+  );
+
+  return () => controller.abort();
+}
+```
+
 ## 最佳实践
 
 1. **校验分层**：HTML5 原生验证 → JS 客户端校验 → 服务端最终校验
@@ -106,6 +279,14 @@ export async function submitForm(formData: FormData) {
 - [FormKit Documentation](https://formkit.com/)
 - [Zod Documentation](https://zod.dev/)
 - [Next.js Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations)
+- [HTML Spec — Form Submission](https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#form-submission)
+- [MDN — FormData](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
+- [MDN — Constraint Validation](https://developer.mozilla.org/en-US/docs/Web/HTML/Constraint_validation)
+- [web.dev — Sign-in Form Best Practices](https://web.dev/articles/sign-in-form-best-practices)
+- [WAI-ARIA — Form Patterns](https://www.w3.org/WAI/ARIA/apg/patterns/forms/)
+- [Conform — Type-safe Form Validation](https://conform.guide/)
+- [Superforms — SvelteKit Forms](https://superforms.rocks/)
+- [Modular Forms — Qwik/Solid/Preact](https://modularforms.dev/)
 
 ---
 

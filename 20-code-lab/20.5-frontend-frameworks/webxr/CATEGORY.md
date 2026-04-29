@@ -103,6 +103,89 @@ export async function placeAnchorAtHit(
 }
 ```
 
+### 手部关节追踪（Hand Tracking）
+
+```typescript
+// 03-hand-tracking.ts
+export function getHandJoints(
+  frame: XRFrame,
+  referenceSpace: XRReferenceSpace,
+  handSource: XRInputSource
+): Map<string, XRPose> | null {
+  if (!handSource.hand) return null;
+
+  const joints = new Map<string, XRPose>();
+  for (const [jointName, jointSpace] of handSource.hand.entries()) {
+    const pose = frame.getPose(jointSpace, referenceSpace);
+    if (pose) {
+      joints.set(jointName, pose);
+    }
+  }
+  return joints;
+}
+
+// 手势识别：判断拇指与食指是否捏合
+export function isPinchGesture(
+  joints: Map<string, XRPose>
+): boolean {
+  const thumbTip = joints.get('thumb-tip');
+  const indexTip = joints.get('index-finger-tip');
+  if (!thumbTip || !indexTip) return false;
+
+  const dx = thumbTip.transform.position.x - indexTip.transform.position.x;
+  const dy = thumbTip.transform.position.y - indexTip.transform.position.y;
+  const dz = thumbTip.transform.position.z - indexTip.transform.position.z;
+  const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+  return distance < 0.02; // 2cm 阈值
+}
+```
+
+### XR 输入源处理（Select 事件）
+
+```typescript
+// xr-input.ts
+export function handleSelectEvent(
+  session: XRSession,
+  refSpace: XRReferenceSpace,
+  onSelect: (pose: XRPose) => void
+): void {
+  session.addEventListener('select', (event) => {
+    const frame = event.frame;
+    const refSpace = (event as any).referenceSpace || refSpace;
+    const pose = frame.getPose(event.inputSource.targetRaySpace, refSpace);
+    if (pose) {
+      onSelect(pose);
+    }
+  });
+}
+```
+
+### WebGL 层与会话清理
+
+```typescript
+// xr-cleanup.ts
+export function createXRLayer(
+  session: XRSession,
+  gl: WebGL2RenderingContext
+): XRWebGLLayer {
+  return new XRWebGLLayer(session, gl, {
+    antialias: true,
+    alpha: false,
+  });
+}
+
+export function endXRSession(session: XRSession, gl?: WebGL2RenderingContext): void {
+  session.end().then(() => {
+    if (gl) {
+      const canvas = gl.canvas as HTMLCanvasElement;
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientHeight;
+    }
+    console.log('[WebXR] Session ended');
+  });
+}
+```
+
 ## 关联模块
 
 - `58-data-visualization` — 数据可视化（Canvas/SVG 渲染）
@@ -119,6 +202,10 @@ export async function placeAnchorAtHit(
 | WebXR Samples | 示例 | [immersive-web.github.io/webxr-samples](https://immersive-web.github.io/webxr-samples) |
 | Babylon.js Docs | 文档 | [doc.babylonjs.com](https://doc.babylonjs.com) |
 | Google AR & VR | 指南 | [developers.google.com/ar/develop/webxr](https://developers.google.com/ar/develop/webxr) |
+| WebXR Hand Input Module | 规范草案 | [immersive-web.github.io/webxr-hand-input/](https://immersive-web.github.io/webxr-hand-input/) |
+| OpenXR Specification | 规范 | [www.khronos.org/openxr/](https://www.khronos.org/openxr/) |
+| WebXR Hit Test Module | 规范 | [immersive-web.github.io/hit-test/](https://immersive-web.github.io/hit-test/) |
+| Can I Use — WebXR | 兼容性 | [caniuse.com/webxr](https://caniuse.com/webxr) |
 
 ---
 

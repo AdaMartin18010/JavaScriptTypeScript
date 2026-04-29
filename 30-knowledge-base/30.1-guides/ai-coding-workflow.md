@@ -99,6 +99,23 @@ describe('processUser', () => {
 - 生成变更摘要（Commit Message）
 - 自动检测安全漏洞（XSS、注入）
 
+### AI 审查 Prompt 模板
+
+```markdown
+## Role
+You are a senior security-focused code reviewer.
+
+## Context
+Repository: Next.js 15 + TypeScript + Prisma
+File to review: src/app/api/orders/route.ts
+
+## Tasks
+1. Identify SQL injection, XSS, or auth bypass risks.
+2. Check for missing input validation.
+3. Suggest performance improvements (N+1 queries, missing indexes).
+4. Output findings in Markdown with severity (Critical / Warning / Info).
+```
+
 ### 3. 测试生成
 
 ```bash
@@ -108,6 +125,52 @@ claude "为 src/utils/date.ts 生成 vitest 测试用例，覆盖边界条件"
 # Cursor  Composer 模式：多文件测试生成
 # 提示："为 src/services/ 下所有 API 客户端生成 MSW mock 和测试"
 ```
+
+---
+
+## AI 项目上下文配置
+
+### `.cursorrules` 示例（Cursor 项目级规则）
+
+```yaml
+# .cursorrules — Cursor IDE 项目级上下文配置
+rules:
+  - always_use_typescript_strict: true
+  - prefer_explicit_return_types: true
+  - testing_framework: vitest
+  - mocking_library: msw
+  - orm: prisma
+  - ui_framework: react-19
+  - style_guide: |
+      - Use functional components with hooks
+      - Prefer `const` arrow functions for event handlers
+      - Use Zod for all runtime validation
+      - Use `next-safe-action` for Server Actions
+      - Never use `any` without `@ts-expect-error` comment
+examples:
+  - prompt: "Create a new API route"
+    expected_pattern: "app/api/[resource]/route.ts with GET/POST handlers, Zod validation, Prisma query"
+```
+
+### MCP (Model Context Protocol) 工具调用
+
+```typescript
+// mcp-server-config.json — 连接外部数据源到 AI 工作流
+{
+  "mcpServers": {
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost/mydb"]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/project/src"]
+    }
+  }
+}
+```
+
+通过 MCP，AI Agent 可直接查询数据库schema、读取文件系统，减少幻觉。
 
 ---
 
@@ -132,6 +195,10 @@ claude "为 src/utils/date.ts 生成 vitest 测试用例，覆盖边界条件"
 - [Claude Code — Agentic Coding](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview)
 - [Ollama — Run LLMs locally](https://ollama.com/)
 - [Aider — AI pair programming in your terminal](https://aider.chat/)
+- [Model Context Protocol (MCP) — Anthropic](https://modelcontextprotocol.io/)
+- [OpenAI API Documentation](https://platform.openai.com/docs/)
+- [Vercel AI SDK](https://sdk.vercel.ai/docs)
+- [Cursor Rules Documentation](https://docs.cursor.com/context/rules)
 
 ---
 

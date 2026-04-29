@@ -92,6 +92,82 @@ app.use(secureHeaders({
 
 ---
 
+## 扩展代码示例
+
+### Zod 输入验证与反序列化防护
+
+```typescript
+import { z } from 'zod';
+
+// 严格 Schema 防止不安全的反序列化（OWASP #5）
+const UserPreferencesSchema = z.object({
+  theme: z.enum(['light', 'dark', 'system']),
+  notifications: z.boolean().default(true),
+  // 显式拒绝未知字段，防止批量赋值
+}).strict();
+
+export function parsePreferences(input: unknown) {
+  return UserPreferencesSchema.parse(input); // 失败时抛出 ZodError
+}
+
+// 用于 API 路由
+app.post('/api/preferences', async (c) => {
+  try {
+    const body = parsePreferences(await c.req.json());
+    await db.preferences.upsert({ where: { userId: c.get('userId') }, data: body });
+    return c.json({ ok: true });
+  } catch (e) {
+    return c.json({ error: 'Invalid input' }, 400);
+  }
+});
+```
+
+### bcrypt 密码哈希示例（Node.js）
+
+```typescript
+import bcrypt from 'bcrypt';
+
+const SALT_ROUNDS = 12; // 2026 年推荐 ≥12
+
+export async function hashPassword(plain: string): Promise<string> {
+  return bcrypt.hash(plain, SALT_ROUNDS);
+}
+
+export async function verifyPassword(plain: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(plain, hash);
+}
+
+// 注册流程
+app.post('/register', async (c) => {
+  const { email, password } = await c.req.json();
+  const passwordHash = await hashPassword(password);
+  // 存储 passwordHash，禁止存储明文或简单 MD5
+  await db.user.create({ data: { email, passwordHash } });
+  return c.json({ ok: true }, 201);
+});
+```
+
+### SameSite Strict Cookie 设置示例
+
+```typescript
+import { setCookie } from 'hono/cookie';
+
+// 登录后设置安全 Cookie
+app.post('/login', async (c) => {
+  const sessionToken = await createSession(userId);
+  setCookie(c, 'session', sessionToken, {
+    httpOnly: true,      // 禁止 JavaScript 访问（防 XSS）
+    secure: true,        // 仅 HTTPS 传输
+    sameSite: 'Strict',  // 禁止跨站发送（防 CSRF）
+    maxAge: 60 * 60 * 24 * 7, // 7 天
+    path: '/',
+  });
+  return c.json({ ok: true });
+});
+```
+
+---
+
 ## 最佳实践
 
 1. **零信任架构**：每个请求独立校验身份和权限，不信任内部网络
@@ -107,9 +183,15 @@ app.use(secureHeaders({
 
 - [OWASP Top 10 (2025)](https://owasp.org/Top10/)
 - [OWASP Cheat Sheet Series](https://cheatsheetseries.owasp.org/)
+- [OWASP Cheat Sheet: Password Storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
+- [OWASP Cheat Sheet: Node.js Security](https://cheatsheetseries.owasp.org/cheatsheets/Nodejs_Security_Cheat_Sheet.html)
+- [NIST SP 800-63B — Digital Identity Guidelines](https://pages.nist.gov/800-63-3/sp800-63b.html)
 - [npm Security Best Practices](https://docs.npmjs.com/security)
+- [Snyk Vulnerability Database](https://security.snyk.io/)
 - [Sigstore / Cosign](https://www.sigstore.dev/)
+- [OpenJS Foundation: Node.js Security Best Practices](https://nodejs.org/en/docs/guides/security/)
 - [Cloudflare Security Documentation](https://developers.cloudflare.com/security/)
+- [Next.js Security Guide](https://nextjs.org/docs/app/building-your-application/authentication#security)
 - [React Server Components Security Guide](https://nextjs.org/docs/app/building-your-application/rendering/server-components#security-considerations)
 
 ---

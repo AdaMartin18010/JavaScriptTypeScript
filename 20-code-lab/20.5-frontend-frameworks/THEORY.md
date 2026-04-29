@@ -24,6 +24,8 @@
 | 响应式系统 | 依赖追踪与自动更新 | reactivity.ts |
 | 虚拟 DOM | 内存中的 UI 表示层，diff 后最小化 DOM 操作 | vdom.ts |
 | 组件化 | 将 UI 拆分为独立、可复用的功能单元 | component.ts |
+| 服务端组件 | 在服务端完成渲染，减少客户端 JS 体积 | server-components.ts |
+| 水合（Hydration） | 将静态 HTML 与客户端状态树关联的过程 | hydration.ts |
 
 ---
 
@@ -124,6 +126,73 @@ counter.setState({ count: 1 });
 counter.setState({ count: 2 });
 ```
 
+#### 服务端组件（RSC）概念示例
+
+```typescript
+// server-component.ts
+// React Server Components 概念：在服务端运行，不打包到客户端
+import { db } from './db';
+
+interface UserProfileProps {
+  userId: string;
+}
+
+// 此组件仅在服务端执行，可直接访问数据库
+export default async function UserProfile({ userId }: UserProfileProps) {
+  const user = await db.users.findById(userId);
+  return (
+    <section>
+      <h1>{user.name}</h1>
+      <p>Joined: {user.createdAt.toDateString()}</p>
+    </section>
+  );
+}
+```
+
+#### 水合（Hydration）与流式 SSR
+
+```typescript
+// hydration-strategy.ts
+// 框架内部的水合入口示意（概念代码）
+function hydrateRoot(rootElement: HTMLElement, vnode: VNode) {
+  // 1. 重建虚拟 DOM 树
+  const vdom = buildVDOM(rootElement);
+  // 2. 附加事件监听器
+  attachEventListeners(rootElement, vnode);
+  // 3. 注册响应式订阅，使后续更新走客户端路径
+  enableClientReactivity(vnode);
+  console.log('[Hydration] complete');
+}
+```
+
+#### 编译优化：VNode 提升与静态节点标记
+
+```typescript
+// compiler-optimization.ts
+// Vue / Svelte 编译器会执行的常见优化（概念代码）
+
+interface VNode {
+  type: string | Function;
+  props: Record<string, any>;
+  children: VNode[];
+  patchFlag?: number; // Vue: 1=TEXT, 2=CLASS, 4=STYLE, 8=PROPS...
+  dynamicProps?: string[];
+}
+
+// 编译器生成：标记动态部分，diff 时跳过静态子树
+function createOptimizedVNode(): VNode {
+  return {
+    type: 'div',
+    props: { id: 'app' },
+    children: [
+      { type: 'h1', props: {}, children: [], patchFlag: 0 }, // 静态节点
+      { type: 'p', props: {}, children: [], patchFlag: 1 },  // 仅文本动态
+    ],
+    patchFlag: 0,
+  };
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -131,13 +200,19 @@ counter.setState({ count: 2 });
 | 虚拟 DOM 总是最快 | 极端简单场景下直接 DOM 操作可能更优；Svelte 编译时方案跳过虚拟 DOM |
 | 框架选择决定性能上限 | 开发者对框架的理解和使用方式更重要 |
 | React 是唯一工业标准 | Vue 与 Angular 在企业级市场同样占主导；Svelte 在嵌入式/低功耗场景增长 |
+| 服务端组件等同于 SSR | RSC 是服务端运行组件的架构，SSR 是将结果序列化为 HTML；二者可叠加 |
 
 ### 3.3 扩展阅读
 
 - [React — Official Docs](https://react.dev/)
+- [React Server Components — RFC](https://github.com/reactjs/rfcs/blob/main/text/0188-server-components.md)
 - [Vue — Guide](https://vuejs.org/guide/introduction.html)
+- [Vue Vapor Mode — 无虚拟 DOM 实验分支](https://github.com/vuejs/core-vapor)
 - [Svelte — Tutorial](https://svelte.dev/tutorial)
+- [Svelte 5 Runes — Docs](https://svelte.dev/docs/runes)
 - [Angular — Docs](https://angular.dev/)
+- [Angular Signals](https://angular.dev/guide/signals)
+- [Web Components — MDN](https://developer.mozilla.org/en-US/docs/Web/Web_Components)
 - [State of JS 2024 — Front-end Frameworks](https://stateofjs.com/en-US/other-tools/front_end_frameworks)
 - `20.5-frontend-frameworks/`
 

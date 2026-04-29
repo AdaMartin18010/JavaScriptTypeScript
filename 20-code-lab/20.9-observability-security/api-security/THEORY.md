@@ -1,4 +1,4 @@
-﻿# API 安全 — 理论基础
+# API 安全 — 理论基础
 
 ## 1. OWASP API Security Top 10
 
@@ -28,6 +28,7 @@
 | **主流实现** | Auth0、Keycloak、Okta | 同 OAuth 2.0 | Istio、Linkerd、AWS ALB | jose、jsonwebtoken |
 
 > **选型建议**：
+>
 > - 用户登录/SSO → **OIDC**
 > - 第三方 API 接入 → **OAuth 2.0 + PKCE**
 > - 服务网格内部通信 → **mTLS**
@@ -115,6 +116,43 @@ app.get('/api/admin/users', async (c) => {
 - **文件上传**: 限制类型、大小，存储在非执行目录，重命名文件
 - **ID 格式**: 使用 UUID 替代自增 ID，防止枚举攻击
 
+### 5.1 Zod Schema 验证中间件示例
+
+```typescript
+import { z } from 'zod';
+import { Hono } from 'hono';
+import { validator } from 'hono/validator';
+
+const app = new Hono();
+
+// 定义严格的输入 Schema
+const CreateUserSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1).max(100),
+  age: z.number().int().min(0).max(150).optional(),
+  role: z.enum(['user', 'admin']).default('user'), // 防止批量赋值（API6 防护）
+});
+
+type CreateUserInput = z.infer<typeof CreateUserSchema>;
+
+app.post(
+  '/api/users',
+  validator('json', (value, c) => {
+    const parsed = CreateUserSchema.safeParse(value);
+    if (!parsed.success) {
+      return c.json({ error: 'Invalid input', issues: parsed.error.issues }, 400);
+    }
+    return parsed.data;
+  }),
+  async (c) => {
+    const body = c.req.valid('json');
+    // body 已类型安全且通过白名单校验
+    const user = await db.user.create({ data: body });
+    return c.json(user, 201);
+  }
+);
+```
+
 ## 6. Rate Limiting
 
 | 策略 | 粒度 | 算法 |
@@ -122,6 +160,56 @@ app.get('/api/admin/users', async (c) => {
 | 固定窗口 | 每分钟/小时 | 简单计数器 |
 | 滑动窗口 | 动态窗口 | 令牌桶 / 漏桶 |
 | 自适应 | 用户行为 | 机器学习异常检测 |
+
+### 6.1 Token Bucket 限流实现（内存版）
+
+```typescript
+// utils/rateLimiter.ts
+interface Bucket {
+  tokens: number;
+  lastRefill: number;
+}
+
+class TokenBucketLimiter {
+  private buckets = new Map<string, Bucket>();
+  constructor(
+    private capacity: number,
+    private refillRatePerSec: number
+  ) {}
+
+  allow(key: string): boolean {
+    const now = Date.now();
+    let bucket = this.buckets.get(key);
+
+    if (!bucket) {
+      bucket = { tokens: this.capacity - 1, lastRefill: now };
+      this.buckets.set(key, bucket);
+      return true;
+    }
+
+    const elapsed = (now - bucket.lastRefill) / 1000;
+    bucket.tokens = Math.min(this.capacity, bucket.tokens + elapsed * this.refillRatePerSec);
+    bucket.lastRefill = now;
+
+    if (bucket.tokens >= 1) {
+      bucket.tokens -= 1;
+      return true;
+    }
+    return false;
+  }
+}
+
+// Hono 中间件应用
+const limiter = new TokenBucketLimiter(100, 10); // 容量 100，每秒补充 10
+
+app.use('/api/*', async (c, next) => {
+  const key = c.req.header('x-api-key') || c.req.ip;
+  if (!limiter.allow(key)) {
+    return c.json({ error: 'Rate limit exceeded' }, 429);
+  }
+  await next();
+});
+```
 
 ## 7. 与相邻模块的关系
 
@@ -132,7 +220,16 @@ app.get('/api/admin/users', async (c) => {
 ## 参考链接
 
 - [OWASP API Security Top 10 2023](https://owasp.org/www-project-api-security/)
+- [OAuth 2.1 Specification — IETF](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1)
+- [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html)
 - [OAuth 2.0 for Browser-Based Apps — IETF](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-browser-based-apps)
-- [JSON Web Token (JWT) Best Current Practices — RFC 8725](https://datatracker.ietf.org/doc/html/rfc8725)
+- [JSON Web Token (JWT) — RFC 7519](https://datatracker.ietf.org/doc/html/rfc7519)
+- [JSON Web Token Best Current Practices — RFC 8725](https://datatracker.ietf.org/doc/html/rfc8725)
+- [Proof Key for Code Exchange by OAuth Public Clients — RFC 7636](https://datatracker.ietf.org/doc/html/rfc7636)
+- [NIST SP 800-63B — Digital Identity Guidelines](https://pages.nist.gov/800-63-3/sp800-63b.html)
 - [JWT.io Debugger](https://jwt.io/)
-- [OWASP Cheat Sheet Series: JWT Security](https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html)
+- [OWASP Cheat Sheet: Input Validation](https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html)
+- [OWASP Cheat Sheet: Rate Limiting](https://cheatsheetseries.owasp.org/cheatsheets/Rate_Limiting_Cheat_Sheet.html)
+- [Zod Documentation](https://zod.dev/)
+- [Express Rate Limit — npm](https://www.npmjs.com/package/express-rate-limit)
+- [OWASP Cheat Sheet: JWT Security](https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html)

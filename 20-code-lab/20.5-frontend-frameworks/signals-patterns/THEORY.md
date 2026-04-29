@@ -24,6 +24,8 @@
 | 响应式系统 | 依赖追踪与自动更新 | reactivity.ts |
 | 细粒度订阅 | 仅追踪最小依赖单元 | fine-grained.ts |
 | 脏检查 | 轮询比对旧值与新值 | dirty-check.ts |
+| 批处理（Batch） | 将多次写操作合并为单次更新传播 | batch.ts |
+| Memo（派生） | 基于依赖自动缓存计算结果 | memo.ts |
 
 ---
 
@@ -65,8 +67,8 @@ let activeEffect: EffectFn | null = null;
 const effectStack: EffectFn[] = [];
 
 class Signal<T> {
-  private _value: T;
-  private _deps = new Set<EffectFn>();
+  protected _value: T;
+  protected _deps = new Set<EffectFn>();
 
   constructor(v: T) {
     this._value = v;
@@ -130,6 +132,93 @@ console.log('--- update lastName ---');
 lastName.value = 'Hopper';   // 触发 effect
 ```
 
+#### Preact Signals 使用示例
+
+```typescript
+// preact-signals-demo.ts
+import { signal, computed, effect, batch } from '@preact/signals-core';
+
+const count = signal(0);
+const doubled = computed(() => count.value * 2);
+
+effect(() => {
+  console.log('count =', count.value, 'doubled =', doubled.value);
+});
+
+// 批量更新，仅触发一次 effect
+batch(() => {
+  count.value = 1;
+  count.value = 2;
+});
+// 输出一次: count = 2, doubled = 4
+```
+
+#### SolidJS Signals 与清理
+
+```typescript
+// solid-signals-demo.ts
+import { createSignal, createEffect, createMemo, onCleanup } from 'solid-js';
+
+const [count, setCount] = createSignal(0);
+const doubled = createMemo(() => count() * 2);
+
+createEffect(() => {
+  console.log('doubled:', doubled());
+  onCleanup(() => {
+    console.log('cleanup previous effect run');
+  });
+});
+
+setCount(1); // 触发 effect 并先执行 cleanup
+setCount(2);
+```
+
+#### Angular Signals（v16+）
+
+```typescript
+// angular-signals-demo.ts
+import { signal, computed, effect } from '@angular/core';
+
+const firstName = signal('Alan');
+const lastName = signal('Turing');
+const fullName = computed(() => `${firstName()} ${lastName()}`);
+
+effect(() => {
+  console.log('Full name:', fullName());
+});
+
+firstName.set('Grace');
+```
+
+#### 批处理与调度器
+
+```typescript
+// batch-scheduler.ts
+let batchedEffects = new Set<EffectFn>();
+let scheduled = false;
+
+function scheduleEffect(fn: EffectFn) {
+  batchedEffects.add(fn);
+  if (scheduled) return;
+  scheduled = true;
+  queueMicrotask(() => {
+    scheduled = false;
+    for (const f of batchedEffects) f();
+    batchedEffects.clear();
+  });
+}
+
+class BatchedSignal<T> extends Signal<T> {
+  set value(v: T) {
+    if (Object.is(this._value, v)) return;
+    this._value = v;
+    for (const fn of this._deps) {
+      scheduleEffect(fn);
+    }
+  }
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -137,6 +226,7 @@ lastName.value = 'Hopper';   // 触发 effect
 | Pull 一定比 Push 简单 | React 的调度与并发模式使 Pull 模型同样复杂 |
 | Signal 必然无内存泄漏 | 持久订阅需正确清理（如组件卸载时），否则 effect 会堆积 |
 | 所有框架信号实现相同 | Solid 使用编译时优化，Preact 使用运行时链表，实现差异显著 |
+| 忽略 Batch 的必要性 | 高频写入无 batch 会导致 O(n²) 级 effect 重算 |
 
 ### 3.3 扩展阅读
 
@@ -144,6 +234,10 @@ lastName.value = 'Hopper';   // 触发 effect
 - [Push vs Pull in Reactive Systems](https://www.reactively.dev/blog/why-use-reactively)
 - [Vue Reactivity Deep Dive](https://vuejs.org/guide/extras/reactivity-in-depth.html)
 - [TC39 Signals Proposal](https://github.com/tc39/proposal-signals)
+- [Preact Signals Documentation](https://preactjs.com/guide/v10/signals/)
+- [SolidJS Reactivity — Docs](https://docs.solidjs.com/concepts/signals)
+- [Angular Signals Guide](https://angular.dev/guide/signals)
+- [React Compiler — React Docs](https://react.dev/learn/react-compiler)
 - `20.5-frontend-frameworks/`
 
 ---

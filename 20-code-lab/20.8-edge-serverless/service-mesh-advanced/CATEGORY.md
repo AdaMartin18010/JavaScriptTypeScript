@@ -24,6 +24,8 @@ created: 2026-04-28
 
 ## 代码示例
 
+### L7 流量管理与负载均衡
+
 ```typescript
 // mesh-architecture.ts — 轻量 L7 流量管理
 interface RouteRule {
@@ -71,10 +73,115 @@ class ServiceMeshProxy {
 }
 ```
 
+### 熔断器模式（Circuit Breaker）
+
+```typescript
+// circuit-breaker.ts — 服务网格熔断器
+interface CircuitBreakerConfig {
+  failureThreshold: number;
+  resetTimeoutMs: number;
+  halfOpenMaxCalls: number;
+}
+
+enum CircuitState { Closed, Open, HalfOpen }
+
+class CircuitBreaker {
+  private state = CircuitState.Closed;
+  private failures = 0;
+  private nextAttempt = 0;
+  private halfOpenCalls = 0;
+
+  constructor(private config: CircuitBreakerConfig) {}
+
+  async execute<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.state === CircuitState.Open) {
+      if (Date.now() < this.nextAttempt) {
+        throw new Error('Circuit breaker is OPEN');
+      }
+      this.state = CircuitState.HalfOpen;
+      this.halfOpenCalls = 0;
+    }
+
+    if (this.state === CircuitState.HalfOpen && this.halfOpenCalls >= this.config.halfOpenMaxCalls) {
+      throw new Error('Circuit breaker is HALF_OPEN (max calls reached)');
+    }
+
+    if (this.state === CircuitState.HalfOpen) this.halfOpenCalls++;
+
+    try {
+      const result = await fn();
+      this.onSuccess();
+      return result;
+    } catch (err) {
+      this.onFailure();
+      throw err;
+    }
+  }
+
+  private onSuccess(): void {
+    this.failures = 0;
+    if (this.state === CircuitState.HalfOpen) {
+      this.state = CircuitState.Closed;
+    }
+  }
+
+  private onFailure(): void {
+    this.failures++;
+    if (this.failures >= this.config.failureThreshold) {
+      this.state = CircuitState.Open;
+      this.nextAttempt = Date.now() + this.config.resetTimeoutMs;
+    }
+  }
+
+  get currentState(): CircuitState { return this.state; }
+}
+```
+
+### 分布式链路追踪（OpenTelemetry 风格）
+
+```typescript
+// tracing.ts — 轻量分布式追踪注入
+interface TraceContext {
+  traceId: string;
+  spanId: string;
+  parentSpanId?: string;
+  sampled: boolean;
+}
+
+function generateTraceId(): string {
+  return crypto.randomUUID().replace(/-/g, '');
+}
+
+function generateSpanId(): string {
+  return Array.from(crypto.getRandomValues(new Uint8Array(8)))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function injectTraceHeaders(ctx: TraceContext): Record<string, string> {
+  return {
+    'traceparent': `00-${ctx.traceId}-${ctx.spanId}-${ctx.sampled ? '01' : '00'}`,
+  };
+}
+
+function extractTraceHeaders(headers: Headers): TraceContext | null {
+  const traceparent = headers.get('traceparent');
+  if (!traceparent) return null;
+  const [, traceId, spanId, flags] = traceparent.split('-');
+  return {
+    traceId,
+    spanId: generateSpanId(), // 当前 span 为新 ID
+    parentSpanId: spanId,
+    sampled: flags === '01',
+  };
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 ARCHIVED.md
@@ -102,6 +209,11 @@ class ServiceMeshProxy {
 | Envoy Proxy Documentation | 官方文档 | [envoyproxy.io/docs](https://www.envoyproxy.io/docs) |
 | eBPF-based Service Mesh (Cilium) | 官方文档 | [docs.cilium.io/en/stable/network/servicemesh](https://docs.cilium.io/en/stable/network/servicemesh/) |
 | Service Mesh Interface (SMI) Spec | 规范 | [smi-spec.io](https://smi-spec.io/) |
+| OpenTelemetry Specification | 规范 | [opentelemetry.io/docs/specs/otel](https://opentelemetry.io/docs/specs/otel/) |
+| W3C Trace Context | 规范 | [w3.org/TR/trace-context](https://www.w3.org/TR/trace-context/) |
+| Cloud Native Patterns — Circuit Breaker | 指南 | [learn.microsoft.com/azure/architecture/patterns/circuit-breaker](https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker) |
+| Envoy Retry & Circuit Breaker Policies | 官方文档 | [envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/circuit_breaking](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/circuit_breaking) |
+| gRPC Load Balancing | 指南 | [grpc.io/docs/guides/service-config](https://grpc.io/docs/guides/service-config/) |
 
 ---
 

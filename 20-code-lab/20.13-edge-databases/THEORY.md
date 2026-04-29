@@ -121,6 +121,100 @@ export async function createPost(title: string, body: string) {
 }
 ```
 
+#### SQLite WASM 浏览器端示例
+
+在浏览器中直接使用 SQLite，实现完全离线的本地优先应用：
+
+```typescript
+// sqlite-wasm-client.ts
+import { sqlite3Worker1Promiser } from '@sqlite.org/sqlite-wasm';
+
+let promiser: Awaited<ReturnType<typeof sqlite3Worker1Promiser>>;
+
+export async function initSQLite() {
+  promiser = await sqlite3Worker1Promiser({
+    worker: () => new Worker('/sqlite-worker.js', { type: 'module' }),
+    onerror: console.error,
+  });
+  return promiser('open', { filename: 'file:local.db?vfs=opfs' });
+}
+
+export async function queryTodos() {
+  const response = await promiser('exec', {
+    sql: 'SELECT id, title, done FROM todos ORDER BY created_at DESC',
+    returnValue: 'resultRows',
+    rowMode: 'object',
+  });
+  return response.result.resultRows as Array<{ id: number; title: string; done: boolean }>;
+}
+
+export async function addTodo(title: string) {
+  await promiser('exec', {
+    sql: 'INSERT INTO todos (title, done) VALUES (?, 0)',
+    bind: [title],
+  });
+}
+```
+
+#### 本地优先同步模式（基于 CRDT 的冲突解决）
+
+```typescript
+// local-first-sync.ts
+interface SyncDoc {
+  id: string;
+  content: string;
+  hlc: string; // Hybrid Logical Clock 向量时钟
+  deleted?: boolean;
+}
+
+/**
+ * 简单的 LWW (Last-Write-Wins) 元素级合并
+ * 实际生产环境推荐使用 Yjs、Automerge 或 Electric SQL
+ */
+export function mergeDocs(local: SyncDoc, remote: SyncDoc): SyncDoc {
+  if (local.hlc > remote.hlc) return local;
+  if (remote.hlc > local.hlc) return remote;
+  // 时钟相等时按节点 ID 字典序打破平局
+  return local.id >= remote.id ? local : remote;
+}
+
+export class LocalFirstStore {
+  private db: IDBDatabase | null = null;
+
+  async open(dbName = 'local-first-db') {
+    return new Promise<void>((resolve, reject) => {
+      const req = indexedDB.open(dbName, 1);
+      req.onupgradeneeded = () => {
+        req.result.createObjectStore('docs', { keyPath: 'id' });
+      };
+      req.onsuccess = () => { this.db = req.result; resolve(); };
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async put(doc: SyncDoc) {
+    if (!this.db) throw new Error('DB not open');
+    const tx = this.db.transaction('docs', 'readwrite');
+    const store = tx.objectStore('docs');
+
+    // 读取本地版本，执行 CRDT 合并
+    const existing = await new Promise<SyncDoc | undefined>((r) => {
+      const getReq = store.get(doc.id);
+      getReq.onsuccess = () => r(getReq.result);
+      getReq.onerror = () => r(undefined);
+    });
+
+    const winner = existing ? mergeDocs(existing, doc) : doc;
+    await new Promise<void>((r, reject) => {
+      const putReq = store.put(winner);
+      putReq.onsuccess = () => r();
+      putReq.onerror = () => reject(putReq.error);
+    });
+    return winner;
+  }
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -139,6 +233,13 @@ export async function createPost(title: string, body: string) {
 - [LibSQL GitHub — Open Contribution Fork](https://github.com/tursodatabase/libsql)
 - [Drizzle ORM — Edge 友好 ORM](https://orm.drizzle.team/)
 - [Fly.io — SQLite at the Edge](https://fly.io/blog/all-in-on-sqlite-litestream/)
+- [SQLite Official Documentation](https://sqlite.org/docs.html)
+- [Electric SQL — Local-First Sync Engine](https://electric-sql.com/)
+- [Yjs — CRDTs for Collaborative Editing](https://docs.yjs.dev/)
+- [Automerge — JSON-like CRDT](https://automerge.org/)
+- [Litestream — Streaming SQLite Replication](https://litestream.io/)
+- [Prisma ORM — Edge Compatibility](https://www.prisma.io/docs/orm/prisma-client/deployment/edge)
+- [Cloudflare Durable Objects — Coordinated Edge State](https://developers.cloudflare.com/durable-objects/)
 
 ---
 

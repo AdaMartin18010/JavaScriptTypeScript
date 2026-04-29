@@ -92,6 +92,95 @@ console.log(checkCompatibility('2.1.0', '~2.0.0')); // false
 console.log(checkCompatibility('3.0.0', '^2.0.0')); // false
 ```
 
+### Lockfile 与完整性校验
+
+```typescript
+// lockfile-integrity.ts — 验证依赖锁定文件
+import { createHash } from "crypto";
+import { readFileSync } from "fs";
+
+interface LockEntry {
+  version: string;
+  resolved: string;
+  integrity: string; // sha512-base64
+}
+
+function verifyIntegrity(
+  packagePath: string,
+  expectedIntegrity: string
+): boolean {
+  const content = readFileSync(packagePath);
+  const hash = createHash("sha512").update(content).digest("base64");
+  const computed = `sha512-${hash}`;
+  return computed === expectedIntegrity;
+}
+
+// 示例 lockfile 条目验证
+const entry: LockEntry = {
+  version: "1.2.3",
+  resolved: "https://registry.npmjs.org/pkg/-/pkg-1.2.3.tgz",
+  integrity:
+    "sha512-abc123...", // 截断
+};
+
+// npm 的 integrity 格式：sha512-<base64>
+// pnpm 的 lockfile 使用类似的校验机制
+```
+
+### 发布配置与 npm 脚本最佳实践
+
+```json
+{
+  "name": "@myorg/awesome-lib",
+  "version": "1.0.0",
+  "files": ["dist", "README.md", "LICENSE"],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": { "types": "./dist/index.d.mts", "default": "./dist/index.mjs" },
+      "require": { "types": "./dist/index.d.ts", "default": "./dist/index.cjs" }
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "test": "vitest",
+    "lint": "eslint src/",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
+```
+
+### pnpm Workspace 配置示例
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - "packages/*"
+  - "apps/*"
+
+# 依赖提升策略（避免幽灵依赖）
+hoist-pattern:
+  - "!@types/*"
+```
+
+```typescript
+// pnpm-workspace.ts — workspace 协议使用
+// packages/app/package.json
+{
+  "dependencies": {
+    "@myorg/shared": "workspace:*",  // 始终使用工作区最新版本
+    "@myorg/utils": "workspace:^1.0.0" // 遵循 semver 范围
+  }
+}
+```
+
 ## 目录内容
 
 - 📄 README.md
@@ -123,6 +212,9 @@ console.log(checkCompatibility('3.0.0', '^2.0.0')); // false
 | pnpm Workspace Protocol | 协议说明 | [pnpm.io/workspaces#workspace-protocol-workspace](https://pnpm.io/workspaces#workspace-protocol-workspace) |
 | Yarn Plug'n'Play | 架构白皮书 | [yarnpkg.com/features/pnp](https://yarnpkg.com/features/pnp) |
 | semantic-release | 自动化版本发布 | [semantic-release.gitbook.io](https://semantic-release.gitbook.io/) |
+| npm audit | 安全审计 | [docs.npmjs.com/cli/commands/npm-audit](https://docs.npmjs.com/cli/commands/npm-audit) |
+| npmmirror 中国镜像 | 镜像站 | [npmmirror.com](https://npmmirror.com/) |
+| Bundlephobia | 包体积分析 | [bundlephobia.com](https://bundlephobia.com/) |
 
 ---
 

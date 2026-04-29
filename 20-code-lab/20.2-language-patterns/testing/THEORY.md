@@ -216,6 +216,104 @@ export default defineConfig({
 - **09-real-world-examples**: 生产环境的测试策略
 - **11-benchmarks**: 性能测试与基准测试
 
+## 8. E2E 测试示例（Playwright）
+
+```typescript
+// tests/checkout.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('user can complete checkout', async ({ page }) => {
+  await page.goto('/products');
+  await page.getByRole('button', { name: 'Add to Cart' }).first().click();
+  await page.goto('/cart');
+  await page.getByRole('button', { name: 'Checkout' }).click();
+  await page.fill('[name="email"]', 'test@example.com');
+  await page.getByRole('button', { name: 'Pay' }).click();
+  await expect(page.locator('h1')).toHaveText('Order Confirmed');
+});
+```
+
+## 9. Mock Service Worker 示例（MSW）
+
+```typescript
+// src/mocks/handlers.ts
+import { http, HttpResponse } from 'msw';
+
+export const handlers = [
+  http.get('/api/user/:id', ({ params }) => {
+    return HttpResponse.json({
+      id: params.id,
+      name: 'Alice',
+      role: 'admin',
+    });
+  }),
+
+  http.post('/api/login', async ({ request }) => {
+    const body = (await request.json()) as { email: string };
+    if (body.email.endsWith('@example.com')) {
+      return HttpResponse.json({ token: 'mock-jwt-token' });
+    }
+    return HttpResponse.json({ error: 'Invalid email' }, { status: 401 });
+  }),
+];
+```
+
+```typescript
+// vitest.setup.ts
+import { setupServer } from 'msw/node';
+import { handlers } from './src/mocks/handlers';
+
+const server = setupServer(...handlers);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+```
+
+## 10. 属性驱动测试（fast-check）
+
+```typescript
+// src/utils/reverse.test.ts
+import { describe, it, expect } from 'vitest';
+import * as fc from 'fast-check';
+
+describe('reverse', () => {
+  it('should be involutive (reverse(reverse(x)) == x)', () => {
+    fc.assert(
+      fc.property(fc.string(), (str) => {
+        const reverse = (s: string) => [...s].reverse().join('');
+        expect(reverse(reverse(str))).toBe(str);
+      })
+    );
+  });
+
+  it('should preserve length', () => {
+    fc.assert(
+      fc.property(fc.array(fc.integer()), (arr) => {
+        const reversed = [...arr].reverse();
+        expect(reversed.length).toBe(arr.length);
+      })
+    );
+  });
+});
+```
+
+## 11. 快照测试与回归防护
+
+```typescript
+// src/components/Alert.test.tsx
+import { describe, it, expect } from 'vitest';
+import { render } from '@testing-library/react';
+import { Alert } from './Alert';
+
+describe('<Alert />', () => {
+  it('renders correctly', () => {
+    const { container } = render(<Alert type="error">Connection lost</Alert>);
+    expect(container.firstChild).toMatchSnapshot();
+  });
+});
+```
+
 ## 参考链接
 
 - [Vitest Documentation](https://vitest.dev/)
@@ -223,3 +321,8 @@ export default defineConfig({
 - [Playwright Documentation](https://playwright.dev/)
 - [MSW (Mock Service Worker)](https://mswjs.io/)
 - [Google Testing Blog](https://testing.googleblog.com/)
+- [Testing Library](https://testing-library.com/)
+- [fast-check — Property-based testing](https://fast-check.dev/)
+- [Jest Documentation](https://jestjs.io/docs/getting-started)
+- [Cypress Documentation](https://docs.cypress.io/)
+- [Supertest — HTTP assertions](https://github.com/ladjs/supertest)

@@ -105,7 +105,94 @@ console.log(oldBuf.byteLength);      // 0（已分离）
 console.log(newBuf.byteLength);      // 512
 ```
 
-### 3.2 常见误区
+### 3.2 高级代码示例
+
+#### `Atomics.waitAsync` 非阻塞同步原语
+
+```javascript
+// main.js — 主线程
+const shared = new SharedArrayBuffer(4);
+const int32 = new Int32Array(shared);
+
+const worker = new Worker('./worker.js', { type: 'module' });
+worker.postMessage(shared);
+
+// 非阻塞等待 Worker 信号
+const result = Atomics.waitAsync(int32, 0, 0);
+// result.value 是 Promise
+result.value.then(status => {
+  console.log('Worker signaled:', status); // "ok"
+  console.log('Updated value:', int32[0]); // 42
+});
+```
+
+```javascript
+// worker.js — Worker 线程
+self.onmessage = ({ data: shared }) => {
+  const int32 = new Int32Array(shared);
+  // 模拟耗时计算
+  performHeavyComputation();
+  int32[0] = 42;
+  Atomics.notify(int32, 0, 1); // 通知主线程
+};
+```
+
+#### 复杂分组：多级透视表
+
+```javascript
+// 多级分组：先按 category 分，再按 priceRange 分
+const inventory = [
+  { name: 'MacBook', category: 'electronics', price: 1999 },
+  { name: 'iPhone', category: 'electronics', price: 999 },
+  { name: 'Banana', category: 'grocery', price: 1 },
+  { name: 'Steak', category: 'grocery', price: 25 },
+];
+
+const pivot = Object.groupBy(inventory, item => item.category);
+// 对每组继续按价格区间细分
+for (const [category, items] of Object.entries(pivot)) {
+  pivot[category] = Object.groupBy(
+    items,
+    item => item.price > 100 ? 'premium' : 'budget'
+  );
+}
+
+console.log(pivot.electronics.premium); // [{MacBook}, {iPhone}]
+console.log(pivot.grocery.budget);      // [{Banana}]
+```
+
+#### `Promise.withResolvers` 实现带超时限制的请求
+
+```javascript
+function fetchWithTimeout(url, timeoutMs = 5000) {
+  const { promise, resolve, reject } = Promise.withResolvers();
+  const controller = new AbortController();
+
+  const timer = setTimeout(() => {
+    controller.abort();
+    reject(new Error(`Request timed out after ${timeoutMs}ms`));
+  }, timeoutMs);
+
+  fetch(url, { signal: controller.signal })
+    .then(response => {
+      clearTimeout(timer);
+      resolve(response);
+    })
+    .catch(err => {
+      clearTimeout(timer);
+      reject(err);
+    });
+
+  return promise;
+}
+
+// 使用示例
+fetchWithTimeout('https://api.example.com/data', 3000)
+  .then(r => r.json())
+  .catch(console.error);
+```
+
+### 3.3 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -113,14 +200,17 @@ console.log(newBuf.byteLength);      // 512
 | `Promise.withResolvers` 只是语法糖 | 它在标准中统一了非标准库中的 Defer 模式 |
 | `transfer` 是拷贝 | 是所有权转移，旧 ArrayBuffer 变为 detached |
 
-### 3.3 扩展阅读
+### 3.4 扩展阅读
 
 - [ECMAScript 2024 Language Specification](https://262.ecma-international.org/15.0/)
 - [MDN: Object.groupBy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/groupBy)
 - [MDN: Promise.withResolvers](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers)
 - [MDN: ArrayBuffer.prototype.transfer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer/transfer)
+- [MDN: Atomics.waitAsync](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics/waitAsync)
 - [TC39 Finished Proposals](https://github.com/tc39/proposals/blob/main/finished-proposals.md)
 - [V8 Features: ES2024](https://v8.dev/features/tags/es2024)
+- [Can I use — Object.groupBy](https://caniuse.com/mdn-javascript_builtins_object_groupby)
+- [Node.green — ES2024 compat](https://node.green/#ES2024)
 - `30-knowledge-base/30.1-language-evolution`
 
 ---

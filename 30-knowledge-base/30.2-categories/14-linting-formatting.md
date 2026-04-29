@@ -102,6 +102,83 @@ eslint .          # ~8s，插件规则 + 自定义规则
 
 ---
 
+## 扩展代码示例
+
+### dprint 统一格式化配置（多语言仓库）
+
+```json
+// dprint.json
+{
+  "typescript": {
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "semiColons": "always",
+    "quoteStyle": "single"
+  },
+  "json": {},
+  "markdown": {},
+  "dockerfile": {},
+  "plugins": [
+    "https://plugins.dprint.dev/typescript-0.93.0.wasm",
+    "https://plugins.dprint.dev/json-0.19.3.wasm",
+    "https://plugins.dprint.dev/markdown-0.17.8.wasm",
+    "https://plugins.dprint.dev/dockerfile-0.3.2.wasm"
+  ],
+  "excludes": [
+    "node_modules",
+    "dist",
+    "*.lock"
+  ]
+}
+```
+
+```bash
+# 检查与格式化
+dprint check
+dprint fmt
+```
+
+### Oxlint CI 零配置拦截
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on: [push, pull_request]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+      - name: Install Oxlint
+        run: pnpm add -D oxlint
+      - name: Fast lint (fail fast)
+        run: pnpm oxlint . --deny-warnings
+      - name: Deep lint (ESLint plugins)
+        run: pnpm eslint . --max-warnings=0
+```
+
+### VS Code settings.json 集成示例
+
+```json
+// .vscode/settings.json
+{
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit",
+    "quickfix.biome": "explicit"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "eslint.enable": false,
+  "prettier.enable": false
+}
+```
+
+---
+
 ## 最佳实践
 
 1. **新项目默认 Biome**：lint + format 一体，零配置，40x 性能提升
@@ -115,10 +192,18 @@ eslint .          # ~8s，插件规则 + 自定义规则
 ## 参考资源
 
 - [ESLint 9 Migration Guide](https://eslint.org/docs/latest/use/configure/migration-guide)
+- [ESLint Flat Config Documentation](https://eslint.org/docs/latest/use/configure/configuration-files)
 - [Biome Documentation](https://biomejs.dev/)
+- [Biome Migrate from ESLint / Prettier](https://biomejs.dev/guides/migrate-eslint-prettier/)
 - [Oxlint GitHub](https://github.com/oxc-project/oxc)
+- [Oxlint Official Documentation](https://oxc.rs/docs/guide/usage/linter.html)
 - [dprint Documentation](https://dprint.dev/)
+- [dprint Plugin Registry](https://dprint.dev/plugins/)
+- [Prettier Configuration Options](https://prettier.io/docs/en/options.html)
+- [Prettier — Integrating with Linters](https://prettier.io/docs/en/integrating-with-linters.html)
 - [Biome vs ESLint vs Oxlint (2026)](https://trybuildpilot.com/424-biome-vs-eslint-vs-oxlint-2026)
+- [VoidZero: Introducing Oxlint](https://voidzero.dev/posts/introducing-oxlint)
+- [Rust-Powered JavaScript Tooling Landscape](https://rust.godbolt.org/)
 
 ---
 

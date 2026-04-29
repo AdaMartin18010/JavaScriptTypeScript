@@ -127,6 +127,146 @@ for (const r of evens) {
 //   .slice(0, 5);
 ```
 
+### 3.2 代码示例：Node.js 流式数据处理
+
+```typescript
+// stream-processing.ts — 使用 Node.js Transform 流处理大文件
+import { createReadStream, createWriteStream } from "fs";
+import { createInterface } from "readline";
+import { Transform, pipeline } from "stream";
+
+// 逐行处理 GB 级 CSV 文件，内存占用恒定
+function processLargeCSV(inputPath: string, outputPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const readStream = createReadStream(inputPath, { encoding: "utf-8" });
+    const writeStream = createWriteStream(outputPath);
+
+    // 自定义 Transform：将每行 JSON 转换为汇总统计
+    const aggregator = new Transform({
+      objectMode: true,
+      transform(chunk: string, _encoding, callback) {
+        try {
+          const record = JSON.parse(chunk);
+          const summary = {
+            id: record.id,
+            total: record.items.reduce(
+              (sum: number, item: { price: number }) => sum + item.price,
+              0
+            ),
+            count: record.items.length,
+          };
+          callback(null, JSON.stringify(summary) + "\n");
+        } catch (err) {
+          callback(err as Error);
+        }
+      },
+    });
+
+    const lineReader = createInterface({ input: readStream });
+
+    pipeline(lineReader as unknown as NodeJS.ReadableStream, aggregator, writeStream, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
+
+// 使用：await processLargeCSV("huge-data.jsonl", "summary.jsonl");
+```
+
+### 3.3 代码示例：函数式管道组合
+
+```typescript
+// functional-pipe.ts — 类型安全的函数管道
+
+type Fn<A, B> = (a: A) => B;
+
+function pipe<A>(a: A): A;
+function pipe<A, B>(a: A, f1: Fn<A, B>): B;
+function pipe<A, B, C>(a: A, f1: Fn<A, B>, f2: Fn<B, C>): C;
+function pipe<A, B, C, D>(a: A, f1: Fn<A, B>, f2: Fn<B, C>, f3: Fn<C, D>): D;
+function pipe(a: unknown, ...fns: Fn<unknown, unknown>[]): unknown {
+  return fns.reduce((acc, fn) => fn(acc), a);
+}
+
+// 可复用的数据处理函数
+const trim = (s: string) => s.trim();
+const toUpper = (s: string) => s.toUpperCase();
+const removeExtraSpaces = (s: string) => s.replace(/\s+/g, " ");
+const capitalizeWords = (s: string) =>
+  s.replace(/\b\w/g, (c) => c.toUpperCase());
+
+// 组合管道
+const normalizeName = (s: string) =>
+  pipe(s, trim, removeExtraSpaces, toUpper, capitalizeWords);
+
+console.log(normalizeName("  john   doe  ")); // "John Doe"
+
+// 数组数据处理管道
+interface User {
+  name: string;
+  age: number;
+  active: boolean;
+}
+
+const users: User[] = [
+  { name: "Alice", age: 30, active: true },
+  { name: "Bob", age: 17, active: false },
+  { name: "Charlie", age: 25, active: true },
+];
+
+const activeAdultNames = users
+  .filter((u) => u.active && u.age >= 18)
+  .map((u) => u.name)
+  .sort();
+
+console.log(activeAdultNames); // ["Alice", "Charlie"]
+```
+
+### 3.4 代码示例：Web Streams API（浏览器原生流）
+
+```typescript
+// web-streams.ts — 使用标准 Web Streams API 处理数据
+
+async function* streamLines(
+  response: Response
+): AsyncGenerator<string, void, unknown> {
+  const reader = response.body?.getReader();
+  if (!reader) return;
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+    for (const line of lines) yield line;
+  }
+
+  if (buffer) yield buffer;
+}
+
+// 使用：流式解析 NDJSON（每行一个 JSON）
+async function processNDJSONStream(url: string) {
+  const response = await fetch(url);
+  let count = 0;
+
+  for await (const line of streamLines(response)) {
+    if (!line.trim()) continue;
+    const record = JSON.parse(line);
+    count++;
+    // 实时处理，无需等待全部下载
+    if (count % 1000 === 0) {
+      console.log(`Processed ${count} records...`);
+    }
+  }
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -140,6 +280,9 @@ for (const r of evens) {
 - [Node.js Stream API](https://nodejs.org/api/stream.html)
 - [TC39 Iterator Helpers Proposal](https://github.com/tc39/proposal-iterator-helpers)
 - [Apache Arrow JavaScript](https://arrow.apache.org/docs/js/)
+- [MDN — Web Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API)
+- [Node.js Performance Best Practices](https://nodejs.org/en/learn/getting-started/how-to-read-environment-variables-from-nodejs)
+- [JavaScript Weekly — Data Processing](https://javascriptweekly.com/)
 - `30-knowledge-base/30.8-data`
 
 ---

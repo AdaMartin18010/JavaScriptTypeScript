@@ -43,7 +43,9 @@
 
 ---
 
-## 代码示例：CrewAI + TypeScript（概念示例）
+## 代码示例
+
+### CrewAI + TypeScript（概念示例）
 
 ```typescript
 // 基于 CrewAI Python 概念映射到 TypeScript 风格伪代码，展示多 Agent 协作模式
@@ -98,6 +100,69 @@ const crew = new Crew({
 })();
 ```
 
+### LangChain JS Agent（工具调用 + ReAct 循环）
+
+```typescript
+import { ChatOpenAI } from '@langchain/openai';
+import { AgentExecutor, createReactAgent } from 'langchain/agents';
+import { TavilySearchResults } from '@langchain/community/tools/tavily_search';
+import { ChatPromptTemplate } from '@langchain/core/prompts';
+
+// 初始化 LLM 与工具
+const llm = new ChatOpenAI({ modelName: 'gpt-4o', temperature: 0 });
+const tools = [new TavilySearchResults({ maxResults: 3 })];
+
+// 创建 ReAct Agent
+const prompt = ChatPromptTemplate.fromMessages([
+  ['system', '你是一个擅长调研的 AI Agent，必要时使用搜索工具获取最新信息。'],
+  ['human', '{input}'],
+  ['placeholder', '{agent_scratchpad}'],
+]);
+
+const agent = await createReactAgent({ llm, tools, prompt });
+const executor = new AgentExecutor({ agent, tools, verbose: true });
+
+// 执行自主任务
+const result = await executor.invoke({
+  input: '2026 年 TypeScript 5.8 有哪些新特性？',
+});
+console.log(result.output);
+```
+
+### AutoGPT 风格思考-行动循环（TypeScript 伪代码）
+
+```typescript
+interface AgentState {
+  goal: string;
+  memory: string[];
+  iterations: number;
+}
+
+async function autoGPTLoop(state: AgentState) {
+  while (state.iterations < 10) {
+    // 1. 思考（Reasoning）
+    const thought = await llm.generateThought(state.goal, state.memory);
+
+    // 2. 决定行动（Action）
+    const action = await llm.decideAction(thought, availableTools);
+
+    // 3. 执行并观察（Observation）
+    const observation = await executeTool(action);
+
+    // 4. 记忆更新
+    state.memory.push(`Thought: ${thought}`);
+    state.memory.push(`Action: ${action.name} -> ${observation}`);
+
+    // 5. 终止条件判断
+    if (await llm.isTaskComplete(state.memory)) {
+      return state.memory.join('\n');
+    }
+    state.iterations++;
+  }
+  throw new Error('Max iterations reached');
+}
+```
+
 ---
 
 ## 选型建议
@@ -113,12 +178,16 @@ const crew = new Crew({
 
 ## 权威参考链接
 
-- [LangChain 官方文档](https://js.langchain.com/)
+- [LangChain 官方文档（JS/TS）](https://js.langchain.com/)
 - [LlamaIndex TypeScript 文档](https://ts.llamaindex.ai/)
 - [CrewAI 官方文档](https://docs.crewai.com/)
 - [AutoGPT GitHub](https://github.com/Significant-Gravitas/AutoGPT)
 - [LangGraph 文档](https://langchain-ai.github.io/langgraph/)
 - [OpenAI Function Calling Guide](https://platform.openai.com/docs/guides/function-calling)
+- [Anthropic Model Context Protocol (MCP)](https://www.anthropic.com/news/model-context-protocol)
+- [Microsoft Semantic Kernel Documentation](https://learn.microsoft.com/en-us/semantic-kernel/)
+- [ReAct: Synergizing Reasoning and Acting in Language Models (Paper)](https://arxiv.org/abs/2210.03629)
+- [AI Agent Patterns — LangChain Blog](https://blog.langchain.dev/agent-patterns/)
 
 ---
 

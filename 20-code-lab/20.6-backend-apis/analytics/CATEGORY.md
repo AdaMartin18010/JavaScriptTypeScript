@@ -16,6 +16,7 @@ created: 2026-04-28
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 README.md
@@ -106,6 +107,193 @@ class AnalyticsTracker {
 // 使用：tracker.track('purchase', { itemId: 'sku-123', value: 99.9 });
 ```
 
+## 代码示例：实时指标聚合引擎
+
+```typescript
+// analytics-engine.ts — 滑动窗口指标聚合
+interface MetricPoint {
+  name: string;
+  value: number;
+  timestamp: number;
+  tags: Record<string, string>;
+}
+
+class SlidingWindowAggregator {
+  private buffer: MetricPoint[] = [];
+  private readonly windowMs: number;
+
+  constructor(windowMs: number = 60_000) {
+    this.windowMs = windowMs;
+    setInterval(() => this.evict(), windowMs);
+  }
+
+  ingest(point: MetricPoint): void {
+    this.buffer.push(point);
+  }
+
+  aggregate(
+    name: string,
+    operation: 'sum' | 'avg' | 'min' | 'max' | 'count'
+  ): number {
+    const now = Date.now();
+    const relevant = this.buffer.filter(
+      (p) => p.name === name && now - p.timestamp <= this.windowMs
+    );
+
+    if (relevant.length === 0) return 0;
+
+    switch (operation) {
+      case 'sum':
+        return relevant.reduce((acc, p) => acc + p.value, 0);
+      case 'avg':
+        return relevant.reduce((acc, p) => acc + p.value, 0) / relevant.length;
+      case 'min':
+        return Math.min(...relevant.map((p) => p.value));
+      case 'max':
+        return Math.max(...relevant.map((p) => p.value));
+      case 'count':
+        return relevant.length;
+    }
+  }
+
+  percentile(name: string, p: number): number {
+    const now = Date.now();
+    const values = this.buffer
+      .filter((pt) => pt.name === name && now - pt.timestamp <= this.windowMs)
+      .map((pt) => pt.value)
+      .sort((a, b) => a - b);
+
+    if (values.length === 0) return 0;
+    const idx = Math.ceil((p / 100) * values.length) - 1;
+    return values[Math.max(0, idx)];
+  }
+
+  private evict(): void {
+    const cutoff = Date.now() - this.windowMs;
+    this.buffer = this.buffer.filter((p) => p.timestamp > cutoff);
+  }
+}
+
+// 使用：
+// const engine = new SlidingWindowAggregator(300_000);
+// engine.ingest({ name: 'api_latency', value: 45, timestamp: Date.now(), tags: { route: '/users' } });
+// console.log(engine.percentile('api_latency', 95));
+```
+
+## 代码示例：用户转化漏斗分析
+
+```typescript
+// funnel-analysis.ts — 多步骤漏斗流失计算
+interface FunnelStep {
+  stepName: string;
+  eventName: string;
+}
+
+interface FunnelResult {
+  stepName: string;
+  uniqueUsers: number;
+  conversionRate: number; // 相对上一步的转化率
+  dropOffRate: number;
+  avgTimeToConvertMs: number;
+}
+
+class FunnelAnalyzer {
+  constructor(private steps: FunnelStep[]) {}
+
+  analyze(events: Array<{ userId: string; event: string; timestamp: number }>): FunnelResult[] {
+    // 按用户分组并排序
+    const byUser = new Map<string, typeof events>();
+    for (const ev of events) {
+      if (!byUser.has(ev.userId)) byUser.set(ev.userId, []);
+      byUser.get(ev.userId)!.push(ev);
+    }
+
+    const results: FunnelResult[] = [];
+    let previousCount = byUser.size;
+
+    for (let i = 0; i < this.steps.length; i++) {
+      const { stepName, eventName } = this.steps[i];
+      let converted = 0;
+      let totalTime = 0;
+
+      for (const [, userEvents] of byUser) {
+        const sorted = userEvents.sort((a, b) => a.timestamp - b.timestamp);
+        // 查找当前步骤事件，且发生在前一步之后
+        const prevEventTime = i === 0 ? 0 : this.findLastStepTime(sorted, this.steps[i - 1].eventName);
+        const match = sorted.find((e) => e.event === eventName && e.timestamp >= prevEventTime);
+        if (match) {
+          converted++;
+          if (i > 0) totalTime += match.timestamp - prevEventTime;
+        }
+      }
+
+      results.push({
+        stepName,
+        uniqueUsers: converted,
+        conversionRate: previousCount === 0 ? 0 : converted / previousCount,
+        dropOffRate: previousCount === 0 ? 0 : (previousCount - converted) / previousCount,
+        avgTimeToConvertMs: converted === 0 ? 0 : totalTime / converted,
+      });
+
+      previousCount = converted;
+    }
+
+    return results;
+  }
+
+  private findLastStepTime(events: typeof events, eventName: string): number {
+    const matches = events.filter((e) => e.event === eventName);
+    return matches.length ? matches[matches.length - 1].timestamp : 0;
+  }
+}
+
+// 使用：
+// const funnel = new FunnelAnalyzer([
+//   { stepName: 'Visit', eventName: 'page_view' },
+//   { stepName: 'SignUp', eventName: 'signup_submit' },
+//   { stepName: 'Purchase', eventName: 'purchase_complete' },
+// ]);
+```
+
+## 代码示例：隐私优先的匿名化聚合
+
+```typescript
+// privacy-first-analytics.ts — 差分隐私风格的客户端聚合
+class PrivacyFirstAggregator {
+  private localBuffer = new Map<string, number[]>();
+  private readonly epsilon: number; // 隐私预算
+
+  constructor(epsilon = 1.0) {
+    this.epsilon = epsilon;
+  }
+
+  record(metric: string, value: number): void {
+    if (!this.localBuffer.has(metric)) this.localBuffer.set(metric, []);
+    this.localBuffer.get(metric)!.push(value);
+  }
+
+  // 在客户端完成聚合后再上报，减少原始事件传输
+  flush(): Record<string, { count: number; sum: number; noisyAvg: number }> {
+    const report: Record<string, { count: number; sum: number; noisyAvg: number }> = {};
+    for (const [metric, values] of this.localBuffer) {
+      const count = values.length;
+      const sum = values.reduce((a, b) => a + b, 0);
+      const avg = count === 0 ? 0 : sum / count;
+      // 添加拉普拉斯噪声实现本地差分隐私
+      const noise = this.laplaceNoise(1 / count);
+      report[metric] = { count, sum, noisyAvg: avg + noise };
+    }
+    this.localBuffer.clear();
+    return report;
+  }
+
+  private laplaceNoise(scale: number): number {
+    const u = Math.random() - 0.5;
+    return -scale * Math.sign(u) * Math.log(1 - 2 * Math.abs(u));
+  }
+}
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -113,8 +301,14 @@ class AnalyticsTracker {
 | Google Analytics 4 — Event Model | 官方事件模型文档 | [developers.google.com/analytics/devguides/collection/ga4](https://developers.google.com/analytics/devguides/collection/ga4) |
 | Plausible Analytics — Privacy First | 隐私优先分析设计 | [plausible.io](https://plausible.io/) |
 | Beacon API | W3C 标准 | [w3c.github.io/beacon](https://w3c.github.io/beacon/) |
-| MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
-| web.dev | 指南 | [web.dev](https://web.dev) |
+| Mixpanel Developer Docs | 产品分析 SDK | [developer.mixpanel.com/docs](https://developer.mixpanel.com/docs) |
+| Segment Protocols | 结构化事件规范 | [segment.com/docs/protocols](https://segment.com/docs/protocols/) |
+| Amplitude Developer Center | 行为分析平台 | [developers.amplitude.com](https://developers.amplitude.com/) |
+| PostHog Docs | 开源产品分析 | [posthog.com/docs](https://posthog.com/docs) |
+| MDN — Performance API | 浏览器性能指标 | [developer.mozilla.org/en-US/docs/Web/API/Performance](https://developer.mozilla.org/en-US/docs/Web/API/Performance) |
+| web.dev — Measure Performance | 性能测量指南 | [web.dev/measure](https://web.dev/measure/) |
+| Apache Kafka — Event Streaming | 实时事件流处理 | [kafka.apache.org/documentation](https://kafka.apache.org/documentation/) |
+| ClickHouse — Real-time Analytics DB | 分析型数据库 | [clickhouse.com/docs](https://clickhouse.com/docs) |
 
 ---
 

@@ -111,6 +111,69 @@ export default defineConfig({
 }
 ```
 
+#### Rust 工具链锁定与跨平台编译
+
+```toml
+# rust-toolchain.toml
+[toolchain]
+channel = "1.78.0"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown", "aarch64-unknown-linux-gnu"]
+profile = "minimal"
+```
+
+```toml
+# Cargo.toml (workspace)
+[workspace]
+members = ["packages/*"]
+resolver = "2"
+
+[workspace.dependencies]
+napi = { version = "2", features = ["napi8"] }
+tokio = { version = "1", features = ["full"] }
+```
+
+#### pnpm 与 Cargo 混合工作区脚本
+
+```json
+// package.json (root)
+{
+  "scripts": {
+    "build:rust": "cargo build --release && pnpm napi build",
+    "lint:rs": "cargo clippy --all-targets --all-features -- -D warnings",
+    "fmt:rs": "cargo fmt --all -- --check",
+    "lint:js": "biome check .",
+    "fmt:js": "biome format . --write"
+  }
+}
+```
+
+#### GitHub Actions — Rust + Node.js 混合 CI
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+      - uses: dtolnay/rust-action@stable
+        with:
+          toolchain: 1.78.0
+          targets: wasm32-unknown-unknown
+      - run: pnpm install
+      - run: pnpm lint:js
+      - run: pnpm lint:rs
+      - run: pnpm build:rust
+      - run: pnpm test
+```
+
 ---
 
 > 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
@@ -126,6 +189,9 @@ export default defineConfig({
 | Rust Book — Cargo & Toolchains | 指南 | [doc.rust-lang.org/cargo](https://doc.rust-lang.org/cargo/) |
 | Rustup Book | 指南 | [rust-lang.github.io/rustup](https://rust-lang.github.io/rustup/) |
 | SWC 文档 | 文档 | [swc.rs](https://swc.rs/) |
+| GitHub Actions 文档 | 文档 | [docs.github.com/actions](https://docs.github.com/actions) |
+| pnpm 工作区 | 文档 | [pnpm.io/workspaces](https://pnpm.io/workspaces) |
+| cross-rs — 交叉编译 | 仓库 | [github.com/cross-rs/cross](https://github.com/cross-rs/cross) |
 
 ---
 

@@ -41,6 +41,28 @@ async function tracedOperation() {
 }
 ```
 
+### 结构化日志关联 Trace ID
+
+```typescript
+// lib/logger.ts — 注入 trace_id / span_id 到每条日志
+import pino from 'pino';
+import { context, trace } from '@opentelemetry/api';
+
+export const logger = pino({
+  level: 'info',
+  mixin() {
+    const span = trace.getSpan(context.active());
+    if (!span) return {};
+    const ctx = span.spanContext();
+    return { trace_id: ctx.traceId, span_id: ctx.spanId };
+  },
+});
+
+// 使用：日志自动携带分布式追踪 ID
+logger.info('订单创建成功');
+// => {"level":30,"time":...,"msg":"订单创建成功","trace_id":"abc...","span_id":"def..."}
+```
+
 ### 浏览器全局错误上报器
 
 ```typescript
@@ -85,6 +107,59 @@ function getCLS(): number {
 }
 ```
 
+### AI 可观测性：LLM 调用链路追踪
+
+```typescript
+// lib/ai-observability.ts — 追踪 LLM 调用与 Token 消耗
+import { trace } from '@opentelemetry/api';
+
+const tracer = trace.getTracer('ai-observability', '1.0.0');
+
+interface LLMRequest {
+  model: string;
+  prompt: string;
+  maxTokens: number;
+}
+
+interface LLMResponse {
+  text: string;
+  usage: { promptTokens: number; completionTokens: number; totalTokens: number };
+}
+
+export async function tracedLLMCall(request: LLMRequest, callLLM: (r: LLMRequest) => Promise<LLMResponse>): Promise<LLMResponse> {
+  return tracer.startActiveSpan('llm.completion', async (span) => {
+    span.setAttribute('llm.model', request.model);
+    span.setAttribute('llm.prompt.length', request.prompt.length);
+    span.setAttribute('llm.max_tokens', request.maxTokens);
+
+    const start = performance.now();
+    try {
+      const response = await callLLM(request);
+      const latency = performance.now() - start;
+
+      span.setAttribute('llm.response.length', response.text.length);
+      span.setAttribute('llm.tokens.prompt', response.usage.promptTokens);
+      span.setAttribute('llm.tokens.completion', response.usage.completionTokens);
+      span.setAttribute('llm.tokens.total', response.usage.totalTokens);
+      span.setAttribute('llm.latency_ms', latency);
+
+      // 采样审计：低概率记录完整 Prompt/Response
+      if (Math.random() < 0.01) {
+        span.setAttribute('llm.prompt.sample', request.prompt.slice(0, 500));
+        span.setAttribute('llm.response.sample', response.text.slice(0, 500));
+      }
+
+      return response;
+    } catch (err) {
+      span.recordException(err as Error);
+      throw err;
+    } finally {
+      span.end();
+    }
+  });
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -118,6 +193,11 @@ function getCLS(): number {
 | W3C Trace Context | 规范 | [w3.org/TR/trace-context/](https://www.w3.org/TR/trace-context/) |
 | Chrome Developers — Reporting API | 文档 | [developer.chrome.com/docs/capabilities/web-apis/reporting](https://developer.chrome.com/docs/capabilities/web-apis/reporting) |
 | OpenTelemetry Semantic Conventions | 规范 | [opentelemetry.io/docs/specs/semconv/](https://opentelemetry.io/docs/specs/semconv/) |
+| Jaeger — Distributed Tracing Platform | 工具 | [jaegertracing.io](https://www.jaegertracing.io/) |
+| Prometheus — Monitoring & Alerting | 工具 | [prometheus.io](https://prometheus.io/) |
+| Sentry — Error Tracking & Performance | 工具 | [sentry.io](https://sentry.io/) |
+| Datadog — Observability Platform | 工具 | [docs.datadoghq.com](https://docs.datadoghq.com/) |
+| OpenTelemetry LLM Semantic Conventions | 草案 | [opentelemetry.io/docs/specs/semconv/gen-ai/](https://opentelemetry.io/docs/specs/semconv/gen-ai/) |
 
 ---
 

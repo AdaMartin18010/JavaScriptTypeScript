@@ -129,6 +129,194 @@ app.notFound((c) => {
 export default app;
 ```
 
+### 3.3 代码示例：纯 Node.js HTTP 中间件模式实现
+
+```typescript
+// middleware-pattern.ts — 不依赖框架的洋葱模型中间件
+import { createServer, IncomingMessage, ServerResponse } from "http";
+
+type NextFn = () => Promise<void> | void;
+type Middleware = (
+  req: IncomingMessage,
+  res: ServerResponse,
+  next: NextFn
+) => Promise<void> | void;
+
+function compose(middlewares: Middleware[]): Middleware {
+  return async (req, res, next) => {
+    let index = -1;
+
+    async function dispatch(i: number): Promise<void> {
+      if (i <= index) throw new Error("next() called multiple times");
+      index = i;
+      const fn = middlewares[i] ?? next;
+      if (!fn) return;
+      await fn(req, res, () => dispatch(i + 1));
+    }
+
+    await dispatch(0);
+  };
+}
+
+// 中间件实现
+const loggerMiddleware: Middleware = async (req, res, next) => {
+  const start = Date.now();
+  await next();
+  const duration = Date.now() - start;
+  console.log(`${req.method} ${req.url} — ${res.statusCode} (${duration}ms)`);
+};
+
+const authMiddleware: Middleware = async (req, res, next) => {
+  const token = req.headers["authorization"];
+  if (!token) {
+    res.statusCode = 401;
+    res.end(JSON.stringify({ error: "Unauthorized" }));
+    return;
+  }
+  (req as any).user = { id: "user-123", role: "admin" };
+  await next();
+};
+
+const routeHandler: Middleware = async (req, res) => {
+  if (req.url === "/health") {
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.end(JSON.stringify({ status: "ok", timestamp: Date.now() }));
+    return;
+  }
+  res.statusCode = 404;
+  res.end(JSON.stringify({ error: "Not Found" }));
+};
+
+// 组合并启动
+const app = compose([loggerMiddleware, authMiddleware, routeHandler]);
+
+const server = createServer((req, res) => {
+  app(req, res, () => {
+    res.statusCode = 404;
+    res.end();
+  });
+});
+
+server.listen(3000, () => console.log("Server on http://localhost:3000"));
+```
+
+### 3.4 代码示例：速率限制中间件（Token Bucket）
+
+```typescript
+// rate-limiter.ts — Token Bucket 算法实现
+
+interface Bucket {
+  tokens: number;
+  lastRefill: number;
+}
+
+class TokenBucketRateLimiter {
+  private buckets = new Map<string, Bucket>();
+
+  constructor(
+    private capacity: number,
+    private refillRate: number // tokens per ms
+  ) {}
+
+  isAllowed(key: string): { allowed: boolean; remaining: number; resetAfter: number } {
+    const now = Date.now();
+    let bucket = this.buckets.get(key);
+
+    if (!bucket) {
+      bucket = { tokens: this.capacity, lastRefill: now };
+      this.buckets.set(key, bucket);
+    }
+
+    // 补充令牌
+    const elapsed = now - bucket.lastRefill;
+    const tokensToAdd = elapsed * this.refillRate;
+    bucket.tokens = Math.min(this.capacity, bucket.tokens + tokensToAdd);
+    bucket.lastRefill = now;
+
+    if (bucket.tokens >= 1) {
+      bucket.tokens -= 1;
+      return {
+        allowed: true,
+        remaining: Math.floor(bucket.tokens),
+        resetAfter: Math.ceil((1 - bucket.tokens) / this.refillRate),
+      };
+    }
+
+    return {
+      allowed: false,
+      remaining: 0,
+      resetAfter: Math.ceil(1 / this.refillRate),
+    };
+  }
+}
+
+// 使用：Hono 中间件
+import { MiddlewareHandler } from "hono";
+
+const rateLimiter = new TokenBucketRateLimiter(100, 0.1); // 100 tokens, 10/sec refill
+
+export const rateLimit: MiddlewareHandler = async (c, next) => {
+  const key = c.req.header("x-forwarded-for") || "anonymous";
+  const result = rateLimiter.isAllowed(key);
+
+  c.header("X-RateLimit-Remaining", String(result.remaining));
+  c.header("X-RateLimit-Reset", String(result.resetAfter));
+
+  if (!result.allowed) {
+    return c.json({ error: "Rate limit exceeded" }, 429);
+  }
+
+  await next();
+};
+```
+
+### 3.5 代码示例：WebSocket 升级与 HTTP 共存
+
+```typescript
+// websocket-server.ts — Node.js 原生 HTTP + WebSocket 升级
+import { createServer } from "http";
+import { WebSocketServer, WebSocket } from "ws";
+
+const httpServer = createServer((req, res) => {
+  if (req.url === "/health") {
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ status: "ok" }));
+    return;
+  }
+  res.writeHead(404);
+  res.end();
+});
+
+const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
+
+const clients = new Set<WebSocket>();
+
+wss.on("connection", (ws) => {
+  clients.add(ws);
+  console.log(`Client connected. Total: ${clients.size}`);
+
+  ws.on("message", (data) => {
+    const message = data.toString();
+    // 广播给所有客户端
+    clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ type: "broadcast", data: message }));
+      }
+    });
+  });
+
+  ws.on("close", () => {
+    clients.delete(ws);
+    console.log(`Client disconnected. Total: ${clients.size}`);
+  });
+});
+
+httpServer.listen(3000, () =>
+  console.log("HTTP + WebSocket server on port 3000")
+);
+```
+
 ### 3.3 常见误区
 
 | 误区 | 正确理解 |
@@ -144,6 +332,9 @@ export default app;
 - [Hono 文档](https://hono.dev/docs/)
 - [Hono Middleware](https://hono.dev/docs/concepts/middleware)
 - [WinterCG (Web-interoperable Runtimes)](https://wintercg.org/)
+- [MDN — HTTP Status Codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
+- [MDN — WebSocket API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
+- [Node.js Cluster Module](https://nodejs.org/api/cluster.html)
 - `30-knowledge-base/30.4-backend`
 
 ---

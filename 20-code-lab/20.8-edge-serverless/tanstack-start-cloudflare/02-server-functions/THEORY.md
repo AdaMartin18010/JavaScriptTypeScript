@@ -54,7 +54,7 @@
 
 ## 三、实践映射
 
-### 3.1 从理论到代码
+### 3.1 CRUD 服务端函数
 
 ```typescript
 // server-functions/todo.ts — 类型安全服务端函数
@@ -97,6 +97,124 @@ export const createTodo = createServerFn({ method: 'POST' })
 // const todos = await listTodos(); // inferred: Todo[]
 ```
 
+### 3.2 带身份验证的服务端函数
+
+```typescript
+// server-functions/auth.ts — JWT 验证与受保护函数
+import { createServerFn } from '@tanstack/react-start';
+import { verify } from 'jose';
+
+interface AuthContext {
+  userId: string;
+  email: string;
+}
+
+async function getAuthContext(request: Request): Promise<AuthContext | null> {
+  const token = request.headers.get('cookie')?.match(/token=([^;]+)/)?.[1];
+  if (!token) return null;
+  try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+    const { payload } = await verify(token, secret, { clockTolerance: 60 });
+    return { userId: payload.sub!, email: payload.email as string };
+  } catch {
+    return null;
+  }
+}
+
+export const getCurrentUser = createServerFn({ method: 'GET' })
+  .handler(async () => {
+    const auth = await getAuthContext(new Request('http://localhost'));
+    if (!auth) throw new Error('Unauthorized');
+    return auth;
+  });
+
+export const updateProfile = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => {
+    if (!data || typeof data !== 'object') throw new Error('Invalid payload');
+    const d = data as Record<string, unknown>;
+    if (typeof d.displayName !== 'string' || d.displayName.length > 50) {
+      throw new Error('displayName must be a string ≤ 50 chars');
+    }
+    return { displayName: d.displayName };
+  })
+  .handler(async ({ data }) => {
+    const auth = await getAuthContext(new Request('http://localhost'));
+    if (!auth) throw new Error('Unauthorized');
+    const env = process.env as unknown as Env;
+    await env.DB.prepare('UPDATE users SET display_name = ? WHERE id = ?')
+      .bind(data.displayName, auth.userId)
+      .run();
+    return { success: true };
+  });
+```
+
+### 3.3 流式响应服务端函数
+
+```typescript
+// server-functions/stream.ts — 流式文本/JSON 输出
+import { createServerFn } from '@tanstack/react-start';
+
+export const streamProgress = createServerFn({ method: 'GET' })
+  .handler(async () => {
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        for (let i = 0; i <= 100; i += 10) {
+          const chunk = JSON.stringify({ progress: i, status: i === 100 ? 'done' : 'working' });
+          controller.enqueue(encoder.encode(`data: ${chunk}\n\n`));
+          await new Promise(r => setTimeout(r, 200));
+        }
+        controller.close();
+      },
+    });
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+      },
+    });
+  });
+
+// 客户端消费流
+// const response = await streamProgress();
+// const reader = response.body?.getReader();
+// while (reader) { const { done, value } = await reader.read(); ... }
+```
+
+### 3.4 KV 缓存与 D1 结合模式
+
+```typescript
+// server-functions/cache-pattern.ts — 边缘缓存 + 数据库回源
+import { createServerFn } from '@tanstack/react-start';
+
+export const getProduct = createServerFn({ method: 'GET' })
+  .validator((data: unknown) => {
+    if (typeof data !== 'string') throw new Error('Product ID required');
+    return data;
+  })
+  .handler(async ({ data: productId }) => {
+    const env = process.env as unknown as Env;
+
+    // 1. 读边缘 KV 缓存
+    const cached = await env.KV.get(`product:${productId}`, { cacheTtl: 60 });
+    if (cached) return JSON.parse(cached);
+
+    // 2. KV 未命中，回源 D1
+    const { results } = await env.DB.prepare(
+      'SELECT * FROM products WHERE id = ?'
+    ).bind(productId).all<Record<string, unknown>>();
+    const product = results?.[0] ?? null;
+
+    // 3. 写入 KV（异步，不阻塞响应）
+    if (product) {
+      env.KV.put(`product:${productId}`, JSON.stringify(product), { expirationTtl: 300 })
+        .catch(console.error);
+    }
+
+    return product;
+  });
+```
+
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 服务端函数 核心机制的理解，并观察不同实现选择带来的行为差异。
 
 ### 3.2 常见误区
@@ -122,6 +240,11 @@ export const createTodo = createServerFn({ method: 'POST' })
 | SuperJSON | 源码 | [github.com/flightcontrolhq/superjson](https://github.com/flightcontrolhq/superjson) |
 | tRPC Server Actions | 官方文档 | [trpc.io/docs/client/react/server-components](https://trpc.io/docs/client/react/server-components) |
 | Remix Action & Loader | 官方文档 | [remix.run/docs/en/main/discussion/data-flow](https://remix.run/docs/en/main/discussion/data-flow) |
+| Next.js Server Actions | 官方文档 | [nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations) |
+| Cloudflare KV API | 官方文档 | [developers.cloudflare.com/kv/api](https://developers.cloudflare.com/kv/api/) |
+| jose — JWT Library | 源码 | [github.com/panva/jose](https://github.com/panva/jose) |
+| MDN — ReadableStream | 文档 | [developer.mozilla.org/en-US/docs/Web/API/ReadableStream](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) |
+| Server-sent Events | 指南 | [developer.mozilla.org/en-US/docs/Web/API/Server-sent_events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) |
 
 ---
 

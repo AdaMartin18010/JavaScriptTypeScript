@@ -85,6 +85,38 @@ flowchart LR
 | 跨 realm `instanceof` | `false` | 仍认为是子类型 | 不同全局构造函数 |
 | 方括号动态访问 | `obj[randomKey]` | 退化为索引签名 | 键名不可静态确定 |
 
+#### 代码示例：Set A 运行时陷阱
+
+```javascript
+// typeof null 历史 bug — 无法被 TS 修复
+console.log(typeof null);        // "object" (JS)
+// TS 类型：let x: null = null; typeof x 在类型级是 "null"，但运行时仍为 "object"
+
+// == 强制转换的不可预测性
+console.log([] == false);        // true  (!!)
+console.log("" == false);        // true
+console.log([1] == true);        // true
+// TS 只能建议使用 ===，无法静态分析 == 的结果
+
+// eval 的动态作用域 — TS 完全无法推断
+eval("const dynamicVar = 42;");
+// console.log(dynamicVar); // 运行时可能可用，但 TS 报错：找不到名称
+
+// 跨 realm instanceof — 不同全局对象
+const iframe = document.createElement("iframe");
+document.body.appendChild(iframe);
+const iframeArray = iframe.contentWindow.Array;
+console.log([] instanceof iframeArray); // false — 同构但不同源
+// TS 仍认为 `number[]` 是 Array<number> 的子类型
+
+// WeakRef + FinalizationRegistry — GC 非确定性
+const ref = new WeakRef({ data: "sensitive" });
+// 无法预测 ref.deref() 何时返回 undefined
+const registry = new FinalizationRegistry((heldValue) => {
+  console.log("Cleaned up:", heldValue); // GC 时机完全不确定
+});
+```
+
 ### Set B: 共享语法（JS 和 TS 完全一致）
 
 | 语法 | JS 运行时 | TS 编译时 | 运行时影响 |
@@ -100,6 +132,52 @@ flowchart LR
 | `Symbol` / `BigInt` | 原始值类型 | 字面量类型 | 无额外生成 |
 | `?.` / `??` | 空值合并/可选链 | narrowing | 无额外生成 |
 | `using` / `await using` | 资源清理 | dispose 类型检查 | 生成 try/finally |
+
+#### 代码示例：Set B 共享语法（TS 编译后零差异）
+
+```typescript
+// === 编译前 TypeScript ===
+async function fetchUser(id: number): Promise<{ name: string }> {
+  const response = await fetch(`/api/users/${id}`);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+// 解构 + 默认值 + 可选链
+function greet(user?: { name: string; title?: string }) {
+  const { name, title = "Guest" } = user ?? {};
+  console.log(`Hello, ${title} ${name?.toUpperCase() ?? "Anonymous"}!`);
+}
+
+// 类（除字段初始化外零运行时差异）
+class Counter {
+  count = 0;  // 此字段 TS 编译后保留
+  increment() { return ++this.count; }
+}
+```
+
+```javascript
+// === 编译后 JavaScript (ES2022 target) ===
+async function fetchUser(id) {
+  const response = await fetch(`/api/users/${id}`);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+function greet(user) {
+  const { name, title = "Guest" } = user ?? {};
+  console.log(`Hello, ${title} ${name?.toUpperCase() ?? "Anonymous"}!`);
+}
+
+class Counter {
+  count = 0;
+  increment() { return ++this.count; }
+}
+```
 
 ### Set C: TS-Only 编译时构造（运行时完全擦除）
 
@@ -125,6 +203,58 @@ flowchart LR
 | `declare module` | 外部类型声明 | **零** | 无 |
 | `/// <reference>` | 编译依赖声明 | **零** | 无 |
 
+#### 代码示例：Set C 类型级编程（编译后完全消失）
+
+```typescript
+// === 编译前：丰富的类型级代码 ===
+
+type EventPayload = 
+  | { type: "user:login"; userId: string; timestamp: number }
+  | { type: "user:logout"; userId: string }
+  | { type: "error"; message: string; code: number };
+
+// 从联合类型中提取所有 type 值 — 编译后完全消失
+type EventType = EventPayload["type"]; // "user:login" | "user:logout" | "error"
+
+// 根据 type 查找对应 payload — 条件类型 + infer
+type PayloadByType<T extends EventType> = 
+  EventPayload extends { type: T; } 
+    ? Extract<EventPayload, { type: T }> 
+    : never;
+
+// 模板字面量类型 — 编译时字符串操作
+type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
+type Endpoint<M extends HttpMethod> = `/api/${Lowercase<M>}/:id`;
+// Endpoint<"GET"> → "/api/get/:id"
+
+// Mapped type — 编译时属性变换
+type ReadonlyDeep<T> = {
+  readonly [K in keyof T]: T[K] extends object ? ReadonlyDeep<T[K]> : T[K];
+};
+
+// 函数重载 — 编译时多态，运行时是单一函数
+declare function process(input: string): string;
+declare function process(input: number): number;
+// 编译后仅剩：function process(input) { ... }
+
+// satisfies — 结构验证同时保留窄类型
+const config = {
+  host: "localhost",
+  port: 3000,
+} as const satisfies { host: string; port: number };
+// config.port 的类型是字面量 3000，而非 number
+```
+
+```javascript
+// === 编译后 JavaScript：所有类型构造完全消失 ===
+
+// 运行时只剩普通对象和函数
+const config = {
+  host: "localhost",
+  port: 3000,
+};
+```
+
 ### Set D: Runtime-Impacting TS 特性（编译后产生 JS 代码）
 
 | 特性 | 编译前 TS | 编译后 JS | 运行时影响 | 可避免？ |
@@ -140,6 +270,86 @@ flowchart LR
 | `export =` | `export = MyModule` | `module.exports = MyModule` | CommonJS 导出 | 用标准 ESM export |
 | `JSX` | `<div />` | `React.createElement("div", null)` | 虚拟 DOM 对象创建 | 预编译（如 SolidJS） |
 | `using` | `using x = resource` | `try { ... } finally { x[Symbol.dispose](); }` | 生成 try/finally | 手写资源管理 |
+
+#### 代码示例：Set D 编译产物对比
+
+```typescript
+// === 编译前 TypeScript ===
+
+// enum — 生成双向映射对象
+enum Status {
+  Pending,
+  Approved,
+  Rejected,
+}
+
+// const enum — 零运行时开销（纯内联）
+const enum HttpCode {
+  OK = 200,
+  NotFound = 404,
+}
+
+// namespace — 生成 IIFE
+namespace Validation {
+  export function isEmail(s: string): boolean {
+    return s.includes("@");
+  }
+}
+
+// parameter properties — 生成构造函数赋值
+class Point {
+  constructor(public x: number, public y: number, private label?: string) {}
+}
+
+// using — 生成 try/finally + Symbol.dispose
+function processFile() {
+  using handle = getFileHandle();
+  handle.write("data");
+} // 自动调用 handle[Symbol.dispose]()
+```
+
+```javascript
+// === 编译后 JavaScript (ES2022, target) ===
+
+// enum → 双向映射对象
+var Status;
+(function (Status) {
+  Status[Status["Pending"] = 0] = "Pending";
+  Status[Status["Approved"] = 1] = "Approved";
+  Status[Status["Rejected"] = 2] = "Rejected";
+})(Status || (Status = {}));
+
+// const enum HttpCode → 完全内联，无残留
+// (编译时直接替换为 200, 404)
+
+// namespace → IIFE
+var Validation;
+(function (Validation) {
+  function isEmail(s) {
+    return s.includes("@");
+  }
+  Validation.isEmail = isEmail;
+})(Validation || (Validation = {}));
+
+// parameter properties → 构造函数内赋值
+class Point {
+  constructor(x, y, label) {
+    this.x = x;
+    this.y = y;
+    this.label = label;
+  }
+}
+
+// using → try/finally
+function processFile() {
+  const handle = getFileHandle();
+  try {
+    handle.write("data");
+  } finally {
+    handle[Symbol.dispose]();
+  }
+}
+```
 
 ---
 
@@ -188,11 +398,27 @@ function greet(user) {
 高级开发者
   ├── 深入 Set A → 引擎内部原理
   ├── 掌握 Set D → 控制编译产物
-  └── 理解 Set C 与 Set A 的边界 → 类型系统局限性
+  └── 理解 Set C 与 Set A 边界 → 类型系统局限性
 
 架构师
   └── 综合运用四集知识 → 设计类型安全且运行时高效的系统
 ```
+
+---
+
+## 🔗 权威参考链接
+
+- [TypeScript Handbook — Type Erasure](https://www.typescriptlang.org/docs/handbook/2/basic-types.html#erased-types)
+- [TypeScript Handbook — Enums](https://www.typescriptlang.org/docs/handbook/enums.html)
+- [TypeScript Handbook — Namespaces](https://www.typescriptlang.org/docs/handbook/namespaces.html)
+- [ECMA-262 — typeof Operator](https://tc39.es/ecma262/#sec-typeof-operator) — `typeof null === "object"` 的规范根源
+- [MDN — eval](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval)
+- [MDN — WeakRef](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef)
+- [MDN — FinalizationRegistry](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry)
+- [MDN — Atomics](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics)
+- [2ality — TypeScript vs JavaScript](https://2ality.com/2020/06/type-erasures-typescript.html)
+- [TypeScript Deep Dive — Type System](https://basarat.gitbook.io/typescript/type-system)
+- [TC39 — ECMAScript Proposals](https://github.com/tc39/proposals)
 
 ---
 

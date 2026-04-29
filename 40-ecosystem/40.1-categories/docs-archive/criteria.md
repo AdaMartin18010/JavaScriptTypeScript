@@ -150,6 +150,132 @@
 
 ---
 
+## 🧪 代码示例：自动化评估脚本
+
+### 使用 npm audit 检测安全漏洞
+
+```bash
+# 在待评估库目录中运行
+npm audit --audit-level=moderate --json > audit-report.json
+
+# 解析高危漏洞数量
+node -e "
+const report = require('./audit-report.json');
+const high = report.metadata.vulnerabilities.high || 0;
+const critical = report.metadata.vulnerabilities.critical || 0;
+console.log('High:', high, 'Critical:', critical);
+"
+```
+
+### 使用 BundlePhobia API 查询包体积
+
+```javascript
+// bundlephobia-fetch.js
+async function fetchBundleInfo(packageName) {
+  const url = `https://bundlephobia.com/api/size?package=${encodeURIComponent(packageName)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`BundlePhobia API error: ${res.status}`);
+  const data = await res.json();
+  return {
+    name: data.name,
+    version: data.version,
+    size: data.size,           // 原始大小（bytes）
+    gzip: data.gzip,           // gzip 后大小
+    dependencyCount: data.dependencyCount,
+    hasJSModule: data.hasJSModule,   // 是否提供 ESM
+    hasJSNext: data.hasJSNext,
+  };
+}
+
+// 使用示例
+fetchBundleInfo('lodash-es').then(info => {
+  console.log(`Package size: ${(info.gzip / 1024).toFixed(1)} KiB (gzip)`);
+  console.log(`Dependencies: ${info.dependencyCount}`);
+  console.log(`ESM support: ${info.hasJSModule}`);
+});
+```
+
+### 使用 GitHub API 获取 Stars 与最后更新
+
+```javascript
+// github-evaluator.js
+async function evaluateRepo(owner, repo, token) {
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const [repoRes, commitRes] = await Promise.all([
+    fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers }),
+    fetch(`https://api.github.com/repos/${owner}/${repo}/commits?per_page=1`, { headers }),
+  ]);
+
+  const repoData = await repoRes.json();
+  const commits = await commitRes.json();
+  const lastUpdated = new Date(commits[0]?.commit?.committer?.date || repoData.pushed_at);
+  const monthsAgo = (Date.now() - lastUpdated.getTime()) / (1000 * 60 * 60 * 24 * 30);
+
+  return {
+    stars: repoData.stargazers_count,
+    openIssues: repoData.open_issues_count,
+    lastCommitMonths: Math.round(monthsAgo),
+    archived: repoData.archived,
+    license: repoData.license?.spdx_id,
+  };
+}
+
+// 使用示例
+evaluateRepo('facebook', 'react', process.env.GH_TOKEN)
+  .then(data => console.log(data));
+```
+
+### 计算综合评分的参考实现
+
+```typescript
+interface ScoreWeights {
+  stars: number;
+  lastUpdate: number;
+  downloads: number;
+  tsSupport: number;
+  docs: number;
+  security: number;
+}
+
+function calculateScore(
+  metrics: {
+    stars: number;
+    lastUpdateMonths: number;
+    weeklyDownloads: number;
+    tsLevel: 0 | 1 | 2 | 3; // 0=none, 1=partial, 2=full, 3=native
+    docsScore: number;      // 0–100
+    highVulns: number;
+  },
+  weights: ScoreWeights = {
+    stars: 0.15,
+    lastUpdate: 0.20,
+    downloads: 0.15,
+    tsSupport: 0.15,
+    docs: 0.20,
+    security: 0.15,
+  }
+): number {
+  const starScore = Math.min(metrics.stars / 1000, 1) * 100;
+  const updateScore = metrics.lastUpdateMonths < 6 ? 100
+    : metrics.lastUpdateMonths < 12 ? 70
+    : metrics.lastUpdateMonths < 24 ? 40 : 0;
+  const downloadScore = Math.min(metrics.weeklyDownloads / 1000, 1) * 100;
+  const tsScore = metrics.tsLevel * 33.3;
+  const securityScore = metrics.highVulns === 0 ? 100 : metrics.highVulns < 3 ? 50 : 0;
+
+  return Math.round(
+    starScore * weights.stars +
+    updateScore * weights.lastUpdate +
+    downloadScore * weights.downloads +
+    tsScore * weights.tsSupport +
+    metrics.docsScore * weights.docs +
+    securityScore * weights.security
+  );
+}
+```
+
+---
+
 ## 🔗 权威参考链接
 
 - [npm Audit 文档](https://docs.npmjs.com/cli/commands/npm-audit)
@@ -160,3 +286,11 @@
 - [Choose a License](https://choosealicense.com/)
 - [Conventional Changelog 规范](https://www.conventionalcommits.org/)
 - [Mozilla Open Source Archetypes](https://mozilla.github.io/open-leadership-training-series/articles/opening-your-project/)
+- [GitHub REST API 文档](https://docs.github.com/en/rest)
+- [npm Registry API](https://github.com/npm/registry/blob/main/docs/REGISTRY-API.md)
+- [Socket.dev — 供应链安全分析](https://socket.dev/)
+- [Libraries.io — 依赖健康度](https://libraries.io/)
+- [StackBlitz — 在线可运行示例](https://stackblitz.com/)
+- [CodeSandbox — 云端 IDE](https://codesandbox.io/)
+- [Semantic Versioning 2.0.0](https://semver.org/)
+- [OSI 认可的开源许可证列表](https://opensource.org/licenses)

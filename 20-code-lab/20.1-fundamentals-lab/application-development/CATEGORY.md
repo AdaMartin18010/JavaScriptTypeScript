@@ -85,6 +85,206 @@ class Order {
 }
 ```
 
+### 状态管理：轻量级可观察 Store
+
+```typescript
+// state-management.ts — 无依赖的轻量状态管理
+
+type Listener<T> = (state: T, prev: T) => void;
+
+class Store<T> {
+  private listeners = new Set<Listener<T>>();
+  private state: T;
+
+  constructor(initial: T) {
+    this.state = initial;
+  }
+
+  getState(): T {
+    return this.state;
+  }
+
+  setState(updater: (prev: T) => T): void {
+    const prev = this.state;
+    this.state = updater(prev);
+    this.listeners.forEach((fn) => fn(this.state, prev));
+  }
+
+  subscribe(listener: Listener<T>): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+}
+
+// 使用：类型安全的全局状态
+interface AppState {
+  user: { id: string; name: string } | null;
+  theme: "light" | "dark";
+  notifications: string[];
+}
+
+const appStore = new Store<AppState>({
+  user: null,
+  theme: "light",
+  notifications: [],
+});
+
+// 订阅变更
+const unsubscribe = appStore.subscribe((state, prev) => {
+  if (state.theme !== prev.theme) {
+    document.documentElement.setAttribute("data-theme", state.theme);
+  }
+});
+
+// 更新状态
+appStore.setState((prev) => ({
+  ...prev,
+  theme: prev.theme === "light" ? "dark" : "light",
+}));
+```
+
+### RESTful API 设计模式
+
+```typescript
+// api-design.ts — 类型安全的 REST API 封装
+
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+
+interface EndpointConfig<P, B, R> {
+  path: string;
+  method: HttpMethod;
+}
+
+class ApiClient {
+  constructor(private baseURL: string) {}
+
+  async request<P, B, R>(
+    config: EndpointConfig<P, B, R>,
+    params?: P,
+    body?: B
+  ): Promise<R> {
+    const url = new URL(config.path, this.baseURL);
+    if (params) {
+      Object.entries(params).forEach(([k, v]) =>
+        url.searchParams.set(k, String(v))
+      );
+    }
+
+    const response = await fetch(url, {
+      method: config.method,
+      headers: { "Content-Type": "application/json" },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+
+    if (!response.ok) {
+      throw new ApiError(response.status, await response.text());
+    }
+    return response.json();
+  }
+}
+
+class ApiError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+  }
+}
+
+// 类型安全的端点定义
+const UserEndpoints = {
+  list: { path: "/users", method: "GET" } as EndpointConfig<
+    { page?: number; limit?: number },
+    never,
+    { users: User[]; total: number }
+  >,
+  create: { path: "/users", method: "POST" } as EndpointConfig<
+    never,
+    Omit<User, "id">,
+    User
+  >,
+};
+
+// 使用
+const api = new ApiClient("https://api.example.com");
+const { users } = await api.request(UserEndpoints.list, { page: 1, limit: 10 });
+```
+
+### 复杂表单验证引擎
+
+```typescript
+// form-engine.ts — 基于 Zod 的动态表单校验
+import { z, ZodType } from "zod";
+
+interface FieldConfig<T> {
+  label: string;
+  schema: ZodType<T>;
+  defaultValue: T;
+}
+
+class FormEngine<T extends Record<string, unknown>> {
+  private values: T;
+  private errors: Partial<Record<keyof T, string>> = {};
+
+  constructor(private config: { [K in keyof T]: FieldConfig<T[K]> }) {
+    this.values = Object.fromEntries(
+      Object.entries(config).map(([k, v]) => [k, v.defaultValue])
+    ) as T;
+  }
+
+  setValue<K extends keyof T>(key: K, value: T[K]): void {
+    this.values = { ...this.values, [key]: value };
+    this.validateField(key);
+  }
+
+  private validateField<K extends keyof T>(key: K): boolean {
+    const result = this.config[key].schema.safeParse(this.values[key]);
+    if (!result.success) {
+      this.errors = {
+        ...this.errors,
+        [key]: result.error.errors[0].message,
+      };
+      return false;
+    }
+    const { [key]: _, ...rest } = this.errors;
+    this.errors = rest;
+    return true;
+  }
+
+  validateAll(): boolean {
+    let valid = true;
+    for (const key of Object.keys(this.config) as Array<keyof T>) {
+      valid = this.validateField(key) && valid;
+    }
+    return valid;
+  }
+
+  getValues(): T {
+    return { ...this.values };
+  }
+
+  getErrors(): Partial<Record<keyof T, string>> {
+    return { ...this.errors };
+  }
+}
+
+// 使用
+const loginForm = new FormEngine({
+  email: {
+    label: "Email",
+    schema: z.string().email("Invalid email format"),
+    defaultValue: "",
+  },
+  password: {
+    label: "Password",
+    schema: z.string().min(8, "Password must be at least 8 characters"),
+    defaultValue: "",
+  },
+});
+
+loginForm.setValue("email", "test@example.com");
+console.log(loginForm.validateAll()); // true/false
+console.log(loginForm.getErrors());
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -109,6 +309,11 @@ class Order {
 | Result Type Pattern | 文章 | [www.learningtypescript.com/articles/result-type](https://www.learningtypescript.com/articles/result-type) |
 | Zod 验证库 | 官方文档 | [zod.dev](https://zod.dev/) |
 | Effect-TS | 函数式错误处理 | [effect.website](https://effect.website/) |
+| Redux Style Guide | 状态管理 | [redux.js.org/style-guide](https://redux.js.org/style-guide/) |
+| TanStack Query | 服务端状态 | [tanstack.com/query](https://tanstack.com/query/latest) |
+| NestJS Documentation | 后端框架 | [docs.nestjs.com](https://docs.nestjs.com/) |
+| Fastify Best Practices | 性能指南 | [fastify.dev/docs/latest/Guides/Best-Practices/](https://fastify.dev/docs/latest/Guides/Best-Practices/) |
+| MDN Web API | 前端 API | [developer.mozilla.org/en-US/docs/Web/API](https://developer.mozilla.org/en-US/docs/Web/API) |
 
 ---
 

@@ -16,6 +16,7 @@ created: 2026-04-28
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 README.md
@@ -103,6 +104,154 @@ class CacheAside<K, V> {
 // 使用：Redis/Memory 实现 CacheStore 接口即可接入
 ```
 
+## 代码示例：Write-Behind 异步批量写入
+
+```typescript
+// cache-patterns.ts — Write-Behind 降低 DB 写压力
+class WriteBehindCache<K, V> {
+  private writeBuffer = new Map<K, V>();
+  private flushTimer: ReturnType<typeof setInterval> | null = null;
+
+  constructor(
+    private cache: CacheStore<K, V>,
+    private dbWriter: (batch: Map<K, V>) => Promise<void>,
+    private flushIntervalMs = 5000,
+    private maxBufferSize = 100
+  ) {
+    this.startFlushTimer();
+  }
+
+  async set(key: K, value: V, ttlMs?: number): Promise<void> {
+    // 1. 立即更新缓存（读操作立即可见）
+    await this.cache.set(key, value, ttlMs);
+    // 2. 缓冲写操作
+    this.writeBuffer.set(key, value);
+
+    if (this.writeBuffer.size >= this.maxBufferSize) {
+      await this.flush();
+    }
+  }
+
+  private startFlushTimer(): void {
+    this.flushTimer = setInterval(() => {
+      if (this.writeBuffer.size > 0) this.flush();
+    }, this.flushIntervalMs);
+  }
+
+  private async flush(): Promise<void> {
+    const batch = new Map(this.writeBuffer);
+    this.writeBuffer.clear();
+    try {
+      await this.dbWriter(batch);
+    } catch {
+      // 回滚到缓冲区，带退避重试
+      for (const [k, v] of batch) {
+        if (!this.writeBuffer.has(k)) this.writeBuffer.set(k, v);
+      }
+    }
+  }
+
+  stop(): void {
+    if (this.flushTimer) clearInterval(this.flushTimer);
+  }
+}
+```
+
+## 代码示例：布隆过滤器防缓存穿透
+
+```typescript
+// cache-protection.ts — 布隆过滤器 + Redis
+class BloomFilter {
+  private bits: Uint8Array;
+  private size: number;
+  private hashCount: number;
+
+  constructor(expectedItems: number, falsePositiveRate = 0.01) {
+    this.size = Math.ceil(-(expectedItems * Math.log(falsePositiveRate)) / (Math.LN2 ** 2));
+    this.hashCount = Math.ceil((this.size / expectedItems) * Math.LN2);
+    this.bits = new Uint8Array(Math.ceil(this.size / 8));
+  }
+
+  add(item: string): void {
+    for (let i = 0; i < this.hashCount; i++) {
+      const idx = this.hash(item, i) % this.size;
+      this.bits[Math.floor(idx / 8)] |= 1 << (idx % 8);
+    }
+  }
+
+  mightContain(item: string): boolean {
+    for (let i = 0; i < this.hashCount; i++) {
+      const idx = this.hash(item, i) % this.size;
+      if ((this.bits[Math.floor(idx / 8)] & (1 << (idx % 8))) === 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private hash(item: string, seed: number): number {
+    let h = seed;
+    for (let i = 0; i < item.length; i++) {
+      h = (h * 31 + item.charCodeAt(i)) >>> 0;
+    }
+    return h % this.size;
+  }
+}
+
+// 使用：写入 Redis 前先检查布隆过滤器，不存在则直接返回 null
+async function getWithBloomFilter(
+  key: string,
+  bloom: BloomFilter,
+  cache: CacheStore<string, unknown>,
+  db: (k: string) => Promise<unknown>
+): Promise<unknown> {
+  if (!bloom.mightContain(key)) return null; // 一定不存在
+  return cache.get(key) ?? db(key);
+}
+```
+
+## 代码示例：Redis 分布式缓存分片
+
+```typescript
+// distributed-cache.ts — 一致性哈希分片
+class ConsistentHashRing {
+  private ring = new Map<number, string>();
+  private nodes: string[] = [];
+  private replicas = 150;
+
+  addNode(node: string): void {
+    this.nodes.push(node);
+    for (let i = 0; i < this.replicas; i++) {
+      const hash = this.hash(`${node}:${i}`);
+      this.ring.set(hash, node);
+    }
+  }
+
+  removeNode(node: string): void {
+    this.nodes = this.nodes.filter((n) => n !== node);
+    for (let i = 0; i < this.replicas; i++) {
+      this.ring.delete(this.hash(`${node}:${i}`));
+    }
+  }
+
+  getNode(key: string): string | undefined {
+    if (this.ring.size === 0) return undefined;
+    const hash = this.hash(key);
+    const sorted = Array.from(this.ring.keys()).sort((a, b) => a - b);
+    const target = sorted.find((h) => h >= hash) ?? sorted[0];
+    return this.ring.get(target);
+  }
+
+  private hash(str: string): number {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+      h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    }
+    return h;
+  }
+}
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -110,8 +259,13 @@ class CacheAside<K, V> {
 | Redis — Caching Strategies | 官方缓存模式 | [redis.io/docs/management/optimization](https://redis.io/docs/management/optimization/) |
 | AWS — Caching Best Practices | 云架构缓存指南 | [docs.aws.amazon.com/whitepapers/latest/database-caching-strategies-using-redis](https://docs.aws.amazon.com/whitepapers/latest/database-caching-strategies-using-redis/) |
 | IETF HTTP Caching (RFC 9111) | HTTP 缓存协议标准 | [datatracker.ietf.org/doc/html/rfc9111](https://datatracker.ietf.org/doc/html/rfc9111) |
-| MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
-| web.dev | 指南 | [web.dev](https://web.dev) |
+| Memcached — Architecture | 分布式内存缓存 | [github.com/memcached/memcached/wiki](https://github.com/memcached/memcached/wiki) |
+| DragonflyDB — Redis Alternative | 现代多线程 KV 存储 | [dragonflydb.io/docs](https://www.dragonflydb.io/docs) |
+| KeyDB — Multithreaded Redis Fork | 高性能 Redis 分支 | [docs.keydb.dev](https://docs.keydb.dev/) |
+| Cache-Aside Pattern | Microsoft Azure 架构中心 | [learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside](https://learn.microsoft.com/en-us/azure/architecture/patterns/cache-aside) |
+| Caching at Netflix | 技术博客 | [netflixtechblog.com/tagged/caching](https://netflixtechblog.com/tagged/caching) |
+| MDN — Cache API | Service Worker 缓存 | [developer.mozilla.org/en-US/docs/Web/API/Cache](https://developer.mozilla.org/en-US/docs/Web/API/Cache) |
+| web.dev — HTTP Cache | 浏览器缓存最佳实践 | [web.dev/articles/http-cache](https://web.dev/articles/http-cache) |
 
 ---
 

@@ -94,6 +94,99 @@ function selectBackend(cap: DeviceCapability): 'webgpu' | 'webnn' | 'wasm' {
 }
 ```
 
+### ONNX Runtime Web 推理
+
+```typescript
+// onnx-web.ts — 浏览器端 ONNX 推理
+import * as ort from 'onnxruntime-web';
+
+async function runONNXInference(
+  modelUrl: string,
+  inputData: Float32Array,
+  inputShape: number[]
+): Promise<Float32Array> {
+  const session = await ort.InferenceSession.create(modelUrl, {
+    executionProviders: ['webgpu', 'wasm'], // 优先 GPU，回退 WASM
+    graphOptimizationLevel: 'all',
+  });
+
+  const tensor = new ort.Tensor('float32', inputData, inputShape);
+  const feeds: Record<string, ort.Tensor> = {};
+  feeds[session.inputNames[0]] = tensor;
+
+  const results = await session.run(feeds);
+  const output = results[session.outputNames[0]];
+  return output.data as Float32Array;
+}
+
+// 使用：
+// const result = await runONNXInference('/models/mnist.onnx', imageData, [1, 1, 28, 28]);
+```
+
+### 模型权重量化（FP32 → INT8）
+
+```typescript
+// quantization.ts — 后训练静态量化
+function quantizeLinear(
+  weights: Float32Array,
+  numBits = 8
+): { quantized: Int8Array; scale: number; zeroPoint: number } {
+  const min = Math.min(...weights);
+  const max = Math.max(...weights);
+  const qmin = -(1 << (numBits - 1));
+  const qmax = (1 << (numBits - 1)) - 1;
+
+  const scale = (max - min) / (qmax - qmin);
+  const zeroPoint = Math.round(qmin - min / scale);
+
+  const quantized = new Int8Array(weights.length);
+  for (let i = 0; i < weights.length; i++) {
+    quantized[i] = Math.max(qmin, Math.min(qmax, Math.round(weights[i] / scale + zeroPoint)));
+  }
+
+  return { quantized, scale, zeroPoint };
+}
+
+function dequantizeLinear(
+  quantized: Int8Array,
+  scale: number,
+  zeroPoint: number
+): Float32Array {
+  const result = new Float32Array(quantized.length);
+  for (let i = 0; i < quantized.length; i++) {
+    result[i] = scale * (quantized[i] - zeroPoint);
+  }
+  return result;
+}
+```
+
+### WebNN API 推理示例
+
+```typescript
+// webnn-demo.ts — W3C WebNN 模型构建
+async function buildWebNNGraph() {
+  if (!('ml' in navigator)) throw new Error('WebNN not supported');
+  const context = await (navigator as any).ml.createContext({
+    devicePreference: 'gpu',
+  });
+
+  const builder = new (window as any).MLGraphBuilder(context);
+
+  // 定义输入张量描述
+  const inputDesc = { dataType: 'float32', dimensions: [1, 224, 224, 3] };
+  const input = builder.input('input', inputDesc);
+
+  // 构建简单的卷积层（示意）
+  const weightDesc = { dataType: 'float32', dimensions: [32, 3, 3, 3] };
+  const weights = builder.constant(weightDesc, new Float32Array(32 * 3 * 3 * 3));
+  const conv = builder.conv2d(input, weights, { padding: [1, 1, 1, 1] });
+  const relu = builder.relu(conv);
+
+  const graph = await builder.build({ output: relu });
+  return { context, graph };
+}
+```
+
 ## 关联模块
 
 - `33-ai-integration` — AI 集成
@@ -111,6 +204,12 @@ function selectBackend(cap: DeviceCapability): 'webgpu' | 'webnn' | 'wasm' {
 | ONNX Runtime Web | 微软 | [onnxruntime.ai/docs/tutorials/web](https://onnxruntime.ai/docs/tutorials/web/) |
 | TensorFlow.js 后端 | 指南 | [tensorflow.org/js/guide/platform_environment](https://www.tensorflow.org/js/guide/platform_environment) |
 | Edge AI 最佳实践 | web.dev | [web.dev/ai](https://web.dev/ai) |
+| Transformers.js | Hugging Face | [huggingface.co/docs/transformers.js](https://huggingface.co/docs/transformers.js) |
+| MediaPipe for Web | Google | [developers.google.com/mediapipe](https://developers.google.com/mediapipe) |
+| WebAssembly SIMD | MDN | [developer.mozilla.org/en-US/docs/WebAssembly/Reference/JavaScript_interface](https://developer.mozilla.org/en-US/docs/WebAssembly/Reference/JavaScript_interface) |
+| Apache TVM | 深度学习编译器 | [tvm.apache.org/docs](https://tvm.apache.org/docs/) |
+| MLIR | 机器学习中间表示 | [mlir.llvm.org](https://mlir.llvm.org/) |
+| TinyML 基金会 | 边缘 AI 社区 | [tinyml.org](https://tinyml.org/) |
 
 ---
 

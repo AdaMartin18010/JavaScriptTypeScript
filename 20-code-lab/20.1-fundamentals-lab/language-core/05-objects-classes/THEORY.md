@@ -124,12 +124,140 @@ console.log(acc.getBalance()); // 100
 // console.log((acc as any).#balance); // SyntaxError: Private field must be declared
 ```
 
-### 3.3 常见误区
+### 3.3 代码示例：组合优于继承
+
+```typescript
+// 组合模式 — 通过混入（Mixin）和接口实现灵活的行为组装
+
+// 行为定义
+interface Flyable {
+  fly(): string;
+}
+
+interface Swimmable {
+  swim(): string;
+}
+
+// 可复用的行为工厂
+function FlyableMixin(base: new (...args: any[]) => {}) {
+  return class extends base implements Flyable {
+    fly() {
+      return `${this.constructor.name} is flying!`;
+    }
+  };
+}
+
+function SwimmableMixin(base: new (...args: any[]) => {}) {
+  return class extends base implements Swimmable {
+    swim() {
+      return `${this.constructor.name} is swimming!`;
+    }
+  };
+}
+
+// 基类
+class Animal {
+  constructor(public name: string) {}
+  move() {
+    return `${this.name} moves.`;
+  }
+}
+
+// 通过组合构建具体类
+class Duck extends SwimmableMixin(FlyableMixin(Animal)) {}
+class Penguin extends SwimmableMixin(Animal) {} // 不能飞
+class Eagle extends FlyableMixin(Animal) {}     // 不能游
+
+const duck = new Duck("Daffy");
+console.log(duck.fly());   // "Duck is flying!"
+console.log(duck.swim());  // "Duck is swimming!"
+
+const penguin = new Penguin("Skipper");
+console.log(penguin.swim()); // "Penguin is swimming!"
+// penguin.fly(); // 编译错误：Property 'fly' does not exist
+```
+
+### 3.4 代码示例：Symbol 与 Well-Known Symbols
+
+```typescript
+// Symbol 创建唯一键 — 避免命名冲突
+const privateKey = Symbol("private");
+
+class SafeBox {
+  [privateKey] = "secret";
+
+  getSecret(): string {
+    return this[privateKey];
+  }
+}
+
+// Well-Known Symbols — 定制对象行为
+class Range {
+  constructor(public start: number, public end: number) {}
+
+  *[Symbol.iterator](): Generator<number> {
+    for (let i = this.start; i <= this.end; i++) yield i;
+  }
+
+  [Symbol.toPrimitive](hint: string): number | string {
+    if (hint === "number") return this.end - this.start;
+    return `Range(${this.start}..${this.end})`;
+  }
+}
+
+const range = new Range(1, 5);
+console.log([...range]);        // [1, 2, 3, 4, 5]
+console.log(+range);            // 4 (长度)
+console.log(`${range}`);        // "Range(1..5)"
+```
+
+### 3.5 代码示例：Reflect API 与元编程
+
+```typescript
+// Reflect — 更规范的元编程接口
+const target = { name: "Alice", age: 30 };
+
+// Reflect.get / set 与直接访问等价但更规范
+console.log(Reflect.get(target, "name"));        // "Alice"
+Reflect.set(target, "age", 31);
+console.log(target.age);                         // 31
+
+// Reflect.defineProperty — 返回布尔值而非抛出
+const success = Reflect.defineProperty(target, "id", {
+  value: "uuid-123",
+  writable: false,
+});
+console.log(success); // true
+
+// Reflect.apply — 显式指定 this 调用函数
+function greet(greeting: string) {
+  return `${greeting}, ${this.name}!`;
+}
+console.log(Reflect.apply(greet, target, ["Hello"])); // "Hello, Alice!"
+
+// Proxy + Reflect 组合 — 拦截并转发
+const observed = new Proxy(target, {
+  get(target, prop, receiver) {
+    console.log(`Getting ${String(prop)}`);
+    return Reflect.get(target, prop, receiver);
+  },
+  set(target, prop, value, receiver) {
+    console.log(`Setting ${String(prop)} = ${value}`);
+    return Reflect.set(target, prop, value, receiver);
+  },
+});
+
+observed.name = "Bob"; // "Setting name = Bob"
+console.log(observed.name); // "Getting name" → "Bob"
+```
+
+### 3.6 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | class 引入了真正的类 | JS class 仍是原型继承的语法糖 |
 | 私有字段 # 可通过反射访问 | 硬私有字段在语言层面不可从外部访问 |
+| 箭头函数适合类方法 | 箭头函数无原型，无法被 super 调用 |
 
 ### 3.4 扩展阅读
 
@@ -138,6 +266,11 @@ console.log(acc.getBalance()); // 100
 - [MDN：类私有字段](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields)
 - [MDN：Object.create()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create)
 - [ECMAScript® 2025 — Ordinary and Exotic Objects Behaviours](https://tc39.es/ecma262/#sec-ordinary-and-exotic-objects-behaviours)
+- [MDN — Symbol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)
+- [MDN — Reflect](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect)
+- [MDN — Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
+- [JavaScript Info — Class Inheritance](https://javascript.info/class-inheritance)
+- [Composition over Inheritance — Medium](https://medium.com/hackernoon/object-oriented-the-great-debate-7fd5a9f0a33d)
 - `10-fundamentals/10.1-language-semantics/05-objects-classes/`
 
 ---

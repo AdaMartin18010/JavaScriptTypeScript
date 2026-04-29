@@ -105,13 +105,109 @@ await scheduler.yield();  // Chrome 129+，主动让出主线程
 
 ---
 
+## 扩展代码示例
+
+### scheduler.yield() 长任务拆分
+
+```typescript
+// utils/processLargeDataset.ts
+export async function processLargeDataset<T>(
+  items: T[],
+  batchSize: number,
+  processor: (batch: T[]) => void
+): Promise<void> {
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    processor(batch);
+
+    // 每处理一批后主动让出主线程，避免阻塞 INP
+    if ('scheduler' in window && 'yield' in window.scheduler) {
+      await (window.scheduler as any).yield();
+    } else {
+      // 降级方案：setTimeout(0)
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+  }
+}
+
+// 使用示例
+const hugeList = Array.from({ length: 100_000 }, (_, i) => i);
+await processLargeDataset(hugeList, 1000, (batch) => {
+  renderBatchToDOM(batch); // 假设的渲染函数
+});
+```
+
+### Service Worker Cache-First 策略
+
+```typescript
+// public/sw.ts
+/// <reference lib="webworker" />
+
+const CACHE_NAME = 'app-v1';
+const PRECACHE_ASSETS = ['/index.html', '/static/main.js', '/static/styles.css'];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS))
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      // Cache-First：优先返回缓存，同时后台更新
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        if (networkResponse.ok) {
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, networkResponse.clone());
+          });
+        }
+        return networkResponse;
+      });
+      return cached || fetchPromise;
+    })
+  );
+});
+```
+
+### React Compiler + useMemo 对比示例
+
+```tsx
+// 传统方式：手动记忆化
+function ExpensiveChart({ data, filter }: { data: number[]; filter: string }) {
+  const filtered = React.useMemo(
+    () => data.filter((d) => d.toString().includes(filter)),
+    [data, filter]
+  );
+  return <Chart data={filtered} />;
+}
+
+// React 19 + Compiler：自动记忆化，无需手动 hooks
+// 只需在构建时启用 compiler，源码保持简洁
+function ExpensiveChartAuto({ data, filter }: { data: number[]; filter: string }) {
+  // Compiler 自动为以下计算添加记忆化
+  const filtered = data.filter((d) => d.toString().includes(filter));
+  return <Chart data={filtered} />;
+}
+```
+
+---
+
 ## 参考资源
 
 - [web.dev/performance](https://web.dev/performance) — Google 性能指南
-- [Core Web Vitals](https://web.dev/vitals/) — 官方文档
+- [web.dev/vitals](https://web.dev/vitals/) — Core Web Vitals 官方文档
+- [web.dev/articles/optimize-inp](https://web.dev/articles/optimize-inp) — INP Optimization Guide
 - [Lighthouse Documentation](https://developer.chrome.com/docs/lighthouse/)
+- [Lighthouse Scoring Guide](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring/)
+- [Chrome DevTools Performance](https://developer.chrome.com/docs/devtools/performance/)
+- [MDN: Service Worker API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
+- [MDN: scheduler.yield()](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/yield)
 - [React Performance](https://react.dev/learn/render-and-commit)
-- [INP Optimization Guide](https://web.dev/articles/optimize-inp)
+- [React Compiler Documentation](https://react.dev/learn/react-compiler)
+- [Vite Build Optimization](https://vitejs.dev/guide/build.html)
+- [Next.js Performance Best Practices](https://nextjs.org/docs/app/building-your-application/optimizing)
+- [Google Chrome UX Report (CrUX)](https://developer.chrome.com/docs/crux/)
 
 ---
 

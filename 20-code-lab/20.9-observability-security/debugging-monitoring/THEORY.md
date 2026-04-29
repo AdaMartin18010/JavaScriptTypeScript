@@ -110,7 +110,102 @@ console.log('当前内存使用:', trace);
 await chrome.devtools?.performance?.enable();
 ```
 
-## 4. 浏览器调试工具
+## 4. 结构化日志与分布式追踪
+
+### Pino 结构化日志（Node.js 高性能日志库）
+
+```typescript
+// lib/logger.ts
+import pino from 'pino';
+
+export const logger = pino({
+  level: process.env.LOG_LEVEL || 'info',
+  transport: process.env.NODE_ENV === 'development'
+    ? { target: 'pino-pretty', options: { colorize: true } }
+    : undefined,
+  base: { service: 'api-gateway', version: '1.0.0' },
+  redact: {
+    paths: ['req.headers.authorization', 'password', 'token', 'ssn'],
+    remove: true,
+  },
+});
+
+// 使用示例
+logger.info({ userId: 'u-123', reqId: 'req-456' }, '用户登录成功');
+logger.error({ err: new Error('DB timeout'), reqId: 'req-456' }, '数据库查询失败');
+```
+
+### OpenTelemetry 手动埋点追踪
+
+```typescript
+// lib/tracer.ts
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { trace, context, SpanStatusCode } from '@opentelemetry/api';
+
+const provider = new NodeTracerProvider();
+provider.addSpanProcessor(new SimpleSpanProcessor(new OTLPTraceExporter({
+  url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT,
+})));
+provider.register();
+
+const tracer = trace.getTracer('debugging-monitoring', '1.0.0');
+
+export async function tracedFetch(url: string, options?: RequestInit) {
+  return tracer.startActiveSpan('http.fetch', async (span) => {
+    try {
+      span.setAttribute('http.url', url);
+      span.setAttribute('http.method', options?.method || 'GET');
+      const res = await fetch(url, options);
+      span.setAttribute('http.status_code', res.status);
+      if (!res.ok) {
+        span.setStatus({ code: SpanStatusCode.ERROR, message: `HTTP ${res.status}` });
+      }
+      return res;
+    } catch (err) {
+      span.recordException(err as Error);
+      throw err;
+    } finally {
+      span.end();
+    }
+  });
+}
+```
+
+## 5. 内存泄漏检测
+
+```typescript
+// scripts/detect-memory-leak.ts — 基于堆快照对比
+import v8 from 'node:v8';
+import fs from 'node:fs';
+
+function writeHeapSnapshot(label: string) {
+  const snapshot = v8.writeHeapSnapshot(`heap-${label}-${Date.now()}.heapsnapshot`);
+  console.log(`Heap snapshot written: ${snapshot}`);
+  return snapshot;
+}
+
+// 模拟潜在泄漏
+const leakyCache: any[] = [];
+
+async function simulateWork() {
+  for (let i = 0; i < 10000; i++) {
+    leakyCache.push({ id: i, data: Buffer.alloc(1024), ts: Date.now() });
+  }
+}
+
+async function main() {
+  writeHeapSnapshot('baseline');
+  await simulateWork();
+  global.gc && global.gc(); // 需 Node.js 启动时加 --expose-gc
+  writeHeapSnapshot('after-work');
+}
+
+main();
+```
+
+## 6. 浏览器调试工具
 
 - **Elements**: DOM 结构、CSS 样式实时编辑
 - **Console**: 日志输出、JavaScript 执行
@@ -119,14 +214,14 @@ await chrome.devtools?.performance?.enable();
 - **Performance**: CPU 火焰图、渲染流水线分析
 - **Memory**: 堆快照、内存泄漏检测
 
-## 5. Node.js 调试
+## 7. Node.js 调试
 
 - **--inspect**: 启动 V8 Inspector 协议
 - **ndb**: Chrome DevTools 风格的 Node 调试器
 - **console.trace()**: 打印当前调用栈
 - **Async Hooks**: 追踪异步资源生命周期
 
-## 6. 日志级别规范
+## 8. 日志级别规范
 
 | 级别 | 用途 | 生产环境 |
 |------|------|---------|
@@ -138,7 +233,7 @@ await chrome.devtools?.performance?.enable();
 
 结构化日志格式（JSON）便于机器解析和聚合。
 
-## 7. 与相邻模块的关系
+## 9. 与相邻模块的关系
 
 - **74-observability**: 可观测性体系
 - **92-observability-lab**: 可观测性工具实践
@@ -151,3 +246,8 @@ await chrome.devtools?.performance?.enable();
 - [Replay.io Documentation](https://docs.replay.io/)
 - [Performance API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Performance_API)
 - [Clinic.js — Node.js Performance Profiling](https://clinicjs.org/)
+- [Pino — High Performance Node.js Logger](https://getpino.io/)
+- [OpenTelemetry JS Documentation](https://opentelemetry.io/docs/languages/js/)
+- [Sentry — Application Monitoring Platform](https://docs.sentry.io/)
+- [Node.js Diagnostic Reporting](https://nodejs.org/api/report.html)
+- [Web Vitals — Chrome Developers](https://developer.chrome.com/docs/web-platform/web-vitals)

@@ -190,6 +190,121 @@ module.exports = withSentryConfig(
 );
 ```
 
+### 高性能日志：Pino + OpenTelemetry 关联
+
+```typescript
+import pino from 'pino';
+import { context, trace } from '@opentelemetry/api';
+
+// 创建带 trace context 的 logger
+const logger = pino({
+  level: process.env.LOG_LEVEL ?? 'info',
+  formatters: {
+    level(label) { return { level: label }; },
+    log(object) {
+      const spanContext = trace.getSpanContext(context.active());
+      if (spanContext) {
+        return {
+          ...object,
+          trace_id: spanContext.traceId,
+          span_id: spanContext.spanId,
+          trace_flags: spanContext.traceFlags,
+        };
+      }
+      return object;
+    },
+  },
+  transport: process.env.NODE_ENV === 'development'
+    ? { target: 'pino-pretty', options: { colorize: true } }
+    : undefined,
+});
+
+// 使用示例：日志自动关联当前 trace
+async function handleRequest(req: Request) {
+  logger.info({ reqId: req.headers.get('x-request-id') }, 'Request started');
+  // ... 业务逻辑
+  logger.info('Request completed');
+}
+```
+
+### 自定义业务指标上报（OTel Counter + Histogram）
+
+```typescript
+import { metrics } from '@opentelemetry/api';
+
+const meter = metrics.getMeter('checkout-service');
+
+// 计数器：订单创建次数
+const orderCounter = meter.createCounter('orders.created', {
+  description: 'Total number of orders created',
+});
+
+// 直方图：订单处理延迟
+const orderLatency = meter.createHistogram('orders.processing.duration', {
+  description: 'Order processing duration in ms',
+  unit: 'ms',
+});
+
+function createOrder(userId: string, region: string) {
+  const start = performance.now();
+  orderCounter.add(1, { region, currency: 'USD' });
+
+  try {
+    // ... 创建订单逻辑
+    const duration = performance.now() - start;
+    orderLatency.record(duration, { region, status: 'success' });
+  } catch (e) {
+    orderLatency.record(performance.now() - start, { region, status: 'error' });
+    throw e;
+  }
+}
+```
+
+### Grafana Dashboard 声明式配置（Provisioning）
+
+```yaml
+# provisioning/dashboards/dashboard.yml
+apiVersion: 1
+providers:
+  - name: 'default'
+    orgId: 1
+    folder: 'Node.js Services'
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+```
+
+```json
+{
+  "dashboard": {
+    "title": "Node.js Service Health",
+    "panels": [
+      {
+        "title": "Request Rate",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{service=\"nextjs-api\"}[5m])",
+            "legendFormat": "{{method}} {{status}}"
+          }
+        ]
+      },
+      {
+        "title": "P95 Latency",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
 ---
 
 ## 选型建议
@@ -209,14 +324,20 @@ module.exports = withSentryConfig(
 | 资源 | 链接 | 说明 |
 |------|------|------|
 | OpenTelemetry Docs | <https://opentelemetry.io/docs/> | 官方文档与规范 |
+| OpenTelemetry Specification | <https://opentelemetry.io/docs/specs/otel/> | 技术规范 |
 | Grafana Docs | <https://grafana.com/docs/> | 官方文档 |
 | Prometheus Docs | <https://prometheus.io/docs/> | 时序数据库文档 |
+| Loki Docs | <https://grafana.com/docs/loki/latest/> | 日志聚合系统 |
+| Tempo Docs | <https://grafana.com/docs/tempo/latest/> | 分布式追踪后端 |
 | Datadog Docs | <https://docs.datadoghq.com/> | 官方文档 |
 | New Relic Docs | <https://docs.newrelic.com/> | 官方文档 |
 | Honeycomb Docs | <https://docs.honeycomb.io/> | 官方文档 |
 | Sentry Docs | <https://docs.sentry.io/> | 错误追踪文档 |
 | Google SRE Book | <https://sre.google/sre-book/table-of-contents/> | 站点可靠性工程 |
 | Distributed Systems Observability | <https://www.oreilly.com/library/view/distributed-systems-observability/9781492033431/> | O'Reilly 可观测性专著 |
+| CNCF Observability Landscape | <https://landscape.cncf.io/guide#observability-and-analysis> | 云原生可观测性全景 |
+| Pino Docs | <https://getpino.io/#/docs/api> | 高性能 Node.js 日志库 |
+| OpenTelemetry Collector | <https://opentelemetry.io/docs/collector/> | 采集器配置指南 |
 
 ---
 

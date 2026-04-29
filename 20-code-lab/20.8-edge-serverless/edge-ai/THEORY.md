@@ -1,4 +1,4 @@
-﻿# 边缘 AI — 理论基础
+# 边缘 AI — 理论基础
 
 ## 1. 边缘 AI 的定义
 
@@ -86,7 +86,81 @@ compatibility_date = "2024-09-23"
 binding = "AI"
 ```
 
-## 5. 边缘推理框架
+## 5. 浏览器端 Transformers.js 推理示例
+
+```typescript
+// 纯浏览器运行，无需后端，适合隐私敏感场景
+import { pipeline } from '@xenova/transformers';
+
+// 文本分类（情感分析）
+async function classifySentiment(text: string): Promise<{ label: string; score: number }[]> {
+  const classifier = await pipeline('sentiment-analysis', 'Xenova/distilbert-base-uncased-finetuned-sst-2-english');
+  return classifier(text);
+}
+
+// 特征提取（生成 Embedding）
+async function extractEmbedding(text: string): Promise<number[]> {
+  const extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+  const output = await extractor(text, { pooling: 'mean', normalize: true });
+  return Array.from(output.data);
+}
+
+// 使用 Web Worker 避免阻塞主线程
+// worker.ts
+self.addEventListener('message', async (e) => {
+  const { text, task } = e.data;
+  const pipe = await pipeline(task as any);
+  const result = await pipe(text);
+  self.postMessage(result);
+});
+```
+
+## 6. 边缘流式 AI 响应示例
+
+```typescript
+// workers/streaming-ai.ts — 流式文本生成
+export interface Env { AI: Ai; }
+
+export default {
+  async fetch(_request: Request, env: Env): Promise<Response> {
+    const stream = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+      prompt: '用中文解释边缘计算的优势',
+      max_tokens: 256,
+      stream: true,
+    });
+
+    return new Response(stream as ReadableStream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+      },
+    });
+  }
+};
+```
+
+## 7. TensorFlow.js WebGPU 推理示例
+
+```typescript
+import * as tf from '@tensorflow/tfjs-core';
+import '@tensorflow/tfjs-backend-webgpu';
+
+async function runWebGPUInference() {
+  await tf.setBackend('webgpu');
+  await tf.ready();
+
+  const a = tf.tensor2d([1, 2, 3, 4], [2, 2]);
+  const b = tf.tensor2d([5, 6, 7, 8], [2, 2]);
+  const c = tf.matMul(a, b);
+
+  const result = await c.data();
+  console.log('WebGPU result:', result);
+
+  a.dispose(); b.dispose(); c.dispose();
+}
+```
+
+## 8. 边缘推理框架
 
 - **TensorFlow.js**: 浏览器和 Node.js 的 ML 推理，支持 WebGL/WebGPU 加速
 - **ONNX Runtime Web**: 跨平台模型格式，浏览器 WASM 执行
@@ -94,7 +168,7 @@ binding = "AI"
 - **MediaPipe**: Google 的跨平台 ML 解决方案，专注视觉和文本
 - **LLM.js**: 浏览器端大语言模型推理（Llama、Mistral 等）
 
-## 6. WebGPU 加速
+## 9. WebGPU 加速
 
 WebGPU 使浏览器能够直接访问 GPU 计算能力：
 
@@ -102,14 +176,14 @@ WebGPU 使浏览器能够直接访问 GPU 计算能力：
 - **性能提升**: 相比 WASM CPU 推理，GPU 加速可达 10-100 倍
 - **兼容性**: Chrome 113+、Firefox、Safari（实验性）
 
-## 7. 应用场景
+## 10. 应用场景
 
 - **实时图像处理**: 滤镜、物体检测、人脸识别
 - **语音处理**: 语音识别、语音合成、降噪
 - **文本处理**: 本地翻译、摘要、情感分析
 - **推荐系统**: 端侧个性化推荐（保护用户隐私）
 
-## 8. 与相邻模块的关系
+## 11. 与相邻模块的关系
 
 - **33-ai-integration**: 云端 AI 集成（本模块是端侧 AI）
 - **36-web-assembly**: WASM 作为边缘推理的运行时
@@ -122,3 +196,8 @@ WebGPU 使浏览器能够直接访问 GPU 计算能力：
 - [Transformers.js — Hugging Face](https://huggingface.co/docs/transformers.js/index)
 - [TensorFlow.js](https://www.tensorflow.org/js)
 - [WebGPU — W3C Specification](https://www.w3.org/TR/webgpu/)
+- [ONNX Runtime Web](https://onnxruntime.ai/docs/get-started/with-javascript/web.html)
+- [MediaPipe for Web](https://developers.google.com/mediapipe/solutions/vision)
+- [WebLLM — Apache TVM](https://webllm.mlc.ai/)
+- [Google AI Edge](https://ai.google.dev/edge)
+- [WASM SIMD Proposal](https://github.com/WebAssembly/simd)

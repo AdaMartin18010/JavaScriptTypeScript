@@ -13,7 +13,11 @@
 
 ### 1.2 形式化基础
 
-[本模块的形式化定义与公理/定理陈述]
+边缘优先架构满足以下约束：
+
+- **延迟约束**: `T_response < T_budget`（通常 < 50ms）
+- **一致性约束**: 边缘副本满足最终一致性 `∃t: ∀replica, data_t ≡ data_master`
+- **可用性约束**: 单边缘节点故障不影响全局服务 `P(available) ≥ 99.99%`
 
 ### 1.3 关键概念
 
@@ -54,7 +58,7 @@
 
 ## 三、实践映射
 
-### 3.1 从理论到代码
+### 3.1 地理感知边缘路由
 
 ```typescript
 // edge-first-patterns/geo-routing.ts — 地理感知边缘路由
@@ -94,6 +98,119 @@ const router = new GeoRouter({
 });
 ```
 
+### 3.2 边缘缓存失效策略
+
+```typescript
+// edge-first-patterns/cache-invalidation.ts
+interface CacheTag {
+  tag: string;
+  ttlSeconds: number;
+}
+
+class EdgeCacheManager {
+  async purgeByTag(tag: string, zoneId: string, apiToken: string): Promise<void> {
+    const res = await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}/purge_cache`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ tags: [tag] }),
+    });
+    if (!res.ok) throw new Error(`Purge failed: ${await res.text()}`);
+  }
+
+  // 基于版本号的被动失效（immutable URL 模式）
+  versionedAsset(path: string, version: string): string {
+    return `${path}?v=${version}`;
+  }
+}
+
+// Cloudflare Worker 中的缓存控制
+export default {
+  async fetch(request: Request): Promise<Response> {
+    const cache = caches.default;
+    const cached = await cache.match(request);
+    if (cached) return cached;
+
+    const response = await fetchOrigin(request);
+    const cloned = response.clone();
+
+    // 仅缓存 GET 请求且状态码 200
+    if (request.method === 'GET' && response.status === 200) {
+      cloned.headers.set('Cache-Control', 'public, max-age=60, s-maxage=300');
+      await cache.put(request, cloned);
+    }
+    return response;
+  },
+};
+```
+
+### 3.3 边缘 SSR（流式渲染）
+
+```typescript
+// edge-first-patterns/edge-ssr.ts — Cloudflare Worker 流式 SSR
+import { renderToReadableStream } from 'react-dom/server';
+import App from './App';
+
+export default {
+  async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+
+    // 流式渲染 React 应用
+    const stream = await renderToReadableStream(<App url={url} />, {
+      bootstrapScripts: ['/client.js'],
+      onError(error: unknown) {
+        console.error('SSR Error:', error);
+      },
+    });
+
+    await stream.allReady;
+
+    return new Response(stream as unknown as ReadableStream, {
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-cache',
+      },
+    });
+  },
+};
+```
+
+### 3.4 局部一致性模式（读写分离）
+
+```typescript
+// edge-first-patterns/local-consistency.ts
+interface ReplicatedStore<T> {
+  readLocal(key: string): Promise<T | null>;
+  writeGlobal(key: string, value: T): Promise<void>;
+  reconcile(): Promise<void>;
+}
+
+class EdgeKVStore implements ReplicatedStore<string> {
+  constructor(
+    private local: KVNamespace,   // Cloudflare KV（边缘读取）
+    private global: DurableObjectStub // Durable Object（强一致写入）
+  ) {}
+
+  async readLocal(key: string): Promise<string | null> {
+    return this.local.get(key, { cacheTtl: 60 });
+  }
+
+  async writeGlobal(key: string, value: string): Promise<void> {
+    await this.global.fetch('http://do/write', {
+      method: 'POST',
+      body: JSON.stringify({ key, value }),
+    });
+  }
+
+  // 定期从全局同步到边缘 KV
+  async reconcile(): Promise<void> {
+    // 通过 Durable Object 的 alarm 机制触发
+  }
+}
+```
+
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 边缘优先模式 核心机制的理解，并观察不同实现选择带来的行为差异。
 
 ### 3.2 常见误区
@@ -120,6 +237,10 @@ const router = new GeoRouter({
 | Fastly Edge Architecture | 官方文档 | [developer.fastly.com/learning/concepts/design-considerations](https://developer.fastly.com/learning/concepts/design-considerations/) |
 | Vercel Edge Network | 官方文档 | [vercel.com/docs/edge-network/overview](https://vercel.com/docs/edge-network/overview) |
 | Akamai Edge Platform | 官方文档 | [developer.akamai.com/edge](https://developer.akamai.com/) |
+| Cloudflare Cache API | 官方文档 | [developers.cloudflare.com/workers/runtime-apis/cache](https://developers.cloudflare.com/workers/runtime-apis/cache/) |
+| React Streaming SSR | 官方文档 | [react.dev/reference/react-dom/server/renderToReadableStream](https://react.dev/reference/react-dom/server/renderToReadableStream) |
+| WinterCG Runtime APIs | 规范 | [wintercg.org/work](https://wintercg.org/work) |
+| RFC 5861 — HTTP Cache-Control Extensions | RFC | [datatracker.ietf.org/doc/html/rfc5861](https://datatracker.ietf.org/doc/html/rfc5861) |
 
 ---
 

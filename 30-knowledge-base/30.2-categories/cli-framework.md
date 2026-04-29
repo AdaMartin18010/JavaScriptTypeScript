@@ -96,6 +96,173 @@ program
 program.parse();
 ```
 
+## 代码示例：Ink React 终端 UI
+
+```tsx
+// ink-dashboard.tsx
+import React, { useState, useEffect } from 'react';
+import { render, Box, Text, useInput, useApp } from 'ink';
+
+function Dashboard() {
+  const [progress, setProgress] = useState(0);
+  const { exit } = useApp();
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 100) {
+          clearInterval(timer);
+          return 100;
+        }
+        return p + 5;
+      });
+    }, 100);
+    return () => clearInterval(timer);
+  }, []);
+
+  useInput((input) => {
+    if (input === 'q') exit();
+  });
+
+  const barWidth = 30;
+  const filled = Math.round((progress / 100) * barWidth);
+  const bar = '█'.repeat(filled) + '░'.repeat(barWidth - filled);
+
+  return (
+    <Box flexDirection="column" padding={1}>
+      <Text bold color="cyan">
+        JS/TS Build Dashboard
+      </Text>
+      <Box marginTop={1}>
+        <Text>[{bar}] {progress}%</Text>
+      </Box>
+      <Box marginTop={1}>
+        <Text dimColor>Press "q" to quit</Text>
+      </Box>
+    </Box>
+  );
+}
+
+render(<Dashboard />);
+```
+
+## 代码示例：Oclif 插件化 CLI
+
+```typescript
+// oclif-example/src/commands/hello.ts
+import { Command, Flags } from '@oclif/core';
+
+export default class Hello extends Command {
+  static description = 'Say hello';
+
+  static flags = {
+    name: Flags.string({
+      char: 'n',
+      description: 'Name to greet',
+      default: 'World',
+    }),
+    from: Flags.string({
+      char: 'f',
+      description: 'Who is greeting',
+      required: true,
+    }),
+  };
+
+  async run(): Promise<void> {
+    const { flags } = await this.parse(Hello);
+    this.log(`${flags.from} says: Hello, ${flags.name}!`);
+  }
+}
+
+// oclif 自动生成 help：
+// $ mycli hello --help
+// Say hello
+//
+// FLAGS
+//   -f, --from=<value>  (required) Who is greeting
+//   -n, --name=<value>  [default: World] Name to greet
+```
+
+## 代码示例：Clack 交互式向导
+
+```typescript
+// clack-wizard.ts — 纯交互式 CLI
+import * as clack from '@clack/prompts';
+import chalk from 'chalk';
+import { setTimeout } from 'node:timers/promises';
+
+interface ProjectConfig {
+  name: string;
+  framework: 'react' | 'vue' | 'svelte' | 'vanilla';
+  typescript: boolean;
+  features: string[];
+}
+
+async function runWizard(): Promise<ProjectConfig> {
+  clack.intro(chalk.bgBlue('  JS/TS 项目脚手架  '));
+
+  const name = await clack.text({
+    message: '项目名称？',
+    placeholder: 'my-awesome-app',
+    validate: (value) => {
+      if (!value) return '项目名称不能为空';
+      if (!/^[a-z0-9-_]+$/i.test(value)) return '只能包含字母、数字、连字符和下划线';
+    },
+  });
+
+  if (clack.isCancel(name)) {
+    clack.cancel('已取消');
+    process.exit(0);
+  }
+
+  const framework = await clack.select({
+    message: '选择框架',
+    options: [
+      { value: 'react', label: 'React' },
+      { value: 'vue', label: 'Vue' },
+      { value: 'svelte', label: 'Svelte' },
+      { value: 'vanilla', label: 'Vanilla JS' },
+    ],
+  });
+
+  if (clack.isCancel(framework)) {
+    clack.cancel('已取消');
+    process.exit(0);
+  }
+
+  const typescript = await clack.confirm({
+    message: '使用 TypeScript？',
+    initialValue: true,
+  });
+
+  const features = await clack.multiselect({
+    message: '选择要安装的额外功能',
+    options: [
+      { value: 'eslint', label: 'ESLint + Prettier' },
+      { value: 'vitest', label: 'Vitest 测试' },
+      { value: 'tailwind', label: 'Tailwind CSS' },
+      { value: 'ci', label: 'GitHub Actions CI' },
+    ],
+  });
+
+  const spinner = clack.spinner();
+  spinner.start('正在生成项目...');
+  await setTimeout(2000);
+  spinner.stop('项目生成完成！');
+
+  clack.outro(chalk.green(`✅ cd ${name}`));
+
+  return {
+    name: name as string,
+    framework: framework as ProjectConfig['framework'],
+    typescript: typescript as boolean,
+    features: features as string[],
+  };
+}
+
+runWizard();
+```
+
 ---
 
 ## 2026 推荐
@@ -116,6 +283,14 @@ program.parse();
 - [Cliffy 官方文档](https://cliffy.io/)
 - [cac 官方文档](https://github.com/cacjs/cac)
 - [Chalk 官方文档](https://github.com/chalk/chalk)
+- [zx — Google 脚本工具](https://github.com/google/zx)
+- [Yargs 官方文档](https://yargs.js.org/)
+- [Minimist — 轻量解析](https://github.com/minimistjs/minimist)
+- [Meow — 轻量 CLI 辅助](https://github.com/sindresorhus/meow)
+- [Ink Testing Library](https://github.com/vadimdemedes/ink-testing-library)
+- [Sindre Sorhus CLI 指南](https://github.com/sindresorhus/awesome-nodejs#command-line-utilities)
+- [Node.js Process 文档](https://nodejs.org/api/process.html)
+- [Node.js Readline 文档](https://nodejs.org/api/readline.html)
 
 ---
 

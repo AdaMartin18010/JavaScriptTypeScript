@@ -103,7 +103,129 @@ impl VisitMut for ConsoleToLogger {
 }
 ```
 
-## 4. 元编程模式
+## 4. TypeScript Compiler API：类型感知代码生成
+
+```typescript
+// ts-compiler-api.ts
+import * as ts from 'typescript';
+
+const sourceCode = `
+interface User {
+  id: number;
+  name: string;
+}
+`;
+
+const sourceFile = ts.createSourceFile(
+  'temp.ts',
+  sourceCode,
+  ts.ScriptTarget.Latest,
+  true
+);
+
+// 遍历接口并生成 Zod Schema 代码
+function generateZodSchema(sourceFile: ts.SourceFile): string {
+  let output = '';
+  ts.forEachChild(sourceFile, (node) => {
+    if (ts.isInterfaceDeclaration(node)) {
+      output += `const ${node.name.text}Schema = z.object({\n`;
+      for (const member of node.members) {
+        if (ts.isPropertySignature(member) && member.type) {
+          const name = (member.name as ts.Identifier).text;
+          const typeText = member.type.getText(sourceFile);
+          const zodType =
+            typeText === 'number' ? 'z.number()' :
+            typeText === 'string' ? 'z.string()' : 'z.any()';
+          output += `  ${name}: ${zodType},\n`;
+        }
+      }
+      output += `});\n`;
+    }
+  });
+  return output;
+}
+
+console.log(generateZodSchema(sourceFile));
+// 输出:
+// const UserSchema = z.object({
+//   id: z.number(),
+//   name: z.string(),
+// });
+```
+
+## 5. OpenAPI 驱动代码生成
+
+```typescript
+// openapi-codegen.ts
+import openapiTS from 'openapi-typescript';
+
+const schema = await fetch('https://petstore3.swagger.io/api/v3/openapi.json').then(r => r.json());
+
+const types = await openapiTS(schema);
+console.log(types);
+// 生成 TypeScript 类型：
+// export interface paths {
+//   "/pet": {
+//     post: { requestBody: { content: { "application/json": components["schemas"]["Pet"] } } };
+//   };
+// }
+```
+
+## 6. 模板驱动代码生成（Handlebars）
+
+```typescript
+// template-codegen.ts
+import Handlebars from 'handlebars';
+
+const componentTemplate = Handlebars.compile(`
+import React from 'react';
+
+export interface {{name}}Props {
+  {{#each props}}
+  {{name}}: {{type}};
+  {{/each}}
+}
+
+export const {{name}}: React.FC<{{name}}Props> = (props) => {
+  return <div>{props.title}</div>;
+};
+`);
+
+const code = componentTemplate({
+  name: 'HeroBanner',
+  props: [
+    { name: 'title', type: 'string' },
+    { name: 'imageUrl', type: 'string' },
+  ],
+});
+
+console.log(code);
+```
+
+## 7. Zod Schema 转 TypeScript 接口（反向生成）
+
+```typescript
+// zod-to-ts.ts
+import { z } from 'zod';
+import { zodToTs, printNode } from 'zod-to-ts';
+
+const UserSchema = z.object({
+  id: z.number(),
+  email: z.string().email(),
+  role: z.enum(['admin', 'user']),
+});
+
+const { node } = zodToTs(UserSchema, 'User');
+console.log(printNode(node));
+// 输出:
+// interface User {
+//   id: number;
+//   email: string;
+//   role: "admin" | "user";
+// }
+```
+
+## 8. 元编程模式
 
 - **装饰器（Decorator）**: 注解式元数据附加
 - **Reflect API**: 运行时类型和元数据操作
@@ -111,7 +233,7 @@ impl VisitMut for ConsoleToLogger {
 - **代码模板**: 基于 AST 的代码片段生成
 - **宏（Macro）**: 编译期代码生成（如 `babel-plugin-macros`）
 
-## 5. 与相邻模块的关系
+## 9. 与相邻模块的关系
 
 - **79-compiler-design**: 编译器的完整设计
 - **78-metaprogramming**: 元编程技术
@@ -129,6 +251,10 @@ impl VisitMut for ConsoleToLogger {
 | TypeScript Compiler API | 文档 | [github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) |
 | AST Explorer | 工具 | [astexplorer.net](https://astexplorer.net) — 交互式 AST 可视化 |
 | TC39 Proposals | 规范 | [tc39.es](https://tc39.es) |
+| openapi-typescript | 仓库 | [github.com/drwpow/openapi-typescript](https://github.com/drwpow/openapi-typescript) |
+| Handlebars.js | 文档 | [handlebarsjs.com](https://handlebarsjs.com/) |
+| zod-to-ts | 仓库 | [github.com/sachinraja/zod-to-ts](https://github.com/sachinraja/zod-to-ts) |
+| babel-plugin-macros | 仓库 | [github.com/kentcdodds/babel-plugin-macros](https://github.com/kentcdodds/babel-plugin-macros) |
 
 ---
 

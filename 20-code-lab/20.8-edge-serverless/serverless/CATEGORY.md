@@ -79,6 +79,96 @@ app.post('/api/echo', async (c) => {
 export default app;
 ```
 
+### 冷启动优化：连接池与初始化分离
+
+```typescript
+// cold-start.ts — Lambda 最佳实践
+import { Pool } from 'pg';
+
+// 全局作用域：复用连接池，避免每次调用重建
+let pool: Pool | null = null;
+
+function getPool(): Pool {
+  if (!pool) {
+    pool = new Pool({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      max: 10,
+      idleTimeoutMillis: 30000,
+    });
+  }
+  return pool;
+}
+
+export const handler = async (event: unknown) => {
+  const client = await getPool().connect();
+  try {
+    const result = await client.query('SELECT NOW() as now');
+    return { statusCode: 200, body: JSON.stringify(result.rows[0]) };
+  } finally {
+    client.release();
+  }
+};
+```
+
+### 事件驱动：SQS → Lambda 批处理
+
+```typescript
+// event-driven.ts — 批量处理 SQS 消息
+import { SQSBatchResponse, SQSEvent, SQSRecord } from 'aws-lambda';
+
+export const handler = async (event: SQSEvent): Promise<SQSBatchResponse> => {
+  const batchItemFailures: { itemIdentifier: string }[] = [];
+
+  await Promise.all(
+    event.Records.map(async (record: SQSRecord) => {
+      try {
+        const body = JSON.parse(record.body);
+        await processMessage(body);
+      } catch {
+        // 仅标记失败项，其余成功消息自动确认
+        batchItemFailures.push({ itemIdentifier: record.messageId });
+      }
+    })
+  );
+
+  return { batchItemFailures };
+};
+
+async function processMessage(body: unknown): Promise<void> {
+  console.log('Processing:', body);
+}
+```
+
+### D1 / Turso 无服务器数据库事务
+
+```typescript
+// serverless-db.ts — Cloudflare D1 事务
+export interface Env {
+  DB: D1Database;
+}
+
+export async function transferCredits(
+  env: Env,
+  fromUser: string,
+  toUser: string,
+  amount: number
+): Promise<Response> {
+  const result = await env.DB.batch([
+    env.DB.prepare('UPDATE users SET credits = credits - ? WHERE id = ?').bind(amount, fromUser),
+    env.DB.prepare('UPDATE users SET credits = credits + ? WHERE id = ?').bind(amount, toUser),
+    env.DB.prepare(
+      'INSERT INTO transactions (from_user, to_user, amount, created_at) VALUES (?, ?, ?, ?)'
+    ).bind(fromUser, toUser, amount, new Date().toISOString()),
+  ]);
+
+  const success = result.every((r) => r.success);
+  return Response.json({ success, meta: result.map((r) => r.meta) });
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -102,6 +192,13 @@ export default app;
 | Vercel Edge Functions | 官方文档 | [vercel.com/docs/functions/edge-functions](https://vercel.com/docs/functions/edge-functions) |
 | Hono | 轻量框架 | [hono.dev](https://hono.dev/) |
 | Serverless Framework | 部署工具 | [serverless.com](https://www.serverless.com/) |
+| OpenFaaS | 开源 Serverless | [docs.openfaas.com](https://docs.openfaas.com/) |
+| Knative | Kubernetes Serverless | [knative.dev/docs](https://knative.dev/docs/) |
+| AWS Lambda Power Tuning | 性能优化工具 | [github.com/alexcasalboni/aws-lambda-power-tuning](https://github.com/alexcasalboni/aws-lambda-power-tuning) |
+| Cloudflare D1 | 无服务器 SQL 数据库 | [developers.cloudflare.com/d1](https://developers.cloudflare.com/d1/) |
+| Turso / libSQL | 边缘 SQLite | [docs.turso.tech](https://docs.turso.tech/) |
+| Neon Serverless Postgres | 无服务器 PostgreSQL | [neon.tech/docs](https://neon.tech/docs/introduction) |
+| SST (Serverless Stack) | 部署框架 | [sst.dev/docs](https://sst.dev/docs/) |
 
 ---
 

@@ -50,6 +50,126 @@
 
 ---
 
+## 代码示例
+
+### 类型系统作为组织政策工具
+
+```typescript
+// strict-policy.ts — 利用 TS 类型系统实施架构规则
+// 通过 branded type 防止不同领域 ID 混用
+type UserId = string & { __brand: 'UserId' };
+type OrderId = string & { __brand: 'OrderId' };
+
+function UserId(id: string): UserId { return id as UserId; }
+function OrderId(id: string): OrderId { return id as OrderId; }
+
+// 以下会在编译时报错，防止将 UserId 传入 Order 查询
+function getOrder(id: OrderId): Promise<Order> { /* ... */ }
+const userId = UserId('u-123');
+// getOrder(userId); // ❌ Type 'UserId' is not assignable to type 'OrderId'
+```
+
+### V8 推测优化观察
+
+```typescript
+// v8-optimization-hints.ts — 帮助 JIT 生成高效代码的模式
+
+// ✅ Monomorphic — 单形态，IC 高效
+class Point { x: number; y: number; constructor(x: number, y: number) { this.x = x; this.y = y; } }
+function distance(p: Point) { return Math.sqrt(p.x ** 2 + p.y ** 2); }
+
+// ❌ Polymorphic — 多形态，IC 退化为 megamorphic，性能下降
+function polymorphicDistance(p: any) { return Math.sqrt(p.x ** 2 + p.y ** 2); }
+
+// ✅ 使用 const/smci 类型的属性访问
+const obj = { x: 1, y: 2 };
+// V8 可以内联缓存 const 属性
+
+// 观察 V8 优化状态（Node.js --print-opt-code --trace-opt）
+// 推荐使用 --allow-natives-syntax 配合 %GetOptimizationStatus(fn)
+```
+
+### 运行时兼容性检测（Node.js / Deno / Bun）
+
+```typescript
+// runtime-compat.ts — 三运行时兼容层
+const runtime = {
+  isNode: typeof process !== 'undefined' && process.versions?.node,
+  isDeno: typeof Deno !== 'undefined',
+  isBun: typeof Bun !== 'undefined',
+};
+
+async function readFile(path: string): Promise<string> {
+  if (runtime.isDeno) {
+    const decoder = new TextDecoder();
+    return decoder.decode(await Deno.readFile(path));
+  }
+  if (runtime.isBun) {
+    return Bun.file(path).text();
+  }
+  // Node.js fallback
+  const fs = await import('node:fs/promises');
+  return fs.readFile(path, 'utf-8');
+}
+
+// WinterCG 标准化 fetch 已三端统一
+async function universalFetch(url: string): Promise<Response> {
+  return fetch(url); // Node 18+, Deno, Bun 均原生支持
+}
+```
+
+### 性能预算守护（CI 检查）
+
+```typescript
+// performance-budget.ts — CI 中的帧预算与包体积检查
+interface BudgetCheck {
+  name: string;
+  actual: number;
+  limit: number;
+  pass: boolean;
+}
+
+function checkBundleBudget(bundleSizeKB: number, limitKB = 200): BudgetCheck {
+  return {
+    name: 'Bundle Size',
+    actual: bundleSizeKB,
+    limit: limitKB,
+    pass: bundleSizeKB <= limitKB,
+  };
+}
+
+function checkINPBudget(inpMs: number, limitMs = 200): BudgetCheck {
+  return {
+    name: 'INP (Interaction to Next Paint)',
+    actual: inpMs,
+    limit: limitMs,
+    pass: inpMs <= limitMs,
+  };
+}
+
+function checkLongTaskBudget(longTaskCount: number, limit = 0): BudgetCheck {
+  return {
+    name: 'Long Tasks (>50ms)',
+    actual: longTaskCount,
+    limit,
+    pass: longTaskCount <= limit,
+  };
+}
+
+// CI 中使用
+const checks = [
+  checkBundleBudget(180),
+  checkINPBudget(165),
+  checkLongTaskBudget(0),
+];
+if (checks.some(c => !c.pass)) {
+  console.table(checks);
+  process.exit(1);
+}
+```
+
+---
+
 ## 数据可视化链接
 
 | 可视化主题 | 链接 | 说明 |
@@ -102,6 +222,23 @@ Bun (性能优先) ←—— 采纳 ——→ Node API 兼容, 包管理器, bun
 ```
 
 **结论**: 三运行时在 API 层面趋于一致 (WinterCG)，差异化集中在启动延迟、包管理体验、内置工具链。2026 年选型更多取决于团队工作流偏好而非功能差异。
+
+---
+
+## 权威参考
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| V8 引擎博客 | 官方博客 | [v8.dev/blog](https://v8.dev/blog) |
+| TypeScript 设计目标 | 官方文档 | [github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals](https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals) |
+| WinterCG 运行时规范 | 规范 | [wintercg.org/work](https://wintercg.org/work) |
+| Node.js 发布时间表 | 官方文档 | [nodejs.org/en/about/previous-releases](https://nodejs.org/en/about/previous-releases) |
+| Deno 2.0 发布公告 | 官方博客 | [deno.com/blog/v2.0](https://deno.com/blog/v2.0) |
+| Bun 性能基准 | 官方文档 | [bun.sh/docs/project/benchmarking](https://bun.sh/docs/project/benchmarking) |
+| Chromium 安全公告 | 官方公告 | [chromereleases.googleblog.com](https://chromereleases.googleblog.com/) |
+| web.dev — Core Web Vitals | 指南 | [web.dev/vitals](https://web.dev/vitals/) |
+| TC39 ECMAScript 提案 | 规范 | [tc39.es](https://tc39.es/) |
+| JS Benchmarking Best Practices | 指南 | [mathiasbynens.be](https://mathiasbynens.be/) |
 
 ---
 

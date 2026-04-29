@@ -4,6 +4,7 @@ review-cycle: 6 months
 next-review: 2026-10-27
 status: current
 ---
+
 # 文档第三轮精修计划
 
 > 目标：建立文档间的交叉引用网络，修正时间线/提案状态的不一致，增强全景索引的完整性。
@@ -118,12 +119,84 @@ status: current
 
 ---
 
-## 六、参考链接
+## 六、自动化交叉引用校验脚本
+
+```typescript
+// scripts/validate-cross-references.ts
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, relative } from 'node:path';
+
+interface ValidationResult {
+  file: string;
+  missing: string[];
+  orphaned: string[];
+}
+
+function findMarkdownFiles(dir: string): string[] {
+  const results: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results.push(...findMarkdownFiles(fullPath));
+    } else if (entry.name.endsWith('.md')) {
+      results.push(fullPath);
+    }
+  }
+  return results;
+}
+
+function extractInternalLinks(content: string): string[] {
+  const linkRegex = /\[.*?\]\((?!https?:\/\/)(.+?)\)/g;
+  const links: string[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = linkRegex.exec(content)) !== null) {
+    links.push(match[1].split('#')[0]); // 去掉锚点
+  }
+  return links;
+}
+
+function validateCrossReferences(baseDir: string): ValidationResult[] {
+  const files = findMarkdownFiles(baseDir);
+  const fileSet = new Set(files.map((f) => relative(baseDir, f)));
+  const results: ValidationResult[] = [];
+
+  for (const file of files) {
+    const relPath = relative(baseDir, file);
+    const content = readFileSync(file, 'utf-8');
+    const links = extractInternalLinks(content);
+
+    const missing = links.filter((link) => {
+      const resolved = join(baseDir, link);
+      return !fileSet.has(link) && !fileSet.has(relative(baseDir, resolved));
+    });
+
+    if (missing.length > 0) {
+      results.push({ file: relPath, missing, orphaned: [] });
+    }
+  }
+
+  return results;
+}
+
+// 运行：
+// const issues = validateCrossReferences('./30-knowledge-base');
+// issues.forEach(i => console.log(`${i.file}: missing ${i.missing.join(', ')}`));
+```
+
+---
+
+## 七、参考链接
 
 - [TC39 Proposals – GitHub](https://github.com/tc39/proposals)
 - [Node.js Release Schedule](https://nodejs.org/en/about/previous-releases)
 - [TypeScript 7.0 Roadmap / Corsa](https://devblogs.microsoft.com/typescript/)
 - [ES2025 Finished Proposals](https://github.com/tc39/proposals/blob/main/finished-proposals.md)
+- [ECMA-262 规范](https://tc39.es/ecma262/)
+- [TypeScript 设计目标](https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals)
+- [Deno 官方博客 — Type Stripping](https://deno.com/blog/v2.0)
+- [Bun 运行时文档](https://bun.sh/docs)
+- [Node.js 官方文档](https://nodejs.org/docs/latest/api/)
+- [WebAssembly 规范](https://webassembly.github.io/spec/)
 - [本项目全景索引](../00_全景综述索引与总结.md)
 
 ---

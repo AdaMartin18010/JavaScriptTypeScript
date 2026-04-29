@@ -108,6 +108,127 @@ worker.on('failed', (job, err) => {
 
 ---
 
+## 扩展代码示例
+
+### RabbitMQ（amqplib）+ TypeScript
+
+```typescript
+import amqp, { Channel, Connection } from 'amqplib';
+
+const QUEUE = 'task_queue';
+
+// 生产者
+async function publishTask(task: unknown) {
+  const conn: Connection = await amqp.connect('amqp://localhost');
+  const ch: Channel = await conn.createChannel();
+  await ch.assertQueue(QUEUE, { durable: true });
+  ch.sendToQueue(QUEUE, Buffer.from(JSON.stringify(task)), { persistent: true });
+  console.log('[Producer] 发送任务:', task);
+  await ch.close();
+  await conn.close();
+}
+
+// 消费者
+async function consumeTask() {
+  const conn = await amqp.connect('amqp://localhost');
+  const ch = await conn.createChannel();
+  await ch.assertQueue(QUEUE, { durable: true });
+  // 公平分发：每次只取 1 条，处理完再取
+  await ch.prefetch(1);
+  ch.consume(QUEUE, (msg) => {
+    if (!msg) return;
+    const content = JSON.parse(msg.content.toString());
+    console.log('[Consumer] 处理任务:', content);
+    // 模拟处理
+    setTimeout(() => {
+      ch.ack(msg);
+    }, 500);
+  });
+}
+
+(async () => {
+  await publishTask({ type: 'send-email', to: 'a@example.com' });
+  await consumeTask();
+})();
+```
+
+### Apache Kafka（kafka-js）+ TypeScript
+
+```typescript
+import { Kafka, Producer, Consumer } from 'kafkajs';
+
+const kafka = new Kafka({ clientId: 'my-app', brokers: ['localhost:9092'] });
+
+// 生产者
+async function produceMessages(topic: string, messages: { key: string; value: string }[]) {
+  const producer: Producer = kafka.producer();
+  await producer.connect();
+  await producer.send({
+    topic,
+    messages: messages.map((m) => ({ key: m.key, value: m.value })),
+  });
+  await producer.disconnect();
+}
+
+// 消费者
+async function consumeMessages(topic: string, groupId: string) {
+  const consumer: Consumer = kafka.consumer({ groupId });
+  await consumer.connect();
+  await consumer.subscribe({ topic, fromBeginning: true });
+  await consumer.run({
+    eachMessage: async ({ topic, partition, message }) => {
+      console.log(`[Kafka] ${topic}[${partition}]: ${message.key} -> ${message.value}`);
+    },
+  });
+}
+
+(async () => {
+  await produceMessages('orders', [
+    { key: 'order-1', value: JSON.stringify({ item: 'MacBook', qty: 1 }) },
+  ]);
+  await consumeMessages('orders', 'order-processor');
+})();
+```
+
+### NATS（nats.js）+ TypeScript
+
+```typescript
+import { connect, StringCodec, JSONCodec } from 'nats';
+
+const sc = StringCodec();
+const jc = JSONCodec();
+
+async function natsPubSub() {
+  const nc = await connect({ servers: 'localhost:4222' });
+
+  // 订阅者
+  const sub = nc.subscribe('orders.created');
+  (async () => {
+    for await (const msg of sub) {
+      const data = jc.decode(msg.data);
+      console.log('[NATS] 收到订单:', data);
+      // 请求-响应模式：回复确认
+      if (msg.respond) {
+        msg.respond(sc.encode('ack'));
+      }
+    }
+  })();
+
+  // 发布者
+  await nc.publish('orders.created', jc.encode({ id: 'ord-42', total: 1999 }));
+
+  // 请求-响应（RPC 风格）
+  const resp = await nc.request('orders.created', jc.encode({ id: 'ord-43', total: 299 }));
+  console.log('[NATS] 响应:', sc.decode(resp.data));
+
+  await nc.drain();
+}
+
+natsPubSub();
+```
+
+---
+
 ## 选型
 
 | 场景 | 推荐 |
@@ -122,11 +243,16 @@ worker.on('failed', (job, err) => {
 ## 权威参考链接
 
 - [RabbitMQ 官方文档](https://www.rabbitmq.com/documentation.html)
+- [RabbitMQ Tutorials](https://www.rabbitmq.com/getstarted.html)
+- [AMQP 0-9-1 Specification](https://www.amqp.org/specification/0-9-1/amqp-org-download)
 - [Apache Kafka 官方文档](https://kafka.apache.org/documentation/)
+- [kafka-js npm](https://www.npmjs.com/package/kafka-js)
 - [NATS 官方文档](https://docs.nats.io/)
+- [nats.js npm](https://www.npmjs.com/package/nats)
 - [BullMQ 官方文档](https://docs.bullmq.io/)
 - [Redis Pub/Sub 文档](https://redis.io/docs/latest/develop/interact/pubsub/)
-- [kafka-js npm](https://www.npmjs.com/package/kafka-js)
+- [CloudEvents Specification](https://cloudevents.io/)
+- [AWS SQS Documentation](https://docs.aws.amazon.com/sqs/)
 
 ---
 

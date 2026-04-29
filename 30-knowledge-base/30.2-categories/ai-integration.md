@@ -80,6 +80,97 @@ async function ragAnswer(question: string, vectorStore: VectorStore) {
 
 ---
 
+## Code Example: 流式文本生成（AI SDK）
+
+```typescript
+import { streamText } from 'ai';
+import { openai } from '@ai-sdk/openai';
+
+export async function POST(req: Request) {
+  const { prompt } = await req.json();
+
+  const result = streamText({
+    model: openai('gpt-4o'),
+    system: '你是一位资深 TypeScript 工程师。',
+    prompt,
+  });
+
+  return result.toDataStreamResponse();
+}
+
+// 客户端消费流
+// const response = await fetch('/api/chat', { method: 'POST', body: JSON.stringify({ prompt }) });
+// const reader = response.body?.pipeThrough(new TextDecoderStream()).getReader();
+// while (reader) {
+//   const { done, value } = await reader.read();
+//   if (done) break;
+//   console.log(value);
+// }
+```
+
+---
+
+## Code Example: Agent 工具调用（Vercel AI SDK）
+
+```typescript
+import { generateText, tool } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { z } from 'zod';
+
+const weatherTool = tool({
+  description: '获取指定城市的当前天气',
+  parameters: z.object({
+    city: z.string().describe('城市名称，如 Beijing'),
+    unit: z.enum(['celsius', 'fahrenheit']).default('celsius'),
+  }),
+  execute: async ({ city, unit }) => {
+    // 实际调用天气 API
+    const res = await fetch(`https://api.weather.example.com/v1/current?city=${city}&unit=${unit}`);
+    return res.json();
+  },
+});
+
+async function runAgent(query: string) {
+  const { text, toolCalls } = await generateText({
+    model: openai('gpt-4o'),
+    tools: { getWeather: weatherTool },
+    prompt: query,
+    maxToolRoundtrips: 3, // 允许最多 3 轮工具调用
+  });
+  return { text, toolCalls };
+}
+
+// const result = await runAgent('北京今天天气怎么样？');
+```
+
+---
+
+## Code Example: 结构化输出（Object Generation）
+
+```typescript
+import { generateObject } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { z } from 'zod';
+
+const schema = z.object({
+  title: z.string().describe('文章标题'),
+  summary: z.string().max(200).describe('200字以内摘要'),
+  tags: z.array(z.string()).max(5).describe('相关标签'),
+  sentiment: z.enum(['positive', 'neutral', 'negative']).describe('情感倾向'),
+});
+
+async function analyzeArticle(content: string) {
+  const { object } = await generateObject({
+    model: openai('gpt-4o'),
+    schema,
+    prompt: `分析以下文章内容，提取结构化信息：\n\n${content}`,
+  });
+  return object; // 类型为 z.infer<typeof schema>
+}
+```
+
+---
+
 ## 最佳实践
 
 1. **流式响应**：使用 `streamText` 提升用户体验
@@ -101,6 +192,13 @@ async function ragAnswer(question: string, vectorStore: VectorStore) {
 - [LlamaIndex TypeScript](https://ts.llamaindex.ai/)
 - [What is RAG? – OpenAI](https://platform.openai.com/docs/guides/retrieval-augmented-generation)
 - [Mastra – TypeScript Agent Framework](https://mastra.ai/)
+- [Anthropic API Documentation](https://docs.anthropic.com/en/api/getting-started)
+- [Google Gemini API](https://ai.google.dev/gemini-api/docs)
+- [Cohere API Reference](https://docs.cohere.com/)
+- [OpenAI Function Calling Guide](https://platform.openai.com/docs/guides/function-calling)
+- [Zod Schema Validation](https://zod.dev/)
+- [Hugging Face — Embeddings Guide](https://huggingface.co/docs/transformers/model_doc/auto#transformers.AutoModel)
+- [pgvector — PostgreSQL Vector Extension](https://github.com/pgvector/pgvector)
 
 ---
 

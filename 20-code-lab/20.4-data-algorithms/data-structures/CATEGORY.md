@@ -25,7 +25,7 @@ created: 2026-04-27
   └── 05-algorithms           → 算法实现
 ```
 
-## 子模块目录
+## 子模块目录结构
 
 | 子模块 | 说明 | 关键文件 |
 |---|---|---|
@@ -114,6 +114,138 @@ class HashTable<K, V> {
 }
 ```
 
+### 最小堆（优先队列）
+
+```ts
+class MinHeap<T> {
+  private heap: T[] = [];
+  constructor(private compare: (a: T, b: T) => number) {}
+
+  private parent(i: number) { return (i - 1) >> 1; }
+  private left(i: number) { return (i << 1) + 1; }
+  private right(i: number) { return (i << 1) + 2; }
+
+  push(val: T): void {
+    this.heap.push(val);
+    let i = this.heap.length - 1;
+    while (i > 0 && this.compare(this.heap[i], this.heap[this.parent(i)]) < 0) {
+      [this.heap[i], this.heap[this.parent(i)]] = [this.heap[this.parent(i)], this.heap[i]];
+      i = this.parent(i);
+    }
+  }
+
+  pop(): T | undefined {
+    if (this.heap.length === 0) return undefined;
+    if (this.heap.length === 1) return this.heap.pop();
+    const top = this.heap[0];
+    this.heap[0] = this.heap.pop()!;
+    let i = 0;
+    while (true) {
+      const l = this.left(i), r = this.right(i);
+      let smallest = i;
+      if (l < this.heap.length && this.compare(this.heap[l], this.heap[smallest]) < 0) smallest = l;
+      if (r < this.heap.length && this.compare(this.heap[r], this.heap[smallest]) < 0) smallest = r;
+      if (smallest === i) break;
+      [this.heap[i], this.heap[smallest]] = [this.heap[smallest], this.heap[i]];
+      i = smallest;
+    }
+    return top;
+  }
+
+  peek(): T | undefined { return this.heap[0]; }
+  size(): number { return this.heap.length; }
+}
+```
+
+### 图的邻接表与 BFS/DFS
+
+```ts
+class Graph<T> {
+  private adj = new Map<T, T[]>();
+
+  addEdge(u: T, v: T): void {
+    if (!this.adj.has(u)) this.adj.set(u, []);
+    this.adj.get(u)!.push(v);
+  }
+
+  bfs(start: T): T[] {
+    const result: T[] = [];
+    const visited = new Set<T>();
+    const queue: T[] = [start];
+    visited.add(start);
+    while (queue.length) {
+      const node = queue.shift()!;
+      result.push(node);
+      for (const neighbor of this.adj.get(node) ?? []) {
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor);
+          queue.push(neighbor);
+        }
+      }
+    }
+    return result;
+  }
+
+  dfs(start: T): T[] {
+    const result: T[] = [];
+    const visited = new Set<T>();
+    const stack: T[] = [start];
+    visited.add(start);
+    while (stack.length) {
+      const node = stack.pop()!;
+      result.push(node);
+      for (const neighbor of this.adj.get(node) ?? []) {
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor);
+          stack.push(neighbor);
+        }
+      }
+    }
+    return result;
+  }
+}
+```
+
+### Trie（前缀树）
+
+```ts
+class TrieNode {
+  children = new Map<string, TrieNode>();
+  isEnd = false;
+}
+
+class Trie {
+  private root = new TrieNode();
+
+  insert(word: string): void {
+    let node = this.root;
+    for (const ch of word) {
+      if (!node.children.has(ch)) node.children.set(ch, new TrieNode());
+      node = node.children.get(ch)!;
+    }
+    node.isEnd = true;
+  }
+
+  search(word: string): boolean {
+    const node = this._traverse(word);
+    return node !== null && node.isEnd;
+  }
+
+  startsWith(prefix: string): boolean {
+    return this._traverse(prefix) !== null;
+  }
+
+  private _traverse(word: string): TrieNode | null {
+    let node = this.root;
+    for (const ch of word) {
+      if (!node.children.has(ch)) return null;
+      node = node.children.get(ch)!;
+    }
+    return node;
+  }
+}
+```
+
 ## 权威外部链接
 
 - [MDN — Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array)
@@ -123,6 +255,9 @@ class HashTable<K, V> {
 - [VisuAlgo — 数据结构可视化](https://visualgo.net/en)
 - [GeeksforGeeks — Data Structures](https://www.geeksforgeeks.org/data-structures/)
 - [Wikipedia — List of data structures](https://en.wikipedia.org/wiki/List_of_data_structures)
+- [JavaScript Algorithms — GitHub 仓库](https://github.com/trekhleb/javascript-algorithms)
+- [CLRS — Introduction to Algorithms (MIT Press)](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)
+- [Data Structures and Algorithms in JavaScript — Egghead](https://egghead.io/courses/data-structures-and-algorithms-in-javascript)
 
 ## 关联索引
 

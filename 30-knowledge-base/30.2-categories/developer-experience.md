@@ -91,6 +91,83 @@ npx @biomejs/biome format --write ./src
 
 ---
 
+## 扩展代码示例
+
+### Oxlint CI 快速拦截
+
+```bash
+# 安装
+pnpm add -D oxlint
+
+# 本地快速检查（零配置）
+pnpx oxlint . --deny-warnings
+
+# 与 ESLint 分层执行（package.json scripts）
+{
+  "scripts": {
+    "lint:fast": "oxlint . --deny-warnings",
+    "lint:deep": "eslint . --max-warnings=0",
+    "lint": "pnpm lint:fast && pnpm lint:deep"
+  }
+}
+```
+
+### VS Code settings.json DX 集成
+
+```json
+// .vscode/settings.json
+{
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit",
+    "quickfix.biome": "explicit"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome"
+  },
+  "eslint.enable": false,
+  "prettier.enable": false,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always"
+}
+```
+
+### Turborepo Pipeline 配置（Monorepo DX）
+
+```json
+// turbo.json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
+```
+
+```bash
+# 利用 Turborepo 远程缓存加速 CI
+turbo run build test lint --remote-only
+```
+
+---
+
 ## DX 核心议题扩展
 
 | 议题 | 说明 | 推荐工具 |
@@ -115,10 +192,15 @@ npx @biomejs/biome format --write ./src
 - [Biome — Official Documentation](https://biomejs.dev/)
 - [OXC — JavaScript Oxidation Compiler](https://oxc.rs/)
 - [ESLint — Flat Config Migration Guide](https://eslint.org/docs/latest/use/configure/migration-to-flat-config)
+- [ESLint — Configuration Files](https://eslint.org/docs/latest/use/configure/configuration-files)
 - [Prettier — Configuration Options](https://prettier.io/docs/en/options.html)
-- [TypeScript LSP](https://github.com/typescript-language-server/typescript-language-server)
+- [TypeScript Language Server](https://github.com/typescript-language-server/typescript-language-server)
 - [VS Code — JavaScript Debugging](https://code.visualstudio.com/docs/nodejs/nodejs-debugging)
 - [Turborepo — DX for Monorepos](https://turbo.build/)
+- [Nx — Smart Monorepos](https://nx.dev/)
+- [Zed Editor](https://zed.dev/)
+- [TypeDoc Documentation](https://typedoc.org/)
+- [Storybook for JavaScript/TypeScript](https://storybook.js.org/)
 
 ---
 

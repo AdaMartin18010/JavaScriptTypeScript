@@ -123,7 +123,136 @@ server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () =>
 });
 ```
 
-## 6. 服务治理
+## 6. NestJS 微服务与消息队列
+
+```typescript
+// order-service.ts
+import { Controller } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+import { OrderService } from './order.service';
+
+@Controller()
+export class OrderController {
+  constructor(private readonly service: OrderService) {}
+
+  @MessagePattern('order.create')
+  async createOrder(@Payload() data: { userId: string; items: OrderItem[] }) {
+    return this.service.create(data);
+  }
+
+  @MessagePattern('order.get')
+  async getOrder(@Payload() id: string) {
+    return this.service.findById(id);
+  }
+}
+```
+
+```typescript
+// main.ts
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+    transport: Transport.REDIS,
+    options: { host: 'localhost', port: 6379 },
+  });
+  await app.listen();
+}
+bootstrap();
+```
+
+## 7. Saga 模式：分布式事务编排
+
+```typescript
+// saga-orchestrator.ts
+interface SagaStep {
+  name: string;
+  execute: () => Promise<void>;
+  compensate: () => Promise<void>;
+}
+
+export class SagaOrchestrator {
+  private steps: SagaStep[] = [];
+  private executed: SagaStep[] = [];
+
+  addStep(step: SagaStep): this {
+    this.steps.push(step);
+    return this;
+  }
+
+  async execute(): Promise<void> {
+    for (const step of this.steps) {
+      try {
+        await step.execute();
+        this.executed.push(step);
+      } catch (err) {
+        // 逆向补偿
+        for (const completed of this.executed.reverse()) {
+          await completed.compensate();
+        }
+        throw new Error(`Saga failed at step "${step.name}": ${err}`);
+      }
+    }
+  }
+}
+
+// 使用示例
+const createOrderSaga = new SagaOrchestrator()
+  .addStep({
+    name: 'reserve_inventory',
+    execute: () => inventoryService.reserve(order.items),
+    compensate: () => inventoryService.release(order.items),
+  })
+  .addStep({
+    name: 'process_payment',
+    execute: () => paymentService.charge(order.total),
+    compensate: () => paymentService.refund(order.total),
+  });
+```
+
+## 8. 熔断与限流
+
+```typescript
+// circuit-breaker.ts
+import CircuitBreaker from 'opossum';
+
+const options = {
+  timeout: 3000,
+  errorThresholdPercentage: 50,
+  resetTimeout: 30000,
+};
+
+const breaker = new CircuitBreaker(asyncCallToRemoteService, options);
+
+breaker.on('open', () => console.warn('[CircuitBreaker] Opened'));
+breaker.on('halfOpen', () => console.info('[CircuitBreaker] Half-Open'));
+breaker.on('close', () => console.info('[CircuitBreaker] Closed'));
+
+// 使用
+breaker.fire({ id: '123' }).catch(() => fallback());
+```
+
+## 9. 链路追踪（OpenTelemetry）
+
+```typescript
+// tracing.ts
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+
+const sdk = new NodeSDK({
+  traceExporter: new OTLPTraceExporter({ url: 'http://localhost:4318/v1/traces' }),
+  instrumentations: [getNodeAutoInstrumentations()],
+});
+
+sdk.start();
+
+process.on('SIGTERM', () => sdk.shutdown().then(() => process.exit(0)));
+```
+
+## 10. 服务治理
 
 - **服务发现**: Consul、Eureka、Kubernetes DNS
 - **负载均衡**: 轮询、最小连接、一致性哈希
@@ -131,7 +260,7 @@ server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () =>
 - **限流**: 令牌桶、漏桶算法保护服务
 - **链路追踪**: OpenTelemetry、Jaeger 追踪请求链路
 
-## 7. 与相邻模块的关系
+## 11. 与相邻模块的关系
 
 - **70-distributed-systems**: 分布式系统基础理论
 - **22-deployment-devops**: 微服务的 CI/CD 流程
@@ -144,3 +273,9 @@ server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () =>
 - [Microservices.io Patterns](https://microservices.io/patterns/)
 - [The Modular Monolith: Rails Architecture with One Foot in the Microservices Door](https://shopify.engineering/modular-monolith-rails-architecture)
 - [AWS Microservices Whitepaper](https://docs.aws.amazon.com/whitepapers/latest/microservices-on-aws/introduction.html)
+- [NestJS Microservices](https://docs.nestjs.com/microservices/basics)
+- [Redis Streams — Messaging](https://redis.io/docs/data-types/streams/)
+- [NATS Documentation](https://docs.nats.io/)
+- [OpenTelemetry — Node.js](https://opentelemetry.io/docs/instrumentation/js/getting-started/nodejs/)
+- [Saga Pattern — Chris Richardson](https://microservices.io/patterns/data/saga.html)
+- [opossum — Circuit Breaker](https://nodeshift.dev/opossum/)

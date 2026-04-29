@@ -116,14 +116,157 @@ increment();
 console.log(count); // 1（实时绑定，非拷贝）
 ```
 
-### 3.3 常见误区
+### 3.3 高级代码示例
+
+#### Node.js ESM 配置与 `import.meta`
+
+```json
+// package.json — 启用 ESM
+{
+  "name": "my-esm-project",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./utils": "./dist/utils.mjs"
+  }
+}
+```
+
+```typescript
+// node-esm-utils.ts — 在 ESM 中获取 __dirname / __filename
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// import.meta.url 也可用于解析相对路径资源
+const configPath = join(__dirname, '../config.json');
+
+// import.meta.resolve 解析模块路径（Node.js 20.6+）
+const lodashPath = import.meta.resolve('lodash-es');
+console.log(lodashPath); // file:///.../node_modules/lodash-es/lodash.js
+
+// import.meta.main — 判断当前模块是否为主入口（Deno / 部分 Node 版本）
+if (import.meta.main) {
+  console.log('Running as main module');
+}
+```
+
+#### ESM 与 CJS 互操作模式
+
+```typescript
+// dual-package.ts — 同时支持 ESM 与 CJS 的双模式包
+// ESM 入口 (index.mjs)
+export { add, subtract } from './math.mjs';
+export { default as config } from './config.mjs';
+
+// CJS 入口 (index.cjs)
+const { add, subtract } = require('./math.cjs');
+const config = require('./config.cjs').default;
+module.exports = { add, subtract, config };
+
+// package.json 中的 exports 字段配置双模式
+{
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./index.cjs"
+    }
+  }
+}
+```
+
+```typescript
+// cjs-consumer-in-esm.ts — 在 ESM 中消费 CJS 模块
+import { createRequire } from 'module';
+
+// 创建相对于当前模块的 require
+const require = createRequire(import.meta.url);
+
+// 现在可以像 CJS 一样 require 旧模块
+const legacy = require('some-old-cjs-lib');
+const pkg = require('some-old-cjs-lib/package.json');
+
+// 注意：CJS 的默认导出在 ESM 中变为 .default
+import cjsDefault from 'cjs-lib';
+// 等价于 CJS 中的 const cjsDefault = require('cjs-lib');
+
+// 命名导入需要 CJS 模块有对应的 exports.__esModule = true
+import { namedExport } from 'cjs-with-esmodule-flag';
+```
+
+#### 循环依赖处理与实时绑定
+
+```typescript
+// a.ts
+import { b } from './b.js';
+console.log('Evaluating a.ts, b =', b);
+export const a = 'A';
+export function useB() {
+  return b.toUpperCase();
+}
+
+// b.ts
+import { a } from './a.js';
+console.log('Evaluating b.ts, a =', a); // undefined（循环依赖时 a 尚未赋值）
+export const b = 'B';
+export function useA() {
+  return a?.toLowerCase() ?? 'a-not-ready';
+}
+
+// main.ts
+import { a, useB } from './a.js';
+import { b, useA } from './b.js';
+
+console.log(useA()); // 'a-not-ready' 或直接 'a'（取决于求值顺序）
+console.log(useB()); // 'B'
+
+// 最佳实践：将循环依赖的共享状态提取到独立模块
+// shared.ts
+export let state = { count: 0 };
+export function increment() { state.count++; }
+```
+
+#### TypeScript ESM 严格模式配置
+
+```json
+// tsconfig.json — 严格 ESM 解析
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "verbatimModuleSyntax": true
+  }
+}
+```
+
+```typescript
+// typescript-esm.ts — 使用 NodeNext 模块解析时必须写 .js 扩展名
+// TS 编译器会保留这些扩展名到输出
+import { helper } from './helper.js'; // 即使源码是 helper.ts
+import type { Config } from './types.js'; // type-only 导入
+
+// verbatimModuleSyntax 要求显式区分值导入和类型导入
+import { someValue } from './values.js';
+import type { SomeType } from './types.js';
+```
+
+### 3.4 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | ESM 和 CJS 可以随意混用 | 互操作需要特定加载器和转换规则 |
 | 循环依赖会自动解决 | 循环依赖可能导致未初始化访问 |
 
-### 3.4 扩展阅读
+### 3.5 扩展阅读
 
 - [MDN JavaScript 模块](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 - [MDN：export](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/export)
@@ -131,6 +274,10 @@ console.log(count); // 1（实时绑定，非拷贝）
 - [Node.js：ECMAScript Modules](https://nodejs.org/api/esm.html)
 - [Node.js：Interop with CommonJS](https://nodejs.org/api/esm.html#interoperability-with-commonjs)
 - [ECMAScript® 2025 — Modules](https://tc39.es/ecma262/#sec-modules)
+- [Node.js：Package Entry Points (exports field)](https://nodejs.org/api/packages.html#package-entry-points)
+- [TypeScript: ECMAScript Module Support in Node.js](https://www.typescriptlang.org/docs/handbook/esm-node.html)
+- [Web.dev: JavaScript Modules](https://web.dev/articles/modules-intro)
+- [Sindre Sorhus: Pure ESM Package Guide](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c)
 - `10-fundamentals/10.1-language-semantics/06-modules/`
 
 ---

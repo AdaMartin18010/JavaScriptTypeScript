@@ -14,6 +14,7 @@ ES2025（ECMAScript 16）补齐 `Set` 的集合代数方法、引入正则表达
 ### 1.2 形式化基础
 
 集合代数 5 元组定义：`intersection`, `union`, `difference`, `symmetricDifference`, `isSubsetOf`/`isSupersetOf`/`isDisjointFrom` 满足数学集合论公理：
+
 - `A.union(B) ≡ B.union(A)`（交换律）
 - `A.intersection(A) ≡ A`（幂等律）
 
@@ -100,7 +101,110 @@ function parseConfig(raw) {
 parseConfig('not json').then(console.log); // { error: 'Unexpected token...' }
 ```
 
-### 3.2 常见误区
+### 3.2 高级代码示例
+
+#### Set 集合代数实战：权限系统
+
+```javascript
+// roles.js — 基于 Set 集合运算的 RBAC 权限计算
+const rolePermissions = {
+  admin: new Set(['read', 'write', 'delete', 'manage']),
+  editor: new Set(['read', 'write', 'publish']),
+  viewer: new Set(['read']),
+};
+
+function effectivePermissions(roles) {
+  // 并集：用户拥有任一角色的所有权限
+  return roles.map(r => rolePermissions[r] || new Set())
+    .reduce((acc, set) => acc.union(set), new Set());
+}
+
+function conflictingRoles(roleA, roleB) {
+  // 对称差：两角色独有的权限差异
+  const permsA = rolePermissions[roleA];
+  const permsB = rolePermissions[roleB];
+  if (!permsA || !permsB) return null;
+  return permsA.symmetricDifference(permsB);
+}
+
+function canUpgradeTo(currentRoles, targetRole) {
+  // 子集判断：当前权限是否为 targetRole 权限的子集
+  const current = effectivePermissions(currentRoles);
+  const target = rolePermissions[targetRole];
+  return current.isSubsetOf(target);
+}
+
+// 使用示例
+console.log(effectivePermissions(['editor', 'viewer']));
+// Set { 'read', 'write', 'publish' }
+
+console.log(canUpgradeTo(['viewer'], 'editor')); // true
+console.log(canUpgradeTo(['admin'], 'editor'));  // false
+```
+
+#### RegExp `v` flag 实战：国际化输入校验
+
+```javascript
+// validators.js
+// 匹配有效的国际化标识符（Unicode 字母 + 数字 + 连接符），但排除纯数字
+const validIdentifier = /^[\p{Letter}\p{Mark}\p{Number}\p{Connector_Punctuation}]+$/v;
+const notPureNumber = /[\p{Letter}\p{Mark}]/v;
+
+function isValidUsername(username) {
+  return validIdentifier.test(username) && notPureNumber.test(username);
+}
+
+// 集合差：匹配所有字母，但排除 ASCII 数字和 Basic Latin 之外的符号
+const safeChars = /[\p{Letter}\p{Number}--[\p{ASCII}&&\p{Number}]]/v;
+
+// 嵌套属性类：匹配中文或日文汉字，但排除日文假名
+const cjkHan = /[\p{Script=Han}||\p{Script=Hani}--[\p{Script=Katakana}\p{Script=Hiragana}]]/v;
+
+console.log(isValidUsername('赵小明'));     // true
+console.log(isValidUsername('user_123'));    // true
+console.log(isValidUsername('12345'));       // false（纯数字）
+console.log(cjkHan.test('漢'));              // true
+console.log(cjkHan.test('カタカナ'));         // false
+```
+
+#### `Promise.try` 统一异步边界
+
+```javascript
+// data-service.js
+class DataService {
+  constructor(apiClient) {
+    this.apiClient = apiClient;
+  }
+
+  async fetchUser(userId) {
+    return Promise.try(() => {
+      if (!userId || typeof userId !== 'string') {
+        throw new TypeError('userId must be a non-empty string');
+      }
+      return this.apiClient.get(`/users/${encodeURIComponent(userId)}`);
+    }).then(response => {
+      if (!response.data) throw new Error('Empty response');
+      return this.transformUser(response.data);
+    });
+  }
+
+  transformUser(raw) {
+    return Promise.try(() => ({
+      id: raw.id,
+      name: raw.name.trim(),
+      email: raw.email.toLowerCase(),
+      // 若 raw.name 不是字符串，.trim() 会抛异常，被统一捕获为 rejected Promise
+    }));
+  }
+}
+
+// 无论同步错误还是异步错误，都走统一的 .catch
+const service = new DataService({ get: () => Promise.resolve({ data: null }) });
+service.fetchUser('').catch(err => console.error('Handled:', err.message));
+// → Handled: userId must be a non-empty string
+```
+
+### 3.3 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -108,7 +212,7 @@ parseConfig('not json').then(console.log); // { error: 'Unexpected token...' }
 | `/v` 完全替代 `/u` | `/v` 是 `/u` 的超集，但某些边界行为不同，迁移需测试 |
 | `Promise.try` 只接受同步函数 | 也接受返回 Promise 的函数，行为等价于 `Promise.resolve().then(fn)` |
 
-### 3.3 扩展阅读
+### 3.4 扩展阅读
 
 - [ECMAScript 2025 Draft Specification](https://tc39.es/ecma262/)
 - [MDN: Set.prototype.intersection](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/intersection)
@@ -116,7 +220,10 @@ parseConfig('not json').then(console.log); // { error: 'Unexpected token...' }
 - [MDN: Promise.try](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/try)
 - [TC39 Proposal: Set Methods](https://github.com/tc39/proposal-set-methods)
 - [TC39 Proposal: RegExp `v` flag](https://github.com/tc39/proposal-regexp-v-flag)
+- [TC39 Proposal: Promise.try](https://github.com/tc39/proposal-promise-try)
 - [V8 Blog: New in JS ES2025](https://v8.dev/features/tags/es2025)
+- [Can I use — Set methods](https://caniuse.com/mdn-javascript_builtins_set_intersection)
+- [Unicode Regular Expressions — unicode.org](https://unicode.org/reports/tr18/)
 - `30-knowledge-base/30.1-language-evolution`
 
 ---

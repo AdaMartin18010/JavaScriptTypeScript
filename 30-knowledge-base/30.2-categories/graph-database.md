@@ -99,6 +99,102 @@ async function recommendProducts(userId: string) {
 
 ---
 
+## 扩展代码示例
+
+### Dgraph + TypeScript（dgraph-js-http）
+
+```typescript
+import { DgraphClient, DgraphClientStub } from 'dgraph-js-http';
+
+const stub = new DgraphClientStub('http://localhost:8080');
+const client = new DgraphClient(stub);
+
+async function setupSchema() {
+  const schema = `
+    name: string @index(exact) .
+    age: int .
+    friend: [uid] .
+    bought: [uid] .
+  `;
+  await client.alter({ schema });
+}
+
+async function mutateData() {
+  const txn = client.newTxn();
+  try {
+    const mu = {
+      set: [
+        { name: 'Alice', age: 30, friend: [{ name: 'Bob', age: 25 }] },
+      ],
+    };
+    await txn.mutate(mu);
+    await txn.commit();
+  } finally {
+    await txn.discard();
+  }
+}
+
+async function queryFriends(name: string) {
+  const query = `
+    query friends($name: string) {
+      user(func: eq(name, $name)) {
+        name
+        friend { name age }
+      }
+    }
+  `;
+  const vars = { $name: name };
+  const res = await client.newTxn().queryWithVars(query, vars);
+  return res.data.user;
+}
+
+(async () => {
+  await setupSchema();
+  await mutateData();
+  console.log(await queryFriends('Alice'));
+  await stub.close();
+})();
+```
+
+### Amazon Neptune（Gremlin）+ TypeScript
+
+```typescript
+import { driver, process as gprocess } from 'gremlin';
+
+const traversal = gprocess.statics;
+const connection = new driver.DriverRemoteConnection(
+  'wss://your-neptune-endpoint:8182/gremlin'
+);
+const g = gprocess.traversal().withRemote(connection);
+
+async function addVertex(label: string, properties: Record<string, unknown>) {
+  let t = g.addV(label);
+  for (const [key, value] of Object.entries(properties)) {
+    t = t.property(key, value);
+  }
+  return await t.next();
+}
+
+async function findFriends(name: string) {
+  return await g
+    .V()
+    .has('name', name)
+    .out('knows')
+    .values('name')
+    .toList();
+}
+
+(async () => {
+  await addVertex('person', { name: 'Alice', age: 30 });
+  await addVertex('person', { name: 'Bob', age: 25 });
+  // 建立关系...
+  console.log(await findFriends('Alice'));
+  await connection.close();
+})();
+```
+
+---
+
 ## 使用场景
 
 - 社交网络关系
@@ -113,11 +209,18 @@ async function recommendProducts(userId: string) {
 ## 权威参考链接
 
 - [Neo4j 官方文档](https://neo4j.com/docs/)
-- [Dgraph 官方文档](https://dgraph.io/docs)
-- [Amazon Neptune 官方文档](https://docs.aws.amazon.com/neptune/)
-- [Memgraph 官方文档](https://memgraph.com/docs)
-- [Cypher Query Language Reference](https://neo4j.com/docs/cypher-manual/current/)
+- [Neo4j Cypher Query Language Reference](https://neo4j.com/docs/cypher-manual/current/)
 - [neo4j-driver npm](https://www.npmjs.com/package/neo4j-driver)
+- [Dgraph 官方文档](https://dgraph.io/docs)
+- [dgraph-js-http npm](https://www.npmjs.com/package/dgraph-js-http)
+- [Amazon Neptune 官方文档](https://docs.aws.amazon.com/neptune/)
+- [Apache TinkerPop Gremlin Documentation](https://tinkerpop.apache.org/gremlin.html)
+- [gremlin-javascript npm](https://www.npmjs.com/package/gremlin)
+- [Memgraph 官方文档](https://memgraph.com/docs)
+- [Memgraph JS Client](https://www.npmjs.com/package/memgraph-js)
+- [GraphQL.org](https://graphql.org/)（DQL 概念来源）
+- [DB-Engines Graph DBMS Ranking](https://db-engines.com/en/ranking/graph+dbms)
+- [Gartner: Graph Database Market Guide](https://www.gartner.com/)
 
 ---
 

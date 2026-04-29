@@ -122,6 +122,104 @@ Atomics.store(state, 0, 1);
 Atomics.notify(state, 0, 1);
 ```
 
+#### 3.1.3 无锁环形缓冲区（Lock-Free Ring Buffer）
+
+```typescript
+// lockfree-ring-buffer.ts
+/**
+ * 基于 Atomics 的无锁单生产者单消费者 (SPSC) 环形队列
+ * 适用于 Worker 之间高吞吐消息传递
+ */
+export class AtomicRingBuffer<T> {
+  private buffer: SharedArrayBuffer;
+  private header: Int32Array;  // [writeIndex, readIndex, capacity]
+  private data: Int32Array;    // 存储序列化后的索引或句柄
+
+  constructor(capacity: number) {
+    // header: 3 个 32-bit 整数；data: capacity 个 32-bit 整数
+    this.buffer = new SharedArrayBuffer((3 + capacity) * 4);
+    this.header = new Int32Array(this.buffer, 0, 3);
+    this.data = new Int32Array(this.buffer, 3 * 4, capacity);
+    Atomics.store(this.header, 2, capacity);
+  }
+
+  enqueue(value: number): boolean {
+    const capacity = Atomics.load(this.header, 2);
+    const writeIndex = Atomics.load(this.header, 0);
+    const readIndex = Atomics.load(this.header, 1);
+
+    if ((writeIndex - readIndex) >= capacity) return false; // 满
+
+    const slot = writeIndex % capacity;
+    Atomics.store(this.data, slot, value);
+    Atomics.store(this.header, 0, writeIndex + 1);
+    return true;
+  }
+
+  dequeue(): number | undefined {
+    const capacity = Atomics.load(this.header, 2);
+    const writeIndex = Atomics.load(this.header, 0);
+    const readIndex = Atomics.load(this.header, 1);
+
+    if (readIndex >= writeIndex) return undefined; // 空
+
+    const slot = readIndex % capacity;
+    const value = Atomics.load(this.data, slot);
+    Atomics.store(this.header, 1, readIndex + 1);
+    return value;
+  }
+
+  getBuffer(): SharedArrayBuffer {
+    return this.buffer;
+  }
+}
+
+// 使用示例
+const rb = new AtomicRingBuffer(1024);
+rb.enqueue(42);
+console.log(rb.dequeue()); // 42
+```
+
+#### 3.1.4 原子自旋锁（用于保护临界区元数据）
+
+```typescript
+// atomic-spinlock.ts
+/**
+ * 基于 Atomics.exchange 的轻量级自旋锁
+ * 注意：自旋锁应只用于极短临界区，避免浪费 CPU
+ */
+export class SpinLock {
+  private flag: Int32Array;
+
+  constructor(sharedBuffer?: SharedArrayBuffer, byteOffset = 0) {
+    this.flag = new Int32Array(sharedBuffer ?? new SharedArrayBuffer(4), byteOffset, 1);
+  }
+
+  lock() {
+    // exchange(old, new): 原子地设置 flag=1，返回旧值
+    // 如果旧值为 1，说明锁已被占用，持续自旋
+    while (Atomics.exchange(this.flag, 0, 1) === 1) {
+      // 可选：调用 Atomics.wait 短暂挂起，减少 CPU 占用
+      Atomics.wait(this.flag, 0, 1, 1);
+    }
+  }
+
+  unlock() {
+    Atomics.store(this.flag, 0, 0);
+    Atomics.notify(this.flag, 0, 1); // 唤醒一个等待者
+  }
+
+  withLock<T>(fn: () => T): T {
+    this.lock();
+    try {
+      return fn();
+    } finally {
+      this.unlock();
+    }
+  }
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -138,6 +236,11 @@ Atomics.notify(state, 0, 1);
 - [Atomics.wait() — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics/wait)
 - [Atomics.notify() — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics/notify)
 - [ECMAScript Shared Memory and Atomics Specification](https://tc39.es/ecma262/multipage/structured-data.html#sec-atomics-object)
+- [V8 Blog — Concurrent Marking in V8](https://v8.dev/blog/concurrent-marking)
+- [WebAssembly Threads Proposal](https://github.com/WebAssembly/threads/blob/main/proposals/threads/Overview.md)
+- [COOP and COEP Explained — web.dev](https://web.dev/articles/coop-coep)
+- [Lock-Free Data Structures — Cambridge University Lecture Notes](https://www.cl.cam.ac.uk/research/srg/netos/lock-free/)
+- [Intel Intrinsics Guide — _mm_pause / SSE2](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html)
 - `20.3-concurrency-async/concurrency/`
 
 ---

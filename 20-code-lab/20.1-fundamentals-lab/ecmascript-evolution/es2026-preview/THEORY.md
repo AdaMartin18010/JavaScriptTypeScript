@@ -106,7 +106,160 @@ console.log(f16.BYTES_PER_ELEMENT); // 2
 // WebGPU 中常用 half-precision 纹理数据
 ```
 
-### 3.2 常见误区
+### 3.2 高级代码示例
+
+#### Uint8Array Base64/Hex 编解码
+
+```javascript
+// binary-utils.js — Uint8Array 与 Base64/Hex 互转（ES2026 Stage 3）
+
+// 编码：Uint8Array → Base64
+const bytes = new Uint8Array([72, 101, 108, 108, 111]); // "Hello"
+const base64 = bytes.toBase64();
+console.log(base64); // "SGVsbG8="
+
+// 支持 URL-safe base64
+const urlSafe = bytes.toBase64({ alphabet: 'base64url' });
+console.log(urlSafe); // "SGVsbG8"
+
+// 解码：Base64 → Uint8Array
+const decoded = Uint8Array.fromBase64(base64);
+console.log(new TextDecoder().decode(decoded)); // "Hello"
+
+// Hex 编解码
+const hex = bytes.toHex();
+console.log(hex); // "48656c6c6f"
+
+const fromHex = Uint8Array.fromHex(hex);
+console.log(fromHex); // Uint8Array [72, 101, 108, 108, 111]
+
+// 流式处理大文件分块
+async function hashLargeFile(fileStream) {
+  const chunks = [];
+  for await (const chunk of fileStream) {
+    chunks.push(chunk.toBase64());
+  }
+  return chunks.join('');
+}
+```
+
+#### `using` 与 `await using` 资源管理实战
+
+```typescript
+// resource-manager.ts
+import { open, type FileHandle } from 'fs/promises';
+
+// 同步 dispose 资源
+class ScopedLock {
+  #released = false;
+  constructor(private key: string) {}
+  [Symbol.dispose]() {
+    if (!this.#released) {
+      console.log(`Releasing lock: ${this.key}`);
+      this.#released = true;
+    }
+  }
+}
+
+// 异步 dispose 资源
+class AsyncDatabaseConnection {
+  #handle: unknown;
+  async connect() { /* ... */ return this; }
+  [Symbol.asyncDispose] = async () => {
+    console.log('Closing DB connection');
+    // await this.#handle.close();
+  };
+}
+
+// 同步 using 块
+function processWithLock(data: string) {
+  using lock = new ScopedLock('resource-1');
+  // 模拟处理
+  const result = data.toUpperCase();
+  // lock 在此处自动释放，无需 finally
+  return result;
+}
+
+// 异步 await using 块
+async function queryDatabase(sql: string) {
+  await using conn = await new AsyncDatabaseConnection().connect();
+  // conn.query(sql) ...
+  const result = { rows: [] };
+  // conn 在块退出时自动异步关闭
+  return result;
+}
+
+// 嵌套资源管理
+function multiResourceOperation() {
+  using lock1 = new ScopedLock('A');
+  using lock2 = new ScopedLock('B');
+  // 退出时按 LIFO 顺序释放：先 B 后 A
+  return compute();
+}
+```
+
+#### `RegExp.escape` 安全搜索高亮
+
+```javascript
+// search-highlighter.js
+function highlightMatches(text, query) {
+  // 安全转义用户输入，防止注入恶意正则
+  const safeQuery = RegExp.escape(query);
+  const re = new RegExp(`(${safeQuery})`, 'gi');
+  return text.replace(re, '<mark>$1</mark>');
+}
+
+// 用户输入可能包含正则特殊字符
+const userQuery = '(price) [VIP] $100';
+const content = 'The (price) [VIP] $100 package includes premium support.';
+
+console.log(highlightMatches(content, userQuery));
+// The <mark>(price) [VIP] $100</mark> package includes premium support.
+
+// 对比：未转义会导致错误
+// new RegExp(userQuery); // SyntaxError: invalid quantifier
+```
+
+#### `Error.isError` 跨 Realm 异常处理
+
+```javascript
+// safe-error-handler.js
+function normalizeError(maybeError) {
+  if (Error.isError(maybeError)) {
+    return {
+      type: maybeError.constructor.name,
+      message: maybeError.message,
+      stack: maybeError.stack,
+    };
+  }
+  if (maybeError instanceof Error) {
+    // 同一 Realm 内 instanceof 仍然有效
+    return { type: 'Error', message: maybeError.message };
+  }
+  return { type: 'unknown', message: String(maybeError) };
+}
+
+// 跨 iframe/Worker 场景
+function handleWorkerError(worker) {
+  worker.onmessage = ({ data }) => {
+    if (data.error && Error.isError(data.error)) {
+      // data.error 是从 Worker Realm 序列化过来的 Error 对象
+      console.error('Worker failed:', data.error.message);
+    }
+  };
+}
+
+// 与 structured clone 配合使用
+const iframe = document.createElement('iframe');
+document.body.appendChild(iframe);
+const foreignErr = new iframe.contentWindow.TypeError('foreign');
+
+console.log(foreignErr instanceof TypeError); // false
+console.log(Error.isError(foreignErr));       // true
+console.log(Object.prototype.toString.call(foreignErr) === '[object Error]'); // true，但不可靠
+```
+
+### 3.3 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -114,14 +267,18 @@ console.log(f16.BYTES_PER_ELEMENT); // 2
 | `using` 是 TypeScript 独有 | 是 TC39 Stage 3 提案，TS 已提前实现；JS 引擎跟进中 |
 | Float16Array 精度与 Float32 相同 | half-precision 仅 10 位尾数，精度远低于 Float32，仅用于特定图形/ML 场景 |
 
-### 3.3 扩展阅读
+### 3.4 扩展阅读
 
 - [TC39 Active Proposals](https://github.com/tc39/proposals/blob/main/README.md)
 - [TC39 Finished Proposals](https://github.com/tc39/proposals/blob/main/finished-proposals.md)
 - [MDN: Import Attributes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import/with)
 - [TypeScript 5.2: Using Declarations](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management)
+- [MDN: Float16Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Float16Array)
+- [WebGPU — WGSL  half-precision types](https://www.w3.org/TR/webgpu/)
 - [V8 Blog](https://v8.dev/blog)
 - [SpiderMonkey Development](https://spidermonkey.dev/)
+- [JavaScript Weekly — TC39 动态追踪](https://javascriptweekly.com/)
+- [Test262 — ECMAScript 测试套件](https://github.com/tc39/test262)
 - `30-knowledge-base/30.1-language-evolution`
 
 ---
