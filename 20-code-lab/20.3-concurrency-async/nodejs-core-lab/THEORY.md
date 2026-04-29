@@ -10,7 +10,142 @@ Node.js 基于 libuv 实现跨平台异步 IO：
 - **线程池**: libuv 管理的线程池处理文件系统、DNS 等阻塞操作
 - **回调队列**: 异步操作完成后回调进入队列，等待事件循环执行
 
-### 1.2 核心模块
+## 2. Node.js 并发模型对比
+
+| 维度 | Event Loop | Worker Threads | Cluster |
+|------|-----------|----------------|---------|
+| **并行类型** | 单线程 + 异步非阻塞 I/O | 真多线程（V8 Isolate） | 多进程（主进程 + 工作进程） |
+| **内存模型** | 共享堆（单线程安全） | 共享 ArrayBuffer / StructuredClone | 独立堆（通过 IPC 通信） |
+| **适用场景** | I/O 密集型（HTTP、文件、DB） | CPU 密集型（图像处理、复杂计算） | 多核利用、故障隔离、零停机重启 |
+| **通信方式** | 无需（单线程） | MessagePort / SharedArrayBuffer | `cluster.fork()` + IPC |
+| **崩溃影响** | 整个进程退出 | 单个线程退出（可捕获） | 单个工作进程退出（主进程可重启） |
+| **资源共享** | N/A | `Atomics` + `SharedArrayBuffer` | 无共享（状态需外部存储） |
+| **复杂度** | 低 | 高（线程同步、死锁风险） | 中等 |
+| **典型应用** | Express / Fastify Web 服务 | 视频转码、ML 推理、压缩 | 高并发 HTTP 服务 |
+
+> **选型决策**：
+>
+> - HTTP API 服务 + 高并发 → **Event Loop + Cluster**
+> - 图像/视频/数据处理 → **Worker Threads**
+> - 需要利用全部 CPU 核心且保持单代码库 → **Cluster**（主进程只负责调度）
+
+## 3. Cluster 模块代码示例
+
+```typescript
+// cluster-server.ts — 生产级 Cluster 模式 HTTP 服务
+import cluster from 'node:cluster';
+import http from 'node:http';
+import os from 'node:os';
+import process from 'node:process';
+
+const PORT = parseInt(process.env.PORT || '3000', 10);
+const WORKER_COUNT = parseInt(process.env.WORKERS || String(os.availableParallelism()), 10);
+
+if (cluster.isPrimary) {
+  console.log(`主进程 ${process.pid} 正在运行，计划启动 ${WORKER_COUNT} 个工作进程`);
+
+  // 记录工作进程状态
+  const workers = new Map<number, number>();
+
+  // Fork 工作进程
+  for (let i = 0; i < WORKER_COUNT; i++) {
+    const worker = cluster.fork();
+    workers.set(worker.id, worker.process.pid!);
+  }
+
+  // 工作进程退出时自动重启（故障恢复）
+  cluster.on('exit', (worker, code, signal) => {
+    console.warn(`工作进程 ${worker.process.pid} 退出，代码: ${code}, 信号: ${signal}`);
+    workers.delete(worker.id);
+
+    // 意外退出才重启，正常退出（如部署）不重启
+    if (code !== 0 && !worker.exitedAfterDisconnect) {
+      const newWorker = cluster.fork();
+      workers.set(newWorker.id, newWorker.process.pid!);
+      console.log(`已重启新工作进程 ${newWorker.process.pid}`);
+    }
+  });
+
+  // 优雅关闭：SIGTERM 时通知所有工作进程
+  process.on('SIGTERM', () => {
+    console.log('主进程收到 SIGTERM，开始优雅关闭...');
+    for (const id of workers.keys()) {
+      cluster.workers?.[id]?.disconnect();
+    }
+  });
+
+} else {
+  // 工作进程：启动 HTTP 服务
+  const server = http.createServer((req, res) => {
+    // 模拟 CPU 密集型任务时主动拒绝，提示使用 Worker Threads
+    if (req.url === '/heavy-task') {
+      // 错误示范：不应在 Event Loop 做重计算
+      // 正确做法：通过 MessageChannel 交给 Worker Thread
+      res.writeHead(503, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Use Worker Threads for CPU-intensive tasks' }));
+      return;
+    }
+
+    // 模拟异步 I/O（Event Loop 的舒适区）
+    if (req.url === '/api/users') {
+      setTimeout(() => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ users: [], workerPid: process.pid }));
+      }, 10);
+      return;
+    }
+
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end(`Hello from worker ${process.pid}\n`);
+  });
+
+  server.listen(PORT, () => {
+    console.log(`工作进程 ${process.pid} 开始监听端口 ${PORT}`);
+  });
+
+  // 优雅关闭：处理完当前连接后退出
+  server.on('close', () => {
+    console.log(`工作进程 ${process.pid} 服务器已关闭`);
+    process.exit(0);
+  });
+
+  process.on('SIGTERM', () => {
+    console.log(`工作进程 ${process.pid} 收到 SIGTERM`);
+    server.close(() => {
+      process.exit(0);
+    });
+  });
+}
+```
+
+Worker Threads 计算密集型任务示例：
+
+```typescript
+// fibonacci.worker.ts
+import { parentPort, workerData } from 'node:worker_threads';
+
+function fib(n: number): number {
+  return n < 2 ? n : fib(n - 1) + fib(n - 2);
+}
+
+const result = fib(workerData.n);
+parentPort?.postMessage({ input: workerData.n, result });
+
+// 主线程调用
+import { Worker } from 'node:worker_threads';
+
+function runFibonacci(n: number): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker('./fibonacci.worker.ts', {
+      workerData: { n },
+    });
+    worker.on('message', resolve);
+    worker.on('error', reject);
+  });
+}
+```
+
+## 4. 核心模块
 
 | 模块 | 用途 |
 |------|------|
@@ -23,7 +158,7 @@ Node.js 基于 libuv 实现跨平台异步 IO：
 | **path** | 路径解析和拼接 |
 | **os** | 操作系统信息 |
 
-## 2. Stream 处理
+## 5. Stream 处理
 
 Node.js 的 Stream 是处理大数据的核心抽象：
 
@@ -37,20 +172,29 @@ Readable → Transform → Writable
 
 背压（Backpressure）处理：当 Writable 消费速度慢于 Readable 生产速度时，自动暂停读取。
 
-## 3. 模块系统
+## 6. 模块系统
 
 - **CommonJS**: `require()` / `module.exports`，运行时同步加载
 - **ESM**: `import` / `export`，静态解析，支持顶级 await
 - **互操作**: Node.js 的 ESM/CJS 互操作规则
 
-## 4. 进程管理
+## 7. 进程管理
 
 - **Cluster**: 主进程 + 工作进程模型，利用多核 CPU
 - **Worker Threads**: 真正的多线程，共享内存（SharedArrayBuffer）
 - **Child Process**: 子进程.spawn() / .exec()，适合 CPU 密集型任务
 
-## 5. 与相邻模块的关系
+## 8. 与相邻模块的关系
 
 - **19-backend-development**: 后端服务开发
 - **12-package-management**: npm 包管理
 - **50-browser-runtime**: 浏览器运行时对比
+
+## 参考链接
+
+- [Node.js Event Loop — Node.js Docs](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick)
+- [Worker Threads — Node.js Docs](https://nodejs.org/api/worker_threads.html)
+- [Cluster — Node.js Docs](https://nodejs.org/api/cluster.html)
+- [Don't Block the Event Loop — Node.js Docs](https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop)
+- [libuv Design Overview](https://docs.libuv.org/en/v1.x/design.html)
+- [Node.js Streams — substack](https://github.com/substack/stream-handbook)

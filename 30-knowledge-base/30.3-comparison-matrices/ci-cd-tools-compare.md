@@ -19,14 +19,242 @@
 
 ---
 
+## 深度对比：GitHub Actions vs GitLab CI vs CircleCI vs Jenkins
+
+| 维度 | GitHub Actions | GitLab CI | CircleCI | Jenkins |
+|------|---------------|-----------|----------|---------|
+| **托管模型** | SaaS (GitHub 绑定) | SaaS + 自托管 | SaaS + 自托管 | 仅自托管 |
+| **配置位置** | `.github/workflows/*.yml` | `.gitlab-ci.yml` | `.circleci/config.yml` | `Jenkinsfile` |
+| **语法复杂度** | 低 | 低 | 低 | 高 (Groovy DSL) |
+| **生态扩展** | 20K+ Marketplace Actions | 内置 CI/CD 模板 | 1,000+ Orbs | 1,800+ 插件 |
+| **容器原生** | ✅ Docker / 自托管 | ✅ Kubernetes Executor | ✅ Docker 原生 | ⚠️ 需配置 |
+| **矩阵构建** | ✅ `strategy.matrix` | ✅ `parallel:matrix` | ✅ `matrix` | ✅ 插件 |
+| **审批/门控** | ✅ 环境保护规则 | ✅ 部署审批 | ✅ 手动门控 | ✅ 插件 |
+| **Secrets 管理** | 仓库/组织/环境级 | 项目/组/实例级 | 上下文/项目级 | 凭证插件 |
+| **自托管成本** | 低 (Linux runner 免费) | 中 (Runner 注册) | 中 | 高 (服务器 + 维护) |
+| **与代码托管集成** | ⭐⭐⭐⭐⭐ (原生) | ⭐⭐⭐⭐⭐ (原生) | ⭐⭐⭐ (Webhook) | ⭐⭐ (通用) |
+| **适用场景** | GitHub 项目首选 | 全生命周期 DevOps | 快速云原生启动 | 超大规模/复杂定制 |
+
+---
+
+## 工作流示例
+
+### GitHub Actions：Next.js 全栈部署
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy Next.js App
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        run: npm run test:ci
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: .next/standalone
+
+  deploy-production:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+
+      - name: Deploy to Vercel
+        uses: vercel/action-deploy@v1
+        id: deploy
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+```
+
+### GitLab CI：多阶段流水线
+```yaml
+# .gitlab-ci.yml
+stages:
+  - install
+  - lint
+  - test
+  - build
+  - deploy
+
+variables:
+  NODE_VERSION: "22"
+  NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.npm"
+
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - .npm/
+    - node_modules/
+
+install:
+  stage: install
+  image: node:$NODE_VERSION
+  script:
+    - npm ci --cache .npm --prefer-offline
+  artifacts:
+    paths:
+      - node_modules/
+
+lint:
+  stage: lint
+  image: node:$NODE_VERSION
+  needs: [install]
+  script:
+    - npm run lint
+    - npx tsc --noEmit
+
+test:
+  stage: test
+  image: node:$NODE_VERSION
+  needs: [install]
+  script:
+    - npm run test:ci
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura-coverage.xml
+
+build:
+  stage: build
+  image: node:$NODE_VERSION
+  needs: [lint, test]
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+
+deploy-production:
+  stage: deploy
+  image: alpine:latest
+  needs: [build]
+  only:
+    - main
+  environment:
+    name: production
+    url: https://example.com
+  script:
+    - echo "Deploying to production..."
+    # 实际部署脚本
+```
+
+### CircleCI：并行测试矩阵
+```yaml
+# .circleci/config.yml
+version: 2.1
+
+orbs:
+  node: circleci/node@6.1.0
+
+jobs:
+  test:
+    parameters:
+      node-version:
+        type: string
+    docker:
+      - image: cimg/node:<< parameters.node-version >>
+    steps:
+      - checkout
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          name: Run tests
+          command: npm run test:ci
+      - store_test_results:
+          path: ./junit.xml
+      - store_artifacts:
+          path: ./coverage
+
+workflows:
+  test-and-deploy:
+    jobs:
+      - test:
+          matrix:
+            parameters:
+              node-version: ["20.12", "22.4", "23.0"]
+      - node/run:
+          npm-run: build
+          requires:
+            - test
+          filters:
+            branches:
+              only: main
+```
+
+---
+
 ## 选型建议
 
-| 场景 | 推荐 |
-|------|------|
-| GitHub 托管项目 | GitHub Actions |
-| 企业级 DevSecOps | GitLab CI |
-| 超大规模/复杂定制 | Jenkins |
-| 快速云原生启动 | CircleCI |
+| 场景 | 推荐 | 原因 |
+|------|------|------|
+| GitHub 托管项目 | GitHub Actions | 原生集成，Actions 生态丰富 |
+| 企业级 DevSecOps | GitLab CI | 内置 SAST/DAST，完整 DevOps 平台 |
+| 超大规模 / 复杂定制 | Jenkins | 无限制并发，Groovy 灵活脚本 |
+| 快速云原生启动 | CircleCI | 配置简洁，并行矩阵构建友好 |
+
+---
+
+## 权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| GitHub Actions Docs | https://docs.github.com/en/actions | 官方文档 |
+| GitLab CI/CD Docs | https://docs.gitlab.com/ee/ci/ | 官方文档 |
+| CircleCI Docs | https://circleci.com/docs/ | 官方文档 |
+| Jenkins Docs | https://www.jenkins.io/doc/ | 官方文档 |
+| GitHub Actions Marketplace | https://github.com/marketplace?type=actions | Actions 市场 |
+| CircleCI Orbs | https://circleci.com/developer/orbs | 可复用配置包 |
+| act (Local GitHub Actions) | https://github.com/nektos/act | 本地运行 GitHub Actions |
+| Dagger | https://dagger.io/ | 可移植 CI/CD 管道 (容器即代码) |
 
 ---
 

@@ -23,9 +23,26 @@ JavaScript 语言核心是所有上层抽象（框架、运行时、工具链）
 
 ---
 
-## 二、设计原理
+## 二、语言对比：JS vs TS vs WASM vs JS-Like
 
-### 2.1 为什么存在这些机制
+| 维度 | JavaScript | TypeScript | WebAssembly | AssemblyScript | Dart |
+|------|-----------|-----------|-------------|---------------|------|
+| **类型系统** | 动态弱类型 | 静态结构化类型 | 无（二进制） | 静态类似 TS | 静态强类型 |
+| **编译阶段** | 无（解释/JIT） | tsc → JS | 二进制字节码 | asc → WASM | dart2js / VM |
+| **运行时** | V8/SpiderMonkey/JSC | V8/SpiderMonkey/JSC | WASM VM | WASM VM | Dart VM / JS |
+| **性能上限** | 中（JIT 优化后） | 中（同 JS） | 高（接近原生） | 高（WASM） | 中-高 |
+| **互操作性** | 原生 | 完美降级为 JS | JS ↔ WASM API | 同 WASM | JS interop |
+| **包生态** | npm（最大） | npm + @types | WASM 模块 | npm | pub.dev |
+| **学习曲线** | 低 | 中 | 高（需 C++/Rust） | 中 | 中 |
+| **最佳场景** | 快速原型、全栈 | 大型项目、团队协作 | 计算密集型、游戏 | 前端计算加速 | Flutter、全栈 |
+| **类型擦除** | N/A | 是（编译后无类型） | N/A | N/A | 否（运行时有类型） |
+| **泛型支持** | 无（运行时） | 完整（编译期） | 无 | 有限 | 完整 |
+
+---
+
+## 三、设计原理
+
+### 3.1 为什么存在这些机制
 
 JavaScript 的设计受 1995 年浏览器脚本需求的深刻影响：
 
@@ -34,7 +51,7 @@ JavaScript 的设计受 1995 年浏览器脚本需求的深刻影响：
 - **单线程事件循环**：避免并发编程的锁竞争，简化 DOM 操作
 - **函数一等公民**：支持高阶函数和回调驱动的异步编程
 
-### 2.2 权衡分析
+### 3.2 权衡分析
 
 | 机制 | 优点 | 缺点 | 现代替代/缓解 |
 |------|------|------|-------------|
@@ -45,9 +62,197 @@ JavaScript 的设计受 1995 年浏览器脚本需求的深刻影响：
 
 ---
 
-## 三、实践映射
+## 四、代码示例：TypeScript 高级类型收窄
 
-### 3.1 从理论到代码
+```typescript
+// type-narrowing.ts — 类型守卫与收窄模式
+
+// 1. 自定义类型守卫（Type Predicate）
+interface Cat {
+  kind: 'cat';
+  meow(): void;
+}
+
+interface Dog {
+  kind: 'dog';
+  bark(): void;
+}
+
+type Animal = Cat | Dog;
+
+function isCat(animal: Animal): animal is Cat {
+  return animal.kind === 'cat';
+}
+
+function makeSound(animal: Animal): void {
+  if (isCat(animal)) {
+    animal.meow(); // TypeScript 知道这里是 Cat
+  } else {
+    animal.bark(); // TypeScript 知道这里是 Dog
+  }
+}
+
+// 2. 判别式联合（Discriminated Union）
+interface Square {
+  kind: 'square';
+  size: number;
+}
+
+interface Rectangle {
+  kind: 'rectangle';
+  width: number;
+  height: number;
+}
+
+interface Circle {
+  kind: 'circle';
+  radius: number;
+}
+
+type Shape = Square | Rectangle | Circle;
+
+// exhaustive switch：确保处理所有 case
+function area(shape: Shape): number {
+  switch (shape.kind) {
+    case 'square':
+      return shape.size ** 2;
+    case 'rectangle':
+      return shape.width * shape.height;
+    case 'circle':
+      return Math.PI * shape.radius ** 2;
+    default:
+      // 利用 never 类型进行穷尽检查
+      const _exhaustiveCheck: never = shape;
+      return _exhaustiveCheck;
+  }
+}
+
+// 3. 基于 in 操作符的收窄
+interface Car {
+  drive(): void;
+  wheels: number;
+}
+
+interface Boat {
+  sail(): void;
+  draft: number;
+}
+
+function move(vehicle: Car | Boat): void {
+  if ('drive' in vehicle) {
+    vehicle.drive(); // Car
+  } else {
+    vehicle.sail(); // Boat
+  }
+}
+
+// 4. 基于 typeof / instanceof 的收窄
+function processValue(value: string | number | Date): string {
+  if (typeof value === 'string') {
+    return value.toUpperCase();
+  }
+  if (typeof value === 'number') {
+    return value.toFixed(2);
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  const _exhaustive: never = value;
+  return _exhaustive;
+}
+
+// 5. 品牌类型（Branded Types）— 模拟名义类型
+type UserId = string & { __brand: 'UserId' };
+type OrderId = string & { __brand: 'OrderId' };
+
+function createUserId(id: string): UserId {
+  return id as UserId;
+}
+
+function createOrderId(id: string): OrderId {
+  return id as OrderId;
+}
+
+function getUser(id: UserId) {
+  return db.users.find(id);
+}
+
+const uid = createUserId('123');
+const oid = createOrderId('456');
+getUser(uid); // ✅ 正确
+// getUser(oid); // ❌ 编译错误：类型不兼容
+```
+
+---
+
+## 五、代码示例：JavaScript 核心机制深度演示
+
+```typescript
+// core-mechanisms.ts — 闭包、原型链、事件循环
+
+// 1. 闭包与私有状态模块模式
+function createCounter() {
+  let count = 0; // 被闭包捕获的私有状态
+
+  return {
+    increment() {
+      return ++count;
+    },
+    decrement() {
+      return --count;
+    },
+    getValue() {
+      return count;
+    },
+  };
+}
+
+const counter = createCounter();
+console.log(counter.increment()); // 1
+console.log(counter.increment()); // 2
+console.log(counter.getValue());  // 2
+// console.log(counter.count);    // undefined — 私有状态不可访问
+
+// 2. 原型链委托
+const animal = {
+  speak() {
+    return 'Some sound';
+  },
+};
+
+const dog = Object.create(animal);
+dog.speak = function () {
+  return 'Woof!';
+};
+
+console.log(dog.speak());        // "Woof!" — 自身属性
+console.log(dog.__proto__.speak()); // "Some sound" — 原型链
+
+// 3. 微任务与宏任务执行顺序演示
+console.log('1. Script start');
+
+setTimeout(() => console.log('2. setTimeout (macrotask)'), 0);
+
+Promise.resolve().then(() => {
+  console.log('3. Promise 1 (microtask)');
+}).then(() => {
+  console.log('4. Promise 2 (microtask)');
+});
+
+queueMicrotask(() => {
+  console.log('5. queueMicrotask');
+});
+
+console.log('6. Script end');
+
+// 输出顺序：1 → 6 → 3 → 5 → 4 → 2
+```
+
+---
+
+## 六、实践映射
+
+### 6.1 从理论到代码
 
 本模块的代码示例覆盖：
 
@@ -55,7 +260,7 @@ JavaScript 的设计受 1995 年浏览器脚本需求的深刻影响：
 - 执行上下文与作用域链的可视化
 - 闭包在模块模式和工厂函数中的应用
 
-### 3.2 常见误区
+### 6.2 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -65,12 +270,25 @@ JavaScript 的设计受 1995 年浏览器脚本需求的深刻影响：
 
 ---
 
-## 四、扩展阅读
+## 七、扩展阅读
 
 - `10-fundamentals/10.1-language-semantics/axioms/` — 三条公理化基础
 - `10-fundamentals/10.2-type-system/structural-vs-nominal.md` — 结构子类型理论
 - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md` — 语言核心全景综述
 
 ---
+
+## 八、权威参考与外部链接
+
+| 资源 | 描述 | 链接 |
+|------|------|------|
+| **ECMA-262** | JavaScript 语言规范 | [tc39.es/ecma262](https://tc39.es/ecma262/) |
+| **TypeScript Handbook** | 官方类型系统文档 | [typescriptlang.org/docs/handbook/intro.html](https://www.typescriptlang.org/docs/handbook/intro.html) |
+| **You Don't Know JS** | Kyle Simpson 深度 JS 系列 | [github.com/getify/You-Dont-Know-JS](https://github.com/getify/You-Dont-Know-JS) |
+| **2ality** | Dr. Axel Rauschmayer 的 JS/TS 深度博客 | [2ality.com](https://2ality.com/) |
+| **WebAssembly Spec** | WASM 核心规范 | [webassembly.github.io/spec/core](https://webassembly.github.io/spec/core/) |
+| **V8 Blog** | Google V8 引擎官方博客 | [v8.dev/blog](https://v8.dev/blog) |
+| **MDN JavaScript** | Mozilla 开发者网络参考 | [developer.mozilla.org/en-US/docs/Web/JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript) |
+| **TC39 Proposals** | JavaScript 语言演进提案 | [github.com/tc39/proposals](https://github.com/tc39/proposals) |
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

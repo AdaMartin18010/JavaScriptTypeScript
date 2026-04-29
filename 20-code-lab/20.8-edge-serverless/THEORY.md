@@ -52,11 +52,155 @@
 
 ---
 
-## 三、扩展阅读
+## 三、边缘平台深度对比
+
+| 平台 | 运行时 | 冷启动 | 全球节点 | 语言支持 | 最大内存 | 最大执行时间 | 价格模型 | 生态锁定 |
+|------|--------|--------|---------|---------|---------|-------------|---------|---------|
+| **Cloudflare Workers** | V8 Isolate | <1ms | 300+ | JS/TS/WASM/Rust | 128MB | 30s-5min | 每百万请求 | 中（Workers 生态） |
+| **Vercel Edge** | V8 Isolate | <1ms | 100+ | JS/TS/WASM | 1024MB | 30s | 按执行时间 | 高（Next.js 生态） |
+| **Netlify Edge** | Deno Deploy | <5ms | 100+ | JS/TS | 512MB | 50s | 按执行时间 | 高（Netlify 生态） |
+| **AWS Lambda@Edge** | Node.js | 50-200ms | 400+ | JS/Python | 128MB | 5s (viewer) / 30s (origin) | 按请求+时间 | 高（AWS 生态） |
+| **AWS CloudFront Functions** | V8 Isolate | <1ms | 400+ | JS | 2MB | <1ms | 每百万请求 | 高（AWS 生态） |
+| **Deno Deploy** | Deno | <10ms | 35+ | JS/TS | 512MB | 30s | 按请求+时间 | 中（Deno 生态） |
+| **Fastly Compute** | WASM (SpiderMonkey) | <50μs | 70+ | JS/Rust/Go | 256MB | 2min | 按请求+时间 | 中（Fastly 生态） |
+
+---
+
+## 四、代码示例：Cloudflare Edge Function
+
+```typescript
+// worker.ts — Cloudflare Workers Edge Function
+export interface Env {
+  KV_CACHE: KVNamespace;
+  RATE_LIMIT: DurableObjectNamespace;
+}
+
+// 基于 IP 的速率限制中间件
+async function rateLimit(
+  request: Request,
+  env: Env,
+  limit: number = 100,
+  window: number = 60
+): Promise<Response | null> {
+  const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const key = `rate:${clientIP}`;
+
+  const current = await env.KV_CACHE.get(key);
+  const count = current ? parseInt(current, 10) : 0;
+
+  if (count >= limit) {
+    return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
+      status: 429,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  await env.KV_CACHE.put(key, String(count + 1), { expirationTtl: window });
+  return null;
+}
+
+// 边缘缓存 + 回源处理
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const url = new URL(request.url);
+    const cacheKey = `api:${url.pathname}:${url.search}`;
+
+    // 1. 速率限制检查
+    const blocked = await rateLimit(request, env);
+    if (blocked) return blocked;
+
+    // 2. 边缘缓存读取
+    const cached = await env.KV_CACHE.get(cacheKey);
+    if (cached) {
+      return new Response(cached, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Cache': 'HIT',
+          'Cache-Control': 'public, max-age=60',
+        },
+      });
+    }
+
+    // 3. 回源处理（模拟 API 调用）
+    const data = await fetch(`https://api.origin.com${url.pathname}`, {
+      cf: { cacheTtl: 60 },
+    });
+    const body = await data.json();
+    const response = JSON.stringify(body);
+
+    // 4. 异步写入边缘缓存
+    ctx.waitUntil(env.KV_CACHE.put(cacheKey, response, { expirationTtl: 300 }));
+
+    return new Response(response, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Cache': 'MISS',
+        'Cache-Control': 'public, max-age=60',
+      },
+    });
+  },
+};
+```
+
+---
+
+## 五、代码示例：Vercel Edge Middleware
+
+```typescript
+// middleware.ts — Next.js Edge Middleware
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export const config = {
+  matcher: ['/api/:path*', '/dashboard/:path*'],
+};
+
+export function middleware(request: NextRequest) {
+  const country = request.geo?.country || 'US';
+  const token = request.cookies.get('auth-token')?.value;
+
+  // 地域路由：欧盟用户路由到 GDPR 合规端点
+  if (country === 'DE' || country === 'FR') {
+    const url = request.nextUrl.clone();
+    url.pathname = `/api/eu${url.pathname}`;
+    return NextResponse.rewrite(url);
+  }
+
+  // 认证检查
+  if (request.nextUrl.pathname.startsWith('/dashboard') && !token) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // 添加安全响应头
+  const response = NextResponse.next();
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  return response;
+}
+```
+
+---
+
+## 六、扩展阅读
 
 - `20-code-lab/20.13-edge-databases/README.md`
 - ``30-knowledge-base/30.2-categories/30-edge-databases.md`` (Legacy)
 
 ---
+
+## 七、权威参考与外部链接
+
+| 资源 | 描述 | 链接 |
+|------|------|------|
+| **Cloudflare Workers Docs** | 边缘计算平台官方文档 | [developers.cloudflare.com/workers](https://developers.cloudflare.com/workers/) |
+| **Vercel Edge Runtime** | Next.js 边缘运行时文档 | [nextjs.org/docs/app/building-your-application/rendering/edge-and-nodejs-runtimes](https://nextjs.org/docs/app/building-your-application/rendering/edge-and-nodejs-runtimes) |
+| **AWS Lambda@Edge** | CloudFront 边缘 Lambda 文档 | [docs.aws.amazon.com/lambda/latest/dg/lambda-edge.html](https://docs.aws.amazon.com/lambda/latest/dg/lambda-edge.html) |
+| **Deno Deploy** | Deno 边缘部署平台 | [deno.com/deploy](https://deno.com/deploy) |
+| **Fastly Compute** | WASM 边缘计算平台 | [developer.fastly.com/learning/compute](https://developer.fastly.com/learning/compute/) |
+| **The Edge Computing Opportunity** | Cloudflare 边缘计算白皮书 | [cloudflare.com/learning/serverless/what-is-edge-computing](https://www.cloudflare.com/learning/serverless/what-is-edge-computing/) |
+| **Winter CG** | 边缘运行时标准化组织 | [wintercg.org](https://wintercg.org/) |
+| **Edge-first Architecture** | Vercel 边缘优先架构指南 | [vercel.com/blog/edge-functions-generally-available](https://vercel.com/blog/edge-functions-generally-available) |
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-29T01:54:41.691Z",
+  "timestamp": "2026-04-29T02:29:31.509Z",
   "totalTheoryFiles": 181,
   "validReferences": 655,
   "brokenReferences": [
@@ -20,9 +20,33 @@
       "line": 96,
       "ref": "docs/guides/ai-coding-workflow.md",
       "context": "- `docs/guides/ai-coding-workflow.md` — AI 辅助异步代码审查"
+    },
+    {
+      "file": "20-code-lab\\20.5-frontend-frameworks\\frontend-frameworks\\THEORY.md",
+      "line": 159,
+      "ref": "/products/${product.id}",
+      "context": "<Link href={`/products/${product.id}`}>"
+    },
+    {
+      "file": "20-code-lab\\20.8-edge-serverless\\tanstack-start-cloudflare\\THEORY.md",
+      "line": 33,
+      "ref": ".output/",
+      "context": "| **构建输出** | `.output/` → Workers 兼容 | `.output/` → Node server | `.vercel/output/` |"
+    },
+    {
+      "file": "20-code-lab\\20.8-edge-serverless\\tanstack-start-cloudflare\\THEORY.md",
+      "line": 33,
+      "ref": ".vercel/output/",
+      "context": "| **构建输出** | `.output/` → Workers 兼容 | `.output/` → Node server | `.vercel/output/` |"
+    },
+    {
+      "file": "20-code-lab\\20.9-observability-security\\debugging-monitoring\\THEORY.md",
+      "line": 25,
+      "ref": "clinic.js",
+      "context": "| **性能分析** | Flame Chart、Long Tasks、Web Vitals | `--prof`、`0x`、`clinic.js` | 录制期间自动捕获 |"
     }
   ],
-  "brokenCount": 3,
+  "brokenCount": 7,
   "codeLabCoverage": {
     "totalModules": 13,
     "coveredModules": 13,
