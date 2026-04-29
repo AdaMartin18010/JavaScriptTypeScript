@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-04-29T02:29:31.509Z",
+  "timestamp": "2026-04-29T02:44:34.877Z",
   "totalTheoryFiles": 181,
   "validReferences": 655,
   "brokenReferences": [
@@ -40,13 +40,37 @@
       "context": "| **构建输出** | `.output/` → Workers 兼容 | `.output/` → Node server | `.vercel/output/` |"
     },
     {
+      "file": "20-code-lab\\20.8-edge-serverless\\THEORY.md",
+      "line": 125,
+      "ref": "https://api.origin.com${url.pathname}",
+      "context": "const data = await fetch(`https://api.origin.com${url.pathname}`, {"
+    },
+    {
       "file": "20-code-lab\\20.9-observability-security\\debugging-monitoring\\THEORY.md",
       "line": 25,
       "ref": "clinic.js",
       "context": "| **性能分析** | Flame Chart、Long Tasks、Web Vitals | `--prof`、`0x`、`clinic.js` | 录制期间自动捕获 |"
+    },
+    {
+      "file": "20-code-lab\\20.9-observability-security\\observability-lab\\THEORY.md",
+      "line": 117,
+      "ref": "https://orders.api/users/${userId}/orders",
+      "context": "httpSpan.setAttribute('http.url', `https://orders.api/users/${userId}/orders`);"
+    },
+    {
+      "file": "20-code-lab\\20.9-observability-security\\observability-lab\\THEORY.md",
+      "line": 118,
+      "ref": "https://orders.api/users/${userId}/orders",
+      "context": "const res = await fetch(`https://orders.api/users/${userId}/orders`);"
+    },
+    {
+      "file": "20-code-lab\\20.9-observability-security\\THEORY.md",
+      "line": 64,
+      "ref": "sigstore/cosign",
+      "context": "| **SLSA** | OpenSSF | 软件制品供应链 | 4 个等级 | 构建/发布 |  provenance 验证 | `sigstore/cosign`, GitHub attestations |"
     }
   ],
-  "brokenCount": 7,
+  "brokenCount": 11,
   "codeLabCoverage": {
     "totalModules": 13,
     "coveredModules": 13,
