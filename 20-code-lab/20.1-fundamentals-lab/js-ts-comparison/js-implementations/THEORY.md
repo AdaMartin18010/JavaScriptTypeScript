@@ -137,7 +137,47 @@ const p2 = new Point(3, 4);
 for (let i = 0; i < 1e6; i++) distance(p1, p2);
 ```
 
-### 3.3 常见误区
+### 3.3 BigInt 与 TypedArray 引擎差异
+
+```js
+// === BigInt 位运算在不同引擎上的性能差异显著 ===
+// 避免在热循环中混合 BigInt 与 Number
+function fastModularExp(base, exp, mod) {
+  let result = 1n;
+  let b = base % mod;
+  let e = exp;
+  while (e > 0n) {
+    if (e & 1n) result = (result * b) % mod;
+    b = (b * b) % mod;
+    e >>= 1n;
+  }
+  return result;
+}
+
+// === TypedArray 零拷贝共享 ===
+// 所有引擎均遵循同一内存布局规范
+const shared = new SharedArrayBuffer(1024);
+const i32 = new Int32Array(shared);
+const f64 = new Float64Array(shared, 0, 128); // 视图重叠
+
+// Atomics 操作在所有引擎上的语义一致
+Atomics.store(i32, 0, 42);
+console.log(Atomics.load(i32, 0)); // 42
+```
+
+### 3.4 Date.parse 实现差异与 ISO 8601 安全写法
+
+```js
+// 不同引擎对非 ISO 格式解析存在差异
+// ❌ 避免：依赖隐式格式
+new Date('02/03/2024'); // V8: Feb 3, JSC: Mar 2
+
+// ✅ 推荐：显式构造或使用 ISO 8601
+new Date('2024-02-03T00:00:00Z');
+new Date(2024, 1, 3); // 月份从 0 开始，所有引擎一致
+```
+
+### 3.5 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -145,7 +185,7 @@ for (let i = 0; i < 1e6; i++) distance(p1, p2);
 | 性能优化只需关注 V8 | Safari 移动端份额巨大，JSC 性能模型与 V8 不同 |
 | `typeof null === 'object'` 是引擎 Bug | 这是语言规范定义的行为，所有引擎一致实现 |
 
-### 3.4 扩展阅读
+### 3.6 扩展阅读
 
 - [V8 Blog](https://v8.dev/blog)
 - [SpiderMonkey Documentation](https://spidermonkey.dev/)
@@ -153,6 +193,10 @@ for (let i = 0; i < 1e6; i++) distance(p1, p2);
 - [ECMA-262 Specification](https://tc39.es/ecma262/)
 - [JS Engine Comparisons (Mathias Bynens)](https://mathiasbynens.be/notes/shapes-ics)
 - [ECMAScript Compat Table](https://compat-table.github.io/compat-table/es2016plus/)
+- [V8 Ignition + TurboFan Pipeline](https://v8.dev/docs/turbofan) — V8 官方编译管线文档
+- [SpiderMonkey WarpMonkey](https://spidermonkey.dev/blog/) — SpiderMonkey 新一代 JIT 介绍
+- [WebKit JSC FTL JIT](https://webkit.org/blog/3362/introducing-the-webkit-ftl-jit/) — FTL（Fourth Tier LLVM）架构
+- [Date.parse ECMA-262 规范](https://tc39.es/ecma262/#sec-date.parse) — 实现定义行为的标准描述
 - `30-knowledge-base/30.2-runtimes`
 
 ---
