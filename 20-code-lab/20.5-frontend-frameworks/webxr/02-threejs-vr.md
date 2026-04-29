@@ -1,4 +1,4 @@
-# Three.js VR 场景搭建
+﻿# Three.js VR 场景搭建
 
 > 文件: `02-threejs-vr.ts` | 难度: ⭐⭐⭐⭐ (高级)
 
@@ -85,6 +85,57 @@ function render() {
 
 ---
 
+## 完整最小示例 (TypeScript)
+
+以下是一个可直接运行的最小 VR 场景，包含一个随控制器交互改变颜色的立方体：
+
+```typescript
+import * as THREE from 'three';
+import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x202020);
+
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 1.6, 3);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.xr.enabled = true;
+document.body.appendChild(renderer.domElement);
+document.body.appendChild(VRButton.createButton(renderer));
+
+// 立方体
+const geometry = new THREE.BoxGeometry(1, 1, 1);
+const material = new THREE.MeshStandardMaterial({ color: 0x44aa88 });
+const cube = new THREE.Mesh(geometry, material);
+cube.position.set(0, 1.5, -2);
+scene.add(cube);
+
+// 灯光
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(1, 2, 1);
+scene.add(light);
+scene.add(new THREE.AmbientLight(0x404040));
+
+// 控制器交互
+const controller = renderer.xr.getController(0);
+controller.addEventListener('selectstart', () => {
+  material.color.setHex(Math.random() * 0xffffff);
+});
+scene.add(controller);
+
+function animate() {
+  renderer.setAnimationLoop(() => {
+    cube.rotation.y += 0.01;
+    renderer.render(scene, camera);
+  });
+}
+animate();
+```
+
+---
+
 ## VR 控制器输入处理
 
 WebXR 输入配置文件支持多种控制器（Meta Quest、HTC Vive、Index 等）。Three.js 通过 `XRInputSource` 提供统一抽象：
@@ -123,6 +174,39 @@ function render() {
   }
   renderer.render(scene, camera);
 }
+```
+
+---
+
+## 传送与移动 (Locomotion)
+
+VR 中常见的移动方式是**抛物线传送**（Teleportion）。下面展示基于控制器指向的简易传送逻辑：
+
+```typescript
+const raycaster = new THREE.Raycaster();
+const tempMatrix = new THREE.Matrix4();
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(20, 20),
+  new THREE.MeshBasicMaterial({ visible: false })
+);
+floor.rotation.x = -Math.PI / 2;
+scene.add(floor);
+
+function handleTeleport(controller: THREE.XRTargetRaySpace) {
+  tempMatrix.identity().extractRotation(controller.matrixWorld);
+  raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+  raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+
+  const intersects = raycaster.intersectObject(floor);
+  if (intersects.length > 0) {
+    const target = intersects[0].point;
+    // 将玩家 rig（相机父节点）移动到目标点
+    cameraRig.position.set(target.x, 0, target.z);
+  }
+}
+
+// 在 selectstart 时触发传送
+controller.addEventListener('selectstart', () => handleTeleport(controller));
 ```
 
 ---
@@ -205,3 +289,7 @@ function render(timestamp: number, frame: XRFrame) {
 - [WebXR Input Profiles](https://github.com/immersive-web/webxr-input-profiles) — 控制器输入配置规范
 - [Meta WebXR Best Practices](https://developers.meta.com/horizon/documentation/web/webxr-performance) — Meta 官方 VR 性能优化指南
 - [Three.js WebXRManager Source](https://github.com/mrdoob/three.js/blob/dev/src/renderers/webxr/WebXRManager.js) — Three.js WebXR 集成源码参考
+- [MDN WebXR Device API](https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API) — Mozilla 开发者网络权威文档
+- [Khronos WebGL](https://www.khronos.org/webgl/) — WebGL 标准与生态系统
+- [Immersive Web Samples](https://immersive-web.github.io/webxr-samples/) — W3C 官方 WebXR 示例仓库
+- [Meta WebXR Getting Started](https://developers.meta.com/horizon/documentation/web/webxr-getting-started) — Meta Quest 官方入门指南

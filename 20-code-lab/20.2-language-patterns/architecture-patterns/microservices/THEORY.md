@@ -1,4 +1,4 @@
-# 微服务架构（Microservices Architecture）
+﻿# 微服务架构（Microservices Architecture）
 
 > **定位**：`20-code-lab/20.2-language-patterns/architecture-patterns/microservices`
 > **关联**：`10-fundamentals/` | `30-knowledge-base/`
@@ -159,7 +159,109 @@ const cb = new CircuitBreaker();
 const user = await cb.call(() => userService.fetchUser(id));
 ```
 
-### 3.2 常见误区
+### 3.2 Saga 编排示例（Orchestration）
+
+以下是用 TypeScript 实现的简化 Saga 编排器，展示如何以中央协调器管理分布式事务步骤：
+
+```typescript
+// saga-orchestrator.ts
+type SagaStep = {
+  name: string;
+  action: () => Promise<void>;
+  compensate: () => Promise<void>;
+};
+
+class SagaOrchestrator {
+  private completed: string[] = [];
+
+  async execute(steps: SagaStep[]) {
+    for (const step of steps) {
+      try {
+        await step.action();
+        this.completed.unshift(step.name); // 记录以便回滚
+      } catch (err) {
+        await this.rollback();
+        throw new Error(`Saga failed at step "${step.name}": ${err}`);
+      }
+    }
+  }
+
+  private async rollback() {
+    for (const name of this.completed) {
+      const step = this.steps.find(s => s.name === name)!;
+      await step.compensate().catch(() => {/* 补偿失败需人工介入 */});
+    }
+  }
+
+  constructor(private steps: SagaStep[]) {}
+}
+
+// 使用示例：创建订单 Saga
+const createOrderSaga = new SagaOrchestrator([
+  {
+    name: 'reserveInventory',
+    action: () => inventoryService.reserve(sku, qty),
+    compensate: () => inventoryService.release(sku, qty),
+  },
+  {
+    name: 'processPayment',
+    action: () => paymentService.charge(userId, amount),
+    compensate: () => paymentService.refund(userId, amount),
+  },
+  {
+    name: 'shipOrder',
+    action: () => shippingService.create(orderId),
+    compensate: () => shippingService.cancel(orderId),
+  },
+]);
+```
+
+### 3.3 gRPC 内部通信示例
+
+对于低延迟、强类型的内部服务通信，gRPC 是首选协议：
+
+```typescript
+// protobuf/payments.proto
+syntax = "proto3";
+service PaymentService {
+  rpc Charge (ChargeRequest) returns (ChargeResponse);
+}
+message ChargeRequest {
+  string user_id = 1;
+  double amount = 2;
+}
+message ChargeResponse {
+  string transaction_id = 1;
+  bool success = 2;
+}
+
+// server.ts
+import * as grpc from '@grpc/grpc-js';
+import * as protoLoader from '@grpc/proto-loader';
+
+const packageDef = protoLoader.loadSync('./protobuf/payments.proto');
+const grpcObj = grpc.loadPackageDefinition(packageDef) as any;
+const server = new grpc.Server();
+
+server.addService(grpcObj.PaymentService.service, {
+  charge: (call: any, callback: any) => {
+    const { user_id, amount } = call.request;
+    // 业务逻辑...
+    callback(null, { transaction_id: 'txn-123', success: true });
+  },
+});
+server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
+  server.start();
+});
+
+// client.ts
+const client = new grpcObj.PaymentService('payments:50051', grpc.credentials.createInsecure());
+client.charge({ user_id: 'u1', amount: 99.9 }, (err: any, response: any) => {
+  console.log(response);
+});
+```
+
+### 3.4 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -167,12 +269,18 @@ const user = await cb.call(() => userService.fetchUser(id));
 | 服务越小越好 | 过细的服务导致通信开销和事务困难 |
 | 先拆微服务再迭代 | 应从模块化单体开始，在痛点出现时拆分 |
 
-### 3.3 扩展阅读
+### 3.5 扩展阅读
 
 - [Building Microservices — Sam Newman](https://samnewman.io/books/building_microservices/)
 - [The Twelve-Factor App](https://12factor.net/)
 - [NATS Documentation](https://docs.nats.io/)
 - [Temporal: Durable Execution](https://temporal.io/)
+- [Martin Fowler — Microservices](https://martinfowler.com/articles/microservices.html) — 微服务架构奠基性文章
+- [Microservices.io Patterns](https://microservices.io/patterns/index.html) — 微服务模式大全与实现指南
+- [Microsoft Azure — Microservices Architecture](https://docs.microsoft.com/en-us/azure/architecture/microservices/) — 微软云架构中心微服务实践
+- [AWS Microservices](https://aws.amazon.com/microservices/) — AWS 微服务最佳实践白皮书
+- [Enterprise Integration Patterns](https://www.enterpriseintegrationpatterns.com/) — 企业集成模式权威参考
+- [gRPC Node.js Documentation](https://grpc.io/docs/languages/node/) — Google 官方 gRPC Node.js 指南
 - `20.2-language-patterns/architecture-patterns/`
 
 ---

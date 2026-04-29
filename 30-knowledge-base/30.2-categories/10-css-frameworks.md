@@ -248,6 +248,80 @@ function ProductCard({ product }: { product: Product }) {
 }
 ```
 
+### Bootstrap 6 主题定制与暗色模式
+
+```scss
+// custom-theme.scss
+@use "bootstrap/scss/bootstrap" with (
+  $primary: #0d6efd,
+  $enable-dark-mode: true,
+  $body-bg-dark: #0f172a,
+  $body-color-dark: #e2e8f0
+);
+
+// JavaScript 切换暗色模式
+const toggleDark = () => {
+  const html = document.documentElement
+  html.setAttribute(
+    'data-bs-theme',
+    html.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark'
+  )
+}
+```
+
+### Tailwind v4 自定义插件与动画
+
+```css
+/* input.css */
+@import "tailwindcss";
+
+@theme {
+  --animate-fade-in: fade-in 0.3s ease-out;
+  --animate-slide-up: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* 使用 */
+.animate-fade-in { animation: var(--animate-fade-in); }
+.animate-slide-up { animation: var(--animate-slide-up); }
+```
+
+### next-themes 暗色模式实现
+
+```tsx
+// app/providers.tsx
+import { ThemeProvider } from 'next-themes'
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      {children}
+    </ThemeProvider>
+  )
+}
+
+// components/ThemeToggle.tsx
+import { useTheme } from 'next-themes'
+
+export function ThemeToggle() {
+  const { theme, setTheme } = useTheme()
+  return (
+    <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+      {theme === 'dark' ? '☀️' : '🌙'}
+    </button>
+  )
+}
+```
+
 ---
 
 ## 选型决策树
@@ -322,6 +396,10 @@ Tailwind v4 和 UnoCSS 均已内置 `@container` 支持，响应式设计从 vie
 - [Lightning CSS](https://lightningcss.dev/) — Tailwind v4 底层 Rust 编译器
 - [Open Props](https://open-props.style/) — CSS 自定义属性设计令牌
 - [Bootstrap Documentation](https://getbootstrap.com/) — Bootstrap 官方文档
+- [next-themes Documentation](https://github.com/pacocoursey/next-themes) — Next.js 主题切换方案
+- [Pico CSS](https://picocss.com/) — 语义化 HTML 样式框架
+- [class-variance-authority (CVA)](https://cva.style/docs) — 类型安全的 Tailwind 组件变体管理
+- [W3C — CSS Nesting Module](https://www.w3.org/TR/css-nesting-1/) — CSS 原生嵌套规范
 
 ---
 

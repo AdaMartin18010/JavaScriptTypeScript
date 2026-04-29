@@ -215,6 +215,109 @@ function useAddTodo() {
 }
 ```
 
+### Vue Pinia：组合式 Store
+
+```typescript
+// stores/counter.ts
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+
+export const useCounterStore = defineStore('counter', () => {
+  const count = ref(0)
+  const double = computed(() => count.value * 2)
+
+  function increment() {
+    count.value++
+  }
+
+  return { count, double, increment }
+})
+
+// 组件中使用
+<script setup lang="ts">
+import { useCounterStore } from '@/stores/counter'
+const counter = useCounterStore()
+</script>
+
+<template>
+  <button @click="counter.increment">
+    {{ counter.count }} × 2 = {{ counter.double }}
+  </button>
+</template>
+```
+
+### React Context API + useReducer 模式
+
+```tsx
+// context/CartContext.tsx
+import { createContext, useContext, useReducer, ReactNode } from 'react'
+
+interface CartItem { id: string; name: string; qty: number }
+type CartAction =
+  | { type: 'ADD'; item: CartItem }
+  | { type: 'REMOVE'; id: string }
+  | { type: 'CLEAR' }
+
+function cartReducer(state: CartItem[], action: CartAction): CartItem[] {
+  switch (action.type) {
+    case 'ADD':
+      return [...state, action.item]
+    case 'REMOVE':
+      return state.filter((i) => i.id !== action.id)
+    case 'CLEAR':
+      return []
+    default:
+      return state
+  }
+}
+
+const CartContext = createContext<{ items: CartItem[]; dispatch: React.Dispatch<CartAction> } | null>(null)
+
+export function CartProvider({ children }: { children: ReactNode }) {
+  const [items, dispatch] = useReducer(cartReducer, [])
+  return <CartContext.Provider value={{ items, dispatch }}>{children}</CartContext.Provider>
+}
+
+export function useCart() {
+  const ctx = useContext(CartContext)
+  if (!ctx) throw new Error('useCart must be inside CartProvider')
+  return ctx
+}
+```
+
+### SolidJS Store：细粒度嵌套响应
+
+```tsx
+import { createStore } from 'solid-js/store'
+
+interface Todo { id: number; text: string; done: boolean }
+
+function TodoList() {
+  const [todos, setTodos] = createStore<Todo[]>([
+    { id: 1, text: 'Learn Solid', done: false },
+  ])
+
+  const toggle = (id: number) => {
+    // 精准更新单个属性，不触发未变更组件重渲染
+    setTodos(
+      (t) => t.id === id,
+      'done',
+      (done) => !done
+    )
+  }
+
+  return (
+    <For each={todos}>
+      {(todo) => (
+        <li classList={{ 'line-through': todo.done }} onClick={() => toggle(todo.id)}>
+          {todo.text}
+        </li>
+      )}
+    </For>
+  )
+}
+```
+
 ---
 
 ## 最佳实践
@@ -238,6 +341,9 @@ function useAddTodo() {
 - [Recoil Archive Notice](https://github.com/facebookexperimental/Recoil) — 归档声明
 - [SolidJS Store & Signals](https://www.solidjs.com/tutorial/stores_createstore) — SolidJS 响应式原语
 - [React 19 Compiler](https://react.dev/learn/react-compiler) — React 官方编译器文档
+- [Pinia Documentation](https://pinia.vuejs.org/) — Vue 官方推荐状态管理库
+- [Vue.js — Reactivity in Depth](https://vuejs.org/guide/extras/reactivity-in-depth.html) — Vue 响应式系统原理
+- [MDN — Web Storage API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API) — localStorage/sessionStorage 规范
 
 ---
 

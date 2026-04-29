@@ -165,3 +165,199 @@ desktop-tauri-react/
 | Tailwind CSS | v4 | 原子化 CSS，快速开发，深色模式支持 |
 | Vite | 6 | 极速 HMR，原生 ESM，与 Tauri 集成良好 |
 | Lucide | 最新 | 轻量级图标库，树摇优化 |
+
+---
+
+## 7. 代码示例
+
+### Rust 命令实现与错误处理
+
+```rust
+// src-tauri/src/lib.rs
+use serde::Serialize;
+use std::fs;
+use tauri::command;
+
+#[derive(Serialize)]
+struct FileEntry {
+    name: String,
+    is_dir: bool,
+    size: u64,
+}
+
+#[derive(Serialize)]
+enum AppError {
+    Io(String),
+    InvalidPath,
+}
+
+impl From<std::io::Error> for AppError {
+    fn from(err: std::io::Error) -> Self {
+        AppError::Io(err.to_string())
+    }
+}
+
+#[command]
+fn read_directory(path: String) -> Result<Vec<FileEntry>, AppError> {
+    let entries = fs::read_dir(&path)?
+        .filter_map(|entry| {
+            let entry = entry.ok()?;
+            let meta = entry.metadata().ok()?;
+            Some(FileEntry {
+                name: entry.file_name().to_string_lossy().to_string(),
+                is_dir: meta.is_dir(),
+                size: meta.len(),
+            })
+        })
+        .collect();
+    Ok(entries)
+}
+
+#[command]
+fn read_text_file(path: String) -> Result<String, AppError> {
+    if path.contains("..") {
+        return Err(AppError::InvalidPath);
+    }
+    let content = fs::read_to_string(&path)?;
+    Ok(content)
+}
+```
+
+### React Hook — 类型安全的 Tauri 调用封装
+
+```typescript
+// src/hooks/useTauri.ts
+import { invoke } from '@tauri-apps/api/core'
+import { useState, useEffect, useCallback } from 'react'
+
+interface FileEntry {
+  name: string
+  isDir: boolean
+  size: number
+}
+
+export function useDirectory(path: string) {
+  const [entries, setEntries] = useState<FileEntry[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const refresh = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await invoke<FileEntry[]>('read_directory', { path })
+      setEntries(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setLoading(false)
+    }
+  }, [path])
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
+  return { entries, loading, error, refresh }
+}
+```
+
+### 事件监听 — 后端推送至前端
+
+```typescript
+// src/hooks/useTauriEvent.ts
+import { listen, Event } from '@tauri-apps/api/event'
+import { useEffect, useState } from 'react'
+
+interface ProgressPayload {
+  progress: number
+  total: number
+  status: 'running' | 'completed' | 'error'
+}
+
+export function useProgressEvent() {
+  const [progress, setProgress] = useState<ProgressPayload | null>(null)
+
+  useEffect(() => {
+    const unlisten = listen<ProgressPayload>('task-progress', (event: Event<ProgressPayload>) => {
+      setProgress(event.payload)
+    })
+
+    return () => {
+      unlisten.then((f) => f())
+    }
+  }, [])
+
+  return progress
+}
+
+// Rust 端发送事件
+// src-tauri/src/lib.rs
+use tauri::Emitter;
+
+#[command]
+fn long_task(app: tauri::AppHandle) {
+    std::thread::spawn(move || {
+        for i in 0..=100 {
+            std::thread::sleep(std::time::Duration::from_millis(50));
+            app.emit("task-progress", ProgressPayload {
+                progress: i,
+                total: 100,
+                status: if i == 100 { "completed" } else { "running" },
+            }).unwrap();
+        }
+    });
+}
+```
+
+### tauri.conf.json 配置示例
+
+```json
+{
+  "productName": "TauriReactApp",
+  "version": "1.0.0",
+  "identifier": "com.example.tauri-react",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:5173",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' ipc:; img-src 'self' asset: https://asset.localhost"
+    },
+    "windows": [
+      {
+        "title": "Tauri React App",
+        "width": 1200,
+        "height": 800,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi", "dmg", "appimage", "deb"],
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/icon.icns", "icons/icon.ico"]
+  }
+}
+```
+
+---
+
+## 8. 权威外部链接
+
+- [Tauri Documentation](https://tauri.app/) — Tauri 官方文档
+- [Tauri v2 Migration Guide](https://v2.tauri.app/start/migrate/from-tauri-1/) — v1 到 v2 迁移指南
+- [Rust Programming Language](https://www.rust-lang.org/) — Rust 官方语言文档
+- [The Rust Book](https://doc.rust-lang.org/book/) — Rust 权威入门教程
+- [WebView2 — Microsoft Edge](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) — Windows WebView2 文档
+- [WKWebView — Apple Developer](https://developer.apple.com/documentation/webkit/wkwebview) — macOS/iOS WebView 文档
+- [WebKitGTK — Linux](https://webkitgtk.org/) — Linux WebView 引擎
+- [CSP Quick Reference Guide](https://content-security-policy.com/) — 内容安全策略速查
+- [OWASP Desktop Application Security](https://owasp.org/www-project-desktop-app-security-top-10/) — 桌面应用安全 Top 10
+- [Serde — Rust Serialization](https://serde.rs/) — Rust 序列化库文档
+- [Vite Documentation](https://vitejs.dev/) — Vite 构建工具官方文档
+- [React 19 Documentation](https://react.dev/) — React 官方文档

@@ -108,6 +108,166 @@ export class PrismaOrderRepository implements OrderRepository {
 
 ---
 
+## 六边形架构完整实现示例
+
+```ts
+// domain/ports/incoming/ForBookingHotel.ts
+export interface ForBookingHotel {
+  book(hotelId: string, guest: Guest, dates: DateRange): Promise<Booking>;
+}
+
+// domain/ports/outgoing/ForStoringBookings.ts
+export interface ForStoringBookings {
+  save(booking: Booking): Promise<void>;
+  findById(id: string): Promise<Booking | null>;
+}
+
+// domain/BookingService.ts
+export class BookingService implements ForBookingHotel {
+  constructor(private readonly store: ForStoringBookings) {}
+
+  async book(hotelId: string, guest: Guest, dates: DateRange): Promise<Booking> {
+    const booking = Booking.create(hotelId, guest, dates);
+    await this.store.save(booking);
+    return booking;
+  }
+}
+
+// adapters/inbound/http/HotelController.ts
+export class HotelController {
+  constructor(private readonly booking: ForBookingHotel) {}
+
+  async postBooking(req: Request, res: Response) {
+    const { hotelId, guest, dates } = req.body;
+    const booking = await this.booking.book(hotelId, guest, dates);
+    res.status(201).json(booking);
+  }
+}
+
+// adapters/outbound/db/InMemoryBookingStore.ts
+export class InMemoryBookingStore implements ForStoringBookings {
+  private bookings = new Map<string, Booking>();
+
+  async save(booking: Booking): Promise<void> {
+    this.bookings.set(booking.id, booking);
+  }
+
+  async findById(id: string): Promise<Booking | null> {
+    return this.bookings.get(id) ?? null;
+  }
+}
+```
+
+---
+
+## NestJS 模块架构示例
+
+```ts
+// orders/orders.module.ts
+import { Module } from '@nestjs/common'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { OrdersController } from './orders.controller'
+import { OrdersService } from './orders.service'
+import { Order } from './entities/order.entity'
+import { OrderRepository } from './repositories/order.repository'
+import { PaymentModule } from '../payment/payment.module'
+
+@Module({
+  imports: [TypeOrmModule.forFeature([Order]), PaymentModule],
+  controllers: [OrdersController],
+  providers: [
+    OrdersService,
+    { provide: 'IOrderRepository', useClass: OrderRepository },
+  ],
+  exports: [OrdersService],
+})
+export class OrdersModule {}
+
+// orders/orders.service.ts
+@Injectable()
+export class OrdersService {
+  constructor(
+    @Inject('IOrderRepository')
+    private readonly repo: IOrderRepository,
+    private readonly payment: PaymentService,
+  ) {}
+
+  async create(dto: CreateOrderDto) {
+    const order = Order.create(dto)
+    await this.payment.authorize(order.total)
+    return this.repo.save(order)
+  }
+}
+```
+
+---
+
+## Module Federation 2.0 配置示例
+
+```ts
+// webpack.config.js (Host App)
+const { ModuleFederationPlugin } = require('@module-federation/enhanced/webpack')
+
+module.exports = {
+  plugins: [
+    new ModuleFederationPlugin({
+      name: 'host',
+      remotes: {
+        checkout: 'checkout@https://checkout.example.com/mf-manifest.json',
+        product: 'product@https://product.example.com/mf-manifest.json',
+      },
+      shared: {
+        react: { singleton: true, eager: true, requiredVersion: '^19.0.0' },
+        'react-dom': { singleton: true, eager: true, requiredVersion: '^19.0.0' },
+      },
+    }),
+  ],
+}
+
+// Host App 中使用远程模块
+const ProductDetail = React.lazy(() => import('product/ProductDetail'))
+
+function App() {
+  return (
+    <React.Suspense fallback={<Spinner />}>
+      <ProductDetail sku="SKU-12345" />
+    </React.Suspense>
+  )
+}
+```
+
+---
+
+## 依赖注入与测试策略
+
+```ts
+// 使用 tsyringe 实现自动依赖注入
+import 'reflect-metadata'
+import { container } from 'tsyringe'
+import { BookingService } from './domain/BookingService'
+import { PrismaBookingStore } from './adapters/outbound/db/PrismaBookingStore'
+
+container.register('ForStoringBookings', { useClass: PrismaBookingStore })
+container.register(BookingService, { useClass: BookingService })
+
+const booking = container.resolve(BookingService)
+
+// 测试时替换为内存实现
+import { InMemoryBookingStore } from './tests/InMemoryBookingStore'
+
+beforeEach(() => {
+  container.register('ForStoringBookings', { useClass: InMemoryBookingStore })
+})
+
+test('should create a booking', async () => {
+  const service = container.resolve(BookingService)
+  const result = await service.book('hotel-1', guest, dates)
+  expect(result.status).toBe('confirmed')
+})
+```
+
+---
+
 ## 2026 趋势
 
 - **Module Federation 2.0**：类型安全、离线容错、DevTools
@@ -124,6 +284,14 @@ export class PrismaOrderRepository implements OrderRepository {
 - [Microsoft — Onion Architecture](https://learn.microsoft.com/en-us/previous-versions/msp-n-p/jj554200(v=pandp.10))
 - [DDD Reference by Eric Evans](https://www.domainlanguage.com/ddd/reference/)
 - [NestJS — Official Architecture Docs](https://docs.nestjs.com/)
+- [Martin Fowler — Patterns of Enterprise Application Architecture](https://martinfowler.com/books/eaa.html)
+- [Module Federation — Official Documentation](https://module-federation.io/) — 微前端模块联邦权威文档
+- [Google Cloud — Microservices Best Practices](https://cloud.google.com/architecture/microservices-best-practices)
+- [AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html)
+- [Microsoft — CQRS Pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs)
+- [Event-Driven Architecture — Martin Fowler](https://martinfowler.com/articles/201701-event-driven.html)
+- [ts-pattern — Pattern Matching for TypeScript](https://github.com/gvergnaud/ts-pattern)
+- [Zod — TypeScript Schema Validation](https://zod.dev/) — 边界输入校验与类型安全
 
 ---
 

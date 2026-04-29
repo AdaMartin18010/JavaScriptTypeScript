@@ -121,6 +121,148 @@ graph TD
 
 ---
 
+## 代码示例
+
+### Node.js 24 — 权限模型与原生 TS
+
+```bash
+# 原生 TypeScript 执行（无需 ts-node）
+node --experimental-strip-types server.ts
+
+# 生产环境启用权限沙箱
+node --permission \
+  --allow-fs-read=/app/data \
+  --allow-fs-write=/app/logs \
+  --allow-net=localhost:3000,api.example.com \
+  --allow-child-process \
+  dist/server.js
+```
+
+```typescript
+// server.ts — Node.js 24 原生 HTTP 服务
+import { createServer } from 'node:http'
+
+const server = createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' })
+  res.end(JSON.stringify({ runtime: 'Node.js 24', ts: true }))
+})
+
+server.listen(3000, () => console.log('Server running on http://localhost:3000'))
+```
+
+### Bun — 极速 I/O 与内置测试
+
+```typescript
+// http.ts — Bun 原生 HTTP 服务
+Bun.serve({
+  port: 3000,
+  fetch(req) {
+    const url = new URL(req.url)
+    if (url.pathname === '/api/health') {
+      return Response.json({ status: 'ok', runtime: 'Bun' })
+    }
+    return new Response('Not Found', { status: 404 })
+  },
+})
+
+// 内置 SQLite（无需安装依赖）
+import { Database } from 'bun:sqlite'
+
+const db = new Database('app.db')
+db.run('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)')
+const insert = db.query('INSERT INTO users (name) VALUES (?)')
+insert.run('Alice')
+```
+
+```typescript
+// sum.test.ts — Bun 内置测试（无需 jest/vitest）
+import { describe, it, expect } from 'bun:test'
+
+describe('math', () => {
+  it('should add correctly', () => {
+    expect(1 + 1).toBe(2)
+  })
+})
+
+// 运行: bun test
+```
+
+### Deno — 安全沙箱与边缘部署
+
+```typescript
+// main.ts — Deno 原生 HTTP 服务
+import { serve } from 'https://deno.land/std@0.220.0/http/server.ts'
+
+serve((req) => {
+  return Response.json({
+    runtime: 'Deno',
+    version: Deno.version.deno,
+    permissions: Deno.permissions.query({ name: 'read' }),
+  })
+}, { port: 8000 })
+```
+
+```bash
+# Deno 显式权限运行（默认拒绝一切）
+deno run --allow-net=localhost:8000 --allow-read=/data --allow-write=/logs main.ts
+
+# Deno Deploy 部署（零配置边缘函数）
+deno deploy --project=my-app --include=main.ts
+```
+
+### Dockerfile 多运行时对比
+
+```dockerfile
+# Node.js 24 LTS
+FROM node:24-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+EXPOSE 3000
+CMD ["node", "--permission", "--allow-fs-read=/app", "--allow-net=0.0.0.0:3000", "dist/server.js"]
+
+# Bun 1.2
+FROM oven/bun:1.2-alpine
+WORKDIR /app
+COPY package.json bun.lockb ./
+RUN bun install --production
+COPY . .
+EXPOSE 3000
+CMD ["bun", "run", "server.ts"]
+
+# Deno 2.x
+FROM denoland/deno:2.0
+WORKDIR /app
+COPY deno.json main.ts ./
+RUN deno cache main.ts
+EXPOSE 8000
+CMD ["deno", "run", "--allow-net", "main.ts"]
+```
+
+### 混合架构 tRPC 网关示例
+
+```typescript
+// gateway.ts — Node.js 主网关，转发至 Bun 微服务
+import { createTRPCProxyClient, httpBatchLink } from '@trpc/client'
+import type { BunServiceRouter } from './bun-service'
+
+const bunClient = createTRPCProxyClient<BunServiceRouter>({
+  links: [httpBatchLink({ url: 'http://bun-service:3001/trpc' })],
+})
+
+// Node.js Express 路由中调用 Bun 服务
+app.get('/api/analytics', async (req, res) => {
+  const report = await bunClient.analytics.generateReport.query({
+    startDate: req.query.from as string,
+    endDate: req.query.to as string,
+  })
+  res.json(report)
+})
+```
+
+---
+
 ## 选型检查清单
 
 ```
@@ -145,3 +287,18 @@ graph TD
 5. **Strapi** — [Bun vs Node.js: Security & Performance](https://strapi.io/blog/bun-vs-nodejs-performance-comparison-guide) (2026-04-19)
 6. **RepoFlow** — [Node.js vs Deno vs Bun Microbenchmarks](https://www.repoflow.io/blog/node-js-vs-deno-vs-bun-performance-benchmarks) (2026-02-17)
 7. **Sachin's DevLog** — [Bun vs Node vs Deno Production Benchmark](https://sachinsharma.dev/blogs/bun-vs-node-vs-deno-benchmark) (2026-03-05)
+
+---
+
+## 权威外部链接
+
+- [Node.js Documentation](https://nodejs.org/docs/latest/api/) — Node.js 官方 API 文档
+- [Bun Documentation](https://bun.sh/docs) — Bun 官方文档与 API 参考
+- [Deno Documentation](https://docs.deno.com/) — Deno 官方文档
+- [Deno Deploy](https://deno.com/deploy) — Deno 边缘计算平台
+- [WinterCG](https://wintercg.org/) — Web 标准化运行时协作组
+- [OpenTelemetry JS](https://opentelemetry.io/docs/languages/js/) — 跨运行时统一可观测性
+- [Node.js Security Best Practices](https://nodejs.org/en/docs/guides/security/) — Node.js 官方安全指南
+- [OWASP NodeGoat](https://github.com/OWASP/NodeGoat) — Node.js 安全漏洞学习项目
+- [Splunk — npm Supply Chain Security Report 2025](https://www.splunk.com/en_us/blog/security.html) — 供应链安全分析
+- [Docker Hub — Node.js Official Images](https://hub.docker.com/_/node) — 官方容器镜像

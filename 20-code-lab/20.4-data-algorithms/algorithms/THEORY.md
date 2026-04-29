@@ -1,4 +1,4 @@
-# 算法 — 理论基础
+﻿# 算法 — 理论基础
 
 ## 1. 复杂度分析
 
@@ -46,6 +46,59 @@
 | 插入排序 | O(n²) | O(n²) | O(1) | 稳定 |
 | 计数排序 | O(n+k) | O(n+k) | O(k) | 稳定 |
 
+### 3.1 快速排序（原地分治）
+
+```typescript
+function quickSort(arr: number[], left = 0, right = arr.length - 1): number[] {
+  if (left < right) {
+    const pivotIndex = partition(arr, left, right);
+    quickSort(arr, left, pivotIndex - 1);
+    quickSort(arr, pivotIndex + 1, right);
+  }
+  return arr;
+}
+
+function partition(arr: number[], left: number, right: number): number {
+  const pivot = arr[right];
+  let i = left - 1;
+  for (let j = left; j < right; j++) {
+    if (arr[j] <= pivot) {
+      i++;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+  [arr[i + 1], arr[right]] = [arr[right], arr[i + 1]];
+  return i + 1;
+}
+
+// 示例
+const unsorted = [3, 6, 8, 10, 1, 2, 1];
+console.log(quickSort([...unsorted]));
+// [1, 1, 2, 3, 6, 8, 10]
+```
+
+### 3.2 归并排序（稳定分治）
+
+```typescript
+function mergeSort(arr: number[]): number[] {
+  if (arr.length <= 1) return arr;
+  const mid = Math.floor(arr.length / 2);
+  const left = mergeSort(arr.slice(0, mid));
+  const right = mergeSort(arr.slice(mid));
+  return merge(left, right);
+}
+
+function merge(left: number[], right: number[]): number[] {
+  const result: number[] = [];
+  let i = 0, j = 0;
+  while (i < left.length && j < right.length) {
+    if (left[i] <= right[j]) result.push(left[i++]);
+    else result.push(right[j++]);
+  }
+  return result.concat(left.slice(i), right.slice(j));
+}
+```
+
 ## 4. 图算法
 
 - **DFS/BFS**: 图遍历基础
@@ -64,6 +117,43 @@
 - **空间优化**: 滚动数组、只保留必要状态
 
 经典问题：背包问题、最长公共子序列、编辑距离、硬币找零。
+
+### 5.1 最长公共子序列 (LCS)
+
+```typescript
+function longestCommonSubsequence(a: string, b: string): string {
+  const m = a.length, n = b.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (a[i - 1] === b[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+
+  // 回溯构造 LCS 字符串
+  let i = m, j = n;
+  const lcs: string[] = [];
+  while (i > 0 && j > 0) {
+    if (a[i - 1] === b[j - 1]) {
+      lcs.unshift(a[i - 1]);
+      i--; j--;
+    } else if (dp[i - 1][j] > dp[i][j - 1]) {
+      i--;
+    } else {
+      j--;
+    }
+  }
+  return lcs.join('');
+}
+
+// 示例
+console.log(longestCommonSubsequence('ABCBDAB', 'BDCABA')); // "BCBA"
+```
 
 ## 6. 代码示例：Dijkstra 最短路径
 
@@ -162,3 +252,6 @@ function lowerBound(arr: number[], target: number): number {
 | **The Art of Computer Programming** | Knuth 卷 1-4B | [Stanford](https://www-cs-faculty.stanford.edu/~knuth/taocp.html) |
 | **MIT 6.006** | 算法导论公开课 | [MIT OpenCourseWare](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/) |
 | **Big-O Cheat Sheet** | 复杂度速查表 | [bigocheatsheet.com](https://www.bigocheatsheet.com/) |
+| **Algorithms 4th Ed.** | Sedgewick & Wayne, 普林斯顿大学 | [algs4.cs.princeton.edu](https://algs4.cs.princeton.edu/) |
+| **Dasgupta-Papadimitriou-Vazirani** | 《Algorithms》免费正版教材 | [PDF](http://algorithmics.lsi.upc.edu/docs/Dasgupta-Papadimitriou-Vazirani.pdf) |
+| **NIST Dictionary of Algorithms** | 美国国家标准与技术研究院算法词典 | [xlinux.nist.gov/dads](https://xlinux.nist.gov/dads/) |

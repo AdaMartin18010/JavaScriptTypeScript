@@ -48,6 +48,188 @@
 
 ---
 
+## 代码示例
+
+### React Native — 跨平台组件
+
+```tsx
+// components/ProductCard.tsx
+import { View, Text, Image, Pressable, StyleSheet } from 'react-native'
+
+interface Product {
+  id: string
+  name: string
+  price: number
+  image: string
+}
+
+export function ProductCard({ product, onPress }: { product: Product; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
+      <Image source={{ uri: product.image }} style={styles.image} />
+      <View style={styles.info}>
+        <Text style={styles.name} numberOfLines={2}>
+          {product.name}
+        </Text>
+        <Text style={styles.price}>${product.price.toFixed(2)}</Text>
+      </View>
+    </Pressable>
+  )
+}
+
+const styles = StyleSheet.create({
+  card: {
+    flexDirection: 'row',
+    padding: 12,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    elevation: 3,
+  },
+  pressed: { opacity: 0.8 },
+  image: { width: 80, height: 80, borderRadius: 6 },
+  info: { marginLeft: 12, flex: 1, justifyContent: 'center' },
+  name: { fontSize: 16, fontWeight: '600', color: '#1f2937' },
+  price: { fontSize: 14, color: '#2563eb', marginTop: 4 },
+})
+```
+
+### Capacitor — 调用原生 API
+
+```typescript
+// utils/filesystem.ts
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
+
+export async function writeConfig(data: object) {
+  await Filesystem.writeFile({
+    path: 'config/app.json',
+    data: JSON.stringify(data),
+    directory: Directory.Data,
+    encoding: Encoding.UTF8,
+  })
+}
+
+export async function readConfig(): Promise<object> {
+  const { data } = await Filesystem.readFile({
+    path: 'config/app.json',
+    directory: Directory.Data,
+    encoding: Encoding.UTF8,
+  })
+  return JSON.parse(data)
+}
+
+// App.tsx — 初始化 Capacitor 插件
+import { SplashScreen } from '@capacitor/splash-screen'
+
+useEffect(() => {
+  SplashScreen.hide({ fadeOutDuration: 500 })
+}, [])
+```
+
+### Capacitor 配置
+
+```typescript
+// capacitor.config.ts
+import { CapacitorConfig } from '@capacitor/cli'
+
+const config: CapacitorConfig = {
+  appId: 'com.example.myapp',
+  appName: 'MyApp',
+  webDir: 'dist',
+  server: {
+    androidScheme: 'https',
+    cleartext: true,
+  },
+  plugins: {
+    SplashScreen: {
+      launchShowDuration: 2000,
+      backgroundColor: '#0f172a',
+    },
+  },
+}
+
+export default config
+```
+
+### PWA — Service Worker + Manifest
+
+```json
+// public/manifest.json
+{
+  "name": "My B2B Dashboard",
+  "short_name": "Dashboard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
+```
+
+```typescript
+// src/sw.ts (Workbox)
+import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
+import { registerRoute } from 'workbox-routing'
+import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies'
+import { ExpirationPlugin } from 'workbox-expiration'
+
+// 预缓存构建产物
+cleanupOutdatedCaches()
+precacheAndRoute(self.__WB_MANIFEST)
+
+// API 请求：Stale-While-Revalidate
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/api/'),
+  new StaleWhileRevalidate({ cacheName: 'api-cache' })
+)
+
+// 图片：Cache First + 过期清理
+registerRoute(
+  ({ request }) => request.destination === 'image',
+  new CacheFirst({
+    cacheName: 'image-cache',
+    plugins: [new ExpirationPlugin({ maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 })],
+  })
+)
+```
+
+```typescript
+// main.tsx — 注册 Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker
+    .register('/sw.js')
+    .then((reg) => console.log('SW registered:', reg.scope))
+    .catch((err) => console.error('SW registration failed:', err))
+}
+```
+
+### React Native — Hermes 引擎配置
+
+```json
+// android/app/build.gradle
+project.ext.react = [
+    enableHermes: true
+]
+
+// ios/Podfile
+use_react_native!(
+  :hermes_enabled => true
+)
+```
+
+```javascript
+// 检查 Hermes 是否启用
+const isHermes = () => !!global.HermesInternal
+console.log('Hermes enabled:', isHermes())
+```
+
+---
+
 ## 2026 生态动态
 
 ### React Native 新架构
@@ -87,6 +269,14 @@
 - [PWA Documentation](https://web.dev/progressive-web-apps/)
 - [NativeScript Documentation](https://nativescript.org/)
 - [Workbox Documentation](https://developer.chrome.com/docs/workbox/)
+- [React Native New Architecture](https://reactnative.dev/docs/the-new-architecture/landing-page) — React Native 新架构官方指南
+- [Ionic — Capacitor Live Updates](https://ionic.io/docs/live-updates) — 热更新官方方案
+- [Google — Progressive Web App Checklist](https://web.dev/pwa-checklist/) — PWA 质量检查清单
+- [Apple — Safari Web Push Notifications](https://developer.apple.com/documentation/usernotifications/sending-web-push-notifications-in-web-apps-and-browsers) — iOS Web Push 官方文档
+- [React Native Gesture Handler](https://docs.swmansion.com/react-native-gesture-handler/) — 手势处理权威库
+- [Hermes Documentation](https://hermesengine.dev/) — Meta 官方 JS 引擎文档
+- [W3C — Web App Manifest](https://www.w3.org/TR/appmanifest/) — PWA Manifest 规范
+- [Web.dev — Service Workers](https://web.dev/learn/pwa/service-workers/) — Service Worker 权威教程
 
 ---
 

@@ -1,4 +1,4 @@
-# 缓存策略深度理论：从本地缓存到分布式缓存
+﻿# 缓存策略深度理论：从本地缓存到分布式缓存
 
 > **目标读者**：后端工程师、性能工程师、关注系统扩展性的架构师
 > **关联文档**：``30-knowledge-base/30.2-categories/caching-strategies.md`` (Legacy) [Legacy link]
@@ -206,6 +206,68 @@ async function getWithSWR<T>(
 }
 ```
 
+### 4.6 本地 LRU 缓存实现
+
+在应用层使用内存 LRU 缓存可避免高频访问 Redis，降低网络 RTT：
+
+```typescript
+// lru-local.ts
+class LRUCache<K, V> {
+  private cache = new Map<K, V>();
+  constructor(private capacity: number) {}
+
+  get(key: K): V | undefined {
+    if (!this.cache.has(key)) return undefined;
+    const value = this.cache.get(key)!;
+    // 移动到最新
+    this.cache.delete(key);
+    this.cache.set(key, value);
+    return value;
+  }
+
+  put(key: K, value: V): void {
+    if (this.cache.has(key)) this.cache.delete(key);
+    else if (this.cache.size >= this.capacity) {
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+    }
+    this.cache.set(key, value);
+  }
+}
+
+// 实际项目中可直接使用 node-lru-cache
+import { LRUCache as NodeLRU } from 'lru-cache';
+const cache = new NodeLRU<string, any>({ max: 500, ttl: 1000 * 60 * 5 });
+```
+
+### 4.7 缓存雪崩与 Stampede 防护
+
+热点 key 过期时的大量并发回源（Cache Stampede）可通过**互斥锁**或**概率提前刷新**缓解：
+
+```typescript
+// 互斥锁防止 stampede
+async function getWithLock<T>(key: string, fetcher: () => Promise<T>, ttl: number): Promise<T> {
+  const cached = await redis.get(key);
+  if (cached) return JSON.parse(cached);
+
+  const lockKey = `lock:${key}`;
+  const lock = await redis.set(lockKey, '1', 'EX', 10, 'NX');
+  if (!lock) {
+    // 未获取锁，短暂等待后重试读缓存
+    await new Promise(r => setTimeout(r, 50));
+    return getWithLock(key, fetcher, ttl);
+  }
+
+  try {
+    const fresh = await fetcher();
+    await redis.setex(key, ttl, JSON.stringify(fresh));
+    return fresh;
+  } finally {
+    await redis.del(lockKey);
+  }
+}
+```
+
 ---
 
 ## 5. 总结
@@ -235,6 +297,11 @@ async function getWithSWR<T>(
 - [Caching Strategies — Microsoft Azure](https://docs.microsoft.com/en-us/azure/architecture/patterns/cache-aside) — Azure 架构中心 Cache-Aside 模式
 - [Redis Pipeline Documentation](https://redis.io/docs/manual/pipelining/) — Redis 官方 Pipeline 指南
 - [Bloom Filters by Example](https://llimllib.github.io/bloomfilter-tutorial/) — 布隆过滤器原理与实现
+- [Redis Eviction Policies](https://redis.io/docs/manual/eviction/) — Redis 官方内存淘汰策略
+- [web.dev HTTP Cache](https://web.dev/articles/http-cache) — Google Web 开发者权威指南
+- [Cloudflare Caching](https://www.cloudflare.com/learning/cdn/what-is-caching/) — CDN 边缘缓存深度解析
+- [node-lru-cache](https://github.com/isaacs/node-lru-cache) — Node.js 应用最广泛的 LRU 缓存库
+- [High Scalability Caching Articles](http://highscalability.com/) — 大规模系统缓存架构案例集
 
 ---
 
@@ -258,18 +325,18 @@ async function getWithSWR<T>(
 
 ### 关键设计模式
 
-本模块涉及的核心设计模式包括（根据代码实现提炼）：
+本模块涉及的核心设计模式包括：
 
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
+1. **Cache-Aside Pattern**：应用层显式管理缓存与存储，灵活性最高，适用于大多数业务场景。
+2. **Write-Through / Write-Behind**：在强一致性与写性能之间权衡，金融交易偏好前者， analytics 场景偏好后者。
+3. **Lease-Based Consistency**：通过互斥锁或租约（lease）防止并发回源与脏写，是分布式缓存的核心并发控制手段。
 
 ### 与相邻模块的关系
 
 | 相邻模块 | 关系说明 |
 |---------|---------|
-| 前置依赖 | 建议先掌握的基础模块 |
-| 后续进阶 | 可继续深化的相关模块 |
+| 前置依赖 | `20.6-backend-apis/rest-api-design`（理解 HTTP 语义与状态码对缓存控制的影响） |
+| 后续进阶 | `20.8-edge-serverless`（边缘缓存与 CDN 策略的进一步深化） |
 
 ---
 

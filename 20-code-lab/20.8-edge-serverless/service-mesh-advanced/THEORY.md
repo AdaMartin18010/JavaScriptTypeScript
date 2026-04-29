@@ -1,4 +1,4 @@
-# 高级服务网格 理论解读
+﻿# 高级服务网格 理论解读
 
 ## 概述
 
@@ -229,6 +229,77 @@ const grpcOptions: ClientOptions = {
 };
 ```
 
+---
+
+## 客户端弹性代码示例
+
+服务网格在基础设施层提供熔断与重试，但业务代码仍需具备**最终一致性**的防御式编程能力。以下是一个结合 `fetch` 的指数退避重试与兜底降级示例：
+
+```typescript
+// resilient-client.ts
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit & { maxRetries?: number; backoffMs?: number } = {}
+): Promise<Response> {
+  const { maxRetries = 3, backoffMs = 100, ...fetchOpts } = options;
+  let lastErr: Error | undefined;
+
+  for (let i = 0; i <= maxRetries; i++) {
+    try {
+      const res = await fetch(url, fetchOpts);
+      if (res.ok) return res;
+      throw new Error(`HTTP ${res.status}`);
+    } catch (err) {
+      lastErr = err as Error;
+      if (i < maxRetries) {
+        const delay = backoffMs * 2 ** i;
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
+  }
+  throw lastErr;
+}
+
+// 降级：返回本地兜底数据
+async function fetchWithFallback<T>(url: string, fallback: T): Promise<T> {
+  try {
+    const res = await fetchWithRetry(url);
+    return (await res.json()) as T;
+  } catch {
+    console.warn(`Fallback triggered for ${url}`);
+    return fallback;
+  }
+}
+```
+
+---
+
+## 可观测性接入：OpenTelemetry + Jaeger
+
+服务网格生成的 trace 需要与业务 Trace 上下文串联。以下是在 Node.js 中注入 OpenTelemetry 的精简配置：
+
+```typescript
+// telemetry.ts
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
+import { Resource } from '@opentelemetry/resources';
+import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+
+const sdk = new NodeSDK({
+  resource: new Resource({
+    [SemanticResourceAttributes.SERVICE_NAME]: 'payments-service',
+    [SemanticResourceAttributes.SERVICE_VERSION]: '1.0.0',
+  }),
+  traceExporter: new OTLPTraceExporter({ url: 'http://jaeger-collector:4317' }),
+  instrumentations: [getNodeAutoInstrumentations()],
+});
+
+sdk.start();
+```
+
+---
+
 ## 关联模块
 
 - `72-container-orchestration` — Kubernetes 容器编排与服务发现基础
@@ -248,5 +319,10 @@ const grpcOptions: ClientOptions = {
 - [Envoy WASM Filters](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/wasm_filter) — Envoy WebAssembly 扩展官方文档
 - [Istio Security Best Practices](https://istio.io/latest/docs/ops/best-practices/security/) — Istio 官方安全最佳实践
 - [CNCF Graduated Projects](https://www.cncf.io/projects/) — CNCF 毕业项目列表（含 Istio、Linkerd）
+- [Istio API Reference](https://istio.io/latest/docs/reference/config/networking/) — VirtualService、DestinationRule 等完整字段说明
+- [Linkerd Reference](https://linkerd.io/2.15/reference/) — 配置与指标参考
+- [OpenTelemetry JS Documentation](https://opentelemetry.io/docs/languages/js/) — Node.js 可观测性官方接入指南
+- [Envoy External Authorization](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/ext_authz_filter.html) — 外部鉴权过滤器详解
+- [Red Hat — What is a Service Mesh](https://www.redhat.com/en/topics/microservices/what-is-a-service-mesh) — 企业级服务网格概念解读
 - 本模块 `README.md` — 模块主题与学习路径
 - 本模块 `mesh-architecture.ts` — Sidecar 代理、流量管理、mTLS 与可观测性实现

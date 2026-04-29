@@ -1,4 +1,4 @@
-# 架构模式 — 理论基础
+﻿# 架构模式 — 理论基础
 
 ## 1. 分层架构（Layered Architecture）
 
@@ -84,14 +84,159 @@ class OrderServiceImpl implements OrderService {
 }
 ```
 
-## 8. 权威参考
+## 8. 代码示例：CQRS 实现
+
+以下展示一个简化的 CQRS 结构，命令端与查询端使用独立模型与存储：
+
+```typescript
+// commands/place-order.ts
+interface PlaceOrderCommand {
+  userId: string;
+  productId: string;
+  quantity: number;
+}
+
+class OrderCommandHandler {
+  constructor(private orderRepo: OrderWriteRepository) {}
+
+  async handle(cmd: PlaceOrderCommand): Promise<void> {
+    const order = Order.create(cmd);
+    await this.orderRepo.save(order);
+    // 发布领域事件，供投影同步
+    await eventBus.publish('OrderPlaced', { orderId: order.id, ...cmd });
+  }
+}
+
+// queries/order-summary.ts
+class OrderQueryHandler {
+  constructor(private readDb: OrderReadRepository) {}
+
+  async getUserOrders(userId: string): Promise<OrderSummary[]> {
+    // 直接查询反规范化视图，避免 JOIN
+    return this.readDb.findByUser(userId);
+  }
+}
+
+// 同步投影（Projection）
+eventBus.subscribe('OrderPlaced', async (event) => {
+  await readDb.upsertSummary({
+    orderId: event.orderId,
+    userId: event.userId,
+    status: 'PENDING',
+    placedAt: new Date(),
+  });
+});
+```
+
+## 9. 代码示例：事件溯源与状态重建
+
+```typescript
+// event-store.ts
+interface DomainEvent {
+  aggregateId: string;
+  type: string;
+  payload: unknown;
+  occurredAt: Date;
+}
+
+interface EventStore {
+  append(event: DomainEvent): Promise<void>;
+  getEvents(aggregateId: string): Promise<DomainEvent[]>;
+}
+
+// 聚合根：通过重放事件重建状态
+class BankAccount {
+  private balance = 0;
+  private id: string;
+
+  constructor(id: string, events: DomainEvent[] = []) {
+    this.id = id;
+    for (const e of events) this.apply(e);
+  }
+
+  private apply(event: DomainEvent) {
+    switch (event.type) {
+      case 'AccountDeposited':
+        this.balance += (event.payload as { amount: number }).amount;
+        break;
+      case 'AccountWithdrawn':
+        this.balance -= (event.payload as { amount: number }).amount;
+        break;
+    }
+  }
+
+  deposit(amount: number): DomainEvent {
+    return {
+      aggregateId: this.id,
+      type: 'AccountDeposited',
+      payload: { amount },
+      occurredAt: new Date(),
+    };
+  }
+
+  getBalance() { return this.balance; }
+}
+
+// 使用示例
+const events = await eventStore.getEvents('acc-123');
+const account = new BankAccount('acc-123', events);
+const newEvent = account.deposit(100);
+await eventStore.append(newEvent);
+```
+
+## 10. 代码示例：微内核插件加载器
+
+```typescript
+// plugin-system.ts
+interface Plugin {
+  name: string;
+  activate(context: PluginContext): void | Promise<void>;
+  deactivate?(): void | Promise<void>;
+}
+
+class PluginSystem {
+  private plugins = new Map<string, Plugin>();
+  private context: PluginContext = { registerCommand: () => {} };
+
+  async load(pluginPath: string) {
+    const module = await import(pluginPath);
+    const plugin: Plugin = module.default ?? module;
+    await plugin.activate(this.context);
+    this.plugins.set(plugin.name, plugin);
+    console.log(`Plugin "${plugin.name}" loaded.`);
+  }
+
+  async unload(name: string) {
+    const plugin = this.plugins.get(name);
+    if (plugin?.deactivate) await plugin.deactivate();
+    this.plugins.delete(name);
+  }
+}
+
+// 示例插件 my-plugin.ts
+const myPlugin: Plugin = {
+  name: 'LoggerPlugin',
+  activate(ctx) {
+    ctx.registerCommand('log', (msg: string) => console.log(msg));
+  },
+};
+export default myPlugin;
+```
+
+## 11. 权威参考
 
 - [Hexagonal Architecture by A. Cockburn](https://alistair.cockburn.us/hexagonal-architecture/) — 原始论文
 - [Martin Fowler — CQRS](https://martinfowler.com/bliki/CQRS.html) — 模式详解
 - [Microsoft — CQRS Pattern](https://docs.microsoft.com/en-us/azure/architecture/patterns/cqrs) — Azure 架构指南
 - [Event Sourcing by Fowler](https://martinfowler.com/eaaDev/EventSourcing.html) — 事件溯源模式
+- [Domain-Driven Design Reference](https://domainlanguage.com/ddd/) — Eric Evans 领域驱动设计权威参考
+- [Microsoft — Event Sourcing Pattern](https://docs.microsoft.com/en-us/azure/architecture/patterns/event-sourcing) — Azure 事件溯源架构指南
+- [Microservices.io — CQRS](https://microservices.io/patterns/data/cqrs.html) — CQRS 数据模式详细说明
+- [Refactoring Guru — Design Patterns](https://refactoring.guru/design-patterns) — 软件设计模式权威可视化教程
+- [O'Reilly — Software Architecture Patterns](https://www.oreilly.com/library/view/software-architecture-patterns/9781491971437/) — Mark Richards 架构模式经典著作
+- [The Twelve-Factor App](https://12factor.net/) — 云原生应用架构方法论
 
-## 9. 与相邻模块的关系
+## 12. 与相邻模块的关系
 
 - **59-fullstack-patterns**: 全栈应用的具体架构实践
 - **53-app-architecture**: 前端应用架构模式
