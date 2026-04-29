@@ -68,7 +68,7 @@ category-boundary: language-core
 | [jsts-code-lab/03-concurrency/](../../jsts-code-lab/03-concurrency/) | 并发编程（Promise、async/await、Worker、Atomics、事件循环） |
 | [jsts-code-lab/04-data-structures/](../../jsts-code-lab/04-data-structures/) | 数据结构（内置 / 自定义 / 函数式） |
 | [jsts-code-lab/05-algorithms/](../../jsts-code-lab/05-algorithms/) | 算法（排序、搜索、动态规划、图、递归） |
-| [jsts-code-lab/10-js-ts-comparison/](../../jsts-code-lab/10-js-ts-comparison/) | JavaScript / TypeScript 对比分析 |
+| [jsts-code-lab/10-js-ts-comparison/](../../20-code-lab/20.1-fundamentals-lab/js-ts-comparison/) | JavaScript / TypeScript 对比分析 |
 
 ### 全景综述
 

@@ -37,9 +37,9 @@ status: current
 
 | 阶段 | 主题 | Checkpoint 项目 | 代码位置 | 通过标准 | 难度 | 预计时间 |
 |------|------|----------------|----------|---------|------|---------|
-| 1 | TypeScript 基础 | 类型安全 `EventEmitter` | `jsts-code-lab/00-language-core/event-emitter-typed.ts` | `vitest run` 全部通过 | ⭐⭐ | 1-2 周 |
-| 2 | 设计模式入门 | Todo 应用 + 3 种设计模式 | `jsts-code-lab/02-design-patterns/todo-app-patterns/` | 模式实现正确 + 单元测试覆盖 | ⭐⭐⭐ | 1-2 周 |
-| 3 | 测试驱动开发 | TDD 计算器 | `jsts-code-lab/07-testing/calculator-tdd/` | 测试覆盖率 ≥ 90% | ⭐⭐⭐ | 1 周 |
+| 1 | TypeScript 基础 | 类型安全 `EventEmitter` | `20-code-lab/00-language-core/event-emitter-typed.ts` | `vitest run` 全部通过 | ⭐⭐ | 1-2 周 |
+| 2 | 设计模式入门 | Todo 应用 + 3 种设计模式 | `20-code-lab/02-design-patterns/todo-app-patterns/` | 模式实现正确 + 单元测试覆盖 | ⭐⭐⭐ | 1-2 周 |
+| 3 | 测试驱动开发 | TDD 计算器 | `20-code-lab/07-testing/calculator-tdd/` | 测试覆盖率 ≥ 90% | ⭐⭐⭐ | 1 周 |
 | 4 | 前端框架入门 | React Todo (Milestone 3) | `examples/beginner-todo-master/` | 功能完整 + TS 无错误 + E2E 通过 | ⭐⭐⭐ | 1-2 周 |
 
 ### 初学者路径理论自检速查
@@ -57,10 +57,10 @@ status: current
 
 | 阶段 | 主题 | Checkpoint 项目 | 代码位置 | 通过标准 | 难度 | 预计时间 |
 |------|------|----------------|----------|---------|------|---------|
-| 1 | 架构模式 | 六边形架构订单系统 | `jsts-code-lab/06-architecture-patterns/hexagonal-order/` | 领域层无外部依赖 + 测试覆盖 ≥ 80% | ⭐⭐⭐⭐ | 2 周 |
-| 2 | 并发编程 | 请求限流器 | `jsts-code-lab/03-concurrency/rate-limiter/` | 并发测试通过 + Benchmark | ⭐⭐⭐⭐ | 2 周 |
-| 3 | 性能优化 | 虚拟列表优化 | `jsts-code-lab/50-browser-runtime/virtual-list-optimization/` | Lighthouse Performance ≥ 90 | ⭐⭐⭐⭐ | 1-2 周 |
-| 4 | 后端开发 | 带认证 API 服务 | `jsts-code-lab/21-api-security/authenticated-api/` | 安全扫描通过 + 集成测试覆盖 | ⭐⭐⭐⭐ | 2 周 |
+| 1 | 架构模式 | 六边形架构订单系统 | `20-code-lab/06-architecture-patterns/hexagonal-order/` | 领域层无外部依赖 + 测试覆盖 ≥ 80% | ⭐⭐⭐⭐ | 2 周 |
+| 2 | 并发编程 | 请求限流器 | `20-code-lab/03-concurrency/rate-limiter/` | 并发测试通过 + Benchmark | ⭐⭐⭐⭐ | 2 周 |
+| 3 | 性能优化 | 虚拟列表优化 | `20-code-lab/50-browser-runtime/virtual-list-optimization/` | Lighthouse Performance ≥ 90 | ⭐⭐⭐⭐ | 1-2 周 |
+| 4 | 后端开发 | 带认证 API 服务 | `20-code-lab/21-api-security/authenticated-api/` | 安全扫描通过 + 集成测试覆盖 | ⭐⭐⭐⭐ | 2 周 |
 
 ### 进阶路径理论自检速查
 
@@ -77,9 +77,9 @@ status: current
 
 | 阶段 | 主题 | Checkpoint 项目 | 代码位置 | 通过标准 | 难度 | 预计时间 |
 |------|------|----------------|----------|---------|------|---------|
-| 1 | 分布式系统 | 简化版 Raft 节点 | `jsts-code-lab/71-consensus-algorithms/raft-implementation/` | 3 节点集群测试 + 网络分区容错 | ⭐⭐⭐⭐⭐ | 3 周 |
+| 1 | 分布式系统 | 简化版 Raft 节点 | `20-code-lab/20.8-edge-serverless/consensus-algorithms/raft-implementation/` | 3 节点集群测试 + 网络分区容错 | ⭐⭐⭐⭐⭐ | 3 周 |
 | 2 | 微服务与云原生 | K8s 微服务部署 | `examples/intermediate-microservice-workshop/` | K8s 健康检查 + 分布式追踪可见 | ⭐⭐⭐⭐⭐ | 2 周 |
-| 3 | 形式化验证 | TLA+ 分布式锁 | `jsts-code-lab/80-formal-verification/tla-plus-distributed-lock/` | TLC 模型检查通过 + 不变量保持 | ⭐⭐⭐⭐⭐ | 2 周 |
+| 3 | 形式化验证 | TLA+ 分布式锁 | `20-code-lab/20.10-formal-verification/formal-verification/tla-plus-distributed-lock/` | TLC 模型检查通过 + 不变量保持 | ⭐⭐⭐⭐⭐ | 2 周 |
 | 4 | 前沿技术 | AI Agent / Wasm / 量子模拟（三选一） | 见下方选项 | 见下方选项 | ⭐⭐⭐⭐⭐ | 3 周 |
 | 5 | 架构师思维 | 技术选型 ADR | `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/技术选型方法论与评估框架.md` | 8 维度评估 + 量化评分 + 风险提示 | ⭐⭐⭐⭐ | 2 周 |
 
@@ -88,8 +88,8 @@ status: current
 | 选项 | 项目 | 代码位置 | 通过标准 |
 |------|------|----------|---------|
 | A | AI Agent 工作流 | `examples/ai-agent-production/` | Agent 能完成多步任务 |
-| B | Wasm 模块集成 | `jsts-code-lab/36-web-assembly/wasm-integration/` | 性能比纯 JS 提升 ≥ 50% |
-| C | 量子算法模拟 | `jsts-code-lab/77-quantum-computing/quantum-simulation/` | 正确模拟量子门操作 |
+| B | Wasm 模块集成 | `20-code-lab/20.1-fundamentals-lab/web-assembly/wasm-integration/` | 性能比纯 JS 提升 ≥ 50% |
+| C | 量子算法模拟 | `20-code-lab/20.10-formal-verification/quantum-computing/quantum-simulation/` | 正确模拟量子门操作 |
 
 ### 架构师路径理论自检速查
 
@@ -140,8 +140,8 @@ status: current
 
 | 资源类型 | 链接 | 说明 |
 |----------|------|------|
-| 代码实验室 | `../../jsts-code-lab/` | 90+ 主题模块，含测试 |
-| 示例项目 | `../../examples/README.md` | 13 个生产级示例 |
+| 代码实验室 | `../../20-code-lab/` | 90+ 主题模块，含测试 |
+| 示例项目 | `../archive/legacy-backups-20260429-0809.zip（已归档）README.md` | 13 个生产级示例 |
 | 理论综述 | `../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/` | 8 大主题全景文档 |
 | 认证体系 | `./project-based-certification.md` | 项目制能力认证 |
 | 构建工具对比 | `../30.3-comparison-matrices/build-tools-compare.md` | 工具选型矩阵 |

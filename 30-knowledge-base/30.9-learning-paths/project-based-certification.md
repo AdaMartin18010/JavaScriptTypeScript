@@ -187,8 +187,8 @@ status: current
 
 #### 参考答案位置
 
-- 参考实现: [jsts-code-lab/00-language-core/calculator-example/](../../20-code-lab/20.1-fundamentals-lab/language-core/)
-- 测试模板: [jsts-code-lab/07-testing/](../../20-code-lab/20.2-language-patterns/testing/)
+- 参考实现: [20-code-lab/00-language-core/calculator-example/](../../20-code-lab/20.1-fundamentals-lab/language-core/)
+- 测试模板: [20-code-lab/07-testing/](../../20-code-lab/20.2-language-patterns/testing/)
 
 #### 扩展挑战
 
@@ -240,7 +240,7 @@ status: current
 #### 参考答案位置
 
 - 参考实现: examples/beginner-todo-master/（已归档）
-- 设计模式参考: [jsts-code-lab/02-design-patterns/observer/](../../20-code-lab/20.2-language-patterns/design-patterns/)
+- 设计模式参考: [20-code-lab/02-design-patterns/observer/](../../20-code-lab/20.2-language-patterns/design-patterns/)
 
 #### 扩展挑战
 
@@ -291,8 +291,8 @@ status: current
 
 #### 参考答案位置
 
-- 前端框架参考: [jsts-code-lab/18-frontend-frameworks/](../../20-code-lab/20.5-frontend-frameworks/frontend-frameworks/)
-- 设计系统参考: [jsts-code-lab/57-design-system/](../../20-code-lab/20.5-frontend-frameworks/design-system/)
+- 前端框架参考: [20-code-lab/18-frontend-frameworks/](../../20-code-lab/20.5-frontend-frameworks/frontend-frameworks/)
+- 设计系统参考: [20-code-lab/57-design-system/](../../20-code-lab/20.5-frontend-frameworks/design-system/)
 
 #### 扩展挑战
 
@@ -343,8 +343,8 @@ status: current
 
 #### 参考答案位置
 
-- 后端参考: [jsts-code-lab/19-backend-development/](../../20-code-lab/20.6-backend-apis/backend-development/)
-- 安全参考: [jsts-code-lab/21-api-security/](../../20-code-lab/20.9-observability-security/api-security/)
+- 后端参考: [20-code-lab/19-backend-development/](../../20-code-lab/20.6-backend-apis/backend-development/)
+- 安全参考: [20-code-lab/21-api-security/](../../20-code-lab/20.9-observability-security/api-security/)
 - 全栈示例: examples/fullstack-tanstack-start/（已归档）
 
 #### 扩展挑战
@@ -400,9 +400,9 @@ status: current
 
 #### 参考答案位置
 
-- 并发模式参考: [jsts-code-lab/03-concurrency/](../../20-code-lab/20.3-concurrency-async/concurrency/)
-- ORM 参考: [jsts-code-lab/20-database-orm/](../../20-code-lab/20.6-backend-apis/database-orm/)
-- 实时通信参考: [jsts-code-lab/30-real-time-communication/](../../20-code-lab/20.3-concurrency-async/real-time-communication/)
+- 并发模式参考: [20-code-lab/03-concurrency/](../../20-code-lab/20.3-concurrency-async/concurrency/)
+- ORM 参考: [20-code-lab/20-database-orm/](../../20-code-lab/20.6-backend-apis/database-orm/)
+- 实时通信参考: [20-code-lab/30-real-time-communication/](../../20-code-lab/20.3-concurrency-async/real-time-communication/)
 
 #### 扩展挑战
 
@@ -453,9 +453,9 @@ status: current
 
 #### 参考答案位置
 
-- 性能优化参考: [jsts-code-lab/08-performance/](../../20-code-lab/20.4-data-algorithms/performance/)
-- 基准测试参考: [jsts-code-lab/11-benchmarks/](../../20-code-lab/20.9-observability-security/benchmarks/)
-- 数据可视化参考: [jsts-code-lab/58-data-visualization/](../../20-code-lab/20.5-frontend-frameworks/data-visualization/)
+- 性能优化参考: [20-code-lab/08-performance/](../../20-code-lab/20.4-data-algorithms/performance/)
+- 基准测试参考: [20-code-lab/11-benchmarks/](../../20-code-lab/20.9-observability-security/benchmarks/)
+- 数据可视化参考: [20-code-lab/58-data-visualization/](../../20-code-lab/20.5-frontend-frameworks/data-visualization/)
 
 #### 扩展挑战
 
@@ -507,8 +507,8 @@ status: current
 
 #### 参考答案位置
 
-- 微服务参考: [jsts-code-lab/25-microservices/](../../20-code-lab/20.6-backend-apis/microservices/)
-- 事件溯源参考: [jsts-code-lab/26-event-sourcing/](../../20-code-lab/20.6-backend-apis/event-sourcing/)
+- 微服务参考: [20-code-lab/25-microservices/](../../20-code-lab/20.6-backend-apis/microservices/)
+- 事件溯源参考: [20-code-lab/26-event-sourcing/](../../20-code-lab/20.6-backend-apis/event-sourcing/)
 - 架构示例: examples/intermediate-microservice-workshop/（已归档）
 
 #### 扩展挑战
@@ -566,8 +566,8 @@ status: current
 #### 参考答案位置
 
 - 编译器参考: examples/advanced-compiler-workshop/（已归档）
-- ECMAScript 演进: [jsts-code-lab/01-ecmascript-evolution/](../../20-code-lab/20.1-fundamentals-lab/ecmascript-evolution/)
-- 编译器理论: [jsts-code-lab/79-compiler-design/](../../20-code-lab/20.11-rust-toolchain/toolchain-configuration/)
+- ECMAScript 演进: [20-code-lab/01-ecmascript-evolution/](../../20-code-lab/20.1-fundamentals-lab/ecmascript-evolution/)
+- 编译器理论: [20-code-lab/79-compiler-design/](../../20-code-lab/20.11-rust-toolchain/toolchain-configuration/)
 
 #### 扩展挑战
 
@@ -619,8 +619,8 @@ status: current
 
 #### 参考答案位置
 
-- 分布式系统理论: [jsts-code-lab/70-distributed-systems/](../../20-code-lab/20.8-edge-serverless/distributed-systems/)
-- 共识算法参考: [jsts-code-lab/71-consensus-algorithms/](../../20-code-lab/20.8-edge-serverless/consensus-algorithms/)
+- 分布式系统理论: [20-code-lab/20.8-edge-serverless/distributed-systems/](../../20-code-lab/20.8-edge-serverless/distributed-systems/)
+- 共识算法参考: [20-code-lab/20.8-edge-serverless/consensus-algorithms/](../../20-code-lab/20.8-edge-serverless/consensus-algorithms/)
 - Raft 论文: [The Raft Consensus Paper](https://raft.github.io/raft.pdf)
 
 #### 扩展挑战

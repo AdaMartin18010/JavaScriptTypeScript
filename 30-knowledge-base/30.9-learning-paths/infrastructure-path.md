@@ -41,12 +41,12 @@
 
 | 主题 | 理论文档 | 代码实践 | 预计时间 |
 |------|---------|---------|---------|
-| 包管理 | `docs/categories/07-package-managers.md` | `jsts-code-lab/12-package-management/` | 4h |
-| Monorepo | `docs/categories/08-monorepo-tools.md` | `jsts-code-lab/13-code-organization/` | 4h |
-| 构建工具 | `docs/categories/03-build-tools.md` | `jsts-code-lab/23-toolchain-configuration/` | 6h |
-| 代码规范 | `docs/categories/14-linting-formatting.md` | `jsts-code-lab/23-toolchain-configuration/` | 3h |
-| 测试基础 | `docs/categories/12-testing.md` | `jsts-code-lab/07-testing/` | 6h |
-| TS 配置 | `docs/guides/typescript-configuration-guide.md` | `jsts-code-lab/10-js-ts-comparison/` | 3h |
+| 包管理 | `docs/categories/07-package-managers.md` | `20-code-lab/` | 4h |
+| Monorepo | `docs/categories/08-monorepo-tools.md` | `20-code-lab/` | 4h |
+| 构建工具 | `docs/categories/03-build-tools.md` | `20-code-lab/` | 6h |
+| 代码规范 | `docs/categories/14-linting-formatting.md` | `20-code-lab/` | 3h |
+| 测试基础 | `docs/categories/12-testing.md` | `20-code-lab/` | 6h |
+| TS 配置 | `docs/guides/typescript-configuration-guide.md` | `20-code-lab/` | 3h |
 
 ### Checkpoint 1: 工具链搭建验证
 
@@ -71,11 +71,11 @@
 
 | 主题 | 理论文档 | 代码实践 | 预计时间 |
 |------|---------|---------|---------|
-| CI/CD | `docs/categories/13-ci-cd.md` | `jsts-code-lab/22-deployment-devops/` | 4h |
-| 容器化 | `docs/guides/docker-guide.md` | `jsts-code-lab/72-container-orchestration/` | 4h |
+| CI/CD | `docs/categories/13-ci-cd.md` | `20-code-lab/` | 4h |
+| 容器化 | `docs/guides/docker-guide.md` | `20-code-lab/20.8-edge-serverless/container-orchestration/` | 4h |
 | 部署平台 | `docs/categories/09-deployment-platforms.md` | `examples/` 中部署配置 | 4h |
-| 边缘部署 | `docs/categories/31-serverless-edge-computing.md` | `jsts-code-lab/32-edge-computing/` | 4h |
-| Serverless | `docs/guides/serverless-guide.md` | `jsts-code-lab/31-serverless/` | 3h |
+| 边缘部署 | `docs/categories/31-serverless-edge-computing.md` | `20-code-lab/` | 4h |
+| Serverless | `docs/guides/serverless-guide.md` | `20-code-lab/` | 3h |
 
 ### Checkpoint 2: 部署架构设计
 
@@ -100,11 +100,11 @@
 
 | 主题 | 理论文档 | 代码实践 | 预计时间 |
 |------|---------|---------|---------|
-| 可观测性 | `docs/categories/23-error-monitoring-logging.md` | `jsts-code-lab/74-observability/` | 5h |
-| 性能工程 | `docs/categories/18-performance.md` | `jsts-code-lab/08-performance/` | 5h |
-| 安全基础 | `docs/categories/25-security.md` | `jsts-code-lab/21-api-security/` | 5h |
-| AI 安全 | `docs/guides/llm-security-guide.md` | `jsts-code-lab/33-ai-integration/` | 3h |
-| 认证授权 | `docs/categories/29-authentication.md` | `jsts-code-lab/95-auth-modern-lab/` | 4h |
+| 可观测性 | `docs/categories/23-error-monitoring-logging.md` | `20-code-lab/` | 5h |
+| 性能工程 | `docs/categories/18-performance.md` | `20-code-lab/` | 5h |
+| 安全基础 | `docs/categories/25-security.md` | `20-code-lab/` | 5h |
+| AI 安全 | `docs/guides/llm-security-guide.md` | `20-code-lab/20.7-ai-agent-infra/ai-integration/` | 3h |
+| 认证授权 | `docs/categories/29-authentication.md` | `20-code-lab/` | 4h |
 
 ### Checkpoint 3: 生产环境保障
 

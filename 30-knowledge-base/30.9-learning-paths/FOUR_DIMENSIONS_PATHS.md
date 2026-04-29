@@ -57,19 +57,19 @@ status: current
 
 - **周期**：1–2 周
 - **核心资源**：
-  - `jsts-code-lab/00-language-core/` — 语言核心代码实验
-  - `jsts-code-lab/01-ecmascript-evolution/` — ECMAScript 特性演进
+  - `20-code-lab/` — 语言核心代码实验
+  - `20-code-lab/` — ECMAScript 特性演进
   - `docs/cheatsheets/TYPESCRIPT_CHEATSHEET.md`
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md`
-- **Checkpoint**：类型安全 `EventEmitter` (`jsts-code-lab/00-language-core/event-emitter-typed.ts`)
+- **Checkpoint**：类型安全 `EventEmitter` (`20-code-lab/00-language-core/event-emitter-typed.ts`)
 
 ### 进阶：类型系统深度与执行模型
 
 - **周期**：2–3 周
 - **核心资源**：
-  - `jsts-code-lab/10-js-ts-comparison/` — JS/TS 对称差集
-  - `jsts-code-lab/14-execution-flow/` — 执行流与事件循环
-  - `jsts-code-lab/40-type-theory-formal/` — 类型理论形式化
+  - `20-code-lab/` — JS/TS 对称差集
+  - `20-code-lab/` — 执行流与事件循环
+  - `20-code-lab/` — 类型理论形式化
   - `jsts-language-core-system/` — 语言核心系统文档
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ADVANCED_TYPE_SYSTEM_FEATURES.md`
 - **Checkpoint**：实现一个支持泛型约束的工具类型库
@@ -78,9 +78,9 @@ status: current
 
 - **周期**：3–4 周
 - **核心资源**：
-  - `jsts-code-lab/41-formal-semantics/` — 形式化语义
-  - `jsts-code-lab/79-compiler-design/` — 编译器设计
-  - `jsts-code-lab/78-metaprogramming/` — 元编程与反射
+  - `20-code-lab/` — 形式化语义
+  - `20-code-lab/` — 编译器设计
+  - `20-code-lab/` — 元编程与反射
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/FORMAL_SEMANTICS_COMPLETE.md`
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/COMPILER_LANGUAGE_DESIGN.md`
 - **Checkpoint**：用 TLA+ 验证并发协议 或 实现玩具级编译器前端
@@ -96,8 +96,8 @@ status: current
 
 - **周期**：1–2 周
 - **核心资源**：
-  - `jsts-code-lab/18-frontend-frameworks/` — 前端框架基础
-  - `jsts-code-lab/51-ui-components/` — UI 组件设计
+  - `20-code-lab/` — 前端框架基础
+  - `20-code-lab/` — UI 组件设计
   - `examples/beginner-todo-master/` — 实战项目
   - `docs/cheatsheets/REACT_CHEATSHEET.md`
 - **Checkpoint**：完成 React + TS Todo 应用并通过 E2E 测试
@@ -106,9 +106,9 @@ status: current
 
 - **周期**：2–3 周
 - **核心资源**：
-  - `jsts-code-lab/06-architecture-patterns/` — 六边形/CQRS/事件溯源
-  - `jsts-code-lab/53-app-architecture/` — 应用架构
-  - `jsts-code-lab/59-fullstack-patterns/` — 全栈模式
+  - `20-code-lab/` — 六边形/CQRS/事件溯源
+  - `20-code-lab/` — 应用架构
+  - `20-code-lab/` — 全栈模式
   - `examples/fullstack-tanstack-start/` — 全栈元框架实战
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ARCHITECTURE_PATTERNS_THEORY.md`
 - **Checkpoint**：六边形架构订单系统 + 单元测试覆盖 ≥ 80%
@@ -117,9 +117,9 @@ status: current
 
 - **周期**：3–4 周
 - **核心资源**：
-  - `jsts-code-lab/79-compiler-design/` — 编译器与 transpiler
-  - `jsts-code-lab/56-code-generation/` — 代码生成
-  - `jsts-code-lab/60-developer-experience/` — DX 与平台工程
+  - `20-code-lab/` — 编译器与 transpiler
+  - `20-code-lab/` — 代码生成
+  - `20-code-lab/` — DX 与平台工程
   - `examples/advanced-compiler-workshop/` — 编译器工作坊
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/METAPROGRAMMING_REFLECTION.md`
 - **Checkpoint**：设计并原型验证一个迷你前端元框架（含编译时优化）
@@ -135,9 +135,9 @@ status: current
 
 - **周期**：2–3 周
 - **核心资源**：
-  - `jsts-code-lab/16-application-development/` — 应用开发
-  - `jsts-code-lab/19-backend-development/` — 后端开发
-  - `jsts-code-lab/21-api-security/` — API 安全
+  - `20-code-lab/` — 应用开发
+  - `20-code-lab/` — 后端开发
+  - `20-code-lab/` — API 安全
   - `examples/nodejs-api-security-boilerplate/`
   - `examples/desktop-tauri-react/`
 - **Checkpoint**：带 JWT 认证的 RESTful API 服务（集成测试通过）
@@ -146,9 +146,9 @@ status: current
 
 - **周期**：2–3 周
 - **核心资源**：
-  - `jsts-code-lab/33-ai-integration/` — AI 集成
-  - `jsts-code-lab/30-real-time-communication/` — 实时通信
-  - `jsts-code-lab/32-edge-computing/` — 边缘计算
+  - `20-code-lab/20.7-ai-agent-infra/ai-integration/` — AI 集成
+  - `20-code-lab/` — 实时通信
+  - `20-code-lab/` — 边缘计算
   - `examples/ai-agent-production/` — AI Agent 生产级示例
   - `examples/edge-ai-inference/` — 边缘 AI 推理
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/AI_ML_INTEGRATION_THEORY.md`
@@ -158,9 +158,9 @@ status: current
 
 - **周期**：3–4 周
 - **核心资源**：
-  - `jsts-code-lab/74-observability/` — 可观测性
-  - `jsts-code-lab/67-multi-tenancy/` — 多租户架构
-  - `jsts-code-lab/75-chaos-engineering/` — 混沌工程
+  - `20-code-lab/` — 可观测性
+  - `20-code-lab/` — 多租户架构
+  - `20-code-lab/` — 混沌工程
   - `examples/monorepo-fullstack-saas/` — SaaS  monorepo
   - `examples/intermediate-microservice-workshop/` — 微服务实战
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/08_observability.md`
@@ -177,9 +177,9 @@ status: current
 
 - **周期**：1–2 周
 - **核心资源**：
-  - `jsts-code-lab/12-package-management/` — 包管理
-  - `jsts-code-lab/23-toolchain-configuration/` — 工具链配置
-  - `jsts-code-lab/17-debugging-monitoring/` — 调试与监控
+  - `20-code-lab/` — 包管理
+  - `20-code-lab/` — 工具链配置
+  - `20-code-lab/` — 调试与监控
   - `examples/04-build-tools/` — 构建工具示例
   - `docs/comparison-matrices/build-tools-compare.md`
 - **Checkpoint**：从零配置一个 monorepo 工具链（lint/test/build/ci-ready）
@@ -188,9 +188,9 @@ status: current
 
 - **周期**：2–3 周
 - **核心资源**：
-  - `jsts-code-lab/22-deployment-devops/` — 部署与 DevOps
-  - `jsts-code-lab/72-container-orchestration/` — 容器编排
-  - `jsts-code-lab/25-microservices/` — 微服务
+  - `20-code-lab/` — 部署与 DevOps
+  - `20-code-lab/20.8-edge-serverless/container-orchestration/` — 容器编排
+  - `20-code-lab/` — 微服务
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/DEVOPS_DEPLOYMENT_THEORY.md`
 - **Checkpoint**：微服务 K8s 部署（健康检查 + 分布式追踪可见）
 
@@ -198,9 +198,9 @@ status: current
 
 - **周期**：3–4 周
 - **核心资源**：
-  - `jsts-code-lab/74-observability/` — 可观测性平台
-  - `jsts-code-lab/75-chaos-engineering/` — 混沌工程
-  - `jsts-code-lab/73-service-mesh-advanced/` — 高级服务网格
+  - `20-code-lab/` — 可观测性平台
+  - `20-code-lab/` — 混沌工程
+  - `20-code-lab/20.8-edge-serverless/service-mesh-advanced/` — 高级服务网格
   - `examples/edge-observability-starter/` — 边缘可观测性 starter
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/08_observability.md`
 - **Checkpoint**：设计并执行一次生产级故障演练（含 SLO 定义、回滚策略、事后复盘）

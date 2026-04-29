@@ -63,7 +63,7 @@ status: current
 
 ### 1.1 语言核心基础
 
-**模块**: [00-language-core](../../jsts-code-lab/00-language-core/)
+**模块**: 00-language-core
 
 **学习内容**:
 
@@ -95,7 +95,7 @@ define function filterByProperty<T, K extends keyof T>(
 
 ### 1.2 类型系统进阶
 
-**模块**: [10-js-ts-comparison](../../jsts-code-lab/10-js-ts-comparison/)
+**模块**: [10-js-ts-comparison](../../20-code-lab/20.1-fundamentals-lab/js-ts-comparison/)
 
 **学习内容**:
 
@@ -118,8 +118,8 @@ define function filterByProperty<T, K extends keyof T>(
 
 ### 2.1 创建型模式
 
-**模块**: [02-design-patterns](../../jsts-code-lab/02-design-patterns/)
-**理论文档**: [设计模式理论](../../jsts-code-lab/02-design-patterns/THEORY.md)
+**模块**: [02-design-patterns](../../20-code-lab/20.2-language-patterns/design-patterns/)
+**理论文档**: [设计模式理论](../../20-code-lab/20.2-language-patterns/design-patterns/THEORY.md)
 
 **重点学习**:
 
@@ -171,7 +171,7 @@ class AnimalFactory {
 
 ### 3.1 单元测试基础
 
-**模块**: [07-testing](../../jsts-code-lab/07-testing/)
+**模块**: [07-testing](../../20-code-lab/20.2-language-patterns/testing/)
 
 **学习内容**:
 
@@ -213,7 +213,7 @@ describe('Calculator', () => {
 
 ### 4.1 前端框架基础
 
-**模块**: [18-frontend-frameworks](../../jsts-code-lab/18-frontend-frameworks/)
+**模块**: [18-frontend-frameworks](../../20-code-lab/20.5-frontend-frameworks/frontend-frameworks/)
 
 **学习内容**:
 
@@ -331,7 +331,7 @@ function validateEmail(email: string): boolean {
 
 - **Checkpoint 项目**: 实现一个类型安全的 `EventEmitter`
   - 要求：支持泛型事件名称和回调参数类型
-  - 代码位置: `jsts-code-lab/00-language-core/event-emitter-typed.ts`
+  - 代码位置: `20-code-lab/00-language-core/event-emitter-typed.ts`
   - 通过标准: `vitest run` 全部通过
 
 **预计时间**: 1-2 周 | **难度**: ⭐⭐
@@ -352,7 +352,7 @@ function validateEmail(email: string): boolean {
   - 工厂模式：创建不同类型的 Todo（普通/重复/截止日期）
   - 观察者模式：Todo 状态变化通知 UI 更新
   - 策略模式：不同的排序策略（日期/优先级/字母）
-  - 代码位置: `jsts-code-lab/02-design-patterns/todo-app-patterns/`
+  - 代码位置: `20-code-lab/02-design-patterns/todo-app-patterns/`
   - 通过标准: 模式实现正确 + 单元测试覆盖
 
 **预计时间**: 1-2 周 | **难度**: ⭐⭐⭐
@@ -372,7 +372,7 @@ function validateEmail(email: string): boolean {
 - **Checkpoint 项目**: 用 TDD 实现一个计算器
   - 要求：先写测试，再写实现，最后重构
   - 功能：加减乘除、幂运算、链式调用
-  - 代码位置: `jsts-code-lab/07-testing/calculator-tdd/`
+  - 代码位置: `20-code-lab/07-testing/calculator-tdd/`
   - 通过标准: 测试覆盖率 ≥ 90%
 
 **预计时间**: 1 周 | **难度**: ⭐⭐⭐
@@ -431,7 +431,7 @@ function validateEmail(email: string): boolean {
 完成初学者路径后，可以继续：
 
 - [中级学习路径](./intermediate-path.md) - 深入学习架构和性能优化
-- [jsts-code-lab 中级模块](../../jsts-code-lab/)
+- [jsts-code-lab 中级模块](../../20-code-lab/)
 
 ---
 

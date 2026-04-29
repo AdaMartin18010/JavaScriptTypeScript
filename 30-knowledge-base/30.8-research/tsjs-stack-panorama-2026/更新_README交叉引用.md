@@ -269,7 +269,7 @@ status: current
 
 - 📚 全景综述总索引 [TODO: 链接待修复] - 完整文档导航
 - [🏠 项目首页](../../../README.md) - 返回项目主页
-- [🧪 代码实验室](../../../20-code-lab) - 动手实践
+- [🧪 代码实验室](../../../20-code-lab/) - 动手实践
 
 ---
 
@@ -327,8 +327,8 @@ status: current
 
 | 文档 | 描述 | 目标读者 |
 |------|------|----------|
-| [📦 awesome-jsts-ecosystem](../../../awesome-jsts-ecosystem) | JS/TS 生态工具导航 | 所有开发者 |
-| [🧪 jsts-code-lab](../../../jsts-code-lab) | 代码实验室（80+ 模块） | 实践学习者 |
+| [📦 awesome-jsts-ecosystem](../../../archive/legacy-backups-20260429-0809.zip) | JS/TS 生态工具导航 | 所有开发者 |
+| [🧪 jsts-code-lab](../../../20-code-lab/) | 代码实验室（80+ 模块） | 实践学习者 |
 | 📚 jsts-code-lab/CROSS-REFERENCE.md [TODO: 链接待修复] | 模块交叉引用索引 | 系统学习者 |
 | 📖 GLOSSARY.md [TODO: 链接待修复] | 专业术语表（中英对照） | 所有读者 |
 | [🗺️ 全景综述索引](../../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/00_总索引与导航.md) | 36 篇技术文档导航中心 | 所有开发者 |

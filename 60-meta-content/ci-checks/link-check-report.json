@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-04-29T01:03:01.538Z",
+  "timestamp": "2026-04-29T01:13:06.151Z",
   "totalFiles": 1201,
   "checkedFiles": 141,
-  "totalLinks": 503,
-  "brokenCount": 44,
+  "totalLinks": 502,
+  "brokenCount": 23,
   "brokenLinks": [
     {
       "file": "20-code-lab\\20.1-fundamentals-lab\\real-world-examples\\THEORY.md",
@@ -142,132 +142,6 @@
       "line": 70,
       "text": "jsts-code-lab/05-algorithms/",
       "url": "../../jsts-code-lab/05-algorithms/"
-    },
-    {
-      "file": "30-knowledge-base\\30.2-categories\\00-language-core.md",
-      "line": 71,
-      "text": "jsts-code-lab/10-js-ts-comparison/",
-      "url": "../../jsts-code-lab/10-js-ts-comparison/"
-    },
-    {
-      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
-      "line": 330,
-      "text": "📦 awesome-jsts-ecosystem",
-      "url": "../../../awesome-jsts-ecosystem"
-    },
-    {
-      "file": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\更新_README交叉引用.md",
-      "line": 331,
-      "text": "🧪 jsts-code-lab",
-      "url": "../../../jsts-code-lab"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
-      "line": 77,
-      "text": "70-distributed-systems",
-      "url": "../../jsts-code-lab/70-distributed-systems/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
-      "line": 78,
-      "text": "分布式系统理论",
-      "url": "../../jsts-code-lab/70-distributed-systems/THEORY.md"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
-      "line": 113,
-      "text": "71-consensus-algorithms",
-      "url": "../../jsts-code-lab/71-consensus-algorithms/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
-      "line": 197,
-      "text": "25-microservices",
-      "url": "../../jsts-code-lab/25-microservices/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
-      "line": 220,
-      "text": "72-container-orchestration",
-      "url": "../../jsts-code-lab/72-container-orchestration/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
-      "line": 221,
-      "text": "73-service-mesh-advanced",
-      "url": "../../jsts-code-lab/73-service-mesh-advanced/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
-      "line": 252,
-      "text": "80-formal-verification",
-      "url": "../../jsts-code-lab/80-formal-verification/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
-      "line": 304,
-      "text": "33-ai-integration",
-      "url": "../../jsts-code-lab/33-ai-integration/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
-      "line": 305,
-      "text": "76-ml-engineering",
-      "url": "../../jsts-code-lab/76-ml-engineering/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
-      "line": 332,
-      "text": "77-quantum-computing",
-      "url": "../../jsts-code-lab/77-quantum-computing/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\advanced-path.md",
-      "line": 343,
-      "text": "36-web-assembly",
-      "url": "../../jsts-code-lab/36-web-assembly/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
-      "line": 66,
-      "text": "00-language-core",
-      "url": "../../jsts-code-lab/00-language-core/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
-      "line": 98,
-      "text": "10-js-ts-comparison",
-      "url": "../../jsts-code-lab/10-js-ts-comparison/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
-      "line": 121,
-      "text": "02-design-patterns",
-      "url": "../../jsts-code-lab/02-design-patterns/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
-      "line": 122,
-      "text": "设计模式理论",
-      "url": "../../jsts-code-lab/02-design-patterns/THEORY.md"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
-      "line": 174,
-      "text": "07-testing",
-      "url": "../../jsts-code-lab/07-testing/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
-      "line": 216,
-      "text": "18-frontend-frameworks",
-      "url": "../../jsts-code-lab/18-frontend-frameworks/"
-    },
-    {
-      "file": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
-      "line": 434,
-      "text": "jsts-code-lab 中级模块",
-      "url": "../../jsts-code-lab/"
     }
   ],
   "passed": false

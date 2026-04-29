@@ -74,8 +74,8 @@ status: current
 
 ### 1.1 分布式系统基础
 
-**模块**: [70-distributed-systems](../../jsts-code-lab/70-distributed-systems/)
-**理论文档**: [分布式系统理论](../../jsts-code-lab/70-distributed-systems/THEORY.md)
+**模块**: [70-distributed-systems](../../20-code-lab/20.8-edge-serverless/distributed-systems/)
+**理论文档**: [分布式系统理论](../../20-code-lab/20.8-edge-serverless/distributed-systems/THEORY.md)
 
 **核心理论**:
 
@@ -110,7 +110,7 @@ status: current
 
 ### 1.2 共识算法
 
-**模块**: [71-consensus-algorithms](../../jsts-code-lab/71-consensus-algorithms/)
+**模块**: [71-consensus-algorithms](../../20-code-lab/20.8-edge-serverless/consensus-algorithms/)
 
 **算法对比**:
 
@@ -194,7 +194,7 @@ class SagaOrchestrator {
 
 ### 2.1 微服务架构
 
-**模块**: [25-microservices](../../jsts-code-lab/25-microservices/)
+**模块**: [25-microservices](../../20-code-lab/20.6-backend-apis/microservices/)
 
 **服务拆分策略**:
 
@@ -217,8 +217,8 @@ class SagaOrchestrator {
 
 ### 2.2 容器编排与服务网格
 
-**模块**: [72-container-orchestration](../../jsts-code-lab/72-container-orchestration/)
-**模块**: [73-service-mesh-advanced](../../jsts-code-lab/73-service-mesh-advanced/)
+**模块**: [72-container-orchestration](../../20-code-lab/20.8-edge-serverless/container-orchestration/)
+**模块**: [73-service-mesh-advanced](../../20-code-lab/20.8-edge-serverless/service-mesh-advanced/)
 
 **Kubernetes 核心资源**:
 
@@ -249,7 +249,7 @@ spec:
 
 ### 3.1 形式化方法基础
 
-**模块**: [80-formal-verification](../../jsts-code-lab/80-formal-verification/)
+**模块**: [80-formal-verification](../../20-code-lab/20.10-formal-verification/formal-verification/)
 
 **形式化验证层次**:
 
@@ -301,8 +301,8 @@ Invariant == count >= 0
 
 ### 4.1 AI 工程化
 
-**模块**: [33-ai-integration](../../jsts-code-lab/33-ai-integration/)
-**模块**: [76-ml-engineering](../../jsts-code-lab/76-ml-engineering/)
+**模块**: [33-ai-integration](../../20-code-lab/20.7-ai-agent-infra/ai-integration/)
+**模块**: [76-ml-engineering](../../20-code-lab/20.7-ai-agent-infra/ml-engineering/)
 
 **LLM 应用架构模式**:
 
@@ -329,7 +329,7 @@ Invariant == count >= 0
 
 ### 4.2 量子计算基础
 
-**模块**: [77-quantum-computing](../../jsts-code-lab/77-quantum-computing/)
+**模块**: [77-quantum-computing](../../20-code-lab/20.10-formal-verification/quantum-computing/)
 
 **量子计算核心概念**:
 
@@ -340,7 +340,7 @@ Invariant == count >= 0
 
 ### 4.3 WebAssembly 高级应用
 
-**模块**: [36-web-assembly](../../jsts-code-lab/36-web-assembly/)
+**模块**: [36-web-assembly](../../20-code-lab/20.1-fundamentals-lab/web-assembly/)
 
 **Wasm 应用场景**:
 
@@ -502,7 +502,7 @@ Invariant == count >= 0
 
 - **Checkpoint 项目**: 实现一个简化版 Raft 节点
   - 功能：领导者选举、心跳机制、日志复制
-  - 代码位置: `jsts-code-lab/71-consensus-algorithms/raft-implementation/`
+  - 代码位置: `20-code-lab/20.8-edge-serverless/consensus-algorithms/raft-implementation/`
   - 通过标准: 3 节点集群测试通过 + 网络分区容错测试
 
 **预计时间**: 3 周 | **难度**: ⭐⭐⭐⭐⭐
@@ -540,7 +540,7 @@ Invariant == count >= 0
 
 - **Checkpoint 项目**: 用 TLA+ 验证一个分布式锁
   - 规格：锁的获取/释放、容错、无死锁
-  - 代码位置: `jsts-code-lab/80-formal-verification/tla-plus-distributed-lock/`
+  - 代码位置: `20-code-lab/20.10-formal-verification/formal-verification/tla-plus-distributed-lock/`
   - 通过标准: TLC 模型检查通过 + 所有不变量保持
 
 **预计时间**: 2 周 | **难度**: ⭐⭐⭐⭐⭐
@@ -561,10 +561,10 @@ Invariant == count >= 0
   - 代码位置: `examples/ai-agent-production/`
   - 通过标准: Agent 能完成多步任务
 - **选项 B**: 实现一个 Wasm 模块并在 JS 中调用
-  - 代码位置: `jsts-code-lab/36-web-assembly/wasm-integration/`
+  - 代码位置: `20-code-lab/20.1-fundamentals-lab/web-assembly/wasm-integration/`
   - 通过标准: 性能比纯 JS 提升 ≥ 50%
 - **选项 C**: 实现一个量子算法模拟
-  - 代码位置: `jsts-code-lab/77-quantum-computing/quantum-simulation/`
+  - 代码位置: `20-code-lab/20.10-formal-verification/quantum-computing/quantum-simulation/`
   - 通过标准: 正确模拟量子门操作
 
 **预计时间**: 3 周 | **难度**: ⭐⭐⭐⭐⭐

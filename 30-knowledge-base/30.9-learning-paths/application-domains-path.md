@@ -53,8 +53,8 @@ status: current
 ### 节点 1.1 全栈 Web 应用开发
 
 - **关联文件/模块**：
-  - `jsts-code-lab/16-application-development/`
-  - `jsts-code-lab/19-backend-development/`
+  - `20-code-lab/`
+  - `20-code-lab/`
   - `examples/beginner-todo-master/`
   - `examples/desktop-tauri-react/`
 - **关键技能**：
@@ -65,7 +65,7 @@ status: current
 ### 节点 1.2 RESTful API 与安全
 
 - **关联文件/模块**：
-  - `jsts-code-lab/21-api-security/`
+  - `20-code-lab/`
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/API_DESIGN_THEORY.md`
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/SECURITY_MODEL_ANALYSIS.md`
 - **关键技能**：
@@ -76,7 +76,7 @@ status: current
 ### 节点 1.3 数据库与 ORM
 
 - **关联文件/模块**：
-  - `jsts-code-lab/20-database-orm/`
+  - `20-code-lab/`
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/DATABASE_ORM_THEORY.md`
 - **关键技能**：
   - Prisma / TypeORM / Drizzle 的选型与 trade-off
@@ -90,8 +90,8 @@ status: current
 ### 节点 2.1 AI 与 LLM 工程化
 
 - **关联文件/模块**：
-  - `jsts-code-lab/33-ai-integration/`
-  - `jsts-code-lab/76-ml-engineering/`
+  - `20-code-lab/20.7-ai-agent-infra/ai-integration/`
+  - `20-code-lab/20.7-ai-agent-infra/ml-engineering/`
   - `examples/ai-agent-production/`
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/AI_ML_INTEGRATION_THEORY.md`
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/10_ai_ml.md`
@@ -104,7 +104,7 @@ status: current
 ### 节点 2.2 实时通信与协作
 
 - **关联文件/模块**：
-  - `jsts-code-lab/30-real-time-communication/`
+  - `20-code-lab/`
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/REALTIME_COMMUNICATION_THEORY.md`
 - **关键技能**：
   - WebSocket / SSE / WebRTC 的选型矩阵
@@ -114,8 +114,8 @@ status: current
 ### 节点 2.3 边缘计算与 Serverless
 
 - **关联文件/模块**：
-  - `jsts-code-lab/32-edge-computing/`
-  - `jsts-code-lab/31-serverless/`
+  - `20-code-lab/`
+  - `20-code-lab/`
   - `examples/edge-ai-inference/`
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/EDGE_SERVERLESS_THEORY.md`
 - **关键技能**：
@@ -130,8 +130,8 @@ status: current
 ### 节点 3.1 微服务与多租户架构
 
 - **关联文件/模块**：
-  - `jsts-code-lab/25-microservices/`
-  - `jsts-code-lab/67-multi-tenancy/`
+  - `20-code-lab/`
+  - `20-code-lab/`
   - `examples/intermediate-microservice-workshop/`
   - `examples/monorepo-fullstack-saas/`
 - **关键技能**：
@@ -142,8 +142,8 @@ status: current
 ### 节点 3.2 可观测性平台
 
 - **关联文件/模块**：
-  - `jsts-code-lab/74-observability/`
-  - `jsts-code-lab/39-performance-monitoring/`
+  - `20-code-lab/`
+  - `20-code-lab/`
   - `examples/edge-observability-starter/`
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/08_observability.md`
 - **关键技能**：
@@ -154,7 +154,7 @@ status: current
 ### 节点 3.3 韧性工程与混沌测试
 
 - **关联文件/模块**：
-  - `jsts-code-lab/75-chaos-engineering/`
+  - `20-code-lab/`
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ERROR_HANDLING_RELIABILITY.md`
 - **关键技能**：
   - 故障注入与熔断器模式
@@ -168,7 +168,7 @@ status: current
 ### Checkpoint 1：带认证 API 服务
 
 - **项目**：实现一个带认证的 RESTful API 服务
-- **代码位置**：`jsts-code-lab/21-api-security/authenticated-api/`
+- **代码位置**：`20-code-lab/21-api-security/authenticated-api/`
 - **要求**：用户注册/登录/CRUD、JWT 认证、输入验证、速率限制
 - **通过标准**：安全扫描通过 + 集成测试覆盖
 - **难度**：⭐⭐⭐⭐ | **预计时间**：2 周
@@ -180,7 +180,7 @@ status: current
   - **要求**：能完成多步任务（如检索 → 分析 → 生成报告）
   - **通过标准**：端到端任务成功率 ≥ 80%，含错误重试与人工介入点
 - **选项 B（边缘函数）**：将 API 服务部署至边缘运行时
-  - **代码位置**：`jsts-code-lab/32-edge-computing/edge-deployment/`
+  - **代码位置**：`20-code-lab/32-edge-computing/edge-deployment/`
   - **要求**：冷启动 < 200ms，支持流式响应
   - **通过标准**：压力测试通过（1000 RPS，P99 < 500ms）
 - **难度**：⭐⭐⭐⭐ | **预计时间**：2–3 周

@@ -193,7 +193,7 @@ status: current
 ### Checkpoint 3：形式化验证或玩具编译器
 
 - **选项 A（形式化验证）**：用 TLA+ 描述并验证一个简化版的分布式锁或读写锁协议
-  - **代码位置**：`jsts-code-lab/41-formal-semantics/`
+  - **代码位置**：`20-code-lab/`
   - **通过标准**：TLC 模型检查通过，所有不变量保持
 - **选项 B（玩具编译器）**：实现一个支持变量声明、算术表达式、函数调用的迷你语言到 JS 的转译器
   - **代码位置**：`50-examples/advanced-compiler-workshop/mini-compiler/`
