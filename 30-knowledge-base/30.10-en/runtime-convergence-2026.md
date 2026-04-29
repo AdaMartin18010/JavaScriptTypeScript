@@ -1,12 +1,77 @@
-# Theorem 3: Runtime Convergence Theorem
+# Runtime Convergence 2026
 
-> **English Summary** of `10-fundamentals/10.1-language-semantics/theorems/runtime-convergence-theorem.md`
+> **English Deep-Dive** of `10-fundamentals/10.1-language-semantics/theorems/runtime-convergence-theorem.md`
 
 ---
 
 ## One-Sentence Summary
 
 Under the dual pressures of open-source transparency and standardization (WinterCG, W3C), Node.js, Bun, and Deno are evolving toward an interoperability Nash equilibrium where competitive differentiation catalyzes convergence rather than ecosystem fragmentation.
+
+---
+
+## Runtime Comparison Matrix (2026)
+
+| Dimension | Node.js 24+ | Deno 2.x | Bun 1.2+ | WinterCG Target |
+|-----------|-------------|----------|----------|-----------------|
+| **TypeScript** | `--experimental-strip-types` (v22+), `tsx` community | Native, no config | Native, fastest transpile | TS as source (proposed) |
+| **Built-in Fetch** | Stable (`undici`-backed) | Native (`deno_fetch`) | Native (`Bun.fetch`) | Required |
+| **Test Runner** | Built-in (`node:test`, `node:assert`) | Built-in (`Deno.test`) | Built-in (`bun:test`) | Unified assertions (draft) |
+| **Watch Mode** | `--watch` (built-in) | `--watch` | `--watch` | - |
+| **Package Manager** | npm (built-in), pnpm, yarn | `jsr:` + npm compat | npm, yarn, pnpm compat | Common registry format |
+| **ESM ↔ CJS** | Increasingly ESM-first, `.cjs`/`.mjs` | Strict ESM, npm polyfills | Transparent dual loader | ESM standard |
+| **Performance** | Baseline | Good, secure-by-default | Fastest startup & bundling | - |
+| **Edge/Serverless** | `node:*` limited on some platforms | Native Deno Deploy | Bun runtime for Vercel | WinterCG minimal subset |
+| **Security** | `--experimental-permission` | Permissions model (read/net/env) | Experimental sandbox | Capability-based (aspirational) |
+| **WASM** | Stable (`WebAssembly` global) | Stable | Stable | Core spec |
+
+---
+
+## WinterCG Fetch Compatibility Example
+
+WinterCG defines a **minimum common Web-interoperable subset** that all server-side runtimes should support. Below is a portable `fetch` wrapper that works on Node.js, Deno, Bun, and Cloudflare Workers without polyfills:
+
+```ts
+// lib/fetch-portable.ts
+// Compatible with Node.js ≥18, Deno ≥1.3, Bun ≥1.0, Cloudflare Workers
+
+const API_BASE = process?.env?.API_BASE ?? Deno?.env?.get("API_BASE") ?? "https://api.example.com";
+
+export async function fetchUser(id: string, opts?: { signal?: AbortSignal }): Promise<unknown> {
+  const url = new URL(`/users/${encodeURIComponent(id)}`, API_BASE);
+
+  // WinterCG-compliant: RequestInit must support `signal`, `method`, `headers`, `body`
+  const res = await fetch(url, {
+    method: "GET",
+    headers: { "Accept": "application/json" },
+    signal: opts?.signal,
+  });
+
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+  }
+
+  // WinterCG-compliant: Response provides `.json()`, `.text()`, `.arrayBuffer()`, `.body` (ReadableStream)
+  return res.json();
+}
+```
+
+### Runtime Detection & Polyfill-Free Bootstrapping
+
+```ts
+// lib/runtime.ts
+export const runtime =
+  typeof (globalThis as any).Deno !== "undefined" ? "deno" :
+  typeof (globalThis as any).Bun !== "undefined" ? "bun" :
+  typeof process !== "undefined" && process.versions?.node ? "node" :
+  "unknown";
+
+// WinterCG defines `navigator.userAgent` for server runtimes (experimental)
+export const userAgent: string | undefined =
+  (globalThis as any).navigator?.userAgent;
+```
+
+---
 
 ## Key Points
 
@@ -26,4 +91,17 @@ The critical insight is that **differentiation is the catalyst for convergence, 
 
 ---
 
-*English summary. Full Chinese theorem with proof tree: `../../10-fundamentals/10.1-language-semantics/theorems/runtime-convergence-theorem.md`*
+## Authoritative Links
+
+- [WinterCG — Web-interoperable Runtimes](https://wintercg.org/)
+- [W3C Web Platform Tests](https://wpt.fyi/)
+- [Node.js v24 Release Notes](https://nodejs.org/en/blog/release/)
+- [Deno 2.x Manual](https://docs.deno.com/)
+- [Bun Documentation](https://bun.sh/docs)
+- [TC39 — ECMAScript® Specification](https://tc39.es/ecma262/)
+- [Cloudflare Workers — WinterCG Compliance](https://developers.cloudflare.com/workers/runtime-apis/)
+
+---
+
+*English deep-dive. Full Chinese theorem with proof tree: `../../10-fundamentals/10.1-language-semantics/theorems/runtime-convergence-theorem.md`*
+*最后更新: 2026-04-29*
