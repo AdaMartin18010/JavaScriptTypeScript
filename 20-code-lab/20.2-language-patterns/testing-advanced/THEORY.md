@@ -1,4 +1,4 @@
-﻿# 高级测试 — 理论基础
+# 高级测试 — 理论基础
 
 ## 1. 属性驱动测试（Property-Based Testing）
 
@@ -43,7 +43,54 @@
 - **工具**: Chromatic、Percy、Loki
 - 注意: 字体渲染差异、动画时序、抗锯齿导致误报
 
-## 6. 与相邻模块的关系
+## 6. 测试方法对比
+
+| 方法 | 目标 | 工具 | 集成阶段 | 成本 |
+|------|------|------|----------|------|
+| 属性测试 | 发现边界 bug | fast-check | 单元测试 | 低 |
+| 变异测试 | 评估测试质量 | Stryker | CI | 高 |
+| 契约测试 | 服务间兼容 | Pact | CI/CD | 中 |
+| 混沌工程 | 系统韧性 | Chaos Monkey | 生产 | 高 |
+| 视觉回归 | UI 一致性 | Chromatic | CI | 中 |
+
+## 7. 代码示例：fast-check 属性测试
+
+```javascript
+const fc = require('fast-check');
+
+describe('Array operations', () => {
+  // 属性：reverse(reverse(arr)) === arr
+  it('should satisfy double reverse identity', () => {
+    fc.assert(
+      fc.property(fc.array(fc.integer()), (arr) => {
+        return JSON.stringify(arr.reverse().reverse()) === JSON.stringify(arr);
+      })
+    );
+  });
+
+  // 属性：排序后数组是非递减的
+  it('should produce sorted array', () => {
+    fc.assert(
+      fc.property(fc.array(fc.integer()), (arr) => {
+        const sorted = [...arr].sort((a, b) => a - b);
+        for (let i = 1; i < sorted.length; i++) {
+          if (sorted[i] < sorted[i - 1]) return false;
+        }
+        return true;
+      })
+    );
+  });
+});
+```
+
+## 8. 权威参考
+
+- [fast-check Documentation](https://dubzzz.github.io/fast-check.github.com/) — 属性测试库
+- [Stryker Mutator](https://stryker-mutator.io/) — JS 变异测试框架
+- [Pact.io](https://pacts.io/) — 契约测试框架
+- [Principles of Chaos Engineering](https://principlesofchaos.org/) — 混沌工程原则
+
+## 9. 与相邻模块的关系
 
 - **07-testing**: 测试基础概念
 - **75-chaos-engineering**: 混沌工程的深度实践

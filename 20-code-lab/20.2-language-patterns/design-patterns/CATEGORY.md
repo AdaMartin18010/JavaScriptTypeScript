@@ -25,7 +25,18 @@ created: 2026-04-27
   └── 05-algorithms         → 算法实现
 ```
 
+## 子模块目录结构
+
+| 子模块 | 说明 |
+|--------|------|
+| `creational/` | 创建型模式（单例、工厂、建造者、原型） |
+| `structural/` | 结构型模式（适配器、装饰器、代理、组合） |
+| `behavioral/` | 行为型模式（观察者、策略、迭代器、命令） |
+| `js-specific/` | JS 特有实现（模块模式、揭示模块、IIFE） |
+
 ## 关联索引
 
 - [10-fundamentals/10.1-language-semantics/README.md](../../../10-fundamentals/10.1-language-semantics/README.md)
 - [30-knowledge-base/30.2-categories/00-language-core.md](../../../30-knowledge-base/30.2-categories/00-language-core.md)
+- [Refactoring Guru — Design Patterns](https://refactoring.guru/design-patterns) — 可视化设计模式指南
+- [Patterns.dev](https://www.patterns.dev/) — 现代 Web 开发模式

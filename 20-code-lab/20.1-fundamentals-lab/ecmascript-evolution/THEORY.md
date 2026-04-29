@@ -37,14 +37,50 @@
 - **ES2025**: Set 方法（union/intersection/difference）、正则表达式增强
 - **ES2026 (Stage 4)**: Temporal API（现代日期时间）、Math.sumPrecise、Error.isError
 
-## 6. 提案阶段流程
+## 6. 版本特性矩阵
+
+| 版本 | 年份 | 核心特性 | 影响力 |
+|------|------|----------|--------|
+| ES3 | 1999 | 基础语法 | 历史基准 |
+| ES5 | 2009 | 严格模式、JSON、Object.defineProperty | ★★★☆☆ |
+| ES2015 | 2015 | let/const、类、模块、Promise、Proxy | ★★★★★ |
+| ES2017 | 2017 | async/await、Object.entries | ★★★★☆ |
+| ES2020 | 2020 | 可选链、空值合并、BigInt | ★★★★☆ |
+| ES2024 | 2024 | GroupBy、Promise.withResolvers | ★★★☆☆ |
+| ES2025 | 2025 | Set 集合方法 | ★★★☆☆ |
+
+## 7. 代码示例：Temporal API（ES2026）
+
+```javascript
+// 使用 Temporal 替代有缺陷的 Date API
+const now = Temporal.Now.instant();
+const date = Temporal.PlainDate.from('2026-04-28');
+const time = Temporal.PlainTime.from('14:30:00');
+
+// 时区感知运算
+const zoned = now.toZonedDateTimeISO('Asia/Shanghai');
+console.log(zoned.toString()); // 2026-04-28T14:30:00+08:00[Asia/Shanghai]
+
+// 持续时间计算
+const duration = Temporal.Duration.from({ days: 5, hours: 3 });
+const future = date.add(duration);
+```
+
+## 8. 提案阶段流程
 
 ```
 Stage 0（Strawperson）→ Stage 1（Proposal）→ Stage 2（Draft）→ Stage 3（Candidate）→ Stage 4（Finished）
 ```
 
-## 7. 与相邻模块的关系
+## 9. 权威参考
+
+- [ECMA-262 Specification](https://tc39.es/ecma262/) — 官方语言规范
+- [MDN — JavaScript Reference](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference) — Mozilla 开发者网络
+- [TC39 Proposals](https://github.com/tc39/proposals) — 官方提案追踪仓库
+- [JavaScript Weekly](https://javascriptweekly.com/) — 社区动态周报
+
+## 10. 与相邻模块的关系
 
 - **00-language-core**: JavaScript 核心机制
-- **06-ecmascript-spec-foundation**: ECMA-262 规范基础
+- **10-fundamentals/10.1-language-semantics**: 语言语义基础
 - **56-code-generation**: 新特性的编译与降级

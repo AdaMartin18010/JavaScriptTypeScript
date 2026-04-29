@@ -1,4 +1,4 @@
-﻿# 可观测性 — 理论基础
+# 可观测性 — 理论基础
 
 ## 1. 可观测性的定义
 
@@ -33,7 +33,50 @@
 - **Errors**: 每秒错误请求数
 - **Duration**: 请求处理时间分布
 
-## 4. 与相邻模块的关系
+## 4. 三大支柱对比
+
+| 维度 | Metrics | Logs | Traces |
+|------|---------|------|--------|
+| 数据量 | 小（聚合后） | 大（每条记录） | 中（按请求采样） |
+| 存储成本 | 低 | 高 | 中 |
+| 查询延迟 | 毫秒级 | 秒级 | 秒级 |
+| 适用场景 | 告警、仪表盘 | 根因分析 | 分布式链路追踪 |
+| 典型工具 | Prometheus、Datadog | ELK、Loki | Jaeger、Zipkin |
+
+## 5. 代码示例：OpenTelemetry 基础用法
+
+```javascript
+// 初始化 Tracer
+const { trace } = require('@opentelemetry/api');
+const tracer = trace.getTracer('my-service');
+
+// 创建 Span
+async function processOrder(orderId) {
+  return tracer.startActiveSpan('processOrder', async (span) => {
+    span.setAttribute('order.id', orderId);
+    try {
+      const result = await validateAndCharge(orderId);
+      span.setStatus({ code: SpanStatusCode.OK });
+      return result;
+    } catch (err) {
+      span.recordException(err);
+      span.setStatus({ code: SpanStatusCode.ERROR, message: err.message });
+      throw err;
+    } finally {
+      span.end();
+    }
+  });
+}
+```
+
+## 6. 权威参考
+
+- [OpenTelemetry Official Docs](https://opentelemetry.io/docs/) — 云原生可观测性标准
+- [Google SRE Book — Monitoring](https://sre.google/sre-book/monitoring-distributed-systems/) — Google 分布式监控最佳实践
+- [Prometheus Best Practices](https://prometheus.io/docs/practices/) — 指标命名与告警设计
+- [W3C Trace Context](https://www.w3.org/TR/trace-context/) — 分布式追踪上下文规范
+
+## 7. 与相邻模块的关系
 
 - **92-observability-lab**: 可观测性的代码实现与工具链
 - **17-debugging-monitoring**: 调试与监控基础

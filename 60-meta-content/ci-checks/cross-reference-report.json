@@ -1,7 +1,7 @@
 {
-  "timestamp": "2026-04-29T01:22:59.748Z",
+  "timestamp": "2026-04-29T01:43:20.536Z",
   "totalTheoryFiles": 181,
-  "validReferences": 653,
+  "validReferences": 655,
   "brokenReferences": [
     {
       "file": "20-code-lab\\20.1-fundamentals-lab\\real-world-examples\\THEORY.md",
@@ -20,21 +20,9 @@
       "line": 96,
       "ref": "docs/guides/ai-coding-workflow.md",
       "context": "- `docs/guides/ai-coding-workflow.md` — AI 辅助异步代码审查"
-    },
-    {
-      "file": "20-code-lab\\20.4-data-algorithms\\data-structures\\THEORY.md",
-      "line": 3,
-      "ref": "jsts-code-lab/04-data-structures",
-      "context": "> 本文件基于 `jsts-code-lab/04-data-structures` 下的 `custom/`、`built-in/` 实现代码，"
-    },
-    {
-      "file": "20-code-lab\\20.5-frontend-frameworks\\data-visualization\\THEORY.md",
-      "line": 4,
-      "ref": "30-knowledge-base/30.2-categories/data-visualization.md",
-      "context": "> **关联文档**：``30-knowledge-base/30.2-categories/data-visualization.md`` (Legacy) [Legacy link]"
     }
   ],
-  "brokenCount": 5,
+  "brokenCount": 3,
   "codeLabCoverage": {
     "totalModules": 13,
     "coveredModules": 13,

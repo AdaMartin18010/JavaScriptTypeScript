@@ -24,6 +24,7 @@ const SCAN_DIRS = [
 
 const EXCLUDE_PATTERNS = [
   /_MIGRATED_FROM\.md$/,
+  /ARCHIVED\.md$/,
   /node_modules/,
   /\.vitepress/,
   /dist/,

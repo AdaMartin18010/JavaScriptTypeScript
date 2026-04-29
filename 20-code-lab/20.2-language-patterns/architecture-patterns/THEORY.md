@@ -1,4 +1,4 @@
-﻿# 架构模式 — 理论基础
+# 架构模式 — 理论基础
 
 ## 1. 分层架构（Layered Architecture）
 
@@ -43,7 +43,55 @@ Alistair Cockburn 提出，强调**业务逻辑独立于外部世界**：
 - **插件**: 独立开发、动态加载
 - **应用**: VS Code、Eclipse、Chrome 扩展
 
-## 6. 与相邻模块的关系
+## 6. 架构模式对比
+
+| 模式 | 耦合度 | 可测试性 | 扩展性 | 复杂度 | 典型应用 |
+|------|--------|----------|--------|--------|----------|
+| 分层架构 | 中 | 中 | 低 | 低 | 传统企业应用 |
+| 六边形架构 | 低 | 高 | 高 | 中 | 领域驱动设计 |
+| CQRS | 低 | 高 | 高 | 高 | 电商、金融系统 |
+| 事件溯源 | 低 | 中 | 高 | 高 | 审计追踪、金融 |
+| 微内核 | 低 | 高 | 高 | 中 | IDE、浏览器 |
+
+## 7. 代码示例：六边形架构端口定义
+
+```typescript
+// 核心域：纯业务逻辑，零外部依赖
+interface OrderService {
+  placeOrder(command: PlaceOrderCommand): Promise<Order>;
+  cancelOrder(orderId: string): Promise<void>;
+}
+
+// 输入端口（驱动适配器实现）
+interface ForPlacingOrders {
+  placeOrder(cmd: PlaceOrderCommand): Promise<Order>;
+}
+
+// 输出端口（被驱动适配器实现）
+interface ForInventory {
+  checkAvailability(productId: string, qty: number): Promise<boolean>;
+}
+
+// 核心实现
+class OrderServiceImpl implements OrderService {
+  constructor(private inventory: ForInventory) {}
+
+  async placeOrder(cmd: PlaceOrderCommand): Promise<Order> {
+    const available = await this.inventory.checkAvailability(cmd.productId, cmd.quantity);
+    if (!available) throw new OutOfStockError(cmd.productId);
+    // ... 核心逻辑
+  }
+}
+```
+
+## 8. 权威参考
+
+- [Hexagonal Architecture by A. Cockburn](https://alistair.cockburn.us/hexagonal-architecture/) — 原始论文
+- [Martin Fowler — CQRS](https://martinfowler.com/bliki/CQRS.html) — 模式详解
+- [Microsoft — CQRS Pattern](https://docs.microsoft.com/en-us/azure/architecture/patterns/cqrs) — Azure 架构指南
+- [Event Sourcing by Fowler](https://martinfowler.com/eaaDev/EventSourcing.html) — 事件溯源模式
+
+## 9. 与相邻模块的关系
 
 - **59-fullstack-patterns**: 全栈应用的具体架构实践
 - **53-app-architecture**: 前端应用架构模式
