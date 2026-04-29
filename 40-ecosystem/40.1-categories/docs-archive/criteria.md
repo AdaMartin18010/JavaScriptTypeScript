@@ -115,3 +115,47 @@
 - 每季度检查维护状态
 - 每年评估是否仍符合标准
 - 标记过时库并推荐替代方案
+
+---
+
+## 📋 归档标准判定矩阵
+
+| 判定维度 | 权重 | 达标线 | 测量方式 |
+|---------|------|--------|---------|
+| GitHub Stars | 15% | 见第 1 节 | GitHub API |
+| 最后更新时间 | 20% | < 12 个月 | GitHub 提交记录 |
+| npm 周下载量 | 15% | > 1,000 | npm-stat.com |
+| TypeScript 支持 | 15% | 🟡 及以上 | 源码/类型定义检查 |
+| 文档完整度 | 20% | 必备文档 ≥ 4/5 | 人工审核 |
+| 安全评分 | 15% | 无高危漏洞 | `npm audit` / Snyk |
+
+**归档决策规则**：
+- 总分 ≥ 80：✅ 直接收录
+- 总分 60–79：⚠️ 条件收录（需注明注意事项）
+- 总分 < 60：❌ 暂不收录
+
+---
+
+## 📊 文档质量评估矩阵
+
+| 等级 | API 文档 | 使用示例 | 变更日志 | 贡献指南 | TypeScript 定义 |
+|------|---------|---------|---------|---------|----------------|
+| 🏆 卓越 (A) | 完整 + 交互式 | 10+ 可运行示例 | 语义化版本 | 详细 + 模板 | 原生 + 泛型完整 |
+| ✅ 良好 (B) | 完整 | 5+ 示例 | 存在 | 存在 | 官方定义 |
+| ⚠️ 及格 (C) | 基本覆盖 | 1–2 示例 | 零星 | 简略 | @types 社区 |
+| ❌ 不足 (D) | 缺失/过时 | 无 | 无 | 无 | 无 |
+
+**推荐库文档质量底线**：B 级及以上。
+
+---
+
+## 🔗 权威参考链接
+
+- [npm Audit 文档](https://docs.npmjs.com/cli/commands/npm-audit)
+- [Snyk Open Source Security](https://snyk.io/product/open-source-security-management/)
+- [BundlePhobia — 包体积分析](https://bundlephobia.com/)
+- [npmtrends — 下载量对比](https://npmtrends.com/)
+- [Open Source Insights (deps.dev)](https://deps.dev/)
+- [Choose a License](https://choosealicense.com/)
+- [Conventional Changelog 规范](https://www.conventionalcommits.org/)
+- [Mozilla Open Source Archetypes](https://mozilla.github.io/open-leadership-training-series/articles/opening-your-project/)

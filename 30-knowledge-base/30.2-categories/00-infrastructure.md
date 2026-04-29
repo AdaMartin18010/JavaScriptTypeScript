@@ -48,6 +48,102 @@
 
 ---
 
+## 基础设施全栈对比表
+
+| 层级 | 主流方案 | 2026 推荐 | 适用场景 |
+|------|---------|----------|---------|
+| **构建工具** | Webpack / Vite / esbuild / Rolldown | **Rolldown + Vite** | 大型项目迁移至 Rust 工具链 |
+| **测试框架** | Jest / Vitest / Mocha | **Vitest + Playwright** | 统一 Vite 生态 + E2E 测试 |
+| **部署平台** | Vercel / Netlify / AWS / Fly.io | **Vercel (Web) + Fly.io (API)** | Edge + 容器混合部署 |
+| **可观测性** | Sentry / Datadog / Grafana | **OpenTelemetry + Sentry** | 云原生 + 错误追踪 |
+| **数据库** | PostgreSQL / MySQL / MongoDB | **PostgreSQL + Drizzle ORM** | 类型安全 SQL |
+| **认证方案** | Auth0 / Firebase Auth / Cognito | **better-auth + Passkeys** | 现代无密码体验 |
+| **API 风格** | REST / GraphQL / tRPC / gRPC | **tRPC (内部) + OpenAPI (外部)** | 端到端类型安全 |
+| **Monorepo** | Nx / Turborepo / Rush | **Turborepo + pnpm** | 快速增量构建 |
+| **容器化** | Docker / Podman | **Docker + Docker Compose** | 本地开发一致性 |
+| **CI/CD** | GitHub Actions / GitLab CI / CircleCI | **GitHub Actions** | 社区生态最丰富 |
+
+---
+
+## 部署平台选型对比
+
+| 平台 | 部署模型 | 冷启动 | 定价模式 | 最佳场景 |
+|------|---------|--------|---------|---------|
+| **Vercel** | Serverless Edge / Node.js | < 50ms | 按请求 + 带宽 | Next.js 全栈应用 |
+| **Cloudflare Pages** | V8 Isolates (Worker) | < 1ms | 按请求 + 存储 | 静态站点 + Edge API |
+| **Fly.io** | Firecracker Micro-VM | ~300ms | 按 vCPU + 内存 | 有状态服务 / Docker |
+| **AWS Lambda** | Serverless Function | ~100–300ms | 按调用 + 时长 | 事件驱动 / 低频 API |
+| **Railway** | Container | ~10s | 按资源使用 | 快速原型 / 团队项目 |
+| **Render** | Container / Static | ~30s | 按实例规格 | 全栈应用 / 数据库托管 |
+
+---
+
+## 代码示例：类型安全的全栈基础设施配置
+
+```typescript
+// turbo.json — Turborepo 管道定义
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "lint": { "dependsOn": ["^build"] },
+    "test": { "dependsOn": ["^build"], "outputs": ["coverage/**"] },
+    "typecheck": { "dependsOn": ["^build"] }
+  }
+}
+
+// Dockerfile — 多阶段构建优化
+# ---- Base ----
+FROM node:22-alpine AS base
+RUN npm install -g pnpm
+
+# ---- Dependencies ----
+FROM base AS deps
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile --prod
+
+# ---- Build ----
+FROM base AS builder
+WORKDIR /app
+COPY . .
+RUN pnpm install --frozen-lockfile
+RUN pnpm turbo run build --filter=web
+
+# ---- Production ----
+FROM node:22-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/apps/web/.next ./.next
+COPY --from=builder /app/apps/web/public ./public
+COPY --from=builder /app/apps/web/package.json ./
+EXPOSE 3000
+CMD ["node", "node_modules/.bin/next", "start"]
+
+// GitHub Actions — CI 流水线
+# .github/workflows/ci.yml
+name: CI
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm turbo run lint typecheck test build
+```
+
+---
+
 ## 决策支持
 
 - [基础设施决策矩阵](../30.3-comparison-matrices/infrastructure-stack-decision-matrix.md)
@@ -70,7 +166,19 @@
 
 ---
 
-*最后更新: 2026-04-27*
+## 参考链接
+
+- [Turborepo — Monorepo Handbook](https://turbo.build/repo/docs)
+- [Vite — Next Generation Frontend Tooling](https://vitejs.dev/)
+- [Dockerfile Best Practices](https://docs.docker.com/develop/dev-best-practices/dockerfile_best-practices/)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [OpenTelemetry — Getting Started](https://opentelemetry.io/docs/)
+- [Drizzle ORM — TypeScript SQL-like ORM](https://orm.drizzle.team/)
+- [better-auth — Framework-agnostic authentication](https://www.better-auth.com/)
+
+---
+
+*最后更新: 2026-04-29*
 *review-cycle: 3 months*
 *next-review: 2026-07-27*
 *status: current*

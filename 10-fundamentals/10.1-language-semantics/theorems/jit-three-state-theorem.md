@@ -73,6 +73,136 @@ $$
 
 ---
 
+## JIT 三态详细对比表
+
+| 维度 | 状态 1：解释执行（Ignition） | 状态 2：基线编译（Sparkplug） | 状态 3：优化执行（TurboFan） |
+|------|---------------------------|---------------------------|---------------------------|
+| **触发条件** | 首次执行 / 去优化后 | 执行数百次 | 执行数千次 + 类型稳定 |
+| **中间表示** | 字节码（Bytecode） | 机器码（无优化） | Sea of Nodes IR → 机器码 |
+| **启动延迟** | ~1-5ms | 中等 | 高（编译耗时） |
+| **峰值性能** | 低（10-100x 慢于优化） | 中等（约 2-3x 解释） | 高（接近 C++） |
+| **内存占用** | 低（字节码紧凑） | 中等 | 高（多版本代码缓存） |
+| **类型反馈** | 收集阶段 | 使用已有反馈 | 深度依赖反馈 |
+| **去优化风险** | 无 | 低 | 高（假设失效则回退） |
+| **适用场景** | 冷代码 / 启动路径 | 温热代码 | 热点循环 / 频繁调用 |
+| **V8 版本** | 全版本 | v9.1+ (2021) | 全版本 |
+
+> **注**：V8 v9.1（2021）引入 **Sparkplug** 作为 Ignition 与 TurboFan 之间的非优化编译层，形成四管道架构。但从「执行状态」角度，仍可归纳为解释 → 编译 → 优化三态。
+
+---
+
+## 代码示例：内联缓存（Inline Cache, IC）机制
+
+内联缓存是 Ignition 收集类型反馈、TurboFan 生成优化代码的核心机制。
+
+```javascript
+// ============================================
+// 示例 1：单态（Monomorphic）→ 多态（Polymorphic）→ 巨态（Megamorphic）
+// ============================================
+
+function getX(obj) {
+  return obj.x; // 此属性访问会被 IC 跟踪
+}
+
+// 阶段 1：单态（Monomorphic）—— 只见过一种形状（Shape/Hidden Class）
+const a = { x: 1 }; // V8 分配 HiddenClass A
+getX(a); // IC 记录：访问 HiddenClass A 的 x 属性，偏移量 0
+getX(a);
+getX(a); // 此后 getX 被优化为：直接读取偏移量 0（极快）
+
+// 阶段 2：多态（Polymorphic）—— 见过少量不同形状
+const b = { x: 2, y: 0 }; // HiddenClass B（x 偏移量可能不同）
+getX(b); // IC 升级为多态：检查 HiddenClass，若为 A 读偏移 0；若为 B 读偏移 0/1
+getX(b);
+
+// 阶段 3：巨态（Megamorphic）—— 见过太多形状，IC 失效
+const c = { x: 3, z: 0 };
+const d = { x: 4, w: 0, y: 0 };
+// 若继续传入不同结构的对象...
+for (let i = 0; i < 10; i++) {
+  getX({ x: i, [`prop${i}`]: i }); // 每次都创建新 HiddenClass
+}
+// IC 达到多态上限（通常 4 种），进入 Megamorphic
+// 此后属性访问退化为哈希表查找，性能骤降
+
+// ============================================
+// 示例 2：通过 d8 或 Node.js --print-ic 观察 IC 状态
+// ============================================
+
+// 命令行：node --trace-ic getx-benchmark.js
+// 输出中会显示 IC state transitions: UNINIT → MONOMORPHIC → POLYMORPHIC → MEGAMORPHIC
+
+// 优化策略：保持对象形状稳定
+function optimizedAccess(users) {
+  let sum = 0;
+  for (const user of users) {
+    // 若所有 user 对象共享同一 HiddenClass（相同属性顺序），
+    // 此访问保持 MONOMORPHIC，TurboFan 可内联为直接偏移读取
+    sum += user.age;
+  }
+  return sum;
+}
+
+// 反模式：属性顺序不一致导致 HiddenClass 分裂
+const goodUsers = [
+  { name: 'A', age: 20, active: true },   // HiddenClass: name → age → active
+  { name: 'B', age: 25, active: false },  // 同一 HiddenClass ✅
+];
+
+const badUsers = [
+  { name: 'A', age: 20, active: true },
+  { age: 25, name: 'B', active: false },  // 属性顺序不同 → 不同 HiddenClass ❌
+];
+
+// ============================================
+// 示例 3：隐藏类（Hidden Class）可视化
+// ============================================
+
+function Point(x, y) {
+  this.x = x;
+  this.y = y;
+}
+
+const p1 = new Point(1, 2);
+const p2 = new Point(3, 4);
+// p1 和 p2 共享同一 HiddenClass（构造函数内属性添加顺序一致）
+
+function BadPoint(x, y, flag) {
+  this.x = x;
+  if (flag) {
+    this.z = 0;      // 条件性添加属性 → HiddenClass 分叉
+  }
+  this.y = y;
+}
+
+const bp1 = new BadPoint(1, 2, false); // HiddenClass: x → y
+const bp2 = new BadPoint(3, 4, true);  // HiddenClass: x → z → y（不同）
+// bp1 和 bp2 的 IC 访问将退化为多态
+
+// ============================================
+// 示例 4：去优化触发观察（通过 --trace-deopt）
+// ============================================
+
+function add(a, b) {
+  return a + b;
+}
+
+// 热身：TurboFan 假设 a, b 均为 number
+for (let i = 0; i < 100000; i++) {
+  add(1, 2);
+}
+
+// 触发去优化：传入 string，打破 number 假设
+add('hello', 'world');
+// TurboFan 发现类型假设失效 → Deoptimize → 回退到 Ignition
+// 之后可能以 (number | string) 为假设重新优化，或保持解释执行
+
+// 运行：node --trace-deopt deopt-demo.js
+// 输出示例：[deoptimizing (DEOPT eager): begin add (opt #1) ...]
+```
+
+---
+
 ## 关键引理
 
 ### 引理 1.1：解释执行的必要性
@@ -124,4 +254,18 @@ $$
 
 ---
 
-*本定理为 TS/JS 软件堆栈全景分析论证的五大核心定理之首。*
+## 权威参考链接
+
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| **V8 Blog: Ignition + TurboFan** | V8 双编译器架构官方介绍 | [v8.dev/blog/ignition-interpreter](https://v8.dev/blog/ignition-interpreter) |
+| **V8 Blog: Sparkplug** | V8 快速非优化编译器 | [v8.dev/blog/sparkplug](https://v8.dev/blog/sparkplug) |
+| **V8 Blog: Sea of Nodes** | TurboFan IR 设计解析 | [v8.dev/blog/turbofan-jit](https://v8.dev/blog/turbofan-jit) |
+| **Understanding V8 Bytecode** | 字节码与 IC 机制详解 | [medium.com/dailyjs/understanding-vms-bytecode-75d9a2638c0b](https://medium.com/dailyjs/understanding-v8s-bytecode-317d46c94775) |
+| **Hidden Classes in V8** | 隐藏类与形状优化 | [v8.dev/docs/hidden-classes](https://v8.dev/docs/hidden-classes) |
+| **Deoptimization in V8** | 去优化机制内部实现 | [v8.dev/blog/deoptimizer](https://v8.dev/blog/deoptimizer) |
+| **JavaScript Engine Fundamentals** | 各引擎通用 JIT 原理解析 | [mathiasbynens.be/notes/shapes-ics](https://mathiasbynens.be/notes/shapes-ics) |
+
+---
+
+*本定理为 TS/JS 软件堆栈全景分析论证的五大核心定理之首，已增强 JIT 阶段表与内联缓存代码示例。*

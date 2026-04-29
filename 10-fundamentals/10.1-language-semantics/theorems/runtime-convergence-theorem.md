@@ -77,6 +77,122 @@
 
 ---
 
+## 运行时深度对比表（Node.js / Deno / Bun / WinterCG）
+
+| 维度 | Node.js (v24+) | Deno (v2+) | Bun (v1.2+) | WinterCG 标准 |
+|------|----------------|-----------|-------------|--------------|
+| **首次发布** | 2009 | 2020 | 2022 | 2022 (社区) |
+| **JS 引擎** | V8 | V8 | JavaScriptCore | 引擎无关 |
+| **TS 支持** | `--experimental-strip-types` | 原生 | 原生 | 不涉及 |
+| **权限模型** | `--permission` (实验) | 默认零权限 | 无 | 不涉及 |
+| **内置测试** | `node --test` | `deno test` | `bun test` | 不涉及 |
+| **包管理器** | npm / pnpm / yarn | JSR + npm 兼容 | 内置 npm 兼容 | 不涉及 |
+| **Fetch API** | ✅ 原生 (v18+) | ✅ 原生 | ✅ 原生 | ✅ 标准基线 |
+| **Web Streams** | ✅ 原生 (v16+) | ✅ 原生 | ✅ 原生 | ✅ 标准基线 |
+| **Blob / File** | ✅ 原生 | ✅ 原生 | ✅ 原生 | ✅ 标准基线 |
+| **Crypto (WebCrypto)** | ✅ 原生 | ✅ 原生 | ✅ 原生 | ✅ 标准基线 |
+| **启动延迟** | ~80ms | ~50ms | ~20ms | 不涉及 |
+| **ESM 优先级** | CJS 为主，ESM 并存 | ESM 优先 | ESM 优先 | ESM |
+| **边缘部署** | Cloudflare Workers 适配 | Deno Deploy | 内置 Worker 支持 | WinterCG 运行时 |
+| **原生 FFI** | N-API / node-api | Deno FFI (不稳定的) | `bun:ffi` | 不涉及 |
+| **HTTP 服务器** | `http` 模块 | `Deno.serve()` | `Bun.serve()` | `fetch` 事件 |
+| **兼容性层** | 无需 | `node:` 前缀 | 内置 Node 兼容 | 不涉及 |
+| **锁文件** | `package-lock.json` | `deno.lock` | `bun.lockb` | 不涉及 |
+| **TSConfig 支持** | 完整 | 部分 | 部分 | 不涉及 |
+
+---
+
+## 代码示例：WinterCG 标准代码跨运行时运行
+
+```typescript
+// 基于 WinterCG 标准编写的代码，可在 Node.js / Deno / Bun / Cloudflare Workers 中无修改运行
+// 来源：WinterCG Runtime Keys 提案 + Common Minimum API
+
+// 1. 标准 HTTP 服务（WinterCG 兼容入口）
+export default {
+  async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+
+    if (url.pathname === '/api/time') {
+      // 2. 标准 WebCrypto（非 Node crypto 模块）
+      const data = new TextEncoder().encode(Date.now().toString());
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      return new Response(JSON.stringify({ utc: new Date().toISOString(), hash: hashHex }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (url.pathname === '/api/stream') {
+      // 3. 标准 Web Streams（ReadableStream / WritableStream）
+      const { readable, writable } = new TransformStream();
+      const writer = writable.getWriter();
+
+      const encoder = new TextEncoder();
+      let count = 0;
+      const interval = setInterval(() => {
+        count++;
+        writer.write(encoder.encode(`data: chunk ${count}\n\n`));
+        if (count >= 5) {
+          clearInterval(interval);
+          writer.close();
+        }
+      }, 100);
+
+      return new Response(readable, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+        },
+      });
+    }
+
+    return new Response('Not Found', { status: 404 });
+  },
+};
+
+// 4. Node.js 适配层（仅在 Node 环境需要）
+// Node v24+ 支持 `import { createServer } from 'node:http';` 但推荐使用标准 fetch handler
+// 通过 @miniflare/http-polyfill 或类似库，WinterCG 代码可在任何环境启动
+
+// 5. 环境检测（渐进增强模式）
+function detectRuntime(): 'node' | 'deno' | 'bun' | 'workerd' | 'unknown' {
+  // @ts-ignore
+  if (typeof Bun !== 'undefined') return 'bun';
+  // @ts-ignore
+  if (typeof Deno !== 'undefined') return 'deno';
+  // @ts-ignore
+  if (typeof process !== 'undefined' && process.versions?.node) return 'node';
+  // Cloudflare Workers
+  // @ts-ignore
+  if (typeof caches !== 'undefined' && !typeof window !== 'undefined') return 'workerd';
+  return 'unknown';
+}
+
+console.log(`Running on: ${detectRuntime()}`);
+```
+
+```javascript
+// package.json 中的多运行时配置示例
+{
+  "name": "universal-wintercg-app",
+  "type": "module",
+  "scripts": {
+    "node": "node --experimental-strip-types server.ts",
+    "deno": "deno run --allow-net server.ts",
+    "bun": "bun run server.ts",
+    "cf": "wrangler dev server.ts"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
+```
+
+---
+
 ## 收敛证据矩阵（2024-2026）
 
 | 特性 | Node.js 采纳时间 | 来源 | 状态 |
@@ -87,6 +203,20 @@
 | Watch mode | v18+ (2022) | Bun | ✅ 稳定 |
 | `--experimental-strip-types` | v22+ (2024) | Bun/Deno | 🧪 实验 |
 | Permission model | 讨论中 | Deno | 📋 提案 |
+
+---
+
+## 权威参考链接
+
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| **WinterCG Runtime Keys** | 跨运行时标准 API 定义 | [wintercg.org](https://wintercg.org) |
+| **WinterCG: Minimum Common Web Platform API** | 运行时最低公共 API 规范 | [github.com/wintercg/proposal-common-minimum-api](https://github.com/wintercg/proposal-common-minimum-api) |
+| **Node.js 版本发布计划** | Node.js 官方 Release 时间表 | [nodejs.org/en/about/previous-releases](https://nodejs.org/en/about/previous-releases) |
+| **Deno 2.0 发布公告** | Deno v2 重大变更与 Node 兼容 | [deno.com/blog/v2.0](https://deno.com/blog/v2.0) |
+| **Bun 路线图与兼容性** | Bun 的 Node 兼容承诺 | [bun.sh/docs/runtime/nodejs-apis](https://bun.sh/docs/runtime/nodejs-apis) |
+| **Cloudflare Workers Runtime** | 边缘运行时 WinterCG 实践 | [developers.cloudflare.com/workers/runtime-apis](https://developers.cloudflare.com/workers/runtime-apis) |
+| **TC39 ECMA-262** | JavaScript 语言标准 | [tc39.es/ecma262](https://tc39.es/ecma262/) |
 
 ---
 

@@ -27,14 +27,16 @@ created: 2026-04-27
 
 ## 子模块目录结构
 
-| 子模块 | 说明 |
-|--------|------|
-| `es2015/` | ES6 核心特性实验（let/const、箭头函数、类、模块） |
-| `es2017/` | 异步函数与 Object 扩展 |
-| `es2020/` | 空值合并、可选链、BigInt、动态 import |
-| `es2024/` | GroupBy、Promise.withResolvers、Array 排序方法 |
-| `es2025/` | Set 集合方法、正则增强 |
-| `tc39-proposals/` | Stage 3/4 提案追踪与实验 |
+| 子模块 | 说明 | 关键特性 |
+|--------|------|----------|
+| `es2015/` | ES6 核心特性实验（let/const、箭头函数、类、模块） | 块级作用域、Promise、模板字符串 |
+| `es2016/` | Array.prototype.includes 与指数运算符 | `**`、`.includes()` |
+| `es2017/` | 异步函数与 Object 扩展 | `async/await`、Object entries/values |
+| `es2018/` | 异步迭代、Rest/Spread、正则增强 | `for-await-of`、命名捕获组 |
+| `es2019/` | Array.flat、Object.fromEntries、trimStart/End | 数组扁平化、描述符简化 |
+| `es2020/` | 空值合并、可选链、BigInt、动态 import | `??`、`?.`、BigInt、`import()` |
+| `es2021/` | Promise.any、逻辑赋值、数字分隔符 | `||=`、`&&=`、`??=`、`|x|n` |
+| `es2022/` | 类私有字段、顶层 await、.at() | `#field`、`await` at top-level、`
 
 ## 关联索引
 
@@ -42,3 +44,9 @@ created: 2026-04-27
 - [30-knowledge-base/30.2-categories/00-language-core.md](../../../30-knowledge-base/30.2-categories/00-language-core.md)
 - [MDN — JavaScript Guide](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide) — Mozilla 权威文档
 - [TC39 Proposals](https://github.com/tc39/proposals) — ECMAScript 提案仓库
+- [ECMA-262 规范](https://tc39.es/ecma262/) — 官方语言规范
+- [ES6 In Depth](https://hacks.mozilla.org/category/es6-in-depth/) — Mozilla 深度系列
+
+---
+
+*最后更新: 2026-04-29*

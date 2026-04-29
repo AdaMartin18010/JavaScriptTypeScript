@@ -69,7 +69,44 @@ status: current
 
 ---
 
-## 三、执行清单
+## 三、精修检查清单
+
+| 编号 | 检查项 | 目标文件 | 优先级 | 验收标准 |
+|------|--------|----------|--------|----------|
+| R1 | 修正 `import defer` Stage 归属 | `JS_TS_深度技术分析.md` | 🔴 P0 | 明确标注 Stage 3，不归属 ES2025 |
+| R2 | 修正 Temporal Stage 状态 | `JS_TS_深度技术分析.md` | 🔴 P0 | 标注 Stage 4 / ES2026 确定成员 |
+| R3 | 统一 Node.js 24 时间线 | 全部涉及文档 | 🟡 P1 | 发布 2026-03 / LTS 2026-10 |
+| R4 | 统一 Corsa / Go 重写术语 | 全部涉及文档 | 🟡 P1 | 首次出现：TypeScript 7.0 / Go 重写（代号 Corsa） |
+| R5 | 统一 Type Stripping 术语 | 全部涉及文档 | 🟡 P1 | 首次出现：类型剥离（Type Stripping，即 annotation removal） |
+| R6 | 添加交叉引用锚点 | `JS_TS_深度技术分析.md` | 🟢 P2 | 每节 ≥ 1 个内部链接 |
+| R7 | 添加关联文档小节 | `JS_TS_学术前沿瞭望.md` | 🟢 P2 | 末尾新增「关联文档」≥ 2 条 |
+| R8 | 添加关联文档小节 | `JS_TS_标准化生态与运行时互操作.md` | 🟢 P2 | 末尾新增「关联文档」≥ 2 条 |
+| R9 | 更新全景索引 | `00_全景综述索引与总结.md` | 🟢 P2 | 7 篇核心文档 + 阅读建议 |
+| R10 | 更新总结陈述 | `99_完整分析与总结.md` | 🟢 P2 | 纳入 v3 新增 3 篇文档 |
+
+---
+
+## 四、优先级矩阵
+
+```
+紧急度 ↑
+        │  R1,R2          R3,R4,R5
+   高   │    ●               ●●●
+        │
+        │                   R6,R7,R8
+   低   │                      ●●●
+        │
+        └────────────────────────────→ 影响范围
+               小                     大
+```
+
+- **P0（本周）**：状态错误修正，避免传播错误信息
+- **P1（两周内）**：术语与时间线统一，降低读者认知摩擦
+- **P2（一个月内）**：交叉引用与索引完善，提升知识网络密度
+
+---
+
+## 五、执行清单
 
 - [ ] T1：`JS_TS_深度技术分析.md` 修正 `import defer`、`Temporal`、Node.js 24 时间线；增加交叉引用
 - [ ] T2：`JS_TS_现代运行时深度分析.md` 统一 Node.js 24 时间线；统一 "Go 重写/Corsa" 术语
@@ -78,6 +115,16 @@ status: current
 - [ ] T5：`00_全景综述索引与总结.md` 更新为 v3 完整索引
 - [ ] T6：`99_完整分析与总结.md` 更新为 v3 完整总结
 - [ ] T7：全局快速检查 `TypeScript 7.0/Corsa`、`Type Stripping` 术语一致性
+
+---
+
+## 六、参考链接
+
+- [TC39 Proposals – GitHub](https://github.com/tc39/proposals)
+- [Node.js Release Schedule](https://nodejs.org/en/about/previous-releases)
+- [TypeScript 7.0 Roadmap / Corsa](https://devblogs.microsoft.com/typescript/)
+- [ES2025 Finished Proposals](https://github.com/tc39/proposals/blob/main/finished-proposals.md)
+- [本项目全景索引](../00_全景综述索引与总结.md)
 
 ---
 

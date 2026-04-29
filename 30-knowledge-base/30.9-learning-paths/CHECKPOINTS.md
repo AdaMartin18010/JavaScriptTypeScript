@@ -141,7 +141,7 @@ status: current
 | 资源类型 | 链接 | 说明 |
 |----------|------|------|
 | 代码实验室 | `../../20-code-lab/` | 90+ 主题模块，含测试 |
-| 示例项目 | `../archive/legacy-backups-20260429-0809.zip（已归档）README.md` | 13 个生产级示例 |
+| 示例项目 | `../archive/examples-backup-20260428.zip（已归档）README.md` | 13 个生产级示例 |
 | 理论综述 | `../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/` | 8 大主题全景文档 |
 | 认证体系 | `./project-based-certification.md` | 项目制能力认证 |
 | 构建工具对比 | `../30.3-comparison-matrices/build-tools-compare.md` | 工具选型矩阵 |

@@ -13,7 +13,11 @@
 
 ### 1.2 形式化基础
 
-[本模块的形式化定义与公理/定理陈述]
+数据处理可形式化为偏函数组合 `(f ∘ g ∘ h)(x)`，其中每个阶段保持引用透明性。流式处理满足结合律：
+
+```
+pipe(a, [f, g, h]) ≡ pipe(pipe(a, [f, g]), [h])
+```
 
 ### 1.3 关键概念
 
@@ -39,6 +43,15 @@
 
 ### 2.3 与相关技术的对比
 
+| 特性 | Lodash | Ramda | RxJS | 原生 Iterator Helpers |
+|------|--------|-------|------|----------------------|
+| 求值策略 | 立即求值 | 立即求值 | 惰性/响应式 | 惰性求值 |
+| 不可变性 | 部分支持 | 完全支持 | 完全支持 | 完全支持 |
+| 中间集合 | 产生 | 避免 | 避免 | 避免 |
+| 异步流 | 不支持 | 不支持 | 原生支持 | 需手动包装 |
+| 树摇优化 | 支持 | 优秀 | 支持 | 原生零成本 |
+| 学习曲线 | 低 | 中 | 高 | 低 |
+
 与 SQL 对比：流式处理适合无模式数据，SQL 适合结构化查询。
 
 ---
@@ -48,6 +61,71 @@
 ### 3.1 从理论到代码
 
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 数据处理 核心机制的理解，并观察不同实现选择带来的行为差异。
+
+#### 可运行示例：惰性管道 + 错误处理
+
+```typescript
+// pipeline.ts — 惰性数据处理管道，可运行 (Node.js ≥18)
+
+interface Result<T, E = Error> {
+  ok: boolean;
+  value?: T;
+  error?: E;
+}
+
+function* lazyRange(start: number, end: number): Generator<number> {
+  for (let i = start; i < end; i++) yield i;
+}
+
+function* filter<T>(
+  gen: Generator<T>,
+  predicate: (x: T) => boolean
+): Generator<T> {
+  for (const x of gen) if (predicate(x)) yield x;
+}
+
+function* map<T, U>(
+  gen: Generator<T>,
+  transform: (x: T) => U
+): Generator<U> {
+  for (const x of gen) yield transform(x);
+}
+
+function* take<T>(gen: Generator<T>, n: number): Generator<T> {
+  let count = 0;
+  for (const x of gen) {
+    if (count++ >= n) break;
+    yield x;
+  }
+}
+
+function safeParseInt(x: string): Result<number> {
+  const n = Number(x);
+  return Number.isNaN(n) || !Number.isInteger(n)
+    ? { ok: false, error: new Error(`Invalid integer: "${x}"`) }
+    : { ok: true, value: n };
+}
+
+// 演示：从大量原始字符串中提取有效偶数，仅处理前 5 个
+const raw = lazyRange(1, 1_000_000).map(String);
+const evens = take(
+  filter(
+    map(raw, safeParseInt),
+    (r): r is Result<number> & { ok: true } => r.ok && (r.value! % 2 === 0)
+  ),
+  5
+);
+
+for (const r of evens) {
+  console.log(r.value); // 2, 4, 6, 8, 10
+}
+
+// 对比：数组方法链会产生中间集合
+// const result = Array.from({length: 1_000_000}, (_, i) => String(i + 1))
+//   .map(safeParseInt)
+//   .filter(r => r.ok && r.value! % 2 === 0)
+//   .slice(0, 5);
+```
 
 ### 3.2 常见误区
 
@@ -59,6 +137,9 @@
 ### 3.3 扩展阅读
 
 - [RxJS 文档](https://rxjs.dev/guide/overview)
+- [Node.js Stream API](https://nodejs.org/api/stream.html)
+- [TC39 Iterator Helpers Proposal](https://github.com/tc39/proposal-iterator-helpers)
+- [Apache Arrow JavaScript](https://arrow.apache.org/docs/js/)
 - `30-knowledge-base/30.8-data`
 
 ---

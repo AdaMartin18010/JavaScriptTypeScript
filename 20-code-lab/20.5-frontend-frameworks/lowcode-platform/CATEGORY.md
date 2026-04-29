@@ -13,12 +13,100 @@ created: 2026-04-27
 ## 边界说明
 
 本模块聚焦低代码平台的核心引擎实现，包括：
+
 - 组件库管理与页面设计器（含撤销重做）
 - Schema 定义与类型安全
 - React/Vue 代码生成
 - 工作流引擎与表达式引擎
 
 通用 UI 组件库（Ant Design / MUI）和构建工具不属于本模块范围。
+
+## 子模块目录结构
+
+| 子模块 | 说明 | 典型文件 |
+|--------|------|----------|
+| `01-form-engine.ts` | 表单引擎与字段校验规则 | `01-form-engine.md` |
+| `02-drag-drop-builder.ts` | 拖拽设计器与坐标计算 | `02-drag-drop-builder.md` |
+| `03-schema-driven-ui.ts` | JSON Schema 驱动组件渲染 | `03-schema-driven-ui.md` |
+| `04-workflow-engine.ts` | 节点编排与 DAG 执行 | `04-workflow-engine.md` |
+| `lowcode-engine.ts` | 低代码引擎核心（画布 / 组件树 / 属性面板） | `lowcode-engine.test.ts` |
+| `schema-definition.ts` | 平台 Schema DSL 与类型推导 | — |
+| `index.ts` | 模块统一导出 | — |
+
+## 代码示例
+
+### Schema 驱动组件渲染
+
+```typescript
+// 03-schema-driven-ui.ts
+interface ComponentSchema {
+  type: string;
+  props: Record<string, unknown>;
+  children?: ComponentSchema[];
+}
+
+export function renderFromSchema(
+  schema: ComponentSchema,
+  componentMap: Map<string, React.FC<any>>
+): React.ReactElement {
+  const Component = componentMap.get(schema.type);
+  if (!Component) throw new Error(`Unknown component: ${schema.type}`);
+
+  const children = schema.children?.map((child) => renderFromSchema(child, componentMap));
+  return <Component {...schema.props}>{children}</Component>;
+}
+```
+
+### 撤销重做历史栈
+
+```typescript
+export class HistoryStack<T> {
+  private past: T[] = [];
+  private future: T[] = [];
+  private present: T;
+
+  constructor(initial: T) {
+    this.present = initial;
+  }
+
+  push(next: T) {
+    this.past.push(this.present);
+    this.present = next;
+    this.future = [];
+  }
+
+  undo(): T | undefined {
+    const previous = this.past.pop();
+    if (previous === undefined) return undefined;
+    this.future.push(this.present);
+    this.present = previous;
+    return this.present;
+  }
+
+  redo(): T | undefined {
+    const next = this.future.pop();
+    if (next === undefined) return undefined;
+    this.past.push(this.present);
+    this.present = next;
+    return this.present;
+  }
+}
+```
+
+### 表达式引擎安全求值
+
+```typescript
+// 04-workflow-engine.ts — 受控表达式求值
+export function safeEvaluate(
+  expression: string,
+  context: Record<string, unknown>
+): unknown {
+  // 白名单：仅允许数学与逻辑运算符
+  const sanitized = expression.replace(/[^a-zA-Z0-9_+\-*/%<>!&|().\s]/g, '');
+  const fn = new Function(...Object.keys(context), `return (${sanitized});`);
+  return fn(...Object.values(context));
+}
+```
 
 ## 关联模块
 
@@ -28,13 +116,16 @@ created: 2026-04-27
 - `30-knowledge-base/30.2-categories/35-pwa-lowcode.md` — 低代码分类索引
 - `30-knowledge-base/application-domains-index.md` — 应用领域总索引
 
-
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
 |------|------|------|
-| MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
-| web.dev | 指南 | [web.dev](https://web.dev) |
+| JSON Schema | 规范 | [json-schema.org](https://json-schema.org) |
+| react-jsonschema-form | 文档 | [rjsf-team.github.io/react-jsonschema-form](https://rjsf-team.github.io/react-jsonschema-form) |
+| Formily | 文档 | [formilyjs.org](https://formilyjs.org) — 阿里开源表单方案 |
+| Designable | GitHub | [github.com/alibaba/designable](https://github.com/alibaba/designable) — 低代码设计器 |
+| LogicFlow | 文档 | [site.logic-flow.cn](https://site.logic-flow.cn) — 流程图引擎 |
+| CodeSandbox / Sandpack | 文档 | [sandpack.codesandbox.io/docs](https://sandpack.codesandbox.io/docs) |
 
 ---
 

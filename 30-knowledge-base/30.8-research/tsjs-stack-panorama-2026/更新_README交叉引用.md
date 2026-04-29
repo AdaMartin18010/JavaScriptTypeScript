@@ -327,7 +327,7 @@ status: current
 
 | 文档 | 描述 | 目标读者 |
 |------|------|----------|
-| [📦 awesome-jsts-ecosystem](../../../archive/legacy-backups-20260429-0809.zip) | JS/TS 生态工具导航 | 所有开发者 |
+| [📦 awesome-jsts-ecosystem](../../../archive/awesome-jsts-ecosystem-backup-20260428.zip) | JS/TS 生态工具导航 | 所有开发者 |
 | [🧪 jsts-code-lab](../../../20-code-lab/) | 代码实验室（80+ 模块） | 实践学习者 |
 | 📚 jsts-code-lab/CROSS-REFERENCE.md [TODO: 链接待修复] | 模块交叉引用索引 | 系统学习者 |
 | 📖 GLOSSARY.md [TODO: 链接待修复] | 专业术语表（中英对照） | 所有读者 |

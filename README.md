@@ -206,7 +206,7 @@
 
 ### 方式一：浏览生态工具
 
-查看 [awesome-jsts-ecosystem](archive/legacy-backups-20260429-0809.zip)（已归档） 目录，获取精选的框架、工具和库。
+查看 [awesome-jsts-ecosystem](archive/awesome-jsts-ecosystem-backup-20260428.zip)（已归档） 目录，获取精选的框架、工具和库。
 
 ### 方式二：动手实践
 

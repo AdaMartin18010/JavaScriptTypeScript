@@ -13,11 +13,81 @@ created: 2026-04-27
 ## 边界说明
 
 本模块聚焦 PWA 应用开发模式，包括：
+
 - Service Worker 生命周期与缓存策略
 - Web App Manifest 与可安装性
 - 后台同步与推送通知
 
 通用前端框架和构建工具不属于本模块范围。
+
+## 子模块目录结构
+
+| 子模块 | 说明 | 典型文件 |
+|--------|------|----------|
+| `service-worker-strategies.ts` | 缓存策略（Cache First / Network First / Stale-While-Revalidate） | — |
+| `pwa-patterns.ts` | PWA 架构模式（Shell / App Shell / Streaming SSR） | `pwa-patterns.test.ts` |
+| `web-app-manifest.ts` | Web App Manifest 类型安全生成与校验 | — |
+| `index.ts` | 模块统一导出 | — |
+
+## 代码示例
+
+### Service Worker 缓存策略
+
+```typescript
+// service-worker-strategies.ts
+export async function staleWhileRevalidate(
+  event: FetchEvent,
+  cacheName: string
+): Promise<Response> {
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(event.request);
+
+  const fetchPromise = fetch(event.request).then((networkResponse) => {
+    if (networkResponse.ok) {
+      cache.put(event.request, networkResponse.clone());
+    }
+    return networkResponse;
+  });
+
+  return cached || fetchPromise;
+}
+```
+
+### 后台同步队列
+
+```typescript
+export async function queueBackgroundSync(
+  tag: string,
+  payload: unknown
+) {
+  const registration = await navigator.serviceWorker.ready;
+
+  if ('sync' in registration) {
+    // 存储到 IndexedDB
+    await db.pendingSyncs.add({ tag, payload, timestamp: Date.now() });
+    await registration.sync.register(tag);
+  } else {
+    // 降级：立即执行
+    await sendToServer(payload);
+  }
+}
+```
+
+### Web Push 订阅管理
+
+```typescript
+export async function subscribePush(
+  publicKey: string
+): Promise<PushSubscription | null> {
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(publicKey),
+  });
+  await sendSubscriptionToServer(subscription);
+  return subscription;
+}
+```
 
 ## 关联模块
 
@@ -26,13 +96,16 @@ created: 2026-04-27
 - `30-knowledge-base/30.2-categories/35-pwa-lowcode.md` — PWA 分类索引
 - `30-knowledge-base/application-domains-index.md` — 应用领域总索引
 
-
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
 |------|------|------|
-| MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
-| web.dev | 指南 | [web.dev](https://web.dev) |
+| web.dev — Progressive Web Apps | 指南 | [web.dev/progressive-web-apps](https://web.dev/progressive-web-apps) |
+| MDN — Service Worker API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) |
+| MDN — Web Push Notifications | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Push_API](https://developer.mozilla.org/en-US/docs/Web/API/Push_API) |
+| Workbox | 文档 | [developer.chrome.com/docs/workbox](https://developer.chrome.com/docs/workbox) |
+| Web App Manifest | 规范 | [w3c.github.io/manifest](https://w3c.github.io/manifest) |
+| PWA Builder | 工具 | [www.pwabuilder.com](https://www.pwabuilder.com) |
 
 ---
 

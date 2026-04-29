@@ -10,6 +10,8 @@ Welcome to **Awesome JS/TS Ecosystem**!
 
 This project aims to be the most comprehensive and authoritative JS/TS ecosystem navigation in Chinese, following the international standards of [awesome-nodejs](https://github.com/sindresorhus/awesome-nodejs) and [awesome-typescript](https://github.com/dzharii/awesome-typescript).
 
+---
+
 ## 🚀 如何使用 / How to Use
 
 ### 浏览分类 / Browse Categories
@@ -33,6 +35,8 @@ If you want to add new libraries or resources:
 3. 创建分支并修改 / Create a branch and make changes
 4. 提交 Pull Request / Submit a Pull Request
 
+---
+
 ## 📂 项目结构 / Project Structure
 
 ```
@@ -50,6 +54,39 @@ awesome-jsts-ecosystem/
     └── translations/         # 翻译文档 / Translations
 ```
 
+---
+
+## 📊 快速导航表
+
+| 我想做... | 查看分类 | 推荐工具 | 学习资源 |
+|----------|---------|---------|---------|
+| 构建 Web 应用 | [前端框架](../../../../30-knowledge-base/30.2-categories/01-frontend-frameworks.md) | React, Vue, Svelte | [React 官方教程](https://react.dev/learn) |
+| 构建后端 API | [后端框架](../../../../30-knowledge-base/30.2-categories/14-backend-frameworks.md) | Hono, Express, NestJS | [Hono 文档](https://hono.dev/) |
+| 数据库操作 | [ORM 与数据库](../../../../30-knowledge-base/30.2-categories/11-orm-database.md) | Prisma, Drizzle | [Prisma 入门](https://www.prisma.io/docs/getting-started) |
+| 状态管理 | [状态管理](../../../../30-knowledge-base/30.2-categories/05-state-management.md) | Zustand, Jotai, Pinia | [Zustand 指南](https://zustand-demo.pmnd.rs/) |
+| 构建工具 | [构建工具](../../../../30-knowledge-base/30.2-categories/03-build-tools.md) | Vite, esbuild, Rollup | [Vite 指南](https://vitejs.dev/guide/) |
+| 测试 | [测试框架](../../../../30-knowledge-base/30.2-categories/12-testing.md) | Vitest, Playwright | [Vitest 文档](https://vitest.dev/) |
+| AI / LLM 集成 | [AI 工具](../../../../30-knowledge-base/30.2-categories/ai-integration.md) | LangChain.js, Vercel AI SDK | [LangChain JS](https://js.langchain.com/) |
+| 桌面应用 | [桌面开发](../../../../30-knowledge-base/30.2-categories/16-mobile-development.md) | Tauri, Electron | [Tauri 文档](https://v2.tauri.app/) |
+| 部署与 CI/CD | [CI/CD](../../../../30-knowledge-base/30.2-categories/13-ci-cd.md) | GitHub Actions, Docker | [GitHub Actions](https://docs.github.com/en/actions) |
+
+---
+
+## 🎯 框架选型决策矩阵
+
+| 场景 | 首选框架 | 次选 | 关键考量 |
+|------|---------|------|---------|
+| 企业级全栈 | Next.js (App Router) | Nuxt | SSR、RSC、生态成熟度 |
+| 轻量 API 后端 | Hono | Fastify | 边缘兼容、TypeScript |
+| 高性能 SPA | Vite + React | Vite + Vue | 构建速度、HMR |
+| 内容站点 | Astro | Next.js | 岛屿架构、零 JS 默认 |
+| AI 应用原型 | Vercel AI SDK + Next.js | LangChain.js | 流式 UI、模型切换 |
+| 桌面应用 | Tauri | Electron | 包体积、内存占用 |
+| 移动应用 | React Native | Expo | 原生性能、热更新 |
+| CLI 工具 | Ink (React CLI) | Commander.js | 交互式 TUI、测试 |
+
+---
+
 ## 🎯 收录标准 / Inclusion Criteria
 
 我们遵循严格的收录标准，确保推荐内容的质量：
@@ -61,10 +98,26 @@ We follow strict inclusion criteria to ensure the quality of recommendations:
 - ✅ 开源许可 / Open source license
 - ✅ 社区认可 / Community recognition
 
+---
+
 ## 📬 联系我们 / Contact Us
 
 - 问题反馈 / Issue Report: GitHub Issues
 - 功能建议 / Feature Request: GitHub Discussions
+
+---
+
+## 🔗 权威参考链接
+
+- [awesome-nodejs](https://github.com/sindresorhus/awesome-nodejs) — Node.js 生态权威索引
+- [awesome-typescript](https://github.com/dzharii/awesome-typescript) — TypeScript 资源大全
+- [npm trends](https://npmtrends.com/) — 包下载量趋势对比
+- [BundlePhobia](https://bundlephobia.com/) — 包体积分析
+- [State of JS](https://stateofjs.com/) — JavaScript 生态年度调查
+- [State of TS](https://stateoftypescript.com/) — TypeScript 生态年度调查
+- [Node.js 官方文档](https://nodejs.org/docs/latest/api/)
+- [TypeScript 官方文档](https://www.typescriptlang.org/docs/)
+- [MDN Web Docs](https://developer.mozilla.org/)
 
 ---
 

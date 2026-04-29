@@ -33,7 +33,7 @@
 |----------|-------------|----------|
 | 📦 awesome-jsts-ecosystem（已归档） | JS/TS ecosystem tool navigation | All developers |
 | [🧪 jsts-code-lab](./20-code-lab/) | Code lab (90+ modules) | Hands-on learners |
-| [🧠 jsts-language-core-system](archive/legacy-backups-20260429-0809.zip)（已归档） | Language core system (52 in-depth docs) | Theory learners |
+| [🧠 jsts-language-core-system](archive/jsts-language-core-system-backup-20260428.zip)（已归档） | Language core system (52 in-depth docs) | Theory learners |
 | 📚 20-code-lab/CROSS-REFERENCE.md | Module cross-reference index | Systematic learners |
 | [📖 GLOSSARY.md](./GLOSSARY.md) | Professional glossary (CN/EN) | All readers |
 | [🎓 beginners-path.md](./30-knowledge-base/30.9-learning-paths/beginners-path.md) | Beginner learning path | Beginners |

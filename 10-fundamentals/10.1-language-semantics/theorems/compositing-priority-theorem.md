@@ -11,6 +11,20 @@
 
 ---
 
+## 浏览器合成层（Compositor Layer）理论
+
+现代浏览器采用多进程/多线程架构，渲染流程涉及三条关键线程：
+
+| 线程 | 职责 | 对动画的影响 |
+|------|------|-------------|
+| **Main Thread** | JS 执行、Style 计算、Layout、Paint | 被 JS 阻塞时动画卡顿 |
+| **Compositor Thread** | 图层合成、屏幕输出、滚动/变换处理 | 独立于主线程，GPU 加速 |
+| **Raster Thread** | 位图光栅化（Paint 结果→GPU 纹理） | 可并行，但受 Paint 阶段产出制约 |
+
+**图层提升（Layer Promotion）**：当元素满足特定条件（如 `will-change: transform`、`transform: translateZ(0)`、CSS 动画/过渡作用于合成属性）时，浏览器将其提升为独立的 **Compositor Layer**，存储为 GPU 纹理。此后对该属性的变更仅需重新合成，无需重走 Layout → Paint。
+
+---
+
 ## 推理树
 
 ```
@@ -66,6 +80,78 @@
 
 ---
 
+## 代码示例：`will-change` 优化与图层管理
+
+```html
+<!-- 优化前：触发 Layout + Paint -->
+<style>
+  .slow-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    animation: moveSlow 2s infinite alternate;
+  }
+  @keyframes moveSlow {
+    from { top: 0; left: 0; }
+    to   { top: 200px; left: 200px; }
+  }
+</style>
+<div class="slow-box">❌ 触发 Reflow + Repaint</div>
+
+<!-- 优化后：仅触发 Composite，GPU 加速 -->
+<style>
+  .fast-box {
+    will-change: transform; /* 提示浏览器提前提升为合成层 */
+    transform: translateZ(0); /* 强制图层提升（兼容性回退） */
+    animation: moveFast 2s infinite alternate;
+  }
+  @keyframes moveFast {
+    from { transform: translate(0, 0); }
+    to   { transform: translate(200px, 200px); }
+  }
+
+  /* 动画结束后释放图层，避免内存爆炸 */
+  .fast-box.animation-ended {
+    will-change: auto;
+  }
+</style>
+<div class="fast-box">✅ Compositor Thread 独立处理</div>
+```
+
+```javascript
+// JavaScript 控制动画的优化模式
+// 反模式：在 rAF 中修改几何属性
+function badAnimation(element) {
+  let pos = 0;
+  function frame() {
+    pos += 2;
+    element.style.left = pos + 'px';      // ❌ 触发 Layout
+    element.style.top  = pos + 'px';      // ❌ 触发 Layout
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+// 优化模式：使用 transform + rAF
+function goodAnimation(element) {
+  let pos = 0;
+  function frame() {
+    pos += 2;
+    element.style.transform = `translate(${pos}px, ${pos}px)`; // ✅ 仅 Composite
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+// 使用 Web Animations API 进一步优化（浏览器自动选择合成属性）
+const anim = element.animate(
+  [{ transform: 'translate(0,0)' }, { transform: 'translate(200px,200px)' }],
+  { duration: 2000, iterations: Infinity, direction: 'alternate' }
+);
+```
+
+---
+
 ## 场景树：交互场景渲染策略
 
 ```
@@ -86,6 +172,19 @@
     └── 策略：防抖/节流 + CSS 过渡
     └── 原理：控制 JS 执行频率，避免阻塞输入响应
 ```
+
+---
+
+## 权威参考链接
+
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| **Blink Rendering Pipeline** | Chromium 官方渲染管线文档 | [developers.google.com/web/fundamentals/performance/rendering](https://developers.google.com/web/fundamentals/performance/rendering) |
+| **CSS Triggers** | 各 CSS 属性触发的渲染阶段速查表 | [csstriggers.com](https://csstriggers.com) |
+| **Web.dev: Optimize Web Animations** | Google 性能优化指南 | [web.dev/animations-guide](https://web.dev/animations-guide) |
+| **W3C CSS Will Change** | `will-change` 规范定义 | [drafts.csswg.org/css-will-change](https://drafts.csswg.org/css-will-change) |
+| **Chromium: Compositor Thread Architecture** | 合成线程架构设计文档 | [chromium.googlesource.com/chromium/src/+/main/docs/compositor_thread.md](https://chromium.googlesource.com/chromium/src/+/main/docs/compositor_thread.md) |
+| **MDN: Controlling composite animation** | Firefox/Gecko 合成动画说明 | [developer.mozilla.org/en-US/docs/Web/Performance/How_browsers_work](https://developer.mozilla.org/en-US/docs/Web/Performance/How_browsers_work) |
 
 ---
 

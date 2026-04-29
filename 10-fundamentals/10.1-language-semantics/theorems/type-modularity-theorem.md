@@ -88,6 +88,117 @@ $$\text{若 } \exists v \in V.\ \deg(v) > \theta_{\text{arch}} \Rightarrow \text
 
 ---
 
+## 代码示例：模块扩充（Module Augmentation）与声明合并
+
+TypeScript 的声明合并（Declaration Merging）和模块扩充是实现类型模块化的高级技术，允许在不修改原始模块的情况下扩展类型定义。
+
+```typescript
+// ============================================
+// 场景：插件架构中的类型模块化扩展
+// ============================================
+
+// 1. 核心模块：定义基础接口（不可变）
+// packages/core/src/events.ts
+export interface EventMap {
+  'app:init': { timestamp: number };
+  'app:error': { message: string; stack?: string };
+}
+
+export class EventBus<E extends EventMap = EventMap> {
+  emit<K extends keyof E>(event: K, payload: E[K]): void {
+    console.log(`[${String(event)}]`, payload);
+  }
+  on<K extends keyof E>(event: K, handler: (payload: E[K]) => void): void {
+    /* ... */
+  }
+}
+
+// ============================================
+// 2. 插件模块：通过 Module Augmentation 扩展类型
+// packages/auth-plugin/src/augment.ts
+// 无需修改 @org/core，即可注册新事件类型
+// ============================================
+
+declare module '@org/core' {
+  // 扩展核心 EventMap，添加认证相关事件
+  interface EventMap {
+    'auth:login': { userId: string; method: 'password' | 'oauth' };
+    'auth:logout': { userId: string; reason?: string };
+    'auth:session-expired': { userId: string; expiredAt: Date };
+  }
+}
+
+// 现在 EventBus 自动包含 auth 事件，并获得完整类型推断
+import { EventBus } from '@org/core';
+
+const bus = new EventBus();
+
+bus.emit('auth:login', { userId: 'u-123', method: 'oauth' }); // ✅ 类型安全
+// bus.emit('auth:login', { userId: 'u-123' }); // ❌ Error: method 必填
+
+// ============================================
+// 3. 跨包类型隔离：Project References 实践
+// ============================================
+
+// packages/tsconfig.base.json
+{
+  "compilerOptions": {
+    "composite": true,        // 启用 Project Reference 编译缓存
+    "declaration": true,
+    "declarationMap": true,
+    "strict": true
+  }
+}
+
+// packages/core/tsconfig.json
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "outDir": "./dist" },
+  "include": ["src/**/*"]
+}
+
+// packages/auth-plugin/tsconfig.json
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "outDir": "./dist" },
+  "include": ["src/**/*"],
+  "references": [
+    { "path": "../core" }     // 显式声明编译依赖，禁止反向引用
+  ]
+}
+
+// packages/web-app/tsconfig.json
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "outDir": "./dist" },
+  "include": ["src/**/*"],
+  "references": [
+    { "path": "../core" },
+    { "path": "../auth-plugin" }
+  ]
+}
+
+// ============================================
+// 4. 品牌类型防止跨域类型混用
+// ============================================
+
+type UserId = string & { readonly __brand: 'UserId' };
+type TenantId = string & { readonly __brand: 'TenantId' };
+
+// 即使结构上完全相同（都是 string），品牌标记阻止隐式兼容
+function transfer(userId: UserId, tenantId: TenantId) {
+  /* ... */
+}
+
+const uid = 'u-123' as UserId;
+const tid = 't-456' as TenantId;
+
+transfer(uid, tid);    // ✅
+// transfer(tid, uid); // ❌ Error: 参数位置颠倒，品牌不匹配
+```
+
+---
+
 ## 工程实践：防御策略
 
 | 策略 | 实现方式 | 效果 |
@@ -97,6 +208,19 @@ $$\text{若 } \exists v \in V.\ \deg(v) > \theta_{\text{arch}} \Rightarrow \text
 | **禁止深层导入** | ESLint `no-restricted-imports` | 防止实现泄露 |
 | **循环依赖检测** | CI 中运行 `madge --circular` | 自动化架构健康检查 |
 | **品牌类型** | `type UserId = string & { readonly __brand: 'UserId' }` | 防止语义相同类型混用 |
+
+---
+
+## 权威参考链接
+
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| **TypeScript Handbook: Declaration Merging** | 官方声明合并与模块扩充文档 | [typescriptlang.org/docs/handbook/declaration-merging.html](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) |
+| **TypeScript Project References** | 官方 Project References 指南 | [typescriptlang.org/docs/handbook/project-references.html](https://www.typescriptlang.org/docs/handbook/project-references.html) |
+| **Nx Monorepo: Enforce Module Boundaries** | 大规模 Monorepo 类型边界实践 | [nx.dev/features/enforce-module-boundaries](https://nx.dev/features/enforce-module-boundaries) |
+| **Turborepo: TypeScript Best Practices** | Vercel 的 Monorepo TS 建议 | [turbo.build/repo/docs/handbook/linting/typescript](https://turbo.build/repo/docs/handbook/linting/typescript) |
+| **madge** | 循环依赖检测 CLI 工具 | [github.com/pahen/madge](https://github.com/pahen/madge) |
+| **TypeScript Brand Types Deep Dive** | 社区品牌类型最佳实践 | [egghead.io/blog/branded-types-in-typescript](https://egghead.io/blog/branded-types-in-typescript) |
 
 ---
 

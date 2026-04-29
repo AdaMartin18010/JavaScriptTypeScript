@@ -9,18 +9,28 @@
 
 ### 1.1 问题域定义
 
-本模块聚焦 ECMAScript 标准演进中的新特性，解决 JavaScript 语言能力持续扩展带来的学习曲线与兼容性问题。通过形式化示例展示语法特性在实际代码中的应用方式。
+本模块聚焦 ECMAScript 2020 标准新增的 7 项核心特性，解决 JavaScript 在空值处理、大整数、模块化动态加载等方面的表达能力不足。通过形式化示例展示语法特性在实际代码中的应用方式。
 
 ### 1.2 形式化基础
 
-[本模块的形式化定义与公理/定理陈述]
+| 特性 | 规范章节 | 状态 |
+|------|----------|------|
+| 可选链 `?.` | ECMA-262 §13.3.9 | Stage 4 (ES2020) |
+| 空值合并 `??` | ECMA-262 §13.12 | Stage 4 (ES2020) |
+| 动态 `import()` | ECMA-262 §13.3.10 | Stage 4 (ES2020) |
+| BigInt | ECMA-262 §6.1.6.2 | Stage 4 (ES2020) |
+| `Promise.allSettled` | ECMA-262 §27.2.4.3 | Stage 4 (ES2020) |
+| `globalThis` | ECMA-262 §19.1 | Stage 4 (ES2020) |
+| `for-in` 枚举顺序 | ECMA-262 §14.7.5 | Stage 4 (ES2020) |
 
 ### 1.3 关键概念
 
 | 特性 | 定义 | 关联 |
 |------|------|------|
-| 新语法 | ECMAScript 年度新增的语法构造 | 示例代码 |
-| polyfill | 旧环境兼容性补充方案 | shim 文件 |
+| 可选链 | 短路求值的属性访问运算符，避免深层空值检查 | 空值合并 |
+| 空值合并 | 仅对 `null` 或 `undefined` 进行默认值回退 | 逻辑或 `\|\|` |
+| BigInt | 任意精度整数类型，以 `n` 结尾 | Number 安全整数限制 |
+| 动态导入 | 运行时异步加载模块，返回 Promise | 静态 `import` 声明 |
 
 ---
 
@@ -28,7 +38,7 @@
 
 ### 2.1 为什么存在
 
-ECMAScript 作为活的语言标准，每年发布新特性以回应开发者社区的痛点。从可选链到顶层 await，新特性的存在理由是在保持向后兼容的前提下提升表达能力与开发效率。
+ECMAScript 2020 针对开发者日常编码中的高频痛点进行填补：深层属性访问的空值防御（可选链）、零与假值的区分（空值合并）、金融与加密场景的整数溢出（BigInt）、代码分割与懒加载（动态 import）。
 
 ### 2.2 权衡分析
 
@@ -36,18 +46,102 @@ ECMAScript 作为活的语言标准，每年发布新特性以回应开发者社
 |------|------|------|---------|
 | 原生新特性 | 代码简洁、语义清晰 | 需要 polyfill/转译 | 现代浏览器环境 |
 | 传统兼容写法 | 全平台支持 | 代码冗长、易出错 | 遗留系统维护 |
+| 工具库（Lodash） | 功能丰富 | 增加依赖体积 | 需要额外工具函数 |
 
 ### 2.3 与相关技术的对比
 
-与 Babel 转译方案对比：原生支持减少运行时开销，但需要更长的兼容性等待期。
+与 Babel 转译方案对比：原生支持减少运行时开销，但需要更长的兼容性等待期。动态 `import()` 与 Webpack `require.ensure` 对比：前者是语言标准，后者是打包工具特性。
 
 ---
 
 ## 三、实践映射
 
-### 3.1 从理论到代码
+### 3.1 可选链与空值合并
 
-本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 ES2020 新特性 核心机制的理解，并观察不同实现选择带来的行为差异。
+```typescript
+// 深层安全访问
+const userCity = user?.address?.city ?? 'Unknown';
+
+// 对比传统写法
+const userCityLegacy = user && user.address && user.address.city ? user.address.city : 'Unknown';
+
+// 函数调用可选链
+const result = someObj.maybeFn?.(arg1, arg2);
+
+// 表达式可选链
+const firstItem = arr?.[0];
+```
+
+### 3.2 BigInt
+
+```typescript
+// 超过 Number.MAX_SAFE_INTEGER 的运算
+const huge = 9007199254740993n;
+const sum = huge + 1n; // 9007199254740994n
+
+// 不能与 Number 混用
+// huge + 1; // TypeError
+
+// 比较可以混用
+huge > 0; // true
+
+// 序列化注意
+JSON.stringify({ value: huge }); // { "value": "9007199254740993" }
+```
+
+### 3.3 动态 import
+
+```typescript
+// 条件懒加载
+async function loadChartLibrary() {
+  if (shouldUseCharts) {
+    const { Chart } = await import('./chart-library.js');
+    return new Chart(container);
+  }
+}
+
+// 基于路径变量的动态导入（需打包工具支持）
+async function loadLocale(locale: string) {
+  const messages = await import(`./locales/${locale}.json`);
+  return messages.default;
+}
+```
+
+### 3.4 Promise.allSettled
+
+```typescript
+const promises = [
+  fetch('/api/users'),
+  fetch('/api/orders'),
+  fetch('/api/products'),
+];
+
+const results = await Promise.allSettled(promises);
+
+const ok = results
+  .filter((r): r is PromiseFulfilledResult<Response> => r.status === 'fulfilled')
+  .map(r => r.value);
+
+const failed = results
+  .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+  .map(r => r.reason);
+```
+
+### 3.5 globalThis
+
+```typescript
+// 跨环境全局对象访问
+const root = globalThis;
+
+// 浏览器: window
+// Node.js: global
+// Web Worker: self
+// globalThis: 统一访问
+
+if (globalThis.Buffer === undefined) {
+  // 浏览器环境，可能需要 polyfill
+}
+```
 
 ### 3.2 常见误区
 
@@ -55,11 +149,20 @@ ECMAScript 作为活的语言标准，每年发布新特性以回应开发者社
 |------|---------|
 | 新特性可以立即在生产环境使用 | 需评估目标运行时支持与转译成本 |
 | 所有特性都向后兼容 | 部分特性需要 polyfill 或语法转换 |
+| `??` 可以替代所有 `\|\|` | `??` 仅对 `null/undefined` 生效，`\|\|` 对 falsy 值生效 |
+| BigInt 与 Number 可以互换 | 运算不能混用，需显式转换 |
+| 动态 import 支持任意表达式 | 路径表达式受打包工具限制，不能完全动态 |
 
-### 3.3 扩展阅读
+---
 
-- [ECMAScript 提案仓库](https://github.com/tc39/proposals)
-- `30-knowledge-base/30.1-language-evolution`
+## 四、权威参考
+
+- [ECMA-262 — 2020 Language Specification](https://262.ecma-international.org/11.0/) — 官方规范
+- [MDN — Optional chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining) — Mozilla 文档
+- [MDN — Nullish coalescing](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing) — Mozilla 文档
+- [MDN — BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) — Mozilla 文档
+- [V8 Blog — ES2020 Features](https://v8.dev/features/tags/es2020) — V8 引擎实现解析
+- [TC39 Proposals](https://github.com/tc39/proposals) — ECMAScript 提案仓库
 
 ---
 

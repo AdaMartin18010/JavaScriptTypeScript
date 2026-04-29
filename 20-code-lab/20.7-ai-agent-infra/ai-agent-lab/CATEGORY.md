@@ -20,6 +20,126 @@ created: 2026-04-27
 
 底层 AI 框架对比和模型 API 本身不属于本模块范围（请参见 `30-knowledge-base/30.2-categories/28-ai-agent-infrastructure.md`）。
 
+## 子模块目录结构
+
+| 子模块 | 说明 | 典型文件 |
+|--------|------|----------|
+| `mcp-server-demo.ts` | Model Context Protocol 最小 Server 实现 | — |
+| `vercel-ai-sdk-tool-calling.ts` | Vercel AI SDK 工具调用与流式响应 | — |
+| `multi-agent-workflow.ts` | 多 Agent 编排与任务委托 | `agent-coordination.test.ts` |
+| `agent-memory.ts` | 短期记忆 / 长期记忆向量存储 | `agent-memory.test.ts` |
+| `tool-registry.ts` | 工具注册表与 JSON Schema 生成 | `tool-registry.test.ts` |
+| `agent-coordination.ts` | Agent 间通信与共识机制 | `agent-coordination.test.ts` |
+| `ARCHITECTURE.md` | Agent 系统架构设计 | — |
+| `index.ts` | 模块统一导出 | — |
+
+## 代码示例
+
+### MCP Server 最小实现
+
+```typescript
+// mcp-server-demo.ts
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
+
+const server = new Server({ name: 'weather-server', version: '1.0.0' }, {
+  capabilities: { tools: {} },
+});
+
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools: [
+    {
+      name: 'get_weather',
+      description: 'Get current weather for a city',
+      inputSchema: {
+        type: 'object',
+        properties: { city: { type: 'string' } },
+        required: ['city'],
+      },
+    },
+  ],
+}));
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  const { city } = request.params.arguments as { city: string };
+  const weather = await fetchWeather(city);
+  return { content: [{ type: 'text', text: JSON.stringify(weather) }] };
+});
+
+const transport = new StdioServerTransport();
+await server.connect(transport);
+```
+
+### 工具注册表动态调用
+
+```typescript
+// tool-registry.ts
+export class ToolRegistry {
+  private tools = new Map<
+    string,
+    { schema: unknown; execute: (args: unknown) => Promise<unknown> }
+  >();
+
+  register(name: string, schema: unknown, execute: (args: unknown) => Promise<unknown>) {
+    this.tools.set(name, { schema, execute });
+  }
+
+  async call(name: string, args: unknown) {
+    const tool = this.tools.get(name);
+    if (!tool) throw new Error(`Tool ${name} not found`);
+    return tool.execute(args);
+  }
+
+  list() {
+    return Array.from(this.tools.entries()).map(([name, { schema }]) => ({
+      name,
+      schema,
+    }));
+  }
+}
+```
+
+### 多 Agent 工作流编排
+
+```typescript
+// multi-agent-workflow.ts
+export interface AgentNode {
+  id: string;
+  role: string;
+  instructions: string;
+  delegateTo?: string[];
+}
+
+export class AgentWorkflow {
+  private agents = new Map<string, AgentNode>();
+
+  addAgent(node: AgentNode) {
+    this.agents.set(node.id, node);
+  }
+
+  async execute(startId: string, input: string): Promise<string> {
+    const agent = this.agents.get(startId)!;
+    // 简化：实际接入 LLM SDK 进行推理与委托
+    const result = await this.runLLM(agent.instructions, input);
+    if (agent.delegateTo) {
+      for (const nextId of agent.delegateTo) {
+        await this.execute(nextId, result);
+      }
+    }
+    return result;
+  }
+
+  private async runLLM(instructions: string, input: string): Promise<string> {
+    // LLM 调用占位
+    return `Result of [${instructions}] on "${input}"`;
+  }
+}
+```
+
 ## 关联模块
 
 - `33-ai-integration` — AI 集成
@@ -27,13 +147,16 @@ created: 2026-04-27
 - `examples/ai-agent-production/` — 生产级示例
 - `30-knowledge-base/application-domains-index.md` — 应用领域总索引
 
-
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
 |------|------|------|
-| MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
-| web.dev | 指南 | [web.dev](https://web.dev) |
+| Model Context Protocol | 规范 | [modelcontextprotocol.io](https://modelcontextprotocol.io) |
+| Vercel AI SDK | 文档 | [sdk.vercel.ai/docs](https://sdk.vercel.ai/docs) |
+| LangChain.js Docs | 文档 | [js.langchain.com](https://js.langchain.com) |
+| Anthropic — Building Effective Agents | 指南 | [anthropic.com/research/building-effective-agents](https://www.anthropic.com/research/building-effective-agents) |
+| OpenAI Function Calling | 文档 | [platform.openai.com/docs/guides/function-calling](https://platform.openai.com/docs/guides/function-calling) |
+| AutoGen — Multi-Agent Conversation | 文档 | [microsoft.github.io/autogen](https://microsoft.github.io/autogen) |
 
 ---
 

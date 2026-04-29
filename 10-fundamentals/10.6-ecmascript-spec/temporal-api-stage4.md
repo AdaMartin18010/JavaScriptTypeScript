@@ -7,7 +7,7 @@
 
 ## 一、为什么需要 Temporal
 
-JavaScript 的 `Date` 对象是 1995 年 Java 1.0 `java.util.Date` 的移植，存在根本性设计缺陷：
+JavaScript 的 `Date` 对象是 1995 年 Java `java.util.Date` 的移植，存在根本性设计缺陷：
 
 | 缺陷 | 示例 | Temporal 解决 |
 |------|------|--------------|
@@ -70,7 +70,137 @@ const duration = end.since(start);  // P1DT12H
 
 ---
 
-## 四、TypeScript 6.0+ 支持
+## 四、Temporal vs Date 深度对比表
+
+| 维度 | `Date` (1995) | `Temporal` (ES2026) |
+|------|--------------|---------------------|
+| **月份表示** | 0-11（易错） | 1-12（直觉） |
+| **可变性** | 可变（`setXxx` 修改原对象） | 不可变（所有操作返回新对象） |
+| **时区支持** | 仅本地时区 + UTC | 完整 IANA 时区数据库 |
+| **夏令时处理** | 无原生支持，行为不一致 | `ZonedDateTime` 自动处理 |
+| **精度** | 毫秒（1970 epoch ms） | 纳秒（bigint epoch ns） |
+| **类型区分** | 单一 `Date` 类型 | 8+ 专用类型（PlainDate/Time/Instant 等） |
+| **字符串解析** | 实现依赖，行为不一致 | ISO 8601 / RFC 3339 严格解析 |
+| **日期算术** | 手动毫秒计算 | `add/subtract/until/since` API |
+| **比较** | 时间戳数字比较 | 类型安全比较（跨类型报错） |
+| **国际化** | `toLocaleString`（有限） | 与 `Intl.DateTimeFormat` 深度集成 |
+| **闰秒处理** | 无 | `Instant` 支持闰秒表 |
+| **Web 兼容性** | 原生支持 | Chrome 128+, Firefox 137+, Safari 未来 |
+
+---
+
+## 五、代码示例：Temporal 实战
+
+```javascript
+// ============================================
+// 示例 1：日历计算与工作日推算
+// ============================================
+
+const today = Temporal.Now.plainDateISO();
+const nextMonth = today.add({ months: 1 });
+
+// 获取两个日期之间的差异（精确到日历语义）
+const untilNextMonth = today.until(nextMonth);
+console.log(untilNextMonth.toString()); // P1M
+
+// 推算「下一个周五」
+function nextFriday(date) {
+  const dayOfWeek = date.dayOfWeek; // 1=Monday, 5=Friday, 7=Sunday
+  const daysUntilFriday = (5 - dayOfWeek + 7) % 7 || 7;
+  return date.add({ days: daysUntilFriday });
+}
+console.log(nextFriday(Temporal.PlainDate.from('2026-04-28')).toString()); // 2026-05-01
+
+// ============================================
+// 示例 2：时区感知的会议调度
+// ============================================
+
+function scheduleMeeting(dateStr, timeZone) {
+  // 从无时区的墙钟时间开始
+  const localDateTime = Temporal.PlainDateTime.from(dateStr);
+
+  // 附加到具体时区（自动处理夏令时转换）
+  const zoned = localDateTime.toZonedDateTime(timeZone);
+
+  // 转换为其他时区显示
+  const attendees = [
+    { name: 'Alice', tz: 'America/New_York' },
+    { name: 'Bob', tz: 'Europe/London' },
+    { name: 'Carol', tz: 'Asia/Tokyo' }
+  ];
+
+  return attendees.map(p => ({
+    name: p.name,
+    localTime: zoned.withTimeZone(p.tz).toPlainDateTime().toString()
+  }));
+}
+
+const meeting = scheduleMeeting('2026-06-15T10:00:00', 'America/Los_Angeles');
+console.log(meeting);
+// [
+//   { name: 'Alice', localTime: '2026-06-15T13:00:00' },
+//   { name: 'Bob',   localTime: '2026-06-15T18:00:00' },
+//   { name: 'Carol', localTime: '2026-06-16T02:00:00' }
+// ]
+
+// ============================================
+// 示例 3：Duration 的精确运算
+// ============================================
+
+const projectStart = Temporal.PlainDate.from('2026-01-06');
+const projectEnd   = Temporal.PlainDate.from('2026-04-28');
+
+// 日历语义差异（自动处理月份天数差异）
+const duration = projectEnd.since(projectStart);
+console.log(duration.toString()); // P3M22D
+
+// 转换为总天数（不含时区/闰秒歧义）
+console.log(duration.total({ unit: 'day' })); // 112
+
+// Duration 的算术与规范化
+const estimate = Temporal.Duration.from({ months: 1, days: 35 });
+const normalized = estimate.round({ largestUnit: 'month', relativeTo: projectStart });
+console.log(normalized.toString()); // P2M4D（因为 1月6日 + 35天 = 2月10日）
+
+// ============================================
+// 示例 4：Instant 与高性能时间戳
+// ============================================
+
+// Date 的精度限制：毫秒
+const dateMs = Date.now();
+
+// Instant 的精度：纳秒（适合日志、性能分析）
+const instant = Temporal.Now.instant();
+console.log(instant.epochMilliseconds); // 与 Date.now() 兼容
+console.log(instant.epochNanoseconds);  // BigInt，纳秒级精度
+
+// 纳秒级耗时测量
+const t1 = Temporal.Now.instant();
+// ... 执行操作 ...
+const t2 = Temporal.Now.instant();
+const elapsed = t1.until(t2);
+console.log(`Elapsed: ${elapsed.total({ unit: 'microsecond' })} µs`);
+
+// ============================================
+// 示例 5：与旧代码的互操作
+// ============================================
+
+const legacyDate = new Date('2026-04-28T10:00:00Z');
+
+// Date → Temporal.Instant
+const instantFromDate = Temporal.Instant.fromEpochMilliseconds(legacyDate.getTime());
+
+// Temporal.Instant → Date
+const dateFromInstant = new Date(instantFromDate.epochMilliseconds);
+
+// Temporal.PlainDate → Date（注意：PlainDate 无时区，需指定）
+const plainDate = Temporal.PlainDate.from('2026-04-28');
+const dateFromPlain = new Date(plainDate.toZonedDateTime({ timeZone: 'UTC' }).epochMilliseconds);
+```
+
+---
+
+## 六、TypeScript 6.0+ 支持
 
 ```typescript
 // tsconfig.json
@@ -83,11 +213,15 @@ const duration = end.since(start);  // P1DT12H
 // 类型安全
 const date: Temporal.PlainDate = Temporal.PlainDate.from('2026-04-28');
 const result: Temporal.Duration = date.until('2026-12-31');
+
+// 编译期防止跨类型混用
+const time: Temporal.PlainTime = Temporal.PlainTime.from('14:30:00');
+// date.until(time); // ❌ TS Error：PlainDate 与 PlainTime 不可比较
 ```
 
 ---
 
-## 五、迁移策略
+## 七、迁移策略
 
 | 旧模式 | Temporal 替代 |
 |--------|--------------|
@@ -96,7 +230,23 @@ const result: Temporal.Duration = date.until('2026-12-31');
 | `date.toISOString()` | `instant.toString()` |
 | `date.getTimezoneOffset()` | `zonedDateTime.offset` |
 | `moment(date).add(1, 'day')` | `date.add({ days: 1 })` |
+| `date-fns format(date, 'yyyy-MM-dd')` | `date.toString()` 或 `Intl.DateTimeFormat` |
+| `dayjs().tz('America/New_York')` | `Temporal.ZonedDateTime` |
 
 ---
 
-*本文件为 ECMAScript 规范基础专题的 Temporal API 深度分析，对应 ES2026 Stage 4 特性。*
+## 权威参考链接
+
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| **TC39 Temporal Proposal** | Stage 4 提案主仓库 | [github.com/tc39/proposal-temporal](https://github.com/tc39/proposal-temporal) |
+| **Temporal Documentation** | 官方文档与 cookbook | [tc39.es/proposal-temporal/docs](https://tc39.es/proposal-temporal/docs/) |
+| **ECMA-262 §21.4 Temporal** | ES2026 规范章节 | [tc39.es/ecma262/#sec-temporal-objects](https://tc39.es/ecma262/#sec-temporal-objects) |
+| **V8 Blog: Temporal Shipping** | V8 引擎实现公告 | [v8.dev/blog](https://v8.dev/blog) |
+| **MDN: Temporal** | Mozilla 开发者文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal) |
+| **Can I Use: Temporal** | 浏览器兼容性矩阵 | [caniuse.com/temporal](https://caniuse.com/temporal) |
+| **Temporal Polyfill** | 旧环境兼容方案 | [github.com/js-temporal/temporal-polyfill](https://github.com/js-temporal/temporal-polyfill) |
+
+---
+
+*本文件为 ECMAScript 规范基础专题的 Temporal API 深度分析，对应 ES2026 Stage 4 特性，已增强对比表与实战代码示例。*

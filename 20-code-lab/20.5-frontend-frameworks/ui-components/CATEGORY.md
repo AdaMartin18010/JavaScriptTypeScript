@@ -18,18 +18,109 @@ module: 51-ui-components
 - 组件渲染策略（CSR、SSR、 islands、Partial Hydration）
 - AI 辅助组件系统设计（实验性）
 
+## 子模块目录结构
+
+| 子模块 | 说明 | 典型文件 |
+|--------|------|----------|
+| `component-lifecycle-models.ts` | 挂载 / 更新 / 卸载生命周期抽象 | `component-lifecycle-models.test.ts` |
+| `component-composition-models.ts` | 插槽、Render Props、Children as Function | `component-composition-models.test.ts` |
+| `component-communication-patterns.ts` | Props、Events、Context、Provide/Inject 通信 | `component-communication-patterns.test.ts` |
+| `state-management-architectures.ts` | 组件级状态机与局部 Store | `state-management-architectures.test.ts` |
+| `rendering-strategies.ts` | CSR / SSR / Islands / Partial Hydration | `rendering-strategies.test.ts` |
+| `ai-component-system.ts` | AI 生成组件与提示词工程 | `ai-component-system.test.ts` |
+| `index.ts` | 模块统一导出 | — |
+
+## 代码示例
+
+### 通用组件生命周期钩子
+
+```typescript
+// component-lifecycle-models.ts
+export interface LifecycleHooks {
+  onMount?(): void | (() => void);
+  onUpdate?(prevProps: Record<string, unknown>): void;
+  onUnmount?(): void;
+}
+
+export function createLifecycleManager(hooks: LifecycleHooks) {
+  let mounted = false;
+
+  return {
+    mount() {
+      const cleanup = hooks.onMount?.();
+      mounted = true;
+      return cleanup;
+    },
+    update(prev: Record<string, unknown>) {
+      if (mounted) hooks.onUpdate?.(prev);
+    },
+    unmount() {
+      hooks.onUnmount?.();
+      mounted = false;
+    },
+  };
+}
+```
+
+### 跨层级 Context 模式
+
+```typescript
+// component-communication-patterns.ts
+import { createContext, useContext } from 'react';
+
+interface ThemeContextValue {
+  mode: 'light' | 'dark';
+  toggle(): void;
+}
+
+const ThemeContext = createContext<ThemeContextValue | null>(null);
+
+export function useTheme() {
+  const ctx = useContext(ThemeContext);
+  if (!ctx) throw new Error('useTheme must be used within ThemeProvider');
+  return ctx;
+}
+```
+
+### Islands 架构水合控制
+
+```typescript
+// rendering-strategies.ts
+export function createIsland(
+  selector: string,
+  hydrate: (root: HTMLElement) => void
+) {
+  if (typeof window === 'undefined') return; // SSR 时跳过
+
+  const roots = document.querySelectorAll<HTMLElement>(selector);
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        hydrate(entry.target as HTMLElement);
+        observer.unobserve(entry.target);
+      }
+    });
+  });
+
+  roots.forEach((root) => observer.observe(root));
+}
+```
+
 ## 相关索引
 
 - [30-knowledge-base/30.2-categories/README.md](../../../30-knowledge-base/30.2-categories/README.md)
 - [30-knowledge-base/30.2-categories/02-ui-component-libraries.md](../../../30-knowledge-base/30.2-categories/02-ui-component-libraries.md)
 
-
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
 |------|------|------|
-| MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
-| web.dev | 指南 | [web.dev](https://web.dev) |
+| React Composition Patterns | 文档 | [react.dev/learn/thinking-in-react](https://react.dev/learn/thinking-in-react) |
+| Vue — Component Basics | 文档 | [vuejs.org/guide/essentials/component-basics](https://vuejs.org/guide/essentials/component-basics) |
+| Web Components — MDN | 文档 | [developer.mozilla.org/en-US/docs/Web/Web_Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components) |
+| Islands Architecture | 博客 | [jasonformat.com/islands-architecture](https://jasonformat.com/islands-architecture) |
+| Astro Islands | 文档 | [docs.astro.build/en/concepts/islands](https://docs.astro.build/en/concepts/islands) |
+| WAI-ARIA Authoring Practices | 指南 | [www.w3.org/WAI/ARIA/apg](https://www.w3.org/WAI/ARIA/apg) |
 
 ---
 

@@ -7,7 +7,7 @@ status: current
 
 # Serverless 与边缘计算（Application Domain）
 
-> **维度**: 应用领域 | **边界**: 本文档聚焦 Serverless 应用架构与边缘部署模式，通用 CI/CD、容器编排和云平台基础设施请参见 `24-ci-cd-devops.md` 和 `26-deployment-hosting.md`。
+> **维度**: 应用领域 | **边界**: 本文档聚焦 Serverless 应用架构与边缘部署模式，通用 CI/CD、容器编排和云平台基础设施请参见 `13-ci-cd.md` 和 `26-deployment-hosting.md`。
 
 ---
 
