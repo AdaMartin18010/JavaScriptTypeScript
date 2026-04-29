@@ -124,6 +124,108 @@ ws.onmessage = (msg) => {
 };
 ```
 
+### 滑动窗口聚合 + Z-Score 异常检测
+
+```typescript
+// sliding-window-anomaly.ts
+
+class SlidingWindow<T> {
+  private buffer: T[] = [];
+  constructor(private size: number) {}
+
+  push(value: T) {
+    this.buffer.push(value);
+    if (this.buffer.length > this.size) this.buffer.shift();
+  }
+
+  get values(): T[] {
+    return [...this.buffer];
+  }
+
+  get mean(): number {
+    const sum = this.buffer.reduce((a, b) => a + (b as unknown as number), 0);
+    return sum / this.buffer.length;
+  }
+
+  get std(): number {
+    const m = this.mean;
+    const variance = this.buffer.reduce((a, b) => a + ((b as unknown as number) - m) ** 2, 0) / this.buffer.length;
+    return Math.sqrt(variance);
+  }
+
+  zScore(value: number): number {
+    const s = this.std;
+    return s === 0 ? 0 : (value - this.mean) / s;
+  }
+}
+
+// 实时检测 QPS 异常
+const qpsWindow = new SlidingWindow<number>(60); // 60 秒窗口
+function onRequest() {
+  const currentQps = getCurrentSecondQps();
+  qpsWindow.push(currentQps);
+  const z = qpsWindow.zScore(currentQps);
+  if (Math.abs(z) > 3) {
+    console.warn(`⚠️ Anomaly detected! QPS=${currentQps}, Z-Score=${z.toFixed(2)}`);
+    alertOpsTeam(currentQps, z);
+  }
+}
+```
+
+### CEP 模式匹配引擎（简化 NFA）
+
+```typescript
+// cep-engine.ts — 识别“3 次登录失败后 1 分钟内转账”
+
+type Event = { type: string; userId: string; timestamp: number; amount?: number };
+
+class CEPPattern {
+  private state = new Map<string, { failedLogins: number; firstFailTime: number }>();
+  private readonly WINDOW_MS = 60_000;
+  private readonly THRESHOLD = 3;
+
+  process(event: Event): boolean {
+    const now = event.timestamp;
+    const record = this.state.get(event.userId) ?? { failedLogins: 0, firstFailTime: now };
+
+    if (event.type === 'login_failed') {
+      if (now - record.firstFailTime > this.WINDOW_MS) {
+        record.failedLogins = 1;
+        record.firstFailTime = now;
+      } else {
+        record.failedLogins++;
+      }
+      this.state.set(event.userId, record);
+      return false;
+    }
+
+    if (event.type === 'transfer' && record.failedLogins >= this.THRESHOLD) {
+      if (now - record.firstFailTime <= this.WINDOW_MS) {
+        // 命中模式
+        this.state.delete(event.userId);
+        return true;
+      }
+    }
+
+    return false;
+  }
+}
+
+const cep = new CEPPattern();
+const events: Event[] = [
+  { type: 'login_failed', userId: 'u1', timestamp: 0 },
+  { type: 'login_failed', userId: 'u1', timestamp: 10_000 },
+  { type: 'login_failed', userId: 'u1', timestamp: 20_000 },
+  { type: 'transfer', userId: 'u1', timestamp: 30_000, amount: 5000 },
+];
+
+for (const e of events) {
+  if (cep.process(e)) {
+    console.log(`🚨 Fraud alert for user ${e.userId} at ${e.timestamp}`);
+  }
+}
+```
+
 ## 关联模块
 
 - `65-analytics` — 离线数据分析与数仓建模基础
@@ -137,5 +239,11 @@ ws.onmessage = (msg) => {
 - [Apache Pinot Documentation](https://docs.pinot.apache.org/)
 - [Kafka Streams Documentation](https://kafka.apache.org/documentation/streams/)
 - [Watermarking in Stream Processing — Flink Docs](https://nightlies.apache.org/flink/flink-docs-stable/docs/concepts/time/)
+- [The Dataflow Model — Google Research (2015)](https://research.google/pubs/pub43864/) — 流批统一计算模型奠基论文
+- [Apache Flink 官方文档](https://nightlies.apache.org/flink/flink-docs-stable/)
+- [Redis Streams — 轻量级流处理](https://redis.io/docs/latest/develop/data-types/streams/)
+- [ksqlDB — Kafka 上的流式 SQL](https://ksqldb.io/)
+- [Materialize — SQL 流处理引擎](https://materialize.com/docs/)
+- [web.dev — Real-time updates](https://web.dev/real-time-updates/)
 - 本模块 `README.md` — 模块主题与学习路径
 - 本模块 `streaming-analytics.ts` — 窗口操作、异常检测、CEP 引擎与实时看板实现

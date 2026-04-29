@@ -69,6 +69,170 @@ const session = await ort.InferenceSession.create('model.onnx');
 const results = await session.run({ input: tensor });
 ```
 
+### 3.3 ML Pipeline 编排
+
+```typescript
+// ml-pipeline.ts
+interface PipelineStage<TInput, TOutput> {
+  name: string;
+  execute(input: TInput): Promise<TOutput>;
+  validate(output: TOutput): boolean;
+}
+
+class MLPipeline {
+  private stages: Array<PipelineStage<any, any>> = [];
+
+  add<T, U>(stage: PipelineStage<T, U>): MLPipeline {
+    this.stages.push(stage);
+    return this;
+  }
+
+  async run<T>(initialInput: T): Promise<unknown> {
+    let data: unknown = initialInput;
+    const metrics: { stage: string; duration: number; status: string }[] = [];
+
+    for (const stage of this.stages) {
+      const start = performance.now();
+      try {
+        data = await stage.execute(data);
+        const isValid = stage.validate(data);
+        if (!isValid) {
+          throw new Error(`Validation failed at stage: ${stage.name}`);
+        }
+        metrics.push({
+          stage: stage.name,
+          duration: performance.now() - start,
+          status: 'success',
+        });
+      } catch (error) {
+        metrics.push({
+          stage: stage.name,
+          duration: performance.now() - start,
+          status: 'failed',
+        });
+        throw new PipelineError(stage.name, error);
+      }
+    }
+
+    return { output: data, metrics };
+  }
+}
+
+class PipelineError extends Error {
+  constructor(public stage: string, public cause: unknown) {
+    super(`Pipeline failed at stage: ${stage}`);
+  }
+}
+
+// 使用示例：完整的训练-验证-部署流水线
+const trainingPipeline = new MLPipeline()
+  .add({
+    name: 'data-preprocessing',
+    execute: async (rawData: number[][]) => {
+      // 归一化、缺失值填充
+      return rawData.map(row => row.map(v => (v === null ? 0 : v / 255)));
+    },
+    validate: (output) => output.every(row => row.every(v => v >= 0 && v <= 1)),
+  })
+  .add({
+    name: 'feature-engineering',
+    execute: async (normalized: number[][]) => {
+      // PCA 降维或特征交叉
+      return normalized.map(row => [...row, row[0] * row[1]]);
+    },
+    validate: (output) => output.length > 0 && output[0].length === 785,
+  })
+  .add({
+    name: 'model-training',
+    execute: async (features: number[][]) => {
+      // 使用 TF.js 或自定义模型训练
+      return { model: 'trained-model-v1', accuracy: 0.94, features };
+    },
+    validate: (output) => output.accuracy > 0.8,
+  })
+  .add({
+    name: 'model-evaluation',
+    execute: async (trainResult) => {
+      // 交叉验证、AUC、F1 计算
+      return { ...trainResult, f1Score: 0.91, auc: 0.96 };
+    },
+    validate: (output) => output.f1Score > 0.85,
+  })
+  .add({
+    name: 'model-deployment',
+    execute: async (evalResult) => {
+      // 序列化并部署到推理服务
+      await deployModel(evalResult.model);
+      return { deployed: true, version: evalResult.model };
+    },
+    validate: (output) => output.deployed === true,
+  });
+
+// 执行
+// const result = await trainingPipeline.run(rawTrainingData);
+```
+
+### 3.4 A/B 测试与模型实验管理
+
+```typescript
+// experiment-manager.ts
+interface Experiment {
+  id: string;
+  name: string;
+  variants: Array<{
+    id: string;
+    modelVersion: string;
+    trafficPercentage: number;
+  }>;
+  metric: string;
+}
+
+class ExperimentManager {
+  private activeExperiments = new Map<string, Experiment>();
+  private assignments = new Map<string, string>(); // userId -> variantId
+
+  registerExperiment(experiment: Experiment) {
+    const totalTraffic = experiment.variants.reduce((sum, v) => sum + v.trafficPercentage, 0);
+    if (Math.abs(totalTraffic - 100) > 0.01) {
+      throw new Error('Variant traffic percentages must sum to 100');
+    }
+    this.activeExperiments.set(experiment.id, experiment);
+  }
+
+  assignVariant(experimentId: string, userId: string): string {
+    const key = `${experimentId}:${userId}`;
+    if (this.assignments.has(key)) {
+      return this.assignments.get(key)!;
+    }
+
+    const experiment = this.activeExperiments.get(experimentId);
+    if (!experiment) return 'control';
+
+    // 一致性哈希确保同一用户始终分到同一组
+    const hash = this.hashString(key);
+    let cumulative = 0;
+    for (const variant of experiment.variants) {
+      cumulative += variant.trafficPercentage;
+      if (hash % 100 < cumulative) {
+        this.assignments.set(key, variant.id);
+        return variant.id;
+      }
+    }
+    return experiment.variants[0].id;
+  }
+
+  private hashString(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash);
+  }
+}
+```
+
 ---
 
 ## 4. 反模式
@@ -82,6 +246,44 @@ const results = await session.run({ input: tensor });
 
 ❌ 模型部署后不再关注性能。
 ✅ 监控：延迟、吞吐量、预测分布漂移。
+
+### 反模式 3：没有版本控制的模型
+
+```typescript
+// ✅ 模型版本管理最佳实践
+class ModelRegistry {
+  private models = new Map<string, ModelVersion[]>();
+
+  register(name: string, version: string, artifactPath: string, metrics: Record<string, number>) {
+    const versions = this.models.get(name) || [];
+    versions.push({ version, artifactPath, metrics, createdAt: new Date() });
+    this.models.set(name, versions);
+  }
+
+  getLatest(name: string): ModelVersion | undefined {
+    const versions = this.models.get(name);
+    return versions?.sort((a, b) => +b.createdAt - +a.createdAt)[0];
+  }
+
+  rollback(name: string, targetVersion: string): boolean {
+    const versions = this.models.get(name);
+    const target = versions?.find(v => v.version === targetVersion);
+    if (target) {
+      // 触发部署回滚
+      console.log(`Rolling back ${name} to ${targetVersion}`);
+      return true;
+    }
+    return false;
+  }
+}
+
+interface ModelVersion {
+  version: string;
+  artifactPath: string;
+  metrics: Record<string, number>;
+  createdAt: Date;
+}
+```
 
 ---
 
@@ -99,9 +301,23 @@ ML 工程 = **软件工程 + 数据科学 + 运维**。
 
 ## 参考资源
 
-- [MLOps Community](https://mlops.community/)
-- [TensorFlow.js](https://www.tensorflow.org/js)
-- [Made With ML](https://madewithml.com/)
+### 权威书籍与课程
+- [Made With ML](https://madewithml.com/) — 开源 MLOps 课程（涵盖从建模到部署的全流程）
+- [Designing Machine Learning Systems — Chip Huyen](https://www.oreilly.com/library/view/designing-machine-learning/9781098107956/) — ML 系统设计权威著作
+- [Feature Stores for ML](https://www.featurestorebook.com/) — 特征存储专著
+
+### 开源工具
+- [MLOps Community](https://mlops.community/) — MLOps 从业者社区
+- [TensorFlow.js](https://www.tensorflow.org/js) — Google 浏览器/Node ML 框架
+- [ONNX Runtime](https://onnxruntime.ai/) — 跨平台高性能推理引擎
+- [Feast](https://feast.dev/) — 开源特征存储
+- [Evidently AI](https://www.evidentlyai.com/) — ML 模型与数据漂移检测
+- [Great Expectations](https://greatexpectations.io/) — 数据质量验证框架
+
+### 规范与标准
+- [MLflow](https://mlflow.org/) — 开源 ML 生命周期管理平台
+- [Kubeflow](https://www.kubeflow.org/) — Kubernetes 上的 ML 工作流
+- [Open Neural Network Exchange (ONNX)](https://onnx.ai/) — 跨框架模型交换标准
 
 ---
 
@@ -125,19 +341,17 @@ ML 工程 = **软件工程 + 数据科学 + 运维**。
 
 ### 关键设计模式
 
-本模块涉及的核心设计模式包括（根据代码实现提炼）：
-
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
+1. **Pipeline 模式**：将 ML 工作流分解为可组合、可验证的阶段，每个阶段可独立测试和回滚
+2. **Feature Store 模式**：分离在线/离线特征计算，消除训练-服务偏差
+3. **Shadow Deployment 模式**：新版本模型与旧版本并行运行，对比输出后再切换流量
 
 ### 与相邻模块的关系
 
 | 相邻模块 | 关系说明 |
 |---------|---------|
-| 前置依赖 | 建议先掌握的基础模块 |
-| 后续进阶 | 可继续深化的相关模块 |
+| 前置依赖 | `linear-regression.ts` — 理解基础算法 |
+| 后续进阶 | `model-serving.ts` — 模型部署与推理优化 |
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+> 📅 理论深化更新：2026-04-29

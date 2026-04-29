@@ -85,6 +85,81 @@ function render() {
 
 ---
 
+## VR 控制器输入处理
+
+WebXR 输入配置文件支持多种控制器（Meta Quest、HTC Vive、Index 等）。Three.js 通过 `XRInputSource` 提供统一抽象：
+
+```typescript
+import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
+
+const controllerModelFactory = new XRControllerModelFactory();
+
+// 左手控制器 (index 0)
+const controllerGrip0 = renderer.xr.getControllerGrip(0);
+controllerGrip0.add(controllerModelFactory.createControllerModel(controllerGrip0));
+scene.add(controllerGrip0);
+
+// 右手控制器 (index 1)
+const controllerGrip1 = renderer.xr.getControllerGrip(1);
+controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
+scene.add(controllerGrip1);
+
+// 监听选择事件（扳机键按下）
+controllerGrip0.addEventListener('selectstart', () => {
+  console.log('Left trigger pressed');
+});
+
+// 每帧读取控制器位姿
+function render() {
+  const session = renderer.xr.getSession();
+  if (session) {
+    for (const inputSource of session.inputSources) {
+      if (inputSource.gamepad) {
+        const [squeeze, trigger] = inputSource.gamepad.buttons;
+        const { x, y } = inputSource.gamepad.axes; // 摇杆/触控板
+        // 根据输入更新交互逻辑
+      }
+    }
+  }
+  renderer.render(scene, camera);
+}
+```
+
+---
+
+## WebXR Hit Test 与空间锚点
+
+将虚拟对象放置在真实世界表面是 AR/VR 交互的核心：
+
+```typescript
+let hitTestSource: XRHitTestSource | null = null;
+
+// 在 sessionstart 中请求 hit test
+session.requestReferenceSpace('viewer').then((viewerSpace) => {
+  session.requestHitTestSource?.({ space: viewerSpace }).then((source) => {
+    hitTestSource = source;
+  });
+});
+
+// 在渲染循环中获取命中结果
+function render(timestamp: number, frame: XRFrame) {
+  const referenceSpace = renderer.xr.getReferenceSpace();
+  if (hitTestSource && referenceSpace) {
+    const hitTestResults = frame.getHitTestResults(hitTestSource);
+    if (hitTestResults.length > 0) {
+      const hitPose = hitTestResults[0].getPose(referenceSpace);
+      if (hitPose) {
+        reticle.visible = true;
+        reticle.matrix.fromArray(hitPose.transform.matrix);
+      }
+    }
+  }
+  renderer.render(scene, camera);
+}
+```
+
+---
+
 ## 性能优化
 
 | 技术 | 说明 | 效果 |
@@ -125,3 +200,8 @@ function render() {
 - [Three.js WebXR 示例](https://threejs.org/examples/?q=webxr)
 - [WebXR 设备 API — Three.js 文档](https://threejs.org/docs/#manual/en/introduction/How-to-create-VR-content)
 - [VR 最佳实践指南](https://developers.meta.com/horizon/documentation/web/webxr-best-practices)
+- [WebXR Device API Specification — W3C](https://www.w3.org/TR/webxr/) — WebXR 官方标准规范
+- [Immersive Web Working Group](https://www.w3.org/immersive-web/) — W3C 沉浸式 Web 工作组
+- [WebXR Input Profiles](https://github.com/immersive-web/webxr-input-profiles) — 控制器输入配置规范
+- [Meta WebXR Best Practices](https://developers.meta.com/horizon/documentation/web/webxr-performance) — Meta 官方 VR 性能优化指南
+- [Three.js WebXRManager Source](https://github.com/mrdoob/three.js/blob/dev/src/renderers/webxr/WebXRManager.js) — Three.js WebXR 集成源码参考

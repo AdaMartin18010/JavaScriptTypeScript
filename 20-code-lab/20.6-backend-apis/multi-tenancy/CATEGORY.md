@@ -33,12 +33,46 @@ created: 2026-04-28
 - 📄 tenant-config.test.ts
 - 📄 tenant-config.ts
 - 📄 tenant-context.test.ts
-- ... 等 3 个条目
+- 📄 tenant-context.ts
+- 📄 tenant-resolver.test.ts
+- 📄 tenant-resolver.ts
 
 
 ---
 
 > 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
+
+## 子模块索引
+
+| 子模块 | 说明 | 关键文件 |
+|--------|------|----------|
+| `tenant-architecture/` | 多租户架构模式（共享/独立 schema） | `tenant-architecture.ts`, `tenant-architecture.test.ts` |
+| `tenant-config/` | 租户配置管理与动态加载 | `tenant-config.ts`, `tenant-config.test.ts` |
+| `tenant-context/` | 请求级租户上下文传递 | `tenant-context.ts`, `tenant-context.test.ts` |
+| `tenant-resolver/` | 租户标识解析（域名/Header/JWT） | `tenant-resolver.ts`, `tenant-resolver.test.ts` |
+| `database-router/` | 数据层路由与分片 | `database-router.ts`, `database-router.test.ts` |
+| `schema-isolation/` | Schema 级隔离与权限控制 | `schema-isolation.ts`, `schema-isolation.test.ts` |
+| `resource-quota/` | 租户级资源配额与限流 | `resource-quota.ts`, `resource-quota.test.ts` |
+
+## 代码示例
+
+### 基于 AsyncLocalStorage 的租户上下文隔离
+
+```typescript
+import { AsyncLocalStorage } from 'async_hooks';
+
+const tenantStorage = new AsyncLocalStorage<{ tenantId: string; dbUrl: string }>();
+
+export function withTenant<T>(tenant: { tenantId: string; dbUrl: string }, fn: () => T): T {
+  return tenantStorage.run(tenant, fn);
+}
+
+export function getCurrentTenant() {
+  const store = tenantStorage.getStore();
+  if (!store) throw new Error('Tenant context not available');
+  return store;
+}
+```
 
 
 ## 学习资源
@@ -47,6 +81,10 @@ created: 2026-04-28
 |------|------|------|
 | MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
 | web.dev | 指南 | [web.dev](https://web.dev) |
+| Microsoft — Multi-tenant SaaS | 架构指南 | [learn.microsoft.com/azure/architecture/example-scenario/multi-saas](https://learn.microsoft.com/en-us/azure/architecture/example-scenario/multi-saas/multi-tenant-data-partitioning) |
+| AWS SaaS Tenant Isolation | 最佳实践 | [docs.aws.amazon.com/saas](https://docs.aws.amazon.com/wellarchitected/latest/saas-lens/tenant-isolation.html) |
+| Stripe — Multitenancy at Scale | 工程博客 | [stripe.com/blog](https://stripe.com/blog) |
+| Node.js AsyncLocalStorage | API 文档 | [nodejs.org/api/async_context](https://nodejs.org/api/async_context.html) |
 
 ---
 

@@ -112,6 +112,100 @@ async function warmupCache() {
 | > 10MB | 网络传输慢 | 走对象存储 |
 | > 100MB | 内存占用高 | 重新设计数据结构 |
 
+### 4.3 布隆过滤器防穿透
+
+```typescript
+import { BloomFilter } from 'bloom-filters';
+
+// 初始化布隆过滤器（预计 100 万元素，误报率 0.1%）
+const filter = BloomFilter.create(1_000_000, 0.001);
+
+// 预热：将所有有效商品 ID 加入过滤器
+const allProductIds = await db.products.getAllIds();
+allProductIds.forEach(id => filter.add(id));
+
+async function getProduct(id: string) {
+  // 快速拒绝不存在的数据
+  if (!filter.has(id)) {
+    return null; // 避免缓存穿透
+  }
+
+  const cached = await redis.get(`product:${id}`);
+  if (cached) return JSON.parse(cached);
+
+  const product = await db.products.findById(id);
+  if (product) {
+    await redis.setex(`product:${id}`, 3600, JSON.stringify(product));
+  } else {
+    // 缓存空值（短过期时间）
+    await redis.setex(`product:${id}:null`, 60, '1');
+  }
+  return product;
+}
+```
+
+### 4.4 Redis Pipeline 批量操作
+
+```typescript
+// 使用 Pipeline 减少 RTT，提升批量读取性能
+async function batchGetProducts(ids: string[]) {
+  const pipeline = redis.pipeline();
+  ids.forEach(id => pipeline.get(`product:${id}`));
+  const results = await pipeline.exec();
+
+  const missingIds: string[] = [];
+  const products = results.map((result, index) => {
+    const [err, data] = result;
+    if (data) return JSON.parse(data);
+    missingIds.push(ids[index]);
+    return null;
+  });
+
+  // 批量回填缺失数据
+  if (missingIds.length > 0) {
+    const fromDb = await db.products.findByIds(missingIds);
+    const refillPipeline = redis.pipeline();
+    fromDb.forEach(p => {
+      refillPipeline.setex(`product:${p.id}`, 3600, JSON.stringify(p));
+    });
+    await refillPipeline.exec();
+  }
+
+  return products;
+}
+```
+
+### 4.5 Stale-While-Revalidate 策略
+
+```typescript
+// 允许在缓存过期后的短时间内返回旧数据，同时异步刷新
+async function getWithSWR<T>(
+  key: string,
+  fetcher: () => Promise<T>,
+  ttlSeconds: number,
+  staleSeconds: number
+): Promise<T> {
+  const data = await redis.get(key);
+  const ttl = await redis.ttl(key);
+
+  if (data && ttl >= -staleSeconds) {
+    const parsed = JSON.parse(data);
+    // 如果在 stale 窗口内，异步刷新
+    if (ttl < 0) {
+      fetcher().then(fresh => {
+        redis.setex(key, ttlSeconds, JSON.stringify(fresh));
+      });
+    }
+    return parsed;
+  }
+
+  // 缓存未命中或完全过期，同步获取
+  const fresh = await fetcher();
+  await redis.setex(key, ttlSeconds, JSON.stringify(fresh));
+  return fresh;
+}
+```
+
 ---
 
 ## 5. 总结
@@ -135,7 +229,12 @@ async function warmupCache() {
 - [Redis 官方文档](https://redis.io/documentation)
 - [Valkey](https://valkey.io/) — Redis 的开源替代
 - [Redis 设计与实现](http://redisbook.com/)
-- [Caching at Scale](https://aws.amazon.com/caching/)
+- [Caching at Scale — AWS](https://aws.amazon.com/caching/)
+- [Cache Patterns — Martin Fowler](https://martinfowler.com/articles/data-cache-sync.html) — 缓存同步策略权威解读
+- [IETF RFC 7234 — HTTP Caching](https://datatracker.ietf.org/doc/html/rfc7234) — HTTP 缓存协议标准
+- [Caching Strategies — Microsoft Azure](https://docs.microsoft.com/en-us/azure/architecture/patterns/cache-aside) — Azure 架构中心 Cache-Aside 模式
+- [Redis Pipeline Documentation](https://redis.io/docs/manual/pipelining/) — Redis 官方 Pipeline 指南
+- [Bloom Filters by Example](https://llimllib.github.io/bloomfilter-tutorial/) — 布隆过滤器原理与实现
 
 ---
 

@@ -205,6 +205,79 @@
 
 ---
 
+## 七、需求验证代码示例
+
+以下示例展示如何用 TypeScript 对需求进行结构化建模，确保分析过程的完备性与可追溯性：
+
+```typescript
+/**
+ * 需求分析结构化模型 —— 用于追踪10个章节的覆盖 completeness
+ */
+interface ChapterRequirement {
+  id: number;
+  title: string;
+  knowledgeDomain: string;
+  explicitDepth: '梳理' | '分析' | '论证';
+  implicitExpectations: string[];
+  verified: boolean;
+}
+
+const chapters: ChapterRequirement[] = [
+  {
+    id: 1,
+    title: '形式本体论与三重统一',
+    knowledgeDomain: 'ECMAScript规范',
+    explicitDepth: '论证',
+    implicitExpectations: ['学术严谨性', '框架贯穿性'],
+    verified: false,
+  },
+  {
+    id: 2,
+    title: '语言本体论层',
+    knowledgeDomain: '编译原理',
+    explicitDepth: '分析',
+    implicitExpectations: ['V8引擎细节准确性'],
+    verified: false,
+  },
+  {
+    id: 7,
+    title: '安全本体论',
+    knowledgeDomain: 'JIT安全',
+    explicitDepth: '论证',
+    implicitExpectations: ['攻击面识别', '威胁建模'],
+    verified: false,
+  },
+];
+
+// 完整性检查函数
+function assertCoverage(chaps: ChapterRequirement[]): void {
+  const uncovered = chaps.filter(c => !c.verified);
+  if (uncovered.length > 0) {
+    throw new Error(`未覆盖章节: ${uncovered.map(c => c.id).join(', ')}`);
+  }
+  console.log('全部章节已覆盖，需求分析通过。');
+}
+```
+
+---
+
+## 八、权威外部资源索引
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| ECMA-262 规范 | [tc39.es/ecma262](https://tc39.es/ecma262/) | 形式本体论的核心依据 |
+| TypeScript 设计目标 | [microsoft.github.io/TypeScript-New-Handbook](https://www.typescriptlang.org/docs/handbook/intro.html) | 类型系统的认识论定位 |
+| V8 博客 | [v8.dev/blog](https://v8.dev/blog) | JIT 编译与性能优化的权威来源 |
+| React 技术揭秘 | [react.iamkasong.com](https://react.iamkasong.com/) | 渲染管线深度分析（中文） |
+| W3C Web 标准 | [w3.org/standards](https://www.w3.org/standards/) | 浏览器技术规范基准 |
+| OWASP Top 10 | [owasp.org/Top10](https://owasp.org/Top10/) | 安全本体论实践参考 |
+| Node.js 设计模式 | [nodejs.org/en/docs/guides](https://nodejs.org/en/docs/guides/) | 运行时生态官方指南 |
+| Anthropic MCP 规范 | [modelcontextprotocol.io](https://modelcontextprotocol.io/) | AI Agent 范式转换技术基础 |
+| Alistair Cockburn 架构思想 | [alistair.cockburn.us](https://alistair.cockburn.us/) | 六边形架构与软件架构理论 |
+| Papers We Love — PLT | [github.com/papers-we-love](https://github.com/papers-we-love/papers-we-love/tree/master/programming_languages_theory) | 编程语言理论经典论文 |
+
+---
+
 ## 附录：核心任务分解
 
 基于以上需求分析，"全面梳理分析论证"任务可分解为以下子任务：

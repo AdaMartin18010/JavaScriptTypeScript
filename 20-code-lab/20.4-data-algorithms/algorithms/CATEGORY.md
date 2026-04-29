@@ -100,6 +100,98 @@ function dijkstra(graph: Map<string, Map<string, number>>, start: string): Map<s
 }
 ```
 
+### 堆排序（Heap Sort）— 利用数组模拟完全二叉树
+
+```ts
+function heapSort(arr: number[]): number[] {
+  const n = arr.length;
+  const heap = [...arr];
+
+  function heapify(size: number, root: number) {
+    let largest = root;
+    const left = 2 * root + 1;
+    const right = 2 * root + 2;
+    if (left < size && heap[left] > heap[largest]) largest = left;
+    if (right < size && heap[right] > heap[largest]) largest = right;
+    if (largest !== root) {
+      [heap[root], heap[largest]] = [heap[largest], heap[root]];
+      heapify(size, largest);
+    }
+  }
+
+  // 建大顶堆
+  for (let i = Math.floor(n / 2) - 1; i >= 0; i--) heapify(n, i);
+  // 逐次提取最大值
+  for (let i = n - 1; i > 0; i--) {
+    [heap[0], heap[i]] = [heap[i], heap[0]];
+    heapify(i, 0);
+  }
+  return heap;
+}
+console.log(heapSort([12, 11, 13, 5, 6, 7]));
+```
+
+### 图的 BFS 与 DFS（邻接表表示）
+
+```ts
+const graph = new Map<string, string[]>([
+  ['A', ['B', 'C']],
+  ['B', ['D', 'E']],
+  ['C', ['F']],
+  ['D', []],
+  ['E', ['F']],
+  ['F', []],
+]);
+
+function bfs(start: string): string[] {
+  const visited = new Set<string>();
+  const queue = [start];
+  const result: string[] = [];
+  while (queue.length) {
+    const node = queue.shift()!;
+    if (visited.has(node)) continue;
+    visited.add(node);
+    result.push(node);
+    queue.push(...(graph.get(node) ?? []));
+  }
+  return result;
+}
+
+function dfs(start: string): string[] {
+  const visited = new Set<string>();
+  const result: string[] = [];
+  function visit(node: string) {
+    if (visited.has(node)) return;
+    visited.add(node);
+    result.push(node);
+    (graph.get(node) ?? []).forEach(visit);
+  }
+  visit(start);
+  return result;
+}
+
+console.log('BFS:', bfs('A')); // [ 'A', 'B', 'C', 'D', 'E', 'F' ]
+console.log('DFS:', dfs('A')); // [ 'A', 'B', 'D', 'E', 'F', 'C' ]
+```
+
+### 滑动窗口最大值（双端队列优化）
+
+```ts
+function maxSlidingWindow(nums: number[], k: number): number[] {
+  const deque: number[] = [];
+  const result: number[] = [];
+  for (let i = 0; i < nums.length; i++) {
+    while (deque.length && deque[0] <= i - k) deque.shift();
+    while (deque.length && nums[deque[deque.length - 1]] <= nums[i]) deque.pop();
+    deque.push(i);
+    if (i >= k - 1) result.push(nums[deque[0]]);
+  }
+  return result;
+}
+console.log(maxSlidingWindow([1, 3, -1, -3, 5, 3, 6, 7], 3));
+// [ 3, 3, 5, 5, 6, 7 ]
+```
+
 ## 权威外部链接
 
 - [VisuAlgo — 算法可视化](https://visualgo.net/en)
@@ -108,6 +200,12 @@ function dijkstra(graph: Map<string, Map<string, number>>, start: string): Map<s
 - [MIT OpenCourseWare — Introduction to Algorithms (6.006)](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/)
 - [Princeton Algorithms (Sedgewick & Wayne)](https://algs4.cs.princeton.edu/home/)
 - [Wikipedia — List of algorithms](https://en.wikipedia.org/wiki/List_of_algorithms)
+- [Introduction to Algorithms (CLRS) — 第 3 / 4 版](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)
+- [MDN — TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) — JS 高性能数值计算基础
+- [V8 Blog — Fast properties](https://v8.dev/blog/fast-properties) — 理解引擎层数据结构优化
+- [ECMA-262 Specification](https://tc39.es/ecma262/) — JS 语言标准对数组与迭代行为的定义
+- [LeetCode Patterns](https://seanprashad.com/leetcode-patterns/) — 高频算法题型与模式总结
+- [Algorithmica — 现代竞赛算法](https://algorithmica.org/en)
 
 ## 关联索引
 

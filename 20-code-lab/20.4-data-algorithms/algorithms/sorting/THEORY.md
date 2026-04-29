@@ -119,7 +119,78 @@ console.log('MergeSort:', mergeSort([...unsorted]));
 // [11, 12, 22, 22, 25, 34, 64, 90]（稳定，两个22顺序保持）
 ```
 
-### 3.2 常见误区
+### 3.2 堆排序 — 原地 O(1) 额外空间
+
+```typescript
+function heapSort(arr: number[]): number[] {
+  const heap = [...arr];
+  const n = heap.length;
+
+  function heapify(size: number, root: number) {
+    let largest = root;
+    const left = 2 * root + 1;
+    const right = 2 * root + 2;
+    if (left < size && heap[left] > heap[largest]) largest = left;
+    if (right < size && heap[right] > heap[largest]) largest = right;
+    if (largest !== root) {
+      [heap[root], heap[largest]] = [heap[largest], heap[root]];
+      heapify(size, largest);
+    }
+  }
+
+  for (let i = Math.floor(n / 2) - 1; i >= 0; i--) heapify(n, i);
+  for (let i = n - 1; i > 0; i--) {
+    [heap[0], heap[i]] = [heap[i], heap[0]];
+    heapify(i, 0);
+  }
+  return heap;
+}
+
+console.log('HeapSort:', heapSort([...unsorted]));
+```
+
+### 3.3 计数排序 — 非比较排序，O(n + k)
+
+```typescript
+function countingSort(arr: number[], maxVal: number): number[] {
+  const count = new Array(maxVal + 1).fill(0);
+  for (const v of arr) count[v]++;
+  const result: number[] = [];
+  for (let i = 0; i < count.length; i++) {
+    while (count[i]-- > 0) result.push(i);
+  }
+  return result;
+}
+
+console.log('CountingSort:', countingSort([4, 2, 2, 8, 3, 3, 1], 8));
+// [1, 2, 2, 3, 3, 4, 8]
+```
+
+### 3.4 自定义比较器与稳定排序技巧
+
+```typescript
+// 多字段排序：先按年龄升序，再按姓名升序（稳定性保证相对顺序）
+interface User {
+  name: string;
+  age: number;
+}
+
+const users: User[] = [
+  { name: 'Bob', age: 30 },
+  { name: 'Alice', age: 25 },
+  { name: 'Charlie', age: 30 },
+];
+
+// 利用 V8 Timsort 的稳定性
+const sorted = users
+  .sort((a, b) => a.name.localeCompare(b.name))
+  .sort((a, b) => a.age - b.age);
+
+console.log(sorted);
+// [Alice 25, Bob 30, Charlie 30] — Bob 在 Charlie 之前（稳定）
+```
+
+### 3.5 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -128,12 +199,18 @@ console.log('MergeSort:', mergeSort([...unsorted]));
 | JS `.sort()` 总是快排 | V8 使用 Timsort（混合稳定排序），非纯快排 |
 | 计数排序通用 | 仅适用于已知小范围整数或可分桶数据 |
 
-### 3.3 扩展阅读
+### 3.6 扩展阅读
 
 - [Sorting Algorithms — Wikipedia](https://en.wikipedia.org/wiki/Sorting_algorithm)
 - [Quicksort — Hoare Partition](https://en.wikipedia.org/wiki/Quicksort)
 - [Timsort — Python/V8 采用的稳定混合排序](https://en.wikipedia.org/wiki/Timsort)
 - [Sorting VisuAlgo](https://visualgo.net/en/sorting)
+- [V8 Blog — Elements kinds in V8](https://v8.dev/blog/elements-kinds) — 理解引擎对数组排序的优化
+- [MDN — Array.prototype.sort](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)
+- [Introsort — std::sort 实现策略](https://en.wikipedia.org/wiki/Introsort)
+- [The Art of Computer Programming, Vol. 3 — Sorting and Searching](https://www-cs-faculty.stanford.edu/~knuth/taocp.html)
+- [Algorithms (Sedgewick & Wayne) — 第 2 章 排序](https://algs4.cs.princeton.edu/20sorting/)
+- [LeetCode Top Interview Questions — Sorting](https://leetcode.com/problem-list/top-interview-questions/)
 - `20.4-data-algorithms/algorithms/`
 
 ---

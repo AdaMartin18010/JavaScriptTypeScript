@@ -9,18 +9,21 @@
 
 ### 1.1 问题域定义
 
-本模块聚焦 ECMAScript 标准演进中的新特性，解决 JavaScript 语言能力持续扩展带来的学习曲线与兼容性问题。通过形式化示例展示语法特性在实际代码中的应用方式。
+ES2025（ECMAScript 16）补齐 `Set` 的集合代数方法、引入正则表达式 `/v` 标志、`Promise.try` 同步异常捕获辅助，以及 `Iterator` 原型辅助方法，解决集合运算缺失、Unicode 属性集匹配复杂化与异步边界错误处理不一致问题。
 
 ### 1.2 形式化基础
 
-[本模块的形式化定义与公理/定理陈述]
+集合代数 5 元组定义：`intersection`, `union`, `difference`, `symmetricDifference`, `isSubsetOf`/`isSupersetOf`/`isDisjointFrom` 满足数学集合论公理：
+- `A.union(B) ≡ B.union(A)`（交换律）
+- `A.intersection(A) ≡ A`（幂等律）
 
 ### 1.3 关键概念
 
 | 特性 | 定义 | 关联 |
 |------|------|------|
-| 新语法 | ECMAScript 年度新增的语法构造 | 示例代码 |
-| polyfill | 旧环境兼容性补充方案 | shim 文件 |
+| Set 集合代数 | Set 实例上的数学集合运算方法 | 7 个新方法 |
+| RegExp `v` flag | Unicode 属性类与集合运算的增强标志 | `u` 标志的演进 |
+| `Promise.try` | 将同步/同步抛异常函数统一为 Promise | 异步边界处理 |
 
 ---
 
@@ -28,18 +31,29 @@
 
 ### 2.1 为什么存在
 
-ECMAScript 作为活的语言标准，每年发布新特性以回应开发者社区的痛点。从可选链到顶层 await，新特性的存在理由是在保持向后兼容的前提下提升表达能力与开发效率。
+社区长期依赖 lodash、immutable.js 或手写循环实现集合运算；`/u` 标志不支持字符类集合运算（如 `[\p{Letter}--[a-z]]`）；`Promise.resolve(fn())` 无法捕获同步抛出的异常。ES2025 将这些标准化。
 
-### 2.2 权衡分析
+### 2.2 特性速查表
+
+| 特性 | 方法 / 语法 | 说明 |
+|------|------------|------|
+| 交集 | `setA.intersection(setB)` | 返回同时存在于 A 和 B 的元素 |
+| 并集 | `setA.union(setB)` | 返回 A 或 B 中所有元素 |
+| 差集 | `setA.difference(setB)` | 返回在 A 但不在 B 的元素 |
+| 对称差 | `setA.symmetricDifference(setB)` | 仅存在于 A 或 B 之一的元素 |
+| 子集判断 | `setA.isSubsetOf(setB)` | A 是否为 B 的子集 |
+| 超集判断 | `setA.isSupersetOf(setB)` | A 是否为 B 的超集 |
+| 不相交判断 | `setA.isDisjointFrom(setB)` | A 与 B 是否无共同元素 |
+| RegExp `v` | `/.../v` | 支持 `\p{...}`、集合差 `--`、交集 `&&` |
+| Promise.try | `Promise.try(fn)` | 同步异常 → rejected Promise |
+
+### 2.3 权衡分析
 
 | 方案 | 优点 | 缺点 | 适用场景 |
 |------|------|------|---------|
-| 原生新特性 | 代码简洁、语义清晰 | 需要 polyfill/转译 | 现代浏览器环境 |
-| 传统兼容写法 | 全平台支持 | 代码冗长、易出错 | 遗留系统维护 |
-
-### 2.3 与相关技术的对比
-
-与 Babel 转译方案对比：原生支持减少运行时开销，但需要更长的兼容性等待期。
+| 原生 Set 方法 | O(n) 优化、可读性强 | 旧运行时需 polyfill | 现代浏览器/Node ≥ 22 |
+| lodash `intersection` | 兼容旧环境 | 额外依赖、无 Set 语义 | 遗留项目 |
+| `/v` vs `/u` | 集合运算、嵌套类 | 学习曲线稍陡 | 复杂 Unicode 匹配 |
 
 ---
 
@@ -47,18 +61,62 @@ ECMAScript 作为活的语言标准，每年发布新特性以回应开发者社
 
 ### 3.1 从理论到代码
 
-本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 ES2025 新特性 核心机制的理解，并观察不同实现选择带来的行为差异。
+```js
+// === Set 集合代数 ===
+const frontend = new Set(['React', 'Vue', 'Angular']);
+const backend  = new Set(['Node', 'React', 'Django']);
+
+frontend.intersection(backend);      // Set { 'React' }
+frontend.union(backend);             // Set { 'React', 'Vue', 'Angular', 'Node', 'Django' }
+frontend.difference(backend);        // Set { 'Vue', 'Angular' }
+frontend.symmetricDifference(backend); // Set { 'Vue', 'Angular', 'Node', 'Django' }
+
+const tagsA = new Set(['js', 'ts', 'node']);
+const tagsB = new Set(['js', 'deno']);
+tagsA.isSubsetOf(new Set(['js', 'ts', 'node', 'bun'])); // true
+tagsA.isDisjointFrom(new Set(['rust', 'go']));           // true
+
+// === RegExp `v` flag ===
+// 匹配所有字母，但排除小写 a-z
+const re = /[\p{Letter}--[a-z]]/v;
+re.test('A');  // true
+re.test('a');  // false
+re.test('中'); // true
+
+// 多属性集合交集：匹配 Emoji 中的手势
+const gesture = /[\p{Emoji}&&\p{So}]/v;
+gesture.test('👍'); // true
+gesture.test('A');  // false
+
+// === Promise.try ===
+// 统一处理同步和异步异常
+function parseConfig(raw) {
+  return Promise.try(() => JSON.parse(raw))
+    .then(cfg => validate(cfg))
+    .catch(err => ({ error: err.message }));
+}
+
+// 同步抛异常也会进入 catch
+parseConfig('not json').then(console.log); // { error: 'Unexpected token...' }
+```
 
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
-| 新特性可以立即在生产环境使用 | 需评估目标运行时支持与转译成本 |
-| 所有特性都向后兼容 | 部分特性需要 polyfill 或语法转换 |
+| Set 方法会修改原集合 | 所有集合代数方法返回**新 Set**，原集合不可变 |
+| `/v` 完全替代 `/u` | `/v` 是 `/u` 的超集，但某些边界行为不同，迁移需测试 |
+| `Promise.try` 只接受同步函数 | 也接受返回 Promise 的函数，行为等价于 `Promise.resolve().then(fn)` |
 
 ### 3.3 扩展阅读
 
-- [ECMAScript 提案仓库](https://github.com/tc39/proposals)
+- [ECMAScript 2025 Draft Specification](https://tc39.es/ecma262/)
+- [MDN: Set.prototype.intersection](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/intersection)
+- [MDN: RegExp `v` flag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/unicodeSets)
+- [MDN: Promise.try](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/try)
+- [TC39 Proposal: Set Methods](https://github.com/tc39/proposal-set-methods)
+- [TC39 Proposal: RegExp `v` flag](https://github.com/tc39/proposal-regexp-v-flag)
+- [V8 Blog: New in JS ES2025](https://v8.dev/features/tags/es2025)
 - `30-knowledge-base/30.1-language-evolution`
 
 ---

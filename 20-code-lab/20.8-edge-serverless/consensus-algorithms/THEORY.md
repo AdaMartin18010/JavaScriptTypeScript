@@ -96,9 +96,214 @@ if votes received from majority:
 - 传播速度呈指数级（类似流行病模型）
 - 应用场景：Cassandra 反熵、Redis Cluster、区块链 P2P
 
-## 8. 权威外部链接
+## 8. 代码示例：Gossip 协议 TypeScript 实现
 
+```typescript
+// gossip-protocol.ts
+
+interface GossipNode {
+  id: string;
+  state: Map<string, unknown>;
+  version: Map<string, number>; // Vector clock
+  neighbors: string[];
+}
+
+class GossipProtocol {
+  private nodes = new Map<string, GossipNode>();
+
+  addNode(node: GossipNode) {
+    this.nodes.set(node.id, node);
+  }
+
+  // Simulate one gossip round for a node
+  gossipRound(nodeId: string) {
+    const node = this.nodes.get(nodeId);
+    if (!node || node.neighbors.length === 0) return;
+
+    // Pick random neighbor
+    const neighborId = node.neighbors[Math.floor(Math.random() * node.neighbors.length)];
+    const neighbor = this.nodes.get(neighborId);
+    if (!neighbor) return;
+
+    // Exchange states: merge newer versions
+    this.mergeStates(node, neighbor);
+    this.mergeStates(neighbor, node);
+  }
+
+  private mergeStates(local: GossipNode, remote: GossipNode) {
+    for (const [key, remoteVer] of remote.version) {
+      const localVer = local.version.get(key) || 0;
+      if (remoteVer > localVer) {
+        local.state.set(key, remote.state.get(key)!);
+        local.version.set(key, remoteVer);
+      }
+    }
+  }
+
+  setValue(nodeId: string, key: string, value: unknown) {
+    const node = this.nodes.get(nodeId);
+    if (!node) return;
+    node.state.set(key, value);
+    node.version.set(key, (node.version.get(key) || 0) + 1);
+  }
+
+  // Check convergence: how many nodes share the same value for a key
+  convergenceRatio(key: string): number {
+    const values = new Map<unknown, number>();
+    for (const node of this.nodes.values()) {
+      const v = node.state.get(key);
+      values.set(v, (values.get(v) || 0) + 1);
+    }
+    const maxCount = Math.max(...values.values());
+    return maxCount / this.nodes.size;
+  }
+}
+
+// Usage
+const gossip = new GossipProtocol();
+
+// Create a 5-node ring topology
+for (let i = 0; i < 5; i++) {
+  gossip.addNode({
+    id: `node-${i}`,
+    state: new Map(),
+    version: new Map(),
+    neighbors: [`node-${(i + 1) % 5}`, `node-${(i + 4) % 5}`],
+  });
+}
+
+// Node 0 sets a value
+gossip.setValue('node-0', 'leader', 'node-0');
+
+// Simulate gossip rounds
+for (let round = 0; round < 10; round++) {
+  for (let i = 0; i < 5; i++) {
+    gossip.gossipRound(`node-${i}`);
+  }
+  console.log(`Round ${round}: convergence = ${gossip.convergenceRatio('leader')}`);
+}
+```
+
+## 9. 代码示例：Raft 日志复制状态机（简化）
+
+```typescript
+// raft-log-replication.ts
+
+type LogEntry = { term: number; index: number; command: string };
+type NodeState = 'Follower' | 'Candidate' | 'Leader';
+
+class RaftNode {
+  id: string;
+  state: NodeState = 'Follower';
+  currentTerm = 0;
+  votedFor: string | null = null;
+  log: LogEntry[] = [];
+  commitIndex = 0;
+  lastApplied = 0;
+
+  // Leader state
+  nextIndex: Map<string, number> = new Map();
+  matchIndex: Map<string, number> = new Map();
+
+  constructor(id: string) {
+    this.id = id;
+  }
+
+  becomeLeader(peers: string[]) {
+    this.state = 'Leader';
+    for (const peer of peers) {
+      this.nextIndex.set(peer, this.log.length + 1);
+      this.matchIndex.set(peer, 0);
+    }
+  }
+
+  appendEntry(command: string): LogEntry {
+    const entry: LogEntry = {
+      term: this.currentTerm,
+      index: this.log.length + 1,
+      command,
+    };
+    this.log.push(entry);
+    return entry;
+  }
+
+  // Handle AppendEntries RPC from leader
+  handleAppendEntries(
+    term: number,
+    leaderId: string,
+    prevLogIndex: number,
+    prevLogTerm: number,
+    entries: LogEntry[],
+    leaderCommit: number
+  ): boolean {
+    if (term < this.currentTerm) return false;
+
+    this.currentTerm = term;
+    this.state = 'Follower';
+    this.votedFor = null;
+
+    // Log consistency check
+    if (prevLogIndex > 0) {
+      const prevEntry = this.log[prevLogIndex - 1];
+      if (!prevEntry || prevEntry.term !== prevLogTerm) {
+        return false;
+      }
+    }
+
+    // Append new entries
+    for (let i = 0; i < entries.length; i++) {
+      const idx = prevLogIndex + i;
+      if (idx < this.log.length && this.log[idx].term !== entries[i].term) {
+        // Conflict: truncate
+        this.log = this.log.slice(0, idx);
+      }
+      if (idx >= this.log.length) {
+        this.log.push(entries[i]);
+      }
+    }
+
+    // Update commit index
+    if (leaderCommit > this.commitIndex) {
+      this.commitIndex = Math.min(leaderCommit, this.log.length);
+    }
+
+    return true;
+  }
+
+  getLogString(): string {
+    return this.log.map(e => `[T${e.term}:${e.command}]`).join(' -> ');
+  }
+}
+
+// Usage
+const leader = new RaftNode('leader-1');
+leader.currentTerm = 1;
+leader.becomeLeader(['follower-1', 'follower-2']);
+
+leader.appendEntry('SET x=1');
+leader.appendEntry('SET y=2');
+
+console.log('Leader log:', leader.getLogString());
+
+const follower = new RaftNode('follower-1');
+const success = follower.handleAppendEntries(
+  1, 'leader-1', 0, 0, leader.log, leader.commitIndex
+);
+console.log('Replication success:', success);
+console.log('Follower log:', follower.getLogString());
+```
+
+## 10. 权威外部链接
+
+### 学术论文与标准
 - [Raft 论文（In Search of an Understandable Consensus Algorithm）](https://raft.github.io/raft.pdf)
+- [The Part-Time Parliament (Paxos原始论文)](https://lamport.azurewebsites.net/pubs/lamport-paxos.pdf) — Leslie Lamport, ACM TOCS 1998
+- [Paxos Made Simple](https://lamport.azurewebsites.net/pubs/paxos-simple.pdf) — Leslie Lamport, 2001
+- [Practical Byzantine Fault Tolerance (PBFT)](http://pmg.csail.mit.edu/papers/osdi99.pdf) — Miguel Castro & Barbara Liskov, OSDI 1999
+- [CAP Twelve Years Later: How the "Rules" Have Changed](https://sites.cs.ucsb.edu/~rich/class/cs293b-cloud/papers/brewer-cap.pdf) — Eric Brewer, IEEE Computer 2012
+- [FLP Impossibility Result](https://groups.csail.mit.edu/tds/papers/Lynch/jacm85.pdf) — Fischer, Lynch, Paterson, JACM 1985
+
+### 官方实现与文档
 - [Raft 可视化演示](https://raft.github.io/)
 - [etcd 官方文档](https://etcd.io/docs/latest/)
 - [etcd-io/raft GitHub 仓库](https://github.com/etcd-io/raft)
@@ -106,7 +311,15 @@ if votes received from majority:
 - [Hyperledger Fabric 共识文档](https://hyperledger-fabric.readthedocs.io/en/latest/)
 - [ZooKeeper ZAB 协议](https://zookeeper.apache.org/doc/r3.9.2/zookeeperInternals.html)
 
-## 9. 与相邻模块的关系
+### 权威技术资源
+- [AWS: Distributed Systems and Consensus](https://aws.amazon.com/builders-library/avoiding-fallback-in-distributed-systems/) — Amazon Builders Library
+- [Google: The Chubby Lock Service](https://research.google/pubs/pub27897/) — Google Research, OSDI 2006
+- [Microsoft: Distributed Consensus in Azure](https://learn.microsoft.com/en-us/azure/architecture/patterns/leader-election) — Azure 架构中心
+- [Cloudflare: Consensus in Distributed Systems](https://blog.cloudflare.com/a-borrowed-jubilee/) — Cloudflare 分布式系统博客
+- [Apache Cassandra: Gossip Protocol](https://cassandra.apache.org/doc/latest/cassandra/architecture/gossip.html) — Cassandra 官方 Gossip 文档
+- [Redis Cluster Specification](https://redis.io/docs/management/scaling/) — Redis 集群规范
+
+## 11. 与相邻模块的关系
 
 - **70-distributed-systems**: 分布式系统的基础理论
 - **83-blockchain-advanced**: 区块链共识机制

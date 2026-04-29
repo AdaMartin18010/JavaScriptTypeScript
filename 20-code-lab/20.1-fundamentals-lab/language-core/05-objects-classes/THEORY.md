@@ -37,7 +37,20 @@ JavaScript 基于原型而非类，但 ES6 class 语法提供了更 familiar 的
 | 类继承 | 代码复用直观 | 紧耦合、脆弱基类 | IS-A 关系明确 |
 | 对象组合 | 灵活、低耦合 | 更多样板代码 | 行为组装 |
 
-### 2.3 与相关技术的对比
+### 2.3 特性对比表：原型委托 vs ES6 Class
+
+| 特性 | 原型委托 (Prototypal) | ES6 Class 语法糖 |
+|------|----------------------|-----------------|
+| 创建对象 | `Object.create(proto)` / 构造函数 | `class Foo extends Bar` |
+| 继承机制 | 原型链动态委托 | 内部仍是原型链，语法更直观 |
+| 构造函数 | 普通函数 + `new` | `constructor()` 方法 |
+| 方法定义 | `Foo.prototype.method = fn` | 类体内直接声明 |
+| 私有成员 | 闭包模拟 / WeakMap | 硬私有 `#field`（ES2022） |
+| 静态成员 | `Foo.staticProp = val` | `static prop = val` |
+| 可读性 | 分散、需要理解机制 | 集中、类 C++/Java 风格 |
+| 运行时修改 | 可动态替换原型 | 类声明后不可重新绑定 |
+
+### 2.4 与相关技术的对比
 
 与经典 OOP 对比：JS 原型委托提供了更轻量的继承机制。
 
@@ -49,16 +62,82 @@ JavaScript 基于原型而非类，但 ES6 class 语法提供了更 familiar 的
 
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 对象与类 核心机制的理解，并观察不同实现选择带来的行为差异。
 
-### 3.2 常见误区
+### 3.2 代码示例：原型 vs Class 的等价实现
+
+```typescript
+// ===== 原型委托风格 =====
+function AnimalProto(name: string) {
+  this.name = name;
+}
+AnimalProto.prototype.speak = function (): string {
+  return `${this.name} makes a sound.`;
+};
+
+function DogProto(name: string, breed: string) {
+  AnimalProto.call(this, name);
+  this.breed = breed;
+}
+DogProto.prototype = Object.create(AnimalProto.prototype);
+DogProto.prototype.constructor = DogProto;
+DogProto.prototype.speak = function (): string {
+  return `${this.name} the ${this.breed} barks!`;
+};
+
+// ===== ES6 Class 风格（语法糖，底层等价） =====
+class Animal {
+  name: string;
+  constructor(name: string) {
+    this.name = name;
+  }
+  speak(): string {
+    return `${this.name} makes a sound.`;
+  }
+}
+
+class Dog extends Animal {
+  breed: string;
+  constructor(name: string, breed: string) {
+    super(name);
+    this.breed = breed;
+  }
+  speak(): string {
+    return `${this.name} the ${this.breed} barks!`;
+  }
+}
+
+// ===== 硬私有字段（ES2022） =====
+class BankAccount {
+  #balance: number = 0; // 真正私有，外部不可访问
+
+  deposit(amount: number): void {
+    if (amount > 0) this.#balance += amount;
+  }
+
+  getBalance(): number {
+    return this.#balance;
+  }
+}
+
+const acc = new BankAccount();
+acc.deposit(100);
+console.log(acc.getBalance()); // 100
+// console.log((acc as any).#balance); // SyntaxError: Private field must be declared
+```
+
+### 3.3 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | class 引入了真正的类 | JS class 仍是原型继承的语法糖 |
 | 私有字段 # 可通过反射访问 | 硬私有字段在语言层面不可从外部访问 |
 
-### 3.3 扩展阅读
+### 3.4 扩展阅读
 
 - [MDN 类](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes)
+- [MDN：继承与原型链](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain)
+- [MDN：类私有字段](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields)
+- [MDN：Object.create()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create)
+- [ECMAScript® 2025 — Ordinary and Exotic Objects Behaviours](https://tc39.es/ecma262/#sec-ordinary-and-exotic-objects-behaviours)
 - `10-fundamentals/10.1-language-semantics/05-objects-classes/`
 
 ---

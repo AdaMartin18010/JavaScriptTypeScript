@@ -123,7 +123,105 @@ console.log('--- no change ---');
 count.value = 2; // 值未变，不触发
 ```
 
-### 3.2 常见误区
+### 3.2 Angular Signals 实战
+
+```typescript
+// angular-counter.ts — Angular 16+ Signals API
+import { Component, signal, computed, effect } from '@angular/core';
+
+@Component({
+  selector: 'app-counter',
+  template: `
+    <p>Count: {{ count() }}</p>
+    <p>Doubled: {{ doubled() }}</p>
+    <button (click)="increment()">+1</button>
+  `,
+})
+export class CounterComponent {
+  count = signal(0);
+  doubled = computed(() => this.count() * 2);
+
+  constructor() {
+    effect(() => {
+      console.log('Count changed to:', this.count());
+    });
+  }
+
+  increment() {
+    this.count.update((c) => c + 1);
+  }
+}
+```
+
+### 3.3 Preact Signals 在 React 中的使用
+
+```tsx
+// react-preact-signals.tsx
+import { signal, computed, batch } from '@preact/signals-core';
+import { useSignals } from '@preact/signals-react/runtime';
+
+const todos = signal<{ id: number; text: string; done: boolean }[]>([]);
+const completedCount = computed(() => todos.value.filter((t) => t.done).length);
+
+function TodoList() {
+  useSignals();
+
+  function addTodo(text: string) {
+    batch(() => {
+      // 批量更新，只触发一次 effect / 重渲染
+      todos.value = [...todos.value, { id: Date.now(), text, done: false }];
+    });
+  }
+
+  function toggle(id: number) {
+    todos.value = todos.value.map((t) =>
+      t.id === id ? { ...t, done: !t.done } : t
+    );
+  }
+
+  return (
+    <div>
+      <p>Completed: {completedCount.value} / {todos.value.length}</p>
+      {todos.value.map((t) => (
+        <div key={t.id} onClick={() => toggle(t.id)}>
+          {t.done ? '✅' : '⬜'} {t.text}
+        </div>
+      ))}
+      <button onClick={() => addTodo('New todo')}>Add</button>
+    </div>
+  );
+}
+```
+
+### 3.4 SolidJS 信号与派生
+
+```tsx
+// solid-counter.tsx
+import { createSignal, createEffect, createMemo, batch } from 'solid-js';
+
+function SolidCounter() {
+  const [count, setCount] = createSignal(0);
+  const doubled = createMemo(() => count() * 2);
+
+  createEffect(() => {
+    console.log('Solid count:', count());
+  });
+
+  return (
+    <button
+      onClick={() =>
+        batch(() => {
+          setCount((c) => c + 1);
+        })
+      }
+    >
+      {count()} × 2 = {doubled()}
+    </button>
+  );
+}
+```
+
+### 3.5 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -131,12 +229,17 @@ count.value = 2; // 值未变，不触发
 | Signals 只能用于小型项目 | Preact Signals 已被用于大型生产应用（如 Shopify） |
 | Angular Signals 与 RxJS 冲突 | Angular 推荐 Signals 处理同步状态，RxJS 处理异步流，二者互补 |
 
-### 3.3 扩展阅读
+### 3.6 扩展阅读
 
 - [SolidJS Reactivity](https://www.solidjs.com/tutorial/introduction_signals)
 - [Preact Signals — Core Docs](https://preactjs.com/guide/v10/signals/)
 - [Angular Signals — Official Guide](https://angular.dev/guide/signals)
 - [The Future of Reactivity — Ryan Carniato](https://dev.to/ryansolid/fine-grained-reactivity-already-won-2a99)
+- [TC39 Signals Proposal (Stage 1)](https://github.com/tc39/proposal-signals) — 原生信号标准化提案
+- [Vue Reactivity Deep Dive](https://vuejs.org/guide/extras/reactivity-in-depth.html)
+- [React Compiler — React Docs](https://react.dev/learn/react-compiler)
+- [Storeon — 极简状态管理中的信号思想](https://github.com/storeon/storeon)
+- [StackBlitz — Signals Benchmark](https://github.com/ryansolid/solid-signals-benchmark)
 - `20.5-frontend-frameworks/`
 
 ---

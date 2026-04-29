@@ -119,6 +119,62 @@ Tauri 使用操作系统原生 WebView（Windows: WebView2, macOS: WKWebView, Li
 | 系统调用 | 丰富（npm 生态） | 需 Rust 库或 FFI |
 | 学习曲线 | 平缓（JS 开发者熟悉） | 陡峭（需学习 Rust） |
 
+**Tauri 命令示例（前端 ↔ Rust 通信）**：
+
+```rust
+// src-tauri/src/lib.rs
+use tauri::command;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize)]
+struct FileMeta {
+    name: String,
+    size: u64,
+}
+
+#[command]
+async fn read_dir(path: String) -> Result<Vec<FileMeta>, String> {
+    let mut entries = Vec::new();
+    let mut dir = tokio::fs::read_dir(&path)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    while let Ok(Some(entry)) = dir.next_entry().await {
+        let meta = entry.metadata().await.map_err(|e| e.to_string())?;
+        entries.push(FileMeta {
+            name: entry.file_name().to_string_lossy().into(),
+            size: meta.len(),
+        });
+    }
+    Ok(entries)
+}
+
+pub fn run() {
+    tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![read_dir])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+```
+
+```typescript
+// src/App.tsx — 前端调用 Rust 命令
+import { invoke } from '@tauri-apps/api/core';
+
+interface FileMeta {
+  name: string;
+  size: number;
+}
+
+async function listFiles(dir: string): Promise<FileMeta[]> {
+  return invoke<FileMeta[]>('read_dir', { path: dir });
+}
+
+// 使用示例
+const files = await listFiles('/Users/alice/Documents');
+console.log(files.map(f => `${f.name} (${f.size} bytes)`));
+```
+
 ---
 
 ## 6. 功能与生态对比
@@ -134,6 +190,29 @@ Tauri 使用操作系统原生 WebView（Windows: WebView2, macOS: WKWebView, Li
 | 移动端支持 | 不支持 | **支持**（Tauri v2 新增 iOS/Android） |
 
 **Tauri v2 的重要突破**：通过 `tauri-mobile` 支持 iOS 和 Android 构建，一套代码可覆盖桌面 + 移动端。
+
+**Tauri v2 移动端配置示例**：
+
+```json
+// src-tauri/tauri.conf.json
+{
+  "identifier": "com.example.myapp",
+  "plugins": {
+    "shell": {
+      "open": true
+    }
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "My App",
+        "width": 800,
+        "height": 600
+      }
+    ]
+  }
+}
+```
 
 ---
 
@@ -176,3 +255,24 @@ Tauri 使用操作系统原生 WebView（Windows: WebView2, macOS: WKWebView, Li
 - 新项目、对体积和安全敏感 → **Tauri v2**
 - 已有大型 Electron 代码库、重度依赖 Node.js 生态 → **Electron**
 - 需要同时覆盖桌面 + 移动端 → **Tauri v2**
+
+---
+
+## 9. 权威外部资源
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Tauri 官方文档 | [tauri.app](https://tauri.app/) | v2 完整指南与 API 参考 |
+| Tauri v2 迁移指南 | [tauri.app/start/migrate/from-tauri-1](https://tauri.app/start/migrate/from-tauri-1/) | 从 v1 升级的官方路径 |
+| Electron 官方文档 | [electronjs.org/docs](https://www.electronjs.org/docs/latest/) | 主进程/渲染进程/安全最佳实践 |
+| Electron Fiddle | [electronjs.org/fiddle](https://www.electronjs.org/fiddle) | 官方快速实验环境 |
+| Electron 安全清单 | [electronjs.org/docs/latest/tutorial/security](https://www.electronjs.org/docs/latest/tutorial/security) | 官方安全最佳实践 |
+| WebView2 Runtime | [learn.microsoft.com/microsoft-edge/webview2](https://learn.microsoft.com/en-us/microsoft-edge/webview2/) | Windows 原生 WebView 文档 |
+| WKWebView (Apple) | [developer.apple.com/documentation/webkit/wkwebview](https://developer.apple.com/documentation/webkit/wkwebview) | macOS/iOS WebView 官方文档 |
+| Rust 官方学习资源 | [rust-lang.org/learn](https://www.rust-lang.org/learn) | Tauri 后端开发基础 |
+| Tauri 插件仓库 | [github.com/tauri-apps/plugins-workspace](https://github.com/tauri-apps/plugins-workspace) | 官方维护的插件集合 |
+| Electron Forge | [electronforge.io](https://www.electronforge.io/) | Electron 官方构建与发布工具 |
+
+---
+
+*最后更新: 2026-04-29*

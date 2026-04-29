@@ -37,7 +37,7 @@ e ::= x            (变量)
 
 ### 2.1 为什么存在
 
-Lambda 演算由 Alonzo Church 于 1936 年提出，旨在形式化“可计算性”概念。它证明了通用计算无需指令集、状态或副作用——仅函数抽象与应用即足够。这一发现直接催生了 Lisp、ML、Haskell 及 JavaScript 的箭头函数等现代语言构造。
+Lambda 演算由 Alonzo Church 于 1936 年提出，旨在形式化"可计算性"概念。它证明了通用计算无需指令集、状态或副作用——仅函数抽象与应用即足够。这一发现直接催生了 Lisp、ML、Haskell 及 JavaScript 的箭头函数等现代语言构造。
 
 ### 2.2 权衡分析
 
@@ -126,6 +126,36 @@ console.log('IF FALSE 10 20 =', IF(FALSE)(10)(20)); // 20
 console.log('factorial 5 =', factorial(5)); // 120
 ```
 
+#### 进阶：Church 配对（Pair）与列表编码
+
+```typescript
+// Church 配对：PAIR a b = λf. f a b
+const PAIR = <A, B>(a: A) => (b: B) => <R>(f: (x: A) => (y: B) => R) => f(a)(b);
+const FIRST = <A, B>(p: (f: (x: A) => (y: B) => A) => A) => p((x) => (_y) => x);
+const SECOND = <A, B>(p: (f: (x: A) => (y: B) => B) => B) => p((_x) => (y) => y);
+
+// 列表编码：NIL = λc.λn.n   CONS = λh.λt.λc.λn. c h (t c n)
+const NIL = <H, R>(c: (h: H) => (t: R) => R) => (n: R) => n;
+const CONS = <H>(h: H) => <R>(t: (c: (h: H) => (t: R) => R) => (n: R) => R) =>
+  (c: (h: H) => (t: R) => R) => (n: R) => c(h)(t(c)(n));
+
+// 构建列表 [1, 2, 3] 的 Church 编码
+const list123 = CONS(1)(CONS(2)(CONS(3)(NIL)));
+
+// 将 Church 列表转换为 JS 数组
+const churchListToArray = <H>(list: (c: (h: H) => (t: H[]) => H[]) => (n: H[]) => H[]): H[] =>
+  list((h) => (t) => [h, ...t])([]);
+
+console.log('Church list [1,2,3]:', churchListToArray(list123)); // [1, 2, 3]
+
+// 映射：MAP f list = list (λh.λt. CONS (f h) t) NIL
+const MAP = <A, B>(f: (a: A) => B) => (list: (c: (h: A) => (t: any) => any) => (n: any) => any) =>
+  list((h: A) => (t: any) => CONS(f(h))(t))(NIL);
+
+const doubled = MAP((x: number) => x * 2)(list123);
+console.log('doubled:', churchListToArray(doubled)); // [2, 4, 6]
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -140,6 +170,21 @@ console.log('factorial 5 =', factorial(5)); // 120
 - [Raul Rojas: A Tutorial Introduction to the Lambda Calculus](https://arxiv.org/abs/1503.09060)
 - [CompCert: Verified Compilation of Lambda Calculus](https://compcert.org/)
 - `20.10-formal-verification/type-theory-formal/`
+
+## 四、权威外部资源
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| TAPL (Types and Programming Languages) | [www.cis.upenn.edu/~bcpierce/tapl](https://www.cis.upenn.edu/~bcpierce/tapl/) | 类型理论经典教材，第5章 λ 演算 |
+| Barendregt: The Lambda Calculus | [elsevier.com/books/the-lambda-calculus/barendregt/978-0-444-86748-3](https://www.elsevier.com/books/the-lambda-calculus/barendregt/978-0-444-86748-3) | λ 演算权威专著 |
+| Church, 1936 — 原始论文 | [doi.org/10.2307/2268480](https://doi.org/10.2307/2268480) | 形式化可计算性的开创性工作 |
+| Rojas 教程 (arXiv) | [arxiv.org/abs/1503.09060](https://arxiv.org/abs/1503.09060) | 免费入门的 λ 演算教程 |
+| PLFA — Programming Language Foundations in Agda | [plfa.inf.ed.ac.uk](https://plfa.inf.ed.ac.uk/) | 使用依赖类型形式化 PLT |
+| Software Foundations (Coq) | [softwarefoundations.cis.upenn.edu](https://softwarefoundations.cis.upenn.edu/) | UPenn 形式化验证课程 |
+| Lambda Calculus in JavaScript | [github.com/tc39/proposal-pattern-matching](https://github.com/tc39/proposal-pattern-matching) | TC39 模式匹配提案（λ 演算的现代应用） |
+| Hindley-Milner 类型推断 | [wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system) | 简单类型 λ 的类型推断算法 |
+| To Mock a Mockingbird (Smullyan) | [wikipedia.org/wiki/To_Mock_a_Mockingbird](https://en.wikipedia.org/wiki/To_Mock_a_Mockingbird) | 通过谜题学习组合子逻辑 |
+| ECMA-262 规范 — 函数语义 | [tc39.es/ecma262/#sec-ecmascript-function-objects](https://tc39.es/ecma262/#sec-ecmascript-function-objects) | JS 函数对象规范定义 |
 
 ---
 

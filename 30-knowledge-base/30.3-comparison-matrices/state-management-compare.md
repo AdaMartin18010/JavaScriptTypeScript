@@ -49,6 +49,58 @@ const useStore = create((set) => ({
 }))
 ```
 
+**进阶：中间件组合与异步 Action**
+
+```typescript
+import { create } from 'zustand';
+import { devtools, persist, subscribeWithSelector } from 'zustand/middleware';
+import { immer } from 'zustand/middleware/immer';
+
+interface UserState {
+  user: { id: string; name: string } | null;
+  loading: boolean;
+  error: string | null;
+  fetchUser: (id: string) => Promise<void>;
+  updateName: (name: string) => void;
+}
+
+const useUserStore = create<UserState>()(
+  devtools(
+    persist(
+      subscribeWithSelector(
+        immer((set) => ({
+          user: null,
+          loading: false,
+          error: null,
+          fetchUser: async (id) => {
+            set((draft) => { draft.loading = true; draft.error = null; });
+            try {
+              const res = await fetch(`/api/users/${id}`);
+              const user = await res.json();
+              set((draft) => { draft.user = user; });
+            } catch (e) {
+              set((draft) => { draft.error = (e as Error).message; });
+            } finally {
+              set((draft) => { draft.loading = false; });
+            }
+          },
+          updateName: (name) => {
+            set((draft) => {
+              if (draft.user) draft.user.name = name;
+            });
+          },
+        }))
+      ),
+      { name: 'user-storage' }
+    ),
+    { name: 'UserStore' }
+  )
+);
+
+// 选择性订阅，避免无关重渲染
+const userName = useUserStore.use.user((s) => s?.name);
+```
+
 ### Redux (RTK)
 
 ```bash
@@ -77,6 +129,30 @@ const counterSlice = createSlice({
 })
 ```
 
+**进阶：RTK Query 数据获取**
+
+```typescript
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+
+export const api = createApi({
+  reducerPath: 'api',
+  baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
+  tagTypes: ['Post'],
+  endpoints: (builder) => ({
+    getPosts: builder.query<Post[], void>({
+      query: () => '/posts',
+      providesTags: ['Post'],
+    }),
+    addPost: builder.mutation<Post, Partial<Post>>({
+      query: (body) => ({ url: '/posts', method: 'POST', body }),
+      invalidatesTags: ['Post'],
+    }),
+  }),
+});
+
+export const { useGetPostsQuery, useAddPostMutation } = api;
+```
+
 ### Jotai
 
 ```bash
@@ -98,6 +174,32 @@ import { atom, useAtom } from 'jotai'
 
 const countAtom = atom(0)
 const doubledAtom = atom((get) => get(countAtom) * 2)
+```
+
+**进阶：异步原子与 Suspense 集成**
+
+```typescript
+import { atom } from 'jotai';
+import { atomWithSuspenseQuery } from 'jotai-tanstack-query';
+
+// 基础原子
+const userIdAtom = atom<string>('1');
+
+// 异步数据原子（自动支持 Suspense + 缓存）
+const userAtom = atomWithSuspenseQuery((get) => ({
+  queryKey: ['user', get(userIdAtom)],
+  queryFn: async ({ queryKey }) => {
+    const res = await fetch(`/api/users/${queryKey[1]}`);
+    if (!res.ok) throw new Error('Failed to fetch user');
+    return res.json() as Promise<User>;
+  },
+}));
+
+// 派生原子：依赖多个原子
+const userDisplayNameAtom = atom((get) => {
+  const { data: user } = get(userAtom);
+  return user?.nickname || user?.name || 'Anonymous';
+});
 ```
 
 ### Pinia
@@ -126,6 +228,37 @@ export const useCounterStore = defineStore('counter', {
 })
 ```
 
+**进阶：组合式 API Store + 插件**
+
+```typescript
+import { defineStore } from 'pinia';
+import { ref, computed } from 'vue';
+
+export const useCartStore = defineStore('cart', () => {
+  // State
+  const items = ref<CartItem[]>([]);
+
+  // Getters
+  const totalItems = computed(() => items.value.reduce((sum, i) => sum + i.qty, 0));
+  const totalPrice = computed(() =>
+    items.value.reduce((sum, i) => sum + i.price * i.qty, 0)
+  );
+
+  // Actions
+  function addItem(product: Product) {
+    const existing = items.value.find((i) => i.id === product.id);
+    if (existing) existing.qty++;
+    else items.value.push({ ...product, qty: 1 });
+  }
+
+  function removeItem(id: string) {
+    items.value = items.value.filter((i) => i.id !== id);
+  }
+
+  return { items, totalItems, totalPrice, addItem, removeItem };
+});
+```
+
 ## 特性对比详解
 
 | 特性 | Zustand | Redux | Jotai | Pinia |
@@ -148,3 +281,20 @@ export const useCounterStore = defineStore('counter', {
 | Vue 项目 | Pinia |
 | 从 Redux 迁移 | Zustand 或 Jotai |
 | 需要跨框架共享 | Redux |
+
+---
+
+## 权威外部资源
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Zustand 官方文档 | [docs.pmnd.rs/zustand](https://docs.pmnd.rs/zustand/getting-started/introduction) | 完整 API 与中间件指南 |
+| Redux Toolkit 官方教程 | [redux-toolkit.js.org/tutorials/quick-start](https://redux-toolkit.js.org/tutorials/quick-start) | 官方快速入门 |
+| Redux 风格指南 | [redux.js.org/style-guide/style-guide](https://redux.js.org/style-guide/style-guide) | 官方最佳实践 |
+| Jotai 官方文档 | [jotai.org/docs](https://jotai.org/docs/) | 原子化状态管理指南 |
+| Pinia 官方文档 | [pinia.vuejs.org](https://pinia.vuejs.org/) | Vue 官方状态管理 |
+| React 官方状态管理建议 | [react.dev/learn/thinking-in-react](https://react.dev/learn/thinking-in-react) | 何时需要状态管理库 |
+| Why React Context is Not a State Management Tool | [blog.isquaredsoftware.com/2021/01/context-redux-differences](https://blog.isquaredsoftware.com/2021/01/context-redux-differences/) | Mark Erikson 深度分析 |
+| Zustand vs Redux 性能对比 | [github.com/pmndrs/zustand#readingwriting-state-and-reacting-to-changes-outside-components](https://github.com/pmndrs/zustand) | 底层性能差异 |
+| Redux DevTools Extension | [github.com/reduxjs/redux-devtools](https://github.com/reduxjs/redux-devtools) | 时间旅行调试工具 |
+| Pinia 插件生态 | [github.com/vuejs/pinia/discussions/categories/ecosystem](https://github.com/vuejs/pinia/discussions/categories/ecosystem) | 持久化、ORM 插件 |

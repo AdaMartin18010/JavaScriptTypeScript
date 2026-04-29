@@ -69,14 +69,133 @@ async function processOrder(orderId) {
 }
 ```
 
-## 6. 权威参考
+## 6. 代码示例：Prometheus Client 指标埋点
+
+```typescript
+import { Counter, Histogram, Registry } from 'prom-client';
+
+const register = new Registry();
+
+// 定义计数器：记录 HTTP 请求总数
+const httpRequestsTotal = new Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status_code'],
+  registers: [register],
+});
+
+// 定义直方图：记录请求延迟分布
+const httpRequestDuration = new Histogram({
+  name: 'http_request_duration_seconds',
+  help: 'Duration of HTTP requests in seconds',
+  labelNames: ['method', 'route'],
+  buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
+  registers: [register],
+});
+
+// Express 中间件集成
+function metricsMiddleware(req, res, next) {
+  const end = httpRequestDuration.startTimer();
+  res.on('finish', () => {
+    const labels = { method: req.method, route: req.route?.path || 'unknown' };
+    httpRequestsTotal.inc({ ...labels, status_code: res.statusCode });
+    end(labels);
+  });
+  next();
+}
+```
+
+## 7. 代码示例：结构化日志与 Trace 上下文关联
+
+```typescript
+import pino from 'pino';
+import { context, trace } from '@opentelemetry/api';
+
+const logger = pino({
+  level: process.env.LOG_LEVEL || 'info',
+  formatters: {
+    level(label) { return { level: label }; },
+  },
+  base: { service: 'payment-service', pid: process.pid },
+});
+
+// 自动注入 trace_id 和 span_id 到每条日志
+function getLoggerWithTrace() {
+  const span = trace.getSpan(context.active());
+  if (!span) return logger;
+  const { traceId, spanId } = span.spanContext();
+  return logger.child({ trace_id: traceId, span_id: spanId });
+}
+
+// 使用示例
+async function chargeUser(userId: string, amount: number) {
+  const log = getLoggerWithTrace();
+  log.info({ userId, amount }, 'Charging user');
+  try {
+    await gateway.charge(userId, amount);
+    log.info({ userId }, 'Charge succeeded');
+  } catch (err) {
+    log.error({ err, userId }, 'Charge failed');
+    throw err;
+  }
+}
+```
+
+## 8. 代码示例：Baggage 跨服务传播
+
+```typescript
+import { propagation, context, baggage } from '@opentelemetry/api';
+
+// 在入口服务设置 Baggage（业务上下文）
+function setTenantContext(tenantId: string, userTier: string) {
+  const currentBaggage = baggage.getActiveBaggage() || baggage.createBaggage();
+  const newBaggage = currentBaggage
+    .setEntry('tenant.id', { value: tenantId })
+    .setEntry('user.tier', { value: userTier });
+  return propagation.setBaggage(context.active(), newBaggage);
+}
+
+// 在下游服务读取 Baggage
+function getTenantContext() {
+  const bg = baggage.getBaggage(context.active());
+  return {
+    tenantId: bg?.getEntry('tenant.id')?.value,
+    userTier: bg?.getEntry('user.tier')?.value,
+  };
+}
+```
+
+## 9. RED 方法仪表盘查询示例（PromQL）
+
+```promql
+# Rate：每秒请求数
+sum(rate(http_requests_total[5m])) by (route)
+
+# Errors：每秒错误率
+sum(rate(http_requests_total{status_code=~"5.."}[5m])) by (route)
+  /
+sum(rate(http_requests_total[5m])) by (route)
+
+# Duration：P99 延迟
+histogram_quantile(0.99,
+  sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route)
+)
+```
+
+## 10. 权威参考
 
 - [OpenTelemetry Official Docs](https://opentelemetry.io/docs/) — 云原生可观测性标准
 - [Google SRE Book — Monitoring](https://sre.google/sre-book/monitoring-distributed-systems/) — Google 分布式监控最佳实践
 - [Prometheus Best Practices](https://prometheus.io/docs/practices/) — 指标命名与告警设计
 - [W3C Trace Context](https://www.w3.org/TR/trace-context/) — 分布式追踪上下文规范
+- [OpenTelemetry Baggage Spec](https://opentelemetry.io/docs/concepts/signals/baggage/) — Baggage 传播规范
+- [CNCF Observability Whitepaper](https://github.com/cncf/tag-observability/blob/main/whitepaper.md) — CNCF 可观测性白皮书
+- [Honeycomb — Observability Guide](https://docs.honeycomb.io/concepts/observability/) — 事件驱动可观测性实践
+- [Jaeger Documentation](https://www.jaegertracing.io/docs/) — 分布式追踪系统文档
+- [Pino — Node.js Logger](https://getpino.io/) — 高性能结构化日志库
+- [Grafana Loki](https://grafana.com/docs/loki/latest/) — 水平可扩展日志聚合系统
 
-## 7. 与相邻模块的关系
+## 11. 与相邻模块的关系
 
 - **92-observability-lab**: 可观测性的代码实现与工具链
 - **17-debugging-monitoring**: 调试与监控基础

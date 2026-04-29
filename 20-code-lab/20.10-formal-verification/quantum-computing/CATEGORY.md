@@ -41,11 +41,12 @@ created: 2026-04-27
 | **社区规模** | 最大 | 大 | 中等 | 最小 |
 | **适用场景** | 学术研究/工业 | NISQ 算法 | 量子机器学习 | 教学/前端可视化 |
 
-### 代码示例：量子态向量模拟（TypeScript）
+## 代码示例
+
+### 单量子比特态向量
 
 ```typescript
 // quantum-state.ts — 单量子比特态向量表示
-
 class Qubit {
   // 态向量: α|0⟩ + β|1⟩，用复数近似 [real, imag]
   constructor(
@@ -69,6 +70,8 @@ class Qubit {
   }
 
   toString(): string {
+    const fmt = (c: [number, number]) =>
+      c[1] === 0 ? c[0].toFixed(3) : `(${c[0].toFixed(3)}+${c[1].toFixed(3)}i)`;
     return `${fmt(this.alpha)}|0⟩ + ${fmt(this.beta)}|1⟩`;
   }
 }
@@ -80,22 +83,83 @@ console.log(q1.toString()); // ≈ 0.707|0⟩ + 0.707|1⟩
 console.log('P(|0⟩) =', q1.measure0().toFixed(3)); // ≈ 0.500
 ```
 
-## 关联模块
+### 多量子比特与 CNOT 门
 
-- `76-ml-engineering` — ML 工程
-- `30-knowledge-base/application-domains-index.md` — 应用领域总索引
+```typescript
+// multi-qubit.ts — 两量子比特与受控非门
+function cnot(control: Qubit, target: Qubit): [Qubit, Qubit] {
+  // 若 control 为 |1⟩，则翻转 target
+  const cProb = control.measure0();
+  const isOne = cProb < 0.5; // 简化判断
 
-## 学习资源
+  if (isOne) {
+    // 翻转 target: 交换 alpha 与 beta
+    return [control, new Qubit(target.beta, target.alpha)];
+  }
+  return [control, target];
+}
+
+// Bell 态制备: |00⟩ → H⊗I → CNOT → (|00⟩+|11⟩)/√2
+const qA = new Qubit().hadamard();
+const qB = new Qubit();
+const [bellA, bellB] = cnot(qA, qB);
+console.log('Bell state prepared');
+```
+
+### Grover 搜索算法模拟
+
+```typescript
+// grover-search.ts — 在 N=4 数据库中搜索标记项
+function groverOracle(target: number): (x: number) => number {
+  // 当 x === target 时相位翻转
+  return (x: number) => (x === target ? -1 : 1);
+}
+
+function groverDiffusion(probabilities: number[]): number[] {
+  const mean = probabilities.reduce((a, b) => a + b, 0) / probabilities.length;
+  return probabilities.map((p) => 2 * mean - p);
+}
+
+function simulateGrover(nQubits: number, target: number): number {
+  const N = 2 ** nQubits;
+  // 初始化均匀叠加态
+  let amps = new Array(N).fill(1 / Math.sqrt(N));
+  const oracle = groverOracle(target);
+
+  const iterations = Math.round((Math.PI / 4) * Math.sqrt(N));
+  for (let i = 0; i < iterations; i++) {
+    // Oracle: 标记目标项
+    amps = amps.map((a, x) => a * oracle(x));
+    // Diffusion: 关于平均值反射
+    amps = groverDiffusion(amps);
+  }
+
+  // 返回概率最大的索引
+  return amps.indexOf(Math.max(...amps.map(Math.abs)));
+}
+
+console.log(simulateGrover(2, 2)); // 在 4 个元素中搜索 2，高概率返回 2
+```
+
+## 权威参考链接
 
 | 资源 | 类型 | 链接 |
 |------|------|------|
 | Qiskit Textbook | 教材 | [qiskit.org/learn](https://qiskit.org/learn) |
-| Quantum Computing for Computer Scientists | 书籍 | [arxiv:quant-ph/0304015](https://arxiv.org/abs/quant-ph/0304015) |
+| Quantum Computing for Computer Scientists | 论文 | [arxiv:quant-ph/0304015](https://arxiv.org/abs/quant-ph/0304015) |
 | Cirq Documentation | 文档 | [quantumai.google/cirq](https://quantumai.google/cirq) |
 | PennyLane Docs | 文档 | [pennylane.ai](https://pennylane.ai) |
 | IBM Quantum Learning | 课程 | [learning.quantum.ibm.com](https://learning.quantum.ibm.com) |
 | Quirk Quantum Simulator | 可视化 | [algassert.com/quirk](https://algassert.com/quirk) — 浏览器内量子电路模拟器 |
-| Quantum Computation and Quantum Information | 教材 | Nielsen & Chuang 经典教材 |
+| Nielsen & Chuang 教材 | 书籍 | Quantum Computation and Quantum Information — 领域圣经 |
+| Microsoft Azure Quantum | 文档 | [learn.microsoft.com/azure/quantum](https://learn.microsoft.com/azure/quantum) |
+| Q# Documentation | 文档 | [learn.microsoft.com/azure/quantum/qsharp](https://learn.microsoft.com/azure/quantum/qsharp) |
+| Quantum Open Source Foundation | 社区 | [qosf.org](https://qosf.org) |
+
+## 关联模块
+
+- `76-ml-engineering` — ML 工程
+- `30-knowledge-base/application-domains-index.md` — 应用领域总索引
 
 ---
 

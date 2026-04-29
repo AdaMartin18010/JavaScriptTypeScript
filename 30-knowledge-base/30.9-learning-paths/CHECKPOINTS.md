@@ -49,6 +49,43 @@ status: current
 - **阶段 3**：红-绿-重构循环 / 单元/集成/E2E 边界 / Mock vs Stub
 - **阶段 4**：组件化核心思想 / props vs state / 单向数据流
 
+**类型安全 EventEmitter 参考实现**：
+
+```typescript
+// event-emitter-typed.ts
+// 通过映射类型实现类型安全的事件总线
+type EventMap = Record<string, unknown[]>;
+
+class TypedEventEmitter<Events extends EventMap> {
+  private listeners: { [K in keyof Events]?: Array<(...args: Events[K]) => void> } = {};
+
+  on<K extends keyof Events>(event: K, listener: (...args: Events[K]) => void): () => void {
+    if (!this.listeners[event]) this.listeners[event] = [];
+    this.listeners[event]!.push(listener);
+    return () => this.off(event, listener);
+  }
+
+  off<K extends keyof Events>(event: K, listener: (...args: Events[K]) => void): void {
+    const arr = this.listeners[event];
+    if (arr) this.listeners[event] = arr.filter(l => l !== listener) as typeof arr;
+  }
+
+  emit<K extends keyof Events>(event: K, ...args: Events[K]): void {
+    this.listeners[event]?.forEach(l => l(...args));
+  }
+}
+
+// 使用示例：编译时类型检查
+type MyEvents = {
+  'user:login': [userId: string, timestamp: number];
+  'user:logout': [userId: string];
+};
+
+const bus = new TypedEventEmitter<MyEvents>();
+bus.on('user:login', (id, ts) => console.log(id, ts)); // ✅ 类型安全
+// bus.on('user:login', (id) => {}); // ❌ 参数数量不匹配会被 TS 捕获
+```
+
 ---
 
 ## ⚙️ 进阶路径 Checkpoints
@@ -68,6 +105,52 @@ status: current
 - **阶段 2**：事件循环完整流程图 / Promise/AsyncAwait/Generator 底层 / 并发控制方案
 - **阶段 3**：Chrome DevTools 性能分析 / 虚拟列表原理 / 缓存策略设计
 - **阶段 4**：RESTful API 设计 / JWT 认证流程 / 数据库 Schema 设计
+
+**限流器 Token Bucket 实现**：
+
+```typescript
+// rate-limiter.ts
+export class TokenBucket {
+  private tokens: number;
+  private lastRefill: number;
+
+  constructor(
+    private capacity: number,
+    private refillRatePerSec: number
+  ) {
+    this.tokens = capacity;
+    this.lastRefill = Date.now();
+  }
+
+  tryConsume(tokens = 1): boolean {
+    this.refill();
+    if (this.tokens >= tokens) {
+      this.tokens -= tokens;
+      return true;
+    }
+    return false;
+  }
+
+  private refill(): void {
+    const now = Date.now();
+    const elapsed = (now - this.lastRefill) / 1000;
+    this.tokens = Math.min(this.capacity, this.tokens + elapsed * this.refillRatePerSec);
+    this.lastRefill = now;
+  }
+}
+
+// 异步限流包装器
+export async function withRateLimit<T>(
+  bucket: TokenBucket,
+  fn: () => Promise<T>,
+  retryMs = 100
+): Promise<T> {
+  while (!bucket.tryConsume()) {
+    await new Promise(r => setTimeout(r, retryMs));
+  }
+  return fn();
+}
+```
 
 ---
 
@@ -98,6 +181,35 @@ status: current
 - **阶段 3**：Hoare 三元组 / TLA+ 并发协议 / 模型检测原理
 - **阶段 4**：Transformer/Attention 原理 / AI Agent 架构 / Wasm Component Model
 - **阶段 5**：完整 ADR 编写 / 技术选型 8 维度评估 / 技术债务偿还计划
+
+**ADR 模板示例（Markdown）**：
+
+```markdown
+# ADR-042: 状态管理库选型
+
+## 状态
+Proposed → Accepted (2026-04-29)
+
+## 上下文
+项目需要为 React 前端选择状态管理方案，候选：Zustand / Redux Toolkit / Jotai。
+
+## 决策
+采用 Zustand，依据 8 维度评估：
+| 维度 | Zustand | RTK | Jotai | 权重 |
+|------|---------|-----|-------|------|
+| 包体积 | 5 | 3 | 4 | 0.15 |
+| 学习成本 | 5 | 2 | 5 | 0.20 |
+| TypeScript 体验 | 4 | 4 | 5 | 0.20 |
+| 生态成熟度 | 4 | 5 | 3 | 0.15 |
+| 可测试性 | 5 | 4 | 4 | 0.15 |
+| 服务端渲染 | 4 | 4 | 4 | 0.10 |
+| 团队熟悉度 | 5 | 3 | 2 | 0.05 |
+| 总分 | 4.55 | 3.50 | 3.95 | — |
+
+## 后果
+- 正向：包体积小，API 极简，无需 Provider 包裹
+- 风险：大型应用状态组织需制定团队规范
+```
 
 ---
 
@@ -145,6 +257,21 @@ status: current
 | 理论综述 | `../../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/` | 8 大主题全景文档 |
 | 认证体系 | `./project-based-certification.md` | 项目制能力认证 |
 | 构建工具对比 | `../30.3-comparison-matrices/build-tools-compare.md` | 工具选型矩阵 |
+
+## 权威外部学习资源
+
+| 资源 | 链接 | 适用路径 |
+|------|------|----------|
+| TypeScript 挑战 | [github.com/type-challenges/type-challenges](https://github.com/type-challenges/type-challenges) | 初学者 → 进阶 |
+| Total TypeScript (Matt Pocock) | [totaltypescript.com](https://www.totaltypescript.com/) | 初学者 → 进阶 |
+| Designing Data-Intensive Applications | [martin.kleppmann.com](https://martin.kleppmann.com/) | 架构师 |
+| TLA+ 视频教程 | [lamport.azurewebsites.net/tla/learning.html](https://lamport.azurewebsites.net/tla/learning.html) | 架构师 |
+| Raft 论文与可视化 | [raft.github.io](https://raft.github.io/) | 架构师 |
+| Web Vitals | [web.dev/vitals](https://web.dev/vitals/) | 进阶 |
+| OWASP Testing Guide | [owasp.org/www-project-web-security-testing-guide](https://owasp.org/www-project-web-security-testing-guide/latest/) | 进阶 → 架构师 |
+| React 官方文档 | [react.dev](https://react.dev/) | 初学者 → 进阶 |
+| Node.js Best Practices | [github.com/goldbergyoni/nodebestpractices](https://github.com/goldbergyoni/nodebestpractices) | 进阶 |
+| Kubernetes 官方教程 | [kubernetes.io/docs/tutorials](https://kubernetes.io/docs/tutorials/) | 架构师 |
 
 ---
 

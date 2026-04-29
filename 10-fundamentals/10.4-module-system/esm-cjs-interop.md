@@ -71,6 +71,19 @@ ECMA-262 定义了抽象的 **Source Text Module Record**，其关键字段：
 | `require('esm-package')` | v22+ | 包需定义 `exports` |
 | 动态 `import()` | 所有版本 | 返回 Promise，异步加载 |
 
+**CJS 中使用动态 `import()`：**
+
+```javascript
+// utils.cjs
+async function loadFormatter() {
+  // ESM-only 包（如 chalk 5+、ora 7+）必须通过动态 import 加载
+  const { default: chalk } = await import('chalk');
+  return (text) => chalk.green(text);
+}
+
+module.exports = { loadFormatter };
+```
+
 ### 4.2 ESM 导入 CJS
 
 **互操作规则表**：
@@ -81,39 +94,220 @@ ECMA-262 定义了抽象的 **Source Text Module Record**，其关键字段：
 | `exports.foo = x` | `import mod from '...'` | `import { foo }` | `mod.foo` 或解构 |
 | `exports.__esModule = true` | 按 Babel 兼容处理 | 可能提升命名导出 | 互操作暗语 |
 
+**实际互操作示例：**
+
+```javascript
+// cjs-lib.cjs
+module.exports = function add(a, b) { return a + b; };
+module.exports.subtract = (a, b) => a - b;
+module.exports.PI = 3.14159;
+```
+
+```typescript
+// consumer.mjs
+import add, { subtract, PI } from './cjs-lib.cjs';
+
+console.log(add(2, 3));           // 5
+console.log(subtract(5, 2));      // 3
+console.log(PI);                  // 3.14159
+```
+
+**TypeScript `esModuleInterop` 下的命名空间导入：**
+
+```typescript
+// tsconfig.json: "esModuleInterop": true, "moduleResolution": "nodenext"
+import * as lib from './cjs-lib.cjs';
+
+// lib 同时具有命名空间属性和 callable default
+lib.default(2, 3);   // 5
+lib.subtract(5, 2);  // 3
+```
+
 ---
 
-## 五、循环依赖（Circular Dependencies）
+## 五、双模式库发布（Dual Package）
 
-### 5.1 ESM 中的循环依赖
+现代 npm 库需要同时支持 ESM 和 CJS。推荐配置：
+
+```json
+{
+  "name": "my-lib",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist"]
+}
+```
+
+**条件导出的 TypeScript 构建脚本（tsup）：**
+
+```json
+{
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean"
+  }
+}
+```
+
+```typescript
+// tsup.config.ts
+import { defineConfig } from 'tsup';
+
+export default defineConfig({
+  entry: ['src/index.ts'],
+  format: ['cjs', 'esm'],
+  dts: true,
+  splitting: false,
+  sourcemap: true,
+  clean: true,
+});
+```
+
+---
+
+## 六、循环依赖（Circular Dependencies）
+
+### 6.1 ESM 中的循环依赖
 
 ESM 通过**TDZ（Temporal Dead Zone）** 保护未初始化绑定，避免访问 `undefined`。
 
 **定理（ESM 循环依赖安全定理）**：ESM 的循环依赖在链接阶段即可检测，未初始化绑定通过 TDZ 保护。
 
-### 5.2 CJS 中的循环依赖
+```javascript
+// a.mjs
+import { b } from './b.mjs';
+export const a = 'a-value';
+console.log('In a.mjs, b =', b); // ✅ 'b-value'
+```
+
+```javascript
+// b.mjs
+import { a } from './a.mjs';
+export const b = 'b-value';
+console.log('In b.mjs, a =', a); // ✅ 'a-value'
+```
+
+**TDZ 保护示例（访问未初始化绑定会抛出 ReferenceError）：**
+
+```javascript
+// first.mjs
+import { second } from './second.mjs';
+export const first = `first sees: ${second}`;
+
+// second.mjs
+import { first } from './first.mjs';
+// 此时 first 尚未初始化，处于 TDZ
+export const second = `second sees: ${first}`; // ❌ ReferenceError: Cannot access 'first' before initialization
+```
+
+### 6.2 CJS 中的循环依赖
 
 CJS 的循环依赖更隐蔽，可能返回**不完整的模块导出**（`{}`）。
 
+```javascript
+// first.cjs
+const second = require('./second.cjs');
+module.exports.first = `first sees: ${second.second}`;
+
+// second.cjs
+const first = require('./first.cjs');
+// first 此时是 {}（空对象占位符）
+module.exports.second = `second sees: ${first.first}`; // "second sees: undefined"
+```
+
+**解决 CJS 循环依赖的模式：**
+
+```javascript
+// first.cjs
+module.exports = { getFirst };
+
+const second = require('./second.cjs');
+
+function getFirst() {
+  return `first sees: ${second.getSecond()}`;
+}
+```
+
+```javascript
+// second.cjs
+module.exports = { getSecond };
+
+const first = require('./first.cjs');
+
+function getSecond() {
+  return `second sees: ${first.getFirst ? first.getFirst() : 'not ready'}`;
+}
+```
+
 ---
 
-## 六、Import Attributes 与 Defer
+## 七、Import Attributes 与 Defer
 
-### 6.1 Import Attributes（ES2025）
+### 7.1 Import Attributes（ES2025）
 
 ```javascript
 import json from './data.json' with { type: 'json' };
+
+// TypeScript 5.3+ 支持
+import type { Config } from './config.json' with { type: 'json' };
+const config: Config = (await import('./config.json', { with: { type: 'json' } })).default;
 ```
 
-### 6.2 Import Defer（Stage 3）
+### 7.2 Import Defer（Stage 3）
 
 ```javascript
 import defer * as heavy from './heavy-module.js';
+
+// heavy 模块延迟加载，首次访问属性时触发实际加载
+const result = heavy.compute(); // 此时才真正执行 heavy-module.js
 ```
 
 ---
 
-## 七、决策树：何时用 ESM，何时用 CJS
+## 八、TypeScript 模块解析配置
+
+```json
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "./dist"
+  }
+}
+```
+
+**`moduleResolution` 策略对比：**
+
+| 策略 | 适用场景 | ESM 文件扩展名 | 条件导出 |
+|------|---------|---------------|---------|
+| `node` | CJS 项目（ legacy ） | 不强制 `.js` | 部分支持 |
+| `nodenext` | ESM / 混合项目 | 强制 `.js` | 完整支持 |
+| `bundler` | Vite / Webpack 项目 | 可省略扩展名 | 完整支持 |
+
+---
+
+## 九、决策树：何时用 ESM，何时用 CJS
 
 ```
 项目类型分析
@@ -126,6 +320,23 @@ import defer * as heavy from './heavy-module.js';
 └── TypeScript 项目
     └── → "module": "nodenext" 或 "bundler"
 ```
+
+---
+
+## 十、权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| ECMA-262 §16.2 Modules | <https://tc39.es/ecma262/#sec-modules> | ECMAScript 模块规范原文 |
+| Node.js ESM Documentation | <https://nodejs.org/api/esm.html> | Node.js 官方 ESM 文档 |
+| Node.js Packages Documentation | <https://nodejs.org/api/packages.html> | 条件导出、双模式包规范 |
+| TypeScript Module Resolution | <https://www.typescriptlang.org/docs/handbook/modules/reference.html> | TS 模块解析参考手册 |
+| TypeScript `moduleResolution` | <https://www.typescriptlang.org/tsconfig#moduleResolution> | bundler / nodenext 配置说明 |
+| Import Attributes Proposal | <https://github.com/tc39/proposal-import-attributes> | TC39 Stage 3 提案 |
+| Import Defer Proposal | <https://github.com/tc39/proposal-defer-import-eval/> | TC39 Stage 3 延迟导入提案 |
+| Node.js CJS ↔ ESM Interop | <https://nodejs.org/api/esm.html#interoperability-with-commonjs> | 官方互操作详解 |
+| tsup — TypeScript Bundler | <https://tsup.egoist.dev/> | 零配置双模式构建工具 |
+| Rollup Guide | <https://rollupjs.org/guide/en/> | ESM-first 打包器文档 |
 
 ---
 

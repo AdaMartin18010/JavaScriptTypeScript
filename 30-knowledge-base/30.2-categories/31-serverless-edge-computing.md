@@ -40,7 +40,63 @@ status: current
 - 🔒 默认安全沙箱
 - 📦 KV、R2、D1、Durable Objects 生态
 
----
+**可运行代码示例**：
+
+```typescript
+// worker.ts —— Cloudflare Workers 边缘函数
+export interface Env {
+  MY_KV: KVNamespace;
+  MY_D1: D1Database;
+}
+
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const url = new URL(request.url);
+
+    // 边缘缓存：优先读取 KV
+    const cacheKey = url.pathname;
+    const cached = await env.MY_KV.get(cacheKey);
+    if (cached) {
+      return new Response(cached, {
+        headers: { 'Content-Type': 'application/json', 'X-Cache': 'HIT' },
+      });
+    }
+
+    // D1 边缘 SQL 查询
+    if (url.pathname === '/api/users') {
+      const { results } = await env.MY_D1.prepare('SELECT id, name FROM users LIMIT 10').all();
+      const json = JSON.stringify(results);
+
+      // 写入 KV 缓存 60 秒
+      ctx.waitUntil(env.MY_KV.put(cacheKey, json, { expirationTtl: 60 }));
+
+      return new Response(json, {
+        headers: { 'Content-Type': 'application/json', 'X-Cache': 'MISS' },
+      });
+    }
+
+    return new Response('Not Found', { status: 404 });
+  },
+};
+```
+
+**Wrangler 部署配置**：
+
+```toml
+# wrangler.toml
+name = "edge-api"
+main = "src/worker.ts"
+compatibility_date = "2026-04-29"
+
+[[kv_namespaces]]
+binding = "MY_KV"
+id = "your-kv-namespace-id"
+
+[[d1_databases]]
+binding = "MY_D1"
+database_name = "production-db"
+database_id = "your-d1-database-id"
+```
 
 ### Vercel Edge Functions
 
@@ -49,7 +105,27 @@ status: current
 
 Vercel 边缘运行时，兼容 WinterCG 标准，支持 Edge Config 和 AI SDK 边缘推理。
 
----
+**Vercel Edge Function 示例**：
+
+```typescript
+// app/api/geoip/route.ts
+import { geolocation } from '@vercel/functions';
+import { NextRequest, NextResponse } from 'next/server';
+
+export const runtime = 'edge'; // 关键：声明为 Edge Runtime
+
+export async function GET(request: NextRequest) {
+  const { city, country, latitude, longitude } = geolocation(request);
+
+  return NextResponse.json({
+    city,
+    country,
+    coordinates: { lat: latitude, lng: longitude },
+    region: request.geo?.region,
+    edgeNode: request.headers.get('x-vercel-id')?.split(':')[1],
+  });
+}
+```
 
 ### Deno Deploy
 
@@ -57,6 +133,41 @@ Vercel 边缘运行时，兼容 WinterCG 标准，支持 Edge Config 和 AI SDK 
 - **TS支持**: ✅ 原生
 
 Deno 的边缘部署平台，原生 TypeScript，内置权限模型。
+
+**Deno Deploy 示例**：
+
+```typescript
+// main.ts
+import { serve } from 'https://deno.land/std@0.220.0/http/server.ts';
+
+serve(async (req) => {
+  const url = new URL(req.url);
+
+  // Deno 原生 KV（全球复制）
+  const kv = await Deno.openKv();
+  const visitCount = await kv.atomic()
+    .sum(['visits', url.pathname], 1n)
+    .commit();
+
+  return new Response(JSON.stringify({ path: url.pathname, visits: visitCount }), {
+    headers: { 'content-type': 'application/json' },
+  });
+});
+```
+
+---
+
+## 边缘运行时选型对比
+
+| 维度 | Cloudflare Workers | Vercel Edge | Deno Deploy |
+|------|-------------------|-------------|-------------|
+| 冷启动 | < 1ms | < 50ms | < 10ms |
+| 全球节点 | 300+ | 100+ | 35+ |
+| 标准兼容 | WinterCG | WinterCG | Deno / WinterCG |
+| 原生存储 | KV, D1, R2, DO | Edge Config, Blob | Deno KV, Postgres |
+| 最大执行时间 | 30s (Free) / 5min (Paid) | 30s | 60s |
+| 本地模拟 | wrangler + Miniflare | next dev | deno deploy --prod |
+| 边缘 AI | Workers AI (内置) | AI SDK + OpenAI | 第三方 API |
 
 ---
 
@@ -72,6 +183,35 @@ Deno 的边缘部署平台，原生 TypeScript，内置权限模型。
 
 ---
 
+## 冷启动优化策略
+
+```typescript
+// 1. 懒加载重模块
+let heavyLib: typeof import('heavy-lib') | null = null;
+
+async function getHeavyLib() {
+  if (!heavyLib) heavyLib = await import('heavy-lib');
+  return heavyLib;
+}
+
+// 2. 连接预热（D1 / PlanetScale）
+const db = drizzle(env.DATABASE_URL, { schema });
+// 在模块顶层建立连接，利用 isolate 复用
+
+// 3. 边缘缓存优先
+async function cachedFetch(key: string, fetcher: () => Promise<Response>, ttl = 60) {
+  const cache = caches.default;
+  const cached = await cache.match(key);
+  if (cached) return cached;
+
+  const response = await fetcher();
+  ctx.waitUntil(cache.put(key, response.clone()));
+  return response;
+}
+```
+
+---
+
 ## 关联资源
 
 - `jsts-code-lab/31-serverless/` — Serverless 代码模式
@@ -79,6 +219,21 @@ Deno 的边缘部署平台，原生 TypeScript，内置权限模型。
 - `jsts-code-lab/93-deployment-edge-lab/` — 部署与边缘实战
 - `docs/categories/30-edge-databases.md` — 边缘数据库分类
 - `examples/edge-observability-starter/` — 边缘可观测性示例
+
+## 权威外部资源
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Cloudflare Workers 文档 | [developers.cloudflare.com/workers](https://developers.cloudflare.com/workers/) | 官方开发指南与运行时 API |
+| WinterCG 标准 | [wintercg.org](https://wintercg.org/) | 边缘运行时标准化组织 |
+| Vercel Edge Runtime | [vercel.com/docs/functions/runtimes/edge-runtime](https://vercel.com/docs/functions/runtimes/edge-runtime) | Edge Runtime 完整 API |
+| Deno Deploy 文档 | [docs.deno.com/deploy/manual](https://docs.deno.com/deploy/manual/) | Deno 原生边缘平台 |
+| Cloudflare D1 文档 | [developers.cloudflare.com/d1](https://developers.cloudflare.com/d1/) | 边缘 SQLite 数据库 |
+| Turso 文档 | [docs.turso.tech](https://docs.turso.tech/) | 边缘 SQLite (libSQL) |
+| Fly.io 边缘部署 | [fly.io/docs](https://fly.io/docs/) | 全球应用部署平台 |
+| AWS Lambda 性能优化 | [docs.aws.amazon.com/lambda/latest/operatorguide/perf-optimize.html](https://docs.aws.amazon.com/lambda/latest/operatorguide/perf-optimize.html) | 官方冷启动优化指南 |
+| Fastly Compute@Edge | [developer.fastly.com/learning/compute](https://developer.fastly.com/learning/compute/) | WASM 边缘运行时 |
+| Edge-first 架构模式 | [martinfowler.com/articles/serverless.html](https://martinfowler.com/articles/serverless.html) | Martin Fowler Serverless 综述 |
 
 ---
 

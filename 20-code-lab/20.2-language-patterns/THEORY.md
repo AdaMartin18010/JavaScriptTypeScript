@@ -13,7 +13,11 @@
 
 ### 1.2 形式化基础
 
-[本模块的形式化定义与公理/定理陈述]
+语言模式可视为在特定上下文（Context）中针对重复出现的问题（Problem）所给出的可复用解决方案（Solution）。形式化表达为：
+
+```
+Pattern = ⟨Context, Problem, Solution, Consequences⟩
+```
 
 ### 1.3 关键概念
 
@@ -39,6 +43,14 @@
 
 ### 2.3 与相关技术的对比
 
+| 模式 | 意图 | 典型实现 | 适用场景 |
+|------|------|---------|---------|
+| 工厂模式 | 封装对象创建逻辑 | `class Factory { create() {} }` | 对象创建复杂 |
+| 策略模式 | 运行时替换算法 | `interface Strategy { execute() }` | 多算法切换 |
+| 观察者模式 | 一对多依赖通知 | `EventEmitter` / `Proxy` | 事件驱动系统 |
+| 装饰器模式 | 动态增强行为 | ES Decorator / 高阶函数 | AOP、日志 |
+| 单例模式 | 全局唯一实例 | `private constructor` | 配置中心 |
+
 与其他相关技术对比，语言模式 在特定场景下提供了独特的权衡优势。
 
 ---
@@ -48,6 +60,43 @@
 ### 3.1 从理论到代码
 
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 语言模式 核心机制的理解，并观察不同实现选择带来的行为差异。
+
+#### 策略模式 + 工厂模式组合示例
+
+```typescript
+// 策略接口
+interface PaymentStrategy {
+  pay(amount: number): Promise<string>;
+}
+
+// 具体策略
+class AlipayStrategy implements PaymentStrategy {
+  async pay(amount: number) {
+    return `Alipay paid ¥${amount}`;
+  }
+}
+
+class WechatStrategy implements PaymentStrategy {
+  async pay(amount: number) {
+    return `Wechat paid ¥${amount}`;
+  }
+}
+
+// 工厂：根据类型创建策略
+class PaymentFactory {
+  static create(method: 'alipay' | 'wechat'): PaymentStrategy {
+    const map: Record<string, new () => PaymentStrategy> = {
+      alipay: AlipayStrategy,
+      wechat: WechatStrategy,
+    };
+    return new map[method]();
+  }
+}
+
+// 使用
+const payment = PaymentFactory.create('alipay');
+payment.pay(100).then(console.log);
+```
 
 ### 3.2 常见误区
 
@@ -59,6 +108,10 @@
 ### 3.3 扩展阅读
 
 - [MDN Web Docs](https://developer.mozilla.org)
+- [Refactoring Guru — Design Patterns](https://refactoring.guru/design-patterns)
+- [Patterns.dev](https://www.patterns.dev/)
+- [JavaScript Design Patterns (Addy Osmani)](https://addyosmani.com/resources/essentialjsdesignpatterns/book/)
+- [Gamma et al. — Design Patterns (GoF)](https://en.wikipedia.org/wiki/Design_Patterns)
 - `30-knowledge-base/`
 
 ---

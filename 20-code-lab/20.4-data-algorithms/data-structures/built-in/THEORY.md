@@ -63,4 +63,57 @@
 
 ---
 
+## 四、深度对比：Array / Map / Set / WeakMap / Object
+
+| 结构 | 键类型 | 有序性 | 可迭代 | 时间复杂度 (CRUD) | 垃圾回收协作 | 典型场景 |
+|------|--------|--------|--------|-------------------|-------------|----------|
+| `Array` | 整数索引 | ✅ 插入序 | ✅ | 尾部 O(1) / 中部 O(n) | ❌ | 队列、栈、列表 |
+| `Object` | `string` / `Symbol` | ❌ (ES2015+ 部分有序) | ⚠️ | 均摊 O(1) | ❌ | 配置对象、字典 |
+| `Map` | 任意值 | ✅ 插入序 | ✅ | O(1) | ❌ | 频繁增删的键值集合 |
+| `Set` | 值本身 | ✅ 插入序 | ✅ | O(1) | ❌ | 去重、成员检测 |
+| `WeakMap` | 仅对象 | ❌ | ❌ | O(1) | ✅ 键弱引用 | 私有数据、元数据缓存 |
+
+## 五、代码示例：高频操作与性能边界
+
+```typescript
+// ── Map：任意键与有序性 ──
+const userMeta = new Map<[number, string], Date>();
+const key: [number, string] = [42, 'session'];
+userMeta.set(key, new Date());
+
+// Map 保持插入顺序，且键与值独立迭代
+for (const [k, v] of userMeta) {
+  console.log(k, v);
+}
+
+// ── WeakMap：私有属性与自动释放 ──
+const privateData = new WeakMap<object, { token: string }>();
+
+class SecureSession {
+  constructor(token: string) {
+    privateData.set(this, { token });
+  }
+  getToken(): string | undefined {
+    return privateData.get(this)?.token;
+  }
+}
+// 当 SecureSession 实例被垃圾回收时，WeakMap 条目自动消失
+
+// ── Set + Array.from 去重模式 ──
+const items = [{ id: 1 }, { id: 2 }, { id: 1 }];
+const unique = Array.from(new Map(items.map(i => [i.id, i])).values());
+// 注意：Set 不能直接按对象字段去重，需配合 Map 或手写比较
+```
+
+## 六、权威参考链接
+
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| ECMAScript® 2025 Language Specification — Map & Set | 形式化语义与算法步骤 | [tc39.es/ecma262](https://tc39.es/ecma262/multipage/keyed-collections.html) |
+| V8 Blog — Fast properties | 对象/Map 底层隐藏类与哈希策略 | [v8.dev/blog/fast-properties](https://v8.dev/blog/fast-properties) |
+| MDN — JavaScript 标准内置对象 | API 与复杂度参考 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects) |
+| JavaScript Algorithms — Data Structures | 开源实现与复杂度对照 | [github.com/trekhleb/javascript-algorithms](https://github.com/trekhleb/javascript-algorithms) |
+
+---
+
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

@@ -1,5 +1,10 @@
 ﻿# 设计系统 — 理论基础
 
+> **定位**：`20-code-lab/20.5-frontend-frameworks/design-system`
+> **关联**：`50-examples/50.2-intermediate/` | `30-knowledge-base/`
+
+---
+
 ## 1. 设计系统定义
 
 设计系统是**可复用组件和标准的集合**，用于管理设计的一致性：
@@ -9,41 +14,288 @@
 - **样式指南**: 颜色、字体、间距等视觉规范
 - **内容指南**: 文案语气、术语使用
 
+---
+
 ## 2. 设计令牌（Design Tokens）
 
-设计系统的原子单位：
+设计系统的原子单位，是跨平台设计一致性的唯一事实来源：
 
 ```json
+// tokens.json — W3C Design Tokens Community Group 格式
 {
-  "color": { "primary": "#007bff", "danger": "#dc3545" },
-  "spacing": { "small": "4px", "medium": "8px", "large": "16px" },
-  "fontSize": { "body": "16px", "heading": "24px" }
+  "color": {
+    "primary": { "$value": "#007bff", "$type": "color" },
+    "danger": { "$value": "#dc3545", "$type": "color" },
+    "surface": {
+      "bg": { "$value": "{color.primary}", "$type": "color", "alpha": 0.08 }
+    }
+  },
+  "spacing": {
+    "small": { "$value": "4px", "$type": "dimension" },
+    "medium": { "$value": "8px", "$type": "dimension" },
+    "large": { "$value": "16px", "$type": "dimension" },
+    "scale": {
+      "$value": "1.5",
+      "$type": "number",
+      "$description": "间距倍数缩放因子"
+    }
+  },
+  "fontSize": {
+    "body": { "$value": "16px", "$type": "dimension" },
+    "heading": { "$value": "24px", "$type": "dimension" }
+  },
+  "shadow": {
+    "card": {
+      "$value": {
+        "x": "0px",
+        "y": "4px",
+        "blur": "12px",
+        "spread": "0px",
+        "color": "rgba(0,0,0,0.1)"
+      },
+      "$type": "shadow"
+    }
+  }
 }
 ```
 
-工具：Style Dictionary、Amazon Style Dictionary
+工具链转换示例（Style Dictionary → CSS 变量）：
+
+```typescript
+// build-tokens.ts
+import StyleDictionary from 'style-dictionary';
+
+StyleDictionary.registerTransform({
+  name: 'size/px',
+  type: 'value',
+  matcher: token => token.$type === 'dimension',
+  transformer: token => `${token.$value}`,
+});
+
+StyleDictionary.extend({
+  source: ['tokens.json'],
+  platforms: {
+    css: {
+      transformGroup: 'css',
+      buildPath: 'dist/',
+      files: [{
+        destination: 'variables.css',
+        format: 'css/variables',
+        options: { outputReferences: true }
+      }]
+    },
+    ts: {
+      transformGroup: 'js',
+      buildPath: 'dist/',
+      files: [{
+        destination: 'tokens.ts',
+        format: 'javascript/es6'
+      }]
+    }
+  }
+}).buildAllPlatforms();
+```
+
+生成的 CSS 变量：
+
+```css
+/* dist/variables.css */
+:root {
+  --color-primary: #007bff;
+  --color-danger: #dc3545;
+  --spacing-small: 4px;
+  --spacing-medium: 8px;
+  --spacing-large: 16px;
+  --font-size-body: 16px;
+  --font-size-heading: 24px;
+  --shadow-card: 0px 4px 12px 0px rgba(0,0,0,0.1);
+}
+```
+
+---
 
 ## 3. 组件库工程化
 
-- **Monorepo 结构**: 组件、主题、文档、工具分离
-- **构建输出**: ESM、CJS、UMD 多格式
-- **Tree Shaking**: 确保未使用组件被移除
-- **类型定义**: 自动生成 .d.ts
+### 3.1 Monorepo 结构
 
-## 4. 与相邻模块的关系
+```
+design-system/
+├── packages/
+│   ├── tokens/          # 设计令牌（JSON → CSS/TS/Swift/Android）
+│   ├── core/            # 无样式基础组件（Headless UI）
+│   ├── react/           # React 实现
+│   ├── vue/             # Vue 实现
+│   ├── themes/          # 主题预设
+│   └── docs/            # Storybook 文档站
+├── apps/
+│   └── storybook/       # 交互式文档
+└── scripts/
+    └── release.mjs      # 自动化发布（Changesets）
+```
+
+### 3.2 多格式构建输出
+
+```typescript
+// vite.config.ts — 组件库构建配置
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import dts from 'vite-plugin-dts';
+
+export default defineConfig({
+  build: {
+    lib: {
+      entry: './src/index.ts',
+      name: 'MyDesignSystem',
+      formats: ['es', 'cjs', 'umd'],
+      fileName: format => `index.${format}.js`,
+    },
+    rollupOptions: {
+      external: ['react', 'react-dom'],
+      output: {
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM',
+        },
+      },
+    },
+  },
+  plugins: [react(), dts({ insertTypesEntry: true })],
+});
+```
+
+### 3.3 Tree Shaking 与副作用标记
+
+```typescript
+// src/components/Button/index.ts
+export { Button } from './Button';
+export type { ButtonProps } from './Button.types';
+
+// package.json — 确保 bundler 能正确 tree-shake
+{
+  "sideEffects": ["*.css", "*.scss"],
+  "exports": {
+    ".": {
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.cjs.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./Button": {
+      "import": "./dist/Button.es.js",
+      "types": "./dist/Button.d.ts"
+    }
+  }
+}
+```
+
+### 3.4 CSS-in-JS 与主题注入
+
+```typescript
+// styled-components 主题示例
+import styled, { ThemeProvider, createGlobalStyle } from 'styled-components';
+
+const theme = {
+  colors: {
+    primary: '#007bff',
+    danger: '#dc3545',
+    text: '#212529',
+  },
+  spacing: (n: number) => `${n * 8}px`,
+  breakpoints: {
+    sm: '576px',
+    md: '768px',
+    lg: '992px',
+  },
+};
+
+const GlobalStyle = createGlobalStyle`
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: ${props => props.theme.colors.text};
+  }
+`;
+
+const Button = styled.button<{ $variant?: 'primary' | 'danger' }>`
+  padding: ${props => props.theme.spacing(1)} ${props => props.theme.spacing(2)};
+  border: none;
+  border-radius: 4px;
+  background: ${props => props.theme.colors[props.$variant || 'primary']};
+  color: white;
+  cursor: pointer;
+
+  &:hover {
+    filter: brightness(1.1);
+  }
+
+  @media (max-width: ${props => props.theme.breakpoints.sm}) {
+    width: 100%;
+  }
+`;
+
+// 使用
+function App() {
+  return (
+    <ThemeProvider theme={theme}>
+      <GlobalStyle />
+      <Button $variant="primary">提交</Button>
+      <Button $variant="danger">删除</Button>
+    </ThemeProvider>
+  );
+}
+```
+
+---
+
+## 4. 可访问性（A11y）与设计系统
+
+```typescript
+// Headless UI + Radix Primitives 模式：行为与样式分离
+import * as Dialog from '@radix-ui/react-dialog';
+
+const Modal = ({ open, onOpenChange, children }: Dialog.DialogProps) => (
+  <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    <Dialog.Portal>
+      <Dialog.Overlay className="modal-overlay" />
+      <Dialog.Content className="modal-content" aria-describedby="modal-desc">
+        {children}
+      </Dialog.Content>
+    </Dialog.Portal>
+  </Dialog.Root>
+);
+
+// 自动管理 focus trap、ESC 关闭、ARIA 属性
+```
+
+---
+
+## 5. 与相邻模块的关系
 
 - **51-ui-components**: UI 组件的设计与实现
 - **56-code-generation**: 基于令牌的代码生成
 - **13-code-organization**: 大型项目的代码组织
 
+---
 
-## 参考资源
+## 6. 参考资源
 
-| 资源 | 类型 | 链接 |
-|------|------|------|
-| MDN Web Docs | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
-| web.dev | 指南 | [web.dev](https://web.dev) |
-| TC39 Proposals | 规范 | [tc39.es](https://tc39.es) |
+### 权威规范
+- [W3C Design Tokens Community Group](https://www.w3.org/community/designtokens/) — 设计令牌标准制定
+- [WCAG 2.2 — Web Content Accessibility Guidelines](https://www.w3.org/WAI/WCAG22/quickref/) — 可访问性规范
+- [ARIA Authoring Practices Guide (APG)](https://www.w3.org/WAI/ARIA/apg/) — W3C 无障碍组件模式
+
+### 开源工具与设计系统
+- [Style Dictionary — Amazon](https://amzn.github.io/style-dictionary/) — 跨平台设计令牌转换
+- [Storybook](https://storybook.js.org/) — 组件驱动开发与文档
+- [Radix UI](https://www.radix-ui.com/) — 无样式、可访问的基础组件原语
+- [Headless UI](https://headlessui.com/) — Tailwind Labs 的无样式组件
+- [Shadcn UI](https://ui.shadcn.com/) — 基于 Radix + Tailwind 的可复制组件
+- [Material Design 3](https://m3.material.io/) — Google 设计系统规范
+- [Polaris — Shopify](https://polaris.shopify.com/) — 电商设计系统范例
+- [Lightning Design System — Salesforce](https://www.lightningdesignsystem.com/) — 企业级设计系统
+
+### 工程化实践
+- [Component-Driven Development](https://www.componentdriven.org/) — 组件驱动开发方法论
+- [Chromatic](https://www.chromatic.com/) — 视觉回归测试与 UI 评审
+- [Changesets](https://github.com/changesets/changesets) — Monorepo 版本管理与发布
 
 ---
 

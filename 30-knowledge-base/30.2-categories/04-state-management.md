@@ -67,6 +67,156 @@ React 19 Compiler（自动记忆化）减少了对 `useMemo` / `useCallback` 的
 
 ---
 
+## 代码示例
+
+### Zustand：轻量全局 Store
+
+```typescript
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+interface BearState {
+  bears: number;
+  increase: () => void;
+  decrease: () => void;
+}
+
+const useBearStore = create<BearState>()(
+  persist(
+    (set) => ({
+      bears: 0,
+      increase: () => set((state) => ({ bears: state.bears + 1 })),
+      decrease: () => set((state) => ({ bears: state.bears - 1 })),
+    }),
+    { name: 'bear-storage' }
+  )
+);
+
+// 组件中使用（自动订阅，精准重渲染）
+function BearCounter() {
+  const bears = useBearStore((state) => state.bears);
+  return <h1>{bears} bears around here</h1>;
+}
+```
+
+### Jotai：原子化状态
+
+```typescript
+import { atom, useAtom } from 'jotai';
+
+// 基础原子
+const countAtom = atom(0);
+
+// 派生原子（自动依赖追踪）
+const doubledCountAtom = atom((get) => get(countAtom) * 2);
+
+// 可写派生原子
+const incrementAtom = atom(null, (get, set) => {
+  set(countAtom, (c) => c + 1);
+});
+
+function Counter() {
+  const [count] = useAtom(countAtom);
+  const [doubled] = useAtom(doubledCountAtom);
+  const [, increment] = useAtom(incrementAtom);
+
+  return (
+    <div>
+      <p>Count: {count}</p>
+      <p>Doubled: {doubled}</p>
+      <button onClick={increment}>+1</button>
+    </div>
+  );
+}
+```
+
+### Redux Toolkit：Slice + Async Thunk
+
+```typescript
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+
+// 异步 Thunk
+const fetchUser = createAsyncThunk('user/fetch', async (userId: string) => {
+  const res = await fetch(`/api/users/${userId}`);
+  return res.json();
+});
+
+const userSlice = createSlice({
+  name: 'user',
+  initialState: { data: null, loading: false, error: null as string | null },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchUser.pending, (state) => { state.loading = true; })
+      .addCase(fetchUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+      })
+      .addCase(fetchUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed';
+      });
+  },
+});
+
+export { fetchUser };
+export default userSlice.reducer;
+```
+
+### Preact Signals：细粒度响应式
+
+```typescript
+import { signal, computed, effect } from '@preact/signals-react';
+
+const count = signal(0);
+const double = computed(() => count.value * 2);
+
+// 副作用追踪
+effect(() => {
+  console.log('Count changed:', count.value);
+});
+
+function SignalCounter() {
+  // 直接读取 .value，组件仅在 count 变化时重渲染
+  return (
+    <button onClick={() => count.value++}>
+      {count.value} × 2 = {double.value}
+    </button>
+  );
+}
+```
+
+### TanStack Query：服务端状态管理
+
+```typescript
+import { useQuery, useMutation, QueryClient } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
+
+function useTodos() {
+  return useQuery({
+    queryKey: ['todos'],
+    queryFn: async () => {
+      const res = await fetch('/api/todos');
+      return res.json();
+    },
+  });
+}
+
+function useAddTodo() {
+  return useMutation({
+    mutationFn: (newTodo: { title: string }) =>
+      fetch('/api/todos', { method: 'POST', body: JSON.stringify(newTodo) }),
+    onSuccess: () => {
+      // 自动重新获取 todos
+      queryClient.invalidateQueries({ queryKey: ['todos'] });
+    },
+  });
+}
+```
+
+---
+
 ## 最佳实践
 
 1. **分离服务端与客户端状态**：用 TanStack Query 管理 API 数据，状态库仅管理 UI 状态
@@ -79,12 +229,15 @@ React 19 Compiler（自动记忆化）减少了对 `useMemo` / `useCallback` 的
 
 ## 参考资源
 
-- [Zustand Documentation](https://docs.pmndrs.dev/zustand)
-- [Jotai Documentation](https://jotai.org/)
-- [Redux Toolkit Documentation](https://redux-toolkit.js.org/)
-- [TanStack Query](https://tanstack.com/query/latest) — 服务端状态管理
-- [Preact Signals](https://preactjs.com/blog/signal-boosting/) — Signals 权威解读
+- [React Documentation — State Management](https://react.dev/learn/thinking-about-react-state-management) — React 官方状态管理指南
+- [Redux Toolkit Documentation](https://redux-toolkit.js.org/) — Redux 官方文档
+- [Zustand Documentation](https://docs.pmndrs.dev/zustand) — Zustand 官方文档
+- [Jotai Documentation](https://jotai.org/) — Jotai 原子化状态管理
+- [TanStack Query](https://tanstack.com/query/latest) — 服务端状态管理权威方案
+- [Preact Signals](https://preactjs.com/blog/signal-boosting/) — Signals 范式权威解读
 - [Recoil Archive Notice](https://github.com/facebookexperimental/Recoil) — 归档声明
+- [SolidJS Store & Signals](https://www.solidjs.com/tutorial/stores_createstore) — SolidJS 响应式原语
+- [React 19 Compiler](https://react.dev/learn/react-compiler) — React 官方编译器文档
 
 ---
 

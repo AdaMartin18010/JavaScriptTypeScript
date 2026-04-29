@@ -69,6 +69,187 @@ npx @tailwindcss/upgrade
 
 ---
 
+## 代码示例
+
+### Panda CSS：类型安全样式系统
+
+```typescript
+// panda.config.ts
+import { defineConfig } from '@pandacss/dev';
+
+export default defineConfig({
+  preflight: true,
+  include: ['./src/**/*.{js,jsx,ts,tsx}'],
+  exclude: [],
+  theme: {
+    extend: {
+      tokens: {
+        colors: {
+          brand: { value: '#0ea5e9' },
+        },
+      },
+    },
+  },
+  outdir: 'styled-system',
+});
+
+// 使用生成的类型安全样式函数
+import { css } from '../styled-system/css';
+
+function Button({ children }: { children: React.ReactNode }) {
+  return (
+    <button
+      className={css({
+        bg: 'brand',
+        color: 'white',
+        px: '4',
+        py: '2',
+        rounded: 'md',
+        _hover: { bg: 'brand.600' },
+      })}
+    >
+      {children}
+    </button>
+  );
+}
+```
+
+### UnoCSS：即时原子引擎
+
+```typescript
+// uno.config.ts
+import { defineConfig, presetUno, presetAttributify } from 'unocss';
+
+export default defineConfig({
+  presets: [presetUno(), presetAttributify()],
+  rules: [
+    ['custom-shadow', { 'box-shadow': '0 4px 6px -1px rgb(0 0 0 / 0.1)' }],
+  ],
+  shortcuts: {
+    'btn-base': 'px-4 py-2 rounded-lg font-medium transition-colors',
+    'btn-primary': 'btn-base bg-blue-600 text-white hover:bg-blue-700',
+  },
+});
+
+// 组件中使用（支持 Attributify 模式）
+function Card() {
+  return (
+    <div bg="white" shadow="lg" rounded="xl" p="6">
+      <h2 text="xl gray-800" font="bold">Title</h2>
+      <button className="btn-primary">Click me</button>
+    </div>
+  );
+}
+```
+
+### Tailwind v4 @theme + @apply
+
+```css
+/* components.css */
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #2563eb;
+  --color-secondary: #475569;
+  --font-heading: "Inter", sans-serif;
+}
+
+/* 使用 @apply 提取组件类 */
+.btn {
+  @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors;
+}
+
+.btn-primary {
+  @apply btn bg-primary text-white hover:bg-primary/90;
+}
+
+.btn-secondary {
+  @apply btn bg-secondary text-white hover:bg-secondary/90;
+}
+```
+
+### shadcn/ui + Tailwind 组件模式
+
+```typescript
+// components/ui/button.tsx
+import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+
+const buttonVariants = cva(
+  'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors',
+  {
+    variants: {
+      variant: {
+        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+        destructive: 'bg-destructive text-white hover:bg-destructive/90',
+        outline: 'border border-input bg-background hover:bg-accent',
+      },
+      size: {
+        default: 'h-10 px-4 py-2',
+        sm: 'h-9 rounded-md px-3',
+        lg: 'h-11 rounded-md px-8',
+      },
+    },
+    defaultVariants: { variant: 'default', size: 'default' },
+  }
+);
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, ...props }, ref) => {
+    return (
+      <button
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
+Button.displayName = 'Button';
+export { Button, buttonVariants };
+```
+
+### CSS 容器查询实战
+
+```css
+/* Tailwind v4 内置 @container 支持 */
+@container (min-width: 400px) {
+  .card-grid {
+    @apply grid-cols-2;
+  }
+}
+
+@container (min-width: 700px) {
+  .card-grid {
+    @apply grid-cols-3;
+  }
+}
+```
+
+```tsx
+// React 中使用容器查询
+function ProductCard({ product }: { product: Product }) {
+  return (
+    <div className="@container">
+      <div className="grid grid-cols-1 @md:grid-cols-2 @lg:grid-cols-3 gap-4">
+        <Image src={product.image} />
+        <div>
+          <h3 className="text-lg @md:text-xl font-bold">{product.name}</h3>
+          <p className="text-sm @md:text-base text-gray-600">{product.desc}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
 ## 选型决策树
 
 ```
@@ -131,11 +312,16 @@ Tailwind v4 和 UnoCSS 均已内置 `@container` 支持，响应式设计从 vie
 
 ## 参考资源
 
-- [Tailwind CSS Documentation](https://tailwindcss.com/)
-- [UnoCSS Documentation](https://unocss.dev/)
-- [Panda CSS Documentation](https://panda-css.com/)
-- [Tailwind CSS v4 Complete Guide (2026)](https://www.mortexsolutions.com/blog/tailwind-css-v4-complete-guide-2026)
-- [Tailwind vs UnoCSS vs Panda (2026)](https://trybuildpilot.com/360-tailwind-css-vs-unocss-vs-panda-css-2026)
+- [Tailwind CSS Documentation](https://tailwindcss.com/) — Tailwind 官方文档
+- [UnoCSS Documentation](https://unocss.dev/) — UnoCSS 官方文档
+- [Panda CSS Documentation](https://panda-css.com/) — Panda CSS 类型安全样式系统
+- [MDN CSS Reference](https://developer.mozilla.org/en-US/docs/Web/CSS) — Mozilla CSS 权威参考
+- [W3C CSS Specifications](https://www.w3.org/Style/CSS/specs.en.html) — CSS 标准规范
+- [shadcn/ui Documentation](https://ui.shadcn.com/) — Radix + Tailwind 组件模式
+- [CSS Container Queries — MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries) — 容器查询权威指南
+- [Lightning CSS](https://lightningcss.dev/) — Tailwind v4 底层 Rust 编译器
+- [Open Props](https://open-props.style/) — CSS 自定义属性设计令牌
+- [Bootstrap Documentation](https://getbootstrap.com/) — Bootstrap 官方文档
 
 ---
 

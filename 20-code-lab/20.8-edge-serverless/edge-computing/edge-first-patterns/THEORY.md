@@ -21,6 +21,8 @@
 |------|------|------|
 | 边缘渲染 | 在 CDN 节点执行 SSR 的策略 | edge-ssr.ts |
 | 地理路由 | 基于用户位置的最近节点调度 | geo-routing.ts |
+| 边缘缓存失效 | 主动/被动缓存刷新策略 | cache-invalidation.ts |
+| 局部一致性 | 边缘副本的最终一致性模型 | local-consistency.ts |
 
 ---
 
@@ -39,13 +41,58 @@
 
 ### 2.3 与相关技术的对比
 
-与云原生对比：边缘降低延迟，云原生计算资源更充沛。
+| 维度 | 边缘优先 | 云原生 | 传统单体 |
+|------|---------|--------|---------|
+| 延迟 | < 50ms（边缘） | 20-100ms（区域） | 100-500ms（中心） |
+| 状态管理 | 局部/最终一致 | 集中强一致 | 集中强一致 |
+| 可扩展性 | 全球自动分发 | 水平扩展集群 | 垂直扩展 |
+| 冷启动 | 毫秒级 | 秒级 | 分钟级 |
+| 运维复杂度 | 中（多节点管理） | 高（K8s 栈） | 低（单节点） |
+| 安全边界 | 分布式零信任 | 边界防火墙 | 边界防火墙 |
 
 ---
 
 ## 三、实践映射
 
 ### 3.1 从理论到代码
+
+```typescript
+// edge-first-patterns/geo-routing.ts — 地理感知边缘路由
+interface GeoRouteConfig {
+  defaultOrigin: string;
+  regions: Record<string, { origin: string; weight: number }[]>;
+}
+
+class GeoRouter {
+  constructor(private config: GeoRouteConfig) {}
+
+  resolve(cfCountry: string | null): string {
+    const region = this.config.regions[cfCountry ?? 'default'];
+    if (!region) return this.config.defaultOrigin;
+
+    // 加权随机选择
+    const total = region.reduce((s, r) => s + r.weight, 0);
+    let pick = Math.random() * total;
+    for (const r of region) {
+      pick -= r.weight;
+      if (pick <= 0) return r.origin;
+    }
+    return region[0].origin;
+  }
+}
+
+// 使用示例
+const router = new GeoRouter({
+  defaultOrigin: 'https://us-east.example.com',
+  regions: {
+    CN: [{ origin: 'https://cn.example.com', weight: 100 }],
+    DE: [
+      { origin: 'https://eu-central.example.com', weight: 70 },
+      { origin: 'https://eu-west.example.com', weight: 30 },
+    ],
+  },
+});
+```
 
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 边缘优先模式 核心机制的理解，并观察不同实现选择带来的行为差异。
 
@@ -60,6 +107,19 @@
 
 - [Cloudflare Patterns](https://developers.cloudflare.com/workers/reference/how-workers-works/)
 - `20.8-edge-serverless/`
+
+---
+
+## 四、权威参考
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| Cloudflare Workers Patterns | 官方文档 | [developers.cloudflare.com/workers/reference/how-workers-works](https://developers.cloudflare.com/workers/reference/how-workers-works/) |
+| Web Vitals & Edge Performance | 指南 | [web.dev/edge-performance](https://web.dev/edge-performance/) |
+| The Edge Computing Landscape | 论文 | [arxiv.org/abs/2008.11266](https://arxiv.org/abs/2008.11266) |
+| Fastly Edge Architecture | 官方文档 | [developer.fastly.com/learning/concepts/design-considerations](https://developer.fastly.com/learning/concepts/design-considerations/) |
+| Vercel Edge Network | 官方文档 | [vercel.com/docs/edge-network/overview](https://vercel.com/docs/edge-network/overview) |
+| Akamai Edge Platform | 官方文档 | [developer.akamai.com/edge](https://developer.akamai.com/) |
 
 ---
 

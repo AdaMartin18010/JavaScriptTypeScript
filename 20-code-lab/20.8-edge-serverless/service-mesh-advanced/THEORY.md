@@ -154,6 +154,81 @@ spec:
           memory: "512Mi"
 ```
 
+### Istio AuthorizationPolicy 零信任访问控制
+
+```yaml
+# 仅允许 frontend 命名空间中的服务调用 payments API
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: payments-authz
+  namespace: prod
+spec:
+  selector:
+    matchLabels:
+      app: payments
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["frontend"]
+      to:
+        - operation:
+            methods: ["GET", "POST"]
+            paths: ["/api/v1/payments/*"]
+      when:
+        - key: request.auth.claims[scope]
+          values: ["payments:write"]
+```
+
+### 可观测性：Envoy 访问日志与 Prometheus 指标
+
+```yaml
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: mesh-default
+  namespace: istio-system
+spec:
+  metrics:
+    - providers:
+        - name: prometheus
+      overrides:
+        - match:
+            metric: REQUEST_COUNT
+          tagOverrides:
+            destination_port:
+              operation: REMOVE
+  accessLogging:
+    - providers:
+        - name: envoy
+      filter:
+        expression: "response.code >= 400"
+```
+
+### gRPC 超时与重试（Envoy 配置）
+
+```typescript
+// 客户端 gRPC 调用配置（配合服务网格策略）
+import { Client, ClientOptions, Transport } from '@nestjs/microservices';
+
+const grpcOptions: ClientOptions = {
+  transport: Transport.GRPC,
+  options: {
+    url: 'payments.prod.svc.cluster.local:50051',
+    package: 'payments',
+    protoPath: './payments.proto',
+    // 客户端级超时，Envoy 层会有更细粒度的重试策略
+    deadline: 5000,
+    // 启用 keepalive 以便 Envoy 连接池复用
+    keepalive: {
+      keepaliveTimeMs: 10000,
+      keepaliveTimeoutMs: 5000,
+    },
+  },
+};
+```
+
 ## 关联模块
 
 - `72-container-orchestration` — Kubernetes 容器编排与服务发现基础
@@ -168,5 +243,10 @@ spec:
 - [Envoy Proxy Documentation](https://www.envoyproxy.io/docs/envoy/latest/)
 - [SMI (Service Mesh Interface) Spec](https://smi-spec.io/)
 - [CNCF Service Mesh Landscape](https://landscape.cncf.io/card-mode?category=service-mesh&grouping=category)
+- [Google SRE Book — Handling Overload](https://sre.google/sre-book/handling-overload/) — Google SRE 关于流量管理和熔断的权威指南
+- [SPIFFE/SPIRE Standard](https://spiffe.io/docs/latest/spiffe-about/overview/) — 服务身份和 mTLS 的开放标准
+- [Envoy WASM Filters](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/wasm_filter) — Envoy WebAssembly 扩展官方文档
+- [Istio Security Best Practices](https://istio.io/latest/docs/ops/best-practices/security/) — Istio 官方安全最佳实践
+- [CNCF Graduated Projects](https://www.cncf.io/projects/) — CNCF 毕业项目列表（含 Istio、Linkerd）
 - 本模块 `README.md` — 模块主题与学习路径
 - 本模块 `mesh-architecture.ts` — Sidecar 代理、流量管理、mTLS 与可观测性实现

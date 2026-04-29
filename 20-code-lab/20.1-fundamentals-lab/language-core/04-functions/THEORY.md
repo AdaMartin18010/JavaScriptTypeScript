@@ -38,7 +38,20 @@
 | 纯函数 | 可测试、可缓存 | 需要额外传参 | 数据转换 |
 | 副作用函数 | 直接操作外部 | 难以追踪依赖 | I/O 操作 |
 
-### 2.3 与相关技术的对比
+### 2.3 特性对比表：函数声明 vs 函数表达式 vs 箭头函数
+
+| 特性 | 函数声明 (Function Declaration) | 函数表达式 (Function Expression) | 箭头函数 (Arrow Function) |
+|------|-------------------------------|--------------------------------|--------------------------|
+| 语法 | `function foo() {}` | `const foo = function() {}` | `const foo = () => {}` |
+| 变量提升 | 整体提升（含体） | 仅变量名提升，赋值不提升 | 无提升 |
+| 自有 `this` | 有（运行时绑定） | 有（运行时绑定） | 无（继承词法 this） |
+| `arguments` 对象 | 有 | 有 | 无（用剩余参数 `...args`） |
+| 作为构造函数 | 可以 `new` | 可以 `new` | 不可以 |
+| `prototype` 属性 | 有 | 有 | 无 |
+| 隐式返回 | 不支持 | 不支持 | 单行表达式可省略 `{}` 隐式返回 |
+| 适用场景 | 通用、需要递归或提升 | 回调、闭包、条件定义 | 简短回调、需要词法 this |
+
+### 2.4 与相关技术的对比
 
 与面向对象语言对比：JS 函数作为一等公民提供了更灵活的抽象能力。
 
@@ -50,16 +63,66 @@
 
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 函数 核心机制的理解，并观察不同实现选择带来的行为差异。
 
-### 3.2 常见误区
+### 3.2 代码示例：三种函数定义的行为差异
+
+```typescript
+// 1. 函数声明 — 整体提升，可在定义前调用
+console.log(declared(2)); // 4
+function declared(x: number): number {
+  return x * x;
+}
+
+// 2. 函数表达式 — 提升的是变量，不是函数体
+// console.log(expressed(2)); // ReferenceError: Cannot access 'expressed' before initialization
+const expressed = function (x: number): number {
+  return x * x;
+};
+
+// 3. 箭头函数 — 无自身 this，适合回调与简短逻辑
+const arrow = (x: number): number => x * x;
+
+// 4. this 绑定差异演示
+const obj = {
+  name: 'Alice',
+  greetDecl: function () {
+    return `Hello, ${this.name}`; // this = obj
+  },
+  greetArrow: () => {
+    return `Hello, ${(obj as any).name}`; // 词法 this，此处指向外层（如 global/module）
+  },
+  greetMethod() {
+    setTimeout(function () {
+      // console.log(this.name); // undefined 或报错，this 指向全局/timer
+    }, 0);
+    setTimeout(() => {
+      console.log(this.name); // "Alice" — 继承词法 this
+    }, 0);
+  },
+};
+
+// 5. 高阶函数：柯里化示例
+function curry<T, U, V>(fn: (a: T, b: U) => V) {
+  return (a: T) => (b: U) => fn(a, b);
+}
+const add = (a: number, b: number) => a + b;
+const curriedAdd = curry(add);
+console.log(curriedAdd(3)(4)); // 7
+```
+
+### 3.3 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | 箭头函数完全等价于普通函数 | 箭头函数无自身 this、arguments 和原型 |
 | async 函数总是返回 Promise | 即使返回非 Promise 值也会被包装 |
 
-### 3.3 扩展阅读
+### 3.4 扩展阅读
 
 - [MDN 函数](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions)
+- [MDN：箭头函数](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions)
+- [MDN：async function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
+- [MDN：生成器函数](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*)
+- [ECMAScript® 2025 — ECMAScript Function Objects](https://tc39.es/ecma262/#sec-ecmascript-function-objects)
 - `10-fundamentals/10.1-language-semantics/04-functions/`
 
 ---

@@ -33,11 +33,42 @@ created: 2026-04-28
 
 > 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
 
+## 子模块速查
+
+| 子模块 | 核心能力 | 关联文件 |
+|--------|----------|----------|
+| Stream Pipeline | 可组合、背压感知的数据流处理 | `stream-pipeline.ts` |
+| HTTP Server Patterns | 高性能 HTTP 服务端模式（路由、中间件、错误处理） | `http-server-patterns.ts` |
+| FS Patterns | 异步/同步文件系统操作、Watch 模式、流式读写 | `fs-patterns.ts` |
+| Crypto Patterns | 哈希、HMAC、对称/非对称加密、随机字节生成 | `crypto-patterns.ts` |
+
+## 代码示例：Stream Pipeline
+
+```typescript
+import { createReadStream, createWriteStream } from 'fs';
+import { createGzip } from 'zlib';
+import { pipeline } from 'stream/promises';
+
+async function compressLog(src: string, dest: string): Promise<void> {
+  await pipeline(
+    createReadStream(src),
+    createGzip(),
+    createWriteStream(dest)
+  );
+  console.log('Pipeline succeeded.');
+}
+
+// 背压自动处理：当写入端忙时，读取端会暂停，防止内存膨胀
+compressLog('./app.log', './app.log.gz').catch(console.error);
+```
 
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
 |------|------|------|
+| Node.js Docs | 官方文档 | [nodejs.org/api](https://nodejs.org/api/) |
+| Node.js Stream Handbook | 指南 | [github.com/substack/stream-handbook](https://github.com/substack/stream-handbook) |
+| libuv Design | 架构文档 | [docs.libuv.org](https://docs.libuv.org/) |
 | MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
 | web.dev | 指南 | [web.dev](https://web.dev) |
 

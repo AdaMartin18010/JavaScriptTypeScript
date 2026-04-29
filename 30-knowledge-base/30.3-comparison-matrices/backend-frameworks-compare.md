@@ -91,6 +91,80 @@ flowchart LR
 
 ---
 
+## 代码示例
+
+### Express 基础路由与中间件
+
+```typescript
+import express, { Request, Response, NextFunction } from 'express';
+
+const app = express();
+app.use(express.json());
+
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  console.log(`[${req.method}] ${req.url}`);
+  next();
+});
+
+app.get('/users/:id', (req: Request, res: Response) => {
+  res.json({ id: req.params.id, name: 'Alice' });
+});
+
+app.listen(3000, () => console.log('Express listening on :3000'));
+```
+
+### NestJS 依赖注入与模块化
+
+```typescript
+import { Module, Controller, Get, Injectable, Param } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+
+@Injectable()
+class UserService {
+  findOne(id: string) {
+    return { id, name: 'Alice' };
+  }
+}
+
+@Controller('users')
+class UserController {
+  constructor(private service: UserService) {}
+
+  @Get(':id')
+  getUser(@Param('id') id: string) {
+    return this.service.findOne(id);
+  }
+}
+
+@Module({ controllers: [UserController], providers: [UserService] })
+class AppModule {}
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  await app.listen(3000);
+}
+bootstrap();
+```
+
+### Hono — Cloudflare Workers 部署
+
+```typescript
+import { Hono } from 'hono';
+
+const app = new Hono();
+
+app.get('/api/health', (c) => c.json({ status: 'ok', runtime: 'cloudflare-workers' }));
+
+app.get('/api/users/:id', (c) => {
+  const id = c.req.param('id');
+  return c.json({ id, name: 'Alice', edge: true });
+});
+
+export default app;
+```
+
+---
+
 ## 2026 后端生态更新
 
 | 技术 / 框架 | 2026 关键更新 |
@@ -120,6 +194,24 @@ flowchart TD
     J -->|是| K[Koa]
     J -->|否| L[Express]
 ```
+
+---
+
+## 权威参考链接
+
+- [Express 官方文档](https://expressjs.com/)
+- [Fastify 官方文档](https://fastify.dev/)
+- [NestJS 官方文档](https://nestjs.com/)
+- [Hono 官方文档](https://hono.dev/)
+- [Elysia 官方文档](https://elysiajs.com/)
+- [Node.js 官方文档](https://nodejs.org/docs/latest/api/)
+- [Bun 运行时文档](https://bun.sh/docs)
+- [Cloudflare Workers 文档](https://developers.cloudflare.com/workers/)
+- [tRPC 文档](https://trpc.io/docs)
+- [WinterTC / Ecma TC55 规范](https://wintertc.org/)
+- [TechEmpower Web Framework Benchmarks](https://www.techempower.com/benchmarks/)
+- [TypeScript Handbook — Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
+- [MDN — Express/Web 框架概念](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/Express_Nodejs)
 
 ---
 

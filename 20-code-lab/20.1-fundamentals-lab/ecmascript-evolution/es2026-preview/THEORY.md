@@ -9,18 +9,19 @@
 
 ### 1.1 问题域定义
 
-本模块聚焦 ECMAScript 标准演进中的新特性，解决 JavaScript 语言能力持续扩展带来的学习曲线与兼容性问题。通过形式化示例展示语法特性在实际代码中的应用方式。
+本模块追踪 ES2026（ECMAScript 17）候选提案，涵盖当前 TC39 Stage 3 的 Import Attributes、RegExp.escape、`Error.isError`、Float16Array 等特性，为标准化前的技术预研提供参考。
 
 ### 1.2 形式化基础
 
-[本模块的形式化定义与公理/定理陈述]
+Stage 3 门槛要求：规范文本完成、至少有 2 个兼容实现通过 Test262 测试套件、无重大设计变更预期。本模块所列特性均满足此门槛。
 
 ### 1.3 关键概念
 
-| 特性 | 定义 | 关联 |
+| 概念 | 定义 | 关联 |
 |------|------|------|
-| 新语法 | ECMAScript 年度新增的语法构造 | 示例代码 |
-| polyfill | 旧环境兼容性补充方案 | shim 文件 |
+| Import Attributes | 模块导入时附带元数据（如 `type: 'json'`） | `import ... with { }` |
+| Source Phase Imports | 在源码阶段而非实例化阶段导入模块 | `import source` |
+| Float16Array | 16 位浮点 TypedArray（IEEE 754 half-precision） | WebGPU/ML 场景 |
 
 ---
 
@@ -28,18 +29,27 @@
 
 ### 2.1 为什么存在
 
-ECMAScript 作为活的语言标准，每年发布新特性以回应开发者社区的痛点。从可选链到顶层 await，新特性的存在理由是在保持向后兼容的前提下提升表达能力与开发效率。
+ES2026 候选特性解决了模块系统灵活性、错误类型安全、数值计算精度与正则表达式安全性的遗留缺口。提前理解这些提案有助于设计面向未来的架构。
 
-### 2.2 权衡分析
+### 2.2 Stage 追踪表（ES2026 周期）
+
+| 提案 | Stage | 核心内容 | 主要推动方 |
+|------|-------|---------|-----------|
+| Import Attributes | 3 | `import ... with { type: 'json' }` | TC39 Module Harmony |
+| Source Phase Imports | 3 | `import source mod from './mod.js'` | TC39 Module Harmony |
+| RegExp.escape | 3 | `RegExp.escape(str)` 安全转义字面量 | TC39 |
+| Error.isError | 3 | 跨 Realm 的可靠 `Error` 判断 | TC39 |
+| Float16Array | 3 | 16-bit float TypedArray | WebGPU WG |
+| Uint8Array Base64/Hex | 3 | `Uint8Array.fromBase64`, `toBase64` | TC39 |
+| Explicit Resource Management | 3 | `using`/`await using` 块级资源释放 | TypeScript/TC39 |
+
+### 2.3 权衡分析
 
 | 方案 | 优点 | 缺点 | 适用场景 |
 |------|------|------|---------|
-| 原生新特性 | 代码简洁、语义清晰 | 需要 polyfill/转译 | 现代浏览器环境 |
-| 传统兼容写法 | 全平台支持 | 代码冗长、易出错 | 遗留系统维护 |
-
-### 2.3 与相关技术的对比
-
-与 Babel 转译方案对比：原生支持减少运行时开销，但需要更长的兼容性等待期。
+| Import Attributes | 声明式模块元数据、安全 | 旧打包器需适配 | JSON/CSS 模块导入 |
+| `RegExp.escape` | 防 ReDoS、用户输入安全 | 新增 API 学习成本 | 动态正则构造 |
+| `using` 语句 | 块级自动释放、免 finally 样板 | 需转译/实验标志 | 文件句柄、锁管理 |
 
 ---
 
@@ -47,18 +57,71 @@ ECMAScript 作为活的语言标准，每年发布新特性以回应开发者社
 
 ### 3.1 从理论到代码
 
-本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 ES2026 预览特性 核心机制的理解，并观察不同实现选择带来的行为差异。
+```js
+// === Import Attributes（需实验标志或最新 Node）===
+import config from './config.json' with { type: 'json' };
+console.log(config.version);
+
+// 动态导入同样支持
+const data = await import('./data.json', { with: { type: 'json' } });
+
+// === Source Phase Imports（Stage 3，工具链实验支持）===
+// import source modSrc from './module.js';
+// modSrc 是 ModuleSource 对象，可用于自定义加载器
+
+// === RegExp.escape ===
+const userInput = 'Price: $5.00 [VIP]';
+const safe = RegExp.escape(userInput);
+console.log(safe); // 'Price:\ \$5\.00\ \[VIP\]'
+const re = new RegExp(safe);
+re.test(userInput); // true
+
+// === Error.isError ===
+// 跨 iframe/Realm 时 instanceof 失效
+const iframe = document.createElement('iframe');
+document.body.appendChild(iframe);
+const ForeignError = iframe.contentWindow.Error;
+
+const err = new ForeignError('oops');
+err instanceof Error;       // false（跨 Realm）
+Error.isError(err);         // true（可靠判断）
+
+// === Explicit Resource Management（TypeScript 5.2+ 实验性支持）===
+// 使用 Symbol.dispose / Symbol.asyncDispose
+class TempFile {
+  #handle;
+  constructor(path) { this.#handle = fs.openSync(path, 'w'); }
+  [Symbol.dispose]() { fs.closeSync(this.#handle); }
+}
+
+// 块退出时自动调用 dispose
+{
+  using file = new TempFile('/tmp/log.txt');
+  fs.writeSync(file.handle, 'data');
+} // <- file[Symbol.dispose]() 自动调用
+
+// === Float16Array（Node.js 实验性 / 浏览器最新版）===
+const f16 = new Float16Array([1.0, 2.5, 3.1]);
+console.log(f16.BYTES_PER_ELEMENT); // 2
+// WebGPU 中常用 half-precision 纹理数据
+```
 
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
-| 新特性可以立即在生产环境使用 | 需评估目标运行时支持与转译成本 |
-| 所有特性都向后兼容 | 部分特性需要 polyfill 或语法转换 |
+| Import Attributes 等同于 Import Assertions | Assertions（旧提案）已废弃，Attributes 使用 `with` 关键字且语义不同 |
+| `using` 是 TypeScript 独有 | 是 TC39 Stage 3 提案，TS 已提前实现；JS 引擎跟进中 |
+| Float16Array 精度与 Float32 相同 | half-precision 仅 10 位尾数，精度远低于 Float32，仅用于特定图形/ML 场景 |
 
 ### 3.3 扩展阅读
 
-- [ECMAScript 提案仓库](https://github.com/tc39/proposals)
+- [TC39 Active Proposals](https://github.com/tc39/proposals/blob/main/README.md)
+- [TC39 Finished Proposals](https://github.com/tc39/proposals/blob/main/finished-proposals.md)
+- [MDN: Import Attributes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import/with)
+- [TypeScript 5.2: Using Declarations](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management)
+- [V8 Blog](https://v8.dev/blog)
+- [SpiderMonkey Development](https://spidermonkey.dev/)
 - `30-knowledge-base/30.1-language-evolution`
 
 ---

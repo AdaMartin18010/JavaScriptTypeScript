@@ -39,6 +39,14 @@
 
 ### 2.3 与相关技术的对比
 
+| 技术 | 调度方式 | 错误处理 | 并发表达 | 适用平台 |
+|------|---------|---------|---------|---------|
+| async/await (JS) | 显式（事件循环） | try/catch | Promise.all | Browser / Node.js |
+| Goroutines (Go) | 隐式（M:N 线程） | 多返回值 | `go` 关键字 | Go |
+| Kotlin Coroutines | 挂起函数 + 调度器 | try/catch | `async/await` | JVM / Android |
+| C# async/await | Task + 线程池 | try/catch | `Task.WhenAll` | .NET |
+| Python asyncio | 事件循环 + 协程 | try/catch | `asyncio.gather` | Python |
+
 与 Goroutines 对比：async/await 显式调度，Goroutines 隐式调度。
 
 ---
@@ -48,6 +56,46 @@
 ### 3.1 从理论到代码
 
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 Async/Await 核心机制的理解，并观察不同实现选择带来的行为差异。
+
+#### 并发控制：顺序 vs 并行 vs 受控并发
+
+```typescript
+// async-await.ts
+
+// 1. 顺序执行（总时长 = 各任务之和）
+async function sequential(urls: string[]) {
+  const results = [];
+  for (const url of urls) {
+    results.push(await fetch(url).then(r => r.json()));
+  }
+  return results;
+}
+
+// 2. 无限制并行（总时长 ≈ 最慢任务，但可能触发限流）
+async function parallel(urls: string[]) {
+  return Promise.all(urls.map(url => fetch(url).then(r => r.json())));
+}
+
+// 3. 受控并发（p-limit 思想）
+async function concurrentPool<T>(
+  tasks: (() => Promise<T>)[],
+  poolLimit: number
+): Promise<T[]> {
+  const results: T[] = new Array(tasks.length);
+  const executing: Promise<void>[] = [];
+
+  for (let i = 0; i < tasks.length; i++) {
+    const p = tasks[i]().then(res => { results[i] = res; });
+    executing.push(p);
+    if (executing.length >= poolLimit) {
+      await Promise.race(executing);
+      executing.splice(executing.findIndex(x => x === p), 1);
+    }
+  }
+  await Promise.all(executing);
+  return results;
+}
+```
 
 ### 3.2 常见误区
 
@@ -59,6 +107,10 @@
 ### 3.3 扩展阅读
 
 - [Async Functions V8](https://v8.dev/features/async-await)
+- [MDN — async function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
+- [TC39 — Async Functions Proposal](https://github.com/tc39/ecmascript-asyncawait)
+- [JavaScript Visualizer 9000](https://www.jsv9000.app/)
+- [Node.js Event Loop](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick)
 - `20.3-concurrency-async/concurrency/`
 
 ---

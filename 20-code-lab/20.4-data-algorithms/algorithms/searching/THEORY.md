@@ -117,7 +117,74 @@ console.log('Interpol 50:', interpolationSearch(sorted, 50));    // 4
 console.log('Binary 99:', binarySearch(sorted, 99));            // -1
 ```
 
-### 3.2 常见误区
+### 3.2 字符串匹配：KMP 算法
+
+```typescript
+// kmp.ts — Knuth-Morris-Pratt 线性时间字符串搜索
+
+function buildLPS(pattern: string): number[] {
+  const lps = new Array(pattern.length).fill(0);
+  let len = 0;
+  let i = 1;
+  while (i < pattern.length) {
+    if (pattern[i] === pattern[len]) {
+      len++;
+      lps[i] = len;
+      i++;
+    } else if (len !== 0) {
+      len = lps[len - 1];
+    } else {
+      lps[i] = 0;
+      i++;
+    }
+  }
+  return lps;
+}
+
+function kmpSearch(text: string, pattern: string): number[] {
+  if (pattern.length === 0) return [];
+  const lps = buildLPS(pattern);
+  const indices: number[] = [];
+  let i = 0;
+  let j = 0;
+  while (i < text.length) {
+    if (text[i] === pattern[j]) {
+      i++;
+      j++;
+      if (j === pattern.length) {
+        indices.push(i - j);
+        j = lps[j - 1];
+      }
+    } else if (j !== 0) {
+      j = lps[j - 1];
+    } else {
+      i++;
+    }
+  }
+  return indices;
+}
+
+console.log(kmpSearch('abcabcabcdabc', 'abc'));
+// [0, 3, 6, 10]
+```
+
+### 3.3 指数搜索（Exponential Search）— 无界或超长数组
+
+```typescript
+function exponentialSearch<T>(arr: T[], target: T): number {
+  if (arr[0] === target) return 0;
+  let bound = 1;
+  while (bound < arr.length && arr[bound] <= target) {
+    bound *= 2;
+  }
+  return binarySearch(
+    arr.slice(bound / 2, Math.min(bound + 1, arr.length)),
+    target
+  );
+}
+```
+
+### 3.4 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -126,12 +193,16 @@ console.log('Binary 99:', binarySearch(sorted, 99));            // -1
 | 插值搜索总是优于二分 | 数据分布不均匀时性能可能退化为 O(n) |
 | `(left + right) / 2` 安全 | 大数组可能溢出，应使用 `left + ((right - left) >>> 1)` |
 
-### 3.3 扩展阅读
+### 3.5 扩展阅读
 
 - [Binary Search — Wikipedia](https://en.wikipedia.org/wiki/Binary_search_algorithm)
 - [Interpolation Search — GeeksforGeeks](https://www.geeksforgeeks.org/interpolation-search/)
 - [Searching Algorithms VisuAlgo](https://visualgo.net/en/sea)
 - [Lower Bounds for Comparison-Based Search](https://en.wikipedia.org/wiki/Decision_tree_model)
+- [Knuth-Morris-Pratt algorithm — Stanford](https://www.cs.princeton.edu/courses/archive/spring20/cos226/lectures/53SubstringSearch.pdf)
+- [The Art of Computer Programming, Vol. 3 — Searching and Sorting](https://www-cs-faculty.stanford.edu/~knuth/taocp.html)
+- [Algorithms (Sedgewick & Wayne) — 第 3 章 查找](https://algs4.cs.princeton.edu/30searching/)
+- [LeetCode Binary Search Pattern](https://leetcode.com/tag/binary-search/)
 - `20.4-data-algorithms/algorithms/`
 
 ---

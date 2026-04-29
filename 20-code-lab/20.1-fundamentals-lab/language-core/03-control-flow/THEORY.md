@@ -37,7 +37,18 @@
 | 早期返回 | 减少嵌套深度 | 分散退出点 | 验证前置条件 |
 | 异常抛出 | 强制处理错误 | 控制流隐式跳转 | 不可恢复错误 |
 
-### 2.3 与相关技术的对比
+### 2.3 特性对比表：控制流模式
+
+| 模式 | 适用场景 | 可读性 | 扩展性 | 注意事项 |
+|------|---------|--------|--------|----------|
+| `if/else if/else` | 简单二元或有限条件 | 高 | 低 | 嵌套过深时用早期返回 |
+| `switch` | 离散值多分支匹配 | 中 | 中 | 必须显式 `break`，否则穿透 |
+| 三元运算符 `? :` | 简单值选择 | 中 | 低 | 避免嵌套超过一层 |
+| 短路求值 `&& \|\|` | 默认值与条件执行 | 高 | 低 | 注意 `0`、`""`、`false` 等假值 |
+| 策略模式/Map | 大量离散规则 | 高 | 高 | 将逻辑与数据分离 |
+| 异常 `try/catch` | 错误恢复与资源清理 | 中 | 中 | 仅用于异常场景，不要控制正常流 |
+
+### 2.4 与相关技术的对比
 
 与结构化编程理论对比：JS 的异常机制增强了非局部退出能力。
 
@@ -49,16 +60,69 @@
 
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 控制流 核心机制的理解，并观察不同实现选择带来的行为差异。
 
-### 3.2 常见误区
+### 3.2 代码示例：`switch` vs 策略模式（Map）
+
+```typescript
+// 传统 switch：容易遗漏 break，扩展性差
+function getStatusMessage(status: number): string {
+  switch (status) {
+    case 200: return 'OK';
+    case 201: return 'Created';
+    case 400: return 'Bad Request';
+    case 401: return 'Unauthorized';
+    case 404: return 'Not Found';
+    case 500: return 'Internal Server Error';
+    default: return 'Unknown Status';
+  }
+}
+
+// 策略模式（Map）：更 declarative，天然防穿透，可动态扩展
+const statusMap = new Map<number, string>([
+  [200, 'OK'],
+  [201, 'Created'],
+  [400, 'Bad Request'],
+  [401, 'Unauthorized'],
+  [404, 'Not Found'],
+  [500, 'Internal Server Error'],
+]);
+
+function getStatusMessageModern(status: number): string {
+  return statusMap.get(status) ?? 'Unknown Status';
+}
+
+// 带逻辑的复杂策略模式
+interface Order {
+  type: 'standard' | 'express' | 'international';
+  weight: number;
+}
+
+const shippingStrategies: Record<Order['type'], (o: Order) => number> = {
+  standard: (o) => o.weight * 1.0,
+  express: (o) => o.weight * 2.5 + 10,
+  international: (o) => o.weight * 5.0 + 25,
+};
+
+function calculateShipping(order: Order): number {
+  const strategy = shippingStrategies[order.type];
+  if (!strategy) throw new Error(`Unsupported order type: ${order.type}`);
+  return strategy(order);
+}
+```
+
+### 3.3 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | switch 默认有 break | 缺少 break 会导致穿透执行 |
 | try/catch 可以捕获异步错误 | 异步错误需配合 await 或 .catch |
 
-### 3.3 扩展阅读
+### 3.4 扩展阅读
 
 - [MDN 控制流](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Control_flow_and_error_handling)
+- [MDN：switch](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/switch)
+- [MDN：try...catch](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch)
+- [MDN：异常与错误处理](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch)
+- [ECMAScript® 2025 — Statements](https://tc39.es/ecma262/#sec-ecmascript-language-statements-and-declarations)
 - `10-fundamentals/10.1-language-semantics/03-control-flow/`
 
 ---

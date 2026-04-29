@@ -85,6 +85,141 @@ consumers:
         secret: ${JWT_SECRET}
 ```
 
+## Envoy Proxy 基础配置（边缘网关）
+
+```yaml
+# envoy.yaml — 静态配置示例
+static_resources:
+  listeners:
+    - name: listener_0
+      address:
+        socket_address: { address: 0.0.0.0, port_value: 8080 }
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: backend
+                      domains: ["*"]
+                      routes:
+                        - match: { prefix: "/api/v1/" }
+                          route: { cluster: backend_service }
+                http_filters:
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+  clusters:
+    - name: backend_service
+      connect_timeout: 0.25s
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      load_assignment:
+        cluster_name: backend_service
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address: { address: backend, port_value: 8081 }
+```
+
+## Traefik Kubernetes IngressRoute CRD
+
+```yaml
+# ingressroute.yaml — Traefik v3 CRD
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: api-route
+  namespace: default
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`api.example.com`) && PathPrefix(`/v1`)
+      kind: Rule
+      services:
+        - name: api-service
+          port: 80
+      middlewares:
+        - name: rate-limit
+        - name: jwt-verify
+  tls:
+    certResolver: letsencrypt
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: rate-limit
+spec:
+  rateLimit:
+    average: 100
+    burst: 50
+```
+
+## OpenAPI 驱动的网关路由声明
+
+```yaml
+# openapi-gateway.yaml — 使用 OpenAPI 规范自动生成路由与鉴权
+openapi: 3.0.3
+info:
+  title: E-Commerce API
+  version: 1.0.0
+paths:
+  /products:
+    get:
+      x-kong-route: { strip_path: false }
+      x-ratelimit: { minute: 120 }
+      responses:
+        '200':
+          description: Product list
+  /orders:
+    post:
+      security:
+        - bearerAuth: []
+      x-kong-plugin-jwt: {}
+      responses:
+        '201':
+          description: Order created
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+```
+
+## 自定义网关插件（Kong JS Plugin）
+
+```javascript
+// custom-auth.js — Kong Gateway JS Plugin（Pongo 测试框架兼容）
+'use strict';
+
+class CustomAuthHandler {
+  constructor(config) {
+    this.config = config;
+  }
+
+  async access(kong) {
+    const header = await kong.request.getHeader('x-api-key');
+    if (!header || header !== this.config.expected_key) {
+      return await kong.response.exit(401, JSON.stringify({ error: 'Unauthorized' }));
+    }
+  }
+}
+
+module.exports = {
+  Plugin: CustomAuthHandler,
+  Schema: [
+    { expected_key: { type: 'string', required: true } },
+  ],
+  Version: '1.0.0',
+};
+```
+
 ---
 
 ## 选型建议
@@ -107,6 +242,13 @@ consumers:
 - [AWS API Gateway 官方文档](https://docs.aws.amazon.com/apigateway/)
 - [NGINX Gateway Fabric](https://docs.nginx.com/nginx-gateway-fabric/)
 - [OpenAPI Gateway Patterns](https://learning.oreilly.com/library/view/designing-web-apis/9781492026914/)
+- [OpenAPI Initiative Specification](https://spec.openapis.org/oas/latest.html)
+- [CNCF API Gateway Landscape](https://landscape.cncf.io/guide#orchestration-management--api-gateway)
+- [Google Cloud API Gateway Docs](https://cloud.google.com/api-gateway/docs)
+- [Azure API Management Docs](https://learn.microsoft.com/en-us/azure/api-management/)
+- [Kong Plugin Development Kit](https://docs.konghq.com/gateway/latest/plugin-development/)
+- [Envoy WASM Filters](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/wasm_filter)
+- [OWASP API Security Top 10](https://owasp.org/www-project-api-security/)
 
 ---
 

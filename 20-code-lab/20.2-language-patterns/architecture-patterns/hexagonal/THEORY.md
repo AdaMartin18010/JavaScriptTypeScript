@@ -127,7 +127,122 @@ await uc.execute('alice@example.com', 'secret');
 assert(notifier.sent.length === 1);
 ```
 
-### 3.2 常见误区
+### 3.2 进阶：完整六边形订单系统（含错误处理与事件）
+
+```typescript
+// ===== 领域层：实体与值对象 =====
+class Order {
+  constructor(
+    public readonly id: string,
+    public readonly customerId: string,
+    public readonly items: OrderItem[],
+    public status: OrderStatus = 'pending'
+  ) {}
+
+  total(): Money {
+    return this.items.reduce((sum, item) => sum.add(item.price.multiply(item.quantity)), Money.zero());
+  }
+
+  confirm(): void {
+    if (this.status !== 'pending') throw new DomainError('Only pending orders can be confirmed');
+    this.status = 'confirmed';
+  }
+}
+
+// ===== 端口定义 =====
+interface OrderRepository {
+  findById(id: string): Promise<Order | null>;
+  save(order: Order): Promise<void>;
+}
+
+interface PaymentGateway {
+  charge(amount: Money, cardToken: string): Promise<PaymentResult>;
+}
+
+interface EventPublisher {
+  publish(event: DomainEvent): Promise<void>;
+}
+
+// ===== 领域事件 =====
+interface DomainEvent {
+  readonly occurredOn: Date;
+  readonly type: string;
+}
+
+class OrderConfirmedEvent implements DomainEvent {
+  readonly occurredOn = new Date();
+  readonly type = 'OrderConfirmed';
+  constructor(public readonly orderId: string, public readonly total: Money) {}
+}
+
+// ===== 用例：确认订单并支付 =====
+class ConfirmOrderUseCase {
+  constructor(
+    private orders: OrderRepository,
+    private payments: PaymentGateway,
+    private events: EventPublisher
+  ) {}
+
+  async execute(orderId: string, cardToken: string): Promise<void> {
+    const order = await this.orders.findById(orderId);
+    if (!order) throw new NotFoundError(`Order ${orderId} not found`);
+
+    const total = order.total();
+    const payment = await this.payments.charge(total, cardToken);
+    if (!payment.success) throw new PaymentError(payment.reason);
+
+    order.confirm();
+    await this.orders.save(order);
+    await this.events.publish(new OrderConfirmedEvent(order.id, total));
+  }
+}
+
+// ===== 适配器：内存测试替身 =====
+class InMemoryOrderRepository implements OrderRepository {
+  private store = new Map<string, Order>();
+  async findById(id: string) { return this.store.get(id) ?? null; }
+  async save(order: Order) { this.store.set(order.id, order); }
+}
+
+class FakePaymentGateway implements PaymentGateway {
+  shouldFail = false;
+  async charge(amount: Money, _token: string): Promise<PaymentResult> {
+    return this.shouldFail
+      ? { success: false, reason: 'insufficient_funds' }
+      : { success: true, transactionId: 'tx-' + Math.random().toString(36).slice(2) };
+  }
+}
+
+class InMemoryEventPublisher implements EventPublisher {
+  events: DomainEvent[] = [];
+  async publish(event: DomainEvent) { this.events.push(event); }
+}
+
+// ===== 集成测试（无需真实 DB / 支付网关） =====
+async function testConfirmOrder() {
+  const orders = new InMemoryOrderRepository();
+  const payments = new FakePaymentGateway();
+  const events = new InMemoryEventPublisher();
+  const uc = new ConfirmOrderUseCase(orders, payments, events);
+
+  // Arrange
+  const order = new Order('o1', 'c1', [new OrderItem('p1', Money.of(100), 2)]);
+  await orders.save(order);
+
+  // Act
+  await uc.execute('o1', 'tok_visa');
+
+  // Assert
+  const saved = await orders.findById('o1');
+  console.assert(saved?.status === 'confirmed');
+  console.assert(events.events.some(e => e.type === 'OrderConfirmed'));
+  console.log('✅ ConfirmOrderUseCase test passed');
+}
+
+testConfirmOrder();
+```
+
+### 3.3 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -135,12 +250,27 @@ assert(notifier.sent.length === 1);
 | 适配器只是接口包装 | 适配器包含技术细节和错误转换 |
 | 端口必须对应外部系统 | 端口也可以用于模块间通信 |
 
-### 3.3 扩展阅读
+### 3.4 扩展阅读
 
 - [Hexagonal Architecture — Alistair Cockburn](https://alistair.cockburn.us/hexagonal-architecture/)
 - [Hexagonal Architecture Explained — AWS](https://aws.amazon.com/blogs/compute/developing-evolutionary-software-with-hexagonal-architecture/)
 - [Applying Hexagonal Architecture to a Symfony Project — Matthieu Napoli](https://matthiasnoback.nl/2017/08/docker-and-hexagonal-architecture/)
 - `20.2-language-patterns/architecture-patterns/`
+
+## 四、权威外部资源
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Alistair Cockburn — Hexagonal Architecture 原文 | [alistair.cockburn.us/hexagonal-architecture](https://alistair.cockburn.us/hexagonal-architecture/) | 六边形架构首创者原文 |
+| AWS — Hexagonal Architecture on Lambda | [aws.amazon.com/blogs/compute/developing-evolutionary-software-with-hexagonal-architecture](https://aws.amazon.com/blogs/compute/developing-evolutionary-software-with-hexagonal-architecture/) | 云原生场景下的六边形实践 |
+| Clean Architecture (Robert C. Martin) | [blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) | 与六边形同源的整洁架构 |
+| Implementing DDD (Vaughn Vernon) | [dddcommunity.org/book/evans_2003](https://dddcommunity.org/book/evans_2003/) | 领域驱动设计与架构模式 |
+| Ports and Adapters Pattern (Microsoft) | [docs.microsoft.com/en-us/archive/msdn-magazine/2013/february/patterns-the-presentation-patterns](https://docs.microsoft.com/en-us/archive/msdn-magazine/2013/february/patterns-the-presentation-patterns) | 微软架构杂志深度解析 |
+| Test-Driven Development with Ports and Adapters | [matthiasnoback.nl/books](https://matthiasnoback.nl/books/) | Matthias Noback 架构系列著作 |
+| NestJS — Dependency Injection | [docs.nestjs.com/fundamentals/custom-providers](https://docs.nestjs.com/fundamentals/custom-providers) | TS 生态中最接近六边形的框架实践 |
+| tsyringe (Microsoft) | [github.com/microsoft/tsyringe](https://github.com/microsoft/tsyringe) | TypeScript 依赖注入容器 |
+| inversifyjs | [inversify.io](https://inversify.io/) | IoC 容器，支持六边形组合根 |
+| ArchUnit (TS 移植) | [github.com/TNG/ArchUnitNET](https://github.com/TNG/ArchUnitNET) | 架构规则自动化测试工具 |
 
 ---
 

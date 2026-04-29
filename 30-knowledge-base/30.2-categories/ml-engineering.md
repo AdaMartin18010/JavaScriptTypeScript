@@ -88,6 +88,144 @@ async function classifyImage(imagePath: string) {
 })();
 ```
 
+## ONNX Runtime Web 浏览器推理
+
+```typescript
+// onnx-browser.ts — 浏览器端运行 ONNX 模型
+import * as ort from 'onnxruntime-web';
+
+async function runONNXInference(
+  modelPath: string,
+  inputData: Float32Array
+): Promise<number[]> {
+  const session = await ort.InferenceSession.create(modelPath, {
+    executionProviders: ['webgpu', 'wasm'], // 优先 GPU 加速
+  });
+
+  const tensor = new ort.Tensor('float32', inputData, [1, inputData.length]);
+  const feeds: Record<string, ort.Tensor> = {};
+  feeds[session.inputNames[0]] = tensor;
+
+  const results = await session.run(feeds);
+  const output = results[session.outputNames[0]];
+  return Array.from(output.data as Float32Array);
+}
+
+// 示例：情感分类模型
+const logits = await runONNXInference('/models/sentiment.onnx', new Float32Array([...]));
+const sentiment = logits[0] > logits[1] ? 'positive' : 'negative';
+```
+
+## Transformers.js 文本 Embedding 与分类
+
+```typescript
+// transformers-pipeline.ts — 零样本分类与特征提取
+import { pipeline, type FeatureExtractionPipeline } from '@xenova/transformers';
+
+// 零样本分类
+const classifier = await pipeline('zero-shot-classification', 'Xenova/mobilebert-uncased-mnli');
+const result = await classifier('This is a great product!', ['positive', 'negative', 'neutral']);
+console.log(result);
+// [{ label: 'positive', score: 0.98 }, ...]
+
+// 文本 Embedding（用于 RAG）
+let embedder: FeatureExtractionPipeline;
+async function getEmbedding(text: string): Promise<number[]> {
+  if (!embedder) {
+    embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+  }
+  const output = await embedder(text, { pooling: 'mean', normalize: true });
+  return Array.from(output.data);
+}
+
+const embedding = await getEmbedding('JavaScript ML engineering');
+console.log('Embedding dimension:', embedding.length); // 384
+```
+
+## Vercel AI SDK 流式对话
+
+```typescript
+// ai-sdk-stream.ts — 服务端流式 LLM 响应
+import { openai } from '@ai-sdk/openai';
+import { streamText } from 'ai';
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const result = streamText({
+    model: openai('gpt-4o-mini'),
+    system: '你是一个 TypeScript 专家，只回答与类型系统和工程化相关的问题。',
+    messages,
+  });
+
+  return result.toDataStreamResponse();
+}
+```
+
+```typescript
+// client-stream.ts — 前端消费流式响应
+import { useChat } from 'ai/react';
+
+function ChatComponent() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat({
+    api: '/api/chat',
+  });
+
+  return (
+    <div>
+      {messages.map((m) => (
+        <div key={m.id} className={m.role}>
+          {m.content}
+        </div>
+      ))}
+      <form onSubmit={handleSubmit}>
+        <input value={input} onChange={handleInputChange} placeholder="Ask about TS..." />
+      </form>
+    </div>
+  );
+}
+```
+
+## pgvector + OpenAI Embedding RAG 检索
+
+```typescript
+// rag-retrieval.ts — 基于 pgvector 的语义检索
+import { Pool } from 'pg';
+import OpenAI from 'openai';
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+async function searchSimilarDocuments(query: string, limit = 5) {
+  // 1. 生成查询向量
+  const embeddingRes = await openai.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: query,
+  });
+  const vector = embeddingRes.data[0].embedding;
+
+  // 2. pgvector 余弦相似度检索
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `SELECT id, content, 1 - (embedding <=> $1::vector) AS similarity
+       FROM documents
+       ORDER BY embedding <=> $1::vector
+       LIMIT $2`,
+      [JSON.stringify(vector), limit]
+    );
+    return result.rows;
+  } finally {
+    client.release();
+  }
+}
+
+(async () => {
+  const docs = await searchSimilarDocuments('JavaScript 性能优化', 3);
+  console.log(docs);
+})();
+```
+
 ---
 
 ## 场景
@@ -106,6 +244,15 @@ async function classifyImage(imagePath: string) {
 - [Hugging Face Hub](https://huggingface.co/models)
 - [Danfo.js 文档](https://danfo.jsdata.org/)
 - [Vercel AI SDK](https://sdk.vercel.ai/docs)
+- [OpenAI API 文档](https://platform.openai.com/docs)
+- [LangChain.js 文档](https://js.langchain.com/)
+- [pgvector 文档](https://github.com/pgvector/pgvector)
+- [Pinecone 文档](https://docs.pinecone.io/)
+- [Milvus 文档](https://milvus.io/docs/)
+- [ML5.js — 浏览器友好 ML](https://ml5js.org/)
+- [Google AI Edge — MediaPipe](https://ai.google.dev/edge/mediapipe/solutions/guide)
+- [Papers with Code — JS/TS ML](https://paperswithcode.com/)
+- [WebNN API — W3C 草案](https://www.w3.org/TR/webnn/) — 浏览器原生神经网络推理标准
 
 ---
 

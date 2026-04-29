@@ -20,7 +20,9 @@
 
 ---
 
-## 代码示例：Fastify + TypeScript
+## 代码示例
+
+### Fastify + TypeScript（TypeBox）
 
 ```typescript
 import Fastify from 'fastify';
@@ -29,7 +31,6 @@ import { Type } from '@sinclair/typebox';
 
 const app = Fastify({ logger: true }).withTypeProvider<TypeBoxTypeProvider>();
 
-// 自动类型推导 + JSON Schema 校验
 const UserSchema = Type.Object({
   id: Type.Number(),
   name: Type.String({ minLength: 1 }),
@@ -42,19 +43,96 @@ app.get('/users/:id', {
     response: { 200: UserSchema },
   },
 }, async (request) => {
-  // request.params.id 被推导为 number
   return { id: request.params.id, name: 'Alice', email: 'alice@example.com' };
 });
 
 async function bootstrap() {
-  try {
-    await app.listen({ port: 3000, host: '0.0.0.0' });
-  } catch (err) {
-    app.log.error(err);
-    process.exit(1);
-  }
+  await app.listen({ port: 3000, host: '0.0.0.0' });
 }
 bootstrap();
+```
+
+### NestJS 控制器 + 依赖注入
+
+```typescript
+import { Controller, Get, Param, Injectable } from '@nestjs/common';
+
+@Injectable()
+class UserService {
+  findById(id: number) {
+    return { id, name: 'Alice', email: 'alice@example.com' };
+  }
+}
+
+@Controller('users')
+class UserController {
+  constructor(private readonly userService: UserService) {}
+
+  @Get(':id')
+  getUser(@Param('id') id: string) {
+    return this.userService.findById(Number(id));
+  }
+}
+```
+
+### Hono — Cloudflare Workers 边缘函数
+
+```typescript
+import { Hono } from 'hono';
+
+const app = new Hono();
+
+app.get('/api/users/:id', (c) => {
+  const id = c.req.param('id');
+  return c.json({ id, name: 'Alice', source: 'edge' });
+});
+
+app.post('/api/users', async (c) => {
+  const body = await c.req.json<{ name: string; email: string }>();
+  return c.json({ created: true, ...body }, 201);
+});
+
+export default app;
+```
+
+### Elysia — 端到端类型安全
+
+```typescript
+import { Elysia, t } from 'elysia';
+
+const app = new Elysia()
+  .get('/users/:id', ({ params: { id } }) => ({ id: Number(id), name: 'Alice' }), {
+    params: t.Object({ id: t.Numeric() }),
+    response: t.Object({ id: t.Number(), name: t.String() }),
+  })
+  .listen(3000);
+
+type App = typeof app;
+// Eden Treaty 客户端可完全推导路由类型
+```
+
+### Express — 中间件与错误处理
+
+```typescript
+import express, { Request, Response, NextFunction } from 'express';
+
+const app = express();
+app.use(express.json());
+
+app.use((req: Request, _res: Response, next: NextFunction) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
+
+app.get('/health', (_req: Request, res: Response) => {
+  res.json({ status: 'ok' });
+});
+
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  res.status(500).json({ error: err.message });
+});
+
+app.listen(3000);
 ```
 
 ---
@@ -78,7 +156,13 @@ bootstrap();
 - [NestJS 官方文档](https://nestjs.com/)
 - [Hono 官方文档](https://hono.dev/)
 - [Elysia 官方文档](https://elysiajs.com/)
+- [Node.js 官方文档](https://nodejs.org/docs/latest/api/)
+- [Bun 运行时文档](https://bun.sh/docs)
+- [Cloudflare Workers 文档](https://developers.cloudflare.com/workers/)
+- [tRPC 文档](https://trpc.io/docs)
+- [WinterTC / Ecma TC55 规范](https://wintertc.org/)
 - [TechEmpower Web Framework Benchmarks](https://www.techempower.com/benchmarks/)
+- [TypeScript Handbook — Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
 
 ---
 

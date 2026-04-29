@@ -41,6 +41,178 @@
 
 ---
 
+## 代表性技术代码示例
+
+### 状态管理：Zustand
+
+```typescript
+import { create } from 'zustand';
+import { devtools, persist } from 'zustand/middleware';
+
+interface BearState {
+  bears: number;
+  increase: () => void;
+  decrease: () => void;
+}
+
+export const useBearStore = create<BearState>()(
+  devtools(
+    persist(
+      (set) => ({
+        bears: 0,
+        increase: () => set((state) => ({ bears: state.bears + 1 })),
+        decrease: () => set((state) => ({ bears: Math.max(0, state.bears - 1) })),
+      }),
+      { name: 'bear-storage' }
+    )
+  )
+);
+
+// 组件中使用
+function BearCounter() {
+  const { bears, increase } = useBearStore();
+  return <button onClick={increase}>Bears: {bears}</button>;
+}
+```
+
+### 表单处理：React Hook Form + Zod
+
+```typescript
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirm: z.string(),
+}).refine((data) => data.password === data.confirm, {
+  message: "Passwords don't match",
+  path: ['confirm'],
+});
+
+type FormData = z.infer<typeof schema>;
+
+function SignUpForm() {
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
+
+  return (
+    <form onSubmit={handleSubmit((data) => console.log(data))}>
+      <input {...register('email')} placeholder="Email" />
+      {errors.email && <span>{errors.email.message}</span>}
+      <input {...register('password')} type="password" placeholder="Password" />
+      <input {...register('confirm')} type="password" placeholder="Confirm" />
+      <button type="submit">Sign Up</button>
+    </form>
+  );
+}
+```
+
+### Monorepo：Turborepo Pipeline
+
+```json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "lint": { "dependsOn": ["^build"] },
+    "test": { "dependsOn": ["^build"] },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}
+```
+
+### CI/CD：GitHub Actions Workflow
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm test --coverage
+      - run: pnpm build
+```
+
+### API 设计：tRPC OpenAPI 集成
+
+```typescript
+import { initTRPC } from '@trpc/server';
+import { z } from 'zod';
+import { generateOpenApiDocument } from 'trpc-openapi';
+
+const t = initTRPC.create();
+export const appRouter = t.router({
+  userById: t.procedure
+    .meta({ openapi: { method: 'GET', path: '/user/{id}' } })
+    .input(z.object({ id: z.string() }))
+    .output(z.object({ id: z.string(), name: z.string() }))
+    .query(({ input }) => ({ id: input.id, name: 'Alice' })),
+});
+
+export const openApiDocument = generateOpenApiDocument(appRouter, {
+  title: 'My API',
+  version: '1.0.0',
+  baseUrl: 'https://api.example.com',
+});
+```
+
+### 性能优化：Core Web Vitals 测量
+
+```typescript
+// web-vitals 测量与上报
+import { onCLS, onINP, onLCP, type Metric } from 'web-vitals';
+
+function sendToAnalytics(metric: Metric) {
+  const body = JSON.stringify({
+    name: metric.name,
+    value: metric.value,
+    id: metric.id,
+    rating: metric.rating, // 'good' | 'needs-improvement' | 'poor'
+  });
+
+  // 使用 sendBeacon 确保数据可靠上报
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon('/analytics/vitals', body);
+  } else {
+    fetch('/analytics/vitals', { body, method: 'POST', keepalive: true });
+  }
+}
+
+onCLS(sendToAnalytics);
+onINP(sendToAnalytics);
+onLCP(sendToAnalytics);
+```
+
+---
+
 ## 框架选择矩阵 (Framework Selection Matrix)
 
 | 评估维度 | React 19 + Next.js 15 | Vue 3 + Nuxt 3 | Svelte 5 + SvelteKit | Angular 18 | Solid + SolidStart |
@@ -79,6 +251,14 @@
 | MDN Web Docs | <https://developer.mozilla.org> | 权威 Web 技术文档 |
 | Node.js Docs | <https://nodejs.org/docs/latest/api/> | Node.js 官方 API 文档 |
 | TypeScript Handbook | <https://www.typescriptlang.org/docs/> | TypeScript 官方手册 |
+| Zustand Documentation | <https://docs.pmnd.rs/zustand> | 轻量状态管理库文档 |
+| React Hook Form | <https://react-hook-form.com/> | 高性能表单验证库 |
+| Turborepo Docs | <https://turbo.build/repo/docs> | Monorepo 构建系统文档 |
+| GitHub Actions Docs | <https://docs.github.com/en/actions> | CI/CD 工作流官方文档 |
+| tRPC Documentation | <https://trpc.io/docs> | 端到端类型安全 API |
+| OWASP Top 10 | <https://owasp.org/www-project-top-ten/> | Web 应用安全风险清单 |
+| web-vitals | <https://github.com/GoogleChrome/web-vitals> | Chrome 核心 Web 指标库 |
+| Can I Use | <https://caniuse.com/> | 浏览器特性兼容性查询 |
 
 ---
 

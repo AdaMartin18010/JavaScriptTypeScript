@@ -125,6 +125,209 @@ function SchemaForm({ schema, onSubmit }: { schema: FormSchema; onSubmit: (v: un
 }
 ```
 
+## 撤销/重做引擎实现
+
+```typescript
+// history-stack.ts
+
+interface HistoryState<T> {
+  past: T[];
+  present: T;
+  future: T[];
+}
+
+class HistoryStack<T> {
+  private state: HistoryState<T>;
+
+  constructor(initial: T) {
+    this.state = { past: [], present: initial, future: [] };
+  }
+
+  push(newPresent: T) {
+    this.state = {
+      past: [...this.state.past, this.state.present],
+      present: newPresent,
+      future: [],
+    };
+  }
+
+  undo(): T | null {
+    if (this.state.past.length === 0) return null;
+    const previous = this.state.past[this.state.past.length - 1];
+    const newPast = this.state.past.slice(0, -1);
+    this.state = {
+      past: newPast,
+      present: previous,
+      future: [this.state.present, ...this.state.future],
+    };
+    return previous;
+  }
+
+  redo(): T | null {
+    if (this.state.future.length === 0) return null;
+    const next = this.state.future[0];
+    const newFuture = this.state.future.slice(1);
+    this.state = {
+      past: [...this.state.past, this.state.present],
+      present: next,
+      future: newFuture,
+    };
+    return next;
+  }
+
+  canUndo(): boolean {
+    return this.state.past.length > 0;
+  }
+
+  canRedo(): boolean {
+    return this.state.future.length > 0;
+  }
+
+  getPresent(): T {
+    return this.state.present;
+  }
+}
+
+// Usage with structured clone for deep copy
+interface PageSchema {
+  components: Array<{ id: string; type: string; props: Record<string, unknown> }>;
+}
+
+const history = new HistoryStack<PageSchema>({ components: [] });
+
+// User adds a component
+history.push({
+  components: [{ id: '1', type: 'Button', props: { text: 'Click me' } }],
+});
+
+// User modifies props
+history.push({
+  components: [{ id: '1', type: 'Button', props: { text: 'Submit' } }],
+});
+
+console.log(history.undo()); // Reverts to first state
+console.log(history.redo()); // Restores second state
+```
+
+## DAG 工作流引擎示例
+
+```typescript
+// dag-workflow.ts
+
+type NodeStatus = 'pending' | 'running' | 'success' | 'failed' | 'skipped';
+
+interface WorkflowNode {
+  id: string;
+  type: 'start' | 'task' | 'condition' | 'parallel' | 'end';
+  execute: (context: WorkflowContext) => Promise<unknown>;
+  condition?: (context: WorkflowContext) => boolean;
+}
+
+interface WorkflowContext {
+  variables: Record<string, unknown>;
+  nodeResults: Map<string, unknown>;
+}
+
+class DAGWorkflowEngine {
+  private nodes = new Map<string, WorkflowNode>();
+  private edges = new Map<string, string[]>(); // from -> to[]
+  private reverseEdges = new Map<string, string[]>(); // to -> from[]
+
+  addNode(node: WorkflowNode) {
+    this.nodes.set(node.id, node);
+  }
+
+  addEdge(from: string, to: string) {
+    if (!this.edges.has(from)) this.edges.set(from, []);
+    this.edges.get(from)!.push(to);
+    if (!this.reverseEdges.has(to)) this.reverseEdges.set(to, []);
+    this.reverseEdges.get(to)!.push(from);
+  }
+
+  async execute(startNodeId: string): Promise<WorkflowContext> {
+    const context: WorkflowContext = { variables: {}, nodeResults: new Map() };
+    const visited = new Set<string>();
+    const inDegree = new Map<string, number>();
+
+    // Calculate in-degrees
+    for (const [to, froms] of this.reverseEdges) {
+      inDegree.set(to, froms.length);
+    }
+
+    const queue: string[] = [startNodeId];
+
+    while (queue.length > 0) {
+      const nodeId = queue.shift()!;
+      if (visited.has(nodeId)) continue;
+
+      const node = this.nodes.get(nodeId);
+      if (!node) continue;
+
+      // Check if all dependencies completed
+      const deps = this.reverseEdges.get(nodeId) || [];
+      const allDepsDone = deps.every(d => visited.has(d));
+      if (!allDepsDone) {
+        queue.push(nodeId); // Re-queue for later
+        continue;
+      }
+
+      visited.add(nodeId);
+
+      // Evaluate condition
+      if (node.condition && !node.condition(context)) {
+        continue; // Skip this node
+      }
+
+      // Execute
+      try {
+        const result = await node.execute(context);
+        context.nodeResults.set(nodeId, result);
+      } catch (err) {
+        console.error(`Node ${nodeId} failed:`, err);
+        throw err;
+      }
+
+      // Enqueue downstream
+      const nextNodes = this.edges.get(nodeId) || [];
+      for (const next of nextNodes) {
+        if (!visited.has(next)) queue.push(next);
+      }
+    }
+
+    return context;
+  }
+}
+
+// Usage
+const workflow = new DAGWorkflowEngine();
+
+workflow.addNode({
+  id: 'start',
+  type: 'start',
+  execute: async () => ({ started: true }),
+});
+
+workflow.addNode({
+  id: 'validate',
+  type: 'task',
+  execute: async (ctx) => {
+    const data = ctx.variables.input;
+    return { valid: data !== null };
+  },
+});
+
+workflow.addNode({
+  id: 'process',
+  type: 'task',
+  execute: async (ctx) => {
+    return { processed: ctx.variables.input };
+  },
+});
+
+workflow.addEdge('start', 'validate');
+workflow.addEdge('validate', 'process');
+```
+
 ## 关联模块
 
 - `56-code-generation` — AST 转换、OpenAPI 客户端生成与模板引擎技术
@@ -133,12 +336,27 @@ function SchemaForm({ schema, onSubmit }: { schema: FormSchema; onSubmit: (v: un
 
 ## 权威参考链接
 
+### 开源低代码平台文档
 - [Retool 官方文档](https://docs.retool.com/)
 - [Appsmith 官方文档](https://docs.appsmith.com/)
 - [Budibase 官方文档](https://docs.budibase.com/)
 - [ToolJet 官方文档](https://docs.tooljet.com/)
+
+### 标准与规范
 - [JSON Schema 规范](https://json-schema.org/)
 - [React JSON Schema Form (rjsf)](https://rjsf-team.github.io/react-jsonschema-form/docs/)
+- [W3C Draft: Low Code Application Platform Requirements](https://www.w3.org/community/web-based-signage/wiki/Low_Code_Application_Platform) — W3C 低代码平台需求草案
+
+### 权威英文资源
+- [Microsoft Power Apps: Architecture Reference](https://learn.microsoft.com/en-us/power-apps/guidance/architecture/overview) — Microsoft 企业级低代码架构参考
+- [OutSystems Architecture Fundamentals](https://success.outsystems.com/documentation/best_practices/architecture_fundamentals/) — 企业低代码架构最佳实践
+- [Mendix Atlas UI System](https://docs.mendix.com/refguide/atlas-ui/) — Mendix 设计系统与组件模型
+- [OASIS Open: Application Vocabulary for Low Code](https://www.oasis-open.org/) — 低代码标准化组织
+- [Gartner: Magic Quadrant for Enterprise Low-Code Application Platforms](https://www.gartner.com/en/documents/4017457) — 企业低代码平台魔力象限
+- [Forrester: The State of Low-Code Platforms](https://www.forrester.com/report/the-state-of-low-code-platforms/RES176861) — 低代码平台行业状态报告
+- [Google Blockly](https://developers.google.com/blockly) — Google 可视化编程引擎（低代码核心引擎参考）
+- [Red Hat: Low-Code and No-Code Development Platforms](https://www.redhat.com/en/topics/low-code) — 红帽低代码开发平台架构指南
+- [Salesforce Lightning Component Framework](https://developer.salesforce.com/docs/component-library/documentation/en/lwc) — Salesforce 组件框架（企业低代码先驱）
 - [低代码引擎 LowCodeEngine (阿里)](https://lowcode-engine.cn/)
 
 ## 参考

@@ -52,7 +52,7 @@
 
 ## 三、实践映射
 
-### 3.1 从理论到代码
+### 3.1 不可变单链表
 
 以下是 **不可变单链表** 的 TypeScript 实现，展示结构共享：
 
@@ -112,7 +112,214 @@ console.log('list3:', list3.toArray()); // [3, 2, 1, 4]
 console.log('Shares tail?', list2.tail === list1); // true
 ```
 
-### 3.2 常见误区
+### 3.2 持久化向量（Relaxed Radix Balanced Tree）
+
+持久化向量是函数式语言中 `Vector` 的核心实现，通过 32 叉树实现 O(log₃₂ n) 的随机访问与更新：
+
+```typescript
+// persistent-vector.ts
+// 简化的持久化向量（32 叉树路径复制）
+
+const BRANCH = 5;
+const WIDTH = 1 << BRANCH; // 32
+
+class PersistentVector<T> {
+  constructor(
+    private readonly root: any,
+    private readonly tail: T[],
+    public readonly size: number,
+    private readonly shift: number
+  ) {}
+
+  static empty<T>(): PersistentVector<T> {
+    return new PersistentVector<T>(null, [], 0, BRANCH);
+  }
+
+  // O(log₃₂ n) 随机访问
+  get(index: number): T | undefined {
+    if (index < 0 || index >= this.size) return undefined;
+    if (index >= this.size - this.tail.length) {
+      return this.tail[index & (WIDTH - 1)];
+    }
+    let node = this.root;
+    let level = this.shift;
+    while (level > 0) {
+      node = node[(index >> level) & (WIDTH - 1)];
+      level -= BRANCH;
+    }
+    return node[index & (WIDTH - 1)];
+  }
+
+  // O(log₃₂ n) 不可变更新（路径复制）
+  set(index: number, value: T): PersistentVector<T> {
+    if (index < 0 || index >= this.size) throw new RangeError('Index out of bounds');
+    if (index >= this.size - this.tail.length) {
+      const newTail = this.tail.slice();
+      newTail[index & (WIDTH - 1)] = value;
+      return new PersistentVector(this.root, newTail, this.size, this.shift);
+    }
+    const newRoot = this.clonePath(this.root, index, this.shift);
+    let node = newRoot;
+    let level = this.shift;
+    while (level > 0) {
+      const idx = (index >> level) & (WIDTH - 1);
+      node = node[idx];
+      level -= BRANCH;
+    }
+    node[index & (WIDTH - 1)] = value;
+    return new PersistentVector(newRoot, this.tail, this.size, this.shift);
+  }
+
+  private clonePath(node: any, index: number, level: number): any {
+    if (level === 0) return node.slice();
+    const copy = node.slice();
+    const idx = (index >> level) & (WIDTH - 1);
+    copy[idx] = this.clonePath(node[idx], index, level - BRANCH);
+    return copy;
+  }
+}
+
+// 使用示例
+const vec = PersistentVector.empty<string>()
+  .set(0, 'a'); // 简化示例，实际需实现 push
+console.log(vec.get(0));
+```
+
+### 3.3 惰性流（Lazy Stream）
+
+惰性流允许表达无限序列，只在需要时计算元素：
+
+```typescript
+// lazy-stream.ts
+// 惰性求值无限流
+
+class Stream<T> {
+  private headValue: T | undefined;
+  private tailValue: Stream<T> | undefined;
+
+  constructor(
+    private readonly headFn: () => T,
+    private readonly tailFn: () => Stream<T>
+  ) {}
+
+  get head(): T {
+    if (this.headValue === undefined) this.headValue = this.headFn();
+    return this.headValue;
+  }
+
+  get tail(): Stream<T> {
+    if (this.tailValue === undefined) this.tailValue = this.tailFn();
+    return this.tailValue;
+  }
+
+  static iterate<T>(seed: T, f: (x: T) => T): Stream<T> {
+    return new Stream<T>(() => seed, () => Stream.iterate(f(seed), f));
+  }
+
+  static naturals(start = 1): Stream<number> {
+    return Stream.iterate(start, x => x + 1);
+  }
+
+  take(n: number): T[] {
+    const out: T[] = [];
+    let cur: Stream<T> = this;
+    for (let i = 0; i < n; i++) {
+      out.push(cur.head);
+      cur = cur.tail;
+    }
+    return out;
+  }
+
+  filter(pred: (x: T) => boolean): Stream<T> {
+    const self = this;
+    return new Stream<T>(
+      () => {
+        let cur = self;
+        while (!pred(cur.head)) cur = cur.tail;
+        return cur.head;
+      },
+      () => self.tail.filter(pred)
+    );
+  }
+
+  map<R>(f: (x: T) => R): Stream<R> {
+    return new Stream<R>(() => f(this.head), () => this.tail.map(f));
+  }
+}
+
+// 可运行示例：素数筛（埃拉托斯特尼筛法）
+function sieve(s: Stream<number>): Stream<number> {
+  return new Stream<number>(
+    () => s.head,
+    () => sieve(s.tail.filter(x => x % s.head !== 0))
+  );
+}
+
+const primes = sieve(Stream.naturals(2));
+console.log(primes.take(10)); // [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]
+
+// 斐波那契数列
+const fibs: Stream<number> = new Stream(
+  () => 0,
+  () => new Stream(
+    () => 1,
+    () => fibs.zip(fibs.tail, (a, b) => a + b)
+  )
+);
+
+// 辅助方法 zip
+Stream.prototype.zip = function<U, R>(other: Stream<U>, f: (a: any, b: U) => R): Stream<R> {
+  const self = this as Stream<any>;
+  return new Stream<R>(() => f(self.head, other.head), () => self.tail.zip(other.tail, f));
+};
+
+declare module './lazy-stream' {
+  interface Stream<T> {
+    zip<U, R>(other: Stream<U>, f: (a: T, b: U) => R): Stream<R>;
+  }
+}
+
+console.log((fibs as any).take(10)); // [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+```
+
+### 3.4 使用 Immer 实现 Copy-on-Write
+
+```typescript
+// immer-example.ts
+import { produce, enableMapSet } from 'immer';
+enableMapSet();
+
+interface State {
+  user: { name: string; preferences: { theme: 'light' | 'dark' } };
+  todos: Array<{ id: number; text: string; done: boolean }>;
+}
+
+const baseState: State = {
+  user: { name: 'Alice', preferences: { theme: 'light' } },
+  todos: [
+    { id: 1, text: 'Learn persistent data structures', done: false },
+  ],
+};
+
+// produce 返回新状态，旧状态不受影响
+const nextState = produce(baseState, draft => {
+  draft.user.preferences.theme = 'dark';
+  draft.todos.push({ id: 2, text: 'Implement lazy streams', done: false });
+});
+
+console.log(baseState.user.preferences.theme); // 'light'（未改变）
+console.log(nextState.user.preferences.theme); // 'dark'
+console.log(baseState.todos.length); // 1
+console.log(nextState.todos.length); // 2
+
+// 结构共享验证：未修改部分引用相同
+console.log(baseState.user === nextState.user); // false（被修改）
+console.log(baseState.todos === nextState.todos); // false（被修改）
+```
+
+---
+
+## 四、常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -120,12 +327,24 @@ console.log('Shares tail?', list2.tail === list1); // true
 | 函数式结构不适合性能敏感场景 | 某些持久化结构（如 Relaxed Radix Balanced Tree）在特定操作上有竞争力 |
 | Immer 深拷贝所有内容 | Immer 使用 Proxy + Copy-on-Write，仅复制被修改的路径 |
 
-### 3.3 扩展阅读
+---
 
-- [Immutable.js — Facebook](https://immutable-js.github.io/immutable-js/)
-- [Persistent Data Structures — Okasaki](https://www.cs.cmu.edu/~rwh/students/okasaki.pdf)
-- [Immer — Structural Sharing Explained](https://immerjs.github.io/immer/)
-- [Clojure Persistent Vectors](https://hypirion.com/musings/understanding-persistent-vector-pt-1)
+## 五、参考资源
+
+### 权威论文与书籍
+- [Purely Functional Data Structures — Chris Okasaki (1996)](https://www.cs.cmu.edu/~rwh/students/okasaki.pdf) — 持久化数据结构奠基博士论文
+- [Persistent Data Structures — MIT 6.851](https://courses.csail.mit.edu/6.851/spring12/lectures/L01.html) — MIT 高级数据结构课程
+- [Immutability in React — React 官方文档](https://react.dev/learn/updating-objects-in-state) — 不可变数据在 UI 框架中的实践
+
+### 开源实现
+- [Immutable.js — Facebook](https://immutable-js.github.io/immutable-js/) — JavaScript 持久化数据结构库
+- [Immer — Structural Sharing Explained](https://immerjs.github.io/immer/) — Copy-on-Write 语义库
+- [Mori — ClojureScript 数据结构移植](https://swannodette.github.io/mori/) — Clojure 持久化结构的 JS 绑定
+- [Clojure Persistent Vectors](https://hypirion.com/musings/understanding-persistent-vector-pt-1) — RRB-Tree 实现详解
+- [Fantasy Land Specification](https://github.com/fantasyland/fantasy-land) — JS 函数式编程代数规范
+
+### 规范与标准
+- [ECMAScript Record & Tuple Proposal](https://tc39.es/proposal-record-tuple/) — TC39 不可变数据类型提案
 - `20.4-data-algorithms/data-structures/`
 
 ---

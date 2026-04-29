@@ -46,6 +46,193 @@ status: current
 
 ---
 
+## 代码示例
+
+### shadcn/ui — Copy-paste 组件模式
+
+```bash
+# 初始化（无需安装为依赖，直接复制源码到项目）
+npx shadcn@latest init
+npx shadcn add button dialog dropdown-menu
+```
+
+```tsx
+// 直接使用复制的组件源码，完全可定制
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+
+export function ConfirmDialog() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="destructive">删除账户</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>确认删除？</DialogTitle>
+        </DialogHeader>
+        <p>此操作不可撤销。</p>
+      </DialogContent>
+    </Dialog>
+  )
+}
+```
+
+### Radix UI — 无样式原语组合
+
+```tsx
+// 基于 Radix 构建完全自定义样式的 Dropdown
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { css } from '@/styled-system/css'
+
+export function CustomDropdown() {
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger className={css({ cursor: 'pointer' })}>
+        打开菜单
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          className={css({
+            bg: 'white',
+            rounded: 'md',
+            shadow: 'lg',
+            p: '2',
+            minW: '200px',
+          })}
+        >
+          <DropdownMenu.Item
+            className={css({
+              px: '3',
+              py: '2',
+              rounded: 'sm',
+              _hover: { bg: 'gray.100' },
+              cursor: 'pointer',
+            })}
+          >
+            编辑
+          </DropdownMenu.Item>
+          <DropdownMenu.Separator className={css({ h: '1px', bg: 'gray.200', my: '1' })} />
+          <DropdownMenu.Item className={css({ px: '3', py: '2', color: 'red.600' })}>
+            删除
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  )
+}
+```
+
+### Element Plus — Vue 3 企业级表格
+
+```vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { ElTable, ElTableColumn, ElTag } from 'element-plus'
+
+interface User {
+  id: number
+  name: string
+  role: 'admin' | 'editor' | 'viewer'
+  status: 'active' | 'inactive'
+}
+
+const users = ref<User[]>([
+  { id: 1, name: 'Alice', role: 'admin', status: 'active' },
+  { id: 2, name: 'Bob', role: 'editor', status: 'inactive' },
+])
+
+const roleColor = (role: string) =>
+  ({ admin: 'danger', editor: 'warning', viewer: 'info' }[role] || 'info')
+</script>
+
+<template>
+  <ElTable :data="users" style="width: 100%">
+    <ElTableColumn prop="id" label="ID" width="60" />
+    <ElTableColumn prop="name" label="姓名" />
+    <ElTableColumn prop="role" label="角色">
+      <template #default="{ row }">
+        <ElTag :type="roleColor(row.role)">{{ row.role }}</ElTag>
+      </template>
+    </ElTableColumn>
+    <ElTableColumn prop="status" label="状态">
+      <template #default="{ row }">
+        <ElTag :type="row.status === 'active' ? 'success' : 'info'">
+          {{ row.status }}
+        </ElTag>
+      </template>
+    </ElTableColumn>
+  </ElTable>
+</template>
+```
+
+### MUI — 主题定制与深色模式
+
+```tsx
+import { createTheme, ThemeProvider, CssBaseline } from '@mui/material'
+import { amber, grey } from '@mui/material/colors'
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: amber,
+    background: {
+      default: grey[900],
+      paper: grey[800],
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          textTransform: 'none',
+        },
+      },
+    },
+  },
+})
+
+function App() {
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <Button variant="contained">主题化按钮</Button>
+    </ThemeProvider>
+  )
+}
+```
+
+---
+
+## 可访问性（A11y）最佳实践
+
+所有现代组件库均遵循 [WAI-ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)：
+
+- **焦点管理**：Dialog 打开时自动聚焦第一个可交互元素，关闭时焦点归还触发器
+- **键盘导航**：Menu 支持 `↑` `↓` `Enter` `Escape`，Tabs 支持 `←` `→` 切换
+- **屏幕阅读器**：通过 `role`、`aria-expanded`、`aria-describedby` 提供语义信息
+- **色彩对比**：确保文本与背景对比度 ≥ 4.5:1（WCAG AA 标准）
+
+```tsx
+// 使用 Radix UI 自动获得完整 ARIA 支持
+// 无需手动编写 aria 属性
+<Checkbox.Root id="terms" checked={checked} onCheckedChange={setChecked}>
+  <Checkbox.Indicator>
+    <CheckIcon />
+  </Checkbox.Indicator>
+</Checkbox.Root>
+<label htmlFor="terms">我同意服务条款</label>
+```
+
+---
+
 ## 选型建议
 
 ### React 项目
@@ -66,6 +253,21 @@ status: current
 | Material Design | **vuetify** |
 | 高性能要求 | **naive-ui** |
 | 多端统一开发 | **quasar** |
+
+---
+
+## 权威外部链接
+
+- [W3C — WAI-ARIA Authoring Practices Guide (APG)](https://www.w3.org/WAI/ARIA/apg/) — 组件可访问性权威标准
+- [Radix UI Primitives Documentation](https://www.radix-ui.com/primitives/docs/overview/introduction) — Headless UI 原语设计与 ARIA 实现参考
+- [Tailwind CSS — Tailwind UI](https://tailwindui.com/) — 官方商业组件库，展示 Tailwind 最佳实践
+- [Material Design 3](https://m3.material.io/) — Google Material Design 规范源文档
+- [shadcn/ui Documentation](https://ui.shadcn.com/docs) — Copy-paste 组件方法论
+- [Chakra UI — Accessibility](https://v2.chakra-ui.com/docs/components/accordion/usage#accessibility) — 组件库无障碍设计指南
+- [WebAIM — Color Contrast Checker](https://webaim.org/resources/contrastchecker/) — WCAG 对比度验证工具
+- [Vue.js — Style Guide](https://vuejs.org/style-guide/) — Vue 官方组件设计规范
+- [React Documentation — Thinking in React](https://react.dev/learn/thinking-in-react) — React 组件设计哲学
+- [TanStack Table Documentation](https://tanstack.com/table/latest/docs/introduction) — 跨框架 Headless Table 权威参考
 
 ---
 

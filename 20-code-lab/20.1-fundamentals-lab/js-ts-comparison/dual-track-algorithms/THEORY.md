@@ -9,18 +9,19 @@
 
 ### 1.1 问题域定义
 
-本模块解决 JS/TS 双轨算法 领域的核心理论与实践映射问题。通过代码示例和形式化分析建立从概念到实现的认知桥梁。
+双轨算法指同一算法在 JavaScript（动态类型）与 TypeScript（静态类型）中的双重实现。通过对比揭示类型系统如何约束输入空间、消除隐式转换 Bug，并在编译期捕获边界条件。
 
 ### 1.2 形式化基础
 
-[本模块的形式化定义与公理/定理陈述]
+设算法 `A` 的输入空间为 `D`，JS 实现接受的实际域为 `D_js ⊇ D`（因隐式转换），TS 实现通过类型系统将输入约束为 `D_ts ⊆ D`。类型正确性保证：`∀x ∈ D_ts, A_ts(x) = A_js(x)`，但 TS 在 `D \ D_ts` 上拒绝编译。
 
 ### 1.3 关键概念
 
 | 概念 | 定义 | 关联 |
 |------|------|------|
-| 核心概念 | JS/TS 双轨算法 的核心定义与语义 | 示例代码 |
-| 实践模式 | 工程化中的典型应用场景 | patterns/ |
+| 结构类型 | TS 基于形状而非名义的类型匹配 | 鸭子类型的形式化 |
+| 窄化（Narrowing） | 运行时检查将联合类型收缩到分支 | `typeof`, `instanceof`, `in` |
+| 类型守卫 | 返回布尔断言的自定义窄化函数 | `x is T` |
 
 ---
 
@@ -28,38 +29,131 @@
 
 ### 2.1 为什么存在
 
-JS/TS 双轨算法 作为软件工程中的重要课题，其存在是为了解决特定领域的复杂度与可维护性挑战。通过建立系统化的理论框架和实践模式，开发者能够更高效地构建可靠的系统。
+JS 的灵活性在快速原型阶段是优势，但在维护期成为负债。双轨对比帮助团队理解：同一算法加上类型约束后，哪些 Bug 可在编译期消除，哪些仍需运行时测试覆盖。
 
-### 2.2 权衡分析
+### 2.2 算法对比表
+
+| 维度 | JavaScript | TypeScript |
+|------|-----------|------------|
+| 输入校验 | 运行时手动检查 | 编译期类型约束 |
+| 空值处理 | `null`/`undefined` 易漏判 | `strictNullChecks` 强制处理 |
+| 返回值一致性 | 依赖文档约定 | 函数签名强制契约 |
+| 重构安全性 | 需全量测试覆盖 | 类型检查捕获大部分错误 |
+| 泛型抽象 | 无 | `<T>` 参数化类型与约束 |
+
+### 2.3 权衡分析
 
 | 方案 | 优点 | 缺点 | 适用场景 |
 |------|------|------|---------|
-| 方案 A | 通用、稳健 | 可能非最优 | 大多数场景 |
-| 方案 B | 针对性强 | 适用范围窄 | 特定需求 |
-
-### 2.3 与相关技术的对比
-
-与其他相关技术对比，JS/TS 双轨算法 在特定场景下提供了独特的权衡优势。
+| 纯 JS + JSDoc | 零构建、渐进类型 | 类型表达力弱于 TS | 小型库、遗留系统 |
+| TS 严格模式 | 最大编译期安全 | 初期迁移成本高 | 中大型项目 |
+| 混合双轨 | 核心算法 TS、脚本 JS | 工具链复杂度 | 渐进迁移中 |
 
 ---
 
 ## 三、实践映射
 
-### 3.1 从理论到代码
+### 3.1 从理论到代码：二叉搜索树插入
 
-本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 JS/TS 双轨算法 核心机制的理解，并观察不同实现选择带来的行为差异。
+```js
+// === JavaScript 版本（动态类型） ===
+class TreeNode {
+  constructor(value) {
+    this.value = value;
+    this.left = null;
+    this.right = null;
+  }
+}
 
-### 3.2 常见误区
+function insert(root, value) {
+  // 无编译期保证：value 可为任意类型
+  if (!root) return new TreeNode(value);
+  if (value < root.value) {
+    root.left = insert(root.left, value);
+  } else {
+    root.right = insert(root.right, value);
+  }
+  return root;
+}
+
+// 潜在 Bug：字符串比较导致意外树结构
+insert(null, '10');
+insert(null, 2); // 混合类型，运行时不报错
+```
+
+```ts
+// === TypeScript 版本（静态类型 + 泛型） ===
+class TreeNode<T> {
+  left: TreeNode<T> | null = null;
+  right: TreeNode<T> | null = null;
+  constructor(public value: T) {}
+}
+
+// 约束 T 必须可比较
+function insert<T extends number | string>(
+  root: TreeNode<T> | null,
+  value: T
+): TreeNode<T> {
+  if (!root) return new TreeNode(value);
+  if (value < root.value) {
+    root.left = insert(root.left, value);
+  } else {
+    root.right = insert(root.right, value);
+  }
+  return root;
+}
+
+const root = insert<number>(null, 10);
+insert(root, 5);
+// insert(root, 'a'); // ❌ 编译错误：类型 'string' 不能赋值给 'number'
+```
+
+### 3.2 类型守卫实战：双轨校验
+
+```ts
+// 在 JS 中需要大量防御性代码
+function processInputJS(input) {
+  if (input == null) throw new Error('null input');
+  if (typeof input.value !== 'number') throw new Error('invalid value');
+  return input.value * 2;
+}
+
+// 在 TS 中类型守卫将校验与类型窄化合并
+type ValidInput = { value: number; label: string };
+
+function isValidInput(x: unknown): x is ValidInput {
+  return (
+    typeof x === 'object' &&
+    x !== null &&
+    'value' in x &&
+    typeof (x as Record<string, unknown>).value === 'number'
+  );
+}
+
+function processInputTS(input: unknown): number {
+  if (!isValidInput(input)) {
+    throw new Error('Input must be ValidInput');
+  }
+  // input 在此处已窄化为 ValidInput
+  return input.value * 2;
+}
+```
+
+### 3.3 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
-| JS/TS 双轨算法 很简单无需学习 | 深入理解能避免隐蔽 bug 和性能陷阱 |
-| 理论脱离实际 | 理论指导实践中的架构决策 |
+| TS 版本总是比 JS 慢 | 类型在编译后擦除，运行时 JS 与 TS 输出一致 |
+| 类型系统可替代所有单元测试 | 类型保证结构安全，业务逻辑正确性仍需测试 |
+| 双轨意味着维护两份代码 | TS 是 JS 的超集，同一份 `.ts` 经编译即得 JS |
 
-### 3.3 扩展阅读
+### 3.4 扩展阅读
 
-- [MDN Web Docs](https://developer.mozilla.org)
-- `30-knowledge-base/`
+- [TypeScript Handbook: Narrowing](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
+- [TypeScript Handbook: Generics](https://www.typescriptlang.org/docs/handbook/2/generics.html)
+- [ECMA-262: Type Conversion](https://tc39.es/ecma262/#sec-type-conversion)
+- [Total TypeScript: Zod Tutorial](https://www.totaltypescript.com/tutorials/zod)
+- `10-fundamentals/10.2-type-system/`
 
 ---
 

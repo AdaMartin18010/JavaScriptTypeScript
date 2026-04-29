@@ -37,7 +37,22 @@
 | ESM | 静态分析、tree-shaking | 旧环境需适配 | 现代项目 |
 | CJS | 生态成熟 | 运行时加载、体积大 | Node.js 历史项目 |
 
-### 2.3 与相关技术的对比
+### 2.3 特性对比表：ESM vs CJS
+
+| 特性 | ESM (`import` / `export`) | CJS (`require` / `module.exports`) |
+|------|---------------------------|-----------------------------------|
+| 加载时机 | 编译时解析依赖，运行时执行 | 完全运行时加载 |
+| 执行模式 | 严格模式 (`'use strict'`) 默认 | 非严格模式默认 |
+| 顶级 `this` | `undefined` | `module.exports` |
+| 导出绑定 | 实时绑定 (live bindings) | 值拷贝（对象引用除外） |
+| 循环依赖 | 支持，导出在求值前已绑定 | 返回已完成的部分导出 |
+| 静态分析 | 支持 tree-shaking、死码消除 | 不支持 |
+| 浏览器原生 | ✅ | ❌ |
+| 文件扩展名 | `.mjs` 或 `"type": "module"` | `.cjs` 或默认 |
+| 条件导入 | `import()` 动态表达式 | `require()` 任意表达式 |
+| `__dirname` / `__filename` | 需通过 `import.meta.url` 计算 | 直接可用 |
+
+### 2.4 与相关技术的对比
 
 与 Python/Java 模块对比：JS 模块系统经历了多次演进，ESM 是最终方向。
 
@@ -49,16 +64,73 @@
 
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 ESM 基础 核心机制的理解，并观察不同实现选择带来的行为差异。
 
-### 3.2 常见误区
+### 3.2 代码示例：ESM 导入导出语法全景
+
+```typescript
+// ===== math-utils.ts：命名导出 =====
+export const PI = 3.14159;
+export function add(a: number, b: number): number {
+  return a + b;
+}
+export class Calculator {
+  value = 0;
+  increment() { this.value++; }
+}
+
+// ===== logger.ts：默认导出 =====
+export default class Logger {
+  log(msg: string) { console.log(`[LOG] ${msg}`); }
+}
+
+// ===== main.ts：消费模块 =====
+// 1. 命名导入（推荐用大括号）
+import { PI, add, Calculator } from './math-utils.js';
+
+// 2. 默认导入
+import Logger from './logger.js';
+
+// 3. 命名空间导入（整体导入为对象）
+import * as MathUtils from './math-utils.js';
+console.log(MathUtils.PI);
+
+// 4. 混合导入（默认 + 命名）
+import LoggerDefault, { PI as MATH_PI } from './combined-module.js';
+
+// 5. 副作用导入（执行模块顶层代码）
+import './polyfills.js';
+
+// 6. 重新导出（ Barrel 模式）
+export { PI, add } from './math-utils.js';
+export { default as Logger } from './logger.js';
+export * from './types.js';
+
+// 7. 实时绑定演示：导出值变化会反映到导入方
+// counter.ts
+export let count = 0;
+export function increment() { count++; }
+
+// consumer.ts
+import { count, increment } from './counter.js';
+console.log(count); // 0
+increment();
+console.log(count); // 1（实时绑定，非拷贝）
+```
+
+### 3.3 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | ESM 和 CJS 可以随意混用 | 互操作需要特定加载器和转换规则 |
 | 循环依赖会自动解决 | 循环依赖可能导致未初始化访问 |
 
-### 3.3 扩展阅读
+### 3.4 扩展阅读
 
-- [MDN 模块](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+- [MDN JavaScript 模块](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+- [MDN：export](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/export)
+- [MDN：import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import)
+- [Node.js：ECMAScript Modules](https://nodejs.org/api/esm.html)
+- [Node.js：Interop with CommonJS](https://nodejs.org/api/esm.html#interoperability-with-commonjs)
+- [ECMAScript® 2025 — Modules](https://tc39.es/ecma262/#sec-modules)
 - `10-fundamentals/10.1-language-semantics/06-modules/`
 
 ---

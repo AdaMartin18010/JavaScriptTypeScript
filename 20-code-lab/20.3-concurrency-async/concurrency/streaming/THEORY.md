@@ -39,6 +39,14 @@
 
 ### 2.3 与相关技术的对比
 
+| 技术 | 标准/平台 | 背压支持 | 转换能力 | 典型场景 |
+|------|----------|---------|---------|---------|
+| Node.js Stream | Node API | `pause/resume` / `pipe` | `Transform` | 文件 I/O、HTTP |
+| Web Streams API | WHATWG 标准 | `ReadableStreamDefaultController` | `TransformStream` | 浏览器 / Deno |
+| RxJS Observable | 库（ReactiveX） | 通过 Scheduler | `map`, `filter`, `mergeMap` | 复杂事件流 |
+| Highland.js | 库 | 自动背压 | 函数式组合 | 函数式流处理 |
+| Python asyncio Stream | Python 标准库 | `StreamReader` | 手动缓冲 | asyncio 生态 |
+
 与批量处理对比：流式低内存但高代码复杂度，批量简单但内存峰值高。
 
 ---
@@ -48,6 +56,61 @@
 ### 3.1 从理论到代码
 
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 流式处理 核心机制的理解，并观察不同实现选择带来的行为差异。
+
+#### Web Streams API：渐进式 JSON Lines 处理
+
+```typescript
+// transform-stream.ts — 在浏览器中处理大体积 JSON Lines
+
+async function* parseJSONLines(stream: ReadableStream<Uint8Array>) {
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop()!; // 保留未完整行
+
+    for (const line of lines) {
+      if (line.trim()) yield JSON.parse(line);
+    }
+  }
+
+  if (buffer.trim()) yield JSON.parse(buffer);
+}
+
+// 使用：fetch 大文件并逐行解析
+const response = await fetch('/api/large-dataset.ndjson');
+for await (const record of parseJSONLines(response.body!)) {
+  console.log(record); // 逐条处理，内存恒定
+}
+```
+
+#### Node.js pipeline 模式
+
+```typescript
+import { createReadStream, createWriteStream } from 'fs';
+import { Transform, pipeline } from 'stream';
+import { promisify } from 'util';
+
+const pipelineAsync = promisify(pipeline);
+
+const upperCase = new Transform({
+  transform(chunk, _encoding, callback) {
+    callback(null, chunk.toString().toUpperCase());
+  },
+});
+
+await pipelineAsync(
+  createReadStream('input.txt'),
+  upperCase,
+  createWriteStream('output.txt')
+);
+```
 
 ### 3.2 常见误区
 
@@ -59,6 +122,10 @@
 ### 3.3 扩展阅读
 
 - [Node.js Streams](https://nodejs.org/api/stream.html)
+- [Web Streams API MDN](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API)
+- [Backpressure in Node.js](https://nodejs.org/en/learn/modules/backpressuring-in-streams)
+- [WHATWG Streams Standard](https://streams.spec.whatwg.org/)
+- [RxJS — Understanding Streams](https://rxjs.dev/guide/observable)
 - `20.3-concurrency-async/concurrency/`
 
 ---

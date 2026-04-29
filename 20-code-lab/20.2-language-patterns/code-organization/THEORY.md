@@ -54,7 +54,68 @@ src/
   presentation/   # UI 层
 ```
 
-## 3. 仓库与代码组织策略对比
+## 3. Barrel Export 模式与类型安全导入
+
+```typescript
+// features/auth/index.ts — Barrel 文件
+export { AuthProvider } from './AuthProvider';
+export { useAuth } from './useAuth';
+export type { AuthUser, AuthState } from './types';
+
+// 消费者代码
+import { useAuth, type AuthUser } from '@/features/auth';
+```
+
+```typescript
+// 使用 TypeScript project references 实现跨包类型隔离
+// tsconfig.json (packages/ui)
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*"]
+}
+
+// tsconfig.json (apps/web)
+{
+  "references": [{ "path": "../../packages/ui" }]
+}
+```
+
+## 4. 依赖注入与控制反转（IoC）
+
+```typescript
+// domain/EmailService.ts — 抽象接口
+export interface EmailService {
+  send(to: string, subject: string, body: string): Promise<void>;
+}
+
+// infrastructure/SendGridEmailService.ts — 具体实现
+export class SendGridEmailService implements EmailService {
+  async send(to: string, subject: string, body: string): Promise<void> {
+    // SendGrid API 调用
+  }
+}
+
+// application/UserRegistration.ts — 高层只依赖抽象
+export class UserRegistration {
+  constructor(private emailService: EmailService) {}
+
+  async register(email: string) {
+    // ... 业务逻辑
+    await this.emailService.send(email, 'Welcome', 'Thanks for signing up!');
+  }
+}
+
+// composition.ts — 在入口组装依赖
+const emailService = new SendGridEmailService();
+const registration = new UserRegistration(emailService);
+```
+
+## 5. 仓库与代码组织策略对比
 
 | 维度 | Monorepo | Polyrepo |
 |------|----------|----------|
@@ -72,7 +133,7 @@ src/
 | **团队协作** | 减少代码冲突，功能边界清晰 | 多人同时修改同类型目录 |
 | **适用规模** | 中大型应用、长期维护 | 小型项目、原型快速验证 |
 
-## 4. Monorepo 配置示例（Turborepo）
+## 6. Monorepo 配置示例（Turborepo）
 
 ```json
 // turbo.json
@@ -122,13 +183,28 @@ my-monorepo/
 └── package.json
 ```
 
-## 5. 依赖管理
+## 7. 循环依赖检测与消除
+
+```typescript
+// 使用 madge 检测循环引用
+// npx madge --circular --extensions ts src/
+// 输出示例：
+// src/features/auth/store.ts -> src/features/user/api.ts -> src/features/auth/store.ts
+
+// 解决方案：引入共享抽象层（domain/events.ts）
+// auth/store.ts 发布事件
+eventBus.emit('auth:login', { userId });
+// user/api.ts 监听事件
+eventBus.on('auth:login', ({ userId }) => refreshUserProfile(userId));
+```
+
+## 8. 依赖管理
 
 - **显式依赖**: 每个模块声明其依赖，避免隐式全局状态
 - **依赖方向**: 外层依赖内层，内层不感知外层
 - **循环依赖检测**: 使用工具（如 madge）检测并消除循环引用
 
-## 6. 与相邻模块的关系
+## 9. 与相邻模块的关系
 
 - **06-architecture-patterns**: 架构模式的理论
 - **59-fullstack-patterns**: 全栈项目的组织实践
@@ -142,3 +218,9 @@ my-monorepo/
 - [Monorepo.tools 对比指南](https://monorepo.tools/)
 - [Google Monorepo 实践 (Eng)](https://research.google/pubs/pub45424/)
 - [Feature-Based Project Structure](https://react-file-structure.surge.sh/)
+- [Martin Fowler — BoundedContext](https://martinfowler.com/bliki/BoundedContext.html)
+- [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html)
+- [TypeScript Project References](https://www.typescriptlang.org/docs/handbook/project-references.html)
+- [Clean Architecture — Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
+- [npm query 与依赖审计](https://docs.npmjs.com/cli/v10/commands/npm-query)
+- [Dependency Cruiser — 可视化依赖关系](https://github.com/sverweij/dependency-cruiser)

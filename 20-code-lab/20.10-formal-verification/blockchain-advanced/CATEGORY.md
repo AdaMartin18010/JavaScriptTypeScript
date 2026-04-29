@@ -76,6 +76,115 @@ async function submitWithdrawal(
 }
 ```
 
+### 使用 viem 进行类型安全的链上交互
+
+```typescript
+import { createPublicClient, http, parseAbi, formatEther } from 'viem';
+import { mainnet } from 'viem/chains';
+
+const client = createPublicClient({
+  chain: mainnet,
+  transport: http(),
+});
+
+const erc20Abi = parseAbi([
+  'function balanceOf(address owner) view returns (uint256)',
+  'event Transfer(address indexed from, address indexed to, uint256 value)',
+] as const);
+
+async function getBalance(token: `0x${string}`, holder: `0x${string}`) {
+  const balance = await client.readContract({
+    address: token,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: [holder],
+  });
+  return formatEther(balance);
+}
+
+// 监听实时转账事件
+client.watchContractEvent({
+  address: token,
+  abi: erc20Abi,
+  eventName: 'Transfer',
+  onLogs: (logs) => {
+    logs.forEach((log) => {
+      console.log(`Transfer: ${log.args.from} → ${log.args.to}: ${formatEther(log.args.value!)}`);
+    });
+  },
+});
+```
+
+### 使用 wagmi + React 连接钱包
+
+```typescript
+import { useAccount, useConnect, useDisconnect, useWriteContract } from 'wagmi';
+import { injected } from 'wagmi/connectors';
+
+function WalletButton() {
+  const { address, isConnected } = useAccount();
+  const { connect } = useConnect();
+  const { disconnect } = useDisconnect();
+
+  return (
+    <button onClick={() => (isConnected ? disconnect() : connect({ connector: injected() }))}>
+      {isConnected ? `Disconnect ${address?.slice(0, 6)}...` : 'Connect Wallet'}
+    </button>
+  );
+}
+
+function MintNFT({ contract }: { contract: `0x${string}` }) {
+  const { writeContract, isPending } = useWriteContract();
+
+  return (
+    <button
+      disabled={isPending}
+      onClick={() =>
+        writeContract({
+          abi: parseAbi(['function mint(address to) returns (uint256)']),
+          address: contract,
+          functionName: 'mint',
+          args: ['0x...'],
+        })
+      }
+    >
+      {isPending ? 'Minting...' : 'Mint NFT'}
+    </button>
+  );
+}
+```
+
+### Circom 零知识证明电路（前端集成准备）
+
+```typescript
+// zk-helper.ts — 在浏览器中生成并验证证明
+import { groth16 } from 'snarkjs';
+
+export async function generateProof(
+  input: Record<string, string | string[]>,
+  wasmPath: string,
+  zkeyPath: string
+) {
+  const { proof, publicSignals } = await groth16.fullProve(input, wasmPath, zkeyPath);
+  return { proof, publicSignals };
+}
+
+export async function verifyProof(
+  vkey: object,
+  publicSignals: string[],
+  proof: object
+): Promise<boolean> {
+  return groth16.verify(vkey, publicSignals, proof);
+}
+
+// 使用示例：证明知道一个哈希的原像
+// const { proof, publicSignals } = await generateProof(
+//   { preimage: '1234' },
+//   '/circuit.wasm',
+//   '/circuit_final.zkey'
+// );
+```
+
 ## 共识机制对比
 
 | 特性 | PoW (工作量证明) | PoS (权益证明) | DPoS (委托权益证明) |
@@ -116,6 +225,11 @@ async function submitWithdrawal(
 | Circom Documentation | 文档 | [docs.circom.io](https://docs.circom.io) — 电路语言与 snarkJS |
 | ethers.js Docs | 文档 | [docs.ethers.org](https://docs.ethers.org) — Ethereum 库 |
 | viem.sh | 文档 | [viem.sh](https://viem.sh) — 类型安全的 Ethereum 交互 |
+| wagmi.sh | 文档 | [wagmi.sh](https://wagmi.sh) — React Hooks for Ethereum |
+| OpenZeppelin Contracts | 文档 | [docs.openzeppelin.com/contracts](https://docs.openzeppelin.com/contracts) |
+| EIP 官方索引 | 规范 | [eips.ethereum.org](https://eips.ethereum.org/) |
+| Foundry 文档 | 工具 | [book.getfoundry.sh](https://book.getfoundry.sh/) |
+| Chainlink 文档 | 文档 | [docs.chain.link](https://docs.chain.link/) |
 
 ---
 

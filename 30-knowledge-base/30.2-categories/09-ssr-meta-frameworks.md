@@ -20,6 +20,100 @@ status: current
 | **RedwoodJS** | 17k⭐ | 全栈React框架，GraphQL集成，脚手架工具，企业级架构 | ⭐⭐⭐⭐⭐ | [redwoodjs.com](https://redwoodjs.com) | [redwoodjs/redwood](https://github.com/redwoodjs/redwood) |
 | **Blitz** | 13k⭐ | 全栈React框架，Zero-API数据层，基于Next.js构建 | ⭐⭐⭐⭐⭐ | [blitzjs.com](https://blitzjs.com) | [blitz-js/blitz](https://github.com/blitz-js/blitz) |
 
+**Next.js App Router 服务端组件示例：**
+
+```typescript
+// app/page.tsx — Server Component（默认服务端渲染）
+import { db } from '@/lib/db';
+import { PostCard } from '@/components/PostCard';
+
+export default async function HomePage() {
+  const posts = await db.post.findMany({
+    orderBy: { createdAt: 'desc' },
+    take: 10,
+  });
+
+  return (
+    <main className="container mx-auto px-4">
+      <h1 className="text-3xl font-bold mb-6">Latest Posts</h1>
+      <ul className="grid gap-4">
+        {posts.map(post => (
+          <PostCard key={post.id} post={post} />
+        ))}
+      </ul>
+    </main>
+  );
+}
+```
+
+**Next.js API Route 与 Server Actions：**
+
+```typescript
+// app/actions.ts
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+
+const createPostSchema = z.object({
+  title: z.string().min(1).max(200),
+  content: z.string().min(1),
+});
+
+export async function createPost(formData: FormData) {
+  const raw = Object.fromEntries(formData.entries());
+  const parsed = createPostSchema.safeParse(raw);
+
+  if (!parsed.success) {
+    return { error: parsed.error.flatten().fieldErrors };
+  }
+
+  // 直接操作数据库，无需 REST API 层
+  const post = await db.post.create({ data: parsed.data });
+  revalidatePath('/');
+  return { success: true, post };
+}
+```
+
+**Remix Loader 与 Action：**
+
+```typescript
+// app/routes/posts.$slug.tsx
+import { json, type LoaderFunctionArgs, type ActionFunctionArgs } from '@remix-run/node';
+import { useLoaderData, Form } from '@remix-run/react';
+
+export async function loader({ params }: LoaderFunctionArgs) {
+  const post = await getPost(params.slug!);
+  if (!post) throw new Response('Not Found', { status: 404 });
+  return json({ post });
+}
+
+export async function action({ request, params }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const intent = formData.get('intent');
+
+  if (intent === 'delete') {
+    await deletePost(params.slug!);
+    return redirect('/posts');
+  }
+  return json({ error: 'Unknown intent' }, { status: 400 });
+}
+
+export default function PostPage() {
+  const { post } = useLoaderData<typeof loader>();
+  return (
+    <article>
+      <h1>{post.title}</h1>
+      <div dangerouslySetInnerHTML={{ __html: post.content }} />
+      <Form method="post">
+        <input type="hidden" name="intent" value="delete" />
+        <button type="submit">Delete</button>
+      </Form>
+    </article>
+  );
+}
+```
+
 ---
 
 ## Vue 元框架
@@ -27,6 +121,48 @@ status: current
 | 库名 | Stars | 特点 | TS支持度 | 官网 | GitHub |
 |------|-------|------|----------|------|--------|
 | **Nuxt** | 55k⭐ | Vue全栈框架，文件路由，SSR/SSG/SPA模式，模块生态丰富 | ⭐⭐⭐⭐⭐ | [nuxt.com](https://nuxt.com) | [nuxt/nuxt](https://github.com/nuxt/nuxt) |
+
+**Nuxt 3 组合式 API 与服务器路由：**
+
+```typescript
+// pages/index.vue — 自动文件路由
+<script setup lang="ts">
+const { data: posts } = await useFetch('/api/posts');
+</script>
+
+<template>
+  <div>
+    <h1>Posts</h1>
+    <ul>
+      <li v-for="post in posts" :key="post.id">{{ post.title }}</li>
+    </ul>
+  </div>
+</template>
+
+// server/api/posts.get.ts — Nitro 服务器路由
+export default defineEventHandler(async (event) => {
+  const query = getQuery(event);
+  const posts = await $fetch('https://api.example.com/posts', { query });
+  return posts;
+});
+```
+
+**Nuxt 插件与模块系统：**
+
+```typescript
+// modules/my-module.ts
+import { defineNuxtModule, addPlugin, createResolver } from '@nuxt/kit';
+
+export default defineNuxtModule({
+  meta: { name: 'myModule', configKey: 'myModule' },
+  defaults: { apiBase: '/api' },
+  setup(options, nuxt) {
+    const resolver = createResolver(import.meta.url);
+    nuxt.options.runtimeConfig.public.apiBase = options.apiBase;
+    addPlugin(resolver.resolve('./runtime/plugin'));
+  },
+});
+```
 
 ---
 
@@ -38,6 +174,76 @@ status: current
 | **SvelteKit** | 18k⭐ | Svelte全栈框架，简洁高效，适配多种部署平台 | ⭐⭐⭐⭐⭐ | [kit.svelte.dev](https://kit.svelte.dev) | [sveltejs/kit](https://github.com/sveltejs/kit) |
 | **SolidStart** | 5k⭐ | SolidJS全栈框架，细粒度响应式，高性能 | ⭐⭐⭐⭐⭐ | [start.solidjs.com](https://start.solidjs.com) | [solidjs/solid-start](https://github.com/solidjs/solid-start) |
 | **Analog** | 3k⭐ | Angular全栈框架，文件路由，服务端渲染，面向现代Angular | ⭐⭐⭐⭐⭐ | [analogjs.org](https://analogjs.org) | [analogjs/analog](https://github.com/analogjs/analog) |
+
+**Astro 群岛架构示例：**
+
+```astro
+---
+// src/pages/index.astro
+import Counter from '../components/Counter.tsx';
+const posts = await fetch('https://api.example.com/posts').then(r => r.json());
+---
+
+<html lang="zh-CN">
+  <head><title>My Blog</title></head>
+  <body>
+    <h1>Static Content (Zero JS)</h1>
+    <ul>
+      {posts.map(post => <li>{post.title}</li>)}
+    </ul>
+
+    <!-- 交互式岛屿：仅此处发送客户端 JS -->
+    <Counter client:load initial={0} />
+    <Counter client:visible initial={100} />
+  </body>
+</html>
+```
+
+```typescript
+// src/components/Counter.tsx
+import { useState } from 'react';
+
+export default function Counter({ initial }: { initial: number }) {
+  const [count, setCount] = useState(initial);
+  return (
+    <button onClick={() => setCount(c => c + 1)}>
+      Count: {count}
+    </button>
+  );
+}
+```
+
+**SvelteKit 表单与渐进增强：**
+
+```svelte
+<!-- src/routes/login/+page.svelte -->
+<script lang="ts">
+  import { enhance } from '$app/forms';
+  export let form;
+</script>
+
+<form method="POST" use:enhance>
+  <input name="email" type="email" required />
+  <input name="password" type="password" required />
+  <button type="submit">Login</button>
+  {#if form?.error}<p class="error">{form.error}</p>{/if}
+</form>
+```
+
+```typescript
+// src/routes/login/+page.server.ts
+import { fail, redirect } from '@sveltejs/kit';
+
+export const actions = {
+  default: async ({ request, cookies }) => {
+    const data = await request.formData();
+    const user = await authenticate(data.get('email'), data.get('password'));
+    if (!user) return fail(400, { error: 'Invalid credentials' });
+    cookies.set('session', user.sessionToken, { path: '/' });
+    throw redirect(303, '/dashboard');
+  },
+};
+```
 
 ---
 
@@ -52,6 +258,24 @@ status: current
 | 多技术栈团队 | **Astro** - 框架无关，性能优先 |
 | Angular项目 | **Analog** - 现代化全栈方案 |
 | 全栈创业MVP | **RedwoodJS** 或 **Blitz** - 快速开发 |
+
+---
+
+## 权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Next.js Documentation | <https://nextjs.org/docs> | 官方文档，App Router 与 Pages Router 完整指南 |
+| React Server Components | <https://react.dev/reference/react/use-server> | React 官方服务端组件规范 |
+| Remix Documentation | <https://remix.run/docs> | 基于 Web 标准的全栈框架文档 |
+| Nuxt Documentation | <https://nuxt.com/docs> | Vue 生态全栈框架官方文档 |
+| Astro Documentation | <https://docs.astro.build> | 内容驱动多框架元框架文档 |
+| SvelteKit Documentation | <https://kit.svelte.dev/docs> | Svelte 全栈框架官方文档 |
+| web.dev — Rendering | <https://web.dev/rendering-on-the-web/> | Google 官方渲染模式对比指南 |
+| Core Web Vitals | <https://web.dev/vitals/> | 性能指标与优化最佳实践 |
+| HTTP Streaming | <https://web.dev/streams/> | Web Streams API 标准文档 |
+| Vercel Edge Runtime | <https://edge-runtime.vercel.app/> | 边缘计算运行时兼容性参考 |
+| TC39 Import Attributes | <https://github.com/tc39/proposal-import-attributes> | 导入属性 Stage 3 提案 |
 
 ---
 
