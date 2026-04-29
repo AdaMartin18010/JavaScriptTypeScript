@@ -66,6 +66,111 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
 });
 ```
 
+## 代码示例：Fetch 取消与进度追踪
+
+```typescript
+// fetch-advanced.ts — AbortController + ReadableStream 进度
+async function fetchWithProgress(
+  url: string,
+  onProgress: (loaded: number, total: number) => void
+) {
+  const controller = new AbortController();
+  const response = await fetch(url, { signal: controller.signal });
+
+  const contentLength = +(response.headers.get('Content-Length') ?? 0);
+  const reader = response.body!.getReader();
+  let loaded = 0;
+
+  const stream = new ReadableStream({
+    start(controller) {
+      function pump(): Promise<void> {
+        return reader.read().then(({ done, value }) => {
+          if (done) { controller.close(); return; }
+          loaded += value.byteLength;
+          onProgress(loaded, contentLength);
+          controller.enqueue(value);
+          return pump();
+        });
+      }
+      return pump();
+    }
+  });
+
+  return new Response(stream);
+}
+
+// 使用：5 秒后自动取消
+const ctrl = new AbortController();
+setTimeout(() => ctrl.abort(), 5000);
+fetch('/api/heavy', { signal: ctrl.signal }).catch(err => {
+  if (err.name === 'AbortError') console.log('Request cancelled');
+});
+```
+
+## 代码示例：IntersectionObserver 懒加载
+
+```typescript
+// observer-patterns.ts — 高性能图片懒加载 + 无限滚动
+function createLazyLoader(
+  selector: string,
+  onIntersect: (el: Element) => void
+) {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        onIntersect(entry.target);
+        observer.unobserve(entry.target); // 加载后取消观察
+      }
+    });
+  }, { rootMargin: '200px 0px' }); // 提前 200px 触发
+
+  document.querySelectorAll(selector).forEach(el => observer.observe(el));
+  return observer;
+}
+
+// 图片懒加载
+const imgObserver = createLazyLoader('img[data-src]', (el) => {
+  const img = el as HTMLImageElement;
+  img.src = img.dataset.src!;
+  img.removeAttribute('data-src');
+});
+```
+
+## 代码示例：Web Streams 流水线
+
+```typescript
+// streams-pipeline.ts — TransformStream 实现行级过滤
+const response = await fetch('/api/logs');
+const lines = response.body!
+  .pipeThrough(new TextDecoderStream())
+  .pipeThrough(new TransformStream({
+    transform(chunk: string, controller) {
+      chunk.split('\n').forEach(line => {
+        if (line.includes('ERROR')) controller.enqueue(line + '\n');
+      });
+    }
+  }));
+
+// 消费过滤后的流
+for await (const line of readableStreamToAsyncIterable(lines)) {
+  console.log(line);
+}
+
+function readableStreamToAsyncIterable<T>(stream: ReadableStream<T>): AsyncIterable<T> {
+  const reader = stream.getReader();
+  return {
+    [Symbol.asyncIterator]() {
+      return {
+        async next() {
+          const { done, value } = await reader.read();
+          return done ? { done: true, value: undefined } : { done: false, value };
+        }
+      };
+    }
+  };
+}
+```
+
 ## 目录内容
 
 - 📄 ARCHITECTURE.md
@@ -93,6 +198,11 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
 | Web Streams Spec | 规范 | [streams.spec.whatwg.org](https://streams.spec.whatwg.org/) |
 | Service Worker Cookbook | 实践 | [serviceworke.rs](https://serviceworke.rs/) |
 | Can I use | 兼容性 | [caniuse.com](https://caniuse.com/) |
+| Fetch Standard (WHATWG) | 规范 | [fetch.spec.whatwg.org](https://fetch.spec.whatwg.org/) |
+| Intersection Observer Spec | 规范 | [w3c.github.io/IntersectionObserver](https://w3c.github.io.io/IntersectionObserver/) |
+| Web Workers Spec | 规范 | [html.spec.whatwg.org/multipage/workers.html](https://html.spec.whatwg.org/multipage/workers.html) |
+| Google Web Fundamentals — Promises | 指南 | [developers.google.com/web/fundamentals/primers/promises](https://developers.google.com/web/fundamentals/primers/promises) |
+| Web.dev — Reliable HTTP Request Cancellation | 实践 | [web.dev/articles/abortable-fetch](https://web.dev/articles/abortable-fetch) |
 
 ---
 

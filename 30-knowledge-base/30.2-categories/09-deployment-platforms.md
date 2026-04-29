@@ -89,7 +89,7 @@
 ### 边缘数据库崛起
 
 - **Cloudflare D1**：SQLite 兼容，全球边缘复制，零配置
-- **Turso**：libSQL  fork，基于 Fly.io 全球部署，嵌入式 SQLite
+- **Turso**：libSQL fork，基于 Fly.io 全球部署，嵌入式 SQLite
 - **Vercel Postgres / KV**：与 Next.js 深度集成，Vercel Dashboard 统一管理
 
 ### ISR 与 Partial Prerendering (PPR)
@@ -110,6 +110,138 @@ Next.js 14+ 的 PPR 允许页面同时包含静态和动态部分：
 
 ---
 
+## 代码示例
+
+### Vercel Edge Function（Middleware）
+
+```typescript
+// middleware.ts
+import { NextRequest, NextResponse } from 'next/server';
+
+export const config = { matcher: ['/api/:path*'] };
+
+export function middleware(request: NextRequest) {
+  const country = request.geo?.country ?? 'US';
+  const response = NextResponse.next();
+  response.headers.set('x-edge-region', request.geo?.region ?? 'unknown');
+
+  // A/B 测试：按国家分桶
+  if (country === 'CN') {
+    return NextResponse.rewrite(new URL('/api/cn-variant', request.url));
+  }
+  return response;
+}
+```
+
+### Cloudflare Pages Function（边缘函数）
+
+```typescript
+// functions/api/[[route]].ts
+import { PagesFunction } from '@cloudflare/workers-types';
+
+export const onRequestGet: PagesFunction<{ DB: D1Database }> = async (context) => {
+  const { DB } = context.env;
+  const { results } = await DB.prepare('SELECT * FROM users WHERE id = ?')
+    .bind(context.params.id)
+    .all();
+  return Response.json(results);
+};
+```
+
+### AWS Lambda + API Gateway（Serverless Framework）
+
+```yaml
+# serverless.yml
+service: my-api
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+functions:
+  hello:
+    handler: dist/handler.hello
+    events:
+      - http:
+          path: hello
+          method: get
+```
+
+```typescript
+// handler.ts
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+
+export const hello = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  return {
+    statusCode: 200,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: 'Hello from Lambda', path: event.path }),
+  };
+};
+```
+
+### Dockerfile（通用 Node.js 生产部署）
+
+```dockerfile
+# Dockerfile
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY package.json ./
+EXPOSE 3000
+USER node
+CMD ["node", "dist/main.js"]
+```
+
+### Fly.io 部署配置（fly.toml）
+
+```toml
+# fly.toml
+app = "my-node-app"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+```
+
+### Deno Deploy 边缘函数
+
+```typescript
+// main.ts
+import { serve } from 'https://deno.land/std@0.192.0/http/server.ts';
+
+serve((req) => {
+  const url = new URL(req.url);
+  if (url.pathname === '/api/edge') {
+    return new Response(JSON.stringify({ region: Deno.env.get('DENO_REGION'), time: Date.now() }), {
+      headers: { 'content-type': 'application/json' },
+    });
+  }
+  return new Response('Not Found', { status: 404 });
+});
+```
+
+---
+
 ## 最佳实践
 
 1. **分离构建与部署**：CI 负责构建 Artifact，部署平台仅负责分发
@@ -123,11 +255,22 @@ Next.js 14+ 的 PPR 允许页面同时包含静态和动态部分：
 ## 参考资源
 
 - [Vercel Documentation](https://vercel.com/docs)
+- [Vercel Edge Functions](https://vercel.com/docs/functions/edge-functions)
 - [Netlify Documentation](https://docs.netlify.com/)
+- [Netlify Edge Functions](https://docs.netlify.com/edge-functions/overview/)
 - [Cloudflare Pages Documentation](https://developers.cloudflare.com/pages/)
+- [Cloudflare Workers](https://developers.cloudflare.com/workers/)
 - [Railway Documentation](https://docs.railway.app/)
+- [Render Documentation](https://render.com/docs)
+- [Fly.io Documentation](https://fly.io/docs/)
+- [Deno Deploy](https://docs.deno.com/deploy/manual/)
+- [AWS Lambda Developer Guide](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)
+- [Serverless Framework](https://www.serverless.com/framework/docs)
+- [Docker — Best Practices for Node.js](https://docs.docker.com/build/building/best-practices/)
 - [Vercel vs Netlify vs Cloudflare (2026)](https://socialanimal.dev/blog/best-deployment-stack-nextjs-vercel-netlify-cloudflare/)
 - [Best Next.js Hosting 2026](https://thesoftwarescout.com/best-hosting-for-next-js-apps-in-2026-where-to-deploy-your-project/)
+- [web.dev — Learn Core Web Vitals](https://web.dev/learn-core-web-vitals/)
+- [MDN — Deploying Web Applications](https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Tools_and_setup/How_much_does_it_cost)
 
 ---
 

@@ -96,7 +96,7 @@ import { createServer } from 'http';
 createServer((req, res) => {
   withRequestContext(crypto.randomUUID(), () => {
     console.log('Start request:', getRequestId());
-    
+
     // 即使进入异步操作，上下文依然保留
     setTimeout(() => {
       console.log('In timeout:', getRequestId()); // 相同的 requestId
@@ -165,6 +165,97 @@ ZoneManager.run(userZone, () => {
 });
 ```
 
+## 代码示例：requestAnimationFrame 与任务调度协作
+
+```typescript
+// event-loop-deep-dive.ts — 在渲染帧中分片执行长任务
+function chunkedRender<T>(
+  items: T[],
+  renderFn: (item: T) => void,
+  options: { chunkSize?: number; deadlineMs?: number } = {}
+): Promise<void> {
+  const { chunkSize = 10, deadlineMs = 16 } = options;
+  let index = 0;
+
+  return new Promise((resolve) => {
+    function work(deadline: IdleDeadline | { timeRemaining: () => number }) {
+      while (index < items.length && deadline.timeRemaining() > 0) {
+        const end = Math.min(index + chunkSize, items.length);
+        for (; index < end; index++) {
+          renderFn(items[index]);
+        }
+      }
+      if (index < items.length) {
+        requestIdleCallback(work, { timeout: deadlineMs });
+      } else {
+        resolve();
+      }
+    }
+
+    // 优先使用 requestIdleCallback，回退到 setTimeout
+    if (typeof requestIdleCallback !== 'undefined') {
+      requestIdleCallback(work, { timeout: deadlineMs });
+    } else {
+      const start = performance.now();
+      work({ timeRemaining: () => Math.max(0, deadlineMs - (performance.now() - start)) });
+    }
+  });
+}
+
+// 使用示例：渲染 10,000 个列表项而不阻塞主线程
+const data = Array.from({ length: 10000 }, (_, i) => ({ id: i, label: `Item ${i}` }));
+await chunkedRender(data, (item) => {
+  const el = document.createElement('div');
+  el.textContent = item.label;
+  listContainer.appendChild(el);
+});
+```
+
+## 代码示例：AbortController 超时与竞态控制
+
+```typescript
+// event-loop-deep-dive.ts — 用 AbortController 取消异步操作
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit & { timeoutMs?: number } = {}
+): Promise<Response> {
+  const { timeoutMs = 5000, ...fetchOptions } = options;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(new DOMException('Timeout', 'TimeoutError')), timeoutMs);
+
+  try {
+    const response = await fetch(url, { ...fetchOptions, signal: controller.signal });
+    return response;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+// 使用示例：竞态控制 — 只保留最新请求的结果
+class RaceGuard<T> {
+  private lastToken = 0;
+
+  async run(fn: (token: number) => Promise<T>): Promise<T | 'stale'> {
+    const token = ++this.lastToken;
+    const result = await fn(token);
+    if (token !== this.lastToken) return 'stale';
+    return result;
+  }
+}
+
+const guard = new RaceGuard<string>();
+inputElement.addEventListener('input', async (e) => {
+  const query = (e.target as HTMLInputElement).value;
+  const result = await guard.run(async () => {
+    const res = await fetchWithTimeout(`/api/search?q=${encodeURIComponent(query)}`);
+    return res.text();
+  });
+  if (result !== 'stale') {
+    resultElement.textContent = result;
+  }
+});
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -198,6 +289,11 @@ ZoneManager.run(userZone, () => {
 | Node.js Async Hooks | 文档 | [nodejs.org/api/async_hooks.html](https://nodejs.org/api/async_hooks.html) |
 | Node.js AsyncLocalStorage | 文档 | [nodejs.org/api/async_context.html#class-asynclocalstorage](https://nodejs.org/api/async_context.html#class-asynclocalstorage) |
 | TC39 Explicit Resource Management | 规范 | [github.com/tc39/proposal-explicit-resource-management](https://github.com/tc39/proposal-explicit-resource-management) |
+| V8 Blog — Understanding GC | 文章 | [v8.dev/blog/trash-talk](https://v8.dev/blog/trash-talk) |
+| Chromium Scheduling APIs | 文档 | [developer.chrome.com/docs/web-platform/scheduler](https://developer.chrome.com/docs/web-platform/scheduler) |
+| Node.js libuv Design Overview | 文档 | [docs.libuv.org/en/v1.x/design.html](https://docs.libuv.org/en/v1.x/design.html) |
+| AbortController (MDN) | 文档 | [developer.mozilla.org/en-US/docs/Web/API/AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) |
+| requestIdleCallback (MDN) | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) |
 
 ---
 

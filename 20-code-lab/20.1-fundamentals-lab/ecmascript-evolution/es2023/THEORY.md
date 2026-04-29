@@ -92,7 +92,79 @@ const lastAdminIndex = users.findLastIndex(u => u.role === 'admin');
 console.log(lastAdminIndex); // 3
 ```
 
-### 3.2 Hashbang Grammar
+### 3.2 与 TypedArray 的兼容性
+
+```js
+// ES2023 方法同样适用于所有 TypedArray 变体
+const uint8 = new Uint8Array([3, 1, 4, 1, 5]);
+
+const sortedUint8 = uint8.toSorted((a, b) => b - a);
+console.log(sortedUint8); // Uint8Array [5, 4, 3, 1, 1]
+console.log(uint8);       // Uint8Array [3, 1, 4, 1, 5] 原数组不变
+
+// BigInt64Array 同样支持
+const bigints = new BigInt64Array([3n, 1n, 4n]);
+const sortedBigints = bigints.toSorted((a, b) => (a < b ? -1 : 1));
+console.log(sortedBigints); // BigInt64Array [1n, 3n, 4n]
+```
+
+### 3.3 React 状态管理中的不可变更新
+
+```tsx
+// 使用 ES2023 方法简化 React 状态更新
+import { useState } from 'react';
+
+function TodoList() {
+  const [todos, setTodos] = useState([
+    { id: 1, text: 'Learn ES2023', done: false },
+    { id: 2, text: 'Build app', done: false },
+  ]);
+
+  function toggleTodo(id: number) {
+    const index = todos.findIndex(t => t.id === id);
+    if (index === -1) return;
+
+    // ✅ ES2023: 简洁的不可变替换
+    setTodos(prev => prev.with(index, {
+      ...prev[index],
+      done: !prev[index].done,
+    }));
+
+    // ❌ 旧方式: 需要展开或使用 slice + concat
+    // setTodos(prev => [
+    //   ...prev.slice(0, index),
+    //   { ...prev[index], done: !prev[index].done },
+    //   ...prev.slice(index + 1),
+    // ]);
+  }
+
+  function removeTodo(id: number) {
+    const index = todos.findIndex(t => t.id === id);
+    setTodos(prev => prev.toSpliced(index, 1));
+  }
+
+  function addTodo(text: string) {
+    const newTodo = { id: Date.now(), text, done: false };
+    setTodos(prev => prev.toSpliced(prev.length, 0, newTodo));
+  }
+
+  return (
+    <ul>
+      {todos.map(todo => (
+        <li key={todo.id}>
+          <span style={{ textDecoration: todo.done ? 'line-through' : 'none' }}>
+            {todo.text}
+          </span>
+          <button onClick={() => toggleTodo(todo.id)}>Toggle</button>
+          <button onClick={() => removeTodo(todo.id)}>Remove</button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+```
+
+### 3.4 Hashbang Grammar
 
 ```js
 #!/usr/bin/env node
@@ -100,21 +172,42 @@ console.log(lastAdminIndex); // 3
 console.log('Hello from ES2023 hashbang');
 ```
 
-### 3.3 常见误区
+### 3.5 Polyfill 与兼容性处理
+
+```js
+// core-js polyfill 使用方式
+import 'core-js/actual/array/to-sorted';
+import 'core-js/actual/array/to-reversed';
+import 'core-js/actual/array/to-spliced';
+import 'core-js/actual/array/with';
+import 'core-js/actual/array/find-last';
+import 'core-js/actual/array/find-last-index';
+
+// 或者使用 es-shims
+const toSorted = require('array.prototype.tosorted');
+const shimmed = toSorted.shim(); // 自动挂载到 Array.prototype
+```
+
+### 3.6 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | 不可变方法性能更差 | 现代引擎对副本方法有优化，大数组可测后再决策 |
 | `findLast` 仅用于数字数组 | 适用于任何可索引集合，包括 `TypedArray` |
 | 旧环境无法使用 | core-js 提供完整 polyfill，Babel 可转译 |
+| `toSpliced` 与 `slice` 等价 | `toSpliced` 可在任意位置插入/删除，`slice` 仅截取 |
 
-### 3.4 扩展阅读
+### 3.7 扩展阅读
 
 - [ECMAScript 2023 Language Specification](https://262.ecma-international.org/14.0/)
 - [MDN: Array.prototype.toSorted](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toSorted)
 - [MDN: Array.prototype.findLast](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findLast)
 - [TC39 Proposal: Change Array by Copy](https://github.com/tc39/proposal-change-array-by-copy)
 - [V8 Dev: New in JavaScript ES2023](https://v8.dev/features/tags/es2023)
+- [core-js: ES2023 Polyfills](https://github.com/zloirock/core-js#ecmascript-array)
+- [Can I Use: ES2023 Array Methods](https://caniuse.com/?search=toSorted)
+- [SpiderMonkey ES2023 Implementation](https://bugzilla.mozilla.org/show_bug.cgi?id=1798015)
+- [Node.js v20 Release Notes — Hashbang](https://nodejs.org/en/blog/release/v20.0.0)
 - `30-knowledge-base/30.1-language-evolution`
 
 ---

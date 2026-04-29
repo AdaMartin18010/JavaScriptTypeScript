@@ -58,7 +58,148 @@ bun build --compile   # Bun 编译
 
 ---
 
-## 3. 测试 CLI
+## 3. 代码示例
+
+### 3.1 Commander.js 子命令与选项验证
+
+```typescript
+import { Command } from 'commander';
+
+const program = new Command();
+
+program
+  .name('deploy-cli')
+  .description('部署工具')
+  .version('1.0.0');
+
+program
+  .command('deploy <env>')
+  .description('部署到指定环境')
+  .option('-d, --dry-run', '模拟运行，不实际部署')
+  .option('-t, --timeout <seconds>', '超时时间', '300')
+  .option('--tag <tag>', '镜像标签', 'latest')
+  .action((env: string, options: { dryRun?: boolean; timeout: string; tag: string }) => {
+    console.log(`Deploying to ${env}`);
+    console.log(`  dryRun: ${options.dryRun ?? false}`);
+    console.log(`  timeout: ${options.timeout}s`);
+    console.log(`  tag: ${options.tag}`);
+  });
+
+program.parse();
+```
+
+### 3.2 Clack 交互式提示
+
+```typescript
+import { intro, outro, text, select, confirm, spinner } from '@clack/prompts';
+import { setTimeout } from 'node:timers/promises';
+
+async function main() {
+  intro('Create New Project');
+
+  const name = await text({
+    message: 'Project name?',
+    placeholder: 'my-awesome-app',
+    validate(value) {
+      if (!value) return 'Project name is required';
+      if (value.length < 3) return 'Name must be at least 3 characters';
+    },
+  });
+
+  const framework = await select({
+    message: 'Pick a framework.',
+    options: [
+      { value: 'next', label: 'Next.js' },
+      { value: 'nuxt', label: 'Nuxt' },
+      { value: 'sveltekit', label: 'SvelteKit' },
+    ],
+  });
+
+  const install = await confirm({
+    message: 'Install dependencies?',
+    initialValue: true,
+  });
+
+  if (install) {
+    const s = spinner();
+    s.start('Installing via npm');
+    await setTimeout(2000);
+    s.stop('Installed');
+  }
+
+  outro(`Project "${name}" created successfully!`);
+}
+
+main().catch(console.error);
+```
+
+### 3.3 Ink React 终端 UI
+
+```typescript
+import { render, Text, Box, useInput, useApp } from 'ink';
+import { useState } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  const { exit } = useApp();
+
+  useInput((input) => {
+    if (input === 'q') exit();
+    if (input === 'k') setCount((n) => n + 1);
+    if (input === 'j') setCount((n) => n - 1);
+  });
+
+  return (
+    <Box flexDirection="column" gap={1}>
+      <Text bold color="green">Interactive Counter</Text>
+      <Text>Count: {count}</Text>
+      <Text dimColor>[j] decrement  [k] increment  [q] quit</Text>
+    </Box>
+  );
+}
+
+render(<Counter />);
+```
+
+### 3.4 配置文件加载与合并
+
+```typescript
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+interface CliConfig {
+  registry?: string;
+  timeout?: number;
+  retry?: number;
+}
+
+function loadConfig(cwd: string): CliConfig {
+  const paths = [
+    resolve(cwd, '.myclirc.json'),
+    resolve(cwd, '.myclirc.js'),
+    resolve(cwd, 'package.json'),
+  ];
+
+  for (const p of paths) {
+    if (!existsSync(p)) continue;
+    const raw = readFileSync(p, 'utf-8');
+    if (p.endsWith('package.json')) {
+      const pkg = JSON.parse(raw) as { mycli?: CliConfig };
+      if (pkg.mycli) return pkg.mycli;
+    } else if (p.endsWith('.js')) {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      return require(p) as CliConfig;
+    } else {
+      return JSON.parse(raw) as CliConfig;
+    }
+  }
+  return {};
+}
+```
+
+---
+
+## 4. 测试 CLI
 
 ```typescript
 import { execa } from 'execa';
@@ -69,9 +210,31 @@ import { execa } from 'execa';
 });
 ```
 
+### 4.1 快照测试帮助文本
+
+```typescript
+import { test, expect } from 'vitest';
+import { execa } from 'execa';
+
+test('help output snapshot', async () => {
+  const { stdout } = await execa('node', ['./dist/cli.js', '--help']);
+  expect(stdout).toMatchInlineSnapshot(`
+    "Usage: deploy-cli [options] [command]
+
+    Options:
+      -V, --version   output the version number
+      -h, --help      display help for command
+
+    Commands:
+      deploy <env>    部署到指定环境
+      help [command]  display help for command"
+  `);
+});
+```
+
 ---
 
-## 4. 反模式
+## 5. 反模式
 
 ### 反模式 1：静默失败
 
@@ -83,9 +246,16 @@ import { execa } from 'execa';
 ❌ 输出包含装饰字符（emoji、颜色码），无法管道处理。
 ✅ 检测 `process.stdout.isTTY`，非终端环境禁用装饰。
 
+```typescript
+import { supportsColor } from 'supports-color';
+
+const useColor = process.stdout.isTTY && supportsColor.stdout !== false;
+const red = (s: string) => (useColor ? `\x1b[31m${s}\x1b[0m` : s);
+```
+
 ---
 
-## 5. 总结
+## 6. 总结
 
 CLI 是**开发者体验的第一触点**。
 
@@ -103,6 +273,12 @@ CLI 是**开发者体验的第一触点**。
 - [Clack](https://github.com/natemoo-re/clack)
 - [Ink](https://github.com/vadimdemedes/ink)
 - [12 Factor CLI Apps](https://medium.com/@jdxcode/12-factor-cli-apps-dd3c227a0e46)
+- [Google Shell Style Guide](https://google.github.io/styleguide/shellguide.html)
+- [CLI Guidelines](https://clig.dev/)
+- [ANSI Escape Codes — Wikipedia](https://en.wikipedia.org/wiki/ANSI_escape_code)
+- [npm — package.json bin field](https://docs.npmjs.com/cli/v10/configuring-npm/package-json#bin)
+- [Node.js — process.exit codes](https://nodejs.org/api/process.html#processexitcode)
+- [Sindre Sorhus — cli-spinners](https://github.com/sindresorhus/cli-spinners)
 
 ---
 
@@ -140,4 +316,4 @@ CLI 是**开发者体验的第一触点**。
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+> 📅 理论深化更新：2026-04-29

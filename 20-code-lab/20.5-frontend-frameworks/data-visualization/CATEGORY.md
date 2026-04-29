@@ -85,6 +85,83 @@ svg.append('g').attr('transform', `translate(0,${height})`).call(d3.axisBottom(x
 svg.append('g').call(d3.axisLeft(y));
 ```
 
+### Chart.js 快速配置
+
+```typescript
+import { Chart, registerables } from 'chart.js';
+Chart.register(...registerables);
+
+const ctx = document.getElementById('myChart') as HTMLCanvasElement;
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+    datasets: [{
+      label: 'Revenue',
+      data: [12000, 19000, 3000, 5000, 2000],
+      borderColor: 'rgb(75, 192, 192)',
+      tension: 0.3,
+    }],
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: { y: { beginAtZero: true } },
+  },
+});
+```
+
+### ECharts 响应式仪表盘
+
+```typescript
+import * as echarts from 'echarts';
+
+const chart = echarts.init(document.getElementById('gauge')!);
+chart.setOption({
+  series: [{
+    type: 'gauge',
+    progress: { show: true, width: 18 },
+    detail: { valueAnimation: true, formatter: '{value}%' },
+    data: [{ value: 78, name: 'CPU' }],
+  }],
+});
+
+window.addEventListener('resize', () => chart.resize());
+```
+
+### WebGL 离屏渲染
+
+```typescript
+const offscreen = new OffscreenCanvas(256, 256);
+const gl = offscreen.getContext('webgl')!;
+
+// 编译着色器
+function compileShader(type: number, source: string): WebGLShader {
+  const shader = gl.createShader(type)!;
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    throw new Error(gl.getShaderInfoLog(shader) ?? 'Shader error');
+  }
+  return shader;
+}
+
+const vs = compileShader(gl.VERTEX_SHADER, `
+  attribute vec2 position;
+  void main() { gl_Position = vec4(position, 0.0, 1.0); }
+`);
+const fs = compileShader(gl.FRAGMENT_SHADER, `
+  precision mediump float;
+  void main() { gl_FragColor = vec4(0.2, 0.6, 1.0, 1.0); }
+`);
+
+const program = gl.createProgram()!;
+gl.attachShader(program, vs);
+gl.attachShader(program, fs);
+gl.linkProgram(program);
+gl.useProgram(program);
+```
+
 ## 权威外部链接
 
 - [MDN — Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
@@ -94,6 +171,11 @@ svg.append('g').call(d3.axisLeft(y));
 - [Chart.js 文档](https://www.chartjs.org/docs/latest/)
 - [Apache ECharts 文档](https://echarts.apache.org/en/option.html)
 - [Three.js 文档](https://threejs.org/docs/)
+- [Observable Plot 文档](https://observablehq.com/plot/)
+- [SVG Path Reference — MDN](https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths)
+- [WebGL Fundamentals](https://webglfundamentals.org/)
+- [W3C — SVG 2 Specification](https://www.w3.org/TR/SVG2/)
+- [Khronos Group — WebGL Specification](https://www.khronos.org/registry/webgl/specs/latest/2.0/)
 
 ## 关联模块
 

@@ -87,6 +87,75 @@ awesome-jsts-ecosystem/
 
 ---
 
+## 🛠️ 快速创建项目示例
+
+### 使用 Vite 创建 TypeScript 项目
+
+```bash
+# 创建项目
+npm create vite@latest my-app -- --template vanilla-ts
+
+# 或使用框架模板
+npm create vite@latest my-react-app -- --template react-ts
+npm create vite@latest my-vue-app -- --template vue-ts
+
+cd my-app
+npm install
+npm run dev
+```
+
+### 使用 `create-next-app` 创建全栈项目
+
+```bash
+npx create-next-app@latest my-next-app --typescript --tailwind --eslint --app --src-dir
+```
+
+### 使用 `create-hono` 创建边缘 API
+
+```bash
+npm create hono@latest my-api
+# 选择 Cloudflare Workers / Node.js / Deno 等运行时模板
+```
+
+### 使用 `npm init` 创建库项目（支持 Dual Package）
+
+```bash
+mkdir my-lib && cd my-lib
+npm init -y
+npm install -D typescript vitest @types/node
+npx tsc --init
+```
+
+```json
+// package.json — Dual Package (ESM + CJS)
+{
+  "name": "my-lib",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.5.0"
+  }
+}
+```
+
+---
+
 ## 🎯 收录标准 / Inclusion Criteria
 
 我们遵循严格的收录标准，确保推荐内容的质量：
@@ -118,6 +187,15 @@ We follow strict inclusion criteria to ensure the quality of recommendations:
 - [Node.js 官方文档](https://nodejs.org/docs/latest/api/)
 - [TypeScript 官方文档](https://www.typescriptlang.org/docs/)
 - [MDN Web Docs](https://developer.mozilla.org/)
+- [JavaScript Info](https://javascript.info/) — 现代 JavaScript 教程
+- [Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices) — Node.js 工程最佳实践
+- [Patterns.dev](https://www.patterns.dev/) — 现代 Web 应用设计模式
+- [web.dev](https://web.dev/) — Google Chrome 团队 Web 性能与最佳实践
+- [Total TypeScript](https://www.totaltypescript.com/) — Matt Pocock 的 TypeScript 进阶课程
+- [TypeScript Deep Dive](https://basarat.gitbook.io/typescript/) — Basarat 的 TypeScript 深度指南
+- [Node.js Design Patterns](https://www.nodejsdesignpatterns.com/) — Node.js 设计模式（书籍）
+- [ECMAScript® 2025 Language Specification](https://tc39.es/ecma262/) — ECMAScript 语言规范
+- [TC39 Proposals](https://github.com/tc39/proposals) — ECMAScript 提案跟踪
 
 ---
 

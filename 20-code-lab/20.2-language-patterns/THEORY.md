@@ -55,9 +55,119 @@ Pattern = ⟨Context, Problem, Solution, Consequences⟩
 
 ---
 
-## 三、实践映射
+## 三、TypeScript 语言特有模式
 
-### 3.1 从理论到代码
+### 3.1 Discriminated Unions（可辨识联合类型）
+
+```typescript
+// 用字面量类型标签实现代数数据类型
+type Shape =
+  | { kind: 'circle'; radius: number }
+  | { kind: 'rectangle'; width: number; height: number }
+  | { kind: 'triangle'; base: number; height: number };
+
+function area(shape: Shape): number {
+  switch (shape.kind) {
+    case 'circle':
+      return Math.PI * shape.radius ** 2;
+    case 'rectangle':
+      return shape.width * shape.height;
+    case 'triangle':
+      return (shape.base * shape.height) / 2;
+    default:
+      // TypeScript 会在此报错若遗漏了分支（exhaustiveness check）
+      const _exhaustive: never = shape;
+      return _exhaustive;
+  }
+}
+```
+
+### 3.2 Branded Types（品牌类型）
+
+```typescript
+// 为同构类型赋予语义区分，避免单位/ID 混淆
+ type UserId = string & { __brand: 'UserId' };
+ type OrderId = string & { __brand: 'OrderId' };
+
+ function UserId(id: string): UserId {
+   return id as UserId;
+ }
+ function OrderId(id: string): OrderId {
+   return id as OrderId;
+ }
+
+ const uid: UserId = UserId('u-123');
+ const oid: OrderId = OrderId('o-456');
+ // uid = oid; // ❌ 编译错误：类型不兼容
+```
+
+### 3.3 Builder Pattern with Method Chaining
+
+```typescript
+class SQLQueryBuilder {
+  private parts: string[] = [];
+
+  select(...columns: string[]): this {
+    this.parts.push(`SELECT ${columns.join(', ')}`);
+    return this;
+  }
+
+  from(table: string): this {
+    this.parts.push(`FROM ${table}`);
+    return this;
+  }
+
+  where(condition: string): this {
+    this.parts.push(`WHERE ${condition}`);
+    return this;
+  }
+
+  build(): string {
+    return this.parts.join(' ');
+  }
+}
+
+const sql = new SQLQueryBuilder()
+  .select('id', 'name')
+  .from('users')
+  .where('age > 18')
+  .build();
+// "SELECT id, name FROM users WHERE age > 18"
+```
+
+### 3.4 Result / Option 类型（函数式错误处理）
+
+```typescript
+type Result<T, E = Error> =
+  | { ok: true; value: T }
+  | { ok: false; error: E };
+
+function ok<T>(value: T): Result<T, never> {
+  return { ok: true, value };
+}
+
+function err<E>(error: E): Result<never, E> {
+  return { ok: false, error };
+}
+
+function divide(a: number, b: number): Result<number, string> {
+  if (b === 0) return err('Division by zero');
+  return ok(a / b);
+}
+
+const result = divide(10, 0);
+if (!result.ok) {
+  console.error(result.error); // 编译器自动收窄类型
+} else {
+  console.log(result.value);
+}
+```
+
+---
+
+## 四、实践映射
+
+### 4.1 从理论到代码
 
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 语言模式 核心机制的理解，并观察不同实现选择带来的行为差异。
 
@@ -98,20 +208,47 @@ const payment = PaymentFactory.create('alipay');
 payment.pay(100).then(console.log);
 ```
 
-### 3.2 常见误区
+#### Proxy 模式实现可观察对象
+
+```typescript
+function createObservable<T extends object>(target: T, onChange: (prop: string, value: unknown) => void): T {
+  return new Proxy(target, {
+    set(obj, prop, value) {
+      const result = Reflect.set(obj, prop, value);
+      onChange(String(prop), value);
+      return result;
+    },
+  });
+}
+
+const state = createObservable({ count: 0 }, (prop, val) => {
+  console.log(`Property "${prop}" changed to ${val}`);
+});
+
+state.count++; // "Property "count" changed to 1"
+```
+
+### 4.2 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | 语言模式 很简单无需学习 | 深入理解能避免隐蔽 bug 和性能陷阱 |
 | 理论脱离实际 | 理论指导实践中的架构决策 |
+| 任何场景都要用设计模式 | 过度设计会增加复杂度；KISS 优先 |
+| TypeScript 类型系统只是文档 | 类型可用于编译期约束、代码生成和 IDE 智能提示 |
 
-### 3.3 扩展阅读
+### 4.3 扩展阅读
 
 - [MDN Web Docs](https://developer.mozilla.org)
 - [Refactoring Guru — Design Patterns](https://refactoring.guru/design-patterns)
 - [Patterns.dev](https://www.patterns.dev/)
 - [JavaScript Design Patterns (Addy Osmani)](https://addyosmani.com/resources/essentialjsdesignpatterns/book/)
 - [Gamma et al. — Design Patterns (GoF)](https://en.wikipedia.org/wiki/Design_Patterns)
+- [TypeScript Handbook — Advanced Types](https://www.typescriptlang.org/docs/handbook/2/types-from-types.html)
+- [Effective TypeScript (Dan Vanderkam)](https://effectivetypescript.com/)
+- [TypeScript Deep Dive (basarat)](https://basarat.gitbook.io/typescript/)
+- [Total TypeScript (Matt Pocock)](https://www.totaltypescript.com/)
+- [fp-ts — Functional Programming in TypeScript](https://gcanti.github.io/fp-ts/)
 - `30-knowledge-base/`
 
 ---

@@ -13,14 +13,22 @@
 
 ### 1.2 形式化基础
 
-[本模块的形式化定义与公理/定理陈述]
+MCP（Model Context Protocol）是一种开放协议，定义了 LLM 应用与外部能力源之间的标准化交互契约。协议核心包含三层：
+
+1. **传输层（Transport）**：负责字节流的可靠传递，支持 `stdio`、`SSE`（Server-Sent Events）与 `HTTP` 三种传输模式。
+2. **协议层（Protocol）**：基于 JSON-RPC 2.0 定义请求/响应格式，包括 `Initialize`、`ToolCall`、`ResourceRead`、`PromptGet` 等方法。
+3. **能力层（Capabilities）**：声明 Server 提供的 `tools`、`resources`、`prompts` 三大能力类别，客户端通过 `capabilities` 协商确定可用功能。
 
 ### 1.3 关键概念
 
 | 概念 | 定义 | 关联 |
 |------|------|------|
 | Server | 向模型暴露工具与资源的后端 | mcp-server.ts |
-| Context | 模型调用的附加上下文信息 | context-provider.ts |
+| Client | 发起工具调用与资源读取的 LLM 应用侧 | mcp-client.ts |
+| Tool | 模型可调用的函数式能力，含 JSON Schema 描述的输入参数 | tool-registry.ts |
+| Resource | 可供模型订阅或读取的上下文数据（文件、数据库记录、API 响应） | resource-provider.ts |
+| Prompt | 预定义的提示模板，支持参数插值 | prompt-template.ts |
+| Context | 模型调用的附加上下文信息（如用户 ID、会话状态） | context-provider.ts |
 
 ---
 
@@ -34,8 +42,9 @@ LLM 需要与外部世界交互才能解决实际问题。MCP 协议标准化了
 
 | 方案 | 优点 | 缺点 | 适用场景 |
 |------|------|------|---------|
-| MCP 标准 | 工具生态共享 | 适配成本 | 通用 LLM 应用 |
-| 直接集成 | 简单直接 | 重复开发 | 单一应用 |
+| MCP 标准 | 工具生态共享，跨模型复用 | 需适配 Provider 实现 | 通用 LLM 应用、多模型切换 |
+| 直接集成 | 简单直接，无协议开销 | 重复开发，N×M 适配问题 | 单一应用、原型验证 |
+| Function Calling | 厂商生态成熟 | 厂商锁定，schema 静态 | 单一厂商深度集成 |
 
 ### 2.3 与相关技术的对比
 
@@ -62,8 +71,9 @@ LLM 需要与外部世界交互才能解决实际问题。MCP 协议标准化了
 
 | 误区 | 正确理解 |
 |------|---------|
-| MCP 只连接数据库 | MCP 可连接任何工具、API 和数据源 |
-| MCP Server 必须远程部署 | MCP Server 可以本地、远程或嵌入运行 |
+| MCP 只连接数据库 | MCP 可连接任何工具、API 和数据源（文件系统、Git、浏览器、Slack 等） |
+| MCP Server 必须远程部署 | MCP Server 可以本地（stdio）、远程（SSE/HTTP）或嵌入运行 |
+| MCP 替代了 Function Calling | MCP 是更高层的标准，Function Calling 是具体实现方式之一 |
 
 ### 4.3 代码示例
 
@@ -107,12 +117,108 @@ async function main() {
 main();
 ```
 
+#### MCP Client（调用远程 Server）
+
+```typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+
+const client = new Client({ name: 'chat-app', version: '1.0.0' });
+const transport = new SSEClientTransport(new URL('http://localhost:3000/sse'));
+
+await client.connect(transport);
+
+// 1. 发现可用工具
+const tools = await client.listTools();
+console.log('Available tools:', tools.tools.map((t) => t.name));
+
+// 2. 调用工具（由 LLM 根据用户意图触发）
+const result = await client.callTool({
+  name: 'get_forecast',
+  arguments: { city: 'Beijing' },
+});
+console.log('Tool result:', result);
+```
+
+#### 资源订阅与增量更新
+
+```typescript
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import {
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
+  SubscribeRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
+
+const server = new Server(
+  { name: 'file-watcher', version: '1.0.0' },
+  { capabilities: { resources: { subscribe: true } } }
+);
+
+const fileStore = new Map<string, string>();
+
+server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+  resources: Array.from(fileStore.keys()).map((uri) => ({
+    uri,
+    mimeType: 'text/plain',
+    name: uri.split('/').pop() ?? uri,
+  })),
+}));
+
+server.setRequestHandler(ReadResourceRequestSchema, async (req) => {
+  const content = fileStore.get(req.params.uri);
+  if (!content) throw new Error('Resource not found');
+  return { contents: [{ uri: req.params.uri, mimeType: 'text/plain', text: content }] };
+});
+
+server.setRequestHandler(SubscribeRequestSchema, async (req) => {
+  // 实际生产中使用 fs.watch 或 chokidar 监听文件变化
+  watchFile(req.params.uri, (newContent) => {
+    fileStore.set(req.params.uri, newContent);
+    server.notification({ method: 'notifications/resources/updated', params: { uri: req.params.uri } });
+  });
+  return {};
+});
+```
+
+#### SSE 传输层 Server（HTTP 模式）
+
+```typescript
+import express from 'express';
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+
+const app = express();
+const server = new Server({ name: 'http-mcp', version: '1.0.0' }, { capabilities: { tools: {} } });
+
+// 注册工具...
+
+let transport: SSEServerTransport;
+
+app.get('/sse', async (req, res) => {
+  transport = new SSEServerTransport('/message', res);
+  await server.connect(transport);
+});
+
+app.post('/message', async (req, res) => {
+  await transport.handlePostMessage(req, res, req.body);
+});
+
+app.listen(3000, () => console.log('MCP SSE Server on http://localhost:3000'));
+```
+
 ### 4.4 扩展阅读
 
 - [MCP Protocol 官方文档](https://modelcontextprotocol.io/)
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
+- [MCP Specification — GitHub](https://github.com/modelcontextprotocol/specification)
 - [Anthropic — Model Context Protocol](https://docs.anthropic.com/en/docs/build-with-claude/mcp)
+- [Anthropic — MCP Introduction Blog Post](https://www.anthropic.com/news/model-context-protocol)
 - [OpenAI Function Calling](https://platform.openai.com/docs/guides/function-calling)
+- [OpenAI Agents SDK](https://github.com/openai/openai-agents-python)
+- [LangChain.js — Tools & Tool Calling](https://js.langchain.com/docs/concepts/tool_calling/)
+- [JSON Schema](https://json-schema.org/) — MCP 工具参数描述的基础规范
+- [JSON-RPC 2.0 Specification](https://www.jsonrpc.org/specification) — MCP 协议消息格式基础
 - `20.7-ai-agent-infra/`
 
 ---

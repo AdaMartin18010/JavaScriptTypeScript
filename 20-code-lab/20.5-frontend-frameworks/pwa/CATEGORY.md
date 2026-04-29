@@ -89,6 +89,88 @@ export async function subscribePush(
 }
 ```
 
+### Web App Manifest 类型安全生成
+
+```typescript
+interface WebAppManifest {
+  name: string;
+  short_name: string;
+  start_url: string;
+  display: 'fullscreen' | 'standalone' | 'minimal-ui' | 'browser';
+  background_color: string;
+  theme_color: string;
+  icons: { src: string; sizes: string; type: string }[];
+}
+
+export function generateManifest(config: Partial<WebAppManifest>): WebAppManifest {
+  return {
+    name: config.name ?? 'My PWA',
+    short_name: config.short_name ?? 'PWA',
+    start_url: config.start_url ?? '/',
+    display: config.display ?? 'standalone',
+    background_color: config.background_color ?? '#ffffff',
+    theme_color: config.theme_color ?? '#000000',
+    icons: config.icons ?? [
+      { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+  };
+}
+
+// 序列化为 JSON 供 build 时写入
+console.log(JSON.stringify(generateManifest({ name: 'Dashboard' }), null, 2));
+```
+
+### Workbox 路由预缓存
+
+```typescript
+// service-worker.ts (workbox-build 生成)
+import { precacheAndRoute } from 'workbox-precaching';
+import { registerRoute } from 'workbox-routing';
+import { StaleWhileRevalidate, CacheFirst } from 'workbox-strategies';
+import { ExpirationPlugin } from 'workbox-expiration';
+
+// 预缓存构建产物
+precacheAndRoute(self.__WB_MANIFEST);
+
+// API 请求：Stale-While-Revalidate
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/api/'),
+  new StaleWhileRevalidate({ cacheName: 'api-cache' })
+);
+
+// 图片资源：Cache First + 过期策略
+registerRoute(
+  ({ request }) => request.destination === 'image',
+  new CacheFirst({
+    cacheName: 'image-cache',
+    plugins: [
+      new ExpirationPlugin({ maxEntries: 60, maxAgeSeconds: 30 * 24 * 60 * 60 }),
+    ],
+  })
+);
+```
+
+### 周期性后台同步
+
+```typescript
+export async function registerPeriodicSync(tag: string, minInterval: number) {
+  const registration = await navigator.serviceWorker.ready;
+
+  if ('periodicSync' in registration) {
+    // @ts-expect-error Periodic Background Sync 实验性
+    const status = await navigator.permissions.query({
+      name: 'periodic-background-sync' as PermissionName,
+    });
+
+    if (status.state === 'granted') {
+      // @ts-expect-error
+      await registration.periodicSync.register(tag, { minInterval });
+    }
+  }
+}
+```
+
 ## 关联模块
 
 - `97-lowcode-platform` — 低代码平台
@@ -106,6 +188,10 @@ export async function subscribePush(
 | Workbox | 文档 | [developer.chrome.com/docs/workbox](https://developer.chrome.com/docs/workbox) |
 | Web App Manifest | 规范 | [w3c.github.io/manifest](https://w3c.github.io/manifest) |
 | PWA Builder | 工具 | [www.pwabuilder.com](https://www.pwabuilder.com) |
+| MDN — Background Sync | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Background_Synchronization_API](https://developer.mozilla.org/en-US/docs/Web/API/Background_Synchronization_API) |
+| MDN — Periodic Background Sync | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Web_Periodic_Background_Synchronization_API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Periodic_Background_Synchronization_API) |
+| Google — PWA Checklist](<https://web.dev/pwa-checklist/>) | 清单 | [web.dev/pwa-checklist](https://web.dev/pwa-checklist/) |
+| W3C — Service Workers](<https://www.w3.org/TR/service-workers/>) | 规范 | [www.w3.org/TR/service-workers](https://www.w3.org/TR/service-workers/) |
 
 ---
 

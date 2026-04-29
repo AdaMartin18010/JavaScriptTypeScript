@@ -139,7 +139,7 @@ interface JointPose {
 function getRayFromIndexFinger(hand: XRHand): { origin: DOMPointReadOnly; direction: DOMPointReadOnly } {
   const indexTip = hand.get('index-finger-tip');
   const indexProximal = hand.get('index-finger-phalanx-proximal');
-  
+
   if (!indexTip || !indexProximal) {
     throw new Error('Index finger joints not available');
   }
@@ -169,7 +169,7 @@ function rayPlaneIntersect(
   const diffY = planePoint.y - rayOrigin.y;
   const diffZ = planePoint.z - rayOrigin.z;
   const t = (diffX * planeNormal.x + diffY * planeNormal.y + diffZ * planeNormal.z) / denom;
-  
+
   if (t < 0) return null; // 交点在射线反方向
 
   return new DOMPointReadOnly(
@@ -237,7 +237,7 @@ class PinchGrabController {
       // 开始抓取
       this.isGrabbing = true;
       const thumbPos = hand.get('thumb-tip')!.transform.position;
-      
+
       // 查找最近的物体
       let closest: THREE.Object3D | null = null;
       let closestDist = Infinity;
@@ -264,6 +264,101 @@ class PinchGrabController {
 }
 ```
 
+## 代码示例：关节置信度过滤与平滑
+
+```typescript
+// 03-hand-tracking.ts — 过滤低置信度关节并应用指数平滑
+interface SmoothedJoint {
+  position: THREE.Vector3;
+  confidence: number;
+}
+
+class HandSmoothingFilter {
+  private history = new Map<XRHandJoint, THREE.Vector3>();
+  private readonly alpha = 0.3; // 平滑系数
+
+  update(hand: XRHand): Map<XRHandJoint, SmoothedJoint> {
+    const result = new Map<XRHandJoint, SmoothedJoint>();
+
+    for (const jointName of hand.keys()) {
+      const joint = hand.get(jointName);
+      if (!joint) continue;
+
+      const { position } = joint.transform;
+      const confidence = (joint as any).confidence ?? 1.0;
+
+      // 过滤低置信度数据（某些设备对遮挡手指置信度会降低）
+      if (confidence < 0.5) {
+        const last = this.history.get(jointName);
+        if (last) {
+          result.set(jointName, { position: last.clone(), confidence });
+        }
+        continue;
+      }
+
+      const current = new THREE.Vector3(position.x, position.y, position.z);
+      const last = this.history.get(jointName);
+
+      if (last) {
+        // 指数平滑：s_t = α * x_t + (1 - α) * s_{t-1}
+        current.lerp(last, 1 - this.alpha);
+      }
+
+      this.history.set(jointName, current.clone());
+      result.set(jointName, { position: current, confidence });
+    }
+
+    return result;
+  }
+}
+```
+
+## 代码示例：手部骨骼可视化
+
+```typescript
+// 03-hand-tracking.ts — 用 Three.js 线框渲染手部骨骼
+const HAND_CONNECTIONS: Array<[XRHandJoint, XRHandJoint]> = [
+  ['wrist', 'thumb-metacarpal'],
+  ['thumb-metacarpal', 'thumb-phalanx-proximal'],
+  ['thumb-phalanx-proximal', 'thumb-phalanx-distal'],
+  ['thumb-phalanx-distal', 'thumb-tip'],
+  ['wrist', 'index-finger-metacarpal'],
+  ['index-finger-metacarpal', 'index-finger-phalanx-proximal'],
+  ['index-finger-phalanx-proximal', 'index-finger-phalanx-intermediate'],
+  ['index-finger-phalanx-intermediate', 'index-finger-phalanx-distal'],
+  ['index-finger-phalanx-distal', 'index-finger-tip'],
+  // ... 其余手指连接
+];
+
+function createHandSkeleton(hand: XRHand, scene: THREE.Scene): THREE.LineSegments {
+  const material = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(HAND_CONNECTIONS.length * 2 * 3);
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const lines = new THREE.LineSegments(geometry, material);
+  scene.add(lines);
+
+  // 每帧更新
+  function update() {
+    let idx = 0;
+    for (const [a, b] of HAND_CONNECTIONS) {
+      const jointA = hand.get(a);
+      const jointB = hand.get(b);
+      if (!jointA || !jointB) continue;
+
+      const pa = jointA.transform.position;
+      const pb = jointB.transform.position;
+      positions[idx++] = pa.x; positions[idx++] = pa.y; positions[idx++] = pa.z;
+      positions[idx++] = pb.x; positions[idx++] = pb.y; positions[idx++] = pb.z;
+    }
+    geometry.attributes.position.needsUpdate = true;
+  }
+
+  (lines as any).updateHand = update;
+  return lines;
+}
+```
+
 ---
 
 ## 参考资源
@@ -278,3 +373,7 @@ class PinchGrabController {
 - [A-Frame Hand Tracking](https://aframe.io/docs/master/components/hand-tracking.html) — A-Frame 手势追踪组件
 - [Google AR Core Hand Tracking](https://developers.google.com/ar/develop/java/hand-tracking) — ARCore 手势追踪
 - [Apple VisionOS Hand Tracking](https://developer.apple.com/documentation/visionos/hand-tracking) — visionOS 手势交互指南
+- [WebXR Samples GitHub](https://github.com/immersive-web/webxr-samples) — 官方 WebXR 示例仓库
+- [Three.js XRHandModelFactory](https://threejs.org/docs/index.html#examples/en/webxr/XRHandModelFactory) — Three.js 手部模型工厂
+- [WebXR Input Profiles](https://github.com/immersive-web/webxr-input-profiles) — 输入设备标准配置文件
+- [OpenXR Specification](https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html) — Khronos OpenXR 底层规范

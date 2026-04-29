@@ -63,6 +63,34 @@ const session = await navigator.xr.requestSession('immersive-ar', {
 | Apple | ARKit Collaborative Sessions | 多用户实时同步 |
 | Meta | Spatial Anchors API | Quest 系列原生支持 |
 
+### 锚点创建与恢复示例
+
+```typescript
+// anchor-manager.ts — WebXR 锚点持久化管理
+class AnchorManager {
+  private anchors = new Map<string, XRAnchor>();
+
+  async createAnchor(frame: XRFrame, pose: XRRigidTransform): Promise<string> {
+    const refSpace = await this.session.requestReferenceSpace('local-floor');
+    const anchor = await frame.createAnchor(pose, refSpace);
+    const id = crypto.randomUUID();
+    this.anchors.set(id, anchor);
+    return id;
+  }
+
+  getAnchorPose(anchorId: string, frame: XRFrame, refSpace: XRReferenceSpace): XRPose | null {
+    const anchor = this.anchors.get(anchorId);
+    if (!anchor) return null;
+    return frame.getPose(anchor.anchorSpace, refSpace);
+  }
+
+  // 序列化锚点 UUID 用于云端同步
+  serialize(): string[] {
+    return Array.from(this.anchors.keys());
+  }
+}
+```
+
 ---
 
 ## 命中测试 (Hit Test)
@@ -97,6 +125,36 @@ frame.getHitTestResults(hitTestSource).forEach((result) => {
 });
 ```
 
+### 带放置预览的命中测试
+
+```typescript
+// placement-preview.ts
+function updatePlacementPreview(
+  frame: XRFrame,
+  hitTestSource: XRHitTestSource,
+  previewMesh: THREE.Mesh,
+  refSpace: XRReferenceSpace
+): void {
+  const hits = frame.getHitTestResults(hitTestSource);
+  if (hits.length === 0) {
+    previewMesh.visible = false;
+    return;
+  }
+
+  const pose = hits[0].getPose(refSpace);
+  if (!pose) return;
+
+  previewMesh.visible = true;
+  previewMesh.position.setFromMatrixPosition(new THREE.Matrix4().fromArray(pose.transform.matrix));
+
+  // 让预览物体与命中表面对齐（法线朝上）
+  const normal = new THREE.Vector3(0, 1, 0).applyMatrix4(
+    new THREE.Matrix4().fromArray(pose.transform.matrix)
+  );
+  previewMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), normal);
+}
+```
+
 ---
 
 ## 平面检测策略
@@ -119,6 +177,64 @@ frame.getHitTestResults(hitTestSource).forEach((result) => {
 └── 垂直面
     ├── 墙壁 (wall)      → 挂画、窗户
     └── 门窗 (opening)   → 导航、遮挡
+```
+
+### 平面几何提取与网格生成
+
+```typescript
+// plane-mesh.ts — 从检测到的平面生成渲染网格
+function createPlaneMesh(plane: XRPlane): THREE.Mesh {
+  const geometry = new THREE.PlaneGeometry(1, 1);
+  const material = new THREE.MeshBasicMaterial({
+    color: 0x00ff00,
+    transparent: true,
+    opacity: 0.3,
+    side: THREE.DoubleSide,
+  });
+  const mesh = new THREE.Mesh(geometry, material);
+
+  // 平面顶点动态更新
+  const polygon = plane.polygon; // DOMPointReadOnly[]
+  if (polygon.length >= 3) {
+    const shape = new THREE.Shape();
+    shape.moveTo(polygon[0].x, polygon[0].z);
+    for (let i = 1; i < polygon.length; i++) {
+      shape.lineTo(polygon[i].x, polygon[i].z);
+    }
+    mesh.geometry = new THREE.ShapeGeometry(shape);
+  }
+
+  return mesh;
+}
+```
+
+---
+
+## 深度感知与遮挡
+
+### 深度纹理集成
+
+```typescript
+// depth-occlusion.ts — 基于深度图的真实遮挡
+class DepthOcclusionManager {
+  private depthTexture: THREE.DepthTexture | null = null;
+
+  async init(session: XRSession, renderer: THREE.WebGLRenderer): Promise<void> {
+    if (!session.enabledFeatures?.includes('depth-sensing')) return;
+
+    const gl = renderer.getContext() as WebGL2RenderingContext;
+    // WebXR 深度感知提供深度图纹理
+    // 通过 frame.getDepthInformation(view) 获取
+  }
+
+  update(frame: XRFrame, view: XRView): void {
+    const depthInfo = (frame as any).getDepthInformation?.(view);
+    if (!depthInfo) return;
+
+    // 将真实世界深度图用于自定义深度测试材质
+    // 使虚拟物体被真实物体遮挡
+  }
+}
 ```
 
 ---
@@ -147,12 +263,53 @@ frame.getHitTestResults(hitTestSource).forEach((result) => {
 | 最佳高度 | 1.2-1.5m | 人体工程学 |
 | 俯仰角 | -10° ~ 20° | 自然视线范围 |
 
+### 空间 UI  billboard 组件
+
+```typescript
+// spatial-ui.ts — 始终面向用户的 UI 面板
+class SpatialUI {
+  private mesh: THREE.Mesh;
+
+  constructor(canvas: HTMLCanvasElement) {
+    const texture = new THREE.CanvasTexture(canvas);
+    const geometry = new THREE.PlaneGeometry(0.5, 0.3);
+    const material = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      side: THREE.DoubleSide,
+    });
+    this.mesh = new THREE.Mesh(geometry, material);
+  }
+
+  update(camera: THREE.Camera): void {
+    // Billboard 效果：UI 面板始终面向相机
+    this.mesh.lookAt(camera.position);
+  }
+
+  setPositionFromHeadset(headsetPose: XRPose, distance = 1.5, heightOffset = 0): void {
+    const m = headsetPose.transform.matrix;
+    const forward = new THREE.Vector3(-m[8], -m[9], -m[10]).normalize();
+    const pos = new THREE.Vector3(m[12], m[13], m[14]);
+    pos.add(forward.multiplyScalar(distance));
+    pos.y += heightOffset;
+    this.mesh.position.copy(pos);
+  }
+}
+```
+
 ---
 
 ## 参考资源
 
+- [WebXR Device API — W3C Editor's Draft](https://immersive-web.github.io/webxr/)
 - [WebXR Anchors 模块](https://immersive-web.github.io/anchors/)
 - [WebXR Hit Test 模块](https://immersive-web.github.io/hit-test/)
 - [WebXR Plane Detection](https://immersive-web.github.io/real-world-geometry/plane-detection.html)
+- [WebXR Depth Sensing](https://immersive-web.github.io/depth-sensing/)
+- [Three.js WebXR Documentation](https://threejs.org/docs/#manual/en/introduction/WebXR-Device-Integration)
+- [Babylon.js WebXR Guide](https://doc.babylonjs.com/features/featuresDeepDive/webXR/)
 - [Apple VisionOS 空间设计指南](https://developer.apple.com/visionos/design/)
+- [Meta Spatial Design Guidelines](https://developer.oculus.com/design/)
 - [Spatial Computing 设计模式](https://www.visionos.design/)
+- [Google ARCore Geospatial API](https://developers.google.com/ar/develop/geospatial)
+- [8th Wall WebAR Platform](https://www.8thwall.com/docs/)

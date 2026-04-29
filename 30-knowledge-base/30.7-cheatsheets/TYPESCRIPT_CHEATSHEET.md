@@ -66,6 +66,26 @@ type DeepPick<T, Path extends string> =
     : Path extends keyof T
       ? { [P in Path]: T[P] }
       : never
+
+// 对象路径类型推导
+type Path<T> = T extends object
+  ? {
+      [K in keyof T]-?: K extends string | number
+        ? `${K}` | `${K}.${Path<T[K]>}`
+        : never
+    }[keyof T]
+  : never
+
+// 类型安全的 get 辅助
+type PathValue<T, P extends Path<T>> = P extends `${infer K}.${infer Rest}`
+  ? K extends keyof T
+    ? Rest extends Path<T[K]>
+      ? PathValue<T[K], Rest>
+      : never
+    : never
+  : P extends keyof T
+    ? T[P]
+    : never
 ```
 
 ## TS 5.6 新特性
@@ -89,6 +109,24 @@ const arr = [1, 2, 3] as const
 if (arr.includes(x)) {
   // x 被收窄为 1 | 2 | 3
 }
+```
+
+## TS 5.7+ 前瞻特性
+
+```typescript
+// 显式资源管理（using / await using）
+// 需要 target: ES2022+ 且 lib 包含 "esnext.disposable"
+{
+  using conn = await createDbConnection();
+  // conn 在块结束时自动调用 [Symbol.dispose]()
+}
+
+// 类型导入属性（Import Attributes）
+import pkg from './package.json' with { type: 'json' };
+// pkg 被推断为 JSON 对象的类型
+
+// 装饰器元数据（Stage 3 实验性）
+// tsconfig.json: "experimentalDecorators": false, "emitDecoratorMetadata": true
 ```
 
 ## 接口 vs 类型别名
@@ -128,6 +166,67 @@ function process(input: string | number) {
 function isString(value: unknown): value is string {
   return typeof value === 'string'
 }
+
+// satisfies 运算符（TS 4.9+）
+const config = {
+  host: 'localhost',
+  port: 3000,
+} satisfies { host: string; port: number }
+// config.host 被推断为精确的字面量 'localhost'，同时保证整体结构匹配
+
+// const 类型参数（TS 5.0+）
+function createRoute<const T extends string>(path: T) {
+  return { path }
+}
+const route = createRoute('/users/:id') // T 推断为 "/users/:id" 而非 string
+```
+
+## 高级类型模式
+
+```typescript
+// 分布式条件类型
+type ToArray<T> = T extends any ? T[] : never
+type StrOrNumArray = ToArray<string | number> // string[] | number[]
+
+// 逆变/协变控制
+type Contravariant<T> = (x: T) => void
+type Covariant<T> = T extends unknown ? T : never
+
+// 类型级字符串操作
+type TrimLeft<S extends string> = S extends ` ${infer Rest}` ? TrimLeft<Rest> : S
+type TrimRight<S extends string> = S extends `${infer Rest} ` ? TrimRight<Rest> : S
+type Trim<S extends string> = TrimLeft<TrimRight<S>>
+
+// 联合类型转交叉类型
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
+
+// 函数参数类型提取
+type ArgType<T> = T extends (arg: infer A) => any ? A : never
+
+// 非空属性过滤
+type NonNullableProperties<T> = {
+  [K in keyof T as T[K] extends null | undefined ? never : K]: T[K]
+}
+```
+
+## 配置速查（tsconfig.json）
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
 ```
 
 ---
@@ -136,8 +235,17 @@ function isString(value: unknown): value is string {
 
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 - [TypeScript 5.6 Release Notes](https://devblogs.microsoft.com/typescript/announcing-typescript-5-6/)
+- [TypeScript 5.7 Release Notes](https://devblogs.microsoft.com/typescript/announcing-typescript-5-7/)
 - [Total TypeScript](https://www.totaltypescript.com/)
 - [Type Challenges](https://github.com/type-challenges/type-challenges)
+- [TypeScript Deep Dive (Basarat)](https://basarat.gitbook.io/typescript/)
+- [TypeScript AST Viewer](https://ts-ast-viewer.com/) — 在线 AST 可视化工具
+- [TypeScript Playground](https://www.typescriptlang.org/play) — 官方在线编辑器
+- [TSConfig Reference](https://www.typescriptlang.org/tsconfig) — 完整配置选项参考
+- [Matt Pocock — Zod & TypeScript](https://www.totaltypescript.com/tutorials/zod) — 运行时类型验证
+- [Effective TypeScript — Dan Vanderkam](https://effectivetypescript.com/)
+- [Learning TypeScript — Josh Goldberg](https://www.learningtypescript.com/)
+- [ts-pattern](https://github.com/gvergnaud/ts-pattern) —  exhaustively 模式匹配库
 
 ---
 

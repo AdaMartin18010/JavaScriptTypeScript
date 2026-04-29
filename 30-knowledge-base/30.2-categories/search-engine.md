@@ -156,6 +156,97 @@ console.log(results.hits);
 console.log(results.facet_counts);
 ```
 
+## 代码示例：Algolia + Node.js
+
+```typescript
+import { algoliasearch } from 'algoliasearch';
+
+const client = algoliasearch('YOUR_APP_ID', 'YOUR_API_KEY');
+
+// 配置索引设置
+await client.setSettings({
+  indexName: 'products',
+  indexSettings: {
+    searchableAttributes: ['title', 'description', 'brand'],
+    attributesForFaceting: ['category', 'price_range', 'inStock'],
+    customRanking: ['desc(popularity)', 'asc(price)'],
+    typoTolerance: 'true',
+    synonyms: [
+      { objectID: '1', type: 'synonym', synonyms: ['laptop', 'notebook', 'portable computer'] },
+    ],
+  },
+});
+
+// 批量索引文档
+await client.saveObjects({
+  indexName: 'products',
+  objects: [
+    { objectID: '1', title: 'MacBook Pro', category: 'Laptops', price: 1999, inStock: true },
+    { objectID: '2', title: 'Dell XPS 13', category: 'Laptops', price: 1299, inStock: true },
+  ],
+});
+
+// 多面搜索
+const { results } = await client.search({
+  requests: [
+    {
+      indexName: 'products',
+      query: 'laptop',
+      facets: ['category', 'inStock'],
+      filters: 'price < 2000',
+      hitsPerPage: 20,
+    },
+  ],
+});
+
+console.log(results[0].hits);
+console.log(results[0].facets);
+```
+
+## 代码示例：向量搜索（语义检索）
+
+```typescript
+// 使用 Elasticsearch 的 dense_vector 实现语义搜索
+import { Client } from '@elastic/elasticsearch';
+
+const client = new Client({ node: 'http://localhost:9200' });
+
+// 创建带向量字段的索引
+await client.indices.create({
+  index: 'semantic-docs',
+  body: {
+    mappings: {
+      properties: {
+        title: { type: 'text' },
+        content: { type: 'text' },
+        embedding: {
+          type: 'dense_vector',
+          dims: 1536, // OpenAI text-embedding-3 维度
+          index: true,
+          similarity: 'cosine',
+        },
+      },
+    },
+  },
+});
+
+// kNN 近似最近邻搜索
+const result = await client.search({
+  index: 'semantic-docs',
+  body: {
+    query: {
+      script_score: {
+        query: { match_all: {} },
+        script: {
+          source: 'cosineSimilarity(params.query_vector, "embedding") + 1.0',
+          params: { query_vector: /* OpenAI embedding */ [] },
+        },
+      },
+    },
+  },
+});
+```
+
 ---
 
 ## 选型建议
@@ -167,6 +258,7 @@ console.log(results.facet_counts);
 | 日志/文档/大数据搜索 | Elasticsearch |
 | 预算敏感 + 需要托管 | Meilisearch Cloud / Typesense Cloud |
 | 无运维 + 快速上线 | Algolia |
+| 语义搜索 / AI 检索 | Elasticsearch + dense_vector / 专用向量数据库 |
 
 ---
 
@@ -174,15 +266,21 @@ console.log(results.facet_counts);
 
 - [Elasticsearch 官方文档](https://www.elastic.co/guide/en/elasticsearch/reference/current/index.html)
 - [Elasticsearch JS Client](https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/index.html)
+- [Elasticsearch kNN Search](https://www.elastic.co/guide/en/elasticsearch/reference/current/knn-search.html) — 语义检索向量搜索
 - [Typesense 官方文档](https://typesense.org/docs/)
 - [Typesense JS Client](https://github.com/typesense/typesense-js)
 - [Meilisearch 官方文档](https://www.meilisearch.com/docs)
 - [Meilisearch JS Client](https://github.com/meilisearch/meilisearch-js)
 - [Algolia 官方文档](https://www.algolia.com/doc/)
 - [Algolia InstantSearch.js](https://www.algolia.com/doc/guides/building-search-ui/what-is-instantsearch/js/)
+- [Algolia JS Client v5](https://github.com/algolia/algoliasearch-client-javascript)
 - [Meilisearch GitHub](https://github.com/meilisearch/meilisearch)
 - [Typesense GitHub](https://github.com/typesense/typesense)
 - [Comparison: Meilisearch vs Typesense vs Elasticsearch](https://typesense.org/typesense-vs-algolia-vs-elasticsearch-vs-meilisearch/) — Typesense 官方横向对比
+- [OpenAI Embeddings API](https://platform.openai.com/docs/guides/embeddings) — 语义搜索向量生成
+- [Lucene Query Syntax](https://lucene.apache.org/core/2_9_4/queryparsersyntax.html) — Elasticsearch 底层查询语法
+- [Apache Tantivy](https://github.com/quickwit-oss/tantivy) — Rust 编写的 Lucene 替代品，Meilisearch 底层依赖
+- [Search Relevance Tuning Guide](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-relevance.html)
 
 ---
 

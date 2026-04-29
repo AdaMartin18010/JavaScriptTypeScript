@@ -21,6 +21,8 @@
 |------|------|------|
 | 时间复杂度 | 操作耗费的渐近增长量级 | complexity.md |
 | Map vs Object | 键类型与迭代顺序的差异 | map-vs-object.ts |
+| 隐藏类 (Hidden Class) | V8 对 Object 的形状优化 | v8-internals.md |
+| 哈希表 | Map/Set 的底层存储结构 | hash-table.md |
 
 ---
 
@@ -34,8 +36,10 @@
 
 | 方案 | 优点 | 缺点 | 适用场景 |
 |------|------|------|---------|
-| Map | 任意键、有序 | 无字面量 | 动态集合 |
-| Object | 字面量简洁 | 键限于字符串/Symbol | 固定结构 |
+| Map | 任意键、有序、O(1) 增删查 | 无字面量、JSON 不支持 | 动态集合、频繁增删 |
+| Object | 字面量简洁 | 键限于字符串/Symbol、原型链污染风险 | 固定结构、配置对象 |
+| Set | 去重、成员检测 O(1) | 无索引访问 | 唯一值集合 |
+| WeakMap | 键弱引用、防内存泄漏 | 不可迭代、键仅限对象 | 私有数据、元数据缓存 |
 
 ### 2.3 与相关技术的对比
 
@@ -55,6 +59,7 @@
 |------|---------|
 | Object 和 Map 完全等价 | Map 支持任意键、有序、有 size 属性 |
 | Set 去重引用类型 | Set 按 SameValueZero 比较，对象去重需额外处理 |
+| Array.prototype.find 在所有场景最优 | 大集合频繁查找应使用 Map/Set |
 
 ### 3.3 扩展阅读
 
@@ -105,7 +110,82 @@ const unique = Array.from(new Map(items.map(i => [i.id, i])).values());
 // 注意：Set 不能直接按对象字段去重，需配合 Map 或手写比较
 ```
 
-## 六、权威参考链接
+## 六、代码示例：ES2024 Object.groupBy 与 Map.groupBy
+
+```typescript
+// group-by.ts — 原生分组（ES2024）
+
+interface Order {
+  id: string;
+  status: 'pending' | 'shipped' | 'delivered';
+  amount: number;
+}
+
+const orders: Order[] = [
+  { id: 'o1', status: 'pending', amount: 100 },
+  { id: 'o2', status: 'shipped', amount: 200 },
+  { id: 'o3', status: 'pending', amount: 150 },
+];
+
+// Object.groupBy：键为字符串
+const byStatus = Object.groupBy(orders, o => o.status);
+// => { pending: [o1, o3], shipped: [o2], delivered: undefined }
+
+// Map.groupBy：键可为任意类型
+const byThreshold = Map.groupBy(orders, o => o.amount >= 150 ? 'high' : 'low');
+// => Map { 'low' => [o1], 'high' => [o2, o3] }
+
+// 兼容性 polyfill
+if (!Object.groupBy) {
+  Object.groupBy = function groupBy<T>(
+    items: Iterable<T>,
+    callbackFn: (item: T, index: number) => string
+  ): Record<string, T[]> {
+    const result: Record<string, T[]> = {};
+    let index = 0;
+    for (const item of items) {
+      const key = callbackFn(item, index++);
+      if (!result[key]) result[key] = [];
+      result[key].push(item);
+    }
+    return result;
+  };
+}
+```
+
+## 七、代码示例：TypedArray 与二进制数据处理
+
+```typescript
+// typed-arrays.ts — 高性能数值计算与文件解析
+
+// 使用 Float64Array 进行大规模数值运算（避免 JS Number 对象开销）
+function vectorAdd(a: Float64Array, b: Float64Array): Float64Array {
+  const result = new Float64Array(a.length);
+  for (let i = 0; i < a.length; i++) {
+    result[i] = a[i] + b[i];
+  }
+  return result;
+}
+
+// 解析二进制文件头（如 WAV 文件）
+function parseWavHeader(buffer: ArrayBuffer) {
+  const view = new DataView(buffer);
+  const riff = String.fromCharCode(...new Uint8Array(buffer, 0, 4));
+  const fileSize = view.getUint32(4, true);
+  const fmtChunkSize = view.getUint32(16, true);
+  const audioFormat = view.getUint16(20, true);
+  const numChannels = view.getUint16(22, true);
+  const sampleRate = view.getUint32(24, true);
+
+  return { riff, fileSize, audioFormat, numChannels, sampleRate };
+}
+
+// 使用 BigUint64Array 处理超过 2^53 的整数（如区块链金额）
+const balances = new BigUint64Array([12345678901234567890n, 98765432109876543210n]);
+const total = balances.reduce((sum, val) => sum + val, 0n);
+```
+
+## 八、权威参考链接
 
 | 资源 | 说明 | 链接 |
 |------|------|------|
@@ -113,6 +193,10 @@ const unique = Array.from(new Map(items.map(i => [i.id, i])).values());
 | V8 Blog — Fast properties | 对象/Map 底层隐藏类与哈希策略 | [v8.dev/blog/fast-properties](https://v8.dev/blog/fast-properties) |
 | MDN — JavaScript 标准内置对象 | API 与复杂度参考 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects) |
 | JavaScript Algorithms — Data Structures | 开源实现与复杂度对照 | [github.com/trekhleb/javascript-algorithms](https://github.com/trekhleb/javascript-algorithms) |
+| MDN — TypedArray | 二进制数据类型 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray) |
+| TC39 — Object.groupBy Proposal | ES2024 分组方法规范 | [tc39.es/proposal-array-grouping](https://tc39.es/proposal-array-grouping/) |
+| V8 Blog — Elements kinds in V8 | 数组内部类型优化 | [v8.dev/blog/elements-kinds](https://v8.dev/blog/elements-kinds) |
+| MDN — WeakMap | 弱引用映射详解 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) |
 
 ---
 

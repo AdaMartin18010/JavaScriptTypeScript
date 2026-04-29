@@ -86,6 +86,99 @@ wasmBuffer.set(input, 0);
 const resultPtr = (exports.process_image as (o: number, l: number) => number)(0, input.length);
 ```
 
+#### 流式编译与实例化（优化首屏）
+
+浏览器支持在下载过程中即时编译 Wasm 字节码，减少总加载时间：
+
+```typescript
+// wasm-streaming.ts
+async function loadWasmStreaming(url: string) {
+  const response = await fetch(url);
+  // 边下载边编译，无需等待完整 ArrayBuffer
+  const module = await WebAssembly.compileStreaming(response);
+  const instance = await WebAssembly.instantiate(module, importObject);
+  return instance.exports;
+}
+```
+
+#### 多内存与 SIMD（Wasm 提案特性）
+
+```typescript
+// wasm-advanced-features.ts
+// 检测环境支持
+function checkWasmFeatures(): Record<string, boolean> {
+  return {
+    bulkMemory: WebAssembly.validate(new Uint8Array([0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00])),
+    simd: typeof WebAssembly.validate === 'function' && WebAssembly.validate(
+      new Uint8Array([
+        0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+        0x01, 0x05, 0x01, 0x60, 0x01, 0x7f, 0x01, 0x7f,
+        0x03, 0x02, 0x01, 0x00, 0x07, 0x07, 0x01, 0x03,
+        0x61, 0x64, 0x64, 0x00, 0x00, 0x0a, 0x0a, 0x01,
+        0x08, 0x00, 0x20, 0x00, 0x20, 0x00, 0xfd, 0x0f,
+        0x1a, 0x0b,
+      ])
+    ),
+    threads: typeof SharedArrayBuffer !== 'undefined',
+    referenceTypes: false, // 需运行时检测
+  };
+}
+```
+
+#### WASI 预览与 Node.js 集成
+
+```typescript
+// wasi-node.ts
+import { WASI } from 'wasi';
+import { argv, env } from 'node:process';
+import { readFile } from 'node:fs/promises';
+
+async function runWasiModule(wasmPath: string) {
+  const wasi = new WASI({
+    version: 'preview1',
+    args: argv,
+    env,
+    preopens: { '/sandbox': '/some/real/path' },
+  });
+
+  const wasm = await WebAssembly.compile(await readFile(wasmPath));
+  const instance = await WebAssembly.instantiate(wasm, {
+    wasi_snapshot_preview1: wasi.wasiImport,
+  });
+
+  wasi.start(instance);
+}
+```
+
+#### WebAssembly Component Model（WIT 接口）
+
+```wit
+// calculator.wit
+package example:calculator;
+
+interface ops {
+  enum op { add, sub, mul, div }
+  eval: func(a: float64, b: float64, op: op) -> result<float64, string>;
+}
+
+world calculator {
+  export ops;
+}
+```
+
+```typescript
+// jco-bindings.ts
+// 使用 @bytecodealliance/jco 生成 TypeScript 绑定
+import { ops } from './calculator.js';
+
+const result = ops.eval(10, 5, 'add');
+if (result.tag === 'ok') {
+  console.log(result.val); // 15
+} else {
+  console.error(result.err);
+}
+```
+
 ---
 
 > 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
@@ -101,6 +194,12 @@ const resultPtr = (exports.process_image as (o: number, l: number) => number)(0,
 | web.dev — Wasm performance | 指南 | [web.dev/tags/webassembly/](https://web.dev/tags/webassembly/) |
 | WebAssembly Component Model | 规范 | [component-model.bytecodealliance.org](https://component-model.bytecodealliance.org/) |
 | Wasmtime Docs | 文档 | [docs.wasmtime.dev](https://docs.wasmtime.dev/) |
+| WebAssembly JavaScript Interface | W3C 推荐标准 | [www.w3.org/TR/wasm-js-api-2/](https://www.w3.org/TR/wasm-js-api-2/) |
+| WebAssembly Core Specification | W3C 核心规范 | [www.w3.org/TR/wasm-core-2/](https://www.w3.org/TR/wasm-core-2/) |
+| AssemblyScript | TypeScript-to-Wasm 编译器 | [www.assemblyscript.org](https://www.assemblyscript.org/) |
+| Rust and WebAssembly Book | 教程 | [rustwasm.github.io/docs/book/](https://rustwasm.github.io/docs/book/) |
+| wasm-bindgen | Rust/JS 交互工具 | [rustwasm.github.io/wasm-bindgen/](https://rustwasm.github.io/wasm-bindgen/) |
+| JCO (JavaScript Component Toolkit) | 组件模型工具链 | [github.com/bytecodealliance/jco](https://github.com/bytecodealliance/jco) |
 
 ---
 

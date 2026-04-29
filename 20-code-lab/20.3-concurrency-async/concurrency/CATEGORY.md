@@ -83,6 +83,82 @@ const current = Atomics.load(counter, 0);
 console.log(current);
 ```
 
+## 代码示例：AbortController 取消复合异步任务
+
+```typescript
+// abort-composite.ts — 统一取消信号传播
+
+async function fetchWithCancel(
+  urls: string[],
+  signal: AbortSignal
+): Promise<Response[]> {
+  const controller = new AbortController();
+
+  // 外部取消时级联取消内部请求
+  signal.addEventListener('abort', () => controller.abort(), { once: true });
+
+  try {
+    return await Promise.all(
+      urls.map(url => fetch(url, { signal: controller.signal }))
+    );
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      console.log('Composite fetch aborted');
+    }
+    throw err;
+  }
+}
+
+// 使用：5 秒后超时取消
+const ac = new AbortController();
+setTimeout(() => ac.abort(), 5000);
+fetchWithCancel(['/api/a', '/api/b'], ac.signal);
+```
+
+## 代码示例：Async Generator + yield* 流水线
+
+```typescript
+// async-generator-pipeline.ts — 背压感知的数据流
+
+async function* fetchPages(url: string) {
+  let nextUrl: string | null = url;
+  while (nextUrl) {
+    const res = await fetch(nextUrl);
+    const data = await res.json() as { results: unknown[]; next: string | null };
+    yield* data.results;
+    nextUrl = data.next;
+  }
+}
+
+async function* filter<T>(
+  source: AsyncIterable<T>,
+  predicate: (item: T) => boolean
+): AsyncGenerator<T> {
+  for await (const item of source) {
+    if (predicate(item)) yield item;
+  }
+}
+
+async function* map<T, R>(
+  source: AsyncIterable<T>,
+  transform: (item: T) => R
+): AsyncGenerator<R> {
+  for await (const item of source) {
+    yield transform(item);
+  }
+}
+
+// 使用
+const activeUsers = filter(
+  fetchPages('/api/users'),
+  user => (user as { active: boolean }).active
+);
+
+for await (const user of activeUsers) {
+  console.log(user);
+}
+```
+
 ## 权威外部链接
 
 - [MDN — Concurrency model and the event loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop)
@@ -90,11 +166,21 @@ console.log(current);
 - [MDN — async function](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function)
 - [MDN — Web Workers API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
 - [MDN — Atomics](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics)
+- [MDN — AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController)
 - [Node.js — worker_threads](https://nodejs.org/api/worker_threads.html)
 - [Node.js — stream](https://nodejs.org/api/stream.html)
 - [Node.js — async_hooks](https://nodejs.org/api/async_hooks.html)
+- [V8 Blog — Promise Hooks](https://v8.dev/blog/fast-async)
+- [HTML Spec — Event Loops](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops)
+- [WHATWG Streams Standard](https://streams.spec.whatwg.org/)
+- [Jake Archibald — Tasks, microtasks, queues and schedules](https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/)
+- [Web.dev — JavaScript Execution](https://web.dev/articles/optimize-javascript-execution)
 
 ## 关联索引
 
 - [10-fundamentals/10.1-language-semantics/README.md](../../../10-fundamentals/10.1-language-semantics/README.md)
 - [30-knowledge-base/30.2-categories/00-language-core.md](../../../30-knowledge-base/30.2-categories/00-language-core.md)
+
+---
+
+*最后更新: 2026-04-29*

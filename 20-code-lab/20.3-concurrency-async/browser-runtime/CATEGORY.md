@@ -91,6 +91,58 @@ function BadPoint(x: number, y: number) {
 }
 ```
 
+### 内存泄漏检测：弱引用与 FinalizationRegistry
+
+```typescript
+export function createWeakRefTracker<T extends object>(
+  onCleanup: (heldValue: string) => void
+) {
+  const registry = new FinalizationRegistry<string>((heldValue) => {
+    onCleanup(heldValue);
+  });
+
+  return {
+    track(obj: T, label: string) {
+      registry.register(obj, label);
+    },
+    // 手动触发垃圾回收不可行，但可在测试环境使用 --expose-gc
+  };
+}
+
+// 使用示例：检测 DOM 节点是否被正确释放
+const tracker = createWeakRefTracker<HTMLElement>((label) => {
+  console.log(`[GC] ${label} was collected`);
+});
+
+const node = document.createElement('div');
+tracker.track(node, 'temporary-div');
+```
+
+### 长任务分割：使用 Scheduler API
+
+```typescript
+export async function chunkedProcessing<T>(
+  items: T[],
+  processor: (item: T) => void,
+  chunkSize = 100
+): Promise<void> {
+  for (let i = 0; i < items.length; i += chunkSize) {
+    const chunk = items.slice(i, i + chunkSize);
+
+    await new Promise<void>((resolve) => {
+      if ('scheduler' in window) {
+        // @ts-expect-error Scheduler API 实验性
+        scheduler.yield().then(resolve);
+      } else {
+        setTimeout(resolve, 0);
+      }
+    });
+
+    chunk.forEach(processor);
+  }
+}
+```
+
 ## 相关索引
 
 - [30-knowledge-base/30.2-categories/README.md](../../../30-knowledge-base/30.2-categories/README.md)
@@ -106,6 +158,11 @@ function BadPoint(x: number, y: number) {
 | Chrome Developers — Inside Look at Modern Web Browser | 系列 | [developer.chrome.com/blog/inside-browser-part1](https://developer.chrome.com/blog/inside-browser-part1) |
 | HTML Standard — Event Loops | 规范 | [html.spec.whatwg.org/multipage/webappapis.html#event-loops](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops) |
 | JavaScript Engine Fundamentals | 指南 | [mathiasbynens.be/notes/shapes-ics](https://mathiasbynens.be/notes/shapes-ics) |
+| MDN — Window.requestAnimationFrame | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame) |
+| web.dev — Optimize JavaScript Execution | 指南 | [web.dev/articles/optimize-javascript-execution](https://web.dev/articles/optimize-javascript-execution) |
+| V8 Blog — Trash talk | 博客 | [v8.dev/blog/trash-talk](https://v8.dev/blog/trash-talk) |
+| WICG — Scheduler API | 提案 | [github.com/WICG/scheduling-apis](https://github.com/WICG/scheduling-apis) |
+| MDN — FinalizationRegistry | 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry) |
 
 ---
 

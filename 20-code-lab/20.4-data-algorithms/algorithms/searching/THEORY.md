@@ -184,7 +184,62 @@ function exponentialSearch<T>(arr: T[], target: T): number {
 }
 ```
 
-### 3.4 常见误区
+### 3.4 TypedArray 二分搜索 — 处理二进制数据
+
+```typescript
+function binarySearchUint32(
+  arr: Uint32Array,
+  target: number
+): number {
+  let left = 0;
+  let right = arr.length - 1;
+  while (left <= right) {
+    const mid = (left + right) >>> 1;
+    if (arr[mid] === target) return mid;
+    if (arr[mid] < target) left = mid + 1;
+    else right = mid - 1;
+  }
+  return -1;
+}
+
+// 从排序后的 Posting List 中查找文档 ID
+const postingList = new Uint32Array([10, 23, 45, 67, 89, 120, 300]);
+console.log(binarySearchUint32(postingList, 89)); // 4
+```
+
+### 3.5 二分搜索边界变体
+
+```typescript
+// 查找第一个 >= target 的元素（下界）
+function lowerBound<T>(arr: T[], target: T): number {
+  let left = 0;
+  let right = arr.length;
+  while (left < right) {
+    const mid = (left + right) >>> 1;
+    if (arr[mid] < target) left = mid + 1;
+    else right = mid;
+  }
+  return left;
+}
+
+// 查找第一个 > target 的元素（上界）
+function upperBound<T>(arr: T[], target: T): number {
+  let left = 0;
+  let right = arr.length;
+  while (left < right) {
+    const mid = (left + right) >>> 1;
+    if (arr[mid] <= target) left = mid + 1;
+    else right = mid;
+  }
+  return left;
+}
+
+const data = [1, 2, 4, 4, 4, 5, 7];
+console.log(lowerBound(data, 4)); // 2 (第一个 4)
+console.log(upperBound(data, 4)); // 5 (第一个 > 4，即 5)
+```
+
+### 3.6 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -193,7 +248,7 @@ function exponentialSearch<T>(arr: T[], target: T): number {
 | 插值搜索总是优于二分 | 数据分布不均匀时性能可能退化为 O(n) |
 | `(left + right) / 2` 安全 | 大数组可能溢出，应使用 `left + ((right - left) >>> 1)` |
 
-### 3.5 扩展阅读
+### 3.7 扩展阅读
 
 - [Binary Search — Wikipedia](https://en.wikipedia.org/wiki/Binary_search_algorithm)
 - [Interpolation Search — GeeksforGeeks](https://www.geeksforgeeks.org/interpolation-search/)
@@ -203,7 +258,9 @@ function exponentialSearch<T>(arr: T[], target: T): number {
 - [The Art of Computer Programming, Vol. 3 — Searching and Sorting](https://www-cs-faculty.stanford.edu/~knuth/taocp.html)
 - [Algorithms (Sedgewick & Wayne) — 第 3 章 查找](https://algs4.cs.princeton.edu/30searching/)
 - [LeetCode Binary Search Pattern](https://leetcode.com/tag/binary-search/)
-- `20.4-data-algorithms/algorithms/`
+- [MDN — TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray)
+- [C++ std::lower_bound / upper_bound](https://en.cppreference.com/w/cpp/algorithm/lower_bound)
+- [Binary Search Variants — TopCoder](https://www.topcoder.com/thrive/articles/Binary%20Search)
 
 ---
 

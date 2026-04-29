@@ -65,6 +65,63 @@ L3: 应用 (Applying)      → 能在真实场景中解决实际问题
 支付: 幂等表 + 分布式锁 + 对账机制
 ```
 
+**核心代码：秒杀令牌桶限流**
+
+```typescript
+// rate-limiter.ts — 基于 Redis 的分布式令牌桶
+import { Redis } from 'ioredis';
+
+class TokenBucketLimiter {
+  constructor(
+    private redis: Redis,
+    private keyPrefix: string,
+    private capacity: number,    // 桶容量
+    private refillRate: number   // 每秒补充令牌数
+  ) {}
+
+  async acquire(clientId: string): Promise<boolean> {
+    const key = `${this.keyPrefix}:${clientId}`;
+    const now = Date.now();
+
+    // Lua 脚本保证原子性
+    const script = `
+      local key = KEYS[1]
+      local capacity = tonumber(ARGV[1])
+      local refillRate = tonumber(ARGV[2])
+      local now = tonumber(ARGV[3])
+      local window = 1000 / refillRate
+
+      local bucket = redis.call('hmget', key, 'tokens', 'lastRefill')
+      local tokens = tonumber(bucket[1]) or capacity
+      local lastRefill = tonumber(bucket[2]) or now
+
+      local elapsed = now - lastRefill
+      local refillTokens = math.floor(elapsed / window)
+      tokens = math.min(capacity, tokens + refillTokens)
+
+      if tokens >= 1 then
+        tokens = tokens - 1
+        redis.call('hmset', key, 'tokens', tokens, 'lastRefill', now)
+        redis.call('pexpire', key, 60000)
+        return 1
+      else
+        redis.call('hmset', key, 'tokens', tokens, 'lastRefill', now)
+        redis.call('pexpire', key, 60000)
+        return 0
+      end
+    `;
+
+    const result = await this.redis.eval(
+      script, 1, key,
+      String(this.capacity),
+      String(this.refillRate),
+      String(now)
+    );
+    return result === 1;
+  }
+}
+```
+
 ### 2.2 社交应用
 
 **挑战**：
@@ -82,6 +139,115 @@ Feed: 推模式（小V）+ 拉模式（大V）混合
 图片: 对象存储 + CDN + 渐进式加载
 ```
 
+**核心代码：WebSocket 连接管理器**
+
+```typescript
+// ws-manager.ts — 生产级 WebSocket 连接管理
+import { WebSocketServer, WebSocket } from 'ws';
+import { EventEmitter } from 'events';
+
+interface ClientSession {
+  id: string;
+  ws: WebSocket;
+  userId: string;
+  rooms: Set<string>;
+  heartbeatAt: number;
+}
+
+class ChatServer extends EventEmitter {
+  private clients = new Map<string, ClientSession>();
+  private rooms = new Map<string, Set<string>>();
+  private wss: WebSocketServer;
+
+  constructor(port: number) {
+    super();
+    this.wss = new WebSocketServer({ port });
+    this.wss.on('connection', (ws, req) => this.handleConnection(ws, req));
+    this.startHeartbeatCheck();
+  }
+
+  private handleConnection(ws: WebSocket, req: any) {
+    const session: ClientSession = {
+      id: crypto.randomUUID(),
+      ws,
+      userId: req.headers['x-user-id'] as string,
+      rooms: new Set(),
+      heartbeatAt: Date.now(),
+    };
+
+    this.clients.set(session.id, session);
+
+    ws.on('message', (data) => this.handleMessage(session, data));
+    ws.on('close', () => this.handleDisconnect(session));
+    ws.on('pong', () => { session.heartbeatAt = Date.now(); });
+
+    ws.send(JSON.stringify({ type: 'connected', sessionId: session.id }));
+  }
+
+  private handleMessage(session: ClientSession, data: RawData) {
+    try {
+      const msg = JSON.parse(data.toString());
+      switch (msg.type) {
+        case 'join':
+          this.joinRoom(session, msg.roomId);
+          break;
+        case 'chat':
+          this.broadcast(msg.roomId, {
+            type: 'chat',
+            from: session.userId,
+            content: msg.content,
+            timestamp: Date.now(),
+          });
+          break;
+      }
+    } catch {
+      session.ws.send(JSON.stringify({ type: 'error', message: 'Invalid message' }));
+    }
+  }
+
+  private joinRoom(session: ClientSession, roomId: string) {
+    session.rooms.add(roomId);
+    if (!this.rooms.has(roomId)) this.rooms.set(roomId, new Set());
+    this.rooms.get(roomId)!.add(session.id);
+  }
+
+  private broadcast(roomId: string, payload: object) {
+    const room = this.rooms.get(roomId);
+    if (!room) return;
+    const message = JSON.stringify(payload);
+    for (const clientId of room) {
+      const client = this.clients.get(clientId);
+      if (client?.ws.readyState === WebSocket.OPEN) {
+        client.ws.send(message);
+      }
+    }
+  }
+
+  private startHeartbeatCheck() {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      for (const [id, session] of this.clients) {
+        if (now - session.heartbeatAt > 30000) {
+          session.ws.terminate();
+          this.handleDisconnect(session);
+        } else {
+          session.ws.ping();
+        }
+      }
+    }, 10000);
+
+    this.wss.on('close', () => clearInterval(interval));
+  }
+
+  private handleDisconnect(session: ClientSession) {
+    for (const roomId of session.rooms) {
+      this.rooms.get(roomId)?.delete(session.id);
+    }
+    this.clients.delete(session.id);
+  }
+}
+```
+
 ### 2.3 SaaS 平台
 
 **挑战**：
@@ -97,6 +263,68 @@ Feed: 推模式（小V）+ 拉模式（大V）混合
 租户: 行级隔离 + 独立 Schema（按需）
 工作流: 状态机引擎 + 可视化编排
 插件: 微前端 / WASM 沙箱
+```
+
+**核心代码：多租户行级隔离中间件**
+
+```typescript
+// tenant-middleware.ts — Express/Koa 风格多租户隔离
+import { Request, Response, NextFunction } from 'express';
+import { Pool } from 'pg';
+
+interface TenantContext {
+  tenantId: string;
+  dbRole: string;
+  isolationLevel: 'row' | 'schema' | 'database';
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      tenant: TenantContext;
+    }
+  }
+}
+
+function tenantMiddleware(pool: Pool) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const tenantId = req.headers['x-tenant-id'] as string;
+    if (!tenantId) {
+      return res.status(400).json({ error: 'Missing tenant ID' });
+    }
+
+    // 验证租户存在性（缓存优化）
+    const client = await pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT id, isolation_level FROM tenants WHERE id = $1',
+        [tenantId]
+      );
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: 'Tenant not found' });
+      }
+
+      req.tenant = {
+        tenantId,
+        dbRole: `tenant_${tenantId}`,
+        isolationLevel: result.rows[0].isolation_level,
+      };
+
+      next();
+    } finally {
+      client.release();
+    }
+  };
+}
+
+// 查询时自动注入 tenant_id
+function withTenantFilter(query: string, tenantId: string): string {
+  // 安全做法：使用参数化查询，此处仅示意
+  if (query.toLowerCase().includes('where')) {
+    return query.replace(/where/i, `WHERE tenant_id = '${tenantId}' AND`);
+  }
+  return `${query} WHERE tenant_id = '${tenantId}'`;
+}
 ```
 
 ---
@@ -147,6 +375,14 @@ Level 4: 创新案例
 - [System Design Primer](https://github.com/donnemartin/system-design-primer)
 - [High Scalability](http://highscalability.com/)
 - [Real-World React Apps](https://github.com/jeromedalbert/real-world-react-apps)
+- [WebSocket API (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
+- [Redis Lua Scripting Best Practices](https://redis.io/docs/manual/programmability/eval-intro/)
+- [PostgreSQL Row-Level Security](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
+- [Martin Fowler — Patterns of Enterprise Application Architecture](https://martinfowler.com/books/eaa.html)
+- [Designing Data-Intensive Applications (O'Reilly)](https://dataintensive.net/)
+- [AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html)
+- [Google SRE Book](https://sre.google/sre-book/table-of-contents/)
+- [Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices)
 
 ---
 
@@ -164,9 +400,9 @@ Level 4: 创新案例
 
 本模块涉及的核心设计模式包括（根据代码实现提炼）：
 
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
+1. **令牌桶限流**：平滑流量突峰，防止服务过载
+2. **发布-订阅消息**：解耦生产者和消费者，支持实时广播
+3. **行级安全隔离**：在数据层面实现多租户隔离
 
 ### 与相邻模块的关系
 

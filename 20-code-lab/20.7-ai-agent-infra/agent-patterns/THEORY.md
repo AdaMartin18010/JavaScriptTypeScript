@@ -168,6 +168,153 @@ const mockLLM = async (prompt: string) => {
 agent.run('How tall is the Eiffel Tower in feet?', mockLLM).then(console.log);
 ```
 
+### Plan-and-Execute 模式实现
+
+```typescript
+// plan-and-execute.ts
+interface PlanStep {
+  id: number;
+  description: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  result?: string;
+}
+
+class PlanAndExecuteAgent {
+  async run(task: string, llm: (prompt: string) => Promise<string>, tools: Tool[]): Promise<string> {
+    // 阶段 1：生成计划
+    const planPrompt = `Create a step-by-step plan to accomplish this task. Respond as JSON array of steps.\nTask: ${task}`;
+    const planJson = await llm(planPrompt);
+    const plan: PlanStep[] = JSON.parse(planJson).map((desc: string, i: number) => ({
+      id: i + 1,
+      description: desc,
+      status: 'pending',
+    }));
+
+    console.log('Plan created:', plan.map(s => s.description));
+
+    // 阶段 2：顺序执行
+    const toolMap = new Map(tools.map(t => [t.name, t]));
+    for (const step of plan) {
+      step.status = 'running';
+      const execPrompt = `Execute this step using available tools if needed.\nStep: ${step.description}\nAvailable tools: ${tools.map(t => t.name).join(', ')}`;
+      const response = await llm(execPrompt);
+
+      // 提取工具调用（简化版）
+      const toolCall = response.match(/USE_TOOL:\s*(\w+)\s*INPUT:\s*(.+)/);
+      if (toolCall) {
+        const [, toolName, input] = toolCall;
+        const tool = toolMap.get(toolName);
+        step.result = tool ? tool.run(input.trim()) : `Tool ${toolName} not found`;
+      } else {
+        step.result = response;
+      }
+      step.status = 'completed';
+    }
+
+    // 阶段 3：汇总结果
+    const summary = plan.map(s => `Step ${s.id}: ${s.result}`).join('\n');
+    const finalPrompt = `Summarize the following execution results into a final answer.\n${summary}`;
+    return llm(finalPrompt);
+  }
+}
+```
+
+### Multi-Agent 消息总线
+
+```typescript
+// multi-agent-bus.ts
+interface Message {
+  from: string;
+  to: string;
+  content: string;
+  timestamp: number;
+}
+
+class AgentBus {
+  private agents = new Map<string, (msg: Message) => Promise<string>>();
+  private history: Message[] = [];
+
+  register(name: string, handler: (msg: Message) => Promise<string>) {
+    this.agents.set(name, handler);
+  }
+
+  async send(from: string, to: string, content: string): Promise<string> {
+    const msg: Message = { from, to, content, timestamp: Date.now() };
+    this.history.push(msg);
+    const handler = this.agents.get(to);
+    if (!handler) throw new Error(`Agent ${to} not found`);
+    return handler(msg);
+  }
+
+  async broadcast(from: string, content: string): Promise<string[]> {
+    const promises: Promise<string>[] = [];
+    for (const [name] of this.agents) {
+      if (name !== from) promises.push(this.send(from, name, content));
+    }
+    return Promise.all(promises);
+  }
+
+  getHistory(): Message[] {
+    return [...this.history];
+  }
+}
+
+// 使用示例：研究员 Agent 与审稿人 Agent 协作
+const bus = new AgentBus();
+
+bus.register('researcher', async (msg) => {
+  if (msg.content.includes('review')) {
+    return 'Revised draft with improved methodology section.';
+  }
+  return 'Draft: Quantum error correction using surface codes.';
+});
+
+bus.register('reviewer', async (msg) => {
+  return 'review: The methodology needs more detail on syndrome extraction.';
+});
+
+(async () => {
+  const draft = await bus.send('system', 'researcher', 'Write a research draft');
+  const review = await bus.send('researcher', 'reviewer', draft);
+  const revised = await bus.send('reviewer', 'researcher', review);
+  console.log(revised);
+})();
+```
+
+### Reflexion 自我反思模式
+
+```typescript
+// reflexion-agent.ts
+class ReflexionAgent {
+  private reflections: string[] = [];
+  private maxTrials = 3;
+
+  async run<T>(
+    task: string,
+    executor: () => Promise<T>,
+    evaluator: (result: T) => { success: boolean; feedback: string },
+    llm: (prompt: string) => Promise<string>
+  ): Promise<T> {
+    for (let trial = 0; trial < this.maxTrials; trial++) {
+      const result = await executor();
+      const evalResult = evaluator(result);
+
+      if (evalResult.success) {
+        return result;
+      }
+
+      // 生成反思
+      const reflectionPrompt = `Task: ${task}\nFailed result: ${JSON.stringify(result)}\nFeedback: ${evalResult.feedback}\nPrevious reflections: ${this.reflections.join('\n')}\nWhat went wrong and how to improve?`;
+      const reflection = await llm(reflectionPrompt);
+      this.reflections.push(reflection);
+      console.log(`Trial ${trial + 1} failed. Reflection: ${reflection}`);
+    }
+
+    throw new Error(`Max trials (${this.maxTrials}) reached. Last reflections: ${this.reflections}`);
+  }
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -181,9 +328,15 @@ agent.run('How tall is the Eiffel Tower in feet?', mockLLM).then(console.log);
 
 - [ReAct: Synergizing Reasoning and Acting in Language Models — arXiv](https://arxiv.org/abs/2210.03629)
 - [LangChain Agents — Concepts](https://python.langchain.com/docs/concepts/agents/)
+- [LangChain.js Documentation](https://js.langchain.com/)
 - [AutoGen: Multi-Agent Conversation Framework — Microsoft](https://microsoft.github.io/autogen/)
 - [Plan-and-Solve Prompting — arXiv](https://arxiv.org/abs/2305.04091)
 - [Reflexion: Self-Reflective Agents — arXiv](https://arxiv.org/abs/2303.11366)
+- [Vercel AI SDK — Agents & Tools](https://sdk.vercel.ai/docs/ai-sdk-core/agents)
+- [OpenAI Function Calling Guide](https://platform.openai.com/docs/guides/function-calling)
+- [Anthropic — Building Effective Agents](https://www.anthropic.com/research/building-effective-agents)
+- [MCP (Model Context Protocol) Specification](https://modelcontextprotocol.io/)
+- [CrewAI — Multi-Agent Framework](https://docs.crewai.com/)
 - `20.7-ai-agent-infra/`
 
 ---

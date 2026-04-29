@@ -21,6 +21,8 @@
 |------|------|------|
 | 链式调用 | then/catch 的顺序组合 | chaining.ts |
 | Promise.all | 并发执行的同步点 | concurrency.ts |
+| Promise.withResolvers | ES2024 手动 resolve/reject 句柄 | with-resolvers.ts |
+| 微任务队列 | Promise 回调的调度机制 | microtask.md |
 
 ---
 
@@ -35,6 +37,9 @@
 | 方案 | 优点 | 缺点 | 适用场景 |
 |------|------|------|---------|
 | Promise.all | 并发执行 | 单失败全失败 | 独立请求 |
+| Promise.allSettled | 全部完成，不中断 | 需手动过滤结果 | 批量写入 |
+| Promise.race | 最快响应 | 可能返回 rejection | 超时控制 |
+| Promise.any | 首个成功 | 全失败时异常复杂 | 冗余服务 |
 | 串行 await | 错误隔离 | 总时长累加 | 有依赖请求 |
 
 ### 2.3 与相关技术的对比
@@ -96,12 +101,108 @@ function makeCancellable<T>(promise: Promise<T>) {
 }
 ```
 
+#### Promise.withResolvers — 手动控制异步流程
+
+```typescript
+// with-resolvers.ts — ES2024 标准模式
+
+function createDeferred<T>() {
+  // 兼容旧环境：若原生不存在则 polyfill
+  if (Promise.withResolvers) {
+    return Promise.withResolvers<T>();
+  }
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => { resolve = res; reject = rej; });
+  return { promise, resolve, reject };
+}
+
+// 使用：将基于回调的 API 包装为 Promise
+function readFileAsync(path: string): Promise<string> {
+  const { promise, resolve, reject } = createDeferred<string>();
+  const fs = require('fs');
+  fs.readFile(path, 'utf8', (err: Error | null, data: string) => {
+    if (err) reject(err);
+    else resolve(data);
+  });
+  return promise;
+}
+```
+
+#### 顺序执行与 Map + Promise 组合
+
+```typescript
+// sequential-map.ts — 控制并发的同时保持顺序映射
+
+async function mapLimit<T, R>(
+  items: T[],
+  limit: number,
+  mapper: (item: T, index: number) => Promise<R>
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  const executing: Promise<void>[] = [];
+
+  for (let i = 0; i < items.length; i++) {
+    const p = mapper(items[i], i).then(r => { results[i] = r; });
+    executing.push(p);
+
+    if (executing.length >= limit) {
+      await Promise.race(executing);
+    }
+  }
+  await Promise.all(executing);
+  return results;
+}
+
+// 使用：最多 3 个并发请求，结果按原数组顺序排列
+const enriched = await mapLimit(
+  userIds,
+  3,
+  async (id) => fetch(`/api/users/${id}`).then(r => r.json())
+);
+```
+
+#### allSettled 结果过滤与类型收窄
+
+```typescript
+// all-settled-filter.ts — 类型安全的批量操作结果处理
+
+type SettledResult<T> =
+  | { status: 'fulfilled'; value: T }
+  | { status: 'rejected'; reason: unknown };
+
+function filterFulfilled<T>(
+  results: PromiseSettledResult<T>[]
+): T[] {
+  return results
+    .filter((r): r is PromiseFulfilledResult<T> => r.status === 'fulfilled')
+    .map(r => r.value);
+}
+
+function filterRejected(
+  results: PromiseSettledResult<unknown>[]
+): unknown[] {
+  return results
+    .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+    .map(r => r.reason);
+}
+
+// 使用
+const uploads = files.map(f => uploadToCDN(f));
+const results = await Promise.allSettled(uploads);
+const succeeded = filterFulfilled(results);
+const failed = filterRejected(results);
+console.log(`Success: ${succeeded.length}, Failed: ${failed.length}`);
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | new Promise 中不调用 resolve 会静默失败 | 未 settle 的 Promise 导致内存泄漏 |
 | Promise.catch 捕获所有错误 | 同步抛出的错误需用 try/catch 或 reject |
+| .then() 中 return Promise 会嵌套 | return Promise 会自动展平（flatten） |
+| Promise.all 中一个 reject 会取消其他 | 其他 Promise 仍继续执行，只是结果被丢弃 |
 
 ### 3.3 扩展阅读
 
@@ -110,6 +211,10 @@ function makeCancellable<T>(promise: Promise<T>) {
 - [V8 — Promise Internals](https://v8.dev/blog/fast-async)
 - [TC39 — Promise.withResolvers](https://github.com/tc39/proposal-promise-with-resolvers)
 - [We have a problem with promises](https://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html)
+- [MDN — Promise.allSettled](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled)
+- [MDN — Promise.any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/any)
+- [Exploring JS — Promises for asynchronous programming](https://exploringjs.com/es6/ch_promises.html)
+- [Node.js — Promise anti-patterns](https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop)
 - `20.3-concurrency-async/concurrency/`
 
 ---

@@ -16,6 +16,7 @@ created: 2026-04-28
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 ARCHIVED.md
@@ -169,7 +170,7 @@ async function withRetry<T>(
       return await fn();
     } catch (err) {
       lastError = err as Error;
-      
+
       if (attempt === options.maxRetries) break;
       if (options.retryableErrors && !options.retryableErrors(lastError)) throw lastError;
 
@@ -248,7 +249,7 @@ class DistributedTracer {
 async function callService(url: string, traceContext: TraceContext) {
   const headers: Record<string, string> = {};
   DistributedTracer.inject(traceContext, headers);
-  
+
   const start = performance.now();
   try {
     const res = await fetch(url, { headers });
@@ -258,6 +259,175 @@ async function callService(url: string, traceContext: TraceContext) {
     console.error(`[trace=${traceContext.traceId}] ${url} failed`);
     throw err;
   }
+}
+```
+
+## 代码示例：Saga 模式 — 编排式事务补偿
+
+```typescript
+// saga-pattern.ts — 分布式长事务的补偿机制
+interface SagaStep {
+  name: string;
+  execute: () => Promise<void>;
+  compensate: () => Promise<void>;
+}
+
+class SagaOrchestrator {
+  private steps: SagaStep[] = [];
+  private executed: SagaStep[] = [];
+
+  addStep(step: SagaStep) {
+    this.steps.push(step);
+  }
+
+  async execute(): Promise<{ success: boolean; failedAt?: string }> {
+    for (const step of this.steps) {
+      try {
+        await step.execute();
+        this.executed.push(step);
+      } catch (err) {
+        console.error(`Saga failed at step "${step.name}":`, err);
+        await this.compensate();
+        return { success: false, failedAt: step.name };
+      }
+    }
+    return { success: true };
+  }
+
+  private async compensate(): Promise<void> {
+    // 逆序补偿已执行的步骤
+    for (let i = this.executed.length - 1; i >= 0; i--) {
+      const step = this.executed[i];
+      try {
+        await step.compensate();
+        console.log(`Compensated step "${step.name}"`);
+      } catch (compErr) {
+        console.error(`Compensation failed for "${step.name}":`, compErr);
+        // 实际生产环境应触发告警，人工介入
+      }
+    }
+  }
+}
+
+// 使用示例：电商下单 Saga
+const orderSaga = new SagaOrchestrator();
+
+orderSaga.addStep({
+  name: 'reserve-inventory',
+  execute: async () => await inventoryService.reserve(order),
+  compensate: async () => await inventoryService.release(order),
+});
+
+orderSaga.addStep({
+  name: 'process-payment',
+  execute: async () => await paymentService.charge(order),
+  compensate: async () => await paymentService.refund(order),
+});
+
+orderSaga.addStep({
+  name: 'create-shipment',
+  execute: async () => await logisticsService.createShipment(order),
+  compensate: async () => await logisticsService.cancelShipment(order),
+});
+
+const result = await orderSaga.execute();
+```
+
+## 代码示例：Bulkhead 舱壁隔离模式
+
+```typescript
+// bulkhead-pattern.ts — 限制并发资源占用，防止级联故障
+class Bulkhead<T> {
+  private queue: Array<() => void> = [];
+  private active = 0;
+
+  constructor(
+    private maxConcurrency: number,
+    private maxQueueSize: number
+  ) {}
+
+  async execute<R>(fn: () => Promise<R>): Promise<R> {
+    if (this.active >= this.maxConcurrency) {
+      if (this.queue.length >= this.maxQueueSize) {
+        throw new Error('Bulkhead queue full');
+      }
+      await new Promise<void>((resolve) => this.queue.push(resolve));
+    }
+
+    this.active++;
+    try {
+      return await fn();
+    } finally {
+      this.active--;
+      const next = this.queue.shift();
+      if (next) next();
+    }
+  }
+}
+
+// 使用示例：为不同服务分配独立舱壁
+const paymentBulkhead = new Bulkhead(5, 20);   // 支付服务：最多 5 并发
+const inventoryBulkhead = new Bulkhead(10, 50); // 库存服务：最多 10 并发
+
+async function callPayment(fn: () => Promise<any>) {
+  return paymentBulkhead.execute(fn);
+}
+```
+
+## 代码示例：Deadline / 超时传播
+
+```typescript
+// deadline-pattern.ts — 跨服务调用时传递剩余超时时间
+interface DeadlineContext {
+  deadlineAt: number; // epoch ms
+}
+
+class Deadline {
+  static create(timeoutMs: number): DeadlineContext {
+    return { deadlineAt: Date.now() + timeoutMs };
+  }
+
+  static remaining(ctx: DeadlineContext): number {
+    return Math.max(0, ctx.deadlineAt - Date.now());
+  }
+
+  static isExpired(ctx: DeadlineContext): boolean {
+    return Date.now() >= ctx.deadlineAt;
+  }
+
+  static propagate(ctx: DeadlineContext, headers: Record<string, string>): void {
+    headers['x-deadline'] = ctx.deadlineAt.toString();
+  }
+
+  static extract(headers: Record<string, string>): DeadlineContext | undefined {
+    const raw = headers['x-deadline'];
+    if (!raw) return undefined;
+    const deadlineAt = parseInt(raw, 10);
+    if (isNaN(deadlineAt)) return undefined;
+    return { deadlineAt };
+  }
+}
+
+// 使用示例：网关层创建 deadline，逐层向下传播
+async function gatewayHandler(req: Request) {
+  const deadline = Deadline.create(5000); // 5s 总超时
+
+  const serviceA = await callServiceA(req, deadline);
+  if (Deadline.isExpired(deadline)) throw new Error('Deadline exceeded');
+
+  const serviceB = await callServiceB(serviceA, deadline);
+  return serviceB;
+}
+
+async function callServiceA(req: Request, deadline: DeadlineContext) {
+  const headers: Record<string, string> = {};
+  Deadline.propagate(deadline, headers);
+
+  const res = await fetch('http://service-a', {
+    headers,
+    signal: AbortSignal.timeout(Deadline.remaining(deadline)),
+  });
+  return res.json();
 }
 ```
 
@@ -276,6 +446,11 @@ async function callService(url: string, traceContext: TraceContext) {
 | Netflix Tech Blog — Hystrix | 文章 | [netflixtechblog.com/introducing-hystrix-for-resilience-engineering](https://netflixtechblog.com/introducing-hystrix-for-resilience-engineering-13523c1f629c) |
 | Google SRE Book — Handling Overload | 书籍 | [sre.google/sre-book/handling-overload/](https://sre.google/sre-book/handling-overload/) |
 | Envoy Proxy Documentation | 文档 | [envoyproxy.io/docs](https://www.envoyproxy.io/docs) |
+| 12-Factor App | 方法论 | [12factor.net](https://12factor.net/) |
+| Dapr Documentation | 文档 | [docs.dapr.io](https://docs.dapr.io/) |
+| Temporal Documentation | 文档 | [docs.temporal.io](https://docs.temporal.io/) |
+| Consul Service Mesh | 文档 | [developer.hashicorp.com/consul/docs/connect](https://developer.hashicorp.com/consul/docs/connect) |
+| AWS App Mesh | 文档 | [docs.aws.amazon.com/app-mesh](https://docs.aws.amazon.com/app-mesh/latest/userguide/what-is-app-mesh.html) |
 
 ---
 

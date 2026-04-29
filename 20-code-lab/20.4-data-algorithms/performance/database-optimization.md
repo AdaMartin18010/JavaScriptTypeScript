@@ -142,9 +142,179 @@ PostgreSQL 示例:
 
 ---
 
+## 代码示例：执行计划分析与慢查询诊断
+
+```typescript
+// database-optimization.ts — 自动分析 PostgreSQL 慢查询
+import { Pool } from 'pg';
+
+interface SlowQuery {
+  query: string;
+  meanTimeMs: number;
+  calls: number;
+  rowsPerCall: number;
+}
+
+async function findSlowQueries(pool: Pool, thresholdMs = 100): Promise<SlowQuery[]> {
+  const { rows } = await pool.query(`
+    SELECT
+      query,
+      ROUND(mean_exec_time::numeric, 2) as mean_time_ms,
+      calls,
+      ROUND(rows::numeric / NULLIF(calls, 0), 2) as rows_per_call
+    FROM pg_stat_statements
+    WHERE mean_exec_time > $1
+    ORDER BY mean_exec_time DESC
+    LIMIT 20
+  `, [thresholdMs]);
+
+  return rows;
+}
+
+async function analyzeQueryPlan(pool: Pool, query: string, params: unknown[]) {
+  const { rows } = await pool.query(`EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ${query}`, params);
+  const plan = rows[0]['QUERY PLAN'][0];
+  return {
+    executionTimeMs: plan['Execution Time'],
+    planningTimeMs: plan['Planning Time'],
+    sharedHitBlocks: plan['Buffers']?.['Shared Hit'],
+    sharedReadBlocks: plan['Buffers']?.['Shared Read'],
+    nodes: plan['Plan'],
+  };
+}
+```
+
+## 代码示例：Prepared Statements 与参数化查询
+
+```typescript
+// database-optimization.ts — 预编译语句防止 SQL 注入并提升重复查询性能
+import { Pool } from 'pg';
+
+class UserRepository {
+  private findByEmailStmt: Promise<ReturnType<Pool['prepare']>>;
+
+  constructor(private pool: Pool) {
+    // 预编译高频查询
+    this.findByEmailStmt = pool.query(`
+      PREPARE find_user_by_email (text) AS
+      SELECT id, email, name, created_at FROM users WHERE email = $1
+    `);
+  }
+
+  async findByEmail(email: string) {
+    const { rows } = await this.pool.query('EXECUTE find_user_by_email($1)', [email]);
+    return rows[0] ?? null;
+  }
+
+  // 批量插入使用 COPY 或 unnest 比多条 INSERT 快 10-100 倍
+  async bulkInsert(users: Array<{ email: string; name: string }>) {
+    const emails = users.map(u => u.email);
+    const names = users.map(u => u.name);
+    const { rows } = await this.pool.query(`
+      INSERT INTO users (email, name)
+      SELECT * FROM unnest($1::text[], $2::text[])
+      ON CONFLICT (email) DO NOTHING
+      RETURNING id
+    `, [emails, names]);
+    return rows;
+  }
+}
+```
+
+## 代码示例：通用连接池封装
+
+```typescript
+// database-optimization.ts — 带健康检查与重试的连接池封装
+import { Pool, PoolConfig } from 'pg';
+
+function createRobustPool(config: PoolConfig) {
+  const pool = new Pool({
+    ...config,
+    max: config.max ?? 20,
+    idleTimeoutMillis: config.idleTimeoutMillis ?? 30000,
+    connectionTimeoutMillis: config.connectionTimeoutMillis ?? 5000,
+    // 连接错误时自动重连
+    allowExitOnIdle: false,
+  });
+
+  pool.on('error', (err) => {
+    console.error('Unexpected database pool error:', err);
+  });
+
+  // 健康检查：定期执行轻量查询
+  const healthCheckInterval = setInterval(async () => {
+    try {
+      const client = await pool.connect();
+      await client.query('SELECT 1');
+      client.release();
+    } catch (err) {
+      console.error('Database health check failed:', err);
+    }
+  }, 30000);
+
+  // 优雅关闭
+  const originalEnd = pool.end.bind(pool);
+  pool.end = async () => {
+    clearInterval(healthCheckInterval);
+    return originalEnd();
+  };
+
+  return pool;
+}
+```
+
+## 代码示例：Cursor 流式查询大结果集
+
+```typescript
+// database-optimization.ts — 避免一次性加载百万行到内存
+import { Pool } from 'pg';
+import { Readable } from 'stream';
+
+async function* queryAsStream<T>(
+  pool: Pool,
+  query: string,
+  params: unknown[],
+  batchSize = 1000
+): AsyncGenerator<T> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const cursorName = `cursor_${Date.now()}`;
+    await client.query(`DECLARE ${cursorName} CURSOR FOR ${query}`, params);
+
+    while (true) {
+      const { rows } = await client.query(`FETCH ${batchSize} FROM ${cursorName}`);
+      if (rows.length === 0) break;
+      for (const row of rows) yield row as T;
+    }
+
+    await client.query(`CLOSE ${cursorName}`);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+// 使用示例：流式导出百万级订单
+for await (const order of queryAsStream<Order>(pool, 'SELECT * FROM orders WHERE status = $1', ['shipped'])) {
+  csvWriter.write(order);
+}
+```
+
 ## 参考资源
 
 - [PostgreSQL 性能优化官方文档](https://www.postgresql.org/docs/current/performance-tips.html)
 - [Use The Index, Luke!](https://use-the-index-luke.com/)
 - [High Performance MySQL](https://www.oreilly.com/library/view/high-performance-mysql/9781492080503/)
 - [Redis 缓存模式](https://redis.io/docs/manual/client-side-caching/)
+- [PostgreSQL EXPLAIN Documentation](https://www.postgresql.org/docs/current/sql-explain.html) — 执行计划权威参考
+- [MySQL EXPLAIN Output Format](https://dev.mysql.com/doc/refman/8.4/en/explain-output.html) — MySQL 执行计划解析
+- [MongoDB Indexing Strategies](https://www.mongodb.com/docs/manual/applications/indexes/) — MongoDB 索引指南
+- [node-postgres Documentation](https://node-postgres.com/) — Node.js PostgreSQL 客户端
+- [pg-pool Configuration](https://node-postgres.com/apis/pool) — PostgreSQL 连接池配置
+- [Sequelize Query Optimization](https://sequelize.org/docs/v6/advanced-association-concepts/eager-loading/) — ORM 预加载与 N+1
+- [Prisma Query Optimization](https://www.prisma.io/docs/orm/prisma-client/queries/query-optimization-performance) — Prisma 性能优化
+- [AWS RDS Performance Insights](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html) — 云数据库性能分析

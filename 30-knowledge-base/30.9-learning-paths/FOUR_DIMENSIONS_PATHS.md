@@ -62,6 +62,38 @@ status: current
   - `docs/cheatsheets/TYPESCRIPT_CHEATSHEET.md`
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/01_language_core.md`
 - **Checkpoint**：类型安全 `EventEmitter` (`20-code-lab/00-language-core/event-emitter-typed.ts`)
+- **关键代码能力**：
+
+```typescript
+// 类型安全的 EventEmitter 实现
+interface EventMap {
+  'user:login': { userId: string; timestamp: number };
+  'user:logout': { userId: string };
+}
+
+class TypedEventEmitter<Events extends Record<string, unknown>> {
+  private listeners = new Map<string, Set<(payload: unknown) => void>>();
+
+  on<K extends keyof Events>(event: K, handler: (payload: Events[K]) => void) {
+    const set = this.listeners.get(event as string) ?? new Set();
+    set.add(handler as (payload: unknown) => void);
+    this.listeners.set(event as string, set);
+    return () => this.off(event, handler);
+  }
+
+  off<K extends keyof Events>(event: K, handler: (payload: Events[K]) => void) {
+    this.listeners.get(event as string)?.delete(handler as (payload: unknown) => void);
+  }
+
+  emit<K extends keyof Events>(event: K, payload: Events[K]) {
+    this.listeners.get(event as string)?.forEach((h) => h(payload));
+  }
+}
+
+const emitter = new TypedEventEmitter<EventMap>();
+emitter.on('user:login', ({ userId }) => console.log(userId)); // ✅ 类型安全
+// emitter.on('user:login', ({ invalid }) => ...); // ❌ 编译错误
+```
 
 ### 进阶：类型系统深度与执行模型
 
@@ -73,6 +105,25 @@ status: current
   - `jsts-language-core-system/` — 语言核心系统文档
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ADVANCED_TYPE_SYSTEM_FEATURES.md`
 - **Checkpoint**：实现一个支持泛型约束的工具类型库
+- **关键代码能力**：
+
+```typescript
+// 类型体操：实现类型安全的路径访问器
+type Path<T, K extends keyof T = keyof T> =
+  K extends string
+    ? T[K] extends Record<string, unknown>
+      ? `${K}` | `${K}.${Path<T[K]>}`
+      : `${K}`
+    : never;
+
+function getPath<T>(obj: T, path: Path<T>): unknown {
+  return path.split('.').reduce((o: any, k) => o?.[k], obj);
+}
+
+const user = { profile: { name: 'Alice', age: 30 }, id: 1 };
+getPath(user, 'profile.name'); // ✅
+// getPath(user, 'profile.invalid'); // ❌ 编译错误
+```
 
 ### 专家：形式化语义与编译器设计
 
@@ -112,6 +163,30 @@ status: current
   - `examples/fullstack-tanstack-start/` — 全栈元框架实战
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ARCHITECTURE_PATTERNS_THEORY.md`
 - **Checkpoint**：六边形架构订单系统 + 单元测试覆盖 ≥ 80%
+- **关键代码能力**：
+
+```typescript
+// 六边形架构（端口与适配器）最小示例
+interface OrderRepositoryPort {
+  save(order: Order): Promise<void>;
+  findById(id: string): Promise<Order | null>;
+}
+
+class InMemoryOrderRepository implements OrderRepositoryPort {
+  private orders = new Map<string, Order>();
+  async save(order: Order) { this.orders.set(order.id, order); }
+  async findById(id: string) { return this.orders.get(id) ?? null; }
+}
+
+class OrderService {
+  constructor(private repo: OrderRepositoryPort) {}
+  async createOrder(input: CreateOrderInput): Promise<Order> {
+    const order = Order.create(input);
+    await this.repo.save(order);
+    return order;
+  }
+}
+```
 
 ### 专家：元框架架构与编译时优化
 
@@ -153,6 +228,29 @@ status: current
   - `examples/edge-ai-inference/` — 边缘 AI 推理
   - `30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/AI_ML_INTEGRATION_THEORY.md`
 - **Checkpoint**：AI Agent 工作流 或 边缘函数部署并通过冷启动测试
+- **关键代码能力**：
+
+```typescript
+// Vercel Edge Function 调用 OpenAI API
+import { OpenAIStream, StreamingTextResponse } from 'ai';
+import { Configuration, OpenAIApi } from 'openai-edge';
+
+export const config = { runtime: 'edge' };
+
+const configOpenAI = new Configuration({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAIApi(configOpenAI);
+
+export default async function handler(req: Request) {
+  const { messages } = await req.json();
+  const response = await openai.createChatCompletion({
+    model: 'gpt-4o-mini',
+    stream: true,
+    messages,
+  });
+  const stream = OpenAIStream(response);
+  return new StreamingTextResponse(stream);
+}
+```
 
 ### 专家：生产级部署与可观测性
 
@@ -183,6 +281,25 @@ status: current
   - `examples/04-build-tools/` — 构建工具示例
   - `docs/comparison-matrices/build-tools-compare.md`
 - **Checkpoint**：从零配置一个 monorepo 工具链（lint/test/build/ci-ready）
+- **关键代码能力**：
+
+```typescript
+// pnpm workspace + Turborepo 最小配置
+// pnpm-workspace.yaml
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+// turbo.json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "build": { "dependsOn": ["^build"], "outputs": [".next/**", "dist/**"] },
+    "test": { "dependsOn": ["build"] },
+    "lint": {}
+  }
+}
+```
 
 ### 进阶：CI/CD 与容器化部署
 
@@ -229,4 +346,27 @@ status: current
 
 ---
 
-*最后更新: 2026-04-27*
+## 外部权威资源
+
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| TypeScript 官方文档 | 微软官方 | [typescriptlang.org/docs](https://www.typescriptlang.org/docs/) |
+| React 官方文档 | Meta 团队维护 | [react.dev](https://react.dev/) |
+| Vue.js 官方文档 | 尤雨溪团队 | [vuejs.org](https://vuejs.org/) |
+| Node.js 官方文档 | OpenJS 基金会 | [nodejs.org/docs](https://nodejs.org/docs/latest/api/) |
+| Next.js 官方文档 | Vercel 团队 | [nextjs.org/docs](https://nextjs.org/docs) |
+| Vite 官方文档 | 尤雨溪团队 | [vitejs.dev](https://vitejs.dev/) |
+| pnpm 官方文档 | 包管理工具 | [pnpm.io](https://pnpm.io/) |
+| Turborepo 官方文档 | Vercel 团队 | [turbo.build](https://turbo.build/) |
+| Kubernetes 官方文档 | CNCF | [kubernetes.io/docs](https://kubernetes.io/docs/) |
+| Docker 官方文档 | Docker Inc. | [docs.docker.com](https://docs.docker.com/) |
+| GitHub Actions 文档 | GitHub | [docs.github.com/actions](https://docs.github.com/en/actions) |
+| OpenAI API 文档 | OpenAI | [platform.openai.com/docs](https://platform.openai.com/docs) |
+| Vercel AI SDK | 统一 AI 调用 | [sdk.vercel.ai/docs](https://sdk.vercel.ai/docs) |
+| MDN Web Docs | Mozilla 官方 | [developer.mozilla.org](https://developer.mozilla.org/) |
+| ECMA-262 规范 | TC39 | [tc39.es/ecma262](https://tc39.es/ecma262/) |
+| web.dev | Google 性能指南 | [web.dev](https://web.dev/) |
+
+---
+
+*最后更新: 2026-04-29*

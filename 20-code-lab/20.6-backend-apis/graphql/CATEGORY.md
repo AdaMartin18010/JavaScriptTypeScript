@@ -91,6 +91,93 @@ export function persistedQueryMiddleware(
 }
 ```
 
+### GraphQL 订阅与 WebSocket
+
+```typescript
+import { GraphQLObjectType, GraphQLString, GraphQLSchema } from 'graphql';
+import { PubSub } from 'graphql-subscriptions';
+
+const pubsub = new PubSub();
+const MESSAGE_ADDED = 'MESSAGE_ADDED';
+
+const SubscriptionType = new GraphQLObjectType({
+  name: 'Subscription',
+  fields: {
+    messageAdded: {
+      type: new GraphQLObjectType({
+        name: 'Message',
+        fields: {
+          id: { type: GraphQLString },
+          content: { type: GraphQLString },
+          roomId: { type: GraphQLString },
+        },
+      }),
+      args: { roomId: { type: GraphQLString } },
+      subscribe: (_root, { roomId }) => pubsub.asyncIterator(`${MESSAGE_ADDED}.${roomId}`),
+    },
+  },
+});
+
+// 发布消息
+export function publishMessage(roomId: string, message: { id: string; content: string }) {
+  pubsub.publish(`${MESSAGE_ADDED}.${roomId}`, { messageAdded: { ...message, roomId } });
+}
+```
+
+### Pothos（GraphQL Code-First）类型安全 Schema
+
+```typescript
+import SchemaBuilder from '@pothos/core';
+
+const builder = new SchemaBuilder<{
+  Objects: { User: { id: string; name: string; email: string } };
+  Context: { userLoader: DataLoader<string, { id: string; name: string; email: string }> };
+}>();
+
+builder.objectType('User', {
+  fields: (t) => ({
+    id: t.exposeID('id'),
+    name: t.exposeString('name'),
+    email: t.exposeString('email'),
+  }),
+});
+
+builder.queryType({
+  fields: (t) => ({
+    user: t.field({
+      type: 'User',
+      args: { id: t.arg.id({ required: true }) },
+      resolve: (_root, args, ctx) => ctx.userLoader.load(args.id),
+    }),
+  }),
+});
+
+export const schema = builder.toSchema();
+```
+
+### GraphQL Codegen 配置
+
+```typescript
+// codegen.ts
+import type { CodegenConfig } from '@graphql-codegen/cli';
+
+const config: CodegenConfig = {
+  schema: './schema.graphql',
+  documents: ['./src/**/*.tsx'],
+  generates: {
+    './src/generated/graphql.ts': {
+      plugins: ['typescript', 'typescript-operations', 'typescript-react-apollo'],
+      config: {
+        withHooks: true,
+        scalars: { DateTime: 'string' },
+      },
+    },
+  },
+};
+
+export default config;
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -106,6 +193,10 @@ export function persistedQueryMiddleware(
 | DataLoader | 文档 | [github.com/graphql/dataloader](https://github.com/graphql/dataloader) |
 | GraphQL Code Generator | 文档 | [the-guild.dev/graphql/codegen](https://the-guild.dev/graphql/codegen) |
 | Relay — Persisted Queries | 指南 | [relay.dev/docs/guides/persisted-queries](https://relay.dev/docs/guides/persisted-queries) |
+| Pothos — GraphQL Schema Builder | 文档 | [pothos-graphql.dev](https://pothos-graphql.dev/) |
+| GraphQL WS — Subscriptions | 文档 | [the-guild.dev/graphql/ws](https://the-guild.dev/graphql/ws) |
+| Apollo Client — Caching](https://www.apollographql.com/docs/react/caching/overview) | 文档 | [apollographql.com/docs/react/caching/overview](https://www.apollographql.com/docs/react/caching/overview) |
+| GraphQL Query Complexity](https://www.howtographql.com/advanced/4-security/) | 指南 | [howtographql.com/advanced/4-security](https://www.howtographql.com/advanced/4-security/) |
 
 ---
 

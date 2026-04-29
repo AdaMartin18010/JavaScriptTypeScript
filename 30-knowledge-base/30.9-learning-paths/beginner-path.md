@@ -37,25 +37,125 @@ redirect: ./beginners-path.md
 
 ---
 
+## 代码示例
+
+### 阶段 2：JavaScript 核心 — 事件循环可视化
+
+```javascript
+console.log('1. sync');
+setTimeout(() => console.log('2. macrotask'), 0);
+Promise.resolve().then(() => console.log('3. microtask'));
+console.log('4. sync end');
+// 输出顺序：1 → 4 → 3 → 2
+```
+
+### 阶段 3：TypeScript 入门 — 类型守卫实践
+
+```typescript
+interface Cat {
+  kind: 'cat';
+  meow(): void;
+}
+interface Dog {
+  kind: 'dog';
+  bark(): void;
+}
+type Animal = Cat | Dog;
+
+function makeSound(animal: Animal) {
+  switch (animal.kind) {
+    case 'cat':
+      animal.meow();
+      break;
+    case 'dog':
+      animal.bark();
+      break;
+    default:
+      const _exhaustive: never = animal; // 穷尽检查
+  }
+}
+```
+
+### 阶段 4：前端框架 — React Hook 组合
+
+```typescript
+import { useState, useCallback } from 'react';
+
+function useCounter(initial = 0) {
+  const [count, setCount] = useState(initial);
+  const increment = useCallback(() => setCount((c) => c + 1), []);
+  const decrement = useCallback(() => setCount((c) => c - 1), []);
+  return { count, increment, decrement };
+}
+
+export default function Counter() {
+  const { count, increment, decrement } = useCounter(0);
+  return (
+    <div>
+      <button onClick={decrement}>-</button>
+      <span>{count}</span>
+      <button onClick={increment}>+</button>
+    </div>
+  );
+}
+```
+
+### 阶段 5：全栈基础 — Express + TypeScript 最小 API
+
+```typescript
+import express, { Request, Response } from 'express';
+
+const app = express();
+app.use(express.json());
+
+interface Todo {
+  id: number;
+  title: string;
+  completed: boolean;
+}
+
+const todos: Todo[] = [];
+
+app.get('/api/todos', (_req: Request, res: Response) => {
+  res.json(todos);
+});
+
+app.post('/api/todos', (req: Request<{}, {}, Omit<Todo, 'id'>>, res: Response) => {
+  const todo: Todo = { id: Date.now(), ...req.body };
+  todos.push(todo);
+  res.status(201).json(todo);
+});
+
+app.listen(3000, () => console.log('Server on http://localhost:3000'));
+```
+
+---
+
 ## 推荐资源链接
 
 | 阶段 | 类型 | 资源名称 | 链接 | 说明 |
 |------|------|----------|------|------|
 | HTML/CSS | 免费教程 | MDN Web Docs — HTML & CSS | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Learn) | Mozilla 官方，最权威参考 |
 | HTML/CSS | 互动练习 | freeCodeCamp — Responsive Web Design | [freecodecamp.org](https://www.freecodecamp.org/learn/2022/responsive-web-design/) | 项目驱动，认证免费 |
+| HTML/CSS | 指南 | web.dev — Learn CSS | [web.dev/learn/css](https://web.dev/learn/css/) | Google 出品，现代 CSS 最佳实践 |
 | JavaScript | 免费教程 | JavaScript.info | [javascript.info](https://javascript.info/) | 现代 JS 深度教程，覆盖 ES2024 |
 | JavaScript | 书籍 | *Eloquent JavaScript* (Marijn Haverbeke) | [eloquentjavascript.net](https://eloquentjavascript.net/) | 开源书籍，从基础到 Node.js |
 | JavaScript | 视频 | JavaScript: The Hard Parts (Frontend Masters) | [frontendmasters.com](https://frontendmasters.com/courses/javascript-hard-parts/) | 异步与闭包深度讲解 |
+| JavaScript | 官方规范 | ECMA-262 | [tc39.es/ecma262](https://tc39.es/ecma262/) | 语言规范原文 |
 | TypeScript | 官方教程 | TypeScript Handbook | [typescriptlang.org/docs](https://www.typescriptlang.org/docs/handbook/intro.html) | 微软官方，持续更新 |
 | TypeScript | 互动练习 | Total TypeScript (Matt Pocock) | [totaltypescript.com](https://www.totaltypescript.com/) | 从初学者到专家的类型体操 |
 | TypeScript | 书籍 | *Effective TypeScript* (Dan Vanderkam) | [effectivetypescript.com](https://effectivetypescript.com/) | 50 条具体建议 |
+| TypeScript | 配置参考 | TSConfig Cheat Sheet | [tsconfig Cheat Sheet](https://www.totaltypescript.com/tsconfig-cheat-sheet) | 推荐配置速查 |
 | 前端框架 | 官方文档 | React Docs (new) | [react.dev](https://react.dev/) | React 团队重写，Hooks 优先 |
 | 前端框架 | 官方文档 | Vue.js Guide | [vuejs.org](https://vuejs.org/guide/introduction.html) | 渐进式框架最佳入门 |
+| 前端框架 | 工具 | Vite 官方文档 | [vitejs.dev](https://vitejs.dev/) | 下一代前端构建工具 |
 | 全栈 | 教程 | Next.js Learn | [nextjs.org/learn](https://nextjs.org/learn) | 基于 App Router 的全栈教程 |
 | 全栈 | 教程 | The Odin Project — Full Stack JavaScript | [theodinproject.com](https://www.theodinproject.com/paths/full-stack-javascript) | 开源免费，项目驱动 |
 | 全栈 | 工具 | Prisma ORM 入门 | [prisma.io/docs](https://www.prisma.io/docs/getting-started) | 类型安全的数据库访问 |
+| 全栈 | 工具 | Drizzle ORM | [orm.drizzle.team](https://orm.drizzle.team/) | 轻量类型安全 ORM |
 | 工程化 | 工具 | Git 官方文档 | [git-scm.com/doc](https://git-scm.com/doc) | 版本控制基础 |
 | 工程化 | 指南 | Conventional Commits | [conventionalcommits.org](https://www.conventionalcommits.org/) | 规范化提交信息 |
+| 工程化 | 工具 | Node.js 官方文档 | [nodejs.org/docs](https://nodejs.org/docs/latest/api/) | 服务端 JS 权威参考 |
 
 ---
 

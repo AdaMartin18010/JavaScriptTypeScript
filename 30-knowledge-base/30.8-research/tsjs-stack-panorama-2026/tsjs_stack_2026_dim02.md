@@ -71,6 +71,138 @@ JavaScript 已成为 **"边缘计算语言"**。Cloudflare Workers、Vercel Edge
 
 ---
 
+## 代码示例
+
+### 类型安全架构边界：Project References 实践
+
+```typescript
+// packages/contracts/src/user.ts
+export interface User {
+  id: string;
+  email: string;
+  role: 'admin' | 'user' | 'guest';
+}
+
+export type CreateUserInput = Omit<User, 'id'>;
+export type UpdateUserInput = Partial<Omit<User, 'id'>>;
+```
+
+```typescript
+// apps/api/src/services/userService.ts
+import { User, CreateUserInput } from '@org/contracts';
+
+// 后端服务直接使用共享契约
+export async function createUser(input: CreateUserInput): Promise<User> {
+  const user: User = {
+    id: crypto.randomUUID(),
+    ...input,
+  };
+  await db.users.insert(user);
+  return user;
+}
+```
+
+```typescript
+// apps/web/src/components/UserProfile.tsx
+import { User } from '@org/contracts';
+
+// 前端组件复用同一类型
+interface Props {
+  user: User;
+  onRoleChange: (role: User['role']) => void;
+}
+
+export function UserProfile({ user, onRoleChange }: Props) {
+  return (
+    <div>
+      <h1>{user.email}</h1>
+      <select value={user.role} onChange={(e) => onRoleChange(e.target.value as User['role'])}>
+        <option value="admin">Admin</option>
+        <option value="user">User</option>
+        <option value="guest">Guest</option>
+      </select>
+    </div>
+  );
+}
+```
+
+### Deno 权限沙盒配置
+
+```typescript
+// main.ts — Deno 安全运行时示例
+import { serve } from 'https://deno.land/std@0.200.0/http/server.ts';
+
+// 运行时需要 --allow-net 权限
+serve((req) => {
+  const url = new URL(req.url);
+  if (url.pathname === '/health') {
+    return new Response(JSON.stringify({ status: 'ok', timestamp: Date.now() }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  return new Response('Not Found', { status: 404 });
+}, { port: 8000 });
+
+// 运行：deno run --allow-net=0.0.0.0:8000 main.ts
+```
+
+### Bun 原生 TypeScript 执行与 SQLite
+
+```typescript
+// server.ts — Bun 原生 TS + 内置 SQLite
+import { Database } from 'bun:sqlite';
+
+const db = new Database('app.db');
+db.run(`CREATE TABLE IF NOT EXISTS metrics (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  service TEXT NOT NULL,
+  value REAL NOT NULL,
+  timestamp INTEGER DEFAULT (unixepoch())
+)`);
+
+// Bun.serve 原生 WebSocket 支持
+Bun.serve({
+  port: 3000,
+  fetch(req) {
+    const url = new URL(req.url);
+    if (url.pathname === '/metrics') {
+      const rows = db.query('SELECT * FROM metrics ORDER BY timestamp DESC LIMIT 100').all();
+      return Response.json(rows);
+    }
+    return new Response('Hello from Bun!', { status: 200 });
+  },
+});
+```
+
+### Zod 运行时类型校验
+
+```typescript
+import { z } from 'zod';
+
+// 定义共享 Schema
+const UserSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  age: z.number().int().min(0).max(150).optional(),
+  role: z.enum(['admin', 'user', 'guest']),
+});
+
+type User = z.infer<typeof UserSchema>;
+
+// 运行时校验外部输入
+function parseUserInput(input: unknown): User {
+  return UserSchema.parse(input); // 失败时抛出 ZodError
+}
+
+// 安全解析（不抛出）
+function safeParseUser(input: unknown): User | null {
+  const result = UserSchema.safeParse(input);
+  return result.success ? result.data : null;
+}
+```
+
+---
+
 ## 维度 02 分析表：类型系统与运行时生态深度对比
 
 | 分析维度 | 现状 (2026 Q1) | 趋势 (2026–2027) | 生态数据 |
@@ -96,3 +228,13 @@ JavaScript 已成为 **"边缘计算语言"**。Cloudflare Workers、Vercel Edge
 - [Cloudflare Workers — V8 Isolates](https://developers.cloudflare.com/workers/reference/how-workers-works/)
 - [Drizzle ORM — Type Safety](https://orm.drizzle.team/)
 - [Zod — TypeScript-first Schema Validation](https://zod.dev/)
+- [TypeScript Design Goals](https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals)
+- [TC39 Process Document](https://tc39.es/process-document/)
+- [V8 Blog — Ignition + TurboFan](https://v8.dev/blog/ignition-turbofan)
+- [JavaScriptCore Documentation](https://docs.webkit.org/Deep%20Dive/JSC/JavaScriptCore.html)
+- [SpiderMonkey Internals](https://firefox-source-docs.mozilla.org/js/index.html)
+- [The Cost of JavaScript (V8)](https://v8.dev/blog/cost-of-javascript-2019)
+- [Node.js Performance Best Practices](https://nodejs.org/en/docs/guides/simple-profiling)
+- [Deno 2.0 Migration Guide](https://docs.deno.com/runtime/fundamentals/migration/)
+- [Bun SQLite Documentation](https://bun.sh/docs/api/sqlite)
+- [TypeScript Project References](https://www.typescriptlang.org/docs/handbook/project-references.html)

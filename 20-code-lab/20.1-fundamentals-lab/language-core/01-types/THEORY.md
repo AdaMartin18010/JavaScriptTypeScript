@@ -95,20 +95,161 @@ console.log(typeof null);        // "object"
 console.log(null instanceof Object); // false
 ```
 
-### 3.3 常见误区
+### 3.3 类型收窄（Type Narrowing）
+
+```typescript
+// discriminated union（可辨识联合类型）
+interface Square {
+  kind: 'square';
+  size: number;
+}
+
+interface Rectangle {
+  kind: 'rectangle';
+  width: number;
+  height: number;
+}
+
+interface Circle {
+  kind: 'circle';
+  radius: number;
+}
+
+type Shape = Square | Rectangle | Circle;
+
+function area(shape: Shape): number {
+  switch (shape.kind) {
+    case 'square':
+      return shape.size ** 2;      // TS 自动收窄为 Square
+    case 'rectangle':
+      return shape.width * shape.height; // TS 自动收窄为 Rectangle
+    case 'circle':
+      return Math.PI * shape.radius ** 2; // TS 自动收窄为 Circle
+    default:
+      // exhaustiveness check
+      const _exhaustive: never = shape;
+      return _exhaustive;
+  }
+}
+```
+
+### 3.4 结构类型 vs 名义类型
+
+```typescript
+// TypeScript 使用结构类型（Duck Typing）
+interface Point2D {
+  x: number;
+  y: number;
+}
+
+interface Point3D {
+  x: number;
+  y: number;
+  z: number;
+}
+
+function printPoint(p: Point2D) {
+  console.log(`(${p.x}, ${p.y})`);
+}
+
+const p3d: Point3D = { x: 1, y: 2, z: 3 };
+printPoint(p3d); // ✅ 合法：Point3D 结构兼容 Point2D
+
+// 名义类型模拟（使用 brands）
+type UserId = string & { __brand: 'UserId' };
+type OrderId = string & { __brand: 'OrderId' };
+
+function createUserId(id: string): UserId {
+  return id as UserId;
+}
+
+function createOrderId(id: string): OrderId {
+  return id as OrderId;
+}
+
+const uid = createUserId('u-123');
+const oid = createOrderId('o-456');
+
+// uid = oid; // ❌ 编译错误：结构相同但 brand 不同
+```
+
+### 3.5 类型谓词（Type Predicates）自定义守卫
+
+```typescript
+// 自定义类型守卫函数
+interface Fish {
+  swim(): void;
+}
+
+interface Bird {
+  fly(): void;
+}
+
+function isFish(pet: Fish | Bird): pet is Fish {
+  return (pet as Fish).swim !== undefined;
+}
+
+function move(pet: Fish | Bird) {
+  if (isFish(pet)) {
+    pet.swim(); // TS 知道此处 pet 是 Fish
+  } else {
+    pet.fly();  // TS 知道此处 pet 是 Bird
+  }
+}
+```
+
+### 3.6 `unknown` 的安全使用模式
+
+```typescript
+// unknown 要求显式类型收窄后才能使用
+function parseJsonSafe(json: string): unknown {
+  try {
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
+function processApiResponse(response: unknown) {
+  // ❌ 直接访问属性：编译错误
+  // console.log(response.data);
+
+  // ✅ 先进行类型校验
+  if (
+    typeof response === 'object' &&
+    response !== null &&
+    'data' in response &&
+    Array.isArray(response.data)
+  ) {
+    return response.data; // response 被收窄为 { data: unknown[] }
+  }
+
+  throw new Error('Invalid response format');
+}
+```
+
+### 3.7 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | any 可以临时替代所有类型 | any 会传播并破坏整个类型链 |
 | unknown 与 any 等价 | unknown 要求使用前先进行类型收窄 |
+| `typeof [] === 'array'` | `typeof []` 返回 `'object'`，应使用 `Array.isArray()` |
+| `instanceof` 跨 iframe 可靠 | 不同全局环境下的构造函数引用不同，instanceof 可能失效 |
+| 接口与类型别名完全等价 | 接口支持声明合并（declaration merging），type 不支持 |
 
-### 3.4 扩展阅读
+### 3.8 扩展阅读
 
 - [TypeScript 类型手册](https://www.typescriptlang.org/docs/handbook/basic-types.html)
 - [MDN：JavaScript 数据类型与数据结构](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures)
 - [MDN：typeof](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof)
 - [MDN：instanceof](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof)
 - [ECMAScript® 2025 Language Specification — ECMAScript Data Types and Values](https://tc39.es/ecma262/#sec-ecmascript-data-types-and-values)
+- [TypeScript Handbook: Narrowing](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
+- [TypeScript Handbook: Type Guards](https://www.typescriptlang.org/docs/handbook/advanced-types.html#type-guards-and-differentiating-types)
+- [TypeScript: Structural vs Nominal Typing](https://www.typescriptlang.org/docs/handbook/type-compatibility.html)
+- [2ality: JavaScript Values — Primitives vs Objects](https://2ality.com/2021/01/object-vs-object.html)
+- [Deep JavaScript: Types, Values, and Variables](https://exploringjs.com/deep-js/ch_types-values-variables.html)
 - `10-fundamentals/10.1-language-semantics/01-types/`
 
 ---

@@ -165,6 +165,66 @@ function hydrateIslands() {
 }
 ```
 
+## 代码示例：Edge Function 边缘计算模式
+
+```typescript
+// edge-function.ts — 在 CDN 边缘运行轻量级逻辑，降低延迟
+export default {
+  async fetch(request: Request, env: Record<string, string>): Promise<Response> {
+    const url = new URL(request.url);
+
+    // 边缘 A/B 测试：根据 Cookie 分流
+    const experimentCookie = request.headers.get('cookie')?.match(/exp=(\w+)/)?.[1];
+    if (url.pathname === '/home') {
+      const variant = experimentCookie ?? (Math.random() > 0.5 ? 'a' : 'b');
+      const upstream = variant === 'a'
+        ? `${env.ORIGIN_A}/home`
+        : `${env.ORIGIN_B}/home`;
+
+      const response = await fetch(upstream, request);
+      const modified = new Response(response.body, response);
+      modified.headers.append('Set-Cookie', `exp=${variant}; Path=/; Max-Age=2592000`);
+      return modified;
+    }
+
+    // 边缘缓存：短时间缓存 API 响应
+    const cacheKey = new Request(url.toString(), request);
+    const cache = caches.default;
+    let cached = await cache.match(cacheKey);
+    if (cached) return cached;
+
+    const origin = await fetch(request);
+    const response = new Response(origin.body, origin);
+    response.headers.set('Cache-Control', 'public, max-age=60');
+    ctx.waitUntil(cache.put(cacheKey, response.clone()));
+    return response;
+  },
+};
+```
+
+## 代码示例：GraphQL Federation Gateway
+
+```typescript
+// federated-gateway.ts — 多服务 GraphQL Schema 聚合
+import { ApolloGateway, IntrospectAndCompose } from '@apollo/gateway';
+import { ApolloServer } from '@apollo/server';
+import { startStandaloneServer } from '@apollo/server/standalone';
+
+const gateway = new ApolloGateway({
+  supergraphSdl: new IntrospectAndCompose({
+    subgraphs: [
+      { name: 'users', url: 'http://user-service:4001/graphql' },
+      { name: 'orders', url: 'http://order-service:4002/graphql' },
+      { name: 'products', url: 'http://product-service:4003/graphql' },
+    ],
+  }),
+});
+
+const server = new ApolloServer({ gateway });
+startStandaloneServer(server, { listen: { port: 4000 } })
+  .then(({ url }) => console.log(`🚀 Gateway ready at ${url}`));
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -202,6 +262,10 @@ function hydrateIslands() {
 | Astro Islands Architecture | 文档 | [docs.astro.build/en/concepts/islands](https://docs.astro.build/en/concepts/islands/) |
 | API Gateway Pattern (AWS) | 指南 | [docs.aws.amazon.com/whitepapers/latest/microservices-on-aws/api-gateway.html](https://docs.aws.amazon.com/whitepapers/latest/microservices-on-aws/api-gateway.html) |
 | OpenAPI Specification | 规范 | [spec.openapis.org](https://spec.openapis.org/) |
+| Cloudflare Workers — Edge Functions | 文档 | [developers.cloudflare.com/workers](https://developers.cloudflare.com/workers/) |
+| Vercel Edge Functions | 文档 | [vercel.com/docs/functions/edge-functions](https://vercel.com/docs/functions/edge-functions) |
+| Apollo Federation | 文档 | [apollographql.com/docs/federation](https://www.apollographql.com/docs/federation/) |
+| Remix Data Flow | 文档 | [remix.run/docs/en/main/discussion/data-flow](https://remix.run/docs/en/main/discussion/data-flow) |
 
 ---
 

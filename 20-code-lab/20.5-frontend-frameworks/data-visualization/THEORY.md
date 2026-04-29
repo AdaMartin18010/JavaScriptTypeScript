@@ -22,11 +22,11 @@
 ### 1.2 可视化层次
 
 ```
-L1: 原始数据 → 清洗整理
-L2: 统计数据 → 聚合摘要
-L3: 视觉编码 → 位置、颜色、大小
-L4: 交互探索 → 筛选、缩放、关联
-L5: 叙事设计 → 故事线、洞察传达
+L1: 原始数据 -> 清洗整理
+L2: 统计数据 -> 聚合摘要
+L3: 视觉编码 -> 位置、颜色、大小
+L4: 交互探索 -> 筛选、缩放、关联
+L5: 叙事设计 -> 故事线、洞察传达
 ```
 
 ---
@@ -49,15 +49,15 @@ L5: 叙事设计 → 故事线、洞察传达
 ### 2.2 颜色设计
 
 ```
-分类数据 → 色相区分（最多 8-10 色）
-顺序数据 → 亮度渐变（单色调）
-发散数据 → 双色渐变（红-蓝）
+分类数据 -> 色相区分（最多 8-10 色）
+顺序数据 -> 亮度渐变（单色调）
+发散数据 -> 双色渐变（红-蓝）
 ```
 
 **工具**：
 
-- [ColorBrewer](https://colorbrewer2.org/) — 科学配色
-- [Coolors](https://coolors.co/) — 快速生成
+- [ColorBrewer](https://colorbrewer2.org/) -- 科学配色
+- [Coolors](https://coolors.co/) -- 快速生成
 
 ---
 
@@ -66,19 +66,19 @@ L5: 叙事设计 → 故事线、洞察传达
 ```
 你想展示什么?
 ├── 比较
-│   ├── 分类对比 → 柱状图 / 条形图
-│   └── 时间趋势 → 折线图 / 面积图
+│   ├── 分类对比 -> 柱状图 / 条形图
+│   └── 时间趋势 -> 折线图 / 面积图
 ├── 分布
-│   ├── 单变量 → 直方图 / 箱线图
-│   └── 多变量 → 散点图矩阵
+│   ├── 单变量 -> 直方图 / 箱线图
+│   └── 多变量 -> 散点图矩阵
 ├── 构成
-│   ├── 静态比例 → 饼图（≤5项）/ 堆叠柱状图
-│   └── 动态变化 → 堆叠面积图 / 桑基图
+│   ├── 静态比例 -> 饼图（<=5项）/ 堆叠柱状图
+│   └── 动态变化 -> 堆叠面积图 / 桑基图
 ├── 关系
-│   ├── 两变量 → 散点图 + 回归线
-│   └── 网络 → 力导向图 / 弦图
+│   ├── 两变量 -> 散点图 + 回归线
+│   └── 网络 -> 力导向图 / 弦图
 └── 地理
-    └── 地图 → 等值线图 / 气泡地图
+    └── 地图 -> 等值线图 / 气泡地图
 ```
 
 ---
@@ -125,18 +125,173 @@ resizeObserver.observe(container);
 
 ### 反模式 1：3D 饼图
 
-❌ 3D 效果扭曲数据感知。
-✅ 使用柱状图或水平条形图。
+x 3D 效果扭曲数据感知。
+v 使用柱状图或水平条形图。
 
 ### 反模式 2：过度装饰
 
-❌ 阴影、渐变、动画干扰数据阅读。
-✅ 遵循"数据墨水比"原则：最大化数据墨水，最小化装饰。
+x 阴影、渐变、动画干扰数据阅读。
+v 遵循"数据墨水比"原则：最大化数据墨水，最小化装饰。
 
 ### 反模式 3：双 Y 轴
 
-❌ 两个 Y 轴容易误导比较。
-✅ 使用分面图或标准化数据。
+x 两个 Y 轴容易误导比较。
+v 使用分面图或标准化数据。
+
+---
+
+## 7. 代码示例：D3.js 比例尺与坐标映射
+
+```typescript
+// scales.ts -- D3 比例尺将数据域映射到视觉域
+import { scaleLinear, scaleBand, scaleTime, extent } from 'd3';
+
+interface DataPoint {
+  date: Date;
+  value: number;
+  category: string;
+}
+
+function createScales(data: DataPoint[], width: number, height: number) {
+  // 线性比例尺：数值 -> 像素高度
+  const yScale = scaleLinear()
+    .domain([0, Math.max(...data.map(d => d.value))])
+    .range([height, 0]) // SVG 坐标系 Y 轴向下
+    .nice();
+
+  // 带状比例尺：分类 -> 像素宽度
+  const xScale = scaleBand<string>()
+    .domain(data.map(d => d.category))
+    .range([0, width])
+    .padding(0.2);
+
+  // 时间比例尺：日期 -> 像素宽度
+  const timeScale = scaleTime()
+    .domain(extent(data, d => d.date) as [Date, Date])
+    .range([0, width]);
+
+  return { xScale, yScale, timeScale };
+}
+```
+
+## 代码示例：WebGL 点云渲染（大数据集）
+
+```typescript
+// canvas-renderer.ts -- 用 WebGL 渲染 100K+ 散点
+function createScatterPlotGL(
+  canvas: HTMLCanvasElement,
+  points: Array<{ x: number; y: number; color: [number, number, number] }>
+) {
+  const gl = canvas.getContext('webgl')!;
+  gl.clearColor(1, 1, 1, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  // 顶点着色器：将数据坐标映射到裁剪空间
+  const vsSource = `
+    attribute vec2 a_position;
+    attribute vec3 a_color;
+    varying vec3 v_color;
+    void main() {
+      gl_Position = vec4(a_position, 0.0, 1.0);
+      gl_PointSize = 2.0;
+      v_color = a_color;
+    }
+  `;
+
+  // 片元着色器
+  const fsSource = `
+    precision mediump float;
+    varying vec3 v_color;
+    void main() {
+      gl_FragColor = vec4(v_color, 1.0);
+    }
+  `;
+
+  // 编译、链接、绑定数据...（简化）
+  // 实际生产建议使用 regl 或 Three.js Points 简化 WebGL 操作
+}
+```
+
+## 代码示例：无障碍图表模式
+
+```typescript
+// chart-accessibility.ts -- 为屏幕阅读器提供语义化数据表
+function createAccessibleChart(container: HTMLElement, data: Array<{ label: string; value: number }>) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-labelledby', 'chart-title chart-desc');
+
+  // 图表标题与描述
+  const title = document.createElement('title');
+  title.id = 'chart-title';
+  title.textContent = '月度销售额';
+  svg.appendChild(title);
+
+  const desc = document.createElement('desc');
+  desc.id = 'chart-desc';
+  desc.textContent = `柱状图显示 ${data.length} 个月的销售数据，最高值为 ${Math.max(...data.map(d => d.value))}`;
+  svg.appendChild(desc);
+
+  // 每个柱附加 ARIA 标签
+  data.forEach((d, i) => {
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('tabindex', '0');
+    rect.setAttribute('role', 'graphics-symbol');
+    rect.setAttribute('aria-label', `${d.label}: ${d.value} 元`);
+    svg.appendChild(rect);
+  });
+
+  // 同步生成屏幕阅读器专用的数据表格
+  const table = document.createElement('table');
+  table.style.position = 'absolute';
+  table.style.left = '-9999px';
+  table.innerHTML = `
+    <caption>月度销售额数据表</caption>
+    <thead><tr><th>月份</th><th>销售额</th></tr></thead>
+    <tbody>
+      ${data.map(d => `<tr><td>${d.label}</td><td>${d.value}</td></tr>`).join('')}
+    </tbody>
+  `;
+  container.appendChild(svg);
+  container.appendChild(table);
+}
+```
+
+## 代码示例：数据分箱（Data Binning）聚合
+
+```typescript
+// data-binning.ts -- 将大数据集降采样为可渲染的柱状分布
+function binData<T>(
+  data: T[],
+  accessor: (d: T) => number,
+  binCount: number
+): Array<{ x0: number; x1: number; count: number; items: T[] }> {
+  const values = data.map(accessor);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const step = (max - min) / binCount;
+
+  const bins = Array.from({ length: binCount }, (_, i) => ({
+    x0: min + i * step,
+    x1: min + (i + 1) * step,
+    count: 0,
+    items: [] as T[],
+  }));
+
+  for (const item of data) {
+    const v = accessor(item);
+    const index = Math.min(Math.floor((v - min) / step), binCount - 1);
+    bins[index].count++;
+    bins[index].items.push(item);
+  }
+
+  return bins;
+}
+
+// 使用示例：将 500K 条交易记录分箱为 50 个区间
+const bins = binData(transactions, t => t.amount, 50);
+renderHistogram(bins); // 只渲染 50 个柱子
+```
 
 ---
 
@@ -155,8 +310,17 @@ resizeObserver.observe(container);
 ## 参考资源
 
 - [D3.js Gallery](https://observablehq.com/@d3/gallery)
-- [The Visual Display of Quantitative Information](https://www.edwardtufte.com/tufte/books_vdqi) — Tufte 经典
+- [The Visual Display of Quantitative Information](https://www.edwardtufte.com/tufte/books_vdqi) -- Tufte 经典
 - [Data Visualization Society](https://www.datavisualizationsociety.com/)
+- [D3.js API Reference](https://d3js.org/d3-shape) -- D3 官方 API 参考
+- [ECharts Documentation](https://echarts.apache.org/en/option.html) -- ECharts 配置项手册
+- [Observable Plot](https://observablehq.com/plot/) -- 声明式数据可视化
+- [Vega-Lite](https://vega.github.io/vega-lite/) -- 基于 JSON 的可视化语法
+- [WCAG 2.2 -- Non-Text Content](https://www.w3.org/WAI/WCAG22/Understanding/non-text-content) -- 无障碍图表规范
+- [Canvas API (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API) -- 2D 画布渲染权威文档
+- [WebGL Fundamentals](https://webglfundamentals.org/) -- WebGL 基础教程
+- [ColorBrewer 2.0](https://colorbrewer2.org/) -- 科学配色工具
+- [Data-Ink Ratio (Tufte)](https://www.edwardtufte.com/tufte/books_vdqi) -- 数据墨水比经典理论
 
 ---
 
@@ -174,7 +338,7 @@ resizeObserver.observe(container);
 - `pie-chart-angles.ts`
 - `scales.ts`
 
-> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
+> **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
 
 ## 核心理论深化
 
@@ -195,4 +359,4 @@ resizeObserver.observe(container);
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+> 理论深化更新：2026-04-29

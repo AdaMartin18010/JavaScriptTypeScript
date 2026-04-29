@@ -149,6 +149,93 @@ dai.on(filter, (from, to, amount, event) => {
 const events = await dai.queryFilter(filter, -10000); // 最近 10000 个区块
 ```
 
+### Multicall 批量读取（减少 RPC 调用）
+
+```typescript
+// multicall-batch.ts
+import { createPublicClient, http, multicall } from 'viem';
+import { mainnet } from 'viem/chains';
+
+const client = createPublicClient({ chain: mainnet, transport: http() });
+
+async function batchBalances(tokens: `0x${string}`[], owner: `0x${string}`) {
+  const results = await multicall({
+    client,
+    contracts: tokens.map((token) => ({
+      address: token,
+      abi: erc20Abi,
+      functionName: 'balanceOf',
+      args: [owner],
+    })),
+  });
+
+  return results.map((r, i) => ({
+    token: tokens[i],
+    balance: r.status === 'success' ? (r.result as bigint) : 0n,
+  }));
+}
+
+// 一次 RPC 调用获取 10 个代币余额
+const balances = await batchBalances(TOKEN_LIST, WALLET_ADDRESS);
+```
+
+### Gas 估算与交易优化
+
+```typescript
+// gas-estimation.ts
+import { ethers } from 'ethers';
+
+async function sendWithOptimizedGas(
+  contract: ethers.Contract,
+  method: string,
+  args: any[],
+  signer: ethers.Signer
+) {
+  // 估算 Gas Limit
+  const gasEstimate = await contract[method].estimateGas(...args);
+  const gasLimit = (gasEstimate * 120n) / 100n; // 增加 20% 缓冲
+
+  // 获取当前 Gas Price（EIP-1559）
+  const feeData = await signer.provider!.getFeeData();
+  const maxFeePerGas = feeData.maxFeePerGas! * 110n / 100n;
+  const maxPriorityFeePerGas = feeData.maxPriorityFeePerGas!;
+
+  const tx = await contract[method](...args, {
+    gasLimit,
+    maxFeePerGas,
+    maxPriorityFeePerGas,
+  });
+
+  return tx.wait();
+}
+```
+
+### 链上数据索引与解析
+
+```typescript
+// event-parser.ts
+import { decodeEventLog, parseAbiItem } from 'viem';
+
+const transferEvent = parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)');
+
+function parseTransferLogs(logs: any[]) {
+  return logs
+    .map((log) => {
+      try {
+        const decoded = decodeEventLog({ abi: [transferEvent], data: log.data, topics: log.topics });
+        return {
+          from: decoded.args.from,
+          to: decoded.args.to,
+          value: decoded.args.value,
+        };
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
+}
+```
+
 ## 关联模块
 
 - `83-blockchain-advanced` — 高级区块链（Layer 2、Rollup）
@@ -171,6 +258,10 @@ const events = await dai.queryFilter(filter, -10000); // 最近 10000 个区块
 | ERC-20 Token Standard | 规范 | [eips.ethereum.org/EIPS/eip-20](https://eips.ethereum.org/EIPS/eip-20) |
 | Solidity 官方文档 | 文档 | [docs.soliditylang.org](https://docs.soliditylang.org) |
 | Foundry 测试框架 | 工具 | [book.getfoundry.sh](https://book.getfoundry.sh) |
+| Ethereum JSON-RPC Specification | 规范 | [ethereum.github.io/execution-apis/api-documentation/](https://ethereum.github.io/execution-apis/api-documentation/) |
+| Alchemy Web3 SDK | 基础设施 | [docs.alchemy.com/reference/sdk](https://docs.alchemy.com/reference/sdk) |
+| Chainlist | RPC 节点列表 | [chainlist.org](https://chainlist.org/) |
+| DeFi Llama | 协议数据 | [defillama.com](https://defillama.com/) |
 
 ---
 

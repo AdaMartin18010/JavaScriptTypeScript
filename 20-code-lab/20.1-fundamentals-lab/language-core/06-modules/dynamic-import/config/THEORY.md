@@ -103,19 +103,172 @@ async function preloadModules(conditions: Record<string, boolean>) {
 }
 ```
 
-### 3.3 常见误区
+### 3.3 代码示例：Import Maps 与浏览器模块解析
+
+```typescript
+// import-map-config.html
+// <script type="importmap">
+// {
+//   "imports": {
+//     "vue": "https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.js",
+//     "lodash/": "https://cdn.jsdelivr.net/npm/lodash-es/"
+//   }
+// }
+// </script>
+
+// browser-dynamic-import.ts
+async function loadWithImportMap() {
+  // 浏览器原生支持 import map 时直接解析
+  const { createApp } = await import('vue');
+  const { debounce } = await import('lodash/debounce.js');
+
+  const app = createApp({
+    setup() {
+      const save = debounce((data: string) => {
+        console.log('Saving:', data);
+      }, 300);
+      return { save };
+    },
+  });
+  app.mount('#app');
+}
+```
+
+### 3.4 代码示例：Node.js ESM 互操作配置
+
+```typescript
+// node-esm-interop.ts
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
+
+const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// 在 ESM 中加载 CJS 包
+const legacyCjs = require('some-cjs-package');
+
+// 读取 package.json（ESM 中无 __dirname 时）
+import { readFileSync } from 'node:fs';
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8'));
+
+// 动态解析模块路径（用于插件系统）
+async function resolvePlugin(name: string): Promise<any> {
+  const resolved = await import.meta.resolve?.(name) ?? require.resolve(name);
+  return import(resolved);
+}
+```
+
+### 3.5 代码示例：Vite `import.meta.glob` 批量加载
+
+```typescript
+// vite-glob-patterns.ts
+
+// 批量加载组件（编译期扫描）
+const components = import.meta.glob('../../components/*.vue');
+// 结果：{ '../../components/Button.vue': () => import('./Button.vue'), ... }
+
+async function loadComponent(name: string) {
+  const matcher = `../../components/${name}.vue`;
+  const loader = components[matcher];
+  if (!loader) throw new Error(`Component ${name} not found`);
+  const module = await loader();
+  return module.default;
+}
+
+// 贪婪加载（直接导入所有模块，不推荐用于大量文件）
+const eagerModules = import.meta.glob('../../locales/*.json', { eager: true });
+// 结果：{ '../../locales/en.json': { default: {...} }, ... }
+
+// 带查询参数的导入
+const rawFiles = import.meta.glob('../../snippets/*', { as: 'raw' });
+// 以字符串形式返回文件内容
+
+// 类型安全的 glob（使用 Vite 客户端类型）
+/// <reference types="vite/client" />
+interface GlobModules {
+  [path: string]: () => Promise<{ default: unknown }>;
+}
+```
+
+### 3.6 代码示例：Webpack / Rspack Magic Comments
+
+```typescript
+// webpack-magic-comments.ts
+
+// 预加载关键分块
+const AdminPanel = lazy(() => import(
+  /* webpackChunkName: "admin" */
+  /* webpackPrefetch: true */
+  /* webpackPreload: true */
+  './AdminPanel'
+));
+
+// 动态上下文（条件加载一组模块）
+function loadLocaleData(locale: string) {
+  return import(
+    /* webpackInclude: /\.(json|js)$/ */
+    /* webpackExclude: /\_test\./ */
+    /* webpackChunkName: "locale-[request]" */
+    /* webpackMode: "lazy" */
+    `./locales/${locale}`
+  );
+}
+
+// 运行时上下文映射（用于微前端或插件系统）
+const context = require.context('./plugins', true, /\.plugin\.ts$/);
+const pluginModules = context.keys().map(context);
+```
+
+### 3.7 代码示例：Deno / Bun 原生动态导入
+
+```typescript
+// deno-dynamic-import.ts
+// Deno 原生支持 ESM 与 URL 导入
+const { serve } = await import('https://deno.land/std@0.200.0/http/server.ts');
+
+// Deno 权限控制下的条件加载
+if (Deno.permissions.querySync({ name: 'read', path: './config.ts' }).state === 'granted') {
+  const config = await import('./config.ts');
+  console.log(config.default);
+}
+
+// bun-dynamic-import.ts
+// Bun 支持同步 require 与异步 import 无缝混用
+const syncMod = require('./legacy.cjs'); // 同步
+const asyncMod = await import('./modern.ts'); // 异步
+
+// Bun 的模块解析缓存控制
+const freshMod = await import('./hot-reload.ts?bust=' + Date.now());
+```
+
+### 3.8 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | ESM 和 CJS 可以随意混用 | 互操作需要特定加载器和转换规则 |
 | 循环依赖会自动解决 | 循环依赖可能导致未初始化访问 |
+| `import()` 可以在模板字符串中任意拼接 | 大部分打包器要求模板字符串前缀可静态分析 |
+| 动态导入一定比静态导入好 | 动态导入失去编译时优化机会，应谨慎使用 |
 
-### 3.4 扩展阅读
+---
+
+## 四、扩展阅读
 
 - [MDN 动态 import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import)
+- [MDN：import.meta](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import.meta)
+- [MDN：JavaScript 模块](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 - [Vite：动态导入](https://vitejs.dev/guide/features.html#dynamic-import)
+- [Vite：Glob Import](https://vitejs.dev/guide/features.html#glob-import)
 - [Webpack：Module Methods — import()](https://webpack.js.org/api/module-methods/#import-1)
+- [Webpack：Magic Comments](https://webpack.js.org/api/module-methods/#magic-comments)
 - [Node.js ESM：import specifiers](https://nodejs.org/api/esm.html#import-specifiers)
+- [Node.js ESM：Interoperability with CommonJS](https://nodejs.org/api/esm.html#interoperability-with-commonjs)
+- [Node.js：createRequire](https://nodejs.org/api/module.html#modulecreaterequirefilename)
+- [Deno Manual: Modules](https://docs.deno.com/runtime/fundamentals/modules/) — Deno 模块系统指南
+- [Bun Docs: Runtime](https://bun.sh/docs/runtime/modules) — Bun 模块加载器
+- [Import Maps Proposal](https://github.com/WICG/import-maps) — WICG 标准提案
 - [ECMAScript® 2025 — Import Calls](https://tc39.es/ecma262/#sec-import-calls)
 - `10-fundamentals/10.1-language-semantics/06-modules/`
 

@@ -180,6 +180,53 @@ function WalletInfo() {
 }
 ```
 
+### 事件监听与日志解析
+
+```typescript
+// viem 事件监听
+import { parseAbiItem } from 'viem';
+
+const transferEvent = parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)');
+
+async function watchTransfers(tokenAddress: `0x${string}`) {
+  const unwatch = publicClient.watchEvent({
+    address: tokenAddress,
+    event: transferEvent,
+    onLogs: (logs) => {
+      for (const log of logs) {
+        console.log(`Transfer: ${log.args.from} -> ${log.args.to}: ${log.args.value}`);
+      }
+    },
+  });
+
+  // 取消监听
+  // unwatch();
+}
+```
+
+### SIWE (Sign-In with Ethereum) 认证
+
+```typescript
+import { SiweMessage } from 'siwe';
+
+function createSiweMessage(address: string, chainId: number, nonce: string) {
+  return new SiweMessage({
+    domain: 'example.com',
+    address,
+    statement: 'Sign in to Example App',
+    uri: 'https://example.com/login',
+    version: '1',
+    chainId,
+    nonce,
+  });
+}
+
+async function verifySiweSignature(message: SiweMessage, signature: string) {
+  const fields = await message.verify({ signature });
+  return fields.success;
+}
+```
+
 ---
 
 ## 与基础设施的边界
@@ -216,6 +263,14 @@ function WalletInfo() {
 | Hardhat | <https://hardhat.org/docs> | 以太坊开发环境 |
 | The Graph | <https://thegraph.com/docs/en/> | 去中心化索引协议 |
 | EVM OpCodes | <https://www.evm.codes/> | EVM 操作码参考 |
+| SIWE (EIP-4361) | <https://eips.ethereum.org/EIPS/eip-4361> | Sign-In with Ethereum 规范 |
+| OpenZeppelin Contracts | <https://docs.openzeppelin.com/contracts> | 安全智能合约库 |
+| Chainlink Data Feeds | <https://docs.chain.link/data-feeds> | 去中心化预言机 |
+| Alchemy API Reference | <https://docs.alchemy.com/reference> | Web3 基础设施 API |
+| MetaMask Docs | <https://docs.metamask.io/> | 钱包集成指南 |
+| Ethereum JSON-RPC Spec | <https://ethereum.github.io/execution-apis/api-documentation/> | 标准 RPC 接口 |
+| ERC-20 Token Standard | <https://eips.ethereum.org/EIPS/eip-20> | 同质化代币标准 |
+| ERC-721 NFT Standard | <https://eips.ethereum.org/EIPS/eip-721> | 非同质化代币标准 |
 
 ---
 

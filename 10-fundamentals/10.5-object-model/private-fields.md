@@ -86,9 +86,169 @@ c['_count'];           // ❌ undefined：不是命名约定
 
 ---
 
-## 四、内存模型分析
+## 四、代码示例：高级私有字段模式
 
-### 4.1 私有字段 vs WeakMap 封装
+### 4.1 品牌类型（Branded Types）运行时保护
+
+```typescript
+// brand-type.ts —— 使用私有字段实现零开销品牌类型
+
+type Brand<B> = { readonly __brand: B };
+type Branded<T, B> = T & Brand<B>;
+
+class UserId {
+  readonly #brand = 'UserId' as const;
+  constructor(readonly value: string) {}
+
+  static from(value: string): Branded<string, 'UserId'> {
+    return value as Branded<string, 'UserId'>;
+  }
+}
+
+class OrderId {
+  readonly #brand = 'OrderId' as const;
+  constructor(readonly value: string) {}
+}
+
+// 编译时 + 运行时双重保护
+function fetchUser(id: Branded<string, 'UserId'>) {
+  return fetch(`/api/users/${id}`);
+}
+
+const userId = UserId.from('123');
+const orderId = '456' as Branded<string, 'OrderId'>;
+
+fetchUser(userId);   // ✅ 通过
+// fetchUser(orderId); // ❌ 编译错误：类型不兼容
+```
+
+### 4.2 私有方法与静态块
+
+```javascript
+// private-methods.js —— ES2022 私有方法与静态初始化块
+
+class SecureStorage {
+  #data = new Map();
+  #encryptionKey;
+
+  // 静态私有字段
+  static #algorithm = 'AES-GCM';
+
+  // 静态块：类加载时执行一次性初始化
+  static {
+    if (!globalThis.crypto?.subtle) {
+      throw new Error('Web Crypto API not available');
+    }
+    console.log(`SecureStorage initialized with ${this.#algorithm}`);
+  }
+
+  constructor() {
+    this.#encryptionKey = this.#generateKey();
+  }
+
+  // 私有方法
+  async #generateKey() {
+    return crypto.subtle.generateKey(
+      { name: SecureStorage.#algorithm, length: 256 },
+      true,
+      ['encrypt', 'decrypt'],
+    );
+  }
+
+  async #encrypt(plaintext) {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ciphertext = await crypto.subtle.encrypt(
+      { name: SecureStorage.#algorithm, iv },
+      this.#encryptionKey,
+      new TextEncoder().encode(plaintext),
+    );
+    return { iv, ciphertext };
+  }
+
+  async set(key, value) {
+    const encrypted = await this.#encrypt(value);
+    this.#data.set(key, encrypted);
+  }
+
+  // 私有 getter
+  get #size() {
+    return this.#data.size;
+  }
+
+  get size() {
+    return this.#size;
+  }
+}
+
+const storage = new SecureStorage();
+await storage.set('token', 'secret-value');
+// storage.#encrypt('x'); // ❌ SyntaxError
+```
+
+### 4.3 组合多个私有字段实现状态机
+
+```typescript
+// state-machine.ts —— 私有字段封装状态转换逻辑
+
+type State = 'idle' | 'loading' | 'success' | 'error';
+
+class AsyncTask<T> {
+  #state: State = 'idle';
+  #result?: T;
+  #error?: Error;
+  #abortController = new AbortController();
+
+  get state(): State {
+    return this.#state;
+  }
+
+  get result(): T | undefined {
+    if (this.#state !== 'success') return undefined;
+    return this.#result;
+  }
+
+  async run(fn: (signal: AbortSignal) => Promise<T>): Promise<void> {
+    if (this.#state === 'loading') {
+      throw new Error('Task already running');
+    }
+
+    this.#state = 'loading';
+    this.#error = undefined;
+
+    try {
+      this.#result = await fn(this.#abortController.signal);
+      this.#state = 'success';
+    } catch (e) {
+      this.#error = e instanceof Error ? e : new Error(String(e));
+      this.#state = 'error';
+    }
+  }
+
+  cancel(): void {
+    this.#abortController.abort();
+    this.#abortController = new AbortController();
+  }
+
+  // 私有方法：状态转换的内部校验
+  #assertTransition(from: State, to: State): void {
+    const validTransitions: Record<State, State[]> = {
+      idle: ['loading'],
+      loading: ['success', 'error', 'idle'],
+      success: ['idle'],
+      error: ['idle'],
+    };
+    if (!validTransitions[from].includes(to)) {
+      throw new Error(`Invalid transition: ${from} -> ${to}`);
+    }
+  }
+}
+```
+
+---
+
+## 五、内存模型分析
+
+### 5.1 私有字段 vs WeakMap 封装
 
 ```javascript
 // WeakMap 模拟方案（ES2015-2021）
@@ -112,7 +272,7 @@ class Counter {
 | **子类访问** | 共享 WeakMap 可访问 | 词法隔离，不可访问 |
 | **内存** | WeakMap 本身占内存 | 内联在对象结构中 |
 
-### 4.2 V8 的内存布局优化
+### 5.2 V8 的内存布局优化
 
 V8 对私有字段的优化策略：
 
@@ -122,9 +282,9 @@ V8 对私有字段的优化策略：
 
 ---
 
-## 五、批判性注意
+## 六、批判性注意
 
-### 5.1 私有字段的局限性
+### 6.1 私有字段的局限性
 
 1. **不可从类外部访问，即使是测试代码**：
 
@@ -154,7 +314,7 @@ V8 对私有字段的优化策略：
    }
    ```
 
-### 5.2 与 Proxy 的交互
+### 6.2 与 Proxy 的交互
 
 **Proxy 无法拦截私有字段访问**。这是设计上的刻意选择：
 
@@ -177,7 +337,7 @@ proxy.#value;          // ❌ SyntaxError（外部访问）
 
 ---
 
-## 六、决策树：何时使用私有字段
+## 七、决策树：何时使用私有字段
 
 ```
 需要封装？
@@ -190,6 +350,21 @@ proxy.#value;          // ❌ SyntaxError（外部访问）
 │       └── → TypeScript private（编译期）
 └── 否 → 公开属性即可
 ```
+
+---
+
+## 八、权威参考链接
+
+- [ECMA-262 §15.7.3 Private Names](https://tc39.es/ecma262/#sec-private-names) — 私有字段规范定义
+- [Class Fields Proposal (TC39)](https://github.com/tc39/proposal-class-fields) — 私有字段语言提案仓库
+- [MDN: Private class features](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_properties) — MDN 私有属性文档
+- [MDN: Static initialization blocks](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks) — 静态块文档
+- [V8 Blog: Class fields performance](https://v8.dev/blog/fast-properties) — V8 属性访问与内存布局优化
+- [TypeScript Handbook: Classes](https://www.typescriptlang.org/docs/handbook/2/classes.html) — TypeScript 类与访问修饰符
+- [Can I Use: Class private fields](https://caniuse.com/mdn-javascript_classes_private_class_fields) — 浏览器兼容性矩阵
+- [JavaScript Engine Fundamentals: Shapes and Inline Caches](https://mathiasbynens.be/notes/shapes-ics) — Mathias Bynens 的 V8 对象模型详解
+- [2ality: JavaScript class fields](https://2ality.com/2022/06/class-fields.html) — Dr. Axel Rauschmayer 的私有字段深度解析
+- [WebKit Blog: Private class fields in JSC](https://webkit.org/blog/8479/release-notes-for-safari-technology-preview-98/) — Safari JavaScriptCore 私有字段实现
 
 ---
 

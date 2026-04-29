@@ -49,6 +49,107 @@ V8 是 Google 开源的高性能 JavaScript 与 WebAssembly 引擎，以 C++ 编
 
 ---
 
+### 2.4 代码示例：V8 隐藏类与 IC 的可观测行为
+
+```javascript
+// hidden-class-demo.js —— 观测 V8 Hidden Class 对性能的影响
+// 运行：node --allow-natives-syntax hidden-class-demo.js
+
+// 反模式：动态添加属性导致 Hidden Class 频繁切换
+function createPointBad(x, y) {
+  const p = {};
+  p.x = x;      // 创建 HiddenClass #1
+  p.y = y;      // 切换为 HiddenClass #2
+  return p;
+}
+
+// 最佳实践：一次性定义完整结构，保持 Hidden Class 稳定
+function createPointGood(x, y) {
+  return { x, y }; // 始终使用同一个 HiddenClass
+}
+
+// 基准对比
+console.time('bad');
+for (let i = 0; i < 1e6; i++) createPointBad(i, i);
+console.timeEnd('bad');
+
+console.time('good');
+for (let i = 0; i < 1e6; i++) createPointGood(i, i);
+console.timeEnd('good');
+// 典型结果：good 比 bad 快 2-5x
+```
+
+### 2.5 代码示例：内联缓存（IC）失效触发去优化
+
+```javascript
+// ic-deopt-demo.js —— 类型突变导致 TurboFan 去优化
+
+function sum(arr) {
+  let total = 0;
+  for (let i = 0; i < arr.length; i++) {
+    total += arr[i]; // 此处生成 IC，假设 arr[i] 为 Smi（小整数）
+  }
+  return total;
+}
+
+// 阶段 1：单态 IC（monomorphic）—— 最优
+const nums = [1, 2, 3, 4, 5];
+for (let i = 0; i < 1e5; i++) sum(nums);
+
+// 阶段 2：引入 double 导致 IC 变为多态（polymorphic）
+const mixed = [1, 2.5, 3, 4, 5];
+for (let i = 0; i < 1e5; i++) sum(mixed);
+
+// 阶段 3：引入字符串导致 IC 变为超态（megamorphic）—— 性能显著下降
+const messy = [1, '2', 3, 4, 5];
+for (let i = 0; i < 1e5; i++) sum(messy);
+
+// 使用 --trace-deopt 标志可观测去优化事件
+// node --trace-deopt ic-deopt-demo.js
+```
+
+### 2.6 代码示例：TurboFan 优化的极限情况
+
+```javascript
+// turbofan-limit.js —— 展示 TurboFan 的边界与优化策略
+
+// 情况 A：可优化 —— 确定性的属性访问路径
+function getNameA(user) {
+  return user.name; // 若 user 始终为 { name: string }，生成固定偏移访问
+}
+
+// 情况 B：难以优化 —— 动态键名导致字典查找
+function getPropB(obj, key) {
+  return obj[key]; // key 为变量，无法预测偏移，退化为哈希查找
+}
+
+// 情况 C：不可优化 —— 调用 eval / with
+function getPropC(obj) {
+  with (obj) {      // 词法环境动态化，TurboFan 完全放弃优化
+    return name;
+  }
+}
+
+// 最佳实践：帮助 TurboFan 做出正确假设
+const FAST_ARRAY = 0;
+const FAST_OBJECT = 1;
+
+function processUsers(users) {
+  // 前置校验帮助 V8 建立类型假设
+  if (!Array.isArray(users)) throw new TypeError('Expected array');
+
+  const result = new Array(users.length); // 预分配数组，避免动态扩容
+  for (let i = 0; i < users.length; i++) {
+    const user = users[i];
+    // 稳定属性访问模式 → 稳定 Hidden Class → 高效 IC
+    result[i] = { id: user.id, displayName: user.name };
+  }
+  return result;
+}
+```
+
+---
+
 ## 三、维度分析表：形式-工程-感知映射
 
 | 维度 | 形式层对象 | 工程层实现 | 感知层指标 | 2026 生态趋势 |
@@ -76,16 +177,60 @@ V8 是 Google 开源的高性能 JavaScript 与 WebAssembly 引擎，以 C++ 编
 
 ---
 
+## 五、代码示例：运行时基准测试实践
+
+```javascript
+// benchmark-runtime.js —— 可复现的运行时性能测量
+
+const { performance } = require('perf_hooks');
+
+function benchmark(name, fn, iterations = 1e6) {
+  // 预热 JIT
+  for (let i = 0; i < 1e4; i++) fn();
+
+  // 强制垃圾回收（Node.js --expose-gc）
+  if (global.gc) global.gc();
+
+  const start = performance.now();
+  for (let i = 0; i < iterations; i++) fn();
+  const duration = performance.now() - start;
+
+  console.log(`${name}: ${duration.toFixed(2)}ms (${(iterations / duration * 1000).toFixed(0)} ops/s)`);
+}
+
+// 基准 1：对象创建模式
+benchmark('Object literal', () => ({ x: 1, y: 2 }));
+benchmark('Object.create', () => Object.create(null, { x: { value: 1 }, y: { value: 2 } }));
+
+// 基准 2：属性访问模式
+const obj = { a: 1, b: 2, c: 3 };
+benchmark('Dot access', () => obj.a + obj.b + obj.c);
+
+// 基准 3：函数调用开销
+function add(a, b) { return a + b; }
+benchmark('Function call', () => add(1, 2));
+```
+
+---
+
 ## 五、权威链接
 
-- [ECMA-262 Specification](https://tc39.es/ecma262/)
-- [V8 Blog – Performance](https://v8.dev/blog)
-- [Node.js Release Schedule](https://nodejs.org/en/about/previous-releases)
-- [TypeScript 7.0 / Corsa Announcement](https://devblogs.microsoft.com/typescript/)
-- [Deno Documentation](https://docs.deno.com/)
-- [Bun Benchmarks & Documentation](https://bun.sh/)
-- [Web Vitals (INP, LCP)](https://web.dev/vitals/)
-- [WASM at the Edge](https://wasmcloud.com/)
+- [ECMA-262 Specification](https://tc39.es/ecma262/) — JavaScript 语言规范官方文本
+- [V8 Blog – Performance](https://v8.dev/blog) — V8 引擎官方技术博客与深度文章
+- [V8 Design Docs](https://v8.dev/docs) — V8 内部设计与实现文档
+- [Node.js Release Schedule](https://nodejs.org/en/about/previous-releases) — Node.js 发布周期与 LTS 日历
+- [TypeScript 7.0 / Corsa Announcement](https://devblogs.microsoft.com/typescript/) — 微软 TypeScript 官方博客
+- [Deno Documentation](https://docs.deno.com/) — Deno 2.x 运行时官方文档
+- [Bun Benchmarks & Documentation](https://bun.sh/) — Bun 运行时官方文档与基准
+- [Web Vitals (INP, LCP)](https://web.dev/vitals/) — Google Core Web Vitals 指南
+- [WASM at the Edge](https://wasmcloud.com/) — WebAssembly 边缘计算平台
+- [V8 Ignition Interpreter](https://v8.dev/blog/ignition-interpreter) — V8 字节码解释器设计
+- [V8 TurboFan](https://v8.dev/blog/turbofan-jit) — TurboFan JIT 编译器架构
+- [V8 Maglev](https://v8.dev/blog/maglev) — Maglev 快速优化编译器
+- [libuv Documentation](https://docs.libuv.org/) — Node.js 异步 I/O 库底层实现
+- [WebKit JSC Blog](https://webkit.org/blog/category/javascript/) — Safari JavaScriptCore 引擎技术博客
+- [SpiderMonkey Blog](https://spidermonkey.dev/) — Firefox JavaScript 引擎技术更新
+- [io_uring](https://kernel.dk/io_uring.pdf) — Linux 异步 I/O 接口论文（Node.js 性能提升基础）
 
 ---
 

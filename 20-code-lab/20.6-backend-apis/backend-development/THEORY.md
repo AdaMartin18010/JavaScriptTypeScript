@@ -17,6 +17,8 @@
 - 可以调用 next() 将控制权传递给下一个中间件
 - 应用：认证、日志、错误处理、压缩、CORS
 
+---
+
 ## 2. 认证授权体系
 
 ### 2.1 认证（Authentication）—— 确认你是谁
@@ -32,12 +34,16 @@
 - **ABAC**: 基于属性的访问控制（动态策略评估）
 - **ACL**: 访问控制列表（直接绑定用户与资源权限）
 
+---
+
 ## 3. 数据库访问模式
 
 - **Active Record**: 模型类直接包含 CRUD 方法
 - **Repository**: 数据访问逻辑封装在仓储层
 - **DAO**: 数据访问对象，更底层的数据库操作抽象
 - **Unit of Work**: 跟踪对象变更，批量提交事务
+
+---
 
 ## 4. API 设计范式对比
 
@@ -51,6 +57,8 @@
 | 浏览器原生支持 | 是 | 是 | 需 gRPC-Web 代理 | 是 |
 | 主要工具链 | Postman, OpenAPI, Swagger | GraphQL Playground, Apollo | protoc, grpcurl | Zod, React Query, Next.js |
 | 适用场景 | 通用 Web API | 复杂查询、聚合数据 | 微服务内部高性能通信 | 全栈 TypeScript 项目 |
+
+---
 
 ## 5. 代码示例
 
@@ -108,6 +116,109 @@ app.post('/api/items', async (req, reply) => {
 app.listen({ port: 3000 });
 ```
 
+### JWT 认证中间件
+
+```typescript
+import jwt from 'jsonwebtoken';
+import type { Request, Response, NextFunction } from 'express';
+
+const SECRET = process.env.JWT_SECRET ?? 'dev-secret';
+
+interface AuthenticatedRequest extends Request {
+  user?: { id: string; role: string };
+}
+
+export function authMiddleware(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) {
+  const header = req.headers.authorization;
+  if (!header?.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Missing token' });
+    return;
+  }
+
+  const token = header.slice(7);
+  try {
+    const payload = jwt.verify(token, SECRET) as { id: string; role: string };
+    req.user = payload;
+    next();
+  } catch {
+    res.status(403).json({ error: 'Invalid token' });
+  }
+}
+
+// 签发令牌
+export function signToken(userId: string, role: string): string {
+  return jwt.sign({ id: userId, role }, SECRET, { expiresIn: '2h' });
+}
+```
+
+### Zod 验证与类型安全请求
+
+```typescript
+import { z } from 'zod';
+import type { Request, Response, NextFunction } from 'express';
+
+const CreateUserSchema = z.object({
+  name: z.string().min(1).max(100),
+  email: z.string().email(),
+  age: z.number().int().min(0).optional(),
+});
+
+type CreateUserInput = z.infer<typeof CreateUserSchema>;
+
+export function validateBody<T>(schema: z.ZodSchema<T>) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.body);
+    if (!result.success) {
+      res.status(400).json({ errors: result.error.issues });
+      return;
+    }
+    req.body = result.data;
+    next();
+  };
+}
+
+// 使用
+app.post('/api/users', validateBody(CreateUserSchema), (req, res) => {
+  const body = req.body as CreateUserInput; // 已验证且类型安全
+  res.status(201).json({ id: crypto.randomUUID(), ...body });
+});
+```
+
+### Hono 边缘运行时路由
+
+```typescript
+import { Hono } from 'hono';
+import { bearerAuth } from 'hono/bearer-auth';
+
+const app = new Hono();
+
+// 中间件：CORS + 日志
+app.use('*', async (c, next) => {
+  c.header('Access-Control-Allow-Origin', '*');
+  const start = Date.now();
+  await next();
+  console.log(`${c.req.method} ${c.req.path} — ${Date.now() - start}ms`);
+});
+
+// 受保护路由
+app.use('/api/admin/*', bearerAuth({ token: process.env.ADMIN_TOKEN! }));
+
+app.get('/api/health', (c) => c.json({ status: 'ok', timestamp: Date.now() }));
+
+app.post('/api/echo', async (c) => {
+  const body = await c.req.json();
+  return c.json(body);
+});
+
+export default app;
+```
+
+---
+
 ## 6. 权威外部链接
 
 - [Node.js 官方文档](https://nodejs.org/api/)
@@ -117,6 +228,13 @@ app.listen({ port: 3000 });
 - [GraphQL 官方学习文档](https://graphql.org/learn/)
 - [gRPC 官方文档](https://grpc.io/docs/)
 - [tRPC 文档](https://trpc.io/docs)
+- [Hono 文档](https://hono.dev/docs)
+- [Zod 文档](https://zod.dev/)
+- [JWT.io — JSON Web Tokens 介绍](https://jwt.io/introduction)
+- [MDN — HTTP Authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication)
+- [OWASP — Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
+- [RFC 9110 — HTTP Semantics](https://www.rfc-editor.org/rfc/rfc9110.html)
+- [Node.js — stream 模块](https://nodejs.org/api/stream.html)
 
 ## 7. 与相邻模块的关系
 

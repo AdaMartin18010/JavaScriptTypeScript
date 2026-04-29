@@ -16,6 +16,7 @@ created: 2026-04-28
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 96-orm-modern-lab.test.ts
@@ -77,6 +78,91 @@ const adapter = new PrismaNeon(pool);
 const prisma = new PrismaClient({ adapter });
 ```
 
+### Drizzle 关系查询与聚合
+
+```typescript
+// drizzle-query-patterns.ts
+import { pgTable, serial, varchar, integer, timestamp, text } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
+import { eq, desc, sql, count } from 'drizzle-orm';
+
+export const posts = pgTable('posts', {
+  id: serial('id').primaryKey(),
+  title: varchar('title', { length: 255 }).notNull(),
+  authorId: integer('author_id').notNull(),
+  publishedAt: timestamp('published_at'),
+  content: text('content'),
+});
+
+export const postsRelations = relations(posts, ({ one }) => ({
+  author: one(users, { fields: [posts.authorId], references: [users.id] }),
+}));
+
+// 动态条件构建
+function buildPostQuery(filters: { authorId?: number; keyword?: string }) {
+  const conditions = [];
+  if (filters.authorId !== undefined) conditions.push(eq(posts.authorId, filters.authorId));
+  if (filters.keyword) conditions.push(sql`${posts.title} ILIKE ${`%${filters.keyword}%`}`);
+
+  return db
+    .select()
+    .from(posts)
+    .where(conditions.length ? sql.join(conditions, sql` AND `) : undefined)
+    .orderBy(desc(posts.publishedAt))
+    .limit(20);
+}
+
+// 聚合查询：每个作者的文章数
+const postCountByAuthor = await db
+  .select({ authorId: posts.authorId, total: count(posts.id) })
+  .from(posts)
+  .groupBy(posts.authorId);
+```
+
+### Turso (libSQL) 边缘连接
+
+```typescript
+// turso-connection.ts
+import { createClient } from '@libsql/client/web';
+import { drizzle } from 'drizzle-orm/libsql';
+
+const client = createClient({
+  url: process.env.TURSO_DATABASE_URL!,
+  authToken: process.env.TURSO_AUTH_TOKEN!,
+});
+
+const db = drizzle(client);
+
+// 在 Cloudflare Worker / Vercel Edge 中使用
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const edgeClient = createClient({
+      url: env.TURSO_DATABASE_URL,
+      authToken: env.TURSO_AUTH_TOKEN,
+    });
+    const edgeDb = drizzle(edgeClient);
+    const allUsers = await edgeDb.select().from(users);
+    return Response.json(allUsers);
+  },
+};
+```
+
+### Prisma Accelerate 连接池
+
+```typescript
+// prisma-accelerate.ts — 边缘环境中的连接池与缓存
+import { PrismaClient } from '@prisma/client/edge';
+import { withAccelerate } from '@prisma/extension-accelerate';
+
+const prisma = new PrismaClient({
+  datasourceUrl: process.env.DATABASE_URL,
+}).$extends(withAccelerate());
+
+// 查询缓存策略
+const cachedUsers = await prisma.user.findMany({
+  cacheStrategy: { ttl: 60, swr: 300 }, // 60s TTL, 300s stale-while-revalidate
+});
+```
 
 ## 学习资源
 
@@ -88,6 +174,11 @@ const prisma = new PrismaClient({ adapter });
 | Prisma Docs | 官方文档 | [prisma.io/docs](https://www.prisma.io/docs) |
 | Turso (libSQL) | 官方文档 | [turso.tech](https://turso.tech/) |
 | Edge Database Decision Guide | 社区指南 | [vercel.com/docs/storage](https://vercel.com/docs/storage) |
+| SQLite on the Edge | 文章 | [blog.cloudflare.com/sqlite-in-durable-objects](https://blog.cloudflare.com/sqlite-in-durable-objects/) |
+| Neon Serverless Driver | 文档 | [neon.tech/docs/serverless/serverless-driver](https://neon.tech/docs/serverless/serverless-driver) |
+| Kysely — Type-safe SQL Query Builder | 文档 | [kysely.dev](https://kysely.dev/) |
+| Prisma Accelerate | 文档 | [prisma.io/data-platform/accelerate](https://www.prisma.io/data-platform/accelerate) |
+| libSQL 架构文档 | 文档 | [github.com/tursodatabase/libsql](https://github.com/tursodatabase/libsql) |
 
 ---
 

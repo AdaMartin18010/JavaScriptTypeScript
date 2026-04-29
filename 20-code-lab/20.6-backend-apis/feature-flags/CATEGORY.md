@@ -16,6 +16,7 @@ created: 2026-04-28
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 README.md
@@ -94,7 +95,7 @@ class PercentageRollout {
     const hash = createHash('sha256')
       .update(`${flag}:${config.salt}:${key}`)
       .digest('hex');
-    
+
     // 取前 8 位 hex 转数字，映射到 0-9999
     const bucket = parseInt(hash.slice(0, 8), 16) % 10000;
     const threshold = config.percentage * 100;
@@ -209,6 +210,102 @@ async function getDashboard(ctx: { userId: string; betaGroup: boolean }) {
 }
 ```
 
+## 代码示例：Express 中间件中的特性开关
+
+```typescript
+// feature-flag-middleware.ts — 基于特性的路由拦截与渲染分支
+import { Request, Response, NextFunction } from 'express';
+
+interface FeatureFlagMiddlewareOptions {
+  flagSystem: FeatureFlagSystem;
+  fallbackHandler?: (req: Request, res: Response) => void;
+}
+
+export function featureFlagMiddleware(
+  flag: string,
+  options: FeatureFlagMiddlewareOptions
+) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const ctx = {
+      userId: req.user?.id ?? req.ip ?? 'anonymous',
+      region: req.headers['x-region'] as string,
+      betaGroup: req.user?.betaGroup,
+    };
+
+    if (options.flagSystem.isEnabled(flag, ctx)) {
+      // 在响应头中注入 flag 状态，便于前端知晓
+      res.setHeader('X-Feature-Flag', `${flag}=enabled`);
+      return next();
+    }
+
+    if (options.fallbackHandler) {
+      return options.fallbackHandler(req, res);
+    }
+
+    res.status(404).json({ error: 'Feature not available' });
+  };
+}
+
+// 使用示例
+app.get('/api/v2/analytics',
+  featureFlagMiddleware('v2-analytics', { flagSystem: flags }),
+  async (req, res) => {
+    const data = await getV2Analytics();
+    res.json(data);
+  }
+);
+```
+
+## 代码示例：多规则组合 targeting 引擎
+
+```typescript
+// feature-flag-system.ts — 复杂规则组合：与、或、非
+interface TargetingRule {
+  type: 'and' | 'or' | 'not' | 'eq' | 'in' | 'gt' | 'lt' | 'regex';
+  field?: string;
+  value?: unknown;
+  rules?: TargetingRule[];
+}
+
+class TargetingEngine {
+  evaluate(rule: TargetingRule, context: Record<string, unknown>): boolean {
+    switch (rule.type) {
+      case 'and':
+        return rule.rules?.every(r => this.evaluate(r, context)) ?? true;
+      case 'or':
+        return rule.rules?.some(r => this.evaluate(r, context)) ?? false;
+      case 'not':
+        return !this.evaluate(rule.rules![0], context);
+      case 'eq':
+        return context[rule.field!] === rule.value;
+      case 'in':
+        return (rule.value as unknown[]).includes(context[rule.field!]);
+      case 'gt':
+        return Number(context[rule.field!]) > Number(rule.value);
+      case 'lt':
+        return Number(context[rule.field!]) < Number(rule.value);
+      case 'regex':
+        return new RegExp(rule.value as string).test(String(context[rule.field!]));
+      default:
+        return false;
+    }
+  }
+}
+
+// 使用示例：仅对北美付费用户在周末开放功能
+const rule: TargetingRule = {
+  type: 'and',
+  rules: [
+    { type: 'eq', field: 'region', value: 'NA' },
+    { type: 'eq', field: 'plan', value: 'premium' },
+    { type: 'in', field: 'dayOfWeek', value: [0, 6] }, // 周日、周六
+  ],
+};
+
+const engine = new TargetingEngine();
+console.log(engine.evaluate(rule, { region: 'NA', plan: 'premium', dayOfWeek: 0 })); // true
+```
+
 
 ## 学习资源
 
@@ -224,6 +321,10 @@ async function getDashboard(ctx: { userId: string; betaGroup: boolean }) {
 | Split.io Feature Flags | 文档 | [help.split.io/hc/en-us](https://help.split.io/hc/en-us) |
 | Flagsmith | 开源特性管理 | [docs.flagsmith.com](https://docs.flagsmith.com/) |
 | Google Growth Platform — Experimentation | 指南 | [developers.google.com/google-play/console/guides/experiments](https://developers.google.com/google-play/console/guides/experiments) |
+| PostHog Feature Flags | 文档 | [posthog.com/docs/feature-flags](https://posthog.com/docs/feature-flags) |
+| GitHub — Feature Flags in Development | 指南 | [github.blog/engineering/engineering-practices/deploying-branch-prediction-models](https://github.blog/engineering/engineering-practices/deploying-branch-prediction-models/) |
+| CNCF — OpenFeature Specification | 规范 | [openfeature.dev/specification](https://openfeature.dev/specification/) |
+| GrowthBook Documentation | 文档 | [docs.growthbook.io](https://docs.growthbook.io/) |
 
 ---
 

@@ -108,7 +108,143 @@ function Page() {
 - **CSS contain**: 隔离布局影响范围
 - **content-visibility**: 延迟视口外元素渲染
 
-## 6. 与相邻模块的关系
+## 6. 代码示例：避免 Layout Thrashing
+
+```typescript
+// layout-thrashing.ts — 读写分离，批量操作
+
+// ❌ 错误：交替读写触发强制同步布局（Forced Synchronous Layout）
+function badUpdate(items: HTMLElement[]) {
+  items.forEach(el => {
+    const height = el.offsetHeight;        // 读（触发重排）
+    el.style.height = `${height * 2}px`;   // 写
+  });
+}
+
+// ✅ 正确：先读后写，批量操作
+function goodUpdate(items: HTMLElement[]) {
+  const heights = items.map(el => el.offsetHeight); // 批量读
+  items.forEach((el, i) => {
+    el.style.height = `${heights[i] * 2}px`;        // 批量写
+  });
+}
+
+// ✅ 更优：使用 requestAnimationFrame 合并到下一帧
+function rafUpdate(items: HTMLElement[]) {
+  requestAnimationFrame(() => {
+    const heights = items.map(el => el.getBoundingClientRect().height);
+    requestAnimationFrame(() => {
+      items.forEach((el, i) => {
+        el.style.height = `${heights[i] * 2}px`;
+      });
+    });
+  });
+}
+```
+
+## 7. 代码示例：IntersectionObserver 虚拟滚动
+
+```typescript
+// virtual-scroll.ts — 长列表渲染优化
+
+interface VirtualScrollOptions {
+  itemHeight: number;
+  containerHeight: number;
+  overscan?: number;
+}
+
+export function createVirtualScroller<T>(
+  container: HTMLElement,
+  items: T[],
+  renderItem: (item: T, index: number) => HTMLElement,
+  options: VirtualScrollOptions
+) {
+  const { itemHeight, containerHeight, overscan = 3 } = options;
+  const totalHeight = items.length * itemHeight;
+  const visibleCount = Math.ceil(containerHeight / itemHeight);
+
+  const spacer = document.createElement('div');
+  spacer.style.height = `${totalHeight}px`;
+  spacer.style.position = 'relative';
+
+  const viewport = document.createElement('div');
+  viewport.style.position = 'absolute';
+  viewport.style.top = '0';
+  viewport.style.left = '0';
+  viewport.style.right = '0';
+
+  spacer.appendChild(viewport);
+  container.appendChild(spacer);
+
+  let renderedRange = { start: -1, end: -1 };
+
+  function updateViewport(scrollTop: number) {
+    const startIdx = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
+    const endIdx = Math.min(items.length, startIdx + visibleCount + overscan * 2);
+
+    if (startIdx === renderedRange.start && endIdx === renderedRange.end) return;
+    renderedRange = { start: startIdx, end: endIdx };
+
+    viewport.innerHTML = '';
+    viewport.style.transform = `translateY(${startIdx * itemHeight}px)`;
+
+    for (let i = startIdx; i < endIdx; i++) {
+      viewport.appendChild(renderItem(items[i], i));
+    }
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        updateViewport(container.scrollTop);
+      }
+    });
+  });
+  observer.observe(spacer);
+
+  container.addEventListener('scroll', () => updateViewport(container.scrollTop));
+  updateViewport(0);
+
+  return { destroy: () => observer.disconnect() };
+}
+```
+
+## 8. 代码示例：CSS Contain 与 content-visibility
+
+```typescript
+// css-contain.ts — 隔离布局影响，提升大规模列表性能
+
+export function injectContainStyles(): void {
+  const style = document.createElement('style');
+  style.textContent = `
+    .contain-layout {
+      contain: layout; /* 元素布局不影响外部 */
+    }
+    .contain-strict {
+      contain: strict; /* layout + style + paint + size */
+    }
+    .content-visibility-auto {
+      content-visibility: auto;
+      contain-intrinsic-size: auto 300px; /* 占位高度，防止滚动条抖动 */
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// React 中使用 CSS Contain 的列表项组件示例
+/*
+function ListItem({ data }: { data: ItemData }) {
+  return (
+    <article style={{ contain: 'content' }}>
+      <h3>{data.title}</h3>
+      <p>{data.description}</p>
+    </article>
+  );
+}
+*/
+```
+
+## 9. 与相邻模块的关系
 
 - **18-frontend-frameworks**: 框架的渲染策略
 - **50-browser-runtime**: 浏览器运行时架构
@@ -120,3 +256,14 @@ function Page() {
 - [Next.js Rendering Documentation](https://nextjs.org/docs/app/building-your-application/rendering)
 - [React Server Components RFC](https://github.com/reactjs/rfcs/blob/main/text/0188-server-components.md)
 - [The App Router Playbook — Vercel](https://vercel.com/blog/understanding-react-server-components)
+- [web.dev — Avoid large, complex layouts and layout thrashing](https://web.dev/articles/avoid-large-complex-layouts-and-layout-thrashing)
+- [MDN — CSS contain](https://developer.mozilla.org/en-US/docs/Web/CSS/contain)
+- [MDN — content-visibility](https://developer.mozilla.org/en-US/docs/Web/CSS/content-visibility)
+- [CSS Triggers — Layout/Paint/Composite 参考](https://csstriggers.com/)
+- [Chrome DevTools — Performance Analysis](https://developer.chrome.com/docs/devtools/performance/)
+- [web.dev — The Science of Web Fonts](https://web.dev/articles/font-best-practices)
+- [Google — Critical Rendering Path](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains/)
+
+---
+
+*本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

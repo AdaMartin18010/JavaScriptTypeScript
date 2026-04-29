@@ -16,6 +16,7 @@ created: 2026-04-28
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 README.md
@@ -87,6 +88,168 @@ export function injectThemeCSSVariables(theme: typeof tokens): void {
 }
 ```
 
+## 代码示例：类型安全的组件变体生成器（cva 风格）
+
+```typescript
+// component-variants.ts — 受 class-variance-authority 启发的变体系统
+
+type VariantConfig<V extends Record<string, Record<string, string>>> = {
+  base: string;
+  variants: V;
+  defaultVariants?: { [K in keyof V]?: keyof V[K] };
+};
+
+type VariantProps<V extends Record<string, Record<string, string>>> = {
+  [K in keyof V]?: keyof V[K];
+};
+
+export function createVariants<V extends Record<string, Record<string, string>>>(
+  config: VariantConfig<V>
+) {
+  return (props?: VariantProps<V>): string => {
+    const classes: string[] = [config.base];
+
+    for (const [key, value] of Object.entries(config.variants)) {
+      const selected = (props?.[key] ?? config.defaultVariants?.[key]) as string;
+      if (selected && config.variants[key][selected]) {
+        classes.push(config.variants[key][selected]);
+      }
+    }
+
+    return classes.join(' ');
+  };
+}
+
+// 使用
+const button = createVariants({
+  base: 'inline-flex items-center justify-center font-medium transition-colors',
+  variants: {
+    intent: {
+      primary: 'bg-blue-600 text-white hover:bg-blue-700',
+      secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300',
+      danger: 'bg-red-600 text-white hover:bg-red-700',
+    },
+    size: {
+      sm: 'px-3 py-1.5 text-sm',
+      md: 'px-4 py-2 text-base',
+      lg: 'px-6 py-3 text-lg',
+    },
+  },
+  defaultVariants: { intent: 'primary', size: 'md' },
+});
+
+// 类型推断确保 IDE 自动补全
+const className = button({ intent: 'danger', size: 'lg' });
+// => "inline-flex items-center ... bg-red-600 text-white hover:bg-red-700 px-6 py-3 text-lg"
+```
+
+## 代码示例：CSS-in-JS 主题注入 + 暗色模式
+
+```typescript
+// css-in-js-generator.ts — 零运行时开销的样式生成
+
+export interface Theme {
+  colors: Record<string, string>;
+  spacing: Record<string, string>;
+}
+
+export function generateCSSVariables(theme: Theme, prefix = 'ds'): string {
+  const lines: string[] = [`:root {`];
+
+  for (const [category, values] of Object.entries(theme)) {
+    for (const [key, value] of Object.entries(values)) {
+      lines.push(`  --${prefix}-${category}-${key}: ${value};`);
+    }
+  }
+
+  lines.push('}');
+  return lines.join('\n');
+}
+
+export function generateDarkModeVariables(
+  darkTheme: Theme,
+  prefix = 'ds'
+): string {
+  const lines: string[] = [`@media (prefers-color-scheme: dark) {`, `  :root {`];
+
+  for (const [category, values] of Object.entries(darkTheme)) {
+    for (const [key, value] of Object.entries(values)) {
+      lines.push(`    --${prefix}-${category}-${key}: ${value};`);
+    }
+  }
+
+  lines.push('  }', '}');
+  return lines.join('\n');
+}
+
+// 使用：在构建时生成静态 CSS
+const lightTheme: Theme = {
+  colors: { bg: '#ffffff', text: '#111827', border: '#e5e7eb' },
+  spacing: { sm: '0.5rem', md: '1rem' },
+};
+
+const darkTheme: Theme = {
+  colors: { bg: '#111827', text: '#f9fafb', border: '#374151' },
+  spacing: lightTheme.spacing,
+};
+
+const css = [
+  generateCSSVariables(lightTheme),
+  generateDarkModeVariables(darkTheme),
+].join('\n');
+```
+
+## 代码示例：SVG Icon System 与树摇优化
+
+```typescript
+// icon-system.ts — 类型安全的图标系统，支持按需加载
+
+export const icons = {
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 6L9 17l-5-5"/></svg>',
+  cross: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+  arrowRight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M12 5l7 7-7 7"/></svg>',
+} as const;
+
+export type IconName = keyof typeof icons;
+
+export function renderIcon(
+  name: IconName,
+  attrs: Record<string, string> = {}
+): SVGSVGElement {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(icons[name], 'image/svg+xml');
+  const svg = doc.documentElement as unknown as SVGSVGElement;
+
+  for (const [k, v] of Object.entries(attrs)) {
+    svg.setAttribute(k, v);
+  }
+
+  if (!svg.hasAttribute('aria-hidden') && !svg.hasAttribute('aria-label')) {
+    svg.setAttribute('aria-hidden', 'true');
+  }
+
+  return svg;
+}
+
+// 批量注册自定义元素（Web Components 方式）
+export function defineIconElements(): void {
+  customElements.define('ds-icon', class extends HTMLElement {
+    static get observedAttributes() { return ['name', 'size']; }
+
+    attributeChangedCallback() {
+      const name = this.getAttribute('name') as IconName;
+      const size = this.getAttribute('size') || '1em';
+      if (name && icons[name]) {
+        this.innerHTML = icons[name];
+        const svg = this.querySelector('svg')!;
+        svg.style.width = size;
+        svg.style.height = size;
+      }
+    }
+  });
+}
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -96,6 +259,11 @@ export function injectThemeCSSVariables(theme: typeof tokens): void {
 | Tailwind CSS — Customizing | 主题系统设计参考 | [tailwindcss.com/docs/theme](https://tailwindcss.com/docs/theme) |
 | MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
 | web.dev | 指南 | [web.dev](https://web.dev) |
+| class-variance-authority (cva) | 变体管理库 | [cva.style](https://cva.style/) |
+| Stitches — CSS-in-JS | 样式库设计 | [stitches.dev](https://stitches.dev/) |
+| W3C — CSS Custom Properties | 规范 | [w3.org/TR/css-variables-1](https://www.w3.org/TR/css-variables-1/) |
+| Nate Baldwin — Design Tokens 术语 | 参考 | [medium.com/eightshapes-llc](https://medium.com/eightshapes-llc/naming-tokens-in-design-systems-9e86c7444746) |
+| Google Material Design 3 | 设计系统参考 | [m3.material.io](https://m3.material.io/) |
 
 ---
 

@@ -112,6 +112,78 @@ await pipelineAsync(
 );
 ```
 
+#### 显式背压处理
+
+```typescript
+import { createReadStream, createWriteStream } from 'fs';
+
+const readable = createReadStream('large-file.bin');
+const writable = createWriteStream('copy.bin');
+
+readable.on('data', (chunk) => {
+  const canContinue = writable.write(chunk);
+  if (!canContinue) {
+    // 写入缓冲区满，暂停读取直到 drain
+    readable.pause();
+    writable.once('drain', () => readable.resume());
+  }
+});
+
+readable.on('end', () => writable.end());
+```
+
+#### Web Streams：TransformStream 与压缩
+
+```typescript
+async function compressStream(source: ReadableStream<Uint8Array>) {
+  const cs = new CompressionStream('gzip');
+  return source.pipeThrough(cs);
+}
+
+// 下载并实时压缩
+const response = await fetch('/api/large-export.csv');
+const compressed = await compressStream(response.body!);
+const reader = compressed.getReader();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  // value: Uint8Array (gzip 压缩后的数据块)
+  await writeChunkToDisk(value);
+}
+```
+
+#### 异步生成器组合流
+
+```typescript
+async function* mapStream<T, R>(
+  source: AsyncIterable<T>,
+  transform: (item: T) => R
+): AsyncGenerator<R> {
+  for await (const item of source) {
+    yield transform(item);
+  }
+}
+
+async function* filterStream<T>(
+  source: AsyncIterable<T>,
+  predicate: (item: T) => boolean
+): AsyncGenerator<T> {
+  for await (const item of source) {
+    if (predicate(item)) yield item;
+  }
+}
+
+// 组合使用
+const numbers = ReadableStream.from([1, 2, 3, 4, 5, 6]);
+const doubled = mapStream(numbers, (n) => n * 2);
+const evens = filterStream(doubled, (n) => n % 4 === 0);
+
+for await (const n of evens) {
+  console.log(n); // 4, 8, 12
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -126,6 +198,11 @@ await pipelineAsync(
 - [Backpressure in Node.js](https://nodejs.org/en/learn/modules/backpressuring-in-streams)
 - [WHATWG Streams Standard](https://streams.spec.whatwg.org/)
 - [RxJS — Understanding Streams](https://rxjs.dev/guide/observable)
+- [Node.js stream.finished](https://nodejs.org/api/stream.html#streamfinishedstream-options-callback)
+- [Web Streams — ReadableStream](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream)
+- [Node.js — stream.pipeline](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-callback)
+- [Compression Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API)
+- [Async Iterators — TC39 Proposal](https://github.com/tc39/proposal-async-iteration)
 - `20.3-concurrency-async/concurrency/`
 
 ---

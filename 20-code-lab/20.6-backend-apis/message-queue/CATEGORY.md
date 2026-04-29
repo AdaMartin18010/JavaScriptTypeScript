@@ -10,12 +10,19 @@ created: 2026-04-28
 
 ## 包含内容
 
-- 本模块聚焦 message queue 核心概念与工程实践。
+- **消息代理核心**：发布/订阅模式、路由键、交换机类型（direct/topic/fanout/headers）。
+- **消费者组与负载均衡**：分区分配策略（range/round-robin/sticky）、再平衡协议、背压控制。
+- **死信队列与重试策略**：最大重试次数、指数退避、 poison-pill 处理。
+- **延迟队列与定时投递**：基于 TTL + DLX、基于优先级队列、基于时间轮算法。
+- **优先级队列调度**：加权优先级、饥饿预防、多级反馈队列。
+- **流式消息处理**：有序消费、窗口聚合、exactly-once 语义。
+- **任务队列与异步执行**：BullMQ 工作流、任务幂等性、速率限制。
 
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 README.md
@@ -80,6 +87,162 @@ async function dequeue(queue: string) {
 }
 ```
 
+### BullMQ 任务队列（含重试与死信）
+
+```typescript
+import { Queue, Worker, Job } from 'bullmq';
+import IORedis from 'ioredis';
+
+const connection = new IORedis({ maxRetriesPerRequest: null });
+
+// 生产者
+const emailQueue = new Queue('email', { connection });
+await emailQueue.add('send-welcome', { userId: 'u123', email: 'a@b.com' }, {
+  attempts: 3,
+  backoff: { type: 'exponential', delay: 2000 },
+  priority: 10,
+});
+
+// 消费者
+const worker = new Worker('email', async (job: Job) => {
+  console.log(`Processing job ${job.id} attempt ${job.attemptsMade + 1}`);
+  await sendEmail(job.data);
+}, { connection, concurrency: 5 });
+
+// 死信监听器
+worker.on('failed', (job, err) => {
+  if (job && job.attemptsMade >= (job.opts.attempts ?? 1)) {
+    console.error(`Job ${job.id} moved to DLQ after max retries`, err);
+    // 持久化到 DLQ 存储
+  }
+});
+```
+
+### RabbitMQ Topic 路由（amqplib）
+
+```typescript
+import amqp from 'amqplib';
+
+const conn = await amqp.connect('amqp://localhost');
+const ch = await conn.createChannel();
+
+const exchange = 'orders.topic';
+await ch.assertExchange(exchange, 'topic', { durable: true });
+
+// 发布者：按路由键发送订单事件
+ch.publish(exchange, 'order.created.us', Buffer.from(JSON.stringify({ orderId: 'O1' })));
+ch.publish(exchange, 'order.shipped.eu', Buffer.from(JSON.stringify({ orderId: 'O2' })));
+
+// 消费者：订阅所有美国订单事件
+const q = await ch.assertQueue('', { exclusive: true });
+await ch.bindQueue(q.queue, exchange, 'order.*.us');
+ch.consume(q.queue, (msg) => {
+  if (msg) {
+    console.log('Received:', msg.fields.routingKey, msg.content.toString());
+    ch.ack(msg);
+  }
+});
+```
+
+### Kafka 消费者组（kafkajs）
+
+```typescript
+import { Kafka, EachMessagePayload } from 'kafkajs';
+
+const kafka = new Kafka({ clientId: 'payment-service', brokers: ['kafka:9092'] });
+const consumer = kafka.consumer({ groupId: 'payment-processor' });
+
+await consumer.connect();
+await consumer.subscribe({ topic: 'payments', fromBeginning: false });
+
+await consumer.run({
+  autoCommit: false,
+  eachMessage: async ({ topic, partition, message }: EachMessagePayload) => {
+    const payload = JSON.parse(message.value?.toString() ?? '{}');
+    await processPayment(payload);
+    // 手动提交偏移量，实现 at-least-once 语义
+    await consumer.commitOffsets([{
+      topic,
+      partition,
+      offset: (Number(message.offset) + 1).toString(),
+    }]);
+  },
+});
+```
+
+### AWS SQS 标准队列消费者
+
+```typescript
+import { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } from '@aws-sdk/client-sqs';
+
+const sqs = new SQSClient({ region: 'us-east-1' });
+const queueUrl = process.env.SQS_QUEUE_URL!;
+
+async function poll() {
+  const { Messages } = await sqs.send(new ReceiveMessageCommand({
+    QueueUrl: queueUrl,
+    MaxNumberOfMessages: 10,
+    WaitTimeSeconds: 20, // 长轮询
+    VisibilityTimeout: 60,
+  }));
+
+  for (const msg of Messages ?? []) {
+    try {
+      await handleMessage(JSON.parse(msg.Body!));
+      await sqs.send(new DeleteMessageCommand({ QueueUrl: queueUrl, ReceiptHandle: msg.ReceiptHandle! }));
+    } catch (err) {
+      console.error('Processing failed, message will retry after visibility timeout', err);
+    }
+  }
+}
+
+setInterval(poll, 1000);
+```
+
+### 基于 Redis Streams 的延迟队列
+
+```typescript
+import { createClient } from 'redis';
+
+const redis = createClient({ url: process.env.REDIS_URL });
+await redis.connect();
+
+const STREAM_KEY = 'delayed:tasks';
+const CONSUMER_GROUP = 'workers';
+
+// 生产者：发布带延迟的任务
+async function scheduleTask(task: object, delayMs: number) {
+  const id = await redis.xAdd(STREAM_KEY, '*', {
+    payload: JSON.stringify(task),
+    executeAt: (Date.now() + delayMs).toString(),
+  });
+  return id;
+}
+
+// 消费者：只处理到达执行时间的消息
+async function processDueTasks() {
+  const now = Date.now();
+  const messages = await redis.xReadGroup(
+    CONSUMER_GROUP, 'worker-1',
+    { key: STREAM_KEY, id: '>' },
+    { COUNT: 100, BLOCK: 5000 }
+  );
+
+  for (const stream of messages ?? []) {
+    for (const msg of stream.messages) {
+      const executeAt = Number(msg.message.executeAt);
+      if (executeAt > now) {
+        // 未到时间，放回流中（或 ack 后重新 schedule）
+        await redis.xAck(STREAM_KEY, CONSUMER_GROUP, msg.id);
+        await scheduleTask(JSON.parse(msg.message.payload), executeAt - now);
+        continue;
+      }
+      await executeTask(JSON.parse(msg.message.payload));
+      await redis.xAck(STREAM_KEY, CONSUMER_GROUP, msg.id);
+    }
+  }
+}
+```
 
 ## 学习资源
 
@@ -92,6 +255,12 @@ async function dequeue(queue: string) {
 | BullMQ | Node.js 队列库 | [bullmq.io](https://bullmq.io/) |
 | Redis Streams | 流处理指南 | [redis.io/docs/data-types/streams](https://redis.io/docs/data-types/streams/) |
 | AWS SQS Developer Guide | 云队列指南 | [docs.aws.amazon.com/sqs](https://docs.aws.amazon.com/sqs/) |
+| amqplib | Node.js AMQP 客户端 | [amqp-node.github.io/amqplib](https://amqp-node.github.io/amqplib/) |
+| kafkajs | Kafka Node.js 客户端 | [kafka.js.org](https://kafka.js.org/) |
+| AWS SDK for JavaScript v3 | 官方 SDK | [docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/javascript_sqs_code_examples.html) |
+| Redis Node.js Client | 官方客户端 | [github.com/redis/node-redis](https://github.com/redis/node-redis) |
+| Designing Data-Intensive Applications (Martin Kleppmann) | 书籍 | [dataintensive.net](https://dataintensive.net/) — 第 11 章深入讲解流处理与消息系统 |
+| Enterprise Integration Patterns (Hohpe & Woolf) | 书籍 | [enterpriseintegrationpatterns.com](https://www.enterpriseintegrationpatterns.com/) — 消息模式权威参考 |
 
 ---
 

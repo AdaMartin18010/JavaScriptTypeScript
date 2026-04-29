@@ -21,6 +21,8 @@
 |------|------|------|
 | 语法糖 | Promise 的同步风格封装 | async-await.ts |
 | 错误传播 | try/catch 对 reject 的捕获 | error-handling.ts |
+| 协程挂起 | await 暂停执行并释放事件循环 | event-loop.md |
+| 顶层 await | ES2022 模块级 await | top-level-await.ts |
 
 ---
 
@@ -34,8 +36,9 @@
 
 | 方案 | 优点 | 缺点 | 适用场景 |
 |------|------|------|---------|
-| async/await | 可读性强 | 错误堆栈丢失 | 顺序异步 |
+| async/await | 可读性强 | 错误堆栈可能丢失原始上下文 | 顺序异步 |
 | Promise 链 | 组合灵活 | 嵌套地狱 | 复杂并行 |
+| 生成器 + co | 可中断、可恢复 | 需额外库支持 | 遗留代码维护 |
 
 ### 2.3 与相关技术的对比
 
@@ -97,12 +100,101 @@ async function concurrentPool<T>(
 }
 ```
 
+#### 错误恢复与重试模式
+
+```typescript
+// error-handling.ts — 指数退避重试
+
+async function fetchWithRetry<T>(
+  fn: () => Promise<T>,
+  options: { retries?: number; backoff?: number; maxDelay?: number } = {}
+): Promise<T> {
+  const { retries = 3, backoff = 100, maxDelay = 10000 } = options;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt === retries) throw err;
+      const delay = Math.min(backoff * 2 ** attempt, maxDelay);
+      await sleep(delay);
+    }
+  }
+  throw new Error('Unreachable');
+}
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// 使用
+try {
+  const data = await fetchWithRetry(() => fetch('/api/flaky').then(r => r.json()), {
+    retries: 5,
+    backoff: 200
+  });
+} catch (err) {
+  console.error('All retries exhausted', err);
+}
+```
+
+#### 顶层 Await 与动态导入
+
+```typescript
+// top-level-await.ts — ES2022 模块级 await
+
+// 条件加载 polyfill
+const { fetch: fetchImpl } = globalThis.fetch
+  ? { fetch: globalThis.fetch }
+  : await import('node-fetch');
+
+// 并行配置加载
+const [config, secrets] = await Promise.all([
+  import('./config.json', { assert: { type: 'json' } }),
+  import('./secrets.json', { assert: { type: 'json' } }).catch(() => ({ default: {} }))
+]);
+
+export const appConfig = { ...config.default, ...secrets.default };
+```
+
+#### Async 迭代器处理大文件流
+
+```typescript
+// async-iterators.ts — 逐行读取大文件而不占用大量内存
+
+async function* readLines(filePath: string): AsyncGenerator<string, void, unknown> {
+  const file = await open(filePath, 'r');
+  const decoder = new TextDecoder();
+  let buffer = new Uint8Array(4096);
+  let leftover = '';
+
+  while (true) {
+    const { bytesRead } = await file.read(buffer, 0, buffer.length, null);
+    if (bytesRead === 0) break;
+
+    const chunk = leftover + decoder.decode(buffer.subarray(0, bytesRead));
+    const lines = chunk.split('\n');
+    leftover = lines.pop()!; // 最后一行可能不完整
+
+    for (const line of lines) yield line;
+  }
+
+  if (leftover) yield leftover;
+  await file.close();
+}
+
+// 使用
+for await (const line of readLines('/var/log/app.log')) {
+  if (line.includes('CRITICAL')) console.log(line);
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | await 会阻塞线程 | await 挂起协程，不阻塞事件循环 |
 | async 函数总是并行执行 | 连续的 await 是顺序执行 |
+| try/catch 能捕获所有异步错误 | 未 await 的 Promise 错误会触发 unhandledRejection |
+| async 函数返回值就是 Promise.resolve | 同步 throw 会 reject，return 会 resolve |
 
 ### 3.3 扩展阅读
 
@@ -111,6 +203,11 @@ async function concurrentPool<T>(
 - [TC39 — Async Functions Proposal](https://github.com/tc39/ecmascript-asyncawait)
 - [JavaScript Visualizer 9000](https://www.jsv9000.app/)
 - [Node.js Event Loop](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick)
+- [MDN — Async iteration protocols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols#the_async_iterator_and_async_iterable_protocols)
+- [Promise with finally (MDN)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/finally)
+- [web.dev — Async functions: making promises friendly](https://web.dev/articles/async-functions)
+- [Exploring JS — Async functions](https://exploringjs.com/es2016-es2017/ch_async-functions.html)
+- [Node.js — unhandledRejection event](https://nodejs.org/api/process.html#event-unhandledrejection)
 - `20.3-concurrency-async/concurrency/`
 
 ---

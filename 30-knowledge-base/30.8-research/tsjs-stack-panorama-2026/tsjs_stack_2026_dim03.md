@@ -69,6 +69,170 @@ INP（Interaction to Next Paint）：良好 < 200ms
 
 ---
 
+## 代码示例
+
+### 性能优化：GPU 加速动画
+
+```typescript
+// useGpuAnimation.ts — 使用 transform 替代 top/left
+import { useRef, useEffect } from 'react';
+
+function useGpuAnimation(targetX: number, targetY: number) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    // ✅ 正确：仅触发 Composite 阶段，GPU 加速
+    el.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+    el.style.willChange = 'transform';
+
+    // ❌ 错误：触发完整 Layout → Paint → Composite
+    // el.style.left = `${targetX}px`;
+    // el.style.top = `${targetY}px`;
+
+    return () => {
+      el.style.willChange = 'auto'; // 动画结束后释放 GPU 层
+    };
+  }, [targetX, targetY]);
+
+  return ref;
+}
+```
+
+### React 19 Server Components 与流式传输
+
+```typescript
+// app/page.tsx — Next.js 15 App Router + React 19 RSC
+import { Suspense } from 'react';
+import { ProductListSkeleton, ProductList } from './ProductList';
+
+// Server Component：零客户端 JS，服务端直接渲染
+export default async function ProductPage() {
+  return (
+    <main>
+      <h1>产品目录</h1>
+      {/* Suspense 边界实现流式 HTML */}
+      <Suspense fallback={<ProductListSkeleton />}>
+        <ProductList />
+      </Suspense>
+    </main>
+  );
+}
+
+// app/ProductList.tsx
+import { db } from '@/lib/db';
+
+export function ProductListSkeleton() {
+  return <div className="skeleton-grid">{Array.from({ length: 6 }, (_, i) => <div key={i} className="skeleton-card" />)}</div>;
+}
+
+export async function ProductList() {
+  const products = await db.query('SELECT * FROM products LIMIT 50');
+
+  return (
+    <ul className="product-grid">
+      {products.map((p) => (
+        <li key={p.id}>
+          <h3>{p.name}</h3>
+          <p>¥{p.price}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+```
+
+### tRPC 端到端类型安全 API
+
+```typescript
+// server/router.ts — tRPC 路由定义
+import { initTRPC } from '@trpc/server';
+import { z } from 'zod';
+
+const t = initTRPC.create();
+
+export const appRouter = t.router({
+  user: t.router({
+    getById: t.procedure
+      .input(z.object({ id: z.string().uuid() }))
+      .query(async ({ input }) => {
+        return db.user.findUnique({ where: { id: input.id } });
+      }),
+    create: t.procedure
+      .input(z.object({ name: z.string().min(1), email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        return db.user.create({ data: input });
+      }),
+  }),
+});
+
+export type AppRouter = typeof appRouter;
+```
+
+```typescript
+// client/api.ts — tRPC 客户端自动推断类型
+import { createTRPCReact } from '@trpc/react-query';
+import type { AppRouter } from '../server/router';
+
+export const trpc = createTRPCReact<AppRouter>();
+
+// 使用：类型从服务端自动推导，修改服务端接口后客户端类型自动更新
+function UserProfile({ userId }: { userId: string }) {
+  const { data } = trpc.user.getById.useQuery({ id: userId });
+  // data 类型自动推断为 RouterOutput['user']['getById']
+  return <div>{data?.name}</div>;
+}
+```
+
+### 微前端 Module Federation 配置
+
+```typescript
+// webpack.config.js — Module Federation 宿主配置
+const { ModuleFederationPlugin } = require('webpack').container;
+
+module.exports = {
+  plugins: [
+    new ModuleFederationPlugin({
+      name: 'host',
+      remotes: {
+        // 远程模块声明
+        dashboard: 'dashboard@https://dashboard.example.com/remoteEntry.js',
+        settings: 'settings@https://settings.example.com/remoteEntry.js',
+      },
+      shared: {
+        react: { singleton: true, requiredVersion: '^19.0.0' },
+        'react-dom': { singleton: true, requiredVersion: '^19.0.0' },
+      },
+    }),
+  ],
+};
+```
+
+```typescript
+// host/src/App.tsx — 动态加载远程模块
+import { lazy, Suspense } from 'react';
+
+// TypeScript 类型声明（运行时由 Module Federation 填充）
+declare module 'dashboard/DashboardPage' {
+  const DashboardPage: React.ComponentType;
+  export default DashboardPage;
+}
+
+const DashboardPage = lazy(() => import('dashboard/DashboardPage'));
+
+function App() {
+  return (
+    <Suspense fallback={<div>Loading module...</div>}>
+      <DashboardPage />
+    </Suspense>
+  );
+}
+```
+
+---
+
 ## 维度 03 分析表：浏览器渲染与全栈架构深度对比
 
 | 分析维度 | 现状 (2026 Q1) | 趋势 (2026–2027) | 生态数据 |
@@ -98,3 +262,12 @@ INP（Interaction to Next Paint）：良好 < 200ms
 - [CSS Container Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries)
 - [Web Authentication (WebAuthn)](https://webauthn.guide/)
 - [State of CSS 2025](https://stateofcss.com/)
+- [Inside look at modern web browser (Google)](https://developer.chrome.com/blog/inside-browser-part1)
+- [Rendering Performance (web.dev)](https://web.dev/rendering-performance/)
+- [Avoid Large, Complex Layouts (web.dev)](https://web.dev/avoid-large-complex-layouts-and-layout-thrashing/)
+- [Module Federation 2.0](https://module-federation.io/)
+- [Turborepo Documentation](https://turbo.build/repo/docs)
+- [FIDO Alliance — Passkeys](https://fidoalliance.org/passkeys/)
+- [Can I Use — Browser Support Tables](https://caniuse.com/)
+- [Lighthouse Performance Scoring](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring)
+- [Interaction to Next Paint (INP)](https://web.dev/articles/inp)

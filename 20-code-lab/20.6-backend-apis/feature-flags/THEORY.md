@@ -100,6 +100,100 @@ function Dashboard() {
 }
 ```
 
+### Unleash Node.js SDK 实战
+
+```typescript
+import { startUnleash, Unleash } from 'unleash-client';
+
+// 连接自托管 Unleash 实例
+const unleash: Unleash = await startUnleash({
+  url: 'http://unleash:4242/api/',
+  appName: 'payment-service',
+  customHeaders: { Authorization: process.env.UNLEASH_API_TOKEN! },
+});
+
+// 带用户属性的动态开关判断
+const isEnabled = unleash.isEnabled('new-payment-gateway', {
+  userId: 'user-12345',
+  sessionId: 'sess-abc',
+  remoteAddress: '192.168.1.1',
+  properties: { plan: 'enterprise', region: 'us-east-1' },
+});
+
+// 渐进发布：按 userId 末位数字分桶，逐步从 0% 提升到 100%
+const rollout = unleash.isEnabled('canary-checkout-v2', {
+  userId: 'user-12345',
+});
+```
+
+### 金丝雀发布 Express 中间件
+
+```typescript
+import { NextFunction, Request, Response } from 'express';
+import { OpenFeature } from '@openfeature/server-sdk';
+
+function canaryMiddleware(flagName: string, rolloutPercentage: number) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const client = OpenFeature.getClient();
+    const context = {
+      targetingKey: req.user?.id ?? req.ip,
+      attributes: { path: req.path, method: req.method },
+    };
+    const isCanary = await client.getBooleanValue(flagName, false, context);
+    req.headers['x-canary'] = isCanary ? 'true' : 'false';
+    next();
+  };
+}
+
+// 使用：仅 5% 用户路由到新版本 API
+app.use('/api/v2/orders', canaryMiddleware('orders-api-v2', 5), orderV2Router);
+app.use('/api/v2/orders', orderV1Router);
+```
+
+### 开关清理策略（Node.js 定时任务）
+
+```typescript
+import { glob } from 'glob';
+import { readFileSync } from 'node:fs';
+
+interface FlagAuditEntry {
+  name: string;
+  createdAt: Date;
+  lastEvaluatedAt?: Date;
+  references: string[];
+}
+
+async function auditFeatureFlags(flagRegistry: Map<string, FlagAuditEntry>): Promise<void> {
+  const sourceFiles = await glob('src/**/*.{ts,tsx}');
+  const flagRefs = new Map<string, string[]>();
+
+  for (const file of sourceFiles) {
+    const content = readFileSync(file, 'utf-8');
+    for (const [flagName] of flagRegistry) {
+      if (content.includes(flagName)) {
+        const refs = flagRefs.get(flagName) ?? [];
+        refs.push(file);
+        flagRefs.set(flagName, refs);
+      }
+    }
+  }
+
+  // 标记 30 天未引用且创建超过 90 天的开关为待清理
+  const now = new Date();
+  for (const [name, entry] of flagRegistry) {
+    const refs = flagRefs.get(name) ?? [];
+    const daysSinceCreation = (now.getTime() - entry.createdAt.getTime()) / 86400000;
+    const daysSinceEval = entry.lastEvaluatedAt
+      ? (now.getTime() - entry.lastEvaluatedAt.getTime()) / 86400000
+      : Infinity;
+
+    if (daysSinceCreation > 90 && daysSinceEval > 30 && refs.length === 0) {
+      console.warn(`[TECH DEBT] Flag "${name}" stale — consider removal`);
+    }
+  }
+}
+```
+
 ## 关联模块
 
 - `65-analytics` — A/B 测试的数据分析与实验结果统计
@@ -114,6 +208,13 @@ function Dashboard() {
 - [Unleash Documentation](https://docs.getunleash.io/)
 - [Flagsmith Documentation](https://docs.flagsmith.com/)
 - [Feature Toggles (Feature Flags) — Martin Fowler](https://martinfowler.com/articles/feature-toggles.html)
+- [OpenFeature React SDK](https://www.npmjs.com/package/@openfeature/react-sdk)
+- [Unleash Node.js Client](https://docs.getunleash.io/reference/sdks/node)
+- [LaunchDarkly Node.js Server SDK](https://docs.launchdarkly.com/sdk/server-side/node-js)
+- [Flagsmith Node.js SDK](https://docs.flagsmith.com/clients/server-side/#nodejs)
+- [CNCF Feature Flags Wiki](https://github.com/cncf/tag-app-delivery/blob/main/feature-flags/README.md)
+- [Google SRE — Feature Flags Best Practices](https://sre.google/workbook/implementing-slos/)
+- [Etsy — Feature Flags at Scale](https://www.etsy.com/codeascraft/feature-flags-at-etsy)
 - 本模块 `README.md` — 模块主题与学习路径
 - 本模块 `feature-flag-system.ts` — 开关规则评估与渐进发布实现
 - 本模块 `feature-toggles.ts` — 开关管理器、环境配置与组管理实现

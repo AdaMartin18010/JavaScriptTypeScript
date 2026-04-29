@@ -16,6 +16,7 @@ created: 2026-04-28
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 README.md
@@ -220,6 +221,95 @@ function generateRSAKeyPair(): { publicKey: string; privateKey: string } {
 import { timingSafeEqual } from 'crypto';
 ```
 
+## 代码示例：Cluster 模块多进程负载均衡
+
+```typescript
+// cluster-patterns.ts — 利用多核 CPU 提升吞吐量
+import cluster from 'cluster';
+import { createServer } from 'http';
+import { availableParallelism } from 'os';
+
+const numCPUs = availableParallelism();
+
+if (cluster.isPrimary) {
+  console.log(`Primary ${process.pid} is running`);
+
+  // Fork workers
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+
+  cluster.on('exit', (worker) => {
+    console.log(`Worker ${worker.process.pid} died, restarting...`);
+    cluster.fork();
+  });
+} else {
+  createServer((req, res) => {
+    // 模拟 CPU 密集型计算
+    const result = heavyComputation();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ pid: process.pid, result }));
+  }).listen(3000);
+
+  console.log(`Worker ${process.pid} started`);
+}
+
+function heavyComputation(): number {
+  let sum = 0;
+  for (let i = 0; i < 1e7; i++) sum += i;
+  return sum;
+}
+```
+
+## 代码示例：Worker Threads  offload CPU 密集型任务
+
+```typescript
+// worker-thread-patterns.ts — 不阻塞事件循环的并行计算
+import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
+
+// worker.ts — 在线程中执行的逻辑
+if (!isMainThread) {
+  const { matrixA, matrixB } = workerData as {
+    matrixA: number[][];
+    matrixB: number[][];
+  };
+
+  function multiply(a: number[][], b: number[][]): number[][] {
+    const result: number[][] = [];
+    for (let i = 0; i < a.length; i++) {
+      result[i] = [];
+      for (let j = 0; j < b[0].length; j++) {
+        let sum = 0;
+        for (let k = 0; k < b.length; k++) {
+          sum += a[i][k] * b[k][j];
+        }
+        result[i][j] = sum;
+      }
+    }
+    return result;
+  }
+
+  parentPort!.postMessage(multiply(matrixA, matrixB));
+}
+
+// main.ts
+export async function parallelMatrixMultiply(
+  a: number[][],
+  b: number[][]
+): Promise<number[][]> {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(__filename, {
+      workerData: { matrixA: a, matrixB: b },
+    });
+    worker.on('message', resolve);
+    worker.on('error', reject);
+    worker.on('exit', (code) => {
+      if (code !== 0) reject(new Error(`Worker stopped with exit code ${code}`));
+    });
+  });
+}
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -234,6 +324,11 @@ import { timingSafeEqual } from 'crypto';
 | Node.js Crypto Module | 文档 | [nodejs.org/api/crypto.html](https://nodejs.org/api/crypto.html) |
 | OWASP Password Storage Cheat Sheet | 指南 | [cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) |
 | NIST SP 800-132 | 规范 | [nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-132.pdf](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-132.pdf) |
+| Node.js Cluster Module | 文档 | [nodejs.org/api/cluster.html](https://nodejs.org/api/cluster.html) |
+| Node.js Worker Threads | 文档 | [nodejs.org/api/worker_threads.html](https://nodejs.org/api/worker_threads.html) |
+| Node.js stream/promises pipeline | 文档 | [nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-options) |
+| undici (Node.js HTTP Client) | 文档 | [undici.nodejs.org](https://undici.nodejs.org/) |
+| pg-pool (PostgreSQL) | 文档 | [node-postgres.com/apis/pool](https://node-postgres.com/apis/pool) |
 
 ---
 

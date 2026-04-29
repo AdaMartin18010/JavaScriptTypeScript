@@ -95,7 +95,77 @@ wss.on('connection', (ws) => {
 });
 ```
 
-## 5. 实时架构模式
+## 5. Server-Sent Events (SSE) 代码示例
+
+```typescript
+// 客户端
+const evtSource = new EventSource('/api/events');
+
+evtSource.addEventListener('price-update', (e) => {
+  const { symbol, price } = JSON.parse(e.data);
+  console.log(`${symbol}: $${price}`);
+});
+
+evtSource.addEventListener('error', () => {
+  console.error('SSE connection lost, auto-reconnecting...');
+});
+
+// 服务端（Node.js + Express）
+app.get('/api/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const interval = setInterval(() => {
+    res.write(`event: price-update\n`);
+    res.write(`data: ${JSON.stringify({ symbol: 'BTC', price: Math.random() * 50000 })}\n\n`);
+  }, 2000);
+
+  req.on('close', () => clearInterval(interval));
+});
+```
+
+## 6. WebRTC 数据通道代码示例
+
+```typescript
+// 简化的 WebRTC DataChannel 文件传输
+
+const pc = new RTCPeerConnection({
+  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+});
+
+const dc = pc.createDataChannel('fileTransfer', { ordered: true });
+
+dc.onopen = () => {
+  const file = document.getElementById('fileInput')!.files![0];
+  const chunkSize = 16384;
+  let offset = 0;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const chunk = e.target!.result as ArrayBuffer;
+    if (dc.readyState === 'open') {
+      dc.send(chunk);
+      offset += chunk.byteLength;
+      if (offset < file.size) readSlice(offset);
+      else dc.send('EOF');
+    }
+  };
+
+  const readSlice = (o: number) => {
+    const slice = file.slice(o, o + chunkSize);
+    reader.readAsArrayBuffer(slice);
+  };
+  readSlice(0);
+};
+
+// 信令交换（需通过 WebSocket 或 SSE 实现）
+pc.onicecandidate = (e) => {
+  if (e.candidate) signalServer.send({ type: 'ice', candidate: e.candidate });
+};
+```
+
+## 7. 实时架构模式
 
 - **发布-订阅**: 频道/主题模型，客户端订阅感兴趣的主题
 - **房间模型**: 用户加入房间，消息广播给房间内所有用户
@@ -103,7 +173,7 @@ wss.on('connection', (ws) => {
 - **消息排序**: 全局序列号保证消息顺序
 - **消息持久化**: 离线消息存储，用户上线后推送
 
-## 6. 与相邻模块的关系
+## 8. 与相邻模块的关系
 
 - **90-web-apis-lab**: WebSocket、WebRTC API 的实践
 - **32-edge-computing**: 边缘节点的实时数据分发
@@ -117,3 +187,12 @@ wss.on('connection', (ws) => {
 - [RFC 6455 — The WebSocket Protocol](https://datatracker.ietf.org/doc/html/rfc6455)
 - [WebSocket vs SSE vs Long Polling (Ably)](https://ably.com/blog/websockets-vs-sse)
 - [ws — Node.js WebSocket 库](https://github.com/websockets/ws)
+- [WebRTC.org — Getting Started](https://webrtc.org/getting-started/)
+- [MDN — RTCPeerConnection](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection)
+- [HTML Spec — Server-sent events](https://html.spec.whatwg.org/multipage/server-sent-events.html)
+- [caniuse — WebRTC](https://caniuse.com/rtcpeerconnection)
+- [Web.dev — Real-time updates](https://web.dev/articles/real-time)
+
+---
+
+*本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

@@ -16,6 +16,7 @@ created: 2026-04-28
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 README.md
@@ -74,6 +75,134 @@ export function getCurrentTenant() {
 }
 ```
 
+### 租户解析中间件（域名 / Header / JWT）
+
+```typescript
+// tenant-resolver.ts
+import type { IncomingMessage, ServerResponse } from 'http';
+
+interface TenantConfig {
+  tenantId: string;
+  schema: string;
+  dbPool: string;
+}
+
+function resolveTenant(req: IncomingMessage): TenantConfig {
+  // 1. 子域名解析：acme.example.com → tenantId = acme
+  const host = req.headers.host || '';
+  const subdomain = host.split('.')[0];
+  if (subdomain && subdomain !== 'www') {
+    return lookupTenantById(subdomain);
+  }
+
+  // 2. Header 解析
+  const headerId = req.headers['x-tenant-id'] as string;
+  if (headerId) return lookupTenantById(headerId);
+
+  // 3. JWT 解析
+  const auth = req.headers.authorization || '';
+  if (auth.startsWith('Bearer ')) {
+    const payload = decodeJwt(auth.slice(7));
+    return lookupTenantById(payload.tenantId);
+  }
+
+  throw new Error('Unable to resolve tenant');
+}
+
+// Express / Node.js HTTP 中间件
+export function tenantMiddleware(
+  req: IncomingMessage & { tenant?: TenantConfig },
+  res: ServerResponse,
+  next: () => void
+) {
+  try {
+    req.tenant = resolveTenant(req);
+    next();
+  } catch (e) {
+    res.statusCode = 400;
+    res.end(JSON.stringify({ error: 'Tenant resolution failed' }));
+  }
+}
+```
+
+### Schema 级隔离与路由
+
+```typescript
+// schema-isolation.ts — 基于 PostgreSQL row-level security + schema
+import { Pool } from 'pg';
+
+class SchemaIsolatedPool {
+  constructor(private basePool: Pool) {}
+
+  async query(tenantSchema: string, sql: string, params?: unknown[]) {
+    const client = await this.basePool.connect();
+    try {
+      await client.query(`SET search_path TO ${tenantSchema}, public`);
+      return await client.query(sql, params);
+    } finally {
+      client.release();
+    }
+  }
+}
+
+// database-router.ts — 动态数据库连接路由
+class DatabaseRouter {
+  private pools = new Map<string, Pool>();
+
+  getPool(tenantId: string, dbUrl: string): Pool {
+    if (!this.pools.has(tenantId)) {
+      this.pools.set(tenantId, new Pool({ connectionString: dbUrl, max: 10 }));
+    }
+    return this.pools.get(tenantId)!;
+  }
+
+  async routeQuery(tenantId: string, dbUrl: string, sql: string, params?: unknown[]) {
+    const pool = this.getPool(tenantId, dbUrl);
+    return pool.query(sql, params);
+  }
+}
+```
+
+### 租户级资源配额限流
+
+```typescript
+// resource-quota.ts — 基于 Token Bucket 的租户限流
+class TenantRateLimiter {
+  private buckets = new Map<string, { tokens: number; last: number }>();
+  private readonly capacity: number;
+  private readonly refillRate: number; // tokens per ms
+
+  constructor(capacity: number, refillPerSecond: number) {
+    this.capacity = capacity;
+    this.refillRate = refillPerSecond / 1000;
+  }
+
+  allow(tenantId: string, cost = 1): boolean {
+    const now = Date.now();
+    const bucket = this.buckets.get(tenantId) || { tokens: this.capacity, last: now };
+
+    const elapsed = now - bucket.last;
+    bucket.tokens = Math.min(this.capacity, bucket.tokens + elapsed * this.refillRate);
+    bucket.last = now;
+
+    if (bucket.tokens >= cost) {
+      bucket.tokens -= cost;
+      this.buckets.set(tenantId, bucket);
+      return true;
+    }
+
+    this.buckets.set(tenantId, bucket);
+    return false;
+  }
+}
+
+// 使用示例：每个租户每秒最多 100 次请求
+const limiter = new TenantRateLimiter(100, 100);
+if (!limiter.allow(req.tenant!.tenantId)) {
+  res.statusCode = 429;
+  res.end('Rate limit exceeded');
+}
+```
 
 ## 学习资源
 
@@ -85,6 +214,10 @@ export function getCurrentTenant() {
 | AWS SaaS Tenant Isolation | 最佳实践 | [docs.aws.amazon.com/saas](https://docs.aws.amazon.com/wellarchitected/latest/saas-lens/tenant-isolation.html) |
 | Stripe — Multitenancy at Scale | 工程博客 | [stripe.com/blog](https://stripe.com/blog) |
 | Node.js AsyncLocalStorage | API 文档 | [nodejs.org/api/async_context](https://nodejs.org/api/async_context.html) |
+| Prisma — Multi-tenancy Guide | 文档 | [prisma.io/docs/orm/overview/prisma-in-your-stack/multi-tenancy](https://www.prisma.io/docs/orm/overview/prisma-in-your-stack/multi-tenancy) |
+| PostgreSQL Row Level Security | 文档 | [postgresql.org/docs/current/ddl-rowsecurity.html](https://www.postgresql.org/docs/current/ddl-rowsecurity.html) |
+| CNCF — SaaS Tenant Isolation Patterns | 白皮书 | [cncf.io](https://www.cncf.io/reports/) |
+| Martin Fowler — MultiTenancy Bliki | 文章 | [martinfowler.com/bliki/Multitenancy.html](https://martinfowler.com/bliki/Multitenancy.html) |
 
 ---
 

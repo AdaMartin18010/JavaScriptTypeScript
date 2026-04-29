@@ -162,10 +162,93 @@ const startOAuth = createServerFn({ method: 'GET' }).handler(async () => {
 });
 ```
 
+### 边缘中间件与请求上下文
+
+```typescript
+// app/middleware.ts —— Cloudflare 边缘上下文注入
+import { createMiddleware } from '@tanstack/react-start';
+
+export const withCloudflareContext = createMiddleware({
+  id: 'cf-context',
+}).server(async ({ next }) => {
+  // 在 Cloudflare Pages 环境中，env 绑定通过全局可访问
+  const env = (globalThis as unknown as { env: Env }).env;
+  return next({
+    context: {
+      db: getDb(env),
+      kv: env.KV,
+      r2: env.R2,
+    },
+  });
+});
+
+// 在路由中使用中间件
+export const Route = createFileRoute('/dashboard')({
+  beforeLoad: async ({ context }) => {
+    const user = await context.db.select().from(users).where(eq(users.id, context.userId));
+    return { user: user[0] };
+  },
+  component: DashboardPage,
+});
+```
+
+### 文件上传与 R2 对象存储
+
+```typescript
+// app/routes/_layout/upload.ts
+import { createServerFn } from '@tanstack/react-start';
+import { putObject } from '../lib/r2';
+
+export const uploadFile = createServerFn({ method: 'POST' })
+  .validator((formData: FormData) => {
+    const file = formData.get('file');
+    if (!(file instanceof File)) throw new Error('Invalid file');
+    return file;
+  })
+  .handler(async ({ data: file }) => {
+    const key = `uploads/${crypto.randomUUID()}-${file.name}`;
+    const arrayBuffer = await file.arrayBuffer();
+    await putObject(key, new Uint8Array(arrayBuffer), {
+      contentType: file.type,
+    });
+    return { key, url: `https://cdn.example.com/${key}` };
+  });
+```
+
+### Wrangler 部署配置
+
+```toml
+# wrangler.toml
+name = "tanstack-start-app"
+compatibility_date = "2026-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 数据库绑定
+[[d1_databases]]
+binding = "DB"
+database_name = "prod-db"
+database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# KV 命名空间绑定
+[[kv_namespaces]]
+binding = "KV"
+id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# R2 存储桶绑定
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "assets"
+
+# 环境变量
+[vars]
+APP_NAME = "TanStack Start on Cloudflare"
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📁 01-basic-setup
@@ -196,10 +279,16 @@ const startOAuth = createServerFn({ method: 'GET' }).handler(async () => {
 | Cloudflare Workers | 官方文档 | [developers.cloudflare.com/workers](https://developers.cloudflare.com/workers/) |
 | Cloudflare D1 | 官方文档 | [developers.cloudflare.com/d1](https://developers.cloudflare.com/d1/) |
 | Cloudflare KV | 官方文档 | [developers.cloudflare.com/kv](https://developers.cloudflare.com/kv/) |
+| Cloudflare R2 | 官方文档 | [developers.cloudflare.com/r2](https://developers.cloudflare.com/r2/) |
 | Vinxi Universal Dev Server | 源码 | [github.com/nksaraf/vinxi](https://github.com/nksaraf/vinxi) |
 | Nitro — 服务端引擎 | 官方文档 | [nitro.unjs.io](https://nitro.unjs.io/) |
 | React Server Components | 官方文档 | [react.dev/reference/react-server](https://react.dev/reference/react-server) |
 | WinterCG Runtime Keys | 规范 | [wintercg.org](https://wintercg.org/) |
+| Drizzle ORM 文档 | 官方文档 | [orm.drizzle.team](https://orm.drizzle.team/) |
+| Zod 文档 | 官方文档 | [zod.dev](https://zod.dev/) |
+| Wrangler CLI 文档 | 官方文档 | [developers.cloudflare.com/workers/wrangler](https://developers.cloudflare.com/workers/wrangler/) |
+| OAuth 2.0 PKCE (RFC 7636) | 规范 | [datatracker.ietf.org/doc/html/rfc7636](https://datatracker.ietf.org/doc/html/rfc7636) |
+| Cloudflare Workers Runtime APIs | 参考 | [developers.cloudflare.com/workers/runtime-apis](https://developers.cloudflare.com/workers/runtime-apis/) |
 
 ---
 

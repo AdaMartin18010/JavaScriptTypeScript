@@ -129,12 +129,14 @@ const currentState = events.reduce(applyEvent, initialState);
 消息队列是**分布式系统的神经系统**。
 
 **选型建议**：
+
 - 简单任务队列 → BullMQ (Redis)
 - 企业级消息 → RabbitMQ
 - 大数据流 → Kafka
 - 云原生 → NATS
 
 **核心原则**：
+
 1. 默认使用 At-least-once + 幂等消费
 2. 消息体保持小巧，大文件走对象存储
 3. 监控消费延迟，防止消息堆积
@@ -165,13 +167,13 @@ async function sendWelcomeEmail(userId: string, email: string) {
 // 消费者：处理队列任务
 const worker = new Worker('email', async (job: Job) => {
   console.log(`Processing job ${job.id} of type ${job.name}`);
-  
+
   if (job.name === 'welcome') {
     const { userId, email } = job.data;
     // 调用邮件服务
     await emailService.send({ to: email, template: 'welcome', userId });
   }
-  
+
   return { sent: true, timestamp: Date.now() };
 }, { connection });
 
@@ -265,13 +267,13 @@ await consumer.run({
   eachMessage: async ({ topic, partition, message }) => {
     const value = JSON.parse(message.value!.toString());
     console.log(`[Partition ${partition}] Processing order ${value.orderId}: ${value.event}`);
-    
+
     // 幂等处理：检查是否已处理过该事件
     if (await isProcessed(value.orderId, value.event)) {
       console.log('Duplicate event detected, skipping.');
       return;
     }
-    
+
     await processOrderEvent(value);
     await markAsProcessed(value.orderId, value.event);
   },
@@ -324,10 +326,10 @@ async function consumeFromGroup(stream: string, group: string, consumer: string)
       );
 
       console.log(`[${consumer}] Processing ${id}:`, event);
-      
+
       // 业务处理...
       await processEvent(event);
-      
+
       // 确认消费
       await redis.xack(stream, group, id);
     }
@@ -338,6 +340,123 @@ async function consumeFromGroup(stream: string, group: string, consumer: string)
 await addEvent('sensor:data', { deviceId: 'd-001', temperature: '23.5', humidity: '60' });
 await createConsumerGroup('sensor:data', 'analytics-group');
 await consumeFromGroup('sensor:data', 'analytics-group', 'worker-1');
+```
+
+## 代码示例：死信队列（DLQ）实现
+
+```typescript
+// dead-letter-queue.ts — 消费失败消息转入死信队列
+interface DLQMessage {
+  originalTopic: string;
+  originalMessage: unknown;
+  failedAt: string;
+  errorMessage: string;
+  retryCount: number;
+}
+
+class DeadLetterQueue {
+  private dlq = new Queue('dead-letter', { connection });
+
+  async enqueue(message: DLQMessage): Promise<void> {
+    await this.dlq.add('failed', message, {
+      attempts: 0, // DLQ 不再重试
+      removeOnComplete: 100,
+    });
+  }
+
+  async reprocess(dlqJobId: string, targetQueue: Queue): Promise<void> {
+    const job = await this.dlq.getJob(dlqJobId);
+    if (!job) throw new Error('DLQ job not found');
+    await targetQueue.add(job.data.originalMessage);
+    await job.remove();
+  }
+}
+
+// 在 Worker 中使用
+const worker = new Worker('email', async (job) => {
+  try {
+    await sendEmail(job.data);
+  } catch (err) {
+    if (job.attemptsMade >= 2) {
+      await dlq.enqueue({
+        originalTopic: 'email',
+        originalMessage: job.data,
+        failedAt: new Date().toISOString(),
+        errorMessage: (err as Error).message,
+        retryCount: job.attemptsMade,
+      });
+      throw err; // 让 BullMQ 标记为失败
+    }
+    throw err; // 继续重试
+  }
+}, { connection });
+```
+
+## 代码示例：Outbox 模式（保证消息至少发送一次）
+
+```typescript
+// outbox-pattern.ts — 数据库事务内写消息，后台轮询发送
+import { PoolClient } from 'pg';
+
+interface OutboxRecord {
+  id: string;
+  topic: string;
+  payload: string;
+  headers: string;
+  created_at: Date;
+  processed_at: Date | null;
+}
+
+async function publishEvent(
+  client: PoolClient,
+  topic: string,
+  payload: unknown,
+  headers: Record<string, string> = {}
+): Promise<void> {
+  // 在同一个数据库事务中写入业务表 + outbox 表
+  await client.query(
+    `INSERT INTO outbox (id, topic, payload, headers, created_at)
+     VALUES ($1, $2, $3, $4, NOW())`,
+    [crypto.randomUUID(), topic, JSON.stringify(payload), JSON.stringify(headers)]
+  );
+}
+
+// 后台轮询发送器
+async function outboxPoller(
+  db: Pool,
+  producer: KafkaProducer,
+  intervalMs = 5000
+): Promise<() => void> {
+  let running = true;
+
+  async function poll() {
+    while (running) {
+      const { rows } = await db.query<OutboxRecord>(
+        `SELECT * FROM outbox WHERE processed_at IS NULL ORDER BY created_at LIMIT 100`
+      );
+
+      for (const row of rows) {
+        try {
+          await producer.send({
+            topic: row.topic,
+            messages: [{ value: row.payload, headers: JSON.parse(row.headers) }],
+          });
+          await db.query(
+            `UPDATE outbox SET processed_at = NOW() WHERE id = $1`,
+            [row.id]
+          );
+        } catch (err) {
+          console.error(`Failed to publish outbox message ${row.id}:`, err);
+        }
+      }
+
+      await new Promise(r => setTimeout(r, intervalMs));
+    }
+  }
+
+  poll();
+  return () => { running = false; };
+}
 ```
 
 ---
@@ -356,6 +475,10 @@ await consumeFromGroup('sensor:data', 'analytics-group', 'worker-1');
 - [Google Cloud Pub/Sub](https://cloud.google.com/pubsub/docs/overview)
 - [Azure Service Bus](https://learn.microsoft.com/en-us/azure/service-bus-messaging/)
 - [Enterprise Integration Patterns](https://www.enterpriseintegrationpatterns.com/) — Hohpe & Woolf 经典
+- [Apache Pulsar Documentation](https://pulsar.apache.org/docs/next/)
+- [NATS Streaming / JetStream](https://docs.nats.io/nats-concepts/jetstream) — NATS 持久化流
+- [CloudEvents Specification](https://cloudevents.io/) — 事件数据标准化规范
+- [The Outbox Pattern (Chris Richardson)](https://microservices.io/patterns/data/transactional-outbox.html) — 事务性发件箱模式
 
 ---
 

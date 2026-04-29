@@ -253,6 +253,79 @@ export const a2aAuth = createMiddleware(async (c, next) => {
 app.use('/tasks/*', a2aAuth);
 ```
 
+#### 多 Agent 编排：路由与扇出
+
+```typescript
+// orchestrator.ts —— 将任务分发给多个专业 Agent
+interface AgentRegistry {
+  findAgents(skillId: string): Promise<AgentCard[]>;
+}
+
+class A2AOrchestrator {
+  constructor(private registry: AgentRegistry, private client: A2AClient) {}
+
+  async fanOut(task: Task, skillId: string): Promise<Artifact[]> {
+    const agents = await this.registry.findAgents(skillId);
+    const results = await Promise.allSettled(
+      agents.map((agent) => this.client.sendTask({ ...task, target: agent })),
+    );
+    return results
+      .filter((r): r is PromiseFulfilledResult<Artifact> => r.status === 'fulfilled')
+      .map((r) => r.value);
+  }
+
+  async route(task: Task): Promise<AgentCard> {
+    const intent = await classifyIntent(task.message.parts.map((p) => p.text).join(' '));
+    const candidates = await this.registry.findAgents(intent.skillId);
+    // 选择负载最低且能力匹配的 Agent
+    return candidates.sort((a, b) => (a.load ?? 0) - (b.load ?? 0))[0];
+  }
+}
+```
+
+#### 任务重试与断路器模式
+
+```typescript
+// resilience.ts —— 带指数退避的 A2A 任务调用
+async function sendTaskWithRetry(
+  client: A2AClient,
+  task: Parameters<A2AClient['sendTask']>[0],
+  maxRetries = 3,
+): Promise<unknown> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await client.sendTask(task);
+    } catch (err) {
+      if (attempt === maxRetries) throw err;
+      const delay = Math.min(1000 * 2 ** attempt, 8000);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+  throw new Error('Unreachable');
+}
+
+class CircuitBreaker {
+  private failures = 0;
+  private threshold = 5;
+  private state: 'closed' | 'open' | 'half-open' = 'closed';
+
+  async execute<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.state === 'open') throw new Error('Circuit breaker is OPEN');
+    try {
+      const result = await fn();
+      this.onSuccess();
+      return result;
+    } catch (e) {
+      this.onFailure();
+      throw e;
+    }
+  }
+
+  private onSuccess() { this.failures = 0; this.state = 'closed'; }
+  private onFailure() { this.failures++; if (this.failures >= this.threshold) this.state = 'open'; }
+}
+```
+
 ### 4.4 扩展阅读
 
 - [A2A Protocol — Google GitHub](https://github.com/google/A2A)
@@ -263,6 +336,12 @@ app.use('/tasks/*', a2aAuth);
 - [OAuth 2.0 Token Exchange (RFC 8693)](https://datatracker.ietf.org/doc/html/rfc8693) — A2A 委托身份的技术基础
 - [Server-Sent Events (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)
 - [JSON-RPC 2.0 Specification](https://www.jsonrpc.org/specification)
+- [Google Cloud A2A 官方文档](https://cloud.google.com/agent-to-agent)
+- [LangChain Agent Interoperability](https://js.langchain.com/docs/concepts/agents/) — 与 A2A 互补的 Agent 编排方案
+- [jose — JWT/JWS/JWE 库](https://github.com/panva/jose) — A2A OAuth 验证的推荐实现
+- [Agent Protocol (OpenAI)](https://platform.openai.com/docs/api-reference) — 对比理解 Agent 通信的另一种设计
+- [Cloudflare Agents](https://developers.cloudflare.com/agents/) — 边缘原生 Agent 部署平台
+- [Temporal — 可靠任务编排](https://temporal.io/) — 复杂多 Agent 工作流的持久化执行引擎
 - `20.7-ai-agent-infra/`
 
 ---

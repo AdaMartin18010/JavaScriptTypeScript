@@ -156,6 +156,101 @@ loadPlugin(manifest, { fetch: globalThis.fetch, URL: globalThis.URL })
   .catch(err => console.error('Plugin failed:', err.message));
 ```
 
+## 代码示例：依赖注入容器
+
+```typescript
+// dependency-injection.ts — 基于装饰器的轻量级 DI 容器
+import 'reflect-metadata';
+
+const INJECTABLE_KEY = Symbol('injectable');
+const DEPENDENCIES_KEY = Symbol('dependencies');
+
+export function Injectable(target: new (...args: any[]) => any) {
+  Reflect.defineMetadata(INJECTABLE_KEY, true, target);
+}
+
+export function Inject(token: symbol | string | new (...args: any[]) => any) {
+  return function (target: any, _propertyKey: string | undefined, parameterIndex: number) {
+    const deps = Reflect.getMetadata(DEPENDENCIES_KEY, target) ?? [];
+    deps[parameterIndex] = token;
+    Reflect.defineMetadata(DEPENDENCIES_KEY, deps, target);
+  };
+}
+
+export class Container {
+  private registry = new Map<any, any>();
+
+  register<T>(token: any, instance: T): void {
+    this.registry.set(token, instance);
+  }
+
+  registerClass<T>(token: any, ctor: new (...args: any[]) => T): void {
+    this.registry.set(token, () => this.resolve(ctor));
+  }
+
+  resolve<T>(ctor: new (...args: any[]) => T): T {
+    const deps = Reflect.getMetadata(DEPENDENCIES_KEY, ctor) ?? [];
+    const args = deps.map((dep: any) => {
+      const registered = this.registry.get(dep);
+      if (registered === undefined) throw new Error(`Dependency ${String(dep)} not registered`);
+      return typeof registered === 'function' ? registered() : registered;
+    });
+    return new ctor(...args);
+  }
+}
+
+// 使用示例
+@Injectable
+class Logger {
+  log(msg: string) { console.log(`[LOG] ${msg}`); }
+}
+
+@Injectable
+class UserService {
+  constructor(@Inject(Logger) private logger: Logger) {}
+  getUser(id: string) {
+    this.logger.log(`Fetching user ${id}`);
+    return { id, name: 'Alice' };
+  }
+}
+
+const container = new Container();
+container.registerClass(Logger, Logger);
+container.registerClass(UserService, UserService);
+const userService = container.resolve(UserService);
+```
+
+## 代码示例：插件版本兼容校验
+
+```typescript
+// plugin-version.ts — 语义化版本约束与兼容性检查
+export function satisfies(version: string, range: string): boolean {
+  const [vMajor, vMinor, vPatch] = version.split('.').map(Number);
+  const [rMajor, rMinor] = range.split('.').map(Number);
+  if (vMajor !== rMajor) return false;
+  if (vMinor < rMinor) return false;
+  return true;
+}
+
+export function validatePluginManifest(
+  manifest: PluginManifest,
+  hostVersion: string,
+  supportedRanges: Record<string, string>
+): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  if (!satisfies(manifest.version, supportedRanges[manifest.name] ?? '1.0')) {
+    errors.push(`Plugin "${manifest.name}" version ${manifest.version} is not compatible with host ${hostVersion}`);
+  }
+
+  if (!manifest.permissions.every(p => ['fetch', 'URL', 'crypto', 'storage'].includes(p))) {
+    errors.push(`Plugin "${manifest.name}" requests unknown permissions`);
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -189,6 +284,11 @@ loadPlugin(manifest, { fetch: globalThis.fetch, URL: globalThis.URL })
 | Figma Plugin API | 文档 | [figma.com/developers](https://www.figma.com/developers/) |
 | VS Code Extension API | 文档 | [code.visualstudio.com/api](https://code.visualstudio.com/api) |
 | ShadowRealm TC39 Proposal | 规范 | [github.com/tc39/proposal-shadowrealm](https://github.com/tc39/proposal-shadowrealm) |
+| Node.js VM Module | 文档 | [nodejs.org/api/vm.html](https://nodejs.org/api/vm.html) |
+| Reflect Metadata (TypeScript) | 文档 | [typescriptlang.org/docs/handbook/decorators.html](https://www.typescriptlang.org/docs/handbook/decorators.html) |
+| QuickJS Sandbox | 源码 | [bellard.org/quickjs](https://bellard.org/quickjs/) |
+| npm semver | 文档 | [docs.npmjs.com/cli/v10/using-npm/semver](https://docs.npmjs.com/cli/v10/using-npm/semver) |
+| InversifyJS DI Container | 文档 | [inversify.io](https://inversify.io/) |
 
 ---
 

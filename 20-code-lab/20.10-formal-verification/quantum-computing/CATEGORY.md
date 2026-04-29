@@ -141,6 +141,67 @@ function simulateGrover(nQubits: number, target: number): number {
 console.log(simulateGrover(2, 2)); // 在 4 个元素中搜索 2，高概率返回 2
 ```
 
+### 量子傅里叶变换 (QFT) 模拟
+
+```typescript
+// qft.ts — 量子傅里叶变换 TypeScript 模拟
+function qft(amplitudes: [number, number][]): [number, number][] {
+  const N = amplitudes.length;
+  const result: [number, number][] = new Array(N).fill(0).map(() => [0, 0]);
+  for (let k = 0; k < N; k++) {
+    let real = 0, imag = 0;
+    for (let j = 0; j < N; j++) {
+      const angle = (2 * Math.PI * j * k) / N;
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      const [ajR, ajI] = amplitudes[j];
+      real += ajR * cos + ajI * sin;
+      imag += ajI * cos - ajR * sin;
+    }
+    result[k] = [real / Math.sqrt(N), imag / Math.sqrt(N)];
+  }
+  return result;
+}
+
+// 验证：QFT 作用于 |1⟩ 基态
+const input: [number, number][] = [[0, 0], [1, 0], [0, 0], [0, 0]];
+const output = qft(input);
+console.log('QFT output:', output.map(c => `(${c[0].toFixed(3)}, ${c[1].toFixed(3)})`).join(', '));
+```
+
+### Shor 算法周期查找模拟
+
+```typescript
+// shor-period.ts — 经典模拟 Shor 周期查找
+function modularExp(base: number, exp: number, mod: number): number {
+  let result = 1;
+  let b = base % mod;
+  let e = exp;
+  while (e > 0) {
+    if (e & 1) result = (result * b) % mod;
+    b = (b * b) % mod;
+    e >>= 1;
+  }
+  return result;
+}
+
+function findPeriodClassical(a: number, N: number): number {
+  let r = 1;
+  let current = a % N;
+  while (current !== 1) {
+    current = (current * a) % N;
+    r++;
+    if (r > N) return -1;
+  }
+  return r;
+}
+
+// 模拟：分解 N=15，选 a=7，期望周期 r=4
+const period = findPeriodClassical(7, 15);
+console.log(`Period of 7^x mod 15 = ${period}`);
+// 若 r 为偶数，可计算 gcd(a^(r/2) ± 1, N) 得到因子
+```
+
 ## 权威参考链接
 
 | 资源 | 类型 | 链接 |
@@ -155,6 +216,11 @@ console.log(simulateGrover(2, 2)); // 在 4 个元素中搜索 2，高概率返�
 | Microsoft Azure Quantum | 文档 | [learn.microsoft.com/azure/quantum](https://learn.microsoft.com/azure/quantum) |
 | Q# Documentation | 文档 | [learn.microsoft.com/azure/quantum/qsharp](https://learn.microsoft.com/azure/quantum/qsharp) |
 | Quantum Open Source Foundation | 社区 | [qosf.org](https://qosf.org) |
+| MIT 6.845 Quantum Complexity Theory | 课程 | [ocw.mit.edu/courses/6-845-quantum-complexity-theory-fall-2010](https://ocw.mit.edu/courses/6-845-quantum-complexity-theory-fall-2010/) |
+| Quantum Computing Stack Exchange | 社区 | [quantumcomputing.stackexchange.com](https://quantumcomputing.stackexchange.com) |
+| arXiv quant-ph | 论文预印本 | [arxiv.org/list/quant-ph/recent](https://arxiv.org/list/quant-ph/recent) |
+| Google Quantum AI Publications | 论文 | [ai.google/discover/quantum-ai](https://ai.google/discover/quantum-ai/) |
+| Quantum Algorithm Zoo | 算法目录 | [quantumalgorithmzoo.org](https://quantumalgorithmzoo.org/) |
 
 ## 关联模块
 

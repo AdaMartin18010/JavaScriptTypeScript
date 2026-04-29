@@ -60,6 +60,96 @@ function detectMemoryLeak(fn: () => void, iterations = 100_000): void {
 }
 ```
 
+### 异步堆栈追踪增强（Node.js async_hooks）
+
+```typescript
+import { createHook } from 'node:async_hooks';
+import { stackTraceLimit } from 'node:errors';
+
+const asyncContexts = new Map<number, string[]>();
+
+const hook = createHook({
+  init(asyncId, type, triggerAsyncId) {
+    const parent = asyncContexts.get(triggerAsyncId) ?? [];
+    asyncContexts.set(asyncId, [...parent, `${type}#${asyncId}`]);
+  },
+  destroy(asyncId) {
+    asyncContexts.delete(asyncId);
+  },
+});
+
+hook.enable();
+
+// 在异常处理中打印异步上下文
+process.on('unhandledRejection', (reason, promise) => {
+  const asyncId = (promise as any)[Symbol.for('asyncId')] ?? 0;
+  console.error('Unhandled rejection context:', asyncContexts.get(asyncId)?.join(' → '));
+});
+```
+
+### Chrome DevTools 程序化堆快照（Node.js）
+
+```typescript
+import { writeHeapSnapshot } from 'node:v8';
+import { writeFileSync } from 'node:fs';
+
+function captureHeapSnapshot(label = 'default') {
+  const snapshotPath = writeHeapSnapshot(`./heap-${label}-${Date.now()}.heapsnapshot`);
+  console.log(`Heap snapshot written to: ${snapshotPath}`);
+  return snapshotPath;
+}
+
+// 对比两次快照定位泄漏对象
+function diffSnapshots(before: string, after: string) {
+  // 使用 Chrome DevTools 打开两个 .heapsnapshot 文件进行 Diff 视图对比
+  console.log(`Compare ${before} and ${after} in Chrome DevTools → Memory tab`);
+}
+
+// 使用示例
+const before = captureHeapSnapshot('before');
+// ... 执行业务逻辑 ...
+const after = captureHeapSnapshot('after');
+diffSnapshots(before, after);
+```
+
+### Worker 线程负载监控
+
+```typescript
+import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
+import { performance } from 'node:perf_hooks';
+
+if (isMainThread) {
+  const worker = new Worker(__filename, { workerData: { jobId: 'J1' } });
+
+  worker.on('message', (msg) => {
+    if (msg.type === 'metrics') {
+      console.log(`Worker CPU time: ${msg.cpuTime}ms | Memory: ${msg.memoryUsage.rss / 1024 / 1024}MB`);
+    }
+  });
+
+  worker.postMessage({ type: 'start', payload: Array.from({ length: 1e6 }, (_, i) => i) });
+} else {
+  parentPort?.on('message', async ({ type, payload }) => {
+    if (type !== 'start') return;
+    const startCpu = performance.eventLoopUtilization();
+    const startMem = process.memoryUsage();
+
+    // 模拟计算密集型任务
+    const result = payload.reduce((a: number, b: number) => a + b, 0);
+
+    const endCpu = performance.eventLoopUtilization(startCpu);
+    parentPort?.postMessage({
+      type: 'metrics',
+      cpuTime: endCpu.active / 1e6,
+      memoryUsage: {
+        rss: process.memoryUsage().rss - startMem.rss,
+      },
+      result,
+    });
+  });
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -89,6 +179,14 @@ function detectMemoryLeak(fn: () => void, iterations = 100_000): void {
 | MDN — PerformanceObserver | 文档 | [developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver) |
 | web.dev — Optimize JavaScript Execution | 指南 | [web.dev/optimize-javascript-execution/](https://web.dev/optimize-javascript-execution/) |
 | Node.js — Memory Diagnostics | 指南 | [nodejs.org/en/learn/diagnostics/memory](https://nodejs.org/en/learn/diagnostics/memory) |
+| Node.js — Async Hooks | 官方文档 | [nodejs.org/api/async_hooks.html](https://nodejs.org/api/async_hooks.html) |
+| Node.js — Worker Threads | 官方文档 | [nodejs.org/api/worker_threads.html](https://nodejs.org/api/worker_threads.html) |
+| Node.js — Report (Diagnostic Report) | 官方文档 | [nodejs.org/api/report.html](https://nodejs.org/api/report.html) |
+| V8 — Heap Snapshots | 文档 | [v8.dev/docs/heap-snapshots](https://v8.dev/docs/heap-snapshots) |
+| Lighthouse Scoring Guide | 指南 | [developer.chrome.com/docs/lighthouse/performance/performance-scoring](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring) |
+| JavaScript Memory Management (MDN) | 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_management](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_management) |
+| Clinic.js — Node.js 性能诊断工具套件 | 工具 | [clinicjs.org](https://clinicjs.org/) |
+| 0x — Node.js 火焰图生成器 | 工具 | [github.com/davidmarkclements/0x](https://github.com/davidmarkclements/0x) |
 
 ---
 

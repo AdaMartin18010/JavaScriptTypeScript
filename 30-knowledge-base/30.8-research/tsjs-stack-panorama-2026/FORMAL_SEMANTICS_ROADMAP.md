@@ -79,6 +79,152 @@ status: current
 
 ---
 
+## 三、代码示例：语义模型的可运行表达
+
+### 约束推断的简化实现
+
+```typescript
+// constraint-inference.ts —— TypeScript 风格约束推断的简化演示
+
+type TypeVar = { kind: 'var'; id: number };
+type TypeConst = { kind: 'const'; name: 'number' | 'string' | 'boolean' };
+type Type = TypeVar | TypeConst | { kind: 'array'; elem: Type } | { kind: 'func'; args: Type[]; ret: Type };
+
+interface Constraint {
+  left: Type;
+  right: Type;
+}
+
+let varId = 0;
+function freshVar(): TypeVar {
+  return { kind: 'var', id: varId++ };
+}
+
+function unify(c: Constraint, subst: Map<number, Type>): Map<number, Type> | null {
+  const { left, right } = c;
+
+  // 相同类型 → 无约束
+  if (left === right) return subst;
+
+  // 变量绑定
+  if (left.kind === 'var') {
+    if (right.kind === 'var' && left.id === right.id) return subst;
+    const newSubst = new Map(subst);
+    newSubst.set(left.id, right);
+    return newSubst;
+  }
+  if (right.kind === 'var') {
+    const newSubst = new Map(subst);
+    newSubst.set(right.id, left);
+    return newSubst;
+  }
+
+  // 数组类型递归合一
+  if (left.kind === 'array' && right.kind === 'array') {
+    return unify({ left: left.elem, right: right.elem }, subst);
+  }
+
+  // 常量类型必须匹配
+  if (left.kind === 'const' && right.kind === 'const' && left.name === right.name) {
+    return subst;
+  }
+
+  return null; // 类型不匹配
+}
+
+// 示例：推断 identity 函数的返回类型
+// function identity<T>(x: T): T
+const T = freshVar();
+const constraint: Constraint = { left: T, right: { kind: 'const', name: 'number' } };
+const solution = unify(constraint, new Map());
+console.log(solution); // Map { 0 => { kind: 'const', name: 'number' } }
+```
+
+### 三层语义边界演示
+
+```typescript
+// semantic-layers.ts —— 运行时 / 擦除 / 宿主的边界
+
+// Layer 1: TypeScript 类型层（编译时擦除）
+interface User {
+  id: string;
+  name: string;
+}
+
+// Layer 2: JavaScript 运行时语义（ECMA-262）
+function greet(user: User) {
+  // 编译后类型擦除，运行时只有值
+  return `Hello, ${user.name}`;
+}
+
+// Layer 3: 宿主调度语义（Node.js / Browser）
+async function fetchUser(id: string): Promise<User> {
+  // 宿主提供 fetch / I/O 能力
+  const res = await fetch(`/api/users/${id}`);
+  const data = await res.json();
+  // 运行时无类型校验，依赖外部契约
+  return data as User;
+}
+
+// 使用 Zod 在边界处恢复类型安全
+import { z } from 'zod';
+const UserSchema = z.object({ id: z.string(), name: z.string() });
+
+async function safeFetchUser(id: string): Promise<User> {
+  const res = await fetch(`/api/users/${id}`);
+  const raw = await res.json();
+  return UserSchema.parse(raw); // 运行时校验 = 三层语义之间的桥梁
+}
+```
+
+### 操作语义推理规则风格
+
+```typescript
+// operational-semantics.ts —— 用代码模拟推理规则
+
+// 规则：若 e1 → v1 且 e2 → v2，则 e1 + e2 → v1 + v2
+// 规则：若 Γ ⊢ x : τ 且 x ∈ dom(Γ)，则 lookup(Γ, x) = τ
+
+type Env = Map<string, unknown>;
+
+function evalExpr(env: Env, expr: unknown): unknown {
+  // [Var] 变量查找
+  if (typeof expr === 'string' && env.has(expr)) {
+    return env.get(expr);
+  }
+
+  // [Num] 数值字面量
+  if (typeof expr === 'number') {
+    return expr;
+  }
+
+  // [Add] 加法：前提 e1 → v1, e2 → v2，结论 e1+e2 → v1+v2
+  if (Array.isArray(expr) && expr[0] === '+') {
+    const v1 = evalExpr(env, expr[1]);
+    const v2 = evalExpr(env, expr[2]);
+    if (typeof v1 === 'number' && typeof v2 === 'number') {
+      return v1 + v2;
+    }
+    throw new TypeError('Addition requires numbers');
+  }
+
+  // [App] 函数调用
+  if (Array.isArray(expr) && typeof expr[0] === 'function') {
+    const fn = expr[0] as (...args: unknown[]) => unknown;
+    const args = expr.slice(1).map((arg) => evalExpr(env, arg));
+    return fn(...args);
+  }
+
+  return expr;
+}
+
+// 测试：(+ 1 (+ 2 3)) → 6
+const result = evalExpr(new Map(), ['+', 1, ['+', 2, 3]]);
+console.log(result); // 6
+```
+
+---
+
 ## 三、权威参考来源（本版文档必须对齐）
 
 1. **ECMAScript® 2025 Language Specification** (ECMA-262, 16th Edition) - <https://tc39.es/ecma262/2025/>
@@ -93,6 +239,24 @@ status: current
    - Bruno et al., *Recursive Subtyping for All* (JFP 2025) — 递归子类型最新进展
    - Brown University S5 / JSCert — JS 形式化语义方向
 6. **WinterCG** (Web-interoperable Runtimes Community Group) — 现代运行时标准化
+
+---
+
+## 四、扩展权威参考
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| TypeScript Compiler API | [github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) | 直接操作 TS 类型系统的编程接口 |
+| ECMA-262 Test Suite (test262) | [github.com/tc39/test262](https://github.com/tc39/test262) | JavaScript 引擎一致性测试标准 |
+| V8 Design Elements | [v8.dev/docs](https://v8.dev/docs) | V8 内部设计文档集合 |
+| libuv Design Overview | [docs.libuv.org/en/v1.x/design.html](https://docs.libuv.org/en/v1.x/design.html) | Node.js 事件循环底层实现 |
+| What Every Computer Scientist Should Know About Floating-Point Arithmetic | [docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html) | JS Number 类型底层基础 |
+| Gradual Typing for Functional Languages (Siek & Taha) | [cs.colorado.edu/~siek/gtfl.pdf](https://www.cs.colorado.edu/~siek/gtfl.pdf) | 渐进类型系统奠基论文 |
+| PLT Redex & Semantics Engineering | [redex.racket-lang.org](https://redex.racket-lang.org/) | 形式化语义建模工具 |
+| JSExplain (INRIA) | [jsexplain.gforge.inria.fr](https://jsexplain.gforge.inria.fr/) | ECMAScript 可执行规范参考实现 |
+| TypeScript Type System Spec (WIP) | [github.com/microsoft/TypeScript/issues/58113](https://github.com/microsoft/TypeScript/issues/58113) | TS 团队正在编写的类型系统规范 |
+| Announcing TypeScript 5.6 (NoInfer) | [devblogs.microsoft.com/typescript/announcing-typescript-5-6](https://devblogs.microsoft.com/typescript/announcing-typescript-5-6/) | NoInfer<T> 语义详解 |
+| TypeScript 5.2 using Declarations | [devblogs.microsoft.com/typescript/announcing-typescript-5-2](https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/) | using 关键字与显式资源管理 |
 
 ---
 
