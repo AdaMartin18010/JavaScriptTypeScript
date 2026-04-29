@@ -1,56 +1,8 @@
 {
-  "generatedAt": "2026-04-28T23:56:35.263Z",
-  "totalScanned": 1056,
-  "totalRated": 704,
+  "generatedAt": "2026-04-29T00:09:42.930Z",
+  "totalScanned": 1045,
+  "totalRated": 693,
   "top30": [
-    {
-      "path": "50-examples\\50.1-beginner\\todo-master\\TUTORIAL.md",
-      "sizeKB": 19.5,
-      "lines": 991,
-      "hasCode": "Y",
-      "hasLink": "Y",
-      "hasTable": "Y",
-      "hasENRef": "Y",
-      "todoCount": 268,
-      "priority": "normal",
-      "score": 815
-    },
-    {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\ARCHITECTURE_PATTERNS_THEORY.md",
-      "sizeKB": 101.6,
-      "lines": 3881,
-      "hasCode": "Y",
-      "hasLink": "Y",
-      "hasTable": "Y",
-      "hasENRef": "Y",
-      "todoCount": 216,
-      "priority": "normal",
-      "score": 648
-    },
-    {
-      "path": "10-fundamentals\\10.6-ecmascript-spec\\ecmascript-features\\ES2023_ARRAY_IMMATABILITY.md",
-      "sizeKB": 39.2,
-      "lines": 1470,
-      "hasCode": "Y",
-      "hasLink": "N",
-      "hasTable": "Y",
-      "hasENRef": "N",
-      "todoCount": 38,
-      "priority": "normal",
-      "score": 129
-    },
-    {
-      "path": "50-examples\\50.1-beginner\\todo-master\\MILESTONES.md",
-      "sizeKB": 2.7,
-      "lines": 130,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 10,
-      "priority": "normal",
-      "score": 99
-    },
     {
       "path": "30-knowledge-base\\30.1-guides\\ai-coding-workflow.md",
       "sizeKB": 0.1,
@@ -136,18 +88,6 @@
       "score": 95
     },
     {
-      "path": "30-knowledge-base\\30.2-categories\\04-state-management.md",
-      "sizeKB": 0.1,
-      "lines": 17,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 3,
-      "priority": "medium",
-      "score": 95
-    },
-    {
       "path": "30-knowledge-base\\30.2-categories\\05-forms.md",
       "sizeKB": 0.1,
       "lines": 17,
@@ -172,18 +112,6 @@
       "score": 95
     },
     {
-      "path": "30-knowledge-base\\30.2-categories\\08-monorepo-tools.md",
-      "sizeKB": 0.1,
-      "lines": 17,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 3,
-      "priority": "medium",
-      "score": 95
-    },
-    {
       "path": "30-knowledge-base\\30.2-categories\\09-deployment-platforms.md",
       "sizeKB": 0.1,
       "lines": 17,
@@ -196,31 +124,7 @@
       "score": 95
     },
     {
-      "path": "30-knowledge-base\\30.2-categories\\10-css-frameworks.md",
-      "sizeKB": 0.1,
-      "lines": 17,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 3,
-      "priority": "medium",
-      "score": 95
-    },
-    {
       "path": "30-knowledge-base\\30.2-categories\\13-ci-cd.md",
-      "sizeKB": 0.1,
-      "lines": 17,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 3,
-      "priority": "medium",
-      "score": 95
-    },
-    {
-      "path": "30-knowledge-base\\30.2-categories\\14-linting-formatting.md",
       "sizeKB": 0.1,
       "lines": 17,
       "hasCode": "N",
@@ -362,57 +266,105 @@
       "todoCount": 3,
       "priority": "normal",
       "score": 92
-    }
-  ],
-  "allResults": [
-    {
-      "path": "50-examples\\50.1-beginner\\todo-master\\TUTORIAL.md",
-      "sizeKB": 19.5,
-      "lines": 991,
-      "hasCode": "Y",
-      "hasLink": "Y",
-      "hasTable": "Y",
-      "hasENRef": "Y",
-      "todoCount": 268,
-      "priority": "normal",
-      "score": 815
     },
     {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\ARCHITECTURE_PATTERNS_THEORY.md",
-      "sizeKB": 101.6,
-      "lines": 3881,
-      "hasCode": "Y",
-      "hasLink": "Y",
-      "hasTable": "Y",
-      "hasENRef": "Y",
-      "todoCount": 216,
-      "priority": "normal",
-      "score": 648
-    },
-    {
-      "path": "10-fundamentals\\10.6-ecmascript-spec\\ecmascript-features\\ES2023_ARRAY_IMMATABILITY.md",
-      "sizeKB": 39.2,
-      "lines": 1470,
-      "hasCode": "Y",
-      "hasLink": "N",
-      "hasTable": "Y",
-      "hasENRef": "N",
-      "todoCount": 38,
-      "priority": "normal",
-      "score": 129
-    },
-    {
-      "path": "50-examples\\50.1-beginner\\todo-master\\MILESTONES.md",
-      "sizeKB": 2.7,
-      "lines": 130,
+      "path": "30-knowledge-base\\30.3-comparison-matrices\\frontend-frameworks-compare.md",
+      "sizeKB": 0.1,
+      "lines": 17,
       "hasCode": "N",
       "hasLink": "N",
       "hasTable": "N",
       "hasENRef": "N",
-      "todoCount": 10,
+      "todoCount": 3,
       "priority": "normal",
-      "score": 99
+      "score": 92
     },
+    {
+      "path": "30-knowledge-base\\30.3-comparison-matrices\\infrastructure-stack-decision-matrix.md",
+      "sizeKB": 0.1,
+      "lines": 17,
+      "hasCode": "N",
+      "hasLink": "N",
+      "hasTable": "N",
+      "hasENRef": "N",
+      "todoCount": 3,
+      "priority": "normal",
+      "score": 92
+    },
+    {
+      "path": "30-knowledge-base\\30.3-comparison-matrices\\js-ts-compilers-compare.md",
+      "sizeKB": 0.1,
+      "lines": 17,
+      "hasCode": "N",
+      "hasLink": "N",
+      "hasTable": "N",
+      "hasENRef": "N",
+      "todoCount": 3,
+      "priority": "normal",
+      "score": 92
+    },
+    {
+      "path": "30-knowledge-base\\30.3-comparison-matrices\\monorepo-tools-compare.md",
+      "sizeKB": 0.1,
+      "lines": 17,
+      "hasCode": "N",
+      "hasLink": "N",
+      "hasTable": "N",
+      "hasENRef": "N",
+      "todoCount": 3,
+      "priority": "normal",
+      "score": 92
+    },
+    {
+      "path": "30-knowledge-base\\30.3-comparison-matrices\\observability-tools-compare.md",
+      "sizeKB": 0.1,
+      "lines": 17,
+      "hasCode": "N",
+      "hasLink": "N",
+      "hasTable": "N",
+      "hasENRef": "N",
+      "todoCount": 3,
+      "priority": "normal",
+      "score": 92
+    },
+    {
+      "path": "30-knowledge-base\\30.3-comparison-matrices\\ui-libraries-compare.md",
+      "sizeKB": 0.1,
+      "lines": 17,
+      "hasCode": "N",
+      "hasLink": "N",
+      "hasTable": "N",
+      "hasENRef": "N",
+      "todoCount": 3,
+      "priority": "normal",
+      "score": 92
+    },
+    {
+      "path": "30-knowledge-base\\30.4-decision-trees\\README.md",
+      "sizeKB": 0.1,
+      "lines": 17,
+      "hasCode": "N",
+      "hasLink": "N",
+      "hasTable": "N",
+      "hasENRef": "N",
+      "todoCount": 3,
+      "priority": "normal",
+      "score": 92
+    },
+    {
+      "path": "30-knowledge-base\\30.6-patterns\\REACT_PATTERNS.md",
+      "sizeKB": 0.1,
+      "lines": 17,
+      "hasCode": "N",
+      "hasLink": "N",
+      "hasTable": "N",
+      "hasENRef": "N",
+      "todoCount": 3,
+      "priority": "normal",
+      "score": 92
+    }
+  ],
+  "allResults": [
     {
       "path": "30-knowledge-base\\30.1-guides\\ai-coding-workflow.md",
       "sizeKB": 0.1,
@@ -498,18 +450,6 @@
       "score": 95
     },
     {
-      "path": "30-knowledge-base\\30.2-categories\\04-state-management.md",
-      "sizeKB": 0.1,
-      "lines": 17,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 3,
-      "priority": "medium",
-      "score": 95
-    },
-    {
       "path": "30-knowledge-base\\30.2-categories\\05-forms.md",
       "sizeKB": 0.1,
       "lines": 17,
@@ -534,18 +474,6 @@
       "score": 95
     },
     {
-      "path": "30-knowledge-base\\30.2-categories\\08-monorepo-tools.md",
-      "sizeKB": 0.1,
-      "lines": 17,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 3,
-      "priority": "medium",
-      "score": 95
-    },
-    {
       "path": "30-knowledge-base\\30.2-categories\\09-deployment-platforms.md",
       "sizeKB": 0.1,
       "lines": 17,
@@ -558,31 +486,7 @@
       "score": 95
     },
     {
-      "path": "30-knowledge-base\\30.2-categories\\10-css-frameworks.md",
-      "sizeKB": 0.1,
-      "lines": 17,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 3,
-      "priority": "medium",
-      "score": 95
-    },
-    {
       "path": "30-knowledge-base\\30.2-categories\\13-ci-cd.md",
-      "sizeKB": 0.1,
-      "lines": 17,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 3,
-      "priority": "medium",
-      "score": 95
-    },
-    {
-      "path": "30-knowledge-base\\30.2-categories\\14-linting-formatting.md",
       "sizeKB": 0.1,
       "lines": 17,
       "hasCode": "N",
@@ -1305,138 +1209,6 @@
       "path": "30-knowledge-base\\30.8-data\\README.md",
       "sizeKB": 0.1,
       "lines": 8,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 1,
-      "priority": "normal",
-      "score": 87
-    },
-    {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\about.md",
-      "sizeKB": 0.1,
-      "lines": 13,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 1,
-      "priority": "normal",
-      "score": 87
-    },
-    {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\ECMA-262.md",
-      "sizeKB": 0.1,
-      "lines": 13,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 1,
-      "priority": "normal",
-      "score": 87
-    },
-    {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\index.md",
-      "sizeKB": 0.1,
-      "lines": 13,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 1,
-      "priority": "normal",
-      "score": 87
-    },
-    {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\Microsoft.md",
-      "sizeKB": 0.1,
-      "lines": 12,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 1,
-      "priority": "normal",
-      "score": 87
-    },
-    {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\Node.js.md",
-      "sizeKB": 0.1,
-      "lines": 13,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 1,
-      "priority": "normal",
-      "score": 87
-    },
-    {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\slide.image.md",
-      "sizeKB": 0.1,
-      "lines": 13,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 1,
-      "priority": "normal",
-      "score": 87
-    },
-    {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\TC39.md",
-      "sizeKB": 0.1,
-      "lines": 13,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 1,
-      "priority": "normal",
-      "score": 87
-    },
-    {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\TypeScript.md",
-      "sizeKB": 0.1,
-      "lines": 13,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 1,
-      "priority": "normal",
-      "score": 87
-    },
-    {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\V8.md",
-      "sizeKB": 0.1,
-      "lines": 13,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 1,
-      "priority": "normal",
-      "score": 87
-    },
-    {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\WHATWG.md",
-      "sizeKB": 0.1,
-      "lines": 12,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 1,
-      "priority": "normal",
-      "score": 87
-    },
-    {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\间隔.md",
-      "sizeKB": 0.1,
-      "lines": 12,
       "hasCode": "N",
       "hasLink": "N",
       "hasTable": "N",
@@ -3714,18 +3486,6 @@
       "score": 76
     },
     {
-      "path": "30-knowledge-base\\30.9-learning-paths\\CHECKPOINTS.md",
-      "sizeKB": 5.9,
-      "lines": 160,
-      "hasCode": "N",
-      "hasLink": "N",
-      "hasTable": "Y",
-      "hasENRef": "N",
-      "todoCount": 6,
-      "priority": "normal",
-      "score": 76
-    },
-    {
       "path": "10-fundamentals\\10.6-ecmascript-spec\\abstract-operations.md",
       "sizeKB": 1.1,
       "lines": 39,
@@ -4770,6 +4530,18 @@
       "score": 69
     },
     {
+      "path": "50-examples\\50.1-beginner\\todo-master\\MILESTONES.md",
+      "sizeKB": 2.7,
+      "lines": 130,
+      "hasCode": "N",
+      "hasLink": "N",
+      "hasTable": "N",
+      "hasENRef": "N",
+      "todoCount": 0,
+      "priority": "normal",
+      "score": 69
+    },
+    {
       "path": "10-fundamentals\\10.1-language-semantics\\theorems\\runtime-convergence-theorem.md",
       "sizeKB": 2.6,
       "lines": 94,
@@ -5598,18 +5370,6 @@
       "score": 62
     },
     {
-      "path": "30-knowledge-base\\30.9-learning-paths\\milestone-checkpoints.md",
-      "sizeKB": 3.1,
-      "lines": 184,
-      "hasCode": "Y",
-      "hasLink": "N",
-      "hasTable": "N",
-      "hasENRef": "N",
-      "todoCount": 1,
-      "priority": "normal",
-      "score": 62
-    },
-    {
       "path": "10-fundamentals\\10.1-language-semantics\\code-examples\\js-ts-difference\\05-ts-to-js-reverse-mapping.md",
       "sizeKB": 2,
       "lines": 119,
@@ -5742,14 +5502,14 @@
       "score": 59
     },
     {
-      "path": "30-knowledge-base\\30.9-learning-paths\\FOUR_DIMENSIONS_PATHS.md",
-      "sizeKB": 7.1,
-      "lines": 233,
-      "hasCode": "N",
+      "path": "30-knowledge-base\\30.9-learning-paths\\milestone-checkpoints.md",
+      "sizeKB": 3.1,
+      "lines": 184,
+      "hasCode": "Y",
       "hasLink": "N",
-      "hasTable": "Y",
+      "hasTable": "N",
       "hasENRef": "N",
-      "todoCount": 3,
+      "todoCount": 0,
       "priority": "normal",
       "score": 59
     },
@@ -5763,6 +5523,18 @@
       "hasENRef": "Y",
       "todoCount": 0,
       "priority": "high",
+      "score": 58
+    },
+    {
+      "path": "30-knowledge-base\\30.9-learning-paths\\CHECKPOINTS.md",
+      "sizeKB": 5.9,
+      "lines": 160,
+      "hasCode": "N",
+      "hasLink": "N",
+      "hasTable": "Y",
+      "hasENRef": "N",
+      "todoCount": 0,
+      "priority": "normal",
       "score": 58
     },
     {
@@ -5838,15 +5610,27 @@
       "score": 55
     },
     {
-      "path": "30-knowledge-base\\30.9-learning-paths\\frameworks-path.md",
-      "sizeKB": 6.5,
-      "lines": 226,
+      "path": "30-knowledge-base\\30.2-categories\\04-state-management.md",
+      "sizeKB": 3,
+      "lines": 100,
       "hasCode": "N",
       "hasLink": "Y",
-      "hasTable": "N",
+      "hasTable": "Y",
       "hasENRef": "Y",
-      "todoCount": 5,
-      "priority": "normal",
+      "todoCount": 0,
+      "priority": "medium",
+      "score": 55
+    },
+    {
+      "path": "30-knowledge-base\\30.2-categories\\10-css-frameworks.md",
+      "sizeKB": 3.4,
+      "lines": 151,
+      "hasCode": "Y",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "N",
+      "todoCount": 0,
+      "priority": "medium",
       "score": 55
     },
     {
@@ -6066,6 +5850,18 @@
       "score": 50
     },
     {
+      "path": "30-knowledge-base\\30.9-learning-paths\\FOUR_DIMENSIONS_PATHS.md",
+      "sizeKB": 7.1,
+      "lines": 233,
+      "hasCode": "N",
+      "hasLink": "N",
+      "hasTable": "Y",
+      "hasENRef": "N",
+      "todoCount": 0,
+      "priority": "normal",
+      "score": 50
+    },
+    {
       "path": "40-ecosystem\\40.1-categories\\docs-archive\\comparison-tables\\template.md",
       "sizeKB": 3.5,
       "lines": 151,
@@ -6126,6 +5922,18 @@
       "score": 47
     },
     {
+      "path": "30-knowledge-base\\30.2-categories\\14-linting-formatting.md",
+      "sizeKB": 3.3,
+      "lines": 134,
+      "hasCode": "Y",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "medium",
+      "score": 47
+    },
+    {
       "path": "30-knowledge-base\\30.4-decision-trees\\legacy-decision-trees.md",
       "sizeKB": 32.5,
       "lines": 1279,
@@ -6158,18 +5966,6 @@
       "hasTable": "Y",
       "hasENRef": "N",
       "todoCount": 1,
-      "priority": "normal",
-      "score": 47
-    },
-    {
-      "path": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
-      "sizeKB": 7.2,
-      "lines": 444,
-      "hasCode": "Y",
-      "hasLink": "Y",
-      "hasTable": "Y",
-      "hasENRef": "Y",
-      "todoCount": 8,
       "priority": "normal",
       "score": 47
     },
@@ -6234,6 +6030,18 @@
       "score": 46
     },
     {
+      "path": "30-knowledge-base\\30.2-categories\\08-monorepo-tools.md",
+      "sizeKB": 3.5,
+      "lines": 151,
+      "hasCode": "Y",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "medium",
+      "score": 45
+    },
+    {
       "path": "30-knowledge-base\\30.3-comparison-matrices\\ssr-metaframeworks-compare.md",
       "sizeKB": 7.9,
       "lines": 223,
@@ -6254,18 +6062,6 @@
       "hasTable": "Y",
       "hasENRef": "N",
       "todoCount": 0,
-      "priority": "normal",
-      "score": 45
-    },
-    {
-      "path": "30-knowledge-base\\30.9-learning-paths\\application-domains-path.md",
-      "sizeKB": 5.6,
-      "lines": 215,
-      "hasCode": "N",
-      "hasLink": "Y",
-      "hasTable": "N",
-      "hasENRef": "Y",
-      "todoCount": 1,
       "priority": "normal",
       "score": 45
     },
@@ -6327,18 +6123,6 @@
       "hasENRef": "Y",
       "todoCount": 0,
       "priority": "medium",
-      "score": 44
-    },
-    {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_性能对比与优化指南.md",
-      "sizeKB": 10.4,
-      "lines": 469,
-      "hasCode": "Y",
-      "hasLink": "N",
-      "hasTable": "Y",
-      "hasENRef": "N",
-      "todoCount": 3,
-      "priority": "normal",
       "score": 44
     },
     {
@@ -6462,6 +6246,18 @@
       "score": 42
     },
     {
+      "path": "30-knowledge-base\\30.9-learning-paths\\application-domains-path.md",
+      "sizeKB": 5.6,
+      "lines": 215,
+      "hasCode": "N",
+      "hasLink": "Y",
+      "hasTable": "N",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "normal",
+      "score": 42
+    },
+    {
       "path": "10-fundamentals\\10.6-ecmascript-spec\\code-examples\\04-completion-records.md",
       "sizeKB": 4.1,
       "lines": 204,
@@ -6482,18 +6278,6 @@
       "hasTable": "Y",
       "hasENRef": "N",
       "todoCount": 0,
-      "priority": "medium",
-      "score": 41
-    },
-    {
-      "path": "30-knowledge-base\\30.2-categories\\05-state-management.md",
-      "sizeKB": 34.2,
-      "lines": 1841,
-      "hasCode": "Y",
-      "hasLink": "N",
-      "hasTable": "Y",
-      "hasENRef": "Y",
-      "todoCount": 11,
       "priority": "medium",
       "score": 41
     },
@@ -6541,6 +6325,18 @@
       "hasLink": "N",
       "hasTable": "N",
       "hasENRef": "N",
+      "todoCount": 0,
+      "priority": "normal",
+      "score": 40
+    },
+    {
+      "path": "30-knowledge-base\\30.9-learning-paths\\frameworks-path.md",
+      "sizeKB": 6.5,
+      "lines": 226,
+      "hasCode": "N",
+      "hasLink": "Y",
+      "hasTable": "N",
+      "hasENRef": "Y",
       "todoCount": 0,
       "priority": "normal",
       "score": 40
@@ -6762,6 +6558,18 @@
       "score": 35
     },
     {
+      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_性能对比与优化指南.md",
+      "sizeKB": 10.4,
+      "lines": 469,
+      "hasCode": "Y",
+      "hasLink": "N",
+      "hasTable": "Y",
+      "hasENRef": "N",
+      "todoCount": 0,
+      "priority": "normal",
+      "score": 35
+    },
+    {
       "path": "10-fundamentals\\10.1-language-semantics\\code-examples\\js-ts-difference\\01-js-only-runtime-features.md",
       "sizeKB": 4.3,
       "lines": 221,
@@ -6906,18 +6714,6 @@
       "score": 31
     },
     {
-      "path": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
-      "sizeKB": 27.8,
-      "lines": 1002,
-      "hasCode": "N",
-      "hasLink": "Y",
-      "hasTable": "Y",
-      "hasENRef": "Y",
-      "todoCount": 8,
-      "priority": "normal",
-      "score": 31
-    },
-    {
       "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\content-plan.md",
       "sizeKB": 22.6,
       "lines": 912,
@@ -6974,18 +6770,6 @@
       "hasTable": "Y",
       "hasENRef": "Y",
       "todoCount": 0,
-      "priority": "normal",
-      "score": 29
-    },
-    {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_学习路径与技能图谱.md",
-      "sizeKB": 9,
-      "lines": 579,
-      "hasCode": "Y",
-      "hasLink": "N",
-      "hasTable": "Y",
-      "hasENRef": "Y",
-      "todoCount": 1,
       "priority": "normal",
       "score": 29
     },
@@ -7341,6 +7125,18 @@
       "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\99_完整分析与总结.md",
       "sizeKB": 9.5,
       "lines": 462,
+      "hasCode": "Y",
+      "hasLink": "N",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "normal",
+      "score": 26
+    },
+    {
+      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\JS_TS_学习路径与技能图谱.md",
+      "sizeKB": 9,
+      "lines": 579,
       "hasCode": "Y",
       "hasLink": "N",
       "hasTable": "Y",
@@ -7710,6 +7506,18 @@
       "score": 23
     },
     {
+      "path": "30-knowledge-base\\30.9-learning-paths\\beginners-path.md",
+      "sizeKB": 7.2,
+      "lines": 444,
+      "hasCode": "Y",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "normal",
+      "score": 23
+    },
+    {
       "path": "50-examples\\50.6-ai-agent\\ai-agent-production\\TUTORIAL.md",
       "sizeKB": 22.4,
       "lines": 1019,
@@ -7790,18 +7598,6 @@
       "hasTable": "Y",
       "hasENRef": "Y",
       "todoCount": 0,
-      "priority": "medium",
-      "score": 21
-    },
-    {
-      "path": "30-knowledge-base\\30.2-categories\\platforms\\MOBILE_DEVELOPMENT.md",
-      "sizeKB": 80.4,
-      "lines": 3521,
-      "hasCode": "Y",
-      "hasLink": "N",
-      "hasTable": "Y",
-      "hasENRef": "N",
-      "todoCount": 1,
       "priority": "medium",
       "score": 21
     },
@@ -7950,6 +7746,18 @@
       "score": 18
     },
     {
+      "path": "30-knowledge-base\\30.2-categories\\platforms\\MOBILE_DEVELOPMENT.md",
+      "sizeKB": 80.4,
+      "lines": 3521,
+      "hasCode": "Y",
+      "hasLink": "N",
+      "hasTable": "Y",
+      "hasENRef": "N",
+      "todoCount": 0,
+      "priority": "medium",
+      "score": 18
+    },
+    {
       "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\FORMAL_SEMANTICS_COMPLETE.md",
       "sizeKB": 26.8,
       "lines": 1170,
@@ -8068,6 +7876,18 @@
       "todoCount": 0,
       "priority": "normal",
       "score": 16
+    },
+    {
+      "path": "10-fundamentals\\10.6-ecmascript-spec\\ecmascript-features\\ES2023_ARRAY_IMMATABILITY.md",
+      "sizeKB": 39.2,
+      "lines": 1470,
+      "hasCode": "Y",
+      "hasLink": "N",
+      "hasTable": "Y",
+      "hasENRef": "N",
+      "todoCount": 0,
+      "priority": "normal",
+      "score": 15
     },
     {
       "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\01_language_core.md",
@@ -8370,6 +8190,18 @@
       "score": 11
     },
     {
+      "path": "50-examples\\50.1-beginner\\todo-master\\TUTORIAL.md",
+      "sizeKB": 19.5,
+      "lines": 991,
+      "hasCode": "Y",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "normal",
+      "score": 11
+    },
+    {
       "path": "30-knowledge-base\\30.2-categories\\19-micro-frontends.md",
       "sizeKB": 23.3,
       "lines": 1221,
@@ -8406,16 +8238,16 @@
       "score": 9
     },
     {
-      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\FUNCTIONAL_PROGRAMMING_THEORY.md",
-      "sizeKB": 55.3,
-      "lines": 2309,
+      "path": "30-knowledge-base\\30.2-categories\\05-state-management.md",
+      "sizeKB": 34.2,
+      "lines": 1841,
       "hasCode": "Y",
-      "hasLink": "Y",
+      "hasLink": "N",
       "hasTable": "Y",
       "hasENRef": "Y",
-      "todoCount": 3,
-      "priority": "normal",
-      "score": 9
+      "todoCount": 0,
+      "priority": "medium",
+      "score": 8
     },
     {
       "path": "30-knowledge-base\\30.2-categories\\28-ai-agent-infrastructure.md",
@@ -8447,6 +8279,18 @@
       "lines": 627,
       "hasCode": "Y",
       "hasLink": "N",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "normal",
+      "score": 7
+    },
+    {
+      "path": "30-knowledge-base\\30.9-learning-paths\\project-based-certification.md",
+      "sizeKB": 27.8,
+      "lines": 1002,
+      "hasCode": "N",
+      "hasLink": "Y",
       "hasTable": "Y",
       "hasENRef": "Y",
       "todoCount": 0,
@@ -8754,6 +8598,18 @@
       "score": 0
     },
     {
+      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\ARCHITECTURE_PATTERNS_THEORY.md",
+      "sizeKB": 101.6,
+      "lines": 3881,
+      "hasCode": "Y",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "normal",
+      "score": 0
+    },
+    {
       "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\deep-dive.md",
       "sizeKB": 89.3,
       "lines": 2762,
@@ -8769,6 +8625,18 @@
       "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\ERROR_HANDLING_RELIABILITY.md",
       "sizeKB": 47.6,
       "lines": 1931,
+      "hasCode": "Y",
+      "hasLink": "Y",
+      "hasTable": "Y",
+      "hasENRef": "Y",
+      "todoCount": 0,
+      "priority": "normal",
+      "score": 0
+    },
+    {
+      "path": "30-knowledge-base\\30.8-research\\tsjs-stack-panorama-2026\\FUNCTIONAL_PROGRAMMING_THEORY.md",
+      "sizeKB": 55.3,
+      "lines": 2309,
       "hasCode": "Y",
       "hasLink": "Y",
       "hasTable": "Y",
@@ -8815,9 +8683,9 @@
     }
   ],
   "summary": {
-    "needsCode": 446,
-    "needsLink": 512,
-    "needsTable": 252,
-    "needsENRef": 481
+    "needsCode": 432,
+    "needsLink": 497,
+    "needsTable": 237,
+    "needsENRef": 467
   }
 }

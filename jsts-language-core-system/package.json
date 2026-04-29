@@ -1,9 +1,0 @@
-{
-  "name": "jsts-language-core-system",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "type-check": "tsc --noEmit",
-    "demo": "tsx index.ts"
-  }
-}

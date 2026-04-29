@@ -120,8 +120,14 @@ function hasEnglishAuthorityRef(content) {
 }
 
 function countTODOs(content) {
-  const matches = content.match(/TODO|FIXME|待补充|待完善/gi);
-  return matches ? matches.length : 0;
+  // 严格匹配真正的 TODO/FIXME 标记：单词边界 + 后接标点/空格/行尾
+  // 排除 toDomain/TodoModel/TodoMaster 等代码标识符误匹配
+  const matches = content.match(/\b(TODO|FIXME)\b[\s:：,;.!]|\b(TODO|FIXME)\b$/gm);
+  const cnMatches = content.match(/待补充|待完善/g);
+  let count = 0;
+  if (matches) count += matches.length;
+  if (cnMatches) count += cnMatches.length;
+  return count;
 }
 
 function analyzeFile(filePath) {
