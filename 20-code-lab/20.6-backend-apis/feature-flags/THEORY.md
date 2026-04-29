@@ -26,6 +26,80 @@
 | A/B 实验 | 验证产品假设，数据驱动决策 | 确保实验组与对照组样本量足够，避免辛普森悖论 |
 | Kill Switch | 线上故障时秒级关闭问题功能 | 开关检查路径必须极简，避免引入额外依赖导致自身失效 |
 
+## 主流平台对比
+
+| 维度 | LaunchDarkly | Unleash | Flagsmith | OpenFeature |
+|------|-------------|---------|-----------|-------------|
+| **托管方式** | SaaS / 企业自托管 | 开源自托管 / SaaS | SaaS / 自托管 | 纯开源规范 + SDK |
+| **定价模式** | 按 MAU 计费，起步较贵 | 开源免费，Pro 按席位 | 免费额度 + 按请求 | 免费（需自建后端） |
+| **实时更新** | ✅ SSE 实时推送 | ✅ 客户端轮询 / SSE | ✅ SSE | 依赖 Provider 实现 |
+| **A/B 测试** | ✅ 内置高级分析 | ⚠️ 需配合外部分析 | ⚠️ 基础分桶 | ❌ 规范层面不涉及 |
+| **边缘支持** | ✅ Edge SDK | ⚠️ 有限 | ⚠️ 有限 | ✅ 可对接任意 Provider |
+| **治理功能** | ✅ 审批流、审计日志 | ✅ 策略约束、审批 | ⚠️ 基础审计 | ❌ 由 Provider 决定 |
+| **厂商锁定** | 高 | 中 | 中 | **无**（可切换 Provider） |
+| **最佳场景** | 企业级全功能需求 | 开源优先、数据主权 | 快速启动中小团队 | 多云/多厂商、避免锁定 |
+
+> **选型建议**：追求功能全面选 LaunchDarkly；数据必须在本地选 Unleash；预算敏感选 Flagsmith；希望避免厂商锁定或已有自研开关系统，选 **OpenFeature** 统一 SDK 层。
+
+## 代码示例
+
+### OpenFeature SDK 使用（Node.js）
+
+```typescript
+import { OpenFeature, InMemoryProvider } from '@openfeature/server-sdk';
+
+// 1. 配置 Provider（生产环境可替换为 LaunchDarkly/Unleash/Flagsmith Provider）
+const provider = new InMemoryProvider({
+  'new-checkout-ui': { enabled: true, variant: 'v2-blue' },
+  'dark-mode': { enabled: false },
+});
+await OpenFeature.setProviderAndWait(provider);
+
+// 2. 获取客户端
+const client = OpenFeature.getClient('my-app');
+
+// 3. 基础布尔开关
+const isNewCheckout = await client.getBooleanValue('new-checkout-ui', false);
+if (isNewCheckout) {
+  renderCheckoutV2();
+} else {
+  renderCheckoutV1();
+}
+
+// 4. 带用户上下文的渐进发布（一致性哈希分桶）
+const context = {
+  targetingKey: 'user-12345', // 稳定用户标识
+  attributes: {
+    tier: 'premium',
+    region: 'ap-east-1',
+  },
+};
+const variant = await client.getStringValue('new-checkout-ui', 'v1-default', context);
+renderCheckout(variant); // "v2-blue" | "v1-default"
+
+// 5. Kill Switch — 极简路径，零依赖
+const isPaymentEnabled = await client.getBooleanValue('payment-gateway', true);
+if (!isPaymentEnabled) {
+  return res.status(503).json({ error: 'Payment temporarily unavailable' });
+}
+```
+
+### 客户端（React）OpenFeature Hook
+
+```typescript
+import { useBooleanFlagValue } from '@openfeature/react-sdk';
+
+function Dashboard() {
+  const { value: showNewWidget, error } = useBooleanFlagValue('new-widget', false);
+  if (error) return <ErrorBanner error={error} />;
+  return (
+    <div>
+      {showNewWidget ? <NewWidget /> : <LegacyWidget />}
+    </div>
+  );
+}
+```
+
 ## 关联模块
 
 - `65-analytics` — A/B 测试的数据分析与实验结果统计
@@ -34,6 +108,12 @@
 
 ## 参考
 
+- [OpenFeature Specification](https://openfeature.dev/specification/)
+- [OpenFeature Node.js SDK](https://www.npmjs.com/package/@openfeature/server-sdk)
+- [LaunchDarkly Docs](https://docs.launchdarkly.com/)
+- [Unleash Documentation](https://docs.getunleash.io/)
+- [Flagsmith Documentation](https://docs.flagsmith.com/)
+- [Feature Toggles (Feature Flags) — Martin Fowler](https://martinfowler.com/articles/feature-toggles.html)
 - 本模块 `README.md` — 模块主题与学习路径
 - 本模块 `feature-flag-system.ts` — 开关规则评估与渐进发布实现
 - 本模块 `feature-toggles.ts` — 开关管理器、环境配置与组管理实现
