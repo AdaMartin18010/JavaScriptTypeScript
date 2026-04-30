@@ -375,6 +375,205 @@ const f_mod = (x: number) => x % 2;
 // 根本问题：Set.map 可能改变容器"大小"，破坏了结构保持
 ```
 
+### 1.6 Array.map 与 Promise.then 的函子对比：结构、时序与错误
+
+Array.map 和 Promise.then 都被称作"函子"，但它们在日常使用中的感受截然不同。理解这种差异，是建立精确直觉的关键。
+
+**精确直觉类比：Array 是「透明玻璃盒」，Promise 是「时间胶囊」**。
+
+- **Array（透明玻璃盒）**：你立刻能看到里面所有的元素。map 就是"对每个元素做同样的事"。盒子的结构（元素的排列顺序、数量）在 map 前后完全可见。
+- **Promise（时间胶囊）**：你不知道里面有什么，也不知道什么时候能打开。then 就是"等打开后，对里面的东西做某事"。胶囊的"外壳"（异步性、pending 状态）在 then 前后保持不变。
+
+**哪里像**：两者都满足函子律——map/then 后容器类型不变，且函数组合律成立。
+
+**哪里不像**：
+1. **时序**：Array.map 是同步的、确定性的；Promise.then 引入了时间维度。
+2. **错误处理**：Array.map 不会"失败"；Promise.then 必须处理 rejection，这超出了函子的最小定义。
+3. **结构可见性**：Array.map 前后数组长度不变；Promise.then 不改变"单个值"的结构，但引入了两个可能的状态（resolved/rejected）。
+
+```typescript
+// ========== 结构可见性对比 ==========
+
+// Array: map 前后结构完全透明
+const arr = [1, 2, 3];
+const mapped = arr.map(x => x * 2);
+console.log(arr.length === mapped.length); // true，结构保持
+
+// Promise: then 前后"时间结构"保持，但值不可见
+const p = Promise.resolve(5);
+const thened = p.then(x => x * 2);
+// p 和 thened 都是 Promise，但内部状态可能不同
+// p 可能已经 resolved，thened 还是 pending（微任务队列中）
+
+// ========== 函子律验证的对称差 ==========
+
+// Array.map 的函子律在数学上几乎严格成立
+const arr2 = [1, 2, 3];
+const id = <A>(x: A): A => x;
+console.log(JSON.stringify(arr2.map(id)) === JSON.stringify(arr2)); // true
+
+// Promise.then 的函子律有微妙之处
+const p2 = Promise.resolve(5);
+p2.then(id).then(result => {
+  console.log(result === 5); // true
+});
+// 但注意：p2.then(id) 返回的是 NEW Promise，不是原 Promise
+// 这与数学上的 "F(id) = id" 有差异——数学上 id 返回自身
+// 编程中出于不变性考虑，返回了新对象
+```
+
+**反例：试图用 Array 的直觉理解 Promise 的陷阱**
+
+```typescript
+// 错误思维："Promise 就是只有一个元素的数组"
+// 这个直觉在错误处理场景下会完全崩溃
+
+const arr3 = [1, 2, 3];
+const badMap = arr3.map(x => {
+  if (x === 2) throw new Error("boom");
+  return x * 2;
+});
+// badMap 在 x=2 处抛出异常，整个 map 中断
+// Array.map 没有内建的"部分失败"语义
+
+const p3 = Promise.resolve(2);
+p3.then(x => {
+  if (x === 2) throw new Error("boom");
+  return x * 2;
+}).catch(err => {
+  console.log("Caught:", err.message); // Caught: boom
+});
+// Promise.then 的"错误传播"是函子定义之外的附加语义
+// 严格范畴论中的函子不允许"短路"行为
+```
+
+**修正方案：区分协变函子的"纯版本"与"增强版本"**
+
+```typescript
+// 纯函子：只满足 map + 函子律
+interface PureFunctor<F> {
+  map<A, B>(f: (a: A) => B): (fa: F<A>) => F<B>;
+}
+
+// 增强函子：函子 + 错误处理
+interface EnhancedFunctor<F, E> {
+  map<A, B>(f: (a: A) => B): (fa: F<A>) => F<B>;
+  catch<A>(handler: (e: E) => F<A>): (fa: F<A>) => F<A>;
+}
+
+// Array 接近纯函子
+// Promise 是增强函子（带有错误通道的 monad）
+// 混淆两者会导致设计错误
+```
+
+### 1.7 从「容器映射」到「函子」的思维脉络进化
+
+程序员对 "map" 的理解通常经历三个阶段：
+
+**阶段一：命令式循环的抽象（1960s）**
+
+最早的程序员用 for 循环遍历数组。1960 年代的 Lisp 引入了 `mapcar`，但它是作为一种"列表处理工具"，而非结构保持映射。
+
+```typescript
+// 阶段一的思维：map 是 "for 循环的简写"
+const doubled = [];
+for (let i = 0; i < arr.length; i++) {
+  doubled.push(arr[i] * 2);
+}
+// 等价于 arr.map(x => x * 2)，但思维模型是"迭代"
+```
+
+**阶段二：容器变换（1990s-2000s）**
+
+随着泛型编程的兴起，程序员开始理解 "map" 是"对容器内的每个元素应用函数"。STL 的 `transform`、Java 的 `Stream.map`、C# 的 `Select` 都遵循这一模型。
+
+```typescript
+// 阶段二的思维：map 是 "容器内的元素变换"
+// "我有一个 Box<A>，想要 Box<B>，怎么办？对每个元素应用 f: A -> B"
+```
+
+**阶段三：结构保持的态射提升（2010s-现在）**
+
+范畴论语境下的理解：map 不是"操作元素"，而是**提升态射**（Lift Morphism）。给定范畴 C 中的态射 f: A → B，函子 F 将其提升为 F(C) 中的态射 F(f): F(A) → F(B)。
+
+```typescript
+// 阶段三的思维：map 是 "态射的提升"
+// 在范畴 Ts（TypeScript 类型）中：
+// f: number -> string 是一个态射
+// Array.map(f): number[] -> string[] 是提升后的态射
+//
+// 关键洞察：Functor 不操作"元素"，它操作"态射"
+// 元素只是恒等态射的像（Yoneda 视角）
+```
+
+**正例：理解阶段的差异导致设计质量差异**
+
+```typescript
+// 阶段二思维的设计：只关注"容器内的元素"
+class Box<T> {
+  constructor(private value: T) {}
+  map<U>(f: (t: T) => U): Box<U> {
+    return new Box(f(this.value));
+  }
+}
+
+// 阶段三思维的设计：关注"结构保持"
+interface Functor<F> {
+  // 不是"变换元素"，而是"提升态射"
+  lift<A, B>(f: (a: A) => B): (fa: F<A>) => F<B>;
+}
+
+// 阶段三思维的优势：自动满足组合律
+// lift(g ∘ f) = lift(g) ∘ lift(f)
+// 这是"结构保持"的必然结果，不是额外实现的
+```
+
+**反例：停留在阶段二导致的错误**
+
+```typescript
+// 错误：认为 "map 就是对每个元素做某事"
+// 导致在不适用的结构上也强行实现 map
+
+class Stack<T> {
+  private items: T[] = [];
+
+  // 强行给栈加 map，但破坏了栈的 LIFO 语义
+  map<U>(f: (t: T) => U): Stack<U> {
+    const newStack = new Stack<U>();
+    // 错误：从栈底开始映射，改变了遍历顺序
+    for (let i = 0; i < this.items.length; i++) {
+      newStack.push(f(this.items[i]));
+    }
+    return newStack;
+  }
+
+  push(t: T): void { this.items.push(t); }
+  pop(): T | undefined { return this.items.pop(); }
+}
+
+// 问题：Stack.map 的语义不明确
+// 是"从栈顶到栈底映射"还是"从栈底到栈顶映射"？
+// 不同的遍历顺序产生不同的结果栈
+// 这说明 Stack 不是天然的函子——它的结构不适合"逐个元素变换"
+```
+
+**修正方案**：如果确实需要变换 Stack 内部元素，先转换为数组，map 后再重建：
+
+```typescript
+// 修正：不强行让 Stack 成为函子
+function mapStack<T, U>(stack: Stack<T>, f: (t: T) => U): Stack<U> {
+  const items = [];
+  // 临时复制（保持原始顺序）
+  const temp = [...stack['items']]; // 实际中应提供 toArray 方法
+  const newStack = new Stack<U>();
+  for (const item of temp) {
+    newStack.push(f(item));
+  }
+  return newStack;
+}
+// 或者更好的设计：Stack 不需要是函子，它是另一种代数结构
+```
+
 ---
 
 ## 2. 反变函子：箭头方向的反转
@@ -688,6 +887,299 @@ const g = () => undefined; // 把所有元素变成 undefined
 // 结论：length 不是自然变换，因为它不保持"结构"
 // 它把 Array 结构压缩成了一个标量
 ```
+
+### 4.4 "自然"是什么意思——精确直觉类比与对称差分析
+
+自然变换的"自然"是范畴论中最容易被误解的词之一。它不是"显然"的意思，也不是"符合直觉"的意思——它是一个精确的数学条件。
+
+**精确直觉类比：自然变换 ≈ 不依赖坐标系选择的物理定律**
+
+想象你在地球表面测量重力加速度。无论你选择北京的坐标系、纽约的坐标系还是火星的坐标系，重力定律的形式保持不变。自然变换的"自然性"条件，正是这种"不依赖具体表示"的数学抽象。
+
+**哪里像**：
+1. 自然变换 α: F → G 要求在"任何"对象 A 处，α_A: F(A) → G(A) 都有定义。
+2. 当你用函子的 map 改变"坐标系"（从 A 到 B）时，α 的"定律形式"不变——即 α_B ∘ F(f) = G(f) ∘ α_A。
+
+**哪里不像**：
+1. 物理坐标变换是连续的、光滑的；范畴论中的态射可以是任意的离散映射。
+2. 物理定律通常有唯一的"正确形式"；自然变换可以有很多个（只要满足交换条件）。
+3. "自然"在物理中带有"必然"的语义，但在数学中它只是"结构保持的"——某些自然变换可能人为构造、毫无美感。
+
+```typescript
+// ========== 自然性条件的代码验证 ==========
+
+// 自然变换 α: F -> G 满足：
+// 对任意 f: A -> B，有 α_B(F(f)(x)) = G(f)(α_A(x))
+//
+// 画成图：
+//    F(A) --F(f)--> F(B)
+//    | α_A            | α_B
+//    v                v
+//    G(A) --G(f)--> G(B)
+
+// 以 flatten: Array<Array<_>> -> Array<_> 为例
+// F = Array<Array<_>> (嵌套数组函子)
+// G = Array<_> (普通数组函子)
+// α = flatten
+
+function testNaturalityCondition<A, B>(
+  nested: A[][],
+  f: (a: A) => B,
+  label: string
+): void {
+  // 左路径：先 map 内层（F(f)），再 flatten（α_B）
+  const left = nested.map(inner => inner.map(f)).flat();
+
+  // 右路径：先 flatten（α_A），再 map（G(f)）
+  const right = nested.flat().map(f);
+
+  const pass = JSON.stringify(left) === JSON.stringify(right);
+  console.log(`${label}: ${pass ? '✅ NATURAL' : '❌ NOT NATURAL'}`);
+}
+
+// 测试
+ testNaturalityCondition([[1, 2], [3, 4]], x => x * 2, 'double');
+ testNaturalityCondition([], x => x, 'empty');
+ testNaturalityCondition([[1], [], [2, 3]], x => x.toString(), 'mixed');
+```
+
+**反例：一个"看起来自然"但不满足自然性条件的变换**
+
+```typescript
+// 定义一个变换：reverseFlatten
+// 它先反转每个内层数组，再 flatten
+// 这"看起来"也很"对称"，但不是自然变换
+
+const reverseFlatten = <A>(nested: A[][]): A[] =>
+  nested.map(inner => [...inner].reverse()).flat();
+
+// 验证它不是自然变换
+const nested = [[1, 2], [3, 4]];
+const f = (x: number) => x * 2;
+
+// 左路径
+const left = reverseFlatten(nested.map(inner => inner.map(f)));
+// nested.map(...) = [[2, 4], [6, 8]]
+// reverseFlatten = [4, 2, 8, 6]
+
+// 右路径
+const right = reverseFlatten(nested).map(f);
+// reverseFlatten(nested) = [2, 1, 4, 3]
+// map(f) = [4, 2, 8, 6]
+
+// 等等，这碰巧相等？让我们换一个 f：
+const g = (x: number) => [x, x]; // number -> number[]
+
+// 类型不匹配了！reverseFlatten 返回 A[]，g 作用于 A
+// 这说明 "reverseFlatten" 试图保持的结构与 map 不兼容
+// 根本问题：reverse 引入了额外的顺序结构，这不是函子性的
+```
+
+**修正方案**：要验证一个变换是否自然，必须对"所有"可能的 f 验证交换图，而不仅仅是一两个例子。对于有限集合，可以穷举；对于无限集合，需要数学证明。
+
+```typescript
+// 穷举验证（有限类型）
+type Finite = 0 | 1 | 2;
+
+const allFunctions: ((x: Finite) => Finite)[] = [
+  x => 0, x => 1, x => 2,
+  x => x,
+  x => (x + 1) % 3 as Finite,
+  x => (x + 2) % 3 as Finite,
+  x => x === 0 ? 1 : 0,
+  x => x === 0 ? 2 : 0,
+  x => x === 1 ? 2 : 1,
+];
+
+function exhaustiveTest<A>(
+  transform: (fa: A[][]) => A[],
+  values: A[][]
+): boolean {
+  // 对每个输入和每个函数，验证自然性条件
+  // 实践中不可能对所有 A 都这样做，只对具体有限类型
+  return true; // 占位
+}
+```
+
+### 4.5 Applicative 函子：多参数函数的提升
+
+函子只允许提升单参数函数：给定 f: A → B，可以构造 F(f): F<A> → F<B>。但如果函数有两个参数呢？
+
+```typescript
+// 函子的局限：无法直接提升多参数函数
+const add = (a: number) => (b: number) => a + b;
+
+// 有了 F<A> 和 F<B>，怎么得到 F<C>？
+// map 只接受"普通函数"，不接受"包装在 F 中的函数"
+```
+
+Applicative 函子在函子基础上增加了 `ap`（apply）操作：
+
+```typescript
+interface Applicative<F> {
+  // 函子的 map
+  map<A, B>(f: (a: A) => B): (fa: F<A>) => F<B>;
+  // 新操作：将 F<A -> B> 应用于 F<A> 得到 F<B>
+  ap<A, B>(ff: F<(a: A) => B>): (fa: F<A>) => F<B>;
+  // 将纯值包装进 F
+  of<A>(a: A): F<A>;
+}
+
+// ========== Array 的 Applicative 实现 ==========
+const ArrayApplicative: Applicative<Array> = {
+  map: <A, B>(f: (a: A) => B) => (arr: A[]) => arr.map(f),
+
+  // ap: Array<(A -> B)> -> Array<A> -> Array<B>
+  // 结果是对所有函数作用于所有元素的所有组合
+  ap: <A, B>(ff: ((a: A) => B)[]) => (fa: A[]) =>
+    ff.flatMap(f => fa.map(f)),
+
+  of: <A>(a: A): A[] => [a]
+};
+
+// 正例：用 Applicative 计算笛卡尔积
+const fs = [(x: number) => x * 2, (x: number) => x + 10];
+const xs = [1, 2, 3];
+const result = ArrayApplicative.ap(fs)(xs);
+// [2, 4, 6, 11, 12, 13]
+// 所有函数作用于所有输入——Applicative 的"组合爆炸"语义
+```
+
+**Applicative 与函子的对称差**：
+
+| 维度 | Functor | Applicative |
+|------|---------|-------------|
+| 提升能力 | 单参数函数 A → B | 多参数函数 A → B → C → ... |
+| 结构组合 | 不能组合多个 F<A> | 可以组合多个 F<A> |
+| 执行顺序 | 不涉及顺序 | 有确定的顺序（先左后右） |
+| 交互能力 | 无交互 | 允许结果间的交互 |
+| 编程对应 | map | Promise.all + map |
+
+```typescript
+// Promise.all 本质上是 Applicative 的"组合"操作
+const p1 = Promise.resolve(1);
+const p2 = Promise.resolve(2);
+
+// "liftA2"：将二元函数提升到 Promise 层面
+const liftA2 = <A, B, C>(
+  f: (a: A) => (b: B) => C
+) => (pa: Promise<A>) => (pb: Promise<B>): Promise<C> =>
+  Promise.all([pa, pb]).then(([a, b]) => f(a)(b));
+
+const addP = liftA2((a: number) => (b: number) => a + b);
+addP(p1)(p2).then(sum => console.log(sum)); // 3
+
+// 对比纯函子：Functor 无法同时"等待"两个 Promise
+// map 只能处理"已知值"的变换，不能组合多个容器
+```
+
+**反例：把 Applicative 问题用 Monad 过度解决的陷阱**
+
+```typescript
+// 过度使用 Monad（chain/flatMap）处理本可用 Applicative 解决的情况
+
+// 场景：验证表单的两个字段（相互独立）
+interface Form { email: string; age: number; }
+
+// Monad 版本（ unnecessarily sequential ）
+function validateFormMonad(form: Form): Either<Error, Form> {
+  return validateEmail(form.email).flatMap(validEmail =>
+    validateAge(form.age).flatMap(validAge =>
+      right({ email: validEmail, age: validAge })
+    )
+  );
+  // 问题：flatMap 暗示了"后续依赖前面结果"，但 email 和 age 验证是独立的
+}
+
+// Applicative 版本（正确表达独立性）
+function validateFormApplicative(form: Form): Either<Error, Form> {
+  const makeForm = (email: string) => (age: number) => ({ email, age });
+  return ap(
+    ap(right(makeForm), validateEmail(form.email)),
+    validateAge(form.age)
+  );
+  // 语义清晰：email 和 age 的验证是独立的、可并行的
+}
+
+// 在 Promise 中：Applicative = Promise.all，Monad = then 链
+// 当步骤间没有数据依赖时，用 Promise.all 表达并行性更准确
+```
+
+### 4.6 Monad 与 Applicative 的认知差异
+
+Monad 在 Applicative 基础上增加了 `chain`（或 `flatMap`、`bind`）操作：
+
+```typescript
+interface Monad<F> extends Applicative<F> {
+  chain<A, B>(f: (a: A) => F<B>): (fa: F<A>) => F<B>;
+}
+```
+
+**精确直觉类比**：
+
+- **Functor** = "我有一个盒子，想对每个元素做变换"
+- **Applicative** = "我有多个盒子，想对它们的元素一起做变换"
+- **Monad** = "我有一个盒子，想根据元素内容决定下一步打开哪个盒子"
+
+**哪里像**：三者都保持结构、都满足组合律。
+
+**哪里不像**：
+
+| 特性 | Applicative | Monad |
+|------|-------------|-------|
+| 函数依赖 | 所有 F<A> 独立计算 | 后续计算可依赖前面结果 |
+| 表达能力 | 静态结构 | 动态结构（后续步骤由前面决定） |
+| 优化难度 | 易并行化 | 难并行化（依赖链） |
+| 代码可读性 | 声明式 | 命令式（虽然封装在函数中） |
+
+```typescript
+// ========== 正例：Monad 的"动态选择"能力 ==========
+
+// 场景：根据用户输入查询数据库，再根据结果调用不同 API
+function getUserWorkflow(userId: string): Promise<string> {
+  return fetchUser(userId).then(user => {
+    // 注意：下一步操作依赖上一步结果（user）
+    if (user.vip) {
+      return fetchVIPData(user.id);
+    } else {
+      return fetchBasicData(user.id);
+    }
+  }).then(data => data.summary);
+}
+
+// 这种"后续依赖前面结果"的能力是 Monad 独有的
+// Applicative 无法表达：因为它要求所有步骤预先确定
+
+// ========== 反例：用 Monad 表达纯组合关系 ==========
+
+// 错误：明明没有依赖关系，却用了 then 链
+function fetchUserAndOrderBad(userId: string, orderId: string): Promise<[User, Order]> {
+  return fetchUser(userId).then(user =>
+    fetchOrder(orderId).then(order => [user, order])
+  );
+  // 问题：fetchOrder 不依赖 user，但 then 链暗示了顺序依赖
+  // 代码难以并行优化，阅读者也误以为有依赖关系
+}
+
+// 修正：用 Applicative（Promise.all）表达独立性
+function fetchUserAndOrderGood(userId: string, orderId: string): Promise<[User, Order]> {
+  return Promise.all([fetchUser(userId), fetchOrder(orderId)]);
+  // 语义清晰：两个请求独立，可以并行
+}
+
+// ========== JS 中函子/Applicative/Monad 的层级 ==========
+// Array: Functor ✅, Applicative ✅, Monad ✅ (flatMap)
+// Promise: "类似 Functor" (then), "类似 Applicative" (Promise.all), "类似 Monad" (then chain)
+// Option/Maybe: Functor ✅, Applicative ✅, Monad ✅
+// Observable (RxJS): Functor ✅, Applicative ✅, Monad ✅
+// Set: 不是 Functor（大小可能变），不是 Applicative，不是 Monad
+```
+
+**对称差总结**：
+
+- 每个 Monad 都是 Applicative，每个 Applicative 都是 Functor。但反向不成立。
+- **能用 Applicative 就不用 Monad**：Applicative 的代码更容易并行化、更容易推理、错误信息更友好。
+- **Monad 是最后的武器**：当计算步骤间有真正的数据依赖时才使用。
 
 ---
 

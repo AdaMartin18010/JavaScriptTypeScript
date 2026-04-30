@@ -548,7 +548,321 @@ function raiseAbstraction() { ... }  // 向上 = 更高抽象 ✓
 
 ---
 
-## 7. 认知科学在编程中的应用框架
+## 7. 代码可读性的认知维度
+
+### 7.1 命名的认知效率
+
+变量命名是编程中最频繁的活动之一，也是认知科学应用最直接的场景。
+
+**精确类比：变量名像记忆线索**
+
+| 变量名类型 | 认知效果 | 工作记忆负担 |
+|-----------|---------|-------------|
+| `x` | 几乎无线索，需要额外记忆 | 高 |
+| `data` | 泛化线索，需要推断具体含义 | 中 |
+| `userList` | 具体线索，直接映射到概念 | 低 |
+| `activePremiumUsers` | 完整语义，无需额外记忆 | 极低 |
+
+**反例：匈牙利命名法的认知灾难**
+
+```typescript
+// 高认知负荷：前缀编码需要额外解码
+const strUserName: string = "Alice";
+const nUserAge: number = 30;
+const bIsActive: boolean = true;
+const arrUserIds: number[] = [1, 2, 3];
+
+// 低认知负荷：类型系统已提供信息
+const userName = "Alice";
+const userAge = 30;
+const isActive = true;
+const userIds = [1, 2, 3];
+```
+
+匈牙利命名法在弱类型语言（如早期 C）中有价值，因为类型信息无法从语法推断。但在 TypeScript 中，类型系统已承担了"类型标注"的认知功能，匈牙利前缀成为纯粹的**外在认知负荷**。
+
+### 7.2 代码布局的视觉认知
+
+人类视觉系统对**邻近性**和**相似性**高度敏感——这是格式塔心理学的核心发现。
+
+```typescript
+// 违反邻近性：相关代码分离
+function processOrder(order: Order) {
+  const items = order.items;
+
+
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+
+  const discount = order.customer?.loyaltyLevel === 'gold' ? total * 0.1 : 0;
+
+
+  return { total, discount, final: total - discount };
+}
+
+// 利用邻近性：相关代码聚合
+function processOrder(order: Order) {
+  const items = order.items;
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const discount = order.customer?.loyaltyLevel === 'gold' ? total * 0.1 : 0;
+
+  return { total, discount, final: total - discount };
+}
+```
+
+**对称差分析：可读性 vs 简洁性**
+
+```
+可读性优化 \\ 简洁性优化 = {
+  "显式中间变量",
+  "垂直空间分隔逻辑块",
+  "命名参数对象"
+}
+
+简洁性优化 \\ 可读性优化 = {
+  "单行表达式链",
+  "隐式返回",
+  "解构嵌套"
+}
+```
+
+**修正方案**：根据读者对象选择策略。
+
+- 库代码（API 表面）：优先可读性——使用者不了解内部实现
+- 内部工具函数：可适当简洁——维护者熟悉上下文
+- 团队共享代码：遵循团队约定——一致性降低认知负荷
+
+### 7.3 注释的认知定位
+
+注释不是"给代码加说明"那么简单——它在认知上承担着**外部记忆**的功能。
+
+**反例：注释复述代码**
+
+```typescript
+// 将 x 加 1
+x = x + 1;
+
+// 如果用户存在
+if (user) {
+  // 发送邮件
+  sendEmail(user.email);
+}
+```
+
+这类注释是纯粹的噪音——它们不提供超出代码本身的信息，反而增加了视觉扫描的负担。
+
+**正例：注释解释"为什么"**
+
+```typescript
+// 故意使用 == 而非 ===：允许字符串数字和数字类型混用
+// 因为历史 API 返回字符串，但新 API 返回数字
+if (value == target) { ... }
+
+// 竞态条件防护：如果另一个请求已更新状态，跳过
+if (currentVersion !== expectedVersion) return;
+```
+
+这类注释回答了"为什么这样做"——这是代码无法自我表达的信息。
+
+**认知原则**：
+
+| 注释类型 | 认知功能 | 必要性 |
+|---------|---------|--------|
+| "做什么" | 复述代码 | 低（好的代码自解释）|
+| "怎么做" | 解释复杂算法 | 中（替代方案：提取命名函数）|
+| "为什么" | 解释设计决策 | 高（代码无法表达意图）|
+| "假设" | 记录前置条件 | 高（防止误用）|
+
+---
+
+## 8. 认知科学在编程教育中的应用
+
+### 8.1 从专家到新手的知识转移
+
+专家拥有的**隐性知识**（tacit knowledge）难以直接传授。编程教育需要**认知脚手架**——临时支持结构，帮助学习者逐步建立专家级心智模型。
+
+**示例：教授闭包的认知脚手架**
+
+```typescript
+// 第 1 步：具体实例（无抽象）
+function makeCounter() {
+  let count = 0;
+  return function() {
+    count++;
+    return count;
+  };
+}
+
+const counter = makeCounter();
+console.log(counter()); // 1
+console.log(counter()); // 2
+
+// 第 2 步：引入"环境"概念
+// makeCounter 创建了一个"环境"，包含变量 count
+// 返回的函数"记住"了这个环境
+
+// 第 3 步：可视化环境（脚手架）
+// counter 的环境: { count: 2 }
+// 每次调用 counter，它访问并修改这个环境中的 count
+
+// 第 4 步：移除脚手架，建立专家模型
+// "闭包是捕获了定义时环境的函数"
+```
+
+**认知脚手架的拆除时机**：
+
+| 阶段 | 脚手架类型 | 拆除信号 |
+|------|-----------|---------|
+| 新手 | 具体示例、可视化工具 | 能独立解释新示例 |
+| 进阶 | 命名模式、模板 | 能识别并应用模式 |
+| 专家 | 无脚手架 | 能创造新模式 |
+
+### 8.2 错误信息的可理解性
+
+TypeScript 的错误信息设计直接影响学习曲线。
+
+**反例：难以理解的类型错误**
+
+```typescript
+type A = { x: { y: { z: string } } };
+type B = { x: { y: { z: number } } };
+
+const a: A = {} as B;
+// 错误：Type 'B' is not assignable to type 'A'.
+//   Types of property 'x' are incompatible.
+//     Types of property 'y' are incompatible.
+//       Types of property 'z' are incompatible.
+//         Type 'number' is not assignable to type 'string'.
+```
+
+虽然 TypeScript 的错误信息比许多编译器友好，但**嵌套路径的反序呈现**增加了认知负荷——开发者需要从下往上读。
+
+**认知优化建议**：
+
+```
+理想错误信息结构：
+1. 一句话总结问题
+2. 具体位置标记
+3. 期望 vs 实际的对比
+4. 修复建议
+```
+
+---
+
+## 9. 编程语言的认知进化史
+
+### 9.1 从机器码到高级语言：抽象梯度的认知解放
+
+编程语言的发展史本质上是**认知负荷逐步降低**的历史。
+
+| 时代 | 语言层级 | 认知负荷来源 | 工作记忆需求 |
+|------|---------|-------------|-------------|
+| 1940s | 机器码 | 二进制、内存地址、硬件细节 | 极高 |
+| 1950s | 汇编 | 助记符、寄存器管理 | 很高 |
+| 1960s | 高级语言（Fortran/COBOL）| 语法规则、GOTO 迷宫 | 高 |
+| 1970s | 结构化语言（C/Pascal）| 指针、内存管理 | 中高 |
+| 1990s | 托管语言（Java/C#）| 类型系统、设计模式 | 中 |
+| 2010s | 现代语言（TS/Rust/Go）| 类型体操、所有权 | 中 |
+
+**精确类比：编程语言像摄影设备的演进**
+
+| 设备 | 开发者注意力分配 | 认知负荷 |
+|------|----------------|---------|
+| 针孔相机（机器码）| 光学、化学、机械全手动 | 极高 |
+| 胶片单反（C语言）| 曝光、对焦手动，快门自动 | 高 |
+| 数码相机（Java）| 构图为主，技术参数辅助 | 中 |
+| 智能手机（TypeScript）| 创意表达，技术几乎透明 | 低 |
+
+**类比的局限**：
+- ✅ 像摄影一样，编程语言的自动化让开发者专注于"创意"而非"技术"
+- ❌ 不像摄影，编程语言的高层抽象可能隐藏性能陷阱
+
+### 9.2 类型系统的认知功能
+
+类型系统不只是"捕获错误"——它在认知上承担着**外部记忆**和**约束传播**的双重功能。
+
+**外部记忆功能**：
+
+```typescript
+// 无类型：需要记住每个变量的预期类型
+const data = fetchData();  // 是什么类型？数组？对象？
+data.forEach(x => ...);     // 运行时才知是否有 forEach
+
+// 有类型：类型是"外部化"的知识
+const data: User[] = fetchData();  // 类型声明即文档
+data.forEach(user => ...);          // 编译时验证类型兼容性
+```
+
+类型声明将"开发者需要记住的信息"转移到了"编译器自动验证的信息"——这是典型的**认知外化**。
+
+**约束传播功能**：
+
+```typescript
+interface Config {
+  timeout: number;
+  retries: number;
+}
+
+function setup(config: Config) { ... }
+
+// 调用时，类型系统自动传播约束
+setup({ timeout: 1000 });  // 错误！缺少 retries
+```
+
+类型系统将约束从"文档中的文字"转化为"编译时的强制检查"——减少了工作记忆的负担。
+
+### 9.3 语法糖的认知经济学
+
+语法糖（Syntactic Sugar）是"不改变语义，但改变表达形式"的语言特性。从认知科学角度，语法糖的价值在于**降低外在认知负荷**。
+
+**对称差分析：语法糖的价值与风险**
+
+```
+语法糖的价值 = {
+  "减少样板代码",
+  "匹配既有心智模型",
+  "降低外在认知负荷"
+}
+
+语法糖的风险 = {
+  "隐藏底层机制",
+  "创造错误直觉",
+  "增加学习成本（新语法）"
+}
+```
+
+**示例：可选链 `?.` 的认知影响**
+
+```typescript
+// 无语法糖（高外在负荷）
+const email = user && user.profile && user.profile.contact && user.profile.contact.email;
+
+// 有语法糖（低外在负荷）
+const email = user?.profile?.contact?.email;
+```
+
+可选链将 3 层嵌套检查压缩为 1 个视觉组块——工作记忆负担从 4 个对象降到 1 个。
+
+**反例：过度语法糖**
+
+```typescript
+// TypeScript 的类型体操：语法糖的反噬
+ type DeepPartial<T> = T extends object ? {
+  [P in keyof T]?: DeepPartial<T[P]>;
+} : T;
+
+// 这段代码的认知负荷极高：
+// - 条件类型 extends
+// - 映射类型 [P in keyof T]
+// - 递归引用 DeepPartial
+// - 可选属性修饰符 ?
+```
+
+当语法糖层数过多时，它从"降低负荷"变成了"增加负荷"——开发者需要同时解析多层语法转换。
+
+---
+
+## 10. 认知科学在编程中的应用框架
 
 ### 分析框架
 

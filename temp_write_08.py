@@ -1,4 +1,5 @@
----
+# -*- coding: utf-8 -*-
+content = """---
 title: "框架范式互操作性"
 description: "框架间互操作性的形式化定义、微前端多模型共存、范式泄漏"
 last-updated: 2026-04-30
@@ -87,7 +88,7 @@ references:
 
 在范畴论语境下，两个框架的互操作性可以精确表述为：
 
-设 Framework A 的模型为范畴 **A**，Framework B 的模型为范畴 **B**。框架 A 的程序 $P_A$ 能在框架 B 中正确执行，当且仅当存在一个适配态射 $adapt: A 	o B$，使得：
+设 Framework A 的模型为范畴 **A**，Framework B 的模型为范畴 **B**。框架 A 的程序 $P_A$ 能在框架 B 中正确执行，当且仅当存在一个适配态射 $adapt: A \to B$，使得：
 
 ```
 execute_B(adapt(P_A)) = observe-equivalent execute_A(P_A)
@@ -996,3 +997,7 @@ export function createSharedState<T>(initialValue: T) {
 6. single-spa. GitHub: single-spa/single-spa.
 7. Jackson, D. (2006). Software Abstractions: Logic, Language, and Analysis. MIT Press.
 8. Gamma, E., et al. (1994). Design Patterns: Elements of Reusable Object-Oriented Software. Addison-Wesley.
+"""
+with open('70-theoretical-foundations/70.3-multi-model-formal-analysis/08-framework-paradigm-interoperability.md', 'w', encoding='utf-8') as f:
+    f.write(content)
+print('done', len(content))

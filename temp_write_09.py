@@ -1,4 +1,5 @@
----
+# -*- coding: utf-8 -*-
+content = """---
 title: "模型间隙的形式化验证"
 description: "TLA+/Coq 建模、属性基测试、符号执行在发现模型间隙中的应用"
 last-updated: 2026-04-30
@@ -92,9 +93,9 @@ VARIABLES count
 Init == count = 0
 
 Increment == count' = count + 1
-Decrement == count > 0 /\ count' = count - 1
+Decrement == count > 0 /\\ count' = count - 1
 
-Next == Increment \/ Decrement
+Next == Increment \\/ Decrement
 
 Invariant == count >= 0
 ```
@@ -124,49 +125,49 @@ VARIABLES taskQueue,      (* 宏任务队列 *)
           callStack       (* 调用栈深度 *)
 
 Init ==
-  /\ taskQueue = <<>>
-  /\ microtaskQueue = <<>>
-  /\ currentTask = "none"
-  /\ callStack = 0
+  /\\ taskQueue = <<>>
+  /\\ microtaskQueue = <<>>
+  /\\ currentTask = "none"
+  /\\ callStack = 0
 
 (* 添加宏任务 *)
 EnqueueTask(t) ==
-  /\ t \in Tasks
-  /\ taskQueue' = Append(taskQueue, t)
-  /\ UNCHANGED <<microtaskQueue, currentTask, callStack>>
+  /\\ t \\in Tasks
+  /\\ taskQueue' = Append(taskQueue, t)
+  /\\ UNCHANGED <<microtaskQueue, currentTask, callStack>>
 
 (* 添加微任务 *)
 EnqueueMicrotask(m) ==
-  /\ m \in Microtasks
-  /\ microtaskQueue' = Append(microtaskQueue, m)
-  /\ UNCHANGED <<taskQueue, currentTask, callStack>>
+  /\\ m \\in Microtasks
+  /\\ microtaskQueue' = Append(microtaskQueue, m)
+  /\\ UNCHANGED <<taskQueue, currentTask, callStack>>
 
 (* 执行一个微任务 *)
 ExecuteMicrotask ==
-  /\ microtaskQueue /= <<>>
-  /\ LET m == Head(microtaskQueue)
+  /\\ microtaskQueue /= <<>>
+  /\\ LET m == Head(microtaskQueue)
     IN
-      /\ microtaskQueue' = Tail(microtaskQueue)
+      /\\ microtaskQueue' = Tail(microtaskQueue)
       (* 微任务执行期间可能产生新的微任务 *)
-      /\ callStack' = callStack + 1
-  /\ UNCHANGED <<taskQueue, currentTask>>
+      /\\ callStack' = callStack + 1
+  /\\ UNCHANGED <<taskQueue, currentTask>>
 
 (* 执行一个宏任务 *)
 ExecuteTask ==
-  /\ taskQueue /= <<>>
-  /\ microtaskQueue = <<>>  (* 宏任务开始前必须清空微任务队列 *)
-  /\ LET t == Head(taskQueue)
+  /\\ taskQueue /= <<>>
+  /\\ microtaskQueue = <<>>  (* 宏任务开始前必须清空微任务队列 *)
+  /\\ LET t == Head(taskQueue)
     IN
-      /\ taskQueue' = Tail(taskQueue)
-      /\ currentTask' = t
-      /\ callStack' = 0
-  /\ UNCHANGED microtaskQueue
+      /\\ taskQueue' = Tail(taskQueue)
+      /\\ currentTask' = t
+      /\\ callStack' = 0
+  /\\ UNCHANGED microtaskQueue
 
 Next ==
-  /\E t \in Tasks : EnqueueTask(t)
-  /\/ \E m \in Microtasks : EnqueueMicrotask(m)
-  /\/ ExecuteMicrotask
-  /\/ ExecuteTask
+  /\\E t \\in Tasks : EnqueueTask(t)
+  /\\/ \\E m \\in Microtasks : EnqueueMicrotask(m)
+  /\\/ ExecuteMicrotask
+  /\\/ ExecuteTask
 ```
 
 这个规范捕捉了事件循环的关键语义：**微任务优先于宏任务，且微任务队列必须清空后才执行下一个宏任务。**
@@ -227,32 +228,32 @@ CONSTANTS Requests
 VARIABLES pendingRequest, lastResponse
 
 Init ==
-  /\ pendingRequest = "none"
-  /\ lastResponse = "none"
+  /\\ pendingRequest = "none"
+  /\\ lastResponse = "none"
 
 (* 发起新请求 *)
 StartRequest(r) ==
-  /\ r \in Requests
-  /\ pendingRequest' = r
-  /\ lastResponse' = "none"  (* 清除前次响应 *)
+  /\\ r \\in Requests
+  /\\ pendingRequest' = r
+  /\\ lastResponse' = "none"  (* 清除前次响应 *)
 
 (* 请求完成 *)
 CompleteRequest(r, resp) ==
-  /\ pendingRequest = r
-  /\ lastResponse' = resp
-  /\ pendingRequest' = "none"
+  /\\ pendingRequest = r
+  /\\ lastResponse' = resp
+  /\\ pendingRequest' = "none"
 
 (* 竞态条件：旧请求的响应在新请求之后到达 *)
 StaleResponse ==
-  /\E r1, r2 \in Requests :
-    /\ r1 /= r2
-    /\ pendingRequest = r2        (* 已经发了新请求 r2 *)
-    /\ lastResponse = "response_" \o r1  (* 但收到的是 r1 的响应 *)
+  /\\E r1, r2 \\in Requests :
+    /\\ r1 /= r2
+    /\\ pendingRequest = r2        (* 已经发了新请求 r2 *)
+    /\\ lastResponse = "response_" \\o r1  (* 但收到的是 r1 的响应 *)
 
 (* 不变量：lastResponse 必须对应 pendingRequest 或 "none" *)
 CorrectnessInvariant ==
   lastResponse = "none"
-  /\ \E r \in Requests : lastResponse = "response_" \o r /\ pendingRequest = "none"
+  /\\ \\E r \\in Requests : lastResponse = "response_" \\o r /\\ pendingRequest = "none"
 ```
 
 这个规范可以验证 `takeLatest` 是否正确处理了竞态条件——当新请求发出后，旧请求的响应是否被正确丢弃。
@@ -804,3 +805,7 @@ function processList(items: number[]): number {
 6. Cadar, C., & Sen, K. (2013). Symbolic Execution for Software Testing: Three Decades Later. Communications of the ACM, 56(2), 82-90.
 7. Cousot, P., & Cousot, R. (1977). Abstract Interpretation: A Unified Lattice Model for Static Analysis of Programs. POPL 1977.
 8. Claessen, K., & Hughes, J. (2000). QuickCheck: A Lightweight Tool for Random Testing of Haskell Programs. ICFP 2000.
+"""
+with open('70-theoretical-foundations/70.3-multi-model-formal-analysis/09-formal-verification-of-model-gaps.md', 'w', encoding='utf-8') as f:
+    f.write(content)
+print('done', len(content))
