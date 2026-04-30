@@ -58,6 +58,7 @@ references:
   - [8. 更多编程实例](#8-更多编程实例)
     - [8.1 数据库 ORM：从模型到查询的伴随](#81-数据库-orm从模型到查询的伴随)
     - [8.2 JSON 序列化：从对象到字符串的伴随](#82-json-序列化从对象到字符串的伴随)
+    - [5.3 伴随在编译器设计中的应用](#53-伴随在编译器设计中的应用)
   - [参考文献](#参考文献)
 
 ---
@@ -684,6 +685,47 @@ const restored = parseJSON(str);  // {} —— 不等于原始对象！
 // 所以 parse 和 stringify 不构成伴随对
 ```
 
+### 5.3 伴随在编译器设计中的应用
+
+现代编译器的中间表示（IR）转换可以看作伴随对的实例。
+
+```typescript
+// 自由构造：从 AST 构造 SSA（静态单赋值）形式
+function toSSA(ast: AST): SSA {
+  // 为每个变量分配唯一的版本号
+  // 引入 φ 函数处理控制流汇合
+}
+
+// 遗忘/保守提取：从 SSA 恢复 AST（丢失 SSA 的特定信息）
+function fromSSA(ssa: SSA): AST {
+  // 合并变量的不同版本
+  // 移除 φ 函数
+}
+```
+
+**为什么这不是严格的伴随？**
+
+SSA 到 AST 的转换丢失了大量信息（版本号、φ 函数、支配边界），所以 `fromSSA ∘ toSSA ≠ id`。但它仍然是一个"近似伴随"——在编译器优化中，这种近似足够有用。
+
+**精确直觉类比：翻译与回译**
+
+| 概念 | 翻译 | 伴随 |
+|------|------|------|
+| 自由构造 | 将中文诗翻译成英文 | 保留所有可表达的信息 |
+| 遗忘 | 将英文诗回译成中文 | 某些英文特有的修辞丢失 |
+| 单位 η | 原文 vs 回译后的版本 | 可能丢失一些韵味 |
+| 余单位 ε | 英文译文 vs 回译后再翻译 | 两次翻译后信息进一步丢失 |
+
+**哪里像**：
+
+- ✅ 像翻译一样，伴随都是"保持核心信息，可能丢失细节"的过程
+- ✅ 像翻译一样，好的翻译（伴随）应该有"回译后尽量接近原文"的性质
+
+**哪里不像**：
+
+- ❌ 不像翻译，伴随是单向的（只有自由构造有明确的"最佳"性质）
+- ❌ 不像翻译，伴随的评价标准是客观的（泛性质）而非主观的（文学性）
+
 ---
 
 ## 参考文献
@@ -695,3 +737,5 @@ const restored = parseJSON(str);  // {} —— 不等于原始对象！
 5. Kan, D. M. (1958). "Adjoint Functors." *Transactions of the American Mathematical Society*, 87(2), 294-329.
 6. Harper, R. (2016). *Practical Foundations for Programming Languages* (2nd ed.). Cambridge University Press.
 7. Wadler, P. (2003). "Call-by-Value is Dual to Call-by-Name." *ICFP 2003*.（伴随在计算中的对偶性）
+8. Appel, A. W. (1998). *Modern Compiler Implementation in ML*. Cambridge University Press. (SSA 形式)
+9. Cytron, R., et al. (1991). "Efficiently Computing Static Single Assignment Form and the Control Dependence Graph." *ACM TOPLAS*, 13(4), 451-490.

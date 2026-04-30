@@ -50,6 +50,7 @@ references:
     - [5.3 内存泄漏的范畴论视角](#53-内存泄漏的范畴论视角)
   - [6. 微任务队列的余极限解释](#6-微任务队列的余极限解释)
   - [7. 反例：运行时行为的非范畴现象](#7-反例运行时行为的非范畴现象)
+    - [5.2 从范畴论视角理解内存泄漏](#52-从范畴论视角理解内存泄漏)
   - [参考文献](#参考文献)
 
 ---
@@ -71,6 +72,7 @@ references:
 JavaScript 诞生于1995年，当时的设计目标是作为浏览器的轻量级脚本语言。 Brendan Eich 在10天内完成了原型实现。这个极短的时间窗口导致了一个关键设计决策：**单线程执行模型**。
 
 为什么是单线程？不是因为没有多线程的技术能力，而是因为**浏览器环境的约束**：
+
 1. DOM 操作必须是确定性的，多线程并发修改 DOM 会导致不可预测的状态
 2. 脚本语言需要简单，多线程同步原语（锁、信号量）会大幅增加复杂度
 3. 当时的网页交互需求并不复杂，单线程足够
@@ -236,17 +238,20 @@ function microtaskStarvation(): void {
 **精确直觉类比：电影放映机**
 
 想象一台老式电影放映机：
+
 - 胶片盘 = 任务队列
 - 当前帧 = 正在执行的代码
 - 放映机的机械结构 = Event Loop
 - 观众看到的连续画面 = 程序的行为
 
 **哪里像**：
+
 - ✅ 放映机一次只放映一帧，与 JavaScript 单线程一次只执行一个任务一致
 - ✅ 帧的顺序由胶片的物理顺序决定，与任务队列的 FIFO 顺序一致
 - ✅ 可以"暂停"放映来换胶片盘，与宏任务切换上下文对应
 
 **哪里不像**：
+
 - ❌ 放映机的帧率是固定的（24fps），但 Event Loop 的任务执行时间差异巨大
 - ❌ 电影胶片是静态的、预先确定的，但 JavaScript 的任务可以动态生成新的任务
 - ❌ 放映机不能"跳过"帧，但 Event Loop 可以通过 `setTimeout(fn, 0)` 来重新排序任务
@@ -439,11 +444,13 @@ console.log(lookupVariable(functionCtx, 'y')); // 2（在 function 中找到）
 调用栈常被比作俄罗斯套娃——每个函数调用创建一个新的"套娃"，嵌套在调用者内部。
 
 **哪里像**：
+
 - ✅ 套娃的嵌套层次与函数调用的嵌套层次完全一致
 - ✅ 每个套娃有自己的"内部空间"（局部变量），外部无法直接访问
 - ✅ 打开最小的套娃（最内层函数）时，可以看到所有外层套娃的内容（作用域链查找）
 
 **哪里不像**：
+
 - ❌ 俄罗斯套娃是静态的，一旦制造完成层次就固定了。调用栈在运行时动态增长和收缩
 - ❌ 套娃的层数有限（通常5-10个），但调用栈理论上可以无限深（直到内存耗尽）
 - ❌ 套娃不能有"兄弟"（同一层不能有两个并排的套娃），但函数调用可以有兄弟调用（同一函数内先后调用两个子函数）
@@ -465,17 +472,20 @@ console.log(dynamicDepth(100)); // 100
 **更精确的类比：餐厅的点单栈**
 
 想象一个餐厅厨房的点单系统：
+
 - 服务员把订单放在一堆盘子的最上面
 - 厨师从最上面的盘子开始做菜
 - 做完一个盘子后，把它拿掉，做下面的盘子
 - 如果厨师需要准备一道复杂的菜，他可能会把这道菜拆分成多个子步骤，每个子步骤成为一个新的盘子放在最上面
 
 **哪里像**：
+
 - ✅ 盘子的堆叠顺序（后进先出）与调用栈完全一致
 - ✅ 厨师一次只能处理最上面的盘子，与单线程 JavaScript 一次只能执行一个函数一致
 - ✅ 复杂菜品拆分后的子步骤盘子，与函数调用分解子任务对应
 
 **哪里不像**：
+
 - ❌ 餐厅的盘子可以任意重排（紧急订单），但调用栈严格遵循 LIFO
 - ❌ 盘子上的订单做完就丢弃，但调用栈中的执行上下文在闭包存在时不能立即销毁
 
@@ -1131,6 +1141,49 @@ const weak = new WeakRef({ data: 'important' });
 // 取决于 GC 是否已运行
 ```
 
+### 5.2 从范畴论视角理解内存泄漏
+
+内存泄漏在范畴论语义中可以理解为**态射的"悬空引用"**——一个对象在范畴中仍然存在（被引用），但没有从初始对象（程序入口）可达的路径。
+
+```typescript
+// 内存泄漏的范畴论分析
+const leakedObjects: object[] = [];
+
+function createLeak(): void {
+  const bigData = new Array(10_000_000).fill('x');
+  leakedObjects.push(bigData);  // bigData 被全局数组引用
+  // 即使 createLeak 执行完毕，bigData 不会被 GC
+  // 因为在范畴论中，bigData 仍然被 leakedObjects 引用
+}
+
+// 修正：避免全局引用
+function noLeak(): void {
+  const bigData = new Array(10_000_000).fill('x');
+  processData(bigData);
+  // bigData 不再被引用，GC 可以回收
+}
+```
+
+**精确直觉类比：图书馆藏书**
+
+| 概念 | 图书馆 | 内存管理 |
+|------|--------|---------|
+| 对象 | 书籍 | 内存中的值 |
+| 引用 | 借阅记录 | 指针/引用 |
+| GC | 图书管理员清理无人借阅的书 | 垃圾回收器释放无引用对象 |
+| 内存泄漏 | 有人登记借阅但从不归还，也不阅读 | 全局变量引用对象但从不使用 |
+| 弱引用 | "参考书籍，仅限馆内阅读" | WeakRef/WeakMap |
+
+**哪里像**：
+
+- ✅ 像图书馆一样，只要有人"登记借阅"（引用），书就不能被清理
+- ✅ 像图书馆一样，"馆内阅读"（弱引用）不阻止清理
+
+**哪里不像**：
+
+- ❌ 不像图书馆，GC 是自动的——没有"催还通知"
+- ❌ 不像图书馆，循环引用（A→B→A）在没有外部引用时仍会被 GC（现代 GC 的循环检测）
+
 ---
 
 ## 参考文献
@@ -1141,3 +1194,9 @@ const weak = new WeakRef({ data: 'important' });
 4. Jacobs, B. (1999). *Categorical Logic and Type Theory*. Elsevier.
 5. Harper, R. (2016). *Practical Foundations for Programming Languages*. Cambridge.
 6. Dybvig, R. K. (2009). *The Scheme Programming Language* (4th ed.). MIT Press.
+7. Jones, R., & Lins, R. (1996). *Garbage Collection: Algorithms for Automatic Dynamic Memory Management*. Wiley.
+8. Wilson, P. R. (1992). "Uniprocessor Garbage Collection Techniques." *IWMM 1992*.
+9. Dijkstra, E. W. (1968). "Go To Statement Considered Harmful." *Communications of the ACM*, 11(3), 147-148.
+10. Steele, G. L. (1977). "Debunking the 'Expensive Procedure Call' Myth." *MIT AI Memo* 443.
+11. Landin, P. J. (1964). "The Mechanical Evaluation of Expressions." *Computer Journal*, 6(4), 308-320.
+12. Strachey, C., & Wadsworth, C. P. (2000). "Continuations: A Mathematical Semantics for Handling Full Jumps." *Higher-Order and Symbolic Computation*, 13(1-2), 135-152.

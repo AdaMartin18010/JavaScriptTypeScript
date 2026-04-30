@@ -48,6 +48,7 @@ references:
     - [6.1 Generator 作为状态机](#61-generator-作为状态机)
     - [6.2 yield 的范畴论语义](#62-yield-的范畴论语义)
   - [7. 反例：控制流的范畴论盲区](#7-反例控制流的范畴论盲区)
+    - [7.1 控制流的认知负荷分析](#71-控制流的认知负荷分析)
   - [参考文献](#参考文献)
 
 ---
@@ -848,6 +849,46 @@ const dynamicCode = "if (Math.random() > 0.5) { return 1; } else { return 2; }";
 // 静态的范畴论分析对此无能为力
 ```
 
+### 7.1 控制流的认知负荷分析
+
+从认知科学角度，不同控制结构的认知负荷截然不同：
+
+| 控制结构 | 认知负荷 | 原因 | 工作记忆需求 |
+|---------|---------|------|-------------|
+| 顺序执行 | 低 | 线性结构，符合阅读习惯 | 1-2 个组块 |
+| if/else | 低-中 | 二分支，需要追踪两条路径 | 2-3 个组块 |
+| 嵌套 if | 高 | 路径数指数增长 | 4-7 个组块 |
+| 循环 | 中 | 需要抽象出迭代模式 | 2-3 个组块 |
+| 递归 | 高 | 需要模拟多层调用栈 | 4+ 个组块 |
+| try/catch | 中 | 需要追踪异常传播路径 | 3-4 个组块 |
+| async/await | 中-高 | 伪同步语法隐藏异步语义 | 3-5 个组块 |
+| 并发 | 极高 | 需要追踪多个执行线索 | 超出容量 |
+
+**工程建议**：
+
+```typescript
+// 高认知负荷：深层嵌套
+function complex(x: number, y: number, z: number): string {
+  if (x > 0) {
+    if (y > 0) {
+      if (z > 0) return "+++";
+      else return "++-";
+    } else {
+      if (z > 0) return "+-+";
+      else return "+--";
+    }
+  } else {
+    // ... 类似的嵌套
+  }
+}
+
+// 低认知负荷：早期返回
+function simple(x: number, y: number, z: number): string {
+  const signs = [x, y, z].map(n => n > 0 ? "+" : "-");
+  return signs.join("");
+}
+```
+
 ---
 
 ## 参考文献
@@ -855,3 +896,6 @@ const dynamicCode = "if (Math.random() > 0.5) { return 1; } else { return 2; }";
 1. Pierce, B. C. (2002). *Types and Programming Languages*. MIT Press.
 2. Harper, R. (2016). *Practical Foundations for Programming Languages* (2nd ed.). Cambridge.
 3. Moggi, E. (1991). "Notions of Computation and Monads." *Information and Computation*, 93(1), 55-92.
+4. Plotkin, G. D. (1981). "A Structural Approach to Operational Semantics." *Aarhus University*. (DAIMI FN-19)
+5. Felleisen, M., & Hieb, R. (1992). "The Revised Report on the Syntactic Theories of Sequential Control and State." *Theoretical Computer Science*, 103(2), 235-271.
+6. Peyton Jones, S. L. (2003). "Tackling the Awkward Squad: Monadic Input/Output, Concurrency, Exceptions, and Foreign-Language Calls in Haskell." *Engineering Theories of Software Construction*.

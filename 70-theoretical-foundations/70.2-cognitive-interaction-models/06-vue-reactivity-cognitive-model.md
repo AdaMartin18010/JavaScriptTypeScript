@@ -52,6 +52,7 @@ references:
     - [4.4 反例：混用 Options 与 Composition 的陷阱](#44-反例混用-options-与-composition-的陷阱)
     - [4.5 迁移的认知成本与增量策略](#45-迁移的认知成本与增量策略)
   - [5. 设计低认知负荷的 Vue 代码](#5-设计低认知负荷的-vue-代码)
+    - [5.5 Vue 响应式 vs React 响应式的对称差分析](#55-vue-响应式-vs-react-响应式的对称差分析)
   - [参考文献](#参考文献)
 
 ---
@@ -154,7 +155,7 @@ const cart = reactive({
 // 当 items 变化时，total "应该"自动更新
 const total = computed(() => {
   const subtotal = cart.items.reduce(
-    (sum, item) => sum + item.price * item.quantity, 
+    (sum, item) => sum + item.price * item.quantity,
     0
   );
   return subtotal * (1 - cart.discount);
@@ -185,25 +186,25 @@ interface User {
 // 正例：利用 Proxy 透明性构建清晰的依赖链
 function useUserSearch(users: Ref<User[]>) {
   const searchQuery = ref<string>('');
-  
+
   // 依赖自动追踪：filteredUsers 隐式依赖于 searchQuery 和 users
   const filteredUsers = computed(() => {
     const query = searchQuery.value.toLowerCase();
     if (!query) return users.value;
-    return users.value.filter(user => 
+    return users.value.filter(user =>
       user.name.toLowerCase().includes(query) ||
       user.email.toLowerCase().includes(query)
     );
   });
-  
+
   // 自动追踪 filteredUsers 的变化
   const resultCount = computed(() => filteredUsers.value.length);
-  
+
   // watch 只会在 resultCount 变化时触发
   watch(resultCount, (newCount, oldCount) => {
     console.log(`Results changed from ${oldCount} to ${newCount}`);
   });
-  
+
   return {
     searchQuery,
     filteredUsers,
@@ -213,6 +214,7 @@ function useUserSearch(users: Ref<User[]>) {
 ```
 
 这个正例展示了 Proxy 透明性的最佳实践场景：
+
 - 数据依赖链清晰：searchQuery → filteredUsers → resultCount
 - 没有手动订阅/取消订阅的负担
 - TypeScript 类型标注完整，编译器能在开发时捕获类型错误
@@ -271,13 +273,13 @@ import { ref, watch } from 'vue';
 // 修正方案 1：对无法被 Proxy 拦截的对象，使用 ref + 替换
 function useDate() {
   const date = ref<Date>(new Date());
-  
+
   const setYear = (year: number): void => {
     const newDate = new Date(date.value);
     newDate.setFullYear(year);
     date.value = newDate;  // 替换整个对象，触发响应
   };
-  
+
   return { date, setYear };
 }
 
@@ -287,12 +289,12 @@ import { triggerRef } from 'vue';
 
 function useCollection() {
   const items = ref<Set<string>>(new Set());
-  
+
   const addItem = (item: string): void => {
     items.value.add(item);
     triggerRef(items);  // 强制通知依赖更新
   };
-  
+
   return { items, addItem };
 }
 
@@ -323,6 +325,7 @@ const shallowState = shallowRef({ deep: { nested: 'value' } });
 - React 的 useState 像**手动门**：你需要按下按钮，门才会打开。这给了你明确的控制感，但每次进出都需要额外动作。
 
 边界标注：
+
 - ✅ 自动门在双手提满东西时更方便（复杂依赖场景）
 - ❌ 自动门在传感器故障时让人困惑（Proxy 边界失效）
 - ✅ 手动门给你明确的反馈（每次 setState 都是显式意图）
@@ -365,6 +368,7 @@ console.log(user.name);    // 无需 .value
 | 认知负担 | 高：每次访问都需要"开锁" | 低：直觉式访问 |
 
 边界标注：
+
 - ✅ 保险箱适合存放零散物品（原始值）
 - ❌ 保险箱不适合频繁展示的场景（需要反复 .value）
 - ✅ 展示柜适合成套展示（对象的多个属性）
@@ -458,17 +462,17 @@ function useAppState(): {
     user: { name: 'Alice', id: 1 },
     settings: { theme: 'light' }
   });
-  
+
   // 使用 toRefs 保持响应性的同时支持解构
   const refs = toRefs(state);
-  
+
   // 使用 readonly 防止外部直接修改
   const readonlySettings = readonly(refs.settings);
-  
+
   const updateTheme = (theme: 'light' | 'dark'): void => {
     state.settings.theme = theme;  // 内部仍然可以修改
   };
-  
+
   return {
     user: refs.user,
     settings: readonlySettings,
@@ -483,6 +487,7 @@ updateTheme('dark');  // ✅ 通过受控接口修改
 ```
 
 这个正例展示了如何建立**防御性响应式边界**：
+
 1. `toRefs` 解决了解构丢失响应性的问题
 2. `readonly` 防止了外部对状态的随意修改
 3. 通过函数接口暴露受控的修改操作
@@ -548,6 +553,7 @@ console.log(fullName.value);  // "Bob Smith" —— 重新计算
 - **有 computed**：管理员第一次查找后，把结果写在索引卡片上。之后只要书没有更换（依赖没变），就直接读卡片（缓存）。
 
 边界标注：
+
 - ✅ 索引卡片减少了重复劳动（缓存有效）
 - ❌ 如果有人在卡片上写笔记（副作用），其他读者会看到（意外共享）
 - ❌ 索引卡片只记录"查询结果"，不应该触发其他动作（副作用）
@@ -566,30 +572,30 @@ interface CartItem {
 
 function useShoppingCart(items: Ref<CartItem[]>) {
   // 派生状态 1：小计
-  const subtotal = computed<number>(() => 
+  const subtotal = computed<number>(() =>
     items.value.reduce((sum, item) => sum + item.price * item.quantity, 0)
   );
-  
+
   // 派生状态 2：商品总数
   const totalItems = computed<number>(() =>
     items.value.reduce((sum, item) => sum + item.quantity, 0)
   );
-  
+
   // 派生状态 3：运费（基于小计）
   const shippingCost = computed<number>(() => {
     if (subtotal.value > 100) return 0;
     return 10;
   });
-  
+
   // 派生状态 4：总价
   const total = computed<number>(() => subtotal.value + shippingCost.value);
-  
+
   // 派生状态 5：格式化后的摘要
   const summary = computed<string>(() => {
     return `Items: ${totalItems.value}, Subtotal: $${subtotal.value.toFixed(2)}, ` +
            `Shipping: $${shippingCost.value.toFixed(2)}, Total: $${total.value.toFixed(2)}`;
   });
-  
+
   return {
     subtotal,
     totalItems,
@@ -630,7 +636,7 @@ import { ref, computed } from 'vue';
 
 const names = ref<string[]>(['Alice', 'Bob']);
 
-const nameObjects = computed(() => 
+const nameObjects = computed(() =>
   names.value.map(name => ({ name, length: name.length }))
 );
 
@@ -654,9 +660,9 @@ const count = computed<number>(() => items.value.length);
 // ✅ watch：监听变化，执行副作用
 watch(count, (newCount: number, oldCount: number | undefined) => {
   console.log(`Count changed from ${oldCount} to ${newCount}`);
-  fetch('/api/log', { 
-    method: 'POST', 
-    body: JSON.stringify({ count: newCount }) 
+  fetch('/api/log', {
+    method: 'POST',
+    body: JSON.stringify({ count: newCount })
   }).catch(() => {});
 });
 
@@ -702,7 +708,7 @@ watch(items, (newItems: string[]) => {
 | **粘度** | 高（逻辑分散在选项中）| 低（逻辑内聚）| Composition 更易重构 |
 | **一致性** | 高（固定结构）| 中（自由组合）| Options 更易上手 |
 | **错误倾向性** | 中（this 指向问题）| 低（显式依赖）| Composition 更类型安全 |
-| ** premature commitment** | 高（必须在编写时选择选项类别）| 低（运行时组织逻辑）| Composition 减少前期决策负担 |
+| **premature commitment** | 高（必须在编写时选择选项类别）| 低（运行时组织逻辑）| Composition 减少前期决策负担 |
 | **可见性** | 中（相关逻辑分散在不同选项）| 高（相关逻辑集中）| Composition 更易理解上下文 |
 | **硬心理操作** | 中（需要在选项间跳转理解逻辑）| 低（线性阅读即可）| Composition 降低阅读负担 |
 
@@ -798,15 +804,15 @@ interface MousePosition {
 export function useMouse(): MousePosition {
   const x = ref<number>(0);
   const y = ref<number>(0);
-  
+
   const update = (e: MouseEvent): void => {
     x.value = e.pageX;
     y.value = e.pageY;
   };
-  
+
   onMounted(() => window.addEventListener('mousemove', update));
   onUnmounted(() => window.removeEventListener('mousemove', update));
-  
+
   return { x, y };
 }
 
@@ -824,7 +830,7 @@ export function useAsync<T>(
   const data = ref<T | null>(null) as Ref<T | null>;
   const error = ref<Error | null>(null);
   const loading = ref<boolean>(false);
-  
+
   const execute = async (): Promise<void> => {
     loading.value = true;
     error.value = null;
@@ -836,7 +842,7 @@ export function useAsync<T>(
       loading.value = false;
     }
   };
-  
+
   return { data, error, loading, execute };
 }
 
@@ -859,10 +865,10 @@ export default {
   },
   setup() {
     const setupCount = ref(0);
-    
+
     // 错误：试图在 setup 中访问 Options API 的数据
     // console.log(this.count);  // ❌ undefined！setup 中 this 不可用
-    
+
     return {
       setupCount
     };
@@ -888,11 +894,11 @@ export default defineComponent({
   setup() {
     const count = ref<number>(0);
     const doubled = computed<number>(() => count.value * 2);
-    
+
     const increment = (): void => {
       count.value++;
     };
-    
+
     return {
       count,
       doubled,
@@ -1008,7 +1014,7 @@ import type { Ref } from 'vue';
 // 正例：带防抖的 ref
 function useDebouncedRef<T>(value: T, delay = 300): Ref<T> {
   let timeout: ReturnType<typeof setTimeout>;
-  
+
   return customRef<T>((track, trigger) => ({
     get() {
       track();
@@ -1043,6 +1049,35 @@ async function fetchData(): Promise<void> {
   // 不需要追踪 data 内部每个属性的变化
 }
 ```
+
+### 5.5 Vue 响应式 vs React 响应式的对称差分析
+
+```
+Vue 响应式 \\ React 响应式 = {
+  "自动依赖追踪（无需手动声明）",
+  "细粒度更新（属性级别）",
+  "Proxy 透明拦截",
+  "Mutable 状态模型"
+}
+
+React 响应式 \\ Vue 响应式 = {
+  "显式状态更新（setState）",
+  "不可变数据流",
+  "时间切片（Time Slicing）",
+  "Suspense 集成"
+}
+
+交集 = {
+  "组件化",
+  "虚拟 DOM（概念上）",
+  "单向数据流（默认）"
+}
+```
+
+**认知影响**：
+
+- Vue 的自动追踪减少了**外在认知负荷**（不需要写依赖数组），但增加了**意外性风险**（你不知道什么会触发更新）
+- React 的显式更新增加了**外在认知负荷**，但提供了**确定性保证**（更新路径明确）
 
 ---
 

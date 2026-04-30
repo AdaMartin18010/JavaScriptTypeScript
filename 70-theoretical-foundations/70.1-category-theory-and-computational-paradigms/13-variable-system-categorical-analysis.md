@@ -54,6 +54,7 @@ references:
   - [7. 环境范畴的整体构造](#7-环境范畴的整体构造)
     - [7.1 环境记录作为范畴对象](#71-环境记录作为范畴对象)
     - [7.2 变量查找作为函子](#72-变量查找作为函子)
+    - [5.3 闭包与存储范畴（Store Category）](#53-闭包与存储范畴store-category)
   - [参考文献](#参考文献)
 
 ---
@@ -1162,6 +1163,66 @@ try {
 - ❌ 邮政系统允许一个地址在多个层级同时存在（街道123号和市123号是不同的地址），但变量名在同一作用域链中不能重复声明（let/const）
 - ❌ 邮政系统没有"TDZ"——你可以随时查询一个未启用的邮编，它会告诉你"不存在"。JavaScript的TDZ是一个"存在但不能访问"的特殊状态
 
+### 5.3 闭包与存储范畴（Store Category）
+
+闭包在范畴论中可以建模为**存储范畴中的态射**——携带了环境（存储状态）的函数。
+
+```typescript
+// 闭包的范畴论直觉：函数 + 捕获的环境
+function makeMultiplier(factor: number): (x: number) => number {
+  // factor 被"捕获"到闭包的环境中
+  return (x: number) => x * factor;
+}
+
+const triple = makeMultiplier(3);
+const quadruple = makeMultiplier(4);
+
+console.log(triple(5));     // 15 —— 使用捕获的 factor=3
+console.log(quadruple(5));  // 20 —— 使用捕获的 factor=4
+```
+
+**存储范畴（Store Category）** 的直觉：
+
+- 对象 = 存储状态（变量名到值的映射）
+- 态射 = 状态转换函数 `Store → Store × Value`
+- 闭包 = 一个"冻结了"部分存储状态的态射
+
+**反例：循环中的闭包陷阱**
+
+```typescript
+// 新手常见错误
+const functions: (() => number)[] = [];
+for (var i = 0; i < 3; i++) {
+  functions.push(() => i);
+}
+
+// 预期：[0, 1, 2]
+// 实际：[3, 3, 3]
+
+// 原因：所有闭包共享同一个 i（var 的作用域在函数级）
+// 修正：使用 let（块级作用域）
+for (let i = 0; i < 3; i++) {
+  functions.push(() => i);  // 每个闭包捕获独立的 i
+}
+```
+
+**对称差分析**：
+
+```
+var \\ let = {
+  "函数级作用域",
+  "变量提升",
+  "可重复声明"
+}
+
+let \\ var = {
+  "块级作用域",
+  "TDZ（暂时性死区）",
+  "不可重复声明",
+  "每次迭代创建新绑定"
+}
+```
+
 ---
 
 ## 参考文献
@@ -1172,3 +1233,4 @@ try {
 4. Jacobs, B. (1999). *Categorical Logic and Type Theory*. Elsevier.
 5. Wadler, P. (1992). "Comprehending Monads." *Mathematical Structures in Computer Science*, 2(4), 461-493.
 6. Reynolds, J. C. (1998). *Theories of Programming Languages*. Cambridge University Press.
+7. Strachey, C. (2000). "Fundamental Concepts in Programming Languages." *Higher-Order and Symbolic Computation*, 13(1-2), 11-49.

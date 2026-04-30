@@ -44,6 +44,8 @@ references:
     - [5.1 拉回：共同约束的类型交集](#51-拉回共同约束的类型交集)
     - [5.2 推出：共同扩展的类型联合](#52-推出共同扩展的类型联合)
   - [6. 反例：极限抽象的局限](#6-反例极限抽象的局限)
+    - [6.1 极限视角下的数据库 JOIN](#61-极限视角下的数据库-join)
+    - [6.2 GraphQL 数据获取的极限视角](#62-graphql-数据获取的极限视角)
   - [参考文献](#参考文献)
 
 ---
@@ -655,6 +657,68 @@ interface PublicUser { id: number; name: string; }
 // 在某些性能敏感场景下，你可能想就地修改
 ```
 
+### 6.1 极限视角下的数据库 JOIN
+
+数据库的 INNER JOIN 是极限概念在数据管理中的直接应用。
+
+```typescript
+// 两个表
+interface Users { id: number; name: string; }
+interface Orders { id: number; userId: number; amount: number; }
+
+// INNER JOIN = 拉回（Pullback）
+// 选择同时满足两个约束的记录：
+// - 存在于 Users 表中
+// - 存在于 Orders 表中且 userId 匹配
+function innerJoin(
+  users: Users[],
+  orders: Orders[]
+): Array<Users & Orders> {
+  const result: Array<Users & Orders> = [];
+  for (const user of users) {
+    for (const order of orders) {
+      if (user.id === order.userId) {
+        result.push({ ...user, ...order });
+      }
+    }
+  }
+  return result;
+}
+```
+
+**范畴论解释**：
+
+```
+Users ---id---> UserId <---userId--- Orders
+
+拉回 = 满足 id = userId 的所有 (user, order) 对
+     = INNER JOIN 的结果
+```
+
+**LEFT JOIN 不是拉回**——它是"偏拉回"，允许一侧为 null。这超出了标准极限的范畴，需要额外的结构（如可空类型范畴）。
+
+### 6.2 GraphQL 数据获取的极限视角
+
+GraphQL 的查询结构天然符合极限的直觉：
+
+```graphql
+query {
+  user(id: 1) {      # 从 Users 中选择一个
+    name             # 投影到 name
+    orders {         # 从 Orders 中拉取关联
+      amount         # 投影到 amount
+    }
+  }
+}
+```
+
+这个查询在范畴论中可以看作一系列极限的组合：
+
+1. 选择 `user(id: 1)` → 从 Users 范畴中选择特定对象
+2. `name` → 投影态射（积的投影）
+3. `orders` → 拉回态射（关联查询）
+4. 整个查询结果 → 多个极限的复合
+
 ---
 
 ## 参考文献
@@ -662,3 +726,5 @@ interface PublicUser { id: number; name: string; }
 1. Leinster, T. (2014). *Basic Category Theory*. Cambridge University Press.
 2. Spivak, D. I. (2014). *Category Theory for the Sciences*. MIT Press.
 3. Riehl, E. (2016). *Category Theory in Context*. Dover. (Ch. 3)
+4. Barr, M., & Wells, C. (1990). *Category Theory for Computing Science*. Prentice Hall.
+5. Spivak, D. I. (2012). "Functorial Data Migration." *Information and Computation*, 217, 31-51.

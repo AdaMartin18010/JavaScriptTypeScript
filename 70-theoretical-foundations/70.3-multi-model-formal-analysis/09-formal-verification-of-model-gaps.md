@@ -72,6 +72,7 @@ references:
       - [反例：符号执行中的路径爆炸](#反例符号执行中的路径爆炸)
     - [5.4 直觉类比：符号执行像解谜游戏](#54-直觉类比符号执行像解谜游戏)
   - [6. 综合验证策略：多方法协同](#6-综合验证策略多方法协同)
+    - [5.3 不可表达性与验证的边界](#53-不可表达性与验证的边界)
   - [参考文献](#参考文献)
 
 ---
@@ -839,6 +840,48 @@ function processList(items: number[]): number {
 
 这种分层验证的核心思想是：**把最昂贵的验证资源（形式化证明）投入到最关键的组件上，用自动化的方法（测试、模型检测）覆盖大部分代码。**
 
+### 5.3 不可表达性与验证的边界
+
+并非所有程序性质都可以被形式化验证。由 Rice 定理可知：**任何非平凡的语义性质都是不可判定的**。
+
+```typescript
+// 不可判定的性质示例：
+// "这个函数对所有输入都终止"
+function mystery(n: number): number {
+  // 如果哥德巴赫猜想成立，返回 1；否则无限循环
+  // 我们无法验证这个函数是否总是终止！
+  return 1;
+}
+```
+
+**实际影响**：
+
+| 可验证的性质 | 不可验证的性质 |
+|-------------|--------------|
+| 类型安全 | 功能正确性（完全）|
+| 内存安全 | 性能保证 |
+| 无死锁（有限状态）| 终止性（通用）|
+| 协议合规 | 用户体验 |
+
+**精确直觉类比：医学诊断**
+
+| 概念 | 医学 | 形式化验证 |
+|------|------|-----------|
+| 可验证 | 血压是否正常 | 类型是否匹配 |
+| 不可验证 | 患者是否幸福 | 用户体验是否良好 |
+| 工具 | 血压计 | 类型检查器 |
+| 局限性 | 无法测量主观感受 | 无法验证主观目标 |
+
+**哪里像**：
+
+- ✅ 像医学一样，形式化验证可以检测"客观指标"，但无法评估"主观体验"
+- ✅ 像医学一样，形式化验证可以发现"疾病"（bug），但不能保证"健康"（完美）
+
+**哪里不像**：
+
+- ❌ 不像医学，形式化验证是数学上精确的——没有"假阴性"（如果验证通过，性质一定成立）
+- ❌ 不像医学，形式化验证的范围是明确的——你知道什么被验证了，什么没有
+
 ---
 
 ## 参考文献
@@ -851,3 +894,5 @@ function processList(items: number[]): number {
 6. Cadar, C., & Sen, K. (2013). Symbolic Execution for Software Testing: Three Decades Later. Communications of the ACM, 56(2), 82-90.
 7. Cousot, P., & Cousot, R. (1977). Abstract Interpretation: A Unified Lattice Model for Static Analysis of Programs. POPL 1977.
 8. Claessen, K., & Hughes, J. (2000). QuickCheck: A Lightweight Tool for Random Testing of Haskell Programs. ICFP 2000.
+9. Rice, H. G. (1953). "Classes of Recursively Enumerable Sets and Their Decision Problems." *Transactions of the American Mathematical Society*, 74(2), 358-366.
+10. Hoare, C. A. R. (1969). "An Axiomatic Basis for Computer Programming." *Communications of the ACM*, 12(10), 576-580.

@@ -64,6 +64,7 @@ references:
     - [陷阱 3：enum 的反向映射陷阱](#陷阱-3enum-的反向映射陷阱)
     - [陷阱 4：namespace 合并的意外行为](#陷阱-4namespace-合并的意外行为)
     - [陷阱 5：泛型默认参数的"静默降级"](#陷阱-5泛型默认参数的静默降级)
+    - [6.3 信息论视角：类型的精度度量](#63-信息论视角类型的精度度量)
   - [参考文献](#参考文献)
 
 ---
@@ -1034,6 +1035,50 @@ const value = cache.get("key");
 value.nonExistent();  // TS 通过，运行时错误
 ```
 
+### 6.3 信息论视角：类型的精度度量
+
+从信息论角度，类型系统可以看作对值空间的一种**编码**。类型越精确，编码所需的 bits 越多，但运行时错误的概率越低。
+
+```typescript
+// 精度：0 bits（最宽泛）
+const anything: any = fetchData();
+
+// 精度：~log₂(|JS值空间|) bits
+const something: unknown = fetchData();
+
+// 精度：~log₂(|字符串|) bits
+const name: string = fetchData();
+
+// 精度：~log₂(|Email格式字符串|) bits
+const email: string & { __brand: 'Email' } = fetchData() as any;
+
+// 精度：~log₂(|User对象|) bits（最高）
+const user: User = fetchData();
+```
+
+**对称差的信息论解释**：
+
+```
+TS 类型空间 = { 所有合法的 TS 类型 }
+JS 运行时空间 = { 所有可能的 JS 值 }
+
+对称差 = 类型系统能表达但不能保证的值 + 运行时存在但类型系统不能表达的值
+
+精度(bits) = log₂(|运行时空间| / |类型约束后的空间|)
+```
+
+**正例**：使用 branded types 增加精度
+
+```typescript
+type Email = string & { __brand: 'Email' };
+type UserId = string & { __brand: 'UserId' };
+
+function sendEmail(to: Email, subject: string): void { ... }
+
+const userId = 'alice@example.com' as UserId;
+// sendEmail(userId, 'Hello');  // 编译错误！UserId 不是 Email
+```
+
 ---
 
 ## 参考文献
@@ -1045,3 +1090,5 @@ value.nonExistent();  // TS 通过，运行时错误
 5. Tobin-Hochstadt, S., & Felleisen, M. (2006). "Interlanguage Migration: From Scripts to Programs." *OOPSLA 2006*.
 6. Cardelli, L., & Wegner, P. (1985). "On Understanding Types, Data Abstraction, and Polymorphism." *ACM Computing Surveys*, 17(4), 471-522.
 7. Wadler, P., & Findler, R. B. (2009). "Well-Typed Programs Can't Be Blamed." *ESOP 2009*.
+8. Flanagan, C. (2006). "Hybrid Type Checking." *POPL 2006*.
+9. Greenman, B., & Felleisen, M. (2019). "A Spectrum of Type Soundness and Performance." *ICFP 2019*.

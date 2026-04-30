@@ -59,6 +59,7 @@ references:
     - [6.2 并发渲染的"非确定性"焦虑](#62-并发渲染的非确定性焦虑)
   - [7. 对称差分析：React 现代特性的认知维度矩阵](#7-对称差分析react-现代特性的认知维度矩阵)
   - [8. 精确直觉类比与边界](#8-精确直觉类比与边界)
+    - [6.3 useEffect 依赖数组的心智模型陷阱](#63-useeffect-依赖数组的心智模型陷阱)
   - [参考文献](#参考文献)
 
 ---
@@ -811,6 +812,49 @@ Concurrent React: "给定 props A，组件可能渲染 B，也可能先渲染 C 
 | **Hydration** | 给骨架注入肌肉 | 先搭骨架（HTML），再注入活力（JS） | 真实生物的生长是渐进的，Hydration 是"突然激活" |
 | **useTransition** | 交通信号灯的分流 | 紧急车辆先行，普通车辆等待 | 交通灯有明确的规则，transition 优先级需要开发者判断 |
 | **Tearing** | 拼图的不同批次印刷 | 同一幅画的左半边和右半边颜色不一致 | 拼图可以重新印刷，Tearing 需要代码层面的修复 |
+
+### 6.3 useEffect 依赖数组的心智模型陷阱
+
+useEffect 的依赖数组是 React 中最容易导致 bug 的特性之一。从认知科学角度，问题在于**依赖数组要求开发者手动维护一个"心智状态列表"**——这与人类工作记忆的自动性相冲突。
+
+```typescript
+function UserProfile({ userId }: { userId: string }) {
+  const [user, setUser] = useState<User | null>(null);
+
+  // 认知陷阱：开发者忘记在依赖数组中包含 userId
+  useEffect(() => {
+    fetchUser(userId).then(setUser);
+  }, []);  // ❌ 缺少 userId！
+
+  // 当 userId 变化时，effect 不会重新执行
+  // 结果：显示的是上一个用户的资料
+}
+```
+
+**为什么容易忘记？**
+
+1. **工作记忆超载**：开发者需要同时关注 effect 函数体、依赖数组、以及组件的 props
+2. **注意力分散**：编写 effect 函数时，注意力集中在"做什么"，而非"依赖什么"
+3. **ESLint 的补救**：`react-hooks/exhaustive-deps` 规则可以自动检测缺失依赖，但这是外部辅助而非内在理解
+
+**精确直觉类比：定时闹钟**
+
+| 概念 | 闹钟 | useEffect |
+|------|------|-----------|
+| 依赖数组 | "每天早上 7 点响" | `[userId]` |
+| 效应函数 | 响铃时执行的动作 | `fetchUser` |
+| 忘记设置依赖 | 闹钟永远不更新 | effect 只在挂载时执行 |
+| ESLint | 智能助手提醒"你忘了设时间" | `exhaustive-deps` |
+
+**哪里像**：
+
+- ✅ 像闹钟一样，useEffect 需要明确的触发条件
+- ✅ 像闹钟一样，忘记设置条件会导致"永远不响"或"不该响时响"
+
+**哪里不像**：
+
+- ❌ 不像闹钟，useEffect 的"触发条件"不是显式的，而是需要开发者推导
+- ❌ 不像闹钟，useEffect 可以"自我修改"（在 effect 中 setState 会触发重渲染）
 
 ---
 

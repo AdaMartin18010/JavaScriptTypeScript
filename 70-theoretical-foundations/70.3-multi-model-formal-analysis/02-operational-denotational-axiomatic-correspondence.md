@@ -834,3 +834,6 @@ function unsafe(x: any): string {
 8. Reynolds, J. C. (1998). *Theories of Programming Languages*. Cambridge University Press.
 9. Pierce, B. C. (2002). *Types and Programming Languages*. MIT Press.
 10. ECMA International. *ECMA-262: ECMAScript Language Specification*.
+11. Gunter, C. A. (1992). *Semantics of Programming Languages: Structures and Techniques*. MIT Press.
+12. Winskel, G. (1993). *The Formal Semantics of Programming Languages*. MIT Press.
+13. Apt, K. R. (1981). "Ten Years of Hoare's Logic: A Survey — Part I." *ACM TOPLAS*, 3(4), 431-483.
