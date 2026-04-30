@@ -41,10 +41,10 @@
 
 | 环境 | 支持状态 | 备注 |
 |------|----------|------|
-| V8 (Node.js >= 22, Chrome >= 124) | ✅ 实验性/已实现 | 可通过 `--js-atomics-pause` 或默认启用 |
-| SpiderMonkey (Firefox) | 🚧 开发中 | 预计在 Firefox 130+ 实现 |
-| JavaScriptCore (Safari) | 🚧 开发中 | WebKit 尚未完整实现 |
-| TypeScript lib | ⚠️ 需自行声明 | 当前 `lib.dom.d.ts` / `lib.es2020.sharedmemory.d.ts` 未包含 |
+| V8 (Node.js >= 22, Chrome >= 124) | 实验性/已实现 | 可通过 `--js-atomics-pause` 或默认启用 |
+| SpiderMonkey (Firefox) | 开发中 | 预计在 Firefox 130+ 实现 |
+| JavaScriptCore (Safari) | 开发中 | WebKit 尚未完整实现 |
+| TypeScript lib | 需自行声明 | 当前 `lib.dom.d.ts` / `lib.es2020.sharedmemory.d.ts` 未包含 |
 
 > 生产使用前，建议通过 `typeof Atomics.pause === 'function'` 做特性检测。
 
@@ -221,6 +221,98 @@ async function benchmark({ usePause, workers, iterations }) {
 // 注：实际收益高度依赖 CPU 架构（x86 PAUSE 指令 vs ARM YIELD）和竞争程度
 ```
 
+### 4.5 代码示例：票证锁（Ticket Lock）实现
+
+```javascript
+// ticket-lock.js
+// Ticket Lock：保证 FIFO 顺序的公平自旋锁
+
+const TICKET_INDEX = 0;  // 下一个可用票号
+const SERVE_INDEX = 1;   // 当前正在服务的票号
+
+function ticketLockAcquire(sab) {
+  const view = new Int32Array(sab);
+  // 原子获取票号并递增
+  const myTicket = Atomics.add(view, TICKET_INDEX, 1);
+
+  // 自旋等待自己的票号被服务
+  while (Atomics.load(view, SERVE_INDEX) !== myTicket) {
+    if (typeof Atomics.pause === 'function') {
+      Atomics.pause();
+    }
+  }
+
+  return myTicket;
+}
+
+function ticketLockRelease(sab) {
+  const view = new Int32Array(sab);
+  // 服务下一个票号
+  Atomics.add(view, SERVE_INDEX, 1);
+}
+
+// 使用示例
+function criticalSection(sab) {
+  const ticket = ticketLockAcquire(sab);
+  try {
+    // 临界区...
+    console.log(`Ticket ${ticket} in critical section`);
+  } finally {
+    ticketLockRelease(sab);
+  }
+}
+```
+
+### 4.6 代码示例：Node.js worker_threads 中的使用
+
+```javascript
+// node-worker-atomics.js
+const { Worker, isMainThread, workerData } = require('node:worker_threads');
+
+if (isMainThread) {
+  const sab = new SharedArrayBuffer(8);
+  const view = new Int32Array(sab);
+
+  // 创建多个 Worker
+  const workers = [];
+  for (let i = 0; i < 4; i++) {
+    workers.push(new Worker(__filename, {
+      workerData: { sab, workerId: i }
+    }));
+  }
+
+  // 等待所有 Worker 完成
+  let completed = 0;
+  workers.forEach(w => {
+    w.on('message', () => {
+      completed++;
+      if (completed === workers.length) {
+        console.log('Final counter:', view[0]);
+        process.exit(0);
+      }
+    });
+  });
+} else {
+  const { sab, workerId } = workerData;
+  const view = new Int32Array(sab);
+
+  for (let i = 0; i < 10000; i++) {
+    // 无锁递增，带 pause 优化
+    while (true) {
+      const current = Atomics.load(view, 0);
+      if (Atomics.compareExchange(view, 0, current, current + 1) === current) {
+        break;
+      }
+      if (typeof Atomics.pause === 'function') {
+        Atomics.pause(3);
+      }
+    }
+  }
+
+  parentPort.postMessage('done');
+}
+```
+
 ## 与 Atomics.wait / Atomics.notify 的区别
 
 | 特性 | `Atomics.pause` | `Atomics.wait` / `Atomics.notify` |
@@ -247,3 +339,8 @@ async function benchmark({ usePause, workers, iterations }) {
 - [ARM Architecture Reference: YIELD / WFE](https://developer.arm.com/documentation/) — ARM 低功耗等待指令参考
 - [WebAssembly Threads Proposal](https://github.com/WebAssembly/threads) — WASM 线程与共享内存提案（与 JS Atomics 协同设计）
 - [A Primer on Memory Consistency and Cache Coherence](https://www.morganclaypool.com/doi/abs/10.2200/S00962ED2V01Y201910CAC049) — 内存一致性与缓存一致性学术教材
+- [MDN: SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) — 共享内存基础文档
+- [Node.js worker_threads](https://nodejs.org/api/worker_threads.html) — Node.js 多线程 Worker API
+- [V8 Blog: Pointer Compression](https://v8.dev/blog/pointer-compression) — V8 内存模型与多线程
+- [Linux Kernel: Spinlocks](https://www.kernel.org/doc/Documentation/locking/spinlocks.txt) — 操作系统自旋锁经典实现参考
+- [Herb Sutter: Lock-Free Programming](https://www.youtube.com/watch?v=c1gO9aB9nbs) — C++ 无锁编程（概念与 JS Atomics 相通）

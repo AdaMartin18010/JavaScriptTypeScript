@@ -245,3 +245,86 @@ Mixins   HOC      Class    Render   Hooks    Context  RSC      Server   React
 ---
 
 *最后更新: 2026-04-29*
+
+---
+
+## 深化补充：经典模式代码示例与权威参考
+
+### Compound Components 模式
+
+```tsx
+// components/Tabs.tsx
+import { createContext, useContext, useState, ReactNode } from 'react';
+
+const TabsContext = createContext<{ activeIndex: number; setActiveIndex: (i: number) => void } | null>(null);
+
+export function Tabs({ children }: { children: ReactNode }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  return (
+    <TabsContext.Provider value={{ activeIndex, setActiveIndex }}>
+      <div className="tabs">{children}</div>
+    </TabsContext.Provider>
+  );
+}
+
+export function TabList({ children }: { children: ReactNode }) {
+  return <div className="tab-list" role="tablist">{children}</div>;
+}
+
+export function Tab({ index, children }: { index: number; children: ReactNode }) {
+  const ctx = useContext(TabsContext);
+  if (!ctx) throw new Error('Tab must be used inside Tabs');
+  return (
+    <button role="tab" aria-selected={ctx.activeIndex === index} onClick={() => ctx.setActiveIndex(index)}>
+      {children}
+    </button>
+  );
+}
+
+export function TabPanel({ index, children }: { index: number; children: ReactNode }) {
+  const ctx = useContext(TabsContext);
+  if (!ctx) throw new Error('TabPanel must be used inside Tabs');
+  if (ctx.activeIndex !== index) return null;
+  return <div role="tabpanel">{children}</div>;
+}
+```
+
+### Render Props 模式
+
+```tsx
+// components/MouseTracker.tsx
+import { useState, ReactNode } from 'react';
+
+interface MouseTrackerProps {
+  render: (state: { x: number; y: number }) => ReactNode;
+}
+
+export function MouseTracker({ render }: MouseTrackerProps) {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  return (
+    <div onMouseMove={(e) => setPosition({ x: e.clientX, y: e.clientY })}>
+      {render(position)}
+    </div>
+  );
+}
+
+// 使用
+// <MouseTracker render={({ x, y }) => <p>Mouse: {x}, {y}</p>} />
+```
+
+### 权威外部链接索引
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| React 官方文档 — Thinking in React | <https://react.dev/learn/thinking-in-react> | React 核心思维模型 |
+| React 官方文档 — Server Components | <https://react.dev/reference/react/use-server> | Server Components 参考 |
+| React 官方文档 — Client Components | <https://react.dev/reference/react/use-client> | Client Components 参考 |
+| Patterns.dev — React | <https://www.patterns.dev/react/> | React 模式大全 |
+| Epic React by Kent C. Dodds | <https://epicreact.dev/> | 深度 React 课程 |
+| React Patterns | <https://reactpatterns.com/> | 经典 React 模式速查 |
+| Radix UI | <https://www.radix-ui.com/> | 无头组件库（Compound 模式实践） |
+| React Server Components RFC | <https://github.com/reactjs/rfcs/blob/main/text/0188-server-components.md> | RSC 设计 RFC |
+| Next.js App Router | <https://nextjs.org/docs/app> | Next.js App Router 文档 |
+| Zustand | <https://docs.pmnd.rs/zustand/getting-started/introduction> | 轻量级状态管理 |
+| TanStack Router | <https://tanstack.com/router/latest> | 类型安全路由 |
+| Preact Signals | <https://preactjs.com/guide/v10/signals/> | 信号响应式系统 |

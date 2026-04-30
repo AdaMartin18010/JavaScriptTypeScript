@@ -367,6 +367,97 @@ const plot = Plot.plot({
 document.body.appendChild(plot);
 ```
 
+### Svelte 5 Runes 状态管理
+
+```typescript
+// svelte-runes.svelte.ts
+export function createCounter() {
+  let count = $state(0);
+  let doubled = $derived(count * 2);
+
+  return {
+    get count() { return count; },
+    get doubled() { return doubled; },
+    increment() { count += 1; },
+  };
+}
+
+// 组件中使用
+<script>
+  import { createCounter } from './svelte-runes.svelte.ts';
+  const counter = createCounter();
+</script>
+
+<button onclick={() => counter.increment()}>
+  Count: {counter.count} (doubled: {counter.doubled})
+</button>
+```
+
+### SolidJS 细粒度响应式
+
+```typescript
+// solid-primitives.ts
+import { createSignal, createMemo, createEffect } from 'solid-js';
+
+export function createFetchStore<T>(url: () => string) {
+  const [data, setData] = createSignal<T | undefined>(undefined);
+  const [error, setError] = createSignal<Error | null>(null);
+  const [loading, setLoading] = createSignal(false);
+
+  createEffect(() => {
+    const currentUrl = url();
+    setLoading(true);
+    fetch(currentUrl)
+      .then((r) => r.json())
+      .then((d) => { setData(d); setError(null); })
+      .catch((e) => setError(e))
+      .finally(() => setLoading(false));
+  });
+
+  return { data, error, loading };
+}
+```
+
+### Astro Islands 架构
+
+```astro
+---
+// index.astro — 零 JS 服务端渲染
+import Counter from '../components/Counter.svelte';
+---
+
+<html>
+  <body>
+    <h1>Static Content (No JS)</h1>
+    <!-- 仅此处注入客户端 JS -->
+    <Counter client:load />
+    <p>More static content...</p>
+  </body>
+</html>
+```
+
+### Qwik Resumability 示例
+
+```typescript
+// counter.tsx — 可恢复的执行上下文
+import { component$, useSignal, $ } from '@builder.io/qwik';
+
+export const Counter = component$(() => {
+  const count = useSignal(0);
+
+  // $ 标记序列化边界，支持从服务端恢复状态
+  const increment = $(() => {
+    count.value++;
+  });
+
+  return (
+    <button onClick$={increment}>
+      Count: {count.value}
+    </button>
+  );
+});
+```
+
 ---
 
 ### 更多权威参考链接
@@ -383,3 +474,11 @@ document.body.appendChild(plot);
 | React DevTools | <https://react.dev/learn/thinking-in-react> | React 官方思维模型 |
 | Vue.js Docs | <https://vuejs.org/guide/introduction.html> | Vue 官方文档 |
 | Svelte Docs | <https://svelte.dev/docs> | Svelte 官方文档 |
+| Angular Signals Guide | <https://angular.dev/guide/signals> | Angular 响应式 Signals |
+| Preact Documentation | <https://preactjs.com/guide/v10/getting-started> | React 轻量替代方案 |
+| Fresh (Deno Framework) | <https://fresh.deno.dev/docs/introduction> | Deno 边缘框架 |
+| Nitro — Universal Server Engine | <https://nitro.unjs.io/> | Nuxt/SolidStart 底层引擎 |
+| Lightning CSS | <https://lightningcss.dev/> | Rust 极速 CSS 解析与压缩 |
+| PostCSS Documentation | <https://postcss.org/docs/> | CSS 后处理工具链 |
+| Autoprefixer | <https://github.com/postcss/autoprefixer> | 自动 CSS 前缀补全 |
+| UnoCSS — Instant On-demand Atomic CSS | <https://unocss.dev/> | 即时原子 CSS 引擎 |

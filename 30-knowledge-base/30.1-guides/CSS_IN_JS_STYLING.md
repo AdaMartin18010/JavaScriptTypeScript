@@ -322,6 +322,70 @@ registerPaint('checkerboard', CheckerboardPainter);
 // .card { background: paint(checkerboard); --checkerboard-size: 24px; }
 ```
 
+### Lightning CSS 与 PostCSS 构建管道
+
+```typescript
+// postcss.config.mjs
+import tailwindcss from '@tailwindcss/postcss';
+import lightningcss from 'postcss-lightningcss';
+
+export default {
+  plugins: [
+    tailwindcss(),
+    lightningcss({
+      browsers: '>= 0.25%',
+      lightningcssOptions: {
+        minify: true,
+        cssModules: true,
+      },
+    }),
+  ],
+};
+```
+
+```typescript
+// vite.config.ts — 使用 Lightning CSS 替代 esbuild/minify-css
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { browserslistToTargets } from 'lightningcss';
+import browserslist from 'browserslist';
+
+export default defineConfig({
+  plugins: [react()],
+  css: {
+    transformer: 'lightningcss',
+    lightningcss: {
+      targets: browserslistToTargets(browserslist('>= 0.25%')),
+    },
+  },
+  build: {
+    cssMinify: 'lightningcss',
+  },
+});
+```
+
+### UnoCSS 即时原子 CSS 引擎
+
+```typescript
+// uno.config.ts
+import { defineConfig, presetUno, presetIcons, transformerDirectives } from 'unocss';
+
+export default defineConfig({
+  presets: [presetUno(), presetIcons()],
+  transformers: [transformerDirectives()],
+  rules: [
+    ['custom-shadow', { 'box-shadow': '0 4px 6px -1px rgb(0 0 0 / 0.1)' }],
+  ],
+  shortcuts: {
+    'btn-base': 'px-4 py-2 rounded border border-transparent cursor-pointer transition',
+    'btn-primary': 'btn-base bg-blue-500 text-white hover:bg-blue-600',
+  },
+});
+
+// 组件中使用
+// <button class="btn-primary custom-shadow">Click me</button>
+```
+
 ---
 
 ## 2026 趋势
@@ -370,7 +434,15 @@ registerPaint('checkerboard', CheckerboardPainter);
 | W3C CSS Houdini Drafts | <https://drafts.css-houdini.org/> | CSS Houdini 规范草案 |
 | CSS Tricks — A Guide to CSS-in-JS | <https://css-tricks.com/a-thorough-analysis-of-css-in-js/> | 深度分析 CSS-in-JS 技术路线 |
 | Smashing Magazine — CSS Architecture | <https://www.smashingmagazine.com/2022/05/semantic-token-based-design-systems/> | 语义化 Token 设计系统 |
+| Lightning CSS | <https://lightningcss.dev/> | Rust 极速 CSS 解析、压缩与转换 |
+| PostCSS Documentation | <https://postcss.org/docs/> | CSS 后处理工具链 |
+| Autoprefixer | <https://github.com/postcss/autoprefixer> | 自动 CSS 前缀补全 |
+| UnoCSS — Instant On-demand Atomic CSS | <https://unocss.dev/> | 即时原子 CSS 引擎 |
+| Windi CSS (Deprecated) | <https://windicss.org/> | Tailwind 的替代先驱（已停止维护，迁移至 UnoCSS） |
+| CSS Nesting — MDN | <https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_nesting> | 原生 CSS 嵌套语法 |
+| Container Queries — MDN | <https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries> | 容器查询现代布局 |
+| Cascade Layers — MDN | <https://developer.mozilla.org/en-US/docs/Web/CSS/@layer> | CSS 层叠层控制优先级 |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

@@ -556,3 +556,71 @@ if ('groupBy' in Object) {
   }, {} as Record<string, typeof items>)
 }
 ```
+
+---
+
+## 深化补充：渐进增强实战与权威参考
+
+### 运行时特性检测封装
+
+```typescript
+// lib/capabilities.ts
+export const Capabilities = {
+  es2025: {
+    iteratorHelpers: typeof Iterator !== 'undefined' && 'map' in Iterator.prototype,
+    setMethods: typeof Set.prototype.union === 'function',
+    promiseTry: typeof Promise.try === 'function',
+  },
+  es2024: {
+    groupBy: typeof Object.groupBy === 'function',
+    promiseWithResolvers: typeof Promise.withResolvers === 'function',
+  },
+  web: {
+    clipboard: typeof navigator !== 'undefined' && 'clipboard' in navigator,
+    webGPU: typeof navigator !== 'undefined' && 'gpu' in navigator,
+    serviceWorker: typeof navigator !== 'undefined' && 'serviceWorker' in navigator,
+  },
+} as const;
+
+export function whenSupported<T>(feature: keyof typeof Capabilities.es2025, fn: () => T): T | undefined {
+  return Capabilities.es2025[feature] ? fn() : undefined;
+}
+```
+
+### 动态 Polyfill 加载策略
+
+```typescript
+// lib/polyfills.ts
+export async function ensurePolyfills(features: Array<'iterator-helpers' | 'set-methods'>): Promise<void> {
+  const loaders: Record<string, () => Promise<void>> = {
+    'iterator-helpers': async () => {
+      if (!Capabilities.es2025.iteratorHelpers) {
+        await import('core-js/proposals/iterator-helpers-stage-3');
+      }
+    },
+    'set-methods': async () => {
+      if (!Capabilities.es2025.setMethods) {
+        await import('core-js/es.set');
+      }
+    },
+  };
+  await Promise.all(features.map(f => loaders[f]?.()));
+}
+```
+
+### 权威外部链接索引
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| MDN — JavaScript Reference | <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference> | 最权威的 Web API 与语法文档 |
+| Can I Use | <https://caniuse.com/> | 浏览器特性兼容性查询 |
+| TC39 Proposals | <https://github.com/tc39/proposals> | ECMAScript 提案跟踪 |
+| core-js | <https://github.com/zloirock/core-js> | 最完整的 JavaScript Polyfill 库 |
+| Babel preset-env | <https://babeljs.io/docs/babel-preset-env> | 按需编译配置 |
+| Vite Plugin Legacy | <https://github.com/vitejs/vite/tree/main/packages/plugin-legacy> | Vite 旧浏览器支持 |
+| Node.js Release Schedule | <https://nodejs.org/en/about/previous-releases> | Node.js 版本发布计划 |
+| web.dev — Baseline | <https://web.dev/baseline> | Google 浏览器基线定义 |
+| WebStatus.dev | <https://webstatus.dev/> | Google 主导的 Web 特性基线状态 |
+| Kangax Compat Table | <https://kangax.github.io/compat-table/> | 引擎特性兼容性表格 |
+| WHATWG Streams Standard | <https://streams.spec.whatwg.org/> | Streams API 标准 |
+| W3C WebGPU | <https://www.w3.org/TR/webgpu/> | WebGPU 标准规范 |

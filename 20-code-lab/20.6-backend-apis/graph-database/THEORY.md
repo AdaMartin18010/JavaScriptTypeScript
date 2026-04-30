@@ -228,6 +228,94 @@ console.log(recommendations);
 await kg.close();
 ```
 
+### Dgraph TypeScript 客户端示例
+
+```typescript
+// dgraph-client.ts — Dgraph DQL 查询与变更
+import { DgraphClient, DgraphClientStub } from 'dgraph-js';
+import grpc from '@grpc/grpc-js';
+
+const stub = new DgraphClientStub('localhost:9080', grpc.credentials.createInsecure());
+const dgraph = new DgraphClient(stub);
+
+async function upsertUser(uid: string, name: string, email: string) {
+  const txn = dgraph.newTxn();
+  try {
+    const mu = new (await import('dgraph-js')).Mutation();
+    mu.setSetJson({
+      uid: `_:${uid}`,
+      'dgraph.type': 'User',
+      name,
+      email,
+    });
+    await txn.mutate(mu);
+    await txn.commit();
+  } finally {
+    await txn.discard();
+  }
+}
+
+async function queryFriends(uid: string) {
+  const query = `
+    query friends($uid: string) {
+      user(func: uid($uid)) {
+        name
+        friend { name email }
+      }
+    }
+  `;
+  const res = await dgraph.newTxn({ readOnly: true }).queryWithVars(query, { $uid: uid });
+  return res.getJson();
+}
+```
+
+### 内存中图算法：拓扑排序（Kahn 算法）
+
+```typescript
+// topological-sort.ts — 用邻接表实现有向无环图（DAG）排序
+class DAG<T> {
+  private adj = new Map<T, Set<T>>();
+  private inDegree = new Map<T, number>();
+
+  addEdge(from: T, to: T): void {
+    if (!this.adj.has(from)) this.adj.set(from, new Set());
+    if (!this.adj.has(to)) this.adj.set(to, new Set());
+    this.adj.get(from)!.add(to);
+    this.inDegree.set(to, (this.inDegree.get(to) || 0) + 1);
+    this.inDegree.set(from, this.inDegree.get(from) || 0);
+  }
+
+  topologicalSort(): T[] | null {
+    const queue: T[] = [];
+    const result: T[] = [];
+    const inDegree = new Map(this.inDegree);
+
+    for (const [node, deg] of inDegree) {
+      if (deg === 0) queue.push(node);
+    }
+
+    while (queue.length > 0) {
+      const node = queue.shift()!;
+      result.push(node);
+      for (const neighbor of this.adj.get(node) || []) {
+        const newDeg = inDegree.get(neighbor)! - 1;
+        inDegree.set(neighbor, newDeg);
+        if (newDeg === 0) queue.push(neighbor);
+      }
+    }
+
+    return result.length === this.adj.size ? result : null; // null = cycle detected
+  }
+}
+
+// 使用：任务依赖排序
+const dag = new DAG<string>();
+dag.addEdge('build', 'test');
+dag.addEdge('lint', 'build');
+dag.addEdge('test', 'deploy');
+console.log(dag.topologicalSort()); // ['lint', 'build', 'test', 'deploy']
+```
+
 ---
 
 ## 7. 图数据库适用性决策树
@@ -274,6 +362,14 @@ await kg.close();
 - [Apache TinkerPop / Gremlin](https://tinkerpop.apache.org/)
 - [GQL ISO 标准进展](https://www.gqlstandards.org/)
 - [Neo4j JavaScript Driver](https://github.com/neo4j/neo4j-javascript-driver)
+- [Neo4j Graph Data Science](https://neo4j.com/docs/graph-data-science/current/) — 图算法库（PageRank、Louvain、Betweenness）
+- [Dgraph JavaScript Client](https://github.com/dgraph-io/dgraph-js) — gRPC 驱动的 TS 客户端
+- [ArangoDB Documentation](https://www.arangodb.com/documentation/) — 多模型数据库（文档+图+KV）
+- [Memgraph Documentation](https://memgraph.com/docs/) — 兼容 Cypher 的高性能内存图数据库
+- [Amazon Neptune](https://aws.amazon.com/neptune/) — 托管图数据库（支持 Gremlin / openCypher / SPARQL）
+- [TigerGraph Documentation](https://docs.tigergraph.com/) — 原生并行图分析平台
+- [Graphileon](https://graphileon.com/) — 图数据库可视化与管理工具
+- [Cytoscape.js](https://js.cytoscape.org/) — 浏览器端图数据可视化库
 
 ---
 
@@ -295,19 +391,21 @@ await kg.close();
 
 ### 关键设计模式
 
-本模块涉及的核心设计模式包括（根据代码实现提炼）：
+本模块涉及的核心设计模式包括：
 
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
+1. **图遍历模式 (Graph Traversal)**：深度优先（DFS）与广度优先（BFS）是所有图算法的基础原语，邻接表表示法兼顾空间效率与遍历速度。
+2. **属性图模式 (Property Graph Model)**：将实体建模为节点、关系建模为有向边，两者均可携带属性。此模型天然映射社交网络、推荐系统和知识图谱。
+3. **连接池与事务模式 (Connection Pooling & Transactions)**：图数据库查询往往涉及多跳遍历，会话（Session）和事务（Transaction）的显式管理是生产环境的必备实践。
 
 ### 与相邻模块的关系
 
 | 相邻模块 | 关系说明 |
 |---------|---------|
-| 前置依赖 | 建议先掌握的基础模块 |
-| 后续进阶 | 可继续深化的相关模块 |
+| 前置依赖 | `20-code-lab/20.4-data-algorithms/` — 图论基础算法（DFS、BFS、Dijkstra、拓扑排序） |
+| 前置依赖 | `20-code-lab/20.6-backend-apis/analytics/` — 事件数据建模，图数据库常用于用户行为路径分析 |
+| 后续进阶 | `30-knowledge-base/30.2-categories/graph-database.md` — 图数据库分类索引与选型矩阵 |
+| 后续进阶 | `20-code-lab/20.6-backend-apis/realtime-analytics/` — 将图查询结果流式推送到实时分析仪表盘 |
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+> 📅 理论深化更新：2026-04-30

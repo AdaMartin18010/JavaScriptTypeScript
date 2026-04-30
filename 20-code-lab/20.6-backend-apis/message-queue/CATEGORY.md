@@ -244,6 +244,101 @@ async function processDueTasks() {
 }
 ```
 
+### NATS JetStream 消费者（现代云原生消息队列）
+
+```typescript
+import { connect, JSONCodec, consumerOpts } from 'nats';
+
+const nc = await connect({ servers: ['nats://localhost:4222'] });
+const js = nc.jetstream();
+const jc = JSONCodec();
+
+// 发布消息到 Stream
+await js.publish('ORDERS.new', jc.encode({ orderId: 'O123', amount: 99.99 }));
+
+// 创建持久化消费者（Durable Consumer）
+const opts = consumerOpts();
+opts.durable('order-processor');
+opts.deliverAll(); // 从最早未确认消息开始投递
+opts.ackExplicit(); // 需要显式确认
+
+const sub = await js.subscribe('ORDERS.new', opts);
+(async () => {
+  for await (const m of sub) {
+    const data = jc.decode(m.data);
+    console.log('Processing order:', data);
+    await processOrder(data);
+    m.ack();
+  }
+})();
+```
+
+### 基于 Redis 的速率限制队列（Token Bucket）
+
+```typescript
+import { createClient } from 'redis';
+
+const redis = createClient({ url: process.env.REDIS_URL });
+await redis.connect();
+
+async function rateLimitedEnqueue(
+  queue: string,
+  task: unknown,
+  options: { maxPerSecond: number; burstSize: number }
+): Promise<boolean> {
+  const tokenKey = `tokens:${queue}`;
+  const lastRefillKey = `last_refill:${queue}`;
+
+  const now = Date.now();
+  const pipeline = redis.multi();
+  pipeline.get(lastRefillKey);
+  pipeline.get(tokenKey);
+
+  const [lastRefillStr, tokensStr] = await pipeline.exec() as [string, string];
+  const lastRefill = lastRefillStr ? parseInt(lastRefillStr) : now;
+  let tokens = tokensStr ? parseFloat(tokensStr) : options.burstSize;
+
+  // 补充令牌
+  const elapsed = (now - lastRefill) / 1000;
+  tokens = Math.min(options.burstSize, tokens + elapsed * options.maxPerSecond);
+
+  if (tokens < 1) {
+    return false; // 限流拒绝
+  }
+
+  const writePipeline = redis.multi();
+  writePipeline.set(tokenKey, String(tokens - 1));
+  writePipeline.set(lastRefillKey, String(now));
+  writePipeline.lPush(queue, JSON.stringify(task));
+  await writePipeline.exec();
+  return true;
+}
+```
+
+### 基于 Pulsar 的 Geo-Replication 消息生产者
+
+```typescript
+import { Client, Producer } from 'pulsar-client';
+
+const client = new Client({
+  serviceUrl: 'pulsar://localhost:6650',
+});
+
+const producer: Producer = await client.createProducer({
+  topic: 'persistent://public/default/global-orders',
+  producerName: 'order-service',
+  sendTimeoutMs: 30000,
+});
+
+async function publishOrderEvent(order: object) {
+  const messageId = await producer.send({
+    data: Buffer.from(JSON.stringify(order)),
+    properties: { region: 'us-east', version: 'v2' },
+  });
+  console.log('Published message:', messageId.toString());
+}
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -261,7 +356,15 @@ async function processDueTasks() {
 | Redis Node.js Client | 官方客户端 | [github.com/redis/node-redis](https://github.com/redis/node-redis) |
 | Designing Data-Intensive Applications (Martin Kleppmann) | 书籍 | [dataintensive.net](https://dataintensive.net/) — 第 11 章深入讲解流处理与消息系统 |
 | Enterprise Integration Patterns (Hohpe & Woolf) | 书籍 | [enterpriseintegrationpatterns.com](https://www.enterpriseintegrationpatterns.com/) — 消息模式权威参考 |
+| NATS Documentation | 官方文档 | [docs.nats.io](https://docs.nats.io/) — 云原生消息系统与 JetStream 流处理 |
+| Apache Pulsar Docs | 官方文档 | [pulsar.apache.org/docs](https://pulsar.apache.org/docs/) — 分布式流处理与多区域复制 |
+| NSQ — Realtime Distributed Messaging | GitHub | [github.com/nsqio/nsq](https://github.com/nsqio/nsq) — 轻量级分布式消息平台 |
+| Celery — Distributed Task Queue | 官方文档 | [docs.celeryq.dev](https://docs.celeryq.dev/) — Python 生态分布式任务队列参考架构 |
+| IBM MQ Documentation | 官方文档 | [ibm.com/docs/en/ibm-mq](https://www.ibm.com/docs/en/ibm-mq) — 企业级消息中间件 |
+| ZeroMQ Guide | 指南 | [zguide.zeromq.org](https://zguide.zeromq.org/) — 无代理高性能消息模式 |
+| Google Cloud Pub/Sub | 官方文档 | [cloud.google.com/pubsub/docs](https://cloud.google.com/pubsub/docs) — 托管发布/订阅服务 |
+| Azure Service Bus | 官方文档 | [learn.microsoft.com/azure/service-bus-messaging](https://learn.microsoft.com/en-us/azure/service-bus-messaging/) — 企业消息代理 |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

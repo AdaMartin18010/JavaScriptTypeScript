@@ -230,6 +230,138 @@ async function fetchUpstream(key: string): Promise<string> {
 }
 ```
 
+### Fastly Compute@Edge 服务处理
+
+```typescript
+// fastly-compute.ts — Fastly Compute@Edge 服务
+import { Router } from '@fastly/expressly';
+
+const router = new Router();
+
+// 在边缘处理请求，无需回源
+router.get('/api/geoip', async (req, res) => {
+  const client = req.fastly.client;
+  return res.json({
+    country: client.geo.country_code,
+    city: client.geo.city,
+    latitude: client.geo.latitude,
+    longitude: client.geo.longitude,
+  });
+});
+
+// 边缘响应改写
+router.get('/api/rewrite', async (req, res) => {
+  const backendResponse = await fetch(req.fastly.backend('origin'), { backend: 'origin' });
+  const body = await backendResponse.text();
+
+  // 在边缘修改响应内容
+  const modified = body.replace(/{{edge_region}}/g, req.fastly.client.geo.city ?? 'unknown');
+
+  return new Response(modified, {
+    status: backendResponse.status,
+    headers: {
+      'Content-Type': 'text/html',
+      'X-Edge-Processed': 'true',
+    },
+  });
+});
+
+router.listen();
+```
+
+### AWS Lambda@Edge 原始请求处理
+
+```typescript
+// lambda-at-edge.ts — CloudFront Lambda@Edge 触发器
+import { CloudFrontRequestEvent, CloudFrontRequestResult } from 'aws-lambda';
+
+export const handler = async (
+  event: CloudFrontRequestEvent
+): Promise<CloudFrontRequestResult> => {
+  const request = event.Records[0].cf.request;
+  const headers = request.headers;
+
+  // 根据设备类型重写到不同路径
+  const userAgent = headers['user-agent']?.[0]?.value ?? '';
+  if (/Mobile|Android|iPhone/.test(userAgent)) {
+    request.uri = request.uri.replace(/^\//, '/mobile/');
+  }
+
+  // A/B 测试：基于 Cookie 路由
+  const cookie = headers['cookie']?.[0]?.value ?? '';
+  if (cookie.includes('experiment=new-ui')) {
+    headers['x-experiment'] = [{ key: 'X-Experiment', value: 'new-ui' }];
+  }
+
+  // 国家/地区路由
+  const country = headers['cloudfront-viewer-country']?.[0]?.value ?? 'US';
+  if (country === 'CN') {
+    request.origin = {
+      custom: {
+        domainName: 'origin-cn.example.com',
+        port: 443,
+        protocol: 'https',
+        sslProtocols: ['TLSv1.2'],
+        path: '',
+        readTimeout: 30,
+        keepaliveTimeout: 5,
+        customHeaders: {},
+      },
+    };
+  }
+
+  return request;
+};
+```
+
+### WebAssembly 边缘模块（Rust 编译为 WASM）
+
+```typescript
+// wasm-edge-module.ts — 加载 WASM 进行边缘计算
+export interface Env {
+  WASM_MODULE: WebAssembly.Module;
+}
+
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const url = new URL(request.url);
+
+    if (url.pathname === '/api/hash') {
+      const input = url.searchParams.get('input') ?? '';
+
+      // 实例化 WASM 模块（高性能哈希计算）
+      const instance = await WebAssembly.instantiate(env.WASM_MODULE, {
+        env: { memory: new WebAssembly.Memory({ initial: 1 }) },
+      });
+
+      const { hash_string, malloc, free } = instance.exports as any;
+
+      // 分配内存并写入字符串
+      const encoder = new TextEncoder();
+      const bytes = encoder.encode(input);
+      const ptr = malloc(bytes.length);
+      new Uint8Array(instance.exports.memory.buffer, ptr, bytes.length).set(bytes);
+
+      // 调用 WASM 函数
+      const resultPtr = hash_string(ptr, bytes.length);
+      const resultView = new Uint8Array(instance.exports.memory.buffer, resultPtr, 32);
+      const hash = Array.from(resultView)
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
+
+      free(ptr);
+      free(resultPtr);
+
+      return new Response(JSON.stringify({ input, hash }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response('Not Found', { status: 404 });
+  },
+};
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -269,7 +401,15 @@ async function fetchUpstream(key: string): Promise<string> {
 | Cloudflare Workers Runtime APIs | 参考 | [developers.cloudflare.com/workers/runtime-apis](https://developers.cloudflare.com/workers/runtime-apis/) |
 | Vercel Edge Runtime — Node.js Compatibility | 文档 | [edge-runtime.vercel.app](https://edge-runtime.vercel.app/) |
 | JSPI (JavaScript Promise Integration) for WASM | 提案 | [github.com/WebAssembly/js-promise-integration](https://github.com/WebAssembly/js-promise-integration) |
+| Wasmer — Universal WebAssembly Runtime | 文档 | [wasmer.io](https://wasmer.io/) — 跨平台 WASM 运行时 |
+| Wasmtime — WebAssembly Runtime | 文档 | [wasmtime.dev](https://wasmtime.dev/) — Bytecode Alliance 官方运行时 |
+| Fly.io Machines | 文档 | [fly.io/docs/machines](https://fly.io/docs/machines/) — Firecracker 微 VM |
+| StackBlitz WebContainers | 文档 | [webcontainers.io](https://webcontainers.io/) — 浏览器内 Node.js 运行时 |
+| AWS Lambda@Edge | 官方文档 | [docs.aws.amazon.com/lambda/latest/dg/lambda-edge](https://docs.aws.amazon.com/lambda/latest/dg/lambda-edge.html) — CloudFront 边缘函数 |
+| Cloudflare Durable Objects | 文档 | [developers.cloudflare.com/durable-objects](https://developers.cloudflare.com/durable-objects/) — 有状态边缘对象 |
+| Supabase Edge Functions | 文档 | [supabase.com/docs/guides/functions](https://supabase.com/docs/guides/functions) — Deno 边缘函数 |
+| Netlify Edge Functions | 文档 | [docs.netlify.com/edge-functions/overview](https://docs.netlify.com/edge-functions/overview/) — Deno 运行时边缘函数 |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

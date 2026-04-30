@@ -274,6 +274,111 @@ async function aggregatedHealth(checks: HealthCheck[]) {
 }
 ```
 
+### Sentry 错误监控集成
+
+```typescript
+// sentry-integration.ts
+import * as Sentry from '@sentry/node';
+import { nodeProfilingIntegration } from '@sentry/profiling-node';
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV,
+  release: process.env.APP_VERSION,
+  integrations: [
+    nodeProfilingIntegration(),
+    Sentry.httpIntegration({ breadcrumbs: true }),
+  ],
+  tracesSampleRate: 1.0,
+  profilesSampleRate: 0.1,
+});
+
+// Express 错误处理中间件
+app.use(Sentry.Handlers.errorHandler());
+
+// 手动捕获异常
+async function riskyOperation() {
+  try {
+    await externalAPICall();
+  } catch (err) {
+    Sentry.captureException(err, {
+      tags: { component: 'payment-gateway' },
+      extra: { userId, transactionId },
+    });
+    throw err;
+  }
+}
+```
+
+### Grafana Loki 日志推送客户端
+
+```typescript
+// loki-client.ts
+interface LokiStream {
+  stream: Record<string, string>;
+  values: [string, string][]; // [timestamp_ns, log_line]
+}
+
+export class LokiClient {
+  constructor(private url: string, private labels: Record<string, string>) {}
+
+  async push(level: string, message: string, extra: Record<string, unknown> = {}) {
+    const timestamp = `${Date.now()}000000`;
+    const logLine = JSON.stringify({
+      level,
+      message,
+      ...extra,
+      ...this.labels,
+      time: new Date().toISOString(),
+    });
+
+    const payload = { streams: [{ stream: { level, ...this.labels }, values: [[timestamp, logLine]] }] };
+
+    await fetch(`${this.url}/loki/api/v1/push`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  }
+}
+```
+
+### 分布式追踪上下文传播（Fetch 拦截器）
+
+```typescript
+// tracing-fetch.ts
+import { context, propagation, trace } from '@opentelemetry/api';
+
+export function tracedFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const tracer = trace.getTracer('http-client');
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+
+  return tracer.startActiveSpan(`HTTP ${init?.method ?? 'GET'}`, async (span) => {
+    span.setAttribute('http.url', url);
+    span.setAttribute('http.method', init?.method ?? 'GET');
+
+    // 将 trace 上下文注入请求头
+    const headers = new Headers(init?.headers);
+    propagation.inject(context.active(), headers, {
+      set: (h, key, value) => h.set(key, value as string),
+    });
+
+    try {
+      const response = await fetch(input, { ...init, headers });
+      span.setAttribute('http.status_code', response.status);
+      span.setStatus({ code: response.ok ? 1 : 2 });
+      return response;
+    } catch (err) {
+      span.recordException(err as Error);
+      span.setStatus({ code: 2, message: (err as Error).message });
+      throw err;
+    } finally {
+      span.end();
+    }
+  });
+}
+```
+
 ## 12. 新增权威参考链接
 
 - [Grafana Tempo](https://grafana.com/docs/tempo/latest/) — 分布式追踪后端
@@ -283,3 +388,10 @@ async function aggregatedHealth(checks: HealthCheck[]) {
 - [Fluentd / Fluent Bit](https://www.fluentd.org/) — 日志收集与转发
 - [Vector by Datadog](https://vector.dev/) — 可观测性数据管道
 - [eBPF.io](https://ebpf.io/) — 内核级可观测性技术
+- [Sentry Documentation](https://docs.sentry.io/platforms/node/) — 应用错误监控平台
+- [Datadog APM](https://docs.datadoghq.com/tracing/) — 应用性能监控
+- [New Relic — OpenTelemetry](https://docs.newrelic.com/docs/more-integrations/open-source-telemetry-integrations/opentelemetry/opentelemetry-introduction/) — OTel 集成指南
+- [Signoz — Open Source APM](https://signoz.io/docs/) — 开源可观测性平台
+- [UptimeRobot](https://uptimerobot.com/) — 外部可用性监控
+- [Grafana OnCall](https://grafana.com/docs/oncall/latest/) — 开源告警响应编排
+- [OpenCost — Kubernetes Cost Monitoring](https://www.opencost.io/docs/) — K8s 成本可观测性

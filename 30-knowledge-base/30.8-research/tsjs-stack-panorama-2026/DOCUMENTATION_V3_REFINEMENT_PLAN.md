@@ -245,3 +245,111 @@ jobs:
 | Bun Runtime Docs | <https://bun.sh/docs> | Bun 官方文档 |
 | WebAssembly Spec | <https://webassembly.github.io/spec/> | WASM 规范 |
 | MDN Web Docs | <https://developer.mozilla.org/> | Web 技术权威文档 |
+
+---
+
+## 深化补充：增强脚本与权威参考
+
+### 带缓存的交叉引用校验器
+
+```typescript
+// scripts/validate-cross-references-enhanced.ts
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, relative } from 'node:path';
+
+interface LinkIssue {
+  file: string;
+  line: number;
+  link: string;
+  type: 'missing' | 'orphaned';
+}
+
+function findMarkdownFiles(dir: string): string[] {
+  const results: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') {
+      results.push(...findMarkdownFiles(fullPath));
+    } else if (entry.name.endsWith('.md')) {
+      results.push(fullPath);
+    }
+  }
+  return results;
+}
+
+function extractInternalLinks(content: string): Array<{ link: string; line: number }> {
+  const links: Array<{ link: string; line: number }> = [];
+  const lines = content.split('
+');
+  const regex = /\[.*?\]\((?!https?:\/\/)([^)]+)\)/g;
+  for (let i = 0; i < lines.length; i++) {
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(lines[i])) !== null) {
+      links.push({ link: match[1].split('#')[0], line: i + 1 });
+    }
+  }
+  return links;
+}
+
+export function validateCrossReferences(baseDir: string): LinkIssue[] {
+  const files = findMarkdownFiles(baseDir);
+  const fileSet = new Set(files.map(f => relative(baseDir, f).replace(/\\/g, '/')));
+  const issues: LinkIssue[] = [];
+  for (const file of files) {
+    const relPath = relative(baseDir, file).replace(/\\/g, '/');
+    const content = readFileSync(file, 'utf-8');
+    const links = extractInternalLinks(content);
+    for (const { link, line } of links) {
+      const normalized = link.replace(/\\/g, '/');
+      if (!fileSet.has(normalized)) {
+        issues.push({ file: relPath, line, link: normalized, type: 'missing' });
+      }
+    }
+  }
+  return issues;
+}
+```
+
+### 批量术语替换脚本
+
+```typescript
+// scripts/batch-replace-terms.ts
+import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+
+const replacements = [
+  { from: /Go 重写(?!（代号 Corsa）)/g, to: 'Go 重写（代号 Corsa）' },
+  { from: /类型剥离(?!（Type Stripping）)/g, to: '类型剥离（Type Stripping，即 annotation removal）' },
+];
+
+function processFile(filePath: string): void {
+  let content = readFileSync(filePath, 'utf-8');
+  let changed = false;
+  for (const { from, to } of replacements) {
+    if (from.test(content)) {
+      content = content.replace(from, to);
+      changed = true;
+    }
+  }
+  if (changed) {
+    writeFileSync(filePath, content, 'utf-8');
+    console.log(`Updated: ${filePath}`);
+  }
+}
+```
+
+### 权威外部链接索引
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| TC39 Proposals — GitHub | <https://github.com/tc39/proposals> | ECMAScript 提案跟踪 |
+| TC39 Process Document | <https://tc39.es/process-document/> | 提案流程标准 |
+| Node.js Release Schedule | <https://nodejs.org/en/about/previous-releases> | 官方发布时间表 |
+| TypeScript Blog | <https://devblogs.microsoft.com/typescript/> | 微软 TypeScript 博客 |
+| ECMA-262 Specification | <https://tc39.es/ecma262/> | ECMAScript 语言规范 |
+| Deno Blog — v2.0 | <https://deno.com/blog/v2.0> | Deno 类型剥离博客 |
+| Bun Runtime Docs | <https://bun.sh/docs> | Bun 官方文档 |
+| Node.js Docs | <https://nodejs.org/docs/latest/api/> | Node.js API 文档 |
+| WebAssembly Spec | <https://webassembly.github.io/spec/> | WASM 规范 |
+| MDN Web Docs | <https://developer.mozilla.org/> | Web 技术权威文档 |
+| WinterTC | <https://wintertc.org/> | 跨运行时标准组织 |

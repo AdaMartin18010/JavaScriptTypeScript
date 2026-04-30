@@ -397,3 +397,70 @@ const StatusMap = { active: 1, inactive: 0 } as const;
 - [Matt Pocock — TypeScript's Worst Unsoundness](https://www.youtube.com/watch?v=TSYWvT1qDHY)
 - [Total TypeScript — Branded Types](https://www.totaltypescript.com/branded-types)
 - [MDN — Array.isArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray)
+
+---
+
+## 深化补充：更多运行时陷阱与权威参考
+
+### 递归类型 unsoundness
+
+```typescript
+type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
+
+const bad: Json = {};
+// TS 允许，但以下赋值在运行时会导致栈溢出或结构错误
+function deepMerge(a: Json, b: Json): Json {
+  if (typeof a === 'object' && a !== null && typeof b === 'object' && b !== null) {
+    return { ...a, ...b, extra: deepMerge(a, b) }; // 无限递归
+  }
+  return b;
+}
+```
+
+### `in` 运算符 narrowing 边界
+
+```typescript
+interface Admin { role: 'admin'; adminKey: string }
+interface User { role: 'user' }
+
+function checkAccess(person: Admin | User) {
+  if ('adminKey' in person) {
+    // TS 收窄为 Admin，但运行时对象可能来自外部 JSON
+    // 如果 person = { role: 'user', adminKey: 'hacked' }，则逻辑错误
+    console.log(person.adminKey);
+  }
+}
+```
+
+### `as const` 与枚举的互操作陷阱
+
+```typescript
+const StatusMap = { active: 1, inactive: 0 } as const;
+type StatusKey = keyof typeof StatusMap; // 'active' | 'inactive'
+
+// 运行时对象可能包含额外键
+const runtime = JSON.parse('{"active":1,"inactive":0,"banned":2}');
+function processStatus(s: typeof StatusMap) {
+  // s 类型要求 { active: 1, inactive: 0 }
+  // 但运行时传入的 { banned: 2 } 在结构兼容时可能通过某些检查
+}
+```
+
+### 权威外部链接索引
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| TypeScript Type System Unsoundness | <https://github.com/microsoft/TypeScript/issues/9825> | 官方 unsoundness 讨论 |
+| TypeScript Design Goals | <https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals> | 设计目标文档 |
+| TypeScript Handbook — Type Compatibility | <https://www.typescriptlang.org/docs/handbook/type-compatibility.html> | 类型兼容性 |
+| TypeScript — strictNullChecks | <https://www.typescriptlang.org/tsconfig/#strictNullChecks> | 严格空检查配置 |
+| TypeScript — noUncheckedIndexedAccess | <https://www.typescriptlang.org/tsconfig/#noUncheckedIndexedAccess> | 索引访问检查 |
+| TypeScript — satisfies Operator | <https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html#the-satisfies-operator> | satisfies 运算符 |
+| Zod — Schema Validation | <https://zod.dev/> | 运行时类型验证 |
+| Valibot — Schema Validation | <https://valibot.dev/> | 模块化验证库 |
+| io-ts — Runtime Type System | <https://github.com/gcanti/io-ts> | 函数式运行时类型 |
+| OWASP — Prototype Pollution | <https://cheatsheetseries.owasp.org/cheatsheets/Prototype_Pollution_Prevention_Cheat_Sheet.html> | 原型污染防御 |
+| Total TypeScript — Branded Types | <https://www.totaltypescript.com/branded-types> | 品牌类型教程 |
+| MDN — Array.isArray | <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray> | 跨 realm 数组检测 |
+| TypeScript ESLint — strict-boolean-expressions | <https://typescript-eslint.io/rules/strict-boolean-expressions/> | 严格布尔表达式规则 |
+| Ariya — TypeScript Unsoundness Deep Dive | <https://ariya.io/2019/05/when-typescript-meets-runtime-validation> | 运行时验证深度分析 |

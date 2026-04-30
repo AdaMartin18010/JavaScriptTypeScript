@@ -285,3 +285,83 @@ resource "cloudflare_record" "app" {
 ---
 
 *最后更新: 2026-04-29*
+
+---
+
+## 深化补充：更多平台实战示例与权威参考
+
+### Netlify Edge Function 示例
+
+```typescript
+// netlify/edge-functions/geo.ts
+import type { Context } from 'https://edge.netlify.com/';
+
+export default async (request: Request, context: Context) => {
+  const url = new URL(request.url);
+  const country = context.geo?.country?.code || 'UNKNOWN';
+
+  if (url.pathname === '/api/geo') {
+    return Response.json({
+      message: `Hello from ${country}`,
+      deployId: context.deploy.id,
+      edgeRegion: context.site.url,
+    });
+  }
+  return context.next();
+};
+```
+
+### Render Blueprint 基础设施即代码
+
+```yaml
+# render.yaml
+services:
+  - type: web
+    name: my-app
+    runtime: node
+    plan: standard
+    buildCommand: npm ci && npm run build
+    startCommand: node dist/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: postgres-db
+          property: connectionString
+databases:
+  - name: postgres-db
+    plan: starter
+```
+
+### 多平台部署抽象层
+
+```typescript
+// lib/deploy-adapter.ts
+interface DeployAdapter {
+  name: string;
+  edgeRuntime: boolean;
+  supportedRegions: string[];
+  deploy(options: DeployOptions): Promise<DeployResult>;
+}
+const adapters: Record<string, DeployAdapter> = {
+  vercel: { name: 'Vercel', edgeRuntime: true, supportedRegions: ['iad1', 'hkg1'], async deploy(opts) { return { url: '' }; } },
+  cloudflare: { name: 'Cloudflare', edgeRuntime: true, supportedRegions: ['global'], async deploy(opts) { return { url: '' }; } },
+};
+```
+
+### 权威外部链接索引
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Vercel Docs | <https://vercel.com/docs> | Vercel 官方文档 |
+| Netlify Docs | <https://docs.netlify.com/> | Netlify 官方文档 |
+| Cloudflare Pages Docs | <https://developers.cloudflare.com/pages/> | Cloudflare 官方文档 |
+| Railway Docs | <https://docs.railway.app/> | Railway 官方文档 |
+| Render Docs | <https://render.com/docs> | Render 官方文档 |
+| Fly.io Docs | <https://fly.io/docs/> | Fly.io 官方文档 |
+| AWS CDK | <https://docs.aws.amazon.com/cdk/> | AWS 基础设施即代码 |
+| OpenNext | <https://open-next.js.org/> | 开源 Next.js 部署适配器 |
+| SST | <https://sst.dev/> | AWS 基础设施框架 |
+| Pulumi | <https://www.pulumi.com/docs/> | 多语言基础设施即代码 |
+| Deno Deploy | <https://docs.deno.com/deploy/> | Deno 边缘部署 |

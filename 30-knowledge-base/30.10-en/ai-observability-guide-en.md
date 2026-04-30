@@ -257,6 +257,15 @@ describe('RAG prompt regression', () => {
 - [Pinecone — LLM Observability Patterns](https://www.pinecone.io/learn/llm-observability/)
 - [Honeycomb — AI Observability](https://www.honeycomb.io/blog/ai-observability)
 - [The Lancet — LLM Evaluation Benchmarks](https://www.thelancet.com/journals/landig/article/PIIS2589-7500(24)00056-X/fulltext)
+- [Braintrust — Eval Framework](https://www.braintrust.dev/docs) — 自动化 LLM 评估与回归测试
+- [Galileo AI — Evaluation & Guardrails](https://www.rungalileo.io/) — 生产级 AI 质量评估平台
+- [TruLens — Explainable AI](https://www.trulens.org/) — 开源 LLM 应用评估与可解释性
+- [Arize Phoenix — AI Observability](https://docs.arize.com/phoenix) — MLOps 与 LLM 可观测性平台
+- [OpenInference — LLM Telemetry Standard](https://github.com/Arize-ai/openinference) — 开放推理遥测标准
+- [arize-ai/phoenix](https://github.com/Arize-ai/phoenix) — 开源 LLM 追踪与评估工具
+- [Patronus AI — Automated Evals](https://www.patronus.ai/) — 自动化 LLM 评估与红队测试
+- [Fiddler AI — Model Performance Management](https://www.fiddler.ai/) — AI 模型可观测性与治理
+- [Evidently AI — ML Monitoring](https://docs.evidentlyai.com/) — 开源 ML 与 LLM 监控
 
 ---
 

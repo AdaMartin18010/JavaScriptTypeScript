@@ -84,6 +84,59 @@ console.log(idx.search('JavaScript'));
 // [{ id: 1, text: 'JavaScript 教程', score: 1 }, { id: 3, text: 'JavaScript 性能优化', score: 1 }]
 ```
 
+### 2.2 BM25 评分实现
+
+```typescript
+// bm25-ranker.ts — Okapi BM25 简化实现
+interface BM25Doc {
+  id: string;
+  tokens: string[];
+  length: number;
+}
+
+class BM25Ranker {
+  private k1 = 1.5;
+  private b = 0.75;
+  private docs: BM25Doc[] = [];
+  private docFreq = new Map<string, number>();
+  private avgDocLength = 0;
+
+  addDocument(id: string, text: string) {
+    const tokens = this.tokenize(text);
+    this.docs.push({ id, tokens, length: tokens.length });
+
+    const unique = new Set(tokens);
+    for (const t of unique) {
+      this.docFreq.set(t, (this.docFreq.get(t) ?? 0) + 1);
+    }
+    this.avgDocLength = this.docs.reduce((s, d) => s + d.length, 0) / this.docs.length;
+  }
+
+  search(query: string, topK = 10): Array<{ id: string; score: number }> {
+    const terms = this.tokenize(query);
+    const N = this.docs.length;
+
+    const scores = this.docs.map((doc) => {
+      let score = 0;
+      for (const term of terms) {
+        const freq = doc.tokens.filter((t) => t === term).length;
+        const df = this.docFreq.get(term) ?? 0;
+        const idf = Math.log((N - df + 0.5) / (df + 0.5) + 1);
+        const denom = freq + this.k1 * (1 - this.b + this.b * (doc.length / this.avgDocLength));
+        score += idf * ((freq * (this.k1 + 1)) / denom);
+      }
+      return { id: doc.id, score };
+    });
+
+    return scores.sort((a, b) => b.score - a.score).slice(0, topK);
+  }
+
+  private tokenize(text: string): string[] {
+    return text.toLowerCase().split(/\W+/).filter(Boolean);
+  }
+}
+```
+
 ---
 
 ## 3. 向量搜索
@@ -182,6 +235,64 @@ function hybridSearch(
 }
 ```
 
+### 3.4 Pinecone 向量数据库客户端
+
+```typescript
+// pinecone-client.ts — 向量搜索即服务
+import { Pinecone } from '@pinecone-database/pinecone';
+
+const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY! });
+const index = pc.index('knowledge-base');
+
+async function upsertDocument(id: string, vector: number[], metadata: object) {
+  await index.namespace('docs').upsert([{ id, values: vector, metadata }]);
+}
+
+async function semanticSearch(queryVector: number[], topK = 5) {
+  const results = await index.namespace('docs').query({
+    vector: queryVector,
+    topK,
+    includeMetadata: true,
+    includeValues: false,
+  });
+  return results.matches?.map((m) => ({
+    id: m.id,
+    score: m.score,
+    metadata: m.metadata,
+  })) ?? [];
+}
+```
+
+### 3.5 pgvector 与 PostgreSQL 混合查询
+
+```typescript
+// pgvector-search.ts — SQL 级语义搜索
+import { Pool } from 'pg';
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+async function hybridPgSearch(queryVector: number[], keywords: string[], limit = 10) {
+  const sql = `
+    SELECT
+      id,
+      title,
+      content,
+      embedding <=> $1 AS vector_distance,
+      ts_rank(to_tsvector('chinese', content), plainto_tsquery('chinese', $2)) AS text_rank,
+      (0.7 * (1 - (embedding <=> $1)) + 0.3 * ts_rank(to_tsvector('chinese', content), plainto_tsquery('chinese', $2))) AS combined_score
+    FROM documents
+    ORDER BY combined_score DESC
+    LIMIT $3
+  `;
+  const { rows } = await pool.query(sql, [
+    `[${queryVector.join(',')}]`,
+    keywords.join(' & '),
+    limit,
+  ]);
+  return rows;
+}
+```
+
 ---
 
 ## 4. 选型
@@ -235,6 +346,32 @@ function expandQuery(query: string): string[] {
 }
 ```
 
+### 5.1 Elasticsearch Query DSL 示例
+
+```typescript
+// elasticsearch-query.ts — 复合查询构造
+const searchBody = {
+  query: {
+    bool: {
+      must: [
+        { multi_match: { query: 'typescript tutorial', fields: ['title^3', 'content'] } },
+      ],
+      filter: [
+        { term: { status: 'published' } },
+        { range: { publishDate: { gte: '2024-01-01' } } },
+      ],
+    },
+  },
+  aggs: {
+    by_category: { terms: { field: 'category.keyword' } },
+    avg_rating: { avg: { field: 'rating' } },
+  },
+  sort: [{ _score: 'desc' }, { publishDate: 'desc' }],
+  from: 0,
+  size: 20,
+};
+```
+
 ---
 
 ## 6. 总结
@@ -257,6 +394,13 @@ function expandQuery(query: string): string[] {
 | HNSW Paper | 论文 | [arxiv.org/abs/1603.09320](https://arxiv.org/abs/1603.09320) |
 | BM25 算法详解 | 博客 | [www.elastic.co/blog/practical-bm25-part-2-the-bm25-algorithm-and-its-variables](https://www.elastic.co/blog/practical-bm25-part-2-the-bm25-algorithm-and-its-variables) |
 | OpenAI Embeddings Guide | 指南 | [platform.openai.com/docs/guides/embeddings](https://platform.openai.com/docs/guides/embeddings) |
+| OpenSearch Documentation | 官方文档 | [opensearch.org/docs](https://opensearch.org/docs/) — AWS 托管 Elasticsearch 分支 |
+| Weaviate Vector Search Engine | 文档 | [weaviate.io/developers](https://weaviate.io/developers/weaviate) — GraphQL 原生向量数据库 |
+| Qdrant Vector Database | 文档 | [qdrant.tech/documentation](https://qdrant.tech/documentation/) — Rust 高性能向量检索 |
+| Tantivy Full-Text Search Engine | GitHub | [github.com/quickwit-oss/tantivy](https://github.com/quickwit-oss/tantivy) — Rust 版 Lucene |
+| Meilisearch Blog — Hybrid Search | 博客 | [blog.meilisearch.com/hybrid-search-primer](https://blog.meilisearch.com/hybrid-search-primer/) — 混合搜索实践 |
+| Vercel AI SDK — Retrieval | 文档 | [sdk.vercel.ai/docs/guides/rag](https://sdk.vercel.ai/docs/guides/rag) — RAG 检索模式 |
+| LangChain Retrieval Docs | 文档 | [js.langchain.com/docs/concepts/retrieval](https://js.langchain.com/docs/concepts/retrieval/) — JS 检索链 |
 
 ---
 
@@ -293,4 +437,4 @@ function expandQuery(query: string): string[] {
 
 ---
 
-> 📅 理论深化更新：2026-04-29
+> 📅 理论深化更新：2026-04-30

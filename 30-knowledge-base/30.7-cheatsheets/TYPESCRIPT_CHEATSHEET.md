@@ -390,3 +390,80 @@ emitter.on('user:login', (e) => console.log(e.userId)); // ✅ 类型安全
 ---
 
 *最后更新: 2026-04-29*
+
+---
+
+## 深化补充：高级模式与权威参考
+
+### 声明合并（Declaration Merging）
+
+```typescript
+// user.d.ts
+interface User {
+  name: string;
+}
+interface User {
+  age: number;
+}
+// 合并后: { name: string; age: number }
+
+// 模块声明合并
+declare module 'vue' {
+  export interface ComponentCustomProperties {
+    $api: ApiClient;
+  }
+}
+```
+
+### 模块扩充（Module Augmentation）
+
+```typescript
+// types/axios.d.ts
+import 'axios';
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    retryCount?: number;
+    retryDelay?: number;
+  }
+}
+```
+
+### 映射类型键重映射（Key Remapping）
+
+```typescript
+// TS 4.1+
+type Getters<T> = {
+  [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K];
+};
+
+interface Person {
+  name: string;
+  age: number;
+}
+type PersonGetters = Getters<Person>;
+// { getName: () => string; getAge: () => number; }
+
+// 过滤特定键
+type RemovePrefix<T, Prefix extends string> = {
+  [K in keyof T as K extends `${Prefix}${infer Rest}` ? Rest : never]: T[K];
+};
+```
+
+### 权威外部链接索引
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| TypeScript Handbook | <https://www.typescriptlang.org/docs/> | 官方文档 |
+| TypeScript 5.6 Release Notes | <https://devblogs.microsoft.com/typescript/announcing-typescript-5-6/> | TS 5.6 发布说明 |
+| TypeScript 5.7 Release Notes | <https://devblogs.microsoft.com/typescript/announcing-typescript-5-7/> | TS 5.7 发布说明 |
+| Total TypeScript | <https://www.totaltypescript.com/> | Matt Pocock 深度教程 |
+| Type Challenges | <https://github.com/type-challenges/type-challenges> | 类型体操挑战 |
+| TypeScript Deep Dive | <https://basarat.gitbook.io/typescript/> | Basarat 开源书 |
+| TypeScript Playground | <https://www.typescriptlang.org/play> | 官方在线编辑器 |
+| TSConfig Reference | <https://www.typescriptlang.org/tsconfig> | 配置参考 |
+| Effective TypeScript | <https://effectivetypescript.com/> | Dan Vanderkam 著作 |
+| Type-Level TypeScript | <https://type-level-typescript.com/> | 类型体操深度教程 |
+| ts-pattern | <https://github.com/gvergnaud/ts-pattern> | 模式匹配库 |
+| TypeScript ESLint | <https://typescript-eslint.io/> | TS ESLint 规则 |
+| TypeScript Compiler API | <https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API> | 编译器 API |
+| TypeScript Performance Wiki | <https://github.com/microsoft/TypeScript/wiki/Performance> | 性能优化 |

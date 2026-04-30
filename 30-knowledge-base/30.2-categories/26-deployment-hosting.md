@@ -429,6 +429,171 @@ status: current
 
 ---
 
+## 13. 部署代码示例
+
+### Docker Compose 多服务部署
+
+```yaml
+# docker-compose.prod.yml
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+volumes:
+  redis_data:
+```
+
+### Terraform CDK (CDKTF) 基础设施定义
+
+```typescript
+// main.ts — 使用 TypeScript 定义云基础设施
+import { Construct } from 'constructs';
+import { App, TerraformStack } from 'cdktf';
+import { AwsProvider, ec2 } from '@cdktf/provider-aws';
+
+class MyStack extends TerraformStack {
+  constructor(scope: Construct, id: string) {
+    super(scope, id);
+
+    new AwsProvider(this, 'aws', { region: 'us-east-1' });
+
+    new ec2.Instance(this, 'web', {
+      ami: 'ami-12345678',
+      instanceType: 't3.micro',
+      tags: { Name: 'cdktf-web-server' },
+    });
+  }
+}
+
+const app = new App();
+new MyStack(app, 'infra');
+app.synth();
+```
+
+### Kubernetes 应用部署清单
+
+```yaml
+# k8s-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextjs-app
+  labels:
+    app: nextjs
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nextjs
+  template:
+    metadata:
+      labels:
+        app: nextjs
+    spec:
+      containers:
+        - name: app
+          image: myregistry/nextjs-app:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: production
+          resources:
+            requests:
+              memory: '256Mi'
+              cpu: '250m'
+            limits:
+              memory: '512Mi'
+              cpu: '500m'
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextjs-service
+spec:
+  selector:
+    app: nextjs
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ClusterIP
+```
+
+### Pulumi TypeScript 基础设施
+
+```typescript
+// index.ts — 使用 Pulumi 部署云资源
+import * as pulumi from '@pulumi/pulumi';
+import * as aws from '@pulumi/aws';
+
+// 创建 S3 桶用于静态托管
+const bucket = new aws.s3.Bucket('my-static-site', {
+  website: {
+    indexDocument: 'index.html',
+    errorDocument: 'error.html',
+  },
+});
+
+// CloudFront CDN 分发
+const cdn = new aws.cloudfront.Distribution('cdn', {
+  enabled: true,
+  origins: [{
+    originId: bucket.arn,
+    domainName: bucket.websiteEndpoint,
+    customOriginConfig: { originProtocolPolicy: 'http-only' },
+  }],
+  defaultCacheBehavior: {
+    targetOriginId: bucket.arn,
+    viewerProtocolPolicy: 'redirect-to-https',
+    allowedMethods: ['GET', 'HEAD'],
+    cachedMethods: ['GET', 'HEAD'],
+    forwardedValues: { queryString: false, cookies: { forward: 'none' } },
+    minTtl: 0,
+    defaultTtl: 3600,
+    maxTtl: 86400,
+  },
+  restrictions: { geoRestriction: { restrictionType: 'none' } },
+  viewerCertificate: { cloudfrontDefaultCertificate: true },
+});
+
+export const bucketName = bucket.id;
+export const cdnDomain = cdn.domainName;
+```
+
+---
+
 > 📅 本文档最后更新：2026年4月
 >
 > 💡 提示：平台定价和功能变化较快，建议查看各平台官网获取最新信息。

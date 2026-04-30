@@ -410,6 +410,96 @@ const crudChain = new PromptChain()
   });
 ```
 
+### SWC 插件快速转换（Rust 原生 AST 处理）
+
+```typescript
+// swc-transformer.ts — 基于 SWC 的高性能代码转换
+import { transformSync } from '@swc/core';
+
+export function stripConsoleLogs(source: string): string {
+  return transformSync(source, {
+    jsc: {
+      parser: { syntax: 'typescript', tsx: true },
+      target: 'es2022',
+      experimental: {
+        plugins: [
+          [
+            '@swc/plugin-transform-imports',
+            {
+              // 配置转换规则
+            },
+          ],
+        ],
+      },
+    },
+  }).code;
+}
+
+// 自定义 Visitor 模式（通过 @swc/wasm-web 在浏览器中运行）
+import { parse, print } from '@swc/wasm-web';
+
+export async function renameIdentifier(source: string, oldName: string, newName: string): Promise<string> {
+  const ast = await parse(source, { syntax: 'typescript', tsx: true });
+
+  function visit(node: any): any {
+    if (node?.type === 'Identifier' && node.value === oldName) {
+      return { ...node, value: newName };
+    }
+    if (node && typeof node === 'object') {
+      for (const key of Object.keys(node)) {
+        node[key] = visit(node[key]);
+      }
+    }
+    return node;
+  }
+
+  const transformed = visit(ast);
+  return print(transformed).code;
+}
+```
+
+### Plop.js 微生成器配置
+
+```typescript
+// plopfile.ts — 交互式脚手架定义
+import { NodePlopAPI } from 'plop';
+
+export default function (plop: NodePlopAPI) {
+  plop.setGenerator('component', {
+    description: 'Create a React component',
+    prompts: [
+      { type: 'input', name: 'name', message: 'Component name' },
+      { type: 'confirm', name: 'withStyles', message: 'Include CSS module?' },
+      { type: 'confirm', name: 'withTest', message: 'Include test file?' },
+    ],
+    actions: (data) => {
+      const actions: any[] = [
+        {
+          type: 'add',
+          path: 'src/components/{{pascalCase name}}/{{pascalCase name}}.tsx',
+          templateFile: 'plop-templates/component.tsx.hbs',
+        },
+      ];
+      if (data?.withStyles) {
+        actions.push({
+          type: 'add',
+          path: 'src/components/{{pascalCase name}}/{{pascalCase name}}.module.css',
+          templateFile: 'plop-templates/component.css.hbs',
+        });
+      }
+      if (data?.withTest) {
+        actions.push({
+          type: 'add',
+          path: 'src/components/{{pascalCase name}}/{{pascalCase name}}.test.tsx',
+          templateFile: 'plop-templates/component.test.tsx.hbs',
+        });
+      }
+      return actions;
+    },
+  });
+}
+```
+
 ## 关联模块
 
 - `33-ai-integration` — AI 集成
@@ -439,6 +529,13 @@ const crudChain = new PromptChain()
 | LangChain JS — LLM orchestration | 文档 | [js.langchain.com](https://js.langchain.com) |
 | Vercel AI SDK — Streaming UI toolkit | 文档 | [sdk.vercel.ai/docs](https://sdk.vercel.ai/docs) |
 | Quicktype — Generate types from JSON | 工具 | [quicktype.io](https://app.quicktype.io) |
+| unplugin — Unified plugin system | GitHub | [github.com/unjs/unplugin](https://github.com/unjs/unplugin) — Vite/Rollup/Webpack 通用插件 |
+| jscodeshift — Codemod toolkit | GitHub | [github.com/facebook/jscodeshift](https://github.com/facebook/jscodeshift) — 大规模代码迁移工具 |
+| ts-node — TypeScript execution | 文档 | [typestrong.org/ts-node](https://typestrong.org/ts-node/) — TS 直接运行 |
+| oclif — CLI framework | 文档 | [oclif.io](https://oclif.io/) — Node.js CLI 脚手架框架 |
+| Rome/ Biome — Unified toolchain | 文档 | [biomejs.dev](https://biomejs.dev/) — 替代 ESLint + Prettier 的统一工具链 |
+| CodeMods with jscodeshift | 博客 | [www.toptal.com/javascript/write-code-to-rewrite-your-code](https://www.toptal.com/javascript/write-code-to-rewrite-your-code) |
+| Codex by OpenAI | 文档 | [platform.openai.com/docs/guides/codex](https://platform.openai.com/docs/guides/codex) — 代码生成模型 |
 
 ---
 

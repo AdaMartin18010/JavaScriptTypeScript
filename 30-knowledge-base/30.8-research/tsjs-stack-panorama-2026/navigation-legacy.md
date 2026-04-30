@@ -18,21 +18,21 @@ status: current
 ## :clipboard: 目录
 
 - [JavaScript / TypeScript 全景综述 - 总索引与导航](#javascript--typescript-全景综述---总索引与导航)
-  - [:clipboard: 目录](#-目录)
-  - [:rocket: 快速开始](#-快速开始)
+  - [:clipboard: 目录](#clipboard-目录)
+  - [:rocket: 快速开始](#rocket-快速开始)
     - [我是初学者](#我是初学者)
     - [我是中级开发者](#我是中级开发者)
     - [我是高级开发者/架构师](#我是高级开发者架构师)
     - [我是研究人员](#我是研究人员)
-  - [:world_map: 文档全景图](#️-文档全景图)
-  - [:books: 按主题分类索引](#-按主题分类索引)
-    - [:dart: P0 核心文档（必学）](#-p0-核心文档必学)
-    - [:wrench: 工程实践文档](#-工程实践文档)
-    - [:classical_building: 架构与系统文档](#️-架构与系统文档)
-    - [:mortar_board: 学习与发展文档](#-学习与发展文档)
-    - [:microscope: 形式化理论与学术文档](#-形式化理论与学术文档)
-    - [:clipboard: 规划与参考文档](#-规划与参考文档)
-  - [:railway_track: 学习路径推荐](#️-学习路径推荐)
+  - [:world\_map: 文档全景图](#world_map-文档全景图)
+  - [:books: 按主题分类索引](#books-按主题分类索引)
+    - [:dart: P0 核心文档（必学）](#dart-p0-核心文档必学)
+    - [:wrench: 工程实践文档](#wrench-工程实践文档)
+    - [:classical\_building: 架构与系统文档](#classical_building-架构与系统文档)
+    - [:mortar\_board: 学习与发展文档](#mortar_board-学习与发展文档)
+    - [:microscope: 形式化理论与学术文档](#microscope-形式化理论与学术文档)
+    - [:clipboard: 规划与参考文档](#clipboard-规划与参考文档)
+  - [:railway\_track: 学习路径推荐](#railway_track-学习路径推荐)
     - [路径 A：初学者路径（0-6 个月）](#路径-a初学者路径0-6-个月)
     - [路径 B：进阶开发者路径（6-12 个月）](#路径-b进阶开发者路径6-12-个月)
     - [路径 C：架构师路径（12-18 个月）](#路径-c架构师路径12-18-个月)
@@ -40,20 +40,25 @@ status: current
       - [类型系统专家](#类型系统专家)
       - [运行时专家](#运行时专家)
       - [性能优化专家](#性能优化专家)
-  - [:mag: 快速查找表](#-快速查找表)
+  - [:mag: 快速查找表](#mag-快速查找表)
     - [按技术领域查找](#按技术领域查找)
     - [按问题类型查找](#按问题类型查找)
     - [按 TC39 提案阶段查找](#按-tc39-提案阶段查找)
     - [按版本查找](#按版本查找)
-  - [:spider_web: 文档依赖关系图](#️-文档依赖关系图)
-  - [:memo: 更新日志](#-更新日志)
+  - [:spider\_web: 文档依赖关系图](#spider_web-文档依赖关系图)
+  - [:memo: 更新日志](#memo-更新日志)
     - [v3.1 (2026-04-08)](#v31-2026-04-08)
     - [v3.0 (2026-04-02)](#v30-2026-04-02)
     - [v2.x (2026-03)](#v2x-2026-03)
-  - [:package: 代码速查：常用 CLI 命令](#-代码速查常用-cli-命令)
-  - [:microscope: 外部学术资源](#-外部学术资源)
-  - [:link: 外部资源链接](#-外部资源链接)
-  - [:bulb: 使用建议](#-使用建议)
+  - [:package: 代码速查：常用 CLI 命令](#package-代码速查常用-cli-命令)
+    - [代码示例：导航文档的自动化生成与校验](#代码示例导航文档的自动化生成与校验)
+  - [:microscope: 外部学术资源](#microscope-外部学术资源)
+  - [:link: 外部资源链接](#link-外部资源链接)
+  - [:bulb: 使用建议](#bulb-使用建议)
+  - [深化补充：自动化工具与权威参考](#深化补充自动化工具与权威参考)
+    - [导航文档自动生成器](#导航文档自动生成器)
+    - [文件变更监听脚本](#文件变更监听脚本)
+    - [权威外部链接索引](#权威外部链接索引)
 
 ---
 
@@ -607,3 +612,91 @@ if (broken.length) {
 ---
 
 *本文档是 JavaScript/TypeScript 全景综述的导航中心，建议收藏并定期回访以获取最新内容。*
+
+---
+
+## 深化补充：自动化工具与权威参考
+
+### 导航文档自动生成器
+
+```typescript
+// scripts/generate-nav.ts
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join, relative, basename } from 'node:path';
+
+interface NavEntry {
+  title: string;
+  path: string;
+  category: string;
+  wordCount: number;
+}
+
+function scanDirectory(dir: string, baseDir: string): NavEntry[] {
+  const entries: NavEntry[] = [];
+  for (const item of readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = join(dir, item.name);
+    if (item.isDirectory() && !item.name.startsWith('.') && item.name !== 'node_modules') {
+      entries.push(...scanDirectory(fullPath, baseDir));
+    } else if (item.name.endsWith('.md')) {
+      const content = readFileSync(fullPath, 'utf-8');
+      const title = content.match(/^# (.+)$/m)?.[1] || basename(item.name, '.md');
+      entries.push({
+        title,
+        path: relative(baseDir, fullPath).replace(/\\/g, '/'),
+        category: relative(baseDir, dir).split('/')[0] || 'root',
+        wordCount: content.split(/\s+/).length,
+      });
+    }
+  }
+  return entries.sort((a, b) => a.path.localeCompare(b.path));
+}
+
+function generateMarkdownIndex(entries: NavEntry[]): string {
+  let md = '# 自动生成索引\n\n';
+  let currentCategory = '';
+  for (const e of entries) {
+    if (e.category !== currentCategory) {
+      currentCategory = e.category;
+      md += `\n## ${currentCategory}\n\n`;
+    }
+    md += '- [' + e.title + '](' + e.path + ') — ' + e.wordCount + ' words\n';
+  }
+  return md;
+}
+```
+
+### 文件变更监听脚本
+
+```typescript
+// scripts/watch-docs.ts
+import { watch } from 'node:fs';
+import { join } from 'node:path';
+
+function watchDocs(dir: string, onChange: (path: string) => void): void {
+  watch(dir, { recursive: true }, (eventType, filename) => {
+    if (filename && filename.endsWith('.md')) {
+      console.log(`[${eventType}] ${filename}`);
+      onChange(join(dir, filename));
+    }
+  });
+  console.log(`Watching ${dir} for changes...`);
+}
+```
+
+### 权威外部链接索引
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| ECMA-262 规范 | <https://tc39.es/ecma262/> | 官方语言规范 |
+| TypeScript 文档 | <https://www.typescriptlang.org/docs/> | 官方文档 |
+| Node.js 文档 | <https://nodejs.org/docs/> | 运行时文档 |
+| WinterTC 标准 | <https://wintertc.org/> | 跨运行时标准 |
+| V8 博客 | <https://v8.dev/blog> | 引擎最新动态 |
+| MDN Web Docs | <https://developer.mozilla.org/en-US/> | Web 技术权威文档 |
+| Deno 文档 | <https://docs.deno.com/> | Deno 运行时文档 |
+| Bun 文档 | <https://bun.sh/docs> | Bun 运行时文档 |
+| Web Platform Tests | <https://github.com/web-platform-tests/wpt> | 浏览器兼容性测试基准 |
+| OpenJS Foundation | <https://openjsf.org/> | JavaScript 生态基金会 |
+| TC39 Meeting Notes | <https://github.com/tc39/notes> | 语言标准会议纪要 |
+| State of JS Survey | <https://stateofjs.com/> | 年度 JS 生态调查 |
+| State of TS Survey | <https://stateofts.com/> | 年度 TS 生态调查 |
