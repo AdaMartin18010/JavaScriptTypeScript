@@ -260,7 +260,67 @@ emitter.on('user:login', (id, ts) => {
 // emitter.emit('user:login', 'wrong'); // ❌ 编译错误：参数类型不匹配
 ```
 
-### 4.3 常见误区
+### 4.3 `satisfies` 运算符与精确类型检查（TS 4.9+）
+
+```typescript
+// satisfies.ts
+// satisfies 运算符在保持类型推断的同时进行额外约束检查
+
+const config = {
+  host: 'localhost',
+  port: 3000,
+  ssl: false,
+} satisfies { host: string; port: number; ssl: boolean };
+
+// 与 : 类型注解的区别：
+// const config: {...} 会丢失具体字面量类型，推断为 string/number/boolean
+// satisfies 保留字面量类型，同时检查结构兼容性
+
+// config.port 的类型是 3000（字面量），而非 number
+const exactPort: 3000 = config.port;
+
+// 实际应用：配置对象既需要验证结构，又需要精确的类型推断
+const apiRoutes = {
+  users: '/api/users',
+  orders: '/api/orders',
+  products: '/api/products',
+} satisfies Record<string, `/${string}`>;
+
+// apiRoutes.users 的类型是 '/api/users' 而非 string
+type RouteKey = keyof typeof apiRoutes; // 'users' | 'orders' | 'products'
+```
+
+### 4.4 使用 Symbol 实现名义类型（Nominal Typing）
+
+```typescript
+// nominal-branding.ts
+// 用 Symbol 实现比字符串品牌更强的名义类型
+
+declare const UserIdBrand: unique symbol;
+declare const OrderIdBrand: unique symbol;
+
+type UserId = string & { readonly [UserIdBrand]: unknown };
+type OrderId = string & { readonly [OrderIdBrand]: unknown };
+
+function createUserId(raw: string): UserId {
+  return raw as UserId;
+}
+function createOrderId(raw: string): OrderId {
+  return raw as OrderId;
+}
+
+const userId = createUserId('user-123');
+const orderId = createOrderId('order-456');
+
+function fetchUser(id: UserId) { /* ... */ }
+
+fetchUser(userId);     // ✅
+// fetchUser(orderId); // ❌ TS Error: OrderId 不能赋值给 UserId
+
+// 与字符串品牌对比：Symbol 品牌在类型层面完全不可伪造
+```
+
+### 4.5 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -269,7 +329,7 @@ emitter.on('user:login', (id, ts) => {
 | TypeScript 类型系统是完全 sound 的 | TS 有意为灵活性牺牲部分 soundness（如 `any`, 函数参数双变） |
 | 类型推断等价于 Hindley-Milner | TS 使用局部上下文敏感推断，非全局 HM 算法 W |
 
-### 4.4 扩展阅读
+### 4.6 扩展阅读
 
 - [TAPL (Types and Programming Languages)](https://www.cis.upenn.edu/~bcpierce/tapl/) — Benjamin Pierce 类型理论经典教材
 - `20.10-formal-verification/type-theory-formal/`
@@ -282,12 +342,16 @@ emitter.on('user:login', (id, ts) => {
 - [TypeScript Handbook: Generics](https://www.typescriptlang.org/docs/handbook/2/generics.html) — 泛型与子类型关系
 - [TypeScript Handbook: Typeof Type Operator](https://www.typescriptlang.org/docs/handbook/2/typeof-types.html) — typeof 类型操作符
 - [TypeScript 4.7: Variance Annotations](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-7.html#optional-variance-annotations-for-type-parameters) — 显式变型修饰符
+- [TypeScript 4.9: Satisfies Operator](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html#the-satisfies-operator) — satisfies 运算符
 - [Hindley-Milner Type Inference (Wikipedia)](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system) — HM 系统百科
 - [TAPL Official Site](https://www.cis.upenn.edu/~bcpierce/tapl/) — Benjamin Pierce 《Types and Programming Languages》
 - [The Evolution of TypeScript's Type System](https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes-oop.html) — TypeScript 面向对象背景开发者指南
 - [TypeScript Type Challenges](https://github.com/type-challenges/type-challenges) — 类型体操练习集，深入理解类型级编程
 - [ECMA-262: The Type System of JavaScript](https://tc39.es/ecma262/#sec-ecmascript-data-types-and-values) — ECMAScript 运行时数据类型规范
 - [Composable Type-Safe SQL in TypeScript (Drizzle)](https://orm.drizzle.team/docs/overview) — 类型安全 SQL 的实践前沿
+- [TypeScript Design Goals](https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals) — 官方设计目标与 soundness 权衡说明
+- [Soundness vs Completeness in TypeScript](https://www.typescriptlang.org/docs/handbook/type-compatibility.html#soundness) — 官方对 soundness 的说明
+- [Papers We Love: Type Theory](https://github.com/papers-we-love/papers-we-love/tree/main/types) — 类型理论经典论文集
 
 ---
 

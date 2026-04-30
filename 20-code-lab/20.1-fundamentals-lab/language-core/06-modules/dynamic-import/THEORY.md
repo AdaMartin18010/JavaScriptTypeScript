@@ -143,6 +143,21 @@ const eagerModules = import.meta.glob('./utils/*.ts', { eager: true });
 // eagerModules 已经是解析后的模块对象
 ```
 
+#### Astro `import.meta.glob` 模式
+
+```typescript
+// astro-glob.astro — Astro 框架中的 glob 导入
+// 与 Vite 语法一致，但常用于内容集合（Content Collections）
+
+const posts = import.meta.glob('../posts/*.md', { eager: true });
+// posts = { '../posts/hello.md': { frontmatter: {...}, default: Component }, ... }
+
+const postList = Object.entries(posts).map(([path, mod]) => ({
+  slug: path.replace('../posts/', '').replace('.md', ''),
+  title: (mod as any).frontmatter?.title,
+}));
+```
+
 #### 条件 polyfill 加载策略
 
 ```typescript
@@ -287,6 +302,66 @@ const { add } = await loadWasm('./math.wasm');
 console.log(add(1, 2)); // 3
 ```
 
+#### 浏览器 `<link rel="modulepreload">` 与动态导入配合
+
+```typescript
+// module-preload.ts — 预加载关键动态模块
+
+function preloadModule(url: string): void {
+  const link = document.createElement('link');
+  link.rel = 'modulepreload';
+  link.href = url;
+  document.head.appendChild(link);
+}
+
+// 在应用初始化时预加载高优先级 chunk
+preloadModule('/chunks/core-components.js');
+preloadModule('/chunks/data-utils.js');
+
+// 稍后动态导入时，模块已预加载，几乎无延迟
+const { DataTable } = await import('/chunks/core-components.js');
+```
+
+#### 在 Web Worker 中使用动态导入
+
+```typescript
+// worker.ts — Worker 内部动态导入
+// Worker 中支持 ESM 后，可直接使用 import()
+
+self.onmessage = async (event) => {
+  const { taskType, data } = event.data;
+
+  if (taskType === 'image-processing') {
+    // 仅在需要时加载大型图像处理库
+    const { processImage } = await import('./image-processor.js');
+    const result = await processImage(data);
+    self.postMessage({ result });
+  }
+};
+```
+
+#### Import Maps 与动态导入
+
+```html
+<!-- index.html -->
+<script type="importmap">
+{
+  "imports": {
+    "vue": "https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.js",
+    "lodash-es": "https://cdn.jsdelivr.net/npm/lodash-es@4/lodash.js"
+  }
+}
+</script>
+<script type="module">
+  // 动态导入同样遵循 import map 解析
+  const { createApp } = await import('vue');
+  const { debounce } = await import('lodash-es');
+
+  const app = createApp({ /* ... */ });
+  app.mount('#app');
+</script>
+```
+
 ### 3.4 常见误区
 
 | 误区 | 正确理解 |
@@ -312,6 +387,9 @@ console.log(add(1, 2)); // 3
 - [Import Attributes Proposal](https://github.com/tc39/proposal-import-attributes)
 - [Web.dev: Lazy Loading JavaScript](https://web.dev/articles/optimize-lcp#lazy_loading)
 - [Web.dev: Reduce JavaScript payloads with code splitting](https://web.dev/articles/reduce-javascript-payloads-with-code-splitting)
+- [Import Maps](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script/type/importmap) — 浏览器原生模块映射
+- [Module Preloading](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/modulepreload) — `<link rel="modulepreload">`
+- [Astro: Glob Imports](https://docs.astro.build/en/guides/imports/#astrometglob) — Astro 内容集合 glob 导入
 - `10-fundamentals/10.1-language-semantics/06-modules/`
 
 ---

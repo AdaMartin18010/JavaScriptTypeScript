@@ -240,6 +240,115 @@ const m = new Mixed();
 console.log(m.greet()); // "B" — 后应用的 Mixin 覆盖前者
 ```
 
+### 4.4 ES2022 私有字段与静态块
+
+```typescript
+// ✅ class 私有字段提供真正的硬私有（不可从外部访问，包括反射）
+class SecureAccount {
+  #balance: number;
+  #pin: string;
+
+  static #nextId = 0;
+  readonly id: number;
+
+  // 静态初始化块（ES2022）
+  static {
+    console.log('SecureAccount class initialized');
+  }
+
+  constructor(initialBalance: number, pin: string) {
+    this.#balance = initialBalance;
+    this.#pin = pin;
+    this.id = ++SecureAccount.#nextId;
+  }
+
+  #validatePin(input: string): boolean {
+    return input === this.#pin;
+  }
+
+  withdraw(amount: number, pin: string): boolean {
+    if (!this.#validatePin(pin)) return false;
+    if (amount > this.#balance) return false;
+    this.#balance -= amount;
+    return true;
+  }
+
+  get balance() {
+    return this.#balance;
+  }
+}
+
+const acc = new SecureAccount(1000, '1234');
+console.log(acc.balance); // 1000
+// console.log(acc.#balance); // ❌ TS Error: Property '#balance' is not accessible outside class
+```
+
+### 4.5 `Object.groupBy` 与 `Map.groupBy`（ES2024）
+
+```typescript
+// Object.groupBy：将数组按条件分组为普通对象
+const inventory = [
+  { name: 'apple', type: 'fruit', qty: 10 },
+  { name: 'banana', type: 'fruit', qty: 5 },
+  { name: 'carrot', type: 'vegetable', qty: 20 },
+];
+
+const byType = Object.groupBy(inventory, item => item.type);
+// {
+//   fruit: [{ name: 'apple', ... }, { name: 'banana', ... }],
+//   vegetable: [{ name: 'carrot', ... }]
+// }
+
+// Map.groupBy：当键为对象或需要保留任意类型时使用
+const byQuantity = Map.groupBy(inventory, item =>
+  item.qty > 10 ? 'sufficient' : 'low'
+);
+```
+
+### 4.6 使用 Symbol 作为计算键（Well-Known Symbols）
+
+```typescript
+const id = Symbol('id');
+
+const user = {
+  name: 'Alice',
+  [id]: 42, // Symbol 键不会出现在 Object.keys 中
+  [Symbol.toStringTag]: 'User', // 影响 Object.prototype.toString.call
+  [Symbol.iterator]: function* () {
+    yield this.name;
+    yield this[id];
+  },
+};
+
+console.log(Object.keys(user)); // ['name']
+console.log(Object.getOwnPropertySymbols(user)); // [Symbol(id), Symbol(toStringTag), Symbol(iterator)]
+console.log([...user]); // ['Alice', 42]
+```
+
+### 4.7 `structuredClone` 深拷贝对象（ES2022）
+
+```typescript
+// 替代 JSON.parse(JSON.stringify(...)) 的深拷贝方案
+// 支持循环引用、Date、RegExp、Map、Set、TypedArray、Blob 等
+
+const original = {
+  nested: { value: 1 },
+  date: new Date(),
+  map: new Map([['key', 'val']]),
+  set: new Set([1, 2, 3]),
+  regex: /abc/g,
+};
+
+const clone = structuredClone(original);
+clone.nested.value = 2;
+console.log(original.nested.value); // 1 — 真正深拷贝
+
+// 对比 Object.assign 的浅拷贝
+const shallow = Object.assign({}, original);
+shallow.nested.value = 3;
+console.log(original.nested.value); // 3 — 嵌套对象共享引用
+```
+
 ---
 
 ## 5. 权威参考 (References)
@@ -258,6 +367,20 @@ console.log(m.greet()); // "B" — 后应用的 Mixin 覆盖前者
 - **MDN: Object.create** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create>
 - **MDN: Object.assign** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign>
 - **MDN: Factory functions** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects>
+- **MDN: Private class features** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields>
+- **MDN: structuredClone** — <https://developer.mozilla.org/en-US/docs/Web/API/structuredClone>
+- **MDN: Object.groupBy** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/groupBy>
+- **MDN: Map.groupBy** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map/groupBy>
+
+### 外部权威资源
+
+- **V8 Blog: Fast Properties** — <https://v8.dev/blog/fast-properties>（Hidden Class 与对象属性优化）
+- **V8 Blog: Class Fields Performance** — <https://v8.dev/blog/class-fields>
+- **TC39 Class Fields Proposal** — <https://github.com/tc39/proposal-class-fields>
+- **TC39 Class Static Block Proposal** — <https://github.com/tc39/proposal-class-static-block>
+- **TypeScript Handbook: Classes** — <https://www.typescriptlang.org/docs/handbook/2/classes.html>
+- **TypeScript Handbook: Mixins** — <https://www.typescriptlang.org/docs/handbook/mixins.html>
+- **2ality: JavaScript Object Creation** — <https://2ality.com/2014/01/object-create.html>
 
 ---
 
@@ -270,6 +393,7 @@ console.log(m.greet()); // "B" — 后应用的 Mixin 覆盖前者
 | ES2015 (ES6) | `class`, `Object.assign` | 类语法糖、对象合并 |
 | ES2018 (ES9) | Spread in object literals | `{ ...obj }` |
 | ES2022 (ES13) | `class` 私有字段、static block | 增强封装 |
+| ES2024 (ES15) | `Object.groupBy`, `Map.groupBy` | 集合分组 |
 
 ---
 

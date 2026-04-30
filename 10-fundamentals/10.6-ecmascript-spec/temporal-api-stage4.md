@@ -198,6 +198,56 @@ const plainDate = Temporal.PlainDate.from('2026-04-28');
 const dateFromPlain = new Date(plainDate.toZonedDateTime({ timeZone: 'UTC' }).epochMilliseconds);
 ```
 
+### 5.1 Temporal.Now 家族与日历系统
+
+```javascript
+// Temporal.Now 提供当前时间的多种获取方式
+const nowInstant = Temporal.Now.instant();          // 绝对时间点
+const nowZoned = Temporal.Now.zonedDateTimeISO();   // 系统时区的 ZonedDateTime
+const nowPlain = Temporal.Now.plainDateISO();       // 当前日历日期
+const nowPlainTime = Temporal.Now.plainTimeISO();   // 当前墙钟时间
+const nowPlainDateTime = Temporal.Now.plainDateTimeISO(); // 当前日期+时间
+
+// 指定时区获取当前时间
+const nycNow = Temporal.Now.zonedDateTimeISO('America/New_York');
+
+// 使用非 ISO 日历（如 Hebrew, Chinese, Islamic）
+const hebrewDate = Temporal.PlainDate.from({ year: 5786, month: 1, day: 1, calendar: 'hebrew' });
+console.log(hebrewDate.toString()); // 5786-01-01[u-ca=hebrew]
+
+// 日历转换
+const gregorian = hebrewDate.withCalendar('iso8601');
+console.log(gregorian.toString()); // 2026-04-18
+```
+
+### 5.2 类型安全的日期比较
+
+```javascript
+const d1 = Temporal.PlainDate.from('2026-04-28');
+const d2 = Temporal.PlainDate.from('2026-05-01');
+
+// 类型安全的比较方法
+console.log(Temporal.PlainDate.compare(d1, d2)); // -1
+console.log(d1.equals(d2)); // false
+console.log(d1.since(d2).toString()); // P-3D
+
+// 跨类型比较会抛出 TypeError
+const t1 = Temporal.PlainTime.from('14:00:00');
+// Temporal.PlainDate.compare(d1, t1); // ❌ TypeError: cannot compare PlainDate and PlainTime
+```
+
+### 5.3 Temporal Polyfill 在旧环境的使用
+
+```javascript
+// 对于尚未原生支持 Temporal 的运行时，使用官方 polyfill
+// npm install @js-temporal/polyfill
+
+import { Temporal } from '@js-temporal/polyfill';
+
+const date = Temporal.PlainDate.from('2026-04-28');
+console.log(date.add({ days: 1 }).toString()); // 2026-04-29
+```
+
 ---
 
 ## 六、TypeScript 6.0+ 支持
@@ -246,6 +296,10 @@ const time: Temporal.PlainTime = Temporal.PlainTime.from('14:30:00');
 | **MDN: Temporal** | Mozilla 开发者文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Temporal) |
 | **Can I Use: Temporal** | 浏览器兼容性矩阵 | [caniuse.com/temporal](https://caniuse.com/temporal) |
 | **Temporal Polyfill** | 旧环境兼容方案 | [github.com/js-temporal/temporal-polyfill](https://github.com/js-temporal/temporal-polyfill) |
+| **Temporal Cookbook** | 官方食谱与常见模式 | [tc39.es/proposal-temporal/docs/cookbook.html](https://tc39.es/proposal-temporal/docs/cookbook.html) |
+| **IANA Time Zone Database** | 时区数据来源 | [www.iana.org/time-zones](https://www.iana.org/time-zones) |
+| **MDN: Intl.DateTimeFormat** | 国际化日期格式化 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat) |
+| **Chrome Platform Status: Temporal** | Chromium 实现状态 | [chromestatus.com/feature/5668255911837696](https://chromestatus.com/feature/5668255911837696) |
 
 ---
 

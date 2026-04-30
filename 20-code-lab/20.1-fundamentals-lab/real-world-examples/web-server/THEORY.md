@@ -317,16 +317,142 @@ httpServer.listen(3000, () =>
 );
 ```
 
-### 3.3 常见误区
+### 3.6 代码示例：Graceful Shutdown 与 Keep-Alive 管理
+
+```typescript
+// graceful-shutdown.ts
+import { createServer } from 'http';
+
+const server = createServer((req, res) => {
+  res.end('OK');
+});
+
+server.listen(3000, () => console.log('Server running'));
+
+function gracefulShutdown(signal: string) {
+  console.log(`Received ${signal}. Starting graceful shutdown...`);
+
+  // 停止接受新连接
+  server.close((err) => {
+    if (err) {
+      console.error('Error during server close:', err);
+      process.exit(1);
+    }
+    console.log('HTTP server closed. Exiting.');
+    process.exit(0);
+  });
+
+  // 强制退出兜底（10 秒后）
+  setTimeout(() => {
+    console.error('Forced shutdown after timeout');
+    process.exit(1);
+  }, 10000);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+```
+
+### 3.7 代码示例：Node.js Cluster 模式利用多核
+
+```typescript
+// cluster-mode.ts
+import cluster from 'cluster';
+import { createServer } from 'http';
+import os from 'os';
+
+const numCPUs = os.availableParallelism();
+
+if (cluster.isPrimary) {
+  console.log(`Primary ${process.pid} is running`);
+
+  for (let i = 0; i < numCPUs; i++) {
+    cluster.fork();
+  }
+
+  cluster.on('exit', (worker) => {
+    console.log(`Worker ${worker.process.pid} died. Forking new one...`);
+    cluster.fork();
+  });
+} else {
+  const server = createServer((req, res) => {
+    res.writeHead(200);
+    res.end(`Hello from worker ${process.pid}\n`);
+  });
+
+  server.listen(3000, () => {
+    console.log(`Worker ${process.pid} started`);
+  });
+}
+```
+
+### 3.8 代码示例：CORS 中间件实现
+
+```typescript
+// cors-middleware.ts
+import { MiddlewareHandler } from 'hono';
+
+interface CorsOptions {
+  origin?: string | string[] | ((origin: string) => boolean);
+  methods?: string[];
+  allowedHeaders?: string[];
+  credentials?: boolean;
+  maxAge?: number;
+}
+
+export function cors(options: CorsOptions = {}): MiddlewareHandler {
+  const {
+    origin = '*',
+    methods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders = ['Content-Type', 'Authorization'],
+    credentials = false,
+    maxAge = 86400,
+  } = options;
+
+  return async (c, next) => {
+    const reqOrigin = c.req.header('origin') || '*';
+
+    let allowOrigin: string;
+    if (typeof origin === 'string') {
+      allowOrigin = origin;
+    } else if (Array.isArray(origin)) {
+      allowOrigin = origin.includes(reqOrigin) ? reqOrigin : '';
+    } else {
+      allowOrigin = origin(reqOrigin) ? reqOrigin : '';
+    }
+
+    c.header('Access-Control-Allow-Origin', allowOrigin);
+    c.header('Access-Control-Allow-Methods', methods.join(', '));
+    c.header('Access-Control-Allow-Headers', allowedHeaders.join(', '));
+    c.header('Access-Control-Max-Age', String(maxAge));
+    if (credentials) {
+      c.header('Access-Control-Allow-Credentials', 'true');
+    }
+
+    if (c.req.method === 'OPTIONS') {
+      return c.text('', 204);
+    }
+
+    await next();
+  };
+}
+```
+
+### 3.9 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | 中间件顺序不重要 | 中间件按注册顺序执行，错误顺序导致异常 |
 | 错误处理放在最后即可 | 异步错误需要专门的错误处理中间件 |
+| 单进程即可应对高并发 | Node.js 单线程，CPU 密集型需 Cluster 或 Worker Threads |
+| WebSocket 与 HTTP 不能共享端口 | 可通过 `upgrade` 事件在同端口共存 |
 
-### 3.4 扩展阅读
+### 3.10 扩展阅读
 
 - [Node.js HTTP 模块](https://nodejs.org/api/http.html)
+- [Node.js HTTPS 模块](https://nodejs.org/api/https.html)
+- [Node.js Cluster 模块](https://nodejs.org/api/cluster.html)
+- [Node.js Stream 模块](https://nodejs.org/api/stream.html)
 - [Express.js 文档](https://expressjs.com/en/4x/api.html)
 - [Fastify 文档](https://fastify.dev/docs/latest/)
 - [Hono 文档](https://hono.dev/docs/)
@@ -334,7 +460,12 @@ httpServer.listen(3000, () =>
 - [WinterCG (Web-interoperable Runtimes)](https://wintercg.org/)
 - [MDN — HTTP Status Codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status)
 - [MDN — WebSocket API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
-- [Node.js Cluster Module](https://nodejs.org/api/cluster.html)
+- [MDN — Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API)
+- [RFC 7230 — HTTP/1.1 Message Syntax](https://datatracker.ietf.org/doc/html/rfc7230)
+- [RFC 7540 — HTTP/2](https://datatracker.ietf.org/doc/html/rfc7540)
+- [RFC 9113 — HTTP/2 (更新)](https://datatracker.ietf.org/doc/html/rfc9113)
+- [RFC 6455 — WebSocket Protocol](https://datatracker.ietf.org/doc/html/rfc6455)
+- [OWASP — Secure Headers Project](https://owasp.org/www-project-secure-headers/)
 - `30-knowledge-base/30.4-backend`
 
 ---

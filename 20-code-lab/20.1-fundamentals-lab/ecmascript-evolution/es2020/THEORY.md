@@ -285,7 +285,38 @@ if (import.meta.env?.MODE === 'development') {
 const imageUrl = new URL('./assets/logo.png', import.meta.url).href;
 ```
 
-### 3.8 常见误区
+### 3.8 BigInt 在加密与金融场景
+
+```typescript
+// 场景 1：精确的金融计算（避免浮点数精度问题）
+function calculateInterest(principal: bigint, ratePercent: bigint, periods: bigint): bigint {
+  // 使用整数运算模拟百分比：(principal * rate) / 100
+  return (principal * ratePercent) / 100n * periods;
+}
+
+const principal = 1000000000n; // 1亿，以最小货币单位计（如分）
+const interest = calculateInterest(principal, 5n, 12n); // 年利率 5%，12 年
+console.log(interest.toString()); // 精确结果
+
+// 场景 2：64 位整数处理（如数据库 ID、雪花算法）
+function parseSnowflake(id: string): { timestamp: bigint; workerId: bigint; sequence: bigint } {
+  const bigintId = BigInt(id);
+  return {
+    timestamp: (bigintId >> 22n) + 1609459200000n,
+    workerId: (bigintId >> 12n) & 0x3ffn,
+    sequence: bigintId & 0xfffn,
+  };
+}
+
+// 场景 3：BigInt 与 TypedArray 互操作
+const buffer = new ArrayBuffer(8);
+const view = new DataView(buffer);
+view.setBigInt64(0, 9007199254740993n); // 写入 64 位大整数
+const readBack = view.getBigInt64(0);   // 读取
+console.log(readBack === 9007199254740993n); // true
+```
+
+### 3.9 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -311,6 +342,8 @@ const imageUrl = new URL('./assets/logo.png', import.meta.url).href;
 - [V8 Blog — ES2020 Features](https://v8.dev/features/tags/es2020) — V8 引擎实现解析
 - [2ality — ES2020 Feature Overview](https://2ality.com/2019/12/ecmascript-2020.html) — Dr. Axel Rauschmayer 深度解析
 - [TC39 Proposals](https://github.com/tc39/proposals) — ECMAScript 提案仓库
+- [Can I Use — ES2020](https://caniuse.com/?search=es2020) — 浏览器兼容性矩阵
+- [Core-JS Polyfills](https://github.com/zloirock/core-js) — ES2020+ polyfill 实现参考
 
 ---
 

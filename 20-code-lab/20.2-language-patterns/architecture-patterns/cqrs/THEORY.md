@@ -14,6 +14,7 @@
 ### 1.2 形式化基础
 
 设系统状态为 $S$，命令集为 $C$，查询集为 $Q$：
+
 - 命令端：$c: S \to S'$（状态转换函数）
 - 查询端：$q: S \to V$（只读投影函数）
 - CQRS 约束：$C \cap Q = \emptyset$（命令与查询接口分离）
@@ -290,15 +291,106 @@ saga.add({
 });
 ```
 
-### 3.5 常见误区
+### 3.5 读模型与 PostgreSQL 物化视图同步
+
+```typescript
+// read-model-sync.ts — 用 PostgreSQL 物化视图作为读模型
+import { Pool } from 'pg';
+
+class OrderReadModel {
+  constructor(private pool: Pool) {}
+
+  async refresh(): Promise<void> {
+    // 刷新物化视图（实际由事件触发）
+    await this.pool.query('REFRESH MATERIALIZED VIEW CONCURRENTLY order_summary');
+  }
+
+  async findByCustomer(customerId: string) {
+    const { rows } = await this.pool.query(
+      'SELECT * FROM order_summary WHERE customer_id = $1 ORDER BY created_at DESC',
+      [customerId]
+    );
+    return rows;
+  }
+
+  async getTopProducts(limit = 10) {
+    const { rows } = await this.pool.query(
+      'SELECT product_id, SUM(quantity) as total_sold FROM order_summary GROUP BY product_id ORDER BY total_sold DESC LIMIT $1',
+      [limit]
+    );
+    return rows;
+  }
+}
+```
+
+### 3.6 事件溯源快照（Snapshotting）优化
+
+```typescript
+// snapshot.ts — 避免重放全部事件
+interface Snapshot<T> {
+  aggregateId: string;
+  version: number;
+  state: T;
+  createdAt: Date;
+}
+
+class SnapshotStore<T> {
+  private snapshots = new Map<string, Snapshot<T>>();
+  private readonly SNAPSHOT_EVERY = 50; // 每 50 个事件打快照
+
+  save(snapshot: Snapshot<T>): void {
+    this.snapshots.set(snapshot.aggregateId, snapshot);
+  }
+
+  load(aggregateId: string): Snapshot<T> | undefined {
+    return this.snapshots.get(aggregateId);
+  }
+
+  shouldSnapshot(eventCount: number): boolean {
+    return eventCount % this.SNAPSHOT_EVERY === 0;
+  }
+}
+
+// 使用：重建聚合时优先加载快照，再重放增量事件
+function rehydrateAggregate<T>(
+  aggregateId: string,
+  eventStore: EventStore,
+  snapshotStore: SnapshotStore<T>,
+  initialState: T,
+  reducer: (state: T, event: DomainEvent) => T
+): T {
+  const snapshot = snapshotStore.load(aggregateId);
+  const fromVersion = snapshot ? snapshot.version : 0;
+  let state = snapshot ? snapshot.state : initialState;
+
+  const events = eventStore.getStream(aggregateId).slice(fromVersion);
+  for (const event of events) {
+    state = reducer(state, event);
+  }
+
+  if (snapshotStore.shouldSnapshot(fromVersion + events.length)) {
+    snapshotStore.save({
+      aggregateId,
+      version: fromVersion + events.length,
+      state,
+      createdAt: new Date(),
+    });
+  }
+
+  return state;
+}
+```
+
+### 3.7 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | CQRS 必须配合事件溯源 | CQRS 可独立使用，事件溯源是可选的 |
 | 分离后读写总是一致的 | 最终一致性需要额外的同步机制 |
 | CQRS 适合所有项目 | 中小型项目引入 CQRS 可能过度设计 |
+| Saga 保证 ACID | Saga 只保证最终一致性，需补偿处理 |
 
-### 3.6 扩展阅读
+### 3.8 扩展阅读
 
 - [CQRS 模式 — Martin Fowler](https://martinfowler.com/bliki/CQRS.html)
 - [Microsoft — CQRS Pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs)
@@ -311,6 +403,9 @@ saga.add({
 - [EventStoreDB Documentation](https://developers.eventstore.com/) — 专用事件存储数据库
 - [NestJS CQRS Module](https://docs.nestjs.com/recipes/cqrs) — Node.js 生态 CQRS 实践框架
 - [Microsoft — Saga distributed pattern](https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/saga/saga) — Azure 官方 Saga 架构参考
+- [PostgreSQL Materialized Views](https://www.postgresql.org/docs/current/rules-materializedviews.html)
+- [Redis Streams for Event Sourcing](https://redis.io/docs/data-types/streams/)
+- [Apache Kafka — Event Sourcing Guide](https://kafka.apache.org/documentation/)
 
 ---
 

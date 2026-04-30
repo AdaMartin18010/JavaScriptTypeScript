@@ -153,7 +153,6 @@ assert(task.title === 'Learn Layered Architecture');
 
 ---
 
-
 ## 进阶代码示例
 
 ### Clean Architecture 边界实践
@@ -225,8 +224,6 @@ app.listen({ port: 3000 }, (err) => {
   console.log('Server running on http://localhost:3000');
 });
 ```
-
-## 进阶代码示例
 
 ### NestJS 风格依赖注入分层
 
@@ -307,6 +304,151 @@ class InMemoryEmailAdapter implements ForEmailSender {
 }
 ```
 
+### DTO 映射与输入校验层
+
+```typescript
+// dto-and-validation.ts
+import { z } from 'zod';
+
+// 表现层 DTO（接收外部输入）
+const CreateTaskDto = z.object({
+  title: z.string().min(1).max(100),
+  description: z.string().optional(),
+  dueDate: z.string().datetime().optional(),
+});
+
+type CreateTaskDto = z.infer<typeof CreateTaskDto>;
+
+// 业务层实体（领域核心）
+interface TaskEntity {
+  id: string;
+  title: string;
+  description?: string;
+  dueDate?: Date;
+  completed: boolean;
+}
+
+// DTO -> Entity 映射器（在表现层或专用映射层）
+function toEntity(dto: CreateTaskDto, id: string): TaskEntity {
+  return {
+    id,
+    title: dto.title,
+    description: dto.description,
+    dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+    completed: false,
+  };
+}
+
+// Entity -> Response DTO 映射器
+function toResponseDto(entity: TaskEntity) {
+  return {
+    id: entity.id,
+    title: entity.title,
+    description: entity.description,
+    dueDate: entity.dueDate?.toISOString(),
+    completed: entity.completed,
+  };
+}
+
+// 控制器中使用
+async function createTask(req: { body: unknown }, useCase: TaskUseCase) {
+  const dto = CreateTaskDto.parse(req.body); // 校验
+  const entity = toEntity(dto, crypto.randomUUID());
+  const created = await useCase.addTask(entity);
+  return toResponseDto(created);
+}
+```
+
+### API 版本控制与表现层适配
+
+```typescript
+// api-versioning.ts
+interface TaskApiV1 {
+  id: string;
+  title: string;
+  done: boolean;
+}
+
+interface TaskApiV2 {
+  id: string;
+  title: string;
+  description: string | null;
+  completed: boolean;
+  createdAt: string;
+}
+
+class TaskApiAdapter {
+  static toV1(entity: TaskEntity): TaskApiV1 {
+    return { id: entity.id, title: entity.title, done: entity.completed };
+  }
+  static toV2(entity: TaskEntity): TaskApiV2 {
+    return {
+      id: entity.id,
+      title: entity.title,
+      description: entity.description ?? null,
+      completed: entity.completed,
+      createdAt: new Date().toISOString(),
+    };
+  }
+}
+
+// 路由中根据 Accept-Version 头返回不同格式
+app.get('/tasks', async (req, res) => {
+  const tasks = await useCase.listTasks();
+  const version = req.headers['accept-version'] || 'v1';
+  if (version === 'v2') {
+    res.json(tasks.map(TaskApiAdapter.toV2));
+  } else {
+    res.json(tasks.map(TaskApiAdapter.toV1));
+  }
+});
+```
+
+### 依赖反转：抽象接口隔离
+
+```typescript
+// dependency-inversion.ts
+// 业务层定义端口
+interface ForUserRepository {
+  findById(id: string): Promise<User | null>;
+  save(user: User): Promise<void>;
+}
+
+// 业务层用例，只依赖接口
+class RegisterUserUseCase {
+  constructor(private repo: ForUserRepository) {}
+  async execute(email: string, password: string) {
+    const existing = await this.repo.findById(email);
+    if (existing) throw new Error('User already exists');
+    const user = new User(crypto.randomUUID(), email, await hashPassword(password));
+    await this.repo.save(user);
+    return user;
+  }
+}
+
+// 数据层实现端口
+class PostgresUserRepository implements ForUserRepository {
+  constructor(private db: Pool) {}
+  async findById(id: string) {
+    const { rows } = await this.db.query('SELECT * FROM users WHERE id = $1', [id]);
+    return rows[0] ?? null;
+  }
+  async save(user: User) {
+    await this.db.query(
+      'INSERT INTO users (id, email, password) VALUES ($1, $2, $3) ON CONFLICT (id) DO UPDATE SET email = $2, password = $3',
+      [user.id, user.email, user.passwordHash]
+    );
+  }
+}
+
+// 内存实现用于测试
+class InMemoryUserRepository implements ForUserRepository {
+  private users = new Map<string, User>();
+  async findById(id: string) { return this.users.get(id) ?? null; }
+  async save(user: User) { this.users.set(user.id, user); }
+}
+```
+
 ## 新增权威参考链接
 
 - [NestJS Documentation](https://docs.nestjs.com/) — 企业级 Node.js 框架
@@ -319,5 +461,8 @@ class InMemoryEmailAdapter implements ForEmailSender {
 - [Martin Fowler — Patterns of Enterprise Application Architecture](https://martinfowler.com/eaaCatalog/) — 企业应用架构模式
 - [Microsoft: Common Web Application Architectures](https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures)
 - [Layered Architecture — O'Reilly Software Architecture Patterns](https://www.oreilly.com/library/view/software-architecture-patterns/9781491971437/ch01.html)
+- [Prisma Documentation](https://www.prisma.io/docs/)
+- [Zod — TypeScript Schema Validation](https://zod.dev/)
+- [Dependency Inversion Principle](https://en.wikipedia.org/wiki/Dependency_inversion_principle)
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

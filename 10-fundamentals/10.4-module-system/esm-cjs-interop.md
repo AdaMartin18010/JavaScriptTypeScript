@@ -84,6 +84,24 @@ async function loadFormatter() {
 module.exports = { loadFormatter };
 ```
 
+**Node.js 22+ `require(esm)` 同步加载行为：**
+
+```javascript
+// Node.js 22 起，require() 可直接加载 ESM 模块（实验性/稳定中）
+// 但若 ESM 模块包含顶层 await，require() 会抛出 ERR_REQUIRE_ASYNC_MODULE
+
+try {
+  const esmMod = require('./esm-module.mjs');
+  console.log(esmMod.default);
+} catch (err) {
+  if (err.code === 'ERR_REQUIRE_ASYNC_MODULE') {
+    // 回退到动态 import
+    const esmMod = await import('./esm-module.mjs');
+    console.log(esmMod.default);
+  }
+}
+```
+
 ### 4.2 ESM 导入 CJS
 
 **互操作规则表**：
@@ -121,6 +139,23 @@ import * as lib from './cjs-lib.cjs';
 // lib 同时具有命名空间属性和 callable default
 lib.default(2, 3);   // 5
 lib.subtract(5, 2);  // 3
+```
+
+**ESM 中使用 `createRequire` 读取 CJS 元数据：**
+
+```typescript
+// esm-consumer.mjs
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+
+const require = createRequire(import.meta.url);
+
+// 读取 CJS 包的 package.json（不加载主入口）
+const pkg = require('lodash/package.json');
+console.log(pkg.version);
+
+// 同步 require CJS 模块
+const cjsUtil = require('./legacy-util.cjs');
 ```
 
 ---
@@ -337,6 +372,10 @@ const result = heavy.compute(); // 此时才真正执行 heavy-module.js
 | Node.js CJS ↔ ESM Interop | <https://nodejs.org/api/esm.html#interoperability-with-commonjs> | 官方互操作详解 |
 | tsup — TypeScript Bundler | <https://tsup.egoist.dev/> | 零配置双模式构建工具 |
 | Rollup Guide | <https://rollupjs.org/guide/en/> | ESM-first 打包器文档 |
+| Bun ESM & CJS | <https://bun.sh/docs/runtime/modules> | Bun 运行时模块系统 |
+| Deno Modules | <https://docs.deno.com/runtime/fundamentals/modules/> | Deno 模块与 npm 兼容 |
+| Sindre Sorhus: Pure ESM Package | <https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c> | ESM 迁移权威指南 |
+| Node.js `require(esm)` | <https://nodejs.org/api/modules.html#requireid> | Node 22+ 同步加载 ESM |
 
 ---
 

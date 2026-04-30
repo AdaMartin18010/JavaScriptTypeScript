@@ -247,6 +247,51 @@ const noisyAmps = simulateGrover(3, 5); // 8 元素搜索
 console.log('Noisy search result:', noisyAmps);
 ```
 
+### 量子纠缠态制备（GHZ 态）
+
+```typescript
+// ghz-state.ts — Greenberger-Horne-Zeilinger 态
+function prepareGHZ(n: number): [number, number][] {
+  const N = 2 ** n;
+  const state: [number, number][] = new Array(N).fill([0, 0]);
+  state[0] = [1 / Math.sqrt(2), 0];       // |00...0⟩
+  state[N - 1] = [1 / Math.sqrt(2), 0];   // |11...1⟩
+  return state;
+}
+
+// GHZ 态是最大纠缠态，测量任意一个量子比特都会瞬间确定其他所有比特
+const ghz3 = prepareGHZ(3);
+console.log('GHZ(3) prepared:', ghz3.map((c, i) => `|${i.toString(2).padStart(3, '0')}⟩:${c[0].toFixed(3)}`).filter(s => !s.endsWith(':0.000')));
+```
+
+### 变分量子特征求解器 (VQE) 简化模拟
+
+```typescript
+// vqe-simplified.ts — 用经典优化器寻找基态能量
+function expectationValue(params: [number, number]): number {
+  const [theta, phi] = params;
+  // 模拟一个简单的哈密顿量期望值 <ψ(θ,φ)|H|ψ(θ,φ)>
+  // H = Z⊗Z + X⊗I + I⊗X
+  return Math.cos(theta) * Math.cos(phi) + 0.5 * Math.sin(theta) + 0.5 * Math.sin(phi);
+}
+
+// 梯度下降优化
+function optimizeVQE(steps = 100, lr = 0.1): [number, number] {
+  let params: [number, number] = [Math.random() * Math.PI, Math.random() * Math.PI];
+  for (let i = 0; i < steps; i++) {
+    const [t, p] = params;
+    const gradT = -Math.sin(t) * Math.cos(p) + 0.5 * Math.cos(t);
+    const gradP = -Math.cos(t) * Math.sin(p) + 0.5 * Math.cos(p);
+    params = [t - lr * gradT, p - lr * gradP];
+  }
+  return params;
+}
+
+const optimal = optimizeVQE();
+console.log('Optimal parameters:', optimal.map(x => x.toFixed(4)));
+console.log('Ground state energy estimate:', expectationValue(optimal).toFixed(6));
+```
+
 ## 权威参考链接
 
 | 资源 | 类型 | 链接 |
@@ -268,6 +313,9 @@ console.log('Noisy search result:', noisyAmps);
 | Quantum Algorithm Zoo | 算法目录 | [quantumalgorithmzoo.org](https://quantumalgorithmzoo.org/) |
 | Qiskit GitHub | 开源 | [github.com/Qiskit](https://github.com/Qiskit) |
 | PennyLane GitHub | 开源 | [github.com/PennyLaneAI/pennylane](https://github.com/PennyLaneAI/pennylane) |
+| Quantum Inspire — 欧洲量子云平台 | 平台 | [www.quantum-inspire.com](https://www.quantum-inspire.com/) |
+| Amazon Braket 文档 | 文档 | [docs.aws.amazon.com/braket](https://docs.aws.amazon.com/braket/) |
+| Unitary Fund — 量子开源社区 | 社区 | [unitary.fund](https://unitary.fund/) |
 
 ## 关联模块
 
@@ -276,4 +324,4 @@ console.log('Noisy search result:', noisyAmps);
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

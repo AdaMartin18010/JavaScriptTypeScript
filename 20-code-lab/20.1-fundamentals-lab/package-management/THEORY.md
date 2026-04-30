@@ -33,8 +33,22 @@
   - [6. 选型决策框架](#6-选型决策框架)
     - [6.1 包管理器选型](#61-包管理器选型)
     - [6.2 Monorepo 工具选型](#62-monorepo-工具选型)
-  - [7. 总结](#7-总结)
+  - [7. 代码示例深化](#7-代码示例深化)
+    - [7.1 pnpm Workspace 完整配置](#71-pnpm-workspace-完整配置)
+    - [7.2 Corepack 与 packageManager 字段](#72-corepack-与-packagemanager-字段)
+    - [7.3 幽灵依赖检测脚本](#73-幽灵依赖检测脚本)
+    - [7.4 私有包发布与 Verdaccio 本地代理](#74-私有包发布与-verdaccio-本地代理)
+  - [8. 总结](#8-总结)
   - [参考资源](#参考资源)
+    - [官方文档](#官方文档)
+    - [Monorepo 工具](#monorepo-工具)
+    - [安全与合规](#安全与合规)
+    - [私有 Registry](#私有-registry)
+    - [规范与 RFC](#规范与-rfc)
+  - [模块代码文件索引](#模块代码文件索引)
+  - [核心理论深化](#核心理论深化)
+    - [关键设计模式](#关键设计模式)
+    - [与相邻模块的关系](#与相邻模块的关系)
 
 ---
 
@@ -349,7 +363,186 @@ Bun 1.3 的包管理器特性：
 
 ---
 
-## 7. 总结
+## 7. 代码示例深化
+
+### 7.1 pnpm Workspace 完整配置
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'apps/*'
+  - 'packages/*'
+  - '!**/test/**'
+
+catalog:
+  react: ^18.3.1
+  react-dom: ^18.3.1
+  typescript: ^5.8.0
+  vitest: ^3.0.0
+  eslint: ^9.0.0
+
+# 仅在某些包中共享的 catalog
+catalogs:
+  internal:
+    '@my-org/utils': workspace:*
+    '@my-org/ui': workspace:*
+```
+
+```json
+// packages/shared/package.json
+{
+  "name": "@my-org/shared",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
+```
+
+### 7.2 Corepack 与 packageManager 字段
+
+```json
+// package.json
+{
+  "name": "my-monorepo",
+  "packageManager": "pnpm@10.2.0+sha256.6a...",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test"
+  }
+}
+```
+
+```bash
+# 团队成员首次 clone 后只需执行
+corepack enable
+corepack prepare pnpm@10.2.0 --activate
+pnpm install
+
+# CI 中（GitHub Actions）
+- uses: pnpm/action-setup@v4
+  with:
+    version: 10.2.0
+- uses: actions/setup-node@v4
+  with:
+    node-version: 22
+    cache: pnpm
+- run: pnpm install --frozen-lockfile
+```
+
+### 7.3 幽灵依赖检测脚本
+
+```typescript
+// detect-phantom-deps.ts
+import { readFileSync, readdirSync, statSync } from 'fs';
+import { join, resolve } from 'path';
+
+interface PackageJson {
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+}
+
+function getDeclaredDeps(pkg: PackageJson): Set<string> {
+  return new Set([
+    ...Object.keys(pkg.dependencies ?? {}),
+    ...Object.keys(pkg.devDependencies ?? {}),
+    ...Object.keys(pkg.peerDependencies ?? {}),
+  ]);
+}
+
+function findPhantomDeps(projectPath: string): string[] {
+  const pkgPath = join(projectPath, 'package.json');
+  const pkg: PackageJson = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+  const declared = getDeclaredDeps(pkg);
+  const phantom: string[] = [];
+
+  function scanFile(filePath: string) {
+    const content = readFileSync(filePath, 'utf-8');
+    const importRegex = /from\s+['"]([^'"./][^'"]*)['"]|require\(['"]([^'"./][^'"]*)['"]\)/g;
+    let match;
+    while ((match = importRegex.exec(content)) !== null) {
+      const pkgName = (match[1] ?? match[2]).split('/')[0];
+      if (!declared.has(pkgName) && !pkgName.startsWith('node:')) {
+        phantom.push(`${filePath}: ${pkgName}`);
+      }
+    }
+  }
+
+  function walk(dir: string) {
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      const stat = statSync(full);
+      if (stat.isDirectory() && entry !== 'node_modules') {
+        walk(full);
+      } else if (/\.(ts|tsx|js|jsx|mjs|cjs)$/.test(entry)) {
+        scanFile(full);
+      }
+    }
+  }
+
+  walk(resolve(projectPath, 'src'));
+  return [...new Set(phantom)];
+}
+
+// 使用
+const issues = findPhantomDeps('.');
+if (issues.length) {
+  console.error('发现幽灵依赖引用：');
+  issues.forEach(i => console.error('  -', i));
+  process.exit(1);
+}
+```
+
+### 7.4 私有包发布与 Verdaccio 本地代理
+
+```yaml
+# .npmrc — 私有 registry 配置
+@my-org:registry=https://registry.my-org.com
+//registry.my-org.com/:_authToken=${NPM_TOKEN}
+always-auth=true
+```
+
+```bash
+# 使用 Verdaccio 本地测试发布
+npm i -g verdaccio
+verdaccio --config ./verdaccio-config.yaml &
+
+# 登录本地 registry
+npm adduser --registry http://localhost:4873
+
+# 发布 workspace 包
+pnpm publish --filter @my-org/shared --registry http://localhost:4873 --no-git-checks
+```
+
+```yaml
+# verdaccio-config.yaml
+storage: ./storage
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+packages:
+  '@my-org/*':
+    access: $all
+    publish: $authenticated
+  '**':
+    access: $all
+    proxy: npmjs
+```
+
+---
+
+## 8. 总结
 
 包管理是 JavaScript 生态的基础设施，2025-2026 年的核心趋势：
 
@@ -368,11 +561,42 @@ Bun 1.3 的包管理器特性：
 
 ## 参考资源
 
+### 官方文档
+
+- [npm 官方文档](https://docs.npmjs.com/)
 - [pnpm 官方文档](https://pnpm.io/)
+- [pnpm Workspaces](https://pnpm.io/workspaces)
+- [pnpm Catalogs](https://pnpm.io/catalogs)
 - [Bun 包管理器](https://bun.sh/docs/cli/install)
-- [Turborepo](https://turbo.build/)
-- [Nx Monorepo](https://nx.dev/)
-- [Corepack](https://nodejs.org/api/corepack.html)
+- [Bun Workspaces](https://bun.sh/docs/install/workspaces)
+- [Yarn Berry 文档](https://yarnpkg.com/getting-started)
+- [Corepack — Node.js 官方](https://nodejs.org/api/corepack.html)
+
+### Monorepo 工具
+
+- [Turborepo 官方文档](https://turbo.build/repo/docs)
+- [Nx 官方文档](https://nx.dev/getting-started/intro)
+- [Rush Stack](https://rushstack.io/)
+- [Lerna 文档](https://lerna.js.org/docs/introduction)（已转为 Turborepo 补充）
+
+### 安全与合规
+
+- [npm audit 文档](https://docs.npmjs.com/cli/v11/commands/npm-audit)
+- [Snyk Vulnerability DB](https://snyk.io/vuln)
+- [OpenSSF Scorecard](https://securityscorecards.dev/)
+- [Socket.dev — 供应链安全](https://socket.dev/)
+
+### 私有 Registry
+
+- [Verdaccio 文档](https://verdaccio.org/docs/what-is-verdaccio/)
+- [GitHub Packages](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry)
+
+### 规范与 RFC
+
+- [Node.js Modules 规范](https://nodejs.org/api/modules.html)
+- [Node.js ESM 规范](https://nodejs.org/api/esm.html)
+- [JSON Schema for package.json](https://json.schemastore.org/package.json)
+- [Semantic Versioning 2.0.0](https://semver.org/)
 
 ---
 
@@ -405,4 +629,4 @@ Bun 1.3 的包管理器特性：
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+> 📅 理论深化更新：2026-04-30

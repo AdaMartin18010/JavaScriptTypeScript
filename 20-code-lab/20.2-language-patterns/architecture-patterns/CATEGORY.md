@@ -252,6 +252,62 @@ class OrderSagaOrchestrator {
 }
 ```
 
+#### 事件驱动架构：发布-订阅模式
+
+```typescript
+// event-driven.ts — 领域事件与事件总线
+interface DomainEvent {
+  readonly id: string;
+  readonly type: string;
+  readonly payload: unknown;
+  readonly occurredOn: Date;
+}
+
+interface EventHandler<T extends DomainEvent> {
+  handle(event: T): Promise<void>;
+}
+
+class EventBus {
+  private handlers = new Map<string, Array<EventHandler<any>>>();
+
+  subscribe<T extends DomainEvent>(
+    eventType: string,
+    handler: EventHandler<T>
+  ): () => void {
+    const list = this.handlers.get(eventType) || [];
+    list.push(handler);
+    this.handlers.set(eventType, list);
+    return () => {
+      const idx = list.indexOf(handler);
+      if (idx >= 0) list.splice(idx, 1);
+    };
+  }
+
+  async publish(event: DomainEvent): Promise<void> {
+    const handlers = this.handlers.get(event.type) || [];
+    await Promise.all(handlers.map(h => h.handle(event).catch(console.error)));
+  }
+}
+
+// 使用示例
+class OrderCreatedEvent implements DomainEvent {
+  readonly id = crypto.randomUUID();
+  readonly type = 'OrderCreated';
+  readonly occurredOn = new Date();
+  constructor(readonly payload: { orderId: string; amount: number }) {}
+}
+
+class SendEmailHandler implements EventHandler<OrderCreatedEvent> {
+  async handle(event: OrderCreatedEvent) {
+    console.log(`Sending confirmation email for order ${event.payload.orderId}`);
+  }
+}
+
+const bus = new EventBus();
+bus.subscribe('OrderCreated', new SendEmailHandler());
+await bus.publish(new OrderCreatedEvent({ orderId: '123', amount: 99.99 }));
+```
+
 ---
 
 > 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
@@ -270,7 +326,11 @@ class OrderSagaOrchestrator {
 | Microsoft — Microservices Architecture | 文档 | [learn.microsoft.com/azure/architecture/microservices](https://learn.microsoft.com/en-us/azure/architecture/microservices/) |
 | Chris Richardson — Microservices Patterns | 书籍 | [microservices.io/patterns](https://microservices.io/patterns/) |
 | Vue.js — Composition API Guide | 文档 | [vuejs.org/guide/extras/composition-api-faq](https://vuejs.org/guide/extras/composition-api-faq.html) |
+| NestJS Architecture | 文档 | [docs.nestjs.com](https://docs.nestjs.com/) |
+| Domain-Driven Design Reference | 参考 | [domainlanguage.com/ddd/reference](https://www.domainlanguage.com/ddd/reference/) |
+| Event-Driven Architecture (AWS) | 文档 | [aws.amazon.com/event-driven-architecture](https://aws.amazon.com/what-is/event-driven-architecture/) |
+| Software Architecture Patterns (O'Reilly) | 书籍 | [www.oreilly.com/library/view/software-architecture-patterns](https://www.oreilly.com/library/view/software-architecture-patterns/9781491971437/) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

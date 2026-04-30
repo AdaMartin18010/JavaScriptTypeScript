@@ -30,8 +30,22 @@
   - [7. 迁移策略与风险评估](#7-迁移策略与风险评估)
     - [7.1 迁移优先级矩阵](#71-迁移优先级矩阵)
     - [7.2 风险评估框架](#72-风险评估框架)
-  - [8. 总结](#8-总结)
+  - [8. 代码示例深化](#8-代码示例深化)
+    - [8.1 Biome 完整配置](#81-biome-完整配置)
+    - [8.2 oxlint 与 ESLint 混合配置](#82-oxlint-与-eslint-混合配置)
+    - [8.3 Rspack 配置文件](#83-rspack-配置文件)
+    - [8.4 Rolldown 库打包配置](#84-rolldown-库打包配置)
+    - [8.5 Lightning CSS 替换 PostCSS](#85-lightning-css-替换-postcss)
+    - [8.6 tsgo 预览项目配置](#86-tsgo-预览项目配置)
+  - [9. 总结](#9-总结)
   - [参考资源](#参考资源)
+    - [官方文档与项目](#官方文档与项目)
+    - [Rust 工具链生态](#rust-工具链生态)
+    - [社区与基准测试](#社区与基准测试)
+  - [模块代码文件索引](#模块代码文件索引)
+  - [核心理论深化](#核心理论深化)
+    - [关键设计模式](#关键设计模式)
+    - [与相邻模块的关系](#与相邻模块的关系)
 
 ---
 
@@ -315,7 +329,245 @@ jobs:
 
 ---
 
-## 8. 总结
+## 8. 代码示例深化
+
+### 8.1 Biome 完整配置
+
+```json
+// biome.json
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error"
+      },
+      "performance": {
+        "noAccumulatingSpread": "warn"
+      },
+      "suspicious": {
+        "noExplicitAny": "warn",
+        "noConsoleLog": "warn"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "trailingCommas": "es5"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "always"
+    }
+  },
+  "files": {
+    "ignore": ["node_modules", "dist", "*.min.js", "coverage"]
+  }
+}
+```
+
+```bash
+# 常用命令
+npx biome check .          # 同时运行 lint + format 检查
+npx biome check --write .  # 自动修复可修复的问题
+npx biome format --write . # 仅格式化
+npx biome lint .           # 仅 lint
+```
+
+### 8.2 oxlint 与 ESLint 混合配置
+
+```json
+// oxlint.json
+{
+  "plugins": ["import", "typescript", "react", "unicorn"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "perf": "warn"
+  },
+  "rules": {
+    "no-console": "warn",
+    "eqeqeq": "error"
+  }
+}
+```
+
+```javascript
+// eslint.config.mjs — 仅保留 oxlint 未覆盖的规则
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
+
+export default [
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: { project: './tsconfig.json' },
+    },
+    plugins: { '@typescript-eslint': tsPlugin },
+    rules: {
+      // 类型感知规则 — oxlint 暂不支持
+      '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      // 自定义团队规则
+      '@typescript-eslint/explicit-function-return-type': 'off',
+    },
+  },
+];
+```
+
+```bash
+# package.json scripts
+{
+  "scripts": {
+    "lint": "oxlint . && eslint .",
+    "lint:fix": "oxlint . --fix && eslint . --fix"
+  }
+}
+```
+
+### 8.3 Rspack 配置文件
+
+```typescript
+// rspack.config.ts
+import { defineConfig } from '@rspack/core';
+import { rspackPluginReactLDR } from 'rspack-plugin-react-refresh';
+
+export default defineConfig({
+  entry: { main: './src/index.tsx' },
+  output: {
+    path: './dist',
+    filename: '[name].[contenthash].js',
+    clean: true,
+  },
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: {
+          loader: 'builtin:swc-loader',
+          options: {
+            jsc: {
+              parser: { syntax: 'typescript', tsx: true },
+              transform: { react: { runtime: 'automatic' } },
+            },
+          },
+        },
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
+      },
+    ],
+  },
+  plugins: [new rspackPluginReactLDR()],
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all',
+        },
+      },
+    },
+  },
+  devServer: {
+    port: 3000,
+    hot: true,
+  },
+});
+```
+
+### 8.4 Rolldown 库打包配置
+
+```typescript
+// rolldown.config.ts
+import { defineConfig } from 'rolldown';
+
+export default defineConfig({
+  input: './src/index.ts',
+  output: [
+    {
+      format: 'esm',
+      file: './dist/index.mjs',
+      sourcemap: true,
+    },
+    {
+      format: 'cjs',
+      file: './dist/index.cjs',
+      sourcemap: true,
+    },
+  ],
+  external: ['react', 'react-dom'],
+  platform: 'browser',
+  // Rolldown 原生支持 TypeScript，无需额外 loader
+});
+```
+
+### 8.5 Lightning CSS 替换 PostCSS
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite';
+import { browserslistToTargets } from 'lightningcss';
+import browserslist from 'browserslist';
+
+export default defineConfig({
+  css: {
+    transformer: 'lightningcss',
+    lightningcss: {
+      targets: browserslistToTargets(browserslist('>= 0.25%, not dead')),
+      drafts: { customMedia: true },
+    },
+  },
+  build: {
+    cssMinify: 'lightningcss',
+  },
+});
+```
+
+### 8.6 tsgo 预览项目配置
+
+```json
+// tsconfig.json — 为 tsgo 做准备，启用严格模式
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedDeclarations": true
+  },
+  "include": ["src/**/*"]
+}
+```
+
+```bash
+# tsgo 预览版安装（未来可用）
+npm install -D @typescript/native-preview
+npx tsgo --noEmit
+```
+
+---
+
+## 9. 总结
 
 2025-2026 年前端工具链的核心变革：**Rust（和 Go）正在系统性地重写 JavaScript 工具链**。
 
@@ -336,11 +588,35 @@ jobs:
 
 ## 参考资源
 
+### 官方文档与项目
+
 - [Biome 官方文档](https://biomejs.dev/)
-- [oxc 项目](https://oxc.rs/)
+- [Biome Configuration Reference](https://biomejs.dev/reference/configuration/)
+- [Oxc 项目](https://oxc.rs/)
+- [oxlint 规则列表](https://oxc.rs/docs/guide/usage/linter/rules.html)
 - [Rolldown](https://rolldown.rs/)
 - [Rspack](https://www.rspack.dev/)
+- [Rspack Configuration](https://www.rspack.dev/config/)
 - [TypeScript Go 编译器](https://github.com/microsoft/typescript-go)
+- [Lightning CSS](https://lightningcss.dev/)
+- [Farm 文档](https://www.farmfe.org/)
+- [Vite 官方文档](https://vitejs.dev/)
+- [Vite Plugin API](https://vitejs.dev/guide/api-plugin.html)
+
+### Rust 工具链生态
+
+- [Rust 官方文档](https://www.rust-lang.org/learn)
+- [The Rust Book](https://doc.rust-lang.org/book/)
+- [Rust and WebAssembly](https://rustwasm.github.io/docs/book/)
+- [napi-rs — Node.js FFI with Rust](https://napi.rs/)
+- [SWC 项目](https://swc.rs/)
+
+### 社区与基准测试
+
+- [JS Benchmarking](https://github.com/privatenumber/minification-benchmarks)
+- [State of JS 2024](https://stateofjs.com/)
+- [ESLint 官方博客](https://eslint.org/blog/)
+- [Prettier 选项哲学](https://prettier.io/docs/en/option-philosophy.html)
 
 ---
 
@@ -376,4 +652,4 @@ jobs:
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+> 📅 理论深化更新：2026-04-30

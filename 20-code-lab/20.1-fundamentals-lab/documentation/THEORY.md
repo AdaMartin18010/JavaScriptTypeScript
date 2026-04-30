@@ -377,6 +377,86 @@ jobs:
           publish_dir: ./docs/.vitepress/dist
 ```
 
+### 7.1 Starlight 配置示例
+
+```typescript
+// astro.config.mjs
+import { defineConfig } from 'astro/config';
+import starlight from '@astrojs/starlight';
+
+export default defineConfig({
+  integrations: [
+    starlight({
+      title: 'My Docs',
+      defaultLocale: 'zh',
+      locales: {
+        zh: { label: '简体中文', lang: 'zh-CN' },
+        en: { label: 'English', lang: 'en' },
+      },
+      sidebar: [
+        {
+          label: '指南',
+          items: [
+            { label: '快速开始', link: '/guide/getting-started/' },
+            { label: '安装', link: '/guide/installation/' },
+          ],
+        },
+        {
+          label: '参考',
+          autogenerate: { directory: 'reference' },
+        },
+      ],
+      social: {
+        github: 'https://github.com/your-org/your-repo',
+      },
+    }),
+  ],
+});
+```
+
+### 7.2 Docusaurus 配置示例
+
+```javascript
+// docusaurus.config.js
+module.exports = {
+  title: 'My Project',
+  url: 'https://docs.example.com',
+  baseUrl: '/',
+  i18n: {
+    defaultLocale: 'zh-Hans',
+    locales: ['zh-Hans', 'en'],
+  },
+  themeConfig: {
+    navbar: {
+      title: 'My Project',
+      items: [
+        { to: '/docs/intro', label: 'Docs', position: 'left' },
+        { type: 'localeDropdown', position: 'right' },
+      ],
+    },
+    algolia: {
+      appId: 'YOUR_APP_ID',
+      apiKey: 'YOUR_API_KEY',
+      indexName: 'your_index',
+    },
+  },
+  presets: [
+    [
+      '@docusaurus/preset-classic',
+      {
+        docs: {
+          sidebarPath: require.resolve('./sidebars.js'),
+          editUrl: 'https://github.com/your-org/your-repo/edit/main/',
+        },
+        theme: {
+          customCss: require.resolve('./src/css/custom.css'),
+        },
+      },
+    ],
+  ],
+};
+```
+
 ## 8. 权威外部资源
 
 | 资源 | 说明 | 链接 |
@@ -393,6 +473,8 @@ jobs:
 | Storybook 官方文档 | 组件驱动开发工具 | [storybook.js.org](https://storybook.js.org/) |
 | OpenAPI Specification | REST API 规范标准 | [spec.openapis.org](https://spec.openapis.org/) |
 | markdownlint | Markdown 风格检查工具 | [github.com/DavidAnson/markdownlint](https://github.com/DavidAnson/markdownlint) |
+| Microsoft Learn: Technical Writing | 微软技术写作指南 | [learn.microsoft.com/en-us/style-guide/welcome/](https://learn.microsoft.com/en-us/style-guide/welcome/) |
+| Astro Documentation | Astro 框架官方文档 | [docs.astro.build](https://docs.astro.build/) |
 
 ## 9. 与相邻模块的关系
 

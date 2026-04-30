@@ -296,6 +296,44 @@ module.exports = {
 };
 ```
 
+### 6.14 使用 import.meta.resolve 与顶层 await 解析模块路径
+
+```javascript
+// resolve-and-load.mjs
+// 在模块初始化阶段解析并加载插件
+
+const pluginPath = await import.meta.resolve('./plugins/core.js');
+const { initialize } = await import(pluginPath);
+await initialize({ verbose: true });
+
+export { pluginPath };
+```
+
+### 6.15 React Server Components 中的顶层 await 模式
+
+```typescript
+// app/page.tsx (Next.js App Router / React Server Components)
+// Server Component 中可直接使用顶层 await 获取数据
+
+async function getData() {
+  const res = await fetch('https://api.example.com/posts', { cache: 'no-store' });
+  return res.json();
+}
+
+// 在 React Server Component 中，组件体本身即 async 函数
+// 顶层 await 语义与 ESM 顶层 await 一致
+export default async function Page() {
+  const posts = await getData(); // 服务端直接 await
+  return (
+    <ul>
+      {posts.map((post) => (
+        <li key={post.id}>{post.title}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
@@ -317,6 +355,8 @@ module.exports = {
 - **ES Module Shims** — <https://github.com/guybedford/es-module-shims>（为旧浏览器提供顶层 await polyfill）
 - **Node.js Test Runner ESM Support** — <https://nodejs.org/api/test.html>
 - **Surma.dev: Top-level await in JavaScript** — <https://surma.dev/things/es-modules/>（深度技术剖析）
+- **React Server Components — RFC** — <https://github.com/reactjs/rfcs/blob/main/text/0188-server-components.md>
+- **Next.js Data Fetching** — <https://nextjs.org/docs/app/building-your-application/data-fetching>
 
 ---
 
