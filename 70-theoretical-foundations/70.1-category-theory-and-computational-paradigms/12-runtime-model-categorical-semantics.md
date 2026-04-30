@@ -26,13 +26,18 @@ references:
 - [运行时的范畴论语义](#运行时的范畴论语义)
   - [目录](#目录)
   - [0. 运行时不是黑盒，是结构](#0-运行时不是黑盒是结构)
+    - [0.1 从单线程到Event Loop的历史脉络](#01-从单线程到event-loop的历史脉络)
   - [1. Event Loop 作为余单子](#1-event-loop-作为余单子)
     - [1.1 余单子的直觉："上下文中的值"](#11-余单子的直觉上下文中的值)
     - [1.2 Event Loop 的余单子结构](#12-event-loop-的余单子结构)
     - [1.3 微任务 vs 宏任务的范畴差异](#13-微任务-vs-宏任务的范畴差异)
+    - [1.4 Event Loop 的纤维化表示](#14-event-loop-的纤维化表示)
+    - [1.5 Promise 链的纤维化视角](#15-promise-链的纤维化视角)
   - [2. 执行上下文堆栈作为链式复形](#2-执行上下文堆栈作为链式复形)
     - [2.1 调用栈的范畴模型](#21-调用栈的范畴模型)
-    - [2.2 闭包环境与切片范畴](#22-闭包环境与切片范畴)
+    - [2.2 调用栈到范畴对象的直觉映射](#22-调用栈到范畴对象的直觉映射)
+    - [2.3 执行上下文的生命周期范畴](#23-执行上下文的生命周期范畴)
+    - [2.4 闭包环境与切片范畴](#24-闭包环境与切片范畴)
   - [3. 编译管道的函子性](#3-编译管道的函子性)
     - [3.1 V8 编译阶段作为态射](#31-v8-编译阶段作为态射)
     - [3.2 语义保持的编译正确性](#32-语义保持的编译正确性)
@@ -42,7 +47,9 @@ references:
   - [5. 内存管理与 GC 的范畴模型](#5-内存管理与-gc-的范畴模型)
     - [5.1 可达性分析作为遗忘函子](#51-可达性分析作为遗忘函子)
     - [5.2 引用计数作为权重](#52-引用计数作为权重)
-  - [6. 反例：运行时行为的非范畴现象](#6-反例运行时行为的非范畴现象)
+    - [5.3 内存泄漏的范畴论视角](#53-内存泄漏的范畴论视角)
+  - [6. 微任务队列的余极限解释](#6-微任务队列的余极限解释)
+  - [7. 反例：运行时行为的非范畴现象](#7-反例运行时行为的非范畴现象)
   - [参考文献](#参考文献)
 
 ---
@@ -58,6 +65,23 @@ references:
 - JIT 编译器保持什么不变？程序的**语义**。
 
 这些问题有数学答案。
+
+### 0.1 从单线程到Event Loop的历史脉络
+
+JavaScript 诞生于1995年，当时的设计目标是作为浏览器的轻量级脚本语言。 Brendan Eich 在10天内完成了原型实现。这个极短的时间窗口导致了一个关键设计决策：**单线程执行模型**。
+
+为什么是单线程？不是因为没有多线程的技术能力，而是因为**浏览器环境的约束**：
+1. DOM 操作必须是确定性的，多线程并发修改 DOM 会导致不可预测的状态
+2. 脚本语言需要简单，多线程同步原语（锁、信号量）会大幅增加复杂度
+3. 当时的网页交互需求并不复杂，单线程足够
+
+但单线程有一个致命问题：**阻塞**。如果 JavaScript 执行一个耗时操作（如网络请求、文件读取），整个浏览器界面会冻结。
+
+解决方案是**异步回调**。浏览器提供了一组 API（如 `setTimeout`、`XMLHttpRequest`），允许 JavaScript 注册回调函数，然后继续执行后续代码。当异步操作完成时，回调被放入一个队列，等待主线程空闲时执行。
+
+这个队列 + 单线程主循环的结构，就是**Event Loop**的雏形。
+
+从范畴论角度看，这是一个**从同步范畴到异步范畴的函子**。同步范畴中的态射（顺序执行）被映射到异步范畴中的态射（回调注册 + 事件触发）。
 
 ---
 
@@ -93,7 +117,7 @@ const extractNEL = <A>(w: NonEmptyList<A>): A => w.head;
 const extendNEL = <A, B>(w: NonEmptyList<A>, f: (w: NonEmptyList<A>) => B): NonEmptyList<B> => ({
   head: f(w),
   tail: w.tail.map((_, i) => f({ head: w.tail[i], tail: w.tail.slice(i + 1) }))
-});
+}));
 
 // extendNEL 让你基于"整个列表的上下文"计算每个位置的值
 // 例如：移动平均
@@ -123,7 +147,7 @@ const extract = <A>(w: EventLoop<A>): A => w.current;
 const extend = <A, B>(w: EventLoop<A>, f: (w: EventLoop<A>) => B): EventLoop<B> => ({
   current: f(w),
   next: () => extend(w.next(), f)
-});
+}));
 
 // === 用 Event Loop 模拟器理解 ===
 interface Task {
@@ -205,6 +229,146 @@ function microtaskStarvation(): void {
 // 范畴论语义：extend 操作无限递归，next 永远不会被调用
 ```
 
+### 1.4 Event Loop 的纤维化表示
+
+**纤维化**（Fibration）是范畴论中描述"参数化结构"的工具。Event Loop 可以被看作一个纤维化：基范畴是"时间线"，纤维是每个时间点的执行状态。
+
+**精确直觉类比：电影放映机**
+
+想象一台老式电影放映机：
+- 胶片盘 = 任务队列
+- 当前帧 = 正在执行的代码
+- 放映机的机械结构 = Event Loop
+- 观众看到的连续画面 = 程序的行为
+
+**哪里像**：
+- ✅ 放映机一次只放映一帧，与 JavaScript 单线程一次只执行一个任务一致
+- ✅ 帧的顺序由胶片的物理顺序决定，与任务队列的 FIFO 顺序一致
+- ✅ 可以"暂停"放映来换胶片盘，与宏任务切换上下文对应
+
+**哪里不像**：
+- ❌ 放映机的帧率是固定的（24fps），但 Event Loop 的任务执行时间差异巨大
+- ❌ 电影胶片是静态的、预先确定的，但 JavaScript 的任务可以动态生成新的任务
+- ❌ 放映机不能"跳过"帧，但 Event Loop 可以通过 `setTimeout(fn, 0)` 来重新排序任务
+
+```typescript
+// Event Loop 的纤维化模型
+// 基范畴 B = 时间线（离散的时间点）
+// 纤维 E_t = 时间 t 时的执行状态
+
+interface TimePoint {
+  tick: number;
+  phase: 'macrotask' | 'microtask' | 'render';
+}
+
+interface ExecutionState {
+  callStack: string[];
+  heap: Map<string, unknown>;
+  pendingTasks: (() => void)[];
+}
+
+// 纤维化：p: E -> B，把执行状态映射到时间点
+function projection(state: { time: TimePoint; state: ExecutionState }): TimePoint {
+  return state.time;
+}
+
+// 提升（Lift）：从基范畴的路径到全范畴的路径
+// 给定一系列时间点，构造对应的执行状态序列
+function liftPath(
+  initialState: ExecutionState,
+  timePoints: TimePoint[],
+  taskQueue: (() => void)[]
+): { time: TimePoint; state: ExecutionState }[] {
+  const result: { time: TimePoint; state: ExecutionState }[] = [];
+  let currentState = initialState;
+  let taskIndex = 0;
+
+  for (const time of timePoints) {
+    // 执行当前时间点的任务
+    if (taskIndex < taskQueue.length) {
+      const task = taskQueue[taskIndex++];
+      task(); // 副作用：可能修改 currentState
+    }
+    result.push({ time, state: { ...currentState } });
+  }
+
+  return result;
+}
+
+// 纤维积：两个时间点的执行状态的"交集"
+// 这对应于并发控制的" happens-before "关系
+function fiberProduct(
+  stateA: ExecutionState,
+  stateB: ExecutionState,
+  commonPrefix: string[]
+): ExecutionState {
+  // 两个状态在共同前缀上必须一致
+  const mergedHeap = new Map([...stateA.heap, ...stateB.heap]);
+  return {
+    callStack: commonPrefix,
+    heap: mergedHeap,
+    pendingTasks: [...stateA.pendingTasks, ...stateB.pendingTasks]
+  };
+}
+```
+
+### 1.5 Promise 链的纤维化视角
+
+Promise 链是 Event Loop 纤维化的具体实例。每个 `.then()` 定义了从一个纤维到下一个纤维的态射。
+
+```typescript
+// Promise 链的纤维化解释
+// p: PromiseChain -> EventLoopTick
+// 每个 Promise 状态变化发生在某个 Event Loop tick 上
+
+// 态射：then 方法定义了纤维间的映射
+type PromiseFiber<A> = {
+  value: A | null;
+  isResolved: boolean;
+  next: PromiseFiber<unknown> | null;
+};
+
+// then = 纤维态射：PromiseFiber<A> -> (A -> PromiseFiber<B>) -> PromiseFiber<B>
+function thenFiber<A, B>(
+  fiber: PromiseFiber<A>,
+  f: (value: A) => PromiseFiber<B>
+): PromiseFiber<B> {
+  if (!fiber.isResolved || fiber.value === null) {
+    // 未解决，创建一个"等待"的纤维
+    return { value: null, isResolved: false, next: null };
+  }
+  return f(fiber.value);
+}
+
+// 正例：Promise 链的执行顺序
+const p1: PromiseFiber<number> = { value: 1, isResolved: true, next: null };
+const p2 = thenFiber(p1, (x) => ({ value: x * 2, isResolved: true, next: null }));
+const p3 = thenFiber(p2, (x) => ({ value: x + 10, isResolved: true, next: null }));
+
+console.log(p3.value); // 12（(1 * 2) + 10）
+
+// 反例：Promise 链中的错误处理不是自动的
+const badChain: PromiseFiber<number> = { value: null, isResolved: false, next: null };
+const badResult = thenFiber(badChain, (x) => ({ value: x * 2, isResolved: true, next: null }));
+// badResult.value === null，但没有任何错误被抛出！
+
+// 修正：显式处理未解决状态
+function thenFiberSafe<A, B>(
+  fiber: PromiseFiber<A>,
+  f: (value: A) => PromiseFiber<B>,
+  onError: () => PromiseFiber<B>
+): PromiseFiber<B> {
+  if (!fiber.isResolved || fiber.value === null) {
+    return onError();
+  }
+  try {
+    return f(fiber.value);
+  } catch {
+    return onError();
+  }
+}
+```
+
 ---
 
 ## 2. 执行上下文堆栈作为链式复形
@@ -268,7 +432,136 @@ console.log(lookupVariable(functionCtx, 'x')); // 1（从 function 找到 global
 console.log(lookupVariable(functionCtx, 'y')); // 2（在 function 中找到）
 ```
 
-### 2.2 闭包环境与切片范畴
+### 2.2 调用栈到范畴对象的直觉映射
+
+**精确直觉类比：俄罗斯套娃（Matryoshka）**
+
+调用栈常被比作俄罗斯套娃——每个函数调用创建一个新的"套娃"，嵌套在调用者内部。
+
+**哪里像**：
+- ✅ 套娃的嵌套层次与函数调用的嵌套层次完全一致
+- ✅ 每个套娃有自己的"内部空间"（局部变量），外部无法直接访问
+- ✅ 打开最小的套娃（最内层函数）时，可以看到所有外层套娃的内容（作用域链查找）
+
+**哪里不像**：
+- ❌ 俄罗斯套娃是静态的，一旦制造完成层次就固定了。调用栈在运行时动态增长和收缩
+- ❌ 套娃的层数有限（通常5-10个），但调用栈理论上可以无限深（直到内存耗尽）
+- ❌ 套娃不能有"兄弟"（同一层不能有两个并排的套娃），但函数调用可以有兄弟调用（同一函数内先后调用两个子函数）
+
+```typescript
+// 反例：调用栈不是静态嵌套
+function dynamicDepth(n: number): number {
+  if (n <= 0) return 0;
+  return 1 + dynamicDepth(n - 1); // 递归深度取决于运行时参数
+}
+
+console.log(dynamicDepth(3)); // 3
+console.log(dynamicDepth(100)); // 100
+
+// 修正认知：调用栈是动态结构，不是静态套娃
+// 更精确的类比是"栈盘"（stack of plates）
+```
+
+**更精确的类比：餐厅的点单栈**
+
+想象一个餐厅厨房的点单系统：
+- 服务员把订单放在一堆盘子的最上面
+- 厨师从最上面的盘子开始做菜
+- 做完一个盘子后，把它拿掉，做下面的盘子
+- 如果厨师需要准备一道复杂的菜，他可能会把这道菜拆分成多个子步骤，每个子步骤成为一个新的盘子放在最上面
+
+**哪里像**：
+- ✅ 盘子的堆叠顺序（后进先出）与调用栈完全一致
+- ✅ 厨师一次只能处理最上面的盘子，与单线程 JavaScript 一次只能执行一个函数一致
+- ✅ 复杂菜品拆分后的子步骤盘子，与函数调用分解子任务对应
+
+**哪里不像**：
+- ❌ 餐厅的盘子可以任意重排（紧急订单），但调用栈严格遵循 LIFO
+- ❌ 盘子上的订单做完就丢弃，但调用栈中的执行上下文在闭包存在时不能立即销毁
+
+### 2.3 执行上下文的生命周期范畴
+
+每个执行上下文都有一个生命周期：**创建 → 激活 → 挂起 → 恢复 → 销毁**。这个生命周期本身可以看作一个范畴。
+
+```typescript
+// 执行上下文生命周期范畴
+// 对象 = 生命周期状态
+// 态射 = 状态转换
+
+type LifecycleState =
+  | { kind: 'created'; context: ExecutionContext }
+  | { kind: 'active'; context: ExecutionContext }
+  | { kind: 'suspended'; context: ExecutionContext; returnPoint: number }
+  | { kind: 'destroyed' };
+
+// 态射：创建 -> 激活
+function activate(state: { kind: 'created'; context: ExecutionContext }): { kind: 'active'; context: ExecutionContext } {
+  return { kind: 'active', context: state.context };
+}
+
+// 态射：激活 -> 挂起（遇到 await 或 yield）
+function suspend(
+  state: { kind: 'active'; context: ExecutionContext },
+  returnPoint: number
+): { kind: 'suspended'; context: ExecutionContext; returnPoint: number } {
+  return { kind: 'suspended', context: state.context, returnPoint };
+}
+
+// 态射：挂起 -> 恢复
+function resume(
+  state: { kind: 'suspended'; context: ExecutionContext; returnPoint: number }
+): { kind: 'active'; context: ExecutionContext } {
+  return { kind: 'active', context: state.context };
+}
+
+// 态射：激活 -> 销毁
+function destroy(state: { kind: 'active'; context: ExecutionContext }): { kind: 'destroyed' } {
+  // 释放资源...
+  return { kind: 'destroyed' };
+}
+
+// 正例：异步函数的生命周期
+async function asyncLifecycle() {
+  // created -> active（函数开始执行）
+  console.log('1. Active');
+
+  // active -> suspended（遇到 await）
+  await Promise.resolve();
+
+  // suspended -> active（Promise 解决）
+  console.log('2. Resumed');
+
+  // active -> destroyed（函数返回）
+  return 'done';
+}
+
+// 反例：闭包延长生命周期
+function leakingLifecycle() {
+  const bigData = new Array(1000000).fill('x');
+
+  // 这个闭包让 destroyed 态射无法执行
+  return function() {
+    return bigData[0];
+  };
+}
+
+const leak = leakingLifecycle();
+// leakingLifecycle 的执行上下文理论上应该销毁
+// 但闭包保持了对 bigData 的引用，导致上下文无法完全释放
+
+// 修正：显式释放不需要的引用
+function safeLifecycle() {
+  const bigData = new Array(1000000).fill('x');
+  const result = bigData[0];
+
+  // 返回一个只引用 result 的闭包
+  return function() {
+    return result;
+  };
+}
+```
+
+### 2.4 闭包环境与切片范畴
 
 ```typescript
 // 闭包是"捕获了特定切片范畴"的函数
@@ -600,9 +893,195 @@ function decrementRef(heap: Map<string, RefCountedObject>, id: string): void {
 // 它使用了全局范畴结构，而不是局部权重
 ```
 
+### 5.3 内存泄漏的范畴论视角
+
+内存泄漏是**可达性分析无法识别的"不必要可达性"**。从范畴论角度，这是**子范畴的嵌入不完全**——泄漏对象在"可达子范畴"中，但应该在"必要可达子范畴"之外。
+
+```typescript
+// 内存泄漏的范畴论分析
+
+// 类型 1：全局变量泄漏
+// 对象被挂载到全局对象上，永远可达
+function globalLeak(): void {
+  (window as any).leakedData = new Array(1000000).fill('leak');
+}
+// 范畴论语义：全局对象是终对象（terminal object）
+// 任何指向终对象的态射都是"不可逆"的——对象永远可达
+
+// 修正：使用 WeakMap 或局部变量
+const privateData = new WeakMap<object, string[]>();
+function safeGlobal(obj: object): void {
+  privateData.set(obj, new Array(1000).fill('safe'));
+}
+
+// 类型 2：闭包泄漏（闭包捕获了大对象，但只使用一小部分）
+function closureLeak(): () => string {
+  const hugeArray = new Array(1000000).fill('data');
+  const smallResult = hugeArray[0];
+
+  return function() {
+    return smallResult; // 只使用了 smallResult
+    // 但闭包保持了对整个 hugeArray 的引用！
+  };
+}
+
+// 范畴论语义：
+// 闭包的环境是一个"切片范畴"对象
+// 切片对象包含了所有捕获的变量，即使只使用了其中一部分
+// 这导致"不必要可达性"——hugeArray 在可达子范畴中，但语义上不必要
+
+// 修正：只捕获必要的值
+function safeClosure(): () => string {
+  const hugeArray = new Array(1000000).fill('data');
+  const smallResult = hugeArray[0];
+
+  // 在返回前解除对 hugeArray 的引用
+  // （实际上这里需要显式处理，因为 hugeArray 仍在作用域中）
+  return (function(captured: string) {
+    return function() { return captured; };
+  })(smallResult);
+}
+
+// 类型 3：事件监听器泄漏
+class EventEmitterLeak {
+  private listeners: Array<() => void> = [];
+
+  on(listener: () => void): void {
+    this.listeners.push(listener);
+  }
+
+  // 忘记提供 off 方法！
+}
+
+// 范畴论语义：
+// 事件监听器数组是一个"余单子"（Comonad）上下文
+// 监听器被 extend 到上下文中，但从未被 extract 和清理
+
+// 修正：提供清理机制
+class SafeEventEmitter {
+  private listeners = new Set<() => void>();
+
+  on(listener: () => void): () => void {
+    this.listeners.add(listener);
+    // 返回取消订阅函数
+    return () => this.listeners.delete(listener);
+  }
+
+  off(listener: () => void): void {
+    this.listeners.delete(listener);
+  }
+}
+
+// 类型 4：DOM 引用泄漏
+function domLeak(): void {
+  const element = document.getElementById('temp');
+  const cache: HTMLElement[] = [];
+
+  if (element) {
+    cache.push(element); // 即使元素从 DOM 中移除，仍被 cache 引用
+  }
+}
+
+// 修正：使用 WeakRef
+function safeDomRef(): void {
+  const element = document.getElementById('temp');
+  const weakCache: WeakRef<HTMLElement>[] = [];
+
+  if (element) {
+    weakCache.push(new WeakRef(element));
+  }
+
+  // 使用时检查对象是否还存在
+  for (const ref of weakCache) {
+    const el = ref.deref();
+    if (el) {
+      console.log(el.id);
+    }
+  }
+}
+```
+
 ---
 
-## 6. 反例：运行时行为的非范畴现象
+## 6. 微任务队列的余极限解释
+
+微任务队列可以看作一个**余极限**（Colimit）——它把多个异步操作的结果"合并"到一个统一的执行流中。
+
+```typescript
+// 微任务队列的余极限解释
+// 给定一组 Promise（作为范畴中的对象），
+// 微任务队列把它们的结果"合并"到一个执行序列中
+
+// 余积（Coproduct）的直觉：
+// 如果有两个 Promise p1: Promise<A> 和 p2: Promise<B>
+// 它们的余积是 Promise<A | B> —— "A 或 B 的某个值"
+
+// 但微任务队列做的是更复杂的结构：
+// 它把所有微任务的结果按顺序"推出"到一个线性序列中
+
+// 用范畴论的语言：
+// 微任务队列是一个"余等化子"（Coequalizer）
+// 它把"所有微任务都完成"的等价关系坍缩为一个点
+
+// 正例：微任务队列确保顺序
+async function microtaskOrder(): Promise<void> {
+  const results: string[] = [];
+
+  Promise.resolve().then(() => results.push('microtask 1'));
+  Promise.resolve().then(() => results.push('microtask 2'));
+  Promise.resolve().then(() => results.push('microtask 3'));
+
+  // 等待所有微任务完成
+  await new Promise(resolve => setTimeout(resolve, 0));
+
+  console.log(results); // ['microtask 1', 'microtask 2', 'microtask 3']
+  // 顺序与注册顺序一致
+}
+
+// 范畴论语义：
+// 微任务队列是一个"推出"（Pushout）
+// 它把多个并发的执行路径"粘合"到一个统一的输出路径上
+
+// 反例：微任务与宏任务的交错
+async function interleavingDemo(): Promise<void> {
+  const results: string[] = [];
+
+  setTimeout(() => results.push('macro 1'), 0);
+  Promise.resolve().then(() => results.push('micro 1'));
+  setTimeout(() => results.push('macro 2'), 0);
+  Promise.resolve().then(() => results.push('micro 2'));
+
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  console.log(results);
+  // ['micro 1', 'micro 2', 'macro 1', 'macro 2']
+  // 微任务在宏任务之前执行
+}
+
+// 修正：如果需要确保宏任务在特定微任务之后执行
+async function orderedExecution(): Promise<void> {
+  const results: string[] = [];
+
+  Promise.resolve().then(() => {
+    results.push('micro 1');
+    // 在微任务中注册宏任务，确保它在所有微任务之后
+    setTimeout(() => results.push('macro 1'), 0);
+  });
+
+  Promise.resolve().then(() => results.push('micro 2'));
+
+  await new Promise(resolve => setTimeout(resolve, 100));
+  console.log(results); // ['micro 1', 'micro 2', 'macro 1']
+}
+
+// 范畴论语义解释：
+// 微任务队列是一个"余极限"，因为它"合并"了多个来源
+// 宏任务队列则是"新的极限上下文"，每次创建新的对象
+```
+
+---
+
+## 7. 反例：运行时行为的非范畴现象
 
 ```typescript
 // 反例 1: JIT 编译的不确定性
@@ -659,3 +1138,6 @@ const weak = new WeakRef({ data: 'important' });
 1. Moggi, E. (1991). "Notions of Computation and Monads." *Information and Computation*, 93(1), 55-92.
 2. V8 Team. "V8 Compiler Design." (Technical documentation)
 3. ECMA-262. *ECMAScript 2025 Language Specification*. (§9 Execution Contexts, §27 Agents)
+4. Jacobs, B. (1999). *Categorical Logic and Type Theory*. Elsevier.
+5. Harper, R. (2016). *Practical Foundations for Programming Languages*. Cambridge.
+6. Dybvig, R. K. (2009). *The Scheme Programming Language* (4th ed.). MIT Press.

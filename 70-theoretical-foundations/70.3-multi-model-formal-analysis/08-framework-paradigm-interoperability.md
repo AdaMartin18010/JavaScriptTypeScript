@@ -28,27 +28,57 @@ references:
   - [2. 框架间互操作性的形式化定义](#2-框架间互操作性的形式化定义)
     - [2.1 互操作性条件的精确表述](#21-互操作性条件的精确表述)
     - [2.2 对称差分析：兼容 vs 可互操作 vs 可移植](#22-对称差分析兼容-vs-可互操作-vs-可移植)
+      - [集合定义](#集合定义)
+      - [C vs I（兼容与互操作的差异）](#c-vs-i兼容与互操作的差异)
+      - [C vs P（兼容与可移植的差异）](#c-vs-p兼容与可移植的差异)
+      - [I vs P（互操作与可移植的差异）](#i-vs-p互操作与可移植的差异)
     - [2.3 正例与反例](#23-正例与反例)
+      - [正例：Web Components 作为互操作基线](#正例web-components-作为互操作基线)
+      - [反例：直接混合不同框架的渲染周期](#反例直接混合不同框架的渲染周期)
     - [2.4 直觉类比：互操作性像语言翻译](#24-直觉类比互操作性像语言翻译)
   - [3. React 组件在 Vue 中的封装](#3-react-组件在-vue-中的封装)
     - [3.1 适配器模式的范畴论语义](#31-适配器模式的范畴论语义)
     - [3.2 对称差分析：适配器 vs 包装器 vs 代理](#32-对称差分析适配器-vs-包装器-vs-代理)
+      - [集合定义](#集合定义-1)
+      - [A vs W（适配器与包装器的差异）](#a-vs-w适配器与包装器的差异)
+      - [A vs P（适配器与代理的差异）](#a-vs-p适配器与代理的差异)
+      - [W vs P（包装器与代理的差异）](#w-vs-p包装器与代理的差异)
     - [3.3 正例与反例](#33-正例与反例)
+      - [正例：@r2wc（React to Web Component）的适配策略](#正例r2wcreact-to-web-component的适配策略)
+      - [反例：在适配器中过度同步状态](#反例在适配器中过度同步状态)
     - [3.4 直觉类比：适配器像电源转换插头](#34-直觉类比适配器像电源转换插头)
   - [4. 微前端架构的多模型共存](#4-微前端架构的多模型共存)
     - [4.1 多模型共存的语义保证](#41-多模型共存的语义保证)
     - [4.2 对称差分析：qiankun vs Module Federation vs iframe](#42-对称差分析qiankun-vs-module-federation-vs-iframe)
+      - [集合定义](#集合定义-2)
+      - [Q vs M（qiankun 与 Module Federation 的差异）](#q-vs-mqiankun-与-module-federation-的差异)
+      - [Q vs I（qiankun 与 iframe 的差异）](#q-vs-iqiankun-与-iframe-的差异)
+      - [M vs I（Module Federation 与 iframe 的差异）](#m-vs-imodule-federation-与-iframe-的差异)
     - [4.3 正例与反例](#43-正例与反例)
+      - [正例：qiankun 的 JS 沙箱实现](#正例qiankun-的-js-沙箱实现)
+      - [反例：忽视样式隔离导致的 CSS 污染](#反例忽视样式隔离导致的-css-污染)
     - [4.4 直觉类比：微前端像联合国](#44-直觉类比微前端像联合国)
   - [5. 状态管理库的兼容性矩阵](#5-状态管理库的兼容性矩阵)
     - [5.1 为什么 Redux 和 Pinia 不能简单互换？](#51-为什么-redux-和-pinia-不能简单互换)
     - [5.2 对称差分析：Redux vs Pinia vs Zustand 的互操作条件](#52-对称差分析redux-vs-pinia-vs-zustand-的互操作条件)
+      - [集合定义](#集合定义-3)
+      - [R vs P（Redux 与 Pinia 的差异）](#r-vs-predux-与-pinia-的差异)
+      - [R vs Z（Redux 与 Zustand 的差异）](#r-vs-zredux-与-zustand-的差异)
+      - [P vs Z（Pinia 与 Zustand 的差异）](#p-vs-zpinia-与-zustand-的差异)
     - [5.3 正例与反例](#53-正例与反例)
+      - [正例：基于事件总线的跨状态库同步](#正例基于事件总线的跨状态库同步)
+      - [反例：直接共享状态对象引用](#反例直接共享状态对象引用)
     - [5.4 直觉类比：状态库像银行系统](#54-直觉类比状态库像银行系统)
   - [6. 范式泄漏的形式化定义](#6-范式泄漏的形式化定义)
     - [6.1 什么是范式泄漏？](#61-什么是范式泄漏)
     - [6.2 对称差分析：范式泄漏 vs 抽象泄漏 vs 实现泄漏](#62-对称差分析范式泄漏-vs-抽象泄漏-vs-实现泄漏)
+      - [集合定义](#集合定义-4)
+      - [PL vs AL（范式泄漏与抽象泄漏的差异）](#pl-vs-al范式泄漏与抽象泄漏的差异)
+      - [PL vs IL（范式泄漏与实现泄漏的差异）](#pl-vs-il范式泄漏与实现泄漏的差异)
+      - [AL vs IL（抽象泄漏与实现泄漏的差异）](#al-vs-il抽象泄漏与实现泄漏的差异)
     - [6.3 正例与反例](#63-正例与反例)
+      - [正例：真正框架无关的抽象](#正例真正框架无关的抽象)
+      - [反例：伪装成通用的框架特定代码](#反例伪装成通用的框架特定代码)
     - [6.4 直觉类比：范式泄漏像口音](#64-直觉类比范式泄漏像口音)
   - [7. 工程决策框架](#7-工程决策框架)
   - [参考文献](#参考文献)
@@ -87,7 +117,7 @@ references:
 
 在范畴论语境下，两个框架的互操作性可以精确表述为：
 
-设 Framework A 的模型为范畴 **A**，Framework B 的模型为范畴 **B**。框架 A 的程序 $P_A$ 能在框架 B 中正确执行，当且仅当存在一个适配态射 $adapt: A 	o B$，使得：
+设 Framework A 的模型为范畴 **A**，Framework B 的模型为范畴 **B**。框架 A 的程序 $P_A$ 能在框架 B 中正确执行，当且仅当存在一个适配态射 $adapt: A  o B$，使得：
 
 ```
 execute_B(adapt(P_A)) = observe-equivalent execute_A(P_A)
@@ -171,22 +201,22 @@ function isInteroperable<A, B>(
 // 用原生 Web Components 定义的组件
 class UniversalButton extends HTMLElement {
   static get observedAttributes() { return ['label', 'disabled']; }
-  
+
   private _label = '';
   private _disabled = false;
-  
+
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
     this.render();
   }
-  
+
   attributeChangedCallback(name: string, oldVal: string, newVal: string) {
     if (name === 'label') this._label = newVal;
     if (name === 'disabled') this._disabled = newVal !== null;
     this.render();
   }
-  
+
   private render() {
     this.shadowRoot!.innerHTML = `
       <button ?disabled="${this._disabled}">${this._label}</button>
@@ -214,15 +244,15 @@ Web Components 的互操作价值在于：**它把互操作性问题从框架层
 // React 组件
 function ReactContainer() {
   const [count, setCount] = useState(0);
-  
+
   useEffect(() => {
     // 错误：在 React 管理的 DOM 节点中手动挂载 Vue 应用
     const vueApp = createApp(VueCounter);
     vueApp.mount('#vue-mount-point'); // 这个节点在 React 的渲染树中！
-    
+
     return () => vueApp.unmount();
   }, []);
-  
+
   return (
     <div>
       <p>React count: {count}</p>
@@ -241,23 +271,27 @@ function ReactContainer() {
 ### 2.4 直觉类比：互操作性像语言翻译
 
 **兼容性像两个说不同语言的人在同一房间**：
+
 - 他们各自做各自的事
 - 不互相干扰
 - 但也完全不交流
 - 实现方式：给每个人戴降噪耳机（沙箱隔离）
 
 **互操作性像两个说不同语言的人通过翻译交流**：
+
 - 一个人说中文，翻译转成英文
 - 另一个人理解后，用英文回答，翻译转成中文
 - 交流是可能的，但慢且可能有歧义
 - 翻译的质量决定交流的效率
 
 **可移植像一个人会说两种语言**：
+
 - 同一个人，在中文环境中说中文，在英文环境中说英文
 - 不需要翻译，因为他本身就能适应
 - 但学习两种语言的成本很高
 
 边界标注：
+
 - 不是所有概念都能精确翻译（互操作有信息损失）
 - 翻译需要时间（互操作有性能开销）
 - 有些笑话在翻译后会失去幽默感（有些框架特性在其他框架中没有对应物）
@@ -291,25 +325,25 @@ function adaptReactToVue<P>(
       // 创建 React 的渲染环境
       const containerRef = ref<HTMLElement>();
       const reactRootRef = ref<Root>();
-      
+
       onMounted(() => {
         reactRootRef.value = createRoot(containerRef.value!);
         reactRootRef.value.render(
           React.createElement(ReactComponent, vueProps)
         );
       });
-      
+
       onUpdated(() => {
         // Vue 的 props 变化时，更新 React 组件
         reactRootRef.value?.render(
           React.createElement(ReactComponent, vueProps)
         );
       });
-      
+
       onUnmounted(() => {
         reactRootRef.value?.unmount();
       });
-      
+
       return () => h('div', { ref: containerRef });
     }
   };
@@ -317,6 +351,7 @@ function adaptReactToVue<P>(
 ```
 
 这个适配器做了三件事：
+
 1. **对象映射**：把 React 函数组件映射为 Vue 组件定义
 2. **生命周期映射**：把 Vue 的 setup/mount/update/unmount 映射到 React 的渲染周期
 3. **状态同步**：把 Vue 的 props 变化同步到 React 的重新渲染
@@ -388,16 +423,16 @@ function createBadAdapter(ReactComp) {
   return defineComponent({
     setup() {
       const reactState = ref({});
-      
+
       // 错误：试图监听 React 组件内部的每一个状态变化
       // 这需要侵入 React 的内部机制，极其脆弱
       const unsubscribe = subscribeToAllReactStateChanges(
         ReactComp,
         (newState) => { reactState.value = newState; }
       );
-      
+
       onUnmounted(unsubscribe);
-      
+
       return { reactState };
     }
   });
@@ -416,11 +451,13 @@ function createBadAdapter(ReactComp) {
 **适配器**：一个物理设备，把 220V 转换成 110V。电器本身不知道它在欧洲——它以为自己在美国的插座上。适配器隐藏了差异。
 
 **框架适配器同理**：
+
 - React 组件（美国电器）不需要知道自己在 Vue（欧洲）中运行
 - 适配器负责把 Vue 的 props（220V）转换成 React 能理解的格式（110V）
 - 事件回调方向相反：React 的事件（110V）需要被适配器升压到 Vue 的事件格式（220V）
 
 边界标注：
+
 - 不是所有电器都能用转换插头（某些框架特性在其他框架中完全不存在）
 - 转换插头有功率限制（适配器有性能开销）
 - 如果电器本身支持双电压（Web Components），就不需要转换插头
@@ -450,14 +487,14 @@ interface MicroFrontendRuntime {
     restoreSnapshot(snapshot: WindowSnapshot): void;
     patchGlobalProperties(patches: GlobalPatch[]): void;
   };
-  
+
   // 2. 样式隔离
   styleIsolation: {
     scopeCSS(css: string, scopeId: string): string;
     mountStyles(styles: string[], container: HTMLElement): void;
     unmountStyles(scopeId: string): void;
   };
-  
+
   // 3. 状态隔离
   globalState: {
     get(key: string): unknown;
@@ -465,13 +502,13 @@ interface MicroFrontendRuntime {
     // 每个子应用有自己独立的全局状态视图
     createScopedStore(appName: string): ScopedStore;
   };
-  
+
   // 4. 通信契约
   eventBus: {
     emit(event: string, payload: unknown): void;
     on(event: string, handler: (payload: unknown) => void): () => void;
   };
-  
+
   // 5. 路由协调
   router: {
     registerRoute(pattern: string, appName: string): void;
@@ -539,11 +576,11 @@ class ProxySandbox {
   private running = false;
   private addedProps = new Set<string>();
   private modifiedProps = new Map<string, any>();
-  
+
   constructor(name: string) {
     const rawWindow = window;
     const fakeWindow = Object.create(null);
-    
+
     this.proxy = new Proxy(fakeWindow, {
       get(target, prop) {
         if (prop === 'window' || prop === 'self' || prop === 'globalThis') {
@@ -567,7 +604,7 @@ class ProxySandbox {
       }
     });
   }
-  
+
   active() {
     this.running = true;
     // 激活时：把沙箱中的修改应用到 proxy
@@ -575,7 +612,7 @@ class ProxySandbox {
       (this.proxy as any)[key] = value;
     });
   }
-  
+
   inactive() {
     this.running = false;
     // 失活时：恢复原始 window 状态
@@ -620,6 +657,7 @@ class ProxySandbox {
 ### 4.4 直觉类比：微前端像联合国
 
 **iframe 方案像各国互派大使馆**：
+
 - 每个国家（子应用）有自己的领土（iframe）
 - 大使馆内部完全自治
 - 国与国之间通过外交渠道（postMessage）通信
@@ -627,6 +665,7 @@ class ProxySandbox {
 - 边界清晰，冲突极少
 
 **qiankun 像联邦制国家**：
+
 - 各州（子应用）共享联邦基础设施（浏览器运行时）
 - 但各州有自己的法律和预算（JS 沙箱 + 状态隔离）
 - 州际交流方便（直接函数调用）
@@ -634,12 +673,14 @@ class ProxySandbox {
 - 边界模糊，需要精心设计的治理
 
 **Module Federation 像跨国公司**：
+
 - 各子公司（模块）共享母公司资源（依赖共享）
 - 文化统一（同一技术栈）
 - 内部协作高效
 - 但不适合文化差异大的实体合并
 
 边界标注：
+
 - 联合国模式最安全但最低效
 - 联邦模式平衡了自治和协作
 - 跨国公司模式最高效但要求文化一致性
@@ -725,7 +766,7 @@ function reduxToUniversalMiddleware(store: ReduxStore) {
     const prevState = store.getState();
     const result = next(action);
     const nextState = store.getState();
-    
+
     // 计算状态差异
     const diff = calculateDiff(prevState, nextState);
     diff.forEach(({ path, value }) => {
@@ -736,7 +777,7 @@ function reduxToUniversalMiddleware(store: ReduxStore) {
         timestamp: Date.now()
       });
     });
-    
+
     return result;
   };
 }
@@ -783,28 +824,33 @@ const piniaStore = defineStore('shared', {
 ### 5.4 直觉类比：状态库像银行系统
 
 **Redux 像中央银行系统**：
+
 - 所有交易（Action）必须通过中央清算（Reducer）
 - 每笔交易都有记录（时间旅行）
 - 流程正式、可追溯
 - 不同国家的央行（不同 Redux store）之间需要通过 SWIFT（事件总线）通信
 
 **Pinia 像现代移动支付**：
+
 - 你直接转账（修改 state），系统自动处理
 - 不需要填写复杂的交易单（Action）
 - 快捷、直觉
 - 但不同支付系统（支付宝、微信支付）之间需要专门的接口
 
 **Zustand 像现金交易**：
+
 - 极简：给钱、拿货
 - 没有中间环节
 - 但大额交易时需要自己记账
 
 **互操作如跨境转账**：
+
 - 你不能直接把支付宝余额给微信用户
 - 需要通过银行作为中介（共同抽象层）
 - 或者使用第三方支付网关（适配器）
 
 边界标注：
+
 - 不同银行系统的核心账本结构不同（状态更新语义不同）
 - 但所有系统都认同"钱不会凭空产生或消失"（状态一致性）
 - 互操作的关键是找到这种最低共识，而非统一所有细节
@@ -827,12 +873,12 @@ const piniaStore = defineStore('shared', {
 // 声称框架无关的工具函数
 export function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
-  
+
   useEffect(() => {
     const timer = setTimeout(() => setDebounced(value), delay);
     return () => clearTimeout(timer);
   }, [value, delay]);
-  
+
   return debounced;
 }
 
@@ -889,17 +935,17 @@ export function useDebounce<T>(value: T, delay: number): T {
 
 export class EventEmitter<T extends Record<string, any>> {
   private listeners: { [K in keyof T]?: Array<(payload: T[K]) => void> } = {};
-  
+
   on<K extends keyof T>(event: K, handler: (payload: T[K]) => void): () => void {
     if (!this.listeners[event]) this.listeners[event] = [];
     this.listeners[event]!.push(handler);
     return () => this.off(event, handler);
   }
-  
+
   emit<K extends keyof T>(event: K, payload: T[K]): void {
     this.listeners[event]?.forEach(h => h(payload));
   }
-  
+
   private off<K extends keyof T>(event: K, handler: (payload: T[K]) => void): void {
     this.listeners[event] = this.listeners[event]?.filter(h => h !== handler);
   }
@@ -923,7 +969,7 @@ export function createSharedState<T>(initialValue: T) {
   // 内部使用了 React 的 useSyncExternalStore
   // 但 API 签名看起来是通用的
   const store = createStore(initialValue);
-  
+
   return {
     getState: () => store.getState(),
     subscribe: (callback: () => void) => store.subscribe(callback),
@@ -945,16 +991,19 @@ export function createSharedState<T>(initialValue: T) {
 想象一个国际组织，要求所有文件使用"标准国际英语"。
 
 **范式泄漏像文件中隐藏的母语习惯**：
+
 - 英国人会写 "colour"，美国人会写 "color"
 - 虽然都是英语，但拼写习惯（范式）不同
 - 如果一份文件声称是"国际标准"，却用了美式拼写，英国读者会感到困惑
 
 **框架对应**：
+
 - React 的 "colour" = Hooks 规则（不能条件调用）
 - Vue 的 "color" = 响应式自动追踪
 - 如果一个库声称"框架无关"，但要求你遵守 Hooks 规则，那就是范式泄漏
 
 边界标注：
+
 - 口音本身不是问题（每个框架有自己的范式很正常）
 - 问题是声称"没有口音"但实际上有
 - 最好的跨框架库像 Esperanto（世界语）——从头设计，不偏向任何母语
