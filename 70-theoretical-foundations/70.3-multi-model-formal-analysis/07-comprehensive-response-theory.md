@@ -1031,6 +1031,131 @@ async function hybridProcess(items: string[]) {
 }
 ```
 
+## 7. Backpressure 的认知模型与工程处理
+
+### 7.1 为什么 Backpressure 难以直觉理解？
+
+Backpressure（背压）是流式系统中最容易被忽视但最关键的概念。从认知科学角度，它的难点在于**时间尺度的不可见性**。
+
+```typescript
+// 生产者速度 >> 消费者速度
+const source = observableFromFastProducer();  // 1000 items/sec
+const consumer = slowConsumer();               // 10 items/sec
+
+source.subscribe(consumer);
+// 结果：内存爆炸或数据丢失
+```
+
+**精确直觉类比：餐厅厨房与服务员**
+
+| 概念 | 餐厅 | 流式系统 |
+|------|------|---------|
+| 生产者 | 厨房出菜速度 | 数据源产生速度 |
+| 消费者 | 服务员上菜速度 | 处理器消费速度 |
+| 缓冲区 | 传菜窗口 | 队列/缓冲区 |
+| Backpressure | 让厨房慢下来 | 让生产者减速 |
+| 无 Backpressure | 菜品堆积、变凉 | 内存溢出、OOM |
+
+**类比的局限**：
+- ✅ 像餐厅一样，当生产快于消费时，需要某种协调机制
+- ❌ 不像餐厅，软件系统的"协调"没有物理限制——内存可以无限增长直到崩溃
+
+### 7.2 Backpressure 策略的对称差分析
+
+```typescript
+// 策略 1：丢弃（Drop）—— 最新数据优先
+source.pipe(throttleTime(100)).subscribe(consumer);
+// 适用：实时图表、传感器数据
+
+// 策略 2：缓冲（Buffer）—— 批量处理
+source.pipe(bufferTime(1000)).subscribe(batch => {
+  batch.forEach(consumer);
+});
+// 适用：日志收集、批量写入
+
+// 策略 3：暂停（Pause）—— 拉取模式
+const pullSource = new PullStream({
+  pull: async () => {
+    await consumer.ready;  // 等待消费者就绪
+    return producer.next();
+  }
+});
+// 适用：文件流、网络流
+
+// 策略 4：扩展（Scale）—— 增加消费者
+source.pipe(
+  mergeMap(item => consumer(item), 4)  // 最多 4 个并发消费
+).subscribe();
+// 适用：CPU 密集型任务、可并行处理
+```
+
+**对称差分析**：
+
+```
+Drop \\ Buffer = { "低延迟保证", "内存恒定", "可能丢失数据" }
+Buffer \\ Drop = { "无数据丢失", "批量处理效率", "内存增长风险" }
+
+Pause \\ Scale = { "严格顺序保证", "精确控制", "可能降低吞吐" }
+Scale \\ Pause = { "自动负载均衡", "高吞吐", "顺序可能错乱" }
+```
+
+### 7.3 JS 中 Backpressure 的工程实践
+
+```typescript
+// Node.js Readable Stream 的背压处理
+import { Readable, Writable } from 'stream';
+
+const readable = new Readable({
+  read() {
+    // 只在消费者请求时生产数据
+    if (this.push(data)) {
+      // 消费者已准备好接收更多数据
+      this._read();
+    }
+    // 否则暂停，等待 'drain' 事件
+  }
+});
+
+const writable = new Writable({
+  write(chunk, encoding, callback) {
+    asyncProcess(chunk).then(() => callback());
+    // callback() 被调用后，Readable 才会继续 push
+  }
+});
+
+readable.pipe(writable);  // 自动背压协调
+```
+
+**关键洞察**：`pipe` 方法的背压是**隐式**的——开发者不需要显式管理，但这种透明性也意味着调试困难。当背压失效时，开发者往往不知道问题出在哪里。
+
+---
+
+## 8. 响应式编程的认知维度总结
+
+### 8.1 三种响应范式的认知负荷对比
+
+| 范式 | 心智模型 | 时间认知 | 状态追踪 | 调试难度 |
+|------|---------|---------|---------|---------|
+| **回调/Promise** | "完成后通知我" | 离散时间点 | 手动管理 | 高 |
+| **async/await** | "伪同步顺序" | 线性时间线 | 自动（语法）| 中 |
+| **Observable/Stream** | "持续数据流" | 连续时间线 | 订阅管理 | 高 |
+| **Signals** | "响应式原子" | 依赖图传播 | 自动（框架）| 低 |
+
+### 8.2 选择响应范式的决策树
+
+```
+数据特征？
+├── 单次结果 → async/await（最低认知负荷）
+├── 多次结果，有限 → AsyncGenerator
+├── 多次结果，无限 → Observable/Stream
+└── 状态变化，多消费者 → Signals/Reactive
+
+性能要求？
+├── 高吞吐 → Observable + Backpressure
+├── 低延迟 → Signals + 细粒度更新
+└── 平衡 → async/await + 批量处理
+```
+
 ---
 
 ## 参考文献

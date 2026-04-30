@@ -1325,6 +1325,177 @@ const method = c.increment;
 // 这与函数的"纯"行为不同
 ```
 
+### 6.3 JavaScript 中函子不遵守定律的真实反例
+
+TypeScript/JavaScript 的生态系统中有许多"声称"是函子但实际上违反函子律的结构。识别这些结构对避免 subtle bug 至关重要。
+
+**反例 1：Thenable 的函子律违反**
+
+```typescript
+// JavaScript 的 Thenable 接口（如 jQuery Deferred）
+// 声称支持 .then(f)，但行为与 Promise A+ 规范有微妙差异
+
+interface Thenable<A> {
+  then<B>(
+    onFulfilled?: (value: A) => B | Thenable<B>,
+    onRejected?: (error: any) => B | Thenable<B>
+  ): Thenable<B>;
+}
+
+// jQuery Deferred 的 then 在旧版本中会"扁平化"非 Thenable 返回值
+// 这与函子律冲突：
+
+// 假设 then 的行为如下：
+// then(f).then(g) 与 then(x => g(f(x))) 在某些边界条件下不同
+
+// 具体场景：如果 f 返回 Thenable
+const f = (x: number) => Promise.resolve(x + 1);
+const g = (x: number) => x * 2;
+
+// 左路径：then(f).then(g)
+Promise.resolve(5).then(f).then(g); // 最终得到 12
+
+// 右路径：then(x => g(f(x))) —— 类型错误！g 期望 number，但 f(x) 是 Promise<number>
+// Promise.resolve(5).then(x => g(f(x)));
+
+// 这说明 Promise.then 实际上不是纯函子 map，因为它自动 flatMap 了
+// 它是 Monad 的 chain/bind，不是 Functor 的 map
+```
+
+**反例 2：非严格求值破坏函子律**
+
+```typescript
+// JavaScript 的惰性求值结构（如 Generator）
+// Generator 的 map 实现容易违反函子律
+
+function* numbers() {
+  yield 1;
+  yield 2;
+  yield 3;
+}
+
+// 自定义 map
+function mapGenerator<A, B>(
+  gen: () => Generator<A>,
+  f: (a: A) => B
+): () => Generator<B> {
+  return function* () {
+    for (const x of gen()) {
+      yield f(x);
+    }
+  };
+}
+
+// 验证律 1: map(id) = id
+const id = <A>(x: A): A => x;
+const g1 = mapGenerator(numbers, id);
+const g2 = numbers;
+
+// g1 和 g2 产生的值序列相同，但...
+// 如果 Generator 有副作用（如读取外部状态），map(id) ≠ id
+let counter = 0;
+function* statefulGen() {
+  yield counter++;
+  yield counter++;
+}
+
+const mappedStateful = mapGenerator(statefulGen, id);
+const original = statefulGen();
+
+console.log([...original]); // [0, 1]
+console.log([...mappedStateful()]); // [2, 3] —— 副作用在"重新执行"时累积！
+// map(id) ≠ id，因为 Generator 不是纯数据结构，它有执行语义
+```
+
+**反例 3：类 Promise 对象的 then 多重语义**
+
+```typescript
+// 某些库实现了"类 Promise"对象，但 then 同时处理 map 和 flatMap
+// 这导致组合律失效
+
+class ConfusingFuture<A> {
+  constructor(private value: A) {}
+
+  then<B>(f: (a: A) => B | ConfusingFuture<B>): ConfusingFuture<B> {
+    const result = f(this.value);
+    if (result instanceof ConfusingFuture) {
+      return result; // flatMap 语义
+    }
+    return new ConfusingFuture(result); // map 语义
+  }
+}
+
+// 测试律 2
+const f = (x: number) => new ConfusingFuture(x + 1);
+const g = (x: number) => x * 2;
+
+const cf = new ConfusingFuture(5);
+
+// 左路径：then(g ∘ f)
+// g(f(x)) = g(ConfusingFuture(6)) —— 类型错误！g 期望 number
+
+// 右路径：then(f).then(g)
+// cf.then(f) = ConfusingFuture(6)
+// ConfusingFuture(6).then(g) = ConfusingFuture(12)
+
+// 左右路径甚至无法比较，因为类型不兼容
+// 根本问题：then 试图同时做 map 和 flatMap，破坏了函子的类型纪律
+```
+
+**修正方案：严格分离 Functor、Applicative 和 Monad 的操作**
+
+```typescript
+// 修正：为每种结构定义清晰的操作
+interface StrictFunctor<F> {
+  map<A, B>(f: (a: A) => B): (fa: F<A>) => F<B>;
+}
+
+interface StrictMonad<F> extends StrictFunctor<F> {
+  // 明确区分 map 和 chain
+  chain<A, B>(f: (a: A) => F<B>): (fa: F<A>) => F<B>;
+  // join: F<F<A>> -> F<A>
+  join<A>(ffa: F<F<A>>): F<A>;
+}
+
+// Promise 的严格版本
+interface StrictPromise<A> {
+  map<B>(f: (a: A) => B): StrictPromise<B>;
+  chain<B>(f: (a: A) => StrictPromise<B>): StrictPromise<B>;
+}
+
+// 在 fp-ts、Ramda 等库中，这些操作是严格分离的
+// 但在原生 JS 中，Promise.then 混淆了边界
+```
+
+**反例 4：DOM 集合的"伪 map"**
+
+```typescript
+// NodeList.prototype.forEach 存在，但 NodeList 没有 map
+// 如果强行给 NodeList 加 map：
+
+function nodeListMap<A extends Node, B>(
+  nodeList: NodeListOf<A>,
+  f: (a: A) => B
+): B[] {
+  return Array.from(nodeList).map(f);
+}
+
+// 问题：NodeList 是"活集合"（live collection）
+// 如果 DOM 在 map 过程中变化，结果不可预测
+const live = document.querySelectorAll('div');
+const mapped = nodeListMap(live, div => div.className);
+// 如果在 map 执行期间有 div 被添加或删除，行为不一致
+
+// 函子律要求"纯函数变换"，但 live collection 引入了外部状态依赖
+// NodeList 不是函子——它是带有外部时间依赖的观察对象
+```
+
+**如何识别"伪函子"**：
+
+1. 检查 `map(id) === id` 是否在引用相等意义下成立（对于不可变结构）。
+2. 检查 `map(g ∘ f)` 和 `map(g) ∘ map(f)` 是否对所有纯函数 f, g 成立。
+3. 特别注意：有副作用、有外部状态依赖、有自动扁平化行为的结构，几乎都不是真正的函子。
+
 ---
 
 ## 7. 反例：什么时候不该用函子
@@ -1378,6 +1549,89 @@ const findFirstValidBad = (users: User[]): User | null => {
 // 函子的链式调用可能创建大量中间数组/Promise
 // [1,2,3].map(f).map(g).map(h) 创建 3 个数组
 // 而 for 循环只创建一个结果数组
+```
+
+### 7.1 精确直觉类比：函子是「结构保持的建筑改造」
+
+**精确类比**：想象你要对一栋大楼进行改造。函子就像是"保持建筑结构不变，只更换内部装修"的工程规范。
+
+- **Array.map** = 保持楼层数不变，把每层办公室重新装修。
+- **Promise.then** = 保持"大楼尚未完工"的状态不变，等完工后改变用途。
+- **Tree.map** = 保持树的拓扑结构不变，只改变每个节点存储的数据。
+
+**哪里像**：
+1. 改造前后，建筑的"类型"不变（Array 还是 Array，Promise 还是 Promise）。
+2. 改造方案（函数 f）与建筑结构无关——同一套装修方案可以用在不同大楼上。
+
+**哪里不像**：
+1. 真实建筑的改造可能改变结构（拆墙、加层），但函子不允许。
+2. 真实装修有成本，函子 map 在理论上无成本（纯函数变换）。
+3. 建筑改造可能失败（发现承重问题），但纯函子 map 不会失败。
+
+**修正方案**：当"改造"可能改变结构或失败时，不要用函子，用 Monad 或显式的错误处理。
+
+```typescript
+// 当"装修"可能失败时：使用 Either Monad
+const safeMap = <A, B>(
+  arr: A[],
+  f: (a: A) => Either<Error, B>
+): Either<Error, B[]> => {
+  const results: B[] = [];
+  for (const a of arr) {
+    const r = f(a);
+    if (r.tag === 'left') return r;
+    results.push(r.value);
+  }
+  return right(results);
+};
+// 这不是函子 map，因为它允许"部分失败"并短路
+```
+
+### 7.2 工程决策：函子层级的选择指南
+
+在实际工程中，面对一个问题时，应该选择哪个抽象层级？
+
+| 问题特征 | 选择 | 理由 |
+|---------|------|------|
+| 对容器内每个元素做独立变换 | Functor (map) | 最简抽象，足够表达 |
+| 多个独立容器的结果组合 | Applicative (ap) | 表达并行性、无隐藏依赖 |
+| 后续步骤依赖前面结果 | Monad (chain) | 唯一表达能力 |
+| 需要遍历并累积状态 | Foldable (reduce) | 函子无法表达"累积" |
+| 需要过滤元素 | Filterable | 不是函子操作（改变结构） |
+| 需要副作用 | IO Monad / Effect | 纯函子排斥副作用 |
+
+```typescript
+// 决策实例：表单验证
+interface FormData {
+  email: string;
+  password: string;
+  age: number;
+}
+
+// 独立的字段验证 → Applicative
+const validateForm = (data: FormData): Either<Error[], FormData> => {
+  const makeForm = (e: string) => (p: string) => (a: number) =>
+    ({ email: e, password: p, age: a });
+
+  return ap(ap(ap(
+    right(makeForm),
+    validateEmail(data.email)
+  ), validatePassword(data.password)), validateAge(data.age));
+};
+
+// 但如果验证有依赖：确认密码必须匹配密码
+const validateFormDependent = (data: FormData): Either<Error[], FormData> => {
+  return validatePassword(data.password).chain(pw =>
+    validateConfirmPassword(pw, data.confirmPassword).chain(_ =>
+      validateEmail(data.email).chain(email =>
+        validateAge(data.age).map(age =>
+          ({ email, password: pw, age })
+        )
+      )
+    )
+  );
+  // 确认密码验证依赖密码值 → 必须用 Monad
+};
 ```
 
 ---

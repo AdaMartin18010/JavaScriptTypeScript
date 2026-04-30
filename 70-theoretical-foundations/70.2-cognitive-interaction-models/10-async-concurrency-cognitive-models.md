@@ -470,7 +470,165 @@ function releaseLock(view: Int32Array, index: number) {
 
 ---
 
-## 6. 设计低认知负荷的并发系统
+## 6. 宏任务与微任务的认知差异
+
+### 6.1 为什么 Promise.then 比 setTimeout 先执行？
+
+这是 JavaScript 并发模型中最反直觉的现象之一，直接源于宏任务与微任务的双层队列设计。
+
+```javascript
+console.log('1');
+
+setTimeout(() => console.log('2'), 0);
+
+Promise.resolve().then(() => console.log('3'));
+
+console.log('4');
+
+// 输出：1, 4, 3, 2
+```
+
+**新手的典型错误**：认为 `setTimeout(fn, 0)` 和 `Promise.then(fn)` 都"尽快执行"，所以顺序不确定。
+
+**正确的心智模型**：
+
+```
+Event Loop 执行流程：
+1. 执行当前调用栈（同步代码）→ 输出 1, 4
+2. 清空微任务队列（microtask queue）→ 输出 3
+3. 执行一个宏任务（macrotask）→ setTimeout 回调 → 输出 2
+```
+
+**精确直觉类比：医院急诊分诊**
+
+| 概念 | 医院分诊 | Event Loop |
+|------|---------|-----------|
+| 同步代码 | 正在手术室进行的手术 | 当前调用栈 |
+| 微任务 | 刚从手术室出来需要观察的患者 | Promise.then、MutationObserver |
+| 宏任务 | 在候诊室等待的普通患者 | setTimeout、setInterval、I/O |
+| 执行顺序 | 先观察术后患者，再叫下一个候诊患者 | 先清空微任务，再执行宏任务 |
+
+**类比的局限**：
+- ✅ 像医院一样，微任务（术后观察）有更高优先级
+- ✅ 像医院一样，如果术后患者不断产生新的术后患者（微任务中创建微任务），普通患者（宏任务）可能永远等待
+- ❌ 不像医院，Event Loop 的"患者"可以自己创造新的"患者"
+
+### 6.2 微任务饥饿的认知陷阱
+
+```javascript
+// 危险：微任务无限递归
+function starveMacrotasks() {
+  Promise.resolve().then(() => {
+    console.log('microtask');
+    starveMacrotasks();  // 无限创建微任务
+  });
+}
+
+setTimeout(() => console.log('macrotask never runs'), 0);
+starveMacrotasks();
+// 输出：microtask, microtask, microtask, ...（永无止境）
+// macrotask 永远不会执行！
+```
+
+**认知分析**：
+
+- 开发者直觉上认为 `setTimeout` 和 `Promise.then` 都是"异步"，应该有公平竞争的机会
+- 实际上微任务的优先级远高于宏任务——这不是"公平排队"，而是"VIP 插队"
+- 这种不对称性违背了人类对"队列"的公平性直觉
+
+---
+
+## 7. 并发模式的心智模型演进
+
+### 7.1 从回调到 Promise 到 async/await 的认知解放
+
+JavaScript 异步编程的演进史，本质上是一部**认知负荷逐步降低**的历史。
+
+**阶段 1：回调地狱（Callback Hell）**
+
+```javascript
+// 认知负荷：极高（需要追踪 4 层嵌套上下文）
+getData(function(a) {
+  getMoreData(a, function(b) {
+    getMoreData(b, function(c) {
+      getMoreData(c, function(d) {
+        console.log(d);
+      });
+    });
+  });
+});
+```
+
+工作记忆分析：需要同时追踪 4 个回调函数的参数和作用域——**超出工作记忆容量**。
+
+**阶段 2：Promise 链**
+
+```javascript
+// 认知负荷：中等（线性结构，但 .then 重复）
+getData()
+  .then(a => getMoreData(a))
+  .then(b => getMoreData(b))
+  .then(c => getMoreData(c))
+  .then(d => console.log(d));
+```
+
+工作记忆分析：线性结构只需追踪当前步骤，但 `.then` 的重复仍是外在负荷。
+
+**阶段 3：async/await**
+
+```javascript
+// 认知负荷：低（利用已有的"顺序执行"心智模型）
+const a = await getData();
+const b = await getMoreData(a);
+const c = await getMoreData(b);
+const d = await getMoreData(c);
+console.log(d);
+```
+
+工作记忆分析：几乎无额外负荷——代码结构与同步代码完全一致。
+
+**对称差分析**：
+
+```
+async/await 能力 \\ Promise 能力 = {
+  "同步语法结构",
+  "try/catch 错误处理",
+  "调试堆栈清晰"
+}
+
+Promise 能力 \\ async/await 能力 = {
+  "显式并发启动（同时发多个请求）",
+  "细粒度控制（.finally, .race）",
+  "函数组合（Promise 作为一等值）"
+}
+```
+
+### 7.2 并发抽象的认知金字塔
+
+```
+认知负荷金字塔（从低到高）：
+
+Level 1: async/await（伪同步）
+  ↓ 开发者看到"顺序执行"
+  
+Level 2: Promise（显式异步）
+  ↓ 开发者需要理解"链式调用"
+  
+Level 3: 回调函数（显式控制反转）
+  ↓ 开发者需要理解"完成后调用我"
+  
+Level 4: 事件监听（发布-订阅）
+  ↓ 开发者需要追踪"谁监听谁"
+  
+Level 5: 原始异步原语（setTimeout/XMLHttpRequest）
+  ↓ 开发者需要手动管理所有状态
+```
+
+**设计建议**：尽量让代码停留在金字塔的低层。
+
+---
+
+## 8. 设计低认知负荷的并发系统
 
 基于认知科学的原理，以下是降低并发代码认知负荷的设计原则：
 
@@ -526,6 +684,21 @@ async function deterministic() {
   const a = await fetchA();  // 先完成 A
   const b = await fetchB();  // 再完成 B
   return { a, b };
+}
+```
+
+**原则 5：显式标记并发边界**
+
+```typescript
+// 差：并发是隐式的
+function process() {
+  fetchA();  // 异步？同步？看不出来！
+  fetchB();
+}
+
+// 好：并发是显式的
+async function process() {
+  const [a, b] = await Promise.all([fetchA(), fetchB()]);
 }
 ```
 
