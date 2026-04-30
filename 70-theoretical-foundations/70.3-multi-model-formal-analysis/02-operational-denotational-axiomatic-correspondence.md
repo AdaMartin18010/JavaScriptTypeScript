@@ -1,22 +1,24 @@
 ---
 title: "操作语义、指称语义、公理语义的形式化对应"
-description: "三种语义的函子性对应与交换图"
+description: "三种语义的函子性对应、对称差分析与工程直觉"
 last-updated: 2026-04-30
 review-cycle: 6 months
 next-review: 2026-10-30
-status: skeleton
+status: complete
 priority: P1
-estimated-length: 4000 words
+actual-length: ~12000 words
 references:
   - Winskel, The Formal Semantics of Programming Languages (1993)
   - FORMAL_SEMANTICS_COMPLETE.md
+  - Harper, Practical Foundations for Programming Languages (2016)
 ---
 
 # 操作语义、指称语义、公理语义的形式化对应
 
 > **理论深度**: 研究生级别
-> **前置阅读**: `FORMAL_SEMANTICS_COMPLETE.md`, `70.1/01-category-theory-primer-for-programmers.md`
-> **目标读者**: 形式语义研究者
+> **前置阅读**: `FORMAL_SEMANTICS_COMPLETE.md`, `70.1/01-category-theory-primer-for-programmers.md`, [01-model-refinement-and-simulation.md](01-model-refinement-and-simulation.md)
+> **目标读者**: 形式语义研究者、编译器开发者、高级语言设计师
+> **配套代码**: [code-examples/three-semantics-correspondence.ts](code-examples/three-semantics-correspondence.ts)
 
 ---
 
@@ -24,47 +26,811 @@ references:
 
 - [操作语义、指称语义、公理语义的形式化对应](#操作语义指称语义公理语义的形式化对应)
   - [目录](#目录)
-  - [1. 三种语义的函子性对应](#1-三种语义的函子性对应)
-  - [2. 操作语义 → 指称语义](#2-操作语义--指称语义)
-  - [3. 指称语义 → 公理语义](#3-指称语义--公理语义)
-  - [4. 三角对应的交换图](#4-三角对应的交换图)
-  - [5. 可靠性与完备性证明](#5-可靠性与完备性证明)
+  - [0. 思维脉络：为什么需要三种语义？](#0-思维脉络为什么需要三种语义)
+    - [0.1 从调试噩梦开始](#01-从调试噩梦开始)
+    - [0.2 三种语义回答三个不同的问题](#02-三种语义回答三个不同的问题)
+    - [0.3 精确直觉类比](#03-精确直觉类比)
+  - [1. 操作语义：程序"如何执行"](#1-操作语义程序如何执行)
+    - [1.1 小步操作语义（SOS）](#11-小步操作语义sos)
+    - [1.2 大步操作语义（自然语义）](#12-大步操作语义自然语义)
+    - [1.3 代码示例：用 TypeScript 实现表达式解释器](#13-代码示例用-typescript-实现表达式解释器)
+    - [1.4 反例：操作语义无法回答的"为什么"](#14-反例操作语义无法回答的为什么)
+  - [2. 指称语义：程序"是什么意思"](#2-指称语义程序是什么意思)
+    - [2.1 从语法到数学对象](#21-从语法到数学对象)
+    - [2.2 连续函数与不动点](#22-连续函数与不动点)
+    - [2.3 代码示例：表达式的指称解释](#23-代码示例表达式的指称解释)
+    - [2.4 反例：指称语义丢失的操作细节](#24-反例指称语义丢失的操作细节)
+  - [3. 公理语义：程序"满足什么性质"](#3-公理语义程序满足什么性质)
+    - [3.1 霍尔三元组](#31-霍尔三元组)
+    - [3.2 最弱前置条件（Weakest Precondition）](#32-最弱前置条件weakest-precondition)
+    - [3.3 代码示例：验证简单程序](#33-代码示例验证简单程序)
+    - [3.4 反例：公理语义无法表达的非功能性属性](#34-反例公理语义无法表达的非功能性属性)
+  - [4. 三种语义的对称差分析](#4-三种语义的对称差分析)
+    - [4.1 操作语义 vs 指称语义的对称差](#41-操作语义-vs-指称语义的对称差)
+    - [4.2 指称语义 vs 公理语义的对称差](#42-指称语义-vs-公理语义的对称差)
+    - [4.3 操作语义 vs 公理语义的对称差](#43-操作语义-vs-公理语义的对称差)
+    - [4.4 三角对应的交换图](#44-三角对应的交换图)
+  - [5. 函子性对应与可靠完备性](#5-函子性对应与可靠完备性)
+    - [5.1 三种语义作为函子](#51-三种语义作为函子)
+    - [5.2 可靠性（Soundness）](#52-可靠性soundness)
+    - [5.3 完备性（Completeness）](#53-完备性completeness)
+    - [5.4 不完备性的根源](#54-不完备性的根源)
+  - [6. JS/TS 语境下的三种语义](#6-jsts-语境下的三种语义)
+    - [6.1 JS 引擎 ≈ 操作语义](#61-js-引擎--操作语义)
+    - [6.2 TypeScript 类型系统 ≈ 公理语义](#62-typescript-类型系统--公理语义)
+    - [6.3 类型作为指称](#63-类型作为指称)
   - [参考文献](#参考文献)
 
 ---
 
-## 1. 三种语义的函子性对应
+## 0. 思维脉络：为什么需要三种语义？
 
-> 🚧 **骨架占位符**：建立三种语义之间的函子性对应，超越现有内容的"对应关系"描述。
+### 0.1 从调试噩梦开始
+
+你正在调试一个生产环境的 bug：
+
+```typescript
+async function processOrder(order: Order) {
+  const validated = await validate(order);
+  if (!validated.ok) return { error: validated.error };
+
+  const reserved = await reserveInventory(order.items);
+  const charged = await chargePayment(order.payment);
+
+  if (!charged.ok) {
+    await releaseInventory(order.items);  // 这里可能也失败！
+    return { error: charged.error };
+  }
+
+  return { success: true };
+}
+```
+
+代码在 `releaseInventory` 调用时抛出了异常，导致库存被永久锁定。你需要回答三个层面的问题：
+
+1. **"发生了什么？"** —— `releaseInventory` 在取消支付后被调用，但网络超时导致释放失败。这是**操作语义**的问题：一步一步的执行轨迹。
+2. **"这应该是什么意思？"** —— 程序的本意是"原子性的交易：要么全部成功，要么全部回滚"。这是**指称语义**的问题：程序应该计算什么数学函数。
+3. **"它满足安全性质吗？"** —— "库存被锁定后最终一定会被释放"是否成立？这是**公理语义**的问题：逻辑推导和不变式。
+
+同一个程序，三种不同的理解方式。如果这三种理解不一致，bug 就产生了。
+
+### 0.2 三种语义回答三个不同的问题
+
+| 语义类型 | 核心问题 | 类比 | 工程工具 |
+|---------|---------|------|---------|
+| 操作语义 | "程序**如何**执行？" | 食谱 | 调试器、Profiler |
+| 指称语义 | "程序**是什么**意思？" | 菜单 | 类型系统、规格说明 |
+| 公理语义 | "程序**满足什么**性质？" | 营养成分表 | 静态分析器、形式验证 |
+
+**关键洞察**：这三种语义不是竞争关系，而是**互补关系**。就像你不能只凭食谱判断一道菜是否健康，也不能只凭营养成分表学会做菜。理解程序的完整图景需要三种视角的交叉验证。
+
+### 0.3 精确直觉类比
+
+**类比一：三种语义 ≈ 描述同一栋建筑的三种方式**
+
+想象你要理解一栋摩天大楼：
+
+- **操作语义** = 施工日志（"第1天打地基，第2天浇筑混凝土..."）
+  - 告诉你建筑**如何**一步步建成
+  - 可以回答："如果第3天停工，会发生什么？"
+  - 无法直接回答："这栋楼最终有多高？"
+
+- **指称语义** = 建筑效果图（"这是一栋高500米的玻璃幕墙大厦"）
+  - 告诉你建筑的**最终形态**
+  - 可以回答："从窗外看风景是什么样的？"
+  - 无法回答："混凝土养护需要多少天？"
+
+- **公理语义** = 结构工程师的安全计算书（"抗震等级8级，承重10万吨"）
+  - 告诉你建筑**满足什么安全性质**
+  - 可以回答："地震时这栋楼会倒吗？"
+  - 无法回答："电梯在哪里？"
+
+**哪里像**：三种描述都是关于"同一栋建筑"（同一个程序）。
+**哪里不像**：建筑可以分开理解（施工和最终形态是时间上的先后），但程序的"执行过程"和"最终含义"是**交织在一起**的——程序没有执行完之前，通常不知道最终含义是什么（除非它是纯函数且可全程序分析）。
+
+**类比二：三种语义 ≈ 三种医学诊断方式**
+
+- **操作语义** = 观察病人的症状变化（"体温从38度升到40度，然后吃了退烧药"）
+- **指称语义** = 病理分析（"这是由X病毒感染引起的免疫反应"）
+- **公理语义** = 治疗方案验证（"如果注射抗生素，感染会在72小时内清除"）
 
 ---
 
-## 2. 操作语义 → 指称语义
+## 1. 操作语义：程序"如何执行"
 
-> 🚧 **骨架占位符**：$\mathcal{D}$ 是一个保持结构的函子，大步/小步语义的指称解释。
+操作语义（Operational Semantics）描述程序**一步步如何执行**。它是最接近程序员直觉的语义——调试器本质上就是在展示操作语义。
+
+### 1.1 小步操作语义（SOS）
+
+小步语义（Structural Operational Semantics, SOS）将计算描述为一系列小步规约。每一步都是一个语法转换：
+
+$$
+\frac{\text{前提条件}}{\text{配置}_1 \to \text{配置}_2}
+$$
+
+**示例：简单算术表达式的小步语义**
+
+```
+(3 + 4) * 5
+→ 7 * 5        [加法规则]
+→ 35           [乘法规则]
+```
+
+**形式化规则**：
+
+$$
+\frac{e_1 \to e_1'}{e_1 + e_2 \to e_1' + e_2} \quad \text{（左规约）}
+$$
+
+$$
+\frac{n = n_1 + n_2}{n_1 + n_2 \to n} \quad \text{（加法计算）}
+$$
+
+文字解释：
+
+- 第一个规则说：如果表达式 $e_1$ 可以规约为 $e_1'$，那么 $e_1 + e_2$ 可以规约为 $e_1' + e_2$。
+- 第二个规则说：如果 $n_1$ 和 $n_2$ 都是数字，它们的和是 $n$，那么 $n_1 + n_2$ 直接规约为 $n$。
+
+### 1.2 大步操作语义（自然语义）
+
+大步语义（Natural Semantics）直接描述"从初始状态到最终状态"的关系：
+
+$$
+\frac{\langle e_1, \sigma \rangle \Downarrow n_1 \quad \langle e_2, \sigma \rangle \Downarrow n_2 \quad n = n_1 + n_2}{\langle e_1 + e_2, \sigma \rangle \Downarrow n}
+$$
+
+文字解释：在环境 $\sigma$ 下，如果 $e_1$ 求值为 $n_1$，$e_2$ 求值为 $n_2$，且 $n = n_1 + n_2$，那么 $e_1 + e_2$ 求值为 $n$。
+
+**小步 vs 大步**：
+
+- 小步语义更精细，可以描述**中间状态**和**非终止**（无限循环）
+- 大步语义更简洁，但不适用于描述并发和死锁
+
+### 1.3 代码示例：用 TypeScript 实现表达式解释器
+
+我们用 TypeScript 实现一个简单表达式语言的操作语义：
+
+```typescript
+// 抽象语法树（AST）
+type Expr =
+  | { kind: "Num"; value: number }
+  | { kind: "Add"; left: Expr; right: Expr }
+  | { kind: "Mul"; left: Expr; right: Expr }
+  | { kind: "Var"; name: string }
+  | { kind: "Assign"; name: string; expr: Expr };
+
+// 环境：变量名 -> 值
+type Env = Map<string, number>;
+
+// 小步语义：返回规约后的表达式和新环境
+function step(expr: Expr, env: Env): { expr: Expr; env: Env } | { value: number } {
+  switch (expr.kind) {
+    case "Num":
+      return { value: expr.value };
+
+    case "Add": {
+      const leftResult = step(expr.left, env);
+      if ("value" in leftResult) {
+        const rightResult = step(expr.right, env);
+        if ("value" in rightResult) {
+          return { value: leftResult.value + rightResult.value };
+        }
+        return { expr: { kind: "Add", left: expr.left, right: rightResult.expr }, env };
+      }
+      return { expr: { kind: "Add", left: leftResult.expr, right: expr.right }, env: leftResult.env };
+    }
+
+    case "Mul": {
+      const leftResult = step(expr.left, env);
+      if ("value" in leftResult) {
+        const rightResult = step(expr.right, env);
+        if ("value" in rightResult) {
+          return { value: leftResult.value * rightResult.value };
+        }
+        return { expr: { kind: "Mul", left: expr.left, right: rightResult.expr }, env };
+      }
+      return { expr: { kind: "Mul", left: leftResult.expr, right: expr.right }, env: leftResult.env };
+    }
+
+    case "Var": {
+      const value = env.get(expr.name);
+      if (value === undefined) throw new Error(`Undefined variable: ${expr.name}`);
+      return { value };
+    }
+
+    case "Assign": {
+      const result = step(expr.expr, env);
+      if ("value" in result) {
+        const newEnv = new Map(env);
+        newEnv.set(expr.name, result.value);
+        return { value: result.value, env: newEnv };
+      }
+      return { expr: { kind: "Assign", name: expr.name, expr: result.expr }, env: result.env };
+    }
+  }
+}
+
+// 多步求值
+defunction evaluate(expr: Expr, env: Env = new Map()): number {
+  let current: Expr = expr;
+  let currentEnv = env;
+
+  while (true) {
+    const result = step(current, currentEnv);
+    if ("value" in result) return result.value;
+    current = result.expr;
+    currentEnv = result.env;
+  }
+}
+
+// 示例：求值 (2 + 3) * 4
+const expr: Expr = {
+  kind: "Mul",
+  left: { kind: "Add", left: { kind: "Num", value: 2 }, right: { kind: "Num", value: 3 } },
+  right: { kind: "Num", value: 4 }
+};
+
+console.log(evaluate(expr));  // 20
+```
+
+### 1.4 反例：操作语义无法回答的"为什么"
+
+**示例 1：操作语义可以告诉你"发生了什么"，但不能告诉你"这是否正确"**
+
+```typescript
+function buggySum(arr: number[]): number {
+  let sum = 0;
+  for (let i = 0; i <= arr.length; i++) {  // 注意：<= 应该是 <
+    sum += arr[i];
+  }
+  return sum;
+}
+```
+
+操作语义可以精确描述这个函数的执行：
+
+1. `sum = 0`
+2. `i = 0`, `sum = 0 + arr[0]`
+3. `i = 1`, `sum = arr[0] + arr[1]`
+4. ...
+5. `i = arr.length`, `sum += arr[arr.length]` → `undefined`
+
+但操作语义本身**不能告诉你**这个程序是"错误的"。它只是忠实地描述了执行过程。要判断对错，你需要一个**规范**——这正是公理语义的工作。
 
 ---
 
-## 3. 指称语义 → 公理语义
+## 2. 指称语义：程序"是什么意思"
 
-> 🚧 **骨架占位符**：最弱前置条件作为从指称到规范的变换，Dijkstra 的谓词变换器。
+指称语义（Denotational Semantics）将程序**映射到数学对象**（通常是某个域中的元素）。它的核心思想是：程序的含义不应该是"如何执行"，而应该是"它计算了什么函数"。
+
+### 2.1 从语法到数学对象
+
+对于一个简单算术表达式，指称语义非常直接：
+
+$$
+\llbracket n \rrbracket = n \quad \text{（数字的指称就是数字本身）}
+$$
+
+$$
+\llbracket e_1 + e_2 \rrbracket = \llbracket e_1 \rrbracket + \llbracket e_2 \rrbracket
+$$
+
+文字解释：表达式 $e_1 + e_2$ 的指称（含义）是 $e_1$ 的指称与 $e_2$ 的指称的算术和。
+
+**关键特性**：指称语义是**组合的**（Compositional）——复合表达式的含义只依赖于子表达式的含义，不依赖于它们的内部结构。
+
+### 2.2 连续函数与不动点
+
+当语言包含递归时，指称语义需要更复杂的数学工具。**域论**（Domain Theory）提供了这些工具：
+
+一个程序（如递归函数）的指称是一个**连续函数** $f: D \to D$。递归的定义对应于这个函数的**最小不动点**（Least Fixed Point）：
+
+$$
+\llbracket \text{rec } f(x). e \rrbracket = \text{fix}(\lambda g. \lambda x. \llbracket e \rrbracket[f \mapsto g])
+$$
+
+其中 $\text{fix}(f) = \bigsqcup_{n \geq 0} f^n(\bot)$ 是函数 $f$ 的最小不动点，通过从底部元素 $\bot$（表示"未定义/非终止"）开始的迭代逼近得到。
+
+**直觉解释**：
+
+- $\bot$ = "完全不知道结果"
+- $f(\bot)$ = "知道第一层递归的结果"
+- $f(f(\bot))$ = "知道前两层递归的结果"
+- ...
+- $\text{fix}(f)$ = "知道所有层递归的结果"
+
+### 2.3 代码示例：表达式的指称解释
+
+```typescript
+// 指称语义：将表达式映射到数学函数
+// Expr -> (Env -> number)
+
+type Denotation = (env: Env) => number;
+
+function denote(expr: Expr): Denotation {
+  switch (expr.kind) {
+    case "Num":
+      return () => expr.value;
+
+    case "Add": {
+      const d1 = denote(expr.left);
+      const d2 = denote(expr.right);
+      return (env) => d1(env) + d2(env);
+    }
+
+    case "Mul": {
+      const d1 = denote(expr.left);
+      const d2 = denote(expr.right);
+      return (env) => d1(env) * d2(env);
+    }
+
+    case "Var":
+      return (env) => {
+        const v = env.get(expr.name);
+        if (v === undefined) throw new Error(`Undefined: ${expr.name}`);
+        return v;
+      };
+
+    case "Assign": {
+      const d = denote(expr.expr);
+      return (env) => {
+        const value = d(env);
+        env.set(expr.name, value);
+        return value;
+      };
+    }
+  }
+}
+
+// 使用指称语义求值
+const denotation = denote(expr);
+const result = denotation(new Map());
+console.log(result);  // 20
+```
+
+**对比操作语义**：
+
+- 操作语义：一步一脚印，跟踪中间状态
+- 指称语义：一步到位，直接给出"这个表达式是什么意思"
+
+### 2.4 反例：指称语义丢失的操作细节
+
+**示例 2：指称语义无法区分"如何计算"**
+
+```typescript
+// 程序 A：从左到右计算
+function sumA(a: number, b: number): number {
+  console.log("Computing A");
+  return a + b;
+}
+
+// 程序 B：先检查再计算
+function sumB(a: number, b: number): number {
+  if (a === 0) return b;
+  console.log("Computing B");
+  return a + b;
+}
+```
+
+从指称语义角度（假设输入是数字）：
+
+$$
+\llbracket \text{sumA} \rrbracket = \llbracket \text{sumB} \rrbracket = \lambda (a, b).\ a + b
+$$
+
+它们的指称完全相同！但操作语义告诉我们：当 $a = 0$ 时，sumB 不会打印 "Computing B"，而 sumA 总是打印。这个**副作用**（打印行为）在纯指称语义中被丢失了。
+
+**分析**：这是指称语义 ⊃ 操作语义的一个实例——指称语义是操作语义的"抽象"，它故意丢失了"如何计算"的细节，只保留"计算什么"。这种抽象在推理程序等价性时很有用（"如果两个程序指称相同，它们就是等价的"），但在分析副作用时就不够了。
 
 ---
 
-## 4. 三角对应的交换图
+## 3. 公理语义：程序"满足什么性质"
 
-> 🚧 **骨架占位符**：操作语义 → 指称语义 → 公理语义 → 操作语义的循环，证明交换图可交换。
+公理语义（Axiomatic Semantics）不关心程序如何执行，也不关心它计算什么函数。它只关心：**程序执行前后，状态满足什么逻辑性质**。
+
+### 3.1 霍尔三元组
+
+霍尔逻辑（Hoare Logic）使用**霍尔三元组**来描述程序的性质：
+
+$$
+\{P\}\ C\ \{Q\}
+$$
+
+文字解释：如果程序 $C$ 执行前，前置条件 $P$ 成立，那么 $C$ 执行后，后置条件 $Q$ 成立。
+
+**示例**：
+
+$$
+\{x > 0\}\ x := x + 1\ \{x > 1\}
+$$
+
+文字解释：如果执行 `x = x + 1` 之前 $x > 0$，那么执行之后 $x > 1$。
+
+**推理规则**：
+
+$$
+\frac{\{P \land B\}\ C_1\ \{Q\} \quad \{P \land \neg B\}\ C_2\ \{Q\}}{\{P\}\ \text{if } B \text{ then } C_1 \text{ else } C_2\ \{Q\}}
+$$
+
+文字解释：要证明"如果 $P$ 成立，执行 if 语句后 $Q$ 成立"，只需分别证明：在 $P$ 且条件 $B$ 成立时执行 $C_1$ 得到 $Q$，以及在 $P$ 且条件 $B$ 不成立时执行 $C_2$ 得到 $Q$。
+
+### 3.2 最弱前置条件（Weakest Precondition）
+
+最弱前置条件（Weakest Precondition, wp）是霍尔逻辑的机械化版本。对于给定的程序 $C$ 和后置条件 $Q$，$wp(C, Q)$ 是最弱（最宽松）的前置条件，使得 $C$ 执行后能保证 $Q$。
+
+**定义**：
+
+$$
+wp(x := e, Q) = Q[x \mapsto e]
+$$
+
+文字解释：赋值语句 $x := e$ 的最弱前置条件是"将 $Q$ 中的所有 $x$ 替换为 $e$"。
+
+$$
+wp(C_1; C_2, Q) = wp(C_1, wp(C_2, Q))
+$$
+
+文字解释：顺序执行 $C_1; C_2$ 的最弱前置条件是"$C_1$ 的最弱前置条件，使得执行后 $C_2$ 的最弱前置条件成立"。
+
+### 3.3 代码示例：验证简单程序
+
+```typescript
+// 用 TypeScript 模拟最弱前置条件的计算
+
+type Predicate = (state: Map<string, number>) => boolean;
+
+type Command =
+  | { kind: "Assign"; var: string; expr: (state: Map<string, number>) => number }
+  | { kind: "Seq"; first: Command; second: Command }
+  | { kind: "If"; cond: Predicate; thenBranch: Command; elseBranch: Command };
+
+// 计算最弱前置条件（简化版：只支持数字表达式）
+function wp(command: Command, post: Predicate): Predicate {
+  switch (command.kind) {
+    case "Assign": {
+      return (state) => {
+        const newState = new Map(state);
+        newState.set(command.var, command.expr(state));
+        return post(newState);
+      };
+    }
+
+    case "Seq": {
+      const wp2 = wp(command.second, post);
+      return wp(command.first, wp2);
+    }
+
+    case "If": {
+      const wpThen = wp(command.thenBranch, post);
+      const wpElse = wp(command.elseBranch, post);
+      return (state) => {
+        if (command.cond(state)) return wpThen(state);
+        return wpElse(state);
+      };
+    }
+  }
+}
+
+// 验证：{x > 0} x := x + 1 {x > 1}
+const assignCommand: Command = {
+  kind: "Assign",
+  var: "x",
+  expr: (state) => (state.get("x") ?? 0) + 1
+};
+
+const postCondition: Predicate = (state) => (state.get("x") ?? 0) > 1;
+const weakestPre = wp(assignCommand, postCondition);
+
+// 验证： weakestPre 是否等价于 x > 0？
+const testState1 = new Map([["x", 5]]);
+const testState2 = new Map([["x", 0]]);
+
+console.log(weakestPre(testState1));  // true: x=5 > 0 => x+1=6 > 1
+console.log(weakestPre(testState2));  // false: x=0 => x+1=1 不大于 1
+```
+
+**分析**：
+
+- 当 $x = 5$ 时，最弱前置条件成立（$5 > 0$），执行后 $x = 6 > 1$ ✓
+- 当 $x = 0$ 时，最弱前置条件不成立，执行后 $x = 1$ 不大于 1 ✓
+- 这验证了 $\{x > 0\}\ x := x + 1\ \{x > 1\}$ 是正确的霍尔三元组
+
+### 3.4 反例：公理语义无法表达的非功能性属性
+
+**示例 3：公理语义无法表达时间复杂度**
+
+```typescript
+// 程序 A：O(n) 线性搜索
+function searchA(arr: number[], target: number): boolean {
+  for (const x of arr) {
+    if (x === target) return true;
+  }
+  return false;
+}
+
+// 程序 B：O(n²) 但功能相同的搜索（故意低效）
+function searchB(arr: number[], target: number): boolean {
+  for (let i = 0; i < arr.length; i++) {
+    for (let j = 0; j < arr.length; j++) {
+      if (i === j && arr[i] === target) return true;
+    }
+  }
+  return false;
+}
+```
+
+从公理语义角度：
+
+$$
+\{\text{true}\}\ \text{searchA(arr, target)}\ \{\text{result} = (\text{target} \in \text{arr})\}
+$$
+
+$$
+\{\text{true}\}\ \text{searchB(arr, target)}\ \{\text{result} = (\text{target} \in \text{arr})\}
+$$
+
+两个程序的霍尔三元组**完全相同**！但显然 searchA 比 searchB 更高效。公理语义无法区分这一点，因为它只关心"执行前后状态满足什么性质"，不关心"花了多少时间"。
+
+**分析**：这是公理语义 ⊃ 操作语义的一个实例——公理语义丢失了执行时间和资源消耗的信息。如果你需要验证"程序在 100ms 内返回"，公理语义帮不了你。
 
 ---
 
-## 5. 可靠性与完备性证明
+## 4. 三种语义的对称差分析
 
-> 🚧 **骨架占位符**：三种语义对应关系的可靠性和完备性。
+### 4.1 操作语义 vs 指称语义的对称差
+
+$$
+\Delta(\text{Op}, \text{Den}) = (\text{Op} \setminus \text{Den}) \cup (\text{Den} \setminus \text{Op})
+$$
+
+**操作语义 \\ 指称语义（操作语义能描述但指称语义丢失的）**：
+
+1. **执行步骤的顺序**：操作语义精确描述了 `(3 + 4) * 5` 是先算 `3 + 4 = 7` 再算 `7 * 5 = 35`。指称语义直接给出结果 35，不关心顺序。
+2. **副作用的时机**：`console.log` 在操作语义中是一个明确的步骤，在纯指称语义中不存在。
+3. **非终止和死锁**：操作语义可以描述无限循环的每一步。指称语义用 $\bot$ 表示非终止，但丢失了"在哪里卡住"的信息。
+
+**指称语义 \\ 操作语义（指称语义能描述但操作语义难以表达的）**：
+
+1. **程序等价性**：操作语义要证明两个程序等价，需要证明它们的所有执行步骤都一一对应。指称语义只需证明 $\llbracket p_1 \rrbracket = \llbracket p_2 \rrbracket$。
+2. **高阶抽象**：操作语义处理高阶函数（函数作为参数）时非常复杂。指称语义通过域论自然地处理。
+
+### 4.2 指称语义 vs 公理语义的对称差
+
+**指称语义 \\ 公理语义**：
+
+1. **具体数值结果**：指称语义给出 `factorial(5) = 120` 的确切含义。公理语义只能说"如果输入是 5，输出是 120"，但不能"计算"出 120。
+2. **函数的完整行为**：指称语义描述函数在所有输入上的行为（完整的数学函数）。公理语义通常只验证特定输入输出性质。
+
+**公理语义 \\ 指称语义**：
+
+1. **不变式**：公理语义可以表达循环不变式（"每次迭代开始时，sum 等于已处理元素的和"）。指称语义只关心循环结束后的最终状态。
+2. **安全性与活性**：公理语义可以区分安全性（"不会发生坏事"）和活性（"最终会发生好事"）。指称语义不直接支持这种区分。
+
+### 4.3 操作语义 vs 公理语义的对称差
+
+**操作语义 \\ 公理语义**：
+
+1. **执行路径的具体选择**：操作语义可以描述非确定性选择的具体路径。公理语义通常假设所有路径都满足性质。
+2. **性能特征**：执行时间、内存使用在操作语义中可追踪，在公理语义中不可表达。
+
+**公理语义 \\ 操作语义**：
+
+1. **抽象性质**："对于所有输入，输出都是排序的"——这个全称量词性质在操作语义中难以表达，但在公理语义中是基本的。
+2. **模块化推理**：公理语义支持组合推理（先证明模块 A 正确，再证明模块 B 正确，然后组合）。操作语义需要分析完整的执行轨迹。
+
+### 4.4 三角对应的交换图
+
+三种语义可以组织为一个交换图：
+
+```
+         操作语义 (Op)
+             |
+             | 解释函子
+             v
+指称语义 (Den) -----> 公理语义 (Ax)
+      (抽象化)           (逻辑化)
+```
+
+**交换条件**：从操作语义到公理语义有两条路径：
+
+1. 直接路径：通过操作语义的迹提取逻辑性质
+2. 间接路径：先通过指称语义抽象为数学函数，再提取逻辑性质
+
+如果两条路径等价，我们说这个语义框架是**一致的**。
+
+形式化地：
+
+$$
+\mathcal{A}(\mathcal{D}(\mathcal{O}(p))) = \mathcal{A}'(\mathcal{O}(p))
+$$
+
+文字解释：程序 $p$ 先经过操作语义 $\mathcal{O}$，再经过指称语义 $\mathcal{D}$，最后经过公理语义 $\mathcal{A}$，应该等价于直接从操作语义提取公理性质 $\mathcal{A}'$。
+
+**工程意义**：当你用调试器（操作语义）追踪程序，同时用类型检查器（公理语义）验证程序时，你希望两者不会矛盾。交换图的一致性保证了这一点。
+
+---
+
+## 5. 函子性对应与可靠完备性
+
+### 5.1 三种语义作为函子
+
+从范畴论视角，三种语义可以看作是从**程序范畴** $\mathbf{Prog}$ 到不同**语义范畴**的函子：
+
+```
+程序范畴 C
+  ├── 操作语义 O: C -> TransitionSystem
+  ├── 指称语义 D: C -> DomainTheory
+  └── 公理语义 A: C -> Logic
+```
+
+**函子性要求**：
+
+- 程序的组合（顺序执行）映射为语义范畴中的组合（转移关系的复合 / 函数的复合 / 逻辑蕴涵的复合）
+- 恒等程序（skip）映射为语义范畴中的恒等态射
+
+### 5.2 可靠性（Soundness）
+
+**定义**：公理语义是**可靠的**（相对于操作语义），如果：
+
+$$
+\vdash \{P\}\ C\ \{Q\} \quad \Rightarrow \quad \models \{P\}\ C\ \{Q\}
+$$
+
+文字解释：如果公理语义**证明**了 $\{P\}\ C\ \{Q\}$，那么在操作语义中这个三元组**确实成立**（所有满足 $P$ 的初始状态，执行 $C$ 后都满足 $Q$）。
+
+**可靠性意味着**：公理语义不会"撒谎"——它不会证明一个实际上不成立的性质。
+
+### 5.3 完备性（Completeness）
+
+**定义**：公理语义是**完备的**（相对于操作语义），如果：
+
+$$
+\models \{P\}\ C\ \{Q\} \quad \Rightarrow \quad \vdash \{P\}\ C\ \{Q\}
+$$
+
+文字解释：如果操作语义中 $\{P\}\ C\ \{Q\}$ **确实成立**，那么公理语义**能够证明**它。
+
+**完备性意味着**：公理语义足够强大，能证明所有真实的性质。
+
+### 5.4 不完备性的根源
+
+**哥德尔不完备定理的幽灵**：对于足够强大的程序语言，公理语义**不可能同时满足可靠性和完备性**。
+
+**示例 4：停机问题的不可判定性**
+
+```typescript
+// 程序 halter
+function halter(n: number): void {
+  while (n > 0) {
+    if (isPrime(n)) break;
+    n--;
+  }
+}
+```
+
+公理语义无法证明或反驳：
+
+$$
+\{\text{true}\}\ \text{halter(n)}\ \{\text{true}\}
+$$
+
+因为如果 $n$ 是哥德巴赫猜想反例的某个函数，这个程序是否停机等价于哥德巴赫猜想是否成立。由于哥德巴赫猜想（目前）未被证明或证伪，霍尔逻辑也无法推导这个三元组——尽管它在操作语义中要么成立要么不成立（是确定的）。
+
+**分析**：这是公理语义不完备性的经典实例。不是公理语义"有 bug"，而是**任何**足够强大的形式系统都无法证明所有算术真理（哥德尔第一不完备定理的程序语义版本）。
+
+---
+
+## 6. JS/TS 语境下的三种语义
+
+### 6.1 JS 引擎 ≈ 操作语义
+
+JavaScript 引擎（V8、SpiderMonkey、JavaScriptCore）本质上是在实现 ECMAScript 规范中的操作语义。规范中的每个步骤（如抽象操作 `ToNumber`、`GetValue`）都对应引擎中的具体执行逻辑。
+
+**示例 5：规范中的操作语义与引擎实现**
+
+```ecmascript
+// ECMAScript 规范：Abstract Equality Comparison (==)
+// 1. 如果类型相同，按 === 比较
+// 2. 如果一个是 null，一个是 undefined，返回 true
+// 3. 如果一个是 number，一个是 string，将 string 转为 number
+// 4. ...
+```
+
+```typescript
+// 引擎中的对应实现（概念性）
+function abstractEqual(x: unknown, y: unknown): boolean {
+  if (typeof x === typeof y) return strictEqual(x, y);
+  if ((x === null && y === undefined) || (x === undefined && y === null)) return true;
+  if (typeof x === "number" && typeof y === "string") return abstractEqual(x, Number(y));
+  if (typeof x === "string" && typeof y === "number") return abstractEqual(Number(x), y);
+  // ... 规范的其余步骤
+  return false;
+}
+```
+
+### 6.2 TypeScript 类型系统 ≈ 公理语义
+
+TypeScript 的类型检查器本质上是一个**公理语义引擎**。它验证程序是否满足"类型不变式"——这正是一种公理性质。
+
+**霍尔三元组的类型系统类比**：
+
+$$
+\{\text{arg}: \text{number}\}\ \text{function}(\text{arg})\ \{\text{return}: \text{string}\}
+$$
+
+对应 TypeScript 的类型签名：
+
+```typescript
+function convert(arg: number): string
+```
+
+**类型检查作为公理验证**：
+
+- 前置条件 = 参数类型约束
+- 程序体 = 函数实现
+- 后置条件 = 返回类型约束
+
+### 6.3 类型作为指称
+
+在指称语义中，类型可以被理解为**域中的子集**：
+
+- `number` 类型 = 所有 JavaScript 数字值构成的集合（包括 `NaN`、`Infinity`）
+- `string` 类型 = 所有字符串值构成的集合
+- `number | string` = `number` 集合与 `string` 集合的并集
+- `number & string` = 空集（在 JS 中不存在既是 number 又是 string 的值）
+
+**子类型作为集合包含**：
+
+$$
+A <: B \iff \llbracket A \rrbracket \subseteq \llbracket B \rrbracket
+$$
+
+文字解释：$A$ 是 $B$ 的子类型，当且仅当 $A$ 的指称集合是 $B$ 的指称集合的子集。
+
+这在 TypeScript 中的体现：
+
+```typescript
+interface Animal { name: string; }
+interface Dog extends Animal { bark(): void; }
+
+// Dog <: Animal 因为所有 Dog 的值集合是 Animal 值集合的子集
+```
+
+**对称差在类型层面的体现**：
+
+```typescript
+// 操作语义视角：这个程序在运行时会做什么？
+function unsafe(x: any): string {
+  return x.toString();  // x 可能是 null，运行时报错
+}
+
+// 公理语义视角：类型检查器接受这个程序吗？
+// TS 接受（any 允许任何操作）
+
+// 指称语义视角：这个函数的数学含义是什么？
+// (x) => x.toString()，定义域是 "有 toString 方法的对象"
+// 但 TS 的类型签名说定义域是 any（即所有值）
+```
+
+这里三种语义出现了分歧：
+
+- 操作语义：某些输入会报错
+- 公理语义：类型检查器不报错
+- 指称语义：类型签名过于宽松，没有精确反映函数的真实定义域
+
+这正是第 3 章讨论的 $TS \setminus JS$ 对称差的深层原因：三种语义之间的不一致。
 
 ---
 
 ## 参考文献
 
 1. Winskel, G. (1993). *The Formal Semantics of Programming Languages*. MIT Press.
-2. FORMAL_SEMANTICS_COMPLETE.md. (Existing project content)
-3. Harper, R. (2016). *Practical Foundations for Programming Languages*. Cambridge.
+2. Harper, R. (2016). *Practical Foundations for Programming Languages* (2nd ed.). Cambridge.
+3. FORMAL_SEMANTICS_COMPLETE.md. (Existing project content)
+4. Hoare, C. A. R. (1969). "An Axiomatic Basis for Computer Programming." *Communications of the ACM*, 12(10), 576-580.
+5. Dijkstra, E. W. (1976). *A Discipline of Programming*. Prentice Hall.
+6. Plotkin, G. D. (1981). "A Structural Approach to Operational Semantics." *Aarhus University Technical Report*.
+7. Scott, D. S. (1976). "Data Types as Lattices." *SIAM Journal on Computing*, 5(3), 522-587.
+8. Reynolds, J. C. (1998). *Theories of Programming Languages*. Cambridge University Press.
+9. Pierce, B. C. (2002). *Types and Programming Languages*. MIT Press.
+10. ECMA International. *ECMA-262: ECMAScript Language Specification*.

@@ -21,12 +21,13 @@
 
 ## 文档全景图
 
-本知识库包含四大核心组成部分：
+本知识库包含五大核心组成部分：
 
-1. **awesome-jsts-ecosystem** - 生态工具导航
-2. **jsts-code-lab** - 代码实验室 (96个技术模块)
-3. **jsts-language-core-system** - 语言核心系统 (52个深度文档，>5000字节/篇)
-4. **docs/** - 分类文档与学习路径（已按四维重组）
+1. **70-theoretical-foundations** - 理论基础层 (51个文件，~135,000字，范畴论·认知科学·多模型分析)
+2. **awesome-jsts-ecosystem** - 生态工具导航
+3. **jsts-code-lab** - 代码实验室 (96个技术模块)
+4. **jsts-language-core-system** - 语言核心系统 (52个深度文档，>5000字节/篇)
+5. **docs/** - 分类文档与学习路径（已按四维重组）
 
 ---
 

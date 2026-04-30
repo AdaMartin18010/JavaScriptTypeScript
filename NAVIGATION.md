@@ -9,6 +9,7 @@
 
 | 层级 | 状态 | 文件数 |
 |------|------|--------|
+| L0 理论基础 | ✅ 完成 | 51 |
 | L1 语言核心 | ✅ 完成 | 18 |
 | L2 代码实验室 | ✅ 迁移完成，THEORY.md 补完中 | 93 模块 |
 | L3 文档体系 | ✅ 完成 | 42 |
@@ -22,6 +23,7 @@
 
 | 角色 | 推荐路径 |
 |------|---------|
+| **理论研究者** | `70-theoretical-foundations/` → 范畴论 → 认知模型 → 多模型分析 |
 | **语言研究者** | `10-fundamentals/` → 公理化基础 → 定理体系 → 形式证明 |
 | **全栈工程师** | `20-code-lab/` → 可运行示例 → THEORY.md → 对比矩阵 |
 | **技术决策者** | `30-knowledge-base/30.4-decision-trees/` → 选型决策 → 对比矩阵 |
@@ -30,7 +32,63 @@
 
 ---
 
-## 四层架构地图
+## 五层架构地图（含 L0 理论基础层）
+
+### L0 理论基础层：`70-theoretical-foundations/` — 范畴论 · 认知科学 · 多模型分析
+
+```
+70-theoretical-foundations/
+├── README.md                           # L0 总览与阅读路径
+├── MASTER_PLAN.md                      # 执行追踪
+├── NOTATION_GUIDE.md                   # 数学符号统一约定
+├── CROSS_REFERENCE.md                  # 与现有内容的交叉引用
+│
+├── 70.1-category-theory-and-computational-paradigms/     # 方向一：范畴论
+│   ├── 01-category-theory-primer-for-programmers.md      # 范畴论基础
+│   ├── 02-cartesian-closed-categories-and-typescript.md  # CCC 与 TS
+│   ├── 03-functors-natural-transformations-in-js.md      # 函子与自然变换
+│   ├── 04-monads-algebraic-effects-comparison.md         # 单子对比 [P0]
+│   ├── 05-limits-colimits-and-aggregation-patterns.md    # 极限与余极限
+│   ├── 06-adjunctions-and-free-forgetful-pairs.md        # 伴随函子
+│   ├── 07-yoneda-lemma-and-representable-functors.md     # Yoneda 引理
+│   ├── 08-topos-theory-and-type-systems.md               # Topos 理论
+│   ├── 09-computational-paradigms-as-categories.md       # 计算范式统一
+│   ├── 10-rust-vs-typescript-category-theory-analysis.md # Rust vs TS [P0]
+│   ├── 11-control-flow-as-categorical-constructs.md      # 控制流
+│   ├── 12-runtime-model-categorical-semantics.md         # 运行时语义
+│   ├── 13-variable-system-categorical-analysis.md        # 变量系统
+│   └── code-examples/                                    # TypeScript 代码示例
+│
+├── 70.2-cognitive-interaction-models/                    # 方向二：认知模型
+│   ├── 01-cognitive-science-primer-for-developers.md     # 认知科学基础
+│   ├── 02-mental-models-and-programming-languages.md     # 心智模型
+│   ├── 03-working-memory-load-in-javascript.md           # 工作记忆负荷
+│   ├── 04-conceptual-models-of-ui-frameworks.md          # UI 框架映射 [P0]
+│   ├── 05-react-algebraic-effects-cognitive-analysis.md  # React 认知分析
+│   ├── 06-vue-reactivity-cognitive-model.md              # Vue 认知模型
+│   ├── 07-angular-architecture-cognitive-load.md         # Angular 认知负荷
+│   ├── 08-rendering-engine-cognitive-perception.md       # 渲染感知 [P0]
+│   ├── 09-data-flow-and-cognitive-trajectory.md          # 数据流认知
+│   ├── 10-async-concurrency-cognitive-models.md          # 并发认知模型
+│   ├── 11-expert-novice-differences-in-js-ts.md          # 专家-新手差异
+│   ├── 12-multimodal-interaction-theory.md               # 多模态交互
+│   └── code-examples/                                    # 认知评估示例
+│
+└── 70.3-multi-model-formal-analysis/                     # 方向三：多模型分析
+    ├── 01-model-refinement-and-simulation.md             # 模型精化
+    ├── 02-operational-denotational-axiomatic-correspondence.md  # 语义对应
+    ├── 03-type-runtime-symmetric-difference.md           # 类型运行时对称差 [P0]
+    ├── 04-reactive-model-adaptation.md                   # 响应式适配 [P0]
+    ├── 05-multi-model-category-construction.md           # 多模型范畴
+    ├── 06-diagonal-arguments-in-semantics.md             # 对角线论证
+    ├── 07-comprehensive-response-theory.md               # 综合响应理论
+    ├── 08-framework-paradigm-interoperability.md         # 框架互操作
+    ├── 09-formal-verification-of-model-gaps.md           # 形式化验证
+    ├── 10-unified-metamodel-for-js-ts.md                 # 统一元模型
+    └── code-examples/                                    # 形式化规约示例
+```
+
+---
 
 ### L1 语言核心层：`10-fundamentals/` — 形式语义与学术前沿
 
