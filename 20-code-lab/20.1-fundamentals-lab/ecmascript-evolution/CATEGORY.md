@@ -78,6 +78,46 @@ export default function formatDate(d: Date): string {
 }
 ```
 
+### ES2016 指数运算符与 Array.includes
+
+```typescript
+// es2016/math.ts
+// 指数运算符 **（右结合）
+console.log(2 ** 3);      // 8
+console.log(2 ** 3 ** 2); // 512（等价于 2 ** (3 ** 2)）
+
+// Array.prototype.includes（使用 SameValueZero 比较）
+const nums = [NaN, +0, 1, 2];
+console.log(nums.includes(NaN));  // true（与 indexOf 不同）
+console.log(nums.includes(-0));   // true（SameValueZero 认为 +0 === -0）
+console.log(nums.includes(3));    // false
+
+// 与 indexOf 的对比：indexOf 使用严格相等，无法检测 NaN
+console.log(nums.indexOf(NaN));   // -1
+```
+
+### ES2017 异步函数与字符串填充
+
+```typescript
+// es2017/async-values.ts
+async function fetchData() {
+  const res = await fetch('/api/data');
+  return res.json();
+}
+
+// Object.entries / Object.values / Object.getOwnPropertyDescriptors
+const obj = { a: 1, b: 2 };
+console.log(Object.entries(obj));   // [['a', 1], ['b', 2]]
+console.log(Object.values(obj));    // [1, 2]
+console.log(Object.getOwnPropertyDescriptors(obj));
+// { a: { value: 1, writable: true, enumerable: true, configurable: true }, ... }
+
+// 字符串填充（String padding）
+const code = '42'.padStart(5, '0');     // '00042'
+const label = 'OK'.padEnd(6, '.');      // 'OK....'
+console.log(code, label);
+```
+
 ### ES2018 异步迭代与 for-await-of
 
 ```typescript
@@ -112,6 +152,94 @@ async function* streamWithTimeout<T>(
 }
 ```
 
+### ES2019 数组扁平化与 Symbol.description
+
+```typescript
+// es2019/flat-and-symbols.ts
+// Array.prototype.flat / flatMap
+const nested = [1, [2, 3], [4, [5, 6]]];
+console.log(nested.flat());       // [1, 2, 3, 4, [5, 6]]
+console.log(nested.flat(2));      // [1, 2, 3, 4, 5, 6]
+
+const sentences = ['Hello world', 'Good morning'];
+console.log(sentences.flatMap(s => s.split(' '))); // ['Hello', 'world', 'Good', 'morning']
+
+// Object.fromEntries（与 Object.entries 互逆）
+const entries = [['a', 1], ['b', 2]];
+const obj = Object.fromEntries(entries); // { a: 1, b: 2 }
+
+// Symbol.description
+const sym = Symbol('my-description');
+console.log(sym.description); // 'my-description'
+
+// String.prototype.trimStart / trimEnd
+const str = '  hello  ';
+console.log(str.trimStart()); // 'hello  '
+console.log(str.trimEnd());   // '  hello'
+```
+
+### ES2020 可选链与空值合并
+
+```typescript
+// nullish-coalescing.ts — 安全访问深层属性
+interface User {
+  profile?: {
+    settings?: {
+      theme?: 'light' | 'dark';
+    };
+  };
+}
+
+function getTheme(user: User | null): 'light' | 'dark' {
+  // 可选链 (?.) + 空值合并 (??)
+  return user?.profile?.settings?.theme ?? 'light';
+}
+
+// 与逻辑或 (||) 的区别：仅对 null/undefined 回退，而非所有 falsy 值
+const count = response.data.count ?? 0; // 0 不会被覆盖
+
+// 动态 import
+async function loadPlugin(name: string) {
+  const plugin = await import(`./plugins/${name}.js`);
+  return plugin.default;
+}
+
+// BigInt
+const huge = 9007199254740991n;
+console.log(huge + 1n); // 9007199254740992n
+```
+
+### ES2021 逻辑赋值与数字分隔符
+
+```typescript
+// logical-assignment.ts — 简洁的条件更新
+const config: { timeout?: number; retries?: number } = {};
+
+// 仅当左侧为 falsy 时才赋值
+config.timeout ||= 5000;   // 等价于: config.timeout || (config.timeout = 5000)
+config.retries ??= 3;      // 等价于: config.retries ?? (config.retries = 3)
+
+// 与 &&= 结合用于条件清空
+let cache: Map<string, any> | null = new Map();
+cache &&= null; // 仅当 cache 存在时才置空
+
+// 数字分隔符（Numeric separators）
+const billion = 1_000_000_000;
+const bytes = 0xFF_FF_FF_FF;
+const binary = 0b1010_0001_1000_0101;
+console.log(billion, bytes, binary);
+
+// String.prototype.replaceAll
+const query = 'SELECT * FROM users WHERE name = ? AND age = ?';
+console.log(query.replaceAll('?', '$1')); // SELECT * FROM users WHERE name = $1 AND age = $1
+
+// Promise.any
+const fastest = await Promise.any([
+  fetch('/api/fast'),
+  fetch('/api/slow'),
+]);
+```
+
 ### ES2022 类私有字段与静态块
 
 ```typescript
@@ -143,46 +271,15 @@ class SecureCounter {
 const c = new SecureCounter();
 c.increment();
 console.log(c.count);        // 1
-// console.log(c.#count);    // ❌ SyntaxError: Private field must be declared
+// console.log(c.#count);    // SyntaxError: Private field must be declared
+
+// Array.prototype.at（支持负索引）
+const arr = ['a', 'b', 'c'];
+console.log(arr.at(-1)); // 'c'
+console.log(arr.at(-2)); // 'b'
 ```
 
-### ES2020 可选链与空值合并
-
-```typescript
-// nullish-coalescing.ts — 安全访问深层属性
-interface User {
-  profile?: {
-    settings?: {
-      theme?: 'light' | 'dark';
-    };
-  };
-}
-
-function getTheme(user: User | null): 'light' | 'dark' {
-  // 可选链 (?.) + 空值合并 (??)
-  return user?.profile?.settings?.theme ?? 'light';
-}
-
-// 与逻辑或 (||) 的区别：仅对 null/undefined 回退，而非所有 falsy 值
-const count = response.data.count ?? 0; // 0 不会被覆盖
-```
-
-### ES2021 逻辑赋值运算符
-
-```typescript
-// logical-assignment.ts — 简洁的条件更新
-const config: { timeout?: number; retries?: number } = {};
-
-// 仅当左侧为 falsy 时才赋值
-config.timeout ||= 5000;   // 等价于: config.timeout || (config.timeout = 5000)
-config.retries ??= 3;      // 等价于: config.retries ?? (config.retries = 3)
-
-// 与 &&= 结合用于条件清空
-let cache: Map<string, any> | null = new Map();
-cache &&= null; // 仅当 cache 存在时才置空
-```
-
-### ES2023 Array.findLast
+### ES2023 不变数组方法与 findLast
 
 ```typescript
 // find-last.ts — 从尾部搜索
@@ -199,6 +296,26 @@ console.log(lastError?.msg); // 'timeout'
 
 const lastErrorIndex = logs.findLastIndex(l => l.level === 'error');
 console.log(lastErrorIndex); // 3
+
+// 不变数组方法（返回新数组，不修改原数组）
+const original = [3, 1, 4, 1, 5];
+
+const sorted = original.toSorted((a, b) => a - b);
+console.log(sorted);    // [1, 1, 3, 4, 5]
+console.log(original);  // [3, 1, 4, 1, 5]（未改变）
+
+const reversed = original.toReversed();
+console.log(reversed);  // [5, 1, 4, 1, 3]
+
+const spliced = original.toSpliced(1, 2, 9, 9);
+console.log(spliced);   // [3, 9, 9, 1, 5]
+
+const replaced = original.with(2, 99);
+console.log(replaced);  // [3, 1, 99, 1, 5]
+
+// Hashbang 注释支持
+// #!/usr/bin/env node
+// console.log('Hello from CLI');
 ```
 
 ### ES2024 Promise.withResolvers
@@ -219,6 +336,16 @@ function readFileAsync(path: string): Promise<string> {
   });
   return promise;
 }
+
+// Map.groupBy / Object.groupBy
+const people = [
+  { name: 'Alice', age: 21 },
+  { name: 'Bob', age: 17 },
+  { name: 'Carol', age: 25 },
+];
+
+const byAdult = Object.groupBy(people, p => p.age >= 18 ? 'adult' : 'minor');
+console.log(byAdult.adult?.length); // 2
 ```
 
 ### ES2025 Set 方法与正则 /v 标志
@@ -267,6 +394,9 @@ console.log(re.test('a'));  // false
 | TC39 Process | 规范 | [tc39.es/process-document](https://tc39.es/process-document/) — 提案阶段定义 |
 | ECMAScript Compatibility Table | 兼容性 | [compat-table.github.io/compat-table](https://compat-table.github.io/compat-table/) — 特性支持矩阵 |
 | JS Feature Proposals (Stage 3) | 提案 | [github.com/tc39/proposals/blob/main/README.md#stage-3](https://github.com/tc39/proposals/blob/main/README.md#stage-3) |
+| MDN: New in JavaScript | 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/New_in_JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/New_in_JavaScript) |
+| JavaScript.info: The Modern JavaScript Tutorial | 教程 | [javascript.info](https://javascript.info/) |
+| ES2025 Draft | 规范草案 | [tc39.es/ecma262](https://tc39.es/ecma262/) |
 
 ---
 

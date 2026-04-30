@@ -292,3 +292,50 @@ console.log('6. Script end');
 | **TC39 Proposals** | JavaScript 语言演进提案 | [github.com/tc39/proposals](https://github.com/tc39/proposals) |
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*
+
+## 深化补充
+
+### 新增代码示例：Temporal Dead Zone (TDZ) 与隐式转换陷阱
+
+```typescript
+// tdz-deep-dive.ts
+
+// 1. TDZ：typeof 在死区内也会报错
+function tdzDemo() {
+  console.log(typeof notYet); // ❌ ReferenceError: Cannot access 'notYet' before initialization
+  let notYet = 42;
+}
+
+// 2. 隐式转换边缘案例
+function coercionTraps() {
+  const cases = [
+    { expr: "[] + {}", expected: "[object Object]" },
+    { expr: "{} + []", expected: 0 }, // 在语句开头 {} 被解析为代码块
+    { expr: "[] + []", expected: "" },
+    { expr: "1 + '2'", expected: "12" },
+    { expr: "1 - '2'", expected: -1 },
+  ];
+  return cases;
+}
+
+// 3. 闭包内存泄漏模式
+function leakPattern() {
+  const bigData = new Array(1e6).fill('x');
+  return {
+    getSize: () => bigData.length, // bigData 被闭包捕获，无法释放
+  };
+}
+const leaky = leakPattern();
+// 即使不再需要 bigData，它仍驻留内存
+```
+
+### 权威外部链接扩展
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| ECMA-262 Lexical Environments | [tc39.es/ecma262/#sec-lexical-environments](https://tc39.es/ecma262/#sec-lexical-environments) | 作用域与 TDZ 规范 |
+| MDN — Closures | [developer.mozilla.org/en-US/docs/Web/JavaScript/Closures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures) | 闭包详解 |
+| MDN — Event Loop | [developer.mozilla.org/en-US/docs/Web/JavaScript/EventLoop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/EventLoop) | 事件循环可视化 |
+| V8 Blog — Trash Talk | [v8.dev/blog/trash-talk](https://v8.dev/blog/trash-talk) | 垃圾回收机制 |
+| 2ality — JavaScript Types | [2ality.com/2020/04/types-javascript.html](https://2ality.com/2020/04/types-javascript.html) | JS 类型系统深度分析 |
+| JavaScript.info | [javascript.info](https://javascript.info/) | 现代 JS 教程 |

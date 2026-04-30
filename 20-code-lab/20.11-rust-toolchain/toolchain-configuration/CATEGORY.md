@@ -277,3 +277,50 @@ console.log(fibonacci(10)); // 55
 ---
 
 *最后更新: 2026-04-30*
+
+## 深化补充
+
+### 新增代码示例：justfile 与 sccache 加速混合构建
+
+```justfile
+# justfile — Rust + Node.js 混合任务
+
+build:
+    cargo build --release
+    pnpm run build
+
+lint:
+    cargo clippy --all-targets --all-features -- -D warnings
+    pnpm oxlint src/
+
+test:
+    cargo nextest run
+    pnpm test
+
+fmt:
+    cargo fmt --all
+    pnpm biome format . --write
+```
+
+```yaml
+# .github/workflows/ci.yml — sccache 加速片段
+- name: Run sccache
+  uses: mozilla-actions/sccache-action@v0.0.3
+- run: cargo build --release
+  env:
+    SCCACHE_GHA_ENABLED: "true"
+    RUSTC_WRAPPER: "sccache"
+```
+
+### 权威外部链接扩展
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Rust Analyzer Manual | [rust-analyzer.github.io/manual.html](https://rust-analyzer.github.io/manual.html) | IDE 支持手册 |
+| Cargo Nextest | [nexte.st](https://nexte.st/) | 下一代 Rust 测试运行器 |
+| sccache | [github.com/mozilla/sccache](https://github.com/mozilla/sccache) | 编译缓存 |
+| cargo-machete | [github.com/bnjbvr/cargo-machete](https://github.com/bnjbvr/cargo-machete) | 未使用依赖检测 |
+| rust-toolchain.toml | [rust-lang.github.io/rustup/overrides.html](https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file) | 工具链锁定规范 |
+| Oxc Config | [oxc.rs/docs/guide/usage/linter/config.html](https://oxc.rs/docs/guide/usage/linter/config.html) | Oxlint 配置参考 |
+| Biome Config | [biomejs.dev/reference/configuration](https://biomejs.dev/reference/configuration/) | Biome 配置手册 |
+| Rspack Config | [rspack.dev/config](https://www.rspack.dev/config/) | Rspack 配置指南 |

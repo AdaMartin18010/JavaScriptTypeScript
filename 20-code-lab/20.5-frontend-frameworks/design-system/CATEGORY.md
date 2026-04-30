@@ -36,10 +36,9 @@ created: 2026-04-28
 - 📄 icon-system.ts
 - ... 等 3 个条目
 
-
 ---
 
-> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
+> 此分类文档已根据实际模块内容补充代码示例与权威链接。
 
 ## 子模块速查
 
@@ -250,6 +249,84 @@ export function defineIconElements(): void {
 }
 ```
 
+## 代码示例：WCAG 对比度校验
+
+```typescript
+// a11y-color-contrast.ts — 计算相对亮度与对比度比值
+function getLuminance(hex: string): number {
+  const rgb = hex.replace('#', '').match(/.{2}/g)!.map(x => parseInt(x, 16) / 255);
+  const [r, g, b] = rgb.map(c => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+export function getContrastRatio(foreground: string, background: string): number {
+  const l1 = getLuminance(foreground);
+  const l2 = getLuminance(background);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+export function meetsWCAG(foreground: string, background: string, level: 'AA' | 'AAA' = 'AA'): boolean {
+  const ratio = getContrastRatio(foreground, background);
+  return level === 'AAA' ? ratio >= 7 : ratio >= 4.5;
+}
+
+// 使用
+console.log(getContrastRatio('#111827', '#ffffff')); // 16.1 (AAA)
+console.log(meetsWCAG('#6b7280', '#ffffff'));        // false (AA 失败)
+```
+
+## 代码示例：W3C Design Token Format 转换器
+
+```typescript
+// design-token-transformer.ts — 将 W3C 社区组格式转换为 CSS/Sass/JSON
+interface W3CToken {
+  $value: string | number;
+  $type?: 'color' | 'dimension' | 'fontFamily' | 'duration';
+  $description?: string;
+}
+
+interface W3CTokenGroup {
+  [key: string]: W3CToken | W3CTokenGroup;
+}
+
+export function tokensToCSS(tokens: W3CTokenGroup, prefix = ''): string {
+  const lines: string[] = [];
+
+  function walk(obj: W3CTokenGroup, path: string) {
+    for (const [key, value] of Object.entries(obj)) {
+      if ('$value' in value) {
+        const token = value as W3CToken;
+        const varName = `--${path ? path + '-' : ''}${key}`;
+        lines.push(`  ${varName}: ${token.$value};`);
+      } else {
+        walk(value as W3CTokenGroup, path ? `${path}-${key}` : key);
+      }
+    }
+  }
+
+  lines.push(':root {');
+  walk(tokens, prefix);
+  lines.push('}');
+  return lines.join('\n');
+}
+
+// 使用
+const w3cTokens: W3CTokenGroup = {
+  color: {
+    primary: { $value: '#3b82f6', $type: 'color' },
+    text: { $value: '#111827', $type: 'color' },
+  },
+  spacing: {
+    sm: { $value: '0.5rem', $type: 'dimension' },
+  },
+};
+
+console.log(tokensToCSS(w3cTokens));
+// :root { --color-primary: #3b82f6; --color-text: #111827; --spacing-sm: 0.5rem; }
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -264,7 +341,14 @@ export function defineIconElements(): void {
 | W3C — CSS Custom Properties | 规范 | [w3.org/TR/css-variables-1](https://www.w3.org/TR/css-variables-1/) |
 | Nate Baldwin — Design Tokens 术语 | 参考 | [medium.com/eightshapes-llc](https://medium.com/eightshapes-llc/naming-tokens-in-design-systems-9e86c7444746) |
 | Google Material Design 3 | 设计系统参考 | [m3.material.io](https://m3.material.io/) |
+| Ark UI | 无头组件库 | [ark-ui.com](https://ark-ui.com/) — Zag.js 驱动的框架无关组件 |
+| Panda CSS | 原子化 CSS-in-JS | [panda-css.com](https://panda-css.com/) — 类型安全、零运行时 |
+| Open Props | CSS 自定义属性库 | [open-props.style](https://open-props.style/) — 预定义设计令牌集合 |
+| WCAG 2.2 Contrast | 规范 | [www.w3.org/WAI/WCAG22/Understanding/contrast-minimum](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html) |
+| CSS Tricks — Design Tokens | 指南 | [css-tricks.com/what-are-design-tokens](https://css-tricks.com/what-are-design-tokens/) |
+| Style Dictionary | 工具 | [amzn.github.io/style-dictionary](https://amzn.github.io/style-dictionary/) — Amazon 跨平台设计令牌转换 |
+| Shadcn UI | 组件库 | [ui.shadcn.com](https://ui.shadcn.com/) — Radix + Tailwind 的可复制组件 |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

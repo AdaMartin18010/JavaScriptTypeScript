@@ -56,6 +56,52 @@ Completion Record: {
 }
 ```
 
+#### 代码示例：Completion Record 与 labeled break/continue
+
+```javascript
+// 规范层面：break/continue 携带 Completion Record 的 [[Target]] 字段
+// 运行时可见：标签匹配决定跳转目标
+
+outer: for (let i = 0; i < 3; i++) {
+  inner: for (let j = 0; j < 3; j++) {
+    if (i === 1 && j === 1) {
+      break outer; // Completion { [[Type]]: break, [[Value]]: empty, [[Target]]: "outer" }
+    }
+    console.log(i, j);
+  }
+}
+// 输出：(0,0) (0,1) (0,2) (1,0) — 在 (1,1) 处跳出外层循环
+```
+
+#### 代码示例：Completion Record 与 return 值的覆盖
+
+```javascript
+function demo() {
+  try {
+    return 1; // 创建 Return Completion { [[Value]]: 1 }
+  } finally {
+    console.log('finally');
+    // 若 finally 中也有 return，会覆盖 try 的返回值
+    // return 2; // 取消注释后将返回 2
+  }
+}
+console.log(demo()); // "finally" 然后 1
+
+// 另一个边界：finally 中的 throw 会覆盖 try 的 return
+function demo2() {
+  try {
+    return 'try-value';
+  } finally {
+    throw new Error('finally-error'); // 覆盖 return，向外传播异常
+  }
+}
+try {
+  demo2();
+} catch (e) {
+  console.log(e.message); // "finally-error"
+}
+```
+
 ---
 
 ## 5. 论证与分析 (Argumentation & Analysis)
@@ -82,12 +128,88 @@ Completion Record: {
 // strict = false
 ```
 
+### 6.2 正例：Property Descriptor 的运行时映射
+
+```javascript
+// Property Descriptor 是规范类型在运行时最直接的映射
+const obj = {};
+
+// 数据属性描述符（Data Property Descriptor）
+Object.defineProperty(obj, 'dataProp', {
+  value: 42,
+  writable: true,
+  enumerable: false,
+  configurable: true
+});
+
+// 访问器属性描述符（Accessor Property Descriptor）
+let internalValue = 0;
+Object.defineProperty(obj, 'accessorProp', {
+  get() { return internalValue; },
+  set(v) { internalValue = v; },
+  enumerable: true,
+  configurable: true
+});
+
+console.log(Object.getOwnPropertyDescriptor(obj, 'dataProp'));
+// { value: 42, writable: true, enumerable: false, configurable: true }
+
+console.log(Object.getOwnPropertyDescriptor(obj, 'accessorProp'));
+// { get: [Function: get], set: [Function: set], enumerable: true, configurable: true }
+```
+
+### 6.3 正例：Realm Record 与 iframe
+
+```javascript
+// 每个 iframe 拥有独立的 Realm，因此内置构造函数不相等
+// 这是 Realm Record 在运行时的直接体现
+
+const iframe = document.createElement('iframe');
+document.body.appendChild(iframe);
+
+const iframeArray = iframe.contentWindow.Array;
+console.log(Array === iframeArray);  // false！不同 Realm
+
+// 同一个 Realm 中才相等
+console.log(Array === window.Array); // true
+
+// 跨 Realm 的 Array.isArray 仍然工作，因为它检查 [[Class]] / 内部槽
+console.log(Array.isArray(iframeArray.from([1, 2, 3]))); // true
+```
+
+### 6.4 正例：Module Record 与 import.meta
+
+```javascript
+// Module Record 的运行时可见面：import.meta
+// 在 ESM 模块中，import.meta 暴露当前模块的元数据
+
+// module-a.js
+console.log(import.meta.url);      // 当前模块的 URL
+console.log(import.meta.resolve);  // 解析相对路径的方法（某些环境）
+
+// 动态导入返回 Module Record 的封装（Promise<ModuleNamespace>）
+const moduleNs = await import('./module-b.js');
+// moduleNs 是一个 Module Namespace Object，对应 Module Record 的导出绑定
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §6.2** — Specification Types
 - **MDN: Reference** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference>
+- **ECMA-262 §6.2** — Specification Types — <https://tc39.es/ecma262/#sec-ecmascript-data-types-and-values>
+- **ECMA-262 §6.2.5** — Reference Record — <https://tc39.es/ecma262/#sec-reference-record-specification-type>
+- **ECMA-262 §6.2.6** — Property Descriptor — <https://tc39.es/ecma262/#sec-property-descriptor-specification-type>
+- **ECMA-262 §9.1** — Environment Records — <https://tc39.es/ecma262/#sec-environment-records>
+- **MDN: Property descriptors** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty>
+- **MDN: try...catch** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch>
+- **V8 Blog: Understanding the ECMAScript spec** — <https://v8.dev/blog/understanding-ecmascript-part-1>
+- **V8 Blog: Understanding the ECMAScript spec Part 2** — <https://v8.dev/blog/understanding-ecmascript-part-2>
+- **V8 Blog: Understanding the ECMAScript spec Part 3** — <https://v8.dev/blog/understanding-ecmascript-part-3>
+- **Engine262** — JavaScript interpreter in JavaScript — <https://github.com/engine262/engine262>
+- **2ality: ECMAScript spec: operations** — <https://2ality.com/2015/08/ecmascript-specification-operations.html>
+- **JavaScript Spec Explorer** — <https://tc39.es/ecma262/>
 
 ---
 

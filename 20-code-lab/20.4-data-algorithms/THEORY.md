@@ -240,6 +240,179 @@ class Graph<T> {
 }
 ```
 
+### 4.2 最小堆（优先队列）
+
+```typescript
+// min-heap.ts — 基于数组的二叉堆实现，用于调度与排序
+class MinHeap<T> {
+  private heap: T[] = [];
+  private compare: (a: T, b: T) => number;
+
+  constructor(compare = (a: T, b: T) => (a < b ? -1 : a > b ? 1 : 0)) {
+    this.compare = compare;
+  }
+
+  get size() { return this.heap.length; }
+
+  push(val: T): void {
+    this.heap.push(val);
+    this.bubbleUp(this.heap.length - 1);
+  }
+
+  pop(): T | undefined {
+    if (this.heap.length <= 1) return this.heap.pop();
+    const top = this.heap[0];
+    this.heap[0] = this.heap.pop()!;
+    this.bubbleDown(0);
+    return top;
+  }
+
+  peek(): T | undefined {
+    return this.heap[0];
+  }
+
+  private bubbleUp(i: number) {
+    while (i > 0) {
+      const parent = Math.floor((i - 1) / 2);
+      if (this.compare(this.heap[i], this.heap[parent]) >= 0) break;
+      [this.heap[i], this.heap[parent]] = [this.heap[parent], this.heap[i]];
+      i = parent;
+    }
+  }
+
+  private bubbleDown(i: number) {
+    const n = this.heap.length;
+    while (true) {
+      let smallest = i;
+      const left = 2 * i + 1;
+      const right = 2 * i + 2;
+      if (left < n && this.compare(this.heap[left], this.heap[smallest]) < 0) smallest = left;
+      if (right < n && this.compare(this.heap[right], this.heap[smallest]) < 0) smallest = right;
+      if (smallest === i) break;
+      [this.heap[i], this.heap[smallest]] = [this.heap[smallest], this.heap[i]];
+      i = smallest;
+    }
+  }
+}
+
+// 使用：合并 K 个有序数组
+function mergeKArrays<T>(arrays: T[][], compare = (a: T, b: T) => (a < b ? -1 : 1)): T[] {
+  const heap = new MinHeap<{ val: T; arr: number; idx: number }>((a, b) => compare(a.val, b.val));
+  const result: T[] = [];
+
+  for (let i = 0; i < arrays.length; i++) {
+    if (arrays[i].length) heap.push({ val: arrays[i][0], arr: i, idx: 0 });
+  }
+
+  while (heap.size > 0) {
+    const { val, arr, idx } = heap.pop()!;
+    result.push(val);
+    if (idx + 1 < arrays[arr].length) {
+      heap.push({ val: arrays[arr][idx + 1], arr, idx: idx + 1 });
+    }
+  }
+
+  return result;
+}
+```
+
+### 4.3 Trie（前缀树）
+
+```typescript
+// trie.ts — 高效前缀搜索与自动补全
+class TrieNode {
+  children = new Map<string, TrieNode>();
+  isEnd = false;
+}
+
+class Trie {
+  private root = new TrieNode();
+
+  insert(word: string): void {
+    let node = this.root;
+    for (const ch of word) {
+      if (!node.children.has(ch)) node.children.set(ch, new TrieNode());
+      node = node.children.get(ch)!;
+    }
+    node.isEnd = true;
+  }
+
+  search(word: string): boolean {
+    const node = this.traverse(word);
+    return node?.isEnd ?? false;
+  }
+
+  startsWith(prefix: string): string[] {
+    const node = this.traverse(prefix);
+    if (!node) return [];
+    const results: string[] = [];
+    this.collect(node, prefix, results);
+    return results;
+  }
+
+  private traverse(word: string): TrieNode | null {
+    let node = this.root;
+    for (const ch of word) {
+      if (!node.children.has(ch)) return null;
+      node = node.children.get(ch)!;
+    }
+    return node;
+  }
+
+  private collect(node: TrieNode, prefix: string, out: string[]): void {
+    if (node.isEnd) out.push(prefix);
+    for (const [ch, child] of node.children) {
+      this.collect(child, prefix + ch, out);
+    }
+  }
+}
+
+// 使用
+const trie = new Trie();
+['typescript', 'java', 'javascript', 'python'].forEach(w => trie.insert(w));
+console.log(trie.startsWith('jav')); // ['java', 'javascript']
+```
+
+### 4.4 布隆过滤器（空间高效的概率型结构）
+
+```typescript
+// bloom-filter.ts — 用多个哈希位判断元素"可能存在"或"肯定不存在"
+class BloomFilter {
+  private bits: Uint8Array;
+  private size: number;
+  private hashes: number;
+
+  constructor(expectedItems: number, falsePositiveRate = 0.01) {
+    this.size = Math.ceil(-(expectedItems * Math.log(falsePositiveRate)) / (Math.log(2) ** 2));
+    this.hashes = Math.ceil((this.size / expectedItems) * Math.log(2));
+    this.bits = new Uint8Array(Math.ceil(this.size / 8));
+  }
+
+  add(item: string): void {
+    for (let i = 0; i < this.hashes; i++) {
+      const idx = this.hash(item, i) % this.size;
+      this.bits[Math.floor(idx / 8)] |= 1 << (idx % 8);
+    }
+  }
+
+  maybeContains(item: string): boolean {
+    for (let i = 0; i < this.hashes; i++) {
+      const idx = this.hash(item, i) % this.size;
+      if ((this.bits[Math.floor(idx / 8)] & (1 << (idx % 8))) === 0) return false;
+    }
+    return true;
+  }
+
+  private hash(item: string, seed: number): number {
+    let h = seed;
+    for (let i = 0; i < item.length; i++) {
+      h = (h * 31 + item.charCodeAt(i)) >>> 0;
+    }
+    return h;
+  }
+}
+```
+
 ---
 
 ## 五、实践映射
@@ -280,5 +453,11 @@ class Graph<T> {
 | **Data Structures in V8** | V8 引擎数据结构实现内幕 | [mrale.ph/blog/2015/01/11/whats-up-with-monomorphism.html](https://mrale.ph/blog/2015/01/11/whats-up-with-monomorphism.html) |
 | **Introduction to Algorithms (CLRS)** | 算法与数据结构圣经 | [mitpress.mit.edu/books/introduction-algorithms-fourth-edition](https://mitpress.mit.edu/books/introduction-algorithms-fourth-edition) |
 | **VisuAlgo** | 数据结构交互式可视化 | [visualgo.net](https://visualgo.net/) |
+| **Algorithmica** | 高级算法与数据结构教程 | [algorithmica.org](https://algorithmica.org/) |
+| **CP-Algorithms** | 竞赛编程算法百科 | [cp-algorithms.com](https://cp-algorithms.com/) |
+| **Big O Cheat Sheet** | 时间/空间复杂度速查 | [bigocheatsheet.com](https://www.bigocheatsheet.com/) |
+| **LeetCode** | 算法练习与面试准备 | [leetcode.com](https://leetcode.com/) |
+| **Data Structure Visualizations** | USFCA 可视化工具 | [www.cs.usfca.edu/~galles/visualization/Algorithms.html](https://www.cs.usfca.edu/~galles/visualization/Algorithms.html) |
+| **Rust JavaScript JIT** | V8 隐藏类与内联缓存机制 | [mrale.ph/blog/2012/06/03/exploring-js-performance.html](https://mrale.ph/blog/2012/06/03/exploring-js-performance.html) |
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

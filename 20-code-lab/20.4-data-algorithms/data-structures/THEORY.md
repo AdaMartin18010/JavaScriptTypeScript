@@ -581,6 +581,37 @@ $$
 
 ---
 
+## 高级树结构
+
+### AVL 树旋转与平衡
+
+```typescript
+// avl-tree.ts
+class AVLNode {
+  left: AVLNode | null = null;
+  right: AVLNode | null = null;
+  height = 1;
+  constructor(public value: number) {}
+}
+function getHeight(n: AVLNode | null): number { return n?.height ?? 0; }
+function rotateRight(y: AVLNode): AVLNode {
+  const x = y.left!;
+  y.left = x.right; x.right = y;
+  y.height = 1 + Math.max(getHeight(y.left), getHeight(y.right));
+  x.height = 1 + Math.max(getHeight(x.left), getHeight(x.right));
+  return x;
+}
+export function insert(root: AVLNode | null, value: number): AVLNode {
+  if (!root) return new AVLNode(value);
+  root.left = insert(root.left, value);
+  return rotateRight(root);
+}
+```
+
+**时间复杂度**：O(log n)。
+
+---
+
 ## 参考实现文件
 
 - `custom/linked-list.ts`
@@ -652,5 +683,44 @@ $$
 - [Khan Academy — Data Structures](https://www.khanacademy.org/computing/computer-science/algorithms) — 数据结构入门视频课程
 
 ---
+
+## 图论进阶
+
+### Kahn 算法 — 拓扑排序（BFS 版）
+
+```typescript
+// kahn-topological-sort.ts
+function kahnTopologicalSort(adj: Map<string, string[]>): string[] {
+  const inDegree = new Map<string, number>();
+  for (const [u, neighbors] of adj) {
+    if (!inDegree.has(u)) inDegree.set(u, 0);
+    for (const v of neighbors) inDegree.set(v, (inDegree.get(v) ?? 0) + 1);
+  }
+  const queue = [...inDegree.entries()].filter(([, d]) => d === 0).map(([v]) => v);
+  const result: string[] = [];
+  while (queue.length) {
+    const u = queue.shift()!;
+    result.push(u);
+    for (const v of adj.get(u) ?? []) {
+      inDegree.set(v, inDegree.get(v)! - 1);
+      if (inDegree.get(v) === 0) queue.push(v);
+    }
+  }
+  if (result.length !== inDegree.size) throw new Error('Cycle detected');
+  return result;
+}
+```
+
+**时间复杂度**：O(|V| + |E|)。
+
+---
+
+## 更多权威外部资源
+
+- [MIT 6.006 — Introduction to Algorithms](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/)
+- [Stanford CS161 — Design and Analysis of Algorithms](https://web.stanford.edu/class/cs161/)
+- [CMU 15-451 — Algorithm Design and Analysis](https://www.cs.cmu.edu/~15451/)
+- [USACO Guide — Data Structures](https://usaco.guide/silver/intro-ds)
+- [OpenDSA — Data Structures and Algorithms](https://opendsa-server.cs.vt.edu/)
 
 > 📅 理论深化更新：2026-04-30

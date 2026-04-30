@@ -199,6 +199,71 @@ console.log(1 + '2'); // "12"
 //    c. 返回 lstr + rstr → "12"
 ```
 
+### 5.1 代码示例：SameValueZero 与 Array.prototype.includes
+
+```javascript
+// SameValueZero 是 Array.prototype.includes 的内部比较语义
+// 它与 === 的区别在于：NaN 被视为等于 NaN，+0 等于 -0
+
+const arr = [NaN, +0, 1, 2];
+
+console.log(arr.includes(NaN));     // true  ✅ SameValueZero
+console.log(arr.indexOf(NaN));      // -1    ❌ 使用 Strict Equality
+
+console.log(arr.includes(-0));      // true  ✅ SameValueZero 认为 +0 === -0
+console.log(arr.indexOf(-0));       // -1    ❌ Strict Equality 下 +0 !== -0
+
+// Object.is 使用 SameValue：区分 +0/-0，但认为 NaN === NaN
+console.log(Object.is(NaN, NaN));   // true
+console.log(Object.is(+0, -0));     // false
+
+// Map 和 Set 也使用 SameValueZero
+const set = new Set([NaN, NaN, +0, -0]);
+console.log(set.size); // 2 (NaN 去重，+0/-0 去重)
+```
+
+### 5.2 代码示例：ToBoolean 在逻辑运算符中的实际应用
+
+```javascript
+// && 和 || 运算符内部调用 ToBoolean 进行条件判断
+// 但返回的是操作数本身（短路求值），而非强制转为布尔值
+
+console.log(0 && 'hello');    // 0      (0 是 falsy，直接返回左侧)
+console.log('ok' && 'hello'); // "hello" ('ok' 是 truthy，返回右侧)
+console.log(null || 'fallback'); // "fallback" (null 是 falsy，返回右侧)
+console.log('a' || 'b');         // "a" ('a' 是 truthy，返回左侧)
+
+// ?? (Nullish Coalescing) 使用不同的抽象操作：仅检查 null/undefined
+console.log(0 ?? 'fallback');    // 0      (0 不是 null/undefined)
+console.log('' ?? 'fallback');   // ""     (空串不是 null/undefined)
+console.log(null ?? 'fallback'); // "fallback"
+console.log(undefined ?? 'fallback'); // "fallback"
+```
+
+### 5.3 代码示例：BigInt 比较与普通数字比较的区别
+
+```javascript
+// BigInt 和 Number 在比较运算中的行为
+// 规范路径：先将两者转换为同一类型，再比较
+
+console.log(1n == 1);   // true  (抽象操作：先 ToNumeric，再比较)
+console.log(1n === 1);  // false (严格相等不触发类型转换)
+
+console.log(2n > 1);    // true
+console.log(1n < 2);    // true
+
+// 混合类型的算术运算抛出 TypeError（不同于比较运算）
+try {
+  console.log(1n + 1);
+} catch (e) {
+  console.log(e.name); // TypeError
+}
+
+// 必须显式转换
+console.log(1n + BigInt(1));  // 2n
+console.log(Number(1n) + 1);  // 2
+```
+
 ---
 
 ## 六、规范阅读方法论
@@ -228,6 +293,52 @@ console.log(1 + '2'); // "12"
 
 ---
 
+## 七、更多代码示例：OrdinaryToPrimitive 的完整路径追踪
+
+```javascript
+// ============================================
+// OrdinaryToPrimitive 演示：数组和对象的默认转换路径
+// ============================================
+
+// 数组的 OrdinaryToPrimitive
+const arr = [1, 2, 3];
+
+// hint='number'：先 valueOf()
+console.log(arr.valueOf());   // [1, 2, 3]（数组对象，非原始值）
+// valueOf 返回对象 → 继续尝试 toString()
+console.log(arr.toString());  // "1,2,3"（原始值，返回）
+
+console.log(arr + '');        // "1,2,3"
+console.log(Number(arr));     // NaN（"1,2,3" 转数字失败）
+
+// 空数组的特例
+console.log([] + []);         // "" + "" = ""
+console.log([] + {});         // "" + "[object Object]" = "[object Object]"
+console.log({} + []);         // 某些引擎解析为 0（{} 空块 + [] → 0）
+
+// 定制 toString/valueOf 观察调用顺序
+const tracker = {
+  calls: [],
+  valueOf() {
+    this.calls.push('valueOf');
+    return this; // 返回对象，强制继续
+  },
+  toString() {
+    this.calls.push('toString');
+    return 'result';
+  }
+};
+
+console.log(tracker + 1); // "result1"
+console.log(tracker.calls); // ['valueOf', 'toString']（number hint：先 valueOf 后 toString）
+
+tracker.calls = [];
+console.log(String(tracker)); // "result"
+console.log(tracker.calls);   // ['toString']（string hint：直接 toString）
+```
+
+---
+
 ## 权威参考链接
 
 | 资源 | 说明 | 链接 |
@@ -238,6 +349,11 @@ console.log(1 + '2'); // "12"
 | **2ality: Converting values to primitives** | Dr. Axel Rauschmayer 深度讲解 | [2ality.com/2022/11/coercion-to-primitive.html](https://2ality.com/2022/11/coercion-to-primitive.html) |
 | **V8 Blog: Understanding the ECMASpec** | 从引擎开发者视角读规范 | [v8.dev/blog/understanding-ecmascript-part-1](https://v8.dev/blog/understanding-ecmascript-part-1) |
 | **JavaScript Spec Explorer** | 交互式规范浏览工具 | [tc39.es/ecma262](https://tc39.es/ecma262) |
+| **Test262** | ECMAScript 官方测试套件 | [github.com/tc39/test262](https://github.com/tc39/test262) |
+| **2ality: Reading the ECMAScript spec** | 规范阅读指南 | [2ality.com/2020/09/ecmascript-spec-reading.html](https://2ality.com/2020/09/ecmascript-spec-reading.html) |
+| **Engine262** | JavaScript 规范的 JavaScript 实现 | [github.com/engine262/engine262](https://github.com/engine262/engine262) |
+| **MDN: JavaScript Data Structures** | 运行时数据结构 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures) |
+| **V8 Blog: Fast Properties** | V8 属性访问优化 | [v8.dev/blog/fast-properties](https://v8.dev/blog/fast-properties) |
 
 ---
 

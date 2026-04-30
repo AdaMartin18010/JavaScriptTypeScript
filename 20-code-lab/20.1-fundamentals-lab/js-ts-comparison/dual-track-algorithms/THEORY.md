@@ -296,3 +296,57 @@ function parseUser(input: unknown): User {
 ---
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*
+
+## 深化补充
+
+### 新增代码示例：类型安全备忘录（Memoization）
+
+```javascript
+// === JavaScript —— 无类型约束，运行时可能传入非函数 ===
+function memoizeJS(fn) {
+  const cache = new Map();
+  return function (...args) {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) return cache.get(key);
+    const result = fn.apply(this, args);
+    cache.set(key, result);
+    return result;
+  };
+}
+
+// 隐患：fn 非函数时不报错；参数不可序列化时静默失败
+const bad = memoizeJS(null);
+```
+
+```typescript
+// === TypeScript —— 泛型约束保证 fn 为函数，参数可序列化 ===
+type Serializable = string | number | boolean | null | Serializable[];
+
+function memoizeTS<T extends Serializable[], R>(
+  fn: (...args: T) => R
+): (...args: T) => R {
+  const cache = new Map<string, R>();
+  return (...args: T): R => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) return cache.get(key)!;
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  };
+}
+
+// 编译期排除非法用法
+const fib = memoizeTS((n: number): number => (n <= 1 ? n : fib(n - 1) + fib(n - 2)));
+console.log(fib(40)); // 快速返回
+// memoizeTS(123); // ❌ 编译错误
+```
+
+### 权威外部链接扩展
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| TypeScript Handbook — Generics | [typescriptlang.org/docs/handbook/2/generics.html](https://www.typescriptlang.org/docs/handbook/2/generics.html) | 泛型深度指南 |
+| ECMA-262 Abstract Operations | [tc39.es/ecma262/#sec-abstract-operations](https://tc39.es/ecma262/#sec-abstract-operations) | 类型转换规范 |
+| VisuAlgo — Sorting | [visualgo.net/en/sorting](https://visualgo.net/en/sorting) | 算法可视化 |
+| Algorithm Design Manual | [algorist.com](https://www.algorist.com/) | 算法设计权威教材 |
+| Total TypeScript | [totaltypescript.com](https://www.totaltypescript.com/) | TS 高级模式实战 |

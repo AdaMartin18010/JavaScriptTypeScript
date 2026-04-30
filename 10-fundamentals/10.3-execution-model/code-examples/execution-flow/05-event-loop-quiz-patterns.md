@@ -134,6 +134,30 @@ console.log("4");
 // 常见错误：以为 new Promise 内部是异步的
 ```
 
+### 3.4 陷阱题：process.nextTick vs Promise.then（Node.js 特有）
+
+```javascript
+// Node.js 环境
+console.log('1');
+
+process.nextTick(() => {
+  console.log('2');
+  process.nextTick(() => console.log('3'));
+});
+
+Promise.resolve().then(() => {
+  console.log('4');
+  Promise.resolve().then(() => console.log('5'));
+});
+
+setTimeout(() => console.log('6'), 0);
+
+console.log('7');
+
+// Node.js 输出：1 → 7 → 2 → 3 → 4 → 5 → 6
+// 解析：nextTick 队列优先级高于 Promise 微任务队列，且 nextTick 可递归排空
+```
+
 ---
 
 ## 4. 机制解释 (Mechanism Explanation)
@@ -167,6 +191,23 @@ function foo() {
 }
 ```
 
+### 4.3 MessageChannel 与 setTimeout(0) 的区别
+
+```javascript
+// MessageChannel 在浏览器中常用于 polyfill 微任务
+const channel = new MessageChannel();
+const port = channel.port2;
+
+port.onmessage = () => console.log('MessageChannel');
+port.postMessage(null);
+
+Promise.resolve().then(() => console.log('Promise'));
+setTimeout(() => console.log('setTimeout'), 0);
+
+// 浏览器典型输出：Promise → MessageChannel → setTimeout
+// MessageChannel 的回调属于宏任务（task），但在现代浏览器中通常排在 setTimeout 之前
+```
+
 ---
 
 ## 5. 论证与分析 (Argumentation & Analysis)
@@ -196,6 +237,30 @@ function starve() {
 starve();
 // 这 1000 个微任务会在单个宏任务周期内全部执行完毕
 // 期间浏览器无法渲染、无法响应用户输入
+```
+
+#### 代码示例：scheduler.yield() — 协作式让出主线程（现代 API）
+
+```javascript
+// 长时间计算任务中主动让出，避免阻塞渲染
+async function processLargeArray(items) {
+  const results = [];
+  const BATCH_SIZE = 100;
+
+  for (let i = 0; i < items.length; i += BATCH_SIZE) {
+    const batch = items.slice(i, i + BATCH_SIZE);
+    results.push(...batch.map(heavyComputation));
+
+    // 每处理一批后让出主线程，允许渲染和输入事件处理
+    if (typeof scheduler !== 'undefined' && scheduler.yield) {
+      await scheduler.yield(); // 将控制权交还给事件循环
+    } else {
+      await new Promise(r => setTimeout(r, 0)); // 降级方案
+    }
+  }
+
+  return results;
+}
 ```
 
 ---
@@ -287,6 +352,39 @@ Promise.resolve().then(() => {
 // rAF 在渲染 pipeline 中，通常在微任务之后、下一个宏任务之前
 ```
 
+### 6.4 正例：精确控制任务调度优先级
+
+```javascript
+// 浏览器端任务调度优先级矩阵
+function scheduleTask(task, priority = 'user-visible') {
+  switch (priority) {
+    case 'immediate':
+      // 微任务：最高优先级，当前任务后立即执行
+      queueMicrotask(task);
+      break;
+
+    case 'user-visible':
+      // 普通宏任务：下一个事件循环 tick
+      setTimeout(task, 0);
+      break;
+
+    case 'background':
+      // 低优先级：requestIdleCallback 或 setTimeout 延迟
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(task, { timeout: 2000 });
+      } else {
+        setTimeout(task, 100);
+      }
+      break;
+
+    case 'animation':
+      // 与渲染同步
+      requestAnimationFrame(task);
+      break;
+  }
+}
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
@@ -298,6 +396,12 @@ Promise.resolve().then(() => {
 - **Node.js Event Loop Guide** — <https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick>
 - **Jake Archibald: Tasks, Microtasks, Queues** — <https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/>
 - **V8 Blog — JavaScript Execution** — <https://v8.dev/blog/fast-async>
+- **Node.js: process.nextTick** — <https://nodejs.org/api/process.html#processnexttickcallback-args>
+- **MDN: queueMicrotask** — <https://developer.mozilla.org/en-US/docs/Web/API/queueMicrotask>
+- **MDN: scheduler.yield()** — <https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/yield>
+- **Chromium: Task Scheduling** — <https://developer.chrome.com/docs/web-platform/scheduler>
+- **WhatWG HTML: Task Sources** — <https://html.spec.whatwg.org/multipage/webappapis.html#task-source>
+- **V8 Blog: Orinoco - garbage collection** — <https://v8.dev/blog/trash-talk>
 
 ---
 

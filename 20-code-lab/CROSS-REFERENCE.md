@@ -388,4 +388,30 @@ function topoSort(modules: ModuleNode[]): string[] {
 
 ---
 
+## 模块依赖矩阵
+
+| 模块 | 前置依赖 | 后续进阶 | 知识库关联 |
+|------|---------|---------|-----------|
+| 20.1-language-core | — | 20.2, 20.3, 20.4 | 10-fundamentals |
+| 20.2-language-patterns | 20.1 | 20.5, 20.6 | 30.1-guides |
+| 20.3-concurrency-async | 20.1 | 20.5, 20.6, 20.8 | 10.3-execution-model |
+| 20.4-data-algorithms | 20.1 | 20.6, 20.10 | 30.3-comparison-matrices |
+| 20.5-frontend-frameworks | 20.2, 20.3 | 20.7, 20.8 | 30.10-en/signals-paradigm |
+| 20.6-backend-apis | 20.3, 20.4 | 20.7, 20.8, 20.9 | decision-trees.md |
+| 20.7-ssr-metaframeworks | 20.5, 20.6 | — | 30.2-categories |
+| 20.8-edge-serverless | 20.5, 20.6 | 20.9 | 30.4-backend |
+| 20.9-observability-security | 20.1, 20.6, 20.8 | — | 30.5-diagrams |
+| 20.10-formal-verification | 20.1, 20.4 | — | 10.7-academic-frontiers |
+| 20.11-rust-toolchain | 20.1, 20.5 | — | 30.10-en/rust-toolchain-migration |
+
+---
+
+## 更多权威参考
+
+- [ECMA-262 — ECMAScript Language Specification](https://262.ecma-international.org/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- [Node.js Documentation](https://nodejs.org/docs/latest/api/)
+- [React Documentation](https://react.dev/)
+- [MDN Web Docs](https://developer.mozilla.org/)
+
 *最后更新: 2026-04-30*

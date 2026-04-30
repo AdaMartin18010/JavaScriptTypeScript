@@ -389,4 +389,46 @@ class MemoryLeakDetector {
 
 ---
 
+## 进阶性能监控代码
+
+### OpenTelemetry 手动埋点（Span Event）
+
+```typescript
+// otel-manual-span.ts
+import { trace, SpanStatusCode } from '@opentelemetry/api';
+
+const tracer = trace.getTracer('perf-lab', '1.0.0');
+
+export async function runDatabaseQuery<T>(sql: string, executor: () => Promise<T>): Promise<T> {
+  return tracer.startActiveSpan('db.query', async (span) => {
+    span.setAttribute('db.statement', sql);
+    span.addEvent('query.start');
+    try {
+      const result = await executor();
+      span.addEvent('query.end', { rowCount: Array.isArray(result) ? result.length : 1 });
+      span.setStatus({ code: SpanStatusCode.OK });
+      return result;
+    } catch (err) {
+      span.recordException(err as Error);
+      span.setStatus({ code: SpanStatusCode.ERROR, message: (err as Error).message });
+      throw err;
+    } finally {
+      span.end();
+    }
+  });
+}
+```
+
+---
+
+## 更多权威参考
+
+| 资源 | 链接 |
+|------|------|
+| web-vitals Attribution | <https://github.com/GoogleChrome/web-vitals#attribution> |
+| Node.js perf_hooks | <https://nodejs.org/api/perf_hooks.html> |
+| OpenTelemetry JS Manual Instrumentation | <https://opentelemetry.io/docs/languages/js/instrumentation/> |
+| Prometheus Client for Node.js | <https://github.com/siimon/prom-client> |
+| WebPageTest | <https://www.webpagetest.org/> |
+
 *最后更新: 2026-04-30*

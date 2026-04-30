@@ -285,7 +285,88 @@ function useSignal<T>(signal: Signal<T>): T {
 // 使用：const count = useSignal(mySignal);
 ```
 
-### 3.2 常见误区
+### 3.2 高级模式：Resource / Async Signal
+
+```typescript
+// async-resource.ts — 将异步数据加载封装为 Signal
+import { signal, computed, effect } from '@preact/signals-core';
+
+interface ResourceState<T> {
+  data: T | undefined;
+  error: Error | undefined;
+  loading: boolean;
+}
+
+function createResource<T>(fetcher: () => Promise<T>) {
+  const state = signal<ResourceState<T>>({ data: undefined, error: undefined, loading: false });
+
+  async function refetch() {
+    state.value = { ...state.value, loading: true, error: undefined };
+    try {
+      const data = await fetcher();
+      state.value = { data, error: undefined, loading: false };
+    } catch (error) {
+      state.value = { data: undefined, error: error as Error, loading: false };
+    }
+  }
+
+  return { state, refetch };
+}
+
+// 使用
+const userResource = createResource(() => fetch('/api/user').then(r => r.json()));
+
+effect(() => {
+  const { data, error, loading } = userResource.state.value;
+  if (loading) console.log('Loading...');
+  else if (error) console.error('Error:', error);
+  else console.log('User:', data);
+});
+
+userResource.refetch();
+```
+
+### 3.3 显式清理与内存管理
+
+```typescript
+// explicit-dispose.ts — 避免持久订阅导致的内存泄漏
+class DisposableEffect {
+  private deps = new Set<() => void>();
+  private cleanupFns: (() => void)[] = [];
+
+  constructor(private fn: () => (() => void) | void) {
+    this.run();
+  }
+
+  private run() {
+    // 清理上次运行
+    this.cleanupFns.forEach((c) => c());
+    this.cleanupFns = [];
+
+    activeEffect = () => this.run();
+    const cleanup = this.fn();
+    if (cleanup) this.cleanupFns.push(cleanup);
+    activeEffect = null;
+  }
+
+  dispose() {
+    this.cleanupFns.forEach((c) => c());
+    this.cleanupFns = [];
+    this.deps.clear();
+  }
+}
+
+// 使用
+const effect = new DisposableEffect(() => {
+  console.log('Current count:', count.value);
+  return () => console.log('cleaning up');
+});
+
+// 组件卸载时调用
+effect.dispose();
+```
+
+### 3.4 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -294,7 +375,7 @@ function useSignal<T>(signal: Signal<T>): T {
 | 所有框架信号实现相同 | Solid 使用编译时优化，Preact 使用运行时链表，实现差异显著 |
 | 忽略 Batch 的必要性 | 高频写入无 batch 会导致 O(n²) 级 effect 重算 |
 
-### 3.3 扩展阅读
+### 3.5 扩展阅读
 
 - [The Future of Reactivity — Ryan Carniato](https://dev.to/ryansolid/fine-grained-reactivity-already-won-2a99)
 - [Push vs Pull in Reactive Systems](https://www.reactively.dev/blog/why-use-reactively)
@@ -311,6 +392,9 @@ function useSignal<T>(signal: Signal<T>): T {
 - [Why Signals Are Better Than Hooks](https://www.builder.io/blog/signals-vs-hooks) — Builder.io 技术博客
 - [TC39 Signals GitHub](https://github.com/tc39/proposal-signals) — ECMAScript 标准提案仓库
 - [Preact Signals Core Source](https://github.com/preactjs/signals) — Preact Signals 源码
+- [Reactively](https://www.reactively.dev/) — 细粒度响应式系统原理讲解
+- [Milos Signals](https://github.com/WebReflection/usignal) — 微体积 Signal 实现参考
+- [Vapor Mode (Vue)](https://vuejs.org/guide/extras/reactivity-in-depth.html) — Vue 无虚拟 DOM 编译模式
 
 ---
 

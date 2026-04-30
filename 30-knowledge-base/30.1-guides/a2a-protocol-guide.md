@@ -902,4 +902,55 @@ class ResilientA2AClient {
 > - MCP (Model Context Protocol) 完全指南 [TODO: 链接待修复] — Agent 与工具集成协议
 > - `jsts-code-lab/94-ai-agent-lab/` — AI Agent 实验代码
 > - AI Agent 基础设施 [TODO: 链接待修复]
+>
+## 进阶代码示例
+
+### Zod 校验 Agent Card
+
+```typescript
+// agent-card-schema.ts
+import { z } from 'zod';
+
+const AgentSkillSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  inputSchema: z.record(z.unknown()),
+  outputSchema: z.record(z.unknown()).optional(),
+});
+
+export const AgentCardSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  version: z.string(),
+  capabilities: z.object({
+    streaming: z.boolean().optional(),
+    pushNotifications: z.boolean().optional(),
+  }),
+  skills: z.array(AgentSkillSchema),
+  authentication: z.object({
+    type: z.enum(['oauth2', 'api_key', 'mTLS']),
+  }).optional(),
+  endpoint: z.string().url(),
+});
+
+export type AgentCard = z.infer<typeof AgentCardSchema>;
+
+export function parseAgentCard(raw: unknown): AgentCard {
+  return AgentCardSchema.parse(raw);
+}
+```
+
+---
+
+## 更多权威参考
+
+| 来源 | 链接 | 说明 |
+|------|------|------|
+| Zod Documentation | <https://zod.dev/> | TypeScript Schema 校验 |
+| JSON-RPC 2.0 Specification | <https://www.jsonrpc.org/specification> | A2A 基础传输协议 |
+| Server-Sent Events (SSE) | <https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events> | 流式推送标准 |
+| Node.js crypto — verify | <https://nodejs.org/api/crypto.html#cryptoverifyalgorithm-data-key-signature> | 签名验证 API |
+| gRPC Documentation | <https://grpc.io/docs/> | 高性能 RPC 框架 |
+
 > - AI SDK 指南 [TODO: 链接待修复]

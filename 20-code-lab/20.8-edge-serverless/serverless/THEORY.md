@@ -387,4 +387,50 @@ async function generateDailyStats(_db: D1Database): Promise<Record<string, numbe
 
 ---
 
+## 进阶 Serverless 模式
+
+### Saga 模式 — Step Functions 编排
+
+```typescript
+// saga-orchestration.ts
+interface SagaStep {
+  name: string;
+  invoke: () => Promise<void>;
+  compensate: () => Promise<void>;
+}
+
+class Saga {
+  private steps: SagaStep[] = [];
+  private completed: SagaStep[] = [];
+
+  addStep(step: SagaStep) { this.steps.push(step); }
+
+  async execute() {
+    for (const step of this.steps) {
+      try {
+        await step.invoke();
+        this.completed.push(step);
+      } catch (err) {
+        for (const completed of [...this.completed].reverse()) {
+          await completed.compensate();
+        }
+        throw new Error('Saga failed at step ' + step.name + ': ' + (err as Error).message);
+      }
+    }
+  }
+}
+```
+
+---
+
+## 更多权威外部资源
+
+| 资源 | 链接 |
+|------|------|
+| OpenFaaS Documentation | <https://docs.openfaas.com/> |
+| Knative Documentation | <https://knative.dev/docs/> |
+| Azure Functions Developer Guide | <https://learn.microsoft.com/en-us/azure/azure-functions/> |
+| AWS Serverless Land | <https://serverlessland.com/> |
+| WinterCG — Web-interoperable Runtimes | <https://wintercg.org/> |
+
 *最后更新: 2026-04-30*

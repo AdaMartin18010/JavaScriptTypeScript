@@ -145,6 +145,46 @@ Number(false);     // 0
 Number(Symbol());  // TypeError
 ```
 
+#### 代码示例：ToString 对 Symbol 的边界行为
+
+```javascript
+// ToString 对 Symbol 抛出 TypeError，这是常见陷阱
+const sym = Symbol('desc');
+
+try {
+  console.log('value: ' + sym);   // TypeError: Cannot convert a Symbol value to a string
+} catch (e) {
+  console.log(e.name); // TypeError
+}
+
+// 正确方式：显式调用 Symbol.prototype.description 或 String() 包装
+try {
+  console.log('value: ' + sym.description); // "value: desc"
+  console.log('value: ' + String(sym));     // "value: Symbol(desc)"
+} catch (e) {
+  console.log('unexpected error:', e);
+}
+```
+
+#### 代码示例：BigInt 与 Number 混合运算的 ToNumber 行为
+
+```javascript
+// BigInt 与 Number 不能直接进行算术运算
+const n = 10n;
+const m = 5;
+
+// console.log(n + m);  // TypeError: Cannot mix BigInt and other types
+
+// 必须显式转换
+console.log(Number(n) + m);  // 15
+console.log(n + BigInt(m));  // 15n
+
+// 比较运算例外：允许跨类型比较（均先 ToNumeric 再比较）
+console.log(10n == 10);   // true
+console.log(10n === 10);  // false（严格相等不触发类型转换）
+console.log(10n > 5);     // true
+```
+
 ---
 
 ## 5. 论证与分析 (Argumentation & Analysis)
@@ -173,6 +213,41 @@ console.log(obj + 1);      // 43 (hint: number → valueOf)
 console.log(`${obj}`);     // "hello" (hint: string → toString)
 ```
 
+### 6.2 正例：IsCallable 与 IsConstructor 的运行时体现
+
+```javascript
+// 这些抽象操作没有直接对应的 JS API，但可以通过 typeof 和 Proxy 间接观察
+
+function isCallable(value) {
+  return typeof value === 'function';
+}
+
+function isConstructor(value) {
+  try {
+    new new Proxy(value, {
+      construct() { return {}; }
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// 箭头函数可调用但不可构造
+const arrow = () => {};
+console.log(isCallable(arrow));    // true
+console.log(isConstructor(arrow)); // false
+
+// class 既可调用（某些引擎）又可构造
+class MyClass {}
+console.log(isCallable(MyClass));    // true (typeof class === 'function')
+console.log(isConstructor(MyClass)); // true
+
+// 普通对象既不可调用也不可构造
+console.log(isCallable({}));       // false
+console.log(isConstructor({}));    // false
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
@@ -181,6 +256,14 @@ console.log(`${obj}`);     // "hello" (hint: string → toString)
 - **MDN: Type Coercion** — <https://developer.mozilla.org/en-US/docs/Glossary/Type_coercion>
 - **MDN: Equality comparisons and sameness** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness>
 - **V8 Blog: JavaScript type coercion explained** — <https://v8.dev/blog/javascript-type-coercion>
+- **2ality: Converting values to primitives** — <https://2ality.com/2022/11/coercion-to-primitive.html>
+- **JavaScript.info: Type Conversions** — <https://javascript.info/type-conversions>
+- **ECMA-262 §7.1.1** — ToPrimitive — <https://tc39.es/ecma262/#sec-toprimitive>
+- **ECMA-262 §7.1.2** — ToBoolean — <https://tc39.es/ecma262/#sec-toboolean>
+- **ECMA-262 §7.1.4** — ToNumber — <https://tc39.es/ecma262/#sec-tonumber>
+- **ECMA-262 §7.1.17** — ToString — <https://tc39.es/ecma262/#sec-tostring>
+- **MDN: BigInt** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt>
+- **MDN: Symbol** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol>
 
 ---
 
@@ -328,7 +411,5 @@ graph TD
     G -->|返回对象| H[抛出 TypeError]
     F --> I[执行加法]
 ```
-
----
 
 > 📅 补充更新：2026-04-27

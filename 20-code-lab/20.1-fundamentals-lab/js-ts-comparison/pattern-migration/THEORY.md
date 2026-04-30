@@ -336,3 +336,51 @@ export interface CreateUserRequest {
 ---
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*
+
+## 深化补充
+
+### 新增代码示例：回调地狱 → Promise + async/await 类型化迁移
+
+```javascript
+// === Before: JavaScript 回调风格 ===
+function fetchUserJS(userId, callback) {
+  fetch(`/api/users/${userId}`)
+    .then(res => res.json())
+    .then(data => callback(null, data))
+    .catch(err => callback(err));
+}
+
+fetchUserJS('123', (err, user) => {
+  if (err) return console.error(err);
+  console.log(user.name);
+});
+```
+
+```typescript
+// === After: TypeScript Promise + async/await ===
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+async function fetchUserTS(userId: string): Promise<User> {
+  const res = await fetch(`/api/users/${userId}`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json() as Promise<User>;
+}
+
+// 使用处获得完整类型推断
+const user = await fetchUserTS('123');
+console.log(user.name.toUpperCase()); // 编译期已知为 string
+```
+
+### 权威外部链接扩展
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| TypeScript Migration Handbook | [typescriptlang.org/docs/handbook/migrating-from-javascript.html](https://www.typescriptlang.org/docs/handbook/migrating-from-javascript.html) | 官方迁移指南 |
+| ts-migrate | [github.com/airbnb/ts-migrate](https://github.com/airbnb/ts-migrate) | AirBnB 迁移工具 |
+| type-coverage | [github.com/plantain-00/type-coverage](https://github.com/plantain-00/type-coverage) | 类型覆盖率统计 |
+| ESLint no-explicit-any | [typescript-eslint.io/rules/no-explicit-any](https://typescript-eslint.io/rules/no-explicit-any/) | any 使用规约 |
+| Total TypeScript — Migration | [totaltypescript.com](https://www.totaltypescript.com/) | 迁移策略课程 |

@@ -239,6 +239,79 @@ export async function switchReferenceSpace(
 // 常见类型：'viewer' | 'local' | 'local-floor' | 'bounded-floor' | 'unbounded'
 ```
 
+### WebXR Layers 合成（高性能多图层）
+
+```typescript
+// xr-layers.ts — WebXR Layers API 用于高性能 UI 叠加层
+export async function createQuadLayer(
+  session: XRSession,
+  gl: WebGL2RenderingContext,
+  width: number,
+  height: number
+): Promise<XRCompositionLayer> {
+  if (!('XRQuadLayer' in window)) {
+    throw new Error('WebXR Layers not supported');
+  }
+
+  const layer = (session as any).renderState.layers
+    ? (session as any).requestReferenceSpace('local-floor').then((refSpace: XRReferenceSpace) => {
+        const quadLayer = new (window as any).XRQuadLayer(session, gl);
+        quadLayer.width = width;
+        quadLayer.height = height;
+        quadLayer.transform = new XRRigidTransform({ x: 0, y: 1.5, z: -2 });
+        return quadLayer;
+      })
+    : null;
+
+  return layer;
+}
+
+// 使用 Layers 时渲染循环需通过 glFramebuffer 直接绘制到层纹理
+```
+
+### Gamepad 输入映射
+
+```typescript
+// gamepad-mapping.ts — 标准化 XR 手柄按键到应用动作
+interface GamepadMapping {
+  button: number;
+  action: 'grab' | 'teleport' | 'menu' | 'trigger';
+  threshold?: number;
+}
+
+const DEFAULT_MAPPING: GamepadMapping[] = [
+  { button: 0, action: 'trigger', threshold: 0.5 },
+  { button: 1, action: 'grab', threshold: 0.5 },
+  { button: 4, action: 'teleport' },
+  { button: 5, action: 'menu' },
+];
+
+export function readGamepadActions(inputSource: XRInputSource): string[] {
+  if (!inputSource.gamepad) return [];
+
+  const actions: string[] = [];
+  const { buttons } = inputSource.gamepad;
+
+  for (const mapping of DEFAULT_MAPPING) {
+    const btn = buttons[mapping.button];
+    if (!btn) continue;
+    const pressed = mapping.threshold !== undefined
+      ? btn.value > mapping.threshold
+      : btn.pressed;
+    if (pressed) actions.push(mapping.action);
+  }
+
+  return actions;
+}
+
+// 摇杆轴值读取（移动/旋转）
+export function readThumbstick(inputSource: XRInputSource): { x: number; y: number } | null {
+  if (!inputSource.gamepad) return null;
+  const [x, y] = inputSource.gamepad.axes;
+  return { x: x ?? 0, y: y ?? 0 };
+}
+```
+
 ## 关联模块
 
 - `58-data-visualization` — 数据可视化（Canvas/SVG 渲染）
@@ -263,6 +336,11 @@ export async function switchReferenceSpace(
 | Khronos WebGL Specification | 规范 | [www.khronos.org/registry/webgl/specs/latest/2.0/](https://www.khronos.org/registry/webgl/specs/latest/2.0/) |
 | Three.js WebXR Examples | 示例 | [threejs.org/examples/?q=webxr](https://threejs.org/examples/?q=webxr) |
 | WebXR Layers API | 规范草案 | [immersive-web.github.io/layers/](https://immersive-web.github.io/layers/) |
+| Wonderland Engine | 引擎 | [wonderlandengine.com](https://wonderlandengine.com/) — WebXR 原生游戏引擎 |
+| 8th Wall | 平台 | [www.8thwall.com](https://www.8thwall.com/) — WebAR 商业开发平台 |
+| Meta WebXR Samples | 示例 | [github.com/meta-quest/webxr-samples](https://github.com/meta-quest/webxr-samples) |
+| Model-Viewer | 组件 | [modelviewer.dev](https://modelviewer.dev/) — Google 的 Web 组件化 3D/AR 查看器 |
+| WebGPU Fundamentals | 教程 | [webgpufundamentals.org](https://webgpufundamentals.org/) — 下一代 Web 图形 API |
 
 ---
 

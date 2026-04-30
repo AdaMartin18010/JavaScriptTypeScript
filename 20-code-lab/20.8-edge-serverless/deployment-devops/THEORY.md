@@ -437,4 +437,46 @@ async function getClusterResource(kind: string, name: string, namespace: string)
 
 ---
 
+## 进阶部署与 IaC 示例
+
+### Serverless Framework 配置
+
+```yaml
+
+# serverless.yml
+
+service: my-api
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  environment:
+    STAGE: ${opt:stage, 'dev'}
+
+functions:
+  hello:
+    handler: dist/hello.handler
+    events:
+      - httpApi:
+          path: /hello
+          method: get
+
+plugins:
+
+- serverless-offline
+```
+
+---
+
+## 更多权威参考
+
+| 资源 | 描述 | 链接 |
+|------|------|------|
+| Terraform Documentation | 声明式 IaC | <https://developer.hashicorp.com/terraform/docs> |
+| Pulumi Documentation | 编程式 IaC | <https://www.pulumi.com/docs/> |
+| Serverless Framework Docs | Serverless YAML | <https://www.serverless.com/framework/docs> |
+| Dagger.io | 可编程 CI/CD | <https://dagger.io/> |
+| Argo Rollouts | 渐进式交付 | <https://argoproj.github.io/argo-rollouts/> |
+
 *最后更新: 2026-04-30*

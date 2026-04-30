@@ -300,3 +300,51 @@ async function loadWasm() {
 ---
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*
+
+## 深化补充
+
+### 新增代码示例：cargo-outdated 集成与 MSRV CI 检查
+
+```bash
+#!/bin/bash
+# check-msrv.sh — 在 CI 中验证 MSRV
+
+set -e
+MSRV="1.70.0"
+
+echo "=== Checking MSRV: $MSRV ==="
+rustup install "$MSRV"
+cargo +"$MSRV" check --all-targets --all-features
+
+echo "=== Running cargo-outdated ==="
+cargo install cargo-outdated
+cargo outdated --exit-code 1
+```
+
+```yaml
+# .github/workflows/msrv.yml
+name: MSRV Check
+on: [pull_request]
+jobs:
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.70.0
+      - run: cargo check --all-features
+      - run: cargo test
+```
+
+### 权威外部链接扩展
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Rust Edition Guide | [doc.rust-lang.org/edition-guide](https://doc.rust-lang.org/edition-guide/) | Edition 迁移官方指南 |
+| Cargo SemVer | [doc.rust-lang.org/cargo/reference/semver.html](https://doc.rust-lang.org/cargo/reference/semver.html) | Cargo 语义化版本 |
+| rustup components history | [rust-lang.github.io/rustup-components-history](https://rust-lang.github.io/rustup-components-history/) | 组件可用性历史 |
+| This Week in Rust | [this-week-in-rust.org](https://this-week-in-rust.org/) | 社区周刊 |
+| cargo-outdated | [github.com/kbknapp/cargo-outdated](https://github.com/kbknapp/cargo-outdated) | 依赖更新检查 |
+| cargo-msrv | [github.com/foresterre/cargo-msrv](https://github.com/foresterre/cargo-msrv) | MSRV 自动查找 |
+| Rust Release Blog | [blog.rust-lang.org](https://blog.rust-lang.org/) | 官方发布博客 |

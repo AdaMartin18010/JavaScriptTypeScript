@@ -364,4 +364,47 @@ async function updateWithDelayDoubleDelete<K, V>(
 
 ---
 
+## 进阶缓存模式
+
+### 多级缓存架构（L1 / L2）
+
+```typescript
+// multi-level-cache.ts
+interface CacheStore<K, V> {
+  get(key: K): Promise<V | undefined>;
+  set(key: K, value: V, ttlMs?: number): Promise<void>;
+  delete(key: K): Promise<void>;
+}
+
+class MultiLevelCache<K, V> {
+  constructor(private l1: CacheStore<K, V>, private l2: CacheStore<K, V>) {}
+  async get(key: K): Promise<V | undefined> {
+    const v1 = await this.l1.get(key);
+    if (v1 !== undefined) return v1;
+    const v2 = await this.l2.get(key);
+    if (v2 !== undefined) { await this.l1.set(key, v2, 10_000); return v2; }
+    return undefined;
+  }
+  async set(key: K, value: V, ttlMs?: number): Promise<void> {
+    await Promise.all([this.l1.set(key, value, ttlMs), this.l2.set(key, value, ttlMs)]);
+  }
+  async delete(key: K): Promise<void> {
+    await Promise.all([this.l1.delete(key), this.l2.delete(key)]);
+  }
+}
+```
+
+> L1 通常为内存（如 Node.js Map + TTL），L2 为 Redis / Memcached。
+
+---
+
+## 更多权威参考
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| IETF RFC 9111 — HTTP Caching | 协议标准 | <https://datatracker.ietf.org/doc/html/rfc9111> |
+| Martin Kleppmann — Designing Data-Intensive Applications | 书籍 | <https://dataintensive.net/> |
+| System Design Primer — Caching | 开源 | <https://github.com/donnemartin/system-design-primer#caching> |
+| web.dev — HTTP Cache | 最佳实践 | <https://web.dev/articles/http-cache> |
+
 *最后更新: 2026-04-30*

@@ -1,4 +1,4 @@
-﻿# 数据分析 — 理论基础
+# 数据分析 — 理论基础
 
 > **定位**：`20-code-lab/20.6-backend-apis/analytics`
 > **关联**：`87-realtime-analytics` | `66-feature-flags` | `17-debugging-monitoring`
@@ -426,7 +426,98 @@ class GDPRComplianceManager {
 
 ---
 
-## 4. 与相邻模块的关系
+## 4. 采样与性能优化
+
+```typescript
+// sampling.ts — 客户端采样以降低服务端压力
+class SamplingTracker {
+  private sampleRate: number;
+
+  constructor(sampleRate = 1.0) {
+    this.sampleRate = Math.max(0, Math.min(1, sampleRate));
+  }
+
+  shouldTrack(): boolean {
+    if (this.sampleRate >= 1) return true;
+    return Math.random() < this.sampleRate;
+  }
+
+  // 按用户 ID 一致性采样：同一用户始终命中或始终丢弃
+  shouldTrackUser(userId: string): boolean {
+    if (this.sampleRate >= 1) return true;
+    const hash = userId.split('').reduce((h, c) => ((h << 5) - h + c.charCodeAt(0)) | 0, 0);
+    const normalized = (Math.abs(hash) % 1000) / 1000;
+    return normalized < this.sampleRate;
+  }
+}
+
+// 服务端采样：在高并发场景下对事件进行降采样
+function reservoirSample<T>(stream: T[], k: number): T[] {
+  const reservoir: T[] = stream.slice(0, k);
+  for (let i = k; i < stream.length; i++) {
+    const j = Math.floor(Math.random() * (i + 1));
+    if (j < k) reservoir[j] = stream[i];
+  }
+  return reservoir;
+}
+```
+
+---
+
+## 5. 实时分析 WebSocket 流
+
+```typescript
+// realtime-analytics.ts — 服务端实时聚合流
+import { WebSocketServer } from 'ws';
+
+interface AnalyticsWindow {
+  start: number;
+  events: number;
+  uniqueUsers: Set<string>;
+}
+
+class RealtimeAnalytics {
+  private window: AnalyticsWindow = { start: Date.now(), events: 0, uniqueUsers: new Set() };
+  private windowMs = 60_000; // 1 分钟滑动窗口
+
+  record(event: AnalyticsEvent) {
+    const now = Date.now();
+    if (now - this.window.start > this.windowMs) {
+      this.emitSummary();
+      this.window = { start: now, events: 0, uniqueUsers: new Set() };
+    }
+    this.window.events++;
+    this.window.uniqueUsers.add(event.user_id);
+  }
+
+  private emitSummary() {
+    const summary = {
+      interval: new Date(this.window.start).toISOString(),
+      events: this.window.events,
+      uniqueUsers: this.window.uniqueUsers.size,
+    };
+    // 推送到监控仪表盘
+    console.log('[Realtime]', summary);
+  }
+
+  attach(wss: WebSocketServer) {
+    wss.on('connection', (ws) => {
+      // 每 10 秒推送当前窗口统计
+      const interval = setInterval(() => {
+        ws.send(JSON.stringify({
+          events: this.window.events,
+          uniqueUsers: this.window.uniqueUsers.size,
+        }));
+      }, 10_000);
+      ws.on('close', () => clearInterval(interval));
+    });
+  }
+}
+```
+
+---
+
+## 6. 与相邻模块的关系
 
 - **87-realtime-analytics**: 实时数据分析
 - **66-feature-flags**: 特性开关与 A/B 测试
@@ -434,29 +525,42 @@ class GDPRComplianceManager {
 
 ---
 
-## 5. 参考资源
+## 7. 参考资源
 
 ### 规范与标准
+
 - [Google Analytics 4 Measurement Protocol](https://developers.google.com/analytics/devguides/collection/protocol/ga4) — GA4 服务端埋点协议
 - [W3C Web Analytics Definitions](https://www.w3.org/TR/web-analytics/) — Web 分析术语标准
 - [ISO/IEC 27001](https://www.iso.org/standard/27001) — 信息安全管理（数据合规）
+- [IETF RFC 7234 — Caching](https://tools.ietf.org/html/rfc7234) — HTTP 缓存机制（影响埋点上报策略）
+- [W3C Privacy-Preserving Ad Measurement](https://www.w3.org/community/privacy-preserving-ad-measurement/) — 隐私保护测量提案
 
 ### 开源工具
+
 - [Plausible Analytics](https://plausible.io/) — 隐私优先、开源的网站分析（GDPR 合规）
 - [PostHog](https://posthog.com/) — 开源产品分析平台（事件追踪、漏斗、A/B 测试）
 - [Matomo](https://matomo.org/) — 自托管 Google Analytics 替代方案
 - [Snowplow](https://snowplow.io/) — 企业级事件数据收集管道
 - [Jitsu](https://jitsu.com/) — 实时事件收集（Segment 开源替代）
+- [OpenReplay](https://openreplay.com/) — 开源会话录制与回放
+- [Sentry Session Replay](https://docs.sentry.io/platforms/javascript/session-replay/) — 前端会话录制 SDK
+- [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/) — 隐私友好、无需 Cookie 的分析
 
 ### 隐私合规
+
 - [GDPR.eu](https://gdpr.eu/) — GDPR 官方指南
 - [OWASP Privacy Risks](https://owasp.org/www-project-top-10-privacy-risks/) — 隐私风险 Top 10
 - [Differential Privacy — Google](https://github.com/google/differential-privacy) — 差分隐私开源库
+- [Privacy Sandbox](https://developer.chrome.com/docs/privacy-sandbox/) — Chrome 隐私沙盒提案
 
 ### 性能测量
+
 - [web.dev — Core Web Vitals](https://web.dev/articles/vitals) — Google 核心网页指标
 - [MDN Performance API](https://developer.mozilla.org/en-US/docs/Web/API/Performance_API) — 浏览器性能测量 API
+- [MDN Navigator.sendBeacon](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon) — 可靠的事件上报 API
+- [Navigation Timing Level 2](https://www.w3.org/TR/navigation-timing-2/) — W3C 页面加载性能标准
+- [Segment Spec — Event Tracking](https://segment.com/academy/collecting-data/) — 事件追踪规范与最佳实践
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

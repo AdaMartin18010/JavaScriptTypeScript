@@ -225,6 +225,82 @@ startStandaloneServer(server, { listen: { port: 4000 } })
   .then(({ url }) => console.log(`🚀 Gateway ready at ${url}`));
 ```
 
+## 代码示例：Server-Sent Events (SSE) 实时推送
+
+```typescript
+// sse-endpoint.ts — 基于 SSE 的轻量级服务端推送（无需 WebSocket）
+export async function handleSSE(request: Request): Promise<Response> {
+  const stream = new ReadableStream({
+    start(controller) {
+      const encoder = new TextEncoder();
+      const send = (data: unknown) => {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+      };
+
+      // 模拟实时事件
+      const interval = setInterval(() => {
+        send({ timestamp: Date.now(), metric: Math.random() });
+      }, 2000);
+
+      // 清理
+      request.signal.addEventListener('abort', () => {
+        clearInterval(interval);
+        controller.close();
+      });
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  });
+}
+
+// 客户端订阅
+// const es = new EventSource('/api/events');
+// es.onmessage = (e) => console.log(JSON.parse(e.data));
+```
+
+## 代码示例：JWT 鉴权中间件（全栈通用）
+
+```typescript
+// jwt-middleware.ts — 基于 jose 的类型安全 JWT 校验
+import { jwtVerify, createRemoteJWKSet } from 'jose';
+
+const JWKS = createRemoteJWKSet(new URL('https://auth.example.com/.well-known/jwks.json'));
+
+export async function jwtAuthMiddleware(req: Request): Promise<Request | Response> {
+  const header = req.headers.get('Authorization');
+  if (!header?.startsWith('Bearer ')) {
+    return new Response(JSON.stringify({ error: 'Missing token' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const token = header.slice(7);
+  try {
+    const { payload } = await jwtVerify(token, JWKS, {
+      issuer: 'https://auth.example.com',
+      audience: 'my-app',
+      clockTolerance: 60,
+    });
+
+    // 将解析后的用户附加到请求上下文
+    (req as any).user = payload;
+    return req;
+  } catch (e) {
+    return new Response(JSON.stringify({ error: 'Invalid token' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -245,7 +321,7 @@ startStandaloneServer(server, { listen: { port: 4000 } })
 
 ---
 
-> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
+> 此分类文档已根据实际模块内容补充代码示例与权威链接。
 
 ## 学习资源
 
@@ -266,7 +342,14 @@ startStandaloneServer(server, { listen: { port: 4000 } })
 | Vercel Edge Functions | 文档 | [vercel.com/docs/functions/edge-functions](https://vercel.com/docs/functions/edge-functions) |
 | Apollo Federation | 文档 | [apollographql.com/docs/federation](https://www.apollographql.com/docs/federation/) |
 | Remix Data Flow | 文档 | [remix.run/docs/en/main/discussion/data-flow](https://remix.run/docs/en/main/discussion/data-flow) |
+| Hono | 文档 | [hono.dev](https://hono.dev/) — 轻量级 Edge-First Web 框架 |
+| Fastify | 文档 | [fastify.dev](https://fastify.dev/) — 高性能 Node.js 框架 |
+| Prisma | 文档 | [prisma.io/docs](https://www.prisma.io/docs) — 下一代 ORM |
+| Drizzle ORM | 文档 | [orm.drizzle.team](https://orm.drizzle.team/) — TypeScript ORM |
+| MDN — Server-Sent Events | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Server-sent_events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) |
+| jose (JWT library) | 文档 | [github.com/panva/jose](https://github.com/panva/jose) — 通用 JWT/JWS/JWE 库 |
+| Next.js App Router | 文档 | [nextjs.org/docs/app](https://nextjs.org/docs/app) — 基于 React Server Components 的路由 |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

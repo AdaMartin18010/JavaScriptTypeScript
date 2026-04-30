@@ -1,4 +1,4 @@
-﻿# 开发者体验 (DX) 理论：工具链与人机工程
+# 开发者体验 (DX) 理论：工具链与人机工程
 
 > **目标读者**：工具链开发者、平台工程师、关注团队效率的技术负责人
 > **关联文档**：``30-knowledge-base/30.2-categories/developer-experience.md`` (Legacy) [Legacy link]
@@ -53,13 +53,13 @@
 
 ### 3.1 错误信息设计
 
-❌ 差的错误信息：
+差的错误信息：
 
 ```
 Error: Cannot read property 'name' of undefined
 ```
 
-✅ 好的错误信息：
+好的错误信息：
 
 ```
 Error: Cannot access 'name' on undefined
@@ -234,6 +234,142 @@ logger.error(new Error('Connection timeout'));
 }
 ```
 
+### 4.4 代码示例：TypeScript 项目引用（Project References）
+
+```json
+// tsconfig.json (根)
+{
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  },
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/ui" },
+    { "path": "./apps/web" }
+  ]
+}
+
+// packages/core/tsconfig.json
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true
+  },
+  "include": ["src/**/*"]
+}
+```
+
+### 4.5 代码示例：ESLint Flat Config
+
+```javascript
+// eslint.config.js
+import js from '@eslint/js';
+import ts from 'typescript-eslint';
+import react from 'eslint-plugin-react';
+
+export default [
+  js.configs.recommended,
+  ...ts.configs.recommended,
+  {
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      parserOptions: {
+        project: './tsconfig.json',
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/explicit-function-return-type': 'off',
+    },
+  },
+  {
+    files: ['**/*.tsx'],
+    plugins: { react },
+    rules: {
+      'react/react-in-jsx-scope': 'off',
+    },
+  },
+];
+```
+
+### 4.6 代码示例：Vitest 快速测试配置
+
+```typescript
+// vitest.config.ts
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: ['node_modules/', 'src/**/*.d.ts'],
+    },
+    // 快速反馈：失败时立即退出
+    bail: 1,
+    // 并行执行
+    pool: 'threads',
+    poolOptions: {
+      threads: { singleThread: false },
+    },
+  },
+});
+```
+
+### 4.7 代码示例：开发期错误边界组件（React）
+
+```tsx
+// ErrorBoundary.tsx
+import { Component, type ReactNode } from 'react';
+
+interface Props {
+  children: ReactNode;
+  fallback?: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+  error?: Error;
+}
+
+export class ErrorBoundary extends Component<Props, State> {
+  state: State = { hasError: false };
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    // 开发期：打印详细错误信息
+    console.error('ErrorBoundary caught:', error);
+    console.error('Component stack:', info.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        this.props.fallback ?? (
+          <div style={{ padding: 20, color: 'red' }}>
+            <h2>Something went wrong</h2>
+            <pre>{this.state.error?.message}</pre>
+            <pre>{this.state.error?.stack}</pre>
+          </div>
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
+```
+
 ---
 
 ## 5. 总结
@@ -265,6 +401,14 @@ logger.error(new Error('Connection timeout'));
 | State of JS | 全球 JS 生态开发者体验年度调查 | [stateofjs.com](https://stateofjs.com/) |
 | Stack Overflow Developer Survey | 开发者工具链与满意度权威数据 | [survey.stackoverflow.co](https://survey.stackoverflow.co/) |
 | Web DX Community Group | W3C 开发者体验社区组 | [www.w3.org/community/webdx](https://www.w3.org/community/webdx/) |
+| Vite Plugin API | 插件开发文档 | [vitejs.dev/guide/api-plugin](https://vitejs.dev/guide/api-plugin) |
+| Vitest 配置参考 | 测试框架配置 | [vitest.dev/config](https://vitest.dev/config/) |
+| TypeScript Project References | 项目引用官方指南 | [typescriptlang.org/docs/handbook/project-references.html](https://www.typescriptlang.org/docs/handbook/project-references.html) |
+| ESLint Flat Config | 新配置格式 | [eslint.org/docs/latest/use/configure/configuration-files](https://eslint.org/docs/latest/use/configure/configuration-files) |
+| esbuild API | 程序化调用文档 | [esbuild.github.io/api](https://esbuild.github.io/api/) |
+| SWC Configuration | 编译器配置 | [swc.rs/docs/configuration/compilation](https://swc.rs/docs/configuration/compilation) |
+| Lightning CSS | CSS 处理 | [lightningcss.dev](https://lightningcss.dev/) |
+| Node.js Performance | Node.js 性能最佳实践 | [nodejs.org/en/docs/guides/dont-block-the-event-loop](https://nodejs.org/en/docs/guides/dont-block-the-event-loop) |
 
 ---
 
@@ -282,7 +426,7 @@ logger.error(new Error('Connection timeout'));
 - `scaffold-generator.ts`
 - `source-maps.ts`
 
-> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
+> 学习建议：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
 
 ## 核心理论深化
 
@@ -303,4 +447,5 @@ logger.error(new Error('Connection timeout'));
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+> 理论深化更新：2026-04-27
+> 再次深化：2026-04-30

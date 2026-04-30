@@ -463,4 +463,64 @@ const packages: PackageMetrics[] = [
 
 ---
 
+## API 风格决策树
+
+```
+需要与前端强类型契约?
+├── ✅ → GraphQL ( Apollo / Pothos / Yoga )
+│   └── 需要极致性能 / 低带宽? → gRPC + protobuf ( 配合 grpc-web )
+└── ❌ → REST
+    └── 需要标准化 / 自动生成文档? → OpenAPI + Zod
+        └── 需要实时推送? → WebSocket / SSE
+```
+
+---
+
+## 评分矩阵计算 — API 风格选型
+
+```typescript
+// api-selection-scorer.ts
+type Criterion = { name: string; weight: number };
+type Option = { name: string; scores: number[] };
+
+function weightedScore(options: Option[], criteria: Criterion[]): Map<string, number> {
+  const totalWeight = criteria.reduce((s, c) => s + c.weight, 0);
+  const result = new Map<string, number>();
+  for (const opt of options) {
+    const score = opt.scores.reduce((sum, s, i) => sum + (s * criteria[i].weight) / totalWeight, 0);
+    result.set(opt.name, Number(score.toFixed(2)));
+  }
+  return new Map([...result.entries()].sort((a, b) => b[1] - a[1]));
+}
+
+const apiCriteria: Criterion[] = [
+  { name: '类型安全', weight: 0.30 },
+  { name: '性能', weight: 0.25 },
+  { name: '生态成熟度', weight: 0.25 },
+  { name: '学习成本', weight: 0.20 },
+];
+
+const apiOptions: Option[] = [
+  { name: 'REST + OpenAPI', scores: [6, 7, 10, 9] },
+  { name: 'GraphQL', scores: [9, 6, 8, 6] },
+  { name: 'tRPC', scores: [10, 7, 7, 7] },
+  { name: 'gRPC', scores: [8, 10, 7, 5] },
+];
+
+console.log('API 风格加权得分：');
+weightedScore(apiOptions, apiCriteria).forEach((score, name) => console.log('  ' + name + ': ' + score));
+```
+
+---
+
+## 更多权威参考
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| OWASP Cheat Sheet Series | <https://cheatsheetseries.owasp.org/> | 安全最佳实践速查 |
+| GraphQL Specification | <https://spec.graphql.org/> | GraphQL 官方规范 |
+| gRPC Documentation | <https://grpc.io/docs/> | gRPC 官方文档 |
+| OpenAPI Specification | <https://spec.openapis.org/> | OpenAPI 规范 |
+| WebAuthn Guide | <https://webauthn.guide/> | 无密码认证指南 |
+
 *最后更新: 2026-04-30*

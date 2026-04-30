@@ -508,4 +508,34 @@ function Skeleton({ width, height }: { width: number; height: number }) {
 
 ---
 
+## 现代 Web API 深度示例
+
+### Broadcast Channel — 跨标签页同步
+
+```typescript
+// broadcast-channel.ts
+const bc = new BroadcastChannel('app-sync');
+
+export function notifyTabs(message: { type: string; payload: unknown }) {
+  bc.postMessage(message);
+}
+
+export function onTabMessage(handler: (msg: { type: string; payload: unknown }) => void) {
+  bc.onmessage = (event) => handler(event.data);
+}
+
+// 使用：用户在一个标签页登出，通知所有标签页刷新
+notifyTabs({ type: 'LOGOUT', payload: {} });
+```
+
+---
+
+## 更多权威参考
+
+- [W3C — Service Workers Specification](https://www.w3.org/TR/service-workers/)
+- [W3C — Web App Manifest](https://www.w3.org/TR/appmanifest/)
+- [Google PWA Checklist](https://web.dev/pwa-checklist/)
+- [MDN — File System Access API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API)
+- [MDN — Web Share API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Share_API)
+
 > 📅 理论深化更新：2026-04-30

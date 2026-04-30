@@ -379,4 +379,67 @@ async function* parseSSEStream(reader: ReadableStreamDefaultReader<Uint8Array>):
 
 ---
 
+## 进阶实践模式
+
+### ReAct Agent 循环（推理 + 行动）
+
+```typescript
+// react-agent-loop.ts
+interface ReActStep {
+  thought: string;
+  action: { name: string; arguments: Record<string, unknown> } | null;
+  observation: string;
+}
+
+async function runReActAgent(
+  query: string,
+  llm: (prompt: string) => Promise<string>,
+  tools: Map<string, (args: unknown) => Promise<string>>,
+  maxSteps = 10
+): Promise<string> {
+  const history: ReActStep[] = [];
+  for (let i = 0; i < maxSteps; i++) {
+    const prompt = buildReActPrompt(query, history);
+    const raw = await llm(prompt);
+    const { thought, action } = parseReActOutput(raw);
+    if (!action) return thought;
+    const observation = await tools.get(action.name)!(action.arguments);
+    history.push({ thought, action, observation });
+  }
+  return history[history.length - 1].thought;
+}
+
+function buildReActPrompt(query: string, history: ReActStep[]): string {
+  let prompt = `Question: ${query}`;
+  for (const step of history) {
+    prompt += `Thought: ${step.thought}
+Action: ${JSON.stringify(step.action)}
+Observation: ${step.observation}`;
+  }
+  prompt += 'Thought:';
+  return prompt;
+}
+
+function parseReActOutput(raw: string): { thought: string; action: { name: string; arguments: Record<string, unknown> } | null } {
+  const actionStart = raw.indexOf('Action:');
+  const thought = raw.slice(0, actionStart).replace('Thought:', '').trim();
+  const actionJson = actionStart > -1 ? raw.slice(actionStart + 7).trim() : null;
+  const action = actionJson ? JSON.parse(actionJson) : null;
+  return { thought, action };
+}
+```
+
+> ReAct 模式将推理轨迹与工具调用交错，提升复杂任务的可解释性。
+
+---
+
+## 更多权威参考
+
+- [OpenAI — Function Calling Guide](https://platform.openai.com/docs/guides/function-calling)
+- [Anthropic — Tool Use](https://docs.anthropic.com/en/docs/build-with-claude/tool-use)
+- [Microsoft — Autogen](https://microsoft.github.io/autogen/)
+- [CrewAI — Getting Started](https://docs.crewai.com/)
+- [Zod — Schema Validation](https://zod.dev/)
+- [OpenTelemetry JS](https://opentelemetry.io/docs/languages/js/)
+
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

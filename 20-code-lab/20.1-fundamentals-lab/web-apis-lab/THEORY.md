@@ -285,3 +285,54 @@ function trackElementSize(
 - [web.dev — Optimize Web Vitals](https://web.dev/articles/vitals)
 - [web.dev — Lazy Loading Images](https://web.dev/articles/lazy-loading-images)
 - [W3C — Web Performance Working Group](https://www.w3.org/webperf/)
+
+## 深化补充
+
+### 新增代码示例：TransformStream 文本处理与 CompressionStream
+
+```typescript
+// stream-transform.ts — TransformStream 实时转换
+
+const upperCaseTransform = new TransformStream<string, string>({
+  transform(chunk, controller) {
+    controller.enqueue(chunk.toUpperCase());
+  },
+});
+
+// 将 ReadableStream 通过 TransformStream 流向 WritableStream
+const source = new ReadableStream({
+  start(controller) {
+    controller.enqueue('hello');
+    controller.enqueue('world');
+    controller.close();
+  },
+});
+
+const writer = new WritableStream({
+  write(chunk) {
+    console.log(chunk); // HELLO, WORLD
+  },
+});
+
+source.pipeThrough(upperCaseTransform).pipeTo(writer);
+
+// CompressionStream — 在浏览器端压缩数据上传
+async function compressData(data: string): Promise<Blob> {
+  const stream = new Blob([data]).stream();
+  const compressed = stream.pipeThrough(new CompressionStream('gzip'));
+  const response = new Response(compressed);
+  return response.blob();
+}
+```
+
+### 权威外部链接扩展
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| WHATWG Streams Standard | [streams.spec.whatwg.org](https://streams.spec.whatwg.org/) | Streams 规范原文 |
+| MDN — TransformStream | [developer.mozilla.org/en-US/docs/Web/API/TransformStream](https://developer.mozilla.org/en-US/docs/Web/API/TransformStream) | TransformStream API |
+| MDN — CompressionStream | [developer.mozilla.org/en-US/docs/Web/API/CompressionStream](https://developer.mozilla.org/en-US/docs/Web/API/CompressionStream) | 压缩流 API |
+| MDN — Web Locks API | [developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API) | 跨标签页锁 |
+| web.dev — Streams | [web.dev/streams](https://web.dev/streams/) | Streams 实践指南 |
+| Can I Use — Streams | [caniuse.com/streams](https://caniuse.com/streams) | 浏览器兼容性 |
+| W3C — WebGPU | [www.w3.org/TR/webgpu](https://www.w3.org/TR/webgpu/) | WebGPU 标准 |

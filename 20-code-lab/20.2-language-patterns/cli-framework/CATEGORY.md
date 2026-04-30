@@ -229,6 +229,104 @@ function envToConfig(prefix: string): any {
 }
 ```
 
+### 带自动补全的交互式提示
+
+```typescript
+// interactive-prompt.ts — 使用 readline 实现极简自动补全
+import * as readline from 'node:readline';
+
+function promptWithAutocomplete(
+  question: string,
+  choices: string[]
+): Promise<string> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    completer: (line: string) => {
+      const hits = choices.filter((c) => c.toLowerCase().startsWith(line.toLowerCase()));
+      return [hits.length ? hits : choices, line];
+    },
+  });
+
+  return new Promise((resolve) => {
+    rl.question(`${question} `, (answer) => {
+      rl.close();
+      resolve(answer);
+    });
+  });
+}
+
+// 使用
+(async () => {
+  const framework = await promptWithAutocomplete('Framework?', ['react', 'vue', 'svelte', 'solid']);
+  console.log('You chose:', framework);
+})();
+```
+
+### Node.js 原生 util.parseArgs（零依赖）
+
+```typescript
+// native-parseargs.ts — Node 18.3+ 内置参数解析
+import { parseArgs } from 'node:util';
+
+const options = {
+  port: { type: 'string', short: 'p', default: '3000' },
+  verbose: { type: 'boolean', short: 'v', default: false },
+  env: { type: 'string', short: 'e' },
+} as const;
+
+const { values, positionals } = parseArgs({ args: process.argv.slice(2), options, allowPositionals: true });
+
+console.log(values);     // { port: '3000', verbose: true, env: 'production' }
+console.log(positionals); // ['build', 'src']
+```
+
+### 多步任务列表（Listr2 风格）
+
+```typescript
+// task-runner.ts — 可组合的并发/串行 CLI 任务队列
+type TaskStatus = 'pending' | 'running' | 'success' | 'error';
+
+interface Task {
+  title: string;
+  task: () => Promise<void>;
+  skip?: () => boolean;
+}
+
+class TaskRunner {
+  async run(tasks: Task[], { concurrent = false } = {}) {
+    if (concurrent) {
+      await Promise.all(tasks.map((t) => this.exec(t)));
+    } else {
+      for (const t of tasks) await this.exec(t);
+    }
+  }
+
+  private async exec(task: Task) {
+    if (task.skip?.()) {
+      console.log(`[SKIP] ${task.title}`);
+      return;
+    }
+    console.log(`[START] ${task.title}`);
+    try {
+      await task.task();
+      console.log(`[DONE]  ${task.title}`);
+    } catch (e) {
+      console.error(`[FAIL]  ${task.title}: ${e}`);
+      throw e;
+    }
+  }
+}
+
+// 使用
+const runner = new TaskRunner();
+await runner.run([
+  { title: 'Lint', task: async () => { /* exec lint */ } },
+  { title: 'Test', task: async () => { /* exec test */ } },
+  { title: 'Build', task: async () => { /* exec build */ } },
+]);
+```
+
 ## 权威参考链接
 
 | 资源 | 类型 | 链接 |
@@ -238,11 +336,19 @@ function envToConfig(prefix: string): any {
 | Oclif | 文档 | [oclif.io](https://oclif.io) — Heroku/ Salesforce 开源 CLI 框架 |
 | Ink | 文档 | [github.com/vadimdemedes/ink](https://github.com/vadimdemedes/ink) — React for CLIs |
 | inquirer.js | 文档 | [github.com/SBoudrias/Inquirer.js](https://github.com/SBoudrias/Inquirer.js) — 交互式提示 |
+| Clack | 文档 | [github.com/natemoo-re/clack](https://github.com/natemoo-re/clack) — 现代美观的交互提示 |
 | CLI Guidelines | 指南 | [clig.dev](https://clig.dev) — 命令行界面设计最佳实践 |
 | POSIX Utility Conventions | 规范 | [pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html) |
 | GNU Coding Standards | 规范 | [gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html](https://www.gnu.org/prep/standards/html_node/Command_002dLine-Interfaces.html) |
 | chalk | 工具 | [github.com/chalk/chalk](https://github.com/chalk/chalk) — 终端样式库 |
 | meow | 工具 | [github.com/sindresorhus/meow](https://github.com/sindresorhus/meow) — 极简 CLI 助手 |
+| cac | 工具 | [github.com/cacjs/cac](https://github.com/cacjs/cac) — 轻量无依赖 CLI 框架（Vite 所用） |
+| zx | 工具 | [github.com/google/zx](https://github.com/google/zx) — Google 的 Bash 替代脚本工具 |
+| consola | 工具 | [github.com/unjs/consola](https://github.com/unjs/consola) — 优雅的 Node.js 控制台输出 |
+| Listr2 | 工具 | [listr2.kilic.dev](https://listr2.kilic.dev/) — 美观的 CLI 任务列表 |
+| Node.js util.parseArgs | API | [nodejs.org/api/util.html#utilparseargsconfig](https://nodejs.org/api/util.html#utilparseargsconfig) — 原生零依赖参数解析 |
+| npm — package.json bin field | 规范 | [docs.npmjs.com/cli/v10/configuring-npm/package-json#bin](https://docs.npmjs.com/cli/v10/configuring-npm/package-json#bin) |
+| Shebang | 指南 | [en.wikipedia.org/wiki/Shebang_(Unix)](https://en.wikipedia.org/wiki/Shebang_(Unix)) |
 
 ## 相关索引
 
@@ -274,4 +380,4 @@ function envToConfig(prefix: string): any {
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

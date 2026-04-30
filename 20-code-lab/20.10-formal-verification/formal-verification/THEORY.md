@@ -306,3 +306,56 @@ seL4 使用 Isabelle/HOL 完整形式化验证了操作系统的功能正确性�
 - **40-type-theory-formal**: 类型理论的形式化基础
 - **41-formal-semantics**: 程序语义的形式化定义
 - **79-compiler-design**: 编译器的形式化验证
+
+## 深化补充
+
+### 新增代码示例：不可空数组精化类型与状态机穷尽检查
+
+```typescript
+// refinement-types.ts — 模拟精化类型保证数组非空
+
+declare const NonEmptyBrand: unique symbol;
+type NonEmptyArray<T> = T[] & { [NonEmptyBrand]: true };
+
+function assertNonEmpty<T>(arr: T[]): NonEmptyArray<T> {
+  if (arr.length === 0) throw new Error('Array must not be empty');
+  return arr as NonEmptyArray<T>;
+}
+
+function first<T>(arr: NonEmptyArray<T>): T {
+  return arr[0]; // 编译期已排除空数组，无需额外检查
+}
+
+// 状态机穷尽检查
+type State = 'idle' | 'loading' | 'success' | 'error';
+
+function handleState(state: State): string {
+  switch (state) {
+    case 'idle': return 'Waiting...';
+    case 'loading': return 'Loading...';
+    case 'success': return 'Done!';
+    case 'error': return 'Failed!';
+    default:
+      // 若新增状态未处理，此处触发编译错误
+      const _exhaustive: never = state;
+      return _exhaustive;
+  }
+}
+```
+
+### 权威外部链接扩展
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| TLA+ Home Page | [lamport.azurewebsites.net/tla/tla.html](https://lamport.azurewebsites.net/tla/tla.html) | Leslie Lamport 官方 |
+| Learn TLA+ | [learntla.com](https://learntla.com/) | TLA+ 入门教程 |
+| Software Foundations | [softwarefoundations.cis.upenn.edu](https://softwarefoundations.cis.upenn.edu/) | Coq 形式化验证教材 |
+| Theorem Proving in Lean 4 | [leanprover.github.io/theorem_proving_in_lean4](https://leanprover.github.io/theorem_proving_in_lean4/) | Lean 官方教材 |
+| Z3 Guide | [microsoft.github.io/z3guide](https://microsoft.github.io/z3guide/) | Z3 官方教程 |
+| Dafny Documentation | [dafny.org](https://dafny.org/) | 微软程序验证语言 |
+| Infer by Meta | [fbinfer.com](https://fbinfer.com/) | 静态分析工具 |
+| Frama-C | [frama-c.com](https://frama-c.com/) | C 程序形式化验证平台 |
+| seL4 Proofs | [sel4.systems/About/seL4-proofs.pml](https://sel4.systems/About/seL4-proofs.pml) | 操作系统形式化验证 |
+| AWS s2n Formal Verification | [aws.github.io/s2n-tls/usage-guide/ch15-formal-verification.html](https://aws.github.io/s2n-tls/usage-guide/ch15-formal-verification.html) | AWS TLS 验证实践 |
+| CPDT | [adam.chlipala.net/cpdt](http://adam.chlipala.net/cpdt/) | Coq 高级教程 |
+| Natural Number Game | [adam.math.hhu.de/#/g/leanprover-community/nng4](https://adam.math.hhu.de/#/g/leanprover-community/nng4) | Lean 交互式入门 |

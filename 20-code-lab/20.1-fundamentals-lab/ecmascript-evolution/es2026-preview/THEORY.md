@@ -284,3 +284,46 @@ console.log(Object.prototype.toString.call(foreignErr) === '[object Error]'); //
 ---
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*
+
+## 深化补充
+
+### 新增代码示例：Float16Array 与 WebGPU 计算管线
+
+```typescript
+// webgpu-compute.ts — 使用 Float16Array 上传 half-precision 张量
+
+async function uploadHalfTensor(device: GPUDevice, data: Float16Array): GPUBuffer {
+  const buffer = device.createBuffer({
+    size: data.byteLength,
+    usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    mappedAtCreation: true,
+  });
+  new Float16Array(buffer.getMappedRange()).set(data);
+  buffer.unmap();
+  return buffer;
+}
+
+// 在 WGSL 中对应类型为 f16（需启用 shader-f16 扩展）
+const shaderCode = `
+  enable f16;
+  @group(0) @binding(0) var<storage, read> input : array<f16>;
+  @compute @workgroup_size(64)
+  fn main(@builtin(global_invocation_id) gid : vec3<u32>) {
+    let i = gid.x;
+    if (i < arrayLength(&input)) {
+      let v = input[i] * f16(2.0);
+      input[i] = v;
+    }
+  }
+`;
+```
+
+### 权威外部链接扩展
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| ECMA-262 Import Attributes | [tc39.es/ecma262/#sec-import-attributes](https://tc39.es/ecma262/#sec-import-attributes) | 规范正式定义 |
+| V8 Import Attributes | [v8.dev/features/import-attributes](https://v8.dev/features/import-attributes) | V8 实现细节 |
+| SpiderMonkey Release Notes | [developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases](https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Releases) | 新特性落地追踪 |
+| Test262 Report | [test262.report](https://test262.report/) | 各引擎 Test262 通过率 |
+| WebGPU Spec | [www.w3.org/TR/webgpu](https://www.w3.org/TR/webgpu/) | W3C WebGPU 标准 |

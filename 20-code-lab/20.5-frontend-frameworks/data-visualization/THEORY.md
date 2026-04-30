@@ -293,9 +293,74 @@ const bins = binData(transactions, t => t.amount, 50);
 renderHistogram(bins); // 只渲染 50 个柱子
 ```
 
+## 代码示例：ECharts 配置化仪表盘
+
+```typescript
+// echarts-dashboard.ts — 声明式配置驱动企业级图表
+import * as echarts from 'echarts';
+
+function initDashboard(container: HTMLElement) {
+  const chart = echarts.init(container);
+
+  const option: echarts.EChartsOption = {
+    tooltip: { trigger: 'axis' },
+    legend: { data: ['销售额', '订单量'] },
+    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+    xAxis: { type: 'category', data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'] },
+    yAxis: [{ type: 'value', name: '销售额' }, { type: 'value', name: '订单量' }],
+    series: [
+      {
+        name: '销售额',
+        type: 'bar',
+        data: [120, 200, 150, 80, 70, 110, 130],
+        itemStyle: { color: '#5470c6' },
+      },
+      {
+        name: '订单量',
+        type: 'line',
+        yAxisIndex: 1,
+        data: [60, 140, 100, 40, 30, 70, 90],
+        smooth: true,
+        itemStyle: { color: '#91cc75' },
+      },
+    ],
+    dataZoom: [{ type: 'inside' }, { type: 'slider' }],
+  };
+
+  chart.setOption(option);
+  window.addEventListener('resize', () => chart.resize());
+  return chart;
+}
+```
+
+## 代码示例：Vega-Lite 声明式 JSON 规范
+
+```typescript
+// vega-lite-spec.ts — 用 JSON 描述图表，编译为 D3/Vega
+export const spec = {
+  $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
+  description: 'A simple bar chart with embedded data.',
+  data: {
+    values: [
+      { category: 'A', value: 28 },
+      { category: 'B', value: 55 },
+      { category: 'C', value: 43 },
+    ],
+  },
+  mark: 'bar',
+  encoding: {
+    x: { field: 'category', type: 'ordinal' },
+    y: { field: 'value', type: 'quantitative' },
+    color: { field: 'category', type: 'nominal', scale: { scheme: 'category10' } },
+  },
+};
+
+// 在浏览器中渲染：vegaEmbed('#vis', spec);
+```
+
 ---
 
-## 7. 总结
+## 8. 总结
 
 数据可视化的目标是**洞察，不是装饰**。
 
@@ -321,6 +386,14 @@ renderHistogram(bins); // 只渲染 50 个柱子
 - [WebGL Fundamentals](https://webglfundamentals.org/) -- WebGL 基础教程
 - [ColorBrewer 2.0](https://colorbrewer2.org/) -- 科学配色工具
 - [Data-Ink Ratio (Tufte)](https://www.edwardtufte.com/tufte/books_vdqi) -- 数据墨水比经典理论
+- [ECharts GL](https://github.com/ecomfe/echarts-gl) — ECharts WebGL 扩展（3D 与大屏）
+- [deck.gl](https://deck.gl/) — Uber 开源大规模地理空间可视化
+- [Unovis](https://unovis.dev/) — 现代声明式图表库（React/Vue/Angular/Svelte）
+- [Plotly.js](https://plotly.com/javascript/) — 科学统计图表库
+- [AntV](https://antv.vision/) — 蚂蚁集团可视化生态（G2 / G6 / L7）
+- [Visx](https://airbnb.io/visx/) — Airbnb 低层级可视化组件库
+- [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/) — 高性能交互式地图库
+- [Apache ECharts 示例集](https://echarts.apache.org/examples/) — 官方示例画廊
 
 ---
 
@@ -344,19 +417,21 @@ renderHistogram(bins); // 只渲染 50 个柱子
 
 ### 关键设计模式
 
-本模块涉及的核心设计模式包括（根据代码实现提炼）：
+本模块涉及的核心设计模式包括：
 
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
+1. **数据转换管道 (Data Transformation Pipeline)**：原始数据经过清洗、聚合、分箱、比例尺映射等多级转换，最终映射到视觉属性。每一级都是纯函数，可测试、可复用。
+2. **渲染策略模式 (Rendering Strategy)**：根据数据量动态选择渲染后端（SVG < Canvas < WebGL），抽象统一的渲染接口以屏蔽底层差异。
+3. **响应式观察者模式 (Responsive Observer)**：通过 ResizeObserver 监听容器变化，结合 requestAnimationFrame 实现防抖重绘，避免频繁重排重绘。
 
 ### 与相邻模块的关系
 
 | 相邻模块 | 关系说明 |
 |---------|---------|
-| 前置依赖 | 建议先掌握的基础模块 |
-| 后续进阶 | 可继续深化的相关模块 |
+| 前置依赖 | `10-fundamentals/10.5-object-model/` — 理解 DOM、Canvas、WebGL API 的对象模型与事件机制 |
+| 前置依赖 | `20-code-lab/20.4-data-algorithms/` — 掌握分箱、排序、聚合等数据处理算法 |
+| 后续进阶 | `20-code-lab/20.5-frontend-frameworks/webxr/` — 将 2D 可视化扩展到沉浸式 3D 空间 |
+| 后续进阶 | `20-code-lab/20.6-backend-apis/analytics/` — 后端埋点数据采集与聚合，为可视化提供数据源 |
 
 ---
 
-> 理论深化更新：2026-04-29
+> 理论深化更新：2026-04-30

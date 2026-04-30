@@ -78,6 +78,37 @@ flowchart TD
     H --> J[catch 或传播]
 ```
 
+### 4.2 await 对 thenable 的处理
+
+`await` 不仅可以等待真正的 Promise，也可以等待任何**thenable**对象（具有 `.then()` 方法的对象）：
+
+```javascript
+// 自定义 thenable
+const thenable = {
+  then(onFulfilled, onRejected) {
+    setTimeout(() => onFulfilled(42), 100);
+  }
+};
+
+async function test() {
+  const value = await thenable; // 等同于 await Promise.resolve(thenable)
+  console.log(value); // 42
+}
+test();
+```
+
+#### 代码示例：await 对非 Promise 原始值的包装
+
+```javascript
+async function primitiveAwait() {
+  const a = await 42;       // 等同于 await Promise.resolve(42)
+  const b = await 'hello';  // 等同于 await Promise.resolve('hello')
+  const c = await null;     // 等同于 await Promise.resolve(null)
+  console.log(a, b, c);     // 42 'hello' null
+}
+primitiveAwait();
+```
+
 ---
 
 ## 5. 论证与分析 (Argumentation & Analysis)
@@ -90,6 +121,51 @@ flowchart TD
 | 串行执行可并行 | `await a(); await b()` | `await Promise.all([a(), b()])` |
 | 顶级 await | 模块中直接使用 | ES2022 支持 |
 | try/catch 范围过大 | 包裹过多代码 | 精细化错误处理 |
+
+#### 代码示例：在循环中误用 await 导致串行化
+
+```javascript
+// ❌ 错误：串行执行，总耗时 = sum(每个请求耗时)
+async function fetchSerial(urls) {
+  const results = [];
+  for (const url of urls) {
+    const res = await fetch(url); // 每次等待前一个完成
+    results.push(await res.json());
+  }
+  return results;
+}
+
+// ✅ 正确：并行执行，总耗时 ≈ 最慢请求
+async function fetchParallel(urls) {
+  const promises = urls.map(async (url) => {
+    const res = await fetch(url);
+    return res.json();
+  });
+  return Promise.all(promises);
+}
+
+// ✅ 正确：需要限流时的并发控制（p-limit 模式）
+async function fetchWithConcurrency(urls, concurrency = 5) {
+  const results = [];
+  const executing = [];
+
+  for (const [index, url] of urls.entries()) {
+    const promise = fetch(url)
+      .then(r => r.json())
+      .then(data => { results[index] = data; });
+
+    executing.push(promise);
+
+    if (executing.length >= concurrency) {
+      await Promise.race(executing);
+      executing.splice(executing.findIndex(p => p === promise), 1);
+    }
+  }
+
+  await Promise.all(executing);
+  return results;
+}
+```
 
 ---
 
@@ -237,6 +313,36 @@ import { db } from './db';
 await db.query('SELECT 1');
 ```
 
+### 6.7 正例：async/await 错误堆栈保留
+
+```typescript
+// async 函数的错误堆栈比 Promise.then 链更清晰
+async function level3() {
+  throw new Error('Something went wrong');
+}
+
+async function level2() {
+  return await level3(); // await 保留完整的异步堆栈
+}
+
+async function level1() {
+  try {
+    await level2();
+  } catch (err) {
+    // 在 V8 中，err.stack 包含 level1 → level2 → level3 的完整路径
+    console.error(err.stack);
+  }
+}
+
+// 对比：Promise.then 链的堆栈在旧引擎中可能丢失上下文
+function badLevel3() {
+  return Promise.reject(new Error('Lost context'));
+}
+function badLevel2() {
+  return badLevel3().then(x => x); // 堆栈可能仅显示 badLevel3
+}
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
@@ -252,6 +358,11 @@ await db.query('SELECT 1');
 - **JavaScript.info: Async/Await** — <https://javascript.info/async-await>
 - **Node.js Timers & Event Loop** — <https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/>
 - **TC39 ECMA-262 Spec** — <https://tc39.es/ecma262/multipage/ecmascript-language-functions-and-classes.html#sec-async-function-definitions> — 官方 async 函数规范
+- **Node.js async_hooks** — <https://nodejs.org/api/async_hooks.html> — 异步资源追踪
+- **TypeScript Handbook: Async/Await** — <https://www.typescriptlang.org/docs/handbook/release-notes/typescript-1-7.html>
+- **MDN: Top-level await** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Operators/await>
+- **V8 Blog: Zero-cost async stack traces** — <https://v8.dev/blog/fast-async>
+- **JavaScript.info: Generators** — <https://javascript.info/generators>
 
 ---
 

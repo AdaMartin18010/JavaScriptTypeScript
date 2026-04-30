@@ -275,3 +275,54 @@ testConfirmOrder();
 ---
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*
+
+## 深化补充
+
+### 新增代码示例：CLI 适配器与 Redis 事件发布适配器
+
+```typescript
+// cli-adapter.ts — 命令行驱动端口
+
+interface RegisterUserCLI {
+  run(args: string[]): Promise<void>;
+}
+
+class RegisterUserCLIAdapter implements RegisterUserCLI {
+  constructor(private useCase: RegisterUserUseCase) {}
+
+  async run(args: string[]): Promise<void> {
+    const [email, password] = args;
+    if (!email || !password) {
+      console.error('Usage: register <email> <password>');
+      process.exit(1);
+    }
+    await this.useCase.execute(email, password);
+    console.log('User registered successfully');
+  }
+}
+
+// redis-event-publisher.ts — 消息队列 driven 端口
+
+interface EventPublisher {
+  publish(event: DomainEvent): Promise<void>;
+}
+
+class RedisEventPublisher implements EventPublisher {
+  constructor(private redis: RedisClient) {}
+
+  async publish(event: DomainEvent): Promise<void> {
+    await this.redis.publish('events', JSON.stringify(event));
+  }
+}
+```
+
+### 权威外部链接扩展
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Matthias Noback — Hexagonal Architecture Book | [matthiasnoback.nl/book/principles-of-hexagonal-architecture](https://matthiasnoback.nl/book/principles-of-hexagonal-architecture/) | 六边形架构专著 |
+| Building Microservices — Sam Newman | [samnewman.io/books/building_microservices](https://samnewman.io/books/building_microservices/) | 微服务构建权威 |
+| PoEAA — Martin Fowler | [martinfowler.com/eaaCatalog](https://martinfowler.com/eaaCatalog/) | 企业应用架构模式 |
+| NestJS Custom Providers | [docs.nestjs.com/fundamentals/custom-providers](https://docs.nestjs.com/fundamentals/custom-providers) | TS 框架依赖注入 |
+| tsyringe | [github.com/microsoft/tsyringe](https://github.com/microsoft/tsyringe) | 微软 TS DI 容器 |
+| inversifyjs | [inversify.io](https://inversify.io/) | IoC 容器 |

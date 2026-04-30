@@ -598,3 +598,70 @@ function exStep(config: { expr: ExExpr; env: Env }): { expr: ExExpr; env: Env } 
 ---
 
 > 理论深化更新：2026-04-30
+
+## 深化补充
+
+### 新增代码示例：简单类型 λ 演算（STLC）类型检查器
+
+```typescript
+// stlc-typechecker.ts — Simply Typed Lambda Calculus
+
+type Type =
+  | { kind: 'Base'; name: string }
+  | { kind: 'Arrow'; domain: Type; codomain: Type };
+
+type Term =
+  | { kind: 'Var'; name: string }
+  | { kind: 'Abs'; param: string; paramType: Type; body: Term }
+  | { kind: 'App'; func: Term; arg: Term };
+
+function typeCheck(term: Term, ctx: Map<string, Type>): Type | null {
+  switch (term.kind) {
+    case 'Var': {
+      const t = ctx.get(term.name);
+      return t ?? null;
+    }
+    case 'Abs': {
+      const newCtx = new Map(ctx);
+      newCtx.set(term.param, term.paramType);
+      const bodyType = typeCheck(term.body, newCtx);
+      return bodyType ? { kind: 'Arrow', domain: term.paramType, codomain: bodyType } : null;
+    }
+    case 'App': {
+      const funcType = typeCheck(term.func, ctx);
+      const argType = typeCheck(term.arg, ctx);
+      if (!funcType || !argType) return null;
+      if (funcType.kind === 'Arrow' && typeEqual(funcType.domain, argType)) {
+        return funcType.codomain;
+      }
+      return null;
+    }
+  }
+}
+
+function typeEqual(a: Type, b: Type): boolean {
+  if (a.kind !== b.kind) return false;
+  if (a.kind === 'Base' && b.kind === 'Base') return a.name === b.name;
+  if (a.kind === 'Arrow' && b.kind === 'Arrow') {
+    return typeEqual(a.domain, b.domain) && typeEqual(a.codomain, b.codomain);
+  }
+  return false;
+}
+
+// 示例：λx:Nat. x 的类型为 Nat → Nat
+const nat: Type = { kind: 'Base', name: 'Nat' };
+const identity = { kind: 'Abs', param: 'x', paramType: nat, body: { kind: 'Var', name: 'x' } } as Term;
+console.log(typeCheck(identity, new Map())); // Arrow(Base(Nat), Base(Nat))
+```
+
+### 权威外部链接扩展
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| TAPL — Official Site | [cis.upenn.edu/~bcpierce/tapl](https://www.cis.upenn.edu/~bcpierce/tapl/) | Types and Programming Languages |
+| TAPL — MIT Press | [mitpress.mit.edu/9780262162098](https://mitpress.mit.edu/9780262162098/types-and-programming-languages/) | 权威教材购买页 |
+| Software Foundations — PLF | [softwarefoundations.cis.upenn.edu/plf-current](https://softwarefoundations.cis.upenn.edu/plf-current/index.html) | Coq 形式化验证教材 |
+| K Framework Tutorial | [kframework.org/k-distribution/k-tutorial](https://kframework.org/k-distribution/k-tutorial/) | K 框架官方教程 |
+| PLT Redex Docs | [docs.racket-lang.org/redex](https://docs.racket-lang.org/redex/) | Redex 语义工程化文档 |
+| Winskel — Formal Semantics | [mitpress.mit.edu/9780262731034](https://mitpress.mit.edu/9780262731034/the-formal-semantics-of-programming-languages/) | 形式语义经典教材 |
+| MIT 6.820 Program Analysis | [ocw.mit.edu/courses/6-820-fundamentals-of-program-analysis-fall-2015](https://ocw.mit.edu/courses/6-820-fundamentals-of-program-analysis-fall-2015/) | MIT 程序分析课程 |

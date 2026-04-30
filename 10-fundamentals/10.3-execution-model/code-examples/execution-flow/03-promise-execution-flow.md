@@ -90,6 +90,48 @@ console.log('4. 同步结束');
 // 输出顺序：1 → 4 → 3 → 2
 ```
 
+#### 代码示例：微任务级联排空（Microtask Queue Draining）
+
+```javascript
+console.log('A');
+
+Promise.resolve().then(() => {
+  console.log('B');
+  Promise.resolve().then(() => {
+    console.log('C');
+  });
+});
+
+Promise.resolve().then(() => {
+  console.log('D');
+});
+
+console.log('E');
+
+// 输出：A → E → B → D → C
+// 解析：微任务队列在单个宏任务周期内会排空所有级联产生的微任务，
+// 但新的微任务追加到队列末尾，因此 C 在 D 之后。
+```
+
+#### 代码示例：Promise 构造函数同步性验证
+
+```javascript
+console.log('1');
+
+const p = new Promise((resolve) => {
+  console.log('2');        // Promise 执行器（executor）立即同步执行
+  resolve('3');
+});
+
+p.then(console.log);
+
+console.log('4');
+
+// 输出：1 → 2 → 4 → 3
+// 关键点：resolve('3') 不会立即触发 then 回调；它仅将 Promise 状态改为 fulfilled，
+// then 回调在下一个微任务 tick 执行。
+```
+
 ---
 
 ## 5. 论证与分析 (Argumentation & Analysis)
@@ -224,6 +266,49 @@ for await (const user of paginatedUsers()) {
 }
 ```
 
+### 6.7 正例：Promise.race + 超时包装器
+
+```typescript
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  const timeout = new Promise<never>((_, reject) => {
+    const id = setTimeout(() => {
+      clearTimeout(id);
+      reject(new Error(`Operation timed out after ${ms}ms`));
+    }, ms);
+  });
+  return Promise.race([promise, timeout]);
+}
+
+// 使用：为任何 Promise 附加超时限制
+const data = await withTimeout(fetch('/api/data').then(r => r.json()), 3000);
+```
+
+### 6.8 正例：手动 Promise 与 Deferred 模式
+
+```typescript
+// 在 Promise.withResolvers 不可用时（ES2024 之前）的手动实现
+function createDeferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: any) => void;
+
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
+  return { promise, resolve, reject };
+}
+
+// 用例：将基于回调的 API 包装为 Promise
+function readFilePromise(path: string): Promise<string> {
+  const { promise, resolve, reject } = createDeferred<string>();
+  require('fs').readFile(path, 'utf8', (err: Error | null, data: string) => {
+    err ? reject(err) : resolve(data);
+  });
+  return promise;
+}
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
@@ -236,6 +321,12 @@ for await (const user of paginatedUsers()) {
 - **Node.js — Event Loop, Timers, and `process.nextTick()`** — <https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick>
 - **WhatWG — DOM Standard: AbortSignal** — <https://dom.spec.whatwg.org/#abortsignal>
 - **TC39 Proposal — `Promise.withResolvers`** — <https://github.com/tc39/proposal-promise-with-resolvers>
+- **HTML Living Standard — Event Loops** — <https://html.spec.whatwg.org/multipage/webappapis.html#event-loops>
+- **V8 Blog: Promise Internals** — <https://v8.dev/blog/fast-async>
+- **JavaScript.info: Promise API** — <https://javascript.info/promise-api>
+- **MDN: AbortController** — <https://developer.mozilla.org/en-US/docs/Web/API/AbortController>
+- **WhatWG Streams Standard** — <https://streams.spec.whatwg.org/>
+- **Web.dev: Cancelable Requests** — <https://web.dev/articles/abortable-fetch>
 
 ---
 
