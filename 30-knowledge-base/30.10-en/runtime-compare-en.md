@@ -140,9 +140,172 @@ deno run --allow-net --allow-env server.ts
 
 ---
 
+## Runtime-Specific Deep Dives
+
+### Node.js v24 — Native Test Runner & SQLite
+
+```javascript
+// node-native-test.mjs — Node.js 内置测试 + SQLite (v24+)
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { DatabaseSync } from 'node:sqlite';
+
+describe('Node.js v24 native features', () => {
+  it('should create an in-memory SQLite database', () => {
+    const db = new DatabaseSync(':memory:');
+    db.exec('CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT)');
+
+    const insert = db.prepare('INSERT INTO users (name) VALUES (?)');
+    insert.run('Alice');
+
+    const query = db.prepare('SELECT * FROM users');
+    const rows = query.all();
+    assert.strictEqual(rows.length, 1);
+    assert.strictEqual(rows[0].name, 'Alice');
+  });
+
+  it('should use native fetch and Web Crypto', async () => {
+    const res = await fetch('https://api.github.com/users/nodejs');
+    assert.strictEqual(res.status, 200);
+
+    const data = await res.json();
+    assert.strictEqual(data.login, 'nodejs');
+  });
+});
+```
+
+```bash
+# 运行原生测试
+node --test node-native-test.mjs
+
+# 监视模式
+node --watch --test node-native-test.mjs
+
+# 权限模型示例
+node --permission --allow-fs-read=* --allow-net=*.github.com app.js
+```
+
+> 📖 Reference: [Node.js v24 Release Notes](https://nodejs.org/en/blog/release/v24.0.0) | [Node.js Test Runner](https://nodejs.org/api/test.html) | [Node.js Permission Model](https://nodejs.org/api/permissions.html)
+
+---
+
+### Bun — File I/O & SSE Streaming
+
+```typescript
+// bun-sse.ts — Bun 特有 API：文件读取、SSE、WebSocket
+import { serve } from 'bun';
+
+serve({
+  port: 3000,
+  async fetch(req) {
+    const url = new URL(req.url);
+
+    // Bun.file() — 零拷贝文件读取（比 fs 快 3-5x）
+    if (url.pathname === '/image') {
+      const file = Bun.file('./assets/hero.png');
+      return new Response(file);
+    }
+
+    // Bun.write() — 原子写入
+    if (url.pathname === '/upload' && req.method === 'POST') {
+      const data = await req.arrayBuffer();
+      await Bun.write('./uploads/dump.bin', data);
+      return Response.json({ ok: true, size: data.byteLength });
+    }
+
+    // Server-Sent Events (SSE)
+    if (url.pathname === '/events') {
+      const stream = new ReadableStream({
+        start(controller) {
+          let count = 0;
+          const timer = setInterval(() => {
+            controller.enqueue(`data: ${JSON.stringify({ count: ++count, time: Date.now() })}
+
+`);
+            if (count >= 10) {
+              clearInterval(timer);
+              controller.close();
+            }
+          }, 1000);
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+        },
+      });
+    }
+
+    return Response.json({ runtime: 'Bun', version: Bun.version });
+  },
+});
+```
+
+> 📖 Reference: [Bun File I/O](https://bun.sh/docs/api/file-io) | [Bun.serve](https://bun.sh/docs/api/http) | [Bun WebSockets](https://bun.sh/docs/api/websockets)
+
+---
+
+### Deno — Permission Sandbox & FFI
+
+```typescript
+// deno-secure.ts — Deno 权限模型与外部函数接口 (FFI)
+// 运行：deno run --allow-net=0.0.0.0:8080 --allow-read=./data --allow-env deno-secure.ts
+
+import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
+
+// 检查当前权限（无需抛出）
+const netPerm = await Deno.permissions.query({ name: 'net', host: '0.0.0.0:8080' });
+console.log('Net permission:', netPerm.state); // "granted" | "prompt" | "denied"
+
+// FFI 调用系统库（示例：调用 libc getpid）
+const libc = Deno.dlopen(
+  Deno.build.os === 'darwin' ? '/usr/lib/libSystem.dylib' : 'libc.so.6',
+  {
+    getpid: { parameters: [], result: 'i32' },
+    getuid: { parameters: [], result: 'i32' },
+  }
+);
+console.log('PID via FFI:', libc.symbols.getpid());
+
+// Deno KV（边缘持久化）
+const kv = await Deno.openKv();
+await kv.set(['visits'], 1n);
+const visit = await kv.get<{ value: bigint }>(['visits']);
+
+serve(async (req) => {
+  const { value } = await kv.atomic().sum(['visits'], 1n).commit();
+  return Response.json({ visits: Number(value), pid: libc.symbols.getpid() });
+}, { port: 8080 });
+```
+
+> 📖 Reference: [Deno Permissions](https://docs.deno.com/runtime/fundamentals/security/) | [Deno FFI](https://docs.deno.com/runtime/manual/runtime/ffi_api/) | [Deno KV](https://docs.deno.com/deploy/kv/)
+
+---
+
 ## Key Insight
 
 **Runtime Convergence Theorem**: In 2026, the three runtimes are converging through competition rather than fragmenting. Node.js adopts competitor features (native Fetch, built-in testing, `node:sqlite`), while Bun/Deno improve npm compatibility. The emerging pattern is **hybrid architecture**: Node.js for core services + Bun for edge functions + Deno for sensitive computations.
+
+---
+
+## Additional Authoritative References
+
+| Resource | Link | Description |
+|----------|------|-------------|
+| Node.js Release Schedule | <https://nodejs.org/en/about/previous-releases> | LTS 与 Current 版本生命周期 |
+| Node.js Performance Best Practices | <https://nodejs.org/en/docs/guides/simple-profiling> | 内置性能分析指南 |
+| Bun Installation & Upgrading | <https://bun.sh/docs/installation> | 官方安装文档 |
+| Bun Benchmark Methodology | <https://bun.sh/docs/project/benchmarking> | 基准测试方法与原始数据 |
+| Deno 2 Migration Guide | <https://docs.deno.com/runtime/manual/advanced/migrate_deprecations/> | 从 Deno 1.x 迁移指南 |
+| Deno Standard Library | <https://jsr.io/@std> | JSR 上的官方标准库 |
+| WinterCG Common Minimum API | <https://common-min-api.proposal.wintercg.org/> | 跨运行时通用 API 规范 |
+| Web-interoperable Runtimes CG | <https://wintercg.org/> | W3C 社区组主页 |
+| V8 Blog — JavaScript Performance | <https://v8.dev/blog> | Google V8 引擎官方博客 |
+| JavaScriptCore (WebKit) Blog | <https://webkit.org/blog/> | Apple JSC 引擎更新 |
+| JS Benchmarks (Krausest) | <https://krausest.github.io/js-framework-benchmark/> | 前端框架基准测试 |
+| TechEmpower Framework Benchmarks | <https://www.techempower.com/benchmarks/> | 全栈 Web 框架性能排名 |
 
 ---
 

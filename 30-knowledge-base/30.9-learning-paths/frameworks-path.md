@@ -65,6 +65,34 @@ status: current
   - Vue 3.5 + Vapor Mode（编译优化，对标 Svelte 的免 Virtual DOM）
   - Svelte 5 Runes 范式（`$state` / `$derived` / `$effect` 细粒度响应式）
 
+```tsx
+// React 19 Compiler — 自动记忆化，无需手动 useMemo
+// 只需在组件顶部添加 "use memo" 指令（实验性）
+function ExpensiveList({ items, filter }: { items: Item[]; filter: string }) {
+  // 编译器自动推断 dependencies，等效于过去的 useMemo
+  const visible = items.filter((i) => i.name.includes(filter));
+  return (
+    <ul>
+      {visible.map((i) => (
+        <li key={i.id}>{i.name}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+```svelte
+<!-- Svelte 5 Runes -->
+<script>
+  let count = $state(0);
+  let doubled = $derived(count * 2);
+  $effect(() => {
+    console.log('count changed:', count);
+  });
+</script>
+<button onclick={() => count++}>Clicks: {count} (x2 = {doubled})</button>
+```
+
 ### 节点 1.2 状态管理与响应式原理
 
 - **关联文件/模块**：
@@ -75,6 +103,31 @@ status: current
   - Signals 范式的细粒度响应式（SolidJS / Preact / Angular signals）
   - React 19 `use` Hook 与 Context 性能优化
   - 状态 colocation 与 lifting 的权衡
+
+```tsx
+// SolidJS Signals — 细粒度响应式，无 Virtual DOM
+import { createSignal, createEffect } from 'solid-js';
+
+function Counter() {
+  const [count, setCount] = createSignal(0);
+  createEffect(() => console.log('count =', count()));
+  return <button onClick={() => setCount(c => c + 1)}>{count()}</button>;
+}
+```
+
+```tsx
+// Preact Signals — 可在 React 外使用，O(1) 订阅
+import { signal, computed, effect } from '@preact/signals-core';
+
+const count = signal(0);
+const doubled = computed(() => count.value * 2);
+
+effect(() => {
+  console.log('doubled:', doubled.value);
+});
+
+count.value = 5; // 仅触发依赖 doubled 的 effect
+```
 
 ### 节点 1.3 设计系统与可复用组件
 
@@ -87,6 +140,42 @@ status: current
   - Compound Components 模式
   - 无障碍（a11y）基础与 ARIA 实践
   - CSS-in-JS vs 原子化 CSS（Tailwind v4）的选型
+
+```tsx
+// Compound Components 模式 — Headless UI 风格
+import { createContext, useContext, useState } from 'react';
+
+const TabsContext = createContext<{ active: string; setActive: (v: string) => void } | null>(null);
+
+function Tabs({ defaultValue, children }: { defaultValue: string; children: React.ReactNode }) {
+  const [active, setActive] = useState(defaultValue);
+  return <TabsContext.Provider value={{ active, setActive }}>{children}</TabsContext.Provider>;
+}
+
+Tabs.List = ({ children }: { children: React.ReactNode }) => <div role="tablist">{children}</div>;
+Tabs.Trigger = ({ value, children }: { value: string; children: React.ReactNode }) => {
+  const ctx = useContext(TabsContext)!;
+  return (
+    <button role="tab" aria-selected={ctx.active === value} onClick={() => ctx.setActive(value)}>
+      {children}
+    </button>
+  );
+};
+Tabs.Content = ({ value, children }: { value: string; children: React.ReactNode }) => {
+  const ctx = useContext(TabsContext)!;
+  return ctx.active === value ? <div role="tabpanel">{children}</div> : null;
+};
+
+// 使用
+<Tabs defaultValue="account">
+  <Tabs.List>
+    <Tabs.Trigger value="account">Account</Tabs.Trigger>
+    <Tabs.Trigger value="settings">Settings</Tabs.Trigger>
+  </Tabs.List>
+  <Tabs.Content value="account">Account panel</Tabs.Content>
+  <Tabs.Content value="settings">Settings panel</Tabs.Content>
+</Tabs>
+```
 
 ---
 
@@ -104,6 +193,32 @@ status: current
   - DDD 限界上下文在前端的映射
   - Module Federation 2.0 / Native Federation 微前端架构
 
+```typescript
+// 六边形架构（端口与适配器）—— 核心领域零外部依赖
+// domain/order.ts
+export interface Order {
+  id: string;
+  items: OrderItem[];
+  total: number;
+}
+
+export interface OrderRepository {
+  save(order: Order): Promise<void>;
+  findById(id: string): Promise<Order | null>;
+}
+
+// application/place-order.ts
+export class PlaceOrderUseCase {
+  constructor(private repo: OrderRepository, private eventBus: EventBus) {}
+  async execute(items: OrderItem[]): Promise<Order> {
+    const order = createOrder(items);
+    await this.repo.save(order);
+    await this.eventBus.publish('OrderPlaced', { orderId: order.id });
+    return order;
+  }
+}
+```
+
 ### 节点 2.2 全栈与元框架
 
 - **关联文件/模块**：
@@ -116,6 +231,49 @@ status: current
   - Next.js App Router 的缓存策略（Router Cache / Data Cache / Full Route Cache）
   - 全栈类型安全（tRPC / oRPC / GraphQL Codegen）
 
+```tsx
+// Next.js 15 — Server Component 默认 + Server Action
+// app/page.tsx (Server Component)
+import { db } from '@/lib/db';
+import { TodoList } from './todo-list';
+
+export default async function Page() {
+  const todos = await db.todo.findMany();
+  return <TodoList initial={todos} />;
+}
+
+// app/actions.ts ("use server")
+'use server';
+import { db } from '@/lib/db';
+import { revalidatePath } from 'next/cache';
+
+export async function addTodo(formData: FormData) {
+  const title = formData.get('title') as string;
+  await db.todo.create({ data: { title, done: false } });
+  revalidatePath('/');
+}
+```
+
+```typescript
+// tRPC — 端到端类型安全 API
+// router.ts
+import { initTRPC } from '@trpc/server';
+const t = initTRPC.create();
+
+export const appRouter = t.router({
+  greeting: t.procedure
+    .input(z.object({ name: z.string() }))
+    .query(({ input }) => `Hello ${input.name}`),
+});
+
+// client.ts — 输入/输出类型全自动推断
+import { createTRPCReact } from '@trpc/react-query';
+export const trpc = createTRPCReact<AppRouter>();
+
+// 组件中使用
+const { data } = trpc.greeting.useQuery({ name: 'tRPC' });
+```
+
 ### 节点 2.3 服务端渲染与边缘渲染
 
 - **关联文件/模块**：
@@ -126,6 +284,21 @@ status: current
   - 流式传输（Streaming）与 Suspense
   - 边缘运行时（Edge Runtime）的限制与优化
   - Astro Islands 架构与 Zero-JS by Default 理念
+
+```tsx
+// Astro Islands — 零 JS 默认，按需交互
+---
+// pages/index.astro
+import Counter from '../components/Counter.tsx';
+---
+<html>
+  <body>
+    <h1>Static by default</h1>
+    <!-- 仅 Counter 组件会发送 JS 到浏览器 -->
+    <Counter client:load />
+  </body>
+</html>
+```
 
 ---
 
@@ -157,6 +330,22 @@ status: current
   - Bundler 插件体系（Rollup / Vite 6 / Rspack / Rolldown）
   - Rust 工具链在 JS 构建中的应用（SWC / Oxc / Rolldown）
 
+```javascript
+// Vite 6 插件 — 编译时宏示例
+// plugins/compile-time-macro.js
+export function defineMacroPlugin() {
+  return {
+    name: 'define-macro',
+    transform(code, id) {
+      // 编译时替换 __BUILD_TIME__ 为实际时间戳
+      if (code.includes('__BUILD_TIME__')) {
+        return code.replace(/__BUILD_TIME__/g, JSON.stringify(Date.now()));
+      }
+    },
+  };
+}
+```
+
 ### 节点 3.3 开发者体验 (DX) 与平台工程
 
 - **关联文件/模块**：
@@ -167,6 +356,28 @@ status: current
   - Monorepo 工具链与远程缓存（Turborepo / Nx / Moon）
   - 类型检查并行化（`fork-ts-checker-webpack-plugin` → `tsc` worker pool）
   - 度量与改进团队级 DX 指标（构建耗时、类型检查耗时、CI 反馈时间）
+
+```json
+// Turborepo 远程缓存配置 — 加速 CI
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["**/.env.*local"],
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "type-check": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "outputs": ["coverage/**"]
+    }
+  }
+}
+```
 
 ---
 
@@ -212,9 +423,18 @@ status: current
 
 ## 推荐资源
 
-- [React Architecture Patterns](https://react.dev/)
+- [React Architecture Patterns](https://react.dev/) — React 官方文档与架构指南
 - [Patterns.dev](https://www.patterns.dev/) — 现代 Web 应用设计模式
 - [Signals Explained](https://preactjs.com/blog/signal-boosting/) — Preact Signals 权威解读
+- [SolidJS Docs](https://docs.solidjs.com/) — 细粒度响应式框架官方文档
+- [Svelte 5 Runes](https://svelte.dev/docs/runes) — Svelte 5 Runes 范式官方说明
+- [Next.js 15 Docs](https://nextjs.org/docs) — App Router、Server Actions 与缓存策略
+- [TanStack Start](https://tanstack.com/start/latest) — 类型安全全栈框架
+- [React Server Components (RFC)](https://github.com/reactjs/rfcs/blob/main/text/0188-server-components.md) — RSC 原始 RFC
+- [tRPC Documentation](https://trpc.io/docs) — 端到端类型安全 API
+- [Astro Islands Architecture](https://docs.astro.build/en/concepts/islands/) — 零 JS 默认与 Islands 架构
+- [Vite Plugin API](https://vitejs.dev/guide/api-plugin.html) — 构建工具插件开发
+- [Turborepo Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) — Monorepo 加速
 - *Frameworkless Front-End Development* — Francesco Strazzullo
 - *Building Micro-Frontends* — Michael Geers
 - Vite / Rollup / esbuild / Rolldown 官方文档与源码

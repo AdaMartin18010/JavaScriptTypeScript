@@ -199,6 +199,270 @@ class Result<T> {
 }
 ```
 
+### 6.3 CQRS + Event Sourcing 完整骨架
+
+```typescript
+// cqrs-event-sourcing.ts — CQRS + Event Sourcing 最小可运行实现
+
+// ========== 领域事件 ==========
+interface DomainEvent {
+  readonly eventId: string;
+  readonly aggregateId: string;
+  readonly occurredAt: Date;
+  readonly type: string;
+}
+
+class InventoryItemCreated implements DomainEvent {
+  readonly type = 'InventoryItemCreated';
+  constructor(
+    readonly eventId: string,
+    readonly aggregateId: string,
+    readonly occurredAt: Date,
+    readonly name: string,
+    readonly initialCount: number
+  ) {}
+}
+
+class ItemsCheckedIn implements DomainEvent {
+  readonly type = 'ItemsCheckedIn';
+  constructor(
+    readonly eventId: string,
+    readonly aggregateId: string,
+    readonly occurredAt: Date,
+    readonly count: number
+  ) {}
+}
+
+// ========== 聚合根 ==========
+class InventoryItem {
+  private constructor(
+    private readonly id: string,
+    private name: string,
+    private count: number,
+    private readonly changes: DomainEvent[] = []
+  ) {}
+
+  static create(id: string, name: string, initialCount: number): InventoryItem {
+    const item = new InventoryItem(id, name, initialCount);
+    item.applyChange(
+      new InventoryItemCreated(crypto.randomUUID(), id, new Date(), name, initialCount)
+    );
+    return item;
+  }
+
+  checkIn(count: number): void {
+    if (count <= 0) throw new Error('Count must be positive');
+    this.applyChange(
+      new ItemsCheckedIn(crypto.randomUUID(), this.id, new Date(), count)
+    );
+  }
+
+  get currentCount(): number { return this.count; }
+  get uncommittedChanges(): DomainEvent[] { return [...this.changes]; }
+  markCommitted(): InventoryItem {
+    return new InventoryItem(this.id, this.name, this.count, []);
+  }
+
+  private applyChange(event: DomainEvent): void {
+    this.mutate(event);
+    this.changes.push(event);
+  }
+
+  private mutate(event: DomainEvent): void {
+    switch (event.type) {
+      case 'InventoryItemCreated':
+        this.name = (event as InventoryItemCreated).name;
+        this.count = (event as InventoryItemCreated).initialCount;
+        break;
+      case 'ItemsCheckedIn':
+        this.count += (event as ItemsCheckedIn).count;
+        break;
+    }
+  }
+
+  // 从事件历史重放状态
+  static reconstitute(events: DomainEvent[]): InventoryItem {
+    let item = new InventoryItem('', '', 0, []);
+    for (const event of events) {
+      item.mutate(event);
+      item = new InventoryItem(
+        event.aggregateId,
+        (item as any).name ?? '',
+        item.count,
+        []
+      );
+    }
+    return item;
+  }
+}
+
+// ========== 命令端 ==========
+interface CommandHandler<TCommand, TResult> {
+  handle(command: TCommand): Promise<TResult>;
+}
+
+class CheckInItemsHandler implements CommandHandler<{ id: string; count: number }, void> {
+  constructor(
+    private readonly eventStore: EventStore,
+    private readonly publisher: EventPublisher
+  ) {}
+
+  async handle(command: { id: string; count: number }): Promise<void> {
+    const events = await this.eventStore.getEventsForAggregate(command.id);
+    const item = InventoryItem.reconstitute(events);
+    item.checkIn(command.count);
+    await this.eventStore.save(item.uncommittedChanges);
+    await this.publisher.publish(item.uncommittedChanges);
+  }
+}
+
+// ========== 查询端（物化视图）==========
+interface InventoryReadModel {
+  id: string;
+  name: string;
+  currentCount: number;
+}
+
+class InMemoryInventoryProjection {
+  private views = new Map<string, InventoryReadModel>();
+
+  apply(event: DomainEvent): void {
+    switch (event.type) {
+      case 'InventoryItemCreated': {
+        const e = event as InventoryItemCreated;
+        this.views.set(e.aggregateId, { id: e.aggregateId, name: e.name, currentCount: e.initialCount });
+        break;
+      }
+      case 'ItemsCheckedIn': {
+        const e = event as ItemsCheckedIn;
+        const view = this.views.get(e.aggregateId);
+        if (view) view.currentCount += e.count;
+        break;
+      }
+    }
+  }
+
+  getById(id: string): InventoryReadModel | undefined {
+    return this.views.get(id);
+  }
+}
+
+// ========== 事件存储接口 ==========
+interface EventStore {
+  getEventsForAggregate(aggregateId: string): Promise<DomainEvent[]>;
+  save(events: DomainEvent[]): Promise<void>;
+}
+
+interface EventPublisher {
+  publish(events: DomainEvent[]): Promise<void>;
+}
+```
+
+### 6.4 内存事件总线实现
+
+```typescript
+// event-bus.ts — 类型安全的事件总线
+
+type EventHandler<T = unknown> = (event: T) => void | Promise<void>;
+
+class TypedEventBus {
+  private handlers = new Map<string, Set<EventHandler>>();
+
+  on<T>(eventType: string, handler: EventHandler<T>): () => void {
+    if (!this.handlers.has(eventType)) {
+      this.handlers.set(eventType, new Set());
+    }
+    this.handlers.get(eventType)!.add(handler as EventHandler);
+    return () => this.handlers.get(eventType)?.delete(handler as EventHandler);
+  }
+
+  async emit<T>(eventType: string, payload: T): Promise<void> {
+    const set = this.handlers.get(eventType);
+    if (!set) return;
+    for (const handler of set) {
+      await handler(payload);
+    }
+  }
+}
+
+// 使用示例
+const bus = new TypedEventBus();
+
+bus.on<OrderCreatedEvent>('OrderCreated', async (e) => {
+  console.log(`Order ${e.orderId} created, sending confirmation email...`);
+  // await emailService.send(...);
+});
+
+bus.on<OrderCreatedEvent>('OrderCreated', async (e) => {
+  console.log(`Order ${e.orderId} created, updating analytics...`);
+  // await analytics.track(...);
+});
+
+await bus.emit('OrderCreated', { orderId: 'ORD-123', items: ['A', 'B'] });
+```
+
+### 6.5 依赖注入容器（手动实现）
+
+```typescript
+// di-container.ts — 最小依赖注入容器
+
+type Constructor<T> = new (...args: unknown[]) => T;
+type Factory<T> = () => T;
+
+class DIContainer {
+  private registrations = new Map<string, { factory: Factory<unknown>; singleton: boolean }>();
+  private singletons = new Map<string, unknown>();
+
+  register<T>(token: string, factory: Factory<T>, singleton = false): this {
+    this.registrations.set(token, { factory, singleton });
+    return this;
+  }
+
+  registerClass<T>(token: string, ctor: Constructor<T>, deps: string[] = [], singleton = false): this {
+    return this.register(token, () => {
+      const resolvedDeps = deps.map((d) => this.resolve(d));
+      return new ctor(...resolvedDeps);
+    }, singleton);
+  }
+
+  resolve<T>(token: string): T {
+    const reg = this.registrations.get(token);
+    if (!reg) throw new Error(`No registration found for token: ${token}`);
+
+    if (reg.singleton) {
+      if (!this.singletons.has(token)) {
+        this.singletons.set(token, reg.factory());
+      }
+      return this.singletons.get(token) as T;
+    }
+    return reg.factory() as T;
+  }
+}
+
+// 使用示例
+interface ILogger {
+  log(msg: string): void;
+}
+class ConsoleLogger implements ILogger {
+  log(msg: string) { console.log(`[LOG] ${msg}`); }
+}
+
+interface IRepository {
+  find(id: string): unknown;
+}
+class UserRepository implements IRepository {
+  constructor(private logger: ILogger) {}
+  find(id: string) { this.logger.log(`Finding user ${id}`); return { id }; }
+}
+
+const container = new DIContainer();
+container.register<ILogger>('ILogger', () => new ConsoleLogger(), true);
+container.registerClass<IRepository>('IRepository', UserRepository, ['ILogger'], true);
+
+const repo = container.resolve<IRepository>('IRepository');
+repo.find('user-1');
+```
+
 ## 7. 技术决策
 
 | 决策 | 选择 | 理由 |
@@ -221,3 +485,12 @@ class Result<T> {
 - [Microsoft .NET Architecture Guides](https://learn.microsoft.com/en-us/dotnet/architecture/) — 微软官方架构指南
 - [Domain-Driven Design Reference - Eric Evans](https://www.domainlanguage.com/wp-content/uploads/2016/05/DDD_Reference_2015-03.pdf) — DDD 参考卡片
 - [AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html) — AWS 架构最佳实践
+- [Martin Fowler — Patterns of Enterprise Application Architecture](https://martinfowler.com/books/eaa.html) — 企业应用架构模式
+- [Martin Fowler — Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html) — 事件溯源详解
+- [Microsoft — CQRS Pattern](https://docs.microsoft.com/en-us/azure/architecture/patterns/cqrs) — 微软 CQRS 模式文档
+- [Enterprise Integration Patterns](https://www.enterpriseintegrationpatterns.com/) — 企业集成模式
+- [Domain-Driven Design Europe — YouTube](https://www.youtube.com/@ddd_eu) — DDD 欧洲大会演讲
+- [Software Architecture Monday — Mark Richards](https://www.developertoarchitect.com/) — 软件架构系列
+- [The C4 Model for Visualising Software Architecture](https://c4model.com/) — 软件架构可视化 C4 模型
+- [Architectural Decision Records (ADR)](https://adr.github.io/) — 架构决策记录实践
+- [Refactoring Guru — Design Patterns](https://refactoring.guru/design-patterns) — 设计模式可视化教程

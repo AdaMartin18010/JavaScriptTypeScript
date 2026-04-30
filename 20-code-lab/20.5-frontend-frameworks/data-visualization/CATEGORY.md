@@ -162,6 +162,144 @@ gl.linkProgram(program);
 gl.useProgram(program);
 ```
 
+## 代码示例：Canvas 离屏渲染与性能优化
+
+```typescript
+// offscreen-canvas-performance.ts — 大批量粒子动画
+
+const canvas = document.getElementById('particleCanvas') as HTMLCanvasElement;
+const ctx = canvas.getContext('2d')!;
+
+// 使用离屏 Canvas 缓存静态背景
+const offscreen = document.createElement('canvas');
+offscreen.width = canvas.width;
+offscreen.height = canvas.height;
+const offCtx = offscreen.getContext('2d')!;
+
+// 预渲染网格背景
+offCtx.strokeStyle = '#e0e0e0';
+for (let x = 0; x < offscreen.width; x += 20) {
+  offCtx.beginPath();
+  offCtx.moveTo(x, 0);
+  offCtx.lineTo(x, offscreen.height);
+  offCtx.stroke();
+}
+for (let y = 0; y < offscreen.height; y += 20) {
+  offCtx.beginPath();
+  offCtx.moveTo(0, y);
+  offCtx.lineTo(offscreen.width, y);
+  offCtx.stroke();
+}
+
+interface Particle { x: number; y: number; vx: number; vy: number; radius: number; }
+const particles: Particle[] = Array.from({ length: 500 }, () => ({
+  x: Math.random() * canvas.width,
+  y: Math.random() * canvas.height,
+  vx: (Math.random() - 0.5) * 2,
+  vy: (Math.random() - 0.5) * 2,
+  radius: Math.random() * 3 + 1,
+}));
+
+function animate() {
+  // 直接 blit 预渲染背景，而非每帧重绘
+  ctx.drawImage(offscreen, 0, 0);
+
+  for (const p of particles) {
+    p.x += p.vx;
+    p.y += p.vy;
+    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'steelblue';
+    ctx.fill();
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+```
+
+## 代码示例：SVG 动态路径与数据驱动动画
+
+```typescript
+// svg-path-animation.ts — 使用 D3 过渡绘制实时折线
+
+import * as d3 from 'd3';
+
+interface DataPoint { time: Date; value: number; }
+
+const margin = { top: 20, right: 30, bottom: 30, left: 40 };
+const width = 600 - margin.left - margin.right;
+const height = 400 - margin.top - margin.bottom;
+
+const svg = d3.select('#chart')
+  .append('svg')
+  .attr('width', width + margin.left + margin.right)
+  .attr('height', height + margin.top + margin.bottom)
+  .append('g')
+  .attr('transform', `translate(${margin.left},${margin.top})`);
+
+const x = d3.scaleTime().range([0, width]);
+const y = d3.scaleLinear().range([height, 0]);
+
+const line = d3.line<DataPoint>()
+  .x(d => x(d.time))
+  .y(d => y(d.value))
+  .curve(d3.curveMonotoneX);
+
+const path = svg.append('path')
+  .attr('fill', 'none')
+  .attr('stroke', 'steelblue')
+  .attr('stroke-width', 2);
+
+function update(data: DataPoint[]) {
+  x.domain(d3.extent(data, d => d.time) as [Date, Date]);
+  y.domain([0, d3.max(data, d => d.value)! * 1.1]);
+
+  path.datum(data)
+    .transition()
+    .duration(500)
+    .attr('d', line);
+}
+
+// 模拟实时数据流
+let data: DataPoint[] = [];
+setInterval(() => {
+  data.push({ time: new Date(), value: Math.random() * 100 });
+  if (data.length > 50) data.shift();
+  update(data);
+}, 1000);
+```
+
+## 代码示例：Observable Plot 声明式图表
+
+```typescript
+// observable-plot-declarative.ts — 极简声明式 API
+
+import * as Plot from '@observablehq/plot';
+
+const data = [
+  { month: 'Jan', revenue: 120, cost: 80 },
+  { month: 'Feb', revenue: 200, cost: 120 },
+  { month: 'Mar', revenue: 150, cost: 90 },
+  { month: 'Apr', revenue: 300, cost: 180 },
+];
+
+const plot = Plot.plot({
+  width: 600,
+  height: 400,
+  color: { legend: true },
+  marks: [
+    Plot.barY(data, { x: 'month', y: 'revenue', fill: 'revenue', tip: true }),
+    Plot.line(data, { x: 'month', y: 'cost', stroke: 'red', strokeWidth: 2 }),
+    Plot.dot(data, { x: 'month', y: 'cost', fill: 'red', r: 4 }),
+  ],
+});
+
+document.getElementById('plot-container')!.appendChild(plot);
+```
+
 ## 权威外部链接
 
 - [MDN — Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
@@ -176,6 +314,13 @@ gl.useProgram(program);
 - [WebGL Fundamentals](https://webglfundamentals.org/)
 - [W3C — SVG 2 Specification](https://www.w3.org/TR/SVG2/)
 - [Khronos Group — WebGL Specification](https://www.khronos.org/registry/webgl/specs/latest/2.0/)
+- [MDN — OffscreenCanvas](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas)
+- [MDN — CanvasRenderingContext2D](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D)
+- [D3.js Selections Guide](https://d3js.org/d3-selection)
+- [D3.js Scales Guide](https://d3js.org/d3-scale)
+- [Observable Plot API Reference](https://observablehq.com/plot/features/plots)
+- [ECharts Examples Gallery](https://echarts.apache.org/examples/en/index.html)
+- [Web.dev — Canvas Performance](https://web.dev/articles/canvas-performance)
 
 ## 关联模块
 

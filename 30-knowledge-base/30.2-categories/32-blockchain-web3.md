@@ -294,6 +294,73 @@ async function fetchTopPools(limit = 10): Promise<Pool[]> {
 }
 ```
 
+### ethers.js 树摇优化导入
+
+```typescript
+// ethers-tree-shake.ts — 仅导入所需子模块，减少打包体积
+import { JsonRpcProvider, Wallet, Contract, formatEther, parseEther } from 'ethers';
+// 对比：import { ethers } from 'ethers' 会引入整个库 (~120KB)
+// 子模块导入可将未使用代码剔除至 ~40KB
+
+const provider = new JsonRpcProvider(process.env.RPC_URL);
+const signer = new Wallet(process.env.PRIVATE_KEY!, provider);
+```
+
+### Viem 监听新区块与日志过滤
+
+```typescript
+// viem-watch.ts — 实时监听链上活动
+import { createPublicClient, http, parseAbiItem } from 'viem';
+import { mainnet } from 'viem/chains';
+
+const client = createPublicClient({ chain: mainnet, transport: http() });
+
+// 监听每个新区块
+const unwatchBlocks = client.watchBlocks({
+  onBlock: (block) => {
+    console.log(`New block #${block.number} | txs: ${block.transactions.length} | gasUsed: ${block.gasUsed}`);
+  },
+});
+
+// 按账户过滤历史日志
+const transferEvent = parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)');
+
+const logs = await client.getLogs({
+  address: '0xA0b86a33E6441e6C7D3D4B4f6c7D8e9F0a1B2c3D', // DAI
+  event: transferEvent,
+  fromBlock: 18_000_000n,
+  toBlock: 18_000_100n,
+  args: { from: '0x1111...' }, // indexed 字段过滤
+});
+```
+
+### IPFS 文件上传 (去中心化存储)
+
+```typescript
+// ipfs-upload.ts — 使用 Pinata 或 NFT.Storage 上传元数据
+import { PinataSDK } from 'pinata';
+
+const pinata = new PinataSDK({
+  pinataJwt: process.env.PINATA_JWT!,
+  pinataGateway: 'https://gateway.pinata.cloud',
+});
+
+async function uploadNFTMetadata(name: string, imageUrl: string, attributes: Record<string, any>) {
+  const metadata = {
+    name,
+    description: 'JSTS Knowledge Base NFT',
+    image: imageUrl,
+    attributes: Object.entries(attributes).map(([trait_type, value]) => ({ trait_type, value })),
+  };
+
+  const blob = new Blob([JSON.stringify(metadata)], { type: 'application/json' });
+  const file = new File([blob], `${name}.json`);
+
+  const upload = await pinata.upload.public.file(file);
+  return `ipfs://${upload.cid}`; // ERC-721 tokenURI 格式
+}
+```
+
 ---
 
 ## 与基础设施的边界
@@ -344,6 +411,13 @@ async function fetchTopPools(limit = 10): Promise<Pool[]> {
 | IPFS Docs | <https://docs.ipfs.tech/> | 星际文件系统文档 |
 | Arweave | <https://docs.arweave.org/> | 永久存储协议 |
 | CoinMarketCap API | <https://coinmarketcap.com/api/documentation/v1/> | 加密货币市场数据 |
+| Infura Documentation | <https://docs.infura.io/> | Consensys 节点托管服务 |
+| Tenderly Simulation | <https://docs.tenderly.co/simulations> | 交易模拟与调试平台 |
+| Etherscan API | <https://docs.etherscan.io/> | 区块链浏览器 API |
+| DefiLlama API | <https://defillama.com/docs/api> | DeFi 聚合数据 API |
+| IPFS HTTP Client (js-ipfs) | <https://github.com/ipfs/js-ipfs> | JavaScript IPFS 实现 |
+| NFT.Storage | <https://nft.storage/docs/> | 免费 IPFS/Filecoin 存储 |
+| Pinata Documentation | <https://docs.pinata.cloud/> | IPFS 托管与网关服务 |
 
 ---
 

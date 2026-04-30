@@ -83,7 +83,34 @@ const r = new NumericRange(0, 100);
 console.log(r.contains(50)); // true
 ```
 
-### 3.2 JSDoc 渐进类型化
+### 3.2 模块扩充（Module Augmentation）
+
+```ts
+// 为第三方库扩展类型声明（不修改源码）
+// types/express-augmentation.d.ts
+import 'express';
+
+declare module 'express' {
+  interface Request {
+    user?: {
+      id: string;
+      email: string;
+      role: 'admin' | 'user';
+    };
+  }
+}
+
+// 使用：中间件注入 user 后，类型安全访问
+app.get('/profile', (req, res) => {
+  if (req.user) {
+    res.json({ email: req.user.email }); // ✅ 类型推断正确
+  } else {
+    res.status(401).send('Unauthorized');
+  }
+});
+```
+
+### 3.3 JSDoc 渐进类型化
 
 ```js
 // @ts-check 在文件顶部启用 TS 类型检查
@@ -123,7 +150,7 @@ const scores = {
 const users = [{ id: '1', name: 'A', role: 'admin' }];
 ```
 
-### 3.3 `tsconfig.json` 互操作配置
+### 3.4 `tsconfig.json` 互操作配置
 
 ```json
 {
@@ -139,7 +166,26 @@ const users = [{ id: '1', name: 'A', role: 'admin' }];
 }
 ```
 
-### 3.4 从 JS 源码自动生成 `.d.ts`
+### 3.5 `satisfies` 运算符：推断 + 约束
+
+```ts
+// TS 4.9+ —— 保留推断类型同时检查结构约束
+const config = {
+  apiUrl: 'https://api.example.com',
+  timeout: 5000,
+  retries: 3,
+} satisfies {
+  apiUrl: string;
+  timeout: number;
+  retries: number;
+};
+
+// config 的推断类型为 { apiUrl: 'https://api.example.com'; timeout: 5000; retries: 3 }
+// 而不是宽泛的 { apiUrl: string; timeout: number; retries: number }
+const exactUrl = config.apiUrl; // 类型：'https://api.example.com'（字面量保留）
+```
+
+### 3.6 从 JS 源码自动生成 `.d.ts`
 
 ```bash
 # 使用 tsc 从带 JSDoc 的 JS 文件生成声明文件
@@ -163,7 +209,7 @@ declare module 'legacy-logger' {
 }
 ```
 
-### 3.5 双包风险（Dual-Package Hazard）与互操作
+### 3.7 双包风险（Dual-Package Hazard）与互操作
 
 ```ts
 // 当库同时提供 CJS 与 ESM 导出时，可能出现两份实例
@@ -185,7 +231,29 @@ declare module 'legacy-logger' {
 }
 ```
 
-### 3.6 常见误区
+### 3.8 渐进迁移：从 `any` 到 `unknown`
+
+```ts
+// ❌ 旧代码：any 绕过所有类型检查
+function parseJSONUnsafe(input: string): any {
+  return JSON.parse(input);
+}
+const data = parseJSONUnsafe('{}');
+data.foo.bar; // 编译通过，运行时可能崩溃
+
+// ✅ 迁移后：unknown 强制窄化
+function parseJSONSafe(input: string): unknown {
+  return JSON.parse(input);
+}
+const safe = parseJSONSafe('{}');
+// safe.foo; // ❌ 编译错误：Object is of type 'unknown'
+
+if (typeof safe === 'object' && safe !== null && 'foo' in safe) {
+  console.log((safe as { foo: string }).foo); // ✅ 窄化后访问
+}
+```
+
+### 3.9 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -193,7 +261,7 @@ declare module 'legacy-logger' {
 | `.d.ts` 必须与 JS 同名同目录 | 可通过 `types`/`typings` 字段在 `package.json` 指定路径 |
 | `any` 是互操作的最佳选择 | 使用 `unknown` + 窄化比 `any` 更安全 |
 
-### 3.7 扩展阅读
+### 3.10 扩展阅读
 
 - [TypeScript: Creating .d.ts Files](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
 - [TypeScript: JSDoc Supported Types](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html)
@@ -204,6 +272,8 @@ declare module 'legacy-logger' {
 - [TSConfig allowJs / checkJs](https://www.typescriptlang.org/tsconfig#allowJs) — 官方编译器选项参考
 - [Sindre Sorhus: ESM Packages](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c) — ESM 迁移最佳实践
 - [TypeScript Handbook: Modules](https://www.typescriptlang.org/docs/handbook/2/modules.html) — 模块解析与声明文件
+- [TypeScript: Module Augmentation](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation) — 官方模块扩充指南
+- [TypeScript `satisfies` Operator](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html#the-satisfies-operator) — TS 4.9 发布说明
 - `10-fundamentals/10.2-type-system/`
 
 ---

@@ -159,6 +159,77 @@ for await (const user of activeUsers) {
 }
 ```
 
+## 代码示例：Promise.withResolvers 与手动控制
+
+```typescript
+// promise-with-resolvers.ts — ES2024 原生 deferred 模式
+
+function createDeferred<T>(): {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+  reject: (reason: unknown) => void;
+} {
+  // ES2024 原生支持 Promise.withResolvers()
+  return Promise.withResolvers<T>();
+}
+
+// 手动控制异步流程
+const { promise, resolve, reject } = createDeferred<number>();
+
+setTimeout(() => resolve(42), 1000);
+
+promise.then(value => console.log('Resolved:', value));
+```
+
+## 代码示例：Structured Clone 与 Worker 间传递复杂数据
+
+```typescript
+// structured-clone-worker.ts — 传递 Map、Set、TypedArray
+
+const workerCode = `
+  self.onmessage = (e) => {
+    const { matrix, metadata } = e.data;
+    // matrix 是 Float64Array，metadata 是 Map
+    const sum = matrix.reduce((a, b) => a + b, 0);
+    self.postMessage({ sum, keys: Array.from(metadata.keys()) });
+  };
+`;
+
+const blob = new Blob([workerCode], { type: 'application/javascript' });
+const worker = new Worker(URL.createObjectURL(blob));
+
+const matrix = new Float64Array([1.1, 2.2, 3.3, 4.4]);
+const metadata = new Map([['version', 1], ['author', 'lab']]);
+
+worker.postMessage({ matrix, metadata }); // 自动结构化克隆
+worker.onmessage = (e) => console.log(e.data);
+```
+
+## 代码示例：Atomics.wait + Atomics.notify 实现锁
+
+```typescript
+// atomics-lock.ts — 跨 Worker 互斥锁
+
+const lockBuffer = new SharedArrayBuffer(4);
+const lockArray = new Int32Array(lockBuffer);
+
+function acquireLock() {
+  while (Atomics.compareExchange(lockArray, 0, 0, 1) !== 0) {
+    Atomics.wait(lockArray, 0, 1); // 等待锁释放
+  }
+}
+
+function releaseLock() {
+  Atomics.store(lockArray, 0, 0);
+  Atomics.notify(lockArray, 0, 1); // 唤醒一个等待者
+}
+
+// Worker 中使用
+// acquireLock();
+// // 临界区操作
+// releaseLock();
+```
+
 ## 权威外部链接
 
 - [MDN — Concurrency model and the event loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop)
@@ -175,6 +246,12 @@ for await (const user of activeUsers) {
 - [WHATWG Streams Standard](https://streams.spec.whatwg.org/)
 - [Jake Archibald — Tasks, microtasks, queues and schedules](https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/)
 - [Web.dev — JavaScript Execution](https://web.dev/articles/optimize-javascript-execution)
+- [ECMAScript® 2025 Language Specification — Promise Objects](https://tc39.es/ecma262/multipage/control-abstraction-objects.html#sec-promise-objects)
+- [ECMAScript® 2025 — AsyncGenerator Objects](https://tc39.es/ecma262/multipage/control-abstraction-objects.html#sec-asyncgenerator-objects)
+- [Node.js — Event Loop, Timers, and process.nextTick()](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick)
+- [MDN — SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer)
+- [MDN — structuredClone](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone)
+- [V8 Blog — Elements Kinds and Performance](https://v8.dev/blog/elements-kinds)
 
 ## 关联索引
 
@@ -183,4 +260,4 @@ for await (const user of activeUsers) {
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

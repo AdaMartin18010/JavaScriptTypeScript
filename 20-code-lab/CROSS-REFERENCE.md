@@ -68,37 +68,37 @@ graph TD
         A --> C[20.3-concurrency-async]
         A --> D[20.4-data-algorithms]
     end
-    
+
     subgraph "应用框架层"
         B --> E[20.5-frontend-frameworks]
         C --> E
         C --> F[20.6-backend-apis]
         D --> F
     end
-    
+
     subgraph "元框架与部署层"
         E --> G[20.7-ssr-metaframeworks]
         F --> G
         F --> H[20.8-edge-serverless]
         E --> H
     end
-    
+
     subgraph "质量保障层"
         A --> I[20.9-observability-security]
         F --> I
         H --> I
     end
-    
+
     subgraph "前沿研究层"
         A --> J[20.10-formal-verification]
         D --> J
     end
-    
+
     subgraph "基础设施层"
         A --> K[20.11-rust-toolchain]
         E --> K
     end
-    
+
     subgraph "知识库关联"
         L[10-fundamentals] -.-> A
         M[30-knowledge-base] -.-> B

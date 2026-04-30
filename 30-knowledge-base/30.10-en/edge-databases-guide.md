@@ -124,6 +124,92 @@ export default {
 
 ---
 
+## Deno KV Edge Example
+
+```typescript
+// deno-kv-edge.ts — Deno KV 原子操作与条件写入
+import { load } from 'https://deno.land/std/dotenv/mod.ts';
+
+const kv = await Deno.openKv();
+
+// 原子递增计数器（边缘全局状态）
+export async function incrementViewCount(postId: string): Promise<number> {
+  const key = ['posts', postId, 'views'];
+  const res = await kv.atomic()
+    .sum(key, 1n)
+    .commit();
+
+  if (!res.ok) throw new Error('Concurrent write conflict');
+
+  const entry = await kv.get<{ value: bigint }>(key);
+  return Number(entry.value?.value ?? 0n);
+}
+
+// 条件写入：仅当版本匹配时更新（乐观锁）
+export async function updatePost(
+  postId: string,
+  newTitle: string,
+  expectedVersion: string
+) {
+  const key = ['posts', postId];
+  const current = await kv.get<{ title: string; version: string }>(key);
+
+  const ok = await kv.atomic()
+    .check(current) // 校验版本未被修改
+    .set(key, { title: newTitle, version: crypto.randomUUID() })
+    .commit();
+
+  return ok;
+}
+
+// 队列 + 定时任务（Deno KV Queue）
+export async function enqueueEmailJob(to: string, subject: string) {
+  await kv.enqueue(
+    { type: 'send-email', to, subject, createdAt: Date.now() },
+    { delay: 60_000 } // 延迟 60 秒执行
+  );
+}
+```
+
+> 📖 Reference: [Deno KV Manual](https://docs.deno.com/deploy/kv/manual/) | [Deno KV Atomic Operations](https://docs.deno.com/deploy/kv/manual/atomic_operations/)
+
+---
+
+## Raw SQL Edge Patterns
+
+```typescript
+// raw-d1.ts — Cloudflare D1 原始 SQL 与批量写入
+export interface Env { DB: D1Database; }
+
+export default {
+  async fetch(req: Request, env: Env): Promise<Response> {
+    const url = new URL(req.url);
+
+    // 参数化查询（防 SQL 注入）
+    const { results } = await env.DB.prepare(
+      'SELECT * FROM posts WHERE published = ? AND user_id = ? ORDER BY created_at DESC LIMIT ?'
+    )
+      .bind(1, url.searchParams.get('userId'), 20)
+      .all();
+
+    // 批量插入（D1 支持参数化绑定）
+    if (req.method === 'POST') {
+      const body = await req.json<{ titles: string[]; userId: number }>();
+      const stmt = env.DB.prepare('INSERT INTO posts (user_id, title) VALUES (?, ?)');
+
+      // D1 批处理 API
+      await env.DB.batch(
+        body.titles.map((title) => stmt.bind(body.userId, title))
+      );
+    }
+
+    return Response.json({ posts: results });
+  },
+};
+```
+
+---
+
 ## Architecture Patterns for Edge Databases
 
 | 模式 | 适用场景 | 实现要点 |
@@ -155,6 +241,16 @@ Deploying edge databases successfully requires acknowledging their structural co
 - [Drizzle ORM — SQLite](https://orm.drizzle.team/docs/get-started-sqlite)
 - [Fly.io — SQLite at the Edge](https://fly.io/docs/reference/sqlite-at-the-edge/)
 - [Cloudflare Blog — D1 GA](https://blog.cloudflare.com/d1-ga/)
+- [Neon Serverless Postgres](https://neon.tech/docs/introduction)
+- [libSQL GitHub Repository](https://github.com/tursodatabase/libsql)
+- [SQLite FTS5 Full-Text Search](https://sqlite.org/fts5.html)
+- [D1 Pricing & Limits](https://developers.cloudflare.com/d1/platform/limits/)
+- [Turso Edge Replication Deep Dive](https://docs.turso.tech/features/edge-replication)
+- [W3C Web SQL Database (Historical Context)](https://www.w3.org/TR/webdatabase/)
+- [Cloudflare Workers KV vs D1](https://developers.cloudflare.com/workers/platform/storage-options/)
+- [Deno Deploy Edge Regions](https://docs.deno.com/deploy/manual/regions/)
+- [Prisma Edge Compatibility](https://www.prisma.io/docs/orm/prisma-client/deployment/edge)
+- [Vercel Edge Config](https://vercel.com/docs/storage/edge-config)
 
 ---
 

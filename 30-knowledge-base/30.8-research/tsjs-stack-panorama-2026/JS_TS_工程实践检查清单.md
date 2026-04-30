@@ -1,9 +1,10 @@
 ---
-last-updated: 2026-04-27
+last-updated: 2026-04-30
 review-cycle: 6 months
 next-review: 2026-10-27
 status: current
 ---
+
 # JavaScript / TypeScript 工程实践检查清单
 
 > 覆盖代码质量、安全、性能、可维护性的完整检查清单
@@ -179,7 +180,7 @@ status: current
   // package.json
   {
     "dependencies": {
-      "lodash": "4.17.21"  // 精确版本
+      "lodash": "4.17.21"
     }
   }
 
@@ -555,7 +556,97 @@ status: current
 
 ---
 
-## 8. 检查清单使用指南
+## 8. 错误处理与边界检查
+
+```typescript
+// error-boundary.ts — React 错误边界示例
+import { Component, ReactNode } from 'react';
+
+interface Props {
+  children: ReactNode;
+  fallback: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+}
+
+class ErrorBoundary extends Component<Props, State> {
+  state: State = { hasError: false };
+
+  static getDerivedStateFromError(): State {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('ErrorBoundary caught:', error, info.componentStack);
+    reportError({ error, componentStack: info.componentStack });
+  }
+
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
+
+// API 错误统一处理
+class APIError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number,
+    public code: string
+  ) {
+    super(message);
+    this.name = 'APIError';
+  }
+}
+
+async function safeFetch<T>(url: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(url, options);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new APIError(
+      body.message || res.statusText,
+      res.status,
+      body.code || 'UNKNOWN_ERROR'
+    );
+  }
+  return res.json();
+}
+```
+
+---
+
+## 9. API 版本控制与废弃策略
+
+```typescript
+// api-versioning.ts
+import { Router } from 'express';
+
+const v1Router = Router();
+const v2Router = Router();
+
+// v1: 旧接口（标记废弃）
+v1Router.get('/users', (req, res) => {
+  res.setHeader('Deprecation', 'true');
+  res.setHeader('Sunset', Date.UTC(2026, 11, 1).toString());
+  res.json({ users: [], version: 'v1-deprecated' });
+});
+
+// v2: 新接口
+v2Router.get('/users', (req, res) => {
+  res.json({
+    data: [],
+    meta: { version: 'v2', total: 0 },
+  });
+});
+
+export { v1Router, v2Router };
+```
+
+---
+
+## 10. 检查清单使用指南
 
 ### 新项目启动
 
@@ -583,6 +674,27 @@ npm run check:lint
 npm run check:test
 npm run check:security
 ```
+
+---
+
+## 11. 权威参考链接
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| TypeScript Handbook | 官方文档 | [typescriptlang.org/docs](https://www.typescriptlang.org/docs/) |
+| ESLint Rules | 文档 | [eslint.org/docs/rules](https://eslint.org/docs/rules/) |
+| Zod 文档 | Schema 校验 | [zod.dev](https://zod.dev/) |
+| OWASP Top 10 | 安全 | [owasp.org/Top10](https://owasp.org/Top10/) |
+| Web Vitals | 性能 | [web.dev/vitals](https://web.dev/vitals/) |
+| Lighthouse CI | 性能自动化 | [github.com/GoogleChrome/lighthouse-ci](https://github.com/GoogleChrome/lighthouse-ci) |
+| Jest 文档 | 测试 | [jestjs.io](https://jestjs.io/) |
+| Playwright 文档 | E2E 测试 | [playwright.dev](https://playwright.dev/) |
+| React Error Boundaries | 文档 | [react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary) |
+| Conventional Commits | 规范 | [conventionalcommits.org](https://www.conventionalcommits.org/) |
+| Sentry 文档 | 监控 | [docs.sentry.io](https://docs.sentry.io/) |
+| GitHub Actions 文档 | CI/CD | [docs.github.com/actions](https://docs.github.com/actions) |
+| WCAG 2.1 指南 | 可访问性 | [w3.org/WAI/WCAG21/quickref](https://www.w3.org/WAI/WCAG21/quickref/) |
+| MDN Web Docs | 参考 | [developer.mozilla.org](https://developer.mozilla.org) |
 
 ---
 

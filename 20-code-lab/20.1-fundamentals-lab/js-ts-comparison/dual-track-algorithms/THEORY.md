@@ -108,7 +108,45 @@ insert(root, 5);
 // insert(root, 'a'); // ❌ 编译错误：类型 'string' 不能赋值给 'number'
 ```
 
-### 3.2 类型守卫实战：双轨校验
+### 3.2 双轨快速排序（QuickSort）
+
+```js
+// === JavaScript —— 动态类型，运行时隐患 ===
+function quickSort(arr) {
+  if (arr.length <= 1) return arr;
+  const pivot = arr[0];
+  const left = arr.slice(1).filter(x => x < pivot);
+  const right = arr.slice(1).filter(x => x >= pivot);
+  return [...quickSort(left), pivot, ...quickSort(right)];
+}
+
+// 运行时问题：混合类型导致异常排序
+quickSort([3, '1', 2]); // ['1', 2, 3] —— 字符串 '1' < 数字 3 为 true
+quickSort([null, 1, undefined]); // 可能产生不稳定结果
+```
+
+```ts
+// === TypeScript —— 泛型约束 + 比较器，编译期安全 ===
+function quickSort<T>(arr: T[], compare: (a: T, b: T) => number): T[] {
+  if (arr.length <= 1) return arr;
+  const pivot = arr[0];
+  const left = arr.slice(1).filter(x => compare(x, pivot) < 0);
+  const right = arr.slice(1).filter(x => compare(x, pivot) >= 0);
+  return [...quickSort(left, compare), pivot, ...quickSort(right, compare)];
+}
+
+// 使用：必须提供 compare 函数，避免隐式转换
+const sorted = quickSort(
+  [{ name: 'Alice', age: 30 }, { name: 'Bob', age: 25 }],
+  (a, b) => a.age - b.age
+);
+// sorted 类型自动推断为 { name: string; age: number }[]
+
+// ❌ 编译错误：不提供 compare 无法调用（泛型参数已约束）
+// quickSort([1, 'a']); // 类型不兼容
+```
+
+### 3.3 类型守卫实战：双轨校验
 
 ```ts
 // 在 JS 中需要大量防御性代码
@@ -139,7 +177,7 @@ function processInputTS(input: unknown): number {
 }
 ```
 
-### 3.3 泛型约束与条件类型：安全映射
+### 3.4 泛型约束与条件类型：安全映射
 
 ```ts
 // TypeScript 利用泛型约束在编译期保证键的存在
@@ -162,7 +200,53 @@ const names = pluck(products, 'name'); // string[]
 // const bad = pluck(products, 'stock'); // ❌ 编译错误：'stock' 不存在于 Product
 ```
 
-### 3.4 用 `zod` 运行时 + 编译时双重校验
+### 3.5 图遍历双轨：DFS 与 BFS
+
+```js
+// === JavaScript —— 无类型保障 ===
+function dfs(graph, start, visited = new Set()) {
+  visited.add(start);
+  console.log(start);
+  for (const neighbor of graph[start] || []) {
+    if (!visited.has(neighbor)) dfs(graph, neighbor, visited);
+  }
+  return visited;
+}
+
+// 运行时错误：graph 可能不是对象，start 可能不存在
+// dfs(null, 'A'); // TypeError
+```
+
+```ts
+// === TypeScript —— 邻接表类型化 ===
+type Graph<T extends string | number> = Record<T, T[]>;
+
+function dfs<T extends string | number>(
+  graph: Graph<T>,
+  start: T,
+  visited = new Set<T>()
+): Set<T> {
+  visited.add(start);
+  console.log(start);
+  const neighbors = graph[start] ?? [];
+  for (const neighbor of neighbors) {
+    if (!visited.has(neighbor)) dfs(graph, neighbor, visited);
+  }
+  return visited;
+}
+
+// 编译期保证：start 必须是 Graph 键的子类型
+const g: Graph<string> = {
+  A: ['B', 'C'],
+  B: ['D'],
+  C: [],
+  D: [],
+};
+dfs(g, 'A'); // ✅
+// dfs(g, 'Z'); // ❌ 若 strictLiteralTypes 开启则报错
+```
+
+### 3.6 用 `zod` 运行时 + 编译时双重校验
 
 ```ts
 // 类型系统无法覆盖运行时边界（如网络输入），配合 Zod 实现双保险
@@ -186,7 +270,7 @@ function parseUser(input: unknown): User {
 // parseUser({ id: -1, email: 'bad', role: 'hacker' }); // 抛出 ZodError
 ```
 
-### 3.5 常见误区
+### 3.7 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -194,7 +278,7 @@ function parseUser(input: unknown): User {
 | 类型系统可替代所有单元测试 | 类型保证结构安全，业务逻辑正确性仍需测试 |
 | 双轨意味着维护两份代码 | TS 是 JS 的超集，同一份 `.ts` 经编译即得 JS |
 
-### 3.6 扩展阅读
+### 3.8 扩展阅读
 
 - [TypeScript Handbook: Narrowing](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
 - [TypeScript Handbook: Generics](https://www.typescriptlang.org/docs/handbook/2/generics.html)
@@ -204,6 +288,9 @@ function parseUser(input: unknown): User {
 - [Zod Documentation](https://zod.dev/) — 运行时 Schema 校验库
 - [Superstruct](https://docs.superstructjs.org/) — 轻量运行时校验替代方案
 - [TypeScript Generics Deep Dive](https://www.typescriptlang.org/docs/handbook/2/generics.html#generic-constraints)
+- [TypeScript: The `satisfies` Operator](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html#the-satisfies-operator) — 推断+约束双重保障
+- [Algorithm Visualizations — VisuAlgo](https://visualgo.net/) — 算法可视化学习
+- [CLRS — Introduction to Algorithms](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/) — 算法权威教材
 - `10-fundamentals/10.2-type-system/`
 
 ---

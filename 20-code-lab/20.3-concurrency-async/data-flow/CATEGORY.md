@@ -159,6 +159,84 @@ pipeline(
 );
 ```
 
+### WHATWG Web Streams API
+
+```typescript
+// web-streams.ts — 浏览器原生流处理与 TransformStream
+async function compressAndUpload(file: File) {
+  const readable = file.stream();
+
+  const transform = new TransformStream<Uint8Array, Uint8Array>({
+    transform(chunk, controller) {
+      // 模拟分块处理（实际可用 CompressionStream）
+      controller.enqueue(chunk);
+    },
+  });
+
+  const response = await fetch('/api/upload', {
+    method: 'POST',
+    body: readable.pipeThrough(transform),
+    duplex: 'half',
+  });
+
+  return response.json();
+}
+```
+
+### AbortController 与竞态处理
+
+```typescript
+// abort-race.ts — 可取消的异步数据流
+async function fetchWithTimeout(url: string, timeoutMs = 5000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
+    return response.json();
+  } catch (err) {
+    if (err instanceof DOMException && err.name === 'AbortError') {
+      throw new Error(`Request to ${url} timed out after ${timeoutMs}ms`);
+    }
+    throw err;
+  }
+}
+
+// 自动取消过时请求的防抖封装
+let currentController: AbortController | null = null;
+async function search(query: string) {
+  currentController?.abort();
+  currentController = new AbortController();
+  return fetch(`/api/search?q=${query}`, { signal: currentController.signal });
+}
+```
+
+### Effection — 结构化并发
+
+```typescript
+// structured-concurrency.ts — 使用 Effection 管理并发资源生命周期
+// npm install effection
+import { run, sleep, spawn, race } from 'effection';
+
+await run(function* () {
+  // 所有子任务在父作用域退出时自动取消
+  const task1 = yield* spawn(function* () {
+    yield* sleep(1000);
+    return 'task1 done';
+  });
+
+  const task2 = yield* spawn(function* () {
+    yield* sleep(500);
+    return 'task2 done';
+  });
+
+  // race：取最先完成的，其余自动取消
+  const winner = yield* race([task1, task2]);
+  console.log(winner); // task2 done
+});
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -197,7 +275,11 @@ pipeline(
 | Most.js — Monadic Stream | 文档 | [github.com/cujojs/most](https://github.com/cujojs/most) |
 | XState — State Machines | 文档 | [stately.ai/docs](https://stately.ai/docs) |
 | ECMAScript Async Iteration | 提案 | [tc39.es/proposal-async-iteration](https://tc39.es/proposal-async-iteration/) |
+| WHATWG Streams Standard | 规范 | [streams.spec.whatwg.org](https://streams.spec.whatwg.org/) |
+| Effection — Structured Concurrency | 文档 | [frontside.com/effection](https://frontside.com/effection) |
+| MDN: AbortController | 文档 | [developer.mozilla.org/en-US/docs/Web/API/AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) |
+| React use (Canary) | 文档 | [react.dev/reference/react/use](https://react.dev/reference/react/use) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

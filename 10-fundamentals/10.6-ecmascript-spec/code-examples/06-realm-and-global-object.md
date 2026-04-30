@@ -118,19 +118,97 @@ ES2020 引入 `globalThis` 作为跨平台的统一全局对象访问方式：
 | Web Worker | `self` | ✅ 统一 |
 | Deno | `window` | ✅ 统一 |
 
+```javascript
+// 安全地获取全局对象（跨平台）
+const globalObject = (function () {
+  if (typeof globalThis !== 'undefined') return globalThis;
+  if (typeof self !== 'undefined') return self;
+  if (typeof window !== 'undefined') return window;
+  if (typeof global !== 'undefined') return global;
+  throw new Error('Unable to locate global object');
+})();
+
+// 定义一个全局 polyfill（仅在缺失时）
+if (!globalObject.structuredClone) {
+  globalObject.structuredClone = function structuredClone(value) {
+    return JSON.parse(JSON.stringify(value));
+  };
+}
+```
+
 ---
 
-## 5. 参考文献
+## 5. Node.js vm 模块与 Realm 模拟
+
+```javascript
+// vm 模块创建独立的 Global Object，但不创建完整 Realm（缺少部分 Intrinsics）
+const vm = require('vm');
+
+const context = vm.createContext({
+  console,
+  setTimeout,
+  globalThis: {}, // 可为空对象
+});
+
+const code = `
+  globalThis.secret = 42;
+  typeof Array;       // 'function'（从当前上下文继承）
+  typeof Promise;     // 'function'
+`;
+
+vm.runInContext(code, context);
+console.log(context.globalThis.secret); // 42
+console.log(globalThis.secret);         // undefined（隔离成功）
+
+// 注意：vm 不是安全沙箱！不应直接执行不可信代码
+// 若需安全沙箱，使用 Worker Threads 或 WebAssembly
+```
+
+---
+
+## 6. `structuredClone` 与跨 Realm 数据传输
+
+```javascript
+// structuredClone 可在 Worker / iframe 间深拷贝复杂对象
+const original = {
+  date: new Date(),
+  map: new Map([['key', 'value']]),
+  set: new Set([1, 2, 3]),
+  nested: { a: [1, 2, 3] },
+};
+
+const cloned = structuredClone(original);
+console.log(cloned.date instanceof Date); // true
+console.log(cloned.map instanceof Map);   // true
+console.log(cloned.nested === original.nested); // false（深拷贝）
+
+// 在 iframe 间传递
+const iframe = document.createElement('iframe');
+document.body.appendChild(iframe);
+iframe.contentWindow.postMessage(structuredClone(original), '*');
+```
+
+---
+
+## 7. 参考文献
 
 - **ECMA-262 §9.3** — Realms
 - **ECMA-262 §18** — The Global Object
+- **ECMA-262 §19.1** — Value Properties of the Global Object（`globalThis`）
 - **ShadowRealm Proposal** — <https://github.com/tc39/proposal-shadowrealm>
 - **MDN: globalThis** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/globalThis>
+- **MDN: ShadowRealm** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ShadowRealm>
+- **Node.js vm Module** — <https://nodejs.org/api/vm.html>
+- **Node.js Worker Threads** — <https://nodejs.org/api/worker_threads.html>
+- **MDN: structuredClone** — <https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone>
+- **HTML Spec: Realm 设置** — <https://html.spec.whatwg.org/multipage/webappapis.html#realms-settings-objects-global-objects>
+- **V8 Blog: Understanding V8 Intrinsics** — <https://v8.dev/blog>
+- **TC39 Meeting Notes on ShadowRealm** — <https://github.com/tc39/notes/tree/main/meetings>
 
 ---
 
 > 📅 最后更新：2026-04-27
-> 📏 字节数：~3,500+
+> 📏 字节数：~5,200+
 
 
 ---

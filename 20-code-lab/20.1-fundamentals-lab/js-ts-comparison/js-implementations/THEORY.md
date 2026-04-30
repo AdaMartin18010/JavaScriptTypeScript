@@ -14,6 +14,7 @@
 ### 1.2 形式化基础
 
 ECMA-262 规范存在「实现定义行为」（implementation-defined）与「未指定行为」（unspecified）两类自由度。引擎差异主要出现在：
+
 - 正则表达式回溯策略（unspecified）
 - 对象属性枚举顺序（ES2020 后已标准化，但历史差异存在）
 - `Array.prototype.sort` 算法（实现定义，ES2019 后规定稳定排序）
@@ -137,7 +138,35 @@ const p2 = new Point(3, 4);
 for (let i = 0; i < 1e6; i++) distance(p1, p2);
 ```
 
-### 3.3 BigInt 与 TypedArray 引擎差异
+### 3.3 隐藏类反优化（Deopt）示例
+
+```js
+// === 隐藏类破坏导致性能断崖 ===
+function createUser(name, role) {
+  const user = { name };
+  // 条件性添加属性会破坏隐藏类预测
+  if (role) {
+    user.role = role; // V8 将创建新的隐藏类映射
+  }
+  return user;
+}
+
+// ✅ 优化版本：始终初始化相同属性（用 null 占位）
+function createUserOptimized(name, role) {
+  return { name, role: role ?? null };
+}
+
+// 基准：在 V8 中优化版本快 2–5x
+console.time('deopt');
+for (let i = 0; i < 1e7; i++) createUser('A', i % 2 === 0 ? 'admin' : undefined);
+console.timeEnd('deopt');
+
+console.time('opt');
+for (let i = 0; i < 1e7; i++) createUserOptimized('A', i % 2 === 0 ? 'admin' : null);
+console.timeEnd('opt');
+```
+
+### 3.4 BigInt 与 TypedArray 引擎差异
 
 ```js
 // === BigInt 位运算在不同引擎上的性能差异显著 ===
@@ -165,7 +194,27 @@ Atomics.store(i32, 0, 42);
 console.log(Atomics.load(i32, 0)); // 42
 ```
 
-### 3.4 Date.parse 实现差异与 ISO 8601 安全写法
+### 3.5 `ArrayBuffer` 转移与 `structuredClone`
+
+```js
+// === 跨引擎一致的零拷贝转移（ES2021+） ===
+const buffer = new ArrayBuffer(1024);
+const view = new Uint8Array(buffer);
+view[0] = 42;
+
+// 转移后原 buffer 失效（所有引擎一致行为）
+const transferred = structuredClone(view, { transfer: [buffer] });
+console.log(transferred[0]); // 42
+console.log(buffer.byteLength); // 0（已转移）
+
+// 在 Worker 间高效传递大对象
+const worker = new Worker('worker.js');
+const bigData = new ArrayBuffer(10 * 1024 * 1024);
+worker.postMessage(bigData, [bigData]);
+// 主线程不再持有 bigData，无复制开销
+```
+
+### 3.6 Date.parse 实现差异与 ISO 8601 安全写法
 
 ```js
 // 不同引擎对非 ISO 格式解析存在差异
@@ -177,7 +226,7 @@ new Date('2024-02-03T00:00:00Z');
 new Date(2024, 1, 3); // 月份从 0 开始，所有引擎一致
 ```
 
-### 3.5 常见误区
+### 3.7 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -185,7 +234,7 @@ new Date(2024, 1, 3); // 月份从 0 开始，所有引擎一致
 | 性能优化只需关注 V8 | Safari 移动端份额巨大，JSC 性能模型与 V8 不同 |
 | `typeof null === 'object'` 是引擎 Bug | 这是语言规范定义的行为，所有引擎一致实现 |
 
-### 3.6 扩展阅读
+### 3.8 扩展阅读
 
 - [V8 Blog](https://v8.dev/blog)
 - [SpiderMonkey Documentation](https://spidermonkey.dev/)
@@ -197,6 +246,10 @@ new Date(2024, 1, 3); // 月份从 0 开始，所有引擎一致
 - [SpiderMonkey WarpMonkey](https://spidermonkey.dev/blog/) — SpiderMonkey 新一代 JIT 介绍
 - [WebKit JSC FTL JIT](https://webkit.org/blog/3362/introducing-the-webkit-ftl-jit/) — FTL（Fourth Tier LLVM）架构
 - [Date.parse ECMA-262 规范](https://tc39.es/ecma262/#sec-date.parse) — 实现定义行为的标准描述
+- [MDN: BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) — 跨引擎 BigInt 行为
+- [MDN: SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) — 共享内存与 Atomics
+- [Node.js Performance Guide](https://nodejs.org/en/docs/guides/simple-profiling) — Node.js/V8 性能分析
+- [WebKit Blog: Riptide GC](https://webkit.org/blog/12967/introducing-riptide/) — JSC 并发垃圾回收
 - `30-knowledge-base/30.2-runtimes`
 
 ---

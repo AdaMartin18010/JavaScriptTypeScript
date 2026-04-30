@@ -135,6 +135,114 @@ with (obj) {
 }
 ```
 
+### 4.3 TDZ（Temporal Dead Zone）的规范根源
+
+```javascript
+// 规范层面：let/const 绑定在创建时处于 "uninitialized" 状态
+// 访问 uninitialized 绑定抛出 ReferenceError
+
+function tdzDemo() {
+  // 此时 temp 已创建绑定，但尚未初始化
+  console.log(typeof temp); // ReferenceError: Cannot access 'temp' before initialization
+  let temp = 1;
+}
+
+// 对比 var：创建即初始化为 undefined
+function hoistingDemo() {
+  console.log(typeof temp); // "undefined"
+  var temp = 1;
+}
+```
+
+### 4.4 闭包的环境记录捕获
+
+```javascript
+// 每个闭包都捕获其定义时的 LexicalEnvironment
+function createCounter() {
+  let count = 0; // 存储在 DeclarativeEnvironmentRecord 中
+  return {
+    increment: () => ++count,
+    decrement: () => --count,
+    get: () => count,
+  };
+}
+
+const counterA = createCounter();
+const counterB = createCounter();
+
+console.log(counterA.increment()); // 1
+console.log(counterA.increment()); // 2
+console.log(counterB.increment()); // 1 —— 独立的环境记录副本
+
+// 环境记录生命周期：只要闭包存在，其 outer 引用的环境记录就存活
+// 这就是闭包导致内存泄漏的根本原因
+```
+
+### 4.5 模块环境记录的 Live Binding
+
+```javascript
+// counter.js
+export let count = 0;
+export function increment() {
+  count++;
+}
+
+// main.js
+import { count, increment } from './counter.js';
+
+console.log(count); // 0
+increment();
+console.log(count); // 1 —— Live Binding：读取时转发到源模块的最新值
+
+// 规范层面：count 在 main.js 的 ModuleEnvironmentRecord 中是一个 IndirectBinding
+// 访问时实际调用 counter.js ModuleEnvironmentRecord.GetBindingValue('count')
+```
+
+### 4.6 函数环境记录与 `this` 绑定
+
+```javascript
+// 箭头函数不创建 FunctionEnvironmentRecord
+// 它们使用外层 LexicalEnvironment 的 this 绑定
+
+const obj = {
+  name: 'Alice',
+  regular() {
+    // 创建 FunctionEnvironmentRecord，this = obj
+    console.log(this.name); // Alice
+    setTimeout(function() {
+      // 创建新的 FunctionEnvironmentRecord，this = globalThis（非严格）或 undefined（严格）
+      console.log(this?.name); // undefined
+    }, 0);
+    setTimeout(() => {
+      // 箭头函数：使用外层 LexicalEnvironment 的 this（即 obj）
+      console.log(this.name); // Alice
+    }, 0);
+  },
+};
+
+obj.regular();
+```
+
+### 4.7 eval 的动态环境记录注入
+
+```javascript
+// 直接 eval 在当前 LexicalEnvironment 中创建绑定
+function evalDemo() {
+  let x = 1;
+  eval('var y = 2; let z = 3;');
+  console.log(y); // 2 —— eval 的 var 进入 VariableEnvironment
+  console.log(z); // 3 —— eval 的 let 进入 LexicalEnvironment
+}
+
+// 间接 eval (通过变量调用) 在全局环境记录中执行
+const indirectEval = eval;
+function indirectDemo() {
+  let x = 1;
+  indirectEval('var y = 99;');
+  // console.log(y); // ReferenceError —— y 在全局，不在局部
+}
+```
+
 ---
 
 ## 5. 权威参考
@@ -197,6 +305,57 @@ ModuleEnv.CreateImportBinding(N, M, N2):
 
 当访问该绑定时，实际会转发到源模块 `M` 中的绑定 `N2`。这就是 ESM Live Binding 的底层机制。
 
+### 补充 4：try-catch 的 Catch Clause 环境记录
+
+```javascript
+// catch 子句创建新的 DeclarativeEnvironmentRecord
+// 异常参数绑定在此环境记录中
+
+try {
+  throw new Error('demo');
+} catch (e) {
+  // e 绑定在 catch 专用的 DeclarativeEnvironmentRecord 中
+  console.log(e.message); // demo
+}
+// console.log(e); // ReferenceError —— e 的绑定随 catch 环境记录销毁
+```
+
+### 补充 5：类字段与私有成员的类环境记录
+
+```javascript
+class MyClass {
+  static #privateStatic = 42; // 存储在 ClassEnvironmentRecord 中
+  #privateField = 0;          // 每个实例的 PrivateEnvironment
+
+  constructor() {
+    // new 创建新的 FunctionEnvironmentRecord
+    // 类字段初始化在 super() 之后、构造函数体之前执行
+    console.log(this.#privateField); // 0
+  }
+
+  getPrivate() {
+    return this.#privateField; // 通过 PrivateName 访问，规范层面不同于普通属性
+  }
+}
+```
+
 ---
 
-> 📅 补充更新：2026-04-27
+## 权威外部链接
+
+| 资源 | 描述 | 链接 |
+|------|------|------|
+| ECMA-262 §9.1 | 环境记录规范 | [tc39.es/ecma262/#sec-environment-records](https://tc39.es/ecma262/#sec-environment-records) |
+| ECMA-262 §9.2 | 词法环境规范 | [tc39.es/ecma262/#sec-lexical-environments](https://tc39.es/ecma262/#sec-lexical-environments) |
+| MDN — Closures | 闭包深入指南 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Closures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures) |
+| MDN — Scope | 作用域说明 | [developer.mozilla.org/en-US/docs/Glossary/Scope](https://developer.mozilla.org/en-US/docs/Glossary/Scope) |
+| MDN — let | 块级绑定 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/let) |
+| MDN — const | 常量绑定 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const) |
+| 2ality — JS Variables | 变量深度解析 | [2ality.com/2015/02/es6-scoping.html](https://2ality.com/2015/02/es6-scoping.html) |
+| V8 Blog — Fast Properties | 隐藏类与环境记录 | [v8.dev/blog/fast-properties](https://v8.dev/blog/fast-properties) |
+| JavaScript Spec Explorer | 规范可视化 | [tc39.es/ecma262/multipage/](https://tc39.es/ecma262/multipage/) |
+| Dr. Axel Rauschmayer — Speaking JS | 权威 JS 教材 | [exploringjs.com/es6/ch_variables.html](https://exploringjs.com/es6/ch_variables.html) |
+| JS Engine Exposed | 引擎内幕系列 | [mathiasbynens.be/notes/shapes-ics](https://mathiasbynens.be/notes/shapes-ics) |
+| Modules in ES6 | 模块系统详解 | [exploringjs.com/es6/ch_modules.html](https://exploringjs.com/es6/ch_modules.html) |
+
+> 📅 补充更新：2026-04-30

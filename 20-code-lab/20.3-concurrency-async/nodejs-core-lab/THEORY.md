@@ -10,6 +10,8 @@ Node.js 基于 libuv 实现跨平台异步 IO：
 - **线程池**: libuv 管理的线程池处理文件系统、DNS 等阻塞操作
 - **回调队列**: 异步操作完成后回调进入队列，等待事件循环执行
 
+---
+
 ## 2. Node.js 并发模型对比
 
 | 维度 | Event Loop | Worker Threads | Cluster |
@@ -28,6 +30,8 @@ Node.js 基于 libuv 实现跨平台异步 IO：
 > - HTTP API 服务 + 高并发 → **Event Loop + Cluster**
 > - 图像/视频/数据处理 → **Worker Threads**
 > - 需要利用全部 CPU 核心且保持单代码库 → **Cluster**（主进程只负责调度）
+
+---
 
 ## 3. Cluster 模块代码示例
 
@@ -145,7 +149,133 @@ function runFibonacci(n: number): Promise<number> {
 }
 ```
 
-## 4. 核心模块
+---
+
+## 4. Stream 管道处理
+
+```typescript
+// stream-pipeline.ts — 可组合的流式数据处理
+import { createReadStream, createWriteStream } from 'node:fs';
+import { pipeline } from 'node:stream/promises';
+import { createGzip } from 'node:zlib';
+import { Transform } from 'node:stream';
+
+// 自定义 Transform：JSON 行解析
+const jsonParser = new Transform({
+  objectMode: true,
+  transform(chunk: Buffer, _encoding, callback) {
+    const lines = chunk.toString().split('\n').filter(Boolean);
+    for (const line of lines) {
+      try {
+        this.push(JSON.parse(line));
+      } catch {
+        this.emit('error', new Error(`Invalid JSON: ${line}`));
+      }
+    }
+    callback();
+  },
+});
+
+// 自定义 Transform：过滤 + 映射
+const filterMap = new Transform({
+  objectMode: true,
+  transform(record: { status: string; value: number }, _enc, cb) {
+    if (record.status === 'ok') {
+      this.push(JSON.stringify({ value: record.value * 2 }) + '\n');
+    }
+    cb();
+  },
+});
+
+// 可运行示例：读取 → 解析 → 过滤 → 压缩 → 写入
+async function runPipeline(input: string, output: string) {
+  await pipeline(
+    createReadStream(input),
+    jsonParser,
+    filterMap,
+    createGzip(),
+    createWriteStream(output)
+  );
+  console.log('Pipeline completed');
+}
+```
+
+---
+
+## 5. AbortController 取消异步操作
+
+```typescript
+// abortable-fetch.ts — 请求取消与超时
+import { setTimeout as delay } from 'node:timers/promises';
+
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit & { timeout?: number } = {}
+): Promise<Response> {
+  const controller = new AbortController();
+  const { timeout = 5000, ...fetchOptions } = options;
+
+  const timer = setTimeout(() => controller.abort(new Error('Request timeout')), timeout);
+
+  try {
+    const response = await fetch(url, { ...fetchOptions, signal: controller.signal });
+    return response;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// 可运行示例：批量请求，任一失败即全部取消
+async function fetchAll(urls: string[]) {
+  const controller = new AbortController();
+  try {
+    const promises = urls.map(url =>
+      fetch(url, { signal: controller.signal }).then(r => r.json())
+    );
+    return await Promise.all(promises);
+  } catch (e) {
+    controller.abort(); // 取消所有未完成的请求
+    throw e;
+  }
+}
+```
+
+---
+
+## 6. ESM/CJS 互操作
+
+```typescript
+// esm-cjs-interop.ts — 混合模块系统最佳实践
+
+// ESM 中导入 CJS：直接默认导入
+import cjsModule from 'cjs-package';
+
+// CJS 中导入 ESM：动态 import（返回 Promise）
+async function loadEsm() {
+  const { default: esmModule, namedExport } = await import('esm-package');
+  return { esmModule, namedExport };
+}
+
+// package.json 配置（type: "module" 时）
+// {
+//   "type": "module",
+//   "exports": {
+//     ".": {
+//       "import": "./dist/index.mjs",
+//       "require": "./dist/index.cjs"
+//     }
+//   }
+// }
+
+// 条件导出辅助
+export function createDualPackage(name: string) {
+  return `Hello from ${name} (works in both ESM and CJS)`;
+}
+```
+
+---
+
+## 7. 核心模块
 
 | 模块 | 用途 |
 |------|------|
@@ -158,7 +288,7 @@ function runFibonacci(n: number): Promise<number> {
 | **path** | 路径解析和拼接 |
 | **os** | 操作系统信息 |
 
-## 5. Stream 处理
+## 8. Stream 处理
 
 Node.js 的 Stream 是处理大数据的核心抽象：
 
@@ -172,25 +302,25 @@ Readable → Transform → Writable
 
 背压（Backpressure）处理：当 Writable 消费速度慢于 Readable 生产速度时，自动暂停读取。
 
-## 6. 模块系统
+## 9. 模块系统
 
 - **CommonJS**: `require()` / `module.exports`，运行时同步加载
 - **ESM**: `import` / `export`，静态解析，支持顶级 await
 - **互操作**: Node.js 的 ESM/CJS 互操作规则
 
-## 7. 进程管理
+## 10. 进程管理
 
 - **Cluster**: 主进程 + 工作进程模型，利用多核 CPU
 - **Worker Threads**: 真正的多线程，共享内存（SharedArrayBuffer）
 - **Child Process**: 子进程.spawn() / .exec()，适合 CPU 密集型任务
 
-## 8. 与相邻模块的关系
+## 11. 与相邻模块的关系
 
 - **19-backend-development**: 后端服务开发
 - **12-package-management**: npm 包管理
 - **50-browser-runtime**: 浏览器运行时对比
 
-## 参考链接
+## 权威参考链接
 
 - [Node.js Event Loop — Node.js Docs](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick)
 - [Worker Threads — Node.js Docs](https://nodejs.org/api/worker_threads.html)
@@ -198,3 +328,14 @@ Readable → Transform → Writable
 - [Don't Block the Event Loop — Node.js Docs](https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop)
 - [libuv Design Overview](https://docs.libuv.org/en/v1.x/design.html)
 - [Node.js Streams — substack](https://github.com/substack/stream-handbook)
+- [Node.js Stream API — Node.js Docs](https://nodejs.org/api/stream.html)
+- [AbortController — Node.js Docs](https://nodejs.org/api/globals.html#abortcontroller)
+- [ESM Modules — Node.js Docs](https://nodejs.org/api/esm.html)
+- [CJS Modules — Node.js Docs](https://nodejs.org/api/modules.html)
+- [Node.js Best Practices — GitHub](https://github.com/goldbergyoni/nodebestpractices)
+- [Understanding Node.js Performance — nearForm](https://www.nearform.com/blog/understanding-node-js-performance/)
+- [Node.js Design Patterns Book](https://nodejsdesignpatterns.com/)
+
+---
+
+*本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

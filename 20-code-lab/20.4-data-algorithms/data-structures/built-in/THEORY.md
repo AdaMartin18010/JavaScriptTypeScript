@@ -185,7 +185,63 @@ const balances = new BigUint64Array([12345678901234567890n, 98765432109876543210
 const total = balances.reduce((sum, val) => sum + val, 0n);
 ```
 
-## 八、权威参考链接
+## 八、代码示例：ArrayBuffer 与 SharedArrayBuffer 实战
+
+```typescript
+// arraybuffer-operations.ts — 二进制数据切片与零拷贝共享
+
+// ArrayBuffer 切片（零拷贝视图）
+const buffer = new ArrayBuffer(1024);
+const view1 = new Uint8Array(buffer, 0, 512);   // 前半段
+const view2 = new Uint16Array(buffer, 512, 256); // 后半段作为 Uint16
+
+view1[0] = 0xFF;
+console.log(buffer.byteLength); // 1024 — 原 buffer 不变
+
+// SharedArrayBuffer：跨 Worker 零拷贝共享
+const sab = new SharedArrayBuffer(1024);
+const sharedView = new Int32Array(sab);
+
+// Worker 线程中
+// Atomics.store(sharedView, 0, 42);
+// Atomics.notify(sharedView, 0);
+
+// 主线程中等待
+Atomics.wait(sharedView, 0, 0); // 阻塞直到索引 0 的值不再是 0
+console.log('Shared value:', sharedView[0]);
+```
+
+## 九、代码示例：Set 的数学运算与关系操作
+
+```typescript
+// set-operations.ts — 集合代数
+
+function union<T>(a: Set<T>, b: Set<T>): Set<T> {
+  return new Set([...a, ...b]);
+}
+
+function intersection<T>(a: Set<T>, b: Set<T>): Set<T> {
+  return new Set([...a].filter(x => b.has(x)));
+}
+
+function difference<T>(a: Set<T>, b: Set<T>): Set<T> {
+  return new Set([...a].filter(x => !b.has(x)));
+}
+
+function isSuperset<T>(a: Set<T>, b: Set<T>): boolean {
+  return [...b].every(x => a.has(x));
+}
+
+// 使用示例
+const activeUsers = new Set(['alice', 'bob', 'charlie']);
+const premiumUsers = new Set(['bob', 'charlie', 'dave']);
+
+console.log(union(activeUsers, premiumUsers));        // 所有用户
+console.log(intersection(activeUsers, premiumUsers)); // 活跃且付费
+console.log(difference(activeUsers, premiumUsers));   // 活跃但未付费
+```
+
+## 十、权威参考链接
 
 | 资源 | 说明 | 链接 |
 |------|------|------|
@@ -197,6 +253,10 @@ const total = balances.reduce((sum, val) => sum + val, 0n);
 | TC39 — Object.groupBy Proposal | ES2024 分组方法规范 | [tc39.es/proposal-array-grouping](https://tc39.es/proposal-array-grouping/) |
 | V8 Blog — Elements kinds in V8 | 数组内部类型优化 | [v8.dev/blog/elements-kinds](https://v8.dev/blog/elements-kinds) |
 | MDN — WeakMap | 弱引用映射详解 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap) |
+| MDN — ArrayBuffer | 二进制数据缓冲区 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer) |
+| MDN — SharedArrayBuffer | 共享内存缓冲区 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) |
+| MDN — DataView | 多字节数据视图 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView) |
+| V8 Blog — Design Elements Kinds | 数组性能优化内幕 | [v8.dev/blog/elements-kinds](https://v8.dev/blog/elements-kinds) |
 
 ---
 

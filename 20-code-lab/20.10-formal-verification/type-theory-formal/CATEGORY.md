@@ -285,6 +285,25 @@ checker.define("x", tNumber);
 console.log(checker.lookup("x")?.name); // "number"
 ```
 
+### 代码示例：System F 风格的多态类型（TypeScript 模拟）
+
+```typescript
+// system-f-simulation.ts — 用 TS 泛型模拟 System F 的类型抽象/应用
+
+// System F: Λα.λx:α.x  (多态恒等函数)
+// TypeScript: <A>(x: A) => x
+const polyId = <A>(x: A): A => x;
+
+// 类型应用：polyId[int] 5
+const intResult = polyId<number>(5);      // 5
+const strResult = polyId<string>("hello"); // "hello"
+
+// 模拟类型构造器：Λα.α → α
+const polySelf = <A>(f: (x: A) => A) => f;
+const double = (x: number) => x * 2;
+console.log(polySelf(double)(3)); // 6
+```
+
 ---
 
 > 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
@@ -293,16 +312,18 @@ console.log(checker.lookup("x")?.name); // "number"
 
 | 资源 | 类型 | 链接 |
 |------|------|------|
-| TAPL | 书籍 | www.cis.upenn.edu/~bcpierce/tapl |
-| SF (Software Foundations) | 课程 | softwarefoundations.cis.upenn.edu |
-| Agda Standard Library | 文档 | agda.github.io/agda-stdlib |
-| TypeScript Compiler API | 参考 | github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API |
-| POPL — Principles of Programming Languages | 会议 | sigplan.org/Conferences/POPL |
-| ICFP — International Conference on Functional Programming | 会议 | icfp.sigplan.org |
-| Lean Prover — Theorem Proving | 文档 | lean-lang.org/theorem_proving |
-| Type Challenges | 练习 | github.com/type-challenges/type-challenges |
-| PLFA — Programming Language Foundations in Agda | 书籍 | plfa.inf.ed.ac.uk |
-| Cornell CS 4110 | 课程 | cs.cornell.edu/courses/cs4110 |
+| TAPL | 书籍 | [www.cis.upenn.edu/~bcpierce/tapl](https://www.cis.upenn.edu/~bcpierce/tapl) |
+| SF (Software Foundations) | 课程 | [softwarefoundations.cis.upenn.edu](https://softwarefoundations.cis.upenn.edu) |
+| Agda Standard Library | 文档 | [agda.github.io/agda-stdlib](https://agda.github.io/agda-stdlib) |
+| TypeScript Compiler API | 参考 | [github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) |
+| POPL — Principles of Programming Languages | 会议 | [sigplan.org/Conferences/POPL](https://sigplan.org/Conferences/POPL) |
+| ICFP — International Conference on Functional Programming | 会议 | [icfp.sigplan.org](https://icfp.sigplan.org) |
+| Lean Prover — Theorem Proving | 文档 | [lean-lang.org/theorem_proving](https://lean-lang.org/theorem_proving) |
+| Type Challenges | 练习 | [github.com/type-challenges/type-challenges](https://github.com/type-challenges/type-challenges) |
+| PLFA — Programming Language Foundations in Agda | 书籍 | [plfa.inf.ed.ac.uk](https://plfa.inf.ed.ac.uk) |
+| Cornell CS 4110 | 课程 | [cs.cornell.edu/courses/cs4110](https://www.cs.cornell.edu/courses/cs4110) |
+| Barendregt: The Lambda Calculus | 书籍 | [elsevier.com/books/the-lambda-calculus/barendregt/978-0-444-86748-3](https://www.elsevier.com/books/the-lambda-calculus/barendregt/978-0-444-86748-3) |
+| ECMA-262 函数语义 | 规范 | [tc39.es/ecma262/#sec-ecmascript-function-objects](https://tc39.es/ecma262/#sec-ecmascript-function-objects) |
 
 ---
 

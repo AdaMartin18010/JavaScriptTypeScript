@@ -43,6 +43,75 @@ created: 2026-04-27
 
 ## 代码示例
 
+### ES2015 解构与模块默认导出
+
+```typescript
+// es2015/destructure.ts — 声明式数据提取
+interface ApiResponse {
+  data: {
+    user: {
+      id: number;
+      name: string;
+      email: string;
+      address: { city: string; zip: string };
+    };
+  };
+}
+
+function extractUser({ data: { user } }: ApiResponse) {
+  // 嵌套解构 + 重命名
+  const {
+    id,
+    name: displayName,
+    address: { city },
+  } = user;
+  return { id, displayName, city };
+}
+
+// 数组解构与 rest
+const [first, ...rest] = [10, 20, 30, 40];
+console.log(first, rest); // 10 [20, 30, 40]
+
+// 默认导出模块
+export default function formatDate(d: Date): string {
+  return d.toISOString().split('T')[0];
+}
+```
+
+### ES2018 异步迭代与 for-await-of
+
+```typescript
+// es2018/async-iteration.ts — 消费异步数据源
+async function* fetchPages(urls: string[]) {
+  for (const url of urls) {
+    const res = await fetch(url);
+    yield res.json();
+  }
+}
+
+// 顺序消费异步生成器
+async function loadAll(urls: string[]) {
+  const results: unknown[] = [];
+  for await (const page of fetchPages(urls)) {
+    results.push(page);
+  }
+  return results;
+}
+
+// 并行映射 + 顺序消费
+async function* streamWithTimeout<T>(
+  promises: Promise<T>[],
+  ms: number
+) {
+  for (const p of promises) {
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout')), ms)
+    );
+    yield Promise.race([p, timeout]);
+  }
+}
+```
+
 ### ES2022 类私有字段与静态块
 
 ```typescript
@@ -152,6 +221,28 @@ function readFileAsync(path: string): Promise<string> {
 }
 ```
 
+### ES2025 Set 方法与正则 /v 标志
+
+```typescript
+// es2025/set-methods.ts — 集合代数运算
+const admins = new Set(['alice', 'bob']);
+const editors = new Set(['bob', 'charlie']);
+
+const both = admins.intersection(editors);     // Set { 'bob' }
+const either = admins.union(editors);          // Set { 'alice', 'bob', 'charlie' }
+const onlyAdmins = admins.difference(editors); // Set { 'alice' }
+const unique = admins.symmetricDifference(editors); // Set { 'alice', 'charlie' }
+
+// 子集/超集判断
+console.log(admins.isSubsetOf(either));  // true
+console.log(either.isSupersetOf(admins)); // true
+
+// 正则 /v 标志：支持集合运算与命名字符类
+const re = /[\p{Emoji}--[\p{ASCII}]]/v; // 仅非 ASCII emoji
+console.log(re.test('🚀')); // true
+console.log(re.test('a'));  // false
+```
+
 ## 关联索引
 
 - [10-fundamentals/10.1-language-semantics/README.md](../../../10-fundamentals/10.1-language-semantics/README.md)
@@ -171,7 +262,12 @@ function readFileAsync(path: string): Promise<string> {
 | TC39 Notes | 会议记录 | [github.com/tc39/notes](https://github.com/tc39/notes) — 标准委员会会议记录 |
 | State of JS | 调研 | [stateofjs.com](https://stateofjs.com) — 开发者特性采用率调研 |
 | Web Platform Tests | 测试套件 | [github.com/web-platform-tests/wpt](https://github.com/web-platform-tests/wpt) — 浏览器一致性测试 |
+| JavaScript Weekly | 周刊 | [javascriptweekly.com](https://javascriptweekly.com/) — JS 生态每周精选 |
+| Exploring JS | 书籍 | [exploringjs.com](https://exploringjs.com/) — Dr. Axel Rauschmayer 免费在线书籍 |
+| TC39 Process | 规范 | [tc39.es/process-document](https://tc39.es/process-document/) — 提案阶段定义 |
+| ECMAScript Compatibility Table | 兼容性 | [compat-table.github.io/compat-table](https://compat-table.github.io/compat-table/) — 特性支持矩阵 |
+| JS Feature Proposals (Stage 3) | 提案 | [github.com/tc39/proposals/blob/main/README.md#stage-3](https://github.com/tc39/proposals/blob/main/README.md#stage-3) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

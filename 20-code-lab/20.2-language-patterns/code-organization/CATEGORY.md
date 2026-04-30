@@ -166,6 +166,113 @@ export { authApi } from './api/auth-api';
 // shared/   → 可复用基础设施（UI kit、utils、api client）
 ```
 
+#### package.json exports 字段与条件导出
+
+```jsonc
+// packages/utils/package.json — 现代 Node.js 模块边界定义
+{
+  "name": "@acme/utils",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./string": {
+      "types": "./dist/string.d.ts",
+      "import": "./dist/string.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false
+}
+```
+
+#### ESLint 模块边界规则
+
+```typescript
+// eslint-boundary.ts — 使用 eslint-plugin-boundaries 强制执行架构分层
+// .eslintrc.cjs 配置片段
+module.exports = {
+  plugins: ['boundaries'],
+  settings: {
+    'boundaries/elements': [
+      { type: 'app', pattern: 'src/app/*' },
+      { type: 'pages', pattern: 'src/pages/*' },
+      { type: 'widgets', pattern: 'src/widgets/*' },
+      { type: 'features', pattern: 'src/features/*' },
+      { type: 'entities', pattern: 'src/entities/*' },
+      { type: 'shared', pattern: 'src/shared/*' },
+    ],
+  },
+  rules: {
+    'boundaries/element-types': [
+      'error',
+      {
+        default: 'disallow',
+        rules: [
+          { from: 'app', allow: ['pages', 'widgets', 'features', 'entities', 'shared'] },
+          { from: 'pages', allow: ['widgets', 'features', 'entities', 'shared'] },
+          { from: 'widgets', allow: ['features', 'entities', 'shared'] },
+          { from: 'features', allow: ['entities', 'shared'] },
+          { from: 'entities', allow: ['shared'] },
+          { from: 'shared', allow: ['shared'] },
+        ],
+      },
+    ],
+  },
+};
+```
+
+#### pnpm Workspace 与 Catalog 共享版本
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# pnpm 9+ catalogs 实现跨包统一依赖版本
+catalog:
+  react: ^18.3.1
+  react-dom: ^18.3.1
+  typescript: ^5.4.5
+
+catalogs:
+  tooling:
+    vite: ^5.2.0
+    vitest: ^1.6.0
+```
+
+```jsonc
+// packages/ui/package.json — 使用 catalog: 协议
+{
+  "dependencies": {
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "vite": "catalog:tooling"
+  }
+}
+```
+
+#### tsup 零配置库构建
+
+```typescript
+// tsup.config.ts — 基于 esbuild 的库打包配置
+import { defineConfig } from 'tsup';
+
+export default defineConfig({
+  entry: ['src/index.ts'],
+  format: ['cjs', 'esm'],
+  dts: true,
+  splitting: false,
+  sourcemap: true,
+  clean: true,
+  treeshake: true,
+});
+```
+
 ---
 
 > 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
@@ -186,7 +293,12 @@ export { authApi } from './api/auth-api';
 | Barrel Files Best Practices | 指南 | [basarat.gitbook.io/typescript/main-1/barrel](https://basarat.gitbook.io/typescript/main-1/barrel) |
 | Clean Architecture — Robert C. Martin | 书籍 | [blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) |
 | Domain-Driven Design Reference | 参考 | [www.domainlanguage.com/ddd/reference/](https://www.domainlanguage.com/ddd/reference/) |
+| ESLint Plugin Boundaries | 仓库 | [github.com/javierbrea/eslint-plugin-boundaries](https://github.com/javierbrea/eslint-plugin-boundaries) |
+| Node.js Exports Field | 文档 | [nodejs.org/api/packages.html#package-entry-points](https://nodejs.org/api/packages.html#package-entry-points) |
+| tsup 文档 | 文档 | [tsup.egoist.dev](https://tsup.egoist.dev/) |
+| Changesets | 文档 | [github.com/changesets/changesets](https://github.com/changesets/changesets) |
+| pnpm Catalogs | 文档 | [pnpm.io/catalogs](https://pnpm.io/catalogs) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

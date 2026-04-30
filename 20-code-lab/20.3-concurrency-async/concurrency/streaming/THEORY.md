@@ -184,6 +184,68 @@ for await (const n of evens) {
 }
 ```
 
+#### Node.js Readable.from 与异步迭代器
+
+```typescript
+import { Readable } from 'stream';
+
+async function* dataGenerator() {
+  for (let i = 0; i < 1_000_000; i++) {
+    yield { id: i, value: Math.random() };
+  }
+}
+
+const stream = Readable.from(dataGenerator());
+
+stream.on('data', (chunk) => {
+  // 逐条处理百万级数据，无需全部加载到内存
+  processRecord(chunk);
+});
+```
+
+#### Web Streams：自定义 TransformStream 实现 CSV 解析
+
+```typescript
+function createCSVParserStream(): TransformStream<Uint8Array, Record<string, string>> {
+  let buffer = '';
+  let headers: string[] | null = null;
+
+  return new TransformStream({
+    transform(chunk, controller) {
+      buffer += new TextDecoder().decode(chunk);
+      const lines = buffer.split('\n');
+      buffer = lines.pop()!;
+
+      for (const line of lines) {
+        const cells = line.split(',').map(c => c.trim());
+        if (!headers) {
+          headers = cells;
+        } else {
+          const row: Record<string, string> = {};
+          headers.forEach((h, i) => row[h] = cells[i] ?? '');
+          controller.enqueue(row);
+        }
+      }
+    },
+    flush(controller) {
+      if (buffer.trim() && headers) {
+        const cells = buffer.split(',').map(c => c.trim());
+        const row: Record<string, string> = {};
+        headers.forEach((h, i) => row[h] = cells[i] ?? '');
+        controller.enqueue(row);
+      }
+    }
+  });
+}
+
+// 使用：fetch CSV 并实时解析为对象流
+const res = await fetch('/api/export.csv');
+const csvStream = res.body!.pipeThrough(createCSVParserStream());
+for await (const record of csvStream) {
+  console.log(record);
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -203,6 +265,11 @@ for await (const n of evens) {
 - [Node.js — stream.pipeline](https://nodejs.org/api/stream.html#streampipelinesource-transforms-destination-callback)
 - [Compression Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API)
 - [Async Iterators — TC39 Proposal](https://github.com/tc39/proposal-async-iteration)
+- [Node.js — stream.finished](https://nodejs.org/api/stream.html#streamfinishedstream-options)
+- [Node.js — stream.Readable.from](https://nodejs.org/api/stream.html#streamreadablefromiterable-options)
+- [MDN — TransformStream](https://developer.mozilla.org/en-US/docs/Web/API/TransformStream)
+- [Web.dev — Streams API Concepts](https://web.dev/articles/streams)
+- [Node.js — Stream Handbook](https://github.com/substack/stream-handbook)
 - `20.3-concurrency-async/concurrency/`
 
 ---

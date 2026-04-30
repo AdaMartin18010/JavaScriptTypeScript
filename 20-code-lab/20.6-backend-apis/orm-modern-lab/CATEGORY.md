@@ -164,6 +164,131 @@ const cachedUsers = await prisma.user.findMany({
 });
 ```
 
+## 代码示例：Drizzle ORM 事务与批量插入
+
+```typescript
+// drizzle-transaction-batch.ts — 原子操作与批量写入
+
+import { db } from './db';
+import { users, posts } from './schema';
+
+// 显式事务
+async function createUserWithPosts(
+  userData: { name: string; email: string },
+  postTitles: string[]
+) {
+  return await db.transaction(async (tx) => {
+    const [user] = await tx.insert(users).values(userData).returning();
+
+    if (postTitles.length > 0) {
+      await tx.insert(posts).values(
+        postTitles.map(title => ({
+          title,
+          authorId: user.id,
+          publishedAt: new Date(),
+        }))
+      );
+    }
+
+    return user;
+  });
+}
+
+// 批量 upsert（插入或更新）
+async function bulkUpsertUsers(
+  userList: { id: number; name: string; email: string }[]
+) {
+  return await db.insert(users)
+    .values(userList)
+    .onConflictDoUpdate({
+      target: users.id,
+      set: { name: sql`excluded.name`, email: sql`excluded.email` },
+    });
+}
+```
+
+## 代码示例：Kysely 类型安全原始 SQL
+
+```typescript
+// kysely-raw-sql.ts — 编译期类型检查的原始 SQL 查询构建器
+
+import { Kysely, PostgresDialect } from 'kysely';
+import { Pool } from 'pg';
+
+interface Database {
+  users: {
+    id: number;
+    name: string;
+    email: string;
+    createdAt: Date;
+  };
+  posts: {
+    id: number;
+    title: string;
+    authorId: number;
+  };
+}
+
+const db = new Kysely<Database>({
+  dialect: new PostgresDialect({
+    pool: new Pool({ connectionString: process.env.DATABASE_URL }),
+  }),
+});
+
+// 类型安全的 join 查询
+const usersWithPostCount = await db
+  .selectFrom('users')
+  .leftJoin('posts', 'posts.authorId', 'users.id')
+  .select([
+    'users.id',
+    'users.name',
+    (eb) => eb.fn.count('posts.id').as('postCount'),
+  ])
+  .groupBy('users.id')
+  .having((eb) => eb.fn.count('posts.id'), '>=', 5)
+  .execute();
+
+// usersWithPostCount 类型：{ id: number; name: string; postCount: string }[]
+```
+
+## 代码示例：边缘数据库连接池与重试策略
+
+```typescript
+// edge-connection-resilience.ts — 边缘环境连接容错
+
+import { createClient } from '@libsql/client/web';
+
+function createResilientClient(url: string, authToken: string, maxRetries = 3) {
+  const client = createClient({ url, authToken });
+
+  return {
+    async execute(query: string, args?: unknown[]) {
+      let lastError: Error | undefined;
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          return await client.execute({ sql: query, args: args as any });
+        } catch (err) {
+          lastError = err as Error;
+          if (i < maxRetries - 1) {
+            await new Promise(r => setTimeout(r, 100 * Math.pow(2, i))); // 指数退避
+          }
+        }
+      }
+      throw lastError;
+    },
+  };
+}
+
+// Cloudflare Worker 中使用
+export default {
+  async fetch(_req: Request, env: Env) {
+    const db = createResilientClient(env.TURSO_DATABASE_URL, env.TURSO_AUTH_TOKEN);
+    const result = await db.execute('SELECT * FROM users LIMIT 10');
+    return Response.json(result.rows);
+  },
+};
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -179,7 +304,11 @@ const cachedUsers = await prisma.user.findMany({
 | Kysely — Type-safe SQL Query Builder | 文档 | [kysely.dev](https://kysely.dev/) |
 | Prisma Accelerate | 文档 | [prisma.io/data-platform/accelerate](https://www.prisma.io/data-platform/accelerate) |
 | libSQL 架构文档 | 文档 | [github.com/tursodatabase/libsql](https://github.com/tursodatabase/libsql) |
+| Drizzle ORM — Migrations | 文档 | [orm.drizzle.team/docs/migrations](https://orm.drizzle.team/docs/migrations) |
+| Prisma Client Extensions | 文档 | [prisma.io/docs/concepts/components/prisma-client/client-extensions](https://www.prisma.io/docs/concepts/components/prisma-client/client-extensions) |
+| Cloudflare D1 Documentation | 文档 | [developers.cloudflare.com/d1](https://developers.cloudflare.com/d1) |
+| PlanetScale Serverless Driver | 文档 | [planetscale.com/docs/tutorials/planetscale-serverless-driver](https://planetscale.com/docs/tutorials/planetscale-serverless-driver) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

@@ -9,6 +9,75 @@
 - **去中心化**: 无单一控制节点，网络共同维护
 - **不可篡改**: 修改历史区块需要重新计算后续所有区块的哈希
 
+```javascript
+// 简化版区块链演示（教学用）
+const crypto = require('crypto');
+
+class Block {
+  constructor(index, data, previousHash = '') {
+    this.index = index;
+    this.timestamp = Date.now();
+    this.data = data;
+    this.previousHash = previousHash;
+    this.nonce = 0;
+    this.hash = this.calculateHash();
+  }
+
+  calculateHash() {
+    return crypto
+      .createHash('sha256')
+      .update(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nonce)
+      .digest('hex');
+  }
+
+  mineBlock(difficulty) {
+    const target = Array(difficulty + 1).join('0');
+    while (this.hash.substring(0, difficulty) !== target) {
+      this.nonce++;
+      this.hash = this.calculateHash();
+    }
+    console.log(`Block mined: ${this.hash}`);
+  }
+}
+
+class Blockchain {
+  constructor() {
+    this.chain = [this.createGenesisBlock()];
+    this.difficulty = 2;
+  }
+
+  createGenesisBlock() {
+    return new Block(0, 'Genesis Block', '0');
+  }
+
+  getLatestBlock() {
+    return this.chain[this.chain.length - 1];
+  }
+
+  addBlock(newBlock) {
+    newBlock.previousHash = this.getLatestBlock().hash;
+    newBlock.mineBlock(this.difficulty);
+    this.chain.push(newBlock);
+  }
+
+  isChainValid() {
+    for (let i = 1; i < this.chain.length; i++) {
+      const current = this.chain[i];
+      const previous = this.chain[i - 1];
+      if (current.hash !== current.calculateHash()) return false;
+      if (current.previousHash !== previous.hash) return false;
+    }
+    return true;
+  }
+}
+
+// 使用
+const myChain = new Blockchain();
+myChain.addBlock(new Block(1, { amount: 100 }));
+myChain.addBlock(new Block(2, { amount: 50 }));
+console.log('Valid?', myChain.isChainValid()); // true
+```
+
 ## 2. 共识机制
 
 | 机制 | 原理 | 能耗 | 代表 |
@@ -30,6 +99,25 @@
 - **不可变性**: 部署后无法修改
 - **确定性**: 相同输入始终产生相同输出
 - **公开透明**: 代码和数据对所有节点可见
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract SimpleStorage {
+    uint256 private storedData;
+    event DataChanged(uint256 newValue);
+
+    function set(uint256 x) public {
+        storedData = x;
+        emit DataChanged(x);
+    }
+
+    function get() public view returns (uint256) {
+        return storedData;
+    }
+}
+```
 
 ## 4. Web3 技术栈
 
@@ -269,7 +357,71 @@ export async function batchReadBalances(addresses: `0x${string}`[]) {
 }
 ```
 
-## 7. 权威外部资源
+## 7. Hardhat 测试与部署示例
+
+```typescript
+// test/SimpleStorage.test.ts — Hardhat + Ethers v6
+import { expect } from 'chai';
+import { ethers } from 'hardhat';
+
+describe('SimpleStorage', () => {
+  async function deployFixture() {
+    const [owner, other] = await ethers.getSigners();
+    const Factory = await ethers.getContractFactory('SimpleStorage');
+    const contract = await Factory.deploy();
+    return { contract, owner, other };
+  }
+
+  it('should store and retrieve a value', async () => {
+    const { contract } = await deployFixture();
+    await contract.set(42);
+    expect(await contract.get()).to.equal(42);
+  });
+
+  it('should emit DataChanged event', async () => {
+    const { contract } = await deployFixture();
+    await expect(contract.set(100))
+      .to.emit(contract, 'DataChanged')
+      .withArgs(100);
+  });
+});
+```
+
+## 8. Foundry 作弊码快速测试
+
+```solidity
+// test/SimpleStorage.t.sol — Foundry (Solidity 内联测试)
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "forge-std/Test.sol";
+import "../src/SimpleStorage.sol";
+
+contract SimpleStorageTest is Test {
+    SimpleStorage store;
+
+    function setUp() public {
+        store = new SimpleStorage();
+    }
+
+    function test_SetAndGet() public {
+        store.set(42);
+        assertEq(store.get(), 42);
+    }
+
+    function testFuzz_Set(uint256 x) public {
+        store.set(x);
+        assertEq(store.get(), x);
+    }
+
+    function testFail_SetWithoutValue() public {
+        // 期望此调用 revert
+        store.set{value: 1 ether}(1);
+    }
+}
+```
+
+## 9. 权威外部资源
 
 - [Viem 官方文档](https://viem.sh/)
 - [Ethers.js 官方文档](https://docs.ethers.org/)
@@ -280,8 +432,16 @@ export async function batchReadBalances(addresses: `0x${string}`[]) {
 - [EIP-1193 — Ethereum Provider JavaScript API](https://eips.ethereum.org/EIPS/eip-1193)
 - [Wagmi — React Hooks for Ethereum](https://wagmi.sh/)
 - [Alchemy Web3 API Reference](https://docs.alchemy.com/reference/api-overview)
+- [Hardhat Documentation](https://hardhat.org/docs) — 以太坊开发环境
+- [Foundry Book](https://book.getfoundry.sh/) — Foundry 测试与部署框架
+- [Solidity Lang](https://soliditylang.org/) — Solidity 官方文档
+- [OpenZeppelin Contracts](https://docs.openzeppelin.com/contracts) — 安全智能合约库
+- [Ethereum Yellow Paper](https://ethereum.github.io/yellowpaper/paper.pdf) — 以太坊协议形式化规范
+- [Mastering Ethereum](https://github.com/ethereumbook/ethereumbook) — 开源以太坊权威教材
+- [CryptoZombies](https://cryptozombies.io/) — 交互式 Solidity 教程
+- [Remix IDE](https://remix.ethereum.org/) — 浏览器内 Solidity 开发环境
 
-## 8. 与相邻模块的关系
+## 10. 与相邻模块的关系
 
 - **83-blockchain-advanced**: 高级区块链主题（Layer 2、跨链）
 - **36-web-assembly**: WASM 在区块链中的应用

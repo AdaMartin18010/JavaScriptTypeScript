@@ -140,6 +140,119 @@ const userValidator = object({ name: string, age: number });
 const user = userValidator.validate({ name: 'Alice', age: 30 });
 ```
 
+### 数据处理流水线（函数式组合）
+
+```typescript
+// data-processing/pipeline.ts — 可组合的流式处理
+
+type Transform<T, U> = (input: T) => U;
+
+function pipe<T>(input: T): T;
+function pipe<T, U>(input: T, f1: Transform<T, U>): U;
+function pipe<T, U, V>(input: T, f1: Transform<T, U>, f2: Transform<U, V>): V;
+function pipe(input: unknown, ...fns: Transform<unknown, unknown>[]): unknown {
+  return fns.reduce((acc, fn) => fn(acc), input);
+}
+
+// 可复用的转换函数
+const filterAdults = (users: { age: number }[]) => users.filter(u => u.age >= 18);
+const extractNames = (users: { name: string }[]) => users.map(u => u.name);
+const sortAlphabetically = (names: string[]) => [...names].sort();
+const joinWithComma = (names: string[]) => names.join(', ');
+
+// 组合流水线
+const formatAdultNames = (users: { age: number; name: string }[]) =>
+  pipe(users, filterAdults, extractNames, sortAlphabetically, joinWithComma);
+
+// 使用
+const users = [
+  { name: 'Charlie', age: 17 },
+  { name: 'Alice', age: 30 },
+  { name: 'Bob', age: 25 },
+];
+console.log(formatAdultNames(users)); // "Alice, Bob"
+```
+
+### CLI 工具参数解析与着色输出
+
+```typescript
+// cli-tools/runner.ts — 带帮助信息的命令行入口
+import { parseArgs } from 'node:util';
+
+interface CLIOptions {
+  port: number;
+  verbose: boolean;
+  config?: string;
+}
+
+function parseCLI(): CLIOptions {
+  const { values } = parseArgs({
+    options: {
+      port: { type: 'string', short: 'p', default: '3000' },
+      verbose: { type: 'boolean', short: 'v', default: false },
+      config: { type: 'string', short: 'c' },
+    },
+    allowPositionals: false,
+  });
+  return {
+    port: parseInt(values.port as string, 10),
+    verbose: values.verbose as boolean,
+    config: values.config as string | undefined,
+  };
+}
+
+// ANSI 颜色辅助
+const color = {
+  green: (s: string) => `\x1b[32m${s}\x1b[0m`,
+  red: (s: string) => `\x1b[31m${s}\x1b[0m`,
+  yellow: (s: string) => `\x1b[33m${s}\x1b[0m`,
+};
+
+export { parseCLI, color };
+```
+
+### 轻量级状态管理（发布订阅模式）
+
+```typescript
+// state-management/pubsub-store.ts — 无依赖状态管理
+
+class Store<TState> {
+  private state: TState;
+  private listeners = new Set<(state: TState, prev: TState) => void>();
+
+  constructor(initial: TState) {
+    this.state = initial;
+  }
+
+  getState(): TState {
+    return this.state;
+  }
+
+  setState(partial: Partial<TState> | ((s: TState) => Partial<TState>)) {
+    const prev = this.state;
+    const patch = typeof partial === 'function' ? partial(this.state) : partial;
+    this.state = { ...this.state, ...patch };
+    this.listeners.forEach(fn => fn(this.state, prev));
+  }
+
+  subscribe(fn: (state: TState, prev: TState) => void): () => void {
+    this.listeners.add(fn);
+    return () => this.listeners.delete(fn);
+  }
+}
+
+// 使用
+interface AppState {
+  count: number;
+  user: string | null;
+}
+
+const store = new Store<AppState>({ count: 0, user: null });
+store.subscribe((s, p) => console.log('changed:', p, '→', s));
+store.setState({ count: 1 });
+store.setState(s => ({ count: s.count + 1 }));
+```
+
 ## 目录内容
 
 - 📄 README.md
@@ -171,9 +284,15 @@ const user = userValidator.validate({ name: 'Alice', age: 30 });
 | JSON Web Tokens (JWT) | 规范 | [jwt.io](https://jwt.io/) |
 | Zod 文档 | Schema 校验库 | [zod.dev](https://zod.dev/) |
 | commander.js | CLI 框架 | [github.com/tj/commander.js](https://github.com/tj/commander.js) |
-|oclif | CLI 框架 | [oclif.io](https://oclif.io/) |
+| oclif | CLI 框架 | [oclif.io](https://oclif.io/) |
 | Node.js Streams | API 文档 | [nodejs.org/api/stream.html](https://nodejs.org/api/stream.html) |
+| Node.js util.parseArgs | API 文档 | [nodejs.org/api/util.html#utilparseargsconfig](https://nodejs.org/api/util.html#utilparseargsconfig) |
+| OWASP Cheat Sheet | 安全 | [cheatsheetseries.owasp.org](https://cheatsheetseries.owasp.org/) |
+| jose (JWT library) | 库 | [github.com/panva/jose](https://github.com/panva/jose) |
+| Effect-TS | 函数式编程 | [effect.website](https://effect.website/) |
+| fp-ts | 函数式编程 | [gcanti.github.io/fp-ts](https://gcanti.github.io/fp-ts/) |
+| Node.js Best Practices | 指南 | [github.com/goldbergyoni/nodebestpractices](https://github.com/goldbergyoni/nodebestpractices) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

@@ -17,15 +17,19 @@
   - [3. 查询与变更](#3-查询与变更)
     - [3.1 查询优化](#31-查询优化)
     - [3.2 变更设计](#32-变更设计)
-  - [4. 与 REST 的对比](#4-与-rest-的对比)
-  - [5. 2025-2026 年生态现状](#5-2025-2026-年生态现状)
-    - [5.1 JS/TS GraphQL 工具栈](#51-jsts-graphql-工具栈)
-    - [5.2 GraphQL 的当前挑战](#52-graphql-的当前挑战)
-    - [5.3 GraphQL 仍不可替代的场景](#53-graphql-仍不可替代的场景)
-  - [6. 在 JS/TS 生态中的定位](#6-在-jsts-生态中的定位)
-    - [6.1 选型建议](#61-选型建议)
-    - [6.2 2026 年推荐栈](#62-2026-年推荐栈)
+  - [4. Pothos Schema Builder（TypeScript 类型安全）](#4-pothos-schema-buildertypescript-类型安全)
+  - [5. GraphQL Yoga 服务端（现代 GraphQL 服务器）](#5-graphql-yoga-服务端现代-graphql-服务器)
+  - [6. GraphQL 片段与变量复用](#6-graphql-片段与变量复用)
+  - [7. 与 REST 的对比](#7-与-rest-的对比)
+  - [8. 2025-2026 年生态现状](#8-2025-2026-年生态现状)
+    - [8.1 JS/TS GraphQL 工具栈](#81-jsts-graphql-工具栈)
+    - [8.2 GraphQL 的当前挑战](#82-graphql-的当前挑战)
+    - [8.3 GraphQL 仍不可替代的场景](#83-graphql-仍不可替代的场景)
+  - [9. 在 JS/TS 生态中的定位](#9-在-jsts-生态中的定位)
+    - [9.1 选型建议](#91-选型建议)
+    - [9.2 2026 年推荐栈](#92-2026-年推荐栈)
   - [参考资源](#参考资源)
+  - [模块代码文件索引](#模块代码文件索引)
 
 ---
 
@@ -174,7 +178,135 @@ type UserError {
 
 ---
 
-## 4. 与 REST 的对比
+## 4. Pothos Schema Builder（TypeScript 类型安全）
+
+```typescript
+// schema-builder.ts — 类型安全的 GraphQL Schema 构造
+import SchemaBuilder from '@pothos/core';
+
+interface Context {
+  user: { id: string; name: string } | null;
+  db: typeof db;
+}
+
+const builder = new SchemaBuilder<{ Context: Context }>({});
+
+// 定义类型
+builder.objectType('User', {
+  fields: (t) => ({
+    id: t.exposeID('id'),
+    name: t.exposeString('name'),
+    email: t.exposeString('email'),
+    posts: t.field({
+      type: ['Post'],
+      resolve: (user, _args, ctx) => ctx.db.posts.findByAuthor(user.id),
+    }),
+  }),
+});
+
+builder.objectType('Post', {
+  fields: (t) => ({
+    id: t.exposeID('id'),
+    title: t.exposeString('title'),
+    author: t.field({
+      type: 'User',
+      resolve: (post, _args, ctx) => ctx.db.users.findById(post.authorId),
+    }),
+  }),
+});
+
+// 定义查询
+builder.queryType({
+  fields: (t) => ({
+    user: t.field({
+      type: 'User',
+      nullable: true,
+      args: { id: t.arg.id({ required: true }) },
+      resolve: (_root, args, ctx) => ctx.db.users.findById(args.id),
+    }),
+    users: t.field({
+      type: ['User'],
+      resolve: (_root, _args, ctx) => ctx.db.users.findAll(),
+    }),
+  }),
+});
+
+export const schema = builder.toSchema();
+```
+
+---
+
+## 5. GraphQL Yoga 服务端（现代 GraphQL 服务器）
+
+```typescript
+// yoga-server.ts — 现代化 GraphQL 服务器
+import { createYoga } from 'graphql-yoga';
+import { createServer } from 'node:http';
+import { schema } from './schema-builder';
+
+const yoga = createYoga({
+  schema,
+  context: async ({ request }) => {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const user = token ? await verifyToken(token) : null;
+    return { user, db };
+  },
+  maskedErrors: {
+    maskError(error) {
+      // 隐藏内部错误详情，仅暴露 safe 错误
+      return error instanceof GraphQLError && error.extensions?.code
+        ? error
+        : new GraphQLError('Internal server error');
+    },
+  },
+});
+
+const server = createServer(yoga);
+server.listen(4000, () => {
+  console.log('GraphQL Yoga running at http://localhost:4000/graphql');
+});
+```
+
+---
+
+## 6. GraphQL 片段与变量复用
+
+```graphql
+# fragments.graphql — 可复用的字段集合
+fragment UserFields on User {
+  id
+  name
+  email
+  avatar {
+    url
+    thumbnail
+  }
+}
+
+fragment PostFields on Post {
+  id
+  title
+  excerpt
+  publishedAt
+}
+
+# 在查询中使用片段
+query GetUserDashboard($userId: ID!) {
+  user(id: $userId) {
+    ...UserFields
+    posts {
+      ...PostFields
+    }
+  }
+  recommendedPosts {
+    ...PostFields
+  }
+}
+```
+
+---
+
+## 7. 与 REST 的对比
 
 | 维度 | GraphQL | REST |
 |------|---------|------|
@@ -189,9 +321,9 @@ type UserError {
 
 ---
 
-## 5. 2025-2026 年生态现状
+## 8. 2025-2026 年生态现状
 
-### 5.1 JS/TS GraphQL 工具栈
+### 8.1 JS/TS GraphQL 工具栈
 
 | 工具 | 定位 | 状态 | 推荐度 |
 |------|------|------|--------|
@@ -204,7 +336,7 @@ type UserError {
 | **Relay** | React 专属 GraphQL 框架 | Meta 维护 | ⭐⭐⭐ |
 | **urql** | 轻量 GraphQL 客户端 | 活跃 | ⭐⭐⭐⭐ |
 
-### 5.2 GraphQL 的当前挑战
+### 8.2 GraphQL 的当前挑战
 
 1. **Server Components 的冲击**：
    - RSC 可以直接查询数据库，减少了对 GraphQL 的需求
@@ -218,7 +350,7 @@ type UserError {
    - GraphQL 的灵活查询使 HTTP 缓存难以应用
    - 需要 Apollo Client 等复杂客户端缓存方案
 
-### 5.3 GraphQL 仍不可替代的场景
+### 8.3 GraphQL 仍不可替代的场景
 
 - **公共 API**：面向第三方开发者的 API（GitHub、Shopify）
 - **微服务聚合**：BFF（Backend for Frontend）层聚合多个服务
@@ -227,9 +359,9 @@ type UserError {
 
 ---
 
-## 6. 在 JS/TS 生态中的定位
+## 9. 在 JS/TS 生态中的定位
 
-### 6.1 选型建议
+### 9.1 选型建议
 
 ```
 是否使用 GraphQL？
@@ -242,7 +374,7 @@ type UserError {
 │           └── 否 → 使用 REST
 ```
 
-### 6.2 2026 年推荐栈
+### 9.2 2026 年推荐栈
 
 **服务端**：
 
@@ -263,6 +395,15 @@ type UserError {
 - [Pothos](https://pothos-graphql.dev/)
 - [GraphQL Yoga](https://the-guild.dev/graphql/yoga-server)
 - [Apollo Client](https://www.apollographql.com/docs/react/)
+- [GraphQL Spec — Facebook](https://spec.graphql.org/) — 官方规范
+- [DataLoader — GraphQL](https://github.com/graphql/dataloader) — 批量加载与去重
+- [Prisma — ORM](https://www.prisma.io/) — 类型安全数据库访问
+- [tRPC](https://trpc.io/) — TypeScript 端到端类型安全 API
+- [GraphQL Code Generator](https://the-guild.dev/graphql/codegen) — 类型生成工具
+- [Apollo Federation](https://www.apollographql.com/docs/federation/) — 微服务 Schema 组合
+- [GraphQL over HTTP Spec](https://graphql.github.io/graphql-over-http/draft/) — HTTP 传输规范
+- [Hasura](https://hasura.io/) — 即时 GraphQL API 引擎
+- [NestJS GraphQL](https://docs.nestjs.com/graphql/quick-start) — 企业级框架集成
 
 ---
 
@@ -275,23 +416,6 @@ type UserError {
 
 > 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
 
-## 核心理论深化
-
-### 关键设计模式
-
-本模块涉及的核心设计模式包括（根据代码实现提炼）：
-
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
-
-### 与相邻模块的关系
-
-| 相邻模块 | 关系说明 |
-|---------|---------|
-| 前置依赖 | 建议先掌握的基础模块 |
-| 后续进阶 | 可继续深化的相关模块 |
-
 ---
 
-> 📅 理论深化更新：2026-04-27
+> 📅 理论深化更新：2026-04-30

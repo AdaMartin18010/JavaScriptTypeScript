@@ -174,6 +174,80 @@ jobs:
       - run: pnpm test
 ```
 
+#### Oxlint 集成与渐进式迁移
+
+```typescript
+// oxc-integration.ts — 渐进式引入 Oxlint 的 npm 脚本封装
+import { execSync } from 'child_process';
+
+export function runOxlint(paths: string[], rules?: string[]) {
+  const cmd = ['npx', 'oxlint', ...paths];
+  if (rules?.length) cmd.push('--rules', rules.join(','));
+  // 初期仅作为警告，不阻塞 CI
+  cmd.push('--deny-warnings', 'false');
+  return execSync(cmd.join(' '), { encoding: 'utf-8', stdio: 'inherit' });
+}
+```
+
+```jsonc
+// package.json — 双 lint 阶段：Oxlint 快速反馈 + ESLint 深度检查
+{
+  "scripts": {
+    "lint:fast": "oxlint src/ --import-plugin --jsx-a11y-plugin",
+    "lint:deep": "eslint src/ --ext .ts,.tsx",
+    "lint": "pnpm lint:fast && pnpm lint:deep"
+  }
+}
+```
+
+#### Rspack 配置示例（Rust 驱动 webpack 替代方案）
+
+```typescript
+// rspack.config.ts
+import { defineConfig } from '@rspack/core';
+
+export default defineConfig({
+  entry: { main: './src/index.ts' },
+  resolve: { extensions: ['.ts', '.tsx', '.js'] },
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: {
+          loader: 'builtin:swc-loader',
+          options: {
+            jsc: { parser: { syntax: 'typescript', tsx: true }, target: 'es2022' },
+          },
+        },
+      },
+    ],
+  },
+  plugins: [
+    // Rspack 内置 HTML 插件，无需额外安装
+    new (require('@rspack/core').HtmlRspackPlugin)({ template: './index.html' }),
+  ],
+});
+```
+
+#### napi-rs 绑定自动生成
+
+```typescript
+// napi-rs 生成的 TypeScript 声明与 Rust 函数对应
+// Cargo.toml 中配置 napi = "2"
+// 通过 #[napi] 宏自动导出
+
+// src/lib.rs
+// use napi_derive::napi;
+// #[napi]
+// pub fn fibonacci(n: u32) -> u32 {
+//     match n { 0 => 0, 1 => 1, _ => fibonacci(n - 1) + fibonacci(n - 2) }
+// }
+
+// index.ts — 消费编译后的 .node 二进制
+import { fibonacci } from './index.node';
+console.log(fibonacci(10)); // 55
+```
+
 ---
 
 > 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
@@ -192,7 +266,14 @@ jobs:
 | GitHub Actions 文档 | 文档 | [docs.github.com/actions](https://docs.github.com/actions) |
 | pnpm 工作区 | 文档 | [pnpm.io/workspaces](https://pnpm.io/workspaces) |
 | cross-rs — 交叉编译 | 仓库 | [github.com/cross-rs/cross](https://github.com/cross-rs/cross) |
+| Rspack 官方文档 | 文档 | [rspack.dev](https://www.rspack.dev/) |
+| Oxlint 规则列表 | 文档 | [oxc.rs/docs/guide/usage/linter/rules.html](https://oxc.rs/docs/guide/usage/linter/rules.html) |
+| napi-rs 指南 | 文档 | [napi.rs](https://napi.rs/) |
+| ESBuild 文档 | 文档 | [esbuild.github.io](https://esbuild.github.io/) |
+| Bun Bundler | 文档 | [bun.sh/docs/bundler](https://bun.sh/docs/bundler) |
+| Moonrepo — 构建系统 | 文档 | [moonrepo.dev](https://moonrepo.dev/) |
+| Changesets 版本管理 | 文档 | [github.com/changesets/changesets](https://github.com/changesets/changesets) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

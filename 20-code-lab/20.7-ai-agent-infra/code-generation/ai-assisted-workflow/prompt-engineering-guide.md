@@ -548,7 +548,212 @@ export function validatePhone(phone: string): boolean {
 
 ---
 
-## 六、Prompt 模板速查
+## 六、代码示例：结构化输出解析
+
+```typescript
+// structured-output-parser.ts — 解析 LLM 的结构化 JSON 输出
+import { z } from 'zod';
+
+// 定义期望的输出模式
+const CodeReviewSchema = z.object({
+  summary: z.string().describe('代码变更的整体摘要'),
+  issues: z.array(
+    z.object({
+      severity: z.enum(['critical', 'warning', 'suggestion']),
+      category: z.enum(['security', 'performance', 'maintainability', 'correctness']),
+      description: z.string(),
+      lineRange: z.tuple([z.number(), z.number()]).optional(),
+      suggestion: z.string(),
+    })
+  ),
+  score: z.number().min(0).max(100).describe('整体代码质量评分'),
+});
+
+type CodeReview = z.infer<typeof CodeReviewSchema>;
+
+// 安全的 LLM 输出解析器
+export function parseCodeReview(rawOutput: string): CodeReview {
+  // 提取 JSON 块（处理 markdown 代码块包裹）
+  const jsonMatch = rawOutput.match(/```(?:json)?\s*([\s\S]*?)\s*```/)?.[1] ?? rawOutput;
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(jsonMatch);
+  } catch {
+    throw new Error('LLM output is not valid JSON');
+  }
+
+  const result = CodeReviewSchema.safeParse(parsed);
+  if (!result.success) {
+    throw new Error(`Schema validation failed: ${result.error.message}`);
+  }
+  return result.data;
+}
+
+// Prompt 模板（用于要求 LLM 输出 JSON）
+export const CODE_REVIEW_PROMPT = `
+你是一位资深 TypeScript 代码审查专家。请审查以下代码变更，并以严格的 JSON 格式输出结果。
+
+要求：
+1. 输出必须是有效的 JSON，不要包含 markdown 格式以外的任何内容
+2. 所有字段必须填写
+3. severity 只能是 "critical", "warning", "suggestion" 之一
+4. category 只能是 "security", "performance", "maintainability", "correctness" 之一
+
+输出模式：
+{
+  "summary": "...",
+  "issues": [
+    {
+      "severity": "warning",
+      "category": "maintainability",
+      "description": "...",
+      "lineRange": [10, 15],
+      "suggestion": "..."
+    }
+  ],
+  "score": 85
+}
+
+代码：
+{code}
+`;
+```
+
+### 6.2 工具使用（Function Calling）模式
+
+```typescript
+// tool-use-pattern.ts — AI Agent 的工具调用模式
+
+interface Tool {
+  name: string;
+  description: string;
+  parameters: z.ZodSchema<unknown>;
+  execute: (params: unknown) => Promise<unknown>;
+}
+
+class AgentWithTools {
+  private tools = new Map<string, Tool>();
+
+  registerTool(tool: Tool): void {
+    this.tools.set(tool.name, tool);
+  }
+
+  getToolDefinitions(): Array<{ name: string; description: string; parameters: unknown }> {
+    return Array.from(this.tools.values()).map((t) => ({
+      name: t.name,
+      description: t.description,
+      parameters: zodToJsonSchema(t.parameters),
+    }));
+  }
+
+  async executeToolCall(name: string, args: unknown): Promise<unknown> {
+    const tool = this.tools.get(name);
+    if (!tool) throw new Error(`Tool "${name}" not found`);
+    const validated = tool.parameters.parse(args);
+    return tool.execute(validated);
+  }
+}
+
+// 使用示例：代码分析 Agent
+const codeAgent = new AgentWithTools();
+
+codeAgent.registerTool({
+  name: 'countLines',
+  description: '统计代码文件行数',
+  parameters: z.object({ filePath: z.string() }),
+  execute: async ({ filePath }) => {
+    const content = await Bun.file(filePath).text();
+    return { lines: content.split('\n').length, filePath };
+  },
+});
+
+codeAgent.registerTool({
+  name: 'findImports',
+  description: '查找文件中的所有 import 语句',
+  parameters: z.object({ filePath: z.string() }),
+  execute: async ({ filePath }) => {
+    const content = await Bun.file(filePath).text();
+    const imports = content.match(/^import .+ from .+;?$/gm) ?? [];
+    return { imports, count: imports.length };
+  },
+});
+
+// 将工具定义发送给 LLM，LLM 决定调用哪个工具
+console.log(JSON.stringify(codeAgent.getToolDefinitions(), null, 2));
+```
+
+### 6.3 上下文窗口管理策略
+
+```typescript
+// context-window-manager.ts — 管理大上下文 Prompt
+
+interface ContextChunk {
+  id: string;
+  content: string;
+  priority: number; // 1-10，越高越重要
+  tokens: number; // 预估 token 数
+}
+
+export class ContextWindowManager {
+  private chunks: ContextChunk[] = [];
+  private readonly maxTokens: number;
+
+  constructor(maxTokens = 8000) {
+    this.maxTokens = maxTokens;
+  }
+
+  addChunk(chunk: ContextChunk): void {
+    this.chunks.push(chunk);
+    this.chunks.sort((a, b) => b.priority - a.priority);
+  }
+
+  buildPrompt(basePrompt: string): string {
+    const baseTokens = this.estimateTokens(basePrompt);
+    let availableTokens = this.maxTokens - baseTokens;
+    const selected: ContextChunk[] = [];
+
+    for (const chunk of this.chunks) {
+      if (chunk.tokens <= availableTokens) {
+        selected.push(chunk);
+        availableTokens -= chunk.tokens;
+      }
+    }
+
+    // 按原始顺序拼接（而非优先级顺序）
+    const sortedSelected = selected.sort(
+      (a, b) => this.chunks.indexOf(a) - this.chunks.indexOf(b)
+    );
+
+    return [
+      basePrompt,
+      '--- 上下文 ---',
+      ...sortedSelected.map((c) => `<!-- ${c.id} -->\n${c.content}`),
+    ].join('\n\n');
+  }
+
+  private estimateTokens(text: string): number {
+    // 粗略估计：1 token ≈ 4 个英文字符或 1 个中文字符
+    let count = 0;
+    for (const char of text) {
+      count += char.charCodeAt(0) > 127 ? 1 : 0.25;
+    }
+    return Math.ceil(count);
+  }
+}
+
+// 使用示例
+const manager = new ContextWindowManager(4000);
+manager.addChunk({ id: 'api-spec', content: 'OpenAPI spec...', priority: 10, tokens: 500 });
+manager.addChunk({ id: 'db-schema', content: 'Prisma schema...', priority: 8, tokens: 300 });
+manager.addChunk({ id: 'user-story', content: 'As a user...', priority: 5, tokens: 200 });
+
+const prompt = manager.buildPrompt('实现用户注册 API 端点');
+```
+
+---
+
+## 七、Prompt 模板速查
 
 ### 快速开始模板
 
@@ -600,3 +805,30 @@ export function validatePhone(phone: string): boolean {
 
 请输出重构后的代码，并对每处变更说明理由。
 ```
+
+---
+
+## 八、权威参考与外部链接
+
+| 资源 | 描述 | 链接 |
+|------|------|------|
+| **OpenAI Prompt Engineering Guide** | OpenAI 官方 Prompt 工程指南 | [platform.openai.com/docs/guides/prompt-engineering](https://platform.openai.com/docs/guides/prompt-engineering) |
+| **Anthropic Claude Prompt Engineering** | Claude 提示工程最佳实践 | [docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview) |
+| **Google Gemini Prompting Guide** | Gemini 模型提示指南 | [ai.google.dev/gemini-api/docs/prompting-intro](https://ai.google.dev/gemini-api/docs/prompting-intro) |
+| **Prompting Guide (DAIR.AI)** | 开源提示工程综合指南 | [www.promptingguide.ai](https://www.promptingguide.ai/) |
+| **LangChain Prompt Templates** | 程序化 Prompt 管理 | [js.langchain.com/docs/concepts/prompt_templates](https://js.langchain.com/docs/concepts/prompt_templates) |
+| **Vercel AI SDK** | 流式 AI 交互 SDK | [sdk.vercel.ai/docs](https://sdk.vercel.ai/docs) |
+| **Zod** | TypeScript 模式验证（用于结构化输出） | [zod.dev](https://zod.dev) |
+| **JSON Schema** | 结构化输出标准 | [json-schema.org](https://json-schema.org/) |
+| **OpenAI Function Calling** | 工具调用规范 | [platform.openai.com/docs/guides/function-calling](https://platform.openai.com/docs/guides/function-calling) |
+| **DSPy** | 提示优化框架 | [github.com/stanfordnlp/dspy](https://github.com/stanfordnlp/dspy) |
+| **Chain-of-Thought Paper** | 思维链原论文 | [arxiv.org/abs/2201.11903](https://arxiv.org/abs/2201.11903) |
+| **ReAct Pattern** | 推理+行动 Agent 模式 | [arxiv.org/abs/2210.03629](https://arxiv.org/abs/2210.03629) |
+| **Cursor IDE Prompting** | AI 编辑器提示技巧 | [www.cursor.com](https://www.cursor.com) |
+| **GitHub Copilot Best Practices** | Copilot 最佳实践 | [docs.github.com/en/copilot/using-github-copilot/best-practices-for-using-github-copilot](https://docs.github.com/en/copilot/using-github-copilot/best-practices-for-using-github-copilot) |
+| **Ollama Local LLMs** | 本地大模型运行 | [ollama.com](https://ollama.com) |
+| **LiteLLM** | 多提供商 LLM 统一调用 | [github.com/BerriAI/litellm](https://github.com/BerriAI/litellm) |
+
+---
+
+*本指南最后更新：2026-04-30*

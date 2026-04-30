@@ -156,19 +156,84 @@ const doubled = MAP((x: number) => x * 2)(list123);
 console.log('doubled:', churchListToArray(doubled)); // [2, 4, 6]
 ```
 
-### 3.2 常见误区
+### 3.2 SKI 组合子
+
+```typescript
+// SKI 组合子 — 图灵完备的极简组合子集合
+// S f g x = f x (g x)
+// K x y   = x
+// I x     = x
+
+const S = <A, B, C>(f: (x: A) => (y: B) => C) =>
+  (g: (x: A) => B) =>
+  (x: A): C =>
+    f(x)(g(x));
+
+const K = <A, B>(x: A) => (_y: B): A => x;
+
+const I = <A>(x: A): A => x;
+
+// 验证：S K K = I（恒等组合子）
+const SKK = S(K)(K);
+console.log('SKK(42) === I(42):', SKK(42) === I(42)); // true
+
+// 用 SKI 实现布尔逻辑
+// TRUE  = K
+// FALSE = K I
+// NOT   = S (S I (K FALSE)) (K TRUE)
+const NOT = (b: (x: boolean) => (y: boolean) => boolean) =>
+  b(false)(true);
+
+// 实际演示
+const churchBool = (b: boolean) => b ? TRUE : FALSE;
+console.log('NOT TRUE =', IF(NOT(churchBool(true)))(10)(20)); // 20
+```
+
+### 3.3 显式对象实现的 Y 组合子（避免严格求值问题）
+
+```typescript
+// 在严格求值语言（TypeScript/JS）中，直接使用 λ 表达式定义的 Y 组合子会导致无限展开
+// 使用对象包装延迟求值
+
+function Y<A, B>(f: (rec: (a: A) => B) => (a: A) => B): (a: A) => B {
+  const wrapper = {
+    get fn() {
+      return (x: A) => f(wrapper.fn)(x);
+    },
+  };
+  return wrapper.fn;
+}
+
+// 用对象版 Y 组合子实现递归
+const fib = Y<number, number>((rec) => (n) =>
+  n <= 1 ? n : rec(n - 1) + rec(n - 2)
+);
+
+console.log('fib(10) =', fib(10)); // 55
+console.log('fib(20) =', fib(20)); // 6765
+```
+
+### 3.4 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | Lambda 演算只是理论玩具 | Lambda 演算是 JS 箭头函数、闭包和 Promise 的理论基础 |
 | Y 组合子可以直接用于生产 | 严格求值语言（如 JS）需要 Z 组合子，否则栈溢出 |
 
-### 3.3 扩展阅读
+### 3.5 扩展阅读
 
 - [TAPL: Chapter 5 — The Untyped Lambda-Calculus](https://www.cis.upenn.edu/~bcpierce/tapl/)
 - [Henk Barendregt: The Lambda Calculus, Its Syntax and Semantics](https://www.sciencedirect.com/bookseries/studies-in-logic-and-the-foundations-of-mathematics/vol/103)
 - [Raul Rojas: A Tutorial Introduction to the Lambda Calculus](https://arxiv.org/abs/1503.09060)
 - [CompCert: Verified Compilation of Lambda Calculus](https://compcert.org/)
+- [Lambda Calculus in JavaScript](https://github.com/tc39/proposal-pattern-matching) — TC39 模式匹配提案（λ 演算的现代应用）
+- [Hindley-Milner 类型推断](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system) — 简单类型 λ 的类型推断算法
+- [To Mock a Mockingbird (Smullyan)](https://en.wikipedia.org/wiki/To_Mock_a_Mockingbird) — 通过谜题学习组合子逻辑
+- [ECMA-262 规范 — 函数语义](https://tc39.es/ecma262/#sec-ecmascript-function-objects) — JS 函数对象规范定义
+- [Church, 1936 — 原始论文](https://doi.org/10.2307/2268480) — 形式化可计算性的开创性工作
+- [PLFA — Programming Language Foundations in Agda](https://plfa.inf.ed.ac.uk/) — 使用依赖类型形式化 PLT
+- [Software Foundations (Coq)](https://softwarefoundations.cis.upenn.edu/) — UPenn 形式化验证课程
+- [Combinatory Logic](https://plato.stanford.edu/entries/logic-combinatory/) — Stanford Encyclopedia 组合子逻辑
 - `20.10-formal-verification/type-theory-formal/`
 
 ## 四、权威外部资源

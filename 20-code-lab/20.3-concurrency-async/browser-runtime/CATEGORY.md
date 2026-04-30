@@ -143,6 +143,172 @@ export async function chunkedProcessing<T>(
 }
 ```
 
+### Intersection Observer 懒加载实现
+
+```typescript
+// lazy-image-loader.ts — 基于 IntersectionObserver 的图片懒加载
+export function createLazyImageLoader(
+  selector = 'img[data-src]',
+  rootMargin = '50px 0px'
+): { observe: () => void; disconnect: () => void } {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const img = entry.target as HTMLImageElement;
+          const src = img.dataset.src;
+          if (src) {
+            img.src = src;
+            img.removeAttribute('data-src');
+            observer.unobserve(img);
+          }
+        }
+      });
+    },
+    { rootMargin }
+  );
+
+  return {
+    observe() {
+      document.querySelectorAll<HTMLImageElement>(selector).forEach((img) => {
+        observer.observe(img);
+      });
+    },
+    disconnect() {
+      observer.disconnect();
+    },
+  };
+}
+
+// 使用
+const loader = createLazyImageLoader();
+loader.observe();
+```
+
+### Performance Observer 监控核心指标
+
+```typescript
+// web-vitals-monitor.ts — Core Web Vitals 采集
+export function observeWebVitals(onReport: (metric: { name: string; value: number }) => void): () => void {
+  const observers: PerformanceObserver[] = [];
+
+  // Largest Contentful Paint (LCP)
+  const lcpObserver = new PerformanceObserver((list) => {
+    const entries = list.getEntries();
+    const lastEntry = entries[entries.length - 1];
+    onReport({ name: 'LCP', value: lastEntry.startTime });
+  });
+  lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] as any });
+  observers.push(lcpObserver);
+
+  // First Input Delay (FID) / Interaction to Next Paint (INP)
+  const inpObserver = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      const e = entry as any;
+      if (e.interactionId > 0) {
+        onReport({ name: 'INP', value: e.processingStart - e.startTime });
+      }
+    }
+  });
+  inpObserver.observe({ type: 'event', buffered: true } as any);
+  observers.push(inpObserver);
+
+  // Cumulative Layout Shift (CLS)
+  let clsValue = 0;
+  const clsObserver = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      const e = entry as any;
+      if (!e.hadRecentInput) {
+        clsValue += e.value;
+      }
+    }
+    onReport({ name: 'CLS', value: clsValue });
+  });
+  clsObserver.observe({ entryTypes: ['layout-shift'] as any });
+  observers.push(clsObserver);
+
+  return () => observers.forEach((o) => o.disconnect());
+}
+```
+
+### Web Workers 并行计算示例
+
+```typescript
+// prime-worker.ts — Web Worker 中计算素数
+// 主线程调用端
+export function countPrimesInRange(start: number, end: number): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(new URL('./prime-worker.ts', import.meta.url));
+    worker.postMessage({ start, end });
+    worker.onmessage = (e) => resolve(e.data.count);
+    worker.onerror = reject;
+  });
+}
+
+// prime-worker.ts 内部
+/*
+self.onmessage = (e: MessageEvent<{ start: number; end: number }>) => {
+  const { start, end } = e.data;
+  let count = 0;
+  for (let n = start; n <= end; n++) {
+    if (isPrime(n)) count++;
+  }
+  self.postMessage({ count });
+};
+
+function isPrime(n: number): boolean {
+  if (n < 2) return false;
+  for (let i = 2; i <= Math.sqrt(n); i++) {
+    if (n % i === 0) return false;
+  }
+  return true;
+}
+*/
+```
+
+### 浏览器内存剖析辅助工具
+
+```typescript
+// memory-profiler.ts — 内存使用快照对比工具
+export class MemoryProfiler {
+  private snapshots: { label: string; usedJSHeapSize: number; timestamp: number }[] = [];
+
+  snapshot(label: string): void {
+    const perf = performance as any;
+    if (perf.memory) {
+      this.snapshots.push({
+        label,
+        usedJSHeapSize: perf.memory.usedJSHeapSize,
+        timestamp: Date.now(),
+      });
+    } else {
+      console.warn('performance.memory API is only available in Chrome');
+    }
+  }
+
+  report(): void {
+    console.table(
+      this.snapshots.map((s, i) => ({
+        label: s.label,
+        heapMB: (s.usedJSHeapSize / 1024 / 1024).toFixed(2),
+        deltaMB:
+          i > 0
+            ? ((s.usedJSHeapSize - this.snapshots[i - 1].usedJSHeapSize) / 1024 / 1024).toFixed(2)
+            : '0.00',
+        elapsedMs: i > 0 ? s.timestamp - this.snapshots[i - 1].timestamp : 0,
+      }))
+    );
+  }
+}
+
+// 使用示例
+const profiler = new MemoryProfiler();
+profiler.snapshot('before');
+// ... 执行大量操作 ...
+profiler.snapshot('after');
+profiler.report();
+```
+
 ## 相关索引
 
 - [30-knowledge-base/30.2-categories/README.md](../../../30-knowledge-base/30.2-categories/README.md)
@@ -163,6 +329,15 @@ export async function chunkedProcessing<T>(
 | V8 Blog — Trash talk | 博客 | [v8.dev/blog/trash-talk](https://v8.dev/blog/trash-talk) |
 | WICG — Scheduler API | 提案 | [github.com/WICG/scheduling-apis](https://github.com/WICG/scheduling-apis) |
 | MDN — FinalizationRegistry | 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry) |
+| web.dev — Core Web Vitals | 指南 | [web.dev/articles/vitals](https://web.dev/articles/vitals) |
+| web.dev — Intersection Observer | 指南 | [web.dev/articles/intersectionobserver](https://web.dev/articles/intersectionobserver) |
+| MDN — Web Workers API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API) |
+| MDN — Performance Observer | 文档 | [developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver) |
+| V8 Blog — Sparkplug | 博客 | [v8.dev/blog/sparkplug](https://v8.dev/blog/sparkplug) |
+| Chromium Blog — RenderingNG | 博客 | [developer.chrome.com/articles/renderingng](https://developer.chrome.com/articles/renderingng) |
+| Jake Archibald — Tasks, microtasks, queues and schedules | 文章 | [jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/](https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/) |
+| Philip Roberts — What the heck is the event loop anyway? | 演讲 | [www.youtube.com/watch?v=8aGhZQkoFbQ](https://www.youtube.com/watch?v=8aGhZQkoFbQ) |
+| JSConf — V8 internals for JS developers | 演讲 | [www.youtube.com/watch?v=m9cTaYVuYVU](https://www.youtube.com/watch?v=m9cTaYVuYVU) |
 
 ---
 

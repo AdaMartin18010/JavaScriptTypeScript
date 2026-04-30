@@ -173,6 +173,106 @@ try {
 }
 ```
 
+#### napi-rs Node 扩展绑定示例
+
+```rust
+// src/lib.rs — 将 Rust 函数暴露给 Node.js
+use napi_derive::napi;
+
+#[napi]
+pub fn fibonacci(n: u32) -> u64 {
+    match n {
+        0 => 0,
+        1 => 1,
+        _ => fibonacci(n - 1) + fibonacci(n - 2),
+    }
+}
+
+#[napi(object)]
+pub struct Point {
+    pub x: f64,
+    pub y: f64,
+}
+
+#[napi]
+pub fn distance(a: &Point, b: &Point) -> f64 {
+    ((b.x - a.x).powi(2) + (b.y - a.y).powi(2)).sqrt()
+}
+```
+
+```typescript
+// __test__/index.spec.ts — Node.js 侧调用 Rust 绑定
+import { fibonacci, distance, Point } from '../index';
+
+describe('Rust bindings', () => {
+  it('fibonacci works', () => {
+    expect(fibonacci(10)).toBe(55);
+  });
+
+  it('distance works', () => {
+    const a: Point = { x: 0, y: 0 };
+    const b: Point = { x: 3, y: 4 };
+    expect(distance(a, b)).toBeCloseTo(5.0);
+  });
+});
+```
+
+#### WASM 打包配置与加载
+
+```toml
+# wasm/Cargo.toml — WASM 目标配置
+[package]
+name = "wasm-utils"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+
+[profile.release]
+opt-level = 3
+lto = true
+```
+
+```rust
+// wasm/src/lib.rs
+use wasm_bindgen::prelude::*;
+use serde::{Serialize, Deserialize};
+
+#[derive(Serialize, Deserialize)]
+pub struct AnalysisResult {
+    pub word_count: usize,
+    pub char_count: usize,
+}
+
+#[wasm_bindgen]
+pub fn analyze_text(input: &str) -> JsValue {
+    let result = AnalysisResult {
+        word_count: input.split_whitespace().count(),
+        char_count: input.chars().count(),
+    };
+    serde_wasm_bindgen::to_value(&result).unwrap()
+}
+```
+
+```typescript
+// web/load-wasm.ts — 浏览器中加载 WASM
+async function loadWasm() {
+  const { analyze_text } = await import('./pkg/wasm_utils.js');
+  const result = analyze_text('Hello WASM world') as {
+    word_count: number;
+    char_count: number;
+  };
+  console.log(result.word_count, result.char_count); // 3 16
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -187,6 +287,14 @@ try {
 - [Cargo Book: The Manifest Format](https://doc.rust-lang.org/cargo/reference/manifest.html)
 - [rustup 文档](https://rust-lang.github.io/rustup/)
 - [Semantic Versioning in Rust (Cargo)](https://doc.rust-lang.org/cargo/reference/semver.html)
+- [napi-rs 文档](https://napi.rs/) — Node.js 原生扩展 Rust 绑定
+- [wasm-bindgen Guide](https://rustwasm.github.io/wasm-bindgen/) — Rust/WASM/JS 互操作
+- [Rust Language Cheat Sheet](https://cheats.rs/) — 快速参考
+- [The Rust Performance Book](https://nnethercote.github.io/perf-book/) — 性能优化指南
+- [Rust By Example](https://doc.rust-lang.org/rust-by-example/) — 交互式学习
+- [Crates.io](https://crates.io/) — Rust 包注册中心
+- [Rustup Components History](https://rust-lang.github.io/rustup-components-history/) — 工具链组件可用性
+- [This Week in Rust](https://this-week-in-rust.org/) — Rust 社区周刊
 - `30-knowledge-base/30.10-native`
 
 ---

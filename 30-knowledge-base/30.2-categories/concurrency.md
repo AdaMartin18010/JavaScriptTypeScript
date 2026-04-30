@@ -40,6 +40,7 @@ Atomics + WASM Threads (Fine-Grained Parallelism)
 | **Worker Threads** | 多线程计算 | `new Worker()` |
 | **Atomics** | 共享内存同步 | `Atomics.add()` |
 | **AbortController** | 取消异步操作 | `controller.abort()` |
+| **StructuredClone** | 深拷贝可序列化对象 | `structuredClone(obj)` |
 
 ## 模式
 
@@ -48,6 +49,7 @@ Atomics + WASM Threads (Fine-Grained Parallelism)
 | **Promise.all** | 并行执行，全部成功 |
 | **Promise.race** | 竞速，取最快 |
 | **Promise.allSettled** | 并行执行，等待全部完成 |
+| **Promise.any** | 并行执行，返回首个成功 |
 | **Async Iterator** | 异步数据流 |
 
 ---
@@ -169,15 +171,148 @@ await pool.terminate();
 
 ---
 
+## Promise 组合器实战
+
+```typescript
+// promise-combinators.ts — 现代异步编排
+
+// 并行限流：同时最多 N 个请求
+async function pLimit<T>(tasks: (() => Promise<T>)[], limit: number): Promise<T[]> {
+  const results: T[] = new Array(tasks.length);
+  const executing = new Set<Promise<void>>();
+
+  for (let i = 0; i < tasks.length; i++) {
+    const p = tasks[i]().then(r => { results[i] = r; });
+    executing.add(p);
+
+    if (executing.size >= limit) {
+      await Promise.race(executing);
+    }
+
+    p.finally(() => executing.delete(p));
+  }
+
+  await Promise.all(executing);
+  return results;
+}
+
+// 超时包装器
+function withTimeout<T>(promise: Promise<T>, ms: number, signal?: AbortSignal): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms);
+    promise.then(resolve, reject).finally(() => clearTimeout(timer));
+    signal?.addEventListener('abort', () => {
+      clearTimeout(timer);
+      reject(signal.reason);
+    });
+  });
+}
+
+// 使用示例
+const urls = ['/api/a', '/api/b', '/api/c'];
+const data = await pLimit(
+  urls.map(url => () => fetch(url).then(r => r.json())),
+  2 // 最多 2 个并发
+);
+```
+
+---
+
+## Async Iterator 与生成器
+
+```typescript
+// async-generator.ts — 消费分页 API
+async function* fetchPaginated<T>(baseUrl: string) {
+  let page = 1;
+  let hasMore = true;
+
+  while (hasMore) {
+    const res = await fetch(`${baseUrl}?page=${page}`);
+    const data = await res.json() as { items: T[]; hasMore: boolean };
+    yield* data.items;
+    hasMore = data.hasMore;
+    page++;
+  }
+}
+
+// 消费：只取前 100 条
+const items: unknown[] = [];
+for await (const item of fetchPaginated('/api/products')) {
+  items.push(item);
+  if (items.length >= 100) break;
+}
+```
+
+---
+
+## Atomics 与 SharedArrayBuffer
+
+```typescript
+// atomic-counter.ts — 无锁共享计数器
+const sab = new SharedArrayBuffer(4);
+const counter = new Int32Array(sab);
+
+// Worker 内
+// Atomics.add(counter, 0, 1); // 原子递增
+// Atomics.load(counter, 0);   // 原子读取
+
+// 自旋锁示例（不推荐生产环境，仅演示原理）
+function acquireLock(lock: Int32Array, index: number) {
+  while (Atomics.compareExchange(lock, index, 0, 1) !== 0) {
+    Atomics.wait(lock, index, 1); // 等待直到值不再是 1
+  }
+}
+
+function releaseLock(lock: Int32Array, index: number) {
+  Atomics.store(lock, index, 0);
+  Atomics.notify(lock, index, 1); // 唤醒等待者
+}
+```
+
+---
+
+## StructuredClone 深拷贝
+
+```typescript
+// structured-clone.ts — 现代深拷贝
+const original = {
+  date: new Date(),
+  map: new Map([['key', 'value']]),
+  set: new Set([1, 2, 3]),
+  nested: { arr: [1, 2, 3] },
+};
+
+const cloned = structuredClone(original);
+
+// 验证独立性
+cloned.nested.arr.push(4);
+console.log(original.nested.arr.length); // 3（未被修改）
+console.log(cloned.nested.arr.length);   // 4
+
+// 循环引用支持
+const cyclic: any = { name: 'root' };
+cyclic.self = cyclic;
+const clonedCyclic = structuredClone(cyclic);
+console.log(clonedCyclic.self === clonedCyclic); // true
+```
+
+---
+
 ## 权威链接
 
 - [MDN — Concurrency model and the event loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/EventLoop)
 - [Node.js — worker_threads](https://nodejs.org/api/worker_threads.html)
 - [MDN — Atomics](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics)
 - [MDN — WebAssembly Threads](https://developer.mozilla.org/en-US/docs/WebAssembly/JavaScript_interface/Module#instantiating_a_module_with_imported_shared_memory)
+- [MDN — Structured Clone Algorithm](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm)
 - [V8 Blog — High-performance ES2015 and beyond](https://v8.dev/blog)
 - [Jake Archibald — Tasks, microtasks, queues and schedules](https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/)
+- [Node.js Event Loop — Node.js Docs](https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick)
+- [Promise.finally — TC39 Proposal](https://github.com/tc39/proposal-promise-finally)
+- [Async Iterator Protocol — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator)
+- [Scheduling APIs — WICG](https://github.com/WICG/scheduling-apis) — 优先级任务调度
+- [Web Locks API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API) — 跨 Tab 锁机制
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

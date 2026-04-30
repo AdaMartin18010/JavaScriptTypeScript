@@ -142,6 +142,199 @@ compile(process.argv.slice(2), {
 });
 ```
 
+### 代码示例：手写递归下降解析器
+
+```typescript
+// mini-parser.ts — 递归下降表达式解析器 (支持 + - * / 和括号)
+
+type Token =
+  | { type: 'NUMBER'; value: number }
+  | { type: 'OP'; value: '+' | '-' | '*' | '/' }
+  | { type: 'LPAREN' }
+  | { type: 'RPAREN' }
+  | { type: 'EOF' };
+
+class Lexer {
+  private pos = 0;
+  constructor(private input: string) {}
+
+  nextToken(): Token {
+    this.skipWhitespace();
+    if (this.pos >= this.input.length) return { type: 'EOF' };
+
+    const char = this.input[this.pos];
+
+    if (/\d/.test(char)) {
+      let num = '';
+      while (this.pos < this.input.length && /\d/.test(this.input[this.pos])) {
+        num += this.input[this.pos++];
+      }
+      return { type: 'NUMBER', value: parseInt(num, 10) };
+    }
+
+    if (char === '+') { this.pos++; return { type: 'OP', value: '+' }; }
+    if (char === '-') { this.pos++; return { type: 'OP', value: '-' }; }
+    if (char === '*') { this.pos++; return { type: 'OP', value: '*' }; }
+    if (char === '/') { this.pos++; return { type: 'OP', value: '/' }; }
+    if (char === '(') { this.pos++; return { type: 'LPAREN' }; }
+    if (char === ')') { this.pos++; return { type: 'RPAREN' }; }
+
+    throw new Error(`Unexpected character: ${char}`);
+  }
+
+  private skipWhitespace(): void {
+    while (this.pos < this.input.length && /\s/.test(this.input[this.pos])) {
+      this.pos++;
+    }
+  }
+}
+
+// 递归下降解析器
+// Grammar:
+//   expr   = term (('+' | '-') term)*
+//   term   = factor (('*' | '/') factor)*
+//   factor = NUMBER | '(' expr ')'
+
+class Parser {
+  private current: Token;
+  constructor(private lexer: Lexer) {
+    this.current = lexer.nextToken();
+  }
+
+  parse(): number {
+    const result = this.expr();
+    if (this.current.type !== 'EOF') {
+      throw new Error('Unexpected token after expression');
+    }
+    return result;
+  }
+
+  private expr(): number {
+    let value = this.term();
+    while (this.current.type === 'OP' && (this.current.value === '+' || this.current.value === '-')) {
+      const op = this.current.value;
+      this.advance();
+      const right = this.term();
+      value = op === '+' ? value + right : value - right;
+    }
+    return value;
+  }
+
+  private term(): number {
+    let value = this.factor();
+    while (this.current.type === 'OP' && (this.current.value === '*' || this.current.value === '/')) {
+      const op = this.current.value;
+      this.advance();
+      const right = this.factor();
+      value = op === '*' ? value * right : value / right;
+    }
+    return value;
+  }
+
+  private factor(): number {
+    if (this.current.type === 'NUMBER') {
+      const value = this.current.value;
+      this.advance();
+      return value;
+    }
+    if (this.current.type === 'LPAREN') {
+      this.advance();
+      const value = this.expr();
+      if (this.current.type !== 'RPAREN') {
+        throw new Error('Expected )');
+      }
+      this.advance();
+      return value;
+    }
+    throw new Error(`Unexpected token: ${this.current.type}`);
+  }
+
+  private advance(): void {
+    this.current = this.lexer.nextToken();
+  }
+}
+
+// 使用
+const parser = new Parser(new Lexer('3 + 4 * (2 - 1)'));
+console.log(parser.parse()); // 7
+```
+
+### 代码示例：SWC 插件（Rust + napi-rs）
+
+```rust
+// swc-plugin-strip-debug/src/lib.rs — SWC 编译器插件骨架
+use swc_core::ecma::{
+    ast::{CallExpr, Callee, Expr, Ident},
+    transforms::testing::test,
+    visit::{as_folder, FoldWith, VisitMut, VisitMutWith},
+};
+use swc_core::plugin::{plugin_transform, proxies::TransformPluginProgramMetadata};
+
+pub struct StripDebugVisitor;
+
+impl VisitMut for StripDebugVisitor {
+    fn visit_mut_call_expr(&mut self, call: &mut CallExpr) {
+        if let Callee::Expr(box Expr::Member(member)) = &call.callee {
+            if let Expr::Ident(Ident { sym, .. }) = &*member.obj {
+                if sym == "console" {
+                    // 将 console.*() 替换为 void 0
+                    call.callee = Callee::Expr(Box::new(Expr::Ident(Ident::new(
+                        "undefined".into(),
+                        call.span,
+                    ))));
+                    call.args.clear();
+                }
+            }
+        }
+        call.visit_mut_children_with(self);
+    }
+}
+
+#[plugin_transform]
+pub fn process_transform(program: Program, _metadata: TransformPluginProgramMetadata) -> Program {
+    program.fold_with(&mut as_folder(StripDebugVisitor))
+}
+```
+
+### 代码示例：使用 ts-morph 进行代码分析与重构
+
+```typescript
+// code-refactor.ts — 使用 ts-morph 批量重构代码
+import { Project, SyntaxKind } from 'ts-morph';
+
+const project = new Project({ tsConfigFilePath: './tsconfig.json' });
+
+// 示例：将所有 var 声明替换为 const
+for (const sourceFile of project.getSourceFiles()) {
+  sourceFile.forEachDescendant((node) => {
+    if (node.getKind() === SyntaxKind.VariableDeclarationList) {
+      const declarationList = node.asKindOrThrow(SyntaxKind.VariableDeclarationList);
+      if (declarationList.getDeclarationKind() === 'var') {
+        declarationList.setDeclarationKind('const');
+      }
+    }
+  });
+}
+
+// 示例：查找所有未使用的导出
+for (const sourceFile of project.getSourceFiles()) {
+  const exports = sourceFile.getExportedDeclarations();
+  for (const [name, declarations] of exports) {
+    for (const decl of declarations) {
+      const refs = decl.findReferences();
+      const nonSelfRefs = refs.flatMap((r) =>
+        r.getReferences().filter((ref) => ref.getSourceFile() !== sourceFile)
+      );
+      if (nonSelfRefs.length === 0) {
+        console.log(`Potentially unused export: ${name} in ${sourceFile.getFilePath()}`);
+      }
+    }
+  }
+}
+
+project.saveSync();
+```
+
 ---
 
 ## 延伸阅读
@@ -160,6 +353,19 @@ compile(process.argv.slice(2), {
 - [OXC Project — High-Performance JavaScript Toolchain](https://oxc.rs/)
 - [tsgo (Go-based TypeScript Compiler) — GitHub](https://github.com/microsoft/typescript-go)
 - [Crafting Interpreters by Robert Nystrom](https://craftinginterpreters.com/)
+- [Compilers: Principles, Techniques, and Tools (Dragon Book)](https://en.wikipedia.org/wiki/Compilers:_Principles,_Techniques,_and_Tools)
+- [Types and Programming Languages (TAPL)](https://www.cis.upenn.edu/~bcpierce/tapl/)
+- [ts-morph — TypeScript AST Manipulation](https://ts-morph.com/)
+- [Acorn — Tiny JavaScript Parser](https://github.com/acornjs/acorn)
+- [Esprima — ECMAScript Parsing Infrastructure](https://esprima.org/)
+- [SpiderMonkey Parser API](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Parser_API)
+- [AST Explorer](https://astexplorer.net/) — 在线 AST 可视化工具
+- [SWC Plugin Development Guide](https://swc.rs/docs/plugin/developing)
+- [Rome Tools / Biome](https://biomejs.dev/) — 统一 JS 工具链
+- [TypeScript AST Viewer](https://ts-ast-viewer.com/) — TypeScript AST 在线查看器
+- [ECMAScript Proposals](https://github.com/tc39/proposals) — TC39 提案追踪
+- [JavaScript Parser Benchmarks](https://github.com/marijnz/parser-bench) — 解析器性能基准
+- [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) — 增量解析器生成器
 
 ---
 

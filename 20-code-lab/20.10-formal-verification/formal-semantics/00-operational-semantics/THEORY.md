@@ -178,19 +178,70 @@ while (state.s.tag !== 'Skip') {
 console.log('Final store:', Object.fromEntries(state.σ)); // { x: 3 }
 ```
 
-### 3.2 常见误区
+### 3.2 非确定性选择：小步语义的优势
+
+```typescript
+// 展示小步语义如何精确刻画并发交错（非确定性）
+// 引入选择算子：e1 ⊕ e2 可规约为 e1 或 e2
+
+type NondetExpr =
+  | { tag: 'Num'; n: number }
+  | { tag: 'Choice'; left: NondetExpr; right: NondetExpr };
+
+// 小步语义允许两种规约路径
+function stepNondet(e: NondetExpr): NondetExpr[] {
+  switch (e.tag) {
+    case 'Num':
+      return [e];
+    case 'Choice':
+      // 非确定性：返回两个可能的后继
+      return [e.left, e.right];
+  }
+}
+
+// 探索所有可能路径
+function exploreAll(e: NondetExpr, depth = 3): number[][] {
+  if (depth === 0) return [];
+  const next = stepNondet(e);
+  if (next.length === 1 && next[0].tag === 'Num') {
+    return [[next[0].n]];
+  }
+  const results: number[][] = [];
+  for (const n of next) {
+    for (const path of exploreAll(n, depth - 1)) {
+      results.push(path);
+    }
+  }
+  return results;
+}
+
+// (1 ⊕ 2) ⊕ 3 的所有可能结果
+const expr: NondetExpr = {
+  tag: 'Choice',
+  left: { tag: 'Choice', left: { tag: 'Num', n: 1 }, right: { tag: 'Num', n: 2 } },
+  right: { tag: 'Num', n: 3 },
+};
+console.log('All paths:', exploreAll(expr)); // [[1], [2], [3]]
+```
+
+### 3.3 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | 形式语义只是学术游戏 | 形式语义是编译器优化和验证的基础 |
 | 小步与大步语义等价 | 它们在并发和非确定性场景表现不同 |
 
-### 3.3 扩展阅读
+### 3.4 扩展阅读
 
 - [Software Foundations: Programming Language Foundations](https://softwarefoundations.cis.upenn.edu/plf-current/index.html)
 - [Types and Programming Languages (TAPL)](https://www.cis.upenn.edu/~bcpierce/tapl/)
 - [Semantics with Applications](https://www.cs.ru.nl/~herman/semanticswithapplications.pdf)
 - [ECMA-262 Specification](https://tc39.es/ecma262/)
+- [Operational Semantics — Stanford Encyclopedia of Philosophy](https://plato.stanford.edu/entries/operational-semantics/)
+- [CS 242: Stanford Programming Languages](https://web.stanford.edu/class/cs242/) — 操作语义与类型系统课程
+- [Concrete Semantics with Isabelle/HOL](https://concrete-semantics.org/) — 用定理证明器验证语义
+- [PLFA — Operational Semantics](https://plfa.inf.ed.ac.uk/Part1/BigStep.html) — Agda 形式化操作语义
+- [ECMA-262 Algorithm Conventions](https://tc39.es/ecma262/#sec-algorithm-conventions) — 规范中的伪代码语义
 - `20.10-formal-verification/formal-semantics/`
 
 ---
