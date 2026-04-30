@@ -333,6 +333,89 @@ function VirtualList({ items, itemHeight, containerHeight }: any) {
 }
 ```
 
+### 6.6 requestIdleCallback 任务调度
+
+```typescript
+// idle-scheduler.ts — 将非紧急工作推迟到浏览器空闲时段
+function scheduleIdleWork<T>(
+  tasks: (() => T)[],
+  options: { timeout?: number; chunkSize?: number } = {}
+): Promise<T[]> {
+  const { timeout = 2000, chunkSize = 1 } = options;
+  const results: T[] = [];
+  let index = 0;
+
+  return new Promise((resolve) => {
+    function work(idleDeadline: IdleDeadline) {
+      while (index < tasks.length && idleDeadline.timeRemaining() > 0) {
+        for (let i = 0; i < chunkSize && index < tasks.length; i++, index++) {
+          results[index] = tasks[index]();
+        }
+      }
+      if (index < tasks.length) {
+        requestIdleCallback(work, { timeout });
+      } else {
+        resolve(results);
+      }
+    }
+    requestIdleCallback(work, { timeout });
+  });
+}
+
+// 使用：批量处理大数据集而不阻塞主线程
+const largeDataset = Array.from({ length: 10000 }, (_, i) => i);
+scheduleIdleWork(
+  largeDataset.map((n) => () => n * n),
+  { chunkSize: 100 }
+).then((squares) => console.log('Processed', squares.length, 'items'));
+```
+
+### 6.7 使用 WeakMap / WeakRef 避免内存泄漏
+
+```typescript
+// weak-ref-patterns.ts — 非侵入式元数据关联与缓存
+
+// 模式 1：WeakMap 关联私有元数据
+const metadata = new WeakMap<object, Record<string, unknown>>();
+
+function attachMeta(obj: object, key: string, value: unknown) {
+  if (!metadata.has(obj)) metadata.set(obj, {});
+  metadata.get(obj)![key] = value;
+}
+
+function getMeta(obj: object, key: string): unknown {
+  return metadata.get(obj)?.[key];
+}
+
+// 模式 2：WeakRef + FinalizationRegistry 实现自动清理缓存
+class WeakValueCache<K, V extends object> {
+  private cache = new Map<K, WeakRef<V>>();
+  private registry = new FinalizationRegistry<K>((key) => {
+    this.cache.delete(key);
+    console.log('Auto-cleaned cache entry for', key);
+  });
+
+  set(key: K, value: V) {
+    this.cache.set(key, new WeakRef(value));
+    this.registry.register(value, key);
+  }
+
+  get(key: K): V | undefined {
+    const ref = this.cache.get(key);
+    return ref?.deref();
+  }
+}
+
+// 使用
+class HeavyObject { data = new ArrayBuffer(1024 * 1024); }
+const cache = new WeakValueCache<string, HeavyObject>();
+{
+  const obj = new HeavyObject();
+  cache.set('key1', obj);
+}
+// obj 超出作用域后，FinalizationRegistry 自动清理 cache 条目
+```
+
 ## 7. 技术决策
 
 | 决策 | 选择 | 理由 |
@@ -365,3 +448,12 @@ function VirtualList({ items, itemHeight, containerHeight }: any) {
 - [Webpack Bundle Analysis](https://webpack.js.org/guides/code-splitting/) — 代码分割与包体积优化
 - [MDN — Performance API](https://developer.mozilla.org/en-US/docs/Web/API/Performance) — 浏览器 Performance API 完整参考
 - [W3C — User Timing Level 3](https://www.w3.org/TR/user-timing-3/) — 用户计时规范
+- [W3C — requestIdleCallback](https://w3c.github.io/requestidlecallback/) — 空闲回调标准规范
+- [V8 Blog — Pointer Compression](https://v8.dev/blog/pointer-compression) — V8 指针压缩技术解析
+- [V8 Blog — Maglev](https://v8.dev/blog/maglev) — V8 Maglev 优化编译器介绍
+- [Chrome DevTools — Performance Analysis Reference](https://developer.chrome.com/docs/devtools/performance/reference) — Chrome 性能面板官方参考
+- [Google — Rendering Performance](https://developers.google.com/web/fundamentals/performance/rendering) — 浏览器渲染管线优化权威指南
+- [Web.dev — Reduce JavaScript Payloads with Tree Shaking](https://web.dev/articles/reduce-javascript-payloads-with-tree-shaking) — Tree Shaking 优化指南
+- [W3C — Long Tasks API](https://w3c.github.io/longtasks/) — 长任务检测标准
+- [MDN — WeakRef](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef) — WeakRef 与 FinalizationRegistry 文档
+- [Web.dev — Lazy Loading Images and Video](https://web.dev/articles/lazy-loading-images) — 懒加载最佳实践

@@ -1,4 +1,4 @@
-﻿# 缓存策略深度理论：从本地缓存到分布式缓存
+# 缓存策略深度理论：从本地缓存到分布式缓存
 
 > **目标读者**：后端工程师、性能工程师、关注系统扩展性的架构师
 > **关联文档**：``30-knowledge-base/30.2-categories/caching-strategies.md`` (Legacy) [Legacy link]
@@ -268,18 +268,145 @@ async function getWithLock<T>(key: string, fetcher: () => Promise<T>, ttl: numbe
 }
 ```
 
+### 4.8 Write-Through 缓存实现
+
+```typescript
+// write-through.ts — 写操作同步更新缓存与数据库
+class WriteThroughCache<T> {
+  constructor(
+    private redis: any,
+    private db: { upsert: (id: string, data: T) => Promise<void> },
+    private ttl: number
+  ) {}
+
+  async set(id: string, data: T): Promise<void> {
+    // 先写 DB，再写缓存（或并行）
+    await this.db.upsert(id, data);
+    await this.redis.setex(`entity:${id}`, this.ttl, JSON.stringify(data));
+  }
+
+  async get(id: string, fetcher: () => Promise<T | null>): Promise<T | null> {
+    const cached = await this.redis.get(`entity:${id}`);
+    if (cached) return JSON.parse(cached);
+
+    const data = await fetcher();
+    if (data) {
+      await this.redis.setex(`entity:${id}`, this.ttl, JSON.stringify(data));
+    }
+    return data;
+  }
+}
+```
+
 ---
 
-## 5. 总结
+## 5. HTTP 缓存控制
+
+```typescript
+// http-cache-headers.ts — 精确控制浏览器与 CDN 缓存行为
+
+function setCacheHeaders(
+  res: Response,
+  options: {
+    maxAge?: number;      // 秒
+    staleWhileRevalidate?: number;
+    immutable?: boolean;
+    private?: boolean;
+    noStore?: boolean;
+  }
+): Response {
+  const headers = new Headers(res.headers);
+
+  if (options.noStore) {
+    headers.set('Cache-Control', 'no-store');
+    return new Response(res.body, { ...res, headers });
+  }
+
+  const directives: string[] = [];
+  if (options.private) directives.push('private');
+  else directives.push('public');
+
+  if (options.maxAge !== undefined) directives.push(`max-age=${options.maxAge}`);
+  if (options.staleWhileRevalidate !== undefined) {
+    directives.push(`stale-while-revalidate=${options.staleWhileRevalidate}`);
+  }
+  if (options.immutable) directives.push('immutable');
+
+  headers.set('Cache-Control', directives.join(', '));
+  return new Response(res.body, { ...res, headers });
+}
+
+// 使用示例
+// 静态资源：长期缓存
+setCacheHeaders(response, { maxAge: 31536000, immutable: true });
+
+// API 响应：短时间缓存 + stale-while-revalidate
+setCacheHeaders(response, { maxAge: 60, staleWhileRevalidate: 300 });
+
+// 用户敏感数据：不缓存
+setCacheHeaders(response, { private: true, maxAge: 0 });
+```
+
+---
+
+## 6. 代码示例：CDN 缓存键自定义与边缘逻辑
+
+```typescript
+// cdn-cache-key.ts — 基于请求特征构造缓存键
+function generateCacheKey(req: Request): string {
+  const url = new URL(req.url);
+  const parts = [url.pathname];
+
+  // 按 Accept-Language 分区缓存
+  const lang = req.headers.get('accept-language')?.split(',')[0] ?? 'en';
+  parts.push(`lang=${lang}`);
+
+  // 按设备类型分区（通过 User-Agent 推断）
+  const ua = req.headers.get('user-agent') ?? '';
+  const device = /Mobile/.test(ua) ? 'mobile' : 'desktop';
+  parts.push(`device=${device}`);
+
+  return parts.join('|');
+}
+
+// Cloudflare Workers 边缘缓存示例
+export default {
+  async fetch(req: Request, env: any, ctx: ExecutionContext): Promise<Response> {
+    const cacheKey = generateCacheKey(req);
+    const cache = caches.default;
+
+    // 尝试读取边缘缓存
+    let response = await cache.match(new Request(cacheKey));
+    if (response) {
+      response = new Response(response.body, {
+        ...response,
+        headers: { ...Object.fromEntries(response.headers), 'X-Cache': 'HIT' },
+      });
+      return response;
+    }
+
+    // 回源
+    response = await fetch(req);
+    ctx.waitUntil(cache.put(new Request(cacheKey), response.clone()));
+    return response;
+  },
+};
+```
+
+---
+
+## 7. 总结
 
 缓存是**性能优化的第一手段**。
 
 **核心原则**：
+
 1. 缓存不应该是数据一致性的依赖，而是性能优化手段
-2.  always 考虑缓存失效策略
+2. always 考虑缓存失效策略
 3. 监控缓存命中率（目标 > 90%）
 
 **选型建议**：
+
 - 本地缓存：lru-cache / quick-lru
 - 分布式缓存：Redis（首选）/ Valkey（Redis 分支）
 - CDN：Cloudflare / Vercel Edge
@@ -294,6 +421,7 @@ async function getWithLock<T>(key: string, fetcher: () => Promise<T>, ttl: numbe
 - [Caching at Scale — AWS](https://aws.amazon.com/caching/)
 - [Cache Patterns — Martin Fowler](https://martinfowler.com/articles/data-cache-sync.html) — 缓存同步策略权威解读
 - [IETF RFC 7234 — HTTP Caching](https://datatracker.ietf.org/doc/html/rfc7234) — HTTP 缓存协议标准
+- [IETF RFC 9111 — HTTP Caching (RFC 9111)](https://datatracker.ietf.org/doc/html/rfc9111) — HTTP 缓存最新标准
 - [Caching Strategies — Microsoft Azure](https://docs.microsoft.com/en-us/azure/architecture/patterns/cache-aside) — Azure 架构中心 Cache-Aside 模式
 - [Redis Pipeline Documentation](https://redis.io/docs/manual/pipelining/) — Redis 官方 Pipeline 指南
 - [Bloom Filters by Example](https://llimllib.github.io/bloomfilter-tutorial/) — 布隆过滤器原理与实现
@@ -302,6 +430,21 @@ async function getWithLock<T>(key: string, fetcher: () => Promise<T>, ttl: numbe
 - [Cloudflare Caching](https://www.cloudflare.com/learning/cdn/what-is-caching/) — CDN 边缘缓存深度解析
 - [node-lru-cache](https://github.com/isaacs/node-lru-cache) — Node.js 应用最广泛的 LRU 缓存库
 - [High Scalability Caching Articles](http://highscalability.com/) — 大规模系统缓存架构案例集
+- [W3C — Edge Architecture Specification](https://www.w3.org/TR/edge-arch/) — 边缘架构规范
+- [MDN — Cache-Control](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control) — Cache-Control 头部完整参考
+- [MDN — ETag](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag) — 条件请求与缓存验证
+- [Redis University — Caching at Scale](https://university.redis.com/) — Redis 官方缓存课程
+- [Google — Page Speed Insights](https://developers.google.com/speed/docs/insights/LeverageBrowserCaching) — 浏览器缓存优化建议
+- [Fastly — Cache Control Tutorial](https://developer.fastly.com/learning/concepts/cache-freshness/) — Fastly 缓存新鲜度权威指南
+- [Cloudflare Workers — Cache API](https://developers.cloudflare.com/workers/runtime-apis/cache/) — Cloudflare Workers 缓存 API 文档
+- [Varnish — HTTP Cache Tutorial](https://varnish-cache.org/docs/trunk/users-guide/increasing-your-hitrate.html) — Varnish 提升命中率指南
+- [AWS — ElastiCache Best Practices](https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/BestPractices.html) — AWS ElastiCache 最佳实践
+- [Google — Cache Optimization Patterns](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/http-caching) — Google 缓存优化模式
+- [IETF — RFC 5861 — stale-while-revalidate](https://datatracker.ietf.org/doc/html/rfc5861) — stale-while-revalidate 扩展标准
+- [Memcached — Official Documentation](https://memcached.org/about) — Memcached 官方文档
+- [Caffeine — High Performance Java Cache](https://github.com/ben-manes/caffeine) — 高性能 Java 缓存库（设计参考）
+- [W3C — Service Workers — Caching Strategies](https://w3c.github.io/ServiceWorker/#cache-addAll) — Service Worker 缓存策略规范
+- [MDN — Service Worker API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) — Service Worker 离线缓存 API
 
 ---
 
@@ -328,7 +471,7 @@ async function getWithLock<T>(key: string, fetcher: () => Promise<T>, ttl: numbe
 本模块涉及的核心设计模式包括：
 
 1. **Cache-Aside Pattern**：应用层显式管理缓存与存储，灵活性最高，适用于大多数业务场景。
-2. **Write-Through / Write-Behind**：在强一致性与写性能之间权衡，金融交易偏好前者， analytics 场景偏好后者。
+2. **Write-Through / Write-Behind**：在强一致性与写性能之间权衡，金融交易偏好前者，analytics 场景偏好后者。
 3. **Lease-Based Consistency**：通过互斥锁或租约（lease）防止并发回源与脏写，是分布式缓存的核心并发控制手段。
 
 ### 与相邻模块的关系

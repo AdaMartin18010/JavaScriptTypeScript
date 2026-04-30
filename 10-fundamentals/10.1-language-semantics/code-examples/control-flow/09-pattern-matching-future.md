@@ -380,3 +380,85 @@ function grade(score: number): string {
 - **ECMA-262: Destructuring Assignment** — <https://tc39.es/ecma262/#sec-destructuring-assignment>
 - **Pattern Matching in TypeScript (pattern-matching.dev)** — <https://pattern-matching.dev/>
 - **Functional Programming: Option Type** — <https://en.wikipedia.org/wiki/Option_type>
+
+---
+
+## 深化补充三：模式匹配高阶模式与跨语言对比
+
+### 可选值（Option/Maybe）与 Result 类型
+
+```typescript
+type Result<T, E> =
+  | { _tag: 'Ok'; value: T }
+  | { _tag: 'Err'; error: E };
+
+function mapResult<T, U, E>(result: Result<T, E>, fn: (v: T) => U): Result<U, E> {
+  return match(result)
+    .with({ _tag: 'Ok', value: P.select() }, (v) => ({ _tag: 'Ok', value: fn(v) } as Result<U, E>))
+    .with({ _tag: 'Err' }, (r) => r as Result<U, E>)
+    .exhaustive();
+}
+
+// 与 Rust Result 对比：
+// Rust: result.map(|v| v * 2)
+// TS: mapResult(result, v => v * 2)
+```
+
+### 正则模式与字符串解构
+
+```typescript
+import { match, P } from 'ts-pattern';
+
+function parseLog(line: string) {
+  return match(line)
+    .with(
+      P.string.regex(/^\[(\d{4}-\d{2}-\d{2})\] (\w+): (.+)$/),
+      (match) => ({
+        date: match[1],
+        level: match[2],
+        message: match[3]
+      })
+    )
+    .otherwise(() => null);
+}
+
+console.log(parseLog('[2024-01-15] ERROR: Connection failed'));
+// { date: '2024-01-15', level: 'ERROR', message: 'Connection failed' }
+```
+
+### 嵌套数组与树形模式
+
+```typescript
+type Tree<T> =
+  | { type: 'leaf'; value: T }
+  | { type: 'node'; children: Tree<T>[] };
+
+function sumTree(tree: Tree<number>): number {
+  return match(tree)
+    .with({ type: 'leaf', value: P.number }, (t) => t.value)
+    .with({ type: 'node', children: P.array(P.any) }, (t) =>
+      t.children.reduce((sum, child) => sum + sumTree(child), 0)
+    )
+    .exhaustive();
+}
+
+// sumTree({ type: 'node', children: [
+//   { type: 'leaf', value: 1 },
+//   { type: 'node', children: [{ type: 'leaf', value: 2 }, { type: 'leaf', value: 3 }] }
+// ] }) === 6
+```
+
+---
+
+## 更多权威外部链接
+
+- **TC39 Pattern Matching Proposal (Stage 1)** — <https://github.com/tc39/proposal-pattern-matching>
+- **TC39 Proposal Champions** — <https://github.com/tc39/proposal-pattern-matching/blob/main/CHAMPIONS.md>
+- **ts-pattern Documentation** — <https://github.com/gvergnaud/ts-pattern>
+- **Rust: Pattern Matching** — <https://doc.rust-lang.org/book/ch18-00-patterns.html>
+- **Scala: Pattern Matching** — <https://docs.scala-lang.org/tour/pattern-matching.html>
+- **F#: Pattern Matching** — <https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/pattern-matching>
+- **Haskell: Pattern Matching** — <https://www.haskell.org/tutorial/patterns.html>
+- **ECMA-262: Destructuring Assignment** — <https://tc39.es/ecma262/#sec-destructuring-assignment>
+- **Pattern Matching in TypeScript** — <https://pattern-matching.dev/>
+- **Wikipedia: Option Type** — <https://en.wikipedia.org/wiki/Option_type>

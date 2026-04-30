@@ -316,4 +316,202 @@ new Derived().log(); // "Derived"
 
 ---
 
-**参考规范**：ECMA-262 §10.2 | MDN | 2ality
+---
+
+## 13. 深化实例：this 绑定边界与高级模式
+
+### 13.1 正例：显式绑定到原始值
+
+```javascript
+function showThis() {
+  console.log(typeof this, this.valueOf());
+}
+
+// 原始值会被装箱为对应包装对象
+showThis.call(42);        // "number", 42
+showThis.call('hello');   // "string", "hello"
+showThis.call(true);      // "boolean", true
+showThis.call(123n);      // "bigint", 123n
+
+// null/undefined 在严格模式下保持原样
+function strictShow() {
+  'use strict';
+  console.log(this);
+}
+strictShow.call(null);    // null
+strictShow.call(undefined); // undefined
+```
+
+### 13.2 正例：Proxy 拦截中的 this 绑定
+
+```javascript
+const target = {
+  value: 10,
+  getValue() { return this.value; }
+};
+
+const proxy = new Proxy(target, {
+  get(target, prop, receiver) {
+    // receiver 是最终的 this 绑定目标
+    console.log('get:', prop, 'receiver === proxy?', receiver === proxy);
+    return Reflect.get(target, prop, receiver);
+  }
+});
+
+console.log(proxy.getValue()); // receiver === proxy, 返回 10
+
+// 陷阱：若未正确传递 receiver，this 绑定会丢失
+const brokenProxy = new Proxy(target, {
+  get(target, prop) {
+    return target[prop]; // ❌ 未传递 receiver
+  }
+});
+console.log(brokenProxy.getValue()); // 10（侥幸），但复杂场景会失败
+```
+
+### 13.3 正例：类私有字段与 this 的严格绑定
+
+```javascript
+class Counter {
+  #count = 0;
+
+  increment() {
+    this.#count++;
+    return this.#count;
+  }
+
+  // 私有字段访问会检查 this 是否为 Counter 实例
+  static tryIncrement(instance) {
+    // 借用方法
+    return Counter.prototype.increment.call(instance);
+  }
+}
+
+const c = new Counter();
+Counter.tryIncrement(c); // 1
+
+// 若传入非实例对象：
+const fake = {};
+try {
+  Counter.prototype.increment.call(fake);
+} catch (e) {
+  console.log(e instanceof TypeError); // true（私有字段访问失败）
+}
+```
+
+### 13.4 正例：回调函数中的 this 绑定模式
+
+```javascript
+class EventEmitter {
+  #listeners = new Map();
+
+  on(event, handler) {
+    if (!this.#listeners.has(event)) {
+      this.#listeners.set(event, new Set());
+    }
+    this.#listeners.get(event).add(handler);
+  }
+
+  emit(event, data) {
+    const handlers = this.#listeners.get(event) || [];
+    for (const handler of handlers) {
+      handler.call(this, data); // 显式绑定 emitter 实例
+    }
+  }
+}
+
+// 使用
+const emitter = new EventEmitter();
+emitter.on('data', function (d) {
+  console.log(this === emitter); // true
+  console.log(d);
+});
+emitter.emit('data', { msg: 'hello' });
+```
+
+---
+
+## 14. 更多权威参考
+
+- **ECMA-262 §10.2.1** — [[Call]]: <https://tc39.es/ecma262/#sec-ecmascript-function-objects-call-thisargument-argumentslist>
+- **MDN: this** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this>
+- **MDN: Proxy** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy>
+- **MDN: Private class features** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields>
+- **2ality: this in JavaScript** — <https://2ality.com/2014/05/this.html>
+- **MDN: Reflect.get** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect/get>
+- **MDN: Function.prototype.bind** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/bind>
+- **MDN: class** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes>
+
+---
+
+---
+
+## 深化补充三：this 绑定边界场景
+
+### 标记模板字符串中的 this
+
+```javascript
+function tagged(strings, ...values) {
+  // 标记函数中的 this 由调用方式决定
+  console.log(this);
+  return strings.reduce((acc, str, i) => acc + str + (values[i] || ''), '');
+}
+
+const obj = { method: tagged };
+obj.method`hello ${'world'}`; // this === obj
+
+const detached = tagged;
+detached`hello`; // 默认绑定：globalThis 或 undefined（严格模式）
+```
+
+### Generator 函数中的 this 绑定
+
+```javascript
+function* gen() {
+  // 生成器函数中的 this 遵循普通函数的绑定规则
+  console.log('generator this:', this);
+  yield 1;
+  yield 2;
+}
+
+const obj = { method: gen };
+const iterator = obj.method(); // this === obj
+iterator.next();
+
+// 使用 GeneratorFunction 构造器（全局环境编译）
+const dynamicGen = new GeneratorFunction('yield 1;');
+// dynamicGen 的 this 始终为默认绑定
+```
+
+### with 语句中的 this 绑定（遗留模式）
+
+```javascript
+const context = { name: 'context' };
+
+function showThis() {
+  console.log(this.name);
+}
+
+with (context) {
+  // with 语句不会改变函数调用的 this 绑定
+  showThis(); // undefined（默认绑定）或 globalThis.name
+
+  // 但可以通过对象方法调用改变
+  context.show = showThis;
+  context.show(); // "context"
+}
+```
+
+---
+
+## 更多权威外部链接
+
+- **MDN: Tagged Templates** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#tagged_templates>
+- **MDN: GeneratorFunction** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/GeneratorFunction>
+- **MDN: Generators** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator>
+- **MDN: with** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/with>
+- **ECMA-262 §10.2.1** — [[Call]]: <https://tc39.es/ecma262/#sec-ecmascript-function-objects-call-thisargument-argumentslist>
+- **ECMA-262 §27.3** — Generator Objects: <https://tc39.es/ecma262/#sec-generator-objects>
+- **2ality: this in JavaScript** — <https://2ality.com/2014/05/this.html>
+
+**参考规范**：ECMA-262 §10.2 | MDN | 2ality | Tagged Templates | Generators

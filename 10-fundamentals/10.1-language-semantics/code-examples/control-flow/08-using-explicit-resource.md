@@ -346,17 +346,17 @@ using group = stack;
 // ReadableStream 的 reader 实现 Symbol.asyncDispose（实验性）
 async function readAllChunks(url: string) {
   await using response = await fetch(url);
-  
+
   // response.body 是 ReadableStream
   const reader = response.body!.getReader();
   const chunks: Uint8Array[] = [];
-  
+
   while (true) {
     const { done, value } = await reader.read();
     if (done) break;
     chunks.push(value);
   }
-  
+
   return Buffer.concat(chunks);
 }
 ```
@@ -367,16 +367,16 @@ async function readAllChunks(url: string) {
 class DisposableAbortController implements Disposable {
   readonly signal: AbortSignal;
   #controller: AbortController;
-  
+
   constructor() {
     this.#controller = new AbortController();
     this.signal = this.#controller.signal;
   }
-  
+
   abort(reason?: unknown) {
     this.#controller.abort(reason);
   }
-  
+
   [Symbol.dispose]() {
     this.abort('disposed');
     console.log('AbortController disposed');
@@ -396,14 +396,14 @@ class DisposableAbortController implements Disposable {
 class DatabaseTransaction implements AsyncDisposable {
   #stack = new AsyncDisposableStack();
   #committed = false;
-  
+
   async begin() {
     const conn = await pool.connect();
     this.#stack.use(conn);
     await conn.query('BEGIN');
     return this;
   }
-  
+
   async commit() {
     await this.#stack.adopt(
       await pool.connect(),
@@ -411,7 +411,7 @@ class DatabaseTransaction implements AsyncDisposable {
     );
     this.#committed = true;
   }
-  
+
   async [Symbol.asyncDispose]() {
     if (!this.#committed) {
       await this.#stack.adopt(
@@ -472,3 +472,79 @@ try {
 - **MDN: AbortController** — <https://developer.mozilla.org/en-US/docs/Web/API/AbortController>
 - **C# using statement** — <https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/using>
 - **Python with statement** — <https://docs.python.org/3/reference/compound_stmts.html#the-with-statement>
+
+---
+
+## 深化补充三：Web API 与显式资源管理
+
+### fetch Response 与 using
+
+```typescript
+async function fetchWithAutoCleanup(url: string) {
+  // 当 Response 实现 Disposable 后，using 可自动释放底层连接
+  await using response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  return await response.json();
+  // response.body 和底层 TCP 连接自动释放
+}
+```
+
+### File System Access API 与 Disposable
+
+```typescript
+// Web File System Access API 的句柄可封装为 Disposable
+class DisposableFileHandle implements Disposable {
+  constructor(private handle: FileSystemFileHandle) {}
+
+  async write(data: string) {
+    const writable = await this.handle.createWritable();
+    await writable.write(data);
+    await writable.close();
+  }
+
+  [Symbol.dispose]() {
+    // 清理相关资源
+    console.log('File handle released');
+  }
+}
+
+// 使用
+// using file = new DisposableFileHandle(await showSaveFilePicker());
+// await file.write('Hello World');
+```
+
+### Web Locks API 与显式锁管理
+
+```typescript
+// Web Locks API 天然适合 using 模式
+async function withLock<T>(name: string, fn: () => Promise<T>): Promise<T> {
+  const lock = await navigator.locks.request(name, { mode: 'exclusive' }, async (lock) => {
+    return { lock, [Symbol.dispose]: () => {} } as Disposable & { lock: Lock };
+  });
+
+  using _guard = lock;
+  return await fn();
+}
+
+// 使用
+// await withLock('resource-a', async () => {
+//   await updateDatabase();
+// });
+```
+
+---
+
+## 更多权威外部链接
+
+- **MDN: Fetch API** — <https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API>
+- **MDN: File System Access API** — <https://developer.mozilla.org/en-US/docs/Web/API/File_System_API>
+- **MDN: Web Locks API** — <https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API>
+- **WHATWG: Fetch Standard** — <https://fetch.spec.whatwg.org/>
+- **WICG: File System Access** — <https://github.com/WICG/file-system-access>
+- **ECMA-262 §14.3** — Using Declarations: <https://tc39.es/ecma262/#sec-using-statement>
+- **Node.js: fs.open** — <https://nodejs.org/api/fs.html#fsopenpath-flags-mode-callback>
+- **TypeScript 5.2 Release Notes** — <https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/#using>

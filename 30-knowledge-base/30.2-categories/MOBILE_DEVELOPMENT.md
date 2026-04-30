@@ -96,6 +96,64 @@ const styles = StyleSheet.create({
 })
 ```
 
+### React Native — Context API 全局状态管理
+
+```tsx
+// contexts/AuthContext.tsx
+import { createContext, useContext, useState, useCallback } from 'react';
+
+interface User {
+  id: string;
+  email: string;
+  token: string;
+}
+
+interface AuthContextValue {
+  user: User | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  isLoading: boolean;
+}
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const login = useCallback(async (email: string, password: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      setUser(data.user);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const logout = useCallback(() => {
+    setUser(null);
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
+}
+```
+
 ### Capacitor — 调用原生 API
 
 ```typescript
@@ -126,6 +184,34 @@ import { SplashScreen } from '@capacitor/splash-screen'
 useEffect(() => {
   SplashScreen.hide({ fadeOutDuration: 500 })
 }, [])
+```
+
+### Capacitor — 推送通知集成
+
+```typescript
+// utils/notifications.ts
+import { PushNotifications } from '@capacitor/push-notifications';
+import { Capacitor } from '@capacitor/core';
+
+export async function initPushNotifications(
+  onToken: (token: string) => void,
+  onNotification: (data: unknown) => void
+) {
+  if (!Capacitor.isNativePlatform()) return;
+
+  const permStatus = await PushNotifications.requestPermissions();
+  if (permStatus.receive !== 'granted') return;
+
+  await PushNotifications.register();
+
+  PushNotifications.addListener('registration', (token) => {
+    onToken(token.value);
+  });
+
+  PushNotifications.addListener('pushNotificationReceived', (notification) => {
+    onNotification(notification.data);
+  });
+}
 ```
 
 ### Capacitor 配置
@@ -208,6 +294,38 @@ if ('serviceWorker' in navigator) {
 }
 ```
 
+### PWA — 后台同步与离线表单
+
+```typescript
+// utils/sync.ts
+export async function queueSync(tag: string, payload: object) {
+  const registration = await navigator.serviceWorker.ready;
+  if ('sync' in registration) {
+    await (registration as any).sync.register(tag);
+    // 存入 IndexedDB 等待同步触发
+    await idbKeyval.set(tag, payload);
+  } else {
+    // 不支持后台同步，立即执行
+    await submitForm(payload);
+  }
+}
+
+// sw.ts — 监听 sync 事件
+self.addEventListener('sync', (event: SyncEvent) => {
+  if (event.tag === 'submit-form') {
+    event.waitUntil(
+      idbKeyval.get('submit-form').then((payload) =>
+        fetch('/api/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      )
+    );
+  }
+});
+```
+
 ### React Native — Hermes 引擎配置
 
 ```json
@@ -259,17 +377,20 @@ console.log('Hermes enabled:', isHermes())
 3. **手势处理**：React Native 使用 `react-native-gesture-handler`，Capacitor 使用 Hammer.js
 4. **安全通信**：Capacitor 与原生桥接时使用 `CapacitorHttp` 替代 `fetch`（绕过 CORS）
 5. **构建优化**：React Native 使用 Hermes 引擎减小包体积并提升启动速度
+6. **类型安全**：为 React Native 组件编写严格的 TypeScript 接口，避免 `any` 泛滥
+7. **可访问性**：使用 React Native 的 `AccessibilityInfo` 和 PWA 的 ARIA 属性确保无障碍支持
 
 ---
 
 ## 参考资源
 
 - [React Native Documentation](https://reactnative.dev/)
+- [React Native New Architecture](https://reactnative.dev/docs/the-new-architecture/landing-page) — React Native 新架构官方指南
 - [Capacitor Documentation](https://capacitorjs.com/)
+- [Capacitor Plugins](https://capacitorjs.com/docs/apis) — 官方插件 API 列表
 - [PWA Documentation](https://web.dev/progressive-web-apps/)
 - [NativeScript Documentation](https://nativescript.org/)
 - [Workbox Documentation](https://developer.chrome.com/docs/workbox/)
-- [React Native New Architecture](https://reactnative.dev/docs/the-new-architecture/landing-page) — React Native 新架构官方指南
 - [Ionic — Capacitor Live Updates](https://ionic.io/docs/live-updates) — 热更新官方方案
 - [Google — Progressive Web App Checklist](https://web.dev/pwa-checklist/) — PWA 质量检查清单
 - [Apple — Safari Web Push Notifications](https://developer.apple.com/documentation/usernotifications/sending-web-push-notifications-in-web-apps-and-browsers) — iOS Web Push 官方文档
@@ -277,6 +398,10 @@ console.log('Hermes enabled:', isHermes())
 - [Hermes Documentation](https://hermesengine.dev/) — Meta 官方 JS 引擎文档
 - [W3C — Web App Manifest](https://www.w3.org/TR/appmanifest/) — PWA Manifest 规范
 - [Web.dev — Service Workers](https://web.dev/learn/pwa/service-workers/) — Service Worker 权威教程
+- [MDN — Push API](https://developer.mozilla.org/en-US/docs/Web/API/Push_API) — Web Push 标准文档
+- [MDN — Background Sync](https://developer.mozilla.org/en-US/docs/Web/API/Background_Synchronization_API) — 后台同步 API
+- [Google Play — Publish PWA](https://developers.google.com/codelabs/pwa-in-play) — 将 PWA 发布到 Google Play
+- [Apple App Store Review Guidelines](https://developer.apple.com/app-store/review/guidelines/) — App Store 审核指南
 
 ---
 

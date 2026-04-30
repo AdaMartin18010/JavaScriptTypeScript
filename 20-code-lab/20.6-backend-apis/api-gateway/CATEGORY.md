@@ -16,6 +16,7 @@ created: 2026-04-28
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 README.md
@@ -258,6 +259,132 @@ export class CircuitBreaker {
 }
 ```
 
+### 负载均衡策略实现
+
+```typescript
+// load-balancer.ts — 轮询与加权轮询负载均衡
+interface Backend {
+  id: string;
+  url: string;
+  weight?: number;
+  healthy: boolean;
+}
+
+export class LoadBalancer {
+  private backends: Backend[] = [];
+  private currentIndex = 0;
+
+  addBackend(backend: Backend) {
+    this.backends.push(backend);
+  }
+
+  /** 简单轮询 */
+  nextRoundRobin(): Backend | undefined {
+    const healthy = this.backends.filter(b => b.healthy);
+    if (healthy.length === 0) return undefined;
+    const backend = healthy[this.currentIndex % healthy.length];
+    this.currentIndex++;
+    return backend;
+  }
+
+  /** 加权轮询 */
+  nextWeighted(): Backend | undefined {
+    const healthy = this.backends.filter(b => b.healthy);
+    if (healthy.length === 0) return undefined;
+
+    const totalWeight = healthy.reduce((sum, b) => sum + (b.weight ?? 1), 0);
+    let random = Math.random() * totalWeight;
+
+    for (const backend of healthy) {
+      random -= (backend.weight ?? 1);
+      if (random <= 0) return backend;
+    }
+    return healthy[healthy.length - 1];
+  }
+
+  markUnhealthy(id: string) {
+    const b = this.backends.find(b => b.id === id);
+    if (b) b.healthy = false;
+  }
+}
+```
+
+### 请求聚合器（Request Aggregation）
+
+```typescript
+// request-aggregator.ts — 网关层将多个下游请求合并为单个响应
+interface AggregatedRequest {
+  endpoint: string;
+  method: string;
+}
+
+export async function aggregateRequests(
+  baseUrl: string,
+  requests: AggregatedRequest[]
+): Promise<Record<string, unknown>> {
+  const results = await Promise.allSettled(
+    requests.map(req =>
+      fetch(`${baseUrl}${req.endpoint}`, { method: req.method }).then(r => r.json())
+    )
+  );
+
+  const response: Record<string, unknown> = {};
+  requests.forEach((req, i) => {
+    const result = results[i];
+    response[req.endpoint] = result.status === 'fulfilled'
+      ? { data: result.value }
+      : { error: result.reason?.message || 'Unknown error' };
+  });
+
+  return response;
+}
+
+// 使用：/api/dashboard 聚合用户、订单、通知三个接口
+// const dashboard = await aggregateRequests('http://api-gateway', [
+//   { endpoint: '/users/me', method: 'GET' },
+//   { endpoint: '/orders/recent', method: 'GET' },
+//   { endpoint: '/notifications', method: 'GET' },
+// ]);
+```
+
+### 分布式 Redis 限流中间件
+
+```typescript
+// redis-rate-limiter.ts — 基于 Redis 的分布式令牌桶
+import { createClient } from 'redis';
+
+export class DistributedRateLimiter {
+  private redis = createClient({ url: process.env.REDIS_URL });
+
+  constructor(
+    private keyPrefix = 'ratelimit',
+    private capacity = 100,
+    private windowSeconds = 60
+  ) {}
+
+  async isAllowed(identifier: string): Promise<{ allowed: boolean; remaining: number }> {
+    const key = `${this.keyPrefix}:${identifier}`;
+    const pipeline = this.redis.multi();
+    pipeline.get(key);
+    pipeline.ttl(key);
+    const [current, ttl] = await pipeline.exec() as [string | null, number];
+
+    let count = parseInt(current ?? '0', 10);
+    if (count >= this.capacity) {
+      return { allowed: false, remaining: 0 };
+    }
+
+    const multi = this.redis.multi();
+    multi.incr(key);
+    if (ttl === -1 || ttl === -2) {
+      multi.expire(key, this.windowSeconds);
+    }
+    await multi.exec();
+    return { allowed: true, remaining: this.capacity - count - 1 };
+  }
+}
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -275,6 +402,21 @@ export class CircuitBreaker {
 | Martin Fowler — Circuit Breaker | 模式说明 | [martinfowler.com/bliki/CircuitBreaker.html](https://martinfowler.com/bliki/CircuitBreaker.html) |
 | JWT.io — JSON Web Tokens | 介绍 | [jwt.io/introduction](https://jwt.io/introduction) |
 | OAuth 2.0 RFC 6749 | 标准 | [datatracker.ietf.org/doc/html/rfc6749](https://datatracker.ietf.org/doc/html/rfc6749) |
+| IETF — HTTP/2 RFC 7540 | 协议标准 | [datatracker.ietf.org/doc/html/rfc7540](https://datatracker.ietf.org/doc/html/rfc7540) |
+| IETF — HTTP/3 RFC 9114 | 协议标准 | [datatracker.ietf.org/doc/html/rfc9114](https://datatracker.ietf.org/doc/html/rfc9114) |
+| Google SRE Book — Load Balancing | 系统架构 | [sre.google/sre-book/load-balancing-frontend](https://sre.google/sre-book/load-balancing-frontend/) |
+| CNCF — API Gateway Landscape | 云原生生态 | [landscape.cncf.io/guide#provisioning--api-gateway](https://landscape.cncf.io/guide#provisioning--api-gateway) |
+| Apache APISIX Documentation | 开源高性能网关 | [apisix.apache.org/docs](https://apisix.apache.org/docs/) |
+| Traefik Docs — Routing & Middlewares | 云原生边缘路由器 | [doc.traefik.io/traefik/routing/overview](https://doc.traefik.io/traefik/routing/overview/) |
+| RFC 9113 — HTTP/2 | HTTP/2 协议标准 | [datatracker.ietf.org/doc/html/rfc9113](https://datatracker.ietf.org/doc/html/rfc9113) |
+| IETF — QUIC RFC 9000 | QUIC 传输协议标准 | [datatracker.ietf.org/doc/html/rfc9000](https://datatracker.ietf.org/doc/html/rfc9000) |
+| Envoy — HTTP Connection Manager | Envoy HTTP 连接管理 | [www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/) |
+| AWS — API Gateway Throttling | API 网关节流官方文档 | [docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html) |
+| Azure — API Management Policies | API 管理策略参考 | [learn.microsoft.com/azure/api-management/api-management-policies](https://learn.microsoft.com/en-us/azure/api-management/api-management-policies) |
+| Kong — Plugin Development | Kong 插件开发指南 | [docs.konghq.com/gateway/latest/plugin-development](https://docs.konghq.com/gateway/latest/plugin-development/) |
+| NGINX — Reverse Proxy & Load Balancing | NGINX 反向代理与负载均衡 | [docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/) |
+| IETF — JWT RFC 7519 | JSON Web Token 标准 | [datatracker.ietf.org/doc/html/rfc7519](https://datatracker.ietf.org/doc/html/rfc7519) |
+| OWASP — API Security Top 10 2023 | API 安全威胁清单 | [owasp.org/www-project-api-security](https://owasp.org/www-project-api-security/) |
 
 ---
 

@@ -258,9 +258,279 @@ export const Route = createFileRoute('/api/trending')({
 });
 ```
 
+### 3.7 R2 对象存储集成
+
+```typescript
+// app/utils/r2-storage.ts — Cloudflare R2 文件上传与下载
+
+import { getBindings } from './env';
+
+interface UploadResult {
+  key: string;
+  etag: string;
+  size: number;
+}
+
+export async function uploadFile(
+  file: File,
+  folder = 'uploads'
+): Promise<UploadResult> {
+  const { R2 } = getBindings();
+  const key = `${folder}/${crypto.randomUUID()}-${file.name}`;
+
+  await R2.put(key, await file.arrayBuffer(), {
+    httpMetadata: { contentType: file.type },
+    customMetadata: { originalName: file.name },
+  });
+
+  const obj = await R2.head(key);
+  if (!obj) throw new Error('Upload verification failed');
+
+  return { key, etag: obj.httpEtag, size: obj.size };
+}
+
+export async function getSignedDownloadUrl(
+  key: string,
+  expiresInSeconds = 3600
+): Promise<string> {
+  const { R2 } = getBindings();
+  // R2 兼容 S3 API，可使用 presigned URL
+  const obj = await R2.get(key);
+  if (!obj) throw new Error('File not found');
+  // 实际生产中使用 aws4fetch 生成 presigned URL
+  return `/api/files/download?key=${encodeURIComponent(key)}`;
+}
+
+// 服务端下载端点
+export const downloadFile = createServerFn({ method: 'GET' })
+  .handler(async (ctx) => {
+    const url = new URL((ctx as any).request.url);
+    const key = url.searchParams.get('key');
+    if (!key) throw new Response('Missing key', { status: 400 });
+
+    const { R2 } = getBindings();
+    const obj = await R2.get(key);
+    if (!obj) throw new Response('Not found', { status: 404 });
+
+    return new Response(obj.body, {
+      headers: {
+        'Content-Type': obj.httpMetadata?.contentType ?? 'application/octet-stream',
+        'Content-Length': obj.size.toString(),
+        'Content-Disposition': `attachment; filename="${obj.customMetadata?.originalName ?? key}"`,
+      },
+    });
+  });
+```
+
+### 3.8 Cloudflare AI 绑定使用
+
+```typescript
+// app/utils/ai-binding.ts — Workers AI 文本生成与嵌入
+
+import { getBindings } from './env';
+
+export async function generateText(prompt: string): Promise<string> {
+  const { AI } = getBindings();
+  const response = await AI.run('@cf/meta/llama-3.1-8b-instruct', {
+    messages: [
+      { role: 'system', content: 'You are a helpful assistant.' },
+      { role: 'user', content: prompt },
+    ],
+  });
+  return (response as any).response ?? '';
+}
+
+export async function generateEmbedding(text: string): Promise<number[]> {
+  const { AI } = getBindings();
+  const response = await AI.run('@cf/baai/bge-base-en-v1.5', { text });
+  return (response as any).data[0] ?? [];
+}
+
+// 向量搜索服务端函数
+export const vectorSearch = createServerFn({ method: 'POST' })
+  .handler(async (ctx) => {
+    const { query } = await (ctx as any).request.json();
+    const embedding = await generateEmbedding(query);
+
+    const { DB } = getBindings();
+    // 假设 posts 表有 embedding 列存储向量
+    const { results } = await DB.prepare(`
+      SELECT id, title, content,
+             vector_distance(embedding, vector32(?)) as distance
+      FROM posts
+      ORDER BY distance ASC
+      LIMIT 5
+    `).bind(JSON.stringify(embedding)).all();
+
+    return results;
+  });
+```
+
+### 3.9 流式响应与 Suspense
+
+```typescript
+// app/routes/streaming.tsx — 流式 SSR 与 Suspense 边界
+import { Suspense } from 'react';
+import { createFileRoute, Await } from '@tanstack/react-router';
+
+export const Route = createFileRoute('/streaming')({
+  component: StreamingPage,
+  loader: async () => {
+    // 立即返回，数据在流中填充
+    return {
+      slowData: new Promise<string>((resolve) => {
+        setTimeout(() => resolve('Heavy data loaded!'), 2000);
+      }),
+      fastData: 'Instant data',
+    };
+  },
+});
+
+function StreamingPage() {
+  const { slowData, fastData } = Route.useLoaderData();
+
+  return (
+    <div>
+      <h1>{fastData}</h1>
+      <Suspense fallback={<div>Loading heavy content...</div>}>
+        <Await promise={slowData}>
+          {(data) => <div>{data}</div>}
+        </Await>
+      </Suspense>
+    </div>
+  );
+}
+```
+
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 基础设置 核心机制的理解，并观察不同实现选择带来的行为差异。
 
-### 3.7 常见误区
+### 3.10 边缘 ISR 与缓存再验证
+
+```typescript
+// app/utils/edge-isr.ts — 基于 KV 的边缘 ISR 模拟
+import { getBindings } from './env';
+
+interface ISRConfig {
+  key: string;
+  revalidateSeconds: number;
+  tag?: string; // 用于按需再验证
+}
+
+export async function edgeISR<T>(
+  config: ISRConfig,
+  renderFn: () => Promise<T>
+): Promise<T> {
+  const { KV } = getBindings();
+  const cacheKey = `isr:${config.key}`;
+  const metaKey = `isr-meta:${config.key}`;
+
+  // 读取元数据
+  const meta = await KV.get<{ generatedAt: number; tag?: string }>(metaKey, 'json');
+  const now = Date.now();
+
+  // 缓存未过期直接返回
+  if (meta && now - meta.generatedAt < config.revalidateSeconds * 1000) {
+    const cached = await KV.get(cacheKey, 'json');
+    if (cached) return cached as T;
+  }
+
+  // 重新渲染
+  const result = await renderFn();
+
+  // 异步写入缓存（不阻塞响应）
+  ctx.waitUntil?.(
+    Promise.all([
+      KV.put(cacheKey, JSON.stringify(result), { expirationTtl: config.revalidateSeconds * 2 }),
+      KV.put(metaKey, JSON.stringify({ generatedAt: now, tag: config.tag }), {
+        expirationTtl: config.revalidateSeconds * 2,
+      }),
+    ])
+  );
+
+  return result;
+}
+
+// 按需再验证 API（通过 tag 清除缓存）
+export const revalidateTag = createServerFn({ method: 'POST' })
+  .handler(async (ctx) => {
+    const { tag } = await (ctx as any).request.json();
+    const { KV } = getBindings();
+
+    // 列出所有 ISR 元数据键并匹配 tag
+    const list = await KV.list({ prefix: 'isr-meta:' });
+    const keysToDelete: string[] = [];
+
+    for (const key of list.keys) {
+      const meta = await KV.get<{ tag?: string }>(key.name, 'json');
+      if (meta?.tag === tag) {
+        keysToDelete.push(key.name);
+        keysToDelete.push(key.name.replace('isr-meta:', 'isr:'));
+      }
+    }
+
+    await Promise.all(keysToDelete.map((k) => KV.delete(k)));
+    return { revalidated: keysToDelete.length };
+  });
+```
+
+### 3.11 D1 数据库迁移与种子
+
+```typescript
+// app/utils/d1-migrate.ts — 边缘 D1 的 Schema 迁移
+import { getBindings } from './env';
+
+const MIGRATIONS = [
+  {
+    id: 1,
+    name: 'create_posts',
+    sql: `
+      CREATE TABLE IF NOT EXISTS posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        content TEXT,
+        published INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+    `,
+  },
+  {
+    id: 2,
+    name: 'add_slug',
+    sql: `ALTER TABLE posts ADD COLUMN slug TEXT UNIQUE;`,
+  },
+];
+
+export async function runMigrations(): Promise<string[]> {
+  const { DB } = getBindings();
+
+  // 创建迁移记录表
+  await DB.exec(`
+    CREATE TABLE IF NOT EXISTS __migrations (
+      id INTEGER PRIMARY KEY,
+      name TEXT NOT NULL,
+      applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  const applied = await DB.prepare('SELECT id FROM __migrations').all<{ id: number }>();
+  const appliedIds = new Set(applied.results?.map((r) => r.id) ?? []);
+
+  const executed: string[] = [];
+  for (const migration of MIGRATIONS) {
+    if (appliedIds.has(migration.id)) continue;
+
+    await DB.exec(migration.sql);
+    await DB.prepare('INSERT INTO __migrations (id, name) VALUES (?, ?)')
+      .bind(migration.id, migration.name)
+      .run();
+    executed.push(migration.name);
+  }
+
+  return executed;
+}
+```
+
+### 3.12 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -269,7 +539,7 @@ export const Route = createFileRoute('/api/trending')({
 | Cloudflare Workers 支持所有 Node API | Workers 使用 Web Standard API，需 polyfill 或适配 |
 | D1 适合高并发写入 | D1 基于 SQLite，写入有单区域限制，读可全球缓存 |
 
-### 3.8 扩展阅读
+### 3.13 扩展阅读
 
 - [TanStack Start](https://tanstack.com/start/latest)
 - `20.8-edge-serverless/`
@@ -293,6 +563,17 @@ export const Route = createFileRoute('/api/trending')({
 | Cloudflare KV — REST API | 官方文档 | [developers.cloudflare.com/kv/api](https://developers.cloudflare.com/kv/api/) |
 | Cloudflare D1 — Limits & Pricing | 官方文档 | [developers.cloudflare.com/d1/platform/limits](https://developers.cloudflare.com/d1/platform/limits/) |
 | H3 — HTTP Framework for JavaScript | 官方文档 | [h3.unjs.io](https://h3.unjs.io/) |
+| Cloudflare R2 Documentation | 官方文档 | [developers.cloudflare.com/r2/](https://developers.cloudflare.com/r2/) |
+| Cloudflare AI Workers | 官方文档 | [developers.cloudflare.com/workers-ai/](https://developers.cloudflare.com/workers-ai/) |
+| Cloudflare Vectorize | 官方文档 | [developers.cloudflare.com/vectorize/](https://developers.cloudflare.com/vectorize/) |
+| React Streaming SSR | 官方文档 | [react.dev/reference/react-dom/server/renderToPipeableStream](https://react.dev/reference/react-dom/server/renderToPipeableStream) |
+| Web Streams API | MDN | [developer.mozilla.org/en-US/docs/Web/API/Streams_API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API) |
+| UnJS — Nuxt Ecosystem | 官方文档 | [unjs.io](https://unjs.io/) |
+| Cloudflare Workers Node.js Compatibility | 官方文档 | [developers.cloudflare.com/workers/runtime-apis/nodejs/](https://developers.cloudflare.com/workers/runtime-apis/nodejs/) |
+| Cloudflare D1 Migrations Guide | 官方文档 | [developers.cloudflare.com/d1/reference/migrations/](https://developers.cloudflare.com/d1/reference/migrations/) |
+| TanStack Query Documentation | 官方文档 | [tanstack.com/query/latest](https://tanstack.com/query/latest) |
+| Vite Plugin SSR | 官方文档 | [vite-plugin-ssr.com](https://vite-plugin-ssr.com/) |
+| MDN — Fetch API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Fetch_API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) |
 
 ---
 

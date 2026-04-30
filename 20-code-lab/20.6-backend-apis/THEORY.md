@@ -451,9 +451,65 @@ function rateLimit(options: { windowMs: number; max: number; keyGenerator?: (c: 
 app.use('/api/*', rateLimit({ windowMs: 60000, max: 100 }));
 ```
 
+## 十二、代码示例：Webhook 处理与 HMAC 签名验证
+
+```typescript
+// webhook-handler.ts — 安全接收第三方 Webhook
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { Hono } from 'hono';
+
+const app = new Hono();
+
+function verifyWebhookSignature(
+  payload: string,
+  signature: string,
+  secret: string,
+  algorithm = 'sha256'
+): boolean {
+  const expected = createHmac(algorithm, secret).update(payload).digest('hex');
+  const expectedBuf = Buffer.from(`${algorithm}=${expected}`, 'utf-8');
+  const actualBuf = Buffer.from(signature, 'utf-8');
+
+  if (expectedBuf.length !== actualBuf.length) return false;
+  return timingSafeEqual(expectedBuf, actualBuf);
+}
+
+app.post('/webhooks/stripe', async (c) => {
+  const payload = await c.req.text();
+  const signature = c.req.header('stripe-signature') ?? '';
+
+  if (!verifyWebhookSignature(payload, signature, process.env.STRIPE_WEBHOOK_SECRET!)) {
+    return c.json({ error: 'Invalid signature' }, 401);
+  }
+
+  const event = JSON.parse(payload);
+
+  switch (event.type) {
+    case 'invoice.payment_succeeded':
+      await handlePaymentSuccess(event.data.object);
+      break;
+    case 'customer.subscription.deleted':
+      await handleSubscriptionCancelled(event.data.object);
+      break;
+    default:
+      console.log(`Unhandled event type: ${event.type}`);
+  }
+
+  return c.json({ received: true });
+});
+
+async function handlePaymentSuccess(invoice: unknown): Promise<void> {
+  console.log('Payment succeeded:', invoice);
+}
+
+async function handleSubscriptionCancelled(subscription: unknown): Promise<void> {
+  console.log('Subscription cancelled:', subscription);
+}
+```
+
 ---
 
-## 十二、扩展阅读
+## 十三、扩展阅读
 
 - `30-knowledge-base/30.4-decision-trees/runtime-selection.md` — 运行时选型决策树
 - `40-ecosystem/40.3-trends/ECOSYSTEM_TRENDS_2026.md` — 后端生态趋势
@@ -475,6 +531,11 @@ app.use('/api/*', rateLimit({ windowMs: 60000, max: 100 }));
 - [Express.js 5 Migration](https://expressjs.com/en/guide/migrating-5.html) — Express 迁移指南
 - [Fastify Documentation](https://fastify.dev/docs/latest/) — 高性能 Node.js 框架
 - [OWASP API Security Top 10](https://owasp.org/www-project-api-security/) — API 安全最佳实践
+- [Stripe Webhook Best Practices](https://docs.stripe.com/webhooks/quickstart) — Webhook 集成官方指南
+- [Hono Zod Validator](https://github.com/honojs/middleware/tree/main/packages/zod-validator) — Hono Zod 中间件
+- [oRPC OpenAPI Generation](https://orpc.unnoq.com/docs/openapi) — oRPC OpenAPI 生成文档
+- [RFC 7234 — HTTP Caching](https://datatracker.ietf.org/doc/html/rfc7234) — HTTP 缓存标准
+- [MDN — HTTP Range Requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests) — 范围请求规范
 
 ---
 

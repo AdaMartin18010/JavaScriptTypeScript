@@ -377,4 +377,78 @@ console.log(frozen.nested.value); // 2（深层未冻结）
 
 ---
 
-**参考规范**：ECMA-262 §8.1 | MDN | 2ality | V8 Blog
+---
+
+## 15. 深化补充三：词法环境边界与声明语义
+
+### 15.1 正例：for-in / for-of 循环中的 let 绑定
+
+```javascript
+const obj = { a: 1, b: 2, c: 3 };
+const fns = [];
+
+// for-in 中 let 每次迭代创建新词法环境
+for (const key in obj) {
+  fns.push(() => key);
+}
+console.log(fns.map(fn => fn())); // ['a', 'b', 'c']
+
+// for-of 同理
+const arr = [10, 20, 30];
+const fns2 = [];
+for (const value of arr) {
+  fns2.push(() => value);
+}
+console.log(fns2.map(fn => fn())); // [10, 20, 30]
+```
+
+### 15.2 正例：delete 操作符与词法环境绑定
+
+```javascript
+// var 声明的属性可 delete（非严格模式）
+function sloppyDelete() {
+  var x = 1;
+  console.log(delete x); // false（configurable 为 false）
+  // 注意：严格模式下 delete 变量绑定会抛出 SyntaxError
+}
+
+// global var 成为全局对象属性，可 delete（非严格模式）
+var globalVar = 1;
+console.log(delete globalVar); // true（在浏览器全局作用域）
+
+// let/const 始终不可 delete
+let localLet = 1;
+console.log(delete localLet); // false（严格模式会报错）
+```
+
+### 15.3 正例：Web Worker 的全局词法环境隔离
+
+```javascript
+// main.js
+const worker = new Worker('./worker.js');
+worker.postMessage('hello');
+
+// worker.js
+// Worker 拥有独立的 globalThis 和词法环境
+console.log(self === globalThis); // true
+let workerOnly = 42; // 不会污染主线程全局环境
+
+self.onmessage = (e) => {
+  console.log(e.data); // 'hello'
+  // workerOnly 在此词法环境中可访问
+};
+```
+
+---
+
+## 16. 更多权威外部链接
+
+- **ECMA-262 §13.7** — Iteration Statements: <https://tc39.es/ecma262/#sec-iteration-statements>
+- **MDN: for...in** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...in>
+- **MDN: for...of** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of>
+- **MDN: delete** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/delete>
+- **MDN: Web Workers** — <https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API>
+- **MDN: Worker** — <https://developer.mozilla.org/en-US/docs/Web/API/Worker>
+- **2ality: ES6 Variables** — <https://2ality.com/2015/02/es6-scoping.html>
+
+**参考规范**：ECMA-262 §8.1 | MDN | 2ality | V8 Blog | Web Workers

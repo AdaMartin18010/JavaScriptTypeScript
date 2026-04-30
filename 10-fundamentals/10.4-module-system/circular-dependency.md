@@ -253,17 +253,123 @@ Monorepo 中循环依赖的破坏性更大：
 
 ---
 
+## 六、进阶：真实场景中的循环依赖案例
+
+### 6.1 Express 路由文件循环
+
+```javascript
+// routes/users.js
+const express = require('express');
+const router = express.Router();
+const orderRoutes = require('./orders'); // 循环风险点
+
+router.get('/:id/orders', (req, res) => {
+  // 使用 orderRoutes 中的逻辑
+});
+
+module.exports = router;
+
+// routes/orders.js
+const express = require('express');
+const router = express.Router();
+const userRoutes = require('./users'); // ← 循环依赖！
+
+router.get('/:id/user', (req, res) => {
+  // 使用 userRoutes 中的逻辑
+});
+
+module.exports = router;
+```
+
+**修复**：提取共享服务层，路由仅依赖服务，不互相依赖。
+
+```javascript
+// services/userService.js
+exports.getUserById = async (id) => { /* ... */ };
+
+// services/orderService.js
+exports.getOrderById = async (id) => { /* ... */ };
+
+// routes/users.js —— 仅依赖 service，不依赖其他 route
+const { getOrderById } = require('../services/orderService');
+```
+
+### 6.2 前端 Store/Model 循环（Redux Ducks 模式）
+
+```javascript
+// store/usersSlice.js
+import { createSlice } from '@reduxjs/toolkit';
+import { fetchOrders } from './ordersSlice'; // ← 循环
+
+const usersSlice = createSlice({ /* ... */ });
+export const { actions } = usersSlice;
+
+// store/ordersSlice.js
+import { setCurrentUser } from './usersSlice'; // ← 循环
+
+const ordersSlice = createSlice({ /* ... */ });
+```
+
+**修复**：引入事件总线或中介层（middleware/thunk）。
+
+```javascript
+// store/middlewares/crossSliceMiddleware.js
+export const crossSliceMiddleware = (store) => (next) => (action) => {
+  if (action.type === 'users/setCurrentUser') {
+    store.dispatch({ type: 'orders/invalidateCache' });
+  }
+  return next(action);
+};
+```
+
+---
+
+## 七、Webpack / Rollup 构建时循环检测
+
+```javascript
+// webpack.config.js
+const CircularDependencyPlugin = require('circular-dependency-plugin');
+
+module.exports = {
+  plugins: [
+    new CircularDependencyPlugin({
+      exclude: /node_modules/,
+      include: /src/,
+      failOnError: true,
+      allowAsyncCycles: false,
+      cwd: process.cwd(),
+      onDetected({ module: webpackModuleRecord, paths, compilation }) {
+        compilation.warnings.push(new Error(paths.join(' -> ')));
+      },
+    }),
+  ],
+};
+```
+
+```javascript
+// rollup.config.js —— Rollup 原生在 ESM 循环时报错
+// 若检测到循环依赖，Rollup 会输出：
+// Error: Circular dependency: src/a.js -> src/b.js -> src/a.js
+```
+
+---
+
 ## 权威参考链接
 
 | 资源 | 说明 | 链接 |
 |------|------|------|
 | **ECMA-262 §16.2.1** | ESM 模块语义规范 | [tc39.es/ecma262/#sec-modules](https://tc39.es/ecma262/#sec-modules) |
 | **Node.js Modules: CJS Cycles** | Node.js 官方循环依赖文档 | [nodejs.org/api/modules.html#modules_cycles](https://nodejs.org/api/modules.html#modules_cycles) |
+| **Node.js ESM Interop** | Node.js ESM 与 CJS 互操作详解 | [nodejs.org/api/esm.html#interoperability-with-commonjs](https://nodejs.org/api/esm.html#interoperability-with-commonjs) |
 | **madge** | 循环依赖检测 CLI | [github.com/pahen/madge](https://github.com/pahen/madge) |
 | **dependency-cruiser** | 依赖图可视化与分析 | [github.com/sverweij/dependency-cruiser](https://github.com/sverweij/dependency-cruiser) |
 | **ESLint: import/no-cycle** | 静态循环依赖检测规则 | [github.com/import-js/eslint-plugin-import/blob/main/docs/rules/no-cycle.md](https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/no-cycle.md) |
 | **Webpack: Circular Dependency Plugin** | 构建时循环检测 | [github.com/aackerman/circular-dependency-plugin](https://github.com/aackerman/circular-dependency-plugin) |
 | **JavaScript Modules: A Beginner's Guide** | MDN ESM 基础教程 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) |
+| **Rollup: Circular Dependencies** | Rollup 对循环依赖的处理 | [rollupjs.org/troubleshooting/#warning-circular-dependencies](https://rollupjs.org/troubleshooting/#warning-circular-dependencies) |
+| **TypeScript Project References** | 编译期包级循环检测 | [typescriptlang.org/docs/handbook/project-references.html](https://www.typescriptlang.org/docs/handbook/project-references.html) |
+| **Vite: Dependency Pre-Bundling** | Vite 预打包与循环依赖 | [vitejs.dev/guide/dep-pre-bundling.html](https://vitejs.dev/guide/dep-pre-bundling.html) |
+| **2ality — ESM vs CJS** | Dr. Axel Rauschmayer 深度解析 | [2ality.com/2019/04/eval-via-import.html](https://2ality.com/2019/04/eval-via-import.html) |
 
 ---
 

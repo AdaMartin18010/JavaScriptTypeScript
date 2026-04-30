@@ -338,4 +338,79 @@ console.log(layerA());
 
 ---
 
-**参考规范**：ECMA-262 §9 | MDN | TC39 Proposals | Node.js Docs
+---
+
+## 15. 深化补充三：执行上下文边界与引擎实现
+
+### 15.1 正例：Class 字段初始化器的执行上下文
+
+```javascript
+class ContextDemo {
+  // 类字段初始化器在独立的词法环境中求值
+  // this 指向正在构造的实例
+  field = this.initField();
+
+  initField() {
+    // 此方法调用的执行上下文的 [[ThisBinding]] 为实例
+    return 42;
+  }
+
+  // 箭头函数字段继承类体的 this
+  arrow = () => this.field;
+}
+
+const demo = new ContextDemo();
+const arrow = demo.arrow;
+console.log(arrow()); // 42 — 即使作为独立函数调用
+```
+
+### 15.2 正例：WeakRef FinalizationRegistry 的执行上下文隔离
+
+```javascript
+// FinalizationRegistry 的回调在独立执行上下文中运行
+// 不继承创建时的词法环境
+const registry = new FinalizationRegistry((heldValue) => {
+  // 此回调的执行上下文是全新的，无法访问外部变量
+  console.log('Cleaned up:', heldValue);
+});
+
+let target = { data: 'sensitive' };
+registry.register(target, 'resource-1');
+
+target = null; // 取消引用
+// 未来某个 GC 周期后，回调在新上下文中执行
+```
+
+### 15.3 正例：性能标记中的执行上下文切换
+
+```javascript
+// 使用 performance.mark 记录执行上下文切换
+function measureContextSwitch() {
+  performance.mark('context-start');
+
+  function inner() {
+    performance.mark('context-inner');
+    performance.measure('outer-to-inner', 'context-start', 'context-inner');
+    return performance.getEntriesByType('measure').pop();
+  }
+
+  return inner();
+}
+
+const measure = measureContextSwitch();
+console.log(`Context switch took ${measure.duration.toFixed(3)} ms`);
+```
+
+---
+
+## 16. 更多权威外部链接
+
+- **V8 Blog: Execution Context Internals** — <https://v8.dev/blog/execution-context>
+- **SpiderMonkey Docs: Execution Contexts** — <https://firefox-source-docs.mozilla.org/js/index.html>
+- **MDN: Classes** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes>
+- **MDN: WeakRef** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef>
+- **MDN: FinalizationRegistry** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry>
+- **W3C: Performance Timeline** — <https://www.w3.org/TR/performance-timeline/>
+- **ECMA-262 §9.3** — Realms: <https://tc39.es/ecma262/#sec-realms>
+
+**参考规范**：ECMA-262 §9 | MDN | TC39 Proposals | Node.js Docs | V8 Blog | SpiderMonkey Docs

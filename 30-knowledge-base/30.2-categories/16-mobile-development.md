@@ -85,6 +85,51 @@ status: archived
 
 **适用场景**: 需要原生性能、已有 React 团队、需与 Web 共享代码的项目
 
+**React Native 新架构 TurboModule 调用示例：**
+
+```typescript
+// App.tsx — 使用新架构的 TurboModules
+import { useState, useEffect } from 'react';
+import { View, Text, Button } from 'react-native';
+
+// 自动桥接的 TurboModule（C++ 层）
+import NativeCalendarModule from './NativeCalendarModule';
+
+interface CalendarEvent {
+  id: string;
+  title: string;
+  startDate: number;
+}
+
+export default function CalendarScreen() {
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+
+  useEffect(() => {
+    // 同步或异步调用原生模块
+    NativeCalendarModule.getAllEvents().then(setEvents);
+  }, []);
+
+  const createEvent = async () => {
+    const newEvent = await NativeCalendarModule.createEvent(
+      'Team Standup',
+      Date.now(),
+      Date.now() + 30 * 60 * 1000
+    );
+    setEvents(prev => [...prev, newEvent]);
+  };
+
+  return (
+    <View>
+      <Text>Events: {events.length}</Text>
+      {events.map(e => (
+        <Text key={e.id}>{e.title}</Text>
+      ))}
+      <Button title="Add Event" onPress={createEvent} />
+    </View>
+  );
+}
+```
+
 ---
 
 ### expo
@@ -111,6 +156,47 @@ status: archived
 
 **适用场景**: 快速原型开发、小型到中型应用、无需原生代码的纯 JS 项目
 
+**Expo Router 文件系统路由示例：**
+
+```typescript
+// app/(tabs)/index.tsx — 自动注册为 Tab 路由
+import { View, Text, FlatList } from 'react-native';
+import { useRouter } from 'expo-router';
+
+export default function HomeScreen() {
+  const router = useRouter();
+
+  return (
+    <View>
+      <Text>Home</Text>
+      <FlatList
+        data={[{ id: '1', title: 'Item 1' }]}
+        renderItem={({ item }) => (
+          <Text
+            onPress={() =>
+              router.push({
+                pathname: '/details/[id]',
+                params: { id: item.id },
+              })
+            }
+          >
+            {item.title}
+          </Text>
+        )}
+      />
+    </View>
+  );
+}
+
+// app/details/[id].tsx — 动态路由
+import { useLocalSearchParams } from 'expo-router';
+
+export default function DetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  return <Text>Detail ID: {id}</Text>;
+}
+```
+
 ---
 
 ### react-navigation
@@ -132,6 +218,44 @@ status: archived
 - 📱 原生手势处理
 - 🧩 模块化设计，按需使用
 - 🔒 与 react-native-screens 集成提升性能
+
+**React Navigation 类型安全路由配置：**
+
+```typescript
+// navigation/types.ts
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+
+export type RootStackParamList = {
+  Home: undefined;
+  Profile: { userId: string };
+  Settings: { section?: 'account' | 'privacy' };
+};
+
+export type HomeProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
+export type ProfileProps = NativeStackScreenProps<RootStackParamList, 'Profile'>;
+
+// navigation/AppNavigator.tsx
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { RootStackParamList } from './types';
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+export default function AppNavigator() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={({ route }) => ({ title: `User ${route.params.userId}` })}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+```
 
 ---
 
@@ -199,6 +323,60 @@ status: archived
 - 🔄 Reanimated 4 支持新架构
 - 📱 Shared Element Transitions 支持
 
+**Reanimated 3 Worklet 动画示例：**
+
+```typescript
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withRepeat,
+  withSequence,
+  interpolate,
+} from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+
+export default function SwipeableCard() {
+  const offset = useSharedValue(0);
+  const rotation = useSharedValue(0);
+
+  const gesture = Gesture.Pan()
+    .onChange((event) => {
+      offset.value = event.translationX;
+      rotation.value = interpolate(
+        event.translationX,
+        [-200, 0, 200],
+        [-15, 0, 15]
+      );
+    })
+    .onEnd(() => {
+      if (Math.abs(offset.value) > 120) {
+        // 滑出屏幕
+        offset.value = withSpring(Math.sign(offset.value) * 500);
+      } else {
+        // 复位
+        offset.value = withSpring(0);
+        rotation.value = withSpring(0);
+      }
+    });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: offset.value },
+      { rotateZ: `${rotation.value}deg` },
+    ],
+  }));
+
+  return (
+    <GestureDetector gesture={gesture}>
+      <Animated.View style={[styles.card, animatedStyle]}>
+        <Text>Swipe me!</Text>
+      </Animated.View>
+    </GestureDetector>
+  );
+}
+```
+
 ---
 
 ## Flutter 生态
@@ -229,6 +407,50 @@ status: archived
 **适用场景**: 高度定制化 UI、复杂动画、多平台统一体验的项目
 
 **注意**: Flutter 使用 Dart 语言而非 JavaScript，但与 JS 生态密切相关，是跨平台开发的重要选择。
+
+**Flutter 状态管理与 Riverpod 示例：**
+
+```dart
+// providers/user_provider.dart
+import 'package:riverpod/riverpod.dart';
+
+@riverpod
+class UserNotifier extends _$UserNotifier {
+  @override
+  Future<User> build(String userId) async {
+    final dio = ref.read(dioProvider);
+    final response = await dio.get('/users/$userId');
+    return User.fromJson(response.data);
+  }
+
+  Future<void> updateProfile(String name) async {
+    state = const AsyncLoading();
+    try {
+      final updated = await ref.read(userRepositoryProvider).updateName(name);
+      state = AsyncData(updated);
+    } catch (err, stack) {
+      state = AsyncError(err, stack);
+    }
+  }
+}
+
+// widgets/user_profile.dart
+class UserProfile extends ConsumerWidget {
+  const UserProfile({super.key, required this.userId});
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userNotifierProvider(userId));
+
+    return userAsync.when(
+      data: (user) => Text(user.name),
+      loading: () => const CircularProgressIndicator(),
+      error: (err, _) => Text('Error: $err'),
+    );
+  }
+}
+```
 
 ---
 
@@ -278,6 +500,26 @@ status: archived
 - 🎯 原生项目作为一等公民
 - 📱 支持 iOS、Android、PWA
 - 🔄 实时重新加载开发模式
+
+**Capacitor 自定义原生插件（TypeScript + Swift/Kotlin）示例：**
+
+```typescript
+// src/definitions.ts
+export interface EchoPlugin {
+  echo(options: { value: string }): Promise<{ value: string }>;
+}
+
+// src/web.ts
+import { WebPlugin } from '@capacitor/core';
+import type { EchoPlugin } from './definitions';
+
+export class EchoWeb extends WebPlugin implements EchoPlugin {
+  async echo(options: { value: string }) {
+    console.log('ECHO', options.value);
+    return options;
+  }
+}
+```
 
 ---
 
@@ -396,6 +638,49 @@ status: archived
 
 **适用场景**: 复杂桌面应用、已有 Web 代码需要桌面化、功能丰富的 IDE 类应用
 
+**Electron 主进程与渲染进程安全通信示例：**
+
+```typescript
+// src/main/preload.ts
+import { contextBridge, ipcRenderer } from 'electron';
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  openFile: () => ipcRenderer.invoke('dialog:openFile'),
+  onFileOpened: (callback: (path: string) => void) =>
+    ipcRenderer.on('file:opened', (_event, path) => callback(path)),
+});
+
+// src/main/index.ts
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+
+ipcMain.handle('dialog:openFile', async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: [{ name: 'Images', extensions: ['jpg', 'png', 'gif'] }],
+  });
+  if (!canceled) return filePaths[0];
+  return null;
+});
+
+// src/renderer/App.tsx
+declare global {
+  interface Window {
+    electronAPI: {
+      openFile: () => Promise<string | null>;
+      onFileOpened: (cb: (path: string) => void) => void;
+    };
+  }
+}
+
+export default function App() {
+  const handleOpen = async () => {
+    const path = await window.electronAPI.openFile();
+    if (path) console.log('Selected:', path);
+  };
+  return <button onClick={handleOpen}>Open File</button>;
+}
+```
+
 ---
 
 ### tauri
@@ -422,6 +707,41 @@ status: archived
 - 🚀 快速启动 (< 500ms)
 
 **适用场景**: 对应用体积和性能敏感、需要现代安全架构、愿意学习 Rust
+
+**Tauri v2 命令系统与权限模型示例：**
+
+```rust
+// src-tauri/src/lib.rs
+use tauri::Manager;
+
+#[tauri::command]
+async fn greet(name: String, app: tauri::AppHandle) -> Result<String, String> {
+    let app_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    Ok(format!("Hello {}, data dir: {:?}", name, app_dir))
+}
+
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init())
+        .invoke_handler(tauri::generate_handler![greet])
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
+```
+
+```typescript
+// src/App.tsx
+import { invoke } from '@tauri-apps/api/core';
+
+export default function App() {
+  const handleGreet = async () => {
+    const response = await invoke<string>('greet', { name: 'Tauri' });
+    console.log(response);
+  };
+  return <button onClick={handleGreet}>Greet</button>;
+}
+```
 
 ---
 
@@ -520,16 +840,32 @@ graph TD
 ### 官方文档
 
 - [React Native 官方文档](https://reactnative.dev/)
-- [Flutter 官方文档](https://docs.flutter.dev/)
+- [React Native New Architecture](https://reactnative.dev/docs/the-new-architecture/landing-page) — 新架构官方指南
 - [Expo 文档](https://docs.expo.dev/)
+- [Expo Router 文档](https://docs.expo.dev/router/introduction/) — 文件系统路由
+- [React Navigation 文档](https://reactnavigation.org/)
+- [React Native Reanimated 文档](https://docs.swmansion.com/react-native-reanimated/)
+- [Flutter 官方文档](https://docs.flutter.dev/)
+- [Flutter Riverpod 文档](https://riverpod.dev/)
 - [Ionic 文档](https://ionicframework.com/docs)
-- [Tauri 文档](https://tauri.app/v1/guides/)
+- [Capacitor 文档](https://capacitorjs.com/docs)
+- [Capacitor Plugin 开发指南](https://capacitorjs.com/docs/plugins/creating-plugins)
+- [Tauri 文档](https://tauri.app/start/)
+- [Tauri v2 Migration](https://v2.tauri.app/start/migrate/) — v2 迁移指南
+- [Electron 文档](https://www.electronjs.org/docs/latest/)
+- [Electron Security Best Practices](https://www.electronjs.org/docs/latest/tutorial/security)
+- [NativeScript 文档](https://docs.nativescript.org/)
+- [Apple Developer — iOS](https://developer.apple.com/ios/) — Apple 官方 iOS 开发资源
+- [Android Developers](https://developer.android.com/) — Google 官方 Android 开发资源
+- [Material Design 3](https://m3.material.io/) — Google Material Design 规范
 
 ### 社区资源
 
 - [React Native 周刊](https://reactnative.cc/)
 - [Flutter 中文社区](https://flutter.cn/)
 - [NativeScript 中文文档](https://docs.nativescript.org/)
+- [React Native Directory](https://reactnative.directory/) — 社区包目录
+- [Expo Example Apps](https://github.com/expo/examples) — 官方示例集合
 
 ---
 

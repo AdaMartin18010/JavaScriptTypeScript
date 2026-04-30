@@ -216,6 +216,95 @@ const oid = OrderId('o-1');
 
 ---
 
+## 代码示例：结构类型的边缘行为与注意事项
+
+```typescript
+// ============================================
+// 示例 1：额外属性检查（Excess Property Checks）
+// ============================================
+
+interface SquareConfig {
+  color?: string;
+  width?: number;
+}
+
+function createSquare(config: SquareConfig): { color: string; area: number } {
+  return {
+    color: config.color || 'red',
+    area: (config.width || 10) ** 2
+  };
+}
+
+// ❌ 额外属性检查报错（对象字面量直接传入）
+// createSquare({ colour: 'red', width: 100 });
+
+// ✅ 绕过额外属性检查的方式
+const myConfig = { colour: 'red', width: 100 };
+createSquare(myConfig); // 不报错，因为 myConfig 推断为 { colour: string; width: number }
+                        // 结构上与 SquareConfig 兼容
+
+// ============================================
+// 示例 2：可选属性与 undefined 的区别
+// ============================================
+
+interface WithOptional {
+  name: string;
+  age?: number;
+}
+
+interface WithUndefined {
+  name: string;
+  age: number | undefined;
+}
+
+const opt: WithOptional = { name: 'A' };      // ✅ age 可省略
+// const und: WithUndefined = { name: 'B' };   // ❌ age 必须显式提供
+
+// ============================================
+// 示例 3：readonly 属性的结构兼容性
+// ============================================
+
+interface Mutable {
+  x: number;
+}
+
+interface Immutable {
+  readonly x: number;
+}
+
+const mut: Mutable = { x: 1 };
+const imm: Immutable = mut; // ✅ Mutable 可赋值给 Immutable（更宽松 → 更严格）
+// mut = imm;               // ❌ Immutable 不可赋值给 Mutable
+
+// ============================================
+// 示例 4：类实例与对象字面量的结构兼容
+// ============================================
+
+class Animal {
+  constructor(public name: string) {}
+  move(distance: number): void {
+    console.log(`${this.name} moved ${distance}m`);
+  }
+}
+
+interface Mover {
+  name: string;
+  move(distance: number): void;
+}
+
+const animal = new Animal('Cat');
+const mover: Mover = animal; // ✅ 类实例结构兼容接口
+
+// 反过来也成立
+const literalMover: Mover = {
+  name: 'Dog',
+  move(d) { console.log(d); }
+};
+const animal2: Animal = literalMover; // ✅ 对象字面量结构兼容类
+```
+
+---
+
 ## 结构 vs 名义的工程权衡
 
 ```
@@ -245,11 +334,6 @@ const oid = OrderId('o-1');
 | **Soundiness Literature** | 学术视角：结构类型的可证安全性 | [Soundiness](https://soundiness.github.io/) |
 | **TypeScript FAQ: Nominal Typing** | 官方 FAQ 对名义类型的讨论 | [github.com/microsoft/TypeScript/wiki/FAQ#nominal-typing](https://github.com/microsoft/TypeScript/wiki/FAQ#nominal-typing) |
 | **Rust Traits vs TypeScript Interfaces** | 名义与结构类型的语言对比 | [doc.rust-lang.org/book/ch10-02-traits.html](https://doc.rust-lang.org/book/ch10-02-traits.html) |
-
-## 更多权威参考
-
-| 资源 | 说明 | 链接 |
-|------|------|------|
 | **TypeScript Handbook: Type Compatibility** | 官方结构子类型说明 | [typescriptlang.org/docs/handbook/type-compatibility.html](https://www.typescriptlang.org/docs/handbook/type-compatibility.html) |
 | **TypeScript Deep Dive: Nominal Typing** | 品牌类型技术详解 | [basarat.gitbook.io/typescript/type-system/moving-types](https://basarat.gitbook.io/typescript/type-system/moving-types) |
 | **Effective TypeScript: Item 53** | 品牌类型最佳实践 | [effectivetypescript.com](https://effectivetypescript.com/) |
@@ -257,6 +341,9 @@ const oid = OrderId('o-1');
 | **Rust Traits vs TypeScript Interfaces** | 名义与结构类型的语言对比 | [doc.rust-lang.org/book/ch10-02-traits.html](https://doc.rust-lang.org/book/ch10-02-traits.html) |
 | **TypeScript FAQ: Nominal Typing** | 官方 FAQ 对名义类型的讨论 | [github.com/microsoft/TypeScript/wiki/FAQ#nominal-typing](https://github.com/microsoft/TypeScript/wiki/FAQ#nominal-typing) |
 | **Soundiness Literature** | 学术视角：结构类型的可证安全性 | [Soundiness](https://soundiness.github.io/) |
+| **MDN: Classes** | JavaScript 类与继承 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes) |
+| **MDN: private class fields** | 私有字段规范 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields) |
+| **Academic Paper: Gradual Typing** | 渐进类型系统学术基础 | [wphomes.soic.indiana.edu/jsabral/pubs/gradual-typing-snapshot.pdf](https://wphomes.soic.indiana.edu/jsabral/pubs/gradual-typing-snapshot.pdf) |
 
 ---
 

@@ -265,7 +265,149 @@ export default {
 
 ---
 
-## 8. 与相邻模块的关系
+## 8. Live Region 与动态内容通知
+
+屏幕阅读器用户无法感知视觉更新，需通过 Live Region 主动通知：
+
+```html
+<!-- 状态栏 Live Region -->
+<div id="status-region" role="status" aria-live="polite" aria-atomic="true" class="sr-only">
+  <!-- 动态插入通知文本 -->
+</div>
+
+<!-- 错误警告 Live Region -->
+<div id="error-region" role="alert" aria-live="assertive" aria-atomic="true" class="sr-only">
+  <!-- 紧急错误信息 -->
+</div>
+```
+
+```typescript
+// live-region.ts — React/Vanilla 通用的 Live Region 管理器
+class LiveRegionAnnouncer {
+  private statusRegion: HTMLElement;
+  private alertRegion: HTMLElement;
+
+  constructor() {
+    this.statusRegion = document.getElementById('status-region')!;
+    this.alertRegion = document.getElementById('error-region')!;
+  }
+
+  announce(message: string, priority: 'polite' | 'assertive' = 'polite') {
+    const region = priority === 'assertive' ? this.alertRegion : this.statusRegion;
+    // 先清空再写入，确保屏幕阅读器重新朗读
+    region.textContent = '';
+    requestAnimationFrame(() => {
+      region.textContent = message;
+    });
+  }
+}
+
+// 使用
+const announcer = new LiveRegionAnnouncer();
+announcer.announce('文件上传完成');
+announcer.announce('网络连接失败，请检查设置', 'assertive');
+```
+
+---
+
+## 9. 代码示例：Skip Link React 组件
+
+```tsx
+// components/SkipLink.tsx
+export function SkipLink({ targetId = 'main-content' }: { targetId?: string }) {
+  return (
+    <a
+      href={`#${targetId}`}
+      className="skip-link"
+      onClick={(e) => {
+        e.preventDefault();
+        const target = document.getElementById(targetId);
+        if (target) {
+          target.tabIndex = -1;
+          target.focus();
+          target.scrollIntoView();
+        }
+      }}
+    >
+      跳转到主内容
+    </a>
+  );
+}
+
+// CSS
+// .skip-link { position: absolute; top: -40px; left: 0; background: #000; color: #fff; padding: 8px; z-index: 100; transition: top 0.3s; }
+// .skip-link:focus { top: 0; }
+```
+
+---
+
+## 10. 代码示例：Accessible Tabs 组件
+
+```tsx
+// components/AccessibleTabs.tsx
+import { useState, useRef, KeyboardEvent } from 'react';
+
+interface Tab {
+  id: string;
+  label: string;
+  content: React.ReactNode;
+}
+
+export function AccessibleTabs({ tabs }: { tabs: Tab[] }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
+    let nextIndex = activeIndex;
+    if (e.key === 'ArrowRight') nextIndex = (activeIndex + 1) % tabs.length;
+    if (e.key === 'ArrowLeft') nextIndex = (activeIndex - 1 + tabs.length) % tabs.length;
+    if (e.key === 'Home') nextIndex = 0;
+    if (e.key === 'End') nextIndex = tabs.length - 1;
+    if (nextIndex !== activeIndex) {
+      e.preventDefault();
+      setActiveIndex(nextIndex);
+      tabRefs.current[nextIndex]?.focus();
+    }
+  };
+
+  return (
+    <div>
+      <div role="tablist" aria-label="示例标签页">
+        {tabs.map((tab, i) => (
+          <button
+            key={tab.id}
+            ref={(el) => { tabRefs.current[i] = el; }}
+            role="tab"
+            aria-selected={i === activeIndex}
+            aria-controls={`panel-${tab.id}`}
+            id={`tab-${tab.id}`}
+            tabIndex={i === activeIndex ? 0 : -1}
+            onClick={() => setActiveIndex(i)}
+            onKeyDown={handleKeyDown}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      {tabs.map((tab, i) => (
+        <div
+          key={tab.id}
+          role="tabpanel"
+          id={`panel-${tab.id}`}
+          aria-labelledby={`tab-${tab.id}`}
+          hidden={i !== activeIndex}
+        >
+          {tab.content}
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+---
+
+## 11. 与相邻模块的关系
 
 - **51-ui-components**: 组件库的可访问性设计
 - **18-frontend-frameworks**: 框架的无障碍支持
@@ -273,7 +415,7 @@ export default {
 
 ---
 
-## 9. 权威参考链接
+## 12. 权威参考链接
 
 - [W3C WCAG 2.2 官方文档](https://www.w3.org/WAI/WCAG22/quickref/)
 - [MDN ARIA 指南](https://developer.mozilla.org/zh-CN/docs/Web/Accessibility/ARIA)
@@ -282,7 +424,7 @@ export default {
 - [axe-core GitHub](https://github.com/dequelabs/axe-core)
 - [WebAIM 对比度检查器](https://webaim.org/resources/contrastchecker/)
 
-## 10. 扩展权威资源
+## 13. 扩展权威资源
 
 | 资源 | 链接 | 说明 |
 |------|------|------|
@@ -296,6 +438,16 @@ export default {
 | WebAIM 年度调查 | [webaim.org/projects/screenreadersurvey9](https://webaim.org/projects/screenreadersurvey9/) | 屏幕阅读器使用统计 |
 | Stark (Figma 插件) | [getstark.co](https://www.getstark.co/) | 设计阶段无障碍检查工具 |
 | European Accessibility Act | [digital-strategy.ec.europa.eu/policies/web-accessibility](https://digital-strategy.ec.europa.eu/en/policies/web-accessibility) | 欧盟无障碍法规要求 |
+| HTML Accessibility API Mappings 1.0 | [w3.org/TR/html-aam-1.0](https://www.w3.org/TR/html-aam-1.0/) | HTML 到无障碍 API 映射规范 |
+| W3C — Accessible Rich Internet Applications (WAI-ARIA) 1.2 | [w3.org/TR/wai-aria-1.2](https://www.w3.org/TR/wai-aria-1.2/) | ARIA 1.2 规范 |
+| MDN — prefers-reduced-motion | [developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion) | 减少动画偏好媒体查询 |
+| MDN — prefers-contrast | [developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-contrast](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-contrast) | 对比度偏好媒体查询 |
+| The A11Y Project — Checklist | [a11yproject.com/checklist](https://www.a11yproject.com/checklist/) | 社区维护的无障碍检查清单 |
+| Pa11y — Automated Accessibility Testing | [pa11y.org](https://pa11y.org/) | 命令行与 CI 无障碍测试工具 |
+| W3C — ARIA 1.3 Draft](<https://w3c.github.io/aria/>) | W3C ARIA 1.3 工作草案 |
+| W3C — Accessibility Conformance Testing (ACT) Rules | [w3.org/WAI/standards-guidelines/act](https://www.w3.org/WAI/standards-guidelines/act/) | 无障碍一致性测试规则 |
+| MDN — Landmark Regions | [developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/region_role](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/region_role) | ARIA 地标角色指南 |
+| Web.dev — Accessibility Foundations](<https://web.dev/accessibility>) | Google Web 开发者无障碍基础 |
 
 ---
 

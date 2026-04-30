@@ -240,6 +240,147 @@ serve((req) => {
 });
 ```
 
+### GitHub Actions CI/CD 部署流水线
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint and Test
+        run: |
+          npm run lint
+          npm run test:ci
+
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Deploy to Vercel
+        uses: vercel/action-deploy@v1
+        if: github.ref == 'refs/heads/main'
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+```
+
+### Terraform 基础设施即代码
+
+```hcl
+# main.tf — AWS Lambda + API Gateway
+terraform {
+  required_providers {
+    aws = { source = "hashicorp/aws", version = "~> 5.0" }
+  }
+}
+
+provider "aws" { region = "us-east-1" }
+
+resource "aws_lambda_function" "api" {
+  function_name = "js-api"
+  runtime       = "nodejs20.x"
+  handler       = "handler.handler"
+  filename      = "./dist/lambda.zip"
+  source_code_hash = filebase64sha256("./dist/lambda.zip")
+
+  environment {
+    variables = {
+      NODE_ENV = "production"
+    }
+  }
+}
+
+resource "aws_apigatewayv2_api" "http_api" {
+  name          = "js-http-api"
+  protocol_type = "HTTP"
+}
+```
+
+### 健康检查驱动的部署门控
+
+```typescript
+// deploy-gate.ts — 蓝绿部署与自动回滚门控
+interface DeploymentGate {
+  healthEndpoint: string;
+  timeoutMs: number;
+  retries: number;
+  rollback: () => Promise<void>;
+}
+
+class DeployGateKeeper {
+  async deployWithGate(
+    deployFn: () => Promise<void>,
+    gate: DeploymentGate
+  ): Promise<'success' | 'rolled-back'> {
+    await deployFn();
+
+    const healthy = await this.probeHealth(gate);
+    if (!healthy) {
+      console.error('Health check failed. Initiating rollback...');
+      await gate.rollback();
+      return 'rolled-back';
+    }
+
+    return 'success';
+  }
+
+  private async probeHealth(gate: DeploymentGate): Promise<boolean> {
+    for (let i = 0; i < gate.retries; i++) {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), gate.timeoutMs);
+        const res = await fetch(gate.healthEndpoint, { signal: controller.signal });
+        clearTimeout(timer);
+
+        if (res.ok) return true;
+      } catch {
+        // 继续重试
+      }
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+    return false;
+  }
+}
+
+// 使用示例
+const gateKeeper = new DeployGateKeeper();
+await gateKeeper.deployWithGate(
+  async () => {
+    // 执行实际部署（如更新 K8s Deployment 镜像）
+    console.log('Deploying new version...');
+  },
+  {
+    healthEndpoint: 'https://my-app.fly.dev/healthz',
+    timeoutMs: 5000,
+    retries: 5,
+    rollback: async () => {
+      // 回滚到上一个镜像版本
+      console.log('Rolling back to previous version...');
+    },
+  }
+);
+```
+
 ---
 
 ## 最佳实践
@@ -271,6 +412,21 @@ serve((req) => {
 - [Best Next.js Hosting 2026](https://thesoftwarescout.com/best-hosting-for-next-js-apps-in-2026-where-to-deploy-your-project/)
 - [web.dev — Learn Core Web Vitals](https://web.dev/learn-core-web-vitals/)
 - [MDN — Deploying Web Applications](https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Tools_and_setup/How_much_does_it_cost)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions) — CI/CD 自动化
+- [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs) — AWS 基础设施即代码
+- [Cloudflare Workers Pricing](https://developers.cloudflare.com/workers/platform/pricing/) — Workers 定价模型
+- [AWS Lambda Limits](https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html) — Lambda 服务限制
+- [Docker Multi-Stage Builds](https://docs.docker.com/build/building/multi-stage/) — 优化镜像大小
+- [The Twelve-Factor App — Config](https://12factor.net/config) — 环境变量管理最佳实践
+- [Vercel Edge Config](https://vercel.com/docs/storage/edge-config) — 边缘配置存储
+- [Fly.io Autoscaling](https://fly.io/docs/reference/configuration/#services-autoscaling) — 自动扩缩容配置
+- [Deno Deploy Runtime API](https://docs.deno.com/deploy/api/) — Deno Deploy 运行时 API
+- [AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html) — AWS 架构最佳实践
+- [Cloudflare Pages Functions Limits](https://developers.cloudflare.com/pages/functions/limitations/) — Pages Functions 限制说明
+- [Railway Deployment Patterns](https://docs.railway.app/reference/deployment-patterns) — Railway 部署模式
+- [Render Health Checks](https://render.com/docs/health-checks) — Render 健康检查配置
+- [Next.js Deployment Documentation](https://nextjs.org/docs/app/building-your-application/deploying) — Next.js 官方部署指南
+- [OWASP Deployment Security](https://owasp.org/www-project-devsecops-guideline/latest/02a-Continuous-Integration/Deployment) — 部署安全指南
 
 ---
 
@@ -283,4 +439,4 @@ serve((req) => {
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

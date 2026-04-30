@@ -246,7 +246,122 @@ obj2.hidden = "leaked"; // 静默失败（strict 下 TypeError）—— writable
 
 ---
 
-## 5. 权威参考 (References)
+## 5. 进阶代码示例
+
+### 5.1 递归深冻结（Deep Freeze）
+
+```typescript
+function deepFreeze<T extends Record<string, any>>(obj: T): Readonly<T> {
+  const propNames = Reflect.ownKeys(obj);
+  for (const name of propNames) {
+    const value = (obj as any)[name];
+    if (value && typeof value === 'object') {
+      deepFreeze(value);
+    }
+  }
+  return Object.freeze(obj);
+}
+
+const config = deepFreeze({
+  db: { host: 'localhost', port: 5432 },
+  cache: { ttl: 3600 }
+});
+
+// config.db.port = 3306; // TypeError: Cannot assign
+```
+
+### 5.2 不可变对象代理（Immutable Proxy）
+
+```typescript
+function immutable<T extends object>(target: T): T {
+  return new Proxy(target, {
+    set() { throw new TypeError('Object is immutable'); },
+    deleteProperty() { throw new TypeError('Object is immutable'); },
+    defineProperty() { throw new TypeError('Object is immutable'); },
+    setPrototypeOf() { throw new TypeError('Object is immutable'); },
+  });
+}
+
+const state = immutable({ count: 0 });
+// state.count = 1; // TypeError
+```
+
+### 5.3 利用 Getter/Setter 实现数据绑定
+
+```typescript
+class Observable<T> {
+  private _value: T;
+  private listeners: Set<(v: T) => void> = new Set();
+
+  constructor(initial: T) {
+    this._value = initial;
+  }
+
+  get value() {
+    return this._value;
+  }
+
+  set value(v: T) {
+    if (this._value !== v) {
+      this._value = v;
+      this.listeners.forEach((fn) => fn(v));
+    }
+  }
+
+  subscribe(fn: (v: T) => void) {
+    this.listeners.add(fn);
+    return () => this.listeners.delete(fn);
+  }
+}
+
+const temperature = new Observable(20);
+temperature.subscribe((t) => console.log(`Temperature: ${t}°C`));
+temperature.value = 25; // 输出: Temperature: 25°C
+```
+
+### 5.4 属性描述符自省与克隆
+
+```typescript
+function cloneDescriptors(src: object, dest: object, keys?: PropertyKey[]) {
+  const props = keys ?? Reflect.ownKeys(src);
+  for (const key of props) {
+    const desc = Object.getOwnPropertyDescriptor(src, key);
+    if (desc) Object.defineProperty(dest, key, desc);
+  }
+}
+
+const original = {
+  get computed() { return 42; },
+  set computed(_v: number) {},
+  normal: 1,
+};
+
+const clone = {};
+cloneDescriptors(original, clone);
+console.log(Object.getOwnPropertyDescriptor(clone, 'computed'));
+// { get: [Function: get computed], set: [Function: set computed], enumerable: true, configurable: true }
+```
+
+### 5.5 `Object.fromEntries` 与描述符批量创建
+
+```typescript
+const entries: [string, PropertyDescriptor][] = [
+  ['name', { value: 'Alice', writable: true, enumerable: true, configurable: true }],
+  ['id', { value: 42, writable: false, enumerable: false, configurable: false }],
+];
+
+const user: Record<string, any> = {};
+for (const [key, desc] of entries) {
+  Object.defineProperty(user, key, desc);
+}
+
+console.log(Object.keys(user)); // ['name']
+console.log(user.id); // 42
+```
+
+---
+
+## 6. 权威参考 (References)
 
 ### ECMA-262 规范
 
@@ -264,6 +379,9 @@ obj2.hidden = "leaked"; // 静默失败（strict 下 TypeError）—— writable
 - **MDN: Property descriptors** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty>
 - **MDN: Object.freeze** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze>
 - **MDN: Object.seal** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/seal>
+- **MDN: Object.preventExtensions** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/preventExtensions>
+- **MDN: Reflect** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect>
+- **MDN: Prototype** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain>
 
 ### 学术参考
 
@@ -272,13 +390,13 @@ obj2.hidden = "leaked"; // 静默失败（strict 下 TypeError）—— writable
 
 ---
 
-## 6. 版本演进 (Version Evolution)
+## 7. 版本演进 (Version Evolution)
 
 | ES 版本 | 特性 | 说明 |
 |---------|------|------|
 | ES1 (1997) | 基础对象模型 | `Object`、`prototype` 链 |
 | ES5 (2009) | Property Descriptor | `Object.defineProperty`、`getOwnPropertyDescriptor`、freeze/seal |
-| ES2015 (ES6) | Symbol 键 | 对象属性键扩展为 `String | Symbol` |
+| ES2015 (ES6) | Symbol 键 | 对象属性键扩展为 `String \| Symbol` |
 | ES2022 (ES13) | Private Elements | `#private` 字段、私有方法、私有 getter/setter |
 | ES2025 (ES16) | Decorator Metadata | 类装饰器与元数据（Stage 3 → 标准） |
 
@@ -291,9 +409,9 @@ obj2.hidden = "leaked"; // 静默失败（strict 下 TypeError）—— writable
 
 ---
 
-## 7. 思维表征 (Mental Representation)
+## 8. 思维表征 (Mental Representation)
 
-### 7.1 对象结构的多维矩阵
+### 8.1 对象结构的多维矩阵
 
 | 维度 | 可变性 | 可见性 | 可枚举性 | 可配置性 |
 |------|--------|--------|---------|---------|
@@ -304,7 +422,7 @@ obj2.hidden = "leaked"; // 静默失败（strict 下 TypeError）—— writable
 | `seal` 后 | ⚠️ writable 决定 | ✅ | ⚠️ 不可改 | ❌ |
 | `freeze` 后 | ❌ | ✅ | ⚠️ 不可改 | ❌ |
 
-### 7.2 描述符创建决策树
+### 8.2 描述符创建决策树
 
 ```mermaid
 graph TD
@@ -323,16 +441,34 @@ graph TD
 
 ---
 
-## 8. Trade-off 与 Pitfalls
+## 9. Trade-off 与 Pitfalls
 
-### 8.1 `defineProperty` 的性能成本
+### 9.1 `defineProperty` 的性能成本
 
 在 V8 等现代引擎中，使用 `defineProperty` 创建大量具有复杂描述符的对象会触发**字典模式（Dictionary Mode）**，导致 Inline Caching（IC）失效，属性访问性能下降 5–10 倍。对于高频访问的热路径对象，优先使用普通属性赋值。
 
-### 8.2 `freeze` 的浅层语义
+### 9.2 `freeze` 的浅层语义
 
 `Object.freeze` 只冻结对象的直接属性，不递归处理嵌套对象。若需要深层不可变性，需手动递归 freeze 或使用 Immutable.js、Immer 等库。
 
-### 8.3 `configurable: false` 的不可逆性
+### 9.3 `configurable: false` 的不可逆性
 
 一旦将属性设为 `configurable: false`，后续无法恢复为 `configurable: true`，也无法删除该属性。此操作具有**单向性**，在设计 API 时需谨慎。
+
+---
+
+## 10. 权威外部链接
+
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| ECMA-262 §6.1.7 | Object Type 规范 | [tc39.es/ecma262/#sec-object-type](https://tc39.es/ecma262/#sec-object-type) |
+| V8 Blog — Fast Properties | V8 属性存储优化 | [v8.dev/blog/fast-properties](https://v8.dev/blog/fast-properties) |
+| V8 Blog — Elements Kinds | V8 数组/对象元素类型 | [v8.dev/blog/elements-kinds](https://v8.dev/blog/elements-kinds) |
+| MDN — Inheritance | JS 继承与原型链 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain) |
+| MDN — Property_accessors | Getter/Setter 详解 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get) |
+| JavaScript Info — Property flags | 属性标志与描述符教程 | [javascript.info/property-descriptors](https://javascript.info/property-descriptors) |
+| TC39 — Object.freeze | 规范草案历史 | [tc39.es/ecma262/#sec-object.freeze](https://tc39.es/ecma262/#sec-object.freeze) |
+
+---
+
+**参考规范**：ECMA-262 §6.1.7 | Node.js Modules Documentation | TypeScript Handbook: Modules

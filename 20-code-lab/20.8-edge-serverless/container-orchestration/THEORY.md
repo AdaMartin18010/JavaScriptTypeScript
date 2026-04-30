@@ -307,7 +307,172 @@ http.createServer((req, res) => {
 }).listen(9090, () => console.log('Metrics server on :9090'));
 ```
 
-## 10. 与相邻模块的关系
+## 10. 代码示例：ConfigMap 与 Secret 环境注入
+
+```typescript
+// config-injection.ts — 运行时配置管理
+import { readFileSync, existsSync } from 'fs';
+
+interface AppConfig {
+  databaseUrl: string;
+  redisUrl: string;
+  jwtSecret: string;
+  apiKey: string;
+  featureFlags: Record<string, boolean>;
+}
+
+function loadConfig(): AppConfig {
+  // Kubernetes ConfigMap 挂载为文件
+  const featureFlagsPath = '/etc/config/feature-flags.json';
+  const featureFlags = existsSync(featureFlagsPath)
+    ? JSON.parse(readFileSync(featureFlagsPath, 'utf-8'))
+    : {};
+
+  // Kubernetes Secret 挂载为文件（base64 已解码）
+  const jwtSecret = existsSync('/etc/secrets/jwt-secret')
+    ? readFileSync('/etc/secrets/jwt-secret', 'utf-8').trim()
+    : process.env.JWT_SECRET!;
+
+  const apiKey = existsSync('/etc/secrets/api-key')
+    ? readFileSync('/etc/secrets/api-key', 'utf-8').trim()
+    : process.env.API_KEY!;
+
+  return {
+    databaseUrl: process.env.DATABASE_URL!,
+    redisUrl: process.env.REDIS_URL!,
+    jwtSecret,
+    apiKey,
+    featureFlags,
+  };
+}
+
+// 热重载 ConfigMap（无需重启 Pod）
+function watchConfig(callback: (config: AppConfig) => void) {
+  const interval = setInterval(() => {
+    const config = loadConfig();
+    callback(config);
+  }, 30000); // 每 30s 检查一次
+  return () => clearInterval(interval);
+}
+```
+
+## 11. 代码示例：Pod 中断预算（PDB）
+
+```typescript
+// pod-disruption-budget.ts — 确保滚动更新期间最小可用副本
+interface PDBSpec {
+  minAvailable: number;   // 或 maxUnavailable
+  selector: Record<string, string>;
+}
+
+class DisruptionBudget {
+  constructor(
+    private pods: Map<string, Pod>,
+    private pdb: PDBSpec
+  ) {}
+
+  canEvict(podId: string): boolean {
+    const owned = Array.from(this.pods.values()).filter(
+      (p) => this.matchesSelector(p, this.pdb.selector)
+    );
+
+    const available = owned.filter((p) => p.status === 'Running').length;
+    const wouldRemain = available - 1;
+
+    return wouldRemain >= this.pdb.minAvailable;
+  }
+
+  private matchesSelector(pod: Pod, selector: Record<string, string>): boolean {
+    return Object.entries(selector).every(([k, v]) => pod.labels?.[k] === v);
+  }
+}
+```
+
+## 12. 代码示例：Init 容器与 Sidecar 模式
+
+```yaml
+# init-sidecar.yaml — Init 容器数据准备 + Sidecar 代理
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app
+spec:
+  template:
+    spec:
+      initContainers:
+        # Init 容器：在应用启动前完成数据迁移
+        - name: db-migrate
+          image: myapp:latest
+          command: ['npm', 'run', 'db:migrate']
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: url
+      containers:
+        # 主应用容器
+        - name: app
+          image: myapp:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+        # Sidecar 容器：日志转发代理
+        - name: fluent-bit
+          image: fluent/fluent-bit:latest
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+      volumes:
+        - name: varlog
+          emptyDir: {}
+```
+
+```typescript
+// sidecar-pattern.ts — 使用 Sidecar 实现分布式追踪自动注入
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { Resource } from '@opentelemetry/resources';
+import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+
+// 作为 Sidecar 运行的 OpenTelemetry Collector 代理
+class SidecarTelemetryAgent {
+  private sdk: NodeSDK;
+
+  constructor(serviceName: string, collectorUrl: string) {
+    this.sdk = new NodeSDK({
+      resource: new Resource({
+        [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
+      }),
+      traceExporter: new OTLPTraceExporter({ url: collectorUrl }),
+    });
+  }
+
+  start(): void {
+    this.sdk.start();
+    console.log('[Sidecar] OpenTelemetry SDK started');
+  }
+
+  shutdown(): Promise<void> {
+    return this.sdk.shutdown();
+  }
+}
+
+// 独立 sidecar 进程入口
+if (require.main === module) {
+  const agent = new SidecarTelemetryAgent(
+    process.env.SERVICE_NAME || 'unknown',
+    process.env.OTEL_COLLECTOR_URL || 'http://localhost:4318/v1/traces'
+  );
+  agent.start();
+
+  process.on('SIGTERM', () => agent.shutdown().then(() => process.exit(0)));
+}
+```
+
+## 13. 与相邻模块的关系
 
 - **22-deployment-devops**: DevOps 与 CI/CD
 - **73-service-mesh-advanced**: 服务网格
@@ -332,7 +497,20 @@ http.createServer((req, res) => {
 | Prometheus Metrics Format | 规范 | [prometheus.io/docs/instrumenting/exposition_formats](https://prometheus.io/docs/instrumenting/exposition_formats/) |
 | Google — Site Reliability Engineering (SRE Book) | 书籍 | [sre.google/sre-book/table-of-contents](https://sre.google/sre-book/table-of-contents/) |
 | Open Container Initiative (OCI) | 规范 | [opencontainers.org](https://opencontainers.org/) |
+| Kubernetes ConfigMaps and Secrets](<https://kubernetes.io/docs/concepts/configuration/secret/>) | 官方文档 | Secret 管理 |
+| Kubernetes Horizontal Pod Autoscaler](<https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/>) | 官方文档 | HPA 自动扩缩容 |
+| Kubernetes Pod Lifecycle](<https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/>) | 官方文档 | Pod 生命周期管理 |
+| Docker Multi-Stage Builds](<https://docs.docker.com/build/building/multi-stage/>) | 官方文档 | 多阶段构建优化镜像 |
+| Helm Charts Best Practices](<https://helm.sh/docs/chart_best_practices/>) | 官方文档 | Helm Chart 最佳实践 |
+| containerd Documentation](<https://containerd.io/docs/>) | 官方文档 | 容器运行时 |
+| CRI-O Documentation](<https://cri-o.io/>) | 官方文档 | Kubernetes 容器运行时 |
+| The Twelve-Factor App](<https://12factor.net/>) | 方法论 | 云原生应用设计原则 |
+| Kubernetes Init Containers](<https://kubernetes.io/docs/concepts/workloads/pods/init-containers/>) | 官方文档 | Init 容器设计模式 |
+| Kubernetes Sidecar Pattern](<https://kubernetes.io/docs/concepts/cluster-administration/logging/#using-a-sidecar-container-with-the-logging-agent>) | 官方文档 | Sidecar 日志代理模式 |
+| Docker BuildKit](<https://docs.docker.com/build/buildkit/>) | 官方文档 | 现代 Docker 构建引擎 |
+| Istio Architecture](<https://istio.io/latest/docs/ops/deployment/architecture/>) | 官方文档 | 服务网格架构 |
+| OpenTelemetry Collector for Kubernetes](<https://opentelemetry.io/docs/kubernetes/collector/>) | 官方文档 | K8s 可观测性采集 |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

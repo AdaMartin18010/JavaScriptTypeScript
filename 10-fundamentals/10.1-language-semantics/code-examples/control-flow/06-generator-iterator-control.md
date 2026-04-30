@@ -164,14 +164,138 @@ for await (const page of fetchPages("/api/items")) {
 }
 ```
 
+### 6.3 正例：手动实现迭代器协议
+
+```javascript
+// 不依赖 function*，手动实现可迭代对象
+class Range {
+  constructor(start, end) {
+    this.start = start;
+    this.end = end;
+  }
+
+  [Symbol.iterator]() {
+    let current = this.start;
+    const last = this.end;
+    return {
+      next() {
+        if (current <= last) {
+          return { value: current++, done: false };
+        }
+        return { done: true };
+      },
+      return() {
+        console.log('Iterator early return');
+        return { done: true };
+      }
+    };
+  }
+}
+
+const range = new Range(1, 3);
+for (const n of range) {
+  console.log(n); // 1, 2, 3
+}
+```
+
+### 6.4 正例：生成器组合与 yield* 委托
+
+```javascript
+function* inner() {
+  yield 2;
+  yield 3;
+}
+
+function* outer() {
+  yield 1;
+  yield* inner();    // 委托给 inner 生成器
+  yield 4;
+  yield* [5, 6];     // 委托给数组的默认迭代器
+}
+
+console.log([...outer()]); // [1, 2, 3, 4, 5, 6]
+```
+
+### 6.5 正例：生成器作为状态机
+
+```javascript
+function* trafficLight() {
+  while (true) {
+    yield { state: 'green', duration: 5000 };
+    yield { state: 'yellow', duration: 2000 };
+    yield { state: 'red', duration: 5000 };
+  }
+}
+
+const light = trafficLight();
+console.log(light.next().value); // { state: 'green', duration: 5000 }
+console.log(light.next().value); // { state: 'yellow', duration: 2000 }
+```
+
+### 6.6 正例：生成器 return() 与 throw() 方法
+
+```javascript
+function* withCleanup() {
+  try {
+    yield 'step 1';
+    yield 'step 2';
+    yield 'step 3';
+  } finally {
+    console.log('Cleanup executed');
+  }
+}
+
+const gen2 = withCleanup();
+console.log(gen2.next());          // { value: 'step 1', done: false }
+console.log(gen2.return('early')); // { value: 'early', done: true }, 触发 finally
+
+const gen3 = withCleanup();
+console.log(gen3.next());          // { value: 'step 1', done: false }
+try {
+  gen3.throw(new Error('Boom'));   // 在 yield 处抛出异常
+} catch (e) {
+  console.log(e.message);          // 'Boom'
+}
+```
+
+### 6.7 正例：递归树遍历生成器
+
+```javascript
+const tree = {
+  value: 1,
+  children: [
+    { value: 2, children: [{ value: 4, children: [] }] },
+    { value: 3, children: [{ value: 5, children: [] }] }
+  ]
+};
+
+function* traverse(node) {
+  yield node.value;
+  for (const child of node.children) {
+    yield* traverse(child);
+  }
+}
+
+console.log([...traverse(tree)]); // [1, 2, 4, 3, 5]
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
 
-- **ECMA-262 §27.3** — Generator Objects
-- **ECMA-262 §7.4** — Operations on Iterator Objects
-- **MDN: function***— <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function>*
+- **ECMA-262 §27.3** — Generator Objects: <https://tc39.es/ecma262/#sec-generator-objects>
+- **ECMA-262 §7.4** — Operations on Iterator Objects: <https://tc39.es/ecma262/#sec-operations-on-iterator-objects>
+- **MDN: function*** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*>
 - **MDN: Iteration protocols** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols>
+- **MDN: yield** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/yield>
+- **MDN: yield*** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/yield*>
+- **MDN: AsyncGenerator** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator>
+- **V8 Blog: Understanding Generators** — <https://v8.dev/blog/tags/generators>
+- **JavaScript.info: Generators** — <https://javascript.info/generators>
+- **TC39 Proposal: Async Iteration** — <https://github.com/tc39/proposal-async-iteration>
+- **V8 Blog: Faster async generators and iterators** — <https://v8.dev/blog/fast-async-iteration>
+- **MDN: for await...of** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for-await...of>
+- **JavaScript Engines: Iterator internals** — <https://v8.dev/blog/tags/iterators>
 
 ---
 
@@ -235,204 +359,3 @@ graph TD
 ---
 
 **参考规范**：ECMA-262 §27.3 | MDN: Generators
-
-
----
-
-## 9. 公理化表述与形式证明 (Axiomatization & Formal Proof)
-
-### 9.1 公理化基础
-
-**公理 1（控制流完备性）**：
-> 任何程序的控制流可通过顺序、分支、循环三种基本结构组合实现（Bohm-Jacopini 定理）。
-
-**公理 2（短路求值的最小计算）**：
-> 逻辑运算符在满足结果确定性的前提下，求值最少的操作数。
-
-**公理 3（异常传播的确定性）**：
-> 异常一旦抛出，沿调用栈向上传播，直到被捕获或到达全局上下文。
-
-### 9.2 定理与证明
-
-**定理 1（条件分支的互斥性）**：
-> 在 `if...else if...else` 链中，至多一个分支被执行。
-
-*证明*：
-> ECMA-262 规定条件分支按顺序求值，首个 truthy 条件对应的分支执行后，跳过后续所有分支。
-> ∎
-
-**定理 2（finally 的执行保证）**：
-> `finally` 块中的代码无论 `try` 块如何完成（正常、return、throw），都会执行。
-
-*证明*：
-> ECMA-262 §13.15.8 规定 finally 块的完成记录优先级高于 try/catch。
-> ∎
-
-**定理 3（循环终止的必要条件）**：
-> `for`、`while`、`do...while` 循环终止的必要条件是循环体内存在使循环条件最终为 falsy 的操作。
-
-*证明*：
-> 若循环条件永真且循环体内无 break/return/throw，根据 ECMA-262 §14.7，循环将无限执行。
-> ∎
-
-### 9.3 真值表：控制流运算符行为
-
-| a | b | a && b | a || b | a ?? b | !a |
-|---|---|--------|--------|--------|-----|
-| true | true | true | true | true | false |
-| true | false | false | true | true | false |
-| false | true | false | true | false | true |
-| false | false | false | false | false | true |
-| null | any | null | any | any | true |
-| undefined | any | undefined | any | any | true |
-| 0 | "d" | "d" | 0 | 0 | true |
-| "" | "d" | "d" | "" | "" | true |
-
----
-
-## 10. 推理链与演绎分析 (Deductive Reasoning Chain)
-
-### 10.1 演绎推理：从代码结构到执行路径
-
-```mermaid
-graph TD
-    A[程序入口] --> B{条件判断}
-    B -->|条件A| C[路径1]
-    B -->|条件B| D[路径2]
-    B -->|默认| E[路径3]
-    C --> F[路径合并]
-    D --> F
-    E --> F
-    F --> G[程序出口]
-```
-
-### 10.2 归纳推理：从运行时行为推导控制流问题
-
-| 现象 | 可能原因 | 解决方案 |
-|------|---------|---------|
-| 意外执行分支 | 条件判断逻辑错误 | 审查布尔表达式 |
-| 无限循环 | 循环条件永真 | 检查终止条件 |
-| 跳过预期代码 | 提前 return/continue | 检查控制流语句 |
-| 资源未释放 | 异常中断流程 | 使用 try...finally 或 using |
-| 异步操作未等待 | 缺少 await | 添加 await 或 Promise 链 |
-
-### 10.3 反事实推理
-
-> **反设**：ECMAScript 不支持任何控制流语句（if/switch/loop/try）。
->
-> **推演结果**：
->
-> 1. 所有程序只能顺序执行，无法根据条件选择路径
-> 2. 重复操作必须通过递归实现，存在栈溢出风险
-> 3. 错误处理无法分离正常逻辑与异常逻辑
-> 4. 图灵完备性仍可通过函数调用和递归保持，但表达力大幅下降
->
-> **结论**：控制流语句是结构化编程的基石，提供了表达复杂算法的基本构件。
-
----
-
-## 11. 形式语义说明
-
-### 11.1 操作语义
-
-操作语义（Operational Semantics）描述了语句如何改变程序状态：
-
-```
-(if (C) S₁ else S₂, σ) → (S₁, σ)  if eval(C, σ) = true
-(if (C) S₁ else S₂, σ) → (S₂, σ)  if eval(C, σ) = false
-```
-
-其中 σ 表示程序状态（变量绑定集合）。
-
-### 11.2 指称语义
-
-指称语义（Denotational Semantics）将语句映射为数学函数：
-
-```
-[[if (C) S₁ else S₂]](σ) =
-  [[S₁]](σ)  if [[C]](σ) = true
-  [[S₂]](σ)  if [[C]](σ) = false
-```
-
----
-
-## 12. 性能与最佳实践
-
-### 12.1 性能考量
-
-| 结构 | 时间复杂度 | 空间复杂度 | 备注 |
-|------|-----------|-----------|------|
-| if...else | O(1) | O(1) | 条件求值 |
-| switch | O(n) 最坏 | O(1) | n = case 数量 |
-| try...catch | 无异常时 O(1) | O(1) | 有异常时开销大 |
-| for 循环 | O(迭代次数) | O(1) | 取决于循环体 |
-| Promise.then | O(1) | O(1) | 微任务队列调度 |
-| async/await | O(1) | O(1) | 生成器状态机开销 |
-
-### 12.2 最佳实践总结
-
-```javascript
-// ✅ 优先使用严格相等
-if (x === 5) { /* ... */ }
-
-// ✅ 使用 switch 进行离散值匹配
-switch (status) {
-  case "active": /* ... */ break;
-  case "inactive": /* ... */ break;
-  default: /* ... */;
-}
-
-// ✅ 使用 ?? 而非 || 进行默认值赋值
-const port = config.port ?? 3000;
-
-// ✅ 使用可选链进行安全访问
-const name = user?.profile?.name;
-
-// ✅ 使用 using 管理资源
-using file = await openFile(path);
-
-// ✅ 并行异步操作使用 Promise.all
-const [a, b] = await Promise.all([fetchA(), fetchB()]);
-
-// ✅ 生成器实现惰性序列
-function* range(n) { for (let i = 0; i < n; i++) yield i; }
-```
-
----
-
-## 13. 思维模型总结
-
-### 13.1 控制流选择速查矩阵
-
-| 需求 | 推荐结构 | 替代方案 |
-|------|---------|---------|
-| 布尔条件分支 | if...else | 三元运算符 ?: |
-| 离散值匹配 | switch | 对象映射表 |
-| 计数循环 | for | while |
-| 条件循环 | while / do...while | for (;;) |
-| 遍历可迭代对象 | for...of | Array.forEach |
-| 遍历对象属性 | for...in + hasOwn | Object.keys |
-| 错误处理 | try...catch...finally | Promise.catch |
-| 资源管理 | using / await using | try...finally |
-| 默认值赋值 | ?? | ||（仅布尔场景）|
-| 安全深层访问 | ?. | && 链 |
-| 异步顺序执行 | await | Promise.then 链 |
-| 异步并行执行 | Promise.all | Promise.race |
-| 惰性序列 | function* | 闭包 |
-| 异步数据流 | async function* | 事件流 |
-
----
-
-## 14. 权威参考完整列表
-
-| 来源 | 链接 | 相关章节 |
-|------|------|---------|
-| ECMA-262 | tc39.es/ecma262 | §13-14 |
-| TypeScript Handbook | typescriptlang.org/docs | Control Flow Analysis |
-| MDN: Control flow | developer.mozilla.org | Statements |
-| MDN: Loops | developer.mozilla.org | Loops_and_iteration |
-| MDN: Exception | developer.mozilla.org | try...catch |
-
----
-
-**参考规范**：ECMA-262 §13-14 | MDN: Control flow | TypeScript Handbook

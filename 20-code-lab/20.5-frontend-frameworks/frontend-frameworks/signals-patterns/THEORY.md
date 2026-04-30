@@ -303,7 +303,72 @@ userStore.subscribe('age', (age) => console.log('Age:', age));
 userStore.patch({ age: 31 }); // 输出: Age: 31
 ```
 
-### 3.7 常见误区
+### 3.7 深层响应式与不可变数据
+
+```typescript
+// deep-reactive.ts — 使用 Proxy 实现深层 Signal 追踪
+function deepSignal<T extends object>(obj: T): T {
+  const signals = new Map<string | symbol, Signal<any>>();
+
+  return new Proxy(obj, {
+    get(target, key) {
+      if (!signals.has(key)) {
+        signals.set(key, new Signal(target[key as keyof T]));
+      }
+      return signals.get(key)!.value;
+    },
+    set(target, key, value) {
+      if (!signals.has(key)) {
+        signals.set(key, new Signal(value));
+      } else {
+        signals.get(key)!.value = value;
+      }
+      (target as any)[key] = value;
+      return true;
+    },
+  });
+}
+
+// 使用
+const state = deepSignal({ user: { name: 'Bob', settings: { theme: 'dark' } } });
+// 注意：此简化版仅演示第一层 Proxy 拦截
+// 生产环境请使用 @vue/reactivity 或 immer + signals
+```
+
+### 3.8 untracked / 避免循环依赖
+
+```typescript
+// untracked-pattern.ts — 在 effect 中读取不触发追踪的值
+import { signal, computed } from '@preact/signals-core';
+
+const a = signal(1);
+const b = signal(2);
+
+// 危险：a → b → a 的循环依赖
+// effect(() => { a.value = b.value; });
+// effect(() => { b.value = a.value; });
+
+// 安全：使用 untracked 打破循环
+function safeEffect() {
+  const currentB = untracked(() => b.value);
+  a.value = currentB + 1;
+}
+
+function untracked<T>(fn: () => T): T {
+  const prev = activeEffect;
+  activeEffect = null;
+  try {
+    return fn();
+  } finally {
+    activeEffect = prev;
+  }
+}
+
+// Angular 中对应为 untracked()
+// Solid 中对应为 untrack()
+```
+
+### 3.9 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -311,7 +376,7 @@ userStore.patch({ age: 31 }); // 输出: Age: 31
 | Signals 只能用于小型项目 | Preact Signals 已被用于大型生产应用（如 Shopify） |
 | Angular Signals 与 RxJS 冲突 | Angular 推荐 Signals 处理同步状态，RxJS 处理异步流，二者互补 |
 
-### 3.8 扩展阅读
+### 3.10 扩展阅读
 
 - [SolidJS Reactivity](https://www.solidjs.com/tutorial/introduction_signals)
 - [Preact Signals — Core Docs](https://preactjs.com/guide/v10/signals/)
@@ -326,7 +391,18 @@ userStore.patch({ age: 31 }); // 输出: Age: 31
 - [Vue Vapor Mode — 无虚拟 DOM 实验](https://github.com/vuejs/vapor)
 - [MobX vs Signals — 响应式范式对比](https://mobx.js.org/README.html)
 - [React Use — 现代 React 并发原语](https://react.dev/reference/react/use)
-- `20.5-frontend-frameworks/`
+- [Wikipedia — Observer Pattern](https://en.wikipedia.org/wiki/Observer_pattern) — Signal 模式的理论基础
+- [TC39 — Decorators Proposal (Stage 3)](https://github.com/tc39/proposal-decorators) — Angular Signals 背后的装饰器语法
+- [Wikipedia — Reactive Programming](https://en.wikipedia.org/wiki/Reactive_programming) — 响应式编程范式形式化定义
+- [Svelte 5 Runes — Official Docs](https://svelte.dev/docs/runes) — Svelte 5 原生 Signal 语法
+- [Qwik — Resumability vs Hydration](https://qwik.dev/docs/concepts/resumable/) — Qwik 框架与 Signal 优化策略
+- [Mitosis — Write Once, Run Everywhere](https://github.com/BuilderIO/mitosis) — 跨框架编译器与 Signal 抽象
+- [VanJS — World's Lightest Reactive Framework](https://vanjs.org/) — 极简 Signal 实现参考
+- [Preact Signals Core — GitHub Source](https://github.com/preactjs/signals) — Preact Signals 核心源码
+- [SolidJS — Reactivity Explained](https://www.solidjs.com/guides/reactivity) — Solid 响应式系统深入解析
+- [Angular — Signals and Change Detection](https://angular.dev/guide/signals/signals-usage) — Angular 信号与变更检测官方指南
+- [Wikipedia — Functional Reactive Programming](https://en.wikipedia.org/wiki/Functional_reactive_programming) — 函数式响应式编程理论
+- [RuneJS — Signal Implementation Walkthrough](https://github.com/tc39/proposal-signals/blob/main/README.md) — TC39 信号提案深度解读
 
 ---
 

@@ -395,6 +395,86 @@ function mergeRegisters<T>(a: LWWRegister<T>, b: LWWRegister<T>): LWWRegister<T>
 - **32-edge-computing**: 边缘节点的实时数据分发
 - **25-microservices**: 微服务间的事件驱动通信
 
+## 11. 代码示例：WebSocket 子协议协商与压缩扩展
+
+```typescript
+// websocket-extensions.ts — 生产级握手与扩展协商
+const socket = new WebSocket('wss://example.com/chat', ['json', 'msgpack'], {
+  headers: {
+    'X-Client-Version': '2.0.0'
+  }
+});
+
+socket.onopen = () => {
+  // 检查协商成功的子协议
+  console.log('Protocol:', socket.protocol); // 'json' | 'msgpack'
+  console.log('Extensions:', socket.extensions); // 'permessage-deflate' 等
+};
+
+// 服务端（Node.js + ws 启用 permessage-deflate）
+import { WebSocketServer } from 'ws';
+import { createServer } from 'http';
+
+const server = createServer();
+const wss = new WebSocketServer({
+  server,
+  perMessageDeflate: {
+    zlibDeflateOptions: { chunkSize: 1024, memLevel: 7, level: 3 },
+    zlibInflateOptions: { chunkSize: 10 * 1024 },
+    clientNoContextTakeover: true,
+    serverNoContextTakeover: true,
+    serverMaxWindowBits: 10,
+    concurrencyLimit: 10
+  }
+});
+```
+
+## 12. 代码示例：WebRTC 完美协商（Perfect Negotiation）
+
+```typescript
+// perfect-negotiation.ts — 避免信令竞争的标准模式
+const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+let makingOffer = false;
+let ignoreOffer = false;
+const polite = true; // 一方 polite=true，另一方 polite=false
+
+pc.onnegotiationneeded = async () => {
+  try {
+    makingOffer = true;
+    await pc.setLocalDescription();
+    signalServer.send({ type: 'offer', sdp: pc.localDescription });
+  } catch (err) {
+    console.error(err);
+  } finally {
+    makingOffer = false;
+  }
+};
+
+pc.onicecandidate = ({ candidate }) => {
+  if (candidate) signalServer.send({ type: 'ice', candidate });
+};
+
+signalServer.onmessage = async ({ type, sdp, candidate }) => {
+  try {
+    if (type === 'offer') {
+      const offerCollision = type === 'offer' && (makingOffer || pc.signalingState !== 'stable');
+      ignoreOffer = !polite && offerCollision;
+      if (ignoreOffer) return;
+
+      await pc.setRemoteDescription(sdp);
+      await pc.setLocalDescription();
+      signalServer.send({ type: 'answer', sdp: pc.localDescription });
+    } else if (type === 'answer') {
+      await pc.setRemoteDescription(sdp);
+    } else if (type === 'ice' && candidate) {
+      await pc.addIceCandidate(candidate);
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+```
+
 ## 权威参考链接
 
 - [MDN WebSocket API](https://developer.mozilla.org/zh-CN/docs/Web/API/WebSocket)
@@ -420,6 +500,12 @@ function mergeRegisters<T>(a: LWWRegister<T>, b: LWWRegister<T>): LWWRegister<T>
 - [WebRTC for the Curious](https://webrtcforthecurious.com/) — 开源 WebRTC 深度指南
 - [High Performance Browser Networking — WebSocket](https://hpbn.co/websocket/) — Ilya Grigorik 网络性能经典
 - [Ably — Real-time Engineering Blog](https://ably.com/blog)
+- [WHATWG — WebSocket Standard](https://websockets.spec.whatwg.org/)
+- [RFC 7692 — Compression Extensions for WebSocket](https://datatracker.ietf.org/doc/html/rfc7692)
+- [W3C — WebRTC Perfect Negotiation](https://w3c.github.io/webrtc-pc/#perfect-negotiation-example)
+- [RFC 8838 — WebRTC Trickle ICE](https://datatracker.ietf.org/doc/html/rfc8838)
+- [MDN — RTCSessionDescription](https://developer.mozilla.org/en-US/docs/Web/API/RTCSessionDescription)
+- [Google — WebRTC Internals](https://webrtc.github.io/webrtc-org/native-code/)
 
 ---
 

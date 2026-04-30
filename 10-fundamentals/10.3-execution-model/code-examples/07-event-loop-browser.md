@@ -330,4 +330,194 @@ function onDataUpdate() {
 
 ---
 
-**参考规范**：HTML Living Standard §8.1.4.2 | MDN | WICG | Chrome Developers
+---
+
+## 13. 深化实例：浏览器调度与渲染实战
+
+### 13.1 正例：requestIdleCallback 与后台任务
+
+```javascript
+// requestIdleCallback 在浏览器空闲时执行低优先级任务
+function scheduleBackgroundWork(deadline: IdleDeadline) {
+  while (deadline.timeRemaining() > 0 && tasks.length > 0) {
+    const task = tasks.shift();
+    task();
+  }
+
+  // 若未执行完，重新注册
+  if (tasks.length > 0) {
+    requestIdleCallback(scheduleBackgroundWork);
+  }
+}
+
+requestIdleCallback(scheduleBackgroundWork, { timeout: 2000 });
+// timeout 确保即使浏览器一直忙碌，也会在 2 秒内强制执行
+```
+
+### 13.2 正例：IntersectionObserver 与事件循环
+
+```javascript
+// IntersectionObserver 回调作为宏任务调度
+const observer = new IntersectionObserver((entries) => {
+  for (const entry of entries) {
+    if (entry.isIntersecting) {
+      // 懒加载图片
+      const img = entry.target as HTMLImageElement;
+      img.src = img.dataset.src!;
+      observer.unobserve(img);
+    }
+  }
+}, { rootMargin: '50px' });
+
+// 观察所有懒加载图片
+document.querySelectorAll('img[data-src]').forEach(img => observer.observe(img));
+
+// 注意：IntersectionObserver 回调在事件循环中的调度时机
+// 类似于 requestAnimationFrame，但独立于渲染周期
+```
+
+### 13.3 正例：ResizeObserver 与微任务调度
+
+```javascript
+// ResizeObserver 回调在布局计算后、绘制前执行
+// 属于观察器回调，通常在当前事件循环周期内执行
+const ro = new ResizeObserver((entries) => {
+  for (const entry of entries) {
+    const { width, height } = entry.contentRect;
+    console.log(`Resized to ${width}x${height}`);
+
+    // 避免在 ResizeObserver 中同步修改导致无限循环
+    // requestAnimationFrame 将 DOM 修改推迟到下一帧
+    requestAnimationFrame(() => {
+      entry.target.style.setProperty('--width', `${width}px`);
+    });
+  }
+});
+
+ro.observe(document.querySelector('.resizable')!);
+```
+
+### 13.4 正例：setTimeout 的 4ms 截断与嵌套限制
+
+```javascript
+// HTML 规范要求 setTimeout 嵌套 5 层以上时最小延迟为 4ms
+let depth = 0;
+function nestedTimeout() {
+  depth++;
+  const start = performance.now();
+  setTimeout(() => {
+    const actual = performance.now() - start;
+    console.log(`Depth ${depth}, actual delay: ${actual.toFixed(2)}ms`);
+    if (depth < 10) nestedTimeout();
+  }, 0);
+}
+
+nestedTimeout();
+// Depth 1-4: ~0-1ms
+// Depth 5+: ~4ms（规范强制）
+```
+
+---
+
+## 14. 更多权威参考
+
+- **HTML Living Standard §8.1.4.2** — Event loops: <https://html.spec.whatwg.org/multipage/webappapis.html#event-loops>
+- **MDN: requestIdleCallback** — <https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback>
+- **MDN: IntersectionObserver** — <https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver>
+- **MDN: ResizeObserver** — <https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver>
+- **MDN: setTimeout** — <https://developer.mozilla.org/en-US/docs/Web/API/setTimeout>
+- **W3C: Intersection Observer** — <https://w3c.github.io/IntersectionObserver/>
+- **W3C: Resize Observer** — <https://w3c.github.io/ResizeObserver/>
+- **Chrome Developers: Inside look at modern web browser** — <https://developer.chrome.com/blog/inside-browser-part3>
+- **Jake Archibald: Tasks, microtasks, queues and schedules** — <https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/>
+
+---
+
+---
+
+## 深化补充三：浏览器调度与优先级任务
+
+### scheduler.postTask 优先级调度
+
+```javascript
+// 使用优先级任务调度 API
+// 'user-blocking' > 'user-visible' > 'background'
+
+scheduler.postTask(() => {
+  console.log('Background task');
+}, { priority: 'background' });
+
+scheduler.postTask(() => {
+  console.log('User-visible task');
+}, { priority: 'user-visible' });
+
+scheduler.postTask(() => {
+  console.log('User-blocking task');
+}, { priority: 'user-blocking' });
+
+// 带 delay 的调度
+scheduler.postTask(() => {
+  console.log('Delayed task');
+}, { delay: 1000, priority: 'user-visible' });
+```
+
+### isInputPending API 协作式调度
+
+```javascript
+// 检测是否有待处理的输入事件
+function processItems(items) {
+  for (const item of items) {
+    processItem(item);
+
+    // 如果有用户输入待处理，让出主线程
+    if (navigator.scheduling?.isInputPending?.()) {
+      // 使用 scheduler.yield 或 setTimeout 让出
+      return scheduler.yield?.().then(() => processItems(items.slice(items.indexOf(item) + 1)));
+    }
+  }
+}
+
+// 保持 UI 响应的同时处理大量数据
+processItems(Array.from({ length: 10000 }, (_, i) => i));
+```
+
+### Cooperative Scheduling with scheduler.yield
+
+```javascript
+async function cooperativeWork(tasks) {
+  for (const task of tasks) {
+    performWork(task);
+
+    // 每完成一个任务后让出主线程
+    if (scheduler.yield) {
+      await scheduler.yield();
+    } else {
+      // 降级方案
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+  }
+}
+
+// 结合优先级
+async function prioritizedWork(tasks) {
+  for (const task of tasks) {
+    performWork(task);
+    await scheduler.yield({ priority: 'user-visible' });
+  }
+}
+```
+
+---
+
+## 更多权威外部链接
+
+- **MDN: scheduler.postTask** — <https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/postTask>
+- **MDN: scheduler.yield** — <https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/yield>
+- **MDN: isInputPending** — <https://developer.mozilla.org/en-US/docs/Web/API/Scheduling/isInputPending>
+- **WICG: Prioritized Task Scheduling** — <https://github.com/WICG/scheduling-apis>
+- **WICG: isInputPending** — <https://github.com/WICG/is-input-pending>
+- **Chrome Developers: Optimize long tasks** — <https://developer.chrome.com/docs/devtools/performance/long-tasks>
+- **HTML Living Standard §8.1.4.2** — Event loops: <https://html.spec.whatwg.org/multipage/webappapis.html#event-loops>
+- **Web Performance Working Group** — <https://www.w3.org/webperf/>
+
+**参考规范**：HTML Living Standard §8.1.4.2 | MDN | WICG | Chrome Developers | W3C WebPerf

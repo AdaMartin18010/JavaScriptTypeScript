@@ -249,6 +249,57 @@ async function callGrpc(service: string, method: string, payload: unknown): Prom
 }
 ```
 
+### 3.7 负载均衡算法实现
+
+```typescript
+// load-balancer.ts — 轮询与最少连接负载均衡
+
+interface BackendNode {
+  id: string;
+  url: string;
+  weight: number;
+  connections: number;
+  healthy: boolean;
+}
+
+export class GatewayLoadBalancer {
+  private backends: BackendNode[] = [];
+  private roundRobinIndex = 0;
+
+  add(node: BackendNode) {
+    this.backends.push(node);
+  }
+
+  /** 加权轮询 */
+  nextWeightedRoundRobin(): BackendNode | undefined {
+    const healthy = this.backends.filter(b => b.healthy);
+    if (healthy.length === 0) return undefined;
+
+    let idx = this.roundRobinIndex;
+    let totalWeight = healthy.reduce((s, b) => s + b.weight, 0);
+    let currentWeight = 0;
+
+    for (let i = 0; i < healthy.length; i++) {
+      currentWeight += healthy[idx % healthy.length].weight;
+      if (currentWeight >= (this.roundRobinIndex % totalWeight)) {
+        this.roundRobinIndex++;
+        return healthy[idx % healthy.length];
+      }
+      idx++;
+    }
+    this.roundRobinIndex++;
+    return healthy[0];
+  }
+
+  /** 最少连接 */
+  nextLeastConnections(): BackendNode | undefined {
+    const healthy = this.backends.filter(b => b.healthy);
+    if (healthy.length === 0) return undefined;
+    return healthy.reduce((min, b) => (b.connections < min.connections ? b : min));
+  }
+}
+```
+
 ---
 
 ## 4. 安全与治理
@@ -301,16 +352,62 @@ routes:
 
 ---
 
-## 6. 总结
+## 6. 代码示例：网关可观测性（OpenTelemetry）
+
+```typescript
+// observability.ts — 网关层分布式追踪与指标
+import { trace, context, propagation } from '@opentelemetry/api';
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+
+const tracer = trace.getTracer('api-gateway');
+
+export async function tracedGatewayHandler(req: Request): Promise<Response> {
+  const parentContext = propagation.extract(context.active(), req.headers);
+
+  return tracer.startActiveSpan('gateway.request', { kind: 1 /* SERVER */ }, parentContext, async (span) => {
+    span.setAttribute('http.method', req.method);
+    span.setAttribute('http.route', new URL(req.url).pathname);
+
+    try {
+      const response = await routeRequest(req);
+      span.setAttribute('http.status_code', response.status);
+      span.setStatus({ code: response.status < 400 ? 1 : 2 });
+      return response;
+    } catch (err) {
+      span.recordException(err as Error);
+      span.setStatus({ code: 2, message: (err as Error).message });
+      return new Response('Internal Server Error', { status: 500 });
+    } finally {
+      span.end();
+    }
+  });
+}
+
+// 初始化 SDK
+export function initTelemetry() {
+  const sdk = new NodeSDK({
+    traceExporter: new OTLPTraceExporter({ url: 'http://otel-collector:4318/v1/traces' }),
+  });
+  sdk.start();
+  return sdk;
+}
+```
+
+---
+
+## 7. 总结
 
 API 网关是微服务架构的**战略要地**。
 
 **选型建议**：
+
 - 初创团队 → 托管网关（AWS/Cloudflare）
 - 成长团队 → Kong / Traefik
 - 大规模 → Envoy + 自定义控制面
 
 **核心原则**：
+
 1. 网关只应处理横切关注点，不处理业务逻辑
 2. 配置即代码，版本化管理网关配置
 3. 监控和告警是网关运维的生命线
@@ -332,6 +429,27 @@ API 网关是微服务架构的**战略要地**。
 - [Google Cloud API Gateway](https://cloud.google.com/api-gateway/docs)
 - [Traefik Docs — Routing & Middlewares](https://doc.traefik.io/traefik/routing/overview/)
 - [Apache APISIX Documentation](https://apisix.apache.org/docs/)
+- [CNCF — API Gateway Landscape](https://landscape.cncf.io/guide#provisioning--api-gateway) — 云原生 API 网关全景
+- [Google SRE Book — Load Balancing](https://sre.google/sre-book/load-balancing-frontend/) — 负载均衡设计原则
+- [IETF — HTTP/2 RFC 7540](https://datatracker.ietf.org/doc/html/rfc7540) — HTTP/2 协议标准
+- [IETF — HTTP/3 RFC 9114](https://datatracker.ietf.org/doc/html/rfc9114) — HTTP/3 协议标准
+- [Martin Fowler — Gateway Routing Pattern](https://martinfowler.com/articles/gateway-pattern.html) — 网关路由模式
+- [Nginx — Reverse Proxy Guide](https://www.nginx.com/resources/glossary/reverse-proxy-server/) — 反向代理基础
+- [Envoy Architecture Overview](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview) — Envoy 架构概览
+- [Netflix Zuul Wiki](https://github.com/Netflix/zuul/wiki) — Zuul 网关设计文档
+- [OpenAPI Specification](https://swagger.io/specification/) — API 定义标准
+- [W3C — Web Services Architecture](https://www.w3.org/TR/ws-arch/) — Web 服务架构标准
+- [OpenTelemetry — API Gateway Instrumentation](https://opentelemetry.io/docs/concepts/instrumenting-library/) — 网关可观测性官方指南
+- [Istio — Traffic Management](https://istio.io/latest/docs/concepts/traffic-management/) — 服务网格流量管理
+- [Linkerd — Gateway Documentation](https://linkerd.io/2.15/tasks/using-ingress/) — Linkerd 网关集成指南
+- [gRPC Gateway — RESTful JSON proxy](https://github.com/grpc-ecosystem/grpc-gateway) — gRPC 到 REST 桥接官方项目
+- [Envoy — Circuit Breaker Configuration](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/circuit_breaking) — Envoy 熔断配置参考
+- [Kong — Rate Limiting Plugin](https://docs.konghq.com/hub/kong-inc/rate-limiting/) — Kong 官方限流插件
+- [Nginx — Lua Module](https://github.com/openresty/lua-nginx-module) — OpenResty Lua 扩展模块
+- [IETF — mTLS RFC 8446](https://datatracker.ietf.org/doc/html/rfc8446) — TLS 1.3 与双向认证标准
+- [Cloudflare — API Shield](https://developers.cloudflare.com/api-shield/) — Cloudflare API 安全与网关产品
+- [AWS — API Gateway WebSocket](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api.html) — AWS WebSocket API 官方文档
+- [Azure — API Management Caching](https://learn.microsoft.com/en-us/azure/api-management/api-management-howto-cache) — Azure 网关缓存策略
 
 ---
 
@@ -358,16 +476,16 @@ API 网关是微服务架构的**战略要地**。
 
 本模块涉及的核心设计模式包括（根据代码实现提炼）：
 
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
+1. **反向代理模式**：隐藏后端服务拓扑，统一暴露接口
+2. **熔断器模式**：防止级联故障，提升系统韧性
+3. **速率限制模式**：保护后端资源，实现公平使用
 
 ### 与相邻模块的关系
 
 | 相邻模块 | 关系说明 |
 |---------|---------|
-| 前置依赖 | 建议先掌握的基础模块 |
-| 后续进阶 | 可继续深化的相关模块 |
+| 前置依赖 | `20.6-backend-apis/rest-api-design`（理解 HTTP 语义与状态码） |
+| 后续进阶 | `20.8-edge-serverless`（边缘网关与 Serverless 集成） |
 
 ---
 

@@ -321,3 +321,197 @@ const v8 = require('v8');
 | WebKit Blog | <https://webkit.org/blog/> | WebKit 博客 |
 | 2ality — V8 Internals | <https://2ality.com/archive.html#v8> | Dr. Axel Rauschmayer V8 文章 |
 | Cliff Click — Sea of Nodes | <https://www.oracle.com/technetwork/java/javase/tech/c2-ir95-150110.pdf> | Sea of Nodes 论文 |
+
+---
+
+## 深化补充二：引擎诊断与低层优化实战
+
+### 使用 performance.now() 测量 JIT 预热
+
+```javascript
+function add(a, b) { return a + b; }
+
+// 冷启动测量
+const startCold = performance.now();
+add(1, 2);
+const coldTime = performance.now() - startCold;
+
+// 预热（触发优化编译）
+for (let i = 0; i < 100000; i++) {
+  add(i, i + 1);
+}
+
+// 热路径测量
+const startHot = performance.now();
+add(1, 2);
+const hotTime = performance.now() - startHot;
+
+console.log(`Cold: ${coldTime.toFixed(4)}ms, Hot: ${hotTime.toFixed(4)}ms`);
+// 通常 hotTime 远小于 coldTime
+```
+
+### WeakRef 与 FinalizationRegistry 的 GC 交互
+
+```javascript
+// WeakRef 允许观察对象是否已被 GC（不阻止回收）
+let target = { data: 'sensitive' };
+const ref = new WeakRef(target);
+
+// 移除强引用
+target = null;
+
+// 强制 GC（仅 Node.js 调试模式：--expose-gc）
+if (global.gc) global.gc();
+
+// 检查是否存活（结果不确定，取决于 GC 状态）
+console.log(ref.deref()); // 可能返回对象或 undefined
+
+// FinalizationRegistry 在对象被回收时触发回调
+const registry = new FinalizationRegistry((heldValue) => {
+  console.log(`Object ${heldValue} was garbage collected`);
+});
+
+let obj = { id: 42 };
+registry.register(obj, 'resource-42');
+obj = null;
+// 未来某个时刻可能输出: "Object resource-42 was garbage collected"
+```
+
+### SharedArrayBuffer 与 Atomics 的多线程内存模型
+
+```javascript
+// 创建共享内存
+const shared = new SharedArrayBuffer(4);
+const view = new Int32Array(shared);
+
+// Worker 线程中通过 Atomics 实现无锁同步
+// 主线程
+Atomics.store(view, 0, 100);
+
+const worker = new Worker('./worker.js');
+worker.postMessage(shared);
+
+// worker.js
+self.onmessage = (e) => {
+  const view = new Int32Array(e.data);
+  const value = Atomics.load(view, 0); // 原子读取
+  Atomics.add(view, 0, 1); // 原子递增
+};
+```
+
+### ArrayBuffer 的转移与结构化克隆
+
+```javascript
+const buffer = new ArrayBuffer(1024);
+const view = new Uint8Array(buffer);
+view[0] = 42;
+
+// postMessage 转移 ArrayBuffer（原上下文失去访问权）
+worker.postMessage(buffer, [buffer]);
+
+console.log(buffer.byteLength); // 0（已转移）
+
+// structuredClone 深拷贝（不转移）
+const cloned = structuredClone({ nested: { buf: new ArrayBuffer(8) } });
+```
+
+---
+
+## 更多权威参考
+
+- **V8 Blog** — <https://v8.dev/blog>
+- **V8: Maglev** — <https://v8.dev/blog/maglev>
+- **MDN: WeakRef** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef>
+- **MDN: FinalizationRegistry** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry>
+- **MDN: SharedArrayBuffer** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer>
+- **MDN: Atomics** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics>
+- **ECMA-262 §24.2** — SharedArrayBuffer Objects: <https://tc39.es/ecma262/#sec-sharedarraybuffer-objects>
+- **Node.js: worker_threads** — <https://nodejs.org/api/worker_threads.html>
+- **SpiderMonkey Blog** — <https://spidermonkey.dev/blog/>
+- **WebKit Blog: JavaScriptCore** — <https://webkit.org/blog/category/javascript/>
+
+---
+
+## 深化补充三：引擎性能测量与运行时诊断
+
+### 性能标记测量 JIT 编译开销
+
+```javascript
+function measureJITOverhead(fn, iterations = 100000) {
+  performance.mark('warmup-start');
+
+  // 预热阶段：触发 JIT 编译
+  for (let i = 0; i < iterations; i++) {
+    fn(i, i + 1);
+  }
+
+  performance.mark('warmup-end');
+  performance.measure('jit-warmup', 'warmup-start', 'warmup-end');
+
+  const measure = performance.getEntriesByName('jit-warmup')[0];
+  console.log(`JIT warmup (${iterations} iterations): ${measure.duration.toFixed(2)}ms`);
+
+  // 清理
+  performance.clearMarks();
+  performance.clearMeasures();
+}
+
+measureJITOverhead((a, b) => a + b);
+```
+
+### console.time 与内存分析
+
+```javascript
+// 测量函数执行时间和内存变化
+function profile(fn, ...args) {
+  const before = performance.memory?.usedJSHeapSize || 0;
+
+  console.time('execution');
+  const result = fn(...args);
+  console.timeEnd('execution');
+
+  if (performance.memory) {
+    const after = performance.memory.usedJSHeapSize;
+    console.log(`Heap delta: ${((after - before) / 1024 / 1024).toFixed(2)} MB`);
+  }
+
+  return result;
+}
+
+profile(() => {
+  return Array.from({ length: 1000000 }, (_, i) => i * 2);
+});
+```
+
+### 堆快照分析实战
+
+```javascript
+// Node.js 生成堆快照分析内存泄漏
+const v8 = require('v8');
+const fs = require('fs');
+
+function takeHeapSnapshot(filename) {
+  const snapshot = v8.writeHeapSnapshot(filename);
+  console.log(`Heap snapshot written to: ${snapshot}`);
+  return snapshot;
+}
+
+// 分析重复字符串或对象
+// 使用 Chrome DevTools Memory 面板加载 .heapsnapshot 文件
+// 或 node --inspect 连接 DevTools 进行实时分析
+```
+
+---
+
+## 更多权威外部链接
+
+- **V8 Blog: Maglev** — <https://v8.dev/blog/maglev>
+- **V8 Blog: Sparkplug** — <https://v8.dev/blog/sparkplug>
+- **V8 Blog: TurboFan** — <https://v8.dev/blog/turbofan-jit>
+- **SpiderMonkey Blog** — <https://spidermonkey.dev/blog/>
+- **WebKit Blog: JavaScriptCore** — <https://webkit.org/blog/category/javascript/>
+- **Node.js: Performance Hooks** — <https://nodejs.org/api/perf_hooks.html>
+- **Node.js: V8 Module** — <https://nodejs.org/api/v8.html>
+- **MDN: performance** — <https://developer.mozilla.org/en-US/docs/Web/API/Performance>
+- **MDN: console.time** — <https://developer.mozilla.org/en-US/docs/Web/API/console/time>
+- **Chrome DevTools: Memory** — <https://developer.chrome.com/docs/devtools/memory>

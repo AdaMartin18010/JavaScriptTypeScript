@@ -206,6 +206,48 @@ const masked = phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
 console.log(masked); // '138****8000'
 ```
 
+### 真实世界 URL 解析
+
+```javascript
+// 解析标准 URL 各组成部分
+const urlPattern =
+  /^(?<protocol>https?):\/\/(?<host>[\w.-]+)(?::(?<port>\d+))?(?<path>\/[^?#]*)?(?:\?(?<query>[^#]*))?(?:#(?<hash>.*))?$/;
+
+const url = 'https://api.example.com:8080/v1/users?active=true#section';
+const match = url.match(urlPattern);
+
+console.log(match?.groups);
+// {
+//   protocol: 'https',
+//   host: 'api.example.com',
+//   port: '8080',
+//   path: '/v1/users',
+//   query: 'active=true',
+//   hash: 'section'
+// }
+```
+
+### 使用 Symbol.matchAll 自定义匹配行为
+
+```javascript
+// 自定义迭代器以处理重叠匹配
+const overlappingRegex = /\w{3}/gy;
+const str = 'abcdef';
+
+const results = [];
+for (const match of str.matchAll(overlappingRegex)) {
+  results.push(match[0]);
+}
+console.log(results); // ['abc', 'def']
+
+// 重叠匹配（每次前进一位）
+const overlap = [];
+for (let i = 0; i <= str.length - 3; i++) {
+  overlap.push(str.slice(i, i + 3));
+}
+console.log(overlap); // ['abc', 'bcd', 'cde', 'def']
+```
+
 ---
 
 ## 代码示例：正则性能优化
@@ -271,6 +313,9 @@ re[Symbol.split] = function (str) {
 - [MDN — RegExp.prototype.exec](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec)
 - [OWASP — ReDoS (Regular Expression Denial of Service)](https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS)
 - [Can I Use — ES2018 RegExp Features](https://caniuse.com/mdn-javascript_builtins_regexp_property_escapes)
+- [ECMA-262 §22.2 — RegExp Objects](https://tc39.es/ecma262/#sec-regexp-regular-expression-objects) — 正则对象规范原文
+- [RegExr — 交互式正则学习工具](https://regexr.com/)
+- [MDN — RegExp.prototype[Symbol.matchAll]](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/@@matchAll)
 
 ---
 

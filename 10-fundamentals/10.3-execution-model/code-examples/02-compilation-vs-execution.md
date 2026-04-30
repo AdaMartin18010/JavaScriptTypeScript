@@ -299,4 +299,170 @@ flowchart TD
 
 ---
 
-**参考规范**：ECMA-262 §5.2, §9 | V8 Blog | MDN
+---
+
+## 9. 深化实例：编译时与运行时边界案例
+
+### 9.1 正例：Function 构造器与动态编译
+
+```javascript
+// Function 构造器在全局作用域编译，无法访问局部变量
+function outer() {
+  const local = 'secret';
+
+  // 编译时无法解析 local，因为 Function 在全局词法环境编译
+  const fn = new Function('return typeof local');
+  console.log(fn()); // "undefined"
+
+  // eval 在当前词法环境编译和执行
+  const val = eval('local'); // "secret"
+}
+
+outer();
+```
+
+### 9.2 正例：import() 的动态编译与执行分离
+
+```javascript
+// 静态 import 在编译阶段加载和链接
+import { utils } from './utils.js'; // 编译时确定
+
+// 动态 import() 在运行时编译和执行
+async function loadPlugin(name) {
+  // 编译和执行都推迟到运行时
+  const module = await import(`./plugins/${name}.js`);
+  return module.default;
+}
+
+// import.meta 在编译阶段确定当前模块 URL
+console.log(import.meta.url); // 当前模块的绝对路径
+```
+
+### 9.3 正例：eval 的编译上下文切换
+
+```javascript
+const x = 'global';
+
+function strictEval() {
+  'use strict';
+  const x = 'local';
+
+  // 非严格模式 eval：在当前环境编译
+  eval('var leaked = 1; console.log(x)'); // "local"
+  console.log(leaked); // 1（泄漏到函数环境）
+
+  // 严格模式 eval：创建独立词法环境
+  eval('"use strict"; var isolated = 2; console.log(x)'); // "local"
+  // console.log(isolated); // ReferenceError（不泄漏）
+}
+
+strictEval();
+```
+
+### 9.4 正例：JSON.parse 与结构化克隆的编译差异
+
+```javascript
+// JSON.parse 在运行时解析字符串为对象（无编译阶段）
+const obj = JSON.parse('{"key": "value"}');
+
+// 结构化克隆支持更多类型（Date, Map, Set, TypedArray 等）
+const original = {
+  date: new Date(),
+  map: new Map([['a', 1]]),
+  buffer: new ArrayBuffer(8)
+};
+
+const cloned = structuredClone(original);
+console.log(cloned.date instanceof Date); // true
+```
+
+---
+
+## 10. 更多权威参考
+
+- **ECMA-262 §5.2** — Algorithm Conventions: <https://tc39.es/ecma262/#sec-algorithm-conventions>
+- **ECMA-262 §19.2.1.1** — Function Constructor: <https://tc39.es/ecma262/#sec-function-p1-p2-p3-p4-p5-p6-p7-p8-p9-p10-p11-p12-p13-p14-p15-body>
+- **MDN: Function** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function>
+- **MDN: import()** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import>
+- **MDN: import.meta** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import.meta>
+- **MDN: structuredClone** — <https://developer.mozilla.org/en-US/docs/Web/API/structuredClone>
+- **V8 Blog: Ignition Interpreter** — <https://v8.dev/blog/ignition-interpreter>
+- **V8 Blog: Maglev** — <https://v8.dev/blog/maglev>
+- **Node.js: VM Module** — <https://nodejs.org/api/vm.html>
+- **TC39: Source Phase Imports (Stage 3)** — <https://github.com/tc39/proposal-source-phase-imports>
+
+---
+
+---
+
+## 深化补充三：编译边界与模块加载
+
+### import() 的动态编译与预加载
+
+```javascript
+// 静态 import 在编译阶段解析依赖图
+import { utils } from './utils.js'; // 编译时确定
+
+// 动态 import() 在运行时编译和执行
+async function loadLocale(locale) {
+  // 编译和执行都推迟到运行时
+  const module = await import(`./locales/${locale}.js`);
+  return module.default;
+}
+
+// import.meta 在编译阶段确定
+console.log(import.meta.url); // 当前模块的绝对路径
+
+// 模块预加载提示（编译时优化）
+// <link rel="modulepreload" href="./critical-module.js">
+```
+
+### Function 构造器与 eval 的编译差异
+
+```javascript
+const local = 'secret';
+
+// Function 构造器在全局词法环境编译
+const globalFn = new Function('return typeof local');
+console.log(globalFn()); // "undefined" — 无法访问局部变量
+
+// eval 在当前词法环境编译和执行
+const localEval = eval('typeof local'); // "string"
+
+// 间接 eval 在全局环境编译
+const indirect = eval;
+console.log(indirect('typeof local')); // "undefined"（浏览器）或报错（ESM）
+```
+
+### Script 元素的编译与执行
+
+```javascript
+// 内联脚本的编译与执行
+// <script> 中的代码在解析时编译，遇到时执行
+
+// async 脚本：下载后立即编译执行（不阻塞解析）
+// <script src="async.js" async></script>
+
+// defer 脚本：下载后延迟到 HTML 解析完成再执行
+// <script src="defer.js" defer></script>
+
+// type="module"：自动 defer，严格模式，独立作用域
+// <script type="module" src="module.js"></script>
+```
+
+---
+
+## 更多权威外部链接
+
+- **HTML Standard: Script Execution** — <https://html.spec.whatwg.org/multipage/scripting.html>
+- **MDN: import()** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import>
+- **MDN: import.meta** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import.meta>
+- **MDN: Function** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function>
+- **MDN: eval** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval>
+- **MDN: script element** — <https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script>
+- **V8 Blog: Code Caching** — <https://v8.dev/blog/code-caching>
+- **V8 Blog: Improved Code Caching** — <https://v8.dev/blog/improved-code-caching>
+- **Node.js: VM Module** — <https://nodejs.org/api/vm.html>
+- **WebPack: Module Federation** — <https://webpack.js.org/concepts/module-federation/>
+
+**参考规范**：ECMA-262 §5.2, §9 | V8 Blog | MDN | HTML Standard

@@ -203,6 +203,56 @@ add('hello', 'world');
 
 ---
 
+## 代码示例：通过 V8 标志观察编译状态
+
+```javascript
+// ============================================
+// 示例 5：使用 V8 内部标志观察 JIT 状态
+// ============================================
+
+// 运行以下脚本时附加 V8 标志：
+// node --trace-opt --trace-deopt --trace-baseline jit-observer.js
+
+function hotFunction(x) {
+  return x * 2 + 1;
+}
+
+// 热身调用
+for (let i = 0; i < 10000; i++) {
+  hotFunction(i);
+}
+
+// 观察输出：
+// [marking <JSFunction hotFunction> for optimized recompilation]
+// [compiling method <JSFunction hotFunction> using TurboFan]
+// [optimizing <JSFunction hotFunction> ...]
+
+// 触发去优化
+hotFunction("not a number");
+// [deoptimizing (DEOPT eager): begin <JSFunction hotFunction> ...]
+
+// ============================================
+// 示例 6：Node.js --prof 分析 JIT 行为
+// ============================================
+
+// 1. 运行：node --prof profile-demo.js
+// 2. 处理：node --prof-process isolate-*.log > profile.txt
+// 3. 查看输出中的 [JavaScript]、[Builtin]、[C++] 占比
+// 4. 关注 [Optimized] vs [Unoptimized] 函数占比
+
+function compute(n) {
+  let sum = 0;
+  for (let i = 0; i < n; i++) {
+    sum += Math.sqrt(i);
+  }
+  return sum;
+}
+
+compute(1e6);
+```
+
+---
+
 ## 关键引理
 
 ### 引理 1.1：解释执行的必要性
@@ -261,10 +311,17 @@ add('hello', 'world');
 | **V8 Blog: Ignition + TurboFan** | V8 双编译器架构官方介绍 | [v8.dev/blog/ignition-interpreter](https://v8.dev/blog/ignition-interpreter) |
 | **V8 Blog: Sparkplug** | V8 快速非优化编译器 | [v8.dev/blog/sparkplug](https://v8.dev/blog/sparkplug) |
 | **V8 Blog: Sea of Nodes** | TurboFan IR 设计解析 | [v8.dev/blog/turbofan-jit](https://v8.dev/blog/turbofan-jit) |
-| **Understanding V8 Bytecode** | 字节码与 IC 机制详解 | [medium.com/dailyjs/understanding-vms-bytecode-75d9a2638c0b](https://medium.com/dailyjs/understanding-v8s-bytecode-317d46c94775) |
+| **Understanding V8 Bytecode** | 字节码与 IC 机制详解 | [medium.com/dailyjs/understanding-v8s-bytecode-317d46c94775](https://medium.com/dailyjs/understanding-v8s-bytecode-317d46c94775) |
 | **Hidden Classes in V8** | 隐藏类与形状优化 | [v8.dev/docs/hidden-classes](https://v8.dev/docs/hidden-classes) |
 | **Deoptimization in V8** | 去优化机制内部实现 | [v8.dev/blog/deoptimizer](https://v8.dev/blog/deoptimizer) |
 | **JavaScript Engine Fundamentals** | 各引擎通用 JIT 原理解析 | [mathiasbynens.be/notes/shapes-ics](https://mathiasbynens.be/notes/shapes-ics) |
+| **V8 Blog: Maglev** | V8 v11.8+ 引入的中间层优化编译器 | [v8.dev/blog/maglev](https://v8.dev/blog/maglev) |
+| **V8 Blog: Turboshaft** | TurboFan 的新中间层框架 | [v8.dev/blog/turboshaft](https://v8.dev/blog/turboshaft) |
+| **MDN: JavaScript Performance** | JS 性能优化指南 | [developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Client-side_JavaScript_frameworks/Main_features](https://developer.mozilla.org/en-US/docs/Web/Performance) |
+| **Node.js: V8 Options** | Node.js V8 运行时选项 | [nodejs.org/api/cli.html#--v8-options](https://nodejs.org/api/cli.html#--v8-options) |
+| **Chrome DevTools: Performance** | 性能分析工具使用 | [developer.chrome.com/docs/devtools/performance](https://developer.chrome.com/docs/devtools/performance) |
+| **ECMA-262 §9.4** | Execution Contexts 规范 | [tc39.es/ecma262/#sec-execution-contexts](https://tc39.es/ecma262/#sec-execution-contexts) |
+| **V8 Design Docs** | V8 内部设计文档索引 | [v8.dev/docs](https://v8.dev/docs) |
 
 ---
 

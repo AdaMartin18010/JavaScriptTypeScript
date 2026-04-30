@@ -224,6 +224,100 @@ arr.push(1);
 // arr.push("hello"); // ✅ 报错
 ```
 
+### 6.3 正例：上下文类型推断在回调中的应用
+
+```typescript
+// 事件监听器的参数类型由 addEventListener 的签名推断
+document.addEventListener('click', (event) => {
+  // event 自动推断为 MouseEvent，无需显式注解
+  console.log(event.clientX, event.clientY);
+});
+
+// Array 方法的回调类型由数组元素类型推断
+const users: { name: string; age: number }[] = [
+  { name: 'Alice', age: 30 },
+  { name: 'Bob', age: 25 }
+];
+
+users.filter(user => user.age >= 18); // user 自动推断
+users.map(user => user.name);         // 返回 string[]
+```
+
+### 6.4 正例：`infer` 关键字与条件类型推断
+
+```typescript
+// 从 Promise<T> 中提取 T
+type Awaited<T> = T extends Promise<infer U> ? U : T;
+
+type Result1 = Awaited<Promise<string>>; // string
+type Result2 = Awaited<number>;           // number
+
+// 从函数类型中提取参数类型
+type Parameters<T extends (...args: any[]) => any> =
+  T extends (...args: infer P) => any ? P : never;
+
+type Params = Parameters<(x: number, y: string) => void>;
+// [number, string]
+
+// 从函数类型中提取返回类型
+type ReturnType<T extends (...args: any[]) => any> =
+  T extends (...args: any[]) => infer R ? R : never;
+
+type Ret = ReturnType<() => Promise<boolean>>;
+// Promise<boolean>
+```
+
+### 6.5 正例：`NoInfer<T>`（TypeScript 5.4+）
+
+```typescript
+// NoInfer<T> 阻止从特定位置推断类型
+// 常用于需要明确泛型参数的场景
+
+type NoInfer<T> = [T][T extends any ? 0 : never];
+
+function createLogger<T>(level: NoInfer<T>, handler: (msg: T) => void) {
+  return (msg: T) => handler(msg);
+}
+
+// ❌ 如果没有 NoInfer，level 会被推断为 string，导致约束过宽
+// ✅ 使用 NoInfer 后，T 必须从 handler 推断
+const log = createLogger('info', (msg: 'info' | 'warn' | 'error') => {
+  console.log(msg);
+});
+```
+
+### 6.6 正例：TypeScript 5.8 的 `isolatedDeclarations` 推断约束
+
+```typescript
+// isolatedDeclarations 要求导出的类型必须显式注解
+// 编译器无法从表达式推断导出签名
+
+// ❌ 在 isolatedDeclarations 下报错
+export const add = (a, b) => a + b;
+
+// ✅ 显式注解满足 isolatedDeclarations
+export const add = (a: number, b: number): number => a + b;
+
+// ✅ 接口和类型别名天然支持
+export interface Point {
+  x: number;
+  y: number;
+}
+```
+
+### 6.7 正例：const 类型参数（TypeScript 5.0+）
+
+```typescript
+// const 类型参数自动推断字面量类型
+function createRoute<const T extends readonly string[]>(paths: T) {
+  return paths;
+}
+
+const routes = createRoute(['/home', '/about', '/contact']);
+// routes 类型：readonly ["/home", "/about", "/contact"]
+// 而非 string[]
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
@@ -232,11 +326,26 @@ arr.push(1);
 
 - **TypeScript Handbook: Type Inference** — <https://www.typescriptlang.org/docs/handbook/type-inference.html>
 - **TypeScript Handbook: Contextual Typing** — <https://www.typescriptlang.org/docs/handbook/type-inference.html#contextual-typing>
+- **TypeScript Handbook: Advanced Types** — <https://www.typescriptlang.org/docs/handbook/2/types-from-types.html>
+- **TypeScript 5.4 Release Notes: NoInfer** — <https://devblogs.microsoft.com/typescript/announcing-typescript-5-4/#the-noinfer-utility-type>
+- **TypeScript 5.0 Release Notes: const Type Parameters** — <https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/#const-type-parameters>
+- **TypeScript 5.5 Release Notes: Type Inference Improvements** — <https://devblogs.microsoft.com/typescript/announcing-typescript-5-5/>
 
 ### 7.2 学术资源
 
 - **"Principal Type-schemes for Functional Programs" (Damas & Milner, 1982)** — Hindley-Milner 算法
 - **"Bidirectional Type Checking" (Pierce & Turner, 2000)** — 双向类型检查
+- **"Types and Programming Languages" (Pierce, 2002)** — 类型系统权威教材
+
+### 7.3 社区与工具资源
+
+- **TypeScript Deep Dive** — <https://basarat.gitbook.io/typescript/>
+- **Type Challenges** — <https://github.com/type-challenges/type-challenges>
+- **Total TypeScript** — <https://www.totaltypescript.com/>
+- **TS AST Viewer** — <https://ts-ast-viewer.com/>
+- **TypeScript Playground** — <https://www.typescriptlang.org/play>
+- **ECMA-262 §6.1** — ECMAScript Language Types: <https://tc39.es/ecma262/#sec-ecmascript-language-types>
+- **MDN: JavaScript Data Types** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures>
 
 ---
 
@@ -274,15 +383,14 @@ flowchart TD
 
 TypeScript 的类型系统具有图灵完备性，使得复杂的类型计算成为可能：
 
-`ypescript
+```typescript
 // 字符串字面量操作
 type Length<T extends string, Acc extends 0[] = []> =
-  T extends` ? Acc['length'] :
-  T extends ${string} ? Length<Rest, [...Acc, 0]> : never;
+  T extends `${string}${infer Rest}` ? Length<Rest, [...Acc, 0]> : Acc['length'];
 
 // 使用
 type L1 = Length<"hello">; // 5
-`
+```
 
 ### 性能考虑
 
@@ -305,26 +413,20 @@ type L1 = Length<"hello">; // 5
 | TS 5.4 | NoInfer<T> |
 | TS 5.8 | 条件返回类型检查增强 |
 
-### 权威参考补充
-
-- **TypeScript Deep Dive** — <https://basarat.gitbook.io/typescript/>
-- **Type Challenges** — <https://github.com/type-challenges/type-challenges>
-- **Total TypeScript** — <https://www.totaltypescript.com/>
-
 ---
 
 ## 思维表征补充
 
 ### 类型系统能力层级
 
-`mermaid
+```mermaid
 graph LR
     A[基础类型] --> B[泛型]
     B --> C[条件类型]
     C --> D[映射类型]
     D --> E[递归类型]
     E --> F[类型体操]
-`
+```
 
 ### 学习路径速查
 
@@ -349,11 +451,11 @@ graph LR
 
 ### 类型安全性等级
 
-`
+```
 类型安全谱系（从弱到强）：
 
 JavaScript (any) < TypeScript (strict: false) < TypeScript (strict: true) < TypeScript (strict + noUncheckedIndexedAccess) < 依赖类型语言 (Idris/Agda)
-`
+```
 
 ### 与函数式编程类型的对比
 
@@ -369,7 +471,7 @@ JavaScript (any) < TypeScript (strict: false) < TypeScript (strict: true) < Type
 
 TypeScript 的类型系统可形式化为一个**结构子类型系统**（Structural Subtyping）：
 
-`
+```
 Γ ⊢ τ₁ <: τ₂    （在环境 Γ 下，τ₁ 是 τ₂ 的子类型）
 
 规则示例：
@@ -379,20 +481,20 @@ TypeScript 的类型系统可形式化为一个**结构子类型系统**（Struc
 
 - 前者包含 x: number
 - 前者包含 y: string（额外属性不影响子类型关系）
-`
+```
 
 ### 编译器实现细节
 
 TypeScript 编译器的类型检查器核心逻辑：
 
-`
+```
 
 1. 构建类型图（Type Graph）
 2. 为每个表达式分配类型变量
 3. 收集约束条件（Constraints）
 4. 求解约束（Unification）
 5. 报告类型错误
-`
+```
 
 ### 性能优化
 
@@ -409,7 +511,7 @@ TypeScript 编译器的类型检查器核心逻辑：
 
 ### 类型驱动开发（Type-Driven Development）
 
-` ypescript
+```typescript
 // 1. 先定义类型
 interface APIResponse<T> {
   data: T;
@@ -426,11 +528,11 @@ async function fetchData<T>(url: string): Promise<APIResponse<T>> {
 // 3. 类型即文档
 const result = await fetchData<User>("/api/user");
 // result 的类型: APIResponse<User>
-`
+```
 
 ### 防御式编程模式
 
-` ypescript
+```typescript
 // 使用 unknown + 类型守卫处理外部数据
 function processExternalData(data: unknown): Result {
   if (!isValidData(data)) {
@@ -439,7 +541,7 @@ function processExternalData(data: unknown): Result {
   // data 已收窄为 ValidData 类型
   return { success: true, data: transform(data) };
 }
-`
+```
 
 ---
 
@@ -447,15 +549,16 @@ function processExternalData(data: unknown): Result {
 
 ### ECMA-262 规范核心章节
 
-- **§5.2 Algorithm Conventions** — 规范算法约定
-- **§6.1 ECMAScript Language Types** — 类型系统基础
-- **§9.4 Execution Contexts** — 执行上下文
-- **§13.15 Equality Operators** — 等式运算符语义
+- **§5.2 Algorithm Conventions** — 规范算法约定: <https://tc39.es/ecma262/#sec-algorithm-conventions>
+- **§6.1 ECMAScript Language Types** — 类型系统基础: <https://tc39.es/ecma262/#sec-ecmascript-language-types>
+- **§9.4 Execution Contexts** — 执行上下文: <https://tc39.es/ecma262/#sec-execution-contexts>
+- **§13.15 Equality Operators** — 等式运算符语义: <https://tc39.es/ecma262/#sec-equality-operators>
 
 ### TypeScript 编译器内部
 
 - **TypeScript Compiler API** — <https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API>
 - **TypeScript AST Viewer** — <https://ts-ast-viewer.com/>
+- **TypeScript Design Goals** — <https://github.com/Microsoft/TypeScript/wiki/TypeScript-Design-Goals>
 
 ### 国际化资源
 
@@ -498,14 +601,14 @@ function processExternalData(data: unknown): Result {
 
 ### 10.1 演绎推理链
 
-`mermaid
+```mermaid
 graph TD
     A[类型标注] --> B[编译时检查]
     B --> C{类型兼容?}
     C -->|是| D[编译通过]
     C -->|否| E[编译错误]
     D --> F[运行时执行]
-`
+```
 
 ### 10.2 反事实推理
 

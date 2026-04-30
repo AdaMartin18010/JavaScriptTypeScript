@@ -314,6 +314,66 @@ async function barrierDemo() {
 barrierDemo();
 ```
 
+#### 3.1.9 Atomics.exchange 原子值交换
+
+```typescript
+// atomic-swap.ts — 基于 exchange 的原子引用更新
+const buffer = new SharedArrayBuffer(4);
+const slot = new Int32Array(buffer);
+
+class AtomicReference<T> {
+  private handles = new Map<number, T>();
+  private nextId = 1;
+
+  store(value: T): number {
+    const id = this.nextId++;
+    this.handles.set(id, value);
+    const oldId = Atomics.exchange(slot, 0, id);
+    if (oldId !== 0) this.handles.delete(oldId);
+    return id;
+  }
+
+  load(): T | undefined {
+    const id = Atomics.load(slot, 0);
+    return id === 0 ? undefined : this.handles.get(id);
+  }
+}
+
+// 使用：Worker 间共享配置快照
+const configRef = new AtomicReference<Record<string, unknown>>();
+configRef.store({ version: 1, featureFlags: { beta: true } });
+console.log(configRef.load());
+```
+
+#### 3.1.10 多线程安全的引用计数器（Atomics.add + Atomics.sub）
+
+```typescript
+// refcount.ts — 共享对象生命周期管理
+const buffer = new SharedArrayBuffer(4);
+const refCount = new Int32Array(buffer);
+Atomics.store(refCount, 0, 1); // 初始引用
+
+function retain() {
+  Atomics.add(refCount, 0, 1);
+}
+
+function release(): boolean {
+  const remaining = Atomics.sub(refCount, 0, 1) - 1;
+  if (remaining === 0) {
+    // 最后一个引用释放，执行清理
+    console.log('Resource freed');
+    return true;
+  }
+  return false;
+}
+
+retain();
+retain();
+release(); // 2
+release(); // 1
+release(); // 0 → Resource freed
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -343,6 +403,7 @@ barrierDemo();
 - [COOP and COEP Explained — web.dev](https://web.dev/articles/coop-coep)
 - [V8 Blog — Concurrent Marking in V8](https://v8.dev/blog/concurrent-marking)
 - [V8 Blog — Elements Kinds and Performance](https://v8.dev/blog/elements-kinds)
+- [V8 Blog — Atomics and SharedArrayBuffer](https://v8.dev/blog/atomics)
 
 #### 学术与进阶
 
@@ -352,6 +413,10 @@ barrierDemo();
 - [A Primer on Memory Consistency and Cache Coherence (Morgan & Claypool)](https://www.morganclaypool.com/doi/abs/10.2200/S00962ED2V01Y201910CAC049)
 - [Is Parallel Programming Hard? And, If So, What Can You Do About It? — Paul E. McKenney](https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook.html)
 - [C++ Memory Order and JS Atomics — V8 Team](https://v8.dev/blog/atomics)
+- [LLVM Atomic Instructions and Concurrency Guide](https://llvm.org/docs/Atomics.html)
+- [What Every Systems Programmer Should Know About Concurrency — Matt Trout](https://assets.bitbashing.io/papers/concurrency-primer.pdf)
+- [Java Concurrency in Practice — Brian Goetz](https://jcip.net/)
+- [Intel 64 and IA-32 Architectures Software Developer's Manual Vol. 3A — Chapter 8.2 Memory Ordering](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
 
 #### 关联模块
 

@@ -359,4 +359,194 @@ console.log('7');
 
 ---
 
-**参考规范**：HTML Living Standard §8.1.4.2 | ECMA-262 §27.2 | MDN | Node.js Docs
+---
+
+## 13. 深化实例：队列调度边界与实战
+
+### 13.1 正例：Promise.race 的微任务时序
+
+```javascript
+const p1 = new Promise(resolve => setTimeout(() => resolve('timeout'), 0));
+const p2 = Promise.resolve('immediate');
+
+Promise.race([p1, p2]).then(winner => {
+  console.log('Winner:', winner); // "immediate"
+});
+
+// Promise.race 的决议本身是一个微任务
+// 即使 p2 已经是 resolved 状态，race 回调仍需等待当前调用栈清空
+```
+
+### 13.2 正例：Atomics.waitAsync 的异步等待队列
+
+```javascript
+// SharedArrayBuffer 上的异步原子操作
+const sab = new SharedArrayBuffer(4);
+const view = new Int32Array(sab);
+
+// Atomics.waitAsync 返回一个 Promise-like 对象
+const { async, value } = Atomics.waitAsync(view, 0, 0, 1000);
+
+if (async) {
+  value.then(result => {
+    console.log('Woke up with:', result); // "ok" 或 "timed-out"
+  });
+} else {
+  console.log('Synchronous result:', value); // 某些平台可能同步返回
+}
+
+// 在 Worker 中唤醒
+// Atomics.notify(view, 0, 1);
+```
+
+### 13.3 正例：BroadcastChannel 与宏任务队列
+
+```javascript
+// BroadcastChannel 消息在目标上下文的宏任务队列中调度
+const channel = new BroadcastChannel('app-sync');
+
+channel.onmessage = (event) => {
+  console.log('Received:', event.data);
+  // 此回调作为标准 MessageEvent 宏任务执行
+};
+
+channel.postMessage({ type: 'UPDATE', payload: {} });
+
+// 与 MessagePort 类似，但支持同 origin 的所有上下文
+// 消息顺序通过序列化的宏任务队列保证
+```
+
+### 13.4 正例：手动清空微任务队列
+
+```javascript
+// 在测试或框架中可能需要等待微任务队列清空
+async function flushMicrotasks() {
+  return new Promise(resolve => queueMicrotask(resolve));
+}
+
+// 更彻底的方式：等待所有级联微任务
+async function flushAllMicrotasks() {
+  while (true) {
+    const hadTasks = await new Promise(resolve => {
+      let executed = false;
+      queueMicrotask(() => { executed = true; });
+      queueMicrotask(() => resolve(executed));
+    });
+    if (!hadTasks) break;
+  }
+}
+
+// 使用
+let counter = 0;
+Promise.resolve().then(() => counter++);
+Promise.resolve().then(() => counter++);
+await flushMicrotasks();
+console.log(counter); // 2
+```
+
+---
+
+## 14. 更多权威参考
+
+- **HTML Living Standard §8.1.4.2** — Event loops: <https://html.spec.whatwg.org/multipage/webappapis.html#event-loops>
+- **ECMA-262 §27.2** — Promise Jobs: <https://tc39.es/ecma262/#sec-promise-jobs>
+- **MDN: queueMicrotask** — <https://developer.mozilla.org/en-US/docs/Web/API/queueMicrotask>
+- **MDN: Atomics.waitAsync** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics/waitAsync>
+- **MDN: BroadcastChannel** — <https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel>
+- **MDN: MessageChannel** — <https://developer.mozilla.org/en-US/docs/Web/API/MessageChannel>
+- **Node.js: process.nextTick** — <https://nodejs.org/api/process.html#processnexttickcallback-args>
+- **Node.js: queueMicrotask** — <https://nodejs.org/api/globals.html#queuemicrotaskcallback>
+- **WICG: Prioritized Task Scheduling** — <https://github.com/WICG/scheduling-apis>
+- **Jake Archibald: Tasks, microtasks, queues and schedules** — <https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/>
+
+---
+
+---
+
+## 深化补充三：队列调度高级模式
+
+### Promise.withResolvers 与微任务
+
+```javascript
+// Promise.withResolvers (ES2024) 提供 resolve/reject 引用
+const { promise, resolve, reject } = Promise.withResolvers();
+
+setTimeout(() => resolve('async value'), 100);
+
+promise.then(value => {
+  console.log(value); // "async value"
+});
+
+// 与手动构造等价：
+// let resolve, reject;
+// const promise = new Promise((res, rej) => { resolve = res; reject = rej; });
+```
+
+### AbortSignal 在异步任务队列中的应用
+
+```javascript
+// 使用 AbortSignal 取消待执行的宏任务
+function scheduleWithTimeout(fn, delay, signal) {
+  const timeoutId = setTimeout(fn, delay);
+
+  if (signal) {
+    signal.addEventListener('abort', () => {
+      clearTimeout(timeoutId);
+      console.log('Task cancelled');
+    });
+  }
+
+  return timeoutId;
+}
+
+const controller = new AbortController();
+scheduleWithTimeout(() => console.log('executed'), 5000, controller.signal);
+
+// 2 秒后取消
+setTimeout(() => controller.abort(), 2000);
+// 输出: "Task cancelled"（不会输出 "executed"）
+```
+
+### 微任务刷新与测试模式
+
+```javascript
+// 在测试中等待所有微任务完成
+async function flushMicrotasks() {
+  // 方式一：使用 queueMicrotask
+  await new Promise(resolve => queueMicrotask(resolve));
+
+  // 方式二：使用 setImmediate（Node.js）
+  // await new Promise(resolve => setImmediate(resolve));
+}
+
+// Jest/Vitest 中的实用模式
+async function waitForMicrotasks(count = 1) {
+  for (let i = 0; i < count; i++) {
+    await Promise.resolve();
+  }
+}
+
+// 测试 Promise 副作用
+let sideEffect = false;
+Promise.resolve().then(() => { sideEffect = true; });
+
+console.log(sideEffect); // false
+await flushMicrotasks();
+console.log(sideEffect); // true
+```
+
+---
+
+## 更多权威外部链接
+
+- **MDN: Promise.withResolvers** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers>
+- **MDN: AbortController** — <https://developer.mozilla.org/en-US/docs/Web/API/AbortController>
+- **MDN: AbortSignal** — <https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal>
+- **MDN: clearTimeout** — <https://developer.mozilla.org/en-US/docs/Web/API/clearTimeout>
+- **ECMA-262 §27.2** — Promise Jobs: <https://tc39.es/ecma262/#sec-promise-jobs>
+- **HTML Living Standard §8.1.4.2** — Event loops: <https://html.spec.whatwg.org/multipage/webappapis.html#event-loops>
+- **Node.js: process.nextTick** — <https://nodejs.org/api/process.html#processnexttickcallback-args>
+- **Jest: Testing Asynchronous Code** — <https://jestjs.io/docs/asynchronous>
+- **Vitest: Testing** — <https://vitest.dev/guide/testing-types.html>
+
+**参考规范**：HTML Living Standard §8.1.4.2 | ECMA-262 §27.2 | MDN | Node.js Docs | Jest | Vitest

@@ -402,7 +402,116 @@ st.update(2, 10);
 console.log(st.query(1, 3)); // 3 + 10 + 7 = 20
 ```
 
-## 十、权威参考链接
+## 十、代码示例：Fenwick Tree（二叉索引树）
+
+```typescript
+// fenwick-tree.ts — 支持前缀和查询与单点更新的高效结构
+class FenwickTree {
+  private tree: number[];
+
+  constructor(n: number) {
+    this.tree = new Array(n + 1).fill(0);
+  }
+
+  /** 在 index 位置增加 delta（1-based） */
+  add(index: number, delta: number): void {
+    while (index < this.tree.length) {
+      this.tree[index] += delta;
+      index += index & -index;
+    }
+  }
+
+  /** 查询 [1, index] 的前缀和（1-based） */
+  sum(index: number): number {
+    let res = 0;
+    while (index > 0) {
+      res += this.tree[index];
+      index -= index & -index;
+    }
+    return res;
+  }
+
+  /** 查询 [l, r] 区间和 */
+  rangeSum(l: number, r: number): number {
+    return this.sum(r) - this.sum(l - 1);
+  }
+}
+
+// 使用：动态频率统计与逆序对计数
+const ft = new FenwickTree(10);
+ft.add(3, 5);
+ft.add(5, 2);
+console.log(ft.sum(5));       // 7
+console.log(ft.rangeSum(3, 5)); // 7
+```
+
+## 十一、代码示例：循环数组实现的双端队列（Deque）
+
+```typescript
+// circular-deque.ts — 固定容量 O(1) 双端操作
+class CircularDeque<T> {
+  private buffer: (T | undefined)[];
+  private front = 0;
+  private rear = 0;
+  private count = 0;
+
+  constructor(private capacity: number) {
+    this.buffer = new Array(capacity);
+  }
+
+  insertFront(value: T): boolean {
+    if (this.isFull()) return false;
+    this.front = (this.front - 1 + this.capacity) % this.capacity;
+    this.buffer[this.front] = value;
+    this.count++;
+    return true;
+  }
+
+  insertLast(value: T): boolean {
+    if (this.isFull()) return false;
+    this.buffer[this.rear] = value;
+    this.rear = (this.rear + 1) % this.capacity;
+    this.count++;
+    return true;
+  }
+
+  deleteFront(): boolean {
+    if (this.isEmpty()) return false;
+    this.buffer[this.front] = undefined;
+    this.front = (this.front + 1) % this.capacity;
+    this.count--;
+    return true;
+  }
+
+  deleteLast(): boolean {
+    if (this.isEmpty()) return false;
+    this.rear = (this.rear - 1 + this.capacity) % this.capacity;
+    this.buffer[this.rear] = undefined;
+    this.count--;
+    return true;
+  }
+
+  getFront(): T | undefined {
+    return this.isEmpty() ? undefined : this.buffer[this.front];
+  }
+
+  getRear(): T | undefined {
+    return this.isEmpty() ? undefined : this.buffer[(this.rear - 1 + this.capacity) % this.capacity];
+  }
+
+  isEmpty(): boolean { return this.count === 0; }
+  isFull(): boolean { return this.count === this.capacity; }
+}
+
+// 使用：滑动窗口最大值队列
+const deque = new CircularDeque<number>(5);
+deque.insertLast(1);
+deque.insertLast(2);
+console.log(deque.getFront()); // 1
+console.log(deque.getRear());  // 2
+```
+
+## 十二、权威参考链接
 
 | 资源 | 说明 | 链接 |
 |------|------|------|
@@ -419,6 +528,13 @@ console.log(st.query(1, 3)); // 3 + 10 + 7 = 20
 | Wikipedia — Segment Tree | 线段树形式化定义 | [en.wikipedia.org/wiki/Segment_tree](https://en.wikipedia.org/wiki/Segment_tree) |
 | GeeksforGeeks — Trie Data Structure | Trie 详解与应用 | [geeksforgeeks.org/trie-insert-and-search](https://www.geeksforgeeks.org/trie-insert-and-search/) |
 | Redis — LRU Cache Implementation | 工业级 LRU 实现参考 | [github.com/redis/redis/blob/unstable/src/evict.c](https://github.com/redis/redis/blob/unstable/src/evict.c) |
+| MIT OpenCourseWare — Introduction to Algorithms | 麻省理工算法公开课 | [ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/) |
+| CP-Algorithms — Fenwick Tree | 树状数组（Fenwick Tree）详解 | [cp-algorithms.com/data_structures/fenwick.html](https://cp-algorithms.com/data_structures/fenwick.html) |
+| UWashington — Data Structures and Algorithms | 华盛顿大学数据结构与算法课程 | [courses.cs.washington.edu/courses/cse373](https://courses.cs.washington.edu/courses/cse373/) |
+| NIST Dictionary of Algorithms and Data Structures | 算法与数据结构标准词典 | [xlinux.nist.gov/dads](https://xlinux.nist.gov/dads/) |
+| Wikipedia — Self-balancing Binary Search Tree | 自平衡二叉搜索树形式化定义 | [en.wikipedia.org/wiki/Self-balancing_binary_search_tree](https://en.wikipedia.org/wiki/Self-balancing_binary_search_tree) |
+| Google Research — B-Trees and LSM Trees | 存储引擎数据结构研究 | [research.google/pubs/pub61](https://research.google/pubs/pub61/) |
+| V8 Blog — Fast Properties | V8 对象属性访问优化内幕 | [v8.dev/blog/fast-properties](https://v8.dev/blog/fast-properties) |
 
 ---
 

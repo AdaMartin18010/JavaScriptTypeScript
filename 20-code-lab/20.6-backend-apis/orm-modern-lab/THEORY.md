@@ -366,6 +366,44 @@ async function getUsersWithRecentPosts() {
 }
 ```
 
+### 4.6 Prisma 中间件与软删除
+
+```typescript
+// prisma-middleware.ts — 全局软删除与审计日志
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+prisma.$use(async (params, next) => {
+  // 软删除拦截：将 delete 转为 update deletedAt
+  if (params.action === 'delete' || params.action === 'deleteMany') {
+    if (params.model === 'Post') {
+      params.action = params.action === 'delete' ? 'update' : 'updateMany';
+      params.args.data = { deletedAt: new Date() };
+    }
+  }
+
+  // 审计日志
+  const start = performance.now();
+  const result = await next(params);
+  const duration = performance.now() - start;
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[Prisma] ${params.model}.${params.action} — ${duration.toFixed(2)}ms`);
+  }
+
+  return result;
+});
+
+// 查询时自动过滤已删除记录
+async function findActivePosts() {
+  return prisma.post.findMany({
+    where: { deletedAt: null },
+    orderBy: { createdAt: 'desc' },
+  });
+}
+```
+
 ## 5. 边缘数据库适配
 
 边缘计算环境对 ORM 提出新要求：
@@ -456,3 +494,9 @@ npx tsc --noEmit
 - [Drizzle Kit Migrations](https://orm.drizzle.team/docs/kit-overview) — Drizzle 迁移工具文档
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/) — PostgreSQL 官方文档
 - [SQLite Documentation](https://www.sqlite.org/docs.html) — SQLite 官方文档
+- [Prisma Client Extensions](https://www.prisma.io/docs/orm/prisma-client/client-extensions) — Prisma 客户端扩展官方指南
+- [Drizzle ORM Relations](https://orm.drizzle.team/docs/relations) — Drizzle 关系查询官方文档
+- [TypeORM Migrations Guide](https://typeorm.io/migrations) — TypeORM 迁移深度指南
+- [MikroORM Performance Guide](https://mikro-orm.io/docs/performance) — MikroORM 性能优化官方指南
+- [Kysely — TypeScript SQL Query Builder](https://kysely.dev/) — 类型安全 SQL 构建器
+- [Zapatos — Schema-strict Postgres](https://jawj.github.io/zapatos/) — 零运行时开销类型生成

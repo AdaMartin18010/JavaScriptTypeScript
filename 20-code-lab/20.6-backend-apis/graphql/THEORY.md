@@ -32,6 +32,7 @@
     - [10.1 Subscription 与实时推送](#101-subscription-与实时推送)
     - [10.2 错误处理与部分响应](#102-错误处理与部分响应)
     - [10.3 指令与元编程](#103-指令与元编程)
+    - [10.4 联邦图（Apollo Federation）](#104-联邦图apollo-federation)
   - [参考资源](#参考资源)
   - [模块代码文件索引](#模块代码文件索引)
 
@@ -522,6 +523,53 @@ builder.queryType({
 });
 ```
 
+### 10.4 联邦图（Apollo Federation）
+
+```typescript
+// federation-gateway.ts — 微服务 Schema 聚合网关
+import { ApolloGateway, IntrospectAndCompose } from '@apollo/gateway';
+import { ApolloServer } from '@apollo/server';
+import { startStandaloneServer } from '@apollo/server/standalone';
+
+const gateway = new ApolloGateway({
+  supergraphSdl: new IntrospectAndCompose({
+    subgraphs: [
+      { name: 'users', url: 'http://localhost:4001/graphql' },
+      { name: 'posts', url: 'http://localhost:4002/graphql' },
+      { name: 'comments', url: 'http://localhost:4003/graphql' },
+    ],
+  }),
+});
+
+const server = new ApolloServer({ gateway });
+
+startStandaloneServer(server, { listen: { port: 4000 } }).then(({ url }) => {
+  console.log(`🚀 Federation Gateway ready at ${url}`);
+});
+```
+
+```typescript
+// users-subgraph.ts — 子服务 Schema 定义
+import { buildSubgraphSchema } from '@apollo/subgraph';
+import { ApolloServer } from '@apollo/server';
+
+const typeDefs = gql`
+  type User @key(fields: "id") {
+    id: ID!
+    name: String!
+    email: String!
+  }
+
+  extend type Query {
+    user(id: ID!): User
+  }
+`;
+
+const server = new ApolloServer({
+  schema: buildSubgraphSchema([{ typeDefs, resolvers }]),
+});
+```
+
 ---
 
 ## 参考资源
@@ -546,6 +594,11 @@ builder.queryType({
 - [GraphQL N+1 Problem Explained](https://shopify.engineering/solving-the-n-1-problem-for-graphql-through-batching) — Shopify 工程博客
 - [Production Ready GraphQL — Marc-André Giroux](https://book.productionreadygraphql.com/) — GraphQL 生产实践书籍
 - [GraphQL Directive Specification](https://spec.graphql.org/draft/#sec-Type-System.Directives) — 官方指令规范
+- [Apollo Federation Specification](https://www.apollographql.com/docs/federation/federation-spec/) — 联邦图规范
+- [GraphQL Cursor Connections Specification](https://relay.dev/graphql/connections.htm) — Relay Connection 分页规范
+- [GraphQL JIT — Fast GraphQL Execution](https://github.com/zalando-incubator/graphql-jit) — 编译加速执行引擎
+- [Escape GraphQL Security Guide](https://escape.tech/blog/graphql-security-best-practices/) — GraphQL 安全最佳实践
+- [GraphQL Scalars Library](https://www.graphql-scalars.dev/) — 扩展标量类型库
 
 ---
 

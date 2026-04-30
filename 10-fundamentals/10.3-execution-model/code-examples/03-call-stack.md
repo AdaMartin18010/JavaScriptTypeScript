@@ -117,12 +117,236 @@ first();
 //   at first (file.js:2)
 ```
 
+### 6.2 正例：异步调用栈追踪
+
+```javascript
+async function a() { await b(); }
+async function b() { await c(); }
+async function c() { throw new Error('async error'); }
+
+a().catch(e => console.log(e.stack));
+// Error: async error
+//   at c (file.js:3)
+//   at async b (file.js:2)
+//   at async a (file.js:1)
+```
+
+### 6.3 正例：Error.captureStackTrace 自定义堆栈
+
+```javascript
+class ValidationError extends Error {
+  constructor(message, field) {
+    super(message);
+    this.field = field;
+    // 移除构造器自身，从调用构造器的位置开始
+    Error.captureStackTrace(this, ValidationError);
+  }
+}
+
+function validate(user) {
+  if (!user.name) throw new ValidationError('Name required', 'name');
+}
+
+validate({});
+// ValidationError: Name required
+//   at validate (file.js:11) — 从调用点追踪
+```
+
+### 6.4 正例：使用 debugger 语句观察实时调用栈
+
+```javascript
+function factorial(n) {
+  if (n <= 1) {
+    debugger; // Chrome DevTools 会在此处暂停，可在 Call Stack 面板查看
+    return 1;
+  }
+  return n * factorial(n - 1);
+}
+
+factorial(5);
+// DevTools Call Stack:
+// factorial (n = 1)
+// factorial (n = 2)
+// factorial (n = 3)
+// factorial (n = 4)
+// factorial (n = 5)
+// (anonymous)
+```
+
+### 6.5 正例：RangeError 与最大栈深度
+
+```javascript
+// 测量当前引擎的近似最大栈深度
+function measureStackDepth(depth = 0) {
+  try {
+    return measureStackDepth(depth + 1);
+  } catch (e) {
+    return depth;
+  }
+}
+
+console.log('Max stack depth:', measureStackDepth());
+// Node.js ~10k–50k，浏览器 ~10k–20k（因引擎和平台而异）
+```
+
+### 6.6 正例：Error.stackTraceLimit 与堆栈截断
+
+```javascript
+// 默认堆栈深度限制为 10（V8）
+Error.stackTraceLimit = 20;
+
+function deep(n) {
+  if (n <= 0) return new Error('deep error');
+  return deep(n - 1);
+}
+
+console.log(deep(15).stack.split('\n').length);
+// 超过 limit 的栈帧会被截断
+// 设为 Infinity 可解除限制（性能敏感）
+```
+
+### 6.7 正例：递归转迭代以消除栈增长
+
+```javascript
+// ❌ 递归版本：O(n) 栈深度
+function sumRecursive(arr, n = arr.length) {
+  if (n === 0) return 0;
+  return arr[n - 1] + sumRecursive(arr, n - 1);
+}
+
+// ✅ 迭代版本：O(1) 栈深度
+function sumIterative(arr) {
+  let sum = 0;
+  for (let i = 0; i < arr.length; i++) {
+    sum += arr[i];
+  }
+  return sum;
+}
+
+// 尾递归优化（引擎依赖，Safari 支持较好）
+function sumTail(arr, acc = 0, n = 0) {
+  if (n >= arr.length) return acc;
+  return sumTail(arr, acc + arr[n], n + 1);
+}
+```
+
+### 6.8 正例：异步调用栈追踪与 async_hooks
+
+```javascript
+import { createHook, executionAsyncId } from 'node:async_hooks';
+
+const stackMap = new Map();
+
+createHook({
+  init(asyncId, type, triggerAsyncId) {
+    const triggerStack = stackMap.get(triggerAsyncId) || '';
+    stackMap.set(asyncId, triggerStack + ` -> ${type}(${asyncId})`);
+  },
+  destroy(asyncId) {
+    stackMap.delete(asyncId);
+  }
+}).enable();
+
+setTimeout(() => {
+  console.log('Current async stack:', stackMap.get(executionAsyncId()));
+}, 0);
+```
+
+### 6.9 正例：Source Map 与原始堆栈还原
+
+```javascript
+// 生产环境代码经过压缩和转译后，堆栈需要 source map 还原
+import { SourceMapConsumer } from 'source-map';
+
+const rawStack = `Error
+  at a.min.js:1:120
+  at b.min.js:1:80`;
+
+// 使用 source-map-support 自动还原 Node.js 堆栈
+import 'source-map-support/register';
+
+// 或在浏览器中通过 DevTools 加载 .map 文件
+// Error.stack 会自动显示原始文件名和行号
+```
+
+### 6.10 正例：Error.cause 的调用栈链式追踪
+
+```javascript
+function readConfig(path) {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'));
+  } catch (err) {
+    // Error.cause 保留原始错误的调用栈
+    throw new Error(`Failed to load config from ${path}`, { cause: err });
+  }
+}
+
+try {
+  readConfig('./missing.json');
+} catch (e) {
+  console.log(e.stack);      // 外层错误栈
+  console.log(e.cause.stack); // 原始错误栈（调用链完整）
+}
+```
+
+### 6.11 正例：AggregateError 的多栈聚合
+
+```javascript
+// AggregateError 合并多个 Promise 的拒绝原因
+const promises = [
+  fetch('/api/a').catch(e => e),
+  fetch('/api/b').catch(e => e),
+  fetch('/api/c').catch(e => e)
+];
+
+Promise.all(promises).then(results => {
+  const errors = results.filter(r => r instanceof Error);
+  if (errors.length > 0) {
+    throw new AggregateError(errors, 'Multiple API failures');
+  }
+}).catch(e => {
+  // e.errors 包含每个独立错误的调用栈
+  e.errors.forEach((err, i) => console.log(`Error ${i}:`, err.stack));
+});
+```
+
+### 6.12 正例：Node.js --async-stack-traces 异步栈完整化
+
+```javascript
+// Node.js 默认启用 async stack traces（v16+）
+async function levelA() { await levelB(); }
+async function levelB() { await levelC(); }
+async function levelC() { throw new Error('deep async error'); }
+
+levelA().catch(err => {
+  // 栈包含完整异步调用链：
+  // Error: deep async error
+  //   at levelC (file.js:4)
+  //   at async levelB (file.js:3)
+  //   at async levelA (file.js:2)
+  console.error(err.stack);
+});
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
 
-- **ECMA-262 §9.4** — Execution Contexts
+- **ECMA-262 §9.4** — Execution Contexts: <https://tc39.es/ecma262/#sec-execution-contexts>
 - **MDN: Call stack** — <https://developer.mozilla.org/en-US/docs/Glossary/Call_stack>
+- **MDN: RangeError** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RangeError>
+- **MDN: Error.captureStackTrace** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/captureStackTrace>
+- **V8 Docs: Stack Trace API** — <https://v8.dev/docs/stack-trace-api>
+- **Chrome DevTools: JavaScript** — <https://developer.chrome.com/docs/devtools/javascript>
+- **Node.js — Async Stack Traces** — <https://nodejs.org/en/learn/asynchronous-work/discover-javascript-async-stack-traces>
+- **TC39: Error Stack Trace Proposal** — <https://github.com/tc39/proposal-error-stacks>
+- **MDN: debugger** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/debugger>
+- **MDN: Error.cause** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause>
+- **MDN: AggregateError** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AggregateError>
+- **Node.js: async_hooks** — <https://nodejs.org/api/async_hooks.html>
+- **Chrome DevTools: Sources** — <https://developer.chrome.com/docs/devtools/sources>
+- **MDN: console.trace** — <https://developer.mozilla.org/en-US/docs/Web/API/console/trace>
+- **V8 Blog: Stack Traces** — <https://v8.dev/blog/stack-traces>
 
 ---
 
@@ -187,194 +411,3 @@ graph TD
 ---
 
 **参考规范**：ECMA-262 §9.4 | MDN: Call stack
-
----
-
-## 11. 更多调用栈实例 (Advanced Examples)
-
-### 11.1 正例：异步调用栈追踪
-
-```javascript
-async function a() { await b(); }
-async function b() { await c(); }
-async function c() { throw new Error('async error'); }
-
-a().catch(e => console.log(e.stack));
-// Error: async error
-//   at c (file.js:3)
-//   at async b (file.js:2)
-//   at async a (file.js:1)
-```
-
-### 11.2 正例：Error.captureStackTrace 自定义堆栈
-
-```javascript
-class ValidationError extends Error {
-  constructor(message, field) {
-    super(message);
-    this.field = field;
-    // 移除构造器自身，从调用构造器的位置开始
-    Error.captureStackTrace(this, ValidationError);
-  }
-}
-
-function validate(user) {
-  if (!user.name) throw new ValidationError('Name required', 'name');
-}
-
-validate({});
-// ValidationError: Name required
-//   at validate (file.js:11) — 从调用点追踪
-```
-
-### 11.3 正例：使用 debugger 语句观察实时调用栈
-
-```javascript
-function factorial(n) {
-  if (n <= 1) {
-    debugger; // Chrome DevTools 会在此处暂停，可在 Call Stack 面板查看
-    return 1;
-  }
-  return n * factorial(n - 1);
-}
-
-factorial(5);
-// DevTools Call Stack:
-// factorial (n = 1)
-// factorial (n = 2)
-// factorial (n = 3)
-// factorial (n = 4)
-// factorial (n = 5)
-// (anonymous)
-```
-
-### 11.4 正例：RangeError 与最大栈深度
-
-```javascript
-// 测量当前引擎的近似最大栈深度
-function measureStackDepth(depth = 0) {
-  try {
-    return measureStackDepth(depth + 1);
-  } catch (e) {
-    return depth;
-  }
-}
-
-console.log('Max stack depth:', measureStackDepth());
-// Node.js ~10k–50k，浏览器 ~10k–20k（因引擎和平台而异）
-```
-
----
-
-## 12. 权威参考与国际化对齐 (References)
-
-- **ECMA-262 §9.4** — Execution Contexts: <https://tc39.es/ecma262/#sec-execution-contexts>
-- **MDN: Call stack** — <https://developer.mozilla.org/en-US/docs/Glossary/Call_stack>
-- **MDN: RangeError** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RangeError>
-- **MDN: Error.captureStackTrace** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/captureStackTrace>
-- **V8 Docs: Stack Trace API** — <https://v8.dev/docs/stack-trace-api>
-- **Chrome DevTools: JavaScript** — <https://developer.chrome.com/docs/devtools/javascript>
-- **Node.js — Async Stack Traces** — <https://nodejs.org/en/learn/asynchronous-work/discover-javascript-async-stack-traces>
-- **TC39: Error Stack Trace Proposal** — <https://github.com/tc39/proposal-error-stacks>
-- **MDN: debugger** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/debugger>
-
----
-
----
-
-## 13. 深化实例：调用栈实战诊断
-
-### 13.1 正例：Error.stackTraceLimit 与堆栈截断
-
-```javascript
-// 默认堆栈深度限制为 10（V8）
-Error.stackTraceLimit = 20;
-
-function deep(n) {
-  if (n <= 0) return new Error('deep error');
-  return deep(n - 1);
-}
-
-console.log(deep(15).stack.split('\n').length);
-// 超过 limit 的栈帧会被截断
-// 设为 Infinity 可解除限制（性能敏感）
-```
-
-### 13.2 正例：递归转迭代以消除栈增长
-
-```javascript
-// ❌ 递归版本：O(n) 栈深度
-function sumRecursive(arr, n = arr.length) {
-  if (n === 0) return 0;
-  return arr[n - 1] + sumRecursive(arr, n - 1);
-}
-
-// ✅ 迭代版本：O(1) 栈深度
-function sumIterative(arr) {
-  let sum = 0;
-  for (let i = 0; i < arr.length; i++) {
-    sum += arr[i];
-  }
-  return sum;
-}
-
-// 尾递归优化（引擎依赖，Safari 支持较好）
-function sumTail(arr, acc = 0, n = 0) {
-  if (n >= arr.length) return acc;
-  return sumTail(arr, acc + arr[n], n + 1);
-}
-```
-
-### 13.3 正例：异步调用栈追踪与 async_hooks
-
-```javascript
-import { createHook, executionAsyncId } from 'node:async_hooks';
-
-const stackMap = new Map();
-
-createHook({
-  init(asyncId, type, triggerAsyncId) {
-    const triggerStack = stackMap.get(triggerAsyncId) || '';
-    stackMap.set(asyncId, triggerStack + ` -> ${type}(${asyncId})`);
-  },
-  destroy(asyncId) {
-    stackMap.delete(asyncId);
-  }
-}).enable();
-
-setTimeout(() => {
-  console.log('Current async stack:', stackMap.get(executionAsyncId()));
-}, 0);
-```
-
-### 13.4 正例：Source Map 与原始堆栈还原
-
-```javascript
-// 生产环境代码经过压缩和转译后，堆栈需要 source map 还原
-import { SourceMapConsumer } from 'source-map';
-
-const rawStack = `Error
-  at a.min.js:1:120
-  at b.min.js:1:80`;
-
-// 使用 source-map-support 自动还原 Node.js 堆栈
-import 'source-map-support/register';
-
-// 或在浏览器中通过 DevTools 加载 .map 文件
-// Error.stack 会自动显示原始文件名和行号
-```
-
----
-
-## 14. 更多权威参考
-
-- **ECMA-262 §9.4** — Execution Contexts: <https://tc39.es/ecma262/#sec-execution-contexts>
-- **V8 Docs: Stack Trace API** — <https://v8.dev/docs/stack-trace-api>
-- **Node.js: async_hooks** — <https://nodejs.org/api/async_hooks.html>
-- **Chrome DevTools: Sources** — <https://developer.chrome.com/docs/devtools/sources>
-- **MDN: console.trace** — <https://developer.mozilla.org/en-US/docs/Web/API/console/trace>
-- **V8 Blog: Stack Traces** — <https://v8.dev/blog/stack-traces>
-
----
-
-**参考规范**：ECMA-262 §9.4 | MDN | V8 | Node.js Docs

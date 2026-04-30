@@ -358,24 +358,74 @@ const result = heavy.compute(); // 此时才真正执行 heavy-module.js
 
 ---
 
-## 十、权威参考链接
+## 十、进阶互操作示例
+
+### 10.1 检测当前模块系统
+
+```javascript
+// detect-module.cjs / detect-module.mjs
+export function detectModuleSystem() {
+  try {
+    // 仅在 ESM 中可用
+    return typeof import.meta.url === 'string' ? 'esm' : 'unknown';
+  } catch {
+    // 在 CJS 中 import.meta 会抛出 SyntaxError
+    return typeof module !== 'undefined' && module.exports ? 'cjs' : 'unknown';
+  }
+}
+```
+
+### 10.2 跨模块系统的版本兼容入口
+
+```javascript
+// index.js —— 运行时判断模块系统
+if (typeof module !== 'undefined' && module.exports) {
+  // CJS 环境
+  module.exports = require('./dist/index.cjs');
+} else {
+  // ESM 环境（由打包工具或运行时处理）
+  export * from './dist/index.mjs';
+}
+```
+
+### 10.3 `require(esm)` 边缘案例（Node.js 22+）
+
+```javascript
+// esm-with-tla.mjs
+export const value = await Promise.resolve(42);
+
+// cjs-consumer.js
+try {
+  const mod = require('./esm-with-tla.mjs');
+} catch (err) {
+  console.log(err.code); // 'ERR_REQUIRE_ASYNC_MODULE'
+  // 必须使用动态 import
+  const mod = await import('./esm-with-tla.mjs');
+}
+```
+
+---
+
+## 十一、权威参考链接
 
 | 资源 | 链接 | 说明 |
 |------|------|------|
 | ECMA-262 §16.2 Modules | <https://tc39.es/ecma262/#sec-modules> | ECMAScript 模块规范原文 |
 | Node.js ESM Documentation | <https://nodejs.org/api/esm.html> | Node.js 官方 ESM 文档 |
 | Node.js Packages Documentation | <https://nodejs.org/api/packages.html> | 条件导出、双模式包规范 |
+| Node.js CJS ↔ ESM Interop | <https://nodejs.org/api/esm.html#interoperability-with-commonjs> | 官方互操作详解 |
+| Node.js `require(esm)` | <https://nodejs.org/api/modules.html#requireid> | Node 22+ 同步加载 ESM |
 | TypeScript Module Resolution | <https://www.typescriptlang.org/docs/handbook/modules/reference.html> | TS 模块解析参考手册 |
 | TypeScript `moduleResolution` | <https://www.typescriptlang.org/tsconfig#moduleResolution> | bundler / nodenext 配置说明 |
 | Import Attributes Proposal | <https://github.com/tc39/proposal-import-attributes> | TC39 Stage 3 提案 |
 | Import Defer Proposal | <https://github.com/tc39/proposal-defer-import-eval/> | TC39 Stage 3 延迟导入提案 |
-| Node.js CJS ↔ ESM Interop | <https://nodejs.org/api/esm.html#interoperability-with-commonjs> | 官方互操作详解 |
 | tsup — TypeScript Bundler | <https://tsup.egoist.dev/> | 零配置双模式构建工具 |
 | Rollup Guide | <https://rollupjs.org/guide/en/> | ESM-first 打包器文档 |
 | Bun ESM & CJS | <https://bun.sh/docs/runtime/modules> | Bun 运行时模块系统 |
 | Deno Modules | <https://docs.deno.com/runtime/fundamentals/modules/> | Deno 模块与 npm 兼容 |
 | Sindre Sorhus: Pure ESM Package | <https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c> | ESM 迁移权威指南 |
-| Node.js `require(esm)` | <https://nodejs.org/api/modules.html#requireid> | Node 22+ 同步加载 ESM |
+| 2ality — ESM in depth | <https://2ality.com/2014/09/es6-modules-final.html> | Dr. Axel 深度解析 |
+| Webpack Module Federation | <https://webpack.js.org/concepts/module-federation/> | 微前端模块共享 |
 
 ---
 

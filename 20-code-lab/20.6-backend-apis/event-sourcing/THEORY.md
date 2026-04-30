@@ -469,6 +469,92 @@ class OutboxPoller {
 }
 ```
 
+### 6.7 事件存储事务边界（PostgreSQL 实现）
+
+```typescript
+// event-sourcing/src/PgEventStore.ts — 生产级 PostgreSQL 事件存储
+import { Pool, PoolClient } from 'pg';
+
+interface PgEventRecord extends EventRecord {
+  position: bigint; // 全局有序位置
+}
+
+class PostgreSQLEventStore implements EventStore {
+  constructor(private pool: Pool) {}
+
+  async append(events: EventRecord[], expectedVersion: number): Promise<void> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // 乐观并发控制：检查当前版本
+      const { rows } = await client.query(
+        `SELECT COUNT(*) as version FROM events WHERE aggregate_id = $1 FOR UPDATE`,
+        [events[0].aggregateId]
+      );
+      const currentVersion = parseInt(rows[0].version, 10);
+      if (currentVersion !== expectedVersion) {
+        throw new Error(`Concurrency conflict: expected ${expectedVersion}, found ${currentVersion}`);
+      }
+
+      // 批量插入事件
+      for (let i = 0; i < events.length; i++) {
+        await client.query(
+          `INSERT INTO events (aggregate_id, version, event_type, payload, metadata, occurred_at)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [
+            events[i].aggregateId,
+            expectedVersion + i + 1,
+            events[i].eventType,
+            JSON.stringify(events[i].payload),
+            JSON.stringify(events[i].metadata ?? {}),
+            events[i].timestamp,
+          ]
+        );
+      }
+
+      await client.query('COMMIT');
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  }
+
+  async getEvents(aggregateId: string): Promise<EventRecord[]> {
+    const { rows } = await this.pool.query(
+      `SELECT aggregate_id, version, event_type, payload, metadata, occurred_at
+       FROM events WHERE aggregate_id = $1 ORDER BY version ASC`,
+      [aggregateId]
+    );
+    return rows.map((r) => ({
+      aggregateId: r.aggregate_id,
+      version: r.version,
+      eventType: r.event_type,
+      payload: r.payload,
+      metadata: r.metadata,
+      timestamp: r.occurred_at,
+    }));
+  }
+
+  async getAllEvents(afterPosition = 0, limit = 100): Promise<EventRecord[]> {
+    const { rows } = await this.pool.query(
+      `SELECT * FROM events WHERE position > $1 ORDER BY position ASC LIMIT $2`,
+      [afterPosition, limit]
+    );
+    return rows.map((r) => ({
+      aggregateId: r.aggregate_id,
+      version: r.version,
+      eventType: r.event_type,
+      payload: r.payload,
+      metadata: r.metadata,
+      timestamp: r.occurred_at,
+    }));
+  }
+}
+```
+
 ## 7. 挑战与应对
 
 | 挑战 | 应对策略 |
@@ -478,6 +564,61 @@ class OutboxPoller {
 | 外部系统集成 | 在投影中发送外部通知（发件箱模式） |
 | 事件存储增长 | 归档旧事件、压缩、快照 |
 | 并发冲突 | 乐观并发控制（版本号） |
+
+### 7.1 事件溯源测试模式
+
+```typescript
+// event-sourcing/src/testing.ts — 事件溯源的 Given-When-Then 测试
+class AggregateTestHarness<T extends AggregateRoot> {
+  constructor(private factory: () => T, private loader: SnapshotAggregateLoader<T>) {}
+
+  async given(events: EventRecord[]): Promise<WhenPhase<T>> {
+    const aggregate = this.factory();
+    (aggregate as any)._id = events[0]?.aggregateId ?? 'test-id';
+    aggregate.loadFromHistory(events);
+    return new WhenPhase(aggregate, this.loader);
+  }
+}
+
+class WhenPhase<T extends AggregateRoot> {
+  constructor(private aggregate: T, private loader: SnapshotAggregateLoader<T>) {}
+
+  async when(action: (aggregate: T) => void): Promise<ThenPhase<T>> {
+    action(this.aggregate);
+    await this.loader.save(this.aggregate);
+    return new ThenPhase(this.aggregate);
+  }
+}
+
+class ThenPhase<T extends AggregateRoot> {
+  constructor(private aggregate: T) {}
+
+  expectEvents(expectedTypes: string[]): ThenPhase<T> {
+    const actual = this.aggregate.uncommittedEvents.map((e) => e.eventType);
+    if (JSON.stringify(actual) !== JSON.stringify(expectedTypes)) {
+      throw new Error(`Expected events ${JSON.stringify(expectedTypes)}, got ${JSON.stringify(actual)}`);
+    }
+    return this;
+  }
+
+  expectState(predicate: (state: T) => boolean): ThenPhase<T> {
+    if (!predicate(this.aggregate)) {
+      throw new Error('Aggregate state did not match expected predicate');
+    }
+    return this;
+  }
+}
+
+// 使用示例
+const harness = new AggregateTestHarness(() => new BankAccount(), loader);
+
+await harness
+  .given([
+    { aggregateId: 'acc-1', version: 1, eventType: 'AccountOpened', payload: { initialBalance: 0 }, timestamp: new Date() },
+  ])
+  .when((acc) => acc.deposit(100))
+  .then((t) => t.expectEvents(['MoneyDeposited']).expectState((acc) => acc.balance === 100));
+```
 
 ## 8. 与相邻模块的关系
 
@@ -501,3 +642,9 @@ class OutboxPoller {
 - [Event Sourcing with PostgreSQL - AxonIQ](https://www.axoniq.io/resources/event-sourcing) — 生产级事件溯源实践
 - [Kafka as an Event Store - Confluent Blog](https://www.confluent.io/blog/apache-kafka-event-store/) — 使用 Kafka 实现事件存储
 - [Projections in Event Sourcing - Alexey Zimarev](https://zimarev.com/blog/event-sourcing/projections/) — 投影模式详解
+- [Event Sourcing in Practice - Bernd Rücker](https://www.berndruecker.io/) — Camunda 联合创始人的事件溯源实践
+- [PostgreSQL Documentation — Transaction Isolation](https://www.postgresql.org/docs/current/transaction-iso.html) — PostgreSQL 事务隔离级别
+- [Axon Framework Reference Guide](https://docs.axoniq.io/reference-guide/) — Java 事件溯源框架权威参考
+- [Event Modeling — Adam Dymitruk](https://eventmodeling.org/) — 事件建模方法论
+- [ESDB Performance Tuning](https://developers.eventstore.com/server/v24.2/configuration.html) — EventStoreDB 性能调优官方指南
+- [Event Store Sourcing Patterns — O'Reilly](https://www.oreilly.com/library/view/software-architecture-patterns/9781491971437/ch02.html) — O'Reilly 软件架构模式：事件驱动

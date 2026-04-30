@@ -286,15 +286,113 @@ graph TD
 
 ---
 
-## 8. 权威参考 (References)
+## 8. 进阶代码示例
+
+### 8.1 浏览器原生 ESM 与 Import Map
+
+```html
+<!-- index.html -->
+<script type="importmap">
+{
+  "imports": {
+    "vue": "https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.js",
+    "lodash-es/": "https://cdn.jsdelivr.net/npm/lodash-es/"
+  }
+}
+</script>
+<script type="module">
+  import { createApp } from 'vue';
+  import debounce from 'lodash-es/debounce.js';
+
+  const app = createApp({ /* ... */ });
+  app.mount('#app');
+</script>
+```
+
+### 8.2 Node.js `createRequire` 在 ESM 中使用 CJS
+
+```javascript
+// config.mjs
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+
+const require = createRequire(import.meta.url);
+
+// 加载 CJS 配置文件
+const legacyConfig = require('./legacy.config.js');
+
+// 读取 JSON（无需 assert）
+const pkg = require('../package.json');
+
+export const config = { ...legacyConfig, version: pkg.version };
+```
+
+### 8.3 UMD 模式完整示例
+
+```javascript
+// umd-module.js
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD
+    define(['jquery'], factory);
+  } else if (typeof module === 'object' && module.exports) {
+    // CommonJS
+    module.exports = factory(require('jquery'));
+  } else {
+    // 浏览器全局
+    root.MyModule = factory(root.jQuery);
+  }
+}(typeof self !== 'undefined' ? self : this, function ($) {
+  return {
+    init: function () { return $('body').length; }
+  };
+}));
+```
+
+### 8.4 条件导出（Conditional Exports）实战
+
+```json
+{
+  "name": "my-lib",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json",
+    "./utils": {
+      "import": "./dist/utils.mjs",
+      "require": "./dist/utils.cjs"
+    }
+  }
+}
+```
+
+---
+
+## 9. 权威参考 (References)
 
 | 来源 | 链接 | 相关章节 |
 |------|------|---------|
-| ECMA-262 | tc39.es/ecma262 | §16.2 Modules |
-| Node.js ESM | nodejs.org/api/esm.html | ESM 完整文档 |
-| Node.js CJS | nodejs.org/api/modules.html | CJS 完整文档 |
-| TypeScript Handbook | typescriptlang.org/docs | Modules |
-| MDN | developer.mozilla.org | JavaScript Modules |
+| ECMA-262 | [tc39.es/ecma262](https://tc39.es/ecma262) | §16.2 Modules |
+| Node.js ESM | [nodejs.org/api/esm.html](https://nodejs.org/api/esm.html) | ESM 完整文档 |
+| Node.js CJS | [nodejs.org/api/modules.html](https://nodejs.org/api/modules.html) | CJS 完整文档 |
+| Node.js Packages | [nodejs.org/api/packages.html](https://nodejs.org/api/packages.html) | 条件导出、Import Map |
+| TypeScript Handbook | [typescriptlang.org/docs/handbook/modules/reference.html](https://www.typescriptlang.org/docs/handbook/modules/reference.html) | Modules |
+| MDN | [developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules) | JavaScript Modules |
+| MDN Import Map | [developer.mozilla.org/en-US/docs/Web/HTML/Element/script/type/importmap](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script/type/importmap) | 浏览器 Import Map |
+| HTML Spec — Scripting | [html.spec.whatwg.org/multipage/webappapis.html#module-map](https://html.spec.whatwg.org/multipage/webappapis.html#module-map) | 浏览器模块映射 |
+| Rollup Guide | [rollupjs.org/guide/en/](https://rollupjs.org/guide/en/) | ESM-first 打包器 |
+| Webpack Modules | [webpack.js.org/concepts/modules/](https://webpack.js.org/concepts/modules/) | Webpack 模块解析 |
+| esbuild Docs | [esbuild.github.io/](https://esbuild.github.io/) | 极速打包器 |
+| 2ality — ESM in depth | [2ality.com/2014/09/es6-modules-final.html](https://2ality.com/2014/09/es6-modules-final.html) | Dr. Axel 深度解析 |
+| Sindre Sorhus ESM Guide | [gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c) | ESM 迁移指南 |
 
 ---
 

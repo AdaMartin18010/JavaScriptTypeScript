@@ -75,6 +75,66 @@ export async function createPost(formData: FormData) {
 }
 ```
 
+**Next.js Middleware 边缘拦截示例：**
+
+```typescript
+// middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  // 基于 Geo 或 Cookie 的 A/B 测试分流
+  const experiment = request.cookies.get('experiment')?.value ?? 'control';
+  const url = request.nextUrl.clone();
+
+  if (url.pathname === '/landing') {
+    url.pathname = experiment === 'treatment' ? '/landing/v2' : '/landing/v1';
+    return NextResponse.rewrite(url);
+  }
+
+  // 国际化前缀自动补全
+  const locale = request.headers.get('accept-language')?.split(',')[0].split('-')[0] ?? 'en';
+  if (!/^\/(en|zh|ja)\//.test(url.pathname)) {
+    url.pathname = `/${locale}${url.pathname}`;
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+};
+```
+
+**Next.js Streaming 与 Suspense 边界：**
+
+```typescript
+// app/dashboard/page.tsx
+import { Suspense } from 'react';
+import { RevenueChart } from '@/components/RevenueChart';
+import { RecentOrders } from '@/components/RecentOrders';
+
+export default function DashboardPage() {
+  return (
+    <div className="grid gap-6">
+      {/* 立即渲染，不阻塞 */}
+      <h1>Dashboard</h1>
+
+      {/* RevenueChart 可独立流式传输 */}
+      <Suspense fallback={<RevenueChart.Skeleton />}>
+        <RevenueChart />
+      </Suspense>
+
+      {/* RecentOrders 亦可独立流式传输 */}
+      <Suspense fallback={<RecentOrders.Skeleton />}>
+        <RecentOrders />
+      </Suspense>
+    </div>
+  );
+}
+```
+
 **Remix Loader 与 Action：**
 
 ```typescript
@@ -164,6 +224,32 @@ export default defineNuxtModule({
 });
 ```
 
+**Nuxt 服务端插件（Server Plugins）示例：**
+
+```typescript
+// server/plugins/auth.ts
+import { defineNitroPlugin } from 'nitropack/runtime';
+
+export default defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook('request', (event) => {
+    const token = getHeader(event, 'authorization')?.replace('Bearer ', '');
+    if (token) {
+      // 校验 JWT 并将用户信息挂载到上下文
+      event.context.auth = verifyToken(token);
+    }
+  });
+});
+
+// server/api/protected.post.ts
+export default defineEventHandler(async (event) => {
+  if (!event.context.auth) {
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' });
+  }
+  const body = await readBody(event);
+  return { success: true, userId: event.context.auth.userId };
+});
+```
+
 ---
 
 ## 多框架支持
@@ -213,6 +299,43 @@ export default function Counter({ initial }: { initial: number }) {
 }
 ```
 
+**Astro 内容集合（Content Collections）与类型安全：**
+
+```typescript
+// src/content/config.ts
+import { defineCollection, z } from 'astro:content';
+
+const blog = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    pubDate: z.coerce.date(),
+    tags: z.array(z.string()).default([]),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { blog };
+
+// src/pages/blog/[...slug].astro
+---
+import { getCollection } from 'astro:content';
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+const { post } = Astro.props;
+const { Content } = await post.render();
+---
+<article>
+  <h1>{post.data.title}</h1>
+  <Content />
+</article>
+```
+
 **SvelteKit 表单与渐进增强：**
 
 ```svelte
@@ -245,6 +368,61 @@ export const actions = {
 };
 ```
 
+**SolidStart 文件路由与 API：**
+
+```typescript
+// src/routes/api/users.ts
+import { json } from '@solidjs/start';
+import { getUsers } from '~/lib/db';
+
+export async function GET() {
+  const users = await getUsers();
+  return json(users);
+}
+
+// src/routes/users.tsx
+import { createResource } from 'solid-js';
+import { useRouteData } from '@solidjs/start';
+
+export function routeData() {
+  return createResource(() => fetch('/api/users').then(r => r.json()));
+}
+
+export default function UsersPage() {
+  const [users] = useRouteData<typeof routeData>();
+  return (
+    <ul>
+      {users()?.map((u: any) => (
+        <li>{u.name}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+**Analog 服务端数据获取：**
+
+```typescript
+// src/app/pages/index.page.ts
+import { Component } from '@angular/core';
+import { injectContent, injectContentFiles } from '@analogjs/content';
+import { AsyncPipe, NgFor } from '@angular/common';
+
+@Component({
+  standalone: true,
+  imports: [AsyncPipe, NgFor],
+  template: `
+    <h1>Blog Posts</h1>
+    <article *ngFor="let post of posts">
+      <h2>{{ post.attributes.title }}</h2>
+    </article>
+  `,
+})
+export default class HomePage {
+  readonly posts = injectContentFiles();
+}
+```
+
 ---
 
 ## 选型建议
@@ -258,6 +436,7 @@ export const actions = {
 | 多技术栈团队 | **Astro** - 框架无关，性能优先 |
 | Angular项目 | **Analog** - 现代化全栈方案 |
 | 全栈创业MVP | **RedwoodJS** 或 **Blitz** - 快速开发 |
+| 极致交互性能 | **SolidStart** - 细粒度响应式，无 VDOM 开销 |
 
 ---
 
@@ -270,12 +449,19 @@ export const actions = {
 | Remix Documentation | <https://remix.run/docs> | 基于 Web 标准的全栈框架文档 |
 | Nuxt Documentation | <https://nuxt.com/docs> | Vue 生态全栈框架官方文档 |
 | Astro Documentation | <https://docs.astro.build> | 内容驱动多框架元框架文档 |
+| Astro Content Collections | <https://docs.astro.build/en/guides/content-collections/> | 类型安全的内容管理 |
 | SvelteKit Documentation | <https://kit.svelte.dev/docs> | Svelte 全栈框架官方文档 |
+| SolidStart Documentation | <https://docs.solidjs.com/solid-start> | SolidJS 元框架官方文档 |
+| Analog Documentation | <https://analogjs.org/docs> | Angular 全栈框架官方文档 |
 | web.dev — Rendering | <https://web.dev/rendering-on-the-web/> | Google 官方渲染模式对比指南 |
 | Core Web Vitals | <https://web.dev/vitals/> | 性能指标与优化最佳实践 |
 | HTTP Streaming | <https://web.dev/streams/> | Web Streams API 标准文档 |
 | Vercel Edge Runtime | <https://edge-runtime.vercel.app/> | 边缘计算运行时兼容性参考 |
 | TC39 Import Attributes | <https://github.com/tc39/proposal-import-attributes> | 导入属性 Stage 3 提案 |
+| WinterCG — Web Interoperability | <https://wintercg.org/> | 跨运行时 JavaScript 标准协作 |
+| React Dev — Thinking in React | <https://react.dev/learn/thinking-in-react> | React 官方思维模型 |
+| Web Vitals INP Guide | <https://web.dev/articles/inp> | Interaction to Next Paint 优化指南 |
+| MDN — HTTP | <https://developer.mozilla.org/en-US/docs/Web/HTTP> | HTTP 协议权威参考 |
 
 ---
 

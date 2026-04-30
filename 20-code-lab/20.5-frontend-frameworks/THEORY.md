@@ -273,7 +273,40 @@ effect(() => {
 count.value = 5; // DOM 自动更新
 ```
 
-### 3.2 常见误区
+### 3.2 元框架与路由模式
+
+```typescript
+// meta-framework-routing.ts — 基于文件系统的路由约定（Next.js / Nuxt / SvelteKit）
+
+// 文件结构 → 路由映射
+// app/page.tsx           → /
+// app/blog/page.tsx      → /blog
+// app/blog/[slug]/page.tsx → /blog/:slug
+// app/api/users/route.ts → /api/users (API Route)
+
+// Next.js App Router 服务端数据获取
+// app/blog/[slug]/page.tsx
+interface BlogPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function BlogPage({ params }: BlogPageProps) {
+  const { slug } = await params;
+  const post = await fetch(`https://api.example.com/posts/${slug}`).then(r => r.json());
+
+  return (
+    <article>
+      <h1>{post.title}</h1>
+      <div dangerouslySetInnerHTML={{ __html: post.content }} />
+    </article>
+  );
+}
+
+// 增量静态再生 (ISR) 配置
+export const revalidate = 3600; // 1 小时后重新生成
+```
+
+### 3.3 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -283,7 +316,7 @@ count.value = 5; // DOM 自动更新
 | 服务端组件等同于 SSR | RSC 是服务端运行组件的架构，SSR 是将结果序列化为 HTML；二者可叠加 |
 | 群岛架构不适合交互密集应用 | 在内容为主的站点上可显著减少 JS，但完全交互应用仍需传统 hydration |
 
-### 3.3 扩展阅读
+### 3.4 扩展阅读
 
 - [React — Official Docs](https://react.dev/)
 - [React Server Components — RFC](https://github.com/reactjs/rfcs/blob/main/text/0188-server-components.md)
@@ -301,7 +334,23 @@ count.value = 5; // DOM 自动更新
 - [Qwik — Resumability vs Hydration](https://qwik.dev/docs/concepts/resumable/)
 - [Marko — Streaming & Partial Hydration](https://markojs.com/docs/server-side-rendering/)
 - [HTMX — Hypermedia-Driven Applications](https://htmx.org/)
-- `20.5-frontend-frameworks/`
+- [Next.js App Router Docs](https://nextjs.org/docs/app) — React 元框架官方文档
+- [Nuxt — Server & Client Architecture](https://nuxt.com/docs/guide/concepts/rendering) — Vue 元框架渲染模式
+- [SvelteKit — Routing](https://kit.svelte.dev/docs/routing) — Svelte 元框架路由系统
+- [W3C — Web Components Spec](https://www.w3.org/TR/components-intro/) — Web Components 标准介绍
+- [W3C — DOM Spec](https://dom.spec.whatwg.org/) — DOM 标准规范
+- [WHATWG — HTML Living Standard](https://html.spec.whatwg.org/) — HTML 标准（含自定义元素）
+- [ECMAScript JSX Proposal](https://github.com/tc39/proposal-jsx) — JSX 标准化提案
+- [Ilya Grigorik — Browser Rendering Performance](https://developers.google.com/web/fundamentals/performance/rendering) — 浏览器渲染管线优化
+- [Web.dev — Core Web Vitals](https://web.dev/vitals/) — Google 核心网页指标
+- [Wikipedia — Model–View–Viewmodel](https://en.wikipedia.org/wiki/Model–view–viewmodel) — MVVM 架构模式理论
+- [W3C — Web Components Working Draft](https://www.w3.org/TR/custom-elements/) — 自定义元素规范
+- [MDN — Shadow DOM](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM) — Shadow DOM 使用指南
+- [React — Server Components Architecture](https://react.dev/reference/react/use-server) — React 服务端组件官方文档
+- [Vue — Reactivity in Depth](https://vuejs.org/guide/extras/reactivity-in-depth.html) — Vue 响应式系统深度解析
+- [Angular — AOT Compilation](https://angular.dev/tools/cli/aot-compiler) — Angular 预编译官方指南
+- [Svelte — Compiler API](https://svelte.dev/docs/svelte-compiler) — Svelte 编译器 API 文档
+- [Web.dev — Rendering on the Web](https://web.dev/articles/rendering-on-the-web) — 服务端渲染 vs 客户端渲染权威指南
 
 ---
 

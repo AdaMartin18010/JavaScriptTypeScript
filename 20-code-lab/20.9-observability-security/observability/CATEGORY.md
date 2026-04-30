@@ -227,6 +227,167 @@ groups:
           runbook_url: "https://wiki.internal/runbooks/payment-failures"
 ```
 
+### SLI/SLO 计算器
+
+```typescript
+// sli-calculator.ts — 服务水平指标与目标计算
+interface SLODefinition {
+  name: string;
+  target: number; // 0.0 - 1.0, e.g., 0.999
+  window: '28d' | '30d' | '90d';
+}
+
+interface SLIMeasurement {
+  goodEvents: number;
+  totalEvents: number;
+}
+
+class SLOCalculator {
+  calculateErrorBudget(slo: SLODefinition, measurement: SLIMeasurement): {
+    currentSLI: number;
+    errorBudgetRemaining: number;
+    errorBudgetTotal: number;
+    burnRate: number;
+    status: 'healthy' | 'at-risk' | 'exhausted';
+  } {
+    const currentSLI = measurement.goodEvents / measurement.totalEvents;
+    const errorBudgetTotal = (1 - slo.target) * measurement.totalEvents;
+    const errorBudgetUsed = measurement.totalEvents - measurement.goodEvents;
+    const errorBudgetRemaining = errorBudgetTotal - errorBudgetUsed;
+    const burnRate = errorBudgetUsed / errorBudgetTotal;
+
+    let status: 'healthy' | 'at-risk' | 'exhausted';
+    if (burnRate >= 1) status = 'exhausted';
+    else if (burnRate > 0.7) status = 'at-risk';
+    else status = 'healthy';
+
+    return { currentSLI, errorBudgetRemaining, errorBudgetTotal, burnRate, status };
+  }
+
+  // 基于消耗速率预测 SLO 违约时间
+  predictExhaustion(slo: SLODefinition, measurement: SLIMeasurement): number | null {
+    const { errorBudgetRemaining, burnRate } = this.calculateErrorBudget(slo, measurement);
+    if (burnRate <= 0) return null;
+
+    const windowDays = parseInt(slo.window);
+    const daysElapsed = windowDays * burnRate;
+    const daysRemaining = windowDays - daysElapsed;
+    return daysRemaining > 0 ? daysRemaining : 0;
+  }
+}
+
+// 示例：99.9% 可用性 SLO
+const slo: SLODefinition = { name: 'api-availability', target: 0.999, window: '30d' };
+const measurement: SLIMeasurement = { goodEvents: 999200, totalEvents: 1000000 };
+const calc = new SLOCalculator();
+console.log(calc.calculateErrorBudget(slo, measurement));
+```
+
+### 日志采样策略
+
+```typescript
+// log-sampling.ts — 结构化日志采样减少成本
+interface SamplingStrategy {
+  shouldLog(level: string, traceId: string): boolean;
+}
+
+class RateLimitSampling implements SamplingStrategy {
+  private counters = new Map<string, number>();
+  private lastReset = Date.now();
+
+  constructor(
+    private maxPerSecond: number = 100,
+    private resetIntervalMs: number = 1000
+  ) {}
+
+  shouldLog(_level: string, traceId: string): boolean {
+    const now = Date.now();
+    if (now - this.lastReset > this.resetIntervalMs) {
+      this.counters.clear();
+      this.lastReset = now;
+    }
+
+    const key = traceId.slice(0, 8); // 按 trace 前缀采样
+    const current = this.counters.get(key) ?? 0;
+    if (current >= this.maxPerSecond) return false;
+
+    this.counters.set(key, current + 1);
+    return true;
+  }
+}
+
+class LevelBasedSampling implements SamplingStrategy {
+  constructor(private rates: Record<string, number> = {
+    error: 1.0,
+    warn: 0.5,
+    info: 0.1,
+    debug: 0.01,
+  }) {}
+
+  shouldLog(level: string, _traceId: string): boolean {
+    const rate = this.rates[level] ?? 1.0;
+    return Math.random() < rate;
+  }
+}
+```
+
+### OpenTelemetry 自动埋点与 Hono 集成
+
+```typescript
+// otel-hono-auto.ts — Hono 框架的 OpenTelemetry 自动埋点
+import { Hono } from 'hono';
+import { trace, context, SpanKind, SpanStatusCode } from '@opentelemetry/api';
+
+const tracer = trace.getTracer('hono-app', '1.0.0');
+
+export function createTelemetryMiddleware() {
+  return async (c: any, next: () => Promise<void>) => {
+    const method = c.req.method;
+    const path = c.req.path;
+
+    const span = tracer.startSpan(`HTTP ${method}`, {
+      kind: SpanKind.SERVER,
+      attributes: {
+        'http.method': method,
+        'http.route': path,
+        'http.target': c.req.url,
+        'http.scheme': c.req.url.startsWith('https') ? 'https' : 'http',
+      },
+    });
+
+    try {
+      await context.with(trace.setSpan(context.active(), span), async () => {
+        await next();
+      });
+
+      span.setAttribute('http.status_code', c.res.status);
+      if (c.res.status >= 400) {
+        span.setStatus({ code: SpanStatusCode.ERROR });
+      } else {
+        span.setStatus({ code: SpanStatusCode.OK });
+      }
+    } catch (err) {
+      span.recordException(err as Error);
+      span.setStatus({ code: SpanStatusCode.ERROR, message: (err as Error).message });
+      throw err;
+    } finally {
+      span.end();
+    }
+  };
+}
+
+// 使用
+const app = new Hono();
+app.use('*', createTelemetryMiddleware());
+
+app.get('/api/users', async (c) => {
+  const currentSpan = trace.getSpan(context.active());
+  currentSpan?.setAttribute('db.table', 'users');
+  // ... 查询数据库
+  return c.json([]);
+});
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -272,9 +433,21 @@ groups:
 | OpenTelemetry Collector | 官方文档 | [opentelemetry.io/docs/collector/](https://opentelemetry.io/docs/collector/) |
 | Pino — Node.js Logger | GitHub / 文档 | [github.com/pinojs/pino](https://github.com/pinojs/pino) |
 | PromQL Cheatsheet | 指南 | [promlabs.com/promql-cheat-sheet/](https://promlabs.com/promql-cheat-sheet/) |
-| Google — Four Golden Signals | SRE 博客 | [sre.google/sre-book/monitoring-distributed-systems/#xref_monitoring_golden-signals](https://sre.google/sre-book/monitoring-distributed-systems/) |
+| Google — Four Golden Signals | SRE 博客 | [sre.google/sre-book/monitoring-distributed-systems/](https://sre.google/sre-book/monitoring-distributed-systems/) |
 | Datadog — Distributed Tracing | 指南 | [docs.datadoghq.com/tracing/](https://docs.datadoghq.com/tracing/) |
+| SLI/SLO Workshop — Google | 官方指南 | [sre.google/workbook/implementing-slos/](https://sre.google/workbook/implementing-slos/) |
+| OpenTelemetry Metrics API | 官方文档 | [opentelemetry.io/docs/concepts/signals/metrics/](https://opentelemetry.io/docs/concepts/signals/metrics/) |
+| Prometheus Alertmanager | 官方文档 | [prometheus.io/docs/alerting/latest/alertmanager/](https://prometheus.io/docs/alerting/latest/alertmanager/) |
+| Grafana Loki — Log Aggregation | 官方文档 | [grafana.com/docs/loki/latest/](https://grafana.com/docs/loki/latest/) |
+| Tempo — Distributed Tracing | 官方文档 | [grafana.com/docs/tempo/latest/](https://grafana.com/docs/tempo/latest/) |
+| RFC 5424 — Syslog Protocol | 标准 | [datatracker.ietf.org/doc/html/rfc5424](https://datatracker.ietf.org/doc/html/rfc5424) |
+| OpenTelemetry Semantic Conventions | 官方文档 | [opentelemetry.io/docs/concepts/semantic-conventions/](https://opentelemetry.io/docs/concepts/semantic-conventions/) |
+| Site Reliability Workbook — Google | 书籍 | [sre.google/workbook/table-of-contents/](https://sre.google/workbook/table-of-contents/) |
+| OpenTelemetry JS Auto-Instrumentations | GitHub | [github.com/open-telemetry/opentelemetry-js-contrib/tree/main/metapackages/auto-instrumentations-node](https://github.com/open-telemetry/opentelemetry-js-contrib/tree/main/metapackages/auto-instrumentations-node) |
+| Hono OpenTelemetry Middleware | GitHub | [github.com/honojs/middleware/tree/main/packages/opentelemetry](https://github.com/honojs/middleware/tree/main/packages/opentelemetry) |
+| OpenTelemetry Logs API | 官方文档 | [opentelemetry.io/docs/concepts/signals/logs/](https://opentelemetry.io/docs/concepts/signals/logs/) |
+| Prometheus Recording Rules | 官方文档 | [prometheus.io/docs/prometheus/latest/configuration/recording_rules/](https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

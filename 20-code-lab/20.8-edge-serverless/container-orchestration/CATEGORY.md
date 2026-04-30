@@ -183,6 +183,123 @@ class ServiceRegistry {
 }
 ```
 
+### 资源配额与亲和性调度
+
+```typescript
+// resource-scheduler.ts — 简化版 K8s 调度约束
+interface ResourceRequirements {
+  cpu: number;      // millicores
+  memory: number;   // MiB
+}
+
+interface Node {
+  id: string;
+  availableCpu: number;
+  availableMemory: number;
+  labels: Record<string, string>;
+  taints: Array<{ key: string; value: string; effect: 'NoSchedule' | 'PreferNoSchedule' }>;
+}
+
+interface PodSpec {
+  name: string;
+  resources: ResourceRequirements;
+  nodeSelector?: Record<string, string>;
+  affinity?: {
+    nodeAffinity?: {
+      required?: Array<{ key: string; operator: 'In'; values: string[] }>;
+      preferred?: Array<{ weight: number; key: string; operator: 'In'; values: string[] }>;
+    };
+    podAntiAffinity?: {
+      required?: Array<{ labelSelector: Record<string, string>; topologyKey: string }>;
+    };
+  };
+  tolerations?: Array<{ key: string; operator: 'Equal'; value: string }>;
+}
+
+class Scheduler {
+  schedule(pod: PodSpec, nodes: Node[]): Node | null {
+    const candidates = nodes.filter((node) => {
+      // 资源检查
+      if (node.availableCpu < pod.resources.cpu) return false;
+      if (node.availableMemory < pod.resources.memory) return false;
+
+      // Node Selector
+      if (pod.nodeSelector) {
+        for (const [key, value] of Object.entries(pod.nodeSelector)) {
+          if (node.labels[key] !== value) return false;
+        }
+      }
+
+      // Taints & Tolerations
+      for (const taint of node.taints) {
+        if (taint.effect === 'NoSchedule') {
+          const tolerated = pod.tolerations?.some(
+            (t) => t.key === taint.key && t.value === taint.value
+          );
+          if (!tolerated) return false;
+        }
+      }
+
+      return true;
+    });
+
+    // 按剩余资源最多排序（Best Fit 变体）
+    candidates.sort((a, b) =>
+      (b.availableCpu + b.availableMemory) - (a.availableCpu + a.availableMemory)
+    );
+
+    return candidates[0] ?? null;
+  }
+}
+```
+
+### 优雅关闭与信号处理
+
+```typescript
+// graceful-shutdown.ts — 容器化应用的优雅关闭
+import http from 'http';
+
+let isShuttingDown = false;
+
+const server = http.createServer((req, res) => {
+  if (isShuttingDown) {
+    res.writeHead(503, { 'Connection': 'close' });
+    res.end('Server is shutting down');
+    return;
+  }
+  res.writeHead(200);
+  res.end('OK');
+});
+
+function gracefulShutdown(signal: string) {
+  console.log(`Received ${signal}. Starting graceful shutdown...`);
+  isShuttingDown = true;
+
+  // 停止接受新连接
+  server.close(async () => {
+    console.log('HTTP server closed');
+
+    // 关闭数据库连接
+    await db.disconnect();
+    console.log('Database disconnected');
+
+    // 清理其他资源
+    process.exit(0);
+  });
+
+  // 强制关闭超时
+  setTimeout(() => {
+    console.error('Forced shutdown after timeout');
+    process.exit(1);
+  }, 30000);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+server.listen(3000, () => console.log('Server on :3000'));
+```
+
 ### 金丝雀发布策略
 
 ```typescript
@@ -242,6 +359,46 @@ class CanaryDeployer {
 }
 ```
 
+### 多阶段 Dockerfile 优化
+
+```dockerfile
+# Dockerfile.optimized — 多阶段构建优化生产镜像
+# 阶段 1：依赖安装（利用 Docker 层缓存）
+FROM node:20-alpine AS deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+# 阶段 2：构建（包含 devDependencies）
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# 阶段 3：运行（最小镜像）
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# 仅复制必要文件
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./
+
+# 非 root 用户运行
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+USER nodejs
+
+EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/healthz', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
+CMD ["node", "dist/main.js"]
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -278,7 +435,20 @@ class CanaryDeployer {
 | containerd — Container Runtime | 文档 | [containerd.io/docs](https://containerd.io/docs/) |
 | CRI-O — Kubernetes Container Runtime | 文档 | [cri-o.io](https://cri-o.io/) |
 | CNCF Cloud Native Trail Map | 指南 | [landscape.cncf.io](https://landscape.cncf.io/) |
+| Kubernetes Resource Management](<https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/>) | 官方文档 | 容器资源配额与限制 |
+| Kubernetes Taints and Tolerations](<https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/>) | 官方文档 | 污点与容忍调度 |
+| Kubernetes Pod Disruption Budgets](<https://kubernetes.io/docs/concepts/workloads/pods/disruptions/>) | 官方文档 | Pod 中断预算 |
+| Docker Best Practices](<https://docs.docker.com/build/building/best-practices/>) | 官方文档 | Docker 构建最佳实践 |
+| Graceful Shutdown in Node.js](<https://nodejs.org/api/process.html#process_signal_events>) | 官方文档 | Node.js 信号处理 |
+| The Twelve-Factor App](<https://12factor.net/>) | 方法论 | 云原生应用设计原则 |
+| Kubernetes Patterns Book](<https://k8spatterns.io/>) | 书籍 | Kubernetes 设计模式 |
+| Envoy Proxy Documentation](<https://www.envoyproxy.io/docs/envoy/latest/>) | 官方文档 | 服务代理与负载均衡 |
+| Docker Multi-Stage Builds](<https://docs.docker.com/build/building/multi-stage/>) | 官方文档 | 多阶段构建优化镜像 |
+| Kubernetes Health Probes](<https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/>) | 官方文档 | 存活、就绪与启动探针 |
+| Istio Service Mesh](<https://istio.io/latest/docs/>) | 官方文档 | 服务网格与服务发现 |
+| Helm Charts Best Practices](<https://helm.sh/docs/chart_best_practices/>) | 官方文档 | Helm Chart 最佳实践 |
+| Prometheus Operator](<https://prometheus-operator.dev/>) | 官方文档 | Kubernetes 监控部署 |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*
