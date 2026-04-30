@@ -236,6 +236,113 @@ console.log(account.getBalance()); // 150
 // console.log(account.#balance); // ❌ 编译错误：私有字段外部不可访问
 ```
 
+### 3.7 更多代码示例
+
+#### IIFE 模式与现代替代方案
+
+```typescript
+// 传统 IIFE：创建私有作用域
+const modulePattern = (() => {
+  const secret = 'hidden';
+  return {
+    getSecret() { return secret; },
+  };
+})();
+
+// ES Module 替代：自然隔离
+// private.ts
+const secret = 'hidden';
+export function getSecret() { return secret; }
+
+// 块级作用域替代（ES2015+）
+{
+  const secret = 'hidden';
+  console.log(secret); // 仅在此块内可见
+}
+// console.log(secret); // ReferenceError
+```
+
+#### globalThis 与跨环境全局对象
+
+```typescript
+// 统一访问全局对象（浏览器/Worker/Node.js）
+const globalObj = globalThis;
+
+// 安全地检查并设置全局配置
+if (!globalThis.APP_CONFIG) {
+  globalThis.APP_CONFIG = {
+    env: 'production',
+    version: '1.0.0',
+  };
+}
+
+// Node.js 特定：global 与 globalThis 等价
+// Web Worker：self 与 globalThis 等价
+// Browser：window 与 globalThis 等价
+```
+
+#### Symbol.for 与全局 Symbol 注册表
+
+```typescript
+// Symbol.for 在全局注册表中创建/获取 Symbol
+const sym1 = Symbol.for('app.logger');
+const sym2 = Symbol.for('app.logger');
+console.log(sym1 === sym2); // true
+
+// 用于跨文件/跨 Realm 的元数据键
+const metadataKey = Symbol.for('design:paramtypes');
+
+// Symbol.keyFor 仅对 Symbol.for 创建的 Symbol 有效
+console.log(Symbol.keyFor(sym1)); // 'app.logger'
+console.log(Symbol.keyFor(Symbol('private'))); // undefined
+```
+
+#### WeakRef 与闭包结合实现惰性计算
+
+```typescript
+function createLazy<T>(factory: () => T) {
+  let ref: WeakRef<{ value: T }> | null = null;
+
+  return () => {
+    const cached = ref?.deref();
+    if (cached) return cached.value;
+
+    const value = factory();
+    ref = new WeakRef({ value });
+    return value;
+  };
+}
+
+// 注意：此示例中 WeakRef 对象本身被闭包强引用，仅演示语法
+// 实际中需确保目标对象可被 GC
+```
+
+#### 模块级作用域与循环依赖处理
+
+```typescript
+// a.ts
+import { b } from './b';
+console.log('a.ts evaluating');
+export const a = 'A';
+export function useB() { return b; }
+
+// b.ts
+import { a } from './a';
+console.log('b.ts evaluating');
+export const b = 'B';
+export function useA() { return a; } // 运行时可能为 undefined
+
+// 解决循环依赖：将导入推迟到函数调用时
+// b-safe.ts
+import type { a as AType } from './a';
+export const b = 'B';
+export function useA() {
+  // 动态导入或运行时访问
+  const { a } = require('./a');
+  return a as typeof AType;
+}
+```
+
 ### 3.7 常见误区
 
 | 误区 | 正确理解 |
@@ -260,6 +367,14 @@ console.log(account.getBalance()); // 150
 - [V8 Blog: Orinoco — Generational Garbage Collector](https://v8.dev/blog/orinoco)
 - [2ality: Variables and Scoping in ES6](https://2ality.com/2015/02/es6-scoping.html)
 - [Google Developers: JavaScript Memory Management](https://developer.chrome.com/docs/devtools/memory-problems/)
+- [MDN: globalThis](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/globalThis) — 全局对象统一访问
+- [MDN: Symbol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol) — Symbol 类型详解
+- [MDN: WeakRef](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef) — 弱引用
+- [V8 Blog: Trash Talk](https://v8.dev/blog/trash-talk) — 垃圾回收深度解析
+- [JavaScript Info: The old "var"](https://javascript.info/var) — var 历史与陷阱
+- [Node.js Docs: Modules](https://nodejs.org/api/modules.html) — CommonJS 模块系统
+- [Node.js Docs: ECMAScript Modules](https://nodejs.org/api/esm.html) — ESM 模块系统
+- [TC39 Proposal: Class Fields](https://github.com/tc39/proposal-class-fields) — 私有字段提案
 - `10-fundamentals/10.1-language-semantics/02-variables/`
 
 ---

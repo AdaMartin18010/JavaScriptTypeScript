@@ -247,6 +247,8 @@ export const rule = ESLintUtils.RuleCreator(
 | TypeScript Language Service API | <https://github.com/microsoft/TypeScript/wiki/Architectural-Overview> | 语言服务架构概述 |
 | TypeScript Deep Dive — Compiler | <https://basarat.gitbook.io/typescript/overview> | 社区深度教程 |
 | TypeScript Compiler Internals | <https://www.typescriptlang.org/dev/typescript-internals/> | 官方内部文档 |
+| TypeScript Handbook: AST Traversal | <https://www.typescriptlang.org/docs/handbook/compiler-api.html> | 遍历与生成代码 |
+| ESLint TypeScript Utils | <https://typescript-eslint.org/developers/custom-rules> | 自定义规则开发 |
 
 ---
 

@@ -180,6 +180,109 @@ if (typeof window !== 'undefined' && window.trustedTypes) {
 }
 ```
 
+### Nonce-Based CSP 中间件
+
+```typescript
+// nonce-csp.ts - 动态 nonce 生成防止内联脚本劫持
+import { randomBytes } from 'crypto';
+import type { Request, Response, NextFunction } from 'express';
+
+function generateNonce(): string {
+  return randomBytes(16).toString('base64');
+}
+
+function nonceBasedCSP(req: Request, res: Response, next: NextFunction) {
+  const nonce = generateNonce();
+  res.locals.nonce = nonce;
+
+  const csp = [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}'`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+  ].join('; ');
+
+  res.setHeader('Content-Security-Policy', csp);
+  next();
+}
+
+// 在模板中使用
+// <script nonce="<%= nonce %>">console.log('trusted inline script');</script>
+```
+
+### 安全 Cookie 构建器
+
+```typescript
+// secure-cookie.ts
+interface CookieOptions {
+  name: string;
+  value: string;
+  maxAge?: number;
+  path?: string;
+  domain?: string;
+  httpOnly?: boolean;
+  secure?: boolean;
+  sameSite?: 'strict' | 'lax' | 'none';
+}
+
+function buildSetCookieHeader(options: CookieOptions): string {
+  const parts: string[] = [`${options.name}=${encodeURIComponent(options.value)}`];
+
+  if (options.maxAge !== undefined) parts.push(`Max-Age=${options.maxAge}`);
+  if (options.path) parts.push(`Path=${options.path}`);
+  if (options.domain) parts.push(`Domain=${options.domain}`);
+  if (options.httpOnly) parts.push('HttpOnly');
+  if (options.secure) parts.push('Secure');
+  if (options.sameSite) parts.push(`SameSite=${options.sameSite.charAt(0).toUpperCase() + options.sameSite.slice(1)}`);
+
+  return parts.join('; ');
+}
+
+// 使用
+const sessionCookie = buildSetCookieHeader({
+  name: 'session',
+  value: 'abc123',
+  httpOnly: true,
+  secure: true,
+  sameSite: 'strict',
+  maxAge: 3600,
+});
+```
+
+### Referrer Policy 策略选择器
+
+```typescript
+// referrer-policy-selector.ts
+type ReferrerPolicy =
+  | 'no-referrer'
+  | 'no-referrer-when-downgrade'
+  | 'origin'
+  | 'origin-when-cross-origin'
+  | 'same-origin'
+  | 'strict-origin'
+  | 'strict-origin-when-cross-origin'
+  | 'unsafe-url';
+
+function selectReferrerPolicy(
+  context: 'internal-api' | 'external-link' | 'cdn-asset' | 'payment-page'
+): ReferrerPolicy {
+  switch (context) {
+    case 'payment-page':
+      return 'no-referrer'; // 绝不泄露支付页面 URL
+    case 'internal-api':
+      return 'same-origin'; // 仅同域请求携带完整 referrer
+    case 'external-link':
+      return 'strict-origin-when-cross-origin'; // 跨域仅发送 origin
+    case 'cdn-asset':
+      return 'origin'; // CDN 只需知道来源域名
+    default:
+      return 'strict-origin-when-cross-origin';
+  }
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -204,19 +307,24 @@ if (typeof window !== 'undefined' && window.trustedTypes) {
 | 资源 | 类型 | 链接 |
 |------|------|------|
 | OWASP XSS Prevention Cheat Sheet | 安全指南 | [cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html) |
-| MDN — Content Security Policy | 文档 | [developer.mozilla.org/en-US/docs/Web/HTTP/CSP](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) |
-| web.dev — Security Headers | 指南 | [web.dev/articles/security-headers](https://web.dev/articles/security-headers) |
-| W3C — CSP Level 3 | 规范 | [w3.org/TR/CSP3/](https://www.w3.org/TR/CSP3/) |
+| MDN - Content Security Policy | 文档 | [developer.mozilla.org/en-US/docs/Web/HTTP/CSP](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) |
+| web.dev - Security Headers | 指南 | [web.dev/articles/security-headers](https://web.dev/articles/security-headers) |
+| W3C - CSP Level 3 | 规范 | [w3.org/TR/CSP3/](https://www.w3.org/TR/CSP3/) |
 | OWASP CSRF Prevention | 安全指南 | [cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html) |
-| MDN — SameSite Cookie | 文档 | [developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) |
+| MDN - SameSite Cookie | 文档 | [developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) |
 | Mozilla Observatory | 检测工具 | [observatory.mozilla.org](https://observatory.mozilla.org/) |
 | Google CSP Evaluator | 检测工具 | [csp-evaluator.withgoogle.com](https://csp-evaluator.withgoogle.com/) |
-| web.dev — Trusted Types | 指南 | [web.dev/articles/trusted-types](https://web.dev/articles/trusted-types) |
-| W3C — Trusted Types Spec | 规范 | [w3c.github.io/trusted-types/dist/spec/](https://w3c.github.io/trusted-types/dist/spec/) |
-| MDN — Subresource Integrity | 文档 | [developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity) |
+| web.dev - Trusted Types | 指南 | [web.dev/articles/trusted-types](https://web.dev/articles/trusted-types) |
+| W3C - Trusted Types Spec | 规范 | [w3c.github.io/trusted-types/dist/spec/](https://w3c.github.io/trusted-types/dist/spec/) |
+| MDN - Subresource Integrity | 文档 | [developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity) |
 | OWASP Top 10 2025 | 安全指南 | [owasp.org/Top10/](https://owasp.org/Top10/) |
 | Chrome Security Headers Guide | 指南 | [developer.chrome.com/docs/privacy-sandbox/security-headers](https://developer.chrome.com/docs/privacy-sandbox/security-headers) |
+| HSTS Preload List | 工具 | [hstspreload.org](https://hstspreload.org/) |
+| security.txt Standard | 规范 | [securitytxt.org](https://securitytxt.org/) |
+| DOMPurify - XSS Sanitizer | 源码 | [github.com/cure53/DOMPurify](https://github.com/cure53/DOMPurify) |
+| Helmet.js - Express Security | 源码 | [helmetjs.github.io](https://helmetjs.github.io/) |
+| web.dev - Secure by Default | 指南 | [web.dev/secure](https://web.dev/secure) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

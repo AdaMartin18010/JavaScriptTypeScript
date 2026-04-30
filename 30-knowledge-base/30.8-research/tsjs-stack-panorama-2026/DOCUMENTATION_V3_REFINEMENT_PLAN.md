@@ -202,3 +202,46 @@ function validateCrossReferences(baseDir: string): ValidationResult[] {
 ---
 
 预计用时：**1 天**
+
+
+---
+
+## 深化补充：自动化脚本与权威链接
+
+### GitHub Actions 交叉引用校验工作流
+
+```yaml
+# .github/workflows/validate-cross-references.yml
+name: Validate Cross References
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * 1' # 每周一自动运行
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install -g tsx
+      - run: tsx scripts/validate-cross-references.ts ./30-knowledge-base
+```
+
+---
+
+### 更多权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| TC39 Process | <https://tc39.es/process-document/> | ECMAScript 提案流程 |
+| Node.js Release Schedule | <https://nodejs.org/en/about/previous-releases> | 官方发布时间表 |
+| TypeScript 7.0 Roadmap | <https://devblogs.microsoft.com/typescript/> | 微软 TypeScript 博客 |
+| ECMA-262 Specification | <https://tc39.es/ecma262/> | ECMAScript 语言规范 |
+| Deno Type Stripping | <https://deno.com/blog/v2.0> | Deno 类型剥离博客 |
+| Bun Runtime Docs | <https://bun.sh/docs> | Bun 官方文档 |
+| WebAssembly Spec | <https://webassembly.github.io/spec/> | WASM 规范 |
+| MDN Web Docs | <https://developer.mozilla.org/> | Web 技术权威文档 |

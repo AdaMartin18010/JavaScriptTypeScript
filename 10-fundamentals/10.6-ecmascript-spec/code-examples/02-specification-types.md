@@ -225,6 +225,41 @@ console.log(Array === iframeArray)  // false！不同 Realm
 | **Job** | 微任务单元（Promise 回调、MutationObserver） | 间接（通过事件循环） |
 | **Job Queue** | 微任务队列（PromiseJobs、ScriptJobs） | 间接 |
 
+### 补充 4：Completion Record 与异常控制流
+
+ECMA-262 使用 Completion Record 精确描述 `try/catch/finally` 和 `return` 的语义：
+
+```javascript
+// 规范层面：try 块的正常完成被 catch 捕获为 throw 完成
+// 运行时可见：finally 总会执行，即使 try 中有 return
+
+function demo() {
+    try {
+        return 1; // 产生 Return Completion { [[Value]]: 1 }
+    } finally {
+        console.log('finally'); // 引擎强制先执行 finally
+        // 若 finally 中也有 return，会覆盖 try 的返回值
+    }
+}
+console.log(demo()); // 输出 "finally" 然后 1
+```
+
+### 补充 5：Reference Record 的运行时体现
+
+`typeof` 和 `delete` 操作符的行为直接受 Reference Record 的 `[[Strict]]` 和 `[[ReferencedName]]` 影响：
+
+```javascript
+// delete 对未声明变量的行为差异
+function strictMode() {
+    'use strict';
+    x = 1; // 隐式全局在严格模式下是 ReferenceError
+    // delete x; // SyntaxError: Delete of an unqualified identifier
+}
+
+// typeof 对未声明变量安全：因为规范规定 typeof 检查 Reference Record 的 base
+console.log(typeof notDeclared); // "undefined"，不会抛出 ReferenceError
+```
+
 ---
 
 ---
@@ -252,10 +287,14 @@ console.log(a(), a(), b()); // 1, 2, 1
 
 ## 更多权威参考链接
 
-- **ECMA-262 §6.2.5** -- <https://tc39.es/ecma262/#sec-reference-record-specification-type>
-- **ECMA-262 §6.2.6** -- <https://tc39.es/ecma262/#sec-property-descriptor-specification-type>
-- **ECMA-262 §9.1** -- <https://tc39.es/ecma262/#sec-environment-records>
-- **Engine262** -- <https://github.com/engine262/engine262>
+- **ECMA-262 §6.2** — Specification Types — <https://tc39.es/ecma262/#sec-ecmascript-data-types-and-values>
+- **ECMA-262 §6.2.5** — Reference Record — <https://tc39.es/ecma262/#sec-reference-record-specification-type>
+- **ECMA-262 §6.2.6** — Property Descriptor — <https://tc39.es/ecma262/#sec-property-descriptor-specification-type>
+- **ECMA-262 §9.1** — Environment Records — <https://tc39.es/ecma262/#sec-environment-records>
+- **MDN: Property descriptors** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty>
+- **MDN: try...catch** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch>
+- **V8 Blog: Understanding the ECMAScript spec** — <https://v8.dev/blog/understanding-ecmascript-part-1>
+- **Engine262** — JavaScript interpreter in JavaScript — <https://github.com/engine262/engine262>
 
 > 📅 补充更新：2026-04-27
 > 📅 再次深化：2026-04-30

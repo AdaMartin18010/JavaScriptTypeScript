@@ -117,7 +117,7 @@ async function quantizeAndSave(model: tf.LayersModel) {
       const max = w.max();
       const scale = max.sub(min).div(255);
       const zeroPoint = tf.floor(min.div(scale).neg());
-      return w.div(scale).add(zeroPoint).clipByValue(0, 255).cast('uint8');
+      return w.div(scale).add(zeroPoint).clipByValues(0, 255).cast('uint8');
     });
     // 实际生产应使用 tfjs-converter 的量化标志
     return quantizedWeights;
@@ -327,6 +327,120 @@ if (result.drifted) {
 }
 ```
 
+### 3.8 特征缩放与标准化
+
+```typescript
+// feature-scaler.ts — MinMax / Z-Score / Robust 缩放
+
+export class FeatureScaler {
+  private min = 0;
+  private max = 1;
+  private mean = 0;
+  private std = 1;
+  private median = 0;
+  private iqr = 1;
+
+  fitMinMax(data: number[]) {
+    this.min = Math.min(...data);
+    this.max = Math.max(...data);
+  }
+
+  transformMinMax(value: number): number {
+    return (value - this.min) / (this.max - this.min || 1);
+  }
+
+  fitZScore(data: number[]) {
+    this.mean = data.reduce((a, b) => a + b, 0) / data.length;
+    const variance = data.reduce((sum, v) => sum + (v - this.mean) ** 2, 0) / data.length;
+    this.std = Math.sqrt(variance);
+  }
+
+  transformZScore(value: number): number {
+    return (value - this.mean) / (this.std || 1);
+  }
+
+  fitRobust(data: number[]) {
+    const sorted = [...data].sort((a, b) => a - b);
+    this.median = sorted[Math.floor(sorted.length / 2)];
+    const q1 = sorted[Math.floor(sorted.length / 4)];
+    const q3 = sorted[Math.floor((sorted.length * 3) / 4)];
+    this.iqr = q3 - q1 || 1;
+  }
+
+  transformRobust(value: number): number {
+    return (value - this.median) / this.iqr;
+  }
+}
+```
+
+### 3.9 模型版本管理与 MLflow 风格追踪
+
+```typescript
+// model-registry.ts — 轻量级模型版本注册表
+
+interface ModelArtifact {
+  version: string;
+  artifactPath: string;
+  metrics: Record<string, number>;
+  hyperparameters: Record<string, unknown>;
+  createdAt: Date;
+  tags: string[];
+}
+
+class ModelRegistry {
+  private models = new Map<string, ModelArtifact[]>();
+
+  register(
+    name: string,
+    version: string,
+    artifactPath: string,
+    metrics: Record<string, number>,
+    hyperparameters: Record<string, unknown> = {},
+    tags: string[] = []
+  ) {
+    const versions = this.models.get(name) || [];
+    versions.push({ version, artifactPath, metrics, hyperparameters, createdAt: new Date(), tags });
+    this.models.set(name, versions);
+  }
+
+  getLatest(name: string): ModelArtifact | undefined {
+    const versions = this.models.get(name);
+    return versions?.sort((a, b) => +b.createdAt - +a.createdAt)[0];
+  }
+
+  getByTag(name: string, tag: string): ModelArtifact[] {
+    return (this.models.get(name) || []).filter((m) => m.tags.includes(tag));
+  }
+
+  rollback(name: string, targetVersion: string): boolean {
+    const versions = this.models.get(name);
+    const target = versions?.find((v) => v.version === targetVersion);
+    if (target) {
+      console.log(`Rolling back ${name} to ${targetVersion}`);
+      return true;
+    }
+    return false;
+  }
+
+  compareVersions(name: string, v1: string, v2: string): Record<string, { v1: number; v2: number; delta: number }> | null {
+    const versions = this.models.get(name);
+    if (!versions) return null;
+    const a = versions.find((v) => v.version === v1);
+    const b = versions.find((v) => v.version === v2);
+    if (!a || !b) return null;
+
+    const result: Record<string, { v1: number; v2: number; delta: number }> = {};
+    const allKeys = new Set([...Object.keys(a.metrics), ...Object.keys(b.metrics)]);
+    for (const key of allKeys) {
+      const m1 = a.metrics[key] ?? 0;
+      const m2 = b.metrics[key] ?? 0;
+      result[key] = { v1: m1, v2: m2, delta: m2 - m1 };
+    }
+    return result;
+  }
+}
+```
+
 ---
 
 ## 4. 反模式
@@ -396,12 +510,15 @@ ML 工程 = **软件工程 + 数据科学 + 运维**。
 ## 参考资源
 
 ### 权威书籍与课程
+
 - [Made With ML](https://madewithml.com/) — 开源 MLOps 课程（涵盖从建模到部署的全流程）
 - [Designing Machine Learning Systems — Chip Huyen](https://www.oreilly.com/library/view/designing-machine-learning/9781098107956/) — ML 系统设计权威著作
 - [Feature Stores for ML](https://www.featurestorebook.com/) — 特征存储专著
 - [Machine Learning Engineering — Andriy Burkov](http://www.mlebook.com/) — 工程化实践指南
+- [Hands-On Machine Learning with Scikit-Learn, Keras & TensorFlow](https://www.oreilly.com/library/view/hands-on-machine-learning/9781098125967/) — 实用 ML 圣经
 
 ### 开源工具
+
 - [MLOps Community](https://mlops.community/) — MLOps 从业者社区
 - [TensorFlow.js](https://www.tensorflow.org/js) — Google 浏览器/Node ML 框架
 - [ONNX Runtime](https://onnxruntime.ai/) — 跨平台高性能推理引擎
@@ -409,14 +526,15 @@ ML 工程 = **软件工程 + 数据科学 + 运维**。
 - [Feast](https://feast.dev/) — 开源特征存储
 - [Evidently AI](https://www.evidentlyai.com/) — ML 模型与数据漂移检测
 - [Great Expectations](https://greatexpectations.io/) — 数据质量验证框架
-
-### 规范与标准
+- [Weights & Biases](https://wandb.ai/) — 实验追踪与可视化平台
 - [MLflow](https://mlflow.org/) — 开源 ML 生命周期管理平台
 - [Kubeflow](https://www.kubeflow.org/) — Kubernetes 上的 ML 工作流
 - [Open Neural Network Exchange (ONNX)](https://onnx.ai/) — 跨框架模型交换标准
 - [Hugging Face Transformers.js](https://huggingface.co/docs/transformers.js) — 浏览器端 Transformer 模型库
 - [Papers With Code — MLOps](https://paperswithcode.com/area/machine-learning/mlops) — 学术论文与实现对应
 - [Google — Rules of ML](https://developers.google.com/machine-learning/guides/rules-of-ml) — Google ML 工程最佳实践
+- [River](https://riverml.xyz/) — 在线机器学习库（Python/JS 概念互通）
+- [Apache Arrow](https://arrow.apache.org/) — 跨语言列式数据格式（JS 绑定：arrow-js）
 
 ---
 
@@ -453,4 +571,4 @@ ML 工程 = **软件工程 + 数据科学 + 运维**。
 
 ---
 
-> 📅 理论深化更新：2026-04-29
+> 📅 理论深化更新：2026-04-30

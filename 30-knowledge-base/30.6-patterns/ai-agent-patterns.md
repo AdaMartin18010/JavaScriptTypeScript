@@ -213,3 +213,101 @@ console.log(result.answer);
 ---
 
 *本模式文档为 AI Agent 基础设施的架构设计参考。*
+
+
+---
+
+## 深化补充：更多模式实现示例
+
+### Plan-and-Solve 简易实现
+
+```typescript
+// plan-and-solve.ts
+interface SubTask {
+  id: string;
+  description: string;
+  dependencies: string[];
+  status: 'pending' | 'done' | 'failed';
+}
+
+class PlanAndSolveAgent {
+  async plan(goal: string): Promise<SubTask[]> {
+    // LLM 生成计划
+    const plan = await llm.generate(`将以下目标分解为子任务，返回 JSON 数组：${goal}`);
+    return JSON.parse(plan);
+  }
+
+  async execute(tasks: SubTask[]): Promise<string> {
+    const completed = new Set<string>();
+    while (completed.size < tasks.length) {
+      const ready = tasks.filter(t => !completed.has(t.id) && t.dependencies.every(d => completed.has(d)));
+      if (ready.length === 0) throw new Error('Deadlock in task dependencies');
+      await Promise.all(ready.map(async t => {
+        t.status = 'done'; // 模拟执行
+        completed.add(t.id);
+      }));
+    }
+    return 'All tasks completed';
+  }
+}
+```
+
+### Multi-Agent 通信骨架（A2A 风格）
+
+```typescript
+// multi-agent-orchestrator.ts
+interface AgentMessage {
+  from: string;
+  to: string;
+  type: 'task' | 'result' | 'feedback';
+  payload: unknown;
+}
+
+class AgentOrchestrator {
+  private agents = new Map<string, Agent>();
+
+  register(name: string, agent: Agent) {
+    this.agents.set(name, agent);
+  }
+
+  async dispatch(msg: AgentMessage): Promise<void> {
+    const target = this.agents.get(msg.to);
+    if (!target) throw new Error(`Agent ${msg.to} not found`);
+    const result = await target.handle(msg.payload);
+    // 将结果路由回发送者或下一个 Agent
+    await this.agents.get(msg.from)?.onFeedback(result);
+  }
+}
+```
+
+### Reflection 模式迭代优化
+
+```typescript
+// reflection.ts
+class ReflectionAgent {
+  async generateWithReflection(prompt: string, maxRounds = 3): Promise<string> {
+    let draft = await llm.generate(prompt);
+    for (let i = 0; i < maxRounds; i++) {
+      const critique = await llm.generate(`请评估以下回答的准确性与完整性：\n${draft}`);
+      if (critique.includes('PASS')) return draft;
+      draft = await llm.generate(`根据反馈改进回答：\n反馈：${critique}\n原始回答：${draft}`);
+    }
+    return draft;
+  }
+}
+```
+
+---
+
+### 更多权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| OpenAI Agents SDK | <https://platform.openai.com/docs/guides/agents> | OpenAI 官方 Agent 指南 |
+| LangGraph Docs | <https://langchain-ai.github.io/langgraph/> | LangChain 状态机 Agent |
+| Mastra Framework | <https://mastra.ai/docs> | 现代 AI 工作流框架 |
+| CrewAI Documentation | <https://docs.crewai.com/> | 多 Agent 协作框架 |
+| AutoGen (Microsoft) | <https://microsoft.github.io/autogen/> | 多 Agent 对话框架 |
+| Google A2A Protocol | <https://github.com/google/a2a> | Agent-to-Agent 协议 |
+| ReAct Paper | <https://arxiv.org/abs/2210.03629> | ReAct 原始论文 |
+| Self-RAG Paper | <https://arxiv.org/abs/2310.11511> | Self-RAG 原始论文 |

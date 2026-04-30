@@ -178,6 +178,110 @@ while (state.s.tag !== 'Skip') {
 console.log('Final store:', Object.fromEntries(state.σ)); // { x: 3 }
 ```
 
+#### 可运行示例：带环境与闭包的 λ 演算小步语义
+
+```typescript
+// lambda-calculus-small-step.ts — λ 演算 + 环境模型，可运行
+
+type Term =
+  | { tag: 'Var'; name: string }
+  | { tag: 'Lam'; param: string; body: Term }
+  | { tag: 'App'; func: Term; arg: Term }
+  | { tag: 'Num'; n: number }
+  | { tag: 'Add'; left: Term; right: Term };
+
+// 闭包 = λ 抽象 + 捕获环境
+interface Closure {
+  tag: 'Closure';
+  param: string;
+  body: Term;
+  env: Env;
+}
+
+type Value = Closure | { tag: 'VNum'; n: number };
+type Env = Map<string, Value>;
+
+function isValue(t: Term | Value): t is Value {
+  return t.tag === 'Closure' || t.tag === 'VNum';
+}
+
+function step(t: Term, env: Env): { term: Term | Value; env: Env } {
+  switch (t.tag) {
+    case 'Var': {
+      const v = env.get(t.name);
+      if (!v) throw new Error(`Unbound variable: ${t.name}`);
+      return { term: v, env };
+    }
+    case 'Lam':
+      // λx.e 在环境 env 下求值为闭包
+      return { term: { tag: 'Closure', param: t.param, body: t.body, env }, env };
+    case 'App': {
+      if (!isValue(t.func)) {
+        const r = step(t.func, env);
+        return { term: { tag: 'App', func: r.term as Term, arg: t.arg }, env: r.env };
+      }
+      if (t.func.tag !== 'Closure') throw new Error('Applying non-function');
+      if (!isValue(t.arg)) {
+        const r = step(t.arg, env);
+        return { term: { tag: 'App', func: t.func, arg: r.term as Term }, env: r.env };
+      }
+      // β 归约：在闭包环境中扩展参数绑定
+      const newEnv = new Map(t.func.env);
+      newEnv.set(t.func.param, t.arg as Value);
+      return { term: t.func.body, env: newEnv };
+    }
+    case 'Num':
+      return { term: { tag: 'VNum', n: t.n }, env };
+    case 'Add': {
+      if (!isValue(t.left)) {
+        const r = step(t.left, env);
+        return { term: { tag: 'Add', left: r.term as Term, right: t.right }, env: r.env };
+      }
+      if (!isValue(t.right)) {
+        const r = step(t.right, env);
+        return { term: { tag: 'Add', left: t.left, right: r.term as Term }, env: r.env };
+      }
+      if (t.left.tag !== 'VNum' || t.right.tag !== 'VNum') throw new Error('Adding non-numbers');
+      return { term: { tag: 'VNum', n: t.left.n + t.right.n }, env };
+    }
+  }
+}
+
+function evalFull(t: Term, env: Env): Value {
+  let current: Term | Value = t;
+  let currentEnv = env;
+  while (!isValue(current)) {
+    const r = step(current, currentEnv);
+    current = r.term;
+    currentEnv = r.env;
+  }
+  return current;
+}
+
+// ===== 演示：((λx.λy.x+y) 1) 2 =====
+const addExpr: Term = {
+  tag: 'App',
+  func: {
+    tag: 'App',
+    func: {
+      tag: 'Lam', param: 'x',
+      body: {
+        tag: 'Lam', param: 'y',
+        body: {
+          tag: 'Add',
+          left: { tag: 'Var', name: 'x' },
+          right: { tag: 'Var', name: 'y' },
+        },
+      },
+    },
+    arg: { tag: 'Num', n: 1 },
+  },
+  arg: { tag: 'Num', n: 2 },
+};
+
+console.log(evalFull(addExpr, new Map())); // { tag: 'VNum', n: 3 }
+```
+
 ### 3.2 非确定性选择：小步语义的优势
 
 ```typescript
@@ -242,6 +346,13 @@ console.log('All paths:', exploreAll(expr)); // [[1], [2], [3]]
 - [Concrete Semantics with Isabelle/HOL](https://concrete-semantics.org/) — 用定理证明器验证语义
 - [PLFA — Operational Semantics](https://plfa.inf.ed.ac.uk/Part1/BigStep.html) — Agda 形式化操作语义
 - [ECMA-262 Algorithm Conventions](https://tc39.es/ecma262/#sec-algorithm-conventions) — 规范中的伪代码语义
+- [Semantics with Applications: Operational Semantics](https://www.cs.ru.nl/~herman/semanticswithapplications.pdf) — 教材第 2 章
+- [Practical Foundations for Programming Languages (PFPL)](https://www.cs.cmu.edu/~rwh/pfpl.html) — Robert Harper
+- [Featherweight Java: A Minimal Core Calculus for Java and GJ](https://doi.org/10.1145/345099.345105) — Igarashi, Pierce, Wadler (TOPLAS 2001)
+- [K Framework: Rewriting-Based Semantic Framework](https://kframework.org/) — 可执行操作语义框架
+- [PLT Redex: Semantic Modeling](https://redex.racket-lang.org/) — Racket 语义建模工具
+- [The Formal Semantics of Programming Languages — Winskel](https://mitpress.mit.edu/9780262731033/) — 经典教材
+- [Definitional Interpreters for Higher-Order Programming Languages](https://doi.org/10.1145/942572.807047) — Reynolds (1972) — 高阶语言定义性解释器
 - `20.10-formal-verification/formal-semantics/`
 
 ---

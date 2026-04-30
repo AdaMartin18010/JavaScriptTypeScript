@@ -14,6 +14,7 @@
 ### 1.2 形式化基础
 
 边缘数据库可形式化为一个有限状态复制机 (Finite-State Replication Machine)：
+
 - 每个边缘节点维护本地副本 $L_i$
 - 写入操作先提交到 $L_i$，再通过异步反熵协议同步到中心 $C$
 - 读操作 $R(x)$ 优先在 $L_i$ 执行，满足 $R(x) \in \{L_i, C\}$
@@ -215,6 +216,67 @@ export class LocalFirstStore {
 }
 ```
 
+#### Drizzle ORM + D1 类型安全查询
+
+```typescript
+// drizzle-schema.ts
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { drizzle } from 'drizzle-orm/d1';
+import { gt } from 'drizzle-orm';
+
+export const users = sqliteTable('users', {
+  id: integer('id').primaryKey(),
+  email: text('email').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+// Cloudflare Worker 中类型安全查询
+export async function getRecentUsers(db: D1Database, days = 7) {
+  const orm = drizzle(db, { schema: { users } });
+  const since = new Date(Date.now() - days * 86400000);
+  return orm.select().from(users).where(gt(users.createdAt, since)).all();
+}
+```
+
+#### Prisma Accelerate 边缘缓存
+
+```typescript
+// prisma-accelerate.ts
+import { PrismaClient } from '@prisma/client/edge';
+import { withAccelerate } from '@prisma/extension-accelerate';
+
+const prisma = new PrismaClient({
+  datasources: { db: { url: process.env.DATABASE_URL } },
+}).$extends(withAccelerate());
+
+// 自动边缘缓存，TTL 控制
+export async function cachedUser(id: string) {
+  return prisma.user.findUnique({
+    where: { id },
+    cacheStrategy: { ttl: 60, swr: 300 }, // 1min 新鲜 + 5min stale-while-revalidate
+  });
+}
+```
+
+#### Bun SQLite 原生高性能示例
+
+```typescript
+// bun-sqlite.ts
+import { Database } from 'bun:sqlite';
+
+const db = new Database('app.db', { create: true });
+db.run('CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY, message TEXT, created_at INTEGER)');
+
+// 预处理语句 + 批量插入（比 Node.js sqlite3 快 3-5 倍）
+const insert = db.prepare('INSERT INTO logs (message, created_at) VALUES ($msg, $ts)');
+
+db.transaction(() => {
+  for (let i = 0; i < 10000; i++) {
+    insert.run({ $msg: `log-${i}`, $ts: Date.now() });
+  }
+})();
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -225,20 +287,32 @@ export class LocalFirstStore {
 
 ### 3.3 扩展阅读
 
+#### 数据库官方文档
+
 - [Cloudflare D1 文档](https://developers.cloudflare.com/d1/)
+- [Cloudflare D1 Pricing & Limits](https://developers.cloudflare.com/d1/platform/pricing/)
 - [Turso / LibSQL 文档](https://docs.turso.tech/)
-- [SQLite WASM](https://sqlite.org/wasm/doc/trunk/index.md)
-- [local-first software](https://www.inkandswitch.com/local-first/)
-- [Edge Database Patterns — Cloudflare Blog](https://blog.cloudflare.com/tag/d1/)
+- [LibSQL Embedded Replicas](https://docs.turso.tech/features/embedded-replicas)
 - [LibSQL GitHub — Open Contribution Fork](https://github.com/tursodatabase/libsql)
-- [Drizzle ORM — Edge 友好 ORM](https://orm.drizzle.team/)
-- [Fly.io — SQLite at the Edge](https://fly.io/blog/all-in-on-sqlite-litestream/)
 - [SQLite Official Documentation](https://sqlite.org/docs.html)
+- [SQLite WASM](https://sqlite.org/wasm/doc/trunk/index.md)
+
+#### ORM 与工具
+
+- [Drizzle ORM — Edge Quick Start](https://orm.drizzle.team/docs/get-started-sqlite)
+- [Prisma ORM — Edge Compatibility](https://www.prisma.io/docs/orm/prisma-client/deployment/edge)
+- [Prisma Accelerate Documentation](https://www.prisma.io/docs/accelerate)
+- [Bun SQLite Documentation](https://bun.sh/docs/api/sqlite)
+
+#### 架构与同步
+
+- [local-first software (Ink & Switch)](https://www.inkandswitch.com/local-first/)
 - [Electric SQL — Local-First Sync Engine](https://electric-sql.com/)
 - [Yjs — CRDTs for Collaborative Editing](https://docs.yjs.dev/)
 - [Automerge — JSON-like CRDT](https://automerge.org/)
 - [Litestream — Streaming SQLite Replication](https://litestream.io/)
-- [Prisma ORM — Edge Compatibility](https://www.prisma.io/docs/orm/prisma-client/deployment/edge)
+- [Fly.io — SQLite at the Edge](https://fly.io/blog/all-in-on-sqlite-litestream/)
+- [Edge Database Patterns — Cloudflare Blog](https://blog.cloudflare.com/tag/d1/)
 - [Cloudflare Durable Objects — Coordinated Edge State](https://developers.cloudflare.com/durable-objects/)
 
 ---

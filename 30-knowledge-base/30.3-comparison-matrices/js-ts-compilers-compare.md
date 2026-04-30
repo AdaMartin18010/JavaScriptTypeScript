@@ -145,6 +145,137 @@ npx swc src -d dist -w
 
 ---
 
+## 代码示例：Babel 现代配置（.babelrc 或 babel.config.js）
+
+```javascript
+// babel.config.js
+module.exports = {
+  presets: [
+    [
+      '@babel/preset-env',
+      {
+        targets: { node: 'current' },
+        modules: false,          // 保留 ESM，由打包器处理
+        useBuiltIns: 'usage',    // 按需 polyfill
+        corejs: 3,
+      },
+    ],
+    [
+      '@babel/preset-typescript',
+      {
+        isTSX: true,
+        allExtensions: true,
+      },
+    ],
+    [
+      '@babel/preset-react',
+      { runtime: 'automatic' },  // React 17+ JSX Transform
+    ],
+  ],
+  plugins: [
+    '@babel/plugin-proposal-decorators',
+    '@babel/plugin-proposal-class-properties',
+    '@babel/plugin-syntax-import-assertions',
+  ],
+  env: {
+    test: {
+      presets: [
+        ['@babel/preset-env', { targets: { node: 'current' } }],
+      ],
+    },
+  },
+};
+```
+
+> 📖 参考：[Babel Configuration](https://babeljs.io/docs/configuration) | [Babel Preset Env](https://babeljs.io/docs/babel-preset-env)
+
+---
+
+## 代码示例：esbuild 脚本化构建
+
+```typescript
+// scripts/build.ts
+import * as esbuild from 'esbuild';
+import { nodeExternalsPlugin } from 'esbuild-node-externals';
+
+async function build() {
+  const common: esbuild.BuildOptions = {
+    entryPoints: ['src/index.ts'],
+    bundle: true,
+    platform: 'node',
+    target: 'node20',
+    tsconfig: './tsconfig.json',
+    sourcemap: true,
+    plugins: [nodeExternalsPlugin()],
+  };
+
+  // ESM 构建
+  await esbuild.build({
+    ...common,
+    format: 'esm',
+    outfile: 'dist/index.mjs',
+  });
+
+  // CJS 构建
+  await esbuild.build({
+    ...common,
+    format: 'cjs',
+    outfile: 'dist/index.cjs',
+  });
+
+  // 类型声明由 tsc 并行生成
+  console.log('Build complete');
+}
+
+build();
+```
+
+> 📖 参考：[esbuild JavaScript API](https://esbuild.github.io/api/)
+
+---
+
+## 代码示例：Oxc 工具链集成
+
+```bash
+# Oxc 提供零配置的高性能工具集
+
+# 1. 转译（Oxc Transformer）
+npx oxc-transform src/index.ts -o dist/index.js
+
+# 2. 代码检查（Oxlint — ESLint 替代）
+npx oxlint src --import-plugin --jest-plugin --react-perf-plugin
+
+# 3. 格式化（Oxc Formatter — Prettier 替代）
+npx oxc-format src --write
+
+# 4. 压缩（Oxc Minifier）
+npx oxc-minify dist/index.js -o dist/index.min.js
+```
+
+```javascript
+// oxc.config.js
+module.exports = {
+  transformer: {
+    target: 'es2022',
+    jsx: {
+      runtime: 'automatic',
+      importSource: 'react',
+    },
+  },
+  linter: {
+    rules: {
+      'no-console': 'warn',
+      'no-unused-vars': 'error',
+      'prefer-const': 'warn',
+    },
+  },
+};
+```
+
+> 📖 参考：[Oxc Configuration](https://oxc.rs/docs/learn/config.html) | [Oxlint Rules](https://oxc.rs/docs/guide/usage/linter/rules.html)
+
+---
+
 ## 代码示例：tsup 库打包配置
 
 ```typescript
@@ -190,6 +321,30 @@ npx tsup
 | 超大型 (2M LOC) | 480s | 240s | 25s | 20s | **15s** |
 
 > 📊 数据为相对估算，实际性能取决于硬件和配置。来源：[SWC Benchmarks](https://swc.rs/docs/benchmarks) | [Oxc Benchmarks](https://oxc.rs/docs/learn/benchmarks.html)
+
+---
+
+## 权威参考链接
+
+- [TypeScript 官方网站](https://www.typescriptlang.org/)
+- [TypeScript Native Port (Go)](https://devblogs.microsoft.com/typescript/typescript-native-port/)
+- [SWC 官方文档](https://swc.rs/docs/getting-started)
+- [SWC 配置参考](https://swc.rs/docs/configuration/compilation)
+- [esbuild 官方文档](https://esbuild.github.io/)
+- [esbuild API 文档](https://esbuild.github.io/api/)
+- [Oxc 项目主页](https://oxc.rs/)
+- [Oxlint 规则列表](https://oxc.rs/docs/guide/usage/linter/rules.html)
+- [Babel 官方文档](https://babeljs.io/docs/)
+- [Babel Preset Env](https://babeljs.io/docs/babel-preset-env)
+- [tsup 文档](https://tsup.egoist.dev/)
+- [Vite 为何不用 esbuild 打包](https://vitejs.dev/guide/why.html#why-not-bundle-with-esbuild)
+- [Rspack 基于 Oxc 的构建](https://www.rspack.dev/)
+- [Rolldown 基于 Oxc 的打包](https://rolldown.rs/)
+- [React Compiler (Babel Plugin)](https://react.dev/learn/react-compiler)
+- [Can I Use — ES Modules](https://caniuse.com/es6-module)
+- [Node.js TypeScript 类型剥离](https://nodejs.org/api/typescript.html)
+- [ECMAScript 兼容性表](https://compat-table.github.io/compat-table/es2016plus/)
+- [TSESTree — TypeScript AST 规范](https://typescript-eslint.io/packages/typescript-estree/)
 
 ---
 

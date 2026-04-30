@@ -241,6 +241,153 @@ export function createPrismaWithRLS(tenantId: string): PrismaClient {
 
 ---
 
+## 代码示例：Kysely + PostgreSQL RLS（类型安全查询构建器）
+
+```typescript
+// lib/kysely-tenant.ts
+import { Kysely, PostgresDialect, sql } from 'kysely';
+import { DB } from './db-types'; // 由 kysely-codegen 生成
+import { Pool } from 'pg';
+
+const basePool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+export function createKyselyWithRLS(tenantId: string): Kysely<DB> {
+  const dialect = new PostgresDialect({
+    pool: basePool,
+    onCreateConnection: async (conn) => {
+      // 设置 RLS 上下文变量
+      await conn.executeQuery(
+        sql`SET LOCAL app.current_tenant = ${tenantId}`.compile(conn)
+      );
+    },
+  });
+
+  return new Kysely<DB>({ dialect });
+}
+
+// 使用：类型安全的多租户查询
+async function getTenantUsers(tenantId: string) {
+  const db = createKyselyWithRLS(tenantId);
+  return db
+    .selectFrom('users')
+    .select(['id', 'email', 'created_at'])
+    .where('tenant_id', '=', tenantId)
+    .execute();
+}
+
+// 复杂连接查询同样受 RLS 保护
+async function getTenantProjectsWithMembers(tenantId: string) {
+  const db = createKyselyWithRLS(tenantId);
+  return db
+    .selectFrom('projects')
+    .innerJoin('project_members', 'project_members.project_id', 'projects.id')
+    .innerJoin('users', 'users.id', 'project_members.user_id')
+    .select(['projects.name', 'users.email'])
+    .where('projects.tenant_id', '=', tenantId)
+    .execute();
+}
+```
+
+---
+
+## 代码示例：Sequelize + Scope 自动过滤
+
+```typescript
+// models/index.ts
+import { Sequelize, DataTypes, Model } from 'sequelize';
+
+const sequelize = new Sequelize(process.env.DATABASE_URL!);
+
+class Project extends Model {
+  declare id: string;
+  declare name: string;
+  declare tenantId: string;
+}
+
+Project.init(
+  {
+    id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+    name: { type: DataTypes.STRING, allowNull: false },
+    tenantId: { type: DataTypes.UUID, allowNull: false, field: 'tenant_id' },
+  },
+  {
+    sequelize,
+    modelName: 'Project',
+    tableName: 'projects',
+    // 默认 scope 自动附加 tenantId 过滤
+    defaultScope: {
+      where: {
+        tenantId: (() => {
+          // 从 AsyncLocalStorage 获取当前租户
+          const store = tenantStorage.getStore();
+          return store ?? 'NO_TENANT';
+        })(),
+      },
+    },
+  }
+);
+
+// 使用：scope 自动生效
+const projects = await Project.findAll(); // 自动过滤当前租户
+```
+
+---
+
+## 代码示例：连接池隔离（DB-per-Tenant）
+
+```typescript
+// lib/tenant-pool-manager.ts
+import { Pool } from 'pg';
+import { LRUCache } from 'lru-cache';
+
+interface TenantDatabaseConfig {
+  host: string;
+  port: number;
+  database: string;
+  user: string;
+  password: string;
+  ssl?: boolean;
+}
+
+class TenantPoolManager {
+  private pools = new LRUCache<string, Pool>({
+    max: 100,              // 最多缓存 100 个连接池
+    ttl: 1000 * 60 * 30,   // 30 分钟未使用释放
+    dispose: (pool) => {
+      pool.end().catch(console.error);
+    },
+  });
+
+  getPool(tenantId: string, config: TenantDatabaseConfig): Pool {
+    if (!this.pools.has(tenantId)) {
+      const pool = new Pool({
+        host: config.host,
+        port: config.port,
+        database: config.database,
+        user: config.user,
+        password: config.password,
+        ssl: config.ssl,
+        max: 10,             // 每个租户最大 10 连接
+        idleTimeoutMillis: 30000,
+      });
+      this.pools.set(tenantId, pool);
+    }
+    return this.pools.get(tenantId)!;
+  }
+
+  async endAll(): Promise<void> {
+    const promises: Promise<void>[] = [];
+    this.pools.forEach((pool) => promises.push(pool.end()));
+    await Promise.all(promises);
+    this.pools.clear();
+  }
+}
+
+export const poolManager = new TenantPoolManager();
+```
+
+---
+
 ## 权威参考链接
 
 | 资源 | 链接 | 说明 |
@@ -257,6 +404,11 @@ export function createPrismaWithRLS(tenantId: string): PrismaClient {
 | Martin Fowler: Multi-tenant | <https://martinfowler.com/articles/multi-tenant.html> | 多租户架构模式权威论述 |
 | OWASP SaaS Security | <https://owasp.org/www-project-saas-security/> | SaaS 安全指南 |
 | Neon Serverless Postgres | <https://neon.tech/docs/introduction> | 无服务器 PostgreSQL（适合多租户） |
+| Kysely Documentation | <https://kysely.dev/docs/intro> | 类型安全 SQL 查询构建器 |
+| Sequelize Scopes | <https://sequelize.org/docs/v6/other-topics/scopes/> | 默认 Scope 自动过滤 |
+| Citus 分布式 PostgreSQL | <https://docs.citusdata.com/> | 水平扩展 PostgreSQL |
+| pg-pool Documentation | <https://node-postgres.com/apis/pool> | PostgreSQL 连接池 |
+| OWASP — Multi-Tenant Data Isolation | <https://owasp.org/www-pdf-archive/OWASP_Top_10_SaaS.pdf> | SaaS 安全最佳实践 |
 
 ---
 

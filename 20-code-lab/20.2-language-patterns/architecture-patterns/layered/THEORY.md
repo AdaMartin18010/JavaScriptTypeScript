@@ -156,6 +156,78 @@ assert(task.title === 'Learn Layered Architecture');
 
 ## 进阶代码示例
 
+### Clean Architecture 边界实践
+
+```typescript
+// entities.ts — 最内层：纯领域实体，零外部依赖
+export interface Todo {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
+export class TodoEntity implements Todo {
+  constructor(
+    public id: string,
+    public title: string,
+    public completed: boolean
+  ) {}
+
+  toggle(): TodoEntity {
+    return new TodoEntity(this.id, this.title, !this.completed);
+  }
+}
+
+// use-cases.ts — 业务用例，只依赖实体
+export interface TodoRepository {
+  findAll(): Promise<Todo[]>;
+  save(todo: Todo): Promise<void>;
+}
+
+export class ListTodosUseCase {
+  constructor(private repo: TodoRepository) {}
+  async execute() { return this.repo.findAll(); }
+}
+
+// adapters.ts — 外层适配器（框架/UI/DB）
+import type { FastifyInstance } from 'fastify';
+
+export function todoRoutes(fastify: FastifyInstance, useCase: ListTodosUseCase) {
+  fastify.get('/todos', async (_req, reply) => {
+    const todos = await useCase.execute();
+    reply.send(todos);
+  });
+}
+```
+
+### Fastify 分层应用组合
+
+```typescript
+// fastify-layered.ts
+import Fastify from 'fastify';
+
+// 数据层
+class InMemoryTodoRepo implements TodoRepository {
+  private todos: Todo[] = [];
+  async findAll() { return this.todos; }
+  async save(todo: Todo) { this.todos.push(todo); return todo; }
+}
+
+// 业务层
+const listUseCase = new ListTodosUseCase(new InMemoryTodoRepo());
+
+// 表现层
+const app = Fastify();
+todoRoutes(app, listUseCase);
+
+app.listen({ port: 3000 }, (err) => {
+  if (err) { console.error(err); process.exit(1); }
+  console.log('Server running on http://localhost:3000');
+});
+```
+
+## 进阶代码示例
+
 ### NestJS 风格依赖注入分层
 
 ```typescript
@@ -238,9 +310,14 @@ class InMemoryEmailAdapter implements ForEmailSender {
 ## 新增权威参考链接
 
 - [NestJS Documentation](https://docs.nestjs.com/) — 企业级 Node.js 框架
+- [Fastify TypeScript Documentation](https://fastify.dev/docs/latest/Reference/TypeScript/)
 - [Hexagonal Architecture (Alistair Cockburn)](https://alistair.cockburn.us/hexagonal-architecture/) — 端口与适配器
 - [Onion Architecture (Jeffrey Palermo)](https://jeffreypalermo.com/blog/the-onion-architecture-part-1/) — 洋葱架构
+- [The Clean Architecture — Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [DDD Reference (Eric Evans)](https://www.domainlanguage.com/ddd/reference/) — 领域驱动设计参考
+- [Implementing DDD — Vaughn Vernon](https://www.oreilly.com/library/view/implementing-domain-driven-design/9780133039900/)
 - [Martin Fowler — Patterns of Enterprise Application Architecture](https://martinfowler.com/eaaCatalog/) — 企业应用架构模式
+- [Microsoft: Common Web Application Architectures](https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures)
+- [Layered Architecture — O'Reilly Software Architecture Patterns](https://www.oreilly.com/library/view/software-architecture-patterns/9781491971437/ch01.html)
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

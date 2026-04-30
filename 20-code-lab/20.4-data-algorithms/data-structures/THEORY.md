@@ -368,6 +368,100 @@ export class UnionFind {
 
 ---
 
+## 高级数据结构
+
+### 1. 线段树 (Segment Tree)
+
+用于区间查询与修改，支持 $O(\log n)$ 时间内的区间和、最值查询。
+
+| 操作 | 时间复杂度 | 空间复杂度 | 说明 |
+|------|-----------|-----------|------|
+| `build` | $O(n)$ | $O(n)$ | 自底向上构建 |
+| `query` | $O(\log n)$ | $O(1)$ | 区间分解查询 |
+| `update` | $O(\log n)$ | $O(1)$ | 单点更新 + 向上传播 |
+
+```typescript
+export class SegmentTree {
+  private tree: number[];
+  private n: number;
+  constructor(arr: number[]) {
+    this.n = arr.length;
+    this.tree = new Array(4 * this.n).fill(0);
+    this.build(arr, 1, 0, this.n - 1);
+  }
+  private build(arr: number[], node: number, l: number, r: number) {
+    if (l === r) { this.tree[node] = arr[l]; return; }
+    const mid = (l + r) >> 1;
+    this.build(arr, node * 2, l, mid);
+    this.build(arr, node * 2 + 1, mid + 1, r);
+    this.tree[node] = this.tree[node * 2] + this.tree[node * 2 + 1];
+  }
+  query(ql: number, qr: number): number {
+    return this._query(1, 0, this.n - 1, ql, qr);
+  }
+  private _query(node: number, l: number, r: number, ql: number, qr: number): number {
+    if (ql > r || qr < l) return 0;
+    if (ql <= l && r <= qr) return this.tree[node];
+    const mid = (l + r) >> 1;
+    return this._query(node * 2, l, mid, ql, qr) + this._query(node * 2 + 1, mid + 1, r, ql, qr);
+  }
+  update(idx: number, val: number) { this._update(1, 0, this.n - 1, idx, val); }
+  private _update(node: number, l: number, r: number, idx: number, val: number) {
+    if (l === r) { this.tree[node] = val; return; }
+    const mid = (l + r) >> 1;
+    if (idx <= mid) this._update(node * 2, l, mid, idx, val);
+    else this._update(node * 2 + 1, mid + 1, r, idx, val);
+    this.tree[node] = this.tree[node * 2] + this.tree[node * 2 + 1];
+  }
+}
+```
+
+### 2. 树状数组 (Fenwick Tree / BIT)
+
+单点更新与前缀查询均为 $O(\log n)$，空间更省。
+
+```typescript
+export class FenwickTree {
+  private bit: number[];
+  constructor(n: number) { this.bit = new Array(n + 1).fill(0); }
+  update(i: number, delta: number) {
+    for (; i < this.bit.length; i += i & -i) this.bit[i] += delta;
+  }
+  query(i: number): number {
+    let sum = 0;
+    for (; i > 0; i -= i & -i) sum += this.bit[i];
+    return sum;
+  }
+  rangeQuery(l: number, r: number): number { return this.query(r) - this.query(l - 1); }
+}
+```
+
+### 3. LRU Cache
+
+基于 `Map` 的 $O(1)$ 实现，利用 JavaScript `Map` 的插入顺序保证。
+
+```typescript
+export class LRUCache<K, V> {
+  private cache = new Map<K, V>();
+  constructor(private capacity: number) {}
+  get(key: K): V | undefined {
+    const value = this.cache.get(key);
+    if (value === undefined) return undefined;
+    this.cache.delete(key);
+    this.cache.set(key, value);
+    return value;
+  }
+  put(key: K, value: V) {
+    if (this.cache.has(key)) this.cache.delete(key);
+    else if (this.cache.size >= this.capacity) {
+      const first = this.cache.keys().next().value;
+      this.cache.delete(first);
+    }
+    this.cache.set(key, value);
+  }
+}
+```
+
 ## 分析方法论
 
 ### 主定理 (Master Theorem)
@@ -504,6 +598,12 @@ $$
 - [GeeksforGeeks — Trie Data Structure](https://www.geeksforgeeks.org/trie-insert-and-search/)
 - [GeeksforGeeks — Disjoint Set Union](https://www.geeksforgeeks.org/union-find/)
 - [Stack Overflow — Amortized Analysis Explained](https://stackoverflow.com/questions/200384/constant-amortized-time)
+- [CP-Algorithms — Segment Tree](https://cp-algorithms.com/data_structures/segment_tree.html)
+- [CP-Algorithms — Fenwick Tree](https://cp-algorithms.com/data_structures/fenwick.html)
+- [LeetCode — LRU Cache](https://leetcode.com/problems/lru-cache/)
+- [VisuAlgo — Segment Tree Visualization](https://visualgo.net/en/segmenttree)
+- [MIT 6.006 — Binary Search Trees](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/lecture-videos/lecture-6-binary-search-trees-treaps/)
+- [GeeksforGeeks — LRU Cache Design](https://www.geeksforgeeks.org/lru-cache-implementation/)
 
 ---
 

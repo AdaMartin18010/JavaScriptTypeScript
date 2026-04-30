@@ -1,4 +1,4 @@
-﻿# 调试与监控 — 理论基础
+# 调试与监控 - 理论基础
 
 ## 1. 调试方法论
 
@@ -15,22 +15,26 @@
 - 在代码历史中使用二分查找定位引入 bug 的提交
 - Git 内置支持：`git bisect`
 
+---
+
 ## 2. 调试工具深度对比
 
 | 维度 | Chrome DevTools | Node.js Inspector | Replay.io |
 |------|-----------------|-------------------|-----------|
 | **运行环境** | 浏览器（Chromium） | Node.js / Deno / Bun | 浏览器 / Node.js（需录制） |
-| **核心能力** | 实时断点、性能分析、内存快照 | V8 Inspector Protocol、CLI 调试 | 时间旅行调试（记录→回放） |
+| **核心能力** | 实时断点、性能分析、内存快照 | V8 Inspector Protocol、CLI 调试 | 时间旅行调试（记录到回放） |
 | **异步追踪** | Async Stack Tags、Performance 面板 | `async_hooks`、`--trace-events` | 原生支持，任意时刻回溯 |
 | **性能分析** | Flame Chart、Long Tasks、Web Vitals | `--prof`、`0x`、`clinic.js` | 录制期间自动捕获 |
 | **协作分享** | 导出 HAR / Performance JSON | 无原生分享 | 分享 Replay URL（含完整上下文） |
 | **成本** | 免费 | 免费 | 免费额度 + 团队付费 |
 | **适用场景** | 前端渲染问题、DOM/CSS 调试 | 服务端逻辑、启动性能 | 复杂异步 Bug、生产环境回溯 |
 
+---
+
 ## 3. 性能分析代码示例（Node.js Inspector + Performance Hooks）
 
 ```typescript
-// profile.ts — 使用 Node.js Performance Hooks 进行自定义性能分析
+// profile.ts - 使用 Node.js Performance Hooks 进行自定义性能分析
 import { performance, PerformanceObserver } from 'node:perf_hooks';
 import fs from 'node:fs';
 
@@ -93,7 +97,7 @@ async function main() {
   );
 
   console.log('性能跟踪文件已生成: profile.json');
-  console.log('在 Chrome DevTools → Performance → Load Profile 中查看');
+  console.log('在 Chrome DevTools Performance Load Profile 中查看');
 }
 
 main();
@@ -109,6 +113,8 @@ console.log('当前内存使用:', trace);
 // 程序化触发 Performance 录制（用于自动化测试）
 await chrome.devtools?.performance?.enable();
 ```
+
+---
 
 ## 4. 结构化日志与分布式追踪
 
@@ -173,10 +179,12 @@ export async function tracedFetch(url: string, options?: RequestInit) {
 }
 ```
 
+---
+
 ## 5. 内存泄漏检测
 
 ```typescript
-// scripts/detect-memory-leak.ts — 基于堆快照对比
+// scripts/detect-memory-leak.ts - 基于堆快照对比
 import v8 from 'node:v8';
 import fs from 'node:fs';
 
@@ -205,7 +213,175 @@ async function main() {
 main();
 ```
 
-## 6. 浏览器调试工具
+---
+
+## 6. Async Hooks 异步资源追踪
+
+```typescript
+// async-trace.ts - 使用 async_hooks 追踪异步调用链
+import { createHook, executionAsyncId, triggerAsyncId } from 'async_hooks';
+import fs from 'fs';
+
+const asyncResources = new Map<number, { type: string; trigger: number; start: number }>();
+
+const hook = createHook({
+  init(asyncId, type, triggerAsyncId) {
+    asyncResources.set(asyncId, { type, trigger: triggerAsyncId, start: Date.now() });
+  },
+  destroy(asyncId) {
+    asyncResources.delete(asyncId);
+  },
+});
+
+hook.enable();
+
+function printAsyncStack() {
+  const current = executionAsyncId();
+  const stack: string[] = [];
+  let id = current;
+  while (id !== 0) {
+    const res = asyncResources.get(id);
+    if (!res) break;
+    stack.push(`${res.type}(${id})`);
+    id = res.trigger;
+  }
+  console.log('Async stack:', stack.join(' -> '));
+}
+
+// 使用
+setTimeout(() => {
+  Promise.resolve().then(() => {
+    printAsyncStack();
+  });
+}, 0);
+```
+
+---
+
+## 7. 分布式追踪上下文传播
+
+```typescript
+// distributed-tracing.ts - 跨服务追踪上下文传递
+import { trace, propagation, context } from '@opentelemetry/api';
+
+interface TraceContext {
+  traceparent?: string;
+  tracestate?: string;
+}
+
+function injectTraceContext(headers: Record<string, string> = {}): Record<string, string> {
+  const carrier: Record<string, string> = { ...headers };
+  propagation.inject(context.active(), carrier, {
+    set(carrier, key, value) {
+      carrier[key] = value;
+    },
+  });
+  return carrier;
+}
+
+function extractTraceContext(headers: Record<string, string>): context.Context {
+  return propagation.extract(context.active(), headers, {
+    get(carrier, key) {
+      return carrier[key] ?? undefined;
+    },
+    keys(carrier) {
+      return Object.keys(carrier);
+    },
+  });
+}
+
+// 在 HTTP 客户端中使用
+async function tracedHttpCall(url: string, body: unknown) {
+  const headers = injectTraceContext({ 'Content-Type': 'application/json' });
+  return fetch(url, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
+}
+
+// 在 HTTP 服务端中使用
+function handleRequest(req: { headers: Record<string, string> }) {
+  const ctx = extractTraceContext(req.headers);
+  const tracer = trace.getTracer('my-service');
+  const span = tracer.startSpan('handleRequest', undefined, ctx);
+  // ... 处理请求
+  span.end();
+}
+```
+
+---
+
+## 8. 健康检查与就绪探针
+
+```typescript
+// health-check.ts
+interface HealthCheck {
+  name: string;
+  check: () => Promise<{ healthy: boolean; message?: string }>;
+  critical: boolean;
+}
+
+class HealthMonitor {
+  private checks: HealthCheck[] = [];
+
+  register(check: HealthCheck) {
+    this.checks.push(check);
+  }
+
+  async run(): Promise<{
+    status: 'healthy' | 'degraded' | 'unhealthy';
+    checks: Record<string, { healthy: boolean; message?: string }>;
+  }> {
+    const results: Record<string, { healthy: boolean; message?: string }> = {};
+    let healthy = true;
+    let degraded = false;
+
+    for (const check of this.checks) {
+      try {
+        const result = await check.check();
+        results[check.name] = result;
+        if (!result.healthy) {
+          if (check.critical) healthy = false;
+          else degraded = true;
+        }
+      } catch (err) {
+        results[check.name] = { healthy: false, message: String(err) };
+        if (check.critical) healthy = false;
+        else degraded = true;
+      }
+    }
+
+    return {
+      status: healthy ? (degraded ? 'degraded' : 'healthy') : 'unhealthy',
+      checks: results,
+    };
+  }
+}
+
+// 使用
+const health = new HealthMonitor();
+health.register({
+  name: 'database',
+  critical: true,
+  check: async () => {
+    // await db.query('SELECT 1');
+    return { healthy: true };
+  },
+});
+health.register({
+  name: 'cache',
+  critical: false,
+  check: async () => {
+    // await cache.ping();
+    return { healthy: true };
+  },
+});
+```
+
+---
+
+## 9. 浏览器调试工具
 
 - **Elements**: DOM 结构、CSS 样式实时编辑
 - **Console**: 日志输出、JavaScript 执行
@@ -214,14 +390,14 @@ main();
 - **Performance**: CPU 火焰图、渲染流水线分析
 - **Memory**: 堆快照、内存泄漏检测
 
-## 7. Node.js 调试
+## 10. Node.js 调试
 
 - **--inspect**: 启动 V8 Inspector 协议
 - **ndb**: Chrome DevTools 风格的 Node 调试器
 - **console.trace()**: 打印当前调用栈
 - **Async Hooks**: 追踪异步资源生命周期
 
-## 8. 日志级别规范
+## 11. 日志级别规范
 
 | 级别 | 用途 | 生产环境 |
 |------|------|---------|
@@ -233,7 +409,7 @@ main();
 
 结构化日志格式（JSON）便于机器解析和聚合。
 
-## 9. 与相邻模块的关系
+## 12. 与相邻模块的关系
 
 - **74-observability**: 可观测性体系
 - **92-observability-lab**: 可观测性工具实践
@@ -244,10 +420,22 @@ main();
 - [Chrome DevTools Documentation](https://developer.chrome.com/docs/devtools/)
 - [Node.js Inspector Guide](https://nodejs.org/en/learn/getting-started/debugging)
 - [Replay.io Documentation](https://docs.replay.io/)
-- [Performance API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Performance_API)
-- [Clinic.js — Node.js Performance Profiling](https://clinicjs.org/)
-- [Pino — High Performance Node.js Logger](https://getpino.io/)
+- [Performance API - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Performance_API)
+- [Clinic.js - Node.js Performance Profiling](https://clinicjs.org/)
+- [Pino - High Performance Node.js Logger](https://getpino.io/)
 - [OpenTelemetry JS Documentation](https://opentelemetry.io/docs/languages/js/)
-- [Sentry — Application Monitoring Platform](https://docs.sentry.io/)
+- [Sentry - Application Monitoring Platform](https://docs.sentry.io/)
 - [Node.js Diagnostic Reporting](https://nodejs.org/api/report.html)
-- [Web Vitals — Chrome Developers](https://developer.chrome.com/docs/web-platform/web-vitals)
+- [Web Vitals - Chrome Developers](https://developer.chrome.com/docs/web-platform/web-vitals)
+- [Grafana - Observability Platform](https://grafana.com/docs/)
+- [Prometheus - Monitoring System](https://prometheus.io/docs/)
+- [Jaeger - Distributed Tracing](https://www.jaegertracing.io/docs/)
+- [Zipkin - Distributed Tracing System](https://zipkin.io/pages/documentation.html)
+- [Tempo - Grafana Distributed Tracing](https://grafana.com/docs/tempo/)
+- [Loki - Log Aggregation](https://grafana.com/docs/loki/)
+- [Fluentd - Data Collector](https://docs.fluentd.org/)
+- [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/)
+- [Datadog APM Documentation](https://docs.datadoghq.com/tracing/)
+- [New Relic APM](https://docs.newrelic.com/docs/apm/)
+- [Honeycomb - Observability Platform](https://docs.honeycomb.io/)
+- [Lightstep - Distributed Tracing](https://docs.lightstep.com/)

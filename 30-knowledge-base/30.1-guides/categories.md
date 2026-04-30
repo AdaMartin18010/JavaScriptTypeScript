@@ -263,3 +263,123 @@ onLCP(sendToAnalytics);
 ---
 
 *最后更新: 2026-04-29*
+
+
+---
+
+## 深化补充：更多代码示例与权威链接
+
+### CSS 框架：Tailwind + Panda CSS
+
+```typescript
+// tailwind.config.ts — 自定义主题与插件
+import type { Config } from 'tailwindcss';
+
+const config: Config = {
+  content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          50: '#f0f9ff',
+          500: '#0ea5e9',
+          900: '#0c4a6e',
+        },
+      },
+    },
+  },
+  plugins: [require('@tailwindcss/typography')],
+};
+export default config;
+```
+
+```typescript
+// Panda CSS — 类型安全原子样式
+import { css } from '../styled-system/css';
+
+const buttonClass = css({
+  bg: 'brand.500',
+  color: 'white',
+  px: '4',
+  py: '2',
+  borderRadius: 'md',
+  _hover: { bg: 'brand.900' },
+});
+```
+
+### 包管理器：pnpm workspace 与 catalog
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'packages/*'
+  - 'apps/*'
+
+catalog:
+  react: ^19.0.0
+  typescript: ^5.8.0
+```
+
+```json
+// package.json — 使用 workspace 协议
+{
+  "dependencies": {
+    "@repo/ui": "workspace:*",
+    "react": "catalog:"
+  }
+}
+```
+
+### 安全：OWASP 安全头部（Helmet）
+
+```typescript
+// security-headers.ts
+import helmet from 'helmet';
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'https:'],
+    },
+  },
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+}));
+```
+
+### 数据可视化：Observable Plot
+
+```typescript
+// plot-example.ts
+import * as Plot from '@observablehq/plot';
+
+const plot = Plot.plot({
+  height: 300,
+  marginLeft: 50,
+  marks: [
+    Plot.barY(data, { x: 'month', y: 'revenue', fill: 'steelblue' }),
+    Plot.ruleY([0]),
+  ],
+});
+
+document.body.appendChild(plot);
+```
+
+---
+
+### 更多权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| npm Documentation | <https://docs.npmjs.com/> | 官方包管理文档 |
+| pnpm Workspaces | <https://pnpm.io/workspaces> | 高效包管理器工作区 |
+| Tailwind CSS Docs | <https://tailwindcss.com/docs> | 实用优先 CSS 框架 |
+| Panda CSS Docs | <https://panda-css.com/docs> | 类型安全 CSS-in-JS |
+| D3.js Documentation | <https://d3js.org/> | 数据可视化底层库 |
+| Observable Plot Docs | <https://observablehq.com/plot/> | 声明式统计图表 |
+| OWASP Cheat Sheet | <https://cheatsheetseries.owasp.org/> | 安全最佳实践速查 |
+| React DevTools | <https://react.dev/learn/thinking-in-react> | React 官方思维模型 |
+| Vue.js Docs | <https://vuejs.org/guide/introduction.html> | Vue 官方文档 |
+| Svelte Docs | <https://svelte.dev/docs> | Svelte 官方文档 |

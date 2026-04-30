@@ -13,6 +13,7 @@ created: 2026-04-27
 ## 边界说明
 
 本模块聚焦代码生成技术的应用，包括：
+
 - AST 遍历与转换
 - AI 辅助工作流（Copilot、Cursor、Claude Code）
 - OpenAPI 客户端生成与模板引擎
@@ -243,6 +244,172 @@ export function scaffold(config: ScaffoldConfig) {
 scaffold({ name: 'UserCard', type: 'component', outDir: './src' });
 ```
 
+### JSON Schema → Zod 运行时校验生成器
+
+```typescript
+// json-schema-to-zod.ts
+import { z } from 'zod';
+
+export function jsonSchemaToZod(schema: unknown): z.ZodTypeAny {
+  if (typeof schema !== 'object' || schema === null) return z.any();
+  const s = schema as Record<string, unknown>;
+
+  switch (s.type) {
+    case 'string': {
+      let zod = z.string();
+      if (s.minLength !== undefined) zod = zod.min(s.minLength as number);
+      if (s.maxLength !== undefined) zod = zod.max(s.maxLength as number);
+      if (s.pattern !== undefined) zod = zod.regex(new RegExp(s.pattern as string));
+      return zod;
+    }
+    case 'number':
+    case 'integer': {
+      let zod = s.type === 'integer' ? z.number().int() : z.number();
+      if (s.minimum !== undefined) zod = zod.min(s.minimum as number);
+      if (s.maximum !== undefined) zod = zod.max(s.maximum as number);
+      return zod;
+    }
+    case 'boolean':
+      return z.boolean();
+    case 'array': {
+      const items = s.items ? jsonSchemaToZod(s.items) : z.any();
+      let zod = z.array(items);
+      if (s.minItems !== undefined) zod = zod.min(s.minItems as number);
+      if (s.maxItems !== undefined) zod = zod.max(s.maxItems as number);
+      return zod;
+    }
+    case 'object': {
+      const shape: Record<string, z.ZodTypeAny> = {};
+      const props = (s.properties ?? {}) as Record<string, unknown>;
+      const required = new Set<string>((s.required as string[]) ?? []);
+      for (const [key, val] of Object.entries(props)) {
+        shape[key] = required.has(key) ? jsonSchemaToZod(val) : jsonSchemaToZod(val).optional();
+      }
+      return z.object(shape);
+    }
+    default:
+      return z.any();
+  }
+}
+
+// 使用示例
+const schema = {
+  type: 'object',
+  required: ['email', 'age'],
+  properties: {
+    email: { type: 'string', format: 'email' },
+    age: { type: 'integer', minimum: 0, maximum: 150 },
+    tags: { type: 'array', items: { type: 'string' } },
+  },
+};
+const UserSchema = jsonSchemaToZod(schema);
+type User = z.infer<typeof UserSchema>;
+```
+
+### React 组件生成器（AI 辅助）
+
+```typescript
+// react-component-gen.ts
+interface PropField {
+  name: string;
+  type: string;
+  optional: boolean;
+  defaultValue?: string;
+}
+
+export function generateReactComponent(
+  name: string,
+  props: PropField[],
+  options: { withStyles?: boolean; withTest?: boolean } = {}
+): Record<string, string> {
+  const propsInterface = props.length
+    ? `interface ${name}Props {\n${props
+        .map((p) => `  ${p.name}${p.optional ? '?' : ''}: ${p.type};`)
+        .join('\n')}\n}`
+    : '';
+
+  const propDestructuring = props.length ? `{ ${props.map((p) => p.name).join(', ')} }` : '';
+  const propType = props.length ? `${name}Props` : 'Record<string, never>';
+
+  const component = `${propsInterface ? propsInterface + '\n\n' : ''}export function ${name}(${propDestructuring}: ${propType}) {
+  return (
+    <div data-testid="${name.toLowerCase()}">
+      {/* TODO: implement ${name} */}
+    </div>
+  );
+}`;
+
+  const files: Record<string, string> = {
+    [`${name}.tsx`]: component,
+  };
+
+  if (options.withStyles) {
+    files[`${name}.module.css`] = `.root {\n  /* styles for ${name} */\n}`;
+  }
+
+  if (options.withTest) {
+    files[`${name}.test.tsx`] = `import { render, screen } from '@testing-library/react';
+import { ${name} } from './${name}';
+
+test('renders ${name}', () => {
+  render(<${name} ${props.map((p) => `${p.name}={${p.defaultValue ?? "''"}}`).join(' ')} />);
+  expect(screen.getByTestId('${name.toLowerCase()}')).toBeInTheDocument();
+});`;
+  }
+
+  return files;
+}
+```
+
+### Prompt Chain 代码生成工作流
+
+```typescript
+// prompt-chain.ts
+interface PromptStep {
+  id: string;
+  template: string;
+  transform?: (output: string) => string;
+}
+
+export class PromptChain {
+  private steps: PromptStep[] = [];
+
+  add(step: PromptStep): this {
+    this.steps.push(step);
+    return this;
+  }
+
+  async execute(context: Record<string, unknown>, llmCall: (prompt: string) => Promise<string>): Promise<string> {
+    let accumulated = '';
+    for (const step of this.steps) {
+      const prompt = this.interpolate(step.template, { ...context, previous: accumulated });
+      const raw = await llmCall(prompt);
+      accumulated = step.transform ? step.transform(raw) : raw;
+    }
+    return accumulated;
+  }
+
+  private interpolate(template: string, context: Record<string, unknown>): string {
+    return template.replace(/\{\{(\w+)\}\}/g, (_, key) => String(context[key] ?? ''));
+  }
+}
+
+// 使用示例：三步生成完整 CRUD 服务
+const crudChain = new PromptChain()
+  .add({
+    id: 'schema',
+    template: 'Generate a TypeScript interface for a {{entity}} with fields: {{fields}}. Return only the interface.',
+  })
+  .add({
+    id: 'validator',
+    template: 'Given the interface:\n{{previous}}\nGenerate a Zod schema for validation. Return only the schema.',
+  })
+  .add({
+    id: 'service',
+    template: 'Given the Zod schema:\n{{previous}}\nGenerate a Prisma service with CRUD methods. Return only the code.',
+  });
+```
+
 ## 关联模块
 
 - `33-ai-integration` — AI 集成
@@ -265,7 +432,14 @@ scaffold({ name: 'UserCard', type: 'component', outDir: './src' });
 | Plop.js — Micro-generator | 文档 | [plopjs.com](https://plopjs.com) |
 | Hygen — Scaffolding tool | 文档 | [hygen.io](https://www.hygen.io) |
 | ts-morph — TypeScript AST Manipulation | 文档 | [ts-morph.com](https://ts-morph.com) |
+| Zod — TypeScript-first schema validation | 文档 | [zod.dev](https://zod.dev) |
+| ESBuild — Extremely fast bundler | 文档 | [esbuild.github.io](https://esbuild.github.io) |
+| Recast — JavaScript AST transformation | 文档 | [github.com/benjamn/recast](https://github.com/benjamn/recast) |
+| Superstruct — Composable data validation | 文档 | [docs.superstructjs.org](https://docs.superstructjs.org) |
+| LangChain JS — LLM orchestration | 文档 | [js.langchain.com](https://js.langchain.com) |
+| Vercel AI SDK — Streaming UI toolkit | 文档 | [sdk.vercel.ai/docs](https://sdk.vercel.ai/docs) |
+| Quicktype — Generate types from JSON | 工具 | [quicktype.io](https://app.quicktype.io) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

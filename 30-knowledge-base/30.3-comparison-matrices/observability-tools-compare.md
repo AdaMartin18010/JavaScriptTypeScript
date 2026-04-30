@@ -458,3 +458,101 @@ groups:
 ---
 
 *最后更新: 2026-04-29*
+
+
+---
+
+## 深化补充：更多可观测性集成示例
+
+### Highlight.io 前端集成（Next.js）
+
+```typescript
+// highlight.init.ts
+import { H } from 'highlight.run';
+
+H.init('YOUR_PROJECT_ID', {
+  serviceName: 'nextjs-app',
+  tracingOrigins: ['localhost', 'api.example.com'],
+  networkRecording: {
+    enabled: true,
+    recordHeadersAndBody: true,
+  },
+});
+
+// pages/_app.tsx
+import { ErrorBoundary } from '@highlight-run/next/client';
+
+export default function MyApp({ Component, pageProps }) {
+  return (
+    <ErrorBoundary>
+      <Component {...pageProps} />
+    </ErrorBoundary>
+  );
+}
+```
+
+### Winston + Loki 日志推送
+
+```typescript
+// winston-loki.ts
+import winston from 'winston';
+import LokiTransport from 'winston-loki';
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new LokiTransport({
+      host: 'http://loki:3100',
+      labels: { job: 'nodejs-app' },
+      json: true,
+    }),
+    new winston.transports.Console(),
+  ],
+});
+
+logger.info('Order created', { orderId: 'ord-123', amount: 199.99 });
+```
+
+### Node.js 健康检查端点（含指标暴露）
+
+```typescript
+// health-and-metrics.ts
+import http from 'http';
+import { register, collectDefaultMetrics } from 'prom-client';
+
+collectDefaultMetrics();
+
+const server = http.createServer(async (req, res) => {
+  if (req.url === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: 'ok', uptime: process.uptime() }));
+  } else if (req.url === '/metrics') {
+    res.writeHead(200, { 'Content-Type': register.contentType });
+    res.end(await register.metrics());
+  } else {
+    res.writeHead(404);
+    res.end();
+  }
+});
+
+server.listen(3000);
+```
+
+---
+
+### 更多权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Highlight.io Docs | <https://www.highlight.io/docs> | 前端可观测性平台 |
+| Winston Logger | <https://github.com/winstonjs/winston> | Node.js 日志库 |
+| Prom Client | <https://github.com/siimon/prom-client> | Node.js Prometheus 客户端 |
+| Grafana Cloud | <https://grafana.com/docs/grafana-cloud/> | 托管可观测性平台 |
+| Honeycomb Docs | <https://docs.honeycomb.io/> | 高基数事件分析 |
+| Loki API | <https://grafana.com/docs/loki/latest/api/> | 日志聚合 API |
+| Datadog APM | <https://docs.datadoghq.com/tracing/> | 应用性能监控 |
+| New Relic APM | <https://docs.newrelic.com/docs/apm/new-relic-apm/getting-started/introduction-apm/> | 应用性能管理 |

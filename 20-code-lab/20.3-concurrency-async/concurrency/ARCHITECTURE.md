@@ -475,6 +475,85 @@ atomic {
 - 性能开销
 - 不适合高争用场景
 
+## JS/TS 并发实践模式
+
+### Worker 线程池实现
+
+```typescript
+import { Worker } from 'worker_threads';
+import os from 'os';
+
+export class WorkerPool {
+  private workers: Worker[] = [];
+  private queue: { id: number; resolve: (v: unknown) => void; reject: (e: Error) => void; payload: unknown }[] = [];
+  private active = new Map<number, unknown>();
+  private idCounter = 0;
+
+  constructor(private size = os.cpus().length) {
+    for (let i = 0; i < size; i++) {
+      const worker = new Worker('./calc-worker.js');
+      worker.on('message', ({ id, result, error }) => {
+        const task = this.active.get(id) as any;
+        this.active.delete(id);
+        error ? task.reject(new Error(error)) : task.resolve(result);
+      });
+      this.workers.push(worker);
+    }
+  }
+
+  execute<T>(payload: unknown): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.queue.push({ id: ++this.idCounter, resolve: resolve as any, reject, payload });
+      this.drain();
+    });
+  }
+
+  private drain() {
+    while (this.queue.length > 0 && this.active.size < this.workers.length) {
+      const task = this.queue.shift()!;
+      const worker = this.workers[this.active.size % this.workers.length];
+      this.active.set(task.id, task);
+      worker.postMessage({ id: task.id, payload: task.payload });
+    }
+  }
+
+  terminate() { return Promise.all(this.workers.map(w => w.terminate())); }
+}
+```
+
+### Web Locks API（浏览器跨标签页同步）
+
+```typescript
+async function synchronizedTask<T>(lockName: string, fn: () => Promise<T>): Promise<T> {
+  return navigator.locks.request(lockName, async () => fn());
+}
+
+// 跨标签页互斥：防止重复提交
+async function submitForm(data: FormData) {
+  return synchronizedTask('form-submit', async () => {
+    const res = await fetch('/api/submit', { method: 'POST', body: data });
+    return res.json();
+  });
+}
+```
+
+### scheduler.yield()（协作式调度）
+
+```typescript
+async function processLargeArray<T>(items: T[], batchSize = 100) {
+  const results: T[] = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    results.push(...items.slice(i, i + batchSize).map(x => x));
+    if ('scheduler' in window && 'yield' in (window as any).scheduler) {
+      await (window as any).scheduler.yield();
+    } else {
+      await new Promise(r => setTimeout(r, 0));
+    }
+  }
+  return results;
+}
+```
+
 ## 10. 参考文档
 
 ### 10.1 经典著作
@@ -496,6 +575,12 @@ atomic {
 - [Go Memory Model](https://golang.org/ref/mem) - Go 官方文档
 - [Java Concurrency in Practice](https://jcip.net/) - 配套网站
 - [Erlang Documentation](https://www.erlang.org/doc/) - Erlang 官方文档
+- [Node.js worker_threads](https://nodejs.org/api/worker_threads.html)
+- [WHATWG Web Locks API Specification](https://wicg.github.io/web-locks/)
+- [MDN — Web Locks API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Locks_API)
+- [scheduler.yield() — WICG Explainer](https://github.com/WICG/scheduling-apis/blob/main/explainers/yield-and-continuation.md)
+- [V8 Blog — Concurrent Marking](https://v8.dev/blog/concurrent-marking)
+- [TC39 — SharedArrayBuffer Specification](https://tc39.es/ecma262/multipage/structured-data.html#sec-sharedarraybuffer-objects)
 
 ### 10.4 相关模块
 

@@ -238,3 +238,96 @@ async function cachedFetch(key: string, fetcher: () => Promise<Response>, ttl = 
 ---
 
 > 📅 最后更新: 2026-04-27
+
+
+---
+
+## 深化补充：更多 Serverless 代码示例
+
+### AWS Lambda TypeScript 处理函数
+
+```typescript
+// lambda-handler.ts — AWS Lambda with TypeScript
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+
+export const handler = async (
+  event: APIGatewayProxyEvent
+): Promise<APIGatewayProxyResult> => {
+  const userId = event.pathParameters?.id;
+  if (!userId) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: 'Missing userId' }),
+    };
+  }
+
+  // 模拟数据库查询
+  const user = await getUserById(userId);
+
+  return {
+    statusCode: 200,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: userId, name: user?.name ?? 'Unknown' }),
+  };
+};
+```
+
+### Vercel Edge Middleware
+
+```typescript
+// middleware.ts — 边缘重定向与 A/B 测试
+import { NextRequest, NextResponse } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  const cookie = request.cookies.get('experiment');
+  const variant = cookie?.value ?? Math.random() > 0.5 ? 'A' : 'B';
+
+  const url = request.nextUrl.clone();
+  url.pathname = `/variant-${variant}${url.pathname}`;
+  const response = NextResponse.rewrite(url);
+  response.cookies.set('experiment', variant, { maxAge: 60 * 60 * 24 });
+  return response;
+}
+
+export const config = {
+  matcher: ['/campaign/:path*'],
+};
+```
+
+### Cloudflare Durable Objects
+
+```typescript
+// counter-do.ts — 有状态边缘对象
+import { DurableObject } from 'cloudflare:workers';
+
+export class Counter extends DurableObject {
+  async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+    let value = (await this.ctx.storage.get<number>('value')) ?? 0;
+
+    if (url.pathname === '/increment') {
+      value++;
+      await this.ctx.storage.put('value', value);
+    }
+
+    return new Response(JSON.stringify({ value }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+}
+```
+
+---
+
+### 更多权威外部资源
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| AWS Lambda Docs | <https://docs.aws.amazon.com/lambda/latest/dg/welcome.html> | 官方无服务器计算文档 |
+| Vercel Middleware | <https://vercel.com/docs/functions/edge-middleware> | Edge Middleware API |
+| Cloudflare Durable Objects | <https://developers.cloudflare.com/durable-objects/> | 有状态边缘对象 |
+| Neon Serverless Postgres | <https://neon.tech/docs/introduction> | 无服务器 PostgreSQL |
+| Supabase Docs | <https://supabase.com/docs> | 开源 Firebase 替代 |
+| Vercel AI SDK | <https://sdk.vercel.ai/docs> | AI 边缘推理 SDK |
+| Serverless Framework | <https://www.serverless.com/framework/docs> | 跨云 Serverless 部署 |
+| AWS SAM | <https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html> | AWS 无服务器应用模型 |

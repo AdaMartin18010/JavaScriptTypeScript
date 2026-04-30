@@ -188,6 +188,106 @@ const uid = createUserId("u-123");
 
 ---
 
+## 💻 代码示例：ES2024+ 运行时特性
+
+### `using` 声明与显式资源管理（RAII）
+
+```typescript
+// ES2024 Explicit Resource Management
+// 基于 Symbol.dispose / Symbol.asyncDispose
+
+class DatabaseConnection implements Disposable {
+  #connected = true;
+
+  query(sql: string): unknown[] {
+    if (!this.#connected) throw new Error("Connection closed");
+    return []; // mock
+  }
+
+  [Symbol.dispose](): void {
+    this.#connected = false;
+    console.log("DB connection released");
+  }
+}
+
+// 自动释放资源，即使发生异常
+function fetchUsers(): unknown[] {
+  using conn = new DatabaseConnection();
+  return conn.query("SELECT * FROM users");
+  // conn[Symbol.dispose]() 自动调用
+}
+
+// Async version
+class AsyncLock implements AsyncDisposable {
+  async [Symbol.asyncDispose](): Promise<void> {
+    await this.release();
+  }
+  async release(): Promise<void> { /* ... */ }
+}
+
+async function doWork() {
+  await using lock = new AsyncLock();
+  // 临界区代码
+} // lock[Symbol.asyncDispose]() 自动 await
+```
+
+### WeakRef 与 FinalizationRegistry（内存敏感场景）
+
+```typescript
+// 构建一个不阻止垃圾回收的缓存
+class WeakCache<K, V extends object> {
+  private cache = new Map<K, WeakRef<V>>();
+  private registry = new FinalizationRegistry<K>((key) => {
+    this.cache.delete(key);
+    console.log(`Cache entry ${key} garbage-collected`);
+  });
+
+  set(key: K, value: V): void {
+    this.cache.set(key, new WeakRef(value));
+    this.registry.register(value, key);
+  }
+
+  get(key: K): V | undefined {
+    const ref = this.cache.get(key);
+    return ref?.deref();
+  }
+}
+
+// 使用：大型对象缓存，不阻止 GC
+const imageCache = new WeakCache<string, ImageBitmap>();
+```
+
+### Proxy + Reflect 实现只读深度冻结
+
+```typescript
+function deepFreeze<T extends object>(obj: T): Readonly<T> {
+  return new Proxy(obj, {
+    get(target, prop, receiver) {
+      const value = Reflect.get(target, prop, receiver);
+      if (value && typeof value === "object") {
+        return deepFreeze(value);
+      }
+      return value;
+    },
+    set(target, prop) {
+      throw new Error(
+        `Cannot set property ${String(prop)} on frozen object`
+      );
+    },
+    deleteProperty(target, prop) {
+      throw new Error(
+        `Cannot delete property ${String(prop)} on frozen object`
+      );
+    },
+  });
+}
+
+const config = deepFreeze({ db: { host: "localhost", port: 5432 } });
+// config.db.port = 3306; // Runtime error!
+```
+
+---
+
 ## 📚 学习路径
 
 | 阶段 | 目标 | 推荐文档 |
@@ -208,3 +308,16 @@ const uid = createUserId("u-123");
 - [MDN JavaScript 参考](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript)
 - [TC39 提案跟踪](https://github.com/tc39/proposals)
 - [TypeScript Deep Dive（中文）](https://basarat.gitbook.io/typescript/)
+- [Exploring JS — JavaScript 全书](https://exploringjs.com/)
+- [V8 Blog](https://v8.dev/blog)
+- [SpiderMonkey Blog](https://spidermonkey.dev/)
+- [JavaScript Visualizer (事件循环)](https://www.jsv9000.app/)
+- [ECMAScript Explicit Resource Management Proposal](https://github.com/tc39/proposal-explicit-resource-management)
+- [MDN — `using`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/using)
+- [MDN — WeakRef](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef)
+- [MDN — Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
+- [TypeScript Handbook — Generics](https://www.typescriptlang.org/docs/handbook/2/generics.html)
+- [TypeScript Handbook — Type Guards](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
+- [TypeScript Handbook — Mapped Types](https://www.typescriptlang.org/docs/handbook/2/mapped-types.html)
+- [TypeScript Handbook — Template Literal Types](https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html)
+- [2ality — JavaScript 特性深度解析](https://2ality.com/)

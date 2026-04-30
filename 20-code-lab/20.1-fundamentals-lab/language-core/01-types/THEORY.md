@@ -228,6 +228,146 @@ function processApiResponse(response: unknown) {
 }
 ```
 
+### 3.7 更多代码示例
+
+#### 模板字面量类型与类型安全的路由
+
+```typescript
+// 类型安全的 API 路由参数提取
+type RouteParams<T extends string> =
+  T extends `${infer _Start}:${infer Param}/${infer Rest}`
+    ? { [K in Param | keyof RouteParams<Rest>]: string }
+    : T extends `${infer _Start}:${infer Param}`
+    ? { [K in Param]: string }
+    : {};
+
+// 使用
+type UserRoute = RouteParams<'/users/:userId/posts/:postId'>;
+// => { userId: string; postId: string }
+
+function buildUrl<T extends string>(
+  route: T,
+  params: RouteParams<T>
+): string {
+  let url: string = route;
+  for (const [key, value] of Object.entries(params)) {
+    url = url.replace(`:${key}`, encodeURIComponent(value as string));
+  }
+  return url;
+}
+
+const url = buildUrl('/users/:userId/posts/:postId', {
+  userId: '42',
+  postId: '99',
+});
+```
+
+#### 条件类型与映射类型
+
+```typescript
+// 条件类型：根据类型选择不同分支
+type IsString<T> = T extends string ? true : false;
+type A = IsString<'hello'>; // true
+type B = IsString<123>;     // false
+
+// 映射类型：批量转换属性
+type ReadonlyDeep<T> = {
+  readonly [K in keyof T]: T[K] extends object
+    ? T[K] extends Function
+      ? T[K]
+      : ReadonlyDeep<T[K]>
+    : T[K];
+};
+
+interface Config {
+  server: { host: string; port: number };
+  debug: boolean;
+}
+
+type FrozenConfig = ReadonlyDeep<Config>;
+// 所有层级属性均为 readonly
+
+// 工具类型：提取 Promise 返回值
+type Awaited<T> = T extends Promise<infer R> ? R : T;
+type Data = Awaited<Promise<string[]>>; // string[]
+```
+
+#### 函数重载与泛型约束
+
+```typescript
+// 函数重载：根据参数数量/类型返回不同结果
+function createElement(tag: 'img'): HTMLImageElement;
+function createElement(tag: 'a'): HTMLAnchorElement;
+function createElement(tag: string): HTMLElement {
+  return document.createElement(tag);
+}
+
+const img = createElement('img');     // HTMLImageElement
+const link = createElement('a');      // HTMLAnchorElement
+
+// 泛型约束：限制类型参数必须满足特定结构
+interface HasLength {
+  length: number;
+}
+
+function logLength<T extends HasLength>(arg: T): T {
+  console.log(arg.length);
+  return arg;
+}
+
+logLength('hello');      // ✅ string 有 length
+logLength([1, 2, 3]);    // ✅ 数组有 length
+// logLength(123);       // ❌ number 无 length
+```
+
+####  branded types 实现更安全的 ID 系统
+
+```typescript
+// 使用 symbol 实现更严格的名义类型
+declare const UserIdBrand: unique symbol;
+declare const OrderIdBrand: unique symbol;
+
+type UserId = string & { readonly [UserIdBrand]: true };
+type OrderId = string & { readonly [OrderIdBrand]: true };
+
+function UserId(id: string): UserId {
+  return id as UserId;
+}
+function OrderId(id: string): OrderId {
+  return id as OrderId;
+}
+
+function fetchUser(id: UserId) {
+  return db.users.findById(id);
+}
+
+const uid = UserId('u-123');
+const oid = OrderId('o-456');
+
+fetchUser(uid);   // ✅
+// fetchUser(oid); // ❌ 编译错误：类型不兼容
+```
+
+#### infer 与递归类型实现深度 Partial
+
+```typescript
+type DeepPartial<T> = T extends Function
+  ? T
+  : T extends object
+  ? { [P in keyof T]?: DeepPartial<T[P]> }
+  : T;
+
+interface Company {
+  name: string;
+  ceo: { name: string; age: number };
+  employees: Array<{ id: number; name: string }>;
+}
+
+const patch: DeepPartial<Company> = {
+  ceo: { name: 'New CEO' }, // 深层属性也可部分更新
+};
+```
+
 ### 3.7 常见误区
 
 | 误区 | 正确理解 |
@@ -238,9 +378,11 @@ function processApiResponse(response: unknown) {
 | `instanceof` 跨 iframe 可靠 | 不同全局环境下的构造函数引用不同，instanceof 可能失效 |
 | 接口与类型别名完全等价 | 接口支持声明合并（declaration merging），type 不支持 |
 
-### 3.8 扩展阅读
+### 3.10 扩展阅读
 
 - [TypeScript 类型手册](https://www.typescriptlang.org/docs/handbook/basic-types.html)
+- [TypeScript Handbook: Everyday Types](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html)
+- [TypeScript Handbook: Advanced Types](https://www.typescriptlang.org/docs/handbook/2/types-from-types.html)
 - [MDN：JavaScript 数据类型与数据结构](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures)
 - [MDN：typeof](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof)
 - [MDN：instanceof](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/instanceof)
@@ -250,6 +392,15 @@ function processApiResponse(response: unknown) {
 - [TypeScript: Structural vs Nominal Typing](https://www.typescriptlang.org/docs/handbook/type-compatibility.html)
 - [2ality: JavaScript Values — Primitives vs Objects](https://2ality.com/2021/01/object-vs-object.html)
 - [Deep JavaScript: Types, Values, and Variables](https://exploringjs.com/deep-js/ch_types-values-variables.html)
+- [TypeScript Handbook: Mapped Types](https://www.typescriptlang.org/docs/handbook/2/mapped-types.html)
+- [TypeScript Handbook: Template Literal Types](https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html)
+- [TypeScript Handbook: Conditional Types](https://www.typescriptlang.org/docs/handbook/2/conditional-types.html)
+- [TypeScript Handbook: Generics](https://www.typescriptlang.org/docs/handbook/2/generics.html)
+- [type-challenges GitHub](https://github.com/type-challenges/type-challenges) — 类型体操练习集
+- [Total TypeScript by Matt Pocock](https://www.totaltypescript.com/) — 高级 TS 教程
+- [Zod 库文档](https://zod.dev/) — 运行时类型校验
+- [Valibot 文档](https://valibot.dev/) — 轻量级 schema 校验
+- [TypeScript Deep Dive](https://basarat.gitbook.io/typescript/) — 开源 TS 深度指南
 - `10-fundamentals/10.1-language-semantics/01-types/`
 
 ---

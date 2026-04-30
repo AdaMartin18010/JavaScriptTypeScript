@@ -192,6 +192,146 @@ fetchWithTimeout('https://api.example.com/data', 3000)
   .catch(console.error);
 ```
 
+### 3.3 更多代码示例
+
+#### `Promise.withResolvers` 实现互斥锁（Mutex）
+
+```typescript
+class AsyncMutex {
+  private locked = false;
+  private queue: Array<{
+    resolve: (release: () => void) => void;
+    reject: (reason?: unknown) => void;
+  }> = [];
+
+  async acquire(): Promise<() => void> {
+    if (!this.locked) {
+      this.locked = true;
+      return () => this.release();
+    }
+
+    const { promise, resolve } = Promise.withResolvers<() => void>();
+    this.queue.push({ resolve, reject: () => {} });
+    const release = await promise;
+    return release;
+  }
+
+  private release() {
+    const next = this.queue.shift();
+    if (next) {
+      next.resolve(() => this.release());
+    } else {
+      this.locked = false;
+    }
+  }
+}
+
+// 使用
+const mutex = new AsyncMutex();
+async function criticalSection() {
+  const release = await mutex.acquire();
+  try {
+    // 临界区...
+  } finally {
+    release();
+  }
+}
+```
+
+#### `Object.groupBy` 实现数据报表
+
+```typescript
+interface Order {
+  id: string;
+  region: 'north' | 'south' | 'east' | 'west';
+  status: 'pending' | 'shipped' | 'delivered';
+  amount: number;
+}
+
+function generateReport(orders: Order[]) {
+  // 按区域分组
+  const byRegion = Object.groupBy(orders, o => o.region);
+
+  // 统计各区域总额
+  const regionTotals = Object.fromEntries(
+    Object.entries(byRegion).map(([region, items]) => [
+      region,
+      items!.reduce((sum, o) => sum + o.amount, 0),
+    ])
+  );
+
+  // 按状态分组（使用 Map.groupBy 按对象键分组）
+  const statusMap = Map.groupBy(orders, o =>
+    o.status === 'delivered' ? 'completed' : 'incomplete'
+  );
+
+  return { byRegion, regionTotals, completed: statusMap.get('completed') ?? [] };
+}
+```
+
+#### `isWellFormed` 在 JSON 序列化前的安全校验
+
+```typescript
+function safeJsonStringify(value: unknown): string | null {
+  if (typeof value === 'string' && !value.isWellFormed()) {
+    console.warn('String contains lone surrogates, sanitizing');
+    value = value.toWellFormed();
+  }
+
+  // 递归处理对象属性
+  if (value && typeof value === 'object') {
+    for (const [k, v] of Object.entries(value)) {
+      if (typeof v === 'string' && !v.isWellFormed()) {
+        (value as Record<string, string>)[k] = v.toWellFormed();
+      }
+    }
+  }
+
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return null;
+  }
+}
+
+// 演示：修复孤立代理
+const dirty = 'Hello \uDC00World';
+console.log(safeJsonStringify(dirty)); // "Hello \uFFFDWorld"
+```
+
+#### `ArrayBuffer.transfer` 实现零拷贝缓冲区调整
+
+```typescript
+function resizeBuffer(buf: ArrayBuffer, newByteLength: number): ArrayBuffer {
+  // 转移并调整大小，旧缓冲区立即分离
+  return buf.transfer(newByteLength);
+}
+
+// 动态增长 ring buffer
+class GrowingRingBuffer {
+  private buffer: ArrayBuffer;
+  private view: Uint8Array;
+
+  constructor(initial = 1024) {
+    this.buffer = new ArrayBuffer(initial);
+    this.view = new Uint8Array(this.buffer);
+  }
+
+  ensureCapacity(needed: number) {
+    if (needed > this.buffer.byteLength) {
+      const newSize = Math.max(needed, this.buffer.byteLength * 2);
+      this.buffer = this.buffer.transfer(newSize);
+      this.view = new Uint8Array(this.buffer);
+    }
+  }
+
+  write(data: Uint8Array, offset: number) {
+    this.ensureCapacity(offset + data.length);
+    this.view.set(data, offset);
+  }
+}
+```
+
 ### 3.3 常见误区
 
 | 误区 | 正确理解 |
@@ -237,9 +377,22 @@ const newBuf = buf.transfer(512);
 
 ## 更多权威参考链接
 
-- [V8 Blog: ES2024 Features](https://v8.dev/features/tags/es2024) -- V8 引擎新特性详解
-- [Node.js v22 Release Notes](https://nodejs.org/en/blog/release/v22.0.0) -- Node.js 对 ES2024 的支持
-- [Safari 17.4 Release Notes](https://webkit.org/blog/15249/webkit-features-in-safari-17-4/) -- WebKit ES2024 支持
-- [Can I Use: Promise.withResolvers](https://caniuse.com/mdn-javascript_builtins_promise_withresolvers) -- 兼容性查询
+- [ECMAScript 2024 Language Specification](https://262.ecma-international.org/15.0/) — 官方语言规范
+- [MDN: Object.groupBy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/groupBy) — Mozilla 文档
+- [MDN: Promise.withResolvers](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers) — Mozilla 文档
+- [MDN: ArrayBuffer.prototype.transfer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer/transfer) — Mozilla 文档
+- [MDN: Atomics.waitAsync](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics/waitAsync) — Mozilla 文档
+- [MDN: String.prototype.isWellFormed](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/isWellFormed) — Unicode 校验
+- [MDN: String.prototype.toWellFormed](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/toWellFormed) — Unicode 修复
+- [TC39 Finished Proposals](https://github.com/tc39/proposals/blob/main/finished-proposals.md) — 已完成的 TC39 提案
+- [V8 Blog: ES2024 Features](https://v8.dev/features/tags/es2024) — V8 引擎新特性详解
+- [Node.js v22 Release Notes](https://nodejs.org/en/blog/release/v22.0.0) — Node.js 对 ES2024 的支持
+- [Safari 17.4 Release Notes](https://webkit.org/blog/15249/webkit-features-in-safari-17-4/) — WebKit ES2024 支持
+- [Can I Use: Promise.withResolvers](https://caniuse.com/mdn-javascript_builtins_promise_withresolvers) — 兼容性查询
+- [TC39 Proposal: Array Grouping](https://github.com/tc39/proposal-array-grouping) — 分组提案仓库
+- [TC39 Proposal: Promise.withResolvers](https://github.com/tc39/proposal-promise-with-resolvers) — Promise 解析器提案
+- [TC39 Proposal: ArrayBuffer Transfer](https://github.com/tc39/proposal-arraybuffer-transfer) — ArrayBuffer 转移提案
+- [TypeScript 5.4 Release Notes](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-4.html) — TS 对 ES2024 的支持
+- [SpiderMonkey ES2024 Bug Tracker](https://bugzilla.mozilla.org/show_bug.cgi?id=1869493) — Firefox 实现跟踪
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

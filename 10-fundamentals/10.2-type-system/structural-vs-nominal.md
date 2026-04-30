@@ -172,6 +172,48 @@ const bLogger: ILogger = { info: console.log, error: console.error };
 setupLogger(bLogger); // ✅ 结构兼容，天然跨包互通
 ```
 
+### 函数类型的结构兼容性
+
+```typescript
+// TypeScript 函数参数是双向协变的（在 strictFunctionTypes 关闭时）
+type Handler = (x: string) => void;
+let h: Handler = (x: string | number) => { console.log(x); }; // ❌ strictFunctionTypes 开启时错误
+
+// ✅ 好: 返回值协变是安全的
+type Factory = () => string | number;
+let f: Factory = () => 'hello'; // ✅ string 是 string | number 的子类型
+```
+
+### 泛型约束中的结构兼容性
+
+```typescript
+interface Named { name: string; }
+interface NamedAndDated extends Named { createdAt: Date; }
+
+function greet<T extends Named>(entity: T): string {
+    return `Hello, ${entity.name}`;
+}
+
+const user: NamedAndDated = { name: 'Alice', createdAt: new Date() };
+greet(user); // ✅ 结构兼容：NamedAndDated 满足 Named 的结构
+```
+
+### 使用私有字段模拟名义类型（零运行时代价）
+
+```typescript
+// 利用 #private 字段使结构不兼容，从而模拟名义类型
+type UserId = string & { readonly #brand: unique symbol };
+type OrderId = string & { readonly #brand: unique symbol };
+
+function UserId(id: string): UserId { return id as UserId; }
+function OrderId(id: string): OrderId { return id as OrderId; }
+
+const uid = UserId('u-1');
+const oid = OrderId('o-1');
+
+// uid = oid; // ❌ 编译错误：私有标识符不同导致结构不兼容
+```
+
 ---
 
 ## 结构 vs 名义的工程权衡
@@ -203,6 +245,18 @@ setupLogger(bLogger); // ✅ 结构兼容，天然跨包互通
 | **Soundiness Literature** | 学术视角：结构类型的可证安全性 | [Soundiness](https://soundiness.github.io/) |
 | **TypeScript FAQ: Nominal Typing** | 官方 FAQ 对名义类型的讨论 | [github.com/microsoft/TypeScript/wiki/FAQ#nominal-typing](https://github.com/microsoft/TypeScript/wiki/FAQ#nominal-typing) |
 | **Rust Traits vs TypeScript Interfaces** | 名义与结构类型的语言对比 | [doc.rust-lang.org/book/ch10-02-traits.html](https://doc.rust-lang.org/book/ch10-02-traits.html) |
+
+## 更多权威参考
+
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| **TypeScript Handbook: Type Compatibility** | 官方结构子类型说明 | [typescriptlang.org/docs/handbook/type-compatibility.html](https://www.typescriptlang.org/docs/handbook/type-compatibility.html) |
+| **TypeScript Deep Dive: Nominal Typing** | 品牌类型技术详解 | [basarat.gitbook.io/typescript/type-system/moving-types](https://basarat.gitbook.io/typescript/type-system/moving-types) |
+| **Effective TypeScript: Item 53** | 品牌类型最佳实践 | [effectivetypescript.com](https://effectivetypescript.com/) |
+| **Go 语言接口设计** | 另一主流结构子类型语言的哲学 | [go.dev/doc/effective_go#interfaces](https://go.dev/doc/effective_go#interfaces) |
+| **Rust Traits vs TypeScript Interfaces** | 名义与结构类型的语言对比 | [doc.rust-lang.org/book/ch10-02-traits.html](https://doc.rust-lang.org/book/ch10-02-traits.html) |
+| **TypeScript FAQ: Nominal Typing** | 官方 FAQ 对名义类型的讨论 | [github.com/microsoft/TypeScript/wiki/FAQ#nominal-typing](https://github.com/microsoft/TypeScript/wiki/FAQ#nominal-typing) |
+| **Soundiness Literature** | 学术视角：结构类型的可证安全性 | [Soundiness](https://soundiness.github.io/) |
 
 ---
 

@@ -305,6 +305,115 @@ console.log(classifier.predict('this was an amazing film'));
 // [{ label: 'positive', score: -10.2 }, { label: 'negative', score: -14.5 }]
 ```
 
+### 文本摘要（TextRank 简化版）
+
+```typescript
+// textrank-summarizer.ts — 基于图排序的抽取式摘要
+
+function tokenizeSentences(text: string): string[] {
+  return text.replace(/([.?!])\s+/g, '$1|').split('|').filter(s => s.trim().length > 0);
+}
+
+function sentenceSimilarity(a: string, b: string): number {
+  const wordsA = new Set(a.toLowerCase().split(/\W+/));
+  const wordsB = new Set(b.toLowerCase().split(/\W+/));
+  const intersection = new Set([...wordsA].filter(w => wordsB.has(w)));
+  return intersection.size / (Math.log(wordsA.size) + Math.log(wordsB.size) || 1);
+}
+
+function textRank(sentences: string[], damping = 0.85, iterations = 30): Map<string, number> {
+  const n = sentences.length;
+  const simMatrix: number[][] = Array.from({ length: n }, () => Array(n).fill(0));
+
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      if (i !== j) simMatrix[i][j] = sentenceSimilarity(sentences[i], sentences[j]);
+    }
+  }
+
+  const scores = new Array(n).fill(1 / n);
+  for (let iter = 0; iter < iterations; iter++) {
+    const newScores = new Array(n).fill(0);
+    for (let i = 0; i < n; i++) {
+      let sum = 0;
+      for (let j = 0; j < n; j++) {
+        if (i !== j) {
+          const outSum = simMatrix[j].reduce((a, b) => a + b, 0);
+          sum += (simMatrix[j][i] / (outSum || 1)) * scores[j];
+        }
+      }
+      newScores[i] = (1 - damping) / n + damping * sum;
+    }
+    scores.splice(0, scores.length, ...newScores);
+  }
+
+  const result = new Map<string, number>();
+  sentences.forEach((s, i) => result.set(s, scores[i]));
+  return result;
+}
+
+export function summarize(text: string, sentenceCount = 3): string {
+  const sentences = tokenizeSentences(text);
+  if (sentences.length <= sentenceCount) return text;
+  const ranks = textRank(sentences);
+  return [...ranks.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, sentenceCount)
+    .map(([s]) => s)
+    .join(' ');
+}
+```
+
+### N-Gram 语言模型
+
+```typescript
+// ngram-model.ts — 字符级 N-Gram 概率模型
+
+class NGramModel {
+  private ngrams = new Map<string, Map<string, number>>();
+  private n: number;
+
+  constructor(n = 3) {
+    this.n = n;
+  }
+
+  train(corpus: string[]) {
+    for (const text of corpus) {
+      const padded = '<' + text.toLowerCase() + '>';
+      for (let i = 0; i <= padded.length - this.n; i++) {
+        const context = padded.slice(i, i + this.n - 1);
+        const next = padded[i + this.n - 1];
+        if (!this.ngrams.has(context)) this.ngrams.set(context, new Map());
+        const counts = this.ngrams.get(context)!;
+        counts.set(next, (counts.get(next) || 0) + 1);
+      }
+    }
+  }
+
+  predictNext(context: string): Array<{ char: string; probability: number }> {
+    const counts = this.ngrams.get(context.toLowerCase());
+    if (!counts) return [];
+    const total = Array.from(counts.values()).reduce((a, b) => a + b, 0);
+    return Array.from(counts.entries())
+      .map(([char, count]) => ({ char, probability: count / total }))
+      .sort((a, b) => b.probability - a.probability);
+  }
+
+  generate(seed: string, length = 20): string {
+    let result = seed.toLowerCase();
+    for (let i = 0; i < length; i++) {
+      const context = result.slice(-(this.n - 1)) || '<';
+      const predictions = this.predictNext(context);
+      if (predictions.length === 0) break;
+      const next = predictions[0].char;
+      if (next === '>') break;
+      result += next;
+    }
+    return result;
+  }
+}
+```
+
 ## 关联模块
 
 - `33-ai-integration` — AI 集成
@@ -324,7 +433,14 @@ console.log(classifier.predict('this was an amazing film'));
 | spaCy (Python参考) | NLP 工业标准 | [spacy.io](https://spacy.io/) |
 | fastText | 文本分类与表示 | [fasttext.cc](https://fasttext.cc/) |
 | ANN-Benchmarks | 向量检索基准 | [ann-benchmarks.com](https://ann-benchmarks.com/) |
+| NLTK Book | 教学资源 | [nltk.org/book](https://www.nltk.org/book/) |
+| Sentence-Transformers | 句子嵌入 | [sbert.net](https://www.sbert.net/) |
+| WordPiece (Google Research) | 分词算法 | [arxiv.org/abs/1609.08144](https://arxiv.org/abs/1609.08144) |
+| VADER Sentiment | 情感分析 | [github.com/cjhutto/vaderSentiment](https://github.com/cjhutto/vaderSentiment) |
+| text2vec.js | 文本向量化 | [github.com/erelsgl/text2vec](https://github.com/erelsgl/text2vec) |
+| Pinecone Vector DB | 向量数据库 | [pinecone.io](https://www.pinecone.io/) |
+| Weaviate | 开源向量搜索引擎 | [weaviate.io](https://weaviate.io/) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

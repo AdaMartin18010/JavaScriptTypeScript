@@ -267,6 +267,70 @@ const Modal = ({ open, onOpenChange, children }: Dialog.DialogProps) => (
 
 ---
 
+## 5. CSS 自定义属性与动态主题
+
+### 5.1 运行时主题切换
+
+```typescript
+// theme-switcher.ts
+type Theme = 'light' | 'dark' | 'system';
+
+function applyTheme(theme: Theme) {
+  const root = document.documentElement;
+  if (theme === 'system') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+  } else {
+    root.setAttribute('data-theme', theme);
+  }
+}
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if (document.documentElement.getAttribute('data-theme') === 'system') applyTheme('system');
+});
+```
+
+```css
+:root[data-theme="light"] {
+  --color-surface: #ffffff;
+  --color-text: #1a1a1a;
+  --color-primary: #007bff;
+}
+:root[data-theme="dark"] {
+  --color-surface: #0a0a0a;
+  --color-text: #f0f0f0;
+  --color-primary: #4dabf7;
+}
+body { background: var(--color-surface); color: var(--color-text); }
+```
+
+### 5.2 CTI 命名约定（Category / Type / Item）
+
+W3C Design Tokens 社区推荐按 `category-type-item` 层级命名：
+
+```json
+{
+  "color": {
+    "bg": { "primary": { "$value": "#ffffff" }, "secondary": { "$value": "#f5f5f5" } },
+    "text": { "primary": { "$value": "#1a1a1a" }, "muted": { "$value": "#666666" } }
+  },
+  "spacing": { "xs": { "$value": "4px" }, "sm": { "$value": "8px" }, "md": { "$value": "16px" } }
+}
+```
+
+### 5.3 语义令牌（Semantic Tokens）
+
+将原始令牌映射到语义用途，实现跨主题一致性：
+
+```typescript
+const semanticTokens = {
+  'button-bg-primary': { $value: '{color.primary}' },
+  'button-bg-primary-hover': { $value: '{color.primary}', $modify: [{ type: 'darken', amount: 0.1 }] },
+  'surface-page': { $value: '{color.bg.primary}' },
+  'text-heading': { $value: '{color.text.primary}' },
+} as const;
+```
+
 ## 5. 与相邻模块的关系
 
 - **51-ui-components**: UI 组件的设计与实现
@@ -278,12 +342,19 @@ const Modal = ({ open, onOpenChange, children }: Dialog.DialogProps) => (
 ## 6. 参考资源
 
 ### 权威规范
+
 - [W3C Design Tokens Community Group](https://www.w3.org/community/designtokens/) — 设计令牌标准制定
+- [W3C Design Tokens Format Module](https://design-tokens.github.io/community-group/format/)
 - [WCAG 2.2 — Web Content Accessibility Guidelines](https://www.w3.org/WAI/WCAG22/quickref/) — 可访问性规范
 - [ARIA Authoring Practices Guide (APG)](https://www.w3.org/WAI/ARIA/apg/) — W3C 无障碍组件模式
+- [CSS Custom Properties — MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/--*)
+- [prefers-color-scheme — MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-color-scheme)
+- [Dark Mode Best Practices — web.dev](https://web.dev/articles/prefers-color-scheme)
 
 ### 开源工具与设计系统
+
 - [Style Dictionary — Amazon](https://amzn.github.io/style-dictionary/) — 跨平台设计令牌转换
+- [CTI Token Naming Convention](https://amzn.github.io/style-dictionary/#/tokens/pipelines/cti)
 - [Storybook](https://storybook.js.org/) — 组件驱动开发与文档
 - [Radix UI](https://www.radix-ui.com/) — 无样式、可访问的基础组件原语
 - [Headless UI](https://headlessui.com/) — Tailwind Labs 的无样式组件
@@ -293,9 +364,12 @@ const Modal = ({ open, onOpenChange, children }: Dialog.DialogProps) => (
 - [Lightning Design System — Salesforce](https://www.lightningdesignsystem.com/) — 企业级设计系统
 
 ### 工程化实践
+
 - [Component-Driven Development](https://www.componentdriven.org/) — 组件驱动开发方法论
 - [Chromatic](https://www.chromatic.com/) — 视觉回归测试与 UI 评审
 - [Changesets](https://github.com/changesets/changesets) — Monorepo 版本管理与发布
+- [Inclusive Design Principles](https://inclusivedesignprinciples.org/)
+- [Open UI — Component Research](https://open-ui.org/)
 
 ---
 

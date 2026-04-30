@@ -259,6 +259,95 @@ async function usersHandler(req: FastifyRequest) {
 }
 ```
 
+### 代码示例：Milestone 5 断路器（Circuit Breaker）
+
+```typescript
+import { CircuitBreaker } from 'opossum';
+
+const options = {
+  timeout: 3000,
+  errorThresholdPercentage: 50,
+  resetTimeout: 30000,
+};
+
+const breaker = new CircuitBreaker(fetchUsers, options);
+
+breaker.fire()
+  .then(console.log)
+  .catch(e => console.error('Circuit open or failure:', e));
+
+// 监听状态转换
+breaker.on('open', () => console.warn('Circuit breaker opened'));
+breaker.on('halfOpen', () => console.info('Circuit breaker half-open, testing...'));
+```
+
+### 代码示例：Milestone 6 Saga 编排式事务
+
+```typescript
+// 协同式 Saga：每个服务完成后发送事件，由 Saga 协调器监听并决定下一步
+async function createOrderSaga(orderId: string) {
+  const steps = [
+    async () => await reserveInventory(orderId),
+    async () => await processPayment(orderId),
+    async () => await shipOrder(orderId),
+  ];
+
+  const compensations: (() => Promise<void>)[] = [];
+  try {
+    for (const step of steps) {
+      const result = await step();
+      compensations.push(result.undo);
+    }
+  } catch (e) {
+    // 反向补偿：按 LIFO 顺序执行已完成的补偿操作
+    for (const compensate of compensations.reverse()) {
+      await compensate();
+    }
+    throw new Error(`Saga failed: ${e.message}`);
+  }
+}
+```
+
+### 代码示例：Milestone 7 动态配置中心
+
+```typescript
+import { ConfigService } from '@nestjs/config';
+
+// 基于文件/Redis 的动态配置，支持热更新
+const configService = new ConfigService();
+const dbHost = configService.get<string>('DATABASE_HOST', 'localhost');
+
+// 监听配置变更并热重载连接池
+configService.onChange('DATABASE_HOST', async (newHost) => {
+  console.log(`Database host changed to ${newHost}, reconnecting...`);
+  await pool.reconnect(newHost);
+});
+```
+
+### 代码示例：Milestone 8 mTLS 与 JWT 鉴权
+
+```typescript
+import fastify from 'fastify';
+import fs from 'fs';
+
+const app = fastify({
+  https: {
+    key: fs.readFileSync('server-key.pem'),
+    cert: fs.readFileSync('server-cert.pem'),
+    ca: fs.readFileSync('ca-cert.pem'),
+    requestCert: true, // 要求客户端证书
+    rejectUnauthorized: true,
+  },
+});
+
+// JWT 验证插件
+app.register(require('@fastify/jwt'), { secret: process.env.JWT_SECRET! });
+
+app.get('/secure', { preValidation: [app.authenticate] }, async (req) => {
+  return { user: req.user };
+});
+```
+
 ---
 
 ## 设计决策记录（ADR）
@@ -280,6 +369,18 @@ async function usersHandler(req: FastifyRequest) {
 - **简单**：无需引入 Consul/Eureka 等重型方案
 - **过期机制**：Redis TTL 天然支持心跳剔除
 - **教学聚焦**：避免服务发现本身的复杂度掩盖教学主题
+
+### ADR-4: 为什么选择 NATS JetStream 而非 Kafka？
+
+- **部署成本**：单二进制启动，无需 ZooKeeper
+- **消费模型**：Push + Pull 双模式，更灵活
+- **主题层级**：原生支持通配符订阅（`orders.*`）
+
+### ADR-5: 为什么使用 OpenTelemetry 而非 Jaeger Client SDK？
+
+- **厂商无关**：统一 API，后端可切换至 Jaeger/Zipkin/Tempo
+- **标准传播**：W3C Trace Context 自动跨语言兼容
+- **未来-proof**：OpenTelemetry Metrics/Logs 统一链路
 
 ---
 
@@ -305,6 +406,16 @@ async function usersHandler(req: FastifyRequest) {
 | Jaeger | 分布式追踪 | [jaegertracing.io](https://www.jaegertracing.io/) |
 | Microservices Patterns | 书籍 | [microservices.io/patterns](https://microservices.io/patterns/) |
 | Building Microservices (O'Reilly) | 书籍 | [samnewman.io/books/building_microservices](https://samnewman.io/books/building_microservices/) |
+
+### 扩展里程碑权威参考
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| Opossum (Circuit Breaker) | npm 包 | [nodeshift.dev/opossum](https://nodeshift.dev/opossum/) |
+| Saga Pattern | 微服务模式 | [microservices.io/patterns/data/saga.html](https://microservices.io/patterns/data/saga.html) |
+| mTLS in Node.js | 官方文档 | [nodejs.org/api/tls.html](https://nodejs.org/api/tls.html) |
+| JWT Best Practices | IETF RFC | [datatracker.ietf.org/doc/html/rfc8725](https://datatracker.ietf.org/doc/html/rfc8725) |
+| OpenTelemetry Semantic Conventions | 规范 | [opentelemetry.io/docs/concepts/semantic-conventions](https://opentelemetry.io/docs/concepts/semantic-conventions/) |
 
 ---
 

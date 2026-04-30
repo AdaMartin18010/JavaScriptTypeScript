@@ -194,3 +194,95 @@ Landing      Todo App (JS)    Migrate to TS      Multi-route SPA       Deployed 
 ---
 
 > 📦 归档说明：本文档作为兼容性入口保留，不再独立更新。所有初学者路径内容请访问上述链接。
+
+
+---
+
+## 深化补充：更多阶段代码示例与资源
+
+### HTML 语义化与可访问性
+
+```html
+<!-- semantic-layout.html -->
+<header>
+  <nav aria-label="Main navigation">
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+  </nav>
+</header>
+<main>
+  <article>
+    <h1>Accessible Article</h1>
+    <p>Use semantic tags and ARIA roles to improve screen reader experience.</p>
+  </article>
+</main>
+<footer>
+  <p>© 2026 Example Inc.</p>
+</footer>
+```
+
+### CSS Grid 响应式布局
+
+```css
+/* grid-layout.css */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 1rem;
+}
+```
+
+### React 表单验证（React Hook Form + Zod）
+
+```typescript
+// react-form.tsx
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const schema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+});
+
+type FormData = z.infer<typeof schema>;
+
+export default function LoginForm() {
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(schema),
+  });
+
+  return (
+    <form onSubmit={handleSubmit(console.log)}>
+      <input {...register('email')} placeholder="Email" />
+      {errors.email && <span>{errors.email.message}</span>}
+      <input type="password" {...register('password')} placeholder="Password" />
+      <button type="submit">Login</button>
+    </form>
+  );
+}
+```
+
+---
+
+### 更多权威参考链接
+
+| 阶段 | 资源 | 链接 | 说明 |
+|------|------|------|------|
+| HTML/CSS | A11y Project | <https://www.a11yproject.com/> | 可访问性最佳实践 |
+| HTML/CSS | web.dev Learn HTML | <https://web.dev/learn/html> | Google HTML 教程 |
+| JavaScript | Node.js Docs | <https://nodejs.org/docs/latest/api/> | 服务端 JS 权威文档 |
+| TypeScript | TypeScript Playground | <https://www.typescriptlang.org/play> | 在线类型实验环境 |
+| TypeScript | TSConfig Reference | <https://www.typescriptlang.org/tsconfig> | 配置项完整参考 |
+| 前端框架 | React Hook Form | <https://react-hook-form.com/> | 高性能表单库 |
+| 前端框架 | Zod Documentation | <https://zod.dev/> | Schema 验证库 |
+| 全栈 | Next.js App Router | <https://nextjs.org/docs/app> | App Router 官方文档 |
+| 全栈 | Prisma ORM | <https://www.prisma.io/docs> | 类型安全 ORM |

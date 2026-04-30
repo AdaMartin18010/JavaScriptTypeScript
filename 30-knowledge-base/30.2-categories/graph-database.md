@@ -193,6 +193,89 @@ async function findFriends(name: string) {
 })();
 ```
 
+### Memgraph + TypeScript（memgraph-js）
+
+```typescript
+import { Memgraph } from 'memgraph-js';
+
+const client = new Memgraph({ host: 'localhost', port: 7687 });
+
+async function shortestPath(start: string, end: string) {
+  const result = await client.query(
+    `
+    MATCH path = shortestPath((a:User {name: $start})-[:FOLLOWS*]-(b:User {name: $end}))
+    RETURN [node in nodes(path) | node.name] AS path_names,
+           length(path) AS hops
+    `,
+    { start, end }
+  );
+  return result.records.map((r) => ({
+    path: r.get('path_names'),
+    hops: r.get('hops'),
+  }));
+}
+
+async function pageRank() {
+  const result = await client.query(`
+    CALL pagerank.get()
+    YIELD node, rank
+    RETURN node.name AS name, rank
+    ORDER BY rank DESC
+    LIMIT 10
+  `);
+  return result.records.map((r) => ({
+    name: r.get('name'),
+    rank: r.get('rank'),
+  }));
+}
+
+(async () => {
+  console.table(await shortestPath('Alice', 'Bob'));
+  console.table(await pageRank());
+  await client.close();
+})();
+```
+
+### Cypher 高级：最短路径与图算法
+
+```typescript
+import neo4j from 'neo4j-driver';
+
+const driver = neo4j.driver('bolt://localhost:7687');
+
+async function graphAlgorithms() {
+  const session = driver.session();
+  try {
+    // 最短路径（无权图）
+    const shortestPath = await session.run(`
+      MATCH path = shortestPath(
+        (a:User {name: 'Alice'})-[:FOLLOWS|BOUGHT*]-(b:User {name: 'Bob'})
+      )
+      RETURN [n IN nodes(path) | n.name] AS path
+    `);
+
+    // 共同好友（三角形计数）
+    const commonFriends = await session.run(`
+      MATCH (a:User {name: 'Alice'})-[:FOLLOWS]->(friend)<-[:FOLLOWS]-(b:User {name: 'Bob'})
+      RETURN friend.name AS commonFriend
+    `);
+
+    // GDS 库：PageRank 算法
+    const pageRank = await session.run(`
+      CALL gds.pageRank.stream('myGraph')
+      YIELD nodeId, score
+      RETURN gds.util.asNode(nodeId).name AS name, score
+      ORDER BY score DESC
+      LIMIT 10
+    `);
+
+    return { shortestPath, commonFriends, pageRank };
+  } finally {
+    await session.close();
+  }
+}
+```
+
 ---
 
 ## 使用场景
@@ -211,6 +294,7 @@ async function findFriends(name: string) {
 - [Neo4j 官方文档](https://neo4j.com/docs/)
 - [Neo4j Cypher Query Language Reference](https://neo4j.com/docs/cypher-manual/current/)
 - [neo4j-driver npm](https://www.npmjs.com/package/neo4j-driver)
+- [Neo4j Graph Data Science (GDS)](https://neo4j.com/docs/graph-data-science/current/)
 - [Dgraph 官方文档](https://dgraph.io/docs)
 - [dgraph-js-http npm](https://www.npmjs.com/package/dgraph-js-http)
 - [Amazon Neptune 官方文档](https://docs.aws.amazon.com/neptune/)
@@ -218,9 +302,16 @@ async function findFriends(name: string) {
 - [gremlin-javascript npm](https://www.npmjs.com/package/gremlin)
 - [Memgraph 官方文档](https://memgraph.com/docs)
 - [Memgraph JS Client](https://www.npmjs.com/package/memgraph-js)
+- [Memgraph MAGE 算法库](https://memgraph.com/docs/advanced-algorithms)
 - [GraphQL.org](https://graphql.org/)（DQL 概念来源）
 - [DB-Engines Graph DBMS Ranking](https://db-engines.com/en/ranking/graph+dbms)
 - [Gartner: Graph Database Market Guide](https://www.gartner.com/)
+- [Cypher Query Language Reference Card (PDF)](https://neo4j.com/docs/cypher-refcard/current/)
+- [Neo4j AuraDB 云托管服务](https://neo4j.com/cloud/auradb/)
+- [Link Prediction with Graph Neural Networks](https://pytorch-geometric.readthedocs.io/en/latest/)
+- [ISO GQL (Graph Query Language) Standard](https://www.gqlstandards.org/)
+- [MDN — Web Crypto API（配合图权限模型）](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
+- [OWASP — Query Parameterization](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html)
 
 ---
 

@@ -226,6 +226,125 @@ for (const e of events) {
 }
 ```
 
+### 基于 Redis Streams 的轻量级流处理
+
+```typescript
+// redis-streams-processor.ts
+import { createClient } from 'redis';
+
+const redis = createClient({ url: process.env.REDIS_URL });
+await redis.connect();
+
+// 生产者
+async function publishEvent(stream: string, event: Record<string, string>) {
+  await redis.xAdd(stream, '*', event);
+}
+
+// 消费者组
+async function createConsumerGroup(stream: string, group: string) {
+  try {
+    await redis.xGroupCreate(stream, group, '0', { MKSTREAM: true });
+  } catch (e: any) {
+    if (!e.message.includes('already exists')) throw e;
+  }
+}
+
+async function consumeEvents(stream: string, group: string, consumer: string) {
+  const messages = await redis.xReadGroup(group, consumer, [{ key: stream, id: '>' }], {
+    COUNT: 100,
+    BLOCK: 5000,
+  });
+
+  if (!messages) return;
+
+  for (const { messages: msgs } of messages) {
+    for (const msg of msgs) {
+      const data = msg.message as Record<string, string>;
+      // 处理事件
+      await processEvent(data);
+      // 确认已处理
+      await redis.xAck(stream, group, msg.id);
+    }
+  }
+}
+```
+
+### 会话窗口与用户行为分析
+
+```typescript
+// session-window-analytics.ts
+interface UserEvent {
+  userId: string;
+  event: string;
+  timestamp: number;
+  metadata?: Record<string, unknown>;
+}
+
+class SessionWindowAnalyzer {
+  private sessions = new Map<string, { start: number; lastActivity: number; events: UserEvent[] }>();
+  private readonly SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 分钟
+
+  ingest(event: UserEvent) {
+    const session = this.sessions.get(event.userId);
+    const now = event.timestamp;
+
+    if (!session || now - session.lastActivity > this.SESSION_TIMEOUT_MS) {
+      // 新会话或超时，先关闭旧会话
+      if (session) this.emitSessionEnd(session);
+      this.sessions.set(event.userId, { start: now, lastActivity: now, events: [event] });
+    } else {
+      session.events.push(event);
+      session.lastActivity = now;
+    }
+  }
+
+  private emitSessionEnd(session: { start: number; lastActivity: number; events: UserEvent[] }) {
+    const duration = session.lastActivity - session.start;
+    const eventCounts = new Map<string, number>();
+    for (const e of session.events) {
+      eventCounts.set(e.event, (eventCounts.get(e.event) || 0) + 1);
+    }
+    console.log('Session ended:', { duration, eventCounts: Object.fromEntries(eventCounts) });
+  }
+
+  flushAll() {
+    for (const [userId, session] of this.sessions) {
+      this.emitSessionEnd(session);
+    }
+    this.sessions.clear();
+  }
+}
+```
+
+### IQR（四分位距）异常检测
+
+```typescript
+// iqr-anomaly-detection.ts — 对非正态分布更鲁棒的异常检测
+
+export class IQROutlierDetector {
+  private q1 = 0;
+  private q3 = 0;
+
+  fit(data: number[]) {
+    const sorted = [...data].sort((a, b) => a - b);
+    this.q1 = this.percentile(sorted, 0.25);
+    this.q3 = this.percentile(sorted, 0.75);
+  }
+
+  detect(value: number, k = 1.5): { outlier: boolean; iqr: number; bounds: [number, number] } {
+    const iqr = this.q3 - this.q1;
+    const lower = this.q1 - k * iqr;
+    const upper = this.q3 + k * iqr;
+    return { outlier: value < lower || value > upper, iqr, bounds: [lower, upper] };
+  }
+
+  private percentile(sorted: number[], p: number): number {
+    const index = Math.ceil(sorted.length * p) - 1;
+    return sorted[Math.max(0, index)];
+  }
+}
+```
+
 ## 关联模块
 
 - `65-analytics` — 离线数据分析与数仓建模基础
@@ -245,5 +364,13 @@ for (const e of events) {
 - [ksqlDB — Kafka 上的流式 SQL](https://ksqldb.io/)
 - [Materialize — SQL 流处理引擎](https://materialize.com/docs/)
 - [web.dev — Real-time updates](https://web.dev/real-time-updates/)
+- [TimescaleDB — Time-Series PostgreSQL](https://docs.timescale.com/)
+- [InfluxDB — Time Series Database](https://docs.influxdata.com/)
+- [Apache Kafka — Official Documentation](https://kafka.apache.org/documentation/)
+- [Apache Pulsar — Cloud-Native Messaging](https://pulsar.apache.org/docs/)
+- [RisingWave — Stream Processing](https://docs.risingwave.com/)
+- [Decodable — Change Data Capture](https://www.decodable.co/docs)
+- [AWS Kinesis Data Streams](https://docs.aws.amazon.com/kinesis/)
+- [Google Cloud Dataflow](https://cloud.google.com/dataflow/docs)
 - 本模块 `README.md` — 模块主题与学习路径
 - 本模块 `streaming-analytics.ts` — 窗口操作、异常检测、CEP 引擎与实时看板实现

@@ -223,7 +223,67 @@ const lbAnimal: ListenerBox<Animal> = { listen: (a) => console.log(a.name) };
 const lbDog: ListenerBox<Dog> = lbAnimal; // ✅ 逆变安全
 ```
 
-### 3.5 常见误区
+### 3.5 satisfies 运算符与结构子类型
+
+TypeScript 4.9 引入的 `satisfies` 运算符允许在保持类型推断的同时检查结构兼容性：
+
+```typescript
+type RGB = [number, number, number];
+type HexColor = `#${string}`;
+
+const palette = {
+  red: [255, 0, 0] as const,
+  green: '#00ff00',
+  blue: [0, 0, 255] as const,
+} satisfies Record<string, RGB | HexColor>;
+
+// palette.red 推断为 readonly [255, 0, 0]，而非 (number | string)[]
+// 同时保证每个值都符合 RGB | HexColor
+```
+
+### 3.6 联合与交集类型的子类型规则
+
+```typescript
+// 联合类型：S <: T1 | T2 当且仅当 S <: T1 或 S <: T2
+type Animal = { name: string };
+type Plant = { species: string };
+type Dog = { name: string; breed: string };
+
+const dog: Dog = { name: 'Rex', breed: 'Husky' };
+const living: Animal | Plant = dog; // ✅ Dog <: Animal ⇒ Dog <: Animal | Plant
+
+// 交集类型：S <: T1 & T2 当且仅当 S <: T1 且 S <: T2
+type Flyable = { fly(): void };
+type Swimmable = { swim(): void };
+type Duck = Flyable & Swimmable;
+
+const mallard: Duck = {
+  fly: () => console.log('flap'),
+  swim: () => console.log('paddle'),
+};
+```
+
+### 3.7 递归条件类型与深度不变性
+
+```typescript
+// DeepReadonly<T>：递归将 T 的所有属性转为只读
+type DeepReadonly<T> =
+  T extends (infer U)[]
+    ? ReadonlyArray<DeepReadonly<U>>
+    : T extends object
+      ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
+      : T;
+
+interface MutableUser {
+  name: string;
+  addresses: { city: string; zip: number }[];
+}
+
+type ImmutableUser = DeepReadonly<MutableUser>;
+// addresses 数组和内部对象也变为只读
+```
+
+### 3.8 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -234,14 +294,30 @@ const lbDog: ListenerBox<Dog> = lbAnimal; // ✅ 逆变安全
 
 ### 3.6 扩展阅读
 
+#### 经典著作与论文
+
 - [TAPL: Chapter 15 — Subtyping](https://www.cis.upenn.edu/~bcpierce/tapl/)
 - [TAPL: Chapter 16 — Metatheory of Subtyping](https://www.cis.upenn.edu/~bcpierce/tapl/)
+- [Cook & Cardelli: A Denotational Semantics of Inheritance](https://doi.org/10.1145/96709.96721)
+- [Featherweight TypeScript](https://arxiv.org/abs/2307.03118) — TypeScript 形式化语义论文
+- [Soundiness: A Song of JavaScript and TypeScript](https://soundiness.github.io/)
+
+#### TypeScript 官方与权威文档
+
 - [TypeScript Handbook: Generics — Variance](https://www.typescriptlang.org/docs/handbook/2/generics.html)
 - [TypeScript Handbook: Structural Type System](https://www.typescriptlang.org/docs/handbook/type-compatibility.html)
-- [Scala Variance Overview](https://docs.scala-lang.org/tour/variances.html)
-- [Cook & Cardelli: A Denotational Semantics of Inheritance](https://doi.org/10.1145/96709.96721)
+- [TypeScript 4.7 Variance Annotations](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-7.html#optional-variance-annotations-for-type-parameters)
+- [TypeScript 4.9 satisfies Operator](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html#the-satisfies-operator)
 - [Microsoft — TypeScript Type Compatibility](https://www.typescriptlang.org/docs/handbook/type-compatibility.html)
+
+#### 语言对比与视频
+
+- [Scala Variance Overview](https://docs.scala-lang.org/tour/variances.html)
+- [Anders Hejlsberg — TypeScript: Static types for dynamic worlds (YouTube)](https://www.youtube.com/watch?v=ET4kT88JRXs)
 - [TypeScript Deep Dive — Type System](https://basarat.gitbook.io/typescript/type-system)
+
+#### 关联模块
+
 - `20.10-formal-verification/type-theory-formal/`
 
 ---

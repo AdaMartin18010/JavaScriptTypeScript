@@ -232,7 +232,97 @@ async function mcpEnhancedGeneration(
 }
 ```
 
-### 4.4 扩展阅读
+### 4.4 多智能体协作工作流
+
+```typescript
+// multi-agent-workflow.ts
+interface Agent {
+  name: string;
+  role: string;
+  run(context: string): Promise<string>;
+}
+
+class CodeReviewerAgent implements Agent {
+  name = 'Reviewer';
+  role = '审查代码风格、类型安全和潜在 bug';
+  async run(context: string): Promise<string> {
+    const prompt = `Review the following TypeScript code for:
+1. Type safety issues
+2. Potential null/undefined errors
+3. Performance anti-patterns
+4. Missing error handling
+
+Code:
+${context}
+Respond with structured JSON: { "issues": [{ "severity", "line", "message" }] }`;
+    return llm(prompt);
+  }
+}
+
+class TestWriterAgent implements Agent {
+  name = 'TestWriter';
+  role = '生成边界条件测试';
+  async run(context: string): Promise<string> {
+    const prompt = `Write Vitest unit tests for:\n${context}\nInclude edge cases and error paths.`;
+    return llm(prompt);
+  }
+}
+
+async function runMultiAgentPipeline(code: string, agents: Agent[]) {
+  const results: Record<string, string> = {};
+  for (const agent of agents) results[agent.name] = await agent.run(code);
+  return results;
+}
+```
+
+### 4.5 RAG 增强代码生成
+
+```typescript
+// rag-code-generation.ts
+interface CodeEmbedding { filePath: string; content: string; embedding: number[]; }
+
+function cosineSimilarity(a: number[], b: number[]): number {
+  let dot = 0, na = 0, nb = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i];
+  }
+  return dot / (Math.sqrt(na) * Math.sqrt(nb));
+}
+
+async function retrieveRelevantContext(query: string, codebase: CodeEmbedding[], topK = 5) {
+  const queryEmbedding = await embedText(query);
+  const scored = codebase.map(doc => ({ doc, score: cosineSimilarity(queryEmbedding, doc.embedding) }));
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, topK).map(s => s.doc);
+}
+```
+
+### 4.6 结构化输出与 Zod 验证
+
+```typescript
+// structured-output.ts
+import { z } from 'zod';
+
+const RefactorSchema = z.object({
+  summary: z.string(),
+  changes: z.array(z.object({
+    filePath: z.string(), originalCode: z.string(),
+    refactoredCode: z.string(), reasoning: z.string(),
+  })),
+  testsAdded: z.boolean(),
+});
+
+type RefactorResult = z.infer<typeof RefactorSchema>;
+
+async function structuredRefactor(code: string): Promise<RefactorResult> {
+  const prompt = `Refactor the code. Respond with valid JSON matching schema...
+Code:\n${code}`;
+  const raw = await llm(prompt);
+  return RefactorSchema.parse(JSON.parse(raw));
+}
+```
+
+### 4.7 扩展阅读
 
 - [GitHub Copilot](https://github.com/features/copilot)
 - [GitHub Copilot API — Copilot Extensions](https://docs.github.com/en/copilot/building-copilot-extensions)

@@ -188,6 +188,94 @@ const toSorted = require('array.prototype.tosorted');
 const shimmed = toSorted.shim(); // 自动挂载到 Array.prototype
 ```
 
+### 3.6 更多代码示例
+
+#### `toSpliced` 实现数组切片替换
+
+```js
+const items = ['a', 'b', 'c', 'd', 'e'];
+
+// 在中间插入新元素（非破坏性）
+const inserted = items.toSpliced(2, 0, 'X', 'Y');
+console.log(inserted); // ['a', 'b', 'X', 'Y', 'c', 'd', 'e']
+console.log(items);    // ['a', 'b', 'c', 'd', 'e'] 原数组不变
+
+// 替换区间
+const replaced = items.toSpliced(1, 3, 'Z');
+console.log(replaced); // ['a', 'Z', 'e']
+```
+
+#### `findLast` 在字符串和类数组上的应用
+
+```js
+// 类数组对象同样支持
+const arrayLike = {
+  length: 4,
+  0: 10,
+  1: 20,
+  2: 30,
+  3: 20,
+};
+const last20 = Array.prototype.findLast.call(arrayLike, x => x === 20);
+console.log(last20); // 20（索引 3）
+
+// 结合解构与 findLastIndex 获取匹配区间
+const logs = [
+  { level: 'info', msg: 'start' },
+  { level: 'warn', msg: 'low memory' },
+  { level: 'error', msg: 'crash' },
+  { level: 'info', msg: 'restart' },
+  { level: 'error', msg: 'db timeout' },
+];
+const lastErrorIndex = logs.findLastIndex(l => l.level === 'error');
+const lastError = logs[lastErrorIndex];
+console.log(`Last error at ${lastErrorIndex}: ${lastError.msg}`);
+```
+
+#### 不可变方法与 Immer 对比
+
+```js
+import { produce } from 'immer';
+
+const state = { items: [3, 1, 4, 1, 5] };
+
+// Immer 方式（仍需引入库）
+const next1 = produce(state, draft => {
+  draft.items.sort((a, b) => a - b);
+});
+
+// ES2023 原生方式（零依赖）
+const next2 = { ...state, items: state.items.toSorted((a, b) => a - b) };
+
+console.log(next1.items); // [1, 1, 3, 4, 5]
+console.log(next2.items); // [1, 1, 3, 4, 5]
+console.log(state.items); // [3, 1, 4, 1, 5] 原状态不变
+```
+
+#### Vue / Pinia 状态更新示例
+
+```ts
+// store.ts — Pinia store 中使用 ES2023 不可变方法
+import { defineStore } from 'pinia';
+
+export const useListStore = defineStore('list', {
+  state: () => ({ items: ['apple', 'banana', 'cherry'] }),
+  actions: {
+    insertAt(index: number, value: string) {
+      // 不可变插入触发响应式更新
+      this.items = this.items.toSpliced(index, 0, value);
+    },
+    replaceAt(index: number, value: string) {
+      this.items = this.items.with(index, value);
+    },
+    reverseView() {
+      // 展示倒序视图而不改变原数组
+      return this.items.toReversed();
+    },
+  },
+});
+```
+
 ### 3.6 常见误区
 
 | 误区 | 正确理解 |
@@ -232,14 +320,25 @@ const prices = [100, 105, 102, 110, 108, 115, 113];
 const lastBelow110 = prices.findLast(p => p < 110); // 108
 const lastIndex = prices.findLastIndex(p => p < 110); // 4
 ```
-
 ---
 
 ## 更多权威参考链接
 
-- [V8 Blog: ES2023 Features](https://v8.dev/features/tags/es2023) -- V8 引擎实现与优化细节
-- [SpiderMonkey Change Array By Copy](https://bugzilla.mozilla.org/show_bug.cgi?id=1712140) -- Firefox 实现跟踪
-- [Node.js v20 Array Methods](https://nodejs.org/docs/latest-v20.x/api/globals.html) -- Node.js 全局 API 文档
-- [Safari Release Notes: ES2023](https://webkit.org/blog/13966/webkit-features-in-safari-16-6/) -- WebKit 支持说明
+- [ECMAScript 2023 Language Specification](https://262.ecma-international.org/14.0/) — 官方语言规范
+- [MDN: Array.prototype.toSorted](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toSorted) — Mozilla 文档
+- [MDN: Array.prototype.findLast](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findLast) — Mozilla 文档
+- [TC39 Proposal: Change Array by Copy](https://github.com/tc39/proposal-change-array-by-copy) — 提案仓库
+- [V8 Blog: ES2023 Features](https://v8.dev/features/tags/es2023) — V8 引擎实现与优化细节
+- [SpiderMonkey Change Array By Copy](https://bugzilla.mozilla.org/show_bug.cgi?id=1712140) — Firefox 实现跟踪
+- [Node.js v20 Array Methods](https://nodejs.org/docs/latest-v20.x/api/globals.html) — Node.js 全局 API 文档
+- [Safari Release Notes: ES2023](https://webkit.org/blog/13966/webkit-features-in-safari-16-6/) — WebKit 支持说明
+- [Can I Use: ES2023 Array Methods](https://caniuse.com/?search=toSorted) — 浏览器兼容性查询
+- [TypeScript 5.2 Release Notes](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html) — TS 对 ES2023 的支持
+- [MDN: Array.prototype.toReversed](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toReversed) — 反转副本方法
+- [MDN: Array.prototype.with](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/with) — 非破坏性替换
+- [MDN: Array.prototype.toSpliced](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toSpliced) — 非破坏性拼接
+- [MDN: Array.prototype.findLastIndex](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findLastIndex) — 反向查找索引
+- [Node.green — ES2023 compat](https://node.green/#ES2023) — Node.js 兼容表
+- [core-js Array Polyfills](https://github.com/zloirock/core-js#ecmascript-array) — 完整 polyfill 集合
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

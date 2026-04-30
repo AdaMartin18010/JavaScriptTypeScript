@@ -187,6 +187,181 @@ console.log(generateSRI('./dist/app.js'));
 
 ---
 
+## 代码示例：SQL 注入防护（参数化查询）
+
+```typescript
+// ❌ 危险：字符串拼接 SQL
+function getUserUnsafe(username: string) {
+  return db.query(`SELECT * FROM users WHERE username = '${username}'`);
+  // 攻击：username = "'; DROP TABLE users; --"
+}
+
+// ✅ 安全：参数化查询（PostgreSQL pg）
+import { Pool } from 'pg';
+const pool = new Pool();
+
+async function getUserSafe(username: string) {
+  const result = await pool.query(
+    'SELECT * FROM users WHERE username = $1',
+    [username]
+  );
+  return result.rows[0];
+}
+
+// ✅ 安全：Prisma ORM 自动参数化
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
+async function getUserPrisma(username: string) {
+  return prisma.user.findUnique({ where: { username } });
+}
+
+// ✅ 安全：Kysely 查询构建器
+import { Kysely } from 'kysely';
+const db = new Kysely<DB>();
+
+async function getUserKysely(username: string) {
+  return db
+    .selectFrom('users')
+    .selectAll()
+    .where('username', '=', username) // 自动参数化
+    .executeTakeFirst();
+}
+```
+
+---
+
+## 代码示例：JWT 安全实现与验证
+
+```typescript
+// lib/jwt.ts
+import { SignJWT, jwtVerify } from 'jose';
+
+const SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
+
+export async function createToken(payload: Record<string, unknown>): Promise<string> {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setIssuer('https://api.example.com')
+    .setAudience('https://app.example.com')
+    .setExpirationTime('2h')
+    .sign(SECRET);
+}
+
+export async function verifyToken(token: string) {
+  const { payload } = await jwtVerify(token, SECRET, {
+    issuer: 'https://api.example.com',
+    audience: 'https://app.example.com',
+    clockTolerance: 60, // 1 分钟时钟偏差容忍
+  });
+  return payload;
+}
+```
+
+---
+
+## 代码示例：Rate Limiting（滑动窗口计数器）
+
+```typescript
+// middleware/rateLimit.ts
+import { LRUCache } from 'lru-cache';
+
+interface RateLimitEntry {
+  count: number;
+  resetTime: number;
+}
+
+class SlidingWindowRateLimiter {
+  private cache = new LRUCache<string, RateLimitEntry>({ max: 10000 });
+
+  isAllowed(key: string, maxRequests: number, windowMs: number): boolean {
+    const now = Date.now();
+    const entry = this.cache.get(key);
+
+    if (!entry || now > entry.resetTime) {
+      this.cache.set(key, { count: 1, resetTime: now + windowMs });
+      return true;
+    }
+
+    if (entry.count >= maxRequests) {
+      return false;
+    }
+
+    entry.count++;
+    return true;
+  }
+
+  getRetryAfter(key: string): number {
+    const entry = this.cache.get(key);
+    return entry ? Math.ceil((entry.resetTime - Date.now()) / 1000) : 0;
+  }
+}
+
+// Express 中间件
+const limiter = new SlidingWindowRateLimiter();
+
+export function rateLimitMiddleware(maxRequests = 100, windowMs = 60000) {
+  return (req: any, res: any, next: any) => {
+    const key = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    if (!limiter.isAllowed(key, maxRequests, windowMs)) {
+      res.setHeader('Retry-After', limiter.getRetryAfter(key));
+      return res.status(429).json({ error: 'Too many requests' });
+    }
+    next();
+  };
+}
+```
+
+---
+
+## 代码示例：SSRF 防护（URL 白名单 + DNS 重绑定防护）
+
+```typescript
+// lib/ssrf-guard.ts
+import { URL } from 'node:url';
+import dns from 'node:dns/promises';
+
+const ALLOWED_PROTOCOLS = new Set(['http:', 'https:']);
+const BLOCKED_HOSTS = new Set(['localhost', '127.0.0.1', '0.0.0.0', '::1']);
+const PRIVATE_IP_PATTERNS = [
+  /^127\./,
+  /^10\./,
+  /^172\.(1[6-9]|2[0-9]|3[0-1])\./,
+  /^192\.168\./,
+  /^169\.254\./, // Link-local
+];
+
+function isPrivateIP(ip: string): boolean {
+  return PRIVATE_IP_PATTERNS.some((p) => p.test(ip));
+}
+
+export async function safeFetch(urlString: string): Promise<Response> {
+  const parsed = new URL(urlString);
+
+  // 1. 协议白名单
+  if (!ALLOWED_PROTOCOLS.has(parsed.protocol)) {
+    throw new Error(`Protocol ${parsed.protocol} not allowed`);
+  }
+
+  // 2. 主机黑名单（快速路径）
+  if (BLOCKED_HOSTS.has(parsed.hostname)) {
+    throw new Error('Private/internal hosts are not allowed');
+  }
+
+  // 3. DNS 解析后检查 IP 是否为内网
+  const addresses = await dns.resolve4(parsed.hostname);
+  if (addresses.some(isPrivateIP)) {
+    throw new Error('Resolved to private IP address');
+  }
+
+  // 4. 使用无特权 HTTP Agent（禁止重定向到内网）
+  return fetch(urlString, { redirect: 'manual' });
+}
+```
+
+---
+
 ## 安全响应头速查
 
 ```http
@@ -212,10 +387,21 @@ Cross-Origin-Opener-Policy: same-origin
 - [Helmet.js — Express Security Headers](https://helmetjs.github.io/)
 - [OWASP — CSRF Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)
 - [OWASP — SSRF Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html)
+- [OWASP — SQL Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html)
 - [CSP Evaluator — Google](https://csp-evaluator.withgoogle.com/)
 - [Security Headers — Scan Tool](https://securityheaders.com/)
 - [web.dev — Security](https://web.dev/security/)
 - [Mozilla Observatory — Security Scan](https://observatory.mozilla.org/)
+- [jose — JWT 库（Node.js）](https://github.com/panva/jose)
+- [OWASP — Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
+- [OWASP — Authorization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html)
+- [OWASP — Node.js Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Nodejs_Security_Cheat_Sheet.html)
+- [Snyk — JavaScript Security Best Practices](https://snyk.io/learn/javascript-security/)
+- [Google Cloud — Web Security Scanner](https://cloud.google.com/security-command-center/docs/concepts-web-security-scanner-overview)
+- [MDN — HTTP Strict Transport Security (HSTS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security)
+- [MDN — Permissions-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permissions-Policy)
+- [Can I Use — Trusted Types](https://caniuse.com/trusted-types)
+- [Report URI — CSP Reporting](https://report-uri.com/)
 
 ---
 

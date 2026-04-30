@@ -360,6 +360,57 @@ graph TD
 
 `"./utils.js"` 匹配 `"./*.js"`，`*` 捕获 `"utils"`，因此解析为 `./types/utils.d.ts`（类型）、`./esm/utils.js`（ESM）、`./cjs/utils.js`（CJS）。
 
+### 7.4 实战代码：package.json imports 与路径解析
+
+```json
+// package.json
+{
+  "imports": {
+    "#utils": "./src/utils.js",
+    "#config/*": "./config/*.json"
+  }
+}
+```
+
+```typescript
+// TypeScript 5.4+ 无需额外 paths 配置即可解析
+import { helper } from '#utils';
+import dbConfig from '#config/database';
+
+// Node.js 运行时同样支持（Node.js 12.20+）
+```
+
+### 7.5 TypeScript paths 与运行时对齐
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@app/*": ["src/app/*"],
+      "@shared/*": ["../shared/*"]
+    }
+  }
+}
+```
+
+```typescript
+// 编译时正确，但运行时需通过 tsx / ts-node / 打包工具处理
+import { User } from '@app/models/user';
+// 运行时等价于：import { User } from './src/app/models/user';
+```
+
+### 7.6 ESM 严格扩展名检查示例
+
+```javascript
+// ESM 中不可省略扩展名，即使 TypeScript 源码是 .ts
+import { add } from './math.js'; // ✅ 正确（指向编译后的 .js）
+
+// TypeScript 5.0+ 支持 --moduleResolution bundler，允许省略扩展名
+// 但产物仍需打包工具处理
+```
+
 ---
 
 ## 8. 权威参考 (References)
@@ -436,5 +487,16 @@ graph TD
 | Node.js 20+ | `import.meta.resolve` | 运行时路径解析 |
 
 ---
+
+## 更多权威参考
+
+| 来源 | 链接 | 说明 |
+|------|------|------|
+| Node.js Modules | [nodejs.org/api/modules.html](https://nodejs.org/api/modules.html) | CJS 模块解析 |
+| Node.js ESM | [nodejs.org/api/esm.html#resolution-algorithm](https://nodejs.org/api/esm.html#resolution-algorithm) | ESM 解析算法 |
+| Node.js Packages | [nodejs.org/api/packages.html](https://nodejs.org/api/packages.html) | exports / imports 字段 |
+| TypeScript Module Resolution | [typescriptlang.org/docs/handbook/module-resolution.html](https://www.typescriptlang.org/docs/handbook/module-resolution.html) | TS 解析策略 |
+| TypeScript TSConfig | [typescriptlang.org/tsconfig](https://www.typescriptlang.org/tsconfig) | paths, baseUrl 配置 |
+| ECMA-262 §16.2 | [tc39.es/ecma262/#sec-modules](https://tc39.es/ecma262/#sec-modules) | 模块规范 |
 
 **参考规范**：Node.js Module Resolution Algorithm | TypeScript Handbook: Module Resolution | ECMA-262 §16.2 (Host Resolve Imported Module)

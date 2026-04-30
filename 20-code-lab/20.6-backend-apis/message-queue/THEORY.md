@@ -459,6 +459,122 @@ async function outboxPoller(
 }
 ```
 
+## 代码示例：Saga 模式 — 分布式事务协调
+
+```typescript
+// saga-orchestrator.ts — 基于消息队列的 Saga 编排器
+interface SagaStep {
+  name: string;
+  action: () => Promise<void>;
+  compensate: () => Promise<void>;
+}
+
+class SagaOrchestrator {
+  private steps: SagaStep[] = [];
+  private executed: string[] = [];
+
+  addStep(step: SagaStep): this {
+    this.steps.push(step);
+    return this;
+  }
+
+  async execute(): Promise<void> {
+    for (const step of this.steps) {
+      try {
+        await step.action();
+        this.executed.push(step.name);
+      } catch (err) {
+        console.error(`Saga step "${step.name}" failed, starting compensation...`);
+        await this.compensate();
+        throw new Error(`Saga failed at step: ${step.name}`);
+      }
+    }
+  }
+
+  private async compensate(): Promise<void> {
+    // 反向补偿已执行的步骤
+    for (const name of this.executed.reverse()) {
+      const step = this.steps.find(s => s.name === name)!;
+      try {
+        await step.compensate();
+      } catch (compErr) {
+        console.error(`Compensation failed for "${name}":`, compErr);
+        // 实际生产环境需告警 + 人工介入
+      }
+    }
+  }
+}
+
+// 订单创建 Saga 示例
+const createOrderSaga = new SagaOrchestrator()
+  .addStep({
+    name: 'reserve-inventory',
+    action: () => inventoryQueue.add('reserve', { productId, qty }),
+    compensate: () => inventoryQueue.add('release', { productId, qty }),
+  })
+  .addStep({
+    name: 'process-payment',
+    action: () => paymentQueue.add('charge', { orderId, amount }),
+    compensate: () => paymentQueue.add('refund', { orderId }),
+  })
+  .addStep({
+    name: 'send-confirmation',
+    action: () => emailQueue.add('order-confirmed', { orderId }),
+    compensate: () => Promise.resolve(), // 不可撤销，无需补偿
+  });
+
+await createOrderSaga.execute();
+```
+
+## 代码示例：延迟队列实现（基于 Redis 有序集合）
+
+```typescript
+// delay-queue.ts — 轻量级延迟队列（无 BullMQ 依赖场景）
+import Redis from 'ioredis';
+
+const redis = new Redis();
+
+interface DelayedJob {
+  id: string;
+  payload: unknown;
+  executeAt: number; // Unix timestamp (ms)
+}
+
+export class DelayQueue {
+  private readonly key: string;
+
+  constructor(queueName: string) {
+    this.key = `delayqueue:${queueName}`;
+  }
+
+  async enqueue(job: DelayedJob): Promise<void> {
+    await redis.zadd(this.key, job.executeAt, JSON.stringify(job));
+  }
+
+  async poll(handler: (job: DelayedJob) => Promise<void>): Promise<void> {
+    const now = Date.now();
+    // 获取所有已到期的任务
+    const jobs = await redis.zrangebyscore(this.key, 0, now);
+
+    for (const raw of jobs) {
+      const job: DelayedJob = JSON.parse(raw);
+      // 使用 Lua 脚本原子移除并处理，防止并发重复消费
+      const removed = await redis.zrem(this.key, raw);
+      if (removed === 1) {
+        await handler(job).catch(err => console.error('DelayQueue handler error:', err));
+      }
+    }
+  }
+}
+
+// 定时轮询（生产环境建议用独立进程/Worker）
+setInterval(() => {
+  delayQueue.poll(async (job) => {
+    console.log(`Executing delayed job ${job.id} at ${new Date().toISOString()}`);
+  });
+}, 1000);
+```
+
 ---
 
 ## 参考资源
@@ -479,6 +595,12 @@ async function outboxPoller(
 - [NATS Streaming / JetStream](https://docs.nats.io/nats-concepts/jetstream) — NATS 持久化流
 - [CloudEvents Specification](https://cloudevents.io/) — 事件数据标准化规范
 - [The Outbox Pattern (Chris Richardson)](https://microservices.io/patterns/data/transactional-outbox.html) — 事务性发件箱模式
+- [Saga Pattern (Chris Richardson)](https://microservices.io/patterns/data/saga.html) — Saga 分布式事务模式
+- [AWS re:Invent — Amazon SQS Deep Dive](https://www.youtube.com/watch?v=17vHzM5lISw) — AWS 官方深度讲解
+- [Google Cloud — Event-Driven Architecture](https://cloud.google.com/eventarc/docs/event-driven-architectures) — 事件驱动架构指南
+- [Martin Fowler — What do you mean by "Event-Driven"?](https://martinfowler.com/articles/201701-event-driven.html) — 事件驱动架构经典文
+- [Confluent — Kafka Streams Documentation](https://docs.confluent.io/platform/current/streams/index.html) — Kafka Streams 权威文档
+- [CNCF Cloud Events Primer](https://github.com/cncf/cloudevents/blob/main/primer.md) — CloudEvents 入门
 
 ---
 
@@ -503,18 +625,21 @@ async function outboxPoller(
 
 ### 关键设计模式
 
-本模块涉及的核心设计模式包括（根据代码实现提炼）：
+本模块涉及的核心设计模式包括：
 
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
+1. **发布-订阅模式（Pub-Sub）**：解耦生产者和消费者，支持一对多消息分发
+2. **Outbox 模式**：在数据库事务中同步写入业务数据和待发送消息，保证最终一致性
+3. **Saga 模式**：通过补偿事务实现跨服务的最终一致性，替代分布式事务
+4. **死信队列（DLQ）**：隔离处理失败的消息，防止阻塞正常消费流程
+5. **延迟队列**：基于有序集合实现精确的定时/延迟任务调度
 
 ### 与相邻模块的关系
 
 | 相邻模块 | 关系说明 |
 |---------|---------|
-| 前置依赖 | 建议先掌握的基础模块 |
-| 后续进阶 | 可继续深化的相关模块 |
+| 前置依赖 | `10-fundamentals/10.2-type-system/` — 类型系统基础 |
+| 后续进阶 | `20.6-backend-apis/microservices/` — 微服务架构深入 |
+| 横向关联 | `30-knowledge-base/30.2-categories/message-queue.md` — 消息队列分类总览 |
 
 ---
 

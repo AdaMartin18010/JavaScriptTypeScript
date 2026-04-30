@@ -228,6 +228,70 @@ const state = createObservable({ count: 0 }, (prop, val) => {
 state.count++; // "Property "count" changed to 1"
 ```
 
+### 3.5 Command 模式（命令 + 撤销）
+
+```typescript
+interface Command { execute(): void; undo(): void; }
+
+class TextEditor {
+  content = '';
+  append(text: string) { this.content += text; }
+  delete(n: number) { this.content = this.content.slice(0, -n); }
+}
+
+class AppendCommand implements Command {
+  constructor(private editor: TextEditor, private text: string) {}
+  execute() { this.editor.append(this.text); }
+  undo() { this.editor.delete(this.text.length); }
+}
+
+class CommandHistory {
+  private history: Command[] = [];
+  private index = -1;
+  execute(cmd: Command) {
+    cmd.execute();
+    this.history = this.history.slice(0, this.index + 1);
+    this.history.push(cmd);
+    this.index++;
+  }
+  undo() { if (this.index >= 0) this.history[this.index--].undo(); }
+  redo() { if (this.index < this.history.length - 1) this.history[++this.index].execute(); }
+}
+```
+
+### 3.6 State 模式（TypeScript 状态机）
+
+```typescript
+type State = 'idle' | 'loading' | 'success' | 'error';
+
+class FetchStateMachine {
+  private state: State = 'idle';
+  transition(event: 'FETCH' | 'SUCCESS' | 'ERROR' | 'RESET') {
+    const map: Record<State, Partial<Record<string, State>>> = {
+      idle: { FETCH: 'loading' },
+      loading: { SUCCESS: 'success', ERROR: 'error' },
+      success: { RESET: 'idle', FETCH: 'loading' },
+      error: { RESET: 'idle', FETCH: 'loading' },
+    };
+    const next = map[this.state][event];
+    if (next) this.state = next;
+    return this.state;
+  }
+}
+```
+
+### 3.7 satisfies 精确推断模式
+
+```typescript
+const config = {
+  apiUrl: 'https://api.example.com',
+  timeout: 5000,
+  retries: 3,
+} satisfies { apiUrl: `https://${string}`; timeout: number; retries?: number };
+
+// config.apiUrl 推断为字面量 "https://api.example.com"
+```
+
 ### 4.2 常见误区
 
 | 误区 | 正确理解 |
@@ -239,16 +303,27 @@ state.count++; // "Property "count" changed to 1"
 
 ### 4.3 扩展阅读
 
-- [MDN Web Docs](https://developer.mozilla.org)
+#### 设计模式权威资源
+
 - [Refactoring Guru — Design Patterns](https://refactoring.guru/design-patterns)
+- [Refactoring Guru — Command Pattern](https://refactoring.guru/design-patterns/command)
+- [Refactoring Guru — State Pattern](https://refactoring.guru/design-patterns/state)
 - [Patterns.dev](https://www.patterns.dev/)
 - [JavaScript Design Patterns (Addy Osmani)](https://addyosmani.com/resources/essentialjsdesignpatterns/book/)
 - [Gamma et al. — Design Patterns (GoF)](https://en.wikipedia.org/wiki/Design_Patterns)
+
+#### TypeScript 深度资源
+
 - [TypeScript Handbook — Advanced Types](https://www.typescriptlang.org/docs/handbook/2/types-from-types.html)
+- [TypeScript satisfies Operator (4.9)](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html#the-satisfies-operator)
 - [Effective TypeScript (Dan Vanderkam)](https://effectivetypescript.com/)
 - [TypeScript Deep Dive (basarat)](https://basarat.gitbook.io/typescript/)
 - [Total TypeScript (Matt Pocock)](https://www.totaltypescript.com/)
 - [fp-ts — Functional Programming in TypeScript](https://gcanti.github.io/fp-ts/)
+
+#### 通用参考
+
+- [MDN Web Docs](https://developer.mozilla.org)
 - `30-knowledge-base/`
 
 ---

@@ -217,6 +217,173 @@ npx nx generate @nx/next:app marketing-site --directory=apps/marketing
 
 ---
 
+## 代码示例：Turborepo 远程缓存自托管（S3 + Docker）
+
+```typescript
+// turbo.config.ts — 远程缓存配置
+import type { TurboJsonSchema } from 'turbo-types';
+
+const config: TurboJsonSchema = {
+  $schema: 'https://turbo.build/schema.json',
+  globalDependencies: ['.env'],
+  remoteCache: {
+    // Turborepo 原生支持 S3 / Azure Blob / GCS
+    // 环境变量配置：
+    // TURBO_REMOTE_CACHE_SIGNATURE_KEY=your-secret
+    // TURBO_TOKEN=your-token
+    // TURBO_TEAM=your-team
+    // AWS_ACCESS_KEY_ID=...
+    // AWS_SECRET_ACCESS_KEY=...
+    // AWS_REGION=us-east-1
+    // TURBO_S3_BUCKET=my-turbo-cache
+  },
+  pipeline: {
+    build: {
+      dependsOn: ['^build'],
+      outputs: ['dist/**', '.next/**'],
+      env: ['NODE_ENV', 'API_URL'],
+    },
+    'build:docker': {
+      dependsOn: ['build'],
+      outputs: ['docker.tar'],
+    },
+    test: {
+      dependsOn: ['build'],
+      outputs: ['coverage/**'],
+      inputs: ['src/**/*.ts', 'tests/**/*.ts'],
+    },
+    lint: {
+      dependsOn: [],
+      outputs: [],
+    },
+    typecheck: {
+      dependsOn: [],
+      outputs: [],
+    },
+  },
+};
+
+export default config;
+```
+
+---
+
+## 代码示例：Nx 任务管道与模块边界（enterprise.json）
+
+```json
+// nx.json — 企业级配置
+{
+  "extends": "nx/presets/npm.json",
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"],
+      "cache": true,
+      "parallelism": true
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
+      "cache": true,
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"]
+    },
+    "lint": {
+      "inputs": ["default", "{workspaceRoot}/.eslintrc.json"],
+      "cache": true
+    }
+  },
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": [
+      "default",
+      "!{projectRoot}/**/*.spec.ts",
+      "!{projectRoot}/**/*.test.ts",
+      "!{projectRoot}/**/*.stories.ts"
+    ],
+    "sharedGlobals": ["{workspaceRoot}/babel.config.json", "{workspaceRoot}/tsconfig.base.json"]
+  },
+  "generators": {
+    "@nx/react": {
+      "application": {
+        "style": "css",
+        "linter": "eslint",
+        "bundler": "vite",
+        "e2eTestRunner": "playwright"
+      },
+      "library": {
+        "unitTestRunner": "vitest"
+      }
+    }
+  },
+  "plugins": ["@nx/eslint", "@nx/vite"],
+  "nxCloudAccessToken": "..."
+}
+```
+
+```json
+// apps/web/project.json — Nx 项目级配置
+{
+  "name": "web",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/web/src",
+  "projectType": "application",
+  "tags": ["scope:frontend", "type:app"],
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/web"
+      }
+    },
+    "serve": {
+      "executor": "@nx/vite:dev-server",
+      "options": { "buildTarget": "web:build" }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"]
+    }
+  }
+}
+```
+
+```json
+// .eslintrc.json — Nx 模块边界规则
+{
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx"],
+      "rules": {
+        "@nx/enforce-module-boundaries": [
+          "error",
+          {
+            "enforceBuildableLibDependency": true,
+            "allow": [],
+            "depConstraints": [
+              {
+                "sourceTag": "scope:frontend",
+                "onlyDependOnLibsWithTags": ["scope:frontend", "scope:shared"]
+              },
+              {
+                "sourceTag": "scope:backend",
+                "onlyDependOnLibsWithTags": ["scope:backend", "scope:shared"]
+              },
+              {
+                "sourceTag": "type:app",
+                "onlyDependOnLibsWithTags": ["type:feature", "type:util", "type:ui"]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+---
+
 ## 选型建议
 
 | 场景 | 推荐工具 | 原因 |
@@ -244,6 +411,13 @@ npx nx generate @nx/next:app marketing-site --directory=apps/marketing
 | Nx Remote Caching | <https://nx.dev/ci/features/remote-cache> | 远程缓存配置 |
 | Turborepo Remote Cache | <https://turbo.build/repo/docs/core-concepts/remote-caching> | 自托管 S3 指南 |
 | Rush Version Policies | <https://rushjs.io/pages/maintainer/publishing/> | 发布与版本策略 |
+| npm Workspaces | <https://docs.npmjs.com/cli/v10/using-npm/workspaces> | npm 内置工作区 |
+| Yarn Workspaces | <https://yarnpkg.com/features/workspaces> | Yarn Berry 工作区 |
+| Nx Console (VS Code) | <https://nx.dev/getting-started/editor-setup> | IDE 集成插件 |
+| Turborepo 生成器示例 | <https://github.com/vercel/turborepo/tree/main/examples> | 官方示例仓库 |
+| Nx 企业最佳实践 | <https://nx.dev/enterprise> | 企业级部署指南 |
+| pnpm 依赖去重机制 | <https://pnpm.io/motivation> | 硬链接与内容寻址存储 |
+| SemVer 规范 | <https://semver.org/> | 语义化版本控制 |
 
 ---
 

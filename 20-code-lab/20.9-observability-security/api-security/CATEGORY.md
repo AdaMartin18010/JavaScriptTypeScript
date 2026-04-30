@@ -183,6 +183,144 @@ function withSecurityHeaders(response: Response): Response {
 }
 ```
 
+### OAuth 2.1 + PKCE 授权码流程
+
+```typescript
+// oauth-pkce.ts — 安全的单页应用认证
+import { createHash, randomBytes } from 'crypto';
+
+function generatePKCE() {
+  const verifier = base64URLEncode(randomBytes(32));
+  const challenge = base64URLEncode(createHash('sha256').update(verifier).digest());
+  return { verifier, challenge, method: 'S256' as const };
+}
+
+function base64URLEncode(buffer: Buffer): string {
+  return buffer.toString('base64url');
+}
+
+function buildAuthorizationUrl(params: {
+  authorizationEndpoint: string;
+  clientId: string;
+  redirectUri: string;
+  scope: string;
+  state: string;
+  codeChallenge: string;
+  codeChallengeMethod: string;
+}): string {
+  const url = new URL(params.authorizationEndpoint);
+  url.searchParams.set('response_type', 'code');
+  url.searchParams.set('client_id', params.clientId);
+  url.searchParams.set('redirect_uri', params.redirectUri);
+  url.searchParams.set('scope', params.scope);
+  url.searchParams.set('state', params.state);
+  url.searchParams.set('code_challenge', params.codeChallenge);
+  url.searchParams.set('code_challenge_method', params.codeChallengeMethod);
+  return url.toString();
+}
+
+// 使用示例
+// const pkce = generatePKCE();
+// const state = randomBytes(16).toString('hex');
+// const authUrl = buildAuthorizationUrl({
+//   authorizationEndpoint: 'https://auth.example.com/oauth/authorize',
+//   clientId: 'my-app',
+//   redirectUri: 'https://app.example.com/callback',
+//   scope: 'openid profile',
+//   state,
+//   codeChallenge: pkce.challenge,
+//   codeChallengeMethod: pkce.method,
+// });
+```
+
+### HMAC 请求签名
+
+```typescript
+// request-signer.ts — API 请求防篡改签名
+import { createHmac, timingSafeEqual } from 'crypto';
+
+function signRequest(
+  method: string,
+  path: string,
+  body: string,
+  timestamp: number,
+  secret: string
+): string {
+  const payload = `${method}\n${path}\n${timestamp}\n${body}`;
+  return createHmac('sha256', secret).update(payload).digest('hex');
+}
+
+function verifyRequest(
+  method: string,
+  path: string,
+  body: string,
+  timestamp: number,
+  signature: string,
+  secret: string,
+  clockSkewMs = 300_000
+): boolean {
+  // 防止重放攻击
+  if (Math.abs(Date.now() - timestamp) > clockSkewMs) return false;
+
+  const expected = signRequest(method, path, body, timestamp, secret);
+  // 固定时间比较
+  const sigBuf = Buffer.from(signature, 'hex');
+  const expBuf = Buffer.from(expected, 'hex');
+  if (sigBuf.length !== expBuf.length) return false;
+  return timingSafeEqual(sigBuf, expBuf);
+}
+```
+
+### API Key 轮换管理器
+
+```typescript
+// api-key-rotation.ts
+interface ApiKeyEntry {
+  key: string;
+  createdAt: number;
+  expiresAt: number;
+  revoked: boolean;
+}
+
+class ApiKeyManager {
+  private keys = new Map<string, ApiKeyEntry>();
+
+  generateKey(prefix = 'ak_'): string {
+    const key = `${prefix}${randomBytes(32).toString('base64url')}`;
+    const now = Date.now();
+    const entry: ApiKeyEntry = {
+      key,
+      createdAt: now,
+      expiresAt: now + 90 * 24 * 60 * 60 * 1000, // 90 天过期
+      revoked: false,
+    };
+    this.keys.set(key, entry);
+    return key;
+  }
+
+  validate(key: string): { valid: boolean; reason?: string } {
+    const entry = this.keys.get(key);
+    if (!entry) return { valid: false, reason: 'invalid' };
+    if (entry.revoked) return { valid: false, reason: 'revoked' };
+    if (Date.now() > entry.expiresAt) return { valid: false, reason: 'expired' };
+    return { valid: true };
+  }
+
+  revoke(key: string): boolean {
+    const entry = this.keys.get(key);
+    if (!entry) return false;
+    entry.revoked = true;
+    return true;
+  }
+
+  rotate(key: string): string | null {
+    if (!this.keys.has(key)) return null;
+    this.revoke(key);
+    return this.generateKey();
+  }
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -223,7 +361,13 @@ function withSecurityHeaders(response: Response): Response {
 | jose Library Documentation | 官方文档 | [github.com/panva/jose](https://github.com/panva/jose) |
 | MDN — Subresource Integrity | 文档 | [developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity) |
 | RFC 7231 — HTTP/1.1 Semantics | RFC | [datatracker.ietf.org/doc/html/rfc7231](https://datatracker.ietf.org/doc/html/rfc7231) |
+| OAuth 2.1 Specification | 规范 | [datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1) |
+| OAuth.net — PKCE | 指南 | [oauth.net/2/pkce](https://oauth.net/2/pkce/) |
+| OpenID Connect Core 1.0 | 规范 | [openid.net/specs/openid-connect-core-1_0.html](https://openid.net/specs/openid-connect-core-1_0.html) |
+| Auth0 — API Security | 指南 | [auth0.com/docs/secure/tokens](https://auth0.com/docs/secure/tokens) |
+| Keycloak Documentation | 官方文档 | [keycloak.org/documentation](https://www.keycloak.org/documentation) |
+| NIST SP 800-63B — Digital Identity Guidelines | 标准 | [pages.nist.gov/800-63-3/sp800-63b.html](https://pages.nist.gov/800-63-3/sp800-63b.html) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

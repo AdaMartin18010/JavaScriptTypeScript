@@ -35,13 +35,20 @@ status: current
     - [6.1 浮点数精度](#61-浮点数精度)
     - [6.2 BigInt 误用](#62-bigint-误用)
   - [7. 正则表达式陷阱](#7-正则表达式陷阱)
+    - [7.1 Unicode 属性转义陷阱](#71-unicode-属性转义陷阱)
+    - [7.2 dotAll 模式与多行匹配陷阱](#72-dotall-模式与多行匹配陷阱)
   - [8. TypeScript 特有陷阱](#8-typescript-特有陷阱)
     - [8.1 类型缩小失效](#81-类型缩小失效)
     - [8.2 枚举陷阱](#82-枚举陷阱)
+    - [8.3 泛型约束中的多余属性检查](#83-泛型约束中的多余属性检查)
+    - [8.4 `keyof` 与索引访问的边界情况](#84-keyof-与索引访问的边界情况)
   - [9. 错误处理陷阱](#9-错误处理陷阱)
+    - [9.1 `AggregateError` 的误用](#91-aggregateerror-的误用)
+    - [9.2 异步错误处理的上下文丢失](#92-异步错误处理的上下文丢失)
   - [10. 安全检查清单](#10-安全检查清单)
     - [代码审查清单](#代码审查清单)
     - [运行时安全检查](#运行时安全检查)
+  - [11. 权威参考与延伸阅读](#11-权威参考与延伸阅读)
 
 ## 1. 类型系统陷阱
 
@@ -599,6 +606,42 @@ regexSafe.test('fileXtxt');  // false
 regexSafe.test('file.txt');  // true
 ```
 
+### 7.1 Unicode 属性转义陷阱
+
+```javascript
+// ❌ 坏: 手动维护 Unicode 范围，容易遗漏
+const emojiRegex = /[\u{1F600}-\u{1F64F}]/u; // 仅覆盖部分表情
+
+// ✅ 好: 使用 Unicode 属性转义（ES2018+）
+const emojiSafe = /\p{Emoji}/u;
+console.log(emojiSafe.test('😀')); // true
+console.log(emojiSafe.test('♠'));  // true（扑克牌也是 Emoji）
+
+// ✅ 更精确: 仅匹配 Emoji_Presentation
+const emojiPresentation = /\p{Emoji_Presentation}/u;
+console.log(emojiPresentation.test('😀')); // true
+console.log(emojiPresentation.test('♠'));  // false
+```
+
+### 7.2 dotAll 模式与多行匹配陷阱
+
+```javascript
+// ❌ 坏: 使用 [\s\S] 或 workaround 匹配任意字符（包括换行）
+const htmlOld = /<div>([\s\S]*?)<\/div>/;
+console.log(htmlOld.test('<div>line1\nline2</div>')); // true，但语义晦涩
+
+// ✅ 好: 使用 dotAll 标志 s（ES2018+）
+const htmlNew = /<div>(.*?)<\/div>/s;
+console.log(htmlNew.test('<div>line1\nline2</div>')); // true，语义清晰
+
+// ❌ 坏: 混淆 m（多行）与 s（dotAll）
+const text = 'abc\ndef';
+/^def/.test(text);      // false（默认锚点只匹配字符串开头）
+/^def/m.test(text);     // true（m 模式使 ^ 匹配行首）
+/./.test(text);         // true（默认 . 不匹配 \n）
+/./s.test(text);        // true（s 模式使 . 匹配任意字符）
+```
+
 ---
 
 ## 8. TypeScript 特有陷阱
@@ -685,6 +728,44 @@ const enum StatusConst {
 // 编译时内联，无运行时开销
 ```
 
+### 8.3 泛型约束中的多余属性检查
+
+```typescript
+// ❌ 坏: 泛型参数接受字面量时，多余属性检查被绕过
+function logPayload<T extends { id: number }>(payload: T) {
+    console.log(payload.id);
+}
+
+logPayload({ id: 1, name: 'Alice' }); // ❗ 不会报错，因为 T 被推断为 { id: number; name: string }
+
+// ✅ 好: 如果需严格限制，使用具体类型而非泛型
+interface StrictPayload { id: number; }
+function logStrict(payload: StrictPayload) {
+    console.log(payload.id);
+}
+// logStrict({ id: 1, name: 'Alice' }); // ❌ 编译错误：Object literal may only specify known properties
+```
+
+### 8.4 `keyof` 与索引访问的边界情况
+
+```typescript
+// ❌ 坏: 对联合类型使用 keyof 得到交集，直觉上是并集
+type Union = { a: string } | { b: number };
+type Keys = keyof Union; // "a" & "b"（几乎不可能满足的交集）
+
+// ✅ 好: 使用泛型分布条件类型获取联合的键
+type KeysOfUnion<T> = T extends unknown ? keyof T : never;
+type KeysCorrect = KeysOfUnion<Union>; // "a" | "b"
+
+// ❌ 坏: 索引访问联合类型可能得到 never
+type Value = Union['a']; // ❌ 错误：Property 'a' does not exist on type 'Union'
+
+// ✅ 好: 使用条件类型安全访问
+type SafeGet<T, K extends PropertyKey> = T extends Record<K, infer V> ? V : never;
+type A = SafeGet<Union, 'a'>; // string
+type B = SafeGet<Union, 'b'>; // number
+```
+
 ---
 
 ## 9. 错误处理陷阱
@@ -742,6 +823,74 @@ async function fetchWithTypeSafety(): Promise<Data> {
 }
 ```
 
+### 9.1 `AggregateError` 的误用
+
+```typescript
+// ❌ 坏: 手动收集多个错误
+const errors: Error[] = [];
+for (const task of tasks) {
+    try { await task(); } catch (e) { errors.push(e as Error); }
+}
+if (errors.length) throw new Error(`Failed: ${errors.map(e => e.message).join(', ')}`);
+
+// ✅ 好: 使用 AggregateError（ES2021+）
+async function runAll(promises: Promise<unknown>[]) {
+    const results = await Promise.allSettled(promises);
+    const failures = results
+        .filter((r): r is PromiseRejectedResult => r.status === 'rejected')
+        .map(r => r.reason);
+    if (failures.length) {
+        throw new AggregateError(failures, 'Multiple tasks failed');
+    }
+}
+
+// 消费端可遍历原始错误
+try {
+    await runAll([fetchA(), fetchB(), fetchC()]);
+} catch (e) {
+    if (e instanceof AggregateError) {
+        for (const err of e.errors) {
+            console.error('Sub-error:', err);
+        }
+    }
+}
+```
+
+### 9.2 异步错误处理的上下文丢失
+
+```typescript
+// ❌ 坏: setTimeout 中抛出的错误无法被外部 try/catch 捕获
+async function badTimeout() {
+    try {
+        setTimeout(() => { throw new Error('Boom'); }, 100);
+    } catch (e) {
+        // 永远不会执行到这里
+        console.error(e);
+    }
+}
+
+// ✅ 好: 将回调包裹为 Promise
+async function goodTimeout() {
+    try {
+        await new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject(new Error('Boom'));
+            }, 100);
+        });
+    } catch (e) {
+        console.error('Caught:', e); // ✅ 正确捕获
+    }
+}
+
+// ✅ 更好: 使用 AbortController 取消并统一错误
+const controller = new AbortController();
+fetch('/api/data', { signal: controller.signal })
+    .catch(e => {
+        if (e.name === 'AbortError') return { cancelled: true };
+        throw e;
+    });
+```
+
 ---
 
 ## 10. 安全检查清单
@@ -767,6 +916,18 @@ async function fetchWithTypeSafety(): Promise<Data> {
 - [ ] 正则表达式超时保护
 - [ ] 递归深度限制
 - [ ] 内存使用监控
+
+## 11. 权威参考与延伸阅读
+
+- [MDN: JavaScript 参考](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference) — Mozilla 官方语言参考
+- [TypeScript 手册](https://www.typescriptlang.org/docs/handbook/intro.html) — 微软官方文档
+- [TypeScript ESLint 规则](https://typescript-eslint.io/rules/) — 静态检查最佳实践
+- [Node.js 最佳实践](https://github.com/goldbergyoni/nodebestpractices) — 社区驱动的 Node.js 安全指南
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/) — Web 应用安全风险权威清单
+- [TC39 Proposals](https://github.com/tc39/proposals) — ECMAScript 语言演进提案追踪
+- [JavaScript: The Good Parts](https://archive.org/details/javascriptgoodpa00croc) — Douglas Crockford 经典著作
+- [Effective TypeScript](https://effectivetypescript.com/) — Dan Vanderkam 的 TypeScript 进阶指南
+- [You Don't Know JS](https://github.com/getify/You-Dont-Know-JS) — Kyle Simpson 深入 JavaScript 系列
 
 ---
 

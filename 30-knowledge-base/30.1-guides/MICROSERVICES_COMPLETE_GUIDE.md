@@ -569,3 +569,100 @@ function deserializeOrderCreated(buffer: Buffer): unknown {
 ---
 
 *最后更新: 2026-04-30*
+
+
+---
+
+## 深化补充：GraphQL Federation 与契约测试
+
+### GraphQL Federation 网关示例
+
+```typescript
+// gateway.ts — Apollo Gateway 组装子图
+import { ApolloGateway, IntrospectAndCompose } from '@apollo/gateway';
+import { ApolloServer } from '@apollo/server';
+import { startStandaloneServer } from '@apollo/server/standalone';
+
+const gateway = new ApolloGateway({
+  supergraphSdl: new IntrospectAndCompose({
+    subgraphs: [
+      { name: 'users', url: 'http://localhost:4001/graphql' },
+      { name: 'orders', url: 'http://localhost:4002/graphql' },
+    ],
+  }),
+});
+
+const server = new ApolloServer({ gateway });
+startStandaloneServer(server, { listen: { port: 4000 } });
+```
+
+### 本地开发：Docker Compose
+
+```yaml
+# docker-compose.dev.yml
+version: '3.8'
+services:
+  nats:
+    image: nats:latest
+    ports: ["4222:4222"]
+  order-service:
+    build: ./apps/order-service
+    environment:
+      - NATS_URL=nats://nats:4222
+    depends_on: [nats]
+  api-gateway:
+    build: ./apps/api-gateway
+    ports: ["3000:3000"]
+    depends_on: [order-service]
+```
+
+### Pact 消费者驱动契约测试
+
+```typescript
+// user-service.pact.spec.ts
+import { Pact } from '@pact-foundation/pact';
+import { userClient } from './user-client';
+
+const provider = new Pact({
+  consumer: 'OrderService',
+  provider: 'UserService',
+  port: 1234,
+  log: './logs/pact.log',
+  dir: './pacts',
+});
+
+describe('UserService Contract', () => {
+  beforeAll(() => provider.setup());
+  afterAll(() => provider.finalize());
+
+  it('returns a user by id', async () => {
+    await provider.addInteraction({
+      state: 'user exists',
+      uponReceiving: 'a request for user u1',
+      withRequest: { method: 'GET', path: '/users/u1' },
+      willRespondWith: {
+        status: 200,
+        body: { id: 'u1', name: 'Alice' },
+      },
+    });
+
+    const user = await userClient.getUser('http://localhost:1234', 'u1');
+    expect(user.name).toBe('Alice');
+  });
+});
+```
+
+---
+
+### 更多权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Apollo Federation | <https://www.apollographql.com/docs/federation/> | GraphQL 联邦官方文档 |
+| Kong Gateway | <https://docs.konghq.com/gateway/latest/> | API 网关文档 |
+| Traefik Proxy | <https://doc.traefik.io/traefik/> | 云原生反向代理 |
+| Docker Compose | <https://docs.docker.com/compose/> | 本地多容器编排 |
+| Pact.io | <https://pact.io/> | 消费者驱动契约测试 |
+| NATS Streaming | <https://docs.nats.io/nats-concepts/jetstream> | JetStream 持久化消息 |
+| Kubernetes Services | <https://kubernetes.io/docs/concepts/services-networking/service/> | K8s 服务网络 |
+| Envoy Proxy | <https://www.envoyproxy.io/docs/envoy/latest/> | 服务网格数据面 |

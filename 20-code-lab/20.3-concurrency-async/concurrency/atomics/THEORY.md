@@ -220,6 +220,39 @@ export class SpinLock {
 }
 ```
 
+#### 3.1.5 CAS 循环与无锁递增（compareExchange）
+
+```typescript
+const buffer = new SharedArrayBuffer(4);
+const counter = new Int32Array(buffer);
+
+function atomicIncrement(index: number): number {
+  let current = Atomics.load(counter, index);
+  while (true) {
+    const next = current + 1;
+    const prev = Atomics.compareExchange(counter, index, current, next);
+    if (prev === current) return next;
+    current = prev;
+  }
+}
+```
+
+#### 3.1.6 内存顺序与可见性保证
+
+```typescript
+const buffer = new SharedArrayBuffer(8);
+const flags = new Int32Array(buffer);
+const data = new Int32Array(buffer, 4);
+
+Atomics.store(data, 1, 42);
+Atomics.store(flags, 0, 1);
+
+while (Atomics.load(flags, 0) !== 1) {}
+console.log(Atomics.load(data, 1)); // 保证看到 42
+```
+
+> ECMAScript 规定 `Atomics.load`/`store` 具有顺序一致性（sequentially consistent）。
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -231,16 +264,32 @@ export class SpinLock {
 
 ### 3.3 扩展阅读
 
+#### MDN 与规范
+
 - [Atomics — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics)
-- [SharedArrayBuffer — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer)
+- [Atomics.compareExchange — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics/compareExchange)
+- [Atomics.load — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics/load)
+- [Atomics.store — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics/store)
 - [Atomics.wait() — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics/wait)
 - [Atomics.notify() — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics/notify)
+- [SharedArrayBuffer — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer)
 - [ECMAScript Shared Memory and Atomics Specification](https://tc39.es/ecma262/multipage/structured-data.html#sec-atomics-object)
-- [V8 Blog — Concurrent Marking in V8](https://v8.dev/blog/concurrent-marking)
+- [ECMAScript Memory Model](https://tc39.es/ecma262/multipage/memory-model.html)
+
+#### 平台与性能
+
 - [WebAssembly Threads Proposal](https://github.com/WebAssembly/threads/blob/main/proposals/threads/Overview.md)
 - [COOP and COEP Explained — web.dev](https://web.dev/articles/coop-coep)
+- [V8 Blog — Concurrent Marking in V8](https://v8.dev/blog/concurrent-marking)
+
+#### 学术与进阶
+
 - [Lock-Free Data Structures — Cambridge University Lecture Notes](https://www.cl.cam.ac.uk/research/srg/netos/lock-free/)
+- [Lock-Free Programming — Herb Sutter](https://www.drdobbs.com/lock-free-code-a-false-sense-of-security/210600279)
 - [Intel Intrinsics Guide — _mm_pause / SSE2](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html)
+
+#### 关联模块
+
 - `20.3-concurrency-async/concurrency/`
 
 ---

@@ -46,13 +46,13 @@
 **现代防护矩阵**：
 
 ```javascript
-// ❌ 危险
+// 危险
 element.innerHTML = userInput;
 
-// ✅ 安全：自动转义
+// 安全：自动转义
 element.textContent = userInput;
 
-// ✅ 安全：DOMPurify 过滤
+// 安全：DOMPurify 过滤
 import DOMPurify from 'dompurify';
 element.innerHTML = DOMPurify.sanitize(userInput);
 ```
@@ -96,12 +96,9 @@ Content-Security-Policy:
 
 ```
 传统: Session + Cookie
-  ↓
-JWT (有状态/无状态)
-  ↓
-OAuth 2.1 + PKCE (第三方登录)
-  ↓
-Passkeys / WebAuthn (无密码)
+  JWT (有状态/无状态)
+  OAuth 2.1 + PKCE (第三方登录)
+  Passkeys / WebAuthn (无密码)
 ```
 
 **Passkeys 优势**：
@@ -113,13 +110,13 @@ Passkeys / WebAuthn (无密码)
 ### 3.2 注入攻击防御
 
 ```typescript
-// ❌ SQL 注入
+// SQL 注入
 const query = `SELECT * FROM users WHERE id = '${userId}'`;
 
-// ✅ 参数化查询 (Prisma)
+// 参数化查询 (Prisma)
 const user = await prisma.user.findUnique({ where: { id: userId } });
 
-// ✅ 参数化查询 (pg)
+// 参数化查询 (pg)
 const result = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
 ```
 
@@ -191,7 +188,7 @@ pnpm audit
 ```markdown
 - [ ] 所有输入点（URL参数、表单、Header、文件上传）
 - [ ] 认证绕过（直接访问需授权的端点）
-- [ ] 权限提升（普通用户→管理员）
+- [ ] 权限提升（普通用户到管理员）
 - [ ] 敏感数据泄露（日志、错误信息、响应头）
 - [ ] CSRF 防护验证
 - [ ] 点击劫持（X-Frame-Options）
@@ -201,7 +198,94 @@ pnpm audit
 
 ---
 
-## 6. 总结
+## 6. 代码示例
+
+### HMAC 请求签名
+
+```typescript
+// hmac-request-signer.ts
+import { createHmac, timingSafeEqual } from 'crypto';
+
+function signRequest(payload: string, secret: string, timestamp: number): string {
+  const data = `${timestamp}.${payload}`;
+  return createHmac('sha256', secret).update(data).digest('hex');
+}
+
+function verifyRequest(payload: string, secret: string, timestamp: number, signature: string): boolean {
+  const expected = signRequest(payload, secret, timestamp);
+  const sigBuf = Buffer.from(signature, 'hex');
+  const expBuf = Buffer.from(expected, 'hex');
+  if (sigBuf.length !== expBuf.length) return false;
+  return timingSafeEqual(sigBuf, expBuf);
+}
+```
+
+### Argon2id 密码哈希（Node.js 原生 crypto）
+
+```typescript
+// password-hashing.ts
+import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
+import { promisify } from 'util';
+
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString('hex');
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString('hex')}.${salt}`;
+}
+
+async function verifyPassword(stored: string, supplied: string): Promise<boolean> {
+  const [hashed, salt] = stored.split('.');
+  const buf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+  return timingSafeEqual(Buffer.from(hashed, 'hex'), buf);
+}
+```
+
+### 入侵检测日志分析器
+
+```typescript
+// intrusion-detection.ts
+interface SecurityEvent {
+  timestamp: number;
+  sourceIp: string;
+  action: string;
+  path: string;
+  statusCode: number;
+  userAgent: string;
+}
+
+class SimpleIDS {
+  private ipFailures = new Map<string, number[]>();
+  private readonly THRESHOLD = 5;
+  private readonly WINDOW_MS = 60_000;
+
+  analyze(event: SecurityEvent): { alert: boolean; reason?: string } {
+    if (event.statusCode < 400) return { alert: false };
+
+    const now = event.timestamp;
+    const failures = this.ipFailures.get(event.sourceIp) || [];
+    const recent = failures.filter((t) => now - t < this.WINDOW_MS);
+    recent.push(now);
+    this.ipFailures.set(event.sourceIp, recent);
+
+    if (recent.length >= this.THRESHOLD) {
+      return { alert: true, reason: `Brute force detected from ${event.sourceIp}` };
+    }
+
+    // 检测路径遍历
+    if (event.path.includes('..') || event.path.includes('%2e%2e')) {
+      return { alert: true, reason: `Path traversal attempt: ${event.path}` };
+    }
+
+    return { alert: false };
+  }
+}
+```
+
+---
+
+## 7. 总结
 
 Web 安全不是"功能"，是**贯穿整个 SDLC 的系统工程**。
 
@@ -223,11 +307,36 @@ Web 安全不是"功能"，是**贯穿整个 SDLC 的系统工程**。
 
 ## 参考资源
 
+### 权威标准与规范
+
 - [OWASP Top 10](https://owasp.org/Top10/)
 - [MDN Web Security](https://developer.mozilla.org/en-US/docs/Web/Security)
 - [Snyk Vulnerability Database](https://security.snyk.io/)
 - [CSP Evaluator](https://csp-evaluator.withgoogle.com/)
 - [web.dev Passkeys](https://web.dev/passkeys/)
+- [NIST Cybersecurity Framework](https://www.nist.gov/cyberframework)
+- [CIS Controls](https://www.cisecurity.org/controls)
+- [NIST SP 800-53 — Security and Privacy Controls](https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final)
+- [ISO/IEC 27001 — Information Security Management](https://www.iso.org/isoiec-27001-information-security.html)
+
+### 工具与平台
+
+- [Semgrep — Lightweight static analysis](https://semgrep.dev/)
+- [CodeQL — GitHub semantic code analysis](https://codeql.github.com/)
+- [OWASP ZAP — Web application security scanner](https://www.zaproxy.org/)
+- [Trivy — Container and dependency scanner](https://trivy.dev/)
+- [SLSA — Supply-chain Levels for Software Artifacts](https://slsa.dev/)
+- [Sigstore — Software signing and transparency](https://www.sigstore.dev/)
+- [npm audit signatures](https://docs.npmjs.com/cli/v10/commands/npm-audit-signatures)
+- [GitHub Advanced Security](https://github.com/features/security)
+- [OpenSSF Scorecard](https://securityscorecards.dev/)
+
+### 书籍与课程
+
+- [The Tangled Web — Michal Zalewski](https://nostarch.com/tangledweb) — 浏览器安全经典
+- [Real-World Bug Hunting — Peter Yaworski](https://nostarch.com/bug-hunting) — 漏洞挖掘实战
+- [Hacking: The Art of Exploitation — Jon Erickson](https://nostarch.com/hacking2.htm) — 底层安全原理
+- [Web Security for Developers — Malcolm McDonald](https://nostarch.com/websecurity)
 
 ---
 
@@ -246,25 +355,25 @@ Web 安全不是"功能"，是**贯穿整个 SDLC 的系统工程**。
 - `security-framework.ts`
 - `threat-modeling.ts`
 
-> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
+> 学习建议：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
 
 ## 核心理论深化
 
 ### 关键设计模式
 
-本模块涉及的核心设计模式包括（根据代码实现提炼）：
+本模块涉及的核心设计模式包括：
 
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
+1. **防御纵深模式**：多层安全控制，单层失效不导致整体崩溃
+2. **最小权限模式**：每个组件仅拥有完成工作所需的最小权限
+3. **零信任架构模式**：永不信任，始终验证
 
 ### 与相邻模块的关系
 
 | 相邻模块 | 关系说明 |
 |---------|---------|
-| 前置依赖 | 建议先掌握的基础模块 |
-| 后续进阶 | 可继续深化的相关模块 |
+| 前置依赖 | `jwt-auth.ts` — 理解认证基础 |
+| 后续进阶 | `threat-modeling.ts` — 威胁建模实践 |
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+> 理论深化更新：2026-04-30

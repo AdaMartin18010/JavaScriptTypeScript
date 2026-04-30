@@ -226,6 +226,87 @@ async function fetchConfigFromCDNs(): Promise<Config> {
 }
 ```
 
+### 3.7 更多代码示例
+
+#### AggregateError 批量错误处理
+
+```typescript
+async function fetchCriticalData(urls: string[]): Promise<Response> {
+  const requests = urls.map(u => fetch(u).then(r => {
+    if (!r.ok) throw new Error(`${u}: ${r.status}`);
+    return r;
+  }));
+
+  try {
+    return await Promise.any(requests);
+  } catch (err) {
+    if (err instanceof AggregateError) {
+      // 统一上报所有失败原因
+      console.error('All sources failed:', err.errors.map(e => (e as Error).message));
+    }
+    throw err;
+  }
+}
+```
+
+#### 逻辑赋值运算符与 DOM API 结合
+
+```typescript
+// 惰性初始化 DOM 元素缓存
+const cache = new Map<string, HTMLElement>();
+function getElement(id: string): HTMLElement {
+  const el = document.getElementById(id);
+  if (!el) throw new Error(`Missing #${id}`);
+  // 若不存在则缓存，存在则复用
+  cache.get(id) ??= el;
+  return cache.get(id)!;
+}
+
+// 配置对象默认值填充（深层）
+interface DeepConfig {
+  server?: { host?: string; port?: number };
+  db?: { url?: string };
+}
+
+function fillDefaults(cfg: DeepConfig): void {
+  cfg.server ??= {};
+  cfg.server.host ??= 'localhost';
+  cfg.server.port ??= 3_000;
+  cfg.db ??= {};
+  cfg.db.url ??= 'postgres://localhost:5432/app';
+}
+```
+
+#### FinalizationRegistry 实现资源池
+
+```typescript
+class ResourcePool<T extends { close(): void }> {
+  private pool = new Set<WeakRef<T>>();
+  private registry = new FinalizationRegistry<T>((held) => {
+    console.log('Resource was GCed, pool size now:', this.pool.size);
+  });
+
+  add(resource: T) {
+    const ref = new WeakRef(resource);
+    this.pool.add(ref);
+    this.registry.register(resource, resource);
+  }
+
+  *active(): Generator<T> {
+    for (const ref of this.pool) {
+      const obj = ref.deref();
+      if (obj) yield obj;
+      else this.pool.delete(ref);
+    }
+  }
+}
+
+// 使用示例
+class DbConnection { close() {} }
+const pool = new ResourcePool<DbConnection>();
+pool.add(new DbConnection());
+```
+
 ### 3.7 常见误区
 
 | 误区 | 正确理解 |
@@ -250,6 +331,14 @@ async function fetchConfigFromCDNs(): Promise<Config> {
 - [2ality — ES2021 Features Overview](https://2ality.com/2020/09/ecmascript-2021.html) — 权威特性综述
 - [caniuse — ES2021 Support Table](https://caniuse.com/?search=es2021) — 浏览器兼容性矩阵
 - [core-js — ES2021 Polyfills](https://github.com/zloirock/core-js#ecmascript-promise) — 特性 polyfill 实现
+- [Node.js v16 Release Notes — ES2021](https://nodejs.org/en/blog/release/v16.0.0) — Node.js 支持说明
+- [TypeScript 4.3 Release Notes](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-3.html) — TS 对逻辑赋值运算符的支持
+- [SpiderMonkey ES2021 Implementation](https://bugzilla.mozilla.org/show_bug.cgi?id=1629106) — Firefox 实现跟踪
+- [WebKit Blog — ES2021](https://webkit.org/blog/11577/release-notes-for-safari-14-1/) — Safari 支持说明
+- [MDN — Numeric Separators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#numeric_separators) — 数字分隔符语法
+- [MDN — AggregateError](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AggregateError) — 聚合错误对象
+- [MDN — FinalizationRegistry](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry) — 终结注册表
+- [Node.green — ES2021 compat](https://node.green/#ES2021) — Node.js 特性兼容表
 
 ---
 

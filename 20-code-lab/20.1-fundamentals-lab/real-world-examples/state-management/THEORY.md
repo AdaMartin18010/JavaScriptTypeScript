@@ -13,7 +13,7 @@
 
 ### 1.2 形式化基础
 
-状态机可形式化为五元组 `M = (S, Σ, δ, s₀, F)`，其中状态转移函数 `δ: S × Σ → S` 保证给定相同输入始终产生相同下一状态。Redux  reducer 即为此 `δ` 的纯函数实现。
+状态机可形式化为五元组 `M = (S, Sigma, delta, s0, F)`，其中状态转移函数 `delta: S x Sigma -> S` 保证给定相同输入始终产生相同下一状态。Redux  reducer 即为此 `delta` 的纯函数实现。
 
 ### 1.3 关键概念
 
@@ -231,6 +231,197 @@ const thunkMiddleware: Middleware<unknown> = (store) => (next) => (action: unkno
 };
 ```
 
+### 3.2 更多代码示例
+
+#### Immer 集成：可变语法实现不可变更新
+
+```typescript
+import { produce } from 'immer';
+
+interface State {
+  user: { name: string; preferences: { theme: 'light' | 'dark' } };
+  posts: Array<{ id: number; title: string; likes: number }>;
+}
+
+const initialState: State = {
+  user: { name: 'Alice', preferences: { theme: 'light' } },
+  posts: [{ id: 1, title: 'Hello', likes: 0 }],
+};
+
+// 使用 Immer 进行深层不可变更新
+const nextState = produce(initialState, (draft) => {
+  draft.user.preferences.theme = 'dark'; // 可变语法！
+  draft.posts[0].likes += 1;
+});
+
+console.log(initialState.posts[0].likes); // 0（原状态未变）
+console.log(nextState.posts[0].likes);    // 1
+```
+
+#### Redux Toolkit 风格 Slice
+
+```typescript
+// slice-pattern.ts — 自包含的状态切片
+interface Slice<State, CaseReducers extends Record<string, (s: State, action: any) => State | void>> {
+  name: string;
+  initialState: State;
+  reducers: CaseReducers;
+}
+
+function createSlice<State, CR extends Record<string, (s: State, action: any) => State | void>>(
+  config: Slice<State, CR>
+) {
+  const actions = {} as { [K in keyof CR]: (payload?: any) => { type: string; payload: any } };
+  for (const key of Object.keys(config.reducers)) {
+    (actions as any)[key] = (payload?: any) => ({ type: `${config.name}/${key}`, payload });
+  }
+
+  function reducer(state = config.initialState, action: { type: string; payload?: any }): State {
+    const caseReducer = config.reducers[action.type.split('/')[1] as keyof CR];
+    if (caseReducer) {
+      const next = caseReducer(state, action);
+      return next === undefined ? state : (next as State);
+    }
+    return state;
+  }
+
+  return { actions, reducer };
+}
+
+// 使用
+const counterSlice = createSlice({
+  name: 'counter',
+  initialState: { value: 0 },
+  reducers: {
+    increment: (s) => { s.value += 1; }, // 可与 Immer 结合
+    decrement: (s) => { s.value -= 1; },
+    add: (s, action) => { s.value += action.payload; },
+  },
+});
+
+console.log(counterSlice.actions.add(5)); // { type: 'counter/add', payload: 5 }
+```
+
+#### 持久化中间件
+
+```typescript
+// persist-middleware.ts — 自动持久化到 localStorage
+function persistMiddleware<S>(key: string) {
+  return (store: Store<S>) => {
+    // 恢复状态
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) store.setState(() => JSON.parse(saved));
+    } catch { /* ignore */ }
+
+    // 订阅保存
+    store.subscribe((state) => {
+      localStorage.setItem(key, JSON.stringify(state));
+    });
+  };
+}
+
+// 使用
+const appStore = createStore({ user: null as any, theme: 'light' });
+persistMiddleware<typeof appStore.getState>('app-state')(appStore);
+```
+
+#### Undo/Redo 高阶 Store
+
+```typescript
+// undoable.ts — 给任意 Store 添加撤销/重做能力
+interface UndoableState<T> {
+  past: T[];
+  present: T;
+  future: T[];
+}
+
+function createUndoableStore<T>(initial: T) {
+  const store = createStore<UndoableState<T>>({
+    past: [],
+    present: initial,
+    future: [],
+  });
+
+  return {
+    ...store,
+    getPresent: () => store.getState().present,
+    setPresent(updater: (t: T) => T) {
+      const state = store.getState();
+      const next = updater(state.present);
+      if (next !== state.present) {
+        store.setState(() => ({
+          past: [...state.past, state.present],
+          present: next,
+          future: [],
+        }));
+      }
+    },
+    undo() {
+      const state = store.getState();
+      if (state.past.length === 0) return;
+      const previous = state.past[state.past.length - 1];
+      store.setState(() => ({
+        past: state.past.slice(0, -1),
+        present: previous,
+        future: [state.present, ...state.future],
+      }));
+    },
+    redo() {
+      const state = store.getState();
+      if (state.future.length === 0) return;
+      const next = state.future[0];
+      store.setState(() => ({
+        past: [...state.past, state.present],
+        present: next,
+        future: state.future.slice(1),
+      }));
+    },
+  };
+}
+```
+
+#### Signals 响应式模式
+
+```typescript
+// signals.ts — 极简响应式信号实现
+class Signal<T> {
+  private value: T;
+  private listeners = new Set<(v: T) => void>();
+
+  constructor(initial: T) { this.value = initial; }
+
+  get() { return this.value; }
+
+  set(v: T) {
+    if (this.value !== v) {
+      this.value = v;
+      this.listeners.forEach((l) => l(v));
+    }
+  }
+
+  subscribe(listener: (v: T) => void) {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  // 派生信号
+  derived<R>(fn: (v: T) => R): Signal<R> {
+    const derived = new Signal(fn(this.value));
+    this.subscribe((v) => derived.set(fn(v)));
+    return derived;
+  }
+}
+
+// 使用
+const count = new Signal(0);
+const doubled = count.derived((c) => c * 2);
+
+doubled.subscribe((d) => console.log('Doubled:', d));
+count.set(5); // Doubled: 10
+count.set(10); // Doubled: 20
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -251,6 +442,12 @@ const thunkMiddleware: Middleware<unknown> = (store) => (next) => (action: unkno
 - [Reselect 文档](https://reselect.js.org/)
 - [Flux Architecture (Facebook)](https://facebook.github.io/flux/)
 - [State Machines in JavaScript — XState 文档](https://stately.ai/docs)
+- [Immer 文档](https://immerjs.github.io/immer/) — 不可变数据工具库
+- [Pinia 文档](https://pinia.vuejs.org/) — Vue 官方状态管理
+- [Recoil 文档](https://recoiljs.org/) — React 原子化状态管理
+- [TanStack Store](https://tanstack.com/store/latest) — 框架无关状态管理
+- [Effector 文档](https://effector.dev/) — 响应式状态管理
+- [MDN: Structured Clone](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone) — 深拷贝原生 API
 
 ---
 

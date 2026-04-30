@@ -226,6 +226,186 @@ function validateCsrfToken(req: Request): boolean {
 }
 ```
 
+### 3.6 更多代码示例
+
+#### 密码哈希与验证（scrypt / bcrypt）
+
+```typescript
+// password-utils.ts — 生产环境应使用 argon2 或 bcrypt
+import { promisify } from 'util';
+import { randomBytes, scrypt } from 'crypto';
+
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString('hex');
+  const derived = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${salt}:${derived.toString('hex')}`;
+}
+
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  const [salt, key] = hash.split(':');
+  const derived = (await scryptAsync(password, salt, 64)) as Buffer;
+  return derived.toString('hex') === key;
+}
+
+// 使用
+const hash = await hashPassword('user-password');
+const isValid = await verifyPassword('user-password', hash);
+```
+
+#### 速率限制中间件（Token Bucket）
+
+```typescript
+// rate-limiter.ts — 基于 Token Bucket 的速率限制
+interface Bucket {
+  tokens: number;
+  lastRefill: number;
+}
+
+class TokenBucketLimiter {
+  private buckets = new Map<string, Bucket>();
+
+  constructor(
+    private capacity: number,
+    private refillRatePerSecond: number
+  ) {}
+
+  allow(key: string): boolean {
+    const now = Date.now();
+    let bucket = this.buckets.get(key);
+
+    if (!bucket) {
+      bucket = { tokens: this.capacity - 1, lastRefill: now };
+      this.buckets.set(key, bucket);
+      return true;
+    }
+
+    const elapsed = (now - bucket.lastRefill) / 1000;
+    bucket.tokens = Math.min(this.capacity, bucket.tokens + elapsed * this.refillRatePerSecond);
+    bucket.lastRefill = now;
+
+    if (bucket.tokens >= 1) {
+      bucket.tokens -= 1;
+      return true;
+    }
+    return false;
+  }
+}
+
+// Express 中间件
+const limiter = new TokenBucketLimiter(10, 1); // 容量 10，每秒补充 1
+
+function rateLimitMiddleware(req: Request, res: Response, next: () => void) {
+  const key = req.ip ?? 'anonymous';
+  if (!limiter.allow(key)) {
+    res.status(429).json({ error: 'Too many requests' });
+    return;
+  }
+  next();
+}
+```
+
+#### OpenID Connect ID Token 校验
+
+```typescript
+// oidc-validation.ts — 简化版 OIDC ID Token 校验
+interface IDTokenPayload {
+  iss: string;       // issuer
+  sub: string;       // subject
+  aud: string;       // audience
+  exp: number;       // expiration
+  iat: number;       // issued at
+  nonce?: string;    // nonce
+}
+
+function validateIDToken(
+  token: string,
+  expectedIssuer: string,
+  expectedAudience: string,
+  expectedNonce?: string
+): IDTokenPayload {
+  const payload = verifyJWT(token, 'oidc-secret'); // 实际应使用 JWKS
+
+  if (payload.iss !== expectedIssuer) throw new Error('Invalid issuer');
+  if (payload.aud !== expectedAudience) throw new Error('Invalid audience');
+  if (payload.exp * 1000 < Date.now()) throw new Error('Token expired');
+  if (expectedNonce && (payload as any).nonce !== expectedNonce) {
+    throw new Error('Invalid nonce');
+  }
+
+  return payload as IDTokenPayload;
+}
+```
+
+#### 基于 Redis 的 JWT 黑名单（撤销）
+
+```typescript
+// jwt-blacklist.ts — 使用 Redis 实现令牌撤销
+import { Redis } from 'ioredis';
+
+const redis = new Redis();
+
+async function revokeToken(jti: string, exp: number) {
+  const ttl = exp - Math.floor(Date.now() / 1000);
+  if (ttl > 0) {
+    await redis.setex(`blacklist:${jti}`, ttl, '1');
+  }
+}
+
+async function isTokenRevoked(jti: string): Promise<boolean> {
+  const result = await redis.get(`blacklist:${jti}`);
+  return result !== null;
+}
+
+// 在中间件中检查
+async function authMiddlewareWithRevoke(secret: string): Middleware {
+  return async (req, res, next) => {
+    const token = extractBearerToken(req);
+    if (!token) { res.status(401).json({ error: 'Missing token' }); return; }
+
+    const payload = verifyJWT(token, secret);
+    const jti = (payload as any).jti;
+    if (jti && await isTokenRevoked(jti)) {
+      res.status(401).json({ error: 'Token revoked' });
+      return;
+    }
+    req.user = payload;
+    next();
+  };
+}
+```
+
+#### 多因素认证（TOTP）验证
+
+```typescript
+// totp.ts — 基于时间的一次性密码（RFC 6238）
+import { createHmac } from 'crypto';
+
+function generateTOTP(secret: string, window = 0): string {
+  const timeStep = 30; // 30 秒时间窗口
+  const counter = Math.floor(Date.now() / 1000 / timeStep) + window;
+  const buf = Buffer.alloc(8);
+  buf.writeBigUInt64BE(BigInt(counter));
+
+  const hmac = createHmac('sha1', Buffer.from(secret, 'base64')).update(buf).digest();
+  const offset = hmac[hmac.length - 1] & 0x0f;
+  const code = ((hmac[offset] & 0x7f) << 24 |
+    (hmac[offset + 1] & 0xff) << 16 |
+    (hmac[offset + 2] & 0xff) << 8 |
+    (hmac[offset + 3] & 0xff)) % 1_000_000;
+
+  return code.toString().padStart(6, '0');
+}
+
+function verifyTOTP(token: string, secret: string, allowedWindows = 1): boolean {
+  for (let w = -allowedWindows; w <= allowedWindows; w++) {
+    if (generateTOTP(secret, w) === token) return true;
+  }
+  return false;
+}
+```
+
 ### 3.6 常见误区
 
 | 误区 | 正确理解 |
@@ -248,6 +428,14 @@ function validateCsrfToken(req: Request): boolean {
 - [Passport.js Documentation](https://www.passportjs.org/docs/) — Node.js 认证中间件
 - [WebAuthn Guide](https://webauthn.guide/) — 无密码认证标准
 - [jose 库 (Node.js/Web 通用)](https://github.com/panva/jose)
+- [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) — 密码存储最佳实践
+- [RFC 6238 — TOTP](https://datatracker.ietf.org/doc/html/rfc6238) — 基于时间的一次性密码标准
+- [RFC 7517 — JSON Web Key (JWK)](https://datatracker.ietf.org/doc/html/rfc7517) — JWT 密钥格式
+- [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html) — OIDC 核心规范
+- [OAuth 2.0 Security Best Current Practice](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics) — OAuth 安全实践
+- [MDN: Cookie SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) — Cookie 安全属性
+- [MDN: Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) — 内容安全策略
+- [Have I Been Pwned API](https://haveibeenpwned.com/API/v3) — 密码泄露检查
 - `30-knowledge-base/30.6-security`
 
 ---

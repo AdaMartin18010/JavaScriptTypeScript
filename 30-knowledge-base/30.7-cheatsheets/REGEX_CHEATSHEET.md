@@ -208,6 +208,48 @@ console.log(masked); // '138****8000'
 
 ---
 
+## 代码示例：正则性能优化
+
+```javascript
+// ❌ 灾难性回溯（Catastrophic Backtracking）
+const bad = /^(a+)+$/;
+bad.test('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa!'); // 极慢，甚至崩溃
+
+// ✅ 使用原子组或占有量词（若引擎支持）或重构模式
+const good = /^a+$/;
+
+// ❌ 贪婪匹配过度捕获
+const greedy = /<div>.*<\/div>/;
+'<div>A</div><div>B</div>'.match(greedy); // 匹配整个字符串
+
+// ✅ 使用非贪婪或排除字符集
+const lazy = /<div>[^<]*<\/div>/;
+'<div>A</div><div>B</div>'.match(lazy); // 只匹配第一个 div
+```
+
+---
+
+## 代码示例：`split` 与 `RegExp` 高级用法
+
+```javascript
+// 使用正则分割，保留分隔符
+const parts = 'hello-world_example'.split(/([-_])/);
+// ['hello', '-', 'world', '_', 'example']
+
+// 按多个空白字符分割并过滤空项
+const words = '  hello   world  '.split(/\s+/).filter(Boolean);
+// ['hello', 'world']
+
+// 使用 Symbol.split 自定义行为
+const re = /\d+/;
+re[Symbol.split] = function (str) {
+  return str.split(this).map(s => s.trim()).filter(Boolean);
+};
+'foo 123 bar 456 baz'.split(re); // ['foo', 'bar', 'baz']
+```
+
+---
+
 ## 参考链接
 
 - [MDN — Regular Expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions)
@@ -224,6 +266,11 @@ console.log(masked); // '138****8000'
 - [MDN — String.prototype.matchAll](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/matchAll)
 - [MDN — Sticky Flag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/sticky)
 - [Node.js — util.parseArgs (Pattern Matching)](https://nodejs.org/api/util.html#utilparseargsconfig)
+- [MDN — String.prototype.split](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split)
+- [MDN — Symbol.split](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/split)
+- [MDN — RegExp.prototype.exec](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec)
+- [OWASP — ReDoS (Regular Expression Denial of Service)](https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS)
+- [Can I Use — ES2018 RegExp Features](https://caniuse.com/mdn-javascript_builtins_regexp_property_escapes)
 
 ---
 

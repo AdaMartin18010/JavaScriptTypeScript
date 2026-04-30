@@ -226,6 +226,112 @@ new Date('2024-02-03T00:00:00Z');
 new Date(2024, 1, 3); // 月份从 0 开始，所有引擎一致
 ```
 
+### 3.7 更多代码示例
+
+#### V8 特定优化：Map vs Object 属性访问
+
+```js
+// V8 中 Object 的固定属性（in-object properties）访问快于 Map
+// 但频繁增删时 Map 更优
+
+// 场景 A：固定键集合，高频读取
+const config = { apiUrl: '...', timeout: 5000, retries: 3 };
+function getConfig(key) { return config[key]; } // V8: 内联缓存优化
+
+// 场景 B：动态键集合，频繁增删
+const cache = new Map();
+function setCache(key, value) { cache.set(key, value); }
+function getCache(key) { return cache.get(key); } // V8: 哈希表优化
+
+// 微基准：始终在自己的环境中测量
+```
+
+#### SpiderMonkey WarpMonkey 优化检查
+
+```js
+// SpiderMonkey 的 WarpMonkey（Firefox 83+）优化了 Baseline 到 Ion 的过渡
+// 避免在热函数中使用 try/catch，它可能阻止 Warp 编译
+
+// ❌ 可能阻止 Warp
+function riskySum(arr) {
+  try {
+    return arr.reduce((a, b) => a + b, 0);
+  } catch {
+    return 0;
+  }
+}
+
+// ✅ 分离异常路径
+function safeSum(arr) {
+  if (!Array.isArray(arr)) return 0;
+  return arr.reduce((a, b) => a + b, 0);
+}
+```
+
+#### JSC DFG/FTL 优化与数组类型一致性
+
+```js
+// JSC 的 DFG（Data Flow Graph）和 FTL（Faster Than Light）JIT
+// 对数组类型推断非常敏感
+
+// ❌ 混合数组类型导致类型去优化
+function mixedArrayOps() {
+  const arr = [1, 2, 3];
+  arr.push(1.5); // 从 Int 数组降级为 Double 数组
+  arr.push('x'); // 进一步降级为 Generic 数组
+  return arr;
+}
+
+// ✅ 保持数组类型一致
+function intArrayOps() {
+  const arr = [1, 2, 3];
+  arr.push(4);
+  arr.push(5);
+  return arr; // 始终保持 Int 数组
+}
+
+function stringArrayOps() {
+  const arr = ['a', 'b'];
+  arr.push('c');
+  return arr; // 始终保持 String 数组
+}
+```
+
+#### 引擎间性能基准测试框架
+
+```typescript
+// benchmark-runner.ts — 跨引擎基准测试
+interface BenchmarkResult {
+  engine: string;
+  opsPerSecond: number;
+  marginOfError: number;
+}
+
+function runBenchmark(name: string, fn: () => void, durationMs = 1000): BenchmarkResult {
+  const start = performance.now();
+  let ops = 0;
+  while (performance.now() - start < durationMs) {
+    fn();
+    ops++;
+  }
+  const elapsed = (performance.now() - start) / 1000;
+  return {
+    engine: (navigator as any).userAgentData?.brands?.[0]?.brand ?? 'unknown',
+    opsPerSecond: Math.round(ops / elapsed),
+    marginOfError: 0,
+  };
+}
+
+// 测试对象创建性能
+function benchmarkObjectCreation() {
+  const results = runBenchmark('object-create', () => {
+    const obj = { x: 1, y: 2, z: 3 };
+    return obj.x + obj.y + obj.z;
+  });
+  console.table(results);
+}
+```
+
 ### 3.7 常见误区
 
 | 误区 | 正确理解 |
@@ -250,6 +356,13 @@ new Date(2024, 1, 3); // 月份从 0 开始，所有引擎一致
 - [MDN: SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) — 共享内存与 Atomics
 - [Node.js Performance Guide](https://nodejs.org/en/docs/guides/simple-profiling) — Node.js/V8 性能分析
 - [WebKit Blog: Riptide GC](https://webkit.org/blog/12967/introducing-riptide/) — JSC 并发垃圾回收
+- [V8 Blog: Pointer Compression](https://v8.dev/blog/pointer-compression) — V8 指针压缩技术
+- [V8 Blog: SparkPlug](https://v8.dev/blog/sparkplug) — V8 非优化编译器
+- [SpiderMonkey Blog: WarpBuilder](https://spidermonkey.dev/blog/) — Warp 优化架构
+- [WebKit Blog: JetStream 3](https://webkit.org/blog/14787/announcing-jetstream-3/) — JSC 基准测试套件
+- [Chrome DevTools: Performance Profiling](https://developer.chrome.com/docs/devtools/performance) — 性能分析指南
+- [Firefox Profiler](https://profiler.firefox.com/) — 跨平台性能分析工具
+- [MDN: Performance API](https://developer.mozilla.org/en-US/docs/Web/API/Performance) — 标准化性能测量
 - `30-knowledge-base/30.2-runtimes`
 
 ---

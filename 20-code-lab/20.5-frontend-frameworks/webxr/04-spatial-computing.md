@@ -299,17 +299,107 @@ class SpatialUI {
 
 ---
 
+## 手部追踪与输入
+
+### 手势识别基础
+
+```typescript
+// hand-tracking.ts
+function getHandJoints(frame: XRFrame, referenceSpace: XRReferenceSpace) {
+  for (const inputSource of frame.session.inputSources) {
+    if (inputSource.hand) {
+      const joints = inputSource.hand;
+      const indexTip = frame.getJointPose(joints.get('index-finger-tip'), referenceSpace);
+      if (indexTip) {
+        console.log('Index tip position:', indexTip.transform.position);
+      }
+    }
+  }
+}
+```
+
+### 捏合手势检测
+
+```typescript
+// pinch-detection.ts
+function isPinching(hand: XRHand, frame: XRFrame, refSpace: XRReferenceSpace): boolean {
+  const thumbTip = frame.getJointPose(hand.get('thumb-tip'), refSpace);
+  const indexTip = frame.getJointPose(hand.get('index-finger-tip'), refSpace);
+  if (!thumbTip || !indexTip) return false;
+  const dx = thumbTip.transform.position.x - indexTip.transform.position.x;
+  const dy = thumbTip.transform.position.y - indexTip.transform.position.y;
+  const dz = thumbTip.transform.position.z - indexTip.transform.position.z;
+  return Math.sqrt(dx * dx + dy * dy + dz * dz) < 0.02;
+}
+```
+
+## DOM Overlay 集成
+
+在 AR 会话中叠加 HTML UI：
+
+```typescript
+// dom-overlay.ts
+const session = await navigator.xr.requestSession('immersive-ar', {
+  requiredFeatures: ['hit-test', 'local-floor'],
+  optionalFeatures: ['dom-overlay'],
+  domOverlay: { root: document.getElementById('ar-overlay')! },
+});
+```
+
+```css
+#ar-overlay { display: none; }
+.xr-overlay #ar-overlay { display: block; }
+```
+
+## 网格检测与动态碰撞
+
+```typescript
+// mesh-detection.ts
+function processMeshUpdates(frame: XRFrame, refSpace: XRReferenceSpace) {
+  const meshes = (frame as any).detectedMeshes || [];
+  for (const mesh of meshes) {
+    const pose = frame.getPose(mesh.meshSpace, refSpace);
+    if (!pose) continue;
+    const vertices = mesh.vertices;
+    const indices = mesh.indices;
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+  }
+}
+```
+
 ## 参考资源
 
+#### WebXR 规范
+
 - [WebXR Device API — W3C Editor's Draft](https://immersive-web.github.io/webxr/)
+- [WebXR Hand Input Module — W3C](https://immersive-web.github.io/webxr-hand-input/)
+- [WebXR DOM Overlays Module](https://immersive-web.github.io/dom-overlays/)
 - [WebXR Anchors 模块](https://immersive-web.github.io/anchors/)
 - [WebXR Hit Test 模块](https://immersive-web.github.io/hit-test/)
 - [WebXR Plane Detection](https://immersive-web.github.io/real-world-geometry/plane-detection.html)
+- [WebXR Mesh Detection](https://immersive-web.github.io/real-world-meshing/)
 - [WebXR Depth Sensing](https://immersive-web.github.io/depth-sensing/)
+
+#### 引擎与开发
+
 - [Three.js WebXR Documentation](https://threejs.org/docs/#manual/en/introduction/WebXR-Device-Integration)
+- [Three.js XR Examples](https://threejs.org/examples/?q=webxr)
 - [Babylon.js WebXR Guide](https://doc.babylonjs.com/features/featuresDeepDive/webXR/)
+- [Babylon.js WebXR Demos](https://doc.babylonjs.com/features/featuresDeepDive/webXR/webXRDemos)
+
+#### 平台设计指南
+
 - [Apple VisionOS 空间设计指南](https://developer.apple.com/visionos/design/)
 - [Meta Spatial Design Guidelines](https://developer.oculus.com/design/)
+- [Meta Spatial SDK](https://developer.oculus.com/documentation/unity/unity-spatial-sdk-overview/)
 - [Spatial Computing 设计模式](https://www.visionos.design/)
 - [Google ARCore Geospatial API](https://developers.google.com/ar/develop/geospatial)
+- [Google AR Foundation — Cross-platform AR](https://developers.google.com/ar)
 - [8th Wall WebAR Platform](https://www.8thwall.com/docs/)
+
+#### MDN 与工作组
+
+- [WebXR Device API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API)
+- [Immersive Web Working Group](https://www.w3.org/groups/ig/immersive-web)

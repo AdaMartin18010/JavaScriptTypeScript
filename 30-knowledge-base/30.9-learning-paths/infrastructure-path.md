@@ -219,3 +219,129 @@ process.on('SIGTERM', () => sdk.shutdown().then(() => process.exit(0)));
 *review-cycle: 6 months*
 *next-review: 2026-10-27*
 *status: current*
+
+
+---
+
+## 深化补充：容器化与基础设施即代码
+
+### Docker Compose 本地开发环境
+
+```yaml
+# docker-compose.dev.yml
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://user:pass@db:5432/dev
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: dev
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+```
+
+### Kubernetes Deployment 与 Service
+
+```yaml
+# k8s/app-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodejs-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nodejs-api
+  template:
+    metadata:
+      labels:
+        app: nodejs-api
+    spec:
+      containers:
+        - name: api
+          image: registry.example.com/nodejs-api:v1.0.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nodejs-api-service
+spec:
+  selector:
+    app: nodejs-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ClusterIP
+```
+
+### Terraform AWS 基础设施片段
+
+```hcl
+# main.tf
+terraform {
+  required_providers {
+    aws = { source = "hashicorp/aws", version = "~> 5.0" }
+  }
+}
+
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_lambda_function" "api" {
+  function_name = "nodejs-api"
+  runtime       = "nodejs22.x"
+  handler       = "index.handler"
+  filename      = "lambda.zip"
+  role          = aws_iam_role.lambda_exec.arn
+  memory_size   = 512
+  timeout       = 30
+}
+```
+
+---
+
+### 更多权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Docker Docs | <https://docs.docker.com/> | 容器化官方文档 |
+| Kubernetes Docs | <https://kubernetes.io/docs/home/> | K8s 官方文档 |
+| Terraform Docs | <https://developer.hashicorp.com/terraform/docs> | 基础设施即代码 |
+| Helm Docs | <https://helm.sh/docs/> | K8s 包管理器 |
+| GitHub Actions | <https://docs.github.com/en/actions> | CI/CD 官方文档 |
+| AWS Lambda | <https://docs.aws.amazon.com/lambda/latest/dg/welcome.html> | 无服务器计算 |
+| Cloudflare Workers | <https://developers.cloudflare.com/workers/> | 边缘计算平台 |
+| Vercel Edge Config | <https://vercel.com/docs/storage/edge-config> | 边缘配置存储 |

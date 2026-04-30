@@ -185,6 +185,64 @@ node --experimental-strip-types src/main.ts
 
 ---
 
+## 代码示例：package.json 脚本组合策略
+
+```json
+{
+  "name": "my-ts-app",
+  "type": "module",
+  "engines": { "node": ">=24.0.0" },
+  "scripts": {
+    "dev": "node --experimental-strip-types --watch src/main.ts",
+    "build": "tsc --noEmit && echo 'Type check passed'",
+    "start": "node --experimental-strip-types src/main.ts",
+    "test": "node --experimental-strip-types --test src/**/*.test.ts",
+    "test:types": "tsc --noEmit",
+    "test:coverage": "c8 node --experimental-strip-types --test src/**/*.test.ts",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write 'src/**/*.ts'"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.5.0",
+    "c8": "^10.0.0"
+  }
+}
+```
+
+---
+
+## 代码示例：tsx 程序化 API（自定义脚本执行）
+
+```typescript
+// scripts/run-with-tsx.ts
+// 当需要更复杂的构建前逻辑时使用 tsx 的编程 API
+
+import { tsx } from 'tsx/api';
+import { spawn } from 'node:child_process';
+import { watch } from 'node:fs';
+
+async function devServer(entry: string) {
+  // tsx 自动处理 TypeScript，无需预编译
+  const child = spawn('npx', ['tsx', 'watch', entry], {
+    stdio: 'inherit',
+    shell: true,
+  });
+
+  // 额外：监听 .env 变更重启
+  watch('.env', () => {
+    console.log('.env changed, restarting...');
+    child.kill('SIGTERM');
+  });
+}
+
+devServer('./src/server.ts');
+```
+
+---
+
 ## 权威链接
 
 - [Node.js TypeScript Support (Experimental)](https://nodejs.org/api/typescript.html)
@@ -199,6 +257,13 @@ node --experimental-strip-types src/main.ts
 - [esbuild Documentation](https://esbuild.github.io/)
 - [TypeScript Handbook — ESM/CJS Interop](https://www.typescriptlang.org/docs/handbook/modules/reference.html)
 - [GitHub Actions — setup-node](https://github.com/actions/setup-node)
+- [Node.js — Watch Mode](https://nodejs.org/api/cli.html#--watch)
+- [Node.js — Test Runner](https://nodejs.org/api/test.html)
+- [TypeScript 5.8 Release Notes](https://devblogs.microsoft.com/typescript/announcing-typescript-5-8/)
+- [Deno 2.0 Migration Guide](https://docs.deno.com/runtime/manual/advanced/migrate_to_deno/)
+- [Bun Bundler Documentation](https://bun.sh/docs/bundler)
+- [tc39/proposal-type-annotations](https://github.com/tc39/proposal-type-annotations)
+- [MDN — JavaScript Modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 
 ---
 

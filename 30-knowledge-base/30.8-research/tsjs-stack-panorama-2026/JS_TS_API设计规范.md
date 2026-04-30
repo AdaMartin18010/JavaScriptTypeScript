@@ -845,3 +845,103 @@ app.post('/api/login', strictLimiter, login);
 ---
 
 *本文档提供了设计高质量 JavaScript/TypeScript API 的完整规范，应作为代码审查和设计评审的参考。*
+
+
+---
+
+## 深化补充：tRPC、OpenAPI 与版本化中间件
+
+### tRPC Router 与中间件设计
+
+```typescript
+// trpc-router.ts
+import { initTRPC, TRPCError } from '@trpc/server';
+import { z } from 'zod';
+
+const t = initTRPC.create();
+const authMiddleware = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.userId) throw new TRPCError({ code: 'UNAUTHORIZED' });
+  return next({ ctx: { userId: ctx.userId } });
+});
+
+const authedProcedure = t.procedure.use(authMiddleware);
+
+export const appRouter = t.router({
+  user: authedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ input, ctx }) => {
+      return db.user.findUnique({ where: { id: input.id } });
+    }),
+
+  post: t.router({
+    create: authedProcedure
+      .input(z.object({ title: z.string().min(1), body: z.string() }))
+      .mutation(async ({ input, ctx }) => {
+        return db.post.create({ data: { ...input, authorId: ctx.userId } });
+      }),
+  }),
+});
+
+export type AppRouter = typeof appRouter;
+```
+
+### Zod + OpenAPI 自动生成文档
+
+```typescript
+// openapi-generator.ts
+import { OpenAPIRegistry, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
+import { z } from 'zod';
+
+const registry = new OpenAPIRegistry();
+
+registry.registerPath({
+  method: 'post',
+  path: '/users',
+  request: { body: { content: { 'application/json': { schema: z.object({ email: z.string().email() }) } } } },
+  responses: {
+    201: { description: 'Created', content: { 'application/json': { schema: z.object({ id: z.string() }) } } },
+  },
+});
+
+const generator = new OpenApiGeneratorV3(registry.definitions);
+console.log(JSON.stringify(generator.generateDocument({ openapi: '3.0.0', info: { title: 'API', version: '1.0.0' } }), null, 2));
+```
+
+### Express API 版本化中间件
+
+```typescript
+// api-version-middleware.ts
+import { Request, Response, NextFunction } from 'express';
+
+interface VersionedRequest extends Request {
+  apiVersion?: string;
+}
+
+function versionMiddleware(defaultVersion = 'v1') {
+  return (req: VersionedRequest, res: Response, next: NextFunction) => {
+    req.apiVersion = req.headers['accept-version'] as string || defaultVersion;
+    next();
+  };
+}
+
+app.use(versionMiddleware());
+app.get('/api/users', (req: VersionedRequest, res) => {
+  if (req.apiVersion === 'v2') return res.json({ users: [], meta: { total: 0 } });
+  return res.json([]);
+});
+```
+
+---
+
+### 更多权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| tRPC Documentation | <https://trpc.io/docs> | 端到端类型安全 API |
+| Zod Documentation | <https://zod.dev/> | TypeScript 模式验证 |
+| OpenAPI Specification | <https://spec.openapis.org/oas/latest.html> | OpenAPI 官方规范 |
+| Express.js Docs | <https://expressjs.com/en/api.html> | Express API 文档 |
+| Fastify Docs | <https://fastify.dev/docs/latest/> | 高性能 Node.js 框架 |
+| GraphQL Best Practices | <https://graphql.org/learn/best-practices/> | GraphQL 官方最佳实践 |
+| DataLoader | <https://github.com/graphql/dataloader> | 批量加载与缓存 |
+| REST API Design (Microsoft) | <https://learn.microsoft.com/en-us/azure/architecture/best-practices/api-design> | 微软 REST 设计指南 |
