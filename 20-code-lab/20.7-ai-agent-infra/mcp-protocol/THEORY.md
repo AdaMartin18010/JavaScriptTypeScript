@@ -207,6 +207,157 @@ app.post('/message', async (req, res) => {
 app.listen(3000, () => console.log('MCP SSE Server on http://localhost:3000'));
 ```
 
+#### Prompt 模板与参数插值
+
+```typescript
+// prompt-template.ts — MCP Prompt 模板实现
+interface PromptArgument {
+  name: string;
+  description: string;
+  required?: boolean;
+}
+
+interface PromptTemplate {
+  name: string;
+  description: string;
+  arguments?: PromptArgument[];
+  template: string; // 支持 {{argName}} 插值
+}
+
+function renderPrompt(template: PromptTemplate, args: Record<string, string>): string {
+  let result = template.template;
+  for (const [key, value] of Object.entries(args)) {
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+  }
+  // 检查必填参数
+  for (const arg of template.arguments ?? []) {
+    if (arg.required && !args[arg.name]) {
+      throw new Error(`Missing required argument: ${arg.name}`);
+    }
+  }
+  return result;
+}
+
+const codeReviewPrompt: PromptTemplate = {
+  name: 'code-review',
+  description: 'Generate a structured code review for the given code snippet',
+  arguments: [
+    { name: 'language', description: 'Programming language', required: true },
+    { name: 'code', description: 'Code snippet to review', required: true },
+  ],
+  template: `Please review the following {{language}} code for:
+1. Code correctness and edge cases
+2. Performance considerations
+3. Security vulnerabilities
+4. Maintainability and readability
+
+Code:
+\`\`\`{{language}}
+{{code}}
+\`\`\`
+
+Provide your review in a structured format with specific line references where applicable.`,
+};
+
+// 可运行示例
+const review = renderPrompt(codeReviewPrompt, {
+  language: 'typescript',
+  code: 'function add(a: number, b: number) { return a + b; }',
+});
+console.log(review);
+```
+
+#### 工具 Schema 校验（Zod + JSON Schema）
+
+```typescript
+// tool-schema-validation.ts — 使用 Zod 定义并导出 JSON Schema
+import { z } from 'zod';
+import { zodToJsonSchema } from 'zod-to-json-schema';
+
+const SearchToolSchema = z.object({
+  query: z.string().min(1).describe('The search query string'),
+  limit: z.number().int().min(1).max(100).default(10).describe('Maximum results to return'),
+  filters: z
+    .object({
+      dateRange: z.tuple([z.string(), z.string()]).optional(),
+      category: z.string().optional(),
+    })
+    .optional(),
+});
+
+type SearchToolInput = z.infer<typeof SearchToolSchema>;
+
+const searchToolJsonSchema = zodToJsonSchema(SearchToolSchema, {
+  name: 'search_tool',
+  $refStrategy: 'none',
+});
+
+console.log('JSON Schema for MCP Tool:', JSON.stringify(searchToolJsonSchema, null, 2));
+
+// 运行时校验
+function validateToolInput(schema: z.ZodSchema<unknown>, input: unknown) {
+  const result = schema.safeParse(input);
+  if (!result.success) {
+    return { valid: false, errors: result.error.issues.map((i) => i.message) };
+  }
+  return { valid: true, data: result.data };
+}
+
+// 可运行示例
+console.log(validateToolInput(SearchToolSchema, { query: 'MCP protocol', limit: 5 }));
+console.log(validateToolInput(SearchToolSchema, { query: '', limit: 200 })); // 校验失败
+```
+
+#### 错误处理与通知
+
+```typescript
+// mcp-error-handling.ts — MCP 协议错误码与通知处理
+import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
+
+// 标准化错误码映射
+const ErrorCodeMap = {
+  [ErrorCode.InvalidRequest]: { status: 400, message: 'Invalid request format' },
+  [ErrorCode.MethodNotFound]: { status: 404, message: 'Method not found' },
+  [ErrorCode.InvalidParams]: { status: 422, message: 'Invalid parameters' },
+  [ErrorCode.InternalError]: { status: 500, message: 'Internal server error' },
+} as const;
+
+function handleMcpError(error: unknown): { code: number; message: string; details?: unknown } {
+  if (error instanceof McpError) {
+    const mapped = ErrorCodeMap[error.code as keyof typeof ErrorCodeMap];
+    return {
+      code: mapped?.status ?? 500,
+      message: error.message || mapped?.message || 'Unknown error',
+      details: error.data,
+    };
+  }
+  if (error instanceof Error) {
+    return { code: 500, message: error.message };
+  }
+  return { code: 500, message: 'Unknown error occurred' };
+}
+
+// 通知发送辅助函数
+async function sendProgressNotification(
+  server: any, // Server instance
+  progressToken: string,
+  progress: number,
+  total?: number
+) {
+  await server.notification({
+    method: 'notifications/progress',
+    params: { progressToken, progress, total },
+  });
+}
+
+// 可运行示例
+try {
+  throw new McpError(ErrorCode.InvalidParams, 'Missing required field: city');
+} catch (err) {
+  console.log('Handled:', handleMcpError(err));
+}
+```
+
 ### 4.4 扩展阅读
 
 - [MCP Protocol 官方文档](https://modelcontextprotocol.io/)
@@ -219,7 +370,13 @@ app.listen(3000, () => console.log('MCP SSE Server on http://localhost:3000'));
 - [LangChain.js — Tools & Tool Calling](https://js.langchain.com/docs/concepts/tool_calling/)
 - [JSON Schema](https://json-schema.org/) — MCP 工具参数描述的基础规范
 - [JSON-RPC 2.0 Specification](https://www.jsonrpc.org/specification) — MCP 协议消息格式基础
-- `20.7-ai-agent-infra/`
+- [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk) — Python 服务端/客户端 SDK
+- [MCP Inspector](https://github.com/modelcontextprotocol/inspector) — MCP 调试与测试工具
+- [Claude Desktop MCP 配置](https://modelcontextprotocol.io/quickstart/user) — Claude Desktop 集成指南
+- [Zod Documentation](https://zod.dev/) — TypeScript 模式验证库
+- [zod-to-json-schema](https://github.com/StefanTerdell/zod-to-json-schema) — Zod 转 JSON Schema 工具
+- [SSE Specification](https://html.spec.whatwg.org/multipage/server-sent-events.html) — Server-Sent Events 标准
+- [What is MCP? — Anthropic Docs](https://docs.anthropic.com/en/docs/agents-and-tools/mcp) — Anthropic 官方 MCP 概念解释
 
 ---
 

@@ -213,6 +213,84 @@ if (window.trustedTypes && trustedTypes.createPolicy) {
 // 通过 HTTP 头启用：Content-Security-Policy: require-trusted-types-for 'script'
 ```
 
+### 4.7 COOP / COEP — 跨源隔离
+
+```typescript
+// cross-origin-isolation.ts — 启用 SharedArrayBuffer 所需的隔离头
+import { Hono } from 'hono';
+
+const app = new Hono();
+
+app.use(async (c, next) => {
+  await next();
+
+  // Cross-Origin-Opener-Policy: 防止跨窗口引用攻击
+  c.header('Cross-Origin-Opener-Policy', 'same-origin');
+
+  // Cross-Origin-Embedder-Policy: 要求嵌入资源显式允许跨源
+  c.header('Cross-Origin-Embedder-Policy', 'require-corp');
+
+  // Cross-Origin-Resource-Policy: 资源级别跨源策略
+  c.header('Cross-Origin-Resource-Policy', 'same-origin');
+});
+
+// 为特定资源放宽 CORP（如 CDN 图片）
+app.get('/public/*', async (c, next) => {
+  await next();
+  c.header('Cross-Origin-Resource-Policy', 'cross-origin');
+});
+```
+
+### 4.8 CSP 违规上报端点
+
+```typescript
+// csp-report.ts — 收集 CSP 违规报告
+import { Hono } from 'hono';
+
+const app = new Hono();
+
+app.post('/csp-report', async (c) => {
+  const report = await c.req.json();
+
+  // 记录到日志系统（避免直接 console.log 在生产环境）
+  await securityLogger.warn('CSP Violation', {
+    documentUri: report['csp-report']?.['document-uri'],
+    blockedUri: report['csp-report']?.['blocked-uri'],
+    violatedDirective: report['csp-report']?.['violated-directive'],
+    userAgent: c.req.header('user-agent'),
+    timestamp: new Date().toISOString(),
+  });
+
+  return c.body(null, 204);
+});
+```
+
+### 4.9 DOMPurify 客户端消毒
+
+```typescript
+// xss-defense.ts — 富文本输入的客户端/服务端消毒
+import createDOMPurify from 'dompurify';
+import { JSDOM } from 'jsdom';
+
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window as any);
+
+// 服务端使用配置
+const ALLOWED_TAGS = ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li'];
+const ALLOWED_ATTR = ['href', 'title', 'target'];
+
+export function sanitizeHtml(dirty: string): string {
+  return DOMPurify.sanitize(dirty, {
+    ALLOWED_TAGS,
+    ALLOWED_ATTR,
+    ALLOW_DATA_ATTR: false,
+  });
+}
+
+// 在 React 中使用（客户端）
+// <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(userInput) }} />
+```
+
 ## 5. 现代 Web 安全趋势
 
 - **Subresource Integrity (SRI)**: 验证 CDN 资源哈希，防止供应链攻击
@@ -241,3 +319,9 @@ if (window.trustedTypes && trustedTypes.createPolicy) {
 - [OWASP Cheat Sheet: Cross-Site Request Forgery (CSRF)](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html)
 - [OWASP Cheat Sheet: Cross-Site Scripting (XSS)](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
 - [DOMPurify GitHub](https://github.com/cure53/DOMPurify)
+- [MDN: Cross-Origin-Opener-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Opener-Policy)
+- [MDN: Cross-Origin-Embedder-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cross-Origin-Embedder-Policy)
+- [web.dev — COOP and COEP](https://web.dev/articles/coop-coep)
+- [Reporting API — W3C](https://www.w3.org/TR/reporting-1/)
+- [Credential Management API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Credential_Management_API)
+- [web.dev — SameSite Cookies Explained](https://web.dev/articles/samesite-cookies-explained)

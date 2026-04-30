@@ -15,6 +15,8 @@ created: 2026-04-28
 - **Node.js 性能**：Event Loop 延迟、`perf_hooks`、V8 引擎 GC 跟踪。
 - **内存与 CPU**：堆内存趋势、长任务切片（Yielding）、Web Workers 负载均衡。
 - **真实用户监控（RUM）**：采样率控制、性能数据上报、分位统计（p50/p95/p99）。
+- **长动画帧 (LoAF)**：监测阻塞主线程的长任务与 INP 归因。
+- **资源提示监控**：preload / prefetch / preconnect 效果量化。
 
 ## 代码示例
 
@@ -169,6 +171,134 @@ class RUMCollector {
 }
 ```
 
+### web-vitals 归因分析
+
+```typescript
+// vitals-attribution.ts
+import { onLCP, onINP, onCLS, type MetricWithAttribution } from 'web-vitals/attribution';
+
+onLCP((metric: MetricWithAttribution) => {
+  const { element, url, timeToFirstByte, resourceLoadDelay } = metric.attribution;
+  console.log('LCP attributed to:', {
+    element: element?.nodeName,
+    url,
+    ttfb: timeToFirstByte,
+    resourceDelay: resourceLoadDelay,
+  });
+});
+```
+
+### INP 优化与长动画帧 (LoAF)
+
+```typescript
+// loaf-observer.ts
+const loafEntries: PerformanceEntry[] = [];
+
+new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    loafEntries.push(entry);
+    const { duration, startTime, firstUIEventTimestamp } = entry as any;
+    if (duration > 150) {
+      console.warn('Long Animation Frame:', { duration, startTime, firstUIEventTimestamp });
+    }
+  }
+}).observe({ type: 'long-animation-frame', buffered: true });
+```
+
+### Node.js V8 GC 跟踪
+
+```typescript
+// v8-gc-trace.ts
+import { writeHeapSnapshot } from 'node:v8';
+import { getHeapStatistics } from 'node:v8';
+
+setInterval(() => {
+  const stats = getHeapStatistics();
+  console.log('Heap used:', stats.used_heap_size / 1024 / 1024, 'MB');
+  if (stats.used_heap_size > stats.heap_size_limit * 0.9) {
+    writeHeapSnapshot('./heap-snapshot.heapsnapshot');
+  }
+}, 30000);
+```
+
+### CPU Profiling with inspector
+
+```typescript
+// cpu-profile.ts
+import * as inspector from 'node:inspector';
+import * as fs from 'node:fs';
+
+const session = new inspector.Session();
+session.connect();
+
+session.post('Profiler.enable', () => {
+  session.post('Profiler.start', () => {
+    setTimeout(() => {
+      session.post('Profiler.stop', (err, { profile }) => {
+        fs.writeFileSync('./cpu-profile.cpuprofile', JSON.stringify(profile));
+        session.disconnect();
+      });
+    }, 5000);
+  });
+});
+```
+
+### Worker Thread Pool 负载均衡
+
+```typescript
+// worker-pool.ts
+import { Worker } from 'node:worker_threads';
+import os from 'node:os';
+
+class WorkerPool {
+  private workers: Worker[] = [];
+  private queue: Array<{ task: any; resolve: (value: any) => void }> = [];
+  private index = 0;
+
+  constructor(script: string, poolSize = os.cpus().length) {
+    for (let i = 0; i < poolSize; i++) {
+      const worker = new Worker(script);
+      worker.on('message', (result) => result.resolve(result));
+      this.workers.push(worker);
+    }
+  }
+
+  execute(task: any): Promise<any> {
+    return new Promise((resolve) => {
+      const worker = this.workers[this.index++ % this.workers.length];
+      worker.postMessage({ task, resolve });
+    });
+  }
+}
+```
+
+### 资源提示 (preload/prefetch) 监控
+
+```typescript
+// resource-hints.ts
+const hintObs = new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    const r = entry as PerformanceResourceTiming;
+    if (r.deliveryType === 'navigational-prefetch') {
+      console.log('Prefetch hit:', r.name);
+    }
+  }
+});
+hintObs.observe({ type: 'resource', buffered: true });
+```
+
+### RUM Beacon 压缩上报
+
+```typescript
+// rum-compressed.ts
+async function sendCompressedRUM(payload: object): Promise<void> {
+  const json = JSON.stringify(payload);
+  const blob = new Blob([json], { type: 'application/json' });
+  const compressed = await new Response(blob.stream().pipeThrough(new CompressionStream('gzip'))).blob();
+  navigator.sendBeacon('/analytics/rum', compressed);
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -204,7 +334,13 @@ class RUMCollector {
 | Resource Timing Level 2 | 规范 | [w3.org/TR/resource-timing-2](https://www.w3.org/TR/resource-timing-2/) |
 | Navigation Timing Level 2 | 规范 | [w3.org/TR/navigation-timing-2](https://www.w3.org/TR/navigation-timing-2/) |
 | Lighthouse Scoring Calculator | 工具 | [googlechrome.github.io/lighthouse/scorecalc](https://googlechrome.github.io/lighthouse/scorecalc/) |
+| web-vitals Attribution Build | 文档 | [github.com/GoogleChrome/web-vitals#attribution-build](https://github.com/GoogleChrome/web-vitals#attribution-build) |
+| web.dev — Long Animation Frames | 指南 | [web.dev/articles/loaf](https://web.dev/articles/loaf) |
+| Node.js — V8 Heap Statistics | 官方文档 | [nodejs.org/api/v8.html](https://nodejs.org/api/v8.html) |
+| Node.js — Worker Threads | 官方文档 | [nodejs.org/api/worker_threads.html](https://nodejs.org/api/worker_threads.html) |
+| W3C — Resource Hints | 规范 | [w3.org/TR/resource-hints/](https://www.w3.org/TR/resource-hints/) |
+| Compression Streams API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API](https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

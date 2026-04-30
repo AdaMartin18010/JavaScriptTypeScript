@@ -1,5 +1,10 @@
 # 算法 — 理论基础
 
+> **定位**：`20-code-lab/20.4-data-algorithms/algorithms`
+> **关联**：`10-fundamentals/` | `30-knowledge-base/`
+
+---
+
 ## 1. 复杂度分析
 
 ### 时间复杂度
@@ -19,6 +24,8 @@
 - 递归算法: O(log n) 到 O(n) 栈空间
 - 动态规划: O(n) 到 O(n²) 表格空间
 
+---
+
 ## 2. 核心算法类别对比
 
 | 类别 | 代表算法 | 时间复杂度 | 空间复杂度 | 适用场景 | 关键思想 |
@@ -35,6 +42,8 @@
 | **DP** | 最长公共子序列 | O(mn) | O(min(m,n)) | 序列比对 | 子问题重叠 |
 | **贪心** | 活动选择 | O(n log n) | O(1) | 区间调度 | 局部最优即全局最优 |
 | **贪心** | Huffman 编码 | O(n log n) | O(n) | 数据压缩 | 构建最优前缀树 |
+
+---
 
 ## 3. 排序算法
 
@@ -135,6 +144,8 @@ function heapify(arr: number[], heapSize: number, root: number): void {
 // 示例
 console.log(heapSort([4, 10, 3, 5, 1])); // [1, 3, 4, 5, 10]
 ```
+
+---
 
 ## 4. 图算法
 
@@ -246,6 +257,8 @@ console.log(topologicalSort([[1, 0], [2, 1], [3, 1], [3, 2]], 4));
 // [0, 1, 2, 3]
 ```
 
+---
+
 ## 5. 动态规划
 
 解决具有**最优子结构**和**重叠子问题**的问题：
@@ -292,6 +305,43 @@ function longestCommonSubsequence(a: string, b: string): string {
 // 示例
 console.log(longestCommonSubsequence('ABCBDAB', 'BDCABA')); // "BCBA"
 ```
+
+### 5.2 编辑距离（Levenshtein Distance）
+
+```typescript
+function editDistance(a: string, b: string): number {
+  const m = a.length, n = b.length;
+  // dp[i][j] = a[0..i) 转换为 b[0..j) 的最小操作数
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+
+  for (let i = 0; i <= m; i++) dp[i][0] = i; // 删除 i 次
+  for (let j = 0; j <= n; j++) dp[0][j] = j; // 插入 j 次
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (a[i - 1] === b[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1]; // 无需操作
+      } else {
+        dp[i][j] = 1 + Math.min(
+          dp[i - 1][j],     // 删除
+          dp[i][j - 1],     // 插入
+          dp[i - 1][j - 1]  // 替换
+        );
+      }
+    }
+  }
+
+  return dp[m][n];
+}
+
+// 示例
+console.log(editDistance('kitten', 'sitting')); // 3
+// kitten → sitten (替换 k→s)
+// sitten → sittin (替换 e→i)
+// sittin → sitting (插入 g)
+```
+
+---
 
 ## 6. 代码示例：Dijkstra 最短路径
 
@@ -355,6 +405,8 @@ function dijkstraPQ(graph: Edge[][], start: number): number[] {
 }
 ```
 
+---
+
 ## 7. 代码示例：二分查找（ lower_bound ）
 
 ```typescript
@@ -407,13 +459,160 @@ function findMinInRotatedSortedArray(nums: number[]): number {
 console.log(findMinInRotatedSortedArray([3, 4, 5, 1, 2])); // 1
 ```
 
-## 8. 与相邻模块的关系
+---
+
+## 8. 并查集（Union-Find）
+
+```typescript
+class UnionFind {
+  private parent: number[];
+  private rank: number[];
+
+  constructor(n: number) {
+    this.parent = Array.from({ length: n }, (_, i) => i);
+    this.rank = new Array(n).fill(0);
+  }
+
+  find(x: number): number {
+    if (this.parent[x] !== x) {
+      this.parent[x] = this.find(this.parent[x]); // 路径压缩
+    }
+    return this.parent[x];
+  }
+
+  union(x: number, y: number): boolean {
+    const px = this.find(x), py = this.find(y);
+    if (px === py) return false;
+
+    // 按秩合并
+    if (this.rank[px] < this.rank[py]) {
+      this.parent[px] = py;
+    } else if (this.rank[px] > this.rank[py]) {
+      this.parent[py] = px;
+    } else {
+      this.parent[py] = px;
+      this.rank[px]++;
+    }
+    return true;
+  }
+
+  connected(x: number, y: number): boolean {
+    return this.find(x) === this.find(y);
+  }
+}
+
+// 示例：判断图中是否存在环
+function hasCycle(edges: [number, number][], n: number): boolean {
+  const uf = new UnionFind(n);
+  for (const [u, v] of edges) {
+    if (!uf.union(u, v)) return true; // 已在同一集合，加边成环
+  }
+  return false;
+}
+
+console.log(hasCycle([[0,1],[1,2],[2,0]], 3)); // true
+console.log(hasCycle([[0,1],[1,2]], 3));       // false
+```
+
+---
+
+## 9. Trie（前缀树）
+
+```typescript
+class TrieNode {
+  children = new Map<string, TrieNode>();
+  isEndOfWord = false;
+}
+
+class Trie {
+  private root = new TrieNode();
+
+  insert(word: string): void {
+    let node = this.root;
+    for (const ch of word) {
+      if (!node.children.has(ch)) node.children.set(ch, new TrieNode());
+      node = node.children.get(ch)!;
+    }
+    node.isEndOfWord = true;
+  }
+
+  search(word: string): boolean {
+    const node = this.findNode(word);
+    return node !== null && node.isEndOfWord;
+  }
+
+  startsWith(prefix: string): boolean {
+    return this.findNode(prefix) !== null;
+  }
+
+  private findNode(str: string): TrieNode | null {
+    let node = this.root;
+    for (const ch of str) {
+      if (!node.children.has(ch)) return null;
+      node = node.children.get(ch)!;
+    }
+    return node;
+  }
+}
+
+// 示例
+const trie = new Trie();
+trie.insert('apple');
+console.log(trie.search('apple'));   // true
+console.log(trie.search('app'));     // false
+console.log(trie.startsWith('app')); // true
+```
+
+---
+
+## 10. 滑动窗口
+
+```typescript
+// 定长窗口：找平均值最大的子数组
+function findMaxAverage(nums: number[], k: number): number {
+  let sum = nums.slice(0, k).reduce((a, b) => a + b, 0);
+  let maxSum = sum;
+
+  for (let i = k; i < nums.length; i++) {
+    sum += nums[i] - nums[i - k];
+    maxSum = Math.max(maxSum, sum);
+  }
+
+  return maxSum / k;
+}
+
+// 不定长窗口：最长无重复子串
+function lengthOfLongestSubstring(s: string): number {
+  const seen = new Set<string>();
+  let maxLen = 0;
+  let left = 0;
+
+  for (let right = 0; right < s.length; right++) {
+    while (seen.has(s[right])) {
+      seen.delete(s[left]);
+      left++;
+    }
+    seen.add(s[right]);
+    maxLen = Math.max(maxLen, right - left + 1);
+  }
+
+  return maxLen;
+}
+
+console.log(lengthOfLongestSubstring('abcabcbb')); // 3 ("abc")
+```
+
+---
+
+## 11. 与相邻模块的关系
 
 - **04-data-structures**: 算法依赖的数据结构
 - **08-performance**: 算法性能优化
 - **54-intelligent-performance**: AI 辅助算法优化
 
-## 9. 权威参考与外部链接
+---
+
+## 12. 权威参考与外部链接
 
 | 资源 | 描述 | 链接 |
 |------|------|------|
@@ -432,3 +631,10 @@ console.log(findMinInRotatedSortedArray([3, 4, 5, 1, 2])); // 1
 | **Khan Academy: Algorithms** | 算法入门免费课程 | [khanacademy.org/computing/computer-science/algorithms](https://www.khanacademy.org/computing/computer-science/algorithms) |
 | **Stanford CS 161** | 算法设计与分析 | [cs.stanford.edu/~tim/cs161](https://web.stanford.edu/class/cs161/) |
 | **Carnegie Mellon 15-451** | 算法设计与分析 | [cs.cmu.edu/~avrim/451f11](https://www.cs.cmu.edu/~avrim/451f11/) |
+| **3Blue1Brown: Algorithms** | 算法可视化视频系列 | [youtube.com/3blue1brown](https://www.youtube.com/c/3blue1brown) |
+| **Project Euler** | 数学与算法编程挑战 | [projecteuler.net](https://projecteuler.net/) |
+| **The Archive of Interesting Code** | 经典算法参考实现 | [keithschwarz.com/interesting](https://www.keithschwarz.com/interesting/) |
+
+---
+
+*本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

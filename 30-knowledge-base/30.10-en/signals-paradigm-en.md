@@ -95,7 +95,7 @@ const count = signal(0);
 const double = computed(() => count.value * 2);
 
 // Side effect
- effect(() => {
+effect(() => {
   console.log(`The count is now ${count.value}`);
 });
 
@@ -150,6 +150,84 @@ export class CounterComponent {
 
 > 📖 Reference: [Angular Signals Guide](https://angular.dev/guide/signals)
 
+### Vue 3.5+ (`shallowRef` + `computed`)
+
+```vue
+<script setup lang="ts">
+import { shallowRef, computed, watchEffect } from 'vue';
+
+// shallowRef is preferred for primitive signals in Vue 3.5+
+const count = shallowRef(0);
+const multiplier = shallowRef(2);
+
+// Computed derived signal
+const doubled = computed(() => count.value * multiplier.value);
+
+// Effect — runs whenever count changes
+watchEffect(() => {
+  console.log(`Count changed to: ${count.value}`);
+});
+
+function increment() {
+  count.value++;
+}
+
+function incrementMultiplier() {
+  multiplier.value++;
+}
+</script>
+
+<template>
+  <div>
+    <p>Count: {{ count }}</p>
+    <p>Doubled: {{ doubled }}</p>
+    <button @click="increment">Increment</button>
+    <button @click="incrementMultiplier">
+      Multiplier: {{ multiplier }}
+    </button>
+  </div>
+</template>
+```
+
+> 📖 Reference: [Vue Reactivity Fundamentals](https://vuejs.org/guide/essentials/reactivity-fundamentals.html) | [Vue `shallowRef`](https://vuejs.org/api/reactivity-advanced.html#shallowref)
+
+### Svelte 5 Runes
+
+```svelte
+<script>
+  // Svelte 5 uses runes for fine-grained reactivity
+  let count = $state(0);
+  let multiplier = $state(2);
+
+  // Derived state — recalculates only when dependencies change
+  let doubled = $derived(count * multiplier);
+
+  // Effect — runs when count changes
+  $effect(() => {
+    console.log(`Count changed to: ${count}`);
+  });
+
+  function increment() {
+    count += 1;
+  }
+
+  function incrementMultiplier() {
+    multiplier += 1;
+  }
+</script>
+
+<div>
+  <p>Count: {count}</p>
+  <p>Doubled: {doubled}</p>
+  <button onclick={increment}>Increment</button>
+  <button onclick={incrementMultiplier}>
+    Multiplier: {multiplier}
+  </button>
+</div>
+```
+
+> 📖 Reference: [Svelte 5 Runes](https://svelte.dev/docs/svelte/what-are-runes)
+
 ---
 
 ## TC39 Standardization
@@ -192,6 +270,59 @@ Signals provide **6-10x** better update performance than React Context for fine-
 ## Theorem (Signals Consistency)
 
 In a DAG structure, Signals' update propagation guarantees that all derived signals eventually converge to a state consistent with atomic signals, provided no circular dependencies exist.
+
+---
+
+## Advanced Patterns
+
+### Batching Updates (SolidJS)
+
+```tsx
+import { createSignal, batch } from 'solid-js';
+
+const [first, setFirst] = createSignal('John');
+const [last, setLast] = createSignal('Doe');
+
+// Without batch: effect runs twice
+// With batch: effect runs once after both updates
+batch(() => {
+  setFirst('Jane');
+  setLast('Smith');
+});
+```
+
+### Untracked Reads (Angular)
+
+```typescript
+import { signal, effect, untracked } from '@angular/core';
+
+const count = signal(0);
+const name = signal('Angular');
+
+effect(() => {
+  // Only re-runs when count changes, not when name changes
+  console.log(`${untracked(name)}: ${count()}`);
+});
+```
+
+---
+
+## Authoritative External Links
+
+- [TC39 Signals Proposal — Stage 1](https://github.com/tc39/proposal-signals)
+- [SolidJS Documentation](https://www.solidjs.com/docs/latest/api#createsignal)
+- [Preact Signals Guide](https://preactjs.com/guide/v10/signals/)
+- [Angular Signals](https://angular.dev/guide/signals)
+- [Vue.js Reactivity in Depth](https://vuejs.org/guide/extras/reactivity-in-depth.html)
+- [Svelte 5 Runes Introduction](https://svelte.dev/blog/runes)
+- [React `useSyncExternalStore` API](https://react.dev/reference/react/useSyncExternalStore)
+- [JS Framework Benchmark (Krausest)](https://krausest.github.io/js-framework-benchmark/)
+- [Builder.io: Signals vs Hooks](https://www.builder.io/blog/signals-vs-hooks)
+- [React Compiler Documentation](https://react.dev/learn/react-compiler)
+- [MDN — Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
+- [V8 Blog — Understanding Proxies](https://v8.dev/features/proxy)
+- [Preact Signals Core (GitHub)](https://github.com/preactjs/signals)
+- [TanStack Store (Framework-Agnostic Signals)](https://tanstack.com/store/latest)
 
 ---
 

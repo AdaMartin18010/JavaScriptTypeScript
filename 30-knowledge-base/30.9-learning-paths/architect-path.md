@@ -76,6 +76,33 @@ redirect: ./advanced-path.md
 - [Confluent — Kafka Design](https://www.confluent.io/blog/kafka-design/)
 ```
 
+### ADR YAML Frontmatter 模板（自动化追踪）
+
+```yaml
+---
+adrs:
+  - id: "ADR-042"
+    title: "采用 Kafka 作为事件总线"
+    status: accepted
+    date: "2026-04-15"
+    owner: "staff-engineer-li"
+    tags: ["messaging", "event-driven", "infrastructure"]
+    stakeholders: ["platform-team", "backend-team"]
+    context: "REST 同步调用导致级联超时"
+    decision: "采用 Apache Kafka"
+    consequences:
+      positive: ["100K msg/s 吞吐", "事件回放", "多语言客户端"]
+      negative: ["运维复杂度", "学习成本"]
+    alternatives:
+      - name: "RabbitMQ"
+        reason_rejected: "吞吐不足"
+      - name: "AWS SQS"
+        reason_rejected: "Vendor lock-in"
+    related_adrs: ["ADR-038", "ADR-041"]
+    superseded_by: null
+---
+```
+
 ---
 
 ## 架构评审检查清单
@@ -129,6 +156,117 @@ export const defaultChecklist: ArchReviewChecklist = {
 }
 ```
 
+### 自动化架构评审脚本
+
+```typescript
+// scripts/run-arch-review.ts
+import { defaultChecklist } from './arch-review-checklist';
+
+interface ReviewResult {
+  category: string;
+  passed: boolean;
+  items: { item: string; passed: boolean; note?: string }[];
+}
+
+function runReview(checklist = defaultChecklist): ReviewResult[] {
+  return Object.entries(checklist).map(([category, items]) => {
+    const itemResults = Object.entries(items).map(([item, passed]) => ({
+      item,
+      passed,
+      note: passed ? undefined : `REQUIRED: ${item} must be addressed`,
+    }));
+
+    return {
+      category,
+      passed: itemResults.every(i => i.passed),
+      items: itemResults,
+    };
+  });
+}
+
+// CLI 输出
+const results = runReview();
+let exitCode = 0;
+
+for (const result of results) {
+  const icon = result.passed ? '✅' : '❌';
+  console.log(`\n${icon} ${result.category.toUpperCase()}`);
+  for (const item of result.items) {
+    const mark = item.passed ? '  ✓' : '  ✗';
+    console.log(`${mark} ${item.item}${item.note ? ` — ${item.note}` : ''}`);
+    if (!item.passed) exitCode = 1;
+  }
+}
+
+process.exit(exitCode);
+```
+
+---
+
+## 系统架构图即代码（Mermaid + Structurizr）
+
+```markdown
+# 系统上下文图（C4 Model Level 1）
+
+```mermaid
+C4Context
+    title System Context diagram for E-Commerce Platform
+    Person(customer, "Customer", "浏览商品、下单、支付")
+    Person(admin, "Admin", "管理商品、订单、库存")
+    System(ecommerce, "E-Commerce Platform", "提供在线购物服务")
+    System_Ext(payment, "Payment Gateway", "Stripe / Alipay")
+    System_Ext(logistics, "Logistics API", "顺丰 / UPS")
+    Rel(customer, ecommerce, "浏览、下单、支付")
+    Rel(admin, ecommerce, "管理商品和订单")
+    Rel(ecommerce, payment, "处理支付")
+    Rel(ecommerce, logistics, "查询物流、创建运单")
+```
+
+```
+
+```typescript
+// structurizr.dsl — C4 Model as Code
+workspace {
+  model {
+    customer = person "Customer" "浏览商品、下单、支付"
+    admin = person "Admin" "管理商品、订单、库存"
+
+    ecommerce = softwareSystem "E-Commerce Platform" {
+      webApp = container "Web App" "Next.js" "React 19, TypeScript"
+      apiGateway = container "API Gateway" "Kong" "路由、限流、认证"
+      orderService = container "Order Service" "Node.js" "业务逻辑"
+      paymentWorker = container "Payment Worker" "BullMQ" "异步支付处理"
+      database = container "Database" "PostgreSQL" "主数据存储"
+      cache = container "Cache" "Redis" "会话、热点数据"
+    }
+
+    paymentGateway = softwareSystem "Payment Gateway" "Stripe / Alipay" "External"
+    logisticsAPI = softwareSystem "Logistics API" "顺丰 / UPS" "External"
+
+    customer -> webApp "浏览、下单"
+    admin -> webApp "管理后台"
+    webApp -> apiGateway "API 调用"
+    apiGateway -> orderService "转发请求"
+    orderService -> database "读写"
+    orderService -> cache "缓存"
+    orderService -> paymentWorker "触发支付"
+    paymentWorker -> paymentGateway "处理支付"
+    orderService -> logisticsAPI "查询物流"
+  }
+
+  views {
+    systemContext ecommerce {
+      include *
+      autolayout lr
+    }
+    container ecommerce {
+      include *
+      autolayout lr
+    }
+  }
+}
+```
+
 ---
 
 ## 推荐资源表
@@ -162,6 +300,21 @@ export const defaultChecklist: ArchReviewChecklist = {
 - [DORA — State of DevOps Reports](https://dora.dev/) — DevOps 研究与评估（Google）
 - [OWASP Cheat Sheet Series](https://cheatsheetseries.owasp.org/) — 安全架构速查表
 - [Azure Architecture Center](https://learn.microsoft.com/en-us/azure/architecture/) — 微软云架构模式库
+- [C4 Model for Visualising Software Architecture](https://c4model.com/) — Simon Brown 的软件架构可视化方法
+- [Structurizr DSL](https://docs.structurizr.com/dsl) — C4 Model 即代码工具
+- [Mermaid Diagrams](https://mermaid.js.org/) — Markdown 原生图表语法
+- [Architecture Decision Records (ADR)](https://adr.github.io/) — 架构决策记录方法论
+- [ThoughtWorks Technology Radar](https://www.thoughtworks.com/radar) — 技术趋势雷达
+- [InfoQ Architecture & Design](https://www.infoq.com/architecture-design/) — 架构设计新闻与案例
+- [ACM Queue — System Design](https://queue.acm.org/) — 系统设计与工程实践期刊
+- [Google Cloud Architecture Center](https://cloud.google.com/architecture) — GCP 架构最佳实践
+- [Kubernetes Documentation](https://kubernetes.io/docs/concepts/architecture/) — K8s 架构概念
+- [Istio Service Mesh](https://istio.io/latest/docs/concepts/what-is-istio/) — 服务网格架构
+- [AWS Architecture Icons](https://aws.amazon.com/architecture/icons/) — 官方架构图标
+- [The Twelve-Factor App](https://12factor.net/) — 云原生应用方法论
+- [Domain-Driven Design Reference](https://domainlanguage.com/wp-content/uploads/2016/05/DDD_Reference_2015-03.pdf) — Eric Evans DDD 参考
+- [Event Storming](https://www.eventstorming.com/) — 领域事件风暴工作坊
+- [Team Topologies](https://teamtopologies.com/) — 团队拓扑与组织设计
 
 ---
 

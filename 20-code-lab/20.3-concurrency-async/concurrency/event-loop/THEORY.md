@@ -220,6 +220,79 @@ scheduleMacroTask(() => console.log('Macro task via MessageChannel'));
 setTimeout(() => console.log('Macro task via setTimeout'), 0);
 ```
 
+#### 示例：scheduler.postTask — 优先级任务调度
+
+```typescript
+// scheduler-posttask.ts — 现代浏览器优先级任务调度 API
+
+async function demoSchedulerPostTask() {
+  // 定义不同优先级的任务
+  const tasks = [
+    { name: 'background-cleanup', priority: 'background' as const, fn: () => console.log('Background task') },
+    { name: 'user-visible-update', priority: 'user-visible' as const, fn: () => console.log('User visible task') },
+    { name: 'user-blocking-render', priority: 'user-blocking' as const, fn: () => console.log('User blocking task') },
+  ];
+
+  if ('scheduler' in window && 'postTask' in (window as any).scheduler) {
+    const scheduler = (window as any).scheduler;
+    // user-blocking 最先执行，background 最后执行
+    await Promise.all(tasks.map(t =>
+      scheduler.postTask(t.fn, { priority: t.priority })
+    ));
+  } else {
+    // 降级：使用 queueMicrotask / setTimeout
+    tasks.forEach(t => {
+      if (t.priority === 'user-blocking') queueMicrotask(t.fn);
+      else setTimeout(t.fn, 0);
+    });
+  }
+}
+
+// 带延迟和取消的任务
+async function delayedTask() {
+  const controller = new TaskController({ priority: 'user-visible' });
+  const promise = (window as any).scheduler.postTask(() => {
+    console.log('Delayed task executed');
+  }, { delay: 1000, signal: controller.signal });
+
+  // 1秒内可取消
+  // controller.abort();
+  return promise;
+}
+```
+
+#### 示例：Node.js promisified 定时器与事件循环
+
+```typescript
+// node-timers.ts — Node.js 定时器的 Promise 封装与事件循环协作
+
+import { setTimeout as sleep } from 'timers/promises';
+import { setImmediate as immediatePromise } from 'timers/promises';
+
+async function eventLoopFriendlyPolling(
+  predicate: () => boolean,
+  intervalMs = 100,
+  timeoutMs = 5000
+): Promise<boolean> {
+  const start = Date.now();
+
+  while (!predicate()) {
+    if (Date.now() - start > timeoutMs) return false;
+    // 使用 timers/promises 而非 busy-wait，让出事件循环
+    await sleep(intervalMs);
+  }
+  return true;
+}
+
+// 使用 setImmediate 让出 CPU 但不等待 I/O
+async function cooperativeYield(count: number) {
+  for (let i = 0; i < count; i++) {
+    console.log(`Step ${i}`);
+    await immediatePromise(); // 让出到事件循环
+  }
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -228,6 +301,7 @@ setTimeout(() => console.log('Macro task via setTimeout'), 0);
 | 微任务在每次宏任务后清空 | 微任务队列会递归清空直到为空（包括微任务中产生的微任务） |
 | `await` 创建新的宏任务 | `await` 将后续代码包装为微任务，而非宏任务 |
 | Node.js `nextTick` 是微任务 | `nextTick` 优先级高于 Promise 微任务，且不在事件循环的 phase 中 |
+| `requestAnimationFrame` 在微任务前执行 | rAF 在渲染阶段，微任务清空后、渲染前执行 |
 
 ### 3.3 扩展阅读
 
@@ -239,7 +313,13 @@ setTimeout(() => console.log('Macro task via setTimeout'), 0);
 - [libuv Design Overview](http://docs.libuv.org/en/v1.x/design.html)
 - [Node.js — Don't Block the Event Loop](https://nodejs.org/en/docs/guides/dont-block-the-event-loop/)
 - [MDN — Concurrency model and the event loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/EventLoop)
+- [MDN: queueMicrotask](https://developer.mozilla.org/en-US/docs/Web/API/queueMicrotask)
+- [MDN: scheduler.postTask](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/postTask)
+- [MDN: requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame)
 - [web.dev — Optimize long tasks](https://web.dev/articles/optimize-long-tasks)
+- [web.dev: Breaking up long tasks with yield](https://web.dev/articles/optimize-long-tasks#yield_to_main)
+- [WICG: Prioritized Task Scheduling](https://github.com/WICG/scheduling-apis)
+- [Chrome Developers: Inside look at modern web browser](https://developer.chrome.com/blog/inside-browser-part3)
 - `20.3-concurrency-async/concurrency/`
 
 ---

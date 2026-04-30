@@ -227,16 +227,126 @@ console.log(binarySearch([1, 3, 5, 7, 9], 5)); // 2
 console.log(lowerBound([1, 3, 5, 7, 9], 6)); // 3
 ```
 
+### 3.3 数组边界验证的形式化契约
+
+```typescript
+// array-contracts.ts — 基于契约的数组安全操作
+
+class SafeArray<T> {
+  #data: T[];
+
+  constructor(data: T[]) {
+    this.#data = [...data];
+  }
+
+  // { arr !== null }
+  // 后置: 返回值 === arr.length
+  get length(): number {
+    return this.#data.length;
+  }
+
+  // { 0 <= index < this.length }
+  // 后置: 返回值 === this.#data[index]
+  get(index: number): T {
+    requires((i: number) => i >= 0 && i < this.length, 'Index out of bounds')(index);
+    return this.#data[index];
+  }
+
+  // { 0 <= index <= this.length }
+  // 后置: this.length === old(this.length) + 1
+  //       this.#data[index] === item
+  insert(index: number, item: T): void {
+    requires((i: number) => i >= 0 && i <= this.length, 'Invalid insert position')(index);
+    this.#data.splice(index, 0, item);
+  }
+
+  // { this.length > 0 }
+  // 后置: 返回值 === this.#data[0] 且 this.length === old(this.length) - 1
+  shift(): T {
+    requires((_: unknown) => this.length > 0, 'Cannot shift from empty array')({});
+    return this.#data.shift()!;
+  }
+}
+
+// 使用示例
+const safe = new SafeArray([10, 20, 30]);
+console.log(safe.get(1)); // 20
+try {
+  safe.get(5);
+} catch (e) {
+  console.log((e as Error).message); // Contract violation (pre): Index out of bounds
+}
+```
+
+### 3.4 分离逻辑的简化演示：资源所有权
+
+```typescript
+// ownership.ts — 运行时资源所有权检查（分离逻辑的 JS 隐喻）
+
+class OwnershipError extends Error {}
+
+class OwnedResource<T> {
+  #value: T | null;
+  #owner: symbol;
+  #freed = false;
+
+  constructor(value: T) {
+    this.#value = value;
+    this.#owner = Symbol('owner');
+  }
+
+  // 借用检查：获取只读引用（不转移所有权）
+  borrow<R>(fn: (val: T) => R, caller: symbol): R {
+    if (this.#freed) throw new OwnershipError('Use after free');
+    if (caller !== this.#owner) throw new OwnershipError('Borrow checker: invalid owner');
+    return fn(this.#value!);
+  }
+
+  // 转移所有权（分离逻辑中的 "*" 隐喻）
+  transfer(newOwner: symbol): symbol {
+    if (this.#freed) throw new OwnershipError('Double free');
+    const oldOwner = this.#owner;
+    (this as any).#owner = newOwner;
+    return oldOwner;
+  }
+
+  // 释放资源（独占操作）
+  free(caller: symbol): void {
+    if (this.#freed) throw new OwnershipError('Double free');
+    if (caller !== this.#owner) throw new OwnershipError('Free by non-owner');
+    this.#freed = true;
+    this.#value = null;
+  }
+}
+
+// 演示
+const ownerA = Symbol('A');
+const res = new OwnedResource({ handle: 'file-1' });
+
+res.borrow((v) => console.log(v.handle), ownerA); // OK
+
+const ownerB = Symbol('B');
+res.transfer(ownerB);
+try {
+  res.borrow((v) => console.log(v), ownerA); // 错误：所有权已转移
+} catch (e) {
+  console.log((e as Error).message);
+}
+res.free(ownerB); // OK
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | 形式语义只是学术游戏 | 形式语义是编译器优化和验证的基础 |
 | 运行时断言等于形式验证 | 运行时断言仅检测错误，无法证明不存在错误 |
+| Hoare 逻辑只能验证整数程序 | 现代工具（Dafny、Why3）支持数组、指针、并发 |
 
 ### 3.3 扩展阅读
 
 - [Hoare: An Axiomatic Basis for Computer Programming (CACM 1969)](https://doi.org/10.1145/363235.363259)
+- [Dijkstra: Guarded Commands, Nondeterminacy and Formal Derivation of Programs (CACM 1975)](https://doi.org/10.1145/360933.360975)
 - [Software Foundations: Verifiable C / Separation Logic](https://softwarefoundations.cis.upenn.edu/)
 - [Dafny: A Language and Program Verifier](https://dafny.org/)
 - [ACSL: ANSI/ISO C Specification Language](https://frama-c.com/acsl.html)
@@ -246,6 +356,8 @@ console.log(lowerBound([1, 3, 5, 7, 9], 6)); // 3
 - [Iris: Higher-Order Concurrent Separation Logic](https://iris-project.org/)
 - [Microsoft Boogie](https://github.com/boogie-org/boogie) — 中间验证语言与工具
 - [KeY Project](https://www.key-project.org/) — Java 程序验证平台
+- [ Separation Logic Tutorial — John Reynolds](https://www.cs.cmu.edu/~jcr/seplogic.pdf)
+- [The Science of Programming — David Gries](https://www.springer.com/gp/book/9780387964805)
 - `20.10-formal-verification/formal-semantics/`
 
 ---

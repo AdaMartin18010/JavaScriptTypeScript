@@ -221,7 +221,89 @@ function SolidCounter() {
 }
 ```
 
-### 3.5 常见误区
+### 3.5 Vue 3 Reactivity / Vapor Mode 风格
+
+```typescript
+// vue-reactivity-style.ts — 基于 @vue/reactivity 的独立使用
+import { ref, computed, watch, effectScope } from '@vue/reactivity';
+
+// 可在任何 JS 环境中使用，不依赖 Vue 组件运行时
+const scope = effectScope();
+
+const price = ref(100);
+const quantity = ref(2);
+const total = computed(() => price.value * quantity.value);
+
+scope.run(() => {
+  watch(total, (newVal, oldVal) => {
+    console.log(`Total changed: ${oldVal} -> ${newVal}`);
+  });
+});
+
+price.value = 150; // 触发 watch
+quantity.value = 3; // 触发 watch
+
+// 批量释放所有 effect，防止内存泄漏
+// scope.stop();
+```
+
+### 3.6 Signal-Based Store Pattern（跨框架）
+
+```typescript
+// signal-store.ts — 轻量级全局状态管理，可注入任何框架
+import { signal, computed, batch, type Signal, type ReadonlySignal } from '@preact/signals-core';
+
+interface Store<S> {
+  state: ReadonlySignal<S>;
+  set<K extends keyof S>(key: K, value: S[K]): void;
+  patch(partial: Partial<S>): void;
+  subscribe<K extends keyof S>(key: K, callback: (value: S[K]) => void): () => void;
+}
+
+function createStore<S extends Record<string, unknown>>(initial: S): Store<S> {
+  const _state = signal<S>(initial);
+
+  return {
+    get state() { return _state as ReadonlySignal<S>; },
+    set(key, value) {
+      batch(() => {
+        _state.value = { ..._state.value, [key]: value };
+      });
+    },
+    patch(partial) {
+      batch(() => {
+        _state.value = { ..._state.value, ...partial };
+      });
+    },
+    subscribe(key, callback) {
+      let last = _state.value[key];
+      const run = () => {
+        const next = _state.value[key];
+        if (next !== last) {
+          last = next;
+          callback(next as S[typeof key]);
+        }
+      };
+      // 使用 effect 模式订阅
+      const subs = new Set<() => void>();
+      const autoEffect = () => {
+        void _state.value[key];
+        subs.add(run);
+        run();
+      };
+      autoEffect();
+      return () => subs.delete(run);
+    },
+  };
+}
+
+// 使用示例
+const userStore = createStore({ name: 'Alice', age: 30 });
+userStore.subscribe('age', (age) => console.log('Age:', age));
+userStore.patch({ age: 31 }); // 输出: Age: 31
+```
+
+### 3.7 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -229,7 +311,7 @@ function SolidCounter() {
 | Signals 只能用于小型项目 | Preact Signals 已被用于大型生产应用（如 Shopify） |
 | Angular Signals 与 RxJS 冲突 | Angular 推荐 Signals 处理同步状态，RxJS 处理异步流，二者互补 |
 
-### 3.6 扩展阅读
+### 3.8 扩展阅读
 
 - [SolidJS Reactivity](https://www.solidjs.com/tutorial/introduction_signals)
 - [Preact Signals — Core Docs](https://preactjs.com/guide/v10/signals/)
@@ -240,6 +322,10 @@ function SolidCounter() {
 - [React Compiler — React Docs](https://react.dev/learn/react-compiler)
 - [Storeon — 极简状态管理中的信号思想](https://github.com/storeon/storeon)
 - [StackBlitz — Signals Benchmark](https://github.com/ryansolid/solid-signals-benchmark)
+- [MDN: Signals API Explainer](https://github.com/tc39/proposal-signals/blob/main/README.md)
+- [Vue Vapor Mode — 无虚拟 DOM 实验](https://github.com/vuejs/vapor)
+- [MobX vs Signals — 响应式范式对比](https://mobx.js.org/README.html)
+- [React Use — 现代 React 并发原语](https://react.dev/reference/react/use)
 - `20.5-frontend-frameworks/`
 
 ---

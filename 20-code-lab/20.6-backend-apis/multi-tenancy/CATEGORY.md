@@ -10,7 +10,12 @@ created: 2026-04-28
 
 ## 包含内容
 
-- 本模块聚焦 multi tenancy 核心概念与工程实践。
+- 多租户架构模式（Shared Database / Schema-per-Tenant / Database-per-Tenant）
+- 租户上下文传递与隔离（AsyncLocalStorage / CLS）
+- 租户解析策略（子域名 / Header / JWT / 路径参数）
+- 数据库层路由与连接池管理
+- Schema 级隔离与 PostgreSQL Row-Level Security
+- 租户级资源配额与限流
 
 ## 相关索引
 
@@ -163,6 +168,39 @@ class DatabaseRouter {
 }
 ```
 
+### PostgreSQL Row-Level Security（RLS）策略
+
+```sql
+-- 启用 RLS 的租户隔离示例
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+
+-- 为每个租户创建策略
+CREATE POLICY tenant_isolation_policy ON orders
+  USING (tenant_id = current_setting('app.current_tenant')::UUID);
+
+-- 应用层在每个查询前设置租户上下文
+-- await client.query("SET app.current_tenant = 'tenant-acme-uuid'");
+```
+
+```typescript
+// rls-client.ts — Prisma + PostgreSQL RLS 集成
+import { PrismaClient } from '@prisma/client';
+
+export function createPrismaClientWithRLS(tenantId: string) {
+  const prisma = new PrismaClient({
+    log: ['query', 'error'],
+  });
+
+  // 使用中间件在每个查询前注入 RLS 上下文
+  prisma.$use(async (params, next) => {
+    await prisma.$executeRawUnsafe(`SET LOCAL app.current_tenant = '${tenantId}'`);
+    return next(params);
+  });
+
+  return prisma;
+}
+```
+
 ### 租户级资源配额限流
 
 ```typescript
@@ -204,6 +242,40 @@ if (!limiter.allow(req.tenant!.tenantId)) {
 }
 ```
 
+### 多租户缓存键命名空间
+
+```typescript
+// tenant-cache.ts — Redis 缓存键隔离
+class TenantCache {
+  constructor(private redis: Redis, private keyPrefix = 'tenant') {}
+
+  private namespacedKey(tenantId: string, key: string): string {
+    return `${this.keyPrefix}:${tenantId}:${key}`;
+  }
+
+  async get<T>(tenantId: string, key: string): Promise<T | null> {
+    const raw = await this.redis.get(this.namespacedKey(tenantId, key));
+    return raw ? JSON.parse(raw) : null;
+  }
+
+  async set(tenantId: string, key: string, value: unknown, ttlSeconds = 300): Promise<void> {
+    await this.redis.setex(
+      this.namespacedKey(tenantId, key),
+      ttlSeconds,
+      JSON.stringify(value)
+    );
+  }
+
+  async flushTenant(tenantId: string): Promise<void> {
+    const pattern = this.namespacedKey(tenantId, '*');
+    const keys = await this.redis.keys(pattern);
+    if (keys.length > 0) {
+      await this.redis.del(...keys);
+    }
+  }
+}
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -218,6 +290,9 @@ if (!limiter.allow(req.tenant!.tenantId)) {
 | PostgreSQL Row Level Security | 文档 | [postgresql.org/docs/current/ddl-rowsecurity.html](https://www.postgresql.org/docs/current/ddl-rowsecurity.html) |
 | CNCF — SaaS Tenant Isolation Patterns | 白皮书 | [cncf.io](https://www.cncf.io/reports/) |
 | Martin Fowler — MultiTenancy Bliki | 文章 | [martinfowler.com/bliki/Multitenancy.html](https://martinfowler.com/bliki/Multitenancy.html) |
+| Prisma Middleware | 文档 | [prisma.io/docs/orm/prisma-client/client-extensions/middleware](https://www.prisma.io/docs/orm/prisma-client/client-extensions/middleware) |
+| Node.js Async Hooks | 文档 | [nodejs.org/api/async_hooks.html](https://nodejs.org/api/async_hooks.html) |
+| Redis Keyspace Notifications | 文档 | [redis.io/docs/manual/keyspace-notifications](https://redis.io/docs/latest/develop/use/keyspace-notifications/) |
 
 ---
 

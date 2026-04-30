@@ -197,6 +197,120 @@ ${schema.jsx}
 }
 ```
 
+### AST 驱动的安全代码生成
+
+```typescript
+// codegen-ast.ts — 使用 @babel/generator 生成类型安全代码
+import * as t from '@babel/types';
+import generate from '@babel/generator';
+
+export function generateFormComponentAst(fields: Array<{ name: string; type: string; required: boolean }>): string {
+  const importReact = t.importDeclaration(
+    [t.importDefaultSpecifier(t.identifier('React'))],
+    t.stringLiteral('react')
+  );
+
+  const body = fields.map((field) => {
+    const inputType = field.type === 'number' ? 'number' : 'text';
+    return t.jsxElement(
+      t.jsxOpeningElement(t.jsxIdentifier('div'), []),
+      t.jsxClosingElement(t.jsxIdentifier('div')),
+      [
+        t.jsxElement(
+          t.jsxOpeningElement(t.jsxIdentifier('label'), []),
+          t.jsxClosingElement(t.jsxIdentifier('label')),
+          [t.jsxText(field.name)]
+        ),
+        t.jsxElement(
+          t.jsxOpeningElement(
+            t.jsxIdentifier('input'),
+            [
+              t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral(inputType)),
+              t.jsxAttribute(t.jsxIdentifier('name'), t.stringLiteral(field.name)),
+              ...(field.required ? [t.jsxAttribute(t.jsxIdentifier('required'))] : []),
+            ],
+            true
+          ),
+          null,
+          []
+        ),
+      ]
+    );
+  });
+
+  const component = t.functionDeclaration(
+    t.identifier('GeneratedForm'),
+    [],
+    t.blockStatement([
+      t.returnStatement(
+        t.jsxElement(
+          t.jsxOpeningElement(t.jsxIdentifier('form'), []),
+          t.jsxClosingElement(t.jsxIdentifier('form')),
+          body
+        )
+      ),
+    ])
+  );
+
+  const ast = t.file(t.program([importReact, component]));
+  return generate(ast).code;
+}
+```
+
+### 实时协作状态同步（Yjs CRDT）
+
+```typescript
+// collaboration.ts — 基于 Yjs 的多用户画布协同编辑
+import * as Y from 'yjs';
+import { WebsocketProvider } from 'y-websocket';
+
+interface CanvasElement {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  type: string;
+}
+
+class CollaborativeCanvas {
+  private doc = new Y.Doc();
+  private elements: Y.Array<Y.Map<unknown>>;
+  private provider: WebsocketProvider;
+
+  constructor(roomId: string, wsUrl: string) {
+    this.elements = this.doc.getArray('elements');
+    this.provider = new WebsocketProvider(wsUrl, roomId, this.doc);
+  }
+
+  addElement(el: CanvasElement) {
+    const map = new Y.Map<unknown>();
+    Object.entries(el).forEach(([k, v]) => map.set(k, v));
+    this.elements.push([map]);
+  }
+
+  updateElement(id: string, patch: Partial<CanvasElement>) {
+    for (const map of this.elements) {
+      if (map.get('id') === id) {
+        Object.entries(patch).forEach(([k, v]) => map.set(k, v));
+        break;
+      }
+    }
+  }
+
+  observe(callback: (elements: CanvasElement[]) => void) {
+    this.elements.observe(() => {
+      callback(this.elements.map((m) => Object.fromEntries(m) as CanvasElement));
+    });
+  }
+
+  destroy() {
+    this.provider.destroy();
+    this.doc.destroy();
+  }
+}
+```
+
 ## 关联模块
 
 - `56-code-generation` — 代码生成
@@ -219,6 +333,13 @@ ${schema.jsx}
 | Appsmith | 文档 | [docs.appsmith.com](https://docs.appsmith.com) |
 | ToolJet | 文档 | [docs.tooljet.com](https://docs.tooljet.com) |
 | Ajv — JSON Schema Validator | 文档 | [ajv.js.org](https://ajv.js.org/) |
+| Babel AST 手册 | 文档 | [github.com/jamiebuilds/babel-handbook](https://github.com/jamiebuilds/babel-handbook/blob/master/translations/en/plugin-handbook.md) |
+| Yjs — CRDT 共享类型 | 文档 | [docs.yjs.dev](https://docs.yjs.dev/) |
+| Monaco Editor | 文档 | [microsoft.github.io/monaco-editor](https://microsoft.github.io/monaco-editor/) |
+| Builder.io — 可视化 CMS | 文档 | [www.builder.io/c/docs/developers](https://www.builder.io/c/docs/developers) |
+| React DnD | 文档 | [react-dnd.github.io/react-dnd/about](https://react-dnd.github.io/react-dnd/about) |
+| tldraw — 开源白板引擎 | GitHub | [github.com/tldraw/tldraw](https://github.com/tldraw/tldraw) |
+| Slate.js — 富文本框架 | 文档 | [docs.slatejs.org](https://docs.slatejs.org/) |
 
 ---
 

@@ -124,6 +124,55 @@ server.listen(3000, async () => {
 });
 ```
 
+### 跨运行时兼容性验证脚本
+
+```typescript
+// verify-runtime-compat.ts
+// 验证当前运行时的 WinterCG API 支持度
+
+async function verifyRuntime() {
+  const checks = {
+    fetch: typeof fetch !== 'undefined',
+    Request: typeof Request !== 'undefined',
+    Response: typeof Response !== 'undefined',
+    ReadableStream: typeof ReadableStream !== 'undefined',
+    WritableStream: typeof WritableStream !== 'undefined',
+    TextEncoder: typeof TextEncoder !== 'undefined',
+    TextDecoder: typeof TextDecoder !== 'undefined',
+    crypto: typeof crypto !== 'undefined',
+    URLPattern: typeof URLPattern !== 'undefined',
+    structuredClone: typeof structuredClone !== 'undefined',
+    atob: typeof atob !== 'undefined',
+    btoa: typeof btoa !== 'undefined',
+    console: typeof console !== 'undefined',
+    setTimeout: typeof setTimeout !== 'undefined',
+    clearTimeout: typeof clearTimeout !== 'undefined',
+    setInterval: typeof setInterval !== 'undefined',
+    clearInterval: typeof clearInterval !== 'undefined',
+    queueMicrotask: typeof queueMicrotask !== 'undefined',
+    AbortController: typeof AbortController !== 'undefined',
+  };
+
+  const runtime =
+    typeof Bun !== 'undefined' ? 'Bun'
+    : typeof Deno !== 'undefined' ? 'Deno'
+    : typeof process !== 'undefined' ? 'Node.js'
+    : 'Unknown/Edge';
+
+  console.log(`Runtime: ${runtime}`);
+  console.log(`WinterCG API Coverage:`);
+  console.table(checks);
+
+  const supported = Object.values(checks).filter(Boolean).length;
+  const total = Object.keys(checks).length;
+  console.log(`\nCoverage: ${supported}/${total} (${(supported/total*100).toFixed(1)}%)`);
+
+  return { runtime, checks, coverage: supported / total };
+}
+
+verifyRuntime();
+```
+
 ### npm 安全性审计命令
 
 ```bash
@@ -138,6 +187,22 @@ npx license-checker --summary
 
 # 验证 lockfile 完整性
 npm ci --audit
+
+# 检查过时的依赖
+npm outdated
+
+# 生成 SPDX SBOM
+npm sbom --format=spdx-json --output=sbom.json
+```
+
+### TypeScript 版本兼容性验证
+
+```bash
+# 验证 tsconfig strict 子选项
+npx tsc --showConfig | jq '.compilerOptions | {strict, noImplicitAny, strictNullChecks, strictFunctionTypes}'
+
+# 检查类型覆盖（需要 type-coverage 包）
+npx type-coverage --strict --detail
 ```
 
 ---
@@ -149,8 +214,11 @@ npm ci --audit
 | ECMA-262 规范 | <https://tc39.es/ecma262/> | 语言语义最终来源 |
 | TypeScript 规范 | <https://github.com/microsoft/TypeScript/blob/main/doc/spec.md> | 类型系统行为 |
 | V8 博客 | <https://v8.dev/blog> | 引擎架构与优化 |
+| V8 Maglev | <https://v8.dev/blog/maglev> | 中层编译器 |
 | Node.js Release | <https://nodejs.org/en/blog/release/> | 运行时版本特性 |
+| Node.js Test Runner | <https://nodejs.org/api/test.html> | 内置测试文档 |
 | Deno 文档 | <https://docs.deno.com/> | 权限与安全模型 |
+| Bun 博客 | <https://bun.sh/blog> | 运行时版本特性 |
 | React RFCs | <https://github.com/reactjs/rfcs> | 框架架构决策 |
 | web.dev 性能 | <https://web.dev/articles/rendering-performance> | 渲染管线 |
 | TechEmpower Benchmark | <https://www.techempower.com/benchmarks/> | 独立性能数据 |
@@ -162,6 +230,14 @@ npm ci --audit
 | caniuse | <https://caniuse.com/> | 浏览器特性兼容性矩阵 |
 | Node.js Security WG | <https://github.com/nodejs/security-wg> | Node.js 安全策略与公告 |
 | OpenJS Foundation | <https://openjsf.org/> | 生态治理与标准参与 |
+| WinterCG | <https://wintercg.org/> | 跨运行时兼容性标准 |
+| State of JS | <https://stateofjs.com/> | 开发者调查与趋势 |
+| Devographics Surveys | <https://survey.devographics.com/> | 开发者调查原始数据 |
+| LangChain.js Releases | <https://github.com/langchain-ai/langchainjs/releases> | 版本验证 |
+| MCP TypeScript SDK | <https://github.com/modelcontextprotocol/typescript-sdk> | 版本验证 |
+| Chrome Built-in AI | <https://developer.chrome.com/docs/ai/built-in> | 浏览器 AI API |
+| WebNN Spec | <https://www.w3.org/TR/webnn/> | W3C 神经网络 API |
+| Stanford PL Encyclopedia | <https://plato.stanford.edu/entries/type-theory/> | 类型理论学术来源 |
 
 ---
 

@@ -332,6 +332,40 @@ const cache = new Map();  // 永远增长的缓存
 // 修复: 使用 WeakMap 或 LRU
 ```
 
+```typescript
+// 4. LRU 缓存实现（防止无限增长）
+class LRUCache<K, V> {
+  private cache = new Map<K, V>();
+
+  constructor(private maxSize: number) {}
+
+  get(key: K): V | undefined {
+    const value = this.cache.get(key);
+    if (value !== undefined) {
+      // 访问后移至末尾（最新）
+      this.cache.delete(key);
+      this.cache.set(key, value);
+    }
+    return value;
+  }
+
+  set(key: K, value: V): void {
+    if (this.cache.has(key)) this.cache.delete(key);
+    else if (this.cache.size >= this.maxSize) {
+      // 淘汰最久未使用
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+    }
+    this.cache.set(key, value);
+  }
+}
+
+// 使用示例
+const cache = new LRUCache<string, any>(100);
+cache.set('user:42', { name: 'Alice' });
+console.log(cache.get('user:42')); // { name: 'Alice' }
+```
+
 ---
 
 ## 5. 框架性能对比
@@ -464,5 +498,23 @@ const HeavyChart = lazy(() => import('./HeavyChart'));
 - [ ] 定期分析性能瓶颈
 
 ---
+
+## 参考资源
+
+- [V8 Blog: Trash talk](https://v8.dev/blog/trash-talk) — V8 垃圾回收器深度解析
+- [V8 Blog: Elements kinds in V8](https://v8.dev/blog/elements-kinds) — 数组内部类型优化
+- [V8 Blog: Orinoco](https://v8.dev/blog/orinoco) — V8 并行垃圾回收
+- [JavaScript Engine Fundamentals: Optimizing prototypes](https://mathiasbynens.be/notes/prototypes) — 隐藏类与原型优化
+- [MDN: Performance API](https://developer.mozilla.org/en-US/docs/Web/API/Performance)
+- [web.dev: Optimize JavaScript Execution](https://web.dev/articles/optimize-javascript-execution)
+- [web.dev: Reduce JavaScript payloads with tree shaking](https://web.dev/articles/reduce-javascript-payloads-with-tree-shaking)
+- [TypeScript Compiler Performance](https://github.com/microsoft/TypeScript/wiki/Performance) — 官方性能调优指南
+- [TC39: WeakRefs](https://github.com/tc39/proposal-weakrefs) — WeakRef 与 FinalizationRegistry 提案
+- [Node.js Worker threads](https://nodejs.org/api/worker_threads.html) — 多线程编程指南
+- [Chrome DevTools: Memory profiling](https://developer.chrome.com/docs/devtools/memory-problems/)
+- [Webpack Bundle Analyzer](https://github.com/webpack-contrib/webpack-bundle-analyzer)
+- [esbuild: Performance](https://esbuild.github.io/faq/#why-is-esbuild-fast) — 为什么 esbuild 这么快
+- [SWC: Rust-based platform for the Web](https://swc.rs/)
+- [HTTP Archive: JavaScript bytes](https://httparchive.org/reports/state-of-javascript) — Web 年度 JS 统计
 
 *本文档提供了基于基准测试的性能数据对比和实用优化建议。*

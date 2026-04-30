@@ -191,6 +191,184 @@ async function orchestrateCodeReview(codeUrl: string) {
 }
 ```
 
+### A2A Express Server Implementation
+
+```typescript
+// a2a-server.ts
+import express from 'express';
+
+const app = express();
+app.use(express.json());
+
+// Serve Agent Card
+app.get('/.well-known/agent.json', (req, res) => {
+  res.json({
+    name: 'CodeReviewAgent',
+    url: 'https://agents.example.com/code-review',
+    version: '1.0.0',
+    capabilities: { streaming: true, pushNotifications: false, stateTransitionHistory: true },
+    skills: [{ id: 'typescript-review', name: 'TypeScript Code Review', tags: ['typescript'] }],
+    authentication: { schemes: ['Bearer'] },
+  });
+});
+
+// Create task
+app.post('/tasks', (req, res) => {
+  const { skillId, input } = req.body;
+  const task: Task = {
+    id: crypto.randomUUID(),
+    status: 'submitted',
+    artifacts: [],
+    history: [{ state: 'submitted', timestamp: new Date().toISOString() }],
+  };
+  // enqueue for processing...
+  res.status(201).json(task);
+});
+
+// Stream task updates
+app.get('/tasks/:id/stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  // emit status updates...
+  const interval = setInterval(() => {
+    res.write(`data: ${JSON.stringify({ state: 'working', timestamp: new Date().toISOString() })}\n\n`);
+  }, 1000);
+  req.on('close', () => clearInterval(interval));
+});
+
+app.listen(3000);
+```
+
+### Task Status Polling Client
+
+```typescript
+// polling-client.ts
+class A2APollingClient {
+  constructor(private client: A2AClient) {}
+
+  async pollUntilComplete(
+    agentUrl: string,
+    taskId: string,
+    intervalMs = 2000
+  ): Promise<Task> {
+    return new Promise((resolve, reject) => {
+      const timer = setInterval(async () => {
+        const task = await this.client.getTask(agentUrl, taskId);
+        if (task.status === 'completed') {
+          clearInterval(timer);
+          resolve(task);
+        }
+        if (task.status === 'failed' || task.status === 'canceled') {
+          clearInterval(timer);
+          reject(new Error(`Task ${taskId} ${task.status}`));
+        }
+      }, intervalMs);
+    });
+  }
+
+  async getTask(agentUrl: string, taskId: string): Promise<Task> {
+    const res = await fetch(`${agentUrl}/tasks/${taskId}`, {
+      headers: { Authorization: `Bearer ${this.client['token']}` },
+    });
+    return res.json();
+  }
+}
+```
+
+### Push Notification Handler
+
+```typescript
+// push-handler.ts
+app.post('/webhooks/a2a', (req, res) => {
+  const { taskId, status, agentUrl } = req.body;
+  console.log(`Push update: Task ${taskId} is now ${status} from ${agentUrl}`);
+  // update local cache / notify user
+  res.sendStatus(200);
+});
+```
+
+### Agent Card Zod Schema Validation
+
+```typescript
+// agent-card-schema.ts
+import { z } from 'zod';
+
+const AgentCardSchema = z.object({
+  name: z.string(),
+  url: z.string().url(),
+  version: z.string(),
+  capabilities: z.object({
+    streaming: z.boolean(),
+    pushNotifications: z.boolean(),
+    stateTransitionHistory: z.boolean(),
+  }),
+  skills: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      tags: z.array(z.string()),
+    })
+  ),
+  authentication: z.object({
+    schemes: z.array(z.string()),
+  }),
+});
+
+export type ValidatedAgentCard = z.infer<typeof AgentCardSchema>;
+export const validateAgentCard = (data: unknown) => AgentCardSchema.parse(data);
+```
+
+### Error Handling for Task Failures
+
+```typescript
+// error-handling.ts
+class A2AError extends Error {
+  constructor(
+    public code: 'TASK_FAILED' | 'AGENT_UNREACHABLE' | 'INVALID_SKILL',
+    message: string
+  ) {
+    super(message);
+  }
+}
+
+async function safeCreateTask(
+  client: A2AClient,
+  agentUrl: string,
+  skillId: string,
+  input: unknown
+): Promise<Task> {
+  try {
+    const card = await client.discoverAgent(agentUrl);
+    if (!card.skills.some((s) => s.id === skillId)) {
+      throw new A2AError('INVALID_SKILL', `Skill ${skillId} not found on agent`);
+    }
+    return await client.createTask(agentUrl, skillId, input);
+  } catch (err) {
+    if (err instanceof A2AError) throw err;
+    throw new A2AError('AGENT_UNREACHABLE', String(err));
+  }
+}
+```
+
+### MCP Tool Call within A2A Task
+
+```typescript
+// mcp-a2a-bridge.ts
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+
+async function executeMCPWithinA2A(taskInput: { tool: string; args: unknown }) {
+  const transport = new StdioClientTransport({ command: 'node', args: ['mcp-server.js'] });
+  const client = new Client({ name: 'a2a-bridge', version: '1.0.0' });
+  await client.connect(transport);
+
+  const result = await client.callTool({ name: taskInput.tool, arguments: taskInput.args as any });
+  await client.close();
+  return result;
+}
+```
+
 ---
 
 ## Reference Links
@@ -200,6 +378,12 @@ async function orchestrateCodeReview(codeUrl: string) {
 - [MCP (Model Context Protocol) — Anthropic](https://modelcontextprotocol.io/)
 - [MCP Specification](https://spec.modelcontextprotocol.io/)
 - [Google Cloud — A2A Overview](https://cloud.google.com/blog/topics/ai-ml)
+- [OpenAI Function Calling](https://platform.openai.com/docs/guides/function-calling)
+- [LangChain Multi-Agent Orchestration](https://python.langchain.com/docs/modules/agents/)
+- [AutoGen — Microsoft Research](https://github.com/microsoft/autogen)
+- [CrewAI Documentation](https://docs.crewai.com/)
+- [Zod Schema Validation](https://zod.dev/)
+- [SSE (Server-Sent Events) MDN](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)
 
 ---
 

@@ -222,12 +222,80 @@ const config = isESM
   : require('./config.cjs');
 ```
 
+#### import.meta.resolve — 模块路径解析
+
+```typescript
+// resolve-module.ts — 解析模块绝对路径（Node.js 16+ 实验性，Node 20+ 稳定）
+
+// 获取模块的绝对文件路径（不加载执行）
+const lodashPath = await import.meta.resolve('lodash');
+console.log(lodashPath); // file:///.../node_modules/lodash/lodash.js
+
+// 解析相对路径
+const utilsPath = await import.meta.resolve('./utils.js', import.meta.url);
+
+// 降级方案（Node < 20）
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const fallbackPath = require.resolve('lodash');
+```
+
+#### 带重试机制的动态导入
+
+```typescript
+// retry-import.ts — 网络不稳定场景下的导入重试
+
+async function importWithRetry<T>(
+  specifier: string,
+  options: { retries?: number; delayMs?: number } = {}
+): Promise<T> {
+  const { retries = 3, delayMs = 1000 } = options;
+
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await import(specifier);
+    } catch (err) {
+      if (attempt === retries) throw err;
+      console.warn(`Import attempt ${attempt} failed, retrying in ${delayMs}ms...`);
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+  throw new Error('Unreachable');
+}
+
+// 使用：CDN 资源加载容错
+const lib = await importWithRetry('https://cdn.example.com/lib.js');
+```
+
+#### 动态导入 WebAssembly 模块
+
+```typescript
+// wasm-loader.ts — ESM 动态导入 WASM
+
+async function loadWasm(url: string) {
+  const mod = await import(/* @vite-ignore */ url);
+  // WebAssembly ESM 包装器通常导出 { default: WebAssembly.Module }
+  const wasmModule = mod.default;
+  const instance = await WebAssembly.instantiate(wasmModule, {
+    env: { memory: new WebAssembly.Memory({ initial: 256 }) }
+  });
+  return instance.exports;
+}
+
+// 使用示例（假设 WASM 导出了 add 函数）
+const { add } = await loadWasm('./math.wasm');
+console.log(add(1, 2)); // 3
+```
+
 ### 3.4 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | ESM 和 CJS 可以随意混用 | 互操作需要特定加载器和转换规则 |
 | 循环依赖会自动解决 | 循环依赖可能导致未初始化访问 |
+| `import()` 路径可以完全动态 | 静态分析工具需要能推断至少一部分路径 |
+| `require()` 在 ESM 中可用 | Node ESM 中需使用 `createRequire` |
+| 动态导入绕过 tree-shaking | 构建工具仍会对被导入模块做 tree-shaking |
 
 ### 3.5 扩展阅读
 
@@ -235,12 +303,15 @@ const config = isESM
 - [MDN：import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import)
 - [Node.js：ECMAScript Modules](https://nodejs.org/api/esm.html)
 - [Node.js：Modules CommonJS](https://nodejs.org/api/modules.html)
+- [Node.js: import.meta.resolve](https://nodejs.org/api/esm.html#importmetaresolvespecifier-parent)
 - [ECMAScript® 2025 — Import Calls](https://tc39.es/ecma262/#sec-import-calls)
+- [ECMAScript® 2025 — HostLoadImportedModule](https://tc39.es/ecma262/#sec-HostLoadImportedModule)
 - [Vite: import.meta.glob](https://vitejs.dev/guide/features.html#glob-import)
 - [Webpack: Code Splitting — Dynamic Imports](https://webpack.js.org/guides/code-splitting/#dynamic-imports)
 - [Rollup: Dynamic Import](https://rollupjs.org/tutorial/#code-splitting)
 - [Import Attributes Proposal](https://github.com/tc39/proposal-import-attributes)
 - [Web.dev: Lazy Loading JavaScript](https://web.dev/articles/optimize-lcp#lazy_loading)
+- [Web.dev: Reduce JavaScript payloads with code splitting](https://web.dev/articles/reduce-javascript-payloads-with-code-splitting)
 - `10-fundamentals/10.1-language-semantics/06-modules/`
 
 ---

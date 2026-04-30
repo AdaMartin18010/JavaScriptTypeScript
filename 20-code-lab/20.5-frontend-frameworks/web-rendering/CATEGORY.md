@@ -180,6 +180,118 @@ export const containLayoutPaint = {
 // React 用法: <div style={containLayoutPaint}>...</div>
 ```
 
+### 并发渲染调度器（Time Slicing 概念）
+
+```typescript
+// concurrent-scheduler.ts — 模拟 React 18 concurrent 时间切片
+export function scheduleConcurrentWork<T>(
+  items: T[],
+  processor: (item: T) => void,
+  options: { chunkSize?: number; yieldMs?: number } = {}
+): Promise<void> {
+  const { chunkSize = 10, yieldMs = 5 } = options;
+
+  return new Promise((resolve) => {
+    let index = 0;
+
+    function workLoop(deadline: IdleDeadline) {
+      while (index < items.length && deadline.timeRemaining() > yieldMs) {
+        const batchEnd = Math.min(index + chunkSize, items.length);
+        for (; index < batchEnd; index++) {
+          processor(items[index]);
+        }
+      }
+
+      if (index < items.length) {
+        requestIdleCallback(workLoop);
+      } else {
+        resolve();
+      }
+    }
+
+    requestIdleCallback(workLoop);
+  });
+}
+
+// 可运行示例
+const largeDataset = Array.from({ length: 10000 }, (_, i) => i);
+scheduleConcurrentWork(largeDataset, (n) => {
+  // 处理每一项，不阻塞主线程
+  Math.sqrt(n);
+}).then(() => console.log('所有项目处理完成'));
+```
+
+### 焦点陷阱（Focus Trap）无障碍实现
+
+```typescript
+// accessibility-focus-trap.ts — 模态框/对话框焦点管理
+export function createFocusTrap(container: HTMLElement) {
+  const focusableSelector =
+    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+  function trap(e: KeyboardEvent) {
+    if (e.key !== 'Tab') return;
+
+    const focusables = Array.from(
+      container.querySelectorAll<HTMLElement>(focusableSelector)
+    ).filter((el) => !el.hasAttribute('disabled') && el.offsetParent !== null);
+
+    if (focusables.length === 0) return;
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  container.addEventListener('keydown', trap);
+  // 自动聚焦第一个可聚焦元素
+  const first = container.querySelector<HTMLElement>(focusableSelector);
+  first?.focus();
+
+  return () => container.removeEventListener('keydown', trap);
+}
+```
+
+### CSS Houdini Paint Worklet
+
+```typescript
+// houdini-paint.ts — CSS Houdini 自定义绘制（需在单独 JS 文件注册）
+// worklet.ts（单独文件，无法直接 import）
+/*
+class CheckerboardPainter {
+  static get inputProperties() { return ['--checkerboard-size', '--checkerboard-color']; }
+
+  paint(ctx: PaintRenderingContext2D, geom: PaintSize, props: StylePropertyMapReadOnly) {
+    const size = parseInt(props.get('--checkerboard-size')?.toString() ?? '20');
+    const color = props.get('--checkerboard-color')?.toString() ?? 'black';
+    for (let y = 0; y < geom.height; y += size) {
+      for (let x = 0; x < geom.width; x += size) {
+        if ((x / size + y / size) % 2 === 0) {
+          ctx.fillStyle = color;
+          ctx.fillRect(x, y, size, size);
+        }
+      }
+    }
+  }
+}
+registerPaint('checkerboard', CheckerboardPainter);
+*/
+
+// 主线程注册
+if ('paintWorklet' in CSS) {
+  (CSS as any).paintWorklet.addModule('/worklet.js');
+}
+
+// CSS 用法: background: paint(checkerboard);
+```
+
 ## 相关索引
 
 - [30-knowledge-base/30.2-categories/README.md](../../../30-knowledge-base/30.2-categories/README.md)
@@ -202,6 +314,14 @@ export const containLayoutPaint = {
 | FLIP Your Animations — Paul Lewis | 博客 | [aerotwist.com/blog/flip-your-animations](https://aerotwist.com/blog/flip-your-animations) |
 | High Performance Animations — HTML5 Rocks | 指南 | [www.html5rocks.com/en/tutorials/speed/high-performance-animations](https://www.html5rocks.com/en/tutorials/speed/high-performance-animations) |
 | Rendering Performance Checklist — web.dev | 清单 | [web.dev/articles/rendering-performance#checklist](https://web.dev/articles/rendering-performance) |
+| React Concurrent Mode — React Docs | 文档 | [react.dev/blog/2022/03/29/react-v18](https://react.dev/blog/2022/03/29/react-v18) |
+| web.dev — INP (Interaction to Next Paint) | 指南 | [web.dev/articles/inp](https://web.dev/articles/inp) |
+| CSS Houdini — Google Developers | 指南 | [developer.chrome.com/docs/css-ui/houdini-intro](https://developer.chrome.com/docs/css-ui/houdini-intro) |
+| W3C CSS Houdini Drafts | 规范 | [drafts.css-houdini.org](https://drafts.css-houdini.org/) |
+| A11y Project — Checklist | 清单 | [a11yproject.com/checklist](https://www.a11yproject.com/checklist/) |
+| Web Content Accessibility Guidelines (WCAG) 2.2 | 规范 | [w3.org/WAI/WCAG22](https://www.w3.org/WAI/WCAG22/) |
+| requestIdleCallback — MDN | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) |
+| scheduler package — React GitHub | 源码 | [github.com/facebook/react/tree/main/packages/scheduler](https://github.com/facebook/react/tree/main/packages/scheduler) |
 
 ---
 

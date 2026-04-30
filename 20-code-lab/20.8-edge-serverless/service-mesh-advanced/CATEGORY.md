@@ -177,6 +177,168 @@ function extractTraceHeaders(headers: Headers): TraceContext | null {
 }
 ```
 
+### mTLS 服务间认证概念
+
+```typescript
+// mtls-concept.ts — 服务网格 mTLS 握手概念实现
+interface X509Certificate {
+  subject: string;
+  issuer: string;
+  notBefore: Date;
+  notAfter: Date;
+  publicKey: CryptoKey;
+}
+
+class MeshMTLS {
+  private caStore = new Map<string, X509Certificate>();
+
+  addTrustedCA(cert: X509Certificate) {
+    this.caStore.set(cert.subject, cert);
+  }
+
+  async verifyPeerCertificate(peerCert: X509Certificate): Promise<boolean> {
+    const now = new Date();
+    if (now < peerCert.notBefore || now > peerCert.notAfter) {
+      console.error('Certificate expired or not yet valid');
+      return false;
+    }
+
+    const issuer = this.caStore.get(peerCert.issuer);
+    if (!issuer) {
+      console.error('Unknown certificate issuer');
+      return false;
+    }
+
+    // 实际生产中使用 Web Crypto API 验证签名
+    console.log(`Verified certificate for ${peerCert.subject} issued by ${peerCert.issuer}`);
+    return true;
+  }
+
+  async performHandshake(clientCert: X509Certificate, serverCert: X509Certificate): Promise<boolean> {
+    const clientOk = await this.verifyPeerCertificate(serverCert);
+    const serverOk = await this.verifyPeerCertificate(clientCert);
+    return clientOk && serverOk;
+  }
+}
+
+// 可运行示例
+const mesh = new MeshMTLS();
+const caCert: X509Certificate = {
+  subject: 'Mesh Root CA',
+  issuer: 'Mesh Root CA',
+  notBefore: new Date('2026-01-01'),
+  notAfter: new Date('2027-01-01'),
+  publicKey: {} as CryptoKey,
+};
+mesh.addTrustedCA(caCert);
+console.log('mTLS CA initialized');
+```
+
+### 指数退避重试
+
+```typescript
+// retry-backoff.ts — 带抖动的指数退避重试
+interface RetryConfig {
+  maxRetries: number;
+  baseDelayMs: number;
+  maxDelayMs: number;
+  jitter: boolean;
+}
+
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  config: RetryConfig
+): Promise<T> {
+  let lastError: Error | undefined;
+
+  for (let attempt = 0; attempt <= config.maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err as Error;
+      if (attempt === config.maxRetries) break;
+
+      const delay = Math.min(
+        config.baseDelayMs * Math.pow(2, attempt),
+        config.maxDelayMs
+      );
+      const jittered = config.jitter ? delay * (0.5 + Math.random() * 0.5) : delay;
+      console.log(`Retry ${attempt + 1}/${config.maxRetries} after ${Math.round(jittered)}ms`);
+      await new Promise((r) => setTimeout(r, jittered));
+    }
+  }
+
+  throw lastError;
+}
+
+// 可运行示例
+let attempts = 0;
+retryWithBackoff(
+  async () => {
+    attempts++;
+    if (attempts < 3) throw new Error('Transient failure');
+    return 'Success!';
+  },
+  { maxRetries: 3, baseDelayMs: 100, maxDelayMs: 2000, jitter: true }
+).then((r) => console.log(r));
+```
+
+### 健康检查探针
+
+```typescript
+// health-probe.ts — Kubernetes 风格健康检查
+interface HealthStatus {
+  status: 'healthy' | 'unhealthy' | 'degraded';
+  checks: Record<string, { status: 'pass' | 'fail'; latencyMs: number; message?: string }>;
+}
+
+class HealthProbe {
+  private checks = new Map<string, () => Promise<{ ok: boolean; message?: string }>>();
+
+  register(name: string, check: () => Promise<{ ok: boolean; message?: string }>) {
+    this.checks.set(name, check);
+  }
+
+  async run(): Promise<HealthStatus> {
+    const results: HealthStatus['checks'] = {};
+    let allPass = true;
+
+    for (const [name, check] of this.checks) {
+      const start = performance.now();
+      try {
+        const result = await check();
+        results[name] = {
+          status: result.ok ? 'pass' : 'fail',
+          latencyMs: Math.round(performance.now() - start),
+          message: result.message,
+        };
+        if (!result.ok) allPass = false;
+      } catch (err) {
+        results[name] = {
+          status: 'fail',
+          latencyMs: Math.round(performance.now() - start),
+          message: (err as Error).message,
+        };
+        allPass = false;
+      }
+    }
+
+    const degradedCount = Object.values(results).filter((r) => r.status === 'fail').length;
+    const status = allPass ? 'healthy' : degradedCount >= this.checks.size / 2 ? 'unhealthy' : 'degraded';
+
+    return { status, checks: results };
+  }
+}
+
+// 可运行示例
+const probe = new HealthProbe();
+probe.register('database', async () => ({ ok: true, message: 'Connected' }));
+probe.register('cache', async () => ({ ok: false, message: 'Connection timeout' }));
+probe.register('upstream', async () => ({ ok: true }));
+
+probe.run().then((status) => console.log('Health:', status.status, status.checks));
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -214,6 +376,13 @@ function extractTraceHeaders(headers: Headers): TraceContext | null {
 | Cloud Native Patterns — Circuit Breaker | 指南 | [learn.microsoft.com/azure/architecture/patterns/circuit-breaker](https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker) |
 | Envoy Retry & Circuit Breaker Policies | 官方文档 | [envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/circuit_breaking](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/circuit_breaking) |
 | gRPC Load Balancing | 指南 | [grpc.io/docs/guides/service-config](https://grpc.io/docs/guides/service-config/) |
+| Istio Security — mTLS | 官方文档 | [istio.io/latest/docs/concepts/security](https://istio.io/latest/docs/concepts/security/) |
+| Cilium Service Mesh — Sidecar-less | 官方文档 | [docs.cilium.io/en/stable/network/servicemesh/ingress](https://docs.cilium.io/en/stable/network/servicemesh/ingress/) |
+| Kubernetes Probes | 官方文档 | [kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle](https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes) |
+| AWS App Mesh | 官方文档 | [aws.amazon.com/app-mesh](https://aws.amazon.com/app-mesh/) |
+| NGINX Service Mesh | 官方文档 | [docs.nginx.com/nginx-service-mesh](https://docs.nginx.com/nginx-service-mesh/) |
+| Service Mesh Comparison (CNCF)](https://layer5.io/service-mesh-landscape) | 对比 | [layer5.io/service-mesh-landscape](https://layer5.io/service-mesh-landscape) |
+| Zero Trust Architecture — NIST](https://csrc.nist.gov/publications/detail/sp/800-207/final) | 规范 | [csrc.nist.gov/publications/detail/sp/800-207/final](https://csrc.nist.gov/publications/detail/sp/800-207/final) |
 
 ---
 

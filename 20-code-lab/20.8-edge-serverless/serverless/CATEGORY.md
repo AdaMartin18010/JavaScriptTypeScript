@@ -169,6 +169,104 @@ export async function transferCredits(
 }
 ```
 
+### Azure Functions HTTP Trigger
+
+```typescript
+// azure-functions.ts — Azure Functions v4 Model
+import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions';
+
+export async function httpTrigger(request: HttpRequest, context: InvocationContext): Promise<HttpResponseInit> {
+  context.log(`HTTP function processed request for url "${request.url}"`);
+
+  const name = request.query.get('name') || (await request.text()) || 'world';
+
+  return {
+    status: 200,
+    jsonBody: { message: `Hello, ${name}!`, timestamp: new Date().toISOString() },
+  };
+}
+
+app.http('httpTrigger', {
+  methods: ['GET', 'POST'],
+  authLevel: 'anonymous',
+  handler: httpTrigger,
+});
+```
+
+### Serverless Framework 部署配置
+
+```yaml
+# serverless.yml — AWS Lambda + API Gateway 部署定义
+service: my-api
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: ap-northeast-1
+  environment:
+    NODE_ENV: production
+    DB_HOST: ${env:DB_HOST}
+
+functions:
+  health:
+    handler: dist/health.handler
+    events:
+      - http:
+          path: /health
+          method: get
+          cors: true
+
+  createOrder:
+    handler: dist/orders.create
+    events:
+      - http:
+          path: /orders
+          method: post
+          cors: true
+    environment:
+      STRIPE_KEY: ${ssm:/prod/stripe/key}
+
+plugins:
+  - serverless-esbuild
+  - serverless-offline
+
+custom:
+  esbuild:
+    bundle: true
+    minify: true
+    target: node20
+```
+
+### OpenTelemetry 在 Lambda 中的追踪
+
+```typescript
+// lambda-telemetry.ts — Lambda 层注入分布式追踪
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { AWSLambdaInstrumentation } from '@opentelemetry/instrumentation-aws-lambda';
+import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
+import { AwsInstrumentation } from '@opentelemetry/instrumentation-aws-sdk';
+
+const sdk = new NodeSDK({
+  traceExporter: new OTLPTraceExporter({ url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT }),
+  instrumentations: [
+    new AWSLambdaInstrumentation(),
+    new HttpInstrumentation(),
+    new AwsInstrumentation(),
+  ],
+});
+
+sdk.start();
+
+// Lambda handler wrapper
+export const tracedHandler = (handler: Function) => {
+  return async (event: unknown, context: unknown) => {
+    // OpenTelemetry 自动注入 traceparent
+    return handler(event, context);
+  };
+};
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -199,6 +297,15 @@ export async function transferCredits(
 | Turso / libSQL | 边缘 SQLite | [docs.turso.tech](https://docs.turso.tech/) |
 | Neon Serverless Postgres | 无服务器 PostgreSQL | [neon.tech/docs](https://neon.tech/docs/introduction) |
 | SST (Serverless Stack) | 部署框架 | [sst.dev/docs](https://sst.dev/docs/) |
+| Azure Functions Documentation | 微软 | [learn.microsoft.com/azure/azure-functions](https://learn.microsoft.com/en-us/azure/azure-functions/) |
+| AWS SAM Documentation | 亚马逊 | [docs.aws.amazon.com/serverless-application-model](https://docs.aws.amazon.com/serverless-application-model/) |
+| OpenTelemetry Lambda | 可观测性 | [opentelemetry.io/docs/faas/lambda-auto-instrument](https://opentelemetry.io/docs/faas/lambda-auto-instrument/) |
+| Lambda Warmer / Provisioned Concurrency | 冷启动 | [aws.amazon.com/blogs/aws/aws-lambda-provisioned-concurrency](https://aws.amazon.com/blogs/aws/aws-lambda-provisioned-concurrency/) |
+| Cloudflare Workers Runtime APIs | 运行时 | [developers.cloudflare.com/workers/runtime-apis](https://developers.cloudflare.com/workers/runtime-apis/) |
+| Deno Deploy | 边缘运行时 | [deno.com/deploy](https://deno.com/deploy) |
+| Supabase Edge Functions | 边缘函数 | [supabase.com/docs/guides/functions](https://supabase.com/docs/guides/functions) |
+| AWS Lambda Handler Types | 类型定义 | [github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/aws-lambda](https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/aws-lambda) |
+| Terraform AWS Provider — Lambda | IaC | [registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lambda_function) |
 
 ---
 

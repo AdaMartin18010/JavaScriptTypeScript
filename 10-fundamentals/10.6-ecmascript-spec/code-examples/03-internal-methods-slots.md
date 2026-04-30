@@ -51,6 +51,25 @@ const handler = {
 const proxy = new Proxy(target, handler);
 ```
 
+### 3.2 Reflect API 与内部方法映射
+
+```javascript
+// Reflect 提供内部方法的默认实现，可用于转发调用
+const target = { a: 1 };
+
+// 以下两式等价（都触发 [[Get]]）
+const v1 = target.a;
+const v2 = Reflect.get(target, 'a');
+
+// 以下两式等价（都触发 [[Set]]）
+target.a = 2;
+Reflect.set(target, 'a', 2);
+
+// 以下两式等价（都触发 [[Delete]]）
+delete target.a;
+Reflect.deleteProperty(target, 'a');
+```
+
 ---
 
 ## 4. 机制解释 (Mechanism Explanation)
@@ -65,6 +84,45 @@ flowchart TD
     D --> E{找到?}
     E -->|是| C
     E -->|否| F[返回 undefined]
+```
+
+### 4.2 内部方法触发时机详解
+
+```javascript
+// [[GetPrototypeOf]] → Object.getPrototypeOf / __proto__ / instanceof
+const proto = Object.getPrototypeOf({}); // Object.prototype
+
+// [[SetPrototypeOf]] → Object.setPrototypeOf / __proto__ = ...
+const obj = {};
+Object.setPrototypeOf(obj, null); // obj.[[Prototype]] = null
+
+// [[IsExtensible]] → Object.isExtensible
+console.log(Object.isExtensible({})); // true
+
+// [[PreventExtensions]] → Object.preventExtensions / seal / freeze
+const sealed = Object.seal({ a: 1 });
+sealed.a = 2; // 静默失败（严格模式抛 TypeError）
+
+// [[GetOwnProperty]] → Object.getOwnPropertyDescriptor
+console.log(Object.getOwnPropertyDescriptor({ a: 1 }, 'a'));
+// { value: 1, writable: true, enumerable: true, configurable: true }
+
+// [[DefineOwnProperty]] → Object.defineProperty
+const defined = {};
+Object.defineProperty(defined, 'readOnly', {
+  value: 42,
+  writable: false,
+  enumerable: true,
+  configurable: false
+});
+
+// [[HasProperty]] → in 运算符 / Reflect.has
+console.log('toString' in {}); // true（原型链查找）
+
+// [[Get]] → 属性访问 / Reflect.get
+// [[Set]] → 属性赋值 / Reflect.set
+// [[Delete]] → delete 运算符 / Reflect.deleteProperty
+// [[OwnPropertyKeys]] → Object.keys / Object.getOwnPropertyNames / Object.getOwnPropertySymbols / Reflect.ownKeys
 ```
 
 ---
@@ -99,12 +157,63 @@ const proxy = new Proxy(target, {
 proxy.a; // "Getting a" → 1
 ```
 
+### 6.2 可撤销 Proxy（Revocable Proxy）
+
+```javascript
+const { proxy, revoke } = Proxy.revocable({ secret: 42 }, {
+  get(target, prop) {
+    if (prop === 'secret') throw new Error('Access denied');
+    return target[prop];
+  }
+});
+
+console.log(proxy.secret); // Error: Access denied
+revoke(); // 撤销代理
+console.log(proxy.secret); // TypeError: Cannot perform 'get' on a proxy that has been revoked
+```
+
+### 6.3 使用 Reflect 实现默认转发
+
+```javascript
+// 安全日志代理：记录所有属性访问但不改变行为
+function createLoggedProxy(target, name) {
+  return new Proxy(target, {
+    get(t, p, receiver) {
+      console.log(`[${name}] GET ${String(p)}`);
+      return Reflect.get(t, p, receiver);
+    },
+    set(t, p, value, receiver) {
+      console.log(`[${name}] SET ${String(p)} = ${value}`);
+      return Reflect.set(t, p, value, receiver);
+    },
+    deleteProperty(t, p) {
+      console.log(`[${name}] DELETE ${String(p)}`);
+      return Reflect.deleteProperty(t, p);
+    },
+    ownKeys(t) {
+      console.log(`[${name}] OWNKEYS`);
+      return Reflect.ownKeys(t);
+    }
+  });
+}
+
+const logged = createLoggedProxy({ a: 1, b: 2 }, 'MyObj');
+logged.a;        // [MyObj] GET a
+logged.c = 3;    // [MyObj] SET c = 3
+delete logged.b; // [MyObj] DELETE b
+Object.keys(logged); // [MyObj] OWNKEYS → ['a', 'c']
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §6.1.7** — Object Internal Methods and Internal Slots
+- **ECMA-262 §10.1** — Ordinary Object Internal Methods
+- **ECMA-262 §10.5** — Proxy Object Internal Methods and Internal Slots
 - **MDN: Proxy** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy>
+- **MDN: Reflect** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect>
+- **MDN: Object.defineProperty** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty>
 
 ---
 
@@ -200,7 +309,25 @@ console.log(arr[0])      // undefined ✅ 索引属性被删除
 
 Array 的 `[[DefineOwnProperty]]` 在检测到索引属性设置时，会自动更新 `length`；反之，设置 `length` 时也会删除超出范围的索引属性。
 
-### 补充 3：Proxy 的不变量（Invariants）
+### 补充 3：String 的 `[[GetOwnProperty]]` 特殊性
+
+```javascript
+const str = 'hello';
+
+// String 对象将索引访问映射到字符
+console.log(str[0]);        // "h"
+console.log(str.length);    // 5
+
+// 无法修改（因为属性描述符的 writable: false）
+str[0] = 'H';
+console.log(str[0]);        // 仍为 "h"
+
+// 通过 Object.getOwnPropertyDescriptor 观察内部槽行为
+console.log(Object.getOwnPropertyDescriptor(str, '0'));
+// { value: 'h', writable: false, enumerable: true, configurable: false }
+```
+
+### 补充 4：Proxy 的不变量（Invariants）
 
 即使 Proxy 可以拦截所有内部方法，ECMA-262 仍规定了**不可违反的不变量**：
 
@@ -223,7 +350,7 @@ const proxy = new Proxy(target, {
 Object.isExtensible(proxy)  // TypeError: 'isExtensible' on proxy: trap result does not reflect extensibility of proxy target
 ```
 
-### 补充 4：内部方法完整映射表
+### 补充 5：内部方法完整映射表
 
 | 内部方法 | 普通对象行为 | Proxy 陷阱 | JS 语法触发 |
 |---------|------------|-----------|-----------|

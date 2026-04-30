@@ -219,6 +219,72 @@ class BatchedSignal<T> extends Signal<T> {
 }
 ```
 
+#### Vue 3 Reactivity（`@vue/reactivity`）独立使用
+
+```typescript
+// vue-reactivity-demo.ts
+import { ref, computed, effect, stop } from '@vue/reactivity';
+
+const count = ref(0);
+const doubled = computed(() => count.value * 2);
+
+const runner = effect(() => {
+  console.log('Vue effect:', count.value, doubled.value);
+});
+
+count.value++; // 触发 effect
+count.value++;
+
+// 停止监听
+stop(runner);
+count.value++; // 不再触发
+```
+
+#### Svelte 5 Runes
+
+```typescript
+// svelte-runes-demo.ts — Svelte 5 编译器将 $state/$derived 转换为细粒度信号
+// 以下为概念性等价代码（实际由 Svelte 编译器处理）
+import { writable, derived } from 'svelte/store';
+
+// Svelte 5: let count = $state(0);
+const count = writable(0);
+
+// Svelte 5: let doubled = $derived(count * 2);
+const doubled = derived(count, ($count) => $count * 2);
+
+// Svelte 5: $effect(() => { console.log(doubled); })
+doubled.subscribe((value) => {
+  console.log('Svelte doubled:', value);
+});
+
+count.set(5); // 输出: Svelte doubled: 10
+```
+
+#### React `useSyncExternalStore` 桥接 Signal
+
+```typescript
+// react-signal-bridge.ts
+import { useSyncExternalStore } from 'react';
+
+function useSignal<T>(signal: Signal<T>): T {
+  return useSyncExternalStore(
+    (callback) => {
+      const effectFn = () => callback();
+      // 订阅 signal 变化（假设 signal 提供 subscribe 方法）
+      signal._deps.add(effectFn);
+      return () => {
+        signal._deps.delete(effectFn);
+      };
+    },
+    () => signal.peek(),
+    () => signal.peek()
+  );
+}
+
+// 使用：const count = useSignal(mySignal);
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -238,7 +304,13 @@ class BatchedSignal<T> extends Signal<T> {
 - [SolidJS Reactivity — Docs](https://docs.solidjs.com/concepts/signals)
 - [Angular Signals Guide](https://angular.dev/guide/signals)
 - [React Compiler — React Docs](https://react.dev/learn/react-compiler)
-- `20.5-frontend-frameworks/`
+- [React useSyncExternalStore](https://react.dev/reference/react/useSyncExternalStore) — React 官方外部状态同步 Hook
+- [Vue Reactivity API](https://vuejs.org/api/reactivity-core.html) — Vue 3 独立响应式 API
+- [Svelte 5 Runes](https://svelte.dev/docs/runes) — Svelte 5 官方 Runes 文档
+- [RxJS vs Signals — Angular Blog](https://blog.angular.dev/signals-vs-rxjs-whose-side-are-you-on-54345389ec9c)
+- [Why Signals Are Better Than Hooks](https://www.builder.io/blog/signals-vs-hooks) — Builder.io 技术博客
+- [TC39 Signals GitHub](https://github.com/tc39/proposal-signals) — ECMAScript 标准提案仓库
+- [Preact Signals Core Source](https://github.com/preactjs/signals) — Preact Signals 源码
 
 ---
 

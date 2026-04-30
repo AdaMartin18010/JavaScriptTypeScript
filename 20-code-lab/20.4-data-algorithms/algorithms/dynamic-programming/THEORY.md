@@ -351,6 +351,133 @@ console.log(rob([1, 2, 3, 1])); // 4 (1 + 3)
 console.log(rob([2, 7, 9, 3, 1])); // 12 (2 + 9 + 1)
 ```
 
+### 树形 DP — 二叉树最大直径
+
+```typescript
+// tree-dp.ts — 后序遍历求树的最长路径（直径）
+interface TreeNode {
+  val: number;
+  left: TreeNode | null;
+  right: TreeNode | null;
+}
+
+function diameterOfBinaryTree(root: TreeNode | null): number {
+  let maxDiameter = 0;
+
+  function depth(node: TreeNode | null): number {
+    if (!node) return 0;
+    const left = depth(node.left);
+    const right = depth(node.right);
+    // 经过当前节点的最长路径 = 左深度 + 右深度
+    maxDiameter = Math.max(maxDiameter, left + right);
+    return 1 + Math.max(left, right);
+  }
+
+  depth(root);
+  return maxDiameter;
+}
+
+// 可运行示例
+const tree: TreeNode = {
+  val: 1,
+  left: { val: 2, left: { val: 4, left: null, right: null }, right: { val: 5, left: null, right: null } },
+  right: { val: 3, left: null, right: null },
+};
+console.log(diameterOfBinaryTree(tree)); // 3 (路径 4→2→1→3 或 5→2→1→3)
+```
+
+### 状态压缩 DP — 旅行商问题（TSP）
+
+```typescript
+// tsp-bitmask.ts — O(n²·2ⁿ) 状态压缩
+function tsp(dist: number[][]): number {
+  const n = dist.length;
+  const FULL_MASK = (1 << n) - 1;
+  // dp[mask][i] = 已访问 mask 表示的城市集合，当前位于城市 i 的最小距离
+  const dp: number[][] = Array.from({ length: 1 << n }, () => Array(n).fill(Infinity));
+  dp[1][0] = 0; // 从城市 0 出发
+
+  for (let mask = 1; mask <= FULL_MASK; mask++) {
+    for (let u = 0; u < n; u++) {
+      if (!(mask & (1 << u))) continue; // u 不在 mask 中
+      if (dp[mask][u] === Infinity) continue;
+      for (let v = 0; v < n; v++) {
+        if (mask & (1 << v)) continue; // v 已访问
+        const nextMask = mask | (1 << v);
+        dp[nextMask][v] = Math.min(dp[nextMask][v], dp[mask][u] + dist[u][v]);
+      }
+    }
+  }
+
+  let minCost = Infinity;
+  for (let i = 1; i < n; i++) {
+    minCost = Math.min(minCost, dp[FULL_MASK][i] + dist[i][0]);
+  }
+  return minCost;
+}
+
+// 可运行示例（4 城市）
+const dist4 = [
+  [0, 10, 15, 20],
+  [10, 0, 35, 25],
+  [15, 35, 0, 30],
+  [20, 25, 30, 0],
+];
+console.log(tsp(dist4)); // 80 (0→1→3→2→0)
+```
+
+### LIS 二分优化（Patience Sorting）
+
+```typescript
+// lis-binary.ts — O(n log n)  patience sorting 思想
+function lengthOfLISOptimal(nums: number[]): number {
+  const tails: number[] = []; // tails[i] = 长度为 i+1 的递增子序列的最小末尾值
+
+  for (const num of nums) {
+    let left = 0, right = tails.length;
+    while (left < right) {
+      const mid = (left + right) >> 1;
+      if (tails[mid] < num) left = mid + 1;
+      else right = mid;
+    }
+    tails[left] = num;
+  }
+
+  return tails.length;
+}
+
+// 可运行示例
+console.log(lengthOfLISOptimal([10, 9, 2, 5, 3, 7, 101, 18])); // 4
+console.log(lengthOfLISOptimal([0, 1, 0, 3, 2, 3])); // 4
+```
+
+### 单词拆分（字典 DP）
+
+```typescript
+// word-break.ts
+function wordBreak(s: string, wordDict: string[]): boolean {
+  const wordSet = new Set(wordDict);
+  // dp[i] = s[0:i) 能否被拆分
+  const dp = new Array(s.length + 1).fill(false);
+  dp[0] = true;
+
+  for (let i = 1; i <= s.length; i++) {
+    for (const word of wordDict) {
+      if (i >= word.length && dp[i - word.length] && s.slice(i - word.length, i) === word) {
+        dp[i] = true;
+        break;
+      }
+    }
+  }
+  return dp[s.length];
+}
+
+// 可运行示例
+console.log(wordBreak('leetcode', ['leet', 'code'])); // true
+console.log(wordBreak('applepenapple', ['apple', 'pen'])); // true
+console.log(wordBreak('catsandog', ['cats', 'dog', 'sand', 'and', 'cat'])); // false
+```
+
 ## 3.4 新增权威参考链接
 
 - [GeeksforGeeks — Dynamic Programming](https://www.geeksforgeeks.org/dynamic-programming/) — DP 基础与经典问题
@@ -363,5 +490,9 @@ console.log(rob([2, 7, 9, 3, 1])); // 12 (2 + 9 + 1)
 - [LeetCode DP Patterns](https://leetcode.com/discuss/general-discussion/458695/dynamic-programming-patterns) — 面试 DP 模式总结
 - [Stanford CS 161: DP](https://web.stanford.edu/class/cs161/) — 算法设计课程
 - [CMU 15-451: Dynamic Programming](https://www.cs.cmu.edu/~avrim/451f11/lectures/lect1004.pdf) — 讲义 PDF
+- [Introduction to Algorithms (CLRS) — Ch. 15](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/) — 算法圣经动态规划章节
+- [USACO Guide — Dynamic Programming](https://usaco.guide/gold/dp-intro) — 竞赛编程 DP 入门
+- [Codeforces DP Tag](https://codeforces.com/problemset?tags=dp) — 高质量 DP 题目集合
+- [YouTube: MIT 6.006 DP Lecture](https://www.youtube.com/watch?v=OQ5jsbhAv_M) — MIT 官方 DP 视频课
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

@@ -15,6 +15,8 @@ created: 2026-04-28
 - **浏览器性能观测**：PerformanceObserver（Long Task、Layout Shift、Largest Contentful Paint）。
 - **错误上报**：全局错误捕获（`window.onerror`、`unhandledrejection`）、Source Map 反解、聚合上报。
 - **AI 可观测性**：LLM 调用链路追踪、Token 消耗指标、Prompt/Response 采样审计。
+- **分布式 Baggage 传播**：跨服务上下文传递业务属性。
+- **日志采样与降级**：动态采样率控制与日志级别热切换。
 
 ## 代码示例
 
@@ -160,6 +162,122 @@ export async function tracedLLMCall(request: LLMRequest, callLLM: (r: LLMRequest
 }
 ```
 
+### OpenTelemetry Express 自动埋点
+
+```typescript
+// opentelemetry-express.ts
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+
+const sdk = new NodeSDK({
+  traceExporter: new OTLPTraceExporter({ url: 'http://localhost:4318/v1/traces' }),
+  instrumentations: [getNodeAutoInstrumentations()],
+});
+
+sdk.start();
+```
+
+### Winston 结构化日志与 Trace 关联
+
+```typescript
+// winston-logger.ts
+import { createLogger, format, transports } from 'winston';
+import { context, trace } from '@opentelemetry/api';
+
+export const logger = createLogger({
+  format: format.combine(
+    format.timestamp(),
+    format.json(),
+    format((info) => {
+      const span = trace.getSpan(context.active());
+      if (span) {
+        const ctx = span.spanContext();
+        info.trace_id = ctx.traceId;
+        info.span_id = ctx.spanId;
+      }
+      return info;
+    })()
+  ),
+  transports: [new transports.Console()],
+});
+```
+
+### Sentry 前端初始化与面包屑
+
+```typescript
+// sentry-init.ts
+import * as Sentry from '@sentry/browser';
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV,
+  beforeSend(event) {
+    if (event.exception) {
+      Sentry.addBreadcrumb({ category: 'error', message: 'Exception caught', level: 'error' });
+    }
+    return event;
+  },
+});
+
+// 手动上报
+Sentry.captureMessage('User clicked checkout', 'info');
+```
+
+### PerformanceObserver 监测 INP
+
+```typescript
+// inp-observer.ts
+let inpValue = 0;
+
+new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    const duration = (entry as any).duration;
+    if (duration > inpValue) inpValue = duration;
+  }
+}).observe({ type: 'event', buffered: true, durationThreshold: 40 });
+
+export function getINP(): number {
+  return inpValue;
+}
+```
+
+### Pino 日志采样配置
+
+```typescript
+// pino-sampling.ts
+import pino from 'pino';
+
+export const sampledLogger = pino({
+  level: 'info',
+  hooks: {
+    logMethod(inputArgs, method) {
+      // 对 debug 级别进行 10% 采样
+      if (this.level === 'debug' && Math.random() > 0.1) return;
+      method.apply(this, inputArgs);
+    },
+  },
+});
+```
+
+### OpenTelemetry Baggage 传播
+
+```typescript
+// baggage-propagation.ts
+import { propagation, context, createBaggage, baggageEntryMetadataFromString } from '@opentelemetry/api';
+
+const baggage = createBaggage({
+  'user.tier': { value: 'premium', metadata: baggageEntryMetadataFromString('') },
+  'user.region': { value: 'ap-east-1', metadata: baggageEntryMetadataFromString('') },
+});
+
+const ctx = propagation.setBaggage(context.active(), baggage);
+
+// 在下游服务中读取
+const downstreamBaggage = propagation.getBaggage(context.active());
+console.log(downstreamBaggage?.getEntry('user.tier')?.value);
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -198,7 +316,11 @@ export async function tracedLLMCall(request: LLMRequest, callLLM: (r: LLMRequest
 | Sentry — Error Tracking & Performance | 工具 | [sentry.io](https://sentry.io/) |
 | Datadog — Observability Platform | 工具 | [docs.datadoghq.com](https://docs.datadoghq.com/) |
 | OpenTelemetry LLM Semantic Conventions | 草案 | [opentelemetry.io/docs/specs/semconv/gen-ai/](https://opentelemetry.io/docs/specs/semconv/gen-ai/) |
+| Pino Documentation | 文档 | [getpino.io](https://getpino.io/) |
+| Winston Documentation | 文档 | [github.com/winstonjs/winston](https://github.com/winstonjs/winston) |
+| Sentry JavaScript SDK | 文档 | [docs.sentry.io/platforms/javascript/](https://docs.sentry.io/platforms/javascript/) |
+| OpenTelemetry Baggage API | 文档 | [opentelemetry.io/docs/specs/otel/baggage/api/](https://opentelemetry.io/docs/specs/otel/baggage/api/) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

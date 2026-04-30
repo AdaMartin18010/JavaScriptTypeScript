@@ -1,4 +1,4 @@
-﻿# 高级服务网格 理论解读
+# 高级服务网格 理论解读
 
 ## 概述
 
@@ -229,6 +229,167 @@ const grpcOptions: ClientOptions = {
 };
 ```
 
+### Istio PeerAuthentication 强制 mTLS
+
+```yaml
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: prod
+spec:
+  mtls:
+    mode: STRICT
+```
+
+### Linkerd ServiceProfile 重试与超时
+
+```yaml
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  name: payments.prod.svc.cluster.local
+  namespace: prod
+spec:
+  routes:
+    - name: POST /api/v1/payments
+      condition:
+        method: POST
+        pathRegex: /api/v1/payments
+      retryBudget:
+        retryRatio: 0.2
+        minRetriesPerSecond: 10
+        ttl: 10s
+      timeout: 3s
+```
+
+### Consul Service Intentions
+
+```hcl
+# consul-intentions.hcl
+Kind = "service-intentions"
+Name = "payments"
+Sources = [
+  {
+    Name   = "frontend"
+    Action = "allow"
+  },
+  {
+    Name   = "legacy-billing"
+    Action = "deny"
+  }
+]
+```
+
+### Envoy WASM Filter 配置
+
+```yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: wasm-custom-filter
+  namespace: istio-system
+spec:
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.wasm
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.wasm.v3.Wasm
+            config:
+              name: custom_filter
+              root_id: custom_filter_root
+              vm_config:
+                vm_id: custom_filter_vm
+                runtime: envoy.wasm.runtime.v8
+                code:
+                  remote:
+                    http_uri:
+                      uri: https://example.com/filters/custom.wasm
+                      cluster: google
+                      timeout: 10s
+```
+
+### OpenTelemetry Collector Sidecar 配置
+
+```yaml
+# otel-collector-sidecar.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments
+spec:
+  template:
+    spec:
+      containers:
+        - name: payments-app
+          image: payments:latest
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://localhost:4317
+        - name: otel-collector
+          image: otel/opentelemetry-collector-contrib:latest
+          args: ["--config=/conf/collector.yaml"]
+          volumeMounts:
+            - name: otel-config
+              mountPath: /conf
+      volumes:
+        - name: otel-config
+          configMap:
+            name: otel-collector-config
+```
+
+### Envoy Rate Limit 配置
+
+```yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rate-limit
+  namespace: istio-system
+spec:
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.local_ratelimit
+          typed_config:
+            "@type": type.googleapis.com/udpa.type.v1.TypedStruct
+            type_url: type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+            value:
+              stat_prefix: http_local_rate_limiter
+              token_bucket:
+                max_tokens: 100
+                tokens_per_fill: 10
+                fill_interval: 1s
+              filter_enabled:
+                runtime_key: local_rate_limit_enabled
+                default_value:
+                  numerator: 100
+                  denominator: HUNDRED
+              filter_enforced:
+                runtime_key: local_rate_limit_enforced
+                default_value:
+                  numerator: 100
+                  denominator: HUNDRED
+              response_headers_to_add:
+                - append_action: OVERWRITE_IF_EXISTS_OR_ADD
+                  header:
+                    key: x-local-rate-limit
+                    value: 'true'
+```
+
 ---
 
 ## 客户端弹性代码示例
@@ -324,5 +485,9 @@ sdk.start();
 - [OpenTelemetry JS Documentation](https://opentelemetry.io/docs/languages/js/) — Node.js 可观测性官方接入指南
 - [Envoy External Authorization](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/ext_authz_filter.html) — 外部鉴权过滤器详解
 - [Red Hat — What is a Service Mesh](https://www.redhat.com/en/topics/microservices/what-is-a-service-mesh) — 企业级服务网格概念解读
+- [Istio in Action (Book)](https://www.manning.com/books/istio-in-action) — Istio 实战权威书籍
+- [Envoy Proxy Blog](https://blog.envoyproxy.io/) — Envoy 官方博客与深度文章
+- [CNCF Service Mesh Whitepaper](https://github.com/cncf/tag-network/blob/main/service-mesh-whitepaper.md) — CNCF 服务网格白皮书
+- [Consul Connect Intentions](https://developer.hashicorp.com/consul/docs/connect/intentions) — Consul 意图管理官方文档
 - 本模块 `README.md` — 模块主题与学习路径
 - 本模块 `mesh-architecture.ts` — Sidecar 代理、流量管理、mTLS 与可观测性实现

@@ -52,6 +52,30 @@ const observer = new PerformanceObserver((list) => {
 observer.observe({ entryTypes: ['measure', 'navigation', 'resource'] });
 ```
 
+### 内存泄漏检测：PerformanceObserver + Long Tasks
+
+```typescript
+// memory-leak-detector.ts — 监控长任务与内存趋势
+const longTaskObserver = new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    console.warn(`Long task detected: ${entry.duration}ms`, entry);
+    // 可上报到监控系统（Sentry / Datadog）
+  }
+});
+longTaskObserver.observe({ entryTypes: ['longtask'] });
+
+// 使用 performance.memory（Chrome 专有）监控堆趋势
+if ('memory' in performance) {
+  setInterval(() => {
+    const mem = (performance as any).memory;
+    const usedRatio = mem.usedJSHeapSize / mem.jsHeapSizeLimit;
+    if (usedRatio > 0.8) {
+      console.warn(`Heap usage high: ${(usedRatio * 100).toFixed(1)}%`);
+    }
+  }, 30000);
+}
+```
+
 ### WeakRef 与 FinalizationRegistry
 
 ```typescript
@@ -179,6 +203,69 @@ async function blurImage(imageData: ImageData): Promise<ImageData> {
 }
 ```
 
+### WebAssembly SIMD 批量数据处理
+
+```typescript
+// wasm-simd.ts — 利用 WASM SIMD 进行批量数值计算
+async function batchNormalize(data: Float32Array): Promise<Float32Array> {
+  const wasm = await loadWasmModule('/wasm/math_simd.wasm');
+  const { normalize_f32, memory } = wasm as any;
+
+  const wasmMemory = new Float32Array(memory.buffer);
+  const ptr = 1024; // 预留栈空间
+  wasmMemory.set(data, ptr / 4);
+
+  // SIMD 加速的向量化归一化（假设 Rust 中使用了 packed_simd）
+  normalize_f32(ptr, data.length);
+
+  return wasmMemory.slice(ptr / 4, ptr / 4 + data.length);
+}
+```
+
+### AI 驱动的性能预算监控
+
+```typescript
+// ai-performance-budget.ts — 基于历史数据预测 LCP 劣化
+interface PerformanceSample {
+  lcp: number;
+  cls: number;
+  inp: number;
+  timestamp: number;
+  bundleSize: number;
+  imageCount: number;
+}
+
+// 简单线性回归预测 LCP 趋势
+function predictLcpDegradation(samples: PerformanceSample[]): number {
+  const n = samples.length;
+  if (n < 2) return 0;
+
+  const avgX = samples.reduce((s, v) => s + v.bundleSize, 0) / n;
+  const avgY = samples.reduce((s, v) => s + v.lcp, 0) / n;
+
+  let num = 0, den = 0;
+  for (const s of samples) {
+    const dx = s.bundleSize - avgX;
+    num += dx * (s.lcp - avgY);
+    den += dx * dx;
+  }
+
+  const slope = num / den; // 每 KB bundle 增长带来的 LCP 增量（ms）
+  const nextBundleSize = samples[n - 1].bundleSize * 1.1; // 预测 10% 增长
+  const predictedLcp = avgY + slope * (nextBundleSize - avgX);
+
+  return predictedLcp;
+}
+
+// 自动化告警：预测 LCP > 2.5s 时触发 CI 阻断
+function assertPerformanceBudget(samples: PerformanceSample[], threshold = 2500) {
+  const predicted = predictLcpDegradation(samples);
+  if (predicted > threshold) {
+    throw new Error(`Predicted LCP ${predicted.toFixed(0)}ms exceeds budget ${threshold}ms`);
+  }
+}
+```
+
 ## 权威参考链接
 
 | 资源 | 类型 | 链接 |
@@ -193,6 +280,12 @@ async function blurImage(imageData: ImageData): Promise<ImageData> {
 | Rust and WebAssembly Book | 书籍 | [rustwasm.github.io/book](https://rustwasm.github.io/book/) |
 | AssemblyScript | 项目 | [assemblyscript.org](https://www.assemblyscript.org) — TypeScript 语法编译到 WASM |
 | Inferno / Solid.js 性能对比 | 基准 | [krausest.github.io/js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/current.html) |
+| V8 博客 — 性能优化 | 博客 | [v8.dev/blog](https://v8.dev/blog) |
+| web.dev — 优化 LCP | 指南 | [web.dev/articles/optimize-lcp](https://web.dev/articles/optimize-lcp) |
+| web.dev — 优化 INP | 指南 | [web.dev/articles/optimize-inp](https://web.dev/articles/optimize-inp) |
+| Long Tasks API | 标准 | [w3c.github.io/longtasks](https://w3c.github.io/longtasks/) |
+| WebAssembly SIMD | 提案 | [github.com/WebAssembly/simd](https://github.com/WebAssembly/simd) |
+| Chrome 渲染性能 | 视频 | [developer.chrome.com/docs/devtools/performance/reference](https://developer.chrome.com/docs/devtools/performance/reference) |
 
 ## 相关索引
 

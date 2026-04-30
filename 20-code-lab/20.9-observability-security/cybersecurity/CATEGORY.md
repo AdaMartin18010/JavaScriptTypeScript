@@ -170,6 +170,60 @@ function csrfProtection(req: any, res: any, next: any) {
 }
 ```
 
+### 安全随机令牌生成（API Key / Session Secret）
+
+```typescript
+// secure-tokens.ts — 加密安全随机数与密钥派生
+import { randomBytes, createHash } from 'node:crypto';
+
+export function generateSecureToken(length = 32): string {
+  // 使用 CSPRNG（cryptographically secure pseudo-random number generator）
+  return randomBytes(length).toString('base64url');
+}
+
+export function generateApiKey(prefix = 'sk_live'): string {
+  const random = randomBytes(24).toString('base64url');
+  const checksum = createHash('sha256').update(random).digest('hex').slice(0, 8);
+  return `${prefix}_${random}_${checksum}`;
+}
+
+export function hashApiKey(apiKey: string): string {
+  // 存储 API Key 的哈希值（类似密码），原始值仅展示一次
+  return createHash('sha256').update(apiKey).digest('hex');
+}
+
+// 使用示例
+const apiKey = generateApiKey();
+console.log('Store this key safely:', apiKey);
+// db.apiKeys.create({ hashedKey: hashApiKey(apiKey), createdAt: new Date() });
+```
+
+### HMAC-SHA256 消息认证码
+
+```typescript
+// hmac-authentication.ts — 请求完整性校验
+import { createHmac, randomBytes } from 'node:crypto';
+
+const SECRET = Buffer.from(process.env.HMAC_SECRET!, 'base64');
+
+export function hmacSign(message: string): string {
+  return createHmac('sha256', SECRET).update(message).digest('base64url');
+}
+
+export function hmacVerify(message: string, signature: string): boolean {
+  const expected = hmacSign(message);
+  return signature === expected;
+}
+
+// 结合 nonce 防止重放攻击
+export function createSignedPayload(payload: object): { data: string; nonce: string; sig: string } {
+  const nonce = randomBytes(12).toString('base64url');
+  const data = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const sig = hmacSign(`${nonce}.${data}`);
+  return { data, nonce, sig };
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -213,6 +267,10 @@ function csrfProtection(req: any, res: any, next: any) {
 | Argon2 — OWASP Password Storage | 指南 | [cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) |
 | Snyk Vulnerability Database | 工具 | [snyk.io/vuln](https://snyk.io/vuln/) |
 | CWE/SANS Top 25 | 标准 | [cwe.mitre.org/top25/](https://cwe.mitre.org/top25/) |
+| libsodium — 现代加密库 | 文档 | [doc.libsodium.org](https://doc.libsodium.org/) |
+| Node.js — Crypto RNG 安全说明 | 文档 | [nodejs.org/api/crypto.html#cryptorandombytessize-callback](https://nodejs.org/api/crypto.html#cryptorandombytessize-callback) |
+| OWASP — Session Management Cheat Sheet | 指南 | [cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html) |
+| IETF — HMAC RFC 2104 | 规范 | [datatracker.ietf.org/doc/html/rfc2104](https://datatracker.ietf.org/doc/html/rfc2104) |
 
 ---
 

@@ -191,6 +191,102 @@ function ExpensiveChartAuto({ data, filter }: { data: number[]; filter: string }
 }
 ```
 
+### 图片优化与响应式加载
+
+```typescript
+// 现代图片加载策略（可运行 HTML/JS）
+function createResponsiveImage(srcSet: Record<string, string>, sizes: string): HTMLImageElement {
+  const img = document.createElement('img');
+  img.srcset = Object.entries(srcSet)
+    .map(([w, url]) => `${url} ${w}w`)
+    .join(', ');
+  img.sizes = sizes;
+  img.loading = 'lazy';
+  img.decoding = 'async';
+  img.fetchPriority = 'high';
+  return img;
+}
+
+// 使用：<img srcset="small.jpg 300w, medium.jpg 600w, large.jpg 900w" sizes="(max-width: 600px) 100vw, 50vw">
+```
+
+```html
+<!-- 现代格式回退：AVIF → WebP → JPEG -->
+<picture>
+  <source srcset="image.avif" type="image/avif">
+  <source srcset="image.webp" type="image/webp">
+  <img src="image.jpg" alt="描述" width="800" height="600" loading="lazy">
+</picture>
+```
+
+### 预加载与资源优先级
+
+```html
+<!-- 预连接关键域名（DNS + TLS 握手提前完成） -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<!-- 预加载关键字体 -->
+<link rel="preload" href="/fonts/main.woff2" as="font" type="font/woff2" crossorigin>
+
+<!-- 预加载关键 CSS（非阻塞渲染但提前获取） -->
+<link rel="preload" href="/critical.css" as="style" onload="this.rel='stylesheet'">
+
+<!-- 预加载下一页路由（低优先级，空闲时获取） -->
+<link rel="prefetch" href="/about" as="document">
+
+<!-- ES 模块预加载 -->
+<link rel="modulepreload" href="/src/app.js">
+```
+
+```typescript
+// JS 动态预加载（基于用户行为预测）
+function prefetchOnHover(linkEl: HTMLAnchorElement, modulePath: string) {
+  let link: HTMLLinkElement | null = null;
+
+  linkEl.addEventListener('mouseenter', () => {
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = modulePath;
+      document.head.appendChild(link);
+    }
+  });
+}
+```
+
+### 内存泄漏检测与修复
+
+```typescript
+// 使用 Performance Memory API 监控内存（Chrome 专用）
+function logMemoryUsage() {
+  const mem = (performance as any).memory;
+  if (!mem) return;
+
+  console.table({
+    'Used JS Heap': `${(mem.usedJSHeapSize / 1e6).toFixed(2)} MB`,
+    'Total JS Heap': `${(mem.totalJSHeapSize / 1e6).toFixed(2)} MB`,
+    'JS Heap Limit': `${(mem.jsHeapSizeLimit / 1e6).toFixed(2)} MB`,
+  });
+}
+
+// WeakRef + FinalizationRegistry 模式（防止缓存泄漏）
+class WeakCache<K, V> {
+  #cache = new Map<K, WeakRef<V>>();
+  #registry = new FinalizationRegistry<K>((key) => this.#cache.delete(key));
+
+  set(key: K, value: V) {
+    this.#cache.set(key, new WeakRef(value));
+    this.#registry.register(value, key);
+  }
+
+  get(key: K): V | undefined {
+    const ref = this.#cache.get(key);
+    return ref?.deref();
+  }
+}
+```
+
 ---
 
 ## 参考资源
@@ -198,16 +294,27 @@ function ExpensiveChartAuto({ data, filter }: { data: number[]; filter: string }
 - [web.dev/performance](https://web.dev/performance) — Google 性能指南
 - [web.dev/vitals](https://web.dev/vitals/) — Core Web Vitals 官方文档
 - [web.dev/articles/optimize-inp](https://web.dev/articles/optimize-inp) — INP Optimization Guide
+- [web.dev/articles/optimize-lcp](https://web.dev/articles/optimize-lcp) — LCP Optimization Guide
+- [web.dev/articles/optimize-cls](https://web.dev/articles/optimize-cls) — CLS Optimization Guide
+- [web.dev/articles/optimize-javascript-execution](https://web.dev/articles/optimize-javascript-execution) — JS 执行优化
 - [Lighthouse Documentation](https://developer.chrome.com/docs/lighthouse/)
 - [Lighthouse Scoring Guide](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring/)
 - [Chrome DevTools Performance](https://developer.chrome.com/docs/devtools/performance/)
+- [Chrome DevTools: Record heap snapshots](https://developer.chrome.com/docs/devtools/memory-problems/heap-snapshots)
 - [MDN: Service Worker API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
 - [MDN: scheduler.yield()](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/yield)
+- [MDN: Performance API](https://developer.mozilla.org/en-US/docs/Web/API/Performance)
+- [MDN: Resource Hints](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/rel/preload)
 - [React Performance](https://react.dev/learn/render-and-commit)
 - [React Compiler Documentation](https://react.dev/learn/react-compiler)
 - [Vite Build Optimization](https://vitejs.dev/guide/build.html)
 - [Next.js Performance Best Practices](https://nextjs.org/docs/app/building-your-application/optimizing)
 - [Google Chrome UX Report (CrUX)](https://developer.chrome.com/docs/crux/)
+- [HTTP Archive: Web Almanac](https://almanac.httparchive.org/) — 年度 Web 性能统计报告
+- [Performance API Level 2 — W3C](https://w3c.github.io/perf-timing/)
+- [Speculation Rules API — WICG](https://wicg.github.io/nav-speculation/speculation-rules.html)
+- [Netlify Edge Functions: Caching](https://docs.netlify.com/edge-functions/api/#edge-function-cache)
+- [Cloudflare Speed Optimization](https://developers.cloudflare.com/speed/)
 
 ---
 

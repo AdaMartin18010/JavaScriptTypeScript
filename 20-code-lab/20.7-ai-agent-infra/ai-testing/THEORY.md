@@ -272,6 +272,329 @@ LLM 能力：
 3. 监控运行时行为（与形式化模型对比）
 ```
 
+## 7. 可运行代码示例
+
+### fast-check 性质测试（TypeScript）
+
+```typescript
+// property-based-demo.ts — 使用 fast-check 进行性质测试
+import * as fc from 'fast-check';
+
+// 性质 1: 数组反转两次等于原数组
+fc.assert(
+  fc.property(fc.array(fc.integer()), (arr) => {
+    return JSON.stringify(arr.reverse().reverse()) === JSON.stringify(arr);
+  })
+);
+
+// 性质 2: 排序后数组应为非递减
+fc.assert(
+  fc.property(fc.array(fc.integer()), (arr) => {
+    const sorted = [...arr].sort((a, b) => a - b);
+    for (let i = 1; i < sorted.length; i++) {
+      if (sorted[i] < sorted[i - 1]) return false;
+    }
+    return true;
+  })
+);
+
+// 性质 3: 自定义数据结构 — 栈的 LIFO 性质
+class Stack<T> {
+  private items: T[] = [];
+  push(x: T) { this.items.push(x); }
+  pop(): T | undefined { return this.items.pop(); }
+  peek(): T | undefined { return this.items[this.items.length - 1]; }
+  size() { return this.items.length; }
+}
+
+fc.assert(
+  fc.property(fc.array(fc.string()), (operations) => {
+    const stack = new Stack<string>();
+    const expected: string[] = [];
+    for (const op of operations) {
+      stack.push(op);
+      expected.push(op);
+    }
+    while (expected.length > 0) {
+      if (stack.pop() !== expected.pop()) return false;
+    }
+    return stack.size() === 0;
+  })
+);
+
+console.log('所有性质测试通过！');
+```
+
+### 变异测试（Mutation Testing）概念实现
+
+```typescript
+// mutation-testing-concept.ts — 变异算子与变异分数计算
+
+/** 变异算子类型 */
+type MutationOperator =
+  | 'arithmetic'   // + → -, * → /
+  | 'relational'   // > → >=, === → !==
+  | 'unary'        // !x → x, ++x → --x
+  | 'boundary';    // 常量边界值修改
+
+interface Mutant {
+  id: string;
+  operator: MutationOperator;
+  original: string;
+  mutated: string;
+  line: number;
+  killed: boolean; // 是否有测试杀死该变异体
+}
+
+/** 模拟变异体生成器 */
+function generateMutants(sourceCode: string): Mutant[] {
+  const mutants: Mutant[] = [];
+  const lines = sourceCode.split('\n');
+
+  lines.forEach((line, idx) => {
+    // 算术运算符变异
+    if (/[\+\-\*\/]/.test(line)) {
+      const mutated = line.replace(/\+/, '-'); // 简化示例
+      if (mutated !== line) {
+        mutants.push({
+          id: `M${mutants.length + 1}`,
+          operator: 'arithmetic',
+          original: line.trim(),
+          mutated: mutated.trim(),
+          line: idx + 1,
+          killed: false,
+        });
+      }
+    }
+    // 关系运算符变异
+    if (/===?|!==?|[<>]=?/.test(line)) {
+      const mutated = line.replace('>', '<=');
+      if (mutated !== line) {
+        mutants.push({
+          id: `M${mutants.length + 1}`,
+          operator: 'relational',
+          original: line.trim(),
+          mutated: mutated.trim(),
+          line: idx + 1,
+          killed: false,
+        });
+      }
+    }
+  });
+
+  return mutants;
+}
+
+/** 计算变异分数 */
+function mutationScore(mutants: Mutant[]): number {
+  const killed = mutants.filter((m) => m.killed).length;
+  return mutants.length === 0 ? 100 : Math.round((killed / mutants.length) * 100);
+}
+
+// 可运行示例
+const sampleCode = `
+function max(a, b) {
+  if (a > b) return a;
+  return b;
+}
+function sum(a, b) {
+  return a + b;
+}
+`;
+
+const mutants = generateMutants(sampleCode);
+console.log('生成变异体:', mutants.length);
+console.log(mutants.map((m) => `${m.id}: ${m.original} → ${m.mutated}`).join('\n'));
+
+// 模拟运行测试套件后标记 killed
+mutants.forEach((m) => {
+  if (m.operator === 'relational' && m.original.includes('a > b')) {
+    m.killed = true; // 假设测试用例 (1,2) 会杀死此变异体
+  }
+});
+
+console.log(`变异分数: ${mutationScore(mutants)}%`);
+```
+
+### 覆盖率引导的模糊测试（Coverage-Guided Fuzzing）
+
+```typescript
+// fuzzing-coverage-guided.ts — 概念性覆盖率引导模糊测试器
+
+interface FuzzInput {
+  data: Uint8Array;
+  coverage: Set<string>; // 已覆盖的分支标识
+  score: number;
+}
+
+class CoverageGuidedFuzzer {
+  private corpus: FuzzInput[] = [];
+  private rng = () => Math.random();
+
+  constructor(seedInputs: Uint8Array[]) {
+    this.corpus = seedInputs.map((data) => ({
+      data,
+      coverage: new Set<string>(),
+      score: 0,
+    }));
+  }
+
+  /** 执行目标函数并收集覆盖率 */
+  execute(target: (input: Uint8Array) => void, input: FuzzInput): Set<string> {
+    const coverage = new Set<string>();
+    // 实际实现需要插桩（instrumentation）收集分支覆盖
+    // 这里用模拟覆盖率代替
+    for (let i = 0; i < input.data.length; i++) {
+      coverage.add(`branch_${input.data[i] % 16}`);
+    }
+    return coverage;
+  }
+
+  /** 变异输入 */
+  mutate(input: FuzzInput): Uint8Array {
+    const mutated = new Uint8Array(input.data);
+    const pos = Math.floor(this.rng() * mutated.length);
+    const strategy = Math.floor(this.rng() * 4);
+    switch (strategy) {
+      case 0: mutated[pos] ^= 0xff; break;          // 位翻转
+      case 1: mutated[pos] = Math.floor(this.rng() * 256); break; // 随机字节
+      case 2: mutated[pos]++; break;                 // 算术增量
+      case 3: mutated[pos] = mutated[pos] >> 1; break; // 位移
+    }
+    return mutated;
+  }
+
+  fuzz(target: (input: Uint8Array) => void, iterations = 1000): FuzzInput[] {
+    const interesting: FuzzInput[] = [];
+
+    for (let i = 0; i < iterations; i++) {
+      const parent = this.corpus[Math.floor(this.rng() * this.corpus.length)];
+      const mutated = this.mutate(parent);
+      const newInput: FuzzInput = {
+        data: mutated,
+        coverage: this.execute(target, { data: mutated, coverage: new Set(), score: 0 }),
+        score: 0,
+      };
+
+      // 如果发现了新覆盖，加入语料库
+      const hasNewCoverage = [...newInput.coverage].some((b) => !parent.coverage.has(b));
+      if (hasNewCoverage) {
+        newInput.score = newInput.coverage.size;
+        this.corpus.push(newInput);
+        interesting.push(newInput);
+      }
+    }
+
+    return interesting;
+  }
+}
+
+// 可运行示例
+function targetFunction(input: Uint8Array): void {
+  if (input.length > 0 && input[0] === 0x41) {
+    if (input.length > 1 && input[1] === 0x42) {
+      console.log('触发深层分支!');
+    }
+  }
+}
+
+const fuzzer = new CoverageGuidedFuzzer([
+  new Uint8Array([0x00]),
+  new Uint8Array([0x41]),
+]);
+const findings = fuzzer.fuzz(targetFunction, 500);
+console.log(`发现 ${findings.length} 个提升覆盖率的输入`);
+```
+
+### LLM-as-Judge 评估器
+
+```typescript
+// llm-as-judge.ts — 使用 LLM 评估输出质量的框架
+interface EvaluationCriteria {
+  name: string;
+  prompt: string;
+  scale: [number, number]; // 评分范围，如 [1, 5]
+}
+
+interface JudgeResult {
+  criteria: string;
+  score: number;
+  reasoning: string;
+}
+
+class LLMJudge {
+  constructor(private criteria: EvaluationCriteria[]) {}
+
+  async evaluate(input: string, output: string): Promise<JudgeResult[]> {
+    const results: JudgeResult[] = [];
+
+    for (const c of this.criteria) {
+      // 实际生产环境调用 LLM API（OpenAI / Claude）
+      const prompt = `
+You are an expert evaluator. Evaluate the following output based on the criterion.
+
+Criterion: ${c.name}
+Description: ${c.prompt}
+Scale: ${c.scale[0]} to ${c.scale[1]}
+
+Input: ${input}
+Output: ${output}
+
+Respond in JSON format: { "score": number, "reasoning": string }
+`;
+      // 模拟 LLM 返回
+      const mockResult = this.mockEvaluate(prompt);
+      results.push({
+        criteria: c.name,
+        score: mockResult.score,
+        reasoning: mockResult.reasoning,
+      });
+    }
+
+    return results;
+  }
+
+  private mockEvaluate(_prompt: string): { score: number; reasoning: string } {
+    // 模拟评估结果
+    return {
+      score: Math.floor(Math.random() * 3) + 3,
+      reasoning: 'The output is relevant and accurate based on the input context.',
+    };
+  }
+
+  aggregate(results: JudgeResult[]): number {
+    if (results.length === 0) return 0;
+    return results.reduce((sum, r) => sum + r.score, 0) / results.length;
+  }
+}
+
+// 可运行示例
+const judge = new LLMJudge([
+  {
+    name: 'Correctness',
+    prompt: 'Is the output factually correct and free of errors?',
+    scale: [1, 5],
+  },
+  {
+    name: 'Relevance',
+    prompt: 'Does the output directly address the input query?',
+    scale: [1, 5],
+  },
+  {
+    name: 'Clarity',
+    prompt: 'Is the output well-structured and easy to understand?',
+    scale: [1, 5],
+  },
+]);
+
+// 异步执行（这里用同步模拟）
+judge.evaluate('Explain quantum computing', 'Quantum computing uses qubits...')
+  .then((results) => {
+    console.log('评估结果:', results);
+    console.log('综合得分:', judge.aggregate(results));
+  });
+```
+
 ## 6. 参考文献
 
 ### 6.1 经典著作
@@ -292,6 +615,18 @@ LLM 能力：
 - [QuickCheck](http://www.cse.chalmers.se/~rjmh/QuickCheck/) - Haskell Property-Based Testing
 - [Evosuite](https://www.evosuite.org/) - Java Test Generation Tool
 - [Testing Strategies in Modern Software Development](https://martinfowler.com/articles/microservice-testing/) - Martin Fowler
+- [fast-check — Property-Based Testing for TypeScript](https://fast-check.dev/) — TypeScript/JavaScript 性质测试框架
+- [AFL — American Fuzzy Lop](https://lcamtuf.coredump.cx/afl/) — 覆盖率引导模糊测试工具
+- [LibFuzzer — LLVM](https://llvm.org/docs/LibFuzzer.html) — 库级覆盖率引导模糊测试
+- [PIT Mutation Testing](https://pitest.org/) — Java 变异测试框架
+- [Stryker Mutator](https://stryker-mutator.io/) — JavaScript/TypeScript 变异测试
+- [JUnit 5 — Parameterized Tests](https://junit.org/junit5/docs/current/user-guide/#writing-tests-parameterized-tests) — 参数化测试
+- [Jest — Property-Based Testing](https://jestjs.io/docs/cli#--testpathpatternregex) — Jest 测试框架
+- [Vitest — Property Testing](https://vitest.dev/guide/property-testing.html) — Vitest 性质测试支持
+- [Google OSS-Fuzz](https://google.github.io/oss-fuzz/) — 开源项目持续模糊测试
+- [NIST SAMATE — Software Assurance Metrics And Tool Evaluation](https://samate.nist.gov/) — NIST 软件保障项目
+- [Code Coverage Analysis](https://testing.googleblog.com/2020/08/code-coverage-best-practices.html) — Google Testing Blog
+- [LLM-as-a-Judge Paper (Zheng et al., 2023)](https://arxiv.org/abs/2306.05685) — LMSYS 评估框架论文
 
 ---
 

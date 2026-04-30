@@ -187,6 +187,103 @@ export default {
 };
 ```
 
+### 4.4 Cloudflare Worker with R2（对象存储）
+
+```typescript
+// r2-upload.ts
+export interface Env {
+  BUCKET: R2Bucket;
+}
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const url = new URL(request.url);
+    if (url.pathname === '/upload' && request.method === 'PUT') {
+      const key = crypto.randomUUID();
+      await env.BUCKET.put(key, request.body);
+      return Response.json({ key });
+    }
+    if (url.pathname.startsWith('/download/')) {
+      const key = url.pathname.slice('/download/'.length);
+      const object = await env.BUCKET.get(key);
+      if (!object) return new Response('Not Found', { status: 404 });
+      return new Response(object.body);
+    }
+    return new Response('Not Found', { status: 404 });
+  }
+};
+```
+
+### 4.5 Vercel Edge Function 流式调用 OpenAI
+
+```typescript
+// openai-stream.ts
+import { OpenAIStream, StreamingTextResponse } from 'ai';
+import { Configuration, OpenAIApi } from 'openai-edge';
+
+const config = new Configuration({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAIApi(config);
+
+export const config = { runtime: 'edge' };
+
+export default async function handler(req: Request) {
+  const { prompt } = await req.json();
+  const response = await openai.createChatCompletion({
+    model: 'gpt-4',
+    stream: true,
+    messages: [{ role: 'user', content: prompt }],
+  });
+  const stream = OpenAIStream(response);
+  return new StreamingTextResponse(stream);
+}
+```
+
+### 4.6 Deno Deploy KV 计数器
+
+```typescript
+// deno-kv.ts
+const kv = await Deno.openKv();
+
+export async function handler(req: Request): Promise<Response> {
+  const { pathname } = new URL(req.url);
+  if (pathname === '/increment') {
+    const result = await kv.atomic().sum(['counter'], 1n).commit();
+    return Response.json({ ok: result.ok });
+  }
+  const entry = await kv.get(['counter']);
+  return Response.json({ count: entry.value ?? 0 });
+}
+```
+
+### 4.7 QuickJS 嵌入式运行示例
+
+```typescript
+// quickjs-embed.ts
+import { getQuickJS } from 'quickjs-emscripten';
+
+async function runUntrustedCode(code: string): Promise<unknown> {
+  const QuickJS = await getQuickJS();
+  const runtime = QuickJS.newRuntime();
+  const context = runtime.newContext();
+
+  // 限制执行时间（1秒）
+  runtime.setMemoryLimit(1024 * 1024);
+  runtime.setMaxStackSize(1024 * 1024);
+
+  const result = context.evalCode(code);
+  if (result.error) {
+    const err = context.dump(result.error);
+    result.error.dispose();
+    throw new Error(err);
+  }
+  const value = context.dump(result.value);
+  result.value.dispose();
+  context.dispose();
+  runtime.dispose();
+  return value;
+}
+```
+
 ## 5. 边缘状态管理
 
 | 存储类型 | 一致性 | 延迟 | 适用场景 |
@@ -226,3 +323,11 @@ export default {
 - [MDN: Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)
 - [QuickJS Documentation](https://bellard.org/quickjs/)
 - [The Edge Computing Landscape — Deno Blog](https://deno.com/blog/the-edge-computing-landscape)
+- [Cloudflare Blog — V8 Isolates](https://blog.cloudflare.com/cloud-computing-without-containers/)
+- [Vercel Edge Runtime Architecture](https://vercel.com/docs/functions/runtimes/edge-runtime)
+- [Deno Deploy Runtime APIs](https://deno.com/deploy/docs/runtime-api)
+- [ACM — Edge Computing Patterns](https://dl.acm.org/doi/10.1145/3409973.3410734)
+- [WASI Preview 2 Specification](https://github.com/WebAssembly/WASI/blob/main/preview2.md)
+- [Cloudflare R2 Documentation](https://developers.cloudflare.com/r2/)
+- [OpenAI Edge Streaming — Vercel AI SDK](https://sdk.vercel.ai/docs)
+- [QuickJS Emscripten Bindings](https://github.com/justjake/quickjs-emscripten)

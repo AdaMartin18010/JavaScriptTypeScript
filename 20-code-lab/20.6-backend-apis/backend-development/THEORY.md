@@ -188,7 +188,7 @@ app.post('/api/users', validateBody(CreateUserSchema), (req, res) => {
 });
 ```
 
-### Hono 边缘运行时路由
+### Hono 轻量边缘框架
 
 ```typescript
 import { Hono } from 'hono';
@@ -217,6 +217,196 @@ app.post('/api/echo', async (c) => {
 export default app;
 ```
 
+### 令牌桶速率限制器
+
+```typescript
+// rate-limiter.ts — 内存令牌桶算法
+interface RateLimitConfig {
+  capacity: number;   // 桶容量
+  refillRate: number; // 每秒填充令牌数
+}
+
+class TokenBucket {
+  private tokens: number;
+  private lastRefill: number;
+
+  constructor(private config: RateLimitConfig) {
+    this.tokens = config.capacity;
+    this.lastRefill = Date.now();
+  }
+
+  allowRequest(tokens = 1): boolean {
+    this.refill();
+    if (this.tokens >= tokens) {
+      this.tokens -= tokens;
+      return true;
+    }
+    return false;
+  }
+
+  private refill(): void {
+    const now = Date.now();
+    const elapsedMs = now - this.lastRefill;
+    const tokensToAdd = (elapsedMs / 1000) * this.config.refillRate;
+    this.tokens = Math.min(this.config.capacity, this.tokens + tokensToAdd);
+    this.lastRefill = now;
+  }
+}
+
+// Express 中间件
+export function rateLimit(config: RateLimitConfig) {
+  const buckets = new Map<string, TokenBucket>();
+
+  return (req: Request, res: Response, next: NextFunction) => {
+    const key = req.ip ?? 'anonymous';
+    if (!buckets.has(key)) {
+      buckets.set(key, new TokenBucket(config));
+    }
+    const bucket = buckets.get(key)!;
+    if (bucket.allowRequest()) {
+      next();
+    } else {
+      res.status(429).json({ error: 'Too Many Requests' });
+    }
+  };
+}
+
+// 使用: app.use(rateLimit({ capacity: 10, refillRate: 2 }));
+```
+
+### GraphQL Resolver 与 DataLoader
+
+```typescript
+// graphql-resolver.ts — N+1 查询优化
+import DataLoader from 'dataloader';
+
+interface User {
+  id: string;
+  name: string;
+  friendIds: string[];
+}
+
+const userLoader = new DataLoader<string, User>(async (ids) => {
+  // 批量查询: SELECT * FROM users WHERE id IN (...)
+  const users = await db.users.findMany({ where: { id: { in: [...ids] } } });
+  const userMap = new Map(users.map((u) => [u.id, u]));
+  return ids.map((id) => userMap.get(id) ?? new Error(`User not found: ${id}`));
+});
+
+const resolvers = {
+  Query: {
+    user: (_: unknown, { id }: { id: string }) => userLoader.load(id),
+  },
+  User: {
+    friends: (parent: User) => userLoader.loadMany(parent.friendIds),
+  },
+};
+
+// DataLoader 在每个请求生命周期内缓存，自动解决 N+1 问题
+```
+
+### gRPC 双向流服务端
+
+```typescript
+// grpc-bidirectional.ts — Node.js gRPC 双向流示例概念
+/*
+// .proto 定义
+service ChatService {
+  rpc StreamMessages(stream ChatMessage) returns (stream ChatMessage);
+}
+*/
+
+import * as grpc from '@grpc/grpc-js';
+
+interface ChatMessage {
+  user: string;
+  content: string;
+}
+
+function streamMessages(call: grpc.ServerDuplexStream<ChatMessage, ChatMessage>) {
+  call.on('data', (message: ChatMessage) => {
+    console.log(`[${message.user}]: ${message.content}`);
+    // 广播给所有连接的客户端（简化版）
+    call.write({ user: 'Server', content: `Echo: ${message.content}` });
+  });
+
+  call.on('end', () => {
+    console.log('Client ended stream');
+    call.end();
+  });
+}
+
+// gRPC 适用于微服务内部高性能通信，浏览器端需 gRPC-Web 转换
+```
+
+### OpenAPI / Swagger 自动生成
+
+```typescript
+// openapi-spec.ts — 使用 OpenAPI 3.0 类型定义
+import { OpenAPIV3 } from 'openapi-types';
+
+const spec: OpenAPIV3.Document = {
+  openapi: '3.0.0',
+  info: { title: 'User API', version: '1.0.0' },
+  paths: {
+    '/api/users': {
+      get: {
+        summary: 'List users',
+        responses: {
+          '200': {
+            description: 'List of users',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/User' },
+                },
+              },
+            },
+          },
+        },
+      },
+      post: {
+        summary: 'Create user',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CreateUserInput' },
+            },
+          },
+        },
+        responses: {
+          '201': { description: 'User created' },
+        },
+      },
+    },
+  },
+  components: {
+    schemas: {
+      User: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          name: { type: 'string' },
+          email: { type: 'string', format: 'email' },
+        },
+      },
+      CreateUserInput: {
+        type: 'object',
+        required: ['name', 'email'],
+        properties: {
+          name: { type: 'string', minLength: 1 },
+          email: { type: 'string', format: 'email' },
+        },
+      },
+    },
+  },
+};
+
+export default spec;
+```
+
 ---
 
 ## 6. 权威外部链接
@@ -235,6 +425,18 @@ export default app;
 - [OWASP — Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
 - [RFC 9110 — HTTP Semantics](https://www.rfc-editor.org/rfc/rfc9110.html)
 - [Node.js — stream 模块](https://nodejs.org/api/stream.html)
+- [Node.js Performance Hooks](https://nodejs.org/api/perf_hooks.html) — Node.js 性能监控 API
+- [DataLoader — GraphQL 批量加载](https://github.com/graphql/dataloader) — Facebook 官方 N+1 解决方案
+- [OpenAPI Specification 3.1.0](https://spec.openapis.org/oas/v3.1.0.html) — OpenAPI 标准规范
+- [NestJS 文档](https://docs.nestjs.com/) — 企业级 Node.js 框架
+- [Prisma ORM 文档](https://www.prisma.io/docs/) — 类型安全数据库工具包
+- [Drizzle ORM 文档](https://orm.drizzle.team/docs/overview) — 轻量 TypeScript ORM
+- [Redis 官方文档](https://redis.io/docs/) — 缓存与会话存储
+- [PostgreSQL 文档](https://www.postgresql.org/docs/) — 关系型数据库参考
+- [MongoDB Node.js Driver](https://www.mongodb.com/docs/drivers/node/current/) — NoSQL 驱动文档
+- [BullMQ — Redis 队列](https://docs.bullmq.io/) — 后台任务队列
+- [Prometheus Node.js Client](https://github.com/siimon/prom-client) — 指标监控客户端
+- [Sentry for Node.js](https://docs.sentry.io/platforms/node/) — 错误追踪平台
 
 ## 7. 与相邻模块的关系
 

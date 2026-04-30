@@ -145,6 +145,96 @@ function measureRenderingCost() {
 }
 ```
 
+### FLIP Animation Technique
+
+```typescript
+// flip-animation.ts — 高性能布局动画：First, Last, Invert, Play
+export class FLIPAnimator {
+  private element: HTMLElement;
+
+  constructor(element: HTMLElement) {
+    this.element = element;
+  }
+
+  // 1. 记录初始状态（First）
+  captureFirst(): DOMRect {
+    return this.element.getBoundingClientRect();
+  }
+
+  // 2. 应用变更后记录最终状态（Last），计算差值（Invert），执行动画（Play）
+  animateTo(newRect: DOMRect, firstRect: DOMRect, duration = 300) {
+    const invertX = firstRect.left - newRect.left;
+    const invertY = firstRect.top - newRect.top;
+    const invertScaleX = firstRect.width / newRect.width;
+    const invertScaleY = firstRect.height / newRect.height;
+
+    // 立即将元素“倒回”原位置（使用 transform，不触发 Layout）
+    this.element.style.transform = `translate(${invertX}px, ${invertY}px) scale(${invertScaleX}, ${invertScaleY})`;
+
+    // 强制同步布局，确保浏览器应用 invert transform
+    void this.element.offsetHeight;
+
+    // 移除 transform，浏览器会使用 GPU 动画平滑过渡到最终状态
+    this.element.style.transition = `transform ${duration}ms cubic-bezier(0.2, 0, 0.2, 1)`;
+    this.element.style.transform = '';
+
+    // 动画结束后清理
+    const cleanup = () => {
+      this.element.style.transition = '';
+      this.element.removeEventListener('transitionend', cleanup);
+    };
+    this.element.addEventListener('transitionend', cleanup);
+  }
+}
+
+// 使用示例：列表重新排序时的平滑过渡
+async function animateReorder(listItem: HTMLElement, targetIndex: number) {
+  const flip = new FLIPAnimator(listItem);
+  const first = flip.captureFirst();
+
+  // 执行 DOM 变更（可能导致布局变化）
+  listItem.parentElement?.insertBefore(listItem, listItem.parentElement.children[targetIndex]);
+
+  const last = listItem.getBoundingClientRect();
+  flip.animateTo(last, first, 250);
+}
+```
+
+### CSS Containment 优化
+
+```css
+/* containment.css — 限制布局/样式/绘制的影响范围 */
+.list-container {
+  /* 严格 containment：子树的布局不影响外部，外部也不影响内部 */
+  contain: strict;
+
+  /* 或更细粒度控制 */
+  contain: layout paint style;
+}
+
+/* 大型列表使用 content-visibility 延迟离屏内容渲染 */
+.virtual-list-item {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 80px; /* 预估高度防止滚动跳动 */
+}
+```
+
+```typescript
+// content-visibility-polyfill.ts — 渐进增强内容可见性
+function setupContentVisibility(containerSelector: string, itemSelector: string) {
+  if (!CSS.supports('content-visibility', 'auto')) {
+    // 降级：使用 IntersectionObserver 按需加载
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        (entry.target as HTMLElement).style.visibility = entry.isIntersecting ? 'visible' : 'hidden';
+      }
+    }, { rootMargin: '200px' });
+
+    document.querySelectorAll(itemSelector).forEach((el) => observer.observe(el));
+  }
+}
+```
+
 ## Detailed Explanation
 
 The Compositing Priority Theorem formalizes an insight that every frontend engineer intuitively practices but rarely explicitly states: the browser's rendering pipeline is not a monolithic process but a cascade of discrete stages with dramatically different computational costs, and smart rendering strategy consists of pushing work to the cheapest eligible stage. The five-stage pipeline—JavaScript → Style → Layout → Paint → Composite—operates under a strict frame budget of 16.6ms at 60fps. In practice, browser bookkeeping consumes 4-6ms, leaving approximately 10ms for application code and rendering. A geometry-changing animation that triggers Layout (Reflow) can consume 8-12ms of this budget by itself, leaving zero headroom for JavaScript execution and guaranteeing frame drops under any realistic workload.
@@ -161,6 +251,14 @@ The engineering significance extends far beyond individual animation choices. Th
 - [MDN: will-change](https://developer.mozilla.org/en-US/docs/Web/CSS/will-change) — Mozilla documentation on the `will-change` optimization property.
 - [High Performance Animations](https://www.html5rocks.com/en/tutorials/speed/high-performance-animations/) — Google HTML5 Rocks guide to GPU-accelerated animations.
 - [Chrome DevTools: Performance Analysis](https://developer.chrome.com/docs/devtools/performance/) — Official guide to profiling rendering performance.
+- [web.dev — Rendering Performance](https://web.dev/articles/rendering-performance) — Comprehensive guide to the browser rendering pipeline.
+- [web.dev — Avoid Large, Complex Layouts](https://web.dev/articles/avoid-large-complex-layouts-and-layout-thrashing) — Techniques to minimize layout thrashing.
+- [web.dev — CSS Containment](https://web.dev/articles/content-visibility) — Using `content-visibility` and `contain` for performance.
+- [MDN: contain](https://developer.mozilla.org/en-US/docs/Web/CSS/contain) — CSS containment property reference.
+- [MDN: content-visibility](https://developer.mozilla.org/en-US/docs/Web/CSS/content-visibility) — content-visibility property reference.
+- [Paul Lewis — FLIP Your Animations](https://aerotwist.com/blog/flip-your-animations/) — Original article on the FLIP technique.
+- [Google Web Fundamentals — Animations](https://developers.google.com/web/fundamentals/design-and-ux/animations) — Best practices for web animations.
+- [Surma — Inside Browser Rendering](https://www.youtube.com/watch?v=SmE4OwHztCc) — Deep dive into browser rendering internals.
 
 ---
 

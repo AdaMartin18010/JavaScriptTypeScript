@@ -211,7 +211,96 @@ app.use('/api/*', async (c, next) => {
 });
 ```
 
-## 7. 与相邻模块的关系
+## 7. HMAC 请求签名（防篡改与重放攻击）
+
+```typescript
+// hmac-signature.ts — API 请求签名与验证
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
+const API_SECRET = process.env.API_SECRET!;
+
+export function signRequest(method: string, path: string, body: string, timestamp: string): string {
+  const payload = `${method.toUpperCase()}|${path}|${timestamp}|${body}`;
+  return createHmac('sha256', API_SECRET).update(payload).digest('hex');
+}
+
+export function verifyRequestSignature(
+  signature: string,
+  method: string,
+  path: string,
+  body: string,
+  timestamp: string,
+  ttlSeconds = 300
+): boolean {
+  // 1. 防重放：时间戳过期拒绝
+  const now = Math.floor(Date.now() / 1000);
+  const ts = Number(timestamp);
+  if (Math.abs(now - ts) > ttlSeconds) return false;
+
+  // 2. 重新计算期望签名
+  const expected = signRequest(method, path, body, timestamp);
+
+  // 3. 恒定时间比较防止时序攻击
+  const sigBuf = Buffer.from(signature, 'hex');
+  const expBuf = Buffer.from(expected, 'hex');
+  if (sigBuf.length !== expBuf.length) return false;
+  return timingSafeEqual(sigBuf, expBuf);
+}
+
+// Hono 中间件集成
+app.use('/api/webhooks/*', async (c, next) => {
+  const signature = c.req.header('x-signature');
+  const timestamp = c.req.header('x-timestamp');
+  const body = await c.req.text();
+
+  if (!signature || !timestamp) {
+    return c.json({ error: 'Missing signature' }, 401);
+  }
+
+  const valid = verifyRequestSignature(
+    signature,
+    c.req.method,
+    c.req.path,
+    body,
+    timestamp
+  );
+
+  if (!valid) {
+    return c.json({ error: 'Invalid signature' }, 403);
+  }
+
+  await next();
+});
+```
+
+## 8. 安全的 CORS 配置
+
+```typescript
+// secure-cors.ts — 最小权限 CORS 中间件
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+
+const ALLOWED_ORIGINS = new Set([
+  'https://app.example.com',
+  'https://admin.example.com',
+]);
+
+const app = new Hono();
+
+app.use('/api/*', cors({
+  origin: (origin) => {
+    // 拒绝未知来源（非浏览器请求 origin 为空，需按业务判断）
+    if (!origin || ALLOWED_ORIGINS.has(origin)) return origin;
+    return null; // 返回 null 触发 CORS 拒绝
+  },
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
+  credentials: true,
+  maxAge: 600,
+}));
+```
+
+## 9. 与相邻模块的关系
 
 - **38-web-security**: Web 层面的安全机制（CSP、CORS、CSRF）
 - **95-auth-modern-lab**: 现代认证机制深度实践
@@ -233,3 +322,7 @@ app.use('/api/*', async (c, next) => {
 - [Zod Documentation](https://zod.dev/)
 - [Express Rate Limit — npm](https://www.npmjs.com/package/express-rate-limit)
 - [OWASP Cheat Sheet: JWT Security](https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html)
+- [web.dev — Secure HTTP Headers](https://web.dev/articles/security-headers)
+- [MDN — CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+- [Hono Documentation](https://hono.dev/docs/)
+- [jose — JWT Library](https://github.com/panva/jose)

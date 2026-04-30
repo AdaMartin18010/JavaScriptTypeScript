@@ -196,6 +196,58 @@ export class CollaborationRoom extends DurableObject {
 }
 ```
 
+### Cloudflare R2 静态资产缓存
+
+```typescript
+// r2-asset-cache.ts — 从 R2 对象存储提供带缓存头的静态资源
+export async function onRequest(context: EventContext<Env, any, any>) {
+  const url = new URL(context.request.url);
+  const key = url.pathname.slice(1); // 去掉前导 /
+
+  const object = await context.env.ASSETS_BUCKET.get(key);
+  if (!object) {
+    return context.next(); // 回源到源站
+  }
+
+  const headers = new Headers();
+  object.writeHttpMetadata(headers);
+  headers.set('etag', object.httpEtag);
+  headers.set('cache-control', 'public, max-age=31536000, immutable');
+  headers.set('cdn-cache-control', 'max-age=31536000');
+
+  return new Response(object.body, { headers });
+}
+```
+
+### Cache Tag 批量失效
+
+```typescript
+// cache-tags.ts — 使用 Cloudflare Cache API 标签实现精准失效
+export async function onRequest(context: EventContext<Env, any, any>) {
+  const response = await context.next();
+
+  // 为动态页面附加缓存标签
+  const headers = new Headers(response.headers);
+  headers.append('Cache-Tag', 'products,api-v2');
+  headers.set('Cache-Control', 'public, max-age=60');
+
+  return new Response(response.body, { status: response.status, headers });
+}
+
+// 独立 API 路由：按标签批量清除缓存
+export async function purgeCacheByTag(tags: string[], zoneId: string, apiToken: string) {
+  const res = await fetch(`https://api.cloudflare.com/client/v4/zones/${zoneId}/purge_cache`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ tags }),
+  });
+  return res.json();
+}
+```
+
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 性能优化 核心机制的理解，并观察不同实现选择带来的行为差异。
 
 ### 3.2 常见误区
@@ -228,6 +280,12 @@ export class CollaborationRoom extends DurableObject {
 | Cloudflare Durable Objects | 官方文档 | [developers.cloudflare.com/durable-objects](https://developers.cloudflare.com/durable-objects/) |
 | React Server Components RFC | 规范 | [github.com/reactjs/rfcs/blob/main/text/0188-server-components.md](https://github.com/reactjs/rfcs/blob/main/text/0188-server-components.md) |
 | HTTP/2 Server Push vs Preload | 对比 | [www.smashingmagazine.com/2017/04/guide-http2-server-push](https://www.smashingmagazine.com/2017/04/guide-http2-server-push/) |
+| Cloudflare R2 Documentation | 官方文档 | [developers.cloudflare.com/r2](https://developers.cloudflare.com/r2/) |
+| Cloudflare Workers KV | 官方文档 | [developers.cloudflare.com/kv](https://developers.cloudflare.com/kv/) |
+| Vercel Edge Functions — Caching | 指南 | [vercel.com/docs/functions/edge-middleware](https://vercel.com/docs/functions/edge-middleware) |
+| Remix Deferred Data Guide | 文档 | [remix.run/docs/en/main/guides/deferred](https://remix.run/docs/en/main/guides/deferred) |
+| Web Streams API | MDN | [developer.mozilla.org/en-US/docs/Web/API/Streams_API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API) |
+| TanStack Start Server Functions | 文档 | [tanstack.com/start/latest/docs/framework/react/server-functions](https://tanstack.com/start/latest/docs/framework/react/server-functions) |
 
 ---
 

@@ -24,7 +24,7 @@ For extending JavaScript runtimes with Rust, three dominant binding strategies e
 |-----------|-------------|------------------|----------|
 | **Target Runtime** | Node.js, Electron | Browser, Node.js (WASM), Deno | Node.js, Electron |
 | **Binding Model** | N-API / Node-API C ABI | WebAssembly linear memory + JS glue | N-API / custom V8 FFI |
-| **Performance** | Near-native, zero-copy buffers | Near-native for compute; JS call overhead ~5-50μs | Near-native; similar to napi-rs |
+| **Performance** | Near-native, zero-copy buffers | Near-native for compute; JS call overhead ~5-50us | Near-native; similar to napi-rs |
 | **Build Output** | `.node` native addon (platform-specific) | `.wasm` (cross-platform) + JS shim | `.node` native addon |
 | **Type Safety** | Rust compile-time + TS type generation | Rust compile-time + TS type generation | Rust compile-time |
 | **Async Support** | Excellent — `tokio` integration | Good — `wasm-bindgen-futures` | Good — `neon::event::Task` |
@@ -118,6 +118,108 @@ sha2 = "0.10"
 crate-type = ["cdylib"]
 ```
 
+### Oxc Transform Configuration
+
+```javascript
+// oxc.config.js — 使用 Oxc 替代 Babel 进行 TypeScript/JSX 转译
+const { transform } = require('oxc-transform');
+
+// 与 Babel 等效的转译配置
+const result = transform('/path/to/file.tsx', `
+  export const App = () => <div>Hello Oxc</div>;
+`, {
+  sourcemap: true,
+  target: 'es2020',
+  jsx: {
+    runtime: 'automatic',
+    importSource: 'react',
+  },
+});
+
+console.log(result.code);
+console.log(result.map);
+```
+
+### Rspack Configuration (Webpack-compatible)
+
+```javascript
+// rspack.config.js — 从 Webpack 零成本迁移
+const path = require('path');
+
+/** @type {import('@rspack/core').Configuration} */
+module.exports = {
+  entry: './src/index.ts',
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: '[name].[contenthash].js',
+  },
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: {
+          loader: 'builtin:swc-loader',
+          options: {
+            jsc: {
+              parser: { syntax: 'typescript', tsx: true },
+              target: 'es2020',
+            },
+          },
+        },
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
+      },
+    ],
+  },
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
+  },
+  // Rspack 特有：内置的模块联邦支持（实验性）
+  experiments: {
+    rspackFuture: {
+      bundlerInfo: { force: true },
+    },
+  },
+};
+```
+
+### Biome Configuration (ESLint + Prettier Replacement)
+
+```json
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.3/schema.json",
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noExplicitAny": "warn"
+      },
+      "correctness": {
+        "noUnusedVariables": "error"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "es5"
+    }
+  }
+}
+```
+
 ### Migration Benchmark: Real-World Comparison
 
 | Tool | Legacy | Rust Replacement | Speedup | Compatibility |
@@ -151,6 +253,12 @@ The recommended migration strategy for 2026 follows a **progressive replacement*
 - [Lightning CSS](https://lightningcss.dev/) — Extremely fast CSS parser, transformer, and bundler.
 - [Rust + Node.js: Neon Bindings](https://neon-bindings.com/) — Alternative Node.js native addon framework.
 - [Vite 8 Release Notes](https://vitejs.dev/blog/announcing-vite8) — Official announcement of Rolldown as default bundler.
+- [SWC — Speedy Web Compiler](https://swc.rs/) — Rust-based compiler used by Next.js and Deno.
+- [Parcel — Rust-powered Bundler](https://parceljs.org/) — Zero-config bundler with Rust core.
+- [Rust Book](https://doc.rust-lang.org/book/) — Official Rust programming language book.
+- [napi-rs GitHub](https://github.com/napi-rs/napi-rs) — Source code and advanced examples.
+- [Bytecode Alliance — WASM Standards](https://bytecodealliance.org/) — WebAssembly ecosystem governance.
+- [Turbopack — Next.js Bundler](https://turbo.build/pack) — Incremental bundler built in Rust.
 
 ---
 

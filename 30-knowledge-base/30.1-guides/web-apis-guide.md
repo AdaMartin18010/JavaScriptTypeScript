@@ -111,6 +111,30 @@ const sanitizeStream = new TransformStream({
     controller.enqueue(new TextEncoder().encode(sanitized));
   },
 });
+
+// 响应流式 JSON 解析（分块处理）
+async function parseJSONStream(response) {
+  const reader = response.body
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new TransformStream({
+      transform(chunk, controller) {
+        // 假设每行一个 JSON 对象
+        for (const line of chunk.split('\n')) {
+          const trimmed = line.trim();
+          if (trimmed) controller.enqueue(JSON.parse(trimmed));
+        }
+      }
+    }))
+    .getReader();
+
+  const items = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    items.push(value);
+  }
+  return items;
+}
 ```
 
 ### Web Storage — 结构化存储与缓存
@@ -140,13 +164,125 @@ await cache.add('/api/config');
 const cached = await cache.match('/api/config');
 ```
 
+### Broadcast Channel — 跨 Tab 通信
+
+```javascript
+// 创建频道（同源策略限制）
+const channel = new BroadcastChannel('app_sync');
+
+// 发送消息
+channel.postMessage({ type: 'LOGIN', userId: 42 });
+
+// 接收消息
+channel.onmessage = (event) => {
+  if (event.data.type === 'LOGOUT') {
+    window.location.reload();
+  }
+};
+
+// 清理
+channel.close();
+
+// 完整示例：跨 Tab 购物车同步
+class CartSync {
+  #channel = new BroadcastChannel('cart_v1');
+
+  constructor() {
+    this.#channel.onmessage = ({ data }) => {
+      if (data.action === 'UPDATE') this.render(data.items);
+    };
+  }
+
+  addItem(item) {
+    const items = this.readCart();
+    items.push(item);
+    localStorage.setItem('cart', JSON.stringify(items));
+    this.#channel.postMessage({ action: 'UPDATE', items });
+  }
+
+  destroy() {
+    this.#channel.close();
+  }
+}
+```
+
+### Resize Observer — 高性能尺寸监听
+
+```javascript
+// 替代轮询与 window.resize 监听，精确到元素级别
+const ro = new ResizeObserver((entries) => {
+  for (const entry of entries) {
+    const { width, height } = entry.contentRect;
+    const element = entry.target;
+
+    // 响应式 Canvas 重绘
+    if (element.tagName === 'CANVAS') {
+      element.width = width * devicePixelRatio;
+      element.height = height * devicePixelRatio;
+      redrawCanvas();
+    }
+
+    // 容器查询的 JS 降级方案
+    if (width < 600) element.classList.add('compact');
+    else element.classList.remove('compact');
+  }
+});
+
+ro.observe(document.querySelector('.responsive-container'));
+ro.observe(document.querySelector('canvas'));
+
+// 断开监听
+// ro.disconnect();
+```
+
+### Intersection Observer — 懒加载与无限滚动
+
+```javascript
+// 图片懒加载（原生 loading="lazy" 的增强版）
+const imageObserver = new IntersectionObserver((entries) => {
+  for (const entry of entries) {
+    if (entry.isIntersecting) {
+      const img = entry.target;
+      img.src = img.dataset.src;
+      img.removeAttribute('data-src');
+      imageObserver.unobserve(img);
+    }
+  }
+}, { rootMargin: '200px 0px', threshold: 0.01 });
+
+document.querySelectorAll('img[data-src]').forEach(img => imageObserver.observe(img));
+
+// 无限滚动触发器
+const sentinel = document.querySelector('#scroll-sentinel');
+const scrollObserver = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting && !isLoading) {
+    loadNextPage();
+  }
+}, { rootMargin: '100px' });
+scrollObserver.observe(sentinel);
+```
+
 ### View Transitions
 
 ```javascript
 // 单页应用导航动画
 document.startViewTransition(() => {
   updateDOM() // 更新内容
-})
+});
+
+// 列表重排动画（可运行示例）
+async function shuffleList(listEl) {
+  if (!document.startViewTransition) {
+    // 降级：直接重排
+    listEl.append(...Array.from(listEl.children).sort(() => Math.random() - 0.5));
+    return;
+  }
+
+  // View Transition 自动捕获旧状态与新状态，计算 FLIP 动画
+  await document.startViewTransition(() => {
+    listEl.append(...Array.from(listEl.children).sort(() => Math.random() - 0.5));
+  }).finished;
+}
 ```
 
 ### Popover API
@@ -158,6 +294,30 @@ document.startViewTransition(() => {
 </div>
 ```
 
+```javascript
+// JS 控制 Popover（手动触发模式）
+const popover = document.getElementById('menu');
+
+// 显示（自动处理焦点、顶层堆叠、Light Dismiss）
+popover.showPopover();
+
+// 隐藏
+popover.hidePopover();
+
+// 监听事件
+popover.addEventListener('toggle', (e) => {
+  console.log('Popover', e.newState); // "open" | "closed"
+});
+
+// 嵌套 Popover 示例
+const submenuTrigger = document.getElementById('submenu-trigger');
+submenuTrigger.addEventListener('click', () => {
+  document.getElementById('submenu').showPopover({
+    source: submenuTrigger // 相对于触发元素定位
+  });
+});
+```
+
 ### Anchor Positioning
 
 ```css
@@ -166,6 +326,59 @@ document.startViewTransition(() => {
   anchor-default: --trigger;
   inset-area: top;
 }
+```
+
+```javascript
+// JS 动态设置锚点（CSS Anchor Positioning API 的脚本接口）
+const trigger = document.getElementById('trigger');
+const tooltip = document.getElementById('tooltip');
+
+// 通过 CSS anchor-name 关联
+trigger.style.anchorName = '--my-anchor';
+tooltip.style.positionAnchor = '--my-anchor';
+
+// fallback 策略：空间不足时自动翻转
+/*
+#tooltip {
+  position-fallback: --flip;
+}
+
+@position-fallback --flip {
+  @try { inset-area: top; }
+  @try { inset-area: bottom; }
+}
+*/
+```
+
+### Web Workers — 后台线程计算
+
+```javascript
+// worker.js
+self.onmessage = ({ data }) => {
+  const { type, payload } = data;
+  if (type === 'HEAVY_COMPUTE') {
+    let sum = 0;
+    for (let i = 0; i < payload.n; i++) sum += Math.sqrt(i);
+    self.postMessage({ type: 'RESULT', sum });
+  }
+};
+
+// main.js
+const worker = new Worker('worker.js', { type: 'module' });
+
+worker.postMessage({ type: 'HEAVY_COMPUTE', payload: { n: 1e8 } });
+worker.onmessage = ({ data }) => {
+  if (data.type === 'RESULT') {
+    console.log('Worker result:', data.sum);
+    worker.terminate();
+  }
+};
+
+// SharedWorker（同源多页面共享）
+const shared = new SharedWorker('shared-worker.js');
+shared.port.start();
+shared.port.postMessage({ action: 'JOIN', roomId: 'room-1' });
+shared.port.onmessage = (e) => console.log('Shared message:', e.data);
 ```
 
 ---
@@ -199,6 +412,28 @@ if (typeof CompressionStream !== 'undefined') {
 } else {
   // 加载 pako.js 回退
 }
+
+// Broadcast Channel 回退到 localStorage 事件
+function createCrossTabChannel(name) {
+  if ('BroadcastChannel' in window) {
+    return new BroadcastChannel(name);
+  }
+  // 降级方案：利用 storage 事件（仅限同源）
+  const listeners = new Set();
+  window.addEventListener('storage', (e) => {
+    if (e.key === name) {
+      const data = JSON.parse(e.newValue ?? '{}');
+      listeners.forEach(fn => fn({ data }));
+    }
+  });
+  return {
+    postMessage: (msg) => {
+      localStorage.setItem(name, JSON.stringify({ ...msg, __ts: Date.now() }));
+    },
+    set onmessage(fn) { listeners.add(fn); },
+    close() { listeners.clear(); }
+  };
+}
 ```
 
 ---
@@ -213,7 +448,18 @@ if (typeof CompressionStream !== 'undefined') {
 - [Anchor Positioning — CSS Tricks](https://css-tricks.com/css-anchor-positioning-guide/)
 - [Web Storage API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API)
 - [IndexedDB API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
+- [Broadcast Channel API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Broadcast_Channel_API)
+- [Resize Observer API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver)
+- [Intersection Observer API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
+- [Web Workers API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)
+- [Cache API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Cache)
+- [Using Service Workers — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API/Using_Service_Workers)
 - [Can I Use — Browser Support Tables](https://caniuse.com/)
+- [web.dev: View Transitions](https://developer.chrome.com/docs/web-platform/view-transitions)
+- [web.dev: Popover API](https://developer.chrome.com/docs/web-platform/popover)
+- [HTML Standard: Web Application APIs](https://html.spec.whatwg.org/multipage/webappapis.html)
+- [WICG: Invokers API](https://open-ui.org/components/invokers.explainer/)
+- [CSS Anchor Positioning — W3C](https://drafts.csswg.org/css-anchor-position/)
 
 ---
 
