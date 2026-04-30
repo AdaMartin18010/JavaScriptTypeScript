@@ -276,7 +276,74 @@ export function resolveRelative(path: string): string {
 }
 ```
 
-### 3.8 常见误区
+### 3.8 代码示例：Import Maps（浏览器原生模块映射）
+
+```html
+<!-- index.html -->
+<script type="importmap">
+{
+  "imports": {
+    "vue": "https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.js",
+    "lodash-es": "https://cdn.jsdelivr.net/npm/lodash-es@4/lodash.js",
+    "@app/": "/src/"
+  },
+  "scopes": {
+    "/src/admin/": {
+      "vue": "https://cdn.jsdelivr.net/npm/vue@3/dist/vue.esm-browser.prod.js"
+    }
+  }
+}
+</script>
+<script type="module">
+  import { createApp } from 'vue';
+  import { debounce } from 'lodash-es';
+  import { init } from '@app/main.js';
+
+  init(createApp, debounce);
+</script>
+```
+
+### 3.9 代码示例：Import Attributes（ES2025 `with` 语法）
+
+```typescript
+// 导入 JSON 模块（浏览器原生支持）
+import config from './config.json' with { type: 'json' };
+console.log(config.apiUrl);
+
+// 动态导入带属性
+const localeData = await import(`./locales/${lang}.json`, {
+  with: { type: 'json' }
+});
+
+// CSS 模块（部分浏览器/工具支持）
+import styles from './styles.css' with { type: 'css' };
+document.adoptedStyleSheets = [styles];
+```
+
+### 3.10 代码示例：模块联邦（Module Federation）概念
+
+```typescript
+// module-federation-concept.ts
+// Webpack 5 / Rspack / Vite(Federation) 的远程模块加载概念
+
+// 容器应用（Host）从远程应用（Remote）动态加载模块
+// 这本质上是动态 import() 的高级封装，配合运行时模块共享
+
+async function loadRemoteComponent(remoteName: string, modulePath: string) {
+  // @ts-ignore — Module Federation 运行时注入
+  const container = window[remoteName];
+  if (!container) throw new Error(`Remote ${remoteName} not loaded`);
+
+  await container.init(__webpack_share_scopes__.default);
+  const factory = await container.get(modulePath);
+  return factory();
+}
+
+// 使用
+const { default: RemoteButton } = await loadRemoteComponent('remoteApp', './Button');
+```
+
+### 3.11 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -292,6 +359,7 @@ export function resolveRelative(path: string): string {
 - [MDN JavaScript 模块](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 - [MDN：export](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/export)
 - [MDN：import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import)
+- [MDN：Import Maps](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script/type/importmap) — 浏览器原生模块映射
 - [Node.js：模块系统对比](https://nodejs.org/api/esm.html#introduction)
 - [Node.js：Package.json 导出配置](https://nodejs.org/api/packages.html#package-entry-points)
 - [Node.js：Subpath imports](https://nodejs.org/api/packages.html#subpath-imports)
@@ -303,7 +371,9 @@ export function resolveRelative(path: string): string {
 - [ESM 双包风险 (Dual Package Hazard)](https://nodejs.org/api/packages.html#dual-package-hazard) — Node.js 官方指南
 - [Pure ESM Package](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c) — Sindre Sorhus 的 ESM 迁移指南
 - [ECMAScript® 2025 — Modules](https://tc39.es/ecma262/#sec-modules)
-- `10-fundamentals/10.1-language-semantics/06-modules/`
+- [Import Attributes Proposal](https://github.com/tc39/proposal-import-attributes)
+- [Module Federation](https://module-federation.io/) — 微前端模块共享架构
+- [Web.dev: ES Modules](https://web.dev/articles/modules) — 浏览器 ESM 基础指南
 
 ---
 

@@ -16,7 +16,7 @@
 语言模式可视为在特定上下文（Context）中针对重复出现的问题（Problem）所给出的可复用解决方案（Solution）。形式化表达为：
 
 ```
-Pattern = ⟨Context, Problem, Solution, Consequences⟩
+Pattern = <Context, Problem, Solution, Consequences>
 ```
 
 ### 1.3 关键概念
@@ -325,6 +325,257 @@ const config = {
 
 - [MDN Web Docs](https://developer.mozilla.org)
 - `30-knowledge-base/`
+
+---
+
+## 进阶代码示例
+
+### Visitor 模式（代数数据类型处理）
+
+```typescript
+// visitor.ts — 对 AST 或数据结构的扩展操作
+type Expr =
+  | { kind: 'literal'; value: number }
+  | { kind: 'add'; left: Expr; right: Expr }
+  | { kind: 'multiply'; left: Expr; right: Expr };
+
+interface ExprVisitor<T> {
+  visitLiteral(node: Extract<Expr, { kind: 'literal' }>): T;
+  visitAdd(node: Extract<Expr, { kind: 'add' }>): T;
+  visitMultiply(node: Extract<Expr, { kind: 'multiply' }>): T;
+}
+
+function visit<T>(expr: Expr, visitor: ExprVisitor<T>): T {
+  switch (expr.kind) {
+    case 'literal': return visitor.visitLiteral(expr);
+    case 'add': return visitor.visitAdd(expr);
+    case 'multiply': return visitor.visitMultiply(expr);
+  }
+}
+
+// 求值 Visitor
+const evaluator: ExprVisitor<number> = {
+  visitLiteral: (n) => n.value,
+  visitAdd: (n) => visit(n.left, evaluator) + visit(n.right, evaluator),
+  visitMultiply: (n) => visit(n.left, evaluator) * visit(n.right, evaluator),
+};
+
+// 打印 Visitor
+const printer: ExprVisitor<string> = {
+  visitLiteral: (n) => String(n.value),
+  visitAdd: (n) => `(${visit(n.left, printer)} + ${visit(n.right, printer)})`,
+  visitMultiply: (n) => `(${visit(n.left, printer)} * ${visit(n.right, printer)})`,
+};
+
+const expr: Expr = {
+  kind: 'multiply',
+  left: { kind: 'literal', value: 2 },
+  right: { kind: 'add', left: { kind: 'literal', value: 3 }, right: { kind: 'literal', value: 4 } },
+};
+
+console.log(visit(expr, evaluator)); // 14
+console.log(visit(expr, printer));   // (2 * (3 + 4))
+```
+
+### Decorator 模式（TypeScript 实验性装饰器）
+
+```typescript
+// decorators.ts
+function measureTime(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const original = descriptor.value;
+  descriptor.value = async function (...args: any[]) {
+    const start = performance.now();
+    const result = await original.apply(this, args);
+    const duration = performance.now() - start;
+    console.log(`${propertyKey} took ${duration.toFixed(2)}ms`);
+    return result;
+  };
+}
+
+function cacheResult<T>(ttlMs: number) {
+  const cache = new Map<string, { value: T; expiry: number }>();
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const original = descriptor.value;
+    descriptor.value = function (...args: any[]) {
+      const key = JSON.stringify(args);
+      const cached = cache.get(key);
+      if (cached && cached.expiry > Date.now()) return cached.value;
+      const result = original.apply(this, args);
+      cache.set(key, { value: result, expiry: Date.now() + ttlMs });
+      return result;
+    };
+  };
+}
+
+class DataService {
+  @measureTime
+  @cacheResult(5000)
+  fetchData(id: string) {
+    // 模拟耗时操作
+    return { id, data: 'expensive result' };
+  }
+}
+```
+
+### Adapter 模式（接口兼容）
+
+```typescript
+// adapter.ts
+// 旧接口
+interface LegacyPrinter {
+  printDocument(content: string): void;
+}
+
+// 新接口
+interface ModernPrinter {
+  print(content: string, options: { color: boolean }): Promise<void>;
+}
+
+class OldPrinter implements LegacyPrinter {
+  printDocument(content: string) {
+    console.log('Legacy print:', content);
+  }
+}
+
+// 适配器：将旧接口包装为新接口
+class PrinterAdapter implements ModernPrinter {
+  constructor(private legacy: LegacyPrinter) {}
+  async print(content: string, _options: { color: boolean }) {
+    this.legacy.printDocument(content);
+  }
+}
+
+// 使用
+const modern: ModernPrinter = new PrinterAdapter(new OldPrinter());
+await modern.print('Hello', { color: true });
+```
+
+### Pipeline / 管道模式
+
+```typescript
+// pipeline.ts
+type PipeFn<T> = (input: T) => T;
+
+function pipe<T>(...fns: PipeFn<T>[]): PipeFn<T> {
+  return (input) => fns.reduce((acc, fn) => fn(acc), input);
+}
+
+// 数据处理管道
+const processUserData = pipe(
+  (data: string) => data.trim(),
+  (data) => data.toLowerCase(),
+  (data) => data.replace(/[^a-z0-9]/g, '-'),
+  (data) => data.replace(/-+/g, '-'),
+  (data) => data.replace(/^-|-$/g, ''),
+);
+
+console.log(processUserData('  Hello World!!!  ')); // "hello-world"
+```
+
+### Railway-Oriented Programming（铁路导向编程）
+
+```typescript
+// railway.ts — 函数式错误处理管道
+type Result<T, E> = { ok: true; value: T } | { ok: false; error: E };
+
+function succeed<T>(value: T): Result<T, never> {
+  return { ok: true, value };
+}
+
+function fail<E>(error: E): Result<never, E> {
+  return { ok: false, error };
+}
+
+function bind<T, U, E>(
+  result: Result<T, E>,
+  fn: (value: T) => Result<U, E>
+): Result<U, E> {
+  return result.ok ? fn(result.value) : result;
+}
+
+function map<T, U, E>(
+  result: Result<T, E>,
+  fn: (value: T) => U
+): Result<U, E> {
+  return result.ok ? succeed(fn(result.value)) : result;
+}
+
+// 使用：验证管道
+function validateEmail(email: string): Result<string, string> {
+  return email.includes('@') ? succeed(email) : fail('Invalid email');
+}
+
+function validateLength(min: number) {
+  return (s: string): Result<string, string> =>
+    s.length >= min ? succeed(s) : fail(`Too short, need ${min} chars`);
+}
+
+const result = bind(
+  bind(succeed('user@example.com'), validateEmail),
+  validateLength(5)
+);
+
+console.log(result); // { ok: true, value: 'user@example.com' }
+```
+
+### Facade 模式（简化复杂子系统）
+
+```typescript
+// facade.ts
+class DatabaseConnection {
+  connect() { console.log('DB connected'); }
+  query(sql: string) { return [{ id: 1 }]; }
+  close() { console.log('DB closed'); }
+}
+
+class CacheLayer {
+  get(key: string) { return null; }
+  set(key: string, value: unknown) { console.log('Cached', key); }
+}
+
+class Logger {
+  log(msg: string) { console.log('[LOG]', msg); }
+}
+
+// Facade：统一入口
+class DataServiceFacade {
+  private db = new DatabaseConnection();
+  private cache = new CacheLayer();
+  private logger = new Logger();
+
+  async fetchUser(id: string) {
+    this.logger.log(`Fetching user ${id}`);
+    const cached = this.cache.get(`user:${id}`);
+    if (cached) return cached;
+    this.db.connect();
+    const [user] = this.db.query(`SELECT * FROM users WHERE id = ${id}`);
+    this.cache.set(`user:${id}`, user);
+    this.db.close();
+    return user;
+  }
+}
+
+// 客户端只需与 Facade 交互
+const service = new DataServiceFacade();
+service.fetchUser('42');
+```
+
+---
+
+## 新增权威参考链接
+
+- [Refactoring Guru — All Design Patterns](https://refactoring.guru/design-patterns/catalog)
+- [Head First Design Patterns](https://www.oreilly.com/library/view/head-first-design/9781492077992/)
+- [Pattern Languages of Program Design](https://hillside.net/plop/)
+- [Wikipedia — Software Design Patterns](https://en.wikipedia.org/wiki/Software_design_pattern)
+- [Source Making — Design Patterns](https://sourcemaking.com/design_patterns)
+- [Dofactory — JS Design Patterns](https://www.dofactory.com/javascript/design-patterns)
+- [JavaScript Patterns (Stoyan Stefanov)](https://www.oreilly.com/library/view/javascript-patterns/9781449397118/)
+- [Learning JavaScript Design Patterns (Addy Osmani)](https://www.patterns.dev/posts/classic-design-patterns/)
+- [Functional Programming Patterns](https://fsharpforfunandprofit.com/fppatterns/)
+- [Railway Oriented Programming — Scott Wlaschin](https://fsharpforfunandprofit.com/rop/)
+- [TC39 Decorators Proposal](https://github.com/tc39/proposal-decorators)
+- [TypeScript Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
 
 ---
 

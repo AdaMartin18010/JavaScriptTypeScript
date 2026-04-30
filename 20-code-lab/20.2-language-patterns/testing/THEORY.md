@@ -1,4 +1,4 @@
-﻿# 测试基础 — 理论基础
+# 测试基础 — 理论基础
 
 ## 1. 测试金字塔
 
@@ -182,7 +182,7 @@ export default defineConfig({
 ### 测试驱动开发（TDD）
 
 ```
-编写失败测试 → 编写最小实现 → 重构 → 重复
+编写失败测试 -> 编写最小实现 -> 重构 -> 重复
 ```
 
 ### 行为驱动开发（BDD）
@@ -314,6 +314,134 @@ describe('<Alert />', () => {
 });
 ```
 
+## 12. 进阶代码示例
+
+### 参数化测试
+
+```typescript
+// parameterized.test.ts
+import { describe, it, expect } from 'vitest';
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+describe('isValidEmail', () => {
+  it.each([
+    ['user@example.com', true],
+    ['test+tag@domain.co.uk', true],
+    ['invalid-email', false],
+    ['@nodomain.com', false],
+    ['', false],
+  ])('isValidEmail(%s) -> %s', (input, expected) => {
+    expect(isValidEmail(input)).toBe(expected);
+  });
+});
+```
+
+### 测试夹具（Fixtures）与工厂函数
+
+```typescript
+// fixtures.ts
+import { faker } from '@faker-js/faker';
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: 'admin' | 'user';
+}
+
+function createUser(overrides: Partial<User> = {}): User {
+  return {
+    id: faker.string.uuid(),
+    email: faker.internet.email(),
+    name: faker.person.fullName(),
+    role: 'user',
+    ...overrides,
+  };
+}
+
+// 使用
+const admin = createUser({ role: 'admin' });
+const user = createUser();
+```
+
+### 并发安全测试
+
+```typescript
+// concurrency.test.ts
+import { describe, it, expect } from 'vitest';
+
+class AtomicCounter {
+  private value = 0;
+  async increment(): Promise<number> {
+    const current = this.value;
+    await new Promise(r => setTimeout(r, Math.random() * 10));
+    this.value = current + 1;
+    return this.value;
+  }
+  getValue() { return this.value; }
+}
+
+// 使用互斥锁修复后的版本
+class SafeCounter {
+  private value = 0;
+  private lock = Promise.resolve();
+  async increment(): Promise<number> {
+    const release = await this.acquireLock();
+    try {
+      this.value++;
+      return this.value;
+    } finally {
+      release();
+    }
+  }
+  private acquireLock(): Promise<() => void> {
+    let release: () => void;
+    const promise = new Promise<void>(resolve => { release = resolve; });
+    const previous = this.lock;
+    this.lock = previous.then(() => promise);
+    return previous.then(() => release);
+  }
+  getValue() { return this.value; }
+}
+
+describe('SafeCounter', () => {
+  it('handles concurrent increments correctly', async () => {
+    const counter = new SafeCounter();
+    await Promise.all(Array.from({ length: 100 }, () => counter.increment()));
+    expect(counter.getValue()).toBe(100);
+  });
+});
+```
+
+### 组件测试（React Testing Library）
+
+```typescript
+// Counter.test.tsx
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Counter } from './Counter';
+
+describe('<Counter />', () => {
+  it('increments when clicked', () => {
+    render(<Counter initial={0} />);
+    const button = screen.getByRole('button', { name: /increment/i });
+    fireEvent.click(button);
+    fireEvent.click(button);
+    expect(screen.getByText('2')).toBeInTheDocument();
+  });
+
+  it('calls onChange callback', () => {
+    const onChange = vi.fn();
+    render(<Counter initial={0} onChange={onChange} />);
+    fireEvent.click(screen.getByRole('button'));
+    expect(onChange).toHaveBeenCalledWith(1);
+  });
+});
+```
+
 ## 参考链接
 
 - [Vitest Documentation](https://vitest.dev/)
@@ -326,3 +454,14 @@ describe('<Alert />', () => {
 - [Jest Documentation](https://jestjs.io/docs/getting-started)
 - [Cypress Documentation](https://docs.cypress.io/)
 - [Supertest — HTTP assertions](https://github.com/ladjs/supertest)
+- [Martin Fowler — Test Pyramid](https://martinfowler.com/bliki/TestPyramid.html)
+- [Martin Fowler — Unit Testing](https://martinfowler.com/bliki/UnitTest.html)
+- [ISTQB — International Software Testing Qualifications Board](https://www.istqb.org/)
+- [Testing Patterns — Google Testing Blog](https://testing.googleblog.com/2015/04/just-say-no-to-more-end-to-end-tests.html)
+- [Arrange-Act-Assert Pattern](https://xp123.com/articles/3a-arrange-act-assert/)
+- [Faker.js — 生成假数据](https://fakerjs.dev/)
+- [React Testing Library — Queries](https://testing-library.com/docs/queries/about/)
+
+---
+
+*本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

@@ -306,4 +306,163 @@ pay('paypal', { amount: 49.99, currency: 'EUR' });
 
 ---
 
+## 进阶代码示例
+
+### Tagged Union 穷尽性检查
+
+```typescript
+// exhaustive-check.ts
+type NetworkState =
+  | { status: 'idle' }
+  | { status: 'loading'; progress: number }
+  | { status: 'success'; data: unknown }
+  | { status: 'error'; message: string };
+
+function getMessage(state: NetworkState): string {
+  switch (state.status) {
+    case 'idle': return 'Waiting...';
+    case 'loading': return `Loading ${state.progress}%`;
+    case 'success': return 'Done!';
+    case 'error': return `Error: ${state.message}`;
+    default:
+      // 若新增状态未处理，此处编译报错
+      const _exhaustive: never = state;
+      return _exhaustive;
+  }
+}
+```
+
+### Template Literal Types 实现类型安全路由
+
+```typescript
+// typed-routes.ts
+type APIRoutes =
+  | '/users'
+  | `/users/${string}`
+  | '/orders'
+  | `/orders/${string}/items`
+  | `/orders/${string}/items/${number}`;
+
+function fetchApi<T>(route: APIRoutes): Promise<T> {
+  return fetch(route).then(r => r.json());
+}
+
+// ✅ 合法
+fetchApi('/users');
+fetchApi('/users/123');
+
+// ❌ 编译错误
+// fetchApi('/products');
+```
+
+### 递归类型实现 JSON 类型
+
+```typescript
+// json-type.ts
+type JSONValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JSONValue[]
+  | { [key: string]: JSONValue };
+
+function safeParseJSON(input: string): JSONValue {
+  return JSON.parse(input);
+}
+
+// 严格排除 Date、Function、undefined 等非法 JSON 值
+const data: JSONValue = {
+  name: 'Alice',
+  scores: [95, 87, 92],
+  metadata: { version: 1, active: true },
+};
+```
+
+### const assertion 与精确字面量推断
+
+```typescript
+// const-assertion.ts
+const config = {
+  apiUrl: 'https://api.example.com',
+  timeout: 5000,
+  retries: 3,
+} as const;
+
+// config.apiUrl 推断为字面量 "https://api.example.com"
+// config.timeout 推断为字面量 5000
+// 无法重新赋值：config.timeout = 3000; // ❌
+
+type Config = typeof config;
+// Config['apiUrl'] === "https://api.example.com"
+```
+
+### Phantom Types（幽灵类型）实现状态机
+
+```typescript
+// phantom-types.ts
+declare const DraftTag: unique symbol;
+declare const PublishedTag: unique symbol;
+
+type Draft = { readonly [DraftTag]: true };
+type Published = { readonly [PublishedTag]: true };
+
+interface Article<State> {
+  title: string;
+  content: string;
+}
+
+function createArticle(title: string, content: string): Article<Draft> {
+  return { title, content };
+}
+
+function publish(article: Article<Draft>): Article<Published> {
+  // 执行发布逻辑...
+  return article as Article<Published>;
+}
+
+// 使用
+const draft = createArticle('Hello', 'World');
+const published = publish(draft);
+// publish(published); // ❌ 编译错误：已发布不能再次发布
+```
+
+### Mapped Types 实现 DeepReadonly
+
+```typescript
+// mapped-types.ts
+type DeepReadonly<T> = {
+  readonly [K in keyof T]: T[K] extends object ? DeepReadonly<T[K]> : T[K];
+};
+
+interface Config {
+  database: { host: string; port: number };
+  features: { auth: boolean; logging: boolean };
+}
+
+const immutableConfig: DeepReadonly<Config> = {
+  database: { host: 'localhost', port: 5432 },
+  features: { auth: true, logging: false },
+};
+
+// immutableConfig.database.port = 3306; // ❌ 编译错误
+```
+
+---
+
+## 新增权威参考链接
+
+- [ECMA-262 Language Specification](https://tc39.es/ecma262/) — JavaScript 语言规范
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- [TypeScript Deep Dive (Basarat)](https://basarat.gitbook.io/typescript/)
+- [Effective TypeScript (Dan Vanderkam)](https://effectivetypescript.com/)
+- [Exploring JS — Dr. Axel Rauschmayer](https://exploringjs.com/)
+- [You Don't Know JS (Kyle Simpson)](https://github.com/getify/You-Dont-Know-JS)
+- [JavaScript Info](https://javascript.info/)
+- [MDN Web Docs — JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+- [TC39 Proposals](https://github.com/tc39/proposals)
+- [Type Challenges](https://github.com/type-challenges/type-challenges) — 类型体操练习题
+
+---
+
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*
