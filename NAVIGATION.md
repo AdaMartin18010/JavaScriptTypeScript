@@ -1,7 +1,7 @@
 # JS/TS 全景知识库 — 全局导航索引
 
 > **导航原则**：主题聚类 > 数字编号 | 形式-实践闭环 | 七种思维表征
-> **最后更新**：2026-04-28
+> **最后更新**：2026-04-30
 
 ---
 
@@ -57,6 +57,8 @@
 │   ├── 11-control-flow-as-categorical-constructs.md      # 控制流
 │   ├── 12-runtime-model-categorical-semantics.md         # 运行时语义
 │   ├── 13-variable-system-categorical-analysis.md        # 变量系统
+│   ├── 14-event-systems-and-message-passing-categorical-semantics.md  # 事件系统范畴语义 [新建]
+│   ├── 15-concurrent-computation-models.md               # 并发计算模型 [新建]
 │   └── code-examples/                                    # TypeScript 代码示例
 │
 ├── 70.2-cognitive-interaction-models/                    # 方向二：认知模型
@@ -72,6 +74,8 @@
 │   ├── 10-async-concurrency-cognitive-models.md          # 并发认知模型
 │   ├── 11-expert-novice-differences-in-js-ts.md          # 专家-新手差异
 │   ├── 12-multimodal-interaction-theory.md               # 多模态交互
+│   ├── 13-frontend-framework-computation-models.md       # 框架计算模型 [新建]
+│   ├── 14-browser-rendering-engine-principles.md         # 浏览器渲染引擎 [新建]
 │   └── code-examples/                                    # 认知评估示例
 │
 └── 70.3-multi-model-formal-analysis/                     # 方向三：多模型分析

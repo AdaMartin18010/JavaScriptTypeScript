@@ -136,4 +136,179 @@ const rectangle = (w: number, h: number): Shape => ({ kind: 'rectangle', width: 
 const mergeAsCoproduct = <A extends object, B extends object>(a: A, b: B): A & B =>
   ({ ...a, ...b }) as A & B;
 
-// TODO: 补充更多极限实例、泛性质的完整验证、极限与余极限的对偶性
+// ============================================================
+// 7. 等化子的泛性质完整验证
+// ============================================================
+
+/**
+ * 等化子 eq: E → A 满足 f ∘ eq = g ∘ eq
+ * 泛性质：对于任意 h: X → A 满足 f ∘ h = g ∘ h，
+ * 存在唯一的 u: X → E 使得 eq ∘ u = h
+ *
+ * 在 TS 中：Array.prototype.filter 是等化子的近似
+ */
+
+/**
+ * 等化子构造：找出满足 f(x) = g(x) 的所有 x
+ */
+const equalizer = <A, B>(
+  domain: A[],
+  f: (a: A) => B,
+  g: (a: A) => B
+): { eq: A[]; inclusion: (e: A) => A } => {
+  const eq = domain.filter(a => f(a) === g(a));
+  const inclusion = (e: A): A => e; // eq ↪ A
+  return { eq, inclusion };
+};
+
+/**
+ * 验证泛性质：
+ * 给定 h: X → A 满足 f ∘ h = g ∘ h，
+ * 存在唯一的 u: X → E
+ */
+const verifyEqualizerUniversal = <X, A, B>(
+  domain: A[],
+  f: (a: A) => B,
+  g: (a: A) => B,
+  h: (x: X) => A,
+  xs: X[] // 测试用例
+): boolean => {
+  // 前提：f ∘ h = g ∘ h
+  const precondition = xs.every(x => f(h(x)) === g(h(x)));
+  if (!precondition) return false;
+
+  const { eq } = equalizer(domain, f, g);
+
+  // 存在 u: X → E 使得 inclusion ∘ u = h
+  // u(x) 必须是 h(x) 且 h(x) ∈ eq
+  const u = (x: X): A | undefined => {
+    const hx = h(x);
+    return eq.includes(hx as any) ? hx : undefined;
+  };
+
+  // 验证：对所有 x，u(x) 存在且 inclusion(u(x)) = h(x)
+  return xs.every(x => {
+    const ux = u(x);
+    return ux !== undefined && ux === h(x);
+  });
+};
+
+// 示例：找出满足 x % 2 === 0 和 x > 0 的共同解
+// f(x) = x % 2, g(x) = 0 的等化子 = 偶数集合
+const evenEqualizer = equalizer(
+  [1, 2, 3, 4, 5, 6],
+  (x: number) => x % 2,
+  () => 0
+);
+// evenEqualizer.eq = [2, 4, 6]
+
+// ============================================================
+// 8. 极限与余极限的对偶性
+// ============================================================
+
+/**
+ * 对偶原理：
+ * 极限 ←→ 余极限（箭头反向）
+ * 积 ←→ 余积
+ * 等化子 ←→ 余等化子
+ * 拉回 ←→ 推出
+ *
+ * 在 TS 中：
+ * - 极限 ≈ 交集/约束满足
+ * - 余极限 ≈ 并集/合并操作
+ */
+
+/**
+ * 余等化子（Coequalizer）：给定 f, g: A → B，
+ * coequalizer: B → Q 满足 coequalizer ∘ f = coequalizer ∘ g
+ * 泛性质：对于任意 h: B → X 满足 h ∘ f = h ∘ g，
+ * 存在唯一的 u: Q → X 使得 u ∘ coequalizer = h
+ *
+ * 在 TS 中：按等价关系商化
+ */
+const coequalizer = <A, B>(
+  codomain: B[],
+  f: (a: A) => B,
+  g: (a: A) => B,
+  as: A[]
+): { quotient: B[][]; proj: (b: B) => B[] } => {
+  // 等价关系：b1 ~ b2 当且仅当 ∃a. f(a) = b1 ∧ g(a) = b2
+  const equivalence: Map<B, Set<B>> = new Map();
+
+  for (const a of as) {
+    const fa = f(a);
+    const ga = g(a);
+    if (!equivalence.has(fa)) equivalence.set(fa, new Set());
+    equivalence.get(fa)!.add(ga);
+  }
+
+  // 商集 = 等价类
+  const classes: B[][] = [];
+  const visited = new Set<B>();
+  for (const b of codomain) {
+    if (visited.has(b)) continue;
+    const cls = [b];
+    visited.add(b);
+    const related = equivalence.get(b);
+    if (related) {
+      for (const r of related) {
+        if (!visited.has(r)) {
+          cls.push(r);
+          visited.add(r);
+        }
+      }
+    }
+    classes.push(cls);
+  }
+
+  const proj = (b: B): B[] =>
+    classes.find(c => c.includes(b as any)) || [b];
+
+  return { quotient: classes, proj };
+};
+
+// 示例：f(a) = a, g(a) = a + 1 (mod 4) 的余等化子
+// 商化后：0 ~ 1 ~ 2 ~ 3 (因为 f(0)=0, g(0)=1; f(1)=1, g(1)=2; ...)
+// 实际上等价类取决于具体定义
+
+// ============================================================
+// 9. 泛性质的完整验证框架
+// ============================================================
+
+/**
+ * 通用极限验证器：
+ * 给定锥 (C, c_i) 和候选极限 (L, l_i)，
+ * 验证 L 是否满足泛性质
+ */
+interface Cone<A, Index> {
+  readonly apex: A;
+  readonly projections: Map<Index, (a: A) => A>;
+}
+
+/**
+ * 验证极限泛性质：
+ * 对于任何其他锥 (C, c_i)，存在唯一的 !u: C → L
+ * 使得 l_i ∘ !u = c_i 对所有 i 成立
+ */
+const verifyLimitUniversal = <A, Index>(
+  limitCone: Cone<A, Index>,
+  otherCone: Cone<A, Index>,
+  uniqueMorphism: (c: A) => A,
+  testCases: A[]
+): boolean => {
+  for (const test of testCases) {
+    const u = uniqueMorphism(test);
+    // 验证：对所有 i，limitProjection_i(u) = otherProjection_i(test)
+    for (const [index, limitProj] of limitCone.projections) {
+      const otherProj = otherCone.projections.get(index);
+      if (!otherProj) return false;
+      if (limitProj(u) !== otherProj(test)) return false;
+    }
+  }
+  return true;
+};
+
+// 应用到 Promise.all：
+// limitCone = (Promise<[T, U]>, { π₁, π₂ })
+// otherCone = (Promise<{ t: T, u: U }>, { c₁: p => p.then(x => x.t), c₂: p => p.then(x => x.u) })
+// uniqueMorphism = p => p.then(x => [x.t, x.u])

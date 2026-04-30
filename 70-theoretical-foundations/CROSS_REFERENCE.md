@@ -62,6 +62,8 @@
 | `70.1/11-control-flow` | `70.1/01-primer` | 前置阅读 |
 | `70.1/12-runtime` | `70.1/01-primer` | 前置阅读 |
 | `70.1/13-variable` | `70.1/01-primer`, `70.1/02-ccc` | 前置阅读 |
+| `70.1/14-event-systems` | `70.1/04-monads`, `70.1/12-runtime` | 前置阅读 |
+| `70.1/15-concurrent-computation` | `70.1/05-limits`, `70.1/14-event-systems` | 前置阅读 |
 | `70.2/02-mental-models` | `70.2/01-cognitive-primer` | 前置阅读 |
 | `70.2/03-working-memory` | `70.2/01-cognitive-primer` | 前置阅读 |
 | `70.2/04-conceptual-models` | `70.2/01-cognitive-primer` | 前置阅读 |
@@ -73,6 +75,8 @@
 | `70.2/10-async-concurrency` | `70.2/01-cognitive-primer` | 前置阅读 |
 | `70.2/11-expert-novice` | `70.2/01-cognitive-primer` | 前置阅读 |
 | `70.2/12-multimodal` | `70.2/01-cognitive-primer` | 前置阅读 |
+| `70.2/13-frontend-framework-computation` | `70.2/04-conceptual-models`, `70.2/05-react-cognitive` | 前置阅读 |
+| `70.2/14-browser-rendering-engine` | `70.2/08-rendering`, `70.2/10-async-concurrency` | 前置阅读 |
 | `70.3/02-semantic-correspondence` | `70.3/01-refinement`, `70.1/01-primer` | 前置阅读 |
 | `70.3/03-type-runtime-diff` | `70.3/01-refinement` | 前置阅读 |
 | `70.3/04-reactive-adaptation` | `70.3/01-refinement` | 前置阅读 |
@@ -82,6 +86,7 @@
 | `70.3/08-framework-interop` | `70.3/04-reactive-adaptation` | 前置阅读 |
 | `70.3/09-formal-verification` | `70.3/03-type-runtime-diff` | 前置阅读 |
 | `70.3/10-metamodel` | `70.3/05-model-category`, `70.3/07-comprehensive-response` | 前置阅读 |
+| `70.3/11-execution-framework-rendering-triangle` | `70.3/07-comprehensive-response`, `70.3/10-metamodel` | 前置阅读 |
 
 ---
 

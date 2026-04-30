@@ -63,6 +63,12 @@ references:
     - [7.2 构建准确的渲染心智模型](#72-构建准确的渲染心智模型)
     - [7.3 工作记忆槽位分析：调试渲染问题](#73-工作记忆槽位分析调试渲染问题)
   - [8. 精确直觉类比与边界](#8-精确直觉类比与边界)
+  - [TypeScript 代码示例：渲染性能与认知感知](#typescript-代码示例渲染性能与认知感知)
+    - [示例 1：帧率检测与 jank 计算](#示例-1帧率检测与-jank-计算)
+    - [示例 2：Core Web Vitals 指标收集器](#示例-2core-web-vitals-指标收集器)
+    - [示例 3：骨架屏感知优化检测](#示例-3骨架屏感知优化检测)
+    - [示例 4：注意力热区模拟](#示例-4注意力热区模拟)
+    - [示例 5：响应时间感知阈值检测](#示例-5响应时间感知阈值检测)
   - [参考文献](#参考文献)
 
 ---
@@ -770,6 +776,235 @@ function HeavyList({ items }) {
 | **合成层（Composited Layer）** | 透明胶片叠加 | 每层独立绘制，合成时叠加 | 过多图层增加内存，反而降低性能 |
 | **主线程阻塞** | 单车道高速公路上的车祸 | 所有车辆（交互）被迫停止 | Web Worker 和 Service Worker 是"辅路" |
 | **流式渲染** | 逐步揭晓的拼图 | 先看轮廓，再逐步填充细节 | 如果关键部分最后才到，效果不如整块渲染 |
+
+---
+
+## TypeScript 代码示例：渲染性能与认知感知
+
+### 示例 1：帧率检测与 jank 计算
+
+```typescript
+/**
+ * 检测页面帧率并识别 jank（卡顿帧）
+ * 基于 requestAnimationFrame 的帧时间戳分析
+ */
+class FrameRateMonitor {
+  private frames: number[] = [];
+  private readonly targetFrameTime = 1000 / 60; // 16.67ms for 60fps
+  private running = false;
+
+  start(): void {
+    this.running = true;
+    this.frames = [];
+    const measure = (timestamp: number) => {
+      if (!this.running) return;
+      this.frames.push(timestamp);
+      if (this.frames.length > 120) this.frames.shift();
+      requestAnimationFrame(measure);
+    };
+    requestAnimationFrame(measure);
+  }
+
+  stop(): void { this.running = false; }
+
+  getJankFrames(): number {
+    let jankCount = 0;
+    for (let i = 1; i < this.frames.length; i++) {
+      const frameTime = this.frames[i] - this.frames[i - 1];
+      if (frameTime > this.targetFrameTime * 1.5) jankCount++;
+    }
+    return jankCount;
+  }
+
+  getAverageFPS(): number {
+    if (this.frames.length < 2) return 0;
+    const duration = this.frames[this.frames.length - 1] - this.frames[0];
+    return Math.round((this.frames.length - 1) / (duration / 1000));
+  }
+}
+
+// 使用示例
+const monitor = new FrameRateMonitor();
+monitor.start();
+setTimeout(() => {
+  console.log(`FPS: ${monitor.getAverageFPS()}, Jank frames: ${monitor.getJankFrames()}`);
+  monitor.stop();
+}, 2000);
+```
+
+### 示例 2：Core Web Vitals 指标收集器
+
+```typescript
+interface WebVitalsReport {
+  readonly lcp: number | null;    // Largest Contentful Paint (ms)
+  readonly fid: number | null;    // First Input Delay (ms)
+  readonly cls: number | null;    // Cumulative Layout Shift
+  readonly fcp: number | null;    // First Contentful Paint (ms)
+  readonly ttfb: number | null;   // Time to First Byte (ms)
+}
+
+class CoreWebVitalsCollector {
+  private metrics: Partial<WebVitalsReport> = {};
+
+  observe(): void {
+    // LCP
+    new PerformanceObserver((list) => {
+      const entries = list.getEntries();
+      const lastEntry = entries[entries.length - 1] as PerformanceEntry & { startTime: number };
+      this.metrics.lcp = Math.round(lastEntry.startTime);
+    }).observe({ entryTypes: ['largest-contentful-paint'] as any });
+
+    // FID
+    new PerformanceObserver((list) => {
+      const firstEntry = list.getEntries()[0] as PerformanceEntry & { processingStart: number; startTime: number };
+      this.metrics.fid = Math.round(firstEntry.processingStart - firstEntry.startTime);
+    }).observe({ entryTypes: ['first-input'] as any });
+
+    // CLS
+    let clsValue = 0;
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        const e = entry as PerformanceEntry & { hadRecentInput: boolean; value: number };
+        if (!e.hadRecentInput) clsValue += e.value;
+      }
+      this.metrics.cls = Math.round(clsValue * 1000) / 1000;
+    }).observe({ entryTypes: ['layout-shift'] as any });
+  }
+
+  getReport(): Partial<WebVitalsReport> {
+    return { ...this.metrics };
+  }
+
+  getHealthStatus(): 'good' | 'needs-improvement' | 'poor' {
+    const { lcp, fid, cls } = this.metrics;
+    if (lcp === null || fid === null || cls === null) return 'needs-improvement';
+    if (lcp <= 2500 && fid <= 100 && cls <= 0.1) return 'good';
+    if (lcp <= 4000 && fid <= 300 && cls <= 0.25) return 'needs-improvement';
+    return 'poor';
+  }
+}
+```
+
+### 示例 3：骨架屏感知优化检测
+
+```typescript
+interface SkeletonScreenConfig {
+  readonly duration: number;        // 预期加载时间 (ms)
+  readonly hasMatchingLayout: boolean;
+  readonly hasShimmerAnimation: boolean;
+  readonly usesBrandColor: boolean;
+}
+
+function evaluateSkeletonEffectiveness(config: SkeletonScreenConfig): {
+  score: number;
+  recommendations: string[];
+} {
+  const recommendations: string[] = [];
+  let score = 0;
+
+  // 持续时间检查
+  if (config.duration < 100) {
+    score += 1;
+    recommendations.push('持续时间过短（<100ms），用户可能察觉不到骨架屏');
+  } else if (config.duration <= 2000) {
+    score += 3;
+  } else {
+    score += 2;
+    recommendations.push('持续时间过长（>2s），应考虑渐进加载策略');
+  }
+
+  // 布局匹配
+  if (config.hasMatchingLayout) {
+    score += 3;
+  } else {
+    score += 0;
+    recommendations.push('骨架屏布局与最终内容不匹配，会增加 CLS');
+  }
+
+  // 动画效果
+  if (config.hasShimmerAnimation) {
+    score += 2;
+  } else {
+    score += 1;
+  }
+
+  return { score: Math.min(10, score), recommendations };
+}
+
+// 示例：评估一个骨架屏设计
+const skeletonEval = evaluateSkeletonEffectiveness({
+  duration: 500,
+  hasMatchingLayout: true,
+  hasShimmerAnimation: true,
+  usesBrandColor: true
+});
+console.log(`骨架屏评分: ${skeletonEval.score}/10`);
+skeletonEval.recommendations.forEach(r => console.log(`  - ${r}`));
+```
+
+### 示例 4：注意力热区模拟
+
+```typescript
+/**
+ * 模拟用户阅读页面时的注意力分布
+ * 基于 F 型阅读模式和视觉显著性
+ */
+function simulateAttentionHeatmap(
+  pageElements: Array<{ x: number; y: number; width: number; height: number; importance: number }>
+): Array<{ element: number; attentionScore: number }> {
+  // F 型模式权重：顶部 > 左侧 > 其他
+  const fPatternWeight = (x: number, y: number): number => {
+    const topWeight = Math.max(0, 1 - y / 300);    // 顶部区域权重高
+    const leftWeight = Math.max(0, 1 - x / 200);   // 左侧区域权重高
+    return 0.3 + 0.4 * topWeight + 0.3 * leftWeight;
+  };
+
+  return pageElements.map((el, i) => {
+    const centerX = el.x + el.width / 2;
+    const centerY = el.y + el.height / 2;
+    const positionWeight = fPatternWeight(centerX, centerY);
+    const attentionScore = Math.round(el.importance * positionWeight * 100) / 100;
+    return { element: i, attentionScore };
+  }).sort((a, b) => b.attentionScore - a.attentionScore);
+}
+```
+
+### 示例 5：响应时间感知阈值检测
+
+```typescript
+/**
+ * 根据交互类型判断响应时间是否满足人类感知阈值
+ * 基于 Nielsen 的 3 个重要时间限制
+ */
+function checkResponseTimePerception(
+  interactionType: 'instant' | 'flow' | 'task',
+  responseTimeMs: number
+): { acceptable: boolean; userPerception: string; recommendation?: string } {
+  const thresholds = {
+    instant: { limit: 100, perception: '感觉即时' },
+    flow: { limit: 1000, perception: '保持流畅' },
+    task: { limit: 10000, perception: '可接受等待' }
+  };
+
+  const threshold = thresholds[interactionType];
+  const acceptable = responseTimeMs <= threshold.limit;
+
+  return {
+    acceptable,
+    userPerception: acceptable
+      ? threshold.perception
+      : responseTimeMs <= threshold.limit * 2
+        ? '感觉延迟，但可容忍'
+        : '感觉系统故障',
+    recommendation: acceptable ? undefined : `目标: <${threshold.limit}ms, 当前: ${responseTimeMs}ms`
+  };
+}
+
+// 测试不同交互的响应时间
+console.log(checkResponseTimePerception('instant', 80));   // ✅ 即时
+console.log(checkResponseTimePerception('instant', 250));  // ❌ 延迟
+console.log(checkResponseTimePerception('flow', 800));     // ✅ 流畅
+```
 
 ---
 

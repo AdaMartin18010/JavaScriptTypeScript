@@ -15,21 +15,23 @@
 
 ## 文件索引
 
-| # | 文件 | 核心内容 | 优先级 | 状态 |
-|---|------|---------|--------|------|
-| 01 | [01-category-theory-primer-for-programmers.md](01-category-theory-primer-for-programmers.md) | 程序员视角的范畴论基础：范畴、函子、自然变换 | P1 | 🟡 骨架 |
-| 02 | [02-cartesian-closed-categories-and-typescript.md](02-cartesian-closed-categories-and-typescript.md) | 证明 TS 简单类型子集构成 CCC；积/和/指数的完整形式化 | P1 | 🟡 骨架 |
-| 03 | [03-functors-natural-transformations-in-js.md](03-functors-natural-transformations-in-js.md) | Array.map/Promise.then 的函子性；自然变换实例 | P1 | 🟡 骨架 |
-| 04 | [04-monads-algebraic-effects-comparison.md](04-monads-algebraic-effects-comparison.md) | Promise 单子 vs Rust Result；Effect System 范畴论语境 | P0 | 🟡 骨架 |
-| 05 | [05-limits-colimits-and-aggregation-patterns.md](05-limits-colimits-and-aggregation-patterns.md) | reduce/merge 的普遍性质；Promise.all/race 的极限语义 | P1 | 🟡 骨架 |
-| 06 | [06-adjunctions-and-free-forgetful-pairs.md](06-adjunctions-and-free-forgetful-pairs.md) | 类型推断的自由-遗忘伴随；IDE 自动补全的伴随语义 | P1 | 🟡 骨架 |
-| 07 | [07-yoneda-lemma-and-representable-functors.md](07-yoneda-lemma-and-representable-functors.md) | Yoneda 引理的编程意义；API 设计与 TDD 的 Yoneda 视角 | P1 | 🟡 骨架 |
-| 08 | [08-topos-theory-and-type-systems.md](08-topos-theory-and-type-systems.md) | Topos 定义；子对象分类器 ↔ boolean；内部逻辑 | P2 | 🟡 骨架 |
-| 09 | [09-computational-paradigms-as-categories.md](09-computational-paradigms-as-categories.md) | 命令式/函数式/OO/响应式的范畴论统一 | P1 | 🟡 骨架 |
-| 10 | [10-rust-vs-typescript-category-theory-analysis.md](10-rust-vs-typescript-category-theory-analysis.md) | Rust vs TS 全面对比：类型系统/所有权/错误处理/并发 | P0 | 🟡 骨架 |
-| 11 | [11-control-flow-as-categorical-constructs.md](11-control-flow-as-categorical-constructs.md) | if/else/while/try-catch/async 的范畴论构造 | P2 | 🟡 骨架 |
-| 12 | [12-runtime-model-categorical-semantics.md](12-runtime-model-categorical-semantics.md) | Event Loop 的余单子语义；V8 编译管道的自然变换 | P2 | 🟡 骨架 |
-| 13 | [13-variable-system-categorical-analysis.md](13-variable-system-categorical-analysis.md) | 解构赋值/闭包/作用域链/TDZ 的范畴论语义 | P2 | 🟡 骨架 |
+| # | 文件 | 核心内容 | 字数 | 代码示例 |
+|---|------|---------|------|----------|
+| 01 | [01-category-theory-primer-for-programmers.md](01-category-theory-primer-for-programmers.md) | 程序员视角的范畴论基础：范畴、函子、自然变换 | ≥8K | ≥6 |
+| 02 | [02-cartesian-closed-categories-and-typescript.md](02-cartesian-closed-categories-and-typescript.md) | 证明 TS 简单类型子集构成 CCC；积/和/指数的完整形式化 | ≥8K | ≥6 |
+| 03 | [03-functors-natural-transformations-in-js.md](03-functors-natural-transformations-in-js.md) | Array.map/Promise.then 的函子性；自然变换实例 | ≥8K | ≥6 |
+| 04 | [04-monads-algebraic-effects-comparison.md](04-monads-algebraic-effects-comparison.md) | Promise 单子 vs Rust Result；Effect System 范畴论语境 | ≥8K | ≥6 |
+| 05 | [05-limits-colimits-and-aggregation-patterns.md](05-limits-colimits-and-aggregation-patterns.md) | reduce/merge 的普遍性质；Promise.all/race 的极限语义 | ≥8K | ≥6 |
+| 06 | [06-adjunctions-and-free-forgetful-pairs.md](06-adjunctions-and-free-forgetful-pairs.md) | 类型推断的自由-遗忘伴随；IDE 自动补全的伴随语义 | ≥8K | ≥6 |
+| 07 | [07-yoneda-lemma-and-representable-functors.md](07-yoneda-lemma-and-representable-functors.md) | Yoneda 引理的编程意义；API 设计与 TDD 的 Yoneda 视角 | ≥8K | ≥6 |
+| 08 | [08-topos-theory-and-type-systems.md](08-topos-theory-and-type-systems.md) | Topos 定义；子对象分类器 ↔ boolean；内部逻辑 | ≥8K | ≥6 |
+| 09 | [09-computational-paradigms-as-categories.md](09-computational-paradigms-as-categories.md) | 命令式/函数式/OO/响应式的范畴论统一 | ≥8K | ≥6 |
+| 10 | [10-rust-vs-typescript-category-theory-analysis.md](10-rust-vs-typescript-category-theory-analysis.md) | Rust vs TS 全面对比：类型系统/所有权/错误处理/并发 | ≥8K | ≥6 |
+| 11 | [11-control-flow-as-categorical-constructs.md](11-control-flow-as-categorical-constructs.md) | if/else/while/try-catch/async 的范畴论构造 | ≥8K | ≥6 |
+| 12 | [12-runtime-model-categorical-semantics.md](12-runtime-model-categorical-semantics.md) | Event Loop 的余单子语义；V8 编译管道的自然变换 | ≥8K | ≥6 |
+| 13 | [13-variable-system-categorical-analysis.md](13-variable-system-categorical-analysis.md) | 解构赋值/闭包/作用域链/TDZ 的范畴论语义 | ≥8K | ≥6 |
+| 14 | [14-event-systems-and-message-passing-categorical-semantics.md](14-event-systems-and-message-passing-categorical-semantics.md) | 事件系统/消息传递/Actor/CSP 的统一范畴语义：Promise 作为 Kleisli 范畴，Stream 作为时间索引函子 | ≥8K | ≥6 |
+| 15 | [15-concurrent-computation-models.md](15-concurrent-computation-models.md) | 并发计算模型形式化：进程代数、π演算、CSP、Actor、Petri 网、JS 并发模型 | ≥8K | ≥6 |
 
 ---
 

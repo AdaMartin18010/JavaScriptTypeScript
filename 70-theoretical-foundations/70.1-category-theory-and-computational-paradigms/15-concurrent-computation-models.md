@@ -1,3 +1,18 @@
+﻿---
+title: "并发计算模型"
+description: "Concurrent Computation Models: Process Algebra, pi-Calculus, CSP, Actor, Petri Nets"
+last-updated: 2026-04-30
+review-cycle: 6 months
+next-review: 2026-10-30
+status: complete
+priority: P1
+actual-length: "~8160 words"
+references:
+  - Milner, Communication and Concurrency (1989)
+  - Hoare, Communicating Sequential Processes (1985)
+  - Reisig, Petri Nets: An Introduction (1985)
+---
+
 # 并发计算模型
 
 > **核心命题**：并发不是"同时做很多事"那么简单。从范畴论和进程代数的角度，并发是一种基本的计算结构，与顺序计算具有同等的数学深度。
@@ -41,6 +56,7 @@
     - [12.1 范畴论不关心时间](#121-范畴论不关心时间)
     - [12.2 形式化验证的规模限制](#122-形式化验证的规模限制)
     - [12.3 "银弹"不存在](#123-银弹不存在)
+    - [12.1 并发模型的工程实践建议](#121-并发模型的工程实践建议)
   - [参考文献](#参考文献)
     - [8.2 Web Workers 与 SharedArrayBuffer 的形式化](#82-web-workers-与-sharedarraybuffer-的形式化)
     - [8.3 JavaScript 并发模型的统一视图](#83-javascript-并发模型的统一视图)
@@ -65,6 +81,8 @@
     - [12.2 形式化与工程实践的鸿沟](#122-形式化与工程实践的鸿沟)
     - [12.3 并发学习的认知建议](#123-并发学习的认知建议)
   - [参考文献](#参考文献-2)
+    - [11.3 并发系统的范畴论设计模式](#113-并发系统的范畴论设计模式)
+  - [参考文献](#参考文献-3)
 
 ---
 

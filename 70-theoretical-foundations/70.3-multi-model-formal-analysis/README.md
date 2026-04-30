@@ -20,18 +20,19 @@
 
 ## 文件索引
 
-| # | 文件 | 核心内容 | 优先级 | 状态 |
-|---|------|---------|--------|------|
-| 01 | [01-model-refinement-and-simulation.md](01-model-refinement-and-simulation.md) | 精化关系、模拟关系、互模拟的形式化定义 | P1 | 🟡 骨架 |
-| 02 | [02-operational-denotational-axiomatic-correspondence.md](02-operational-denotational-axiomatic-correspondence.md) | 三种语义的函子性对应与交换图 | P1 | 🟡 骨架 |
-| 03 | [03-type-runtime-symmetric-difference.md](03-type-runtime-symmetric-difference.md) | 类型系统与运行时的对称差 $\Delta(M_1, M_2)$ | P0 | 🟡 骨架 |
-| 04 | [04-reactive-model-adaptation.md](04-reactive-model-adaptation.md) | React/Vue/Solid/Svelte 响应式模型的适配与不可表达性 | P0 | 🟡 骨架 |
-| 05 | [05-multi-model-category-construction.md](05-multi-model-category-construction.md) | 构造模型范畴 $\mathbf{Models}$，分析极限与余极限 | P1 | 🟡 骨架 |
-| 06 | [06-diagonal-arguments-in-semantics.md](06-diagonal-arguments-in-semantics.md) | Cantor 对角线、Rice 定理、模型间隙的对角线构造 | P2 | 🟡 骨架 |
-| 07 | [07-comprehensive-response-theory.md](07-comprehensive-response-theory.md) | 综合响应理论：即时+延迟+并发的统一框架 | P1 | 🟡 骨架 |
-| 08 | [08-framework-paradigm-interoperability.md](08-framework-paradigm-interoperability.md) | 框架间互操作性的形式化定义、微前端多模型共存 | P2 | 🟡 骨架 |
-| 09 | [09-formal-verification-of-model-gaps.md](09-formal-verification-of-model-gaps.md) | TLA+/Coq 建模、属性基测试、符号执行 | P2 | 🟡 骨架 |
-| 10 | [10-unified-metamodel-for-js-ts.md](10-unified-metamodel-for-js-ts.md) | 统一元模型 $M_{JS/TS}$ 的提出与范畴论语义 | P2 | 🟡 骨架 |
+| # | 文件 | 核心内容 | 字数 | 代码示例 |
+|---|------|---------|------|----------|
+| 01 | [01-model-refinement-and-simulation.md](01-model-refinement-and-simulation.md) | 精化关系、模拟关系、互模拟的形式化定义 | ≥8K | ≥6 |
+| 02 | [02-operational-denotational-axiomatic-correspondence.md](02-operational-denotational-axiomatic-correspondence.md) | 三种语义的函子性对应与交换图 | ≥8K | ≥6 |
+| 03 | [03-type-runtime-symmetric-difference.md](03-type-runtime-symmetric-difference.md) | 类型系统与运行时的对称差 $\Delta(M_1, M_2)$ | ≥8K | ≥6 |
+| 04 | [04-reactive-model-adaptation.md](04-reactive-model-adaptation.md) | React/Vue/Solid/Svelte 响应式模型的适配与不可表达性 | ≥8K | ≥6 |
+| 05 | [05-multi-model-category-construction.md](05-multi-model-category-construction.md) | 构造模型范畴 $\mathbf{Models}$，分析极限与余极限 | ≥8K | ≥6 |
+| 06 | [06-diagonal-arguments-in-semantics.md](06-diagonal-arguments-in-semantics.md) | Cantor 对角线、Rice 定理、模型间隙的对角线构造 | ≥8K | ≥6 |
+| 07 | [07-comprehensive-response-theory.md](07-comprehensive-response-theory.md) | 综合响应理论：即时+延迟+并发的统一框架 | ≥8K | ≥6 |
+| 08 | [08-framework-paradigm-interoperability.md](08-framework-paradigm-interoperability.md) | 框架间互操作性的形式化定义、微前端多模型共存 | ≥8K | ≥6 |
+| 09 | [09-formal-verification-of-model-gaps.md](09-formal-verification-of-model-gaps.md) | TLA+/Coq 建模、属性基测试、符号执行 | ≥8K | ≥6 |
+| 10 | [10-unified-metamodel-for-js-ts.md](10-unified-metamodel-for-js-ts.md) | 统一元模型 $M_{JS/TS}$ 的提出与范畴论语义 | ≥8K | ≥6 |
+| 11 | [11-execution-framework-rendering-triangle.md](11-execution-framework-rendering-triangle.md) | 执行模型→框架设计→渲染优化的系统性三角关联：React Concurrent Mode、Vue 3 编译时优化、跨平台映射 | ≥8K | ≥6 |
 
 ---
 

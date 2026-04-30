@@ -1,64 +1,102 @@
-%%{
-  init: {
-    'theme': 'base',
-    'themeVariables': {
-      'primaryColor': '#e1f5fe',
-      'primaryTextColor': '#01579b',
-      'primaryBorderColor': '#0288d1',
-      'lineColor': '#0288d1',
-      'secondaryColor': '#fff3e0',
-      'tertiaryColor': '#e8f5e9'
-    }
-  }
-}%%
+%% 心智模型与编程语言的多维认知图谱
+%% 用于支持 70.2 方向的认知分析
+%% @reference Johnson-Laird, Mental Models (1983); Stefik & Hanenberg (2014)
 
+%% ============================================
+%% 图 1: 动态类型 vs 静态类型的心智模型映射
+%% ============================================
+graph LR
+    subgraph Dynamic["动态类型心智模型"]
+        D1["值携带类型标签<br/>runtime tag check"]
+        D2["鸭子类型直觉<br/>'如果它像鸭子...'"]
+        D3["运行时惊喜<br/>TypeError at runtime"]
+    end
+
+    subgraph Static["静态类型心智模型"]
+        S1["变量绑定类型<br/>compile-time check"]
+        S2["契约先行直觉<br/>'先签协议再交易'"]
+        S3["编译时保证<br/>No runtime type errors"]
+    end
+
+    D1 <-->|"认知切换成本<br/>2-4 周"| S1
+    D2 <-->|"思维模式冲突<br/>鸭子 → 契约"| S2
+    D3 <-->|"错误发现时机<br/>运行 → 编译"| S3
+
+    style Dynamic fill:#fff3e0
+    style Static fill:#e3f2fd
+
+%% ============================================
+%% 图 2: 前端框架的多模型映射
+%% ============================================
 graph TB
-    subgraph Developer["开发者心智模型"]
-        WM["工作记忆<br/>4±1 个 chunk"]
-        LTM["长期记忆<br/>图式/模式"]
-        MM["心智模型<br/>Mental Model"]
+    subgraph ReactModel["React 心智模型"]
+        R1["UI = f(state)"]
+        R2["单向数据流"]
+        R3["Virtual DOM Diff"]
     end
 
-    subgraph Code["代码表征"]
-        Syntax["语法结构"]
-        Types["类型约束"]
-        Semantics["运行时语义"]
+    subgraph VueModel["Vue 心智模型"]
+        V1["响应式代理<br/>Transparent reactivity"]
+        V2["双向绑定可选"]
+        V3["模板编译 + Patch"]
     end
 
-    subgraph Framework["框架模型"]
-        React["React<br/>f(state) => UI"]
-        Vue["Vue<br/>响应式代理"]
-        Angular["Angular<br/>MVC/MVVM"]
-        Solid["Solid<br/>Signal"]
-        Svelte["Svelte<br/>编译时"]
+    subgraph SolidModel["Solid 心智模型"]
+        So1["Signal = 细粒度原子"]
+        So2["自动依赖追踪"]
+        So3["直接 DOM 更新"]
     end
 
-    subgraph Output["输出感知"]
-        Render["渲染输出"]
-        Interactive["交互反馈"]
-        CognitiveLoad["认知负荷评估"]
+    subgraph SvelteModel["Svelte 心智模型"]
+        Sv1["编译时魔法"]
+        Sv2["无运行时框架"]
+        Sv3["生成更新代码"]
     end
 
-    %% 信息流
-    Code -->|"阅读/理解"| WM
-    WM -->|"图式匹配"| LTM
-    LTM -->|"模型构建"| MM
-    MM -->|"框架映射"| Framework
-    Framework -->|"渲染预测"| Render
-    Render -->|"感知反馈"| Interactive
-    Interactive -->|"负荷测量"| CognitiveLoad
-    CognitiveLoad -->|"模型更新"| MM
+    R1 -.->|"认知距离: 中"| V1
+    R1 -.->|"认知距离: 高"| So1
+    V1 -.->|"认知距离: 低"| So1
+    So1 -.->|"认知距离: 中"| Sv1
 
-    %% 框架间的映射
-    React -.->|"概念模型冲突"| Vue
-    Vue -.->|"响应式语义差异"| Angular
-    Angular -.->|"架构复杂度差异"| Solid
-    Solid -.->|"细粒度 vs 粗粒度"| Svelte
-    Svelte -.->|"运行时 vs 编译时"| React
+    style ReactModel fill:#e3f2fd
+    style VueModel fill:#e8f5e9
+    style SolidModel fill:#fce4ec
+    style SvelteModel fill:#fff3e0
 
-    %% 样式
-    style WM fill:#ffebee,stroke:#c62828
-    style CognitiveLoad fill:#ffebee,stroke:#c62828
-    style React fill:#e3f2fd,stroke:#1565c0
-    style Vue fill:#e8f5e9,stroke:#2e7d32
-    style Angular fill:#fff3e0,stroke:#ef6c00
+%% ============================================
+%% 图 3: 异步模式的认知负荷层级
+%% ============================================
+graph LR
+    CB["回调地狱<br/>Callback Hell"] -->|"认知负荷 ↓"| PC["Promise 链<br/>Promise Chain"]
+    PC -->|"认知负荷 ↓"| AA["async/await<br/>Syntactic Sugar"]
+    AA -->|"认知负荷 ↓"| RX["RxJS Observable<br/>Stream Algebra"]
+
+    CB -.->|"WM 占用: 7±2 chunks"| CB
+    PC -.->|"WM 占用: 5±2 chunks"| PC
+    AA -.->|"WM 占用: 3±1 chunks"| AA
+    RX -.->|"WM 占用: 6±2 chunks<br/>学习曲线陡峭"| RX
+
+    style CB fill:#ffebee
+    style PC fill:#fff3e0
+    style AA fill:#e8f5e9
+    style RX fill:#e1f5fe
+
+%% ============================================
+%% 图 4: 专家-新手的认知差异（Dreyfus 模型）
+%% ============================================
+graph LR
+    N["新手<br/>Novice<br/>遵循规则"] -->|"模式积累"| A["高级初学者<br/>Advanced Beginner"]
+    A -->|"情境判断"| C["胜任者<br/>Competent<br/>目标导向"]
+    C -->|"直觉发展"| P["精通者<br/>Proficient<br/>全局视角"]
+    P -->|"模式识别"| E["专家<br/>Expert<br/>直觉决策"]
+    E -->|"融会贯通"| M["大师<br/>Master<br/>超越规则"]
+
+    N -.->|"TS 错误信息理解<br/>需要显式推理"| N
+    E -.->|"TS 错误信息理解<br/>模式匹配，即时反应"| E
+
+    style N fill:#ffebee
+    style A fill:#fff3e0
+    style C fill:#fffde7
+    style P fill:#e8f5e9
+    style E fill:#e3f2fd
+    style M fill:#f3e5f5

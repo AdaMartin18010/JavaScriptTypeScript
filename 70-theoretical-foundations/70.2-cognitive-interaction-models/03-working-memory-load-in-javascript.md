@@ -64,6 +64,12 @@ references:
     - [8.2 错误检测实验](#82-错误检测实验)
     - [8.3 工作记忆负荷实验（双任务范式）](#83-工作记忆负荷实验双任务范式)
     - [5.2 认知负荷的量化测量方法](#52-认知负荷的量化测量方法)
+  - [TypeScript 代码示例：认知负荷的量化测量](#typescript-代码示例认知负荷的量化测量)
+    - [示例 1：计算代码的认知块数量](#示例-1计算代码的认知块数量)
+    - [示例 2：工作记忆负荷模拟器](#示例-2工作记忆负荷模拟器)
+    - [示例 3：眼动追踪指标预测模型](#示例-3眼动追踪指标预测模型)
+    - [示例 4：代码复杂度与阅读时间预测](#示例-4代码复杂度与阅读时间预测)
+    - [示例 5：认知维度自动评分器](#示例-5认知维度自动评分器)
   - [参考文献](#参考文献)
 
 ---
@@ -882,6 +888,212 @@ function sumRecursive(arr: number[], i = 0): number {
   "树结构的自然表达",
   "分治算法的直接映射"
 }
+```
+
+---
+
+## TypeScript 代码示例：认知负荷的量化测量
+
+### 示例 1：计算代码的认知块数量
+
+```typescript
+/**
+ * 计算代码字符串的认知块（chunks）数量
+ * 基于 Miller (1956) 的 7±2 理论
+ */
+function countCognitiveChunks(code: string): number {
+  // 运算符数量
+  const operators = (code.match(/[+\-*/=%<>!&|^~?:]/g) || []).length;
+  // 函数调用数量
+  const calls = (code.match(/\w+\s*\(/g) || []).length;
+  // 嵌套深度
+  const nestingDepth = Math.max(...code.split('\n').map(line => {
+    let depth = 0;
+    for (const char of line) {
+      if (char === '(' || char === '{' || char === '[') depth++;
+      if (char === ')' || char === '}' || char === ']') depth--;
+    }
+    return depth;
+  }));
+  // 认知块 = 运算符 + 调用 + 嵌套深度
+  return operators + calls + nestingDepth;
+}
+
+// 测试
+const callbackCode = `fetch('/api').then(res => res.json()).then(data => console.log(data))`;
+const asyncCode = `const data = await (await fetch('/api')).json(); console.log(data);`;
+console.log(`回调认知块: ${countCognitiveChunks(callbackCode)}`); // 预期: 较高
+console.log(`async/await 认知块: ${countCognitiveChunks(asyncCode)}`); // 预期: 较低
+```
+
+### 示例 2：工作记忆负荷模拟器
+
+```typescript
+interface CognitiveLoadReading {
+  readonly intrinsic: number;   // 内在负荷 (0-10)
+  readonly extraneous: number;  // 外在负荷 (0-10)
+  readonly germane: number;     // 相关负荷 (0-10)
+  readonly total: number;       // 总负荷
+}
+
+/**
+ * 模拟阅读代码时的工作记忆负荷
+ */
+function simulateWorkingMemoryLoad(
+  linesOfCode: number,
+  nestingDepth: number,
+  unfamiliarPatterns: number
+): CognitiveLoadReading {
+  const intrinsic = Math.min(10, linesOfCode * 0.05 + nestingDepth * 1.5);
+  const extraneous = Math.min(10, unfamiliarPatterns * 2);
+  const germane = Math.min(10, linesOfCode * 0.02);
+  return {
+    intrinsic: Math.round(intrinsic * 10) / 10,
+    extraneous: Math.round(extraneous * 10) / 10,
+    germane: Math.round(germane * 10) / 10,
+    total: Math.round((intrinsic + extraneous) * 10) / 10
+  };
+}
+
+// 对比不同异步模式的工作记忆负荷
+const callbackLoad = simulateWorkingMemoryLoad(15, 4, 3);  // 回调地狱
+const promiseLoad = simulateWorkingMemoryLoad(15, 2, 1);   // Promise 链
+const asyncLoad = simulateWorkingMemoryLoad(15, 1, 0);     // async/await
+
+console.table({ callbackLoad, promiseLoad, asyncLoad });
+```
+
+### 示例 3：眼动追踪指标预测模型
+
+```typescript
+interface EyeTrackingPrediction {
+  readonly fixationCount: number;
+  readonly avgFixationDurationMs: number;
+  readonly saccadeAmplitude: number;
+  readonly regressionRate: number;
+}
+
+type CodePattern = 'callback-hell' | 'promise-chain' | 'async-await' | 'rxjs-pipe';
+
+const patternMetrics: Record<CodePattern, EyeTrackingPrediction> = {
+  'callback-hell': {
+    fixationCount: 25,
+    avgFixationDurationMs: 450,
+    saccadeAmplitude: 180,
+    regressionRate: 0.35
+  },
+  'promise-chain': {
+    fixationCount: 18,
+    avgFixationDurationMs: 320,
+    saccadeAmplitude: 120,
+    regressionRate: 0.20
+  },
+  'async-await': {
+    fixationCount: 12,
+    avgFixationDurationMs: 250,
+    saccadeAmplitude: 80,
+    regressionRate: 0.10
+  },
+  'rxjs-pipe': {
+    fixationCount: 22,
+    avgFixationDurationMs: 400,
+    saccadeAmplitude: 150,
+    regressionRate: 0.28
+  }
+};
+
+function predictEyeMetrics(
+  pattern: CodePattern,
+  linesOfCode: number
+): EyeTrackingPrediction {
+  const base = patternMetrics[pattern];
+  const scale = linesOfCode / 10;
+  return {
+    fixationCount: Math.round(base.fixationCount * scale),
+    avgFixationDurationMs: base.avgFixationDurationMs,
+    saccadeAmplitude: base.saccadeAmplitude,
+    regressionRate: base.regressionRate
+  };
+}
+```
+
+### 示例 4：代码复杂度与阅读时间预测
+
+```typescript
+/**
+ * 基于认知负荷理论的代码阅读时间预测
+ * T_read = base_time * (1 + intrinsic) * (1 + extraneous) * complexity_factor
+ */
+function predictReadingTime(params: {
+  lines: number;
+  nestingDepth: number;
+  operatorDensity: number;
+  expertise: 'novice' | 'intermediate' | 'expert';
+}): { seconds: number; breakdown: string } {
+  const basePerLine = { novice: 0.8, intermediate: 0.5, expert: 0.3 }[params.expertise];
+  const complexity = 1 + params.nestingDepth * 0.3 + params.operatorDensity * 0.1;
+  const seconds = params.lines * basePerLine * complexity;
+  return {
+    seconds: Math.round(seconds),
+    breakdown: `${params.lines}行 × ${basePerLine}s/行 × ${complexity.toFixed(2)}复杂度 = ${Math.round(seconds)}秒`
+  };
+}
+
+// 示例：预测理解 20 行回调地狱代码的时间
+const callbackTime = predictReadingTime({
+  lines: 20, nestingDepth: 5, operatorDensity: 0.8, expertise: 'intermediate'
+});
+console.log(callbackTime.breakdown); // ~20 × 0.5 × 2.8 = 28秒
+```
+
+### 示例 5：认知维度自动评分器
+
+```typescript
+type DimensionLevel = 'low' | 'medium' | 'high';
+
+interface CognitiveDimensions {
+  abstractionGradient: DimensionLevel;
+  hiddenDependencies: DimensionLevel;
+  prematureCommitment: DimensionLevel;
+  progressiveEvaluation: DimensionLevel;
+  roleExpressiveness: DimensionLevel;
+  viscosity: DimensionLevel;
+  visibility: DimensionLevel;
+  closenessOfMapping: DimensionLevel;
+  consistency: DimensionLevel;
+  hardMentalOperations: DimensionLevel;
+  secondaryNotation: DimensionLevel;
+  errorProneness: DimensionLevel;
+}
+
+const dimensionScore: Record<DimensionLevel, number> = { low: 1, medium: 2, high: 3 };
+
+function scoreCognitiveDimensions(dims: CognitiveDimensions): {
+  totalScore: number;
+  riskLevel: 'low' | 'medium' | 'high';
+} {
+  const keys = Object.keys(dims) as (keyof CognitiveDimensions)[];
+  const total = keys.reduce((sum, k) => sum + dimensionScore[dims[k]], 0);
+  const riskLevel = total < 20 ? 'low' : total < 30 ? 'medium' : 'high';
+  return { totalScore: total, riskLevel };
+}
+
+// 示例：评估 async/await 的认知维度
+const asyncAwaitScore = scoreCognitiveDimensions({
+  abstractionGradient: 'low',
+  hiddenDependencies: 'low',
+  prematureCommitment: 'low',
+  progressiveEvaluation: 'high',
+  roleExpressiveness: 'high',
+  viscosity: 'low',
+  visibility: 'high',
+  closenessOfMapping: 'high',
+  consistency: 'high',
+  hardMentalOperations: 'low',
+  secondaryNotation: 'high',
+  errorProneness: 'low'
+});
+console.log(`async/await 认知维度评分: ${asyncAwaitScore.totalScore}/36, 风险: ${asyncAwaitScore.riskLevel}`);
 ```
 
 ---

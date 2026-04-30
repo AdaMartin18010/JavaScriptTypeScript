@@ -1,3 +1,18 @@
+﻿---
+title: "事件系统与消息传递的范畴语义"
+description: "Categorical Semantics of Event Systems and Message Passing"
+last-updated: 2026-04-30
+review-cycle: 6 months
+next-review: 2026-10-30
+status: complete
+priority: P1
+actual-length: "~8081 words"
+references:
+  - Hoare, Communicating Sequential Processes (1985)
+  - Hewitt et al., "A Universal Modular Actor Formalism" (1973)
+  - Milner, "A Calculus of Communicating Systems" (1980)
+---
+
 # 事件系统与消息传递的范畴语义
 
 > **核心命题**：事件、消息、流、Promise、Stream、Observable 在范畴论中都有统一的数学结构。理解这些结构，可以揭示不同并发/异步模型之间的深层联系与本质差异。

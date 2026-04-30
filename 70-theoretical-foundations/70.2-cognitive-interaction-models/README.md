@@ -21,20 +21,22 @@
 
 ## 文件索引
 
-| # | 文件 | 核心内容 | 优先级 | 状态 |
-|---|------|---------|--------|------|
-| 01 | [01-cognitive-science-primer-for-developers.md](01-cognitive-science-primer-for-developers.md) | 工作记忆、认知负荷、心智模型、具身认知基础 | P1 | 🟡 骨架 |
-| 02 | [02-mental-models-and-programming-languages.md](02-mental-models-and-programming-languages.md) | 动态类型 vs 静态类型的心智模型；渐进类型的认知切换成本 | P1 | 🟡 骨架 |
-| 03 | [03-working-memory-load-in-javascript.md](03-working-memory-load-in-javascript.md) | 回调地狱/Promise/async/RxJS 的认知负荷对比 | P1 | 🟡 骨架 |
-| 04 | [04-conceptual-models-of-ui-frameworks.md](04-conceptual-models-of-ui-frameworks.md) | Angular/React/Vue/Solid/Svelte 的多模型映射与认知成本 | P0 | 🟡 骨架 |
-| 05 | [05-react-algebraic-effects-cognitive-analysis.md](05-react-algebraic-effects-cognitive-analysis.md) | Hooks 规则、Fiber 时间切片、Suspense 的认知分析 | P1 | 🟡 骨架 |
-| 06 | [06-vue-reactivity-cognitive-model.md](06-vue-reactivity-cognitive-model.md) | Proxy 透明性、Ref vs Reactive、Composition vs Options | P2 | 🟡 骨架 |
-| 07 | [07-angular-architecture-cognitive-load.md](07-angular-architecture-cognitive-load.md) | DI、RxJS 强制使用、模块层级、装饰器的认知负荷 | P2 | 🟡 骨架 |
-| 08 | [08-rendering-engine-cognitive-perception.md](08-rendering-engine-cognitive-perception.md) | 帧率感知、渲染流水线与注意力、Core Web Vitals 与人类感知 | P0 | 🟡 骨架 |
-| 09 | [09-data-flow-and-cognitive-trajectory.md](09-data-flow-and-cognitive-trajectory.md) | 单向 vs 双向数据流、全局状态的心智地图、不可变数据 | P2 | 🟡 骨架 |
-| 10 | [10-async-concurrency-cognitive-models.md](10-async-concurrency-cognitive-models.md) | 人类并发直觉、Event Loop 的认知优势、竞态条件的检测困难 | P1 | 🟡 骨架 |
-| 11 | [11-expert-novice-differences-in-js-ts.md](11-expert-novice-differences-in-js-ts.md) | Dreyfus 模型、模式识别、新手错误根源、TS 错误信息可理解性 | P2 | 🟡 骨架 |
-| 12 | [12-multimodal-interaction-theory.md](12-multimodal-interaction-theory.md) | 代码+类型+运行时的多模态整合、IDE 认知工具、AI 辅助编程 | P2 | 🟡 骨架 |
+| # | 文件 | 核心内容 | 字数 | 代码示例 |
+|---|------|---------|------|----------|
+| 01 | [01-cognitive-science-primer-for-developers.md](01-cognitive-science-primer-for-developers.md) | 工作记忆、认知负荷、心智模型、具身认知基础 | ≥8K | ≥6 |
+| 02 | [02-mental-models-and-programming-languages.md](02-mental-models-and-programming-languages.md) | 动态类型 vs 静态类型的心智模型；渐进类型的认知切换成本 | ≥8K | ≥6 |
+| 03 | [03-working-memory-load-in-javascript.md](03-working-memory-load-in-javascript.md) | 回调地狱/Promise/async/RxJS 的认知负荷对比 | ≥8K | ≥6 |
+| 04 | [04-conceptual-models-of-ui-frameworks.md](04-conceptual-models-of-ui-frameworks.md) | Angular/React/Vue/Solid/Svelte 的多模型映射与认知成本 | ≥8K | ≥6 |
+| 05 | [05-react-algebraic-effects-cognitive-analysis.md](05-react-algebraic-effects-cognitive-analysis.md) | Hooks 规则、Fiber 时间切片、Suspense 的认知分析 | ≥8K | ≥6 |
+| 06 | [06-vue-reactivity-cognitive-model.md](06-vue-reactivity-cognitive-model.md) | Proxy 透明性、Ref vs Reactive、Composition vs Options | ≥8K | ≥6 |
+| 07 | [07-angular-architecture-cognitive-load.md](07-angular-architecture-cognitive-load.md) | DI、RxJS 强制使用、模块层级、装饰器的认知负荷 | ≥8K | ≥6 |
+| 08 | [08-rendering-engine-cognitive-perception.md](08-rendering-engine-cognitive-perception.md) | 帧率感知、渲染流水线与注意力、Core Web Vitals 与人类感知 | ≥8K | ≥6 |
+| 09 | [09-data-flow-and-cognitive-trajectory.md](09-data-flow-and-cognitive-trajectory.md) | 单向 vs 双向数据流、全局状态的心智地图、不可变数据 | ≥8K | ≥6 |
+| 10 | [10-async-concurrency-cognitive-models.md](10-async-concurrency-cognitive-models.md) | 人类并发直觉、Event Loop 的认知优势、竞态条件的检测困难 | ≥8K | ≥6 |
+| 11 | [11-expert-novice-differences-in-js-ts.md](11-expert-novice-differences-in-js-ts.md) | Dreyfus 模型、模式识别、新手错误根源、TS 错误信息可理解性 | ≥8K | ≥6 |
+| 12 | [12-multimodal-interaction-theory.md](12-multimodal-interaction-theory.md) | 代码+类型+运行时的多模态整合、IDE 认知工具、AI 辅助编程 | ≥8K | ≥6 |
+| 13 | [13-frontend-framework-computation-models.md](13-frontend-framework-computation-models.md) | 前端框架内部计算模型形式化：React Fiber/VDOM Diff、Vue 响应式图论、Angular 变更检测、Solid Signals、Svelte 编译时 | ≥8K | ≥6 |
+| 14 | [14-browser-rendering-engine-principles.md](14-browser-rendering-engine-principles.md) | 浏览器渲染引擎技术原理：DOM/CSSOM/Render Tree、Layout、Paint、Composite、V8 交互 | ≥8K | ≥6 |
 
 ---
 
