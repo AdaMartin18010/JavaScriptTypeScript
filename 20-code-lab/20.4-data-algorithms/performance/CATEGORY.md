@@ -16,6 +16,7 @@ created: 2026-04-28
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 ARCHITECTURE.md
@@ -187,6 +188,130 @@ measureOperation('heavy-sort', () => {
 console.log(getMeasures('heavy-sort').map((m) => `${m.name}: ${m.duration.toFixed(2)}ms`));
 ```
 
+### scheduler.yield — 协作式调度（Chrome 115+）
+
+```typescript
+// scheduler-yield.ts
+// 将控制权交还给浏览器，避免阻塞主线程
+
+async function processLargeDataset(items: any[]) {
+  const results: any[] = [];
+  for (let i = 0; i < items.length; i++) {
+    results.push(heavyComputation(items[i]));
+    // 每处理 50 项让出主线程
+    if (i % 50 === 0 && 'scheduler' in globalThis) {
+      await (globalThis as any).scheduler.yield();
+    }
+  }
+  return results;
+}
+
+// Polyfill 降级
+if (!('scheduler' in globalThis)) {
+  (globalThis as any).scheduler = {
+    yield: () => new Promise((resolve) => setTimeout(resolve, 0)),
+  };
+}
+```
+
+### 图片懒加载与资源预加载
+
+```typescript
+// lazy-preload.ts
+// 原生懒加载 + 关键资源预加载
+
+function setupLazyImages() {
+  // 使用 loading="lazy" 是最简单有效的图片懒加载
+  // 以下展示 IntersectionObserver 降级方案
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const img = entry.target as HTMLImageElement;
+        if (img.dataset.src) {
+          img.src = img.dataset.src;
+          img.removeAttribute('data-src');
+        }
+        observer.unobserve(img);
+      }
+    });
+  });
+
+  document.querySelectorAll('img[data-src]').forEach((img) => observer.observe(img));
+}
+
+// 预加载关键资源
+function preloadCriticalResources() {
+  const resources = [
+    { href: '/fonts/main.woff2', as: 'font', type: 'font/woff2', crossorigin: true },
+    { href: '/styles/critical.css', as: 'style' },
+  ];
+
+  resources.forEach((res) => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.href = res.href;
+    link.as = res.as;
+    if (res.type) link.type = res.type;
+    if (res.crossorigin) link.crossOrigin = 'anonymous';
+    document.head.appendChild(link);
+  });
+}
+
+// 预获取下一页
+function prefetchNextPage(url: string) {
+  const link = document.createElement('link');
+  link.rel = 'prefetch';
+  link.href = url;
+  document.head.appendChild(link);
+}
+```
+
+### 文本压缩与流式传输
+
+```typescript
+// compression-stream.ts
+// 使用 CompressionStream API 进行 gzip 压缩（现代浏览器）
+
+async function compressText(input: string): Promise<Uint8Array> {
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(input));
+      controller.close();
+    },
+  });
+
+  const compressed = stream.pipeThrough(new CompressionStream('gzip'));
+  const reader = compressed.getReader();
+  const chunks: Uint8Array[] = [];
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+
+  // 合并 chunks
+  const total = chunks.reduce((sum, c) => sum + c.length, 0);
+  const result = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return result;
+}
+
+// Node.js 中使用 zlib 等效实现
+import { promisify } from 'util';
+import { gzip } from 'zlib';
+const gzipAsync = promisify(gzip);
+
+async function compressNode(input: string): Promise<Buffer> {
+  return gzipAsync(Buffer.from(input));
+}
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -204,7 +329,14 @@ console.log(getMeasures('heavy-sort').map((m) => `${m.name}: ${m.duration.toFixe
 | Google Lighthouse | 性能审计 | [developer.chrome.com/docs/lighthouse](https://developer.chrome.com/docs/lighthouse) |
 | WebPageTest | 多地点性能测试 | [webpagetest.org](https://www.webpagetest.org/) |
 | W3C — User Timing API | 规范 | [w3c.github.io/user-timing/](https://w3c.github.io/user-timing/) |
+| web.dev — Optimize Long Tasks | 指南 | [web.dev/articles/optimize-long-tasks](https://web.dev/articles/optimize-long-tasks) |
+| web.dev — Lazy Loading Images | 最佳实践 | [web.dev/articles/lazy-loading-images](https://web.dev/articles/lazy-loading-images) |
+| MDN — Compression Streams API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API](https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API) |
+| web.dev — Prefetching Strategies | 预加载策略 | [web.dev/articles/route-prefetching-in-nextjs](https://web.dev/articles/route-prefetching-in-nextjs) |
+| WICG — scheduler.yield | 提案 | [github.com/WICG/scheduling-apis/blob/main/explainers/yield-and-continuation.md](https://github.com/WICG/scheduling-apis/blob/main/explainers/yield-and-continuation.md) |
+| High Performance Browser Networking | 书籍 | [hpbn.co](https://hpbn.co/) |
+| JavaScript Performance Pitfalls — Matthias Bynens | 演讲 | [v8.dev/docs/turbofan](https://v8.dev/docs/turbofan) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

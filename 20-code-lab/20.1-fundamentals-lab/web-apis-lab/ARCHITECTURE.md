@@ -150,6 +150,107 @@ const strategies = {
 };
 ```
 
+### 6.3 MessageChannel 主线程与 Worker 双向通信
+
+```typescript
+// message-channel-demo.ts
+// MessageChannel 提供独立的两个端口，避免全局 message 事件冲突
+
+const channel = new MessageChannel();
+const worker = new Worker(new URL('./calc.worker.ts', import.meta.url));
+
+// 将 port2 转让给 Worker，保留 port1 在本线程
+worker.postMessage({ type: 'init-port', port: channel.port2 }, [channel.port2]);
+
+// 通过 port1 发送任务并等待响应
+function runTask(payload: { op: string; args: number[] }): Promise<number> {
+  return new Promise((resolve) => {
+    channel.port1.onmessage = (e) => resolve(e.data.result);
+    channel.port1.postMessage(payload);
+  });
+}
+
+runTask({ op: 'sum', args: [1, 2, 3, 4, 5] }).then(console.log); // 15
+```
+
+### 6.4 Background Sync 离线请求排队
+
+```typescript
+// background-sync-demo.ts
+// Service Worker 中注册后台同步
+
+// main.ts
+async function queueSync(tag: string) {
+  const registration = await navigator.serviceWorker.ready;
+  if ('sync' in registration) {
+    await (registration as any).sync.register(tag);
+    console.log(`Background sync "${tag}" registered`);
+  } else {
+    // 降级：立即执行
+    await fetchPendingRequests();
+  }
+}
+
+// 用户提交表单时
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  await saveToIndexedDB(formData); // 先本地持久化
+  await queueSync('submit-form');   // 请求后台同步
+  showToast('Will sync when online');
+});
+
+// sw.ts
+self.addEventListener('sync', (event: SyncEvent) => {
+  if (event.tag === 'submit-form') {
+    event.waitUntil(fetchPendingRequests());
+  }
+});
+
+async function fetchPendingRequests() {
+  const pending = await getPendingFromIndexedDB();
+  for (const req of pending) {
+    try {
+      await fetch(req.url, { method: req.method, body: req.body });
+      await removeFromIndexedDB(req.id);
+    } catch {
+      // 网络仍不可用，保留待下次同步
+    }
+  }
+}
+```
+
+### 6.5 File System Access API 持久化文件句柄
+
+```typescript
+// file-system-access.ts
+async function pickAndSaveFile() {
+  // 1. 打开文件选择器
+  const [fileHandle] = await (window as any).showOpenFilePicker({
+    types: [{ description: 'Text Files', accept: { 'text/plain': ['.txt'] } }],
+  });
+
+  // 2. 读取文件
+  const file = await fileHandle.getFile();
+  const content = await file.text();
+  console.log('Original content:', content);
+
+  // 3. 写回修改后的内容
+  const writable = await fileHandle.createWritable();
+  await writable.write(content.toUpperCase());
+  await writable.close();
+
+  // 4. 请求持久化权限（下次可直接访问，无需重新选择）
+  const persisted = await (navigator as any).storage?.getDirectory?.() ?? null;
+  console.log('Persisted handle available:', persisted !== null);
+}
+
+// 存储文件句柄到 IndexedDB，实现"最近打开"列表
+async function saveHandleToIndexedDB(handle: FileSystemFileHandle, key: string) {
+  const db = await openDB('file-handles', 1);
+  await db.put('handles', handle, key); // IndexedDB 支持存储 FileSystemHandle
+}
+```
+
 ## 7. 技术决策
 
 | 决策 | 选择 | 理由 |
@@ -172,3 +273,10 @@ const strategies = {
 - [Streams Standard](https://streams.spec.whatwg.org/) — WHATWG Streams 规范
 - [IndexedDB 规范](https://w3c.github.io/IndexedDB/) — W3C Indexed Database API
 - [Web Workers 规范](https://html.spec.whatwg.org/multipage/workers.html) — HTML Living Standard
+- [Background Sync Spec](https://wicg.github.io/background-sync/spec/) — WICG Background Sync
+- [File System Access API](https://wicg.github.io/file-system-access/) — WICG 文件系统访问规范
+- [Storage Standard](https://storage.spec.whatwg.org/) — WHATWG Storage 规范
+- [web.dev — Service Worker 生命周期](https://web.dev/articles/service-worker-lifecycle) — Google 官方指南
+- [web.dev — Streams API](https://web.dev/articles/streams) — 流式处理最佳实践
+- [GoogleChromeLabs — Service Worker Cookbook](https://serviceworke.rs/) — 可交互的 Service Worker 示例
+- [Can I use — Web Platform Support](https://caniuse.com/) — 浏览器兼容性查询

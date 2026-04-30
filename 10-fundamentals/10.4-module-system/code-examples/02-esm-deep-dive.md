@@ -275,18 +275,108 @@ import text from "./shader.glsl" with { type: "text" };
 console.log(text); // GLSL 源码字符串
 ```
 
+### 7.6 条件与动态加载实战
+
+```javascript
+// feature-flags.js
+export const features = {
+  analytics: true,
+  payments: false,
+};
+
+// main.js
+import { features } from "./feature-flags.js";
+
+async function loadModules() {
+  const modules = [];
+  if (features.analytics) {
+    const { initAnalytics } = await import("./analytics.js");
+    modules.push(initAnalytics());
+  }
+  if (features.payments) {
+    const { initPayments } = await import("./payments.js");
+    modules.push(initPayments());
+  }
+  await Promise.all(modules);
+}
+```
+
+### 7.7 `import.meta` 与 `import.meta.url` 实战
+
+```javascript
+// utils.js — 基于 import.meta.url 解析相对路径
+export function resolveAsset(relativePath) {
+  // 在浏览器中返回模块所在目录的绝对 URL
+  // 在 Node.js 中返回 file:// URL
+  return new URL(relativePath, import.meta.url).href;
+}
+
+// 使用示例
+const iconUrl = resolveAsset("../assets/icon.svg");
+console.log(iconUrl); // file:///path/to/assets/icon.svg 或 https://...
+
+// import.meta.main — Deno/Bun 中判断是否为入口模块
+if (import.meta.main) {
+  console.log("Entry point");
+}
+```
+
+### 7.8 循环依赖处理
+
+```javascript
+// a.js
+import { b } from "./b.js";
+export const a = "from A";
+console.log("In A, b =", b); // undefined（b 尚未求值）
+
+// b.js
+import { a } from "./a.js";
+export const b = "from B";
+console.log("In B, a =", a); // "from A"（a 已求值）
+```
+
+**最佳实践**：将相互依赖提取到独立模块，或使用函数延迟访问。
+
+```javascript
+// shared.js
+export let shared = null;
+export function init(value) { shared = value; }
+
+// a.js
+import { shared } from "./shared.js";
+export function getA() { return shared ? shared.a : null; }
+```
+
 ---
 
 ## 8. 权威参考 (References)
 
 | 来源 | 链接 | 相关章节 |
 |------|------|---------|
-| ECMA-262 | tc39.es/ecma262 | §16.2 Modules |
-| TC39: Import Attributes | tc39.es/proposal-import-attributes | ES2025 |
-| TC39: Source Phase Imports | tc39.es/proposal-source-phase-imports | Stage 3 |
-| TC39: Import Defer | tc39.es/proposal-import-defer | Stage 3 |
-| Node.js ESM | nodejs.org/api/esm.html | ESM 文档 |
-| V8 Blog | v8.dev/features/modules | ESM 实现 |
+| ECMA-262 | https://tc39.es/ecma262 | §16.2 Modules |
+| TC39: Import Attributes | https://tc39.es/proposal-import-attributes | ES2025 |
+| TC39: Source Phase Imports | https://tc39.es/proposal-source-phase-imports | Stage 3 |
+| TC39: Import Defer | https://tc39.es/proposal-import-defer | Stage 3 |
+| TC39: Import Assertions (Deprecated) | https://github.com/tc39/proposal-import-attributes/tree/main?tab=readme-ov-file#import-assertions | 废弃说明 |
+| Node.js ESM | https://nodejs.org/api/esm.html | ESM 文档 |
+| Node.js Module Resolution | https://nodejs.org/api/modules.html#all-together | 模块解析算法 |
+| V8 Blog: ESM | https://v8.dev/features/modules | ESM 实现 |
+| V8 Blog: Dynamic Import | https://v8.dev/features/dynamic-import | 动态导入 |
+| V8 Blog: Import Attributes | https://v8.dev/features/import-attributes | Import Attributes |
+| MDN: import | https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import | import 语句参考 |
+| MDN: export | https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/export | export 语句参考 |
+| MDN: import.meta | https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import.meta | import.meta 参考 |
+| MDN: Dynamic import() | https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import | 动态导入参考 |
+| MDN: Top-Level Await | https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules#top_level_await | TLA 指南 |
+| Rollup: Tree Shaking | https://rollupjs.org/tutorial/tree-shaking | Tree Shaking 原理 |
+| Webpack: Tree Shaking | https://webpack.js.org/guides/tree-shaking/ | Tree Shaking 配置 |
+| esbuild: ESM | https://esbuild.github.io/api/#format | ESM 输出格式 |
+| TypeScript: ESM Guide | https://www.typescriptlang.org/docs/handbook/modules/theory.html | TS 模块理论 |
+| TypeScript: NodeNext | https://www.typescriptlang.org/docs/handbook/modules/reference.html#node16-nodenext | NodeNext 模块解析 |
+| Deno: ESM | https://docs.deno.com/runtime/fundamentals/modules/ | Deno 模块系统 |
+| Import Maps | https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script/type/importmap | 浏览器 Import Maps |
+| W3C: Import Maps Spec | https://wicg.github.io/import-maps/ | Import Maps 规范 |
+| WHATWG: HTML Module Script | https://html.spec.whatwg.org/multipage/webappapis.html#module-script | HTML 模块脚本规范 |
 
 ---
 

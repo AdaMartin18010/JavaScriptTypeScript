@@ -99,6 +99,18 @@ type EventName<T extends string> = `on${Capitalize<T>}`;
 
 运行时：不存在。这是类型级的字符串操作。
 
+**代码示例：模板字面量类型的实际应用**
+
+```typescript
+type HTTPMethod = 'get' | 'post' | 'put' | 'delete';
+type Endpoint = `/api/${string}`;
+type APIRoute = `${Uppercase<HTTPMethod>} ${Endpoint}`;
+
+// 结果："GET /api/users" | "POST /api/users" | ...
+const route: APIRoute = 'GET /api/users'; // ✅
+const badRoute: APIRoute = 'patch /api/users'; // ❌ 编译错误
+```
+
 ---
 
 ## 修饰符
@@ -168,6 +180,35 @@ abstract class Animal {
 | `keyof` (类型级) | 零 | `Object.keys()` (返回 string[]) |
 | `typeof` (类型级) | 零 | JS `typeof` 返回 primitive string |
 
+**代码示例：`satisfies` 的编译时行为**
+
+```typescript
+const config = {
+  host: 'localhost',
+  port: 3000,
+} satisfies { host: string; port: number };
+
+// config 的类型被推断为 { host: string; port: number }
+// 而不是更宽泛的 Record<string, string | number>
+// 编译后：const config = { host: 'localhost', port: 3000 };
+```
+
+**代码示例：函数重载的编译时擦除**
+
+```typescript
+// 编译前：三个重载签名 + 实现签名
+function createElement(tag: 'img'): HTMLImageElement;
+function createElement(tag: 'a'): HTMLAnchorElement;
+function createElement(tag: string): HTMLElement {
+  return document.createElement(tag);
+}
+
+// 编译后：仅保留实现签名
+function createElement(tag) {
+  return document.createElement(tag);
+}
+```
+
 ---
 
 ## 类型擦除保证
@@ -188,6 +229,25 @@ function greet(user) {
 
 所有类型注解、接口、类型别名、泛型参数、条件类型在编译后**完全消失**。
 
+**代码示例：泛型的完全擦除**
+
+```typescript
+// 编译前：泛型参数 T 在编译后完全消失
+function identity<T>(arg: T): T {
+  return arg;
+}
+
+const num = identity<number>(42);
+const str = identity<string>('hello');
+
+// 编译后：
+function identity(arg) {
+  return arg;
+}
+const num = identity(42);
+const str = identity('hello');
+```
+
 ---
 
 ## 例外：Runtime-Impacting 特性
@@ -201,7 +261,12 @@ function greet(user) {
 
 ---
 
-## 参考
+## 权威参考
 
-- TypeScript Spec: Type Erasure
-- [TypeScript Design Goals](https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals)
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| **TypeScript Handbook: Type Compatibility** | 官方类型兼容性说明 | [typescriptlang.org/docs/handbook/type-compatibility.html](https://www.typescriptlang.org/docs/handbook/type-compatibility.html) |
+| **TypeScript Design Goals** | 类型擦除与编译时语义的设计哲学 | [github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals](https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals) |
+| **TypeScript Playground** | 实时观察编译前后代码差异 | [typescriptlang.org/play](https://www.typescriptlang.org/play) |
+| **TS Spec: Type Erasure** | 类型擦除的形式化描述 | [github.com/microsoft/TypeScript/blob/main/doc/spec.md](https://github.com/microsoft/TypeScript/blob/main/doc/spec.md) |
+| **TypeScript Handbook: Advanced Types** | 条件类型、映射类型、模板字面量类型详解 | [typescriptlang.org/docs/handbook/2/types-from-types.html](https://www.typescriptlang.org/docs/handbook/2/types-from-types.html) |

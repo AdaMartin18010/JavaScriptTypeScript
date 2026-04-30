@@ -181,6 +181,89 @@ hoist-pattern:
 }
 ```
 
+### Corepack 管理包管理器版本
+
+```bash
+# 启用 Corepack（Node.js 16.13+ 内置）
+corepack enable
+
+# 在 package.json 中声明包管理器约束
+cat package.json | jq '.packageManager'
+# "pnpm@8.15.0"
+
+# 自动使用项目指定的包管理器
+corepack use pnpm@latest
+```
+
+```typescript
+// corepack-check.ts — 运行时检测包管理器一致性
+import { readFileSync } from 'fs';
+
+function checkPackageManager(): void {
+  const pkg = JSON.parse(readFileSync('package.json', 'utf-8'));
+  const expected = pkg.packageManager; // e.g. "pnpm@8.15.0"
+  const [name, version] = expected.split('@');
+
+  const userAgent = process.env.npm_config_user_agent ?? '';
+  if (!userAgent.startsWith(name)) {
+    console.warn(
+      `⚠️  请使用 ${expected} 运行此项目。当前: ${userAgent}`
+    );
+    process.exit(1);
+  }
+}
+```
+
+### npm Provenance 与供应链安全
+
+```bash
+# npm provenance 在 CI 中自动生成 SLSA 来源证明
+# GitHub Actions 示例
+- run: npm publish --provenance
+  env:
+    NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+```
+
+```typescript
+// provenance-verify.ts — 验证包来源
+import { execSync } from 'child_process';
+
+function verifyProvenance(packageName: string, version: string) {
+  const out = execSync(
+    `npm view ${packageName}@${version} --json`,
+    { encoding: 'utf-8' }
+  );
+  const meta = JSON.parse(out);
+  if (meta.provenance) {
+    console.log('✅ 该包具有 SLSA Provenance 证明');
+    console.log(meta.provenance.source); // { url, revision }
+  } else {
+    console.warn('⚠️  该包缺少来源证明');
+  }
+}
+```
+
+### 包管理器特性对比矩阵
+
+```typescript
+// package-manager-matrix.ts
+interface PackageManager {
+  name: string;
+  lockfile: string;
+  workspaceSupport: boolean;
+  contentAddressableStore: boolean;
+  installStrategy: 'nested' | 'flattened' | 'content-addressed';
+}
+
+const managers: PackageManager[] = [
+  { name: 'npm', lockfile: 'package-lock.json', workspaceSupport: true, contentAddressableStore: false, installStrategy: 'flattened' },
+  { name: 'yarn-classic', lockfile: 'yarn.lock', workspaceSupport: true, contentAddressableStore: false, installStrategy: 'flattened' },
+  { name: 'yarn-berry', lockfile: 'yarn.lock', workspaceSupport: true, contentAddressableStore: true, installStrategy: 'content-addressed' },
+  { name: 'pnpm', lockfile: 'pnpm-lock.yaml', workspaceSupport: true, contentAddressableStore: true, installStrategy: 'content-addressed' },
+  { name: 'bun', lockfile: 'bun.lockb', workspaceSupport: true, contentAddressableStore: false, installStrategy: 'flattened' },
+];
+```
+
 ## 目录内容
 
 - 📄 README.md
@@ -215,7 +298,12 @@ hoist-pattern:
 | npm audit | 安全审计 | [docs.npmjs.com/cli/commands/npm-audit](https://docs.npmjs.com/cli/commands/npm-audit) |
 | npmmirror 中国镜像 | 镜像站 | [npmmirror.com](https://npmmirror.com/) |
 | Bundlephobia | 包体积分析 | [bundlephobia.com](https://bundlephobia.com/) |
+| npm Provenance | 供应链安全 | [docs.npmjs.com/generating-provenance-statements](https://docs.npmjs.com/generating-provenance-statements) |
+| SLSA Framework | 供应链安全规范 | [slsa.dev](https://slsa.dev/) |
+| OpenJS Foundation — Package Manager Collaboration | 生态协作 | [openjsf.org](https://openjsf.org/) |
+| Bun Package Manager | 高性能替代方案 | [bun.sh/docs/cli/install](https://bun.sh/docs/cli/install) |
+| Node.js Modules Team | 模块系统演进 | [github.com/nodejs/modules](https://github.com/nodejs/modules) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

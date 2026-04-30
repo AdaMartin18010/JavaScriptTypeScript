@@ -168,6 +168,116 @@ turbo run build test lint --remote-only
 
 ---
 
+## 代码示例：TypeScript 项目引用（Project References）
+
+```json
+// tsconfig.json — 根配置
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true
+  },
+  "references": [
+    { "path": "./packages/shared" },
+    { "path": "./packages/ui" },
+    { "path": "./apps/web" }
+  ],
+  "files": []
+}
+```
+
+```json
+// packages/ui/tsconfig.json — 子项目
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true
+  },
+  "include": ["src/**/*"],
+  "references": [
+    { "path": "../shared" }
+  ]
+}
+```
+
+```bash
+# 增量构建整个 monorepo
+npx tsc --build --force
+npx tsc --build --watch
+```
+
+## 代码示例：VS Code Debug Launch 配置
+
+```json
+// .vscode/launch.json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Next.js",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "dev"],
+      "env": { "NODE_OPTIONS": "--inspect" },
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Vitest",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["vitest", "run", "--reporter=verbose"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Attach to Chrome",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "webRoot": "${workspaceFolder}",
+      "sourceMapPathOverrides": {
+        "webpack://_N_E/*": "${webRoot}/*"
+      }
+    }
+  ]
+}
+```
+
+## 代码示例：Knip 死代码检测
+
+```bash
+# 安装 Knip
+pnpm add -D knip
+
+# 运行分析（检测未使用的导出、依赖、文件）
+npx knip
+
+# CI 中严格模式
+npx knip --no-exit-code --reporter json
+```
+
+```json
+// knip.json
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/index.ts", "src/cli.ts"],
+  "project": ["src/**/*.ts"],
+  "ignore": ["src/**/*.test.ts", "src/**/*.d.ts"],
+  "rules": {
+    "exports": "warn",
+    "types": "warn",
+    "dependencies": "error"
+  }
+}
+```
+
 ## DX 核心议题扩展
 
 | 议题 | 说明 | 推荐工具 |
@@ -200,6 +310,13 @@ turbo run build test lint --remote-only
 - [Nx — Smart Monorepos](https://nx.dev/)
 - [Zed Editor](https://zed.dev/)
 - [TypeDoc Documentation](https://typedoc.org/)
+- [TypeScript — Project References](https://www.typescriptlang.org/docs/handbook/project-references.html)
+- [VS Code — Node.js Debugging](https://code.visualstudio.com/docs/nodejs/nodejs-debugging)
+- [Knip — Find Unused Files, Dependencies and Exports](https://knip.dev/)
+- [Zed Editor — TypeScript Support](https://zed.dev/docs/languages/typescript)
+- [Node.js — Inspector Guide](https://nodejs.org/en/learn/getting-started/debugging)
+- [Chrome DevTools — JavaScript Debugging](https://developer.chrome.com/docs/devtools/javascript)
+- [tsc CLI Options](https://www.typescriptlang.org/docs/handbook/compiler-options.html)
 - [Storybook for JavaScript/TypeScript](https://storybook.js.org/)
 
 ---

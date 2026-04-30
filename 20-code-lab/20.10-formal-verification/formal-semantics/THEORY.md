@@ -309,6 +309,201 @@ confluenceResult.trace.forEach((cfg, i) => {
 | **证明技术** | 结构归纳 + 共归纳 | 结构归纳 |
 | **工具映射** | 解释器、步进调试器 | 编译器求值 |
 
+## 代码示例：Hoare 逻辑（公理语义）
+
+```typescript
+// hoare-logic.ts
+// 简化版 Hoare 三元组验证器
+
+type Assertion = (env: Map<string, number>) => boolean;
+
+interface HoareTriple {
+  pre: Assertion;
+  command: string; // 简化表示
+  post: Assertion;
+}
+
+// 赋值公理：{P[e/x]} x := e {P}
+// 即：将后置条件 P 中的 x 替换为 e，得到前置条件
+function assignmentAxiom(
+  varName: string,
+  exprValue: number,
+  post: Assertion
+): Assertion {
+  return (env) => {
+    const tempEnv = new Map(env);
+    tempEnv.set(varName, exprValue);
+    return post(tempEnv);
+  };
+}
+
+// 顺序组合规则：{P} C1 {R} 且 {R} C2 {Q} ⇒ {P} C1;C2 {Q}
+function seqRule(
+  triple1: HoareTriple,
+  triple2: HoareTriple
+): HoareTriple | null {
+  // 检查中间条件是否匹配（简化版本）
+  const midMatch = triple1.post.toString() === triple2.pre.toString();
+  if (!midMatch) return null;
+  return { pre: triple1.pre, command: `${triple1.command}; ${triple2.command}`, post: triple2.post };
+}
+
+// 条件规则：{P ∧ B} C1 {Q} 且 {P ∧ ¬B} C2 {Q} ⇒ {P} if B then C1 else C2 {Q}
+function ifRule(
+  pre: Assertion,
+  cond: Assertion,
+  thenTriple: HoareTriple,
+  elseTriple: HoareTriple,
+  post: Assertion
+): HoareTriple {
+  return { pre, command: 'if B then C1 else C2', post };
+}
+
+// 循环不变式规则：{I ∧ B} C {I} ⇒ {I} while B do C {I ∧ ¬B}
+function whileRule(
+  invariant: Assertion,
+  cond: Assertion,
+  bodyTriple: HoareTriple
+): HoareTriple {
+  return {
+    pre: invariant,
+    command: 'while B do C',
+    post: (env) => invariant(env) && !cond(env),
+  };
+}
+
+// 验证示例：验证 {n ≥ 0} fact := 1; i := 1; while i ≤ n do (fact := fact * i; i := i + 1) {fact = n!}
+function verifyFactorial() {
+  const n = 5;
+  const env = new Map<string, number>([['n', n]]);
+
+  // 循环不变式：fact = (i-1)! ∧ 1 ≤ i ≤ n+1
+  const invariant: Assertion = (e) => {
+    const fact = e.get('fact') ?? 1;
+    const i = e.get('i') ?? 1;
+    const N = e.get('n') ?? n;
+    return fact === factorial(i - 1) && i >= 1 && i <= N + 1;
+  };
+
+  const pre: Assertion = (e) => (e.get('n') ?? 0) >= 0;
+  const post: Assertion = (e) => (e.get('fact') ?? 0) === factorial(e.get('n') ?? 0);
+
+  console.log('Precondition holds:', pre(env));
+  console.log('Postcondition target:', post(env));
+  console.log('Invariant construction required for full verification.');
+}
+
+function factorial(x: number): number {
+  return x <= 1 ? 1 : x * factorial(x - 1);
+}
+
+verifyFactorial();
+```
+
+## 代码示例：大步语义（Big-Step Semantics）
+
+```typescript
+// big-step-semantics.ts
+// 大步语义直接定义表达式到最终值的映射
+
+type BExpr =
+  | { kind: 'Num'; value: number }
+  | { kind: 'Add'; left: BExpr; right: BExpr }
+  | { kind: 'Var'; name: string };
+
+type BEnv = Map<string, number>;
+
+function bigEval(expr: BExpr, env: BEnv): number {
+  switch (expr.kind) {
+    case 'Num':
+      return expr.value;
+    case 'Var': {
+      const v = env.get(expr.name);
+      if (v === undefined) throw new Error(`Unbound: ${expr.name}`);
+      return v;
+    }
+    case 'Add':
+      return bigEval(expr.left, env) + bigEval(expr.right, env);
+  }
+}
+
+// 大步语义与小步语义的等价性（对于终止程序）：
+// ∀e, env.  smallStepEval(e, env) = bigEval(e, env)
+// 证明思路：对表达式结构进行归纳
+
+// 大步语义下的 while 循环（使用不动点/递归）
+function bigWhile(
+  cond: (env: BEnv) => boolean,
+  body: (env: BEnv) => BEnv,
+  env: BEnv
+): BEnv {
+  if (!cond(env)) return env;
+  return bigWhile(cond, body, body(env));
+}
+```
+
+## 代码示例：λ 演算核心（归约语义）
+
+```typescript
+// lambda-calculus.ts
+// 无类型 λ 演算的简化实现
+
+type LambdaTerm =
+  | { kind: 'Var'; name: string }
+  | { kind: 'Abs'; param: string; body: LambdaTerm }
+  | { kind: 'App'; func: LambdaTerm; arg: LambdaTerm };
+
+const Var = (name: string): LambdaTerm => ({ kind: 'Var', name });
+const Abs = (param: string, body: LambdaTerm): LambdaTerm => ({ kind: 'Abs', param, body });
+const App = (func: LambdaTerm, arg: LambdaTerm): LambdaTerm => ({ kind: 'App', func, arg });
+
+// α 等价（重命名绑定变量）
+function alphaEquivalent(a: LambdaTerm, b: LambdaTerm): boolean {
+  return toDeBruijn(a) === toDeBruijn(b);
+}
+
+// 简化为 De Bruijn 索引字符串表示
+function toDeBruijn(term: LambdaTerm, ctx: string[] = []): string {
+  switch (term.kind) {
+    case 'Var': {
+      const idx = ctx.indexOf(term.name);
+      return idx >= 0 ? `#${idx}` : term.name; // 自由变量保留名称
+    }
+    case 'Abs':
+      return `(λ ${toDeBruijn(term.body, [term.param, ...ctx])})`;
+    case 'App':
+      return `(${toDeBruijn(term.func, ctx)} ${toDeBruijn(term.arg, ctx)})`;
+  }
+}
+
+// β 归约（替换，简化版，不做捕获避免）
+function betaReduce(term: LambdaTerm): LambdaTerm | null {
+  if (term.kind !== 'App' || term.func.kind !== 'Abs') return null;
+  return substitute(term.func.body, term.func.param, term.arg);
+}
+
+function substitute(body: LambdaTerm, name: string, value: LambdaTerm): LambdaTerm {
+  switch (body.kind) {
+    case 'Var':
+      return body.name === name ? value : body;
+    case 'Abs':
+      if (body.param === name) return body;
+      return { kind: 'Abs', param: body.param, body: substitute(body.body, name, value) };
+    case 'App':
+      return {
+        kind: 'App',
+        func: substitute(body.func, name, value),
+        arg: substitute(body.arg, name, value),
+      };
+  }
+}
+
+// 示例：(
+// (λx. λy. x y) (λz. z)
+const example = App(Abs('x', Abs('y', App(Var('x'), Var('y')))), Abs('z', Var('z')));
+console.log('De Bruijn:', toDeBruijn(example));
+```
+
 ## 与相邻模块的关系
 
 | 相邻模块 | 关系说明 |
@@ -320,13 +515,21 @@ confluenceResult.trace.forEach((cfg, i) => {
 
 - [Operational Semantics — Wikipedia](https://en.wikipedia.org/wiki/Operational_semantics)
 - [Denotational Semantics — Wikipedia](https://en.wikipedia.org/wiki/Denotational_semantics)
+- [Axiomatic Semantics — Wikipedia](https://en.wikipedia.org/wiki/Axiomatic_semantics)
 - [Plotkin — A Structural Approach to Operational Semantics (SOS)](https://homepages.inf.ed.ac.uk/gdp/publications/sos_jlap.pdf)
 - [Winskel — The Formal Semantics of Programming Languages (MIT Press)](https://mitpress.mit.edu/9780262731034/)
 - [Pierce — Types and Programming Languages (TAPL)](https://www.cis.upenn.edu/~bcpierce/tapl/)
 - [Software Foundations — Vol 2: Programming Language Foundations](https://softwarefoundations.cis.upenn.edu/plf-current/index.html)
 - [K Framework — Runtime Verification](https://kframework.org/)
 - [PLT Redex — Brown University](https://redex.racket-lang.org/)
+- [Hoare Logic — Stanford Encyclopedia of Philosophy](https://plato.stanford.edu/entries/logic-hoare/)
+- [Dafny — Microsoft Research](https://dafny.org/) — 支持 Hoare 逻辑的程序验证语言
+- [Why3 — Program Verification Platform](https://why3.lri.fr/) — 公理语义验证工具
+- [CompCert — Verified Compiler](https://compcert.org/) — 经形式化验证的 C 编译器
+- [Lambda Calculus — Stanford Encyclopedia](https://plato.stanford.edu/entries/lambda-calculus/)
+- [Coq Proof Assistant](https://coq.inria.fr/) — 交互式定理证明
+- [Lean Theorem Prover](https://lean-lang.org/) — 现代定理证明器
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+> 📅 理论深化更新：2026-04-30

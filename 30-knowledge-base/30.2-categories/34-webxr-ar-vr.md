@@ -176,6 +176,87 @@ session.end() ← 用户退出
 
 ---
 
+## 代码示例：WebXR Hit-Test（AR 放置）
+
+```typescript
+import * as THREE from 'three';
+import { XRButton } from 'three/addons/webxr/XRButton.js';
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.xr.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+document.body.appendChild(XRButton.createButton(renderer, {
+  requiredFeatures: ['hit-test', 'dom-overlay'],
+  domOverlay: { root: document.getElementById('overlay')! }
+}));
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera();
+
+// 放置指示器
+const reticle = new THREE.Mesh(
+  new THREE.RingGeometry(0.05, 0.06, 32).rotateX(-Math.PI / 2),
+  new THREE.MeshBasicMaterial({ color: 0x00ff88 })
+);
+reticle.visible = false;
+scene.add(reticle);
+
+let hitTestSource: XRHitTestSource | null = null;
+
+renderer.xr.addEventListener('sessionstart', async () => {
+  const session = renderer.xr.getSession()!;
+  const viewerSpace = await session.requestReferenceSpace('viewer');
+  hitTestSource = await session.requestHitTestSource({
+    space: viewerSpace,
+    offsetRay: new XRRay()
+  });
+});
+
+renderer.setAnimationLoop((time, frame) => {
+  if (frame && hitTestSource) {
+    const refSpace = renderer.xr.getReferenceSpace()!;
+    const hitTestResults = frame.getHitTestResults(hitTestSource);
+    if (hitTestResults.length > 0) {
+      const pose = hitTestResults[0].getPose(refSpace);
+      if (pose) {
+        reticle.visible = true;
+        reticle.position.set(
+          pose.transform.position.x,
+          pose.transform.position.y,
+          pose.transform.position.z
+        );
+      }
+    }
+  }
+  renderer.render(scene, camera);
+});
+```
+
+## 代码示例：Babylon.js WebXR 快速启动
+
+```typescript
+import { Engine, Scene, Vector3, HemisphericLight, MeshBuilder } from '@babylonjs/core';
+import { WebXRDefaultExperience } from '@babylonjs/core/XR';
+
+const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement;
+const engine = new Engine(canvas, true);
+const scene = new Scene(engine);
+
+new HemisphericLight('light', new Vector3(0, 1, 0), scene);
+const box = MeshBuilder.CreateBox('box', { size: 0.2 }, scene);
+box.position.z = 1;
+
+// 一键启用 WebXR
+const xr = await WebXRDefaultExperience.CreateAsync(scene, {
+  floorMeshes: [],
+  optionalFeatures: ['hand-tracking']
+});
+
+engine.runRenderLoop(() => scene.render());
+window.addEventListener('resize', () => engine.resize());
+```
+
 ## 与基础设施的边界
 
 ```
@@ -193,6 +274,14 @@ session.end() ← 用户退出
 - `jsts-code-lab/84-webxr/` — WebXR 引擎、空间追踪、手势识别
 - `jsts-code-lab/58-data-visualization/` — Canvas/SVG 渲染、图表
 - `docs/categories/04-data-visualization.md` — 3D 可视化库分类
+- [WebXR Device API — W3C Candidate Recommendation](https://www.w3.org/TR/webxr/)
+- [WebXR Hand Input Module](https://immersive-web.github.io/webxr-hand-input/)
+- [Three.js WebXR Examples](https://threejs.org/examples/?q=webxr)
+- [Babylon.js WebXR Documentation](https://doc.babylonjs.com/features/featuresDeepDive/webXR)
+- [glTF 2.0 Specification](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)
+- [WebGL 2.0 Specification](https://registry.khronos.org/webgl/specs/latest/2.0/)
+- [8th Wall Documentation](https://www.8thwall.com/docs/)
+- [OpenXR Specification](https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html)
 - `docs/application-domains-index.md` — 应用领域总索引
 
 ---

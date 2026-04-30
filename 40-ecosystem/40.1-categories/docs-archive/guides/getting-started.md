@@ -154,6 +154,50 @@ npx tsc --init
 }
 ```
 
+### 使用 pnpm Workspace 搭建 Monorepo
+
+```json
+// pnpm-workspace.yaml
+packages:
+  - 'packages/*'
+  - 'apps/*'
+```
+
+```json
+// package.json (root)
+{
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  }
+}
+```
+
+### 配置严格的 TypeScript 编译选项
+
+```json
+// tsconfig.json 推荐严格配置
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}
+```
+
 ---
 
 ## 🎯 收录标准 / Inclusion Criteria
@@ -184,9 +228,9 @@ We follow strict inclusion criteria to ensure the quality of recommendations:
 - [BundlePhobia](https://bundlephobia.com/) — 包体积分析
 - [State of JS](https://stateofjs.com/) — JavaScript 生态年度调查
 - [State of TS](https://stateoftypescript.com/) — TypeScript 生态年度调查
-- [Node.js 官方文档](https://nodejs.org/docs/latest/api/)
-- [TypeScript 官方文档](https://www.typescriptlang.org/docs/)
-- [MDN Web Docs](https://developer.mozilla.org/)
+- [Node.js 官方文档](https://nodejs.org/docs/latest/api/) — Node.js API 参考
+- [TypeScript 官方文档](https://www.typescriptlang.org/docs/) — TypeScript 语言文档
+- [MDN Web Docs](https://developer.mozilla.org/) — Mozilla 开发者网络，Web 标准权威参考
 - [JavaScript Info](https://javascript.info/) — 现代 JavaScript 教程
 - [Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices) — Node.js 工程最佳实践
 - [Patterns.dev](https://www.patterns.dev/) — 现代 Web 应用设计模式
@@ -196,6 +240,29 @@ We follow strict inclusion criteria to ensure the quality of recommendations:
 - [Node.js Design Patterns](https://www.nodejsdesignpatterns.com/) — Node.js 设计模式（书籍）
 - [ECMAScript® 2025 Language Specification](https://tc39.es/ecma262/) — ECMAScript 语言规范
 - [TC39 Proposals](https://github.com/tc39/proposals) — ECMAScript 提案跟踪
+- [npm Documentation](https://docs.npmjs.com/) — npm 官方文档
+- [pnpm Documentation](https://pnpm.io/motivation) — pnpm 官方文档与 Monorepo 指南
+- [Turbo Documentation](https://turbo.build/repo/docs) — Turborepo 构建系统文档
+- [Vite Documentation](https://vitejs.dev/guide/) — Vite 下一代前端工具链
+- [Vitest Documentation](https://vitest.dev/guide/) — Vitest 下一代测试框架
+- [Rollup Documentation](https://rollupjs.org/introduction/) — Rollup 模块打包器
+- [esbuild Documentation](https://esbuild.github.io/) — esbuild 极速打包器
+- [SWC Documentation](https://swc.rs/docs/usage/core) — SWC 基于 Rust 的编译器
+- [Deno Documentation](https://docs.deno.com/) — Deno 运行时官方文档
+- [Bun Documentation](https://bun.sh/docs) — Bun 运行时官方文档
+- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/) — 边缘计算平台文档
+- [Vercel Edge Functions](https://vercel.com/docs/functions/edge-functions) — Vercel 边缘函数文档
+- [NestJS Documentation](https://docs.nestjs.com/) — NestJS 企业级框架文档
+- [Prisma Documentation](https://www.prisma.io/docs/) — Prisma ORM 官方文档
+- [Drizzle ORM Documentation](https://orm.drizzle.team/docs/overview) — Drizzle ORM 轻量文档
+- [Playwright Documentation](https://playwright.dev/docs/intro) — Playwright E2E 测试文档
+- [Testing Library](https://testing-library.com/docs/) — 测试工具集官方文档
+- [Zod Documentation](https://zod.dev/) — Zod 运行时类型校验库
+- [tsx Documentation](https://github.com/privatenumber/tsx) — tsx TypeScript 执行器
+- [TSConfig Cheat Sheet](https://www.totaltypescript.com/tsconfig-cheat-sheet) — TSConfig 配置速查表
+- [JavaScript Weekly](https://javascriptweekly.com/) — JavaScript 技术周刊
+- [Node Weekly](https://nodeweekly.com/) — Node.js 技术周刊
+- [Frontend Focus](https://frontendfoc.us/) — 前端技术周刊
 
 ---
 

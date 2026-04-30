@@ -174,6 +174,117 @@ examples:
 
 ---
 
+## 代码示例：Vercel AI SDK 流式响应
+
+```typescript
+// app/api/chat/route.ts — Next.js App Router 流式 AI 聊天
+import { openai } from '@ai-sdk/openai';
+import { streamText } from 'ai';
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const result = streamText({
+    model: openai('gpt-4o'),
+    system: 'You are a senior TypeScript engineer.',
+    messages,
+  });
+
+  return result.toDataStreamResponse();
+}
+```
+
+```typescript
+// app/page.tsx — 前端消费流式响应
+'use client';
+import { useChat } from '@ai-sdk/react';
+
+export default function Chat() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat();
+
+  return (
+    <div>
+      {messages.map(m => (
+        <div key={m.id}>
+          <strong>{m.role}:</strong> {m.content}
+        </div>
+      ))}
+      <form onSubmit={handleSubmit}>
+        <input value={input} onChange={handleInputChange} placeholder="Ask about TypeScript..." />
+      </form>
+    </div>
+  );
+}
+```
+
+## 代码示例：OpenAI 结构化输出（Structured Outputs）
+
+```typescript
+import { openai } from '@ai-sdk/openai';
+import { generateObject } from 'ai';
+import { z } from 'zod';
+
+const CodeReviewSchema = z.object({
+  summary: z.string().describe('变更摘要'),
+  issues: z.array(z.object({
+    severity: z.enum(['critical', 'warning', 'info']),
+    line: z.number(),
+    message: z.string(),
+    suggestion: z.string(),
+  })),
+  score: z.number().min(0).max(10).describe('代码质量评分'),
+});
+
+export async function reviewCode(diff: string) {
+  const { object } = await generateObject({
+    model: openai('gpt-4o'),
+    schema: CodeReviewSchema,
+    prompt: `Review the following TypeScript diff:\n\n${diff}`,
+  });
+  return object;
+}
+```
+
+## 代码示例：LangChain.js Agent 工具调用
+
+```typescript
+import { ChatOpenAI } from '@langchain/openai';
+import { tool } from '@langchain/core/tools';
+import { z } from 'zod';
+import { AgentExecutor, createToolCallingAgent } from 'langchain/agents';
+import { ChatPromptTemplate } from '@langchain/core/prompts';
+
+const weatherTool = tool(
+  async ({ city }) => {
+    // 实际实现调用天气 API
+    return `Weather in ${city}: 24°C, Sunny`;
+  },
+  {
+    name: 'weather',
+    description: 'Get current weather for a city',
+    schema: z.object({ city: z.string() }),
+  }
+);
+
+const model = new ChatOpenAI({ model: 'gpt-4o' });
+const tools = [weatherTool];
+
+const prompt = ChatPromptTemplate.fromMessages([
+  ['system', 'You are a helpful assistant. Use tools when needed.'],
+  ['placeholder', '{chat_history}'],
+  ['human', '{input}'],
+  ['placeholder', '{agent_scratchpad}'],
+]);
+
+const agent = createToolCallingAgent({ llm: model, tools, prompt });
+const executor = new AgentExecutor({ agent, tools });
+
+const result = await executor.invoke({
+  input: 'What is the weather in Tokyo?',
+});
+console.log(result.output);
+```
+
 ## 最佳实践
 
 1. **始终人工审查**：AI 生成的代码需理解后再提交
@@ -198,6 +309,12 @@ examples:
 - [Model Context Protocol (MCP) — Anthropic](https://modelcontextprotocol.io/)
 - [OpenAI API Documentation](https://platform.openai.com/docs/)
 - [Vercel AI SDK](https://sdk.vercel.ai/docs)
+- [Vercel AI SDK Documentation](https://sdk.vercel.ai/docs)
+- [OpenAI API — Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs)
+- [LangChain.js Documentation](https://js.langchain.com/docs/)
+- [Anthropic Model Context Protocol](https://modelcontextprotocol.io/)
+- [AI SDK Patterns — Streaming](https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot)
+- [Zod — TypeScript-first Schema Validation](https://zod.dev/)
 - [Cursor Rules Documentation](https://docs.cursor.com/context/rules)
 
 ---

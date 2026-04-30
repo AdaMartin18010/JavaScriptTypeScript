@@ -166,6 +166,193 @@ app.post('/login', async (c) => {
 });
 ```
 
+### Helmet.js 完整安全头配置
+
+```typescript
+import express from 'express';
+import helmet from 'helmet';
+
+const app = express();
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'nonce-<%=nonce%>'"],
+      styleSrc: ["'self'", "'nonce-<%=nonce%>'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      fontSrc: ["'self'", "https:", "data:"],
+      connectSrc: ["'self'", "https://api.example.com"],
+      mediaSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      frameSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // 根据需求开启
+  crossOriginOpenerPolicy: { policy: 'same-origin' },
+  crossOriginResourcePolicy: { policy: 'same-site' },
+  dnsPrefetchControl: { allow: false },
+  frameguard: { action: 'deny' },
+  hsts: {
+    maxAge: 63072000,
+    includeSubDomains: true,
+    preload: true,
+  },
+  ieNoOpen: true,
+  noSniff: true,
+  originAgentCluster: true,
+  permittedCrossDomainPolicies: { permittedPolicies: 'none' },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  xssFilter: true,
+}));
+```
+
+### Rate Limiting 与暴力破解防护
+
+```typescript
+import { rateLimit } from 'express-rate-limit';
+import RedisStore from 'rate-limit-redis';
+import { createClient } from 'redis';
+
+const redisClient = createClient({ url: process.env.REDIS_URL });
+await redisClient.connect();
+
+// 通用 API 限流
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 分钟
+  max: 100, // 每 IP 100 次
+  standardHeaders: true,
+  legacyHeaders: false,
+  store: new RedisStore({
+    sendCommand: (...args: string[]) => redisClient.sendCommand(args),
+  }),
+  message: { error: 'Too many requests, please try again later.' },
+});
+
+// 登录接口更严格限流
+const loginLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 小时
+  max: 5, // 每 IP 5 次
+  skipSuccessfulRequests: true,
+  store: new RedisStore({
+    sendCommand: (...args: string[]) => redisClient.sendCommand(args),
+  }),
+  handler: (_req, res) => {
+    res.status(429).json({
+      error: 'Too many login attempts. Please try again after 1 hour.',
+    });
+  },
+});
+
+app.use('/api/', apiLimiter);
+app.use('/api/login', loginLimiter);
+```
+
+### JWT 安全实现与 Refresh Token 轮换
+
+```typescript
+import { SignJWT, jwtVerify } from 'jose';
+
+const ACCESS_SECRET = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET!);
+const REFRESH_SECRET = new TextEncoder().encode(process.env.JWT_REFRESH_SECRET!);
+
+// 生成短期 Access Token
+export async function createAccessToken(payload: { userId: string; role: string }) {
+  return new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setIssuer('https://api.example.com')
+    .setAudience('https://app.example.com')
+    .setExpirationTime('15m') // 15 分钟
+    .sign(ACCESS_SECRET);
+}
+
+// 生成长期 Refresh Token（存储于 httpOnly cookie 或数据库）
+export async function createRefreshToken(userId: string) {
+  const tokenId = crypto.randomUUID();
+  const token = await new SignJWT({ userId, tokenId })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('7d')
+    .sign(REFRESH_SECRET);
+
+  // 将 tokenId 存入数据库，支持撤销
+  await db.refreshTokens.create({
+    data: { id: tokenId, userId, expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
+  });
+
+  return token;
+}
+
+// 验证 Access Token
+export async function verifyAccessToken(token: string) {
+  try {
+    const { payload } = await jwtVerify(token, ACCESS_SECRET, {
+      issuer: 'https://api.example.com',
+      audience: 'https://app.example.com',
+      clockTolerance: 60,
+    });
+    return payload as { userId: string; role: string };
+  } catch (e) {
+    throw new Error('Invalid or expired token');
+  }
+}
+```
+
+### SSRF 防护：URL 白名单与内网屏蔽
+
+```typescript
+import { URL } from 'node:url';
+
+// 禁止访问的私有 IP 段
+const BLOCKED_HOSTS = [
+  /^127\./,
+  /^10\./,
+  /^172\.(1[6-9]|2[0-9]|3[01])\./,
+  /^192\.168\./,
+  /^0\./,
+  /^::1$/,
+  /^fc00:/i,
+  /^fe80:/i,
+];
+
+// 允许的协议
+const ALLOWED_PROTOCOLS = ['http:', 'https:'];
+
+export function validateUrl(input: string): URL {
+  let url: URL;
+  try {
+    url = new URL(input);
+  } catch {
+    throw new Error('Invalid URL');
+  }
+
+  if (!ALLOWED_PROTOCOLS.includes(url.protocol)) {
+    throw new Error(`Protocol ${url.protocol} is not allowed`);
+  }
+
+  const hostname = url.hostname;
+
+  // 阻止 localhost 及域名解析到内网的情况
+  if (BLOCKED_HOSTS.some(re => re.test(hostname)) || hostname === 'localhost') {
+    throw new Error('Private/internal addresses are not allowed');
+  }
+
+  return url;
+}
+
+// 使用
+async function fetchExternal(userProvidedUrl: string) {
+  const safeUrl = validateUrl(userProvidedUrl);
+  const response = await fetch(safeUrl.toString(), {
+    redirect: 'error', // 禁止重定向（防止绕过）
+    signal: AbortSignal.timeout(5000),
+  });
+  return response.text();
+}
+```
+
 ---
 
 ## 最佳实践
@@ -185,6 +372,9 @@ app.post('/login', async (c) => {
 - [OWASP Cheat Sheet Series](https://cheatsheetseries.owasp.org/)
 - [OWASP Cheat Sheet: Password Storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
 - [OWASP Cheat Sheet: Node.js Security](https://cheatsheetseries.owasp.org/cheatsheets/Nodejs_Security_Cheat_Sheet.html)
+- [OWASP Cheat Sheet: Cross-Site Scripting (XSS)](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html)
+- [OWASP Cheat Sheet: Content Security Policy](https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html)
+- [OWASP Cheat Sheet: Prototype Pollution Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Prototype_Pollution_Prevention_Cheat_Sheet.html)
 - [NIST SP 800-63B — Digital Identity Guidelines](https://pages.nist.gov/800-63-3/sp800-63b.html)
 - [npm Security Best Practices](https://docs.npmjs.com/security)
 - [Snyk Vulnerability Database](https://security.snyk.io/)
@@ -193,6 +383,15 @@ app.post('/login', async (c) => {
 - [Cloudflare Security Documentation](https://developers.cloudflare.com/security/)
 - [Next.js Security Guide](https://nextjs.org/docs/app/building-your-application/authentication#security)
 - [React Server Components Security Guide](https://nextjs.org/docs/app/building-your-application/rendering/server-components#security-considerations)
+- [Helmet.js Documentation](https://helmetjs.github.io/)
+- [Express Rate Limit](https://github.com/express-rate-limit/express-rate-limit)
+- [Jose — JWT Library](https://github.com/panva/jose)
+- [Zod Documentation](https://zod.dev/)
+- [bcrypt npm Package](https://www.npmjs.com/package/bcrypt)
+- [Mozilla Web Security Guidelines](https://infosec.mozilla.org/guidelines/web_security)
+- [CSP Evaluator (Google)](https://csp-evaluator.withgoogle.com/)
+- [Hono Secure Headers](https://hono.dev/docs/middleware/builtin/secure-headers)
+- [Web Application Security Testing Guide (WSTG)](https://owasp.org/www-project-web-security-testing-guide/)
 
 ---
 

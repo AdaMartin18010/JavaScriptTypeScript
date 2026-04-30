@@ -16,6 +16,9 @@ module: 19-backend-development
 - WebSocket 实时通信
 - 中间件机制与请求处理管线
 - 服务端架构设计
+- tRPC 与 gRPC 类型安全调用
+- 服务端错误边界与全局异常处理
+- WebSocket 心跳保活与房间管理
 
 ## 子模块目录结构
 
@@ -24,6 +27,9 @@ module: 19-backend-development
 | `express-patterns.ts` | Express 中间件管线与错误边界 | `express-patterns.test.ts` |
 | `api-design.ts` | RESTful / RPC / OpenAPI 设计规范 | `api-design.test.ts` |
 | `websocket-patterns.ts` | WebSocket 服务端房间管理与广播 | `websocket-patterns.test.ts` |
+| `fastify-patterns.ts` | Fastify 插件与生命周期钩子 | `fastify-patterns.test.ts` |
+| `nestjs-patterns.ts` | NestJS 依赖注入与控制器模式 | `nestjs-patterns.test.ts` |
+| `trpc-patterns.ts` | tRPC 类型安全路由与中间件 | `trpc-patterns.test.ts` |
 | `ARCHITECTURE.md` | 服务端架构设计文档 | — |
 | `index.ts` | 模块统一导出 | — |
 
@@ -185,6 +191,69 @@ app.post('/users', validateBody(UserSchema.omit({ id: true })), (req, res) => {
 });
 ```
 
+### NestJS 依赖注入与控制器
+
+```typescript
+// nestjs-patterns.ts
+import { Controller, Get, Param, Injectable } from '@nestjs/common';
+
+@Injectable()
+export class UserService {
+  private users = [{ id: '1', name: 'Alice' }];
+
+  findById(id: string) {
+    return this.users.find((u) => u.id === id);
+  }
+}
+
+@Controller('users')
+export class UserController {
+  constructor(private readonly userService: UserService) {}
+
+  @Get(':id')
+  getUser(@Param('id') id: string) {
+    return this.userService.findById(id);
+  }
+}
+```
+
+### tRPC 类型安全路由
+
+```typescript
+// trpc-patterns.ts
+import { initTRPC } from '@trpc/server';
+import { z } from 'zod';
+
+const t = initTRPC.create();
+
+export const appRouter = t.router({
+  user: t.router({
+    getById: t.procedure
+      .input(z.object({ id: z.string() }))
+      .query(({ input }) => {
+        return { id: input.id, name: 'Alice' };
+      }),
+  }),
+});
+
+export type AppRouter = typeof appRouter;
+```
+
+### Express 全局错误边界
+
+```typescript
+// express-error-boundary.ts
+import type { ErrorRequestHandler } from 'express';
+
+export const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
+  console.error('[Global Error]', err);
+  res.status(err.status || 500).json({
+    error: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message,
+    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
+  });
+};
+```
+
 ## 相关索引
 
 - [30-knowledge-base/30.2-categories/README.md](../../../30-knowledge-base/30.2-categories/README.md)
@@ -207,7 +276,11 @@ app.post('/users', validateBody(UserSchema.omit({ id: true })), (req, res) => {
 | Zod Documentation | 校验库 | [zod.dev](https://zod.dev) |
 | Node.js Design Patterns Book | 书籍 | [nodejsdp.link](https://nodejsdp.link) |
 | HTTP/3 RFC 9114 | 标准 | [datatracker.ietf.org/doc/html/rfc9114](https://datatracker.ietf.org/doc/html/rfc9114) |
+| NestJS Fundamentals | 文档 | [docs.nestjs.com/fundamentals/custom-providers](https://docs.nestjs.com/fundamentals/custom-providers) |
+| tRPC Server-side Calls | 文档 | [trpc.io/docs/server/server-side-calls](https://trpc.io/docs/server/server-side-calls) |
+| Express Error Handling | 文档 | [expressjs.com/en/guide/error-handling.html](https://expressjs.com/en/guide/error-handling.html) |
+| WebSocket API (MDN) | 文档 | [developer.mozilla.org/en-US/docs/Web/API/WebSockets_API](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

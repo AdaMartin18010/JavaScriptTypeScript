@@ -12,6 +12,7 @@ created: 2026-04-28
 
 - 本模块聚焦 edge computing 核心概念与工程实践。
 - 涵盖边缘运行时模型、Edge-First 架构模式与地理感知路由策略。
+- 边缘缓存策略、WebAssembly 边缘计算、流式渲染与实时协作。
 
 ## 子模块速查
 
@@ -165,6 +166,93 @@ async function runWasmAtEdge(
 }
 ```
 
+### Deno Deploy Edge Function
+
+```typescript
+// deno-deploy.ts
+import { serve } from 'https://deno.land/std@0.200.0/http/server.ts';
+
+serve(async (req: Request) => {
+  const { pathname } = new URL(req.url);
+  if (pathname === '/hello') {
+    return new Response(JSON.stringify({ message: 'Hello from Deno Deploy' }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  return new Response('Not Found', { status: 404 });
+});
+```
+
+### Vercel Edge Config 读取
+
+```typescript
+// vercel-edge-config.ts
+import { get } from '@vercel/edge-config';
+
+export async function middleware(request: Request) {
+  const featureFlags = await get('featureFlags');
+  if (featureFlags?.newHomepage) {
+    return new Response(null, { status: 307, headers: { Location: '/home-v2' } });
+  }
+  return new Response('OK');
+}
+```
+
+### Cloudflare Durable Objects 协作编辑
+
+```typescript
+// durable-object-collab.ts
+export class CollaborativeEditor {
+  private sessions: WebSocket[] = [];
+  private state: DurableObjectState;
+
+  constructor(state: DurableObjectState) {
+    this.state = state;
+  }
+
+  async fetch(request: Request): Promise<Response> {
+    const upgradeHeader = request.headers.get('Upgrade');
+    if (upgradeHeader !== 'websocket') {
+      return new Response('Expected websocket', { status: 400 });
+    }
+
+    const [client, server] = Object.values(new WebSocketPair());
+    this.sessions.push(server);
+    server.accept();
+
+    server.addEventListener('message', (event) => {
+      // 广播给所有连接的客户端
+      this.sessions.forEach((ws) => {
+        if (ws.readyState === WebSocket.READY_STATE_OPEN) {
+          ws.send(event.data);
+        }
+      });
+    });
+
+    return new Response(null, { status: 101, webSocket: client });
+  }
+}
+```
+
+### Next.js Edge Middleware Rewrite
+
+```typescript
+// middleware.ts
+import { NextRequest, NextResponse } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  const country = request.geo?.country || 'US';
+  if (country === 'CN') {
+    return NextResponse.rewrite(new URL('/zh-CN' + request.nextUrl.pathname, request.url));
+  }
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/((?!api|_next/static|favicon.ico).*)'],
+};
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -181,11 +269,9 @@ async function runWasmAtEdge(
 - 📄 edge-runtime.ts
 - 📄 index.ts
 
-
 ---
 
 > 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
-
 
 ## 学习资源
 
@@ -206,7 +292,10 @@ async function runWasmAtEdge(
 | State of the Edge (Linux Foundation) | 报告 | [github.com/State-of-the-Edge](https://github.com/State-of-the-Edge) |
 | Cloudflare Workers KV | 官方文档 | [developers.cloudflare.com/kv](https://developers.cloudflare.com/kv/) |
 | Fly.io Edge Apps | 官方文档 | [fly.io/docs](https://fly.io/docs/) |
+| Cloudflare Durable Objects | 官方文档 | [developers.cloudflare.com/durable-objects](https://developers.cloudflare.com/durable-objects) |
+| Vercel Edge Config | 官方文档 | [vercel.com/docs/storage/edge-config](https://vercel.com/docs/storage/edge-config) |
+| Deno Deploy Runtime APIs | 官方文档 | [deno.com/deploy/docs/runtime-api](https://deno.com/deploy/docs/runtime-api) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

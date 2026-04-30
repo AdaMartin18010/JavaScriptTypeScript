@@ -209,6 +209,80 @@ type NonNullableProperties<T> = {
 }
 ```
 
+## 高级模式：类型安全的状态机
+
+```typescript
+// 基于 discriminated union 的状态机
+type State =
+  | { status: 'idle' }
+  | { status: 'loading'; requestId: string }
+  | { status: 'success'; data: unknown }
+  | { status: 'error'; error: Error };
+
+function handleState(state: State): string {
+  switch (state.status) {
+    case 'idle': return 'Waiting...';
+    case 'loading': return `Loading ${state.requestId}...`;
+    case 'success': return `Loaded: ${JSON.stringify(state.data)}`;
+    case 'error': return `Error: ${state.error.message}`;
+    default:
+      // exhaustiveness check
+      const _exhaustive: never = state;
+      return _exhaustive;
+  }
+}
+```
+
+## 高级模式：品牌类型（Unique Symbol）
+
+```typescript
+declare const UserIdBrand: unique symbol;
+declare const PostIdBrand: unique symbol;
+
+type UserId = string & { readonly [UserIdBrand]: true };
+type PostId = string & { readonly [PostIdBrand]: true };
+
+function createUserId(id: string): UserId {
+  return id as UserId;
+}
+
+const uid = createUserId('123');
+// const pid: PostId = uid; // ❌ Compile error
+```
+
+## 高级模式：Parser 类型（模板字面量递归）
+
+```typescript
+// 类型级 JSON Path 解析器
+type ParsePath<T extends string> =
+  T extends `${infer Head}.${infer Tail}`
+    ? [Head, ...ParsePath<Tail>]
+    : T extends ''
+      ? []
+      : [T];
+
+type Path1 = ParsePath<'user.profile.name'>; // ['user', 'profile', 'name']
+type Path2 = ParsePath<'items.0.id'>;        // ['items', '0', 'id']
+```
+
+## 实用模式：Const 类型参数
+
+```typescript
+// 保留字面量类型而不需要 `as const`
+function createAction<const T extends string>(type: T) {
+  return { type } as const;
+}
+
+const action = createAction('USER_LOGIN'); // type: { readonly type: "USER_LOGIN" }
+
+// 配合元组使用
+function createTuple<const T extends readonly unknown[]>(...args: T): T {
+  return args;
+}
+
+const tuple = createTuple('a', 1, true); // type: readonly ["a", 1, true]
+```
+
 ## 配置速查（tsconfig.json）
 
 ```json
@@ -245,7 +319,16 @@ type NonNullableProperties<T> = {
 - [Matt Pocock — Zod & TypeScript](https://www.totaltypescript.com/tutorials/zod) — 运行时类型验证
 - [Effective TypeScript — Dan Vanderkam](https://effectivetypescript.com/)
 - [Learning TypeScript — Josh Goldberg](https://www.learningtypescript.com/)
-- [ts-pattern](https://github.com/gvergnaud/ts-pattern) —  exhaustively 模式匹配库
+- [ts-pattern](https://github.com/gvergnaud/ts-pattern) — exhaustively 模式匹配库
+- [TypeScript 5.5 Release Notes](https://devblogs.microsoft.com/typescript/announcing-typescript-5-5/)
+- [TypeScript Handbook — Generics](https://www.typescriptlang.org/docs/handbook/2/generics.html)
+- [TypeScript Handbook — Narrowing](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
+- [TypeScript Handbook — Template Literal Types](https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html)
+- [TSConfig Reference](https://www.typescriptlang.org/tsconfig) — 完整配置选项参考
+- [Total TypeScript — Advanced Patterns](https://www.totaltypescript.com/tutorials)
+- [Matt Pocock — TypeScript Generics Workshop](https://www.totaltypescript.com/workshops/typescript-generics)
+- [Type Hero — TypeScript Challenges](https://typehero.dev/)
+- [TypeScript ESLint](https://typescript-eslint.io/)
 
 ---
 

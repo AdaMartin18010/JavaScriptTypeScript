@@ -144,6 +144,106 @@ jobs:
 
 ---
 
+## 代码示例：Docker Compose 本地开发栈
+
+```yaml
+# docker-compose.dev.yml
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/dev
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:16-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dev
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+
+volumes:
+  postgres_data:
+```
+
+## 代码示例：GitHub Actions 矩阵策略
+
+```yaml
+# .github/workflows/ci-matrix.yml
+name: CI Matrix
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22, 24]
+        package-manager: [npm, pnpm, bun]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - if: matrix.package-manager == 'pnpm'
+        uses: pnpm/action-setup@v3
+        with: { version: 9 }
+      - if: matrix.package-manager == 'bun'
+        uses: oven-sh/setup-bun@v2
+      - run: ${{ matrix.package-manager }} install
+      - run: ${{ matrix.package-manager }} run test
+```
+
+## 代码示例：Terraform AWS ECS 部署
+
+```hcl
+# infra/main.tf
+terraform {
+  required_providers { aws = { source = "hashicorp/aws" } }
+}
+
+provider "aws" { region = "us-east-1" }
+
+resource "aws_ecs_cluster" "app" {
+  name = "jsts-app-cluster"
+}
+
+resource "aws_ecs_task_definition" "app" {
+  family                   = "jsts-app"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "256"
+  memory                   = "512"
+  container_definitions = jsonencode([{
+    name  = "app"
+    image = "${aws_ecr_repository.app.repository_url}:latest"
+    portMappings = [{ containerPort = 3000 }]
+    environment = [
+      { name = "NODE_ENV", value = "production" }
+    ]
+  }])
+}
+```
+
 ## 决策支持
 
 - [基础设施决策矩阵](../30.3-comparison-matrices/infrastructure-stack-decision-matrix.md)
@@ -174,6 +274,13 @@ jobs:
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [OpenTelemetry — Getting Started](https://opentelemetry.io/docs/)
 - [Drizzle ORM — TypeScript SQL-like ORM](https://orm.drizzle.team/)
+- [Docker Compose Documentation](https://docs.docker.com/compose/)
+- [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
+- [Kubernetes Documentation](https://kubernetes.io/docs/)
+- [AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html)
+- [GitHub Actions — Workflow Syntax](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions)
+- [Neon Serverless Postgres](https://neon.tech/docs/introduction)
+- [Cloudflare Workers — Runtime APIs](https://developers.cloudflare.com/workers/runtime-apis/)
 - [better-auth — Framework-agnostic authentication](https://www.better-auth.com/)
 
 ---

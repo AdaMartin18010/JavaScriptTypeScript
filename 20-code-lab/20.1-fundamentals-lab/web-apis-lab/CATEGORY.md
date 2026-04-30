@@ -171,6 +171,108 @@ function readableStreamToAsyncIterable<T>(stream: ReadableStream<T>): AsyncItera
 }
 ```
 
+### Web Share API 与 Clipboard API 集成
+
+```typescript
+// share-and-clipboard.ts
+// 原生系统分享
+async function nativeShare(data: { title: string; text: string; url: string }) {
+  if (navigator.share) {
+    await navigator.share(data);
+  } else {
+    // 降级：复制到剪贴板
+    await navigator.clipboard.writeText(`${data.title}\n${data.url}`);
+    showToast('Link copied to clipboard');
+  }
+}
+
+// Clipboard 富文本写入
+async function copyRichText(html: string, plain: string) {
+  const blobHtml = new Blob([html], { type: 'text/html' });
+  const blobText = new Blob([plain], { type: 'text/plain' });
+  const clipboardItem = new ClipboardItem({
+    'text/html': blobHtml,
+    'text/plain': blobText,
+  });
+  await navigator.clipboard.write([clipboardItem]);
+}
+
+// 读取剪贴板图片
+async function pasteImage(): Promise<Blob | null> {
+  const items = await navigator.clipboard.read();
+  for (const item of items) {
+    if (item.types.includes('image/png')) {
+      return await item.getType('image/png');
+    }
+  }
+  return null;
+}
+```
+
+### Permissions API 与功能探测
+
+```typescript
+// permissions-api.ts
+// 统一查询权限状态
+
+async function queryPermission(name: PermissionName): Promise<PermissionState> {
+  try {
+    const result = await navigator.permissions.query({ name });
+    return result.state; // 'granted' | 'denied' | 'prompt'
+  } catch {
+    return 'prompt'; // 该权限不支持 Permissions API
+  }
+}
+
+// 使用示例
+async function requestCameraWithFallback() {
+  const state = await queryPermission('camera');
+  if (state === 'denied') {
+    showSettingsDialog(); // 引导用户去系统设置开启
+    return;
+  }
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+  videoElement.srcObject = stream;
+}
+```
+
+### Web Storage 事件跨标签页同步
+
+```typescript
+// storage-sync.ts
+// localStorage 在同源标签页间广播变更
+window.addEventListener('storage', (event: StorageEvent) => {
+  if (event.key === 'app-theme') {
+    applyTheme(event.newValue ?? 'light');
+    console.log(`Theme synced from another tab: ${event.newValue}`);
+  }
+});
+
+function setTheme(theme: 'light' | 'dark') {
+  localStorage.setItem('app-theme', theme);
+  applyTheme(theme); // 当前标签页立即生效
+}
+
+// 封装为响应式 Store
+function createSharedStorage<T>(key: string, defaultValue: T) {
+  let value = JSON.parse(localStorage.getItem(key) ?? 'null') ?? defaultValue;
+  const listeners = new Set<(v: T) => void>();
+
+  window.addEventListener('storage', (e) => {
+    if (e.key === key && e.newValue) {
+      value = JSON.parse(e.newValue);
+      listeners.forEach((fn) => fn(value));
+    }
+  });
+
+  return {
+    get() { return value; },
+    set(v: T) { value = v; localStorage.setItem(key, JSON.stringify(v)); listeners.forEach((fn) => fn(v)); },
+    subscribe(fn: (v: T) => void) { listeners.add(fn); return () => listeners.delete(fn); },
+  };
+}
+```
+
 ## 目录内容
 
 - 📄 ARCHITECTURE.md
@@ -203,7 +305,14 @@ function readableStreamToAsyncIterable<T>(stream: ReadableStream<T>): AsyncItera
 | Web Workers Spec | 规范 | [html.spec.whatwg.org/multipage/workers.html](https://html.spec.whatwg.org/multipage/workers.html) |
 | Google Web Fundamentals — Promises | 指南 | [developers.google.com/web/fundamentals/primers/promises](https://developers.google.com/web/fundamentals/primers/promises) |
 | Web.dev — Reliable HTTP Request Cancellation | 实践 | [web.dev/articles/abortable-fetch](https://web.dev/articles/abortable-fetch) |
+| MDN — Web Share API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Web_Share_API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Share_API) |
+| MDN — Clipboard API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Clipboard_API](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API) |
+| MDN — Permissions API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Permissions_API](https://developer.mozilla.org/en-US/docs/Web/API/Permissions_API) |
+| MDN — Web Storage API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API) |
+| web.dev — Notification API | 指南 | [web.dev/articles/push-notifications-overview](https://web.dev/articles/push-notifications-overview) |
+| W3C — Web Notifications | 规范 | [notifications.spec.whatwg.org/](https://notifications.spec.whatwg.org/) |
+| GoogleChromeLabs — Progressively Enhance With JS APIs | 示例 | [github.com/GoogleChromeLabs](https://github.com/GoogleChromeLabs) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

@@ -179,6 +179,53 @@ if (result.tag === 'ok') {
 }
 ```
 
+#### AssemblyScript — TypeScript 子集编译到 Wasm
+
+```typescript
+// assembly/index.ts（AssemblyScript 语法，近似 TypeScript）
+export function fib(n: i32): i32 {
+  if (n <= 1) return n;
+  let a: i32 = 0, b: i32 = 1;
+  for (let i: i32 = 2; i <= n; i++) {
+    const t = a + b;
+    a = b;
+    b = t;
+  }
+  return b;
+}
+
+// 宿主 JavaScript 加载
+const wasmModule = await WebAssembly.instantiateStreaming(
+  fetch('./build/release.wasm')
+);
+console.log(wasmModule.exports.fib(40)); // 102334155
+```
+
+#### Wasm 内存动态增长监控
+
+```typescript
+// wasm-memory-growth.ts
+function trackMemoryGrowth(instance: WebAssembly.Instance) {
+  const memory = instance.exports.memory as WebAssembly.Memory;
+  const initialPages = memory.buffer.byteLength / (64 * 1024);
+
+  return new Proxy(memory, {
+    get(target, prop) {
+      if (prop === 'grow') {
+        return (delta: number) => {
+          const before = target.buffer.byteLength;
+          const result = target.grow(delta);
+          const after = target.buffer.byteLength;
+          console.log(`Memory grew: ${before} → ${after} bytes (pages: ${result})`);
+          return result;
+        };
+      }
+      return (target as any)[prop];
+    },
+  });
+}
+```
+
 ---
 
 > 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
@@ -200,7 +247,12 @@ if (result.tag === 'ok') {
 | Rust and WebAssembly Book | 教程 | [rustwasm.github.io/docs/book/](https://rustwasm.github.io/docs/book/) |
 | wasm-bindgen | Rust/JS 交互工具 | [rustwasm.github.io/wasm-bindgen/](https://rustwasm.github.io/wasm-bindgen/) |
 | JCO (JavaScript Component Toolkit) | 组件模型工具链 | [github.com/bytecodealliance/jco](https://github.com/bytecodealliance/jco) |
+| WASI Preview 2 | 标准文档 | [github.com/WebAssembly/WASI](https://github.com/WebAssembly/WASI) |
+| Wasm GC Proposal | 提案文档 | [github.com/WebAssembly/gc](https://github.com/WebAssembly/gc) |
+| Wasm SIMD Proposal | 提案文档 | [github.com/WebAssembly/simd](https://github.com/WebAssembly/simd) |
+| WebAssembly Weekly | 社区周报 | [wasmweekly.news](https://wasmweekly.news/) |
+| Figma — WebAssembly Cut File Load Time by 3x | 工程案例 | [figma.com/blog/webassembly-cut-figmas-load-time-by-3x](https://www.figma.com/blog/webassembly-cut-figmas-load-time-by-3x/) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

@@ -148,6 +148,113 @@ npx wrangler deploy
 
 ---
 
+## 代码示例：Terraform Cloudflare Workers 部署
+
+```hcl
+# infra/workers.tf
+terraform {
+  required_providers {
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 4.0"
+    }
+  }
+}
+
+variable "cloudflare_account_id" { type = string }
+
+resource "cloudflare_workers_script" "api" {
+  account_id = var.cloudflare_account_id
+  name       = "jsts-edge-api"
+  content    = file("${path.module}/../dist/worker.js")
+
+  plain_text_binding {
+    name = "ENVIRONMENT"
+    text = "production"
+  }
+}
+
+resource "cloudflare_workers_route" "api" {
+  zone_id     = var.cloudflare_zone_id
+  pattern     = "api.example.com/*"
+  script_name = cloudflare_workers_script.api.name
+}
+```
+
+## 代码示例：Kubernetes Deployment 清单
+
+```yaml
+# k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jsts-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: jsts-api
+  template:
+    metadata:
+      labels:
+        app: jsts-api
+    spec:
+      containers:
+        - name: api
+          image: jsts-api:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "production"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jsts-api-service
+spec:
+  selector:
+    app: jsts-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: LoadBalancer
+```
+
+## 代码示例：Vercel AI + Next.js Edge 全栈
+
+```typescript
+// app/api/generate/route.ts
+import { openai } from '@ai-sdk/openai';
+import { streamText } from 'ai';
+
+export const runtime = 'edge';
+
+export async function POST(req: Request) {
+  const { prompt } = await req.json();
+  const result = streamText({
+    model: openai('gpt-4o-mini'),
+    prompt,
+    maxTokens: 512,
+  });
+  return result.toDataStreamResponse();
+}
+```
+
 ## 决策树
 
 ```
@@ -177,5 +284,16 @@ npx wrangler deploy
 ```
 
 ---
+
+## 参考链接
+
+- [Terraform Registry — Cloudflare Provider](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs)
+- [Kubernetes Documentation — Workloads](https://kubernetes.io/docs/concepts/workloads/)
+- [Vercel Edge Runtime](https://vercel.com/docs/functions/runtimes/edge-runtime)
+- [AWS ECS Task Definitions](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definitions.html)
+- [Railway Deployment Docs](https://docs.railway.app/deploy/deployments)
+- [Fly.io App Configuration](https://fly.io/docs/reference/configuration/)
+- [Cloudflare Workers — D1 Database](https://developers.cloudflare.com/d1/)
+- [Neon Serverless Postgres](https://neon.tech/docs/introduction)
 
 *最后更新: 2026-04-29*

@@ -194,6 +194,79 @@ async function auditFeatureFlags(flagRegistry: Map<string, FlagAuditEntry>): Pro
 }
 ```
 
+### LaunchDarkly Node.js SDK 实战
+
+```typescript
+// launchdarkly-patterns.ts
+import { init, LDClient } from 'launchdarkly-node-server-sdk';
+
+const client: LDClient = init(process.env.LD_SDK_KEY!);
+
+await client.waitForInitialization();
+
+const isEnabled = client.boolVariation('new-dashboard', {
+  key: 'user-12345',
+  custom: { tier: 'enterprise', region: 'us-west-2' },
+}, false);
+```
+
+### Flagsmith 远程配置
+
+```typescript
+// flagsmith-patterns.ts
+import Flagsmith from 'flagsmith';
+
+const flagsmith = new Flagsmith({
+  environmentID: process.env.FLAGSMITH_ENV_ID!,
+});
+
+const flags = await flagsmith.getEnvironmentFlags();
+const isEnabled = flags.isFeatureEnabled('new-logo');
+const buttonColor = flags.getFeatureValue('button-color');
+```
+
+### 一致性哈希分桶实现
+
+```typescript
+// consistent-hash-bucket.ts
+import { createHash } from 'node:crypto';
+
+export function getBucket(userId: string, totalBuckets: number = 100): number {
+  const hash = createHash('sha256').update(userId).digest('hex');
+  const intHash = parseInt(hash.slice(0, 8), 16);
+  return intHash % totalBuckets;
+}
+
+// 渐进发布：仅对前 10% 的桶启用
+export function isInRollout(userId: string, percentage: number): boolean {
+  const bucket = getBucket(userId);
+  return bucket < percentage;
+}
+```
+
+### NestJS 装饰器模式开关
+
+```typescript
+// feature-flag.decorator.ts
+import { Reflector } from '@nestjs/core';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { OpenFeature } from '@openfeature/server-sdk';
+
+export const FeatureFlag = Reflector.createDecorator<string>();
+
+@Injectable()
+export class FeatureFlagGuard implements CanActivate {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const flagName = new Reflector().get(FeatureFlag, context.getHandler());
+    if (!flagName) return true;
+    const request = context.switchToHttp().getRequest();
+    return OpenFeature.getClient().getBooleanValue(flagName, false, {
+      targetingKey: request.user?.id,
+    });
+  }
+}
+```
+
 ## 关联模块
 
 - `65-analytics` — A/B 测试的数据分析与实验结果统计
@@ -215,6 +288,10 @@ async function auditFeatureFlags(flagRegistry: Map<string, FlagAuditEntry>): Pro
 - [CNCF Feature Flags Wiki](https://github.com/cncf/tag-app-delivery/blob/main/feature-flags/README.md)
 - [Google SRE — Feature Flags Best Practices](https://sre.google/workbook/implementing-slos/)
 - [Etsy — Feature Flags at Scale](https://www.etsy.com/codeascraft/feature-flags-at-etsy)
+- [LaunchDarkly SDK Reference — Node.js](https://docs.launchdarkly.com/sdk/server-side/node-js)
+- [OpenFeature .NET / Java / Go SDKs](https://openfeature.dev/docs/reference/technologies/)
+- [Feature Flags Best Practices — LaunchDarkly](https://docs.launchdarkly.com/guides/best-practices)
+- [Flagsmith API Documentation](https://docs.flagsmith.com/quickstart)
 - 本模块 `README.md` — 模块主题与学习路径
 - 本模块 `feature-flag-system.ts` — 开关规则评估与渐进发布实现
 - 本模块 `feature-toggles.ts` — 开关管理器、环境配置与组管理实现

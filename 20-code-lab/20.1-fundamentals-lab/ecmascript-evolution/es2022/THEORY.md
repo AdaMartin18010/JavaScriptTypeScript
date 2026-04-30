@@ -96,6 +96,31 @@ console.log(account.balance); // 150
 // account.#balance; // SyntaxError: Private field must be declared in enclosing class
 ```
 
+**代码示例：私有字段在纯 JavaScript 中的运行时保护**
+
+```javascript
+// pure-js-private.mjs
+class SecureVault {
+  #secret;
+
+  constructor(secret) {
+    this.#secret = secret;
+  }
+
+  getSecret() {
+    return this.#secret;
+  }
+}
+
+const vault = new SecureVault('password123');
+console.log(vault.getSecret()); // "password123"
+
+// 以下操作均会失败：
+console.log(vault.#secret);        // SyntaxError（编译期）
+console.log(vault['#secret']);     // undefined（不是普通属性）
+console.log(Reflect.ownKeys(vault)); // 不包含 #secret
+```
+
 ### 3.2 类静态块
 
 ```typescript
@@ -122,6 +147,29 @@ class DatabaseConfig {
 }
 ```
 
+**代码示例：静态块执行顺序验证**
+
+```javascript
+// static-block-order.mjs
+class Demo {
+  static log = [];
+
+  static {
+    this.log.push('first static block');
+  }
+
+  static {
+    this.log.push('second static block');
+  }
+
+  static x = this.log.push('static field');
+}
+
+console.log(Demo.log);
+// ['first static block', 'second static block', 'static field']
+// 顺序：static 块按书写顺序执行，然后是静态字段初始化
+```
+
 ### 3.3 顶层 await
 
 ```typescript
@@ -137,6 +185,33 @@ export const db = await createConnection(config.database);
 import { db } from './db.js';
 // db 已初始化完成，可直接使用
 await db.query('SELECT 1');
+```
+
+**代码示例：Node.js ESM 中的顶层 await**
+
+```javascript
+// server.mjs
+import { readFile } from 'node:fs/promises';
+
+// 顶层 await：模块等待文件读取完成后才导出
+const pkg = JSON.parse(await readFile('./package.json', 'utf-8'));
+export const PORT = process.env.PORT || 3000;
+export const APP_NAME = pkg.name;
+
+// 模块导入方会隐式等待上述 await 完成
+```
+
+**代码示例：顶层 await 的瀑布加载模式**
+
+```javascript
+// resources.mjs
+import { loadConfig } from './config.mjs';
+import { createDb } from './db.mjs';
+import { createCache } from './cache.mjs';
+
+export const config = await loadConfig();
+export const db = await createDb(config.database);
+export const cache = await createCache(config.redis);
 ```
 
 ### 3.4 Array.prototype.at
@@ -161,6 +236,15 @@ const str = 'hello';
 str.at(-1); // 'o'
 ```
 
+**代码示例：`.at()` 在 TypedArray 上的使用**
+
+```javascript
+const uint8 = new Uint8Array([10, 20, 30, 40]);
+console.log(uint8.at(-1)); // 40
+
+// 与 .slice(-1)[0] 对比：.at() 更简洁且无数组分配开销
+```
+
 ### 3.5 Object.hasOwn
 
 ```typescript
@@ -175,6 +259,29 @@ Object.hasOwn(obj, 'bar'); // false（继承属性）
 obj.hasOwnProperty('foo'); // true
 // 但可能被覆盖或对象没有该方法
 // Object.hasOwn 更安全
+```
+
+**代码示例：`Object.hasOwn` 替代 `hasOwnProperty.call`**
+
+```javascript
+const obj = Object.create(null); // 无原型对象
+obj.foo = 1;
+
+// 传统写法（繁琐且易错）
+Object.prototype.hasOwnProperty.call(obj, 'foo'); // true
+
+// ES2022 写法（简洁安全）
+Object.hasOwn(obj, 'foo'); // true
+```
+
+**代码示例：`Object.hasOwn` 的 polyfill**
+
+```javascript
+if (!Object.hasOwn) {
+  Object.hasOwn = function (obj, prop) {
+    return Object.prototype.hasOwnProperty.call(obj, prop);
+  };
+}
 ```
 
 ### 3.6 Error Cause
@@ -204,6 +311,37 @@ try {
 }
 ```
 
+**代码示例：构建可观测的错误链**
+
+```javascript
+function readConfig(path) {
+  try {
+    return JSON.parse(fs.readFileSync(path, 'utf-8'));
+  } catch (cause) {
+    throw new Error(`Failed to read config: ${path}`, { cause });
+  }
+}
+
+function validateConfig(raw) {
+  if (!raw.port) {
+    throw new Error('Config validation failed: missing "port"', { cause: raw });
+  }
+  return raw;
+}
+
+try {
+  const config = validateConfig(readConfig('./app.json'));
+} catch (e) {
+  console.error(e.message);
+  // 可遍历整个错误链
+  let current = e;
+  while (current) {
+    console.error('→', current.message);
+    current = current.cause;
+  }
+}
+```
+
 ### 3.7 常见误区
 
 | 误区 | 正确理解 |
@@ -217,12 +355,18 @@ try {
 
 ## 四、权威参考
 
-- [ECMA-262 — 2022 Language Specification](https://262.ecma-international.org/13.0/) — 官方规范
-- [MDN — Private class features](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields) — Mozilla 文档
-- [MDN — Top-level await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await#top_level_await) — Mozilla 文档
-- [MDN — Array.prototype.at](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/at) — Mozilla 文档
-- [MDN — Object.hasOwn](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwn) — Mozilla 文档
-- [V8 Blog — ES2022 Features](https://v8.dev/features/tags/es2022) — V8 引擎实现解析
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| ECMA-262 — 2022 Language Specification | 官方规范 | [262.ecma-international.org/13.0](https://262.ecma-international.org/13.0/) |
+| MDN — Private class features | Mozilla 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields) |
+| MDN — Top-level await | Mozilla 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await#top_level_await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await#top_level_await) |
+| MDN — Array.prototype.at | Mozilla 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/at](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/at) |
+| MDN — Object.hasOwn | Mozilla 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwn](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwn) |
+| MDN — Error: cause | Mozilla 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause) |
+| V8 Blog — ES2022 Features | V8 引擎实现解析 | [v8.dev/features/tags/es2022](https://v8.dev/features/tags/es2022) |
+| Node.js ESM — Top-level await | Node.js 文档 | [nodejs.org/api/esm.html#top-level-await](https://nodejs.org/api/esm.html#top-level-await) |
+| TypeScript 4.3 Release Notes | 私有字段与方法支持 | [devblogs.microsoft.com/typescript/announcing-typescript-4-3](https://devblogs.microsoft.com/typescript/announcing-typescript-4-3/) |
+| TC39 Proposal — Class Fields | 私有字段提案历史 | [github.com/tc39/proposal-class-fields](https://github.com/tc39/proposal-class-fields) |
 
 ---
 

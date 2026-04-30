@@ -270,16 +270,71 @@ import { y } from "./b.mjs"; // 触发 b 求值
 export let x = y + 1;        // 若 b 访问 x，TDZ！因为此语句尚未执行
 ```
 
+**代码示例：ESM Live Binding 在循环依赖中的行为**
+
+```javascript
+// counter.mjs
+export let count = 0;
+export function increment() {
+  count++;
+}
+
+// logger.mjs
+import { count, increment } from './counter.mjs';
+
+export function logCount() {
+  console.log('Current count:', count); // Live binding：始终读取最新值
+}
+
+// main.mjs
+import { increment } from './counter.mjs';
+import { logCount } from './logger.mjs';
+
+increment();
+logCount(); // 输出 1（live binding 正常工作）
+```
+
+**代码示例：使用动态 `import()` 打破循环依赖**
+
+```javascript
+// service.mjs
+let repository;
+
+export async function init() {
+  // 动态导入打破静态循环
+  repository = (await import('./repository.mjs')).repository;
+}
+
+export function getUser(id) {
+  if (!repository) throw new Error('Not initialized');
+  return repository.findById(id);
+}
+
+// repository.mjs
+import { getUser } from './service.mjs'; // 静态导入 service 的类型/工具函数
+
+export const repository = {
+  findById(id) {
+    // 安全使用 service 的导出（只要不在初始化时互相调用）
+    return { id, name: 'Alice' };
+  }
+};
+```
+
 ---
 
 ## 8. 权威参考 (References)
 
 | 来源 | 链接 | 相关章节 |
 |------|------|---------|
-| Node.js CJS Cycles | nodejs.org/api/modules.html#cycles | Cycles |
-| ECMA-262 ESM | tc39.es/ecma262/#sec-moduleevaluation | Module Evaluation |
-| madge | github.com/pahen/madge | Circular dependency detection |
-| dependency-cruiser | github.com/sverweij/dependency-cruiser | Architecture validation |
+| Node.js CJS Cycles | [nodejs.org/api/modules.html#cycles](https://nodejs.org/api/modules.html#cycles) | Cycles |
+| ECMA-262 ESM | [tc39.es/ecma262/#sec-moduleevaluation](https://tc39.es/ecma262/#sec-moduleevaluation) | Module Evaluation |
+| madge | [github.com/pahen/madge](https://github.com/pahen/madge) | Circular dependency detection |
+| dependency-cruiser | [github.com/sverweij/dependency-cruiser](https://github.com/sverweij/dependency-cruiser) | Architecture validation |
+| Node.js ESM Cycles | [nodejs.org/api/esm.html#resolution-and-loading-algorithm](https://nodejs.org/api/esm.html#resolution-and-loading-algorithm) | ESM 解析与加载算法 |
+| V8 Blog: Modules | [v8.dev/features/modules](https://v8.dev/features/modules) | JavaScript 模块系统详解 |
+| ESLint Plugin Import | [github.com/import-js/eslint-plugin-import](https://github.com/import-js/eslint-plugin-import) | `no-cycle` 规则 |
+| Rollup Circular Dependencies | [rollupjs.org/troubleshooting/#warning-circular-dependencies](https://rollupjs.org/troubleshooting/#warning-circular-dependencies) | 打包器循环依赖处理 |
 
 ---
 

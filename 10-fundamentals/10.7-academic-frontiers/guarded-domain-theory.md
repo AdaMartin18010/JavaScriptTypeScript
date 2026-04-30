@@ -152,6 +152,72 @@ const useDebug: boolean = config.debug;
 // 同时保留原始值的精细结构信息。
 ```
 
+### 3.5 渐进类型的 Gradual Guarantee
+
+Guarded Domain Theory 的形式化目标是证明 **Gradual Guarantee**：若将静态类型程序中某些类型替换为 `any`，程序的行为不会改变（最多从类型错误降级为运行时检查）。
+
+```typescript
+// 静态版本：编译期保证
+function staticAdd(x: number, y: number): number {
+  return x + y;
+}
+
+// 渐进版本：将 number 替换为 any，行为在运行时保持一致
+// 但可能抛出运行时类型错误而非编译错误
+function gradualAdd(x: any, y: any): any {
+  return x + y;
+}
+
+// Guarded Domain 解释：
+// staticAdd 的语义是在 number 域上的严格函数。
+// gradualAdd 的语义是将输入 guard 到 number 域，
+// 执行加法后 unguard 回 any 域。
+// 若输入无法 guard（如字符串），运行时抛出 blame。
+```
+
+### 3.6 用 TypeScript 模拟 Guarded Cast
+
+```typescript
+// 模拟 Guarded Domain 中的 cast 操作
+// cast: any → T，失败时产生 blame
+type Guarded<T> = { _tag: 'Guarded'; value: T };
+
+function guardValue<T>(
+  value: unknown,
+  check: (v: unknown) => v is T,
+  label: string
+): Guarded<T> {
+  if (check(value)) return { _tag: 'Guarded', value };
+  throw new TypeError(`Guarded cast failed at ${label}: expected guard predicate to hold`);
+}
+
+function unguard<T>(g: Guarded<T>): T {
+  return g.value;
+}
+
+// 示例：安全 JSON 解析器
+type User = { name: string; age: number };
+
+function isUser(v: unknown): v is User {
+  return (
+    typeof v === 'object' && v !== null &&
+    'name' in v && typeof (v as Record<string, unknown>).name === 'string' &&
+    'age' in v && typeof (v as Record<string, unknown>).age === 'number'
+  );
+}
+
+function parseUser(json: string): User {
+  const parsed = JSON.parse(json) as unknown;
+  const guarded = guardValue(parsed, isUser, 'parseUser');
+  return unguard(guarded);
+}
+
+// 成功
+console.log(parseUser('{"name":"Alice","age":30}'));
+// 失败：抛出 TypeError
+// console.log(parseUser('{"name":"Bob"}'));
+```
+
 ---
 
 ## 四、与本项目的关系
@@ -182,12 +248,21 @@ const useDebug: boolean = config.debug;
 | *Gradual Typing for Functional Languages* | Siek & Taha | 2006 | [ACM DL](https://dl.acm.org/doi/10.1145/1159803.1159817) |
 | *Denotational Semantics of Gradual Types* | Campora et al. | 2022 | [ICFP](https://doi.org/10.1145/3547627) |
 | *The Gradualizer* | Cimini & Siek | 2016 | [POPL](https://doi.org/10.1145/2837614.2837632) |
+| *Abstracting Gradual Typing* | Garcia et al. | 2016 | [POPL](https://doi.org/10.1145/2837614.2837670) |
+| *Gradual Typing: A New Perspective* | Siek et al. | 2015 | [PNAS](https://doi.org/10.1073/pnas.1510986112) |
+| *Towards a Semantic Model for Gradual Typing* | Clark et al. | 2023 | [arXiv](https://arxiv.org/abs/2310.12352) |
 | TypeScript Design Goals | Microsoft | 2023 | [GitHub Wiki](https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals) |
 | TC39 Type Annotations Proposal | TC39 | Stage 1 | [tc39/proposal-type-annotations](https://github.com/tc39/proposal-type-annotations) |
 | Gradual Typing.org | Community | — | [gradualtyping.org](http://gradualtyping.org/) |
 | Siek's Blog — Gradual Typing | Siek | — | [siek.blogspot.com](https://siek.blogspot.com/) |
 | Reticulated Python | Vitousek et al. | 2014 | [Github](https://github.com/mvitousek/reticulated) |
+| Typed Racket | Felleisen et al. | — | [Racket Docs](https://docs.racket-lang.org/ts-guide/) |
+| Pyright / mypy Gradual Typing | Microsoft / Dropbox | — | [Pyright Docs](https://microsoft.github.io/pyright/) |
+| Soundness and Gradual Typing | Tobin-Hochstadt | — | [PL Perspectives](https://blog.sigplan.org/2019/08/12/soundness-and-graadual-typing/) |
 | PLDI 2024 Proceedings | ACM | 2024 | [ACM DL](https://dl.acm.org/doi/proceedings/10.1145/3656410) |
+| POPL 2025 Proceedings | ACM | 2025 | [ACM DL](https://dl.acm.org/doi/proceedings/10.1145/3704888) |
+| TYPES Forum | Community | — | [types-announce](https://lists.chalmers.se/pipermail/types-announce/) |
+| Lambda the Ultimate — Gradual Typing | Community | — | [LtU](http://lambda-the-ultimate.org/) |
 
 ---
 

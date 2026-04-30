@@ -62,6 +62,44 @@ function assertInvariant(cond: boolean, msg: string) {
 }
 ```
 
+### 霍尔逻辑：数组二分查找正确性
+
+```typescript
+// hoare-binary-search.ts — 二分查找的霍尔三元组验证
+/**
+ * 前置条件: arr 已按升序排列，且包含可比较元素
+ * 后置条件: 若返回值 >= 0，则 arr[返回值] === target
+ *           若返回值 === -1，则 target 不在 arr 中
+ * 循环不变式: 若 target 在 arr 中，则 target 在 arr[lo..hi) 范围内
+ */
+function binarySearch(arr: number[], target: number): number {
+  let lo = 0;
+  let hi = arr.length;
+
+  // 不变式: target ∈ arr → target ∈ arr[lo..hi)
+  while (lo < hi) {
+    const mid = Math.floor(lo + (hi - lo) / 2);
+    if (arr[mid] === target) return mid;
+    if (arr[mid] < target) {
+      lo = mid + 1; // target 在右半部
+    } else {
+      hi = mid;     // target 在左半部
+    }
+  }
+
+  // 终止: lo === hi，target 不在 arr[lo..hi) 中
+  return -1;
+}
+
+// 运行时断言验证
+function testBinarySearch() {
+  const arr = [1, 3, 5, 7, 9, 11];
+  assertInvariant(binarySearch(arr, 5) === 2, 'finds existing element');
+  assertInvariant(binarySearch(arr, 4) === -1, 'returns -1 for missing');
+  assertInvariant(binarySearch([], 1) === -1, 'handles empty array');
+}
+```
+
 ### 基于属性的测试：fast-check
 
 ```typescript
@@ -95,6 +133,21 @@ const userArbitrary = fc.record({
   id: fc.integer({ min: 1 }),
   email: fc.string({ unit: 'grapheme-ascii', minLength: 3 }).map((s) => `${s}@example.com`),
 });
+
+// 性质 4: 数学性质——加法交换律
+fc.assert(
+  fc.property(fc.integer(), fc.integer(), (a, b) => a + b === b + a)
+);
+
+// 性质 5: 函数性质——filter 的幂等性
+fc.assert(
+  fc.property(fc.array(fc.integer()), (arr) => {
+    const isPositive = (x: number) => x > 0;
+    const once = arr.filter(isPositive);
+    const twice = once.filter(isPositive);
+    return JSON.stringify(once) === JSON.stringify(twice);
+  })
+);
 ```
 
 ### 有界模型检验：状态机验证
@@ -171,6 +224,81 @@ function head<T>(arr: NonEmptyArray<T>): T {
 }
 ```
 
+### 纯函数与引用透明性
+
+```typescript
+// purity.ts — 形式化验证的基础：纯函数
+
+// 引用透明：相同输入始终产生相同输出，无副作用
+function pureAdd(a: number, b: number): number {
+  return a + b;
+}
+
+// 非引用透明：依赖外部状态
+let counter = 0;
+function impureAdd(a: number, b: number): number {
+  counter++; // 副作用
+  return a + b + counter;
+}
+
+// 不可变数据结构：保证引用透明
+function immutableUpdate<T>(arr: readonly T[], index: number, value: T): readonly T[] {
+  return arr.map((item, i) => (i === index ? value : item));
+}
+
+const original = [1, 2, 3] as const;
+const updated = immutableUpdate(original, 1, 99);
+console.log(original); // [1, 2, 3] — 未改变
+console.log(updated);  // [1, 99, 3]
+
+// 等式推理：pureAdd(1, 2) 可安全替换为 3，不影响程序语义
+// 形式化验证依赖此性质进行代数化简
+```
+
+### 轻量级验证：契约式设计
+
+```typescript
+// contracts.ts — 运行时契约（Design by Contract）
+
+class Contract {
+  static requires(cond: boolean, msg: string) {
+    if (!cond) throw new Error(`Precondition failed: ${msg}`);
+  }
+  static ensures<T>(result: T, cond: (r: T) => boolean, msg: string): T {
+    if (!cond(result)) throw new Error(`Postcondition failed: ${msg}`);
+    return result;
+  }
+  static invariant<T>(obj: T, cond: (o: T) => boolean, msg: string) {
+    if (!cond(obj)) throw new Error(`Invariant violated: ${msg}`);
+  }
+}
+
+class BankAccount {
+  private balance = 0;
+
+  deposit(amount: number) {
+    Contract.requires(amount > 0, 'amount must be positive');
+    this.balance += amount;
+    Contract.invariant(this, (a) => a.balance >= 0, 'balance >= 0');
+  }
+
+  withdraw(amount: number) {
+    Contract.requires(amount > 0, 'amount must be positive');
+    Contract.requires(amount <= this.balance, 'insufficient funds');
+    this.balance -= amount;
+    Contract.invariant(this, (a) => a.balance >= 0, 'balance >= 0');
+  }
+
+  getBalance(): number {
+    return Contract.ensures(
+      this.balance,
+      (b) => b >= 0,
+      'balance must be non-negative'
+    );
+  }
+}
+```
+
 ## 权威参考链接
 
 | 资源 | 类型 | 链接 |
@@ -185,6 +313,16 @@ function head<T>(arr: NonEmptyArray<T>): T {
 | seL4 | 项目 | [sel4.systems](https://sel4.systems) — 经形式化验证的操作系统内核 |
 | Spin Model Checker | 工具 | [spinroot.com](https://spinroot.com) — 经典模型检验工具 |
 | NASA JPL 编码规范 | 标准 | [lars-lab.jpl.nasa.gov/JPL_Coding_Standard_C.pdf](https://lars-lab.jpl.nasa.gov/JPL_Coding_Standard_C.pdf) — 高可靠软件规范 |
+| Dafny | 工具 | [github.com/dafny-lang/dafny](https://github.com/dafny-lang/dafny) — Microsoft 程序验证语言 |
+| Why3 | 工具 | [why3.lri.fr](https://why3.lri.fr/) — 程序验证平台 |
+| Frama-C | 工具 | [frama-c.com](https://frama-c.com/) — C 程序分析框架 |
+| CBMC | 工具 | [github.com/diffblue/cbmc](https://github.com/diffblue/cbmc) — C 有界模型检验器 |
+| K Framework | 工具 | [runtimeverification.com/blog/k-framework](https://runtimeverification.com/blog/k-framework/) — 语义框架 |
+| Alloy Analyzer | 工具 | [alloytools.org](https://alloytools.org/) — 轻量级形式化建模 |
+| Property-Based Testing (QuickCheck) | 论文 | [Koen Claessen, John Hughes](https://dl.acm.org/doi/10.1145/351240.351266) — QuickCheck 原始论文 |
+| Design by Contract (Eiffel) | 百科 | [en.wikipedia.org/wiki/Design_by_contract](https://en.wikipedia.org/wiki/Design_by_contract) |
+| TypeScript Functional Programming | 指南 | [gcanti.github.io/fp-ts/](https://gcanti.github.io/fp-ts/) — fp-ts 函数式编程库 |
+| JSCheck (Douglas Crockford) | 工具 | [github.com/douglascrockford/JSCheck](https://github.com/douglascrockford/JSCheck) — JS 属性测试 |
 
 ## 相关索引
 

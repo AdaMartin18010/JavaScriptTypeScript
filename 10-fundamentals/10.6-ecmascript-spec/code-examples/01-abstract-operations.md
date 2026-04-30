@@ -79,6 +79,72 @@ flowchart TD
     I -->|否| J[抛出 TypeError]
 ```
 
+**代码示例：ToPrimitive 的行为验证**
+
+```javascript
+const obj = {
+  valueOf() { return 42; },
+  toString() { return "hello"; }
+};
+
+console.log(obj + 1);      // 43 (hint: number → valueOf)
+console.log(`${obj}`);     // "hello" (hint: string → toString)
+```
+
+**代码示例：`Symbol.toPrimitive` 的优先权**
+
+```javascript
+const obj2 = {
+  [Symbol.toPrimitive](hint) {
+    if (hint === 'number') return 99;
+    if (hint === 'string') return 'str';
+    return 'default';
+  },
+  valueOf() { return 1; },
+  toString() { return '2'; }
+};
+
+console.log(obj2 + 1);   // "default1" (Symbol.toPrimitive 优先于 valueOf)
+console.log(String(obj2)); // "str" (Symbol.toPrimitive 优先于 toString)
+console.log(Number(obj2)); // 99
+```
+
+### 4.2 ToBoolean 真值表
+
+| 输入类型 | 结果 | 代码示例 |
+|----------|------|----------|
+| `undefined` | `false` | `Boolean(undefined) // false` |
+| `null` | `false` | `Boolean(null) // false` |
+| `Boolean` | 原值 | `Boolean(true) // true` |
+| `Number` | `+0`, `-0`, `NaN` → `false` | `Boolean(0) // false`, `Boolean(1) // true` |
+| `String` | 空串 → `false` | `Boolean('') // false`, `Boolean('a') // true` |
+| `Symbol` | `true` | `Boolean(Symbol()) // true` |
+| `BigInt` | `0n` → `false` | `Boolean(0n) // false`, `Boolean(1n) // true` |
+| `Object` | `true` | `Boolean({}) // true` |
+
+### 4.3 ToNumber 转换规则
+
+```javascript
+// 字符串转数字
+Number('123');     // 123
+Number('12.3');    // 12.3
+Number('');        // 0
+Number('  ');      // 0
+Number('123abc');  // NaN
+Number('0x10');    // 16 (十六进制)
+
+// 对象转数字（触发 ToPrimitive hint: number）
+Number({ valueOf: () => 42 }); // 42
+Number({ toString: () => '99' }); // 99
+
+// 特殊值
+Number(undefined); // NaN
+Number(null);      // 0
+Number(true);      // 1
+Number(false);     // 0
+Number(Symbol());  // TypeError
+```
+
 ---
 
 ## 5. 论证与分析 (Argumentation & Analysis)
@@ -113,6 +179,8 @@ console.log(`${obj}`);     // "hello" (hint: string → toString)
 
 - **ECMA-262 §7** — Abstract Operations
 - **MDN: Type Coercion** — <https://developer.mozilla.org/en-US/docs/Glossary/Type_coercion>
+- **MDN: Equality comparisons and sameness** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness>
+- **V8 Blog: JavaScript type coercion explained** — <https://v8.dev/blog/javascript-type-coercion>
 
 ---
 
@@ -206,6 +274,20 @@ set.add(-0)
 console.log(set.size)      // 1 ✅ SameValueZero 不区分正负零
 ```
 
+**代码示例：`Map` 键的比较使用 SameValueZero**
+
+```javascript
+const map = new Map();
+map.set(NaN, 'first');
+map.set(NaN, 'second'); // SameValueZero 认为 NaN === NaN，覆盖前值
+console.log(map.get(NaN)); // "second"
+
+map.set(+0, 'positive zero');
+map.set(-0, 'negative zero'); // SameValueZero 认为 +0 === -0，覆盖前值
+console.log(map.get(-0)); // "negative zero"
+console.log(map.get(+0)); // "negative zero"
+```
+
 ### 补充 2：RequireObjectCoercible
 
 `RequireObjectCoercible(argument)` 是许多字符串和对象方法的隐式前置检查：
@@ -217,6 +299,18 @@ console.log(set.size)      // 1 ✅ SameValueZero 不区分正负零
 | 其他 | 返回原值 |
 
 这也是 `"hello".trim()` 能工作而 `null.trim()` 抛错的原因。
+
+**代码示例：RequireObjectCoercible 在方法中的隐式调用**
+
+```javascript
+// 以下方法内部均调用 RequireObjectCoercible(this)
+null.toString();        // TypeError: Cannot read properties of null
+undefined.trim();       // TypeError: Cannot read properties of undefined
+
+// 但 null 和 undefined 可以被 Object 方法接受
+Object.keys(null);      // TypeError
+Object(undefined);      // 返回 {}
+```
 
 ### 补充 3：抽象操作调用链完整示例
 

@@ -177,6 +177,157 @@ jobs:
 }
 ```
 
+### ESLint 9 Flat Config 完整生产配置
+
+```javascript
+// eslint.config.js — 生产级 TypeScript + React 配置
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import reactPlugin from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
+import importPlugin from 'eslint-plugin-import';
+import unicorn from 'eslint-plugin-unicorn';
+
+export default tseslint.config(
+  js.configs.recommended,
+  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  reactPlugin.configs.flat.recommended,
+  reactHooks.configs['recommended-latest'],
+  jsxA11y.flatConfigs.recommended,
+  importPlugin.flatConfigs.recommended,
+  unicorn.configs.recommended,
+  {
+    files: ['**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'warn',
+      '@typescript-eslint/prefer-nullish-coalescing': 'error',
+      'react/react-in-jsx-scope': 'off', // React 17+ JSX Transform
+      'react/jsx-key': 'error',
+      'import/no-unresolved': 'off', // Let tsc handle module resolution
+      'unicorn/prefer-node-protocol': 'error',
+      'unicorn/no-array-for-each': 'warn',
+    },
+    settings: {
+      react: { version: 'detect' },
+    },
+  },
+  {
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'coverage/**',
+      '*.config.js',
+      '.next/**',
+    ],
+  }
+);
+```
+
+### Biome 完整项目配置
+
+```json
+// biome.json
+{
+  "$schema": "https://biomejs.dev/schemas/2.0.0/schema.json",
+  "organizeImports": {
+    "enabled": true
+  },
+  "files": {
+    "ignore": ["dist", "node_modules", "coverage", ".next"]
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "attributePosition": "auto"
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error"
+      },
+      "suspicious": {
+        "noConsoleLog": "warn",
+        "noExplicitAny": "error"
+      },
+      "style": {
+        "useTemplate": "error",
+        "useConst": "error"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "es5",
+      "semicolons": "always"
+    }
+  }
+}
+```
+
+```bash
+# 初始化并运行
+npx @biomejs/biome init
+npx @biomejs/biome check .
+npx @biomejs/biome check --write .   # 自动修复
+```
+
+### Pre-commit 钩子配置（lefthook）
+
+```yaml
+# lefthook.yml
+pre-commit:
+  parallel: true
+  commands:
+    biome-check:
+      glob: "*.{js,ts,jsx,tsx}"
+      run: pnpm biome check --write --staged --no-errors-on-unmatched {staged_files}
+      stage_fixed: true
+    type-check:
+      run: pnpm tsc --noEmit
+    test:
+      run: pnpm test --run
+```
+
+```bash
+# 安装 lefthook
+pnpm add -D lefthook
+npx lefthook install
+```
+
+### TypeScript 严格模式检查脚本
+
+```json
+// package.json
+{
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "typecheck": "tsc --noEmit --pretty",
+    "quality": "npm run typecheck && npm run lint && npm run format:check"
+  }
+}
+```
+
 ---
 
 ## 最佳实践
@@ -193,10 +344,14 @@ jobs:
 
 - [ESLint 9 Migration Guide](https://eslint.org/docs/latest/use/configure/migration-guide)
 - [ESLint Flat Config Documentation](https://eslint.org/docs/latest/use/configure/configuration-files)
+- [ESLint Rules Reference](https://eslint.org/docs/latest/rules/)
+- [TypeScript ESLint Documentation](https://typescript-eslint.io/)
 - [Biome Documentation](https://biomejs.dev/)
 - [Biome Migrate from ESLint / Prettier](https://biomejs.dev/guides/migrate-eslint-prettier/)
+- [Biome Configuration Reference](https://biomejs.dev/reference/configuration/)
 - [Oxlint GitHub](https://github.com/oxc-project/oxc)
 - [Oxlint Official Documentation](https://oxc.rs/docs/guide/usage/linter.html)
+- [Oxlint Rules](https://oxc.rs/docs/guide/usage/linter/rules.html)
 - [dprint Documentation](https://dprint.dev/)
 - [dprint Plugin Registry](https://dprint.dev/plugins/)
 - [Prettier Configuration Options](https://prettier.io/docs/en/options.html)
@@ -204,6 +359,13 @@ jobs:
 - [Biome vs ESLint vs Oxlint (2026)](https://trybuildpilot.com/424-biome-vs-eslint-vs-oxlint-2026)
 - [VoidZero: Introducing Oxlint](https://voidzero.dev/posts/introducing-oxlint)
 - [Rust-Powered JavaScript Tooling Landscape](https://rust.godbolt.org/)
+- [Lefthook Documentation](https://evilmartians.github.io/lefthook/)
+- [Husky Documentation](https://typicode.github.io/husky/)
+- [ESLint Plugin Unicorn](https://github.com/sindresorhus/eslint-plugin-unicorn)
+- [JSX A11y Plugin](https://github.com/jsx-eslint/eslint-plugin-jsx-a11y)
+- [ESLint Plugin Import](https://github.com/import-js/eslint-plugin-import)
+- [Conventional Commits](https://www.conventionalcommits.org/)
+- [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html)
 
 ---
 

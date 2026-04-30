@@ -202,6 +202,131 @@ vm.addTodo('Learn MVVM');
 vm.toggle(vm.state.todos[0].id);
 ```
 
+#### React 中的 MVC 变体（Container/Presentational 组件）
+
+```typescript
+// react-mvc-variant.tsx
+// Model: 纯逻辑 + 状态管理（可替换为 Redux/Zustand）
+class TaskModel {
+  private tasks: Task[] = [];
+  private listeners: Set<(tasks: Task[]) => void> = new Set();
+
+  add(task: Omit<Task, 'id'>) {
+    this.tasks = [...this.tasks, { ...task, id: crypto.randomUUID() }];
+    this.emit();
+  }
+
+  remove(id: string) {
+    this.tasks = this.tasks.filter((t) => t.id !== id);
+    this.emit();
+  }
+
+  subscribe(fn: (tasks: Task[]) => void) {
+    this.listeners.add(fn);
+    return () => this.listeners.delete(fn);
+  }
+
+  private emit() {
+    this.listeners.forEach((fn) => fn([...this.tasks]));
+  }
+}
+
+// View (Presentational): 纯渲染，无业务逻辑
+function TaskListView({ tasks, onRemove }: { tasks: Task[]; onRemove: (id: string) => void }) {
+  return (
+    <ul>
+      {tasks.map((t) => (
+        <li key={t.id}>
+          {t.title}
+          <button onClick={() => onRemove(t.id)}>Remove</button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// Controller (Container): 连接 Model 与 View
+function TaskContainer() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const modelRef = useRef(new TaskModel());
+
+  useEffect(() => {
+    return modelRef.current.subscribe(setTasks);
+  }, []);
+
+  return (
+    <TaskListView
+      tasks={tasks}
+      onRemove={(id) => modelRef.current.remove(id)}
+    />
+  );
+}
+```
+
+#### 事件总线解耦 MVC 通信
+
+```typescript
+// event-bus-mvc.ts
+// 使用发布-订阅解耦 Model ↔ View 的直接依赖
+
+type EventMap = {
+  'todo:added': { id: number; text: string };
+  'todo:toggled': { id: number; done: boolean };
+  'todo:removed': { id: number };
+};
+
+class EventBus<E extends Record<string, any>> {
+  private listeners: { [K in keyof E]?: Set<(payload: E[K]) => void> } = {};
+
+  on<K extends keyof E>(event: K, handler: (payload: E[K]) => void) {
+    if (!this.listeners[event]) this.listeners[event] = new Set();
+    this.listeners[event]!.add(handler);
+    return () => this.listeners[event]!.delete(handler);
+  }
+
+  emit<K extends keyof E>(event: K, payload: E[K]) {
+    this.listeners[event]?.forEach((fn) => fn(payload));
+  }
+}
+
+const bus = new EventBus<EventMap>();
+
+// Model 通过事件总线通知变更
+class EventDrivenModel {
+  private todos: Map<number, Todo> = new Map();
+
+  add(text: string) {
+    const id = Date.now();
+    this.todos.set(id, { id, text, done: false });
+    bus.emit('todo:added', { id, text });
+  }
+
+  toggle(id: number) {
+    const todo = this.todos.get(id);
+    if (todo) {
+      todo.done = !todo.done;
+      bus.emit('todo:toggled', { id, done: todo.done });
+    }
+  }
+}
+
+// View 订阅事件总线
+class EventDrivenView {
+  constructor(private container: HTMLElement) {
+    bus.on('todo:added', ({ id, text }) => {
+      const li = document.createElement('li');
+      li.dataset.id = String(id);
+      li.textContent = text;
+      this.container.appendChild(li);
+    });
+    bus.on('todo:toggled', ({ id, done }) => {
+      const li = this.container.querySelector(`[data-id="${id}"]`);
+      if (li) li.classList.toggle('done', done);
+    });
+  }
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -223,6 +348,10 @@ vm.toggle(vm.state.todos[0].id);
 - [Martin Fowler — Presentation Domain Data Layering](https://martinfowler.com/bliki/PresentationDomainDataLayering.html)
 - [Google — Android Architecture Components (MVVM Guide)](https://developer.android.com/topic/libraries/architecture)
 - [Angular — Understanding MVC in Angular](https://angular.io/guide/architecture)
+- [React — Thinking in React](https://react.dev/learn/thinking-in-react) — React 官方组件设计哲学
+- [Redux — Three Principles](https://redux.js.org/understanding/thinking-in-redux/three-principles) — 单向数据流与 MVC 的关系
+- [Refactoring Guru — MVC](https://refactoring.guru/design-patterns/mvc) — 可视化设计模式指南
+- [Patterns of Enterprise Application Architecture — Martin Fowler](https://martinfowler.com/eaaCatalog/) — 企业应用架构模式
 
 ---
 

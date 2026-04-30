@@ -150,6 +150,50 @@ const anim = element.animate(
 );
 ```
 
+**代码示例：使用 CSS `contain` 隔离布局影响**
+
+```css
+/* contain: layout 防止子元素变化影响外部布局 */
+.optimized-list {
+  contain: layout;
+  will-change: transform;
+}
+
+/* content-visibility 跳过视口外元素的渲染 */
+.card {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 300px;
+}
+```
+
+```javascript
+// 测量 Layout Thrashing（强制同步布局）
+function measureLayoutThrashing() {
+  const el = document.getElementById('test');
+
+  // ❌ 强制同步布局：读取后立即写入，再读取
+  const h1 = el.offsetHeight; // 读取（触发 Layout）
+  el.style.height = (h1 + 10) + 'px'; // 写入（使 Layout 失效）
+  const h2 = el.offsetHeight; // 再次读取（被迫重新 Layout）
+
+  // ✅ 批量读取，批量写入
+  const height = el.offsetHeight;
+  requestAnimationFrame(() => {
+    el.style.height = (height + 10) + 'px';
+  });
+}
+
+// 使用 PerformanceObserver 监控长任务
+const observer = new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    if (entry.duration > 50) {
+      console.warn('Long task detected:', entry.duration, 'ms');
+    }
+  }
+});
+observer.observe({ entryTypes: ['longtask'] });
+```
+
 ---
 
 ## 场景树：交互场景渲染策略
@@ -185,6 +229,9 @@ const anim = element.animate(
 | **W3C CSS Will Change** | `will-change` 规范定义 | [drafts.csswg.org/css-will-change](https://drafts.csswg.org/css-will-change) |
 | **Chromium: Compositor Thread Architecture** | 合成线程架构设计文档 | [chromium.googlesource.com/chromium/src/+/main/docs/compositor_thread.md](https://chromium.googlesource.com/chromium/src/+/main/docs/compositor_thread.md) |
 | **MDN: Controlling composite animation** | Firefox/Gecko 合成动画说明 | [developer.mozilla.org/en-US/docs/Web/Performance/How_browsers_work](https://developer.mozilla.org/en-US/docs/Web/Performance/How_browsers_work) |
+| **Web.dev: Avoid Large, Complex Layouts** | 布局优化最佳实践 | [web.dev/avoid-large-complex-layouts-and-layout-thrashing](https://web.dev/avoid-large-complex-layouts-and-layout-thrashing) |
+| **W3C CSS Containment** | `contain` 属性规范 | [drafts.csswg.org/css-contain](https://drafts.csswg.org/css-contain) |
+| **High Performance Animations** | Paul Irish 经典性能文章 | [web.dev/animations-guide](https://web.dev/animations-guide) |
 
 ---
 

@@ -126,6 +126,92 @@ const untrustedRenderer = spawn('chrome', [
 ]);
 ```
 
+### Node.js Permission Model (Experimental Security)
+
+```javascript
+// Node.js v20+ experimental permission model
+// Launch with: node --experimental-permission --allow-fs-read=* --allow-fs-write=/tmp app.js
+
+const fs = require('fs');
+
+// Without --allow-fs-read, this throws ERR_ACCESS_DENIED
+try {
+  const data = fs.readFileSync('/etc/passwd', 'utf8');
+  console.log(data);
+} catch (err) {
+  if (err.code === 'ERR_ACCESS_DENIED') {
+    console.error('Permission denied: file system access blocked');
+  }
+}
+
+// Programmatic permission check
+const { permission } = require('node:process');
+if (permission.has('fs.read', '/etc/passwd')) {
+  console.log('Read access granted');
+} else {
+  console.log('Read access denied — running in restricted mode');
+}
+```
+
+### Content Security Policy (CSP) for JIT Mitigation
+
+```javascript
+// Express.js: Strict CSP to block inline script execution
+const express = require('express');
+const helmet = require('helmet');
+
+const app = express();
+
+app.use(helmet.contentSecurityPolicy({
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", "'nonce-abc123'"], // No 'unsafe-inline', no 'unsafe-eval'
+    styleSrc: ["'self'", "'nonce-abc123'"],
+    objectSrc: ["'none'"],                  // Block Flash, PDF plugins
+    baseUri: ["'self'"],
+    frameAncestors: ["'none'"],             // Clickjacking protection
+    upgradeInsecureRequests: [],
+  },
+}));
+
+// The absence of 'unsafe-eval' prevents dynamic code generation,
+// which also reduces JIT attack surface for XSS → RCE chains.
+```
+
+### Safe JSON Parsing with Prototype Pollution Defense
+
+```javascript
+// Prototype pollution is a common precursor to JIT type confusion exploits
+
+// ❌ Vulnerable: Object.prototype can be poisoned
+function unsafeMerge(target, source) {
+  for (const key in source) {
+    target[key] = source[key];  // May write to __proto__
+  }
+}
+
+// ✅ Safe: Use Object.create(null) and explicit key validation
+function safeMerge(target, source) {
+  const safeTarget = Object.create(null);
+  Object.assign(safeTarget, target);
+
+  for (const key of Object.keys(source)) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      throw new Error('Prototype pollution attempt blocked');
+    }
+    if (typeof source[key] === 'object' && source[key] !== null) {
+      safeTarget[key] = safeMerge(safeTarget[key] || Object.create(null), source[key]);
+    } else {
+      safeTarget[key] = source[key];
+    }
+  }
+  return safeTarget;
+}
+
+// Even safer: Use structuredClone (deep copy without prototype chain)
+const cloned = structuredClone(untrustedData);
+```
+
 ## Detailed Explanation
 
 The JIT Security Tension Theorem states that V8's performance derives from a narrow balancing act: the engine must aggressively speculate about types to generate optimized machine code, yet every speculation introduces a potential deoptimization path that can be weaponized by attackers. Formally, for any runtime R with JIT capability, the attack surface A_JIT(R) is strictly greater than the attack surface of an equivalent AOT-compiled runtime A_AOT(R). This inequality is not a temporary state awaiting better engineering—it is a logical consequence of the JIT compilation model itself.
@@ -143,6 +229,15 @@ The 2026 vulnerability landscape confirms this analysis with disturbing regulari
 - [Project Zero: JIT Compilation and Security](https://googleprojectzero.blogspot.com/) — Google's Project Zero research blog, frequently publishing V8 JIT vulnerability analyses.
 - [WASM Spec: Validation Algorithm](https://webassembly.github.io/spec/core/appendix/algorithm.html) — Formal validation algorithm that guarantees memory safety at load time.
 - [MDN: WebAssembly.Memory](https://developer.mozilla.org/en-US/docs/WebAssembly/JavaScript_interface/Memory) — API documentation for constrained WASM memory.
+- [Node.js Permission Model](https://nodejs.org/api/permissions.html) — Official docs for the experimental `--experimental-permission` flag.
+- [OWASP: Prototype Pollution Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Prototype_Pollution_Prevention_Cheat_Sheet.html) — Practical defenses against prototype pollution.
+- [Helmet.js CSP Documentation](https://helmetjs.github.io/docs/content-security-policy/) — Configuring Content Security Policy in Node.js.
+- [V8 Blog: Pointer Compression](https://v8.dev/blog/pointer-compression) — How V8 reduces memory and limits pointer forging.
+- [Chromium: Control-Flow Integrity](https://www.chromium.org/Home/chromium-security/memory-safety/) — Memory safety roadmap including CFI.
+- [CERT C Coding Standard](https://wiki.sei.cmu.edu/confluence/display/c/SEI+CERT+C+Coding+Standard) — While C-focused, the principles inform secure JIT-adjacent native code.
+- [Rust Language Security](https://www.rust-lang.org/policies/security) — Rust security policy and memory-safety guarantees.
+- [Spectre & Meltdown: JavaScript Exploits](https://leaky.page/) — Live demonstration of Spectre-style attacks from JavaScript.
+- [WebAssembly JS API Spec](https://webassembly.github.io/spec/js-api/) — Normative spec for WASM-JS interop security boundaries.
 
 ---
 

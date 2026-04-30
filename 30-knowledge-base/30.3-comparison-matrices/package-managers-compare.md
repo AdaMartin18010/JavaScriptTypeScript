@@ -320,6 +320,93 @@ serve((_req) => new Response('Hello Deno!'), { port: 8000 })
 | **内置 TS 执行** | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | **Lock 文件可读性** | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⭐ (二进制) | ⭐⭐⭐ |
 
+## 代码示例：Corepack 统一包管理器版本
+
+```bash
+# 启用 Corepack（Node.js 18+ 内置）
+corepack enable
+
+# 准备特定版本
+corepack prepare pnpm@10.0.0 --activate
+corepack prepare yarn@4.6.0 --activate
+```
+
+```json
+// 在 package.json 中声明包管理器
+{
+  "packageManager": "pnpm@10.0.0+sha256.abcdef..."
+}
+```
+
+```bash
+# CI 中使用 Corepack
+# .github/workflows/ci.yml
+- uses: actions/checkout@v4
+- run: corepack enable
+- run: pnpm install --frozen-lockfile
+```
+
+## 代码示例：pnpm 高级 Workspace 过滤
+
+```bash
+# 仅构建被修改的包及其依赖
+pnpm --filter "...[HEAD~1]" build
+
+# 并行运行所有包的测试
+pnpm -r --parallel run test
+
+# 在特定包及其依赖图中执行命令
+pnpm --filter @myapp/web... build
+
+# Workspace 依赖图可视化
+pnpm nx graph
+```
+
+## 代码示例：Bun Workspace 配置
+
+```json
+// bun.json (或 package.json 中的 bun 字段)
+{
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "build": "bun run --filter '*' build"
+  }
+}
+```
+
+```toml
+# bun.toml
+[install]
+exact = true
+
+[install.cache]
+dir = ".bun-cache"
+```
+
+## 代码示例：Yarn Berry PnP 严格模式配置
+
+```yaml
+# .yarnrc.yml
+nodeLinker: pnp
+pnpMode: strict
+
+packageExtensions:
+  "eslint-plugin-react@*":
+    peerDependencies:
+      eslint: "*"
+
+plugins:
+  - path: .yarn/plugins/@yarnpkg/plugin-typescript.cjs
+    spec: "@yarnpkg/plugin-typescript"
+```
+
+```bash
+# Zero-install：将缓存提交到 Git
+yarn install
+git add .yarn/cache .pnp.cjs
+```
+
 ## 选型建议
 
 | 场景 | 推荐工具 | 理由 |
@@ -370,3 +457,15 @@ bun run <script>
 - **Yarn v1 → Yarn Berry**: 非简单升级，需评估 PnP 兼容性
 - **任意 → Deno**: 需迁移到 Deno 的模块系统或使用 `npm:` 前缀
 - **Monorepo 工具链**: pnpm + Turborepo 是当前社区最活跃的组合
+
+## 参考链接
+
+- [npm Documentation](https://docs.npmjs.com/)
+- [pnpm Workspace Documentation](https://pnpm.io/workspaces)
+- [Yarn Berry Documentation](https://yarnpkg.com/getting-started)
+- [Bun Package Manager](https://bun.sh/docs/cli/install)
+- [Deno npm Compatibility](https://docs.deno.com/runtime/fundamentals/node/)
+- [Corepack Documentation](https://nodejs.org/api/corepack.html)
+- [Node.js Package Manager Spec](https://github.com/nodejs/package-maintenance/blob/main/docs/PACKAGE-SUPPORT.md)
+- [JSR — JavaScript Registry](https://jsr.io/)
+- [OpenJS Foundation — Package Management](https://openjsf.org/)

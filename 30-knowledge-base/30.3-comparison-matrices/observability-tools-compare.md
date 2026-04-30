@@ -305,6 +305,114 @@ providers:
 }
 ```
 
+### PromQL 常用查询示例
+
+```promql
+# 每秒请求率（按状态码分组）
+rate(http_requests_total[5m])
+
+# P95 延迟
+histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+
+# 错误率 > 1% 时触发
+(
+  sum(rate(http_requests_total{status=~"5.."}[5m]))
+  /
+  sum(rate(http_requests_total[5m]))
+) > 0.01
+
+# 内存使用百分比
+(
+  process_resident_memory_bytes{job="nodejs-app"}
+  /
+  container_spec_memory_limit_bytes{job="nodejs-app"}
+) * 100
+
+# CPU 使用率（容器）
+rate(container_cpu_usage_seconds_total{pod=~"my-app-.*"}[5m])
+```
+
+### OpenTelemetry Collector 配置
+
+```yaml
+# otel-collector-config.yml
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+  resource:
+    attributes:
+      - key: environment
+        value: production
+        action: upsert
+
+exporters:
+  prometheusremotewrite:
+    endpoint: http://prometheus:9090/api/v1/write
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [otlp/tempo]
+    metrics:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [prometheusremotewrite]
+    logs:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [loki]
+```
+
+### Alertmanager 告警规则
+
+```yaml
+# alert-rules.yml
+groups:
+  - name: nodejs-alerts
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total[5m]))
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on {{ $labels.service }}"
+          description: "Error rate is {{ $value | humanizePercentage }}"
+
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.99,
+            rate(http_request_duration_seconds_bucket[5m])
+          ) > 0.5
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High P99 latency on {{ $labels.service }}"
+```
+
 ---
 
 ## 选型建议
@@ -325,19 +433,27 @@ providers:
 |------|------|------|
 | OpenTelemetry Docs | <https://opentelemetry.io/docs/> | 官方文档与规范 |
 | OpenTelemetry Specification | <https://opentelemetry.io/docs/specs/otel/> | 技术规范 |
+| OpenTelemetry JS API | <https://opentelemetry.io/docs/languages/js/> | Node.js / 浏览器 SDK |
 | Grafana Docs | <https://grafana.com/docs/> | 官方文档 |
 | Prometheus Docs | <https://prometheus.io/docs/> | 时序数据库文档 |
+| PromQL Cheat Sheet | <https://promlabs.com/promql-cheat-sheet/> | PromQL 速查 |
 | Loki Docs | <https://grafana.com/docs/loki/latest/> | 日志聚合系统 |
 | Tempo Docs | <https://grafana.com/docs/tempo/latest/> | 分布式追踪后端 |
 | Datadog Docs | <https://docs.datadoghq.com/> | 官方文档 |
 | New Relic Docs | <https://docs.newrelic.com/> | 官方文档 |
 | Honeycomb Docs | <https://docs.honeycomb.io/> | 官方文档 |
 | Sentry Docs | <https://docs.sentry.io/> | 错误追踪文档 |
+| Sentry OpenTelemetry | <https://docs.sentry.io/platforms/javascript/guides/node/otel/> | Sentry + OTel 集成 |
 | Google SRE Book | <https://sre.google/sre-book/table-of-contents/> | 站点可靠性工程 |
 | Distributed Systems Observability | <https://www.oreilly.com/library/view/distributed-systems-observability/9781492033431/> | O'Reilly 可观测性专著 |
 | CNCF Observability Landscape | <https://landscape.cncf.io/guide#observability-and-analysis> | 云原生可观测性全景 |
 | Pino Docs | <https://getpino.io/#/docs/api> | 高性能 Node.js 日志库 |
 | OpenTelemetry Collector | <https://opentelemetry.io/docs/collector/> | 采集器配置指南 |
+| Jaeger Documentation | <https://www.jaegertracing.io/docs/> | 开源分布式追踪 |
+| Alertmanager Documentation | <https://prometheus.io/docs/alerting/latest/alertmanager/> | 告警管理 |
+| RED Method (Request-Error-Duration) | <https://grafana.com/blog/2018/08/02/the-red-method-how-to-instrument-your-services/> | 服务监控方法论 |
+| USE Method (Utilization-Saturation-Errors) | <http://www.brendangregg.com/usemethod.html> | 资源监控方法论 |
+| OpenTelemetry Semantic Conventions | <https://opentelemetry.io/docs/specs/semconv/> | 标准化属性命名 |
 
 ---
 

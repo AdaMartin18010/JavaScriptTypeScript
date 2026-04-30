@@ -176,7 +176,113 @@ packageExtensions:
 }
 ```
 
-### 7. 迁移路径
+### 7. npm Workspaces 配置示例
+
+```json
+// package.json (npm workspace root)
+{
+  "name": "npm-monorepo",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm test --workspaces --if-present"
+  }
+}
+```
+
+```bash
+# 在特定 workspace 中安装依赖
+npm install lodash -w @myorg/shared-utils
+
+# 为所有 workspace 安装公共 devDependency
+npm install typescript -D -ws
+
+# 运行指定 workspace 的脚本
+npm run dev -w @myorg/web-app
+```
+
+### 8. Corepack 与引擎约束
+
+```json
+// package.json — 强制包管理器版本
+{
+  "packageManager": "pnpm@10.2.0+sha256.a12f2...",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  }
+}
+```
+
+```bash
+# 启用 Corepack（Node.js 22+ 默认已启用）
+corepack enable
+corepack prepare pnpm@10.2.0 --activate
+
+# 验证当前使用的包管理器
+corepack pnpm -v
+```
+
+### 9. 依赖覆盖与应急修复
+
+```json
+// package.json — npm overrides (npm v8.3+, Node.js 16+)
+{
+  "overrides": {
+    "lodash": "^4.17.21",
+    "vite": {
+      "esbuild": "^0.25.0"
+    }
+  }
+}
+```
+
+```yaml
+# pnpm — pnpm.overrides in package.json
+{
+  "pnpm": {
+    "overrides": {
+      "express@<4.19.0": "4.19.0"
+    }
+  }
+}
+```
+
+```yaml
+# Yarn — resolutions in package.json
+{
+  "resolutions": {
+    "**/lodash": "^4.17.21"
+  }
+}
+```
+
+### 10. 自动化安全审计流水线
+
+```yaml
+# .github/workflows/security-audit.yml
+name: Security Audit
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # 每周一早 6 点
+  pull_request:
+    paths:
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+      - run: pnpm audit --audit-level moderate
+      - run: pnpm outdated --compatible
+```
+
+### 11. 迁移路径
 
 | 从 | 到 | 步骤 |
 |----|-----|------|
@@ -203,6 +309,14 @@ packageExtensions:
 - [State of JS 2024 — Other Tools](https://2024.stateofjs.com/en-US/other-tools/)
 - [Socket.dev — Supply Chain Security](https://socket.dev/)
 - [Snyk — npm Security Best Practices](https://snyk.io/blog/npm-security-best-practices/)
+- [npm Workspaces Documentation](https://docs.npmjs.com/cli/v10/using-npm/workspaces)
+- [npm package.json overrides](https://docs.npmjs.com/cli/v10/configuring-npm/package-json#overrides)
+- [pnpm Catalogs (Workspace Dependencies)](https://pnpm.io/catalogs)
+- [Yarn Zero-Installs](https://yarnpkg.com/features/caching#zero-installs)
+- [Bun Lockfile Format](https://bun.sh/docs/install/lockfile)
+- [Node.js engines field](https://docs.npmjs.com/cli/v10/configuring-npm/package-json#engines)
+- [OpenJS Foundation: Security Best Practices](https://openjsf.org/security/)
+- [GitHub Dependabot Documentation](https://docs.github.com/en/code-security/dependabot)
 
 ---
 

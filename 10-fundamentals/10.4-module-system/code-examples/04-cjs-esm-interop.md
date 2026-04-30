@@ -91,6 +91,23 @@ const cjs = require("./legacy.cjs");
 - `import.meta.url` 用于确定解析的基准路径（Base URL）；
 - 该机制使得渐进式迁移（Incremental Migration）成为可能——ESM 模块可以逐步替换 CJS 依赖，而无需一次性重构整个代码库。
 
+**代码示例：ESM 中使用 CJS 的 `__dirname` 和 `__filename` 等价物**
+
+```javascript
+// utils.mjs
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
+
+const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// 现在可以像 CJS 一样读取 JSON 文件
+const pkg = require('./package.json');
+console.log(__dirname, pkg.name);
+```
+
 ---
 
 ## 4. CJS → ESM：动态 `import()`
@@ -116,6 +133,24 @@ async function loadEsm() {
 | CJS → ESM | `require("esm")` | 同步 | ❌ 禁止（`ERR_REQUIRE_ESM`） |
 | CJS → ESM | `import("esm")` | 异步 | ✅ 支持 |
 | ESM → CJS | `import cjs from "cjs"` | 同步 | ✅ 支持 |
+
+**代码示例：CJS 中动态导入 ESM 并处理命名导出**
+
+```javascript
+// loader.cjs
+async function loadUtils() {
+  // 动态导入 ESM 模块
+  const { foo, bar, default: defaultExport } = await import('./utils.mjs');
+
+  console.log(foo, bar);
+  console.log(defaultExport);
+}
+
+// 在 CJS 顶层使用立即执行异步函数
+(async () => {
+  await loadUtils();
+})();
+```
 
 ---
 
@@ -145,6 +180,30 @@ graph TD
 - CJS 消费者 `require('pkg')` 修改计数器 → CJS 实例状态变更；
 - ESM 消费者 `import 'pkg'` 读取计数器 → ESM 实例状态未变；
 - 两者观察到不一致的状态，导致逻辑错误。
+
+**代码示例：复现 Dual Package Hazard**
+
+```javascript
+// counter-lib/index.cjs
+let count = 0;
+module.exports = {
+  increment() { return ++count; },
+  getCount() { return count; }
+};
+
+// counter-lib/index.mjs
+let count = 0;
+export const increment = () => ++count;
+export const getCount = () => count;
+
+// consumer.cjs
+const cjsCounter = require('counter-lib');
+console.log(cjsCounter.increment()); // 1
+
+// consumer.mjs
+import * as esmCounter from 'counter-lib';
+console.log(esmCounter.getCount()); // 0 — 状态分裂！
+```
 
 ### 5.3 消除策略
 
@@ -203,6 +262,27 @@ Node.js 按以下条件键顺序匹配（部分）：
 3. `"require"` —— CJS 导入上下文；
 4. `"default"` —— 兜底条件，必须放在最后。
 
+**代码示例：支持子路径导出的完整 `package.json`**
+
+```json
+{
+  "name": "my-lib",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./utils": {
+      "types": "./dist/utils.d.ts",
+      "import": "./dist/utils.mjs",
+      "require": "./dist/utils.cjs"
+    },
+    "./package.json": "./package.json"
+  }
+}
+```
+
 ---
 
 ## 7. `.mjs` / `.cjs` 扩展名与 `"type": "module"`
@@ -256,6 +336,23 @@ import { foo } from "./foo.js";
 import { foo } from "./foo";
 ```
 
+**代码示例：Node.js 库的 `tsconfig.json` 配置**
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "declaration": true,
+    "strict": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"]
+}
+```
+
 **推理链**：若项目最终由 Vite 打包，则 `"bundler"` 更贴近实际行为；若项目发布为 npm 包供 Node.js 直接使用，则 `"nodenext"` 是必要的，否则运行时可能出现路径解析失败。
 
 ---
@@ -285,9 +382,9 @@ import { foo } from "./foo";
 ESMImportCJS(module.exports):
   if module.exports is not an object or is null:
     return { default: module.exports, [Symbol.toStringTag]: 'Module' }
-  
+
   namespace ← CreateSyntheticModule()
-  
+
   if module.exports.__esModule is true:
     for each key in module.exports:
       if key ≠ "__esModule":
@@ -298,11 +395,12 @@ ESMImportCJS(module.exports):
     for each key in module.exports:
       if key ≠ "default":
         namespace[key] ← module.exports[key]
-  
+
   return namespace
 ```
 
 **关键语义**：
+
 - CJS 的 `module.exports` 总是被包装为一个 **Synthetic Module Namespace Object**；
 - 若 `__esModule` 为真，默认导出优先取 `module.exports.default`；
 - 若 `__esModule` 为假，整个 `module.exports` 对象成为 `default` 导出。
@@ -313,11 +411,15 @@ ESMImportCJS(module.exports):
 
 | 来源 | 链接 | 相关章节 |
 |------|------|---------|
-| Node.js ESM Interop | nodejs.org/api/esm.html | Interoperability with CommonJS |
-| Node.js Packages | nodejs.org/api/packages.html | Conditional Exports, Type Field |
-| TypeScript Modules | typescriptlang.org/docs/handbook/modules | Module Resolution |
-| TC39 ESM Spec | tc39.es/ecma262/#sec-modules | Module Semantics |
-| Babel Plugin | babeljs.io/docs/babel-plugin-transform-modules-commonjs | __esModule |
+| Node.js ESM Interop | [nodejs.org/api/esm.html](https://nodejs.org/api/esm.html) | Interoperability with CommonJS |
+| Node.js Packages | [nodejs.org/api/packages.html](https://nodejs.org/api/packages.html) | Conditional Exports, Type Field |
+| TypeScript Modules | [typescriptlang.org/docs/handbook/modules](https://www.typescriptlang.org/docs/handbook/modules) | Module Resolution |
+| TC39 ESM Spec | [tc39.es/ecma262/#sec-modules](https://tc39.es/ecma262/#sec-modules) | Module Semantics |
+| Babel Plugin | [babeljs.io/docs/babel-plugin-transform-modules-commonjs](https://babeljs.io/docs/babel-plugin-transform-modules-commonjs) | __esModule |
+| Vite Library Mode | [vitejs.dev/guide/build.html#library-mode](https://vitejs.dev/guide/build.html#library-mode) | 打包 ESM/CJS 双格式库 |
+| Rollup Output Formats | [rollupjs.org/configuration-options/#output-format](https://rollupjs.org/configuration-options/#output-format) | cjs / es 输出配置 |
+| webpack Module Federation | [webpack.js.org/concepts/module-federation](https://webpack.js.org/concepts/module-federation) | 跨构建运行时模块共享 |
+| Node.js ERR_REQUIRE_ESM | [nodejs.org/api/errors.html#err_require_esm](https://nodejs.org/api/errors.html#err_require_esm) | 错误码说明 |
 
 ---
 

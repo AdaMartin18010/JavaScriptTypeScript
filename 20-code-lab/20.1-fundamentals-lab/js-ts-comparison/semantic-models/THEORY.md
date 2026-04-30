@@ -202,7 +202,77 @@ function area(s: Shape): number {
 }
 ```
 
-### 3.6 常见误区
+### 3.6 `unknown` vs `any`：语义安全鸿沟
+
+```typescript
+// any：关闭类型检查，与 JS 动态语义一致（最不安全）
+function unsafe(x: any) {
+  x.whatever(); // 编译通过，运行时可能爆炸
+}
+
+// unknown：要求显式类型收窄后才能使用（推荐替代 any）
+function safer(x: unknown) {
+  // x.whatever(); // ❌ 编译错误：Object is of type 'unknown'
+  if (typeof x === 'string') {
+    return x.toUpperCase(); // ✅ 窄化后安全
+  }
+  if (Array.isArray(x)) {
+    return x.length; // ✅ 窄化后安全
+  }
+  throw new TypeError('Expected string or array');
+}
+
+// unknown 是 TS 3.0 引入的「类型安全 any」
+// 它强制开发者进行显式检查，体现了静态语义对动态语义的约束
+```
+
+### 3.7 声明合并（Declaration Merging）：TS 独有的静态语义
+
+```typescript
+// interface 可以多次声明并自动合并
+interface User {
+  name: string;
+}
+interface User {
+  age: number;
+}
+
+// 等效于：
+// interface User { name: string; age: number; }
+
+const user: User = { name: 'Alice', age: 30 }; // ✅
+
+// 编译后：所有 interface 信息消失，仅剩对象字面量
+// const user = { name: 'Alice', age: 30 };
+
+// namespace 也可以与函数/类合并
+function greet(name: string): void;
+namespace greet {
+  export const prefix = 'Hello';
+}
+
+console.log(greet.prefix); // 'Hello'
+// 编译后：greet 函数和 greet.prefix 属性都存在
+```
+
+### 3.8 条件类型与分布式条件类型
+
+```typescript
+// 条件类型：TS 静态语义中的类型级编程
+type IsString<T> = T extends string ? true : false;
+
+type A = IsString<'hello'>; // true
+type B = IsString<42>;      // false
+
+// 分布式条件类型：对联合类型的自动分发
+type ToArray<T> = T extends any ? T[] : never;
+type C = ToArray<string | number>; // string[] | number[]
+
+// 编译后：所有类型运算被擦除，不产生任何运行时代码
+// 这体现了「静态语义仅存在于编译期」的核心特性
+```
+
+### 3.9 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -210,15 +280,25 @@ function area(s: Shape): number {
 | 运行时类型与静态类型一致 | TS 类型在编译后被擦除，`typeof x` 反映的是 JS 运行时标签 |
 | `as` 类型断言改变运行时行为 | `as` 仅在编译期生效，运行时值不变 |
 | 接口在运行时可被检测 | 接口完全擦除，`instanceof` 仅适用于类构造函数 |
+| `unknown` 和 `any` 等价 | `unknown` 要求显式窄化，是类型安全的 `any` |
+| 类型守卫在运行时有开销 | 类型守卫的谓词函数在运行时就是普通 JS，无额外开销 |
 
-### 3.7 扩展阅读
+### 3.10 扩展阅读
 
 - [ECMA-262: Execution Contexts](https://tc39.es/ecma262/#sec-execution-contexts)
 - [TypeScript Handbook: Type Erasure](https://www.typescriptlang.org/docs/handbook/2/basic-types.html#erased-types)
 - [TypeScript Handbook: Type Compatibility](https://www.typescriptlang.org/docs/handbook/type-compatibility.html)
 - [TypeScript Design Goals (Non-goals)](https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals)
 - [ECMAScript Spec: Abstract Operations](https://tc39.es/ecma262/#sec-abstract-operations)
-- `20.10-formal-verification/`
+- [TypeScript Handbook: Narrowing](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
+- [TypeScript Handbook: unknown](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#unknown)
+- [TypeScript Handbook: Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html)
+- [TypeScript Handbook: Conditional Types](https://www.typescriptlang.org/docs/handbook/2/conditional-types.html)
+- [TypeScript Handbook: Type Guards](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates)
+- [Zod Documentation](https://zod.dev/)
+- [io-ts Documentation](https://gcanti.github.io/io-ts/)
+- [valibot Documentation](https://valibot.dev/) — 轻量级替代 Zod 的运行时校验库
+- [TypeBox Documentation](https://github.com/sinclairzx81/typebox) — JSON Schema + TS 类型同步
 
 ---
 
@@ -236,6 +316,11 @@ function area(s: Shape): number {
 | TypeScript Advanced Types | <https://www.typescriptlang.org/docs/handbook/2/types-from-types.html> | 类型体操 |
 | ECMAScript Spec: Abstract Operations | <https://tc39.es/ecma262/#sec-abstract-operations> | 抽象操作规范 |
 | Soundness vs Completeness in Type Systems | <https://en.wikipedia.org/wiki/Soundness> | 类型系统健全性 |
+| TypeScript Compiler Notes | <https://github.com/microsoft/TypeScript-Compiler-Notes> | TS 编译器内部笔记 |
+| TypeScript Deep Dive | <https://basarat.gitbook.io/typescript/> | Basarat 的 TS 深度指南 |
+| Type Challenges (type-challenges) | <https://github.com/type-challenges/type-challenges> | 类型体操练习题集 |
+| Total TypeScript | <https://www.totaltypescript.com/> | Matt Pocock 的 TS 进阶课程 |
+| Practical Advanced TypeScript | <https://www.executeprogram.com/courses/typescript> | 交互式 TS 课程 |
 
 ---
 

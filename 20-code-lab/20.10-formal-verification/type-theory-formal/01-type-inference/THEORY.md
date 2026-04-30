@@ -207,20 +207,110 @@ demo('const', constExpr);  // (t0 -> (t1 -> t0))
 demo('let', letExpr);      // int
 ```
 
-### 3.2 常见误区
+### 3.2 TypeScript 的局部类型推断实战
+
+```typescript
+// ts-inference.ts — TypeScript 如何应用类型推断
+
+// 变量推断：从初始化表达式推导
+const num = 42;           // number
+const msg = 'hello';      // string
+const arr = [1, 2, 3];    // number[]
+
+// 对象推断：结构推导
+const point = { x: 10, y: 20 }; // { x: number; y: number }
+
+// 上下文类型（Contextual Typing）：从使用位置推导
+function map<T, U>(arr: T[], fn: (item: T) => U): U[] {
+  return arr.map(fn);
+}
+
+// 此处 T 被推断为 number，U 被推断为 string
+const labels = map([1, 2, 3], n => `Item ${n}`);
+
+// 泛型约束推断
+type HasLength = { length: number };
+function logLength<T extends HasLength>(arg: T): T {
+  console.log(arg.length);
+  return arg;
+}
+
+const result = logLength('hello'); // T 被推断为 "hello" 字面量类型
+
+// 条件类型推断
+type ReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+
+type Fn = (x: number) => string;
+type Ret = ReturnType<Fn>; // string（infer 推导出返回值类型）
+
+// as const：推断最窄类型
+const config = {
+  host: 'localhost',
+  port: 3000,
+} as const;
+// config 的类型为 { readonly host: 'localhost'; readonly port: 3000 }
+```
+
+### 3.3 统一算法的可视化理解
+
+```typescript
+// unification-demo.ts — 统一算法的逐步演示
+
+// 问题：统一 (α → int) 与 (bool → β)
+// 步骤 1：分解函数类型
+//   统一 α 与 bool → α ↦ bool
+//   统一 int 与 β → β ↦ int
+// 结果：{ α ↦ bool, β ↦ int }
+
+function demoUnification() {
+  const t1 = tArr(tVar('α'), tCon('int'));
+  const t2 = tArr(tCon('bool'), tVar('β'));
+  const subst = unify(t1, t2);
+  console.log('Unifying', typeToString(t1), 'with', typeToString(t2));
+  subst.forEach((t, k) => console.log(`  ${k} ↦ ${typeToString(t)}`));
+}
+
+// Occurs Check 示例：防止无限类型
+// 统一 α 与 (α → int) 会导致无限递归类型 α = α → int
+// Robinson 统一算法通过 occurs check 拒绝此类合一
+function demoOccursCheck() {
+  const t1 = tVar('α');
+  const t2 = tArr(tVar('α'), tCon('int'));
+  try {
+    unify(t1, t2);
+  } catch (e: any) {
+    console.log('Occurs check caught:', e.message);
+  }
+}
+```
+
+### 3.4 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | 类型推断总是能找到最一般类型 | 高阶多态（Rank-N）下 HM 推断不可判定 |
 | TypeScript 使用 HM 推断 | TS 使用结构化类型 + 双向检查，与 HM 名义类型系统不同 |
+| 类型推断会减慢编译速度 | 现代算法（如 Graph-based）为线性复杂度，推断开销可忽略 |
+| 所有局部变量都应省略类型 | 复杂对象的显式标注可改善错误信息可读性 |
+| `infer` 可在运行时提取类型 | `infer` 是纯编译期类型运算，不产生运行时代码 |
 
-### 3.3 扩展阅读
+### 3.5 扩展阅读
 
 - [TAPL: Chapter 22 — Type Reconstruction](https://www.cis.upenn.edu/~bcpierce/tapl/)
 - [Damas & Milner: Principal Type-Schemes for Functional Programs (POPL 1982)](https://doi.org/10.1145/582153.582176)
 - [TypeScript Compiler Internals: Type Inference](https://github.com/microsoft/TypeScript-Compiler-Notes)
 - [Algorithm W Step-by-Step](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.65.7733)
-- `20.10-formal-verification/type-theory-formal/`
+- [TypeScript Handbook: Type Inference](https://www.typescriptlang.org/docs/handbook/type-inference.html)
+- [TypeScript Handbook: Contextual Typing](https://www.typescriptlang.org/docs/handbook/type-inference.html#contextual-typing)
+- [Robinson: A Machine-Oriented Logic (1965)](https://doi.org/10.1145/321250.321253) — 统一算法原始论文
+- [Cardelli: Basic Polymorphic Type Checking](https://www.sciencedirect.com/science/article/pii/0167642385900020) — 多态类型检查基础
+- [Hindley: The Principal Type-Scheme of an Object in Combinatory Logic (1969)](https://www.jstor.org/stable/1995158) — 最一般类型原始论文
+- [Milner: A Theory of Type Polymorphism in Programming (1978)](https://doi.org/10.1016/0022-0000(78)90014-4) — let-多态性经典论文
+- [Koenig & Ramsey: Type Inference](https://www.cs.tufts.edu/~nr/cs257/archive/andrew-kennedy/type-inference.pdf) — 类型推断综述
+- [Oliveira & Sulzmann: Sound and Decidable Type Inference](https://doi.org/10.1145/1328438.1328445) — 类型推断的可靠性
+- [Rust Type Inference](https://doc.rust-lang.org/reference/type-inference.html) — Rust 类型推断参考
+- [Scala 3 Type Inference](https://docs.scala-lang.org/scala3/reference/inference.html) — Scala 3 双向类型检查
+- [20.10-formal-verification/type-theory-formal/]
 
 ---
 

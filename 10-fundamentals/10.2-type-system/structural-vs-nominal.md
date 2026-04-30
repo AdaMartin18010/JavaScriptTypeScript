@@ -149,6 +149,29 @@ payUSD(localPrice); // ❌ Error: 防止货币单位混用的严重财务错误
 payUSD(99.99);      // ❌ Error: 裸 number 无法传入
 ```
 
+**代码示例：跨包结构兼容的实际场景**
+
+```typescript
+// package-a 定义的接口
+interface Logger {
+  info(msg: string): void;
+  error(msg: string): void;
+}
+
+// package-b 定义的接口（完全不同名称，相同结构）
+interface ILogger {
+  info(msg: string): void;
+  error(msg: string): void;
+}
+
+// package-c 的函数接受 package-a 的 Logger
+function setupLogger(logger: Logger) { /* ... */ }
+
+// 可以传入 package-b 的实现，无需任何适配层
+const bLogger: ILogger = { info: console.log, error: console.error };
+setupLogger(bLogger); // ✅ 结构兼容，天然跨包互通
+```
+
 ---
 
 ## 结构 vs 名义的工程权衡
@@ -178,6 +201,8 @@ payUSD(99.99);      // ❌ Error: 裸 number 无法传入
 | **Effective TypeScript: Item 53** | Dan Vanderkam 品牌类型最佳实践 | [effectivetypescript.com](https://effectivetypescript.com/) |
 | **GO 语言接口设计** | 另一主流结构子类型语言的哲学 | [go.dev/doc/effective_go#interfaces](https://go.dev/doc/effective_go#interfaces) |
 | **Soundiness Literature** | 学术视角：结构类型的可证安全性 | [Soundiness](https://soundiness.github.io/) |
+| **TypeScript FAQ: Nominal Typing** | 官方 FAQ 对名义类型的讨论 | [github.com/microsoft/TypeScript/wiki/FAQ#nominal-typing](https://github.com/microsoft/TypeScript/wiki/FAQ#nominal-typing) |
+| **Rust Traits vs TypeScript Interfaces** | 名义与结构类型的语言对比 | [doc.rust-lang.org/book/ch10-02-traits.html](https://doc.rust-lang.org/book/ch10-02-traits.html) |
 
 ---
 

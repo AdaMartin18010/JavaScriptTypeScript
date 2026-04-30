@@ -50,6 +50,8 @@ status: current
     - [v3.1 (2026-04-08)](#v31-2026-04-08)
     - [v3.0 (2026-04-02)](#v30-2026-04-02)
     - [v2.x (2026-03)](#v2x-2026-03)
+  - [📦 代码速查：常用 CLI 命令](#-代码速查常用-cli-命令)
+  - [🔬 外部学术资源](#-外部学术资源)
   - [🔗 外部资源链接](#-外部资源链接)
   - [💡 使用建议](#-使用建议)
 
@@ -466,6 +468,37 @@ graph TB
 
 ---
 
+## 📦 代码速查：常用 CLI 命令
+
+```bash
+# TypeScript 严格检查
+npx tsc --noEmit --strict
+
+# Node.js 性能分析
+node --prof app.js
+node --prof-process isolate-*.log > profile.txt
+
+# V8 垃圾回收追踪
+node --trace-gc app.js
+
+# 依赖安全审计
+npm audit --audit-level=moderate
+pnpm audit --prod
+
+# 包大小分析
+npx webpack-bundle-analyzer dist/stats.json
+```
+
+## 🔬 外部学术资源
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| ACM Digital Library | <https://dl.acm.org/> | PLDI/POPL/OOPSLA 论文库 |
+| arXiv Programming Languages | <https://arxiv.org/cs.PL> | 预印本论文 |
+| Google Research — Programming | <https://research.google/research-areas/programming-languages/> | 工业界研究 |
+| Microsoft Research — TypeScript | <https://www.microsoft.com/en-us/research/research-area/programming-languages-software-engineering/> | 类型系统研究 |
+| ICFP Proceedings | <https://dblp.org/db/conf/icfp/index.html> | 函数式编程会议 |
+
 ## 🔗 外部资源链接
 
 | 资源 | 链接 | 说明 |
@@ -484,6 +517,13 @@ graph TB
 | OpenJS Foundation | <https://openjsf.org/> | JavaScript 生态基金会 |
 | JSConf / TC39 Meeting Notes | <https://github.com/tc39/notes> | 语言标准会议纪要 |
 | TypeScript Compiler API | <https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API> | 编译器扩展指南 |
+| State of JS Survey | <https://stateofjs.com/> | 年度 JS 生态调查 |
+| State of TS Survey | <https://stateofts.com/> | 年度 TS 生态调查 |
+| Node Weekly | <https://nodeweekly.com/> | Node.js 新闻周刊 |
+| Frontend Focus | <https://frontendfoc.us/> | 前端技术周刊 |
+| TC39 Meeting Agendas | <https://github.com/tc39/agendas> | 标准化会议议程 |
+| JavaScript Weekly | <https://javascriptweekly.com/> | JS 技术周刊 |
+| Node.js Design Patterns | <https://nodejs.org/en/learn/> | 官方学习资源 |
 
 ---
 

@@ -13,6 +13,7 @@ created: 2026-04-27
 ## 边界说明
 
 本模块聚焦 WebXR 应用开发的核心抽象，包括：
+
 - XR 会话管理与视图渲染
 - 空间锚点与命中测试
 - 手势追踪与场景图管理
@@ -27,6 +28,7 @@ created: 2026-04-27
 | `02-threejs-vr.ts` | Three.js 与 WebXR 集成示例 | `02-threejs-vr.md` |
 | `03-hand-tracking.ts` | 手部关节追踪与手势映射 | `03-hand-tracking.md` |
 | `04-spatial-computing.ts` | 空间锚点、平面检测与命中测试 | `04-spatial-computing.md` |
+| `05-input-sources.ts` | 输入源处理（手柄、手势、游戏板） | `05-input-sources.md` |
 | `xr-engine.ts` | 通用 XR 引擎封装（会话 / 输入 / 渲染调度） | `xr-engine.test.ts` |
 | `index.ts` | 模块统一导出 | — |
 
@@ -186,6 +188,57 @@ export function endXRSession(session: XRSession, gl?: WebGL2RenderingContext): v
 }
 ```
 
+### Three.js AR 命中测试完整示例
+
+```typescript
+// ar-hit-test.ts
+import * as THREE from 'three';
+
+export async function initARHitTest(session: XRSession, renderer: THREE.WebGLRenderer) {
+  const refSpace = await session.requestReferenceSpace('local-floor');
+  const hitTestSource = await (session as any).requestHitTestSource({ space: refSpace });
+
+  const scene = new THREE.Scene();
+  const reticle = new THREE.Mesh(
+    new THREE.RingGeometry(0.05, 0.06, 32),
+    new THREE.MeshBasicMaterial({ color: 0xffffff })
+  );
+  reticle.visible = false;
+  scene.add(reticle);
+
+  renderer.setAnimationLoop((timestamp: number, frame?: XRFrame) => {
+    if (!frame) return;
+    const pose = frame.getViewerPose(refSpace);
+    if (pose) {
+      const hits = frame.getHitTestResults(hitTestSource);
+      if (hits.length > 0) {
+        const hitPose = hits[0].getPose(refSpace);
+        if (hitPose) {
+          reticle.visible = true;
+          const { x, y, z } = hitPose.transform.position;
+          reticle.position.set(x, y, z);
+        }
+      }
+    }
+    renderer.render(scene, new THREE.PerspectiveCamera());
+  });
+}
+```
+
+### 参考空间类型切换
+
+```typescript
+// reference-space.ts
+export async function switchReferenceSpace(
+  session: XRSession,
+  type: XRReferenceSpaceType
+): Promise<XRReferenceSpace> {
+  return session.requestReferenceSpace(type);
+}
+
+// 常见类型：'viewer' | 'local' | 'local-floor' | 'bounded-floor' | 'unbounded'
+```
+
 ## 关联模块
 
 - `58-data-visualization` — 数据可视化（Canvas/SVG 渲染）
@@ -206,7 +259,11 @@ export function endXRSession(session: XRSession, gl?: WebGL2RenderingContext): v
 | OpenXR Specification | 规范 | [www.khronos.org/openxr/](https://www.khronos.org/openxr/) |
 | WebXR Hit Test Module | 规范 | [immersive-web.github.io/hit-test/](https://immersive-web.github.io/hit-test/) |
 | Can I Use — WebXR | 兼容性 | [caniuse.com/webxr](https://caniuse.com/webxr) |
+| W3C WebXR Device API Spec | 规范 | [www.w3.org/TR/webxr/](https://www.w3.org/TR/webxr/) |
+| Khronos WebGL Specification | 规范 | [www.khronos.org/registry/webgl/specs/latest/2.0/](https://www.khronos.org/registry/webgl/specs/latest/2.0/) |
+| Three.js WebXR Examples | 示例 | [threejs.org/examples/?q=webxr](https://threejs.org/examples/?q=webxr) |
+| WebXR Layers API | 规范草案 | [immersive-web.github.io/layers/](https://immersive-web.github.io/layers/) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

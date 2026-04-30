@@ -301,6 +301,143 @@ JavaScript 已成为 **"边缘计算语言"**。Cloudflare Workers、Vercel Edge
 
 ---
 
+## 六.5 代码示例：Worker Threads 并发池
+
+```typescript
+// worker-pool.ts
+import { Worker } from 'node:worker_threads';
+import os from 'node:os';
+
+interface Task<T, R> {
+  data: T;
+  resolve: (value: R) => void;
+  reject: (reason: unknown) => void;
+}
+
+export class WorkerPool<T, R> {
+  private workers: Worker[] = [];
+  private queue: Task<T, R>[] = [];
+  private active = new Map<number, Task<T, R>>();
+
+  constructor(
+    private script: string,
+    private size = os.availableParallelism()
+  ) {
+    for (let i = 0; i < size; i++) {
+      const worker = new Worker(script);
+      worker.on('message', (msg) => {
+        const task = this.active.get(worker.threadId);
+        if (task) {
+          task.resolve(msg);
+          this.active.delete(worker.threadId);
+          this.drain();
+        }
+      });
+      worker.on('error', (err) => {
+        const task = this.active.get(worker.threadId);
+        if (task) {
+          task.reject(err);
+          this.active.delete(worker.threadId);
+          this.drain();
+        }
+      });
+      this.workers.push(worker);
+    }
+  }
+
+  execute(data: T): Promise<R> {
+    return new Promise((resolve, reject) => {
+      this.queue.push({ data, resolve, reject });
+      this.drain();
+    });
+  }
+
+  private drain() {
+    if (this.queue.length === 0) return;
+    const idleWorker = this.workers.find(
+      (w) => !this.active.has(w.threadId)
+    );
+    if (!idleWorker) return;
+    const task = this.queue.shift()!;
+    this.active.set(idleWorker.threadId, task);
+    idleWorker.postMessage(task.data);
+  }
+
+  terminate() {
+    return Promise.all(this.workers.map((w) => w.terminate()));
+  }
+}
+```
+
+```typescript
+// cpu-intensive-worker.ts
+import { parentPort } from 'node:worker_threads';
+
+parentPort?.on('message', (n: number) => {
+  // CPU 密集型计算：第 n 个斐波那契数
+  function fib(n: number): number {
+    return n < 2 ? n : fib(n - 1) + fib(n - 2);
+  }
+  parentPort?.postMessage(fib(n));
+});
+```
+
+## 代码示例：SharedArrayBuffer 与 Atomics
+
+```typescript
+// shared-memory-counter.ts
+import { Worker } from 'node:worker_threads';
+
+const buffer = new SharedArrayBuffer(4);
+const counter = new Int32Array(buffer);
+
+const workers = Array.from({ length: 4 }, () =>
+  new Worker(`
+    const { parentPort, workerData } = require('node:worker_threads');
+    for (let i = 0; i < 10000; i++) {
+      Atomics.add(workerData.counter, 0, 1);
+    }
+    parentPort.postMessage('done');
+  `, { eval: true, workerData: { counter } })
+);
+
+await Promise.all(workers.map(w => new Promise(r => w.once('message', r))));
+console.log('Final counter:', counter[0]); // 40000
+```
+
+## 代码示例：Cloudflare Edge 函数
+
+```typescript
+// functions/api/edge.ts — Cloudflare Pages Function
+export interface Env {
+  KV: KVNamespace;
+  D1: D1Database;
+}
+
+export const onRequest: PagesFunction<Env> = async (context) => {
+  const { request, env } = context;
+  const cacheKey = new URL(request.url).pathname;
+
+  // KV 缓存读取
+  const cached = await env.KV.get(cacheKey);
+  if (cached) return new Response(cached, {
+    headers: { 'Content-Type': 'application/json', 'X-Cache': 'HIT' }
+  });
+
+  // D1 查询
+  const { results } = await env.D1.prepare(
+    'SELECT * FROM posts WHERE slug = ?'
+  ).bind(cacheKey).all();
+
+  const json = JSON.stringify(results);
+  await env.KV.put(cacheKey, json, { expirationTtl: 300 });
+
+  return new Response(json, {
+    headers: { 'Content-Type': 'application/json', 'X-Cache': 'MISS' }
+  });
+};
+```
+
 ## 七、安全本体论：JIT 编译与类型混淆的结构性风险
 
 ### 7.1 2026 年 V8 漏洞的模式分析
@@ -397,5 +534,19 @@ TypeScript/JavaScript 软件堆栈在 2026 年的技术图景中，占据一个�
 理解这种"权衡的艺术"，是掌握当代软件工程本质的关键。
 
 ---
+
+## 参考链接
+
+- [Node.js Worker Threads](https://nodejs.org/api/worker_threads.html)
+- [ECMAScript Shared Memory and Atomics](https://tc39.es/ecma262/multipage/structured-data.html#sec-structured-data-sharedarraybuffer-objects)
+- [Cloudflare Pages Functions](https://developers.cloudflare.com/pages/functions/)
+- [Web Performance API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Performance)
+- [Node.js Performance Hooks](https://nodejs.org/api/perf_hooks.html)
+- [Vercel Edge Runtime APIs](https://vercel.com/docs/functions/runtimes/edge-runtime)
+- [V8 Blog — TurboFan](https://v8.dev/blog/turbofan-jit)
+- [V8 Blog — Maglev](https://v8.dev/blog/maglev)
+- [TC39 Proposals](https://github.com/tc39/proposals)
+- [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API)
+- [WebAssembly Spec](https://webassembly.github.io/spec/core/)
 
 > **如需继续深入任何子主题**（如 V8 编译器源码级分析、TypeScript 类型系统的形式化语义、具体框架的架构对比、或 Edge Computing 的物理部署模型），请指示，我将继续推进。

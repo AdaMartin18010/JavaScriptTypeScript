@@ -192,6 +192,175 @@ console.log(maxSlidingWindow([1, 3, -1, -3, 5, 3, 6, 7], 3));
 // [ 3, 3, 5, 5, 6, 7 ]
 ```
 
+### A* 寻路算法（简化网格版）
+
+```ts
+// a-star-grid.ts
+interface Node {
+  x: number;
+  y: number;
+  g: number; // 从起点代价
+  h: number; // 启发式代价
+  f: number; // g + h
+  parent?: Node;
+}
+
+function astar(
+  grid: number[][], // 0 = walkable, 1 = obstacle
+  start: [number, number],
+  end: [number, number]
+): [number, number][] {
+  const rows = grid.length;
+  const cols = grid[0].length;
+  const open: Node[] = [];
+  const closed = new Set<string>();
+
+  const heuristic = (a: [number, number], b: [number, number]) =>
+    Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]); // 曼哈顿距离
+
+  open.push({ x: start[0], y: start[1], g: 0, h: heuristic(start, end), f: heuristic(start, end) });
+
+  while (open.length) {
+    open.sort((a, b) => a.f - b.f);
+    const current = open.shift()!;
+    const key = `${current.x},${current.y}`;
+
+    if (current.x === end[0] && current.y === end[1]) {
+      const path: [number, number][] = [];
+      let node: Node | undefined = current;
+      while (node) {
+        path.unshift([node.x, node.y]);
+        node = node.parent;
+      }
+      return path;
+    }
+
+    closed.add(key);
+
+    for (const [dx, dy] of [[0, 1], [1, 0], [0, -1], [-1, 0]]) {
+      const nx = current.x + dx;
+      const ny = current.y + dy;
+      if (nx < 0 || nx >= rows || ny < 0 || ny >= cols || grid[nx][ny] === 1) continue;
+      if (closed.has(`${nx},${ny}`)) continue;
+
+      const g = current.g + 1;
+      const h = heuristic([nx, ny], end);
+      const existing = open.find((n) => n.x === nx && n.y === ny);
+
+      if (!existing || g < existing.g) {
+        const node: Node = { x: nx, y: ny, g, h, f: g + h, parent: current };
+        if (!existing) open.push(node);
+        else Object.assign(existing, node);
+      }
+    }
+  }
+
+  return []; // 不可达
+}
+
+// 使用
+const grid = [
+  [0, 0, 0, 0],
+  [1, 1, 0, 1],
+  [0, 0, 0, 0],
+];
+console.log(astar(grid, [0, 0], [2, 3]));
+```
+
+### 拓扑排序（Kahn 算法）
+
+```ts
+// topological-sort.ts
+function topologicalSort(adj: Map<string, string[]>): string[] {
+  const inDegree = new Map<string, number>();
+  for (const [u, vs] of adj) {
+    if (!inDegree.has(u)) inDegree.set(u, 0);
+    for (const v of vs) {
+      inDegree.set(v, (inDegree.get(v) ?? 0) + 1);
+    }
+  }
+
+  const queue = [...inDegree.entries()].filter(([, d]) => d === 0).map(([k]) => k);
+  const result: string[] = [];
+
+  while (queue.length) {
+    const u = queue.shift()!;
+    result.push(u);
+    for (const v of adj.get(u) ?? []) {
+      inDegree.set(v, inDegree.get(v)! - 1);
+      if (inDegree.get(v) === 0) queue.push(v);
+    }
+  }
+
+  if (result.length !== inDegree.size) throw new Error('Cycle detected');
+  return result;
+}
+
+// 使用：任务依赖排序
+const deps = new Map<string, string[]>([
+  ['build', ['test', 'deploy']],
+  ['test', ['lint']],
+  ['lint', []],
+  ['deploy', []],
+]);
+console.log(topologicalSort(deps)); // [ 'lint', 'test', 'build', 'deploy' ]
+```
+
+### 编辑距离（动态规划）
+
+```ts
+// edit-distance.ts
+function minDistance(word1: string, word2: string): number {
+  const m = word1.length;
+  const n = word2.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (word1[i - 1] === word2[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+      } else {
+        dp[i][j] = Math.min(
+          dp[i - 1][j] + 1,     // 删除
+          dp[i][j - 1] + 1,     // 插入
+          dp[i - 1][j - 1] + 1  // 替换
+        );
+      }
+    }
+  }
+
+  return dp[m][n];
+}
+
+console.log(minDistance('horse', 'ros')); // 3
+console.log(minDistance('intention', 'execution')); // 5
+```
+
+### 0-1 背包问题（动态规划 + 空间优化）
+
+```ts
+// knapsack.ts
+function knapsack(weights: number[], values: number[], capacity: number): number {
+  const n = weights.length;
+  // 一维 DP：dp[j] 表示容量 j 时的最大价值
+  const dp = new Array(capacity + 1).fill(0);
+
+  for (let i = 0; i < n; i++) {
+    // 逆序遍历，防止重复选择
+    for (let j = capacity; j >= weights[i]; j--) {
+      dp[j] = Math.max(dp[j], dp[j - weights[i]] + values[i]);
+    }
+  }
+
+  return dp[capacity];
+}
+
+console.log(knapsack([1, 3, 4, 5], [1, 4, 5, 7], 7)); // 9
+```
+
 ## 权威外部链接
 
 - [VisuAlgo — 算法可视化](https://visualgo.net/en)
@@ -206,6 +375,11 @@ console.log(maxSlidingWindow([1, 3, -1, -3, 5, 3, 6, 7], 3));
 - [ECMA-262 Specification](https://tc39.es/ecma262/) — JS 语言标准对数组与迭代行为的定义
 - [LeetCode Patterns](https://seanprashad.com/leetcode-patterns/) — 高频算法题型与模式总结
 - [Algorithmica — 现代竞赛算法](https://algorithmica.org/en)
+- [A* Pathfinding for Beginners — Stanford Game AI](https://theory.stanford.edu/~amitp/GameProgramming/AStarComparison.html)
+- [Red Blob Games — Pathfinding](https://www.redblobgames.com/pathfinding/a-star/introduction.html) — 交互式寻路教程
+- [Dynamic Programming Patterns — Educative](https://www.educative.io/courses/grokking-dynamic-programming-patterns-for-coding-interviews) — DP 模式化学习
+- [Competitive Programmer's Handbook — CSES](https://cses.fi/book/book.pdf) — 竞赛编程手册
+- [JavaScript Algorithms — trekhleb](https://github.com/trekhleb/javascript-algorithms) — JS 算法开源仓库
 
 ## 关联索引
 

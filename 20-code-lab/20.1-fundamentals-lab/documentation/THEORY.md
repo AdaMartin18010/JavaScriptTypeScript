@@ -8,6 +8,22 @@
 - 代码审查流程审查文档变更
 - CI/CD 自动构建和发布文档站点
 
+**代码示例：使用 `lint-staged` 对文档进行预提交检查**
+
+```json
+// package.json
+{
+  "lint-staged": {
+    "*.md": ["markdownlint-cli2", "cspell --no-must-find-files"]
+  }
+}
+```
+
+```bash
+# .husky/pre-commit
+npx lint-staged
+```
+
 ## 2. 文档类型
 
 | 类型 | 受众 | 内容 | 示例 |
@@ -24,11 +40,135 @@
 - **OpenAPI / Swagger**: REST API 规范，生成交互式文档
 - **TypeDoc**: TypeScript 项目的文档生成器
 
+**代码示例：TSDoc 注释与 TypeDoc 生成**
+
+```typescript
+// src/calculator.ts
+/**
+ * 计算两个数的和
+ * @param a - 被加数
+ * @param b - 加数
+ * @returns 两数之和
+ * @example
+ * ```ts
+ * add(2, 3); // 5
+ * ```
+ */
+export function add(a: number, b: number): number {
+  return a + b;
+}
+```
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "outDir": "./dist"
+  }
+}
+```
+
+```bash
+# 生成 API 文档
+npx typedoc --out docs/api src/index.ts
+```
+
+**代码示例：OpenAPI 3.0 YAML 片段**
+
+```yaml
+# openapi.yaml
+openapi: 3.0.0
+info:
+  title: User API
+  version: 1.0.0
+paths:
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+```
+
 ## 4. 文档站点工具
 
 - **VitePress / Docusaurus**: 静态站点生成器，支持搜索、国际化
 - **MDX**: Markdown + JSX，在文档中嵌入交互式组件
 - **Storybook**: 组件文档与交互式展示
+
+**代码示例：MDX 中嵌入交互式 React 组件**
+
+```mdx
+---
+title: Button 组件
+---
+
+import { Button } from '@acme/ui';
+
+# Button
+
+按钮用于触发操作或事件。
+
+## 示例
+
+<Button variant="primary">点击我</Button>
+
+## 代码
+
+```tsx
+<Button variant="primary">点击我</Button>
+```
+
+```
+
+**代码示例：Storybook 组件故事**
+
+```tsx
+// Button.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from './Button';
+
+const meta: Meta<typeof Button> = {
+  component: Button,
+  title: 'Components/Button',
+};
+export default meta;
+
+type Story = StoryObj<typeof Button>;
+
+export const Primary: Story = {
+  args: {
+    variant: 'primary',
+    children: 'Primary Button',
+  },
+};
+
+export const Secondary: Story = {
+  args: {
+    variant: 'secondary',
+    children: 'Secondary Button',
+  },
+};
+```
 
 ## 5. 文档质量度量
 
@@ -36,6 +176,18 @@
 - **准确性**: 文档与代码行为一致
 - **可读性**: Flesch 阅读易度分数
 - **时效性**: 最后更新时间
+
+**代码示例：使用 `markdownlint` 保证文档风格一致**
+
+```json
+// .markdownlint.json
+{
+  "default": true,
+  "MD013": { "line_length": 120 },
+  "MD033": false,
+  "MD041": false
+}
+```
 
 ## 6. 文档站点工具深度对比
 
@@ -227,14 +379,20 @@ jobs:
 
 ## 8. 权威外部资源
 
-- [VitePress 官方文档](https://vitepress.dev/)
-- [Docusaurus 官方文档](https://docusaurus.io/)
-- [Starlight 官方文档](https://starlight.astro.build/)
-- [Mintlify 官方文档](https://mintlify.com/)
-- [Diátaxis 文档框架](https://diataxis.fr/)
-- [MDN — Writing Great Documentation](https://developer.mozilla.org/en-US/docs/MDN/Writing_guidelines)
-- [Write the Docs 社区](https://www.writethedocs.org/)
-- [Google Technical Writing Course](https://developers.google.com/tech-writing)
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| VitePress 官方文档 | Vue 驱动的静态站点生成器 | [vitepress.dev](https://vitepress.dev/) |
+| Docusaurus 官方文档 | React 驱动的文档站点框架 | [docusaurus.io](https://docusaurus.io/) |
+| Starlight 官方文档 | Astro 文档主题 | [starlight.astro.build](https://starlight.astro.build/) |
+| Mintlify 官方文档 | 现代文档平台 | [mintlify.com](https://mintlify.com/) |
+| Diátaxis 文档框架 | 文档分类方法论 | [diataxis.fr](https://diataxis.fr/) |
+| MDN — Writing Great Documentation | Mozilla 技术写作指南 | [developer.mozilla.org/en-US/docs/MDN/Writing_guidelines](https://developer.mozilla.org/en-US/docs/MDN/Writing_guidelines) |
+| Write the Docs 社区 | 全球技术文档社区 | [www.writethedocs.org](https://www.writethedocs.org/) |
+| Google Technical Writing Course | 谷歌技术写作课程 | [developers.google.com/tech-writing](https://developers.google.com/tech-writing) |
+| TypeDoc 官方文档 | TypeScript API 文档生成器 | [typedoc.org](https://typedoc.org/) |
+| Storybook 官方文档 | 组件驱动开发工具 | [storybook.js.org](https://storybook.js.org/) |
+| OpenAPI Specification | REST API 规范标准 | [spec.openapis.org](https://spec.openapis.org/) |
+| markdownlint | Markdown 风格检查工具 | [github.com/DavidAnson/markdownlint](https://github.com/DavidAnson/markdownlint) |
 
 ## 9. 与相邻模块的关系
 

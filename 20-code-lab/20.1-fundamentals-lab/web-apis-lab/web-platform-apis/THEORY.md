@@ -194,7 +194,85 @@ self.onmessage = (e) => {
 };
 ```
 
-### 3.5 常见误区
+### 3.5 Notification API 与 Push Manager 基础
+
+```typescript
+// notification-push-demo.ts
+// 请求通知权限并显示本地通知
+async function showLocalNotification(title: string, body: string) {
+  const permission = await Notification.requestPermission();
+  if (permission === 'granted') {
+    new Notification(title, {
+      body,
+      icon: '/icon-192x192.png',
+      badge: '/badge-72x72.png',
+      tag: 'message-1', // 相同 tag 会替换旧通知
+    });
+  }
+}
+
+// Push 订阅（需配合 Service Worker）
+async function subscribeToPush() {
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+  });
+  await fetch('/api/push-subscription', {
+    method: 'POST',
+    body: JSON.stringify(subscription),
+    headers: { 'Content-Type': 'application/json' },
+  });
+}
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  return Uint8Array.from(rawData, (c) => c.charCodeAt(0));
+}
+```
+
+### 3.6 Geolocation API 与坐标处理
+
+```typescript
+// geolocation-demo.ts
+function getCurrentPosition(timeout = 5000): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation not supported'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true,
+      timeout,
+      maximumAge: 60000,
+    });
+  });
+}
+
+// 计算两点间距离（Haversine 公式）
+function haversineDistance(
+  lat1: number, lon1: number,
+  lat2: number, lon2: number
+): number {
+  const R = 6371e3; // 地球半径（米）
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// 使用
+const pos = await getCurrentPosition();
+console.log(`Accuracy: ${pos.coords.accuracy}m`);
+console.log(`Distance to target: ${haversineDistance(pos.coords.latitude, pos.coords.longitude, 39.9, 116.4).toFixed(0)}m`);
+```
+
+### 3.7 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -202,7 +280,7 @@ self.onmessage = (e) => {
 | DOM 操作总是同步的 | 部分 API 如 IntersectionObserver 是异步回调 |
 | Fetch 会默认携带 cookie | 需显式设置 `credentials: 'include'` |
 
-### 3.6 扩展阅读
+### 3.8 扩展阅读
 
 - [MDN Web APIs](https://developer.mozilla.org/en-US/docs/Web/API)
 - [WHATWG Fetch Living Standard](https://fetch.spec.whatwg.org/)
@@ -218,6 +296,13 @@ self.onmessage = (e) => {
 - [web.dev — Core Web Vitals](https://web.dev/articles/vitals) — 性能指标与测量
 - [Web Workers Spec — WHATWG](https://html.spec.whatwg.org/multipage/workers.html) — 官方多线程规范
 - [Credential Management API](https://developer.mozilla.org/en-US/docs/Web/API/Credential_Management_API) — 凭据管理
+- [MDN — Notifications API](https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API) — 通知与推送
+- [MDN — Push API](https://developer.mozilla.org/en-US/docs/Web/API/Push_API) — Web Push 规范
+- [MDN — Geolocation API](https://developer.mozilla.org/en-US/docs/Web/API/Geolocation_API) — 地理位置
+- [web.dev — Notification Patterns](https://web.dev/articles/notification-patterns) — 通知最佳实践
+- [W3C — Web Notifications](https://notifications.spec.whatwg.org/) — 通知规范
+- [W3C — Push API](https://w3c.github.io/push-api/) — Push API 规范
+- [GoogleChromeLabs — Web Capabilities](https://github.com/GoogleChromeLabs/web-capabilities) — 现代 Web 能力进展
 
 ---
 

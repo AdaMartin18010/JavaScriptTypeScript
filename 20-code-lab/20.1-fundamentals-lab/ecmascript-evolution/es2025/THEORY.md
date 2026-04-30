@@ -25,6 +25,7 @@ ES2025（ECMAScript 16）补齐 `Set` 的集合代数方法、引入正则表达
 | Set 集合代数 | Set 实例上的数学集合运算方法 | 7 个新方法 |
 | RegExp `v` flag | Unicode 属性类与集合运算的增强标志 | `u` 标志的演进 |
 | `Promise.try` | 将同步/同步抛异常函数统一为 Promise | 异步边界处理 |
+| Iterator Helpers | Iterator 原型上的 map/filter/take/drop 等方法 | 惰性计算 |
 
 ---
 
@@ -47,6 +48,10 @@ ES2025（ECMAScript 16）补齐 `Set` 的集合代数方法、引入正则表达
 | 不相交判断 | `setA.isDisjointFrom(setB)` | A 与 B 是否无共同元素 |
 | RegExp `v` | `/.../v` | 支持 `\p{...}`、集合差 `--`、交集 `&&` |
 | Promise.try | `Promise.try(fn)` | 同步异常 → rejected Promise |
+| Iterator.map | `iter.map(fn)` | 惰性映射迭代器 |
+| Iterator.filter | `iter.filter(fn)` | 惰性过滤迭代器 |
+| Iterator.take | `iter.take(n)` | 取前 n 个元素 |
+| Iterator.toArray | `iter.toArray()` | 收集为数组 |
 
 ### 2.3 权衡分析
 
@@ -55,6 +60,7 @@ ES2025（ECMAScript 16）补齐 `Set` 的集合代数方法、引入正则表达
 | 原生 Set 方法 | O(n) 优化、可读性强 | 旧运行时需 polyfill | 现代浏览器/Node ≥ 22 |
 | lodash `intersection` | 兼容旧环境 | 额外依赖、无 Set 语义 | 遗留项目 |
 | `/v` vs `/u` | 集合运算、嵌套类 | 学习曲线稍陡 | 复杂 Unicode 匹配 |
+| Iterator Helpers | 惰性、可组合 | 需配合 `.next()` 或 `toArray()` | 大数据流处理 |
 
 ---
 
@@ -204,6 +210,76 @@ service.fetchUser('').catch(err => console.error('Handled:', err.message));
 // → Handled: userId must be a non-empty string
 ```
 
+#### Iterator Helpers 实战：大数据流处理
+
+```javascript
+// iterator-helpers.js — 惰性处理大型数据流
+
+function* generateLogs() {
+  for (let i = 0; i < 1_000_000; i++) {
+    yield { level: i % 2 === 0 ? 'info' : 'error', msg: `Log ${i}`, ts: Date.now() };
+  }
+}
+
+// 惰性管道：不创建中间数组，内存占用 O(1)
+const recentErrors = generateLogs()
+  .filter(log => log.level === 'error')   // 惰性过滤
+  .map(log => ({ ...log, msg: log.msg.toUpperCase() }))  // 惰性映射
+  .take(10)                               // 取前 10 条
+  .toArray();                             // 此时才真正执行
+
+console.log(recentErrors.length); // 10
+
+// 与 Array 方法对比：array.filter().map().slice() 会创建多个中间数组
+// Iterator Helpers 全程惰性，适合无法放入内存的数据集
+
+// 自定义迭代器组合
+function fibonacci() {
+  let [a, b] = [0, 1];
+  return {
+    [Symbol.iterator]() {
+      return {
+        next() {
+          [a, b] = [b, a + b];
+          return { value: a, done: false };
+        }
+      };
+    }
+  };
+}
+
+const fibPrimes = fibonacci()
+  .take(100)
+  .filter(n => n > 100 && isPrime(n))
+  .toArray();
+```
+
+#### Iterator Helpers 链式组合
+
+```javascript
+// pipeline.js — 数据处理管道
+
+function* readLines(fileContent) {
+  yield* fileContent.split('\n');
+}
+
+const stats = readLines(csvData)
+  .drop(1)                         // 跳过表头
+  .map(line => line.split(','))
+  .filter(cols => cols.length >= 3)
+  .map(([name, age, city]) => ({ name, age: Number(age), city }))
+  .filter(user => user.age >= 18)
+  .map(user => ({ ...user, category: user.age < 30 ? 'young' : 'adult' }))
+  .take(1000)                      // 只处理前 1000 条有效记录
+  .toArray();
+
+// 聚合：按城市分组
+const byCity = stats.reduce((acc, user) => {
+  acc[user.city] = (acc[user.city] || 0) + 1;
+  return acc;
+}, {});
+```
+
 ### 3.3 常见误区
 
 | 误区 | 正确理解 |
@@ -211,6 +287,8 @@ service.fetchUser('').catch(err => console.error('Handled:', err.message));
 | Set 方法会修改原集合 | 所有集合代数方法返回**新 Set**，原集合不可变 |
 | `/v` 完全替代 `/u` | `/v` 是 `/u` 的超集，但某些边界行为不同，迁移需测试 |
 | `Promise.try` 只接受同步函数 | 也接受返回 Promise 的函数，行为等价于 `Promise.resolve().then(fn)` |
+| Iterator Helpers 会立即执行 | 它们是**惰性**的，直到调用 `.next()` 或 `.toArray()` 才真正消费 |
+| Iterator 只能遍历一次 | 与 Generator 一样，大多数 Iterator 是**一次性**的，不可重放 |
 
 ### 3.4 扩展阅读
 
@@ -218,12 +296,18 @@ service.fetchUser('').catch(err => console.error('Handled:', err.message));
 - [MDN: Set.prototype.intersection](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/intersection)
 - [MDN: RegExp `v` flag](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/unicodeSets)
 - [MDN: Promise.try](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/try)
+- [MDN: Iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator) — Iterator Helpers 参考
 - [TC39 Proposal: Set Methods](https://github.com/tc39/proposal-set-methods)
 - [TC39 Proposal: RegExp `v` flag](https://github.com/tc39/proposal-regexp-v-flag)
 - [TC39 Proposal: Promise.try](https://github.com/tc39/proposal-promise-try)
+- [TC39 Proposal: Iterator Helpers](https://github.com/tc39/proposal-iterator-helpers)
 - [V8 Blog: New in JS ES2025](https://v8.dev/features/tags/es2025)
+- [V8 Blog: Iterator Helpers](https://v8.dev/features/iterator-helpers)
 - [Can I use — Set methods](https://caniuse.com/mdn-javascript_builtins_set_intersection)
+- [Can I use — Iterator Helpers](https://caniuse.com/mdn-javascript_builtins_iterator)
 - [Unicode Regular Expressions — unicode.org](https://unicode.org/reports/tr18/)
+- [Unicode Property Escapes in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Regular_expressions/Unicode_character_class_escape)
+- [Core-js: Set Methods Polyfill](https://github.com/zloirock/core-js#set-methods)
 - `30-knowledge-base/30.1-language-evolution`
 
 ---

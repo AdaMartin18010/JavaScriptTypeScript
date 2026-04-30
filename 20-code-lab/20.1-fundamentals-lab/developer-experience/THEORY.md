@@ -120,6 +120,28 @@ export default defineConfig({
 });
 ```
 
+**代码示例：Vite 插件拦截请求并注入 mock 数据**
+
+```typescript
+// vite-plugin-mock-api.ts
+import type { Plugin } from 'vite';
+
+export function mockApiPlugin(): Plugin {
+  return {
+    name: 'mock-api',
+    configureServer(server) {
+      server.middlewares.use('/api/users', (req, res) => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify([
+          { id: 1, name: 'Alice' },
+          { id: 2, name: 'Bob' }
+        ]));
+      });
+    }
+  };
+}
+```
+
 ### 4.2 使用 tsx 实现零延迟 TypeScript 执行
 
 在开发脚本与 CLI 工具时，`tsx` 提供了比 `ts-node` 更快的启动速度：
@@ -165,6 +187,53 @@ cli.help();
 cli.parse();
 ```
 
+**代码示例：使用 `consola` 实现分级日志输出**
+
+```typescript
+// logger.ts
+import { createConsola } from 'consola';
+
+const logger = createConsola({
+  level: process.env.DEBUG ? 4 : 3,
+  formatOptions: { colors: true, date: true }
+});
+
+logger.info('Server starting...');
+logger.success('Connected to database');
+logger.warn('Deprecation: old API will be removed in v3');
+logger.error(new Error('Connection timeout'));
+```
+
+**代码示例：Monorepo 中的快速反馈环配置**
+
+```json
+// package.json (根目录)
+{
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "tsx": "^4.0.0"
+  }
+}
+```
+
+```js
+// turbo.json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "build": { "dependsOn": ["^build"] },
+    "dev": { "cache": false, "persistent": true },
+    "lint": {},
+    "typecheck": {}
+  }
+}
+```
+
 ---
 
 ## 5. 总结
@@ -181,18 +250,21 @@ cli.parse();
 
 ## 参考资源
 
-- [Vite 文档](https://vitejs.dev/)
-- [Bun 文档](https://bun.sh/)
-- [Biome 文档](https://biomejs.dev/)
-- [esbuild](https://esbuild.github.io/) — 极速 JavaScript 打包器，定义了新一代工具链性能基准
-- [SWC](https://swc.rs/) — Rust 编写的超快 TypeScript/JavaScript 编译器
-- [Turborepo](https://turbo.build/) — Vercel 推出的 Monorepo 构建系统，优化 DX 与缓存
-- [tsx](https://github.com/privatenumber/tsx) — Node.js TypeScript 执行器，比 ts-node 快 10 倍以上
-- [TypeScript TSConfig Reference](https://www.typescriptlang.org/tsconfig) — 官方编译器选项权威文档
-- [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) — LSP 规范，IDE 体验的基础设施标准
-- [VS Code Extension API](https://code.visualstudio.com/api) — 微软官方扩展开发文档
-- [State of JS](https://stateofjs.com/) — 全球 JavaScript 生态开发者体验年度调查
-- [Stack Overflow Developer Survey](https://survey.stackoverflow.co/) — 开发者工具链与满意度权威数据来源
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| Vite 文档 | 下一代前端工具链 | [vitejs.dev](https://vitejs.dev/) |
+| Bun 文档 | 一体化 JavaScript 运行时 | [bun.sh](https://bun.sh/) |
+| Biome 文档 | 格式化与 Lint 工具 | [biomejs.dev](https://biomejs.dev/) |
+| esbuild | 极速 JavaScript 打包器 | [esbuild.github.io](https://esbuild.github.io/) |
+| SWC | Rust 编写的超快 TS/JS 编译器 | [swc.rs](https://swc.rs/) |
+| Turborepo | Monorepo 构建系统 | [turbo.build](https://turbo.build/) |
+| tsx | Node.js TypeScript 执行器 | [github.com/privatenumber/tsx](https://github.com/privatenumber/tsx) |
+| TypeScript TSConfig Reference | 官方编译器选项权威文档 | [typescriptlang.org/tsconfig](https://www.typescriptlang.org/tsconfig) |
+| Language Server Protocol | IDE 体验的基础设施标准 | [microsoft.github.io/language-server-protocol](https://microsoft.github.io/language-server-protocol/) |
+| VS Code Extension API | 微软官方扩展开发文档 | [code.visualstudio.com/api](https://code.visualstudio.com/api) |
+| State of JS | 全球 JS 生态开发者体验年度调查 | [stateofjs.com](https://stateofjs.com/) |
+| Stack Overflow Developer Survey | 开发者工具链与满意度权威数据 | [survey.stackoverflow.co](https://survey.stackoverflow.co/) |
+| Web DX Community Group | W3C 开发者体验社区组 | [www.w3.org/community/webdx](https://www.w3.org/community/webdx/) |
 
 ---
 

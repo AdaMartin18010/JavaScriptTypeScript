@@ -108,6 +108,74 @@ export async function POST(req: Request) {
 // }
 ```
 
+### 客户端 React 流式消费组件
+
+```tsx
+// components/ChatStream.tsx
+'use client';
+
+import { useState, useCallback } from 'react';
+
+export function ChatStream() {
+  const [messages, setMessages] = useState<string[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const sendMessage = useCallback(async () => {
+    if (!input.trim()) return;
+    setIsLoading(true);
+
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: input }),
+    });
+
+    if (!response.body) return;
+
+    const reader = response.body
+      .pipeThrough(new TextDecoderStream())
+      .getReader();
+
+    let currentMessage = '';
+    setMessages(prev => [...prev, `User: ${input}`, 'AI: ']);
+    setInput('');
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      currentMessage += value;
+      // 更新最后一条消息
+      setMessages(prev => [
+        ...prev.slice(0, -1),
+        `AI: ${currentMessage}`,
+      ]);
+    }
+
+    setIsLoading(false);
+  }, [input]);
+
+  return (
+    <div>
+      <div>
+        {messages.map((msg, i) => (
+          <p key={i}>{msg}</p>
+        ))}
+      </div>
+      <input
+        value={input}
+        onChange={e => setInput(e.target.value)}
+        onKeyDown={e => e.key === 'Enter' && sendMessage()}
+        disabled={isLoading}
+      />
+      <button onClick={sendMessage} disabled={isLoading}>
+        Send
+      </button>
+    </div>
+  );
+}
+```
+
 ---
 
 ## Code Example: Agent 工具调用（Vercel AI SDK）
@@ -169,6 +237,69 @@ async function analyzeArticle(content: string) {
 }
 ```
 
+### MCP (Model Context Protocol) TypeScript SDK 示例
+
+```typescript
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+
+// 创建 MCP 客户端，连接本地工具服务器
+const transport = new StdioClientTransport({
+  command: 'npx',
+  args: ['-y', '@modelcontextprotocol/server-filesystem', '/path/to/allowed/dir'],
+});
+
+const client = new Client({ name: 'my-app', version: '1.0.0' });
+await client.connect(transport);
+
+// 列出可用工具
+const tools = await client.listTools();
+console.log('Available tools:', tools.tools.map(t => t.name));
+
+// 调用工具
+const result = await client.callTool({
+  name: 'read_file',
+  arguments: { path: '/path/to/allowed/dir/example.md' },
+});
+
+console.log(result.content);
+await client.close();
+```
+
+### AI SDK 多模型路由与 Fallback
+
+```typescript
+import { generateText } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { anthropic } from '@ai-sdk/anthropic';
+import { google } from '@ai-sdk/google';
+
+// 多模型 fallback 策略
+async function resilientGenerate(prompt: string) {
+  const providers = [
+    { name: 'openai', model: openai('gpt-4o') },
+    { name: 'anthropic', model: anthropic('claude-3-5-sonnet-20241022') },
+    { name: 'google', model: google('gemini-2.0-flash') },
+  ];
+
+  for (const provider of providers) {
+    try {
+      const { text } = await generateText({
+        model: provider.model,
+        prompt,
+        maxRetries: 2,
+      });
+      return { provider: provider.name, text };
+    } catch (error) {
+      console.warn(`${provider.name} failed:`, error);
+      continue;
+    }
+  }
+
+  throw new Error('All AI providers failed');
+}
+```
+
 ---
 
 ## 最佳实践
@@ -181,13 +312,16 @@ async function analyzeArticle(content: string) {
    - 通用语义：`text-embedding-3-small`（性价比高）
    - 代码检索：`text-embedding-3-large` 或专用代码模型
    - 多语言：Cohere `embed-multilingual-v3`
+6. **MCP 标准化**：使用 Model Context Protocol 统一工具接入，避免供应商锁定
 
 ---
 
 ## 权威链接
 
 - [Vercel AI SDK Documentation](https://sdk.vercel.ai/docs)
+- [Vercel AI SDK Quickstart](https://sdk.vercel.ai/docs/getting-started)
 - [OpenAI API Reference](https://platform.openai.com/docs/api-reference)
+- [OpenAI Function Calling Guide](https://platform.openai.com/docs/guides/function-calling)
 - [LangChain.js](https://js.langchain.com/)
 - [LlamaIndex TypeScript](https://ts.llamaindex.ai/)
 - [What is RAG? – OpenAI](https://platform.openai.com/docs/guides/retrieval-augmented-generation)
@@ -195,10 +329,17 @@ async function analyzeArticle(content: string) {
 - [Anthropic API Documentation](https://docs.anthropic.com/en/api/getting-started)
 - [Google Gemini API](https://ai.google.dev/gemini-api/docs)
 - [Cohere API Reference](https://docs.cohere.com/)
-- [OpenAI Function Calling Guide](https://platform.openai.com/docs/guides/function-calling)
 - [Zod Schema Validation](https://zod.dev/)
 - [Hugging Face — Embeddings Guide](https://huggingface.co/docs/transformers/model_doc/auto#transformers.AutoModel)
 - [pgvector — PostgreSQL Vector Extension](https://github.com/pgvector/pgvector)
+- [Model Context Protocol Specification](https://modelcontextprotocol.io/)
+- [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
+- [OpenAI Assistants API](https://platform.openai.com/docs/assistants/overview)
+- [Vercel AI SDK RAG Guide](https://sdk.vercel.ai/docs/guides/rag-chatbot)
+- [LangChain Expression Language (LCEL)](https://js.langchain.com/docs/concepts/#langchain-expression-language-lcel)
+- [OpenAI Tokenizer](https://platform.openai.com/tokenizer)
+- [Pinecone Documentation](https://docs.pinecone.io/)
+- [Weaviate Vector Database](https://weaviate.io/developers/weaviate)
 
 ---
 
