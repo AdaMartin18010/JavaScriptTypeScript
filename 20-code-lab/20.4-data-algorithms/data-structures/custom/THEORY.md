@@ -288,7 +288,121 @@ console.log(maxHeap.pop()); // 9
 console.log(maxHeap.pop()); // 6
 ```
 
-## 八、权威参考链接
+## 八、代码示例：并查集（Disjoint Set Union）
+
+```typescript
+// union-find.ts — 用于连通性检测、Kruskal 最小生成树
+class UnionFind {
+  private parent: number[] = [];
+  private rank: number[] = [];
+
+  constructor(n: number) {
+    for (let i = 0; i < n; i++) {
+      this.parent[i] = i;
+      this.rank[i] = 0;
+    }
+  }
+
+  find(x: number): number {
+    if (this.parent[x] !== x) {
+      this.parent[x] = this.find(this.parent[x]); // 路径压缩
+    }
+    return this.parent[x];
+  }
+
+  union(a: number, b: number): boolean {
+    const ra = this.find(a);
+    const rb = this.find(b);
+    if (ra === rb) return false;
+
+    // 按秩合并
+    if (this.rank[ra] < this.rank[rb]) {
+      this.parent[ra] = rb;
+    } else if (this.rank[ra] > this.rank[rb]) {
+      this.parent[rb] = ra;
+    } else {
+      this.parent[rb] = ra;
+      this.rank[ra]++;
+    }
+    return true;
+  }
+
+  connected(a: number, b: number): boolean {
+    return this.find(a) === this.find(b);
+  }
+}
+
+// 使用：判断图中两节点是否连通
+const uf = new UnionFind(5);
+uf.union(0, 1);
+uf.union(1, 2);
+console.log(uf.connected(0, 2)); // true
+console.log(uf.connected(0, 3)); // false
+```
+
+## 九、代码示例：线段树（Range Query）
+
+```typescript
+// segment-tree.ts — 支持区间查询与单点更新的二叉树结构
+class SegmentTree {
+  private tree: number[];
+  private n: number;
+
+  constructor(arr: number[]) {
+    this.n = arr.length;
+    this.tree = new Array(4 * this.n).fill(0);
+    this.build(arr, 0, 0, this.n - 1);
+  }
+
+  private build(arr: number[], node: number, l: number, r: number): void {
+    if (l === r) {
+      this.tree[node] = arr[l];
+      return;
+    }
+    const mid = (l + r) >> 1;
+    this.build(arr, node * 2 + 1, l, mid);
+    this.build(arr, node * 2 + 2, mid + 1, r);
+    this.tree[node] = this.tree[node * 2 + 1] + this.tree[node * 2 + 2];
+  }
+
+  /** 查询区间 [ql, qr] 的和 */
+  query(ql: number, qr: number): number {
+    return this.queryRec(0, 0, this.n - 1, ql, qr);
+  }
+
+  private queryRec(node: number, l: number, r: number, ql: number, qr: number): number {
+    if (ql > r || qr < l) return 0;
+    if (ql <= l && r <= qr) return this.tree[node];
+    const mid = (l + r) >> 1;
+    return this.queryRec(node * 2 + 1, l, mid, ql, qr)
+         + this.queryRec(node * 2 + 2, mid + 1, r, ql, qr);
+  }
+
+  /** 单点更新：将 index 位置的值设为 value */
+  update(index: number, value: number): void {
+    this.updateRec(0, 0, this.n - 1, index, value);
+  }
+
+  private updateRec(node: number, l: number, r: number, index: number, value: number): void {
+    if (l === r) {
+      this.tree[node] = value;
+      return;
+    }
+    const mid = (l + r) >> 1;
+    if (index <= mid) this.updateRec(node * 2 + 1, l, mid, index, value);
+    else this.updateRec(node * 2 + 2, mid + 1, r, index, value);
+    this.tree[node] = this.tree[node * 2 + 1] + this.tree[node * 2 + 2];
+  }
+}
+
+// 使用：区间和查询
+const st = new SegmentTree([1, 3, 5, 7, 9, 11]);
+console.log(st.query(1, 3)); // 3 + 5 + 7 = 15
+st.update(2, 10);
+console.log(st.query(1, 3)); // 3 + 10 + 7 = 20
+```
+
+## 十、权威参考链接
 
 | 资源 | 说明 | 链接 |
 |------|------|------|
@@ -300,6 +414,11 @@ console.log(maxHeap.pop()); // 6
 | V8 Blog — Elements Kinds | V8 引擎如何优化数组 | [v8.dev/blog/elements-kinds](https://v8.dev/blog/elements-kinds) |
 | MDN — JavaScript Data Structures | 内置数据结构文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures) |
 | TC39 — Map and Set Specification | ECMAScript 规范 | [tc39.es/ecma262/#sec-keyed-collections](https://tc39.es/ecma262/#sec-keyed-collections) |
+| Competitive Programming Handbook (Antti Laaksonen) | 竞赛编程算法与数据结构 | [cses.fi/book/book.pdf](https://cses.fi/book/book.pdf) |
+| CP-Algorithms — Data Structures | 算法与数据结构参考 | [cp-algorithms.com/data_structures/disjoint_set_union.html](https://cp-algorithms.com/data_structures/disjoint_set_union.html) |
+| Wikipedia — Segment Tree | 线段树形式化定义 | [en.wikipedia.org/wiki/Segment_tree](https://en.wikipedia.org/wiki/Segment_tree) |
+| GeeksforGeeks — Trie Data Structure | Trie 详解与应用 | [geeksforgeeks.org/trie-insert-and-search](https://www.geeksforgeeks.org/trie-insert-and-search/) |
+| Redis — LRU Cache Implementation | 工业级 LRU 实现参考 | [github.com/redis/redis/blob/unstable/src/evict.c](https://github.com/redis/redis/blob/unstable/src/evict.c) |
 
 ---
 

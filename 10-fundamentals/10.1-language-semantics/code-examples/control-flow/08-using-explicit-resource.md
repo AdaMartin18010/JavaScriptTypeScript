@@ -335,3 +335,140 @@ using group = stack;
 | C# using statement | <https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/using> | C# using 参考 |
 | Python with statement | <https://docs.python.org/3/reference/compound_stmts.html#the-with-statement> | Python with 参考 |
 | Rust RAII | <https://doc.rust-lang.org/rust-by-example/scope/raii.html> | Rust RAII 参考 |
+
+---
+
+## 深化补充二：显式资源管理进阶实战
+
+### Web Streams 与 using 声明
+
+```typescript
+// ReadableStream 的 reader 实现 Symbol.asyncDispose（实验性）
+async function readAllChunks(url: string) {
+  await using response = await fetch(url);
+  
+  // response.body 是 ReadableStream
+  const reader = response.body!.getReader();
+  const chunks: Uint8Array[] = [];
+  
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+  
+  return Buffer.concat(chunks);
+}
+```
+
+### AbortController 的 Disposable 封装
+
+```typescript
+class DisposableAbortController implements Disposable {
+  readonly signal: AbortSignal;
+  #controller: AbortController;
+  
+  constructor() {
+    this.#controller = new AbortController();
+    this.signal = this.#controller.signal;
+  }
+  
+  abort(reason?: unknown) {
+    this.#controller.abort(reason);
+  }
+  
+  [Symbol.dispose]() {
+    this.abort('disposed');
+    console.log('AbortController disposed');
+  }
+}
+
+// 使用
+{
+  using ac = new DisposableAbortController();
+  fetch('/api/data', { signal: ac.signal });
+} // 自动 abort 未完成的请求
+```
+
+### 事务模式中的 AsyncDisposableStack
+
+```typescript
+class DatabaseTransaction implements AsyncDisposable {
+  #stack = new AsyncDisposableStack();
+  #committed = false;
+  
+  async begin() {
+    const conn = await pool.connect();
+    this.#stack.use(conn);
+    await conn.query('BEGIN');
+    return this;
+  }
+  
+  async commit() {
+    await this.#stack.adopt(
+      await pool.connect(),
+      async (conn) => { await conn.query('COMMIT'); }
+    );
+    this.#committed = true;
+  }
+  
+  async [Symbol.asyncDispose]() {
+    if (!this.#committed) {
+      await this.#stack.adopt(
+        await pool.connect(),
+        async (conn) => { await conn.query('ROLLBACK'); }
+      );
+    }
+    await this.#stack.disposeAsync();
+  }
+}
+
+// 使用
+async function transfer(from: number, to: number, amount: number) {
+  await using tx = await new DatabaseTransaction().begin();
+  await db.query('UPDATE accounts SET balance = balance - $1 WHERE id = $2', [amount, from]);
+  await db.query('UPDATE accounts SET balance = balance + $1 WHERE id = $2', [amount, to]);
+  await tx.commit();
+} // 若抛出异常或未 commit，自动回滚
+```
+
+### 嵌套 using 声明与异常聚合
+
+```typescript
+function createResource(id: number, failOnDispose = false) {
+  return {
+    id,
+    [Symbol.dispose]() {
+      console.log(`disposing resource ${id}`);
+      if (failOnDispose) throw new Error(`dispose ${id} failed`);
+    }
+  };
+}
+
+try {
+  using r1 = createResource(1);
+  using r2 = createResource(2, true); // dispose 会失败
+  using r3 = createResource(3);
+  throw new Error('main error');
+} catch (e) {
+  // e 是 SuppressedError，包含主异常和 dispose 异常
+  console.log(e instanceof SuppressedError); // true
+  console.log(e.error.message);              // 'main error'
+  console.log(e.suppressed.message);         // 'dispose 2 failed'
+}
+```
+
+---
+
+## 更多权威参考
+
+- **ECMA-262 §14.3** — Using Declarations: <https://tc39.es/ecma262/#sec-using-statement>
+- **MDN: using** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/using>
+- **MDN: Symbol.dispose** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/dispose>
+- **TypeScript 5.2 Release Notes** — <https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/#using>
+- **Node.js: Explicit Resource Management** — <https://nodejs.org/docs/latest/api/globals.html#using>
+- **TC39 Explicit Resource Management Proposal** — <https://github.com/tc39/proposal-explicit-resource-management>
+- **Web Streams API** — <https://developer.mozilla.org/en-US/docs/Web/API/Streams_API>
+- **MDN: AbortController** — <https://developer.mozilla.org/en-US/docs/Web/API/AbortController>
+- **C# using statement** — <https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/using>
+- **Python with statement** — <https://docs.python.org/3/reference/compound_stmts.html#the-with-statement>

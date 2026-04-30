@@ -28,6 +28,10 @@
   - [9. 在 JS/TS 生态中的定位](#9-在-jsts-生态中的定位)
     - [9.1 选型建议](#91-选型建议)
     - [9.2 2026 年推荐栈](#92-2026-年推荐栈)
+  - [10. 高级主题](#10-高级主题)
+    - [10.1 Subscription 与实时推送](#101-subscription-与实时推送)
+    - [10.2 错误处理与部分响应](#102-错误处理与部分响应)
+    - [10.3 指令与元编程](#103-指令与元编程)
   - [参考资源](#参考资源)
   - [模块代码文件索引](#模块代码文件索引)
 
@@ -389,6 +393,137 @@ query GetUserDashboard($userId: ID!) {
 
 ---
 
+## 10. 高级主题
+
+### 10.1 Subscription 与实时推送
+
+```typescript
+// subscription-server.ts — 基于 SSE 的 GraphQL Subscription
+import { createYoga } from 'graphql-yoga';
+import { createServer } from 'node:http';
+import { builder } from './schema-builder';
+import { PubSub } from 'graphql-yoga';
+
+const pubsub = new PubSub();
+
+// 定义 Subscription 类型
+builder.subscriptionType({
+  fields: (t) => ({
+    postCreated: t.field({
+      type: 'Post',
+      subscribe: () => pubsub.subscribe('POST_CREATED'),
+      resolve: (payload) => payload,
+    }),
+    commentAdded: t.field({
+      type: 'Comment',
+      args: { postId: t.arg.id({ required: true }) },
+      subscribe: (_root, args) => pubsub.subscribe(`COMMENT_ADDED_${args.postId}`),
+      resolve: (payload) => payload,
+    }),
+  }),
+});
+
+// 发布事件
+export function publishPostCreated(post: Post) {
+  pubsub.publish('POST_CREATED', post);
+}
+
+const yoga = createYoga({
+  schema: builder.toSchema(),
+  // Yoga 默认使用 SSE（Server-Sent Events）传输订阅
+});
+
+createServer(yoga).listen(4000);
+```
+
+### 10.2 错误处理与部分响应
+
+```typescript
+// error-handling.ts — GraphQL 错误分类与部分响应
+import { GraphQLError } from 'graphql';
+
+class UserInputError extends GraphQLError {
+  constructor(message: string, extensions?: Record<string, unknown>) {
+    super(message, { extensions: { code: 'BAD_USER_INPUT', ...extensions } });
+  }
+}
+
+class AuthenticationError extends GraphQLError {
+  constructor(message = 'Unauthorized') {
+    super(message, { extensions: { code: 'UNAUTHENTICATED' } });
+  }
+}
+
+// Resolver 中使用
+const resolvers = {
+  Query: {
+    user: async (_parent: unknown, args: { id: string }, context: Context) => {
+      if (!context.user) throw new AuthenticationError();
+      if (!args.id.match(/^[0-9a-f-]{36}$/i)) {
+        throw new UserInputError('Invalid user ID format', { field: 'id' });
+      }
+      const user = await context.db.users.findById(args.id);
+      if (!user) throw new GraphQLError('User not found', { extensions: { code: 'NOT_FOUND' } });
+      return user;
+    },
+  },
+};
+
+// 客户端处理部分响应
+/*
+HTTP 200 但响应体可能包含 errors 数组：
+{
+  "data": { "user": null },
+  "errors": [
+    { "message": "User not found", "extensions": { "code": "NOT_FOUND" } }
+  ]
+}
+*/
+```
+
+### 10.3 指令与元编程
+
+```graphql
+# directives.graphql — 自定义指令实现字段级控制
+directive @auth(role: String = "user") on FIELD_DEFINITION
+directive @rateLimit(max: Int, window: String = "1m") on FIELD_DEFINITION
+directive @cacheControl(maxAge: Int) on FIELD_DEFINITION
+
+# Schema 中使用
+type Query {
+  adminUsers: [User!]! @auth(role: "admin")
+  searchPosts(query: String!): [Post!]! @rateLimit(max: 30, window: "1m")
+  trendingPosts: [Post!]! @cacheControl(maxAge: 300)
+}
+```
+
+```typescript
+// directive-implementation.ts — Pothos 中实现指令逻辑
+import SchemaBuilder from '@pothos/core';
+import { createRateLimitRule } from 'graphql-rate-limit';
+
+const builder = new SchemaBuilder<{
+  Context: Context;
+  Directives: {
+    auth: { role: string };
+    rateLimit: { max: number; window: string };
+  };
+}>({});
+
+// 权限指令通过插件实现
+builder.queryType({
+  fields: (t) => ({
+    adminUsers: t.field({
+      type: ['User'],
+      authScopes: { admin: true },  // Pothos Auth Plugin
+      resolve: (_root, _args, ctx) => ctx.db.users.findAdmins(),
+    }),
+  }),
+});
+```
+
+---
+
 ## 参考资源
 
 - [GraphQL 官方文档](https://graphql.org/)
@@ -404,6 +539,13 @@ query GetUserDashboard($userId: ID!) {
 - [GraphQL over HTTP Spec](https://graphql.github.io/graphql-over-http/draft/) — HTTP 传输规范
 - [Hasura](https://hasura.io/) — 即时 GraphQL API 引擎
 - [NestJS GraphQL](https://docs.nestjs.com/graphql/quick-start) — 企业级框架集成
+- [Relay Documentation](https://relay.dev/) — Meta 出品的 React GraphQL 框架
+- [urql Documentation](https://formidable.com/open-source/urql/) — 轻量 GraphQL 客户端
+- [GraphQL Ws (WebSocket Transport)](https://the-guild.dev/graphql/ws) — GraphQL over WebSocket 协议
+- [RFC 7807 — Problem Details](https://datatracker.ietf.org/doc/html/rfc7807) — HTTP API 错误标准
+- [GraphQL N+1 Problem Explained](https://shopify.engineering/solving-the-n-1-problem-for-graphql-through-batching) — Shopify 工程博客
+- [Production Ready GraphQL — Marc-André Giroux](https://book.productionreadygraphql.com/) — GraphQL 生产实践书籍
+- [GraphQL Directive Specification](https://spec.graphql.org/draft/#sec-Type-System.Directives) — 官方指令规范
 
 ---
 

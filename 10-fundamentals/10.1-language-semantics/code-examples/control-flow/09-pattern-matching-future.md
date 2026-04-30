@@ -287,3 +287,96 @@ const first = match([iter.next(), iter.next(), iter.next()])
 | F# — Pattern Matching | <https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/pattern-matching> | F# 模式匹配参考 |
 | Haskell — Pattern Matching | <https://www.haskell.org/tutorial/patterns.html> | Haskell 模式匹配参考 |
 | ECMA-262 — Destructuring | <https://tc39.es/ecma262/#sec-destructuring-assignment> | 解构赋值规范 |
+
+---
+
+## 深化补充二：高级模式匹配实战
+
+### 可选值（Option/Maybe）模式
+
+```typescript
+type Option<T> = { _tag: 'Some'; value: T } | { _tag: 'None' };
+
+function map<T, U>(opt: Option<T>, fn: (v: T) => U): Option<U> {
+  // 当前用 switch 实现，未来可用 match 表达式
+  switch (opt._tag) {
+    case 'Some': return { _tag: 'Some', value: fn(opt.value) };
+    case 'None': return { _tag: 'None' };
+  }
+}
+
+// TC39 提案未来语法：
+// const result = match (opt) {
+//   when { _tag: 'Some', value }: { _tag: 'Some', value: fn(value) },
+//   when { _tag: 'None' }: { _tag: 'None' }
+// };
+```
+
+### JSON Schema 结构匹配
+
+```typescript
+import { match, P } from 'ts-pattern';
+
+type APIResponse =
+  | { status: 'success'; data: { users: { id: number; name: string }[] } }
+  | { status: 'error'; code: number; message: string };
+
+const handle = (res: APIResponse) =>
+  match(res)
+    .with(
+      { status: 'success', data: { users: P.array({ id: P.number, name: P.string }) } },
+      (r) => r.data.users.map(u => u.name)
+    )
+    .with({ status: 'error', code: P.number }, (r) => [`Error ${r.code}: ${r.message}`])
+    .exhaustive();
+```
+
+### 递归数据结构匹配
+
+```typescript
+type Expr =
+  | { type: 'literal'; value: number }
+  | { type: 'add'; left: Expr; right: Expr }
+  | { type: 'multiply'; left: Expr; right: Expr };
+
+function evaluate(expr: Expr): number {
+  return match(expr)
+    .with({ type: 'literal' }, (e) => e.value)
+    .with({ type: 'add' }, (e) => evaluate(e.left) + evaluate(e.right))
+    .with({ type: 'multiply' }, (e) => evaluate(e.left) * evaluate(e.right))
+    .exhaustive();
+}
+
+// evaluate({ type: 'add', left: { type: 'literal', value: 2 }, right: { type: 'literal', value: 3 } }) === 5
+```
+
+### 守卫子句与范围匹配
+
+```typescript
+import { match, P } from 'ts-pattern';
+
+function grade(score: number): string {
+  return match(score)
+    .with(P.number.when(n => n >= 90 && n <= 100), () => 'A')
+    .with(P.number.when(n => n >= 80 && n < 90), () => 'B')
+    .with(P.number.when(n => n >= 70 && n < 80), () => 'C')
+    .with(P.number.when(n => n >= 60 && n < 70), () => 'D')
+    .with(P.number.when(n => n >= 0 && n < 60), () => 'F')
+    .otherwise(() => 'Invalid');
+}
+```
+
+---
+
+## 更多权威参考
+
+- **TC39 Pattern Matching Proposal (Stage 1)** — <https://github.com/tc39/proposal-pattern-matching>
+- **TypeScript Handbook: Narrowing** — <https://www.typescriptlang.org/docs/handbook/2/narrowing.html>
+- **ts-pattern Documentation** — <https://github.com/gvergnaud/ts-pattern>
+- **Rust: Pattern Matching** — <https://doc.rust-lang.org/book/ch18-00-patterns.html>
+- **Scala: Pattern Matching** — <https://docs.scala-lang.org/tour/pattern-matching.html>
+- **F#: Pattern Matching** — <https://learn.microsoft.com/en-us/dotnet/fsharp/language-reference/pattern-matching>
+- **Haskell: Pattern Matching** — <https://www.haskell.org/tutorial/patterns.html>
+- **ECMA-262: Destructuring Assignment** — <https://tc39.es/ecma262/#sec-destructuring-assignment>
+- **Pattern Matching in TypeScript (pattern-matching.dev)** — <https://pattern-matching.dev/>
+- **Functional Programming: Option Type** — <https://en.wikipedia.org/wiki/Option_type>

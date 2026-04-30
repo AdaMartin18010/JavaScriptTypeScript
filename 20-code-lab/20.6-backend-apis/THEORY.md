@@ -298,9 +298,162 @@ export default config;
 // data?.user.name 完全类型安全
 ```
 
+## 九、代码示例：oRPC 双模式路由器
+
+```typescript
+// orpc-router.ts — 同时输出 RPC 和 OpenAPI REST
+import { createORPC, ORPCError } from '@orpc/server';
+import { z } from 'zod';
+
+const orpc = createORPC({
+  context: async () => ({ user: null }), // 可注入认证上下文
+});
+
+const router = orpc.router({
+  user: orpc.router({
+    get: orpc
+      .input(z.object({ id: z.string().uuid() }))
+      .output(z.object({ id: z.string(), name: z.string(), email: z.string() }))
+      .handler(async ({ input }) => {
+        const user = await db.users.findById(input.id);
+        if (!user) throw new ORPCError('NOT_FOUND', { message: 'User not found' });
+        return user;
+      }),
+
+    list: orpc
+      .input(z.object({ limit: z.number().min(1).max(100).default(20) }).optional())
+      .handler(async ({ input }) => {
+        return db.users.findMany({ limit: input?.limit ?? 20 });
+      }),
+
+    create: orpc
+      .input(z.object({ name: z.string(), email: z.string().email() }))
+      .handler(async ({ input }) => {
+        return db.users.create({ data: input });
+      }),
+  }),
+});
+
+// 导出供 tRPC 风格客户端调用
+export type AppRouter = typeof router;
+export { router };
+```
+
+## 十、代码示例：幂等性键（Idempotency Key）模式
+
+```typescript
+// idempotency.ts — 防止重复提交的幂等性中间件
+import { Hono } from 'hono';
+
+interface IdempotencyStore {
+  get(key: string): Promise<{ status: number; body: unknown } | null>;
+  set(key: string, response: { status: number; body: unknown }, ttlSec: number): Promise<void>;
+}
+
+class InMemoryIdempotencyStore implements IdempotencyStore {
+  private store = new Map<string, { response: { status: number; body: unknown }; expires: number }>();
+
+  async get(key: string) {
+    const entry = this.store.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expires) {
+      this.store.delete(key);
+      return null;
+    }
+    return entry.response;
+  }
+
+  async set(key: string, response: { status: number; body: unknown }, ttlSec: number) {
+    this.store.set(key, { response, expires: Date.now() + ttlSec * 1000 });
+  }
+}
+
+function idempotencyMiddleware(store: IdempotencyStore, ttlSec = 3600) {
+  return async (c: any, next: () => Promise<void>) => {
+    const key = c.req.header('Idempotency-Key');
+    if (!key) return next();
+
+    const cached = await store.get(key);
+    if (cached) {
+      return c.json(cached.body, cached.status);
+    }
+
+    await next();
+
+    // 缓存响应
+    const body = c.res.body;
+    const status = c.res.status;
+    await store.set(key, { status, body }, ttlSec);
+  };
+}
+
+// 使用
+const app = new Hono();
+app.use('/api/*', idempotencyMiddleware(new InMemoryIdempotencyStore()));
+app.post('/api/payments', async (c) => {
+  // 同一 Idempotency-Key 的重复请求返回相同结果
+  const payment = await processPayment(await c.req.json());
+  return c.json(payment, 201);
+});
+```
+
+## 十一、代码示例：限流中间件（Token Bucket）
+
+```typescript
+// rate-limit.ts — Token Bucket 限流算法
+interface RateLimitStore {
+  consume(key: string, tokens: number, windowMs: number, capacity: number): Promise<boolean>;
+}
+
+class InMemoryTokenBucket implements RateLimitStore {
+  private buckets = new Map<string, { tokens: number; lastRefill: number }>();
+
+  async consume(key: string, tokens: number, windowMs: number, capacity: number): Promise<boolean> {
+    const now = Date.now();
+    let bucket = this.buckets.get(key);
+
+    if (!bucket) {
+      bucket = { tokens: capacity, lastRefill: now };
+    }
+
+    // 补充令牌
+    const elapsed = now - bucket.lastRefill;
+    const refillTokens = (elapsed / windowMs) * capacity;
+    bucket.tokens = Math.min(capacity, bucket.tokens + refillTokens);
+    bucket.lastRefill = now;
+
+    if (bucket.tokens < tokens) {
+      this.buckets.set(key, bucket);
+      return false; // 限流
+    }
+
+    bucket.tokens -= tokens;
+    this.buckets.set(key, bucket);
+    return true;
+  }
+}
+
+function rateLimit(options: { windowMs: number; max: number; keyGenerator?: (c: any) => string }) {
+  const store = new InMemoryTokenBucket();
+  return async (c: any, next: () => Promise<void>) => {
+    const key = options.keyGenerator ? options.keyGenerator(c) : c.req.ip;
+    const allowed = await store.consume(key, 1, options.windowMs, options.max);
+    if (!allowed) {
+      return c.json({ error: 'Too many requests' }, 429, {
+        'Retry-After': Math.ceil(options.windowMs / 1000).toString(),
+      });
+    }
+    await next();
+  };
+}
+
+// 使用
+app.use('/api/*', rateLimit({ windowMs: 60000, max: 100 }));
+```
+
 ---
 
-## 九、扩展阅读
+## 十二、扩展阅读
 
 - `30-knowledge-base/30.4-decision-trees/runtime-selection.md` — 运行时选型决策树
 - `40-ecosystem/40.3-trends/ECOSYSTEM_TRENDS_2026.md` — 后端生态趋势
@@ -316,6 +469,12 @@ export default config;
 - [Zod to OpenAPI](https://github.com/asteasolutions/zod-to-openapi)
 - [Deno Deploy Documentation](https://docs.deno.com/deploy/manual/)
 - [Cloudflare Workers — Best Practices](https://developers.cloudflare.com/workers/platform/best-practices/)
+- [RFC 6585 — HTTP Status 429](https://datatracker.ietf.org/doc/html/rfc6585) — Too Many Requests 标准
+- [Bun Documentation](https://bun.sh/docs) — Bun 运行时官方文档
+- [Node.js 24 Release Notes](https://nodejs.org/en/blog/release/) — Node.js 最新特性
+- [Express.js 5 Migration](https://expressjs.com/en/guide/migrating-5.html) — Express 迁移指南
+- [Fastify Documentation](https://fastify.dev/docs/latest/) — 高性能 Node.js 框架
+- [OWASP API Security Top 10](https://owasp.org/www-project-api-security/) — API 安全最佳实践
 
 ---
 

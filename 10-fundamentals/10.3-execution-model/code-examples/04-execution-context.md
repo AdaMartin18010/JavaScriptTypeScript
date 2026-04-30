@@ -241,4 +241,101 @@ console.log(context.module.exports.result); // 101
 
 ---
 
+---
+
+## 13. 深化实例：执行上下文进阶实战
+
+### 13.1 正例：类静态块与执行上下文层级
+
+```javascript
+class Config {
+  static #instance;
+
+  // 类静态块拥有自己的词法环境，可访问私有字段
+  static {
+    const env = process.env.NODE_ENV || 'development';
+    this.#instance = new this(env); // 静态块中的 this 指向类本身
+  }
+
+  constructor(env) {
+    this.env = env;
+  }
+}
+
+// 等价于在类评估时创建一个特殊的执行上下文
+// 该上下文可访问类的私有名称绑定
+console.log(Config.env); // 'development'
+```
+
+### 13.2 正例：Top-level await 的模块执行上下文
+
+```javascript
+// module.mjs
+const response = await fetch('https://api.example.com/config');
+// 顶层 await 会暂停模块的执行上下文创建
+// 但不会影响其他模块的加载
+
+export const config = await response.json();
+// 其他 import 本模块的代码会等待该上下文完成
+```
+
+### 13.3 正例：直接 eval 与间接 eval 的上下文差异
+
+```javascript
+const x = 'global';
+
+function demo() {
+  const x = 'local';
+
+  // 直接 eval：继承当前执行上下文的词法环境
+  eval('console.log(x)'); // "local"
+
+  // 间接 eval：使用全局执行上下文
+  const indirect = eval;
+  indirect('console.log(typeof x)'); // "undefined"（独立上下文）
+
+  // 严格模式下的直接 eval 创建独立词法环境
+  'use strict';
+  eval('var inner = 1');
+  console.log(typeof inner); // "undefined"（不泄漏）
+}
+
+demo();
+```
+
+### 13.4 正例：Error 对象的执行上下文快照
+
+```javascript
+function layerA() {
+  function layerB() {
+    function layerC() {
+      const err = new Error('context snapshot');
+      return err.stack;
+    }
+    return layerC();
+  }
+  return layerB();
+}
+
+// 堆栈追踪记录了调用链上每个执行上下文的快照
+console.log(layerA());
+// Error: context snapshot
+//   at layerC (file.js:4)
+//   at layerB (file.js:6)
+//   at layerA (file.js:8)
+```
+
+---
+
+## 14. 更多权威参考
+
+- **ECMA-262 §9.3** — Realms: <https://tc39.es/ecma262/#sec-realms>
+- **V8 Blog: Understanding the JavaScript Execution Context** — <https://v8.dev/blog/execution-context>
+- **Node.js — Contextify (vm module internals)** — <https://nodejs.org/api/vm.html#vmrunincontextcode-contextifiedobject-options>
+- **HTML Living Standard §8.1.3.5** — Realms and their counterparts: <https://html.spec.whatwg.org/multipage/webappapis.html#realms-and-their-counterparts>
+- **TC39: ShadowRealm (Stage 3)** — <https://github.com/tc39/proposal-shadowrealm>
+- **MDN: strict mode** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode>
+
+---
+
 **参考规范**：ECMA-262 §9 | MDN | TC39 Proposals | Node.js Docs

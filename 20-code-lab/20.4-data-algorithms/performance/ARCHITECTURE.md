@@ -221,6 +221,118 @@ const vec3Pool = new ObjectPool(
 );
 ```
 
+### 6.3 防抖与节流实现
+
+```typescript
+// debounce-throttle.ts — 高频事件优化
+
+/** 防抖：延迟执行，只响应最后一次 */
+function debounce<T extends (...args: any[]) => void>(fn: T, wait: number): T {
+  let timer: ReturnType<typeof setTimeout>;
+  return ((...args: any[]) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), wait);
+  }) as T;
+}
+
+/** 节流：固定间隔执行 */
+function throttle<T extends (...args: any[]) => void>(fn: T, limit: number): T {
+  let inThrottle = false;
+  return ((...args: any[]) => {
+    if (!inThrottle) {
+      fn(...args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  }) as T;
+}
+
+// 使用：搜索输入防抖 + 滚动事件节流
+const searchInput = document.getElementById('search') as HTMLInputElement;
+searchInput.addEventListener('input', debounce((e) => {
+  console.log('Search:', (e.target as HTMLInputElement).value);
+}, 300));
+
+window.addEventListener('scroll', throttle(() => {
+  console.log('Scroll position:', window.scrollY);
+}, 100));
+```
+
+### 6.4 记忆化（Memoization）优化
+
+```typescript
+// memoization.ts — 计算结果缓存
+function memoize<T extends (...args: any[]) => any>(fn: T): T {
+  const cache = new Map<string, ReturnType<T>>();
+  return ((...args: any[]) => {
+    const key = JSON.stringify(args);
+    if (cache.has(key)) return cache.get(key)!;
+    const result = fn(...args);
+    cache.set(key, result);
+    return result;
+  }) as T;
+}
+
+// 使用：斐波那契数列
+const fib = memoize((n: number): number => {
+  if (n <= 1) return n;
+  return fib(n - 1) + fib(n - 2);
+});
+
+console.log(fib(40)); // 快于未缓存版本数万倍
+```
+
+### 6.5 虚拟列表（Virtual List）核心
+
+```typescript
+// virtual-list.ts — 只渲染可视区域 DOM
+interface VirtualListConfig {
+  itemHeight: number;
+  containerHeight: number;
+  totalItems: number;
+  overscan?: number;
+}
+
+function calculateVisibleRange(
+  scrollTop: number,
+  config: VirtualListConfig
+): { start: number; end: number; offsetY: number } {
+  const { itemHeight, containerHeight, totalItems, overscan = 3 } = config;
+  const start = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
+  const visibleCount = Math.ceil(containerHeight / itemHeight) + overscan * 2;
+  const end = Math.min(totalItems, start + visibleCount);
+  const offsetY = start * itemHeight;
+  return { start, end, offsetY };
+}
+
+// React 风格伪代码
+function VirtualList({ items, itemHeight, containerHeight }: any) {
+  const [scrollTop, setScrollTop] = useState(0);
+  const { start, end, offsetY } = calculateVisibleRange(scrollTop, {
+    itemHeight,
+    containerHeight,
+    totalItems: items.length,
+  });
+
+  return (
+    <div
+      style={{ height: containerHeight, overflow: 'auto' }}
+      onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+    >
+      <div style={{ height: items.length * itemHeight, position: 'relative' }}>
+        <div style={{ transform: `translateY(${offsetY}px)` }}>
+          {items.slice(start, end).map((item: any, i: number) => (
+            <div key={item.id} style={{ height: itemHeight }}>
+              {item.content}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
 ## 7. 技术决策
 
 | 决策 | 选择 | 理由 |
@@ -243,3 +355,13 @@ const vec3Pool = new ObjectPool(
 - [High Performance Browser Networking](https://hpbn.co/) — Ilya Grigorik 的网络性能经典著作
 - [JavaScript Engine Fundamentals](https://mathiasbynens.be/notes/shapes-ics) — V8 隐藏类与内联缓存原理
 - [Benchmark.js](https://benchmarkjs.com/) — JavaScript 基准测试库标杆
+- [Web.dev — Optimize JavaScript Execution](https://web.dev/articles/optimize-javascript-execution) — Google 官方 JS 执行优化指南
+- [V8 Blog — Fast Properties](https://v8.dev/blog/fast-properties) — V8 对象属性访问优化内幕
+- [V8 Blog — Sparkplug](https://v8.dev/blog/sparkplug) — V8 非优化编译器解析
+- [Node.js Performance Best Practices](https://nodejs.org/en/docs/guides/simple-profiling/) — Node.js 官方性能分析指南
+- [Clinic.js Documentation](https://clinicjs.org/documentation/) — Node.js 性能诊断工具集
+- [Lighthouse Scoring Guide](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring/) — Lighthouse 评分机制详解
+- [React Profiler API](https://react.dev/reference/react/Profiler) — React 组件级性能分析
+- [Webpack Bundle Analysis](https://webpack.js.org/guides/code-splitting/) — 代码分割与包体积优化
+- [MDN — Performance API](https://developer.mozilla.org/en-US/docs/Web/API/Performance) — 浏览器 Performance API 完整参考
+- [W3C — User Timing Level 3](https://www.w3.org/TR/user-timing-3/) — 用户计时规范

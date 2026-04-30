@@ -268,6 +268,104 @@ async function searchPostsDrizzle(query: string) {
 }
 ```
 
+### 4.4 MikroORM Unit of Work 模式
+
+```typescript
+// mikro-orm-example.ts — DDD 友好的 ORM
+import { Entity, PrimaryKey, Property, OneToMany, Collection,
+         EntityManager, Cascade } from '@mikro-orm/core';
+
+@Entity()
+class User {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  email!: string;
+
+  @Property({ nullable: true })
+  name?: string;
+
+  @OneToMany(() => Post, post => post.author, { cascade: [Cascade.ALL] })
+  posts = new Collection<Post>(this);
+}
+
+@Entity()
+class Post {
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  title!: string;
+
+  @ManyToOne(() => User)
+  author!: User;
+}
+
+// Unit of Work 自动追踪变更
+async function createUserWithPosts(em: EntityManager) {
+  const user = new User();
+  user.email = 'alice@example.com';
+  user.name = 'Alice';
+
+  const post = new Post();
+  post.title = 'Hello MikroORM';
+  post.author = user;
+  user.posts.add(post);
+
+  // 只需 persist 根实体，级联自动处理关联实体
+  await em.persistAndFlush(user);
+
+  // 修改实体后，flush 自动检测 dirty checking
+  user.name = 'Alice Updated';
+  await em.flush(); // 只更新 name 字段
+}
+```
+
+### 4.5 TypeORM QueryBuilder 复杂查询
+
+```typescript
+// typeorm-querybuilder.ts — 复杂 SQL 构造
+import { DataSource } from 'typeorm';
+
+const dataSource = new DataSource({ /* ... */ });
+
+async function getTopAuthorsWithStats() {
+  return dataSource
+    .getRepository(User)
+    .createQueryBuilder('user')
+    .leftJoinAndSelect('user.posts', 'post')
+    .select([
+      'user.id',
+      'user.name',
+      'COUNT(post.id) as postCount',
+      'SUM(post.viewCount) as totalViews',
+    ])
+    .where('post.published = :published', { published: true })
+    .groupBy('user.id')
+    .having('COUNT(post.id) > :minPosts', { minPosts: 5 })
+    .orderBy('totalViews', 'DESC')
+    .limit(10)
+    .getRawMany();
+}
+
+// 子查询构造
+async function getUsersWithRecentPosts() {
+  const subQuery = dataSource
+    .createQueryBuilder()
+    .select('post.authorId')
+    .from(Post, 'post')
+    .where('post.createdAt > :date', { date: new Date(Date.now() - 7 * 86400000) });
+
+  return dataSource
+    .getRepository(User)
+    .createQueryBuilder('user')
+    .where(`user.id IN (${subQuery.getQuery()})`)
+    .setParameters(subQuery.getParameters())
+    .getMany();
+}
+```
+
 ## 5. 边缘数据库适配
 
 边缘计算环境对 ORM 提出新要求：
@@ -276,6 +374,27 @@ async function searchPostsDrizzle(query: string) {
 - **WASM 编译**: Prisma 7 将查询引擎编译为 WASM，在边缘运行
 - **轻量级驱动**: LibSQL（Turso）比 SQLite 更适合边缘场景
 
+### 5.1 Drizzle + Turso 边缘配置
+
+```typescript
+// drizzle-turso-edge.ts
+import { createClient } from '@libsql/client/web';
+import { drizzle } from 'drizzle-orm/libsql';
+
+// 在 Cloudflare Workers 中使用 HTTP 模式连接 Turso
+const client = createClient({
+  url: process.env.TURSO_DATABASE_URL!,
+  authToken: process.env.TURSO_AUTH_TOKEN!,
+});
+
+export const db = drizzle(client);
+
+// 查询自动通过 HTTP 传输，无需持久 TCP 连接
+export async function getPostsEdge() {
+  return db.select().from(posts).all();
+}
+```
+
 ## 6. 迁移策略
 
 | 策略 | 特点 | 工具 |
@@ -283,6 +402,34 @@ async function searchPostsDrizzle(query: string) {
 | **声明式** | Schema 定义即真相 | Prisma Migrate、Django Migrations |
 | **命令式** | 手写迁移脚本 | Flyway、Liquibase、node-pg-migrate |
 | **混合式** | 声明式生成 + 手动调整 | Alembic、TypeORM Migrations |
+
+### 6.1 Prisma 迁移工作流
+
+```bash
+# 1. 修改 schema.prisma
+# 2. 生成迁移文件
+npx prisma migrate dev --name add_user_role
+
+# 3. 生成客户端类型（CI/CD 中必须）
+npx prisma generate
+
+# 4. 部署迁移到生产
+npx prisma migrate deploy
+```
+
+### 6.2 Drizzle 迁移工作流
+
+```bash
+# 1. 修改 schema.ts
+# 2. 生成迁移 SQL
+npx drizzle-kit generate
+
+# 3. 应用到数据库
+npx drizzle-kit migrate
+
+# 4. 可选：类型检查
+npx tsc --noEmit
+```
 
 ## 7. 与相邻模块的关系
 
@@ -302,3 +449,10 @@ async function searchPostsDrizzle(query: string) {
 - [Turso / LibSQL Documentation](https://docs.turso.tech/) — 边缘 SQLite 数据库
 - [SQLize (Active Record vs Data Mapper)](https://sqlize.online/) — SQL 在线对比工具
 - [Node.js ORM Benchmarks](https://github.com/antonk52/bench-node-orm) — Node.js ORM 性能基准测试
+- [Martin Fowler — ORM Hate](https://martinfowler.com/bliki/OrmHate.html) — ORM 设计哲学经典论述
+- [Unit of Work Pattern — Martin Fowler](https://martinfowler.com/eaaCatalog/unitOfWork.html) — 工作单元模式
+- [Identity Map Pattern — Martin Fowler](https://martinfowler.com/eaaCatalog/identityMap.html) — 标识映射模式
+- [Prisma Driver Adapters](https://www.prisma.io/docs/orm/overview/databases/database-drivers) — 数据库驱动适配器
+- [Drizzle Kit Migrations](https://orm.drizzle.team/docs/kit-overview) — Drizzle 迁移工具文档
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/) — PostgreSQL 官方文档
+- [SQLite Documentation](https://www.sqlite.org/docs.html) — SQLite 官方文档

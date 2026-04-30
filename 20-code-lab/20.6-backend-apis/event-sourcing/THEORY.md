@@ -275,6 +275,200 @@ class ProjectionEngine {
 }
 ```
 
+### 6.4 快照模式（Snapshot Pattern）
+
+```typescript
+// event-sourcing/src/Snapshot.ts
+interface Snapshot {
+  aggregateId: string;
+  version: number;
+  state: object;
+  timestamp: Date;
+}
+
+interface SnapshotStore {
+  save(snapshot: Snapshot): Promise<void>;
+  load(aggregateId: string): Promise<Snapshot | null>;
+}
+
+class InMemorySnapshotStore implements SnapshotStore {
+  private snapshots = new Map<string, Snapshot>();
+
+  async save(snapshot: Snapshot): Promise<void> {
+    this.snapshots.set(snapshot.aggregateId, snapshot);
+  }
+
+  async load(aggregateId: string): Promise<Snapshot | null> {
+    return this.snapshots.get(aggregateId) ?? null;
+  }
+}
+
+// 带快照的聚合加载器
+class SnapshotAggregateLoader<T extends AggregateRoot> {
+  constructor(
+    private eventStore: EventStore,
+    private snapshotStore: SnapshotStore,
+    private factory: () => T,
+    private snapshotInterval = 10
+  ) {}
+
+  async load(aggregateId: string): Promise<T> {
+    const snapshot = await this.snapshotStore.load(aggregateId);
+    const events = await this.eventStore.getEvents(aggregateId);
+
+    const aggregate = this.factory();
+    (aggregate as any)._id = aggregateId;
+
+    if (snapshot) {
+      // 从快照恢复状态
+      Object.assign(aggregate, snapshot.state);
+      (aggregate as any)._version = snapshot.version;
+      // 只重放快照之后的事件
+      const newEvents = events.filter(e => e.version > snapshot.version);
+      aggregate.loadFromHistory(newEvents);
+    } else {
+      aggregate.loadFromHistory(events);
+    }
+
+    return aggregate;
+  }
+
+  async save(aggregate: T): Promise<void> {
+    const events = aggregate.uncommittedEvents;
+    if (events.length === 0) return;
+
+    await this.eventStore.append(events, aggregate.version - events.length);
+    aggregate.markCommitted();
+
+    // 每 N 个版本创建一次快照
+    if (aggregate.version % this.snapshotInterval === 0) {
+      await this.snapshotStore.save({
+        aggregateId: aggregate.id,
+        version: aggregate.version,
+        state: { ...(aggregate as any) },
+        timestamp: new Date(),
+      });
+    }
+  }
+}
+```
+
+### 6.5 事件版本升级（Upcasting）
+
+```typescript
+// event-sourcing/src/Upcaster.ts
+interface EventUpcaster {
+  fromVersion: number;
+  toVersion: number;
+  eventType: string;
+  upcast(payload: object): object;
+}
+
+class EventUpcasterChain {
+  private upcasters: Map<string, EventUpcaster[]> = new Map();
+
+  register(upcaster: EventUpcaster): void {
+    const list = this.upcasters.get(upcaster.eventType) ?? [];
+    list.push(upcaster);
+    list.sort((a, b) => a.fromVersion - b.fromVersion);
+    this.upcasters.set(upcaster.eventType, list);
+  }
+
+  upcast(event: EventRecord): EventRecord {
+    const chain = this.upcasters.get(event.eventType) ?? [];
+    let payload = event.payload;
+
+    for (const upcaster of chain) {
+      payload = upcaster.upcast(payload);
+    }
+
+    return { ...event, payload };
+  }
+}
+
+// 使用示例：MoneyDeposited v1 → v2 升级（添加 currency 字段）
+const depositUpcaster: EventUpcaster = {
+  eventType: 'MoneyDeposited',
+  fromVersion: 1,
+  toVersion: 2,
+  upcast: (payload) => ({
+    ...payload,
+    currency: (payload as any).currency ?? 'USD', // 默认值迁移
+  }),
+};
+```
+
+### 6.6 发件箱模式（Outbox Pattern）
+
+```typescript
+// event-sourcing/src/Outbox.ts
+interface OutboxMessage {
+  id: string;
+  topic: string;
+  payload: string;
+  headers: Record<string, string>;
+  createdAt: Date;
+  processedAt?: Date;
+}
+
+interface OutboxStore {
+  enqueue(message: OutboxMessage): Promise<void>;
+  pollPending(limit: number): Promise<OutboxMessage[]>;
+  markProcessed(id: string): Promise<void>;
+}
+
+// 在事务中同时写入事件和 outbox，保证原子性
+class EventSourcingWithOutbox {
+  constructor(
+    private eventStore: EventStore,
+    private outboxStore: OutboxStore
+  ) {}
+
+  async executeCommand(
+    aggregate: AggregateRoot,
+    publish: (event: EventRecord) => OutboxMessage[]
+  ): Promise<void> {
+    const events = aggregate.uncommittedEvents;
+    if (events.length === 0) return;
+
+    // 事务边界内同时写入事件和 outbox
+    await this.eventStore.append(events, aggregate.version - events.length);
+
+    for (const event of events) {
+      const messages = publish(event);
+      for (const msg of messages) {
+        await this.outboxStore.enqueue(msg);
+      }
+    }
+
+    aggregate.markCommitted();
+  }
+}
+
+// 后台轮询处理器
+class OutboxPoller {
+  constructor(
+    private outboxStore: OutboxStore,
+    private publisher: (msg: OutboxMessage) => Promise<void>,
+    private intervalMs = 1000
+  ) {}
+
+  start(): void {
+    setInterval(async () => {
+      const pending = await this.outboxStore.pollPending(100);
+      for (const msg of pending) {
+        try {
+          await this.publisher(msg);
+          await this.outboxStore.markProcessed(msg.id);
+        } catch (err) {
+          console.error(`Failed to publish outbox message ${msg.id}:`, err);
+        }
+      }
+    }, this.intervalMs);
+  }
+}
+```
+
 ## 7. 挑战与应对
 
 | 挑战 | 应对策略 |
@@ -299,3 +493,11 @@ class ProjectionEngine {
 - [Event Store DB Documentation](https://developers.eventstore.com/) — 专用事件存储数据库
 - [Designing Event-Driven Systems - Confluent](https://www.confluent.io/designing-event-driven-systems/) — 事件驱动系统设计
 - [The Dark Side of Event Sourcing - Haufe](https://www.haufegroup.io/en/blog/event-sourcing-the-dark-side) — 事件溯源实践中的挑战与对策
+- [RFC 4122 — UUID](https://datatracker.ietf.org/doc/html/rfc4122) — UUID v4 标准规范
+- [ISO 8601 Date Format](https://www.iso.org/iso-8601-date-and-time-format.html) — 国际日期时间标准
+- [Building Microservices - Sam Newman](https://samnewman.io/books/building_microservices/) — 微服务架构经典，含事件溯源章节
+- [Implementing Domain-Driven Design - Vaughn Vernon](https://www.oreilly.com/library/view/implementing-domain-driven-design/9780133039900/) — DDD 实现，聚合根与事件存储
+- [Outbox Pattern - Chris Richardson](https://microservices.io/patterns/data/transactional-outbox.html) — 微服务模式：事务性发件箱
+- [Event Sourcing with PostgreSQL - AxonIQ](https://www.axoniq.io/resources/event-sourcing) — 生产级事件溯源实践
+- [Kafka as an Event Store - Confluent Blog](https://www.confluent.io/blog/apache-kafka-event-store/) — 使用 Kafka 实现事件存储
+- [Projections in Event Sourcing - Alexey Zimarev](https://zimarev.com/blog/event-sourcing/projections/) — 投影模式详解

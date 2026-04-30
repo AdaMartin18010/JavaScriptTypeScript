@@ -253,6 +253,67 @@ console.log(Atomics.load(data, 1)); // 保证看到 42
 
 > ECMAScript 规定 `Atomics.load`/`store` 具有顺序一致性（sequentially consistent）。
 
+#### 3.1.7 原子位运算（Atomics.and / or / xor）
+
+```typescript
+// flags.ts — 使用位掩码管理多 Worker 状态
+const buffer = new SharedArrayBuffer(4);
+const flags = new Int32Array(buffer);
+
+// 设置第 2 位 (0b0100)
+Atomics.or(flags, 0, 0b0100);
+
+// 清除第 2 位
+Atomics.and(flags, 0, ~0b0100);
+
+// 翻转第 0 位
+Atomics.xor(flags, 0, 0b0001);
+
+// 读取当前值
+const current = Atomics.load(flags, 0);
+console.log(current & 0b0100 ? 'bit 2 set' : 'bit 2 clear');
+```
+
+#### 3.1.8 多 Worker 共享状态机（Atomics.sub + notifyAll）
+
+```typescript
+// barrier.ts — 简易屏障同步：等待 N 个 Worker 到达某点
+const N = 4;
+const buffer = new SharedArrayBuffer(4);
+const remaining = new Int32Array(buffer);
+Atomics.store(remaining, 0, N);
+
+const workerCode = `
+  const { workerData, parentPort } = require('worker_threads');
+  const { buffer, workerId } = workerData;
+  const remaining = new Int32Array(buffer);
+
+  // 模拟工作
+  console.log('Worker', workerId, 'working...');
+
+  // 到达屏障
+  const left = Atomics.sub(remaining, 0, 1);
+  if (left === 1) {
+    // 最后一个到达，唤醒所有等待者
+    Atomics.notify(remaining, 0, N);
+    parentPort.postMessage('all-reached');
+  } else {
+    Atomics.wait(remaining, 0, 0);
+    parentPort.postMessage('released');
+  }
+`;
+
+async function barrierDemo() {
+  const { Worker } = await import('worker_threads');
+  const workers = Array.from({ length: N }, (_, i) =>
+    new Worker(workerCode, { eval: true, workerData: { buffer, workerId: i } })
+  );
+  const msgs = await Promise.all(workers.map(w => new Promise(r => w.once('message', r))));
+  console.log('Barrier results:', msgs);
+}
+barrierDemo();
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -281,12 +342,16 @@ console.log(Atomics.load(data, 1)); // 保证看到 42
 - [WebAssembly Threads Proposal](https://github.com/WebAssembly/threads/blob/main/proposals/threads/Overview.md)
 - [COOP and COEP Explained — web.dev](https://web.dev/articles/coop-coep)
 - [V8 Blog — Concurrent Marking in V8](https://v8.dev/blog/concurrent-marking)
+- [V8 Blog — Elements Kinds and Performance](https://v8.dev/blog/elements-kinds)
 
 #### 学术与进阶
 
 - [Lock-Free Data Structures — Cambridge University Lecture Notes](https://www.cl.cam.ac.uk/research/srg/netos/lock-free/)
 - [Lock-Free Programming — Herb Sutter](https://www.drdobbs.com/lock-free-code-a-false-sense-of-security/210600279)
 - [Intel Intrinsics Guide — _mm_pause / SSE2](https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html)
+- [A Primer on Memory Consistency and Cache Coherence (Morgan & Claypool)](https://www.morganclaypool.com/doi/abs/10.2200/S00962ED2V01Y201910CAC049)
+- [Is Parallel Programming Hard? And, If So, What Can You Do About It? — Paul E. McKenney](https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook.html)
+- [C++ Memory Order and JS Atomics — V8 Team](https://v8.dev/blog/atomics)
 
 #### 关联模块
 

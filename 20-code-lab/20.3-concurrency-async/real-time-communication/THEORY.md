@@ -8,6 +8,7 @@
 | **SSE** | 服务端→客户端单向 | HTTP | 低延迟 | 股票行情、新闻推送、日志流 | 除 IE 外全支持 |
 | **WebRTC** | P2P 双向 | UDP (DTLS/SRTP) | 极低延迟 | 音视频通话、文件传输、屏幕共享 | 现代浏览器 |
 | **Long-Polling** | 客户端轮询 | HTTP | 较高延迟 | 兼容性要求极高的旧系统 | 全浏览器 |
+| **WebTransport** | 全双工 | HTTP/3 (QUIC) | 极低延迟 | 游戏、实时流、替代 WebSocket | Chrome/Edge |
 
 ---
 
@@ -230,6 +231,34 @@ app.get('/api/events', (req, res) => {
 });
 ```
 
+### SSE 带 Last-Event-ID 的断线续传
+
+```typescript
+// sse-resume.ts — 支持断线续传的 SSE 服务端
+app.get('/api/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const lastId = parseInt(req.headers['last-event-id'] as string || '0', 10);
+  // 从 lastId 开始重发历史消息
+  const missedEvents = eventStore.getSince(lastId);
+  missedEvents.forEach(ev => {
+    res.write(`id: ${ev.id}\n`);
+    res.write(`event: ${ev.type}\n`);
+    res.write(`data: ${JSON.stringify(ev.data)}\n\n`);
+  });
+
+  const listener = (ev: EventRecord) => {
+    res.write(`id: ${ev.id}\n`);
+    res.write(`event: ${ev.type}\n`);
+    res.write(`data: ${JSON.stringify(ev.data)}\n\n`);
+  };
+  eventStore.subscribe(listener);
+  req.on('close', () => eventStore.unsubscribe(listener));
+});
+```
+
 ---
 
 ## 6. WebRTC 数据通道代码示例
@@ -298,15 +327,69 @@ window.addEventListener('beforeunload', () => channel.close());
 
 ---
 
-## 8. 实时架构模式
+## 8. WebTransport API（HTTP/3 双向流）
+
+```typescript
+// webtransport-client.ts — 基于 QUIC 的低延迟通信
+async function connectWebTransport(url: string) {
+  const transport = new WebTransport(url);
+  await transport.ready;
+
+  // 发送单向流
+  const writable = await transport.createUnidirectionalStream();
+  const writer = writable.getWriter();
+  const encoder = new TextEncoder();
+  await writer.write(encoder.encode('hello from client'));
+  writer.close();
+
+  // 接收服务端流
+  const reader = transport.incomingUnidirectionalStreams.getReader();
+  const { value: stream } = await reader.read();
+  if (stream) {
+    const streamReader = stream.getReader();
+    const { value } = await streamReader.read();
+    console.log('Server says:', new TextDecoder().decode(value));
+  }
+}
+
+// 服务端（Node.js 使用 @fails-components/webtransport）
+// WebTransport 服务端目前生态仍在发展中
+```
+
+---
+
+## 9. 实时架构模式
 
 - **发布-订阅**: 频道/主题模型，客户端订阅感兴趣的主题
 - **房间模型**: 用户加入房间，消息广播给房间内所有用户
 - **Presence**: 用户在线状态、正在输入指示器
 - **消息排序**: 全局序列号保证消息顺序
 - **消息持久化**: 离线消息存储，用户上线后推送
+- **CRDT**: 无冲突复制数据类型，用于协作编辑（Yjs, Automerge）
 
-## 9. 与相邻模块的关系
+### CRDT 协作编辑概念示例
+
+```typescript
+// crdt-concept.ts — Yjs 风格的 LWW（Last-Write-Wins）Register
+interface LWWRegister<T> {
+  value: T;
+  timestamp: number; // HLC 或 Lamport Clock
+  peerId: string;
+}
+
+function mergeRegisters<T>(a: LWWRegister<T>, b: LWWRegister<T>): LWWRegister<T> {
+  if (a.timestamp > b.timestamp) return a;
+  if (b.timestamp > a.timestamp) return b;
+  // 时钟相同时按 peerId 字典序决胜
+  return a.peerId > b.peerId ? a : b;
+}
+
+// 实际生产请使用 Yjs: https://github.com/yjs/yjs
+```
+
+---
+
+## 10. 与相邻模块的关系
 
 - **90-web-apis-lab**: WebSocket、WebRTC API 的实践
 - **32-edge-computing**: 边缘节点的实时数据分发
@@ -318,16 +401,25 @@ window.addEventListener('beforeunload', () => channel.close());
 - [MDN Server-Sent Events](https://developer.mozilla.org/zh-CN/docs/Web/API/Server-sent_events)
 - [MDN WebRTC API](https://developer.mozilla.org/zh-CN/docs/Web/API/WebRTC_API)
 - [MDN BroadcastChannel](https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel)
+- [MDN WebTransport API](https://developer.mozilla.org/en-US/docs/Web/API/WebTransport_API)
 - [RFC 6455 — The WebSocket Protocol](https://datatracker.ietf.org/doc/html/rfc6455)
+- [RFC 8445 — Interactive Connectivity Establishment (ICE)](https://datatracker.ietf.org/doc/html/rfc8445)
+- [WebRTC 1.0: Real-Time Communication Between Browsers — W3C Candidate Recommendation](https://www.w3.org/TR/webrtc/)
 - [WebSocket vs SSE vs Long Polling (Ably)](https://ably.com/blog/websockets-vs-sse)
 - [ws — Node.js WebSocket 库](https://github.com/websockets/ws)
 - [WebRTC.org — Getting Started](https://webrtc.org/getting-started/)
 - [MDN — RTCPeerConnection](https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection)
 - [HTML Spec — Server-sent events](https://html.spec.whatwg.org/multipage/server-sent-events.html)
 - [caniuse — WebRTC](https://caniuse.com/rtcpeerconnection)
+- [caniuse — WebTransport](https://caniuse.com/webtransport)
 - [Web.dev — Real-time updates](https://web.dev/articles/real-time)
 - [Socket.io Documentation](https://socket.io/docs/v4/) — 流行实时通信库
-- [WebTransport API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/WebTransport_API) — HTTP/3 双向通信
+- [Yjs — CRDT 协作编辑框架](https://docs.yjs.dev/)
+- [Automerge — CRDT 数据同步](https://automerge.org/)
+- [IETF — WebTransport over HTTP/3 Draft](https://datatracker.ietf.org/doc/html/draft-ietf-webtrans-http3)
+- [WebRTC for the Curious](https://webrtcforthecurious.com/) — 开源 WebRTC 深度指南
+- [High Performance Browser Networking — WebSocket](https://hpbn.co/websocket/) — Ilya Grigorik 网络性能经典
+- [Ably — Real-time Engineering Blog](https://ably.com/blog)
 
 ---
 

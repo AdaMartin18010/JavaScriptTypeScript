@@ -280,4 +280,101 @@ function tdzTypeof() {
 
 ---
 
+---
+
+## 13. 深化实例：词法环境边界案例
+
+### 13.1 正例：for 循环 let 的每次迭代新环境
+
+```javascript
+const fns = [];
+
+for (let i = 0; i < 3; i++) {
+  // 每次迭代创建新的词法环境，i 绑定在不同环境中
+  fns.push(() => i);
+}
+
+console.log(fns.map(fn => fn())); // [0, 1, 2]
+
+// 对比 var：共享同一个绑定
+const fnsVar = [];
+for (var j = 0; j < 3; j++) {
+  fnsVar.push(() => j);
+}
+console.log(fnsVar.map(fn => fn())); // [3, 3, 3]
+```
+
+### 13.2 正例：catch 子句的独立词法环境
+
+```javascript
+try {
+  throw new Error('original');
+} catch (err) {
+  // catch 创建块级词法环境，err 绑定在其中
+  const message = err.message;
+  console.log(message); // "original"
+}
+
+// err 在 catch 块外不可访问
+// console.log(err); // ReferenceError
+
+// ES2019 起可省略 catch 绑定
+try {
+  riskyOperation();
+} catch {
+  console.log('failed without binding');
+}
+```
+
+### 13.3 正例：switch 语句的块级作用域
+
+```javascript
+const action = 'create';
+
+switch (action) {
+  case 'create': {
+    // 使用块语句确保 let/const 不泄漏到整个 switch
+    const id = generateId();
+    console.log('Creating', id);
+    break;
+  }
+  case 'delete': {
+    const id = lookupId(); // 可与上面 case 中的 id 同名
+    console.log('Deleting', id);
+    break;
+  }
+}
+```
+
+### 13.4 正例：const 绑定与对象可变性
+
+```javascript
+// const 绑定的是标识符，不是值本身
+const config = { apiUrl: 'https://api.example.com' };
+
+// ✅ 可以修改对象属性
+config.apiUrl = 'https://staging.example.com';
+
+// ❌ 不能重新绑定标识符
+// config = { apiUrl: '...' }; // TypeError
+
+// 使用 Object.freeze 实现浅不可变
+const frozen = Object.freeze({ nested: { value: 1 } });
+frozen.nested.value = 2; // 静默失败（严格模式报错）
+console.log(frozen.nested.value); // 2（深层未冻结）
+```
+
+---
+
+## 14. 更多权威参考
+
+- **ECMA-262 §13.3.3** — Let and Const Declarations: <https://tc39.es/ecma262/#sec-let-and-const-declarations>
+- **ECMA-262 §13.14** — The try Statement: <https://tc39.es/ecma262/#sec-try-statement>
+- **MDN: Closures** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures>
+- **2ality: Variables and scoping in ECMAScript 6** — <https://2ality.com/2015/02/es6-scoping.html>
+- **V8 Blog: Fast Properties** — <https://v8.dev/blog/fast-properties>
+- **MDN: Object.freeze** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze>
+
+---
+
 **参考规范**：ECMA-262 §8.1 | MDN | 2ality | V8 Blog
