@@ -49,6 +49,14 @@ references:
     - [6.2 yield 的范畴论语义](#62-yield-的范畴论语义)
   - [7. 反例：控制流的范畴论盲区](#7-反例控制流的范畴论盲区)
     - [7.1 控制流的认知负荷分析](#71-控制流的认知负荷分析)
+    - [8. 控制流与计算效应的统一视角](#8-控制流与计算效应的统一视角)
+    - [9. 控制流的历史演化与认知经济学](#9-控制流的历史演化与认知经济学)
+    - [10. 范畴论视角下的控制流形式化](#10-范畴论视角下的控制流形式化)
+    - [10. 控制流的范畴论视角下的形式化](#10-控制流的范畴论视角下的形式化)
+    - [11. 控制流与类型系统的交互](#11-控制流与类型系统的交互)
+    - [12. 控制流的可组合性与认知负荷](#12-控制流的可组合性与认知负荷)
+    - [13. 控制流与类型推断的交互](#13-控制流与类型推断的交互)
+    - [14. 控制流与异常处理的范畴论统一](#14-控制流与异常处理的范畴论统一)
   - [参考文献](#参考文献)
 
 ---
@@ -952,6 +960,473 @@ const fetchUser = (id: string): T.Task<User> =>
   "更容易的形式化验证",
   "引用透明性"
 }
+```
+
+### 9. 控制流的历史演化与认知经济学
+
+编程语言控制流结构的演化，本质上是**认知经济学**的优化过程——用更低的认知成本表达相同的计算意图。
+
+**历史脉络**：
+
+```
+1940s: 机器码跳转（GOTO）
+  → 认知负荷：极高。程序员必须手动追踪每条跳转。
+
+1960s: 结构化编程（if/else, while, for）
+  → 认知负荷：高。Dijkstra 证明 GOTO 有害。
+
+1980s: 异常处理（try-catch）
+  → 认知负荷：中。错误处理与正常逻辑分离。
+
+1990s: 回调函数（事件驱动）
+  → 认知负荷：高。回调地狱是认知噩梦。
+
+2000s: Promise/Future（链式异步）
+  → 认知负荷：中-高。线性化异步逻辑。
+
+2010s: async/await（伪同步）
+  → 认知负荷：低。用同步语法写异步逻辑。
+
+2020s: Effect 系统（代数效应）
+  → 认知负荷：中。显式追踪所有效应。
+```
+
+**认知经济学原则**：
+
+```
+好的控制流设计 = 最小化认知负荷 × 最大化表达能力
+
+= 用尽可能少的"心智步骤"表达尽可能多的"计算意图"
+
+= 让代码的"阅读顺序"尽可能接近"执行顺序"
+```
+
+**反例：过度抽象的控制流**
+
+```typescript
+// 过度使用 Monad 组合，导致认知负荷反而增加
+const result = pipe(
+  fetchUser(id),
+  chain(user => pipe(
+    fetchOrders(user.id),
+    chain(orders => pipe(
+      calculateTotal(orders),
+      map(total => ({ user, orders, total }))
+    ))
+  ))
+);
+
+// 虽然数学上严谨，但阅读者需要在脑中展开多层嵌套
+// async/await 版本更易理解
+
+async function better() {
+  const user = await fetchUser(id);
+  const orders = await fetchOrders(user.id);
+  const total = calculateTotal(orders);
+  return { user, orders, total };
+}
+```
+
+**精确直觉类比：控制流像交通系统的演化**
+
+| 年代 | 交通 | 控制流 | 共同点 |
+|------|------|--------|--------|
+| 1940s | 无信号灯十字路口 | GOTO | 混乱、事故多发 |
+| 1960s | 红绿灯系统 | if/while/for | 规则化、可预测 |
+| 1980s | 高速公路紧急车道 | try-catch | 正常与紧急分离 |
+| 1990s | 复杂的立交桥 | 回调 | 导航困难 |
+| 2000s | GPS 导航 | Promise | 有路线指引但仍需注意力 |
+| 2010s | 自动驾驶辅助 | async/await | 看起来像在正常驾驶 |
+| 2020s | 车联网协同 | Effect 系统 | 所有车辆知道彼此意图 |
+
+**哪里像**：
+
+- ✅ 像交通一样，控制流的演化方向都是"降低操作者的认知负担"
+- ✅ 像交通一样，新技术（async/await）让"外行"也能安全"驾驶"
+
+**哪里不像**：
+
+- ❌ 不像交通，控制流可以同时存在于多个"时代"（GOTO 在现代 C 中仍可用）
+- ❌ 不像交通，软件控制流的"事故"可以无损重现和调试
+
+### 10. 范畴论视角下的控制流形式化
+
+将所有控制流结构统一在范畴论语境中，我们可以获得一个**形式化的控制流代数**。
+
+**控制流范畴 CF**：
+
+```
+对象：程序状态（变量绑定、堆栈、堆）
+态射：状态转换（基本操作、函数调用、控制转移）
+组合：顺序执行（;）
+恒等：空操作（skip）
+```
+
+**结构化控制流定理（Böhm-Jacopini）的范畴论表述**：
+
+```
+任何程序流图都可以被转换为仅使用：
+- 顺序组合（态射复合）
+- 条件选择（余积）
+- 循环（不动点算子）
+
+这三个构造对应范畴论中的：
+- 复合（∘）
+- 余积（+）
+- 初始代数（μ）
+```
+
+**TypeScript 控制流的形式化片段**：
+
+```typescript
+// 顺序执行 = 态射复合
+const seq = <A, B, C>(f: (a: A) => B, g: (b: B) => C) =>
+  (a: A) => g(f(a));
+
+// 条件 = 余积的 case 分析
+const cond = <A, B>(p: (a: A) => boolean,
+                     t: (a: A) => B,
+                     f: (a: A) => B) =>
+  (a: A) => p(a) ? t(a) : f(a);
+
+// 循环 = 不动点
+const whileLoop = <A>(p: (a: A) => boolean,
+                      body: (a: A) => A) => {
+  const loop = (a: A): A => p(a) ? loop(body(a)) : a;
+  return loop;
+};
+```
+
+**反例：控制流范畴不能捕捉所有程序行为**
+
+```
+控制流范畴 CF 的局限：
+
+1. 时间：CF 不区分"立即执行"和"延迟执行"
+   → 需要引入时间索引范畴
+
+2. 资源：CF 不追踪内存使用
+   → 需要引入资源敏感范畴（线性逻辑）
+
+3. 概率：CF 不处理随机性
+   → 需要引入概率范畴（Giry Monad）
+
+4. 安全：CF 不区分"可信"和"不可信"操作
+   → 需要引入安全类型系统（效应系统）
+```
+
+### 10. 控制流的范畴论视角下的形式化
+
+将所有控制流结构统一在范畴论语境中，我们可以获得一个**形式化的控制流代数**。
+
+**控制流范畴 CF**：
+
+```
+对象：程序状态（变量绑定、堆栈、堆）
+态射：状态转换（基本操作、函数调用、控制转移）
+组合：顺序执行（;）
+恒等：空操作（skip）
+```
+
+**结构化控制流定理（Böhm-Jacopini）的范畴论表述**：
+
+```
+任何程序流图都可以被转换为仅使用：
+- 顺序组合（态射复合）
+- 条件选择（余积）
+- 循环（不动点算子）
+
+这三个构造对应范畴论中的：
+- 复合（∘）
+- 余积（+）
+- 初始代数（μ）
+```
+
+**TypeScript 控制流的形式化片段**：
+
+```typescript
+// 顺序执行 = 态射复合
+function seq<A, B, C>(f: (a: A) => B, g: (b: B) => C): (a: A) => C {
+  return (a) => g(f(a));
+}
+
+// 条件 = 余积的 case 分析
+function cond<A, B>(
+  p: (a: A) => boolean,
+  t: (a: A) => B,
+  f: (a: A) => B
+): (a: A) => B {
+  return (a) => p(a) ? t(a) : f(a);
+}
+
+// 循环 = 不动点
+function whileLoop<A>(
+  p: (a: A) => boolean,
+  body: (a: A) => A
+): (a: A) => A {
+  function loop(a: A): A {
+    return p(a) ? loop(body(a)) : a;
+  }
+  return loop;
+}
+```
+
+**反例：控制流范畴不能捕捉所有程序行为**
+
+```
+控制流范畴 CF 的局限：
+
+1. 时间：CF 不区分"立即执行"和"延迟执行"
+   → 需要引入时间索引范畴
+
+2. 资源：CF 不追踪内存使用
+   → 需要引入资源敏感范畴（线性逻辑）
+
+3. 概率：CF 不处理随机性
+   → 需要引入概率范畴（Giry Monad）
+
+4. 安全：CF 不区分"可信"和"不可信"操作
+   → 需要引入安全类型系统（效应系统）
+```
+
+**精确直觉类比：控制流范畴像乐谱**
+
+| 概念 | 乐谱 | 控制流范畴 |
+|------|------|-----------|
+| 对象 | 音符/和弦 | 程序状态 |
+| 态射 | 音符之间的连接 | 状态转换 |
+| 顺序执行 | 按顺序演奏音符 | 按顺序执行语句 |
+| 条件 | 反复记号（可选段落） | if/else |
+| 循环 | 重复记号 | while/for |
+| 函数调用 | 转到另一页乐谱 | 跳转执行 |
+
+**哪里像**：
+
+- ✅ 像乐谱一样，控制流范畴规定了"演奏"（执行）的顺序
+- ✅ 像乐谱一样，不同的"乐器"（数据）可以在同一张"乐谱"上演奏
+
+**哪里不像**：
+
+- ❌ 不像乐谱，控制流可以有副作用（修改全局状态）
+- ❌ 不像乐谱，控制流可以"自我修改"（eval、动态代码）
+
+### 11. 控制流与类型系统的交互
+
+TypeScript 的类型系统与控制流分析紧密耦合。这种耦合可以从范畴论角度获得新的理解。
+
+**类型收窄（Type Narrowing）= 子对象的选择**：
+
+```typescript
+function process(x: string | number) {
+  if (typeof x === 'string') {
+    // 在这个分支中，x 的类型被"收窄"为 string
+    // 范畴论：这是从余积 string + number 中选择 string 子对象
+    console.log(x.toUpperCase());
+  } else {
+    // 在这个分支中，x 的类型被"收窄"为 number
+    // 范畴论：这是从余积 string + number 中选择 number 子对象
+    console.log(x.toFixed(2));
+  }
+}
+```
+
+**控制流分析 = 在类型范畴中追踪子对象**：
+
+```
+TypeScript 编译器在控制流图中传播类型信息：
+
+每个控制流节点 = 类型范畴中的一个对象（子类型）
+每条边 = 态射（类型转换或保持）
+
+类型收窄 = 沿条件边"向下"移动（到子类型）
+类型放宽 = 在汇合点"向上"移动（到超类型）
+```
+
+**正例：穷尽检查（Exhaustiveness Checking）**
+
+```typescript
+type Shape =
+  | { kind: 'circle'; radius: number }
+  | { kind: 'square'; side: number }
+  | { kind: 'triangle'; base: number; height: number };
+
+function area(shape: Shape): number {
+  switch (shape.kind) {
+    case 'circle': return Math.PI * shape.radius ** 2;
+    case 'square': return shape.side ** 2;
+    case 'triangle': return 0.5 * shape.base * shape.height;
+    default:
+      // 如果 Shape 新增了一个变体，这里会编译错误
+      // 范畴论：这是余积的"穷尽性"要求——所有 injection 都必须处理
+      const _exhaustive: never = shape;
+      return _exhaustive;
+  }
+}
+```
+
+**反例：类型系统的控制流盲区**
+
+```typescript
+// TypeScript 无法追踪动态控制流
+function dynamic(x: boolean) {
+  const fn = x ? (a: string) => a.length : (a: number) => a.toFixed();
+  // fn 的类型是 ((a: string) => number) | ((a: number) => string)
+  // 但 TypeScript 无法确定调用时应该传 string 还是 number
+  fn('hello');  // 可能运行时错误！
+}
+
+// 范畴论视角：
+// 动态控制流破坏了"静态类型"的假设
+// fn 的类型是一个"余积的函数"，不是"函数的余积"
+// 这两者不等价！
+```
+
+### 12. 控制流的可组合性与认知负荷
+
+从认知科学角度，可组合的控制流结构显著降低理解和维护成本。
+
+**可组合性的范畴论标准**：
+
+```
+控制流结构 C 是可组合的，当且仅当：
+
+1. 封闭性：两个 C 的组合仍然是 C
+   → 如：两个函数的组合仍然是函数
+
+2. 结合律：(C1 ∘ C2) ∘ C3 = C1 ∘ (C2 ∘ C3)
+   → 组合顺序不影响结果
+
+3. 单位元：存在空操作 skip，使得 skip ∘ C = C ∘ skip = C
+   → 空操作不改变行为
+
+满足这三个条件的控制流结构 = 范畴！
+```
+
+**工程实践**：
+
+```typescript
+// 可组合：函数组合
+const pipeline = compose(
+  validate,
+  transform,
+  save,
+  notify
+);
+
+// 不可组合：goto
+// goto label1;
+// ...
+// label1: ...
+// 无法将两个 goto 程序"组合"成一个有意义的程序
+
+// 结论：函数式控制流（可组合）vs 命令式控制流（不可组合）
+// 的认知优势根源在于范畴论结构
+```
+
+**精确直觉类比：可组合控制流像乐高，不可组合像粘土**
+
+| 特性 | 乐高（可组合） | 粘土（不可组合） |
+|------|-------------|---------------|
+| 组合 | 精确的接口连接 | 任意揉合 |
+| 预测性 | 知道连接后是什么样子 | 不确定 |
+| 重用 | 可以拆下来重用 | 一旦混合无法分离 |
+| 错误 | 接口不匹配时无法连接 | 错误可能在任意时刻显现 |
+
+**哪里像**：
+
+- ✅ 像乐高一样，可组合的控制流有明确的"接口"（类型）
+- ✅ 像乐高一样，组合错误在"连接时"就能发现（编译错误）
+
+**哪里不像**：
+
+- ❌ 不像乐高，控制流的"接口"可以是高阶的（函数作为参数）
+- ❌ 不像乐高，控制流组合可能有副作用（全局状态修改）
+
+### 13. 控制流与类型推断的交互
+
+TypeScript 的控制流分析（Control Flow Analysis）本质上是**在类型范畴中追踪子对象**的过程。
+
+**类型收窄的范畴论解释**：
+
+```typescript
+function example(x: string | number | boolean) {
+  if (typeof x === 'string') {
+    // 这里 x 的类型被收窄为 string
+    // 范畴论：从余积 string + number + boolean 中
+    //         选择了 string 子对象
+    x.toUpperCase();
+  } else if (typeof x === 'number') {
+    // 这里 x 的类型被收窄为 number
+    // 范畴论：从余积 number + boolean 中
+    //         选择了 number 子对象
+    x.toFixed(2);
+  } else {
+    // 这里 x 的类型被推断为 boolean
+    // 范畴论：剩下的唯一子对象
+    x.valueOf();
+  }
+}
+```
+
+**discriminated union 的穷尽检查**：
+
+```typescript
+type Shape =
+  | { kind: 'circle'; radius: number }
+  | { kind: 'rect'; width: number; height: number }
+  | { kind: 'triangle'; base: number; height: number };
+
+function area(shape: Shape): number {
+  switch (shape.kind) {
+    case 'circle': return Math.PI * shape.radius ** 2;
+    case 'rect': return shape.width * shape.height;
+    case 'triangle': return 0.5 * shape.base * shape.height;
+    default:
+      // TypeScript 确保这里永远不会到达
+      // 如果 Shape 新增了一个变体，这里会编译错误
+      const _exhaustiveCheck: never = shape;
+      return _exhaustiveCheck;
+  }
+}
+
+// 范畴论视角：
+// switch 语句 = 余积的 case 分析（categorical fold）
+// never = 初始对象（空类型，不存在值）
+// 穷尽检查 = 确保所有 injection 都被处理
+```
+
+### 14. 控制流与异常处理的范畴论统一
+
+异常处理可以从**余单子**（Comonad）的角度统一理解。
+
+```
+异常 = 计算的"非正常"出口
+
+在范畴论中，这对应于：
+- 正常路径 = 主态射
+- 异常路径 = 余单子的 "extract" 分支
+- finally = 资源清理 = 余单体的 "duplicate"
+```
+
+**TypeScript 中的异常范畴**：
+
+```typescript
+// Either 类型 = 正常值 + 异常值
+type Either<E, A> = { tag: 'left'; error: E } | { tag: 'right'; value: A };
+
+// 异常处理 = Either 的 fold
+function handleException<E, A, B>(
+  result: Either<E, A>,
+  onError: (e: E) => B,
+  onSuccess: (a: A) => B
+): B {
+  return result.tag === 'left' ? onError(result.error) : onSuccess(result.value);
+}
+
+// try-catch-finally 的范畴论解释：
+// try = 主计算（可能产生异常）
+// catch = 异常路径的处理（left 分支）
+// finally = 无论结果如何都执行（自然变换）
 ```
 
 ---

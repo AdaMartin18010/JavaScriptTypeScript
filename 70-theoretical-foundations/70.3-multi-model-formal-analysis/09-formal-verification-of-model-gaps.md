@@ -908,4 +908,4 @@ function mystery(n: number): number {
 20. Garey, M. R., & Johnson, D. S. (1979). *Computers and Intractability: A Guide to the Theory of NP-Completeness*. W. H. Freeman.
 21. Cook, S. A. (1971). "The Complexity of Theorem-Proving Procedures." *STOC 1971*.
 22. Karp, R. M. (1972). "Reducibility Among Combinatorial Problems." *Complexity of Computer Computations*, 85-103.
-15. Hoare, C. A. R. (1969). "An Axiomatic Basis for Computer Programming." *Communications of the ACM*, 12(10), 576-580.
+23. Hoare, C. A. R. (1969). "An Axiomatic Basis for Computer Programming." *Communications of the ACM*, 12(10), 576-580.

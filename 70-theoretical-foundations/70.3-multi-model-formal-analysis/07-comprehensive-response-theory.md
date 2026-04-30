@@ -1281,4 +1281,4 @@ Signals \\ (async/await ∪ Observable) = {
 24. Armstrong, J. (2003). "Making Reliable Distributed Systems in the Presence of Software Errors." *PhD Thesis, KTH*.
 25. Virding, R., et al. (1996). *Concurrent Programming in ERLANG* (2nd ed.). Prentice Hall.
 26. Hewitt, C., et al. (1973). "A Universal Modular ACTOR Formalism for Artificial Intelligence." *IJCAI 1973*.
-23. Cooper, G. H., & Krishnamurthi, S. (2006). "Embedding Dynamic Dataflow in a Call-by-Value Language." *ESOP 2006*.
+27. Cooper, G. H., & Krishnamurthi, S. (2006). "Embedding Dynamic Dataflow in a Call-by-Value Language." *ESOP 2006*.
