@@ -69,7 +69,69 @@ const session = await ort.InferenceSession.create('model.onnx');
 const results = await session.run({ input: tensor });
 ```
 
-### 3.3 ML Pipeline 编排
+### 3.3 ONNX Runtime Web — 浏览器高性能推理
+
+```typescript
+// onnx-runtime-web.ts — 跨浏览器标准化推理
+
+import * as ort from 'onnxruntime-web';
+
+async function runInference(imageData: ImageData): Promise<number[]> {
+  // 创建输入张量 [1, 3, 224, 224]
+  const tensor = new ort.Tensor('float32', preprocess(imageData), [1, 3, 224, 224]);
+  const session = await ort.InferenceSession.create('model.onnx', {
+    executionProviders: ['wasm'], // 或 'webgpu' 以获得 GPU 加速
+  });
+
+  const feeds: Record<string, ort.Tensor> = { input: tensor };
+  const results = await session.run(feeds);
+  const output = results.output as ort.Tensor;
+  return Array.from(output.data as Float32Array);
+}
+
+function preprocess(imageData: ImageData): Float32Array {
+  const { data, width, height } = imageData;
+  const normalized = new Float32Array(3 * width * height);
+  for (let i = 0; i < width * height; i++) {
+    normalized[i] = data[i * 4] / 255;             // R
+    normalized[i + width * height] = data[i * 4 + 1] / 255; // G
+    normalized[i + 2 * width * height] = data[i * 4 + 2] / 255; // B
+  }
+  return normalized;
+}
+```
+
+### 3.4 TensorFlow.js 模型量化与转换
+
+```typescript
+// tfjs-quantization.ts — 减少模型体积，提升推理速度
+
+import * as tf from '@tensorflow/tfjs';
+
+async function quantizeAndSave(model: tf.LayersModel) {
+  // 将权重从 float32 量化为 uint8（仅 1/4 体积）
+  const quantized = await tf.tidy(() => {
+    const weights = model.getWeights();
+    const quantizedWeights = weights.map((w) => {
+      const min = w.min();
+      const max = w.max();
+      const scale = max.sub(min).div(255);
+      const zeroPoint = tf.floor(min.div(scale).neg());
+      return w.div(scale).add(zeroPoint).clipByValue(0, 255).cast('uint8');
+    });
+    // 实际生产应使用 tfjs-converter 的量化标志
+    return quantizedWeights;
+  });
+
+  await model.save('localstorage://quantized-model');
+  console.log('模型已量化并保存');
+}
+
+// 命令行转换（推荐）
+// tensorflowjs_converter --quantization_bytes 1 ./saved_model ./web_model
+```
+
+### 3.5 ML Pipeline 编排
 
 ```typescript
 // ml-pipeline.ts
@@ -172,7 +234,7 @@ const trainingPipeline = new MLPipeline()
 // const result = await trainingPipeline.run(rawTrainingData);
 ```
 
-### 3.4 A/B 测试与模型实验管理
+### 3.6 A/B 测试与模型实验管理
 
 ```typescript
 // experiment-manager.ts
@@ -230,6 +292,38 @@ class ExperimentManager {
     }
     return Math.abs(hash);
   }
+}
+```
+
+### 3.7 数据漂移检测（Data Drift Detection）
+
+```typescript
+// drift-detection.ts — 基于统计检验的输入分布监控
+
+export class DriftDetector {
+  private referenceMean: number = 0;
+  private referenceStd: number = 1;
+
+  fit(referenceData: number[]) {
+    this.referenceMean = referenceData.reduce((a, b) => a + b, 0) / referenceData.length;
+    const variance = referenceData.reduce((sum, v) => sum + (v - this.referenceMean) ** 2, 0) / referenceData.length;
+    this.referenceStd = Math.sqrt(variance);
+  }
+
+  /** 计算 Z-Score 漂移指标，超过阈值触发告警 */
+  detect(newData: number[], threshold = 3.0): { drifted: boolean; zScore: number } {
+    const newMean = newData.reduce((a, b) => a + b, 0) / newData.length;
+    const zScore = Math.abs(newMean - this.referenceMean) / (this.referenceStd / Math.sqrt(newData.length));
+    return { drifted: zScore > threshold, zScore };
+  }
+}
+
+// 使用
+const detector = new DriftDetector();
+detector.fit(trainingFeatureDistribution);
+const result = detector.detect(latestFeatureDistribution);
+if (result.drifted) {
+  console.warn(`数据漂移告警: Z-Score = ${result.zScore.toFixed(2)}`);
 }
 ```
 
@@ -305,11 +399,13 @@ ML 工程 = **软件工程 + 数据科学 + 运维**。
 - [Made With ML](https://madewithml.com/) — 开源 MLOps 课程（涵盖从建模到部署的全流程）
 - [Designing Machine Learning Systems — Chip Huyen](https://www.oreilly.com/library/view/designing-machine-learning/9781098107956/) — ML 系统设计权威著作
 - [Feature Stores for ML](https://www.featurestorebook.com/) — 特征存储专著
+- [Machine Learning Engineering — Andriy Burkov](http://www.mlebook.com/) — 工程化实践指南
 
 ### 开源工具
 - [MLOps Community](https://mlops.community/) — MLOps 从业者社区
 - [TensorFlow.js](https://www.tensorflow.org/js) — Google 浏览器/Node ML 框架
 - [ONNX Runtime](https://onnxruntime.ai/) — 跨平台高性能推理引擎
+- [ONNX Runtime Web](https://onnxruntime.ai/docs/get-started/with-javascript/web.html) — 浏览器端 ONNX 推理
 - [Feast](https://feast.dev/) — 开源特征存储
 - [Evidently AI](https://www.evidentlyai.com/) — ML 模型与数据漂移检测
 - [Great Expectations](https://greatexpectations.io/) — 数据质量验证框架
@@ -318,6 +414,9 @@ ML 工程 = **软件工程 + 数据科学 + 运维**。
 - [MLflow](https://mlflow.org/) — 开源 ML 生命周期管理平台
 - [Kubeflow](https://www.kubeflow.org/) — Kubernetes 上的 ML 工作流
 - [Open Neural Network Exchange (ONNX)](https://onnx.ai/) — 跨框架模型交换标准
+- [Hugging Face Transformers.js](https://huggingface.co/docs/transformers.js) — 浏览器端 Transformer 模型库
+- [Papers With Code — MLOps](https://paperswithcode.com/area/machine-learning/mlops) — 学术论文与实现对应
+- [Google — Rules of ML](https://developers.google.com/machine-learning/guides/rules-of-ml) — Google ML 工程最佳实践
 
 ---
 

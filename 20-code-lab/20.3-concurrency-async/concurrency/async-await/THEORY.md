@@ -212,4 +212,62 @@ for await (const line of readLines('/var/log/app.log')) {
 
 ---
 
+### AbortController 与异步取消模式
+
+```typescript
+async function fetchWithCancel(url: string, signal: AbortSignal): Promise<Response> {
+  return fetch(url, { signal });
+}
+
+const controller = new AbortController();
+fetchWithCancel('/api/data', controller.signal);
+document.getElementById('cancel')!.addEventListener('click', () => controller.abort());
+```
+
+### Async Generator 管道处理
+
+```typescript
+async function* map<T, R>(source: AsyncIterable<T>, fn: (x: T) => R): AsyncGenerator<R> {
+  for await (const item of source) yield fn(item);
+}
+
+async function* filter<T>(source: AsyncIterable<T>, predicate: (x: T) => boolean): AsyncGenerator<T> {
+  for await (const item of source) if (predicate(item)) yield item;
+}
+
+const lines = readLines('/var/log/app.log');
+const errors = filter(lines, line => line.includes('ERROR'));
+const timestamps = map(errors, line => ({ ts: new Date(), msg: line }));
+
+for await (const entry of timestamps) {
+  console.log(entry.ts.toISOString(), entry.msg);
+}
+```
+
+### Promise.withResolvers 与 async/await 的协同
+
+```typescript
+function createFileWatcher(path: string) {
+  const { promise: ready, resolve, reject } = Promise.withResolvers<void>();
+  const watcher = fs.watch(path, (event) => { if (event === 'change') resolve(); });
+  watcher.on('error', reject);
+  return { ready, stop: () => watcher.close() };
+}
+
+const watcher = createFileWatcher('./config.json');
+await watcher.ready;
+watcher.stop();
+```
+
+---
+
+## 更多权威参考链接
+
+- [AbortController — MDN](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) — 取消异步操作标准 API
+- [Async Iteration — TC39 Proposal](https://github.com/tc39/proposal-async-iteration) — 异步迭代协议规范
+- [web.dev: Abortable Fetch](https://web.dev/articles/abortable-fetch) — 可取消的请求实践指南
+- [Promise.withResolvers — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers) — ES2024 Promise 构造辅助
+- [Exploring JS — Async Iteration](https://exploringjs.com/es2018-es2019/ch_async-iteration.html) — 异步迭代深度解析
+- [Node.js: AbortController](https://nodejs.org/api/globals.html#class-abortcontroller) — Node.js 环境支持
+
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

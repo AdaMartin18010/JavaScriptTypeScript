@@ -163,6 +163,173 @@ async function autoGPTLoop(state: AgentState) {
 }
 ```
 
+### 自愈健康检查控制器
+
+```typescript
+interface HealthCheck {
+  name: string;
+  check: () => Promise<{ healthy: boolean; latencyMs: number }>;
+  onUnhealthy: () => Promise<void>;
+  maxRetries: number;
+}
+
+class SelfHealingController {
+  private checks: HealthCheck[] = [];
+  private intervalMs: number;
+
+  constructor(intervalMs: number = 30_000) {
+    this.intervalMs = intervalMs;
+  }
+
+  register(check: HealthCheck) {
+    this.checks.push(check);
+  }
+
+  start() {
+    setInterval(() => this.runAll(), this.intervalMs);
+  }
+
+  private async runAll() {
+    for (const check of this.checks) {
+      const result = await check.check();
+      if (!result.healthy) {
+        console.warn(`[SelfHealing] ${check.name} unhealthy (${result.latencyMs}ms). Attempting recovery...`);
+        let recovered = false;
+        for (let i = 0; i < check.maxRetries; i++) {
+          await check.onUnhealthy();
+          const retry = await check.check();
+          if (retry.healthy) {
+            console.log(`[SelfHealing] ${check.name} recovered after ${i + 1} attempt(s).`);
+            recovered = true;
+            break;
+          }
+          await sleep(1000 * (i + 1)); // exponential backoff-ish
+        }
+        if (!recovered) {
+          console.error(`[SelfHealing] ${check.name} failed to recover after ${check.maxRetries} retries.`);
+          // Trigger paging / alerting here
+        }
+      }
+    }
+  }
+}
+
+function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+// 使用示例：数据库连接自愈
+const dbHealer = new SelfHealingController(10_000);
+dbHealer.register({
+  name: 'postgres-primary',
+  check: async () => {
+    const start = performance.now();
+    try {
+      await db.query('SELECT 1');
+      return { healthy: true, latencyMs: performance.now() - start };
+    } catch {
+      return { healthy: false, latencyMs: performance.now() - start };
+    }
+  },
+  onUnhealthy: async () => {
+    await db.reconnect();
+  },
+  maxRetries: 3,
+});
+dbHealer.start();
+```
+
+### GitOps 风格状态调和循环（TypeScript）
+
+```typescript
+type DesiredState = { replicas: number; image: string; env: Record<string, string> };
+type ActualState = { replicas: number; image: string; env: Record<string, string>; status: 'running' | 'stopped' };
+
+class GitOpsReconciler {
+  constructor(
+    private fetchDesired: () => Promise<DesiredState>,
+    private fetchActual: () => Promise<ActualState>,
+    private apply: (delta: Partial<DesiredState>) => Promise<void>,
+  ) {}
+
+  async reconcile() {
+    const desired = await this.fetchDesired();
+    const actual = await this.fetchActual();
+
+    const delta: Partial<DesiredState> = {};
+    if (desired.replicas !== actual.replicas) delta.replicas = desired.replicas;
+    if (desired.image !== actual.image) delta.image = desired.image;
+
+    const envDiff = Object.entries(desired.env).filter(
+      ([k, v]) => actual.env[k] !== v,
+    );
+    if (envDiff.length > 0) delta.env = desired.env;
+
+    if (Object.keys(delta).length > 0) {
+      console.log('[Reconciler] Drift detected. Applying delta:', delta);
+      await this.apply(delta);
+    } else {
+      console.log('[Reconciler] State converged.');
+    }
+  }
+
+  start(intervalMs: number = 60_000) {
+    this.reconcile();
+    setInterval(() => this.reconcile(), intervalMs);
+  }
+}
+```
+
+### MCP (Model Context Protocol) 工具服务器骨架
+
+```typescript
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
+
+const server = new Server(
+  { name: 'weather-server', version: '1.0.0' },
+  { capabilities: { tools: {} } },
+);
+
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools: [
+    {
+      name: 'get_forecast',
+      description: 'Get weather forecast for a city',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          city: { type: 'string', description: 'City name' },
+          days: { type: 'number', description: 'Forecast days (1-7)' },
+        },
+        required: ['city'],
+      },
+    },
+  ],
+}));
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  if (request.params.name === 'get_forecast') {
+    const { city, days = 3 } = request.params.arguments as { city: string; days?: number };
+    const forecast = await fetchWeatherAPI(city, days);
+    return { content: [{ type: 'text', text: JSON.stringify(forecast, null, 2) }] };
+  }
+  throw new Error(`Unknown tool: ${request.params.name}`);
+});
+
+async function fetchWeatherAPI(city: string, days: number) {
+  // Stub for external weather service integration
+  return { city, days, temperature: [22, 24, 21].slice(0, days) };
+}
+
+const transport = new StdioServerTransport();
+await server.connect(transport);
+```
+
 ---
 
 ## 选型建议
@@ -188,7 +355,14 @@ async function autoGPTLoop(state: AgentState) {
 - [Microsoft Semantic Kernel Documentation](https://learn.microsoft.com/en-us/semantic-kernel/)
 - [ReAct: Synergizing Reasoning and Acting in Language Models (Paper)](https://arxiv.org/abs/2210.03629)
 - [AI Agent Patterns — LangChain Blog](https://blog.langchain.dev/agent-patterns/)
+- [OpenAI Agents SDK (Beta)](https://github.com/openai/openai-agents-python)
+- [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
+- [Kubernetes Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)
+- [Argo CD — GitOps for Kubernetes](https://argo-cd.readthedocs.io/)
+- [Flux CD — GitOps Toolkit](https://fluxcd.io/)
+- [Google SRE — Handling Overload](https://sre.google/sre-book/handling-overload/)
+- [AWS Auto Scaling Documentation](https://docs.aws.amazon.com/autoscaling/)
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

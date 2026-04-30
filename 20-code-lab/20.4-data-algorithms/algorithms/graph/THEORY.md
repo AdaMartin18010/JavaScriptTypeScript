@@ -9,13 +9,14 @@
 
 ### 1.1 问题域定义
 
-本模块解决图结构数据的遍历与路径查找问题。涵盖 DFS、BFS、最短路径（Dijkstra）和启发式搜索（A*）等经典算法。
+本模块解决图结构数据的遍历与路径查找问题。涵盖 DFS、BFS、最短路径（Dijkstra、Bellman-Ford）和启发式搜索（A*）等经典算法。
 
 ### 1.2 形式化基础
 
 - **图** G = (V, E)，V 为顶点集，E 为边集。
 - **BFS/DFS** 时间复杂度均为 O(V + E)，空间复杂度 O(V)。
 - **Dijkstra** 在无权/正权图中单源最短路径时间复杂度 O((V + E) log V)（优先队列优化）。
+- **Bellman-Ford** 支持负权边，时间复杂度 O(V·E)，可检测负权环。
 - **A\*** 在可采纳启发式下保证最优，时间复杂度取决于启发函数质量。
 
 ### 1.3 关键概念
@@ -25,6 +26,7 @@
 | 邻接表 | 空间高效的图存储结构 | adjacency-list.ts |
 | 拓扑排序 | 有向无环图的线性化排序 | topological-sort.ts |
 | 松弛操作 | 更新最短路径估计值 | dijkstra.ts |
+| 负权环检测 | Bellman-Ford 的图合法性验证 | bellman-ford.ts |
 
 ---
 
@@ -41,6 +43,7 @@
 | BFS | O(V + E) | O(V) | 无权图最短路径、层级遍历 | 逐层扩展，保证无权最短 |
 | DFS | O(V + E) | O(V)（递归栈）| 连通性检测、拓扑排序、回溯 | 深度优先，空间常数更优 |
 | Dijkstra | O((V+E) log V) | O(V) | 正权图单源最短路径 | 贪心策略，全局最优 |
+| Bellman-Ford | O(V·E) | O(V) | 含负权边的单源最短路径 | 可检测负权环 |
 | A* | 取决于启发函数 | O(V) | 游戏寻路、地图导航 | 目标导向，搜索空间更小 |
 
 ### 2.3 与相关技术的对比
@@ -285,7 +288,49 @@ class UnionFind {
 }
 ```
 
-### 3.5 常见误区
+### 3.5 Bellman-Ford 算法（负权边支持）
+
+```typescript
+// bellman-ford.ts — 支持负权边与负权环检测
+
+function bellmanFord(g: Graph, start: string): { dist: Map<string, number>; hasNegativeCycle: boolean } {
+  const dist = new Map<string, number>();
+  for (const v of g.keys()) dist.set(v, Infinity);
+  dist.set(start, 0);
+
+  const edges: Array<{ from: string; to: string; weight: number }> = [];
+  for (const [from, list] of g) {
+    for (const { to, weight } of list) edges.push({ from, to, weight });
+  }
+
+  // 松弛 V-1 次
+  for (let i = 0; i < g.size - 1; i++) {
+    for (const { from, to, weight } of edges) {
+      const nd = (dist.get(from) ?? Infinity) + weight;
+      if (nd < (dist.get(to) ?? Infinity)) {
+        dist.set(to, nd);
+      }
+    }
+  }
+
+  // 第 V 次松弛检测负权环
+  for (const { from, to, weight } of edges) {
+    if ((dist.get(from) ?? Infinity) + weight < (dist.get(to) ?? Infinity)) {
+      return { dist, hasNegativeCycle: true };
+    }
+  }
+
+  return { dist, hasNegativeCycle: false };
+}
+
+// 使用
+const bfResult = bellmanFord(g, 'A');
+if (bfResult.hasNegativeCycle) {
+  console.warn('图中存在负权环，最短路径无意义');
+}
+```
+
+### 3.6 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -294,16 +339,18 @@ class UnionFind {
 | Dijkstra 适用于负权边 | 负权边会导致贪心失效，应使用 Bellman-Ford |
 | A* 任何启发式都最优 | 启发式必须可采纳（admissible）且一致（consistent） |
 
-### 3.6 扩展阅读
+### 3.7 扩展阅读
 
 - [Graph Algorithms — CLRS 第 22–24 章](https://mitpress.mit.edu/9780262046305/introduction-to-algorithms/)
 - [Dijkstra's Algorithm — Wikipedia](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm)
+- [Bellman-Ford Algorithm — Stanford CS161](https://web.stanford.edu/class/cs161/) — 负权边与负权环检测权威讲解
 - [A* Search Algorithm — Red Blob Games](https://www.redblobgames.com/pathfinding/a-star/introduction.html)
 - [Graph Traversals VisuAlgo](https://visualgo.net/en/dfsbfs)
 - [Algorithms, 4th Edition — Sedgewick & Wayne](https://algs4.cs.princeton.edu/) — 普林斯顿大学经典算法教材，含 Java 实现与可视化
 - [MIT 6.006 Introduction to Algorithms](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/) — MIT 公开课，图算法章节权威讲解
 - [CP-Algorithms — Graph Section](https://cp-algorithms.com/graph/) — 竞赛编程图算法百科，含形式化证明与代码
 - [NetworkX Documentation](https://networkx.org/documentation/stable/) — Python 图算法库官方文档，算法描述具有高度权威性
+- [Stanford ACM-ICPC Notebook — Graph Algorithms](https://github.com/jaehyunp/stanfordacm/blob/master/code/GraphAlgorithms.dijkstra.cpp) — 竞赛级标准实现参考
 
 ---
 

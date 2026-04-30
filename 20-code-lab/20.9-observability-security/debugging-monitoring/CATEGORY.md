@@ -150,6 +150,122 @@ if (isMainThread) {
 }
 ```
 
+### OpenTelemetry 手动 Trace 埋点
+
+```typescript
+import { trace, SpanStatusCode } from '@opentelemetry/api';
+
+const tracer = trace.getTracer('my-service', '1.0.0');
+
+async function processOrder(orderId: string) {
+  return tracer.startActiveSpan('process-order', async (span) => {
+    try {
+      span.setAttribute('order.id', orderId);
+
+      // 子 Span：验证库存
+      const stock = await tracer.startActiveSpan('check-stock', async (child) => {
+        child.setAttribute('item.sku', 'SKU-123');
+        const result = await db.checkStock(orderId);
+        child.end();
+        return result;
+      });
+
+      if (!stock.available) {
+        span.setStatus({ code: SpanStatusCode.ERROR, message: 'Out of stock' });
+        throw new Error('Out of stock');
+      }
+
+      span.setStatus({ code: SpanStatusCode.OK });
+      return { orderId, status: 'confirmed' };
+    } catch (err) {
+      span.recordException(err as Error);
+      throw err;
+    } finally {
+      span.end();
+    }
+  });
+}
+```
+
+### Error Cause 链式追踪（现代调试模式）
+
+```typescript
+class DatabaseError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = 'DatabaseError';
+  }
+}
+
+class ServiceError extends Error {
+  constructor(message: string, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = 'ServiceError';
+  }
+}
+
+async function fetchUser(id: string) {
+  try {
+    return await db.query('SELECT * FROM users WHERE id = ?', [id]);
+  } catch (cause) {
+    throw new DatabaseError(`Failed to fetch user ${id}`, { cause });
+  }
+}
+
+async function getProfile(id: string) {
+  try {
+    const user = await fetchUser(id);
+    return transformProfile(user);
+  } catch (cause) {
+    throw new ServiceError(`Profile service unavailable for ${id}`, { cause });
+  }
+}
+
+// 打印完整的错误因果链
+getProfile('42').catch((err) => {
+  console.error(err.message);
+  // ServiceError: Profile service unavailable for 42
+  //   Caused by DatabaseError: Failed to fetch user 42
+  //     Caused by Error: Connection timeout
+  let depth = 0;
+  let current: unknown = err;
+  while (current instanceof Error && current.cause) {
+    console.log('  '.repeat(++depth) + 'Caused by →', (current.cause as Error).message);
+    current = current.cause;
+  }
+});
+```
+
+### 结构化日志与上下文关联（Pino + AsyncLocalStorage）
+
+```typescript
+import { AsyncLocalStorage } from 'node:async_hooks';
+import pino from 'pino';
+
+const logger = pino({ level: 'info', transport: { target: 'pino-pretty' } });
+const requestStore = new AsyncLocalStorage<Map<string, string>>();
+
+function getContextualLogger() {
+  const store = requestStore.getStore();
+  if (!store) return logger;
+  return logger.child(Object.fromEntries(store));
+}
+
+function runWithRequestContext(requestId: string, fn: () => Promise<void>) {
+  const store = new Map<string, string>([
+    ['requestId', requestId],
+    ['timestamp', new Date().toISOString()],
+  ]);
+  return requestStore.run(store, fn);
+}
+
+// 使用示例
+await runWithRequestContext('req-001', async () => {
+  getContextualLogger().info('Processing payment');
+  // { "requestId": "req-001", "timestamp": "...", "msg": "Processing payment" }
+});
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -187,7 +303,16 @@ if (isMainThread) {
 | JavaScript Memory Management (MDN) | 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_management](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Memory_management) |
 | Clinic.js — Node.js 性能诊断工具套件 | 工具 | [clinicjs.org](https://clinicjs.org/) |
 | 0x — Node.js 火焰图生成器 | 工具 | [github.com/davidmarkclements/0x](https://github.com/davidmarkclements/0x) |
+| OpenTelemetry JavaScript | 官方文档 | [opentelemetry.io/docs/languages/js](https://opentelemetry.io/docs/languages/js/) |
+| Pino — 高性能 Node.js 日志库 | 官方文档 | [getpino.io](https://getpino.io/) |
+| Sentry — 应用监控与错误追踪 | 文档 | [docs.sentry.io/platforms/javascript](https://docs.sentry.io/platforms/javascript/) |
+| Datadog — Node.js APM | 文档 | [docs.datadoghq.com/tracing/trace_collection/dd_libraries/nodejs](https://docs.datadoghq.com/tracing/trace_collection/dd_libraries/nodejs/) |
+| New Relic — Node.js 监控 | 文档 | [docs.newrelic.com/docs/apm/agents/nodejs-agent](https://docs.newrelic.com/docs/apm/agents/nodejs-agent/) |
+| web-vitals.js — 核心 Web 指标采集库 | GitHub | [github.com/GoogleChrome/web-vitals](https://github.com/GoogleChrome/web-vitals) |
+| Chrome UX Report (CrUX) | 数据集 | [developer.chrome.com/docs/crux](https://developer.chrome.com/docs/crux) |
+| Node.js — Diagnostics Channel | 官方文档 | [nodejs.org/api/diagnostics_channel.html](https://nodejs.org/api/diagnostics_channel.html) |
+| JavaScript Error Cause Proposal (ES2022) | 规范 | [tc39.es/ecma262/#sec-error-message](https://tc39.es/ecma262/#sec-error-message) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

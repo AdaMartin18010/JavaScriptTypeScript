@@ -175,6 +175,88 @@ graph TD
 
 ---
 
+## 代码示例：模块初始化脚手架
+
+```typescript
+// scaffold-module.ts — 快速创建新的 code-lab 模块
+
+import { mkdir, writeFile } from 'fs/promises';
+import { join } from 'path';
+
+interface ModuleConfig {
+  id: string;
+  name: string;
+  description: string;
+  prerequisites: string[];
+}
+
+async function scaffoldModule(config: ModuleConfig) {
+  const baseDir = join('20-code-lab', `${config.id}-${config.name}`);
+
+  await mkdir(join(baseDir, 'examples'), { recursive: true });
+  await mkdir(join(baseDir, 'exercises'), { recursive: true });
+
+  await writeFile(
+    join(baseDir, 'THEORY.md'),
+    `# ${config.name}\n\n> **定位**：\`20-code-lab/${config.id}-${config.name}/\`\n> **关联**：${config.prerequisites.map(p => `\`${p}\``).join(' | ')}\n\n## 核心理论\n\n[待补充]\n\n## 设计原理\n\n[待补充]\n\n## 实践映射\n\n### 代码示例\n\n\`\`\`typescript\n// 第一个代码示例\n\`\`\`\n\n---\n\n*本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*\n`
+  );
+
+  console.log(`✅ 模块 ${config.id}-${config.name} 脚手架创建完成`);
+}
+
+// 使用示例
+// scaffoldModule({ id: '20.12', name: 'build-free-typescript', description: '无构建工具 TS', prerequisites: ['20.1-language-core'] });
+```
+
+## 代码示例：自动化交叉引用校验
+
+```typescript
+// validate-cross-references.ts — 检查所有 THEORY.md 中的链接有效性
+
+import { glob } from 'glob';
+import { readFile } from 'fs/promises';
+import { existsSync } from 'fs';
+
+interface BrokenLink {
+  file: string;
+  line: number;
+  link: string;
+}
+
+async function validateCrossReferences(): Promise<BrokenLink[]> {
+  const broken: BrokenLink[] = [];
+  const files = await glob('20-code-lab/**/THEORY.md');
+
+  for (const file of files) {
+    const content = await readFile(file, 'utf-8');
+    const lines = content.split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+      // 匹配相对路径链接
+      const matches = lines[i].match(/\]\((\.\.\/[^)]+)\)/g);
+      if (!matches) continue;
+
+      for (const match of matches) {
+        const link = match.slice(2, -1); // 提取路径
+        const resolved = new URL(link, `file://${file}`).pathname;
+        if (!existsSync(resolved)) {
+          broken.push({ file, line: i + 1, link });
+        }
+      }
+    }
+  }
+
+  return broken;
+}
+
+// validateCrossReferences().then(links => {
+//   if (links.length === 0) console.log('✅ 所有交叉引用有效');
+//   else links.forEach(l => console.log(`❌ ${l.file}:${l.line} → ${l.link}`));
+// });
+```
+
+---
+
 ## 权威链接
 
 - [ECMA-262 Specification](https://262.ecma-international.org/15.0/) — JavaScript 语言规范，所有语言核心实验的终极依据。
@@ -186,7 +268,12 @@ graph TD
 - [V8 Blog](https://v8.dev/blog) — JIT、垃圾回收与运行时优化。
 - [Rust Book](https://doc.rust-lang.org/book/) — Rust 工具链实验的语言基础。
 - [SWC Documentation](https://swc.rs/docs/getting-started) — 编译器插件开发指南。
+- [Deno Documentation](https://docs.deno.com/) — Deno 运行时与标准库参考。
+- [Bun Documentation](https://bun.sh/docs) — Bun 运行时、包管理与构建工具。
+- [TC39 Proposals](https://github.com/tc39/proposals) — ECMAScript  Stage-0 到 Stage-4 提案跟踪。
+- [W3C Standards](https://www.w3.org/standards/) — Web 平台标准规范总览。
+- [WHATWG Living Standards](https://spec.whatwg.org/) — HTML、DOM、Streams 等活标准。
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

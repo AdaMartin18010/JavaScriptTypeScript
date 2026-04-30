@@ -24,6 +24,7 @@
 | 快速排序 | 分治 pivot 的平均 O(n log n) | quicksort.ts |
 | 稳定性 | 相等元素原始顺序的保持 | stable-sort.ts |
 | 原地性 | 是否使用常数额外空间 | in-place.ts |
+| 桶排序 | 非比较排序，按值域分桶 | bucket-sort.ts |
 
 ---
 
@@ -41,6 +42,7 @@
 | 归并排序 | O(n log n) | O(n log n) | O(n) | 稳定 | 链表排序、外部排序 |
 | 堆排序 | O(n log n) | O(n log n) | O(1) | 不稳定 | 内存受限、确定性需求 |
 | 计数排序 | O(n + k) | O(n + k) | O(k) | 稳定 | 小范围整数排序 |
+| 基数排序 | O(d·(n + k)) | O(d·(n + k)) | O(n + k) | 稳定 | 定长键值（如字符串、UUID） |
 
 ### 2.3 与相关技术的对比
 
@@ -166,7 +168,51 @@ console.log('CountingSort:', countingSort([4, 2, 2, 8, 3, 3, 1], 8));
 // [1, 2, 2, 3, 3, 4, 8]
 ```
 
-### 3.4 自定义比较器与稳定排序技巧
+### 3.4 基数排序 — 按位分桶，稳定线性时间
+
+```typescript
+// radix-sort.ts — 基数排序适合定长整数或字符串键
+
+function radixSort(arr: number[]): number[] {
+  if (arr.length === 0) return arr;
+  const max = Math.max(...arr.map(Math.abs));
+  let exp = 1;
+  const output = [...arr];
+
+  while (Math.floor(max / exp) > 0) {
+    countingSortByDigit(output, exp);
+    exp *= 10;
+  }
+
+  // 处理负数：分离后合并
+  const negatives = output.filter(x => x < 0).reverse();
+  const positives = output.filter(x => x >= 0);
+  return negatives.concat(positives);
+}
+
+function countingSortByDigit(arr: number[], exp: number): void {
+  const n = arr.length;
+  const output = new Array(n).fill(0);
+  const count = new Array(10).fill(0);
+
+  for (let i = 0; i < n; i++) {
+    const digit = Math.floor(Math.abs(arr[i]) / exp) % 10;
+    count[digit]++;
+  }
+  for (let i = 1; i < 10; i++) count[i] += count[i - 1];
+  for (let i = n - 1; i >= 0; i--) {
+    const digit = Math.floor(Math.abs(arr[i]) / exp) % 10;
+    output[count[digit] - 1] = arr[i];
+    count[digit]--;
+  }
+  for (let i = 0; i < n; i++) arr[i] = output[i];
+}
+
+console.log('RadixSort:', radixSort([170, -45, 75, -90, 802, 24, 2, 66]));
+// [-90, -45, 2, 24, 66, 75, 170, 802]
+```
+
+### 3.5 自定义比较器与稳定排序技巧
 
 ```typescript
 // 多字段排序：先按年龄升序，再按姓名升序（稳定性保证相对顺序）
@@ -190,7 +236,7 @@ console.log(sorted);
 // [Alice 25, Bob 30, Charlie 30] — Bob 在 Charlie 之前（稳定）
 ```
 
-### 3.5 常见误区
+### 3.6 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -199,7 +245,7 @@ console.log(sorted);
 | JS `.sort()` 总是快排 | V8 使用 Timsort（混合稳定排序），非纯快排 |
 | 计数排序通用 | 仅适用于已知小范围整数或可分桶数据 |
 
-### 3.6 扩展阅读
+### 3.7 扩展阅读
 
 - [Sorting Algorithms — Wikipedia](https://en.wikipedia.org/wiki/Sorting_algorithm)
 - [Quicksort — Hoare Partition](https://en.wikipedia.org/wiki/Quicksort)
@@ -211,7 +257,8 @@ console.log(sorted);
 - [The Art of Computer Programming, Vol. 3 — Sorting and Searching](https://www-cs-faculty.stanford.edu/~knuth/taocp.html)
 - [Algorithms (Sedgewick & Wayne) — 第 2 章 排序](https://algs4.cs.princeton.edu/20sorting/)
 - [LeetCode Top Interview Questions — Sorting](https://leetcode.com/problem-list/top-interview-questions/)
-- `20.4-data-algorithms/algorithms/`
+- [Google Research — Timsort Analysis](https://research.google/pubs/pub44601/) — Timsort 形式化分析与正确性证明
+- [V8 Source — array-sort.cc](https://chromium.googlesource.com/v8/v8.git/+/refs/heads/main/src/builtins/array-sort.cc) — V8 排序实现源码级参考
 
 ---
 

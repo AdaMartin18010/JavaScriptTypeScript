@@ -181,16 +181,121 @@ export function middleware(request: NextRequest) {
 }
 ```
 
+## 六、代码示例：Hono 轻量边缘框架
+
+```typescript
+// hono-edge.ts — 使用 Hono 构建跨平台边缘应用
+import { Hono } from 'hono';
+import { cors } from 'hono/cors';
+import { cache } from 'hono/cache';
+
+const app = new Hono<{ Bindings: { KV: KVNamespace; D1: D1Database } }>();
+
+app.use('*', cors());
+
+// 边缘缓存路由
+app.get('/api/posts', cache({ cacheName: 'posts', cacheControl: 'max-age=3600' }), async (c) => {
+  const { results } = await c.env.D1.prepare('SELECT * FROM posts ORDER BY created_at DESC LIMIT 20').all();
+  return c.json(results);
+});
+
+// KV 计数器
+app.post('/api/views/:slug', async (c) => {
+  const slug = c.req.param('slug');
+  const current = parseInt((await c.env.KV.get(`views:${slug}`)) ?? '0', 10);
+  await c.env.KV.put(`views:${slug}`, String(current + 1));
+  return c.json({ slug, views: current + 1 });
+});
+
+// 统一错误处理
+app.onError((err, c) => {
+  console.error(`${err}`);
+  return c.json({ error: err.message }, 500);
+});
+
+export default app;
+```
+
+## 七、代码示例：Durable Objects 状态协同
+
+```typescript
+// durable-object.ts — Cloudflare Durable Objects 实现实时协同
+
+export class ChatRoom implements DurableObject {
+  private sessions: WebSocket[] = [];
+  private messages: Array<{ user: string; text: string; ts: number }> = [];
+
+  constructor(private state: DurableObjectState) {}
+
+  async fetch(request: Request): Promise<Response> {
+    const upgradeHeader = request.headers.get('Upgrade');
+    if (upgradeHeader !== 'websocket') {
+      return new Response('Expected websocket', { status: 400 });
+    }
+
+    const [client, server] = Object.values(new WebSocketPair());
+    this.sessions.push(server);
+
+    server.accept();
+    server.addEventListener('message', async (msg) => {
+      const data = JSON.parse(msg.data as string);
+      this.messages.push({ ...data, ts: Date.now() });
+      await this.state.storage.put('messages', this.messages);
+
+      // 广播给所有连接的客户端
+      this.sessions.forEach((s) => {
+        if (s.readyState === WebSocket.READY_STATE_OPEN) {
+          s.send(JSON.stringify(data));
+        }
+      });
+    });
+
+    return new Response(null, { status: 101, webSocket: client });
+  }
+}
+```
+
+## 八、代码示例：边缘数据库查询（Turso / D1）
+
+```typescript
+// edge-database.ts — 在边缘函数中查询 SQLite 数据库
+
+import { createClient } from '@libsql/client/web';
+
+// Turso 边缘 SQLite
+const turso = createClient({
+  url: process.env.TURSO_DATABASE_URL!,
+  authToken: process.env.TURSO_AUTH_TOKEN!,
+});
+
+export async function getProducts(category: string) {
+  const rs = await turso.execute({
+    sql: 'SELECT id, name, price FROM products WHERE category = ?',
+    args: [category],
+  });
+  return rs.rows;
+}
+
+// Cloudflare D1 版本
+export async function getProductsD1(d1: D1Database, category: string) {
+  const { results } = await d1
+    .prepare('SELECT id, name, price FROM products WHERE category = ?')
+    .bind(category)
+    .all();
+  return results;
+}
+```
+
 ---
 
-## 六、扩展阅读
+## 九、扩展阅读
 
 - `20-code-lab/20.13-edge-databases/README.md`
 - ``30-knowledge-base/30.2-categories/30-edge-databases.md`` (Legacy)
 
 ---
 
-## 七、权威参考与外部链接
+## 十、权威参考与外部链接
 
 | 资源 | 描述 | 链接 |
 |------|------|------|
@@ -202,5 +307,13 @@ export function middleware(request: NextRequest) {
 | **The Edge Computing Opportunity** | Cloudflare 边缘计算白皮书 | [cloudflare.com/learning/serverless/what-is-edge-computing](https://www.cloudflare.com/learning/serverless/what-is-edge-computing/) |
 | **Winter CG** | 边缘运行时标准化组织 | [wintercg.org](https://wintercg.org/) |
 | **Edge-first Architecture** | Vercel 边缘优先架构指南 | [vercel.com/blog/edge-functions-generally-available](https://vercel.com/blog/edge-functions-generally-available) |
+| **Hono** | 轻量跨平台 Web 框架 | [hono.dev](https://hono.dev/) |
+| **Cloudflare Durable Objects** | 有状态边缘对象 | [developers.cloudflare.com/durable-objects](https://developers.cloudflare.com/durable-objects/) |
+| **Cloudflare KV** | 全局键值存储 | [developers.cloudflare.com/kv](https://developers.cloudflare.com/kv/) |
+| **Turso** | 边缘 SQLite 数据库 | [turso.tech](https://turso.tech/) |
+| **Cloudflare D1** | Workers 原生 SQL 数据库 | [developers.cloudflare.com/d1](https://developers.cloudflare.com/d1/) |
+| **PartyKit** | 实时协同边缘框架 | [partykit.io](https://www.partykit.io/) |
+| **Fly.io** | 边缘容器平台 | [fly.io](https://fly.io/) |
+| **OpenAuth** | 边缘优先认证库 | [openauth.js.org](https://openauth.js.org/) |
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

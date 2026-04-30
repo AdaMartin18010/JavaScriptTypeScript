@@ -224,3 +224,50 @@ eventBus.on('auth:login', ({ userId }) => refreshUserProfile(userId));
 - [Clean Architecture — Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [npm query 与依赖审计](https://docs.npmjs.com/cli/v10/commands/npm-query)
 - [Dependency Cruiser — 可视化依赖关系](https://github.com/sverweij/dependency-cruiser)
+
+### Nx 项目图与 affected 构建
+
+```json
+{
+  "extends": "nx/presets/core.json",
+  "targetDefaults": {
+    "build": { "dependsOn": ["^build"], "cache": true },
+    "test": { "dependsOn": ["build"], "cache": true }
+  }
+}
+```
+
+```bash
+npx nx affected -t build --base=main --head=HEAD
+npx nx graph
+```
+
+### pnpm Workspace Catalog 集中版本管理
+
+```yaml
+# pnpm-workspace.yaml
+catalog:
+  react: ^18.2.0
+  typescript: ^5.4.0
+
+# package.json
+# "dependencies": { "react": "catalog:" }
+```
+
+### 依赖可视化：Dependency Cruiser
+
+```bash
+npx depcruise src --include-only "^src" --output-type dot | dot -T svg > dependency-graph.svg
+```
+
+---
+
+## 更多权威参考链接
+
+- [Nx 官方文档](https://nx.dev/getting-started/intro) — 智能构建系统
+- [pnpm Workspaces](https://pnpm.io/workspaces) — 高性能 Monorepo 包管理
+- [pnpm Catalogs](https://pnpm.io/catalogs) — 集中版本管理
+- [Dependency Cruiser 配置指南](https://github.com/sverweij/dependency-cruiser) — 依赖规则与可视化
+- [Turborepo 远程缓存](https://turbo.build/repo/docs/core-concepts/remote-caching) — CI 加速
+- [Feature-Sliced Design](https://feature-sliced.design/) — 前端架构方法论
+- [npm query](https://docs.npmjs.com/cli/v10/commands/npm-query) — 依赖查询与审计

@@ -225,6 +225,162 @@ export default defineConfig({
 | **并行能力** | 优秀 | 良好 | 优秀 |
 | **大型项目表现** | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ |
 
+## 高级代码示例
+
+### Vitest — 高级 Mock、Spy 与模块模拟
+
+```typescript
+// advanced-mock.test.ts
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import * as fs from 'node:fs';
+
+// 模块级 Mock（自动提升）
+vi.mock('node:fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:fs')>();
+  return {
+    ...actual,
+    readFileSync: vi.fn().mockReturnValue('mocked content'),
+  };
+});
+
+// 定时器模拟
+beforeEach(() => {
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+});
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+describe('advanced vitest patterns', () => {
+  it('should spy on object methods', () => {
+    const calculator = {
+      add: (a: number, b: number) => a + b,
+    };
+
+    const spy = vi.spyOn(calculator, 'add').mockReturnValue(100);
+    expect(calculator.add(1, 2)).toBe(100);
+    expect(spy).toHaveBeenCalledWith(1, 2);
+    spy.mockRestore(); // 恢复原始实现
+  });
+
+  it('should handle async with fake timers', async () => {
+    const fn = vi.fn();
+    setTimeout(fn, 1000);
+    vi.advanceTimersByTime(1000);
+    expect(fn).toHaveBeenCalled();
+  });
+
+  it('should stub environment variables', () => {
+    vi.stubEnv('API_KEY', 'test-key-123');
+    expect(process.env.API_KEY).toBe('test-key-123');
+    vi.unstubAllEnvs();
+  });
+});
+```
+
+### Vitest + React Testing Library 组件测试
+
+```tsx
+// Button.test.tsx
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { Button } from './Button';
+
+describe('Button', () => {
+  it('renders and handles click', async () => {
+    const handleClick = vi.fn();
+    render(<Button onClick={handleClick}>Click me</Button>);
+
+    const button = screen.getByRole('button', { name: /click me/i });
+    expect(button).toBeInTheDocument();
+
+    await userEvent.click(button);
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('is accessible via aria-label', () => {
+    render(<Button aria-label="Close dialog">×</Button>);
+    expect(screen.getByLabelText('Close dialog')).toBeDefined();
+  });
+});
+```
+
+### Playwright — 视觉回归与 API  mocking
+
+```typescript
+// visual-and-api.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Advanced Playwright Patterns', () => {
+  test('visual regression of dashboard', async ({ page }) => {
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
+
+    // 截图对比（首次运行生成基线）
+    await expect(page).toHaveScreenshot('dashboard.png', {
+      maxDiffPixels: 100,
+      threshold: 0.2,
+    });
+  });
+
+  test('mock API responses', async ({ page }) => {
+    // 拦截并替换 API 响应
+    await page.route('**/api/user', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ id: 1, name: 'Mock User', role: 'admin' }),
+      });
+    });
+
+    await page.goto('/profile');
+    await expect(page.locator('h1')).toHaveText('Mock User');
+  });
+
+  test('test mobile viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto('/');
+    await expect(page.locator('[data-testid="mobile-menu"]')).toBeVisible();
+  });
+
+  test('upload file', async ({ page }) => {
+    await page.goto('/upload');
+
+    const [fileChooser] = await Promise.all([
+      page.waitForEvent('filechooser'),
+      page.click('#upload-button'),
+    ]);
+
+    await fileChooser.setFiles({
+      name: 'test.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from('id,name\n1,Alice\n2,Bob'),
+    });
+
+    await expect(page.locator('.upload-success')).toBeVisible();
+  });
+});
+```
+
+### Playwright — Trace Viewer 与调试
+
+```typescript
+// playwright.config.ts snippet
+export default defineConfig({
+  use: {
+    trace: 'retain-on-failure', // 失败时保留 trace
+    video: 'on-first-retry',
+    screenshot: 'only-on-failure',
+  },
+});
+```
+
+```bash
+# 运行后打开交互式 Trace Viewer
+npx playwright show-trace test-results/
+```
+
 ## 选型建议
 
 ### 按测试类型选择
@@ -298,3 +454,30 @@ npm install -D @playwright/test
 - Playwright 用于 E2E，不替代单元测试框架
 - Vitest 和 Jest 可以共存，但不推荐
 - 覆盖率工具选择：V8 (快) vs Istanbul (准)
+
+---
+
+## 权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Vitest 官方文档 | <https://vitest.dev/> | 下一代测试框架 |
+| Vitest UI 模式 | <https://vitest.dev/guide/ui.html> | 交互式测试浏览器 |
+| Jest 官方文档 | <https://jestjs.io/> | 成熟测试框架 |
+| Jest ESM 支持 | <https://jestjs.io/docs/ecmascript-modules> | ESM 迁移指南 |
+| Playwright 官方文档 | <https://playwright.dev/> | E2E 测试框架 |
+| Playwright Component Testing | <https://playwright.dev/docs/test-components> | 组件测试 |
+| Playwright Visual Comparison | <https://playwright.dev/docs/test-snapshots> | 截图对比 |
+| Testing Library | <https://testing-library.com/> | 以用户为中心的测试 |
+| React Testing Library | <https://testing-library.com/docs/react-testing-library/intro/> | React 组件测试 |
+| @testing-library/jest-dom | <https://github.com/testing-library/jest-dom> | 自定义 DOM 匹配器 |
+| MSW (Mock Service Worker) | <https://mswjs.io/> | API Mock 库 |
+| Istanbul / nyc | <https://istanbul.js.org/> | 覆盖率工具 |
+| c8 Coverage | <https://github.com/bcoe/c8> | V8 原生覆盖率 |
+| Storybook Test Runner | <https://storybook.js.org/docs/writing-tests/test-runner> | UI 组件测试 |
+| Cypress | <https://www.cypress.io/> | 替代 E2E 方案 |
+| WebdriverIO | <https://webdriver.io/> | 跨浏览器自动化 |
+
+---
+
+> 📅 最后更新: 2026-04-29

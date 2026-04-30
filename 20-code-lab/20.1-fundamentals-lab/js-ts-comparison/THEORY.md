@@ -207,12 +207,103 @@ function makeSound(pet: Pet) {
 }
 ```
 
+### 6.4 `satisfies` 运算符与精确类型校验（TypeScript 4.9+）
+
+```typescript
+// satisfies-operator.ts
+// `satisfies` 在保留推断类型的同时检查约束
+
+const config = {
+  host: 'localhost',
+  port: 3000,
+  ssl: false,
+} satisfies { host: string; port: number; ssl: boolean };
+
+// config.host 推断为 string（而非联合类型）
+// 同时若缺少字段或类型不匹配，编译期报错
+
+// 对比 as const / 显式注解 / satisfies
+const routes = {
+  home: '/',
+  about: '/about',
+  user: '/user/:id',
+} as const;
+
+// routes 类型为 { readonly home: "/"; readonly about: "/about"; readonly user: "/user/:id"; }
+type RouteKeys = keyof typeof routes; // "home" | "about" | "user"
+```
+
+### 6.5 映射类型与模板字面量类型实战
+
+```typescript
+// mapped-template-types.ts
+// 自动生成 API 响应类型
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  age: number;
+}
+
+// 1. 自动生成 Partial / Required / Readonly 变体
+type Nullable<T> = { [K in keyof T]: T[K] | null };
+type UserNullable = Nullable<User>;
+
+// 2. 自动为每个字段生成 getter 方法名
+type Getters<T> = {
+  [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K];
+};
+type UserGetters = Getters<User>;
+// { getId: () => number; getName: () => string; ... }
+
+// 3. 事件处理器映射
+type EventPayload = {
+  click: { x: number; y: number };
+  scroll: { top: number };
+  resize: { width: number; height: number };
+};
+
+type EventHandlers = {
+  [K in keyof EventPayload as `on${Capitalize<string & K>}`]: (
+    payload: EventPayload[K]
+  ) => void;
+};
+// { onClick: (payload: { x: number; y: number }) => void; ... }
+
+// 4. 深度 Readonly
+type DeepReadonly<T> = {
+  readonly [K in keyof T]: T[K] extends object
+    ? DeepReadonly<T[K]>
+    : T[K];
+};
+```
+
+### 6.6 逆变与协变：函数参数与返回值的位置差异
+
+```typescript
+// variance-demo.ts
+type Logger<T> = (x: T) => void;
+
+// 若 Dog extends Animal，则 Logger<Animal> extends Logger<Dog>
+// 即：参数位置发生逆变（contravariance）
+let animalLogger: Logger<Animal> = (a) => console.log(a.name);
+let dogLogger: Logger<Dog> = animalLogger; // ✅ Dog 更具体，可以接收更宽泛的 logger
+
+// 返回值位置发生协变（covariance）
+type Producer<T> = () => T;
+let dogProducer: Producer<Dog> = () => new Dog('Rex', 2);
+let animalProducer: Producer<Animal> = dogProducer; // ✅ 更具体的 producer 可替代更宽泛的
+```
+
 ## 7. 高级类型特性
 
 - **条件类型**: `T extends U ? X : Y`
 - **映射类型**: `{ [K in keyof T]: T[K] }`
 - **模板字面量类型**: `` `hello-${string}` ``
 - **逆变/协变**: 函数参数位置的类型关系
+- **`satisfies`**: TypeScript 4.9+ 引入的精确约束运算符
+- **`infer`**: 条件类型中提取类型参数
 
 ## 8. 与相邻模块的关系
 
@@ -226,7 +317,12 @@ function makeSound(pet: Pet) {
 - [TypeScript Handbook: Structural Typing](https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes.html#structural-type-system) — 结构类型系统介绍
 - [TypeScript Handbook: Narrowing](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) — 类型收窄完整指南
 - [TypeScript Handbook: Advanced Types](https://www.typescriptlang.org/docs/handbook/2/types-from-types.html) — 类型生成类型
+- [TypeScript Handbook: Template Literal Types](https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html) — 模板字面量类型
+- [TypeScript Handbook: `satisfies` Operator](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html#the-satisfies-operator) — satisfies 运算符
 - [ECMA-262 Language Specification](https://tc39.es/ecma262/) — ECMAScript 语言规范
 - [nominal typing vs structural typing (TypeScript FAQ)](https://github.com/Microsoft/TypeScript/wiki/FAQ#why-do-these-empty-classes-behave-strangely) — TypeScript 官方 FAQ
 - [TAPL (Types and Programming Languages)](https://www.cis.upenn.edu/~bcpierce/tapl/) — Benjamin Pierce 经典类型理论教材
 - [TypeScript Deep Dive by Basarat](https://basarat.gitbook.io/typescript/) — 开源 TypeScript 深度指南
+- [TypeScript Weekly](https://typescript-weekly.com/) — TypeScript 社区周报
+- [Total TypeScript by Matt Pocock](https://www.totaltypescript.com/) — 高级 TypeScript 实践课程
+- [Type Challenges](https://github.com/type-challenges/type-challenges) — 类型体操题库

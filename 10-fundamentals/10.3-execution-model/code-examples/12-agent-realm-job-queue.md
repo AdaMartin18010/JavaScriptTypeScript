@@ -94,13 +94,141 @@ newRealm.evaluate(`
 console.log(typeof x); // "undefined"
 ```
 
+### 6.2 ShadowRealm 的错误隔离与值传递
+
+```javascript
+// ShadowRealm 通过 evaluate/wrap 实现跨 Realm 调用
+const realm = new ShadowRealm();
+
+// 在 Realm 内定义一个纯函数
+realm.evaluate(`
+  globalThis.compute = function(n) {
+    if (n < 0) throw new Error('Negative input');
+    return n * 2;
+  };
+`);
+
+// 将 Realm 内的函数包装为可调用对象
+const wrappedCompute = realm.wrap('compute');
+
+try {
+  console.log(wrappedCompute(21)); // 42
+  console.log(wrappedCompute(-1)); // 抛出 Error，但发生在 Realm 内部
+} catch (err) {
+  // 跨 Realm 错误需要显式传递；部分实现中 err 为 string
+  console.error('Realm error:', err);
+}
+
+// ⚠️ ShadowRealm 处于 TC39 Stage 3，Node.js 22+ / Deno 实验性支持
+```
+
+### 6.3 SharedArrayBuffer + Atomics 的 Agent 间同步
+
+```javascript
+// main.js — 主线程创建共享内存并派生 Worker
+const { Worker } = require('node:worker_threads');
+
+const shared = new SharedArrayBuffer(4);
+const int32 = new Int32Array(shared);
+
+const worker = new Worker('./worker.js', { workerData: shared });
+
+// 等待 Worker 完成写入后通知
+Atomics.wait(int32, 0, 0); // 阻塞直到 int32[0] !== 0
+console.log('Result from Worker:', int32[0]); // 42
+
+// worker.js
+const { workerData, parentPort } = require('node:worker_threads');
+const int32 = new Int32Array(workerData);
+
+// 模拟计算
+int32[0] = 42;
+Atomics.notify(int32, 0, 1); // 通知等待的 Agent
+```
+
+### 6.4 AsyncContext 的跨异步边界传播（Stage 2 提案模拟）
+
+```typescript
+// AsyncContext 提案旨在替代 AsyncLocalStorage，提供语言级标准
+// 以下为概念演示（目前需 Babel 插件或实验性运行时支持）
+
+import { AsyncContext } from 'node:async_hooks'; // Node.js 实验性 API
+
+const requestContext = new AsyncContext.Variable<string>();
+
+function handleRequest(requestId: string) {
+  requestContext.run(requestId, () => {
+    log('Request started');
+    setTimeout(() => {
+      log('After timeout'); // requestId 自动传播
+      Promise.resolve().then(() => {
+        log('In microtask'); // requestId 依然可访问
+      });
+    }, 10);
+  });
+}
+
+function log(message: string) {
+  const reqId = requestContext.get() ?? 'unknown';
+  console.log(`[${reqId}] ${message}`);
+}
+
+handleRequest('req-001');
+// [req-001] Request started
+// [req-001] After timeout
+// [req-001] In microtask
+```
+
+### 6.5 手动 Job Queue 模拟器（理解微任务调度）
+
+```typescript
+type Job = () => void;
+
+class SimpleJobQueue {
+  private queue: Job[] = [];
+
+  enqueue(job: Job) {
+    this.queue.push(job);
+  }
+
+  flush() {
+    while (this.queue.length > 0) {
+      const job = this.queue.shift()!;
+      job();
+      // 注意：真实引擎在 job 执行期间新入队的 job 也会在当前 flush 中处理
+      // 这就是 "微任务饿死" 风险的来源
+    }
+  }
+}
+
+// 演示：Promise.resolve 的 then 回调被包装为 Job
+const jobs = new SimpleJobQueue();
+
+function mockPromiseThen(onFulfilled: (value: unknown) => void) {
+  jobs.enqueue(() => onFulfilled('mock-value'));
+}
+
+mockPromiseThen((v) => console.log('Job executed with:', v));
+jobs.flush(); // Job executed with: mock-value
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
 
-- **ECMA-262 §9.3** — Realms
-- **ECMA-262 §9.5** — Jobs and Host Operations
-- **ECMA-262 §9.7** — Agents
+- **ECMA-262 §9.3** — Realms: <https://tc39.es/ecma262/#sec-realms>
+- **ECMA-262 §9.5** — Jobs and Host Operations: <https://tc39.es/ecma262/#sec-jobs-and-job-queues>
+- **ECMA-262 §9.7** — Agents: <https://tc39.es/ecma262/#sec-agents>
+- **HTML Living Standard — Event Loops** — <https://html.spec.whatwg.org/multipage/webappapis.html#event-loops>
+- **V8 Blog — ShadowRealm** — <https://v8.dev/features/shadowrealm>
+- **MDN — ShadowRealm** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ShadowRealm>
+- **MDN — SharedArrayBuffer** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer>
+- **MDN — Atomics** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics>
+- **Node.js — Worker Threads** — <https://nodejs.org/api/worker_threads.html>
+- **Node.js — Async Hooks** — <https://nodejs.org/api/async_hooks.html>
+- **TC39 — ShadowRealm Proposal** — <https://github.com/tc39/proposal-shadowrealm>
+- **TC39 — Async Context Proposal** — <https://github.com/tc39/proposal-async-context>
+- **TC39 — Explicit Resource Management** — <https://github.com/tc39/proposal-explicit-resource-management>
 
 ---
 
@@ -376,11 +504,11 @@ function compute(obj) {
 
 | 来源 | 链接 | 相关章节 |
 |------|------|---------|
-| ECMA-262 | tc39.es/ecma262 | §8.1, §9, §10, §27 |
-| HTML Living Standard | html.spec.whatwg.org | §8.1.4.2 |
-| V8 Blog | v8.dev/blog | Ignition, TurboFan, GC |
-| Node.js Docs | nodejs.org | Event Loop, libuv |
-| MDN | developer.mozilla.org | Execution context, Event loop |
+| ECMA-262 | <https://tc39.es/ecma262> | §8.1, §9, §10, §27 |
+| HTML Living Standard | <https://html.spec.whatwg.org> | §8.1.4.2 |
+| V8 Blog | <https://v8.dev/blog> | Ignition, TurboFan, GC |
+| Node.js Docs | <https://nodejs.org> | Event Loop, libuv |
+| MDN | <https://developer.mozilla.org> | Execution context, Event loop |
 
 ---
 

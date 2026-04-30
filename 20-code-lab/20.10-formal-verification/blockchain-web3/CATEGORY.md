@@ -236,6 +236,112 @@ function parseTransferLogs(logs: any[]) {
 }
 ```
 
+### Hardhat + TypeChain 类型安全测试
+
+```typescript
+// test/MyToken.test.ts — Hardhat + TypeChain 严格类型测试
+import { expect } from 'chai';
+import { ethers } from 'hardhat';
+import { MyToken } from '../typechain-types';
+
+describe('MyToken', () => {
+  let token: MyToken;
+  let owner: any;
+  let addr1: any;
+
+  beforeEach(async () => {
+    [owner, addr1] = await ethers.getSigners();
+    const TokenFactory = await ethers.getContractFactory('MyToken');
+    token = await TokenFactory.deploy('MyToken', 'MTK', ethers.parseEther('1000000'));
+    await token.waitForDeployment();
+  });
+
+  it('should assign total supply to owner', async () => {
+    const ownerBalance = await token.balanceOf(owner.address);
+    expect(await token.totalSupply()).to.equal(ownerBalance);
+  });
+
+  it('should transfer tokens', async () => {
+    await token.transfer(addr1.address, ethers.parseEther('100'));
+    expect(await token.balanceOf(addr1.address)).to.equal(ethers.parseEther('100'));
+  });
+
+  it('should emit Transfer event', async () => {
+    await expect(token.transfer(addr1.address, 100n))
+      .to.emit(token, 'Transfer')
+      .withArgs(owner.address, addr1.address, 100n);
+  });
+});
+```
+
+### Foundry 模糊测试（Fuzz Testing）
+
+```solidity
+// test/MyToken.fuzz.t.sol — Foundry 内联模糊测试
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "forge-std/Test.sol";
+import "../src/MyToken.sol";
+
+contract MyTokenFuzzTest is Test {
+    MyToken token;
+
+    function setUp() public {
+        token = new MyToken("MyToken", "MTK", 1_000_000 ether);
+    }
+
+    // Foundry 自动生成随机输入 (amount) 运行 256 次
+    function testFuzzTransfer(address to, uint256 amount) public {
+        vm.assume(to != address(0));
+        vm.assume(to != address(this));
+        amount = bound(amount, 0, token.balanceOf(address(this)));
+
+        token.transfer(to, amount);
+        assertEq(token.balanceOf(to), amount);
+    }
+
+    // 不变量测试：总供应量永远不变
+    function testInvariantTotalSupply() public {
+        assertEq(token.totalSupply(), 1_000_000 ether);
+    }
+}
+```
+
+> 📖 Reference: [Foundry Fuzz Testing](https://book.getfoundry.sh/forge/fuzz-testing) | [Foundry Invariant Testing](https://book.getfoundry.sh/forge/invariant-testing)
+
+### 静态分析与安全扫描（Slither）
+
+```bash
+# 安装 Slither
+pip install slither-analyzer
+
+# 运行全套检测器
+slither ./src --solc-remaps @openzeppelin=node_modules/@openzeppelin
+
+# 输出 JSON 报告供 CI 使用
+slither ./src --json slither-report.json --checklist
+```
+
+```yaml
+# .github/workflows/security.yml — CI 集成 Slither
+name: Security Scan
+on: [push, pull_request]
+jobs:
+  slither:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crytic/slither-action@v0.4.0
+        with:
+          node-version: 20
+          fail-on: medium
+```
+
+> 📖 Reference: [Slither Documentation](https://github.com/crytic/slither) | [Trail of Bits Blockchain Security](https://www.trailofbits.com/practice/blockchain-security/)
+
+---
+
 ## 关联模块
 
 - `83-blockchain-advanced` — 高级区块链（Layer 2、Rollup）
@@ -262,6 +368,18 @@ function parseTransferLogs(logs: any[]) {
 | Alchemy Web3 SDK | 基础设施 | [docs.alchemy.com/reference/sdk](https://docs.alchemy.com/reference/sdk) |
 | Chainlist | RPC 节点列表 | [chainlist.org](https://chainlist.org/) |
 | DeFi Llama | 协议数据 | [defillama.com](https://defillama.com/) |
+| Hardhat Documentation | 文档 | [hardhat.org/docs](https://hardhat.org/docs) |
+| TypeChain — TypeScript for Ethereum | 工具 | [github.com/dethcrypto/TypeChain](https://github.com/dethcrypto/TypeChain) |
+| Slither Static Analysis | 安全 | [github.com/crytic/slither](https://github.com/crytic/slither) |
+| Mythril Security Analysis | 安全 | [github.com/Consensys/mythril](https://github.com/Consensys/mythril) |
+| Echidna Fuzzing | 安全 | [github.com/crytic/echidna](https://github.com/crytic/echidna) |
+| OpenZeppelin Defender | 运维 | [docs.openzeppelin.com/defender](https://docs.openzeppelin.com/defender) |
+| Tenderly Simulation & Debugging | 调试 | [docs.tenderly.co](https://docs.tenderly.co) |
+| CoinMarketCap API | 市场数据 | [coinmarketcap.com/api/documentation/v1/](https://coinmarketcap.com/api/documentation/v1/) |
+| Etherscan API | 浏览器 | [docs.etherscan.io](https://docs.etherscan.io) |
+| Infura Documentation | 基础设施 | [docs.infura.io](https://docs.infura.io) |
+| MetaMask Docs | 钱包 | [docs.metamask.io](https://docs.metamask.io) |
+| WalletConnect v2 Docs | 协议 | [docs.walletconnect.com](https://docs.walletconnect.com) |
 
 ---
 

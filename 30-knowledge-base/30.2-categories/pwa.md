@@ -167,6 +167,192 @@ function openIndexedDB(): Promise<IDBDatabase> {
 
 ---
 
+## Web Push 推送通知
+
+```typescript
+// push-client.ts — 客户端订阅推送
+export async function subscribePush(applicationServerKey: string) {
+  const registration = await navigator.serviceWorker.ready;
+
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(applicationServerKey),
+  });
+
+  // 将 subscription JSON 发送至后端保存
+  await fetch('/api/push-subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(subscription),
+  });
+
+  return subscription;
+}
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
+}
+```
+
+```typescript
+// sw-push.ts — Service Worker 中接收并显示通知
+self.addEventListener('push', (event) => {
+  const data = event.data?.json() ?? { title: 'New Notification', body: '' };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icon-192x192.png',
+      badge: '/badge-72x72.png',
+      data: data.url,
+      actions: [
+        { action: 'open', title: 'Open' },
+        { action: 'dismiss', title: 'Dismiss' },
+      ],
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  if (event.action === 'open' || !event.action) {
+    event.waitUntil(clients.openWindow(event.notification.data ?? '/'));
+  }
+});
+```
+
+```javascript
+// push-server.js — Node.js 服务端使用 web-push 库发送
+import webpush from 'web-push';
+
+webpush.setVapidDetails(
+  'mailto:admin@example.com',
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
+);
+
+async function sendPush(subscription, payload) {
+  try {
+    await webpush.sendNotification(subscription, JSON.stringify(payload));
+  } catch (err) {
+    if (err.statusCode === 410) {
+      // 订阅已过期，从数据库删除
+      await deleteSubscription(subscription.endpoint);
+    }
+  }
+}
+```
+
+> 📖 Reference: [web-push-libs/web-push](https://github.com/web-push-libs/web-push) | [Push API (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/Push_API)
+
+---
+
+## File System Access API（本地文件读写）
+
+```typescript
+// file-system-access.ts — 渐进式增强文件操作
+export async function openAndReadFile(): Promise<string> {
+  if (!('showOpenFilePicker' in window)) {
+    // 降级：传统 <input type="file">
+    return fallbackFileInput();
+  }
+
+  const [fileHandle] = await window.showOpenFilePicker({
+    types: [
+      { description: 'Markdown', accept: { 'text/markdown': ['.md'] } },
+      { description: 'Text', accept: { 'text/plain': ['.txt'] } },
+    ],
+    multiple: false,
+  });
+
+  const file = await fileHandle.getFile();
+  return file.text();
+}
+
+export async function saveToFile(content: string, suggestedName = 'notes.md') {
+  if (!('showSaveFilePicker' in window)) {
+    // 降级：下载 Blob
+    const blob = new Blob([content], { type: 'text/markdown' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = suggestedName;
+    a.click();
+    return;
+  }
+
+  const fileHandle = await window.showSaveFilePicker({
+    suggestedName,
+    types: [{ accept: { 'text/markdown': ['.md'] } }],
+  });
+
+  const writable = await fileHandle.createWritable();
+  await writable.write(content);
+  await writable.close();
+}
+
+// 拖拽打开文件
+export function enableDropFile(target: HTMLElement, onRead: (text: string) => void) {
+  target.addEventListener('dragover', (e) => { e.preventDefault(); target.classList.add('drag-over'); });
+  target.addEventListener('dragleave', () => target.classList.remove('drag-over'));
+  target.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    target.classList.remove('drag-over');
+    const file = e.dataTransfer?.files[0];
+    if (file) onRead(await file.text());
+  });
+}
+```
+
+> 📖 Reference: [File System Access API (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API) | [Google Chrome Developers — File System Access](https://developer.chrome.com/docs/capabilities/web-apis/file-system-access)
+
+---
+
+## Periodic Background Sync（定期后台同步）
+
+```typescript
+// periodic-sync.ts — 定期更新缓存内容（如每日新闻、股票数据）
+export async function registerPeriodicSync(tag: string, minIntervalHours = 24) {
+  const registration = await navigator.serviceWorker.ready;
+
+  if ('periodicSync' in registration) {
+    const status = await navigator.permissions.query({
+      name: 'periodic-background-sync' as any,
+    });
+
+    if (status.state === 'granted') {
+      await (registration as any).periodicSync.register(tag, {
+        minInterval: minIntervalHours * 60 * 60 * 1000,
+      });
+      console.log(`Registered periodic sync: ${tag}`);
+    }
+  }
+}
+```
+
+```typescript
+// sw-periodic.ts — Service Worker 中处理定期同步
+self.addEventListener('periodicsync', (event: any) => {
+  if (event.tag === 'refresh-news') {
+    event.waitUntil(refreshNewsCache());
+  }
+});
+
+async function refreshNewsCache() {
+  const cache = await caches.open('news-cache');
+  const response = await fetch('/api/news/latest');
+  if (response.ok) {
+    await cache.put('/api/news/latest', response.clone());
+  }
+}
+```
+
+> ⚠️ 仅 Chrome/Edge 支持；iOS Safari 不支持。
+
+---
+
 ## 工具
 
 | 工具 | 说明 |
@@ -186,6 +372,18 @@ function openIndexedDB(): Promise<IDBDatabase> {
 - [Service Worker API (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
 - [PWA Builder](https://www.pwabuilder.com/)
 - [Background Sync API (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/Background_Synchronization_API)
+- [Push API (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/Push_API)
+- [Notifications API (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API)
+- [File System Access API (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API)
+- [Periodic Background Sync (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/Web_Periodic_Background_Synchronization_API)
+- [Badging API (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/Badging_API)
+- [Web Share Target API (MDN)](https://developer.mozilla.org/en-US/docs/Web/Manifest/share_target)
+- [Cache Storage API (MDN)](https://developer.mozilla.org/en-US/docs/Web/API/CacheStorage)
+- [Install Prompt — BeforeInstallPromptEvent](https://developer.mozilla.org/en-US/docs/Web/API/BeforeInstallPromptEvent)
+- [Google Developers — PWA Checklist](https://web.dev/pwa-checklist/)
+- [Microsoft PWA Documentation](https://docs.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/)
+- [web-push-libs/web-push (Node.js)](https://github.com/web-push-libs/web-push)
+- [W3C Web App Manifest](https://www.w3.org/TR/appmanifest/)
 
 ---
 

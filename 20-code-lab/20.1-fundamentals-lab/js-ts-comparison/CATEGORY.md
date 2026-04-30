@@ -175,6 +175,49 @@ const tsRoles = ['admin', 'user', 'guest'] as const;
 type Role = (typeof tsRoles)[number]; // 'admin' | 'user' | 'guest'
 ```
 
+### Type Predicate 类型谓词：运行时类型守卫
+
+```typescript
+interface Cat { meow: () => void; kind: 'cat'; }
+interface Dog { bark: () => void; kind: 'dog'; }
+type Animal = Cat | Dog;
+
+function isCat(animal: Animal): animal is Cat {
+  return animal.kind === 'cat';
+}
+
+function makeSound(animal: Animal) {
+  if (isCat(animal)) { animal.meow(); }
+  else { animal.bark(); }
+}
+```
+
+### Template Literal Types：字符串层面的类型编程
+
+```typescript
+type Endpoint = `/api/v1/${'users' | 'orders'}/${number}`;
+const validUrl: Endpoint = '/api/v1/users/42'; // ✅
+
+type EventName<T extends string> = `on${Capitalize<T>}`;
+type ClickEvent = EventName<'click'>; // "onClick"
+```
+
+### Discriminated Union 可辨识联合模式
+
+```typescript
+type Shape =
+  | { kind: 'circle'; radius: number }
+  | { kind: 'rectangle'; width: number; height: number };
+
+function area(shape: Shape): number {
+  switch (shape.kind) {
+    case 'circle': return Math.PI * shape.radius ** 2;
+    case 'rectangle': return shape.width * shape.height;
+    default: const _exhaustive: never = shape; return _exhaustive;
+  }
+}
+```
+
 ## 关联索引
 
 - [10-fundamentals/10.1-language-semantics/README.md](../../../10-fundamentals/10.1-language-semantics/README.md)
@@ -195,3 +238,8 @@ type Role = (typeof tsRoles)[number]; // 'admin' | 'user' | 'guest'
 - [Microsoft TypeScript Wiki](https://github.com/microsoft/TypeScript/wiki) — 官方 Wiki，含设计原则与路线图
 - [Total TypeScript](https://www.totaltypescript.com/) — Matt Pocock 的 TypeScript 进阶课程
 - [Type Challenges](https://github.com/type-challenges/type-challenges) — 类型体操练习题集
+- [TypeScript Type Predicates](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates) — 官方类型谓词文档
+- [Template Literal Types](https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html) — 模板字面量类型手册
+- [Discriminated Unions](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions) — 可辨识联合官方说明
+- [TypeScript Design Goals](https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals) — TS 语言设计目标
+- [Execute Program: TypeScript](https://www.executeprogram.com/courses/typescript) — 交互式 TypeScript 课程

@@ -173,18 +173,66 @@ console.log('Result:', result);
 // 改进方案：使用 setImmediate / MessageChannel / Worker 将计算拆分为异步块
 ```
 
+### 6.5 调用栈深度限制与尾调用优化
+
+```javascript
+// 浏览器和 Node.js 的调用栈深度通常在 10,000 ~ 50,000 之间
+function measureStackDepth() {
+  let depth = 0;
+  function recurse() {
+    depth++;
+    recurse();
+  }
+  try {
+    recurse();
+  } catch (e) {
+    console.log('Max stack depth:', depth);
+    // 典型值：Node.js ~12,500；Chrome ~13,000
+  }
+}
+
+// 尾调用优化（TCO）在严格模式下理论上支持，但 V8 已放弃实现
+// 实际工程中应始终将递归改写为迭代
+'use strict';
+function tcoFactorial(n, acc = 1n) {
+  if (n <= 1) return acc;
+  return tcoFactorial(n - 1, acc * BigInt(n)); // 尾调用位置
+}
+```
+
+### 6.6 同步结构化克隆（Structured Clone）示例
+
+```javascript
+// structuredClone 是同步 API，内部执行结构化克隆算法
+const original = {
+  date: new Date(),
+  map: new Map([['key', 'value']]),
+  set: new Set([1, 2, 3]),
+  nested: { a: 1 },
+};
+
+const cloned = structuredClone(original);
+console.log(cloned.date !== original.date); // true（不同引用）
+console.log(cloned.nested !== original.nested); // true（深拷贝）
+
+// 注意：包含函数的的对象无法被结构化克隆
+// structuredClone({ fn: () => {} }); // throws DataCloneError
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
 
-- **ECMA-262 §9.4** — Execution Contexts
+- **ECMA-262 §9.4** — Execution Contexts: <https://tc39.es/ecma262/#sec-execution-contexts>
 - **MDN: Event Loop** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop>
 - **MDN: Call Stack** — <https://developer.mozilla.org/en-US/docs/Glossary/Call_stack>
 - **V8 Blog — Stack Traces** — <https://v8.dev/docs/stack-trace-api>
 - **Node.js Docs — Event Loop** — <https://nodejs.org/en/learn/asynchronous-work/event-loop-its-role>
 - **JavaScript.Info — Event Loop** — <https://javascript.info/event-loop>
-- **ECMA-262 §9.4** — 执行上下文栈管理: <https://tc39.es/ecma262/#sec-execution-contexts>
 - **Philip Roberts: What the heck is the event loop?** — <https://www.youtube.com/watch?v=8aGhZQkoFbQ> (JSConf 2014)
+- **MDN — structuredClone** — <https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone>
+- **V8 Blog — Understanding V8 Bytecode** — <https://v8.dev/blog/understanding-v8-bytecode>
+- **HTML Living Standard — Scripting** — <https://html.spec.whatwg.org/multipage/webappapis.html>
 
 ---
 

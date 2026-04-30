@@ -137,6 +137,29 @@ const fresh = require("./module"); // 重新执行模块代码
 
 > ⚠️ 生产环境中应谨慎操作 `require.cache`，因为这会破坏 Singleton 语义，并可能导致依赖该模块的其他模块持有过期引用。
 
+### 3.4 `require.cache` 遍历与依赖分析
+
+```javascript
+// 打印当前进程已加载的所有模块路径
+Object.keys(require.cache).forEach((path) => {
+  console.log(path);
+});
+
+// 分析某个模块的依赖树深度
+function getModuleDepth(mod, depth = 0, visited = new Set()) {
+  if (visited.has(mod.id)) return depth;
+  visited.add(mod.id);
+  let max = depth;
+  for (const child of mod.children || []) {
+    max = Math.max(max, getModuleDepth(child, depth + 1, visited));
+  }
+  return max;
+}
+
+const entry = require.cache[require.resolve('./app.js')];
+console.log('Dependency tree depth:', getModuleDepth(entry));
+```
+
 ---
 
 ## 4. `exports` vs `module.exports`：引用关系与陷阱
@@ -190,6 +213,27 @@ module.exports = { bar: 2 };
 module.exports = function greet(name) {
   return `Hello, ${name}`;
 };
+```
+
+### 4.5 运行时替换导出（Monkey-patching）
+
+```javascript
+// patch-logger.js — 在测试环境中替换 console 方法
+const original = require('./logger');
+
+// 保存原始引用
+const originalLog = original.log;
+
+// 替换模块导出上的方法
+original.log = function patchedLog(...args) {
+  if (process.env.NODE_ENV === 'test') {
+    process.stdout.write(`[TEST] ${args.join(' ')}\n`);
+  } else {
+    originalLog.apply(this, args);
+  }
+};
+
+// 由于 Singleton 语义，所有 require('./logger') 的调用方都会看到这个补丁
 ```
 
 ---
@@ -265,14 +309,14 @@ const __dirname = path.dirname(__filename);
 
 ```mermaid
 graph TD
-    Start["调用方 require('foo')"] --> Resolve["① Resolve<br/>Module._resolveFilename"]
-    Resolve --> CacheCheck{"② Cache Check<br/>require.cache[resolved]?"}
+    Start["调用方 require('foo')"] --> Resolve["① Resolve\nModule._resolveFilename"]
+    Resolve --> CacheCheck{"② Cache Check\nrequire.cache[resolved]?"}
     CacheCheck -->|命中 HIT| ReturnCache["返回 cachedModule.exports"]
-    CacheCheck -->|未命中 MISS| CreateModule["③ Create Module<br/>new Module(resolvedPath)"]
-    CreateModule --> AddCache["④ Cache Registration<br/>require.cache[resolved] = module"]
-    AddCache --> Compile["⑤ Compile<br/>Module._compile"]
+    CacheCheck -->|未命中 MISS| CreateModule["③ Create Module\nnew Module(resolvedPath)"]
+    CreateModule --> AddCache["④ Cache Registration\nrequire.cache[resolved] = module"]
+    AddCache --> Compile["⑤ Compile\nModule._compile"]
     Compile --> Wrap["包装为 Wrapper Function"]
-    Wrap --> Execute["⑥ Execute<br/>vm.runInThisContext"]
+    Wrap --> Execute["⑥ Execute\nvm.runInThisContext"]
     Execute --> ReturnExports["返回 module.exports"]
     ReturnCache --> End["End"]
     ReturnExports --> End
@@ -298,14 +342,59 @@ stateDiagram-v2
 
 ---
 
-## 8. 权威参考 (References)
+## 8. 在 ESM 中使用 CJS：`createRequire` 与条件导出
+
+### 8.1 `module.createRequire` 桥接
+
+```javascript
+// bridge.mjs — 在 ESM 中创建 CJS require 函数
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+
+const require = createRequire(import.meta.url);
+
+// 现在可以像 CJS 一样使用 require
+const lodash = require('lodash');
+const localConfig = require('./config.json');
+
+console.log(lodash.VERSION);
+```
+
+### 8.2 条件导出（Conditional Exports）在 CJS 与 ESM 间的兼容
+
+```json
+{
+  "name": "my-lib",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  }
+}
+```
+
+```javascript
+// 当 CJS 代码 require('my-lib') 时，Node.js 会加载 ./dist/index.cjs
+// 当 ESM 代码 import('my-lib') 时，Node.js 会加载 ./dist/index.mjs
+```
+
+---
+
+## 9. 权威参考 (References)
 
 | 来源 | 链接 | 相关章节 |
 |------|------|---------|
-| Node.js Modules API | nodejs.org/api/modules.html | The module wrapper, Caching |
-| CommonJS Spec | wiki.commonjs.org/wiki/Modules/1.1 | Module Context, Require |
-| Node.js Source | github.com/nodejs/node | lib/internal/modules/cjs/loader.js |
-| ECMA-262 (对比参考) | tc39.es/ecma262 | §16.2 Modules |
+| Node.js Modules API | <https://nodejs.org/api/modules.html> | The module wrapper, Caching |
+| CommonJS Spec | <https://wiki.commonjs.org/wiki/Modules/1.1> | Module Context, Require |
+| Node.js Source | <https://github.com/nodejs/node> | lib/internal/modules/cjs/loader.js |
+| ECMA-262 (对比参考) | <https://tc39.es/ecma262> | §16.2 Modules |
+| Node.js — `module.createRequire` | <https://nodejs.org/api/module.html#modulecreaterequirefilename> | ESM 桥接 CJS |
+| Node.js — Packages | <https://nodejs.org/api/packages.html> | Conditional Exports |
+| TypeScript Handbook — CJS/ESM Interop | <https://www.typescriptlang.org/docs/handbook/modules/appendices/esm-cjs-interop.html> | 互操作指南 |
+| MDN — JavaScript Modules | <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules> | ESM 与 CJS 对比 |
+| webpack — Tree Shaking | <https://webpack.js.org/guides/tree-shaking/> | CJS 对 Tree Shaking 的限制 |
+| Rollup — CommonJS Plugin | <https://github.com/rollup/plugins/tree/master/packages/commonjs> | CJS 转 ESM 打包 |
 
 ---
 

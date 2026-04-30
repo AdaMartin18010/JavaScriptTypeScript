@@ -212,4 +212,34 @@ const shimmed = toSorted.shim(); // 自动挂载到 Array.prototype
 
 ---
 
+### 3.5 引擎优化与内存考量
+
+```js
+// 现代引擎（V8 12+、SpiderMonkey 125+）对 toSorted 采用写时复制优化
+const large = new Array(1_000_000).fill(0).map((_, i) => i);
+console.time('native');
+const sorted1 = large.toSorted((a, b) => b - a);
+console.timeEnd('native');
+console.time('manual');
+const sorted2 = large.slice().sort((a, b) => b - a);
+console.timeEnd('manual');
+```
+
+### 3.6 findLast 在时间序列分析中的应用
+
+```js
+const prices = [100, 105, 102, 110, 108, 115, 113];
+const lastBelow110 = prices.findLast(p => p < 110); // 108
+const lastIndex = prices.findLastIndex(p => p < 110); // 4
+```
+
+---
+
+## 更多权威参考链接
+
+- [V8 Blog: ES2023 Features](https://v8.dev/features/tags/es2023) -- V8 引擎实现与优化细节
+- [SpiderMonkey Change Array By Copy](https://bugzilla.mozilla.org/show_bug.cgi?id=1712140) -- Firefox 实现跟踪
+- [Node.js v20 Array Methods](https://nodejs.org/docs/latest-v20.x/api/globals.html) -- Node.js 全局 API 文档
+- [Safari Release Notes: ES2023](https://webkit.org/blog/13966/webkit-features-in-safari-16-6/) -- WebKit 支持说明
+
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

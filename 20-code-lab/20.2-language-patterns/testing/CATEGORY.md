@@ -150,6 +150,64 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 ```
 
+### Snapshot Testing 快照测试
+
+```typescript
+import { describe, it, expect } from 'vitest';
+
+function renderButton(props: { label: string; disabled?: boolean }) {
+  return `<button ${props.disabled ? 'disabled ' : ''}class="btn">${props.label}</button>`;
+}
+
+describe('renderButton', () => {
+  it('matches snapshot for default state', () => {
+    expect(renderButton({ label: 'Submit' })).toMatchSnapshot();
+  });
+});
+```
+
+### Property-Based Testing 基于属性的测试
+
+```typescript
+import { describe, it } from 'vitest';
+import * as fc from 'fast-check';
+
+function add(a: number, b: number): number { return a + b; }
+
+describe('add', () => {
+  it('is commutative', () => {
+    fc.assert(fc.property(fc.integer(), fc.integer(), (a, b) => {
+      expect(add(a, b)).toBe(add(b, a));
+    }));
+  });
+});
+```
+
+### React Testing Library 组件测试
+
+```typescript
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Counter } from './Counter';
+
+describe('Counter', () => {
+  it('increments count on click', () => {
+    render(<Counter initial={0} />);
+    const button = screen.getByRole('button', { name: /increment/i });
+    fireEvent.click(button);
+    expect(screen.getByText('Count: 1')).toBeInTheDocument();
+  });
+});
+```
+
+### 测试金字塔的代码化实践
+
+```typescript
+// 1. 单元测试（大量、快速、隔离）: 纯函数、工具类
+// 2. 集成测试（服务边界、数据库、API）: 事务回滚、模块协作
+// 3. E2E 测试（关键用户路径、少量）: 登录-下单-支付完整流程
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -198,4 +256,12 @@ afterAll(() => server.close());
 
 ---
 
-*最后更新: 2026-04-29*
+- [fast-check](https://fast-check.dev/) — 基于属性的测试库
+- [Vitest Snapshot Testing](https://vitest.dev/guide/snapshot.html) — 快照测试官方文档
+- [Testing Library Queries](https://testing-library.com/docs/queries/about/) — 查询优先级与最佳实践
+- [Test Double](https://testdouble.com/) — 测试替身最佳实践
+- [GitHub Actions CI](https://docs.github.com/en/actions) — 持续集成官方文档
+
+---
+
+*最后更新: 2026-04-30*

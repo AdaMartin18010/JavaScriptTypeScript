@@ -26,6 +26,7 @@
 | 组件化 | 将 UI 拆分为独立、可复用的功能单元 | component.ts |
 | 服务端组件 | 在服务端完成渲染，减少客户端 JS 体积 | server-components.ts |
 | 水合（Hydration） | 将静态 HTML 与客户端状态树关联的过程 | hydration.ts |
+| 群岛架构 | 页面大部分为静态 HTML，仅交互区域注入 JS | islands.ts |
 
 ---
 
@@ -48,7 +49,7 @@
 
 ### 2.3 与相关技术的对比
 
-与原生 DOM 对比：框架提升开发效率与可维护性，原生无抽象开销。Web Components 提供标准组件化但缺乏框架级的响应式与生态工具链。
+与原生 DOM 对比：框架提升开发效率与可维护性，原生无抽象开销。Web Components 提供标准组件化但缺乏框架级的响应式与生态工具链。群岛架构在静态站点场景中进一步减少客户端 JS 负载。
 
 ---
 
@@ -193,6 +194,85 @@ function createOptimizedVNode(): VNode {
 }
 ```
 
+#### 群岛架构（Islands Architecture）
+
+```typescript
+// islands-architecture.ts — Astro 风格的 Islands 实现原理
+// 服务端输出静态 HTML，仅在交互 island 注入 hydration 脚本
+
+interface Island {
+  component: string;   // 组件模块路径
+  props: Record<string, unknown>;
+  selector: string;    // DOM 挂载点
+}
+
+function renderIsland(island: Island): string {
+  const props = JSON.stringify(island.props).replace(/</g, '\\u003c');
+  return `
+    <div data-island="${island.component}" data-props='${props}'>
+      <!-- 服务端预渲染的静态 HTML -->
+      <button>Interactive</button>
+    </div>
+    <script type="module">
+      import { hydrate } from '/_astro/island-hydrator.js';
+      hydrate('${island.component}', '${island.selector}', ${props});
+    </script>
+  `;
+}
+
+// 客户端 hydrate 仅对标记的 island 执行，而非整棵树
+async function hydrate(componentPath: string, selector: string, props: unknown) {
+  const mod = await import(componentPath);
+  const el = document.querySelector(selector);
+  if (el && mod.default) {
+    // 框架特定的挂载逻辑（ReactDOM.hydrateRoot / vue.createApp）
+    mountToElement(el, mod.default, props);
+  }
+}
+```
+
+#### SolidJS 细粒度响应式（无虚拟 DOM）
+
+```typescript
+// solid-reactivity.ts — Solid 编译后的信号更新模型
+import { createSignal, createEffect } from 'solid-js';
+
+function Counter() {
+  const [count, setCount] = createSignal(0);
+
+  // createEffect 在编译后成为直接绑定到 DOM 的更新函数
+  createEffect(() => {
+    // 编译器将此 effect 关联到 button 的 textContent
+    console.log('DOM update:', count());
+  });
+
+  return {
+    mount(el: HTMLButtonElement) {
+      el.onclick = () => setCount(c => c + 1);
+    },
+  };
+}
+
+// 核心区别：无 VDOM diff，信号变化直接触发绑定 DOM 的更新函数
+```
+
+#### Preact Signals 在任意框架中运行
+
+```typescript
+// preact-signals-agnostic.ts — 框架无关的信号状态管理
+import { signal, effect, computed } from '@preact/signals-core';
+
+const count = signal(0);
+const doubled = computed(() => count.value * 2);
+
+// 可在 React/Vue/Vanilla 中统一使用
+effect(() => {
+  document.getElementById('counter')!.textContent = String(count.value);
+});
+
+count.value = 5; // DOM 自动更新
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -201,6 +281,7 @@ function createOptimizedVNode(): VNode {
 | 框架选择决定性能上限 | 开发者对框架的理解和使用方式更重要 |
 | React 是唯一工业标准 | Vue 与 Angular 在企业级市场同样占主导；Svelte 在嵌入式/低功耗场景增长 |
 | 服务端组件等同于 SSR | RSC 是服务端运行组件的架构，SSR 是将结果序列化为 HTML；二者可叠加 |
+| 群岛架构不适合交互密集应用 | 在内容为主的站点上可显著减少 JS，但完全交互应用仍需传统 hydration |
 
 ### 3.3 扩展阅读
 
@@ -214,6 +295,12 @@ function createOptimizedVNode(): VNode {
 - [Angular Signals](https://angular.dev/guide/signals)
 - [Web Components — MDN](https://developer.mozilla.org/en-US/docs/Web/Web_Components)
 - [State of JS 2024 — Front-end Frameworks](https://stateofjs.com/en-US/other-tools/front_end_frameworks)
+- [Astro — Islands Architecture](https://docs.astro.build/en/concepts/islands/)
+- [SolidJS — Reactivity Guide](https://docs.solidjs.com/concepts/intro-to-reactivity)
+- [Preact Signals](https://preactjs.com/guide/v10/signals/)
+- [Qwik — Resumability vs Hydration](https://qwik.dev/docs/concepts/resumable/)
+- [Marko — Streaming & Partial Hydration](https://markojs.com/docs/server-side-rendering/)
+- [HTMX — Hypermedia-Driven Applications](https://htmx.org/)
 - `20.5-frontend-frameworks/`
 
 ---

@@ -175,7 +175,149 @@ function MouseTracker({ render }: MouseTrackerProps) {
 )} />
 ```
 
-## 6. 设计系统
+## 6. 代码示例：无头组件 + CVA 样式变体
+
+```tsx
+// headless-cva.tsx — 结合 Radix UI 与 class-variance-authority 的类型安全样式
+import * as React from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { cva, type VariantProps } from 'class-variance-authority';
+
+const overlayVariants = cva(
+  'fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out',
+  {
+    variants: {
+      blur: {
+        true: 'backdrop-blur-sm',
+        false: '',
+      },
+    },
+    defaultVariants: { blur: false },
+  }
+);
+
+const contentVariants = cva(
+  'fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] rounded-lg bg-white p-6 shadow-lg',
+  {
+    variants: {
+      size: {
+        sm: 'max-w-sm',
+        md: 'max-w-lg',
+        lg: 'max-w-2xl',
+      },
+    },
+    defaultVariants: { size: 'md' },
+  }
+);
+
+interface DialogContentProps
+  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>,
+    VariantProps<typeof contentVariants>,
+    VariantProps<typeof overlayVariants> {}
+
+const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
+  ({ className, size, blur, children, ...props }, ref) => (
+    <DialogPrimitive.Portal>
+      <DialogPrimitive.Overlay className={overlayVariants({ blur })} />
+      <DialogPrimitive.Content
+        ref={ref}
+        className={contentVariants({ size, className })}
+        {...props}
+      >
+        {children}
+      </DialogPrimitive.Content>
+    </DialogPrimitive.Portal>
+  )
+);
+DialogContent.displayName = 'DialogContent';
+
+export { DialogContent };
+```
+
+## 7. 代码示例：多态组件（Polymorphic Component）
+
+```tsx
+// polymorphic.ts — 支持 as 属性的类型安全多态组件
+import React from 'react';
+
+type AsProp<C extends React.ElementType> = {
+  as?: C;
+};
+
+type PropsToOmit<C extends React.ElementType, P> = keyof (AsProp<C> & P);
+
+type PolymorphicComponentProp<
+  C extends React.ElementType,
+  Props = {}
+> = React.PropsWithChildren<Props & AsProp<C>> &
+  Omit<React.ComponentPropsWithoutRef<C>, PropsToOmit<C, Props>>;
+
+type BoxProps = { className?: string };
+
+export const Box = <C extends React.ElementType = 'div'>({
+  as,
+  children,
+  className,
+  ...rest
+}: PolymorphicComponentProp<C, BoxProps>) => {
+  const Component = as || 'div';
+  return (
+    <Component className={className} {...rest}>
+      {children}
+    </Component>
+  );
+};
+
+// 使用：Box 可渲染为 button、span、article 等，保持完整类型推断
+<Box as="button" type="submit" className="btn">Submit</Box>
+<Box as="a" href="/home" className="link">Home</Box>
+```
+
+## 8. 代码示例：Vue / Svelte Slot 模式
+
+```vue
+<!-- Vue 3: 具名插槽与作用域插槽 -->
+<!-- Modal.vue -->
+<template>
+  <dialog ref="dialogRef">
+    <header><slot name="header">默认标题</slot></header>
+    <main><slot :open="isOpen" :close="close">默认内容</slot></main>
+    <footer><slot name="footer" :close="close"></slot></footer>
+  </dialog>
+</template>
+
+<!-- 使用 -->
+<Modal>
+  <template #header>自定义标题</template>
+  <template #default="{ open, close }">
+    <p>Modal 状态: {{ open }}</p>
+    <button @click="close">关闭</button>
+  </template>
+</Modal>
+```
+
+```svelte
+<!-- Svelte: 插槽与 let 指令 -->
+<!-- DataTable.svelte -->
+<table>
+  <thead><slot name="header" /></thead>
+  <tbody>
+    {#each rows as row}
+      <slot name="row" {row} />
+    {/each}
+  </tbody>
+</table>
+
+<!-- 使用 -->
+<DataTable {rows}>
+  <tr slot="header"><th>Name</th><th>Age</th></tr>
+  <tr slot="row" let:row>
+    <td>{row.name}</td><td>{row.age}</td>
+  </tr>
+</DataTable>
+```
+
+## 9. 设计系统
 
 ### 原子设计方法论
 
@@ -187,22 +329,43 @@ function MouseTracker({ render }: MouseTrackerProps) {
 
 设计系统的最小单位，以 JSON/YAML 定义：
 
+```json
+// tokens.json — W3C Design Tokens Community Group 格式
+{
+  "color": {
+    "primary": { "$value": "#0d6efd", "$type": "color" },
+    "surface": { "$value": "#ffffff", "$type": "color" }
+  },
+  "spacing": {
+    "xs": { "$value": "4px", "$type": "dimension" },
+    "sm": { "$value": "8px", "$type": "dimension" },
+    "md": { "$value": "16px", "$type": "dimension" }
+  },
+  "font": {
+    "body": {
+      "$value": { "family": "Inter", "size": "1rem", "weight": 400 },
+      "$type": "font"
+    }
+  }
+}
+```
+
 - 颜色、字体、间距、圆角、阴影
 - 跨平台共享（Web、iOS、Android、Figma）
 
-## 7. 组件测试策略
+## 10. 组件测试策略
 
 - **单元测试**: 交互和渲染（React Testing Library）
 - **视觉测试**: 截图比对（Chromatic、Percy）
 - **可访问性测试**: 自动化 a11y 检查（axe-core）
 
-## 8. 与相邻模块的关系
+## 11. 与相邻模块的关系
 
 - **57-design-system**: 设计系统的工程实现
 - **35-accessibility-a11y**: 组件的可访问性
 - **18-frontend-frameworks**: 框架的组件模型
 
-## 9. 权威参考与外部链接
+## 12. 权威参考与外部链接
 
 | 资源 | 描述 | 链接 |
 |------|------|------|
@@ -214,3 +377,12 @@ function MouseTracker({ render }: MouseTrackerProps) {
 | **Compound Components Pattern** | Kent C. Dodds 经典文章 | [kentcdodds.com/blog/compound-components-with-react-hooks](https://kentcdodds.com/blog/compound-components-with-react-hooks) |
 | **React Patterns** | React 设计模式大全 | [reactpatterns.com](https://reactpatterns.com/) |
 | **WAI-ARIA Authoring Practices** | 官方可访问性组件模式 | [w3.org/WAI/ARIA/apg](https://www.w3.org/WAI/ARIA/apg/) |
+| **shadcn/ui** | 可复制粘贴的组件集合 | [ui.shadcn.com](https://ui.shadcn.com/) |
+| **CVA (class-variance-authority)** | 类型安全样式变体工具 | [cva.style](https://cva.style/) |
+| **Tailwind CSS** | 实用优先 CSS 框架 | [tailwindcss.com](https://tailwindcss.com/) |
+| **Panda CSS** | 类型安全 CSS-in-JS | [panda-css.com](https://panda-css.com/) |
+| **Open Props** | CSS 自定义属性设计系统 | [open-props.style](https://open-props.style/) |
+| **Design Tokens W3C Community Group** | 规范 | [github.com/design-tokens/community-group](https://github.com/design-tokens/community-group) |
+| **Testing Library** | 测试最佳实践 | [testing-library.com](https://testing-library.com/) |
+| **axe-core** | 可访问性自动化引擎 | [github.com/dequelabs/axe-core](https://github.com/dequelabs/axe-core) |
+| **Polymorphic React Components** | 类型安全多态组件 | [github.com/kripod/react-polymorphic-box](https://github.com/kripod/react-polymorphic-box) |

@@ -167,17 +167,76 @@ export async function getDb() {
 }
 ```
 
+### 6.7 并行 vs 串行顶层 await
+
+```javascript
+// ❌ 串行：总延迟 = dbTime + cacheTime + configTime
+const db = await connectDb();
+const cache = await connectCache();
+const config = await loadConfig();
+
+// ✅ 并行：总延迟 = max(dbTime, cacheTime, configTime)
+const [db, cache, config] = await Promise.all([
+  connectDb(),
+  connectCache(),
+  loadConfig(),
+]);
+
+export { db, cache, config };
+```
+
+### 6.8 package.json type module 配置示例
+
+```json
+{
+  "name": "my-esm-app",
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  }
+}
+```
+
+### 6.9 测试包含顶层 await 的模块
+
+```javascript
+// test-helper.mjs
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+
+// 直接导入包含顶层 await 的模块
+import { config } from '../src/config.js';
+
+describe('Config Module', () => {
+  it('should have loaded apiUrl from remote', () => {
+    assert.strictEqual(typeof config.apiUrl, 'string');
+    assert.ok(config.apiUrl.startsWith('https://'));
+  });
+});
+
+// 注意：Node.js test runner 原生支持 ESM；
+// 对于 Vitest，直接 import 含顶层 await 的模块即可自动等待。
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
 
-- **ECMA-262 §16.2.1.4** — Async Modules
+- **ECMA-262 §16.2.1.4** — Async Modules: <https://tc39.es/ecma262/#sec-async-modules>
 - **MDN: Top-level await** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules#top_level_await>
 - **V8 Blog — Top-level await** — <https://v8.dev/features/top-level-await>
 - **Node.js ESM Docs** — <https://nodejs.org/api/esm.html#top-level-await>
 - **TC39 Proposal: Top-level await** — <https://github.com/tc39/proposal-top-level-await>
 - **web.dev — JavaScript Modules** — <https://web.dev/articles/modules>
 - **MDN: import** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import>
+- **Node.js — Modules: Packages** — <https://nodejs.org/api/packages.html>
+- **TypeScript ESM Handbook** — <https://www.typescriptlang.org/docs/handbook/esm-node.html>
+- **web.dev — ES Modules in Depth** — <https://web.dev/articles/es-modules-in-depth>
 
 ---
 

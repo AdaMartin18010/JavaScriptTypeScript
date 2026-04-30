@@ -140,6 +140,212 @@ export class CounterComponent {
 
 ---
 
+## 代码示例：数据获取与副作用模式
+
+### React 19 — Server Components + `use`
+
+```tsx
+// app/page.tsx — Next.js App Router Server Component
+import { Suspense } from 'react';
+import { PostList } from './PostList';
+
+// 服务端直接获取数据，零客户端 JS
+async function getPosts() {
+  const res = await fetch('https://api.example.com/posts', { next: { revalidate: 60 } });
+  return res.json();
+}
+
+export default async function Page() {
+  const postsPromise = getPosts();
+
+  return (
+    <main>
+      <h1>Posts</h1>
+      <Suspense fallback={<p>Loading posts...</p>}>
+        <PostList promise={postsPromise} />
+      </Suspense>
+    </main>
+  );
+}
+
+// PostList.tsx — Client Component 使用 use() 解包 Promise
+'use client';
+import { use } from 'react';
+
+export function PostList({ promise }: { promise: Promise<Post[]> }) {
+  const posts = use(promise); // 悬挂边界内解包
+  return (
+    <ul>
+      {posts.map(p => <li key={p.id}>{p.title}</li>)}
+    </ul>
+  );
+}
+```
+
+### Vue 3.5 — `defineProps` + `useFetch` (Nuxt)
+
+```vue
+<script setup lang="ts">
+interface Post { id: number; title: string; }
+
+// Nuxt 自动处理 SSR 数据获取与状态复用
+const { data: posts, pending } = await useFetch<Post[]>('/api/posts', {
+  server: true,
+  default: () => [],
+});
+
+// Vue 3.5 useTemplateRef + watchEffect 组合
+const listRef = useTemplateRef<HTMLUListElement>('list');
+watchEffect(() => {
+  if (posts.value?.length && listRef.value) {
+    console.log('List mounted with', posts.value.length, 'items');
+  }
+});
+</script>
+
+<template>
+  <ul ref="list">
+    <li v-if="pending">Loading...</li>
+    <li v-for="post in posts" :key="post.id">{{ post.title }}</li>
+  </ul>
+</template>
+```
+
+### Svelte 5 — Runes + `$effect`
+
+```svelte
+<script lang="ts">
+  interface Post { id: number; title: string; }
+
+  let posts = $state<Post[]>([]);
+  let loading = $state(true);
+
+  // $effect 替代生命周期：自动追踪依赖
+  $effect(() => {
+    fetch('/api/posts')
+      .then(r => r.json())
+      .then(data => { posts = data; })
+      .finally(() => { loading = false; });
+  });
+
+  // $derived：计算属性
+  let postCount = $derived(posts.length);
+</script>
+
+{#if loading}
+  <p>Loading...</p>
+{:else}
+  <p>Total: {postCount} posts</p>
+  <ul>
+    {#each posts as post (post.id)}
+      <li>{post.title}</li>
+    {/each}
+  </ul>
+{/if}
+```
+
+### SolidJS — `createResource` + `Suspense`
+
+```tsx
+import { createResource, Suspense, ErrorBoundary } from 'solid-js';
+
+const fetchPosts = async () => {
+  const res = await fetch('/api/posts');
+  if (!res.ok) throw new Error('Failed to load');
+  return res.json();
+};
+
+export default function PostPage() {
+  const [posts] = createResource(fetchPosts);
+
+  return (
+    <ErrorBoundary fallback={<p>Error loading posts.</p>}>
+      <Suspense fallback={<p>Loading...</p>}>
+        <ul>
+          <For each={posts()}>
+            {(post) => <li>{post.title}</li>}
+          </For>
+        </ul>
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+```
+
+### Astro 5 — Islands + Server Endpoints
+
+```astro
+---
+// pages/index.astro — 服务端渲染，零 JS 发送到浏览器
+const res = await fetch('https://api.example.com/posts');
+const posts: Post[] = await res.json();
+---
+
+<html>
+  <body>
+    <h1>Static Post List</h1>
+    <ul>
+      {posts.map(p => (
+        <li>{p.title}</li>
+      ))}
+    </ul>
+
+    <!-- 仅在需要交互的区域水合 Vue/React/Svelte 组件 -->
+    <LikeButton client:idle postId={posts[0].id} />
+  </body>
+</html>
+```
+
+```tsx
+// components/LikeButton.tsx — 客户端 Islands
+import { useState } from 'react';
+
+export default function LikeButton({ postId }: { postId: number }) {
+  const [likes, setLikes] = useState(0);
+  return (
+    <button onClick={() => setLikes(l => l + 1)}>
+      ❤️ {likes}
+    </button>
+  );
+}
+```
+
+### Angular 19 — Standalone Components + `httpResource` (实验性)
+
+```typescript
+import { Component, computed, resource } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+
+interface Post { id: number; title: string; }
+
+@Component({
+  selector: 'app-posts',
+  standalone: true,
+  template: `
+    @if (posts.isLoading()) {
+      <p>Loading...</p>
+    } @else {
+      <p>Count: {{ count() }}</p>
+      <ul>
+        @for (post of posts.value(); track post.id) {
+          <li>{{ post.title }}</li>
+        }
+      </ul>
+    }
+  `,
+})
+export class PostsComponent {
+  // Angular 19 实验性 httpResource
+  posts = resource<Post[], void>({
+    loader: () => fetch('/api/posts').then(r => r.json()),
+  });
+
+  count = computed(() => this.posts.value()?.length ?? 0);
+}
+```
+
+---
+
 ## 性能基准 (JS Framework Benchmark)
 
 | 操作 | React 19 | Vue 3.5 | Svelte 5 | Solid | Angular 19 |
@@ -151,6 +357,32 @@ export class CounterComponent {
 | Create 10K rows | 1.00x | 0.90x | 0.55x | **0.40x** | 0.95x |
 
 > 📊 数据来源：[krausest.github.io/js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/)（数值为相对 React 的倍数，越低越好）
+
+---
+
+## 权威参考链接
+
+- [React 官方文档](https://react.dev/)
+- [React Compiler](https://react.dev/learn/react-compiler)
+- [Next.js 文档](https://nextjs.org/docs)
+- [Vue 官方文档](https://vuejs.org/)
+- [Vue 3.5 新特性](https://blog.vuejs.org/posts/vue-3-5)
+- [Nuxt 文档](https://nuxt.com/docs)
+- [Svelte 官方文档](https://svelte.dev/)
+- [Svelte 5 Runes](https://svelte.dev/blog/runes)
+- [SvelteKit 文档](https://kit.svelte.dev/)
+- [Astro 官方文档](https://docs.astro.build/)
+- [Astro Islands 架构](https://docs.astro.build/en/concepts/islands/)
+- [SolidJS 官方文档](https://www.solidjs.com/)
+- [SolidStart 文档](https://docs.solidjs.com/solid-start)
+- [Angular 官方文档](https://angular.dev/)
+- [Angular Signals](https://angular.dev/guide/signals)
+- [Angular Zoneless Change Detection](https://angular.dev/guide/experimental/zoneless)
+- [State of JS 2025](https://stateofjs.com/)
+- [JS Framework Benchmark](https://krausest.github.io/js-framework-benchmark/)
+- [Bundlephobia](https://bundlephobia.com/)
+- [Web Components Interop](https://custom-elements-everywhere.com/)
+- [MDN — Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components)
 
 ---
 

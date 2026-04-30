@@ -171,6 +171,55 @@ export async function registerPeriodicSync(tag: string, minInterval: number) {
 }
 ```
 
+### 离线回退页面（Offline Fallback）
+
+```typescript
+// offline-fallback.ts — 当网络与缓存均不可用时提供兜底页面
+
+const OFFLINE_PAGE = '/offline.html';
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open('offline-v1').then((cache) => cache.add(OFFLINE_PAGE))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener('fetch', (event) => {
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() =>
+        caches.match(OFFLINE_PAGE).then((res) => res || new Response('Offline'))
+      )
+    );
+  }
+});
+```
+
+### Manifest 验证与审计
+
+```typescript
+// manifest-validator.ts — 基于 JSON Schema 的清单校验
+
+export interface ManifestAuditResult {
+  valid: boolean;
+  errors: string[];
+  warnings: string[];
+}
+
+export function auditManifest(manifest: Partial<WebAppManifest>): ManifestAuditResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  if (!manifest.name) errors.push('缺少 name 字段');
+  if (!manifest.icons?.some(i => i.sizes === '192x192')) warnings.push('缺少 192x192 图标');
+  if (!manifest.icons?.some(i => i.sizes === '512x512')) warnings.push('缺少 512x512 图标');
+  if (!manifest.start_url) warnings.push('建议设置 start_url');
+
+  return { valid: errors.length === 0, errors, warnings };
+}
+```
+
 ## 关联模块
 
 - `97-lowcode-platform` — 低代码平台
@@ -190,8 +239,12 @@ export async function registerPeriodicSync(tag: string, minInterval: number) {
 | PWA Builder | 工具 | [www.pwabuilder.com](https://www.pwabuilder.com) |
 | MDN — Background Sync | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Background_Synchronization_API](https://developer.mozilla.org/en-US/docs/Web/API/Background_Synchronization_API) |
 | MDN — Periodic Background Sync | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Web_Periodic_Background_Synchronization_API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Periodic_Background_Synchronization_API) |
-| Google — PWA Checklist](<https://web.dev/pwa-checklist/>) | 清单 | [web.dev/pwa-checklist](https://web.dev/pwa-checklist/) |
-| W3C — Service Workers](<https://www.w3.org/TR/service-workers/>) | 规范 | [www.w3.org/TR/service-workers](https://www.w3.org/TR/service-workers/) |
+| Google — PWA Checklist | 清单 | [web.dev/pwa-checklist](https://web.dev/pwa-checklist/) |
+| W3C — Service Workers | 规范 | [www.w3.org/TR/service-workers](https://www.w3.org/TR/service-workers/) |
+| MDN — Cache API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Cache](https://developer.mozilla.org/en-US/docs/Web/API/Cache) |
+| Google — Push Notifications on the Web | 指南 | [developers.google.com/web/fundamentals/push-notifications](https://developers.google.com/web/fundamentals/push-notifications) |
+| W3C — Web App Manifest W3C Recommendation | 规范 | [www.w3.org/TR/appmanifest](https://www.w3.org/TR/appmanifest/) |
+| web.dev — Offline UX Considerations | 指南 | [web.dev/offline-ux-design-guidelines](https://web.dev/offline-ux-design-guidelines/) |
 
 ---
 

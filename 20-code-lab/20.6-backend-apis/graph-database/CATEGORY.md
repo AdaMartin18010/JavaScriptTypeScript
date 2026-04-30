@@ -191,6 +191,79 @@ LIMIT 10
 */
 ```
 
+### Neo4j JavaScript 驱动连接示例
+
+```typescript
+// neo4j-driver-example.ts — 基于官方驱动的类型安全查询
+
+import neo4j, { Driver, Session, Integer } from 'neo4j-driver';
+
+export class Neo4jGraphClient {
+  private driver: Driver;
+
+  constructor(uri: string, username: string, password: string) {
+    this.driver = neo4j.driver(uri, neo4j.auth.basic(username, password));
+  }
+
+  async run<T extends Record<string, unknown>>(
+    cypher: string,
+    params?: Record<string, unknown>
+  ): Promise<T[]> {
+    const session: Session = this.driver.session();
+    try {
+      const result = await session.run(cypher, params);
+      return result.records.map((record) => {
+        const obj: Record<string, unknown> = {};
+        record.keys.forEach((key) => {
+          const value = record.get(key);
+          // 将 Neo4j Integer 转为 JS Number
+          obj[key] = Integer.isInteger(value) ? value.toNumber() : value;
+        });
+        return obj as T;
+      });
+    } finally {
+      await session.close();
+    }
+  }
+
+  async close() {
+    await this.driver.close();
+  }
+}
+
+// 使用
+const client = new Neo4jGraphClient('bolt://localhost:7687', 'neo4j', 'password');
+const users = await client.run<{ name: string; since: number }>(
+  'MATCH (u:User)-[r:FOLLOWS]->(t) WHERE u.id = $id RETURN t.name AS name, r.since AS since',
+  { id: 'user-123' }
+);
+```
+
+### Gremlin 遍历查询示例
+
+```typescript
+// gremlin-example.ts — Apache TinkerPop Gremlin 风格遍历（伪代码）
+
+interface GremlinGraph {
+  V(): GremlinTraversal;
+  E(): GremlinTraversal;
+}
+
+interface GremlinTraversal {
+  hasLabel(label: string): this;
+  has(key: string, value: unknown): this;
+  out(edgeLabel: string): this;
+  in(edgeLabel: string): this;
+  values(...keys: string[]): this;
+  toList<T>(): Promise<T[]>;
+  count(): Promise<number>;
+}
+
+// 使用（对应 gremlin-javascript 驱动）
+// g.V().hasLabel('User').has('name', 'Alice').out('FOLLOWS').values('name').toList()
+// → ['Bob', 'Charlie']
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -198,6 +271,7 @@ LIMIT 10
 | MDN | 文档 | [developer.mozilla.org](https://developer.mozilla.org) |
 | web.dev | 指南 | [web.dev](https://web.dev) |
 | Neo4j Documentation | 官方文档 | [neo4j.com/docs](https://neo4j.com/docs/) |
+| Neo4j JavaScript Driver | 官方文档 | [neo4j.com/docs/javascript-manual/current](https://neo4j.com/docs/javascript-manual/current/) |
 | Cypher Query Language | 查询语言参考 | [neo4j.com/docs/cypher-manual](https://neo4j.com/docs/cypher-manual/current/) |
 | Graph Databases (O'Reilly) | 经典书籍 | [neo4j.com/graph-databases-book](https://neo4j.com/graph-databases-book/) |
 | Apache AGE | 图数据库扩展 | [age.apache.org](https://age.apache.org/) |
@@ -205,6 +279,9 @@ LIMIT 10
 | Gremlin (Apache TinkerPop) | 图遍历语言 | [tinkerpop.apache.org/gremlin.html](https://tinkerpop.apache.org/gremlin.html) |
 | GraphQL.org | 图查询规范（应用层） | [graphql.org](https://graphql.org/) |
 | GNNs for Graph Databases | 综述 | [arxiv.org/abs/2012.06052](https://arxiv.org/abs/2012.06052) |
+| Amazon Neptune Documentation | 官方文档 | [docs.aws.amazon.com/neptune](https://docs.aws.amazon.com/neptune/) |
+| ArangoDB Graph Course | 教程 | [www.arangodb.com/resources/tutorials](https://www.arangodb.com/resources/tutorials/) |
+| RedisGraph (now FalkorDB) | 文档 | [docs.falkordb.com](https://docs.falkordb.com/) |
 
 ---
 

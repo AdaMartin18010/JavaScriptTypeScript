@@ -13,7 +13,9 @@
 
 ### 1.2 形式化基础
 
-[本模块的形式化定义与公理/定理陈述]
+- **边缘运行时**：Cloudflare Workers 基于 V8 Isolates，无 Node.js 兼容层，支持 Web Standard API。
+- **冷启动**：边缘函数冷启动 < 1ms，但首次连接 D1/KV 等绑定仍有延迟。
+- **流式 SSR**：TanStack Start 支持 `renderToPipeableStream` 的 Web 等价物，通过 `ReadableStream` 向边缘推送 HTML。
 
 ### 1.3 关键概念
 
@@ -22,6 +24,7 @@
 | SSR | 服务端渲染的流式传输 | ssr-streaming.ts |
 | API 路由 | 文件系统约定的服务端端点 | api-routes.ts |
 | 边缘适配器 | 将 Node.js 框架适配到边缘运行时的层 | edge-adapter.ts |
+| 平台绑定 | Cloudflare D1 / KV / R2 / AI 的运行时注入 | platform-bindings.ts |
 
 ---
 
@@ -184,16 +187,89 @@ export const getPostCount = createServerFn({ method: 'GET' })
   });
 ```
 
+### 3.5 边缘中间件 — 认证与请求日志
+
+```typescript
+// app/utils/middleware.ts — 可组合的 H3 风格中间件
+
+import { createMiddleware } from '@tanstack/react-start';
+
+export const authMiddleware = createMiddleware().server(async ({ next }) => {
+  const event = getEvent();
+  const authHeader = event.request.headers.get('authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    throw new Response('Unauthorized', { status: 401 });
+  }
+  // 可在此解析 JWT 并注入上下文
+  return next();
+});
+
+export const loggerMiddleware = createMiddleware().server(async ({ next }) => {
+  const start = performance.now();
+  const result = await next();
+  console.log(`[${new Date().toISOString()}] ${(event as any).request.url} — ${(performance.now() - start).toFixed(2)}ms`);
+  return result;
+});
+
+// 在路由中使用
+export const Route = createFileRoute('/api/protected')({
+  middleware: [authMiddleware, loggerMiddleware],
+  loader: async () => {
+    return { secret: 'data' };
+  },
+});
+```
+
+### 3.6 KV 边缘缓存策略
+
+```typescript
+// app/utils/kv-cache.ts — 基于 Cloudflare KV 的响应缓存
+
+import { getBindings } from './env';
+
+interface CacheOptions {
+  ttlSeconds?: number; // 默认 60s
+  key?: string;
+}
+
+export async function withKVCache<T>(
+  fn: () => Promise<T>,
+  options: CacheOptions = {}
+): Promise<T> {
+  const { ttlSeconds = 60, key = fn.toString() } = options;
+  const { KV } = getBindings();
+
+  const cached = await KV.get(key, 'json');
+  if (cached) return cached as T;
+
+  const result = await fn();
+  await KV.put(key, JSON.stringify(result), { expirationTtl: ttlSeconds });
+  return result;
+}
+
+// 在 loader 中使用
+export const Route = createFileRoute('/api/trending')({
+  loader: async () => {
+    return withKVCache(
+      () => fetchTrendingFromDB(),
+      { ttlSeconds: 300, key: 'trending:top10' }
+    );
+  },
+});
+```
+
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 基础设置 核心机制的理解，并观察不同实现选择带来的行为差异。
 
-### 3.2 常见误区
+### 3.7 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | 边缘 SSR 总是比 CSR 快 | 首次加载快，但交互复杂度影响体验 |
 | TanStack Start 是元框架 | Start 是路由+数据层，需配合 UI 框架 |
+| Cloudflare Workers 支持所有 Node API | Workers 使用 Web Standard API，需 polyfill 或适配 |
+| D1 适合高并发写入 | D1 基于 SQLite，写入有单区域限制，读可全球缓存 |
 
-### 3.3 扩展阅读
+### 3.8 扩展阅读
 
 - [TanStack Start](https://tanstack.com/start/latest)
 - `20.8-edge-serverless/`
@@ -214,6 +290,9 @@ export const getPostCount = createServerFn({ method: 'GET' })
 | D1 Database — SQL API | 官方文档 | [developers.cloudflare.com/d1/build-with-d1/d1-client-api](https://developers.cloudflare.com/d1/build-with-d1/d1-client-api/) |
 | Vite SSR 概念 | 官方文档 | [vitejs.dev/guide/ssr](https://vitejs.dev/guide/ssr.html) |
 | React Server Components | 官方文档 | [react.dev/reference/react/use-server](https://react.dev/reference/react/use-server) |
+| Cloudflare KV — REST API | 官方文档 | [developers.cloudflare.com/kv/api](https://developers.cloudflare.com/kv/api/) |
+| Cloudflare D1 — Limits & Pricing | 官方文档 | [developers.cloudflare.com/d1/platform/limits](https://developers.cloudflare.com/d1/platform/limits/) |
+| H3 — HTTP Framework for JavaScript | 官方文档 | [h3.unjs.io](https://h3.unjs.io/) |
 
 ---
 

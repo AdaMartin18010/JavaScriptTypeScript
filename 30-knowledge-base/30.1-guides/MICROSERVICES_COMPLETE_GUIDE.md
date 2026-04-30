@@ -1,4 +1,4 @@
-﻿# 微服务完整指南
+# 微服务完整指南
 
 > JavaScript/TypeScript 微服务架构的设计原则、通信模式与运维实践。
 
@@ -312,6 +312,225 @@ spec:
 
 ---
 
+## 代码示例：Fastify 微服务 + pino 结构化日志
+
+```typescript
+// fastify-microservice.ts — 轻量级高性能微服务骨架
+
+import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
+
+const app = Fastify({
+  logger: {
+    level: 'info',
+    transport: process.env.NODE_ENV === 'development'
+      ? { target: 'pino-pretty', options: { colorize: true } }
+      : undefined,
+  },
+});
+
+// 插件注册
+await app.register(cors);
+await app.register(helmet);
+
+// 健康检查
+app.get('/health', async () => ({ status: 'ok', uptime: process.uptime() }));
+
+//  readiness 检查（含依赖验证）
+app.get('/ready', async () => {
+  // 检查数据库、消息队列连接状态
+  const dbHealthy = await checkDatabaseConnection();
+  const mqHealthy = await checkMessageQueueConnection();
+  if (!dbHealthy || !mqHealthy) {
+    return app.httpErrors.serviceUnavailable('Dependencies not ready');
+  }
+  return { status: 'ready' };
+});
+
+// 业务路由
+app.post<{ Body: { userId: string; items: string[] } }>(
+  '/orders',
+  {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['userId', 'items'],
+        properties: {
+          userId: { type: 'string', format: 'uuid' },
+          items: { type: 'array', items: { type: 'string' } },
+        },
+      },
+    },
+  },
+  async (request, reply) => {
+    const { userId, items } = request.body;
+    const order = await orderService.create({ userId, items });
+    reply.status(201).send(order);
+  }
+);
+
+// 优雅关闭
+app.addHook('onClose', async () => {
+  await db.disconnect();
+  await mq.disconnect();
+});
+
+await app.listen({ port: 3000, host: '0.0.0.0' });
+```
+
+## 代码示例：Circuit Breaker 熔断器实现
+
+```typescript
+// circuit-breaker.ts — 基于 opossum 的熔断模式
+
+import CircuitBreaker from 'opossum';
+
+async function fetchInventory(productId: string) {
+  const response = await fetch(`http://inventory-service/products/${productId}`);
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.json();
+}
+
+const breaker = new CircuitBreaker(fetchInventory, {
+  timeout: 3000,        // 3 秒超时
+  errorThresholdPercentage: 50, // 50% 错误率触发熔断
+  resetTimeout: 10000,  // 10 秒后尝试半开恢复
+});
+
+// 熔断状态监听
+breaker.on('open', () => console.warn('Circuit breaker OPENED'));
+breaker.on('halfOpen', () => console.info('Circuit breaker HALF-OPEN'));
+breaker.on('close', () => console.info('Circuit breaker CLOSED'));
+
+// 服务中使用，自动降级
+app.get('/products/:id/inventory', async (req, reply) => {
+  try {
+    const inventory = await breaker.fire(req.params.id);
+    reply.send(inventory);
+  } catch (err) {
+    // 熔断或超时，返回缓存的默认值
+    reply.send({ productId: req.params.id, quantity: 0, cached: true });
+  }
+});
+```
+
+## 代码示例：Event Sourcing 事件溯源基础
+
+```typescript
+// event-sourcing.ts — 内存事件存储与状态重放
+
+interface DomainEvent {
+  id: string;
+  type: string;
+  payload: Record<string, unknown>;
+  timestamp: Date;
+  aggregateId: string;
+}
+
+class EventStore {
+  private events: DomainEvent[] = [];
+
+  append(event: DomainEvent): void {
+    this.events.push(event);
+  }
+
+  getEventsForAggregate(aggregateId: string): DomainEvent[] {
+    return this.events.filter(e => e.aggregateId === aggregateId);
+  }
+
+  // 状态重放：从事件流重建当前状态
+  replay<T>(
+    aggregateId: string,
+    initialState: T,
+    reducer: (state: T, event: DomainEvent) => T
+  ): T {
+    return this.getEventsForAggregate(aggregateId).reduce(reducer, initialState);
+  }
+}
+
+// 使用示例：订单聚合
+interface OrderState {
+  id: string;
+  items: string[];
+  status: 'pending' | 'paid' | 'shipped';
+}
+
+const store = new EventStore();
+
+store.append({
+  id: crypto.randomUUID(),
+  type: 'OrderCreated',
+  payload: { items: ['sku-1', 'sku-2'] },
+  timestamp: new Date(),
+  aggregateId: 'order-123',
+});
+
+store.append({
+  id: crypto.randomUUID(),
+  type: 'OrderPaid',
+  payload: { amount: 199.99 },
+  timestamp: new Date(),
+  aggregateId: 'order-123',
+});
+
+const currentState = store.replay<OrderState>(
+  'order-123',
+  { id: 'order-123', items: [], status: 'pending' },
+  (state, event) => {
+    switch (event.type) {
+      case 'OrderCreated':
+        return { ...state, items: event.payload.items as string[] };
+      case 'OrderPaid':
+        return { ...state, status: 'paid' };
+      default:
+        return state;
+    }
+  }
+);
+
+console.log(currentState); // { id: 'order-123', items: ['sku-1', 'sku-2'], status: 'paid' }
+```
+
+## 代码示例：Schema Registry + Avro 事件契约
+
+```typescript
+// schema-registry-avro.ts — 跨服务事件契约验证
+
+import avro from 'avsc';
+
+// 定义订单创建事件的 Avro Schema
+const OrderCreatedSchema = avro.Type.forSchema({
+  type: 'record',
+  name: 'OrderCreated',
+  fields: [
+    { name: 'orderId', type: 'string' },
+    { name: 'userId', type: 'string' },
+    { name: 'items', type: { type: 'array', items: 'string' } },
+    { name: 'totalAmount', type: 'double' },
+    { name: 'timestamp', type: 'long' },
+  ],
+});
+
+// 序列化（发布前）
+function serializeOrderCreated(event: unknown): Buffer {
+  return OrderCreatedSchema.toBuffer(event);
+}
+
+// 反序列化（消费时）
+function deserializeOrderCreated(buffer: Buffer): unknown {
+  return OrderCreatedSchema.fromBuffer(buffer);
+}
+
+// Kafka 生产者中使用
+// producer.send({ topic: 'orders', messages: [{ value: serializeOrderCreated(event) }] });
+
+// Kafka 消费者中使用
+// const event = deserializeOrderCreated(message.value);
+```
+
+---
+
 ## 最佳实践
 
 1. **数据库 per Service**：禁止直接访问其他服务的数据库
@@ -341,7 +560,12 @@ spec:
 | Istio | <https://istio.io/latest/docs/> | 服务网格流量管理与安全 |
 | AWS Microservices | <https://aws.amazon.com/microservices/> | AWS 微服务白皮书 |
 | Google Cloud Microservices | <https://cloud.google.com/microservices> | Google Cloud 微服务架构中心 |
+| Fastify Documentation | <https://fastify.dev/> | 高性能 Node.js 框架 |
+| Opossum Circuit Breaker | <https://nodeshift.dev/opossum/> | Node.js 熔断器库 |
+| CloudEvents Specification | <https://cloudevents.io/> | 事件数据标准化规范 |
+| Apache Avro | <https://avro.apache.org/docs/> | 数据序列化与 Schema 注册 |
+| Confluent Schema Registry | <https://docs.confluent.io/platform/current/schema-registry/index.html> | Kafka Schema 管理 |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

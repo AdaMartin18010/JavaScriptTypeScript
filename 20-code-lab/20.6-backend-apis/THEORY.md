@@ -199,12 +199,123 @@ export default async function Page() {
 
 ---
 
-## 六、扩展阅读
+## 六、代码示例：Hono 边缘路由与中间件
+
+```typescript
+// hono-edge-api.ts — 轻量级边缘优先 HTTP 框架
+
+import { Hono } from 'hono';
+import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
+
+const app = new Hono<{ Bindings: { DATABASE_URL: string } }>();
+
+// 全局中间件：CORS + 请求计时
+app.use('*', async (c, next) => {
+  c.header('Access-Control-Allow-Origin', '*');
+  const start = Date.now();
+  await next();
+  c.header('X-Response-Time', `${Date.now() - start}ms`);
+});
+
+// Zod 验证路由
+const userSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+});
+
+app.post('/users', zValidator('json', userSchema), async (c) => {
+  const data = c.req.valid('json');
+  // 数据库操作...
+  return c.json({ id: crypto.randomUUID(), ...data }, 201);
+});
+
+// 嵌套路由
+const posts = new Hono();
+posts.get('/', (c) => c.json([]));
+posts.get('/:id', (c) => c.json({ id: c.req.param('id') }));
+app.route('/posts', posts);
+
+export default app;
+```
+
+## 七、代码示例：OpenAPI 3.1 + Zod 自动生成文档
+
+```typescript
+// openapi-zod-autogen.ts — 类型安全 + 自动生成 API 文档
+
+import { z } from 'zod';
+import { extendZodWithOpenApi, OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
+
+extendZodWithOpenApi(z);
+
+const UserSchema = z.object({
+  id: z.string().uuid().openapi({ example: '550e8400-e29b-41d4-a716-446655440000' }),
+  name: z.string().min(1).openapi({ example: 'Alice' }),
+  email: z.string().email().openapi({ example: 'alice@example.com' }),
+}).openapi('User');
+
+const registry = new OpenApiGeneratorV3([
+  UserSchema,
+  z.object({ users: z.array(UserSchema) }).openapi('UserList'),
+]);
+
+const docs = registry.generateDocument({
+  openapi: '3.1.0',
+  info: { title: 'My API', version: '1.0.0' },
+});
+
+console.log(JSON.stringify(docs, null, 2));
+// 可直接导入 Swagger UI 或 Redoc
+```
+
+## 八、代码示例：GraphQL Codegen 端到端类型安全
+
+```typescript
+// graphql-codegen-config.ts — 从 Schema 生成 TypeScript 类型
+
+// codegen.ts
+import type { CodegenConfig } from '@graphql-codegen/cli';
+
+const config: CodegenConfig = {
+  schema: './schema.graphql',
+  documents: ['./src/**/*.graphql'],
+  generates: {
+    './src/generated/graphql.ts': {
+      plugins: ['typescript', 'typescript-operations', 'typescript-react-apollo'],
+      config: {
+        withHooks: true,
+        scalars: { DateTime: 'string' },
+      },
+    },
+  },
+};
+
+export default config;
+
+// 生成的类型可直接用于 React 组件
+// const { data, loading } = useGetUserQuery({ variables: { id: '123' } });
+// data?.user.name 完全类型安全
+```
+
+---
+
+## 九、扩展阅读
 
 - `30-knowledge-base/30.4-decision-trees/runtime-selection.md` — 运行时选型决策树
 - `40-ecosystem/40.3-trends/ECOSYSTEM_TRENDS_2026.md` — 后端生态趋势
 - `30-knowledge-base/30.3-comparison-matrices/backend-frameworks-compare.md` — 后端框架对比
 - [tRPC Server Components 官方指南](https://trpc.io/docs/client/react/server-components)
+- [oRPC Documentation](https://orpc.unnoq.com/)
+- [Hono Documentation](https://hono.dev/docs/getting-started/basic)
+- [Zod Documentation](https://zod.dev/)
+- [Next.js Server Actions](https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations)
+- [OpenAPI 3.1 Specification](https://spec.openapis.org/oas/v3.1.0)
+- [RFC 7807 — Problem Details](https://datatracker.ietf.org/doc/html/rfc7807)
+- [GraphQL Code Generator](https://the-guild.dev/graphql/codegen)
+- [Zod to OpenAPI](https://github.com/asteasolutions/zod-to-openapi)
+- [Deno Deploy Documentation](https://docs.deno.com/deploy/manual/)
+- [Cloudflare Workers — Best Practices](https://developers.cloudflare.com/workers/platform/best-practices/)
 
 ---
 

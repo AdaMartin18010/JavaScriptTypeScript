@@ -219,4 +219,36 @@ memory.release();
 - [Rust wasm-bindgen](https://rustwasm.github.io/wasm-bindgen/) — Rust 与 JS 绑定
 - [WebAssembly Interface Types Proposal](https://github.com/WebAssembly/interface-types) — W3C 接口类型提案
 
+### 组件组合与包管理实战
+
+```wit
+package example:calculator;
+interface calc { eval: func(expr: string) -> result<f64, string>; }
+world calculator-world { import example:math/operations; export calc; }
+```
+
+```typescript
+import { calc } from './calculator-js/calculator-world.js';
+const result = calc.eval('2 + 2');
+if (result.tag === 'ok') { console.log('Result:', result.val); }
+```
+
+### 升降级（Lifting/Lowering）数据流
+
+```typescript
+// JS number -> Lifting -> WASM i32 -> 执行 -> Lowering -> JS number
+// JS string -> UTF-8 -> WASM linear memory (ptr, len) -> JS string
+```
+
+---
+
+## 更多权威参考链接
+
+- [WIT 语法参考](https://component-model.bytecodealliance.org/design/wit.html) — WIT 接口定义完整语法
+- [JCO Transpiler](https://github.com/bytecodealliance/jco) — JS 宿主组件工具
+- [Wasmtime 运行时](https://docs.wasmtime.dev/) — 生产级 WASM 运行时
+- [WASI Preview 2 规范](https://github.com/WebAssembly/WASI/tree/main/preview2) — 系统接口标准
+- [Bytecode Alliance 博客](https://bytecodealliance.org/articles) — 组件模型深度文章
+- [Fermyon Spin 组件实践](https://developer.fermyon.com/spin/v2/javascript-components) — 服务端 WASM 组件
+
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

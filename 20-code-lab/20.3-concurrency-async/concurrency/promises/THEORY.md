@@ -13,7 +13,9 @@
 
 ### 1.2 形式化基础
 
-[本模块的形式化定义与公理/定理陈述]
+- **Promise/A+ 规范**：定义了 `then` 方法的语义，要求必须异步调用回调（通过微任务队列）。
+- **状态机**：一个 Promise 处于 `pending`、`fulfilled` 或 `rejected` 三者之一，且状态转换不可逆。
+- **Monad 类比**：Promise 可视为单值异步 Monad，支持 `map`（`.then`）、`flatMap`（链式 `.then`）和错误处理（`.catch`）。
 
 ### 1.3 关键概念
 
@@ -23,6 +25,7 @@
 | Promise.all | 并发执行的同步点 | concurrency.ts |
 | Promise.withResolvers | ES2024 手动 resolve/reject 句柄 | with-resolvers.ts |
 | 微任务队列 | Promise 回调的调度机制 | microtask.md |
+| AbortController | 取消长期运行的异步操作 | abort-patterns.ts |
 
 ---
 
@@ -195,6 +198,79 @@ const failed = filterRejected(results);
 console.log(`Success: ${succeeded.length}, Failed: ${failed.length}`);
 ```
 
+#### AbortController 与 Promise 取消模式
+
+```typescript
+// abort-patterns.ts — 基于 AbortSignal 的资源清理与请求取消
+
+/** 将 fetch 包装为支持 AbortSignal 的函数 */
+async function cancellableFetch(
+  url: string,
+  signal: AbortSignal
+): Promise<Response> {
+  const res = await fetch(url, { signal });
+  return res;
+}
+
+/** 超时自动取消的封装 */
+function fetchWithAbortTimeout(url: string, ms: number): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(new Error('Request timeout')), ms);
+  return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timeout));
+}
+
+/** 竞争请求：先返回的先被采用，其他的自动取消 */
+async function raceWithCleanup<T>(promises: (signal: AbortSignal) => Promise<T>[]): Promise<T> {
+  const controller = new AbortController();
+  try {
+    return await Promise.race(promises(controller.signal));
+  } finally {
+    controller.abort();
+  }
+}
+
+// 使用示例
+const controller = new AbortController();
+document.getElementById('cancel')!.addEventListener('click', () => controller.abort());
+try {
+  const data = await fetch('/api/heavy-computation', { signal: controller.signal });
+  console.log(await data.json());
+} catch (err) {
+  if (err instanceof DOMException && err.name === 'AbortError') {
+    console.log('用户取消操作');
+  }
+}
+```
+
+#### 指数退避重试 + 退避上限
+
+```typescript
+// retry-backoff.ts — 稳定的网络请求重试策略
+
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  options: { maxRetries?: number; baseDelay?: number; maxDelay?: number } = {}
+): Promise<T> {
+  const { maxRetries = 3, baseDelay = 300, maxDelay = 10000 } = options;
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt === maxRetries) break;
+      const delay = Math.min(baseDelay * 2 ** attempt, maxDelay);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw lastError;
+}
+
+// 使用：最多重试 3 次，退避间隔 300ms → 600ms → 1200ms
+const result = await retryWithBackoff(() => fetchJson('/api/flaky-endpoint'));
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -203,9 +279,12 @@ console.log(`Success: ${succeeded.length}, Failed: ${failed.length}`);
 | Promise.catch 捕获所有错误 | 同步抛出的错误需用 try/catch 或 reject |
 | .then() 中 return Promise 会嵌套 | return Promise 会自动展平（flatten） |
 | Promise.all 中一个 reject 会取消其他 | 其他 Promise 仍继续执行，只是结果被丢弃 |
+| async 函数返回非 Promise 值 | 会被自动包装为 resolved Promise |
+| await 在 forEach 中生效 | forEach 不会等待异步回调，应使用 for…of |
 
 ### 3.3 扩展阅读
 
+- [Promises/A+ Specification](https://promisesaplus.com/) — Promise 行为权威规范
 - [Promises MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)
 - [Promisees — Interactive Playground](https://bevacqua.github.io/promisees/)
 - [V8 — Promise Internals](https://v8.dev/blog/fast-async)
@@ -215,6 +294,9 @@ console.log(`Success: ${succeeded.length}, Failed: ${failed.length}`);
 - [MDN — Promise.any](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/any)
 - [Exploring JS — Promises for asynchronous programming](https://exploringjs.com/es6/ch_promises.html)
 - [Node.js — Promise anti-patterns](https://nodejs.org/en/learn/asynchronous-work/dont-block-the-event-loop)
+- [WHATWG — DOM Standard: AbortController](https://dom.spec.whatwg.org/#aborting-ongoing-activities) — 取消信号规范
+- [MDN — AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController)
+- [JavaScript Event Loop: Microtasks and Macrotasks](https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/) — Jake Archibald 经典可视化解析
 - `20.3-concurrency-async/concurrency/`
 
 ---

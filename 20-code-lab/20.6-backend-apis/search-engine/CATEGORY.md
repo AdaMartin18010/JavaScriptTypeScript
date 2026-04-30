@@ -16,6 +16,7 @@ created: 2026-04-28
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 README.md
@@ -173,6 +174,169 @@ const engine = new AutocompleteEngine();
 console.log(engine.suggest('t')); // ['typescript', 'tailwind', 'testing', 'tanstack', 'three.js']
 ```
 
+### 分面搜索（Faceted Search）实现
+
+```typescript
+// faceted-search.ts — 内存分面聚合引擎
+
+interface Document {
+  id: string;
+  title: string;
+  category: string;
+  brand: string;
+  price: number;
+  tags: string[];
+}
+
+interface FacetResult {
+  field: string;
+  values: Array<{ value: string; count: number }>;
+}
+
+class FacetedSearchEngine {
+  constructor(private docs: Document[]) {}
+
+  search(
+    query: string,
+    filters: Record<string, string[]> = {}
+  ): { hits: Document[]; facets: FacetResult[] } {
+    // 1. 全文过滤
+    let hits = this.docs.filter((d) =>
+      d.title.toLowerCase().includes(query.toLowerCase())
+    );
+
+    // 2. 分面过滤
+    for (const [field, values] of Object.entries(filters)) {
+      if (values.length === 0) continue;
+      hits = hits.filter((d) => {
+        const docValue = (d as any)[field];
+        if (Array.isArray(docValue)) return values.some((v) => docValue.includes(v));
+        return values.includes(String(docValue));
+      });
+    }
+
+    // 3. 分面聚合
+    const facets: FacetResult[] = ['category', 'brand', 'tags'].map((field) => ({
+      field,
+      values: this.aggregate(hits, field),
+    }));
+
+    return { hits, facets };
+  }
+
+  private aggregate(hits: Document[], field: string): Array<{ value: string; count: number }> {
+    const counts = new Map<string, number>();
+    for (const doc of hits) {
+      const val = (doc as any)[field];
+      const vals = Array.isArray(val) ? val : [val];
+      for (const v of vals) {
+        counts.set(v, (counts.get(v) ?? 0) + 1);
+      }
+    }
+    return Array.from(counts.entries())
+      .map(([value, count]) => ({ value, count }))
+      .sort((a, b) => b.count - a.count);
+  }
+}
+
+// 使用
+const engine = new FacetedSearchEngine([
+  { id: '1', title: 'MacBook Pro', category: 'laptop', brand: 'Apple', price: 1999, tags: ['pro', 'm3'] },
+  { id: '2', title: 'ThinkPad X1', category: 'laptop', brand: 'Lenovo', price: 1599, tags: ['business'] },
+  { id: '3', title: 'iPhone 15', category: 'phone', brand: 'Apple', price: 999, tags: ['5g'] },
+]);
+
+const result = engine.search('apple', { category: ['laptop', 'phone'] });
+console.log(result.facets.find((f) => f.field === 'brand'));
+// { field: 'brand', values: [{ value: 'Apple', count: 2 }] }
+```
+
+### 查询解析器（布尔逻辑）
+
+```typescript
+// query-parser.ts — 支持 AND/OR/NOT 的查询表达式解析
+
+type QueryNode =
+  | { type: 'term'; value: string }
+  | { type: 'and'; left: QueryNode; right: QueryNode }
+  | { type: 'or'; left: QueryNode; right: QueryNode }
+  | { type: 'not'; child: QueryNode };
+
+class BooleanQueryParser {
+  parse(input: string): QueryNode {
+    const tokens = input.match(/\(|\)|AND|OR|NOT|[^\s()]+/gi) ?? [];
+    let pos = 0;
+
+    const parseExpr = (): QueryNode => {
+      let node = parseTerm();
+      while (pos < tokens.length) {
+        const op = tokens[pos].toUpperCase();
+        if (op === 'AND') { pos++; node = { type: 'and', left: node, right: parseTerm() }; }
+        else if (op === 'OR') { pos++; node = { type: 'or', left: node, right: parseTerm() }; }
+        else break;
+      }
+      return node;
+    };
+
+    const parseTerm = (): QueryNode => {
+      const tok = tokens[pos];
+      if (tok === '(') { pos++; const inner = parseExpr(); pos++; return inner; }
+      if (tok.toUpperCase() === 'NOT') { pos++; return { type: 'not', child: parseTerm() }; }
+      pos++;
+      return { type: 'term', value: tok.toLowerCase() };
+    };
+
+    return parseExpr();
+  }
+
+  evaluate(node: QueryNode, docText: string): boolean {
+    const text = docText.toLowerCase();
+    switch (node.type) {
+      case 'term': return text.includes(node.value);
+      case 'and': return this.evaluate(node.left, docText) && this.evaluate(node.right, docText);
+      case 'or': return this.evaluate(node.left, docText) || this.evaluate(node.right, docText);
+      case 'not': return !this.evaluate(node.child, docText);
+    }
+  }
+}
+
+// 使用
+const parser = new BooleanQueryParser();
+const ast = parser.parse('(laptop OR phone) AND apple NOT samsung');
+console.log(parser.evaluate(ast, 'Apple MacBook Pro laptop')); // true
+console.log(parser.evaluate(ast, 'Samsung Galaxy phone')); // false
+```
+
+### 向量搜索近似（Vector Search Concept）
+
+```typescript
+// vector-search.ts — 余弦相似度向量检索概念实现
+
+function cosineSimilarity(a: number[], b: number[]): number {
+  const dot = a.reduce((sum, val, i) => sum + val * b[i], 0);
+  const normA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+  const normB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+  return dot / (normA * normB);
+}
+
+class VectorIndex {
+  private vectors: Array<{ id: string; embedding: number[]; meta: unknown }> = [];
+
+  add(id: string, embedding: number[], meta: unknown) {
+    this.vectors.push({ id, embedding, meta });
+  }
+
+  search(query: number[], topK = 5) {
+    return this.vectors
+      .map((v) => ({ id: v.id, score: cosineSimilarity(v.embedding, query), meta: v.meta }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, topK);
+  }
+}
+
+// 生产环境中应使用专用向量数据库：Pinecone、Weaviate、Milvus、pgvector
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -188,7 +352,13 @@ console.log(engine.suggest('t')); // ['typescript', 'tailwind', 'testing', 'tans
 | SQLite FTS5 | 全文搜索扩展 | [sqlite.org/fts5.html](https://sqlite.org/fts5.html) |
 | Introduction to Information Retrieval (Stanford) | 经典教材 | [nlp.stanford.edu/IR-book](https://nlp.stanford.edu/IR-book/) |
 | Typesense | 开源搜索引擎 | [typesense.org](https://typesense.org/) |
+| OpenSearch | 开源搜索与分析 | [opensearch.org](https://opensearch.org/) |
+| Fuse.js — 模糊搜索 | 文档 | [fusejs.io](https://www.fusejs.io/) |
+| Pagefind — 静态站点搜索 | 文档 | [pagefind.app](https://pagefind.app/) |
+| pgvector — Postgres 向量扩展 | 文档 | [github.com/pgvector/pgvector](https://github.com/pgvector/pgvector) |
+| Weaviate — 向量数据库 | 文档 | [weaviate.io](https://weaviate.io/) |
+| Apache Tika — 内容提取 | 文档 | [tika.apache.org](https://tika.apache.org/) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

@@ -177,6 +177,102 @@ export class ComponentBus {
 export const globalBus = new ComponentBus();
 ```
 
+### 复合组件（Compound Component）模式
+
+```typescript
+// compound-component.ts — 内部状态共享，外部声明式组合
+
+import React, { createContext, useContext, useState, useCallback } from 'react';
+
+interface TabsContextValue {
+  activeIndex: number;
+  setActiveIndex: (i: number) => void;
+}
+
+const TabsContext = createContext<TabsContextValue | null>(null);
+
+function useTabs() {
+  const ctx = useContext(TabsContext);
+  if (!ctx) throw new Error('Tabs subcomponents must be used within <Tabs>');
+  return ctx;
+}
+
+export function Tabs({ children, defaultIndex = 0 }: { children: React.ReactNode; defaultIndex?: number }) {
+  const [activeIndex, setActiveIndex] = useState(defaultIndex);
+  return (
+    <TabsContext.Provider value={{ activeIndex, setActiveIndex }}>
+      <div className="tabs">{children}</div>
+    </TabsContext.Provider>
+  );
+}
+
+export function TabList({ children }: { children: React.ReactNode }) {
+  return <div className="tab-list" role="tablist">{children}</div>;
+}
+
+export function Tab({ index, children }: { index: number; children: React.ReactNode }) {
+  const { activeIndex, setActiveIndex } = useTabs();
+  return (
+    <button
+      role="tab"
+      aria-selected={activeIndex === index}
+      className={activeIndex === index ? 'tab active' : 'tab'}
+      onClick={() => setActiveIndex(index)}
+    >
+      {children}
+    </button>
+  );
+}
+
+export function TabPanel({ index, children }: { index: number; children: React.ReactNode }) {
+  const { activeIndex } = useTabs();
+  if (activeIndex !== index) return null;
+  return <div role="tabpanel">{children}</div>;
+}
+
+// 使用
+// <Tabs defaultIndex={0}>
+//   <TabList>
+//     <Tab index={0}>First</Tab>
+//     <Tab index={1}>Second</Tab>
+//   </TabList>
+//   <TabPanel index={0}>Content 1</TabPanel>
+//   <TabPanel index={1}>Content 2</TabPanel>
+// </Tabs>
+```
+
+### 受控与非受控组件桥接
+
+```typescript
+// controlled-bridge.ts — 同时支持受控和非受控模式
+
+import { useState, useCallback } from 'react';
+
+interface UseControllableStateOptions<T> {
+  propValue?: T;
+  defaultValue: T;
+  onChange?: (value: T) => void;
+}
+
+export function useControllableState<T>(options: UseControllableStateOptions<T>) {
+  const { propValue, defaultValue, onChange } = options;
+  const isControlled = propValue !== undefined;
+  const [internalValue, setInternalValue] = useState(defaultValue);
+
+  const value = isControlled ? propValue : internalValue;
+  const setValue = useCallback(
+    (next: T | ((prev: T) => T)) => {
+      const resolved = typeof next === 'function' ? (next as (prev: T) => T)(value) : next;
+      if (!isControlled) setInternalValue(resolved);
+      onChange?.(resolved);
+    },
+    [isControlled, onChange, value]
+  );
+
+  return [value, setValue] as const;
+}
+```
+
 ## 相关索引
 
 - [30-knowledge-base/30.2-categories/README.md](../../../30-knowledge-base/30.2-categories/README.md)
@@ -187,7 +283,9 @@ export const globalBus = new ComponentBus();
 | 资源 | 类型 | 链接 |
 |------|------|------|
 | React Composition Patterns | 文档 | [react.dev/learn/thinking-in-react](https://react.dev/learn/thinking-in-react) |
+| React — Lifting State Up | 文档 | [react.dev/learn/state-a-components-memory](https://react.dev/learn/state-a-components-memory) |
 | Vue — Component Basics | 文档 | [vuejs.org/guide/essentials/component-basics](https://vuejs.org/guide/essentials/component-basics) |
+| Vue — Provide / Inject | 文档 | [vuejs.org/guide/components/provide-inject](https://vuejs.org/guide/components/provide-inject.html) |
 | Web Components — MDN | 文档 | [developer.mozilla.org/en-US/docs/Web/Web_Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components) |
 | Islands Architecture | 博客 | [jasonformat.com/islands-architecture](https://jasonformat.com/islands-architecture) |
 | Astro Islands | 文档 | [docs.astro.build/en/concepts/islands](https://docs.astro.build/en/concepts/islands) |
@@ -197,6 +295,8 @@ export const globalBus = new ComponentBus();
 | Headless UI — Tailwind | 文档 | [headlessui.com](https://headlessui.com) |
 | Web Components Spec — W3C | 规范 | [github.com/w3c/webcomponents](https://github.com/w3c/webcomponents) |
 | Inclusive Components — Heydon Pickering | 指南 | [inclusive-components.design](https://inclusive-components.design) |
+| Kent C. Dodds — Compound Components | 博客 | [kentcdodds.com/blog/compound-components-with-react-hooks](https://kentcdodds.com/blog/compound-components-with-react-hooks) |
+| Patterns.dev — Modern Web App Design Patterns | 指南 | [www.patterns.dev](https://www.patterns.dev) |
 
 ---
 

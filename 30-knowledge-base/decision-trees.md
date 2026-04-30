@@ -179,6 +179,119 @@ flowchart TD
 
 ---
 
+## 5. 交互式决策引擎示例
+
+以下是一个使用 Node.js `readline` 实现的 CLI 决策向导，可用于团队内部技术选型投票或新人引导：
+
+```typescript
+import * as readline from 'node:readline';
+
+interface DecisionNode {
+  id: string;
+  question: string;
+  choices: { label: string; nextId?: string; result?: string }[];
+}
+
+const decisionGraph: Record<string, DecisionNode> = {
+  start: {
+    id: 'start',
+    question: '你的项目类型是什么？',
+    choices: [
+      { label: '内容驱动站点（博客/文档/Marketing）', nextId: 'content' },
+      { label: '交互式 Web 应用（SaaS/Dashboard）', nextId: 'app' },
+      { label: 'API / 后端服务', nextId: 'backend' },
+    ],
+  },
+  content: {
+    id: 'content',
+    question: '是否需要 MDX / 交互式组件嵌入？',
+    choices: [
+      { label: '是', result: '推荐：Astro + React Islands 集成' },
+      { label: '否', result: '推荐：Astro 纯静态或 Hugo / Eleventy' },
+    ],
+  },
+  app: {
+    id: 'app',
+    question: '团队对 React 的熟悉程度？',
+    choices: [
+      { label: '丰富经验', result: '推荐：React 19 + Next.js 15 (App Router)' },
+      { label: '一般 / 偏向后端', result: '推荐：Vue 3.5 + Nuxt 3' },
+      { label: '追求极致性能', result: '推荐：Svelte 5 + SvelteKit 或 SolidJS' },
+    ],
+  },
+  backend: {
+    id: 'backend',
+    question: '性能瓶颈预期？',
+    choices: [
+      { label: 'I/O 密集型 / 高并发', result: '推荐：Node.js 24 LTS + Fastify 或 Deno 2.x' },
+      { label: 'CPU 密集型 / 计算任务', result: '推荐：Node.js + Rust/WASM addon，或 Rust/Go 微服务' },
+      { label: '边缘部署 / 全球低延迟', result: '推荐：Hono + Cloudflare Workers 或 Deno Deploy' },
+    ],
+  },
+};
+
+function runWizard(node: DecisionNode): Promise<string> {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  return new Promise((resolve) => {
+    console.log(`\n❓ ${node.question}`);
+    node.choices.forEach((c, i) => console.log(`  ${i + 1}. ${c.label}`));
+    rl.question('请输入选项编号: ', (answer) => {
+      const idx = parseInt(answer, 10) - 1;
+      const selected = node.choices[idx];
+      rl.close();
+      if (!selected) {
+        console.log('无效输入，默认选择第一项。');
+        resolve(runWizard(node));
+        return;
+      }
+      if (selected.result) {
+        resolve(`\n✅ 结论：${selected.result}`);
+      } else if (selected.nextId) {
+        resolve(runWizard(decisionGraph[selected.nextId]));
+      } else {
+        resolve('无结论');
+      }
+    });
+  });
+}
+
+// runWizard(decisionGraph.start).then(console.log).catch(console.error);
+```
+
+### 批量评分矩阵计算器
+
+```typescript
+type ScoreRecord = Record<string, number>;
+
+function scoreMatrix(
+  options: string[],
+  criteria: string[],
+  weights: number[],
+  scores: number[][],
+): { option: string; weightedScore: number }[] {
+  const totalWeight = weights.reduce((a, b) => a + b, 0);
+  return options.map((opt, i) => {
+    const ws = scores[i].reduce((sum, s, j) => sum + (s * weights[j]) / totalWeight, 0);
+    return { option: opt, weightedScore: Number(ws.toFixed(2)) };
+  }).sort((a, b) => b.weightedScore - a.weightedScore);
+}
+
+// 后端运行时选型示例
+const backendOptions = ['Node.js + Fastify', 'Deno + Oak', 'Bun + Elysia', 'Cloudflare Workers'];
+const backendCriteria = ['吞吐量', 'TS 原生支持', '冷启动', '生态成熟度'];
+const backendWeights = [0.3, 0.2, 0.2, 0.3];
+const backendScores = [
+  [8, 7, 6, 10],   // Node.js
+  [7, 10, 7, 5],   // Deno
+  [9, 10, 8, 4],   // Bun
+  [6, 8, 10, 6],   // Workers
+];
+
+console.log(scoreMatrix(backendOptions, backendCriteria, backendWeights, backendScores));
+```
+
+---
+
 ## 权威链接
 
 - [ThoughtWorks Technology Radar 2026](https://www.thoughtworks.com/radar) — 企业技术选型趋势权威参考。
@@ -190,7 +303,15 @@ flowchart TD
 - [JS Framework Benchmark](https://krausest.github.io/js-framework-benchmark/) — 前端框架运行时性能对比。
 - [StackShare Trends](https://stackshare.io/trending/tools) — 企业技术栈实际采用趋势。
 - [Serverless Patterns](https://serverlessland.com/patterns) — AWS 无服务器架构模式库。
+- [Next.js 官方文档](https://nextjs.org/docs) — React 全栈框架选型参考。
+- [Nuxt 官方文档](https://nuxt.com/docs) — Vue 全栈框架选型参考。
+- [Cloudflare Workers 文档](https://developers.cloudflare.com/workers/) — 边缘运行时官方文档。
+- [Hono 文档](https://hono.dev/docs) — 轻量边缘框架文档。
+- [PostgreSQL 官方文档](https://www.postgresql.org/docs/) — 关系型数据库权威参考。
+- [MongoDB 文档](https://www.mongodb.com/docs/) — 文档型数据库官方文档。
+- [Vercel 定价与功能](https://vercel.com/pricing) — 部署平台成本决策参考。
+- [Fly.io 文档](https://fly.io/docs/) — 容器化部署平台指南。
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

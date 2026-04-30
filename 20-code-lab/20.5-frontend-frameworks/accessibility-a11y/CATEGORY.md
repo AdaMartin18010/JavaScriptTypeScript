@@ -181,6 +181,46 @@ const customBtn = document.getElementById('custom-button')!;
 makeAccessibleButton(customBtn, () => console.log('Activated'));
 ```
 
+## 代码示例：色彩对比度检测（WCAG 2.1 1.4.3）
+
+```typescript
+// contrast-checker.ts — 基于相对亮度公式的对比度计算
+
+function hexToRgb(hex: string): [number, number, number] {
+  const sanitized = hex.replace('#', '');
+  const bigint = parseInt(sanitized.length === 3 ? sanitized.split('').map(c => c + c).join('') : sanitized, 16);
+  return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+}
+
+function relativeLuminance([r, g, b]: [number, number, number]): number {
+  const toLinear = (c: number) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+/** 计算 WCAG 2.1 对比度比值 */
+export function contrastRatio(foreground: string, background: string): number {
+  const lum1 = relativeLuminance(hexToRgb(foreground));
+  const lum2 = relativeLuminance(hexToRgb(background));
+  const lighter = Math.max(lum1, lum2);
+  const darker = Math.min(lum1, lum2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+/** 检查是否满足 AA 或 AAA 标准 */
+export function checkContrast(foreground: string, background: string, level: 'AA' | 'AAA' = 'AA'): boolean {
+  const ratio = contrastRatio(foreground, background);
+  const threshold = level === 'AA' ? 4.5 : 7.0;
+  return ratio >= threshold;
+}
+
+// 使用
+console.log(contrastRatio('#000000', '#ffffff')); // 21
+console.log(checkContrast('#767676', '#ffffff')); // false (AA)
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -194,6 +234,9 @@ makeAccessibleButton(customBtn, () => console.log('Activated'));
 | W3C — Accessible Rich Internet Applications (WAI-ARIA) 1.2 | 规范 | [w3.org/TR/wai-aria-1.2](https://www.w3.org/TR/wai-aria-1.2/) |
 | WebAIM — Introduction to Web Accessibility | 入门指南 | [webaim.org/articles](https://webaim.org/articles/) |
 | MDN — prefers-reduced-motion | CSS 媒体特性 | [developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion](https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion) |
+| W3C — ACT Rules | 可访问性一致性测试规则 | [w3.org/WAI/standards-guidelines/act](https://www.w3.org/WAI/standards-guidelines/act/) |
+| WebAIM — Color Contrast Checker | 在线工具 | [webaim.org/resources/contrastchecker](https://webaim.org/resources/contrastchecker/) |
+| W3C — HTML Accessibility API Mappings 1.0 | 规范 | [w3.org/TR/html-aam-1.0](https://www.w3.org/TR/html-aam-1.0/) |
 
 ---
 

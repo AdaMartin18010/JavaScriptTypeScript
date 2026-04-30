@@ -215,4 +215,31 @@ fetchWithTimeout('https://api.example.com/data', 3000)
 
 ---
 
+### 3.5 更多实战模式：分组与 Unicode
+
+```js
+// Object.groupBy 键强制转字符串
+const items = [{ name: 'A', priority: 1 }, { name: 'B', priority: 2 }];
+const byPriority = Object.groupBy(items, i => i.priority);
+console.log(byPriority[1]);
+
+// Well-Formed Unicode 在 JSON 中的意义
+const payload = { text: 'Hello \uDC00World' };
+console.log(JSON.stringify({ text: payload.text.toWellFormed() }));
+
+// ArrayBuffer.transfer 分离旧缓冲区
+const buf = new ArrayBuffer(1024);
+const newBuf = buf.transfer(512);
+// buf.byteLength === 0
+```
+
+---
+
+## 更多权威参考链接
+
+- [V8 Blog: ES2024 Features](https://v8.dev/features/tags/es2024) -- V8 引擎新特性详解
+- [Node.js v22 Release Notes](https://nodejs.org/en/blog/release/v22.0.0) -- Node.js 对 ES2024 的支持
+- [Safari 17.4 Release Notes](https://webkit.org/blog/15249/webkit-features-in-safari-17-4/) -- WebKit ES2024 支持
+- [Can I Use: Promise.withResolvers](https://caniuse.com/mdn-javascript_builtins_promise_withresolvers) -- 兼容性查询
+
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

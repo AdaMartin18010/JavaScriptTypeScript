@@ -178,4 +178,53 @@ import safeConfig from '/api/config' with { type: 'json' };
 
 ---
 
+---
+
+## Import Defer 进阶示例与边缘场景
+
+### 延迟加载大型库的实际模式
+
+```javascript
+// chart-dashboard.js — 延迟加载图表库，避免阻塞首屏渲染
+import defer * as ChartLib from './heavy-chart-library.js';
+
+export async function renderChart(data) {
+  // 第一次访问导出成员时自动等待加载完成
+  const canvas = document.getElementById('chart');
+  const chart = await ChartLib.createChart(canvas, data);
+  return chart;
+}
+
+// 命名空间对象立即可用，可检查是否已加载
+console.log(ChartLib); // Module { [Symbol(deferred)]: true, createChart: [Getter] }
+```
+
+### 错误处理：defer 模块加载失败
+
+```javascript
+import defer * as analytics from './analytics-sdk.js';
+
+export async function trackEvent(event) {
+  try {
+    // 若 analytics 模块 404 或执行出错，此处抛出
+    await analytics.track(event);
+  } catch (err) {
+    // 降级：静默丢弃或使用备用实现
+    console.warn('Analytics unavailable, event dropped:', event.name);
+  }
+}
+```
+
+---
+
+## 更多权威参考链接
+
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| **HTML Standard — Module scripts** | WHATWG 模块脚本加载规范 | [html.spec.whatwg.org/multipage/webappapis.html#module-scripts](https://html.spec.whatwg.org/multipage/webappapis.html#module-scripts) |
+| **Node.js ESM Loader** | Node.js 模块加载器文档 | [nodejs.org/api/esm.html](https://nodejs.org/api/esm.html) |
+| **WebKit: Import Attributes** | Safari/webkit 实现说明 | [webkit.org/blog/15446/import-attributes-and-duplicate-imports-in-javascript](https://webkit.org/blog/15446/import-attributes-and-duplicate-imports-in-javascript/) |
+| **Import Defer Design Notes** | V8 延迟加载设计考量 | [docs.google.com/document/d/1lZR7ORv6W4f2oCR9DWDhZgYP9HqqNEdCv6zJ8WA1h3o](https://docs.google.com/document/d/1lZR7ORv6W4f2oCR9DWDhZgYP9HqqNEdCv6zJ8WA1h3o) |
+
+
 *本文件为模块系统专题的补充篇，已增强对比矩阵与代码示例。*

@@ -174,6 +174,130 @@ async function loadChartLibrary(type: 'line' | 'bar' | 'pie') {
 console.log(import.meta.url); // 当前模块的绝对 URL
 ```
 
+### Proxy 与 Reflect 元编程
+
+```typescript
+// proxy-validation.ts — 使用 Proxy 实现运行时校验
+function createValidatedObject<T extends Record<string, any>>(
+  schema: { [K in keyof T]: (v: any) => boolean }
+): T {
+  const store = {} as T;
+
+  return new Proxy(store, {
+    set(target, prop: string, value) {
+      const validator = schema[prop];
+      if (validator && !validator(value)) {
+        throw new TypeError(`Invalid value for ${prop}: ${value}`);
+      }
+      target[prop as keyof T] = value;
+      return true;
+    },
+    get(target, prop: string) {
+      if (!(prop in target)) {
+        console.warn(`Accessing undefined property: ${prop}`);
+      }
+      return target[prop as keyof T];
+    },
+    deleteProperty(target, prop: string) {
+      if (prop in schema) {
+        throw new Error(`Cannot delete required property: ${prop}`);
+      }
+      return Reflect.deleteProperty(target, prop);
+    },
+  });
+}
+
+const user = createValidatedObject({
+  name: (v) => typeof v === 'string' && v.length > 0,
+  age: (v) => Number.isInteger(v) && v >= 0 && v <= 150,
+});
+
+user.name = 'Alice'; // ✅
+user.age = 30;       // ✅
+// user.age = -5;    // ❌ TypeError: Invalid value for age: -5
+```
+
+### Generator 与 Iterator 协议
+
+```typescript
+// generators.ts — 惰性序列与自定义迭代器
+function* fibonacci(limit: number) {
+  let [a, b] = [0, 1];
+  while (a <= limit) {
+    yield a;
+    [a, b] = [b, a + b];
+  }
+}
+
+// 消费生成器
+for (const n of fibonacci(100)) {
+  console.log(n); // 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89
+}
+
+// 自定义可迭代对象
+class Range implements Iterable<number> {
+  constructor(private start: number, private end: number, private step = 1) {}
+
+  *[Symbol.iterator](): Iterator<number> {
+    for (let i = this.start; i <= this.end; i += this.step) {
+      yield i;
+    }
+  }
+
+  // 反向迭代
+  *[Symbol.asyncIterator](): AsyncIterator<number> {
+    for (let i = this.end; i >= this.start; i -= this.step) {
+      yield await Promise.resolve(i);
+    }
+  }
+}
+
+const range = new Range(1, 5);
+console.log([...range]); // [1, 2, 3, 4, 5]
+```
+
+### Symbol 与 Well-Known Symbols
+
+```typescript
+// symbols.ts — 唯一键与元编程符号
+const hiddenKey = Symbol('private');
+
+const obj = {
+  name: 'public',
+  [hiddenKey]: 'secret data',
+};
+
+// Symbol 属性不可被常规枚举
+console.log(Object.keys(obj)); // ['name']
+console.log(Object.getOwnPropertySymbols(obj)); // [Symbol(private)]
+
+// Well-Known Symbols — 改变对象内置行为
+const collection = {
+  items: ['a', 'b', 'c'],
+  [Symbol.iterator]() {
+    let i = 0;
+    return {
+      next: () => ({
+        value: this.items[i++],
+        done: i > this.items.length,
+      }),
+    };
+  },
+  [Symbol.toPrimitive](hint: string) {
+    if (hint === 'number') return this.items.length;
+    return this.items.join(', ');
+  },
+  get [Symbol.toStringTag]() {
+    return 'CustomCollection';
+  },
+};
+
+console.log([...collection]);      // ['a', 'b', 'c']
+console.log(String(collection));   // "a, b, c"
+console.log(Number(collection));   // 3
+console.log(Object.prototype.toString.call(collection)); // [object CustomCollection]
+```
+
 ## 权威参考链接
 
 | 资源 | 类型 | 链接 |
@@ -188,6 +312,12 @@ console.log(import.meta.url); // 当前模块的绝对 URL
 | JavaScript Weekly | 周刊 | [javascriptweekly.com](https://javascriptweekly.com) |
 | V8 Blog — JavaScript internals | 博客 | [v8.dev/blog/tags/javascript](https://v8.dev/blog/tags/javascript) |
 | Node.js Module System | 文档 | [nodejs.org/api/modules.html](https://nodejs.org/api/modules.html) & [esm.html](https://nodejs.org/api/esm.html) |
+| TC39 Proposals (GitHub) | 规范提案 | [github.com/tc39/proposals](https://github.com/tc39/proposals) |
+| 2ality — JavaScript 深度博客 | 博客 | [2ality.com](https://2ality.com/) — Dr. Axel Rauschmayer |
+| MDN Proxy & Reflect | 文档 | [developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Proxy](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Proxy) |
+| MDN Generator Functions | 文档 | [developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator) |
+| MDN Symbol | 文档 | [developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Symbol](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Symbol) |
+| ECMAScript Compatibility Table | 兼容性 | [compat-table.github.io/compat-table/](https://compat-table.github.io/compat-table/) |
 
 ## 关联索引
 

@@ -476,6 +476,14 @@ graph TB
 | WinterTC 标准 | <https://wintertc.org/> | 跨运行时标准 |
 | V8 博客 | <https://v8.dev/blog> | 引擎最新动态 |
 | PLDI/POPL 论文 | <https://dl.acm.org/> | 学术会议论文 |
+| TC39 Proposals | <https://github.com/tc39/proposals> | ECMAScript 提案跟踪 |
+| MDN Web Docs | <https://developer.mozilla.org/en-US/> | Web 技术权威文档 |
+| Deno 文档 | <https://docs.deno.com/> | Deno 运行时文档 |
+| Bun 文档 | <https://bun.sh/docs> | Bun 运行时文档 |
+| Web Platform Tests | <https://github.com/web-platform-tests/wpt> | 浏览器兼容性测试基准 |
+| OpenJS Foundation | <https://openjsf.org/> | JavaScript 生态基金会 |
+| JSConf / TC39 Meeting Notes | <https://github.com/tc39/notes> | 语言标准会议纪要 |
+| TypeScript Compiler API | <https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API> | 编译器扩展指南 |
 
 ---
 

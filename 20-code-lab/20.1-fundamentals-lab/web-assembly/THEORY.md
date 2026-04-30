@@ -164,7 +164,150 @@ Wasm 已从"浏览器新奇技术"演变为**特定领域的生产级运行时**
 
 ---
 
-## 8. 限制与 2026 年现实检查
+## 8. 编译到 Wasm：Rust + wasm-pack
+
+```rust
+// src/lib.rs — Rust 编译为 Wasm 模块
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub fn fibonacci(n: u32) -> u32 {
+    match n {
+        0 => 0,
+        1 => 1,
+        _ => fibonacci(n - 1) + fibonacci(n - 2),
+    }
+}
+
+#[wasm_bindgen]
+pub struct ImageProcessor {
+    width: u32,
+    height: u32,
+}
+
+#[wasm_bindgen]
+impl ImageProcessor {
+    #[wasm_bindgen(constructor)]
+    pub fn new(width: u32, height: u32) -> ImageProcessor {
+        ImageProcessor { width, height }
+    }
+
+    pub fn grayscale(&self, pixels: &[u8]) -> Vec<u8> {
+        pixels.chunks_exact(4)
+            .flat_map(|rgba| {
+                let gray = (0.299 * rgba[0] as f32 + 0.587 * rgba[1] as f32 + 0.114 * rgba[2] as f32) as u8;
+                [gray, gray, gray, rgba[3]]
+            })
+            .collect()
+    }
+}
+```
+
+```bash
+# Cargo.toml 依赖
+# [dependencies]
+# wasm-bindgen = "0.2"
+
+# 编译为 npm 包
+wasm-pack build --target web --out-dir pkg
+```
+
+```javascript
+// browser.js — 浏览器中消费 Rust Wasm
+import init, { fibonacci, ImageProcessor } from './pkg/mywasm.js';
+
+await init();
+
+// 直接调用 Rust 函数
+console.log(fibonacci(20)); // 6765
+
+// 使用 Rust 结构体
+const processor = new ImageProcessor(1920, 1080);
+const grayPixels = processor.grayscale(rawRgbaArray);
+```
+
+> 📖 Reference: [Rust and WebAssembly Book](https://rustwasm.github.io/book/) | [wasm-bindgen Guide](https://rustwasm.github.io/wasm-bindgen/) | [wasm-pack](https://rustwasm.github.io/wasm-pack/)
+
+---
+
+## 9. AssemblyScript：TypeScript 语法编译到 Wasm
+
+```typescript
+// assembly/index.ts — AssemblyScript（语法近似 TypeScript）
+export function add(a: i32, b: i32): i32 {
+  return a + b;
+}
+
+export function factorial(n: i32): i32 {
+  let result: i32 = 1;
+  for (let i: i32 = 2; i <= n; i++) {
+    result *= i;
+  }
+  return result;
+}
+
+// 固定类型数组（直接映射 Wasm 线性内存）
+export function sumArray(arr: Int32Array): i32 {
+  let sum: i32 = 0;
+  for (let i: i32 = 0; i < arr.length; i++) {
+    sum += arr[i];
+  }
+  return sum;
+}
+```
+
+```bash
+# 编译
+asc assembly/index.ts --target release -o build/release.wasm --bindings raw
+```
+
+```javascript
+// main.js — 加载 AssemblyScript 产物
+const wasmModule = await WebAssembly.instantiateStreaming(
+  fetch('build/release.wasm')
+);
+const { add, factorial, sumArray, __new, __pin, __unpin, Int32Array_ID } = wasmModule.instance.exports;
+
+// 分配并填充数组
+const ptr = __pin(__new(4 * 4, Int32Array_ID));
+const mem = new Int32Array(wasmModule.instance.exports.memory.buffer);
+mem.set([1, 2, 3, 4], ptr / 4);
+console.log(sumArray(ptr)); // 10
+__unpin(ptr);
+```
+
+> 📖 Reference: [AssemblyScript Documentation](https://www.assemblyscript.org/) | [AssemblyScript Standard Library](https://www.assemblyscript.org/stdlib.html)
+
+---
+
+## 10. Node.js 实验性 WASI 集成
+
+```javascript
+// node-wasi.mjs — Node.js v22+ 运行 WASI 模块
+import { readFile } from 'node:fs/promises';
+import { WASI } from 'wasi';
+import { argv, env } from 'node:process';
+
+const wasi = new WASI({
+  version: 'preview1',
+  args: argv.slice(1),
+  env,
+  preopens: {
+    '/sandbox': '/path/to/host/dir',
+  },
+});
+
+const wasm = await WebAssembly.compile(await readFile('./app.wasm'));
+const instance = await WebAssembly.instantiate(wasm, {
+  wasi_snapshot_preview1: wasi.wasiImport,
+});
+
+wasi.start(instance);
+```
+
+---
+
+## 11. 限制与 2026 年现实检查
 
 | 期望 | 现实（2026） | 展望 |
 |------|-------------|------|
@@ -177,7 +320,7 @@ Wasm 已从"浏览器新奇技术"演变为**特定领域的生产级运行时**
 
 ---
 
-## 9. 与相邻模块的关系
+## 12. 与相邻模块的关系
 
 - **82-edge-ai**: Wasm 在边缘 AI 推理中的应用（ONNX Runtime Web、TensorFlow.js Wasm backend）
 - **79-compiler-design**: 编译到 Wasm 的编译器设计（wasm32-wasip2 target、cargo-component）
@@ -195,3 +338,16 @@ Wasm 已从"浏览器新奇技术"演变为**特定领域的生产级运行时**
 5. **DevNewsletter** — [State of WebAssembly 2026](https://devnewsletter.com/p/state-of-webassembly-2026/)
 6. **Shahzad Bhatti** — [Building Polyglot Applications with WASM](https://weblog.plexobject.com/archives/7394)
 7. **Cristhian.dev** — [WebAssembly Component Model Guide](https://blog.iamcristhian.dev/2026/04/webassembly-component-model-wasm-beyond-browser-2026)
+8. **Rust and WebAssembly Book** — [rustwasm.github.io/book](https://rustwasm.github.io/book/)
+9. **wasm-bindgen Guide** — [rustwasm.github.io/wasm-bindgen](https://rustwasm.github.io/wasm-bindgen/)
+10. **AssemblyScript Docs** — [assemblyscript.org](https://www.assemblyscript.org/)
+11. **Wasmtime Runtime Docs** — [docs.wasmtime.dev](https://docs.wasmtime.dev/)
+12. **Fermyon Spin Docs** — [developer.fermyon.com](https://developer.fermyon.com/spin)
+13. **wasmCloud Docs** — [wasmcloud.com/docs](https://wasmcloud.com/docs)
+14. **Chrome Platform Status — WasmGC** — [chromestatus.com/feature/6062715726462976](https://chromestatus.com/feature/6062715726462976)
+15. **WebAssembly Summit** — [webassemblysophia.com](https://webassemblysummit.org/) | [YouTube Talks](https://www.youtube.com/c/WebAssembly)
+16. **Cloudflare Workers — Wasm](<https://developers.cloudflare.com/workers/runtime-apis/webassembly/>)
+17. **Deno — WebAssembly](<https://docs.deno.com/runtime/manual/runtime/webassembly/>)
+18. **Node.js WASI API** — [nodejs.org/api/wasi.html](https://nodejs.org/api/wasi.html)
+19. **WIT 接口设计指南** — [component-model.bytecodealliance.org/design/wit.html](https://component-model.bytecodealliance.org/design/wit.html)
+20. **WASI Preview 2 Proposal** — [github.com/WebAssembly/WASI/tree/main/preview2](https://github.com/WebAssembly/WASI/tree/main/preview2)

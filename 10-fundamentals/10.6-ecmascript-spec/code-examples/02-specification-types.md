@@ -227,4 +227,35 @@ console.log(Array === iframeArray)  // false！不同 Realm
 
 ---
 
+---
+
+## 补充：规范类型的运行时等价映射
+
+### Property Descriptor 运行时映射
+
+```javascript
+const obj = {};
+Object.defineProperty(obj, 'key', { value: 42, writable: true, enumerable: false, configurable: true });
+console.log(Object.getOwnPropertyDescriptor(obj, 'key'));
+// { value: 42, writable: true, enumerable: false, configurable: true }
+```
+
+### Environment Record 与闭包
+
+```javascript
+function makeCounter() { let n = 0; return () => ++n; }
+const a = makeCounter(), b = makeCounter();
+console.log(a(), a(), b()); // 1, 2, 1
+```
+
+---
+
+## 更多权威参考链接
+
+- **ECMA-262 §6.2.5** -- <https://tc39.es/ecma262/#sec-reference-record-specification-type>
+- **ECMA-262 §6.2.6** -- <https://tc39.es/ecma262/#sec-property-descriptor-specification-type>
+- **ECMA-262 §9.1** -- <https://tc39.es/ecma262/#sec-environment-records>
+- **Engine262** -- <https://github.com/engine262/engine262>
+
 > 📅 补充更新：2026-04-27
+> 📅 再次深化：2026-04-30

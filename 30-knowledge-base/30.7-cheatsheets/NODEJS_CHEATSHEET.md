@@ -146,6 +146,127 @@ const query = db.prepare('SELECT * FROM users');
 console.log(query.all()); // [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }]
 ```
 
+### Worker Threads — CPU 密集型任务
+
+```javascript
+// worker.js — 在工作线程中执行
+import { parentPort, workerData } from 'worker_threads';
+
+function fibonacci(n) {
+  return n < 2 ? n : fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+const result = fibonacci(workerData.n);
+parentPort.postMessage({ input: workerData.n, result });
+```
+
+```javascript
+// main.js — 主线程创建 Worker
+import { Worker } from 'worker_threads';
+
+function runWorker(n) {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker('./worker.js', { workerData: { n } });
+    worker.on('message', resolve);
+    worker.on('error', reject);
+    worker.on('exit', (code) => {
+      if (code !== 0) reject(new Error(`Worker stopped with exit code ${code}`));
+    });
+  });
+}
+
+// 并行计算多个斐波那契数
+const results = await Promise.all([runWorker(35), runWorker(40), runWorker(38)]);
+console.log(results);
+```
+
+### Crypto — HMAC / JWT 签名
+
+```javascript
+import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
+
+// HMAC-SHA256 签名
+function signPayload(payload, secret) {
+  return createHmac('sha256', secret).update(payload).digest('base64url');
+}
+
+// 简易 JWT 签名（生产环境请使用 jsonwebtoken 库）
+function createJWT(header, payload, secret) {
+  const encodedHeader = Buffer.from(JSON.stringify(header)).toString('base64url');
+  const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = signPayload(`${encodedHeader}.${encodedPayload}`, secret);
+  return `${encodedHeader}.${encodedPayload}.${signature}`;
+}
+
+// 常量时间比较（防时序攻击）
+function safeCompare(a, b) {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
+}
+
+// 生成加密安全随机 token
+const csrfToken = randomBytes(32).toString('hex');
+```
+
+### Path & URL — 跨平台路径处理
+
+```javascript
+import { join, resolve, parse, glob } from 'path';
+import { fileURLToPath } from 'url';
+
+// ESM 中获取 __dirname 等价物
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = resolve(__filename, '..');
+
+// 跨平台路径拼接
+const configPath = join(__dirname, 'config', 'default.json');
+
+// 路径解析
+const { dir, name, ext } = parse('/home/user/project/src/index.ts');
+// dir: '/home/user/project/src', name: 'index', ext: '.ts'
+
+// URL 解析与构造
+const apiUrl = new URL('/api/v2/users', 'https://api.example.com');
+apiUrl.searchParams.append('page', '1');
+apiUrl.searchParams.append('limit', '20');
+console.log(apiUrl.toString()); // https://api.example.com/api/v2/users?page=1&limit=20
+```
+
+### Readable.from — 将数组/异步迭代器转为流
+
+```javascript
+import { Readable, Writable } from 'stream';
+
+// 将数组转为对象流
+const dataStream = Readable.from([
+  { id: 1, name: 'Alice' },
+  { id: 2, name: 'Bob' },
+  { id: 3, name: 'Carol' },
+]);
+
+// 异步迭代器来源
+async function* generateRows() {
+  for (let i = 0; i < 1000; i++) {
+    yield { index: i, timestamp: Date.now() };
+  }
+}
+
+const asyncStream = Readable.from(generateRows());
+
+// 消费流
+asyncStream.pipe(
+  new Writable({
+    objectMode: true,
+    write(chunk, encoding, callback) {
+      console.log('Processing:', chunk);
+      callback();
+    },
+  })
+);
+```
+
 ---
 
 ## 常用命令
@@ -179,6 +300,19 @@ node --inspect-brk app.js
 - [Node.js Cluster API](https://nodejs.org/api/cluster.html)
 - [Node.js SQLite (v24)](https://nodejs.org/api/sqlite.html)
 - [Node.js Permission Model](https://nodejs.org/api/permissions.html)
+- [Node.js Worker Threads](https://nodejs.org/api/worker_threads.html)
+- [Node.js Crypto API](https://nodejs.org/api/crypto.html)
+- [Node.js Test Runner](https://nodejs.org/api/test.html)
+- [Node.js --watch Mode](https://nodejs.org/api/cli.html#--watch)
+- [Node.js TypeScript Support](https://nodejs.org/api/typescript.html)
+- [Node.js Release Schedule](https://nodejs.org/en/about/previous-releases)
+- [Node.js Path API](https://nodejs.org/api/path.html)
+- [Node.js URL API](https://nodejs.org/api/url.html)
+- [Node.js Events API](https://nodejs.org/api/events.html)
+- [Node.js Child Process](https://nodejs.org/api/child_process.html)
+- [Node.js File System Promises API](https://nodejs.org/api/fs.html#promises-api)
+- [Node.js Best Practices (goldbergyoni)](https://github.com/goldbergyoni/nodebestpractices)
+- [Node.js Design Patterns (book)](https://www.nodejsdesignpatterns.com/)
 
 ---
 

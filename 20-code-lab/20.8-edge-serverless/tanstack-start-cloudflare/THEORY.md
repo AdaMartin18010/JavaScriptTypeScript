@@ -67,8 +67,8 @@ export default defineConfig({
 });
 ```
 
-```typescript
-// wrangler.toml
+```toml
+# wrangler.toml
 name = "tanstack-start-app"
 compatibility_date = "2026-04-28"
 compatibility_flags = ["nodejs_compat"]
@@ -181,6 +181,123 @@ function DashboardPage() {
 }
 ```
 
+## 代码示例：TanStack Router 类型安全导航
+
+```typescript
+// router-navigation-typesafe.ts — 零字符串硬编码的链接
+
+import { Link, createFileRoute } from '@tanstack/react-router';
+
+// 路由定义自动生成类型，无需手动维护
+export const Route = createFileRoute('/posts/$postId/edit')({
+  component: EditPostPage,
+});
+
+function EditPostPage() {
+  const { postId } = Route.useParams(); // postId 类型为 string
+
+  return (
+    <div>
+      <h1>Edit Post {postId}</h1>
+      {/* Link 组件在编译期验证目标路由是否存在 */}
+      <Link
+        to="/posts/$postId"
+        params={{ postId }}
+        search={{ preview: true }}
+        className="text-blue-600"
+      >
+        返回详情页
+      </Link>
+      {/* 以下代码会在编译期报错：to="/non-existent" */}
+    </div>
+  );
+}
+```
+
+## 代码示例：Durable Objects + WebSocket 实时协作
+
+```typescript
+// durable-objects-websocket.ts — 边缘状态ful连接
+
+import { DurableObject } from 'cloudflare:workers';
+
+export class CollaborationRoom extends DurableObject {
+  private sessions: Set<WebSocket> = new Set();
+
+  async fetch(request: Request) {
+    const upgradeHeader = request.headers.get('Upgrade');
+    if (upgradeHeader !== 'websocket') {
+      return new Response('Expected websocket', { status: 400 });
+    }
+
+    const [client, server] = Object.values(new WebSocketPair());
+    this.sessions.add(server);
+
+    server.accept();
+    server.addEventListener('message', (msg) => {
+      // 广播给房间内所有客户端
+      for (const ws of this.sessions) {
+        if (ws.readyState === WebSocket.READY_STATE_OPEN) {
+          ws.send(msg.data as string);
+        }
+      }
+    });
+
+    server.addEventListener('close', () => {
+      this.sessions.delete(server);
+    });
+
+    return new Response(null, { status: 101, webSocket: client });
+  }
+}
+
+// Worker 入口
+export default {
+  async fetch(request: Request, env: Env) {
+    const url = new URL(request.url);
+    if (url.pathname.startsWith('/ws/room/')) {
+      const roomId = url.pathname.split('/').pop()!;
+      const id = env.COLLAB_ROOM.idFromName(roomId);
+      const room = env.COLLAB_ROOM.get(id);
+      return room.fetch(request);
+    }
+    return new Response('Not Found', { status: 404 });
+  },
+};
+```
+
+## 代码示例：边缘 KV 缓存与失效策略
+
+```typescript
+// edge-kv-cache.ts — 分层缓存：KV + D1
+
+import { createServerFn } from '@tanstack/react-start';
+
+export const getProduct = createServerFn({ method: 'GET' })
+  .validator((id: string) => id)
+  .handler(async ({ data: id }) => {
+    const { env } = await import('cloudflare:workers').then(m => m.getRequestContext());
+
+    // L1: KV 高速缓存（全球边缘节点）
+    const cacheKey = `product:${id}`;
+    const cached = await env.CACHE.get(cacheKey, { cacheTtl: 300 });
+    if (cached) return JSON.parse(cached);
+
+    // L2: D1 数据库查询
+    const product = await env.DB
+      .prepare('SELECT * FROM products WHERE id = ?')
+      .bind(id)
+      .first<{ id: string; name: string; price: number }>();
+
+    if (!product) throw new Error('Product not found');
+
+    // 回填缓存（异步，不阻塞响应）
+    ctx.waitUntil(env.CACHE.put(cacheKey, JSON.stringify(product), { expirationTtl: 3600 }));
+
+    return product;
+  });
+```
+
 ## 关联模块
 
 - `18-frontend-frameworks` — React 框架对比与选型指南
@@ -195,6 +312,13 @@ function DashboardPage() {
 - [Cloudflare D1 Documentation](https://developers.cloudflare.com/d1/)
 - [Cloudflare KV Documentation](https://developers.cloudflare.com/kv/)
 - [Hono + TanStack Start Examples](https://github.com/TanStack/router/tree/main/examples)
+- [Cloudflare Durable Objects](https://developers.cloudflare.com/durable-objects/)
+- [Cloudflare Workers — WebSocket](https://developers.cloudflare.com/workers/runtime-apis/websockets/)
+- [TanStack Start — Server Functions](https://tanstack.com/start/latest/docs/framework/react/server-functions)
+- [TanStack Router — Type Safety](https://tanstack.com/router/latest/docs/framework/react/guide/type-safety)
+- [Cloudflare Workers — Bindings](https://developers.cloudflare.com/workers/runtime-apis/bindings/)
+- [Vite — SSR Documentation](https://vitejs.dev/guide/ssr.html)
+- [React — Server Components](https://react.dev/reference/react/use-server)
 - 本模块 `README.md` — 完整目录结构、快速使用指南与关键约束
 - 本模块 `02-server-functions/api-server-fn.ts` — Server Function 基础与输入验证示例
 - 本模块 `02-server-functions/d1-example.ts` — D1 数据库查询与写入示例

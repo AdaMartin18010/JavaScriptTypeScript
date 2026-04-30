@@ -16,6 +16,7 @@ created: 2026-04-28
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 ARCHIVED.md
@@ -183,6 +184,133 @@ class OrderProjection {
 }
 ```
 
+### CQRS：命令与查询分离
+
+```typescript
+// cqrs.ts — 命令端（写模型）与查询端（读模型）分离
+
+// ========== 命令端（写模型） ==========
+interface Command<T> {
+  type: string;
+  payload: T;
+}
+
+class OrderCommandHandler {
+  constructor(private eventStore: EventStore) {}
+
+  async handle(command: Command<unknown>): Promise<void> {
+    switch (command.type) {
+      case 'CreateOrder': {
+        const { orderId } = command.payload as { orderId: string };
+        this.eventStore.append({
+          aggregateId: orderId,
+          version: 1,
+          type: 'OrderCreated',
+          payload: command.payload,
+          occurredAt: new Date().toISOString(),
+        });
+        break;
+      }
+      case 'AddItem': {
+        const { orderId, amount } = command.payload as { orderId: string; amount: number };
+        const events = this.eventStore.getEvents(orderId);
+        const version = events.length + 1;
+        this.eventStore.append({
+          aggregateId: orderId,
+          version,
+          type: 'ItemAdded',
+          payload: command.payload,
+          occurredAt: new Date().toISOString(),
+        });
+        break;
+      }
+    }
+  }
+}
+
+// ========== 查询端（读模型） ==========
+class OrderQueryHandler {
+  constructor(private projection: OrderProjection) {}
+
+  getOrderSummary(orderId: string): OrderSummary | undefined {
+    return this.projection.getSummary(orderId);
+  }
+}
+```
+
+### 事件版本迁移（Upcasting）
+
+```typescript
+// event-versioning.ts — 处理 schema 演进的 upcaster 模式
+
+type EventV1 = { type: 'ItemAdded'; payload: { sku: string; qty: number } };
+type EventV2 = { type: 'ItemAdded'; payload: { sku: string; qty: number; unitPrice: number } };
+
+interface EventUpcaster {
+  canHandle(event: StoredEvent): boolean;
+  upcast(event: StoredEvent): StoredEvent;
+}
+
+class ItemAddedUpcaster implements EventUpcaster {
+  canHandle(event: StoredEvent): boolean {
+    return event.type === 'ItemAdded' && !('unitPrice' in (event.payload as any));
+  }
+
+  upcast(event: StoredEvent): StoredEvent {
+    return {
+      ...event,
+      payload: { ...(event.payload as object), unitPrice: 0 }, // 默认值填充
+    };
+  }
+}
+
+class UpcastingEventStore extends EventStore {
+  private upcasters: EventUpcaster[] = [];
+
+  register(upcaster: EventUpcaster) {
+    this.upcasters.push(upcaster);
+  }
+
+  getEvents(aggregateId: string, afterVersion = 0): StoredEvent[] {
+    const raw = super.getEvents(aggregateId, afterVersion);
+    return raw.map((e) => {
+      const upcaster = this.upcasters.find((u) => u.canHandle(e));
+      return upcaster ? upcaster.upcast(e) : e;
+    });
+  }
+}
+```
+
+### 幂等性处理与去重
+
+```typescript
+// idempotency.ts — 基于幂等键的命令去重
+
+class IdempotencyGuard {
+  private processed = new Set<string>();
+
+  async execute<T>(idempotencyKey: string, fn: () => Promise<T>): Promise<T> {
+    if (this.processed.has(idempotencyKey)) {
+      throw new Error(`Duplicate command: ${idempotencyKey}`);
+    }
+    this.processed.add(idempotencyKey);
+    return fn();
+  }
+}
+
+// 实际生产环境中，processed 应持久化到 Redis / 数据库
+class RedisIdempotencyGuard {
+  constructor(private redis: { setnx: (k: string, v: string) => Promise<number> }) {}
+
+  async execute<T>(idempotencyKey: string, ttlSeconds = 3600, fn: () => Promise<T>): Promise<T> {
+    const acquired = await this.redis.setnx(`idempotency:${idempotencyKey}`, '1');
+    if (!acquired) throw new Error(`Duplicate command: ${idempotencyKey}`);
+    // 设置过期时间防止 key 无限增长
+    return fn();
+  }
+}
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -196,7 +324,12 @@ class OrderProjection {
 | Designing Event-Driven Systems (O'Reilly) | 免费电子书 | [www.confluent.io/designing-event-driven-systems](https://www.confluent.io/designing-event-driven-systems/) |
 | Axon Framework | Java/C# 事件溯源框架参考 | [axoniq.io](https://axoniq.io/) |
 | Temporal — Durable Execution | 相关工作流持久化 | [temporal.io](https://temporal.io/) |
+| Apache Kafka Documentation | 官方文档 | [kafka.apache.org/documentation](https://kafka.apache.org/documentation/) |
+| NATS Streaming / JetStream | 文档 | [docs.nats.io](https://docs.nats.io/) |
+| Memphis.dev — 现代消息队列 | 文档 | [memphis.dev](https://memphis.dev/) |
+| Prisma — Event Sourcing with Prisma | 博客 | [prisma.io/blog](https://www.prisma.io/blog) |
+| Event Modeling | 方法论 | [eventmodeling.org](https://eventmodeling.org/) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

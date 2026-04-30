@@ -163,6 +163,32 @@
 
 ---
 
+## 样式方案决策树
+
+```
+样式方案？
+├── 原子化 CSS / 设计系统 → Tailwind CSS v4
+├── CSS-in-JS / 组件级样式 → Panda CSS / StyleX
+├── 零运行时 CSS-in-JS → Vanilla Extract
+├── 预处理器（Sass/Less）→ 传统项目迁移兼容
+└── CSS Modules → 作用域隔离 + 无运行时开销
+```
+
+---
+
+## Monorepo 工具决策树
+
+```
+Monorepo 需求？
+├── 快速 + 简洁 → pnpm workspaces
+├── 强任务管道 + 远程缓存 → Nx
+├── 统一版本 + Changesets → Turborepo + Changesets
+├── 大型多语言仓库 → Bazel / Buck2
+└── 内置发布 + 文档 → Nx + Docusaurus
+```
+
+---
+
 ## 快速参考卡
 
 | 决策 | 2026 默认选择 | 备选 |
@@ -209,6 +235,45 @@ const buildToolTree: DecisionNode = {
 console.log(traverse(buildToolTree));
 ```
 
+### 带权决策矩阵评分器
+
+```typescript
+type Criterion = { name: string; weight: number };
+type Option = { name: string; scores: number[] };
+
+function weightedScore(options: Option[], criteria: Criterion[]): Map<string, number> {
+  const totalWeight = criteria.reduce((s, c) => s + c.weight, 0);
+  const result = new Map<string, number>();
+
+  for (const opt of options) {
+    const score = opt.scores.reduce((sum, s, i) => sum + (s * criteria[i].weight) / totalWeight, 0);
+    result.set(opt.name, Number(score.toFixed(2)));
+  }
+
+  return new Map([...result.entries()].sort((a, b) => b[1] - a[1]));
+}
+
+// 前端框架选型评分示例
+const criteria: Criterion[] = [
+  { name: '生态成熟度', weight: 0.30 },
+  { name: 'TypeScript 体验', weight: 0.25 },
+  { name: '运行时性能', weight: 0.25 },
+  { name: '招聘友好度', weight: 0.20 },
+];
+
+const options: Option[] = [
+  { name: 'React 19 + Next.js 15', scores: [9, 9, 7, 10] },
+  { name: 'Vue 3.5 + Nuxt 3', scores: [8, 9, 8, 6] },
+  { name: 'Svelte 5 + SvelteKit', scores: [6, 8, 9, 4] },
+  { name: 'SolidJS + SolidStart', scores: [5, 8, 10, 3] },
+];
+
+console.log('框架选型加权得分：');
+weightedScore(options, criteria).forEach((score, name) => {
+  console.log(`  ${name}: ${score}`);
+});
+```
+
 ---
 
 ## 权威参考链接
@@ -232,7 +297,13 @@ console.log(traverse(buildToolTree));
 | Playwright | <https://playwright.dev/> | 现代 E2E 测试框架 |
 | Prisma | <https://www.prisma.io/docs/> | 类型安全 ORM |
 | Drizzle ORM | <https://orm.drizzle.team/> | SQL-like TypeScript ORM |
+| Tailwind CSS | <https://tailwindcss.com/docs> | 原子化 CSS 框架 |
+| Nx | <https://nx.dev/> | 智能构建系统与 Monorepo 工具 |
+| Turborepo | <https://turbo.build/repo/docs> | Vercel Monorepo 任务编排 |
+| TC39 Proposals | <https://github.com/tc39/proposals> | ECMAScript 提案跟踪 |
+| Deno 文档 | <https://docs.deno.com/> | Deno 运行时官方文档 |
+| Bun 文档 | <https://bun.sh/docs> | Bun 运行时官方文档 |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

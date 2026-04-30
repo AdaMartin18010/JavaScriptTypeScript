@@ -103,7 +103,58 @@ routes:
 
 **推荐**：令牌桶用于用户级限流，滑动窗口用于系统级保护。
 
-### 3.3 熔断与降级
+### 3.3 令牌桶限流 TypeScript 实现
+
+```typescript
+// token-bucket.ts — 内存级令牌桶限流器
+
+interface TokenBucketOptions {
+  capacity: number;   // 桶容量（突发上限）
+  refillRate: number; // 每秒填充令牌数
+}
+
+export class TokenBucket {
+  private tokens: number;
+  private lastRefill: number;
+
+  constructor(private options: TokenBucketOptions) {
+    this.tokens = options.capacity;
+    this.lastRefill = Date.now();
+  }
+
+  /** 尝试消耗 n 个令牌，返回是否允许通过 */
+  consume(n = 1): boolean {
+    this.refill();
+    if (this.tokens >= n) {
+      this.tokens -= n;
+      return true;
+    }
+    return false;
+  }
+
+  private refill() {
+    const now = Date.now();
+    const elapsed = (now - this.lastRefill) / 1000;
+    this.tokens = Math.min(
+      this.options.capacity,
+      this.tokens + elapsed * this.options.refillRate
+    );
+    this.lastRefill = now;
+  }
+}
+
+// 使用：每 IP 一个桶
+const buckets = new Map<string, TokenBucket>();
+
+export function rateLimit(ip: string): boolean {
+  if (!buckets.has(ip)) {
+    buckets.set(ip, new TokenBucket({ capacity: 10, refillRate: 2 }));
+  }
+  return buckets.get(ip)!.consume();
+}
+```
+
+### 3.4 熔断与降级
 
 ```typescript
 // 熔断器状态机
@@ -119,6 +170,83 @@ interface CircuitBreaker {
 // open   → (timeout 后)        → half-open
 // half-open → (成功 > threshold) → closed
 // half-open → (失败)           → open
+```
+
+### 3.5 JWT 认证中间件
+
+```typescript
+// jwt-auth.ts — 基于 jose 库的网关认证层
+
+import { jwtVerify, JWTPayload } from 'jose';
+
+const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+
+export interface AuthenticatedRequest extends Request {
+  jwt?: JWTPayload;
+}
+
+export async function jwtAuthMiddleware(req: Request): Promise<JWTPayload | null> {
+  const auth = req.headers.get('authorization');
+  if (!auth?.startsWith('Bearer ')) return null;
+  const token = auth.slice(7);
+  try {
+    const { payload } = await jwtVerify(token, secret, { clockTolerance: 60 });
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+// 网关入口使用
+export async function gatewayHandler(req: Request): Promise<Response> {
+  const jwt = await jwtAuthMiddleware(req);
+  if (!jwt) return new Response('Unauthorized', { status: 401 });
+
+  // 透传用户信息到下游
+  const upstream = new Request(req, {
+    headers: {
+      ...Object.fromEntries(req.headers),
+      'X-User-Id': jwt.sub ?? 'anonymous',
+      'X-User-Roles': Array.isArray(jwt.roles) ? jwt.roles.join(',') : '',
+    },
+  });
+
+  return fetch(upstream);
+}
+```
+
+### 3.6 请求/响应转换（REST ↔ gRPC）
+
+```typescript
+// protocol-transformer.ts — 简化版 REST-to-gRPC JSON 桥接
+
+interface TransformRule {
+  path: string;
+  method: 'GET' | 'POST';
+  grpcService: string;
+  grpcMethod: string;
+  mapRequest: (req: Request) => Promise<Record<string, unknown>>;
+  mapResponse: (grpcRes: unknown) => Response;
+}
+
+export async function transformToGrpc(
+  req: Request,
+  rules: TransformRule[]
+): Promise<Response> {
+  const url = new URL(req.url);
+  const rule = rules.find(r => r.path === url.pathname && r.method === req.method);
+  if (!rule) return new Response('Not Found', { status: 404 });
+
+  const payload = await rule.mapRequest(req);
+  const grpcRes = await callGrpc(rule.grpcService, rule.grpcMethod, payload);
+  return rule.mapResponse(grpcRes);
+}
+
+// 伪代码：通过 @grpc/grpc-js 调用后端
+async function callGrpc(service: string, method: string, payload: unknown): Promise<unknown> {
+  // 实际实现依赖 protobuf 定义与 grpc 客户端
+  return { success: true, data: payload };
+}
 ```
 
 ---
@@ -195,6 +323,15 @@ API 网关是微服务架构的**战略要地**。
 - [Kong 文档](https://docs.konghq.com/)
 - [API Gateway Patterns](https://microservices.io/patterns/apigateway.html)
 - [Cloudflare API Gateway](https://developers.cloudflare.com/api-shield/)
+- [OWASP API Security Top 10](https://owasp.org/www-project-api-security/) — API 安全威胁权威清单
+- [Nginx Docs — Rate Limiting](https://nginx.org/en/docs/http/ngx_http_limit_req_module.html)
+- [IETF — JWT RFC 7519](https://datatracker.ietf.org/doc/html/rfc7519) — JSON Web Token 标准
+- [IETF — OAuth 2.1 Draft](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1) — OAuth 2.1 规范草案
+- [AWS API Gateway Developer Guide](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html)
+- [Azure API Management Documentation](https://learn.microsoft.com/en-us/azure/api-management/)
+- [Google Cloud API Gateway](https://cloud.google.com/api-gateway/docs)
+- [Traefik Docs — Routing & Middlewares](https://doc.traefik.io/traefik/routing/overview/)
+- [Apache APISIX Documentation](https://apisix.apache.org/docs/)
 
 ---
 

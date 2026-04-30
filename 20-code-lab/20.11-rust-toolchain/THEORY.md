@@ -229,4 +229,54 @@ profile = "default"
 
 ---
 
+### napi-rs 错误处理与异步 API
+
+```rust
+use napi::bindgen_prelude::*;
+use napi_derive::napi;
+
+#[napi]
+pub fn safe_divide(a: f64, b: f64) -> Result<f64> {
+  if b == 0.0 { return Err(Error::from_reason("division by zero")); }
+  Ok(a / b)
+}
+
+#[napi]
+pub async fn fetch_data(url: String) -> Result<String> {
+  let body = reqwest::get(&url).await.map_err(|e| Error::from_reason(e.to_string()))?
+    .text().await.map_err(|e| Error::from_reason(e.to_string()))?;
+  Ok(body)
+}
+```
+
+```javascript
+const { safeDivide, fetchData } = require('./index.node');
+try { safeDivide(10, 0); } catch (err) { console.error(err.message); }
+fetchData('https://api.example.com/data').then(console.log);
+```
+
+### Cargo Workspace 多 crate 配置
+
+```toml
+[workspace]
+members = ["packages/napi-native", "packages/wasm-bindings"]
+resolver = "2"
+
+[workspace.dependencies]
+napi = { version = "2", features = ["napi8"] }
+napi-derive = "2"
+wasm-bindgen = "0.2"
+```
+
+---
+
+## 更多权威参考链接
+
+- [napi-rs 异步任务指南](https://napi.rs/docs/concepts/async-task) — 异步模式详解
+- [Rustnomicon: FFI](https://doc.rust-lang.org/nomicon/ffi.html) — 不安全 FFI 编程指南
+- [wasm-pack 指南](https://rustwasm.github.io/wasm-pack/book/) — WASM 包构建与发布
+- [Cargo Workspaces](https://doc.rust-lang.org/cargo/reference/workspaces.html) — 官方工作区配置参考
+- [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/) — 官方 API 设计准则
+- [The Rust Performance Book](https://nnethercote.github.io/perf-book/) — Rust 性能优化
+
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

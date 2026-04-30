@@ -189,6 +189,142 @@ WebGPU 使浏览器能够直接访问 GPU 计算能力：
 - **36-web-assembly**: WASM 作为边缘推理的运行时
 - **32-edge-computing**: 边缘计算架构与部署
 
+## 12. 代码示例：Vercel AI SDK 流式 UI
+
+```typescript
+// app/api/chat/route.ts — Vercel AI SDK 流式聊天
+import { openai } from '@ai-sdk/openai';
+import { streamText } from 'ai';
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+
+  const result = streamText({
+    model: openai('gpt-4o-mini'),
+    messages,
+    system: '你是一个 helpful 的助手。',
+  });
+
+  return result.toDataStreamResponse();
+}
+```
+
+```typescript
+// app/page.tsx — 客户端流式消费
+'use client';
+
+import { useChat } from 'ai/react';
+
+export default function ChatPage() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat();
+
+  return (
+    <div>
+      {messages.map(m => (
+        <div key={m.id} className={m.role === 'user' ? 'user' : 'assistant'}>
+          {m.content}
+        </div>
+      ))}
+      <form onSubmit={handleSubmit}>
+        <input value={input} onChange={handleInputChange} placeholder="说点什么..." />
+        <button type="submit">发送</button>
+      </form>
+    </div>
+  );
+}
+```
+
+## 13. 代码示例：浏览器端 Whisper 语音转文字
+
+```typescript
+// whisper-browser.ts — Transformers.js 本地语音识别
+
+import { pipeline } from '@xenova/transformers';
+
+async function transcribeAudio(audioBuffer: AudioBuffer): Promise<string> {
+  const transcriber = await pipeline(
+    'automatic-speech-recognition',
+    'Xenova/whisper-tiny.en',
+    { dtype: 'fp32' }
+  );
+
+  // 将 AudioBuffer 转换为 Float32Array
+  const audioData = audioBuffer.getChannelData(0);
+
+  const result = await transcriber(audioData, {
+    return_timestamps: true,
+    chunk_length_s: 30,
+  });
+
+  return (result as any).text;
+}
+
+// 使用 Web Audio API 录制并转写
+async function startRecording() {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const ctx = new AudioContext({ sampleRate: 16000 });
+  const source = ctx.createMediaStreamSource(stream);
+  const processor = ctx.createScriptProcessor(4096, 1, 1);
+
+  const chunks: Float32Array[] = [];
+  processor.onaudioprocess = (e) => {
+    chunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+  };
+
+  source.connect(processor);
+  processor.connect(ctx.destination);
+
+  // 5 秒后停止并转写
+  setTimeout(async () => {
+    source.disconnect();
+    processor.disconnect();
+    const fullAudio = new Float32Array(chunks.reduce((a, b) => a + b.length, 0));
+    let offset = 0;
+    for (const chunk of chunks) {
+      fullAudio.set(chunk, offset);
+      offset += chunk.length;
+    }
+    const buffer = ctx.createBuffer(1, fullAudio.length, 16000);
+    buffer.copyToChannel(fullAudio, 0);
+    const text = await transcribeAudio(buffer);
+    console.log('Transcription:', text);
+  }, 5000);
+}
+```
+
+## 14. 代码示例：RAG 向量检索与边缘 Embedding
+
+```typescript
+// edge-rag.ts — 边缘 RAG：Embedding + 向量相似度搜索
+
+export interface Env {
+  AI: Ai;
+  VECTOR_INDEX: VectorizeIndex;
+}
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    const { query } = await request.json<{ query: string }>();
+
+    // 1. 生成查询 Embedding
+    const embedding = await env.AI.run('@cf/baai/bge-base-en-v1.5', { text: query });
+    const vector = embedding.data[0];
+
+    // 2. 向量相似度搜索（Cloudflare Vectorize）
+    const matches = await env.VECTOR_INDEX.query(vector, { topK: 3 });
+
+    // 3. 拼接上下文并生成回答
+    const context = matches.matches.map(m => m.metadata?.text).join('\n\n');
+    const answer = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+      prompt: `基于以下上下文回答问题：\n\n${context}\n\n问题：${query}`,
+      max_tokens: 512,
+    });
+
+    return Response.json({ answer: answer.response, sources: matches.matches });
+  },
+};
+```
+
 ## 参考链接
 
 - [Cloudflare Workers AI Documentation](https://developers.cloudflare.com/workers-ai/)
@@ -201,3 +337,10 @@ WebGPU 使浏览器能够直接访问 GPU 计算能力：
 - [WebLLM — Apache TVM](https://webllm.mlc.ai/)
 - [Google AI Edge](https://ai.google.dev/edge)
 - [WASM SIMD Proposal](https://github.com/WebAssembly/simd)
+- [Vercel AI SDK — Chat API](https://sdk.vercel.ai/docs/ai-sdk-ui/chatbot)
+- [Cloudflare Vectorize](https://developers.cloudflare.com/vectorize/)
+- [Hugging Face Transformers.js](https://huggingface.co/docs/transformers.js/index)
+- [TensorFlow.js — WebGPU Backend](https://www.tensorflow.org/js/guide/webgpu)
+- [ONNX Runtime — Web Execution Provider](https://onnxruntime.ai/docs/execution-providers/WebNN-ExecutionProvider.html)
+- [MDN — WebGPU API](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API)
+- [Chrome Developers — WebGPU](https://developer.chrome.com/docs/web-platform/webgpu)
