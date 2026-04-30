@@ -399,6 +399,134 @@ function process(obj) {
 }
 ```
 
+---
+
+## BigInt 与高精度整数
+
+```javascript
+// BigInt 用于超过 Number.MAX_SAFE_INTEGER 的整数
+const huge = 9007199254740993n; // 超过 2^53 - 1
+const another = BigInt('9007199254740993');
+
+// 算术运算（不能混用 Number 和 BigInt）
+const sum = huge + 1n; // ✅
+// const bad = huge + 1; // ❌ TypeError
+
+// 比较可以混用
+console.log(1n === 1); // false（严格不等）
+console.log(1n == 1);  // true（宽松相等）
+console.log(1n < 2);   // true
+
+// JSON 序列化需自定义
+JSON.stringify({ value: huge }, (k, v) =>
+  typeof v === 'bigint' ? v.toString() : v
+);
+// {"value":"9007199254740993"}
+```
+
+---
+
+## AbortController 与可取消异步操作
+
+```javascript
+// 取消 fetch 请求
+const controller = new AbortController();
+const signal = controller.signal;
+
+fetch('/api/slow', { signal })
+  .then(r => r.json())
+  .catch(err => {
+    if (err.name === 'AbortError') {
+      console.log('Request was cancelled');
+    }
+  });
+
+// 5 秒后取消
+setTimeout(() => controller.abort(), 5000);
+
+// 组合多个信号（AbortSignal.any — ES2024+）
+const ctrl1 = new AbortController();
+const ctrl2 = new AbortController();
+const combined = AbortSignal.any([ctrl1.signal, ctrl2.signal]);
+fetch('/api', { signal: combined });
+```
+
+---
+
+## Atomics 与 SharedArrayBuffer
+
+```javascript
+// 多线程共享内存原子操作
+const sab = new SharedArrayBuffer(1024);
+const int32 = new Int32Array(sab);
+
+// 原子写入（线程安全）
+Atomics.store(int32, 0, 42);
+
+// 原子读取
+const value = Atomics.load(int32, 0);
+
+// 原子加法（返回旧值）
+const oldValue = Atomics.add(int32, 1, 10);
+
+// 等待与通知（用于 Worker 间同步）
+// Atomics.wait(int32, 0, 42); // 挂起直到索引0的值不再是42
+// Atomics.notify(int32, 0, 1); // 唤醒1个等待的线程
+```
+
+---
+
+## Symbol.asyncIterator 与异步迭代协议
+
+```javascript
+// 自定义异步可迭代对象
+class AsyncDataSource {
+  constructor(urls) {
+    this.urls = urls;
+  }
+
+  async *[Symbol.asyncIterator]() {
+    for (const url of this.urls) {
+      const resp = await fetch(url);
+      yield await resp.json();
+    }
+  }
+}
+
+// 消费异步迭代器
+const source = new AsyncDataSource(['/api/users/1', '/api/users/2']);
+for await (const user of source) {
+  console.log(user.name);
+}
+
+// for await...of 自动处理异步迭代
+```
+
+---
+
+## 正则表达式进阶（ES2024+）
+
+```javascript
+// 具名捕获组
+const re = /(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})/;
+const match = '2026-04-29'.match(re);
+console.log(match.groups); // { year: '2026', month: '04', day: '29' }
+
+// 反向断言
+const price = 'USD 100'.match(/(?<=USD )\d+/); // ['100']
+const notPrice = 'EUR 100'.match(/(?<!USD )\d+/); // null
+
+// dotAll 模式（s 标志）
+const multiline = 'line1\nline2'.match(/line1.line2/s); // ✅ 匹配
+
+// RegExp.escape（ES2025 Stage 3）
+const literal = RegExp.escape('Hello. How are you?');
+// 'Hello\\. How are you\\?'
+new RegExp(literal).test('Hello. How are you?'); // true
+```
+
+---
+
 ## 参考资源
 
 - [MDN JavaScript Reference](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
@@ -419,6 +547,21 @@ function process(obj) {
 - [MDN — Error Cause](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause) — Error Cause 文档
 - [MDN — Array.prototype.toSorted](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toSorted) — 不可变排序方法
 - [Node.js Error Handling Best Practices](https://nodejs.org/en/learn/getting-started/error-handling) — Node.js 官方错误处理指南
+- [MDN — BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) — 高精度整数
+- [MDN — AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) — 可取消异步操作
+- [MDN — Atomics](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics) — 共享内存原子操作
+- [MDN — SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) — 共享内存
+- [MDN — Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) — 代理对象
+- [MDN — Reflect](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect) — 反射 API
+- [MDN — FinalizationRegistry](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry) — 垃圾回收回调
+- [MDN — WeakRef](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef) — 弱引用
+- [MDN — structuredClone](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone) — 结构化克隆算法
+- [MDN — Intl API](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl) — 国际化 API
+- [MDN — RegExp.escape](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/escape) — 正则表达式转义
+- [MDN — Symbol.asyncIterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/asyncIterator) — 异步迭代协议
+- [HTML Living Standard — Structured Clone Algorithm](https://html.spec.whatwg.org/multipage/structured-data.html#safe-passing-of-structured-data) — 结构化克隆规范
+- [V8 Blog — Understanding V8 Bytecode](https://v8.dev/blog/understanding-v8-bytecode) — V8 字节码解析
+- [V8 Blog — TurboFan JIT](https://v8.dev/blog/turbofan-jit) — JIT 编译器原理
 
 ---
 

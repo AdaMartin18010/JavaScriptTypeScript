@@ -292,6 +292,151 @@ function Counter() {
 }
 ```
 
+#### 可运行示例：基于 Proxy 的自动响应式系统
+
+```typescript
+// proxy-reactivity.ts — 使用 ES6 Proxy 实现自动依赖追踪
+
+const targetMap = new WeakMap<object, Map<string | symbol, Set<() => void>>>();
+let activeEffect: (() => void) | null = null;
+
+function track(target: object, key: string | symbol) {
+  if (!activeEffect) return;
+  let depsMap = targetMap.get(target);
+  if (!depsMap) {
+    depsMap = new Map();
+    targetMap.set(target, depsMap);
+  }
+  let dep = depsMap.get(key);
+  if (!dep) {
+    dep = new Set();
+    depsMap.set(key, dep);
+  }
+  dep.add(activeEffect);
+}
+
+function trigger(target: object, key: string | symbol) {
+  const depsMap = targetMap.get(target);
+  if (!depsMap) return;
+  const dep = depsMap.get(key);
+  if (dep) {
+    dep.forEach(effect => effect());
+  }
+}
+
+export function reactive<T extends object>(obj: T): T {
+  return new Proxy(obj, {
+    get(target, key, receiver) {
+      track(target, key);
+      return Reflect.get(target, key, receiver);
+    },
+    set(target, key, value, receiver) {
+      const oldValue = Reflect.get(target, key, receiver);
+      const result = Reflect.set(target, key, value, receiver);
+      if (oldValue !== value) {
+        trigger(target, key);
+      }
+      return result;
+    },
+  });
+}
+
+export function watchEffect(fn: () => void) {
+  activeEffect = fn;
+  fn();
+  activeEffect = null;
+}
+
+// ===== 演示：Proxy 响应式 Todo List =====
+interface TodoState {
+  items: string[];
+  input: string;
+}
+
+const state = reactive<TodoState>({ items: [], input: '' });
+
+function addItem() {
+  if (!state.input.trim()) return;
+  state.items.push(state.input);
+  state.input = '';
+}
+
+// 任何对 state.items 或 state.input 的读取都会被追踪
+watchEffect(() => {
+  console.log('Items:', state.items.join(', '));
+});
+
+watchEffect(() => {
+  console.log('Input changed:', state.input);
+});
+
+state.input = 'Buy milk'; // 触发第二个 effect
+addItem();                // 触发两个 effect
+```
+
+#### 可运行示例：ViewModel 的单元测试模式
+
+```typescript
+// mvvm-testing.ts — 不依赖 DOM 的 ViewModel 测试
+
+class LoginViewModel {
+  username = '';
+  password = '';
+  isLoading = false;
+  error: string | null = null;
+
+  constructor(private authService: { login(u: string, p: string): Promise<boolean> }) {}
+
+  async submit() {
+    if (!this.username || !this.password) {
+      this.error = 'Please fill in all fields';
+      return;
+    }
+    this.isLoading = true;
+    this.error = null;
+    try {
+      const success = await this.authService.login(this.username, this.password);
+      if (!success) this.error = 'Invalid credentials';
+    } catch (e) {
+      this.error = 'Network error';
+    } finally {
+      this.isLoading = false;
+    }
+  }
+}
+
+// ===== 测试 =====
+async function testLoginViewModel() {
+  const mockAuth = {
+    login: async (u: string, p: string) => u === 'admin' && p === 'secret',
+  };
+  const vm = new LoginViewModel(mockAuth);
+
+  // 初始状态
+  console.assert(vm.isLoading === false, 'should not be loading initially');
+
+  // 空提交
+  await vm.submit();
+  console.assert(vm.error === 'Please fill in all fields', 'should validate empty fields');
+
+  // 成功登录
+  vm.username = 'admin';
+  vm.password = 'secret';
+  await vm.submit();
+  console.assert(vm.error === null, 'should clear error on success');
+  console.assert(vm.isLoading === false, 'should stop loading');
+
+  // 失败登录
+  vm.password = 'wrong';
+  await vm.submit();
+  console.assert(vm.error === 'Invalid credentials', 'should show error on failure');
+
+  console.log('All tests passed');
+}
+
+testLoginViewModel();
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -315,6 +460,12 @@ function Counter() {
 - [Svelte 5 Runes Introduction](https://svelte.dev/blog/runes) — 编译时响应式原语
 - [SolidJS Reactivity Primitives](https://docs.solidjs.com/concepts/signals) — 细粒度响应式指南
 - [Microsoft: The MVVM Pattern](https://learn.microsoft.com/en-us/archive/msdn-magazine/2009/february/patterns-wpf-apps-with-the-model-view-viewmodel-design-pattern) — John Gossman 原始论文
+- [MDN — Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) — ES6 Proxy API
+- [Vue 3 Reactivity Source Code](https://github.com/vuejs/core/tree/main/packages/reactivity) — Vue 响应式系统源码
+- [TC39 Signals Proposal](https://github.com/tc39/proposal-signals) — 原生 Signals 标准提案
+- [RxJS — Observable Pattern](https://rxjs.dev/guide/observable) — 响应式编程扩展模式
+- [Preact Signals](https://preactjs.com/guide/v10/signals/) — 轻量级 Signals 实现
+- [Refactoring UI — Designing with MVVM](https://refactoringui.com/) — 界面设计与状态管理
 - `20.2-language-patterns/architecture-patterns/`
 
 ---

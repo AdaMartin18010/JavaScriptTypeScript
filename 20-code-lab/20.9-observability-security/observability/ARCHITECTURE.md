@@ -205,6 +205,173 @@ process.on('SIGTERM', () => {
 });
 ```
 
+### 4.4 自定义 Histogram 与 SLO 监控
+
+```typescript
+// custom-metrics.ts — 业务指标与 SLO 定义
+
+import { metrics, ValueType } from '@opentelemetry/api';
+
+const meter = metrics.getMeter('payment-service', '1.0.0');
+
+// 请求延迟直方图（用于计算 P99）
+const requestDuration = meter.createHistogram('http.request.duration_ms', {
+  description: 'HTTP request duration in milliseconds',
+  unit: 'ms',
+});
+
+// 计数器：总请求数
+const requestCounter = meter.createCounter('http.request.total', {
+  description: 'Total HTTP requests',
+});
+
+// 可观测 Gauge：当前连接数
+let activeConnections = 0;
+const connectionGauge = meter.createObservableGauge('http.connections.active', {
+  description: 'Active HTTP connections',
+});
+connectionGauge.addCallback((observableResult) => {
+  observableResult.observe(activeConnections);
+});
+
+// UpDownCounter：队列深度
+const queueDepth = meter.createUpDownCounter('task.queue.depth', {
+  description: 'Current task queue depth',
+});
+
+// SLO 记录中间件
+export function sloMiddleware(req: any, res: any, next: () => void) {
+  const start = Date.now();
+  requestCounter.add(1, { route: req.route, method: req.method });
+  activeConnections++;
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    requestDuration.record(duration, { route: req.route, status: res.statusCode });
+    activeConnections--;
+  });
+
+  next();
+}
+```
+
+### 4.5 结构化日志与 Trace 关联
+
+```typescript
+// structured-logging.ts — JSON 日志与 Trace ID 注入
+
+import { trace, context } from '@opentelemetry/api';
+
+interface LogEntry {
+  timestamp: string;
+  level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
+  message: string;
+  service: string;
+  traceId?: string;
+  spanId?: string;
+  [key: string]: unknown;
+}
+
+class StructuredLogger {
+  constructor(private serviceName: string) {}
+
+  private getTraceContext(): { traceId?: string; spanId?: string } {
+    const span = trace.getSpan(context.active());
+    if (!span) return {};
+    const ctx = span.spanContext();
+    return { traceId: ctx.traceId, spanId: ctx.spanId };
+  }
+
+  log(level: LogEntry['level'], message: string, meta: Record<string, unknown> = {}) {
+    const entry: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level,
+      message,
+      service: this.serviceName,
+      ...this.getTraceContext(),
+      ...meta,
+    };
+    console.log(JSON.stringify(entry));
+  }
+
+  info(message: string, meta?: Record<string, unknown>) { this.log('INFO', message, meta); }
+  warn(message: string, meta?: Record<string, unknown>) { this.log('WARN', message, meta); }
+  error(message: string, meta?: Record<string, unknown>) { this.log('ERROR', message, meta); }
+}
+
+// 使用：日志自动携带 Trace ID，可在 Loki/Grafana 中关联
+const logger = new StructuredLogger('payment-service');
+logger.info('Processing payment', { amount: 100, currency: 'USD' });
+```
+
+### 4.6 告警规则与异常检测
+
+```typescript
+// alert-engine.ts — 基于阈值的简单告警引擎
+
+interface AlertRule {
+  id: string;
+  metric: string;
+  condition: 'gt' | 'lt' | 'eq';
+  threshold: number;
+  durationSec: number;
+  severity: 'warning' | 'critical';
+}
+
+interface AlertState {
+  ruleId: string;
+  firedAt: number;
+  resolvedAt?: number;
+}
+
+class AlertEngine {
+  private rules: AlertRule[] = [];
+  private activeAlerts = new Map<string, AlertState>();
+  private history: number[] = [];
+
+  addRule(rule: AlertRule) {
+    this.rules.push(rule);
+  }
+
+  evaluate(metric: string, value: number, timestamp: number) {
+    this.history.push(value);
+    if (this.history.length > 100) this.history.shift();
+
+    for (const rule of this.rules.filter(r => r.metric === metric)) {
+      const triggered = this.checkCondition(value, rule.condition, rule.threshold);
+      const existing = this.activeAlerts.get(rule.id);
+
+      if (triggered && !existing) {
+        this.activeAlerts.set(rule.id, { ruleId: rule.id, firedAt: timestamp });
+        this.notify(rule, value, 'firing');
+      } else if (!triggered && existing) {
+        existing.resolvedAt = timestamp;
+        this.activeAlerts.delete(rule.id);
+        this.notify(rule, value, 'resolved');
+      }
+    }
+  }
+
+  private checkCondition(value: number, condition: string, threshold: number): boolean {
+    switch (condition) {
+      case 'gt': return value > threshold;
+      case 'lt': return value < threshold;
+      case 'eq': return value === threshold;
+      default: return false;
+    }
+  }
+
+  private notify(rule: AlertRule, value: number, state: 'firing' | 'resolved') {
+    console.error(`[ALERT ${state.toUpperCase()}] ${rule.severity}: ${rule.metric}=${value} (${rule.condition} ${rule.threshold})`);
+  }
+}
+
+// 使用
+const alerts = new AlertEngine();
+alerts.addRule({ id: 'high-latency', metric: 'http.request.duration_ms', condition: 'gt', threshold: 500, durationSec: 60, severity: 'warning' });
+alerts.addRule({ id: 'error-spike', metric: 'http.errors.rate', condition: 'gt', threshold: 0.05, durationSec: 30, severity: 'critical' });
+```
+
 ## 5. 技术决策
 
 | 决策 | 选择 | 理由 |
@@ -229,3 +396,10 @@ process.on('SIGTERM', () => {
 - [Grafana Beyla](https://grafana.com/docs/beyla/latest/) — 基于 eBPF 的应用自动观测工具
 - [CNCF Observability Whitepaper](https://github.com/cncf/tag-observability/blob/main/whitepaper.md) — CNCF 可观测性白皮书
 - [Google Cloud: SRE Book - Monitoring](https://sre.google/sre-book/monitoring-distributed-systems/) — Google SRE 监控章节
+- [Prometheus Querying Basics](https://prometheus.io/docs/prometheus/latest/querying/basics/) — PromQL 查询基础
+- [Jaeger Documentation](https://www.jaegertracing.io/docs/) — 分布式追踪系统文档
+- [Grafana Loki](https://grafana.com/docs/loki/latest/) — 日志聚合系统文档
+- [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/concepts/semantic-conventions/) — 语义约定标准
+- [Honeycomb — Observability Guide](https://docs.honeycomb.io/) — 可观测性实践指南
+- [Datadog — APM Best Practices](https://docs.datadoghq.com/tracing/) — APM 最佳实践
+- [Grafana — SLO Dashboard Guide](https://grafana.com/docs/grafana-cloud/alerting-and-irm/slo/) — SLO 监控仪表板

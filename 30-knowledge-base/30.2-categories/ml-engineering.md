@@ -13,6 +13,7 @@
 | **向量数据库** | pgvector, Pinecone, Milvus | Embedding 存储 |
 | **LLM SDK** | OpenAI SDK, Vercel AI SDK | API 调用 |
 | **特征工程** | Danfo.js, lodash | 数据处理 |
+| **浏览器推理** | Transformers.js, ML5.js | WASM/WebGPU 本地运行 |
 
 ---
 
@@ -226,13 +227,119 @@ async function searchSimilarDocuments(query: string, limit = 5) {
 })();
 ```
 
+## ML5.js — 浏览器友好 ML
+
+```typescript
+// ml5-browser.ts — 基于 TensorFlow.js 的高级封装，更易上手
+import ml5 from 'ml5';
+
+// 图像分类
+async function classifyWithML5(imageElement: HTMLImageElement) {
+  const classifier = await ml5.imageClassifier('MobileNet');
+  const results = await classifier.classify(imageElement);
+  console.log(results);
+  // [{ label: 'tabby cat', confidence: 0.89 }, ...]
+  return results;
+}
+
+// 姿态检测
+async function detectPose(videoElement: HTMLVideoElement) {
+  const poseNet = await ml5.poseNet(videoElement);
+  poseNet.on('pose', (results: any[]) => {
+    console.log(`检测到 ${results.length} 个姿态`);
+    results.forEach((pose) => {
+      console.log(pose.pose.keypoints); // 鼻子、肩膀、手肘等关键点
+    });
+  });
+}
+```
+
+## WebNN API — 浏览器原生神经网络推理
+
+```typescript
+// webnn-browser.ts — W3C 草案标准的浏览器原生 ML 推理
+async function runWebNN(modelBuffer: ArrayBuffer, inputData: Float32Array) {
+  if (!('ml' in navigator)) {
+    throw new Error('WebNN not supported in this browser');
+  }
+
+  const context = await (navigator as any).ml.createContext({
+    devicePreference: 'gpu', // 'cpu' | 'gpu'
+  });
+
+  // 构建简单的全连接网络图
+  const builder = new (window as any).MLGraphBuilder(context);
+  const input = builder.input('input', { type: 'float32', dimensions: [1, 784] });
+  const weights = builder.constant({ type: 'float32', dimensions: [784, 10] }, new Float32Array(7840));
+  const bias = builder.constant({ type: 'float32', dimensions: [10] }, new Float32Array(10));
+
+  const matmul = builder.matmul(input, weights);
+  const output = builder.add(matmul, bias);
+
+  const graph = await builder.build({ output });
+  const result = await context.compute(graph, { input: inputData });
+  return result.outputs.output;
+}
+```
+
+## LangChain.js 工具链编排
+
+```typescript
+// langchain-tools.ts — 使用 LangChain.js 编排 LLM 工具调用
+import { ChatOpenAI } from '@langchain/openai';
+import { createOpenAIFunctionsAgent, AgentExecutor } from 'langchain/agents';
+import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts';
+
+// 定义自定义工具
+const weatherTool = {
+  name: 'get_weather',
+  description: '获取指定城市的当前天气',
+  parameters: {
+    type: 'object',
+    properties: {
+      city: { type: 'string', description: '城市名称' },
+    },
+    required: ['city'],
+  },
+  async invoke({ city }: { city: string }) {
+    // 调用天气 API
+    return JSON.stringify({ city, temperature: 22, condition: 'sunny' });
+  },
+};
+
+async function createAgent() {
+  const model = new ChatOpenAI({ modelName: 'gpt-4o', temperature: 0 });
+  const prompt = ChatPromptTemplate.fromMessages([
+    ['system', '你是一个 helpful assistant，可以使用工具回答问题。'],
+    ['human', '{input}'],
+    new MessagesPlaceholder('agent_scratchpad'),
+  ]);
+
+  const agent = await createOpenAIFunctionsAgent({
+    llm: model,
+    tools: [weatherTool as any],
+    prompt,
+  });
+
+  return new AgentExecutor({ agent, tools: [weatherTool as any] });
+}
+
+(async () => {
+  const executor = await createAgent();
+  const result = await executor.invoke({ input: '北京今天天气怎么样？' });
+  console.log(result.output);
+})();
+```
+
 ---
 
 ## 场景
 
-- **客户端推理**：TensorFlow.js 在浏览器运行图像识别
-- **服务端推理**：ONNX Runtime 运行导出模型
-- **RAG 系统**：向量数据库 + Embedding + LLM
+- **客户端推理**：TensorFlow.js / Transformers.js 在浏览器运行图像识别、文本分类
+- **服务端推理**：ONNX Runtime 运行导出模型，降低客户端负载
+- **RAG 系统**：向量数据库 + Embedding + LLM，构建知识问答系统
+- **实时交互**：WebNN / WebGPU 加速浏览器端推理，零后端依赖
+- **工具编排**：LangChain.js / Vercel AI SDK 编排多步骤 LLM 工作流
 
 ---
 
@@ -253,6 +360,11 @@ async function searchSimilarDocuments(query: string, limit = 5) {
 - [Google AI Edge — MediaPipe](https://ai.google.dev/edge/mediapipe/solutions/guide)
 - [Papers with Code — JS/TS ML](https://paperswithcode.com/)
 - [WebNN API — W3C 草案](https://www.w3.org/TR/webnn/) — 浏览器原生神经网络推理标准
+- [WebGPU API — MDN](https://developer.mozilla.org/en-US/docs/Web/API/WebGPU_API) — 浏览器 GPU 计算标准
+- [NVIDIA TensorRT](https://developer.nvidia.com/tensorrt) — GPU 推理优化引擎
+- [Hugging Face Optimum](https://huggingface.co/docs/optimum/) — 模型优化与加速工具
+- [RAG Survey Paper (arXiv)](https://arxiv.org/abs/2312.10997) — 检索增强生成技术综述
+- [Google Research — Embedding Models](https://research.google/pubs/?q=embedding) — Google Embedding 研究论文
 
 ---
 

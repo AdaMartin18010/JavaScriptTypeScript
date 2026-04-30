@@ -187,6 +187,77 @@ for await (const line of readLines('/var/log/app.log')) {
 }
 ```
 
+#### 结构化并发：AsyncTaskGroup
+
+```typescript
+// structured-concurrency.ts — 仿 Go errgroup / Swift TaskGroup
+
+class AsyncTaskGroup<T> {
+  private tasks: Promise<T>[] = [];
+
+  add(task: Promise<T>) {
+    this.tasks.push(task);
+  }
+
+  async waitAll(): Promise<T[]> {
+    return Promise.all(this.tasks);
+  }
+
+  async race(): Promise<T> {
+    return Promise.race(this.tasks);
+  }
+
+  // 全部完成或任一失败即终止（fail-fast）
+  async waitAllOrFail(): Promise<T[]> {
+    return Promise.all(this.tasks);
+  }
+}
+
+// 使用：并行获取多个资源，任一失败全部中断
+async function fetchUserDashboard(userId: string) {
+  const group = new AsyncTaskGroup<unknown>();
+
+  group.add(fetch(`/api/users/${userId}`).then(r => r.json()));
+  group.add(fetch(`/api/users/${userId}/orders`).then(r => r.json()));
+  group.add(fetch(`/api/users/${userId}/preferences`).then(r => r.json()));
+
+  const [profile, orders, preferences] = await group.waitAllOrFail();
+  return { profile, orders, preferences };
+}
+```
+
+#### AsyncLocalStorage 上下文传播
+
+```typescript
+// async-context.ts — Node.js AsyncLocalStorage 实现请求上下文追踪
+
+import { AsyncLocalStorage } from 'async_hooks';
+
+const requestStore = new AsyncLocalStorage<{ requestId: string; startTime: number }>();
+
+async function handleRequest(requestId: string) {
+  return requestStore.run({ requestId, startTime: Date.now() }, async () => {
+    await doWork();
+    await doMoreWork();
+    const ctx = requestStore.getStore();
+    console.log(`Request ${ctx?.requestId} completed in ${Date.now() - (ctx?.startTime ?? 0)}ms`);
+  });
+}
+
+async function doWork() {
+  const ctx = requestStore.getStore();
+  console.log(`[${ctx?.requestId}] Doing work...`);
+  // 即使在异步操作后，上下文仍然保留
+  await new Promise(resolve => setTimeout(resolve, 10));
+  console.log(`[${ctx?.requestId}] Work done`);
+}
+
+async function doMoreWork() {
+  const ctx = requestStore.getStore();
+  console.log(`[${ctx?.requestId}] More work...`);
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -269,5 +340,9 @@ watcher.stop();
 - [Promise.withResolvers — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/withResolvers) — ES2024 Promise 构造辅助
 - [Exploring JS — Async Iteration](https://exploringjs.com/es2018-es2019/ch_async-iteration.html) — 异步迭代深度解析
 - [Node.js: AbortController](https://nodejs.org/api/globals.html#class-abortcontroller) — Node.js 环境支持
+- [Node.js AsyncLocalStorage](https://nodejs.org/api/async_context.html#class-asynclocalstorage) — 异步上下文存储
+- [WHATWG Streams Standard](https://streams.spec.whatwg.org/) — 流标准与异步迭代
+- [Structured Concurrency in Swift](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/concurrency/) — 结构化并发设计参考
+- [Bluebird Promise Cancellation](http://bluebirdjs.com/docs/api/cancellation.html) — Promise 取消先驱设计
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

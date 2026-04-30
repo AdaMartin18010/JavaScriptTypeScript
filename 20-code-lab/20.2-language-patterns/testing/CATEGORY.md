@@ -200,6 +200,85 @@ describe('Counter', () => {
 });
 ```
 
+### BDD 风格测试（Vitest + Gherkin 语义）
+
+```typescript
+// bdd-style.test.ts — 行为驱动描述
+import { describe, it, expect } from 'vitest';
+import { ShoppingCart } from './shopping-cart';
+
+describe('Shopping Cart', () => {
+  describe('Given an empty cart', () => {
+    const cart = new ShoppingCart();
+
+    it('When adding a product Then total equals product price', () => {
+      cart.add({ id: 'p1', price: 100 });
+      expect(cart.total()).toBe(100);
+    });
+
+    it('When adding multiple products Then total is sum of prices', () => {
+      cart.add({ id: 'p1', price: 100 });
+      cart.add({ id: 'p2', price: 200 });
+      expect(cart.total()).toBe(300);
+    });
+  });
+
+  describe('Given a cart with items', () => {
+    const cart = new ShoppingCart();
+    beforeEach(() => {
+      cart.add({ id: 'p1', price: 100 });
+    });
+
+    it('When removing an item Then total decreases', () => {
+      cart.remove('p1');
+      expect(cart.total()).toBe(0);
+    });
+  });
+});
+```
+
+### 测试覆盖率阈值配置
+
+```typescript
+// vitest.config.ts
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 75,
+        statements: 80,
+      },
+      exclude: ['**/*.d.ts', '**/*.test.ts', '**/node_modules/**'],
+    },
+  },
+});
+```
+
+### Node.js 原生 Test Runner
+
+```typescript
+// node-native-test.test.ts — Node.js 20+ 内置测试运行器
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { sum } from './math';
+
+describe('math', () => {
+  it('sums two numbers', () => {
+    assert.equal(sum(2, 3), 5);
+  });
+
+  it('throws on non-number input', () => {
+    assert.throws(() => sum('a' as any, 1), TypeError);
+  });
+});
+```
+
 ### 测试金字塔的代码化实践
 
 ```typescript
@@ -253,14 +332,65 @@ describe('Counter', () => {
 | MSW Getting Started | 文档 | [mswjs.io/docs/getting-started](https://mswjs.io/docs/getting-started) |
 | Kent C. Dodds — Testing JavaScript | 课程 | [testingjavascript.com](https://testingjavascript.com) |
 | React Testing Library | 文档 | [testing-library.com/react](https://testing-library.com/docs/react-testing-library/intro/) |
+| fast-check | 文档 | [fast-check.dev](https://fast-check.dev/) — 基于属性的测试库 |
+| Vitest Snapshot Testing | 文档 | [vitest.dev/guide/snapshot.html](https://vitest.dev/guide/snapshot.html) — 快照测试官方文档 |
+| Testing Library Queries | 文档 | [testing-library.com/docs/queries/about/](https://testing-library.com/docs/queries/about/) — 查询优先级与最佳实践 |
+| Test Double | 文档 | [testdouble.com](https://testdouble.com/) — 测试替身最佳实践 |
+| GitHub Actions CI | 文档 | [docs.github.com/en/actions](https://docs.github.com/en/actions) — 持续集成官方文档 |
+| Vitest Coverage | 文档 | [vitest.dev/guide/coverage.html](https://vitest.dev/guide/coverage.html) — 覆盖率配置指南 |
+| Node.js Test Runner Migration | 指南 | [nodejs.org/en/learn/test-runner/using-test-runner](https://nodejs.org/en/learn/test-runner/using-test-runner) |
+| BDD Wikipedia | 百科 | [en.wikipedia.org/wiki/Behavior-driven_development](https://en.wikipedia.org/wiki/Behavior-driven_development) |
+| TDD by Example (Kent Beck) | 书籍 | [amazon.com/Test-Driven-Development-Kent-Beck](https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530) |
 
----
+### Mocking ES Modules with `vi.mock`
 
-- [fast-check](https://fast-check.dev/) — 基于属性的测试库
-- [Vitest Snapshot Testing](https://vitest.dev/guide/snapshot.html) — 快照测试官方文档
-- [Testing Library Queries](https://testing-library.com/docs/queries/about/) — 查询优先级与最佳实践
-- [Test Double](https://testdouble.com/) — 测试替身最佳实践
-- [GitHub Actions CI](https://docs.github.com/en/actions) — 持续集成官方文档
+```typescript
+// math.ts
+export const add = (a: number, b: number) => a + b;
+
+// math.test.ts
+import { describe, it, expect, vi } from 'vitest';
+
+vi.mock('./math', () => ({
+  add: vi.fn().mockReturnValue(42),
+}));
+
+import { add } from './math';
+
+describe('mocked module', () => {
+  it('returns mocked value', () => {
+    expect(add(1, 2)).toBe(42);
+  });
+});
+```
+
+### Accessibility Testing with jest-axe
+
+```typescript
+// a11y.test.tsx
+import { render } from '@testing-library/react';
+import { axe, toHaveNoViolations } from 'jest-axe';
+import { Button } from './Button';
+
+expect.extend(toHaveNoViolations);
+
+it('has no accessibility violations', async () => {
+  const { container } = render(<Button>Click me</Button>);
+  const results = await axe(container);
+  expect(results).toHaveNoViolations();
+});
+```
+
+### 新增权威参考链接
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| Vitest Mocking Guide | 文档 | [vitest.dev/guide/mocking.html](https://vitest.dev/guide/mocking.html) |
+| Jest Mock Functions | 文档 | [jestjs.io/docs/mock-functions](https://jestjs.io/docs/mock-functions) |
+| axe-core Documentation | GitHub | [github.com/dequelabs/axe-core](https://github.com/dequelabs/axe-core) |
+| Testing Library Query Priority | 文档 | [testing-library.com/docs/queries/about/#priority](https://testing-library.com/docs/queries/about/#priority) |
+| Cypress Component Testing | 文档 | [docs.cypress.io/guides/component-testing/overview](https://docs.cypress.io/guides/component-testing/overview) |
+| Storybook Interaction Tests | 文档 | [storybook.js.org/docs/writing-tests/interaction-testing](https://storybook.js.org/docs/writing-tests/interaction-testing) |
 
 ---
 

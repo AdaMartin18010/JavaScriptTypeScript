@@ -28,6 +28,13 @@ status: current
     - [4.1 按框架选择](#41-按框架选择)
     - [4.2 决策树](#42-决策树)
     - [4.3 趋势总结](#43-趋势总结)
+  - [5. 跨框架路由代码示例](#5-跨框架路由代码示例)
+    - [5.1 Solid Router（SolidJS 官方路由）](#51-solid-routersolidjs-官方路由)
+    - [5.2 SvelteKit 文件系统路由](#52-sveltekit-文件系统路由)
+    - [5.3 React Router v7 数据 API（Loader + Action）](#53-react-router-v7-数据-apiloader--action)
+    - [5.4 Next.js App Router 并行路由与拦截路由](#54-nextjs-app-router-并行路由与拦截路由)
+    - [5.5 原生 URLPattern API（框架无关路由匹配）](#55-原生-urlpattern-api框架无关路由匹配)
+  - [6. 权威参考链接](#6-权威参考链接)
   - [📝 贡献指南](#-贡献指南)
 
 ---
@@ -306,6 +313,218 @@ const result = router.lookup('/user/123');
 | 📁 **文件系统路由** | 元框架普遍采用约定优于配置 | Next.js, Nuxt |
 | 🧩 **嵌套路由** | 路由与 UI 结构深度耦合 | React Router v6, Remix |
 | 🪶 **轻量化** | 超小体积路由方案受青睐 | wouter |
+
+---
+
+## 5. 跨框架路由代码示例
+
+### 5.1 Solid Router（SolidJS 官方路由）
+
+```tsx
+// Solid Router 示例
+import { Router, Route, A } from '@solidjs/router';
+
+function App() {
+  return (
+    <Router>
+      <Route path="/" component={Home} />
+      <Route path="/user/:id" component={User} />
+      <Route path="*paramName" component={NotFound} />
+    </Router>
+  );
+}
+
+// 导航组件
+function Nav() {
+  return (
+    <nav>
+      <A href="/" end>Home</A>
+      <A href="/user/123">User</A>
+    </nav>
+  );
+}
+```
+
+### 5.2 SvelteKit 文件系统路由
+
+```svelte
+<!-- src/routes/blog/[slug]/+page.svelte -->
+<script>
+  export let data;
+</script>
+
+<h1>{data.post.title}</h1>
+<article>{@html data.post.content}</article>
+```
+
+```ts
+// src/routes/blog/[slug]/+page.ts — 数据加载
+import { error } from '@sveltejs/kit';
+
+export async function load({ params, fetch }) {
+  const res = await fetch(`/api/posts/${params.slug}`);
+  if (!res.ok) throw error(404, 'Not found');
+  return { post: await res.json() };
+}
+```
+
+### 5.3 React Router v7 数据 API（Loader + Action）
+
+```tsx
+// routes/user.$id.tsx — Remix / React Router v7 风格
+import { LoaderFunctionArgs, ActionFunctionArgs } from 'react-router-dom';
+
+export async function loader({ params }: LoaderFunctionArgs) {
+  const user = await fetchUser(params.id!);
+  if (!user) throw new Response('Not Found', { status: 404 });
+  return { user };
+}
+
+export async function action({ request, params }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  await updateUser(params.id!, Object.fromEntries(formData));
+  return { ok: true };
+}
+
+export default function UserPage() {
+  const { user } = useLoaderData<typeof loader>();
+  return (
+    <div>
+      <h1>{user.name}</h1>
+      <Form method="post">
+        <input name="displayName" defaultValue={user.displayName} />
+        <button type="submit">Save</button>
+      </Form>
+    </div>
+  );
+}
+```
+
+### 5.4 Next.js App Router 并行路由与拦截路由
+
+```tsx
+// app/dashboard/@team/page.tsx — 并行路由（Parallel Routes）
+// 同一布局中同时渲染多个独立页面
+export default function TeamPage() {
+  return <section className="w-1/2"><h2>Team Stats</h2></section>;
+}
+
+// app/dashboard/@analytics/page.tsx
+export default function AnalyticsPage() {
+  return <section className="w-1/2"><h2>Analytics</h2></section>;
+}
+
+// app/dashboard/layout.tsx
+export default function DashboardLayout({
+  children,
+  team,
+  analytics,
+}: {
+  children: React.ReactNode;
+  team: React.ReactNode;
+  analytics: React.ReactNode;
+}) {
+  return (
+    <div>
+      {children}
+      <div className="flex">
+        {team}
+        {analytics}
+      </div>
+    </div>
+  );
+}
+```
+
+```tsx
+// app/feed/@modal/(..)photo/[id]/page.tsx — 拦截路由（Intercepting Routes）
+// 点击 feed 中的图片时，在模态框中打开而非跳转页面
+import { Modal } from '@/components/modal';
+
+export default function PhotoModal({ params }: { params: { id: string } }) {
+  return (
+    <Modal>
+      <img src={`/photos/${params.id}.jpg`} alt="" />
+    </Modal>
+  );
+}
+```
+
+### 5.5 原生 URLPattern API（框架无关路由匹配）
+
+```ts
+// url-pattern-api.ts — 基于 URLPattern 的高性能路由匹配（浏览器 + Deno + Node 18+）
+interface Route<T> {
+  pattern: URLPattern;
+  handler: (params: Record<string, string>, url: URL) => T;
+}
+
+class URLPatternRouter<T> {
+  private routes: Route<T>[] = [];
+
+  add(path: string, handler: Route<T>['handler']): this {
+    this.routes.push({
+      pattern: new URLPattern({ pathname: path }),
+      handler,
+    });
+    return this;
+  }
+
+  match(url: string | URL): { params: Record<string, string>; result: T } | null {
+    const u = typeof url === 'string' ? new URL(url) : url;
+    for (const route of this.routes) {
+      const match = route.pattern.exec(u);
+      if (match) {
+        const params = match.pathname.groups as Record<string, string>;
+        return { params, result: route.handler(params, u) };
+      }
+    }
+    return null;
+  }
+}
+
+// 使用示例
+const router = new URLPatternRouter<Response>();
+router.add('/user/:id', (params) => new Response(`User ${params.id}`));
+router.add('/post/:slug/comments/:commentId', (params) =>
+  new Response(`Post ${params.slug}, Comment ${params.commentId}`)
+);
+
+const match = router.match('http://localhost/user/123');
+// match.params.id === '123'
+```
+
+---
+
+## 6. 权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| React Router 官方文档 | [reactrouter.com](https://reactrouter.com) | React 生态标准路由 |
+| TanStack Router 文档 | [tanstack.com/router](https://tanstack.com/router) | 端到端类型安全路由 |
+| Vue Router 文档 | [router.vuejs.org](https://router.vuejs.org) | Vue 官方路由 |
+| Solid Router 文档 | [docs.solidjs.com/solid-router](https://docs.solidjs.com/solid-router) | SolidJS 官方路由 |
+| SvelteKit Routing | [kit.svelte.dev/docs/routing](https://kit.svelte.dev/docs/routing) | SvelteKit 文件系统路由 |
+| wouter GitHub | [github.com/molefrog/wouter](https://github.com/molefrog/wouter) | 极简 React 路由 |
+| radix3 GitHub | [github.com/unjs/radix3](https://github.com/unjs/radix3) | 高性能 Radix Tree 路由 |
+| Next.js App Router | [nextjs.org/docs/app](https://nextjs.org/docs/app) | Next.js 应用路由 |
+| Nuxt Routing | [nuxt.com/docs/getting-started/routing](https://nuxt.com/docs/getting-started/routing) | Nuxt 文件系统路由 |
+| MDN — History API | [developer.mozilla.org/en-US/docs/Web/API/History_API](https://developer.mozilla.org/en-US/docs/Web/API/History_API) | 浏览器历史管理底层 API |
+| W3C — URL Standard | [url.spec.whatwg.org](https://url.spec.whatwg.org/) | URL 解析标准规范 |
+| Reach Router Archive | [github.com/reach/router](https://github.com/reach/router) | 已归档项目 |
+| Next.js App Router | [nextjs.org/docs/app](https://nextjs.org/docs/app) | Next.js 应用路由与并行路由 |
+| Next.js Intercepting Routes | [nextjs.org/docs/app/building-your-application/routing/intercepting-routes](https://nextjs.org/docs/app/building-your-application/routing/intercepting-routes) | 拦截路由官方文档 |
+| Remix Routing | [remix.run/docs/en/main/file-conventions/routes](https://remix.run/docs/en/main/file-conventions/routes) | Remix 文件系统路由 |
+| URLPattern API (MDN) | [developer.mozilla.org/en-US/docs/Web/API/URLPattern](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern) | 原生路由匹配 API |
+| URLPattern API (Can I use) | [caniuse.com/mdn-api_urlpattern](https://caniuse.com/mdn-api_urlpattern) | 浏览器兼容性查询 |
+| React Router v7 Blog | [remix.run/blog/react-router-v7](https://remix.run/blog/react-router-v7) | React Router v7 发布公告 |
+| TanStack Router Search Params | [tanstack.com/router/latest/docs/framework/react/guide/search-params](https://tanstack.com/router/latest/docs/framework/react/guide/search-params) | 类型化搜索参数 |
+| Vue Router Navigation Guards | [router.vuejs.org/guide/advanced/navigation-guards](https://router.vuejs.org/guide/advanced/navigation-guards.html) | 导航守卫官方文档 |
+| SvelteKit Advanced Routing | [kit.svelte.dev/docs/advanced-routing](https://kit.svelte.dev/docs/advanced-routing) | 高级路由模式 |
+| Solid Router Data APIs | [docs.solidjs.com/solid-router/reference/data-apis](https://docs.solidjs.com/solid-router/reference/data-apis) | 数据加载 API |
+| Nuxt Route Middleware | [nuxt.com/docs/guide/directory-structure/middleware](https://nuxt.com/docs/guide/directory-structure/middleware) | 路由中间件 |
+| Wouter TypeScript Guide | [github.com/molefrog/wouter#typescript](https://github.com/molefrog/wouter#typescript) | 类型安全使用指南 |
+| Radix3 — UnJS | [github.com/unjs/radix3](https://github.com/unjs/radix3) | 高性能 radix tree 路由 |
 
 ---
 

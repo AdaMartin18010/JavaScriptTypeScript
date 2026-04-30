@@ -577,6 +577,169 @@ setInterval(() => {
 
 ---
 
+## 代码示例：NATS JetStream 持久化消费
+
+```typescript
+// nats-jetstream.ts — NATS JetStream 保证有序持久化消费
+import { connect, JSONCodec, consumerOpts } from 'nats';
+
+const nc = await connect({ servers: ['localhost:4222'] });
+const js = nc.jetstream();
+const jc = JSONCodec<OrderEvent>();
+
+interface OrderEvent {
+  id: string;
+  status: 'created' | 'paid' | 'shipped';
+  amount: number;
+}
+
+// 发布事件到 Stream（自动创建 Stream 若不存在）
+async function publishOrderEvent(order: OrderEvent): Promise<void> {
+  await js.publish('ORDERS.created', jc.encode(order), {
+    msgID: order.id, // 幂等：相同 msgID 的去重窗口内只接受一次
+  });
+  console.log('Published:', order.id);
+}
+
+// 创建持久化消费者（Durable Consumer）
+const opts = consumerOpts()
+  .durable('order-processor')
+  .deliverAll()
+  .ackExplicit()
+  .maxDeliver(3)
+  .replayInstantly();
+
+const sub = await js.subscribe('ORDERS.created', opts);
+(async () => {
+  for await (const msg of sub) {
+    const order = jc.decode(msg.data);
+    try {
+      await processOrder(order);
+      msg.ack(); // 显式确认
+    } catch (err) {
+      console.error('Processing failed:', err);
+      msg.nak(5000); // 否定确认，5 秒后重新投递
+    }
+  }
+})();
+
+// 批量发布示例
+await Promise.all([
+  publishOrderEvent({ id: 'ord-101', status: 'created', amount: 199.99 }),
+  publishOrderEvent({ id: 'ord-102', status: 'created', amount: 49.50 }),
+]);
+```
+
+## 代码示例：AWS SQS 消费者（@aws-sdk/client-sqs）
+
+```typescript
+// sqs-consumer.ts — 基于 AWS SDK v3 的 SQS 长轮询消费
+import {
+  SQSClient,
+  ReceiveMessageCommand,
+  DeleteMessageCommand,
+  ChangeMessageVisibilityCommand,
+} from '@aws-sdk/client-sqs';
+
+const client = new SQSClient({ region: process.env.AWS_REGION ?? 'us-east-1' });
+const queueUrl = process.env.SQS_QUEUE_URL!;
+
+async function pollMessages(): Promise<void> {
+  const command = new ReceiveMessageCommand({
+    QueueUrl: queueUrl,
+    MaxNumberOfMessages: 10,
+    WaitTimeSeconds: 20,      // 长轮询，减少空请求
+    VisibilityTimeout: 60,    // 处理窗口
+    AttributeNames: ['All'],
+    MessageAttributeNames: ['All'],
+  });
+
+  const response = await client.send(command);
+  if (!response.Messages || response.Messages.length === 0) return;
+
+  for (const msg of response.Messages) {
+    try {
+      const body = JSON.parse(msg.Body!);
+      await handleSQSMessage(body);
+
+      // 消费成功后删除消息
+      await client.send(
+        new DeleteMessageCommand({
+          QueueUrl: queueUrl,
+          ReceiptHandle: msg.ReceiptHandle!,
+        })
+      );
+    } catch (err) {
+      console.error('SQS message processing failed:', err);
+      // 不删除消息，等待 VisibilityTimeout 后自动重新可见
+      // 或主动延长可见性超时以获得更多处理时间
+      await client.send(
+        new ChangeMessageVisibilityCommand({
+          QueueUrl: queueUrl,
+          ReceiptHandle: msg.ReceiptHandle!,
+          VisibilityTimeout: 300,
+        })
+      );
+    }
+  }
+}
+
+// 持续轮询（生产环境建议使用官方 sqs-consumer 库）
+setInterval(pollMessages, 1000);
+```
+
+## 代码示例：CloudEvents 规范兼容的消息封装
+
+```typescript
+// cloudevent-wrapper.ts — 遵循 CNCF CloudEvents 规范的消息封装
+interface CloudEvent<T = unknown> {
+  specversion: '1.0';
+  type: string;           // 事件类型，如 com.example.order.created
+  source: string;         // 事件源 URI
+  id: string;             // 唯一标识
+  time: string;           // ISO 8601 时间戳
+  datacontenttype?: string;
+  data?: T;
+}
+
+function createCloudEvent<T>(
+  type: string,
+  source: string,
+  data: T
+): CloudEvent<T> {
+  return {
+    specversion: '1.0',
+    type,
+    source,
+    id: crypto.randomUUID(),
+    time: new Date().toISOString(),
+    datacontenttype: 'application/json',
+    data,
+  };
+}
+
+// 使用示例：序列化后投递到 Kafka / RabbitMQ / SQS
+const event = createCloudEvent(
+  'com.example.order.created',
+  '/services/order-service',
+  { orderId: 'ord-789', amount: 299.99 }
+);
+
+// Kafka 投递
+await producer.send({
+  topic: 'orders',
+  messages: [
+    {
+      key: event.id,
+      value: JSON.stringify(event),
+      headers: { 'ce-specversion': '1.0', 'ce-type': event.type },
+    },
+  ],
+});
+```
+
+---
+
 ## 参考资源
 
 - [Kafka 官方文档](https://kafka.apache.org/documentation/)
@@ -601,6 +764,15 @@ setInterval(() => {
 - [Martin Fowler — What do you mean by "Event-Driven"?](https://martinfowler.com/articles/201701-event-driven.html) — 事件驱动架构经典文
 - [Confluent — Kafka Streams Documentation](https://docs.confluent.io/platform/current/streams/index.html) — Kafka Streams 权威文档
 - [CNCF Cloud Events Primer](https://github.com/cncf/cloudevents/blob/main/primer.md) — CloudEvents 入门
+- [AWS SDK for JavaScript v3 — SQS](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/sqs/) — AWS SQS 客户端官方文档
+- [NATS.js Documentation](https://github.com/nats-io/nats.js) — NATS Node.js 客户端仓库
+- [Google Cloud Pub/Sub Documentation](https://cloud.google.com/pubsub/docs) — Google Cloud 官方文档
+- [Azure Service Bus Documentation](https://learn.microsoft.com/en-us/azure/service-bus-messaging/) — Azure 官方文档
+- [NSQ — Realtime Distributed Messaging](https://nsq.io/) — 轻量级分布式消息队列
+- [Apache RocketMQ](https://rocketmq.apache.org/) — 阿里巴巴开源消息队列
+- [ZeroMQ Guide](https://zguide.zeromq.org/) — 高性能异步消息库指南
+- [The Log: What every software engineer should know](https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying) — Jay Kreps 经典文章
+- [CNCF Cloud Native Interactive Landscape](https://landscape.cncf.io/) — CNCF 云原生全景图
 
 ---
 

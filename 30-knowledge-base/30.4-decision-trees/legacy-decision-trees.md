@@ -65,6 +65,53 @@ flowchart TD
 | 移动端优先 | **Vuetify** | Material Design，响应式好 |
 | 现代React项目 | **shadcn/ui + Tailwind** | 2024年最流行组合 |
 
+### 代码示例：shadcn/ui 组件安装与自定义主题
+
+```bash
+# 初始化 shadcn/ui（基于 Next.js 或 Vite）
+npx shadcn@latest init --yes --template next --base-color slate
+
+# 按需添加组件
+npx shadcn add button card dialog
+
+# 生成的 components/ui/button.tsx 可直接修改源码
+```
+
+```typescript
+// tailwind.config.ts — 扩展 shadcn/ui 主题令牌
+import type { Config } from 'tailwindcss';
+
+const config: Config = {
+  darkMode: ['class'],
+  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        primary: {
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
+        },
+      },
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+      },
+    },
+  },
+  plugins: [require('tailwindcss-animate')],
+};
+
+export default config;
+```
+
+> 📚 参考：[shadcn/ui Documentation](https://ui.shadcn.com/docs) | [Tailwind CSS Customization](https://tailwindcss.com/docs/customizing-colors) | [Radix UI Primitives](https://www.radix-ui.com/primitives)
+
 ---
 
 ## 2. 状态管理选型决策树
@@ -151,6 +198,54 @@ export const useCartStore = create<CartState>()(
 );
 ```
 
+### 代码示例：TanStack Query v5 数据获取与变异
+
+```typescript
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
+// 查询 Hook
+function useUser(userId: string) {
+  return useQuery({
+    queryKey: ['user', userId],
+    queryFn: async () => {
+      const res = await fetch(`/api/users/${userId}`);
+      if (!res.ok) throw new Error('Failed to fetch user');
+      return res.json() as Promise<{ id: string; name: string; email: string }>;
+    },
+    staleTime: 5 * 60 * 1000, // 5 分钟内视为新鲜
+  });
+}
+
+// 乐观更新变异
+function useUpdateUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { id: string; name: string }) => {
+      const res = await fetch(`/api/users/${payload.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      return res.json();
+    },
+    onMutate: async (newData) => {
+      await queryClient.cancelQueries({ queryKey: ['user', newData.id] });
+      const prev = queryClient.getQueryData(['user', newData.id]);
+      queryClient.setQueryData(['user', newData.id], (old: any) => ({ ...old, ...newData }));
+      return { prev };
+    },
+    onError: (err, newData, context) => {
+      queryClient.setQueryData(['user', newData.id], context?.prev);
+    },
+    onSettled: (data, err, newData) => {
+      queryClient.invalidateQueries({ queryKey: ['user', newData.id] });
+    },
+  });
+}
+```
+
+> 📚 参考：[Zustand Documentation](https://docs.pmnd.rs/zustand/getting-started/introduction) | [TanStack Query Docs](https://tanstack.com/query/latest/docs/framework/react/overview) | [Redux Toolkit Quick Start](https://redux-toolkit.js.org/tutorials/quick-start)
+
 ---
 
 ## 3. 构建工具选型决策树
@@ -204,6 +299,42 @@ flowchart TD
 | Monorepo | **Turborepo + pnpm** | 构建缓存，CI/CD加速 |
 | 大型库 | **Rollup** | 输出控制最精细 |
 | Webpack迁移 | **Vite** | 有官方迁移指南，成本可控 |
+
+### 代码示例：tsup 库打包配置
+
+```typescript
+// tsup.config.ts
+import { defineConfig } from 'tsup';
+
+export default defineConfig({
+  entry: ['src/index.ts'],
+  format: ['cjs', 'esm'],
+  dts: true,
+  splitting: true,
+  sourcemap: true,
+  clean: true,
+  treeshake: true,
+  // 外部化 peer dependencies
+  external: ['react', 'react-dom'],
+});
+```
+
+```bash
+# 单次构建
+npx tsup
+
+# 监视模式
+npx tsup --watch
+
+# 产物结构
+# dist/
+#   index.js      (CJS)
+#   index.mjs     (ESM)
+#   index.d.ts    (类型声明)
+#   index.js.map  (Source Map)
+```
+
+> 📚 参考：[Vite Documentation](https://vitejs.dev/guide/) | [tsup Documentation](https://tsup.egoist.dev/) | [Rollup.js Guide](https://rollupjs.org/guide/en/) | [Turborepo Docs](https://turbo.build/repo/docs)
 
 ---
 
@@ -292,7 +423,30 @@ app.get('/health', async () => ({ status: 'ok' }));
 app.listen({ port: 3000, host: '0.0.0.0' });
 ```
 
-> 📚 参考：[Fastify Documentation](https://www.fastify.io/docs/latest/) | [Fastify TypeScript Support](https://www.fastify.io/docs/latest/Reference/TypeScript/)
+### 代码示例：Hono 边缘运行时多平台适配
+
+```typescript
+// app.ts — 多平台统一入口
+import { Hono } from 'hono';
+
+const app = new Hono();
+
+app.get('/api/hello', (c) => {
+  return c.json({ message: 'Hello from Hono!', runtime: c.env?.RUNTIME ?? 'unknown' });
+});
+
+// Node.js / Bun / Deno 通用导出
+export default app;
+
+// Cloudflare Workers 绑定
+export const onRequest = app.fetch;
+
+// AWS Lambda 适配（需 @hono/node-server 或 hono/aws-lambda）
+// import { handle } from 'hono/aws-lambda';
+// export const handler = handle(app);
+```
+
+> 📚 参考：[Fastify Documentation](https://www.fastify.io/docs/latest/) | [Fastify TypeScript Support](https://www.fastify.io/docs/latest/Reference/TypeScript/) | [Hono Documentation](https://hono.dev/docs/getting-started/basic) | [NestJS Docs](https://docs.nestjs.com/)
 
 ---
 
@@ -395,6 +549,8 @@ const usersWithPosts = await db.query.users.findMany({
 // 推导类型: Array<{ id: number; name: string; email: string; posts: Array<{ ... }> }>
 ```
 
+> 📚 参考：[Drizzle ORM Documentation](https://orm.drizzle.team/docs/overview) | [Prisma Documentation](https://www.prisma.io/docs/) | [Kysely Documentation](https://kysely.dev/docs/intro)
+
 ---
 
 ## 6. 测试框架选型决策树
@@ -479,7 +635,31 @@ afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 ```
 
-> 📚 参考：[Vitest Documentation](https://vitest.dev/) | [MSW Documentation](https://mswjs.io/)
+### 代码示例：Playwright E2E 测试与视觉回归
+
+```typescript
+// tests/login.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('user can log in', async ({ page }) => {
+  await page.goto('/login');
+  await page.fill('[data-testid="email"]', 'alice@example.com');
+  await page.fill('[data-testid="password"]', 'secret123');
+  await page.click('[data-testid="submit"]');
+  await expect(page).toHaveURL('/dashboard');
+  await expect(page.locator('h1')).toContainText('Dashboard');
+});
+
+// 视觉回归测试
+test('homepage visual regression', async ({ page }) => {
+  await page.goto('/');
+  await expect(page).toHaveScreenshot('homepage.png', {
+    maxDiffPixels: 100,
+  });
+});
+```
+
+> 📚 参考：[Vitest Documentation](https://vitest.dev/) | [MSW Documentation](https://mswjs.io/) | [Playwright Docs](https://playwright.dev/docs/intro) | [Node.js Test Runner](https://nodejs.org/api/test.html)
 
 ---
 
@@ -550,9 +730,37 @@ flowchart TD
 | Docker场景 | **Bun** | 极简镜像，单二进制 |
 | Yarn迁移 | **yarn berry** | Plug'n'Play，离线模式 |
 
-### 参考对比矩阵
+### 代码示例：pnpm workspace 配置
 
-- 包管理器对比矩阵 [TODO: 链接待修复]
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'packages/*'
+  - 'apps/*'
+```
+
+```json
+// package.json — 根目录脚本
+{
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint",
+    "dev:web": "pnpm --filter web dev",
+    "dev:api": "pnpm --filter api dev"
+  }
+}
+```
+
+```bash
+# 常用 pnpm workspace 命令
+pnpm install              # 安装所有依赖
+pnpm --filter <pkg> add lodash   # 给指定包添加依赖
+pnpm --filter <pkg> exec vitest  # 在指定包中执行命令
+pnpm -r run build         # 递归构建所有包
+```
+
+> 📚 参考：[pnpm Documentation](https://pnpm.io/) | [pnpm Workspaces](https://pnpm.io/workspaces) | [Bun Package Manager](https://bun.sh/docs/cli/install) | [npm Workspaces](https://docs.npmjs.com/cli/v10/using-npm/workspaces)
 
 ---
 
@@ -620,9 +828,48 @@ Monorepo工具选择？
 | 跨框架组件库 | **Bit** | 组件级独立发布，技术栈无关 |
 | 大型团队 | **Nx 或 Turborepo** | 依赖图可视化，任务并行化 |
 
-### 参考对比矩阵
+### 代码示例：Nx 生成器与执行器
 
-- Monorepo 工具对比矩阵 [TODO: 链接待修复]
+```bash
+# 安装 Nx
+npx create-nx-workspace@latest myorg --preset=ts
+
+# 生成库
+npx nx g @nx/js:lib utils --unitTestRunner=vitest
+
+# 生成应用
+npx nx g @nx/next:app webapp
+
+# 依赖图可视化
+npx nx graph
+
+# 受影响项目构建（仅构建变更及其依赖）
+npx nx affected -t build
+```
+
+```json
+// nx.json — 任务缓存与并行配置
+{
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"],
+      "cache": true
+    },
+    "test": {
+      "inputs": ["default", "^production", "{workspaceRoot}/jest.config.js"],
+      "cache": true
+    }
+  },
+  "parallel": 3,
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": ["default", "!{projectRoot}/**/*.test.ts"]
+  }
+}
+```
+
+> 📚 参考：[Turborepo Documentation](https://turbo.build/repo/docs) | [Nx Documentation](https://nx.dev/getting-started/intro) | [Rush Stack](https://rushstack.io/) | [Bit Documentation](https://bit.dev/docs/getting-started/installing-bit)
 
 ---
 
@@ -717,12 +964,50 @@ flowchart TD
 }
 ```
 
-> 📚 参考：[Vercel Docs — Deployment](https://vercel.com/docs/concepts/deployments/overview) | [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
-| AWS生态 | **AWS Amplify** | 与AWS服务深度集成 |
+### 代码示例：Cloudflare Workers 部署配置
 
-### 参考对比矩阵
+```typescript
+// wrangler.toml
+name = "my-api"
+main = "src/index.ts"
+compatibility_date = "2026-04-27"
 
-- 部署平台对比矩阵 [TODO: 链接待修复]
+# D1 数据库绑定
+[[d1_databases]]
+binding = "DB"
+database_name = "production-db"
+database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# KV 缓存绑定
+[[kv_namespaces]]
+binding = "CACHE"
+id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+```
+
+```typescript
+// src/index.ts — Hono on Cloudflare Workers
+import { Hono } from 'hono';
+
+const app = new Hono<{ Bindings: { DB: D1Database; CACHE: KVNamespace } }>();
+
+app.get('/api/users/:id', async (c) => {
+  const id = c.req.param('id');
+  const cached = await c.env.CACHE.get(`user:${id}`);
+  if (cached) return c.json(JSON.parse(cached));
+
+  const user = await c.env.DB.prepare('SELECT * FROM users WHERE id = ?')
+    .bind(id)
+    .first();
+  if (!user) return c.notFound();
+
+  await c.env.CACHE.put(`user:${id}`, JSON.stringify(user), { expirationTtl: 300 });
+  return c.json(user);
+});
+
+export default app;
+```
+
+> 📚 参考：[Vercel Docs — Deployment](https://vercel.com/docs/concepts/deployments/overview) | [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/) | [Cloudflare Pages Docs](https://developers.cloudflare.com/pages/) | [Fly.io Docs](https://fly.io/docs/)
 
 ---
 
@@ -786,9 +1071,37 @@ flowchart TD
 | 企业级APM | **New Relic** | 分布式追踪成熟 |
 | 自托管日志 | **winston** | 传输插件丰富，生态成熟 |
 
-### 参考对比矩阵
+### 代码示例：pino 结构化日志与 OpenTelemetry 集成
 
-- 可观测性工具对比矩阵 [TODO: 链接待修复]
+```typescript
+import pino from 'pino';
+
+// 生产环境结构化日志（JSON）
+const logger = pino({
+  level: process.env.LOG_LEVEL ?? 'info',
+  base: { service: 'api-gateway', version: '1.2.0' },
+  timestamp: pino.stdTimeFunctions.isoTime,
+  formatters: {
+    level(label) {
+      return { level: label.toUpperCase() };
+    },
+  },
+  redact: {
+    paths: ['req.headers.authorization', 'password', 'token'],
+    remove: true,
+  },
+});
+
+// 使用
+logger.info({ reqId: 'abc-123', userId: 42 }, 'User login success');
+logger.error({ err: new Error('DB connection timeout') }, 'Database error');
+
+// 子 logger 继承上下文
+const child = logger.child({ component: 'payment-service' });
+child.warn({ amount: 199.99 }, 'Suspicious transaction detected');
+```
+
+> 📚 参考：[Sentry Documentation](https://docs.sentry.io/) | [pino Documentation](https://getpino.io/#/) | [Datadog Docs](https://docs.datadoghq.com/) | [OpenTelemetry JS](https://opentelemetry.io/docs/languages/js/)
 
 ---
 
@@ -894,9 +1207,69 @@ jobs:
         if: inputs.run-e2e
 ```
 
-### 参考对比矩阵
+### 代码示例：GitLab CI 多阶段流水线
 
-- CI/CD 工具对比矩阵 [TODO: 链接待修复]
+```yaml
+# .gitlab-ci.yml
+stages: [install, lint, test, build, deploy]
+
+variables:
+  NODE_VERSION: "22"
+  PNPM_CACHE_FOLDER: ".pnpm-store"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - ${PNPM_CACHE_FOLDER}
+    - node_modules/
+    - .turbo/
+
+install:
+  stage: install
+  image: node:${NODE_VERSION}
+  script:
+    - corepack enable
+    - corepack prepare pnpm@latest --activate
+    - pnpm config set store-dir ${PNPM_CACHE_FOLDER}
+    - pnpm install --frozen-lockfile
+
+lint:
+  stage: lint
+  image: node:${NODE_VERSION}
+  script:
+    - pnpm lint
+    - pnpm typecheck
+
+test:
+  stage: test
+  image: node:${NODE_VERSION}
+  script:
+    - pnpm test --coverage
+  coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
+
+build:
+  stage: build
+  image: node:${NODE_VERSION}
+  script:
+    - pnpm build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week
+
+deploy:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "Deploying to production..."
+  environment:
+    name: production
+    url: https://api.example.com
+  only:
+    - main
+```
+
+> 📚 参考：[GitHub Actions Documentation](https://docs.github.com/en/actions) | [GitLab CI/CD Docs](https://docs.gitlab.com/ee/ci/) | [CircleCI Docs](https://circleci.com/docs/) | [Jenkins Documentation](https://www.jenkins.io/doc/)
 
 ---
 
@@ -1008,10 +1381,43 @@ const client = createTRPCProxyClient<AppRouter>({
 const user = await client.user.getById.query({ id: '550e8400-e29b-41d4-a716-446655440000' });
 ```
 
-### 参考对比矩阵
+### 代码示例：Server-Sent Events 实时推送
 
-- 后端框架对比矩阵 [TODO: 链接待修复]
-- 部署平台对比矩阵 [TODO: 链接待修复]
+```typescript
+// server.ts — Node.js 原生 SSE
+import { createServer } from 'node:http';
+
+const server = createServer((req, res) => {
+  if (req.url === '/events') {
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    });
+
+    const interval = setInterval(() => {
+      res.write(`data: ${JSON.stringify({ time: new Date().toISOString(), price: Math.random() * 100 })}
+
+`);
+    }, 1000);
+
+    req.on('close', () => clearInterval(interval));
+    return;
+  }
+
+  res.writeHead(200, { 'Content-Type': 'text/html' });
+  res.end(`
+    <script>
+      const evtSource = new EventSource('/events');
+      evtSource.onmessage = (e) => console.log(JSON.parse(e.data));
+    </script>
+  `);
+});
+
+server.listen(3000);
+```
+
+> 📚 参考：[tRPC Documentation](https://trpc.io/docs) | [GraphQL Specification](https://spec.graphql.org/) | [Socket.io Docs](https://socket.io/docs/v4/) | [MDN — Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events)
 
 ---
 
@@ -1135,11 +1541,33 @@ const app = new Hono();
 app.on(['POST', 'GET'], '/api/auth/**', (c) => auth.handler(c.req.raw));
 ```
 
-> 📚 参考：[better-auth Documentation](https://www.better-auth.com/docs/) | [WebAuthn / Passkeys Guide](https://webauthn.guide/)
+### 代码示例：Passkeys / WebAuthn 注册与验证
 
-### 参考对比矩阵
+```typescript
+// 客户端：注册 Passkey
+async function registerPasskey() {
+  const resp = await fetch('/api/auth/passkey/register-options');
+  const options = await resp.json();
 
-- 安全与合规分类文档 [TODO: 链接待修复]
+  const credential = await navigator.credentials.create({ publicKey: options }) as PublicKeyCredential;
+
+  await fetch('/api/auth/passkey/register-verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      id: credential.id,
+      rawId: Array.from(new Uint8Array(credential.rawId)),
+      response: {
+        clientDataJSON: Array.from(new Uint8Array((credential.response as AuthenticatorAttestationResponse).clientDataJSON)),
+        attestationObject: Array.from(new Uint8Array((credential.response as AuthenticatorAttestationResponse).attestationObject)),
+      },
+      type: credential.type,
+    }),
+  });
+}
+```
+
+> 📚 参考：[better-auth Documentation](https://www.better-auth.com/docs/) | [WebAuthn / Passkeys Guide](https://webauthn.guide/) | [Auth.js Documentation](https://authjs.dev/) | [Clerk Docs](https://clerk.com/docs) | [Supabase Auth Docs](https://supabase.com/docs/guides/auth)
 
 ---
 
@@ -1223,9 +1651,49 @@ flowchart TD
 | 向量/RAG | **Pinecone** | 托管服务，开箱即用 |
 | 图数据库 | **Neo4j** | 原生图存储，Cypher直观 |
 
-### 参考对比矩阵
+### 代码示例：Redis 限流器与分布式锁
 
-- ORM 对比矩阵 [TODO: 链接待修复]
+```typescript
+import Redis from 'ioredis';
+
+const redis = new Redis({ host: 'localhost', port: 6379 });
+
+// 滑动窗口限流器
+async function rateLimit(key: string, limit: number, windowMs: number): Promise<boolean> {
+  const now = Date.now();
+  const windowStart = now - windowMs;
+  const multi = redis.multi();
+
+  multi.zremrangebyscore(key, 0, windowStart);
+  multi.zcard(key);
+  multi.zadd(key, now, `${now}-${Math.random()}`);
+  multi.pexpire(key, windowMs);
+
+  const results = await multi.exec();
+  const currentCount = (results?.[1]?.[1] as number) ?? 0;
+  return currentCount < limit;
+}
+
+// 分布式锁（Redlock 简化版）
+async function acquireLock(lockKey: string, ttlMs: number): Promise<string | null> {
+  const token = `${Date.now()}-${Math.random()}`;
+  const result = await redis.set(lockKey, token, 'PX', ttlMs, 'NX');
+  return result === 'OK' ? token : null;
+}
+
+async function releaseLock(lockKey: string, token: string): Promise<void> {
+  const script = `
+    if redis.call("get", KEYS[1]) == ARGV[1] then
+      return redis.call("del", KEYS[1])
+    else
+      return 0
+    end
+  `;
+  await redis.eval(script, 1, lockKey, token);
+}
+```
+
+> 📚 参考：[PostgreSQL Documentation](https://www.postgresql.org/docs/) | [Redis Commands Reference](https://redis.io/commands/) | [MongoDB Docs](https://www.mongodb.com/docs/) | [pgvector GitHub](https://github.com/pgvector/pgvector) | [Neo4j Cypher Manual](https://neo4j.com/docs/cypher-manual/current/)
 
 ---
 
@@ -1314,6 +1782,49 @@ flowchart TD
 | 快速原型 / MVP | **Vercel AI SDK** | 学习曲线最低，社区资源最多 |
 | 企业级多 Agent 平台 | **Mastra + Langfuse** | 编排能力 + 可观测性完备 |
 
+### 代码示例：Vercel AI SDK Streaming Chat
+
+```tsx
+// app/api/chat/route.ts
+import { openai } from '@ai-sdk/openai';
+import { streamText } from 'ai';
+
+export async function POST(req: Request) {
+  const { messages } = await req.json();
+  const result = streamText({
+    model: openai('gpt-4o'),
+    system: 'You are a helpful assistant.',
+    messages,
+  });
+  return result.toDataStreamResponse();
+}
+
+// app/components/Chat.tsx
+'use client';
+import { useChat } from 'ai/react';
+
+export default function Chat() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat();
+
+  return (
+    <div className="chat">
+      {messages.map((m) => (
+        <div key={m.id} className={m.role}>
+          <strong>{m.role === 'user' ? 'User: ' : 'AI: '}</strong>
+          {m.content}
+        </div>
+      ))}
+      <form onSubmit={handleSubmit}>
+        <input value={input} onChange={handleInputChange} placeholder="Say something..." />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  );
+}
+```
+
+> 📚 参考：[Vercel AI SDK Documentation](https://sdk.vercel.ai/docs) | [LangGraph Docs](https://langchain-ai.github.io/langgraph/) | [Mastra Documentation](https://mastra.ai/docs) | [CrewAI Docs](https://docs.crewai.com/) | [OpenAI Agents SDK](https://platform.openai.com/docs/guides/agents) | [Model Context Protocol](https://modelcontextprotocol.io/)
+
 ---
 
 ## 16. AI Coding Workflow 选型决策树
@@ -1376,6 +1887,34 @@ flowchart TD
 | 敏感代码 / 离线 | **Ollama + Continue** | 完全本地，数据自主 |
 | 开源偏好 / 模型自由 | **Continue.dev + 任意模型** | 开源插件，模型可配置 |
 | 企业团队统一采购 | **GitHub Copilot Business** | $19/月，管理后台，合规认证 |
+
+### 代码示例：Ollama 本地模型 API 调用
+
+```typescript
+// 调用本地 Ollama 模型生成代码
+async function generateWithOllama(prompt: string): Promise<string> {
+  const res = await fetch('http://localhost:11434/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'deepseek-coder:6.7b',
+      prompt,
+      stream: false,
+      options: { temperature: 0.2, num_ctx: 8192 },
+    }),
+  });
+  const data = await res.json();
+  return data.response;
+}
+
+// 使用示例
+const code = await generateWithOllama(
+  'Write a TypeScript function that validates an email address using regex.'
+);
+console.log(code);
+```
+
+> 📚 参考：[Cursor Documentation](https://docs.cursor.com/) | [Claude Code Docs](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview) | [Ollama GitHub](https://github.com/ollama/ollama) | [Continue.dev Docs](https://docs.continue.dev/) | [Aider Documentation](https://aider.chat/docs/)
 
 ---
 
@@ -1442,6 +1981,53 @@ flowchart TD
 | 遗留 Node.js 18/20 | **tsx** | 兼容性好，无需升级运行时 |
 | 生产构建 (bundling) | **tsc / esbuild / rolldown / bun build** | 根据生态选择 |
 | CI 类型检查 | **tsc --noEmit 或 tsgo** | 完整类型检查，不输出产物 |
+
+### 代码示例：Node.js 24+ 原生 TypeScript 运行
+
+```json
+// package.json
+{
+  "name": "native-ts-app",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.ts",
+    "start": "node src/server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}
+```
+
+```typescript
+// src/server.ts — 原生运行，无需 tsx / ts-node
+import { createServer } from 'node:http';
+
+interface User {
+  id: number;
+  name: string;
+}
+
+const users: User[] = [
+  { id: 1, name: 'Alice' },
+  { id: 2, name: 'Bob' },
+];
+
+const server = createServer((req, res) => {
+  if (req.url === '/users') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(users));
+    return;
+  }
+  res.writeHead(404);
+  res.end('Not Found');
+});
+
+server.listen(3000, () => console.log('Server running at http://localhost:3000'));
+```
+
+> 📚 参考：[Node.js Type Stripping Docs](https://nodejs.org/api/typescript.html) | [Node.js --experimental-transform-types](https://nodejs.org/api/cli.html#--experimental-transform-types) | [Bun TypeScript Docs](https://bun.sh/docs/typescript) | [Deno TypeScript Support](https://docs.deno.com/runtime/fundamentals/typescript/) | [tsx Documentation](https://github.com/privatenumber/tsx)
 
 ---
 
@@ -1534,7 +2120,29 @@ app.get('/users/:id', async (c) => {
 export default app;
 ```
 
-> 📚 参考：[Cloudflare D1 Documentation](https://developers.cloudflare.com/d1/) | [Drizzle ORM D1 Docs](https://orm.drizzle.team/docs/get-started-sqlite#cloudflare-d1)
+### 代码示例：Neon Serverless Driver + Edge
+
+```typescript
+// db.ts — Neon serverless driver（HTTP 连接，无 TCP）
+import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
+
+const sql = neon(process.env.DATABASE_URL!);
+export const db = drizzle(sql);
+
+// 使用（可在任何边缘运行时执行）
+import { pgTable, serial, varchar } from 'drizzle-orm/pg-core';
+
+const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+});
+
+// 查询
+const allUsers = await db.select().from(users);
+```
+
+> 📚 参考：[Cloudflare D1 Documentation](https://developers.cloudflare.com/d1/) | [Drizzle ORM D1 Docs](https://orm.drizzle.team/docs/get-started-sqlite#cloudflare-d1) | [Neon Documentation](https://neon.tech/docs/) | [Turso Documentation](https://docs.turso.tech/) | [Neon Serverless Driver](https://github.com/neondatabase/serverless)
 
 ---
 
@@ -1601,6 +2209,23 @@ export default app;
 | Ollama Docs | <https://github.com/ollama/ollama> | 本地大模型运行 |
 | Node.js Type Stripping | <https://nodejs.org/api/typescript.html> | Node.js 原生 TS 支持 |
 | esbuild Docs | <https://esbuild.github.io/> | 极速打包工具 |
+| shadcn/ui Docs | <https://ui.shadcn.com/docs> | 现代 React 组件库 |
+| Tailwind CSS Docs | <https://tailwindcss.com/docs> | 实用优先 CSS 框架 |
+| Radix UI Primitives | <https://www.radix-ui.com/primitives> | 无头 UI 组件 |
+| tRPC Documentation | <https://trpc.io/docs> | 端到端类型安全 API |
+| GraphQL Specification | <https://spec.graphql.org/> | GraphQL 规范 |
+| Socket.io Docs | <https://socket.io/docs/v4/> | 实时双向通信库 |
+| MDN — Server-Sent Events | <https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events> | SSE 官方文档 |
+| Redis Documentation | <https://redis.io/docs/> | Redis 官方文档 |
+| pgvector GitHub | <https://github.com/pgvector/pgvector> | Postgres 向量扩展 |
+| Neo4j Cypher Manual | <https://neo4j.com/docs/cypher-manual/current/> | 图数据库查询语言 |
+| Vercel AI SDK | <https://sdk.vercel.ai/docs> | AI 应用开发 SDK |
+| Model Context Protocol | <https://modelcontextprotocol.io/> | AI 工具标准协议 |
+| OpenAI Agents SDK | <https://platform.openai.com/docs/guides/agents> | OpenAI Agent 开发 |
+| Cursor Documentation | <https://docs.cursor.com/> | AI 原生 IDE |
+| Claude Code Docs | <https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview> | 命令行 AI 编码 |
+| Continue.dev Docs | <https://docs.continue.dev/> | 开源 AI 编码助手 |
+| Aider Documentation | <https://aider.chat/docs/> | 命令行多文件 AI 编辑 |
 
 ---
 

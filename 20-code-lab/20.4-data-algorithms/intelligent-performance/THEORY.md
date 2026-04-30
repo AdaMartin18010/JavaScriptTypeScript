@@ -252,13 +252,252 @@ function injectResourceHints() {
 
 ---
 
-## 9. 总结
+## 9. Speculation Rules API（预测性导航预渲染）
+
+```html
+<!-- 在 <head> 中声明推测规则 -->
+<script type="speculationrules">
+{
+  "prerender": [{
+    "source": "list",
+    "urls": ["/about", "/pricing", "/docs"]
+  }],
+  "prefetch": [{
+    "source": "document",
+    "where": {
+      "href_matches": "/blog/*",
+      "relative_to": "document"
+    },
+    "eagerness": "moderate"
+  }]
+}
+</script>
+```
+
+```typescript
+// 程序化注册推测规则（Chrome 121+）
+function registerSpeculationRules(urls: string[]) {
+  const script = document.createElement('script');
+  script.type = 'speculationrules';
+  script.textContent = JSON.stringify({
+    prerender: [{
+      source: 'list',
+      urls,
+    }],
+  });
+  document.head.appendChild(script);
+}
+
+// 基于用户行为动态注册
+registerSpeculationRules(['/checkout', '/cart']);
+```
+
+---
+
+## 10. Priority Hints API（资源加载优先级控制）
+
+```typescript
+// priority-hints.ts — 控制图片和 fetch 的加载优先级
+function loadHeroImage(src: string): HTMLImageElement {
+  const img = new Image();
+  img.src = src;
+  // @ts-ignore — fetchpriority 是实验性属性
+  img.fetchPriority = 'high'; // 'high' | 'low' | 'auto'
+  return img;
+}
+
+// 对非关键图片降低优先级
+function loadLazyImage(src: string): HTMLImageElement {
+  const img = document.createElement('img');
+  img.src = src;
+  img.loading = 'lazy';
+  // @ts-ignore
+  img.fetchPriority = 'low';
+  return img;
+}
+
+// fetch 请求优先级
+fetch('/api/non-critical-data', {
+  // @ts-ignore
+  priority: 'low',
+});
+```
+
+---
+
+## 11. 新增代码示例
+
+### Core Web Vitals 监控仪表盘
+
+```typescript
+// cwv-dashboard.ts — 收集并上报 Core Web Vitals 指标
+import { onLCP, onINP, onCLS, onTTFB, onFCP } from 'web-vitals';
+
+type MetricName = 'LCP' | 'INP' | 'CLS' | 'TTFB' | 'FCP';
+
+interface CWVReport {
+  name: MetricName;
+  value: number;
+  rating: 'good' | 'needs-improvement' | 'poor';
+  navigationType: string;
+}
+
+const THRESHOLDS: Record<MetricName, { good: number; poor: number }> = {
+  LCP: { good: 2500, poor: 4000 },
+  INP: { good: 200, poor: 500 },
+  CLS: { good: 0.1, poor: 0.25 },
+  TTFB: { good: 800, poor: 1800 },
+  FCP: { good: 1800, poor: 3000 },
+};
+
+function getRating(name: MetricName, value: number): CWVReport['rating'] {
+  const t = THRESHOLDS[name];
+  if (value <= t.good) return 'good';
+  if (value <= t.poor) return 'needs-improvement';
+  return 'poor';
+}
+
+function sendToAnalytics(report: CWVReport) {
+  // 发送到分析后端
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon('/api/vitals', JSON.stringify(report));
+  } else {
+    fetch('/api/vitals', { method: 'POST', body: JSON.stringify(report), keepalive: true });
+  }
+}
+
+// 注册所有 CWV 指标
+onLCP((metric) => sendToAnalytics({ name: 'LCP', value: metric.value, rating: getRating('LCP', metric.value), navigationType: metric.navigationType }));
+onINP((metric) => sendToAnalytics({ name: 'INP', value: metric.value, rating: getRating('INP', metric.value), navigationType: metric.navigationType }));
+onCLS((metric) => sendToAnalytics({ name: 'CLS', value: metric.value, rating: getRating('CLS', metric.value), navigationType: metric.navigationType }));
+onTTFB((metric) => sendToAnalytics({ name: 'TTFB', value: metric.value, rating: getRating('TTFB', metric.value), navigationType: metric.navigationType }));
+onFCP((metric) => sendToAnalytics({ name: 'FCP', value: metric.value, rating: getRating('FCP', metric.value), navigationType: metric.navigationType }));
+```
+
+### 基于 Intersection Observer 的智能懒加载
+
+```typescript
+// smart-lazy-load.ts — 带预加载缓冲区的智能懒加载
+class SmartLazyLoader {
+  private observer: IntersectionObserver;
+  private preloadBuffer = new Set<Element>();
+
+  constructor(options?: IntersectionObserverInit) {
+    this.observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          this.loadElement(entry.target as HTMLElement);
+          this.observer.unobserve(entry.target);
+        } else if (entry.boundingClientRect.top < window.innerHeight * 2) {
+          // 进入 2 倍视口缓冲区，开始预加载
+          this.preloadBuffer.add(entry.target);
+        }
+      }
+    }, { rootMargin: '200px 0px', ...options });
+  }
+
+  observe(selector: string) {
+    document.querySelectorAll(selector).forEach(el => this.observer.observe(el));
+  }
+
+  private loadElement(el: HTMLElement) {
+    const src = el.dataset.src;
+    const srcset = el.dataset.srcset;
+    if (!src) return;
+
+    if (el.tagName === 'IMG') {
+      const img = el as HTMLImageElement;
+      if (srcset) img.srcset = srcset;
+      img.src = src;
+      img.classList.add('loaded');
+    } else if (el.tagName === 'VIDEO') {
+      const video = el as HTMLVideoElement;
+      video.src = src;
+      video.preload = 'metadata';
+    }
+  }
+}
+
+// 使用
+const loader = new SmartLazyLoader();
+loader.observe('[data-src]');
+```
+
+### Web Workers 任务卸载模式
+
+```typescript
+// worker-pool.ts — 带任务队列的 Web Worker 池
+class WorkerPool {
+  private workers: Worker[] = [];
+  private queue: Array<{ task: unknown; resolve: (value: unknown) => void; reject: (reason: unknown) => void }> = [];
+  private busy = new Set<Worker>();
+
+  constructor(scriptUrl: string, poolSize = navigator.hardwareConcurrency || 4) {
+    for (let i = 0; i < poolSize; i++) {
+      const worker = new Worker(scriptUrl, { type: 'module' });
+      worker.onmessage = (e) => {
+        const { id, result, error } = e.data;
+        this.busy.delete(worker);
+        // 查找对应的 resolve/reject
+        const pending = this.queue.find(q => (q as any).id === id);
+        if (pending) {
+          if (error) pending.reject(error);
+          else pending.resolve(result);
+          this.queue = this.queue.filter(q => q !== pending);
+        }
+        this.processQueue();
+      };
+      this.workers.push(worker);
+    }
+  }
+
+  async execute(task: unknown): Promise<unknown> {
+    return new Promise((resolve, reject) => {
+      this.queue.push({ task, resolve, reject } as any);
+      this.processQueue();
+    });
+  }
+
+  private processQueue() {
+    if (this.queue.length === 0) return;
+    const available = this.workers.find(w => !this.busy.has(w));
+    if (!available) return;
+
+    const job = this.queue.shift()!;
+    this.busy.add(available);
+    available.postMessage({ task: job.task });
+  }
+
+  terminate() {
+    this.workers.forEach(w => w.terminate());
+  }
+}
+
+// worker.ts — 图像处理 Worker 示例
+self.onmessage = (e) => {
+  const { imageData, filter } = e.data.task;
+  const data = imageData.data;
+  switch (filter) {
+    case 'grayscale':
+      for (let i = 0; i < data.length; i += 4) {
+        const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        data[i] = data[i + 1] = data[i + 2] = gray;
+      }
+      break;
+  }
+  self.postMessage({ result: imageData });
+};
+```
+
+---
+
+## 12. 总结
 
 AI 不会取代性能工程师，但会**放大性能工程师的能力**。
 
 ---
 
-## 10. 模块代码文件索引
+## 13. 模块代码文件索引
 
 本模块包含以下可运行 TypeScript 代码文件，用于将上述理论概念转化为实践：
 
@@ -269,11 +508,11 @@ AI 不会取代性能工程师，但会**放大性能工程师的能力**。
 - `network-optimization-models.ts`
 - `rendering-performance-model.ts`
 
-> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
+> 学习建议：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
 
 ---
 
-## 11. 权威参考链接
+## 14. 权威参考链接
 
 - [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci)
 - [Web Vitals](https://web.dev/vitals/)
@@ -290,5 +529,15 @@ AI 不会取代性能工程师，但会**放大性能工程师的能力**。
 - [Interaction to Next Paint (INP)](https://web.dev/inp/) — 交互响应性指标
 - [HTTP Archive — State of the Web](https://httparchive.org/reports/state-of-the-web) — 真实性能数据
 - [JavaScript Start-up Optimization](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/javascript-startup-optimization)
+- [Speculation Rules API — Chrome for Developers](https://developer.chrome.com/docs/web-platform/speculation-rules) — 预测性预渲染
+- [Priority Hints — WICG](https://wicg.github.io/priority-hints/) — 资源加载优先级标准草案
+- [web.dev — Optimize Resource Loading](https://web.dev/optimize-lcp/) — LCP 优化指南
+- [Chrome DevTools — Performance Insights](https://developer.chrome.com/docs/devtools/performance-insights) — 性能洞察面板
+- [W3C Long Tasks API](https://w3c.github.io/longtasks/) — 长任务检测标准
+- [web.dev — Adaptive Loading](https://web.dev/adaptive-loading-codelab/) — 自适应加载实战
+- [Google Chrome Labs — Adapt](https://github.com/GoogleChromeLabs/adapt) — 自适应加载库
+- [Web Workers — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API) — 多线程编程指南
+- [Scheduler API — React](https://github.com/facebook/react/tree/main/packages/scheduler) — React 调度器源码
+- [requestIdleCallback — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) — 空闲回调 API
 
-> 📅 理论深化更新：2026-04-30
+> 理论深化更新：2026-04-30

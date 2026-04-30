@@ -226,6 +226,105 @@ console.log(result.answer);
 
 ---
 
+## 代码示例：Plan-and-Execute Agent（TypeScript）
+
+```typescript
+interface Plan {
+  steps: string[];
+  dependencies: number[][]; // step index -> dependency step indices
+}
+
+class PlanAndExecuteAgent {
+  private llm: LLMClient;
+  private tools: Map<string, Tool>;
+
+  constructor(llm: LLMClient, tools: Tool[]) {
+    this.llm = llm;
+    this.tools = new Map(tools.map(t => [t.name, t]));
+  }
+
+  async run(query: string): Promise<{ result: string; plan: Plan; executed: string[] }> {
+    // Phase 1: Plan
+    const plan = await this.generatePlan(query);
+    
+    // Phase 2: Execute with dependency-aware scheduling
+    const results = new Map<number, string>();
+    const executed: string[] = [];
+
+    for (let i = 0; i < plan.steps.length; i++) {
+      const context = plan.dependencies[i]
+        .map(depIdx => `Step ${depIdx + 1} result: ${results.get(depIdx)}`)
+        .join('\n');
+
+      const stepPrompt = `Plan step ${i + 1}: ${plan.steps[i]}\n${context}\nExecute using tools if needed.`;
+      const result = await this.executeStep(stepPrompt);
+      results.set(i, result);
+      executed.push(result);
+    }
+
+    // Phase 3: Synthesize
+    const final = await this.llm.complete(
+      `Based on the following executed steps, answer the original query:\n${executed.join('\n')}\n\nQuery: ${query}`
+    );
+    return { result: final, plan, executed };
+  }
+
+  private async generatePlan(query: string): Promise<Plan> {
+    const response = await this.llm.complete(
+      `Create a step-by-step plan to answer: ${query}. Output as JSON: { "steps": [...], "dependencies": [...] }`
+    );
+    return JSON.parse(response) as Plan;
+  }
+
+  private async executeStep(prompt: string): Promise<string> {
+    // Simplified: in production, use ReAct-style tool selection here
+    return this.llm.complete(prompt);
+  }
+}
+```
+
+## 代码示例：Reflexion Agent（自我反思循环）
+
+```typescript
+interface Attempt {
+  output: string;
+  evaluation: 'pass' | 'fail' | 'partial';
+  reflection: string;
+}
+
+class ReflexionAgent {
+  private llm: LLMClient;
+  private maxAttempts = 3;
+
+  async run(task: string): Promise<{ final: string; history: Attempt[] }> {
+    const history: Attempt[] = [];
+
+    for (let i = 0; i < this.maxAttempts; i++) {
+      const previous = history.map(h => `Attempt ${history.indexOf(h) + 1}:\nOutput: ${h.output}\nReflection: ${h.reflection}`).join('\n\n');
+      
+      const output = await this.llm.complete(
+        `Task: ${task}\n${previous}\n\nPlease complete the task, learning from past reflections.`
+      );
+
+      const evalResult = await this.evaluate(task, output);
+      history.push({ output, evaluation: evalResult.score, reflection: evalResult.feedback });
+
+      if (evalResult.score === 'pass') break;
+    }
+
+    return { final: history[history.length - 1].output, history };
+  }
+
+  private async evaluate(task: string, output: string): Promise<{ score: 'pass' | 'fail' | 'partial'; feedback: string }> {
+    const prompt = `Evaluate if the following output satisfies the task.\nTask: ${task}\nOutput: ${output}\nRespond with JSON: { "score": "pass|fail|partial", "feedback": "..." }`;
+    const response = await this.llm.complete(prompt);
+    return JSON.parse(response);
+  }
+}
+```
+
+---
+
 ## Agent 评估指标
 
 | 指标 | 说明 | 测量方式 |
@@ -236,6 +335,132 @@ console.log(result.answer);
 | **延迟** | 端到端响应时间 | 计时器 |
 | **幻觉率** | 生成虚假信息的频率 | 事实核查 / NLI 模型 |
 | **工具调用准确率** | 正确选择工具的比例 | 正确工具 / 总调用 |
+
+---
+
+## 参考链接
+
+- [OpenAI Function Calling Guide](https://platform.openai.com/docs/guides/function-calling) — 结构化工具调用官方指南
+- [Anthropic Tool Use](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) — Claude 工具使用最佳实践
+- [Vercel AI SDK — Agents](https://sdk.vercel.ai/docs/ai-sdk-core/agents) — TypeScript AI Agent 开发 SDK
+- [Google A2A Protocol](https://google.github.io/A2A/) — Agent-to-Agent 通信协议规范
+- [MCP Specification](https://modelcontextprotocol.io/) — 模型上下文协议官方文档
+- [LangChain.js Documentation](https://js.langchain.com/) — JavaScript LangChain 官方文档
+- [ReAct Paper (arXiv)](https://arxiv.org/abs/2210.03629) — 推理+行动语言模型论文
+- [Reflexion Paper (arXiv)](https://arxiv.org/abs/2303.11366) — 自我反思智能体论文
+
+## 进阶代码示例
+
+### MCP Tool Server 最小实现
+
+```typescript
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
+
+const server = new Server({ name: 'math-server', version: '1.0.0' }, { capabilities: { tools: {} } });
+
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools: [
+    {
+      name: 'add',
+      description: 'Add two numbers',
+      inputSchema: {
+        type: 'object',
+        properties: { a: { type: 'number' }, b: { type: 'number' } },
+        required: ['a', 'b'],
+      },
+    },
+  ],
+}));
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  if (request.params.name === 'add') {
+    const { a, b } = request.params.arguments as { a: number; b: number };
+    return { content: [{ type: 'text', text: String(a + b) }] };
+  }
+  throw new Error('Tool not found');
+});
+
+const transport = new StdioServerTransport();
+await server.connect(transport);
+```
+
+### Multi-Agent 编排器（简化版）
+
+```typescript
+interface Agent {
+  role: string;
+  execute: (task: string, context: string) => Promise<string>;
+}
+
+class Orchestrator {
+  private agents: Map<string, Agent> = new Map();
+
+  register(agent: Agent) {
+    this.agents.set(agent.role, agent);
+  }
+
+  async dispatch(plan: { role: string; task: string }[]): Promise<string[]> {
+    const results: string[] = [];
+    for (const step of plan) {
+      const agent = this.agents.get(step.role);
+      if (!agent) throw new Error(`Agent ${step.role} not found`);
+      const context = results.join('\n');
+      const result = await agent.execute(step.task, context);
+      results.push(result);
+    }
+    return results;
+  }
+}
+
+// 使用
+const planner: Agent = { role: 'planner', execute: async (t) => `Plan: ${t}` };
+const coder: Agent = { role: 'coder', execute: async (t) => `Code: ${t}` };
+const orchestrator = new Orchestrator();
+orchestrator.register(planner);
+orchestrator.register(coder);
+const output = await orchestrator.dispatch([
+  { role: 'planner', task: 'Design API' },
+  { role: 'coder', task: 'Implement endpoints' },
+]);
+```
+
+### A2A 协议消息格式示例
+
+```json
+{
+  "id": "msg-001",
+  "type": "agent:message",
+  "from": "agent://planner/001",
+  "to": "agent://coder/002",
+  "content": {
+    "task": "Implement user authentication",
+    "priority": "high",
+    "deadline": "2026-05-01T00:00:00Z"
+  },
+  "protocol": "A2A/1.0"
+}
+```
+
+---
+
+## 扩展参考链接
+
+- [MCP Specification](https://modelcontextprotocol.io/) — 模型上下文协议官方文档
+- [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) — 官方 SDK 仓库
+- [Google A2A Protocol](https://google.github.io/A2A/) — Agent-to-Agent 通信协议规范
+- [OpenAI Function Calling Guide](https://platform.openai.com/docs/guides/function-calling) — 结构化工具调用官方指南
+- [Anthropic Tool Use](https://docs.anthropic.com/en/docs/build-with-claude/tool-use) — Claude 工具使用最佳实践
+- [Vercel AI SDK — Agents](https://sdk.vercel.ai/docs/ai-sdk-core/agents) — TypeScript AI Agent 开发 SDK
+- [LangChain.js Documentation](https://js.langchain.com/) — JavaScript LangChain 官方文档
+- [ReAct Paper (arXiv)](https://arxiv.org/abs/2210.03629) — 推理+行动语言模型论文
+- [Reflexion Paper (arXiv)](https://arxiv.org/abs/2303.11366) — 自我反思智能体论文
+- [AutoGen Multi-Agent Conversation](https://microsoft.github.io/autogen/) — 微软多 Agent 对话框架
+- [CrewAI Documentation](https://docs.crewai.com/) — 多角色 Agent 协作平台文档
 
 ---
 

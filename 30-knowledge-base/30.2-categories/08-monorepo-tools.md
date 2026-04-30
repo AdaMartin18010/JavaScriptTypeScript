@@ -253,6 +253,44 @@ moon run :build --affected
 
 ---
 
+### pnpm Workspace Catalogs（依赖版本统一管理）
+
+pnpm 9.5+ 支持 Catalogs，将跨包依赖版本集中到根目录统一管理，避免版本漂移：
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+catalog:
+  react: ^19.0.0
+  react-dom: ^19.0.0
+  typescript: ^5.8.0
+  zod: ^3.24.0
+
+catalogs:
+  staging:
+    react: ^19.0.0-rc.1
+```
+
+```json
+// packages/ui/package.json
+{
+  "dependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  }
+}
+```
+
+```bash
+# 将 catalog 版本写入各包（用于发布前锁定）
+pnpm catalog:update
+```
+
+---
+
 ## 参考资源
 
 - [Turborepo Documentation](https://turbo.build/) — Vercel 官方文档
@@ -265,6 +303,11 @@ moon run :build --affected
 - [Turborepo Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) — 远程缓存配置指南
 - [Nx Project Crystal](https://nx.dev/concepts/nx-project-crystal) — 零配置项目检测
 - [Steve Kinney: Turborepo vs Nx](https://github.com/stevekinney/stevekinney.net/blob/main/courses/enterprise-ui/turborepo-versus-nx.md)
+- [pnpm Catalogs](https://pnpm.io/catalogs) — 集中化依赖版本管理
+- [Nx Crystal — Zero Config Detection](https://nx.dev/concepts/nx-project-crystal) — 无配置项目检测
+- [Moon MCP Server](https://moonrepo.dev/docs/guides/mcp-server) — AI Agent 仓库任务编排
+- [Changesets GitHub](https://github.com/changesets/changesets) — 版本管理开源仓库
+- [Turborepo 2.0 Release Notes](https://turbo.build/blog) — 最新版本动态
 
 ---
 
@@ -273,6 +316,101 @@ moon run :build --affected
 - `30-knowledge-base/30.2-categories/07-package-managers.md`
 - `20-code-lab/20.6-architecture-patterns/monorepo/`
 - `40-ecosystem/comparison-matrices/build-tools-compare.md`
+
+## 进阶配置示例
+
+### Turborepo 远程缓存与签名
+
+```json
+// turbo.json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "remoteCache": {
+    "signature": true
+  },
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "dist/**"],
+      "env": ["NODE_ENV"]
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "outputs": ["coverage/**"]
+    }
+  }
+}
+```
+
+```bash
+# 登录远程缓存（Vercel）
+npx turbo login
+npx turbo link
+```
+
+### Changesets GitHub Actions 发布工作流
+
+```yaml
+# .github/workflows/release.yml
+name: Release
+on:
+  push:
+    branches: [main]
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: npx changeset version
+      - run: npm run build
+      - run: npx changeset publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: git push --follow-tags
+```
+
+### Moon 多语言任务与依赖图
+
+```yaml
+# .moon/tasks.yml
+tasks:
+  build:
+    command: 'pnpm run build'
+    inputs: ['src/**/*', 'tsconfig.json']
+    outputs: ['dist']
+  test:
+    command: 'pnpm run test'
+    deps: ['~:build']
+  lint:
+    command: 'eslint src/'
+    deps: ['~:build']
+
+# 支持 Rust 任务
+tasks:
+  rust-build:
+    command: 'cargo build --release'
+    platform: 'rust'
+    inputs: ['src/**/*.rs', 'Cargo.toml']
+```
+
+---
+
+## 扩展参考链接
+
+- [Turborepo Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) — 官方远程缓存指南
+- [Nx Crystal — Zero Config Detection](https://nx.dev/concepts/nx-project-crystal) — 无配置项目检测
+- [Moon MCP Server](https://moonrepo.dev/docs/guides/mcp-server) — AI Agent 仓库任务编排
+- [Changesets GitHub](https://github.com/changesets/changesets) — 版本管理开源仓库
+- [Turborepo 2.0 Release Notes](https://turbo.build/blog) — 最新版本动态
+- [pnpm Catalogs](https://pnpm.io/catalogs) — 集中化依赖版本管理
+- [Rush Stack](https://rushstack.io/) — Microsoft 企业级 monorepo 方案
+- [monorepo.tools](https://monorepo.tools/) — 全工具横向对比
+- [GitHub Actions — Publishing with Changesets](https://github.com/changesets/action) — 官方 Action 文档
 
 ---
 

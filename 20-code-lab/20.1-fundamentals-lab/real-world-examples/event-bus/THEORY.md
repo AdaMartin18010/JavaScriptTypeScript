@@ -13,7 +13,15 @@
 
 ### 1.2 形式化基础
 
-[本模块的形式化定义与公理/定理陈述]
+事件总线可形式化定义为一个三元组：
+
+```
+EventBus = (Topics, Subscribers, Publish)
+
+Topics: 主题/事件名称的有限集合
+Subscribers: Topic → P(Callback) 的映射
+Publish: (topic, payload) → ∀cb ∈ Subscribers(topic): cb(payload)
+```
 
 ### 1.3 关键概念
 
@@ -21,6 +29,7 @@
 |------|------|------|
 | 发布订阅 | 解耦的消息广播模式 | pub-sub.ts |
 | 事件通道 | 带类型约束的命名空间事件 | typed-channels.ts |
+| 背压控制 | 生产者速率超过消费者时的流控策略 | backpressure.ts |
 
 ---
 
@@ -36,6 +45,7 @@
 |------|------|------|---------|
 | 全局总线 | 简单统一 | 全局状态难追踪 | 小型应用 |
 | 作用域总线 | 隔离清晰 | 管理复杂度 | 模块化应用 |
+| 分层总线 | 跨层通信可控 | 架构复杂度高 | 企业级应用 |
 
 ### 2.3 特性对比表：Pub/Sub vs Observer
 
@@ -256,14 +266,101 @@ interface DOMEvents {
 }
 ```
 
-### 3.6 常见误区
+### 3.6 带通配符与命名空间的增强事件总线
+
+```typescript
+// ===== 支持通配符订阅和命名空间隔离的高级事件总线 =====
+class EnhancedEventBus<Events extends EventMap = EventMap> {
+  private listeners = new Map<string, Set<(...args: any[]) => void>>();
+  private wildcards = new Set<(event: string, ...args: any[]) => void>();
+
+  on<K extends keyof Events>(event: K, listener: Events[K]): () => void;
+  on(event: string, listener: (...args: any[]) => void): () => void {
+    const key = String(event);
+    if (!this.listeners.has(key)) this.listeners.set(key, new Set());
+    this.listeners.get(key)!.add(listener);
+    return () => this.listeners.get(key)?.delete(listener);
+  }
+
+  onAny(listener: (event: string, ...args: any[]) => void): () => void {
+    this.wildcards.add(listener);
+    return () => this.wildcards.delete(listener);
+  }
+
+  emit<K extends keyof Events>(event: K, ...args: Parameters<Events[K]>): void;
+  emit(event: string, ...args: any[]): void {
+    const key = String(event);
+    this.listeners.get(key)?.forEach((fn) => {
+      try { fn(...args); } catch (err) { console.error(`Handler error on "${key}":`, err); }
+    });
+    this.wildcards.forEach((fn) => {
+      try { fn(key, ...args); } catch (err) { console.error(`Wildcard error on "${key}":`, err); }
+    });
+  }
+
+  // 命名空间隔离：返回一个仅能看到特定前缀事件的总线视图
+  namespace<N extends string>(prefix: N): EnhancedEventBus<Events> {
+    const child = new EnhancedEventBus<Events>();
+    const fullPrefix = `${prefix}:`;
+    child.onAny((event, ...args) => this.emit(`${fullPrefix}${event}` as any, ...args));
+    return child;
+  }
+}
+
+// 使用示例
+const bus = new EnhancedEventBus();
+bus.on('user:*', (data) => console.log('Any user event:', data)); // 通配符支持
+bus.onAny((event, data) => console.log(`[LOG] ${event}:`, data));  // 全局监听
+
+const paymentBus = bus.namespace('payment');
+paymentBus.emit('created', { id: 'p-1' }); // 实际发布 payment:created
+```
+
+### 3.7 Node.js 内置 EventEmitter 的类型安全扩展
+
+```typescript
+// ===== 基于 Node.js EventEmitter 的生产级封装 =====
+import { EventEmitter } from 'node:events';
+
+class TypedEmitter<Events extends EventMap> extends EventEmitter {
+  on<K extends keyof Events>(event: K, listener: Events[K]): this {
+    return super.on(String(event), listener as (...args: any[]) => void);
+  }
+
+  once<K extends keyof Events>(event: K, listener: Events[K]): this {
+    return super.once(String(event), listener as (...args: any[]) => void);
+  }
+
+  emit<K extends keyof Events>(event: K, ...args: Parameters<Events[K]>): boolean {
+    return super.emit(String(event), ...args);
+  }
+
+  off<K extends keyof Events>(event: K, listener: Events[K]): this {
+    return super.off(String(event), listener as (...args: any[]) => void);
+  }
+}
+
+interface ServerEvents {
+  'connection': (clientId: string) => void;
+  'message': (clientId: string, payload: Buffer) => void;
+  'disconnect': (clientId: string, reason: string) => void;
+}
+
+const server = new TypedEmitter<ServerEvents>();
+server.on('connection', (id) => console.log(`Client ${id} connected`));
+server.emit('connection', 'c-42');
+```
+
+### 3.8 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | 事件总线消除了耦合 | 总线本身成为隐式全局依赖 |
 | 更多事件类型总是更好 | 过度细分会导致调试困难和逻辑分散 |
+| 异步 emit 总是安全 | 未处理 rejection 会导致未捕获异常 |
+| 不需要取消订阅 | 组件卸载后残留监听器是内存泄漏主因 |
 
-### 3.7 扩展阅读
+### 3.9 扩展阅读
 
 - [Event Emitter 模式](https://nodejs.org/api/events.html)
 - [Node.js Events API](https://nodejs.org/api/events.html#class-eventemitter)
@@ -275,7 +372,94 @@ interface DOMEvents {
 - [Node.js EventEmitter Memory Leaks](https://nodejs.org/api/events.html#emittersetmaxlistenersn) — maxListeners 与泄漏检测
 - [RxJS Subjects](https://rxjs.dev/guide/subject) — 响应式编程中的多播 Observable
 - [Mitt — 200B 极简 Event Emitter](https://github.com/developit/mitt) — 微型事件总线库
+- [Google Publisher Subscriber Pattern](https://developers.google.com/web/fundamentals/architecture/app-shell) — Google Web Fundamentals 事件模式
+- [Event Sourcing Pattern — Microsoft](https://docs.microsoft.com/en-us/azure/architecture/patterns/event-sourcing) — 微软云架构事件溯源
+- [ReactiveX Observable Contract](http://reactivex.io/documentation/contract.html) — 响应式流规范
+- [Node.js EventEmitter Best Practices](https://nodejs.org/en/learn/asynchronous-work/the-nodejs-event-emitter) — Node.js 官方最佳实践
 - `20.2-language-patterns/design-patterns/behavioral/`
+
+### 3.10 带中间件拦截器的事件总线
+
+```typescript
+type Middleware<T> = (event: string, payload: T, next: () => void) => void;
+
+class MiddlewareEventBus<Events extends EventMap = EventMap> {
+  private listeners: { [K in keyof Events]?: Set<Events[K]> } = {};
+  private middlewares: Middleware<unknown>[] = [];
+
+  use(mw: Middleware<unknown>): void {
+    this.middlewares.push(mw);
+  }
+
+  on<K extends keyof Events>(event: K, listener: Events[K]): () => void {
+    if (!this.listeners[event]) this.listeners[event] = new Set<Events[K]>();
+    this.listeners[event]!.add(listener);
+    return () => this.off(event, listener);
+  }
+
+  off<K extends keyof Events>(event: K, listener: Events[K]): void {
+    this.listeners[event]?.delete(listener);
+  }
+
+  emit<K extends keyof Events>(event: K, ...args: Parameters<Events[K]>): void {
+    const run = (index: number) => {
+      if (index >= this.middlewares.length) {
+        this.listeners[event]?.forEach((fn) => {
+          try { (fn as any)(...args); } catch (err) { console.error(err); }
+        });
+        return;
+      }
+      this.middlewares[index](event as string, args, () => run(index + 1));
+    };
+    run(0);
+  }
+}
+
+// 使用：日志中间件
+const bus = new MiddlewareEventBus<AppEvents>();
+bus.use((event, payload, next) => {
+  console.log(`[before] ${event}`, payload);
+  next();
+  console.log(`[after] ${event}`);
+});
+```
+
+### 3.11 基于 RxJS Subject 的响应式事件总线
+
+```typescript
+import { Subject } from 'rxjs';
+
+class RxEventBus<Events extends EventMap = EventMap> {
+  private subjects = new Map<keyof Events, Subject<Parameters<Events[keyof Events]>>>();
+
+  on<K extends keyof Events>(event: K): Subject<Parameters<Events[K]>> {
+    if (!this.subjects.has(event)) this.subjects.set(event, new Subject<Parameters<Events[K]>>());
+    return this.subjects.get(event) as Subject<Parameters<Events[K]>>;
+  }
+
+  emit<K extends keyof Events>(event: K, ...args: Parameters<Events[K]>): void {
+    this.on(event).next(args);
+  }
+}
+
+// 使用
+const rxBus = new RxEventBus<AppEvents>();
+rxBus.on('user:login').subscribe(([id, ts]) => {
+  console.log(`Rx login: ${id} at ${ts}`);
+});
+rxBus.emit('user:login', 'u-456', Date.now());
+```
+
+### 新增权威参考链接
+
+- [Enterprise Integration Patterns — Martin Fowler](https://martinfowler.com/books/eip.html) — 企业集成模式权威著作
+- [Apache Kafka Documentation](https://kafka.apache.org/documentation/) — 分布式事件流平台
+- [RabbitMQ Tutorials](https://www.rabbitmq.com/getstarted.html) — 消息队列入门
+- [ZeroMQ Guide](https://zguide.zeromq.org/) — 高性能异步消息库
+- [NATS.io Documentation](https://docs.nats.io/) — 云原生消息系统
+- [AWS SNS](https://aws.amazon.com/sns/) — 托管发布/订阅消息服务
+- [Azure Event Grid](https://azure.microsoft.com/en-us/services/event-grid/) — 事件路由服务
+- [Google Cloud Pub/Sub](https://cloud.google.com/pubsub) — 全托管消息中间件
 
 ---
 

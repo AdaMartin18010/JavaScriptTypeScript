@@ -14,6 +14,7 @@
 | **Panda CSS** | ❌（编译时） | 0 | 优秀 | 原生 | ✅ 快速增长 |
 | **Vanilla Extract** | ❌（编译时） | 0 | 优秀 | 原生 | ✅ 活跃 |
 | **Tailwind + CSS Modules** | ❌ | 0 | 需配置 | 原生 | ✅ 主流 |
+| **StyleX** | ❌（编译时） | 0 | 良好 | 原生 | ✅ Meta 开源 |
 
 ---
 
@@ -254,13 +255,80 @@ export function Badge({
 }
 ```
 
+### StyleX (Meta 编译时原子 CSS)
+
+```tsx
+// Button.tsx
+import * as stylex from '@stylexjs/stylex';
+
+const styles = stylex.create({
+  base: {
+    padding: '8px 16px',
+    borderRadius: '4px',
+    border: '1px solid #ddd',
+    cursor: 'pointer',
+  },
+  primary: {
+    backgroundColor: '#0070f3',
+    color: 'white',
+    borderColor: '#0070f3',
+  },
+  secondary: {
+    backgroundColor: 'white',
+    color: '#333',
+  },
+});
+
+export function Button({ variant = 'secondary' }: { variant?: 'primary' | 'secondary' }) {
+  return (
+    <button {...stylex.props(styles.base, styles[variant])}>
+      Click me
+    </button>
+  );
+}
+```
+
+### CSS Houdini — Paint Worklet 自定义绘制
+
+```typescript
+// paint-worklet.ts — 在支持的环境中注册自定义 CSS Paint
+if ('paintWorklet' in CSS) {
+  (CSS as any).paintWorklet.addModule('/worklets/checkerboard.js');
+}
+
+// worklets/checkerboard.js
+class CheckerboardPainter {
+  static get inputProperties() {
+    return ['--checkerboard-size', '--checkerboard-color'];
+  }
+
+  paint(ctx: PaintRenderingContext2D, geom: PaintSize, props: StylePropertyMapReadOnly) {
+    const size = parseInt(props.get('--checkerboard-size')?.toString() || '20');
+    const color = props.get('--checkerboard-color')?.toString() || 'black';
+    for (let y = 0; y < geom.height; y += size) {
+      for (let x = 0; x < geom.width; x += size) {
+        if ((x / size + y / size) % 2 === 0) {
+          ctx.fillStyle = color;
+          ctx.fillRect(x, y, size, size);
+        }
+      }
+    }
+  }
+}
+
+registerPaint('checkerboard', CheckerboardPainter);
+
+// CSS 使用
+// .card { background: paint(checkerboard); --checkerboard-size: 24px; }
+```
+
 ---
 
 ## 2026 趋势
 
 **运行时 CSS-in-JS 衰退**：Styled Components 和 Emotion 因 RSC（React Server Components）兼容性问题，在 Next.js App Router 中难以使用。社区转向：
 
-- **编译时方案**：Panda CSS, Vanilla Extract, Linaria
+- **编译时方案**：Panda CSS, Vanilla Extract, Linaria, StyleX
 - **原子化 CSS**：Tailwind CSS（最主流选择）
 - **CSS Modules**：零运行时开销，TypeScript 通过 `*.module.css.d.ts` 支持
 
@@ -274,6 +342,7 @@ export function Badge({
 | 设计系统 | Panda CSS（类型安全令牌） |
 | 零依赖偏好 | CSS Modules + PostCSS |
 | 遗留项目维护 | 保持 Styled Components，逐步迁移 |
+| Meta/Facebook 生态 | StyleX（与 React 深度集成） |
 
 ---
 
@@ -287,6 +356,7 @@ export function Badge({
 | Panda CSS Docs | <https://panda-css.com/docs> | 官方文档与配置指南 |
 | Vanilla Extract | <https://vanilla-extract.style/> | 类型安全 CSS |
 | Tailwind CSS | <https://tailwindcss.com/docs> | 原子化 CSS 文档 |
+| StyleX | <https://stylexjs.com/docs/learn/> | Meta 编译时原子 CSS |
 | CSS Modules | <https://github.com/css-modules/css-modules> | 模块化 CSS 规范 |
 | Next.js CSS 文档 | <https://nextjs.org/docs/app/building-your-application/styling> | 官方样式指南 |
 | The State of CSS 2024 | <https://2024.stateofcss.com/en-US/other-tools/css_in_js> | CSS-in-JS 趋势报告 |
@@ -296,6 +366,10 @@ export function Badge({
 | React Server Components — Styling | <https://nextjs.org/docs/app/building-your-application/rendering/composition-patterns#unsupported-pattern-importing-server-components-into-client-components> | RSC 样式限制说明 |
 | Why I Won't Use Next.js — Kent C. Dodds | <https://www.epicweb.dev/why-i-wont-use-nextjs> | 运行时 CSS-in-JS 与 RSC 冲突讨论 |
 | The Future of CSS-in-JS | <https://dev.to/srmaganti/the-future-of-css-in-js-1d2o> | 社区趋势综述 |
+| CSS Houdini — MDN | <https://developer.mozilla.org/en-US/docs/Web/API/CSS_Houdini> | 浏览器底层 CSS 扩展 API |
+| W3C CSS Houdini Drafts | <https://drafts.css-houdini.org/> | CSS Houdini 规范草案 |
+| CSS Tricks — A Guide to CSS-in-JS | <https://css-tricks.com/a-thorough-analysis-of-css-in-js/> | 深度分析 CSS-in-JS 技术路线 |
+| Smashing Magazine — CSS Architecture | <https://www.smashingmagazine.com/2022/05/semantic-token-based-design-systems/> | 语义化 Token 设计系统 |
 
 ---
 

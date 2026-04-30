@@ -1,4 +1,4 @@
-﻿# 微服务 — 理论基础
+# 微服务 — 理论基础
 
 ## 1. 微服务定义
 
@@ -252,7 +252,104 @@ sdk.start();
 process.on('SIGTERM', () => sdk.shutdown().then(() => process.exit(0)));
 ```
 
-## 10. 服务治理
+## 10. API Gateway 与 BFF 模式
+
+```typescript
+// api-gateway.ts — 统一入口、路由聚合、认证鉴权
+
+import { createProxyMiddleware } from 'http-proxy-middleware';
+import express from 'express';
+
+const app = express();
+
+// 认证中间件
+app.use('/api', verifyJwtToken);
+
+// 路由聚合：将多个微服务 API 聚合为统一端点
+app.use('/api/users', createProxyMiddleware({ target: 'http://user-service:3001', changeOrigin: true }));
+app.use('/api/orders', createProxyMiddleware({ target: 'http://order-service:3002', changeOrigin: true }));
+app.use('/api/inventory', createProxyMiddleware({ target: 'http://inventory-service:3003', changeOrigin: true }));
+
+// BFF（Backend for Frontend）— 为移动端定制聚合 API
+app.get('/mobile/home', async (req, res) => {
+  const [user, recommendations, notifications] = await Promise.all([
+    fetchUser(req.userId),
+    fetchRecommendations(req.userId),
+    fetchNotifications(req.userId),
+  ]);
+  res.json({ user, recommendations, notifications });
+});
+```
+
+## 11. 健康检查与优雅关闭
+
+```typescript
+// health-check.ts — Kubernetes 探针与优雅关闭
+
+import http from 'http';
+
+let isReady = false;
+let isShuttingDown = false;
+
+const server = http.createServer((req, res) => {
+  if (req.url === '/healthz') {
+    res.writeHead(200);
+    res.end('OK');
+    return;
+  }
+  if (req.url === '/ready') {
+    res.writeHead(isReady && !isShuttingDown ? 200 : 503);
+    res.end(isReady ? 'Ready' : 'Not Ready');
+    return;
+  }
+  // ... 业务处理
+});
+
+// 优雅关闭
+process.on('SIGTERM', () => {
+  isShuttingDown = true;
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    // 关闭数据库连接等
+    process.exit(0);
+  });
+});
+
+// 启动完成后标记就绪
+connectToDatabase().then(() => {
+  isReady = true;
+  server.listen(3000);
+});
+```
+
+## 12. 重试与抖动（Jitter）退避
+
+```typescript
+// retry-with-jitter.ts — 指数退避 + 全抖动，避免惊群效应
+
+async function fetchWithRetryAndJitter<T>(
+  fn: () => Promise<T>,
+  options: { retries?: number; baseDelay?: number; maxDelay?: number } = {}
+): Promise<T> {
+  const { retries = 3, baseDelay = 100, maxDelay = 10000 } = options;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt === retries) throw err;
+      // 全抖动：random(0, min(maxDelay, baseDelay * 2^attempt))
+      const expDelay = Math.min(baseDelay * 2 ** attempt, maxDelay);
+      const jitter = Math.random() * expDelay;
+      await new Promise(resolve => setTimeout(resolve, jitter));
+    }
+  }
+  throw new Error('Unreachable');
+}
+```
+
+## 13. 服务治理
 
 - **服务发现**: Consul、Eureka、Kubernetes DNS
 - **负载均衡**: 轮询、最小连接、一致性哈希
@@ -260,7 +357,7 @@ process.on('SIGTERM', () => sdk.shutdown().then(() => process.exit(0)));
 - **限流**: 令牌桶、漏桶算法保护服务
 - **链路追踪**: OpenTelemetry、Jaeger 追踪请求链路
 
-## 11. 与相邻模块的关系
+## 14. 与相邻模块的关系
 
 - **70-distributed-systems**: 分布式系统基础理论
 - **22-deployment-devops**: 微服务的 CI/CD 流程
@@ -279,3 +376,10 @@ process.on('SIGTERM', () => sdk.shutdown().then(() => process.exit(0)));
 - [OpenTelemetry — Node.js](https://opentelemetry.io/docs/instrumentation/js/getting-started/nodejs/)
 - [Saga Pattern — Chris Richardson](https://microservices.io/patterns/data/saga.html)
 - [opossum — Circuit Breaker](https://nodeshift.dev/opossum/)
+- [Microsoft — Cloud Design Patterns](https://learn.microsoft.com/en-us/azure/architecture/patterns/) — 微软云设计模式库
+- [CNCF — Cloud Native Landscape](https://landscape.cncf.io/) — 云原生技术全景图
+- [AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html) — AWS 架构最佳实践
+- [Google Cloud — Microservices Best Practices](https://cloud.google.com/architecture/microservices-best-practices) — Google 微服务实践
+- [Kubernetes — Health Checks](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) — K8s 探针配置
+- [Envoy Proxy — Architecture](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview) — 服务网格代理架构
+- [Istio — Service Mesh Concepts](https://istio.io/latest/docs/concepts/what-is-istio/) — Istio 服务网格概念

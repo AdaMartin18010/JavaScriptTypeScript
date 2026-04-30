@@ -246,13 +246,171 @@ spec:
 - **Helm**: Kubernetes 包管理器
 - **服务网格**: Istio、Linkerd，提供 mTLS、流量管理、可观测性
 
-## 7. 与相邻模块的关系
+## 7. 代码示例：金丝雀发布 TypeScript 控制器
+
+```typescript
+// canary-controller.ts — 基于权重的渐进式流量切换
+interface Deployment {
+  version: string;
+  replicas: number;
+  weight: number; // 0-100 的流量权重
+}
+
+class CanaryController {
+  private stable: Deployment;
+  private canary: Deployment;
+  private stepSize = 10;
+
+  constructor(stableVersion: string, canaryVersion: string, totalReplicas: number) {
+    this.stable = { version: stableVersion, replicas: totalReplicas, weight: 100 };
+    this.canary = { version: canaryVersion, replicas: 0, weight: 0 };
+  }
+
+  startCanary(canaryReplicas: number): void {
+    this.canary.replicas = canaryReplicas;
+    this.stable.replicas -= canaryReplicas;
+    console.log(`[Canary] Started: stable=${this.stable.replicas}, canary=${this.canary.replicas}`);
+  }
+
+  promote(): void {
+    // 逐步增加 canary 权重
+    while (this.canary.weight < 100) {
+      this.canary.weight = Math.min(100, this.canary.weight + this.stepSize);
+      this.stable.weight = 100 - this.canary.weight;
+      console.log(`[Canary] Weight: stable=${this.stable.weight}%, canary=${this.canary.weight}%`);
+      // 实际场景中此处会调用负载均衡器 API 更新权重
+    }
+    // 切换完成，canary 成为新的 stable
+    this.stable = { ...this.canary, weight: 100 };
+    this.canary = { version: '', replicas: 0, weight: 0 };
+    console.log('[Canary] Promotion complete');
+  }
+
+  rollback(): void {
+    this.canary.weight = 0;
+    this.stable.weight = 100;
+    this.stable.replicas += this.canary.replicas;
+    this.canary.replicas = 0;
+    console.log('[Canary] Rolled back to stable');
+  }
+}
+
+// 使用示例
+const ctrl = new CanaryController('v1.2.3', 'v1.3.0', 10);
+ctrl.startCanary(2); // 先放 2 个 canary 实例
+// 经过监控验证后...
+ctrl.promote();      // 逐步切流量
+```
+
+## 8. 代码示例：健康检查端点与优雅关闭
+
+```typescript
+// health-check.ts — Express/Fastify 通用健康检查与优雅关闭
+import { createServer } from 'node:http';
+
+interface HealthStatus {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  checks: Record<string, { status: 'pass' | 'fail'; latencyMs: number }>;
+  uptime: number;
+}
+
+class HealthChecker {
+  private startTime = Date.now();
+  private shuttingDown = false;
+  private checks = new Map<string, () => Promise<boolean>>();
+
+  register(name: string, check: () => Promise<boolean>) {
+    this.checks.set(name, check);
+  }
+
+  async runChecks(): Promise<HealthStatus> {
+    const results: HealthStatus['checks'] = {};
+    let allPass = true;
+
+    for (const [name, check] of this.checks) {
+      const start = performance.now();
+      try {
+        const pass = await check();
+        results[name] = { status: pass ? 'pass' : 'fail', latencyMs: Math.round(performance.now() - start) };
+        if (!pass) allPass = false;
+      } catch {
+        results[name] = { status: 'fail', latencyMs: Math.round(performance.now() - start) };
+        allPass = false;
+      }
+    }
+
+    return {
+      status: this.shuttingDown ? 'unhealthy' : allPass ? 'healthy' : 'degraded',
+      checks: results,
+      uptime: Date.now() - this.startTime,
+    };
+  }
+
+  initiateShutdown(signal: string, server: ReturnType<typeof createServer>) {
+    console.log(`Received ${signal}, initiating graceful shutdown...`);
+    this.shuttingDown = true;
+
+    // 停止接受新连接，等待现有请求完成
+    server.close(() => {
+      console.log('HTTP server closed');
+      process.exit(0);
+    });
+
+    // 强制退出兜底
+    setTimeout(() => {
+      console.error('Forced shutdown after timeout');
+      process.exit(1);
+    }, 30_000);
+  }
+}
+
+// Express 集成示例
+// app.get('/health', async (_req, res) => {
+//   const status = await healthChecker.runChecks();
+//   res.status(status.status === 'healthy' ? 200 : 503).json(status);
+// });
+```
+
+## 9. 代码示例：GitOps 资源同步状态检测
+
+```typescript
+// gitops-sync-check.ts — 检查 Git 期望状态与集群实际状态差异
+interface K8sResource {
+  kind: string;
+  name: string;
+  namespace: string;
+  desiredImage: string;
+  actualImage?: string;
+}
+
+async function detectDrift(desired: K8sResource[]): Promise<K8sResource[]> {
+  const drifted: K8sResource[] = [];
+
+  for (const res of desired) {
+    // 实际场景中通过 Kubernetes API 获取实际状态
+    const actual = await getClusterResource(res.kind, res.name, res.namespace);
+    if (actual?.image !== res.desiredImage) {
+      drifted.push({ ...res, actualImage: actual?.image });
+    }
+  }
+
+  return drifted;
+}
+
+// 模拟 K8s API 调用
+async function getClusterResource(kind: string, name: string, namespace: string): Promise<{ image: string } | undefined> {
+  // 此处应调用 kubectl / Kubernetes Client API
+  return { image: `registry/${kind.toLowerCase()}:${name}-${namespace}` };
+}
+```
+
+## 10. 与相邻模块的关系
 
 - **93-deployment-edge-lab**: 边缘环境的部署策略
 - **72-container-orchestration**: Kubernetes 与容器编排
 - **74-observability**: 生产环境监控与告警
 
-## 8. 权威参考与外部链接
+## 11. 权威参考与外部链接
 
 | 资源 | 描述 | 链接 |
 |------|------|------|
@@ -270,7 +428,13 @@ spec:
 | **CNCF Cloud Native Trail Map** | 云原生技术全景 | [cncf.io/trail-map](https://www.cncf.io/trail-map/) |
 | **Istio Service Mesh Docs** | 服务网格指南 | [istio.io/latest/docs](https://istio.io/latest/docs/) |
 | **GitLab CI/CD Documentation** | 官方流水线文档 | [docs.gitlab.com/ee/ci](https://docs.gitlab.com/ee/ci/) |
+| **Kubernetes HPA Documentation** | 自动扩缩容指南 | [kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) |
+| **Azure — Blue-Green Deployment** | 蓝绿部署最佳实践 | [learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks-mission-critical](https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks-mission-critical) |
+| **AWS — Canary Deployments** | 金丝雀发布指南 | [docs.aws.amazon.com/whitepapers/latest/blue-green-deployments/blue-green-deployments.html](https://docs.aws.amazon.com/whitepapers/latest/blue-green-deployments/blue-green-deployments.html) |
+| **Spotify — Backstage** | 开发者平台开源项目 | [backstage.io](https://backstage.io/) — 内部开发者门户 |
+| **OpenGitOps** | GitOps 标准工作组 | [opengitops.dev](https://opengitops.dev/) |
+| **CNCF — DevOps Toolkit** | 云原生 DevOps 工具集 | [cncf.io/projects/](https://www.cncf.io/projects/) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

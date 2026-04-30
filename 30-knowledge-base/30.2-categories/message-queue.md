@@ -13,6 +13,7 @@
 | **NATS** | NATS | 云原生，轻量 |
 | **BullMQ** | Redis | Node.js 原生，任务队列 |
 | **SQS** | HTTP | AWS 托管 |
+| **Redis Streams** | Redis | 轻量日志流，消费组 |
 
 ---
 
@@ -227,6 +228,105 @@ async function natsPubSub() {
 natsPubSub();
 ```
 
+### Redis Streams + 消费组
+
+```typescript
+import Redis from 'ioredis';
+
+const redis = new Redis({ host: 'localhost', port: 6379 });
+
+// 生产者：向 Stream 追加消息
+async function addStreamEvent(stream: string, data: Record<string, unknown>) {
+  const id = await redis.xadd(stream, '*', 'payload', JSON.stringify(data));
+  console.log(`[Redis Streams] 添加消息 ID: ${id}`);
+  return id;
+}
+
+// 消费者：使用消费组读取
+async function consumeStreamGroup(
+  stream: string,
+  group: string,
+  consumer: string
+) {
+  // 确保消费组存在
+  try {
+    await redis.xgroup('CREATE', stream, group, '$', 'MKSTREAM');
+  } catch (err: any) {
+    if (!err.message.includes('BUSYGROUP')) throw err;
+  }
+
+  // 读取未确认消息
+  const messages = await redis.xreadgroup(
+    'GROUP', group, consumer,
+    'COUNT', 10,
+    'BLOCK', 5000,
+    'STREAMS', stream, '>'
+  );
+
+  if (!messages) return [];
+
+  const results = [];
+  for (const [, entries] of messages) {
+    for (const [id, fields] of entries as [string, string[]][]) {
+      const payload = JSON.parse(fields[1]);
+      results.push({ id, payload });
+      // 确认消息已处理
+      await redis.xack(stream, group, id);
+    }
+  }
+  return results;
+}
+
+// 示例运行
+(async () => {
+  await addStreamEvent('events:user-actions', { action: 'login', userId: 'u123' });
+  const msgs = await consumeStreamGroup('events:user-actions', 'processors', 'worker-1');
+  console.log('消费消息:', msgs);
+})();
+```
+
+### AWS SQS 消息队列
+
+```typescript
+import { SQSClient, SendMessageCommand, ReceiveMessageCommand, DeleteMessageCommand } from '@aws-sdk/client-sqs';
+
+const sqs = new SQSClient({ region: 'us-east-1' });
+const QUEUE_URL = process.env.SQS_QUEUE_URL!;
+
+// 发送消息
+async function sendSQSMessage(body: string, attributes?: Record<string, string>) {
+  const command = new SendMessageCommand({
+    QueueUrl: QUEUE_URL,
+    MessageBody: body,
+    MessageAttributes: Object.fromEntries(
+      Object.entries(attributes || {}).map(([k, v]) => [k, { DataType: 'String', StringValue: v }])
+    ),
+  });
+  const result = await sqs.send(command);
+  console.log('[SQS] 消息发送:', result.MessageId);
+  return result.MessageId;
+}
+
+// 接收消息
+async function receiveSQSMessage() {
+  const command = new ReceiveMessageCommand({
+    QueueUrl: QUEUE_URL,
+    MaxNumberOfMessages: 10,
+    WaitTimeSeconds: 20, // 长轮询
+    MessageAttributeNames: ['All'],
+  });
+  const result = await sqs.send(command);
+  for (const msg of result.Messages || []) {
+    console.log('[SQS] 收到:', msg.Body);
+    // 删除已处理消息
+    await sqs.send(new DeleteMessageCommand({
+      QueueUrl: QUEUE_URL,
+      ReceiptHandle: msg.ReceiptHandle!,
+    }));
+  }
+}
+```
+
 ---
 
 ## 选型
@@ -237,6 +337,8 @@ natsPubSub();
 | 事件流（日志/指标）| Kafka / Redpanda |
 | 实时消息 | NATS |
 | 云原生微服务 | NATS / RabbitMQ |
+| 轻量日志流 + 消费组 | Redis Streams |
+| AWS 云原生 | SQS / SNS |
 
 ---
 
@@ -251,8 +353,14 @@ natsPubSub();
 - [nats.js npm](https://www.npmjs.com/package/nats)
 - [BullMQ 官方文档](https://docs.bullmq.io/)
 - [Redis Pub/Sub 文档](https://redis.io/docs/latest/develop/interact/pubsub/)
-- [CloudEvents Specification](https://cloudevents.io/)
+- [Redis Streams 文档](https://redis.io/docs/latest/develop/data-types/streams/)
 - [AWS SQS Documentation](https://docs.aws.amazon.com/sqs/)
+- [AWS SNS Documentation](https://docs.aws.amazon.com/sns/)
+- [CloudEvents Specification](https://cloudevents.io/)
+- [CNCF Cloud Native Landscape — Streaming & Messaging](https://landscape.cncf.io/guide#streaming--messaging) — CNCF 消息中间件全景图
+- [Martin Fowler — Event-Driven Architecture](https://martinfowler.com/articles/201701-event-driven.html) — 事件驱动架构权威综述
+- [Enterprise Integration Patterns](https://www.enterpriseintegrationpatterns.com/) — Hohpe & Woolf 企业集成模式经典
+- [Confluent Blog — Kafka Best Practices](https://www.confluent.io/blog/) — Kafka 工程实践深度文章
 
 ---
 

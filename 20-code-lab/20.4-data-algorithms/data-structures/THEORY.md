@@ -462,6 +462,42 @@ export class LRUCache<K, V> {
 }
 ```
 
+### 4. 双哈希表实现的两数之和
+
+```typescript
+// built-in/map-set.ts — 利用 Map 实现 O(n) 两数之和
+function twoSum(nums: number[], target: number): number[] {
+  const seen = new Map<number, number>();
+  for (let i = 0; i < nums.length; i++) {
+    const complement = target - nums[i];
+    if (seen.has(complement)) {
+      return [seen.get(complement)!, i];
+    }
+    seen.set(nums[i], i);
+  }
+  return [];
+}
+```
+
+### 5. 单调栈 — 下一个更大元素
+
+```typescript
+// monotonic-stack.ts — 单调递减栈求下一个更大元素
+function nextGreaterElement(nums: number[]): number[] {
+  const result = new Array(nums.length).fill(-1);
+  const stack: number[] = []; // 存下标，保持值递减
+
+  for (let i = 0; i < nums.length; i++) {
+    while (stack.length && nums[stack[stack.length - 1]] < nums[i]) {
+      const idx = stack.pop()!;
+      result[idx] = nums[i];
+    }
+    stack.push(i);
+  }
+  return result;
+}
+```
+
 ## 分析方法论
 
 ### 主定理 (Master Theorem)
@@ -604,7 +640,17 @@ $$
 - [VisuAlgo — Segment Tree Visualization](https://visualgo.net/en/segmenttree)
 - [MIT 6.006 — Binary Search Trees](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-fall-2011/lecture-videos/lecture-6-binary-search-trees-treaps/)
 - [GeeksforGeeks — LRU Cache Design](https://www.geeksforgeeks.org/lru-cache-implementation/)
+- [MDN — Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) — JavaScript 内置 Map 对象规范与性能说明
+- [V8 Blog — Fast Properties](https://v8.dev/blog/fast-properties) — V8 引擎哈希表实现内幕
+- [TC39 — Set Methods Proposal](https://github.com/tc39/proposal-set-methods) — JavaScript 原生集合运算提案
+- [Princeton COS 226 — Algorithms](https://algs4.cs.princeton.edu/home/) — Robert Sedgewick 算法课程教材
+- [CMU 15-451 — Algorithm Design and Analysis](https://www.cs.cmu.edu/~15451/) — 卡内基梅隆大学算法课程
+- [Stanford CS 161 — Design and Analysis of Algorithms](https://web.stanford.edu/class/cs161/) — 斯坦福大学算法课程
+- [GeeksforGeeks — Monotonic Stack](https://www.geeksforgeeks.org/introduction-to-monotonic-stack-data-structure-and-algorithm-tutorials/) — 单调栈详解与题目
+- [LeetCode — Two Sum](https://leetcode.com/problems/two-sum/) — 哈希表经典入门题
+- [USACO Guide — Data Structures](https://usaco.guide/silver/intro-ds) — 竞赛编程数据结构学习路径
+- [Khan Academy — Data Structures](https://www.khanacademy.org/computing/computer-science/algorithms) — 数据结构入门视频课程
 
 ---
 
-> 📅 理论深化更新：2026-04-29
+> 📅 理论深化更新：2026-04-30

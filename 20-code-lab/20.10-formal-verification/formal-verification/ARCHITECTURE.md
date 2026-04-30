@@ -1,4 +1,4 @@
-﻿# 形式化验证 — 架构设计
+# 形式化验证 — 架构设计
 
 ## 1. 架构概述
 
@@ -7,50 +7,50 @@
 ## 2. 架构图
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                           输入层 (Input Layer)                           │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                   │
-│  │ Source Code  │  │Specification │  │   Test Or    │                   │
-│  │   (AST)      │  │ (Pre/Post/   │  │  Property    │                   │
-│  │              │  │  Invariant)  │  │              │                   │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘                   │
-└─────────┼─────────────────┼─────────────────┼───────────────────────────┘
-          │                 │                 │
-          ▼                 ▼                 ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        验证引擎层 (Verification Engine)                   │
-│  ┌──────────────────────┐  ┌──────────────────────┐  ┌──────────────┐  │
-│  │   Hoare Triple       │  │   Symbolic Executor  │  │   Property   │  │
-│  │      Parser          │  │   (Path Exploration) │  │   Generator  │  │
-│  └──────────┬───────────┘  └──────────┬───────────┘  └──────┬───────┘  │
-│             │                         │                     │          │
-│             ▼                         ▼                     ▼          │
-│  ┌──────────────────────┐  ┌──────────────────────┐  ┌──────────────┐  │
-│  │ Weakest Precondition │  │   Path Condition     │  │   Shrinker   │  │
-│  │     Calculator       │  │   (PC) Accumulator   │  │   (Delta)    │  │
-│  └──────────┬───────────┘  └──────────┬───────────┘  └──────┬───────┘  │
-└─────────────┼─────────────────────────┼─────────────────────┼──────────┘
-              │                         │                     │
-              ▼                         ▼                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                       求解层 (Solver Layer)                              │
-│  ┌──────────────────────────────────────────────────────────────────┐   │
-│  │                    SMT Solver Interface (Z3 / CVC5)               │   │
-│  │  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌───────────┐  │   │
-│  │  │  Boolean   │  │  Integer   │  │   Array    │  │  BitVec   │  │   │
-│  │  │  Theory    │  │  Theory    │  │  Theory    │  │  Theory   │  │   │
-│  │  └────────────┘  └────────────┘  └────────────┘  └───────────┘  │   │
-│  └──────────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────┘
-              │
-              ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                       输出层 (Output Layer)                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                   │
-│  │  Verified    │  │Counterexample│  │  Coverage    │                   │
-│  │   (Safe)     │  │   (Unsafe)   │  │    Report    │                   │
-│  └──────────────┘  └──────────────┘  └──────────────┘                   │
-└─────────────────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------------------+
+|                           输入层 (Input Layer)                           |
+|  +--------------+  +--------------+  +--------------+                   |
+|  | Source Code  |  |Specification |  |   Test Or    |                   |
+|  |   (AST)      |  | (Pre/Post/   |  |  Property    |                   |
+|  |              |  |  Invariant)  |  |              |                   |
+|  +------+-------+  +------+-------+  +------+-------+                   |
++--------+--------+--------+--------+--------+--------+-------------------+
+         |                 |                 |
+         v                 v                 v
++-------------------------------------------------------------------------+
+|                        验证引擎层 (Verification Engine)                   |
+|  +----------------------+  +----------------------+  +--------------+  |
+|  |   Hoare Triple       |  |   Symbolic Executor  |  |   Property   |  |
+|  |      Parser          |  |   (Path Exploration) |  |   Generator  |  |
+|  +----------+-----------+  +----------+-----------+  +------+-------+  |
+|             |                         |                     |          |
+|             v                         v                     v          |
+|  +----------------------+  +----------------------+  +--------------+  |
+|  | Weakest Precondition |  |   Path Condition     |  |   Shrinker   |  |
+|  |     Calculator       |  |   (PC) Accumulator   |  |   (Delta)    |  |
+|  +----------+-----------+  +----------+-----------+  +------+-------+  |
++-------------+-------------------------+---------------------+----------+
+              |                         |                     |
+              v                         v                     v
++-------------------------------------------------------------------------+
+|                       求解层 (Solver Layer)                              |
+|  +------------------------------------------------------------------+   |
+|  |                    SMT Solver Interface (Z3 / CVC5)               |   |
+|  |  +------------+  +------------+  +------------+  +-----------+  |   |
+|  |  |  Boolean   |  |  Integer   |  |   Array    |  |  BitVec   |  |   |
+|  |  |  Theory    |  |  Theory    |  |  Theory    |  |  Theory   |  |   |
+|  |  +------------+  +------------+  +------------+  +-----------+  |   |
+|  +------------------------------------------------------------------+   |
++-------------------------------------------------------------------------+
+              |
+              v
++-------------------------------------------------------------------------+
+|                       输出层 (Output Layer)                              |
+|  +--------------+  +--------------+  +--------------+                   |
+|  |  Verified    |  |Counterexample|  |  Coverage    |                   |
+|  |   (Safe)     |  |   (Unsafe)   |  |    Report    |                   |
+|  +--------------+  +--------------+  +--------------+                   |
++-------------------------------------------------------------------------+
 ```
 
 ## 3. 核心组件
@@ -195,6 +195,119 @@ forall(arrayOf(int), (arr) => {
 });
 ```
 
+### 6.3 SMT-LIB 编码实战：将谓词转换为求解器输入
+
+```typescript
+// smt-encoder.ts
+// 将高层谓词转换为 SMT-LIB v2 标准格式
+
+class SMTLibEncoder {
+  private decls: string[] = [];
+  private assertions: string[] = [];
+
+  declareInt(name: string): void {
+    this.decls.push(`(declare-fun ${name} () Int)`);
+  }
+
+  assertEq(left: string, right: string): void {
+    this.assertions.push(`(assert (= ${left} ${right}))`);
+  }
+
+  assertLt(left: string, right: string): void {
+    this.assertions.push(`(assert (< ${left} ${right}))`);
+  }
+
+  toSMTLib(): string {
+    return [
+      '(set-logic QF_LIA)',
+      ...this.decls,
+      ...this.assertions,
+      '(check-sat)',
+      '(get-model)',
+    ].join('\n');
+  }
+}
+
+// 示例：验证 x + y = y + x（整数交换律）
+const encoder = new SMTLibEncoder();
+encoder.declareInt('x');
+encoder.declareInt('y');
+encoder.assertions.push('(assert (not (= (+ x y) (+ y x))))');
+console.log(encoder.toSMTLib());
+// 输出交由 Z3 求解，若返回 unsat 则证明交换律成立
+```
+
+### 6.4 符号执行路径探索示例
+
+```typescript
+// symbolic-executor.ts
+// 简化符号执行引擎，追踪路径条件（Path Condition）
+
+interface SymValue {
+  toString(): string;
+}
+
+class SymVar implements SymValue {
+  constructor(public name: string) {}
+  toString() { return this.name; }
+}
+
+class SymExpr implements SymValue {
+  constructor(public op: string, public left: SymValue, public right: SymValue) {}
+  toString() { return `(${this.op} ${this.left} ${this.right})`; }
+}
+
+interface PathState {
+  pc: string[];        // 路径条件累积
+  assignments: Map<string, SymValue>;
+}
+
+function symExecIf(cond: boolean, state: PathState): [PathState, PathState] {
+  const symCond = new SymVar(`b_${state.pc.length}`);
+  const thenState: PathState = {
+    pc: [...state.pc, symCond.toString()],
+    assignments: new Map(state.assignments)
+  };
+  const elseState: PathState = {
+    pc: [...state.pc, `(not ${symCond})`],
+    assignments: new Map(state.assignments)
+  };
+  return [thenState, elseState];
+}
+
+// 示例：符号执行 x = a + b; if (x > 0) y = 1 else y = -1
+// 生成两条路径条件：
+// Path 1: (> (+ a b) 0) ∧ (= y 1)
+// Path 2: (not (> (+ a b) 0)) ∧ (= y -1)
+```
+
+### 6.5 有界模型检测（Bounded Model Checking）
+
+```typescript
+// bmc.ts
+// 通过循环展开将程序转换为 SMT 公式，检测有限步内的性质违反
+
+function unrollLoop(body: Command, invariant: Predicate, bound: number): Command {
+  let result: Command = { type: 'skip' };
+  for (let i = 0; i < bound; i++) {
+    result = {
+      type: 'seq',
+      children: [result, body]
+    };
+  }
+  return result;
+}
+
+// 有界验证：检查循环在 k 次迭代内是否保持性质
+function boundedVerify(loop: Command, invariant: Predicate, bound: number): boolean {
+  const unrolled = unrollLoop(loop, invariant, bound);
+  const wpCalc = new WeakestPreconditionCalculator();
+  const wp = wpCalc.computeWp(unrolled, invariant);
+  // 将 wp 编码为 SMT-LIB 并调用求解器
+  return true; // 占位：实际需 SMT 判定
+}
+```
+
 ## 7. 技术决策
 
 | 决策 | 选择 | 理由 |
@@ -217,3 +330,16 @@ forall(arrayOf(int), (arr) => {
 - [TLA+ Home Page](https://lamport.azurewebsites.net/tla/tla.html) — Leslie Lamport 的 TLA+ 官方页面
 - [Property-Based Testing with fast-check](https://dubzzz.github.io/fast-check.github.com/) — JavaScript 属性测试框架
 - [The Science of Deep Specification (Software Foundations)](https://softwarefoundations.cis.upenn.edu/) — 形式化验证经典教材
+- [SMT-LIB Standard](https://smt-lib.org/) — SMT 求解器统一输入格式规范
+- [Z3 Guide](https://microsoft.github.io/z3guide/) — Z3 求解器官方教程与 Playground
+- [Boogie Verification Language](https://github.com/boogie-org/boogie) — 微软中间验证语言
+- [SPARK Pro](https://www.adacore.com/about-spark) — Ada 形式化验证工具链（航空/铁路工业级）
+- [CompCert Verified Compiler](https://compcert.org/) — 经形式化验证的 C 编译器
+- [Viper Verification Infrastructure](https://www.pm.inf.ethz.ch/research/viper.html) —  ETH Zurich 程序验证框架
+- [F* Programming Language](https://www.fstar-lang.org/) — 支持证明编程的函数式语言（Project Everest）
+- [CBMC: C Bounded Model Checker](https://github.com/diffblue/cbmc) — 有界模型检测工具
+- [Kani Rust Verifier](https://github.com/model-checking/kani) — Rust 代码模型检测器
+
+---
+
+> 架构文档更新：2026-04-30

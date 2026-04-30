@@ -243,7 +243,69 @@ const asyncMod = await import('./modern.ts'); // 异步
 const freshMod = await import('./hot-reload.ts?bust=' + Date.now());
 ```
 
-### 3.8 常见误区
+### 3.8 代码示例：Import Attributes（JSON / CSS 模块导入）
+
+```typescript
+// import-attributes.ts — 使用 import attributes 导入非 JS 模块
+// ES2025 / TypeScript 5.3+ 支持的语法
+
+// 导入 JSON 模块（需运行时支持）
+const config = await import('./config.json', { with: { type: 'json' } });
+console.log(config.default.apiEndpoint);
+
+// 导入 CSS 模块（部分浏览器实验性支持）
+const styles = await import('./theme.css', { with: { type: 'css' } });
+// styles.default 是一个 CSSStyleSheet 对象
+document.adoptedStyleSheets = [...document.adoptedStyleSheets, styles.default];
+
+// Node.js 中使用 import attributes
+import pkg from './package.json' with { type: 'json' };
+console.log(pkg.version);
+
+// 动态导入带 attributes
+async function loadConfigWithType(path: string) {
+  return import(path, { with: { type: 'json' } });
+}
+```
+
+### 3.9 代码示例：模块联邦（Module Federation）动态加载
+
+```typescript
+// module-federation-loader.ts — 微前端场景下的跨构建动态加载
+// @module-federation/enhanced 提供类型安全的远程加载
+
+declare const __webpack_init_sharing__: (scope: string) => Promise<void>;
+declare const __webpack_share_scopes__: Record<string, unknown>;
+
+async function loadRemoteModule(remoteUrl: string, scope: string, module: string) {
+  // 加载远程容器脚本
+  await new Promise<void>((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = remoteUrl;
+    script.onload = () => resolve();
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+
+  // 初始化共享作用域
+  await __webpack_init_sharing__('default');
+  const container = (window as any)[scope];
+  await container.init(__webpack_share_scopes__.default);
+
+  // 获取远程模块
+  const factory = await container.get(module);
+  return factory();
+}
+
+// 使用示例
+const RemoteButton = await loadRemoteModule(
+  'https://remote-app.example.com/remoteEntry.js',
+  'remote_app',
+  './Button'
+);
+```
+
+### 3.10 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -251,6 +313,7 @@ const freshMod = await import('./hot-reload.ts?bust=' + Date.now());
 | 循环依赖会自动解决 | 循环依赖可能导致未初始化访问 |
 | `import()` 可以在模板字符串中任意拼接 | 大部分打包器要求模板字符串前缀可静态分析 |
 | 动态导入一定比静态导入好 | 动态导入失去编译时优化机会，应谨慎使用 |
+| Import Attributes 在所有运行时都可用 | JSON 模块导入需要显式启用，旧版 Node 不支持 |
 
 ---
 
@@ -259,17 +322,22 @@ const freshMod = await import('./hot-reload.ts?bust=' + Date.now());
 - [MDN 动态 import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import)
 - [MDN：import.meta](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import.meta)
 - [MDN：JavaScript 模块](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+- [MDN：Import Attributes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import/with)
 - [Vite：动态导入](https://vitejs.dev/guide/features.html#dynamic-import)
 - [Vite：Glob Import](https://vitejs.dev/guide/features.html#glob-import)
 - [Webpack：Module Methods — import()](https://webpack.js.org/api/module-methods/#import-1)
 - [Webpack：Magic Comments](https://webpack.js.org/api/module-methods/#magic-comments)
+- [Webpack：Module Federation](https://webpack.js.org/concepts/module-federation/)
 - [Node.js ESM：import specifiers](https://nodejs.org/api/esm.html#import-specifiers)
 - [Node.js ESM：Interoperability with CommonJS](https://nodejs.org/api/esm.html#interoperability-with-commonjs)
 - [Node.js：createRequire](https://nodejs.org/api/module.html#modulecreaterequirefilename)
 - [Deno Manual: Modules](https://docs.deno.com/runtime/fundamentals/modules/) — Deno 模块系统指南
 - [Bun Docs: Runtime](https://bun.sh/docs/runtime/modules) — Bun 模块加载器
 - [Import Maps Proposal](https://github.com/WICG/import-maps) — WICG 标准提案
+- [Import Attributes Proposal](https://github.com/tc39/proposal-import-attributes) — TC39 Stage 4 提案
 - [ECMAScript® 2025 — Import Calls](https://tc39.es/ecma262/#sec-import-calls)
+- [ECMAScript® 2025 — Import Attributes](https://tc39.es/ecma262/#sec-import-attributes)
+- [Module Federation 2.0 官方文档](https://module-federation.io/) — 微前端模块联邦
 - `10-fundamentals/10.1-language-semantics/06-modules/`
 
 ---

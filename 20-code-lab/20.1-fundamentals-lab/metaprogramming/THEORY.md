@@ -255,7 +255,90 @@ class UserController {
 console.log(Reflect.getMetadata('controller:path', UserController)); // '/users'
 ```
 
-## 8. 与相邻模块的关系
+## 8. 代码示例：WeakRef 与 FinalizationRegistry
+
+```typescript
+// WeakRef：不阻止垃圾回收的弱引用
+class ImageCache {
+  private cache = new Map<string, WeakRef<HTMLImageElement>>();
+  private registry = new FinalizationRegistry<string>((key) => {
+    console.log(`Image ${key} was garbage collected`);
+    this.cache.delete(key);
+  });
+
+  set(key: string, img: HTMLImageElement) {
+    const ref = new WeakRef(img);
+    this.cache.set(key, ref);
+    this.registry.register(img, key);
+  }
+
+  get(key: string): HTMLImageElement | undefined {
+    const ref = this.cache.get(key);
+    return ref?.deref(); // 若对象已被回收，返回 undefined
+  }
+}
+
+// 使用示例
+const cache = new ImageCache();
+{
+  const img = new Image();
+  img.src = 'large-photo.jpg';
+  cache.set('photo', img);
+}
+// img 超出作用域后可能被 GC，FinalizationRegistry 会清理 Map 中的条目
+```
+
+## 9. 代码示例：自定义元素与 Web Components 元编程
+
+```typescript
+// 使用自定义元素和 Shadow DOM 实现封装组件
+class BaseElement extends HTMLElement {
+  protected shadow: ShadowRoot;
+
+  constructor() {
+    super();
+    this.shadow = this.attachShadow({ mode: 'open' });
+  }
+
+  connectedCallback() {
+    this.render();
+  }
+
+  render() {
+    this.shadow.innerHTML = `<slot></slot>`;
+  }
+}
+
+// 使用装饰器注册自定义元素
+function CustomElement(tagName: string) {
+  return function (target: CustomElementConstructor) {
+    if (!customElements.get(tagName)) {
+      customElements.define(tagName, target);
+    }
+  };
+}
+
+@CustomElement('user-card')
+class UserCard extends BaseElement {
+  static observedAttributes = ['name', 'role'];
+
+  attributeChangedCallback(name: string, oldVal: string, newVal: string) {
+    if (oldVal !== newVal) this.render();
+  }
+
+  render() {
+    const name = this.getAttribute('name') ?? 'Unknown';
+    const role = this.getAttribute('role') ?? 'guest';
+    this.shadow.innerHTML = `
+      <style>:host { display: block; padding: 1rem; border: 1px solid #ccc; }</style>
+      <h3>${name}</h3>
+      <span class="badge">${role}</span>
+    `;
+  }
+}
+```
+
+## 10. 与相邻模块的关系
 
 - **56-code-generation**: AST 操作与代码生成
 - **68-plugin-system**: 插件系统的元编程应用
@@ -266,10 +349,16 @@ console.log(Reflect.getMetadata('controller:path', UserController)); // '/users'
 - [Proxy — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
 - [Reflect — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect)
 - [Symbol — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)
+- [WeakRef — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef)
+- [FinalizationRegistry — MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry)
+- [Custom Elements — MDN](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements)
 - [ECMAScript Decorators Proposal](https://github.com/tc39/proposal-decorators) — TC39 Stage 3 提案
 - [JavaScript Metaprogramming with Proxy — 2ality](https://2ality.com/2014/12/es6-proxies.html)
 - [Vue 3 Reactivity Source Code](https://github.com/vuejs/core/tree/main/packages/reactivity)
 - [Reflect Metadata — TC39 Proposal](https://github.com/tc39/proposal-decorators/blob/master/metadata.md)
 - [MDN — Well-known Symbols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol#well-known_symbols)
 - [V8 Blog — Proxies in V8](https://v8.dev/blog/optimizing-proxies)
+- [V8 Blog — WeakRefs and FinalizationRegistry](https://v8.dev/features/weak-references)
 - [2ality — Symbols in ECMAScript 6](https://2ality.com/2014/12/es6-symbols.html)
+- [2ality — WeakRefs and FinalizationRegistry](https://2ality.com/2020/05/weakrefs-finalizationregistry.html)
+- [Web Components — web.dev](https://web.dev/articles/web-components)

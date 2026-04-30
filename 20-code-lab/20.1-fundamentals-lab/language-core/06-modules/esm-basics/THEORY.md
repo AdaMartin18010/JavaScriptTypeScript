@@ -259,25 +259,110 @@ import { someValue } from './values.js';
 import type { SomeType } from './types.js';
 ```
 
+### 3.4 代码示例：Top-Level Await 与模块加载控制
+
+```typescript
+// db-connection.ts — 使用 top-level await 初始化模块级资源
+import { createConnection } from './db-client.js';
+
+// 模块加载时自动等待连接建立
+export const db = await createConnection({
+  host: process.env.DB_HOST,
+  poolSize: 10,
+});
+
+// 消费模块无需手动等待
+// routes.ts
+import { db } from './db-connection.js';
+// db 已保证连接成功
+export async function getUsers() {
+  return db.query('SELECT * FROM users');
+}
+```
+
+```typescript
+// config-loader.ts — 使用 top-level await 加载配置
+const configResponse = await fetch('/api/config');
+export const appConfig = await configResponse.json();
+
+// 条件 top-level await
+const isDev = process.env.NODE_ENV === 'development';
+export const analytics = isDev
+  ? { track: () => {} } // mock
+  : await import('./analytics-prod.js').then(m => m.default);
+```
+
+### 3.5 代码示例：Import Attributes 与 JSON/CSS 模块
+
+```typescript
+// 静态导入 JSON（TypeScript 5.3+ / Node.js 18.20+ / ES2025）
+import pkg from './package.json' with { type: 'json' };
+console.log(pkg.version);
+
+// 类型声明辅助（TypeScript 4.5+）
+declare module '*.json' {
+  const value: unknown;
+  export default value;
+}
+
+// CSS 模块导入（实验性，部分浏览器支持）
+import sheet from './styles.css' with { type: 'css' };
+// sheet: CSSStyleSheet
+document.adoptedStyleSheets.push(sheet);
+```
+
+### 3.6 代码示例：ESM 树摇优化验证
+
+```typescript
+// tree-shake-demo.ts — 验证打包器能否正确 tree-shake
+// utils.ts
+export function used() { return 'I am used'; }
+export function unused() { return 'I should be removed'; } // 会被 tree-shake
+
+// main.ts
+import { used } from './utils.js';
+console.log(used());
+
+// 检查输出：unused 函数不应出现在最终 bundle 中
+// 使用 Rollup / Webpack / esbuild 的分析工具验证
+```
+
+```typescript
+// side-effect-free-marker.ts — 使用 package.json 标记无副作用
+// package.json
+{
+  "sideEffects": false,
+  // 或精确指定哪些文件有副作用
+  "sideEffects": ["*.css", "./polyfills.js"]
+}
+```
+
 ### 3.4 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | ESM 和 CJS 可以随意混用 | 互操作需要特定加载器和转换规则 |
 | 循环依赖会自动解决 | 循环依赖可能导致未初始化访问 |
+| Top-level await 会阻塞所有导入 | 仅阻塞当前模块的求值，不影响并行加载的其他模块 |
+| `.js` 扩展名在 TypeScript 中写错没关系 | NodeNext 解析下必须写 `.js`，TS 会原样保留 |
 
 ### 3.5 扩展阅读
 
 - [MDN JavaScript 模块](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
 - [MDN：export](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/export)
 - [MDN：import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import)
+- [MDN：Top-level await](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await#top_level_await)
+- [MDN：Import Attributes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import/with)
 - [Node.js：ECMAScript Modules](https://nodejs.org/api/esm.html)
 - [Node.js：Interop with CommonJS](https://nodejs.org/api/esm.html#interoperability-with-commonjs)
 - [ECMAScript® 2025 — Modules](https://tc39.es/ecma262/#sec-modules)
+- [ECMAScript® 2025 — Top-Level Await](https://tc39.es/ecma262/#sec-modules-evaluating)
 - [Node.js：Package Entry Points (exports field)](https://nodejs.org/api/packages.html#package-entry-points)
 - [TypeScript: ECMAScript Module Support in Node.js](https://www.typescriptlang.org/docs/handbook/esm-node.html)
 - [Web.dev: JavaScript Modules](https://web.dev/articles/modules-intro)
 - [Sindre Sorhus: Pure ESM Package Guide](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c)
+- [Rollup: Tree Shaking Guide](https://rollupjs.org/tutorial/#tree-shaking)
+- [esbuild: Tree Shaking](https://esbuild.github.io/api/#tree-shaking)
 - `10-fundamentals/10.1-language-semantics/06-modules/`
 
 ---

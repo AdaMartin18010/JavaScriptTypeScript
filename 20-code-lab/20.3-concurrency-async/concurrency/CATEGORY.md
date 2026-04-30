@@ -230,6 +230,49 @@ function releaseLock() {
 // releaseLock();
 ```
 
+## 代码示例：Promise.race 超时包装器
+
+```typescript
+// timeout-race.ts — 为任意 Promise 添加超时控制
+
+function withTimeout<T>(promise: Promise<T>, ms: number, signal?: AbortSignal): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => {
+      const timer = setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms);
+      signal?.addEventListener('abort', () => {
+        clearTimeout(timer);
+        reject(new Error('Aborted before timeout'));
+      });
+    }),
+  ]);
+}
+
+// 使用
+const user = await withTimeout(fetch('/api/user').then(r => r.json()), 5000);
+```
+
+## 代码示例：BroadcastChannel 跨页面通信
+
+```typescript
+// broadcast-channel.ts — 同源多标签页/Worker 广播
+
+const channel = new BroadcastChannel('app_sync');
+
+// 发送状态更新
+channel.postMessage({ type: 'THEME_CHANGE', payload: 'dark' });
+
+// 接收广播
+channel.onmessage = (event) => {
+  if (event.data.type === 'THEME_CHANGE') {
+    document.body.classList.toggle('dark', event.data.payload === 'dark');
+  }
+};
+
+// 清理
+// channel.close();
+```
+
 ## 权威外部链接
 
 - [MDN — Concurrency model and the event loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop)
@@ -252,6 +295,10 @@ function releaseLock() {
 - [MDN — SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer)
 - [MDN — structuredClone](https://developer.mozilla.org/en-US/docs/Web/API/structuredClone)
 - [V8 Blog — Elements Kinds and Performance](https://v8.dev/blog/elements-kinds)
+- [MDN — BroadcastChannel](https://developer.mozilla.org/en-US/docs/Web/API/BroadcastChannel)
+- [Node.js — AsyncLocalStorage](https://nodejs.org/api/async_context.html#class-asynclocalstorage)
+- [WHATWG — HTML Living Standard: Web Workers](https://html.spec.whatwg.org/multipage/workers.html)
+- [TC39 — Top-level await](https://github.com/tc39/proposal-top-level-await)
 
 ## 关联索引
 

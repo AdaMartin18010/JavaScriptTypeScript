@@ -267,6 +267,165 @@ export default function transformer(file: FileInfo, api: API, options: Options) 
 - **代码模板**: 基于 AST 的代码片段生成
 - **宏（Macro）**: 编译期代码生成（如 `babel-plugin-macros`）
 
+## 10. 代码示例：LLM 驱动的代码生成（OpenAI API）
+
+```typescript
+// llm-codegen.ts — 利用大语言模型生成类型安全代码
+import OpenAI from 'openai';
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+interface GeneratedCode {
+  filename: string;
+  code: string;
+  language: 'typescript' | 'javascript';
+}
+
+async function generateZodSchemaFromDescription(
+  description: string
+): Promise<GeneratedCode> {
+  const prompt = `
+根据以下描述生成 TypeScript Zod Schema，只输出代码块：
+"""${description}"""
+要求：
+1. 使用 z.object() 定义
+2. 包含 .email()、.min()、.max() 等约束
+3. 导出类型推导：export type X = z.infer<typeof XSchema>;
+`;
+
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4o',
+    messages: [
+      { role: 'system', content: '你是一个 TypeScript 代码生成专家。' },
+      { role: 'user', content: prompt },
+    ],
+    temperature: 0.2,
+  });
+
+  const raw = completion.choices[0].message.content ?? '';
+  const code = raw.replace(/```typescript\n?/g, '').replace(/```\n?/g, '').trim();
+
+  return { filename: 'generated-schema.ts', code, language: 'typescript' };
+}
+
+// 使用示例
+const result = await generateZodSchemaFromDescription(
+  '用户注册表单：邮箱（必填）、密码（8-32位）、年龄（可选，18-120）、角色（admin/user/guest）'
+);
+console.log(result.code);
+```
+
+## 11. 代码示例：GraphQL Code Generator 端到端类型生成
+
+```typescript
+// codegen.ts — 基于 GraphQL Schema 生成 TypeScript 类型与 React Hooks
+import { codegen } from '@graphql-codegen/core';
+import * as typescriptPlugin from '@graphql-codegen/typescript';
+import * as typescriptOperationsPlugin from '@graphql-codegen/typescript-operations';
+import * as typescriptReactApolloPlugin from '@graphql-codegen/typescript-react-apollo';
+import { buildSchema } from 'graphql';
+
+const schema = buildSchema(`
+  type Query {
+    user(id: ID!): User
+  }
+  type User {
+    id: ID!
+    email: String!
+    profile: Profile
+  }
+  type Profile {
+    displayName: String
+    avatar: String
+  }
+`);
+
+const documents = [
+  {
+    document: parse(`
+      query GetUser($id: ID!) {
+        user(id: $id) {
+          id
+          email
+          profile { displayName avatar }
+        }
+      }
+    `),
+  },
+];
+
+const output = await codegen({
+  schema,
+  documents,
+  config: { skipTypename: true },
+  filename: 'generated.ts',
+  pluginMap: {
+    typescript: typescriptPlugin,
+    typescriptOperations: typescriptOperationsPlugin,
+    typescriptReactApollo: typescriptReactApolloPlugin,
+  },
+  plugins: [
+    { typescript: {} },
+    { typescriptOperations: {} },
+    { typescriptReactApollo: { withHooks: true } },
+  ],
+});
+
+// 输出包含：TypeScript 类型 + React Apollo useGetUserQuery Hook
+console.log(output);
+```
+
+## 12. 代码示例：自定义 ESLint 规则（自动代码规范生成）
+
+```typescript
+// eslint-plugin-custom/rules/no-raw-sql.ts
+import { Rule } from 'eslint';
+
+const rule: Rule.RuleModule = {
+  meta: {
+    type: 'problem',
+    docs: {
+      description: '禁止直接拼接 SQL 字符串，强制使用参数化查询',
+      category: 'Security',
+      recommended: true,
+    },
+    schema: [],
+    messages: {
+      noRawSql:
+        '检测到可能的 SQL 注入风险。请使用参数化查询或查询构建器（如 Knex / Prisma）。',
+    },
+  },
+  create(context) {
+    return {
+      // 检测字符串拼接中的 SQL 关键字
+      BinaryExpression(node) {
+        if (node.operator !== '+') return;
+        const source = context.getSourceCode().getText(node);
+        const sqlKeywords = /SELECT|INSERT|UPDATE|DELETE|DROP/i;
+        if (sqlKeywords.test(source) && source.includes('+')) {
+          context.report({ node, messageId: 'noRawSql' });
+        }
+      },
+      // 检测模板字符串中的变量插值 + SQL 关键字
+      TemplateLiteral(node) {
+        const source = context.getSourceCode().getText(node);
+        const sqlKeywords = /SELECT|INSERT|UPDATE|DELETE/i;
+        if (sqlKeywords.test(source) && node.expressions.length > 0) {
+          context.report({ node, messageId: 'noRawSql' });
+        }
+      },
+    };
+  },
+};
+
+export default rule;
+
+// 注册方式：在 eslint.config.js 中
+// import customPlugin from './eslint-plugin-custom';
+// plugins: { custom: customPlugin },
+// rules: { 'custom/no-raw-sql': 'error' }
+```
+
 ## 10. 与相邻模块的关系
 
 - **79-compiler-design**: 编译器的完整设计
@@ -297,6 +456,19 @@ export default function transformer(file: FileInfo, api: API, options: Options) 
 | Vite Plugin API | 文档 | [vitejs.dev/guide/api-plugin](https://vitejs.dev/guide/api-plugin) |
 | Rollup Plugin Development | 文档 | [rollupjs.org/plugin-development](https://rollupjs.org/plugin-development/) |
 | Rome / Biome | 代码库 | [github.com/biomejs/biome](https://github.com/biomejs/biome) — 下一代 JS 工具链 |
+| GraphQL Code Generator | 文档 | [the-guild.dev/graphql/codegen](https://the-guild.dev/graphql/codegen) — GraphQL 端到端类型生成 |
+| OpenAI API | 文档 | [platform.openai.com/docs](https://platform.openai.com/docs) — LLM 驱动代码生成 |
+| Anthropic Claude API | 文档 | [docs.anthropic.com](https://docs.anthropic.com/) — Claude 代码辅助 |
+| LangChain.js | 仓库 | [github.com/langchain-ai/langchainjs](https://github.com/langchain-ai/langchainjs) — LLM 应用框架 |
+| Prettier Plugin API | 文档 | [prettier.io/docs/en/plugins](https://prettier.io/docs/en/plugins.html) — 代码格式化插件开发 |
+| ESLint Custom Rules | 文档 | [eslint.org/docs/latest/extend/custom-rules](https://eslint.org/docs/latest/extend/custom-rules) — 自定义规则开发 |
+| tsoa — TypeScript OpenAPI | 仓库 | [github.com/lukeautry/tsoa](https://github.com/lukeautry/tsoa) — 从 TypeScript 控制器生成 OpenAPI Spec |
+| Prisma Client Extensions | 文档 | [prisma.io/docs/orm/prisma-client/client-extensions](https://www.prisma.io/docs/orm/prisma-client/client-extensions) — 运行时代码生成扩展 |
+| NestJS CLI & Schematics | 文档 | [docs.nestjs.com/recipes/crud-generator](https://docs.nestjs.com/recipes/crud-generator) — 基于模板的 CRUD 生成 |
+| Plop.js | 仓库 | [github.com/plopjs/plop](https://github.com/plopjs/plop) — 轻量级微生成器框架 |
+| Hygen | 仓库 | [github.com/jondot/hygen](https://github.com/jondot/hygen) — 可扩展代码生成器 |
+| Swc Plugin Development | 文档 | [swc.rs/docs/plugin/selecting-swc-core](https://swc.rs/docs/plugin/selecting-swc-core) — SWC 插件开发指南 |
+| Rust Bindings for Node.js (napi-rs) | 仓库 | [github.com/napi-rs/napi-rs](https://github.com/napi-rs/napi-rs) — Rust 原生 Node 模块 |
 
 ---
 

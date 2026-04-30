@@ -531,6 +531,153 @@ function deserializeOrderCreated(buffer: Buffer): unknown {
 
 ---
 
+## 代码示例：Sidecar 模式 — OpenTelemetry Agent 注入
+
+```typescript
+// sidecar-otel.ts — Sidecar 模式实现可观测性解耦
+// 此模式无需修改业务代码，通过共享进程命名空间注入探针
+
+// docker-compose 中的 Sidecar 配置示例
+/*
+version: '3.8'
+services:
+  order-service:
+    image: order-service:v1
+    network_mode: "service:otel-sidecar"
+  otel-sidecar:
+    image: otel/opentelemetry-collector-contrib:latest
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    command: ["--config", "/etc/otelcol-contrib/config.yaml"]
+*/
+
+// 程序化 Sidecar 健康检查代理
+import http from 'http';
+
+class SidecarHealthProxy {
+  constructor(
+    private mainPort: number,
+    private sidecarPort: number
+  ) {}
+
+  async checkAll(): Promise<{ main: boolean; sidecar: boolean }> {
+    const [main, sidecar] = await Promise.all([
+      this.httpCheck(`http://localhost:${this.mainPort}/health`),
+      this.httpCheck(`http://localhost:${this.sidecarPort}/health`),
+    ]);
+    return { main, sidecar };
+  }
+
+  private httpCheck(url: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      http.get(url, (res) => resolve(res.statusCode === 200))
+          .on('error', () => resolve(false));
+    });
+  }
+}
+
+// Kubernetes 中的 Sidecar 注入（Init Container + shared volume）
+/*
+initContainers:
+  - name: copy-otel-agent
+    image: otel-agent:latest
+    volumeMounts:
+      - name: otel-agent-vol
+        mountPath: /agent
+containers:
+  - name: app
+    volumeMounts:
+      - name: otel-agent-vol
+        mountPath: /opt/otel
+    env:
+      - name: NODE_OPTIONS
+        value: "--require /opt/otel/auto-instrument.js"
+*/
+```
+
+## 代码示例：健康检查聚合模式
+
+```typescript
+// health-aggregator.ts — 聚合多个依赖的健康状态
+
+interface HealthIndicator {
+  name: string;
+  check: () => Promise<{ status: 'up' | 'down'; details?: Record<string, unknown> }>;
+}
+
+class HealthAggregator {
+  private indicators: HealthIndicator[] = [];
+
+  register(indicator: HealthIndicator): void {
+    this.indicators.push(indicator);
+  }
+
+  async checkAll(): Promise<{
+    status: 'up' | 'down' | 'degraded';
+    components: Record<string, { status: 'up' | 'down'; details?: Record<string, unknown> }>;
+  }> {
+    const results = await Promise.allSettled(
+      this.indicators.map(async (ind) => ({
+        name: ind.name,
+        result: await ind.check(),
+      }))
+    );
+
+    const components: Record<string, any> = {};
+    let downCount = 0;
+
+    results.forEach((r) => {
+      if (r.status === 'fulfilled') {
+        components[r.value.name] = r.value.result;
+        if (r.value.result.status === 'down') downCount++;
+      } else {
+        components[r.status === 'rejected' ? 'unknown' : ''] = { status: 'down', error: String(r.reason) };
+        downCount++;
+      }
+    });
+
+    const overallStatus = downCount === 0 ? 'up' : downCount === this.indicators.length ? 'down' : 'degraded';
+    return { status: overallStatus, components };
+  }
+}
+
+// NestJS 风格使用
+const health = new HealthAggregator();
+
+health.register({
+  name: 'database',
+  check: async () => {
+    await prisma.$queryRaw`SELECT 1`;
+    return { status: 'up' };
+  },
+});
+
+health.register({
+  name: 'redis',
+  check: async () => {
+    await redis.ping();
+    return { status: 'up' };
+  },
+});
+
+health.register({
+  name: 'nats',
+  check: async () => {
+    const info = await natsClient.info();
+    return { status: info.connected ? 'up' : 'down' };
+  },
+});
+
+// Express 路由
+app.get('/health', async (_req, res) => {
+  const result = await health.checkAll();
+  const statusCode = result.status === 'up' ? 200 : result.status === 'degraded' ? 200 : 503;
+  res.status(statusCode).json(result);
+});
+```
+
+---
+
 ## 最佳实践
 
 1. **数据库 per Service**：禁止直接访问其他服务的数据库
@@ -565,6 +712,11 @@ function deserializeOrderCreated(buffer: Buffer): unknown {
 | CloudEvents Specification | <https://cloudevents.io/> | 事件数据标准化规范 |
 | Apache Avro | <https://avro.apache.org/docs/> | 数据序列化与 Schema 注册 |
 | Confluent Schema Registry | <https://docs.confluent.io/platform/current/schema-registry/index.html> | Kafka Schema 管理 |
+| Google SRE Book | <https://sre.google/sre-book/table-of-contents/> | 站点可靠性工程圣经 |
+| AWS — Multi-Account Strategy | <https://docs.aws.amazon.com/whitepapers/latest/organizing-your-aws-environment/introduction.html> | AWS 多账户架构 |
+| CNCF — Cloud Native Trail Map | <https://landscape.cncf.io/> | 云原生技术全景图 |
+| Dapr — Distributed Application Runtime | <https://docs.dapr.io/> | 微服务构建块框架 |
+| Linkerd — Service Mesh | <https://linkerd.io/docs/> | 轻量级服务网格 |
 
 ---
 
@@ -666,3 +818,7 @@ describe('UserService Contract', () => {
 | NATS Streaming | <https://docs.nats.io/nats-concepts/jetstream> | JetStream 持久化消息 |
 | Kubernetes Services | <https://kubernetes.io/docs/concepts/services-networking/service/> | K8s 服务网络 |
 | Envoy Proxy | <https://www.envoyproxy.io/docs/envoy/latest/> | 服务网格数据面 |
+| Prometheus — Node.js Client | <https://github.com/siimon/prom-client> | 指标采集库 |
+| Jaeger Tracing | <https://www.jaegertracing.io/docs/> | 分布式追踪系统 |
+| Grafana Labs | <https://grafana.com/docs/> | 可观测性平台 |
+| Helm — Kubernetes Package Manager | <https://helm.sh/docs/> | K8s 应用包管理 |

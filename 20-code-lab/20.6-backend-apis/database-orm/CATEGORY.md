@@ -19,20 +19,20 @@ created: 2026-04-28
 
 ## 目录内容
 
-- 📄 README.md
-- 📄 THEORY.md
-- 📄 _MIGRATED_FROM.md
-- 📄 connection-pool.test.ts
-- 📄 connection-pool.ts
-- 📄 drizzle-patterns.ts
-- 📄 index.ts
-- 📄 migration-system.test.ts
-- 📄 migration-system.ts
-- 📄 prisma-patterns.test.ts
-- 📄 prisma-patterns.ts
-- 📄 schema-builder.ts
-- 📄 sql-query-builder.test.ts
-- 📄 sql-query-builder.ts
+- README.md
+- THEORY.md
+- _MIGRATED_FROM.md
+- connection-pool.test.ts
+- connection-pool.ts
+- drizzle-patterns.ts
+- index.ts
+- migration-system.test.ts
+- migration-system.ts
+- prisma-patterns.test.ts
+- prisma-patterns.ts
+- schema-builder.ts
+- sql-query-builder.test.ts
+- sql-query-builder.ts
 
 
 ---
@@ -82,7 +82,7 @@ class QueryBuilder<T extends TableSchema> {
   }
 }
 
-// ── 使用示例 ──
+// 使用示例
 interface User { id: number; name: string; email: string; age: number; }
 
 const qb = new QueryBuilder<User>('users')
@@ -224,6 +224,183 @@ function createNewConnection(): unknown {
 }
 ```
 
+## 新增代码示例
+
+### 事务重试与幂等性模式
+
+```typescript
+// transaction-retry.ts — 带指数退避的自动重试
+
+export interface TransactionOptions {
+  maxRetries?: number;
+  baseDelayMs?: number;
+  retryableErrors?: string[];
+}
+
+export async function withRetry<T>(
+  operation: () => Promise<T>,
+  options: TransactionOptions = {}
+): Promise<T> {
+  const { maxRetries = 3, baseDelayMs = 100, retryableErrors = ['deadlock', 'timeout'] } = options;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      const isRetryable = retryableErrors.some(e =>
+        error.message?.toLowerCase().includes(e) ||
+        error.code?.toLowerCase().includes(e)
+      );
+
+      if (!isRetryable || attempt === maxRetries) throw error;
+
+      const delay = baseDelayMs * Math.pow(2, attempt);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw new Error('Unreachable');
+}
+
+// 使用示例（Prisma）
+export async function createOrderWithRetry(data: OrderInput) {
+  return withRetry(
+    () => prisma.$transaction(async (tx) => {
+      const order = await tx.order.create({ data });
+      await tx.inventory.update({
+        where: { productId: data.productId },
+        data: { quantity: { decrement: data.quantity } },
+      });
+      return order;
+    }),
+    { maxRetries: 3, retryableErrors: ['deadlock', 'serialization'] }
+  );
+}
+```
+
+### 软删除与全局过滤
+
+```typescript
+// soft-delete.ts — Prisma 软删除中间件
+
+import { Prisma } from '@prisma/client';
+
+export const softDeleteMiddleware: Prisma.Middleware = async (params, next) => {
+  if (params.model === 'User' || params.model === 'Post') {
+    // 拦截 delete 操作，改为更新 deletedAt
+    if (params.action === 'delete') {
+      params.action = 'update';
+      params.args.data = { deletedAt: new Date() };
+    }
+    if (params.action === 'deleteMany') {
+      params.action = 'updateMany';
+      params.args.data = { deletedAt: new Date() };
+    }
+
+    // 为 find/findMany/findFirst 自动添加 deletedAt: null 过滤
+    if (['findUnique', 'findFirst', 'findMany', 'count'].includes(params.action)) {
+      params.args.where = {
+        ...params.args.where,
+        deletedAt: null,
+      };
+    }
+  }
+
+  return next(params);
+};
+
+// prisma.$use(softDeleteMiddleware);
+```
+
+### 审计日志触发器模式
+
+```typescript
+// audit-log.ts — 基于 Prisma 中间件的变更追踪
+
+import { Prisma } from '@prisma/client';
+
+interface AuditLogEntry {
+  table: string;
+  recordId: string;
+  action: 'CREATE' | 'UPDATE' | 'DELETE';
+  oldData: Record<string, unknown> | null;
+  newData: Record<string, unknown> | null;
+  changedAt: Date;
+  changedBy: string;
+}
+
+export function createAuditMiddleware(getUserId: () => string): Prisma.Middleware {
+  return async (params, next) => {
+    const before = params.action === 'update' || params.action === 'delete'
+      ? await (params.model as any).findUnique?.({ where: params.args.where })
+      : null;
+
+    const result = await next(params);
+
+    if (['create', 'update', 'delete'].includes(params.action)) {
+      const entry: AuditLogEntry = {
+        table: params.model,
+        recordId: result?.id ?? params.args.where?.id,
+        action: params.action.toUpperCase() as AuditLogEntry['action'],
+        oldData: before ? JSON.parse(JSON.stringify(before)) : null,
+        newData: result ? JSON.parse(JSON.stringify(result)) : null,
+        changedAt: new Date(),
+        changedBy: getUserId(),
+      };
+      // 异步写入审计表，不阻塞主操作
+      prisma.auditLog.create({ data: entry }).catch(console.error);
+    }
+
+    return result;
+  };
+}
+```
+
+### 批量操作与冲突处理
+
+```typescript
+// bulk-operations.ts — 类型安全批量插入与 upsert
+
+import { Prisma } from '@prisma/client';
+
+export async function bulkUpsertUsers(
+  prisma: PrismaClient,
+  users: Array<{ email: string; name: string; metadata?: object }>
+) {
+  // 使用 createMany 进行高速批量插入
+  const { count } = await prisma.user.createMany({
+    data: users.map(u => ({
+      ...u,
+      updatedAt: new Date(),
+    })),
+    skipDuplicates: true,
+  });
+
+  // 对冲突记录执行更新（数据库支持 upsert 时）
+  const conflicts = await prisma.$transaction(
+    users.map(u =>
+      prisma.user.upsert({
+        where: { email: u.email },
+        update: { name: u.name, metadata: u.metadata, updatedAt: new Date() },
+        create: u,
+      })
+    )
+  );
+
+  return { inserted: count, upserted: conflicts.length };
+}
+
+// Drizzle 批量插入示例
+export async function bulkInsertPosts(
+  db: DbClient,
+  posts: Array<typeof schema.posts.$inferInsert>
+) {
+  return db.insert(schema.posts)
+    .values(posts)
+    .onConflictDoNothing({ target: schema.posts.id })
+    .returning();
+}
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -239,7 +416,13 @@ function createNewConnection(): unknown {
 | PostgreSQL 官方文档 | 文档 | [postgresql.org/docs](https://www.postgresql.org/docs/) |
 | PlanetScale — Database branching | 指南 | [planetscale.com/docs/concepts/branching](https://planetscale.com/docs/concepts/branching) |
 | Node.js — Event Loop 与 I/O | 文档 | [nodejs.org/en/learn/asynchronous-work/event-loop-explained](https://nodejs.org/en/learn/asynchronous-work/event-loop-explained) |
+| Prisma Accelerate | 连接池与缓存 | [prisma.io/data-platform/accelerate](https://www.prisma.io/data-platform/accelerate) |
+| Drizzle Kit Migrations | 迁移工具 | [orm.drizzle.team/kit-docs/overview](https://orm.drizzle.team/kit-docs/overview) |
+| MikroORM Documentation | 数据映射器 ORM | [mikro-orm.io](https://mikro-orm.io/) |
+| Kysely — Type-safe SQL Query Builder | 文档 | [kysely.dev](https://kysely.dev/) |
+| sqlc — Compile SQL to TypeScript | 代码生成 | [sqlc.dev](https://sqlc.dev/) |
+| Database normalization — 3NF/BCNF | 理论 | [w3resource.com/sql/database-normalization.php](https://www.w3resource.com/sql/database-normalization.php) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

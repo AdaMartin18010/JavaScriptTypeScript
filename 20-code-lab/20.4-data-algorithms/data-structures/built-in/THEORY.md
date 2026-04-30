@@ -241,7 +241,105 @@ console.log(intersection(activeUsers, premiumUsers)); // 活跃且付费
 console.log(difference(activeUsers, premiumUsers));   // 活跃但未付费
 ```
 
-## 十、权威参考链接
+## 十、代码示例：Map 与 Object 性能基准对比
+
+```typescript
+// performance-benchmark.ts — 量化 Map vs Object 的增删查性能差异
+
+function benchmark<T>(name: string, fn: () => T, iterations: number): number {
+  const start = performance.now();
+  for (let i = 0; i < iterations; i++) fn();
+  return performance.now() - start;
+}
+
+const ITERATIONS = 1_000_000;
+const keys = Array.from({ length: ITERATIONS }, (_, i) => `key-${i}`);
+
+// Object 写入
+const objWrite = benchmark('Object write', () => {
+  const obj: Record<string, number> = {};
+  for (let i = 0; i < 1000; i++) obj[keys[i]] = i;
+}, 1000);
+
+// Map 写入
+const mapWrite = benchmark('Map write', () => {
+  const map = new Map<string, number>();
+  for (let i = 0; i < 1000; i++) map.set(keys[i], i);
+}, 1000);
+
+// Object 读取
+const obj: Record<string, number> = {};
+for (let i = 0; i < ITERATIONS; i++) obj[keys[i]] = i;
+const objRead = benchmark('Object read', () => {
+  for (let i = 0; i < 1000; i++) obj[keys[i]];
+}, 1000);
+
+// Map 读取
+const map = new Map<string, number>();
+for (let i = 0; i < ITERATIONS; i++) map.set(keys[i], i);
+const mapRead = benchmark('Map read', () => {
+  for (let i = 0; i < 1000; i++) map.get(keys[i]);
+}, 1000);
+
+console.table({
+  'Object write (ms)': objWrite,
+  'Map write (ms)': mapWrite,
+  'Object read (ms)': objRead,
+  'Map read (ms)': mapRead,
+});
+// 结论：频繁增删时 Map 通常更快；固定结构读取时 Object 可能更快（V8 内联缓存）
+```
+
+## 十一、代码示例：WeakRef 与 FinalizationRegistry
+
+```typescript
+// weak-references.ts — ES2021 弱引用与终结器
+
+class CachedImage {
+  private ref: WeakRef<HTMLImageElement>;
+  private cleanup = new FinalizationRegistry<string>((src) => {
+    console.log(`Image ${src} was garbage collected`);
+  });
+
+  constructor(src: string) {
+    const img = new Image();
+    img.src = src;
+    this.ref = new WeakRef(img);
+    this.cleanup.register(img, src);
+  }
+
+  getImage(): HTMLImageElement | undefined {
+    return this.ref.deref();
+  }
+}
+
+// 使用：当图片不再被其他地方引用时，WeakRef 返回 undefined
+const cache = new CachedImage('/large-asset.png');
+const img = cache.getImage();
+if (img) document.body.appendChild(img);
+// 当 img 从 DOM 移除且无其他引用时，FinalizationRegistry 回调触发
+```
+
+## 十二、代码示例：Record & Tuple（Stage 3 TC39 提案）
+
+```typescript
+// record-and-tuple.ts — 不可变值类型（需 @babel/plugin-proposal-record-and-tuple）
+
+// Record：不可深层变对象
+const config = #{ name: 'app', port: 3000, features: #['auth', 'api'] };
+
+// Record 按值比较，非引用比较
+console.log(#{ a: 1 } === #{ a: 1 }); // true
+
+// Tuple：不可变数组
+const coords = #[10, 20, 30];
+
+// 与 Object.freeze 的区别：Record/Tuple 在任何层级都不可变且按值比较
+// const frozen = Object.freeze({ nested: { value: 1 } });
+// frozen.nested.value = 2; // 静默失败（或严格模式下报错）— 但 !== 按引用比较
+```
+
+## 十三、权威参考链接
 
 | 资源 | 说明 | 链接 |
 |------|------|------|
@@ -257,6 +355,12 @@ console.log(difference(activeUsers, premiumUsers));   // 活跃但未付费
 | MDN — SharedArrayBuffer | 共享内存缓冲区 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) |
 | MDN — DataView | 多字节数据视图 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView) |
 | V8 Blog — Design Elements Kinds | 数组性能优化内幕 | [v8.dev/blog/elements-kinds](https://v8.dev/blog/elements-kinds) |
+| MDN — WeakRef | 弱引用对象 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef) |
+| MDN — FinalizationRegistry | 终结器注册表 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry) |
+| TC39 — Record & Tuple Proposal | 不可变值类型提案 | [github.com/tc39/proposal-record-tuple](https://github.com/tc39/proposal-record-tuple) |
+| V8 Blog — Pointer Compression | 指针压缩对结构影响 | [v8.dev/blog/pointer-compression](https://v8.dev/blog/pointer-compression) |
+| MDN — Atomics | 共享内存原子操作 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Atomics) |
+| JavaScript Array Performance — JSBenchIt | 在线基准测试 | [jsbenchit.org](https://jsbenchit.org/) |
 
 ---
 

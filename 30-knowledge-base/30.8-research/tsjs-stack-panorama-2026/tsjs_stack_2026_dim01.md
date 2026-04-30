@@ -150,6 +150,60 @@ function processUsers(users) {
 
 ---
 
+## 二（续）、Node.js 性能分析实践
+
+```javascript
+// profile-v8.js —— 使用 Node.js 内置标志进行性能分析
+// 运行：node --prof --heapsnapshot-near-heap-limit=3 profile-v8.js
+
+function heavyComputation(iterations = 1e6) {
+  const results = [];
+  for (let i = 0; i < iterations; i++) {
+    // 模拟对象创建压力
+    results.push({ index: i, value: Math.sqrt(i), tag: `item-${i}` });
+  }
+  return results;
+}
+
+// 预热
+heavyComputation(1e3);
+
+// 主测试
+console.time('heavy');
+const data = heavyComputation(5e5);
+console.timeEnd('heavy');
+
+console.log('Items created:', data.length);
+
+// 生成堆快照（用于分析内存布局）
+// 需要 --heapsnapshot-near-heap-limit 或手动调用：
+// require('v8').writeHeapSnapshot();
+```
+
+```bash
+# 处理 --prof 日志
+node --prof-process isolate-0x*-v8.log > profile.txt
+
+# 关键指标
+# [JavaScript]: JS 函数自身耗时
+# [C++ builtin]: V8 内置函数耗时
+# [Shared libraries]: 系统库耗时
+# [Summary]: 汇总统计
+```
+
+### V8 诊断标志速查
+
+| 标志 | 用途 |
+|------|------|
+| `--trace-opt` | 追踪 TurboFan 优化事件 |
+| `--trace-deopt` | 追踪去优化事件 |
+| `--trace-ic` | 追踪内联缓存状态 |
+| `--print-bytecode` | 打印 Ignition 字节码 |
+| `--allow-natives-syntax` | 允许 `%DebugPrint(obj)` 等 V8 内部函数 |
+| `--expose-gc` | 暴露 `global.gc()` 用于基准测试 |
+
+---
+
 ## 三、维度分析表：形式-工程-感知映射
 
 | 维度 | 形式层对象 | 工程层实现 | 感知层指标 | 2026 生态趋势 |
@@ -231,6 +285,89 @@ benchmark('Function call', () => add(1, 2));
 - [WebKit JSC Blog](https://webkit.org/blog/category/javascript/) — Safari JavaScriptCore 引擎技术博客
 - [SpiderMonkey Blog](https://spidermonkey.dev/) — Firefox JavaScript 引擎技术更新
 - [io_uring](https://kernel.dk/io_uring.pdf) — Linux 异步 I/O 接口论文（Node.js 性能提升基础）
+- [Node.js Profiling Guide](https://nodejs.org/en/docs/guides/simple-profiling) — 官方性能分析入门
+- [V8 Flags List](https://nodejs.org/en/docs/guides/diagnostics-flamegraph) — Node.js 诊断与火焰图
+- [ECMA-262 16th Edition](https://tc39.es/ecma262/) — 2025 正式版语言规范
+- [TC39 Proposals](https://github.com/tc39/proposals) — 正在审议的语言提案
+- [Go Memory Model](https://go.dev/ref/mem) — Go 内存模型（TS 7.0 编译器基础）
+
+## 进阶代码示例
+
+### 使用 clinic.js 进行 Node.js 性能诊断
+
+```bash
+# 安装 clinic.js
+npm install -g clinic
+
+# 生成火焰图
+clinic doctor -- node profile-v8.js
+clinic flame -- node profile-v8.js
+clinic bubbleprof -- node profile-v8.js
+```
+
+### Worker Threads 并行计算示例
+
+```javascript
+// worker.js
+const { parentPort } = require('worker_threads');
+
+parentPort.on('message', (task) => {
+  const result = heavyComputation(task);
+  parentPort.postMessage(result);
+});
+
+function heavyComputation(n) {
+  let sum = 0;
+  for (let i = 0; i < n; i++) sum += Math.sqrt(i);
+  return sum;
+}
+```
+
+```javascript
+// main.js
+const { Worker } = require('worker_threads');
+
+function runWorker(task) {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker('./worker.js');
+    worker.postMessage(task);
+    worker.on('message', resolve);
+    worker.on('error', reject);
+    worker.on('exit', (code) => {
+      if (code !== 0) reject(new Error(`Worker stopped with code ${code}`));
+    });
+  });
+}
+
+(async () => {
+  const results = await Promise.all([
+    runWorker(1e8),
+    runWorker(1e8),
+    runWorker(1e8),
+  ]);
+  console.log('Results:', results);
+})();
+```
+
+### Node.js io_uring 实验性启用（Linux）
+
+```bash
+# Node.js v24+ 实验性支持 io_uring
+node --experimental-io-uring server.js
+```
+
+---
+
+## 扩展参考链接
+
+- [Node.js Profiling Guide](https://nodejs.org/en/docs/guides/simple-profiling) — 官方性能分析入门
+- [clinic.js Documentation](https://clinicjs.org/) — Node.js 性能诊断工具套件
+- [Node.js Worker Threads](https://nodejs.org/api/worker_threads.html) — 官方多线程模块文档
+- [V8 Blog — Maglev](https://v8.dev/blog/maglev) — Maglev 快速优化编译器
+- [io_uring Paper](https://kernel.dk/io_uring.pdf) — Linux 异步 I/O 接口论文
+- [TC39 Proposals](https://github.com/tc39/proposals) — 正在审议的语言提案
+- [Node.js Diagnostics Flamegraph](https://nodejs.org/en/docs/guides/diagnostics-flamegraph) — 官方火焰图指南
+- [WebKit JSC Blog](https://webkit.org/blog/category/javascript/) — Safari JavaScriptCore 引擎技术博客
 
 ---
 

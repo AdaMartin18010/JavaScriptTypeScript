@@ -176,6 +176,114 @@ effect(() => {
 count.value = 5; // Logs: Count: 5, Doubled: 10
 ```
 
+### Vue 3.5 Reactivity with `ref` and `computed`
+
+```typescript
+// Vue 3.5+ Composition API with reactivity
+import { ref, computed, watch, watchEffect } from 'vue';
+
+function useCounter() {
+  const count = ref(0);
+  const doubled = computed(() => count.value * 2);
+
+  // Watch: explicit dependency tracking
+  watch(count, (newVal, oldVal) => {
+    console.log(`Count changed from ${oldVal} to ${newVal}`);
+  });
+
+  // WatchEffect: automatic dependency collection
+  watchEffect(() => {
+    console.log(`Current doubled value: ${doubled.value}`);
+  });
+
+  function increment() {
+    count.value++;
+  }
+
+  return { count, doubled, increment };
+}
+
+// In component: only the DOM nodes reading `count` or `doubled` re-render
+```
+
+### Angular 16+ Signals in TypeScript
+
+```typescript
+// Angular 16+ standalone component with signals
+import { Component, computed, effect, signal } from '@angular/core';
+
+@Component({
+  selector: 'app-counter',
+  standalone: true,
+  template: `
+    <div>
+      <p>Count: {{ count() }}</p>
+      <p>Doubled: {{ doubled() }}</p>
+      <button (click)="increment()">+1</button>
+    </div>
+  `,
+})
+export class CounterComponent {
+  count = signal(0);
+  doubled = computed(() => this.count() * 2);
+
+  constructor() {
+    // Effect: runs whenever signal dependencies change
+    effect(() => {
+      console.log(`The current count is: ${this.count()}`);
+    });
+  }
+
+  increment() {
+    this.count.update((v) => v + 1);
+  }
+}
+```
+
+### Preact Signals with React Integration
+
+```tsx
+// Preact Signals in a React component (zero re-renders on signal reads)
+import { useSignal, useComputed } from '@preact/signals-react';
+
+function Counter() {
+  const count = useSignal(0);
+  const doubled = useComputed(() => count.value * 2);
+
+  return (
+    <div>
+      <p>Count: {count}</p> {/* Reads signal directly, no hook re-run */}
+      <p>Doubled: {doubled}</p>
+      <button onClick={() => count.value++}>+1</button>
+    </div>
+  );
+}
+```
+
+### Svelte 5 Runes
+
+```svelte
+<!-- Svelte 5: Runes-based reactivity -->
+<script>
+  let count = $state(0);
+  let doubled = $derived(count * 2);
+
+  $effect(() => {
+    console.log(`Count is now ${count}`);
+  });
+
+  function increment() {
+    count++;
+  }
+</script>
+
+<div>
+  <p>Count: {count}</p>
+  <p>Doubled: {doubled}</p>
+  <button onclick={increment}>+1</button>
+</div>
+```
+
 ## Detailed Explanation
 
 The Signals paradigm represents a fundamental shift in how frontend frameworks conceptualize state-to-UI propagation. Rather than treating components as the atomic unit of reactivity—as React Hooks do with their function-re-execution model—Signals treat each individual piece of state and each derived computation as a node in a reactive graph. When an atomic signal changes, the update does not cascade through a component tree; instead, it travels precisely along the edges of the dependency graph, touching only those computations that directly or transitively depend on the changed value.
@@ -195,6 +303,12 @@ The theoretical foundation of Signals can be traced through three intellectual l
 - [Signals Proposal (TC39 Stage 1)](https://github.com/tc39/proposal-signals) — TC39 proposal for standardizing signals in JavaScript.
 - [Fine-Grained Reactivity by Ryan Carniato](https://dev.to/ryansolid/a-hands-on-introduction-to-fine-grained-reactivity-3ndf) — Author of SolidJS explains the core concepts.
 - [React vs Signals: 10 Years Later](https://www.builder.io/blog/react-vs-signals) — Builder.io comparative analysis of React and signals performance.
+- [Rob Pike — Go Concurrency Patterns](https://go.dev/talks/2012/concurrency.slide) — Foundational concurrency primitives that influenced signal design.
+- [Conal Elliott — Push-Pull Functional Reactive Programming](http://conal.net/papers/push-pull-frp/push-pull-frp.pdf) — Academic paper on FRP semantics.
+- [krausest/js-framework-benchmark](https://krausest.github.io/js-framework-benchmark/) — Benchmark data for framework performance comparisons.
+- [MDN — Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components) — Browser-native component model that signals complement.
+- [TC39 Process Document](https://tc39.es/process-document/) — Understanding how the Signals proposal advances through standardization.
+- [SolidJS Blog — The Future of Reactivity](https://www.solidjs.com/blog/) — Latest architectural discussions from the SolidJS team.
 
 ---
 

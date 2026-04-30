@@ -17,14 +17,14 @@ status: current
 | 指标 | Express | Fastify | NestJS | Koa | Hono | Elysia |
 |------|---------|---------|--------|-----|------|--------|
 | **发布年份** | 2010 | 2016 | 2017 | 2013 | 2021 | 2023 |
-| **维护方** | OpenJS | OpenJS | 社区 (Kamil Myśliwiec) | Koajs | HonoJS | Elysiajs |
+| **维护方** | OpenJS | OpenJS | 社区 (Kamil Mysliwiec) | Koajs | HonoJS | Elysiajs |
 | **设计哲学** | 极简中间件 | 高性能 + 插件 | 企业级架构 | 下一代中间件 | 超轻量跨运行时 | Bun 原生端到端类型 |
 | **性能 (req/s)** | ~18K (Node 22) | ~72K (Node 22) | ~45K (Fastify adapter) | ~25K | ~230K (Node 22) / ~460K (Bun 1.2) / **~840K (CF Workers)** | ~980K (Bun 1.2) |
 | **TypeScript 支持** | @types/express (社区) | 极佳（原生 + typebox） | 极佳（原生 required） | 需手动配置 | 极佳（原生, type-inferred） | 极佳（原生, Eden Treaty） |
-| **依赖注入 (DI)** | ❌ | ❌ | ✅ 内置 | ❌ | ❌ | ✅ 轻量 |
-| **装饰器支持** | ❌ | ❌ | ✅ 核心 | ❌ | ❌ | ✅ 核心 |
-| **JSON Schema 验证** | ❌ (需外部) | ✅ 原生 (内置) | ⚠️ (class-validator) | ❌ | ⚠️ (Zod/valibot 中间件) | ✅ 原生 |
-| **WebSocket 支持** | ❌ (需 Socket.io) | ⚠️ (插件) | ⚠️ (Gateway) | ❌ | ✅ 原生 | ⚠️ (插件) |
+| **依赖注入 (DI)** | :x: | :x: | :white_check_mark: 内置 | :x: | :x: | :white_check_mark: 轻量 |
+| **装饰器支持** | :x: | :x: | :white_check_mark: 核心 | :x: | :x: | :white_check_mark: 核心 |
+| **JSON Schema 验证** | :x: (需外部) | :white_check_mark: 原生 (内置) | :warning: (class-validator) | :x: | :warning: (Zod/valibot 中间件) | :white_check_mark: 原生 |
+| **WebSocket 支持** | :x: (需 Socket.io) | :warning: (插件) | :warning: (Gateway) | :x: | :white_check_mark: 原生 | :warning: (插件) |
 | **多运行时支持** | Node.js | Node.js | Node.js | Node.js | Node/Bun/Deno/Edge | Bun/Node.js |
 | **学习曲线** | 平缓 | 平缓 | 陡峭 | 中等 | 极平缓 | 平缓 |
 | **企业级采用度** | 极高 | 高 | 高 | 中等 | 快速增长 (~2M npm/周) | 早期采用 (~300K npm/周) |
@@ -38,9 +38,9 @@ status: current
 | **中间件模型** | 回调函数 `(req, res, next)` | 钩子 (Hooks) + 插件 | Express 兼容 + 模块化 | 洋葱模型 (async/await) | 标准 Web API (Request/Response) | 类型推导路由 |
 | **模块化组织** | 手动 Router | 插件封装 | Module + Controller + Service | 手动 Router | 轻量 Router | 类型推导模块 |
 | **ORM 集成** | 任意 | 任意 | Prisma/TypeORM 官方示例 | 任意 | 任意 | 内置类型推导 |
-| **微服务支持** | ❌ | ❌ | ✅ RabbitMQ/Kafka/gRPC | ❌ | ❌ | ❌ |
-| **GraphQL 集成** | ❌ | ❌ | ✅ @nestjs/graphql | ❌ | ❌ | ⚠️ (插件) |
-| **OpenAPI/Swagger** | ❌ (需外部) | ⚠️ (插件) | ✅ @nestjs/swagger | ❌ | ⚠️ (中间件) | ⚠️ (插件) |
+| **微服务支持** | :x: | :x: | :white_check_mark: RabbitMQ/Kafka/gRPC | :x: | :x: | :x: |
+| **GraphQL 集成** | :x: | :x: | :white_check_mark: @nestjs/graphql | :x: | :x: | :warning: (插件) |
+| **OpenAPI/Swagger** | :x: (需外部) | :warning: (插件) | :white_check_mark: @nestjs/swagger | :x: | :warning: (中间件) | :warning: (插件) |
 
 ---
 
@@ -51,7 +51,7 @@ status: current
 | 企业级大型后端系统 | **NestJS** | Fastify | 依赖注入、模块化、微服务、GraphQL 一站式支持 |
 | 极致性能 API (Bun) | **Elysia** | Hono | Bun 1.2 上 Elysia ~980K req/s，Hono ~460K req/s；均为 Rust/编译时优化级吞吐 |
 | 快速原型 / 小型服务 | **Fastify** | Express | 零配置 TS，原生 JSON Schema，开发体验极佳 |
-| 边缘计算 / Serverless | **Hono** | — | 超小包体积 (~12KB)，多运行时兼容，Cloudflare Workers 首选；CF Workers 实测 **~840K req/s**，WinterTC/Ecma TC55 合规 |
+| 边缘计算 / Serverless | **Hono** | -- | 超小包体积 (~12KB)，多运行时兼容，Cloudflare Workers 首选；CF Workers 实测 **~840K req/s**，WinterTC/Ecma TC55 合规 |
 | 传统项目维护 / 招聘友好 | **Express** | Fastify | 生态最成熟，人才储备最大，中间件最多 |
 | 现代化中间件链式控制 | **Koa** | Fastify | 洋葱模型 async/await，错误处理更优雅 |
 | 全栈 TypeScript (Bun 生态) | **Elysia** | Hono | Eden Treaty 实现端到端类型安全 API 调用；Hono 提供 `hc` 类型安全 RPC |
@@ -62,12 +62,12 @@ status: current
 
 | 框架 | Node.js | Bun | Deno | Cloudflare Workers | AWS Lambda | Docker |
 |------|---------|-----|------|-------------------|------------|--------|
-| **Express** | ✅ | ✅ | ⚠️ | ❌ | ✅ | ✅ |
-| **Fastify** | ✅ | ✅ | ⚠️ | ❌ | ✅ | ✅ |
-| **NestJS** | ✅ | ⚠️ | ❌ | ❌ | ✅ | ✅ |
-| **Koa** | ✅ | ✅ | ⚠️ | ❌ | ✅ | ✅ |
-| **Hono** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Elysia** | ✅ | ✅ **首选** | ❌ | ⚠️ | ⚠️ | ✅ |
+| **Express** | :white_check_mark: | :white_check_mark: | :warning: | :x: | :white_check_mark: | :white_check_mark: |
+| **Fastify** | :white_check_mark: | :white_check_mark: | :warning: | :x: | :white_check_mark: | :white_check_mark: |
+| **NestJS** | :white_check_mark: | :warning: | :x: | :x: | :white_check_mark: | :white_check_mark: |
+| **Koa** | :white_check_mark: | :white_check_mark: | :warning: | :x: | :white_check_mark: | :white_check_mark: |
+| **Hono** | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+| **Elysia** | :white_check_mark: | :white_check_mark: **首选** | :x: | :warning: | :warning: | :white_check_mark: |
 
 ---
 
@@ -146,7 +146,7 @@ async function bootstrap() {
 bootstrap();
 ```
 
-### Hono — Cloudflare Workers 部署
+### Hono -- Cloudflare Workers 部署
 
 ```typescript
 import { Hono } from 'hono';
@@ -161,6 +161,121 @@ app.get('/api/users/:id', (c) => {
 });
 
 export default app;
+```
+
+### Elysia Eden Treaty 端到端类型安全
+
+```typescript
+// server.ts -- Elysia 服务端定义
+import { Elysia, t } from 'elysia';
+
+const app = new Elysia()
+  .get('/api/users/:id', ({ params }) => {
+    return { id: params.id, name: 'Alice', email: 'alice@example.com' };
+  }, {
+    params: t.Object({ id: t.String() }),
+    response: t.Object({
+      id: t.String(),
+      name: t.String(),
+      email: t.String(),
+    }),
+  })
+  .post('/api/users', ({ body }) => {
+    return { id: crypto.randomUUID(), ...body };
+  }, {
+    body: t.Object({ name: t.String(), email: t.String() }),
+    response: t.Object({ id: t.String(), name: t.String(), email: t.String() }),
+  })
+  .listen(3000);
+
+export type App = typeof app;
+
+// client.ts -- 客户端自动继承服务端类型
+import { edenTreaty } from '@elysiajs/eden';
+import type { App } from './server';
+
+const api = edenTreaty<App>('http://localhost:3000');
+
+// api.users.post 的参数和返回值均自动类型推导
+async function createUser() {
+  const { data } = await api.api.users.post({
+    name: 'Bob',
+    email: 'bob@example.com',
+  });
+  // data 类型: { id: string; name: string; email: string } | null
+  console.log(data?.id);
+}
+
+// api.users[':id'].get 的参数自动推导为 { params: { id: string } }
+async function getUser(id: string) {
+  const { data } = await api.api.users[id].get();
+  // data 类型: { id: string; name: string; email: string } | null
+  return data;
+}
+```
+
+### Fastify 生命周期钩子代码示例
+
+```typescript
+// fastify-hooks.ts -- Fastify 钩子链的完整演示
+import Fastify from 'fastify';
+
+const app = Fastify({ logger: true });
+
+// 1. onRequest -- 请求到达时，可用于认证/日志
+app.addHook('onRequest', async (request, reply) => {
+  request.log.info(`[onRequest] ${request.method} ${request.url}`);
+  const token = request.headers.authorization;
+  if (!token && request.url !== '/health') {
+    reply.code(401).send({ error: 'Unauthorized' });
+    return reply;
+  }
+});
+
+// 2. preParsing -- 解析请求体前，可用于 body 转换
+app.addHook('preParsing', async (request, reply, payload) => {
+  request.log.info('[preParsing] Transforming payload if needed');
+  return payload;
+});
+
+// 3. preValidation -- 校验前，可用于动态 schema 注入
+app.addHook('preValidation', async (request, reply) => {
+  request.log.info('[preValidation] Preparing validation context');
+});
+
+// 4. preHandler -- 路由处理前，最后的数据准备机会
+app.addHook('preHandler', async (request, reply) => {
+  request.log.info('[preHandler] Attaching user context');
+  (request as any).user = { id: 'u1', role: 'admin' };
+});
+
+// 5. Handler -- 业务逻辑
+app.post<{ Body: { name: string } }>(
+  '/users',
+  { schema: { body: { type: 'object', required: ['name'], properties: { name: { type: 'string' } } } } },
+  async (request, reply) => {
+    const user = (request as any).user;
+    return { id: crypto.randomUUID(), name: request.body.name, createdBy: user.id };
+  }
+);
+
+// 6. onSend -- 发送响应前，可用于响应体加密/压缩
+app.addHook('onSend', async (request, reply, payload) => {
+  request.log.info('[onSend] Finalizing response');
+  return payload;
+});
+
+// 7. onResponse -- 响应发送后，Metrics 上报
+app.addHook('onResponse', async (request, reply) => {
+  request.log.info(`[onResponse] ${reply.statusCode} in ${reply.elapsedTime}ms`);
+});
+
+// 8. onError -- 错误处理
+app.addHook('onError', async (request, reply, error) => {
+  request.log.error(`[onError] ${error.message}`);
+});
+
+app.listen({ port: 3000 });
 ```
 
 ---
@@ -210,8 +325,16 @@ flowchart TD
 - [tRPC 文档](https://trpc.io/docs)
 - [WinterTC / Ecma TC55 规范](https://wintertc.org/)
 - [TechEmpower Web Framework Benchmarks](https://www.techempower.com/benchmarks/)
-- [TypeScript Handbook — Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
-- [MDN — Express/Web 框架概念](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/Express_Nodejs)
+- [TypeScript Handbook -- Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
+- [MDN -- Express/Web 框架概念](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/Express_Nodejs)
+- [Elysia Eden Treaty 文档](https://elysiajs.com/eden/treaty.html)
+- [Fastify Hooks 生命周期](https://fastify.dev/docs/latest/Reference/Lifecycle/)
+- [Hono RPC 客户端](https://hono.dev/docs/guides/rpc)
+- [Bun HTTP 服务器性能](https://bun.sh/docs/api/http)
+- [Node.js 性能最佳实践](https://nodejs.org/en/docs/guides/dont-block-the-event-loop/)
+- [OpenJS Foundation -- Express 项目](https://openjsf.org/projects/)
+- [NestJS -- Microservices 文档](https://docs.nestjs.com/microservices/basics)
+- [Fastify -- Benchmark 方法论](https://github.com/fastify/benchmarks)
 
 ---
 
@@ -219,5 +342,5 @@ flowchart TD
 >
 > - [ORM 对比](./orm-compare.md)
 > - [测试框架对比](./testing-compare.md)
-> - `docs/categories/14-backend-frameworks.md` — 后端框架生态导航
-> - `jsts-code-lab/19-backend-development/` — 后端开发模式实现
+> - `docs/categories/14-backend-frameworks.md` -- 后端框架生态导航
+> - `jsts-code-lab/19-backend-development/` -- 后端开发模式实现

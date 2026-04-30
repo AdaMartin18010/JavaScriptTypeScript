@@ -223,12 +223,85 @@ describe('Config Module', () => {
 // 对于 Vitest，直接 import 含顶层 await 的模块即可自动等待。
 ```
 
+### 6.10 TypeScript 声明文件中的顶层 await
+
+```typescript
+// types/global-fetch.d.ts
+// 顶层 await 在 .d.ts 中不可直接使用，但可通过模块级异步工厂暴露类型
+
+declare module 'async-config' {
+  export interface AppConfig {
+    apiUrl: string;
+    timeout: number;
+    features: string[];
+  }
+  // 模块工厂函数签名，供顶层 await 调用
+  export function loadConfig(url: string): Promise<AppConfig>;
+}
+
+// 消费端 (index.ts)
+// import { loadConfig } from 'async-config';
+// export const config = await loadConfig('/api/config');
+```
+
+### 6.11 CommonJS 互操作陷阱与解决方案
+
+```javascript
+// Node.js 中顶层 await 仅在 ESM 中可用，CJS 需显式异步化
+// cjs-compat.cjs — 为 CJS 消费者提供同步访问入口
+
+const { config } = await import('./config.mjs'); // 动态 import() 可加载 ESM
+
+module.exports = { getConfig: () => config };
+
+// ⚠️ 注意：module.exports 赋值发生在 await 之后，CJS 同步 require 可能拿到 undefined
+// 更安全的方式：
+// module.exports = import('./config.mjs').then(m => m.config);
+```
+
+### 6.12 浏览器原生模块中的顶层 await
+
+```html
+<!-- index.html -->
+<script type="module">
+  // 浏览器原生 ESM 支持顶层 await
+  const { initApp } = await import('./app.js');
+  await initApp();
+</script>
+
+<script type="module" src="./analytics.js"></script>
+<!-- analytics.js 若含顶层 await，浏览器会延迟 DOMContentLoaded 直到其完成 -->
+```
+
+### 6.13 Vite / Webpack 对顶层 await 的处理
+
+```javascript
+// vite.config.ts
+export default {
+  build: {
+    target: 'es2022', // 确保输出保留顶层 await
+  },
+  esbuild: {
+    supported: {
+      'top-level-await': true,
+    },
+  },
+};
+
+// webpack.config.js
+module.exports = {
+  experiments: {
+    topLevelAwait: true, // Webpack 5+ 需显式开启
+  },
+};
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §16.2.1.4** — Async Modules: <https://tc39.es/ecma262/#sec-async-modules>
-- **MDN: Top-level await** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules#top_level_await>
+- **MDN: Top-level await** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/await#top_level_await>
 - **V8 Blog — Top-level await** — <https://v8.dev/features/top-level-await>
 - **Node.js ESM Docs** — <https://nodejs.org/api/esm.html#top-level-await>
 - **TC39 Proposal: Top-level await** — <https://github.com/tc39/proposal-top-level-await>
@@ -237,6 +310,13 @@ describe('Config Module', () => {
 - **Node.js — Modules: Packages** — <https://nodejs.org/api/packages.html>
 - **TypeScript ESM Handbook** — <https://www.typescriptlang.org/docs/handbook/esm-node.html>
 - **web.dev — ES Modules in Depth** — <https://web.dev/articles/es-modules-in-depth>
+- **Rollup: Top-Level Await** — <https://rollupjs.org/configuration-options/#output-esmodule>
+- **Webpack 5: Top Level Await Experiment** — <https://webpack.js.org/configuration/experiments/#experimentstoplevelawait>
+- **Vite: Browser Compatibility** — <https://vitejs.dev/guide/build.html#browser-compatibility>
+- **HTML Standard: module scripts** — <https://html.spec.whatwg.org/multipage/webappapis.html#module-scripts>
+- **ES Module Shims** — <https://github.com/guybedford/es-module-shims>（为旧浏览器提供顶层 await polyfill）
+- **Node.js Test Runner ESM Support** — <https://nodejs.org/api/test.html>
+- **Surma.dev: Top-level await in JavaScript** — <https://surma.dev/things/es-modules/>（深度技术剖析）
 
 ---
 
@@ -249,6 +329,7 @@ describe('Config Module', () => {
 | 模块初始化 | ✅ | 获取配置、建立连接 |
 | 动态导入 | ✅ | `const mod = await import("./mod.js")` |
 | 频繁调用的模块 | ❌ | 影响性能 |
+| 库包的入口模块 | ⚠️ | 需评估对消费者的阻塞影响 |
 
 ---
 

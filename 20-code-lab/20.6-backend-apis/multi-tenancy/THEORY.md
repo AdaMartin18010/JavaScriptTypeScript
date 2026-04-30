@@ -182,7 +182,179 @@ class TenantDatabaseRouter {
 
 ---
 
-## 5. 反模式
+## 5. 代码示例：Redis 分布式租户限流
+
+```typescript
+// redis-tenant-limiter.ts — 基于 Redis 的集群级租户限流
+import { Redis } from 'ioredis';
+
+interface RedisRateLimitConfig {
+  windowSeconds: number;
+  maxRequests: number;
+}
+
+class RedisTenantRateLimiter {
+  constructor(private redis: Redis) {}
+
+  async isAllowed(tenantId: string, config: RedisRateLimitConfig): Promise<boolean> {
+    const key = `ratelimit:${tenantId}`;
+    const now = Date.now();
+    const windowStart = now - config.windowSeconds * 1000;
+
+    // 使用 Redis Sorted Set 实现滑动窗口
+    const pipeline = this.redis.pipeline();
+    pipeline.zremrangebyscore(key, 0, windowStart);
+    pipeline.zcard(key);
+    pipeline.zadd(key, now, `${now}-${Math.random()}`);
+    pipeline.pexpire(key, config.windowSeconds * 1000);
+
+    const [, [ , currentCount ], , ] = await pipeline.exec() as [any, [any, number], any, any];
+
+    return currentCount < config.maxRequests;
+  }
+
+  async checkQuota(tenantId: string, resource: 'storage' | 'compute'): Promise<{ used: number; limit: number }> {
+    const used = await this.redis.hget(`quota:${tenantId}`, resource) ?? '0';
+    const limit = await this.redis.hget(`quota:config`, resource) ?? '0';
+    return { used: parseInt(used, 10), limit: parseInt(limit, 10) };
+  }
+}
+
+// Fastify / Express 插件形式集成
+export async function tenantRateLimitPlugin(
+  redis: Redis,
+  getTenantConfig: (tenantId: string) => RedisRateLimitConfig
+) {
+  const limiter = new RedisTenantRateLimiter(redis);
+
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const tenantId = (req as any).tenant?.id;
+    if (!tenantId) return next();
+
+    const config = getTenantConfig(tenantId);
+    const allowed = await limiter.isAllowed(tenantId, config);
+
+    if (!allowed) {
+      return res.status(429).json({
+        error: 'Rate limit exceeded',
+        retryAfter: config.windowSeconds,
+      });
+    }
+    next();
+  };
+}
+```
+
+---
+
+## 6. 代码示例：租户感知的 Prisma 中间件（完整版）
+
+```typescript
+// prisma-tenant-middleware.ts — 完整租户隔离中间件
+import { PrismaClient } from '@prisma/client';
+import { AsyncLocalStorage } from 'async_hooks';
+
+// 租户上下文存储
+const tenantStorage = new AsyncLocalStorage<{ tenantId: string; plan: string }>();
+
+export function getTenantContext() {
+  return tenantStorage.getStore();
+}
+
+export function withTenant<T>(tenantId: string, plan: string, fn: () => Promise<T>): Promise<T> {
+  return tenantStorage.run({ tenantId, plan }, fn);
+}
+
+export function createTenantAwarePrisma(): PrismaClient {
+  const prisma = new PrismaClient();
+
+  prisma.$extends({
+    query: {
+      async $allOperations({ model, operation, args, query }) {
+        const ctx = getTenantContext();
+        if (!ctx || !model) return query(args);
+
+        // 安全模型白名单：排除无租户字段的表
+        const tenantModels = ['User', 'Project', 'Invoice', 'Resource'];
+        if (!tenantModels.includes(model)) return query(args);
+
+        // 注入租户过滤
+        const safeArgs = args ?? {};
+        safeArgs.where = {
+          ...(safeArgs.where ?? {}),
+          tenantId: ctx.tenantId,
+        };
+
+        return query(safeArgs);
+      },
+    },
+  });
+
+  return prisma;
+}
+
+// 在 HTTP 处理链中使用
+// app.use(tenantResolver);
+// app.use(async (req, res, next) => {
+//   await withTenant(req.tenant.id, req.tenant.plan, () => handler(req, res));
+// });
+```
+
+---
+
+## 7. 代码示例：多租户 Schema 迁移策略
+
+```typescript
+// schema-migrator.ts — 独立 Schema 租户的迁移管理
+import { execSync } from 'child_process';
+
+interface TenantSchema {
+  tenantId: string;
+  schemaName: string;
+  databaseUrl: string;
+}
+
+class TenantSchemaMigrator {
+  constructor(private baseDatabaseUrl: string) {}
+
+  async migrateTenant(schema: TenantSchema): Promise<void> {
+    const tenantDbUrl = new URL(this.baseDatabaseUrl);
+    tenantDbUrl.searchParams.set('schema', schema.schemaName);
+
+    // 创建 schema（如果不存在）
+    execSync(
+      `psql "${this.baseDatabaseUrl}" -c "CREATE SCHEMA IF NOT EXISTS \\"${schema.schemaName}\\";"`
+    );
+
+    // 运行 Prisma Migrate（指定 schema）
+    execSync(`npx prisma migrate deploy`, {
+      env: {
+        ...process.env,
+        DATABASE_URL: tenantDbUrl.toString(),
+      },
+      stdio: 'inherit',
+    });
+  }
+
+  async migrateAll(tenants: TenantSchema[]): Promise<{ tenantId: string; success: boolean }[]> {
+    return Promise.all(
+      tenants.map(async (t) => {
+        try {
+          await this.migrateTenant(t);
+          return { tenantId: t.tenantId, success: true };
+        } catch (err) {
+          console.error(`Migration failed for ${t.tenantId}:`, err);
+          return { tenantId: t.tenantId, success: false };
+        }
+      })
+    );
+  }
+}
+```
+
+---
+
+## 8. 反模式
 
 ### 反模式 1：租户泄露
 
@@ -201,7 +373,7 @@ class TenantDatabaseRouter {
 
 ---
 
-## 6. 总结
+## 9. 总结
 
 多租户的核心是**在成本与隔离之间找到平衡**。
 
@@ -225,6 +397,11 @@ class TenantDatabaseRouter {
 | Martin Fowler — Multi-Tenancy | 文章 | [martinfowler.com/articles/multi-tenant-django.html](https://martinfowler.com/articles/multi-tenant-django.html) |
 | Node.js Event Loop 与连接池 | 文档 | [nodejs.org/en/docs/guides/event-loop-timers-and-nexttick](https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick) |
 | Redis Rate Limiting Patterns | 指南 | [redis.io/docs/manual/patterns/distributed-locks](https://redis.io/docs/manual/patterns/distributed-locks) |
+| AWS — SaaS Architecture Patterns | 文档 | [docs.aws.amazon.com/whitepapers/latest/saas-architecture-fundamentals/tenant-isolation.html](https://docs.aws.amazon.com/whitepapers/latest/saas-architecture-fundamentals/tenant-isolation.html) |
+| Google Cloud — Multi-Tenant Design | 指南 | [cloud.google.com/architecture/multitenancy-approaches](https://cloud.google.com/architecture/multitenancy-approaches) |
+| Prisma — Connection Management | 文档 | [prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections) |
+| OWASP — Multi-Tenant Security | 指南 | [owasp.org/www-project-web-security-testing-guide/latest/4-web_application_security_testing/07-session_management_testing](https://owasp.org/www-project-web-security-testing-guide/latest/4-web_application_security_testing/07-session_management_testing) |
+| Node.js AsyncLocalStorage | 文档 | [nodejs.org/api/async_context.html#class-asynclocalstorage](https://nodejs.org/api/async_context.html#class-asynclocalstorage) |
 
 ---
 

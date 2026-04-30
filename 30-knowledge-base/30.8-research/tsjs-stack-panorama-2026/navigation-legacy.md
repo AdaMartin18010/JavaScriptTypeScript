@@ -11,28 +11,28 @@ status: current
 **最后更新**: 2026-04-17
 **文档版本**: v4.0
 **总文档数**: 37 篇
-**覆盖领域**: 语言核心 → 编译工程 → 架构设计 → 学术前沿
+**覆盖领域**: 语言核心 -> 编译工程 -> 架构设计 -> 学术前沿
 
 ---
 
-## 📋 目录
+## :clipboard: 目录
 
 - [JavaScript / TypeScript 全景综述 - 总索引与导航](#javascript--typescript-全景综述---总索引与导航)
-  - [📋 目录](#-目录)
-  - [🚀 快速开始](#-快速开始)
+  - [:clipboard: 目录](#-目录)
+  - [:rocket: 快速开始](#-快速开始)
     - [我是初学者](#我是初学者)
     - [我是中级开发者](#我是中级开发者)
     - [我是高级开发者/架构师](#我是高级开发者架构师)
     - [我是研究人员](#我是研究人员)
-  - [🗺️ 文档全景图](#️-文档全景图)
-  - [📚 按主题分类索引](#-按主题分类索引)
-    - [🎯 P0 核心文档（必学）](#-p0-核心文档必学)
-    - [🔧 工程实践文档](#-工程实践文档)
-    - [🏗️ 架构与系统文档](#️-架构与系统文档)
-    - [🎓 学习与发展文档](#-学习与发展文档)
-    - [🔬 形式化理论与学术文档](#-形式化理论与学术文档)
-    - [📋 规划与参考文档](#-规划与参考文档)
-  - [🛤️ 学习路径推荐](#️-学习路径推荐)
+  - [:world_map: 文档全景图](#️-文档全景图)
+  - [:books: 按主题分类索引](#-按主题分类索引)
+    - [:dart: P0 核心文档（必学）](#-p0-核心文档必学)
+    - [:wrench: 工程实践文档](#-工程实践文档)
+    - [:classical_building: 架构与系统文档](#️-架构与系统文档)
+    - [:mortar_board: 学习与发展文档](#-学习与发展文档)
+    - [:microscope: 形式化理论与学术文档](#-形式化理论与学术文档)
+    - [:clipboard: 规划与参考文档](#-规划与参考文档)
+  - [:railway_track: 学习路径推荐](#️-学习路径推荐)
     - [路径 A：初学者路径（0-6 个月）](#路径-a初学者路径0-6-个月)
     - [路径 B：进阶开发者路径（6-12 个月）](#路径-b进阶开发者路径6-12-个月)
     - [路径 C：架构师路径（12-18 个月）](#路径-c架构师路径12-18-个月)
@@ -40,52 +40,52 @@ status: current
       - [类型系统专家](#类型系统专家)
       - [运行时专家](#运行时专家)
       - [性能优化专家](#性能优化专家)
-  - [🔍 快速查找表](#-快速查找表)
+  - [:mag: 快速查找表](#-快速查找表)
     - [按技术领域查找](#按技术领域查找)
     - [按问题类型查找](#按问题类型查找)
     - [按 TC39 提案阶段查找](#按-tc39-提案阶段查找)
     - [按版本查找](#按版本查找)
-  - [🕸️ 文档依赖关系图](#️-文档依赖关系图)
-  - [📝 更新日志](#-更新日志)
+  - [:spider_web: 文档依赖关系图](#️-文档依赖关系图)
+  - [:memo: 更新日志](#-更新日志)
     - [v3.1 (2026-04-08)](#v31-2026-04-08)
     - [v3.0 (2026-04-02)](#v30-2026-04-02)
     - [v2.x (2026-03)](#v2x-2026-03)
-  - [📦 代码速查：常用 CLI 命令](#-代码速查常用-cli-命令)
-  - [🔬 外部学术资源](#-外部学术资源)
-  - [🔗 外部资源链接](#-外部资源链接)
-  - [💡 使用建议](#-使用建议)
+  - [:package: 代码速查：常用 CLI 命令](#-代码速查常用-cli-命令)
+  - [:microscope: 外部学术资源](#-外部学术资源)
+  - [:link: 外部资源链接](#-外部资源链接)
+  - [:bulb: 使用建议](#-使用建议)
 
 ---
 
-## 🚀 快速开始
+## :rocket: 快速开始
 
 ### 我是初学者
 
-👉 从 [01_language_core.md](./01_language_core.md) 开始，建立语言基础
-👉 接着阅读 [JS_TS_学习路径与技能图谱.md](./JS_TS_学习路径与技能图谱.md) 的 Stage 1-2
-👉 实践 [03_design_patterns.md](./03_design_patterns.md) 中的基础模式
+:point_right: 从 [01_language_core.md](./01_language_core.md) 开始，建立语言基础
+:point_right: 接着阅读 [JS_TS_学习路径与技能图谱.md](./JS_TS_学习路径与技能图谱.md) 的 Stage 1-2
+:point_right: 实践 [03_design_patterns.md](./03_design_patterns.md) 中的基础模式
 
 ### 我是中级开发者
 
-👉 深入 [04_concurrency.md](./04_concurrency.md) 掌握并发模型
-👉 学习 [07_architecture.md](./07_architecture.md) 的系统架构设计
-👉 参考 [JS_TS_工程实践检查清单.md](./JS_TS_工程实践检查清单.md) 规范代码质量
+:point_right: 深入 [04_concurrency.md](./04_concurrency.md) 掌握并发模型
+:point_right: 学习 [07_architecture.md](./07_architecture.md) 的系统架构设计
+:point_right: 参考 [JS_TS_工程实践检查清单.md](./JS_TS_工程实践检查清单.md) 规范代码质量
 
 ### 我是高级开发者/架构师
 
-👉 必读 [JS_TS_深度技术分析.md](./JS_TS_深度技术分析.md) 获取 Executive Summary
-👉 研究 [05_distributed_systems.md](./05_distributed_systems.md) 分布式理论
-👉 关注 [JS_TS_学术前沿瞭望.md](./JS_TS_学术前沿瞭望.md) 掌握 PL 前沿动态
+:point_right: 必读 [JS_TS_深度技术分析.md](./JS_TS_深度技术分析.md) 获取 Executive Summary
+:point_right: 研究 [05_distributed_systems.md](./05_distributed_systems.md) 分布式理论
+:point_right: 关注 [JS_TS_学术前沿瞭望.md](./JS_TS_学术前沿瞭望.md) 掌握 PL 前沿动态
 
 ### 我是研究人员
 
-👉 重点 [JS_TS_语言语义模型全面分析.md](./JS_TS_语言语义模型全面分析.md) 形式化语义
-👉 结合 [FORMAL_SEMANTICS_COMPLETE.md](./FORMAL_SEMANTICS_COMPLETE.md) 深入理论
-👉 参考 [ACADEMIC_ALIGNMENT_2025.md](./ACADEMIC_ALIGNMENT_2025.md) 学术对齐分析
+:point_right: 重点 [JS_TS_语言语义模型全面分析.md](./JS_TS_语言语义模型全面分析.md) 形式化语义
+:point_right: 结合 [FORMAL_SEMANTICS_COMPLETE.md](./FORMAL_SEMANTICS_COMPLETE.md) 深入理论
+:point_right: 参考 [ACADEMIC_ALIGNMENT_2025.md](./ACADEMIC_ALIGNMENT_2025.md) 学术对齐分析
 
 ---
 
-## 🗺️ 文档全景图
+## :world_map: 文档全景图
 
 ```mermaid
 mindmap
@@ -143,21 +143,21 @@ mindmap
 
 ---
 
-## 📚 按主题分类索引
+## :books: 按主题分类索引
 
-### 🎯 P0 核心文档（必学）
+### :dart: P0 核心文档（必学）
 
 | 文档 | 摘要 | 阅读时长 | 前置要求 |
 |------|------|----------|----------|
 | [01_language_core.md](./01_language_core.md) | ECMAScript 2025/2026 新特性、TypeScript 5.8-6.0 类型系统深度解析、严格类型配置最佳实践 | 2h | 无 |
 | [04_concurrency.md](./04_concurrency.md) | Event Loop 执行模型、Promise 语义、Worker/SharedArrayBuffer、内存模型与 happens-before 关系 | 2.5h | 01_language_core |
-| [JS_TS_语言语义模型全面分析.md](./JS_TS_语言语义模型全面分析.md) | 形式化语义三层模型、类型系统 ⊢ 关系、执行上下文与作用域链、模块系统语义 | 3h | 01_language_core, 04_concurrency |
+| [JS_TS_语言语义模型全面分析.md](./JS_TS_语言语义模型全面分析.md) | 形式化语义三层模型、类型系统 |- 关系、执行上下文与作用域链、模块系统语义 | 3h | 01_language_core, 04_concurrency |
 | JS_TS_现代运行时深度分析.md [TODO: 链接待修复] | V8 Turbolev 编译器、Node.js 24 Type Stripping、Deno/Bun 架构对比、WasmGC | 2.5h | 04_concurrency |
 | [JS_TS_标准化生态与运行时互操作.md](./JS_TS_标准化生态与运行时互操作.md) | WinterTC/TC55 标准、Minimum Common Web API、跨运行时兼容性策略 | 1.5h | JS_TS_现代运行时深度分析 |
 | [JS_TS_学术前沿瞭望.md](./JS_TS_学术前沿瞭望.md) | Guarded Domain Theory、Type-Constrained LLM、Relaxed Memory 验证、Structs 提案 | 2h | JS_TS_语言语义模型全面分析 |
 | [JS_TS_深度技术分析.md](./JS_TS_深度技术分析.md) | Executive Summary：关键结论、决策矩阵、风险清单、2026 配置推荐 | 1h | 上述所有 |
 
-### 🔧 工程实践文档
+### :wrench: 工程实践文档
 
 | 文档 | 摘要 | 适用场景 |
 |------|------|----------|
@@ -168,7 +168,7 @@ mindmap
 | [JS_TS_性能对比与优化指南.md](./JS_TS_性能对比与优化指南.md) | 运行时性能对比、内存优化、启动优化、渲染优化策略 | 性能调优 |
 | [JS_TS_API设计规范.md](./JS_TS_API设计规范.md) | RESTful/GraphQL/gRPC 设计规范、版本控制、文档化最佳实践 | API 设计 |
 
-### 🏗️ 架构与系统文档
+### :classical_building: 架构与系统文档
 
 | 文档 | 摘要 | 目标读者 |
 |------|------|----------|
@@ -179,7 +179,7 @@ mindmap
 | [09_cicd.md](./09_cicd.md) | GitHub Actions/GitLab CI 最佳实践、部署策略、流水线优化 | DevOps 工程师 |
 | [10_ai_ml.md](./10_ai_ml.md) | TensorFlow.js、LLM 集成、RAG 架构、MLOps 实践 | AI 应用开发者 |
 
-### 🎓 学习与发展文档
+### :mortar_board: 学习与发展文档
 
 | 文档 | 摘要 | 使用方式 |
 |------|------|----------|
@@ -187,7 +187,7 @@ mindmap
 | [JavaScript_TypeScript_Complete_Guide.md](./JavaScript_TypeScript_Complete_Guide.md) | 所有主题的索引汇总、快速参考手册、概念速查 | 日常查阅 |
 | [JS_TS_语义模型可视化图表.md](./JS_TS_语义模型可视化图表.md) | Mermaid 架构图、时序图、状态机、流程图集合 | 辅助理解 |
 
-### 🔬 形式化理论与学术文档
+### :microscope: 形式化理论与学术文档
 
 | 文档 | 摘要 | 学术价值 |
 |------|------|----------|
@@ -198,7 +198,7 @@ mindmap
 | V8_RUNTIME_THEORY.md [TODO: 链接待修复] | V8 引擎形式化模型、隐藏类理论、GC 算法正确性 | 运行时研究 |
 | [ACADEMIC_ALIGNMENT_2025.md](./ACADEMIC_ALIGNMENT_2025.md) | 2025 年 PL 学术会议与 JS/TS 相关研究对齐分析 | 学术前沿跟踪 |
 
-### 📋 规划与参考文档
+### :clipboard: 规划与参考文档
 
 | 文档 | 用途 |
 |------|------|
@@ -212,7 +212,7 @@ mindmap
 
 ---
 
-## 🛤️ 学习路径推荐
+## :railway_track: 学习路径推荐
 
 ### 路径 A：初学者路径（0-6 个月）
 
@@ -282,31 +282,31 @@ mindmap
 #### 类型系统专家
 
 ```
-01_language_core.md → JS_TS_语言语义模型全面分析.md
-→ TYPE_SOUNDNESS_ANALYSIS.md → GRADUAL_TYPING_THEORY.md
-→ JS_TS_学术前沿瞭望.md [Gradual Typing 章节]
+01_language_core.md -> JS_TS_语言语义模型全面分析.md
+-> TYPE_SOUNDNESS_ANALYSIS.md -> GRADUAL_TYPING_THEORY.md
+-> JS_TS_学术前沿瞭望.md [Gradual Typing 章节]
 ```
 
 #### 运行时专家
 
 ```
-04_concurrency.md → JS_TS_现代运行时深度分析.md
-→ V8_RUNTIME_THEORY.md → MODULE_RESOLUTION_SEMANTICS.md
-→ JS_TS_TypeScript_7_0_Native_Compiler.md
+04_concurrency.md -> JS_TS_现代运行时深度分析.md
+-> V8_RUNTIME_THEORY.md -> MODULE_RESOLUTION_SEMANTICS.md
+-> JS_TS_TypeScript_7_0_Native_Compiler.md
 ```
 
 #### 性能优化专家
 
 ```
-04_concurrency.md → JS_TS_性能对比与优化指南.md
-→ V8_RUNTIME_THEORY.md [GC/编译器章节]
-→ JS_TS_现代运行时深度分析.md [性能章节]
-→ JS_TS_工程实践检查清单.md [性能检查项]
+04_concurrency.md -> JS_TS_性能对比与优化指南.md
+-> V8_RUNTIME_THEORY.md [GC/编译器章节]
+-> JS_TS_现代运行时深度分析.md [性能章节]
+-> JS_TS_工程实践检查清单.md [性能检查项]
 ```
 
 ---
 
-## 🔍 快速查找表
+## :mag: 快速查找表
 
 ### 按技术领域查找
 
@@ -372,7 +372,7 @@ mindmap
 
 ---
 
-## 🕸️ 文档依赖关系图
+## :spider_web: 文档依赖关系图
 
 ```mermaid
 graph TB
@@ -444,31 +444,31 @@ graph TB
 
 ---
 
-## 📝 更新日志
+## :memo: 更新日志
 
 ### v3.1 (2026-04-08)
 
-- ✅ 创建本文档，整合所有 P0/P1 文档索引
-- ✅ 建立三级学习路径（初学者/进阶/架构师/专项）
-- ✅ 添加多维度快速查找表
-- ✅ 绘制文档依赖关系图
+- :white_check_mark: 创建本文档，整合所有 P0/P1 文档索引
+- :white_check_mark: 建立三级学习路径（初学者/进阶/架构师/专项）
+- :white_check_mark: 添加多维度快速查找表
+- :white_check_mark: 绘制文档依赖关系图
 
 ### v3.0 (2026-04-02)
 
-- ✅ 发布 TypeScript 6.0 更新
-- ✅ 新增 JS_TS_标准化生态与运行时互操作.md
-- ✅ 新增 JS_TS_学术前沿瞭望.md
-- ✅ 更新 JS_TS_现代运行时深度分析.md (Node.js 24, V8 Turbolev)
+- :white_check_mark: 发布 TypeScript 6.0 更新
+- :white_check_mark: 新增 JS_TS_标准化生态与运行时互操作.md
+- :white_check_mark: 新增 JS_TS_学术前沿瞭望.md
+- :white_check_mark: 更新 JS_TS_现代运行时深度分析.md (Node.js 24, V8 Turbolev)
 
 ### v2.x (2026-03)
 
-- ✅ 创建 01-10 核心文档
-- ✅ 创建形式化语义系列文档
-- ✅ 建立基础文档体系
+- :white_check_mark: 创建 01-10 核心文档
+- :white_check_mark: 创建形式化语义系列文档
+- :white_check_mark: 建立基础文档体系
 
 ---
 
-## 📦 代码速查：常用 CLI 命令
+## :package: 代码速查：常用 CLI 命令
 
 ```bash
 # TypeScript 严格检查
@@ -489,17 +489,71 @@ pnpm audit --prod
 npx webpack-bundle-analyzer dist/stats.json
 ```
 
-## 🔬 外部学术资源
+### 代码示例：导航文档的自动化生成与校验
+
+```typescript
+// navigation-validator.ts — 校验导航链接是否指向真实文件
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+
+interface LinkCheckResult {
+  link: string;
+  exists: boolean;
+  line: number;
+}
+
+function extractMarkdownLinks(content: string): Array<{ text: string; href: string; line: number }> {
+  const links: Array<{ text: string; href: string; line: number }> = [];
+  const lines = content.split('\n');
+  const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
+
+  for (let i = 0; i < lines.length; i++) {
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(lines[i])) !== null) {
+      const href = match[2].split('#')[0]; // 去掉锚点
+      if (!href.startsWith('http') && !href.startsWith('#')) {
+        links.push({ text: match[1], href, line: i + 1 });
+      }
+    }
+  }
+  return links;
+}
+
+function validateNavigationFile(navPath: string): LinkCheckResult[] {
+  const content = readFileSync(navPath, 'utf-8');
+  const baseDir = dirname(navPath);
+  const links = extractMarkdownLinks(content);
+
+  return links.map(l => ({
+    link: l.href,
+    exists: existsSync(resolve(baseDir, l.href)),
+    line: l.line,
+  }));
+}
+
+// 使用示例
+const results = validateNavigationFile('./navigation-legacy.md');
+const broken = results.filter(r => !r.exists);
+if (broken.length) {
+  console.error('Broken links found:', broken);
+  process.exit(1);
+}
+```
+
+## :microscope: 外部学术资源
 
 | 资源 | 链接 | 说明 |
 |------|------|------|
 | ACM Digital Library | <https://dl.acm.org/> | PLDI/POPL/OOPSLA 论文库 |
 | arXiv Programming Languages | <https://arxiv.org/cs.PL> | 预印本论文 |
-| Google Research — Programming | <https://research.google/research-areas/programming-languages/> | 工业界研究 |
-| Microsoft Research — TypeScript | <https://www.microsoft.com/en-us/research/research-area/programming-languages-software-engineering/> | 类型系统研究 |
+| Google Research -- Programming | <https://research.google/research-areas/programming-languages/> | 工业界研究 |
+| Microsoft Research -- TypeScript | <https://www.microsoft.com/en-us/research/research-area/programming-languages-software-engineering/> | 类型系统研究 |
 | ICFP Proceedings | <https://dblp.org/db/conf/icfp/index.html> | 函数式编程会议 |
+| IEEE Xplore -- Software Engineering | <https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=32> | IEEE Transactions on Software Engineering |
+| SIGPLAN Notices | <https://dl.acm.org/loi/sigplan> | 编程语言 SIG 会刊 |
+| HAL Archives Ouvertes | <https://hal.science/> | 法语区学术预印本 |
 
-## 🔗 外部资源链接
+## :link: 外部资源链接
 
 | 资源 | 链接 | 说明 |
 |------|------|------|
@@ -524,10 +578,25 @@ npx webpack-bundle-analyzer dist/stats.json
 | TC39 Meeting Agendas | <https://github.com/tc39/agendas> | 标准化会议议程 |
 | JavaScript Weekly | <https://javascriptweekly.com/> | JS 技术周刊 |
 | Node.js Design Patterns | <https://nodejs.org/en/learn/> | 官方学习资源 |
+| GitHub Trending -- TypeScript | <https://github.com/trending/typescript> | TS 热门仓库 |
+| npm Trends | <https://npmtrends.com/> | 包下载量对比 |
+| Stack Overflow -- JavaScript | <https://stackoverflow.com/questions/tagged/javascript> | 问答社区 |
+| ESLint 官方文档 | <https://eslint.org/docs/latest/> | 代码质量工具 |
+| Prettier 官方文档 | <https://prettier.io/docs/en/> | 代码格式化 |
+| Rollup 官方文档 | <https://rollupjs.org/> | 模块打包器 |
+| esbuild 官方文档 | <https://esbuild.github.io/> | 极速打包器 |
+| SWC 官方文档 | <https://swc.rs/> | Rust 编译器 |
+| Rome/BIOME 文档 | <https://biomejs.dev/> | 一体化工具链 |
+| W3C Web Platform | <https://www.w3.org/standards/> | W3C 标准汇总 |
+| IETF HTTP Standards | <https://httpwg.org/specs/> | HTTP 协议标准 |
+| WHATWG HTML Living Standard | <https://html.spec.whatwg.org/> | HTML 现行标准 |
+| Can I Use | <https://caniuse.com/> | 浏览器特性兼容性查询 |
+| WebKit Blog | <https://webkit.org/blog/> | WebKit/Safari 引擎博客 |
+| SpiderMonkey Blog | <https://spidermonkey.dev/blog/> | Firefox JS 引擎博客 |
 
 ---
 
-## 💡 使用建议
+## :bulb: 使用建议
 
 1. **首次访问**：阅读本文档的"快速开始"和"学习路径推荐"部分
 2. **日常查阅**：使用"按问题类型查找"表快速定位

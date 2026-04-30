@@ -283,6 +283,58 @@ function createTuple<const T extends readonly unknown[]>(...args: T): T {
 const tuple = createTuple('a', 1, true); // type: readonly ["a", 1, true]
 ```
 
+## 高级模式：条件类型 + 映射类型组合
+
+```typescript
+// 将对象的所有方法返回值转为 Promise
+type PromisifyMethods<T> = {
+  [K in keyof T]: T[K] extends (...args: infer A) => infer R
+    ? (...args: A) => Promise<R>
+    : T[K];
+};
+
+// 提取可选属性的键名
+type OptionalKeys<T> = {
+  [K in keyof T]-?: {} extends Pick<T, K> ? K : never;
+}[keyof T];
+
+// 将指定键设为可选，其余必填
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+```
+
+## 高级模式：类型安全的 Event Emitter
+
+```typescript
+// 类型安全的 EventEmitter
+type EventMap = {
+  'user:login': { userId: string; timestamp: number };
+  'user:logout': { userId: string };
+  'error': { message: string; code: number };
+};
+
+class TypedEmitter<Events extends Record<string, any>> {
+  private listeners: { [K in keyof Events]?: Array<(payload: Events[K]) => void> } = {};
+
+  on<K extends keyof Events>(event: K, handler: (payload: Events[K]) => void): () => void {
+    if (!this.listeners[event]) this.listeners[event] = [];
+    this.listeners[event]!.push(handler);
+    return () => this.off(event, handler);
+  }
+
+  off<K extends keyof Events>(event: K, handler: (payload: Events[K]) => void): void {
+    this.listeners[event] = this.listeners[event]?.filter((h) => h !== handler);
+  }
+
+  emit<K extends keyof Events>(event: K, payload: Events[K]): void {
+    this.listeners[event]?.forEach((h) => h(payload));
+  }
+}
+
+const emitter = new TypedEmitter<EventMap>();
+emitter.on('user:login', (e) => console.log(e.userId)); // ✅ 类型安全
+// emitter.on('user:login', (e) => console.log(e.notExist)); // ❌ 编译错误
+```
+
 ## 配置速查（tsconfig.json）
 
 ```json
@@ -329,6 +381,11 @@ const tuple = createTuple('a', 1, true); // type: readonly ["a", 1, true]
 - [Matt Pocock — TypeScript Generics Workshop](https://www.totaltypescript.com/workshops/typescript-generics)
 - [Type Hero — TypeScript Challenges](https://typehero.dev/)
 - [TypeScript ESLint](https://typescript-eslint.io/)
+- [TypeScript Compiler API](https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API) — 编译器程序化接口
+- [TypeScript Performance Wiki](https://github.com/microsoft/TypeScript/wiki/Performance) — 编译性能优化指南
+- [Anders Hejlsberg — TypeScript Keynote (YouTube)](https://www.youtube.com/watch?v=2pL28CcEgpU) — TypeScript 创始人演讲
+- [Type-Level TypeScript](https://type-level-typescript.com/) — 类型体操深度教程
+- [TS Docs — Generics](https://www.typescriptlang.org/docs/handbook/2/generics.html) — 官方泛型文档
 
 ---
 

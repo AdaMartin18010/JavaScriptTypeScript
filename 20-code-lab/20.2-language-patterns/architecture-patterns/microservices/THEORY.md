@@ -42,6 +42,7 @@
 |------|------|------|---------|
 | 微服务 | 独立扩展、技术异构 | 分布式复杂度 | 大型团队 |
 | 单体 | 简单一致 | 扩展受限 | 小型团队 |
+| 模块化单体 | 部署简单、内部解耦 | 无法独立扩展 | 中型团队过渡 |
 
 ### 2.3 与相关技术的对比
 
@@ -159,6 +160,119 @@ const cb = new CircuitBreaker();
 const user = await cb.call(() => userService.fetchUser(id));
 ```
 
+**令牌桶速率限制器**
+
+```typescript
+// rate-limiter.ts — 保护下游服务的令牌桶实现
+class TokenBucket {
+  private tokens: number;
+  private lastRefill: number;
+
+  constructor(
+    private capacity: number,
+    private refillRatePerSec: number
+  ) {
+    this.tokens = capacity;
+    this.lastRefill = Date.now();
+  }
+
+  tryAcquire(tokens = 1): boolean {
+    this.refill();
+    if (this.tokens >= tokens) {
+      this.tokens -= tokens;
+      return true;
+    }
+    return false;
+  }
+
+  private refill() {
+    const now = Date.now();
+    const delta = (now - this.lastRefill) / 1000;
+    this.tokens = Math.min(this.capacity, this.tokens + delta * this.refillRatePerSec);
+    this.lastRefill = now;
+  }
+}
+
+// 装饰器模式应用于服务方法
+function rateLimited(bucket: TokenBucket) {
+  return function (_target: any, _key: string, descriptor: PropertyDescriptor) {
+    const original = descriptor.value;
+    descriptor.value = async function (...args: any[]) {
+      if (!bucket.tryAcquire()) {
+        throw new Error('Rate limit exceeded');
+      }
+      return original.apply(this, args);
+    };
+  };
+}
+
+class PaymentGateway {
+  private bucket = new TokenBucket(100, 10); // 容量 100，每秒补充 10
+
+  @rateLimited(this.bucket)
+  async charge(amount: number, token: string) {
+    // 调用外部支付 API
+    return { transactionId: `txn-${Date.now()}` };
+  }
+}
+```
+
+**服务发现与健康检查**
+
+```typescript
+// service-registry.ts — 基于内存的服务注册与发现
+interface ServiceInstance {
+  id: string;
+  name: string;
+  host: string;
+  port: number;
+  health: 'UP' | 'DOWN';
+  metadata: Record<string, string>;
+  lastHeartbeat: number;
+}
+
+class ServiceRegistry {
+  private services = new Map<string, ServiceInstance[]>();
+  private readonly heartbeatTimeout = 30000;
+
+  register(instance: ServiceInstance): void {
+    const list = this.services.get(instance.name) ?? [];
+    const idx = list.findIndex((s) => s.id === instance.id);
+    if (idx >= 0) list[idx] = instance;
+    else list.push(instance);
+    this.services.set(instance.name, list);
+  }
+
+  deregister(serviceName: string, instanceId: string): void {
+    const list = this.services.get(serviceName) ?? [];
+    this.services.set(
+      serviceName,
+      list.filter((s) => s.id !== instanceId)
+    );
+  }
+
+  discover(serviceName: string): ServiceInstance | null {
+    const healthy = this.services
+      .get(serviceName)
+      ?.filter((s) => s.health === 'UP' && Date.now() - s.lastHeartbeat < this.heartbeatTimeout);
+    if (!healthy?.length) return null;
+    // 简单轮询负载均衡
+    return healthy[Math.floor(Math.random() * healthy.length)];
+  }
+
+  heartbeat(instanceId: string): void {
+    for (const list of this.services.values()) {
+      const instance = list.find((s) => s.id === instanceId);
+      if (instance) {
+        instance.lastHeartbeat = Date.now();
+        instance.health = 'UP';
+        return;
+      }
+    }
+  }
+}
+```
+
 ### 3.2 Saga 编排示例（Orchestration）
 
 以下是用 TypeScript 实现的简化 Saga 编排器，展示如何以中央协调器管理分布式事务步骤：
@@ -261,15 +375,64 @@ client.charge({ user_id: 'u1', amount: 99.9 }, (err: any, response: any) => {
 });
 ```
 
-### 3.4 常见误区
+### 3.4 基于 Redis 的分布式锁
+
+```typescript
+// distributed-lock.ts — Redlock 算法的简化实现
+import Redis from 'ioredis';
+
+class DistributedLock {
+  private redis: Redis;
+
+  constructor(redisUrl: string) {
+    this.redis = new Redis(redisUrl);
+  }
+
+  async acquire(lockKey: string, ttlMs: number): Promise<{ release: () => Promise<void> } | null> {
+    const token = crypto.randomUUID();
+    const acquired = await this.redis.set(lockKey, token, 'PX', ttlMs, 'NX');
+    if (acquired !== 'OK') return null;
+
+    return {
+      release: async () => {
+        const current = await this.redis.get(lockKey);
+        if (current === token) {
+          await this.redis.del(lockKey);
+        }
+      },
+    };
+  }
+
+  async withLock<T>(lockKey: string, ttlMs: number, fn: () => Promise<T>): Promise<T> {
+    const lock = await this.acquire(lockKey, ttlMs);
+    if (!lock) throw new Error(`Failed to acquire lock: ${lockKey}`);
+    try {
+      return await fn();
+    } finally {
+      await lock.release();
+    }
+  }
+}
+
+// 使用：防止库存超卖
+const lock = new DistributedLock('redis://localhost:6379');
+await lock.withLock(`inventory:${sku}`, 5000, async () => {
+  const stock = await inventoryRepo.getStock(sku);
+  if (stock < qty) throw new Error('Out of stock');
+  await inventoryRepo.decrement(sku, qty);
+});
+```
+
+### 3.5 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | 微服务解决所有扩展问题 | 引入分布式复杂度，需要配套基础设施 |
 | 服务越小越好 | 过细的服务导致通信开销和事务困难 |
 | 先拆微服务再迭代 | 应从模块化单体开始，在痛点出现时拆分 |
+| 共享数据库没问题 | 违反去中心化数据原则，导致隐性耦合 |
 
-### 3.5 扩展阅读
+### 3.6 扩展阅读
 
 - [Building Microservices — Sam Newman](https://samnewman.io/books/building_microservices/)
 - [The Twelve-Factor App](https://12factor.net/)
@@ -281,7 +444,65 @@ client.charge({ user_id: 'u1', amount: 99.9 }, (err: any, response: any) => {
 - [AWS Microservices](https://aws.amazon.com/microservices/) — AWS 微服务最佳实践白皮书
 - [Enterprise Integration Patterns](https://www.enterpriseintegrationpatterns.com/) — 企业集成模式权威参考
 - [gRPC Node.js Documentation](https://grpc.io/docs/languages/node/) — Google 官方 gRPC Node.js 指南
+- [Google SRE Book — Distributed Systems](https://sre.google/sre-book/distributed-systems/) — Google SRE 分布式系统章节
+- [AWS Builder's Library — Avoiding Fallback in Distributed Systems](https://aws.amazon.com/builders-library/avoiding-fallback-in-distributed-systems/) — AWS 分布式系统设计
+- [Netflix Tech Blog — Fault Tolerance in a High Volume Distributed System](https://netflixtechblog.com/fault-tolerance-in-a-high-volume-distributed-system-91ab4faae74a) — Netflix 容错设计
+- [Redlock Algorithm — Redis](https://redis.io/docs/manual/patterns/distributed-locks/) — Redis 官方分布式锁算法
+- [CNCF Cloud Native Definition](https://github.com/cncf/toc/blob/main/DEFINITION.md) — 云原生基金会定义
 - `20.2-language-patterns/architecture-patterns/`
+
+### 3.6 API Gateway 模式实现
+
+```typescript
+// api-gateway.ts — 简易反向代理网关
+import http from 'node:http';
+import httpProxy from 'http-proxy';
+
+const proxy = httpProxy.createProxyServer();
+const routes: Record<string, string> = {
+  '/orders': 'http://order-service:3001',
+  '/payments': 'http://payment-service:3002',
+  '/inventory': 'http://inventory-service:3003',
+};
+
+const gateway = http.createServer((req, res) => {
+  const target = Object.keys(routes).find((prefix) => req.url?.startsWith(prefix));
+  if (!target) { res.writeHead(404); res.end('Not Found'); return; }
+  proxy.web(req, res, { target: routes[target] });
+});
+
+gateway.listen(3000, () => console.log('API Gateway on :3000'));
+```
+
+### 3.7 指数退避与抖动重试
+
+```typescript
+// retry.ts — 带抖动的指数退避重试
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries = 5,
+  baseDelay = 100
+): Promise<T> {
+  for (let i = 0; i < maxRetries; i++) {
+    try { return await fn(); } catch (err) {
+      if (i === maxRetries - 1) throw err;
+      const jitter = Math.random() * baseDelay;
+      const delay = Math.pow(2, i) * baseDelay + jitter;
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+  throw new Error('Unreachable');
+}
+```
+
+### 新增权威参考链接
+
+- [API Gateway Pattern — AWS](https://docs.aws.amazon.com/whitepapers/latest/microservices-on-aws/api-gateway.html) — AWS 微服务白皮书
+- [Istio Service Mesh](https://istio.io/latest/docs/concepts/what-is-istio/) — 服务网格概念与配置
+- [Kubernetes Services](https://kubernetes.io/docs/concepts/services-networking/service/) — K8s 服务发现官方文档
+- [Envoy Proxy Documentation](https://www.envoyproxy.io/docs) — 云原生代理配置参考
+- [Netflix Eureka](https://github.com/Netflix/eureka) — 服务注册与发现
+- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/) — 云架构最佳实践
 
 ---
 

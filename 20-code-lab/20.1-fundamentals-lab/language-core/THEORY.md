@@ -34,6 +34,38 @@ const bool = !!'hello';       // true (双非转布尔)
 const int = ~~3.14;           // 3 (双位非截断小数)
 ```
 
+### 代码示例：BigInt 与 Symbol 的进阶用法
+
+```javascript
+// BigInt：处理超过 Number.MAX_SAFE_INTEGER 的整数
+const huge = 9007199254740993n; // 2^53 + 1
+console.log(huge === BigInt('9007199254740993')); // true
+
+// BigInt 与 Number 混合运算会报错
+// console.log(huge + 1); // TypeError
+console.log(huge + 1n); // 9007199254740994n
+
+// Symbol 作为唯一标识符与 well-known symbols
+const id = Symbol('userId');
+const user = { name: 'Alice', [id]: 42 };
+console.log(Object.keys(user)); // ['name'] — Symbol 键不可枚举
+console.log(Object.getOwnPropertySymbols(user)); // [Symbol(userId)]
+
+// Well-known Symbol：自定义对象迭代行为
+const fibonacci = {
+  [Symbol.iterator]() {
+    let a = 0, b = 1;
+    return {
+      next() {
+        [a, b] = [b, a + b];
+        return { value: a, done: false };
+      }
+    };
+  }
+};
+console.log([...fibonacci].slice(0, 5)); // [1, 1, 2, 3, 5]
+```
+
 ---
 
 ## 2. 执行上下文与作用域
@@ -75,6 +107,32 @@ function demo() {
 }
 ```
 
+### 代码示例：Temporal Dead Zone（TDZ）与提升差异
+
+```javascript
+// TDZ：let/const 声明前访问会报错
+function tdzDemo() {
+  console.log(typeof notDeclared); // 'undefined'（未声明的变量）
+  // console.log(a); // ReferenceError: Cannot access 'a' before initialization
+  let a = 42;
+}
+
+// var 提升 vs let/const 不提升
+function hoistingDemo() {
+  console.log(varVar); // undefined（已提升，未赋值）
+  // console.log(letVar); // ReferenceError: TDZ
+  var varVar = 1;
+  let letVar = 2;
+}
+
+// 函数声明 vs 函数表达式
+funcDecl(); // 函数声明整体提升
+function funcDecl() { console.log('declared'); }
+
+// funcExpr(); // TypeError: funcExpr is not a function
+var funcExpr = function() { console.log('expressed'); };
+```
+
 ---
 
 ## 3. 闭包
@@ -108,6 +166,37 @@ console.log(closure.getLength()); // 1000000
 // closure = null;
 ```
 
+### 代码示例：柯里化与偏函数应用
+
+```javascript
+// 柯里化：将多参数函数转换为单参数链
+function curry(fn) {
+  return function curried(...args) {
+    if (args.length >= fn.length) {
+      return fn.apply(this, args);
+    }
+    return function(...nextArgs) {
+      return curried.apply(this, args.concat(nextArgs));
+    };
+  };
+}
+
+const add = (a, b, c) => a + b + c;
+const curriedAdd = curry(add);
+console.log(curriedAdd(1)(2)(3)); // 6
+console.log(curriedAdd(1, 2)(3)); // 6
+
+// 偏函数应用
+function partial(fn, ...presetArgs) {
+  return function(...laterArgs) {
+    return fn(...presetArgs, ...laterArgs);
+  };
+}
+
+const addTen = partial(add, 10, 5);
+console.log(addTen(3)); // 18
+```
+
 ---
 
 ## 4. this 绑定规则
@@ -139,6 +228,29 @@ const obj = {
 
 obj.regular();
 obj.arrow();
+```
+
+### 代码示例：显式绑定与 bind 的应用
+
+```javascript
+// 硬绑定：使用 bind 创建 this 固定的函数
+function greet(greeting) {
+  console.log(`${greeting}, ${this.name}`);
+}
+
+const person = { name: 'Alice' };
+const boundGreet = greet.bind(person);
+boundGreet('Hello'); // "Hello, Alice"
+
+// bind 的预设参数功能
+function multiply(a, b) { return a * b; }
+const double = multiply.bind(null, 2);
+console.log(double(5)); // 10
+
+// call/apply 的差异
+const numbers = [5, 6, 2, 3, 7];
+console.log(Math.max.apply(null, numbers)); // 7
+console.log(Math.max(...numbers));          // 7（ES6 展开运算符替代 apply）
 ```
 
 ---
@@ -175,6 +287,42 @@ console.log(dog instanceof Animal); // true
 // 原型链检查
 console.log(Object.getPrototypeOf(dog) === Dog.prototype); // true
 console.log(Object.getPrototypeOf(Dog.prototype) === Animal.prototype); // true
+```
+
+### 代码示例：使用 class 语法与私有字段
+
+```javascript
+// ES2022 私有字段（#前缀）真正私有，无法从外部访问
+class BankAccount {
+  #balance = 0;
+  #transactions = [];
+
+  constructor(initialBalance = 0) {
+    this.#balance = initialBalance;
+  }
+
+  deposit(amount) {
+    if (amount <= 0) throw new Error('Invalid amount');
+    this.#balance += amount;
+    this.#transactions.push({ type: 'deposit', amount, date: new Date() });
+    return this.#balance;
+  }
+
+  get balance() {
+    return this.#balance;
+  }
+
+  // 静态私有字段
+  static #accountCount = 0;
+  static getAccountCount() {
+    return this.#accountCount;
+  }
+}
+
+const acc = new BankAccount(100);
+acc.deposit(50);
+console.log(acc.balance); // 150
+// console.log(acc.#balance); // SyntaxError: Private field must be declared in an enclosing class
 ```
 
 ---
@@ -263,7 +411,57 @@ c.increment(); // 11
 
 ---
 
-## 8. 与相邻模块的关系
+## 8. 代码示例：Event Loop 与任务调度
+
+```javascript
+// 宏任务与微任务的执行顺序
+console.log('1. script start');
+
+setTimeout(() => console.log('2. setTimeout'), 0);
+
+Promise.resolve().then(() => {
+  console.log('3. promise 1');
+  return Promise.resolve();
+}).then(() => {
+  console.log('4. promise 2');
+});
+
+queueMicrotask(() => console.log('5. queueMicrotask'));
+
+console.log('6. script end');
+
+// 输出顺序：
+// 1. script start
+// 6. script end
+// 3. promise 1
+// 5. queueMicrotask
+// 4. promise 2
+// 2. setTimeout
+```
+
+```javascript
+// requestAnimationFrame 与 requestIdleCallback 的配合
+function scheduleWork(priority: 'high' | 'low') {
+  if (priority === 'high') {
+    // 下一帧渲染前执行，适合视觉更新
+    requestAnimationFrame(() => {
+      document.body.style.transform = 'translateX(0)';
+    });
+  } else {
+    // 浏览器空闲时执行，适合非紧急数据处理
+    requestIdleCallback((deadline) => {
+      while (deadline.timeRemaining() > 0) {
+        // 执行小批量工作
+        processChunk();
+      }
+    }, { timeout: 2000 });
+  }
+}
+```
+
+---
+
+## 9. 与相邻模块的关系
 
 - **01-ecmascript-evolution**: ECMAScript 标准演进
 - **10-js-ts-comparison**: JavaScript 与 TypeScript 的差异
@@ -271,17 +469,26 @@ c.increment(); // 11
 
 ---
 
-## 9. 权威链接
+## 10. 权威链接
 
 - [ECMA-262 – Execution Contexts](https://tc39.es/ecma262/#sec-execution-contexts)
 - [ECMA-262 – Ordinary Object Internal Methods and Internal Slots](https://tc39.es/ecma262/#sec-ordinary-object-internal-methods-and-internal-slots)
+- [ECMA-262 – Type Conversion](https://tc39.es/ecma262/#sec-type-conversion)
+- [ECMA-262 – BigInt](https://tc39.es/ecma262/#sec-ecmascript-language-types-bigint-type)
+- [ECMA-262 – Symbol Objects](https://tc39.es/ecma262/#sec-symbol-objects)
 - [MDN – Closures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures)
 - [MDN – Prototype Inheritance](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain)
 - [MDN – this](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this)
+- [MDN – BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt)
+- [MDN – Symbol](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol)
+- [MDN – Event Loop](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop)
 - [JavaScript Info – Scope & Closure](https://javascript.info/closure)
 - [JavaScript Info – Prototypes](https://javascript.info/prototype-inheritance)
 - [V8 Blog – Fast Properties](https://v8.dev/blog/fast-properties)
 - [V8 Blog – Understanding the JavaScript Stack](https://v8.dev/blog/understanding-the-javascript-stack)
+- [V8 Blog – Orinoco: Generational GC](https://v8.dev/blog/orinoco)
 - [You Don't Know JS: Scope & Closures (2nd Ed)](https://github.com/getify/You-Dont-Know-JS/tree/2nd-ed/scope-closures)
 - [You Don't Know JS: this & Object Prototypes](https://github.com/getify/You-Dont-Know-JS/tree/2nd-ed/this-object-prototypes)
-- [2ality – JavaScript’s type coercion](https://2ality.com/2019/10/type-coercion.html)
+- [2ality – JavaScript's type coercion](https://2ality.com/2019/10/type-coercion.html)
+- [2ality – ES2022 class features](https://2ality.com/2022/03/private-class-fields.html)
+- [Jake Archibald: Tasks, microtasks, queues and schedules](https://jakearchibald.com/2015/tasks-microtasks-queues-and-schedules/)

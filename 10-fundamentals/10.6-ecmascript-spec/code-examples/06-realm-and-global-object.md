@@ -164,6 +164,52 @@ console.log(globalThis.secret);         // undefined（隔离成功）
 // 若需安全沙箱，使用 Worker Threads 或 WebAssembly
 ```
 
+### 代码示例：使用 vm 模块构建受限执行环境
+
+```javascript
+// restricted-vm.ts — 构建受限的代码执行沙盒
+import { createContext, runInContext, Script } from 'node:vm';
+
+interface SandboxOptions {
+  timeout?: number;
+  memoryLimit?: number;
+  allowedGlobals?: string[];
+}
+
+function createRestrictedSandbox(options: SandboxOptions = {}) {
+  const { timeout = 1000, allowedGlobals = ['Math', 'JSON', 'console'] } = options;
+
+  // 白名单全局对象
+  const whitelist: Record<string, any> = {};
+  for (const key of allowedGlobals) {
+    if (key in globalThis) whitelist[key] = (globalThis as any)[key];
+  }
+
+  const context = createContext({
+    ...whitelist,
+    globalThis: {},
+    // 注入安全的辅助函数
+    assert: (cond: boolean, msg?: string) => {
+      if (!cond) throw new Error(msg ?? 'Assertion failed');
+    },
+  });
+
+  return {
+    run(code: string) {
+      return runInContext(code, context, { timeout });
+    },
+    getGlobal(key: string) {
+      return context[key];
+    },
+  };
+}
+
+// 使用示例
+const sandbox = createRestrictedSandbox({ timeout: 500 });
+console.log(sandbox.run('Math.max(1, 2, 3)')); // 3
+console.log(sandbox.run('JSON.stringify({a:1})')); // '{"a":1}'
+```
+
 ---
 
 ## 6. `structuredClone` 与跨 Realm 数据传输
@@ -188,6 +234,34 @@ document.body.appendChild(iframe);
 iframe.contentWindow.postMessage(structuredClone(original), '*');
 ```
 
+### 代码示例：跨 Realm 的 Transferable 对象传递
+
+```javascript
+// cross-realm-transfer.ts — 跨 Realm 高效传输 ArrayBuffer
+const worker = new Worker('worker.js');
+
+const buffer = new ArrayBuffer(1024 * 1024); // 1MB
+const view = new Uint8Array(buffer);
+view.fill(42);
+
+// postMessage 的 transfer 列表将所有权转移给 Worker
+// 发送后当前 Realm 不能再访问该 buffer
+worker.postMessage({ type: 'data', buffer }, [buffer]);
+
+// buffer 已被转移，此处访问会报错
+// console.log(view[0]); // TypeError: Cannot perform Construct on a detached ArrayBuffer
+
+// Worker 端接收
+// worker.js
+self.onmessage = (event) => {
+  const { buffer } = event.data;
+  const view = new Uint8Array(buffer);
+  console.log(view[0]); // 42
+  // 处理完成后可转移回主线程
+  self.postMessage({ buffer }, [buffer]);
+};
+```
+
 ---
 
 ## 7. 参考文献
@@ -195,6 +269,7 @@ iframe.contentWindow.postMessage(structuredClone(original), '*');
 - **ECMA-262 §9.3** — Realms
 - **ECMA-262 §18** — The Global Object
 - **ECMA-262 §19.1** — Value Properties of the Global Object（`globalThis`）
+- **ECMA-262 §19.4** — Constructor Properties of the Global Object（Intrinsics）
 - **ShadowRealm Proposal** — <https://github.com/tc39/proposal-shadowrealm>
 - **MDN: globalThis** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/globalThis>
 - **MDN: ShadowRealm** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ShadowRealm>
@@ -204,6 +279,12 @@ iframe.contentWindow.postMessage(structuredClone(original), '*');
 - **HTML Spec: Realm 设置** — <https://html.spec.whatwg.org/multipage/webappapis.html#realms-settings-objects-global-objects>
 - **V8 Blog: Understanding V8 Intrinsics** — <https://v8.dev/blog>
 - **TC39 Meeting Notes on ShadowRealm** — <https://github.com/tc39/notes/tree/main/meetings>
+- **MDN: Web Workers API** — <https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API>
+- **MDN: postMessage / transfer** — <https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage>
+- **WHATWG HTML: Structured Serialize/Deserialize** — <https://html.spec.whatwg.org/multipage/structured-data.html>
+- **Node.js: MessageChannel & Transferables** — <https://nodejs.org/api/worker_threads.html#portpostmessagevalue-transferlist>
+- **Deno: Workers & Permissions** — <https://docs.deno.com/runtime/fundamentals/workers/>
+- **Bun: Worker Threads** — <https://bun.sh/docs/api/workers>
 
 ---
 
@@ -284,6 +365,57 @@ Realm 是 JavaScript 的**安全边界**之一：
 - **跨域 iframe**：`contentWindow` 大部分属性被封锁（Same-Origin Policy）
 - **Worker**：完全隔离的 Realm，只能通过 `postMessage` 通信
 - **ShadowRealm**（提案）：程序化的 Realm，提供受控的隔离环境
+
+### 补充 4：使用 ` compartments` 模式实现多 Realm 安全沙箱
+
+```javascript
+// compartment-pattern.ts — 基于 Realm 隔离的安全插件系统
+class PluginCompartment {
+  private iframe: HTMLIFrameElement;
+  private port: MessagePort;
+
+  constructor(allowedAPIs: string[] = []) {
+    this.iframe = document.createElement('iframe');
+    this.iframe.sandbox.add('allow-scripts');
+    this.iframe.style.display = 'none';
+
+    const { port1, port2 } = new MessageChannel();
+    this.port = port1;
+
+    this.iframe.onload = () => {
+      this.iframe.contentWindow!.postMessage(
+        { type: 'init', allowedAPIs },
+        '*',
+        [port2]
+      );
+    };
+
+    document.body.appendChild(this.iframe);
+    this.iframe.src = 'about:blank';
+  }
+
+  async eval(code: string): Promise<unknown> {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Eval timeout')), 5000);
+      this.port.onmessage = (event) => {
+        clearTimeout(timeout);
+        if (event.data.error) reject(new Error(event.data.error));
+        else resolve(event.data.result);
+      };
+      this.port.postMessage({ type: 'eval', code });
+    });
+  }
+
+  destroy() {
+    this.iframe.remove();
+    this.port.close();
+  }
+}
+
+// 使用示例
+const sandbox = new PluginCompartment(['Math', 'JSON']);
+sandbox.eval('JSON.stringify({pi: Math.PI})').then(console.log);
+```
 
 ---
 

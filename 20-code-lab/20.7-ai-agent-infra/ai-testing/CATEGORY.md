@@ -228,6 +228,67 @@ export async function compareVisual(
 }
 ```
 
+### 差分测试（Differential Testing）
+
+```typescript
+// differential-testing.ts — 对比两个实现输出一致性
+
+export async function differentialTest<T>(
+  input: T,
+  implementations: Array<(input: T) => Promise<unknown>>,
+  comparator: (a: unknown, b: unknown) => boolean = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+): Promise<{ consistent: boolean; results: unknown[]; divergentAt?: number }> {
+  const results = await Promise.all(implementations.map(impl => impl(input)));
+
+  for (let i = 1; i < results.length; i++) {
+    if (!comparator(results[0], results[i])) {
+      return { consistent: false, results, divergentAt: i };
+    }
+  }
+
+  return { consistent: true, results };
+}
+
+// 使用：验证重构前后输出一致性
+const oldImpl = async (x: number) => heavyLegacyCalculation(x);
+const newImpl = async (x: number) => optimizedCalculation(x);
+
+const diffResult = await differentialTest(42, [oldImpl, newImpl]);
+if (!diffResult.consistent) {
+  console.error(`Output diverged at implementation ${diffResult.divergentAt}`);
+}
+```
+
+### 智能测试选择器（变更影响分析）
+
+```typescript
+// smart-test-selector.ts — 基于 Git diff 的测试子集选择
+
+import { execSync } from 'child_process';
+
+export function getChangedFiles(baseBranch = 'main'): string[] {
+  const diff = execSync(`git diff --name-only ${baseBranch}...HEAD`, { encoding: 'utf-8' });
+  return diff.trim().split('\n').filter(Boolean);
+}
+
+export function selectTests(
+  changedFiles: string[],
+  testMap: Map<string, string[]> // 文件 -> 相关测试文件
+): Set<string> {
+  const selected = new Set<string>();
+  for (const file of changedFiles) {
+    const tests = testMap.get(file);
+    if (tests) tests.forEach(t => selected.add(t));
+  }
+  return selected;
+}
+
+// 使用
+const changed = getChangedFiles('origin/main');
+const testsToRun = selectTests(changed, dependencyGraph);
+console.log(`Running ${testsToRun.size} tests affected by ${changed.length} changed files`);
+```
+
 ## 关联模块
 
 - `33-ai-integration` — AI 集成
@@ -244,11 +305,15 @@ export async function compareVisual(
 | Arize AI — LLM Evaluation | 指南 | [docs.arize.com/phoenix](https://docs.arize.com/phoenix) |
 | Coverage.js (c8) | 文档 | [github.com/bcoe/c8](https://github.com/bcoe/c8) |
 | Evals Framework — OpenAI | 文档 | [github.com/openai/evals](https://github.com/openai/evals) |
-| Google — Fuzz Testing (OSS-Fuzz)](https://google.github.io/oss-fuzz/) | 模糊测试 |
+| Google — Fuzz Testing (OSS-Fuzz) | 模糊测试 | [google.github.io/oss-fuzz](https://google.github.io/oss-fuzz/) |
 | Jest — Snapshot Testing | 文档 | [jestjs.io/docs/snapshot-testing](https://jestjs.io/docs/snapshot-testing) |
 | Vitest — Property Testing | 文档 | [vitest.dev/guide/property-testing.html](https://vitest.dev/guide/property-testing.html) |
 | Microsoft — Responsible AI Toolbox | 评估工具 | [responsibleaitoolbox.ai](https://responsibleaitoolbox.ai/) |
+| Mutation Testing Concepts | 指南 | [mutation-testing.org](https://mutation-testing.org/) |
+| Property-Based Testing — Hypothesis | 文档 | [hypothesis.works](https://hypothesis.works/) |
+| Differential Testing — ACM Paper | 论文 | [dl.acm.org/doi/10.1145/3368089.3417063](https://dl.acm.org/doi/10.1145/3368089.3417063) |
+| Chaos Engineering Principles | 指南 | [principlesofchaos.org](https://principlesofchaos.org/) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

@@ -204,6 +204,229 @@ class ProgressBar {
 }
 ```
 
+### Vite 插件开发示例
+
+```typescript
+// plugins/html-transform.ts — 自定义 Vite 插件
+import type { Plugin } from 'vite';
+
+export function htmlTransformPlugin(): Plugin {
+  return {
+    name: 'html-transform',
+    transformIndexHtml(html) {
+      // 注入全局环境变量或分析脚本
+      return html.replace(
+        '<head>',
+        `<head>\n  <meta name="build-time" content="${new Date().toISOString()}">`
+      );
+    },
+  };
+}
+
+// vite.config.ts
+import { defineConfig } from 'vite';
+import { htmlTransformPlugin } from './plugins/html-transform';
+
+export default defineConfig({
+  plugins: [htmlTransformPlugin()],
+});
+```
+
+### React Error Boundary + Source Map 恢复
+
+```tsx
+// components/ErrorBoundary.tsx
+import { Component, type ReactNode } from 'react';
+
+interface Props {
+  children: ReactNode;
+  fallback?: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+  error?: Error;
+}
+
+export class ErrorBoundary extends Component<Props, State> {
+  state: State = { hasError: false };
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    // 上报到 Sentry / LogRocket
+    console.error('ErrorBoundary caught:', error, info.componentStack);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        this.props.fallback ?? (
+          <div style={{ padding: '2rem', color: 'red' }}>
+            <h2>Something went wrong.</h2>
+            <pre>{this.state.error?.stack}</pre>
+          </div>
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
+```
+
+### Turborepo Remote Cache 配置
+
+```json
+// turbo.json — 远程缓存与签名验证
+{
+  "$schema": "https://turbo.build/schema.json",
+  "remoteCache": {
+    "enabled": true,
+    "signature": true
+  },
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "env": ["NODE_ENV", "API_URL"]
+    }
+  }
+}
+```
+
+```bash
+# 配置远程缓存（Vercel / self-hosted）
+npx turbo login
+npx turbo link
+
+# CI 中启用缓存
+TURBO_TOKEN=$TOKEN TURBO_TEAM=$TEAM npx turbo run build
+```
+
+### 代码示例：自定义 Source Map 解析器
+
+```typescript
+// utils/parse-stack.ts — 将错误堆栈解析为结构化数据
+import { SourceMapConsumer } from 'source-map';
+
+interface StackFrame {
+  functionName: string;
+  fileName: string;
+  lineNumber: number;
+  columnNumber: number;
+  source?: string; // 原始源码行
+}
+
+export async function parseStackTrace(error: Error, sourceMapDir: string): Promise<StackFrame[]> {
+  const lines = error.stack?.split('\n') ?? [];
+  const frames: StackFrame[] = [];
+
+  for (const line of lines) {
+    const match = line.match(/at\s+(.*?)\s+\((.*?):(\d+):(\d+)\)/);
+    if (!match) continue;
+
+    const [, functionName, fileName, lineStr, colStr] = match;
+    const frame: StackFrame = {
+      functionName,
+      fileName,
+      lineNumber: parseInt(lineStr, 10),
+      columnNumber: parseInt(colStr, 10),
+    };
+
+    // 尝试解析 Source Map
+    try {
+      const mapPath = `${sourceMapDir}/${fileName}.map`;
+      const rawMap = await fs.promises.readFile(mapPath, 'utf-8');
+      const consumer = await new SourceMapConsumer(rawMap);
+      const original = consumer.originalPositionFor({
+        line: frame.lineNumber,
+        column: frame.columnNumber,
+      });
+      if (original.source) {
+        frame.fileName = original.source;
+        frame.lineNumber = original.line ?? frame.lineNumber;
+        frame.columnNumber = original.column ?? frame.columnNumber;
+        frame.source = consumer.sourceContentFor(original.source) ?? undefined;
+      }
+      consumer.destroy();
+    } catch {
+      // Source Map 不可用，保留编译后位置
+    }
+
+    frames.push(frame);
+  }
+
+  return frames;
+}
+```
+
+### 代码示例：Vite 环境变量类型安全注入
+
+```typescript
+// types/env.d.ts
+interface ImportMetaEnv {
+  readonly VITE_API_URL: string;
+  readonly VITE_APP_NAME: string;
+  readonly VITE_ENABLE_ANALYTICS: string; // "true" | "false"
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+```
+
+```typescript
+// config/env.ts — 运行时验证与转换
+import { z } from 'zod';
+
+const envSchema = z.object({
+  VITE_API_URL: z.string().url(),
+  VITE_APP_NAME: z.string().min(1),
+  VITE_ENABLE_ANALYTICS: z.enum(['true', 'false']).default('false'),
+});
+
+export const env = envSchema.parse(import.meta.env);
+export type Env = z.infer<typeof envSchema>;
+```
+
+### 代码示例：Webpack 模块联邦（Module Federation）微前端 HMR
+
+```typescript
+// webpack.config.ts — Module Federation 配置
+import { ModuleFederationPlugin } from '@module-federation/enhanced/webpack';
+
+export default {
+  plugins: [
+    new ModuleFederationPlugin({
+      name: 'host_app',
+      remotes: {
+        remote: 'remote_app@http://localhost:3001/remoteEntry.js',
+      },
+      shared: {
+        react: { singleton: true, eager: true, requiredVersion: '^19.0.0' },
+        'react-dom': { singleton: true, eager: true, requiredVersion: '^19.0.0' },
+      },
+    }),
+  ],
+  devServer: {
+    hot: true,
+    // 模块联邦远程加载支持 HMR
+    headers: { 'Access-Control-Allow-Origin': '*' },
+  },
+};
+```
+
+## 常见误区
+
+| 误区 | 正确理解 |
+|------|---------|
+| HMR 会保留所有状态 | 仅保留组件 hooks 状态；模块级变量可能重置 |
+| Source Map 只在开发有用 | 生产环境 Source Map 是错误监控和调试的关键 |
+| Turborepo 只缓存构建产物 | 也缓存 lint / test / typecheck 结果 |
+| Project References 自动工作 | 需要 `composite: true` 和正确的 `references` 路径 |
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -248,6 +471,16 @@ class ProgressBar {
 | Vite Config Reference | 官方文档 | [vitejs.dev/config/server-options.html](https://vitejs.dev/config/server-options.html) |
 | mkcert — 本地 HTTPS 证书 | 工具 | [github.com/FiloSottile/mkcert](https://github.com/FiloSottile/mkcert) |
 | ANSI Escape Codes | 参考 | [en.wikipedia.org/wiki/ANSI_escape_code](https://en.wikipedia.org/wiki/ANSI_escape_code) |
+| Vite Plugin API | 官方文档 | [vitejs.dev/guide/api-plugin.html](https://vitejs.dev/guide/api-plugin.html) |
+| React — Error Boundaries | 官方文档 | [react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary) |
+| Source Map Revision 3 Spec | 规范 | [sourcemaps.info/spec.html](https://sourcemaps.info/spec.html) |
+| Turbo Remote Caching | 官方文档 | [turbo.build/repo/docs/core-concepts/remote-caching](https://turbo.build/repo/docs/core-concepts/remote-caching) |
+| Vite Dev Server Source Maps | 文档 | [vitejs.dev/config/build-options.html#build-sourcemap](https://vitejs.dev/config/build-options.html#build-sourcemap) |
+| Webpack Module Federation | 官方文档 | [module-federation.io/](https://module-federation.io/) |
+| React DevTools | 官方文档 | [react.dev/learn/react-developer-tools](https://react.dev/learn/react-developer-tools) |
+| Chrome DevTools — JavaScript Debugging | 官方文档 | [developer.chrome.com/docs/devtools/javascript](https://developer.chrome.com/docs/devtools/javascript) |
+| Node.js — Inspector Protocol | 官方文档 | [nodejs.org/en/learn/getting-started/debugging](https://nodejs.org/en/learn/getting-started/debugging) |
+| Zod — Schema Validation | 官方文档 | [zod.dev](https://zod.dev/) |
 
 ---
 

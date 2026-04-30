@@ -404,6 +404,112 @@ async function signUserOperation(
 }
 ```
 
+### ERC-721 / ERC-1155 批量元数据获取
+
+```typescript
+// nft-batch-metadata.ts — 使用 multicall 批量获取 NFT 元数据
+import { ethers } from 'ethers';
+
+const erc721Interface = new ethers.Interface([
+  'function tokenURI(uint256 tokenId) view returns (string)',
+  'function ownerOf(uint256 tokenId) view returns (address)',
+]);
+
+const multicallAbi = [
+  'function aggregate(tuple(address target, bytes callData)[] calls) view returns (uint256 blockNumber, bytes[] returnData)',
+];
+
+async function batchTokenMetadata(
+  multicallAddress: string,
+  nftContract: string,
+  tokenIds: bigint[],
+  provider: ethers.Provider
+): Promise<{ tokenId: bigint; uri: string; owner: string }[]> {
+  const multicall = new ethers.Contract(multicallAddress, multicallAbi, provider);
+
+  const calls = tokenIds.flatMap((id) => [
+    { target: nftContract, callData: erc721Interface.encodeFunctionData('tokenURI', [id]) },
+    { target: nftContract, callData: erc721Interface.encodeFunctionData('ownerOf', [id]) },
+  ]);
+
+  const [, returnData] = await multicall.aggregate(calls);
+
+  return tokenIds.map((id, i) => ({
+    tokenId: id,
+    uri: erc721Interface.decodeFunctionResult('tokenURI', returnData[i * 2])[0],
+    owner: erc721Interface.decodeFunctionResult('ownerOf', returnData[i * 2 + 1])[0],
+  }));
+}
+```
+
+### Flashbots MEV 保护交易（主网 ETH）
+
+```typescript
+// mev-protection.ts — 使用 Flashbots Protect 避免夹心攻击
+import { ethers } from 'ethers';
+
+const FLASHBOTS_RPC = 'https://api.securerpc.com/v1';
+
+async function sendProtectedTx(
+  signer: ethers.Signer,
+  tx: ethers.TransactionRequest
+): Promise<ethers.TransactionResponse> {
+  const flashbotsProvider = new ethers.JsonRpcProvider(FLASHBOTS_RPC);
+  const signedTx = await signer.signTransaction(tx);
+
+  const hash = await flashbotsProvider.send('eth_sendRawTransaction', [signedTx]);
+  console.log(`Protected tx hash: ${hash}`);
+
+  // 轮询交易收据
+  const provider = signer.provider!;
+  while (true) {
+    const receipt = await provider.getTransactionReceipt(hash);
+    if (receipt) return receipt as unknown as ethers.TransactionResponse;
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+}
+```
+
+### 时间锁合约交互（OpenZeppelin TimelockController）
+
+```typescript
+// timelock-operations.ts
+import { ethers } from 'ethers';
+
+const timelockAbi = [
+  'function schedule(address target, uint256 value, bytes data, bytes32 predecessor, bytes32 salt, uint256 delay) external',
+  'function execute(address target, uint256 value, bytes data, bytes32 predecessor, bytes32 salt) external',
+  'function cancel(bytes32 id) external',
+  'function getTimestamp(bytes32 id) view returns (uint256)',
+];
+
+async function scheduleTimelockOperation(
+  timelock: ethers.Contract,
+  target: string,
+  data: string,
+  delay: bigint,
+  signer: ethers.Signer
+): Promise<string> {
+  const salt = ethers.id(Date.now().toString());
+  const predecessor = ethers.ZeroHash;
+
+  const tx = await timelock.connect(signer).schedule(
+    target, 0n, data, predecessor, salt, delay
+  );
+  await tx.wait();
+
+  const id = ethers.keccak256(
+    ethers.AbiCoder.defaultAbiCoder().encode(
+      ['address', 'uint256', 'bytes', 'bytes32', 'bytes32'],
+      [target, 0n, data, predecessor, salt]
+    )
+  );
+
+  console.log(`Scheduled operation ${id}, executable after ${delay}s`);
+  return id;
+}
+```
+
 ## 共识机制对比
 
 | 特性 | PoW (工作量证明) | PoS (权益证明) | DPoS (委托权益证明) |
@@ -456,7 +562,14 @@ async function signUserOperation(
 | Tally Governance | 文档 | [docs.tally.xyz](https://docs.tally.xyz/) — DAO 治理工具 |
 | Snapshot | 文档 | [docs.snapshot.org](https://docs.snapshot.org/) — 链下投票治理 |
 | zkSync Docs | 文档 | [docs.zksync.io](https://docs.zksync.io/) — zkEVM 与 ZK Stack |
+| Flashbots Protect | 文档 | [docs.flashbots.net/flashbots-protect/overview](https://docs.flashbots.net/flashbots-protect/overview) — MEV 保护交易 RPC |
+| ERC-721 Non-Fungible Token Standard | 规范 | [eips.ethereum.org/EIPS/eip-721](https://eips.ethereum.org/EIPS/eip-721) |
+| ERC-1155 Multi Token Standard | 规范 | [eips.ethereum.org/EIPS/eip-1155](https://eips.ethereum.org/EIPS/eip-1155) |
+| Multicall3 | 合约 | [github.com/mds1/multicall](https://github.com/mds1/multicall) — 批量只读调用聚合 |
+| Uniswap V3 Docs | 文档 | [docs.uniswap.org](https://docs.uniswap.org/) — AMM 与集中流动性 |
+| Aave Protocol Docs | 文档 | [docs.aave.com](https://docs.aave.com/) — 去中心化借贷协议 |
+| The Graph Docs | 文档 | [thegraph.com/docs](https://thegraph.com/docs/en/) — 链上数据索引 |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

@@ -227,6 +227,155 @@ export function auditManifest(manifest: Partial<WebAppManifest>): ManifestAuditR
 - `30-knowledge-base/30.2-categories/35-pwa-lowcode.md` — PWA 分类索引
 - `30-knowledge-base/application-domains-index.md` — 应用领域总索引
 
+### 文件系统访问 API（File System Access API）
+
+```typescript
+// file-system-access.ts — 本地文件读写（Chrome 86+）
+
+export async function openAndReadTextFile(): Promise<string | null> {
+  try {
+    const [fileHandle] = await (window as any).showOpenFilePicker({
+      types: [{ description: 'Text Files', accept: { 'text/plain': ['.txt'] } }],
+    });
+    const file = await fileHandle.getFile();
+    return await file.text();
+  } catch (err) {
+    if ((err as Error).name === 'AbortError') return null;
+    throw err;
+  }
+}
+
+export async function saveTextFile(content: string, suggestedName = 'document.txt') {
+  const fileHandle = await (window as any).showSaveFilePicker({
+    suggestedName,
+    types: [{ description: 'Text Files', accept: { 'text/plain': ['.txt'] } }],
+  });
+  const writable = await fileHandle.createWritable();
+  await writable.write(content);
+  await writable.close();
+}
+```
+
+### 徽章 API（Badging API）
+
+```typescript
+// badging-api.ts — 应用图标未读数标记
+
+export async function setAppBadge(count?: number): Promise<void> {
+  if ('setAppBadge' in navigator) {
+    await (navigator as any).setAppBadge(count);
+  }
+}
+
+export async function clearAppBadge(): Promise<void> {
+  if ('clearAppBadge' in navigator) {
+    await (navigator as any).clearAppBadge();
+  }
+}
+
+// 使用示例：新消息到达时更新徽章
+// setAppBadge(unreadCount);
+```
+
+### Web Share Target — 接收系统分享
+
+```typescript
+// share-target.ts — 作为系统级分享目标
+// 需在 manifest 中配置 share_target
+
+interface ShareTargetManifest {
+  share_target: {
+    action: string;
+    method: string;
+    enctype: string;
+    params: {
+      title: string;
+      text: string;
+      url: string;
+      files?: Array<{ name: string; accept: string[] }>;
+    };
+  };
+}
+
+// manifest.json 对应配置：
+// "share_target": {
+//   "action": "/share",
+//   "method": "POST",
+//   "enctype": "multipart/form-data",
+//   "params": {
+//     "title": "title",
+//     "text": "text",
+//     "url": "url",
+//     "files": [{ "name": "media", "accept": ["image/*", "video/*"] }]
+//   }
+// }
+
+// 在 /share 路由处理接收到的分享
+export function handleShareTarget(formData: FormData) {
+  const title = formData.get('title') as string;
+  const text = formData.get('text') as string;
+  const url = formData.get('url') as string;
+  const files = formData.getAll('media') as File[];
+
+  return { title, text, url, files };
+}
+```
+
+### 屏幕唤醒锁定（Screen Wake Lock API）
+
+```typescript
+// wake-lock.ts — 防止屏幕熄灭（如演示、导航场景）
+
+let wakeLock: WakeLockSentinel | null = null;
+
+export async function requestWakeLock(): Promise<void> {
+  if ('wakeLock' in navigator) {
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => {
+        console.log('Wake lock released');
+      });
+    } catch (err) {
+      console.error('Wake lock request failed:', err);
+    }
+  }
+}
+
+export async function releaseWakeLock(): Promise<void> {
+  if (wakeLock) {
+    await wakeLock.release();
+    wakeLock = null;
+  }
+}
+
+// 页面可见性变化时自动重新获取
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible' && wakeLock === null) {
+    await requestWakeLock();
+  }
+});
+```
+
+### 导航预加载（Navigation Preload）
+
+```typescript
+// navigation-preload.ts — Service Worker 中加速导航请求
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (self as any).registration?.navigationPreload?.enable().catch(() => {})
+  );
+});
+
+self.addEventListener('fetch', (event: FetchEvent) => {
+  if (event.preloadResponse) {
+    event.respondWith(
+      event.preloadResponse.catch(() => fetch(event.request))
+    );
+  }
+});
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -245,7 +394,18 @@ export function auditManifest(manifest: Partial<WebAppManifest>): ManifestAuditR
 | Google — Push Notifications on the Web | 指南 | [developers.google.com/web/fundamentals/push-notifications](https://developers.google.com/web/fundamentals/push-notifications) |
 | W3C — Web App Manifest W3C Recommendation | 规范 | [www.w3.org/TR/appmanifest](https://www.w3.org/TR/appmanifest/) |
 | web.dev — Offline UX Considerations | 指南 | [web.dev/offline-ux-design-guidelines](https://web.dev/offline-ux-design-guidelines/) |
+| MDN — File System Access API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/File_System_API](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API) |
+| MDN — Badging API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Badging_API](https://developer.mozilla.org/en-US/docs/Web/API/Badging_API) |
+| MDN — Web Share API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Web_Share_API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Share_API) |
+| MDN — Screen Wake Lock API | 文档 | [developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API](https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API) |
+| web.dev — Navigation Preload | 指南 | [web.dev/navigation-preload](https://web.dev/navigation-preload/) |
+| Fugu API Tracker | 能力追踪 | [fugu-tracker.web.app](https://fugu-tracker.web.app/) — PWA 新能力发布追踪 |
+| web.dev — Notifications | 指南 | [web.dev/push-notifications-overview](https://web.dev/push-notifications-overview/) |
+| MDN — Before Install Prompt Event | 文档 | [developer.mozilla.org/en-US/docs/Web/API/BeforeInstallPromptEvent](https://developer.mozilla.org/en-US/docs/Web/API/BeforeInstallPromptEvent) |
+| web.dev — Install Prompt | 指南 | [web.dev/customize-install](https://web.dev/customize-install/) |
+| Vite PWA Plugin | 工具 | [vite-pwa-org.netlify.app](https://vite-pwa-org.netlify.app/) — 零配置 PWA 插件 |
+| Serwist (Workbox 继任者) | 工具 | [serwist.pages.dev](https://serwist.pages.dev/) — 下一代 Service Worker 库 |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

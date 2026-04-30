@@ -1,4 +1,4 @@
-﻿# 国际化 — 理论基础
+# 国际化 — 理论基础
 
 ## 1. i18n 核心概念
 
@@ -123,8 +123,8 @@ export function UserProfile({ user }: UserProfileProps) {
     <div className="user-profile">
       {/* 基础文本插值 */}
       <h1>
-        <FormattedMessage 
-          id="user.greeting" 
+        <FormattedMessage
+          id="user.greeting"
           defaultMessage="Welcome, {name}!"
           values={{ name: user.name }}
         />
@@ -146,10 +146,10 @@ export function UserProfile({ user }: UserProfileProps) {
           defaultMessage="{gender, select, male {He} female {She} other {They}} joined on {date}"
           values={{
             gender: user.gender,
-            date: intl.formatDate(user.joinDate, { 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
+            date: intl.formatDate(user.joinDate, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
             })
           }}
         />
@@ -235,7 +235,7 @@ export default function App() {
         <option value="en-US">English</option>
         <option value="ja-JP">日本語</option>
       </select>
-      <UserProfile 
+      <UserProfile
         user={{
           name: 'Alice',
           joinDate: new Date('2025-06-15'),
@@ -249,7 +249,55 @@ export default function App() {
 }
 ```
 
-## 7. 权威外部资源
+## 7. 本地化排序与 Locale 解析
+
+### Intl.Collator 深度使用
+
+```typescript
+// 多层级排序：先按姓氏拼音，再按名字
+const students = [
+  { name: '张三', score: 85 },
+  { name: '李四', score: 92 },
+  { name: '王五', score: 78 },
+];
+
+const collator = new Intl.Collator('zh', {
+  sensitivity: 'variant',
+  numeric: true, // 数字按数值排序
+});
+
+students.sort((a, b) => collator.compare(a.name, b.name));
+// [{ name: '李四', ... }, { name: '王五', ... }, { name: '张三', ... }]
+```
+
+### Locale Negotiation 策略
+
+```typescript
+// 浏览器端语言协商
+function getBestLocale(
+  supported: string[],
+  requested: string[] = navigator.languages as string[]
+): string {
+  const locales = supported.map((s) => new Intl.Locale(s));
+  for (const req of requested) {
+    const exact = supported.find((s) => s === req);
+    if (exact) return exact;
+    const langMatch = supported.find((s) => s.startsWith(req.split('-')[0]));
+    if (langMatch) return langMatch;
+  }
+  return supported[0];
+}
+
+// 使用 Intl.DisplayNames 展示可用语言
+const languageNames = new Intl.DisplayNames('zh', { type: 'language' });
+const options = ['en-US', 'zh-CN', 'ja-JP'].map((locale) => ({
+  value: locale,
+  label: languageNames.of(locale),
+}));
+// [{ value: 'en-US', label: '英语（美国）' }, ...]
+```
+
+## 8. 权威外部资源
 
 - [FormatJS 官方文档](https://formatjs.io/)
 - [react-i18next 官方文档](https://react.i18next.com/)
@@ -260,8 +308,21 @@ export default function App() {
 - [MDN — Internationalization API](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl)
 - [CLDR — Unicode Common Locale Data Repository](https://cldr.unicode.org/)
 - [The Programmer's Guide to ICU4C](https://unicode-org.github.io/icu/userguide/icu4c/)
+- [MDN — Intl.Collator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator) — 本地化排序详解
+- [MDN — Intl.DisplayNames](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DisplayNames) — 显示名称本地化
+- [MDN — Intl.Locale](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale) — BCP 47 解析
+- [Unicode Collation Algorithm](https://unicode.org/reports/tr10/) — Unicode 排序算法规范
+- [ECMA-402 Specification](https://tc39.es/ecma402/) — Intl API 语言规范
+- [BCP 47 Language Tags](https://tools.ietf.org/html/bcp47) — IETF 语言标签标准
+- [Unicode Standard Annex #35](https://unicode.org/reports/tr35/) — Unicode 区域数据标记语言 (LDML)
+- [i18next ICU Format Plugin](https://www.i18next.com/translation-function/formatting#icu) — i18next ICU 格式支持
+- [Lingui Macro Reference](https://lingui.dev/ref/macro) — Lingui 宏标记语法
+- [Next.js i18n Routing](https://nextjs.org/docs/app/building-your-application/routing/internationalization) — 框架级国际化路由
+- [Mozilla Fluent Documentation](https://projectfluent.org/) — Mozilla 的本地化系统
+- [Crowdin Localization Platform](https://support.crowdin.com/) — 翻译管理平台
+- [Lokalise Documentation](https://docs.lokalise.com/) — 协作翻译平台
 
-## 8. 与相邻模块的关系
+## 9. 与相邻模块的关系
 
 - **51-ui-components**: UI 组件的国际化支持
 - **18-frontend-frameworks**: 框架的 i18n 生态（react-intl、vue-i18n）

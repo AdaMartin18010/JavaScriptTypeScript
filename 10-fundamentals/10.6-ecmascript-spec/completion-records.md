@@ -178,6 +178,173 @@ outerLoop: for (let i = 0; i < 3; i++) {
 
 ---
 
+## 代码示例：规范中的 `?` 与 `!` 记法模拟
+
+ECMA-262 §5.2.3.1 使用 `?` 表示 ReturnIfAbrupt，`!` 表示断言 normal completion。以下用 JavaScript 模拟这一模式：
+
+```javascript
+// ============================================
+// 模拟 ReturnIfAbrupt (?) 和 AssertNormal (!)
+// ============================================
+
+// Completion Record 工厂
+function NormalCompletion(value) {
+  return { type: 'normal', value, target: undefined };
+}
+function ThrowCompletion(value) {
+  return { type: 'throw', value, target: undefined };
+}
+function ReturnCompletion(value) {
+  return { type: 'return', value, target: undefined };
+}
+function BreakCompletion(target) {
+  return { type: 'break', value: undefined, target };
+}
+
+// 模拟 ? Operation() —— ReturnIfAbrupt
+function abruptCheck(completion) {
+  if (completion.type !== 'normal') {
+    // 规范行为：直接返回当前 completion，中止后续执行
+    throw { __isAbrupt: true, completion };
+  }
+  return completion.value;
+}
+
+// 模拟 ! Operation() —— AssertNormal
+function assertNormal(completion) {
+  if (completion.type !== 'normal') {
+    throw new Error('AssertNormal failed: expected normal completion');
+  }
+  return completion.value;
+}
+
+// 包装执行环境，自动处理 abrupt completion 传播
+function runWithAbruptHandling(fn) {
+  try {
+    return fn();
+  } catch (e) {
+    if (e && e.__isAbrupt) return e.completion;
+    throw e;
+  }
+}
+
+// 示例：模拟属性访问的抽象操作
+function getV(obj, prop) {
+  return runWithAbruptHandling(() => {
+    // ? ToObject(obj)
+    const O = abruptCheck(obj === null || obj === undefined
+      ? ThrowCompletion(new TypeError('Cannot convert undefined to object'))
+      : NormalCompletion(Object(obj)));
+
+    // ! Get(O, prop)
+    const result = assertNormal(NormalCompletion(O[prop]));
+    return NormalCompletion(result);
+  });
+}
+
+console.log(getV({ a: 1 }, 'a')); // { type: 'normal', value: 1, ... }
+console.log(getV(null, 'a'));     // { type: 'throw', value: TypeError }
+```
+
+---
+
+## 代码示例：Generator 的 Completion Record 语义
+
+Generator 函数内部使用 Yield 产生暂停点，其完成语义与常规函数不同：
+
+```javascript
+// ============================================
+// Generator 的完成状态机
+// ============================================
+
+function* gen() {
+  yield 1;           // 产生 { value: 1, done: false }
+  yield 2;           // 产生 { value: 2, done: false }
+  return 'done';     // 产生 { value: 'done', done: true }
+}
+
+const g = gen();
+console.log(g.next());  // { value: 1, done: false }
+console.log(g.next());  // { value: 2, done: false }
+console.log(g.next());  // { value: 'done', done: true }
+console.log(g.next());  // { value: undefined, done: true } ← 已关闭
+
+// ============================================
+// throw() 向 generator 注入 throw completion
+// ============================================
+
+function* resilientGen() {
+  try {
+    yield 'A';
+  } catch (e) {
+    yield `Recovered: ${e.message}`;
+  }
+  yield 'B';
+}
+
+const r = resilientGen();
+console.log(r.next());           // { value: 'A', done: false }
+console.log(r.throw(new Error('boom'))); // { value: 'Recovered: boom', done: false }
+console.log(r.next());           // { value: 'B', done: false }
+
+// ============================================
+// return() 向 generator 注入 return completion
+// ============================================
+
+function* resourceGen() {
+  try {
+    yield 'resource-1';
+    yield 'resource-2';
+  } finally {
+    console.log('Cleanup executed'); // 模拟资源释放
+  }
+}
+
+const res = resourceGen();
+console.log(res.next());    // { value: 'resource-1', done: false }
+console.log(res.return('early-exit')); // Cleanup executed → { value: 'early-exit', done: true }
+```
+
+---
+
+## 代码示例：for-await-of 与异步迭代器的 Completion
+
+```javascript
+// ============================================
+// 异步迭代器的完成语义
+// ============================================
+
+async function* asyncGen() {
+  try {
+    yield await Promise.resolve(1);
+    yield await Promise.resolve(2);
+  } finally {
+    console.log('Async generator cleanup');
+  }
+}
+
+(async () => {
+  // break 会触发异步迭代器的 return()，执行 finally
+  for await (const x of asyncGen()) {
+    console.log(x);
+    if (x === 1) break; // 触发异步 return completion
+  }
+  // 输出：1 → Async generator cleanup
+})();
+
+// ============================================
+// 显式调用 AsyncIterator.return()
+// ============================================
+
+(async () => {
+  const it = asyncGen();
+  console.log(await it.next());   // { value: 1, done: false }
+  console.log(await it.return('end')); // Async generator cleanup → { value: 'end', done: true }
+})();
+```
+
+---
+
 ## Completion 类型状态转移图
 
 ```
@@ -220,6 +387,9 @@ outerLoop: for (let i = 0; i < 3; i++) {
 | **ReturnIfAbrupt** | `?` / `!` 记法 | §5.2.3.1 |
 | **TryStatement Evaluation** | try-catch-finally 求值算法 | §13.15.8 |
 | **ThrowStatement** | `throw` 生成 throw completion | §13.16 |
+| **Generator Start/Resume** | Generator 状态机与 completion | §27.5.3 |
+| **AsyncGeneratorStart** | 异步生成器的完成语义 | §27.6.3 |
+| **ForIn/OfHeadEvaluation** | 迭代循环的 completion 处理 | §14.7.5.3 |
 
 ---
 
@@ -229,9 +399,14 @@ outerLoop: for (let i = 0; i < 3; i++) {
 |------|------|------|
 | **ECMA-262 §6.2.4** | Completion Record 规范定义 | [tc39.es/ecma262/#sec-completion-record-specification-type](https://tc39.es/ecma262/#sec-completion-record-specification-type) |
 | **ECMA-262 §13.15** | Try/Catch/Finally 语句语义 | [tc39.es/ecma262/#sec-try-statement](https://tc39.es/ecma262/#sec-try-statement) |
+| **ECMA-262 §5.2.3** | ReturnIfAbrupt 与简写记法 | [tc39.es/ecma262/#sec-returnifabrupt](https://tc39.es/ecma262/#sec-returnifabrupt) |
+| **ECMA-262 §27.5** | Generator 函数规范 | [tc39.es/ecma262/#sec-generator-function-definitions](https://tc39.es/ecma262/#sec-generator-function-definitions) |
 | **MDN: try...catch** | 开发者友好的 try/catch 指南 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch) |
+| **MDN: Iteration protocols** | 迭代器/生成器协议 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols) |
 | **2ality: Exception handling in JS** | Dr. Axel Rauschmayer 深度解析 | [2ality.com/2017/01/try-catch-finally.html](https://2ality.com/2017/01/try-catch-finally.html) |
 | **V8 Blog: Understanding Exceptions** | 引擎层面异常处理实现 | [v8.dev/blog](https://v8.dev/blog) |
+| **MDN: return statement in try...catch...finally** | return 与 finally 的交互 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch#the_finally_block](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch#the_finally_block) |
+| **TC39 Notes: Completion Records** | 规范会议记录与设计动机 | [github.com/tc39/ecma262/issues/2558](https://github.com/tc39/ecma262/issues/2558) |
 
 ---
 

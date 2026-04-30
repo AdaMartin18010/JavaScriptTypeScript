@@ -282,6 +282,100 @@ const addExpr: Term = {
 console.log(evalFull(addExpr, new Map())); // { tag: 'VNum', n: 3 }
 ```
 
+#### 可运行示例：异常处理的操作语义（扩展 While 语言）
+
+```typescript
+// exceptions-operational.ts — 扩展 While 语言 with throw/try-catch
+
+type StmtExt =
+  | { tag: 'Skip' }
+  | { tag: 'Assign'; x: string; e: Expr }
+  | { tag: 'Seq'; s1: StmtExt; s2: StmtExt }
+  | { tag: 'If'; cond: Expr; thenBranch: StmtExt; elseBranch: StmtExt }
+  | { tag: 'While'; cond: Expr; body: StmtExt }
+  | { tag: 'Throw'; e: Expr }                          // 抛出异常
+  | { tag: 'TryCatch'; body: StmtExt; catchVar: string; handler: StmtExt }; // 捕获异常
+
+// 配置扩展为 <语句, 存储, 异常值 | null>
+interface Config {
+  s: StmtExt;
+  σ: Store;
+  exn: { tag: 'Num'; n: number } | null;
+}
+
+function stepStmtExt(c: Config): Config {
+  const { s, σ, exn } = c;
+  if (exn !== null) {
+    // 异常传播：Skip 继续向上，TryCatch 捕获
+    if (s.tag === 'Seq') {
+      // 异常跳过 s2，继续向上传播
+      return { s: s.s2, σ, exn }; // 简化：实际应持续传播直到 TryCatch
+    }
+    if (s.tag === 'TryCatch') {
+      // 进入 catch 块，绑定异常值
+      const newStore = new Map(σ);
+      newStore.set(s.catchVar, exn.n);
+      return { s: s.handler, σ: newStore, exn: null };
+    }
+    return c; // 已是最外层，异常未捕获
+  }
+
+  switch (s.tag) {
+    case 'Skip': return c;
+    case 'Assign': {
+      const r = stepExpr(s.e, σ);
+      if (isValue(r.e)) {
+        const newStore = new Map(r.σ);
+        newStore.set(s.x, (r.e as Extract<Expr, { tag: 'Num' }>).n);
+        return { s: { tag: 'Skip' }, σ: newStore, exn: null };
+      }
+      return { s: { tag: 'Assign', x: s.x, e: r.e }, σ: r.σ, exn: null };
+    }
+    case 'Seq': {
+      if (s.s1.tag === 'Skip') return { s: s.s2, σ, exn: null };
+      const r = stepStmtExt({ s: s.s1, σ, exn: null });
+      return { s: { tag: 'Seq', s1: r.s, s2: s.s2 }, σ: r.σ, exn: r.exn };
+    }
+    case 'Throw': {
+      const r = stepExpr(s.e, σ);
+      if (isValue(r.e)) {
+        return { s: { tag: 'Skip' }, σ: r.σ, exn: r.e as Extract<Expr, { tag: 'Num' }> };
+      }
+      return { s: { tag: 'Throw', e: r.e }, σ: r.σ, exn: null };
+    }
+    case 'TryCatch': {
+      const r = stepStmtExt({ s: s.body, σ, exn: null });
+      if (r.exn !== null && r.s.tag === 'Skip') {
+        // body 求值完成且抛出异常
+        const newStore = new Map(r.σ);
+        newStore.set(s.catchVar, r.exn.n);
+        return { s: s.handler, σ: newStore, exn: null };
+      }
+      if (r.s.tag === 'Skip' && r.exn === null) {
+        return { s: { tag: 'Skip' }, σ: r.σ, exn: null }; // 无异常
+      }
+      return { s: { tag: 'TryCatch', body: r.s, catchVar: s.catchVar, handler: s.handler }, σ: r.σ, exn: r.exn };
+    }
+    // ... If, While 类似基础版本
+    default: return c;
+  }
+}
+
+// ===== 演示：try { throw 42 } catch e { x = e } =====
+const exnProgram: StmtExt = {
+  tag: 'TryCatch',
+  body: { tag: 'Throw', e: { tag: 'Num', n: 42 } },
+  catchVar: 'e',
+  handler: { tag: 'Assign', x: 'x', e: { tag: 'Var', x: 'e' } },
+};
+
+let exnState: Config = { s: exnProgram, σ: new Map(), exn: null };
+while (exnState.s.tag !== 'Skip' || exnState.exn !== null) {
+  exnState = stepStmtExt(exnState);
+}
+console.log('After catch, x =', exnState.σ.get('x')); // 42
+```
+
 ### 3.2 非确定性选择：小步语义的优势
 
 ```typescript
@@ -328,6 +422,107 @@ const expr: NondetExpr = {
 console.log('All paths:', exploreAll(expr)); // [[1], [2], [3]]
 ```
 
+#### 可运行示例：并行组合的操作语义（交错语义）
+
+```typescript
+// concurrent-operational.ts — 两个线程的交错执行模型
+
+type Action =
+  | { tag: 'Read'; var: string }
+  | { tag: 'Write'; var: string; value: number }
+  | { tag: 'Fork'; child: Thread };
+
+interface Thread {
+  id: number;
+  pc: number;
+  actions: Action[];
+}
+
+interface ConcurrentConfig {
+  threads: Thread[];
+  store: Map<string, number>;
+  done: number[];
+}
+
+// 非确定性地选择一个可运行的线程
+function stepConcurrent(c: ConcurrentConfig): ConcurrentConfig[] {
+  const results: ConcurrentConfig[] = [];
+  for (let i = 0; i < c.threads.length; i++) {
+    const t = c.threads[i];
+    if (c.done.includes(t.id)) continue;
+    const action = t.actions[t.pc];
+    if (!action) continue; // 线程结束
+
+    const newThreads = c.threads.map((th, idx) =>
+      idx === i ? { ...th, pc: th.pc + 1 } : th
+    );
+    const newStore = new Map(c.store);
+    const newDone = [...c.done];
+
+    switch (action.tag) {
+      case 'Read':
+        // 读操作不改变存储，仅推进 PC
+        results.push({ threads: newThreads, store: newStore, done: newDone });
+        break;
+      case 'Write':
+        newStore.set(action.var, action.value);
+        results.push({ threads: newThreads, store: newStore, done: newDone });
+        break;
+      case 'Fork':
+        newThreads.push({ ...action.child, id: newThreads.length });
+        results.push({ threads: newThreads, store: newStore, done: newDone });
+        break;
+    }
+  }
+  // 标记完成的线程
+  for (const t of c.threads) {
+    if (t.pc >= t.actions.length && !c.done.includes(t.id)) {
+      newDone.push(t.id);
+    }
+  }
+  return results;
+}
+
+// ===== 演示：两个线程竞争写入 x =====
+const threadA: Thread = {
+  id: 0, pc: 0,
+  actions: [
+    { tag: 'Write', var: 'x', value: 1 },
+    { tag: 'Read', var: 'x' },
+  ],
+};
+const threadB: Thread = {
+  id: 1, pc: 0,
+  actions: [
+    { tag: 'Write', var: 'x', value: 2 },
+    { tag: 'Read', var: 'x' },
+  ],
+};
+
+const initial: ConcurrentConfig = { threads: [threadA, threadB], store: new Map(), done: [] };
+// 所有交错路径可通过 BFS 探索
+function exploreConcurrent(initial: ConcurrentConfig, maxDepth = 4): Map<string, number>[] {
+  const finals: Map<string, number>[] = [];
+  const queue: { c: ConcurrentConfig; depth: number }[] = [{ c: initial, depth: 0 }];
+  while (queue.length) {
+    const { c, depth } = queue.shift()!;
+    if (depth >= maxDepth) {
+      finals.push(c.store);
+      continue;
+    }
+    const nexts = stepConcurrent(c);
+    if (nexts.length === 0) {
+      finals.push(c.store);
+    } else {
+      for (const n of nexts) queue.push({ c: n, depth: depth + 1 });
+    }
+  }
+  return finals;
+}
+
+console.log('Possible final stores:', exploreConcurrent(initial).map(s => Object.fromEntries(s)));
+```
+
 ### 3.3 常见误区
 
 | 误区 | 正确理解 |
@@ -353,6 +548,10 @@ console.log('All paths:', exploreAll(expr)); // [[1], [2], [3]]
 - [PLT Redex: Semantic Modeling](https://redex.racket-lang.org/) — Racket 语义建模工具
 - [The Formal Semantics of Programming Languages — Winskel](https://mitpress.mit.edu/9780262731033/) — 经典教材
 - [Definitional Interpreters for Higher-Order Programming Languages](https://doi.org/10.1145/942572.807047) — Reynolds (1972) — 高阶语言定义性解释器
+- [A Structural Approach to Operational Semantics — Gordon Plotkin](https://homepages.inf.ed.ac.uk/gdp/publications/sos_jlap.pdf) — SOS 奠基论文
+- [Lecture Notes on the Lambda Calculus — Peter Selinger](https://arxiv.org/abs/0804.3434) — λ 演算讲义
+- [JavaScript: The First 20 Years — Chapter 3](https://dl.acm.org/doi/10.1145/3386327) — JS 语言演化史
+- [CompCert: Formally Verified C Compiler](https://compcert.org/) — 形式化语义到编译器验证
 - `20.10-formal-verification/formal-semantics/`
 
 ---

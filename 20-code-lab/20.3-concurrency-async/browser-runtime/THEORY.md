@@ -1,6 +1,7 @@
 # 浏览器运行时深度解析
 
-> 浏览器渲染机制、事件循环模型与内存管理的理论基础
+> **定位**：`20-code-lab/20.3-concurrency-async/browser-runtime`
+> **关联**：`10-fundamentals/` | `30-knowledge-base/`
 
 ---
 
@@ -176,6 +177,89 @@ TaskQueues = {
 - 状态变更的同步观察
 ```
 
+### 2.4 requestAnimationFrame 与渲染时机
+
+```javascript
+// raf-demo.ts — 理解 requestAnimationFrame 在渲染管线中的位置
+let frameCount = 0;
+
+function animate() {
+  // 此回调在样式计算和布局之前执行
+  // 适合读取 layout 属性（此时值与上一帧一致，不会触发强制同步布局）
+  const element = document.getElementById('box')!;
+  
+  // 1. 先读取（安全，不会触发 forced reflow）
+  const currentLeft = parseInt(element.style.left || '0');
+  
+  // 2. 再写入（批量样式变更）
+  element.style.left = `${currentLeft + 1}px`;
+  element.style.transform = `translateX(${Math.sin(frameCount * 0.05) * 100}px)`;
+  
+  frameCount++;
+  requestAnimationFrame(animate);
+}
+
+requestAnimationFrame(animate);
+```
+
+### 2.5 IntersectionObserver 与惰性加载
+
+```typescript
+// lazy-load.ts — 使用 IntersectionObserver 实现高性能图片懒加载
+function lazyLoadImages() {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const img = entry.target as HTMLImageElement;
+          img.src = img.dataset.src!;
+          img.classList.remove('lazy');
+          observer.unobserve(img);
+        }
+      });
+    },
+    {
+      rootMargin: '50px 0px', // 提前 50px 开始加载
+      threshold: 0.01,
+    }
+  );
+
+  document.querySelectorAll('img.lazy').forEach((img) => observer.observe(img));
+}
+```
+
+### 2.6 requestIdleCallback 与后台任务调度
+
+```typescript
+// idle-callback.ts — 利用空闲时间执行非紧急任务
+function scheduleIdleWork(tasks: (() => void)[]) {
+  function workLoop(deadline: IdleDeadline) {
+    while (tasks.length > 0 && deadline.timeRemaining() > 0) {
+      const task = tasks.shift()!;
+      task();
+    }
+    
+    if (tasks.length > 0) {
+      requestIdleCallback(workLoop, { timeout: 2000 });
+    }
+  }
+  
+  requestIdleCallback(workLoop, { timeout: 2000 });
+}
+
+// 使用：分片处理大量数据
+const largeDataset = Array.from({ length: 10000 }, (_, i) => i);
+const chunks = largeDataset.reduce<{ tasks: (() => void)[] }>(
+  (acc, _, i) => {
+    if (i % 100 === 0) acc.tasks.push(() => processChunk(largeDataset.slice(i, i + 100)));
+    return acc;
+  },
+  { tasks: [] }
+).tasks;
+
+scheduleIdleWork(chunks);
+```
+
 ## 3. 内存管理理论
 
 ### 3.1 垃圾回收算法
@@ -246,6 +330,34 @@ setInterval(() => {
 }, 1000);
 ```
 
+### 3.3 WeakRef 与 FinalizationRegistry 主动内存管理
+
+```typescript
+// weakref-cache.ts — 不阻止垃圾回收的缓存
+class WeakRefCache<K, V extends object> {
+  private cache = new Map<K, WeakRef<V>>();
+  private registry = new FinalizationRegistry<K>((key) => {
+    console.log(`[GC] Evicted: ${String(key)}`);
+    this.cache.delete(key);
+  });
+
+  set(key: K, value: V): void {
+    this.cache.set(key, new WeakRef(value));
+    this.registry.register(value, key);
+  }
+
+  get(key: K): V | undefined {
+    const ref = this.cache.get(key);
+    return ref?.deref();
+  }
+}
+
+// 使用：DOM 节点缓存
+const nodeCache = new WeakRefCache<string, HTMLElement>();
+nodeCache.set('header', document.getElementById('header')!);
+// 当 DOM 被移除且没有其他强引用时，缓存自动失效
+```
+
 ## 4. 性能指标的科学测量
 
 ### 4.1 Core Web Vitals 的统计学基础
@@ -293,6 +405,30 @@ INP = max(交互延迟) for all interactions
 - JS 预算：总大小 / 压缩后大小 / 缓存命中率
 - 图片预算：视口大小 × 设备像素比 × 格式效率
 - 字体预算：字重数量 × 子集化程度
+```
+
+### 4.3 Long Tasks API 与主线程监控
+
+```typescript
+// long-tasks-monitor.ts — 检测并上报长任务
+const observer = new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    if (entry.duration > 50) {
+      // 超过 50ms 即视为长任务（RAIL 模型）
+      console.warn('[Long Task]', entry.duration, 'ms', entry.attribution);
+      
+      // 上报到监控系统
+      reportToAnalytics({
+        type: 'long_task',
+        duration: entry.duration,
+        startTime: entry.startTime,
+        containerSrc: (entry as any).attribution?.[0]?.containerSrc,
+      });
+    }
+  }
+});
+
+observer.observe({ entryTypes: ['longtask'] });
 ```
 
 ## 5. 现代浏览器架构演进
@@ -346,6 +482,8 @@ Spectre 漏洞后的安全架构：
 
 1. [HTML Standard - Event Loops](https://html.spec.whatwg.org/multipage/webappapis.html#event-loops). WHATWG.
 2. [W3C Performance Timeline](https://www.w3.org/TR/performance-timeline/). W3C.
+3. [W3C Long Tasks API](https://w3c.github.io/longtasks/). W3C.
+4. [Web Vitals — Google](https://web.dev/vitals/). Google.
 
 ### 6.2 经典著作
 
@@ -362,6 +500,19 @@ Spectre 漏洞后的安全架构：
 - [Inside look at modern web browser](https://developers.google.com/web/updates/2018/09/inside-browser-part1) - Google Developers
 - [The Anatomy of a Frame](https://aerotwist.com/blog/the-anatomy-of-a-frame/) - Paul Lewis
 - [Web Performance Best Practices](https://developer.mozilla.org/en-US/docs/Web/Performance) - MDN Web Docs
+- [High-Performance Browser Networking](https://hpbn.co/) - Ilya Grigorik
+- [Google Chrome Developers — Rendering Performance](https://www.youtube.com/playlist?list=PLNYkxOF6rcICgS7eFJr9NZoIAjQovPz-y) - YouTube 系列
+- [web.dev — Optimize JavaScript Execution](https://web.dev/optimize-javascript-execution/) - Google
+- [web.dev — Avoid Large, Complex Layouts](https://web.dev/avoid-large-complex-layouts-and-layout-thrashing/) - Google
+- [web.dev — Reduce the Scope of Style Calculations](https://web.dev/reduce-the-scope-and-complexity-of-style-calculations/) - Google
+- [MDN — IntersectionObserver](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver) - MDN
+- [MDN — requestIdleCallback](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback) - MDN
+- [MDN — WeakRef](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef) - MDN
+- [MDN — FinalizationRegistry](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry) - MDN
+- [V8 Blog — Trash talk](https://v8.dev/blog/trash-talk) - V8 垃圾回收详解
+- [V8 Blog — Concurrent marking](https://v8.dev/blog/concurrent-marking) - V8 并发标记
+- [web.dev — INP](https://web.dev/inp/) - Interaction to Next Paint 优化指南
+- [Chromium Blog — Site Isolation](https://blog.chromium.org/2018/07/mitigating-spectre-with-site-isolation.html) - Chromium 站点隔离
 
 ---
 
@@ -384,17 +535,61 @@ Spectre 漏洞后的安全架构：
 
 本模块涉及的核心设计模式包括（根据代码实现提炼）：
 
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
+1. **批量读写分离**：避免 layout thrashing 的核心模式
+2. **观察者模式**：MutationObserver、IntersectionObserver 等 API 的底层模式
+3. **时间片调度**：requestIdleCallback 与任务分片的调度模式
 
 ### 与相邻模块的关系
 
 | 相邻模块 | 关系说明 |
 |---------|---------|
-| 前置依赖 | 建议先掌握的基础模块 |
-| 后续进阶 | 可继续深化的相关模块 |
+| `20.3-concurrency-async/web-workers` | Web Workers 提供并行能力，补充事件循环的并发模型 |
+| `20.5-frontend-frameworks/` | 前端框架的虚拟 DOM diff 是对渲染管线的优化 |
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+### 2.7 scheduler.yield() 协作式调度
+
+```typescript
+// scheduler-yield.ts — 主动让出主线程，减少长任务
+async function processLargeArray(items: number[]) {
+  const results: number[] = [];
+  for (let i = 0; i < items.length; i++) {
+    results.push(heavyComputation(items[i]));
+    // 每处理 50 项主动让出，避免阻塞事件循环
+    if (i % 50 === 0 && 'scheduler' in globalThis) {
+      await (globalThis as any).scheduler.yield();
+    }
+  }
+  return results;
+}
+```
+
+### 4.4 PerformanceObserver 测量 Core Web Vitals
+
+```typescript
+// web-vitals-observer.ts
+const observer = new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    if (entry.entryType === 'largest-contentful-paint') {
+      console.log('LCP:', entry.startTime);
+    }
+    if (entry.entryType === 'layout-shift') {
+      console.log('CLS:', (entry as any).value);
+    }
+  }
+});
+
+observer.observe({ type: 'largest-contentful-paint', buffered: true });
+observer.observe({ type: 'layout-shift', buffered: true });
+```
+
+### 新增参考文献
+
+- [MDN — scheduler.yield()](https://developer.mozilla.org/en-US/docs/Web/API/Scheduler/yield) — 协作式任务调度 API
+- [Chrome Developers — Core Web Vitals](https://web.dev/vitals/) — Google 官方 Web 性能指标
+- [web.dev — Optimize INP](https://web.dev/optimize-inp/) — 交互延迟优化指南
+- [W3C — Long Animation Frames API](https://w3c.github.io/long-animation-frames/) — 长动画帧规范
+- [Google Chrome Labs — scheduler.yield Polyfill](https://github.com/GoogleChromeLabs/scheduler-yield-polyfill) — 调度器垫片
+
+> 📅 理论深化更新：2026-04-30

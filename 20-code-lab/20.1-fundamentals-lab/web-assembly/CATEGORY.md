@@ -226,6 +226,67 @@ function trackMemoryGrowth(instance: WebAssembly.Instance) {
 }
 ```
 
+#### Rust wasm-bindgen 双向互操作
+
+```rust
+// src/lib.rs (Rust)
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub fn greet(name: &str) -> String {
+    format!("Hello, {}!", name)
+}
+
+#[wasm_bindgen]
+pub struct Point {
+    pub x: f64,
+    pub y: f64,
+}
+
+#[wasm_bindgen]
+impl Point {
+    pub fn distance(&self, other: &Point) -> f64 {
+        ((self.x - other.x).powi(2) + (self.y - other.y).powi(2)).sqrt()
+    }
+}
+```
+
+```typescript
+// 宿主 TypeScript 调用 Rust 导出
+import init, { greet, Point } from './pkg/rust_wasm.js';
+
+await init();
+console.log(greet('WebAssembly')); // "Hello, WebAssembly!"
+
+const p1 = new Point(0, 0);
+const p2 = new Point(3, 4);
+console.log(p1.distance(p2)); // 5
+```
+
+#### Wasm 异常处理与陷阱捕获
+
+```typescript
+// wasm-error-handling.ts
+async function safeWasmCall<T>(fn: () => T): Promise<{ ok: true; value: T } | { ok: false; error: WebAssembly.RuntimeError }> {
+  try {
+    return { ok: true, value: fn() };
+  } catch (err) {
+    if (err instanceof WebAssembly.RuntimeError) {
+      console.error('Wasm runtime error:', err.message);
+      return { ok: false, error: err };
+    }
+    throw err;
+  }
+}
+
+// 使用
+const result = await safeWasmCall(() => exports.divide(10, 0));
+if (!result.ok) {
+  // 处理除零陷阱
+  console.error('Division by zero in Wasm module');
+}
+```
+
 ---
 
 > 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
@@ -252,6 +313,62 @@ function trackMemoryGrowth(instance: WebAssembly.Instance) {
 | Wasm SIMD Proposal | 提案文档 | [github.com/WebAssembly/simd](https://github.com/WebAssembly/simd) |
 | WebAssembly Weekly | 社区周报 | [wasmweekly.news](https://wasmweekly.news/) |
 | Figma — WebAssembly Cut File Load Time by 3x | 工程案例 | [figma.com/blog/webassembly-cut-figmas-load-time-by-3x](https://www.figma.com/blog/webassembly-cut-figmas-load-time-by-3x/) |
+| WebAssembly System Interface (WASI) | W3C 文档 | [wasi.dev](https://wasi.dev/) |
+| wasm-pack | Rust/Wasm 构建工具 | [rustwasm.github.io/wasm-pack/](https://rustwasm.github.io/wasm-pack/) |
+| Emscripten | C/C++ 到 Wasm 编译器 | [emscripten.org](https://emscripten.org/) |
+| WABT (WebAssembly Binary Toolkit) | 二进制工具 | [github.com/WebAssembly/wabt](https://github.com/WebAssembly/wabt) |
+| WebAssembly Micro Runtime (WAMR) | 文档 | [github.com/bytecodealliance/wasm-micro-runtime](https://github.com/bytecodealliance/wasm-micro-runtime) |
+| Google — WebAssembly for Web Developers | 指南 | [developers.google.com/web/updates/2018/03/wasm](https://developers.google.com/web/updates/2018/03/wasm) |
+
+#### WebAssembly.Table 与动态链接
+
+```typescript
+// wasm-table.ts — 使用 Table 实现函数指针动态分发
+const table = new WebAssembly.Table({ initial: 2, element: 'anyfunc' });
+
+const importObject = {
+  js: {
+    table,
+    log: (x: number) => console.log(x),
+  },
+};
+
+const wasm = await WebAssembly.instantiateStreaming(fetch('./table.wasm'), importObject);
+
+// Wasm 模块可以通过索引调用 table 中的函数
+(table as any).set(0, wasm.exports.add);
+(table as any).set(1, wasm.exports.sub);
+```
+
+#### 多线程 Wasm：SharedArrayBuffer + Atomics
+
+```typescript
+// worker.ts — 在 Worker 中与 Wasm 共享内存
+const memory = new WebAssembly.Memory({ initial: 1, maximum: 4, shared: true });
+const wasmModule = await WebAssembly.compileStreaming(fetch('./multithread.wasm'));
+const instance = await WebAssembly.instantiate(wasmModule, { env: { memory } });
+
+// 主线程与 Worker 通过 Atomics 协作
+Atomics.store(new Int32Array(memory.buffer), 0, 42);
+Atomics.notify(new Int32Array(memory.buffer), 0, 1);
+```
+
+---
+
+> 此分类文档由批量生成脚本自动创建，请根据实际模块内容补充和调整。
+
+## 新增权威参考链接
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| MDN — WebAssembly.Memory | 文档 | [developer.mozilla.org/en-US/docs/WebAssembly/JavaScript_interface/Memory](https://developer.mozilla.org/en-US/docs/WebAssembly/JavaScript_interface/Memory) |
+| MDN — WebAssembly.Table | 文档 | [developer.mozilla.org/en-US/docs/WebAssembly/JavaScript_interface/Table](https://developer.mozilla.org/en-US/docs/WebAssembly/JavaScript_interface/Table) |
+| MDN — SharedArrayBuffer | 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer) |
+| WebAssembly Threads Proposal | 提案 | [github.com/WebAssembly/threads](https://github.com/WebAssembly/threads) |
+| Wasmtime TypeScript Embedding | 文档 | [docs.wasmtime.dev/lang-typescript.html](https://docs.wasmtime.dev/lang-typescript.html) |
+| Emscripten Documentation | 文档 | [emscripten.org/docs](https://emscripten.org/docs) |
+| AssemblyScript Standard Library | 文档 | [www.assemblyscript.org/stdlib.html](https://www.assemblyscript.org/stdlib.html) |
+| Rust wasm-pack | 工具 | [rustwasm.github.io/wasm-pack](https://rustwasm.github.io/wasm-pack/) |
 
 ---
 

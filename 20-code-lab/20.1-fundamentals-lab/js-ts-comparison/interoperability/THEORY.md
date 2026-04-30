@@ -253,15 +253,164 @@ if (typeof safe === 'object' && safe !== null && 'foo' in safe) {
 }
 ```
 
-### 3.9 常见误区
+### 3.9 代码示例：`declare` 关键字与全局扩展
+
+```typescript
+// ============================================
+// declare 关键字：在不执行代码的情况下声明类型
+// ============================================
+
+// 声明全局变量（如由 HTML script 标签注入）
+declare const __APP_VERSION__: string;
+declare const __BUILD_TIME__: number;
+
+// 声明全局函数（如旧版 jQuery 或第三方 SDK）
+declare function trackEvent(name: string, payload?: Record<string, unknown>): void;
+
+// 扩展全局 Window 接口
+declare global {
+  interface Window {
+    analytics?: {
+      track: (event: string, props?: object) => void;
+    };
+  }
+}
+
+// 使用：window.analytics?.track('page_view');
+
+// ============================================
+// 命名空间 vs ES Module 的互操作
+// ============================================
+
+// 将遗留 UMD 库适配为 ES Module 类型
+// types/legacy-lib.d.ts
+declare namespace LegacyLib {
+  export interface Options {
+    debug: boolean;
+  }
+  export function init(options: Options): void;
+}
+
+// 作为 ES Module 导出
+declare module 'legacy-lib' {
+  export = LegacyLib;
+}
+
+// 消费侧
+import * as LegacyLib from 'legacy-lib';
+LegacyLib.init({ debug: true });
+```
+
+### 3.10 代码示例：路径映射与条件类型导入
+
+```typescript
+// tsconfig.json 中配置路径别名，实现跨包类型共享
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["../shared/src/*"],
+      "@types/*": ["./types/*"]
+    }
+  }
+}
+
+// ============================================
+// 条件类型导入（inline type import）
+// ============================================
+
+// TS 4.5+ 支持 import type 的独立语法，避免运行时依赖
+import type { UserDTO } from '@shared/user';
+import { validateUser } from '@shared/user'; // 运行时导入
+
+// TS 4.9+ 支持在 import 语句中内联 type 标记
+import { type UserDTO, validateUser } from '@shared/user';
+// 编译后：仅保留 validateUser 的导入
+
+// ============================================
+// ts-node / tsx 运行 TS 与 ESM 互操作
+// ============================================
+
+// package.json 中配置 ts-node 的 ESM loader
+{
+  "scripts": {
+    "dev": "node --loader ts-node/esm src/index.ts",
+    "build": "tsc"
+  }
+}
+
+// tsconfig.json 配合 ESM
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022"
+  }
+}
+```
+
+### 3.11 代码示例：从 JavaScript 到 TypeScript 的迁移阶段
+
+```typescript
+// ============================================
+// 阶段 1：仅添加 @ts-check 和 JSDoc（零构建改动）
+// ============================================
+
+// utils.js
+// @ts-check
+/**
+ * @param {number} a
+ * @param {number} b
+ * @returns {number}
+ */
+export function add(a, b) {
+  return a + b;
+}
+
+// ============================================
+// 阶段 2：允许 TS 检查 JS，启用严格模式项逐个升级
+// ============================================
+
+// tsconfig.json
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "strict": false,
+    "noImplicitAny": true,   // 先开启 any 警告
+    "strictNullChecks": false // 后续再开启
+  }
+}
+
+// ============================================
+// 阶段 3：文件级迁移，保留 .js 后缀通过 d.ts 过渡
+// ============================================
+
+// utils.d.ts —— 为尚未改写的 utils.js 提供类型
+declare module './utils.js' {
+  export function add(a: number, b: number): number;
+}
+
+// ============================================
+// 阶段 4：完全 TypeScript 化
+// ============================================
+
+// utils.ts
+export function add(a: number, b: number): number {
+  return a + b;
+}
+```
+
+### 3.12 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | JS 文件无法拥有类型安全 | `// @ts-check` 或 `checkJs` 启用完整 TS 检查 |
 | `.d.ts` 必须与 JS 同名同目录 | 可通过 `types`/`typings` 字段在 `package.json` 指定路径 |
 | `any` 是互操作的最佳选择 | 使用 `unknown` + 窄化比 `any` 更安全 |
+| ESM 与 CJS 类型可以混用 | `moduleResolution` 需与运行时一致，否则解析出错 |
 
-### 3.10 扩展阅读
+### 3.13 扩展阅读
 
 - [TypeScript: Creating .d.ts Files](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html)
 - [TypeScript: JSDoc Supported Types](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html)
@@ -274,7 +423,11 @@ if (typeof safe === 'object' && safe !== null && 'foo' in safe) {
 - [TypeScript Handbook: Modules](https://www.typescriptlang.org/docs/handbook/2/modules.html) — 模块解析与声明文件
 - [TypeScript: Module Augmentation](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation) — 官方模块扩充指南
 - [TypeScript `satisfies` Operator](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html#the-satisfies-operator) — TS 4.9 发布说明
-- `10-fundamentals/10.2-type-system/`
+- [TypeScript: ESM in Node.js](https://www.typescriptlang.org/docs/handbook/esm-node.html) — Node.js ESM 互操作指南
+- [ts-node ESM Loader](https://typestrong.org/ts-node/docs/imports/) — ts-node 的 ESM 加载器配置
+- [TypeScript: Type-Only Imports](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html#type-only-imports-and-export) — 纯类型导入导出
+- [TypeScript: Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) — 大型仓库互操作策略
+- [Node.js: TypeScript Type Stripping](https://nodejs.org/api/typescript.html) — Node.js 22+ 原生 TS 支持
 
 ---
 

@@ -260,6 +260,99 @@ function cosineSimilarity(a: number[], b: number[]): number {
 }
 ```
 
+#### MCP Server 最小实现（stdio 传输）
+
+```typescript
+// mcp-server-minimal.ts — 基于 stdio 的 MCP Server 最小可运行示例
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js';
+
+const server = new Server(
+  { name: 'weather-server', version: '1.0.0' },
+  { capabilities: { tools: {} } }
+);
+
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools: [
+    {
+      name: 'get_weather',
+      description: '获取指定城市的当前天气',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          city: { type: 'string', description: '城市名称' },
+          unit: { type: 'string', enum: ['celsius', 'fahrenheit'], default: 'celsius' },
+        },
+        required: ['city'],
+      },
+    },
+  ],
+}));
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  if (request.params.name === 'get_weather') {
+    const { city, unit = 'celsius' } = request.params.arguments as Record<string, string>;
+    // 模拟调用天气 API
+    const weather = { city, temperature: 22, unit, condition: 'sunny' };
+    return { content: [{ type: 'text', text: JSON.stringify(weather) }] };
+  }
+  throw new Error(`Unknown tool: ${request.params.name}`);
+});
+
+const transport = new StdioServerTransport();
+await server.connect(transport);
+console.error('Weather MCP Server running on stdio');
+```
+
+#### 流式响应处理器（SSE 解析）
+
+```typescript
+// streaming-handler.ts — 处理 LLM 流式输出与工具调用交错
+interface StreamChunk {
+  type: 'text' | 'tool_call' | 'tool_result' | 'done';
+  content?: string;
+  toolCall?: { name: string; arguments: Record<string, unknown> };
+}
+
+async function* parseSSEStream(reader: ReadableStreamDefaultReader<Uint8Array>): AsyncGenerator<StreamChunk> {
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') {
+          yield { type: 'done' };
+          continue;
+        }
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.choices?.[0]?.delta?.tool_calls) {
+            yield { type: 'tool_call', toolCall: parsed.choices[0].delta.tool_calls[0].function };
+          } else if (parsed.choices?.[0]?.delta?.content) {
+            yield { type: 'text', content: parsed.choices[0].delta.content };
+          }
+        } catch {
+          // 忽略解析失败的行
+        }
+      }
+    }
+  }
+}
+```
+
 ### 4.4 扩展阅读
 
 - [Model Context Protocol](https://modelcontextprotocol.io/)
@@ -274,6 +367,14 @@ function cosineSimilarity(a: number[], b: number[]): number {
 - [LlamaIndex.TS](https://ts.llamaindex.ai/) — RAG 与数据代理的 TS 实现
 - [AI Agent Design Patterns — Microsoft Research](https://www.microsoft.com/en-us/research/publication/the-shift-from-models-to-compound-ai-systems/)
 - [Building Effective Agents — Anthropic](https://www.anthropic.com/research/building-effective-agents)
+- [MCP Inspector](https://github.com/modelcontextprotocol/inspector) — MCP Server 调试工具
+- [LangGraph — Agent Workflows](https://langchain-ai.github.io/langgraphjs/) — JS/TS 状态机 Agent 编排
+- [OpenAI API — Streaming](https://platform.openai.com/docs/api-reference/streaming) — 官方流式响应文档
+- [Pinecone — Vector Database](https://docs.pinecone.io/) — 向量检索基础设施
+- [Weaviate — Vector Search](https://weaviate.io/developers/weaviate) — 开源向量数据库
+- [Hugging Face — MTEB Leaderboard](https://huggingface.co/spaces/mteb/leaderboard) — 文本嵌入模型排行榜
+- [OWASP — LLM AI Security Top 10](https://owasp.org/www-project-top-10-for-large-language-model-applications/) — LLM 安全威胁清单
+- [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework) — AI 系统风险管理框架
 - `30-knowledge-base/`
 
 ---

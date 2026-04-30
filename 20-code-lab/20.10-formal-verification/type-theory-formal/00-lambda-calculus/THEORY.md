@@ -213,6 +213,78 @@ console.log('fib(10) =', fib(10)); // 55
 console.log('fib(20) =', fib(20)); // 6765
 ```
 
+#### 进阶：Church 前驱与数值比较
+
+```typescript
+// Church 前驱：PRED n = n (λg.λh. h (g f)) (λu. x) (λu. u)
+// 核心思想：构造一对 (n, n-1)，最终取第二个分量
+
+const PRED = <T>(n: (f: (p: [T, T]) => [T, T]) => (x: [T, T]) => [T, T]) =>
+  (f: (x: T) => T) => (x: T): T => {
+    const pair = n(([a, _b]) => [f(a), a] as [T, T])([x, x] as [T, T]);
+    return pair[1];
+  };
+
+// Church 减法：SUB m n = n PRED m
+const SUB = <T>(m: (f: (x: T) => T) => (x: T) => T) =>
+  (n: (f: (p: [T, T]) => [T, T]) => (x: [T, T]) => [T, T]) =>
+    (f: (x: T) => T) => (x: T) => PRED<T>(n)((p) => p)(m(f)(x));
+
+// 数值相等判断（简化为 JS number 比较）
+const churchEq = <T>(m: (f: (x: T) => T) => (x: T) => T) =>
+  (n: (f: (x: T) => T) => (x: T) => T): boolean =>
+    churchToNum(m) === churchToNum(n);
+
+console.log('PRED 3 =', churchToNum(PRED(THREE))); // 2
+console.log('3 - 2 =', churchToNum(SUB(THREE)(TWO))); // 1
+```
+
+#### 进阶：λ 演算解释器骨架
+
+```typescript
+// 基于 de Bruijn 索引的 λ 演算解释器核心
+// 避免变量名捕获，直接以数字表示绑定深度
+
+type DeBruijnTerm =
+  | { type: 'Var'; index: number }
+  | { type: 'Abs'; body: DeBruijnTerm }
+  | { type: 'App'; func: DeBruijnTerm; arg: DeBruijnTerm };
+
+function shift(term: DeBruijnTerm, cutoff: number, by: number): DeBruijnTerm {
+  switch (term.type) {
+    case 'Var':
+      return { type: 'Var', index: term.index >= cutoff ? term.index + by : term.index };
+    case 'Abs':
+      return { type: 'Abs', body: shift(term.body, cutoff + 1, by) };
+    case 'App':
+      return { type: 'App', func: shift(term.func, cutoff, by), arg: shift(term.arg, cutoff, by) };
+  }
+}
+
+function substitute(term: DeBruijnTerm, value: DeBruijnTerm, depth: number = 0): DeBruijnTerm {
+  switch (term.type) {
+    case 'Var':
+      return term.index === depth ? value : term;
+    case 'Abs':
+      return { type: 'Abs', body: substitute(term.body, shift(value, 0, 1), depth + 1) };
+    case 'App':
+      return { type: 'App', func: substitute(term.func, value, depth), arg: substitute(term.arg, value, depth) };
+  }
+}
+
+function betaReduce(term: DeBruijnTerm): DeBruijnTerm {
+  if (term.type === 'App' && term.func.type === 'Abs') {
+    return substitute(term.func.body, shift(term.arg, 0, 1));
+  }
+  return term;
+}
+
+// 示例：((λ. 0) (λ. 0))  =>  λ. 0
+const identity: DeBruijnTerm = { type: 'Abs', body: { type: 'Var', index: 0 } };
+const apply: DeBruijnTerm = { type: 'App', func: identity, arg: identity };
+console.log('Beta reduced:', JSON.stringify(betaReduce(apply)));
+```
+
 ### 3.4 常见误区
 
 | 误区 | 正确理解 |
@@ -250,6 +322,9 @@ console.log('fib(20) =', fib(20)); // 6765
 | Hindley-Milner 类型推断 | [wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system) | 简单类型 λ 的类型推断算法 |
 | To Mock a Mockingbird (Smullyan) | [wikipedia.org/wiki/To_Mock_a_Mockingbird](https://en.wikipedia.org/wiki/To_Mock_a_Mockingbird) | 通过谜题学习组合子逻辑 |
 | ECMA-262 规范 — 函数语义 | [tc39.es/ecma262/#sec-ecmascript-function-objects](https://tc39.es/ecma262/#sec-ecmascript-function-objects) | JS 函数对象规范定义 |
+| Stanford Encyclopedia — Lambda Calculus | [plato.stanford.edu/entries/lambda-calculus](https://plato.stanford.edu/entries/lambda-calculus/) | 斯坦福哲学百科全书 λ 演算条目 |
+| Cambridge — Semantics of Programming Languages | [www.cl.cam.ac.uk/teaching/1415/Semantics](https://www.cl.cam.ac.uk/teaching/1415/Semantics/) | 剑桥编程语言语义课程 |
+| De Bruijn Index (Wikipedia) | [wikipedia.org/wiki/De_Bruijn_index](https://en.wikipedia.org/wiki/De_Bruijn_index) | 无名变量表示法 |
 
 ---
 

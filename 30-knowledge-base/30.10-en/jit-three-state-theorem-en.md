@@ -180,6 +180,100 @@ poly('a');
 benchmark(poly, 'after deopt (megamorphic)');
 ```
 
+---
+
+## Code Example: Node.js PerformanceObserver for JIT-Aware Profiling
+
+```javascript
+// performance-observer-jit.js — 利用 Node.js perf_hooks 监控函数优化事件
+
+const { PerformanceObserver, performance } = require('perf_hooks');
+
+const obs = new PerformanceObserver((list) => {
+  for (const entry of list.getEntries()) {
+    if (entry.detail?.deoptReason) {
+      console.warn(
+        `[DEOPT] ${entry.name} at ${entry.detail.url}:${entry.detail.lineNumber}\n` +
+        `  Reason: ${entry.detail.deoptReason}\n` +
+        `  Severity: ${entry.detail.severity}`
+      );
+    } else if (entry.entryType === 'function') {
+      console.log(
+        `[FUNCTION] ${entry.name} | Duration: ${entry.duration.toFixed(3)}ms | ` +
+        `Optimizations: ${entry.detail?.optimized ? 'YES' : 'NO'}`
+      );
+    }
+  }
+});
+
+obs.observe({ entryTypes: ['function', 'gc'] });
+
+// 标记需要监控的函数
+function hotFunction(data) {
+  return data.map(x => x * 2).filter(x => x > 10);
+}
+
+// 使用 performance.timerify 包装函数以收集性能数据
+const tracked = performance.timerify(hotFunction);
+
+// 预热 JIT
+for (let i = 0; i < 5000; i++) {
+  tracked(Array.from({ length: 100 }, (_, j) => j));
+}
+
+// 触发 deopt：传入非数组类型
+tracked('not an array');
+
+obs.disconnect();
+```
+
+---
+
+## Code Example: Maglev Compiler (V8 v12+)
+
+```javascript
+// maglev-benefits.js — V8 v12+ Maglev 编译器带来的性能提升场景
+// Maglev 介于 Sparkplug 和 TurboFan 之间，提供更优的 warm-up 性能
+
+class Vector2D {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+  magnitude() {
+    return Math.sqrt(this.x * this.x + this.y * this.y);
+  }
+}
+
+// Maglev 优化的典型场景：中等热度、类型稳定的类方法
+function simulatePhysics(vectors, iterations) {
+  let totalEnergy = 0;
+  for (let i = 0; i < iterations; i++) {
+    for (const v of vectors) {
+      totalEnergy += v.magnitude();
+    }
+  }
+  return totalEnergy;
+}
+
+// 创建单态对象数组（Maglev 可快速优化）
+const vectors = Array.from({ length: 100 }, (_, i) => new Vector2D(i, i * 2));
+
+// 测量不同阶段的性能
+console.time('warm-up');
+simulatePhysics(vectors, 100);
+console.timeEnd('warm-up');
+
+console.time('hot');
+simulatePhysics(vectors, 100000);
+console.timeEnd('hot');
+
+// 使用 --maglev 标志启用（V8 v12+ 默认启用）
+// node --maglev maglev-benefits.js
+```
+
+---
+
 ## Key Lemmas
 
 1. **Interpretation Necessity**: No type feedback exists at first execution, preventing meaningful speculative optimization
@@ -217,6 +311,15 @@ benchmark(poly, 'after deopt (megamorphic)');
 - [V8 Flags Reference](https://v8.dev/docs/flags)
 - [Node.js Performance Hooks](https://nodejs.org/api/perf_hooks.html)
 - [Node.js Performance Best Practices](https://nodejs.org/en/docs/guides/dont-block-the-event-loop/)
+- ["JavaScript Engine Fundamentals: Shapes and Inline Caches" – V8 Blog](https://v8.dev/blog/fast-properties)
+- ["Turbofan JIT Design" – V8 Blog, 2015](https://v8.dev/blog/turbofan-jit)
+- [Node.js — Writing High-Performance Servers](https://nodejs.org/en/learn/getting-started/the-v8-javascript-engine)
+- [IEEE — "Trace-based Just-in-Time Type Specialization for Dynamic Languages"](https://ieeexplore.ieee.org/document/5452011) — TraceMonkey 论文
+- [ACM — "An Inline Cache isn't Just a Cache"](https://dl.acm.org/doi/10.1145/3360605)
+- [Chromium Docs — V8 Development](https://chromium.googlesource.com/v8/v8.git/+/HEAD/docs/development.md)
+- [Benedikt Meurer — V8 Performance Blog](https://benediktmeurer.de/)
+- [WebKit Blog — Introducing the New B3 JIT Compiler](https://webkit.org/blog/5852/introducing-the-b3-jit-compiler/)
+- [SpiderMonkey — IonMonkey Documentation](https://wiki.mozilla.org/IonMonkey)
 
 ---
 

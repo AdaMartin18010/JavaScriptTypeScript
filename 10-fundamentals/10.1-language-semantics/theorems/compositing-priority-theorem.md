@@ -194,6 +194,51 @@ const observer = new PerformanceObserver((list) => {
 observer.observe({ entryTypes: ['longtask'] });
 ```
 
+### 代码示例：使用 `content-visibility` 与 `contain-intrinsic-size` 优化长列表
+
+```css
+/* 长列表性能优化：跳过视口外元素的 Layout/Paint */
+.feed-item {
+  content-visibility: auto;
+  /* 必须提供内在尺寸，否则滚动条会跳动 */
+  contain-intrinsic-size: auto 200px;
+  /* 多重 contain 提升隔离性 */
+  contain: layout style paint;
+}
+
+/* 复杂组件的严格隔离 */
+.dashboard-widget {
+  contain: strict;
+  /* 相当于 contain: size layout paint style */
+}
+```
+
+```javascript
+// 使用 Intersection Observer 配合 content-visibility 实现虚拟化
+function setupVisibilityVirtualization(containerSelector: string) {
+  const container = document.querySelector(containerSelector);
+  if (!container) return;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        const target = entry.target as HTMLElement;
+        if (entry.isIntersecting) {
+          target.style.contentVisibility = 'visible';
+          target.dispatchEvent(new CustomEvent('itemvisible'));
+        } else {
+          target.style.contentVisibility = 'auto';
+        }
+      }
+    },
+    { root: container, rootMargin: '200px 0px' }
+  );
+
+  container.querySelectorAll('.feed-item').forEach(item => observer.observe(item));
+  return observer;
+}
+```
+
 ---
 
 ## 场景树：交互场景渲染策略
@@ -232,6 +277,13 @@ observer.observe({ entryTypes: ['longtask'] });
 | **Web.dev: Avoid Large, Complex Layouts** | 布局优化最佳实践 | [web.dev/avoid-large-complex-layouts-and-layout-thrashing](https://web.dev/avoid-large-complex-layouts-and-layout-thrashing) |
 | **W3C CSS Containment** | `contain` 属性规范 | [drafts.csswg.org/css-contain](https://drafts.csswg.org/css-contain) |
 | **High Performance Animations** | Paul Irish 经典性能文章 | [web.dev/animations-guide](https://web.dev/animations-guide) |
+| **Web.dev: Content-visibility** | content-visibility 性能指南 | [web.dev/content-visibility](https://web.dev/content-visibility/) |
+| **CSS Containment Module Level 2** | W3C 规范 | [drafts.csswg.org/css-contain-2](https://drafts.csswg.org/css-contain-2/) |
+| **Chromium: GPU Architecture** | Chromium GPU 加速文档 | [chromium.googlesource.com/chromium/src/+/main/docs/gpu/README.md](https://chromium.googlesource.com/chromium/src/+/main/docs/gpu/README.md) |
+| **Web Animations API — MDN** | WAAPI 权威文档 | [developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API) |
+| **W3C CSS Animations Level 2** | CSS 动画规范 | [drafts.csswg.org/css-animations-2](https://drafts.csswg.org/css-animations-2/) |
+| **Chrome DevTools: Performance** | 性能面板使用指南 | [developer.chrome.com/docs/devtools/performance](https://developer.chrome.com/docs/devtools/performance) |
+| **RAIL Model — Web.dev** | Google 响应性能模型 | [web.dev/rail](https://web.dev/rail/) |
 
 ---
 

@@ -373,4 +373,185 @@ const semanticTokens = {
 
 ---
 
-*最后更新: 2026-04-29*
+## 7. 设计令牌标准化：W3C Design Tokens Format Module
+
+```typescript
+// w3c-tokens.ts — 符合 W3C 社区组规范的令牌解析器
+
+interface W3CToken {
+  $value: string | number | object;
+  $type: 'color' | 'dimension' | 'fontFamily' | 'fontWeight' | 'duration' | 'cubicBezier' | 'number' | 'shadow';
+  $description?: string;
+  $extensions?: Record<string, unknown>;
+}
+
+function validateToken(token: unknown): token is W3CToken {
+  if (typeof token !== 'object' || token === null) return false;
+  const t = token as Record<string, unknown>;
+  return '$value' in t && '$type' in t;
+}
+
+function resolveTokenReference(tokens: Record<string, W3CToken>, path: string): W3CToken['$value'] {
+  if (!path.startsWith('{') || !path.endsWith('}')) return path;
+  const key = path.slice(1, -1);
+  const token = tokens[key];
+  if (!token) throw new Error(`Unresolved token reference: ${key}`);
+  return token.$value;
+}
+
+// 使用示例
+const designTokens: Record<string, W3CToken> = {
+  'color.primary': { $value: '#007bff', $type: 'color' },
+  'color.primary-hover': { $value: '{color.primary}', $type: 'color' },
+  'spacing.base': { $value: '4px', $type: 'dimension' },
+};
+
+console.log(resolveTokenReference(designTokens, '{color.primary}')); // '#007bff'
+```
+
+## 8. 主题契约与类型安全（vanilla-extract 风格）
+
+```typescript
+// theme-contract.ts — 编译时主题类型安全
+import { createThemeContract, createTheme } from '@vanilla-extract/css';
+
+export const vars = createThemeContract({
+  color: {
+    background: null,
+    foreground: null,
+    primary: null,
+  },
+  space: {
+    small: null,
+    medium: null,
+    large: null,
+  },
+  fontSize: {
+    body: null,
+    heading: null,
+  },
+});
+
+export const lightTheme = createTheme(vars, {
+  color: { background: '#ffffff', foreground: '#1a1a1a', primary: '#007bff' },
+  space: { small: '4px', medium: '8px', large: '16px' },
+  fontSize: { body: '16px', heading: '24px' },
+});
+
+export const darkTheme = createTheme(vars, {
+  color: { background: '#0a0a0a', foreground: '#f0f0f0', primary: '#4dabf7' },
+  space: { small: '4px', medium: '8px', large: '16px' },
+  fontSize: { body: '16px', heading: '24px' },
+});
+
+// TypeScript 在编译时确保所有主题值完整，无需运行时检查
+```
+
+## 9. CSS 容器查询与组件级响应式
+
+```typescript
+// container-queries.ts — 基于容器而非视口的响应式设计
+
+// 在组件库中定义容器查询
+const cardStyles = `
+  .card-container {
+    container-type: inline-size;
+    container-name: card;
+  }
+
+  @container card (min-width: 400px) {
+    .card {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+    }
+    .card-image {
+      border-radius: 8px 0 0 8px;
+    }
+  }
+
+  @container card (max-width: 399px) {
+    .card {
+      display: flex;
+      flex-direction: column;
+    }
+    .card-image {
+      border-radius: 8px 8px 0 0;
+      height: 150px;
+    }
+  }
+`;
+
+// React 中使用
+function ResponsiveCard({ image, title, description }: CardProps) {
+  return (
+    <div className="card-container">
+      <div className="card">
+        <img className="card-image" src={image} alt={title} />
+        <div className="card-body">
+          <h3>{title}</h3>
+          <p>{description}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+## 10. 设计系统文档站点（Storybook + MDX）
+
+```typescript
+// Button.stories.mdx — 组件文档即代码
+import { Meta, Story, Canvas, ArgsTable } from '@storybook/blocks';
+import { Button } from './Button';
+
+<Meta title="Components/Button" component={Button} />
+
+# Button
+
+按钮是用户交互的核心组件，支持多种变体与尺寸。
+
+## 变体
+
+<Canvas>
+  <Story name="Variants">
+    <div style={{ display: 'flex', gap: '8px' }}>
+      <Button variant="primary">Primary</Button>
+      <Button variant="secondary">Secondary</Button>
+      <Button variant="danger">Danger</Button>
+      <Button variant="ghost">Ghost</Button>
+    </div>
+  </Story>
+</Canvas>
+
+## 参数表
+
+<ArgsTable of={Button} />
+
+## 可访问性
+
+- 支持键盘焦点管理
+- 提供 `aria-pressed` 状态指示
+- 确保色彩对比度符合 WCAG 2.1 AA 标准
+```
+
+## 11. 权威参考链接补充
+
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| W3C Design Tokens Format Module | 设计令牌格式规范 | [design-tokens.github.io/community-group/format](https://design-tokens.github.io/community-group/format/) |
+| vanilla-extract Documentation | 零运行时 CSS-in-TS | [vanilla-extract.style](https://vanilla-extract.style/) |
+| CSS Container Queries — MDN | 容器查询文档 | [developer.mozilla.org/en-US/docs/Web/CSS/CSS_Container_Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Container_Queries) |
+| Storybook MDX Documentation | 组件文档编写 | [storybook.js.org/docs/writing-docs/mdx](https://storybook.js.org/docs/writing-docs/mdx) |
+| Figma REST API | 设计系统与设计稿同步 | [www.figma.com/developers/api](https://www.figma.com/developers/api) |
+| Tokens Studio for Figma | Figma 设计令牌插件 | [tokens.studio](https://tokens.studio/) |
+| Style Dictionary — Advanced Concepts | 高级令牌转换配置 | [amzn.github.io/style-dictionary](https://amzn.github.io/style-dictionary/#/README) |
+| CSS Houdini — MDN | 底层 CSS 扩展 API | [developer.mozilla.org/en-US/docs/Web/Guide/Houdini](https://developer.mozilla.org/en-US/docs/Web/Guide/Houdini) |
+| Design Systems Coalition | 设计系统社区资源 | [www.designsystemscoalition.com](https://www.designsystemscoalition.com/) |
+| Design Systems by Figma | 设计系统调研报告 | [www.designsystems.com](https://www.designsystems.com/) |
+| Every Layout | 基于 CSS 内在布局的设计模式 | [every-layout.dev](https://every-layout.dev/) |
+| CSS Tricks — Design Systems | 设计系统专栏 | [css-tricks.com/tag/design-systems](https://css-tricks.com/tag/design-systems/) |
+| Ant Design — 企业级设计系统 | 中文设计系统范例 | [ant.design](https://ant.design/) |
+
+---
+
+*最后更新: 2026-04-30*

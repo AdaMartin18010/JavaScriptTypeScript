@@ -220,6 +220,37 @@ await bench.run();
 console.table(bench.table());
 ```
 
+### 负载测试：k6 脚本
+
+```typescript
+// load-test-k6.ts — 使用 k6 进行 HTTP 负载测试
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+
+export const options = {
+  stages: [
+    { duration: '2m', target: 100 },   // 渐进增长到 100 VU
+    { duration: '5m', target: 100 },   // 保持 100 VU
+    { duration: '2m', target: 200 },   // 提升到 200 VU
+    { duration: '5m', target: 200 },   // 保持 200 VU
+    { duration: '2m', target: 0 },     // 逐步下降
+  ],
+  thresholds: {
+    http_req_duration: ['p(95)<500'],   // 95% 请求 < 500ms
+    http_req_failed: ['rate<0.01'],     // 错误率 < 1%
+  },
+};
+
+export default function () {
+  const res = http.get('https://api.example.com/health');
+  check(res, {
+    'status is 200': (r) => r.status === 200,
+    'response time < 500ms': (r) => r.timings.duration < 500,
+  });
+  sleep(1);
+}
+```
+
 ### 视觉回归测试：Playwright Screenshot
 
 ```typescript
@@ -233,6 +264,59 @@ test('homepage visual regression', async ({ page }) => {
   await expect(page).toHaveScreenshot('homepage.png', {
     maxDiffPixels: 100,
     mask: [page.locator('[data-testid="timestamp"]')], // 掩码动态内容
+  });
+});
+```
+
+### 突变测试（Stryker）
+
+```typescript
+// stryker.config.mjs — 检测测试有效性的突变测试配置
+export default {
+  testRunner: 'vitest',
+  reporters: ['progress', 'html', 'clear-text'],
+  mutator: {
+    plugins: [],
+  },
+  coverageAnalysis: 'perTest',
+  thresholds: {
+    high: 80,
+    low: 60,
+    break: 50,
+  },
+};
+```
+
+### TestContainers 数据库集成测试
+
+```typescript
+// integration-testcontainers.test.ts
+import { PostgreSqlContainer } from '@testcontainers/postgresql';
+import { Client } from 'pg';
+import { beforeAll, afterAll, describe, it, expect } from 'vitest';
+
+describe('UserRepository with real Postgres', () => {
+  let container: Awaited<ReturnType<PostgreSqlContainer['start']>>;
+  let client: Client;
+
+  beforeAll(async () => {
+    container = await new PostgreSqlContainer().start();
+    client = new Client({ connectionString: container.getConnectionUri() });
+    await client.connect();
+    await client.query(`
+      CREATE TABLE users (id SERIAL PRIMARY KEY, email TEXT NOT NULL);
+    `);
+  });
+
+  afterAll(async () => {
+    await client.end();
+    await container.stop();
+  });
+
+  it('inserts and retrieves a user', async () => {
+    await client.query("INSERT INTO users (email) VALUES ('test@example.com')");
+    const res = await client.query('SELECT * FROM users WHERE email = $1', ['test@example.com']);
+    expect(res.rows[0].email).toBe('test@example.com');
   });
 });
 ```
@@ -257,6 +341,13 @@ test('homepage visual regression', async ({ page }) => {
 | Lighthouse CI | 文档 | [github.com/GoogleChrome/lighthouse-ci](https://github.com/GoogleChrome/lighthouse-ci) — 性能回归持续集成 |
 | Playwright Visual Comparisons | 文档 | [playwright.dev/docs/test-snapshots](https://playwright.dev/docs/test-snapshots) |
 | k6 Documentation | 文档 | [grafana.com/docs/k6/latest/](https://grafana.com/docs/k6/latest/) |
+| Stryker Mutator | 文档 | [stryker-mutator.io](https://stryker-mutator.io/) — JavaScript 突变测试 |
+| TestContainers Node.js | 文档 | [node.testcontainers.org](https://node.testcontainers.org/) |
+| Chaos Monkey for Spring Boot | 工具 | [codecentric.github.io/chaos-monkey-spring-boot](https://codecentric.github.io/chaos-monkey-spring-boot/) |
+| Netflix Chaos Engineering | 博客 | [netflixtechblog.com/tagged/chaos-engineering](https://netflixtechblog.com/tagged/chaos-engineering) |
+| AWS Fault Injection Simulator | 文档 | [aws.amazon.com/fis](https://aws.amazon.com/fis/) |
+| OWASP Testing Guide | 文档 | [owasp.org/www-project-web-security-testing-guide](https://owasp.org/www-project-web-security-testing-guide/) |
+| Google PageSpeed Insights | 工具 | [pagespeed.web.dev](https://pagespeed.web.dev/) |
 
 ## 相关索引
 
@@ -268,6 +359,62 @@ test('homepage visual regression', async ({ page }) => {
 
 > 此分类文档由批量生成脚本自动创建，已根据实际模块内容补充和调整。
 
+### 分布式追踪与测试集成
+
+```typescript
+// tracing.test.ts — 使用 OpenTelemetry 在测试中验证追踪链
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
+import { SimpleSpanProcessor, InMemorySpanExporter } from '@opentelemetry/sdk-trace-base';
+
+const provider = new NodeTracerProvider();
+const exporter = new InMemorySpanExporter();
+provider.addSpanProcessor(new SimpleSpanProcessor(exporter));
+provider.register();
+
+const tracer = provider.getTracer('test-tracer');
+
+async function tracedOperation() {
+  return tracer.startActiveSpan('process-payment', async (span) => {
+    span.setAttribute('amount', 99.9);
+    await new Promise((r) => setTimeout(r, 10));
+    span.end();
+  });
+}
+
+// 测试中验证 span 生成
+await tracedOperation();
+const spans = exporter.getFinishedSpans();
+expect(spans.some((s) => s.name === 'process-payment')).toBe(true);
+```
+
+### Lighthouse CI 性能预算测试
+
+```json
+// lighthouserc.json
+{
+  "ci": {
+    "collect": { "url": ["http://localhost:3000/"] },
+    "assert": {
+      "preset": "lighthouse:recommended",
+      "assertions": {
+        "categories:performance": ["warn", { "minScore": 0.9 }],
+        "first-contentful-paint": ["error", { "maxNumericValue": 1800 }]
+      }
+    }
+  }
+}
+```
+
+### 新增权威参考链接
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| OpenTelemetry Documentation | 文档 | [opentelemetry.io/docs](https://opentelemetry.io/docs/) |
+| Lighthouse CI | GitHub | [github.com/GoogleChrome/lighthouse-ci](https://github.com/GoogleChrome/lighthouse-ci) |
+| OWASP ZAP | 工具 | [www.zaproxy.org](https://www.zaproxy.org/) |
+| Artillery.io Load Testing | 工具 | [www.artillery.io](https://www.artillery.io/) |
+| Grafana k6 Documentation | 文档 | [grafana.com/docs/k6/latest](https://grafana.com/docs/k6/latest/) |
+
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

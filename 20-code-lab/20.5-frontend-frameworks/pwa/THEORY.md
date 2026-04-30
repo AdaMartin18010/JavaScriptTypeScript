@@ -281,6 +281,182 @@ PWA 已经从"实验性技术"演变为**现代 Web 开发的默认选择**。20
 
 ---
 
+## 代码示例：原生 Service Worker 缓存策略
+
+```typescript
+// sw.ts — 不使用 Workbox 的原生 Service Worker 实现
+const CACHE_NAME = 'app-v1';
+const PRECACHE_ASSETS = ['/index.html', '/app.js', '/styles.css'];
+
+// 安装阶段：预缓存核心资源
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS))
+  );
+  self.skipWaiting();
+});
+
+// 激活阶段：清理旧缓存
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+// 抓取阶段：Stale-While-Revalidate 策略
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      const fetchPromise = fetch(event.request).then((networkResponse) => {
+        if (networkResponse.ok) {
+          const clone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return networkResponse;
+      });
+      // 优先返回缓存，后台更新
+      return cached ?? fetchPromise;
+    })
+  );
+});
+```
+
+## 代码示例：Background Sync 实现离线表单提交
+
+```typescript
+// background-sync.ts — 断网时排队，联网后自动提交
+async function submitForm(data: FormData): Promise<void> {
+  if (!navigator.serviceWorker?.ready) {
+    // 无 SW 支持，直接 fetch
+    await fetch('/api/submit', { method: 'POST', body: data });
+    return;
+  }
+
+  const registration = await navigator.serviceWorker.ready;
+  if ('sync' in registration) {
+    // 存入 IndexedDB
+    await saveToOutbox(data);
+    await registration.sync.register('submit-form');
+    showToast('将在联网后自动提交');
+  } else {
+    // 回退：直接提交
+    await fetch('/api/submit', { method: 'POST', body: data });
+  }
+}
+
+// Service Worker 中监听 sync 事件
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'submit-form') {
+    event.waitUntil(processOutbox());
+  }
+});
+
+async function processOutbox() {
+  const items = await getOutboxItems();
+  for (const item of items) {
+    try {
+      await fetch('/api/submit', { method: 'POST', body: item.data });
+      await removeFromOutbox(item.id);
+    } catch (err) {
+      console.error('Sync failed for item', item.id, err);
+      // 保留在 outbox，下次 sync 重试
+    }
+  }
+}
+```
+
+## 代码示例：Web Push 订阅与接收
+
+```typescript
+// push-notification.ts — 浏览器端 Push 订阅管理
+const VAPID_PUBLIC_KEY = 'BEl62i...'; // 从服务器获取
+
+async function subscribePush(): Promise<PushSubscription | null> {
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+  });
+
+  // 将 subscription 发送到后端存储
+  await fetch('/api/push-subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(subscription),
+  });
+
+  return subscription;
+}
+
+// Service Worker 中监听 push 事件
+self.addEventListener('push', (event) => {
+  const data = event.data?.json() ?? { title: '通知', body: '' };
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icon-192.png',
+      badge: '/badge-72.png',
+      data: { url: data.url ?? '/' },
+    })
+  );
+});
+
+// 点击通知打开对应页面
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(self.clients.openWindow(event.notification.data.url));
+});
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map((c) => c.charCodeAt(0)));
+}
+```
+
+## 代码示例：App Shell 骨架屏模式
+
+```typescript
+// app-shell.tsx — React 中实现 App Shell 骨架屏
+function AppShell({ children }: { children: React.ReactNode }) {
+  const [shellReady, setShellReady] = useState(false);
+
+  useEffect(() => {
+    // 优先加载 Shell，再加载内容
+    setShellReady(true);
+  }, []);
+
+  return (
+    <div className="app">
+      <header className="shell-header">
+        <Skeleton width={120} height={32} />
+        <nav><Skeleton width={200} height={24} /></nav>
+      </header>
+      <main className={shellReady ? 'content-loaded' : 'content-loading'}>
+        {shellReady ? children : <PageSkeleton />}
+      </main>
+    </div>
+  );
+}
+
+function Skeleton({ width, height }: { width: number; height: number }) {
+  return (
+    <div
+      className="skeleton"
+      style={{ width, height, background: '#e5e7eb', borderRadius: 4 }}
+    />
+  );
+}
+```
+
+---
+
 ## 参考资源
 
 - [web.dev PWA 指南](https://web.dev/progressive-web-apps/)
@@ -288,6 +464,17 @@ PWA 已经从"实验性技术"演变为**现代 Web 开发的默认选择**。20
 - [PWA Builder](https://www.pwabuilder.com/)
 - [Fugu API Tracker](https://fugu-tracker.web.app/) — Web 平台能力追踪
 - [Baseline](https://web.dev/baseline) — Web 特性兼容性
+- [MDN — Service Worker API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) — Service Worker 权威参考
+- [MDN — Web App Manifest](https://developer.mozilla.org/en-US/docs/Web/Manifest) — Manifest 字段完整规范
+- [MDN — Push API](https://developer.mozilla.org/en-US/docs/Web/API/Push_API) — Web Push 标准文档
+- [MDN — Background Sync API](https://developer.mozilla.org/en-US/docs/Web/API/Background_Synchronization_API) — 后台同步规范
+- [W3C — Web App Manifest 规范](https://www.w3.org/TR/appmanifest/) — W3C 官方标准
+- [Google Developers — Progressive Web Apps](https://developers.google.com/web/progressive-web-apps) — Google PWA 综合教程
+- [web.dev — Speculation Rules](https://developer.chrome.com/docs/devtools/speculation-rules) — 预渲染规则详解
+- [Chrome Developers — Isolated Web Apps](https://developer.chrome.com/docs/extensions/reference/manifest/isolated-worlds) — 隔离式 Web 应用概览
+- [W3C — Web Push Protocol (RFC 8030)](https://tools.ietf.org/html/rfc8030) — Push 协议 RFC
+- [Can I Use — Service Workers](https://caniuse.com/serviceworkers) — 浏览器兼容性查询
+- [Lighthouse PWA 审计指南](https://developer.chrome.com/docs/lighthouse/pwa/) — PWA 质量评估标准
 
 ---
 
@@ -321,4 +508,4 @@ PWA 已经从"实验性技术"演变为**现代 Web 开发的默认选择**。20
 
 ---
 
-> 📅 理论深化更新：2026-04-27
+> 📅 理论深化更新：2026-04-30

@@ -205,6 +205,189 @@ const Header = ({ molecules }: OrganismProps<{ title?: string }>) => (
 );
 ```
 
+### CQRS 与事件溯源骨架
+
+```typescript
+// cqrs-event-sourcing.ts — 命令查询职责分离 + 事件溯源
+
+// 领域事件
+type DomainEvent =
+  | { type: 'OrderCreated'; orderId: string; customerId: string; amount: number }
+  | { type: 'OrderPaid'; orderId: string; paidAt: Date }
+  | { type: 'OrderShipped'; orderId: string; trackingNumber: string };
+
+// 事件存储（Append-only）
+class EventStore {
+  private streams = new Map<string, DomainEvent[]>();
+
+  append(streamId: string, events: DomainEvent[], expectedVersion: number): void {
+    const current = this.streams.get(streamId) ?? [];
+    if (current.length !== expectedVersion) {
+      throw new Error('Concurrency conflict: stream version mismatch');
+    }
+    current.push(...events);
+    this.streams.set(streamId, current);
+  }
+
+  getStream(streamId: string): DomainEvent[] {
+    return [...(this.streams.get(streamId) ?? [])];
+  }
+}
+
+// 聚合根：Order
+class OrderAggregate {
+  private events: DomainEvent[] = [];
+  private state = { status: 'draft' as string, amount: 0 };
+
+  static create(orderId: string, customerId: string, amount: number): OrderAggregate {
+    const order = new OrderAggregate();
+    order.apply({ type: 'OrderCreated', orderId, customerId, amount });
+    return order;
+  }
+
+  pay(): void {
+    if (this.state.status !== 'draft') throw new Error('Invalid state transition');
+    this.apply({ type: 'OrderPaid', orderId: 'todo', paidAt: new Date() });
+  }
+
+  private apply(event: DomainEvent): void {
+    this.events.push(event);
+    // 状态投影（简化示例）
+    if (event.type === 'OrderCreated') this.state.amount = event.amount;
+    if (event.type === 'OrderPaid') this.state.status = 'paid';
+  }
+
+  getUncommittedEvents(): DomainEvent[] {
+    return [...this.events];
+  }
+}
+
+// 读取模型投影（Read Model）
+class OrderReadModel {
+  private projections = new Map<string, { status: string; amount: number }>();
+
+  project(events: DomainEvent[]): void {
+    for (const e of events) {
+      if (e.type === 'OrderCreated') {
+        this.projections.set(e.orderId, { status: 'draft', amount: e.amount });
+      }
+      if (e.type === 'OrderPaid') {
+        const p = this.projections.get(e.orderId);
+        if (p) p.status = 'paid';
+      }
+    }
+  }
+
+  get(orderId: string) {
+    return this.projections.get(orderId);
+  }
+}
+```
+
+### 清洁架构（Clean Architecture）端口与适配器
+
+```typescript
+// clean-architecture.ts — 核心不依赖外层
+
+// 领域层（最内层）
+interface User {
+  id: string;
+  email: string;
+}
+
+interface UserRepository {
+  findById(id: string): Promise<User | null>;
+  save(user: User): Promise<void>;
+}
+
+// 用例层
+class RegisterUserUseCase {
+  constructor(private repo: UserRepository) {}
+
+  async execute(email: string): Promise<User> {
+    const user: User = { id: crypto.randomUUID(), email };
+    await this.repo.save(user);
+    return user;
+  }
+}
+
+// 适配器层（外层）— 可替换为 Prisma / TypeORM / 内存存储
+class InMemoryUserRepository implements UserRepository {
+  private users = new Map<string, User>();
+
+  async findById(id: string): Promise<User | null> {
+    return this.users.get(id) ?? null;
+  }
+
+  async save(user: User): Promise<void> {
+    this.users.set(user.id, user);
+  }
+}
+
+// 基础设施层 — HTTP 控制器
+class UserController {
+  constructor(private useCase: RegisterUserUseCase) {}
+
+  async handle(req: Request): Promise<Response> {
+    const { email } = await req.json();
+    const user = await this.useCase.execute(email);
+    return Response.json(user);
+  }
+}
+
+// 依赖注入组装（Composition Root）
+const repo: UserRepository = new InMemoryUserRepository();
+const useCase = new RegisterUserUseCase(repo);
+const controller = new UserController(useCase);
+```
+
+### 限界上下文映射（DDD Strategic Design）
+
+```typescript
+// bounded-contexts.ts — 模块间集成模式
+
+// 共享内核（Shared Kernel）
+interface Money {
+  amount: number;
+  currency: 'USD' | 'EUR' | 'CNY';
+}
+
+// 客户上下文
+namespace CustomerContext {
+  export interface Customer {
+    id: string;
+    name: string;
+    creditLimit: Money;
+  }
+
+  export class CustomerService {
+    verifyCredit(customerId: string, amount: Money): boolean {
+      // 客户上下文内的信用检查逻辑
+      return true;
+    }
+  }
+}
+
+// 订单上下文（通过防腐层与客户上下文交互）
+namespace OrderContext {
+  interface CustomerACL {
+    getCreditLimit(customerId: string): Promise<Money>;
+  }
+
+  export class OrderService {
+    constructor(private customerACL: CustomerACL) {}
+
+    async placeOrder(customerId: string, total: Money): Promise<void> {
+      const creditLimit = await this.customerACL.getCreditLimit(customerId);
+      if (total.amount > creditLimit.amount) {
+        throw new Error('Credit limit exceeded');
+      }
+      // 创建订单...
+    }
+  }
+}
+```
+
 ## 权威参考链接
 
 | 资源 | 类型 | 链接 |
@@ -219,6 +402,15 @@ const Header = ({ molecules }: OrganismProps<{ title?: string }>) => (
 | React — Thinking in React | 指南 | [react.dev/learn/thinking-in-react](https://react.dev/learn/thinking-in-react) |
 | Vue.js — Composition API | 文档 | [vuejs.org/guide/extras/composition-api-faq.html](https://vuejs.org/guide/extras/composition-api-faq.html) |
 | Clean Architecture (Uncle Bob) | 文章 | [blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) |
+| Domain-Driven Design Reference | 参考 | [domainlanguage.com/ddd/reference](https://domainlanguage.com/ddd/reference/) |
+| Microsoft — CQRS Pattern | 文档 | [learn.microsoft.com/azure/architecture/patterns/cqrs](https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs) |
+| Martin Fowler — Event Sourcing | 文章 | [martinfowler.com/eaaDev/EventSourcing.html](https://martinfowler.com/eaaDev/EventSourcing.html) |
+| Hexagonal Architecture (Alistair Cockburn) | 文章 | [alistair.cockburn.us/hexagonal-architecture](https://alistair.cockburn.us/hexagonal-architecture/) |
+| NX Monorepo Tools | 文档 | [nx.dev](https://nx.dev/) — 企业级 Monorepo 架构 |
+| Turborepo | 文档 | [turbo.build](https://turbo.build/) — Vercel 的高性能构建系统 |
+| Event Store DB | 文档 | [developers.eventstore.com](https://developers.eventstore.com/) — 事件存储数据库 |
+| InversifyJS | 仓库 | [inversify.io](https://inversify.io/) — TypeScript DI 容器 |
+| TSyringe | 仓库 | [github.com/microsoft/tsyringe](https://github.com/microsoft/tsyringe) — Microsoft DI 容器 |
 
 ## 相关索引
 

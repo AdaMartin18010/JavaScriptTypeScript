@@ -238,6 +238,52 @@ function benchmarkTypeCheck(iterations = 3): number[] {
 benchmarkTypeCheck();
 ```
 
+**Go 原生编译器迁移检查清单**：
+
+```typescript
+// scripts/ts7-migration-check.ts — 检查项目是否兼容 TypeScript 7.0
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+
+const violations: string[] = [];
+
+function scanFile(path: string) {
+  const content = readFileSync(path, 'utf-8');
+  const lines = content.split('\n');
+
+  lines.forEach((line, idx) => {
+    // 检查 enum 使用
+    if (/\benum\s+\w+/.test(line) && !line.includes('//')) {
+      violations.push(`${path}:${idx + 1} — 使用 enum，TS 7.0 需确保可擦除`);
+    }
+    // 检查 namespace
+    if (/\bnamespace\s+\w+/.test(line)) {
+      violations.push(`${path}:${idx + 1} — 使用 namespace，建议改用 module`);
+    }
+    // 检查参数属性
+    if (/constructor\s*\([^)]*\b(private|protected|public|readonly)\s+/.test(line)) {
+      violations.push(`${path}:${idx + 1} — 使用参数属性，需显式声明`);
+    }
+  });
+}
+
+function scanDir(dir: string) {
+  for (const entry of readdirSync(dir)) {
+    const path = join(dir, entry);
+    const stat = statSync(path);
+    if (stat.isDirectory() && !entry.includes('node_modules')) {
+      scanDir(path);
+    } else if (path.endsWith('.ts') && !path.endsWith('.d.ts')) {
+      scanFile(path);
+    }
+  }
+}
+
+scanDir('./src');
+console.log(`扫描完成，发现 ${violations.length} 个潜在兼容性问题：`);
+violations.forEach((v) => console.log('  ⚠️', v));
+```
+
 ---
 
 ## 参考文献
@@ -253,6 +299,13 @@ benchmarkTypeCheck();
 9. Anders Hejlsberg on TypeScript's Future. Microsoft Build 2025. <https://build.microsoft.com/en-US/sessions>
 10. SWC (Speedy Web Compiler). <https://swc.rs/> — Rust 编写的 TS/JS 编译器
 11. esbuild. <https://esbuild.github.io/> — Go 编写的极速打包工具
+12. TypeScript GitHub Repository. <https://github.com/microsoft/TypeScript> — 源码与 Issue 跟踪
+13. Go Memory Model. <https://go.dev/ref/mem> — Go 内存模型，理解 goroutine 并行类型检查基础
+14. TypeScript Compiler API. <https://github.com/microsoft/TypeScript/wiki/Using-the-Compiler-API> — 编译器程序化接口文档
+15. Node.js Type Stripping RFC. <https://github.com/nodejs/node/pull/53725> — Node.js 原生 TS 支持 RFC
+16. LSP Specification 3.17. <https://microsoft.github.io/language-server-protocol/specifications/specification-current/> — 语言服务器协议规范
+17. Go Concurrency Patterns. <https://go.dev/talks/2012/concurrency.slide> — Go 并发原语设计
+18. TypeScript Design Goals. <https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals> — 官方设计目标文档
 
 ---
 

@@ -165,6 +165,58 @@ import safeConfig from '/api/config' with { type: 'json' };
 
 ---
 
+## 代码示例：Node.js 中 WASM 与 import attributes
+
+```javascript
+// ============================================
+// 6. WebAssembly 模块导入（Node.js 实验性）
+// ============================================
+
+// Node.js 22+ 支持通过 import attributes 加载 WASM
+import wasmModule from './math.wasm' with { type: 'webassembly' };
+
+// wasmModule 为 WebAssembly.Module 实例
+const instance = await WebAssembly.instantiate(wasmModule, {
+  env: { memory: new WebAssembly.Memory({ initial: 1 }) }
+});
+
+console.log(instance.exports.add(1, 2)); // 3
+
+// ============================================
+// 7. TypeScript moduleResolution: bundler 配合 attributes
+// ============================================
+
+// tsconfig.json
+// {
+//   "compilerOptions": {
+//     "module": "preserve",
+//     "moduleResolution": "bundler",
+//     "resolveJsonModule": true,
+//     "allowArbitraryExtensions": true
+//   }
+// }
+
+// TypeScript 5.3+ 的 bundler 解析策略原生支持 import attributes
+import pkg from '../package.json' with { type: 'json' };
+console.log(pkg.version);
+
+// ============================================
+// 8. 构建工具中的 Import Attributes 处理
+// ============================================
+
+// Vite 5+ 自动将 import attributes 映射到对应 loader
+// import logo from './logo.svg' with { type: 'asset' };
+// → 处理为 URL 引用或内联 base64
+
+// Webpack 5 实验性支持（需配置 experiments.buildHttp）
+// module.rules.push({
+//   type: 'json',
+//   dependency: { with: { type: 'json' } }
+// });
+```
+
+---
+
 ## 权威参考链接
 
 | 资源 | 说明 | 链接 |
@@ -175,8 +227,12 @@ import safeConfig from '/api/config' with { type: 'json' };
 | **TypeScript 5.3 Release Notes** | Import Attributes 支持说明 | [devblogs.microsoft.com/typescript/announcing-typescript-5-3/#import-attributes](https://devblogs.microsoft.com/typescript/announcing-typescript-5-3/#import-attributes) |
 | **MDN: import** | Mozilla 开发者文档（含 attributes） | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) |
 | **V8 Blog: Import Attributes** | 引擎实现层面解析 | [v8.dev/features/import-attributes](https://v8.dev/features/import-attributes) |
-
----
+| **Node.js ESM: Import Attributes** | Node.js 官方文档 | [nodejs.org/api/esm.html#import-attributes](https://nodejs.org/api/esm.html#import-attributes) |
+| **WebKit: Import Attributes** | Safari/webkit 实现说明 | [webkit.org/blog/15446/import-attributes-and-duplicate-imports-in-javascript](https://webkit.org/blog/15446/import-attributes-and-duplicate-imports-in-javascript/) |
+| **HTML Standard — Module scripts** | WHATWG 模块脚本加载规范 | [html.spec.whatwg.org/multipage/webappapis.html#module-scripts](https://html.spec.whatwg.org/multipage/webappapis.html#module-scripts) |
+| **Vite: Static Asset Handling** | Vite 对模块资源的处理 | [vitejs.dev/guide/assets.html](https://vitejs.dev/guide/assets.html) |
+| **Webpack Module Types** | Webpack 对不同模块类型的加载 | [webpack.js.org/concepts/modules](https://webpack.js.org/concepts/modules/) |
+| **Import Attributes Design Notes** | V8 设计考量文档 | [docs.google.com/document/d/1lZR7ORv6W4f2oCR9DWDhZgYP9HqqNEdCv6zJ8WA1h3o](https://docs.google.com/document/d/1lZR7ORv6W4f2oCR9DWDhZgYP9HqqNEdCv6zJ8WA1h3o) |
 
 ---
 
@@ -215,16 +271,26 @@ export async function trackEvent(event) {
 }
 ```
 
+### Import Defer 与动态导入的选型对比
+
+```javascript
+// 场景 A：延迟加载大型库，但需立即暴露 API 签名
+import defer * as HeavyLib from './heavy-lib.js';
+// ✅ 命名空间立即可用，调用时自动等待
+
+// 场景 B：条件加载（用户点击后才需要）
+async function onUserClick() {
+  const { renderModal } = await import('./modal.js');
+  renderModal();
+}
+// ✅ 动态导入更灵活，完全不加载直到触发条件
+
+// 场景 C：预加载但延迟执行
+import defer * as ReportGenerator from './report-generator.js';
+// 浏览器可在空闲时预取 report-generator.js
+// 用户点击"生成报告"时直接调用 ReportGenerator.run()
+```
+
 ---
-
-## 更多权威参考链接
-
-| 资源 | 说明 | 链接 |
-|------|------|------|
-| **HTML Standard — Module scripts** | WHATWG 模块脚本加载规范 | [html.spec.whatwg.org/multipage/webappapis.html#module-scripts](https://html.spec.whatwg.org/multipage/webappapis.html#module-scripts) |
-| **Node.js ESM Loader** | Node.js 模块加载器文档 | [nodejs.org/api/esm.html](https://nodejs.org/api/esm.html) |
-| **WebKit: Import Attributes** | Safari/webkit 实现说明 | [webkit.org/blog/15446/import-attributes-and-duplicate-imports-in-javascript](https://webkit.org/blog/15446/import-attributes-and-duplicate-imports-in-javascript/) |
-| **Import Defer Design Notes** | V8 延迟加载设计考量 | [docs.google.com/document/d/1lZR7ORv6W4f2oCR9DWDhZgYP9HqqNEdCv6zJ8WA1h3o](https://docs.google.com/document/d/1lZR7ORv6W4f2oCR9DWDhZgYP9HqqNEdCv6zJ8WA1h3o) |
-
 
 *本文件为模块系统专题的补充篇，已增强对比矩阵与代码示例。*

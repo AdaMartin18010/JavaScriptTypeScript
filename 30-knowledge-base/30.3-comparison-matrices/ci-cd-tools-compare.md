@@ -233,6 +233,154 @@ workflows:
               only: main
 ```
 
+### Jenkins：Shared Library 可复用流水线
+
+```groovy
+// vars/buildNodeJs.groovy — Jenkins Shared Library
+// 仓库：jenkins-shared-libraries/vars/buildNodeJs.groovy
+
+def call(Map config = [:]) {
+  pipeline {
+    agent any
+    tools { nodejs config.nodeVersion ?: '22' }
+    stages {
+      stage('Install') {
+        steps { sh 'npm ci' }
+      }
+      stage('Lint & Type Check') {
+        parallel {
+          stage('Lint') { steps { sh 'npm run lint' } }
+          stage('Type Check') { steps { sh 'npx tsc --noEmit' } }
+        }
+      }
+      stage('Test') {
+        steps { sh 'npm run test:ci' }
+        post {
+          always {
+            publishHTML([
+              allowMissing: false,
+              alwaysLinkToLastBuild: true,
+              keepAll: true,
+              reportDir: 'coverage',
+              reportFiles: 'index.html',
+              reportName: 'Coverage Report'
+            ])
+          }
+        }
+      }
+      stage('Build') {
+        steps { sh 'npm run build' }
+      }
+      stage('Deploy') {
+        when { branch 'main' }
+        steps {
+          sh "echo 'Deploying ${config.appName} to ${config.environment}'"
+          // 调用实际部署脚本
+        }
+      }
+    }
+  }
+}
+
+// Jenkinsfile 中使用
+// @Library('jenkins-shared-libraries') _
+// buildNodeJs(appName: 'my-app', environment: 'production')
+```
+
+### Dagger：可移植 CI/CD 管道（容器即代码）
+
+```typescript
+// dagger-pipeline.ts — 使用 Dagger SDK 定义可移植构建流水线
+import { connect } from '@dagger.io/dagger';
+
+async function main() {
+  await connect(async (client) => {
+    // 1. 获取 Node.js 基础镜像
+    const node = client.container()
+      .from('node:22-alpine')
+      .withDirectory('/src', client.host().directory('.'))
+      .withWorkdir('/src');
+
+    // 2. 安装依赖（利用缓存）
+    const deps = node
+      .withMountedCache('/src/node_modules', client.cacheVolume('node-modules'))
+      .withExec(['npm', 'ci']);
+
+    // 3. 并行执行 Lint 与 Type Check
+    const lint = deps.withExec(['npm', 'run', 'lint']);
+    const typeCheck = deps.withExec(['npx', 'tsc', '--noEmit']);
+
+    // 4. 测试（导出覆盖率报告）
+    const tested = deps
+      .withExec(['npm', 'run', 'test:ci'])
+      .directory('/src/coverage')
+      .export('./coverage');
+
+    // 5. 构建生产产物
+    const build = deps.withExec(['npm', 'run', 'build']);
+
+    // 6. 构建 Docker 镜像并推送
+    const image = client.container()
+      .from('node:22-alpine')
+      .withDirectory('/app', build.directory('/src/dist'))
+      .withWorkdir('/app')
+      .withEntrypoint(['node', 'index.js']);
+
+    await image.publish('ghcr.io/myorg/app:latest');
+
+    // 等待并行任务完成
+    await Promise.all([lint.sync(), typeCheck.sync(), tested, build.sync()]);
+    console.log('Pipeline completed successfully');
+  });
+}
+
+main().catch(console.error);
+```
+
+### GitHub Actions 可复用工作流（Reusable Workflow）
+
+```yaml
+# .github/workflows/reusable-nodejs.yml
+name: Reusable Node.js CI
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        required: false
+        type: string
+        default: '22'
+      runs-on:
+        required: false
+        type: string
+        default: ubuntu-latest
+    secrets:
+      NPM_TOKEN:
+        required: false
+
+jobs:
+  ci:
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm run test:ci
+      - run: npm run build
+
+# 调用方式：.github/workflows/app.yml
+# jobs:
+#   call-ci:
+#     uses: ./.github/workflows/reusable-nodejs.yml
+#     with: { node-version: '22' }
+```
+
 ---
 
 ## 选型建议
@@ -258,6 +406,22 @@ workflows:
 | CircleCI Orbs | <https://circleci.com/developer/orbs> | 可复用配置包 |
 | act (Local GitHub Actions) | <https://github.com/nektos/act> | 本地运行 GitHub Actions |
 | Dagger | <https://dagger.io/> | 可移植 CI/CD 管道 (容器即代码) |
+| GitHub Actions — Reusable Workflows | <https://docs.github.com/en/actions/sharing-automations/reusing-workflows> | 可复用工作流官方文档 |
+| GitHub Actions — Composite Actions | <https://docs.github.com/en/actions/sharing-automations/creating-a-composite-action> | 复合 Action 官方文档 |
+| GitLab CI/CD Templates | <https://docs.gitlab.com/ee/ci/examples/> | 官方 CI 模板库 |
+| Jenkins Shared Libraries | <https://www.jenkins.io/doc/book/pipeline/shared-libraries/> | 共享库官方文档 |
+| CircleCI Orbs Registry | <https://circleci.com/developer/orbs> | 官方 Orbs 注册表 |
+| Dagger SDK for Node.js | <https://docs.dagger.io/sdk/nodejs> | Dagger Node.js SDK 文档 |
+| Argo CD Documentation | <https://argo-cd.readthedocs.io/> | Kubernetes GitOps 持续交付 |
+| Argo Workflows | <https://argoproj.github.io/workflows/> | Kubernetes 原生工作流引擎 |
+| Tekton Documentation | <https://tekton.dev/docs/> | 云原生 CI/CD 框架 |
+| Woodpecker CI | <https://woodpecker-ci.org/> | 轻量级容器化 CI |
+| GitHub Actions Runner | <https://github.com/actions/runner> | 自托管 Runner 源码 |
+| GitLab Runner Documentation | <https://docs.gitlab.com/runner/> | 官方 Runner 文档 |
+| SourceHut Builds | <https://man.sr.ht/builds.sr.ht/> | 极简构建服务 |
+| Buildkite Documentation | <https://buildkite.com/docs> | 混合云 CI/CD 平台 |
+| Semaphore CI Documentation | <https://docs.semaphoreci.com/> | 云原生 CI/CD |
+| Travis CI Documentation | <https://docs.travis-ci.com/> | 老牌 CI 服务 |
 
 ---
 

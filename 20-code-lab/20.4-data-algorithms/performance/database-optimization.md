@@ -1,6 +1,6 @@
 # 数据库性能优化
 
-> 文件: `database-optimization.ts` | 难度: ⭐⭐⭐⭐ (高级)
+> 文件: `database-optimization.ts` | 难度: 高级
 
 ---
 
@@ -34,18 +34,18 @@ EXPLAIN ANALYZE SELECT * FROM orders WHERE status = 'pending' ORDER BY created_a
 ### N+1 问题
 
 ```typescript
-// ❌ N+1: 1 次查用户 + N 次查订单
+// N+1: 1 次查用户 + N 次查订单
 const users = await db.users.findAll();
 for (const user of users) {
   user.orders = await db.orders.find({ userId: user.id }); // N 次查询
 }
 
-// ✅ JOIN / 预加载
+// JOIN / 预加载
 const users = await db.users.findAll({
   include: [{ model: db.orders }], // 1 次 JOIN 查询
 });
 
-// ✅ DataLoader 批处理
+// DataLoader 批处理
 const ordersLoader = new DataLoader(async (userIds) => {
   const orders = await db.orders.find({ userId: { $in: userIds } });
   return userIds.map((id) => orders.filter((o) => o.userId === id));
@@ -61,9 +61,9 @@ const ordersLoader = new DataLoader(async (userIds) => {
 ```
 选择性 = 不同值数量 / 总行数
 
-username: 100000 / 100000 = 1.0      ✅ 高选择性，适合索引
-gender:   2 / 100000 = 0.00002        ❌ 低选择性，不适合单独索引
-status:   5 / 100000 = 0.00005        ⚠️ 视查询模式决定
+username: 100000 / 100000 = 1.0      高选择性，适合索引
+gender:   2 / 100000 = 0.00002        低选择性，不适合单独索引
+status:   5 / 100000 = 0.00005        视查询模式决定
 ```
 
 ### 复合索引列顺序
@@ -80,7 +80,7 @@ CREATE INDEX idx_orders ON orders (status, created_at, user_id);
 -- 索引包含查询所需的所有列，无需回表
 CREATE INDEX idx_orders_cover ON orders (status, created_at, id, total);
 -- SELECT id, total FROM orders WHERE status = ? ORDER BY created_at;
--- → 完全在索引内完成，不回表读取数据页
+-- 完全在索引内完成，不回表读取数据页
 ```
 
 ---
@@ -93,7 +93,7 @@ connections = ((core_count * 2) + effective_spindle_count) * 服务实例数
 
 PostgreSQL 示例:
 - 4 核 CPU, SSD, 4 个应用实例
-- 推荐: ((4 * 2) + 1) / 4 ≈ 2-3 连接/实例
+- 推荐: ((4 * 2) + 1) / 4 = 2-3 连接/实例
 - 总连接池: 10-12
 ```
 
@@ -102,7 +102,7 @@ PostgreSQL 示例:
 | 参数 | 说明 | 推荐值 |
 |------|------|--------|
 | min | 最小连接数 | 2-5 |
-| max | 最大连接数 | 10-20 (CPU 核数 × 2) |
+| max | 最大连接数 | 10-20 (CPU 核数 x 2) |
 | idleTimeout | 空闲超时 | 30s |
 | acquireTimeout | 获取连接超时 | 5s |
 
@@ -233,7 +233,6 @@ function createRobustPool(config: PoolConfig) {
     max: config.max ?? 20,
     idleTimeoutMillis: config.idleTimeoutMillis ?? 30000,
     connectionTimeoutMillis: config.connectionTimeoutMillis ?? 5000,
-    // 连接错误时自动重连
     allowExitOnIdle: false,
   });
 
@@ -304,6 +303,157 @@ for await (const order of queryAsStream<Order>(pool, 'SELECT * FROM orders WHERE
 }
 ```
 
+## 新增代码示例
+
+### 查询计划可视化解析器
+
+```typescript
+// query-plan-visualizer.ts — 将 EXPLAIN JSON 转换为可读报告
+interface PlanNode {
+  'Node Type': string;
+  'Actual Rows': number;
+  'Actual Total Time': number;
+  'Plans'?: PlanNode[];
+  'Relation Name'?: string;
+  'Index Name'?: string;
+  'Filter'?: string;
+  'Rows Removed by Filter'?: number;
+}
+
+function analyzePlanNode(node: PlanNode, depth = 0): string[] {
+  const indent = '  '.repeat(depth);
+  const lines: string[] = [];
+  const icon = node['Index Name'] ? ' index' : node['Node Type'] === 'Seq Scan' ? ' seq' : '';
+  lines.push(`${indent}[${node['Node Type']}${icon}] rows=${node['Actual Rows']} time=${node['Actual Total Time'].toFixed(2)}ms`);
+
+  if (node['Relation Name']) lines.push(`${indent}  on: ${node['Relation Name']}`);
+  if (node['Index Name']) lines.push(`${indent}  using: ${node['Index Name']}`);
+  if (node['Filter']) lines.push(`${indent}  filter: ${node['Filter']}`);
+  if (node['Rows Removed by Filter']) lines.push(`${indent}  removed: ${node['Rows Removed by Filter']} rows`);
+
+  for (const child of node['Plans'] ?? []) {
+    lines.push(...analyzePlanNode(child, depth + 1));
+  }
+  return lines;
+}
+
+function generateOptimizationSuggestions(node: PlanNode): string[] {
+  const suggestions: string[] = [];
+  if (node['Node Type'] === 'Seq Scan' && node['Actual Rows'] > 10000) {
+    suggestions.push(`Consider adding an index on ${node['Relation Name']} to avoid Seq Scan`);
+  }
+  if (node['Rows Removed by Filter'] && node['Rows Removed by Filter'] > node['Actual Rows'] * 10) {
+    suggestions.push('Filter is removing too many rows; consider a partial index');
+  }
+  for (const child of node['Plans'] ?? []) {
+    suggestions.push(...generateOptimizationSuggestions(child));
+  }
+  return suggestions;
+}
+```
+
+### 表分区策略自动化
+
+```typescript
+// partition-automation.ts — PostgreSQL 按时间自动分区
+import { Pool } from 'pg';
+
+class TimePartitionManager {
+  constructor(private pool: Pool, private tableName: string, private partitionInterval: 'month' | 'week' | 'day') {}
+
+  async ensurePartitionForDate(date: Date): Promise<void> {
+    const partitionName = this.getPartitionName(date);
+    const startDate = this.getPeriodStart(date);
+    const endDate = this.getPeriodEnd(date);
+
+    await this.pool.query(`
+      CREATE TABLE IF NOT EXISTS ${partitionName} PARTITION OF ${this.tableName}
+      FOR VALUES FROM ($1) TO ($2)
+    `, [startDate, endDate]);
+  }
+
+  async dropOldPartitions(retentionMonths: number): Promise<void> {
+    const cutoff = new Date();
+    cutoff.setMonth(cutoff.getMonth() - retentionMonths);
+
+    const { rows } = await this.pool.query(`
+      SELECT inhrelid::regclass::text AS partition_name
+      FROM pg_inherits
+      WHERE inhparent = $1::regclass
+    `, [this.tableName]);
+
+    for (const row of rows) {
+      const partitionDate = this.extractDateFromName(row.partition_name);
+      if (partitionDate && partitionDate < cutoff) {
+        await this.pool.query(`DROP TABLE IF EXISTS ${row.partition_name}`);
+      }
+    }
+  }
+
+  private getPartitionName(date: Date): string {
+    const suffix = date.toISOString().slice(0, 7).replace('-', '_'); // yyyy_mm
+    return `${this.tableName}_${suffix}`;
+  }
+
+  private getPeriodStart(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+  }
+
+  private getPeriodEnd(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 1);
+  }
+
+  private extractDateFromName(name: string): Date | null {
+    const match = name.match(/_(\d{4})_(\d{2})$/);
+    return match ? new Date(parseInt(match[1]), parseInt(match[2]) - 1, 1) : null;
+  }
+}
+```
+
+### VACUUM / ANALYZE 自动化维护
+
+```typescript
+// db-maintenance.ts — 自动化表维护任务
+import { Pool } from 'pg';
+
+interface TableStats {
+  tableName: string;
+  deadTuples: number;
+  liveTuples: number;
+  lastVacuum: Date | null;
+  lastAnalyze: Date | null;
+}
+
+async function getTableStats(pool: Pool): Promise<TableStats[]> {
+  const { rows } = await pool.query(`
+    SELECT
+      relname AS table_name,
+      n_dead_tup AS dead_tuples,
+      n_live_tup AS live_tuples,
+      last_vacuum,
+      last_analyze
+    FROM pg_stat_user_tables
+    WHERE schemaname = 'public'
+    ORDER BY n_dead_tup DESC
+  `);
+  return rows;
+}
+
+async function runMaintenance(pool: Pool, deadTupleRatio = 0.1): Promise<void> {
+  const stats = await getTableStats(pool);
+  for (const stat of stats) {
+    const ratio = stat.liveTuples > 0 ? stat.deadTuples / stat.liveTuples : 0;
+    if (ratio > deadTupleRatio) {
+      console.log(`VACUUM ANALYZE ${stat.tableName} (dead ratio: ${(ratio * 100).toFixed(1)}%)`);
+      await pool.query(`VACUUM ANALYZE ${stat.tableName}`);
+    }
+  }
+}
+
+// 定时运行
+// setInterval(() => runMaintenance(pool), 24 * 60 * 60 * 1000);
+```
+
 ## 参考资源
 
 - [PostgreSQL 性能优化官方文档](https://www.postgresql.org/docs/current/performance-tips.html)
@@ -318,3 +468,9 @@ for await (const order of queryAsStream<Order>(pool, 'SELECT * FROM orders WHERE
 - [Sequelize Query Optimization](https://sequelize.org/docs/v6/advanced-association-concepts/eager-loading/) — ORM 预加载与 N+1
 - [Prisma Query Optimization](https://www.prisma.io/docs/orm/prisma-client/queries/query-optimization-performance) — Prisma 性能优化
 - [AWS RDS Performance Insights](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_PerfInsights.html) — 云数据库性能分析
+- [PostgreSQL pg_stat_statements](https://www.postgresql.org/docs/current/pgstatstatements.html) — 查询统计扩展
+- [PostgreSQL Table Partitioning](https://www.postgresql.org/docs/current/ddl-partitioning.html) — 表分区官方指南
+- [PostgreSQL VACUUM](https://www.postgresql.org/docs/current/sql-vacuum.html) — 垃圾回收与统计更新
+- [DataLoader — GraphQL](https://github.com/graphql/dataloader) — 批处理与去重库
+- [PostgreSQL Query Plan Visualizer](https://explain.dalibo.com/) — 在线执行计划可视化
+- [SQL Indexing and Tuning Book](https://use-the-index-luke.com/sql/table-of-contents) — 索引与调优免费电子书

@@ -254,13 +254,114 @@ async function publishEvent(target: string, event: Omit<OrderEvent, 'detailType'
 - **EventBridge**: 事件总线，解耦发布者和消费者
 - **Edge-first**: 将请求处理前推到 CDN 边缘，最小化源站负载
 
-## 7. 与相邻模块的关系
+## 7. 代码示例：冷启动优化 — 依赖预加载与连接池
+
+```typescript
+// cold-start-optimization.ts — AWS Lambda 冷启动优化技巧
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+
+// ⚡ 在模块顶层初始化，利用 Lambda 执行上下文复用
+const ddbClient = DynamoDBDocumentClient.from(new DynamoDBClient({ maxAttempts: 3 }));
+
+// 预加载常用模块，避免首次调用时才 require
+import('./heavy-module').then((m) => {
+  // 懒加载但提前预热
+});
+
+export const handler = async (event: unknown) => {
+  // 使用已初始化的客户端，跳过冷启动开销
+  const result = await ddbClient.get({ TableName: 'Users', Key: { id: '123' } });
+  return { statusCode: 200, body: JSON.stringify(result.Item) };
+};
+```
+
+## 8. 代码示例：边缘函数中间件链
+
+```typescript
+// edge-middleware.ts — 可组合的 Edge Function 中间件
+export interface EdgeContext {
+  request: Request;
+  geo?: { city?: string; country?: string };
+  cf?: { colo?: string };
+}
+
+export type EdgeMiddleware = (
+  ctx: EdgeContext,
+  next: () => Promise<Response>
+) => Promise<Response>;
+
+function compose(...middlewares: EdgeMiddleware[]): EdgeMiddleware {
+  return async (ctx, next) => {
+    let index = -1;
+    async function dispatch(i: number): Promise<Response> {
+      if (i <= index) throw new Error('next() called multiple times');
+      index = i;
+      const fn = middlewares[i] ?? next;
+      return fn(ctx, () => dispatch(i + 1));
+    }
+    return dispatch(0);
+  };
+}
+
+// 使用示例
+const rateLimit: EdgeMiddleware = async (ctx, next) => {
+  const clientIP = ctx.request.headers.get('CF-Connecting-IP') ?? 'unknown';
+  const key = `ratelimit:${clientIP}`;
+  // 实际调用 KV 进行计数
+  return next();
+};
+
+const cors: EdgeMiddleware = async (ctx, next) => {
+  const response = await next();
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  return response;
+};
+
+export const handler = compose(rateLimit, cors);
+```
+
+## 9. 代码示例：Serverless 定时任务（CRON）
+
+```typescript
+// scheduled-cleanup.ts — Cloudflare Workers / Deno Deploy 定时清理
+// wrangler.toml: [triggers] crons = ["0 2 * * *"]
+// Deno Deploy: 使用 Deno.cron API
+
+export default {
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
+    console.log('Running scheduled cleanup at', new Date(event.scheduledTime).toISOString());
+
+    // 1. 清理过期 KV 条目
+    const expiredKeys = await findExpiredKeys(env.KV_CACHE);
+    await Promise.all(expiredKeys.map((k) => env.KV_CACHE.delete(k)));
+
+    // 2. 生成日报统计
+    const stats = await generateDailyStats(env.DB);
+    await env.KV_CACHE.put('daily-stats', JSON.stringify(stats));
+
+    console.log(`Cleanup complete. Removed ${expiredKeys.length} expired keys.`);
+  },
+};
+
+async function findExpiredKeys(kv: KVNamespace): Promise<string[]> {
+  // KV 本身按 TTL 自动过期，此处演示手动扫描场景
+  const list = await kv.list();
+  return list.keys.filter((k) => k.expiration && k.expiration * 1000 < Date.now()).map((k) => k.name);
+}
+
+async function generateDailyStats(_db: D1Database): Promise<Record<string, number>> {
+  return { totalRequests: 10000, errors: 12, avgLatencyMs: 45 };
+}
+```
+
+## 10. 与相邻模块的关系
 
 - **32-edge-computing**: 边缘函数与 Serverless 的关系
 - **22-deployment-devops**: Serverless 的 CI/CD 策略
 - **93-deployment-edge-lab**: 边缘部署实践
 
-## 8. 权威外部资源
+## 11. 权威外部资源
 
 - [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
 - [AWS Lambda Developer Guide](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)
@@ -276,3 +377,14 @@ async function publishEvent(target: string, event: Omit<OrderEvent, 'detailType'
 - [Cloudflare Durable Objects — Stateful Edge](https://developers.cloudflare.com/durable-objects/)
 - [AWS Step Functions Developer Guide](https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html)
 - [Vercel Functions — Runtime & Region Configuration](https://vercel.com/docs/functions)
+- [AWS Lambda Cold Start Best Practices](https://docs.aws.amazon.com/lambda/latest/operatorguide/execution-environments.html) — 执行环境与冷启动深度分析
+- [Cloudflare Workers — D1 Database](https://developers.cloudflare.com/d1/) — 边缘 SQLite 数据库
+- [Cloudflare Workers — Queues](https://developers.cloudflare.com/queues/) — 边缘消息队列
+- [Deno — KV Database](https://docs.deno.com/deploy/kv/manual/) — Deno 原生键值存储
+- [WinterCG — Web-interoperable Runtimes](https://wintercg.org/) — 边缘运行时标准化组织
+- [Node.js — Corepack](https://nodejs.org/api/corepack.html) — 包管理器版本锁定
+- [OpenJS Foundation — Edge Computing](https://openjsf.org/projects/) — 边缘计算相关开源项目
+
+---
+
+*最后更新: 2026-04-30*

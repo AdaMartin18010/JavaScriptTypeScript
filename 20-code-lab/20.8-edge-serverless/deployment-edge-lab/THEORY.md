@@ -234,7 +234,204 @@ app.get('/api/user/:id', async (c) => {
 
 ---
 
-## 7. 与相邻模块的关系
+## 7. 多区域 KV 同步与数据一致性
+
+```typescript
+// multi-region-kv.ts — 利用 Cloudflare KV 实现跨区域配置同步
+export default {
+  async fetch(request: Request, env: Env) {
+    const url = new URL(request.url);
+    const key = url.pathname.slice(1);
+
+    // 读取配置（KV 最终一致，适合配置/Feature Flag）
+    const config = await env.KV.get(`config:${key}`, { type: 'json' });
+    if (!config) {
+      return new Response('Config not found', { status: 404 });
+    }
+
+    // 基于地域的差异化响应
+    const country = request.cf?.country ?? 'US';
+    const localized = (config as any).regions?.[country] ?? (config as any).default;
+
+    return new Response(JSON.stringify(localized), {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=60',
+        'CF-Cache-Status': 'DYNAMIC',
+      },
+    });
+  },
+};
+```
+
+## 8. 边缘中间件链：认证 + 缓存 + 路由
+
+```typescript
+// edge-middleware.ts — 可组合的 Hono 中间件链
+import { Hono } from 'hono';
+import { bearerAuth } from 'hono/bearer-auth';
+import { cache } from 'hono/cache';
+
+const app = new Hono<{ Bindings: Env }>();
+
+// 1. 全局认证中间件
+app.use('/api/*', bearerAuth({
+  verifyToken: async (token, c) => {
+    // 验证 JWT 或 API Key（示例简化）
+    const valid = await c.env.KV.get(`apikey:${token}`);
+    return valid !== null;
+  },
+}));
+
+// 2. 缓存中间件（仅 GET）
+app.use('/api/public/*', cache({
+  cacheName: 'public-api',
+  cacheControl: 'max-age=3600',
+}));
+
+// 3. 路由层
+app.get('/api/public/products', async (c) => {
+  const { results } = await c.env.DB.prepare('SELECT * FROM products LIMIT 50').all();
+  return c.json(results);
+});
+
+app.post('/api/private/orders', async (c) => {
+  const body = await c.req.json();
+  // 订单处理...
+  return c.json({ orderId: crypto.randomUUID() }, 201);
+});
+
+export default app;
+```
+
+## 9. WASM 边缘模块加载
+
+```typescript
+// wasm-edge.ts — 在 Cloudflare Workers 中加载 Rust/WASM 模块
+import wasmModule from './fibonacci.wasm';
+
+export default {
+  async fetch(request: Request) {
+    const url = new URL(request.url);
+    const n = parseInt(url.searchParams.get('n') || '10', 10);
+
+    // WASM 实例化（零成本，Isolate 预加载）
+    const instance = await WebAssembly.instantiate(wasmModule, {
+      env: { memory: new WebAssembly.Memory({ initial: 1 }) },
+    });
+
+    const fib = (instance.exports.fibonacci as CallableFunction)(n);
+    return new Response(JSON.stringify({ n, fib }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  },
+};
+```
+
+## 10. 本地开发与测试：Wrangler + Miniflare
+
+```typescript
+// wrangler.toml — 本地开发配置
+name = "edge-api"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+preview_id = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy" # 本地开发使用 preview
+
+[[d1_databases]]
+binding = "DB"
+database_name = "edge-db"
+database_id = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+
+# 本地启动：wrangler dev --local
+```
+
+```typescript
+// test/edge.test.ts — 使用 Miniflare 进行边缘函数单元测试
+import { Miniflare } from 'miniflare';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+
+let mf: Miniflare;
+
+beforeAll(async () => {
+  mf = new Miniflare({
+    scriptPath: './dist/index.js',
+    modules: true,
+    kvNamespaces: ['KV'],
+    d1Databases: ['DB'],
+  });
+});
+
+afterAll(async () => {
+  await mf.dispose();
+});
+
+describe('Edge API', () => {
+  it('should return 200 on health check', async () => {
+    const res = await mf.dispatchFetch('http://localhost/health');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.status).toBe('healthy');
+  });
+
+  it('should rate limit after 100 requests', async () => {
+    for (let i = 0; i < 101; i++) {
+      const res = await mf.dispatchFetch('http://localhost/api/data');
+      if (i === 100) expect(res.status).toBe(429);
+    }
+  });
+});
+```
+
+## 11. 边缘 CI/CD 流水线：自动化部署与回滚
+
+```typescript
+// deploy-pipeline.ts — 类型安全的边缘部署流水线抽象
+interface EdgeDeployment {
+  platform: 'cloudflare' | 'vercel' | 'deno-deploy';
+  environment: 'staging' | 'production';
+  artifactPath: string;
+  secrets: Record<string, string>;
+}
+
+class EdgeDeployPipeline {
+  async deploy(config: EdgeDeployment): Promise<{ url: string; version: string }> {
+    // 1. 预部署检查
+    await this.runPreChecks(config);
+    // 2. 上传产物
+    const version = await this.uploadArtifact(config);
+    // 3. 渐进式流量切换（金丝雀）
+    if (config.environment === 'production') {
+      await this.canaryRollout(config, version);
+    }
+    return { url: `https://${config.environment}.example.com`, version };
+  }
+
+  private async runPreChecks(config: EdgeDeployment): Promise<void> {
+    // 类型检查、单元测试、安全扫描
+    console.log(`[PreCheck] Running for ${config.platform}...`);
+  }
+
+  private async uploadArtifact(config: EdgeDeployment): Promise<string> {
+    console.log(`[Deploy] Uploading ${config.artifactPath} to ${config.platform}`);
+    return `v-${Date.now()}`;
+  }
+
+  private async canaryRollout(config: EdgeDeployment, version: string): Promise<void> {
+    // 先切 5% 流量，观察 5 分钟
+    console.log(`[Canary] Routing 5% traffic to ${version}`);
+    await new Promise((r) => setTimeout(r, 5 * 60 * 1000));
+    console.log(`[Canary] Promoting ${version} to 100%`);
+  }
+}
+```
+
+---
+
+## 10. 与相邻模块的关系
 
 - **22-deployment-devops**: 传统部署与 CI/CD 流程
 - **32-edge-computing**: 边缘计算架构与运行时深入
@@ -251,3 +448,27 @@ app.get('/api/user/:id', async (c) => {
 3. **MorphLLM** — [Cloudflare Workers vs Vercel 2026](https://www.morphllm.com/comparisons/cloudflare-workers-vs-vercel) (2026-04-04)
 4. **FinlyInsights** — [Cloudflare Workers vs Vercel Edge Functions Guide](https://finlyinsights.com/cloudflare-workers-vs-vercel-edge-functions/) (2026)
 5. **Astro Vault** — [Serverless & Edge Computing Best Practices](https://vault.llbbl.com/content/runtimes/serverless-edge/) (2026)
+6. **Cloudflare Workers Documentation** — [developers.cloudflare.com/workers](https://developers.cloudflare.com/workers/) — Cloudflare 官方文档
+7. **Vercel Edge Functions** — [vercel.com/docs/functions/edge-functions](https://vercel.com/docs/functions/edge-functions) — Vercel 官方文档
+8. **Deno Deploy** — [docs.deno.com/deploy/manual](https://docs.deno.com/deploy/manual/) — Deno Deploy 官方手册
+9. **WinterCG** — [wintercg.org](https://wintercg.org/) — Web-interoperable Runtimes 标准组织
+10. **Hono Framework** — [hono.dev](https://hono.dev/) — 跨平台边缘 Web 框架
+11. **Cloudflare D1** — [developers.cloudflare.com/d1](https://developers.cloudflare.com/d1/) — 边缘 SQLite 数据库
+12. **Cloudflare KV** — [developers.cloudflare.com/kv](https://developers.cloudflare.com/kv/) — 全局键值存储
+13. **Cloudflare Durable Objects** — [developers.cloudflare.com/durable-objects](https://developers.cloudflare.com/durable-objects/) — 有状态边缘对象
+14. **Turso / libSQL** — [turso.tech](https://turso.tech/) — 边缘 SQLite 全球副本
+15. **Neon Serverless Postgres** — [neon.tech](https://neon.tech/) — 边缘兼容 Postgres
+16. **WebAssembly on Cloudflare Workers** — [developers.cloudflare.com/workers/runtime-apis/webassembly](https://developers.cloudflare.com/workers/runtime-apis/webassembly/) — WASM 边缘运行指南
+17. **OWASP Top 10** — [owasp.org/Top10](https://owasp.org/Top10/) — Web 应用安全基准
+18. **GDPR Official Text** — [gdpr-info.eu](https://gdpr-info.eu/) — 欧盟通用数据保护条例
+19. **Wrangler CLI Documentation** — [developers.cloudflare.com/workers/wrangler](https://developers.cloudflare.com/workers/wrangler/) — Cloudflare Workers 命令行工具
+20. **Miniflare Documentation** — [miniflare.dev](https://miniflare.dev/) — 本地 Workers 模拟器
+21. **Vercel CLI Documentation** — [vercel.com/docs/cli](https://vercel.com/docs/cli) — Vercel 命令行工具
+22. **Deno Deployctl** — [docs.deno.com/deploy/manual/deployctl](https://docs.deno.com/deploy/manual/deployctl/) — Deno Deploy 部署工具
+23. **Cloudflare Workers Testing** — [developers.cloudflare.com/workers/testing](https://developers.cloudflare.com/workers/testing/) — Workers 官方测试指南
+24. **Vitest Documentation** — [vitest.dev](https://vitest.dev/) — 极速 Vite 原生测试框架
+25. **GitHub Actions — Deployment Environments** — [docs.github.com/en/actions/deployment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) — 多环境部署配置
+26. **Cloudflare Workers Analytics** — [developers.cloudflare.com/workers/observability](https://developers.cloudflare.com/workers/observability/) — Workers 可观测性
+27. **Vercel Analytics** — [vercel.com/docs/analytics](https://vercel.com/docs/analytics) — Vercel 性能分析
+28. **Fly.io Documentation** — [fly.io/docs](https://fly.io/docs/) — Fly.io 边缘部署平台
+29. **Railway Documentation** — [docs.railway.app](https://docs.railway.app/) — Railway 部署平台

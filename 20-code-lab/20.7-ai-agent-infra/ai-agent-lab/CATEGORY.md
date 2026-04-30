@@ -228,6 +228,85 @@ export class AgentMemory {
 }
 ```
 
+### ReAct 循环实现
+
+```typescript
+// react-loop.ts — 推理-行动循环
+
+interface ReActStep {
+  thought: string;
+  action?: { tool: string; input: unknown };
+  observation?: string;
+}
+
+async function reactLoop(
+  query: string,
+  tools: Map<string, (input: unknown) => Promise<unknown>>,
+  llm: { complete(prompt: string): Promise<string> },
+  maxSteps = 10
+): Promise<string> {
+  const history: ReActStep[] = [];
+
+  for (let step = 0; step < maxSteps; step++) {
+    const prompt = `
+Question: ${query}
+${history.map(h => `Thought: ${h.thought}\nAction: ${JSON.stringify(h.action)}\nObservation: ${h.observation}`).join('\n')}
+Thought:`;
+
+    const response = await llm.complete(prompt);
+    const thought = response.trim();
+
+    // 简单解析：如果包含 "Action:" 则提取工具调用
+    const actionMatch = thought.match(/Action:\s*(\w+)\s*\((.*)\)/);
+    if (actionMatch) {
+      const [, toolName, toolInput] = actionMatch;
+      const toolFn = tools.get(toolName);
+      if (toolFn) {
+        const observation = String(await toolFn(JSON.parse(toolInput)));
+        history.push({ thought, action: { tool: toolName, input: JSON.parse(toolInput) }, observation });
+        if (observation.includes('FINAL_ANSWER')) return observation.replace('FINAL_ANSWER: ', '');
+      }
+    } else {
+      // 无 Action，直接作为答案
+      return thought;
+    }
+  }
+
+  return 'Max steps exceeded';
+}
+```
+
+### 结构化输出解析（Zod + LLM）
+
+```typescript
+// structured-output.ts — 强制 LLM 返回可验证的结构化数据
+
+import { z } from 'zod';
+
+const PersonSchema = z.object({
+  name: z.string(),
+  age: z.number().int().positive(),
+  email: z.string().email(),
+  skills: z.array(z.string()).min(1),
+});
+
+type Person = z.infer<typeof PersonSchema>;
+
+async function extractPerson(text: string, llm: { complete(prompt: string): Promise<string> }): Promise<Person> {
+  const prompt = `
+Extract person information from the following text as valid JSON matching this schema:
+${JSON.stringify(PersonSchema.shape, null, 2)}
+
+Text: """${text}"""
+
+Respond with JSON only, no markdown.`;
+
+  const response = await llm.complete(prompt);
+  const parsed = JSON.parse(response);
+  return PersonSchema.parse(parsed); // Zod 验证，失败则抛出
+}
+```
+
 ## 关联模块
 
 - `33-ai-integration` — AI 集成
@@ -248,7 +327,12 @@ export class AgentMemory {
 | AutoGen — Multi-Agent Conversation | 文档 | [microsoft.github.io/autogen](https://microsoft.github.io/autogen) |
 | MCP SDK for TypeScript | 源码 | [github.com/modelcontextprotocol/typescript-sdk](https://github.com/modelcontextprotocol/typescript-sdk) |
 | Vercel AI SDK GitHub | 源码 | [github.com/vercel/ai](https://github.com/vercel/ai) |
+| ReAct Paper — Reasoning + Acting | 论文 | [arxiv.org/abs/2210.03629](https://arxiv.org/abs/2210.03629) |
+| OpenAI — Structured Outputs | 文档 | [platform.openai.com/docs/guides/structured-outputs](https://platform.openai.com/docs/guides/structured-outputs) |
+| Google — AI Agent Whitepaper | 白皮书 | [ai.google/discover/agentic-ai](https://ai.google/discover/agentic-ai/) |
+| Hugging Face — Agents Course | 课程 | [huggingface.co/learn/agents-course](https://huggingface.co/learn/agents-course) |
+| Zod — Schema Validation | 文档 | [zod.dev](https://zod.dev) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

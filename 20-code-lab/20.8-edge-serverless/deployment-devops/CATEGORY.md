@@ -304,6 +304,121 @@ spec:
 }
 ```
 
+### Terraform CDK (cdktf) 基础设施即代码
+
+```typescript
+// cdktf-stack.ts — 使用 CDK for Terraform 定义 Cloudflare Workers 基础设施
+import { Construct } from 'constructs';
+import { App, TerraformStack, CloudBackend, NamedCloudWorkspace } from 'cdktf';
+import { CloudflareProvider, WorkerScript, WorkerRoute } from '@cdktf/provider-cloudflare';
+
+class EdgeStack extends TerraformStack {
+  constructor(scope: Construct, id: string) {
+    super(scope, id);
+
+    new CloudflareProvider(this, 'cloudflare', {
+      apiToken: process.env.CLOUDFLARE_API_TOKEN!,
+    });
+
+    const worker = new WorkerScript(this, 'edge-worker', {
+      name: 'api-gateway',
+      content: `export default { async fetch(req) { return new Response('OK'); } };`,
+      module: true,
+    });
+
+    new WorkerRoute(this, 'api-route', {
+      zoneId: process.env.CLOUDFLARE_ZONE_ID!,
+      pattern: 'api.example.com/*',
+      scriptName: worker.name,
+    });
+  }
+}
+
+const app = new App();
+const stack = new EdgeStack(app, 'edge-infra');
+new CloudBackend(stack, {
+  hostname: 'app.terraform.io',
+  organization: 'my-org',
+  workspaces: new NamedCloudWorkspace('edge-production'),
+});
+app.synth();
+```
+
+### 多阶段 Docker Buildx 构建（跨平台）
+
+```typescript
+// docker-buildx.ts — 生成跨平台 Edge Worker 构建命令
+interface BuildxConfig {
+  platforms: string[];       // e.g. ['linux/amd64', 'linux/arm64']
+  tags: string[];
+  push: boolean;
+  cacheTo?: string;
+  cacheFrom?: string;
+}
+
+export function generateBuildxCommand(config: BuildxConfig): string {
+  const parts = [
+    'docker buildx build',
+    `--platform ${config.platforms.join(',')}`,
+    ...config.tags.map((t) => `-t ${t}`),
+    config.push ? '--push' : '--load',
+    config.cacheTo ? `--cache-to=type=registry,ref=${config.cacheTo}` : '',
+    config.cacheFrom ? `--cache-from=type=registry,ref=${config.cacheFrom}` : '',
+    '.',
+  ];
+  return parts.filter(Boolean).join(' \
+  ');
+}
+
+// 示例输出
+console.log(generateBuildxCommand({
+  platforms: ['linux/amd64', 'linux/arm64'],
+  tags: ['ghcr.io/myorg/edge-worker:v1.2.0'],
+  push: true,
+  cacheTo: 'ghcr.io/myorg/edge-worker:cache',
+}));
+```
+
+### GitHub Actions 矩阵部署（多环境 + 金丝雀）
+
+```yaml
+# .github/workflows/edge-deploy.yml
+name: Edge Multi-Environment Deploy
+
+on:
+  push:
+    branches: [main, canary]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [staging, production]
+        include:
+          - environment: staging
+            cloudflare_account: ${{ secrets.CF_ACCOUNT_STAGING }}
+            route: 'api-staging.example.com/*'
+          - environment: production
+            cloudflare_account: ${{ secrets.CF_ACCOUNT_PROD }}
+            route: 'api.example.com/*'
+    environment:
+      name: ${{ matrix.environment }}
+      url: https://${{ matrix.route }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: 'npm' }
+      - run: npm ci
+      - run: npm run build
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ matrix.cloudflare_account }}
+          command: deploy --env ${{ matrix.environment }}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -352,6 +467,18 @@ spec:
 | BuildKit / Buildx | 文档 | [docs.docker.com/build/buildkit](https://docs.docker.com/build/buildkit/) |
 | SLSA — Supply-chain Levels for Software Artifacts | 规范 | [slsa.dev](https://slsa.dev/) |
 | Cosign — Container Signing | 仓库 | [github.com/sigstore/cosign](https://github.com/sigstore/cosign) |
+| Terraform CDK Documentation | 官方文档 | [developer.hashicorp.com/terraform/cdktf](https://developer.hashicorp.com/terraform/cdktf) |
+| Cloudflare Wrangler CLI | 官方文档 | [developers.cloudflare.com/workers/wrangler](https://developers.cloudflare.com/workers/wrangler/) |
+| Vercel CLI Documentation | 官方文档 | [vercel.com/docs/cli](https://vercel.com/docs/cli) |
+| Deno Deployctl | 官方文档 | [docs.deno.com/deploy/manual/deployctl](https://docs.deno.com/deploy/manual/deployctl/) |
+| Docker BuildKit Documentation | 官方文档 | [docs.docker.com/build/buildkit](https://docs.docker.com/build/buildkit/) |
+| GitHub Actions — Deployment Environments | 官方文档 | [docs.github.com/en/actions/deployment/targeting-different-environments](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment) |
+| GitHub Actions — Reusable Workflows | 官方文档 | [docs.github.com/en/actions/sharing-automations/reusing-workflows](https://docs.github.com/en/actions/sharing-automations/reusing-workflows) |
+| Google Cloud Build Documentation | 官方文档 | [cloud.google.com/build/docs](https://cloud.google.com/build/docs) |
+| AWS CodePipeline Documentation | 官方文档 | [docs.aws.amazon.com/codepipeline](https://docs.aws.amazon.com/codepipeline/latest/userguide/welcome.html) |
+| Azure DevOps Pipelines | 官方文档 | [learn.microsoft.com/en-us/azure/devops/pipelines](https://learn.microsoft.com/en-us/azure/devops/pipelines/) |
+| Fly.io Deployment Docs | 官方文档 | [fly.io/docs](https://fly.io/docs/) |
+| Railway Deployment Docs | 官方文档 | [docs.railway.app](https://docs.railway.app/) |
 
 ---
 

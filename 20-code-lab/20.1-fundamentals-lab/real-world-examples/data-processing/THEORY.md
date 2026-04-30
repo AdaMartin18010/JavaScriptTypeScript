@@ -267,12 +267,124 @@ async function processNDJSONStream(url: string) {
 }
 ```
 
+### 3.5 代码示例：Array.fromAsync 与分组聚合
+
+```typescript
+// array-from-async.ts — 使用 ES2025 Array.fromAsync 处理异步迭代器
+async function* fetchPages(urls: string[]) {
+  for (const url of urls) {
+    const resp = await fetch(url);
+    yield resp.json();
+  }
+}
+
+// Array.fromAsync 将异步迭代器转换为数组（ES2025+）
+const pages = await Array.fromAsync(fetchPages(['/api/page1', '/api/page2']));
+
+// Object.groupBy 数据分组（ES2024+）
+const products = [
+  { name: 'Laptop', category: 'Electronics', price: 1200 },
+  { name: 'Phone', category: 'Electronics', price: 800 },
+  { name: 'Desk', category: 'Furniture', price: 300 },
+];
+
+const byCategory = Object.groupBy(products, p => p.category);
+console.log(byCategory.Electronics.length); // 2
+
+// Map.groupBy 使用函数分组
+const byPriceRange = Map.groupBy(products, p =>
+  p.price > 500 ? 'premium' : 'budget'
+);
+console.log(byPriceRange.get('premium')?.length); // 2
+```
+
+### 3.6 代码示例：使用 Iterator Helpers 处理大数据集
+
+```typescript
+// iterator-helpers.ts — TC39 Stage 3 Iterator Helpers 提案
+// 部分运行时（Node.js 22+ / Chrome 122+）已原生支持
+
+function* generateData() {
+  for (let i = 1; i <= 1_000_000; i++) {
+    yield { id: i, value: Math.random() };
+  }
+}
+
+// 使用迭代器助手方法链（零中间数组）
+const topValues = generateData()
+  .filter(item => item.value > 0.5)
+  .map(item => ({ ...item, score: item.value * 100 }))
+  .take(10)
+  .toArray();
+
+console.log(topValues.length); // ≤ 10
+
+// drop + flatMap 组合
+const nested = [
+  [1, 2, 3],
+  [4, 5, 6],
+  [7, 8, 9],
+];
+const flattened = nested
+  .values()
+  .drop(1) // 跳过第一个子数组
+  .flatMap(arr => arr.values())
+  .toArray();
+console.log(flattened); // [4, 5, 6, 7, 8, 9]
+```
+
+### 3.7 代码示例：使用 AbortController 取消长耗时数据处理
+
+```typescript
+// cancellable-processing.ts — 可取消的数据处理任务
+async function processWithCancellation(
+  data: AsyncIterable<number>,
+  signal: AbortSignal
+): Promise<number[]> {
+  const results: number[] = [];
+
+  for await (const item of data) {
+    if (signal.aborted) {
+      throw new Error('Processing cancelled');
+    }
+
+    // 模拟耗时计算
+    await new Promise(r => setTimeout(r, 10));
+    results.push(item * 2);
+
+    // 每处理 100 项检查一次取消信号
+    if (results.length % 100 === 0) {
+      await new Promise(r => setTimeout(r, 0)); // 让出事件循环
+    }
+  }
+
+  return results;
+}
+
+// 使用示例
+const controller = new AbortController();
+setTimeout(() => controller.abort(), 500); // 500ms 后取消
+
+try {
+  const processed = await processWithCancellation(
+    (async function* () {
+      for (let i = 0; i < 1000; i++) yield i;
+    })(),
+    controller.signal
+  );
+} catch (e) {
+  console.log(e.message); // "Processing cancelled"
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
 | 数组方法链总是最优 | 大数组多次遍历可能不如单次循环高效 |
 | 流式处理只适合大文件 | 流式也能改善内存抖动和响应性 |
+| Object.groupBy 修改原数组 | groupBy 返回新对象，不修改原数组 |
+| 所有环境都支持 Iterator Helpers | 需检查运行时版本或引入 polyfill |
 
 ### 3.3 扩展阅读
 
@@ -281,8 +393,13 @@ async function processNDJSONStream(url: string) {
 - [TC39 Iterator Helpers Proposal](https://github.com/tc39/proposal-iterator-helpers)
 - [Apache Arrow JavaScript](https://arrow.apache.org/docs/js/)
 - [MDN — Web Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API)
+- [MDN — Array.fromAsync](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/fromAsync)
+- [MDN — Object.groupBy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/groupBy)
+- [MDN — Map.groupBy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map/groupBy)
 - [Node.js Performance Best Practices](https://nodejs.org/en/learn/getting-started/how-to-read-environment-variables-from-nodejs)
 - [JavaScript Weekly — Data Processing](https://javascriptweekly.com/)
+- [web.dev — Streams API Concepts](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API/Concepts)
+- [2ality — Iterator Helpers in JavaScript](https://2ality.com/2023/06/iterator-helpers.html)
 - `30-knowledge-base/30.8-data`
 
 ---

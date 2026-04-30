@@ -221,9 +221,152 @@ export const adminOnlyRoute = createServerFn({ method: 'GET' })
   });
 ```
 
-本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 认证集成 核心机制的理解，并观察不同实现选择带来的行为差异。
+### 3.2 D1 数据库存储 Session 方案
 
-### 3.2 常见误区
+```typescript
+// auth/d1-session.ts — 使用 Cloudflare D1 实现可吊销 Session
+import { createServerFn } from '@tanstack/react-start';
+
+interface D1SessionRecord {
+  id: string;
+  userId: string;
+  email: string;
+  role: string;
+  expiresAt: number;
+  createdAt: number;
+}
+
+export const createD1Session = createServerFn({ method: 'POST' })
+  .handler(async ({ request }) => {
+    const env = process.env as unknown as Env;
+    const { userId, email, role } = await request.json();
+
+    const sessionId = crypto.randomUUID();
+    const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 天
+
+    await env.DB.prepare(
+      `INSERT INTO sessions (id, userId, email, role, expiresAt, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    )
+      .bind(sessionId, userId, email, role, expiresAt, Date.now())
+      .run();
+
+    // 签名 sessionId，防止篡改
+    const signature = await hmacSign(sessionId, env.SESSION_SECRET);
+    const cookieValue = `${sessionId}.${signature}`;
+
+    return new Response(JSON.stringify({ success: true }), {
+      headers: {
+        'Set-Cookie': `session=${cookieValue}; HttpOnly; Secure; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`,
+      },
+    });
+  });
+
+export const verifyD1Session = createServerFn({ method: 'GET' })
+  .handler(async ({ request }) => {
+    const env = process.env as unknown as Env;
+    const cookie = request.headers.get('cookie') ?? '';
+    const match = cookie.match(/session=([^.]+)\.([^;]+)/);
+
+    if (!match) return new Response('Unauthorized', { status: 401 });
+    const [, sessionId, signature] = match;
+
+    // 验证签名
+    const expectedSig = await hmacSign(sessionId, env.SESSION_SECRET);
+    if (signature !== expectedSig) {
+      return new Response('Invalid session', { status: 401 });
+    }
+
+    // 查询 D1
+    const { results } = await env.DB.prepare(
+      `SELECT * FROM sessions WHERE id = ? AND expiresAt > ?`
+    )
+      .bind(sessionId, Date.now())
+      .all<D1SessionRecord>();
+
+    if (!results || results.length === 0) {
+      return new Response('Session expired', { status: 401 });
+    }
+
+    return { user: results[0] };
+  });
+
+async function hmacSign(data: string, secret: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data));
+  return btoa(String.fromCharCode(...new Uint8Array(signature))).replace(/=/g, '');
+}
+```
+
+### 3.3 刷新令牌轮转实现
+
+```typescript
+// auth/refresh-rotation.ts — 边缘环境 Refresh Token 轮转
+import { createServerFn } from '@tanstack/react-start';
+
+interface TokenPair {
+  accessToken: string;
+  refreshToken: string;
+  accessExpires: number;
+  refreshExpires: number;
+}
+
+export const refreshTokenRotation = createServerFn({ method: 'POST' })
+  .handler(async ({ request }) => {
+    const env = process.env as unknown as Env;
+    const { refreshToken } = await request.json();
+
+    // 1. 验证 refreshToken 是否存在于 KV（且未吊销）
+    const stored = await env.OAUTH_KV.get(`refresh:${refreshToken}`);
+    if (!stored) {
+      return new Response('Invalid refresh token', { status: 401 });
+    }
+
+    const tokenData = JSON.parse(stored);
+    if (Date.now() > tokenData.expiresAt) {
+      await env.OAUTH_KV.delete(`refresh:${refreshToken}`);
+      return new Response('Refresh token expired', { status: 401 });
+    }
+
+    // 2. 生成新的 Token 对
+    const newAccess = await generateJWT({ sub: tokenData.userId }, '15m', env.JWT_SECRET);
+    const newRefresh = crypto.randomUUID();
+
+    // 3. 原子替换：存入新 refresh，删除旧的
+    await env.OAUTH_KV.put(
+      `refresh:${newRefresh}`,
+      JSON.stringify({ userId: tokenData.userId, expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000 }),
+      { expirationTtl: 7 * 24 * 60 * 60 }
+    );
+    await env.OAUTH_KV.delete(`refresh:${refreshToken}`);
+
+    return Response.json({
+      accessToken: newAccess,
+      refreshToken: newRefresh,
+      tokenType: 'Bearer',
+      expiresIn: 900,
+    });
+  });
+
+async function generateJWT(payload: object, expiresIn: string, secret: string): Promise<string> {
+  const exp = expiresIn.endsWith('m')
+    ? Math.floor(Date.now() / 1000) + parseInt(expiresIn) * 60
+    : Math.floor(Date.now() / 1000) + 3600;
+
+  return new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime(exp)
+    .sign(new TextEncoder().encode(secret));
+}
+```
+
+### 3.4 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -232,7 +375,7 @@ export const adminOnlyRoute = createServerFn({ method: 'GET' })
 | JWT 无法吊销 | 可通过短 TTL + 刷新令牌 + KV 黑名单实现 |
 | 边缘环境不需要 CSRF 防护 | 无状态 JWT 不受 CSRF 影响，但 Cookie 仍需 SameSite |
 
-### 3.3 扩展阅读
+### 3.5 扩展阅读
 
 - [TanStack Start](https://tanstack.com/start/latest)
 - [Cloudflare Workers Runtime APIs](https://developers.cloudflare.com/workers/runtime-apis/)
@@ -255,6 +398,11 @@ export const adminOnlyRoute = createServerFn({ method: 'GET' })
 | Cloudflare D1 (SQLite) | 官方文档 | [developers.cloudflare.com/d1](https://developers.cloudflare.com/d1/) |
 | Web Crypto API | MDN | [developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) |
 | TanStack Start Middleware | 官方文档 | [tanstack.com/start/latest/docs/framework/react/middleware](https://tanstack.com/start/latest/docs/framework/react/middleware) |
+| Cloudflare Workers — Cache API | 文档 | [developers.cloudflare.com/workers/runtime-apis/cache](https://developers.cloudflare.com/workers/runtime-apis/cache/) |
+| OWASP — JWT Security Cheat Sheet | 指南 | [cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html](https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html) |
+| IETF — OAuth 2.0 Security Best Current Practice | RFC Draft | [datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics) |
+| Cloudflare — Secure Cookie Attributes | 博客 | [blog.cloudflare.com/secure-cookies/](https://blog.cloudflare.com/secure-cookies/) |
+| MDN — SameSite Cookies | 文档 | [developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) |
 
 ---
 

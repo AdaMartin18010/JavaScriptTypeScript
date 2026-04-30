@@ -270,6 +270,99 @@ parallel([
 
 ---
 
+### 6.6 带超时与取消的回调封装
+
+```typescript
+// 为传统回调 API 增加 AbortController 支持
+function fetchWithCallback(
+  url: string,
+  callback: (err: Error | null, data?: string) => void,
+  options?: { timeout?: number; signal?: AbortSignal }
+): void {
+  const controller = new AbortController();
+  const signal = options?.signal;
+  const timeout = options?.timeout ?? 5000;
+
+  // 外部取消与内部超时统一
+  const onAbort = () => controller.abort();
+  signal?.addEventListener('abort', onAbort);
+
+  const timer = setTimeout(() => {
+    controller.abort(new Error(`Request timeout after ${timeout}ms`));
+  }, timeout);
+
+  fetch(url, { signal: controller.signal })
+    .then(res => res.text())
+    .then(data => {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', onAbort);
+      callback(null, data);
+    })
+    .catch(err => {
+      clearTimeout(timer);
+      signal?.removeEventListener('abort', onAbort);
+      callback(err instanceof Error ? err : new Error(String(err)));
+    });
+}
+
+// 使用
+const controller = new AbortController();
+fetchWithCallback('https://api.example.com/data', (err, data) => {
+  if (err) {
+    console.error('Failed:', err.message);
+    return;
+  }
+  console.log('Data:', data?.slice(0, 100));
+}, { timeout: 3000, signal: controller.signal });
+
+// 3 秒后主动取消
+setTimeout(() => controller.abort(), 3000);
+```
+
+### 6.7 回调转 EventEmitter 模式
+
+```typescript
+import { EventEmitter } from 'node:events';
+
+// 将多次回调转换为基于事件的流式接口
+class ProgressDownloader extends EventEmitter {
+  download(url: string): void {
+    const chunks: Buffer[] = [];
+    let received = 0;
+
+    fetch(url).then(response => {
+      const reader = response.body?.getReader();
+      if (!reader) {
+        this.emit('error', new Error('No readable body'));
+        return;
+      }
+
+      const pump = (): Promise<void> => reader.read().then(({ done, value }) => {
+        if (done) {
+          this.emit('finish', Buffer.concat(chunks));
+          return;
+        }
+        chunks.push(value);
+        received += value.length;
+        this.emit('progress', { received, total: response.headers.get('content-length') });
+        return pump();
+      });
+
+      pump().catch(err => this.emit('error', err));
+    }).catch(err => this.emit('error', err));
+  }
+}
+
+// 使用
+const downloader = new ProgressDownloader();
+downloader.on('progress', (info) => console.log(`Progress: ${info.received} bytes`));
+downloader.on('finish', (buffer) => console.log('Complete:', buffer.length));
+downloader.on('error', (err) => console.error('Error:', err));
+downloader.download('https://example.com/large-file.bin');
+```
+
+---
+
 ## 7. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §6.2.6** — [[Call]]
@@ -282,6 +375,13 @@ parallel([
 - **JavaScript.info: Callbacks** — <https://javascript.info/callbacks>
 - **Refactoring Guru: Callback Pattern** — <https://refactoring.guru/design-patterns/chain-of-responsibility>
 - **TC39 ECMA-262 Spec** — <https://tc39.es/ecma262/> — 官方 ECMAScript 规范
+- **Node.js Events — EventEmitter** — <https://nodejs.org/api/events.html#class-eventemitter>
+- **MDN: AbortController** — <https://developer.mozilla.org/en-US/docs/Web/API/AbortController>
+- **WHATWG Streams Standard** — <https://streams.spec.whatwg.org/> — Web Streams 规范
+- **Node.js util.callbackify** — <https://nodejs.org/api/util.html#utilcallbackifyoriginal>
+- **Bluebird.promisify API** — <http://bluebirdjs.com/docs/api/promise.promisify.html>
+- **JavaScript.info: Event Loop** — <https://javascript.info/event-loop>
+- **MDN: Fetch API** — <https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API>
 
 ---
 
@@ -339,3 +439,115 @@ graph TD
 ---
 
 **参考规范**：ECMA-262 §6.2.6 | MDN: Callback function
+
+---
+
+## 进阶代码示例
+
+### Thunk 模式与懒执行
+
+```typescript
+// Thunk：将计算延迟到需要时执行
+function createThunk<T>(fn: () => T): () => T {
+  let executed = false;
+  let result: T;
+  return () => {
+    if (!executed) {
+      result = fn();
+      executed = true;
+    }
+    return result;
+  };
+}
+
+const expensiveThunk = createThunk(() => {
+  console.log('Computing...');
+  return 42;
+});
+
+console.log(expensiveThunk()); // Computing... 42
+console.log(expensiveThunk()); // 42（缓存）
+```
+
+### `util.promisify` 与 `child_process.exec`
+
+```typescript
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const execAsync = promisify(exec);
+
+async function getGitCommit(): Promise<string> {
+  const { stdout } = await execAsync('git rev-parse --short HEAD');
+  return stdout.trim();
+}
+
+getGitCommit().then((hash) => console.log('Current commit:', hash));
+```
+
+### 类型安全的错误优先回调工厂
+
+```typescript
+type Callback<T> = (err: Error | null, result?: T) => void;
+
+function createAsyncTask<T>(executor: (resolve: (value: T) => void, reject: (reason: Error) => void) => void): Callback<T> {
+  return (callback) => {
+    executor(
+      (value) => callback(null, value),
+      (reason) => callback(reason)
+    );
+  };
+}
+
+const readConfig = createAsyncTask<string>((resolve, reject) => {
+  try {
+    const data = require('fs').readFileSync('config.json', 'utf-8');
+    resolve(data);
+  } catch (e) {
+    reject(e instanceof Error ? e : new Error(String(e)));
+  }
+});
+
+readConfig((err, data) => {
+  if (err) {
+    console.error('Failed:', err.message);
+    return;
+  }
+  console.log('Config:', data?.slice(0, 100));
+});
+```
+
+### 基于 `queueMicrotask` 的回调调度
+
+```typescript
+function scheduleMicrotaskCallback<T>(task: (done: Callback<T>) => void): Callback<T> {
+  return (callback) => {
+    queueMicrotask(() => {
+      task(callback);
+    });
+  };
+}
+
+scheduleMicrotaskCallback<number>((done) => {
+  done(null, Math.random());
+})((err, result) => {
+  console.log('Microtask result:', result);
+});
+```
+
+---
+
+## 扩展参考链接
+
+- [Node.js util.promisify](https://nodejs.org/api/util.html#utilpromisifyoriginal) — 官方 promisify 文档
+- [Node.js util.callbackify](https://nodejs.org/api/util.html#utilcallbackifyoriginal) — 官方 callbackify 文档
+- [MDN — Callback function](https://developer.mozilla.org/en-US/docs/Glossary/Callback_function) — 回调函数概念
+- [MDN — queueMicrotask](https://developer.mozilla.org/en-US/docs/Web/API/queueMicrotask) — 微任务队列 API
+- [Promise A+ Specification](https://promisesaplus.com/) — Promise 行为标准规范
+- [ECMA-262 Specification](https://tc39.es/ecma262/) — 官方 ECMAScript 规范
+- [Node.js Events — EventEmitter](https://nodejs.org/api/events.html#class-eventemitter) — 事件驱动编程指南
+- [MDN — AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController) — 取消异步操作标准 API
+- [WHATWG Streams Standard](https://streams.spec.whatwg.org/) — Web Streams 规范
+- [Bluebird.promisify API](http://bluebirdjs.com/docs/api/promise.promisify.html) — Bluebird promisify 参考
+- [JavaScript.info — Callbacks](https://javascript.info/callbacks) — 回调模式深度教程
+- [Refactoring Guru — Chain of Responsibility](https://refactoring.guru/design-patterns/chain-of-responsibility) — 责任链设计模式

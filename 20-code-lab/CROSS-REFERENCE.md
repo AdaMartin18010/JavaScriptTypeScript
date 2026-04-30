@@ -255,6 +255,109 @@ async function validateCrossReferences(): Promise<BrokenLink[]> {
 // });
 ```
 
+## 代码示例：学习路径进度追踪器
+
+```typescript
+// learning-tracker.ts — 追踪个人学习进度
+interface ModuleProgress {
+  moduleId: string;
+  completed: boolean;
+  theoryRead: boolean;
+  exercisesDone: number;
+  totalExercises: number;
+}
+
+class LearningTracker {
+  private progress = new Map<string, ModuleProgress>();
+
+  loadFromStorage(): void {
+    const raw = localStorage.getItem('jsts-learning-progress');
+    if (raw) {
+      const data = JSON.parse(raw) as ModuleProgress[];
+      data.forEach((p) => this.progress.set(p.moduleId, p));
+    }
+  }
+
+  saveToStorage(): void {
+    localStorage.setItem('jsts-learning-progress', JSON.stringify([...this.progress.values()]));
+  }
+
+  markTheoryRead(moduleId: string): void {
+    const p = this.progress.get(moduleId) ?? { moduleId, completed: false, theoryRead: false, exercisesDone: 0, totalExercises: 0 };
+    p.theoryRead = true;
+    this.progress.set(moduleId, p);
+    this.saveToStorage();
+  }
+
+  markExerciseComplete(moduleId: string): void {
+    const p = this.progress.get(moduleId)!;
+    p.exercisesDone++;
+    if (p.exercisesDone >= p.totalExercises && p.theoryRead) {
+      p.completed = true;
+    }
+    this.saveToStorage();
+  }
+
+  getCompletionRate(): number {
+    if (this.progress.size === 0) return 0;
+    const completed = [...this.progress.values()].filter((p) => p.completed).length;
+    return Math.round((completed / this.progress.size) * 100);
+  }
+}
+```
+
+## 代码示例：依赖拓扑排序（学习顺序生成）
+
+```typescript
+// topo-sort-learning-path.ts — 根据前置依赖生成学习顺序
+type ModuleNode = {
+  id: string;
+  prerequisites: string[];
+};
+
+function topoSort(modules: ModuleNode[]): string[] {
+  const adj = new Map<string, string[]>();
+  const inDegree = new Map<string, number>();
+
+  for (const m of modules) {
+    if (!inDegree.has(m.id)) inDegree.set(m.id, 0);
+    for (const pre of m.prerequisites) {
+      if (!adj.has(pre)) adj.set(pre, []);
+      adj.get(pre)!.push(m.id);
+      inDegree.set(m.id, (inDegree.get(m.id) ?? 0) + 1);
+    }
+  }
+
+  const queue = modules.filter((m) => (inDegree.get(m.id) ?? 0) === 0).map((m) => m.id);
+  const result: string[] = [];
+
+  while (queue.length) {
+    const curr = queue.shift()!;
+    result.push(curr);
+    for (const next of adj.get(curr) ?? []) {
+      const newDegree = (inDegree.get(next) ?? 0) - 1;
+      inDegree.set(next, newDegree);
+      if (newDegree === 0) queue.push(next);
+    }
+  }
+
+  if (result.length !== inDegree.size) {
+    throw new Error('Cycle detected in module dependencies');
+  }
+
+  return result;
+}
+
+// 示例：生成 20-code-lab 学习顺序
+// const order = topoSort([
+//   { id: '20.1', prerequisites: [] },
+//   { id: '20.2', prerequisites: ['20.1'] },
+//   { id: '20.3', prerequisites: ['20.1'] },
+//   { id: '20.4', prerequisites: ['20.1'] },
+//   { id: '20.5', prerequisites: ['20.2', '20.3'] },
+// ]);
+```
+
 ---
 
 ## 权威链接
@@ -273,6 +376,15 @@ async function validateCrossReferences(): Promise<BrokenLink[]> {
 - [TC39 Proposals](https://github.com/tc39/proposals) — ECMAScript  Stage-0 到 Stage-4 提案跟踪。
 - [W3C Standards](https://www.w3.org/standards/) — Web 平台标准规范总览。
 - [WHATWG Living Standards](https://spec.whatwg.org/) — HTML、DOM、Streams 等活标准。
+- [Node.js Design Patterns](https://nodejs.org/en/docs/guides/) — Node.js 官方设计模式与最佳实践指南
+- [Google JavaScript Style Guide](https://google.github.io/styleguide/jsguide.html) — Google JS 编码规范
+- [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript) — 社区最流行的 JS 风格指南
+- [JavaScript.Info](https://javascript.info/) — 现代 JavaScript 教程（开源）
+- [ExploringJS — Deep JavaScript](https://exploringjs.com/deep-js/) — Dr. Axel Rauschmayer 深度 JavaScript 书籍
+- [Patterns.dev](https://www.patterns.dev/) — 现代 Web 应用设计模式（开源书籍）
+- [Refactoring Guru](https://refactoring.guru/) — 设计模式与重构交互式教程
+- [GitHub — Build your own X](https://github.com/codecrafters-io/build-your-own-x) — 从零实现各类技术的教程集合
+- [The Architecture of Open Source Applications](http://www.aosabook.org/) — 开源软件架构深度分析
 
 ---
 

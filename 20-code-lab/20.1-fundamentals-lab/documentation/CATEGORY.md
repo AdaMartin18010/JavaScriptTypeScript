@@ -225,6 +225,104 @@ const adr = renderADR({
 });
 ```
 
+### 代码示例：使用 TypeScript Compiler API 提取文档
+
+```typescript
+// ts-doc-extractor.ts — 使用 TS Compiler API 提取 JSDoc/TSDoc
+import * as ts from 'typescript';
+
+interface ExtractedDoc {
+  name: string;
+  kind: ts.SyntaxKind;
+  jsDoc?: string;
+  params: Array<{ name: string; type: string; optional: boolean }>;
+  returnType?: string;
+}
+
+function extractDocsFromFile(filePath: string): ExtractedDoc[] {
+  const program = ts.createProgram([filePath], {});
+  const sourceFile = program.getSourceFile(filePath)!;
+  const checker = program.getTypeChecker();
+  const docs: ExtractedDoc[] = [];
+
+  ts.forEachChild(sourceFile, function visit(node) {
+    if (ts.isFunctionDeclaration(node) && node.name) {
+      const symbol = checker.getSymbolAtLocation(node.name);
+      const jsDoc = symbol?.getDocumentationComment(checker);
+      const params = node.parameters.map(p => ({
+        name: p.name.getText(sourceFile),
+        type: p.type ? p.type.getText(sourceFile) : 'any',
+        optional: !!p.questionToken,
+      }));
+
+      docs.push({
+        name: node.name.text,
+        kind: node.kind,
+        jsDoc: jsDoc?.map(c => c.text).join('\n'),
+        params,
+        returnType: node.type?.getText(sourceFile),
+      });
+    }
+    ts.forEachChild(node, visit);
+  });
+
+  return docs;
+}
+```
+
+### 代码示例：自动化变更日志生成
+
+```typescript
+// changelog-generator.ts — 基于 Conventional Commits 生成 CHANGELOG
+interface Commit {
+  hash: string;
+  type: 'feat' | 'fix' | 'docs' | 'refactor' | 'test' | 'chore';
+  scope?: string;
+  subject: string;
+  breaking: boolean;
+}
+
+function parseConventionalCommit(message: string): Commit | null {
+  const regex = /^(feat|fix|docs|refactor|test|chore)(?:\(([^)]+)\))?!?: (.+)$/m;
+  const match = message.match(regex);
+  if (!match) return null;
+
+  return {
+    hash: '',
+    type: match[1] as Commit['type'],
+    scope: match[2],
+    subject: match[3],
+    breaking: message.includes('BREAKING CHANGE') || message.includes('!:'),
+  };
+}
+
+function generateMarkdownChangelog(commits: Commit[], version: string): string {
+  const groups = Object.groupBy(commits, c => c.type);
+  const lines = [`## [${version}]\n`];
+
+  const typeTitles: Record<string, string> = {
+    feat: '### ✨ Features',
+    fix: '### 🐛 Bug Fixes',
+    docs: '### 📝 Documentation',
+    refactor: '### ♻️ Refactoring',
+  };
+
+  for (const [type, title] of Object.entries(typeTitles)) {
+    const group = groups[type];
+    if (!group?.length) continue;
+    lines.push(title);
+    for (const c of group) {
+      const scope = c.scope ? `**${c.scope}**: ` : '';
+      const breaking = c.breaking ? ' ⚠️ BREAKING' : '';
+      lines.push(`- ${scope}${c.subject}${breaking}`);
+    }
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
@@ -253,6 +351,11 @@ const adr = renderADR({
 | Markdownlint — Markdown 规范检查 | 工具 | [github.com/DavidAnson/markdownlint](https://github.com/DavidAnson/markdownlint) |
 | JSR — JavaScript Registry 文档标准 | 平台 | [jsr.io](https://jsr.io/) |
 | Read the Docs — 文档托管平台 | 平台 | [readthedocs.org](https://readthedocs.org/) |
+| Conventional Commits 规范 | 规范 | [conventionalcommits.org](https://www.conventionalcommits.org/) |
+| Keep a Changelog | 规范 | [keepachangelog.com](https://keepachangelog.com/) |
+| Semantic Versioning | 规范 | [semver.org](https://semver.org/) |
+| MDX — Markdown for the component era | 格式 | [mdxjs.com](https://mdxjs.com/) |
+| Shiki — 语法高亮引擎 | 工具 | [shiki.style](https://shiki.style/) |
 
 ---
 
@@ -266,6 +369,9 @@ const adr = renderADR({
 | web.dev | 指南 | [web.dev](https://web.dev) |
 | Google Technical Writing Courses | 课程 | [developers.google.com/tech-writing](https://developers.google.com/tech-writing) |
 | Write the Docs — 文档工程师社区 | 社区 | [writethedocs.org](https://www.writethedocs.org/) |
+| Docs-as-Code — 文档即代码实践 | 方法论 | [docsascode.com](https://www.docsascode.com/) |
+| API Documentation Best Practices | 指南 | [swagger.io/resources/articles/best-practices-in-api-documentation/](https://swagger.io/resources/articles/best-practices-in-api-documentation/) |
+| The Good Docs Project | 开源模板 | [thegooddocsproject.dev](https://thegooddocsproject.dev/) |
 
 ---
 

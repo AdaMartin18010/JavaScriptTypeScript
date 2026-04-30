@@ -252,6 +252,95 @@ class ConsistentHashRing {
 }
 ```
 
+## 代码示例：缓存雪崩防护 — 随机 TTL + 互斥锁
+
+```typescript
+// cache-avalanche-protection.ts — 防止热点 key 同时过期导致雪崩
+class AvalancheProtectedCache<K, V> {
+  constructor(
+    private cache: CacheStore<K, V>,
+    private loader: (key: K) => Promise<V>,
+    private baseTtlMs = 60_000,
+    private jitterPercent = 0.25 // TTL 随机浮动 ±25%
+  ) {}
+
+  async get(key: K): Promise<V> {
+    const cached = await this.cache.get(key);
+    if (cached !== undefined) return cached;
+
+    // 互斥锁：同一时刻只有一个请求回源
+    const lockKey = `lock:${String(key)}`;
+    const acquired = await this.cache.set(lockKey, true as unknown as V, 5000);
+    if (!acquired) {
+      // 等待其他请求回填缓存后重试
+      await new Promise((r) => setTimeout(r, 100));
+      const retry = await this.cache.get(key);
+      if (retry !== undefined) return retry;
+      throw new Error('Cache lock timeout');
+    }
+
+    try {
+      const value = await this.loader(key);
+      const jitter = this.baseTtlMs * this.jitterPercent * (Math.random() * 2 - 1);
+      const ttl = Math.max(1000, Math.floor(this.baseTtlMs + jitter));
+      await this.cache.set(key, value, ttl);
+      return value;
+    } finally {
+      await this.cache.delete(lockKey as unknown as K);
+    }
+  }
+}
+```
+
+## 代码示例：Read-Through 缓存装饰器
+
+```typescript
+// read-through.ts — 透明缓存装饰器模式
+function withReadThroughCache<K, V>(
+  fn: (key: K) => Promise<V>,
+  cache: CacheStore<K, V>,
+  ttlMs: number
+): (key: K) => Promise<V> {
+  return async (key: K): Promise<V> => {
+    const cached = await cache.get(key);
+    if (cached !== undefined) return cached;
+    const value = await fn(key);
+    await cache.set(key, value, ttlMs);
+    return value;
+  };
+}
+
+// 使用：透明地为任意异步函数加上缓存层
+const getUserCached = withReadThroughCache(
+  (id: string) => db.users.findById(id),
+  redisCache,
+  30_000
+);
+```
+
+## 代码示例：缓存与数据库最终一致性（延迟双删）
+
+```typescript
+// cache-consistency.ts — 延迟双删模式保证最终一致性
+async function updateWithDelayDoubleDelete<K, V>(
+  key: K,
+  updater: () => Promise<V>,
+  cache: CacheStore<K, V>,
+  delayMs = 500
+): Promise<V> {
+  // 1. 先删缓存
+  await cache.delete(key);
+
+  // 2. 更新数据库
+  const value = await updater();
+
+  // 3. 延迟再次删除缓存（覆盖并发读导致的旧值回填）
+  setTimeout(() => cache.delete(key), delayMs);
+
+  return value;
+}
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -266,7 +355,13 @@ class ConsistentHashRing {
 | Caching at Netflix | 技术博客 | [netflixtechblog.com/tagged/caching](https://netflixtechblog.com/tagged/caching) |
 | MDN — Cache API | Service Worker 缓存 | [developer.mozilla.org/en-US/docs/Web/API/Cache](https://developer.mozilla.org/en-US/docs/Web/API/Cache) |
 | web.dev — HTTP Cache | 浏览器缓存最佳实践 | [web.dev/articles/http-cache](https://web.dev/articles/http-cache) |
+| Redis University — Caching Data | 免费课程 | [university.redis.io](https://university.redis.io/) |
+| Martin Kleppmann — Designing Data-Intensive Applications | 经典书籍 | [dataintensive.net](https://dataintensive.net/) — 第 11 章缓存深度分析 |
+| AWS — ElastiCache Best Practices | 托管缓存指南 | [docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/BestPractices.html](https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/BestPractices.html) |
+| Google Cloud — Memorystore Best Practices | 托管 Redis | [cloud.google.com/memorystore/docs/redis/best-practices](https://cloud.google.com/memorystore/docs/redis/best-practices) |
+| System Design Primer — Caching | 开源系统设计 | [github.com/donnemartin/system-design-primer#caching](https://github.com/donnemartin/system-design-primer#caching) |
+| Redis — Key Eviction Policies | 内存淘汰策略 | [redis.io/docs/reference/eviction/](https://redis.io/docs/reference/eviction/) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

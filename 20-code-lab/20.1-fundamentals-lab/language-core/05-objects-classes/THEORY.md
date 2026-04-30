@@ -13,7 +13,17 @@
 
 ### 1.2 形式化基础
 
-[本模块的形式化定义与公理/定理陈述]
+设对象 $o$ 的原型为 $\text{proto}(o)$，属性查找为函数 $\text{Lookup}(o, p)$：
+
+$$
+\text{Lookup}(o, p) = \begin{cases}
+o[p] & \text{if } p \in \text{OwnKeys}(o) \\
+\text{Lookup}(\text{proto}(o), p) & \text{if } \text{proto}(o) \neq \text{null} \\
+\text{undefined} & \text{otherwise}
+\end{cases}
+$$
+
+ES6 `class` 语法不改变上述原型语义，仅提供**静态声明式封装**。TypeScript 在此基础上扩展了接口实现检查与编译期类型擦除。
 
 ### 1.3 关键概念
 
@@ -21,6 +31,8 @@
 |------|------|------|
 | 原型链 | 对象属性继承的查找机制 | prototype-chain.ts |
 | 类字段 | ES2022 类实例属性的声明语法 | class-fields.ts |
+| 私有字段 | ES2022 硬私有 `#field` 语法 | private-fields.ts |
+| 静态块 | ES2022 类级静态初始化块 | static-blocks.ts |
 
 ---
 
@@ -251,7 +263,123 @@ observed.name = "Bob"; // "Setting name = Bob"
 console.log(observed.name); // "Getting name" → "Bob"
 ```
 
-### 3.6 常见误区
+### 3.6 代码示例：ES2022+ 现代类特性
+
+```typescript
+// ============================================
+// 静态初始化块（ES2022）
+// ============================================
+
+class DatabaseConfig {
+  static host: string;
+  static port: number;
+  static readonly maxConnections: number;
+
+  static {
+    // 类级静态初始化块，在类求值时执行一次
+    const env = process.env.DB_HOST ?? 'localhost';
+    this.host = env;
+    this.port = parseInt(process.env.DB_PORT ?? '5432', 10);
+    (this as any).maxConnections = 100;
+    console.log('DatabaseConfig initialized');
+  }
+}
+
+console.log(DatabaseConfig.host); // "localhost" 或环境变量值
+
+// ============================================
+// 私有静态成员与私有方法（ES2022）
+// ============================================
+
+class SecureToken {
+  static #secretKey = crypto.randomUUID();
+  static #counter = 0;
+
+  static #rotateKey(): void {
+    this.#secretKey = crypto.randomUUID();
+    this.#counter++;
+  }
+
+  static generate(): string {
+    if (this.#counter > 1000) this.#rotateKey();
+    return `${this.#secretKey}-${Date.now()}`;
+  }
+}
+
+console.log(SecureToken.generate());
+// SecureToken.#secretKey; // SyntaxError: Private static access error
+
+// ============================================
+// `in` 运算符检测私有字段存在（ES2022）
+// ============================================
+
+class User {
+  #password: string;
+  constructor(password: string) {
+    this.#password = password;
+  }
+
+  static hasPassword(user: User): boolean {
+    return #password in user; // 检测实例是否包含私有字段
+  }
+}
+
+const u = new User('secret');
+console.log(User.hasPassword(u)); // true
+
+// ============================================
+// 访问器与类自动访问器（TS 4.9 / ES2023 Decorators）
+// ============================================
+
+class ObservableValue {
+  #value: number = 0;
+
+  get value(): number {
+    return this.#value;
+  }
+
+  set value(v: number) {
+    this.#value = v;
+    this.#notify(v);
+  }
+
+  #notify(v: number): void {
+    console.log('Value changed to', v);
+  }
+}
+
+const obs = new ObservableValue();
+obs.value = 42; // "Value changed to 42"
+
+// ============================================
+// Object.groupBy 与 Map.groupBy（ES2024）
+// ============================================
+
+const inventory = [
+  { name: 'apple', type: 'fruit', qty: 10 },
+  { name: 'carrot', type: 'vegetable', qty: 5 },
+  { name: 'banana', type: 'fruit', qty: 3 },
+];
+
+// Object.groupBy 按回调返回值分组
+const byType = Object.groupBy(inventory, item => item.type);
+console.log(byType.fruit.length); // 2
+
+// Map.groupBy 支持对象键的分组
+const byQtyThreshold = Map.groupBy(inventory, item => item.qty > 5 ? 'high' : 'low');
+console.log(byQtyThreshold.get('high')?.length); // 1
+
+// ============================================
+// Object.hasOwn 替代 Object.prototype.hasOwnProperty
+// ============================================
+
+const obj = { a: 1 };
+console.log(Object.hasOwn(obj, 'a'));      // true
+console.log(Object.hasOwn(obj, 'toString')); // false（继承属性）
+// 无需 call/apply 绑定，更安全
+```
+
+### 3.7 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -259,7 +387,7 @@ console.log(observed.name); // "Getting name" → "Bob"
 | 私有字段 # 可通过反射访问 | 硬私有字段在语言层面不可从外部访问 |
 | 箭头函数适合类方法 | 箭头函数无原型，无法被 super 调用 |
 
-### 3.4 扩展阅读
+### 3.8 扩展阅读
 
 - [MDN 类](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes)
 - [MDN：继承与原型链](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Inheritance_and_the_prototype_chain)
@@ -271,7 +399,14 @@ console.log(observed.name); // "Getting name" → "Bob"
 - [MDN — Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
 - [JavaScript Info — Class Inheritance](https://javascript.info/class-inheritance)
 - [Composition over Inheritance — Medium](https://medium.com/hackernoon/object-oriented-the-great-debate-7fd5a9f0a33d)
-- `10-fundamentals/10.1-language-semantics/05-objects-classes/`
+- [TC39: Class Fields Proposal](https://github.com/tc39/proposal-class-fields) — 私有字段与公有字段规范
+- [V8 Blog: Class Fields](https://v8.dev/features/class-fields) — 引擎实现解析
+- [MDN: Static initialization blocks](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks) — 静态块官方文档
+- [MDN: Object.groupBy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/groupBy) — ES2024 分组方法
+- [MDN: Object.hasOwn](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwn) — 安全的 hasOwn 检查
+- [TC39: Decorators Proposal](https://github.com/tc39/proposal-decorators) — 类装饰器规范
+- [TypeScript Handbook: Classes](https://www.typescriptlang.org/docs/handbook/2/classes.html) — TS 类系统指南
+- [ExploringJS: Classes](https://exploringjs.com/impatient-js/ch_classes.html) — Dr. Axel Rauschmayer 深度教程
 
 ---
 

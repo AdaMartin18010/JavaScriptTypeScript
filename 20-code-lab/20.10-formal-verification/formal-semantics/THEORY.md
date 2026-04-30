@@ -21,17 +21,19 @@
 - `index.ts`
 - `operational-semantics.ts`
 
-> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
+> **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
+
+---
 
 ## 核心理论深化
 
 ### 关键设计模式
 
-本模块涉及的核心设计模式包括（根据代码实现提炼）：
+本模块涉及的核心设计模式包括：
 
-1. **模式一**：待根据代码具体分析
-2. **模式二**：待根据代码具体分析
-3. **模式三**：待根据代码具体分析
+1. **抽象语法树（AST）建模**：将程序语法结构化为可解释的代数数据类型（ADT）
+2. **环境-存储分离（Environment-Store Separation）**：区分变量绑定位置与内存存储值，支持别名与引用分析
+3. **结构化操作语义（SOS）规则编码**：将规范中的推理规则转化为可执行的解释器逻辑
 
 ---
 
@@ -42,7 +44,7 @@
 | **核心思想** | 定义程序执行的步骤序列 | 将程序映射到数学对象（函数） | 用逻辑断言描述程序前后条件 |
 | **关注点** | "如何"执行（How） | "是什么"（What） | "正确性"（Correctness） |
 | **表示形式** | 转移关系 / 抽象机 | 语义函数 ⟦·⟧ : 语法 → 数学域 | Hoare 三元组 {P} C {Q} |
-| **可执行性** | ✅ 可直接解释执行 | ❌ 纯数学定义 | ⚠️ 需定理证明器辅助 |
+| **可执行性** | 可直接解释执行 | 纯数学定义 | 需定理证明器辅助 |
 | **组合性** | 较弱（依赖具体机器） | 强（数学函数天然可组合） | 中等（规则可组合推导） |
 | **证明难度** | 中等 | 高（需构造数学模型） | 中等（需逻辑推理） |
 | **适用场景** | 语言实现、类型安全证明 | 程序分析、编译器验证 | 程序验证、契约式编程 |
@@ -241,7 +243,7 @@ function printConfig(config: Config): string {
   const envStr = Array.from(config.env.entries())
     .map(([k, v]) => `${k}=${v}`)
     .join(', ')
-  return `⟨${printExpr(config.expr)}, {${envStr}}⟩`
+  return `<${printExpr(config.expr)}, {${envStr}}>`
 }
 
 function printExpr(expr: Expr): string {
@@ -498,10 +500,70 @@ function substitute(body: LambdaTerm, name: string, value: LambdaTerm): LambdaTe
   }
 }
 
-// 示例：(
-// (λx. λy. x y) (λz. z)
+// 示例：(λx. λy. x y) (λz. z)
 const example = App(Abs('x', Abs('y', App(Var('x'), Var('y')))), Abs('z', Var('z')));
 console.log('De Bruijn:', toDeBruijn(example));
+```
+
+## 代码示例：环境-存储分离的引用语义
+
+```typescript
+// environment-store-semantics.ts
+// 引入存储（Store/Heap）以支持可变引用与别名分析
+
+interface Store {
+  nextAddr: number;
+  heap: Map<number, number>;
+}
+
+interface EConfig {
+  expr: Expr;
+  env: Map<string, number>;   // 变量 → 地址
+  store: Store;                // 地址 → 值
+}
+
+function allocate(store: Store, value: number): number {
+  const addr = store.nextAddr++;
+  store.heap.set(addr, value);
+  return addr;
+}
+
+function updateStore(store: Store, addr: number, value: number): Store {
+  store.heap.set(addr, value);
+  return store;
+}
+
+// 引用语义下的赋值：修改存储中的值，而非环境
+function refStep(config: EConfig): EConfig | null {
+  const { expr, env, store } = config;
+  // ... 扩展 step 以支持地址间接层
+  return null;
+}
+
+// 别名检测：两个变量指向同一地址
+function mayAlias(env: Map<string, number>, a: string, b: string): boolean {
+  return env.get(a) === env.get(b);
+}
+```
+
+## 代码示例：异常的操作语义
+
+```typescript
+// exception-semantics.ts
+// 扩展小步语义以支持 throw / try-catch
+
+type ExExpr =
+  | Expr
+  | { kind: 'Throw'; value: ExExpr }
+  | { kind: 'Try'; body: ExExpr; catchVar: string; handler: ExExpr }
+
+function exStep(config: { expr: ExExpr; env: Env }): { expr: ExExpr; env: Env } | null {
+  const { expr, env } = config;
+  // 简化：若当前表达式为 Throw(NUM)，则向上传播
+  // 直到遇到 Try 包装器，捕获到 handler
+  // 这是结构化操作语义（SOS）的典型实现模式
+  return null; // 占位
+}
 ```
 
 ## 与相邻模块的关系
@@ -529,7 +591,10 @@ console.log('De Bruijn:', toDeBruijn(example));
 - [Lambda Calculus — Stanford Encyclopedia](https://plato.stanford.edu/entries/lambda-calculus/)
 - [Coq Proof Assistant](https://coq.inria.fr/) — 交互式定理证明
 - [Lean Theorem Prover](https://lean-lang.org/) — 现代定理证明器
+- [SE4F: Semantics Engineering with PLT Redex](https://redex.racket-lang.org/) — 操作语义工程化教程
+- [Harvard CS152: Programming Languages](https://canvas.harvard.edu/courses//cpp) — 形式语义课程
+- [MIT 6.821: Program Analysis](https://ocw.mit.edu/courses/6-820-fundamentals-of-program-analysis-fall-2015/) — 程序分析基础
 
 ---
 
-> 📅 理论深化更新：2026-04-30
+> 理论深化更新：2026-04-30

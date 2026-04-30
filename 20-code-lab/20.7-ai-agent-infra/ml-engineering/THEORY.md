@@ -441,24 +441,78 @@ class ModelRegistry {
 }
 ```
 
+### 3.10 推理缓存层（Prediction Cache）
+
+```typescript
+// prediction-cache.ts — 基于输入特征的 LRU 缓存
+
+export class PredictionCache<TInput, TOutput> {
+  private cache = new Map<string, { output: TOutput; expiresAt: number }>();
+  private maxSize: number;
+
+  constructor(options: { maxSize?: number; defaultTTLMs?: number } = {}) {
+    this.maxSize = options.maxSize ?? 1000;
+  }
+
+  private hashInput(input: TInput): string {
+    return JSON.stringify(input);
+  }
+
+  get(input: TInput): TOutput | undefined {
+    const key = this.hashInput(input);
+    const entry = this.cache.get(key);
+    if (!entry) return undefined;
+    if (Date.now() > entry.expiresAt) {
+      this.cache.delete(key);
+      return undefined;
+    }
+    // LRU：移到末尾（最新使用）
+    this.cache.delete(key);
+    this.cache.set(key, entry);
+    return entry.output;
+  }
+
+  set(input: TInput, output: TOutput, ttlMs: number = 60000) {
+    const key = this.hashInput(input);
+    if (this.cache.size >= this.maxSize && !this.cache.has(key)) {
+      // 淘汰最旧的
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+    }
+    this.cache.set(key, { output, expiresAt: Date.now() + ttlMs });
+  }
+}
+
+// 使用：为高延迟模型添加缓存
+const cache = new PredictionCache<{ userId: string }, number[]>({ maxSize: 5000, defaultTTLMs: 300000 });
+
+async function getRecommendations(userId: string): Promise<number[]> {
+  const cached = cache.get({ userId });
+  if (cached) return cached;
+  const result = await expensiveModelInference(userId);
+  cache.set({ userId }, result);
+  return result;
+}
+```
+
 ---
 
 ## 4. 反模式
 
 ### 反模式 1：训练-服务偏差
 
-❌ 训练时用 Python 处理特征，服务时用 JS 重写。
-✅ 特征工程代码共享，或用 ONNX 标准化模型。
+训练时用 Python 处理特征，服务时用 JS 重写。
+特征工程代码共享，或用 ONNX 标准化模型。
 
 ### 反模式 2：无监控部署
 
-❌ 模型部署后不再关注性能。
-✅ 监控：延迟、吞吐量、预测分布漂移。
+模型部署后不再关注性能。
+监控：延迟、吞吐量、预测分布漂移。
 
 ### 反模式 3：没有版本控制的模型
 
 ```typescript
-// ✅ 模型版本管理最佳实践
+// 模型版本管理最佳实践
 class ModelRegistry {
   private models = new Map<string, ModelVersion[]>();
 
@@ -536,7 +590,20 @@ ML 工程 = **软件工程 + 数据科学 + 运维**。
 - [River](https://riverml.xyz/) — 在线机器学习库（Python/JS 概念互通）
 - [Apache Arrow](https://arrow.apache.org/) — 跨语言列式数据格式（JS 绑定：arrow-js）
 
----
+### 权威外部链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| Google — Rules of ML | [developers.google.com/machine-learning/guides/rules-of-ml](https://developers.google.com/machine-learning/guides/rules-of-ml) | Google ML 工程 43 条最佳实践 |
+| TensorFlow.js 指南 | [tensorflow.org/js/guide](https://www.tensorflow.org/js/guide) | 官方浏览器/Node ML 开发指南 |
+| ONNX 标准规范 | [onnx.ai](https://onnx.ai/) | 跨框架模型交换开放标准 |
+| Hugging Face Transformers.js | [huggingface.co/docs/transformers.js](https://huggingface.co/docs/transformers.js) | 浏览器端 Transformer 推理 |
+| MLOps Specialization — DeepLearning.AI | [coursera.org/specializations/machine-learning-engineering-for-production-mlops](https://www.coursera.org/specializations/machine-learning-engineering-for-production-mlops) | Andrew Ng MLOps 专项课程 |
+| Chip Huyen — ML Design Patterns | [github.com/chiphuyen/machine-learning-systems-design](https://github.com/chiphuyen/machine-learning-systems-design) | ML 系统设计模式开源书 |
+| Stanford CS329S | [cs329s.stanford.edu](https://cs329s.stanford.edu/) | Stanford ML 系统课程 |
+| Feast 文档 | [docs.feast.dev](https://docs.feast.dev/) | 开源特征存储平台文档 |
+| Evidently AI 文档 | [docs.evidentlyai.com](https://docs.evidentlyai.com/) | 数据与模型漂移检测 |
+| MLflow 文档 | [mlflow.org/docs/latest/index.html](https://mlflow.org/docs/latest/index.html) | ML 生命周期管理平台 |
 
 ## 模块代码文件索引
 
@@ -552,7 +619,7 @@ ML 工程 = **软件工程 + 数据科学 + 运维**。
 - `simple-neural-network.ts`
 - `tensor-ops.ts`
 
-> 💡 **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
+> **学习建议**：阅读 THEORY.md 后，逐一运行上述代码文件，观察理论概念的实际行为。修改参数和边界条件，加深理解。
 
 ## 核心理论深化
 
@@ -571,4 +638,4 @@ ML 工程 = **软件工程 + 数据科学 + 运维**。
 
 ---
 
-> 📅 理论深化更新：2026-04-30
+> 理论深化更新：2026-04-30

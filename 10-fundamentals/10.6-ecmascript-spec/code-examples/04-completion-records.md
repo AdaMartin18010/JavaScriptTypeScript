@@ -211,6 +211,100 @@ function demo() {
 console.log(demo()); // 42
 ```
 
+### 6.7 正例：switch 语句中的完成记录
+
+```javascript
+// switch 语句的完成记录行为
+function switchCompletion(x) {
+  switch (x) {
+    case 1:
+      return 'one'; // ReturnCompletion('one')
+    case 2:
+      throw new Error('two'); // ThrowCompletion(Error)
+    case 3:
+      break; // BreakCompletion(empty)
+    default:
+      'default'; // 正常完成，值为 'default'（但不会被使用）
+  }
+  return 'after switch';
+}
+
+console.log(switchCompletion(1)); // "one"
+console.log(switchCompletion(3)); // "after switch"
+```
+
+### 6.8 正例：for...of 中的 break 完成记录
+
+```javascript
+// for...of 循环中 break 产生 BreakCompletion，触发迭代器 return()
+const iterable = {
+  [Symbol.iterator]() {
+    let i = 0;
+    return {
+      next() {
+        if (i < 5) return { value: i++, done: false };
+        return { done: true };
+      },
+      return() {
+        console.log('Iterator cleanup triggered by break');
+        return { done: true };
+      }
+    };
+  }
+};
+
+for (const x of iterable) {
+  if (x === 2) break; // BreakCompletion 触发迭代器 return()
+  console.log(x);
+}
+// 输出:
+// 0
+// 1
+// "Iterator cleanup triggered by break"
+```
+
+### 6.9 正例：Generator 函数中的完成记录
+
+```javascript
+function* gen() {
+  try {
+    yield 1; // 暂停，返回 NormalCompletion(1) 到迭代器协议
+    yield 2;
+  } finally {
+    console.log('Generator cleanup');
+  }
+}
+
+const g = gen();
+console.log(g.next()); // { value: 1, done: false }
+console.log(g.return('aborted')); // 触发 finally，返回 { value: 'aborted', done: true }
+// 输出: "Generator cleanup"
+
+// throw() 向生成器注入 ThrowCompletion
+const g2 = gen();
+g2.next();
+try {
+  g2.throw(new Error('injected')); // 向生成器内抛出 ThrowCompletion
+} catch (e) {
+  console.log(e.message); // "injected"
+}
+```
+
+### 6.10 正例：with 语句中的完成记录
+
+```javascript
+// with 语句影响标识符解析，但完成记录传播不受影响
+const obj = { a: 1 };
+
+function withExample() {
+  with (obj) {
+    if (a === 1) return 'matched'; // ReturnCompletion 正常传播
+  }
+}
+
+console.log(withExample()); // "matched"
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
@@ -219,13 +313,22 @@ console.log(demo()); // 42
 - **ECMA-262 §13.15** — Try/Catch/Finally 语句的完成记录语义
 - **ECMA-262 §10.2.1** — FunctionDeclarationInstantiation 与完成记录
 - **ECMA-262 §27.7** — AsyncFunction 的完成记录到 Promise 转换
+- **ECMA-262 §14.16** — `break` 语句的完成记录语义
+- **ECMA-262 §14.17** — `continue` 语句的完成记录语义
+- **ECMA-262 §14.10** — `return` 语句的完成记录语义
+- **ECMA-262 §14.18** — `with` 语句的完成记录语义
+- **ECMA-262 §20.5.5.11** — Generator 的 throw/return 语义
 - **MDN: Control flow** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Control_flow_and_error_handling>
 - **MDN: break** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/break>
 - **MDN: continue** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/continue>
 - **MDN: return** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/return>
 - **MDN: throw** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/throw>
 - **MDN: try...catch** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch>
+- **MDN: Iteration protocols** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols>
 - **2ality — Exploring ES6: Completion Values** — <https://2ality.com/2014/09/es6-iterators.html>（关联迭代器完成语义）
+- **V8 Blog — Understanding Exceptions and Stack Traces** — <https://v8.dev/docs/stack-trace-api>
+- **SpiderMonkey Internals — Exception Handling** — <https://firefox-source-docs.mozilla.org/js/index.html>
+- **Engine262** — 教育用 ECMA-262 参考实现，可直接观察 Completion Record 行为 <https://engine262.js.org/>
 
 ---
 

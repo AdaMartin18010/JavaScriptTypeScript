@@ -541,6 +541,72 @@ function bernsteinVazirani(hiddenString: string): string {
 // 经典情况需要 n 次查询，量子算法只需 1 次
 ```
 
+### 量子相位估计 (QPE) 实现
+
+```typescript
+// quantum-phase-estimation.ts — 估计本征值的相位
+function quantumPhaseEstimation(
+  unitary: Complex[][],
+  eigenstate: StateVector,
+  precisionBits: number
+): number {
+  const n = precisionBits;
+  const state = new StateVector(n).applyGate(Gates.H(), Array.from({ length: n }, (_, i) => i));
+  const combined = state.tensorProduct(eigenstate);
+
+  // 受控酉操作: 对第 i 个控制位施加 U^(2^i)
+  for (let i = 0; i < n; i++) {
+    const power = 1 << i;
+    const uPower = matrixPower(unitary, power);
+    // 受控应用 uPower 到 eigenstate 寄存器
+    combined.applyControlledGate(uPower, [i], Array.from({ length: eigenstate.qubits }, (_, j) => n + j));
+  }
+
+  // 逆 QFT 到前 n 个量子比特
+  applyInverseQFT(combined, n);
+
+  // 测量前 n 个量子比特得到相位估计
+  let measured = 0;
+  for (let i = 0; i < n; i++) {
+    measured = (measured << 1) | combined.measureSingleQubit(i);
+  }
+  return measured / (1 << n); // 相位 ∈ [0, 1)
+}
+```
+
+### 三量子比特量子纠错码 (Bit-Flip Code)
+
+```typescript
+// quantum-error-correction.ts — 3-qubit bit-flip 纠错码
+function encodeBitFlip(state: StateVector): StateVector {
+  // |ψ⟩ = α|0⟩ + β|1⟩ → α|000⟩ + β|111⟩
+  const encoded = state.tensorProduct(new StateVector(2));
+  encoded.applyGate(Gates.CNOT(), [0, 1]);
+  encoded.applyGate(Gates.CNOT(), [0, 2]);
+  return encoded;
+}
+
+function measureSyndrome(state: StateVector): [number, number] {
+  // 使用辅助量子比特测量稳定子生成元
+  // Z1 Z2 和 Z2 Z3 的测量结果指示错误位置
+  const ancilla = new StateVector(2);
+  const combined = state.tensorProduct(ancilla);
+
+  // 简化的 syndrome 提取逻辑
+  const s1 = (state.measureSingleQubit(0) ^ state.measureSingleQubit(1));
+  const s2 = (state.measureSingleQubit(1) ^ state.measureSingleQubit(2));
+  return [s1, s2];
+}
+
+function correctBitFlip(state: StateVector, syndrome: [number, number]): StateVector {
+  const [s1, s2] = syndrome;
+  if (s1 === 1 && s2 === 1) state.applyGate(Gates.X(), [0]);
+  else if (s1 === 1 && s2 === 0) state.applyGate(Gates.X(), [1]);
+  else if (s1 === 0 && s2 === 1) state.applyGate(Gates.X(), [2]);
+  return state;
+}
+```
+
 ---
 
 ## 参考实现文件
@@ -556,6 +622,7 @@ function bernsteinVazirani(hiddenString: string): string {
 - `bernstein-vazirani.ts` — 隐藏字符串恢复
 - `variational-quantum-eigensolver.ts` — VQE 参数化电路与能量最小化
 - `quantum-error-correction.ts` — 量子纠错码基础
+- `quantum-phase-estimation.ts` — 量子相位估计实现
 
 ---
 
@@ -571,6 +638,7 @@ function bernsteinVazirani(hiddenString: string): string {
 - `quantum-fourier-transform.ts`
 - `quantum-gates-extended.ts`
 - `quantum-gates.ts`
+- `quantum-phase-estimation.ts`
 - `quantum-simulator.ts`
 - `quantum-state-vector.ts`
 - `quantum-teleportation.ts`
@@ -612,7 +680,15 @@ function bernsteinVazirani(hiddenString: string): string {
 | **Preskill Lecture Notes** | John Preskill 量子信息讲义 | [theory.caltech.edu/~preskill/ph219](http://theory.caltech.edu/~preskill/ph219/ph219_2020-21.html) |
 | **arXiv quant-ph** | 量子物理预印本论文库 | [arxiv.org/list/quant-ph/recent](https://arxiv.org/list/quant-ph/recent) |
 | **Q# Documentation** | Microsoft 量子编程语言 | [docs.microsoft.com/azure/quantum](https://docs.microsoft.com/en-us/azure/quantum/) |
+| **Cirq Documentation** | Google 量子编程框架 | [quantumai.google/cirq](https://quantumai.google/cirq) |
+| **PennyLane** | 量子机器学习与变分算法平台 | [pennylane.ai](https://pennylane.ai/) |
+| **Quantum Open Source Foundation** | 量子开源软件清单 | [qosf.org](https://qosf.org/) |
+| **Error Correction Zoo** | 量子纠错码分类学 | [errorcorrectionzoo.org](https://errorcorrectionzoo.org/) |
+| **QWorld (QBronze/QSilver)** | 量子计算入门课程 | [qworld.net](https://qworld.net/) |
+| **MIT OpenCourseWare — Quantum Computation** | 课程讲义与作业 | [ocw.mit.edu/courses/8-370x-quantum-information-science-i-spring-2018](https://ocw.mit.edu/courses/8-370x-quantum-information-science-i-spring-2018/) |
+| **Stim — Quantum Error Correction Simulator** | Google 表面码模拟器 | [github.com/quantumlib/Stim](https://github.com/quantumlib/Stim) |
+| **tket Compiler** | Cambridge Quantum 量子编译器 | [cqcl.github.io/tket](https://cqcl.github.io/tket-site/api-docs/) |
 
 ---
 
-> 📅 理论深化更新：2026-04-29
+> 📅 理论深化更新：2026-04-30

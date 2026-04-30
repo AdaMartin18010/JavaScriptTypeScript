@@ -246,6 +246,78 @@ for await (const record of csvStream) {
 }
 ```
 
+#### Node.js Duplex 流：实时日志过滤与转发
+
+```typescript
+import { Transform, PassThrough } from 'stream';
+import type { Duplex } from 'stream';
+
+function createLogFilterStream(minLevel: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'): Duplex {
+  const levels = { DEBUG: 0, INFO: 1, WARN: 2, ERROR: 3 };
+  const threshold = levels[minLevel];
+
+  return new Transform({
+    objectMode: true,
+    transform(chunk: { level: string; message: string }, _encoding, callback) {
+      const levelValue = levels[chunk.level as keyof typeof levels] ?? 0;
+      if (levelValue >= threshold) {
+        callback(null, chunk);
+      } else {
+        callback(); // 过滤掉低级别日志
+      }
+    },
+  });
+}
+
+// 使用：将日志流过滤后转发到多个目的地
+const source = new PassThrough({ objectMode: true });
+const filter = createLogFilterStream('WARN');
+const destination = new PassThrough({ objectMode: true });
+
+source.pipe(filter).pipe(destination);
+
+destination.on('data', (log) => console.log('[WARN+]', log));
+
+source.write({ level: 'INFO', message: 'Server started' });   // 被过滤
+source.write({ level: 'ERROR', message: 'DB connection lost' }); // 通过
+```
+
+#### Node.js 自定义 Transform：行缓冲区行号注入
+
+```typescript
+import { Transform } from 'stream';
+
+function createLineNumberTransform(): Transform {
+  let lineNumber = 0;
+  let leftover = '';
+
+  return new Transform({
+    transform(chunk: Buffer, _encoding, callback) {
+      const text = leftover + chunk.toString('utf-8');
+      const lines = text.split('\n');
+      leftover = lines.pop()!;
+
+      const output = lines
+        .map(line => `${String(++lineNumber).padStart(6, '0')}: ${line}`)
+        .join('\n') + '\n';
+
+      callback(null, output);
+    },
+    flush(callback) {
+      if (leftover) {
+        callback(null, `${String(++lineNumber).padStart(6, '0')}: ${leftover}\n`);
+      } else {
+        callback();
+      }
+    },
+  });
+}
+
+// 使用：为文本流添加行号
+import { createReadStream, createWriteStream } from 'fs';
+createReadStream('input.txt').pipe(createLineNumberTransform()).pipe(createWriteStream('output.txt'));
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -270,7 +342,10 @@ for await (const record of csvStream) {
 - [MDN — TransformStream](https://developer.mozilla.org/en-US/docs/Web/API/TransformStream)
 - [Web.dev — Streams API Concepts](https://web.dev/articles/streams)
 - [Node.js — Stream Handbook](https://github.com/substack/stream-handbook)
-- `20.3-concurrency-async/concurrency/`
+- [Node.js — Duplex Streams](https://nodejs.org/api/stream.html#duplex-and-transform-streams)
+- [MDN — WritableStream](https://developer.mozilla.org/en-US/docs/Web/API/WritableStream)
+- [Node.js — Stream Backpressure Guide](https://nodejs.org/en/learn/modules/backpressuring-in-streams)
+- [Streams Spec — ReadableStreamBYOBReader](https://streams.spec.whatwg.org/#byob-readers)
 
 ---
 

@@ -256,6 +256,81 @@ try {
 
 ---
 
+## 10. `importHelpers` 与 `tslib`
+
+当 `tsconfig.json` 中 `"importHelpers": true` 时，TypeScript 会将辅助函数（如 `__decorate`、`__extends`、`__assign`）集中到 `tslib` 包中引用，而非在每个文件内联：
+
+```typescript
+// tsconfig.json
+{
+  "compilerOptions": {
+    "importHelpers": true
+  }
+}
+```
+
+```javascript
+// 编译后（有 importHelpers）
+import { __decorate } from "tslib";
+
+// 编译后（无 importHelpers，默认）
+var __decorate = function(decorators, target, key, desc) { ... };
+```
+
+**运行时影响**：
+- 减少重复辅助函数代码，节省 bundle 体积（大型项目可节省 5-10%）
+- 引入外部依赖 `tslib`，需确保安装
+
+---
+
+## 11. `downlevelIteration` 与生成器降级
+
+当 `target` 低于 `ES2015` 或 `downlevelIteration: true` 时，TypeScript 会注入迭代协议兼容代码：
+
+```typescript
+// 编译前
+function* idMaker() {
+  let index = 0;
+  while (true) yield index++;
+}
+
+const ids = [...idMaker()];
+```
+
+```javascript
+// 编译后（downlevelIteration: true, target: ES5）
+var __generator = (this && this.__generator) || function (thisArg, body) { ... };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) { ... };
+
+function idMaker() {
+  var index;
+  return __generator(this, function (_a) {
+    switch (_a.label) {
+      case 0:
+        index = 0;
+        _a.label = 1;
+      case 1:
+        if (!true) return [3 /*break*/, 3];
+        return [4 /*yield*/, index++];
+      case 2:
+        _a.sent();
+        return [3 /*break*/, 1];
+      case 3: return [2 /*return*/];
+    }
+  });
+}
+
+var ids = __spreadArray([], idMaker(), true);
+```
+
+**运行时影响**：
+- 生成大量状态机代码（`__generator`）模拟原生生成器
+- `for...of` 循环展开为 `try...catch` + 迭代器协议调用
+- 显著增加包体积和执行开销
+- **建议**：现代运行环境（Node.js 18+）直接设置 `target: ES2022` 避免降级
+
+---
+
 ## 完整对照表
 
 | 特性 | 运行时残留 | 可消除？ | 消除方法 |
@@ -270,10 +345,118 @@ try {
 | `export =` | `module.exports` | ✅ | 标准 ESM |
 | JSX | `createElement` | ❌ | 预编译框架 |
 | `using` | try/finally | ❌ | 手写 |
+| `importHelpers` | `tslib` 辅助函数导入 | ✅ | 关闭配置 |
+| `downlevelIteration` | `__generator` / `__spreadArray` 状态机 | ✅ | `target: ES2022` |
 
 ---
 
 ## 参考
 
-- TypeScript Compiler Options
-- [TypeScript Emit Helpers](https://www.typescriptlang.org/docs/handbook/namespaces.html)
+- [TypeScript Compiler Options — `importHelpers`](https://www.typescriptlang.org/tsconfig#importHelpers) — 辅助函数导入配置
+- [TypeScript Compiler Options — `downlevelIteration`](https://www.typescriptlang.org/tsconfig#downlevelIteration) — 迭代降级配置
+- [TypeScript Compiler Options — `useDefineForClassFields`](https://www.typescriptlang.org/tsconfig#useDefineForClassFields) — 类字段定义语义配置
+- [TypeScript Compiler Options — `jsx`](https://www.typescriptlang.org/tsconfig#jsx) — JSX 转换模式配置
+- [TypeScript Emit Helpers (`tslib`)](https://github.com/microsoft/tslib) — 官方辅助函数库
+- [TC39 Decorators Proposal](https://github.com/tc39/proposal-decorators) — ECMAScript 装饰器 Stage 3 提案
+- [TypeScript Handbook: Namespaces](https://www.typescriptlang.org/docs/handbook/namespaces.html) — namespace 编译行为详解
+- [TypeScript Handbook: Enums](https://www.typescriptlang.org/docs/handbook/enums.html) — enum 编译行为与最佳实践
+- [TypeScript Handbook: JSX](https://www.typescriptlang.org/docs/handbook/jsx.html) — JSX 转换模式说明
+- [ECMAScript Explicit Resource Management](https://github.com/tc39/proposal-explicit-resource-management) — `using` / `await using` TC39 提案
+
+---
+
+## 进阶代码示例
+
+### `const enum` 与 `enum` 包体积对比
+
+```typescript
+// ❌ 生成双向映射对象，增加包体积
+enum Status { Active = 1, Inactive = 0 }
+
+// ✅ const enum 完全内联，零运行时开销
+const enum Priority { Low = 1, Medium = 2, High = 3 }
+
+function getLabel(p: Priority) {
+  return p === Priority.High ? 'urgent' : 'normal';
+}
+// 编译后：function getLabel(p) { return p === 3 ? 'urgent' : 'normal'; }
+```
+
+### Decorators + `emitDecoratorMetadata` 完整示例
+
+```typescript
+import 'reflect-metadata';
+
+const Injectable = (): ClassDecorator => (target) => {
+  Reflect.defineMetadata('design:injectable', true, target);
+  return target;
+};
+
+const Inject = (token: string): ParameterDecorator => (target, key, index) => {
+  const existing = Reflect.getMetadata('design:paramtypes', target, key) || [];
+  existing[index] = token;
+  Reflect.defineMetadata('design:paramtypes', existing, target, key);
+};
+
+@Injectable()
+class Database {
+  query() { return [{ id: 1 }]; }
+}
+
+@Injectable()
+class UserService {
+  constructor(@Inject('DB') private db: Database) {}
+  findAll() { return this.db.query(); }
+}
+
+// 编译后包含 __metadata 调用，依赖 reflect-metadata polyfill
+```
+
+### `using` 与 `Symbol.dispose` 实践
+
+```typescript
+// 定义可释放资源
+class TempFile implements Disposable {
+  #path: string;
+  constructor(name: string) {
+    this.#path = `/tmp/${name}`;
+    console.log('Created', this.#path);
+  }
+  [Symbol.dispose]() {
+    console.log('Disposed', this.#path);
+  }
+}
+
+function processData() {
+  using file = new TempFile('data.txt');
+  // file 在此处自动释放，即使抛出异常
+  if (Math.random() > 0.5) throw new Error('Oops');
+  return 42;
+}
+```
+
+### `downlevelIteration` 对 `for...of` 的影响演示
+
+```typescript
+// target: ES5 + downlevelIteration: true
+const set = new Set([1, 2, 3]);
+for (const item of set) {
+  console.log(item);
+}
+// 编译后生成 try/catch + 迭代器协议调用，增加 ~20 行代码
+```
+
+---
+
+## 扩展参考链接
+
+- [TypeScript Handbook — Enums](https://www.typescriptlang.org/docs/handbook/enums.html) — enum 编译行为与最佳实践
+- [TypeScript Handbook — Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) — 装饰器官方文档
+- [TypeScript Handbook — Namespaces](https://www.typescriptlang.org/docs/handbook/namespaces.html) — namespace 编译行为详解
+- [TypeScript Handbook — JSX](https://www.typescriptlang.org/docs/handbook/jsx.html) — JSX 转换模式说明
+- [TC39 Decorators Proposal](https://github.com/tc39/proposal-decorators) — ECMAScript 装饰器 Stage 3 提案
+- [ECMAScript Explicit Resource Management](https://github.com/tc39/proposal-explicit-resource-management) — `using` / `await using` TC39 提案
+- [TypeScript Compiler Options — `importHelpers`](https://www.typescriptlang.org/tsconfig#importHelpers) — 辅助函数导入配置
+- [TypeScript Compiler Options — `downlevelIteration`](https://www.typescriptlang.org/tsconfig#downlevelIteration) — 迭代降级配置
+- [tslib GitHub Repository](https://github.com/microsoft/tslib) — 官方辅助函数库
+- [TypeScript Compiler Options — `useDefineForClassFields`](https://www.typescriptlang.org/tsconfig#useDefineForClassFields) — 类字段定义语义配置

@@ -255,13 +255,115 @@ observeResourceTiming(
 - **统计显著性**: 使用 t-test 判断性能变化是否显著
 - **火焰图对比**: 定位性能回归的具体函数
 
-## 7. 与相邻模块的关系
+## 7. 代码示例：性能预算 CI 检查器
+
+```typescript
+// performance-budget-ci.ts — CI 中阻止超预算的部署
+interface BudgetRule {
+  type: 'bundle' | 'lcp' | 'fcp' | 'ttfb' | 'custom';
+  maximumWarning: number;
+  maximumError: number;
+  unit: 'kb' | 'ms' | 's';
+}
+
+interface PerformanceReport {
+  metrics: Record<string, number>;
+  bundleSize?: number;
+}
+
+function checkBudgets(report: PerformanceReport, budgets: BudgetRule[]): { passed: boolean; violations: string[] } {
+  const violations: string[] = [];
+
+  for (const budget of budgets) {
+    let value: number | undefined;
+    if (budget.type === 'bundle') value = report.bundleSize;
+    else value = report.metrics[budget.type];
+
+    if (value === undefined) continue;
+
+    if (value > budget.maximumError) {
+      violations.push(`❌ FAIL: ${budget.type} = ${value}${budget.unit} exceeds max ${budget.maximumError}${budget.unit}`);
+    } else if (value > budget.maximumWarning) {
+      violations.push(`⚠️ WARN: ${budget.type} = ${value}${budget.unit} exceeds warning ${budget.maximumWarning}${budget.unit}`);
+    }
+  }
+
+  return { passed: violations.filter((v) => v.startsWith('❌')).length === 0, violations };
+}
+
+// CI 脚本中使用
+// const report = await runLighthouse(url);
+// const result = checkBudgets(report, budgets);
+// if (!result.passed) process.exit(1);
+```
+
+## 8. 代码示例：Node.js 内存泄漏检测器
+
+```typescript
+// memory-leak-detector.ts — 基于 heapdump 的内存监控
+import { writeHeapSnapshot } from 'node:v8';
+import os from 'node:os';
+
+class MemoryLeakDetector {
+  private snapshots: Array<{ timestamp: number; heapUsedMB: number }> = [];
+  private thresholdMB: number;
+  private growthRateThreshold = 1.2; // 20% 增长阈值
+
+  constructor(thresholdMB = 512) {
+    this.thresholdMB = thresholdMB;
+  }
+
+  check(): { leaking: boolean; growthRate: number; recommendation: string } {
+    const usage = process.memoryUsage();
+    const heapUsedMB = usage.heapUsed / 1024 / 1024;
+
+    this.snapshots.push({ timestamp: Date.now(), heapUsedMB });
+    if (this.snapshots.length > 10) this.snapshots.shift();
+
+    // 计算增长率
+    let growthRate = 1;
+    if (this.snapshots.length >= 3) {
+      const first = this.snapshots[0].heapUsedMB;
+      const last = this.snapshots[this.snapshots.length - 1].heapUsedMB;
+      growthRate = last / first;
+    }
+
+    const leaking = heapUsedMB > this.thresholdMB && growthRate > this.growthRateThreshold;
+
+    return {
+      leaking,
+      growthRate,
+      recommendation: leaking
+        ? `Potential memory leak detected. Heap: ${heapUsedMB.toFixed(1)}MB, Growth: ${((growthRate - 1) * 100).toFixed(1)}%`
+        : 'Memory usage within normal range',
+    };
+  }
+
+  captureSnapshot(path?: string): string {
+    const filename = path ?? `heap-${Date.now()}.heapsnapshot`;
+    writeHeapSnapshot(filename);
+    return filename;
+  }
+}
+
+// 使用：定时检查
+// const detector = new MemoryLeakDetector(512);
+// setInterval(() => {
+//   const result = detector.check();
+//   if (result.leaking) {
+//     console.error(result.recommendation);
+//     detector.captureSnapshot();
+//   }
+// }, 60_000);
+```
+
+## 9. 与相邻模块的关系
 
 - **08-performance**: 性能优化策略
 - **11-benchmarks**: 基准测试方法论
 - **74-observability**: 可观测性体系
 
-## 8. 权威参考链接
+## 10. 权威参考链接
 
 - [web-vitals npm package](https://github.com/GoogleChrome/web-vitals) — Google 官方 Web Vitals 库
 - [Core Web Vitals by Google](https://web.dev/articles/vitals) — Google 核心 Web 指标详解
@@ -272,3 +374,19 @@ observeResourceTiming(
 - [SigNoz Open Source APM](https://signoz.io/docs/) — 开源 OpenTelemetry APM 平台
 - [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) — 自动化 Lighthouse 持续集成
 - [W3C Performance Timeline](https://www.w3.org/TR/performance-timeline/) — W3C 性能时间线规范
+- [OpenTelemetry JS SDK](https://opentelemetry.io/docs/languages/js/) — OpenTelemetry JavaScript 官方文档
+- [Google Chrome — Performance API](https://developer.chrome.com/docs/devtools/performance/overview) — Chrome DevTools 性能分析指南
+- [web.dev — Optimize LCP](https://web.dev/articles/optimize-lcp) — LCP 优化最佳实践
+- [web.dev — Optimize INP](https://web.dev/articles/optimize-inp) — INP 交互性能优化
+- [Node.js — Performance Hooks](https://nodejs.org/api/perf_hooks.html) — Node.js 内置性能测量 API
+- [V8 — Memory Management](https://v8.dev/blog/trash-talk) — V8 垃圾回收与内存管理深度解析
+- [Chrome User Experience Report (CrUX)](https://developer.chrome.com/docs/crux/) — 真实用户体验大数据集
+- [SpeedCurve — Performance Budgets](https://www.speedcurve.com/blog/performance-budgets/) — 性能预算方法论
+- [WebPageTest](https://www.webpagetest.org/) — 开源网页性能测试平台
+- [Calibre — Performance Monitoring](https://calibreapp.com/) — 性能监控与预算工具
+- [OpenTelemetry — W3C Trace Context](https://www.w3.org/TR/trace-context/) — 分布式追踪标准
+- [Grafana — Frontend Observability](https://grafana.com/solutions/frontend-observability/) — 前端性能仪表盘
+
+---
+
+*最后更新: 2026-04-30*

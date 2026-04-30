@@ -56,13 +56,13 @@
 **Fibonacci：三种实现对比**
 
 ```typescript
-// ❌ 朴素递归：O(2^n)，存在大量重复计算
+// 朴素递归：O(2^n)，存在大量重复计算
 function fibNaive(n: number): number {
   if (n <= 1) return n;
   return fibNaive(n - 1) + fibNaive(n - 2);
 }
 
-// ✅ 记忆化递归：O(n) 时间，O(n) 空间
+// 记忆化递归：O(n) 时间，O(n) 空间
 function fibMemo(n: number, memo: number[] = []): number {
   if (n <= 1) return n;
   if (memo[n] !== undefined) return memo[n];
@@ -70,7 +70,7 @@ function fibMemo(n: number, memo: number[] = []): number {
   return memo[n];
 }
 
-// ✅ 表格法迭代：O(n) 时间，O(1) 空间（滚动数组优化）
+// 表格法迭代：O(n) 时间，O(1) 空间（滚动数组优化）
 function fibTab(n: number): number {
   if (n <= 1) return n;
   let prev2 = 0; // dp[i-2]
@@ -85,9 +85,8 @@ function fibTab(n: number): number {
 
 // 可运行示例
 console.log('Naive(10):', fibNaive(10));   // 55
-console.log('Memo(50):', fibMemo(50));      // 12586269025（秒出）
-console.log('Tab(50):', fibTab(50));        // 12586269025（秒出）
-// fibNaive(50) 将耗时数年，切勿运行
+console.log('Memo(50):', fibMemo(50));      // 12586269025
+console.log('Tab(50):', fibTab(50));        // 12586269025
 ```
 
 **0/1 背包问题（经典 DP）**
@@ -95,30 +94,43 @@ console.log('Tab(50):', fibTab(50));        // 12586269025（秒出）
 ```typescript
 function knapsack(weights: number[], values: number[], capacity: number): number {
   const n = weights.length;
-  // dp[i][w] = 前 i 个物品，容量 w 时的最大价值
   const dp: number[][] = Array.from({ length: n + 1 }, () => Array(capacity + 1).fill(0));
 
   for (let i = 1; i <= n; i++) {
     for (let w = 0; w <= capacity; w++) {
       if (weights[i - 1] <= w) {
-        // 选或不选第 i 个物品
         dp[i][w] = Math.max(
-          dp[i - 1][w], // 不选
-          dp[i - 1][w - weights[i - 1]] + values[i - 1] // 选
+          dp[i - 1][w],
+          dp[i - 1][w - weights[i - 1]] + values[i - 1]
         );
       } else {
-        dp[i][w] = dp[i - 1][w]; // 容量不够，只能不选
+        dp[i][w] = dp[i - 1][w];
       }
     }
   }
   return dp[n][capacity];
 }
 
-// 可运行示例
-const weights = [2, 3, 4, 5];
-const values = [3, 4, 5, 6];
-console.log(knapsack(weights, values, 5)); // 7（选重量 2+3，价值 3+4）
-console.log(knapsack(weights, values, 8)); // 10（选重量 3+5，价值 4+6）
+console.log(knapsack([2, 3, 4, 5], [3, 4, 5, 6], 5)); // 7
+console.log(knapsack([2, 3, 4, 5], [3, 4, 5, 6], 8)); // 10
+```
+
+**0/1 背包空间优化（滚动数组）**
+
+```typescript
+// 滚动数组优化：从 O(n*C) 降到 O(C)
+function knapsackOptimized(weights: number[], values: number[], capacity: number): number {
+  const dp = new Array(capacity + 1).fill(0);
+  for (let i = 0; i < weights.length; i++) {
+    // 必须倒序遍历，避免重复选取同一物品
+    for (let w = capacity; w >= weights[i]; w--) {
+      dp[w] = Math.max(dp[w], dp[w - weights[i]] + values[i]);
+    }
+  }
+  return dp[capacity];
+}
+
+console.log(knapsackOptimized([2, 3, 4, 5], [3, 4, 5, 6], 5)); // 7
 ```
 
 **最长递增子序列（LIS）**
@@ -126,22 +138,16 @@ console.log(knapsack(weights, values, 8)); // 10（选重量 3+5，价值 4+6）
 ```typescript
 function lengthOfLIS(nums: number[]): number {
   if (nums.length === 0) return 0;
-  // dp[i] = 以 nums[i] 结尾的最长递增子序列长度
   const dp = new Array(nums.length).fill(1);
-
   for (let i = 1; i < nums.length; i++) {
     for (let j = 0; j < i; j++) {
-      if (nums[j] < nums[i]) {
-        dp[i] = Math.max(dp[i], dp[j] + 1);
-      }
+      if (nums[j] < nums[i]) dp[i] = Math.max(dp[i], dp[j] + 1);
     }
   }
   return Math.max(...dp);
 }
 
-// 可运行示例
-console.log(lengthOfLIS([10, 9, 2, 5, 3, 7, 101, 18])); // 4（[2, 3, 7, 101]）
-console.log(lengthOfLIS([0, 1, 0, 3, 2, 3]));           // 4（[0, 1, 2, 3]）
+console.log(lengthOfLIS([10, 9, 2, 5, 3, 7, 101, 18])); // 4
 ```
 
 ### 3.2 常见误区
@@ -150,8 +156,8 @@ console.log(lengthOfLIS([0, 1, 0, 3, 2, 3]));           // 4（[0, 1, 2, 3]）
 |------|---------|
 | DP 就是递归加缓存 | 自底向上 DP 无递归开销，空间可优化 |
 | 所有问题都适合 DP | DP 要求最优子结构和重叠子问题 |
-| DP 一定比暴力快 | 状态空间过大时（指数级状态），DP 同样不可行 |
-| 空间不能优化 | 很多线性 DP 可用滚动数组将 O(n²) 降到 O(n) |
+| DP 一定比暴力快 | 状态空间过大时，DP 同样不可行 |
+| 空间不能优化 | 很多线性 DP 可用滚动数组将 O(n^2) 降到 O(n) |
 
 ### 3.3 扩展阅读
 
@@ -163,319 +169,338 @@ console.log(lengthOfLIS([0, 1, 0, 3, 2, 3]));           // 4（[0, 1, 2, 3]）
 
 ---
 
-
 ## 3.2 进阶代码示例
 
 ### 编辑距离（Levenshtein Distance）
 
 ```typescript
-// edit-distance.ts
 function minDistance(word1: string, word2: string): number {
   const m = word1.length, n = word2.length;
   const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
-
   for (let i = 0; i <= m; i++) dp[i][0] = i;
   for (let j = 0; j <= n; j++) dp[0][j] = j;
-
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      if (word1[i - 1] === word2[j - 1]) {
-        dp[i][j] = dp[i - 1][j - 1];
-      } else {
-        dp[i][j] = Math.min(
-          dp[i - 1][j] + 1,    // 删除
-          dp[i][j - 1] + 1,    // 插入
-          dp[i - 1][j - 1] + 1 // 替换
-        );
-      }
+      if (word1[i - 1] === word2[j - 1]) dp[i][j] = dp[i - 1][j - 1];
+      else dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + 1);
     }
   }
   return dp[m][n];
 }
-
-// 可运行示例
 console.log(minDistance('horse', 'ros')); // 3
-console.log(minDistance('intention', 'execution')); // 5
 ```
 
 ### 最长公共子序列（LCS）
 
 ```typescript
-// lcs.ts
 function longestCommonSubsequence(text1: string, text2: string): number {
   const m = text1.length, n = text2.length;
   const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
-
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      if (text1[i - 1] === text2[j - 1]) {
-        dp[i][j] = dp[i - 1][j - 1] + 1;
-      } else {
-        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-      }
+      if (text1[i - 1] === text2[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
+      else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
     }
   }
   return dp[m][n];
 }
-
-// 可运行示例
-console.log(longestCommonSubsequence('abcde', 'ace')); // 3 ('ace')
-console.log(longestCommonSubsequence('abc', 'def')); // 0
+console.log(longestCommonSubsequence('abcde', 'ace')); // 3
 ```
 
 ### 硬币找零（完全背包）
 
 ```typescript
-// coin-change.ts
 function coinChange(coins: number[], amount: number): number {
   const dp = new Array(amount + 1).fill(Infinity);
   dp[0] = 0;
-
   for (const coin of coins) {
-    for (let i = coin; i <= amount; i++) {
-      dp[i] = Math.min(dp[i], dp[i - coin] + 1);
-    }
+    for (let i = coin; i <= amount; i++) dp[i] = Math.min(dp[i], dp[i - coin] + 1);
   }
   return dp[amount] === Infinity ? -1 : dp[amount];
 }
-
-// 可运行示例
-console.log(coinChange([1, 2, 5], 11)); // 3 (5+5+1)
-console.log(coinChange([2], 3)); // -1
+console.log(coinChange([1, 2, 5], 11)); // 3
 ```
 
 ### 最大子数组和（Kadane 算法）
 
 ```typescript
-// maximum-subarray.ts — O(n) 线性 DP
 function maxSubArray(nums: number[]): number {
-  let maxSoFar = nums[0];
-  let maxEndingHere = nums[0];
-
+  let maxSoFar = nums[0], maxEndingHere = nums[0];
   for (let i = 1; i < nums.length; i++) {
-    // 要么延续当前子数组，要么从当前元素重新开始
     maxEndingHere = Math.max(nums[i], maxEndingHere + nums[i]);
     maxSoFar = Math.max(maxSoFar, maxEndingHere);
   }
   return maxSoFar;
 }
-
-// 可运行示例
-console.log(maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4])); // 6 ([4,-1,2,1])
-console.log(maxSubArray([1])); // 1
+console.log(maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4])); // 6
 ```
 
 ### 矩阵链乘法（区间 DP）
 
 ```typescript
-// matrix-chain-multiplication.ts — O(n³) 区间 DP
 function matrixChainOrder(dims: number[]): { minCost: number; splits: number[][] } {
-  const n = dims.length - 1; // n 个矩阵
-  // dp[i][j] = 计算矩阵 Ai...Aj 的最小标量乘法次数
+  const n = dims.length - 1;
   const dp: number[][] = Array.from({ length: n }, () => Array(n).fill(0));
   const split: number[][] = Array.from({ length: n }, () => Array(n).fill(0));
-
-  // 链长度从 2 到 n
   for (let len = 2; len <= n; len++) {
     for (let i = 0; i <= n - len; i++) {
       const j = i + len - 1;
       dp[i][j] = Infinity;
       for (let k = i; k < j; k++) {
-        // 在 k 处分割: (Ai...Ak) × (Ak+1...Aj)
         const cost = dp[i][k] + dp[k + 1][j] + dims[i] * dims[k + 1] * dims[j + 1];
-        if (cost < dp[i][j]) {
-          dp[i][j] = cost;
-          split[i][j] = k;
-        }
+        if (cost < dp[i][j]) { dp[i][j] = cost; split[i][j] = k; }
       }
     }
   }
-
   return { minCost: dp[0][n - 1], splits: split };
 }
-
-// 可运行示例: A1(10×30), A2(30×5), A3(5×60)
-// dims = [10, 30, 5, 60]
-console.log(matrixChainOrder([10, 30, 5, 60]));
-// { minCost: 4500, splits: [...] }
-// 最优加括号: (A1 × A2) × A3 = 10×30×5 + 10×5×60 = 1500 + 3000 = 4500
+console.log(matrixChainOrder([10, 30, 5, 60])); // { minCost: 4500 }
 ```
 
 ### 爬楼梯（简单线性 DP）
 
 ```typescript
-// climbing-stairs.ts
 function climbStairs(n: number): number {
   if (n <= 2) return n;
-  // dp[i] = 爬到第 i 阶的方法数
-  // 滚动数组优化至 O(1) 空间
-  let prev2 = 1; // dp[i-2]
-  let prev1 = 2; // dp[i-1]
-  for (let i = 3; i <= n; i++) {
-    const current = prev1 + prev2;
-    prev2 = prev1;
-    prev1 = current;
-  }
+  let prev2 = 1, prev1 = 2;
+  for (let i = 3; i <= n; i++) { const cur = prev1 + prev2; prev2 = prev1; prev1 = cur; }
   return prev1;
 }
-
-// 可运行示例
-console.log(climbStairs(3)); // 3 (1+1+1, 1+2, 2+1)
-console.log(climbStairs(4)); // 5
 console.log(climbStairs(10)); // 89
 ```
 
 ### 打家劫舍（线性 DP 带状态限制）
 
 ```typescript
-// house-robber.ts — 相邻房屋不能同时偷
 function rob(nums: number[]): number {
   if (nums.length === 0) return 0;
   if (nums.length === 1) return nums[0];
-
-  // dp[i] = 前 i 间房屋能偷到的最高金额
-  // 滚动数组优化
-  let prev2 = nums[0]; // dp[i-2]
-  let prev1 = Math.max(nums[0], nums[1]); // dp[i-1]
-
-  for (let i = 2; i < nums.length; i++) {
-    const current = Math.max(prev1, prev2 + nums[i]);
-    prev2 = prev1;
-    prev1 = current;
-  }
+  let prev2 = nums[0], prev1 = Math.max(nums[0], nums[1]);
+  for (let i = 2; i < nums.length; i++) { const cur = Math.max(prev1, prev2 + nums[i]); prev2 = prev1; prev1 = cur; }
   return prev1;
 }
-
-// 可运行示例
-console.log(rob([1, 2, 3, 1])); // 4 (1 + 3)
-console.log(rob([2, 7, 9, 3, 1])); // 12 (2 + 9 + 1)
+console.log(rob([2, 7, 9, 3, 1])); // 12
 ```
 
 ### 树形 DP — 二叉树最大直径
 
 ```typescript
-// tree-dp.ts — 后序遍历求树的最长路径（直径）
-interface TreeNode {
-  val: number;
-  left: TreeNode | null;
-  right: TreeNode | null;
-}
-
+interface TreeNode { val: number; left: TreeNode | null; right: TreeNode | null; }
 function diameterOfBinaryTree(root: TreeNode | null): number {
   let maxDiameter = 0;
-
   function depth(node: TreeNode | null): number {
     if (!node) return 0;
-    const left = depth(node.left);
-    const right = depth(node.right);
-    // 经过当前节点的最长路径 = 左深度 + 右深度
+    const left = depth(node.left), right = depth(node.right);
     maxDiameter = Math.max(maxDiameter, left + right);
     return 1 + Math.max(left, right);
   }
-
   depth(root);
   return maxDiameter;
 }
-
-// 可运行示例
-const tree: TreeNode = {
-  val: 1,
-  left: { val: 2, left: { val: 4, left: null, right: null }, right: { val: 5, left: null, right: null } },
-  right: { val: 3, left: null, right: null },
-};
-console.log(diameterOfBinaryTree(tree)); // 3 (路径 4→2→1→3 或 5→2→1→3)
+const tree: TreeNode = { val: 1, left: { val: 2, left: { val: 4, left: null, right: null }, right: { val: 5, left: null, right: null } }, right: { val: 3, left: null, right: null } };
+console.log(diameterOfBinaryTree(tree)); // 3
 ```
 
 ### 状态压缩 DP — 旅行商问题（TSP）
 
 ```typescript
-// tsp-bitmask.ts — O(n²·2ⁿ) 状态压缩
 function tsp(dist: number[][]): number {
-  const n = dist.length;
-  const FULL_MASK = (1 << n) - 1;
-  // dp[mask][i] = 已访问 mask 表示的城市集合，当前位于城市 i 的最小距离
+  const n = dist.length, FULL_MASK = (1 << n) - 1;
   const dp: number[][] = Array.from({ length: 1 << n }, () => Array(n).fill(Infinity));
-  dp[1][0] = 0; // 从城市 0 出发
-
+  dp[1][0] = 0;
   for (let mask = 1; mask <= FULL_MASK; mask++) {
     for (let u = 0; u < n; u++) {
-      if (!(mask & (1 << u))) continue; // u 不在 mask 中
-      if (dp[mask][u] === Infinity) continue;
+      if (!(mask & (1 << u)) || dp[mask][u] === Infinity) continue;
       for (let v = 0; v < n; v++) {
-        if (mask & (1 << v)) continue; // v 已访问
+        if (mask & (1 << v)) continue;
         const nextMask = mask | (1 << v);
         dp[nextMask][v] = Math.min(dp[nextMask][v], dp[mask][u] + dist[u][v]);
       }
     }
   }
-
   let minCost = Infinity;
-  for (let i = 1; i < n; i++) {
-    minCost = Math.min(minCost, dp[FULL_MASK][i] + dist[i][0]);
-  }
+  for (let i = 1; i < n; i++) minCost = Math.min(minCost, dp[FULL_MASK][i] + dist[i][0]);
   return minCost;
 }
-
-// 可运行示例（4 城市）
-const dist4 = [
-  [0, 10, 15, 20],
-  [10, 0, 35, 25],
-  [15, 35, 0, 30],
-  [20, 25, 30, 0],
-];
-console.log(tsp(dist4)); // 80 (0→1→3→2→0)
+console.log(tsp([[0, 10, 15, 20], [10, 0, 35, 25], [15, 35, 0, 30], [20, 25, 30, 0]])); // 80
 ```
 
 ### LIS 二分优化（Patience Sorting）
 
 ```typescript
-// lis-binary.ts — O(n log n)  patience sorting 思想
 function lengthOfLISOptimal(nums: number[]): number {
-  const tails: number[] = []; // tails[i] = 长度为 i+1 的递增子序列的最小末尾值
-
+  const tails: number[] = [];
   for (const num of nums) {
     let left = 0, right = tails.length;
-    while (left < right) {
-      const mid = (left + right) >> 1;
-      if (tails[mid] < num) left = mid + 1;
-      else right = mid;
-    }
+    while (left < right) { const mid = (left + right) >> 1; if (tails[mid] < num) left = mid + 1; else right = mid; }
     tails[left] = num;
   }
-
   return tails.length;
 }
-
-// 可运行示例
 console.log(lengthOfLISOptimal([10, 9, 2, 5, 3, 7, 101, 18])); // 4
-console.log(lengthOfLISOptimal([0, 1, 0, 3, 2, 3])); // 4
 ```
 
 ### 单词拆分（字典 DP）
 
 ```typescript
-// word-break.ts
 function wordBreak(s: string, wordDict: string[]): boolean {
-  const wordSet = new Set(wordDict);
-  // dp[i] = s[0:i) 能否被拆分
   const dp = new Array(s.length + 1).fill(false);
   dp[0] = true;
-
   for (let i = 1; i <= s.length; i++) {
     for (const word of wordDict) {
-      if (i >= word.length && dp[i - word.length] && s.slice(i - word.length, i) === word) {
-        dp[i] = true;
-        break;
-      }
+      if (i >= word.length && dp[i - word.length] && s.slice(i - word.length, i) === word) { dp[i] = true; break; }
     }
   }
   return dp[s.length];
 }
-
-// 可运行示例
 console.log(wordBreak('leetcode', ['leet', 'code'])); // true
-console.log(wordBreak('applepenapple', ['apple', 'pen'])); // true
-console.log(wordBreak('catsandog', ['cats', 'dog', 'sand', 'and', 'cat'])); // false
+```
+
+### 正则表达式匹配（双序列 DP）
+
+```typescript
+function isMatch(s: string, p: string): boolean {
+  const m = s.length, n = p.length;
+  const dp: boolean[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(false));
+  dp[0][0] = true;
+  for (let j = 2; j <= n; j++) if (p[j - 1] === '*') dp[0][j] = dp[0][j - 2];
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (p[j - 1] === '*') dp[i][j] = dp[i][j - 2] || ((p[j - 2] === '.' || p[j - 2] === s[i - 1]) && dp[i - 1][j]);
+      else if (p[j - 1] === '.' || p[j - 1] === s[i - 1]) dp[i][j] = dp[i - 1][j - 1];
+    }
+  }
+  return dp[m][n];
+}
+console.log(isMatch('aa', 'a*')); // true
+```
+
+### 数位 DP — 统计范围内满足条件的数字
+
+```typescript
+// digit-dp.ts — 统计 [0, n] 中数字和为 target 的个数
+function countDigitSum(n: number, target: number): number {
+  const digits = String(n).split('').map(Number);
+  const memo = new Map<string, number>();
+
+  function dfs(pos: number, sum: number, tight: boolean, leadingZero: boolean): number {
+    if (pos === digits.length) return leadingZero ? 0 : (sum === target ? 1 : 0);
+    const key = `${pos},${sum},${tight},${leadingZero}`;
+    if (!tight && memo.has(key)) return memo.get(key)!;
+
+    const limit = tight ? digits[pos] : 9;
+    let count = 0;
+    for (let d = 0; d <= limit; d++) {
+      count += dfs(
+        pos + 1,
+        sum + d,
+        tight && d === limit,
+        leadingZero && d === 0
+      );
+    }
+    if (!tight) memo.set(key, count);
+    return count;
+  }
+
+  return dfs(0, 0, true, true);
+}
+
+console.log(countDigitSum(100, 5)); // 6 (5, 14, 23, 32, 41, 50)
+```
+
+### DP 优化技巧：Knuth 优化适用条件
+
+```typescript
+// Knuth Optimization：将 O(n^3) 区间 DP 优化为 O(n^2)
+// 适用条件：
+// 1. dp[i][j] = min(dp[i][k] + dp[k][j]) + C[i][j]   (i < k < j)
+// 2. 四边形不等式：a ≤ b ≤ c ≤ d ⇒ C[a][c] + C[b][d] ≤ C[a][d] + C[b][c]
+// 3. 单调性：C[b][c] ≤ C[a][d]
+//
+// 此时最优分割点 opt[i][j-1] ≤ opt[i][j] ≤ opt[i+1][j]
+
+function knuthOptimization(n: number, cost: number[][]): number {
+  const dp: number[][] = Array.from({ length: n }, () => Array(n).fill(Infinity));
+  const opt: number[][] = Array.from({ length: n }, () => Array(n).fill(0));
+
+  for (let i = 0; i < n; i++) { dp[i][i] = 0; opt[i][i] = i; }
+
+  for (let len = 2; len <= n; len++) {
+    for (let i = 0; i <= n - len; i++) {
+      const j = i + len - 1;
+      for (let k = opt[i][j - 1]; k <= opt[i + 1][j]; k++) {
+        const val = (dp[i][k] ?? 0) + (dp[k + 1]?.[j] ?? 0) + cost[i][j];
+        if (val < dp[i][j]) { dp[i][j] = val; opt[i][j] = k; }
+      }
+    }
+  }
+  return dp[0][n - 1];
+}
+```
+
+### 树形 DP 换根（Re-rooting）
+
+```typescript
+// tree-reroot.ts — 计算每个节点作为根时的子树最大值
+// 两次 DFS：第一次自底向上，第二次自顶向下传递父节点信息
+
+interface TreeNodeR { id: number; children: { node: TreeNodeR; weight: number }[]; }
+
+function rerootDP(root: TreeNodeR): Map<number, number> {
+  const n = countNodes(root);
+  const dpDown = new Map<number, number>(); // 以 u 为根的子树最优值
+  const dpUp = new Map<number, number>();   // 以 u 为根、排除父方向的最优值
+  const result = new Map<number, number>();
+
+  // 第一次 DFS：计算 dpDown
+  function dfs1(u: TreeNodeR, parent: TreeNodeR | null) {
+    let best = 0;
+    for (const { node: v, weight } of u.children) {
+      if (v === parent) continue;
+      dfs1(v, u);
+      best = Math.max(best, (dpDown.get(v.id) ?? 0) + weight);
+    }
+    dpDown.set(u.id, best);
+  }
+
+  // 第二次 DFS：计算 dpUp 并合并结果
+  function dfs2(u: TreeNodeR, parent: TreeNodeR | null, parentContribution: number) {
+    // 收集所有子节点的贡献
+    const childContribs = u.children
+      .filter(({ node: v }) => v !== parent)
+      .map(({ node: v, weight }) => (dpDown.get(v.id) ?? 0) + weight);
+
+    childContribs.push(parentContribution);
+    result.set(u.id, Math.max(...childContribs));
+
+    // 前缀/后缀最大值数组，用于快速计算排除某一子树后的最大值
+    const prefix: number[] = [];
+    let running = 0;
+    for (const c of childContribs) { prefix.push(running); running = Math.max(running, c); }
+
+    let childIdx = 0;
+    for (const { node: v, weight } of u.children) {
+      if (v === parent) continue;
+      const withoutV = Math.max(parentContribution, prefix[childIdx]);
+      dfs2(v, u, withoutV + weight);
+      childIdx++;
+    }
+  }
+
+  dfs1(root, null);
+  dfs2(root, null, 0);
+  return result;
+}
+
+function countNodes(root: TreeNodeR): number {
+  let c = 0;
+  function dfs(u: TreeNodeR, p: TreeNodeR | null) {
+    c++;
+    for (const { node: v } of u.children) if (v !== p) dfs(v, u);
+  }
+  dfs(root, null);
+  return c;
+}
 ```
 
 ## 3.4 新增权威参考链接
@@ -494,5 +519,74 @@ console.log(wordBreak('catsandog', ['cats', 'dog', 'sand', 'and', 'cat'])); // f
 - [USACO Guide — Dynamic Programming](https://usaco.guide/gold/dp-intro) — 竞赛编程 DP 入门
 - [Codeforces DP Tag](https://codeforces.com/problemset?tags=dp) — 高质量 DP 题目集合
 - [YouTube: MIT 6.006 DP Lecture](https://www.youtube.com/watch?v=OQ5jsbhAv_M) — MIT 官方 DP 视频课
+- [CSES Problem Set — Dynamic Programming](https://cses.fi/problemset/list/) — 芬兰计算机科学竞赛题集
+- [Knuth Optimization — CP-Algorithms](https://cp-algorithms.com/dynamic_programming/knuth-optimization.html) — DP 优化技巧
+- [Digit DP — Codeforces Blog](https://codeforces.com/blog/entry/53960) — 数位 DP 教程
+- [SOS DP (Sum Over Subsets)](https://cp-algorithms.com/algebra/all-submasks.html) — 子集卷积 DP
+- [Convex Hull Trick](https://cp-algorithms.com/geometry/convex_hull_trick.html) — 斜率优化 DP
+- [DP on Trees — Codeforces](https://codeforces.com/blog/entry/20935) — 树形 DP 教程
+- [Errichto: DP Tutorial](https://www.youtube.com/playlist?list=PLl0KD3g-oDOEbtmoKT5UWZ-0_QbyqhlCb) — 知名算法教育者 DP 视频系列
+- [Algorithms Live: DP Optimizations](https://algorithms-live.blogspot.com/) — 高级 DP 优化讲座
+- [Dynamic Programming — Brilliant.org](https://brilliant.org/wiki/dynamic-programming/) — 交互式 DP 学习
+- [HackerRank Dynamic Programming](https://www.hackerrank.com/domains/algorithms?filters%5Bsubdomains%5D%5B%5D=dynamic-programming) — 在线练习
+- [Educative: Grokking Dynamic Programming Patterns](https://www.educative.io/courses/grokking-dynamic-programming-patterns-for-coding-interviews) — 模式化学习
+
+### 最长回文子串（中心扩展 + DP）
+
+```typescript
+function longestPalindrome(s: string): string {
+  const n = s.length;
+  const dp: boolean[][] = Array.from({ length: n }, () => Array(n).fill(false));
+  let start = 0, maxLen = 1;
+
+  for (let i = 0; i < n; i++) dp[i][i] = true;
+  for (let i = 0; i < n - 1; i++) {
+    if (s[i] === s[i + 1]) { dp[i][i + 1] = true; start = i; maxLen = 2; }
+  }
+
+  for (let len = 3; len <= n; len++) {
+    for (let i = 0; i <= n - len; i++) {
+      const j = i + len - 1;
+      if (s[i] === s[j] && dp[i + 1][j - 1]) {
+        dp[i][j] = true;
+        start = i;
+        maxLen = len;
+      }
+    }
+  }
+  return s.substring(start, start + maxLen);
+}
+console.log(longestPalindrome('babad')); // 'bab'
+```
+
+### 编辑距离空间优化（双行滚动）
+
+```typescript
+function minDistanceOpt(word1: string, word2: string): number {
+  const m = word1.length, n = word2.length;
+  if (m < n) return minDistanceOpt(word2, word1);
+  let prev = new Array(n + 1).fill(0);
+  let curr = new Array(n + 1).fill(0);
+  for (let j = 0; j <= n; j++) prev[j] = j;
+  for (let i = 1; i <= m; i++) {
+    curr[0] = i;
+    for (let j = 1; j <= n; j++) {
+      if (word1[i - 1] === word2[j - 1]) curr[j] = prev[j - 1];
+      else curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + 1);
+    }
+    [prev, curr] = [curr, prev];
+  }
+  return prev[n];
+}
+console.log(minDistanceOpt('horse', 'ros')); // 3
+```
+
+### 新增权威参考链接
+
+- [GeeksforGeeks — Longest Palindromic Substring](https://www.geeksforgeeks.org/longest-palindromic-substring-dp-12/) — DP 解法详解
+- [LeetCode 5 — Longest Palindromic Substring](https://leetcode.com/problems/longest-palindromic-substring/) — 经典面试题
+- [CP-Algorithms — DP on Strings](https://cp-algorithms.com/string/string-processing.html) — 字符串 DP 专题
+- [USACO Guide — Knapsack DP](https://usaco.guide/gold/knapsack) — 背包问题深入
+- [Algorithm Design Manual (Skiena) — DP Chapter](http://www.algorist.com/) — 算法设计手册动态规划章节
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

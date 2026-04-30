@@ -167,6 +167,181 @@ console.log(`${d1.add(d2)}`);     // "4.00s"
 
 ---
 
+## 代码示例：`==` 抽象相等比较算法追踪
+
+ECMA-262 §7.2.14 `IsLooselyEqual(x, y)` 定义了 `==` 的完整行为。以下通过代码复现规范中的比较步骤：
+
+```javascript
+// ============================================
+// 复现规范 IsLooselyEqual 的核心分支
+// ============================================
+
+function isLooselyEqual(x, y) {
+  // 1. 类型相同 → 严格相等
+  if (typeof x === typeof y) return x === y;
+
+  // 2. null == undefined 为 true（规范特例）
+  if ((x === null && y === undefined) || (x === undefined && y === null)) return true;
+
+  // 3. Number ↔ String：String 转 Number
+  if (typeof x === 'number' && typeof y === 'string') return isLooselyEqual(x, Number(y));
+  if (typeof x === 'string' && typeof y === 'number') return isLooselyEqual(Number(x), y);
+
+  // 4. BigInt ↔ String：String 转 BigInt
+  if (typeof x === 'bigint' && typeof y === 'string') {
+    try { return isLooselyEqual(x, BigInt(y)); } catch { return false; }
+  }
+  if (typeof x === 'string' && typeof y === 'bigint') {
+    try { return isLooselyEqual(BigInt(x), y); } catch { return false; }
+  }
+
+  // 5. Boolean → Number 转换
+  if (typeof x === 'boolean') return isLooselyEqual(Number(x), y);
+  if (typeof y === 'boolean') return isLooselyEqual(x, Number(y));
+
+  // 6. Object vs Primitive：对象转原始值（ToPrimitive）
+  if ((typeof x === 'object' || typeof x === 'function') && x !== null) {
+    return isLooselyEqual(ToPrimitive(x), y);
+  }
+  if ((typeof y === 'object' || typeof y === 'function') && y !== null) {
+    return isLooselyEqual(x, ToPrimitive(y));
+  }
+
+  // 7. BigInt ↔ Number：不可混用（除非安全范围）
+  if (typeof x === 'bigint' && typeof y === 'number') return x === BigInt(y);
+  if (typeof x === 'number' && typeof y === 'bigint') return BigInt(x) === y;
+
+  return false;
+}
+
+function ToPrimitive(input, preferredType = 'default') {
+  if (input === null || typeof input !== 'object') return input;
+  const sym = input[Symbol.toPrimitive];
+  if (sym) {
+    const result = sym.call(input, preferredType);
+    if (result !== null && typeof result !== 'object') return result;
+    throw new TypeError('Cannot convert object to primitive value');
+  }
+  // 简化版：优先 valueOf，其次 toString
+  if (typeof input.valueOf === 'function') {
+    const v = input.valueOf();
+    if (v !== input) return v;
+  }
+  if (typeof input.toString === 'function') {
+    const s = input.toString();
+    if (s !== input) return s;
+  }
+  return input;
+}
+
+// 经典陷阱验证
+console.log(isLooselyEqual([], ''));        // true  ([] → ToPrimitive → "")
+console.log(isLooselyEqual(true, 1));       // true  (true → 1)
+console.log(isLooselyEqual(null, undefined)); // true
+console.log(isLooselyEqual('0', false));    // true  (false → 0; '0' → 0)
+console.log(isLooselyEqual({}, '[object Object]')); // true
+```
+
+---
+
+## 代码示例：SameValue vs SameValueZero vs 严格相等
+
+ECMA-262 定义了三种等价判断抽象操作，它们对边界值的处理不同：
+
+```javascript
+// ============================================
+// 三种等价操作的边界差异
+// ============================================
+
+function SameValue(x, y) {
+  // 规范 7.2.11：区分 +0 与 -0；NaN === NaN
+  if (typeof x !== typeof y) return false;
+  if (Number.isNaN(x) && Number.isNaN(y)) return true;
+  // 使用 Object.is 即 SameValue
+  return Object.is(x, y);
+}
+
+function SameValueZero(x, y) {
+  // 规范 7.2.12：不区分 +0 与 -0；NaN === NaN
+  // 用于 Map/Set 键比较、Array.prototype.includes
+  if (Number.isNaN(x) && Number.isNaN(y)) return true;
+  return x === y; // +0 === -0 为 true
+}
+
+function IsStrictlyEqual(x, y) {
+  // 规范 7.2.15：区分 +0 与 -0（+0 === -0 为 true）；NaN !== NaN
+  return x === y;
+}
+
+// 对比矩阵
+const tests = [
+  [0, -0],
+  [NaN, NaN],
+  [+Infinity, -Infinity],
+  ['', ''],
+  [null, undefined],
+];
+
+console.table(tests.map(([a, b]) => ({
+  left: String(a), right: String(b),
+  '===': a === b,
+  'Object.is': Object.is(a, b),
+  'SameValueZero': SameValueZero(a, b)
+})));
+
+// Map 使用 SameValueZero：Map 中 +0 与 -0 视为同一键
+const m = new Map();
+m.set(0, 'zero');
+m.set(-0, 'negative zero');
+console.log(m.size); // 1
+console.log(m.get(0)); // "negative zero"
+
+// Array.prototype.includes 使用 SameValueZero
+console.log([NaN].includes(NaN)); // true
+console.log([0].includes(-0));    // true
+
+// indexOf 使用严格相等 ===
+console.log([NaN].indexOf(NaN));  // -1（找不到）
+```
+
+---
+
+## 代码示例：OrdinaryToPrimitive 与自定义对象转换
+
+```javascript
+// ============================================
+// OrdinaryToPrimitive 的规范级模拟
+// ============================================
+
+function OrdinaryToPrimitive(O, hint) {
+  // ECMA-262 §7.1.1.1
+  const methodNames = hint === 'string' ? ['toString', 'valueOf'] : ['valueOf', 'toString'];
+  for (const name of methodNames) {
+    const method = O[name];
+    if (typeof method === 'function') {
+      const result = method.call(O);
+      if (result !== null && typeof result !== 'object') return result;
+    }
+  }
+  throw new TypeError('Cannot convert object to primitive value');
+}
+
+// 日期对象优先 toString（hint='string'）
+const date = new Date(0);
+console.log(OrdinaryToPrimitive(date, 'string')); // "1970-01-01T00:00:00.000Z"
+console.log(OrdinaryToPrimitive(date, 'number')); // 0（valueOf 返回时间戳）
+
+// 自定义对象控制转换顺序
+const obj = {
+  valueOf() { return 42; },
+  toString() { return 'custom'; }
+};
+console.log(OrdinaryToPrimitive(obj, 'number')); // 42（优先 valueOf）
+console.log(OrdinaryToPrimitive(obj, 'string')); // "custom"（优先 toString）
+```
+
+---
+
 ## 扩展：抽象操作与日常 JavaScript
 
 ```javascript
@@ -212,9 +387,17 @@ console.log(safeAdd('42', 8));    // 50
 - [ECMA-262 第 15 版 — 抽象操作 (Section 7)](https://262.ecma-international.org/15.0/#sec-abstract-operations) — 规范原文。
 - [ECMA-262 — ToPrimitive](https://262.ecma-international.org/15.0/#sec-toprimitive) — 规范 §7.1.1。
 - [ECMA-262 — Type Conversion](https://262.ecma-international.org/15.0/#sec-type-conversion) — 第 7.1 节完整类型转换算法。
+- [ECMA-262 — IsLooselyEqual](https://262.ecma-international.org/15.0/#sec-islooselyequal) — 抽象相等 `==` 的规范算法 §7.2.14。
+- [ECMA-262 — IsStrictlyEqual](https://262.ecma-international.org/15.0/#sec-isstrictlyequal) — 严格相等 `===` §7.2.15。
+- [ECMA-262 — SameValue](https://262.ecma-international.org/15.0/#sec-samevalue) — `Object.is` 底层操作 §7.2.11。
 - [MDN: Symbol.toPrimitive](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Symbol/toPrimitive) — Mozilla 文档与示例。
+- [MDN: Equality comparisons and sameness](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Equality_comparisons_and_sameness) — `==`、`===`、`Object.is` 对比。
 - [JavaScript Spec Explorer](https://tc39.es/ecma262/multipage/) — TC39 提供的规范多页面浏览版本。
 - [ECMAScript Specification Types](https://262.ecma-international.org/15.0/#sec-ecmascript-language-types) — 规范类型系统的形式化定义。
+- [2ality: JavaScript’s == operator](https://2ality.com/2011/06/javascript-equality.html) — Dr. Axel Rauschmayer 深度解析 `==`。
+- [V8 Blog: Understanding the ECMAScript spec](https://v8.dev/blog/understanding-ecmascript-part-1) — V8 团队解读规范系列。
+- [MDN: Type coercion](https://developer.mozilla.org/en-US/docs/Glossary/Type_coercion) — 类型强制转换概览。
+- [JavaScript WTF: [] + {} vs {} + []](https://www.youtube.com/watch?v=vtS1npQOv2I) — 视觉化解释抽象操作（Wat 演讲衍生）。
 
 ---
 

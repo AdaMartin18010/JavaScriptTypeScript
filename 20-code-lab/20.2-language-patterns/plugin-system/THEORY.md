@@ -1,5 +1,59 @@
 ﻿# 插件系统 — 理论基础
 
+> **定位**：`20-code-lab/20.2-language-patterns/plugin-system`
+> **关联**：`10-fundamentals/` | `30-knowledge-base/`
+
+---
+
+## 一、核心理论
+
+### 1.1 问题域定义
+
+本模块解决**软件系统可扩展性**的问题。在不修改核心代码的前提下，允许第三方或内部团队通过标准化接口扩展系统功能。核心原则：**开闭原则（对扩展开放、对修改关闭）**。
+
+### 1.2 形式化基础
+
+插件系统可形式化为一个五元组：
+
+```
+PluginSystem = (Core, Plugins, API, Lifecycle, Registry)
+
+Core: 提供最小功能集合的内核
+Plugins: 可动态加载的扩展模块集合
+API: Core → Plugins 的能力暴露接口
+Lifecycle: {load, activate, deactivate, unload} 的状态转换
+Registry: Plugin → Metadata 的映射
+```
+
+### 1.3 关键概念
+
+| 概念 | 定义 | 关联 |
+|------|------|------|
+| 微内核 | 仅提供基础机制、所有功能由插件实现的核心 | microkernel.ts |
+| Hook 系统 | 在关键执行点预留扩展点 | hook-system.ts |
+| 沙箱隔离 | 限制插件可访问的宿主能力 | sandbox.ts |
+| 热加载 | 运行时无需重启即可更新插件 | hot-reload.ts |
+
+---
+
+## 二、设计原理
+
+### 2.1 为什么存在
+
+软件需求持续演化，核心系统无法预见所有使用场景。插件系统通过定义清晰的扩展契约，让外部开发者参与功能扩展，同时保护核心系统的稳定性。
+
+### 2.2 权衡分析
+
+| 方案 | 优点 | 缺点 | 适用场景 |
+|------|------|------|---------|
+| 内置功能 | 简单可控 | 无法扩展 | 小型工具 |
+| 插件系统 | 生态可扩展 | 架构复杂度高 | 平台型产品 |
+| 脚本嵌入 | 灵活快速 | 安全风险大 | 内部工具 |
+
+---
+
+## 三、实践映射
+
 ## 1. 插件架构模式
 
 ### 微内核模式
@@ -402,6 +456,63 @@ const vitePlugin: Plugin = {
 };
 ```
 
+### 5.3 Webpack 插件（基于 Tapable 钩子系统）
+
+```typescript
+import { Compiler } from 'webpack';
+
+class BundleAnalyzerPlugin {
+  apply(compiler: Compiler) {
+    // 在编译完成后执行
+    compiler.hooks.done.tap('BundleAnalyzerPlugin', (stats) => {
+      const info = stats.toJson();
+      console.log('Bundle size analysis:');
+      info.assets?.forEach((asset) => {
+        const sizeKB = (asset.size / 1024).toFixed(2);
+        console.log(`  ${asset.name}: ${sizeKB} KB`);
+      });
+    });
+
+    // 在生成资源到输出目录之前
+    compiler.hooks.emit.tapAsync('BundleAnalyzerPlugin', (compilation, callback) => {
+      const report = JSON.stringify(compilation.getStats().toJson());
+      compilation.assets['bundle-report.json'] = {
+        source: () => report,
+        size: () => report.length,
+      } as any;
+      callback();
+    });
+  }
+}
+```
+
+### 5.4 Babel 插件（AST 转换）
+
+```typescript
+// babel-plugin-remove-console.ts — 删除所有 console.* 调用
+import { PluginObj, types as t } from '@babel/core';
+
+export default function removeConsolePlugin(): PluginObj {
+  return {
+    name: 'remove-console',
+    visitor: {
+      CallExpression(path) {
+        const callee = path.node.callee;
+        if (
+          t.isMemberExpression(callee) &&
+          t.isIdentifier(callee.object, { name: 'console' })
+        ) {
+          path.remove();
+        }
+      },
+    },
+  };
+}
+
+// 使用：在 babel.config.js 中配置
+// plugins: ['./babel-plugin-remove-console.js']
+```
+
 ---
 
 ## 6. 与相邻模块的关系
@@ -425,7 +536,79 @@ const vitePlugin: Plugin = {
 | QuickJS Sandbox | GitHub | <https://bellard.org/quickjs/> |
 | ECMAScript ShadowRealm | 提案 | <https://github.com/tc39/proposal-shadowrealm> |
 | web.dev — Sandboxing | 指南 | <https://web.dev/sandboxed-iframes/> |
+| Webpack Plugin API | 文档 | <https://webpack.js.org/concepts/plugins/> |
+| Babel Plugin Handbook | 文档 | <https://github.com/jamiebuilds/babel-handbook/blob/master/translations/en/plugin-handbook.md> |
+| ESLint Plugin Development | 文档 | <https://eslint.org/docs/latest/extend/plugins> |
+| Node.js VM Module | 文档 | <https://nodejs.org/api/vm.html> |
+| QuickJS Documentation | 文档 | <https://bellard.org/quickjs/quickjs.html> |
+| Microkernel Architecture — Microsoft | 架构 | <https://docs.microsoft.com/en-us/azure/architecture/guide/architecture-styles/microservices> |
+| Open Components (OC) | 框架 | <https://opencomponents.github.io/> |
+
+### 5.5 插件依赖拓扑排序
+
+```typescript
+// topological-sort.ts — 确保插件按依赖顺序加载
+function topologicalSort(plugins: PluginManifest[]): PluginManifest[] {
+  const inDegree = new Map<string, number>();
+  const adj = new Map<string, string[]>();
+
+  for (const p of plugins) {
+    inDegree.set(p.name, 0);
+    adj.set(p.name, []);
+  }
+  for (const p of plugins) {
+    for (const dep of p.dependencies ?? []) {
+      adj.get(dep)!.push(p.name);
+      inDegree.set(p.name, (inDegree.get(p.name) ?? 0) + 1);
+    }
+  }
+
+  const queue = Array.from(inDegree.entries()).filter(([, d]) => d === 0).map(([n]) => n);
+  const result: PluginManifest[] = [];
+
+  while (queue.length) {
+    const name = queue.shift()!;
+    const plugin = plugins.find((p) => p.name === name)!;
+    result.push(plugin);
+    for (const next of adj.get(name)!) {
+      inDegree.set(next, inDegree.get(next)! - 1);
+      if (inDegree.get(next) === 0) queue.push(next);
+    }
+  }
+
+  if (result.length !== plugins.length) throw new Error('Cyclic plugin dependency detected');
+  return result;
+}
+```
+
+### 5.6 内容安全策略（CSP）限制插件代码
+
+```html
+<!-- 通过 CSP 限制插件内联脚本执行 -->
+<meta http-equiv="Content-Security-Policy"
+  content="default-src 'self'; script-src 'self' https://trusted-cdn.example.com; object-src 'none';">
+```
+
+```typescript
+// 动态创建受 CSP 约束的 Worker
+const blob = new Blob(
+  [`self.addEventListener('message', (e) => { self.postMessage(e.data + 1); })`],
+  { type: 'application/javascript' }
+);
+const worker = new Worker(URL.createObjectURL(blob));
+worker.postMessage(42);
+```
+
+### 新增权威参考链接
+
+| 资源 | 类型 | 链接 |
+|------|------|------|
+| Chrome Extension Manifest V3 | 文档 | <https://developer.chrome.com/docs/extensions/mv3/intro/> |
+| Mozilla Extension Workshop | 文档 | <https://extensionworkshop.com/> |
+| Figma Plugin Sandbox | 文档 | <https://www.figma.com/plugin-docs/whats-supported/> |
+| Rollup Plugin Hub | GitHub | <https://github.com/rollup/plugins> |
+| Vite Plugin Community |  awesome | <https://github.com/vitejs/awesome-vite#plugins> |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

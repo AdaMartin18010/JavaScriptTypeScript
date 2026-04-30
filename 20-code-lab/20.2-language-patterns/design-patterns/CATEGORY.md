@@ -224,6 +224,202 @@ const db2 = DatabaseConnection.getInstance('mysql://localhost');
 console.log(db1 === db2); // true，始终返回第一次创建的实例
 ```
 
+## 代码示例：Builder 模式（链式类型推断）
+
+```typescript
+// builder.ts — 类型安全的 SQL 查询构建器
+
+class QueryBuilder<T extends Record<string, unknown>> {
+  private _select: (keyof T)[] = [];
+  private _where: string[] = [];
+  private _params: unknown[] = [];
+  private _orderBy?: { column: keyof T; direction: 'ASC' | 'DESC' };
+  private _limit?: number;
+
+  select(...columns: (keyof T)[]): this {
+    this._select = columns;
+    return this;
+  }
+
+  where<K extends keyof T>(column: K, operator: string, value: T[K]): this {
+    this._where.push(`${String(column)} ${operator} ?`);
+    this._params.push(value);
+    return this;
+  }
+
+  orderBy(column: keyof T, direction: 'ASC' | 'DESC' = 'ASC'): this {
+    this._orderBy = { column, direction };
+    return this;
+  }
+
+  limit(n: number): this {
+    this._limit = n;
+    return this;
+  }
+
+  build(): { sql: string; params: unknown[] } {
+    const columns = this._select.length ? this._select.join(', ') : '*';
+    let sql = `SELECT ${columns} FROM table`;
+    if (this._where.length) sql += ` WHERE ${this._where.join(' AND ')}`;
+    if (this._orderBy) sql += ` ORDER BY ${String(this._orderBy.column)} ${this._orderBy.direction}`;
+    if (this._limit) sql += ` LIMIT ${this._limit}`;
+    return { sql, params: this._params };
+  }
+}
+
+interface UserTable {
+  id: number;
+  name: string;
+  email: string;
+  age: number;
+}
+
+const query = new QueryBuilder<UserTable>()
+  .select('id', 'name', 'email')
+  .where('age', '>', 18)
+  .where('name', 'LIKE', 'A%')
+  .orderBy('age', 'DESC')
+  .limit(10)
+  .build();
+
+console.log(query.sql);
+// SELECT id, name, email FROM table WHERE age > ? AND name LIKE ? ORDER BY age DESC LIMIT 10
+```
+
+## 代码示例：Factory 模式（带类型守卫）
+
+```typescript
+// factory.ts — 根据类型字符串创建对应实例
+
+type Vehicle = Car | Truck | Motorcycle;
+
+interface Car { type: 'car'; doors: number; brand: string; }
+interface Truck { type: 'truck'; capacity: number; brand: string; }
+interface Motorcycle { type: 'motorcycle'; hasSidecar: boolean; brand: string; }
+
+class VehicleFactory {
+  static create(config: { type: 'car'; doors: number; brand: string }): Car;
+  static create(config: { type: 'truck'; capacity: number; brand: string }): Truck;
+  static create(config: { type: 'motorcycle'; hasSidecar: boolean; brand: string }): Motorcycle;
+  static create(config: any): Vehicle {
+    switch (config.type) {
+      case 'car': return { type: 'car', doors: config.doors, brand: config.brand };
+      case 'truck': return { type: 'truck', capacity: config.capacity, brand: config.brand };
+      case 'motorcycle': return { type: 'motorcycle', hasSidecar: config.hasSidecar, brand: config.brand };
+      default: throw new Error(`Unknown vehicle type: ${config.type}`);
+    }
+  }
+}
+
+const car = VehicleFactory.create({ type: 'car', doors: 4, brand: 'Toyota' });
+const truck = VehicleFactory.create({ type: 'truck', capacity: 5000, brand: 'Volvo' });
+```
+
+## 代码示例：Command 模式（撤销/重做栈）
+
+```typescript
+// command.ts — 命令模式实现撤销重做
+
+interface Command {
+  execute(): void;
+  undo(): void;
+}
+
+class TextEditor {
+  content = '';
+
+  insert(text: string, position: number): Command {
+    return {
+      execute: () => {
+        this.content = this.content.slice(0, position) + text + this.content.slice(position);
+      },
+      undo: () => {
+        this.content = this.content.slice(0, position) + this.content.slice(position + text.length);
+      },
+    };
+  }
+
+  delete(position: number, length: number): Command {
+    const deleted = this.content.slice(position, position + length);
+    return {
+      execute: () => {
+        this.content = this.content.slice(0, position) + this.content.slice(position + length);
+      },
+      undo: () => {
+        this.content = this.content.slice(0, position) + deleted + this.content.slice(position);
+      },
+    };
+  }
+}
+
+class CommandHistory {
+  private history: Command[] = [];
+  private pointer = -1;
+
+  execute(cmd: Command): void {
+    cmd.execute();
+    // 丢弃 pointer 之后的命令（重做历史）
+    this.history = this.history.slice(0, this.pointer + 1);
+    this.history.push(cmd);
+    this.pointer++;
+  }
+
+  undo(): void {
+    if (this.pointer < 0) return;
+    this.history[this.pointer].undo();
+    this.pointer--;
+  }
+
+  redo(): void {
+    if (this.pointer >= this.history.length - 1) return;
+    this.pointer++;
+    this.history[this.pointer].execute();
+  }
+}
+
+// 使用
+const editor = new TextEditor();
+const history = new CommandHistory();
+
+history.execute(editor.insert('Hello', 0));
+history.execute(editor.insert(' World', 5));
+console.log(editor.content); // Hello World
+
+history.undo();
+console.log(editor.content); // Hello
+
+history.redo();
+console.log(editor.content); // Hello World
+```
+
+## 代码示例：Adapter 模式（旧 API 适配新接口）
+
+```typescript
+// adapter.ts — 将遗留 XMLHttpRequest 适配为 fetch 风格接口
+
+interface FetchLike {
+  fetch(url: string, options?: { method?: string; body?: string }): Promise<{ json(): Promise<unknown> }>;
+}
+
+class XMLHttpRequestAdapter implements FetchLike {
+  fetch(url: string, options: { method?: string; body?: string } = {}): Promise<{ json(): Promise<unknown> }> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open(options.method ?? 'GET', url);
+      xhr.onload = () => resolve({
+        json: () => Promise.resolve(JSON.parse(xhr.responseText)),
+      });
+      xhr.onerror = () => reject(new Error('Request failed'));
+      xhr.send(options.body ?? null);
+    });
+  }
+}
+
+// 现代代码可直接使用适配后的接口
+const api: FetchLike = new XMLHttpRequestAdapter();
+api.fetch('/api/data').then(r => r.json()).then(console.log);
+```
+
 ## 关联索引
 
 - [10-fundamentals/10.1-language-semantics/README.md](../../../10-fundamentals/10.1-language-semantics/README.md)
@@ -242,7 +438,13 @@ console.log(db1 === db2); // true，始终返回第一次创建的实例
 | TC39 — Class Fields & Private Methods | 规范 | [tc39.es/proposal-class-fields](https://tc39.es/proposal-class-fields/) |
 | MDN — Proxy | 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) |
 | Head First Design Patterns (2nd Ed.) | 书籍 | [wickedlysmart.com/head-first-design-patterns](https://wickedlysmart.com/head-first-design-patterns/) |
+| TC39 — Decorators Proposal | 规范 | [github.com/tc39/proposal-decorators](https://github.com/tc39/proposal-decorators) |
+| SOLID Principles (Uncle Bob) | 文章 | [blog.cleancoder.com/uncle-bob/2020/10/18/Solid-Relevance.html](https://blog.cleancoder.com/uncle-bob/2020/10/18/Solid-Relevance.html) |
+| DRY, KISS, YAGNI Principles | 指南 | [thevaluable.dev/principles-dry-kiss-yagni](https://thevaluable.dev/principles-dry-kiss-yagni/) |
+| Martin Fowler — Patterns of Enterprise Application Architecture | 书籍 | [martinfowler.com/books/eaa.html](https://martinfowler.com/books/eaa.html) |
+| Functional Design Patterns (Scott Wlaschin) | 演讲 | [fsharpforfunandprofit.com/fppatterns](https://fsharpforfunandprofit.com/fppatterns/) |
+| RxJS Observable Pattern | 文档 | [rxjs.dev/guide/observable](https://rxjs.dev/guide/observable) — 响应式观察者模式工业实现 |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

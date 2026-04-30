@@ -341,6 +341,39 @@ console.log(editDistance('kitten', 'sitting')); // 3
 // sittin → sitting (插入 g)
 ```
 
+### 5.3 记忆化搜索：爬楼梯问题
+
+```typescript
+// 记忆化搜索：自顶向下 + 缓存
+function climbStairs(n: number): number {
+  const memo = new Map<number, number>();
+
+  function dfs(step: number): number {
+    if (step <= 1) return 1;
+    if (memo.has(step)) return memo.get(step)!;
+    const result = dfs(step - 1) + dfs(step - 2);
+    memo.set(step, result);
+    return result;
+  }
+
+  return dfs(n);
+}
+
+// 对应表格法（自底向上）
+function climbStairsIter(n: number): number {
+  if (n <= 1) return 1;
+  let prev2 = 1, prev1 = 1;
+  for (let i = 2; i <= n; i++) {
+    const curr = prev1 + prev2;
+    prev2 = prev1;
+    prev1 = curr;
+  }
+  return prev1;
+}
+
+console.log(climbStairs(10), climbStairsIter(10)); // 89 89
+```
+
 ---
 
 ## 6. 代码示例：Dijkstra 最短路径
@@ -604,7 +637,102 @@ console.log(lengthOfLongestSubstring('abcabcbb')); // 3 ("abc")
 
 ---
 
-## 11. 与相邻模块的关系
+## 11. 进阶算法模式
+
+### 11.1 Floyd 判圈算法（龟兔赛跑）
+
+```typescript
+// 检测链表是否有环，并返回环的起点
+function detectCycle<T>(head: { value: T; next: { value: T; next: any } | null } | null): number | null {
+  if (!head || !head.next) return null;
+
+  let slow = head.next;
+  let fast = head.next.next;
+
+  // 阶段一：检测是否相遇
+  while (fast && fast.next) {
+    if (slow === fast) break;
+    slow = slow.next!;
+    fast = fast.next.next!;
+  }
+
+  if (!fast || !fast.next) return null; // 无环
+
+  // 阶段二：找环起点
+  let ptr = head;
+  while (ptr !== slow) {
+    ptr = ptr.next!;
+    slow = slow.next!;
+  }
+
+  return ptr.value as unknown as number;
+}
+```
+
+### 11.2 线段树（区间查询）
+
+```typescript
+class SegmentTree {
+  private tree: number[];
+  private n: number;
+
+  constructor(arr: number[]) {
+    this.n = arr.length;
+    this.tree = new Array(4 * this.n).fill(0);
+    this.build(arr, 0, 0, this.n - 1);
+  }
+
+  private build(arr: number[], node: number, start: number, end: number): void {
+    if (start === end) {
+      this.tree[node] = arr[start];
+      return;
+    }
+    const mid = Math.floor((start + end) / 2);
+    this.build(arr, 2 * node + 1, start, mid);
+    this.build(arr, 2 * node + 2, mid + 1, end);
+    this.tree[node] = this.tree[2 * node + 1] + this.tree[2 * node + 2];
+  }
+
+  // 区间求和查询 O(log n)
+  query(left: number, right: number): number {
+    return this.queryRec(0, 0, this.n - 1, left, right);
+  }
+
+  private queryRec(node: number, start: number, end: number, left: number, right: number): number {
+    if (left > end || right < start) return 0;
+    if (left <= start && end <= right) return this.tree[node];
+    const mid = Math.floor((start + end) / 2);
+    return this.queryRec(2 * node + 1, start, mid, left, right) +
+           this.queryRec(2 * node + 2, mid + 1, end, left, right);
+  }
+
+  // 单点更新 O(log n)
+  update(index: number, value: number): void {
+    this.updateRec(0, 0, this.n - 1, index, value);
+  }
+
+  private updateRec(node: number, start: number, end: number, index: number, value: number): void {
+    if (start === end) {
+      this.tree[node] = value;
+      return;
+    }
+    const mid = Math.floor((start + end) / 2);
+    if (index <= mid) this.updateRec(2 * node + 1, start, mid, index, value);
+    else this.updateRec(2 * node + 2, mid + 1, end, index, value);
+    this.tree[node] = this.tree[2 * node + 1] + this.tree[2 * node + 2];
+  }
+}
+
+// 示例
+const st = new SegmentTree([1, 3, 5, 7, 9, 11]);
+console.log(st.query(1, 3)); // 3 + 5 + 7 = 15
+st.update(2, 10);
+console.log(st.query(1, 3)); // 3 + 10 + 7 = 20
+```
+
+---
+
+## 12. 与相邻模块的关系
 
 - **04-data-structures**: 算法依赖的数据结构
 - **08-performance**: 算法性能优化
@@ -612,7 +740,7 @@ console.log(lengthOfLongestSubstring('abcabcbb')); // 3 ("abc")
 
 ---
 
-## 12. 权威参考与外部链接
+## 13. 权威参考与外部链接
 
 | 资源 | 描述 | 链接 |
 |------|------|------|
@@ -634,6 +762,9 @@ console.log(lengthOfLongestSubstring('abcabcbb')); // 3 ("abc")
 | **3Blue1Brown: Algorithms** | 算法可视化视频系列 | [youtube.com/3blue1brown](https://www.youtube.com/c/3blue1brown) |
 | **Project Euler** | 数学与算法编程挑战 | [projecteuler.net](https://projecteuler.net/) |
 | **The Archive of Interesting Code** | 经典算法参考实现 | [keithschwarz.com/interesting](https://www.keithschwarz.com/interesting/) |
+| **Interactive Python — Problem Solving with Algorithms and Data Structures** | 免费在线教材 | [runestone.academy/ns/books/published/pythonds](https://runestone.academy/ns/books/published/pythonds/index.html) |
+| **E-Maxx Algorithms (English)** | 竞赛编程算法翻译 | [cp-algorithms.com](https://cp-algorithms.com/) |
+| **William Fiset — Data Structures & Algorithms** | YouTube 算法教程 | [youtube.com/@WilliamFiset-videos](https://www.youtube.com/@WilliamFiset-videos) |
 
 ---
 

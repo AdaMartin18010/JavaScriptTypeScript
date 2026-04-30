@@ -199,6 +199,160 @@ transfer(uid, tid);    // ✅
 
 ---
 
+## 代码示例：Barrel File 反模式与依赖可视化
+
+Barrel file（`index.ts` 集中导出）在大型 Monorepo 中会成为类型依赖图的**超级节点**，急剧增加节点度数。
+
+```typescript
+// ============================================
+// 反模式：巨型 Barrel File 导致类型图中心化
+// packages/types/src/index.ts（危险！）
+// ============================================
+
+// ❌ 单一导出点导致所有消费者依赖此节点
+export * from './user';
+export * from './order';
+export * from './payment';
+export * from './inventory';
+export * from './shipping';
+export * from './analytics';
+export * from './notification';
+// ... 50+ 领域
+
+// ============================================
+// 正模式：按领域拆分，消费者只引入所需子包
+// packages/types-user/src/index.ts
+// packages/types-order/src/index.ts
+// ============================================
+
+// ✅ 细粒度类型包，降低单节点度数
+// import type { UserProfile } from '@org/types-user';
+// import type { OrderLine } from '@org/types-order';
+
+// ============================================
+// 自动化检测：使用 dependency-cruiser 分析类型图
+// .dependency-cruiser.js
+// ============================================
+
+/** @type {import('dependency-cruiser').IConfiguration} */
+module.exports = {
+  forbidden: [
+    {
+      name: 'no-circular-dependency',
+      severity: 'error',
+      from: {},
+      to: { circular: true }
+    },
+    {
+      name: 'no-deep-cross-import',
+      comment: '禁止跨领域深层导入',
+      severity: 'warn',
+      from: { path: '^packages/([^/]+)/' },
+      to: {
+        path: '^packages/([^/]+)/',
+        pathNot: '^packages/$1/',
+        // 只允许通过公共 API（index.ts）导入
+        reachable: false
+      }
+    }
+  ],
+  options: {
+    doNotFollow: {
+      path: 'node_modules',
+      dependencyTypes: ['npm', 'npm-dev', 'npm-peer', 'npm-optional']
+    },
+    tsConfig: { fileName: './tsconfig.json' }
+  }
+};
+
+// CLI：生成类型依赖图并检测循环
+// npx depcruise --config .dependency-cruiser.js --output-type dot src | dot -T svg > deps.svg
+```
+
+---
+
+## 代码示例：类型依赖度数的脚本化监控
+
+通过 TypeScript Compiler API 程序化分析类型节点的入度，实现架构健康度自动化监控。
+
+```typescript
+// scripts/analyze-type-graph.ts
+import * as ts from 'typescript';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+
+interface TypeNode {
+  name: string;
+  file: string;
+  inDegree: number;
+  outDegree: number;
+}
+
+function analyzeTypeGraph(projectPath: string): TypeNode[] {
+  const configPath = ts.findConfigFile(projectPath, ts.sys.fileExists);
+  if (!configPath) throw new Error('tsconfig.json not found');
+
+  const { config } = ts.readConfigFile(configPath, ts.sys.readFile);
+  const { options, fileNames } = ts.parseJsonConfigFileContent(
+    config, ts.sys, path.dirname(configPath)
+  );
+
+  const program = ts.createProgram(fileNames, options);
+  const checker = program.getTypeChecker();
+  const graph = new Map<string, { inDegree: Set<string>; outDegree: Set<string> }>();
+
+  for (const sourceFile of program.getSourceFiles()) {
+    if (sourceFile.isDeclarationFile) continue;
+
+    ts.forEachChild(sourceFile, function visit(node) {
+      if (ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)) {
+        const symbol = checker.getSymbolAtLocation(node.name);
+        if (!symbol) return;
+
+        const key = `${sourceFile.fileName}#${node.name.text}`;
+        if (!graph.has(key)) graph.set(key, { inDegree: new Set(), outDegree: new Set() });
+
+        // 分析类型体中的引用
+        const type = checker.getTypeAtLocation(node);
+        const properties = type.getProperties();
+        for (const prop of properties) {
+          const propType = checker.getTypeOfSymbolAtLocation(prop, node);
+          const propSymbol = propType.getSymbol();
+          if (propSymbol?.declarations?.[0]) {
+            const declFile = propSymbol.declarations[0].getSourceFile().fileName;
+            const targetKey = `${declFile}#${propSymbol.name}`;
+            if (targetKey !== key) {
+              graph.get(key)!.outDegree.add(targetKey);
+              if (!graph.has(targetKey)) graph.set(targetKey, { inDegree: new Set(), outDegree: new Set() });
+              graph.get(targetKey)!.inDegree.add(key);
+            }
+          }
+        }
+      }
+      ts.forEachChild(node, visit);
+    });
+  }
+
+  return Array.from(graph.entries())
+    .map(([name, deps]) => ({ name, file: name.split('#')[0], inDegree: deps.inDegree.size, outDegree: deps.outDegree.size }))
+    .sort((a, b) => b.inDegree - a.inDegree);
+}
+
+// 使用示例
+const nodes = analyzeTypeGraph(process.cwd());
+const threshold = 20;
+const highDegreeNodes = nodes.filter(n => n.inDegree > threshold);
+
+console.table(nodes.slice(0, 10));
+if (highDegreeNodes.length > 0) {
+  console.warn(`⚠️ 发现 ${highDegreeNodes.length} 个高度类型节点（阈值=${threshold}）`);
+  console.warn('建议：拆分巨型 barrel file 或引入接口隔离模式（ISP）');
+  process.exit(1);
+}
+```
+
+---
+
 ## 工程实践：防御策略
 
 | 策略 | 实现方式 | 效果 |
@@ -208,6 +362,7 @@ transfer(uid, tid);    // ✅
 | **禁止深层导入** | ESLint `no-restricted-imports` | 防止实现泄露 |
 | **循环依赖检测** | CI 中运行 `madge --circular` | 自动化架构健康检查 |
 | **品牌类型** | `type UserId = string & { readonly __brand: 'UserId' }` | 防止语义相同类型混用 |
+| **依赖可视化** | `dependency-cruiser` + Graphviz | 类型依赖图持续监控 |
 
 ---
 
@@ -220,7 +375,13 @@ transfer(uid, tid);    // ✅
 | **Nx Monorepo: Enforce Module Boundaries** | 大规模 Monorepo 类型边界实践 | [nx.dev/features/enforce-module-boundaries](https://nx.dev/features/enforce-module-boundaries) |
 | **Turborepo: TypeScript Best Practices** | Vercel 的 Monorepo TS 建议 | [turbo.build/repo/docs/handbook/linting/typescript](https://turbo.build/repo/docs/handbook/linting/typescript) |
 | **madge** | 循环依赖检测 CLI 工具 | [github.com/pahen/madge](https://github.com/pahen/madge) |
+| **dependency-cruiser** | 架构依赖可视化与规则检查 | [github.com/sverweij/dependency-cruiser](https://github.com/sverweij/dependency-cruiser) |
 | **TypeScript Brand Types Deep Dive** | 社区品牌类型最佳实践 | [egghead.io/blog/branded-types-in-typescript](https://egghead.io/blog/branded-types-in-typescript) |
+| **TypeScript Compiler API** | 程序化分析类型图的官方接口 | [typescriptlang.org/dev/boost](https://www.typescriptlang.org/dev/boost/) |
+| **Martin Fowler: Domain-Driven Design** | 领域拆分理论基础 | [martinfowler.com/bliki/DomainDrivenDesign.html](https://martinfowler.com/bliki/DomainDrivenDesign.html) |
+| **SemVer Specification** | 语义化版本控制规范 | [semver.org](https://semver.org/) |
+| **Interface Segregation Principle (ISP)** | SOLID 原则之接口隔离 | [wikipedia.org/wiki/Interface_segregation_principle](https://en.wikipedia.org/wiki/Interface_segregation_principle) |
+| **Google TypeScript Style Guide** | Google 大型 TS 代码库规范 | [google.github.io/styleguide/tsguide.html](https://google.github.io/styleguide/tsguide.html) |
 
 ---
 

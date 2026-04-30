@@ -16,47 +16,47 @@
 ```
                     [公理1: 开放源码公理]
                     三大运行时均为开源项目
-                           │
+                           |
                     [公理2: 标准化压力公理]
                     WinterCG + W3C 定义 Web API 标准
-                           │
-              ┌────────────┴────────────┐
-              ▼                         ▼
+                           |
+              +------------+------------+
+              |                         |
     [引理: Node.js 存量优势]        [引理: Bun/Deno 差异化创新]
     200万+ npm 包，企业采用率 85%      性能/安全/体验创新
-              │                         │
-              └────────────┬────────────┘
-                           ▼
+              |                         |
+              +------------+------------+
+                           |
               [三体竞争动态]
-              Node.js ←──竞争──→ Bun
-                  ↑       ↘     ↗
-                  └────竞争──→ Deno
-                           │
+              Node.js <-> 竞争 <-> Bun
+                  ^       \     /
+                  +---- 竞争 -> Deno
+                           |
               差异化策略有效？
-              ┌────────────┴────────────┐
-              ▼                         ▼
+              +------------+------------+
+              |                         |
          [是] 获得用户              [是] 被领先者采纳
-              │                         │
-              │                    Node.js v24+
-              │                    · 采纳原生 Fetch API
-              │                    · 采纳内置测试运行器
-              │                    · 采纳 watch-mode
-              │                         │
-              │                    Bun/Deno 反向兼容
-              │                    · Bun npm 兼容改进
-              │                    · Deno node: 前缀支持
-              │                         │
-              └────────────┬────────────┘
-                           ▼
+              |                         |
+              |                    Node.js v24+
+              |                    · 采纳原生 Fetch API
+              |                    · 采纳内置测试运行器
+              |                    · 采纳 watch-mode
+              |                         |
+              |                    Bun/Deno 反向兼容
+              |                    · Bun npm 兼容改进
+              |                    · Deno node: 前缀支持
+              |                         |
+              +------------+------------+
+                           |
               [运行时收敛]
               · API 标准化（WinterCG）
               · 行为一致性提升
               · 混合策略成为主流
-                           │
+                           |
               [2026 混合架构模式]
               Node.js 主服务 + Bun 边缘函数
               Deno 敏感计算 + Node.js UI
-                           │
+                           |
               [开发者受益]
               多运行时协同，而非单一押注
 ```
@@ -73,7 +73,7 @@
 | 2015 | Chrome 主导 | Chromium 共识 |
 | 2020 | Chromium 生态 | 标准化成熟 |
 
-**推论**：运行时竞争遵循类似轨迹——差异化创新 → 最佳实践被标准化 → 整体基线提升。
+**推论**：运行时竞争遵循类似轨迹——差异化创新 -> 最佳实践被标准化 -> 整体基线提升。
 
 ---
 
@@ -87,14 +87,14 @@
 | **权限模型** | `--permission` (实验) | 默认零权限 | 无 | 不涉及 |
 | **内置测试** | `node --test` | `deno test` | `bun test` | 不涉及 |
 | **包管理器** | npm / pnpm / yarn | JSR + npm 兼容 | 内置 npm 兼容 | 不涉及 |
-| **Fetch API** | ✅ 原生 (v18+) | ✅ 原生 | ✅ 原生 | ✅ 标准基线 |
-| **Web Streams** | ✅ 原生 (v16+) | ✅ 原生 | ✅ 原生 | ✅ 标准基线 |
-| **Blob / File** | ✅ 原生 | ✅ 原生 | ✅ 原生 | ✅ 标准基线 |
-| **Crypto (WebCrypto)** | ✅ 原生 | ✅ 原生 | ✅ 原生 | ✅ 标准基线 |
+| **Fetch API** | 原生 (v18+) | 原生 | 原生 | 标准基线 |
+| **Web Streams** | 原生 (v16+) | 原生 | 原生 | 标准基线 |
+| **Blob / File** | 原生 | 原生 | 原生 | 标准基线 |
+| **Crypto (WebCrypto)** | 原生 | 原生 | 原生 | 标准基线 |
 | **启动延迟** | ~80ms | ~50ms | ~20ms | 不涉及 |
 | **ESM 优先级** | CJS 为主，ESM 并存 | ESM 优先 | ESM 优先 | ESM |
 | **边缘部署** | Cloudflare Workers 适配 | Deno Deploy | 内置 Worker 支持 | WinterCG 运行时 |
-| **原生 FFI** | N-API / node-api | Deno FFI (不稳定的) | `bun:ffi` | 不涉及 |
+| **原生 FFI** | N-API / node-api | Deno FFI (不稳定) | `bun:ffi` | 不涉及 |
 | **HTTP 服务器** | `http` 模块 | `Deno.serve()` | `Bun.serve()` | `fetch` 事件 |
 | **兼容性层** | 无需 | `node:` 前缀 | 内置 Node 兼容 | 不涉及 |
 | **锁文件** | `package-lock.json` | `deno.lock` | `bun.lockb` | 不涉及 |
@@ -197,12 +197,12 @@ console.log(`Running on: ${detectRuntime()}`);
 
 | 特性 | Node.js 采纳时间 | 来源 | 状态 |
 |------|----------------|------|------|
-| Fetch API | v18+ (2022) | Deno 首创 | ✅ 成熟 |
-| Web Streams | v16+ (2021) | 标准驱动 | ✅ 成熟 |
-| 内置测试运行器 | v20+ (2023) | Bun/Deno | ✅ 稳定 |
-| Watch mode | v18+ (2022) | Bun | ✅ 稳定 |
-| `--experimental-strip-types` | v22+ (2024) | Bun/Deno | 🧪 实验 |
-| Permission model | 讨论中 | Deno | 📋 提案 |
+| Fetch API | v18+ (2022) | Deno 首创 | 成熟 |
+| Web Streams | v16+ (2021) | 标准驱动 | 成熟 |
+| 内置测试运行器 | v20+ (2023) | Bun/Deno | 稳定 |
+| Watch mode | v18+ (2022) | Bun | 稳定 |
+| `--experimental-strip-types` | v22+ (2024) | Bun/Deno | 实验 |
+| Permission model | 讨论中 | Deno | 提案 |
 
 ---
 
@@ -259,6 +259,102 @@ export function serve(handler: (req: Request) => Response | Promise<Response>, p
 
 ---
 
+## 代码示例：多运行时测试矩阵
+
+```typescript
+// tests/runtime-compat.test.ts — 使用 Vitest 测试跨运行时行为一致性
+import { describe, it, expect } from 'vitest';
+
+// 运行时标识
+declare const Bun: unknown;
+declare const Deno: { version: { deno: string } };
+
+const runtime =
+  typeof Bun !== 'undefined' ? 'bun' :
+  typeof Deno !== 'undefined' ? 'deno' :
+  typeof process !== 'undefined' ? 'node' : 'unknown';
+
+describe(`Runtime Compatibility (${runtime})`, () => {
+  it('should support standard Fetch API', async () => {
+    const resp = await fetch('https://httpbin.org/get');
+    expect(resp.status).toBe(200);
+    expect(typeof resp.json).toBe('function');
+  });
+
+  it('should support WebCrypto', async () => {
+    const data = new TextEncoder().encode('hello');
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    expect(hash.byteLength).toBe(32);
+  });
+
+  it('should support Web Streams', () => {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode('hello'));
+        controller.close();
+      },
+    });
+    expect(stream).toBeInstanceOf(ReadableStream);
+  });
+
+  it('should support Blob and File', () => {
+    const blob = new Blob(['hello'], { type: 'text/plain' });
+    expect(blob.size).toBe(5);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    expect(file.name).toBe('test.txt');
+  });
+});
+```
+
+---
+
+## 代码示例：package.json exports 字段实现双运行时适配
+
+```json
+{
+  "name": "universal-utils",
+  "type": "module",
+  "exports": {
+    ".": {
+      "bun": "./src/bun.ts",
+      "deno": "./src/deno.ts",
+      "node": "./src/node.ts",
+      "workerd": "./src/workerd.ts",
+      "default": "./src/node.ts"
+    }
+  }
+}
+```
+
+```typescript
+// src/node.ts
+export { readFile } from 'node:fs/promises';
+export { createServer } from 'node:http';
+
+// src/deno.ts
+export const readFile = Deno.readTextFile;
+export const createServer = () => {
+  throw new Error('Use Deno.serve() instead in Deno runtime');
+};
+
+// src/bun.ts
+export const readFile = Bun.file;
+export const createServer = () => {
+  throw new Error('Use Bun.serve() instead in Bun runtime');
+};
+
+// src/workerd.ts
+export const readFile = async (path: string) => {
+  const file = await fetch(path);
+  return file.text();
+};
+```
+
+> 📚 参考：[Node.js Conditional Exports](https://nodejs.org/api/packages.html#conditional-exports) | [Deno Node.js Compatibility](https://docs.deno.com/runtime/fundamentals/node/) | [Bun Node.js APIs](https://bun.sh/docs/runtime/nodejs-apis)
+
+---
+
 ## 权威参考链接
 
 | 资源 | 说明 | 链接 |
@@ -276,6 +372,13 @@ export function serve(handler: (req: Request) => Response | Promise<Response>, p
 | **Bun Documentation** | Bun 运行时官方文档 | [bun.sh/docs](https://bun.sh/docs) |
 | **Workerd (Cloudflare)** | Cloudflare Workers 运行时源码 | [github.com/cloudflare/workerd](https://github.com/cloudflare/workerd) |
 | **Web Platform Tests for WinterCG** | WinterCG 兼容性测试 | [github.com/wintercg/admin](https://github.com/wintercg/admin) |
+| **CommonJS vs ESM** | Node.js 模块系统演进 | [nodejs.org/api/esm.html](https://nodejs.org/api/esm.html) |
+| **Deno Permission Model** | Deno 权限系统文档 | [docs.deno.com/runtime/fundamentals/security/](https://docs.deno.com/runtime/fundamentals/security/) |
+| **Bun FFI Documentation** | Bun 原生 FFI 调用 | [bun.sh/docs/api/ffi](https://bun.sh/docs/api/ffi) |
+| **Node.js N-API** | Node.js 原生插件 API | [nodejs.org/api/n-api.html](https://nodejs.org/api/n-api.html) |
+| **JSR Registry** | Deno/JavaScript 注册表 | [jsr.io](https://jsr.io/) |
+| **Cloudflare Workers Compatibility Dates** | 兼容性日期机制 | [developers.cloudflare.com/workers/configuration/compatibility-dates/](https://developers.cloudflare.com/workers/configuration/compatibility-dates/) |
+| **WinterCG Runtime Keys Proposal** | 运行时标识标准化 | [github.com/wintercg/runtime-keys](https://github.com/wintercg/runtime-keys) |
 
 ---
 

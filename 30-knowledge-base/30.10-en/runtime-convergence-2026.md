@@ -146,6 +146,117 @@ CMD if [ "$(which node)" != "" ]; then node --experimental-strip-types main.ts; 
     fi
 ```
 
+### Cross-Runtime File I/O Abstraction
+
+```ts
+// lib/fs-universal.ts — 跨运行时文件读取
+export async function readJsonFile<T = unknown>(path: string): Promise<T> {
+  if (runtime === 'deno') {
+    const text = await Deno.readTextFile(path);
+    return JSON.parse(text);
+  }
+  if (runtime === 'bun') {
+    const file = Bun.file(path);
+    return await file.json();
+  }
+  // Node.js fallback
+  const { readFile } = await import('node:fs/promises');
+  const text = await readFile(path, 'utf-8');
+  return JSON.parse(text);
+}
+
+export async function writeJsonFile(path: string, data: unknown): Promise<void> {
+  const payload = JSON.stringify(data, null, 2);
+  if (runtime === 'deno') {
+    await Deno.writeTextFile(path, payload);
+    return;
+  }
+  if (runtime === 'bun') {
+    await Bun.write(path, payload);
+    return;
+  }
+  const { writeFile } = await import('node:fs/promises');
+  await writeFile(path, payload, 'utf-8');
+}
+```
+
+### Cross-Runtime Cryptographic Operations (Web Crypto)
+
+```ts
+// lib/crypto-universal.ts — 跨运行时哈希与 HMAC（Node ≥18, Deno, Bun, Workers）
+const encoder = new TextEncoder();
+
+export async function sha256(message: string): Promise<string> {
+  const data = encoder.encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+export async function hmacSHA256(key: string, message: string): Promise<string> {
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(key),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(message));
+  return Array.from(new Uint8Array(signature))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+// 使用示例：所有现代运行时均支持 Web Crypto API
+const digest = await sha256('hello-world');
+console.log(digest); // 统一输出，与平台无关
+```
+
+### Cross-Runtime Environment Variable Access
+
+```ts
+// lib/env-universal.ts — 统一的跨运行时环境变量读取
+export function getEnv(key: string): string | undefined {
+  if (typeof process !== 'undefined' && process.env) {
+    return process.env[key];
+  }
+  if (typeof (globalThis as any).Deno !== 'undefined') {
+    return (globalThis as any).Deno.env.get(key);
+  }
+  // Bun 兼容 process.env，Cloudflare Workers 使用 import.meta.env / bindings
+  if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
+    return (import.meta as any).env[key];
+  }
+  return undefined;
+}
+
+// 带有默认值的类型安全封装
+export function requireEnv(key: string): string {
+  const value = getEnv(key);
+  if (!value) throw new Error(`Missing required environment variable: ${key}`);
+  return value;
+}
+```
+
+### Cross-Runtime Test Matrix with Vitest
+
+```ts
+// vitest.config.ts — 多运行时测试矩阵
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    environment: 'node', // 默认 Node.js
+    include: ['test/**/*.test.ts'],
+    exclude: ['test/**/*.deno.test.ts', 'test/**/*.bun.test.ts'],
+  },
+});
+
+// 运行时特定配置
+// vitest.config.deno.ts — 使用 @vitest/browser 或 deno 适配器（社区实验性）
+// vitest.config.bun.ts — bun:test 兼容层
+```
+
 ---
 
 ## Key Points
@@ -183,6 +294,24 @@ The critical insight is that **differentiation is the catalyst for convergence, 
 | **JSR Registry** | JavaScript 标准注册表 | [jsr.io](https://jsr.io/) |
 | **WinterCG Minimum Common API** | 服务端运行时最小公共 API | [proposal-common-min-api](https://common-min-api.proposal.wintercg.org/) |
 | **Vercel Edge Runtime** | Edge 运行时兼容性 | [edge-runtime.vercel.app](https://edge-runtime.vercel.app/) |
+| **Node.js Permission Model** | Node.js 实验性权限模型 | [nodejs.org/api/permissions](https://nodejs.org/api/permissions.html) |
+| **Deno Permissions** | Deno 安全权限文档 | [docs.deno.com/runtime/fundamentals/security](https://docs.deno.com/runtime/fundamentals/security/) |
+| **Bun Security & Sandboxing** | Bun 安全相关说明 | [bun.sh/docs/runtime/nodejs-apis](https://bun.sh/docs/runtime/nodejs-apis) |
+| **npm Registry API** | npm 注册表 API 文档 | [github.com/npm/registry](https://github.com/npm/registry) |
+| **CommonJS vs ESM — Node.js** | Node.js 模块系统 | [nodejs.org/api/esm](https://nodejs.org/api/esm.html) |
+| **WebAssembly Core Spec** | W3C WASM 规范 | [webassembly.github.io/spec/core](https://webassembly.github.io/spec/core/) |
+| **State of JS 2025** | 开发者调查 | [stateofjs.com](https://stateofjs.com/) | JavaScript 生态年度调查
+| **Node.js Benchmarking** | 官方博客 | [nodejs.org/en/blog](https://nodejs.org/en/blog/) | 性能基准测试报告
+| **Bun Benchmark Blog** | 官方博客 | [bun.sh/blog](https://bun.sh/blog) | Bun 性能对比博文
+| **Deno 2 Blog** | 官方博客 | [deno.com/blog](https://deno.com/blog) | Deno 重大版本发布说明
+| **npm Documentation** | 官方文档 | [docs.npmjs.com](https://docs.npmjs.com/) | npm 包管理器文档
+| **pnpm Documentation** | 官方文档 | [pnpm.io](https://pnpm.io/) | pnpm 包管理器文档
+| **JSR Registry** | 官方文档 | [jsr.io/docs](https://jsr.io/docs) | JavaScript Registry 文档
+| **V8 Blog** | 官方博客 | [v8.dev/blog](https://v8.dev/blog) | V8 引擎更新与性能优化
+| **Web Crypto API (MDN)** | MDN | [developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) | Web 加密标准 API
+| **Package.json Conditional Exports** | Node.js 文档 | [nodejs.org/api/packages](https://nodejs.org/api/packages.html#conditional-exports) | 条件导出规范
+| **Vitest Documentation** | 官方文档 | [vitest.dev](https://vitest.dev/) | 下一代测试框架
+| **UnJS — Universal JavaScript** | 组织 | [unjs.io](https://unjs.io/) | 通用 JavaScript 工具集
 
 ---
 

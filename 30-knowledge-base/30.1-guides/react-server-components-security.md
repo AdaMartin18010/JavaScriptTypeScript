@@ -235,6 +235,46 @@ export function middleware() {
 
 ---
 
+### 安全序列化边界检查（手动校验）
+
+```tsx
+// lib/serialize-guard.ts —— 防止意外将不可序列化对象传递给 Client Component
+import { z } from 'zod';
+
+const SafeRscPayloadSchema = z.record(
+  z.union([z.string(), z.number(), z.boolean(), z.null(), z.array(z.any()), z.record(z.any())])
+);
+
+export function assertSafePayload(
+  label: string,
+  payload: unknown
+): Record<string, unknown> {
+  const parsed = SafeRscPayloadSchema.safeParse(payload);
+  if (!parsed.success) {
+    throw new Error(
+      `[RSC Serialization] "${label}" contains non-serializable values: ${parsed.error.message}`
+    );
+  }
+  return parsed.data;
+}
+
+// app/dashboard/page.tsx
+import { assertSafePayload } from '@/lib/serialize-guard';
+
+export default async function DashboardPage() {
+  const raw = await db.query('SELECT id, name, settings FROM users WHERE id = ?', [userId]);
+  // settings 可能是包含函数或循环引用的复杂对象
+  const safe = assertSafePayload('userPayload', {
+    id: raw.id,
+    name: raw.name,
+    theme: raw.settings?.theme,
+  });
+  return <ClientComponent {...safe} />;
+}
+```
+
+---
+
 ## 最佳实践
 
 1. **最小暴露原则**：Server Component 仅向 Client Component 传递必要数据
@@ -259,6 +299,102 @@ export function middleware() {
 - [web.dev — Security headers](https://web.dev/articles/security-headers)
 - [Upstash Ratelimit — Serverless Rate Limiting](https://upstash.com/docs/redis/sdks/ratelimit-ts/overview)
 - [React 19 Security Documentation](https://react.dev/blog/2024/12/05/react-19)
+- [React Official Docs — Server Components](https://react.dev/reference/react/use-server)
+- [Next.js Security Best Practices](https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy)
+- [OWASP — Insecure Deserialization](https://owasp.org/Top10/A08_2021-Insecure_Deserialization/)
+- [web.dev — Secure the client-server boundary](https://web.dev/articles/secure-client-server-boundary)
+- [Zod Schema Validation — Best Practices](https://zod.dev/?id=basic-usage)
+
+## 进阶防护示例
+
+### 环境变量白名单守卫
+
+```tsx
+// lib/env-guard.ts
+const ALLOWED_CLIENT_KEYS = [
+  'NEXT_PUBLIC_API_URL',
+  'NEXT_PUBLIC_APP_NAME',
+] as const;
+
+export function getClientEnv(): Record<string, string | undefined> {
+  return Object.fromEntries(
+    ALLOWED_CLIENT_KEYS.map((key) => [key, process.env[key]])
+  );
+}
+
+// ✅ Server Component 仅暴露白名单变量
+export default async function Page() {
+  const env = getClientEnv();
+  return <ClientInit env={env} />;
+}
+```
+
+### Server Action CSRF Token 校验
+
+```tsx
+// lib/csrf.ts
+import { createHash, randomBytes } from 'node:crypto';
+
+export function generateCsrfToken(sessionId: string): string {
+  const salt = randomBytes(16).toString('hex');
+  const hash = createHash('sha256')
+    .update(`${sessionId}:${salt}`)
+    .digest('hex');
+  return `${salt}.${hash}`;
+}
+
+export function verifyCsrfToken(sessionId: string, token: string): boolean {
+  const [salt, hash] = token.split('.');
+  if (!salt || !hash) return false;
+  const expected = createHash('sha256')
+    .update(`${sessionId}:${salt}`)
+    .digest('hex');
+  return hash === expected;
+}
+
+// app/actions.ts
+'use server';
+export async function updateProfile(formData: FormData) {
+  const session = await auth();
+  if (!session?.userId) throw new Error('Unauthorized');
+  const csrf = String(formData.get('csrfToken'));
+  if (!verifyCsrfToken(session.sessionId, csrf)) {
+    throw new Error('Invalid CSRF token');
+  }
+  // ... 业务逻辑
+}
+```
+
+### React 19 Taint API 高阶用法
+
+```tsx
+// lib/taint.ts
+import { taintObjectReference, taintUniqueValue } from 'react';
+
+export interface ApiSecrets {
+  apiKey: string;
+  dbUrl: string;
+}
+
+export function guardSecrets(secrets: ApiSecrets): ApiSecrets {
+  taintObjectReference('Secrets must not reach the client', secrets);
+  taintUniqueValue('API key is sensitive', secrets, secrets.apiKey);
+  return secrets;
+}
+```
+
+---
+
+## 扩展参考链接
+
+- [MDN — Content Security Policy (CSP)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
+- [OWASP — Server Side Request Forgery (SSRF)](https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29/)
+- [Next.js — Authentication Patterns](https://nextjs.org/docs/app/building-your-application/authentication)
+- [Vercel — Security Best Practices for RSC](https://vercel.com/docs/security)
+- [CWE-79: Cross-site Scripting](https://cwe.mitre.org/data/definitions/79.html)
+- [React Official Blog — React 19](https://react.dev/blog/2024/12/05/react-19)
+- [web.dev — Secure the client-server boundary](https://web.dev/articles/secure-client-server-boundary)
+- [Zod Schema Validation — Best Practices](https://zod.dev/?id=basic-usage)
 
 ---
 

@@ -239,7 +239,98 @@ console.log(lowerBound(data, 4)); // 2 (第一个 4)
 console.log(upperBound(data, 4)); // 5 (第一个 > 4，即 5)
 ```
 
-### 3.6 常见误区
+### 3.6 跳跃搜索（Jump Search）— 块状跳过
+
+```typescript
+// jump-search.ts — 步长为 √n 的块跳转搜索
+function jumpSearch<T>(arr: T[], target: T): number {
+  const n = arr.length;
+  let step = Math.floor(Math.sqrt(n));
+  let prev = 0;
+
+  // 跳转到包含 target 的块
+  while (arr[Math.min(step, n) - 1] < target) {
+    prev = step;
+    step += Math.floor(Math.sqrt(n));
+    if (prev >= n) return -1;
+  }
+
+  // 线性搜索该块
+  while (arr[prev] < target) {
+    prev++;
+    if (prev === Math.min(step, n)) return -1;
+  }
+
+  return arr[prev] === target ? prev : -1;
+}
+
+const jumpData = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144];
+console.log(jumpSearch(jumpData, 55)); // 10
+console.log(jumpSearch(jumpData, 15)); // -1
+```
+
+### 3.7 三分搜索（Ternary Search）— 单峰函数极值
+
+```typescript
+// ternary-search.ts — 在单峰数组中寻找峰值或最大值
+function ternarySearchMax(arr: number[], left = 0, right = arr.length - 1): number {
+  if (right - left < 3) {
+    return Math.max(...arr.slice(left, right + 1));
+  }
+
+  const mid1 = left + Math.floor((right - left) / 3);
+  const mid2 = right - Math.floor((right - left) / 3);
+
+  if (arr[mid1] < arr[mid2]) {
+    return ternarySearchMax(arr, mid1 + 1, right);
+  } else {
+    return ternarySearchMax(arr, left, mid2 - 1);
+  }
+}
+
+// 单峰数组示例：先增后减
+const unimodal = [1, 3, 5, 7, 9, 11, 10, 8, 6, 4];
+console.log(ternarySearchMax(unimodal)); // 11
+```
+
+### 3.8 模糊搜索：Levenshtein 距离过滤
+
+```typescript
+// fuzzy-search.ts — 基于编辑距离的近似字符串匹配
+function levenshteinDistance(a: string, b: string): number {
+  const matrix: number[][] = Array.from({ length: a.length + 1 }, () => []);
+
+  for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+  for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,      // 删除
+        matrix[i][j - 1] + 1,      // 插入
+        matrix[i - 1][j - 1] + cost // 替换
+      );
+    }
+  }
+
+  return matrix[a.length][b.length];
+}
+
+function fuzzySearch(candidates: string[], query: string, maxDistance = 2): string[] {
+  return candidates
+    .map(c => ({ candidate: c, distance: levenshteinDistance(c.toLowerCase(), query.toLowerCase()) }))
+    .filter(r => r.distance <= maxDistance)
+    .sort((a, b) => a.distance - b.distance)
+    .map(r => r.candidate);
+}
+
+const names = ['typescript', 'javascript', 'python', 'rust', 'golang'];
+console.log(fuzzySearch(names, 'typoscript')); // ['typescript']
+console.log(fuzzySearch(names, 'javscript'));  // ['javascript']
+```
+
+### 3.9 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -248,7 +339,7 @@ console.log(upperBound(data, 4)); // 5 (第一个 > 4，即 5)
 | 插值搜索总是优于二分 | 数据分布不均匀时性能可能退化为 O(n) |
 | `(left + right) / 2` 安全 | 大数组可能溢出，应使用 `left + ((right - left) >>> 1)` |
 
-### 3.7 扩展阅读
+### 3.10 扩展阅读
 
 - [Binary Search — Wikipedia](https://en.wikipedia.org/wiki/Binary_search_algorithm)
 - [Interpolation Search — GeeksforGeeks](https://www.geeksforgeeks.org/interpolation-search/)
@@ -261,6 +352,14 @@ console.log(upperBound(data, 4)); // 5 (第一个 > 4，即 5)
 - [MDN — TypedArray](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray)
 - [C++ std::lower_bound / upper_bound](https://en.cppreference.com/w/cpp/algorithm/lower_bound)
 - [Binary Search Variants — TopCoder](https://www.topcoder.com/thrive/articles/Binary%20Search)
+- [Exponential Search — Wikipedia](https://en.wikipedia.org/wiki/Exponential_search)
+- [Jump Search — GeeksforGeeks](https://www.geeksforgeeks.org/jump-search/)
+- [Ternary Search — CP-Algorithms](https://cp-algorithms.com/num_methods/ternary_search.html)
+- [Levenshtein Distance — Wikipedia](https://en.wikipedia.org/wiki/Levenshtein_distance)
+- [Fuse.js](https://www.fusejs.io/) — 轻量级模糊搜索库
+- [FlexSearch](https://github.com/nextapps-de/flexsearch) — 高性能全文搜索库
+- [Apache Lucene](https://lucene.apache.org/) — 工业级搜索引擎库
+- [Meilisearch Documentation](https://www.meilisearch.com/docs) — 开源即时搜索引擎
 
 ---
 

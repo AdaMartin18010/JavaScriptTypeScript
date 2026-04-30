@@ -236,6 +236,85 @@ export function ChakraExample() {
 }
 ```
 
+### Ark UI (跨框架 Headless)
+
+```tsx
+// React 中使用 Ark UI
+import { Dialog, Portal } from '@ark-ui/react';
+
+export function ArkDialog() {
+  return (
+    <Dialog.Root>
+      <Dialog.Trigger asChild>
+        <button>Open Dialog</button>
+      </Dialog.Trigger>
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content>
+            <Dialog.Title>Ark UI Dialog</Dialog.Title>
+            <Dialog.Description>
+              Ark UI 提供 React、Vue、Solid 共享的无障碍底层原语。
+            </Dialog.Description>
+            <Dialog.CloseTrigger asChild>
+              <button>Close</button>
+            </Dialog.CloseTrigger>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
+  );
+}
+```
+
+### Ant Design v5 (企业级后台)
+
+```tsx
+import { ConfigProvider, Button, Card, Modal, Table, Tag } from 'antd';
+import { useState } from 'react';
+
+const dataSource = [
+  { key: '1', name: '胡彦斌', age: 32, status: 'active' },
+  { key: '2', name: '胡彦祖', age: 42, status: 'inactive' },
+];
+
+const columns = [
+  { title: '姓名', dataIndex: 'name', key: 'name' },
+  { title: '年龄', dataIndex: 'age', key: 'age' },
+  {
+    title: '状态',
+    dataIndex: 'status',
+    key: 'status',
+    render: (status: string) => (
+      <Tag color={status === 'active' ? 'green' : 'red'}>
+        {status === 'active' ? '活跃' : '停用'}
+      </Tag>
+    ),
+  },
+];
+
+export function AntDesignExample() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  return (
+    <ConfigProvider theme={{ token: { colorPrimary: '#0070f3' } }}>
+      <Card title="用户管理" extra={<Button type="primary" onClick={() => setIsModalOpen(true)}>新增</Button>}>
+        <Table dataSource={dataSource} columns={columns} pagination={false} />
+      </Card>
+
+      <Modal
+        title="新增用户"
+        open={isModalOpen}
+        onOk={() => setIsModalOpen(false)}
+        onCancel={() => setIsModalOpen(false)}
+      >
+        <p>Ant Design 提供完整的企业级后台组件体系。</p>
+      </Modal>
+    </ConfigProvider>
+  );
+}
+```
+
 ---
 
 ## 选型建议
@@ -265,6 +344,13 @@ export function ChakraExample() {
 | Radix Vue | <https://www.radix-vue.com/> | Radix 的 Vue 移植 |
 | A11y Project | <https://www.a11yproject.com/> | 无障碍最佳实践 |
 | WAI-ARIA Practices | <https://www.w3.org/WAI/ARIA/apg/> | W3C 无障碍指南 |
+| React Spectrum — Adobe | <https://react-spectrum.adobe.com/react-aria/> | Adobe 无障碍组件库 |
+| Headless UI (Tailwind) | <https://headlessui.com/> | Tailwind Labs 官方 Headless 组件 |
+| NextUI | <https://nextui.org/docs/guide/introduction> | React UI 库（基于 Tailwind） |
+| React Aria Components | <https://react-spectrum.adobe.com/react-aria/components.html> | Adobe 组件化无障碍原语 |
+| Design System Checklist | <https://designsystemchecklist.com/> | 设计系统构建最佳实践检查清单 |
+| Component Party — Web Components Comparison](https://component-party.dev/) | 跨框架组件写法对比 |
+| Smashing Magazine — Design Systems](https://www.smashingmagazine.com/category/design-systems/) | 设计系统深度文章 |
 
 ---
 

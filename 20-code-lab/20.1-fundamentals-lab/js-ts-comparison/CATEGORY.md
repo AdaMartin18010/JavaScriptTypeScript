@@ -218,6 +218,169 @@ function area(shape: Shape): number {
 }
 ```
 
+### `infer` 关键字：类型提取
+
+```typescript
+// 从 Promise<T> 中提取 T
+type Awaited<T> = T extends Promise<infer U> ? U : T;
+type Result = Awaited<Promise<string>>; // string
+
+// 从函数返回类型中提取
+type ReturnType<T> = T extends (...args: any[]) => infer R ? R : never;
+type Fn = () => number;
+type R = ReturnType<Fn>; // number
+
+// 从数组中提取元素类型
+type ElementType<T> = T extends Array<infer E> ? E : never;
+type Num = ElementType<number[]>; // number
+```
+
+### Mapped Types：批量类型变换
+
+```typescript
+// 将所有属性变为可选
+type Partial<T> = {
+  [P in keyof T]?: T[P];
+};
+
+// 将所有属性变为只读
+type Readonly<T> = {
+  readonly [P in keyof T]: T[P];
+};
+
+// 将所有属性变为必填（去除 undefined）
+type Required<T> = {
+  [P in keyof T]-?: T[P];
+};
+
+// 自定义：给每个值加上 getter
+type WithGetters<T> = {
+  [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K];
+};
+
+interface User {
+  name: string;
+  age: number;
+}
+
+type UserGetters = WithGetters<User>;
+// { getName: () => string; getAge: () => number }
+```
+
+### Conditional Types：条件类型
+
+```typescript
+// 基本语法
+type IsString<T> = T extends string ? true : false;
+type A = IsString<'hello'>; // true
+type B = IsString<42>;      // false
+
+// 分发条件类型
+type ToArray<T> = T extends any ? T[] : never;
+type StrOrNumArray = ToArray<string | number>; // string[] | number[]
+
+// 排除 null / undefined
+type NonNullable<T> = T extends null | undefined ? never : T;
+type C = NonNullable<string | null>; // string
+```
+
+### `keyof` / `typeof` 组合使用
+
+```typescript
+const httpStatus = {
+  OK: 200,
+  NotFound: 404,
+  ServerError: 500,
+} as const;
+
+// 获取对象键的联合类型
+type HttpStatusCode = (typeof httpStatus)[keyof typeof httpStatus]; // 200 | 404 | 500
+
+// 生成反向映射（值 → 键）
+type HttpStatusName = keyof typeof httpStatus; // 'OK' | 'NotFound' | 'ServerError'
+
+// 类型安全的配置对象
+type Config = typeof httpStatus;
+function isValidStatus(code: number): code is HttpStatusCode {
+  return Object.values(httpStatus).includes(code as HttpStatusCode);
+}
+```
+
+### 代码示例：const enum 与 enum 的编译差异
+
+```typescript
+// const enum — 编译时完全内联，无运行时对象
+const enum HttpStatus {
+  OK = 200,
+  NotFound = 404,
+  ServerError = 500,
+}
+
+const status = HttpStatus.OK;
+// 编译为：const status = 200 /* HttpStatus.OK */;
+
+// 普通 enum — 运行时生成反向映射对象
+enum Color {
+  Red = 1,
+  Green = 2,
+  Blue = 4,
+}
+
+const colorName = Color[2]; // 'Green' — 反向映射
+// 编译为 IIFE 生成的对象，包含 Red:1, 1:'Red', Green:2, 2:'Green' ...
+```
+
+### 代码示例：Declaration Merging（声明合并）
+
+```typescript
+// 接口声明合并 — 同名接口自动合并
+type User {
+  name: string;
+}
+
+type User {
+  age: number;
+}
+
+// 等效于：
+// type User = { name: string; age: number; }
+
+// 命名空间与类合并 — 实现"静态属性 + 实例属性"模式
+class Album {
+  label!: Album.AlbumLabel;
+}
+namespace Album {
+  export class AlbumLabel {
+    constructor(public stations: number) {}
+  }
+}
+
+const album = new Album();
+album.label = new Album.AlbumLabel(10);
+```
+
+### 代码示例：Unique Symbol 创建私有键
+
+```typescript
+// 使用 unique symbol 创建编译时唯一的属性键
+declare const brand: unique symbol;
+
+type Brand<T, TBrand> = T & { [brand]: TBrand };
+
+type USD = Brand<number, 'USD'>;
+type EUR = Brand<number, 'EUR'>;
+
+function usd(amount: number): USD {
+  return amount as USD;
+}
+function eur(amount: number): EUR {
+  return amount as EUR;
+}
+
+const price = usd(100);
+// price + eur(50); // ❌ 编译错误：不能将 EUR 赋值给 USD
+```
+
 ## 关联索引
 
 - [10-fundamentals/10.1-language-semantics/README.md](../../../10-fundamentals/10.1-language-semantics/README.md)
@@ -243,3 +406,16 @@ function area(shape: Shape): number {
 - [Discriminated Unions](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#discriminated-unions) — 可辨识联合官方说明
 - [TypeScript Design Goals](https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals) — TS 语言设计目标
 - [Execute Program: TypeScript](https://www.executeprogram.com/courses/typescript) — 交互式 TypeScript 课程
+- [TypeScript Mapped Types](https://www.typescriptlang.org/docs/handbook/2/mapped-types.html) — 映射类型官方手册
+- [TypeScript Conditional Types](https://www.typescriptlang.org/docs/handbook/2/conditional-types.html) — 条件类型官方手册
+- [TypeScript `infer` Keyword](https://www.typescriptlang.org/docs/handbook/2/conditional-types.html#inferring-within-conditional-types) — infer 提取类型详解
+- [TypeScript `keyof` Operator](https://www.typescriptlang.org/docs/handbook/2/keyof-types.html) — 索引类型查询
+- [TypeScript Enums](https://www.typescriptlang.org/docs/handbook/enums.html) — 枚举类型官方文档
+- [TypeScript Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) — 声明合并机制
+- [TypeScript `unique symbol`](https://www.typescriptlang.org/docs/handbook/symbols.html#unique-symbol) — 唯一符号类型
+- [TypeScript `const enum`](https://www.typescriptlang.org/docs/handbook/enums.html#const-enums) — 常量枚举编译行为
+- [TypeScript `namespace`](https://www.typescriptlang.org/docs/handbook/namespaces.html) — 命名空间模块模式
+- [ECMAScript Decorators Proposal](https://github.com/tc39/proposal-decorators) — TC39 装饰器提案
+- [TypeScript Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) — TS 装饰器实验性功能
+- [JSDoc @type Tag](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#type) — JSDoc 类型注解
+- [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html) — Google TypeScript 风格指南

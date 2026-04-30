@@ -2,7 +2,7 @@
 
 > **形式化定义**：同步执行流是 JavaScript 最基本的执行模式，代码按照书写顺序**逐行执行**，每条语句完成后才执行下一条。在同步模式下，调用栈（Call Stack）依次压入和弹出执行上下文，形成严格的**后进先出（LIFO）**执行顺序。ECMA-262 §9.4 定义了执行上下文栈的管理规则。
 >
-> 对齐版本：ECMAScript 2025 (ES16) §9.4 | TypeScript 5.8–6.0
+> 对齐版本：ECMAScript 2025 (ES16) §9.4 | TypeScript 5.8-6.0
 
 ---
 
@@ -13,8 +13,8 @@
 同步执行的数学表示：
 
 ```
-同步执行: stmt₁; stmt₂; ...; stmtₙ
-语义: eval(stmt₁) → eval(stmt₂) → ... → eval(stmtₙ)
+同步执行: stmt_1; stmt_2; ...; stmt_n
+语义: eval(stmt_1) -> eval(stmt_2) -> ... -> eval(stmt_n)
 ```
 
 ### 1.2 概念层级图谱
@@ -266,6 +266,110 @@ const t1 = hrtime.bigint();
 console.log(`Nanoseconds: ${t1 - t0}`);
 ```
 
+### 6.9 同步模块加载与循环依赖分析
+
+```javascript
+// a.js
+const b = require('./b');
+console.log('a.js loaded, b.value =', b.value);
+module.exports = { value: 'A' };
+
+// b.js
+const a = require('./a');
+console.log('b.js loaded, a.value =', a.value);
+module.exports = { value: 'B' };
+
+// main.js
+// Node.js 同步模块加载处理循环依赖：
+// 1. 加载 a.js -> 执行到 require('./b') -> 暂停 a.js，开始加载 b.js
+// 2. 加载 b.js -> 执行到 require('./a') -> a.js 正在加载中，返回已解析的部分 exports（此时为空对象 {}）
+// 3. b.js 完成 -> a.js 继续 -> 两者都完成
+// 输出顺序：
+// b.js loaded, a.value = undefined  （a.js 尚未完成）
+// a.js loaded, b.value = B
+```
+
+### 6.10 同步队列与栈数据结构的实现
+
+```javascript
+// 同步栈（LIFO — 同调用栈语义）
+class SyncStack {
+  #items = [];
+  push(item) { this.#items.push(item); }
+  pop() { return this.#items.pop(); }
+  peek() { return this.#items.at(-1); }
+  get size() { return this.#items.length; }
+}
+
+// 同步队列（FIFO）
+class SyncQueue {
+  #items = [];
+  enqueue(item) { this.#items.push(item); }
+  dequeue() { return this.#items.shift(); }
+  peek() { return this.#items[0]; }
+  get size() { return this.#items.length; }
+}
+
+// 用例：深度优先遍历（栈）vs 广度优先遍历（队列）
+function dfsSync(tree) {
+  const stack = new SyncStack();
+  stack.push(tree);
+  while (stack.size > 0) {
+    const node = stack.pop();
+    console.log(node.value);
+    // 子节点逆序压栈以保持遍历顺序
+    for (let i = node.children.length - 1; i >= 0; i--) {
+      stack.push(node.children[i]);
+    }
+  }
+}
+
+function bfsSync(tree) {
+  const queue = new SyncQueue();
+  queue.enqueue(tree);
+  while (queue.size > 0) {
+    const node = queue.dequeue();
+    console.log(node.value);
+    for (const child of node.children) {
+      queue.enqueue(child);
+    }
+  }
+}
+```
+
+### 6.11 同步错误边界与防御性编程
+
+```javascript
+// 同步代码中的错误边界模式
+function safeDivide(a, b) {
+  if (typeof a !== 'number' || typeof b !== 'number') {
+    throw new TypeError('Arguments must be numbers');
+  }
+  if (b === 0) {
+    throw new RangeError('Division by zero');
+  }
+  return a / b;
+}
+
+// 使用 Result 类型避免异常（函数式风格）
+function divideResult(a, b) {
+  if (typeof a !== 'number' || typeof b !== 'number') {
+    return { ok: false, error: new TypeError('Arguments must be numbers') };
+  }
+  if (b === 0) {
+    return { ok: false, error: new RangeError('Division by zero') };
+  }
+  return { ok: true, value: a / b };
+}
+
+const result = divideResult(10, 0);
+if (result.ok) {
+  console.log('Result:', result.value);
+} else {
+  console.error('Error:', result.error.message);
+}
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
@@ -286,6 +390,17 @@ console.log(`Nanoseconds: ${t1 - t0}`);
 - **Node.js: process.hrtime** — <https://nodejs.org/api/process.html#processhrtimebigint>
 - **V8 Blog — TurboFan** — <https://v8.dev/blog/turbofan-jit>
 - **What the heck is the event loop?** — Philip Roberts JSConf 2014: <https://www.youtube.com/watch?v=8aGhZQkoFbQ>
+- **Node.js Modules — Cycles** — <https://nodejs.org/api/modules.html#cycles> — 循环依赖处理机制
+- **MDN — Error** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error> — Error 构造函数规范
+- **MDN — throw** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/throw> — 异常抛出语句
+- **MDN — try...catch** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch> — 异常捕获
+- **V8 Blog — Ignition + TurboFan** — <https://v8.dev/blog/ignition-interpreter> — V8 执行管道解析
+- **JavaScript Engine Fundamentals** — <https://mathiasbynens.be/notes/shapes-ics> — 隐藏类与内联缓存
+- **ECMA-262 §13.3** — Destructuring Binding Patterns: <https://tc39.es/ecma262/#sec-destructuring-binding-patterns>
+- **ECMA-262 §9.3** — Execution Contexts Stack: <https://tc39.es/ecma262/#sec-execution-contexts-stack>
+- **Node.js Docs — Blocking vs Non-Blocking** — <https://nodejs.org/en/learn/asynchronous-work/overview-of-blocking-vs-non-blocking>
+- **Chrome DevTools — Call Stack** — <https://developer.chrome.com/docs/devtools/javascript/reference#call-stack>
+- **WebKit Blog — JSCallFrame** — <<https://webkit.org/blog/> JavaScript 调用栈实现>
 
 ---
 
@@ -294,7 +409,7 @@ console.log(`Nanoseconds: ${t1 - t0}`);
 ### 8.1 同步执行模型
 
 ```
-同步执行: A → B → C → D
+同步执行: A -> B -> C -> D
 每个步骤完成后才执行下一步
 ```
 
@@ -314,7 +429,7 @@ console.log(`Nanoseconds: ${t1 - t0}`);
 
 *证明*：
 > 同步代码没有并发竞争条件，执行顺序完全由代码结构决定。
-> ∎
+> QED
 
 ---
 

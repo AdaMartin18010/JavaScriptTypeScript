@@ -268,6 +268,148 @@ napi-derive = "2"
 wasm-bindgen = "0.2"
 ```
 
+### Tokio 异步运行时与 JS Promise 桥接
+
+```rust
+// src/async_bridge.rs — 将 Tokio 异步任务暴露为 JS Promise
+use napi::bindgen_prelude::*;
+use napi_derive::napi;
+use tokio::time::{sleep, Duration};
+
+#[napi]
+pub async fn delayed_greet(name: String, ms: u32) -> Result<String> {
+  sleep(Duration::from_millis(ms as u64)).await;
+  Ok(format!("Hello, {}! (after {}ms)", name, ms))
+}
+
+#[napi]
+pub async fn compute_hash(data: Buffer) -> Result<String> {
+  use sha2::{Sha256, Digest};
+  let mut hasher = Sha256::new();
+  hasher.update(&data);
+  let result = hasher.finalize();
+  Ok(format!("{:x}", result))
+}
+```
+
+```javascript
+const { delayedGreet, computeHash } = require('./index.node');
+
+(async () => {
+  const msg = await delayedGreet('Rust', 500);
+  console.log(msg); // Hello, Rust! (after 500ms)
+
+  const hash = await computeHash(Buffer.from('hello world'));
+  console.log(hash); // b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9
+})();
+```
+
+### Rust → JS 零拷贝 Buffer 传递
+
+```rust
+// src/buffer_bridge.rs — 使用 napi::JsBuffer 实现零拷贝读写
+use napi::bindgen_prelude::*;
+use napi_derive::napi;
+
+#[napi]
+pub fn invert_image_pixels(mut buf: Buffer) -> Buffer {
+  // 直接修改传入的 Buffer（零拷贝）
+  for byte in buf.as_mut() {
+    *byte = 255 - *byte;
+  }
+  buf
+}
+
+#[napi]
+pub fn generate_waveform(samples: u32, frequency: f64) -> Buffer {
+  // Rust 分配内存，所有权转给 JS（零拷贝）
+  let mut data = Vec::with_capacity(samples as usize * 4);
+  for i in 0..samples {
+    let t = i as f64 / 44100.0;
+    let sample = (t * frequency * 2.0 * std::f64::consts::PI).sin() as f32;
+    data.extend_from_slice(&sample.to_le_bytes());
+  }
+  Buffer::from(data)
+}
+```
+
+### WASI 命令行工具编译示例
+
+```toml
+# Cargo.toml (WASI)
+[package]
+name = "rust-wasi-tool"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+```
+
+```rust
+// src/main.rs — 编译为 wasi 后在 Node.js 或 wasmtime 中运行
+use std::io::{self, Read};
+
+fn main() {
+    let mut input = String::new();
+    io::stdin().read_to_string(&mut input).unwrap();
+    let word_count = input.split_whitespace().count();
+    println!("Word count: {}", word_count);
+}
+```
+
+```bash
+# 编译为 WASI 目标
+rustup target add wasm32-wasi
+cargo build --target wasm32-wasi --release
+
+# 使用 wasmtime 运行
+wasmtime target/wasm32-wasi/release/rust-wasi-tool.wasm < input.txt
+```
+
+### Rust 与 JS 共享内存（WebAssembly Memory）
+
+```rust
+// src/shared_memory.rs
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub struct ImageProcessor;
+
+#[wasm_bindgen]
+impl ImageProcessor {
+  pub fn grayscale(ptr: *mut u8, len: usize) {
+    let slice = unsafe { std::slice::from_raw_parts_mut(ptr, len) };
+    for chunk in slice.chunks_exact_mut(4) {
+      let gray = (0.299 * chunk[0] as f64 + 0.587 * chunk[1] as f64 + 0.114 * chunk[2] as f64) as u8;
+      chunk[0] = gray;
+      chunk[1] = gray;
+      chunk[2] = gray;
+      // chunk[3] 保持 alpha
+    }
+  }
+}
+```
+
+```javascript
+// 在 JS 中直接操作 WASM 线性内存
+const wasm = await WebAssembly.instantiateStreaming(fetch('./processor.wasm'));
+const memory = wasm.instance.exports.memory;
+
+const width = 1920, height = 1080;
+const byteSize = width * height * 4;
+const ptr = wasm.instance.exports.malloc(byteSize);
+
+const imageData = new Uint8ClampedArray(memory.buffer, ptr, byteSize);
+// 将 Canvas ImageData 写入共享内存
+ctx.getImageData(0, 0, width, height).data.set(imageData);
+
+// 调用 Rust 函数处理
+wasm.instance.exports.grayscale(ptr, byteSize);
+
+// 读取结果
+ctx.putImageData(new ImageData(imageData, width, height), 0, 0);
+```
+
 ---
 
 ## 更多权威参考链接
@@ -278,5 +420,17 @@ wasm-bindgen = "0.2"
 - [Cargo Workspaces](https://doc.rust-lang.org/cargo/reference/workspaces.html) — 官方工作区配置参考
 - [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/) — 官方 API 设计准则
 - [The Rust Performance Book](https://nnethercote.github.io/perf-book/) — Rust 性能优化
+- [Tokio Documentation](https://tokio.rs/) — Rust 异步运行时官方文档
+- [Rust By Example](https://doc.rust-lang.org/rust-by-example/) — 交互式 Rust 学习
+- [WASI Specification](https://github.com/WebAssembly/WASI) — WebAssembly 系统接口规范
+- [wasmtime Runtime](https://docs.wasmtime.dev/) — Bytecode Alliance 的 WASM 运行时
+- [Rust and WebAssembly Book](https://rustwasm.github.io/book/) — 官方 Rust WASM 开发指南
+- [neon-bindings Documentation](https://neon-bindings.com/) — 另一 Rust-Node 绑定框架
+- [deno_bindgen](https://github.com/denoland/deno_bindgen) — Deno 的 Rust FFI 绑定工具
+- [swc-project](https://swc.rs/) — 基于 Rust 的 JS/TS 编译器（napi-rs 大规模应用案例）
+- [Rspack](https://www.rspack.dev/) — 基于 Rust 的高性能打包工具
+- [Parcel Rust Transformer](https://parceljs.org/) — Parcel 使用 Rust 加速构建
+- [oxide.rs — Next.js Rust 工具链](https://nextjs.org/docs/app/building-your-application/optimizing/package-bundling) — Next.js Turbopack 底层 Rust 架构
+- [Rust Cookbook — FFI](https://rust-lang-nursery.github.io/rust-cookbook/development_tools/ffi.html) — FFI 实战配方
 
 *本 THEORY.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*

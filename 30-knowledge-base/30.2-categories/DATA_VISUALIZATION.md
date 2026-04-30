@@ -145,6 +145,169 @@ const material = new THREE.MeshBasicNodeMaterial({
 
 ---
 
+### D3.js 数据绑定与更新模式（Data Join）
+
+```javascript
+// d3-data-join.ts — D3 核心模式：数据绑定、进入、更新、退出
+import * as d3 from 'd3';
+
+interface DataPoint {
+  id: string;
+  value: number;
+  label: string;
+}
+
+function renderBarChart(container: HTMLElement, data: DataPoint[]) {
+  const svg = d3.select(container);
+  const width = container.clientWidth;
+  const height = 300;
+  const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+
+  const x = d3.scaleBand()
+    .domain(data.map((d) => d.id))
+    .range([margin.left, width - margin.right])
+    .padding(0.2);
+
+  const y = d3.scaleLinear()
+    .domain([0, d3.max(data, (d) => d.value) ?? 0])
+    .nice()
+    .range([height - margin.bottom, margin.top]);
+
+  // Data Join 模式
+  const bars = svg.selectAll<SVGRectElement, DataPoint>('rect.bar')
+    .data(data, (d: any) => d.id); // 以 id 为 key
+
+  // ENTER：新数据项
+  bars.enter()
+    .append('rect')
+    .attr('class', 'bar')
+    .attr('x', (d) => x(d.id) ?? 0)
+    .attr('y', height - margin.bottom)
+    .attr('width', x.bandwidth())
+    .attr('height', 0)
+    .attr('fill', 'steelblue')
+    .transition().duration(750)
+    .attr('y', (d) => y(d.value))
+    .attr('height', (d) => height - margin.bottom - y(d.value));
+
+  // UPDATE：已有数据项更新
+  bars.transition().duration(750)
+    .attr('x', (d) => x(d.id) ?? 0)
+    .attr('y', (d) => y(d.value))
+    .attr('width', x.bandwidth())
+    .attr('height', (d) => height - margin.bottom - y(d.value));
+
+  // EXIT：移除不存在的数据项
+  bars.exit()
+    .transition().duration(750)
+    .attr('y', height - margin.bottom)
+    .attr('height', 0)
+    .remove();
+}
+
+// 使用：数据更新时自动处理进入/更新/退出
+renderBarChart(document.getElementById('chart')!, [
+  { id: 'a', value: 30, label: 'A' },
+  { id: 'b', value: 80, label: 'B' },
+]);
+```
+
+### ECharts 实时数据流（WebSocket 驱动）
+
+```typescript
+// echarts-realtime.ts — WebSocket 驱动的实时折线图
+import * as echarts from 'echarts';
+
+const chart = echarts.init(document.getElementById('realtime-chart')!);
+const maxPoints = 50;
+const data: [number, number][] = [];
+
+chart.setOption({
+  title: { text: '实时服务器负载' },
+  xAxis: { type: 'time', splitLine: { show: false } },
+  yAxis: { type: 'value', min: 0, max: 100 },
+  series: [{
+    name: 'CPU %',
+    type: 'line',
+    showSymbol: false,
+    areaStyle: { opacity: 0.3 },
+    data,
+  }],
+});
+
+const ws = new WebSocket('wss://metrics.example.com/live');
+ws.onmessage = (event) => {
+  const payload = JSON.parse(event.data);
+  const timestamp = Date.now();
+  data.push([timestamp, payload.cpu]);
+  if (data.length > maxPoints) data.shift();
+
+  chart.setOption({
+    series: [{ data }],
+  });
+};
+
+// 响应式重绘
+window.addEventListener('resize', () => chart.resize());
+```
+
+### Chart.js 自定义插件（水印与阈值线）
+
+```typescript
+// chartjs-plugin.ts — Chart.js 自定义插件示例
+import { Chart } from 'chart.js';
+
+const watermarkPlugin = {
+  id: 'watermark',
+  afterDraw(chart: Chart) {
+    const { ctx, chartArea } = chart;
+    ctx.save();
+    ctx.globalAlpha = 0.1;
+    ctx.font = 'bold 48px sans-serif';
+    ctx.fillStyle = '#000';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.translate(chartArea.left + chartArea.width / 2, chartArea.top + chartArea.height / 2);
+    ctx.rotate(-Math.PI / 6);
+    ctx.fillText('INTERNAL', 0, 0);
+    ctx.restore();
+  },
+};
+
+const thresholdLinePlugin = {
+  id: 'thresholdLine',
+  beforeDraw(chart: Chart) {
+    const { ctx, chartArea, scales } = chart;
+    const y = scales.y.getPixelForValue(80); // 阈值 80%
+    if (y < chartArea.top || y > chartArea.bottom) return;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 4]);
+    ctx.moveTo(chartArea.left, y);
+    ctx.lineTo(chartArea.right, y);
+    ctx.stroke();
+    ctx.restore();
+  },
+};
+
+// 注册并使用
+Chart.register(watermarkPlugin, thresholdLinePlugin);
+
+new Chart(document.getElementById('myChart') as HTMLCanvasElement, {
+  type: 'line',
+  data: {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    datasets: [{ label: 'Sales', data: [65, 59, 80, 81, 96] }],
+  },
+  options: {
+    plugins: { watermark: true, thresholdLine: true },
+  },
+});
+```
+
 ## 性能考量
 
 | 数据量级 | 推荐方案 | 说明 |
@@ -234,6 +397,21 @@ export function useChartResize() {
 | Pantos 研究 — 感知与认知 | [research.tableau.com/sites/default/files](https://research.tableau.com/sites/default/files/pantos-2020-perception.pdf) | 可视化感知研究论文 |
 | Google Material Design 数据可视化 | [m3.material.io/styles/illustration/data-visualization](https://m3.material.io/styles/illustration/data-visualization/overview) | 设计系统配色与规范 |
 | Deck.gl 性能优化 | [deck.gl/docs/developer-guide/performance](https://deck.gl/docs/developer-guide/performance) | 大规模地理数据渲染 |
+| D3.js API Reference | [d3js.org/d3-selection](https://d3js.org/d3-selection) | D3 选择集与数据绑定权威文档 |
+| D3.js Gallery | [observablehq.com/@d3/gallery](https://observablehq.com/@d3/gallery) | 官方可视化图库 |
+| ECharts WebSocket 示例 | [echarts.apache.org/examples](https://echarts.apache.org/examples/) | 官方示例与配置手册 |
+| Chart.js Plugin API | [chartjs.org/docs/latest/developers/plugins](https://www.chartjs.org/docs/latest/developers/plugins.html) | 自定义插件开发指南 |
+| Observable Plot Documentation | [observablehq.com/plot/features](https://observablehq.com/plot/features/) | 声明式统计图形文档 |
+| Apache ECharts GL | [github.com/ecomfe/echarts-gl](https://github.com/ecomfe/echarts-gl) | ECharts 3D 与 WebGL 扩展 |
+| Three.js WebGPU Renderer | [threejs.org/docs/index.html#manual/en/introduction/WebGPU](https://threejs.org/docs/index.html#manual/en/introduction/WebGPU) | WebGPU 渲染器文档 |
+| Tremor React Components | [tremor.so/docs](https://www.tremor.so/docs) | Tremor 组件库文档 |
+| Visx (Airbnb) | [github.com/airbnb/visx](https://github.com/airbnb/visx) | React 底层可视化原语 |
+| Nivo | [nivo.rocks](https://nivo.rocks/) | React 声明式数据可视化 |
+| Victory (Formidable) | [formidable.com/open-source/victory](https://formidable.com/open-source/victory/) | React 跨平台可视化 |
+| Frappe Charts | [frappe.io/charts](https://frappe.io/charts) | 现代 GitHub 风格图表 |
+| WebGPU Explainer | [gpuweb.github.io/gpuweb/explainer](https://gpuweb.github.io/gpuweb/explainer/) | WebGPU 技术说明 |
+| Data Visualization Society | [datavisualizationsociety.com](https://www.datavisualizationsociety.com/) | 数据可视化社区 |
+| Information is Beautiful Awards | [informationisbeautiful.net](https://www.informationisbeautiful.net/) | 数据可视化设计灵感 |
 
 ---
 

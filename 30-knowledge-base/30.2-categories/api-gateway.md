@@ -222,6 +222,164 @@ module.exports = {
 
 ---
 
+## 代码示例：Express Gateway 中间件限流实现
+
+```typescript
+// express-gateway-limiter.ts — 基于 Express 的轻量级网关限流
+import express, { Request, Response, NextFunction } from 'express';
+import rateLimit from 'express-rate-limit';
+import RedisStore from 'rate-limit-redis';
+import { Redis } from 'ioredis';
+
+const redis = new Redis(process.env.REDIS_URL);
+
+// 基于 Redis 的分布式限流
+const distributedLimiter = rateLimit({
+  store: new RedisStore({
+    sendCommand: (...args: string[]) => redis.call(...args),
+  }),
+  windowMs: 60 * 1000, // 1 分钟
+  max: (req: Request) => {
+    // 根据 API Key 等级动态调整配额
+    const tier = req.headers['x-api-tier'] as string || 'free';
+    return tier === 'premium' ? 10000 : tier === 'pro' ? 1000 : 100;
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request) => req.ip ?? 'unknown',
+  handler: (_req: Request, res: Response) => {
+    res.status(429).json({
+      error: 'Too Many Requests',
+      retryAfter: Math.ceil((distributedLimiter as any).windowMs / 1000),
+    });
+  },
+});
+
+// 基于内存的本地限流（兜底）
+const localLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+});
+
+const app = express();
+app.use(localLimiter);
+app.use('/api/v1/', distributedLimiter);
+
+// 反向代理到上游服务
+import { createProxyMiddleware } from 'http-proxy-middleware';
+
+app.use('/api/v1/users', createProxyMiddleware({
+  target: 'http://user-service:8080',
+  changeOrigin: true,
+  pathRewrite: { '^/api/v1/users': '/users' },
+}));
+
+app.listen(3000, () => console.log('Express Gateway on :3000'));
+```
+
+## 代码示例：Envoy WASM 过滤器基础
+
+```rust
+// envoy-wasm-filter.rs — 使用 Rust 编写 Envoy WASM 过滤器
+// 编译: cargo build --target=wasm32-wasi --release
+
+use proxy_wasm::traits::*;
+use proxy_wasm::types::*;
+
+proxy_wasm::main! {{
+    proxy_wasm::set_log_level(LogLevel::Trace);
+    proxy_wasm::set_root_context(|_| -> Box<dyn RootContext> {
+        Box::new(HttpAuthRoot)
+    });
+}}
+
+struct HttpAuthRoot;
+
+impl Context for HttpAuthRoot {}
+
+impl RootContext for HttpAuthRoot {
+    fn get_type(&self) -> Option<ContextType> {
+        Some(ContextType::HttpContext)
+    }
+
+    fn create_http_context(&self, _context_id: u32) -> Option<Box<dyn HttpContext>> {
+        Some(Box::new(HttpAuthFilter))
+    }
+}
+
+struct HttpAuthFilter;
+
+impl Context for HttpAuthFilter {}
+
+impl HttpContext for HttpAuthFilter {
+    fn on_http_request_headers(&mut self, _num_headers: usize, _end_of_stream: bool) -> Action {
+        if let Some(token) = self.get_http_request_header("authorization") {
+            if token.starts_with("Bearer ") && validate_token(&token[7..]) {
+                return Action::Continue;
+            }
+        }
+        self.send_http_response(401, vec![], Some(b"Unauthorized"));
+        Action::Pause
+    }
+}
+
+fn validate_token(token: &str) -> bool {
+    // 简化的 token 验证逻辑
+    token.len() > 20
+}
+```
+
+## 代码示例：AWS API Gateway OpenAPI 导入与 Lambda 集成
+
+```typescript
+// aws-apigw-import.ts — 使用 AWS CDK 导入 OpenAPI 并集成 Lambda
+import * as cdk from 'aws-cdk-lib';
+import * as apigw from 'aws-cdk-lib/aws-apigateway';
+import * as lambda from 'aws-cdk-lib/aws-lambda-nodejs';
+import { Construct } from 'constructs';
+
+export class ApiGatewayStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    const handler = new lambda.NodejsFunction(this, 'ApiHandler', {
+      entry: './src/handler.ts',
+      handler: 'handler',
+      runtime: cdk.aws_lambda.Runtime.NODEJS_22_X,
+    });
+
+    const api = new apigw.RestApi(this, 'EcommerceApi', {
+      restApiName: 'E-commerce API',
+      deployOptions: {
+        tracingEnabled: true,
+        loggingLevel: apigw.MethodLoggingLevel.INFO,
+      },
+    });
+
+    // OpenAPI 驱动的资源创建
+    const products = api.root.addResource('products');
+    products.addMethod('GET', new apigw.LambdaIntegration(handler), {
+      methodResponses: [{ statusCode: '200' }],
+      apiKeyRequired: true,
+    });
+
+    // 创建 API Key 与使用计划
+    const plan = api.addUsagePlan('UsagePlan', {
+      name: 'Standard',
+      throttle: { rateLimit: 100, burstLimit: 50 },
+      quota: { limit: 10000, period: apigw.Period.DAY },
+    });
+
+    const key = api.addApiKey('ApiKey');
+    plan.addApiKey(key);
+    plan.addApiStage({ stage: api.deploymentStage });
+  }
+}
+```
+
+---
+
 ## 选型建议
 
 | 场景 | 推荐网关 |
@@ -249,6 +407,15 @@ module.exports = {
 - [Kong Plugin Development Kit](https://docs.konghq.com/gateway/latest/plugin-development/)
 - [Envoy WASM Filters](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/wasm_filter)
 - [OWASP API Security Top 10](https://owasp.org/www-project-api-security/)
+- [Express Rate Limit — npm](https://www.npmjs.com/package/express-rate-limit)
+- [Envoy Proxy — Architecture Overview](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/)
+- [AWS CDK — API Gateway Construct](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigateway-readme.html)
+- [Kong — DB-less Declarative Configuration](https://docs.konghq.com/gateway/latest/production/deployment-topologies/db-less-and-declarative-config/)
+- [Istio — Gateway Configuration](https://istio.io/latest/docs/tasks/traffic-management/ingress/ingress-control/)
+- [NGINX — Rate Limiting](https://www.nginx.com/blog/rate-limiting-nginx/)
+- [Microsoft — API Management Patterns](https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-offloading)
+- [Google — API Design Guide](https://cloud.google.com/apis/design)
+- [Envoy WASM SDK — proxy-wasm-rust-sdk](https://github.com/proxy-wasm/proxy-wasm-rust-sdk)
 
 ---
 

@@ -19,13 +19,13 @@ created: 2026-04-28
 
 ## 目录内容
 
-- 📄 ARCHIVED.md
-- 📄 README.md
-- 📄 THEORY.md
-- 📄 _MIGRATED_FROM.md
-- 📄 a11y-utils.test.ts
-- 📄 a11y-utils.ts
-- 📄 index.ts
+- ARCHIVED.md
+- README.md
+- THEORY.md
+- _MIGRATED_FROM.md
+- a11y-utils.test.ts
+- a11y-utils.ts
+- index.ts
 
 
 ---
@@ -74,7 +74,7 @@ export function createFocusTrap(container: HTMLElement) {
   return () => container.removeEventListener('keydown', handleKeyDown);
 }
 
-// ── 动态 ARIA 属性更新工具 ──
+// 动态 ARIA 属性更新工具
 export function announceToScreenReader(message: string, priority: 'polite' | 'assertive' = 'polite') {
   const el = document.createElement('div');
   el.setAttribute('role', 'status');
@@ -221,6 +221,185 @@ console.log(contrastRatio('#000000', '#ffffff')); // 21
 console.log(checkContrast('#767676', '#ffffff')); // false (AA)
 ```
 
+## 新增代码示例
+
+### 地标区域（Landmark Regions）自动化注入
+
+```typescript
+// landmarks.ts — 确保页面包含必要 ARIA 地标（WCAG 1.3.1）
+
+export const REQUIRED_LANDMARKS = ['main', 'navigation'] as const;
+export const RECOMMENDED_LANDMARKS = ['banner', 'contentinfo', 'search'] as const;
+
+export function auditLandmarks(container: HTMLElement = document.body): {
+  missing: string[];
+  present: string[];
+  duplicate: string[];
+} {
+  const landmarks = Array.from(container.querySelectorAll<HTMLElement>(
+    '[role="main"], [role="navigation"], [role="banner"], [role="contentinfo"], [role="search"], [role="complementary"]'
+  ));
+
+  const present = landmarks.map(el => el.getAttribute('role')!);
+  const missing = REQUIRED_LANDMARKS.filter(r => !present.includes(r));
+
+  const counts = present.reduce((acc, r) => { acc[r] = (acc[r] || 0) + 1; return acc; }, {} as Record<string, number>);
+  const duplicate = Object.entries(counts).filter(([, c]) => c > 1).map(([r]) => r);
+
+  return { missing, present, duplicate };
+}
+
+export function injectMissingLandmarks(): void {
+  if (!document.querySelector('[role="main"]')) {
+    const main = document.querySelector('main') || document.querySelector('article');
+    if (main) main.setAttribute('role', 'main');
+  }
+  if (!document.querySelector('[role="navigation"]')) {
+    const nav = document.querySelector('nav');
+    if (nav) nav.setAttribute('role', 'navigation');
+  }
+}
+```
+
+### ARIA Live Region 状态通知队列
+
+```typescript
+// live-region-queue.ts — 避免屏幕阅读器消息丢失
+
+class LiveRegionQueue {
+  private queue: Array<{ message: string; priority: 'polite' | 'assertive' }> = [];
+  private isAnnouncing = false;
+  private region: HTMLElement | null = null;
+
+  constructor() {
+    this.region = document.createElement('div');
+    this.region.setAttribute('aria-live', 'polite');
+    this.region.setAttribute('aria-atomic', 'true');
+    this.region.className = 'sr-only';
+    document.body.appendChild(this.region);
+  }
+
+  announce(message: string, priority: 'polite' | 'assertive' = 'polite') {
+    this.queue.push({ message, priority });
+    if (!this.isAnnouncing) this.processQueue();
+  }
+
+  private async processQueue() {
+    if (this.queue.length === 0) { this.isAnnouncing = false; return; }
+    this.isAnnouncing = true;
+    const { message, priority } = this.queue.shift()!;
+
+    if (this.region) {
+      this.region.setAttribute('aria-live', priority);
+      this.region.textContent = '';
+      // 强制 DOM 刷新
+      await new Promise(r => requestAnimationFrame(r));
+      this.region.textContent = message;
+    }
+
+    // 等待屏幕阅读器完成播报（估算）
+    await new Promise(r => setTimeout(r, Math.max(1000, message.length * 50)));
+    this.processQueue();
+  }
+}
+
+export const announcer = new LiveRegionQueue();
+// announcer.announce('表单提交成功', 'polite');
+```
+
+### Focus Visible 与焦点样式管理
+
+```typescript
+// focus-visible.ts — 仅在键盘导航时显示焦点环（WCAG 2.4.7）
+
+export function setupFocusVisible(): () => void {
+  let hadKeyboardEvent = false;
+  let hadFocusVisibleRecently = false;
+  let hadFocusVisibleRecentlyTimeout: ReturnType<typeof setTimeout>;
+
+  function onPointerDown() {
+    hadKeyboardEvent = false;
+  }
+
+  function onKeyDown(e: KeyboardEvent) {
+    if (e.metaKey || e.altKey || e.ctrlKey) return;
+    hadKeyboardEvent = true;
+  }
+
+  function onFocus(e: FocusEvent) {
+    if (hadKeyboardEvent || hadFocusVisibleRecently) {
+      (e.target as HTMLElement)?.classList.add('focus-visible');
+    }
+  }
+
+  function onBlur(e: FocusEvent) {
+    (e.target as HTMLElement)?.classList.remove('focus-visible');
+  }
+
+  function onWindowFocus() {
+    hadFocusVisibleRecently = true;
+    clearTimeout(hadFocusVisibleRecentlyTimeout);
+    hadFocusVisibleRecentlyTimeout = setTimeout(() => { hadFocusVisibleRecently = false; }, 100);
+  }
+
+  document.addEventListener('pointerdown', onPointerDown, true);
+  document.addEventListener('keydown', onKeyDown, true);
+  document.addEventListener('focus', onFocus, true);
+  document.addEventListener('blur', onBlur, true);
+  window.addEventListener('focus', onWindowFocus);
+
+  return () => {
+    document.removeEventListener('pointerdown', onPointerDown, true);
+    document.removeEventListener('keydown', onKeyDown, true);
+    document.removeEventListener('focus', onFocus, true);
+    document.removeEventListener('blur', onBlur, true);
+    window.removeEventListener('focus', onWindowFocus);
+  };
+}
+```
+
+### 自动化可访问性测试集成
+
+```typescript
+// a11y-test-integration.ts — 基于 axe-core 的运行时检测
+
+import axe from 'axe-core';
+
+export async function runA11yAudit(
+  context: HTMLElement = document.body,
+  options?: axe.RunOptions
+): Promise<axe.AxeResults> {
+  const results = await axe.run(context, {
+    rules: {
+      'color-contrast': { enabled: true },
+      'heading-order': { enabled: true },
+      'region': { enabled: true },
+      ...options?.rules,
+    },
+    ...options,
+  });
+
+  if (results.violations.length > 0) {
+    console.group('Accessibility Violations');
+    for (const violation of results.violations) {
+      console.warn(`${violation.impact?.toUpperCase()}: ${violation.description}`);
+      for (const node of violation.nodes) {
+        console.warn('  Element:', node.html);
+        console.warn('  Fix:', node.failureSummary);
+      }
+    }
+    console.groupEnd();
+  }
+
+  return results;
+}
+
+// 开发模式下自动运行
+if (process.env.NODE_ENV === 'development') {
+  setTimeout(() => runA11yAudit(), 3000);
+}
+```
+
 ## 学习资源
 
 | 资源 | 类型 | 链接 |
@@ -237,7 +416,13 @@ console.log(checkContrast('#767676', '#ffffff')); // false (AA)
 | W3C — ACT Rules | 可访问性一致性测试规则 | [w3.org/WAI/standards-guidelines/act](https://www.w3.org/WAI/standards-guidelines/act/) |
 | WebAIM — Color Contrast Checker | 在线工具 | [webaim.org/resources/contrastchecker](https://webaim.org/resources/contrastchecker/) |
 | W3C — HTML Accessibility API Mappings 1.0 | 规范 | [w3.org/TR/html-aam-1.0](https://www.w3.org/TR/html-aam-1.0/) |
+| ARIA Authoring Practices Guide — Patterns | 交互模式 | [w3.org/WAI/ARIA/apg/patterns](https://www.w3.org/WAI/ARIA/apg/patterns/) |
+| WebAIM — Keyboard Accessibility | 键盘导航 | [webaim.org/techniques/keyboard/](https://webaim.org/techniques/keyboard/) |
+| Inclusive Components — Heydon Pickering | 组件设计 | [inclusive-components.design](https://inclusive-components.design/) |
+| Accessible Rich Internet Applications (WAI-ARIA) 1.3 | 最新草案 | [w3.org/TR/wai-aria-1.3](https://w3.org/TR/wai-aria-1.3/) |
+| axe DevTools — Browser Extension | 浏览器插件 | [deque.com/axe/devtools](https://www.deque.com/axe/devtools/) |
+| Lighthouse Accessibility Scoring | 评分标准 | [developer.chrome.com/docs/lighthouse/accessibility/scoring](https://developer.chrome.com/docs/lighthouse/accessibility/scoring) |
 
 ---
 
-*最后更新: 2026-04-29*
+*最后更新: 2026-04-30*

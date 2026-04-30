@@ -9,7 +9,7 @@
 title: A2A (Agent-to-Agent) Protocol 完全指南
 description: 深度解析 Google 主导的 A2A 协议规范、Agent Cards 自动发现机制、与 MCP 的互补关系，以及多智能体编排实践。
 date: 2026-04-27
-last-updated: 2026-04-27
+last-updated: 2026-04-30
 review-cycle: 6 months
 next-review: 2026-10-27
 status: current
@@ -725,6 +725,152 @@ A2A (Agent-to-Agent Protocol) 代表了 AI 生态从"单 Agent + 工具"向"多 
 
 ---
 
+## 代码示例：流式任务更新（SSE 客户端）
+
+```typescript
+// a2a-streaming-client.ts — 接收 Agent 实时状态更新
+async function* streamTaskUpdates(agentUrl: string, taskId: string): AsyncGenerator<TaskUpdate> {
+  const response = await fetch(`${agentUrl}/tasks/${taskId}/stream`, {
+    headers: { Accept: 'text/event-stream' },
+  });
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('No response body');
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    const lines = buffer.split('\n');
+    buffer = lines.pop() ?? '';
+
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const data = line.slice(6).trim();
+        try {
+          yield JSON.parse(data) as TaskUpdate;
+        } catch {
+          // 忽略解析失败的行
+        }
+      }
+    }
+  }
+}
+
+// 使用示例
+// for await (const update of streamTaskUpdates('https://agent.example.com', 'task-123')) {
+//   console.log(`[${update.status}]`, update.intermediate_result);
+// }
+```
+
+## 代码示例：MCP-A2A 协议网关（概念实现）
+
+```typescript
+// mcp-a2a-gateway.ts — 允许 MCP Client 透明调用 A2A Agent
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+
+class McpA2aGateway {
+  private a2aAgents = new Map<string, AgentCard>();
+
+  async discoverAgents(registryUrl: string) {
+    const res = await fetch(`${registryUrl}/agents`);
+    const agents = await res.json() as AgentCard[];
+    agents.forEach((a) => this.a2aAgents.set(a.name, a));
+  }
+
+  toMcpTools(): McpTool[] {
+    const tools: McpTool[] = [];
+    for (const [name, card] of this.a2aAgents) {
+      for (const skill of card.skills) {
+        tools.push({
+          name: `${name}.${skill.id}`,
+          description: `${card.description} — ${skill.description}`,
+          inputSchema: skill.inputSchema,
+        });
+      }
+    }
+    return tools;
+  }
+
+  async execute(toolName: string, args: unknown): Promise<unknown> {
+    const [agentName, skillId] = toolName.split('.');
+    const agent = this.a2aAgents.get(agentName);
+    if (!agent) throw new Error(`Agent not found: ${agentName}`);
+
+    const res = await fetch(agent.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: crypto.randomUUID(),
+        method: 'tasks/send',
+        params: { skillId, input: args },
+      }),
+    });
+
+    return res.json();
+  }
+}
+```
+
+## 代码示例：A2A 任务重试与熔断
+
+```typescript
+// a2a-resilience.ts — 带指数退避和熔断的 A2A 客户端
+class ResilientA2AClient {
+  private failures = new Map<string, { count: number; lastFailure: number }>();
+  private readonly maxRetries = 3;
+  private readonly circuitThreshold = 5;
+  private readonly circuitTimeoutMs = 30_000;
+
+  async sendWithRetry(agentUrl: string, task: object): Promise<unknown> {
+    const circuit = this.failures.get(agentUrl);
+    if (circuit && circuit.count >= this.circuitThreshold) {
+      if (Date.now() - circuit.lastFailure < this.circuitTimeoutMs) {
+        throw new Error(`Circuit breaker open for ${agentUrl}`);
+      }
+      // 半开状态，允许一次试探
+      this.failures.delete(agentUrl);
+    }
+
+    let lastError: Error | undefined;
+    for (let attempt = 0; attempt < this.maxRetries; attempt++) {
+      try {
+        const result = await this.doSend(agentUrl, task);
+        this.failures.delete(agentUrl); // 成功则重置
+        return result;
+      } catch (err) {
+        lastError = err as Error;
+        const delay = Math.min(1000 * 2 ** attempt, 10_000);
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+
+    // 记录失败
+    const prev = this.failures.get(agentUrl) ?? { count: 0, lastFailure: 0 };
+    this.failures.set(agentUrl, { count: prev.count + 1, lastFailure: Date.now() });
+    throw lastError;
+  }
+
+  private async doSend(agentUrl: string, task: object): Promise<unknown> {
+    const res = await fetch(`${agentUrl}/tasks/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', id: crypto.randomUUID(), params: task }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  }
+}
+```
+
+---
+
 ## References
 
 | 来源 | 链接 | 说明 |
@@ -739,6 +885,15 @@ A2A (Agent-to-Agent Protocol) 代表了 AI 生态从"单 Agent + 工具"向"多 
 | JSON-RPC 2.0 规范 | `https://www.jsonrpc.org/specification` | A2A 基础传输协议 |
 | gRPC 官方文档 | `https://grpc.io/docs/` | A2A v1.0 可选传输层 |
 | DID 核心规范 | `https://www.w3.org/TR/did-core/` | 去中心化身份标识 |
+| W3C — Verifiable Credentials | `https://www.w3.org/TR/vc-data-model/` | 可验证凭证数据模型 |
+| OpenAI — Function Calling | `https://platform.openai.com/docs/guides/function-calling` | 函数调用基础概念 |
+| Anthropic — Tool Use | `https://docs.anthropic.com/en/docs/build-with-claude/tool-use` | Claude 工具使用指南 |
+| LangGraph — Multi-Agent Systems | `https://langchain-ai.github.io/langgraphjs/concepts/multi_agent/` | 多 Agent 系统设计 |
+| IETF — OAuth 2.0 (RFC 6749) | `https://tools.ietf.org/html/rfc6749` | OAuth 2.0 授权框架 |
+| Cloudflare — mTLS | `https://developers.cloudflare.com/cloudflare-one/identity/devices/` | 双向 TLS 身份验证 |
+| IEEE — Multi-Agent Systems Survey | `https://ieeexplore.ieee.org/document/9954387` | 多智能体系统综述论文 |
+| Microsoft Research — Compound AI Systems | `https://www.microsoft.com/en-us/research/publication/the-shift-from-models-to-compound-ai-systems/` | 复合 AI 系统研究 |
+| OWASP — AI Security | `https://owasp.org/www-project-ai-security-and-privacy-guide/` | AI 安全与隐私指南 |
 
 ---
 

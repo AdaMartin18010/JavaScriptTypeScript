@@ -1,4 +1,4 @@
-﻿# 决策树
+# 决策树
 
 > JavaScript/TypeScript 技术选型的结构化决策框架。
 
@@ -274,6 +274,151 @@ weightedScore(options, criteria).forEach((score, name) => {
 });
 ```
 
+### 交互式 CLI 决策向导（Node.js + inquirer）
+
+```typescript
+// 生产级 CLI 决策向导示例
+import { createPromptModule } from 'inquirer';
+
+const prompt = createPromptModule();
+
+interface TechChoice {
+  category: string;
+  question: string;
+  choices: { name: string; value: string; description?: string }[];
+}
+
+const questions: TechChoice[] = [
+  {
+    category: 'frontend',
+    question: '选择前端框架：',
+    choices: [
+      { name: 'React', value: 'react', description: '最大生态，Next.js 全栈' },
+      { name: 'Vue', value: 'vue', description: '渐进式，易上手' },
+      { name: 'Svelte', value: 'svelte', description: '编译优化，包体积小' },
+    ],
+  },
+  {
+    category: 'state',
+    question: '选择状态管理方案：',
+    choices: [
+      { name: 'Zustand', value: 'zustand', description: '极简，无样板代码' },
+      { name: 'TanStack Query', value: 'tanstack-query', description: '服务端状态首选' },
+      { name: 'Redux Toolkit', value: 'redux', description: '大型企业级' },
+    ],
+  },
+];
+
+async function runWizard() {
+  const answers: Record<string, string> = {};
+  for (const q of questions) {
+    const { choice } = await prompt({
+      type: 'list',
+      name: 'choice',
+      message: q.question,
+      choices: q.choices.map(c => ({
+        name: `${c.name} — ${c.description}`,
+        value: c.value,
+      })),
+    });
+    answers[q.category] = choice;
+  }
+  console.log('\n✅ 你的技术栈选择：', answers);
+}
+
+// runWizard();
+```
+
+## 代码示例：AI 辅助技术选型（基于规则 + LLM 混合）
+
+```typescript
+// ai-assisted-decision.ts — 结合规则引擎与大模型推理的选型助手
+interface ProjectRequirement {
+  teamSize: 'small' | 'medium' | 'large';
+  performancePriority: 'low' | 'medium' | 'high';
+  ssrRequired: boolean;
+  edgeRuntime: boolean;
+  existingStack?: string[];
+}
+
+function ruleBasedRecommendation(req: ProjectRequirement): string[] {
+  const candidates: string[] = [];
+
+  if (req.ssrRequired) {
+    if (req.edgeRuntime) candidates.push('Remix / React Router v7');
+    else candidates.push('Next.js 15 (App Router)', 'Nuxt 3');
+  } else {
+    candidates.push('Vite + React', 'Vite + Vue');
+  }
+
+  if (req.performancePriority === 'high') {
+    candidates.push('SvelteKit', 'SolidStart');
+  }
+
+  if (req.teamSize === 'large') {
+    // 大型团队优先生态成熟度
+    candidates.unshift('Next.js 15 (App Router)');
+  }
+
+  return [...new Set(candidates)];
+}
+
+// 生成自然语言提示词，供 LLM 进一步分析
+function generatePrompt(req: ProjectRequirement, candidates: string[]): string {
+  return `作为资深前端架构师，请基于以下项目需求，从候选方案中给出最终推荐并说明理由：
+
+项目需求：
+- 团队规模：${req.teamSize}
+- 性能优先级：${req.performancePriority}
+- SSR 需求：${req.ssrRequired}
+- Edge Runtime：${req.edgeRuntime}
+- 现有技术栈：${req.existingStack?.join(', ') ?? '无'}
+
+候选方案：
+${candidates.map((c) => `- ${c}`).join('\n')}
+
+请输出：1) 最终推荐 2) 备选方案 3) 风险与注意事项`;
+}
+
+// 使用示例
+// const req: ProjectRequirement = { teamSize: 'large', performancePriority: 'high', ssrRequired: true, edgeRuntime: true };
+// const candidates = ruleBasedRecommendation(req);
+// const prompt = generatePrompt(req, candidates);
+// const recommendation = await callLLM(prompt);
+```
+
+## 代码示例：npm 包趋势对比决策辅助
+
+```typescript
+// npm-trends-decision.ts — 基于下载量趋势的选型辅助
+interface PackageMetrics {
+  name: string;
+  weeklyDownloads: number;
+  growthRate: number; // 近 6 个月增长率
+  lastUpdateDays: number;
+  issuesOpen: number;
+  stars: number;
+}
+
+function scorePackage(metrics: PackageMetrics): number {
+  // 综合评分：下载量 40% + 增长率 30% + 活跃度 30%
+  const downloadScore = Math.min(metrics.weeklyDownloads / 1_000_000, 1) * 40;
+  const growthScore = Math.min(Math.max(metrics.growthRate, -1), 1) * 30 + 15; // 基础分 15
+  const freshnessScore = metrics.lastUpdateDays < 30 ? 15 : metrics.lastUpdateDays < 90 ? 10 : 5;
+  const healthScore = metrics.issuesOpen < 100 ? 10 : 5;
+  return downloadScore + growthScore + freshnessScore + healthScore;
+}
+
+// 示例数据（2026-04 估算）
+const packages: PackageMetrics[] = [
+  { name: 'next', weeklyDownloads: 5_200_000, growthRate: 0.12, lastUpdateDays: 3, issuesOpen: 412, stars: 127000 },
+  { name: 'nuxt', weeklyDownloads: 1_800_000, growthRate: 0.08, lastUpdateDays: 5, issuesOpen: 230, stars: 55000 },
+  { name: 'sveltekit', weeklyDownloads: 800_000, growthRate: 0.15, lastUpdateDays: 7, issuesOpen: 89, stars: 82000 },
+];
+
+// packages.map(p => ({ name: p.name, score: scorePackage(p).toFixed(1) })).sort((a, b) => +b.score - +a.score);
+```
+
 ---
 
 ## 权威参考链接
@@ -303,6 +448,18 @@ weightedScore(options, criteria).forEach((score, name) => {
 | TC39 Proposals | <https://github.com/tc39/proposals> | ECMAScript 提案跟踪 |
 | Deno 文档 | <https://docs.deno.com/> | Deno 运行时官方文档 |
 | Bun 文档 | <https://bun.sh/docs> | Bun 运行时官方文档 |
+| inquirer.js | <https://github.com/SBoudrias/Inquirer.js> | 交互式 Node.js CLI 库 |
+| npmtrends.com | <https://www.npmtrends.com/> | npm 包下载量趋势对比 |
+| Bundlephobia | <https://bundlephobia.com/> | 包体积分析工具 |
+| Thoughtworks Technology Radar | <https://www.thoughtworks.com/radar> | 技术趋势雷达 |
+| State of Frontend | <https://stateoffrontend.com/> | 前端生态年度调查 |
+| NPM Registry API | <https://github.com/npm/registry/blob/master/docs/REGISTRY-API.md> | npm 元数据 API 文档 |
+| React Server Components RFC | <https://github.com/reactjs/rfcs/blob/main/text/0188-server-components.md> | RSC 架构 RFC |
+| Vercel Edge Runtime | <https://edge-runtime.vercel.app/> | Edge Runtime 规范与 API |
+| Cloudflare Workers — Runtime APIs | <https://developers.cloudflare.com/workers/runtime-apis/> | Workers 运行时 API |
+| OpenJS Foundation — Standards | <https://openjsf.org/> | JavaScript 运行时标准组织 |
+| Node.js — Performance Best Practices | <https://nodejs.org/en/docs/guides/simple-profiling> | Node.js 性能调优指南 |
+| Webpack — Tree Shaking | <https://webpack.js.org/guides/tree-shaking/> | 摇树优化深度指南 |
 
 ---
 

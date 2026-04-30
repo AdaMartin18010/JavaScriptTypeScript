@@ -143,7 +143,7 @@ export function PredictivePrefetch() {
 ### Service Worker 智能缓存策略
 
 ```typescript
-// public/sw.ts — Workbox 驱动的智能缓存
+// public/sw.ts -- Workbox 驱动的智能缓存
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { StaleWhileRevalidate, CacheFirst, NetworkFirst } from 'workbox-strategies';
@@ -183,7 +183,7 @@ registerRoute(
 );
 ```
 
-### `requestIdleCallback` 非关键任务调度
+### requestIdleCallback 非关键任务调度
 
 ```typescript
 // lib/idle-work.ts
@@ -218,15 +218,176 @@ scheduleIdleWork(() => {
 
 ---
 
+## 代码示例：PerformanceObserver 元素归因分析
+
+```typescript
+// lib/lcp-attribution.ts -- 利用 PerformanceObserver 获取 LCP 元素详细归因
+
+interface LCPAttributionDetail {
+  lcpEntry: PerformanceEntry;
+  element: Element | null;
+  url?: string;
+  loadTime: number;
+  renderTime: number;
+  resourceLoadDuration: number;
+  elementRenderDelay: number;
+}
+
+export function observeLCPAttribution(
+  callback: (detail: LCPAttributionDetail) => void
+): () => void {
+  if (!('PerformanceObserver' in window)) return () => {};
+
+  const observer = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      const lcpEntry = entry as any;
+      // 获取 LCP 归因信息（Chrome 122+）
+      const attribution = lcpEntry.attribution?.[0];
+
+      callback({
+        lcpEntry: entry,
+        element: lcpEntry.element,
+        url: lcpEntry.url,
+        loadTime: lcpEntry.loadTime ?? 0,
+        renderTime: lcpEntry.renderTime ?? 0,
+        resourceLoadDuration: attribution?.resourceLoadDuration ?? 0,
+        elementRenderDelay: attribution?.elementRenderDelay ?? 0,
+      });
+    }
+  });
+
+  observer.observe({ type: 'largest-contentful-paint', buffered: true });
+  return () => observer.disconnect();
+}
+
+// 使用示例：上报 LCP 瓶颈诊断
+observeLCPAttribution((detail) => {
+  const bottlenecks: string[] = [];
+  if (detail.resourceLoadDuration > 800) bottlenecks.push('resource-load-slow');
+  if (detail.elementRenderDelay > 200) bottlenecks.push('render-delay');
+
+  fetch('/api/perf-diag', {
+    method: 'POST',
+    body: JSON.stringify({
+      lcp: detail.renderTime,
+      element: detail.element?.tagName,
+      bottlenecks,
+      url: window.location.href,
+    }),
+    keepalive: true,
+  });
+});
+```
+
+## 代码示例：scheduler.yield() 长任务拆分
+
+```typescript
+// lib/yielding-processor.ts -- 使用 scheduler.yield() 避免阻塞主线程
+
+export async function processLargeDataset<T, R>(
+  items: T[],
+  processor: (item: T) => R,
+  options: { chunkSize?: number; yieldEvery?: number } = {}
+): Promise<R[]> {
+  const { chunkSize = 100, yieldEvery = 50 } = options;
+  const results: R[] = [];
+
+  for (let i = 0; i < items.length; i += chunkSize) {
+    const chunk = items.slice(i, i + chunkSize);
+
+    // 处理当前块
+    for (const item of chunk) {
+      results.push(processor(item));
+    }
+
+    // 每处理 yieldEvery 个元素后让出主线程
+    if (i > 0 && i % (chunkSize * yieldEvery) === 0) {
+      if ('scheduler' in window && 'yield' in (window as any).scheduler) {
+        await (window as any).scheduler.yield();
+      } else {
+        // 降级：使用 setTimeout(0) 让出
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+    }
+  }
+
+  return results;
+}
+
+// 使用示例：大数据表格渲染不阻塞交互
+async function renderTable(rows: DataRow[]) {
+  const processed = await processLargeDataset(
+    rows,
+    (row) => ({ ...row, computed: expensiveCalculation(row) }),
+    { chunkSize: 50, yieldEvery: 20 }
+  );
+  setTableData(processed);
+}
+```
+
+## 代码示例：自适应图片质量（Network Information API）
+
+```typescript
+// lib/adaptive-image.ts -- 根据网络状况动态选择图片质量
+
+interface ImageVariant {
+  url: string;
+  quality: 'high' | 'medium' | 'low';
+}
+
+export function selectOptimalImage(variants: ImageVariant[]): ImageVariant {
+  const nav = navigator as any;
+
+  // 使用 Network Information API
+  const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
+
+  if (connection) {
+    const { effectiveType, saveData } = connection;
+
+    if (saveData) return variants.find(v => v.quality === 'low') ?? variants[0];
+
+    switch (effectiveType) {
+      case '4g': return variants.find(v => v.quality === 'high') ?? variants[0];
+      case '3g': return variants.find(v => v.quality === 'medium') ?? variants[0];
+      case '2g':
+      case 'slow-2g':
+        return variants.find(v => v.quality === 'low') ?? variants[0];
+    }
+  }
+
+  // 降级：根据设备内存判断
+  const memory = (nav as any).deviceMemory;
+  if (memory && memory < 4) {
+    return variants.find(v => v.quality === 'low') ?? variants[0];
+  }
+
+  return variants[variants.length - 1];
+}
+
+// React 组件中使用
+function AdaptiveImage({ srcSet }: { srcSet: ImageVariant[] }) {
+  const [src, setSrc] = useState(srcSet[0].url);
+
+  useEffect(() => {
+    const optimal = selectOptimalImage(srcSet);
+    setSrc(optimal.url);
+  }, [srcSet]);
+
+  return <img src={src} alt="Adaptive" loading="lazy" />;
+}
+```
+
+---
+
 ## Core Web Vitals 阈值（2026）
 
 | 指标 | 优秀 | 需改进 | 差 |
 |------|------|--------|-----|
-| **LCP**（最大内容绘制） | ≤ 2.5s | ≤ 4.0s | > 4.0s |
-| **INP**（交互到下一次绘制） | ≤ 200ms | ≤ 500ms | > 500ms |
-| **CLS**（累积布局偏移） | ≤ 0.1 | ≤ 0.25 | > 0.25 |
-| **TTFB**（首字节时间） | ≤ 0.8s | ≤ 1.8s | > 1.8s |
-| **FCP**（首次内容绘制） | ≤ 1.8s | ≤ 3.0s | > 3.0s |
+| **LCP**（最大内容绘制） | <= 2.5s | <= 4.0s | > 4.0s |
+| **INP**（交互到下一次绘制） | <= 200ms | <= 500ms | > 500ms |
+| **CLS**（累积布局偏移） | <= 0.1 | <= 0.25 | > 0.25 |
+| **TTFB**（首字节时间） | <= 0.8s | <= 1.8s | > 1.8s |
+| **FCP**（首次内容绘制） | <= 1.8s | <= 3.0s | > 3.0s |
 
 ---
 
@@ -247,11 +408,22 @@ scheduleIdleWork(() => {
 - [Chrome DevTools Performance](https://developer.chrome.com/docs/devtools/performance/)
 - [Vercel Speed Insights](https://vercel.com/docs/speed-insights)
 - [Chrome UX Report (CrUX)](https://developer.chrome.com/docs/crux)
-- [Speculation Rules API — Chrome Developers](https://developer.chrome.com/docs/web-platform/prerender-pages)
-- [Workbox — Google Chrome Labs](https://developer.chrome.com/docs/workbox)
-- [web.dev — Optimize LCP](https://web.dev/articles/optimize-lcp)
-- [web.dev — Optimize INP](https://web.dev/articles/optimize-inp)
-- [web.dev — Optimize CLS](https://web.dev/articles/optimize-cls)
+- [Speculation Rules API -- Chrome Developers](https://developer.chrome.com/docs/web-platform/prerender-pages)
+- [Workbox -- Google Chrome Labs](https://developer.chrome.com/docs/workbox)
+- [web.dev -- Optimize LCP](https://web.dev/articles/optimize-lcp)
+- [web.dev -- Optimize INP](https://web.dev/articles/optimize-inp)
+- [web.dev -- Optimize CLS](https://web.dev/articles/optimize-cls)
+- [MDN -- PerformanceObserver](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver)
+- [web.dev -- Optimize Long Tasks](https://web.dev/articles/optimize-long-tasks)
+- [Chrome -- The Science of Web Fonts](https://web.dev/articles/font-best-practices)
+- [W3C -- Network Information API](https://wicg.github.io/netinfo/)
+- [web.dev -- Adaptive Loading](https://web.dev/articles/codelab-adaptive-loading)
+- [web.dev -- Content Visibility](https://web.dev/articles/content-visibility)
+- [Google -- Rendering on the Web](https://web.dev/rendering-on-the-web/)
+- [Chrome -- INP Optimization Guide](https://web.dev/articles/inp)
+- [web.dev -- Resource Prioritization](https://web.dev/articles/resource-prioritization)
+- [Next.js -- Image Optimization](https://nextjs.org/docs/app/building-your-application/optimizing/images)
+- [Vercel -- Edge Config for Performance](https://vercel.com/docs/storage/edge-config)
 
 ---
 

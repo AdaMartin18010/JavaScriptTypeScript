@@ -244,7 +244,136 @@ function ListItem({ data }: { data: ItemData }) {
 */
 ```
 
-## 9. 与相邻模块的关系
+## 9. 代码示例：React useDeferredValue 高优先级任务插队
+
+```tsx
+// deferred-search.tsx — 利用 useDeferredValue 保持输入响应
+import { useState, useDeferredValue, memo } from 'react';
+
+// 模拟大数据量列表渲染
+const HeavyList = memo(({ query }: { query: string }) => {
+  const items = Array.from({ length: 5000 }, (_, i) => `Item ${i}`);
+  const filtered = items.filter(item =>
+    item.toLowerCase().includes(query.toLowerCase())
+  );
+
+  return (
+    <ul>
+      {filtered.map(item => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+  );
+});
+
+export function SearchPage() {
+  const [rawQuery, setRawQuery] = useState('');
+  const deferredQuery = useDeferredValue(rawQuery);
+
+  const isStale = rawQuery !== deferredQuery;
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={rawQuery}
+        onChange={e => setRawQuery(e.target.value)}
+        placeholder="搜索 5000 条数据..."
+      />
+      <div style={{ opacity: isStale ? 0.5 : 1 }}>
+        <HeavyList query={deferredQuery} />
+      </div>
+    </div>
+  );
+}
+```
+
+## 10. 代码示例：requestIdleCallback 非关键渲染调度
+
+```typescript
+// idle-rendering.ts — 将非关键 DOM 更新推迟到浏览器空闲期
+
+export function scheduleIdleRender(
+  buildFragment: () => DocumentFragment,
+  container: HTMLElement,
+  timeout = 2000
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const cb = (deadline: IdleDeadline) => {
+      try {
+        // 如果有足够时间，直接插入；否则继续 defer
+        if (deadline.timeRemaining() > 10 || deadline.didTimeout) {
+          container.appendChild(buildFragment());
+          resolve();
+        } else {
+          // 时间不足，重新调度
+          if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(cb, { timeout });
+          } else {
+            setTimeout(() => cb({ didTimeout: true, timeRemaining: () => 50 } as IdleDeadline), 50);
+          }
+        }
+      } catch (err) {
+        reject(err);
+      }
+    };
+
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(cb, { timeout });
+    } else {
+      // Safari 降级：使用 MessageChannel 实现微任务级别的空闲调度
+      const channel = new MessageChannel();
+      channel.port2.onmessage = () => cb({ didTimeout: true, timeRemaining: () => 16 } as IdleDeadline);
+      channel.port1.postMessage(null);
+    }
+  });
+}
+
+// 使用场景：延迟加载评论区、非首屏推荐模块
+scheduleIdleRender(() => {
+  const frag = document.createDocumentFragment();
+  const commentSection = document.createElement('div');
+  commentSection.id = 'comments';
+  commentSection.innerHTML = '<!-- 异步加载评论 -->';
+  frag.appendChild(commentSection);
+  return frag;
+}, document.getElementById('footer')!);
+```
+
+## 11. 代码示例：Web Worker 离屏 Canvas 渲染
+
+```typescript
+// offscreen-canvas.worker.ts — 将 heavy canvas 渲染卸载到 Worker
+// 主线程
+const canvas = document.querySelector('canvas')!;
+const offscreen = canvas.transferControlToOffscreen();
+
+const worker = new Worker(new URL('./chart.worker.ts', import.meta.url), {
+  type: 'module',
+});
+
+worker.postMessage({ canvas: offscreen, data: largeDataset }, [offscreen]);
+
+// chart.worker.ts
+self.onmessage = (event: MessageEvent<{ canvas: OffscreenCanvas; data: number[] }>) => {
+  const { canvas, data } = event.data;
+  const ctx = canvas.getContext('2d')!;
+
+  // 在 Worker 中执行耗时渲染，不阻塞主线程
+  const width = canvas.width;
+  const height = canvas.height;
+  const barWidth = width / data.length;
+
+  ctx.clearRect(0, 0, width, height);
+  data.forEach((value, i) => {
+    const barHeight = (value / Math.max(...data)) * height;
+    ctx.fillStyle = `hsl(${(i / data.length) * 360}, 70%, 50%)`;
+    ctx.fillRect(i * barWidth, height - barHeight, barWidth - 1, barHeight);
+  });
+};
+```
+
+## 12. 与相邻模块的关系
 
 - **18-frontend-frameworks**: 框架的渲染策略
 - **50-browser-runtime**: 浏览器运行时架构
@@ -263,6 +392,18 @@ function ListItem({ data }: { data: ItemData }) {
 - [Chrome DevTools — Performance Analysis](https://developer.chrome.com/docs/devtools/performance/)
 - [web.dev — The Science of Web Fonts](https://web.dev/articles/font-best-practices)
 - [Google — Critical Rendering Path](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains/)
+- [React — useDeferredValue API Reference](https://react.dev/reference/react/useDeferredValue)
+- [React — Suspense for Data Fetching](https://react.dev/reference/react/Suspense)
+- [web.dev — Optimize Cumulative Layout Shift](https://web.dev/articles/cls)
+- [web.dev — Optimize Largest Contentful Paint](https://web.dev/articles/lcp)
+- [MDN — IntersectionObserver API](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver)
+- [MDN — OffscreenCanvas](https://developer.mozilla.org/en-US/docs/Web/API/OffscreenCanvas)
+- [web.dev — content-visibility: the new CSS property that boosts your rendering performance](https://web.dev/articles/content-visibility)
+- [HTML Spec — Event Loop Processing Model](https://html.spec.whatwg.org/multipage/webappapis.html#event-loop-processing-model)
+- [W3C — requestIdleCallback](https://w3c.github.io/requestidlecallback/)
+- [Chrome — Inside look at modern web browser (Part 3)](https://developer.chrome.com/blog/inside-browser-part3/)
+- [web.dev — Rendering performance](https://web.dev/articles/rendering-performance)
+- [web.dev — Reduce the scope and complexity of style calculations](https://web.dev/articles/reduce-scope-and-complexity-of-style-calculations)
 
 ---
 

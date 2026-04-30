@@ -310,6 +310,153 @@ console.log('number <: string|number ?', isExtSubtype(etNum, unionType)); // tru
 console.log('narrow number:', narrowByTag(unionType, 'number')); // { tag: 'Num' }
 ```
 
+#### 可运行示例：类型推断引擎（Hindley-Milner 风格）
+
+```typescript
+// type-inference.ts — 基于约束收集的类型推断，可运行
+
+type HMType =
+  | { tag: 'TVar'; name: string }
+  | { tag: 'TCon'; name: string }
+  | { tag: 'TFun'; arg: HMType; ret: HMType };
+
+let varCounter = 0;
+function freshVar(): HMType {
+  return { tag: 'TVar', name: `t${varCounter++}` };
+}
+
+function typeToStringHM(t: HMType): string {
+  switch (t.tag) {
+    case 'TVar': return t.name;
+    case 'TCon': return t.name;
+    case 'TFun': return `(${typeToStringHM(t.arg)} -> ${typeToStringHM(t.ret)})`;
+  }
+}
+
+// 替换：将类型变量映射到类型
+type Subst = Map<string, HMType>;
+
+function applySubst(t: HMType, subst: Subst): HMType {
+  switch (t.tag) {
+    case 'TVar': return subst.get(t.name) ?? t;
+    case 'TCon': return t;
+    case 'TFun': return { tag: 'TFun', arg: applySubst(t.arg, subst), ret: applySubst(t.ret, subst) };
+  }
+}
+
+function composeSubst(s1: Subst, s2: Subst): Subst {
+  const result = new Map<string, HMType>();
+  for (const [k, v] of s2) result.set(k, applySubst(v, s1));
+  for (const [k, v] of s1) if (!result.has(k)) result.set(k, v);
+  return result;
+}
+
+// 统一（Unification）：求解类型等式约束
+function unify(t1: HMType, t2: HMType): Subst {
+  if (t1.tag === 'TVar') return bindVar(t1.name, t2);
+  if (t2.tag === 'TVar') return bindVar(t2.name, t1);
+  if (t1.tag === 'TCon' && t2.tag === 'TCon') {
+    if (t1.name === t2.name) return new Map();
+    throw new Error(`Cannot unify ${t1.name} with ${t2.name}`);
+  }
+  if (t1.tag === 'TFun' && t2.tag === 'TFun') {
+    const s1 = unify(t1.arg, t2.arg);
+    const s2 = unify(applySubst(t1.ret, s1), applySubst(t2.ret, s1));
+    return composeSubst(s2, s1);
+  }
+  throw new Error(`Cannot unify ${typeToStringHM(t1)} with ${typeToStringHM(t2)}`);
+}
+
+function bindVar(name: string, t: HMType): Subst {
+  if (t.tag === 'TVar' && t.name === name) return new Map();
+  if (occursCheck(name, t)) throw new Error(`Occurs check failed: ${name} in ${typeToStringHM(t)}`);
+  return new Map([[name, t]]);
+}
+
+function occursCheck(name: string, t: HMType): boolean {
+  switch (t.tag) {
+    case 'TVar': return t.name === name;
+    case 'TCon': return false;
+    case 'TFun': return occursCheck(name, t.arg) || occursCheck(name, t.ret);
+  }
+}
+
+// ===== 演示：推断 λx.λy.x y 的类型 =====
+// x : t0, y : t1, 需要 x 是函数类型：t0 = t1 -> t2
+// 结果类型：t1 -> t2
+// 整体：t0 -> t1 -> t2 = (t1 -> t2) -> t1 -> t2
+const t0 = freshVar();
+const t1 = freshVar();
+const t2 = freshVar();
+const subst = unify(t0, { tag: 'TFun', arg: t1, ret: t2 });
+console.log('Inferred type of λx.λy.x y:', typeToStringHM(applySubst({ tag: 'TFun', arg: t0, ret: { tag: 'TFun', arg: t1, ret: t2 } }, subst)));
+// 输出: ((t1 -> t2) -> (t1 -> t2))
+```
+
+#### 可运行示例：递归类型检查与不动点组合子
+
+```typescript
+// recursive-types.ts — let rec / fixpoint 的类型安全实现
+
+type RecExpr =
+  | { tag: 'Num'; value: number }
+  | { tag: 'Var'; name: string }
+  | { tag: 'Func'; param: string; paramType: Type; body: RecExpr }
+  | { tag: 'Call'; func: RecExpr; arg: RecExpr }
+  | { tag: 'LetRec'; name: string; type: Type; value: RecExpr; body: RecExpr }; // let rec f = ... in ...
+
+function typecheckRec(env: Map<string, Type>, e: RecExpr): Type {
+  switch (e.tag) {
+    case 'Num': return tNum;
+    case 'Var': {
+      const t = env.get(e.name);
+      if (!t) throw new Error(`Unknown variable: ${e.name}`);
+      return t;
+    }
+    case 'Func': {
+      const newEnv = new Map(env);
+      newEnv.set(e.param, e.paramType);
+      const bodyT = typecheckRec(newEnv, e.body);
+      return { tag: 'Func', params: [e.paramType], ret: bodyT };
+    }
+    case 'Call': {
+      const ft = typecheckRec(env, e.func);
+      if (ft.tag !== 'Func') throw new Error('Call on non-function');
+      const at = typecheckRec(env, e.arg);
+      if (!isSubtype(at, ft.params[0])) throw new Error('Argument type mismatch');
+      return ft.ret;
+    }
+    case 'LetRec': {
+      // let rec f: T = value in body
+      // value 的类型必须 <: T，body 在 f: T 的环境中检查
+      const newEnv = new Map(env);
+      newEnv.set(e.name, e.type);
+      const valueT = typecheckRec(newEnv, e.value);
+      if (!isSubtype(valueT, e.type)) throw new Error(`LetRec value type mismatch: ${typeToString(valueT)} <: ${typeToString(e.type)}`);
+      return typecheckRec(newEnv, e.body);
+    }
+  }
+}
+
+// ===== 演示：let rec fact = (n: number): number => if n==0 then 1 else n * fact(n-1) in fact(5) =====
+// 简化表达：
+const factType: Type = { tag: 'Func', params: [tNum], ret: tNum };
+const factBody: RecExpr = {
+  tag: 'Func', param: 'n', paramType: tNum,
+  body: { tag: 'Var', name: 'n' } // 简化：返回 n
+};
+const letRecExpr: RecExpr = {
+  tag: 'LetRec', name: 'fact', type: factType, value: factBody,
+  body: {
+    tag: 'Call',
+    func: { tag: 'Var', name: 'fact' },
+    arg: { tag: 'Num', value: 5 },
+  },
+};
+
+console.log('fact(5) type:', typeToString(typecheckRec(new Map(), letRecExpr))); // number
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -332,6 +479,11 @@ console.log('narrow number:', narrowByTag(unionType, 'number')); // { tag: 'Num'
 - [CompCert: Formally Verified C Compiler](https://compcert.org/) — 工业级形式化编译器
 - [WasmSpec: WebAssembly Formal Specification](https://webassembly.github.io/spec/core/) — WebAssembly 操作语义规范
 - [Isabelle/HOL: A Proof Assistant for Higher-Order Logic](https://isabelle.in.tum.de/) — 定理证明辅助工具
+- [AST Explorer](https://astexplorer.net/) — 交互式解析器与 AST 可视化
+- [TypeScript AST Viewer](https://ts-ast-viewer.com/) — TypeScript AST 在线查看器
+- [How TypeScript's Compiler Compiles Itself — Anders Hejlsberg](https://www.youtube.com/watch?v=wpgKd-rwnMw) — TS 编译器架构演讲
+- [mini-typescript](https://github.com/microsoft/mini-typescript) — Microsoft 官方教学编译器
+- [TypeScript Type Challenges](https://github.com/type-challenges/type-challenges) — 类型系统体操练习
 - `20.10-formal-verification/type-theory-formal/`
 
 ---

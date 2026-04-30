@@ -236,7 +236,129 @@ console.log(sorted);
 // [Alice 25, Bob 30, Charlie 30] — Bob 在 Charlie 之前（稳定）
 ```
 
-### 3.6 常见误区
+### 3.6 希尔排序（Shell Sort）— 递减增量排序
+
+```typescript
+// shell-sort.ts — 插入排序的泛化，对大规模数据有效
+function shellSort(arr: number[]): number[] {
+  const result = [...arr];
+  let gap = Math.floor(result.length / 2);
+
+  while (gap > 0) {
+    for (let i = gap; i < result.length; i++) {
+      const temp = result[i];
+      let j = i;
+      while (j >= gap && result[j - gap] > temp) {
+        result[j] = result[j - gap];
+        j -= gap;
+      }
+      result[j] = temp;
+    }
+    gap = Math.floor(gap / 2);
+  }
+
+  return result;
+}
+
+console.log('ShellSort:', shellSort([64, 34, 25, 12, 22, 11, 90]));
+// [11, 12, 22, 25, 34, 64, 90]
+```
+
+### 3.7 桶排序 — 按值域分桶后各自排序
+
+```typescript
+// bucket-sort.ts — 均匀分布数据的高效排序
+function bucketSort(arr: number[], bucketSize = 5): number[] {
+  if (arr.length === 0) return arr;
+
+  const min = Math.min(...arr);
+  const max = Math.max(...arr);
+  const bucketCount = Math.floor((max - min) / bucketSize) + 1;
+  const buckets: number[][] = Array.from({ length: bucketCount }, () => []);
+
+  for (const num of arr) {
+    const idx = Math.floor((num - min) / bucketSize);
+    buckets[idx].push(num);
+  }
+
+  const result: number[] = [];
+  for (const bucket of buckets) {
+    // 每个桶使用插入排序
+    result.push(...insertionSort(bucket));
+  }
+  return result;
+}
+
+function insertionSort(arr: number[]): number[] {
+  for (let i = 1; i < arr.length; i++) {
+    const key = arr[i];
+    let j = i - 1;
+    while (j >= 0 && arr[j] > key) {
+      arr[j + 1] = arr[j];
+      j--;
+    }
+    arr[j + 1] = key;
+  }
+  return arr;
+}
+
+console.log('BucketSort:', bucketSort([0.42, 0.32, 0.33, 0.52, 0.37, 0.47, 0.51]));
+```
+
+### 3.8 拓扑排序 — 有向无环图（DAG）的线性排序
+
+```typescript
+// topological-sort.ts — Kahn 算法（入度表法）
+function topologicalSort(graph: Map<string, Set<string>>): string[] {
+  const inDegree = new Map<string, number>();
+  const result: string[] = [];
+  const queue: string[] = [];
+
+  // 初始化入度
+  for (const [node, edges] of graph) {
+    if (!inDegree.has(node)) inDegree.set(node, 0);
+    for (const neighbor of edges) {
+      inDegree.set(neighbor, (inDegree.get(neighbor) ?? 0) + 1);
+    }
+  }
+
+  // 入度为 0 的节点入队
+  for (const [node, degree] of inDegree) {
+    if (degree === 0) queue.push(node);
+  }
+
+  while (queue.length > 0) {
+    const node = queue.shift()!;
+    result.push(node);
+
+    for (const neighbor of graph.get(node) ?? []) {
+      const newDegree = inDegree.get(neighbor)! - 1;
+      inDegree.set(neighbor, newDegree);
+      if (newDegree === 0) queue.push(neighbor);
+    }
+  }
+
+  if (result.length !== inDegree.size) {
+    throw new Error('Graph contains cycles');
+  }
+
+  return result;
+}
+
+// 依赖关系图：task -> [依赖的任务]
+const taskGraph = new Map<string, Set<string>>([
+  ['build', new Set(['lint', 'test'])],
+  ['lint', new Set()],
+  ['test', new Set(['compile'])],
+  ['compile', new Set()],
+  ['deploy', new Set(['build'])],
+]);
+
+console.log(topologicalSort(taskGraph));
+// ['lint', 'compile', 'test', 'build', 'deploy']
+```
+
+### 3.9 常见误区
 
 | 误区 | 正确理解 |
 |------|---------|
@@ -245,7 +367,7 @@ console.log(sorted);
 | JS `.sort()` 总是快排 | V8 使用 Timsort（混合稳定排序），非纯快排 |
 | 计数排序通用 | 仅适用于已知小范围整数或可分桶数据 |
 
-### 3.7 扩展阅读
+### 3.10 扩展阅读
 
 - [Sorting Algorithms — Wikipedia](https://en.wikipedia.org/wiki/Sorting_algorithm)
 - [Quicksort — Hoare Partition](https://en.wikipedia.org/wiki/Quicksort)
@@ -259,6 +381,15 @@ console.log(sorted);
 - [LeetCode Top Interview Questions — Sorting](https://leetcode.com/problem-list/top-interview-questions/)
 - [Google Research — Timsort Analysis](https://research.google/pubs/pub44601/) — Timsort 形式化分析与正确性证明
 - [V8 Source — array-sort.cc](https://chromium.googlesource.com/v8/v8.git/+/refs/heads/main/src/builtins/array-sort.cc) — V8 排序实现源码级参考
+- [Shell Sort — Wikipedia](https://en.wikipedia.org/wiki/Shellsort)
+- [Bucket Sort — Wikipedia](https://en.wikipedia.org/wiki/Bucket_sort)
+- [Topological Sorting — Wikipedia](https://en.wikipedia.org/wiki/Topological_sorting)
+- [Kahn's Algorithm — CP-Algorithms](https://cp-algorithms.com/graph/topological-sort.html)
+- [Heap Sort — Wikipedia](https://en.wikipedia.org/wiki/Heapsort)
+- [Counting Sort — Wikipedia](https://en.wikipedia.org/wiki/Counting_sort)
+- [Radix Sort — Wikipedia](https://en.wikipedia.org/wiki/Radix_sort)
+- [Insertion Sort — Wikipedia](https://en.wikipedia.org/wiki/Insertion_sort)
+- [JavaScript Engine Array Sort Internals — Mathias Bynens](https://v8.dev/blog/array-sort)
 
 ---
 

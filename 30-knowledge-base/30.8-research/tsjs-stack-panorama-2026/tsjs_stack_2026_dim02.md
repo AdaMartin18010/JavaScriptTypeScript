@@ -203,6 +203,75 @@ function safeParseUser(input: unknown): User | null {
 
 ---
 
+### TypeScript Strict 配置模板（大型 Monorepo）
+
+```json
+// tsconfig.base.json —— 2026 年推荐严格配置
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
+  }
+}
+```
+
+> `noUncheckedIndexedAccess` 和 `exactOptionalPropertyTypes` 是大型代码库防止 `undefined` 漏洞的两道关键防线。
+
+### Drizzle ORM 类型安全查询示例
+
+```typescript
+// schema.ts
+import { pgTable, serial, varchar, integer, timestamp } from 'drizzle-orm/pg-core';
+
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  role: varchar('role', { length: 50 }).notNull().default('user'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+```
+
+```typescript
+// query.ts
+import { eq } from 'drizzle-orm';
+import { db } from './db';
+import { users } from './schema';
+
+// 类型安全查询：返回 User[]，字段完全推导
+const allUsers = await db.select().from(users);
+
+// 类型安全过滤：email 字段类型被约束为 string
+const admin = await db
+  .select()
+  .from(users)
+  .where(eq(users.role, 'admin'))
+  .limit(1);
+
+// 类型安全插入：NewUser 类型约束插入对象
+await db.insert(users).values({ email: 'alice@example.com', role: 'admin' });
+```
+
+---
+
 ## 维度 02 分析表：类型系统与运行时生态深度对比
 
 | 分析维度 | 现状 (2026 Q1) | 趋势 (2026–2027) | 生态数据 |
@@ -238,3 +307,97 @@ function safeParseUser(input: unknown): User | null {
 - [Deno 2.0 Migration Guide](https://docs.deno.com/runtime/fundamentals/migration/)
 - [Bun SQLite Documentation](https://bun.sh/docs/api/sqlite)
 - [TypeScript Project References](https://www.typescriptlang.org/docs/handbook/project-references.html)
+- [Drizzle ORM Documentation](https://orm.drizzle.team/docs/overview) — 类型安全 SQL-like ORM 官方文档
+- [Prisma Documentation](https://www.prisma.io/docs) — 下一代 Node.js ORM 官方文档
+- [TypeScript TSConfig Reference](https://www.typescriptlang.org/tsconfig/) — 官方编译器配置参考
+- [Node.js Permission Model](https://nodejs.org/api/permissions.html) — Node.js 实验性权限模型
+- [State of JS 2025](https://stateofjs.com/) — JavaScript 生态年度调查报告
+- [TC39 Proposals](https://github.com/tc39/proposals) — ECMAScript 语言提案跟踪
+
+---
+
+## 进阶代码示例
+
+### TypeScript Branded Types 与运行时校验结合
+
+```typescript
+// types.ts
+declare const brand: unique symbol;
+export type Branded<T, B> = T & { readonly [brand]: B };
+
+export type UserId = Branded<string, 'UserId'>;
+export type OrderId = Branded<string, 'OrderId'>;
+
+export function createUserId(id: string): UserId {
+  if (!id.startsWith('u-')) throw new Error('Invalid UserId');
+  return id as UserId;
+}
+
+export function createOrderId(id: string): OrderId {
+  if (!id.startsWith('o-')) throw new Error('Invalid OrderId');
+  return id as OrderId;
+}
+
+// 编译时与运行时双重保护
+const uid = createUserId('u-123');
+// const oid: OrderId = uid; // ❌ 编译错误
+```
+
+### Edge Function — Cloudflare Workers with Hono
+
+```typescript
+// worker.ts
+import { Hono } from 'hono';
+
+const app = new Hono();
+
+app.get('/api/health', (c) => c.json({ status: 'ok', edge: true }));
+
+app.get('/api/users/:id', (c) => {
+  const id = c.req.param('id');
+  return c.json({ id, source: 'edge' });
+});
+
+export default app;
+```
+
+```toml
+# wrangler.toml
+name = "tsjs-edge-demo"
+compatibility_date = "2026-04-01"
+main = "worker.ts"
+```
+
+### Zod Schema 精化（Refinement）与转换
+
+```typescript
+import { z } from 'zod';
+
+const PasswordSchema = z
+  .string()
+  .min(8, 'Password must be at least 8 characters')
+  .max(128)
+  .refine((val) => /[A-Z]/.test(val), {
+    message: 'Must contain at least one uppercase letter',
+  })
+  .refine((val) => /[0-9]/.test(val), {
+    message: 'Must contain at least one digit',
+  })
+  .transform((val) => hashPassword(val)); // 运行时转换
+
+type Password = z.infer<typeof PasswordSchema>;
+```
+
+---
+
+## 扩展参考链接
+
+- [TypeScript Handbook — Branded Types](https://www.typescriptlang.org/docs/handbook/symbols.html) — 官方 branded type 指南
+- [Cloudflare Workers Documentation](https://developers.cloudflare.com/workers/) — 边缘函数官方文档
+- [Hono Cloudflare Workers Example](https://hono.dev/getting-started/cloudflare-workers) — Hono 官方示例
+- [Zod Documentation — Refine](https://zod.dev/?id=refine) — Zod 精化与校验文档
+- [TypeScript Project References](https://www.typescriptlang.org/docs/handbook/project-references.html) — 官方项目引用指南
+- [Drizzle ORM — Type Safety](https://orm.drizzle.team/) — 类型安全 ORM 官方文档
+- [Bun SQLite Documentation](https://bun.sh/docs/api/sqlite) — Bun 内置 SQLite API
+- [Deno 2.0 Migration Guide](https://docs.deno.com/runtime/fundamentals/migration/) — Deno 迁移官方指南
+- [Node.js Permission Model](https://nodejs.org/api/permissions.html) — Node.js 实验性权限模型

@@ -215,6 +215,210 @@ export const getProduct = createServerFn({ method: 'GET' })
   });
 ```
 
+### 3.5 批量操作服务端函数
+
+```typescript
+// server-functions/batch.ts — 批量插入与事务
+import { createServerFn } from '@tanstack/react-start';
+
+export const batchCreateTodos = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => {
+    if (!Array.isArray(data) || data.length === 0 || data.length > 100) {
+      throw new Error('Expected 1–100 items');
+    }
+    for (const item of data) {
+      if (typeof item !== 'string' || item.length === 0) {
+        throw new Error('Each item must be a non-empty string');
+      }
+    }
+    return data as string[];
+  })
+  .handler(async ({ data: items }) => {
+    const env = process.env as unknown as Env;
+    const stmt = env.DB.prepare('INSERT INTO todos (id, text, done) VALUES (?, ?, ?)');
+
+    // D1 支持批量绑定
+    const bindings = items.map((text) => [crypto.randomUUID(), text, 0]);
+    const result = await env.DB.batch(
+      bindings.map((args) => stmt.bind(...args))
+    );
+
+    return {
+      inserted: result.length,
+      ids: bindings.map((b) => b[0]),
+    };
+  });
+```
+
+### 3.6 R2 文件上传服务端函数
+
+```typescript
+// server-functions/upload.ts — 边缘文件上传至 R2
+import { createServerFn } from '@tanstack/react-start';
+
+export const uploadFile = createServerFn({ method: 'POST' })
+  .validator(async (data: unknown) => {
+    if (!(data instanceof FormData)) throw new Error('Expected FormData');
+    const file = data.get('file');
+    if (!(file instanceof File)) throw new Error('file field required');
+    if (file.size > 10 * 1024 * 1024) throw new Error('Max 10MB');
+    return file;
+  })
+  .handler(async ({ data: file }) => {
+    const env = process.env as unknown as Env;
+    const key = `uploads/${crypto.randomUUID()}-${file.name}`;
+    const buffer = await file.arrayBuffer();
+
+    await env.R2.put(key, buffer, {
+      httpMetadata: { contentType: file.type },
+      customMetadata: { uploadedAt: new Date().toISOString() },
+    });
+
+    return { key, url: `${env.R2_PUBLIC_URL}/${key}` };
+  });
+```
+
+### 3.7 错误边界与类型化错误处理
+
+```typescript
+// server-functions/error-handler.ts — 类型化的服务端错误响应
+import { createServerFn } from '@tanstack/react-start';
+
+class AppError extends Error {
+  constructor(
+    public code: string,
+    message: string,
+    public statusCode: number = 500
+  ) {
+    super(message);
+  }
+}
+
+export const safeDivide = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => {
+    if (!data || typeof data !== 'object') throw new AppError('INVALID_INPUT', 'Expected object');
+    const d = data as { a: number; b: number };
+    if (typeof d.a !== 'number' || typeof d.b !== 'number') {
+      throw new AppError('INVALID_INPUT', 'Both a and b must be numbers', 400);
+    }
+    return d;
+  })
+  .handler(async ({ data }) => {
+    if (data.b === 0) {
+      throw new AppError('DIVISION_BY_ZERO', 'Cannot divide by zero', 422);
+    }
+    return { result: data.a / data.b };
+  });
+
+// 客户端调用时自动推断错误类型
+// try {
+//   const { result } = await safeDivide({ data: { a: 10, b: 0 } });
+// } catch (err) {
+//   err.code === 'DIVISION_BY_ZERO' // 类型安全
+// }
+```
+
+### 3.8 Durable Objects 协作状态（跨请求有状态）
+
+```typescript
+// server-functions/collaboration.ts — 基于 Durable Objects 的协作编辑
+import { createServerFn } from '@tanstack/react-start';
+
+interface CursorPosition {
+  userId: string;
+  x: number;
+  y: number;
+  color: string;
+}
+
+export const updateCursor = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => {
+    const d = data as CursorPosition;
+    if (!d.userId || typeof d.x !== 'number' || typeof d.y !== 'number') {
+      throw new Error('Invalid cursor data');
+    }
+    return d;
+  })
+  .handler(async ({ data }) => {
+    const env = process.env as unknown as Env;
+
+    // 每个文档对应一个 Durable Object ID
+    const id = env.COLLAB.idFromName('doc:123');
+    const stub = env.COLLAB.get(id);
+
+    await stub.fetch('http://internal/update-cursor', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+
+    return { success: true };
+  });
+
+// Durable Object 实现（通常在单独文件中）
+export class CollaborationRoom implements DurableObject {
+  private cursors = new Map<string, CursorPosition>();
+
+  constructor(private state: DurableObjectState) {}
+
+  async fetch(request: Request): Promise<Response> {
+    const url = new URL(request.url);
+    if (url.pathname === '/update-cursor') {
+      const data = await request.json<CoveragePosition>();
+      this.cursors.set(data.userId, data);
+      await this.state.storage.put('cursors', Array.from(this.cursors.entries()));
+      return new Response(JSON.stringify({ cursors: Array.from(this.cursors.values()) }));
+    }
+    return new Response('Not Found', { status: 404 });
+  }
+}
+```
+
+### 3.9 服务端函数组合：认证 + 授权中间件
+
+```typescript
+// server-functions/middleware.ts — 可复用的服务端函数中间件
+import { createServerFn } from '@tanstack/react-start';
+import { verify } from 'jose';
+
+type Middleware<T> = (ctx: { request: Request; data: T }) => Promise<AuthContext>;
+
+interface AuthContext {
+  userId: string;
+  role: 'admin' | 'editor' | 'viewer';
+}
+
+async function requireAuth<T>({ request }: { request: Request; data: T }): Promise<AuthContext> {
+  const token = request.headers.get('cookie')?.match(/token=([^;]+)/)?.[1];
+  if (!token) throw new Error('Unauthorized');
+
+  const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+  const { payload } = await verify(token, secret, { clockTolerance: 60 });
+  return { userId: payload.sub!, role: payload.role as AuthContext['role'] };
+}
+
+function requireRole(role: AuthContext['role']) {
+  return async (ctx: { request: Request; data: unknown; auth: AuthContext }) => {
+    if (ctx.auth.role !== role) {
+      throw new Error(`Forbidden: requires ${role} role`);
+    }
+  };
+}
+
+export const deleteUser = createServerFn({ method: 'POST' })
+  .validator((data: unknown) => {
+    if (typeof data !== 'string') throw new Error('User ID required');
+    return data;
+  })
+  .handler(async ({ data: userId, request }) => {
+    const auth = await requireAuth({ request, data: userId });
+    await requireRole('admin')({ request, data: userId, auth });
+
+    const env = process.env as unknown as Env;
+    await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
+    return { deleted: userId };
+  });
+```
+
 本模块的代码示例将上述理论概念映射为可运行的实现。通过实际编码练习，可以验证对 服务端函数 核心机制的理解，并观察不同实现选择带来的行为差异。
 
 ### 3.2 常见误区
@@ -245,6 +449,21 @@ export const getProduct = createServerFn({ method: 'GET' })
 | jose — JWT Library | 源码 | [github.com/panva/jose](https://github.com/panva/jose) |
 | MDN — ReadableStream | 文档 | [developer.mozilla.org/en-US/docs/Web/API/ReadableStream](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream) |
 | Server-sent Events | 指南 | [developer.mozilla.org/en-US/docs/Web/API/Server-sent_events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) |
+| Cloudflare R2 API | 官方文档 | [developers.cloudflare.com/r2/api/worker/worker-api](https://developers.cloudflare.com/r2/api/worker/worker-api/) |
+| D1 Batch API | 官方文档 | [developers.cloudflare.com/d1/best-practices/use-indexes](https://developers.cloudflare.com/d1/best-practices/use-indexes/) |
+| TanStack Start — Cloudflare Adapter | 官方文档 | [tanstack.com/start/latest/docs/framework/react/hosting](https://tanstack.com/start/latest/docs/framework/react/hosting) |
+| WinterCG — Web Standard APIs | 规范 | [wintercg.org](https://wintercg.org/) |
+| Web Crypto API | MDN | [developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) |
+| Cloudflare Workers — Environment Variables | 官方文档 | [developers.cloudflare.com/workers/configuration/environment-variables](https://developers.cloudflare.com/workers/configuration/environment-variables/) |
+| TanStack Query Documentation | 官方文档 | [tanstack.com/query/latest](https://tanstack.com/query/latest) | React 异步状态管理
+| Vinxi Documentation | 官方文档 | [vinxi.vercel.app](https://vinxi.vercel.app/) | TanStack Start 底层元框架
+| Cloudflare Workers Types | 仓库 | [github.com/cloudflare/workers-types](https://github.com/cloudflare/workers-types) | TypeScript 类型定义
+| Durable Objects Documentation | 官方文档 | [developers.cloudflare.com/durable-objects](https://developers.cloudflare.com/durable-objects/) | 有状态边缘对象
+| Hono Middleware Documentation | 官方文档 | [hono.dev/docs/guides/middleware](https://hono.dev/docs/guides/middleware) | 中间件编写指南
+| jose — JWT Library | 文档 | [github.com/panva/jose](https://github.com/panva/jose) | 边缘友好 JWT 库
+| Cloudflare D1 Migrations | 官方文档 | [developers.cloudflare.com/d1/reference/migrations](https://developers.cloudflare.com/d1/reference/migrations/) | D1 数据库迁移
+| Zod Documentation | 官方文档 | [zod.dev](https://zod.dev/) | Schema 校验库
+| SuperJSON Documentation | 仓库 | [github.com/flightcontrolhq/superjson](https://github.com/flightcontrolhq/superjson) | 序列化库
 
 ---
 

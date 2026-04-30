@@ -42,12 +42,12 @@
 ### 评分换算规则
 
 ```
-加权总分 = Σ(维度得分 × 权重)
+加权总分 = sum(维度得分 x 权重)
 
-≥ 4.5 → Adopt
-3.5 - 4.4 → Trial
-2.5 - 3.4 → Assess
-< 2.5 → Hold
+>= 4.5 -> Adopt
+3.5 - 4.4 -> Trial
+2.5 - 3.4 -> Assess
+< 2.5 -> Hold
 ```
 
 ---
@@ -173,7 +173,7 @@
 
 1. **每季度组织技术雷达评审会**（建议 2 小时）
    - 会前：各技术负责人提交评估表
-   - 会中：逐项讨论边界案例（Trial ↔ Assess）
+   - 会中：逐项讨论边界案例（Trial <-> Assess）
    - 会后：更新 JSON 配置并发布可视化雷达图
 
 2. **每个技术由实际使用者提供评估依据**
@@ -181,8 +181,8 @@
    - Trial 阶段技术必须指定试点项目和截止日期
 
 3. **记录技术迁移决策**
-   - 从 Trial → Adopt：需 2 个以上试点项目成功运行 3 个月
-   - 从 Adopt → Hold：需制定迁移计划和时间表
+   - 从 Trial -> Adopt：需 2 个以上试点项目成功运行 3 个月
+   - 从 Adopt -> Hold：需制定迁移计划和时间表
    - 所有变更记录到 `assessmentHistory`
 
 4. **将雷达结果写入团队知识库**
@@ -203,7 +203,7 @@ quadrantChart
     Data & AI: [PostgreSQL, pgvector, MCP, OpenAI SDK]
 ```
 
-> 📖 参考：[Mermaid Quadrant Chart](https://mermaid.js.org/syntax/quadrantChart.html) | [ThoughtWorks Radar Methodology](https://www.thoughtworks.com/radar/byor)
+> 参考：[Mermaid Quadrant Chart](https://mermaid.js.org/syntax/quadrantChart.html) | [ThoughtWorks Radar Methodology](https://www.thoughtworks.com/radar/byor)
 
 ---
 
@@ -246,7 +246,84 @@ const react: Technology = {
   scores: { maturity: 5, community: 5, familiarity: 5, compatibility: 5, maintenanceRisk: 5, costBenefit: 4 },
 };
 
-console.log(`${react.name} → ${calculateQuadrant(react)}`); // React 19 → adopt
+console.log(`${react.name} -> ${calculateQuadrant(react)}`); // React 19 -> adopt
+```
+
+### 代码示例：批量导入技术雷达数据
+
+```typescript
+// scripts/import-radar.ts — 从 CSV/表格批量导入技术条目
+import { parse } from 'csv-parse/sync';
+import * as fs from 'node:fs';
+
+interface RadarEntry {
+  name: string;
+  quadrant: 'adopt' | 'trial' | 'assess' | 'hold';
+  category: string;
+  score: number;
+  description: string;
+}
+
+function importFromCsv(path: string): RadarEntry[] {
+  const content = fs.readFileSync(path, 'utf-8');
+  const records = parse(content, { columns: true, skip_empty_lines: true });
+  return records.map((r: any) => ({
+    name: r.name,
+    quadrant: r.quadrant.toLowerCase(),
+    category: r.category,
+    score: parseFloat(r.score),
+    description: r.description,
+  }));
+}
+
+// 验证象限一致性
+function validateEntry(entry: RadarEntry): string[] {
+  const errors: string[] = [];
+  if (entry.score < 1 || entry.score > 5) errors.push(`${entry.name}: score must be 1-5`);
+  const expected = calculateQuadrantFromScore(entry.score);
+  if (entry.quadrant !== expected) {
+    errors.push(`${entry.name}: score ${entry.score} suggests ${expected}, but listed as ${entry.quadrant}`);
+  }
+  return errors;
+}
+
+function calculateQuadrantFromScore(score: number): string {
+  if (score >= 4.5) return 'adopt';
+  if (score >= 3.5) return 'trial';
+  if (score >= 2.5) return 'assess';
+  return 'hold';
+}
+```
+
+### 代码示例：GitHub Actions 自动化雷达更新
+
+```yaml
+# .github/workflows/tech-radar.yml
+name: Tech Radar Update
+on:
+  schedule:
+    - cron: '0 9 1 */3 *'  # 每季度第一天 09:00 UTC
+  workflow_dispatch:
+
+jobs:
+  update-radar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run radar:evaluate
+      - run: npm run radar:generate-svg
+      - name: Commit updates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add radar/
+          git diff --quiet --staged || git commit -m "chore: quarterly tech radar update [$(date +%Y-%m-%d)]"
+          git push
 ```
 
 ---
@@ -272,6 +349,15 @@ console.log(`${react.name} → ${calculateQuadrant(react)}`); // React 19 → ad
 | Technology Radar Methodology | <https://www.thoughtworks.com/radar/byor> | 构建自己的技术雷达指南 |
 | Stack Overflow Developer Survey | <https://survey.stackoverflow.com/> | 开发者技术趋势调查 |
 | InfoQ Trends Reports | <https://www.infoq.com/trends/> | 技术采用趋势报告 |
+| IEEE Software Technology Trends | <https://www.computer.org/software-magazine/> | 软件工程学术趋势 |
+| Gartner Hype Cycle | <https://www.gartner.com/en/newsroom/hype-cycle> | 技术成熟度曲线 |
+| RedMonk Tech Rankings | <https://redmonk.com/> | 开发者语言与框架排名 |
+| JetBrains Developer Ecosystem Survey | <https://www.jetbrains.com/lp/devecosystem-2024/> | 开发者生态系统调查 |
+| The State of Developer Experience | <https://stateofdx.com/> | 开发者体验年度调查 |
+| OSS Insight | <https://ossinsight.io/> | 开源项目趋势分析平台 |
+| OpenSource Observatory | <https://joinup.ec.europa.eu/collection/open-source-observatory-osor> | 欧盟开源观察站 |
+| ACM Computing Surveys | <https://dl.acm.org/journal/csur> | 计算领域学术综述 |
+| arXiv Software Engineering | <https://arxiv.org/list/cs.SE/recent> | 软件工程预印本论文 |
 
 ---
 

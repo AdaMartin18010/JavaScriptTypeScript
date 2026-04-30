@@ -250,6 +250,70 @@ const str = identity('hello');
 
 ---
 
+## 进阶编译时构造
+
+### `unique symbol` —— 编译时唯一标识
+
+```typescript
+// 编译前
+declare const brand: unique symbol;
+
+type Branded<T, B> = T & { readonly [brand]: B };
+
+type UserId = Branded<string, 'UserId'>;
+type OrderId = Branded<string, 'OrderId'>;
+
+function createUserId(id: string): UserId {
+  return id as UserId;
+}
+
+const uid = createUserId('u-123');
+// const oid: OrderId = uid; // ❌ 编译错误：类型不兼容
+```
+
+运行时：`unique symbol` 完全消失，仅保留基础类型 `string`。
+
+### `declare` —— 外部实体声明
+
+```typescript
+// 编译前：告诉编译器某个实体已存在
+declare const process: {
+  env: Record<string, string>;
+};
+
+declare function setupAnalytics(config: { trackingId: string }): void;
+
+declare module '*.svg' {
+  const content: string;
+  export default content;
+}
+
+// 编译后：零代码生成
+// （所有 declare 语句都被完全擦除）
+```
+
+### 模块扩充（Module Augmentation）
+
+```typescript
+// 编译前：向已有模块添加类型声明
+declare module 'vue' {
+  interface ComponentCustomProperties {
+    $api: ApiClient;
+  }
+}
+
+declare module 'hono' {
+  interface ContextVariableMap {
+    user: { id: string; role: string };
+  }
+}
+
+// 编译后：零代码
+// 运行时依赖宿主环境实际注入对应属性
+```
+
+---
+
 ## 例外：Runtime-Impacting 特性
 
 部分 TS 特性会产生运行时代码，详见 `03-runtime-impacting-ts-features.md`：
@@ -270,3 +334,93 @@ const str = identity('hello');
 | **TypeScript Playground** | 实时观察编译前后代码差异 | [typescriptlang.org/play](https://www.typescriptlang.org/play) |
 | **TS Spec: Type Erasure** | 类型擦除的形式化描述 | [github.com/microsoft/TypeScript/blob/main/doc/spec.md](https://github.com/microsoft/TypeScript/blob/main/doc/spec.md) |
 | **TypeScript Handbook: Advanced Types** | 条件类型、映射类型、模板字面量类型详解 | [typescriptlang.org/docs/handbook/2/types-from-types.html](https://www.typescriptlang.org/docs/handbook/2/types-from-types.html) |
+| **TypeScript Handbook: Symbols** | unique symbol 与 branded types | [typescriptlang.org/docs/handbook/symbols.html](https://www.typescriptlang.org/docs/handbook/symbols.html) |
+| **TypeScript Handbook: Modules** | 模块系统与模块扩充 | [typescriptlang.org/docs/handbook/modules.html](https://www.typescriptlang.org/docs/handbook/modules.html) |
+| **TypeScript Handbook: Declaration Files** | declare 与 .d.ts 文件编写 | [typescriptlang.org/docs/handbook/declaration-files/introduction.html](https://www.typescriptlang.org/docs/handbook/declaration-files/introduction.html) |
+| **TypeScript TSConfig Reference** | 编译器选项完整参考 | [typescriptlang.org/tsconfig](https://www.typescriptlang.org/tsconfig) |
+| **ECMA-262 Specification** | JavaScript 语言底层规范 | [tc39.es/ecma262](https://tc39.es/ecma262/) |
+| **TypeScript Deep Dive (Basarat)** | 社区深度教程 | [basarat.gitbook.io/typescript](https://basarat.gitbook.io/typescript/) |
+
+---
+
+## 进阶代码示例
+
+### 递归条件类型：DeepReadonly
+
+```typescript
+type DeepReadonly<T> = T extends (infer R)[]
+  ? ReadonlyArray<DeepReadonly<R>>
+  : T extends object
+  ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
+  : T;
+
+// 使用
+interface Config {
+  server: { port: number; host: string };
+  features: string[];
+}
+
+const config: DeepReadonly<Config> = {
+  server: { port: 3000, host: 'localhost' },
+  features: ['auth', 'billing'],
+};
+
+// config.server.port = 4000; // ❌ 编译错误：readonly
+// config.features.push('new'); // ❌ 编译错误
+```
+
+### 模板字面量类型与模式匹配
+
+```typescript
+type EventName<T extends string> = `on${Capitalize<T>}`;
+type ClickEvent = EventName<'click'>; // "onClick"
+
+type RouteParams<T extends string> =
+  T extends `${infer _Start}/:${infer Param}/${infer Rest}`
+    ? { [K in Param | keyof RouteParams<`/${Rest}`>]: string }
+    : {};
+
+type UserRoute = RouteParams<'/api/users/:id/posts/:postId'>;
+// { id: string; postId: string }
+```
+
+### 断言谓词类型（Assertion Predicate）
+
+```typescript
+function assertIsString(value: unknown): asserts value is string {
+  if (typeof value !== 'string') {
+    throw new TypeError(`Expected string, got ${typeof value}`);
+  }
+}
+
+function parseInput(input: unknown) {
+  assertIsString(input);
+  return input.toUpperCase(); // ✅ input 被收窄为 string
+}
+```
+
+### `import type` 与 `import` 的区别
+
+```typescript
+// ✅ 仅编译时引入，无运行时代码
+import type { User } from './types';
+
+// ✅ 运行时引入 + 类型信息
+import { User } from './types';
+
+// ✅ TypeScript 3.8+ 明确类型导入
+import { type User, createUser } from './types';
+```
+
+---
+
+## 扩展参考链接
+
+- [TypeScript Handbook — Conditional Types](https://www.typescriptlang.org/docs/handbook/2/conditional-types.html) — 官方条件类型指南
+- [TypeScript Handbook — Template Literal Types](https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html) — 模板字面量类型详解
+- [TypeScript Handbook — Type Predicates](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates) — 类型谓词与断言
+- [TypeScript 3.8 Release Notes — type-only imports](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-8.html) — 仅类型导入说明
+- [TypeScript Playground](https://www.typescriptlang.org/play) — 实时观察编译前后代码差异
+- [TypeScript Design Goals](https://github.com/microsoft/TypeScript/wiki/TypeScript-Design-Goals) — 类型擦除与编译时语义的设计哲学
+- [ECMA-262 Specification](https://tc39.es/ecma262/) — JavaScript 语言底层规范
+- [TypeScript Handbook — Mapped Types](https://www.typescriptlang.org/docs/handbook/2/mapped-types.html) — 映射类型官方文档
