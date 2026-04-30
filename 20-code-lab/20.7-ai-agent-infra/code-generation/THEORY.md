@@ -225,7 +225,41 @@ console.log(printNode(node));
 // }
 ```
 
-## 8. 元编程模式
+## 8. 代码变换：jscodeshift 批量迁移
+
+```typescript
+// codemod/transforms/replace-imports.ts — 批量替换废弃的导入路径
+import { API, FileInfo, Options } from 'jscodeshift';
+
+export default function transformer(file: FileInfo, api: API, options: Options) {
+  const j = api.jscodeshift;
+  const root = j(file.source);
+
+  // 替换旧包名导入为新包名
+  root
+    .find(j.ImportDeclaration)
+    .filter(path => path.node.source.value === '@deprecated/ui-lib')
+    .forEach(path => {
+      path.node.source.value = '@newco/design-system';
+    });
+
+  // 替换具名导入的组件名
+  root
+    .find(j.ImportSpecifier)
+    .filter(path => path.node.imported.name === 'OldButton')
+    .forEach(path => {
+      path.node.imported.name = 'Button';
+      if (path.node.local) path.node.local.name = 'Button';
+    });
+
+  return root.toSource({ quote: 'single' });
+}
+
+// 运行方式：
+// npx jscodeshift -t codemod/transforms/replace-imports.ts src/**/*.tsx --parser=tsx
+```
+
+## 9. 元编程模式
 
 - **装饰器（Decorator）**: 注解式元数据附加
 - **Reflect API**: 运行时类型和元数据操作
@@ -233,7 +267,7 @@ console.log(printNode(node));
 - **代码模板**: 基于 AST 的代码片段生成
 - **宏（Macro）**: 编译期代码生成（如 `babel-plugin-macros`）
 
-## 9. 与相邻模块的关系
+## 10. 与相邻模块的关系
 
 - **79-compiler-design**: 编译器的完整设计
 - **78-metaprogramming**: 元编程技术
@@ -255,6 +289,14 @@ console.log(printNode(node));
 | Handlebars.js | 文档 | [handlebarsjs.com](https://handlebarsjs.com/) |
 | zod-to-ts | 仓库 | [github.com/sachinraja/zod-to-ts](https://github.com/sachinraja/zod-to-ts) |
 | babel-plugin-macros | 仓库 | [github.com/kentcdodds/babel-plugin-macros](https://github.com/kentcdodds/babel-plugin-macros) |
+| jscodeshift | 仓库 | [github.com/facebook/jscodeshift](https://github.com/facebook/jscodeshift) — Facebook 开源的代码迁移工具 |
+| ts-morph | 仓库 | [github.com/dsherret/ts-morph](https://github.com/dsherret/ts-morph) — TypeScript AST 操作简化库 |
+| unplugin | 仓库 | [github.com/unjs/unplugin](https://github.com/unjs/unplugin) — 通用构建工具插件框架 |
+| ECMAScript Spec | 规范 | [tc39.es/ecma262](https://tc39.es/ecma262/) — ECMA-262 语言规范 |
+| Webpack Loader API | 文档 | [webpack.js.org/api/loaders](https://webpack.js.org/api/loaders/) |
+| Vite Plugin API | 文档 | [vitejs.dev/guide/api-plugin](https://vitejs.dev/guide/api-plugin) |
+| Rollup Plugin Development | 文档 | [rollupjs.org/plugin-development](https://rollupjs.org/plugin-development/) |
+| Rome / Biome | 代码库 | [github.com/biomejs/biome](https://github.com/biomejs/biome) — 下一代 JS 工具链 |
 
 ---
 

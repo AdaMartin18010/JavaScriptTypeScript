@@ -206,6 +206,59 @@ console.log(`Running on: ${detectRuntime()}`);
 
 ---
 
+## 代码示例：运行时无关的模块加载器
+
+```typescript
+// lib/runtime.ts — 抹平 Node.js / Bun / Deno 的差异
+
+declare const Bun: { file(path: string): { text(): Promise<string> } } | undefined;
+declare const Deno: { readTextFile(path: string): Promise<string> } | undefined;
+
+export async function readTextFile(path: string): Promise<string> {
+  if (typeof Bun !== 'undefined') {
+    return Bun.file(path).text();
+  }
+  if (typeof Deno !== 'undefined') {
+    return Deno.readTextFile(path);
+  }
+  // Node.js fallback
+  const { readFile } = await import('node:fs/promises');
+  return readFile(path, 'utf-8');
+}
+
+export function serve(handler: (req: Request) => Response | Promise<Response>, port = 3000): void {
+  if (typeof Bun !== 'undefined') {
+    // @ts-ignore
+    Bun.serve({ port, fetch: handler });
+    return;
+  }
+  if (typeof Deno !== 'undefined') {
+    // @ts-ignore
+    Deno.serve({ port }, handler);
+    return;
+  }
+  // Node.js fallback
+  import('node:http').then(({ createServer }) => {
+    createServer((req, res) => {
+      const url = `http://${req.headers.host}${req.url}`;
+      const request = new Request(url, {
+        method: req.method,
+        headers: new Headers(Object.entries(req.headers).filter(([_, v]) => typeof v === 'string') as [string, string][]),
+        body: req.method !== 'GET' && req.method !== 'HEAD' ? req : undefined,
+      });
+      Promise.resolve(handler(request)).then((response) => {
+        res.writeHead(response.status, Object.fromEntries(response.headers));
+        response.body ? response.body.pipeTo(new WritableStream({ write(chunk) { res.write(chunk); } })) : res.end();
+      });
+    }).listen(port);
+  });
+}
+```
+
+> 该模式展示了 WinterCG 标准化之前，社区如何通过运行时检测实现库的可移植性。
+
+---
+
 ## 权威参考链接
 
 | 资源 | 说明 | 链接 |
@@ -217,6 +270,12 @@ console.log(`Running on: ${detectRuntime()}`);
 | **Bun 路线图与兼容性** | Bun 的 Node 兼容承诺 | [bun.sh/docs/runtime/nodejs-apis](https://bun.sh/docs/runtime/nodejs-apis) |
 | **Cloudflare Workers Runtime** | 边缘运行时 WinterCG 实践 | [developers.cloudflare.com/workers/runtime-apis](https://developers.cloudflare.com/workers/runtime-apis) |
 | **TC39 ECMA-262** | JavaScript 语言标准 | [tc39.es/ecma262](https://tc39.es/ecma262/) |
+| **W3C Web Platform Tests** | 跨运行时兼容性测试集 | [github.com/web-platform-tests/wpt](https://github.com/web-platform-tests/wpt) |
+| **Node.js TypeScript Support** | Node.js 原生 TS 运行文档 | [nodejs.org/api/typescript.html](https://nodejs.org/api/typescript.html) |
+| **Deno Standard Library** | Deno 官方标准库 | [jsr.io/@std](https://jsr.io/@std) |
+| **Bun Documentation** | Bun 运行时官方文档 | [bun.sh/docs](https://bun.sh/docs) |
+| **Workerd (Cloudflare)** | Cloudflare Workers 运行时源码 | [github.com/cloudflare/workerd](https://github.com/cloudflare/workerd) |
+| **Web Platform Tests for WinterCG** | WinterCG 兼容性测试 | [github.com/wintercg/admin](https://github.com/wintercg/admin) |
 
 ---
 

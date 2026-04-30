@@ -269,6 +269,31 @@ flowchart TD
 | 高性能API | **Go/Gin** | 资源占用低，并发强 |
 | 极致性能 | **Rust/Actix-web** | 内存安全，速度最快 |
 
+### 代码示例：Fastify 起步模板
+
+```typescript
+// server.ts — Fastify + @fastify/swagger + TypeScript
+import Fastify from 'fastify';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
+
+const app = Fastify({ logger: true });
+
+app.register(swagger, {
+  openapi: {
+    info: { title: 'API', version: '1.0.0' },
+  },
+});
+
+app.register(swaggerUi, { routePrefix: '/docs' });
+
+app.get('/health', async () => ({ status: 'ok' }));
+
+app.listen({ port: 3000, host: '0.0.0.0' });
+```
+
+> 📚 参考：[Fastify Documentation](https://www.fastify.io/docs/latest/) | [Fastify TypeScript Support](https://www.fastify.io/docs/latest/Reference/TypeScript/)
+
 ---
 
 ## 5. ORM选型决策树
@@ -425,6 +450,36 @@ flowchart TD
 | 组件测试 | **Testing Library** | 用户行为导向，无障碍友好 |
 | API测试 | **Vitest + MSW** | Mock服务 worker，真实HTTP模拟 |
 | 视觉回归 | **Playwright + Storybook** | 截图对比，组件文档 |
+
+### 代码示例：Vitest 单元测试 + MSW Mock
+
+```typescript
+// sum.test.ts
+import { describe, it, expect } from 'vitest';
+import { sum } from './sum';
+
+describe('sum', () => {
+  it('adds two numbers', () => {
+    expect(sum(1, 2)).toBe(3);
+  });
+});
+
+// api.test.ts — 使用 MSW 拦截 HTTP
+import { rest } from 'msw';
+import { setupServer } from 'msw/node';
+
+const server = setupServer(
+  rest.get('/api/user', (req, res, ctx) => {
+    return res(ctx.json({ id: 1, name: 'Alice' }));
+  })
+);
+
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
+```
+
+> 📚 参考：[Vitest Documentation](https://vitest.dev/) | [MSW Documentation](https://mswjs.io/)
 
 ---
 
@@ -640,6 +695,29 @@ flowchart TD
 | 预算敏感全栈 | **Render** | 价格透明，一体化托管 |
 | 全球容器部署 | **Fly.io** | 区域级部署，数据库一体 |
 | 强合规需求 | **自建K8s** | 完全自主可控 |
+
+### 代码示例：Next.js 部署到 Vercel
+
+```javascript
+// vercel.json — 边缘函数与缓存配置
+{
+  "functions": {
+    "app/api/edge/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
+      ]
+    }
+  ]
+}
+```
+
+> 📚 参考：[Vercel Docs — Deployment](https://vercel.com/docs/concepts/deployments/overview) | [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
 | AWS生态 | **AWS Amplify** | 与AWS服务深度集成 |
 
 ### 参考对比矩阵
@@ -1030,6 +1108,35 @@ flowchart TD
 | 微服务间 | **JWT** | 无状态传递，服务解耦 |
 | 未来趋势 | **Passkeys** | 防钓鱼，用户体验好 |
 
+### 代码示例：better-auth 基础配置
+
+```typescript
+// auth.ts — better-auth 通用配置
+import { betterAuth } from 'better-auth';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { db } from './db';
+
+export const auth = betterAuth({
+  database: drizzleAdapter(db, { provider: 'sqlite' }),
+  socialProviders: {
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    },
+  },
+  plugins: [], // 按需加载 2FA / Passkeys / Organization
+});
+
+// server.ts — Hono 集成
+import { Hono } from 'hono';
+import { auth } from './auth';
+
+const app = new Hono();
+app.on(['POST', 'GET'], '/api/auth/**', (c) => auth.handler(c.req.raw));
+```
+
+> 📚 参考：[better-auth Documentation](https://www.better-auth.com/docs/) | [WebAuthn / Passkeys Guide](https://webauthn.guide/)
+
 ### 参考对比矩阵
 
 - 安全与合规分类文档 [TODO: 链接待修复]
@@ -1390,6 +1497,45 @@ flowchart TD
 | 极端轻量 / 低带宽 | **Drizzle + D1/Turso** | 最小 bundle，最快冷启动 |
 | 已有 MySQL 生态迁移 | **PlanetScale** | Vitess 分片，分支工作流 |
 
+### 代码示例：Drizzle ORM + Cloudflare D1
+
+```typescript
+// schema.ts
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+
+export const users = sqliteTable('users', {
+  id: integer('id').primaryKey(),
+  email: text('email').notNull().unique(),
+  name: text('name').notNull(),
+});
+
+// db.ts — Cloudflare D1 绑定
+import { drizzle } from 'drizzle-orm/d1';
+import * as schema from './schema';
+
+export function getDb(d1: D1Database) {
+  return drizzle(d1, { schema });
+}
+
+// worker.ts
+import { Hono } from 'hono';
+import { getDb } from './db';
+import { users } from './schema';
+import { eq } from 'drizzle-orm';
+
+const app = new Hono<{ Bindings: { DB: D1Database } }>();
+
+app.get('/users/:id', async (c) => {
+  const db = getDb(c.env.DB);
+  const user = await db.select().from(users).where(eq(users.id, Number(c.req.param('id')))).get();
+  return user ? c.json(user) : c.notFound();
+});
+
+export default app;
+```
+
+> 📚 参考：[Cloudflare D1 Documentation](https://developers.cloudflare.com/d1/) | [Drizzle ORM D1 Docs](https://orm.drizzle.team/docs/get-started-sqlite#cloudflare-d1)
+
 ---
 
 ## 决策速查表
@@ -1441,6 +1587,20 @@ flowchart TD
 | TanStack Query Docs | <https://tanstack.com/query/latest> | TanStack Query 文档 |
 | Auth.js Docs | <https://authjs.dev/> | Auth.js 认证库 |
 | better-auth Docs | <https://www.better-auth.com/docs/> | better-auth 文档 |
+| Fastify Docs | <https://www.fastify.io/docs/latest/> | Node.js 高性能框架文档 |
+| Vitest Docs | <https://vitest.dev/> | 下一代测试框架 |
+| MSW Docs | <https://mswjs.io/> | API Mocking 库 |
+| Cloudflare Workers Docs | <https://developers.cloudflare.com/workers/> | 边缘计算平台 |
+| WebAuthn Guide | <https://webauthn.guide/> | 无密码认证标准指南 |
+| Cloudflare D1 Docs | <https://developers.cloudflare.com/d1/> | 边缘数据库 |
+| Neon Docs | <https://neon.tech/docs/> | Serverless Postgres |
+| Turso Docs | <https://docs.turso.tech/> | 边缘 SQLite |
+| LangGraph Docs | <https://langchain-ai.github.io/langgraph/> | 图编排 Agent 框架 |
+| Mastra Docs | <https://mastra.ai/docs> | TypeScript AI 框架 |
+| CrewAI Docs | <https://docs.crewai.com/> | 多角色 Agent 团队 |
+| Ollama Docs | <https://github.com/ollama/ollama> | 本地大模型运行 |
+| Node.js Type Stripping | <https://nodejs.org/api/typescript.html> | Node.js 原生 TS 支持 |
+| esbuild Docs | <https://esbuild.github.io/> | 极速打包工具 |
 
 ---
 

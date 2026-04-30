@@ -309,6 +309,96 @@ obj.count ||= 1   // 仅当 falsy 时赋值
 
 ---
 
+## 错误处理模式
+
+```javascript
+// try/catch/finally
+try {
+  riskyOperation();
+} catch (e) {
+  if (e instanceof TypeError) {
+    console.error('类型错误:', e.message);
+  } else {
+    throw e; // 重新抛出未知错误
+  }
+} finally {
+  cleanup(); // 无论成功与否都执行
+}
+
+// 全局错误捕获（浏览器）
+window.addEventListener('error', (event) => {
+  reportError({ message: event.message, stack: event.error?.stack });
+});
+
+// 全局未处理的 Promise 拒绝
+window.addEventListener('unhandledrejection', (event) => {
+  console.warn('Unhandled rejection:', event.reason);
+  event.preventDefault(); // 阻止控制台报错
+});
+
+// Error Cause（ES2022）— 保留错误链
+try {
+  await fetchUser();
+} catch (e) {
+  throw new Error('Failed to load dashboard', { cause: e });
+}
+```
+
+---
+
+## 现代数组与对象方法（ES2023+）
+
+```javascript
+// Array.prototype.toSorted / toReversed / toSpliced（ES2023）
+const nums = [3, 1, 4];
+const sorted = nums.toSorted((a, b) => a - b); // [1, 3, 4]
+const reversed = nums.toReversed(); // [4, 1, 3]
+
+// Array.prototype.with — 不可变替换（ES2023）
+const replaced = nums.with(1, 99); // [3, 99, 4]
+
+// Array.prototype.findLast / findLastIndex（ES2023）
+const lastEven = [1, 2, 3, 4].findLast(n => n % 2 === 0); // 4
+
+// Object.groupBy（ES2024）
+const inventory = [
+  { name: 'asparagus', type: 'vegetables' },
+  { name: 'banana', type: 'fruit' },
+];
+const grouped = Object.groupBy(inventory, ({ type }) => type);
+// { vegetables: [...], fruit: [...] }
+
+// Map.prototype.emplace（Stage 3 提案预览）
+// const map = new Map();
+// map.emplace('key', { insert: () => 'value', update: (existing) => existing + '!' });
+```
+
+---
+
+## Map、Set 与 Weak 集合
+
+```javascript
+// Map — 任意键类型，保持插入顺序
+const userAges = new Map([
+  ['Alice', 30],
+  ['Bob', 25],
+]);
+userAges.set('Charlie', 35);
+
+// Set — 唯一值集合
+const tags = new Set(['js', 'ts', 'js']); // { 'js', 'ts' }
+tags.add('rust');
+
+// WeakMap — 私有属性模式（见 WeakMap 节）
+// WeakSet — 标记对象是否被处理过
+const processed = new WeakSet();
+function process(obj) {
+  if (processed.has(obj)) return;
+  processed.add(obj);
+  // ...
+}
+```
+
 ## 参考资源
 
 - [MDN JavaScript Reference](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
@@ -322,6 +412,13 @@ obj.count ||= 1   // 仅当 falsy 时赋值
 - [2ality — JavaScript & TypeScript Blog](https://2ality.com/) — Dr. Axel 的技术博客
 - [JavaScript Weekly](https://javascriptweekly.com/) — JS 生态每周精选
 - [State of JS 2025](https://stateofjs.com/) — JavaScript 开发者年度调查报告
+- [JavaScript Error Cause Proposal](https://github.com/tc39/proposal-error-cause) — ES2022 Error Cause 提案
+- [ES2023 New Array Features](https://dev.to/hemanth/es2023-new-array-features-3ek1) — 新数组方法详解
+- [2ality — ES2024 Features](https://2ality.com/2024/01/ecmascript-2024.html) — Dr. Axel 的 ES2024 特性总结
+- [TC39 Process Document](https://tc39.es/process-document/) — ECMAScript 提案阶段官方定义
+- [MDN — Error Cause](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause) — Error Cause 文档
+- [MDN — Array.prototype.toSorted](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/toSorted) — 不可变排序方法
+- [Node.js Error Handling Best Practices](https://nodejs.org/en/learn/getting-started/error-handling) — Node.js 官方错误处理指南
 
 ---
 

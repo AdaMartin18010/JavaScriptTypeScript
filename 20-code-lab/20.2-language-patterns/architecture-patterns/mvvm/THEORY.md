@@ -243,6 +243,55 @@ count.set(5);
 count.update(v => v + 1);
 ```
 
+**Svelte 5 Runes（编译时响应式）**
+
+```svelte
+<!-- Counter.svelte (Svelte 5 Runes) -->
+<script>
+  let count = $state(0);
+  let double = $derived(count * 2);
+
+  function increment() { count++; }
+  function decrement() { count--; }
+</script>
+
+<div>
+  <p>{count} (Double: {double})</p>
+  <button onclick={decrement}>-</button>
+  <button onclick={increment}>+</button>
+</div>
+```
+
+**SolidJS Signals（细粒度响应式）**
+
+```typescript
+// SolidJS 使用细粒度 Signal，无虚拟 DOM
+import { createSignal, createEffect, createMemo } from 'solid-js';
+
+function CounterViewModel() {
+  const [count, setCount] = createSignal(0);
+  const double = createMemo(() => count() * 2);
+
+  createEffect(() => {
+    console.log('Count updated:', count());
+  });
+
+  return { count, double, increment: () => setCount(c => c + 1), decrement: () => setCount(c => c - 1) };
+}
+
+// View (SolidJS JSX)
+function Counter() {
+  const vm = CounterViewModel();
+  return (
+    <div>
+      <p>{vm.count()} (Double: {vm.double()})</p>
+      <button onClick={vm.decrement}>-</button>
+      <button onClick={vm.increment}>+</button>
+    </div>
+  );
+}
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -261,6 +310,11 @@ count.update(v => v + 1);
 - [Angular Signals Guide](https://angular.dev/guide/signals)
 - [MDN: MVC Architecture](https://developer.mozilla.org/en-US/docs/Glossary/MVC)
 - [Microsoft WPF Data Binding](https://learn.microsoft.com/en-us/dotnet/desktop/wpf/data/?view=netdesktop-8.0)
+- [Martin Fowler — Presentation Model](https://martinfowler.com/eaaDev/PresentationModel.html) — MVVM 的理论前身
+- [Android Architecture Components: ViewModel](https://developer.android.com/topic/libraries/architecture/viewmodel) — 移动端 MVVM 实践
+- [Svelte 5 Runes Introduction](https://svelte.dev/blog/runes) — 编译时响应式原语
+- [SolidJS Reactivity Primitives](https://docs.solidjs.com/concepts/signals) — 细粒度响应式指南
+- [Microsoft: The MVVM Pattern](https://learn.microsoft.com/en-us/archive/msdn-magazine/2009/february/patterns-wpf-apps-with-the-model-view-viewmodel-design-pattern) — John Gossman 原始论文
 - `20.2-language-patterns/architecture-patterns/`
 
 ---

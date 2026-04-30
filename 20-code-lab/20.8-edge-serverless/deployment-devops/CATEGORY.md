@@ -191,10 +191,124 @@ setTimeout(() => { ready = true; }, 2000);
 export default app;
 ```
 
+### Docker Compose 本地开发栈生成
+
+```typescript
+// docker-compose-gen.ts — 生成本地开发用 Docker Compose 配置
+interface ServiceConfig {
+  name: string;
+  image: string;
+  ports: string[];
+  env?: Record<string, string>;
+  volumes?: string[];
+  dependsOn?: string[];
+}
+
+export function generateCompose(services: ServiceConfig[]): string {
+  const lines = ['services:'];
+  for (const svc of services) {
+    lines.push(`  ${svc.name}:`);
+    lines.push(`    image: ${svc.image}`);
+    lines.push(`    ports:`);
+    for (const p of svc.ports) lines.push(`      - "${p}"`);
+    if (svc.env) {
+      lines.push(`    environment:`);
+      for (const [k, v] of Object.entries(svc.env)) {
+        lines.push(`      ${k}: ${v}`);
+      }
+    }
+    if (svc.volumes) {
+      lines.push(`    volumes:`);
+      for (const vol of svc.volumes) lines.push(`      - ${vol}`);
+    }
+    if (svc.dependsOn) {
+      lines.push(`    depends_on:`);
+      for (const dep of svc.dependsOn) lines.push(`      - ${dep}`);
+    }
+  }
+  return lines.join('\n');
+}
+
+// 示例：生成本地全栈开发环境
+console.log(generateCompose([
+  { name: 'app', image: 'node:20-alpine', ports: ['3000:3000'], dependsOn: ['db', 'redis'] },
+  { name: 'db', image: 'postgres:16-alpine', ports: ['5432:5432'], env: { POSTGRES_DB: 'dev' }, volumes: ['pgdata:/var/lib/postgresql/data'] },
+  { name: 'redis', image: 'redis:7-alpine', ports: ['6379:6379'] },
+]));
+```
+
+### Kubernetes 部署清单生成
+
+```typescript
+// k8s-manifest-gen.ts — 生成基础 K8s Deployment + Service
+interface K8sDeploymentConfig {
+  name: string;
+  image: string;
+  replicas: number;
+  port: number;
+  env?: Record<string, string>;
+}
+
+export function generateK8sManifest(config: K8sDeploymentConfig): string {
+  const envBlock = config.env
+    ? Object.entries(config.env).map(([k, v]) =>
+        `        - name: ${k}\n          value: "${v}"`).join('\n')
+    : '';
+
+  return `
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${config.name}
+spec:
+  replicas: ${config.replicas}
+  selector:
+    matchLabels:
+      app: ${config.name}
+  template:
+    metadata:
+      labels:
+        app: ${config.name}
+    spec:
+      containers:
+      - name: app
+        image: ${config.image}
+        ports:
+        - containerPort: ${config.port}
+${envBlock}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: ${config.port}
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: ${config.port}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${config.name}
+spec:
+  selector:
+    app: ${config.name}
+  ports:
+  - port: 80
+    targetPort: ${config.port}
+  type: ClusterIP
+`.trim();
+}
+```
+
 ## 相关索引
 
 - `30-knowledge-base/30.2-categories/README.md` — 分类总览
 - `20-code-lab/` — 代码实验室实践
+
 ## 目录内容
 
 - 📄 ARCHITECTURE.md
@@ -224,11 +338,20 @@ export default app;
 | DORA Metrics | 指南 | [cloud.google.com/blog/products/devops-sre/using-the-four-keys-to-measure-your-devops-performance](https://cloud.google.com/blog/products/devops-sre/using-the-four-keys-to-measure-your-devops-performance) |
 | The Twelve-Factor App | 方法论 | [12factor.net](https://12factor.net/) |
 | OCI Image Spec | 规范 | [github.com/opencontainers/image-spec](https://github.com/opencontainers/image-spec) |
-| Docker — Multi-stage builds](https://docs.docker.com/build/building/multi-stage/) | 文档 | [docs.docker.com/build/building/multi-stage](https://docs.docker.com/build/building/multi-stage/) |
-| Kubernetes — Health Checks](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) | 文档 | [kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) |
-| GitHub Actions — Reusable Workflows](https://docs.github.com/en/actions/sharing-automations/reusing-workflows) | 文档 | [docs.github.com/en/actions/sharing-automations/reusing-workflows](https://docs.github.com/en/actions/sharing-automations/reusing-workflows) |
-| Cloud Native Computing Foundation](https://www.cncf.io/) | 组织 | [cncf.io](https://www.cncf.io/) |
-| Terraform — AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs) | 文档 | [registry.terraform.io/providers/hashicorp/aws/latest/docs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs) |
+| Docker — Multi-stage builds](<https://docs.docker.com/build/building/multi-stage/>) | 文档 | [docs.docker.com/build/building/multi-stage](https://docs.docker.com/build/building/multi-stage/) |
+| Kubernetes — Health Checks](<https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/>) | 文档 | [kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) |
+| GitHub Actions — Reusable Workflows](<https://docs.github.com/en/actions/sharing-automations/reusing-workflows>) | 文档 | [docs.github.com/en/actions/sharing-automations/reusing-workflows](https://docs.github.com/en/actions/sharing-automations/reusing-workflows) |
+| Cloud Native Computing Foundation](<https://www.cncf.io/>) | 组织 | [cncf.io](https://www.cncf.io/) |
+| Terraform — AWS Provider](<https://registry.terraform.io/providers/hashicorp/aws/latest/docs>) | 文档 | [registry.terraform.io/providers/hashicorp/aws/latest/docs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs) |
+| Docker Compose Specification | 规范 | [github.com/compose-spec/compose-spec](https://github.com/compose-spec/compose-spec) |
+| Kubernetes Documentation | 官方文档 | [kubernetes.io/docs](https://kubernetes.io/docs/) |
+| Helm — Kubernetes 包管理 | 官方文档 | [helm.sh/docs](https://helm.sh/docs/) |
+| Argo CD — GitOps 持续交付 | 官方文档 | [argo-cd.readthedocs.io](https://argo-cd.readthedocs.io/) |
+| GitHub Actions — Composite Actions | 官方文档 | [docs.github.com/en/actions/sharing-automations/creating-a-composite-action](https://docs.github.com/en/actions/sharing-automations/creating-a-composite-action) |
+| Podman Documentation | 官方文档 | [podman.io/docs](https://podman.io/docs) |
+| BuildKit / Buildx | 文档 | [docs.docker.com/build/buildkit](https://docs.docker.com/build/buildkit/) |
+| SLSA — Supply-chain Levels for Software Artifacts | 规范 | [slsa.dev](https://slsa.dev/) |
+| Cosign — Container Signing | 仓库 | [github.com/sigstore/cosign](https://github.com/sigstore/cosign) |
 
 ---
 

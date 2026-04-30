@@ -207,6 +207,50 @@ quadrantChart
 
 ---
 
+## 自动化评分脚本示例
+
+```typescript
+// scripts/evaluate-tech.ts — 基于评估标准自动计算象限
+import * as fs from 'node:fs';
+
+interface Technology {
+  id: string;
+  name: string;
+  scores: Record<string, number>; // 1-5
+}
+
+const WEIGHTS = {
+  maturity: 0.25,
+  community: 0.20,
+  familiarity: 0.20,
+  compatibility: 0.15,
+  maintenanceRisk: 0.10,
+  costBenefit: 0.10,
+};
+
+function calculateQuadrant(tech: Technology): 'adopt' | 'trial' | 'assess' | 'hold' {
+  const weighted = Object.entries(WEIGHTS).reduce((sum, [key, weight]) => {
+    return sum + (tech.scores[key] ?? 3) * weight;
+  }, 0);
+
+  if (weighted >= 4.5) return 'adopt';
+  if (weighted >= 3.5) return 'trial';
+  if (weighted >= 2.5) return 'assess';
+  return 'hold';
+}
+
+// 示例
+const react: Technology = {
+  id: 'react-19',
+  name: 'React 19',
+  scores: { maturity: 5, community: 5, familiarity: 5, compatibility: 5, maintenanceRisk: 5, costBenefit: 4 },
+};
+
+console.log(`${react.name} → ${calculateQuadrant(react)}`); // React 19 → adopt
+```
+
+---
+
 ## 关联模板
 
 | 模板 | 用途 | 路径 |
@@ -214,6 +258,20 @@ quadrantChart
 | 技术选型决策记录 | ADR (Architecture Decision Record) | `60-meta-content/templates/adr-template.md` |
 | 技术试点报告 | Trial Report | `60-meta-content/templates/trial-report.md` |
 | 迁移计划 | Migration Plan | `60-meta-content/templates/migration-plan.md` |
+
+---
+
+## 权威参考链接
+
+| 资源 | 链接 | 说明 |
+|------|------|------|
+| ThoughtWorks Technology Radar | <https://www.thoughtworks.com/radar> | 技术雷达方法论创始 |
+| Zalando Tech Radar | <https://opensource.zalando.com/tech-radar/> | 开源技术雷达生成器 |
+| CNCF Cloud Native Landscape | <https://landscape.cncf.io/> | 云原生技术全景图 |
+| Mermaid Quadrant Chart | <https://mermaid.js.org/syntax/quadrantChart.html> | Mermaid 象限图语法 |
+| Technology Radar Methodology | <https://www.thoughtworks.com/radar/byor> | 构建自己的技术雷达指南 |
+| Stack Overflow Developer Survey | <https://survey.stackoverflow.com/> | 开发者技术趋势调查 |
+| InfoQ Trends Reports | <https://www.infoq.com/trends/> | 技术采用趋势报告 |
 
 ---
 

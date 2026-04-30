@@ -237,6 +237,79 @@ const pointExpr: Expr = {
 console.log('point.x :', typeToString(typecheck(new Map(), pointExpr))); // number
 ```
 
+#### 可运行示例：扩展 Mini TS — 联合类型与泛型约束
+
+```typescript
+// mini-typescript-extended.ts — 联合类型与简单泛型
+
+type ExtType =
+  | { tag: 'Num' } | { tag: 'Str' } | { tag: 'Bool' } | { tag: 'Never' }
+  | { tag: 'Obj'; fields: Map<string, ExtType> }
+  | { tag: 'Func'; params: ExtType[]; ret: ExtType }
+  | { tag: 'Union'; members: ExtType[] }      // T | U
+  | { tag: 'Generic'; name: string; bound: ExtType | null }; // <T extends U>
+
+const etNum: ExtType = { tag: 'Num' };
+const etStr: ExtType = { tag: 'Str' };
+
+function flattenUnion(t: ExtType): ExtType[] {
+  return t.tag === 'Union' ? t.members.flatMap(flattenUnion) : [t];
+}
+
+function isExtSubtype(sub: ExtType, sup: ExtType): boolean {
+  if (sub.tag === 'Never') return true;
+  // 联合类型子类型：sub 的每个成员都是 sup 的子类型
+  if (sub.tag === 'Union') {
+    return sub.members.every(m => isExtSubtype(m, sup));
+  }
+  if (sup.tag === 'Union') {
+    const flatSup = flattenUnion(sup);
+    // sub 是联合类型的子类型，当且仅当 sub 等价于联合的某个子集
+    // 简化：sub 是 sup 中某个成员的子类型
+    return flatSup.some(m => isExtSubtype(sub, m));
+  }
+  if (sub.tag !== sup.tag) return false;
+  switch (sub.tag) {
+    case 'Num': case 'Str': case 'Bool': case 'Never': return true;
+    case 'Obj': {
+      const sFields = sub.fields;
+      const bFields = (sup as Extract<ExtType, { tag: 'Obj' }>).fields;
+      for (const [k, vt] of bFields) {
+        const st = sFields.get(k);
+        if (!st || !isExtSubtype(st, vt)) return false;
+      }
+      return true;
+    }
+    case 'Func': {
+      const bf = sup as Extract<ExtType, { tag: 'Func' }>;
+      if (sub.params.length !== bf.params.length) return false;
+      // 逆变参数 + 协变返回
+      return sub.params.every((p, i) => isExtSubtype(bf.params[i], p)) && isExtSubtype(sub.ret, bf.ret);
+    }
+    default: return false;
+  }
+}
+
+// 类型收窄：if (typeof x === 'number') ...
+function narrowByTag(value: ExtType, tag: string): ExtType | null {
+  const members = flattenUnion(value);
+  const narrowed = members.filter(m => {
+    if (tag === 'number') return m.tag === 'Num';
+    if (tag === 'string') return m.tag === 'Str';
+    if (tag === 'boolean') return m.tag === 'Bool';
+    return false;
+  });
+  if (narrowed.length === 0) return null;
+  if (narrowed.length === 1) return narrowed[0];
+  return { tag: 'Union', members: narrowed };
+}
+
+// ===== 演示：string | number 的子类型推导 =====
+const unionType: ExtType = { tag: 'Union', members: [etNum, etStr] };
+console.log('number <: string|number ?', isExtSubtype(etNum, unionType)); // true
+console.log('narrow number:', narrowByTag(unionType, 'number')); // { tag: 'Num' }
+```
+
 ### 3.2 常见误区
 
 | 误区 | 正确理解 |
@@ -250,6 +323,15 @@ console.log('point.x :', typeToString(typecheck(new Map(), pointExpr))); // numb
 - [TypeScript Compiler Internals](https://github.com/microsoft/TypeScript-Compiler-Notes)
 - [Crafting Interpreters by Robert Nystrom](https://craftinginterpreters.com/)
 - [TypeScript Compiler Architecture Overview](https://github.com/microsoft/TypeScript/wiki/Architectural-Overview)
+- [Featherweight TypeScript: A Verified Type Checker in Dafny](https://doi.org/10.1145/3294031.3294081) — Microsoft Research
+- [Bidirectional Typing — Jana Dunfield & Neel Krishnaswami](https://arxiv.org/abs/1908.05839) — 双向类型检查综述
+- [Gradual Typing for Functional Languages](https://doi.org/10.1145/1159803.1159817) — Siek & Taha
+- [TAPL Chapter 15: Subtyping](https://www.cis.upenn.edu/~bcpierce/tapl/) — 子类型系统权威参考
+- [Types and Programming Languages: Chapter 11 — Simply Typed Lambda Calculus](https://www.cis.upenn.edu/~bcpierce/tapl/) — 形式化类型推导
+- [PLFA — DeBruijn: Substitution](https://plfa.inf.ed.ac.uk/Part2/DeBruijn.html) — 变量绑定与替换的形式化
+- [CompCert: Formally Verified C Compiler](https://compcert.org/) — 工业级形式化编译器
+- [WasmSpec: WebAssembly Formal Specification](https://webassembly.github.io/spec/core/) — WebAssembly 操作语义规范
+- [Isabelle/HOL: A Proof Assistant for Higher-Order Logic](https://isabelle.in.tum.de/) — 定理证明辅助工具
 - `20.10-formal-verification/type-theory-formal/`
 
 ---

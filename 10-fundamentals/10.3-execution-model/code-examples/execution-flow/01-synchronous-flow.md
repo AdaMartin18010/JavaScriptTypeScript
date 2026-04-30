@@ -219,6 +219,53 @@ console.log(cloned.nested !== original.nested); // true（深拷贝）
 // structuredClone({ fn: () => {} }); // throws DataCloneError
 ```
 
+### 6.7 同步生成器与迭代器控制
+
+```javascript
+// 同步生成器实现斐波那契数列
+function* fibonacci(max) {
+  let [a, b] = [0, 1];
+  while (a <= max) {
+    yield a;
+    [a, b] = [b, a + b];
+  }
+}
+
+// for...of 消费
+for (const n of fibonacci(100)) {
+  console.log(n); // 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89
+}
+
+// 手动控制迭代（展示同步流的逐步执行）
+const iter = fibonacci(10);
+console.log(iter.next()); // { value: 0, done: false }
+console.log(iter.next()); // { value: 1, done: false }
+console.log(iter.return()); // { value: undefined, done: true } — 提前终止
+```
+
+### 6.8 高精度同步计时
+
+```javascript
+// performance.now() 提供微秒级精度（相对时间）
+const start = performance.now();
+
+// 同步计算密集型任务
+let sum = 0;
+for (let i = 0; i < 1e7; i++) {
+  sum += i;
+}
+
+const duration = performance.now() - start;
+console.log(`Elapsed: ${duration.toFixed(3)}ms`);
+
+// Node.js: process.hrtime.bigint() 提供纳秒级精度
+import { hrtime } from 'node:process';
+const t0 = hrtime.bigint();
+// ... sync work ...
+const t1 = hrtime.bigint();
+console.log(`Nanoseconds: ${t1 - t0}`);
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
@@ -233,6 +280,12 @@ console.log(cloned.nested !== original.nested); // true（深拷贝）
 - **MDN — structuredClone** — <https://developer.mozilla.org/en-US/docs/Web/API/Window/structuredClone>
 - **V8 Blog — Understanding V8 Bytecode** — <https://v8.dev/blog/understanding-v8-bytecode>
 - **HTML Living Standard — Scripting** — <https://html.spec.whatwg.org/multipage/webappapis.html>
+- **ECMA-262 §27.5** — Generator Functions: <https://tc39.es/ecma262/#sec-generator-functions>
+- **MDN: Generator** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator>
+- **MDN: performance.now()** — <https://developer.mozilla.org/en-US/docs/Web/API/Performance/now>
+- **Node.js: process.hrtime** — <https://nodejs.org/api/process.html#processhrtimebigint>
+- **V8 Blog — TurboFan** — <https://v8.dev/blog/turbofan-jit>
+- **What the heck is the event loop?** — Philip Roberts JSConf 2014: <https://www.youtube.com/watch?v=8aGhZQkoFbQ>
 
 ---
 
