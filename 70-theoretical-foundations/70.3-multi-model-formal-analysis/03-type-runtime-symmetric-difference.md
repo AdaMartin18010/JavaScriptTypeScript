@@ -1130,3 +1130,5 @@ const userId = 'alice@example.com' as UserId;
 45. Schmidt, D. A. (1998). "Abstract Interpretation from a Lattice-Theoretic Perspective." *SAS 1998*.
 46. Møller, A., & Schwartzbach, M. I. (2012). "Static Program Analysis." *Lecture Notes, Aarhus University*.
 47. Beyer, D., et al. (2007). "The Software Model Checker BLAST." *International Journal on Software Tools for Technology Transfer*, 9(5-6), 505-525.
+48. Henzinger, T. A., et al. (2002). "Lazy Abstraction." *POPL 2002*.
+49. Ball, T., & Rajamani, S. K. (2001). "Automatically Validating Temporal Safety Properties of Interfaces." *SPIN 2001*.

@@ -889,6 +889,71 @@ function simple(x: number, y: number, z: number): string {
 }
 ```
 
+### 8. 控制流与计算效应的统一视角
+
+从范畴论角度看，所有控制流结构都是**计算效应**的不同表现形式。
+
+```
+计算效应的统一分类：
+
+纯计算（无副作用）
+  ↓ 恒等 Monad
+
+顺序副作用
+  ↓ Writer Monad（日志）、State Monad（状态）
+
+非确定性选择
+  ↓ List Monad、Maybe Monad
+
+异常/错误
+  ↓ Either Monad、Except Monad
+
+ continuations
+  ↓ Continuation Monad
+
+交互/IO
+  ↓ IO Monad、Async Monad
+```
+
+**TypeScript 中的计算效应**（通过 fp-ts）：
+
+```typescript
+import * as O from 'fp-ts/Option';
+import * as E from 'fp-ts/Either';
+import * as T from 'fp-ts/Task';
+
+// Maybe 效应（处理 null）
+const safeDiv = (a: number, b: number): O.Option<number> =>
+  b === 0 ? O.none : O.some(a / b);
+
+// Either 效应（处理错误）
+const validate = (input: string): E.Either<string, number> => {
+  const n = parseInt(input);
+  return isNaN(n) ? E.left('Invalid number') : E.right(n);
+};
+
+// Async 效应（处理异步）
+const fetchUser = (id: string): T.Task<User> =>
+  () => fetch(`/api/users/${id}`).then(r => r.json());
+```
+
+**对称差分析：命令式 vs 函数式控制流**
+
+```
+命令式 \\ 函数式 = {
+  "直观的执行顺序",
+  "break/continue/goto 的灵活性",
+  "与硬件执行模型的直接对应"
+}
+
+函数式 \\ 命令式 = {
+  "数学上的可组合性",
+  "效应的显式追踪",
+  "更容易的形式化验证",
+  "引用透明性"
+}
+```
+
 ---
 
 ## 参考文献
