@@ -1,0 +1,64 @@
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'primaryColor': '#e1f5fe',
+      'primaryTextColor': '#01579b',
+      'primaryBorderColor': '#0288d1',
+      'lineColor': '#0288d1',
+      'secondaryColor': '#fff3e0',
+      'tertiaryColor': '#e8f5e9'
+    }
+  }
+}%%
+
+graph TB
+    subgraph Developer["开发者心智模型"]
+        WM["工作记忆<br/>4±1 个 chunk"]
+        LTM["长期记忆<br/>图式/模式"]
+        MM["心智模型<br/>Mental Model"]
+    end
+
+    subgraph Code["代码表征"]
+        Syntax["语法结构"]
+        Types["类型约束"]
+        Semantics["运行时语义"]
+    end
+
+    subgraph Framework["框架模型"]
+        React["React<br/>f(state) => UI"]
+        Vue["Vue<br/>响应式代理"]
+        Angular["Angular<br/>MVC/MVVM"]
+        Solid["Solid<br/>Signal"]
+        Svelte["Svelte<br/>编译时"]
+    end
+
+    subgraph Output["输出感知"]
+        Render["渲染输出"]
+        Interactive["交互反馈"]
+        CognitiveLoad["认知负荷评估"]
+    end
+
+    %% 信息流
+    Code -->|"阅读/理解"| WM
+    WM -->|"图式匹配"| LTM
+    LTM -->|"模型构建"| MM
+    MM -->|"框架映射"| Framework
+    Framework -->|"渲染预测"| Render
+    Render -->|"感知反馈"| Interactive
+    Interactive -->|"负荷测量"| CognitiveLoad
+    CognitiveLoad -->|"模型更新"| MM
+
+    %% 框架间的映射
+    React -.->|"概念模型冲突"| Vue
+    Vue -.->|"响应式语义差异"| Angular
+    Angular -.->|"架构复杂度差异"| Solid
+    Solid -.->|"细粒度 vs 粗粒度"| Svelte
+    Svelte -.->|"运行时 vs 编译时"| React
+
+    %% 样式
+    style WM fill:#ffebee,stroke:#c62828
+    style CognitiveLoad fill:#ffebee,stroke:#c62828
+    style React fill:#e3f2fd,stroke:#1565c0
+    style Vue fill:#e8f5e9,stroke:#2e7d32
+    style Angular fill:#fff3e0,stroke:#ef6c00
