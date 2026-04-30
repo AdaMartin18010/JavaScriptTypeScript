@@ -328,7 +328,94 @@ console.log(readBack === 9007199254740993n); // true
 
 ---
 
-## 四、权威参考
+## 四、进阶代码示例
+
+### 4.1 可选链的安全导航模式
+
+```typescript
+// 深层对象安全访问与默认值
+const config = {
+  server: {
+    ports: [8080, 8081]
+  }
+};
+
+const primaryPort = config?.server?.ports?.[0] ?? 3000;
+const backupPort = config?.server?.ports?.[1] ?? primaryPort;
+
+// 可选链与函数调用
+const logger = {
+  debug: (msg: string) => console.log(`[DEBUG] ${msg}`)
+};
+logger.debug?.('optional chaining works'); // 安全调用
+```
+
+### 4.2 结合 `??` 与 `||` 的精确默认值
+
+```typescript
+function createServer(options: { port?: number; host?: string; timeout?: number }) {
+  // ?? 仅对 null/undefined 生效，适合数值 0 是合法值的情况
+  const port = options.port ?? 8080;
+  // || 对所有 falsy 值生效，适合字符串 "" 也应被替换的情况
+  const host = options.host || 'localhost';
+  const timeout = options.timeout ?? 5000;
+
+  return { port, host, timeout };
+}
+
+console.log(createServer({ port: 0 }));       // { port: 0, host: 'localhost', timeout: 5000 }
+console.log(createServer({ port: undefined })); // { port: 8080, ... }
+```
+
+### 4.3 动态 import 实现路由级代码分割
+
+```typescript
+// router.ts
+const routes = {
+  '/dashboard': () => import('./pages/Dashboard.js'),
+  '/settings': () => import('./pages/Settings.js'),
+  '/profile': () => import('./pages/Profile.js'),
+};
+
+async function navigate(path: string) {
+  const loader = routes[path as keyof typeof routes];
+  if (!loader) return null;
+
+  const module = await loader();
+  return module.default;
+}
+```
+
+### 4.4 globalThis 跨环境存储
+
+```typescript
+// lib/storage.ts
+const globalStore = (() => {
+  const map = new Map<string, any>();
+  return {
+    get<T>(key: string): T | undefined {
+      if (globalThis.__SHARED_STORE__) {
+        return globalThis.__SHARED_STORE__.get(key);
+      }
+      return map.get(key);
+    },
+    set<T>(key: string, value: T) {
+      if (!globalThis.__SHARED_STORE__) {
+        globalThis.__SHARED_STORE__ = new Map();
+      }
+      globalThis.__SHARED_STORE__.set(key, value);
+    }
+  };
+})();
+
+declare global {
+  var __SHARED_STORE__: Map<string, any> | undefined;
+}
+```
+
+---
+
+## 五、权威参考
 
 - [ECMA-262 — 2020 Language Specification](https://262.ecma-international.org/11.0/) — 官方规范
 - [MDN — Optional chaining](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining) — Mozilla 文档
@@ -344,6 +431,7 @@ console.log(readBack === 9007199254740993n); // true
 - [TC39 Proposals](https://github.com/tc39/proposals) — ECMAScript 提案仓库
 - [Can I Use — ES2020](https://caniuse.com/?search=es2020) — 浏览器兼容性矩阵
 - [Core-JS Polyfills](https://github.com/zloirock/core-js) — ES2020+ polyfill 实现参考
+- [MDN — DataView.setBigInt64](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView/setBigInt64) — TypedArray BigInt 互操作
 
 ---
 

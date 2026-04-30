@@ -49,9 +49,9 @@ Completion Record = {
 ### 2.2 辅助操作
 
 ```
-NormalCompletion(value) → { [[Type]]: normal, [[Value]]: value, [[Target]]: empty }
-ThrowCompletion(value)  → { [[Type]]: throw, [[Value]]: value, [[Target]]: empty }
-ReturnCompletion(value) → { [[Type]]: return, [[Value]]: value, [[Target]]: empty }
+NormalCompletion(value) -> { [[Type]]: normal, [[Value]]: value, [[Target]]: empty }
+ThrowCompletion(value)  -> { [[Type]]: throw, [[Value]]: value, [[Target]]: empty }
+ReturnCompletion(value) -> { [[Type]]: return, [[Value]]: value, [[Target]]: empty }
 ```
 
 ---
@@ -307,7 +307,137 @@ console.log(withExample()); // "matched"
 
 ---
 
-## 7. 权威参考与国际化对齐 (References)
+## 7. 进阶代码示例
+
+### 7.1 利用 do-while(false) 模式模拟 try/catch 语义
+
+```javascript
+// 老代码中利用 break 实现提前退出的模式
+function processData(data) {
+  let result;
+  do {
+    if (!data) {
+      result = 'empty';
+      break; // BreakCompletion，跳出 do-while
+    }
+    if (data.error) {
+      result = 'error';
+      break;
+    }
+    result = data.value;
+  } while (false);
+  return result;
+}
+
+console.log(processData(null));     // "empty"
+console.log(processData({ error: true })); // "error"
+```
+
+### 7.2 Promise 链中的完成记录等效模式
+
+```javascript
+// 将同步的 try/catch/finally 映射到 Promise
+function safeOperation() {
+  return Promise.resolve()
+    .then(() => {
+      // try 块
+      return riskyCall();
+    })
+    .catch((err) => {
+      // catch 块：处理 ThrowCompletion
+      return { error: err.message };
+    })
+    .finally(() => {
+      // finally 块：总是执行
+      console.log('cleanup');
+    });
+}
+
+function riskyCall() {
+  if (Math.random() > 0.5) throw new Error('fail');
+  return 'success';
+}
+```
+
+### 7.3 手动实现 Promise.allSettled 的完成记录视角
+
+```javascript
+function allSettledManual(promises) {
+  return Promise.all(
+    promises.map((p) =>
+      p.then(
+        (value) => ({ status: 'fulfilled', value }), // NormalCompletion
+        (reason) => ({ status: 'rejected', reason }) // ThrowCompletion 被捕获
+      )
+    )
+  );
+}
+```
+
+### 7.4 类构造函数中 return 对象的影响
+
+```javascript
+class Base {
+  constructor() {
+    this.base = true;
+    // 显式 return 对象会覆盖默认返回的 this
+    return { overridden: true };
+  }
+}
+
+class Derived extends Base {
+  constructor() {
+    super();
+    this.derived = true;
+    // 由于 Base 返回了非 this 对象，这里无法设置 derived
+  }
+}
+
+const d = new Derived();
+console.log(d); // { overridden: true }
+console.log(d.derived); // undefined
+```
+
+### 7.5 使用 Symbol.iterator 控制完成记录
+
+```javascript
+class ResourcePool {
+  #resources = [];
+  #closed = false;
+
+  add(resource) {
+    if (this.#closed) throw new Error('Pool is closed');
+    this.#resources.push(resource);
+  }
+
+  *[Symbol.iterator]() {
+    for (const r of this.#resources) {
+      yield r;
+    }
+  }
+
+  close() {
+    this.#closed = true;
+    for (const r of this.#resources) {
+      if (typeof r.release === 'function') r.release();
+    }
+  }
+}
+
+const pool = new ResourcePool();
+pool.add({ name: 'A', release() { console.log('Released A'); } });
+pool.add({ name: 'B', release() { console.log('Released B'); } });
+
+for (const r of pool) {
+  console.log(r.name);
+  if (r.name === 'A') break; // BreakCompletion 不会触发 finally，但 for...of 会正常结束
+}
+pool.close();
+```
+
+---
+
+## 8. 权威参考与国际化对齐 (References)
 
 - **ECMA-262 §6.2.4** — The Completion Record Specification Type
 - **ECMA-262 §13.15** — Try/Catch/Finally 语句的完成记录语义
@@ -332,24 +462,24 @@ console.log(withExample()); // "matched"
 
 ---
 
-## 8. 思维表征总结 (Cognitive Representations)
+## 9. 思维表征总结 (Cognitive Representations)
 
-### 8.1 完成记录传播
+### 9.1 完成记录传播
 
 ```
-语句执行 → Completion Record
-  normal → 继续下一条
-  return → 函数返回
-  throw → 寻找 catch
-  break → 跳出循环
-  continue → 循环继续
+语句执行 -> Completion Record
+  normal -> 继续下一条
+  return -> 函数返回
+  throw -> 寻找 catch
+  break -> 跳出循环
+  continue -> 循环继续
 ```
 
 ---
 
-## 9. 公理化表述与形式证明 (Axiomatization & Formal Proof)
+## 10. 公理化表述与形式证明 (Axiomatization & Formal Proof)
 
-### 9.1 公理化基础
+### 10.1 公理化基础
 
 **公理 1（完成记录的完备性）**：
 > 每个语句执行必然产生一个 Completion Record。
@@ -357,7 +487,7 @@ console.log(withExample()); // "matched"
 **公理 2（finally 的覆盖性）**：
 > finally 块中的 return/throw 覆盖 try/catch 中的完成记录。
 
-### 9.2 定理与证明
+### 10.2 定理与证明
 
 **定理 1（异常传播的确定性）**：
 > throw 产生的 ThrowCompletion 必然被最近的 catch 捕获或传播到全局。
@@ -368,9 +498,9 @@ console.log(withExample()); // "matched"
 
 ---
 
-## 10. 推理链与演绎分析 (Deductive Reasoning Chain)
+## 11. 推理链与演绎分析 (Deductive Reasoning Chain)
 
-### 10.1 演绎推理
+### 11.1 演绎推理
 
 ```mermaid
 graph TD
@@ -382,11 +512,26 @@ graph TD
     E -->|否| G[传播]
 ```
 
-### 10.2 反事实推理
+### 11.2 反事实推理
 
 > **反设**：没有 Completion Record。
 > **推演结果**：return/throw/break/continue 的实现无法统一描述，规范将充满特例。
 > **结论**：Completion Record 是 ECMA-262 规范优雅性的关键设计。
+
+---
+
+## 12. 权威外部链接
+
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| ECMA-262 §6.2.4 | Completion Record 规范 | [tc39.es/ecma262/#sec-completion-record-specification-type](https://tc39.es/ecma262/#sec-completion-record-specification-type) |
+| ECMA-262 §13.15 | Try/Catch/Finally | [tc39.es/ecma262/#sec-try-statement](https://tc39.es/ecma262/#sec-try-statement) |
+| MDN — Control flow | JS 控制流指南 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Control_flow_and_error_handling](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Control_flow_and_error_handling) |
+| MDN — try...catch | 异常处理详解 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/try...catch) |
+| MDN — Generator | 生成器完成语义 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator) |
+| V8 Blog — Understanding Exceptions | V8 异常与栈追踪 | [v8.dev/docs/stack-trace-api](https://v8.dev/docs/stack-trace-api) |
+| JavaScript Info — Error handling | 错误处理教程 | [javascript.info/exception](https://javascript.info/exception) |
+| Engine262 | 教育用 ECMA-262 实现 | [engine262.js.org](https://engine262.js.org/) |
 
 ---
 

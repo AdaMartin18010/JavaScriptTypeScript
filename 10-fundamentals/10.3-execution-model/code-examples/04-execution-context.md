@@ -108,35 +108,7 @@ outer();
 // 3. inner 上下文: z = "inner"
 ```
 
----
-
-## 7. 权威参考与国际化对齐 (References)
-
-- **ECMA-262 §9.4** — Execution Contexts
-- **MDN: Execution context** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_context>
-
----
-
-## 8. 思维表征总结 (Cognitive Representations)
-
-### 8.1 执行上下文创建流程
-
-```mermaid
-flowchart TD
-    Start[进入函数] --> Create[创建执行上下文]
-    Create --> Lexical[创建词法环境]
-    Create --> Variable[创建变量环境]
-    Create --> This[确定 this 绑定]
-    Create --> Init[变量实例化]
-    Init --> Execute[执行函数体]
-    Execute --> Pop[弹出上下文]
-```
-
----
-
-## 9. 更多执行上下文实例 (Advanced Examples)
-
-### 9.1 正例：模块执行上下文的 this
+### 6.2 正例：模块执行上下文的 this
 
 ```javascript
 // ES 模块的顶层 this 是 undefined（严格模式默认）
@@ -149,7 +121,7 @@ console.log(this); // undefined
 console.log(this === module.exports); // true
 ```
 
-### 9.2 正例：eval 的执行上下文继承
+### 6.3 正例：eval 的执行上下文继承
 
 ```javascript
 const x = 'global';
@@ -166,7 +138,7 @@ function outer() {
 outer();
 ```
 
-### 9.3 正例：Realm 与 iframe 的执行上下文隔离
+### 6.4 正例：Realm 与 iframe 的执行上下文隔离
 
 ```javascript
 // 不同 Realm 具有独立的 globalThis 和内置对象
@@ -182,7 +154,7 @@ console.log(arr instanceof Array); // false
 console.log(Array.isArray(arr));   // true（推荐方式）
 ```
 
-### 9.4 正例：AsyncContext (Stage 2) 的异步上下文传播
+### 6.5 正例：AsyncContext (Stage 2) 的异步上下文传播
 
 ```javascript
 // TC39 Async Context 提案（Stage 2）用于在异步调用中保持上下文
@@ -201,7 +173,7 @@ storage.run({ userId: 42 }, () => {
 });
 ```
 
-### 9.5 正例：Node.js vm 模块与独立上下文
+### 6.6 正例：Node.js vm 模块与独立上下文
 
 ```javascript
 import { createContext, runInContext } from 'node:vm';
@@ -224,28 +196,7 @@ runInContext(code, context);
 console.log(context.module.exports.result); // 101
 ```
 
----
-
-## 10. 权威参考与国际化对齐 (References)
-
-- **ECMA-262 §9.4** — Execution Contexts: <https://tc39.es/ecma262/#sec-execution-contexts>
-- **ECMA-262 §9.2** — ECMAScript Code Execution Contexts: <https://tc39.es/ecma262/#sec-execution-contexts>
-- **MDN: Execution context** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_context>
-- **MDN: Realm** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Realm>
-- **Node.js: vm module** — <https://nodejs.org/api/vm.html>
-- **Node.js: AsyncLocalStorage** — <https://nodejs.org/api/async_context.html>
-- **TC39: Async Context Proposal** — <https://github.com/tc39/proposal-async-context>
-- **TC39: ShadowRealm** — <https://github.com/tc39/proposal-shadowrealm>
-- **V8 Blog: Understanding V8 Bytecode** — <https://v8.dev/blog/understanding-v8-bytecode>
-- **HTML Living Standard §8.1.4.2** — Event loops: <https://html.spec.whatwg.org/multipage/webappapis.html#event-loops>
-
----
-
----
-
-## 13. 深化实例：执行上下文进阶实战
-
-### 13.1 正例：类静态块与执行上下文层级
+### 6.7 正例：类静态块与执行上下文层级
 
 ```javascript
 class Config {
@@ -267,7 +218,7 @@ class Config {
 console.log(Config.env); // 'development'
 ```
 
-### 13.2 正例：Top-level await 的模块执行上下文
+### 6.8 正例：Top-level await 的模块执行上下文
 
 ```javascript
 // module.mjs
@@ -279,7 +230,7 @@ export const config = await response.json();
 // 其他 import 本模块的代码会等待该上下文完成
 ```
 
-### 13.3 正例：直接 eval 与间接 eval 的上下文差异
+### 6.9 正例：直接 eval 与间接 eval 的上下文差异
 
 ```javascript
 const x = 'global';
@@ -303,7 +254,7 @@ function demo() {
 demo();
 ```
 
-### 13.4 正例：Error 对象的执行上下文快照
+### 6.10 正例：Error 对象的执行上下文快照
 
 ```javascript
 function layerA() {
@@ -325,24 +276,7 @@ console.log(layerA());
 //   at layerA (file.js:8)
 ```
 
----
-
-## 14. 更多权威参考
-
-- **ECMA-262 §9.3** — Realms: <https://tc39.es/ecma262/#sec-realms>
-- **V8 Blog: Understanding the JavaScript Execution Context** — <https://v8.dev/blog/execution-context>
-- **Node.js — Contextify (vm module internals)** — <https://nodejs.org/api/vm.html#vmrunincontextcode-contextifiedobject-options>
-- **HTML Living Standard §8.1.3.5** — Realms and their counterparts: <https://html.spec.whatwg.org/multipage/webappapis.html#realms-and-their-counterparts>
-- **TC39: ShadowRealm (Stage 3)** — <https://github.com/tc39/proposal-shadowrealm>
-- **MDN: strict mode** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode>
-
----
-
----
-
-## 15. 深化补充三：执行上下文边界与引擎实现
-
-### 15.1 正例：Class 字段初始化器的执行上下文
+### 6.11 正例：Class 字段初始化器的执行上下文
 
 ```javascript
 class ContextDemo {
@@ -364,7 +298,7 @@ const arrow = demo.arrow;
 console.log(arrow()); // 42 — 即使作为独立函数调用
 ```
 
-### 15.2 正例：WeakRef FinalizationRegistry 的执行上下文隔离
+### 6.12 正例：WeakRef FinalizationRegistry 的执行上下文隔离
 
 ```javascript
 // FinalizationRegistry 的回调在独立执行上下文中运行
@@ -381,7 +315,7 @@ target = null; // 取消引用
 // 未来某个 GC 周期后，回调在新上下文中执行
 ```
 
-### 15.3 正例：性能标记中的执行上下文切换
+### 6.13 正例：性能标记中的执行上下文切换
 
 ```javascript
 // 使用 performance.mark 记录执行上下文切换
@@ -403,14 +337,46 @@ console.log(`Context switch took ${measure.duration.toFixed(3)} ms`);
 
 ---
 
-## 16. 更多权威外部链接
+## 7. 权威参考与国际化对齐 (References)
 
-- **V8 Blog: Execution Context Internals** — <https://v8.dev/blog/execution-context>
-- **SpiderMonkey Docs: Execution Contexts** — <https://firefox-source-docs.mozilla.org/js/index.html>
-- **MDN: Classes** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes>
+- **ECMA-262 §9.4** — Execution Contexts: <https://tc39.es/ecma262/#sec-execution-contexts>
+- **ECMA-262 §9.2** — ECMAScript Code Execution Contexts: <https://tc39.es/ecma262/#sec-execution-contexts>
+- **ECMA-262 §9.3** — Realms: <https://tc39.es/ecma262/#sec-realms>
+- **MDN: Execution context** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_context>
+- **MDN: Realm** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Realm>
+- **MDN: strict mode** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode>
+- **MDN: eval** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval>
+- **MDN: this** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this>
 - **MDN: WeakRef** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef>
 - **MDN: FinalizationRegistry** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry>
+- **Node.js: vm module** — <https://nodejs.org/api/vm.html>
+- **Node.js: AsyncLocalStorage** — <https://nodejs.org/api/async_context.html>
+- **TC39: Async Context Proposal** — <https://github.com/tc39/proposal-async-context>
+- **TC39: ShadowRealm** — <https://github.com/tc39/proposal-shadowrealm>
+- **V8 Blog: Understanding V8 Bytecode** — <https://v8.dev/blog/understanding-v8-bytecode>
+- **V8 Blog: Execution Context Internals** — <https://v8.dev/blog/execution-context>
+- **SpiderMonkey Docs: Execution Contexts** — <https://firefox-source-docs.mozilla.org/js/index.html>
+- **HTML Living Standard §8.1.4.2** — Event loops: <https://html.spec.whatwg.org/multipage/webappapis.html#event-loops>
+- **HTML Living Standard §8.1.3.5** — Realms and their counterparts: <https://html.spec.whatwg.org/multipage/webappapis.html#realms-and-their-counterparts>
 - **W3C: Performance Timeline** — <https://www.w3.org/TR/performance-timeline/>
-- **ECMA-262 §9.3** — Realms: <https://tc39.es/ecma262/#sec-realms>
+
+---
+
+## 8. 思维表征总结 (Cognitive Representations)
+
+### 8.1 执行上下文创建流程
+
+```mermaid
+flowchart TD
+    Start[进入函数] --> Create[创建执行上下文]
+    Create --> Lexical[创建词法环境]
+    Create --> Variable[创建变量环境]
+    Create --> This[确定 this 绑定]
+    Create --> Init[变量实例化]
+    Init --> Execute[执行函数体]
+    Execute --> Pop[弹出上下文]
+```
+
+---
 
 **参考规范**：ECMA-262 §9 | MDN | TC39 Proposals | Node.js Docs | V8 Blog | SpiderMonkey Docs

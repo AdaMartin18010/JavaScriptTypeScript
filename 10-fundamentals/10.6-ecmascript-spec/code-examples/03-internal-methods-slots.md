@@ -275,12 +275,111 @@ graph TD
 
 ---
 
-**参考规范**：ECMA-262 §6.1.7 | MDN: Proxy
+## 11. 进阶代码示例
 
+### 11.1 负索引数组代理（利用 [[Get]] 拦截）
+
+```javascript
+function createNegativeArray(arr) {
+  return new Proxy(arr, {
+    get(target, prop) {
+      const index = Number(prop);
+      if (!isNaN(index) && index < 0) {
+        return target[target.length + index];
+      }
+      return Reflect.get(target, prop);
+    }
+  });
+}
+
+const arr = createNegativeArray([1, 2, 3, 4]);
+console.log(arr[-1]); // 4
+console.log(arr[-2]); // 3
+```
+
+### 11.2 使用 Proxy 实现默认值对象
+
+```javascript
+function withDefaults(target, defaults) {
+  return new Proxy(target, {
+    get(t, p) {
+      if (p in t) return t[p];
+      if (p in defaults) return defaults[p];
+      return undefined;
+    }
+  });
+}
+
+const config = withDefaults({ port: 8080 }, {
+  host: 'localhost',
+  port: 3000,
+  debug: false
+});
+
+console.log(config.port);  // 8080（来自 target）
+console.log(config.host);  // 'localhost'（来自 defaults）
+console.log(config.debug); // false（来自 defaults）
+```
+
+### 11.3 Proxy 实现私有属性模拟（软私有）
+
+```javascript
+function createPrivateFields(...fields) {
+  const store = new WeakMap();
+  return {
+    init(obj, values) {
+      store.set(obj, { ...values });
+    },
+    proxy(target) {
+      return new Proxy(target, {
+        get(t, p) {
+          if (fields.includes(p)) return store.get(t)?.[p];
+          return Reflect.get(t, p);
+        },
+        set(t, p, value) {
+          if (fields.includes(p)) {
+            store.get(t)[p] = value;
+            return true;
+          }
+          return Reflect.set(t, p, value);
+        },
+        ownKeys(t) {
+          return Reflect.ownKeys(t).filter(k => !fields.includes(k));
+        },
+        getOwnPropertyDescriptor(t, p) {
+          if (fields.includes(p)) return undefined;
+          return Reflect.getOwnPropertyDescriptor(t, p);
+        }
+      });
+    }
+  };
+}
+```
+
+### 11.4 拦截函数调用（apply/construct）
+
+```javascript
+function createDeprecatedProxy(fn, replacement) {
+  return new Proxy(fn, {
+    apply(target, thisArg, args) {
+      console.warn(`Warning: ${target.name} is deprecated. Use ${replacement} instead.`);
+      return Reflect.apply(target, thisArg, args);
+    },
+    construct(target, args) {
+      console.warn(`Warning: ${target.name} constructor is deprecated.`);
+      return Reflect.construct(target, args);
+    }
+  });
+}
+
+function oldApi() { return 'result'; }
+const deprecatedApi = createDeprecatedProxy(oldApi, 'newApi');
+deprecatedApi(); // Warning: oldApi is deprecated...
+```
 
 ---
 
-## 补充：Exotic Objects 与内部方法变体
+## 12. 补充：Exotic Objects 与内部方法变体
 
 ### 补充 1：Exotic Objects 概述
 
@@ -367,6 +466,21 @@ Object.isExtensible(proxy)  // TypeError: 'isExtensible' on proxy: trap result d
 | `[[OwnPropertyKeys]]` | 返回所有自有键 | `ownKeys` | `Object.keys/entries` |
 | `[[Call]]` | 函数调用 | `apply` | `func()` |
 | `[[Construct]]` | 构造函数 | `construct` | `new Func()` |
+
+---
+
+## 13. 权威外部链接
+
+| 资源 | 说明 | 链接 |
+|------|------|------|
+| ECMA-262 §6.1.7 | Object Internal Methods and Internal Slots | [tc39.es/ecma262/#sec-object-internal-methods-and-internal-slots](https://tc39.es/ecma262/#sec-object-internal-methods-and-internal-slots) |
+| ECMA-262 §10.5 | Proxy Object Internal Methods | [tc39.es/ecma262/#sec-proxy-object-internal-methods-and-internal-slots](https://tc39.es/ecma262/#sec-proxy-object-internal-methods-and-internal-slots) |
+| MDN — Proxy | Proxy 完整文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) |
+| MDN — Reflect | Reflect API 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect) |
+| MDN — Handler | Proxy handler 对象 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy) |
+| V8 Blog — Proxies | V8 Proxy 优化 | [v8.dev/features/proxy](https://v8.dev/features/proxy) |
+| JavaScript Info — Proxy | 教程式讲解 | [javascript.info/proxy](https://javascript.info/proxy) |
+| 2ality — Meta Programming | 元编程与 Proxy | [2ality.com/2014/12/es6-proxies.html](https://2ality.com/2014/12/es6-proxies.html) |
 
 ---
 

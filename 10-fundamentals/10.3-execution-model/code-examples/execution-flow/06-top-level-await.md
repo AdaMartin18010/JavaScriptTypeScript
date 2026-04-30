@@ -334,6 +334,72 @@ export default async function Page() {
 }
 ```
 
+### 6.16 正例：模块图执行顺序的可视化
+
+```javascript
+// main.mjs
+import './a.mjs';
+import './b.mjs';
+console.log('main');
+
+// a.mjs
+import './c.mjs';
+await new Promise(r => setTimeout(r, 10));
+console.log('a');
+
+// b.mjs
+console.log('b');
+
+// c.mjs
+console.log('c');
+
+// 输出顺序：
+// c → b → a → main
+// 解释：模块图按深度优先同步求值，遇到顶层 await 时暂停该分支，
+// 但其他独立分支继续执行。所有依赖完成后才执行当前模块后续代码。
+```
+
+### 6.17 正例：动态导入与顶层 await 的降级策略
+
+```javascript
+// fallback-loader.mjs
+// 当主 CDN 失败时，自动降级到备用源
+
+async function loadLibrary(primary, fallback) {
+  try {
+    return await import(primary);
+  } catch {
+    console.warn(`Primary source ${primary} failed, trying fallback`);
+    return await import(fallback);
+  }
+}
+
+export const lib = await loadLibrary(
+  'https://cdn-a.example.com/lib.mjs',
+  'https://cdn-b.example.com/lib.mjs'
+);
+```
+
+### 6.18 正例：TypeScript 声明 emit 与顶层 await 兼容性
+
+```typescript
+// tsconfig.json 配置确保声明文件正确生成
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "declaration": true,
+    "declarationMap": true,
+    "isolatedDeclarations": true
+  }
+}
+
+// 当使用 isolatedDeclarations 时，导出的顶层 await 结果必须显式注解类型
+export const config: AppConfig = await loadConfig(); // ✅
+// export const config = await loadConfig();         // ❌ 类型推断不足
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
@@ -357,6 +423,10 @@ export default async function Page() {
 - **Surma.dev: Top-level await in JavaScript** — <https://surma.dev/things/es-modules/>（深度技术剖析）
 - **React Server Components — RFC** — <https://github.com/reactjs/rfcs/blob/main/text/0188-server-components.md>
 - **Next.js Data Fetching** — <https://nextjs.org/docs/app/building-your-application/data-fetching>
+- **MDN: import.meta** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import.meta>
+- **Node.js: import.meta.resolve** — <https://nodejs.org/api/esm.html#importmetaresolvespecifier>
+- **TypeScript: isolatedDeclarations** — <https://www.typescriptlang.org/tsconfig/#isolatedDeclarations>
+- **Web.dev: Baseline 2023 (Top-level await)** — <https://web.dev/baseline/2023>
 
 ---
 

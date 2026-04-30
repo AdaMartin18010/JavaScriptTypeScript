@@ -336,7 +336,7 @@ try {
   // 可遍历整个错误链
   let current = e;
   while (current) {
-    console.error('→', current.message);
+    console.error('->', current.message);
     current = current.cause;
   }
 }
@@ -353,7 +353,124 @@ try {
 
 ---
 
-## 四、权威参考
+## 四、进阶代码示例
+
+### 4.1 私有字段与 Symbol 联合实现名义类型
+
+```typescript
+const brandSymbol = Symbol('brand');
+
+class User {
+  #id: string;
+  [brandSymbol] = 'User' as const;
+
+  constructor(id: string) {
+    this.#id = id;
+  }
+
+  getId() { return this.#id; }
+}
+
+class Admin {
+  #id: string;
+  [brandSymbol] = 'Admin' as const;
+
+  constructor(id: string) {
+    this.#id = id;
+  }
+
+  getId() { return this.#id; }
+}
+
+// 结构类型相同但 brandSymbol 值不同，可区分类型
+```
+
+### 4.2 静态块实现环境配置加载
+
+```typescript
+class AppConfig {
+  static apiBase: string;
+  static featureFlags: Record<string, boolean>;
+
+  static {
+    const env = process.env.NODE_ENV ?? 'development';
+    const configs: Record<string, { api: string; flags: Record<string, boolean> }> = {
+      development: { api: 'http://localhost:3000', flags: { beta: true } },
+      production: { api: 'https://api.example.com', flags: { beta: false } },
+    };
+    this.apiBase = configs[env].api;
+    this.featureFlags = configs[env].flags;
+  }
+}
+
+console.log(AppConfig.apiBase);
+```
+
+### 4.3 顶层 await 实现条件模块加载
+
+```typescript
+// adapter.mjs
+let adapter;
+
+if (process.env.DATABASE === 'postgres') {
+  ({ postgresAdapter: adapter } = await import('./adapters/postgres.mjs'));
+} else {
+  ({ sqliteAdapter: adapter } = await import('./adapters/sqlite.mjs'));
+}
+
+export { adapter };
+```
+
+### 4.4 `.at()` 在数据处理管道中的应用
+
+```typescript
+function getLatestLog(logs: string[]): string | undefined {
+  return logs.at(-1);
+}
+
+function getSecondToLast<T>(arr: T[]): T | undefined {
+  return arr.at(-2);
+}
+
+const metrics = [10, 20, 30, 40];
+console.log(getLatestLog(['a', 'b', 'c'])); // 'c'
+console.log(getSecondToLast(metrics));        // 30
+```
+
+### 4.5 Error Cause 与结构化日志
+
+```typescript
+class HttpError extends Error {
+  constructor(
+    message: string,
+    public statusCode: number,
+    cause?: unknown
+  ) {
+    super(message, { cause });
+  }
+}
+
+async function robustFetch(url: string) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new HttpError(`Fetch failed`, res.status, { url, statusText: res.statusText });
+    }
+    return res.json();
+  } catch (e) {
+    console.error(JSON.stringify({
+      message: (e as Error).message,
+      cause: (e as Error).cause,
+      stack: (e as Error).stack,
+    }, null, 2));
+    throw e;
+  }
+}
+```
+
+---
+
+## 五、权威参考
 
 | 资源 | 说明 | 链接 |
 |------|------|------|
@@ -363,10 +480,13 @@ try {
 | MDN — Array.prototype.at | Mozilla 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/at](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/at) |
 | MDN — Object.hasOwn | Mozilla 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwn](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwn) |
 | MDN — Error: cause | Mozilla 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause) |
+| MDN — Class static block | Mozilla 文档 | [developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Static_initialization_blocks) |
 | V8 Blog — ES2022 Features | V8 引擎实现解析 | [v8.dev/features/tags/es2022](https://v8.dev/features/tags/es2022) |
 | Node.js ESM — Top-level await | Node.js 文档 | [nodejs.org/api/esm.html#top-level-await](https://nodejs.org/api/esm.html#top-level-await) |
 | TypeScript 4.3 Release Notes | 私有字段与方法支持 | [devblogs.microsoft.com/typescript/announcing-typescript-4-3](https://devblogs.microsoft.com/typescript/announcing-typescript-4-3/) |
 | TC39 Proposal — Class Fields | 私有字段提案历史 | [github.com/tc39/proposal-class-fields](https://github.com/tc39/proposal-class-fields) |
+| 2ality — ES2022 Feature Overview | Dr. Axel 深度解析 | [2ality.com/2021/06/ecmascript-2022.html](https://2ality.com/2021/06/ecmascript-2022.html) |
+| Can I Use — ES2022 | 浏览器兼容性矩阵 | [caniuse.com/?search=es2022](https://caniuse.com/?search=es2022) |
 
 ---
 

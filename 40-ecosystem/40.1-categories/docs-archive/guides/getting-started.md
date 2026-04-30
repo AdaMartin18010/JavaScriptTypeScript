@@ -156,8 +156,8 @@ npx tsc --init
 
 ### 使用 pnpm Workspace 搭建 Monorepo
 
-```json
-// pnpm-workspace.yaml
+```yaml
+# pnpm-workspace.yaml
 packages:
   - 'packages/*'
   - 'apps/*'
@@ -194,6 +194,87 @@ packages:
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
+  }
+}
+```
+
+### 使用 Playwright 配置 E2E 测试
+
+```bash
+npm init playwright@latest
+```
+
+```typescript
+// playwright.config.ts
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: 'html',
+  use: {
+    baseURL: 'http://localhost:3000',
+    trace: 'on-first-retry',
+  },
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+  ],
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+  },
+});
+```
+
+```typescript
+// e2e/home.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('homepage has correct title', async ({ page }) => {
+  await page.goto('/');
+  await expect(page).toHaveTitle(/Awesome App/);
+});
+
+test('navigation works', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: 'About' }).click();
+  await expect(page).toHaveURL('/about');
+});
+```
+
+### 使用 Biome 替代 ESLint + Prettier
+
+```bash
+npm install -D @biomejs/biome
+npx @biomejs/biome init
+```
+
+```json
+// biome.json
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.0/schema.json",
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noConsoleLog": "warn"
+      }
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
   }
 }
 ```
@@ -263,6 +344,11 @@ We follow strict inclusion criteria to ensure the quality of recommendations:
 - [JavaScript Weekly](https://javascriptweekly.com/) — JavaScript 技术周刊
 - [Node Weekly](https://nodeweekly.com/) — Node.js 技术周刊
 - [Frontend Focus](https://frontendfoc.us/) — 前端技术周刊
+- [Biome Documentation](https://biomejs.dev/guides/getting-started/) — Rust 原生 linter/formatter
+- [OpenAI API Documentation](https://platform.openai.com/docs/) — OpenAI API 官方文档
+- [Vercel AI SDK](https://sdk.vercel.ai/docs/) — AI 应用开发 SDK
+- [Hono Documentation](https://hono.dev/docs/) — 轻量边缘优先 Web 框架
+- [Tauri v2 Documentation](https://v2.tauri.app/) — 跨平台桌面应用框架
 
 ---
 

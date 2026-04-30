@@ -249,6 +249,169 @@ const bufferPool = new ObjectPool(
 );
 ```
 
+### 6.6 正例：内存泄漏检测模式
+
+```javascript
+// 使用 Chrome DevTools Memory Timeline 识别泄漏
+// 步骤：
+// 1. 打开 DevTools → Memory → Timeline
+// 2. 执行可疑操作
+// 3. 触发 GC（点击垃圾图标）
+// 4. 观察堆大小是否持续增长
+
+// 程序化检测：标记-清理模式
+class LeakDetector {
+  #registry = new FinalizationRegistry((name) => {
+    console.log(`[LeakDetector] ${name} was properly GC'd ✅`);
+  });
+
+  track(obj, name) {
+    this.#registry.register(obj, name);
+  }
+}
+
+const detector = new LeakDetector();
+
+function testScope() {
+  const data = { huge: new Array(1e6) };
+  detector.track(data, 'scope-data');
+}
+
+testScope();
+// 如果未打印 "scope-data was properly GC'd"，说明存在泄漏
+```
+
+### 6.7 正例：Node.js 堆快照分析脚本
+
+```javascript
+import v8 from 'node:v8';
+import fs from 'node:fs';
+
+// 生成堆快照
+const snapshotPath = v8.writeHeapSnapshot('./heap.heapsnapshot');
+console.log('Heap snapshot written to:', snapshotPath);
+
+// 解析堆快照中的对象统计（简化版）
+function analyzeHeapSnapshot(path) {
+  const snapshot = JSON.parse(fs.readFileSync(path, 'utf8'));
+  const nodes = snapshot.nodes;
+  const strings = snapshot.strings;
+
+  // nodes 数组结构: [type, name, id, self_size, edge_count, trace_node_id, ...]
+  const nodeFields = snapshot.snapshot.meta.node_fields;
+  const typeIdx = nodeFields.indexOf('type');
+  const nameIdx = nodeFields.indexOf('name');
+  const sizeIdx = nodeFields.indexOf('self_size');
+  const nodeFieldCount = nodeFields.length;
+
+  const typeStats = {};
+  for (let i = 0; i < nodes.length; i += nodeFieldCount) {
+    const type = strings[nodes[i + typeIdx]];
+    const size = nodes[i + sizeIdx];
+    typeStats[type] = (typeStats[type] || 0) + size;
+  }
+
+  return Object.entries(typeStats)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+}
+
+// 使用：分析堆快照中占用最多的类型
+// const topTypes = analyzeHeapSnapshot(snapshotPath);
+// console.table(topTypes);
+```
+
+### 6.8 正例：使用 WeakRef 实现缓存的软引用策略
+
+```javascript
+class SoftRefCache {
+  #map = new Map();
+  #registry = new FinalizationRegistry((key) => {
+    this.#map.delete(key);
+  });
+
+  set(key, value) {
+    this.#map.set(key, new WeakRef(value));
+    this.#registry.register(value, key);
+  }
+
+  get(key) {
+    const ref = this.#map.get(key);
+    return ref?.deref();
+  }
+
+  has(key) {
+    return this.get(key) !== undefined;
+  }
+}
+
+// 使用：大对象缓存，内存紧张时自动释放
+const imageCache = new SoftRefCache();
+
+async function loadImage(url) {
+  let image = imageCache.get(url);
+  if (!image) {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    image = await createImageBitmap(blob);
+    imageCache.set(url, image);
+  }
+  return image;
+}
+```
+
+### 6.9 正例：避免意外的全局泄漏
+
+```javascript
+// ❌ 非严格模式下的隐式全局变量
+function leaky() {
+  accidentalGlobal = 'I am global'; // 泄漏到全局对象
+}
+
+// ✅ 使用严格模式防止隐式全局
+'use strict';
+function safe() {
+  // accidentalGlobal2 = 'Error!'; // ReferenceError
+}
+
+// ✅ 使用 lint 规则检测 (ESLint no-implicit-globals)
+// .eslintrc: { "rules": { "no-implicit-globals": "error" } }
+
+// ✅ 使用 TypeScript 严格模式
+// tsconfig.json: { "compilerOptions": { "strict": true } }
+```
+
+### 6.10 正例：清除定时器与事件监听
+
+```javascript
+// ❌ 定时器泄漏
+function startBadPolling() {
+  setInterval(() => {
+    fetch('/api/status');
+  }, 5000);
+}
+
+// ✅ 正确清理
+function startGoodPolling(controller) {
+  const id = setInterval(() => {
+    if (controller.signal.aborted) {
+      clearInterval(id);
+      return;
+    }
+    fetch('/api/status', { signal: controller.signal });
+  }, 5000);
+
+  // 暴露清理函数
+  return () => clearInterval(id);
+}
+
+// ✅ 使用 AbortController 统一取消
+const controller = new AbortController();
+const stop = startGoodPolling(controller);
+// 稍后取消
+controller.abort();
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
@@ -267,6 +430,12 @@ const bufferPool = new ObjectPool(
 - **WebKit Blog: JSC GC** — <https://webkit.org/blog/12967/understanding-gc-in-jsc-from-scratch/>
 - **SpiderMonkey: GC Internals** — <https://firefox-source-docs.mozilla.org/js/gc/index.html>
 - **Node.js: --max-old-space-size** CLI Flag — <https://nodejs.org/api/cli.html#--max-old-space-sizesize-in-megabytes>
+- **V8 Blog: Pointer Compression** — <https://v8.dev/blog/pointer-compression>
+- **V8 Blog: Oilpan** — <https://v8.dev/blog/oilpan>
+- **MDN: WeakMap** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap>
+- **MDN: WeakSet** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet>
+- **Google Developers: JavaScript Memory Profiling** — <https://developer.chrome.com/docs/devtools/memory-problems>
+- **Node.js: Clinic.js Heap Profiler** — <https://clinicjs.org/documentation/heapprofiler/>
 
 ---
 

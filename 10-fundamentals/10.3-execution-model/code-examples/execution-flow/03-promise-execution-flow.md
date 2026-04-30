@@ -147,7 +147,7 @@ console.log('4');
 
 ### 5.2 `Promise.withResolvers`（ES2024）
 
-ES2024 新增了 `Promise.withResolvers`，将 `resolve` 和 `reject` 暴露给外部调用者，解决了“先创建 Promise、后决定其命运”的常见模式：
+ES2024 新增了 `Promise.withResolvers`，将 `resolve` 和 `reject` 暴露给外部调用者，解决了"先创建 Promise、后决定其命运"的常见模式：
 
 ```javascript
 function createDelayedTask(ms) {
@@ -269,8 +269,8 @@ for await (const user of paginatedUsers()) {
 ### 6.7 正例：Promise.race + 超时包装器
 
 ```typescript
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
-  const timeout = new Promise<never>((_, reject) => {
+function withTimeout(promise, ms) {
+  const timeout = new Promise((_, reject) => {
     const id = setTimeout(() => {
       clearTimeout(id);
       reject(new Error(`Operation timed out after ${ms}ms`));
@@ -287,11 +287,11 @@ const data = await withTimeout(fetch('/api/data').then(r => r.json()), 3000);
 
 ```typescript
 // 在 Promise.withResolvers 不可用时（ES2024 之前）的手动实现
-function createDeferred<T>() {
-  let resolve!: (value: T | PromiseLike<T>) => void;
-  let reject!: (reason?: any) => void;
+function createDeferred() {
+  let resolve;
+  let reject;
 
-  const promise = new Promise<T>((res, rej) => {
+  const promise = new Promise((res, rej) => {
     resolve = res;
     reject = rej;
   });
@@ -300,13 +300,101 @@ function createDeferred<T>() {
 }
 
 // 用例：将基于回调的 API 包装为 Promise
-function readFilePromise(path: string): Promise<string> {
-  const { promise, resolve, reject } = createDeferred<string>();
-  require('fs').readFile(path, 'utf8', (err: Error | null, data: string) => {
+function readFilePromise(path) {
+  const { promise, resolve, reject } = createDeferred();
+  require('fs').readFile(path, 'utf8', (err, data) => {
     err ? reject(err) : resolve(data);
   });
   return promise;
 }
+```
+
+### 6.9 正例：Promise.resolve 的展开行为
+
+```javascript
+// Promise.resolve 会展开 thenable 对象
+const thenable = {
+  then(resolve, reject) {
+    resolve(42);
+  }
+};
+
+Promise.resolve(thenable).then(value => {
+  console.log(value); // 42
+});
+
+// 但 Promise.resolve 不会展开 Promise 实例
+const p = Promise.resolve(100);
+Promise.resolve(p).then(value => {
+  console.log(value); // 100（同一个 Promise 实例）
+});
+```
+
+### 6.10 正例：未处理的 Promise 拒绝监控
+
+```javascript
+// Node.js: 监听未处理的 Promise 拒绝
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise);
+  console.error('Reason:', reason);
+});
+
+// 浏览器: 监听 unhandledrejection 事件
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled rejection:', event.reason);
+  event.preventDefault(); // 阻止控制台错误输出
+});
+
+// ✅ 最佳实践：始终处理 Promise 拒绝
+const p = fetch('/api/data');
+p.then(data => console.log(data));
+p.catch(err => console.error(err)); // 显式处理错误
+
+// 或在 async 函数中使用 try/catch
+async function safeFetch() {
+  try {
+    return await fetch('/api/data');
+  } catch (err) {
+    console.error('Fetch failed:', err);
+    return null;
+  }
+}
+```
+
+### 6.11 正例：Promise 链中的错误恢复
+
+```javascript
+fetch('/api/user')
+  .then(res => res.json())
+  .catch(err => {
+    console.error('Primary API failed, using cache', err);
+    return getUserFromCache(); // 返回 fallback 值，链继续
+  })
+  .then(user => {
+    console.log('User:', user); // 可能是 API 或缓存数据
+  })
+  .catch(err => {
+    console.error('Completely failed:', err); // 最终兜底
+  });
+```
+
+### 6.12 正例：`Promise.all` 的并发控制
+
+```javascript
+// 限制并发数，避免同时发起过多请求
+async function batchProcess(items, batchSize, processor) {
+  const results = [];
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const batchResults = await Promise.all(batch.map(processor));
+    results.push(...batchResults);
+  }
+  return results;
+}
+
+// 使用：每次最多并发 5 个请求
+const urls = Array.from({ length: 20 }, (_, i) => `/api/item/${i}`);
+const responses = await batchProcess(urls, 5, url => fetch(url));
 ```
 
 ---
@@ -327,6 +415,12 @@ function readFilePromise(path: string): Promise<string> {
 - **MDN: AbortController** — <https://developer.mozilla.org/en-US/docs/Web/API/AbortController>
 - **WhatWG Streams Standard** — <https://streams.spec.whatwg.org/>
 - **Web.dev: Cancelable Requests** — <https://web.dev/articles/abortable-fetch>
+- **MDN: unhandledrejection** — <https://developer.mozilla.org/en-US/docs/Web/API/Window/unhandledrejection_event>
+- **Node.js: unhandledRejection** — <https://nodejs.org/api/process.html#event-unhandledrejection>
+- **MDN: Promise.all** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all>
+- **MDN: Promise.race** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/race>
+- **MDN: Promise.allSettled** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled>
+- **MDN: Promise.any** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/any>
 
 ---
 

@@ -108,6 +108,52 @@ status: current
 即：在网络分区发生时，不可能同时满足一致性和可用性
 ```
 
+**分布式 ID 生成器（Snowflake 简化版）示例：**
+
+```typescript
+// snowflake.ts — 64 位分布式唯一 ID
+const EPOCH = 1609459200000n; // 2021-01-01
+
+class Snowflake {
+  private sequence = 0n;
+  private lastTimestamp = -1n;
+
+  constructor(
+    private datacenterId: bigint,
+    private workerId: bigint
+  ) {
+    if (datacenterId > 31n || workerId > 31n) {
+      throw new Error('ID must be < 32');
+    }
+  }
+
+  nextId(): bigint {
+    let timestamp = BigInt(Date.now()) - EPOCH;
+
+    if (timestamp === this.lastTimestamp) {
+      this.sequence = (this.sequence + 1n) & 4095n;
+      if (this.sequence === 0n) {
+        // 序列溢出，等待下一毫秒
+        while (timestamp <= this.lastTimestamp) {
+          timestamp = BigInt(Date.now()) - EPOCH;
+        }
+      }
+    } else {
+      this.sequence = 0n;
+    }
+
+    this.lastTimestamp = timestamp;
+
+    return (
+      (timestamp << 22n) |
+      (this.datacenterId << 17n) |
+      (this.workerId << 12n) |
+      this.sequence
+    );
+  }
+}
+```
+
 ### 1.2 共识算法
 
 **模块**: [71-consensus-algorithms](../../20-code-lab/20.8-edge-serverless/consensus-algorithms/)
@@ -188,6 +234,64 @@ class SagaOrchestrator {
 }
 ```
 
+**Saga 编排器（基于事件总线）扩展示例：**
+
+```typescript
+// saga/order-saga.ts
+import { EventEmitter } from 'events';
+
+interface OrderSagaState {
+  orderId: string;
+  userId: string;
+  amount: number;
+  status: 'pending' | 'paid' | 'shipped' | 'compensated';
+}
+
+class OrderSaga {
+  private emitter = new EventEmitter();
+
+  constructor(private state: OrderSagaState) {}
+
+  async execute() {
+    try {
+      await this.reserveInventory();
+      await this.processPayment();
+      await this.createShipment();
+      this.emitter.emit('saga.completed', this.state);
+    } catch (err) {
+      await this.compensate();
+      this.emitter.emit('saga.failed', { state: this.state, error: err });
+    }
+  }
+
+  private async reserveInventory() {
+    // 调用库存服务
+    this.state.status = 'pending';
+  }
+
+  private async processPayment() {
+    // 调用支付服务
+    this.state.status = 'paid';
+  }
+
+  private async createShipment() {
+    // 调用物流服务
+    this.state.status = 'shipped';
+  }
+
+  private async compensate() {
+    if (this.state.status === 'shipped') await this.cancelShipment();
+    if (this.state.status === 'paid') await this.refundPayment();
+    if (this.state.status === 'pending') await this.releaseInventory();
+    this.state.status = 'compensated';
+  }
+
+  private async cancelShipment() { /* ... */ }
+  private async refundPayment() { /* ... */ }
+  private async releaseInventory() { /* ... */ }
+}
+```
+
 ---
 
 ## 📚 第二阶段：微服务与云原生 (2 周)
@@ -214,6 +318,62 @@ class SagaOrchestrator {
 | **异步消息** | 松耦合、削峰 | 最终一致、复杂度 | 事件通知 |
 | **CQRS** | 读写优化 | 数据同步复杂度 | 高读场景 |
 | **Event Sourcing** | 完整审计 | 学习曲线陡峭 | 审计要求 |
+
+**gRPC 服务定义与调用示例：**
+
+```protobuf
+// proto/orders.proto
+syntax = "proto3";
+
+service OrderService {
+  rpc CreateOrder (CreateOrderRequest) returns (Order);
+  rpc GetOrder (GetOrderRequest) returns (Order);
+  rpc StreamOrderUpdates (StreamOrderRequest) returns (stream OrderUpdate);
+}
+
+message CreateOrderRequest {
+  string user_id = 1;
+  repeated OrderItem items = 2;
+}
+
+message Order {
+  string id = 1;
+  string user_id = 2;
+  double total_amount = 3;
+  OrderStatus status = 4;
+}
+
+enum OrderStatus {
+  PENDING = 0;
+  CONFIRMED = 1;
+  SHIPPED = 2;
+  DELIVERED = 3;
+}
+```
+
+```typescript
+// server.ts — gRPC 服务端实现
+import * as grpc from '@grpc/grpc-js';
+import { OrderServiceService, IOrderServiceServer } from './generated/orders_grpc_pb';
+
+const orderService: IOrderServiceServer = {
+  createOrder: (call, callback) => {
+    const request = call.request;
+    const order = new Order();
+    order.setId(crypto.randomUUID());
+    order.setUserId(request.getUserId());
+    order.setStatus(OrderStatus.PENDING);
+    callback(null, order);
+  },
+  // ...
+};
+
+const server = new grpc.Server();
+server.addService(OrderServiceService, orderService);
+server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), () => {
+  server.start();
+});
+```
 
 ### 2.2 容器编排与服务网格
 
@@ -242,6 +402,38 @@ spec:
 - 可观测性 (追踪、指标)
 - 安全 (mTLS、访问控制)
 - 弹性 (重试、熔断、超时)
+
+**Istio 流量管理示例：**
+
+```yaml
+# virtual-service.yaml
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: api-canary
+spec:
+  hosts:
+    - api.example.com
+  http:
+    - match:
+        - headers:
+            x-canary:
+              exact: "true"
+      route:
+        - destination:
+            host: api-server
+            subset: v2
+          weight: 100
+    - route:
+        - destination:
+            host: api-server
+            subset: v1
+          weight: 90
+        - destination:
+            host: api-server
+            subset: v2
+          weight: 10
+```
 
 ---
 
@@ -272,6 +464,48 @@ spec:
 └─────────────────────────────────────┘
 ```
 
+**使用 Z3 求解器进行约束求解示例：**
+
+```typescript
+// 使用 z3-solver 进行形式化约束求解
+import { init } from 'z3-solver';
+
+async function proveSchedulingConflict() {
+  const { Context } = await init();
+  const Z3 = Context('main');
+
+  // 定义变量：任务 A 和 B 的开始时间与持续时间
+  const startA = Z3.Int.const('startA');
+  const startB = Z3.Int.const('startB');
+  const durationA = Z3.Int.val(3);
+  const durationB = Z3.Int.val(2);
+
+  // 约束：时间窗口为 0-5
+  const bounds = Z3.And(
+    startA.ge(0), startA.le(5),
+    startB.ge(0), startB.le(5)
+  );
+
+  // 约束：任务不重叠（A 在 B 前 或 B 在 A 前）
+  const noOverlap = Z3.Or(
+    startA.add(durationA).le(startB),
+    startB.add(durationB).le(startA)
+  );
+
+  const solver = new Z3.Solver();
+  solver.add(bounds);
+  solver.add(Z3.Not(noOverlap)); // 寻找冲突（重叠）的调度
+
+  const result = await solver.check();
+  if (result === 'sat') {
+    const model = solver.model();
+    console.log('Conflict found:', model.eval(startA), model.eval(startB));
+  } else {
+    console.log('No conflict possible — scheduling is safe.');
+  }
+}
+```
+
 ### 3.2 TLA+ 规格说明
 
 **TLA+ 基础**:
@@ -293,6 +527,44 @@ Decrement == count > 0 /\ count' = count - 1
 Next == Increment \/ Decrement
 
 Invariant == count >= 0
+```
+
+**TLA+ PlusCal 算法规格（分布式互斥）：**
+
+```tla
+\* MODULE DistributedMutex
+EXTENDS Naturals, Sequences, TLC
+
+CONSTANTS N, MaxToken
+
+(* --algorithm distributed_mutex
+variables
+  request = [i \in 1..N |-> FALSE],
+  token = 1;  \* 当前持有 token 的节点
+
+process Proc \in 1..N
+variable nextToken;
+begin
+Request:
+  request[self] := TRUE;
+  await token = self;
+CriticalSection:
+  skip;  \* 临界区
+Release:
+  request[self] := FALSE;
+  \* 将 token 传递给下一个请求者
+  nextToken := (self % N) + 1;
+  while request[nextToken] = FALSE /\ nextToken # self do
+    nextToken := (nextToken % N) + 1;
+  end while;
+  token := nextToken;
+  goto Request;
+end process
+end algorithm; *)
+
+\* 不变量：至多一个进程在临界区
+Mutex == \A i, j \in 1..N :
+  (i # j) => ~((pc[i] = "CriticalSection") /\ (pc[j] = "CriticalSection"))
 ```
 
 ---
@@ -327,6 +599,59 @@ Invariant == count >= 0
 └─────────────────────────────────────────┘
 ```
 
+**AI Agent 工具调用示例（OpenAI Functions）：**
+
+```typescript
+// agents/weather-agent.ts
+import OpenAI from 'openai';
+
+const tools: OpenAI.Chat.Completions.ChatCompletionTool[] = [
+  {
+    type: 'function',
+    function: {
+      name: 'get_weather',
+      description: 'Get current weather for a location',
+      parameters: {
+        type: 'object',
+        properties: {
+          location: { type: 'string', description: 'City name' },
+          unit: { type: 'string', enum: ['celsius', 'fahrenheit'] },
+        },
+        required: ['location'],
+      },
+    },
+  },
+];
+
+async function runAgent(query: string) {
+  const openai = new OpenAI();
+  const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+    { role: 'user', content: query },
+  ];
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o',
+    messages,
+    tools,
+  });
+
+  const toolCall = response.choices[0].message.tool_calls?.[0];
+  if (toolCall?.function.name === 'get_weather') {
+    const args = JSON.parse(toolCall.function.arguments);
+    const weather = await getWeather(args.location, args.unit);
+    messages.push(response.choices[0].message);
+    messages.push({
+      role: 'tool',
+      tool_call_id: toolCall.id,
+      content: JSON.stringify(weather),
+    });
+
+    const final = await openai.chat.completions.create({ model: 'gpt-4o', messages });
+    return final.choices[0].message.content;
+  }
+}
+```
+
 ### 4.2 量子计算基础
 
 **模块**: [77-quantum-computing](../../20-code-lab/20.10-formal-verification/quantum-computing/)
@@ -338,6 +663,30 @@ Invariant == count >= 0
 - 纠缠 (Entanglement)
 - 量子门操作
 
+**使用 Qiskit 进行量子电路模拟（Python）：**
+
+```python
+# quantum_circuit.py
+from qiskit import QuantumCircuit, transpile
+from qiskit_aer import AerSimulator
+
+# 创建贝尔态（纠缠对）
+circuit = QuantumCircuit(2, 2)
+circuit.h(0)           # Hadamard 门：将 q0 置于叠加态
+circuit.cx(0, 1)       # CNOT 门：纠缠 q0 和 q1
+circuit.measure([0, 1], [0, 1])
+
+# 模拟运行
+simulator = AerSimulator()
+compiled = transpile(circuit, simulator)
+job = simulator.run(compiled, shots=1024)
+result = job.result()
+counts = result.get_counts()
+
+print(counts)
+# 输出近似：{'00': ~512, '11': ~512} — 完美纠缠
+```
+
 ### 4.3 WebAssembly 高级应用
 
 **模块**: [36-web-assembly](../../20-code-lab/20.1-fundamentals-lab/web-assembly/)
@@ -348,6 +697,47 @@ Invariant == count >= 0
 - 服务端沙箱执行
 - 插件系统
 - 跨语言调用
+
+**Wasm 组件模型（WASI Preview 2）示例：**
+
+```rust
+// add.wit — 接口定义
+package example:calculator;
+
+interface add {
+    add: func(a: s32, b: s32) -> s32;
+}
+
+world calculator {
+    export add;
+}
+```
+
+```rust
+// src/lib.rs
+wit_bindgen::generate!({
+    world: "calculator",
+    path: "../add.wit",
+});
+
+struct Calculator;
+
+impl Guest for Calculator {
+    fn add(a: i32, b: i32) -> i32 {
+        a + b
+    }
+}
+
+export!(Calculator);
+```
+
+```typescript
+// 在 Node.js / Deno 中调用 Wasm Component
+import { instantiate } from './calculator.js';
+
+const { add } = await instantiate();
+console.log(add(2, 3)); // 5
+```
 
 ---
 
@@ -402,6 +792,49 @@ Invariant == count >= 0
 | **成本** | 10% | 许可、运维、人力 |
 | **长期维护** | 10% | 活跃度、路线图 |
 
+**量化评分矩阵示例：**
+
+```typescript
+// tech-evaluation.ts
+interface EvaluationCriterion {
+  name: string;
+  weight: number;
+  scores: Record<string, number>; // 候选方案 → 分数 (1-5)
+}
+
+function calculateWeightedScore(
+  criteria: EvaluationCriterion[],
+  candidate: string
+): number {
+  return criteria.reduce((total, c) => {
+    const score = c.scores[candidate] ?? 0;
+    return total + score * c.weight;
+  }, 0);
+}
+
+const criteria: EvaluationCriterion[] = [
+  {
+    name: 'Performance',
+    weight: 0.20,
+    scores: { nextjs: 4, nuxt: 4, sveltekit: 5 },
+  },
+  {
+    name: 'Ecosystem',
+    weight: 0.25,
+    scores: { nextjs: 5, nuxt: 4, sveltekit: 3 },
+  },
+  {
+    name: 'Team Familiarity',
+    weight: 0.30,
+    scores: { nextjs: 5, nuxt: 3, sveltekit: 2 },
+  },
+];
+
+['nextjs', 'nuxt', 'sveltekit'].forEach((c) => {
+  console.log(`${c}: ${calculateWeightedScore(criteria, c).toFixed(2)}`);
+});
+```
+
 ---
 
 ## 🛠️ 架构设计挑战
@@ -436,6 +869,31 @@ Invariant == count >= 0
 - CRDT (Conflict-free Replicated Data Types)
 - OT (Operational Transformation)
 - WebSocket 连接管理
+
+**Yjs CRDT 示例：**
+
+```typescript
+import * as Y from 'yjs';
+import { WebsocketProvider } from 'y-websocket';
+
+const doc = new Y.Doc();
+const ytext = doc.getText('content');
+
+// 绑定 WebSocket 协作
+const provider = new WebsocketProvider(
+  'wss://demo.yjs.dev',
+  'my-document-room',
+  doc
+);
+
+// 本地编辑
+ytext.insert(0, 'Hello collaborative world!');
+
+// 监听远程变更
+ytext.observe(() => {
+  console.log('Document updated:', ytext.toString());
+});
+```
 
 ### 挑战 3: 设计一个加密货币交易所
 
@@ -473,18 +931,22 @@ Invariant == count >= 0
 - "Dynamo: Amazon's Highly Available Key-value Store"
 - "The Google File System"
 - "MapReduce: Simplified Data Processing on Large Clusters"
+- "CRDTs: Conflict-free Replicated Data Types" - Shapiro et al.
 
 ### 在线课程
 
 - [MIT 6.824: Distributed Systems](https://pdos.csail.mit.edu/6.824/)
 - [CMU Database Systems](https://15445.courses.cs.cmu.edu/)
 - [TLA+ Video Course](https://lamport.azurewebsites.net/video/videos.html)
+- [Stanford CS144: Computer Networking](https://cs144.github.io/)
 
 ### 技术博客
 
 - [High Scalability](http://highscalability.com/)
 - [Martin Kleppmann's Blog](https://martin.kleppmann.com/)
 - [The Morning Paper](https://blog.acolyer.org/)
+- [Google Research Blog](https://research.google/blog/)
+- [AWS Architecture Blog](https://aws.amazon.com/blogs/architecture/)
 
 ---
 

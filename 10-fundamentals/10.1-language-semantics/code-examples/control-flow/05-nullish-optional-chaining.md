@@ -49,7 +49,7 @@ mindmap
 | 操作数 | 两个表达式 | 访问链 |
 | 短路条件 | 左操作数非 null/undefined | 中间值为 null/undefined |
 | 返回值 | 左或右操作数 | 访问结果或 undefined |
-| 与 `||` 互斥 | 是（需括号） | — |
+| 与 `\|\|` 互斥 | 是（需括号） | — |
 | TypeScript 支持 | ✅ | ✅ |
 
 ### 2.2 `??` vs `||` 的精确差异
@@ -154,6 +154,86 @@ const name = user?.name; // 如果 user 必然存在，直接用 user.name
 user?.name = "Alice"; // SyntaxError！
 ```
 
+### 6.3 高级组合模式
+
+```typescript
+// 处理深层嵌套的 API 响应
+interface ApiResponse {
+  data?: {
+    items?: Array<{
+      metadata?: {
+        tags?: string[];
+      };
+    }>;
+  };
+}
+
+function getFirstTag(response: ApiResponse): string | undefined {
+  return response.data?.items?.[0]?.metadata?.tags?.[0];
+}
+
+// 动态属性访问 + 可选链
+function getLocalizedLabel(
+  translations: Record<string, Record<string, string>>,
+  lang: string,
+  key: string
+): string {
+  return translations[lang]?.[key] ?? translations['en']?.[key] ?? key;
+}
+
+// 可选链与括号表达式
+const methodName = 'getValue';
+const value = obj?.[methodName]?.();
+
+// 可选链与构造函数
+const instance = MyClass?.prototype?.constructor?.name;
+```
+
+### 6.4 与 TypeScript  narrowing 的结合
+
+```typescript
+interface User {
+  name: string;
+  address?: {
+    city: string;
+    zip?: string;
+  };
+}
+
+function formatAddress(user: User): string {
+  // 可选链 + 空值合并提供默认值
+  const city = user.address?.city ?? 'Unknown City';
+  const zip = user.address?.zip ?? '00000';
+
+  // TypeScript 知道 user.address 在此 narrowing 后仍然存在
+  if (user.address) {
+    // user.address 被收窄为 { city: string; zip?: string }
+    return `${user.address.city}, ${zip}`;
+  }
+
+  return city;
+}
+```
+
+### 6.5 短路求值与副作用
+
+```javascript
+// 右侧仅在需要时求值（短路）
+let counter = 0;
+function getDefault() {
+  counter++;
+  return 'default';
+}
+
+const a = 'value' ?? getDefault(); // getDefault 不会被调用
+const b = null ?? getDefault();     // getDefault 被调用
+console.log(counter); // 1
+
+// 可选链同样短路：后续属性访问不会执行
+const obj = null;
+const x = obj?.expensiveComputation(); // expensiveComputation 不会执行
+```
+
 ---
 
 ## 7. 权威参考与国际化对齐 (References)
@@ -162,6 +242,16 @@ user?.name = "Alice"; // SyntaxError！
 - **ECMA-262 §13.3** — Optional Chains
 - **MDN: Nullish coalescing** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing>
 - **MDN: Optional chaining** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining>
+- **MDN: Logical OR vs Nullish coalescing** — <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing#relationship_with_the_logical_or_operator>
+- **TypeScript Handbook — Narrowing** — <https://www.typescriptlang.org/docs/handbook/2/narrowing.html>
+- **Can I Use — Optional Chaining** — <https://caniuse.com/mdn-javascript_operators_optional_chaining>
+- **Can I Use — Nullish Coalescing** — <https://caniuse.com/mdn-javascript_operators_nullish_coalescing>
+- **TC39 Proposal — Optional Chaining** — <https://github.com/tc39/proposal-optional-chaining>
+- **TC39 Proposal — Nullish Coalescing** — <https://github.com/tc39/proposal-nullish-coalescing>
+- **V8 Blog — Optional Chaining** — <https://v8.dev/features/optional-chaining>
+- **V8 Blog — Nullish Coalescing** — <https://v8.dev/features/nullish-coalescing>
+- **2ality — Optional Chaining in JavaScript** — <https://2ality.com/2019/07/optional-chaining.html>
+- **2ality — Nullish Coalescing** — <https://2ality.com/2019/08/nullish-coalescing.html>
 
 ---
 
@@ -177,6 +267,16 @@ flowchart TD
     Q2 -->|是| OptionalDefault["?. + ??"]
     Q2 -->|否| Optional["?."]
 ```
+
+### 8.2 常见错误排查
+
+| 错误现象 | 原因 | 正确写法 |
+|---------|------|---------|
+| `SyntaxError` | 赋值左侧使用 `?.` | `if (obj) obj.prop = value` |
+| `Uncaught TypeError` | 忘记 `?.` 前对象本身可能为 null | `obj?.prop?.nested` |
+| 意外的默认值 | 使用 `\|\|` 误判 falsy 值 | 用 `??` 替代 `\|\|` |
+| `undefined` 无法索引 | `arr?.[0]` 误写为 `arr[0]?` | `arr?.[0]` |
+| 函数调用失败 | `fn()` 未检查 fn 是否存在 | `fn?.()` |
 
 ---
 
@@ -199,6 +299,13 @@ flowchart TD
 > 根据 ECMA-262 §13.3，可选链从左到右求值，遇到第一个 `null`/`undefined` 即短路。
 > ∎
 
+**定理 2（空值合并的结合律限制）**：
+> `??` 是右结合的：`a ?? b ?? c` ≡ `a ?? (b ?? c)`
+
+*证明*：
+> ECMA-262 §13.12 规定空值合并运算符为 right-associative。
+> ∎
+
 ### 9.3 真值表：?? 与 || 的差异
 
 | a | a \|\| "d" | a ?? "d" | 说明 |
@@ -206,6 +313,7 @@ flowchart TD
 | 0 | "d" | 0 | || 误判 0 |
 | "" | "d" | "" | || 误判 "" |
 | false | "d" | false | || 误判 false |
+| NaN | "d" | NaN | || 误判 NaN |
 | null | "d" | "d" | 两者一致 |
 | undefined | "d" | "d" | 两者一致 |
 
@@ -234,205 +342,69 @@ graph TD
 
 ---
 
-**参考规范**：ECMA-262 §13.12 | MDN: Optional chaining / Nullish coalescing
+## 11. 性能与最佳实践
 
-
----
-
-## 9. 公理化表述与形式证明 (Axiomatization & Formal Proof)
-
-### 9.1 公理化基础
-
-**公理 1（控制流完备性）**：
-> 任何程序的控制流可通过顺序、分支、循环三种基本结构组合实现（Bohm-Jacopini 定理）。
-
-**公理 2（短路求值的最小计算）**：
-> 逻辑运算符在满足结果确定性的前提下，求值最少的操作数。
-
-**公理 3（异常传播的确定性）**：
-> 异常一旦抛出，沿调用栈向上传播，直到被捕获或到达全局上下文。
-
-### 9.2 定理与证明
-
-**定理 1（条件分支的互斥性）**：
-> 在 `if...else if...else` 链中，至多一个分支被执行。
-
-*证明*：
-> ECMA-262 规定条件分支按顺序求值，首个 truthy 条件对应的分支执行后，跳过后续所有分支。
-> ∎
-
-**定理 2（finally 的执行保证）**：
-> `finally` 块中的代码无论 `try` 块如何完成（正常、return、throw），都会执行。
-
-*证明*：
-> ECMA-262 §13.15.8 规定 finally 块的完成记录优先级高于 try/catch。
-> ∎
-
-**定理 3（循环终止的必要条件）**：
-> `for`、`while`、`do...while` 循环终止的必要条件是循环体内存在使循环条件最终为 falsy 的操作。
-
-*证明*：
-> 若循环条件永真且循环体内无 break/return/throw，根据 ECMA-262 §14.7，循环将无限执行。
-> ∎
-
-### 9.3 真值表：控制流运算符行为
-
-| a | b | a && b | a || b | a ?? b | !a |
-|---|---|--------|--------|--------|-----|
-| true | true | true | true | true | false |
-| true | false | false | true | true | false |
-| false | true | false | true | false | true |
-| false | false | false | false | false | true |
-| null | any | null | any | any | true |
-| undefined | any | undefined | any | any | true |
-| 0 | "d" | "d" | 0 | 0 | true |
-| "" | "d" | "d" | "" | "" | true |
-
----
-
-## 10. 推理链与演绎分析 (Deductive Reasoning Chain)
-
-### 10.1 演绎推理：从代码结构到执行路径
-
-```mermaid
-graph TD
-    A[程序入口] --> B{条件判断}
-    B -->|条件A| C[路径1]
-    B -->|条件B| D[路径2]
-    B -->|默认| E[路径3]
-    C --> F[路径合并]
-    D --> F
-    E --> F
-    F --> G[程序出口]
-```
-
-### 10.2 归纳推理：从运行时行为推导控制流问题
-
-| 现象 | 可能原因 | 解决方案 |
-|------|---------|---------|
-| 意外执行分支 | 条件判断逻辑错误 | 审查布尔表达式 |
-| 无限循环 | 循环条件永真 | 检查终止条件 |
-| 跳过预期代码 | 提前 return/continue | 检查控制流语句 |
-| 资源未释放 | 异常中断流程 | 使用 try...finally 或 using |
-| 异步操作未等待 | 缺少 await | 添加 await 或 Promise 链 |
-
-### 10.3 反事实推理
-
-> **反设**：ECMAScript 不支持任何控制流语句（if/switch/loop/try）。
->
-> **推演结果**：
->
-> 1. 所有程序只能顺序执行，无法根据条件选择路径
-> 2. 重复操作必须通过递归实现，存在栈溢出风险
-> 3. 错误处理无法分离正常逻辑与异常逻辑
-> 4. 图灵完备性仍可通过函数调用和递归保持，但表达力大幅下降
->
-> **结论**：控制流语句是结构化编程的基石，提供了表达复杂算法的基本构件。
-
----
-
-## 11. 形式语义说明
-
-### 11.1 操作语义
-
-操作语义（Operational Semantics）描述了语句如何改变程序状态：
-
-```
-(if (C) S₁ else S₂, σ) → (S₁, σ)  if eval(C, σ) = true
-(if (C) S₁ else S₂, σ) → (S₂, σ)  if eval(C, σ) = false
-```
-
-其中 σ 表示程序状态（变量绑定集合）。
-
-### 11.2 指称语义
-
-指称语义（Denotational Semantics）将语句映射为数学函数：
-
-```
-[[if (C) S₁ else S₂]](σ) =
-  [[S₁]](σ)  if [[C]](σ) = true
-  [[S₂]](σ)  if [[C]](σ) = false
-```
-
----
-
-## 12. 性能与最佳实践
-
-### 12.1 性能考量
+### 11.1 性能考量
 
 | 结构 | 时间复杂度 | 空间复杂度 | 备注 |
 |------|-----------|-----------|------|
-| if...else | O(1) | O(1) | 条件求值 |
-| switch | O(n) 最坏 | O(1) | n = case 数量 |
-| try...catch | 无异常时 O(1) | O(1) | 有异常时开销大 |
-| for 循环 | O(迭代次数) | O(1) | 取决于循环体 |
-| Promise.then | O(1) | O(1) | 微任务队列调度 |
-| async/await | O(1) | O(1) | 生成器状态机开销 |
+| `?.` 属性访问 | O(1) | O(1) | 每次访问增加一次 nullish 检查 |
+| `??` 运算符 | O(1) | O(1) | 严格比较，比 `\|\|` 略快（无类型转换） |
+| 深层 `?.` 链 | O(k) | O(1) | k = 链长度，短路时提前返回 |
 
-### 12.2 最佳实践总结
+### 11.2 最佳实践总结
 
 ```javascript
-// ✅ 优先使用严格相等
-if (x === 5) { /* ... */ }
-
-// ✅ 使用 switch 进行离散值匹配
-switch (status) {
-  case "active": /* ... */ break;
-  case "inactive": /* ... */ break;
-  default: /* ... */;
-}
-
-// ✅ 使用 ?? 而非 || 进行默认值赋值
+// ✅ 优先使用 ?? 而非 || 进行默认值赋值
 const port = config.port ?? 3000;
 
 // ✅ 使用可选链进行安全访问
 const name = user?.profile?.name;
 
-// ✅ 使用 using 管理资源
-using file = await openFile(path);
+// ✅ 深层访问配合空值合并提供兜底
+const theme = user?.preferences?.theme ?? 'light';
 
-// ✅ 并行异步操作使用 Promise.all
-const [a, b] = await Promise.all([fetchA(), fetchB()]);
+// ✅ 可选链用于回调调用
+onComplete?.(result);
 
-// ✅ 生成器实现惰性序列
-function* range(n) { for (let i = 0; i < n; i++) yield i; }
+// ✅ 数组安全索引
+const first = items?.[0];
+
+// ❌ 不要与 && 混用导致优先级混乱
+const bad = a && b?.c ?? d; // 难以阅读，应加括号
+const good = (a && b?.c) ?? d;
+
+// ❌ 不要对已知非空对象使用可选链
+const userName = user?.name; // 如果 user 一定存在，直接用 user.name
 ```
 
 ---
 
-## 13. 思维模型总结
+## 12. 思维模型总结
 
-### 13.1 控制流选择速查矩阵
+### 12.1 访问模式速查矩阵
 
 | 需求 | 推荐结构 | 替代方案 |
 |------|---------|---------|
-| 布尔条件分支 | if...else | 三元运算符 ?: |
-| 离散值匹配 | switch | 对象映射表 |
-| 计数循环 | for | while |
-| 条件循环 | while / do...while | for (;;) |
-| 遍历可迭代对象 | for...of | Array.forEach |
-| 遍历对象属性 | for...in + hasOwn | Object.keys |
-| 错误处理 | try...catch...finally | Promise.catch |
-| 资源管理 | using / await using | try...finally |
-| 默认值赋值 | ?? | ||（仅布尔场景）|
-| 安全深层访问 | ?. | && 链 |
-| 异步顺序执行 | await | Promise.then 链 |
-| 异步并行执行 | Promise.all | Promise.race |
-| 惰性序列 | function* | 闭包 |
-| 异步数据流 | async function* | 事件流 |
+| 安全深层属性访问 | `?.` | `&&` 链（已过时） |
+| 安全方法调用 | `?.()` | `typeof fn === 'function' && fn()` |
+| 安全数组索引 | `?.[]` | `arr && arr[i]` |
+| 排除 null/undefined 的默认值 | `??` | `\|\|`（会误判 falsy） |
+| 组合安全访问 + 默认值 | `?. ??` | lodash `get` |
+| 强制非空断言（TypeScript） | `!` | 需确保运行时确实非空 |
 
 ---
 
-## 14. 权威参考完整列表
+## 13. 权威参考完整列表
 
 | 来源 | 链接 | 相关章节 |
 |------|------|---------|
-| ECMA-262 | tc39.es/ecma262 | §13-14 |
-| TypeScript Handbook | typescriptlang.org/docs | Control Flow Analysis |
-| MDN: Control flow | developer.mozilla.org | Statements |
-| MDN: Loops | developer.mozilla.org | Loops_and_iteration |
-| MDN: Exception | developer.mozilla.org | try...catch |
+| ECMA-262 | [tc39.es/ecma262](https://tc39.es/ecma262/) | §13.3, §13.12 |
+| TypeScript Handbook | [typescriptlang.org/docs](https://www.typescriptlang.org/docs/) | Control Flow Analysis |
+| MDN: Optional chaining | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining) | Operators |
+| MDN: Nullish coalescing | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing) | Operators |
+| MDN: Logical OR | [developer.mozilla.org](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_OR) | Operators |
 
 ---
 
-**参考规范**：ECMA-262 §13-14 | MDN: Control flow | TypeScript Handbook
+**参考规范**：ECMA-262 §13.3 | ECMA-262 §13.12 | MDN: Optional chaining / Nullish coalescing

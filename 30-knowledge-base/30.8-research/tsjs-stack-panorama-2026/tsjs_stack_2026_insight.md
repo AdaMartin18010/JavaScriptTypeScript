@@ -89,6 +89,25 @@ const obj = { x: 1, y: 2 };
 // 推荐使用 --allow-natives-syntax 配合 %GetOptimizationStatus(fn)
 ```
 
+### V8 优化状态探测（开发环境）
+
+```javascript
+// 使用 --allow-natives-syntax 运行时标志启动 Node.js
+// node --allow-natives-syntax inspect-v8.js
+
+function hotFunction(x) {
+  return x * 2 + 1;
+}
+
+// 预热
+for (let i = 0; i < 100000; i++) hotFunction(i);
+
+// %GetOptimizationStatus 是 V8 内部函数，需特殊标志
+// 状态码：1=optimized, 2=not optimized, 3=always optimized, 4=never optimized
+// const status = %GetOptimizationStatus(hotFunction);
+// console.log('Optimization status:', status);
+```
+
 ### 运行时兼容性检测（Node.js / Deno / Bun）
 
 ```typescript
@@ -168,6 +187,45 @@ if (checks.some(c => !c.pass)) {
 }
 ```
 
+### 使用 Async Context 追踪跨异步调用上下文（Node.js v18.13+ / v20+）
+
+```typescript
+// async-context-tracking.ts — 使用 AsyncLocalStorage 实现分布式追踪
+import { AsyncLocalStorage } from 'async_hooks';
+
+interface RequestContext {
+  requestId: string;
+  userId?: string;
+  startTime: number;
+}
+
+const asyncStorage = new AsyncLocalStorage<RequestContext>();
+
+export function runWithContext<T>(context: RequestContext, fn: () => T): T {
+  return asyncStorage.run(context, fn);
+}
+
+export function getContext(): RequestContext | undefined {
+  return asyncStorage.getStore();
+}
+
+// 在中间件中使用
+async function requestMiddleware(req: Request, handler: () => Promise<Response>) {
+  const context: RequestContext = {
+    requestId: crypto.randomUUID(),
+    userId: req.headers.get('x-user-id') ?? undefined,
+    startTime: performance.now(),
+  };
+
+  return runWithContext(context, async () => {
+    const response = await handler();
+    const duration = performance.now() - context.startTime;
+    console.log(`[${context.requestId}] ${req.url} — ${duration.toFixed(2)}ms`);
+    return response;
+  });
+}
+```
+
 ---
 
 ## 数据可视化链接
@@ -239,6 +297,12 @@ Bun (性能优先) ←—— 采纳 ——→ Node API 兼容, 包管理器, bun
 | web.dev — Core Web Vitals | 指南 | [web.dev/vitals](https://web.dev/vitals/) |
 | TC39 ECMAScript 提案 | 规范 | [tc39.es](https://tc39.es/) |
 | JS Benchmarking Best Practices | 指南 | [mathiasbynens.be](https://mathiasbynens.be/) |
+| Node.js Async Context | 官方文档 | [nodejs.org/api/async_context.html](https://nodejs.org/api/async_context.html) |
+| V8 Blog — Understanding V8 Performance | 官方博客 | [v8.dev/blog](https://v8.dev/blog) |
+| web.dev — Optimize INP | 指南 | [web.dev/articles/optimize-inp](https://web.dev/articles/optimize-inp) |
+| MDN — Performance API | 参考 | [developer.mozilla.org/en-US/docs/Web/API/Performance](https://developer.mozilla.org/en-US/docs/Web/API/Performance) |
+| GitHub Octoverse 2024 | 报告 | [github.blog/news-insights/octoverse/](https://github.blog/news-insights/octoverse/) |
+| Cloudflare Workers Runtime APIs | 文档 | [developers.cloudflare.com/workers/runtime-apis/](https://developers.cloudflare.com/workers/runtime-apis/) |
 
 ---
 

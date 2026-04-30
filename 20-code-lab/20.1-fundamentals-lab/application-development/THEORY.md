@@ -1,9 +1,9 @@
-﻿# 应用开发 — 理论基础
+# 应用开发 — 理论基础
 
 ## 1. 软件开发生命周期（SDLC）
 
 ```
-需求分析 → 设计 → 编码 → 测试 → 部署 → 运维 → 反馈
+需求分析 -> 设计 -> 编码 -> 测试 -> 部署 -> 运维 -> 反馈
 ```
 
 现代实践强调**迭代**和**增量**：短周期（1-2周）交付可用版本。
@@ -219,10 +219,10 @@ npm i -D semantic-release @semantic-release/git @semantic-release/changelog
 |------|---------------|---------------|---------------------|-------------------|
 | **页面导航** | 客户端路由，无刷新 | 服务端路由，整页刷新 | 客户端路由，支持离线 | 客户端路由，嵌入原生壳 |
 | **首屏加载** | 需下载 JS Bundle | 仅当前页 HTML/CSS | Service Worker 缓存 | 与 PWA 相同 |
-| **离线能力** | ❌ 依赖网络 | ❌ 依赖网络 | ✅ Service Worker | ✅ Service Worker |
+| **离线能力** | 依赖网络 | 依赖网络 | Service Worker | Service Worker |
 | **安装方式** | 浏览器书签 | 浏览器书签 | 添加到主屏幕 | Google Play / App Store |
 | **原生能力** | 受限 | 受限 | 有限（Push、Camera） | 几乎完整原生 API |
-| **SEO** | 需 SSR/预渲染 | ✅ 天然友好 | 同 SPA | 同 SPA |
+| **SEO** | 需 SSR/预渲染 | 天然友好 | 同 SPA | 同 SPA |
 | **代表技术** | React Router、Vue Router | Next.js 多路由、Django | Workbox、Vite PWA Plugin | Bubblewrap、PWABuilder |
 | **适用场景** | 后台系统、社交应用 | 内容站点、官网 | 跨平台移动端应用 | 低成本上架应用商店 |
 
@@ -230,12 +230,12 @@ npm i -D semantic-release @semantic-release/git @semantic-release/changelog
 
 ```
 是否需要应用商店分发？
-  ├─ 是 → 需要原生能力？
-  │         ├─ 是 → TWA / 原生混合
-  │         └─ 否 → PWA + WebAPK
-  └─ 否 → 内容为主还是交互为主？
-            ├─ 内容 → MPA / SSG
-            └─ 交互 → SPA / PWA
+  -- 是 -> 需要原生能力？
+  |         -- 是 -> TWA / 原生混合
+  |         -- 否 -> PWA + WebAPK
+  -- 否 -> 内容为主还是交互为主？
+            -- 内容 -> MPA / SSG
+            -- 交互 -> SPA / PWA
 ```
 
 ---
@@ -331,7 +331,140 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 
 ---
 
-## 8. 权威外部资源
+## 8. 进阶代码示例
+
+### 8.1 分层架构示例（Clean Architecture）
+
+```typescript
+// domain/entities/User.ts
+export class User {
+  constructor(
+    public readonly id: string,
+    public readonly email: string,
+    public readonly name: string
+  ) {}
+
+  validate(): boolean {
+    return this.email.includes('@') && this.name.length > 0;
+  }
+}
+
+// application/usecases/RegisterUser.ts
+import { User } from '@/domain/entities/User';
+import { UserRepository } from '@/domain/repositories/UserRepository';
+
+export class RegisterUser {
+  constructor(private repo: UserRepository) {}
+
+  async execute(email: string, name: string): Promise<User> {
+    const user = new User(crypto.randomUUID(), email, name);
+    if (!user.validate()) throw new Error('Invalid user data');
+    return this.repo.save(user);
+  }
+}
+
+// infrastructure/repositories/PrismaUserRepository.ts
+import { PrismaClient } from '@prisma/client';
+import { User } from '@/domain/entities/User';
+import { UserRepository } from '@/domain/repositories/UserRepository';
+
+export class PrismaUserRepository implements UserRepository {
+  constructor(private prisma: PrismaClient) {}
+
+  async save(user: User): Promise<User> {
+    await this.prisma.user.create({
+      data: { id: user.id, email: user.email, name: user.name }
+    });
+    return user;
+  }
+}
+```
+
+### 8.2 端到端测试示例（Playwright）
+
+```typescript
+// tests/e2e/checkout.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Checkout Flow', () => {
+  test('completes purchase with valid card', async ({ page }) => {
+    await page.goto('/products');
+    await page.click('[data-testid="add-to-cart-1"]');
+    await page.click('[data-testid="checkout-button"]');
+
+    await page.fill('[name="cardNumber"]', '4242424242424242');
+    await page.fill('[name="expiry"]', '12/30');
+    await page.fill('[name="cvc"]', '123');
+    await page.click('[data-testid="pay-button"]');
+
+    await expect(page).toHaveURL('/order-confirmation');
+    await expect(page.locator('h1')).toContainText('Thank you');
+  });
+});
+```
+
+### 8.3 性能监控（Web Vitals）
+
+```typescript
+// lib/vitals.ts
+import { onCLS, onFID, onFCP, onLCP, onTTFB, Metric } from 'web-vitals';
+
+function sendToAnalytics(metric: Metric) {
+  const body = JSON.stringify(metric);
+  // 使用 navigator.sendBeacon 可靠发送
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon('/analytics/vitals', body);
+  } else {
+    fetch('/analytics/vitals', { body, method: 'POST', keepalive: true });
+  }
+}
+
+export function reportWebVitals() {
+  onCLS(sendToAnalytics);
+  onFID(sendToAnalytics);
+  onFCP(sendToAnalytics);
+  onLCP(sendToAnalytics);
+  onTTFB(sendToAnalytics);
+}
+```
+
+### 8.4 API 层错误处理中间件
+
+```typescript
+// middleware/errorHandler.ts
+import { Request, Response, NextFunction } from 'express';
+
+export class AppError extends Error {
+  constructor(
+    public statusCode: number,
+    message: string,
+    public code?: string
+  ) {
+    super(message);
+  }
+}
+
+export function errorHandler(
+  err: Error,
+  _req: Request,
+  res: Response,
+  _next: NextFunction
+) {
+  if (err instanceof AppError) {
+    return res.status(err.statusCode).json({
+      error: err.message,
+      code: err.code,
+    });
+  }
+
+  console.error('Unexpected error:', err);
+  return res.status(500).json({ error: 'Internal server error' });
+}
+```
+
+---
+
+## 9. 权威外部资源
 
 - [Google Developers — Progressive Web Apps](https://developers.google.com/web/progressive-web-apps)
 - [MDN — Web App Manifests](https://developer.mozilla.org/en-US/docs/Web/Manifest)
@@ -344,10 +477,14 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 - [GitHub — Code Review Best Practices](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews)
 - [Playwright Documentation](https://playwright.dev/) — E2E 测试框架
 - [Cucumber Documentation](https://cucumber.io/docs/cucumber/) — BDD 测试框架
+- [Martin Fowler — Clean Architecture](https://martinfowler.com/architecture/) — 软件架构思想
+- [web.dev — Core Web Vitals](https://web.dev/vitals/) — 性能指标权威指南
+- [OWASP Top 10](https://owasp.org/www-project-top-ten/) — Web 安全威胁清单
+- [Google Testing Blog](https://testing.googleblog.com/) — 测试最佳实践
 
 ---
 
-## 9. 与相邻模块的关系
+## 10. 与相邻模块的关系
 
 - **22-deployment-devops**: 部署与运维实践
 - **29-documentation**: 技术文档编写
