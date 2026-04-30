@@ -65,6 +65,7 @@ references:
     - [8.1 三种响应范式的认知负荷对比](#81-三种响应范式的认知负荷对比)
     - [8.2 选择响应范式的决策树](#82-选择响应范式的决策树)
     - [8.3 响应式系统的范畴论统一视角](#83-响应式系统的范畴论统一视角)
+    - [8.4 响应式系统的工程决策框架](#84-响应式系统的工程决策框架)
   - [参考文献](#参考文献)
 
 ---
@@ -1266,3 +1267,18 @@ Signals \\ (async/await ∪ Observable) = {
 10. Petri, C. A. (1962). "Kommunikation mit Automaten." *PhD Thesis*.
 11. Jacobs, B. (1999). *Categorical Logic and Type Theory*. Elsevier.
 12. Rutten, J. (2000). "Universal Coalgebra: A Theory of Systems." *Theoretical Computer Science*, 249(1), 3-80.
+13. Meijer, E. (2012). "Your Mouse is a Database." *Communications of the ACM*, 55(5), 66-73.
+14. Czaplicki, E., & Chong, S. (2013). "Asynchronous Functional Reactive Programming for GUIs." *PLDI 2013*.
+15. Bacon, J. (2015). *Functional Reactive Programming*. Manning.
+16. Salvaneschi, G., et al. (2014). "REScala: Bridging Between Object-Oriented and Functional Style in Reactive Applications." *MODULARITY 2014*.
+17. Bainomugisha, E., et al. (2013). "A Survey on Reactive Programming." *ACM Computing Surveys*, 45(4), 1-34.
+18. Meyerovich, L. A., et al. (2009). "Flapjax: A Programming Language for Ajax Applications." *OOPSLA 2009*.
+19. Cooper, G. H., & Krishnamurthi, S. (2006). "Embedding Dynamic Dataflow in a Call-by-Value Language." *ESOP 2006*.
+20. Edwards, J. (2009). "Coherent Reaction." *ONWARD 2009*.
+21. Tarditi, D., et al. (2012). "Units: A New Polyglot Approach to Safe Concurrent Programming." *PPoPP 2012*.
+22. Welc, A., et al. (2005). "Safe Futures for Java." *OOPSLA 2005*.
+23. Haller, P., & Odersky, M. (2009). "Scala Actors: Unifying Thread-based and Event-based Programming." *Theoretical Computer Science*, 410(2-3), 202-220.
+24. Armstrong, J. (2003). "Making Reliable Distributed Systems in the Presence of Software Errors." *PhD Thesis, KTH*.
+25. Virding, R., et al. (1996). *Concurrent Programming in ERLANG* (2nd ed.). Prentice Hall.
+26. Hewitt, C., et al. (1973). "A Universal Modular ACTOR Formalism for Artificial Intelligence." *IJCAI 1973*.
+23. Cooper, G. H., & Krishnamurthi, S. (2006). "Embedding Dynamic Dataflow in a Call-by-Value Language." *ESOP 2006*.

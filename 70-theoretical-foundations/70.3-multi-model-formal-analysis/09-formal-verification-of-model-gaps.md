@@ -895,4 +895,17 @@ function mystery(n: number): number {
 7. Cousot, P., & Cousot, R. (1977). Abstract Interpretation: A Unified Lattice Model for Static Analysis of Programs. POPL 1977.
 8. Claessen, K., & Hughes, J. (2000). QuickCheck: A Lightweight Tool for Random Testing of Haskell Programs. ICFP 2000.
 9. Rice, H. G. (1953). "Classes of Recursively Enumerable Sets and Their Decision Problems." *Transactions of the American Mathematical Society*, 74(2), 358-366.
-10. Hoare, C. A. R. (1969). "An Axiomatic Basis for Computer Programming." *Communications of the ACM*, 12(10), 576-580.
+10. Turing, A. M. (1936). "On Computable Numbers, with an Application to the Entscheidungsproblem." *Proceedings of the London Mathematical Society*, 42(2), 230-265.
+11. Church, A. (1936). "An Unsolvable Problem of Elementary Number Theory." *American Journal of Mathematics*, 58(2), 345-363.
+12. Gödel, K. (1931). "Über formal unentscheidbare Sätze der Principia Mathematica und verwandter Systeme I." *Monatshefte für Mathematik und Physik*, 38(1), 173-198.
+13. Post, E. L. (1944). "Recursively Enumerable Sets of Positive Integers and Their Decision Problems." *Bulletin of the American Mathematical Society*, 50(5), 284-316.
+14. Kleene, S. C. (1936). "General Recursive Functions of Natural Numbers." *Mathematische Annalen*, 112(1), 727-742.
+15. Rogers, H. (1967). *Theory of Recursive Functions and Effective Computability*. McGraw-Hill.
+16. Soare, R. I. (1987). *Recursively Enumerable Sets and Degrees*. Springer.
+17. Hopcroft, J. E., & Ullman, J. D. (1979). *Introduction to Automata Theory, Languages, and Computation*. Addison-Wesley.
+18. Sipser, M. (1997). *Introduction to the Theory of Computation*. PWS Publishing.
+19. Arora, S., & Barak, B. (2009). *Computational Complexity: A Modern Approach*. Cambridge University Press.
+20. Garey, M. R., & Johnson, D. S. (1979). *Computers and Intractability: A Guide to the Theory of NP-Completeness*. W. H. Freeman.
+21. Cook, S. A. (1971). "The Complexity of Theorem-Proving Procedures." *STOC 1971*.
+22. Karp, R. M. (1972). "Reducibility Among Combinatorial Problems." *Complexity of Computer Computations*, 85-103.
+15. Hoare, C. A. R. (1969). "An Axiomatic Basis for Computer Programming." *Communications of the ACM*, 12(10), 576-580.

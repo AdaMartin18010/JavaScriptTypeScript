@@ -837,3 +837,5 @@ function unsafe(x: any): string {
 11. Gunter, C. A. (1992). *Semantics of Programming Languages: Structures and Techniques*. MIT Press.
 12. Winskel, G. (1993). *The Formal Semantics of Programming Languages*. MIT Press.
 13. Apt, K. R. (1981). "Ten Years of Hoare's Logic: A Survey — Part I." *ACM TOPLAS*, 3(4), 431-483.
+14. Hennessy, M., & Plotkin, G. D. (1979). "Full Abstraction for a Simple Parallel Programming Language." *MFCS 1979*.
+15. Milner, R. (1977). "Fully Abstract Models of Typed lambda-Calculi." *Theoretical Computer Science*, 4(1), 1-22.
