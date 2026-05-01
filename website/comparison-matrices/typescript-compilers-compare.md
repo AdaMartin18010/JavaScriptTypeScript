@@ -157,17 +157,245 @@ cd typescript-go && npm install && npm run build
 
 ---
 
-## 2026-2027 趋势
+## 新兴编译器与工具
 
-| 趋势 | 影响 |
-|------|------|
-| **tsgo Alpha → Beta** | 2026 Q4 发布 Beta，目标 10x 速度提升 |
-| **Oxc 1.0** | 统一工具链（lint + format + build + minify） |
-| **tsc 维护模式** | 功能冻结，专注 tsgo 迁移 |
-| **SWC 巩固地位** | Next.js + Vercel 生态深度绑定 |
-| **esbuild 稳定** | 功能完整，进入维护阶段 |
+### Bun Transpiler
+
+```bash
+bun build ./src/index.ts --outdir ./dist
+```
+
+**定位**: Bun 内置的 TypeScript 转译器
+
+- **语言**: Zig | **类型检查**: ❌ (需 tsc)
+- **优势**: 与 Bun runtime 深度集成、内置 bundler、极快
+- **适用**: Bun 生态项目
+
+```ts
+// bun.build API
+await Bun.build({
+  entrypoints: ['./src/index.ts'],
+  outdir: './dist',
+  target: 'browser',
+  minify: true,
+})
+```
+
+### Deno 类型检查
+
+```bash
+deno check src/mod.ts
+```
+
+**定位**: Deno 原生 TypeScript 支持
+
+- **特点**: 无需 tsconfig、原生 ESM、内置类型
+- **优势**: 零配置、安全沙箱、内置测试
+- **限制**: npm 兼容性需 `--node-modules-dir`
+
+### TypeScript-to-Lua
+
+```bash
+npm install -D typescript-to-lua
+```
+
+**定位**: TypeScript 转 Lua，用于游戏脚本（Roblox、WoW）
+
+- **Stars**: 3k+ | **特点**: 保留 TypeScript 类型安全，输出 Lua
 
 ---
+
+## 类型检查性能优化
+
+### 诊断慢编译
+
+```bash
+# 生成性能追踪
+npx tsc --generateTrace ./trace
+
+# 分析追踪
+npx @typescript/analyze-trace ./trace
+```
+
+### 常见性能瓶颈
+
+| 问题 | 症状 | 解决方案 |
+|------|------|----------|
+| **泛型过度推断** | 条件类型嵌套过深 | 显式类型注解 |
+| **大型联合类型** | `string | number | ...` 上百项 | 使用接口替代 |
+| **递归类型** | 无限递归推断 | 增加终止条件 |
+| **全局类型污染** | `*.d.ts` 过多 | 精简声明文件 |
+| **source map** | 生成耗时 | 开发开启，生产关闭 |
+
+### 优化 tsconfig
+
+```json
+{
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "./.tsbuildinfo",
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmitOnError": false,
+    "isolatedModules": true
+  },
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+}
+```
+
+---
+
+## 声明文件生成对比
+
+| 功能 | tsc | tsgo | SWC | esbuild |
+|------|:---:|:----:|:---:|:-------:|
+| `.d.ts` 生成 | ✅ | ⚠️ Alpha | ❌ | ❌ |
+| `.d.ts.map` | ✅ | ❌ | ❌ | ❌ |
+| 类型内联 | ✅ | ⚠️ | ❌ | ❌ |
+| JSDoc 保留 | ✅ | ✅ | N/A | N/A |
+
+> 库开发必须使用 `tsc --declaration` 生成类型声明文件，这是目前唯一可靠方案（2026-05）。
+
+---
+
+## 工具链集成深度对比
+
+### Monorepo 集成
+
+| 工具 | tsc | SWC | esbuild | tsgo |
+|------|:---:|:---:|:-------:|:----:|
+| **Turborepo** | ✅ | ✅ | ✅ | ⚠️ |
+| **Nx** | ✅ | ✅ | ✅ | ⚠️ |
+| **Rush** | ✅ | ✅ | ✅ | ⚠️ |
+| **project references** | ✅ | ❌ | ❌ | ⚠️ |
+
+### IDE 集成
+
+| IDE | tsc | tsgo | SWC |
+|-----|:---:|:----:|:---:|
+| **VS Code** | ✅ 默认 | ⚠️ 插件 | ❌ |
+| **WebStorm** | ✅ 默认 | ❌ | ❌ |
+| **Vim/Neovim** | ✅ | ⚠️ | ❌ |
+| **Zed** | ✅ | ❌ | ✅ |
+
+---
+
+## 2026-2027 趋势
+
+| 趋势 | 影响 | 时间线 |
+|------|------|--------|
+| **tsgo Alpha → Beta** | 2026 Q4 发布 Beta，目标 10x 速度提升 | 2026 Q4 |
+| **tsgo 生产可用** | 完整类型检查，99% tsc 兼容性 | 2027 H1 |
+| **Oxc 1.0** | 统一工具链（lint + format + build + minify） | 2026 Q4 |
+| **tsc 维护模式** | 功能冻结，专注 tsgo 迁移 | 已启动 |
+| **SWC 巩固地位** | Next.js + Vercel 生态深度绑定 | 持续 |
+| **esbuild 稳定** | 功能完整，进入维护阶段 | 已稳定 |
+| **Bun 编译器成熟** | 替代 Node.js + tsc 组合 | 2026-2027 |
+| **Rolldown 统一** | Vite 8 默认使用 Rolldown (Rust) | 2026 H2 |
+
+### 推荐工具链组合（2026）
+
+```
+开发体验
+├── 类型检查: tsc --noEmit (唯一选择)
+├── 开发服务器: Vite (esbuild) / Next.js (SWC)
+├── 生产构建: Vite (esbuild/Rolldown) / Next.js (SWC/Turbopack)
+├── Lint: ESLint (迁移中) → Oxc (未来)
+├── Format: Prettier → dprint / Biome (可选)
+└── Test: Vitest (esbuild 内置)
+
+未来 (2027+)
+├── 类型检查: tsgo (替代 tsc)
+└── 统一工具: Oxc (lint + format + build)
+```
+
+---
+
+## 压缩工具对比
+
+TypeScript 编译链通常需要配合压缩工具。
+
+| 工具 | 语言 | 速度 | 压缩率 | 2026 状态 |
+|------|------|:----:|:------:|:---------:|
+| **Terser** | JS | 基准 | 高 | 🟡 维护 |
+| **esbuild** | Go | 30x | 中 | 🟢 稳定 |
+| **SWC minify** | Rust | 20x | 高 | 🟢 成熟 |
+| **Oxc minify** | Rust | 25x | 高 | 🟢 Beta |
+| **Google Closure** | Java | 0.5x | 最高 | 🟡 小众 |
+
+## 格式化工具对比
+
+| 工具 | 语言 | 速度 | Prettier 兼容 | 2026 状态 |
+|------|------|:----:|:-------------:|:---------:|
+| **Prettier** | JS | 基准 | 自身 | 🟢 标准 |
+| **dprint** | Rust | 20x | 插件 | 🟢 增长 |
+| **Biome** | Rust | 15x | 部分 | 🟢 增长 |
+| **Oxc format** | Rust | 20x | 开发中 | 🟢 Beta |
+
+## 完整工具链选型
+
+```
+类型检查 + 开发体验
+├── tsc --noEmit (必须)
+└── tsgo (未来替代)
+
+转译 + 构建
+├── Vite → esbuild (dev) + Rollup/Rolldown (prod)
+├── Next.js → SWC (默认)
+├── 遗留 → Babel
+└── 未来 → Oxc (统一)
+
+压缩
+├── 默认 → esbuild / SWC / Oxc
+└── 极致 → Terser
+
+格式化
+├── 默认 → Prettier
+└── 速度 → dprint / Biome
+```
+
+## 压缩工具对比
+
+TypeScript 编译链通常需要配合压缩工具。
+
+| 工具 | 语言 | 速度 | 压缩率 | 2026 状态 |
+|------|------|:----:|:------:|:---------:|
+| **Terser** | JS | 基准 | 高 | 🟡 维护 |
+| **esbuild** | Go | 30x | 中 | 🟢 稳定 |
+| **SWC minify** | Rust | 20x | 高 | 🟢 成熟 |
+| **Oxc minify** | Rust | 25x | 高 | 🟢 Beta |
+| **Google Closure** | Java | 0.5x | 最高 | 🟡 小众 |
+
+## 格式化工具对比
+
+| 工具 | 语言 | 速度 | Prettier 兼容 | 2026 状态 |
+|------|------|:----:|:-------------:|:---------:|
+| **Prettier** | JS | 基准 | 自身 | 🟢 标准 |
+| **dprint** | Rust | 20x | 插件 | 🟢 增长 |
+| **Biome** | Rust | 15x | 部分 | 🟢 增长 |
+| **Oxc format** | Rust | 20x | 开发中 | 🟢 Beta |
+
+## 完整工具链选型
+
+```
+类型检查 + 开发体验
+├── tsc --noEmit (必须)
+└── tsgo (未来替代)
+
+转译 + 构建
+├── Vite → esbuild (dev) + Rollup/Rolldown (prod)
+├── Next.js → SWC (默认)
+├── 遗留 → Babel
+└── 未来 → Oxc (统一)
+
+压缩
+├── 默认 → esbuild / SWC / Oxc
+└── 极致 → Terser
+
+格式化
+├── 默认 → Prettier
+└── 速度 → dprint / Biome
+```
 
 ## 参考资源
 
@@ -176,3 +404,5 @@ cd typescript-go && npm install && npm run build
 - [esbuild 文档](https://esbuild.github.io/) 📚
 - [Oxc 文档](https://oxc.rs/) 📚
 - [Babel 文档](https://babeljs.io/) 📚
+- [Biome 文档](https://biomejs.dev/) 📚
+- [dprint 文档](https://dprint.dev/) 📚

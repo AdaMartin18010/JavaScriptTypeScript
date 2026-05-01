@@ -237,6 +237,30 @@ export default defineConfig({
 | 视觉回归 | Playwright + 截图对比 |
 | API 测试 | Vitest / Jest / Playwright |
 
+### 其他测试工具
+
+| 工具 | Stars | 定位 | 2026 状态 |
+|------|-------|------|:---------:|
+| **Cypress** | 48k+ | E2E 测试 | 🟡 维护 |
+| **WebdriverIO** | 9.5k+ | 跨浏览器自动化 | 🟢 活跃 |
+| **AVA** | 20k+ | 极简测试 | 🟡 维护 |
+| **Node.js Test Runner** | 内置 | 官方测试 | 🟢 增长 |
+| **Bun Test** | 内置 | Bun 原生 | 🟢 新兴 |
+
+**Cypress 现状**：2024-2025 增长停滞，仅支持 Chromium，企业裁员影响维护。新项目建议 Playwright。
+
+```js
+// Node.js 内置 Test Runner (v22)
+import { test, describe } from 'node:test'
+import assert from 'node:assert'
+
+describe('math', () => {
+  test('addition', () => {
+    assert.strictEqual(1 + 1, 2)
+  })
+})
+```
+
 ### 按项目类型选择
 
 | 项目类型 | 推荐 |
@@ -246,6 +270,21 @@ export default defineConfig({
 | Next.js | Vitest (单元) + Playwright (E2E) |
 | 传统 Node 项目 | Jest 或 Vitest |
 | 需要跨浏览器测试 | Playwright |
+| 纯 Node.js 库 | Node.js Test Runner / Vitest |
+| Bun 生态 | Bun Test |
+
+---
+
+## 2026 趋势
+
+| 趋势 | 描述 |
+|------|------|
+| **Vitest 统治** | 新项目默认选择，Jest 存量维护 |
+| **Playwright 霸主** | E2E 测试事实标准 |
+| **Cypress 衰退** | 新功能放缓，市场份额流失 |
+| **AI 测试生成** | Copilot / Cursor 自动生成测试 |
+| **视觉回归普及** | Playwright + Argos / Chromatic |
+| **Node.js 内置** | 官方 test runner 成为轻量选择 |
 
 ### 组合方案
 
@@ -291,6 +330,93 @@ npm install -D @playwright/test
 - 替换 `jest` 导入为 `vitest`
 - 配置 `globals: true` 以兼容全局 API
 - 更新 mock 语法 (大部分兼容)
+
+## 测试覆盖率工具
+
+| 工具 | 引擎 | 速度 | 精度 | 报告格式 |
+|------|------|:----:|:----:|:--------:|
+| **v8 coverage** | V8 | 快 | 高 | HTML/LCOV/JSON |
+| **Istanbul/nyc** | Babel | 慢 | 最高 | HTML/LCOV |
+| **c8** | V8 | 快 | 高 | HTML/LCOV |
+
+```json
+// vitest.config.ts
+export default defineConfig({
+  test: {
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 70,
+        statements: 80,
+      },
+    },
+  },
+})
+```
+
+## 视觉回归测试
+
+| 工具 | 价格 | 集成 | 像素对比 | 2026 状态 |
+|------|:----:|:----:|:--------:|:---------:|
+| **Chromatic** | $/月 | Storybook | ✅ | 🟢 首选 |
+| **Argos** | $/月 | CI | ✅ | 🟢 增长 |
+| **Percy** | $/月 | 多框架 | ✅ | 🟡 维护 |
+| **Loki** | 免费 | Storybook | ✅ | 🟢 开源 |
+| **Playwright** | 免费 | 内置 | ⚠️ 基础 | 🟢 增长 |
+
+## 性能测试
+
+| 工具 | 类型 | 适用场景 |
+|------|------|---------|
+| **Lighthouse CI** | 合成测试 | Core Web Vitals |
+| **k6** | 负载测试 | API 压力测试 |
+| **Artillery** | 负载测试 | 微服务 |
+| **Autocannon** | 基准测试 | Node.js HTTP |
+
+```js
+// k6 负载测试
+import http from 'k6/http'
+import { check } from 'k6'
+
+export const options = {
+  stages: [
+    { duration: '1m', target: 100 },
+    { duration: '3m', target: 100 },
+    { duration: '1m', target: 0 },
+  ],
+}
+
+export default function () {
+  const res = http.get('https://api.example.com/users')
+  check(res, { 'status is 200': (r) => r.status === 200 })
+}
+```
+
+## 测试数据管理
+
+| 策略 | 工具 | 适用 |
+|------|------|------|
+| **Mock Service Worker** | MSW | API Mock |
+| **faker-js** | faker | 假数据生成 |
+| **Testcontainers** | docker | 数据库集成测试 |
+| **工厂模式** | factory.ts | 测试对象构建 |
+
+```ts
+// MSW 2.x 示例
+import { http, HttpResponse } from 'msw'
+
+export const handlers = [
+  http.get('/api/users', () => {
+    return HttpResponse.json([
+      { id: '1', name: 'Alice' },
+      { id: '2', name: 'Bob' },
+    ])
+  }),
+]
+```
 
 ### 注意事项
 

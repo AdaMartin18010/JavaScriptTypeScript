@@ -257,6 +257,7 @@ monorepo/
 ```
 
 **边界规则**：
+
 - `apps` 不能相互依赖
 - `packages` 可以相互依赖，但不能依赖 `apps`
 - `tooling` 只能被顶层依赖
@@ -277,6 +278,115 @@ monorepo/
 
 ---
 
+## 10. Monorepo 代码共享模式
+
+```
+monorepo/
+├── apps/               # 应用层（不可被依赖）
+│   ├── web/
+│   └── api/
+├── packages/           # 共享包（可被依赖）
+│   ├── ui/            # UI 组件库
+│   ├── config/        # 共享配置（eslint, tsconfig）
+│   ├── types/         # 共享类型定义
+│   └── utils/         # 工具函数
+└── tooling/           # 构建工具配置
+    ├── typescript/
+    └── eslint/
+```
+
+**边界规则**：
+
+- `apps` 不能相互依赖
+- `packages` 可以相互依赖，但不能依赖 `apps`
+- `tooling` 只能被顶层依赖
+
+## 11. 2026 趋势
+
+| 趋势 | 描述 | 影响 |
+|------|------|:----:|
+| **Rust 化完成** | Nx Crystal、Turborepo v2 全面 Rust | 🔥 极高 |
+| **AI 集成** | Nx MCP Server、AI 辅助代码生成 | 🔥 高 |
+| **远程缓存普及** | 成为 Monorepo 标配 | 🔥 高 |
+| **统一版本管理** | pnpm Catalog、Changesets 成为标准 | 🔥 高 |
+| **多语言 Monorepo** | Moon、Bazel 支持 JS/Rust/Go 混合 | 中 |
+| **零配置趋势** | 减少 boilerplate，开箱即用 | 中 |
+| **分布式任务执行** | Nx Cloud DTE 超大型仓库并行构建 | 中 |
+
+## 实际案例分析
+
+### 案例 1: Vercel (Turborepo)
+
+Vercel 自身使用 Turborepo 管理 100+ 包的 monorepo：
+
+- **构建时间**: 从 15 分钟降至 2 分钟 (远程缓存)
+- **日构建次数**: 2000+ 次命中缓存
+- **团队规模**: 200+ 开发者
+
+### 案例 2: Nx 官方仓库 (Nx + Nx Cloud)
+
+Nx 团队使用自研工具管理自身仓库：
+
+- **包数量**: 300+ 包
+- **CI 时间**: 平均 8 分钟 (DTE 分布式执行)
+- **缓存命中率**: 85%+
+
+### 案例 3: 中小型开源项目 (pnpm + Turborepo)
+
+```
+my-project/
+├── apps/
+│   ├── web/          # Next.js 应用
+│   └── docs/         # Nextra 文档
+├── packages/
+│   ├── ui/           # React 组件库
+│   ├── config/       # 共享配置
+│   └── utils/        # 工具函数
+├── package.json      # workspaces + turbo 脚本
+├── turbo.json        # 任务管道
+└── pnpm-workspace.yaml
+```
+
+```json
+// package.json
+{
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "@changesets/cli": "^2.27.0"
+  }
+}
+```
+
+## 常见问题与解决方案
+
+| 问题 | 原因 | 解决方案 |
+|------|------|----------|
+| **缓存不命中** | 环境变量/文件变动导致哈希变化 | 检查 `globalDependencies` 和 `inputs` 配置 |
+| **循环依赖** | packages 相互引用 | 使用 `madge` 检测，重构为单向依赖 |
+| **版本冲突** | 不同包依赖同一库不同版本 | 使用 pnpm Catalog 统一版本 |
+| **CI 构建慢** | 无远程缓存，每次都全量构建 | 配置 Turborepo Remote Cache 或 Nx Cloud |
+| **类型检查慢** | tsconfig project references 未配置 | 启用 TypeScript project references |
+
+## 学习资源
+
+| 资源 | 类型 | 难度 |
+|------|------|------|
+| [Turborepo 官方教程](https://turbo.build/repo/docs) | 文档 | 入门 |
+| [Nx 官方教程](https://nx.dev/getting-started/intro) | 文档 | 入门 |
+| [Monorepo.tools](https://monorepo.tools/) | 对比网站 | 入门 |
+| [Nx Crystal 公告](https://nx.dev/blog/nx-crystal) | 博客 | 进阶 |
+| [Turborepo 远程缓存指南](https://vercel.com/docs/monorepos/remote-caching) | 文档 | 进阶 |
+
+---
+
 > 📅 本文档最后更新：2026 年 5 月
 >
-> 💡 提示：2025 年 Monorepo 工具的核心趋势是 **Rust 化**（Nx Crystal、Turborepo v2）和 **AI 集成**（Nx MCP Server）。选型时建议优先评估远程缓存和 CI 集成能力。
+> 💡 提示：2025-2026 年 Monorepo 工具的核心趋势是 **Rust 化**（Nx Crystal、Turborepo v2）和 **AI 集成**（Nx MCP Server）。选型时建议优先评估远程缓存和 CI 集成能力。对于新项目，推荐 **pnpm + Turborepo** 作为起点；随着团队规模增长，可平滑迁移至 **Nx**。

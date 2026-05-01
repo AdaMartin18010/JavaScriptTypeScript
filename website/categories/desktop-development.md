@@ -144,27 +144,27 @@ Wails 是 Go 语言编写的 Tauri 替代品，采用类似的 WebView 前端 + 
 package main
 
 import (
-	"context"
+ "context"
 )
 
 // App struct
 type App struct {
-	ctx context.Context
+ ctx context.Context
 }
 
 // NewApp creates a new App application struct
 func NewApp() *App {
-	return &App{}
+ return &App{}
 }
 
 // startup is called when the app starts
 func (a *App) startup(ctx context.Context) {
-	a.ctx = ctx
+ a.ctx = ctx
 }
 
 // Greet returns a greeting for the given name
 func (a *App) Greet(name string) string {
-	return "Hello " + name + "!"
+ return "Hello " + name + "!"
 }
 ```
 
@@ -263,14 +263,135 @@ npx react-native-macos-init
 
 ---
 
-## 2026 趋势前瞻
+## 开发体验对比
 
-| 趋势 | 描述 |
-|------|------|
-| **Tauri 移动统一** | v2 移动端支持逐渐成熟，一套代码覆盖桌面 + 移动端 |
-| **Electron 瘦身** | Electron 团队探索模块化 Chromium，目标减少 50% 体积 |
-| **AI 辅助桌面开发** | Copilot 支持 Tauri/Electron 项目生成，自动配置安全策略 |
-| **WebView 标准化** | WebView2 (Win)、WKWebView (macOS)、WebKitGTK (Linux) 趋于统一 |
+| 维度 | Tauri | Electron | Flutter | Wails |
+|------|:-----:|:--------:|:-------:|:-----:|
+| **热重载** | ✅ | ✅ | ✅ | ✅ |
+| **调试工具** | Chrome DevTools | Chrome DevTools | Flutter DevTools | Chrome DevTools |
+| **IDE 支持** | VS Code 插件 | VS Code 插件 | Android Studio / VS Code | VS Code 插件 |
+| **文档质量** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
+| **社区规模** | 快速增长 | 最大 | 大 | 较小 |
+| **学习资源** | 中 | 极丰富 | 丰富 | 较少 |
+
+## 调试与诊断
+
+| 工具 | 适用框架 | 功能 |
+|------|---------|------|
+| **Chrome DevTools** | Tauri/Electron/Wails | 前端调试 |
+| **Flutter DevTools** | Flutter | UI 检查、性能分析 |
+| **Tauri CLI** | Tauri | 日志、调试、构建 |
+| **electron-builder** | Electron | 打包、签名、自动更新 |
+
+## 2026-2027 趋势前瞻
+
+| 趋势 | 描述 | 影响 |
+|------|------|:----:|
+| **Tauri 移动统一** | v2 移动端支持逐渐成熟，一套代码覆盖桌面 + 移动端 | 🔥 极高 |
+| **Electron 瘦身** | 探索模块化 Chromium，目标减少 50% 体积 | 🔥 高 |
+| **AI 辅助桌面开发** | Copilot 支持 Tauri/Electron 项目生成，自动配置安全策略 | 🔥 高 |
+| **WebView 标准化** | WebView2 / WKWebView / WebKitGTK 趋于统一 | 中 |
+| **跨平台一致性** | 一套代码覆盖桌面 + 移动端 + Web 成为标配 | 🔥 高 |
+| **Rust 桌面生态** | Tauri 带动 Rust GUI 框架爆发 | 中 |
+| **Flutter 桌面成熟** | 多窗口稳定，企业采用率增长 | 中 |
+| **端侧 AI** | 桌面应用集成本地 LLM (Llama.cpp, ONNX) | 新兴 |
+
+## 打包与分发深度
+
+### 代码签名
+
+| 平台 | 证书类型 | 成本 | 必需 |
+|------|----------|:----:|:----:|
+| **macOS** | Apple Developer ID | $99/年 | ✅ 公证 |
+| **Windows** | EV / OV Code Signing | $200-700/年 | ⚠️ 推荐 |
+| **Linux** | GPG / AppImage | 免费 | ❌ |
+
+### 分发渠道
+
+| 渠道 | 平台 | 费用 | 审核 |
+|------|------|:----:|:----:|
+| **Mac App Store** | macOS | $99/年 | ✅ 严格 |
+| **Microsoft Store** | Windows | 免费 | ✅ 中等 |
+| **Snap Store** | Linux | 免费 | ✅ 中等 |
+| **Flathub** | Linux | 免费 | ✅ 中等 |
+| **Homebrew** | macOS | 免费 | ❌ |
+| **GitHub Releases** | 全平台 | 免费 | ❌ |
+| **自动更新服务器** | 全平台 | 自托管 | ❌ |
+
+```bash
+# Tauri 打包全平台
+cargo tauri build --target universal-apple-darwin  # macOS 通用
+cargo tauri build --target x86_64-pc-windows-msvc  # Windows
+cargo tauri build --target x86_64-unknown-linux-gnu # Linux
+```
+
+## 安全最佳实践
+
+| 方案 | 安全特性 | 配置要点 |
+|------|----------|----------|
+| **Tauri** | ACL 权限、进程隔离、Content Security Policy | 最小权限原则，显式声明允许 API |
+| **Electron** | Context Isolation、Sandbox、CSP | 禁用 nodeIntegration，启用 contextIsolation |
+| **Flutter** | 平台沙箱、Dart 类型安全 | 遵循平台安全指南 |
+
+```javascript
+// Electron 安全 preload
+// preload.js (Context Isolated)
+const { contextBridge, ipcRenderer } = require('electron')
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  openFile: () => ipcRenderer.invoke('dialog:openFile'),
+  onUpdate: (callback) => ipcRenderer.on('update', callback),
+})
+```
+
+```rust
+// Tauri v2 ACL 配置
+// capabilities/default.json
+{
+  "identifier": "default",
+  "description": "默认能力",
+  "local": true,
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "fs:allow-read",
+    "dialog:allow-open"
+  ]
+}
+```
+
+## 实际案例
+
+| 应用 | 技术栈 | 用户量 | 选择理由 |
+|------|--------|--------|----------|
+| **VS Code** | Electron | 1500万+ | 成熟生态，插件丰富 |
+| **Figma** | Electron + C++ | 1000万+ | 历史选择，Web 技术栈 |
+| **Spotify** | Electron | 6亿+ | 跨平台一致，快速迭代 |
+| **Linear** | Electron | 100万+ | 成熟方案，团队熟悉 |
+| **Postman** | Electron | 2000万+ | 历史积累，生态成熟 |
+| **Hoppscotch** | Tauri | 50万+ | 轻量启动，现代架构 |
+| **GitButler** | Tauri | 10万+ | Rust 后端，Git 操作 |
+| **MongoDB Compass** | Electron | 100万+ | 历史选择 |
+
+## 选型终极决策树
+
+```
+桌面应用开发?
+├── 需要极致体积 (< 10MB)?
+│   ├── 有 Rust 团队 → Tauri
+│   ├── 有 Go 团队 → Wails
+│   └── 极简需求 → Neutralinojs
+├── 需要大型生态/快速开发?
+│   ├── 已有 Web 团队 → Electron
+│   └── 新团队 → Tauri (学习曲线可接受)
+├── 需要像素级 UI 控制?
+│   ├── 已有 Flutter 移动 → Flutter Desktop
+│   └── 独立桌面 → Flutter Desktop / Tauri
+├── 已有 React Native 移动?
+│   └── RN Windows/macOS (代码共享)
+└── 高安全性需求 (金融/医疗)?
+    └── Tauri (Rust 内存安全 + ACL)
+```
 
 ---
 

@@ -427,3 +427,60 @@ npx create-nx-workspace --pm=pnpm
 | 任务调度 | Turborepo / Nx | 缓存、并行、管道 |
 | 代码规范 | ESLint + Prettier + Changesets | 统一代码风格和发布日志 |
 | CI/CD | GitHub Actions | 自动化构建和发布 |
+
+## 2026 趋势与展望
+
+| 趋势 | 描述 | 影响 |
+|------|------|------|
+| **Rust 化完成** | Nx Crystal、Turborepo v2 全面 Rust 化，性能提升 5-10x | 🔥 极高 |
+| **AI 集成** | Nx MCP Server、AI 辅助代码生成和 CI 自修复 | 🔥 高 |
+| **远程缓存普及** | 成为 Monorepo 标配，CI 构建时间降至秒级 | 🔥 高 |
+| **统一版本管理** | pnpm Catalog、Changesets 成为开源发布标准 | 🔥 高 |
+| **多语言 Monorepo** | Moon、Bazel 支持 JS/Rust/Go 混合工作区 | 中 |
+| **分布式任务执行** | Nx Cloud DTE 支持超大型仓库并行构建 | 中 |
+| **零配置趋势** | 工具趋向开箱即用，减少 boilerplate | 中 |
+
+### 选型决策矩阵（2026）
+
+| 场景 | 首选 | 次选 | 避免 |
+|------|------|------|------|
+| 小团队 (2-5人) | pnpm + Turborepo | Bun workspaces | Bazel |
+| 中型团队 (5-20人) | pnpm + Nx | pnpm + Turborepo | Lerna |
+| 大型团队 (20-100人) | Nx + Nx Cloud | Turborepo + Remote Cache | 纯 pnpm |
+| 超大规模 / 多语言 | Bazel / Moon | Nx | Turborepo |
+| Next.js / Vercel | Turborepo | Nx | - |
+| Angular 企业 | Nx | - | - |
+| 设计系统 / 组件库 | Bit | Nx | Turborepo |
+| 遗留项目维护 | 迁移至 Nx | 迁移至 Turborepo | Lerna |
+
+### 迁移路径
+
+**Lerna → Turborepo/Nx**
+
+```bash
+# 1. 移除 lerna
+npm uninstall lerna
+
+# 2. 安装 Turborepo
+npm install -D turbo
+
+# 3. 创建 turbo.json，映射原有脚本
+# 4. 使用 Changesets 替代 lerna version/publish
+```
+
+**npm Workspaces → pnpm Workspaces**
+
+```bash
+# 1. 生成 pnpm-workspace.yaml
+echo "packages:\n  - 'packages/*'\n  - 'apps/*'" > pnpm-workspace.yaml
+
+# 2. 迁移 lockfile
+rm package-lock.json
+pnpm install
+
+# 3. 更新 CI 脚本
+```
+
+---
+
+## 参考资源

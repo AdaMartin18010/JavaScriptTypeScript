@@ -260,6 +260,40 @@ const result = router.lookup('/user/123');
 
 ---
 
+### 4.5 路由守卫与权限
+
+```tsx
+// React Router 权限守卫
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  const location = useLocation();
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return children;
+}
+
+// Vue Router 导航守卫
+router.beforeEach((to, from, next) => {
+  if (to.meta.requiresAuth && !isAuthenticated()) {
+    next('/login');
+  } else {
+    next();
+  }
+});
+```
+
+### 4.6 趋势总结
+
+| 趋势 | 描述 | 代表库 |
+|------|------|--------|
+| 🔒 **类型安全路由** | 路由参数、搜索参数的类型推断成为标配 | TanStack Router |
+| 📁 **文件系统路由** | 元框架普遍采用约定优于配置 | Next.js, Nuxt |
+| 🧩 **嵌套路由** | 路由与 UI 结构深度耦合 | React Router v6, Remix |
+| 🪶 **轻量化** | 超小体积路由方案受青睐 | wouter |
+| 🚀 **并行路由** | 同一布局中多个独立页面 | Next.js App Router |
+| 🔄 **拦截路由** | 模态框内打开路由而不跳转 | Next.js App Router |
+
 ## 4. 选型指南
 
 ### 4.1 按框架选择
@@ -330,7 +364,7 @@ const route = createRoute({
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const location = useLocation();
-  
+
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
@@ -357,6 +391,128 @@ router.beforeEach((to, from, next) => {
 | 🪶 **轻量化** | 超小体积路由方案受青睐 | wouter |
 | 🚀 **并行路由** | 同一布局中多个独立页面 | Next.js App Router |
 | 🔄 **拦截路由** | 模态框内打开路由而不跳转 | Next.js App Router |
+| 🎯 **服务端路由** | 服务端优先渲染 + 客户端 hydration | Remix, SvelteKit |
+| 🔀 **视图过渡** | 页面切换动画 API 标准化 | View Transitions API |
+
+---
+
+## 5. 路由实现原理
+
+### 5.1 Radix Tree 匹配
+
+radix3 使用 Radix Tree（压缩前缀树）实现 O(k) 路径匹配：
+
+```
+路由树结构:
+/
+├── api/
+│   ├── v1/
+│   │   └── users/:id  → handler: getUser
+│   └── health         → handler: healthCheck
+└── blog/
+    └── [slug]         → handler: blogPost
+```
+
+| 算法 | 时间复杂度 | 空间复杂度 | 适用 |
+|------|:---------:|:---------:|------|
+| **Radix Tree** | O(k) | O(n) | 服务端路由 |
+| **正则匹配** | O(n) | O(1) | 简单路由 |
+| **Trie** | O(k) | O(n×m) | 通用匹配 |
+
+### 5.2 客户端路由原理
+
+```
+浏览器 URL 变化
+    ↓
+History API (pushState/replaceState)
+    ↓
+路由匹配算法 (hash/path)
+    ↓
+组件渲染 + 数据获取
+    ↓
+滚动恢复 / 焦点管理
+```
+
+| 模式 | 实现 | 优点 | 缺点 |
+|------|------|------|------|
+| **History API** | pushState | URL 美观、SEO 友好 | 需服务端配合 |
+| **Hash 模式** | location.hash | 无需服务端 | URL 有 `#` |
+| **Memory 模式** | 内存存储 | 测试/非浏览器环境 | 无 URL 同步 |
+
+---
+
+## 6. 性能优化深度
+
+### 6.1 路由级代码分割
+
+```tsx
+// React Router v6 + lazy
+import { lazy, Suspense } from 'react'
+
+const Dashboard = lazy(() => import('./Dashboard'))
+const Settings = lazy(() => import('./Settings'))
+
+const router = createBrowserRouter([
+  {
+    path: '/dashboard',
+    element: (
+      <Suspense fallback={<Spinner />}>
+        <Dashboard />
+      </Suspense>
+    ),
+  },
+])
+```
+
+### 6.2 预加载策略
+
+| 策略 | 触发时机 | 适用场景 |
+|------|----------|----------|
+| **悬停预加载** | mouseenter | 导航菜单 |
+| **视口预加载** | IntersectionObserver | 页面内链接 |
+| **空闲预加载** | requestIdleCallback | 次要页面 |
+| **即时预加载** | 路由定义时 | 关键页面 |
+
+```tsx
+// TanStack Router 预加载
+const route = createRoute({
+  path: '/dashboard',
+  component: Dashboard,
+  preload: true,           // 悬停时预加载
+  preloadStaleTime: 30000, // 30秒内不重复预加载
+})
+```
+
+### 6.3 滚动与焦点管理
+
+```tsx
+// React Router 滚动恢复
+const router = createBrowserRouter(routes, {
+  scrollRestoration: 'auto', // 自动恢复滚动位置
+})
+
+// 手动控制
+useEffect(() => {
+  window.scrollTo(0, 0)
+  document.querySelector('h1')?.focus()
+}, [pathname])
+```
+
+---
+
+## 7. 选型速查表
+
+| 需求 | 推荐方案 | 理由 |
+|------|----------|------|
+| React + 类型安全 | TanStack Router | 端到端类型推断 |
+| React + 极简 | wouter (~2KB) | 零依赖，无 Provider |
+| React + 成熟生态 | React Router v7 | 最大社区，文档完善 |
+| Vue 3 | Vue Router 4 | 官方唯一选择 |
+| Next.js | App Router | 内置，深度集成 RSC |
+| Nuxt 3 | 文件系统路由 | 内置，自动代码分割 |
+| SvelteKit | 文件系统路由 | 内置，服务端优先 |
+| 服务端/框架无关 | radix3 | 极致性能，Nuxt 底层 |
+| 全栈类型安全 | TanStack Start | 路由 + API + ORM 全链路类型 |
 
 ---
 

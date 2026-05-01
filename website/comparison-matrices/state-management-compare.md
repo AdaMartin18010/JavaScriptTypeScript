@@ -254,15 +254,198 @@ React 项目？
 
 ---
 
-## 2026 趋势
+## 状态管理架构模式
 
-| 趋势 | 描述 |
-|------|------|
-| **Signals 普及** | React 社区拥抱 Signals (Preact Signals, Legend State) |
-| **Zustand 统治** | 新建 React 项目默认选择 |
-| **服务端状态主导** | TanStack Query 成为数据获取标准 |
-| **本地优先** | Yjs + Electric SQL 推动协同状态 |
-| **Redux 存量** | 新项目采用率 < 10%，但存量庞大 |
+### 分层架构
+
+```
+┌─────────────────────────────────────────┐
+│           展示层 (UI Components)         │
+│  React / Vue / Solid / Svelte           │
+├─────────────────────────────────────────┤
+│           状态层 (State Layer)           │
+│  ┌─────────┐ ┌─────────┐ ┌──────────┐  │
+│  │ 本地状态 │ │ 共享状态 │ │ 远程状态  │  │
+│  │ useState │ │ Zustand │ │ TanStack │  │
+│  │  Signal  │ │  Jotai  │ │  Query   │  │
+│  └─────────┘ └─────────┘ └──────────┘  │
+├─────────────────────────────────────────┤
+│           服务层 (Service Layer)         │
+│  API Client / Cache / Persistence       │
+└─────────────────────────────────────────┘
+```
+
+### 推荐分层策略
+
+| 状态类型 | 工具 | 生命周期 | 作用域 |
+|----------|------|----------|--------|
+| **组件本地** | useState / Signal | 组件挂载 | 组件内 |
+| **模块共享** | Zustand / Jotai | 页面级 | 页面内 |
+| **全局应用** | Redux Toolkit / Pinia | 应用级 | 全局 |
+| **服务端缓存** | TanStack Query / SWR | 按需/过期 | 全局 |
+| **URL 状态** | 路由参数 | URL 级 | 共享 |
+| **本地存储** | Zustand persist | 持久化 | 全局 |
+
+---
+
+## 高级状态管理方案
+
+### Legend State
+
+```bash
+npm install @legendapp/state
+```
+
+**定位**: 基于 Signals 的响应式状态管理，自动跟踪依赖
+
+- **Stars**: 6k+ | **包大小**: ~4KB
+- **优势**: 自动优化重渲染、原生 Signals、持久化内置
+- **特点**: 无需选择器，自动追踪使用到的属性
+
+```ts
+import { observable } from '@legendapp/state'
+import { observer } from '@legendapp/state/react'
+
+const state = observable({ count: 0, user: { name: 'John' } })
+
+// 自动追踪：只重渲染当 count 变化时
+const Counter = observer(() => {
+  return <div>{state.count.get()}</div>
+})
+
+// 直接修改，自动触发更新
+state.count.set(c => c + 1)
+```
+
+### Valtio
+
+```bash
+npm install valtio
+```
+
+**定位**: Proxy 驱动的可变状态管理
+
+- **Stars**: 8k+ | **包大小**: ~3KB
+- **优势**: 可变语法、自动订阅、TypeScript 友好
+- **适用**: 喜欢可变语法的开发者
+
+```ts
+import { proxy, useSnapshot } from 'valtio'
+
+const state = proxy({ count: 0, nested: { value: 1 } })
+
+function Counter() {
+  const snap = useSnapshot(state)
+  return (
+    <button onClick={() => state.count++}>
+      {snap.count}
+    </button>
+  )
+}
+```
+
+### Effector
+
+```bash
+npm install effector
+```
+
+**定位**: 业务逻辑与 UI 分离的独立状态管理
+
+- **Stars**: 9k+ | **包大小**: ~8KB
+- **优势**: 纯函数事件驱动、测试友好、SSR 支持
+- **适用**: 复杂业务逻辑、需要严格数据流
+
+```ts
+import { createStore, createEvent, sample } from 'effector'
+
+const increment = createEvent()
+const $count = createStore(0)
+  .on(increment, count => count + 1)
+
+// 纯逻辑，不依赖任何 UI 框架
+$count.watch(count => console.log(count))
+increment() // 1
+```
+
+---
+
+## 状态持久化与同步
+
+### 持久化方案对比
+
+| 方案 | 库 | 存储 | 加密 | 压缩 | 版本控制 |
+|------|-----|------|:----:|:----:|:--------:|
+| **LocalStorage** | Zustand persist | localStorage | ❌ | ❌ | ❌ |
+| **IndexedDB** | idb-keyval | IndexedDB | ❌ | ❌ | ❌ |
+| **MMKV** | react-native-mmkv | 文件 | ❌ | ❌ | ❌ |
+| **Secure Store** | expo-secure-store | Keychain | ✅ | ❌ | ❌ |
+
+### 状态同步（本地优先）
+
+```ts
+// Electric SQL 本地优先同步
+import { Shape } from '@electric-sql/client'
+
+const shape = new Shape({
+  url: 'http://localhost:3000/v1/shape',
+  table: 'todos',
+})
+
+// 自动双向同步：本地 <-> 服务端
+shape.subscribe(rows => {
+  console.log('Synced rows:', rows)
+})
+```
+
+| 工具 | Stars | 协议 | CRDT | 离线支持 | 冲突解决 |
+|------|-------|------|:----:|:--------:|:--------:|
+| **Yjs** | 18k+ | CRDT | ✅ | ✅ | 自动 |
+| **Electric SQL** | 5k+ | 逻辑复制 | ❌ | ✅ | 最后写入 |
+| **PowerSync** | 2k+ | SQLite | ❌ | ✅ | 自定义 |
+| **Liveblocks** | 8k+ | 操作转换 | ❌ | ✅ | 实时 |
+| **TinyBase** | 6k+ | 本地优先 | ❌ | ✅ | 手动 |
+
+---
+
+## 选型决策矩阵
+
+| 维度 | 权重 | Zustand | Jotai | Redux | Pinia | Signals |
+|------|:----:|:-------:|:-----:|:-----:|:-----:|:-------:|
+| 学习成本 | 高 | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ |
+| 性能 | 高 | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| DevTools | 中 | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ |
+| 生态 | 中 | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ |
+| SSR | 高 | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
+| 团队规模 | 中 | 小-中 | 小-中 | 大 | 中-大 | 小-中 |
+
+---
+
+## 2026-2027 趋势
+
+| 趋势 | 描述 | 影响度 |
+|------|------|:------:|
+| **Signals 普及** | React 社区拥抱 Signals (Preact Signals, Legend State) | 🔥 极高 |
+| **Zustand 统治** | 新建 React 项目默认选择，市占率 40%+ | 🔥 极高 |
+| **服务端状态主导** | TanStack Query 成为数据获取标准 | 🔥 极高 |
+| **本地优先架构** | Yjs + Electric SQL 推动协同状态管理 | 🔥 高 |
+| **Redux 存量维护** | 新项目采用率 < 10%，但存量庞大 | 中 |
+| **状态即服务** | Convex、Supabase Realtime 等后端即状态 | 🔥 高 |
+| **编译时优化** | Vue Vapor Mode、Solid 编译时优化减少运行时开销 | 中 |
+| **AI 驱动状态** | AI 生成状态管理代码、智能状态切分 | 新兴 |
+
+### 2027 年技术栈推荐
+
+| 场景 | 推荐方案 |
+|------|----------|
+| **React 新项目** | Zustand + TanStack Query |
+| **React 高性能** | Preact Signals / Legend State |
+| **Vue 项目** | Pinia + VueUse |
+| **Solid 项目** | Signals (内置) + Solid Query |
+| **跨框架组件库** | Nanostores |
+| **复杂状态机** | XState |
+| **本地优先应用** | Yjs + Electric SQL |
+| **全栈实时** | Convex / Supabase Realtime |
 
 ---
 
@@ -273,4 +456,3 @@ React 项目？
 - [Jotai 文档](https://jotai.org/) 📚
 - [Pinia 文档](https://pinia.vuejs.org/) 📚
 - [TanStack Query 文档](https://tanstack.com/query/latest) 📚
-

@@ -264,7 +264,46 @@ EXPOSE 3000
 CMD ["node", "./dist/server/index.mjs"]
 ```
 
-## 9. 2026 趋势
+## 9. TanStack Query 集成
+
+```ts
+// app/routes/posts.tsx
+import { createFileRoute } from '@tanstack/react-router'
+import { useSuspenseQuery } from '@tanstack/react-query'
+
+export const Route = createFileRoute('/posts')({
+  component: PostsComponent,
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData({
+      queryKey: ['posts'],
+      queryFn: fetchPosts,
+    })
+  },
+})
+
+function PostsComponent() {
+  const { data: posts } = useSuspenseQuery({
+    queryKey: ['posts'],
+    queryFn: fetchPosts,
+  })
+  return <ul>{posts.map(p => <li key={p.id}>{p.title}</li>)}</ul>
+}
+```
+
+## 10. 与 Next.js 深度对比
+
+| 维度 | TanStack Start | Next.js App Router |
+|------|:--------------:|:------------------:|
+| **路由类型安全** | ✅ 原生 | ⚠️ 需配置 |
+| **Edge 部署** | ✅ 原生 Workers | ⚠️ 受限 |
+| **平台锁定** | 低 | 高 |
+| **生态成熟度** | 新兴 | 最成熟 |
+| **学习曲线** | 低 | 中 |
+| **构建工具** | Vite | Turbopack/Webpack |
+| **AI SDK 集成** | ⚠️ 需配置 | ✅ Vercel AI |
+| **定价** | 开源免费 | Vercel 绑定 |
+
+## 11. 2026 趋势
 
 | 趋势 | 描述 |
 |------|------|
@@ -273,8 +312,9 @@ CMD ["node", "./dist/server/index.mjs"]
 | **Vue 版本** | TanStack Start for Vue 在开发中 |
 | **生态成熟** | 更多第三方集成（Auth、ORM、CMS） |
 | **边缘优先** | Cloudflare Workers 继续作为首选部署目标 |
+| **采用率增长** | 从 8% 向 15-20% 迈进 |
 
-## 10. 相关资源
+## 12. 相关资源
 
 - [Cloudflare Workers - TanStack Start 官方指南](https://developers.cloudflare.com/workers/framework-guides/web-apps/tanstack-start/) 📚
 - [TanStack Start 部署文档](https://tanstack.com/router/latest/docs/framework/react/start/deployment) 📚

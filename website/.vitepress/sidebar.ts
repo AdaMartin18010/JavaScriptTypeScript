@@ -43,6 +43,7 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: false,
       items: [
         { text: 'TypeScript 高级模式指南', link: '/guide/typescript-advanced-patterns' },
+        { text: '2026-2027 架构与框架趋势', link: '/guide/architecture-trends-2027-guide' },
         { text: 'Web APIs 完全指南', link: '/guide/web-apis-guide' },
         { text: 'Node.js 核心模块指南', link: '/guide/nodejs-core-modules-guide' },
       ]
