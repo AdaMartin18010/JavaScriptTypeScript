@@ -147,16 +147,143 @@ export default {
 | 需要极致产物优化 | Rollup |
 | 企业级应用 | Webpack 或 Vite |
 
-## 迁移建议
+## 新兴构建工具
 
-### Webpack → Vite
+### Rspack
 
-- 使用 `vite-plugin-commonjs` 处理 CJS 依赖
-- 注意环境变量替换方式变化
-- CSS 相关配置需调整
+```bash
+npm install @rspack/core @rspack/cli
+```
 
-### Webpack → Rollup
+**定位**: Webpack 兼容的 Rust 构建工具
 
-- 适合库项目迁移
-- 需要重新配置开发流程
-- 测试 WIP (Work In Progress)
+- **优势**: Webpack 配置兼容、Rust 性能、渐进式迁移
+- **劣势**: 生态较新、部分插件不兼容
+- **适用**: 大型 Webpack 项目迁移
+
+| 指标 | Rspack | Webpack |
+|------|--------|---------|
+| 冷启动 | ~2s | ~5s |
+| HMR | ~200ms | 1-3s |
+| 内存 | 中 | 高 |
+
+### esbuild
+
+```bash
+npm install esbuild
+```
+
+**定位**: 极速 JavaScript bundler 和 minifier
+
+- **优势**: Go 编写极快、零依赖、内置 TS/JSX
+- **劣势**: 不生成类型声明、Tree Shaking 保守
+- **适用**: 工具链内部、原型开发、库构建
+
+### Turbopack
+
+```bash
+# Next.js 14+ 默认
+next dev --turbo
+```
+
+**定位**: Webpack 继任者，增量计算架构
+
+- **优势**: 增量计算、Next.js 原生、Rust 性能
+- **劣势**: 仅 Next.js 生态、独立使用受限
+- **适用**: Next.js 项目
+
+### Farm
+
+```bash
+npm install @farmjs/core
+```
+
+**定位**: Rust 编写的 Vite 兼容构建工具
+
+- **优势**: Vite 插件兼容、Rust 性能、统一编译
+- **劣势**: 生态早期
+- **适用**: 需要 Vite 插件但追求更快速度
+
+### Rolldown
+
+```bash
+npm install rolldown
+```
+
+**定位**: Rollup 的 Rust 重写，Vite 未来默认
+
+- **优势**: Rollup API 兼容、Rust 性能、统一 dev/prod
+- **劣势**: 装饰器支持仍在完善
+- **适用**: Vite 8+ 用户
+
+---
+
+## 构建工具全景对比
+
+| 工具 | Stars | 语言 | 冷启动 | HMR | 生产构建 | 配置复杂度 | 2026 状态 |
+|------|-------|------|:------:|:---:|:--------:|:----------:|:---------:|
+| **Vite** | 68k+ | JS/Rust | ~200ms | <50ms | 快 | 低 | 🟢 首选 |
+| **Rspack** | 10k+ | Rust | ~2s | ~200ms | 快 | 中 | 🟢 增长 |
+| **esbuild** | 38k+ | Go | ~100ms | — | 极快 | 低 | 🟢 稳定 |
+| **Webpack** | 64k+ | JS | ~5s | 1-3s | 中 | 高 | 🟡 存量 |
+| **Rollup** | 25k+ | JS | ~2s | ~100ms | 快 | 中 | 🟢 库首选 |
+| **Rolldown** | 8k+ | Rust | ~200ms | — | 极快 | 低 | 🟢 未来 |
+| **Turbopack** | — | Rust | ~1s | ~100ms | 快 | 低 | 🟢 Next.js |
+| **Parcel** | 42k+ | Rust | ~1s | ~200ms | 快 | 极低 | 🟡 维护 |
+| **Farm** | 3k+ | Rust | ~200ms | <50ms | 快 | 低 | 🟢 新兴 |
+
+---
+
+## 性能对比（1000 模块项目）
+
+| 工具 | 冷启动 | HMR | 生产构建 | 内存 |
+|------|:------:|:---:|:--------:|:----:|
+| **Vite** | 200ms | 50ms | 8s | 500MB |
+| **Rspack** | 2s | 200ms | 12s | 1GB |
+| **esbuild** | 100ms | — | 3s | 200MB |
+| **Webpack** | 5s | 2s | 20s | 2GB |
+| **Rollup** | 2s | 100ms | 10s | 600MB |
+| **Rolldown** | 200ms | — | 5s | 400MB |
+| **Farm** | 200ms | 50ms | 7s | 500MB |
+
+---
+
+## 选型决策树
+
+```
+新项目？
+├── 是
+│   ├── React/Vue/Svelte → Vite
+│   ├── Next.js → Turbopack (内置)
+│   └── 库开发 → Rollup / Rolldown / tsup
+└── 否 (遗留项目)
+    ├── Webpack 项目 → 保持或迁移至 Rspack
+    └── 追求极致速度 → Vite
+
+需要库打包？
+├── 是 → Rollup / esbuild / tsup
+└── 否 → Vite / Rspack / Webpack
+```
+
+---
+
+## 2026 趋势
+
+| 趋势 | 描述 |
+|------|------|
+| **Rolldown 统一** | Vite 8 可能默认使用 Rolldown |
+| **Rspack 企业采用** | 字节跳动、Discord 等大规模迁移 |
+| **Farm 崛起** | Vite 插件兼容 + Rust 性能 |
+| **Webpack 存量** | 新项目几乎不用，但存量庞大 |
+| **Rust 化** | 新工具几乎都用 Rust 编写 |
+| **零配置** | 工具趋向开箱即用 |
+
+---
+
+## 参考资源
+
+- [Vite 文档](https://vitejs.dev/) 📚
+- [Rspack 文档](https://rspack.dev/) 📚
+- [esbuild 文档](https://esbuild.github.io/) 📚
+- [Rollup 文档](https://rollupjs.org/) 📚
+- [Webpack 文档](https://webpack.js.org/) 📚

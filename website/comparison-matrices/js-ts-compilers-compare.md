@@ -68,12 +68,50 @@ flowchart TD
     J -->|否| L[SWC<br/>极速转译，语义接近 tsc]
 ```
 
+## 性能基准
+
+### 转译速度对比 (10 万行 TypeScript)
+
+| 工具 | 时间 | 相对 tsc | 内存占用 |
+|------|------|---------|---------|
+| **esbuild** | ~0.3s | 50x | ~200MB |
+| **SWC** | ~0.8s | 20x | ~300MB |
+| **Rolldown** | ~1.0s | 15x | ~250MB |
+| **Babel** | ~1.7s | 10x | ~500MB |
+| **tsc** | ~16.7s | 1x (基准) | ~1.5GB |
+| **tsgo** | ~1.5s (类型检查) | 10x | ~300MB |
+
+📊 来源: 各项目官方 benchmark (2026-04)
+
+### 构建工具集成
+
+| 工具 | Vite | Next.js | Rollup | Webpack | 独立使用 |
+|------|:----:|:-------:|:------:|:-------:|:--------:|
+| **tsc** | 类型检查 | 类型检查 | 类型检查 | 类型检查 | ✅ |
+| **SWC** | ❌ | ✅ 默认 | ❌ | ❌ | ✅ |
+| **esbuild** | ✅ 默认 | ⚠️ 可选 | ✅ | ⚠️ | ✅ |
+| **Babel** | ❌ | ❌ | ✅ 插件 | ✅ 默认 | ✅ |
+| **Rolldown** | ✅ 未来默认 | ❌ | ❌ | ❌ | ⚠️ |
+| **tsgo** | ⚠️ 实验 | ❌ | ❌ | ❌ | ⚠️ |
+
+## 2026 趋势
+
+| 趋势 | 描述 |
+|------|------|
+| **tsgo Alpha → Beta** | 2026 Q4 发布 Beta，目标 10x 速度提升 |
+| **Rolldown 1.0** | Vite 8 可能默认使用 Rolldown 替代 esbuild |
+| **tsc 维护模式** | 功能冻结，专注 tsgo 迁移 |
+| **SWC 巩固地位** | Next.js + Vercel 生态深度绑定 |
+| **Node.js 原生 TS** | type stripping 成为运行标准 |
+| **Oxc 统一工具链** | lint + format + build + minify 单一工具 |
+
 ## 参考资源
 
-- [TypeScript 官方文档](https://www.typescriptlang.org/docs/)
-- [Babel TypeScript Preset](https://babeljs.io/docs/babel-preset-typescript)
-- [SWC 文档](https://swc.rs/docs/)
-- [esbuild 文档](https://esbuild.github.io/)
-- [Rolldown 文档](https://rolldown.rs/)
-- [TypeScript 7.0 / Project Corsa 公告](https://devblogs.microsoft.com/typescript/)
-- [Node.js TypeScript Type Stripping 文档](https://nodejs.org/api/typescript.html)
+- [TypeScript 官方文档](https://www.typescriptlang.org/docs/) 📚
+- [Babel TypeScript Preset](https://babeljs.io/docs/babel-preset-typescript) 📚
+- [SWC 文档](https://swc.rs/docs/) 📚
+- [esbuild 文档](https://esbuild.github.io/) 📚
+- [Rolldown 文档](https://rolldown.rs/) 📚
+- [Oxc 文档](https://oxc.rs/) 📚
+- [TypeScript 7.0 / Project Corsa 公告](https://devblogs.microsoft.com/typescript/) 📚
+- [Node.js TypeScript Type Stripping 文档](https://nodejs.org/api/typescript.html) 📚

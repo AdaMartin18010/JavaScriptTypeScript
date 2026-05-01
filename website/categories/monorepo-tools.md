@@ -202,7 +202,66 @@ Bun 内置 workspace 支持，配置极简：
 
 ---
 
-## 7. 核心特性对比
+## 7. Changesets 发布管理
+
+Changesets 是 Monorepo 版本管理和发布的现代标准工具。
+
+```bash
+# 安装
+npm install -D @changesets/cli
+
+# 创建变更集
+npx changeset
+# 选择受影响的包，填写变更描述
+
+# 版本提升
+npx changeset version
+# 自动更新版本号、生成 CHANGELOG
+
+# 发布
+npx changeset publish
+```
+
+**与 Monorepo 工具配合**：
+
+| 组合 | 适用场景 |
+|------|---------|
+| **Turborepo + Changesets** | Vercel 生态，轻量发布 |
+| **Nx + Nx Release** | Nx 原生，无需额外工具 |
+| **Moon + Changesets** | 多语言项目统一发布 |
+
+## 8. 包版本策略
+
+| 策略 | 描述 | 适用场景 |
+|------|------|---------|
+| **固定版本** | 所有包统一版本号 | 紧耦合项目 |
+| **独立版本** | 各包独立版本管理 | 松耦合库集合 |
+| **语义化版本** | 遵循 SemVer 规范 | 开源库发布 |
+| **快照版本** | `0.0.0-snapshot-xxx` | 持续集成 |
+
+## 9. Monorepo 代码共享模式
+
+```
+monorepo/
+├── apps/               # 应用层（不可被依赖）
+│   ├── web/
+│   └── api/
+├── packages/           # 共享包（可被依赖）
+│   ├── ui/            # UI 组件库
+│   ├── config/        # 共享配置（eslint, tsconfig）
+│   ├── types/         # 共享类型定义
+│   └── utils/         # 工具函数
+└── tooling/           # 构建工具配置
+    ├── typescript/
+    └── eslint/
+```
+
+**边界规则**：
+- `apps` 不能相互依赖
+- `packages` 可以相互依赖，但不能依赖 `apps`
+- `tooling` 只能被顶层依赖
+
+## 10. 核心特性对比
 
 | 维度 | Turborepo | Nx v20+ | Moon | Lerna | pnpm ws | Bun ws |
 |------|:---------:|:-------:|:----:|:-----:|:-------:|:------:|
@@ -213,6 +272,7 @@ Bun 内置 workspace 支持，配置极简：
 | **远程缓存** | ✅ (Vercel) | ✅ (Nx Cloud) | ✅ | ❌ | ❌ | ❌ |
 | **多语言支持** | ❌ | ⚠️ (插件) | ✅ | ❌ | ❌ | ❌ |
 | **工具链管理** | ❌ | ❌ | ✅ (proto) | ❌ | ❌ | ❌ |
+| **发布管理** | ⚠️ Changesets | ✅ Nx Release | ⚠️ Changesets | ✅ | ❌ | ❌ |
 | **学习曲线** | 低 | 中 | 中 | 低 | 低 | 很低 |
 
 ---

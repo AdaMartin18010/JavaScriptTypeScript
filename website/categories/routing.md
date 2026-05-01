@@ -292,7 +292,62 @@ const result = router.lookup('/user/123');
 └── 需要极致性能 → radix3
 ```
 
-### 4.3 趋势总结
+### 4.3 文件系统路由深度
+
+| 框架 | 路由约定 | 动态路由 | 嵌套布局 | 并行路由 | 拦截路由 |
+|------|---------|:--------:|:--------:|:--------:|:--------:|
+| **Next.js App Router** | `app/page.tsx` | `[id]` `[[...slug]]` | `layout.tsx` | `@team` | `(.)photo` |
+| **Nuxt 3** | `pages/index.vue` | `[id]` `[...slug]` | `layouts/` | - | - |
+| **SvelteKit** | `src/routes/+page.svelte` | `[id]` `[...rest]` | `+layout.svelte` | - | - |
+| **Astro** | `src/pages/index.astro` | `[id]` | - | - | - |
+| **Remix** | `app/routes/_index.tsx` | `$id` `$.tsx` | `Outlet` | - | - |
+
+### 4.4 路由性能优化
+
+| 技术 | 描述 | 适用场景 |
+|------|------|---------|
+| **Code Splitting** | 路由级懒加载 | 大型 SPA |
+| **Prefetching** | 悬停/视口内预加载 | 快速导航 |
+| **Route Preloading** | `<link rel="preload">` | 首屏优化 |
+| **Streaming** | React 18 Streaming SSR | 元框架 |
+
+```tsx
+// React Router 懒加载
+const Dashboard = lazy(() => import('./Dashboard'));
+
+// TanStack Router 预加载
+const route = createRoute({
+  path: '/dashboard',
+  component: Dashboard,
+  preload: true,  // 悬停时预加载
+});
+```
+
+### 4.5 路由守卫与权限
+
+```tsx
+// React Router 权限守卫
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  const location = useLocation();
+  
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return children;
+}
+
+// Vue Router 导航守卫
+router.beforeEach((to, from, next) => {
+  if (to.meta.requiresAuth && !isAuthenticated()) {
+    next('/login');
+  } else {
+    next();
+  }
+});
+```
+
+### 4.6 趋势总结
 
 | 趋势 | 描述 | 代表库 |
 |------|------|--------|
@@ -300,6 +355,8 @@ const result = router.lookup('/user/123');
 | 📁 **文件系统路由** | 元框架普遍采用约定优于配置 | Next.js, Nuxt |
 | 🧩 **嵌套路由** | 路由与 UI 结构深度耦合 | React Router v6, Remix |
 | 🪶 **轻量化** | 超小体积路由方案受青睐 | wouter |
+| 🚀 **并行路由** | 同一布局中多个独立页面 | Next.js App Router |
+| 🔄 **拦截路由** | 模态框内打开路由而不跳转 | Next.js App Router |
 
 ---
 

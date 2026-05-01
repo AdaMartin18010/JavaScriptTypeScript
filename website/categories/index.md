@@ -69,4 +69,4 @@ description: JavaScript/TypeScript 生态系统技术分类总导航，覆盖语
 
 ---
 
-最后更新: 2026-05-01 | 新增: TypeScript 语言全景、性能工程、数据库与存储、API 开发、Rust 工具链、AI/ML、桌面端开发、实时通信、包管理器、浏览器 APIs 2026（对齐 2026 十大趋势）
+最后更新: 2026-05-01 | 新增: TypeScript 语言全景、性能工程、数据库与存储、API 开发、Rust 工具链、AI/ML、桌面端开发、实时通信、包管理器、浏览器 APIs 2026 | 深度扩展: 移动端开发、样式处理、CI/CD、部署托管、WebAssembly、性能优化、测试策略、Edge 架构、CSS 架构、API 范式对比（对齐 2026 十大趋势）
