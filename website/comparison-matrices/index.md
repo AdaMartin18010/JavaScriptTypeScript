@@ -1,11 +1,11 @@
 ---
 title: 技术对比矩阵导航
-description: "19 个技术选型对比矩阵，聚焦语义差异与工程实践，为团队决策提供结构化参考。"
+description: "24 个技术选型对比矩阵，聚焦语义差异与工程实践，为团队决策提供结构化参考。"
 ---
 
 # 技术对比矩阵导航
 
-> 19 个技术领域对比矩阵，助你快速选型。
+> 24 个技术领域对比矩阵，助你快速选型。
 
 ## 前端与 UI
 
@@ -27,6 +27,8 @@ description: "19 个技术选型对比矩阵，聚焦语义差异与工程实践
 
 - [后端框架对比](./backend-frameworks-compare)
 - [ORM 对比](./orm-compare)
+- [数据库对比矩阵](./databases-compare)
+- [API 范式对比矩阵](./api-paradigms-compare)
 
 ## AI 与智能化
 
@@ -37,11 +39,17 @@ description: "19 个技术选型对比矩阵，聚焦语义差异与工程实践
 - [测试工具对比](./testing-compare)
 - [可观测性工具对比](./observability-tools-compare)
 - [浏览器兼容性矩阵](./browser-compatibility-compare)
+- [性能工具对比矩阵](./performance-tools-compare)
 
 ## 部署与运维
 
 - [部署平台对比](./deployment-platforms-compare)
 - [CI/CD 工具对比](./ci-cd-tools-compare)
+
+## 语言与样式
+
+- [TypeScript 编译器对比矩阵](./typescript-compilers-compare)
+- [CSS 框架对比矩阵](./css-frameworks-compare)
 
 ## 推荐阅读顺序
 
@@ -52,4 +60,4 @@ description: "19 个技术选型对比矩阵，聚焦语义差异与工程实践
 
 ## 更新记录
 
-最后更新: 2026-05-01 | 新增: 运行时对比、Edge 平台对比、AI 编码助手对比、JS/TS 编译器对比（对齐 2026 十大趋势）
+最后更新: 2026-05-01 | 新增: 数据库对比、API 范式对比、性能工具对比、TypeScript 编译器对比、CSS 框架对比（对齐 2026 十大趋势）

@@ -15,6 +15,8 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: false,
       items: [
         { text: 'CSS-in-JS 完整指南', link: '/guide/css-in-js-styling' },
+        { text: '现代 CSS 架构指南', link: '/guide/modern-css-architecture-guide' },
+        { text: '测试策略指南', link: '/guide/testing-strategy-guide' },
         { text: '日期时间处理完全指南', link: '/guide/date-time-handling' },
         { text: '调试与故障排查指南', link: '/guide/debugging-troubleshooting' },
         { text: '文件处理完整指南', link: '/guide/file-handling' },
@@ -28,6 +30,10 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: false,
       items: [
         { text: '微服务架构完整指南', link: '/guide/microservices-complete-guide' },
+        { text: 'Edge-First 架构指南', link: '/guide/edge-first-architecture-guide' },
+        { text: '性能优化指南', link: '/guide/performance-optimization-guide' },
+        { text: 'API 设计模式指南', link: '/guide/api-design-patterns-guide' },
+        { text: '数据库迁移指南', link: '/guide/database-migration-guide' },
         { text: '迁移指南合集', link: '/guide/migration-guides' },
         { text: 'TanStack Start + Cloudflare 部署指南', link: '/guide/tanstack-start-cloudflare-deployment' },
       ]
@@ -36,6 +42,7 @@ export const sidebar: DefaultTheme.Sidebar = {
       text: '语言核心与运行时',
       collapsed: false,
       items: [
+        { text: 'TypeScript 高级模式指南', link: '/guide/typescript-advanced-patterns' },
         { text: 'Web APIs 完全指南', link: '/guide/web-apis-guide' },
         { text: 'Node.js 核心模块指南', link: '/guide/nodejs-core-modules-guide' },
       ]
@@ -198,6 +205,11 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '🔄 CI/CD 工具对比', link: '/comparison-matrices/ci-cd-tools-compare' },
         { text: '🤖 AI 编码助手对比', link: '/comparison-matrices/ai-tools-compare' },
         { text: '🌐 浏览器兼容性矩阵', link: '/comparison-matrices/browser-compatibility-compare' },
+        { text: '🗄️ 数据库对比矩阵', link: '/comparison-matrices/databases-compare' },
+        { text: '📡 API 范式对比矩阵', link: '/comparison-matrices/api-paradigms-compare' },
+        { text: '⚡ 性能工具对比矩阵', link: '/comparison-matrices/performance-tools-compare' },
+        { text: '🔷 TypeScript 编译器对比矩阵', link: '/comparison-matrices/typescript-compilers-compare' },
+        { text: '🎨 CSS 框架对比矩阵', link: '/comparison-matrices/css-frameworks-compare' },
       ]
     }
   ],
