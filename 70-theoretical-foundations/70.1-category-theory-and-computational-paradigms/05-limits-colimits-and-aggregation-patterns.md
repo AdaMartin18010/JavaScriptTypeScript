@@ -53,6 +53,9 @@ references:
     - [6.7 极限的工程局限性：性能与可计算性](#67-极限的工程局限性性能与可计算性)
     - [6.8 极限与类型系统的深层联系](#68-极限与类型系统的深层联系)
     - [6.9 极限与软件架构](#69-极限与软件架构)
+    - [6.10 极限与代码重构](#610-极限与代码重构)
+    - [6.11 极限与测试驱动开发](#611-极限与测试驱动开发)
+    - [6.12 极限理论的持续影响](#612-极限理论的持续影响)
   - [参考文献](#参考文献)
 
 ---
@@ -1167,10 +1170,12 @@ const processUsers = compose(
 | 验证 | 检查每步是否正确 | 单元测试 |
 
 **哪里像**：
+
 - ✅ 像说明书一样，分解后的步骤更容易理解和验证
 - ✅ 像说明书一样，分解后的步骤可以"重用"（搭建多个相同的车轮）
 
 **哪里不像**：
+
 - ❌ 不像说明书，代码的"分解"没有唯一正确的答案
 - ❌ 不像说明书，代码的"组合"可能有副作用
 
@@ -1189,11 +1194,11 @@ function testMap() {
   const input = [1, 2, 3];
   const result = input.map(x => x);
   assert.deepEqual(result, input);
-  
+
   // 验证函子律：map(g ∘ f) = map(g) ∘ map(f)
   const f = (x: number) => x + 1;
   const g = (x: number) => x * 2;
-  
+
   const result1 = input.map(x => g(f(x)));
   const result2 = input.map(f).map(g);
   assert.deepEqual(result1, result2);

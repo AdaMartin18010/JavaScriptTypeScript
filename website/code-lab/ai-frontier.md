@@ -1,3 +1,8 @@
+---
+title: AI 前沿实验室
+description: "Awesome JS/TS Ecosystem 代码实验室: AI 前沿实验室"
+---
+
 # AI 与前沿 (33, 55-56, 82, 94)
 
 > 本分组包含 5 个模块，按成熟度排序。

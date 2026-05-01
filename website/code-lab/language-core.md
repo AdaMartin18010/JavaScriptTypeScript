@@ -1,3 +1,8 @@
+---
+title: 语言核心实验室
+description: "Awesome JS/TS Ecosystem 代码实验室: 语言核心实验室"
+---
+
 # 语言核心 (00-09)
 
 > 本分组包含 10 个模块，按成熟度排序。

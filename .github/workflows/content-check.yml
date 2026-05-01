@@ -29,15 +29,12 @@ jobs:
 
       - name: Run link checker
         run: node 60-meta-content/ci-checks/link-checker.js
-        continue-on-error: true
 
       - name: Run version audit
         run: node 60-meta-content/ci-checks/version-audit.js
-        continue-on-error: true
 
       - name: Run cross-reference validator
         run: node 60-meta-content/ci-checks/cross-reference-validator.js
-        continue-on-error: true
 
       - name: Run all checks (summary)
         run: node 60-meta-content/ci-checks/run-all-checks.js

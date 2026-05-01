@@ -1,3 +1,8 @@
+---
+title: 贡献指南
+description: "Awesome JS/TS Ecosystem 指南: 贡献指南"
+---
+
 # 贡献指南
 
 感谢您对 **Awesome JS/TS Ecosystem** 项目的关注！本文档将指导您如何参与贡献。

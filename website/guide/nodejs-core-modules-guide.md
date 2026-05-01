@@ -1,3 +1,8 @@
+---
+title: Node.js 核心模块完全指南
+description: "Awesome JS/TS Ecosystem 指南: Node.js 核心模块完全指南"
+---
+
 # Node.js 核心模块完全指南
 
 > 系统梳理 Node.js 内置核心模块（built-in modules），覆盖文件系统、网络、加密、流处理、进程管理等关键能力。本文档基于 Node.js 20 LTS / 22 LTS 特性编写，强调 TypeScript 类型安全最佳实践。

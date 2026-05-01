@@ -1,3 +1,8 @@
+---
+title: 代码实验室首页
+description: "Awesome JS/TS Ecosystem 代码实验室: 代码实验室首页"
+---
+
 # 🧪 代码实验室
 
 > [jsts-code-lab](https://github.com/AdaMartin18010/JavaScriptTypeScript/tree/main/jsts-code-lab) 是本项目配套的代码实验室，包含 **96+ 技术模块**，从语言核心到前沿工程的完整实现。

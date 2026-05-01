@@ -24,7 +24,7 @@ const { execSync } = require('child_process');
 const CONFIG = {
   // 扫描的根目录
   scanDirs: [
-    path.join(__dirname, '..', 'jsts-code-lab'),
+    path.join(__dirname, '..', '20-code-lab'),
   ],
   // 输出文件路径
   outputPath: path.join(__dirname, '..', 'security-report.json'),

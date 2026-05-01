@@ -336,7 +336,7 @@ function updateStarsLine(line, newValues) {
 // ─── Main ───
 async function main() {
   const rootDir = path.resolve(__dirname, '..');
-  const matricesDir = path.join(rootDir, 'docs', 'comparison-matrices');
+  const matricesDir = path.join(rootDir, 'website', 'comparison-matrices');
   const dataDir = path.join(rootDir, 'data');
 
   if (!fs.existsSync(matricesDir)) {

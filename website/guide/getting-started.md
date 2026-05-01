@@ -1,3 +1,8 @@
+---
+title: 快速开始
+description: "Awesome JS/TS Ecosystem 指南: 快速开始"
+---
+
 # 快速开始
 
 欢迎来到 **Awesome JS/TS Ecosystem**！本指南将帮助你快速了解如何使用本站资源。

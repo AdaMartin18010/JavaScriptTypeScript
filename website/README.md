@@ -27,8 +27,17 @@ website/
 │   ├── theme/            # 主题定制
 │   └── sidebar.ts        # 侧边栏配置
 ├── public/               # 静态资源
-├── guide/                # 指南页面
-├── categories/           # 分类文档
+├── guide/                # 指南页面 (19)
+├── categories/           # 分类文档 (33)
+├── comparison-matrices/  # 对比矩阵 (19)
+├── code-lab/             # 代码实验室导航
+├── learning-paths/       # 学习路径
+├── patterns/             # 设计模式
+├── platforms/            # 跨平台开发
+├── diagrams/             # 架构图与流程图
+├── cheatsheets/          # 速查表
+├── research/             # 研究报告
+├── templates/            # 文档模板
 ├── index.md              # 首页
 └── about.md              # 关于页面
 ```

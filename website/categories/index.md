@@ -1,11 +1,11 @@
 ---
 title: 技术分类导航
-description: JavaScript/TypeScript 生态系统技术分类总导航，覆盖前端、后端、工程化、跨平台与运维等全领域。
+description: JavaScript/TypeScript 生态系统技术分类总导航，覆盖语言、编译、构建、运行时、框架、架构、AI、Edge 等全领域。
 ---
 
 # 技术分类导航
 
-> 27 个技术分类，覆盖 JS/TS 生态全领域。
+> 33 个技术分类，覆盖 JS/TS 生态全领域，对齐 2026 十大趋势。
 
 ## 📦 前端核心
 
@@ -22,6 +22,7 @@ description: JavaScript/TypeScript 生态系统技术分类总导航，覆盖前
 
 ## 🛠️ 工程化
 
+- [包管理器](./package-managers)
 - [SSR/Meta 框架](./ssr-meta-frameworks)
 - [表单处理](./form-handling)
 - [验证](./validation)
@@ -34,17 +35,31 @@ description: JavaScript/TypeScript 生态系统技术分类总导航，覆盖前
 - [测试](./testing)
 - [测试生态](./testing-ecosystem)
 - [后端框架](./backend-frameworks)
+- [实时通信](./real-time-communication)
+
+## 🦀 Rust 工具链与构建
+
+- [Rust 工具链全景](./rust-toolchain)
+
+## 🤖 AI 与前沿
+
+- [AI / ML 基础设施](./ai-agent-infrastructure)
 
 ## 📱 跨平台与新兴技术
 
 - [移动端开发](./mobile-development)
+- [桌面应用开发](./desktop-development)
 - [WebAssembly](./webassembly)
 - [TanStack Start](./tanstack-start)
 
 ## 🔩 运维与工程基建
 
-- [错误监控与日志](./error-monitoring-logging)
+- [可观测性与监控](./error-monitoring-logging)
 - [CI/CD 与 DevOps](./ci-cd-devops)
 - [Monorepo 工具](./monorepo-tools)
 - [部署与托管平台](./deployment-hosting)
-- [安全与合规](./security-compliance)
+- [安全与认证](./security-compliance)
+
+---
+
+最后更新: 2026-05-01 | 新增: Rust 工具链、AI/ML、桌面端开发、实时通信、包管理器、浏览器 APIs 2026（对齐 2026 十大趋势）

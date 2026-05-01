@@ -6,15 +6,16 @@
 </p>
 
 <p align="center">
-  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.8+-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
-  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-20+-339933?logo=node.js&logoColor=white" alt="Node.js" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.9+-3178C6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-24%20LTS-339933?logo=node.js&logoColor=white" alt="Node.js" /></a>
+  <a href="https://vitejs.dev/"><img src="https://img.shields.io/badge/Vite-6.3-646CFF?logo=vite&logoColor=white" alt="Vite" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT" /></a>
   <a href="CONTRIBUTING.md"><img src="https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg" alt="Contributions Welcome" /></a>
 </p>
 
 > "从形式语义到生产部署的 JS/TS 全栈知识库 —— 5大定理体系、7种思维表征、六层语义化架构"
 >
-> 🏷️ **项目状态**: v5.0 重构完成 | 六层语义化架构
+> 🏷️ **项目状态**: v5.1 全面重构完成 | 33分类·19对比矩阵·19指南·600+代码实验室
 
 ---
 
@@ -23,8 +24,8 @@
 - 🏛️ **六层语义化架构**：L1形式语义 → L2代码实验 → L3选型决策 → L4生态趋势 → L5示例项目 → L6元数据
 - 🧠 **5大定理体系**：JIT三态转化、类型模块化、运行时收敛、合成优先、JIT安全张力
 - 🗺️ **7种思维表征**：思维导图、多维矩阵、决策树、定理推理树、场景树、范畴论交换图、演化时间线
-- 📐 **93个代码实验室**：从语言核心到AI Agent的全路径可运行示例
-- 🌐 **15+英文摘要**：覆盖5大定理与旗舰技术专题
+- 📐 **600+ 代码实验室文档**：从语言核心到AI Agent的全路径可运行示例
+- 🌐 **19+ 技术指南**：覆盖5大定理与旗舰技术专题
 
 ---
 

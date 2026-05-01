@@ -1,3 +1,8 @@
+---
+title: 关于
+description: "关于 Awesome JS/TS Ecosystem 项目"
+---
+
 # 关于本站
 
 ## 项目简介

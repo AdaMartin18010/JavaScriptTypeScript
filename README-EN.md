@@ -64,7 +64,7 @@ This project aims to be a comprehensive, TypeScript-first resource collection th
 
 ## 📚 Table of Contents
 
-- [Awesome JavaScript/TypeScript Ecosystem ](#awesome-javascripttypescript-ecosystem-)
+- [Awesome JavaScript/TypeScript Ecosystem](#awesome-javascripttypescript-ecosystem-)
   - [📚 Document Navigation](#-document-navigation)
   - [📖 Overview](#-overview)
     - [Why This List?](#why-this-list)

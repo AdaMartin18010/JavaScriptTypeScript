@@ -39,6 +39,17 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: 'Web APIs 完全指南', link: '/guide/web-apis-guide' },
         { text: 'Node.js 核心模块指南', link: '/guide/nodejs-core-modules-guide' },
       ]
+    },
+    {
+      text: 'AI 与前沿开发',
+      collapsed: false,
+      items: [
+        { text: 'AI-Native 开发完全指南', link: '/guide/ai-native-development' },
+        { text: 'AI SDK 与 Mastra 开发指南', link: '/guide/ai-sdk-guide' },
+        { text: 'MCP 协议实战指南', link: '/guide/mcp-guide' },
+        { text: 'WebAssembly 完全指南', link: '/guide/webassembly-guide' },
+        { text: '浏览器 APIs 2026', link: '/guide/browser-apis-2026' },
+      ]
     }
   ],
 
@@ -67,6 +78,7 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '分布式与企业 (59, 61-75)', link: '/code-lab/distributed-enterprise' },
         { text: '理论深度 (40-41, 77-81)', link: '/code-lab/theoretical-depth' },
         { text: '实验室专题 (90-96)', link: '/code-lab/specialized-labs' },
+        { text: '🌐 Edge-First 架构实战', link: '/code-lab/edge-first-architecture' },
       ]
     }
   ],
@@ -108,6 +120,23 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '🧪 测试', link: '/categories/testing' },
         { text: '🔗 测试生态', link: '/categories/testing-ecosystem' },
         { text: '🔐 后端框架', link: '/categories/backend-frameworks' },
+        { text: '⚡ 实时通信', link: '/categories/real-time-communication' },
+      ]
+    },
+    {
+      text: '🤖 AI 与前沿',
+      collapsed: false,
+      items: [
+        { text: '🤖 AI/ML 基础设施', link: '/categories/ai-agent-infrastructure' },
+      ]
+    },
+    {
+      text: '🦀 Rust 工具链与构建',
+      collapsed: false,
+      items: [
+        { text: '🦀 Rust 工具链全景', link: '/categories/rust-toolchain' },
+        { text: '⚡ 构建工具对比', link: '/comparison-matrices/build-tools-compare' },
+        { text: '🔧 JS/TS 编译器对比', link: '/comparison-matrices/js-ts-compilers-compare' },
       ]
     },
     {
@@ -115,6 +144,7 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: false,
       items: [
         { text: '📱 移动端开发', link: '/categories/mobile-development' },
+        { text: '💻 桌面应用开发', link: '/categories/desktop-development' },
         { text: '🔷 WebAssembly', link: '/categories/webassembly' },
         { text: '🚀 TanStack Start', link: '/categories/tanstack-start' },
       ]
@@ -123,11 +153,12 @@ export const sidebar: DefaultTheme.Sidebar = {
       text: '🔩 运维与工程基建',
       collapsed: false,
       items: [
-        { text: '🔍 错误监控与日志', link: '/categories/error-monitoring-logging' },
+        { text: '🔍 可观测性与监控', link: '/categories/error-monitoring-logging' },
         { text: '🔄 CI/CD 与 DevOps', link: '/categories/ci-cd-devops' },
         { text: '📦 Monorepo 工具', link: '/categories/monorepo-tools' },
+        { text: '📦 包管理器', link: '/categories/package-managers' },
         { text: '🚀 部署与托管平台', link: '/categories/deployment-hosting' },
-        { text: '🛡️ 安全与合规', link: '/categories/security-compliance' },
+        { text: '🛡️ 安全与认证', link: '/categories/security-compliance' },
       ]
     }
   ],
@@ -144,6 +175,8 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '🎭 SSR 元框架对比', link: '/comparison-matrices/ssr-metaframeworks-compare' },
         { text: '⚡ 构建工具对比', link: '/comparison-matrices/build-tools-compare' },
         { text: '🔧 JS/TS 编译器对比', link: '/comparison-matrices/js-ts-compilers-compare' },
+        { text: '🏃 运行时对比', link: '/comparison-matrices/runtime-compare' },
+        { text: '🌐 Edge 平台对比', link: '/comparison-matrices/edge-platforms-compare' },
         { text: '🗄️ ORM 对比', link: '/comparison-matrices/orm-compare' },
         { text: '🗂️ 状态管理对比', link: '/comparison-matrices/state-management-compare' },
         { text: '🧪 测试工具对比', link: '/comparison-matrices/testing-compare' },
@@ -153,6 +186,7 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '🔍 可观测性工具对比', link: '/comparison-matrices/observability-tools-compare' },
         { text: '🚀 部署平台对比', link: '/comparison-matrices/deployment-platforms-compare' },
         { text: '🔄 CI/CD 工具对比', link: '/comparison-matrices/ci-cd-tools-compare' },
+        { text: '🤖 AI 编码助手对比', link: '/comparison-matrices/ai-tools-compare' },
         { text: '🌐 浏览器兼容性矩阵', link: '/comparison-matrices/browser-compatibility-compare' },
       ]
     }

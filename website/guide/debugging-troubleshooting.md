@@ -1,4 +1,9 @@
-﻿---
+---
+title: JavaScript/TypeScript 调试与故障排查指南
+description: "Awesome JS/TS Ecosystem 指南: JavaScript/TypeScript 调试与故障排查指南"
+---
+
+---
 title: 'JavaScript/TypeScript 调试与故障排查指南'
 ---
 

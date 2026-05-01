@@ -1,3 +1,8 @@
+---
+title: SSR 元框架对比矩阵
+description: "2025-2026 年 SSR 元框架对比矩阵 对比矩阵，覆盖主流方案选型数据与工程实践建议"
+---
+
 # SSR 元框架对比矩阵
 
 > 对比主流全栈/SSR 元框架（Next.js、Nuxt、SvelteKit、Remix、TanStack Start 等），帮助你在服务端渲染、边缘部署、数据获取策略等维度做出选型决策。

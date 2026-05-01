@@ -1,385 +1,390 @@
-# 20.2 Language Patterns — Architecture Design / 语言模式实验室架构设计
+# 20.2 Language Patterns — Architecture
 
-> **定位**: `20-code-lab/20.2-language-patterns/`
-> **定位 (EN)**: Language patterns lab — reusable solutions to recurring design problems in JS/TS.
-> **关联**: `20.1-fundamentals-lab/` | `20.5-frontend-frameworks/` | `20.6-backend-apis/`
-
----
-
-## 1. 架构概述 / Architecture Overview
-
-本模块是连接**语言基础**（20.1）与**领域应用**（20.5/20.6）的**模式转换层**。它回答的核心问题是："在 JavaScript/TypeScript 的特定约束下，如何以 idiomatic 的方式表达经典设计模式与现代架构模式？"
-
-This module serves as the **pattern transformation layer** bridging Language Fundamentals (20.1) and Domain Applications (20.5/20.6). It answers: "Given JS/TS's unique constraints, how do we express classic design patterns and modern architecture idiomatically?"
-
-模块采用**"模式目录（Pattern Catalog）"**的元结构，将 GoF 23 种设计模式、企业架构模式、前端应用架构模式、CLI 框架模式等统一纳入一个可检索、可运行、可对比的知识框架。每个模式实例都是一个**最小可运行的垂直切片（Vertical Slice）**，包含完整的类型定义、实现代码、单元测试和适用场景说明。
-
-The module adopts a **Pattern Catalog** meta-structure, unifying GoF's 23 design patterns, enterprise architecture patterns, frontend application patterns, and CLI framework patterns into a single searchable, runnable, and comparable knowledge framework.
+> **路径**: `20-code-lab/20.2-language-patterns/ARCHITECTURE.md`
+> **定位**: 语言模式与软件设计模式实验模块
+> **关联**: `10-fundamentals/` | `20.1-fundamentals-lab/` | `30-knowledge-base/`
 
 ---
 
-## 2. 系统架构图 / System Architecture Diagram
+## 1. System Overview / 系统概述
+
+### 中文
+
+`20.2-language-patterns` 是 JS/TS 全景知识库代码实验系列的第二个模块，聚焦**软件设计模式、架构范式与 TypeScript 语言特有模式的系统化实践**。如果说 `20.1-fundamentals-lab` 解决的是"语言机制是什么"的问题，那么本模块解决的就是"如何用好这些机制来组织复杂代码"的问题。
+
+本模块的核心教学目标是培养学习者的**模式识别能力**与**架构决策能力**。在真实工程实践中，优秀的开发者不是背诵了更多设计模式，而是能够在面对重复出现的问题时，快速识别出适合当前上下文（Context）的模式，并理解该模式带来的权衡（Trade-offs）。本模块通过形式化的模式定义、TypeScript 类型系统增强的实现、以及从 GoF 经典模式到现代前端架构的完整覆盖，帮助学习者建立这种能力。
+
+本模块的独特价值在于：**将抽象的设计模式转化为可编译、可测试、可扩展的 TypeScript 代码**。传统的"设计模式"教学往往停留在 UML 图和伪代码层面，而本模块要求每个模式都有完整的类型签名、单元测试和真实场景的应用示例。
+
+### English
+
+`20.2-language-patterns` is the second module in the JS/TS panoramic knowledge base code lab series, focusing on the **systematic practice of software design patterns, architectural paradigms, and TypeScript language-specific patterns**. If `20.1-fundamentals-lab` answers "what are the language mechanisms", this module answers "how to use these mechanisms to organize complex code".
+
+The core teaching goal is to cultivate learners' **pattern recognition ability** and **architectural decision-making ability**. In real engineering practice, excellent developers are not those who memorize more design patterns, but those who can quickly identify patterns suitable for the current context when facing recurring problems, and understand the trade-offs involved.
+
+---
+
+## 2. Module Structure / 模块结构
+
+### 中文
+
+本模块采用**"经典模式 + 现代架构 + 领域应用"**的三层组织结构：
+
+```
+20.2-language-patterns/
+├── README.md                    # 目录索引
+├── THEORY.md                    # 语言模式核心理论与代码示例
+├── ARCHITECTURE.md              # 本文件
+│
+├── design-patterns/             # GoF 23种设计模式完整实现
+│   ├── creational/              # 创建型模式
+│   │   ├── factory.ts           # 工厂模式
+│   │   ├── abstract-factory.ts  # 抽象工厂
+│   │   ├── builder.ts           # 建造者模式
+│   │   ├── prototype.ts         # 原型模式
+│   │   └── singleton.ts         # 单例模式
+│   ├── structural/              # 结构型模式
+│   │   ├── adapter.ts           # 适配器模式
+│   │   ├── bridge.ts            # 桥接模式
+│   │   ├── composite.ts         # 组合模式
+│   │   ├── decorator.ts         # 装饰器模式
+│   │   ├── facade.ts            # 外观模式
+│   │   ├── flyweight.ts         # 享元模式
+│   │   └── proxy.ts             # 代理模式
+│   ├── behavioral/              # 行为型模式
+│   │   ├── chain-of-responsibility.ts
+│   │   ├── command.ts           # 命令模式（含撤销）
+│   │   ├── iterator.ts
+│   │   ├── mediator.ts
+│   │   ├── memento.ts
+│   │   ├── observer.ts
+│   │   ├── state.ts             # 状态机模式
+│   │   ├── strategy.ts
+│   │   ├── template-method.ts
+│   │   └── visitor.ts           # Visitor + 代数数据类型
+│   └── js-ts-specific/          # JS/TS 特有模式
+│       └── typescript-specific-patterns.ts
+│
+├── app-architecture/            # 应用架构模式
+│   ├── mvc-derivatives.ts       # MVC/MVP/MVVM 演进
+│   ├── data-fetching-patterns.ts
+│   ├── dependency-injection-models.ts
+│   ├── module-bundling-models.ts
+│   ├── routing-navigation-models.ts
+│   └── llm-driven-architecture.ts
+│
+├── architecture-patterns/       # 系统级架构模式
+│   ├── layered/                 # 分层架构
+│   ├── mvc/                     # MVC 经典实现
+│   ├── mvvm/                    # MVVM 响应式绑定
+│   ├── hexagonal/               # 六边形架构（端口与适配器）
+│   ├── cqrs/                    # 命令查询职责分离
+│   └── microservices/           # 微服务模式
+│
+├── fullstack-patterns/          # 全栈模式
+│   ├── bff-pattern.ts           # Backend-for-Frontend
+│   ├── api-gateway.ts           # API 网关模式
+│   ├── data-flow-patterns.ts    # 数据流模式
+│   └── end-to-end-types.ts      # 端到端类型安全
+│
+├── cli-framework/               # CLI 框架设计模式
+│   ├── cli-builder.ts           # 构建器模式应用
+│   ├── command-parser.ts
+│   ├── argument-validator.ts
+│   ├── config-loader.ts
+│   ├── interactive-prompt.ts
+│   ├── progress-bar.ts
+│   └── help-generator.ts
+│
+├── code-organization/           # 代码组织模式
+│   └── project-structure.ts
+│
+├── plugin-system/               # 插件系统架构
+│   └── plugin-architecture.ts
+│
+├── testing/                     # 测试模式
+│   ├── unit-test-patterns.ts
+│   ├── integration-testing.ts
+│   ├── mock-stub.ts
+│   ├── tdd-bdd.ts
+│   └── e2e-testing.ts
+│
+└── testing-advanced/            # 高级测试模式
+    └── e2e-testing.ts
+```
+
+### English
+
+This module adopts a **three-layer organizational structure** of "classic patterns + modern architecture + domain applications".
+
+---
+
+## 3. Key Concepts Map / 核心概念映射
 
 ```mermaid
-graph TB
-    subgraph 模式入口 Pattern Gateway
-        A[THEORY.md<br/>模式元语言定义]
-        B[README.md<br/>目录索引与导航]
-    end
+graph TD
+    A[Design Patterns / 设计模式] --> B[Creational / 创建型]
+    A --> C[Structural / 结构型]
+    A --> D[Behavioral / 行为型]
+    A --> E[TS-Specific / TS 特有]
 
-    subgraph 设计模式层 Design Patterns Layer
-        C1[creational/<br/>创建型模式]
-        C2[structural/<br/>结构型模式]
-        C3[behavioral/<br/>行为型模式]
-        C4[js-ts-specific/<br/>TS 特有模式]
-    end
+    B --> B1[Factory / 工厂]
+    B --> B2[Builder / 建造者]
+    B --> B3[Singleton / 单例]
+    B --> B4[Prototype / 原型]
 
-    subgraph 应用架构层 Application Architecture Layer
-        D1[architecture-patterns/<br/>企业架构模式]
-        D2[app-architecture/<br/>前端应用架构]
-        D3[fullstack-patterns/<br/>全栈模式]
-    end
+    C --> C1[Adapter / 适配器]
+    C --> C2[Decorator / 装饰器]
+    C --> C3[Facade / 外观]
+    C --> C4[Proxy / 代理]
 
-    subgraph 工程模式层 Engineering Patterns Layer
-        E1[cli-framework/<br/>CLI 框架]
-        E2[code-organization/<br/>代码组织]
-        E3[plugin-system/<br/>插件系统]
-        E4[testing/<br/>测试模式]
-        E5[testing-advanced/<br/>高级测试]
-    end
+    D --> D1[Observer / 观察者]
+    D --> D2[Strategy / 策略]
+    D --> D3[Command / 命令]
+    D --> D4[State / 状态机]
+    D --> D5[Visitor / 访问者]
 
-    A --> B
-    B --> C1 & C2 & C3 & C4
-    B --> D1 & D2 & D3
-    B --> E1 & E2 & E3 & E4 & E5
+    E --> E1[Discriminated Unions / 可辨识联合]
+    E --> E2[Branded Types / 品牌类型]
+    E --> E3[satisfies Operator]
+    E --> E4[Result/Option / 函数式错误处理]
 
-    C1 & C2 & C3 & C4 --> D1 & D2 & D3
-    D1 & D2 & D3 --> E1 & E2 & E3 & E4 & E5
+    B1 --> F[Architecture Patterns / 架构模式]
+    C2 --> F
+    D1 --> F
+    D2 --> F
+
+    F --> G[MVC/MVVM / 表现层架构]
+    F --> H[CQRS / 读写分离]
+    F --> I[Hexagonal / 六边形]
+    F --> J[Microservices / 微服务]
+    F --> K[BFF / 前后端适配]
+
+    E --> L[Type-Safe Systems / 类型安全系统]
+    L --> M[End-to-End Types / 端到端类型]
+    L --> N[Validation Pipelines / 验证管道]
 ```
 
 ---
 
-## 3. 模块依赖图 / Module Dependency Map
+## 4. Learning Progression / 学习路径
 
-```mermaid
-graph LR
-    subgraph 基础依赖 Foundation
-        F1[Type System<br/>from 20.1]
-        F2[Function / Closure<br/>from 20.1]
-        F3[Prototype / Class<br/>from 20.1]
-    end
+### 中文
 
-    subgraph 创建型 Creational
-        CR1[factory.ts]
-        CR2[singleton.ts]
-        CR3[builder.ts]
-        CR4[abstract-factory.ts]
-    end
+**阶段一：经典模式筑基（5-7 天）**
 
-    subgraph 结构型 Structural
-        ST1[adapter.ts]
-        ST2[decorator.ts]
-        ST3[composite.ts]
-        ST4[proxy.ts]
-    end
+1. 阅读 `THEORY.md`，理解 `Pattern = <Context, Problem, Solution, Consequences>` 的形式化定义
+2. 按 GoF 分类学习 `design-patterns/`：
+   - 第 1-2 天：创建型模式（factory → builder → singleton）
+   - 第 3-4 天：结构型模式（adapter → decorator → facade → proxy）
+   - 第 5-7 天：行为型模式（observer → strategy → command → state → visitor）
+3. 每个模式运行对应的 `.test.ts` 验证理解
+4. 重点掌握 THEORY.md 中的"常见误区"
 
-    subgraph 行为型 Behavioral
-        BE1[observer.ts]
-        BE2[strategy.ts]
-        BE3[command.ts]
-        BE4[visitor.ts]
-    end
+**阶段二：TypeScript 类型增强（2-3 天）**
+5. 学习 `design-patterns/js-ts-specific/typescript-specific-patterns.ts`
+6. 深入理解 Discriminated Unions、Branded Types、`satisfies`、Result/Option 类型
+7. 对比传统 JS 实现与 TS 类型增强实现的差异
 
-    subgraph 架构型 Architectural
-        AR1[mvc-architecture.ts]
-        AR2[cqrs-pattern.ts]
-        AR3[hexagonal/ports.ts]
-        AR4[microservices-patterns.ts]
-    end
+**阶段三：架构模式升级（3-5 天）**
+8. 学习 `architecture-patterns/` 中的系统级模式
+9. 重点：layered（分层）→ hexagonal（六边形）→ cqrs（读写分离）的演进逻辑
+10. 在 `app-architecture/` 中观察 MVC → MVVM → 现代前端架构的演化
 
-    subgraph 工程型 Engineering
-        EN1[cli-builder.ts]
-        EN2[data-fetching-patterns.ts]
-        EN3[module-bundling-models.ts]
-    end
+**阶段四：领域应用实战（3-5 天）**
+11. 在 `cli-framework/` 中综合运用 Builder + Command + Strategy 模式构建 CLI 工具
+12. 在 `fullstack-patterns/` 中实践 BFF 和端到端类型安全
+13. 在 `plugin-system/` 中设计可扩展的插件架构
+14. 在 `testing/` 中学习测试替身与 TDD/BDD 模式
 
-    F1 --> CR1 & CR3 & ST1
-    F2 --> CR2 & BE1 & BE2
-    F3 --> CR4 & ST4 & BE3
+### English
 
-    CR1 --> ST1 & ST2
-    CR2 --> ST4
-    CR3 --> AR3
+**Phase 1: Classic Pattern Foundation (5-7 days)**
 
-    ST1 --> AR1
-    ST2 --> BE3
-    ST3 --> AR2
-    ST4 --> AR4
+1. Read `THEORY.md` and understand the formal definition `Pattern = <Context, Problem, Solution, Consequences>`
+2. Study `design-patterns/` by GoF categories
+3. Validate understanding with corresponding `.test.ts` files
+4. Focus on "Common Misconceptions" in THEORY.md
 
-    BE1 --> EN2
-    BE2 --> EN1
-    BE3 --> EN3
-    BE4 --> AR2
+**Phase 2: TypeScript Type Enhancement (2-3 days)**
+5. Study TS-specific patterns
+6. Deep understanding of Discriminated Unions, Branded Types, `satisfies`, Result/Option types
 
-    AR1 & AR2 & AR3 & AR4 --> EN1 & EN2 & EN3
-```
+**Phase 3: Architecture Pattern Upgrade (3-5 days)**
+8. Study system-level patterns in `architecture-patterns/`
+9. Focus on the evolution logic: layered → hexagonal → CQRS
+10. Observe MVC → MVVM → modern frontend architecture evolution
+
+**Phase 4: Domain Application Practice (3-5 days)**
+11. Build CLI tools using Builder + Command + Strategy patterns
+12. Practice BFF and end-to-end type safety
+13. Design extensible plugin architecture
+14. Learn testing doubles and TDD/BDD patterns
 
 ---
 
-## 4. 数据流描述 / Data Flow Description
+## 5. Prerequisites & Dependencies / 前置知识与依赖
 
-本模块的数据流体现为**"问题 → 模式选择 → 实现 → 验证 → 演化"**的闭环。以下以前端应用架构中的数据获取模式为例：
+### 中文
 
-The data flow manifests as a **"Problem → Pattern Selection → Implementation → Validation → Evolution"** closed loop.
+**前置知识：**
 
-### 4.1 模式应用数据流 / Pattern Application Data Flow
+- 完成 `20.1-fundamentals-lab` 或具备等效知识：
+  - 深入理解闭包、原型链、this 绑定
+  - 熟悉 TypeScript 基本类型系统（interface、type、generic）
+  - 了解 ES6+ 语法（class、module、arrow function、destructuring）
 
-```
-用户交互 / 系统事件
-    ↓
-[Router] 路由匹配与导航守卫
-    ↓
-[Data Fetching Pattern] 选择数据获取策略
-    ├── SSR (服务端渲染): 服务器直取数据 → HTML 流式传输
-    ├── CSR (客户端渲染): 挂载后客户端 fetch → 状态更新
-    ├── SWR (状态重新验证): 缓存优先 → 后台更新
-    └── RSC (React Server Component): 服务端组件直取 → 序列化传输
-    ↓
-[State Management] 状态归一化与派生
-    ↓
-[Component Tree] 响应式更新与渲染
-    ↓
-[DOM / VDOM] 最小化变更应用
-```
-
-### 4.2 CLI 框架数据流 / CLI Framework Data Flow
+**模块间依赖：**
 
 ```
-进程参数 (process.argv)
-    ↓
-[Argument Validator] 参数校验与类型转换
-    ↓
-[Command Parser] 命令路由与子命令分发
-    ↓
-[Config Loader] 配置文件合并（CLI 参数 > 环境变量 > 配置文件 > 默认值）
-    ↓
-[Interactive Prompt] 缺失参数的交互式补全
-    ↓
-[Middleware Chain] 日志、鉴权、遥测等横切关注点
-    ↓
-[Command Handler] 业务逻辑执行
-    ↓
-[Output Formatter] 结果格式化（JSON / Table / Tree / Progress）
+20.2-language-patterns
+├── 前置依赖：20.1-fundamentals-lab
+│   ├── 闭包 → 模块模式、高阶函数、回调模式
+│   ├── 原型链 → 继承模式、原型委托
+│   ├── class 语法 → 所有基于 class 的模式实现
+│   └── 类型系统 → TS 特有模式的类型约束
+├── 为 20.3-concurrency-async 提供：
+│   ├── Observer 模式 → 事件驱动与流式编程
+│   ├── Strategy 模式 → 并发策略切换
+│   └── Command 模式 → 异步任务队列
+├── 为 20.5-frontend-frameworks 提供：
+│   ├── MVC/MVVM → 前端框架架构理解
+│   ├── Observer → 响应式系统原理
+│   └── Decorator → 高阶组件与 AOP
+└── 为 20.6-backend-apis 提供：
+    ├── Facade → API 网关与服务聚合
+    ├── Adapter → 新旧接口兼容
+    └── CQRS → 读写分离架构
 ```
 
-### 4.3 CQRS + Event Sourcing 数据流 / CQRS + ES Data Flow
+### English
 
-```
-HTTP Request / Command
-    ↓
-[Command Handler] 验证与业务规则
-    ↓
-[Aggregate Root] 状态变更 → 生成 Domain Event
-    ↓
-[Event Store] 只追加事件日志 (Append-only)
-    ↓
-[Event Bus] 异步发布
-    ↓
-[Projection Handler] 构建物化视图 (Read Model)
-    ↓
-[Query Handler] 从 Read Model 查询
-    ↓
-HTTP Response / DTO
-```
+**Prerequisites:**
+
+- Complete `20.1-fundamentals-lab` or possess equivalent knowledge
+- Deep understanding of closures, prototype chains, `this` binding
+- Familiarity with TypeScript basic type system
+- Knowledge of ES6+ syntax
 
 ---
 
-## 5. 关键设计决策与权衡 / Key Design Decisions and Trade-offs
+## 6. Exercise Design Philosophy / 练习设计哲学
 
-### 5.1 决策矩阵 / Decision Matrix
+### 中文
 
-| 决策 / Decision | 选择 / Choice | 理由 / Rationale | 代价 / Trade-off |
-|----------------|--------------|-----------------|----------------|
-| 模式分类法 | GoF 三分法 + JS/TS 特有模式 + 架构模式 | 兼顾经典与生态特色 | 分类边界偶有模糊 |
-| 实现风格 | 类型安全优先（严格 TypeScript） | 展示 TS 的类型表达能力 | 部分实现较 JavaScript 冗长 |
-| 框架依赖 | 模式骨架零框架，仅在 app-architecture 中使用框架概念代码 | 保证模式的通用性 | 无法直接复制粘贴到生产框架 |
-| 测试深度 | 每个模式配对测试 + 集成场景测试 | 验证模式行为正确性 | 代码量翻倍 |
-| 抽象层级 | 从类级模式到系统级架构全覆盖 | 满足不同层级学习需求 | 目录结构复杂 |
-| 语言特性使用 | ES2022 + TS 5.4 全部特性 | 展示最现代的表达力 | 旧环境需转译 |
+本模块的练习设计遵循**"模式识别 → 模式应用 → 模式组合 → 模式批判"**的四层认知升级路径：
 
-### 5.2 TypeScript 类型系统作为"模式强制器" / TypeScript as Pattern Enforcer
+**第一层：模式识别（Pattern Recognition）**
 
-在经典动态语言中，设计模式的正确性依赖于**约定（convention）**和**开发者纪律**。TypeScript 的类型系统使我们能够将部分模式约束**编译期化**：
+- 给定一段代码，识别其中使用了哪种设计模式
+- 给定一个问题描述，从模式库中选择最合适的模式
+- 练习材料：`design-patterns/` 中的 `.test.ts` 文件既是测试也是案例
 
-- **Builder 模式**: 通过 `this` 返回类型实现链式调用的类型安全
-- **Strategy 模式**: `interface Strategy` 强制所有策略实现统一契约
-- **Visitor 模式**: 利用 `Extract<Union, { kind: 'X' }>` 实现穷尽性检查
-- **Result 类型**: 用 discriminated union 替代异常，强制调用方处理错误路径
+**第二层：模式应用（Pattern Application）**
 
-### 5.3 为什么保留"反模式"讨论 / Why Include "Anti-patterns"
+- 根据场景需求，独立实现一个模式
+- 要求：包含完整的 TypeScript 类型定义、单元测试、使用示例
+- 示例：实现一个支持插件的装饰器模式日志系统
 
-`testing-advanced/` 和部分 `app-architecture/` 文件不仅展示正确做法，还展示**常见误用**：
+**第三层：模式组合（Pattern Composition）**
 
-- 过度使用单例 → 测试困难、隐藏依赖
-- 错误的 Context 使用 → React 中不必要的重渲染
-- 上帝对象（God Object）→ 维护灾难
+- 将多个模式组合解决复杂问题
+- 典型案例：Factory + Strategy + Command 构建支付系统
+- 典型案例：Observer + State + Memento 构建可撤销的状态机
 
-这种"正反对比"的架构设计显著提升了学习者的**模式识别能力**。
+**第四层：模式批判（Pattern Critique）**
 
----
+- 分析过度设计（Over-engineering）的风险
+- 理解 KISS 原则与模式应用的平衡
+- 讨论："何时不该用设计模式？"
+- 对比：同一问题用不同模式解决的优劣
 
-## 6. 技术栈 / Technology Stack
+**TypeScript 类型挑战：**
+本模块特别强调利用 TypeScript 类型系统增强模式的表达力：
 
-| 层级 / Layer | 技术 / Technology | 版本 / Version | 用途 / Purpose |
-|-------------|------------------|---------------|---------------|
-| 语言 / Language | TypeScript | ≥5.4 | 模式实现与类型约束 |
-| 运行时 / Runtime | Node.js | ≥18 | 服务端模式执行 |
-| 运行时 / Runtime | Deno | ≥1.40 | 现代模块与测试 |
-| 前端概念 / Frontend Concepts | React / Vue / Svelte (类型定义) | 18+ / 3.4+ / 5+ | 应用架构模式演示 |
-| 测试框架 / Testing | Vitest | ≥1.0 | 快速单元与集成测试 |
-| 测试框架 / Testing | Deno Test | built-in | Deno 环境测试 |
-| 代码质量 / Quality | ESLint + @typescript-eslint | ≥7.0 | 代码规范 |
-| 类型检查 / Type Checking | tsc --noEmit | ≥5.4 | 编译期验证 |
-| 文档 / Docs | Markdown + Mermaid | — | 架构图与说明 |
+- 使用 Discriminated Unions 替代传统的 `if/else` 类型判断
+- 使用 Branded Types 防止 ID 混淆和单位错误
+- 使用 `satisfies` 在保持字面量推断的同时施加约束
+- 使用 Result/Option 类型替代 throw/catch 进行可组合的错误处理
 
----
+### English
 
-## 7. 测试策略 / Testing Strategy
+**Layer 1: Pattern Recognition**
 
-### 7.1 测试架构 / Testing Architecture
+- Given code, identify the design pattern used
+- Given a problem description, select the most suitable pattern from the pattern library
 
-```mermaid
-graph TB
-    subgraph 单元测试层 Unit Tests
-        U1[factory.test.ts]
-        U2[observer.test.ts]
-        U3[command.test.ts]
-    end
+**Layer 2: Pattern Application**
 
-    subgraph 集成测试层 Integration Tests
-        I1[strategy + factory 组合测试]
-        I2[decorator + middleware 链测试]
-    end
+- Independently implement a pattern based on scenario requirements
+- Requirements: complete TypeScript type definitions, unit tests, usage examples
 
-    subgraph 架构验证层 Architecture Validation
-        A1[依赖方向测试<br/>上层不得依赖下层]
-        A2[端口契约测试<br/>Hexagonal Architecture]
-    end
+**Layer 3: Pattern Composition**
 
-    U1 & U2 & U3 --> I1 & I2
-    I1 & I2 --> A1 & A2
-```
+- Combine multiple patterns to solve complex problems
+- Classic case: Factory + Strategy + Command for payment system
 
-### 7.2 测试分类 / Test Categories
+**Layer 4: Pattern Critique**
 
-| 测试类型 / Type | 目标 / Target | 示例 / Example |
-|----------------|-------------|--------------|
-| 模式行为测试 / Behavioral | 验证模式在运行时产生预期行为 | `singleton.test.ts` 验证唯一实例 |
-| 类型级测试 / Type-level | 验证编译期类型约束 | `builder.test.ts` 中链式调用类型推断 |
-| 组合测试 / Compositional | 验证多个模式协同工作 | `strategy + factory` 组合 |
-| 反模式检测 / Anti-pattern | 验证错误用法被类型系统捕获 | 非法状态转换的编译错误 |
-| 性能感知测试 / Performance-aware | 验证模式在大数据量下的表现 | `flyweight.test.ts` 内存对比 |
-
-### 7.3 测试执行 / Test Execution
-
-```bash
-# 所有测试
-npx vitest run
-
-# 单一模式目录
-npx vitest run design-patterns/creational
-
-# 类型检查
-npx tsc --noEmit
-
-# Deno 环境
-deno test --allow-all
-```
+- Analyze risks of over-engineering
+- Understand balance between KISS principle and pattern application
+- Discussion: "When should we NOT use design patterns?"
 
 ---
 
-## 8. 部署考量 / Deployment Considerations
+## 7. Extension Points / 扩展方向
 
-### 8.1 作为库发布 / Publishing as a Library
+### 中文
 
-本模块的部分子集（如 `design-patterns/` 中的通用实现）可打包为 npm 包供外部引用：
+**纵向深化：**
 
-```mermaid
-flowchart LR
-    A[源代码] --> B[TypeScript 编译]
-    B --> C[ESM + CJS 双格式输出]
-    C --> D[npm publish]
-    D --> E[外部项目 npm install]
-```
+- 阅读 GoF 《设计模式》原典，对比本模块的 TS 实现与 C++ 实现的差异
+- 研究 Refactoring Guru 和 Patterns.dev 的现代解读
+- 深入学习 fp-ts：将命令式设计模式转化为函数式组合子
+- 研究 TC39 Decorators Proposal 的 Stage 3 进展
 
-**构建设置**:
-- `tsconfig.json`: `module: "NodeNext"`, `declaration: true`
-- 输出目录: `dist/esm/` + `dist/cjs/`
-- 入口映射: `exports` 字段指向类型定义与运行时
+**横向扩展：**
 
-### 8.2 作为学习平台部署 / Deploying as Learning Platform
+- 进入 `20.3-concurrency-async`：将 Observer 模式扩展到事件流（RxJS）
+- 进入 `20.5-frontend-frameworks`：将 MVC/MVVM 与 React/Vue 的组件模型对比
+- 进入 `20.6-backend-apis`：将 CQRS、BFF 模式应用于服务端架构
 
-| 部署目标 / Target | 方案 / Solution | 触发方式 / Trigger |
-|------------------|----------------|-------------------|
-| 静态文档站点 | VitePress 构建 → GitHub Pages | push to main |
-| 可交互 Playground | StackBlitz 项目模板 | 文档内嵌按钮 |
-| CI 验证 | GitHub Actions 矩阵 | PR / nightly |
-| npm 包 | Changesets 版本管理 | 手动 release |
+**实战项目：**
 
-### 8.3 运行时兼容性矩阵 / Runtime Compatibility Matrix
+- 基于 `cli-framework/` 开发一个完整的命令行工具并发布到 npm
+- 基于 `plugin-system/` 为现有开源项目设计插件 API
+- 实现一个轻量级前端框架，综合运用 Observer + Virtual DOM + Diff 算法
+- 为企业内部系统设计一套基于 Hexagonal Architecture 的代码规范
 
-| 模式类别 / Category | Node.js | Deno | Bun | Browser |
-|--------------------|---------|------|-----|---------|
-| 创建型 / Creational | ✅ | ✅ | ✅ | ✅ |
-| 结构型 / Structural | ✅ | ✅ | ✅ | ✅ |
-| 行为型 / Behavioral | ✅ | ✅ | ✅ | ✅ |
-| CLI 框架 / CLI | ✅ | ✅ | ✅ | ❌ |
-| 前端架构 / Frontend Arch | ✅ (SSR) | ✅ | ✅ | ✅ |
-| 全栈模式 / Fullstack | ✅ | ✅ | ✅ | 部分 |
+**学术前沿：**
 
-### 8.4 容器化与边缘部署 / Containerization & Edge
+- 研究范畴论中的 Functor/Monad 与设计模式中 Visitor 模式的同构关系
+- 探索代数效应（Algebraic Effects）作为错误处理和状态管理的新范式
+- 学习依赖注入容器的设计原理（Angular DI、InversifyJS、TSyringe）
 
-```dockerfile
-# 最小学习镜像
-FROM denoland/deno:alpine
-WORKDIR /app
-COPY . .
-RUN deno cache **/*.ts
-CMD ["deno", "test", "--allow-all"]
-```
+### English
 
-边缘函数场景（如 Cloudflare Workers）中，部分模式需调整：
-- **单例模式**: 在 Isolate 环境中天然单例，无需显式实现
-- **状态模式**: 需外置到 KV / Durable Objects
-- **观察者模式**: 跨 Isolate 需使用 Event Bus 替代内存事件
+**Vertical Deepening:**
+
+- Read the original GoF "Design Patterns" and compare TS implementations with C++
+- Study modern interpretations from Refactoring Guru and Patterns.dev
+- Deep dive into fp-ts: convert imperative design patterns to functional combinators
+- Research TC39 Decorators Proposal Stage 3 progress
+
+**Horizontal Expansion:**
+
+- Proceed to `20.3-concurrency-async`: extend Observer pattern to event streams (RxJS)
+- Proceed to `20.5-frontend-frameworks`: compare MVC/MVVM with React/Vue component models
+- Proceed to `20.6-backend-apis`: apply CQRS, BFF patterns to server-side architecture
+
+**Practical Projects:**
+
+- Develop a complete CLI tool based on `cli-framework/` and publish to npm
+- Design plugin APIs for existing open-source projects
+- Implement a lightweight frontend framework using Observer + Virtual DOM + Diff
+- Design code standards based on Hexagonal Architecture for enterprise systems
 
 ---
 
-## 9. 质量属性 / Quality Attributes
-
-| 属性 / Attribute | 实现机制 / Mechanism | 验证方式 / Verification |
-|-----------------|---------------------|------------------------|
-| **可组合性 Composability** | 模式间松耦合接口 | 随机组合两个模式，验证无冲突 |
-| **可学习性 Learnability** | 单一职责文件 + 独立测试 | 新开发者 15 分钟理解一个模式 |
-| **可移植性 Portability** | ESM 标准模块 | 跨运行时执行一致性 |
-| **可验证性 Verifiability** | 100% 文件配对测试 | CI 全绿 |
-| **可演化性 Evolvability** | 接口抽象 + 适配器模式 | 替换底层实现不影响上层 |
-
----
-
-## 10. 参考与扩展 / References & Extensions
-
-- [GoF — Design Patterns](https://en.wikipedia.org/wiki/Design_Patterns) — 经典设计模式原典
-- [Refactoring Guru](https://refactoring.guru/design-patterns) — 可视化模式教程
-- [Patterns.dev](https://www.patterns.dev/) — 现代 Web 模式集合
-- [JavaScript Design Patterns (Addy Osmani)](https://addyosmani.com/resources/essentialjsdesignpatterns/book/) — JS 特有模式深度解析
-- [Enterprise Integration Patterns](https://www.enterpriseintegrationpatterns.com/) — 企业集成模式
-- [The Clean Architecture — Robert C. Martin](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html) — 整洁架构
-- [Hexagonal Architecture — Alistair Cockburn](https://alistair.cockburn.us/hexagonal-architecture/) — 六边形架构
-- `20-code-lab/20.1-fundamentals-lab/` — 本模块的下层基础
-- `20-code-lab/20.5-frontend-frameworks/` — 前端架构模式的具体应用
-- `20-code-lab/20.6-backend-apis/` — 后端架构模式的具体应用
-
----
-
-*本 ARCHITECTURE.md 遵循 JS/TS 全景知识库的文档规范。生成时间: 2026-05-01*
+*本 ARCHITECTURE.md 遵循 JS/TS 全景知识库的理论-实践闭环原则。*
+*This ARCHITECTURE.md follows the theory-practice closed-loop principle of the JS/TS panoramic knowledge base.*

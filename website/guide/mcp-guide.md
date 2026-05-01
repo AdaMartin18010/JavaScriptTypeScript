@@ -1,3 +1,8 @@
+---
+title: MCP (Model Context Protocol) 完全指南
+description: "Awesome JS/TS Ecosystem 指南: MCP (Model Context Protocol) 完全指南"
+---
+
 # MCP (Model Context Protocol) 完全指南
 
 > 深度解析 Model Context Protocol 协议规范、Server/Client 开发实践、Transport 选型与安全最佳实践。

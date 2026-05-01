@@ -1,3 +1,8 @@
+---
+title: 搜索
+description: "Awesome JS/TS Ecosystem 全站搜索"
+---
+
 # 🔍 增强搜索
 
 > 基于文档元数据的增强搜索中心。支持按分类、难度、模块类型筛选。

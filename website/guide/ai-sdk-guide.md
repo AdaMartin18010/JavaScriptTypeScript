@@ -1,3 +1,8 @@
+---
+title: AI SDK 与 Mastra 完整开发指南
+description: "Awesome JS/TS Ecosystem 指南: AI SDK 与 Mastra 完整开发指南"
+---
+
 # AI SDK 与 Mastra 完整开发指南
 
 > 全面覆盖 Vercel AI SDK、AI SDK RSC 与 Mastra 三大 AI 开发框架的核心 API、最佳实践与选型策略，帮助开发者快速构建生产级 AI 应用。
@@ -1010,7 +1015,7 @@ export default function Home() {
 
 > **关联文档**
 >
-> - [AI 工具对比矩阵](../../website/comparison-matrices/ai-tools-compare.md) — Vercel AI SDK、LangChain.js、Mastra、LlamaIndex TS、OpenAI SDK 的详细对比
+> - [AI 工具对比矩阵](/comparison-matrices/ai-tools-compare) — Vercel AI SDK、LangChain.js、Mastra、LlamaIndex TS、OpenAI SDK 的详细对比
 > - `jsts-code-lab/` — 相关代码示例与实验（待补充）
 > - [Vercel AI SDK 官方文档](https://sdk.vercel.ai/docs)
 > - [Mastra 官方文档](https://mastra.ai/docs)

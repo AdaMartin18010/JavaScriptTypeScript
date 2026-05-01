@@ -30,7 +30,7 @@ features:
     link: /categories/ui-component-libraries
   - icon: ⚡
     title: 构建工具
-    details: Vite、Webpack、Rollup、esbuild 等构建工具对比与最佳实践
+    details: Vite、Rolldown、Rspack、esbuild 等构建工具对比与最佳实践
     link: /categories/build-tools
   - icon: 📊
     title: 数据可视化
@@ -40,10 +40,26 @@ features:
     title: 状态管理
     details: Zustand、Redux、Jotai、Pinia 等状态管理方案深度解析
     link: /categories/state-management
+  - icon: 🦀
+    title: Rust 工具链
+    details: Rolldown、Oxc、Oxlint、Rspack、Biome 等 Rust 编写的高性能工具链
+    link: /categories/rust-toolchain
+  - icon: 🤖
+    title: AI 与前沿
+    details: AI-Native 开发、MCP 协议、Vercel AI SDK、Mastra、Transformers.js
+    link: /categories/ai-agent-infrastructure
+  - icon: 📱
+    title: 跨平台开发
+    details: React Native、Expo、Tauri、Electron、WebAssembly 跨平台方案
+    link: /categories/mobile-development
   - icon: 🛠️
     title: 开发工具
-    details: ESLint、Prettier、Vitest、Playwright 等工程化工具
+    details: ESLint、Prettier、Vitest、Playwright、Oxlint 等工程化工具
     link: /categories/linting-formatting
+  - icon: 🌐
+    title: Edge 与部署
+    details: Cloudflare Workers、Vercel、Docker、Serverless 边缘计算与部署平台
+    link: /categories/deployment-hosting
 ---
 
 <script setup>
@@ -51,19 +67,19 @@ import { ref, computed } from 'vue'
 
 // 统计数据
 const stats = ref({
-  libraries: 213,
-  categories: 20,
-  contributors: 5,
-  lastUpdated: '2026-04'
+  libraries: 280,
+  categories: 33,
+  contributors: 8,
+  lastUpdated: '2026-05'
 })
 
 // 最新更新
 const updates = ref([
-  { date: '2026-04', tag: '发布', content: '🚀 v4.0 发布：JS/TS 语义模型全面升级，对齐 Stanford/MIT/CMU/Berkeley/UW 学术课程' },
-  { date: '2026-04', tag: '新增', content: '新增编译器/转译器语义对比矩阵（tsc/Babel/SWC/esbuild/Rolldown/tsgo）' },
-  { date: '2026-04', tag: '新增', content: '新增 TypeScript Compiler API 工程实践代码示例（AST 提取、Transformer、.d.ts 生成）' },
-  { date: '2026-04', tag: '更新', content: '更新 ECMAScript 2025/2026 与 TypeScript 7.0 (Project Corsa) 前沿语义分析' },
-  { date: '2026-04', tag: '更新', content: 'jsts-code-lab 代码实验室扩展至 83 个模块，744+ 个 TypeScript 代码文件' },
+  { date: '2026-05', tag: '发布', content: '🚀 v5.1 发布：全面梳理2026十大趋势，覆盖语言/编译/构建/运行时/框架/架构全栈' },
+  { date: '2026-05', tag: '新增', content: '新增 Rust 工具链专题（Rolldown/Oxc/Biome/Rspack）、AI-Native开发、Edge-First架构' },
+  { date: '2026-05', tag: '新增', content: '新增浏览器API 2026、桌面开发、实时通信、AI/ML in JS等8个分类' },
+  { date: '2026-05', tag: '更新', content: '更新所有对比矩阵至2026 Q2数据：Vite满意度98%、Cloudflare Workers 12%、TS登顶GitHub' },
+  { date: '2026-05', tag: '重构', content: '网站架构升级：VitePress 1.6 + Rolldown构建、Oxlint统一、Node 24 LTS' },
 ])
 </script>
 
@@ -140,6 +156,31 @@ const updates = ref([
     <div class="icon">🔐</div>
     <h3>后端框架</h3>
     <p>Express、Fastify、NestJS、Hono</p>
+  </a>
+  <a href="/categories/rust-toolchain" class="category-card">
+    <div class="icon">🦀</div>
+    <h3>Rust 工具链</h3>
+    <p>Rolldown、Oxc、Biome、Rspack</p>
+  </a>
+  <a href="/categories/ai-agent-infrastructure" class="category-card">
+    <div class="icon">🤖</div>
+    <h3>AI / ML</h3>
+    <p>MCP、Transformers.js、Mastra、Vercel AI</p>
+  </a>
+  <a href="/categories/webassembly" class="category-card">
+    <div class="icon">🔷</div>
+    <h3>WebAssembly</h3>
+    <p>WASM 2.0、WASI、Rust→WASM、Edge WASM</p>
+  </a>
+  <a href="/categories/mobile-development" class="category-card">
+    <div class="icon">📱</div>
+    <h3>移动端</h3>
+    <p>React Native、Expo、Flutter、Capacitor</p>
+  </a>
+  <a href="/categories/desktop-development" class="category-card">
+    <div class="icon">💻</div>
+    <h3>桌面端</h3>
+    <p>Tauri v2、Electron、Flutter Desktop</p>
   </a>
 </div>
 

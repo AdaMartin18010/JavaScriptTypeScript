@@ -16,26 +16,42 @@ export default withMermaid(defineConfig({
   // 清理URL
   cleanUrls: true,
 
-  // 忽略已知的跨项目死链（指向 jsts-code-lab 和 JSTS全景综述 的链接）
+  // 将页面元数据提取为独立 chunk，提升缓存命中率
+  metaChunk: true,
+
+  // 忽略已知的跨项目死链（指向项目源码目录的链接，这些不属于 VitePress 站点构建范围）
   ignoreDeadLinks: [
     /jsts-code-lab\//,
     /JSTS全景综述\//,
+    /\/10-fundamentals\//,
+    /\/20-code-lab\//,
+    /\/50-examples\//,
+    /\/70-theoretical-foundations\//,
+    /^\.\.\/..\/10-fundamentals\//,
+    /^\.\.\/..\/20-code-lab\//,
+    /^\.\.\/..\/50-examples\//,
+    /^\.\.\/..\/70-theoretical-foundations\//,
   ],
   
   // 元数据
   head: [
     ['link', { rel: 'icon', href: '/favicon.svg' }],
     ['meta', { name: 'theme-color', content: '#5f67ee' }],
-    ['meta', { name: 'og:type', content: 'website' }],
-    ['meta', { name: 'og:locale', content: 'zh-CN' }],
-    ['meta', { name: 'og:site_name', content: 'Awesome JS/TS Ecosystem' }],
-    ['meta', { name: 'og:image', content: '/og-image.png' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:locale', content: 'zh_CN' }],
+    ['meta', { property: 'og:site_name', content: 'Awesome JS/TS Ecosystem' }],
+    ['meta', { property: 'og:image', content: '/og-image.png' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:image', content: '/og-image.png' }],
   ],
 
   // 主题配置
   themeConfig: {
     // 站点Logo
     logo: '/logo.svg',
+
+    // 外链显示外部跳转图标
+    externalLinkIcon: true,
     
     // 导航栏
     nav: [
@@ -140,18 +156,40 @@ export default withMermaid(defineConfig({
     lightModeSwitchTitle: '切换到浅色模式',
 
     // 暗色模式标题
-    darkModeSwitchTitle: '切换到深色模式'
+    darkModeSwitchTitle: '切换到深色模式',
+
+    // 404 页面
+    notFound: {
+      title: '页面未找到',
+      quote: '抱歉，您访问的页面不存在或已被移动。',
+      linkLabel: '返回首页',
+      linkText: '带我回家'
+    }
   },
 
   // Markdown配置
   markdown: {
     lineNumbers: true,
+    languageAlias: {
+      ts: 'typescript',
+      js: 'javascript',
+      bash: 'bash',
+      shell: 'bash',
+      zsh: 'bash',
+      jsonc: 'json',
+      'vue-html': 'html'
+    },
     config: (md) => {
       // 可以在这里添加自定义markdown插件
     }
   },
 
-  // 构建配置
+  vite: {
+    build: {
+      chunkSizeWarningLimit: 1500
+    }
+  },
+
   sitemap: {
     hostname: 'https://awesome-jsts-ecosystem.vercel.app'
   }

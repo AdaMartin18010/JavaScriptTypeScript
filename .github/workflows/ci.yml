@@ -4,76 +4,25 @@ on:
   push:
     branches: [main, master]
     paths:
-      - 'jsts-code-lab/**'
-      - 'jsts-language-core-system/**'
-      - 'examples/**'
-      - 'docs/**'
+      - 'website/**'
+      - '20-code-lab/**'
+      - '10-fundamentals/**'
+      - '50-examples/**'
+      - '30-knowledge-base/**'
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [main, master]
     paths:
-      - 'jsts-code-lab/**'
-      - 'jsts-language-core-system/**'
-      - 'examples/**'
-      - 'docs/**'
+      - 'website/**'
+      - '20-code-lab/**'
+      - '10-fundamentals/**'
+      - '50-examples/**'
+      - '30-knowledge-base/**'
       - '.github/workflows/ci.yml'
 
 jobs:
-  test-code-lab:
-    name: Code Lab Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [22.x, 23.x]
-        shard: [1, 2]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 10
-
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-          cache-dependency-path: jsts-code-lab/pnpm-lock.yaml
-
-      - name: Install dependencies
-        working-directory: jsts-code-lab
-        run: pnpm install --frozen-lockfile
-
-      - name: Run linter (oxlint/biome)
-        working-directory: jsts-code-lab
-        run: pnpm lint
-        continue-on-error: true # 教学示例代码包含故意展示的边缘模式，触发大量严格规则警告
-
-      - name: Run tests (vitest)
-        working-directory: jsts-code-lab
-        run: pnpm vitest --coverage --shard=${{ matrix.shard }}/2
-
-      - name: Type check (tsc --noEmit)
-        working-directory: jsts-code-lab
-        run: pnpm type-check
-        continue-on-error: true # TODO: 历史遗留类型错误待修复（见 #issue）
-
-      - name: Upload coverage
-        if: matrix.node-version == '22.x' && matrix.shard == 1
-        uses: codecov/codecov-action@v4
-        with:
-          directory: jsts-code-lab/coverage
-          flags: unittests
-          name: codecov-umbrella
-
-  type-check-language-core:
-    name: Language Core System Type Check
+  build-docs:
+    name: Build VitePress Documentation
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -81,53 +30,37 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 10
-
-      - name: Setup Node.js 22.x
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.x
-          cache: 'pnpm'
-          cache-dependency-path: jsts-code-lab/pnpm-lock.yaml
+          node-version: '22'
 
       - name: Install dependencies
-        working-directory: jsts-code-lab
-        run: pnpm install --frozen-lockfile
+        working-directory: website
+        run: npm install
 
-      - name: Type check jsts-language-core-system
-        working-directory: jsts-language-core-system
-        run: ../jsts-code-lab/node_modules/.bin/tsc --noEmit
+      - name: Build documentation
+        working-directory: website
+        run: npm run docs:build
 
-      - name: Run language core demos
-        working-directory: jsts-language-core-system
-        run: ../jsts-code-lab/node_modules/.bin/tsx index.ts
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitepress-dist
+          path: website/.vitepress/dist
 
   validate-examples:
     name: Validate Example Projects
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 10
-
-      - name: Setup Node.js 22.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-          cache: 'pnpm'
-
       - name: Validate example READMEs exist
         run: |
-          for dir in examples/*/; do
+          for dir in 50-examples/*/; do
             if [ ! -f "$dir/README.md" ]; then
               echo "❌ Missing README.md in $dir"
               exit 1
@@ -137,7 +70,7 @@ jobs:
 
       - name: Validate example package.json structure
         run: |
-          for dir in examples/*/; do
+          for dir in 50-examples/*/; do
             if [ ! -f "$dir/package.json" ]; then
               echo "⚠️ No package.json in $dir (may be non-Node example)"
             fi

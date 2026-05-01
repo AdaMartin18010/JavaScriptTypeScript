@@ -1,3 +1,8 @@
+---
+title: 趋势报告
+description: "Awesome JS/TS Ecosystem 月度趋势报告与生态统计数据"
+---
+
 # 📈 Stars 趋势报告
 
 > 生成时间: 2026/4/18 03:20:27

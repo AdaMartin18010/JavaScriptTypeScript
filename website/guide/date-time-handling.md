@@ -1,4 +1,9 @@
-﻿---
+---
+title: JavaScript/TypeScript 日期时间处理完全指南
+description: "Awesome JS/TS Ecosystem 指南: JavaScript/TypeScript 日期时间处理完全指南"
+---
+
+---
 title: 'JavaScript/TypeScript 日期时间处理完全指南'
 ---
 

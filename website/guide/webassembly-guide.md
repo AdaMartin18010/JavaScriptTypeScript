@@ -1,3 +1,8 @@
+---
+title: WebAssembly 完全指南
+description: "Awesome JS/TS Ecosystem 指南: WebAssembly 完全指南"
+---
+
 # WebAssembly 完全指南
 
 > 深入理解 WebAssembly (Wasm) 在 JavaScript/TypeScript 生态系统中的定位、集成方式与性能优化策略。
