@@ -32,6 +32,11 @@
 | 13 | [13-variable-system-categorical-analysis.md](13-variable-system-categorical-analysis.md) | 解构赋值/闭包/作用域链/TDZ 的范畴论语义 | ≥8K | ≥6 |
 | 14 | [14-event-systems-and-message-passing-categorical-semantics.md](14-event-systems-and-message-passing-categorical-semantics.md) | 事件系统/消息传递/Actor/CSP 的统一范畴语义：Promise 作为 Kleisli 范畴，Stream 作为时间索引函子 | ≥8K | ≥6 |
 | 15 | [15-concurrent-computation-models.md](15-concurrent-computation-models.md) | 并发计算模型形式化：进程代数、π演算、CSP、Actor、Petri 网、JS 并发模型 | ≥8K | ≥6 |
+| 16 | [16-server-components-categorical-semantics.md](16-server-components-categorical-semantics.md) | React Server Components 的余单子范畴语义：Server/Client 伴随函子、Streaming 余极限、Suspense 拉回 | ≥8K | ≥6 |
+| 17 | [17-signals-paradigm-category-theory.md](17-signals-paradigm-category-theory.md) | Signal 范式的统一范畴论语义：时间索引余预层、细粒度响应式余单子 | ≥8K | ≥6 |
+| 18 | [18-islands-architecture-categorical-semantics.md](18-islands-architecture-categorical-semantics.md) | Astro Islands 架构的局部化范畴语义： hydration 函子、偏序集、交互边界 | ≥8K | ≥6 |
+| 19 | [19-build-tools-category-theory.md](19-build-tools-category-theory.md) | 构建工具理论的范畴论模型：依赖图范畴、增量编译函子、模块联邦余积 | ≥8K | ≥6 |
+| 20 | [20-web-components-formal-semantics.md](20-web-components-formal-semantics.md) | Web Components 的形式语义：Custom Elements 初始代数、Shadow DOM 分离函子、对偶关系 | ≥8K | ≥6 |
 
 ---
 
