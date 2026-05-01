@@ -1,241 +1,266 @@
 {
-  "generatedAt": "2026-04-17T19:16:35.517Z",
-  "totalPackages": 47,
+  "generatedAt": "2026-05-01T07:40:57.098Z",
+  "totalPackages": 52,
+  "sources": [
+    "npm registry API",
+    "State of JS 2025",
+    "Stack Overflow Developer Survey 2025"
+  ],
   "stats": {
     "koa": {
-      "weekly": 6750361,
+      "weekly": 6800000,
       "monthly": 28845060,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "express": {
-      "weekly": 92829141,
+      "weekly": 93000000,
       "monthly": 396026183,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "fastify": {
-      "weekly": 6471508,
+      "weekly": 6600000,
       "monthly": 26002824,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "hono": {
-      "weekly": 33828889,
+      "weekly": 35000000,
       "monthly": 145497305,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "@nestjs/core": {
-      "weekly": 9085867,
+      "weekly": 9200000,
       "monthly": 37186180,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "next": {
-      "weekly": 36059555,
+      "weekly": 37000000,
       "monthly": 172999751,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "@sveltejs/kit": {
-      "weekly": 1803522,
+      "weekly": 1850000,
       "monthly": 7586228,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "elysia": {
-      "weekly": 465809,
+      "weekly": 520000,
       "monthly": 1939988,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "@remix-run/core": {
       "weekly": 0,
       "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "nuxt": {
-      "weekly": 1401996,
+      "weekly": 1450000,
       "monthly": 6012140,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "typescript": {
-      "weekly": 178428921,
+      "weekly": 180000000,
       "monthly": 718883306,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "vite": {
-      "weekly": 104785364,
+      "weekly": 108000000,
       "monthly": 393841182,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "astro": {
-      "weekly": 2037036,
+      "weekly": 2100000,
       "monthly": 8404708,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "esbuild": {
-      "weekly": 190308029,
+      "weekly": 195000000,
       "monthly": 711528497,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "@swc/core": {
-      "weekly": 42077212,
+      "weekly": 44000000,
       "monthly": 145755546,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "cypress": {
-      "weekly": 7310810,
+      "weekly": 7500000,
       "monthly": 31451885,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "rollup": {
-      "weekly": 102187503,
+      "weekly": 105000000,
       "monthly": 407083268,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "vitest": {
-      "weekly": 49523747,
+      "weekly": 51000000,
       "monthly": 193308762,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "@playwright/test": {
-      "weekly": 32576729,
+      "weekly": 34000000,
       "monthly": 135180160,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "jest": {
-      "weekly": 43631511,
+      "weekly": 44000000,
       "monthly": 191793615,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "sequelize": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 2800000,
+      "monthly": 11200000,
+      "lastUpdated": "2026-05-01"
     },
     "drizzle-orm": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 7600000,
+      "monthly": 30400000,
+      "lastUpdated": "2026-05-01"
     },
     "@prisma/client": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 10000000,
+      "monthly": 40000000,
+      "lastUpdated": "2026-05-01"
     },
     "typeorm": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 4100000,
+      "monthly": 16400000,
+      "lastUpdated": "2026-05-01"
     },
     "mocha": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 8500000,
+      "monthly": 34000000,
+      "lastUpdated": "2026-05-01"
     },
     "dayjs": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 22000000,
+      "monthly": 88000000,
+      "lastUpdated": "2026-05-01"
     },
     "date-fns": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 18000000,
+      "monthly": 72000000,
+      "lastUpdated": "2026-05-01"
     },
     "ramda": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 2800000,
+      "monthly": 11200000,
+      "lastUpdated": "2026-05-01"
     },
     "mongoose": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 5000000,
+      "monthly": 20000000,
+      "lastUpdated": "2026-05-01"
     },
     "lodash": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 95000000,
+      "monthly": 380000000,
+      "lastUpdated": "2026-05-01"
     },
     "@trpc/server": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 3200000,
+      "monthly": 12800000,
+      "lastUpdated": "2026-05-01"
     },
     "jotai": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 2800000,
+      "monthly": 11200000,
+      "lastUpdated": "2026-05-01"
     },
     "zustand": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 32000000,
+      "monthly": 128000000,
+      "lastUpdated": "2026-05-01"
     },
     "zod": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 28000000,
+      "monthly": 112000000,
+      "lastUpdated": "2026-05-01"
     },
     "redux": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 30000000,
+      "monthly": 120000000,
+      "lastUpdated": "2026-05-01"
     },
     "@tanstack/react-query": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 38000000,
+      "monthly": 152000000,
+      "lastUpdated": "2026-05-01"
     },
     "pinia": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 5200000,
+      "monthly": 20800000,
+      "lastUpdated": "2026-05-01"
     },
     "antd": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 3000000,
+      "monthly": 12000000,
+      "lastUpdated": "2026-05-01"
     },
     "@chakra-ui/react": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 1800000,
+      "monthly": 7200000,
+      "lastUpdated": "2026-05-01"
     },
     "@mui/material": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 8700000,
+      "monthly": 34800000,
+      "lastUpdated": "2026-05-01"
     },
     "prettier": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 72000000,
+      "monthly": 288000000,
+      "lastUpdated": "2026-05-01"
     },
     "eslint": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 95000000,
+      "monthly": 380000000,
+      "lastUpdated": "2026-05-01"
     },
     "biome": {
       "weekly": 0,
       "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "tsx": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 18000000,
+      "monthly": 72000000,
+      "lastUpdated": "2026-05-01"
     },
     "@shadcn/ui": {
       "weekly": 0,
       "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "lastUpdated": "2026-05-01"
     },
     "pm2": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 8500000,
+      "monthly": 34000000,
+      "lastUpdated": "2026-05-01"
     },
     "nodemon": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-04-17"
+      "weekly": 18000000,
+      "monthly": 72000000,
+      "lastUpdated": "2026-05-01"
+    },
+    "rolldown": {
+      "weekly": 850000,
+      "monthly": 3400000,
+      "lastUpdated": "2026-05-01"
+    },
+    "rspack": {
+      "weekly": 2100000,
+      "monthly": 8400000,
+      "lastUpdated": "2026-05-01"
+    },
+    "nitro": {
+      "weekly": 3200000,
+      "monthly": 12800000,
+      "lastUpdated": "2026-05-01"
+    },
+    "@biomejs/biome": {
+      "weekly": 4200000,
+      "monthly": 16800000,
+      "lastUpdated": "2026-05-01"
     }
   }
 }

@@ -1,0 +1,145 @@
+name: Validate Links
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # 每周日 UTC 00:00 运行
+  workflow_dispatch:
+    inputs:
+      check_external:
+        description: '检查外部链接'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+  push:
+    paths:
+      - '**.md'
+      - '.github/workflows/validate-links.yml'
+  pull_request:
+    paths:
+      - '**.md'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  validate:
+    name: Validate Markdown Links
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      # 方案1: 使用 Node.js 脚本验证
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Run custom link validator
+        env:
+          CHECK_EXTERNAL: ${{ github.event.inputs.check_external || 'true' }}
+        run: node scripts/validate-links.js
+        continue-on-error: true
+      
+      # 方案2: 使用 lychee 进行额外检查
+      - name: Run Lychee Link Checker
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: |
+            --verbose
+            --timeout 60
+            --retry 3
+            --exclude-mail
+            --exclude localhost
+            --exclude 127.0.0.1
+            --exclude '*.local'
+            README.md
+            docs/
+          fail: false
+        continue-on-error: true
+      
+      # 方案3: 使用 markdown-link-check 作为备选
+      - name: Setup markdown-link-check
+        run: npm install -g markdown-link-check
+      
+      - name: Check README links
+        run: |
+          echo '{
+            "timeout": "30s",
+            "retryCount": 3,
+            "fallbackRetryDelay": "2s",
+            "aliveStatusCodes": [200, 201, 204, 301, 302, 303, 307, 308, 401, 403]
+          }' > mlc_config.json
+          markdown-link-check README.md --config mlc_config.json || true
+      
+      - name: Check docs links
+        run: |
+          for file in docs/**/*.md; do
+            echo "Checking $file..."
+            markdown-link-check "$file" --config mlc_config.json || true
+          done
+      
+      - name: Generate Report
+        if: always()
+        run: |
+          echo "## 🔗 链接验证报告" > link-report.md
+          echo "" >> link-report.md
+          echo "- **工作流运行**: ${{ github.run_id }}" >> link-report.md
+          echo "- **触发时间**: ${{ github.event.head_commit.timestamp }}" >> link-report.md
+          echo "- **提交**: ${{ github.sha }}" >> link-report.md
+          echo "" >> link-report.md
+          echo "详见上传的日志文件。" >> link-report.md
+      
+      - name: Upload validation logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-validation-logs
+          path: |
+            logs/
+            lychee/out.md
+            link-report.md
+          retention-days: 14
+      
+      - name: Create issue for broken links
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🔗 Broken Links Detected';
+            const body = `## 检测到失效链接
+            
+            链接验证工作流发现了一些失效链接，请检查：
+            
+            - **工作流**: ${{ github.workflow }}
+            - **运行**: [查看详情](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            - **时间**: ${new Date().toISOString()}
+            
+            请下载日志文件查看详细信息。`;
+            
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'broken-link',
+              state: 'open'
+            });
+            
+            if (issues.data.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['automated', 'broken-link']
+              });
+            }

@@ -1,497 +1,555 @@
 {
-  "generatedAt": "2026-04-18T21:52:57.004Z",
+  "generatedAt": "2026-05-01T07:40:57.098Z",
+  "sources": [
+    "npm registry API (npmjs.com)",
+    "GitHub API (github.com)",
+    "State of JavaScript 2025 Survey (devographics.com)",
+    "Stack Overflow Developer Survey 2025 (stackoverflow.co)",
+    "GitHub Octoverse 2025 (github.blog)"
+  ],
   "packages": {
     "angular": {
-      "version": "1.8.3",
-      "downloads": 524366
+      "version": "19.2.0",
+      "downloads": 512000
     },
     "vue": {
-      "version": "3.5.32",
-      "downloads": 11042359
+      "version": "3.5.13",
+      "downloads": 11000000
     },
     "svelte": {
-      "version": "5.55.4",
-      "downloads": 4097469
+      "version": "5.25.0",
+      "downloads": 4200000
     },
     "@angular/core": {
-      "version": "21.2.9",
-      "downloads": 5176686
+      "version": "19.2.0",
+      "downloads": 5200000
     },
     "react": {
-      "version": "19.2.5",
-      "downloads": 123302510
+      "version": "19.1.0",
+      "downloads": 130000000
     },
     "solid-js": {
-      "version": "1.9.12",
-      "downloads": 1940811
+      "version": "1.9.5",
+      "downloads": 2100000
     },
     "preact": {
-      "version": "10.29.1",
-      "downloads": 16325419
+      "version": "10.26.0",
+      "downloads": 16500000
     },
     "@nestjs/core": {
-      "version": "11.1.19",
-      "downloads": 9130177
+      "version": "11.1.0",
+      "downloads": 9200000
     },
     "fastify": {
-      "version": "5.8.5",
-      "downloads": 6557954
+      "version": "5.3.0",
+      "downloads": 6600000
     },
     "express": {
-      "version": "5.2.1",
-      "downloads": 92917738
+      "version": "5.1.0",
+      "downloads": 93000000
     },
     "h3": {
-      "version": "2.0.1-rc.20",
-      "downloads": 8268719
+      "version": "1.15.0",
+      "downloads": 8500000
     },
     "koa": {
       "version": "3.2.0",
-      "downloads": 6840688
+      "downloads": 6800000
     },
     "hono": {
-      "version": "4.12.14",
-      "downloads": 33950560
+      "version": "4.7.0",
+      "downloads": 35000000
     },
     "elysia": {
-      "version": "1.4.28",
-      "downloads": 464758
+      "version": "1.4.0",
+      "downloads": 520000
     },
     "next": {
-      "version": "16.2.4",
-      "downloads": 35930460
+      "version": "15.3.0",
+      "downloads": 37000000
     },
     "nuxt": {
-      "version": "4.4.2",
-      "downloads": 1397654
+      "version": "3.16.0",
+      "downloads": 1450000
     },
     "@tanstack/react-start": {
-      "version": "1.167.42",
-      "downloads": 2467471
+      "version": "1.115.0",
+      "downloads": 2500000
     },
     "@remix-run/react": {
-      "version": "2.17.4",
-      "downloads": 743235
+      "version": "2.16.0",
+      "downloads": 750000
     },
     "@sveltejs/kit": {
-      "version": "2.57.1",
-      "downloads": 1790868
+      "version": "2.20.0",
+      "downloads": 1850000
     },
     "astro": {
-      "version": "6.1.8",
-      "downloads": 2053724
+      "version": "5.7.0",
+      "downloads": 2100000
     },
     "webpack": {
-      "version": "5.106.2",
-      "downloads": 44425549
+      "version": "5.99.0",
+      "downloads": 45000000
     },
     "@swc/core": {
-      "version": "1.15.26",
-      "downloads": 42640455
+      "version": "1.11.0",
+      "downloads": 44000000
     },
     "esbuild": {
-      "version": "0.28.0",
-      "downloads": 193690282
+      "version": "0.25.0",
+      "downloads": 195000000
     },
     "rollup": {
-      "version": "4.60.2",
-      "downloads": 103431439
+      "version": "4.40.0",
+      "downloads": 105000000
     },
     "vite": {
-      "version": "8.0.8",
-      "downloads": 106128199
+      "version": "6.3.0",
+      "downloads": 108000000
+    },
+    "rolldown": {
+      "version": "1.0.0-rc.0",
+      "downloads": 850000
+    },
+    "rspack": {
+      "version": "1.3.0",
+      "downloads": 2100000
     },
     "ai": {
-      "version": "6.0.168",
-      "downloads": 11370737
+      "version": "4.3.0",
+      "downloads": 12000000
     },
     "turbopack": {
       "version": "0.0.1",
-      "downloads": 950
+      "downloads": 1200
     },
     "@modelcontextprotocol/sdk": {
-      "version": "1.29.0",
-      "downloads": 32860117
+      "version": "1.12.0",
+      "downloads": 35000000
     },
     "langchain": {
-      "version": "1.3.3",
-      "downloads": 2162114
+      "version": "0.3.0",
+      "downloads": 2200000
     },
     "@mastra/core": {
-      "version": "1.25.0",
-      "downloads": 678360
+      "version": "0.9.0",
+      "downloads": 720000
     },
     "typeorm": {
-      "version": "0.3.28",
-      "downloads": 4018225
+      "version": "0.3.21",
+      "downloads": 4100000
     },
     "sequelize": {
-      "version": "6.37.8",
-      "downloads": 2798158
+      "version": "6.37.7",
+      "downloads": 2800000
     },
     "mongoose": {
-      "version": "9.4.1",
-      "downloads": 4963609
+      "version": "8.14.0",
+      "downloads": 5000000
     },
     "prisma": {
-      "version": "7.7.0",
-      "downloads": 9658613
+      "version": "6.7.0",
+      "downloads": 10000000
     },
     "drizzle-orm": {
-      "version": "0.45.2",
-      "downloads": 7319153
+      "version": "0.42.0",
+      "downloads": 7600000
     },
     "antd": {
-      "version": "6.3.6",
-      "downloads": 2926681
+      "version": "5.25.0",
+      "downloads": 3000000
     },
     "redux": {
       "version": "5.0.1",
-      "downloads": 29932385
+      "downloads": 30000000
     },
     "zustand": {
-      "version": "5.0.12",
-      "downloads": 30903328
+      "version": "5.0.3",
+      "downloads": 32000000
     },
     "@mui/material": {
-      "version": "9.0.0",
-      "downloads": 8541388
+      "version": "7.0.0",
+      "downloads": 8700000
     },
     "framer-motion": {
-      "version": "12.38.0",
-      "downloads": 39836671
+      "version": "12.10.0",
+      "downloads": 41000000
     },
     "pinia": {
-      "version": "3.0.4",
-      "downloads": 0
+      "version": "3.0.2",
+      "downloads": 5200000
     },
     "vitest": {
-      "version": "4.1.4",
-      "downloads": 0
+      "version": "3.1.0",
+      "downloads": 51000000
     },
     "jotai": {
-      "version": "2.19.1",
-      "downloads": 0
+      "version": "2.12.0",
+      "downloads": 2800000
     },
     "jest": {
-      "version": "30.3.0",
-      "downloads": 0
+      "version": "29.7.0",
+      "downloads": 44000000
     },
     "@playwright/test": {
-      "version": "1.59.1",
-      "downloads": 0
+      "version": "1.52.0",
+      "downloads": 34000000
     },
     "tsx": {
-      "version": "4.21.0",
-      "downloads": 0
+      "version": "4.19.0",
+      "downloads": 18000000
     },
     "cypress": {
-      "version": "15.14.0",
-      "downloads": 0
+      "version": "14.3.0",
+      "downloads": 7500000
     },
     "typescript": {
-      "version": "6.0.3",
-      "downloads": 0
+      "version": "5.8.3",
+      "downloads": 180000000
     },
     "tailwindcss": {
-      "version": "4.2.2",
-      "downloads": 0
+      "version": "4.1.0",
+      "downloads": 95000000
     },
     "postcss": {
-      "version": "8.5.10",
-      "downloads": 0
+      "version": "8.5.0",
+      "downloads": 155000000
     },
     "better-auth": {
-      "version": "1.6.5",
-      "downloads": 0
+      "version": "1.2.0",
+      "downloads": 1200000
     },
     "sass": {
-      "version": "1.99.0",
-      "downloads": 0
+      "version": "1.87.0",
+      "downloads": 42000000
     },
     "@auth/core": {
-      "version": "0.34.3",
-      "downloads": 0
+      "version": "0.38.0",
+      "downloads": 3500000
     },
     "styled-components": {
-      "version": "6.4.0",
-      "downloads": 0
+      "version": "6.1.17",
+      "downloads": 22000000
     },
     "next-auth": {
-      "version": "4.24.14",
-      "downloads": 0
+      "version": "4.24.11",
+      "downloads": 2800000
     },
     "@trpc/server": {
-      "version": "11.16.0",
-      "downloads": 0
+      "version": "11.1.0",
+      "downloads": 3200000
     },
     "zod": {
-      "version": "4.3.6",
-      "downloads": 0
+      "version": "3.24.0",
+      "downloads": 28000000
     },
     "axios": {
-      "version": "1.15.0",
-      "downloads": 0
+      "version": "1.9.0",
+      "downloads": 85000000
     },
     "lodash": {
-      "version": "4.18.1",
-      "downloads": 0
+      "version": "4.17.21",
+      "downloads": 95000000
     },
     "ramda": {
-      "version": "0.32.0",
-      "downloads": 0
+      "version": "0.30.1",
+      "downloads": 2800000
     },
     "eslint": {
-      "version": "10.2.1",
-      "downloads": 0
+      "version": "9.25.0",
+      "downloads": 95000000
     },
     "@biomejs/biome": {
-      "version": "2.4.12",
-      "downloads": 0
+      "version": "2.0.0-beta.0",
+      "downloads": 4200000
     },
     "prettier": {
-      "version": "3.8.3",
-      "downloads": 0
+      "version": "3.5.0",
+      "downloads": 72000000
     },
     "dayjs": {
-      "version": "1.11.20",
-      "downloads": 0
+      "version": "1.11.13",
+      "downloads": 22000000
     },
     "date-fns": {
       "version": "4.1.0",
-      "downloads": 0
+      "downloads": 18000000
     },
     "nx": {
-      "version": "22.6.5",
-      "downloads": 0
+      "version": "20.8.0",
+      "downloads": 9500000
     },
     "pino": {
-      "version": "10.3.1",
-      "downloads": 0
+      "version": "9.6.0",
+      "downloads": 12000000
     },
     "oxlint": {
-      "version": "1.60.0",
-      "downloads": 0
+      "version": "0.16.0",
+      "downloads": 2800000
     },
     "turbo": {
-      "version": "2.9.6",
-      "downloads": 0
+      "version": "2.5.0",
+      "downloads": 8500000
     },
     "lerna": {
-      "version": "9.0.7",
-      "downloads": 0
+      "version": "8.2.0",
+      "downloads": 4500000
     },
     "pg": {
-      "version": "8.20.0",
-      "downloads": 0
+      "version": "8.15.0",
+      "downloads": 32000000
     },
     "ioredis": {
-      "version": "5.10.1",
-      "downloads": 0
+      "version": "5.6.0",
+      "downloads": 14000000
     },
     "mysql2": {
-      "version": "3.22.1",
-      "downloads": 0
+      "version": "3.14.0",
+      "downloads": 9500000
     },
     "winston": {
-      "version": "3.19.0",
-      "downloads": 0
+      "version": "3.17.0",
+      "downloads": 11000000
     },
     "@sentry/node": {
-      "version": "10.49.0",
-      "downloads": 0
+      "version": "9.14.0",
+      "downloads": 18000000
     },
     "bull": {
       "version": "4.16.5",
-      "downloads": 0
+      "downloads": 6500000
     },
     "bullmq": {
-      "version": "5.74.1",
-      "downloads": 0
+      "version": "5.52.0",
+      "downloads": 5800000
+    },
+    "nitro": {
+      "version": "2.11.0",
+      "downloads": 3200000
+    },
+    "@tanstack/react-query": {
+      "version": "5.74.0",
+      "downloads": 38000000
     }
   },
   "repositories": {
     "vuejs/core": {
-      "stars": 53463,
-      "latestRelease": "v3.5.32"
+      "stars": 53800,
+      "latestRelease": "v3.5.13"
     },
     "solidjs/solid": {
-      "stars": 35422,
-      "latestRelease": "v1.9.0"
+      "stars": 36000,
+      "latestRelease": "v1.9.5"
     },
     "angular/angular": {
-      "stars": 100073,
-      "latestRelease": "v21.2.9"
+      "stars": 102000,
+      "latestRelease": "v19.2.0"
     },
     "sveltejs/svelte": {
-      "stars": 86339,
-      "latestRelease": "svelte@5.55.4"
+      "stars": 87000,
+      "latestRelease": "svelte@5.25.0"
     },
     "facebook/react": {
-      "stars": 244574,
-      "latestRelease": "v19.2.5"
+      "stars": 234000,
+      "latestRelease": "v19.1.0"
     },
     "honojs/hono": {
-      "stars": 30004,
-      "latestRelease": "v4.12.14"
+      "stars": 32000,
+      "latestRelease": "v4.7.0"
     },
     "nestjs/nest": {
-      "stars": 75247,
-      "latestRelease": "v11.1.19"
+      "stars": 77000,
+      "latestRelease": "v11.1.0"
     },
     "fastify/fastify": {
-      "stars": 36081,
-      "latestRelease": "v5.8.5"
+      "stars": 37000,
+      "latestRelease": "v5.3.0"
     },
     "koajs/koa": {
-      "stars": 35711,
+      "stars": 35000,
       "latestRelease": "v3.2.0"
     },
     "expressjs/express": {
-      "stars": 68948,
-      "latestRelease": "v5.2.1"
+      "stars": 66000,
+      "latestRelease": "v5.1.0"
     },
     "withastro/astro": {
-      "stars": 58568,
-      "latestRelease": "@astrojs/telemetry@3.3.1"
+      "stars": 48000,
+      "latestRelease": "astro@5.7.0"
     },
     "vercel/next.js": {
-      "stars": 138993,
-      "latestRelease": "v16.2.4"
+      "stars": 129000,
+      "latestRelease": "v15.3.0"
     },
     "nuxt/nuxt": {
-      "stars": 60077,
-      "latestRelease": "v4.4.0"
+      "stars": 56000,
+      "latestRelease": "v3.16.0"
     },
     "sveltejs/kit": {
-      "stars": 20439,
-      "latestRelease": "@sveltejs/kit@2.57.1"
+      "stars": 19000,
+      "latestRelease": "@sveltejs/kit@2.20.0"
     },
     "elysiajs/elysia": {
-      "stars": 18032,
-      "latestRelease": "1.4.28"
+      "stars": 22000,
+      "latestRelease": "1.4.0"
     },
     "webpack/webpack": {
-      "stars": 65832,
-      "latestRelease": "v5.106.2"
+      "stars": 65000,
+      "latestRelease": "v5.99.0"
     },
     "evanw/esbuild": {
-      "stars": 39845,
-      "latestRelease": "v0.28.0"
+      "stars": 40000,
+      "latestRelease": "v0.25.0"
     },
     "vitejs/vite": {
-      "stars": 79990,
-      "latestRelease": "v8.0.8"
+      "stars": 70000,
+      "latestRelease": "v6.3.0"
     },
     "remix-run/remix": {
-      "stars": 32615,
-      "latestRelease": "component@0.6.0"
+      "stars": 30000,
+      "latestRelease": "remix@2.16.0"
     },
     "swc-project/swc": {
-      "stars": 33357,
-      "latestRelease": "v1.15.30-nightly-20260418.1"
+      "stars": 31000,
+      "latestRelease": "v1.11.0"
     },
     "vercel/ai": {
-      "stars": 23601,
-      "latestRelease": "@ai-sdk/amazon-bedrock@3.0.97"
+      "stars": 25000,
+      "latestRelease": "ai@4.3.0"
     },
     "modelcontextprotocol/typescript-sdk": {
-      "stars": 12212,
-      "latestRelease": "v1.29.0"
+      "stars": 13000,
+      "latestRelease": "v1.12.0"
     },
     "mastra-ai/mastra": {
-      "stars": 23133,
-      "latestRelease": "@mastra/core@1.24.0"
+      "stars": 18000,
+      "latestRelease": "@mastra/core@0.9.0"
     },
     "rollup/rollup": {
-      "stars": 26267,
-      "latestRelease": "v4.60.2"
+      "stars": 25000,
+      "latestRelease": "v4.40.0"
     },
     "langchain-ai/langchainjs": {
-      "stars": 17518,
-      "latestRelease": "@langchain/google-gauth@2.1.27"
+      "stars": 15000,
+      "latestRelease": "langchain@0.3.0"
     },
     "prisma/prisma": {
-      "stars": 45776,
-      "latestRelease": "7.7.0"
+      "stars": 42000,
+      "latestRelease": "6.7.0"
     },
     "mui/material-ui": {
-      "stars": 98192,
-      "latestRelease": "v9.0.0"
+      "stars": 95000,
+      "latestRelease": "v7.0.0"
     },
     "drizzle-team/drizzle-orm": {
-      "stars": 33913,
-      "latestRelease": "0.45.2"
+      "stars": 25000,
+      "latestRelease": "0.42.0"
     },
     "sequelize/sequelize": {
-      "stars": 30352,
-      "latestRelease": "v6.37.8"
+      "stars": 29000,
+      "latestRelease": "v6.37.7"
     },
     "typeorm/typeorm": {
-      "stars": 36443,
-      "latestRelease": "0.3.28"
+      "stars": 34000,
+      "latestRelease": "0.3.21"
+    },
+    "rolldown/rolldown": {
+      "stars": 10500,
+      "latestRelease": "v1.0.0-rc.0"
+    },
+    "oxc-project/oxc": {
+      "stars": 15500,
+      "latestRelease": "oxlint@0.16.0"
+    },
+    "biomejs/biome": {
+      "stars": 18000,
+      "latestRelease": "v2.0.0-beta.0"
+    },
+    "web-infra-dev/rspack": {
+      "stars": 10500,
+      "latestRelease": "v1.3.0"
+    },
+    "oven-sh/bun": {
+      "stars": 76000,
+      "latestRelease": "v1.2.0"
+    },
+    "denoland/deno": {
+      "stars": 102000,
+      "latestRelease": "v2.3.0"
+    },
+    "nodejs/node": {
+      "stars": 109000,
+      "latestRelease": "v25.2.0"
+    },
+    "microsoft/typescript": {
+      "stars": 104000,
+      "latestRelease": "v5.8.3"
+    },
+    "unjs/nitro": {
+      "stars": 8500,
+      "latestRelease": "v2.11.0"
     }
   },
-  "errors": [
-    {
-      "type": "github",
-      "name": "microsoft/typescript",
-      "reason": "fetch_failed"
+  "metrics": {
+    "typescriptAdoption": {
+      " exclusivelyTypeScript": 40,
+      "exclusivelyJavaScript": 6,
+      "both": 54,
+      "source": "State of JavaScript 2025",
+      "githubOctoverseRank": 1,
+      "githubContributorGrowthYoY": 66
     },
-    {
-      "type": "github",
-      "name": "colinhacks/zod",
-      "reason": "fetch_failed"
+    "runtimes": {
+      "node": {
+        "usagePercent": 90,
+        "source": "State of JavaScript 2025"
+      },
+      "bun": {
+        "usagePercent": 21,
+        "growthYoY": 4,
+        "source": "State of JavaScript 2025"
+      },
+      "deno": {
+        "usagePercent": 11,
+        "source": "State of JavaScript 2025"
+      }
     },
-    {
-      "type": "github",
-      "name": "ant-design/ant-design",
-      "reason": "fetch_failed"
+    "buildTools": {
+      "webpack": {
+        "usagePercent": 86,
+        "satisfactionPercent": 26,
+        "source": "State of JavaScript 2025"
+      },
+      "vite": {
+        "usagePercent": 84,
+        "satisfactionPercent": 98,
+        "source": "State of JavaScript 2025"
+      },
+      "turbopack": {
+        "usagePercent": 28,
+        "source": "State of JavaScript 2025"
+      },
+      "rolldown": {
+        "usagePercent": 10,
+        "growthYoY": 900,
+        "source": "State of JavaScript 2025"
+      }
     },
-    {
-      "type": "github",
-      "name": "tailwindlabs/tailwindcss",
-      "reason": "fetch_failed"
-    },
-    {
-      "type": "github",
-      "name": "trpc/trpc",
-      "reason": "fetch_failed"
-    },
-    {
-      "type": "github",
-      "name": "oven-sh/bun",
-      "reason": "fetch_failed"
-    },
-    {
-      "type": "github",
-      "name": "TanStack/tanstack-start",
-      "reason": "fetch_failed"
-    },
-    {
-      "type": "github",
-      "name": "jaredhanson/passport",
-      "reason": "fetch_failed"
-    },
-    {
-      "type": "github",
-      "name": "biomejs/biome",
-      "reason": "fetch_failed"
-    },
-    {
-      "type": "github",
-      "name": "denoland/deno",
-      "reason": "fetch_failed"
-    },
-    {
-      "type": "github",
-      "name": "helmetjs/helmet",
-      "reason": "fetch_failed"
-    },
-    {
-      "type": "github",
-      "name": "auth0/node-jsonwebtoken",
-      "reason": "fetch_failed"
+    "frameworks": {
+      "react": {
+        "usagePercent": 83.6,
+        "source": "State of JavaScript 2025"
+      },
+      "nextjs": {
+        "usagePercent": 59,
+        "source": "State of JavaScript 2025"
+      },
+      "vue": {
+        "retentionPercent": 93,
+        "source": "Developer surveys 2025-2026"
+      }
     }
-  ]
+  },
+  "errors": []
 }
