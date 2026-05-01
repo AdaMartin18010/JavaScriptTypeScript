@@ -37,6 +37,8 @@
 | 12 | [12-multimodal-interaction-theory.md](12-multimodal-interaction-theory.md) | 代码+类型+运行时的多模态整合、IDE 认知工具、AI 辅助编程 | ≥8K | ≥6 |
 | 13 | [13-frontend-framework-computation-models.md](13-frontend-framework-computation-models.md) | 前端框架内部计算模型形式化：React Fiber/VDOM Diff、Vue 响应式图论、Angular 变更检测、Solid Signals、Svelte 编译时 | ≥8K | ≥6 |
 | 14 | [14-browser-rendering-engine-principles.md](14-browser-rendering-engine-principles.md) | 浏览器渲染引擎技术原理：DOM/CSSOM/Render Tree、Layout、Paint、Composite、V8 交互 | ≥8K | ≥6 |
+| 15 | [15-edge-computing-cognitive-model.md](15-edge-computing-cognitive-model.md) | Edge Runtime 的开发者认知模型：三元心智、延迟分层、状态幻觉、成本直觉 | ≥8K | ≥6 |
+| 16 | [16-developer-cognitive-modern-stack.md](16-developer-cognitive-modern-stack.md) | 现代前端技术栈的开发者认知模型：技术爆炸、认知过载、决策疲劳、框架选型 | ≥8K | ≥6 |
 
 ---
 

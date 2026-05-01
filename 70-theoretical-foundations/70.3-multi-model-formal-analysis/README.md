@@ -33,6 +33,8 @@
 | 09 | [09-formal-verification-of-model-gaps.md](09-formal-verification-of-model-gaps.md) | TLA+/Coq 建模、属性基测试、符号执行 | ≥8K | ≥6 |
 | 10 | [10-unified-metamodel-for-js-ts.md](10-unified-metamodel-for-js-ts.md) | 统一元模型 $M_{JS/TS}$ 的提出与范畴论语义 | ≥8K | ≥6 |
 | 11 | [11-execution-framework-rendering-triangle.md](11-execution-framework-rendering-triangle.md) | 执行模型→框架设计→渲染优化的系统性三角关联：React Concurrent Mode、Vue 3 编译时优化、跨平台映射 | ≥8K | ≥6 |
+| 12 | [12-meta-framework-symmetric-difference.md](12-meta-framework-symmetric-difference.md) | 元框架的形式化对称差分析：Next.js/Nuxt/SvelteKit/Astro/Remix 的渲染策略格与不可表达性 | ≥8K | ≥6 |
+| 13 | [13-unified-frontend-architecture-analysis.md](13-unified-frontend-architecture-analysis.md) | 前端架构模式的统一形式化分析：渲染策略完备格、七框架对称差、不可能三角 | ≥8K | ≥6 |
 
 ---
 
