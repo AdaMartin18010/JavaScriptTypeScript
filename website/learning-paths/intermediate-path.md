@@ -305,6 +305,7 @@ interface ApiResponse<T> {
 - [Patterns.dev](https://www.patterns.dev/) - 现代 Web 应用设计模式
 - [Refactoring.Guru](https://refactoring.guru/) - 重构和设计模式
 - [Web.dev Performance](https://web.dev/performance-scoring/) - 性能优化指南
+- [Svelte 5 Signals 编译器生态全栈指南](/svelte-signals-stack/) - Compiler-Based Signals + SvelteKit + Edge 部署
 
 ### 源码阅读
 
@@ -344,6 +345,7 @@ interface ApiResponse<T> {
 完成进阶路径后，可以继续：
 
 - [高级学习路径](./advanced-path.md) - 分布式系统和架构师思维
+- [Svelte 5 Signals 编译器生态](/svelte-signals-stack/) - 深入 Compiler-Based Signals 架构与 Edge 全栈开发
 - jsts-code-lab 高级模块
 
 ---

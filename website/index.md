@@ -60,6 +60,10 @@ features:
     title: Edge 与部署
     details: Cloudflare Workers、Vercel、Docker、Serverless 边缘计算与部署平台
     link: /categories/deployment-hosting
+  - icon: ⚡
+    title: Svelte 5 Signals
+    details: Compiler-Based Signals 编译器生态专题 — Svelte 5、SvelteKit、TypeScript、Vite 全栈指南
+    link: /svelte-signals-stack/
 ---
 
 <script setup>

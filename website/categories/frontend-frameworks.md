@@ -472,6 +472,66 @@ description: JavaScript/TypeScript 前端框架生态库 完整指南
 - 需要 SSR 的 Svelte 项目
 - 边缘部署应用
 
+### 4.3 Svelte 5 Runes 深度
+
+Svelte 5（2024-10）引入 Runes — 基于 Signals 的显式响应式系统，替代了 Svelte 4 的隐式 `$:` 声明。
+
+| 特性 | Svelte 4 | Svelte 5 |
+|------|----------|----------|
+| **状态声明** | `let count = 0` | `let count = $state(0)` |
+| **派生计算** | `$: doubled = count * 2` | `let doubled = $derived(count * 2)` |
+| **副作用** | `onMount(() => {...})` | `$effect(() => {...})` |
+| **Props** | `export let name` | `let { name } = $props()` |
+| **跨文件状态** | Svelte Stores | `.svelte.ts` 文件 |
+| **Bundle** | ~5KB | **~2KB** |
+
+**核心 Runes 原语**：
+
+| Rune | 作用 | 示例 |
+|------|------|------|
+| `$state` | 创建响应式状态 | `let count = $state(0)` |
+| `$derived` | 创建派生计算 | `let doubled = $derived(count * 2)` |
+| `$effect` | 创建副作用 | `$effect(() => console.log(count))` |
+| `$props` | 接收组件 props | `let { name } = $props()` |
+| `$bindable` | 双向绑定 | `let { value = $bindable() } = $props()` |
+| `$inspect` | 调试追踪 | `$inspect(count)` |
+
+**性能数据**（来源：JS Framework Benchmark 2026-04）：
+
+| 测试项 | Svelte 5 | React 19 | Vue 3.5 |
+|--------|----------|----------|---------|
+| 创建 10,000 行 | **250ms** | 450ms | 400ms |
+| 更新每 10 行 | **18ms** | 45ms | 38ms |
+| Hello World gzip | **~2KB** | ~42KB | ~34KB |
+| Lighthouse | **96/100** | 92/100 | 94/100 |
+
+### 4.4 Svelte 生态工具
+
+| 工具 | Stars | 定位 |
+|------|-------|------|
+| **shadcn-svelte** | 8k+ | 拷贝式 UI 组件库 |
+| **Skeleton UI** | 5k+ | 完整 Svelte 组件库 |
+| **Melt UI** | 4k+ | 无头组件原语 |
+| **Superforms** | 4k+ | 表单处理 + Zod 验证 |
+| **Lucia Auth** | 6k+ | 轻量认证 |
+| **SvelteKit** | 19k+ | 官方全栈框架 |
+
+### 4.5 选型对比
+
+| 维度 | Svelte 5 | React 19 | Vue 3.5 | Solid 1.9 |
+|------|----------|----------|---------|-----------|
+| **Bundle** | ~2KB | ~42KB | ~34KB | ~7KB |
+| **学习曲线** | 低 | 中等 | 低 | 中等 |
+| **性能** | 顶级 | 良好 | 良好 | 顶级 |
+| **生态** | 中等 | 极大 | 大 | 较小 |
+| **招聘** | 窄 | 极广 | 广 | 极窄 |
+| **TS 支持** | 优秀 | 优秀 | 优秀 | 优秀 |
+| **SSR** | SvelteKit | Next.js | Nuxt | SolidStart |
+
+> 📊 数据来源：GitHub Stars 2026-05, JS Framework Benchmark 2026-04, State of JS 2024
+
+**深度阅读**：[Svelte 5 Signals 编译器生态全栈指南](/svelte-signals-stack/) — 覆盖 Compiler Signals 架构、Runes 完全指南、SvelteKit 全栈开发、TypeScript 编译运行时、Vite + pnpm 构建集成、Edge 部署与生产实践。
+
 ---
 
 ## 5. Solid 生态
