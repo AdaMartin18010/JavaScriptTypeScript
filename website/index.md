@@ -68,7 +68,7 @@ import { ref, computed } from 'vue'
 // 统计数据
 const stats = ref({
   libraries: 280,
-  categories: 33,
+  categories: 37,
   contributors: 8,
   lastUpdated: '2026-05'
 })
@@ -77,7 +77,7 @@ const stats = ref({
 const updates = ref([
   { date: '2026-05', tag: '发布', content: '🚀 v5.1 发布：全面梳理2026十大趋势，覆盖语言/编译/构建/运行时/框架/架构全栈' },
   { date: '2026-05', tag: '新增', content: '新增 Rust 工具链专题（Rolldown/Oxc/Biome/Rspack）、AI-Native开发、Edge-First架构' },
-  { date: '2026-05', tag: '新增', content: '新增浏览器API 2026、桌面开发、实时通信、AI/ML in JS等8个分类' },
+  { date: '2026-05', tag: '新增', content: '新增 TypeScript 语言全景、性能工程、数据库与存储、API 开发、浏览器 API 2026、桌面开发、实时通信、AI/ML in JS 等 12 个分类' },
   { date: '2026-05', tag: '更新', content: '更新所有对比矩阵至2026 Q2数据：Vite满意度98%、Cloudflare Workers 12%、TS登顶GitHub' },
   { date: '2026-05', tag: '重构', content: '网站架构升级：VitePress 1.6 + Rolldown构建、Oxlint统一、Node 24 LTS' },
 ])

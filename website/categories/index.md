@@ -5,7 +5,7 @@ description: JavaScript/TypeScript 生态系统技术分类总导航，覆盖语
 
 # 技术分类导航
 
-> 33 个技术分类，覆盖 JS/TS 生态全领域，对齐 2026 十大趋势。
+> 37 个技术分类，覆盖 JS/TS 生态全领域，对齐 2026 十大趋势。
 
 ## 📦 前端核心
 
@@ -29,13 +29,20 @@ description: JavaScript/TypeScript 生态系统技术分类总导航，覆盖语
 - [样式处理](./styling)
 - [Linting & 格式化](./linting-formatting)
 
-## 🔧 后端与工具
+## 🔧 后端与数据
 
+- [后端框架](./backend-frameworks)
+- [API 开发与架构](./api-development)
+- [数据库与存储](./databases)
 - [ORM / 数据库](./orm-database)
+- [实时通信](./real-time-communication)
 - [测试](./testing)
 - [测试生态](./testing-ecosystem)
-- [后端框架](./backend-frameworks)
-- [实时通信](./real-time-communication)
+
+## 📐 语言核心与性能
+
+- [TypeScript 语言全景](./typescript-language)
+- [性能工程与优化](./performance-engineering)
 
 ## 🦀 Rust 工具链与构建
 
@@ -62,4 +69,4 @@ description: JavaScript/TypeScript 生态系统技术分类总导航，覆盖语
 
 ---
 
-最后更新: 2026-05-01 | 新增: Rust 工具链、AI/ML、桌面端开发、实时通信、包管理器、浏览器 APIs 2026（对齐 2026 十大趋势）
+最后更新: 2026-05-01 | 新增: TypeScript 语言全景、性能工程、数据库与存储、API 开发、Rust 工具链、AI/ML、桌面端开发、实时通信、包管理器、浏览器 APIs 2026（对齐 2026 十大趋势）

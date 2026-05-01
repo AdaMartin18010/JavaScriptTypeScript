@@ -113,14 +113,16 @@ export const sidebar: DefaultTheme.Sidebar = {
       ]
     },
     {
-      text: '🔧 后端与工具',
+      text: '🔧 后端与数据',
       collapsed: false,
       items: [
+        { text: '🔐 后端框架', link: '/categories/backend-frameworks' },
+        { text: '📡 API 开发', link: '/categories/api-development' },
+        { text: '🗄️ 数据库与存储', link: '/categories/databases' },
         { text: '🗄️ ORM/数据库', link: '/categories/orm-database' },
+        { text: '⚡ 实时通信', link: '/categories/real-time-communication' },
         { text: '🧪 测试', link: '/categories/testing' },
         { text: '🔗 测试生态', link: '/categories/testing-ecosystem' },
-        { text: '🔐 后端框架', link: '/categories/backend-frameworks' },
-        { text: '⚡ 实时通信', link: '/categories/real-time-communication' },
       ]
     },
     {
@@ -137,6 +139,14 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '🦀 Rust 工具链全景', link: '/categories/rust-toolchain' },
         { text: '⚡ 构建工具对比', link: '/comparison-matrices/build-tools-compare' },
         { text: '🔧 JS/TS 编译器对比', link: '/comparison-matrices/js-ts-compilers-compare' },
+      ]
+    },
+    {
+      text: '📐 语言核心',
+      collapsed: false,
+      items: [
+        { text: '🔷 TypeScript 语言全景', link: '/categories/typescript-language' },
+        { text: '⚡ 性能工程与优化', link: '/categories/performance-engineering' },
       ]
     },
     {
