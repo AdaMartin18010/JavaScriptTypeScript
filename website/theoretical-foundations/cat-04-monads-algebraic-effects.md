@@ -9,7 +9,7 @@ category: "theoretical-foundations"
 # 单子与代数效应：Promise/Async 与 Rust Result 的深度对比
 
 > **理论深度**: 研究生级别
-> **前置阅读**: [范畴论入门](cat-01-category-theory-primer.md), [函子与自然变换](cat-03-functors-natural-transformations-in-js.md)
+> **前置阅读**: [范畴论入门](cat-01-category-theory-primer.md), [函子与自然变换](cat-03-functors-natural-transformations.md)
 > **目标读者**: 语言设计者、高级框架开发者、全栈架构师
 
 ---
@@ -537,6 +537,7 @@ graph LR
 **哪里像**：准确传达了单子的核心语义——"计算不是孤立的，它携带了影响后续计算的环境信息"。
 
 **哪里不像**：
+
 - ❌ "管道"暗示了数据的线性流动，但某些单子（如 List Monad）更像"分叉路口"
 - ❌ "环境控制室"暗示了有状态的机制，但 Identity Monad 没有任何额外机制
 - ❌ 没有直接解释单子律为什么重要——它们是保证组合**结合性**和**单位元**的数学公理
