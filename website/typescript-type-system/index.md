@@ -78,20 +78,20 @@ flowchart TB
 | | Day 4-7 | [02 原始类型深度](./02-primitive-types.md) | 精通字面量类型、联合/交叉类型、enum 的陷阱与最佳实践 | 6h |
 | | Day 8-11 | [03 对象类型](./03-object-types.md) | 彻底区分 interface 与 type；掌握索引签名和映射类型基础 | 8h |
 | | Day 12-14 | [04 函数类型](./04-function-types.md) | 理解函数重载、this 类型、严格函数类型、参数变型 | 6h |
-| **核心机制** | Day 15-18 | [05 泛型深度](./05-generics-deep-dive.md) | 泛型约束、默认参数、条件类型前置、infer 关键字 | 10h |
-| | Day 19-21 | [06 条件类型](./06-conditional-types.md) | 分布式条件类型、never 过滤、类型分配律 | 8h |
-| | Day 22-25 | [07 映射类型](./07-mapped-types.md) | 内置映射类型原理、Key Remapping via `as`、自定义映射 | 8h |
-| | Day 26-28 | [08 模板字面量类型](./08-template-literal-types.md) | 字符串操作类型、类型级路由解析、事件名推导 | 6h |
-| | Day 29-32 | [09 类型推断](./09-type-inference.md) | 上下文类型推断、泛型推断、最佳公共类型、ReturnType 推导 | 8h |
-| | Day 33-35 | [10 类型兼容性](./10-type-compatibility.md) | 结构化类型系统、名义类型模拟、branded types 实战 | 6h |
-| **工具与实战** | Day 36-39 | [11 内置工具类型](./11-utility-types.md) | 手写实现所有内置工具类型；理解其设计意图 | 8h |
-| | Day 40-43 | [12 类型体操](./12-type-challenges.md) | 完成 easy/medium/hard 三个梯度的类型挑战 | 12h |
-| | Day 44-46 | [13 高级模式](./13-advanced-patterns.md) | branded/opaque/phantom types；HKT 高阶类型模拟 | 8h |
-| | Day 47-49 | [14 声明合并](./14-declaration-merging.md) | namespace、module augmentation、全局类型扩展 | 6h |
-| **工程与内部** | Day 50-52 | [15 装饰器类型系统](./15-decorators-types.md) | Stage 3 Decorators 的类型支持、元数据类型 | 6h |
-| | Day 53-55 | [16 tsconfig完全指南](./16-tsconfig-deep-dive.md) | 逐行解析 compilerOptions；针对项目类型优化配置 | 8h |
-| | Day 56-58 | [17 类型系统性能](./17-performance-optimization.md) | 复杂类型编译优化、项目引用、增量编译 | 6h |
-| | Day 59-60 | [18 编译器内部](./18-type-system-internals.md) | 类型检查器架构、绑定器、检查器、类型关系图 | 10h |
+| **核心机制** | Day 15-18 | 05 泛型深度 | 泛型约束、默认参数、条件类型前置、infer 关键字 | 10h |
+| | Day 19-21 | *06 条件类型*（待更新） | 分布式条件类型、never 过滤、类型分配律 | 8h |
+| | Day 22-25 | *07 映射类型*（待更新） | 内置映射类型原理、Key Remapping via `as`、自定义映射 | 8h |
+| | Day 26-28 | *08 模板字面量类型*（待更新） | 字符串操作类型、类型级路由解析、事件名推导 | 6h |
+| | Day 29-32 | *09 类型推断*（待更新） | 上下文类型推断、泛型推断、最佳公共类型、ReturnType 推导 | 8h |
+| | Day 33-35 | *10 类型兼容性*（待更新） | 结构化类型系统、名义类型模拟、branded types 实战 | 6h |
+| **工具与实战** | Day 36-39 | 11 内置工具类型 | 手写实现所有内置工具类型；理解其设计意图 | 8h |
+| | Day 40-43 | *12 类型体操*（待更新） | 完成 easy/medium/hard 三个梯度的类型挑战 | 12h |
+| | Day 44-46 | *13 高级模式*（待更新） | branded/opaque/phantom types；HKT 高阶类型模拟 | 8h |
+| | Day 47-49 | *14 声明合并*（待更新） | namespace、module augmentation、全局类型扩展 | 6h |
+| **工程与内部** | Day 50-52 | 15 装饰器类型系统 | Stage 3 Decorators 的类型支持、元数据类型 | 6h |
+| | Day 53-55 | *16 tsconfig完全指南*（待更新） | 逐行解析 compilerOptions；针对项目类型优化配置 | 8h |
+| | Day 56-58 | *17 类型系统性能*（待更新） | 复杂类型编译优化、项目引用、增量编译 | 6h |
+| | Day 59-60 | *18 编译器内部*（待更新） | 类型检查器架构、绑定器、检查器、类型关系图 | 10h |
 
 **总计**：约 140 小时，每天约 2.3 小时。
 

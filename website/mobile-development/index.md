@@ -96,9 +96,9 @@ flowchart TD
 | [01](./01-react-native-new-arch.md) | React Native New Architecture | Fabric、TurboModules、JSI 架构解析 |
 | [02](./02-expo-ecosystem.md) | Expo 生态系统 | Expo Router、EAS Build、Expo Modules |
 | [03](./03-tauri-v2-mobile.md) | Tauri v2 移动端支持 | Rust 后端、iOS/Android 原生集成 |
-| [04](./04-capacitor-ionic.md) | Capacitor + Ionic | Web-to-Mobile 桥接方案 |
-| [05](./05-performance-optimization.md) | 移动端性能优化 | 启动时间、包体积、内存管理 |
-| [06](./06-deployment-strategies.md) | 部署策略 | App Store、OTA 更新、CodePush 替代方案 |
+| 04 | Capacitor + Ionic | Web-to-Mobile 桥接方案 |
+| 05 | 移动端性能优化 | 启动时间、包体积、内存管理 |
+| 06 | 部署策略 | App Store、OTA 更新、CodePush 替代方案 |
 
 ## 典型项目结构示例
 
@@ -181,7 +181,7 @@ mobile-tauri-app/
 2. **Expo** 已成为 React Native 生态的事实标准开发层，EAS 构建服务显著降低了 CI/CD 复杂度。
 3. **Tauri v2** 的移动端支持为已有 Web/桌面应用提供了最低成本的移动扩展路径，尤其适合 Rust 技术栈团队。
 4. **Capacitor** 是已有 Web 应用（Vue/React/Angular）迁移到移动端的最高效方案，但不适合高性能需求场景。
-5. **包体积与启动速度** 仍是跨平台方案的普遍瓶颈，需结合本专题 [05 性能优化章节](./05-performance-optimization.md) 进行针对性调优。
+5. **包体积与启动速度** 仍是跨平台方案的普遍瓶颈，需结合本专题 05 性能优化章节 进行针对性调优。
 
 ---
 

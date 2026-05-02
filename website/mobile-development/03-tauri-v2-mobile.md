@@ -451,5 +451,5 @@ src-tauri/gen/ios/
 
 > 🔗 **相关阅读**：
 >
-> - [Capacitor + Ionic](./04-capacitor-ionic.md) — 另一种 Web-to-Mobile 方案的对比
-> - [性能优化](./05-performance-optimization.md) — Tauri 应用的包体积与启动优化
+> - Capacitor + Ionic — 另一种 Web-to-Mobile 方案的对比
+> - 性能优化 — Tauri 应用的包体积与启动优化

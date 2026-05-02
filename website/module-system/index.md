@@ -122,11 +122,11 @@ mindmap
 | [01 - ESM 基础](./01-esm-fundamentals.md) | ESM 核心机制 | `import`/`export` 语法、命名/默认导出、静态分析、Tree Shaking |
 | [02 - CJS 内部机制](./02-cjs-internals.md) | CommonJS 原理 | `require` 实现、`module.exports`、模块包装器、缓存机制、循环依赖 |
 | [03 - ESM/CJS 互操作](./03-esm-cjs-interop.md) | 互操作与配置 | `.cjs`/`.mjs`、package.json `type`、条件导出、Dual Package Hazard |
-| [04 - Import Attributes](./04-import-attributes.md) | 导入属性 | JSON/CSS 导入、`with { type: "json" }`、类型安全 |
-| [05 - 循环依赖](./05-circular-dependencies.md) | 循环依赖 | 检测方法、解决策略、最佳实践、工具辅助 |
-| [06 - 模块解析算法](./06-module-resolution.md) | 模块解析 | Node.js 解析规则、Bundler 差异、TypeScript `moduleResolution` |
-| [07 - 打包器模块图](./07-bundler-module-graph.md) | 打包器原理 | Rollup/Webpack/Vite 的模块图构建、Code Splitting、Scope Hoisting |
-| [08 - Defer 与 Import Maps](./08-defer-module-scripts.md) | 浏览器加载 | `type=module` defer/async 差异、Import Maps 配置、性能优化 |
+| *04 - Import Attributes*（待更新） | 导入属性 | JSON/CSS 导入、`with { type: "json" }`、类型安全 |
+| *05 - 循环依赖*（待更新） | 循环依赖 | 检测方法、解决策略、最佳实践、工具辅助 |
+| *06 - 模块解析算法*（待更新） | 模块解析 | Node.js 解析规则、Bundler 差异、TypeScript `moduleResolution` |
+| *07 - 打包器模块图*（待更新） | 打包器原理 | Rollup/Webpack/Vite 的模块图构建、Code Splitting、Scope Hoisting |
+| *08 - Defer 与 Import Maps*（待更新） | 浏览器加载 | `type=module` defer/async 差异、Import Maps 配置、性能优化 |
 
 ---
 

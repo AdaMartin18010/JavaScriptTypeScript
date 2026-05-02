@@ -324,4 +324,4 @@ graph LR
 > 🔗 **相关阅读**：
 >
 > - [Expo 生态系统](./02-expo-ecosystem.md) — Expo 如何简化 New Architecture 配置
-> - [性能优化](./05-performance-optimization.md) — New Architecture 下的启动优化策略
+> - 性能优化 — New Architecture 下的启动优化策略

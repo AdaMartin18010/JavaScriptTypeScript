@@ -58,6 +58,6 @@ mindmap
 | [01 - 对象基础](./01-object-fundamentals) | 创建方式、属性描述符、Getter/Setter、V8 内部表示 | 15 min |
 | [02 - 原型链深度](./02-prototype-chain) | `[[Prototype]]`、原型查找、原型污染、性能对比 | 20 min |
 | [03 - Class vs 原型](./03-class-vs-prototype) | ES6 Class 继承链、`super`、`new.target` | 15 min |
-| [04 - Proxy / Reflect](./04-proxy-reflect) | 拦截器、不可撤销 Proxy、Reflect API | 15 min |
-| [05 - 私有字段](./05-private-fields) | `#prefix`、WeakMap 模拟、封装模式 | 10 min |
-| [06 - 对象模式](./06-object-patterns) | 工厂、混入、组合优于继承、Object.assign 陷阱 | 15 min |
+| *04 - Proxy / Reflect*（待更新） | 拦截器、不可撤销 Proxy、Reflect API | 15 min |
+| *05 - 私有字段*（待更新） | `#prefix`、WeakMap 模拟、封装模式 | 10 min |
+| *06 - 对象模式*（待更新） | 工厂、混入、组合优于继承、Object.assign 陷阱 | 15 min |

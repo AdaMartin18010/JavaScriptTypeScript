@@ -446,4 +446,4 @@ expo-mobile-app/
 > 🔗 **相关阅读**：
 >
 > - [React Native New Architecture](./01-react-native-new-arch.md) — Expo 如何封装 New Architecture
-> - [部署策略](./06-deployment-strategies.md) — EAS Submit 与商店审核自动化
+> - 部署策略 — EAS Submit 与商店审核自动化

@@ -254,7 +254,7 @@ const orderId: OrderId = "order-123";
 getUser(orderId); // ✅ 不报错，但语义错误！
 ```
 
-**解决方案： branded types**（详见 [13 高级模式](./13-advanced-patterns.md)）：
+**解决方案： branded types**（详见 *13 高级模式*（待更新））：
 
 ```ts
 type UserId = string & { __brand: "UserId" };

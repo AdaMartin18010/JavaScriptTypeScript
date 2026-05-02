@@ -802,5 +802,5 @@ setup(function () {
 ---
 
 :::info 下一章
-进入 TypeScript 类型系统最核心也最迷人的领域：泛型深度解析 → [05 泛型深度](./05-generics-deep-dive.md)
+进入 TypeScript 类型系统最核心也最迷人的领域：泛型深度解析 → *05 泛型深度*（待更新）
 :::
