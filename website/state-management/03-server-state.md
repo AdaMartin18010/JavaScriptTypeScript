@@ -638,7 +638,7 @@ graph TB
 
 ## 服务端状态与本地状态协作
 
-` sx
+```tsx
 // 组合服务端状态和本地状态
 function ProductPage() {
   // 服务端状态
@@ -667,11 +667,12 @@ function ProductPage() {
     </div>
   );
 }
-``n
+
+```
 
 ## 服务端状态监控
 
-` sx
+```tsx
 import { useQuery, onlineManager } from '@tanstack/react-query';
 
 function NetworkStatus() {
@@ -683,7 +684,8 @@ return (
     </div>
   );
 }
-``n
+```
+
 ---
 
 ## 参考资源

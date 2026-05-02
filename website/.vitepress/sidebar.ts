@@ -432,6 +432,21 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: false,
       items: [
         { text: '🏠 专题首页', link: '/programming-principles/' },
+        { text: '01. 计算思维', link: '/programming-principles/01-computational-thinking' },
+        { text: '02. λ演算', link: '/programming-principles/02-lambda-calculus' },
+        { text: '03. 类型论基础', link: '/programming-principles/03-type-theory-fundamentals' },
+        { text: '04. 操作语义', link: '/programming-principles/04-operational-semantics' },
+        { text: '05. 指称语义', link: '/programming-principles/05-denotational-semantics' },
+        { text: '06. 公理化语义', link: '/programming-principles/06-axiomatic-semantics' },
+        { text: '07. 抽象解释', link: '/programming-principles/07-abstract-interpretation' },
+        { text: '08. 内存模型', link: '/programming-principles/08-memory-models' },
+        { text: '09. 并发模型', link: '/programming-principles/09-concurrency-models' },
+        { text: '10. 代数效应', link: '/programming-principles/10-algebraic-effects' },
+        { text: '11. 线性逻辑与所有权', link: '/programming-principles/11-linear-logic-ownership' },
+        { text: '12. 续体语义', link: '/programming-principles/12-continuation-semantics' },
+        { text: '13. 渐进类型', link: '/programming-principles/13-gradual-typing-theory' },
+        { text: '14. 依赖类型', link: '/programming-principles/14-dependent-types-future' },
+        { text: '15. 从原理到实践', link: '/programming-principles/15-principles-to-practice' },
       ]
     }
   ],
@@ -443,6 +458,18 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: false,
       items: [
         { text: '🏠 专题首页', link: '/ui-principles/' },
+        { text: '01. 人机交互基础', link: '/ui-principles/01-hci-foundations' },
+        { text: '02. 视觉感知', link: '/ui-principles/02-visual-perception' },
+        { text: '03. 认知负荷理论', link: '/ui-principles/03-cognitive-load-theory' },
+        { text: '04. 交互设计定律', link: '/ui-principles/04-interaction-design-laws' },
+        { text: '05. 设计系统理论', link: '/ui-principles/05-design-systems-theory' },
+        { text: '06. 排版与布局', link: '/ui-principles/06-typography-layout-grid' },
+        { text: '07. 动效原理', link: '/ui-principles/07-motion-animation-principles' },
+        { text: '08. 可访问性理论', link: '/ui-principles/08-accessibility-theory' },
+        { text: '09. 响应式与自适应', link: '/ui-principles/09-responsive-adaptive-theory' },
+        { text: '10. UI状态模型', link: '/ui-principles/10-ui-state-models' },
+        { text: '11. 反馈循环', link: '/ui-principles/11-feedback-loops-ux' },
+        { text: '12. 跨文化UI', link: '/ui-principles/12-cross-cultural-ui' },
       ]
     }
   ],
@@ -454,6 +481,20 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: false,
       items: [
         { text: '🏠 专题首页', link: '/programming-paradigms/' },
+        { text: '01. 范式总论', link: '/programming-paradigms/01-paradigm-overview' },
+        { text: '02. 命令式范式', link: '/programming-paradigms/02-imperative-paradigm' },
+        { text: '03. 结构化编程', link: '/programming-paradigms/03-structured-programming' },
+        { text: '04. 函数式范式', link: '/programming-paradigms/04-functional-paradigm' },
+        { text: '05. OOP范式', link: '/programming-paradigms/05-oop-paradigm' },
+        { text: '06. 逻辑与约束式', link: '/programming-paradigms/06-logic-constraint-paradigm' },
+        { text: '07. 反应式范式', link: '/programming-paradigms/07-reactive-paradigm' },
+        { text: '08. 并发范式', link: '/programming-paradigms/08-concurrent-paradigm' },
+        { text: '09. 数据流范式', link: '/programming-paradigms/09-dataflow-paradigm' },
+        { text: '10. 元编程范式', link: '/programming-paradigms/10-metaprogramming-paradigm' },
+        { text: '11. 多范式设计', link: '/programming-paradigms/11-multi-paradigm-design' },
+        { text: '12. 范式形式化对比', link: '/programming-paradigms/12-paradigm-formal-comparison' },
+        { text: '13. 范式演化史', link: '/programming-paradigms/13-paradigm-evolution-timeline' },
+        { text: '14. 范式与语言设计', link: '/programming-paradigms/14-paradigm-and-language-design' },
       ]
     }
   ],
@@ -465,6 +506,20 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: false,
       items: [
         { text: '🏠 专题首页', link: '/framework-models/' },
+        { text: '01. 组件模型理论', link: '/framework-models/01-component-model-theory' },
+        { text: '02. 虚拟DOM理论', link: '/framework-models/02-virtual-dom-theory' },
+        { text: '03. 响应式与信号', link: '/framework-models/03-reactivity-signals-theory' },
+        { text: '04. 状态管理理论', link: '/framework-models/04-state-management-theory' },
+        { text: '05. 渲染模型', link: '/framework-models/05-rendering-models' },
+        { text: '06. 控制反转与DI', link: '/framework-models/06-control-inversion-theory' },
+        { text: '07. 模板引擎理论', link: '/framework-models/07-templating-theory' },
+        { text: '08. 编译器即框架', link: '/framework-models/08-compiler-as-framework' },
+        { text: '09. 元框架理论', link: '/framework-models/09-meta-framework-theory' },
+        { text: '10. 服务端客户端边界', link: '/framework-models/10-server-client-boundary' },
+        { text: '11. 路由与导航', link: '/framework-models/11-routing-navigation-theory' },
+        { text: '12. 框架性能模型', link: '/framework-models/12-framework-performance-models' },
+        { text: '13. 框架选型理论', link: '/framework-models/13-framework-selection-theory' },
+        { text: '14. 框架演化模式', link: '/framework-models/14-framework-evolution-patterns' },
       ]
     }
   ],
@@ -476,6 +531,20 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: false,
       items: [
         { text: '🏠 专题首页', link: '/application-design/' },
+        { text: '01. 架构模式总览', link: '/application-design/01-architecture-patterns-overview' },
+        { text: '02. 分层架构', link: '/application-design/02-layered-architecture' },
+        { text: '03. 领域驱动设计', link: '/application-design/03-domain-driven-design' },
+        { text: '04. 整洁架构', link: '/application-design/04-clean-architecture' },
+        { text: '05. 微服务设计', link: '/application-design/05-microservices-design' },
+        { text: '06. 事件驱动架构', link: '/application-design/06-event-driven-architecture' },
+        { text: '07. API设计模式', link: '/application-design/07-api-design-patterns' },
+        { text: '08. 数据管理模式', link: '/application-design/08-data-management-patterns' },
+        { text: '09. 安全设计', link: '/application-design/09-security-by-design' },
+        { text: '10. 可观测性设计', link: '/application-design/10-observability-design' },
+        { text: '11. 可测试性设计', link: '/application-design/11-testability-design' },
+        { text: '12. 演进式架构', link: '/application-design/12-evolutionary-architecture' },
+        { text: '13. 设计系统工程化', link: '/application-design/13-design-systems-engineering' },
+        { text: '14. 权衡分析框架', link: '/application-design/14-trade-off-analysis-framework' },
       ]
     }
   ],
@@ -487,6 +556,14 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: false,
       items: [
         { text: '🏠 总论首页', link: '/theoretical-hierarchy/' },
+        { text: '01. L0→L1：数学到计算', link: '/theoretical-hierarchy/01-math-to-computation' },
+        { text: '02. L1→L2：计算到语言', link: '/theoretical-hierarchy/02-computation-to-language' },
+        { text: '03. L2→L3：语言到范式', link: '/theoretical-hierarchy/03-language-to-paradigm' },
+        { text: '04. L3→L4：范式到框架', link: '/theoretical-hierarchy/04-paradigm-to-framework' },
+        { text: '05. L4→L5：框架到应用', link: '/theoretical-hierarchy/05-framework-to-application' },
+        { text: '06. L6 UI横向贯穿', link: '/theoretical-hierarchy/06-ui-cross-layer-theory' },
+        { text: '07. 演化路径', link: '/theoretical-hierarchy/07-evolution-pathways' },
+        { text: '08. 决策框架', link: '/theoretical-hierarchy/08-decision-framework' },
       ]
     }
   ],

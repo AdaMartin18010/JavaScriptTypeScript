@@ -662,11 +662,12 @@ const [state, send] = useCallbackMachine({
   success: { FETCH: 'loading' },
   error: { RETRY: 'loading' }
 }, 'idle');
-``n
+
+```
 
 ### 与XState的useActor
 
-` sx
+```tsx
 import { useActor } from '@xstate/react';
 
 function MachineComponent({ machine }) {
@@ -679,7 +680,7 @@ function MachineComponent({ machine }) {
     </div>
   );
 }
-``n
+```
 
 ## 状态机模式速查
 
