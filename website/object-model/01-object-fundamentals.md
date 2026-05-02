@@ -563,3 +563,34 @@ const deepCloned = structuredClone(original);
 - [JavaScript Engine Fundamentals](https://mathiasbynens.be/notes/shapes-ics) 📚
 - [ECMAScript Specification - Objects](https://tc39.es/ecma262/#sec-objects) 📄
 - [V8 Design Elements: Objects](https://v8.dev/docs/objects) ⚡
+
+
+## 对象操作最佳实践
+
+`js
+// 1. 使用对象解构时指定默认值
+const { name = 'Unknown', age = 0 } = user;
+
+// 2. 使用可选链安全访问
+const city = user?.address?.city ?? 'Unknown';
+
+// 3. 合并对象优先使用展开运算符
+const merged = { ...defaults, ...overrides };
+
+// 4. 判断对象为空
+const isEmpty = Object.keys(obj).length === 0;
+
+// 5. 安全的对象遍历
+for (const [key, value] of Object.entries(obj)) {
+  console.log(key, value);
+}
+``n
+---
+
+## 参考
+
+- [V8 Blog: Fast Properties](https://v8.dev/blog/fast-properties) ⚡
+- [V8 Blog: Inline Caching](https://v8.dev/blog/ic-odyssey) ⚡
+- [JavaScript Engine Fundamentals](https://mathiasbynens.be/notes/shapes-ics) 📚
+- [ECMAScript Specification - Objects](https://tc39.es/ecma262/#sec-objects) 📄
+- [V8 Design Elements: Objects](https://v8.dev/docs/objects) ⚡

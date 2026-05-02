@@ -575,3 +575,71 @@ var Animal = /** @class */ (function () {
 - V8 对 Class 的优化优于传统构造函数，尤其在字段预声明与继承链稳定性方面。
 - 静态块提供了复杂的类级初始化能力，在框架代码中非常有用。
 - 现代项目推荐直接使用原生 Class（ES2022+目标），避免 transpiler 转换开销。
+
+
+## Class 设计模式
+
+### 单例模式
+
+`js
+class Singleton {
+  static #instance = null;
+
+  static getInstance() {
+    if (!Singleton.#instance) {
+      Singleton.#instance = new Singleton();
+    }
+    return Singleton.#instance;
+  }
+
+  #data = new Map();
+
+  set(key, value) {
+    this.#data.set(key, value);
+  }
+
+  get(key) {
+    return this.#data.get(key);
+  }
+}
+
+const s1 = Singleton.getInstance();
+const s2 = Singleton.getInstance();
+console.log(s1 === s2); // true
+``n
+
+### 工厂模式
+
+`js
+class User {
+  constructor(name) {
+    this.name = name;
+  }
+}
+
+class Admin extends User {
+  constructor(name) {
+    super(name);
+    this.role = 'admin';
+  }
+}
+
+class UserFactory {
+  static create(type, name) {
+    switch (type) {
+      case 'admin': return new Admin(name);
+      case 'user': return new User(name);
+      default: throw new Error('Unknown type');
+    }
+  }
+}
+
+const user = UserFactory.create('admin', 'Alice');
+``n
+---
+
+## 参考
+
+- [ECMAScript Specification: Classes](https://tc39.es/ecma262/#sec-ecmascript-language-functions-and-classes) 📄
+- [V8 Blog: Class Fields](https://v8.dev/features/class-fields) ⚡
+- [MDN: Classes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes) 📘

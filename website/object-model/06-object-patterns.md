@@ -635,3 +635,40 @@ class User {
 - [Immer Documentation](https://immerjs.github.io/immer/) 🔄
 
 > 最后更新: 2026-05-02
+
+
+## 对象模式速查表
+
+| 模式 | 适用场景 | 实现复杂度 | 性能 |
+|------|---------|-----------|------|
+| 工厂模式 | 动态创建对象 | 低 | 高 |
+| 建造者模式 | 复杂对象构建 | 中 | 高 |
+| Mixin | 多来源行为组合 | 中 | 高 |
+| 组合模式 | 避免深继承链 | 低 | 高 |
+| 不变性 | 状态管理 | 低 | 中 |
+| Symbol键 | 元数据存储 | 低 | 高 |
+| Proxy | 拦截操作 | 中 | 低 |
+
+### 选择决策树
+
+``n需要创建对象？
+  ├── 是 → 类型确定？
+  │         ├── 是 → 类/构造函数
+  │         └── 否 → 工厂模式
+  └── 否 → 需要组合行为？
+            ├── 是 → Mixin/组合
+            └── 否 → 需要保护数据？
+                      ├── 是 → 不变性/冻结
+                      └── 否 → 普通对象
+``n
+---
+
+## 参考资源
+
+- [JavaScript Info: Objects](https://javascript.info/object) 📚
+- [MDN: Object.defineProperty](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty) 📘
+- [Exploring ES6: Symbols](https://exploringjs.com/es6/ch_symbols.html) 📖
+- [Immer Documentation](https://immerjs.github.io/immer/) 🔄
+- [JavaScript Design Patterns](https://addyosmani.com/resources/essentialjsdesignpatterns/book/) 📚
+
+> 最后更新: 2026-05-02

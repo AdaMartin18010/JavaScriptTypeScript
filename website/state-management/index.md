@@ -257,6 +257,104 @@ graph LR
 6. **[异步状态](./06-async-state)** — Promise、Async/Await、Suspense
 7. **[状态机](./07-state-machines)** — XState、有限状态机、工作流
 
+## 状态管理常见误区
+
+### 误区1：所有状态都放全局
+
+```js
+// ❌ 过度全局化
+const useGlobalStore = create(() => ({
+  inputValue: '',      // 只在一个表单使用
+  isModalOpen: false,  // 只在单个页面使用
+  hoveredItem: null,   // 纯UI状态
+  scrollPosition: 0    // 无需共享
+}));
+
+// ✅ 就近原则
+function FormComponent() {
+  const [inputValue, setInputValue] = useState('');  // 本地状态
+}
+
+function PageComponent() {
+  const [isModalOpen, setIsModalOpen] = useState(false);  // 页面级状态
+}
+```
+
+### 误区2：派生状态重复存储
+
+```js
+// ❌ 重复存储派生状态
+const [items, setItems] = useState([]);
+const [itemCount, setItemCount] = useState(0);  // 可派生
+const [isEmpty, setIsEmpty] = useState(true);    // 可派生
+
+useEffect(() => {
+  setItemCount(items.length);
+  setIsEmpty(items.length === 0);
+}, [items]);
+
+// ✅ 使用时计算
+const itemCount = items.length;
+const isEmpty = items.length === 0;
+```
+
+### 误区3：服务端状态当作本地状态
+
+```js
+// ❌ 手动管理服务端数据
+const [users, setUsers] = useState([]);
+const [loading, setLoading] = useState(false);
+
+useEffect(() => {
+  setLoading(true);
+  fetchUsers().then(data => {
+    setUsers(data);
+    setLoading(false);
+  });
+}, []);
+
+// ✅ 使用专用工具
+const { data: users, isLoading } = useQuery({
+  queryKey: ['users'],
+  queryFn: fetchUsers
+});
+```
+
+### 误区4：状态更新不可预测
+
+```js
+// ❌ 直接修改状态
+const [user, setUser] = useState({ name: 'Alice', age: 30 });
+user.age = 31;  // 直接修改！
+setUser(user);  // 引用相同，React不更新
+
+// ✅ 不可变更新
+setUser(prev => ({ ...prev, age: 31 }));
+```
+
+## 状态管理未来趋势
+
+```mermaid
+graph LR
+    A[2024-2025] --> B[Signals普及]
+    B --> C[框架内置响应式]
+    C --> D[编译时优化]
+    D --> E[服务端状态优先]
+    E --> F[AI辅助状态设计]
+
+    style A fill:#e1f5fe
+    style F fill:#fff3e0
+```
+
+| 趋势 | 说明 | 代表 |
+|------|------|------|
+| **Signals 普及** | 细粒度响应式成为标配 | Solid, Vue Vapor, Preact |
+| **编译时响应式** | 编译器自动追踪依赖 | Svelte 5, Vue Vapor |
+| **服务端状态优先** | 客户端状态管理范围缩小 | TanStack Query |
+| **URL即状态** | 更多状态放入URL | nuqs, Next.js |
+| **状态机普及** | 复杂交互用状态机建模 | XState |
+| **AI辅助设计** | AI推荐最佳状态结构 | Claude, Cursor |
+
 ## 参考资源
 
 - [React State Management](https://react.dev/learn/thinking-about-react-state) ⚛️
@@ -266,5 +364,157 @@ graph LR
 - [Zustand Documentation](https://docs.pmnd.rs/zustand/getting-started/introduction) 🐻
 - [TanStack Query](https://tanstack.com/query/latest) 🔄
 - [XState Documentation](https://stately.ai/docs) 🚦
+- [The Rise of Signals](https://preactjs.com/blog/signal-boosting/) 📈
+
+> 最后更新: 2026-05-02
+
+
+## 状态管理生态系统图
+
+`mermaid
+graph TB
+    subgraph Core[核心概念]
+        S1[State]
+        P1[Props]
+        E1[Event]
+    end
+
+    subgraph Patterns[设计模式]
+        L1[Lifting State Up]
+        C1[Container/Presentational]
+        H1[Hooks Composition]
+    end
+
+    subgraph Tools[工具生态]
+        T1[Redux Toolkit]
+        T2[Zustand]
+        T3[TanStack Query]
+        T4[XState]
+    end
+
+    S1 --> Patterns
+    Patterns --> Tools
+
+end
+``n
+---
+
+## 快速参考卡片
+
+| 状态类型 | 推荐工具 | 持久化 | 共享范围 |
+|----------|---------|--------|----------|
+| 本地UI | useState/ref | 否 | 组件 |
+| 页面级 | useReducer | 否 | 页面 |
+| 全局客户端 | Zustand/Redux | localStorage | 应用 |
+| 服务端 | TanStack Query | HTTP缓存 | 应用 |
+| 表单 | React Hook Form | localStorage | 表单 |
+| URL | nuqs | URL | 应用 |
+| 异步 | Promise/Suspense | 否 | 组件 |
+| 状态机 | XState | 否 | 组件/应用 |
+
+> 最后更新: 2026-05-02
+
+
+## 状态管理架构模式
+
+### Flux架构
+
+`mermaid
+graph LR
+    A[Action] --> D[Dispatcher]
+    D --> S[Store]
+    S --> V[View]
+    V --> A
+``n
+
+### 单向数据流
+
+`mermaid
+graph LR
+    User[用户交互] --> Event[事件]
+    Event --> Handler[处理器]
+    Handler --> Update[更新状态]
+    Update --> Render[重新渲染]
+    Render --> UI[UI更新]
+``n
+
+### 分层状态架构
+
+``n应用层
+  ├── 视图层 (Components)
+  ├── 状态层 (Store/Context)
+  ├── 服务层 (API/Cache)
+  └── 基础设施层 (Storage/Network)
+``n
+---
+
+## 参考资源
+
+- [React State Management](https://react.dev/learn/thinking-about-react-state) ⚛️
+- [Vue State Management](https://vuejs.org/guide/scaling-up/state-management.html) 💚
+- [Svelte Runes](https://svelte.dev/docs/runes) 🧡
+- [Redux Style Guide](https://redux.js.org/style-guide/) 📘
+- [Zustand Documentation](https://docs.pmnd.rs/zustand/getting-started/introduction) 🐻
+- [TanStack Query](https://tanstack.com/query/latest) 🔄
+- [XState Documentation](https://stately.ai/docs) 🚦
+- [The Rise of Signals](https://preactjs.com/blog/signal-boosting/) 📈
+
+> 最后更新: 2026-05-02
+
+
+## 状态管理性能检查清单
+
+| 检查项 | 说明 | 工具 |
+|--------|------|------|
+| 不必要重渲染 | 使用React DevTools Profiler | React DevTools |
+| 状态更新频率 | 监控setState调用次数 | Console.log / DevTools |
+| 选择器效率 | 确保selector不返回新引用 | Reselect / 单元测试 |
+| 内存泄漏 | 清理订阅和定时器 | Chrome Memory Tab |
+| Bundle大小 | 状态库对打包体积的影响 | Bundle Analyzer |
+
+### 性能优化速查
+
+` sx
+// ✅ 使用选择器精确订阅
+const name = useStore(state => state.user.name);
+
+// ✅ 拆分独立store
+const useUserStore = create(() => ({ ... }));
+const useCartStore = create(() => ({ ... }));
+
+// ✅ 派生状态用computed
+const fullName = useMemo(() => ${first} , [first, last]);
+
+// ❌ 避免全量订阅
+const state = useStore(); // 任何变化都触发重渲染
+``n
+---
+
+> 最后更新: 2026-05-02
+
+
+## 状态管理学习路径
+
+`mermaid
+graph LR
+    A[基础: useState/useRef] --> B[进阶: useReducer/Context]
+    B --> C[工具: Zustand/Redux]
+    C --> D[服务端: TanStack Query]
+    E[表单: React Hook Form]
+    F[URL: nuqs]
+    G[异步: Suspense]
+    H[高级: XState]
+
+    C --> E
+    C --> F
+    C --> G
+    C --> H
+``n
+
+1. **入门**: 掌握useState、useRef、props drilling
+2. **进阶**: 学习useReducer、Context API、状态提升
+3. **工具**: 根据项目规模选择Zustand或Redux
+4. **服务端**: 学习TanStack Query管理服务端状态
+5. **专项**: 表单(RHF)、URL(nuqs)、状态机(XState)
 
 > 最后更新: 2026-05-02

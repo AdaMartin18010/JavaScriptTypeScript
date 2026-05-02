@@ -617,3 +617,55 @@ class ModernService {
 - [Private Fields in Proxy](https://github.com/tc39/proposal-class-fields/blob/master/PRIVATE_SYNTAX_FAQ.md#how-do-private-fields-interact-with-proxies) 📄
 
 > 最后更新: 2026-05-02
+
+
+## 私有字段最佳实践总结
+
+### 命名规范
+
+`javascript
+class BestPractices {
+  // 公有API
+  name;
+
+  // 内部状态（软私有）
+  _internalCache;
+
+  // 真正私有
+  #secretKey;
+
+  // 静态私有
+  static #instanceCount = 0;
+
+  constructor() {
+    BestPractices.#instanceCount++;
+    this.#secretKey = generateKey();
+  }
+
+  static getInstanceCount() {
+    return BestPractices.#instanceCount;
+  }
+}
+``n
+
+### 访问控制矩阵
+
+| 修饰符 | 类内部 | 子类 | 实例外部 | 调试工具 |
+|--------|--------|------|----------|----------|
+| public | ✅ | ✅ | ✅ | ✅ |
+| protected (TS) | ✅ | ✅ | ❌ | ✅ |
+| private (TS) | ✅ | ❌ | ❌ | ✅ |
+| #prefix | ✅ | ❌ | ❌ | ⚠️ |
+| WeakMap | ✅ | ❌ | ❌ | ✅ |
+
+---
+
+## 参考资源
+
+- [TC39 Private Fields Proposal](https://github.com/tc39/proposal-class-fields) 📄
+- [V8 Private Fields Implementation](https://v8.dev/features/class-fields) ⚡
+- [TypeScript Private Modifier](https://www.typescriptlang.org/docs/handbook/2/classes.html#private) 📘
+- [JavaScript Private Class Features](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields) 📘
+- [Private Fields in Proxy](https://github.com/tc39/proposal-class-fields/blob/master/PRIVATE_SYNTAX_FAQ.md#how-do-private-fields-interact-with-proxies) 📄
+
+> 最后更新: 2026-05-02

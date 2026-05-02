@@ -415,6 +415,206 @@ function App() {
 | **包大小** | ~12KB | ~4KB | ~30KB | ~7KB |
 | **学习曲线** | 中 | 低 | 高 | 中 |
 
+## 7. GraphQL 服务端状态
+
+### 7.1 Apollo Client
+
+```tsx
+import { ApolloClient, InMemoryCache, gql, useQuery, useMutation } from '@apollo/client';
+
+const client = new ApolloClient({
+  uri: '/graphql',
+  cache: new InMemoryCache({
+    typePolicies: {
+      Query: {
+        fields: {
+          posts: {
+            keyArgs: ['type', 'category'],
+            merge(existing = [], incoming) {
+              return [...existing, ...incoming];
+            }
+          }
+        }
+      }
+    }
+  })
+});
+
+// 查询
+const GET_POSTS = gql`
+  query GetPosts($category: String!) {
+    posts(category: $category) {
+      id
+      title
+      author {
+        name
+      }
+    }
+  }
+`;
+
+function Posts({ category }: { category: string }) {
+  const { data, loading, error, fetchMore } = useQuery(GET_POSTS, {
+    variables: { category }
+  });
+
+  if (loading) return <Skeleton />;
+  if (error) return <Error message={error.message} />;
+
+  return (
+    <div>
+      {data.posts.map(post => (
+        <PostCard key={post.id} post={post} />
+      ))}
+      <button onClick={() => fetchMore({ variables: { offset: data.posts.length } })}>
+        Load More
+      </button>
+    </div>
+  );
+}
+```
+
+### 7.2 urql（轻量GraphQL客户端）
+
+```tsx
+import { createClient, Provider, useQuery } from 'urql';
+
+const client = createClient({
+  url: '/graphql',
+  exchanges: [cacheExchange, fetchExchange]
+});
+
+function App() {
+  return (
+    <Provider value={client}>
+      <Posts />
+    </Provider>
+  );
+}
+```
+
+## 8. 服务端状态最佳实践
+
+### 8.1 错误处理策略
+
+```tsx
+function useSafeQuery<T>(options: UseQueryOptions<T>) {
+  const query = useQuery(options);
+
+  if (query.error) {
+    // 统一错误处理
+    if (query.error.status === 401) {
+      redirectToLogin();
+    } else if (query.error.status >= 500) {
+      showRetryDialog();
+    }
+  }
+
+  return query;
+}
+
+// 错误边界 + Query
+class QueryErrorBoundary extends React.Component {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <ErrorFallback onRetry={() => this.setState({ hasError: false })} />;
+    }
+    return this.props.children;
+  }
+}
+```
+
+### 8.2 预加载策略
+
+```tsx
+// 路由预加载
+const queryClient = new QueryClient();
+
+function prefetchUser(userId: string) {
+  queryClient.prefetchQuery({
+    queryKey: ['user', userId],
+    queryFn: () => fetchUser(userId),
+    staleTime: 60 * 1000
+  });
+}
+
+// 悬停预加载
+function UserLink({ userId }: { userId: string }) {
+  return (
+    <Link
+      to={`/users/${userId}`}
+      onMouseEnter={() => prefetchUser(userId)}
+    >
+      View Profile
+    </Link>
+  );
+}
+```
+
+### 8.3 离线优先
+
+```tsx
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+
+const persister = createSyncStoragePersister({
+  storage: window.localStorage
+});
+
+function App() {
+  return (
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister }}
+    >
+      <AppContent />
+    </PersistQueryClientProvider>
+  );
+}
+```
+
+## 9. 服务端状态与本地状态的边界
+
+```mermaid
+graph TB
+    subgraph Server["服务端状态"]
+        S1[用户资料]
+        S2[商品列表]
+        S3[订单数据]
+    end
+
+    subgraph Client["客户端状态"]
+        C1[筛选条件]
+        C2[排序方式]
+        C3[选中项]
+        C4[UI展开/折叠]
+    end
+
+    subgraph Hybrid["混合状态"]
+        H1[购物车 - 服务端+本地]
+        H2[表单草稿 - 本地+持久化]
+    end
+
+    Server -->|TanStack Query| Client
+    Client -->|useState| UI
+    Hybrid -->|Zustand + persist| UI
+```
+
+| 状态 | 工具 | 持久化 |
+|------|------|--------|
+| 用户数据 | TanStack Query | HTTP缓存 |
+| 列表数据 | TanStack Query | HTTP缓存 |
+| 筛选条件 | URL + useState | URL |
+| 购物车 | Zustand | localStorage |
+| 表单草稿 | useState | localStorage |
+| 主题设置 | Zustand | localStorage |
+
 ## 总结
 
 - **服务端状态**与客户端状态有本质区别，应使用专用工具管理
@@ -423,6 +623,7 @@ function App() {
 - **Apollo Client** / **urql** 适合GraphQL项目
 - **缓存策略**是核心：staleTime、gcTime、refetch策略需根据场景配置
 - **乐观更新**提升用户体验，但必须处理好错误回滚
+- **离线支持**通过持久化实现，提升弱网体验
 
 ## 参考资源
 
@@ -430,5 +631,67 @@ function App() {
 - [SWR Documentation](https://swr.vercel.app/) 🔄
 - [Apollo Client Caching](https://www.apollographql.com/docs/react/caching/overview) 📊
 - [React Query vs SWR](https://tanstack.com/query/latest/docs/comparison) 📊
+- [Caching Strategies](https://web.dev/articles/http-cache) 📚
+
+> 最后更新: 2026-05-02
+
+
+## 服务端状态与本地状态协作
+
+` sx
+// 组合服务端状态和本地状态
+function ProductPage() {
+  // 服务端状态
+  const { data: product } = useQuery({
+    queryKey: ['product', id],
+    queryFn: () => fetchProduct(id)
+  });
+
+  // 本地状态
+  const [quantity, setQuantity] = useState(1);
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  // 派生状态
+  const totalPrice = product ? product.price * quantity : 0;
+
+  return (
+    <div>
+      <ProductImage src={product?.image} isZoomed={isZoomed} />
+      <h1>{product?.name}</h1>
+      <p></p>
+      <QuantitySelector value={quantity} onChange={setQuantity} />
+      <p>Total: </p>
+      <button onClick={() => addToCart(product, quantity)}>
+        Add to Cart
+      </button>
+    </div>
+  );
+}
+``n
+
+## 服务端状态监控
+
+` sx
+import { useQuery, onlineManager } from '@tanstack/react-query';
+
+function NetworkStatus() {
+  const isOnline = onlineManager.isOnline();
+
+return (
+    <div className={isOnline ? 'online' : 'offline'}>
+      {isOnline ? '🟢 Online' : '🔴 Offline'}
+    </div>
+  );
+}
+``n
+---
+
+## 参考资源
+
+- [TanStack Query Documentation](https://tanstack.com/query/latest) 🔄
+- [SWR Documentation](https://swr.vercel.app/) 🔄
+- [Apollo Client Caching](https://www.apollographql.com/docs/react/caching/overview) 📊
+- [React Query vs SWR](https://tanstack.com/query/latest/docs/comparison) 📊
+- [Caching Strategies](https://web.dev/articles/http-cache) 📚
 
 > 最后更新: 2026-05-02

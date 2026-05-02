@@ -553,3 +553,49 @@ whereIsProperty(rabbit, 'toString'); // { found: true, depth: 2, onPrototype: tr
 - [MDN: Object.prototype](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/prototype) 📘
 - [JavaScript.info: Prototype Inheritance](https://javascript.info/prototype-inheritance) 📚
 - [Prototype Pollution Prevention](https://learn.snyk.io/lesson/prototype-pollution/) 🔒
+
+
+## 原型链设计模式
+
+### 委托模式（Delegation Pattern）
+
+`js
+// 使用原型链实现委托
+const validator = {
+  validate(value) {
+    return value !== null && value !== undefined;
+  }
+};
+
+const requiredValidator = Object.create(validator);
+requiredValidator.validate = function(value) {
+  return validator.validate.call(this, value) && value !== '';
+};
+
+const emailValidator = Object.create(requiredValidator);
+emailValidator.validate = function(value) {
+  return requiredValidator.validate.call(this, value) && value.includes('@');
+};
+
+console.log(emailValidator.validate('<test@example.com>')); // true
+console.log(emailValidator.validate('invalid')); // false
+``n
+
+### 原型继承 vs 类继承
+
+| 特性 | 原型继承 | 类继承 |
+|------|---------|--------|
+| 灵活性 | 高（运行时修改） | 低（静态定义） |
+| 性能 | 原型链查找 | V8优化更好 |
+| 可读性 | 较低 | 高 |
+| 内存占用 | 共享方法 | 共享方法 |
+| 调试难度 | 较高 | 较低 |
+
+---
+
+## 参考
+
+- [V8 Blog: Prototypes](https://v8.dev/blog/fast-properties#prototype) ⚡
+- [MDN: Object.prototype](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/prototype) 📘
+- [JavaScript.info: Prototype Inheritance](https://javascript.info/prototype-inheritance) 📚
+- [Prototype Pollution Prevention](https://learn.snyk.io/lesson/prototype-pollution/) 🔒

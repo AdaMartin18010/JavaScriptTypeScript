@@ -32,6 +32,13 @@ export default withMermaid(defineConfig({
     /^\.\.\/..\/20-code-lab\//,
     /^\.\.\/..\/50-examples\//,
     /^\.\.\/..\/70-theoretical-foundations\//,
+    // 理论体系新专题链接保护（建设中，完成后移除对应规则）
+    /\/programming-principles\//,
+    /\/ui-principles\//,
+    /\/programming-paradigms\//,
+    /\/framework-models\//,
+    /\/application-design\//,
+    /\/theoretical-hierarchy\//,
     // 新专题链接保护（已完成创建，后续可移除）
     // TypeScript类型系统 / 模块系统 / 移动端 / AI编码 / 对象模型
   ],

@@ -563,6 +563,151 @@ const selectUserInfo = createSelector(
 const user = useAppSelector(selectUserInfo, shallowEqual);
 ```
 
+## 8. 状态持久化
+
+### 8.1 Zustand 持久化
+
+```typescript
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+
+interface AppState {
+  theme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark') => void;
+  sidebarCollapsed: boolean;
+  toggleSidebar: () => void;
+}
+
+export const useAppStore = create<AppState>()(
+  persist(
+    (set) => ({
+      theme: 'light',
+      setTheme: (theme) => set({ theme }),
+      sidebarCollapsed: false,
+      toggleSidebar: () => set((state) => ({
+        sidebarCollapsed: !state.sidebarCollapsed
+      }))
+    }),
+    {
+      name: 'app-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        theme: state.theme,
+        sidebarCollapsed: state.sidebarCollapsed
+      })
+    }
+  )
+);
+```
+
+### 8.2 Redux 持久化
+
+```typescript
+import { configureStore } from '@reduxjs/toolkit';
+import { persistStore, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
+
+const persistConfig = {
+  key: 'root',
+  storage,
+  whitelist: ['user', 'settings']  // 只持久化这些slice
+};
+
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+export const store = configureStore({
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE']
+      }
+    })
+});
+
+export const persistor = persistStore(store);
+```
+
+## 9. 全局状态调试
+
+### 9.1 Redux DevTools
+
+```typescript
+export const store = configureStore({
+  reducer: rootReducer,
+  devTools: process.env.NODE_ENV !== 'production',
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: true,
+      immutableCheck: true
+    })
+});
+
+// DevTools功能：
+// - 时间旅行：回退到任意状态
+// - 状态检查：查看完整状态树
+// - Action日志：追踪所有dispatch
+// - 自定义图表：状态变化可视化
+```
+
+### 9.2 Zustand DevTools
+
+```typescript
+export const useStore = create<Store>()(
+  devtools(
+    (set, get, api) => ({
+      // ...state
+    }),
+    { name: 'MyStore', enabled: process.env.NODE_ENV !== 'production' }
+  )
+);
+```
+
+## 10. 性能优化策略
+
+### 10.1 Selector 优化
+
+```typescript
+// ❌ 每次都返回新对象
+const userInfo = useSelector(state => ({
+  name: state.user.name,
+  email: state.user.email
+}));
+
+// ✅ 使用 reselect 缓存
+import { createSelector } from '@reduxjs/toolkit';
+
+const selectUser = (state: RootState) => state.user;
+export const selectUserInfo = createSelector(
+  [selectUser],
+  (user) => ({ name: user.name, email: user.email })
+);
+
+// ✅ Zustand 选择器
+const useUserName = () => useStore(state => state.user.name);
+// 只有 name 变化时才重渲染
+```
+
+### 10.2 状态拆分与懒加载
+
+```typescript
+// 按页面懒加载slice
+const store = configureStore({
+  reducer: {
+    auth: authSlice,
+    // 其他slice动态注入
+  }
+});
+
+// 动态注入reducer
+export function injectReducer(key: string, reducer: Reducer) {
+  if (!store.asyncReducers[key]) {
+    store.asyncReducers[key] = reducer;
+    store.replaceReducer(createReducer(store.asyncReducers));
+  }
+}
+```
+
 ## 总结
 
 - **Redux Toolkit**: 大型应用首选，生态完善，调试强大
@@ -570,6 +715,7 @@ const user = useAppSelector(selectUserInfo, shallowEqual);
 - **Pinia**: Vue 生态的官方推荐，组合式API友好
 - **Jotai**: 原子化状态，适合细粒度依赖追踪
 - **Context**: 仅用于低频更新的全局数据（主题、语言）
+- **持久化**: Zustand persist / Redux persist 实现状态持久化
 - **选型原则**: 小应用选Zustand，大应用选Redux，Vue选Pinia
 
 ## 参考资源
@@ -579,5 +725,6 @@ const user = useAppSelector(selectUserInfo, shallowEqual);
 - [Pinia Documentation](https://pinia.vuejs.org/) 🍍
 - [Jotai Documentation](https://jotai.org/) ⚛️
 - [Recoil Documentation](https://recoiljs.org/) ⚛️
+- [Redux DevTools](https://github.com/reduxjs/redux-devtools) 🔧
 
 > 最后更新: 2026-05-02

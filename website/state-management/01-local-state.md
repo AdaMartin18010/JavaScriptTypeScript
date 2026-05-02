@@ -553,6 +553,186 @@ function Counter({ count, onChange }) {
 }
 ```
 
+## 7. 跨框架本地状态对比
+
+### 7.1 计数器实现对比
+
+```jsx
+// React
+function Counter() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;
+}
+```
+
+```svelte
+<!-- Svelte 5 -->
+<script>
+  let count = $state(0);
+</script>
+<button onclick={() => count++}>{count}</button>
+```
+
+```vue
+<!-- Vue 3 -->
+<script setup>
+import { ref } from 'vue';
+const count = ref(0);
+</script>
+<template>
+  <button @click="count++">{{ count }}</button>
+</template>
+```
+
+```tsx
+// Solid
+function Counter() {
+  const [count, setCount] = createSignal(0);
+  return <button onClick={() => setCount(c => c + 1)}>{count()}</button>;
+}
+```
+
+| 框架 | 声明 | 更新 | 派生 | 副作用 |
+|------|------|------|------|--------|
+| React | `useState` | `setState` | `useMemo` | `useEffect` |
+| Svelte | `$state` | 直接赋值 | `$derived` | `$effect` |
+| Vue | `ref/reactive` | 直接赋值 | `computed` | `watch` |
+| Solid | `createSignal` | `setter` | `createMemo` | `createEffect` |
+
+### 7.2 双向绑定对比
+
+```jsx
+// React（单向 + 事件）
+const [value, setValue] = useState('');
+<input value={value} onChange={e => setValue(e.target.value)} />
+```
+
+```svelte
+<!-- Svelte -->
+<script>
+  let value = $state('');
+</script>
+<input bind:value />
+```
+
+```vue
+<!-- Vue -->
+<script setup>
+const value = ref('');
+</script>
+<template>
+  <input v-model="value" />
+</template>
+```
+
+## 8. 性能优化深度
+
+### 8.1 批量更新
+
+```jsx
+// React 18 自动批量更新
+function BatchExample() {
+  const [count, setCount] = useState(0);
+  const [flag, setFlag] = useState(false);
+
+  const handleClick = () => {
+    setCount(c => c + 1);  // 不立即重渲染
+    setFlag(f => !f);       // 也不立即重渲染
+    // 事件处理完成后，统一重渲染一次
+  };
+
+  console.log('Render count:', ++renderCount.current);
+  // 点击后只输出一次，不是两次
+
+  return <button onClick={handleClick}>Update</button>;
+}
+```
+
+### 8.2 选择性订阅
+
+```tsx
+// Zustand / Jotai 的选择性订阅
+const useUserName = () => useStore(state => state.user.name);
+// 只有 user.name 变化时才重渲染
+
+// React Context 的性能问题
+const useTheme = () => useContext(ThemeContext);
+// Context值变化时，所有Consumer都会重渲染
+```
+
+### 8.3 useReducer vs useState 性能
+
+```jsx
+// useState 多个setter
+const [name, setName] = useState('');
+const [email, setEmail] = useState('');
+const [age, setAge] = useState(0);
+
+// useReducer 单个dispatch
+const [state, dispatch] = useReducer(formReducer, initialState);
+// dispatch({ type: 'update', field: 'name', value: 'Alice' });
+// 对于复杂对象，useReducer更容易优化
+```
+
+| 场景 | useState | useReducer |
+|------|---------|-----------|
+| 简单值 | ✅ 推荐 | ❌ 过度设计 |
+| 多个相关字段 | ⚠️ 可以 | ✅ 推荐 |
+| 复杂状态逻辑 | ❌ 难维护 | ✅ 清晰 |
+| 频繁同时更新 | ⚠️ 多次渲染 | ✅ 单次渲染 |
+
+## 9. 常见陷阱与解决方案
+
+### 9.1 初始化陷阱
+
+```jsx
+// ❌ 函数每次渲染都执行
+const [data] = useState(computeExpensiveValue());
+
+// ✅ 惰性初始化
+const [data] = useState(() => computeExpensiveValue());
+
+// ❌ 依赖props但没有更新
+const [value, setValue] = useState(props.defaultValue);
+// props.defaultValue变化时，value不会更新
+
+// ✅ 使用key强制重置
+<Editor key={props.id} defaultValue={props.value} />
+
+// ✅ 或使用effect同步
+const [value, setValue] = useState(props.defaultValue);
+useEffect(() => {
+  setValue(props.defaultValue);
+}, [props.defaultValue]);
+```
+
+### 9.2 异步闭包陷阱
+
+```jsx
+function AsyncCounter() {
+  const [count, setCount] = useState(0);
+
+  // ❌ 闭包陷阱
+  useEffect(() => {
+    const timer = setInterval(() => {
+      console.log(count);  // 永远是0
+      setCount(count + 1); // 永远设置成1
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []); // 依赖数组为空
+
+  // ✅ 使用函数式更新
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCount(c => c + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return <div>{count}</div>;
+}
+```
+
 ## 总结
 
 - **React**: useState 用于简单状态，useReducer 用于复杂逻辑，useRef 用于不触发渲染的值
@@ -560,6 +740,7 @@ function Counter({ count, onChange }) {
 - **Vue**: ref 用于原始值和替换，reactive 用于对象属性修改，computed 用于派生
 - **底层原理**: 现代框架趋向细粒度 Signal 模型，实现值级精确更新
 - **最佳实践**: 避免过度拆分/合并状态，注意闭包陷阱，适度使用状态提升
+- **性能**: React 18 自动批量更新，选择性订阅减少重渲染，useReducer适合复杂状态
 
 ## 参考资源
 
@@ -568,5 +749,6 @@ function Counter({ count, onChange }) {
 - [Vue Reactivity Fundamentals](https://vuejs.org/guide/essentials/reactivity-fundamentals.html) 💚
 - [SolidJS Signals](https://www.solidjs.com/tutorial/introduction_signals) 🔵
 - [Preact Signals](https://github.com/preactjs/signals) ⚡
+- [React useReducer](https://react.dev/reference/react/useReducer) ⚛️
 
 > 最后更新: 2026-05-02

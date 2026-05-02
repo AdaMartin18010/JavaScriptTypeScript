@@ -425,6 +425,72 @@ export const sidebar: DefaultTheme.Sidebar = {
     }
   ],
 
+  // 理论体系专题：编程原理
+  '/programming-principles/': [
+    {
+      text: '🔬 编程原理',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/programming-principles/' },
+      ]
+    }
+  ],
+
+  // 理论体系专题：UI原理
+  '/ui-principles/': [
+    {
+      text: '🎨 UI原理',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/ui-principles/' },
+      ]
+    }
+  ],
+
+  // 理论体系专题：编程范式
+  '/programming-paradigms/': [
+    {
+      text: '⚡ 编程范式',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/programming-paradigms/' },
+      ]
+    }
+  ],
+
+  // 理论体系专题：框架模型
+  '/framework-models/': [
+    {
+      text: '🏗️ 框架模型',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/framework-models/' },
+      ]
+    }
+  ],
+
+  // 理论体系专题：应用设计
+  '/application-design/': [
+    {
+      text: '📐 应用设计',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/application-design/' },
+      ]
+    }
+  ],
+
+  // 理论体系专题：层次关联总论
+  '/theoretical-hierarchy/': [
+    {
+      text: '🔗 理论层次总论',
+      collapsed: false,
+      items: [
+        { text: '🏠 总论首页', link: '/theoretical-hierarchy/' },
+      ]
+    }
+  ],
+
   // 模板部分
   '/templates/': [
     {
