@@ -109,6 +109,7 @@ description: "Awesome JS/TS Ecosystem 代码实验室: 代码实验室首页"
 | 🌿 **94** | ai-agent-lab | 可用 | 3 | 1 | [查看](../../jsts-code-lab/94-ai-agent-lab/) |
 | 🌿 **95** | auth-modern-lab | 可用 | 4 | 1 | [查看](../../jsts-code-lab/95-auth-modern-lab/) |
 | 🌿 **96** | orm-modern-lab | 可用 | 4 | 1 | [查看](../../jsts-code-lab/96-orm-modern-lab/) |
+| 🌿 **Svelte** | svelte-signals-lab | 可用 | 3 | 3 | [查看](../../20-code-lab/20.5-frontend-frameworks/svelte-signals-lab/) |
 
 ---
 

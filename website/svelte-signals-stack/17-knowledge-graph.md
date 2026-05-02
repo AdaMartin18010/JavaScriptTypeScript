@@ -1,6 +1,7 @@
 ---
 title: Svelte 知识图谱与思维工具
 description: '思维导图、决策树、推理判断树、多维矩阵、定理卡片、流程图等 10+ 种思维表征方式'
+keywords: '知识图谱, 决策树, 推理判断, 多维矩阵, 定理卡片, 思维工具, Mermaid'
 ---
 
 # Svelte 知识图谱与思维工具
@@ -837,6 +838,6 @@ flowchart TD
 
 ---
 
-> **最后更新:** 2026-05-01
+> **最后更新:** 2026-05-02
 >
 > **相关页面:** Form Actions（参见 03-sveltekit-fullstack）· 性能模式（参见 14-reactivity-deep-dive）

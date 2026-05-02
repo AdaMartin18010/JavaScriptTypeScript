@@ -112,6 +112,7 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '理论深度 (40-41, 77-81)', link: '/code-lab/theoretical-depth' },
         { text: '实验室专题 (90-96)', link: '/code-lab/specialized-labs' },
         { text: '🌐 Edge-First 架构实战', link: '/code-lab/edge-first-architecture' },
+        { text: '⚡ Svelte Signals 实验室', link: '/code-lab/svelte-signals-lab' },
       ]
     }
   ],

@@ -1,6 +1,7 @@
 ---
 title: Svelte 组件开发模式大全
 description: '从基础组件到组件库设计体系的完整模式指南，覆盖 Props、Events、Snippets、Actions、组合模式'
+keywords: 'Svelte组件, Props, Events, Snippets, Action, 组件库设计, 组合模式'
 ---
 
 # Svelte 组件开发模式大全
@@ -2759,4 +2760,4 @@ graph TD
 
 **解读**: 现代组件库采用"头less + 样式分离"架构。Design Tokens 定义视觉基础，Headless 层处理交互逻辑，样式层提供具体外观，无障碍规范贯穿全层。
 
-> 最后更新: 2026-05-01
+> 最后更新: 2026-05-02

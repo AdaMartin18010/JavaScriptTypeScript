@@ -2259,6 +2259,7 @@ const { createRequire } = compat.nodeModule;
 
 ## 延伸阅读
 
+- [⚡ Svelte 5 Signals 编译器生态专题 — Edge 同构运行时](/svelte-signals-stack/06-edge-isomorphic-runtime) — SvelteKit Cloudflare/Vercel Edge 部署实践
 - [部署与托管平台对比矩阵](../comparison-matrices/deployment-platforms-compare)
 - [数据库与存储分类](../categories/databases)
 - [实时通信分类](../categories/real-time-communication)

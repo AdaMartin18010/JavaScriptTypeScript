@@ -1,11 +1,12 @@
 ---
 title: Svelte 生产实践
 description: '测试策略、CI/CD、Core Web Vitals 优化、CSP 安全、监控与部署最佳实践'
+keywords: 'Vitest, Playwright, CI/CD, Docker, Core Web Vitals, CSP, Sentry, 安全'
 ---
 
 # Svelte 生产实践
 
-> 最后更新: 2026-05-01
+> 最后更新: 2026-05-02
 > 数据来源: Web Almanac 2024、Chrome UX Report (CrUX) 2024Q4、Svelte 官方文档 (5.28.2)、MDN、OWASP Cheat Sheet Series 2024
 
 ---
@@ -1346,4 +1347,4 @@ export const handle = async ({ event, resolve }) => {
 
 ---
 
-> 最后更新: 2026-05-01
+> 最后更新: 2026-05-02

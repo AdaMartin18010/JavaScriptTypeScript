@@ -1,6 +1,12 @@
+---
+title: 前端框架选型终极对比
+description: 'Svelte 5 vs React 19 vs Vue 3.5 vs Solid 1.9 vs Angular 19 全维度对比：性能、生态、开发者体验、选型决策'
+keywords: '前端框架对比, Svelte vs React, Vue, Solid, Angular, 框架选型, 性能基准'
+---
+
 # 前端框架终极对比矩阵：Svelte 5 vs React 19 vs Vue 3.5 vs Solid 1.9 vs Angular 19
 
-> **文档版本**: v1.0.0 | **最后更新**: 2026-05-01 | **数据基准**: JS Framework Benchmark 2026-04, State of JS 2024, GitHub Stars 2026-05, Stack Overflow Survey 2025, npm registry 2026-04
+> **文档版本**: v1.0.0 | **最后更新**: 2026-05-02 | **数据基准**: JS Framework Benchmark 2026-04, State of JS 2024, GitHub Stars 2026-05, Stack Overflow Survey 2025, npm registry 2026-04
 
 ---
 
@@ -26,8 +32,8 @@
 
 | 指标 | Svelte 5 | React 19 | Vue 3.5 | Solid 1.9 | Angular 19 |
 |------|----------|----------|---------|-----------|------------|
-| **GitHub Stars** | 83.5k | 235k | 210k | 35k | 96k |
-| **npm 周下载量** | 1.1M | 13M | 6M | 180k | 4M |
+| **GitHub Stars** | 86.5k | 235k | 210k | 35k | 96k |
+| **npm 周下载量** | 4.2M | 13M | 6M | 180k | 4M |
 | **Bundle (Hello World)** | **~2KB** | ~42KB | ~34KB | ~7KB | ~130KB |
 | **Bundle (10 路由 SPA)** | **~25KB** | ~95KB | ~58KB | ~35KB | ~180KB |
 | **创建 10,000 行 (ms)** | **250ms** | 450ms | 400ms | **220ms** | 580ms |
@@ -676,7 +682,7 @@ SaaS 后台系统通常具有以下特征：大量表单、复杂表格、权限
 
 > **文档元数据**
 >
-> - 最后更新: 2026-05-01
+> - 最后更新: 2026-05-02
 > - 数据基准: JS Framework Benchmark 2026-04, State of JS 2024, GitHub Stars 2026-05, Stack Overflow Survey 2025, npm registry 2026-04, Lighthouse CI
 > - 作者: AI Assistant
 > - 维护: 定期随框架更新同步刷新数据

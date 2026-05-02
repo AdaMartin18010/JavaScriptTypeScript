@@ -1,15 +1,10 @@
----
-title: 趋势报告
-description: "Awesome JS/TS Ecosystem 月度趋势报告与生态统计数据"
----
-
 # 📈 Stars 趋势报告
 
-> 生成时间: 2026/4/18 03:20:27
+> 生成时间: 2026/5/2 10:25:02
 
 ## 📊 概览
 
-- 追踪仓库数: **42**
+- 追踪仓库数: **53**
 - 分类数: **9**
 
 ---
@@ -18,16 +13,16 @@ description: "Awesome JS/TS Ecosystem 月度趋势报告与生态统计数据"
 
 | 排名 | 仓库 | 分类 | Stars | 年增长率 |
 |------|------|------|-------|----------|
-| 1 | [Hono](https://github.com/honojs/hono) | webFrameworks | 29,990 | +19.70% |
-| 2 | [Vitest](https://github.com/vitest-dev/vitest) | testing | 16,377 | +15.88% |
-| 3 | [Elysia](https://github.com/elysiajs/elysia) | webFrameworks | 18,024 | +15.53% |
-| 4 | [Remix](https://github.com/remix-run/remix) | fullstack | 32,614 | +12.04% |
-| 5 | [Drizzle ORM](https://github.com/drizzle-team/drizzle-orm) | orm | 33,907 | +11.50% |
-| 6 | [SvelteKit](https://github.com/sveltejs/kit) | fullstack | 20,430 | +11.39% |
-| 7 | [Cypress](https://github.com/cypress-io/cypress) | testing | 49,627 | +11.34% |
-| 8 | [Deno](https://github.com/denoland/deno) | runtime | 106,507 | +10.99% |
-| 9 | [Svelte](https://github.com/sveltejs/svelte) | frontend | 86,327 | +10.24% |
-| 10 | [Alpine.js](https://github.com/alpinejs/alpine) | frontend | 31,455 | +10.19% |
+| 1 | [Biome](https://github.com/biomejs/biome) | emerging | 24,514 | +39.81% |
+| 2 | [Elysia](https://github.com/elysiajs/elysia) | webFrameworks | 18,204 | +27.45% |
+| 3 | [tsx](https://github.com/privatenumber/tsx) | emerging | 11,957 | +23.74% |
+| 4 | [Elysia](https://github.com/elysiajs/elysia) | emerging | 18,204 | +21.50% |
+| 5 | [Hono](https://github.com/honojs/hono) | emerging | 30,241 | +19.97% |
+| 6 | [Drizzle ORM](https://github.com/drizzle-team/drizzle-orm) | emerging | 34,128 | +18.80% |
+| 7 | [Playwright](https://github.com/microsoft/playwright) | testing | 87,785 | +16.90% |
+| 8 | [Hono](https://github.com/honojs/hono) | webFrameworks | 30,241 | +16.32% |
+| 9 | [Drizzle ORM](https://github.com/drizzle-team/drizzle-orm) | orm | 34,128 | +15.14% |
+| 10 | [Vite](https://github.com/vitejs/vite) | buildTools | 80,339 | +13.35% |
 
 ---
 
@@ -35,16 +30,16 @@ description: "Awesome JS/TS Ecosystem 月度趋势报告与生态统计数据"
 
 | 排名 | 仓库 | 分类 | Stars |
 |------|------|------|-------|
-| 1 | [React](https://github.com/facebook/react) | frontend | 244,578 |
-| 2 | [Vue.js](https://github.com/vuejs/vue) | frontend | 209,839 |
-| 3 | [Next.js](https://github.com/vercel/next.js) | fullstack | 138,975 |
-| 4 | [Node.js](https://github.com/nodejs/node) | runtime | 116,777 |
-| 5 | [Deno](https://github.com/denoland/deno) | runtime | 106,507 |
-| 6 | [Angular](https://github.com/angular/angular) | frontend | 100,073 |
-| 7 | [Bun](https://github.com/oven-sh/bun) | runtime | 89,171 |
-| 8 | [Playwright](https://github.com/microsoft/playwright) | testing | 86,703 |
-| 9 | [Svelte](https://github.com/sveltejs/svelte) | frontend | 86,327 |
-| 10 | [Vite](https://github.com/vitejs/vite) | buildTools | 79,972 |
+| 1 | [React](https://github.com/facebook/react) | frontend | 244,796 |
+| 2 | [Vue.js](https://github.com/vuejs/vue) | frontend | 209,808 |
+| 3 | [Next.js](https://github.com/vercel/next.js) | fullstack | 139,250 |
+| 4 | [Node.js](https://github.com/nodejs/node) | runtime | 117,015 |
+| 5 | [Deno](https://github.com/denoland/deno) | runtime | 106,594 |
+| 6 | [Angular](https://github.com/angular/angular) | frontend | 100,062 |
+| 7 | [Bun](https://github.com/oven-sh/bun) | runtime | 89,492 |
+| 8 | [Playwright](https://github.com/microsoft/playwright) | testing | 87,785 |
+| 9 | [Svelte](https://github.com/sveltejs/svelte) | frontend | 86,454 |
+| 10 | [Vite](https://github.com/vitejs/vite) | buildTools | 80,339 |
 
 ---
 
@@ -54,77 +49,86 @@ description: "Awesome JS/TS Ecosystem 月度趋势报告与生态统计数据"
 
 | 仓库 | Stars | 月增长 | 年增长 |
 |------|-------|--------|--------|
-| [React](https://github.com/facebook/react) | 244,578 | +5.88% | +5.72% |
-| [Vue.js](https://github.com/vuejs/vue) | 209,839 | +2.73% | +4.43% |
-| [Angular](https://github.com/angular/angular) | 100,073 | +5.00% | +2.45% |
-| [Svelte](https://github.com/sveltejs/svelte) | 86,327 | +0.96% | +10.24% |
-| [Preact](https://github.com/preactjs/preact) | 38,560 | +0.99% | +3.16% |
+| [React](https://github.com/facebook/react) | 244,796 | +0.37% | +5.72% |
+| [Vue.js](https://github.com/vuejs/vue) | 209,808 | +2.24% | +4.44% |
+| [Angular](https://github.com/angular/angular) | 100,062 | +7.34% | +11.87% |
+| [Svelte](https://github.com/sveltejs/svelte) | 86,454 | +1.79% | +11.07% |
+| [Preact](https://github.com/preactjs/preact) | 38,589 | +3.52% | +3.83% |
 
 ### fullstack
 
 | 仓库 | Stars | 月增长 | 年增长 |
 |------|-------|--------|--------|
-| [Next.js](https://github.com/vercel/next.js) | 138,975 | +4.13% | +8.81% |
-| [Nuxt](https://github.com/nuxt/nuxt) | 60,071 | +-0.49% | +2.59% |
-| [Astro](https://github.com/withastro/astro) | 58,537 | +-7.26% | +3.73% |
-| [Remix](https://github.com/remix-run/remix) | 32,614 | +1.22% | +12.04% |
-| [SvelteKit](https://github.com/sveltejs/kit) | 20,430 | +2.30% | +11.39% |
+| [Next.js](https://github.com/vercel/next.js) | 139,250 | +-2.41% | +6.85% |
+| [Nuxt](https://github.com/nuxt/nuxt) | 60,149 | +1.84% | +10.42% |
+| [Astro](https://github.com/withastro/astro) | 58,906 | +1.96% | +12.02% |
+| [Remix](https://github.com/remix-run/remix) | 32,742 | +-3.14% | +11.87% |
+| [SvelteKit](https://github.com/sveltejs/kit) | 20,475 | +7.96% | +10.17% |
 
 ### buildTools
 
 | 仓库 | Stars | 月增长 | 年增长 |
 |------|-------|--------|--------|
-| [Vite](https://github.com/vitejs/vite) | 79,972 | +-3.77% | +1.69% |
-| [Webpack](https://github.com/webpack/webpack) | 65,833 | +-5.43% | +2.67% |
-| [Parcel](https://github.com/parcel-bundler/parcel) | 44,037 | +-2.73% | +1.05% |
-| [esbuild](https://github.com/evanw/esbuild) | 39,845 | +-6.84% | +3.19% |
-| [SWC](https://github.com/swc-project/swc) | 33,357 | +4.29% | +9.79% |
+| [Vite](https://github.com/vitejs/vite) | 80,339 | +-0.37% | +13.35% |
+| [Webpack](https://github.com/webpack/webpack) | 65,776 | +0.86% | +2.58% |
+| [Parcel](https://github.com/parcel-bundler/parcel) | 44,032 | +3.54% | +8.23% |
+| [esbuild](https://github.com/evanw/esbuild) | 39,873 | +2.51% | +8.48% |
+| [SWC](https://github.com/swc-project/swc) | 33,384 | +-2.19% | +1.76% |
 
 ### webFrameworks
 
 | 仓库 | Stars | 月增长 | 年增长 |
 |------|-------|--------|--------|
-| [NestJS](https://github.com/nestjs/nest) | 75,243 | +5.13% | +4.31% |
-| [Express](https://github.com/expressjs/express) | 68,945 | +-0.30% | +1.33% |
-| [Fastify](https://github.com/fastify/fastify) | 36,069 | +-0.46% | +0.50% |
-| [Koa](https://github.com/koajs/koa) | 35,713 | +-3.35% | +2.86% |
-| [Hono](https://github.com/honojs/hono) | 29,990 | +7.46% | +19.70% |
+| [NestJS](https://github.com/nestjs/nest) | 75,357 | +-1.31% | +6.29% |
+| [Express](https://github.com/expressjs/express) | 68,979 | +-5.00% | +2.23% |
+| [Fastify](https://github.com/fastify/fastify) | 36,155 | +7.50% | +12.68% |
+| [Koa](https://github.com/koajs/koa) | 35,707 | +4.26% | +5.89% |
+| [Hono](https://github.com/honojs/hono) | 30,241 | +-4.50% | +16.32% |
 
 ### orm
 
 | 仓库 | Stars | 月增长 | 年增长 |
 |------|-------|--------|--------|
-| [Prisma](https://github.com/prisma/prisma) | 45,770 | +7.22% | +7.31% |
-| [TypeORM](https://github.com/typeorm/typeorm) | 36,440 | +-0.77% | +3.45% |
-| [Drizzle ORM](https://github.com/drizzle-team/drizzle-orm) | 33,907 | +-2.33% | +11.50% |
-| [Sequelize](https://github.com/sequelize/sequelize) | 30,352 | +2.96% | +2.17% |
-| [Mongoose](https://github.com/Automattic/mongoose) | 27,472 | +-3.68% | +-6.26% |
+| [Prisma](https://github.com/prisma/prisma) | 45,867 | +-4.67% | +6.33% |
+| [Drizzle ORM](https://github.com/drizzle-team/drizzle-orm) | 34,128 | +5.06% | +15.14% |
+| [TypeORM](https://github.com/typeorm/typeorm) | 36,466 | +-7.57% | +-3.02% |
+| [Sequelize](https://github.com/sequelize/sequelize) | 30,350 | +5.48% | +3.54% |
+| [Mongoose](https://github.com/Automattic/mongoose) | 27,476 | +-6.60% | +-3.02% |
 
 ### testing
 
 | 仓库 | Stars | 月增长 | 年增长 |
 |------|-------|--------|--------|
-| [Playwright](https://github.com/microsoft/playwright) | 86,703 | +-3.95% | +-0.07% |
-| [Cypress](https://github.com/cypress-io/cypress) | 49,627 | +9.55% | +11.34% |
-| [Jest](https://github.com/jestjs/jest) | 45,337 | +0.85% | +3.18% |
-| [Mocha](https://github.com/mochajs/mocha) | 22,882 | +-2.16% | +-0.72% |
-| [Vitest](https://github.com/vitest-dev/vitest) | 16,377 | +10.64% | +15.88% |
+| [Playwright](https://github.com/microsoft/playwright) | 87,785 | +-0.78% | +16.90% |
+| [Cypress](https://github.com/cypress-io/cypress) | 49,623 | +-1.39% | +0.56% |
+| [Jest](https://github.com/jestjs/jest) | 45,335 | +-3.64% | +0.67% |
+| [Mocha](https://github.com/mochajs/mocha) | 22,883 | +1.03% | +1.32% |
+| [Vitest](https://github.com/vitest-dev/vitest) | 16,451 | +-3.29% | +10.31% |
 
 ### runtime
 
 | 仓库 | Stars | 月增长 | 年增长 |
 |------|-------|--------|--------|
-| [Node.js](https://github.com/nodejs/node) | 116,777 | +4.04% | +2.13% |
-| [Deno](https://github.com/denoland/deno) | 106,507 | +7.49% | +10.99% |
-| [Bun](https://github.com/oven-sh/bun) | 89,171 | +-3.52% | +5.85% |
+| [Node.js](https://github.com/nodejs/node) | 117,015 | +-3.79% | +-2.24% |
+| [Deno](https://github.com/denoland/deno) | 106,594 | +-1.16% | +12.80% |
+| [Bun](https://github.com/oven-sh/bun) | 89,492 | +0.79% | +13.20% |
 
 ### utils
 
 | 仓库 | Stars | 月增长 | 年增长 |
 |------|-------|--------|--------|
-| [Lodash](https://github.com/lodash/lodash) | 61,313 | +-1.73% | +7.88% |
+| [Lodash](https://github.com/lodash/lodash) | 61,263 | +-0.08% | +5.03% |
+| [Day.js](https://github.com/iamkun/dayjs) | 48,631 | +-6.17% | +3.15% |
+| [Zod](https://github.com/colinhacks/zod) | 42,552 | +5.99% | +9.87% |
+| [tRPC](https://github.com/trpc/trpc) | 40,131 | +-4.47% | +12.50% |
+| [date-fns](https://github.com/date-fns/date-fns) | 36,560 | +5.63% | +9.12% |
 
 ### emerging
 
 | 仓库 | Stars | 月增长 | 年增长 |
 |------|-------|--------|--------|
+| [Drizzle ORM](https://github.com/drizzle-team/drizzle-orm) | 34,128 | +-2.39% | +18.80% |
+| [Hono](https://github.com/honojs/hono) | 30,241 | +1.75% | +19.97% |
+| [Biome](https://github.com/biomejs/biome) | 24,514 | +4.07% | +39.81% |
+| [Elysia](https://github.com/elysiajs/elysia) | 18,204 | +1.62% | +21.50% |
+| [tsx](https://github.com/privatenumber/tsx) | 11,957 | +6.65% | +23.74% |

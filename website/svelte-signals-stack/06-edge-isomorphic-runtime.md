@@ -1,11 +1,12 @@
 ---
 title: Edge 同构运行时与部署
 description: 'SvelteKit Edge 部署、Cloudflare Workers / Vercel Edge / Node.js 适配器、同构渲染策略与 Edge 数据库集成'
+keywords: 'Edge, Cloudflare Workers, Vercel Edge, 同构渲染, D1, Turso, Streaming'
 ---
 
 # Edge 同构运行时与部署
 
-> 最后更新: 2026-05-01 | 覆盖: Cloudflare Workers, Vercel Edge, Netlify Edge, Node.js, 同构渲染, Edge 数据库, WinterCG
+> 最后更新: 2026-05-02 | 覆盖: Cloudflare Workers, Vercel Edge, Netlify Edge, Node.js, 同构渲染, Edge 数据库, WinterCG
 
 ---
 
@@ -202,7 +203,7 @@ export default {
 # wrangler.toml
 name = "my-sveltekit-app"
 main = ".svelte-kit/cloudflare/_worker.js"
-compatibility_date = "2026-05-01"
+compatibility_date = "2026-05-02"
 
 [[d1_databases]]
 binding = "DB"
@@ -1007,4 +1008,4 @@ export const handle: Handle = async ({ event, resolve }) => {
 - [Neon Serverless Driver](https://neon.tech/docs/serverless/serverless-driver) 📚
 - [Turso / libSQL 文档](https://docs.turso.tech/) 📚
 
-> 最后更新: 2026-05-01 | 数据来源: Cloudflare/Vercel/Netlify 官方文档, WinterCG 草案 2026-04, Node.js v22 文档, 边缘数据库厂商基准测试 2026-Q1
+> 最后更新: 2026-05-02 | 数据来源: Cloudflare/Vercel/Netlify 官方文档, WinterCG 草案 2026-04, Node.js v22 文档, 边缘数据库厂商基准测试 2026-Q1

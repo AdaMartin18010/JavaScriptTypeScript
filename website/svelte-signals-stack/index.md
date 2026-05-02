@@ -1,6 +1,7 @@
 ---
 title: Svelte 5 Signals 编译器生态
 description: 'Compiler-Based Signals + Svelte 5 + SvelteKit + TypeScript + Vite + pnpm + Edge Runtime 完整技术栈专题'
+keywords: 'Svelte, SvelteKit, Svelte 5, Runes, Signals, Compiler, TypeScript, Vite, pnpm, Edge, Fullstack'
 ---
 
 # Svelte 5 Signals 编译器生态
@@ -47,9 +48,9 @@ npm run dev
 
 | 技术 | 版本 | Stars | 关键指标 | 许可证 |
 |------|------|-------|----------|--------|
-| **Svelte** | 5.53.x | 83.5k+ | Hello World ~2KB gzip | MIT |
-| **SvelteKit** | 2.53.x | 19k+ | 1,200 RPS (vs Next.js 850) | MIT |
-| **Vite** | 6.3.0 | 70k+ | 满意度 98% | MIT |
+| **Svelte** | 5.53.x | 86.5k+ | Hello World ~2KB gzip | MIT |
+| **SvelteKit** | 2.53.x | 20.5k+ | 1,200 RPS (vs Next.js 850) | MIT |
+| **Vite** | 6.3.0 | 80.3k+ | 满意度 98% | MIT |
 | **pnpm** | 10.x | 32k+ | 35%+ 新建项目采用率 | MIT |
 | **TypeScript** | 5.8.x | - | svelte-check 覆盖率 99.2% | Apache-2.0 |
 
@@ -766,6 +767,6 @@ my-app/
 
 ---
 
-> 最后更新: 2026-05-01 | 专题总计: 18 章节, 650KB+ | 状态: ✅ 构建通过 | 对齐: 2026 十大技术趋势
+> 最后更新: 2026-05-02 | 专题总计: 18 章节, 650KB+ | 状态: ✅ 构建通过 | 对齐: 2026 十大技术趋势
 >
 > 维护者: JSTS 技术社区 | 协议: CC BY-SA 4.0 | 问题反馈: [GitHub Issues](https://github.com/luyanfei/JavaScriptTypeScript/issues)

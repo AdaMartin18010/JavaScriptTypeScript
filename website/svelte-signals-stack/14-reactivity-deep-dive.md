@@ -1,6 +1,7 @@
 ---
 title: 响应式系统深度原理
 description: 'Svelte 5 Compiler-Based Signals 响应式引擎的完整原理：依赖追踪、调度算法、编译转换、内存模型'
+keywords: '响应式原理, Signals, 依赖追踪, 编译器转换, 内存模型, 性能优化'
 ---
 
 # 响应式系统深度原理
@@ -1443,4 +1444,4 @@ flowchart LR
 
 **解读**: Svelte 编译器在构建时完成所有响应式分析，将 `$state`、`$derived`、`$effect` 转换为底层的 Signal 创建、依赖注册和副作用调度代码。
 
-> **最后更新**: 2026-05-01
+> **最后更新**: 2026-05-02

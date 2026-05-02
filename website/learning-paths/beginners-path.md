@@ -340,6 +340,7 @@ function validateEmail(email: string): boolean {
 
 完成初学者路径后，可以继续：
 
+- [⚡ Svelte 5 Signals 编译器生态专题](/svelte-signals-stack/16-learning-ladder) — 从第 0 天到第 100 天的 Svelte 渐进式学习阶梯
 - [中级学习路径](./intermediate-path.md) - 深入学习架构和性能优化
 - jsts-code-lab 中级模块
 

@@ -1,3 +1,9 @@
+---
+title: Compiler-Based Signals 架构原理
+description: '深度解析 Svelte 5、Vue Vapor Mode、React Compiler 等 Compiler-Based Signals 架构的设计哲学、实现机制与性能特征'
+keywords: 'Svelte Compiler, Signals, AST, Virtual DOM, 编译器原理, 前端框架对比'
+---
+
 # Compiler-Based Signals 架构原理
 
 > 深度解析 Svelte 5、Vue Vapor Mode、React Compiler 等 Compiler-Based Signals 架构的设计哲学、实现机制与性能特征。
@@ -484,4 +490,4 @@ let doubled = $derived(count * 2);
 - [SolidJS 响应式原语](https://www.solidjs.com/tutorial/introduction_signals) 📚
 - [Vue Vapor Mode RFC](https://github.com/vuejs/rfcs/discussions/609) 📚
 
-> 最后更新: 2026-05-01 | 数据来源: JS Framework Benchmark 2026-04, GitHub Stars 2026-05, Lighthouse CI, State of JS 2024
+> 最后更新: 2026-05-02 | 数据来源: JS Framework Benchmark 2026-04, GitHub Stars 2026-05, Lighthouse CI, State of JS 2024

@@ -1,3 +1,9 @@
+---
+title: 迁移到 Svelte 5：完整迁移指南
+description: '从 React、Vue、Angular 迁移到 Svelte 5 的全路径指导：自动化工具、手动迁移步骤、渐进式策略、常见陷阱与成本估算'
+keywords: 'React迁移, Vue迁移, Angular迁移, Svelte 5, 渐进式迁移, 迁移成本'
+---
+
 # 迁移到 Svelte 5：从 React / Vue / Angular 的完整迁移指南
 
 > 本文提供从三大主流前端框架（React、Vue、Angular）迁移到 Svelte 5 的全路径指导，涵盖自动化工具、手动迁移步骤、渐进式策略、常见陷阱与成本估算。适合技术负责人、架构师及一线开发者参考。
@@ -1604,6 +1610,6 @@ graph LR
 
 ---
 
-> 📝 **最后更新**: 2026-05-01
+> 📝 **最后更新**: 2026-05-02
 >
 > 本指南基于 Svelte 5.0+ 和 SvelteKit 2.0+ 编写。随着框架演进，部分细节可能变化，建议参考官方最新文档进行核实。

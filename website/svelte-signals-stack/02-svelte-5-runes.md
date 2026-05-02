@@ -1,3 +1,9 @@
+---
+title: Svelte 5 Runes 完全指南
+description: 'Svelte 5 Runes 语法深度指南：$state、$derived、$effect、$props、Snippets、.svelte.ts 共享状态与迁移策略'
+keywords: 'Svelte 5, Runes, $state, $derived, $effect, $props, Snippets, 响应式, 迁移指南'
+---
+
 # Svelte 5 Runes 完全指南
 
 Svelte 5（2024-10 发布）是一次根本性重写，Runes 语法取代了经典的 `let` 隐式响应式声明。Runes 基于 Signals 实现，但通过编译器优化达到零运行时框架代码。
@@ -1551,4 +1557,4 @@ graph LR
 - [Svelte REPL](https://svelte.dev/playground) 🛠️
 - [Svelte 5 源码](https://github.com/sveltejs/svelte/tree/main/packages/svelte) 🔧
 
-> 最后更新: 2026-05-01 | Svelte 版本: 5.53.x | 数据来源: svelte.dev 官方文档
+> 最后更新: 2026-05-02 | Svelte 版本: 5.53.x | 数据来源: svelte.dev 官方文档

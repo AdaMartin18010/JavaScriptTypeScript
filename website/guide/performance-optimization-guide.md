@@ -2040,6 +2040,7 @@ heapdump.writeSnapshot('./heap-' + Date.now() + '.heapsnapshot');
 
 ## 延伸阅读
 
+- [⚡ Svelte 5 Signals 编译器生态 — 生产实践](/svelte-signals-stack/08-production-practices) — Svelte 项目的 CWV 优化、Bundle 优化与监控策略
 - [性能工程分类](../categories/performance-engineering)
 - [构建工具对比矩阵](../comparison-matrices/build-tools-compare)
 - [Chrome User Experience Report](https://developer.chrome.com/docs/crux)

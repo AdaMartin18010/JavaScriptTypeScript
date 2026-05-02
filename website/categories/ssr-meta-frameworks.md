@@ -563,6 +563,7 @@ flowchart TD
 
 - [SSR 元框架对比矩阵](../comparison-matrices/ssr-metaframeworks-compare.md) — 核心指标与架构矩阵速查
 - [TanStack Start + Cloudflare Workers 部署完全指南](../guide/tanstack-start-cloudflare-deployment.md) — 边缘部署实战
+- [⚡ Svelte 5 Signals 编译器生态专题](/svelte-signals-stack/) — SvelteKit 全栈开发深度指南（路由、Form Actions、Edge 部署）
 - [前端框架生态库](./frontend-frameworks.md) — React / Vue / Svelte 等底层 UI 框架
 - [后端框架生态](./backend-frameworks.md) — Express / Fastify / Nest / Hono 等后端框架
 - [部署与托管](./deployment-hosting.md) — Vercel / Cloudflare / Netlify 等平台对比

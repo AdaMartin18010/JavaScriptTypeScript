@@ -1,3 +1,9 @@
+---
+title: TypeScript + Svelte 编译运行时
+description: 'Svelte 5 原生 TypeScript 支持深度解析：.svelte.ts、svelte-check、泛型组件、类型系统与生产实践'
+keywords: 'TypeScript, Svelte, .svelte.ts, svelte-check, 泛型组件, 类型安全'
+---
+
 # TypeScript + Svelte 编译运行时
 
 Svelte 5 的 TypeScript 支持是一次彻底的变革。
@@ -952,4 +958,4 @@ export function getThemeContext(): ThemeContext {
 - [Svelte Language Tools](https://github.com/sveltejs/language-tools) 🛠️
 - [TypeScript 5.5 发行说明](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-5.html) 📚
 
-> 最后更新: 2026-05-01 | 数据来源: svelte.dev 官方文档, TypeScript 5.5+, Svelte 5.0+ 源码
+> 最后更新: 2026-05-02 | 数据来源: svelte.dev 官方文档, TypeScript 5.5+, Svelte 5.0+ 源码

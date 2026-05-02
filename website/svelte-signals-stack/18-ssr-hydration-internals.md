@@ -1,6 +1,7 @@
 ---
 title: SSR 与 Hydration 深度原理
 description: 'SvelteKit SSR 渲染流水线、Hydration 机制、Streaming SSR、序列化原理与常见问题诊断'
+keywords: 'SSR, Hydration, Streaming, SvelteKit, 服务端渲染, 序列化, 性能诊断'
 ---
 
 # SSR 与 Hydration 深度原理
@@ -1168,7 +1169,7 @@ sequenceDiagram
 
 **解读**: Streaming SSR 允许服务端在数据未完全就绪时先发送骨架屏，数据返回后再流式推送内容块并执行占位符替换，显著改善首屏可感知性能。
 
-> **最后更新**: 2026-05-01
+> **最后更新**: 2026-05-02
 >
 > **相关阅读**:
 >

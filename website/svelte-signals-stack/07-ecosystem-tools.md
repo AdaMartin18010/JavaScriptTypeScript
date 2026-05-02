@@ -1,11 +1,12 @@
 ---
 title: Svelte 生态工具链
 description: 'shadcn-svelte、Skeleton UI、Superforms、Lucia Auth、Prisma/Drizzle 集成等 Svelte 5 生态核心工具'
+keywords: 'shadcn-svelte, Superforms, Lucia Auth, Drizzle, 动画, MCP, UI组件库'
 ---
 
 # Svelte 生态工具链
 
-> 最后更新: 2026-05-01 | 覆盖: UI 库、表单、认证、ORM、AI 工具、动画、图表、状态管理
+> 最后更新: 2026-05-02 | 覆盖: UI 库、表单、认证、ORM、AI 工具、动画、图表、状态管理
 
 ---
 
@@ -1801,8 +1802,8 @@ export const globalCounter = createCounter();
 | **TanStack Query** | ~42k | v5.x | 活跃 | MIT | 服务端状态管理，缓存策略强大 |
 | **Zustand** | ~51k | v5.x | 活跃 | MIT | 轻量全局状态，跨框架友好 |
 
-> 数据来源: GitHub Stars / npm registry 2026-05-01 | 维护状态基于最近 3 个月提交频率和发布记录
+> 数据来源: GitHub Stars / npm registry 2026-05-02 | 维护状态基于最近 3 个月提交频率和发布记录
 
 ---
 
-> 最后更新: 2026-05-01 | 数据来源: GitHub Stars 2026-05, npm registry, 各项目官方文档及发布公告
+> 最后更新: 2026-05-02 | 数据来源: GitHub Stars 2026-05, npm registry, 各项目官方文档及发布公告

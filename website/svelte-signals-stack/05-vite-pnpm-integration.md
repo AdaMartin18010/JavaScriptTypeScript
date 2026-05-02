@@ -1,11 +1,12 @@
 ---
 title: Vite + pnpm + Svelte 构建集成
 description: 'SvelteKit 底层构建原理、Vite 插件架构、pnpm workspace Monorepo 最佳实践与性能优化'
+keywords: 'Vite, pnpm, Monorepo, 构建工具, HMR, SSR构建, Rolldown'
 ---
 
 # Vite + pnpm + Svelte 构建集成
 
-> 最后更新: 2026-05-01 | Vite 6.3.x / 8 Preview | pnpm 10.x | SvelteKit 2.53.x
+> 最后更新: 2026-05-02 | Vite 6.3.x / 8 Preview | pnpm 10.x | SvelteKit 2.53.x
 
 ---
 
@@ -1230,4 +1231,4 @@ DEBUG=rolldown pnpm build
 - [SvelteKit Packaging](https://svelte.dev/docs/kit/packaging) 📦
 - [Svelte Compiler Options](https://svelte.dev/docs/svelte-compiler) ⚙️
 
-> 最后更新: 2026-05-01 | 数据来源: vitejs.dev, pnpm.io, rolldown.rs, svelte.dev 官方文档
+> 最后更新: 2026-05-02 | 数据来源: vitejs.dev, pnpm.io, rolldown.rs, svelte.dev 官方文档

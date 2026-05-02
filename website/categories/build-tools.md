@@ -6,7 +6,7 @@ description: JavaScript/TypeScript 构建工具完整指南 - Vite、Webpack、R
 # 构建工具
 
 > 数据更新时间：2026年5月
-> 
+>
 > 数据来源：GitHub API、npm Registry、State of JavaScript 2025 Survey、Vite/Rspack/Rolldown 官方博客与 Benchmark
 
 JavaScript/TypeScript 生态的构建工具经历了从 Webpack 一统天下到百花齐放的发展过程。现代构建工具追求**极速构建**、**原生 ESM 支持**和**TypeScript 开箱即用**。2026 年，工具链的 **Rust 化** 已进入收割期——Rolldown 成为 Vite 生产构建默认底层，Rspack 在字节跳动等头部企业承载数万应用，Farm 以 Vite 插件兼容性快速崛起。
@@ -1056,3 +1056,9 @@ State of JavaScript 2025 调查数据（约 12,000 名受访者）：
 > - 开发者满意度：State of JavaScript 2025 Survey（约 12,000 名受访者）
 > - 企业迁移数据：StackShare、GitHub Dependency Graph 综合分析，2026-Q1
 > - 版本状态：各项目官方 Release 页面与 npm latest tag，2026-04
+
+---
+
+## 相关专题
+
+- [⚡ Svelte 5 Signals 编译器生态专题](/svelte-signals-stack/) — 覆盖 Svelte 5 Runes、SvelteKit 全栈、Vite 构建集成、Edge 部署的完整技术栈指南

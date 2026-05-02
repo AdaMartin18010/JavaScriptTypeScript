@@ -1,3 +1,9 @@
+---
+title: SvelteKit 2.x 全栈框架深度指南
+description: 'SvelteKit 文件系统路由、数据加载、Form Actions、API 路由、适配器与部署策略的完整指南'
+keywords: 'SvelteKit, 全栈框架, 路由, Form Actions, SSR, 适配器, Edge部署'
+---
+
 # SvelteKit 2.x 全栈框架深度指南
 
 ## 概述
@@ -1168,4 +1174,4 @@ import type { PageLoad, PageServerLoad, Actions, RequestHandler } from './$types
 - [Svelte 5 Runes 指南](02-svelte-5-runes) 📚 — SvelteKit 构建于 Svelte 5 之上
 - [Svelte Society](https://sveltesociety.dev/) 🌐 — 社区组件、模板和资源库
 
-> **最后更新**: 2026-05-01 | **SvelteKit 版本**: 2.53.x | **数据来源**: kit.svelte.dev, GitHub Stars 2026-05, devmorph.dev benchmark
+> **最后更新**: 2026-05-02 | **SvelteKit 版本**: 2.53.x | **数据来源**: kit.svelte.dev, GitHub Stars 2026-05, npm registry 2026-05
