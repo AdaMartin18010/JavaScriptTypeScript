@@ -1,0 +1,710 @@
+---
+title: "测试模式大全：从经典到现代"
+description: "系统梳理测试模式的分类体系，深入剖析Arrange-Act-Assert、Given-When-Then、属性测试与变异测试的理论根基，并全面映射到JS/TS生态中的fast-check、Stryker与TypeScript类型测试的工程实践。"
+date: 2026-05-01
+tags: ["测试工程", "测试模式", "属性测试", "变异测试", "fast-check", "Stryker"]
+category: "engineering"
+---
+
+# 测试模式大全：从经典到现代
+
+## 引言
+
+测试代码也是代码——这一看似平凡的命题蕴含着深刻的工程洞见。正如生产代码需要设计模式来应对复杂性，测试代码同样需要模式来指导其结构、组织和演化。 poorly written tests 不仅是维护负担，更是假信心的来源：它们看似在保护系统，实则因脆弱、缓慢或缺乏断言价值而成为沉默的帮凶。
+
+测试模式的谱系极为丰富，从经典的 xUnit 模式（Arrange-Act-Assert、Four-Phase Test）到现代函数式测试范式（Property-Based Testing、Mutation Testing），从面向对象时代的测试数据构建模式（Object Mother、Builder）到 TypeScript 生态独特的类型级测试（Type Testing）。掌握这些模式，意味着开发者能够在不同场景下选择最恰当的测试结构，在可读性、可维护性和缺陷发现能力之间取得最佳平衡。
+
+本文首先建立测试模式的分类学框架，随后深入剖析核心模式的理论语义与适用场景，最后全面映射到 JavaScript/TypeScript 生态的现代实践——fast-check 的属性测试、Stryker 的变异测试、TypeScript 的类型测试，以及测试反模式的识别与消除。
+
+## 理论严格表述
+
+### 测试模式的分类学
+
+借鉴 GoF（Gang of Four）设计模式的分类方法，测试模式可按其关注点分为三大类：
+
+**创建型模式（Creational Patterns）**：关注测试数据的创建与组装。测试数据的质量直接决定了测试的有效性——如果测试数据不能代表真实世界的输入分布，测试通过也仅仅证明了系统在「玩具数据」上的正确性。创建型模式包括：
+
+- **Test Data Builder**：通过流式 API 构建复杂测试对象
+- **Object Mother**：集中管理常用的预置测试对象
+- **Factory Method**：根据参数动态生成测试数据变体
+
+**结构型模式（Structural Patterns）**：关注测试代码的组织结构与模块关系。良好的结构使得测试意图清晰、失败信息明确、维护成本可控。结构型模式包括：
+
+- **Arrange-Act-Assert (AAA)**：三阶段测试结构
+- **Given-When-Then**：BDD 风格的四段式结构
+- **Four-Phase Test**：包含显式清理阶段的四段式结构
+
+**行为型模式（Behavioral Patterns）**：关注测试的执行策略与验证方式。这些模式决定了测试如何探索被测系统的行为空间。行为型模式包括：
+
+- **Parameterized Test**：用多组数据驱动同一测试逻辑
+- **Property-Based Testing**：基于不变式自动生成测试用例
+- **Mutation Testing**：通过主动注入缺陷评估测试套件的缺陷发现能力
+
+### Arrange-Act-Assert (AAA) 模式
+
+AAA 是最基础、最通用的测试结构模式，由 William C. Wake 在《XP Explored》中系统阐述。它将每个测试用例严格划分为三个阶段：
+
+1. **Arrange（预置）**：建立被测对象的初始状态，准备依赖替身，配置环境。
+2. **Act（执行）**：触发被测行为——通常只有一行代码调用被测方法。
+3. **Assert（断言）**：验证执行后的状态或输出是否符合预期。
+
+AAA 的价值在于其「语义透明性」：任何熟悉该模式的读者都能在 3 秒内定位测试的预置条件、触发动作和验证点。当测试失败时，AAA 结构使得故障定位极为高效——如果断言失败，问题可能在于被测代码；如果 Act 阶段抛出异常，问题可能在于 Arrange 阶段的预置状态。
+
+AAA 的严格形式要求每个测试只包含一个 Act。包含多个 Act 的测试违反了「单一职责原则」：当测试失败时，无法确定是哪个 Act 导致了失败。
+
+### Given-When-Then 模式
+
+Given-When-Then 是 BDD（Behavior-Driven Development）的测试结构模式，由 Dan North 提出。与 AAA 相比，GWT 更强调「业务语境」和「利益相关者沟通」：
+
+- **Given**：系统所处的业务语境和前置条件。与 Arrange 的区别在于，Given 使用业务语言描述（「用户已登录且购物车中有商品」），而非技术语言（「创建 user 对象并注入 cart mock」）。
+- **When**：用户或系统触发的业务动作。
+- **Then**：可观察的业务结果。
+
+GWT 的真正威力在于它作为「活的文档」（living documentation）的功能。当测试使用业务语言编写时，非技术人员（产品经理、业务分析师）可以直接阅读测试用例并验证业务规则是否被正确实现。在 Cucumber 等 BDD 工具中，GWT 场景甚至可以由业务方直接编写，技术人员负责将其绑定到自动化代码。
+
+### Four-Phase Test 模式
+
+Four-Phase Test 是 AAA 的扩展版本，增加了一个显式的清理阶段：
+
+1. **Setup（设置）**：等同于 Arrange。
+2. **Exercise（执行）**：等同于 Act。
+3. **Verify（验证）**：等同于 Assert。
+4. **Teardown（清理）**：恢复系统到测试前的状态，释放资源。
+
+Teardown 的重要性在集成测试和 E2E 测试中尤为突出。如果测试创建了数据库记录、临时文件或全局状态变更，而未在 Teardown 中清理，后续测试将继承这些变更，导致状态污染和脆弱性。在 xUnit 框架中，`afterEach` 和 `afterAll` 钩子正是 Teardown 阶段的制度化实现。
+
+### Parameterized Test 模式
+
+Parameterized Test 将测试逻辑与测试数据分离，使得同一逻辑可以应用于多组输入数据。从逻辑学的角度，参数化测试是对「全称命题」的有限实例化验证：
+
+$$\forall x \in D: P(x) \implies Q(x)$$
+
+通过选取 $D$ 的代表性子集 $T \subset D$，参数化测试验证 $P(t) \implies Q(t)$ 对所有 $t \in T$ 成立。
+
+参数化测试的价值不仅是减少代码重复，更在于它强制开发者思考输入域的划分：为参数化测试选择数据的过程，本身就是等价类划分和边界值分析的实践。
+
+### Property-Based Testing 的理论
+
+Property-Based Testing（PBT）由 Koen Claessen 和 John Hughes 在 Haskell 的 QuickCheck 库中首创，代表了测试方法论从「基于示例」到「基于性质」的范式转换。
+
+传统测试是「示例驱动的」：开发者手工构造输入 $x$ 并验证 $P(x) = y$。PBT 是「性质驱动的」：开发者声明被测函数应满足的不变式（property），测试框架自动生成大量随机输入并验证不变式是否成立。
+
+形式化地，设被测函数为 $f: D \to R$，则 property 是一个谓词 $prop_f: D \times R \to \{\text{true}, \text{false}\}$。PBT 的目标是：
+
+$$\forall x \in D: prop_f(x, f(x)) = \text{true}$$
+
+由于 $D$ 通常是无限的，PBT 通过随机采样 $x \sim \text{Random}(D)$ 进行统计性验证。当发现反例时，PBT 框架会尝试「缩小」（shrink）输入——从复杂的反例出发，递归地生成更简单的变体，直到找到最小反例（minimal counterexample）。这种缩小机制使得调试效率大幅提升：开发者看到的不是 1000 行 JSON 的失败数据，而是 3 个字段的最简反例。
+
+常见的 property 类型包括：
+
+- **往返性质（Round-trip）**：`encode(decode(x)) === x`
+- **幂等性（Idempotence）**：`f(f(x)) === f(x)`
+- **不变性（Invariant）**：`f(x).length === x.length`（长度保持）
+- **代数法则（Algebraic Law）**：`sort(concat(a, b))` 应与 `concat(sort(a), sort(b))` 在某种意义下等价
+
+### Mutation Testing 的理论
+
+Mutation Testing 是一种评估测试套件质量的元测试技术。其核心思想是：如果测试套件足够优秀，那么当程序被注入微小的人工缺陷（变异算子，mutation operator）时，至少有一个测试应当失败。
+
+形式化地，设程序为 $P$，测试套件为 $T$，变异算子为 $mut: P \to P'$。若 $T$ 在 $P$ 上全部通过但在 $P'$ 上至少有一个失败，则称 $T$ 「杀死」（killed）了变异体 $P'$；若 $T$ 在 $P'$ 上仍然全部通过，则称变异体「存活」（survived）。
+
+变异充分性分数（Mutation Score）定义为：
+
+$$\text{Mutation Score} = \frac{\text{Killed Mutants}}{\text{Total Mutants} - \text{Equivalent Mutants}}$$
+
+其中 Equivalent Mutants 是指语义上与原程序等价、无法被任何测试杀死的变异体（例如 `a + b` 变异为 `b + a`）。
+
+变异测试揭示了覆盖率指标的盲区：一段 100% 覆盖的代码，如果测试仅「执行」了代码而未「验证」其行为，变异体将大量存活。例如，测试执行了函数但没有任何断言——覆盖率 100%，但所有变异均存活。
+
+常见的变异算子包括：
+
+- 算术运算符替换：`+` → `-`, `*` → `/`
+- 关系运算符替换：`>` → `>=`, `===` → `!==`
+- 逻辑运算符替换：`&&` → `||`
+- 语句删除：删除函数调用或赋值语句
+- 边界值偏移：`> 0` → `> 1`
+
+## 工程实践映射
+
+### JS/TS 中的测试数据创建模式
+
+**Factory 模式创建测试数据**
+
+工厂模式通过函数动态生成测试数据，避免了硬编码导致的冲突和冗余：
+
+```typescript
+// tests/factories/user.ts
+import { faker } from '@faker-js/faker/locale/zh_CN';
+
+interface CreateUserOptions {
+  role?: 'user' | 'admin' | 'guest';
+  verified?: boolean;
+  overrides?: Partial<User>;
+}
+
+export function createUser(options: CreateUserOptions = {}): User {
+  const { role = 'user', verified = true, overrides } = options;
+
+  return {
+    id: faker.string.uuid(),
+    email: faker.internet.email(),
+    name: faker.person.fullName(),
+    avatar: faker.image.avatar(),
+    role,
+    verified,
+    createdAt: faker.date.past(),
+    updatedAt: faker.date.recent(),
+    ...overrides,
+  };
+}
+
+// 批量生成
+export function createUsers(count: number, options?: CreateUserOptions): User[] {
+  return Array.from({ length: count }, () => createUser(options));
+}
+
+// 测试中使用
+describe('权限系统', () => {
+  it('管理员应能删除任意用户', () => {
+    const admin = createUser({ role: 'admin' });
+    const target = createUser({ role: 'user' });
+
+    const result = canDelete(admin, target);
+    expect(result).toBe(true);
+  });
+
+  it('普通用户不应能删除其他用户', () => {
+    const user = createUser({ role: 'user' });
+    const target = createUser({ role: 'user' });
+
+    expect(canDelete(user, target)).toBe(false);
+  });
+});
+```
+
+**Builder 模式构建复杂对象**
+
+对于具有大量可选字段的复杂对象，Builder 模式提供了流畅的 API：
+
+```typescript
+// tests/builders/order-builder.ts
+class OrderBuilder {
+  private order: Partial<Order> = {
+    id: faker.string.uuid(),
+    items: [],
+    status: 'pending',
+    createdAt: new Date(),
+  };
+
+  withItem(productId: string, quantity: number, price: number): this {
+    this.order.items = [
+      ...(this.order.items || []),
+      { productId, quantity, price },
+    ];
+    return this;
+  }
+
+  withStatus(status: OrderStatus): this {
+    this.order.status = status;
+    return this;
+  }
+
+  withCustomer(customerId: string): this {
+    this.order.customerId = customerId;
+    return this;
+  }
+
+  build(): Order {
+    if (!this.order.items?.length) {
+      throw new Error('Order must have at least one item');
+    }
+    return this.order as Order;
+  }
+}
+
+// 使用
+const order = new OrderBuilder()
+  .withCustomer('cust-123')
+  .withItem('prod-1', 2, 100)
+  .withItem('prod-2', 1, 50)
+  .withStatus('confirmed')
+  .build();
+```
+
+**Object Mother 模式**
+
+Object Mother 集中管理领域对象的标准实例，特别适用于具有复杂业务规则的对象：
+
+```typescript
+// tests/mothers/order-mother.ts
+export class OrderMother {
+  static standardOrder(): Order {
+    return new OrderBuilder()
+      .withCustomer('standard-customer')
+      .withItem('standard-product', 1, 99.99)
+      .build();
+  }
+
+  static bulkOrder(): Order {
+    return new OrderBuilder()
+      .withCustomer('bulk-customer')
+      .withItem('bulk-product', 1000, 10)
+      .withStatus('processing')
+      .build();
+  }
+
+  static cancelledOrder(): Order {
+    return new OrderBuilder()
+      .withCustomer('any-customer')
+      .withItem('any-product', 1, 50)
+      .withStatus('cancelled')
+      .build();
+  }
+}
+
+// 测试中使用
+describe('订单折扣', () => {
+  it('批量订单应享受 20% 折扣', () => {
+    const order = OrderMother.bulkOrder();
+    const discount = calculateDiscount(order);
+    expect(discount).toBe(0.20);
+  });
+});
+```
+
+### fast-check 的属性测试实现
+
+fast-check 是 JavaScript/TypeScript 生态中最成熟的属性测试框架，其 API 设计与 QuickCheck 高度一致：
+
+```typescript
+import fc from 'fast-check';
+import { describe, it, expect } from 'vitest';
+
+describe('数组工具函数的属性测试', () => {
+  // 性质 1: sort 的幂等性 —— 排序两次等于排序一次
+  it('sort 应是幂等的', () => {
+    fc.assert(
+      fc.property(fc.array(fc.integer()), (arr) => {
+        const once = [...arr].sort((a, b) => a - b);
+        const twice = [...once].sort((a, b) => a - b);
+        expect(twice).toEqual(once);
+      })
+    );
+  });
+
+  // 性质 2: reverse 的往返性质 —— reverse(reverse(x)) === x
+  it('reverse 两次应等于原数组', () => {
+    fc.assert(
+      fc.property(fc.array(fc.string()), (arr) => {
+        expect([...arr].reverse().reverse()).toEqual(arr);
+      })
+    );
+  });
+
+  // 性质 3: filter 不应增加数组长度
+  it('filter 结果长度不应超过原数组', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.integer()),
+        fc.func(fc.boolean()),
+        (arr, predicate) => {
+          expect(arr.filter(predicate).length).toBeLessThanOrEqual(arr.length);
+        }
+      )
+    );
+  });
+
+  // 性质 4: 自定义编码/解码的往返性质
+  it('base64 编码解码应可往返', () => {
+    fc.assert(
+      fc.property(fc.string(), (str) => {
+        expect(Buffer.from(Buffer.from(str).toString('base64'), 'base64').toString()).toBe(str);
+      }),
+      { numRuns: 1000 } // 运行 1000 次随机测试
+    );
+  });
+
+  // 性质 5: 加法交换律和结合律
+  it('加法应满足交换律和结合律', () => {
+    fc.assert(
+      fc.property(fc.integer(), fc.integer(), fc.integer(), (a, b, c) => {
+        expect(a + b).toBe(b + a);              // 交换律
+        expect((a + b) + c).toBe(a + (b + c));  // 结合律
+      })
+    );
+  });
+});
+```
+
+fast-check 的 Arbitrary（数据生成器）系统极为强大，支持组合生成复杂数据结构：
+
+```typescript
+// 自定义用户数据生成器
+const userArbitrary = fc.record({
+  id: fc.uuid(),
+  name: fc.string({ minLength: 1, maxLength: 50 }),
+  age: fc.integer({ min: 0, max: 150 }),
+  email: fc.emailAddress(),
+  tags: fc.array(fc.string(), { maxLength: 5 }),
+  metadata: fc.dictionary(fc.string(), fc.oneof(fc.string(), fc.integer(), fc.boolean())),
+});
+
+// 使用自定义生成器进行属性测试
+it('用户序列化应可往返', () => {
+  fc.assert(
+    fc.property(userArbitrary, (user) => {
+      const serialized = JSON.stringify(user);
+      const deserialized = JSON.parse(serialized);
+      expect(deserialized).toEqual(user);
+    })
+  );
+});
+```
+
+fast-check 的 `fc.assert` 默认运行 100 次随机测试，对于关键业务逻辑可提升至 10000 次。当发现反例时，fast-check 会自动缩小输入，输出最小失败案例：
+
+```
+Error: Property failed after 42 tests
+{ seed: 12345, path: "41:2:1:0", endOnFailure: true }
+Counterexample: [[1, 3, 2]]
+Shrunk 3 time(s)
+Got error: expect(received).toEqual(expected)
+```
+
+### Stryker 的变异测试配置
+
+Stryker 是 JavaScript/TypeScript 生态领先的变异测试框架。以下是完整的配置与使用指南：
+
+```typescript
+// stryker.config.mjs
+export default {
+  mutate: [
+    'src/**/*.ts',
+    '!src/**/*.test.ts',
+    '!src/**/*.spec.ts',
+    '!src/types/**',
+  ],
+  testRunner: 'vitest',           // 或 'jest', 'mocha', 'command'
+  coverageAnalysis: 'perTest',
+  reporters: ['html', 'clear-text', 'progress'],
+  htmlReporter: {
+    fileName: 'reports/mutation-report.html',
+  },
+  thresholds: {
+    high: 80,                     // 高分阈值
+    low: 60,                      // 低分阈值
+    break: 50,                    // CI 失败阈值
+  },
+  // 变异算子配置
+  mutator: {
+    excludedMutations: [
+      'StringLiteral',            // 字符串字面量（通常噪音大）
+    ],
+  },
+  // 增量模式：仅对变更文件运行变异测试
+  incremental: true,
+  incrementalFile: 'reports/stryker-incremental.json',
+};
+```
+
+运行变异测试：
+
+```bash
+npx stryker run
+```
+
+Stryker 的输出报告详细展示了每个变异体的状态：
+
+```
+All mutants killed! ( mutation score: 100.00% )
+# Killed: 245
+# Survived: 12
+# Timeout: 3
+# No coverage: 0
+# Ignored: 5
+```
+
+对于存活的变异体，开发者需要分析其原因：
+
+- **测试缺失**：需要补充能够杀死该变异体的测试用例
+- **等价变异体**：变异体与原程序语义等价，需手动标记为忽略
+- **低价值测试**：测试执行了代码但未验证行为，需增强断言
+
+在 CI 中集成变异测试时，建议采用「增量模式」——仅对 PR 中修改的文件运行变异测试，将执行时间从数小时压缩到数分钟：
+
+```yaml
+# .github/workflows/mutation-test.yml
+- name: Run mutation tests
+  run: npx stryker run --incremental
+  env:
+    STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
+```
+
+### 测试反模式
+
+识别和消除测试反模式与采纳测试正模式同等重要。以下是 JS/TS 生态中最常见的测试反模式：
+
+**1. Happy Path Bias（快乐路径偏见）**
+
+测试仅覆盖「一切正常」的场景，忽略了错误处理、边界条件和异常情况。研究表明，生产环境中的缺陷有 60% 以上发生在错误处理路径上。
+
+```typescript
+// 反模式：只测试成功场景
+it('应创建用户', async () => {
+  const user = await createUser({ email: 'test@example.com' });
+  expect(user.email).toBe('test@example.com'); // 永远通过
+});
+
+// 正模式：同时测试错误场景
+it('应拒绝重复邮箱', async () => {
+  await createUser({ email: 'exists@example.com' });
+  await expect(createUser({ email: 'exists@example.com' }))
+    .rejects.toThrow('Email already exists');
+});
+
+it('应拒绝无效邮箱格式', async () => {
+  await expect(createUser({ email: 'not-an-email' }))
+    .rejects.toThrow('Invalid email format');
+});
+```
+
+**2. Mystery Guest（神秘访客）**
+
+测试依赖于外部文件中不可见的测试数据，导致测试意图模糊。读者无法从测试代码本身理解为何预期结果是 42——答案藏在 500 行外的 fixtures 文件中。
+
+```typescript
+// 反模式：神秘访客
+it('应计算正确总价', () => {
+  const order = loadOrderFromFixture('order-123'); // 数据在哪里？
+  expect(calculateTotal(order)).toBe(299.99);      // 为什么是 299.99？
+});
+
+// 正模式：数据内联或工厂明确构建
+it('应计算正确总价', () => {
+  const order = new OrderBuilder()
+    .withItem('book', 2, 99.99)
+    .withItem('pen', 1, 100.01)
+    .build();
+  expect(calculateTotal(order)).toBe(299.99); // 2*99.99 + 100.01 = 299.99
+});
+```
+
+**3. Fragile Test（脆弱测试）**
+
+测试因过度依赖实现细节而频繁失效。当生产代码重构时，即使行为未变，测试也会失败。
+
+```typescript
+// 反模式：依赖内部实现
+it('应更新用户', () => {
+  const spy = vi.spyOn(userService, 'internalUpdateMethod'); // 内部方法！
+  updateUser('123', { name: 'New' });
+  expect(spy).toHaveBeenCalled(); // 重构后方法名变了？测试失败
+});
+
+// 正模式：验证可观察行为
+it('应更新用户', async () => {
+  await updateUser('123', { name: 'New' });
+  const user = await getUser('123');
+  expect(user.name).toBe('New'); // 验证行为结果，而非实现方式
+});
+```
+
+**4. Slow Test（缓慢测试）**
+
+执行时间超过 1 秒的单元测试会逐渐侵蚀开发体验。常见原因包括：真实数据库连接、未 Mock 的外部 API 调用、冗余的浏览器启动、以及大量不必要的测试数据生成。
+
+```typescript
+// 反模式：单元测试中访问真实数据库
+it('应保存用户', async () => {
+  const db = new PrismaClient(); // 连接真实数据库
+  await db.user.create({ data: { email: 'test@example.com' } });
+  const found = await db.user.findUnique({ where: { email: 'test@example.com' } });
+  expect(found).not.toBeNull(); // 慢！
+});
+
+// 正模式：使用 Fake Repository
+it('应保存用户', async () => {
+  const repo = new FakeUserRepository();
+  await repo.save({ email: 'test@example.com' });
+  const found = await repo.findByEmail('test@example.com');
+  expect(found).not.toBeNull(); // 毫秒级
+});
+```
+
+### Testing Trophy vs Testing Pyramid
+
+Kent C. Dodds 提出的 Testing Trophy 是对传统测试金字塔的重新诠释。与金字塔强调「数量比例」不同，Trophy 强调「投资回报」与「信心比例」：
+
+- **静态测试**：ESLint、TypeScript、Prettier——零运行时代价，捕获大量低级错误。
+- **单元测试**：测试纯函数和独立单元——快速、精准、低成本。
+- **集成测试**：测试多个模块的协作——ROI 最高的测试层级，捕获大多数真实缺陷。
+- **E2E 测试**：测试完整用户流程——高成本但不可替代的信心来源。
+
+Testing Trophy 的核心理念是：**「集成测试提供了最佳的信心/成本比」**。这一观点与 Google 的研究一致：在大型代码库中，集成测试发现的缺陷密度（defects per test）显著高于单元测试和 E2E 测试。
+
+在 JS/TS 项目中，Testing Trophy 的建议比例可能是：
+
+- 静态测试：100% 文件覆盖（无成本）
+- 单元测试：大量（工具函数、纯逻辑）
+- 集成测试：更多（组件、API、数据库访问层）
+- E2E 测试：适量（关键用户旅程）
+
+### 测试与 TypeScript 类型的结合
+
+TypeScript 的类型系统本身就是一套强大的静态测试工具。然而，类型正确不等于逻辑正确——branded types（品牌类型）的测试策略展示了类型与测试的协同：
+
+```typescript
+// 使用 branded type 防止单位混淆
+type Cents = number & { __brand: 'Cents' };
+type Dollars = number & { __brand: 'Dollars' };
+
+function toCents(dollars: Dollars): Cents {
+  return (dollars * 100) as Cents;
+}
+
+function toDollars(cents: Cents): Dollars {
+  return (cents / 100) as Dollars;
+}
+
+// 编译期防止错误
+const price: Dollars = 10;
+const cents = toCents(price); // OK
+// toCents(10); // Error: 普通 number 不能传入
+
+// 但类型系统无法验证转换逻辑的正确性
+// 需要测试验证：
+describe('货币转换', () => {
+  it('10 美元应等于 1000 美分', () => {
+    expect(toCents(10 as Dollars)).toBe(1000 as Cents);
+  });
+
+  it('1250 美分应等于 12.5 美元', () => {
+    expect(toDollars(1250 as Cents)).toBe(12.5 as Dollars);
+  });
+
+  it('不应丢失精度', () => {
+    expect(toCents(0.01 as Dollars)).toBe(1 as Cents);
+    expect(toDollars(1 as Cents)).toBe(0.01 as Dollars);
+  });
+});
+```
+
+对于更高级的类型级测试，可以使用 `tsd` 或 `expect-type` 库验证类型推断的正确性：
+
+```typescript
+import { expectType } from 'tsd';
+
+// 验证泛型函数的类型推断
+declare function pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>;
+
+expectType<{ a: string }>(pick({ a: '1', b: 2 }, ['a']));
+// @ts-expect-error —— 验证错误用法被正确拒绝
+pick({ a: '1' }, ['b']);
+```
+
+这种「类型测试」对于库作者尤为重要——它确保了公共 API 的类型契约在版本迭代中不被意外破坏。
+
+## Mermaid 图表
+
+### 测试模式分类体系
+
+```mermaid
+graph TB
+    subgraph "测试模式分类学"
+        direction TB
+        A[测试模式] --> B[创建型模式]
+        A --> C[结构型模式]
+        A --> D[行为型模式]
+
+        B --> B1[Factory Method]
+        B --> B2[Test Data Builder]
+        B --> B3[Object Mother]
+
+        C --> C1[Arrange-Act-Assert]
+        C --> C2[Given-When-Then]
+        C --> C3[Four-Phase Test]
+
+        D --> D1[Parameterized Test]
+        D --> D2[Property-Based Testing]
+        D --> D3[Mutation Testing]
+    end
+
+    style A fill:#54a0ff,stroke:#333,stroke-width:2px,color:#fff
+    style B fill:#1dd1a1,stroke:#333,stroke-width:2px,color:#fff
+    style C fill:#feca57,stroke:#333,stroke-width:2px
+    style D fill:#ff6b6b,stroke:#333,stroke-width:2px,color:#fff
+```
+
+### 变异测试工作流程
+
+```mermaid
+flowchart LR
+    A[原始程序 P] --> B[变异引擎]
+    B --> C1[变异体 1<br/>+ 变 -]
+    B --> C2[变异体 2<br/>> 变 >=]
+    B --> C3[变异体 N<br/>删除语句]
+
+    C1 --> D[测试套件 T]
+    C2 --> D
+    C3 --> D
+
+    D --> E1[杀死<br/>Killed]
+    D --> E2[存活<br/>Survived]
+    D --> E3[等价<br/>Equivalent]
+
+    E1 --> F[变异分数<br/>Killed / Total]
+    E2 --> G[需要增强测试]
+    E3 --> H[手动标记忽略]
+
+    style A fill:#54a0ff,stroke:#333,stroke-width:2px,color:#fff
+    style B fill:#feca57,stroke:#333,stroke-width:2px
+    style E1 fill:#1dd1a1,stroke:#333,stroke-width:2px,color:#fff
+    style E2 fill:#ff6b6b,stroke:#333,stroke-width:2px,color:#fff
+    style E3 fill:#c8d6e5,stroke:#333
+```
+
+### Testing Trophy 信心/成本模型
+
+```mermaid
+graph TB
+    subgraph "Testing Trophy —— 信心与成本"
+        direction TB
+        E2E["E2E 测试<br/>高成本 · 高信心<br/>关键用户旅程"] --> INT["集成测试<br/>中成本 · 最高 ROI<br/>主要缺陷来源"]
+        INT --> UNIT["单元测试<br/>低成本 · 快速反馈<br/>纯函数与逻辑"]
+        UNIT --> STATIC["静态测试<br/>零成本 · 基础保障<br/>ESLint + TypeScript"]
+    end
+
+    E2E --> |"少量"| E2E2["5-10%"]
+    INT --> |"大量"| INT2["40-50%"]
+    UNIT --> |"大量"| UNIT2["30-40%"]
+    STATIC --> |"全覆盖"| STATIC2["100% 文件"]
+
+    style E2E fill:#ff6b6b,stroke:#333,stroke-width:2px,color:#fff
+    style INT fill:#1dd1a1,stroke:#333,stroke-width:2px,color:#fff
+    style UNIT fill:#54a0ff,stroke:#333,stroke-width:2px,color:#fff
+    style STATIC fill:#feca57,stroke:#333,stroke-width:2px
+```
+
+## 理论要点总结
+
+1. **测试模式为测试代码的结构、创建和行为提供了系统化的指导框架**：创建型模式解决「数据从哪来」，结构型模式解决「测试如何组织」，行为型模式解决「如何系统性地探索行为空间」。
+
+2. **Arrange-Act-Assert 和 Given-When-Then 是测试结构的两大范式**：AAA 强调技术层面的清晰分割，GWT 强调业务语境的可读性。二者并非互斥，而是在不同受众和场景下各有优势。
+
+3. **Property-Based Testing 将测试从「基于示例」提升到「基于性质」的抽象层次**：通过声明不变式而非枚举示例，PBT 能够以较少的代码覆盖更大的输入空间，并通过自动缩小机制提供最小反例。
+
+4. **Mutation Testing 是测试套件的「元测试」**：它通过主动注入人工缺陷来评估测试的真实有效性，揭示了覆盖率指标的根本盲区——覆盖率只衡量「执行」，不衡量「验证」。
+
+5. **测试反模式的危害不亚于生产代码反模式**：Happy Path Bias、Mystery Guest、Fragile Test 和 Slow Test 会侵蚀测试体系的可信度，必须像对待生产代码异味一样积极地识别和消除。
+
+## 参考资源
+
+1. Meszaros, G. (2007). *xUnit Test Patterns: Refactoring Test Code*. Addison-Wesley. 测试模式领域的百科全书，系统分类了 70 余种测试模式与反模式，是本文模式分类学的核心参考。
+
+2. Claessen, K., & Hughes, J. (2000). [QuickCheck: A Lightweight Tool for Random Testing of Haskell Programs](https://dl.acm.org/doi/10.1145/357766.351266). ACM SIGPLAN Notices. 属性测试的开山之作，奠定了基于随机生成和缩小的测试范式理论基础。
+
+3. Stryker. (2025). [Stryker Mutator Documentation](https://stryker-mutator.io/docs/). JavaScript/TypeScript 变异测试的权威指南，涵盖配置、算子说明、CI 集成和结果解读。
+
+4. fast-check. (2025). [fast-check Documentation](https://dubzzz.github.io/fast-check.github.com/). JavaScript 属性测试框架的完整文档，包含 arbitrary 组合、自定义生成器和高级配置。
+
+5. Dodds, K. C. (2018). [Write tests. Not too many. Mostly integration.](https://kentcdodds.com/blog/write-tests) Kent C. Dodds 关于 Testing Trophy 的经典博文，论证了集成测试在信心/成本比上的优势，对测试金字塔进行了现代诠释。

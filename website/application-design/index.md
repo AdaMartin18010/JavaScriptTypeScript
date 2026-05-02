@@ -535,6 +535,16 @@ graph TB
 - **Leonard Richardson** — Richardson 成熟度模型
 - **GraphQL 规范** — Facebook/GraphQL Foundation 的开放规范
 
+### 知识库延伸阅读
+
+本专题的应用设计理论在 Awesome JS/TS 知识库中有系统性的深度研究支撑：
+
+- **[架构模式理论研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ARCHITECTURE_PATTERNS_THEORY.md)** — 从分层架构、六边形架构到微内核模式的完整形式化分析，建立架构模式选择的多属性决策框架，与专题中的 [01 架构模式总览](./01-architecture-patterns-overview.md) 形成理论与实践的双向映射。
+
+- **[安全模型分析](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/SECURITY_MODEL_ANALYSIS.md)** — 纵深防御、零信任架构与威胁建模的形式化方法论，为专题中 [09 安全设计](./09-security-by-design.md) 的 OWASP 实践提供理论纵深。
+
+- **[API 设计理论研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/API_DESIGN_THEORY.md)** — RESTful、GraphQL、gRPC 与 tRPC 四种 API 风格的形式化契约模型，分析类型安全、版本化策略与幂等性设计的数学基础，与 [07 API 设计模式](./07-api-design-patterns.md) 直接呼应。
+
 ---
 
 ## 实践资源与工具推荐

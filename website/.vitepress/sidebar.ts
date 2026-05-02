@@ -86,8 +86,10 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '分布式与企业 (59, 61-75)', link: '/code-lab/distributed-enterprise' },
         { text: '理论深度 (40-41, 77-81)', link: '/code-lab/theoretical-depth' },
         { text: '实验室专题 (90-96)', link: '/code-lab/specialized-labs' },
-        { text: '🌐 Edge-First 架构实战', link: '/code-lab/edge-first-architecture' },
         { text: '⚡ Svelte Signals 实验室', link: '/code-lab/svelte-signals-lab' },
+        { text: '🧪 语言核心实验室', link: '/code-lab/language-core-lab' },
+        { text: '🧪 异步并发实验室', link: '/code-lab/async-concurrency-lab' },
+        { text: '🧪 类型系统实验室', link: '/code-lab/type-system-lab' },
       ]
     }
   ],
@@ -582,6 +584,19 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '05. URL状态', link: '/state-management/05-url-state' },
         { text: '06. 异步状态', link: '/state-management/06-async-state' },
         { text: '07. 状态机', link: '/state-management/07-state-machines' },
+        { text: '08. 状态组合模式', link: '/state-management/08-state-composition-patterns' },
+        { text: '09. 状态同步', link: '/state-management/09-state-synchronization' },
+        { text: '10. 状态持久化', link: '/state-management/10-state-persistence' },
+        { text: '11. 状态测试策略', link: '/state-management/11-state-testing-strategies' },
+        { text: '12. 状态架构对比', link: '/state-management/12-state-architecture-comparison' },
+        { text: '13. 微前端状态', link: '/state-management/13-state-in-micro-frontends' },
+        { text: '14. 实时协作状态', link: '/state-management/14-real-time-collaborative-state' },
+        { text: '15. 状态反模式', link: '/state-management/15-state-management-anti-patterns' },
+        { text: '16. Serverless状态', link: '/state-management/16-state-in-serverless-edge' },
+        { text: '17. 状态调试', link: '/state-management/17-debugging-state' },
+        { text: '18. 状态演化', link: '/state-management/18-state-evolution-patterns' },
+        { text: '19. 状态性能优化', link: '/state-management/19-state-performance-optimization' },
+        { text: '20. 状态选型指南', link: '/state-management/20-state-management-selection-guide' },
       ]
     }
   ],
@@ -593,6 +608,21 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: false,
       items: [
         { text: '🏠 专题首页', link: '/testing-engineering/' },
+        { text: '01. 测试基础理论', link: '/testing-engineering/01-testing-fundamentals' },
+        { text: '02. 单元测试深度', link: '/testing-engineering/02-unit-testing-deep-dive' },
+        { text: '03. 集成测试', link: '/testing-engineering/03-integration-testing' },
+        { text: '04. E2E测试', link: '/testing-engineering/04-e2e-testing' },
+        { text: '05. 测试模式', link: '/testing-engineering/05-testing-patterns' },
+        { text: '06. 视觉回归测试', link: '/testing-engineering/06-visual-regression-testing' },
+        { text: '07. 变异测试', link: '/testing-engineering/07-mutation-testing' },
+        { text: '08. 可访问性测试', link: '/testing-engineering/08-accessibility-testing' },
+        { text: '09. 安全测试', link: '/testing-engineering/09-security-testing' },
+        { text: '10. 性能测试', link: '/testing-engineering/10-performance-testing' },
+        { text: '11. CI/CD测试策略', link: '/testing-engineering/11-ci-cd-testing' },
+        { text: '12. 测试驱动开发', link: '/testing-engineering/12-test-driven-development' },
+        { text: '13. 契约测试', link: '/testing-engineering/13-contract-testing' },
+        { text: '14. 测试数据管理', link: '/testing-engineering/14-test-data-management' },
+        { text: '15. 生产环境测试', link: '/testing-engineering/15-testing-in-production' },
       ]
     }
   ],
@@ -604,6 +634,18 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: false,
       items: [
         { text: '🏠 专题首页', link: '/performance-engineering/' },
+        { text: '01. 性能基础理论', link: '/performance-engineering/01-performance-fundamentals' },
+        { text: '02. 渲染性能', link: '/performance-engineering/02-rendering-performance' },
+        { text: '03. 打包优化', link: '/performance-engineering/03-bundle-optimization' },
+        { text: '04. 内存管理', link: '/performance-engineering/04-memory-management' },
+        { text: '05. 网络优化', link: '/performance-engineering/05-network-optimization' },
+        { text: '06. 缓存策略', link: '/performance-engineering/06-caching-strategies' },
+        { text: '07. Web Worker并行', link: '/performance-engineering/07-web-worker-parallelism' },
+        { text: '08. 性能监控', link: '/performance-engineering/08-performance-monitoring' },
+        { text: '09. SSR性能', link: '/performance-engineering/09-ssr-performance' },
+        { text: '10. JS引擎优化', link: '/performance-engineering/10-javascript-engine-optimization' },
+        { text: '11. 性能测试方法论', link: '/performance-engineering/11-performance-testing-methodology' },
+        { text: '12. 性能选型指南', link: '/performance-engineering/12-performance-engineering-selection-guide' },
       ]
     }
   ],
@@ -615,6 +657,18 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: false,
       items: [
         { text: '🏠 专题首页', link: '/database-orm/' },
+        { text: '01. 数据库基础理论', link: '/database-orm/01-database-fundamentals' },
+        { text: '02. ORM深度', link: '/database-orm/02-orm-deep-dive' },
+        { text: '03. 查询优化', link: '/database-orm/03-query-optimization' },
+        { text: '04. 数据库迁移', link: '/database-orm/04-database-migrations' },
+        { text: '05. 事务与并发', link: '/database-orm/05-transactions-concurrency' },
+        { text: '06. NoSQL数据库', link: '/database-orm/06-nosql-databases' },
+        { text: '07. 数据库安全', link: '/database-orm/07-database-security' },
+        { text: '08. GraphQL与数据库', link: '/database-orm/08-graphql-databases' },
+        { text: '09. Serverless数据库', link: '/database-orm/09-serverless-databases' },
+        { text: '10. 数据库测试', link: '/database-orm/10-database-testing' },
+        { text: '11. 数据库设计模式', link: '/database-orm/11-database-design-patterns' },
+        { text: '12. 数据库ORM选型', link: '/database-orm/12-database-orm-selection-guide' },
       ]
     }
   ],
@@ -626,6 +680,40 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: false,
       items: [
         { text: '🏠 专题首页', link: '/desktop-development/' },
+        { text: '01. 桌面开发基础', link: '/desktop-development/01-desktop-fundamentals' },
+        { text: '02. Electron vs Tauri', link: '/desktop-development/02-electron-tauri-comparison' },
+        { text: '03. 桌面UI框架', link: '/desktop-development/03-desktop-ui-frameworks' },
+        { text: '04. 桌面安全', link: '/desktop-development/04-desktop-security' },
+        { text: '05. 原生API集成', link: '/desktop-development/05-desktop-native-apis' },
+        { text: '06. 打包与分发', link: '/desktop-development/06-desktop-packaging-distribution' },
+        { text: '07. 桌面性能', link: '/desktop-development/07-desktop-performance' },
+        { text: '08. 桌面选型指南', link: '/desktop-development/08-desktop-development-selection-guide' },
+      ]
+    }
+  ],
+
+  // 理论前沿专题：范畴论
+  '/theoretical-foundations/': [
+    {
+      text: '🔬 理论前沿',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/theoretical-foundations/' },
+        { text: '📘 范畴论基础', link: '/theoretical-foundations/cat-01-category-theory-primer' },
+        { text: '📗 笛卡尔闭范畴与TS', link: '/theoretical-foundations/cat-02-cartesian-closed-categories' },
+        { text: '📕 函子与自然变换', link: '/theoretical-foundations/cat-03-functors-natural-transformations' },
+        { text: '📙 Monad与代数效应', link: '/theoretical-foundations/cat-04-monads-algebraic-effects' },
+        { text: '📒 极限与余极限', link: '/theoretical-foundations/cat-05-limits-colimits' },
+        { text: '🧠 认知科学入门', link: '/theoretical-foundations/cog-01-cognitive-science-primer' },
+        { text: '🧠 心智模型与编程', link: '/theoretical-foundations/cog-02-mental-models' },
+        { text: '🧠 工作记忆负荷', link: '/theoretical-foundations/cog-03-working-memory' },
+        { text: '🧠 UI框架概念模型', link: '/theoretical-foundations/cog-04-conceptual-models-ui' },
+        { text: '🧠 React认知分析', link: '/theoretical-foundations/cog-05-react-algebraic-effects' },
+        { text: '🔧 模型精化与仿真', link: '/theoretical-foundations/mm-01-model-refinement' },
+        { text: '🔧 语义对应理论', link: '/theoretical-foundations/mm-02-semantics-correspondence' },
+        { text: '🔧 类型与运行时差', link: '/theoretical-foundations/mm-03-type-runtime-difference' },
+        { text: '🔧 反应式模型适配', link: '/theoretical-foundations/mm-04-reactive-adaptation' },
+        { text: '🔧 多模型范畴构造', link: '/theoretical-foundations/mm-05-multi-model-category' },
       ]
     }
   ],

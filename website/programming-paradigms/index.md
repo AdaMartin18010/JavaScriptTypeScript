@@ -276,6 +276,14 @@ graph BT
 - Robert Harper.《Practical Foundations for Programming Languages》（2nd ed.）. 从类型论和语义学角度重新审视编程语言设计，强调「语言机制即逻辑法则」的统一视角。
 - Simon Peyton Jones.《The Implementation of Functional Programming Languages》. 虽然聚焦于函数式语言实现，但其关于惰性求值、类型推断和图规约的论述对所有范式研究者都有启发。
 
+### 知识库延伸阅读
+
+本专题的范式分析在 Awesome JS/TS 知识库中有更深层的研究支撑：
+
+- **[函数式编程理论深度研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/FUNCTIONAL_PROGRAMMING_THEORY.md)** — 从 λ 演算、范畴论和类型论三个维度，建立函数式编程的完整形式化基础，涵盖单子（Monad）、应用函子（Applicative）与 traversable 的代数定律证明。
+
+- **[并发模型深度研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/CONCURRENCY_MODELS_DEEP_DIVE.md)** — 系统对比 CSP、Actor 模型、软件事务内存（STM）与 futures/promises 四种并发抽象的形式化语义，分析 JavaScript Event Loop 模型在更大并发理论谱系中的定位与局限。
+
 ---
 
 ## 要点总结

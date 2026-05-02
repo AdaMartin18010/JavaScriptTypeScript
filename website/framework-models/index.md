@@ -227,6 +227,16 @@ graph TD
 
 ---
 
+## 知识库延伸阅读
+
+本专题的框架模型分析在 Awesome JS/TS 知识库中有对应的形式化理论研究支撑：
+
+- **[前端框架理论研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/FRONTEND_FRAMEWORK_THEORY.md)** — 从组件代数、虚拟DOM的diff复杂性到细粒度响应式DAG模型的完整形式化推导，为专题中 [01 组件模型理论](./01-component-model-theory.md)、[02 虚拟DOM理论](./02-virtual-dom-theory.md) 和 [03 响应式Signals理论](./03-reactivity-signals-theory.md) 提供深层数学基础。
+
+- **[工具链与构建理论研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/TOOLCHAIN_BUILD_THEORY.md)** — 编译时框架的抽象层次下沉分析、Rust工具链（SWC/Oxc）与JavaScript构建管线优化的形式化收益评估，直接支撑 [08 编译器即框架](./08-compiler-as-framework.md) 和 [09 元框架理论](./09-meta-framework-theory.md) 的演化论证。
+
+---
+
 ## 核心概念速查表
 
 | 概念 | 所在章节 | 一句话定义 |
