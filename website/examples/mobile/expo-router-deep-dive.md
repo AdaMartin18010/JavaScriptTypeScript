@@ -8,7 +8,7 @@ category: "examples"
 
 # Expo Router 深度解析
 
-> **版本信息**: Expo Router v3 | Expo SDK 52 | React Navigation 7 | File-based Routing  
+> **版本信息**: Expo Router v3 | Expo SDK 52 | React Navigation 7 | File-based Routing
 > **目标读者**: 希望掌握现代 React Native 路由方案、构建复杂导航流程的开发者
 
 ---
@@ -223,17 +223,17 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <Stack
-            screenOptions={&#123;
+            screenOptions={{
               headerStyle: { backgroundColor: '#fff' },
               headerTintColor: '#007AFF',
               headerTitleStyle: { fontWeight: '600' },
               animation: 'slide_from_right',
-            &#125;}
+            }}
           >
-            <Stack.Screen name="(app)" options={&#123; headerShown: false &#125;} />
-            <Stack.Screen name="(auth)" options={&#123; headerShown: false, animation: 'none' &#125;} />
-            <Stack.Screen name="post/[id]" options={&#123; title: '帖子详情', presentation: 'card' &#125;} />
-            <Stack.Screen name="+not-found" options={&#123; title: '页面未找到' &#125;} />
+            <Stack.Screen name="(app)" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'none' }} />
+            <Stack.Screen name="post/[id]" options={{ title: '帖子详情', presentation: 'card' }} />
+            <Stack.Screen name="+not-found" options={{ title: '页面未找到' }} />
           </Stack>
           <StatusBar style="auto" />
         </QueryClientProvider>
@@ -242,7 +242,7 @@ export default function RootLayout() {
   );
 }
 
-const styles = StyleSheet.create(&#123; container: { flex: 1 } &#125;);
+const styles = StyleSheet.create({ container: { flex: 1 } });
 ```
 
 ### Tab 导航布局
@@ -258,7 +258,7 @@ export default function AppLayout() {
 
   return (
     <Tabs
-      screenOptions={({ route }) => (&#123;
+      screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;
           switch (route.name) {
@@ -269,17 +269,17 @@ export default function AppLayout() {
             default: iconName = 'help-outline';
           }
           return <Ionicons name={iconName} size={size} color={color} />;
-        &#125;,
+        },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: &#123; backgroundColor: colors.background, borderTopColor: colors.border &#125;,
+        tabBarStyle: { backgroundColor: colors.background, borderTopColor: colors.border },
         headerShown: false,
-      &#125;)}
+      })}
     >
-      <Tabs.Screen name="index" options={&#123; title: '首页' &#125;} />
-      <Tabs.Screen name="explore" options={&#123; title: '探索' &#125;} />
-      <Tabs.Screen name="notifications" options={&#123; title: '通知', tabBarBadge: 3 &#125;} />
-      <Tabs.Screen name="profile" options={&#123; title: '我的' &#125;} />
+      <Tabs.Screen name="index" options={{ title: '首页' }} />
+      <Tabs.Screen name="explore" options={{ title: '探索' }} />
+      <Tabs.Screen name="notifications" options={{ title: '通知', tabBarBadge: 3 }} />
+      <Tabs.Screen name="profile" options={{ title: '我的' }} />
     </Tabs>
   );
 }
@@ -293,10 +293,10 @@ import { Stack } from 'expo-router';
 
 export default function AuthLayout() {
   return (
-    <Stack screenOptions={&#123; headerShown: false, animation: 'slide_from_right' &#125;}>
+    <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
       <Stack.Screen name="login" />
-      <Stack.Screen name="register" options={&#123; headerShown: true, title: '注册账号' &#125;} />
-      <Stack.Screen name="forgot-password" options={&#123; headerShown: true, title: '重置密码', presentation: 'modal' &#125;} />
+      <Stack.Screen name="register" options={{ headerShown: true, title: '注册账号' }} />
+      <Stack.Screen name="forgot-password" options={{ headerShown: true, title: '重置密码', presentation: 'modal' }} />
     </Stack>
   );
 }
@@ -334,7 +334,7 @@ export default function PostDetailScreen(): JSX.Element {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={&#123; title: post.title &#125;} />
+      <Stack.Screen options={{ title: post.title }} />
       <Text style={styles.title}>{post.title}</Text>
       <Text style={styles.body}>{post.body}</Text>
       <Text style={styles.meta}>作者: {post.author.name} · {post.createdAt}</Text>
@@ -342,24 +342,24 @@ export default function PostDetailScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create(&#123;
+const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   title: { fontSize: 24, fontWeight: '700', marginBottom: 12 },
   body: { fontSize: 16, lineHeight: 24, color: '#333', marginBottom: 16 },
   meta: { fontSize: 14, color: '#999' },
   link: { color: '#007AFF', marginTop: 16 },
-&#125;);
+});
 ```
 
-### 多段动态路由
+### 多段动态路由与捕获所有
 
 ```tsx
 // app/user/[userId]/posts/[postId].tsx
 import { useLocalSearchParams } from 'expo-router';
 
 export default function UserPostDetail() {
-  const { userId, postId } = useLocalSearchParams<&#123; userId: string; postId: string &#125;>();
+  const { userId, postId } = useLocalSearchParams<{ userId: string; postId: string }>();
   return (
     <View>
       <Text>User: {userId}</Text>
@@ -368,8 +368,6 @@ export default function UserPostDetail() {
   );
 }
 ```
-
-### 捕获所有路由
 
 ```tsx
 // app/docs/[...slug].tsx
@@ -381,8 +379,6 @@ export default function DocsPage() {
   return <Text>Documentation Path: {path}</Text>;
 }
 ```
-
-### 可选捕获所有
 
 ```tsx
 // app/blog/[[...slug]].tsx
@@ -520,7 +516,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [token, segments, isLoading]);
 
   return (
-    <AuthContext.Provider value={&#123; isAuthenticated: !!token, isLoading &#125;}>
+    <AuthContext.Provider value={{ isAuthenticated: !!token, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
@@ -572,7 +568,7 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create(&#123;
+const styles = StyleSheet.create({
   container: { flex: 1, padding: 24, justifyContent: 'center' },
   title: { fontSize: 32, fontWeight: '700', marginBottom: 32 },
   input: { height: 50, borderWidth: 1, borderColor: '#E5E5EA', borderRadius: 12, paddingHorizontal: 16, marginBottom: 16, fontSize: 16 },
@@ -580,7 +576,7 @@ const styles = StyleSheet.create(&#123;
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   link: { color: '#007AFF', textAlign: 'center', marginTop: 16 },
-&#125;);
+});
 ```
 
 ### 受保护的 API 路由
@@ -602,9 +598,9 @@ export default function SettingsLayout() {
 
   return (
     <Stack>
-      <Stack.Screen name="index" options={&#123; title: '设置' &#125;} />
-      <Stack.Screen name="profile" options={&#123; title: '个人资料' &#125;} />
-      <Stack.Screen name="security" options={&#123; title: '安全' &#125;} />
+      <Stack.Screen name="index" options={{ title: '设置' }} />
+      <Stack.Screen name="profile" options={{ title: '个人资料' }} />
+      <Stack.Screen name="security" options={{ title: '安全' }} />
     </Stack>
   );
 }
@@ -623,10 +619,10 @@ import { Stack } from 'expo-router';
 export default function AppLayout() {
   return (
     <Stack>
-      <Stack.Screen name="(tabs)" options={&#123; headerShown: false &#125;} />
-      <Stack.Screen name="modal/create-post" options={&#123; presentation: 'modal', animation: 'slide_from_bottom', headerShown: true, title: '创建帖子' &#125;} />
-      <Stack.Screen name="modal/image-preview" options={&#123; presentation: 'fullScreenModal', headerShown: false, animation: 'fade' &#125;} />
-      <Stack.Screen name="modal/sheet" options={&#123; presentation: 'transparentModal', animation: 'slide_from_bottom', contentStyle: &#123; backgroundColor: 'transparent' &#125; &#125;} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="modal/create-post" options={{ presentation: 'modal', animation: 'slide_from_bottom', headerShown: true, title: '创建帖子' }} />
+      <Stack.Screen name="modal/image-preview" options={{ presentation: 'fullScreenModal', headerShown: false, animation: 'fade' }} />
+      <Stack.Screen name="modal/sheet" options={{ presentation: 'transparentModal', animation: 'slide_from_bottom', contentStyle: { backgroundColor: 'transparent' } }} />
     </Stack>
   );
 }
@@ -657,9 +653,9 @@ export default function BottomSheetModal() {
       }
     });
 
-  const animatedStyle = useAnimatedStyle(() => (&#123;
+  const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
-  &#125;));
+  }));
 
   return (
     <View style={styles.overlay}>
@@ -670,21 +666,21 @@ export default function BottomSheetModal() {
           <Text style={styles.title}>选项</Text>
           <TouchableOpacity style={styles.option}><Text>分享</Text></TouchableOpacity>
           <TouchableOpacity style={styles.option}><Text>收藏</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.option}><Text style={&#123; color: '#FF3B30' &#125;}>举报</Text></TouchableOpacity>
+          <TouchableOpacity style={styles.option}><Text style={{ color: '#FF3B30' }}>举报</Text></TouchableOpacity>
         </Animated.View>
       </GestureDetector>
     </View>
   );
 }
 
-const styles = StyleSheet.create(&#123;
+const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end' },
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
   sheet: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 16, paddingBottom: 32 },
   handle: { width: 40, height: 4, backgroundColor: '#E5E5EA', borderRadius: 2, alignSelf: 'center', marginVertical: 12 },
   title: { fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 16 },
   option: { paddingVertical: 16, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#E5E5EA' },
-&#125;);
+});
 ```
 
 ---
@@ -753,6 +749,7 @@ export default function Root({ children }: { children: React.ReactNode }) {
 **现象**: `useLocalSearchParams` 返回的类型与实际 URL 不一致。
 
 **解决方案**:
+
 ```typescript
 const { id } = useLocalSearchParams<{ id: string }>();
 if (!id || typeof id !== 'string') {
@@ -765,6 +762,7 @@ if (!id || typeof id !== 'string') {
 **现象**: 在 `_layout.tsx` 中执行副作用导致子路由重载。
 
 **解决方案**:
+
 ```tsx
 // ❌ 错误: 在布局中直接发起请求
 export default function Layout() {
@@ -787,6 +785,7 @@ export default function Layout() {
 **现象**: 应用通过深度链接打开后，导航栈状态异常。
 
 **解决方案**:
+
 ```tsx
 <Stack initialRouteName="(app)">
   <Stack.Screen name="(app)" />
@@ -799,6 +798,7 @@ export default function Layout() {
 **现象**: 在 Modal 中 `router.push` 没有正确导航。
 
 **解决方案**:
+
 ```tsx
 router.push('../other-modal');
 router.push('/modal/other');
@@ -809,6 +809,7 @@ router.push('/modal/other');
 **现象**: Web 模式下直接访问 `/post/123` 刷新后 404。
 
 **解决方案**:
+
 ```javascript
 module.exports = {
   trailingSlash: true,
@@ -825,12 +826,13 @@ module.exports = {
 **现象**: `(app)` 和 `(auth)` 组之间的导航行为不符合预期。
 
 **解决方案**:
+
 ```tsx
 router.replace('/(auth)/login');
 
 <Stack>
-  <Stack.Screen name="(app)" options={&#123; headerShown: false &#125;} />
-  <Stack.Screen name="(auth)" options={&#123; headerShown: false &#125;} />
+  <Stack.Screen name="(app)" options={{ headerShown: false }} />
+  <Stack.Screen name="(auth)" options={{ headerShown: false }} />
 </Stack>
 ```
 
@@ -856,7 +858,7 @@ Expo Router v3 通过文件系统路由、类型安全的导航 API 和原生深
 | 普通跳转 | `router.push('/post/123')` | 堆栈压入新页面 |
 | 替换跳转 | `router.replace('/home')` | 替换当前页面 |
 | 返回 | `router.back()` | 返回上一页 |
-| 带参数跳转 | `router.push(&#123; pathname: '/post/[id]', params: &#123; id: '123' &#125; &#125;)` | 动态路由 |
+| 带参数跳转 | `router.push({ pathname: '/post/[id]', params: { id: '123' } })` | 动态路由 |
 | 带查询参数 | `router.push('/search?q=test')` | URL 查询参数 |
 | 刷新 | `router.refresh()` | 重新获取数据 |
 | 重定向 | `router.replace('/(auth)/login')` | 认证跳转 |

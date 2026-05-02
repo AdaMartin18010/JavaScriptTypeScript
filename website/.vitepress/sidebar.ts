@@ -764,6 +764,23 @@ export const sidebar: DefaultTheme.Sidebar = {
     }
   ],
 
+  // 示例部分
+  '/examples/': [
+    {
+      text: '💡 实战示例',
+      collapsed: false,
+      items: [
+        { text: '📱 移动端示例首页', link: '/examples/mobile/' },
+        { text: 'React Native + Expo 搭建', link: '/examples/mobile/react-native-expo-setup' },
+        { text: 'RN 新架构解析', link: '/examples/mobile/react-native-new-architecture' },
+        { text: '跨平台共享代码', link: '/examples/mobile/cross-platform-shared-code' },
+        { text: '移动端性能优化', link: '/examples/mobile/mobile-performance-optimization' },
+        { text: '原生模块开发', link: '/examples/mobile/mobile-native-modules' },
+        { text: 'Expo Router 深度解析', link: '/examples/mobile/expo-router-deep-dive' },
+      ]
+    }
+  ],
+
   // 模板部分
   '/templates/': [
     {
