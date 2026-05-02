@@ -568,6 +568,68 @@ export const sidebar: DefaultTheme.Sidebar = {
     }
   ],
 
+  // 状态管理深度专题
+  '/state-management/': [
+    {
+      text: '🗂️ 状态管理深度',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/state-management/' },
+        { text: '01. 本地状态', link: '/state-management/01-local-state' },
+        { text: '02. 全局状态', link: '/state-management/02-global-state' },
+        { text: '03. 服务端状态', link: '/state-management/03-server-state' },
+        { text: '04. 表单状态', link: '/state-management/04-form-state' },
+        { text: '05. URL状态', link: '/state-management/05-url-state' },
+        { text: '06. 异步状态', link: '/state-management/06-async-state' },
+        { text: '07. 状态机', link: '/state-management/07-state-machines' },
+      ]
+    }
+  ],
+
+  // 测试工程专题
+  '/testing-engineering/': [
+    {
+      text: '🧪 测试工程',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/testing-engineering/' },
+      ]
+    }
+  ],
+
+  // 性能工程专题
+  '/performance-engineering/': [
+    {
+      text: '⚡ 性能工程',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/performance-engineering/' },
+      ]
+    }
+  ],
+
+  // 数据库与ORM专题
+  '/database-orm/': [
+    {
+      text: '🗄️ 数据库与ORM',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/database-orm/' },
+      ]
+    }
+  ],
+
+  // 桌面开发专题
+  '/desktop-development/': [
+    {
+      text: '💻 桌面开发',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/desktop-development/' },
+      ]
+    }
+  ],
+
   // 模板部分
   '/templates/': [
     {

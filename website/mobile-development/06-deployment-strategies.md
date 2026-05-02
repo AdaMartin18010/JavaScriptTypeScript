@@ -730,6 +730,7 @@ graph TD
 > Apps should be self-contained in their bundles, and may not read or write data outside the container directory, except for data stored in the app's dedicated container or as otherwise permitted.
 
 **合规实践**：
+
 ```typescript
 // 1. 仅更新 HTML/JS/CSS 资源
 // 2. 使用应用内置的解释器执行（JavaScriptCore / WebView）
@@ -899,6 +900,7 @@ class ReleaseMonitor {
 移动端部署是一个涉及工程、法务、运营的综合性流程，需要在自动化、合规性和用户体验之间取得平衡。
 
 **核心要点**：
+
 1. **商店发布**：iOS 使用 fastlane + Xcode Archive 自动化；Android 使用 AAB 格式 + Play Console 分层测试轨道（Internal → Closed → Open → Production）
 2. **OTA 热更新**：iOS/Android 均允许更新 Web 资源（HTML/JS/CSS），但严禁下载可执行原生代码；差异更新（bsdiff）可将更新包压缩到原始大小的 1-5%
 3. **CodePush 替代**：Ionic Appflow（Capacitor 生态）、Expo EAS Update（Expo 生态）、自建 OTA 服务（完全可控）
@@ -907,6 +909,7 @@ class ReleaseMonitor {
 6. **监控回滚**：关键指标（崩溃率 < 1%、启动时间 < 2s）、自动回滚机制、灰度发布按用户哈希分发
 
 **推荐工具链**：
+
 - CI/CD：GitHub Actions + fastlane
 - OTA：自建服务（完全控制）或 Ionic Appflow（快速上线）
 - 监控：Firebase Crashlytics + Sentry

@@ -50,26 +50,26 @@ graph TB
             BK[CAPBridge<br/>Objective-C/Swift]
             AP[Native Plugins<br/>Camera / Filesystem / Geolocation]
         end
-        
+
         subgraph Android["Android Platform"]
             AW[WebView<br/>JavaScript Runtime]
             AB[CAPBridge<br/>Kotlin/Java]
             AAP[Native Plugins<br/>Camera / Filesystem / Geolocation]
         end
-        
+
         subgraph WebLayer["🌐 Web Layer"]
             JS[Capacitor Core JS<br/>@capacitor/core]
             APP[App Bundle<br/>Ionic / React / Vue / Angular]
         end
     end
-    
+
     JS -->|postMessage| WK
     JS -->|evaluateJavascript| AW
     BK -->|invoke| AP
     AB -->|invoke| AAP
     WK -->|window.webkit.messageHandlers| BK
     AW -->|@JavascriptInterface| AB
-    
+
     style WebLayer fill:#e1f5fe
     style iOS fill:#fff3e0
     style Android fill:#e8f5e9
@@ -86,25 +86,25 @@ import WebKit
 class CAPBridgeViewController: UIViewController, WKScriptMessageHandler {
     var webView: WKWebView!
     var bridge: CAPBridge!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         let config = WKWebViewConfiguration()
         config.userContentController.add(self, name: "capacitor")
-        
+
         webView = WKWebView(frame: view.bounds, configuration: config)
         view.addSubview(webView)
-        
+
         bridge = CAPBridge(webView: webView)
-        
+
         // 加载本地 Web 资源
         let url = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "public")!
         webView.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())
     }
-    
+
     // 接收来自 JavaScript 的消息
-    func userContentController(_ userContentController: WKUserContentController, 
+    func userContentController(_ userContentController: WKUserContentController,
                                didReceive message: WKScriptMessage) {
         if message.name == "capacitor" {
             bridge.handleJSCall(message.body as! [String: Any])
@@ -130,23 +130,23 @@ import android.webkit.WebView
 import android.webkit.JavascriptInterface
 
 class CAPBridge(private val webView: WebView) {
-    
+
     init {
         webView.settings.javaScriptEnabled = true
         webView.addJavascriptInterface(this, "Capacitor")
     }
-    
+
     @JavascriptInterface
     fun postMessage(jsonData: String) {
         val data = JSONObject(jsonData)
         val pluginId = data.getString("pluginId")
         val methodName = data.getString("methodName")
-        
+
         // 路由到对应 Plugin
         val plugin = PluginRegistry.get(pluginId)
         plugin?.invoke(methodName, data.getJSONObject("options"))
     }
-    
+
     // Native → JS
     fun sendResponse(callbackId: String, result: JSObject) {
         val js = "window.Capacitor.fromNative('$callbackId', ${result.toString()})"
@@ -205,14 +205,14 @@ graph LR
         CP[@capacitor/core<br/>官方核心插件<br/>~20个]
         CC[@capacitor-community/*<br/>社区维护插件<br/>100+]
         CUSTOM[自定义插件<br/>Custom Native Plugin]
-        
+
         CP -->|Camera / Filesystem / Geolocation| App
         CC -->|SQLite / Firebase / Bluetooth| App
         CUSTOM -->|企业级原生 SDK 封装| App
     end
-    
+
     App[Ionic/Capacitor App]
-    
+
     style CP fill:#bbdefb
     style CC fill:#c8e6c9
     style CUSTOM fill:#ffe0b2
@@ -259,7 +259,7 @@ async function getCurrentPosition() {
   if permission.location !== 'granted' {
     throw new Error('Location permission denied');
   }
-  
+
   const coordinates = await Geolocation.getCurrentPosition({
     enableHighAccuracy: true,
     timeout: 10000,
@@ -298,7 +298,7 @@ async function writeLog(content: string) {
 // src/definitions.ts
 export interface EchoPlugin {
   echo(options: { value: string }): Promise<{ value: string }>;
-  
+
   // 支持事件监听
   addListener(
     eventName: 'onBatteryLow',
@@ -319,10 +319,10 @@ import Capacitor
 
 @objc(EchoPlugin)
 public class EchoPlugin: CAPPlugin {
-    
+
     @objc func echo(_ call: CAPPluginCall) {
         let value = call.getString("value") ?? ""
-        
+
         // 主线程执行 UI 操作
         DispatchQueue.main.async {
             // 调用原生 SDK 或系统 API
@@ -334,15 +334,15 @@ public class EchoPlugin: CAPPlugin {
             call.resolve(result)
         }
     }
-    
+
     @objc func checkBattery(_ call: CAPPluginCall) {
         UIDevice.current.isBatteryMonitoringEnabled = true
         let level = UIDevice.current.batteryLevel
-        
+
         if level < 0.2 {
             notifyListeners("onBatteryLow", data: ["level": level])
         }
-        
+
         call.resolve(["level": level])
     }
 }
@@ -359,34 +359,34 @@ import com.getcapacitor.annotation.CapacitorPlugin
 
 @CapacitorPlugin(name = "Echo")
 class EchoPlugin : Plugin() {
-    
+
     @PluginMethod
     fun echo(call: PluginCall) {
         val value = call.getString("value", "")
-        
+
         val ret = JSObject().apply {
             put("value", value)
             put("platform", "Android")
             put("timestamp", System.currentTimeMillis())
         }
-        
+
         call.resolve(ret)
     }
-    
+
     @PluginMethod
     fun checkBattery(call: PluginCall) {
-        val batteryIntent = context.registerReceiver(null, 
+        val batteryIntent = context.registerReceiver(null,
             IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         val level = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
         val scale = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
         val batteryPct = level * 100 / scale.toFloat()
-        
+
         if (batteryPct < 20) {
             notifyListeners("onBatteryLow", JSObject().apply {
                 put("level", batteryPct / 100)
             })
         }
-        
+
         call.resolve(JSObject().apply {
             put("level", batteryPct / 100)
         })
@@ -489,21 +489,21 @@ const config: CapacitorConfig = {
   // 应用标识
   appId: 'com.example.myapp',
   appName: 'MyHybridApp',
-  
+
   // Web 资源目录（build 输出）
   webDir: 'dist',
-  
+
   // 开发服务器配置（live reload）
   server: {
     // 局域网开发时指向本地 dev server
     url: 'http://192.168.1.100:5173',
     cleartext: true, // 允许 HTTP（仅开发）
-    
+
     // 或使用 Capacitor 内置 server
     // androidScheme: 'https',
     // iosScheme: 'capacitor',
   },
-  
+
   // 插件全局配置
   plugins: {
     SplashScreen: {
@@ -519,7 +519,7 @@ const config: CapacitorConfig = {
       presentationOptions: ['badge', 'sound', 'alert'],
     },
   },
-  
+
   // Android 特定配置
   android: {
     buildOptions: {
@@ -529,7 +529,7 @@ const config: CapacitorConfig = {
     allowMixedContent: true, // HTTP + HTTPS 混合内容
     captureInput: true, // WebView 输入优化
   },
-  
+
   // iOS 特定配置
   ios: {
     contentInset: 'always',
@@ -558,28 +558,28 @@ import FirebaseMessaging
 @UIApplicationMain
 class AppDelegate: UIApplicationDelegate {
     var window: UIWindow?
-    
-    func application(_ application: UIApplication, 
+
+    func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // 初始化 Firebase（不会被 Capacitor 覆盖）
         FirebaseApp.configure()
-        
+
         // 注册推送
         UNUserNotificationCenter.current().delegate = self
         application.registerForRemoteNotifications()
-        
+
         return true
     }
-    
+
     // 处理 APNS Token
-    func application(_ application: UIApplication, 
+    func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         Messaging.messaging().apnsToken = deviceToken
     }
 }
 
 extension AppDelegate: UNUserNotificationCenterDelegate {
-    func userNotificationCenter(_ center: UNUserNotificationCenter, 
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
         return [.banner, .sound, .badge]
     }
@@ -600,7 +600,7 @@ class MainActivity : BridgeActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         registerPlugin(EchoPlugin::class.java) // 注册自定义插件
         super.onCreate(savedInstanceState)
-        
+
         // 预初始化支付 SDK
         Checkout.preload(applicationContext)
     }
@@ -620,19 +620,19 @@ graph TD
         THEME[Ionic Theming<br/>CSS Variables / Dark Mode]
         NAV[Ionic Navigation<br/>ion-router / 手势返回]
         UTIL[Ionic Utilities<br/>Platform detection / Overlay]
-        
+
         UI --> APP
         THEME --> APP
         NAV --> APP
         UTIL --> APP
     end
-    
+
     APP[App Logic]
     CAP[Capacitor Runtime<br/>Native Bridge]
     NATIVE[Native Platform APIs]
-    
+
     APP --> CAP --> NATIVE
-    
+
     style UI fill:#e3f2fd
     style THEME fill:#e8f5e9
     style NAV fill:#fff3e0
@@ -669,15 +669,15 @@ router.isReady().then(() => {
         <ion-title>相机示例</ion-title>
       </ion-toolbar>
     </ion-header>
-    
+
     <ion-content class="ion-padding">
       <ion-button @click="takePhoto" expand="block">
         <ion-icon slot="start" :icon="camera"></ion-icon>
         拍照
       </ion-button>
-      
+
       <ion-img v-if="photoUrl" :src="photoUrl" style="margin-top: 16px;"></ion-img>
-      
+
       <ion-toast
         :is-open="showToast"
         message="照片已保存"
@@ -724,7 +724,7 @@ export function usePlatform() {
     isMobile: isPlatform('mobile'),
     isDesktop: isPlatform('desktop'),
     isHybrid: isPlatform('hybrid'), // Capacitor / Cordova
-    
+
     // 平台特定样式
     platformClass: isPlatform('ios') ? 'platform-ios' : 'platform-android',
   };
@@ -749,7 +749,7 @@ flowchart LR
     D --> E[替换 Plugin 调用]
     E --> F[更新 Build Scripts]
     F --> G[测试与发布]
-    
+
     style A fill:#ffcdd2
     style G fill:#c8e6c9
 ```
@@ -770,6 +770,7 @@ flowchart LR
 ### 4.6.2 代码迁移示例
 
 **Cordova 风格（旧）**：
+
 ```javascript
 // Cordova Camera
 navigator.camera.getPicture(
@@ -789,6 +790,7 @@ navigator.camera.getPicture(
 ```
 
 **Capacitor 风格（新）**：
+
 ```typescript
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 
@@ -821,14 +823,14 @@ graph TB
         Portal1[Portal: 首页模块<br/>独立 build / 独立部署]
         Portal2[Portal: 商城模块<br/>独立 build / 独立部署]
         Portal3[Portal: 个人中心<br/>独立 build / 独立部署]
-        
+
         Portal1 --> SharedBridge[Shared Capacitor Bridge]
         Portal2 --> SharedBridge
         Portal3 --> SharedBridge
     end
-    
+
     SharedBridge --> NativeAPI[原生 API]
-    
+
     style Portal1 fill:#e3f2fd
     style Portal2 fill:#e8f5e9
     style Portal3 fill:#fff3e0
@@ -857,7 +859,7 @@ async function authenticateWithBiometrics() {
     description: '确保是您本人在操作',
     maxAttempts: 3,
   });
-  
+
   return result.verified;
 }
 ```
@@ -902,22 +904,26 @@ Capacitor + Ionic 代表了现代 Hybrid Mobile 开发的最佳实践：
 ## 4.9 参考资源
 
 ### 官方文档
+
 - [Capacitor Official Documentation](https://capacitorjs.com/docs)
 - [Ionic Framework Docs](https://ionicframework.com/docs)
 - [Capacitor Plugin Registry](https://capacitorjs.com/docs/plugins)
 
 ### 插件与工具
+
 - [Capacitor Community Plugins](https://github.com/capacitor-community)
 - [Awesome Capacitor](https://github.com/riderx/awesome-capacitor)
 - [Ionic VS Code Extension](https://ionic.io/docs/vs-code)
 
 ### 进阶阅读
+
 - ["Migrating from Cordova to Capacitor" - Ionic Blog](https://ionic.io/blog/migrating-from-cordova-to-capacitor)
 - ["Capacitor vs Cordova: The Difference" - Ionic Blog](https://ionic.io/blog/capacitor-vs-cordova-modern-hybrid-app-development)
 - [WKWebView Communication Patterns](https://developer.apple.com/documentation/webkit/wkscriptmessagehandler)
 - [Android WebView JavaScriptInterface Security](https://developer.android.com/reference/android/webkit/JavascriptInterface)
 
 ### 社区与源码
+
 - [Capacitor GitHub](https://github.com/ionic-team/capacitor)
 - [Ionic Framework GitHub](https://github.com/ionic-team/ionic-framework)
 - [Capacitor Plugins Monorepo](https://github.com/ionic-team/capacitor-plugins)

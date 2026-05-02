@@ -167,15 +167,15 @@ function createValidatedFn(fn, schema) {
   return new Proxy(fn, {
     apply(target, thisArg, args) {
       console.log(`[CALL] ${target.name}(${args.map(a => JSON.stringify(a)).join(', ')})`);
-      
+
       // 简单参数数量校验
       if (args.length !== target.length) {
         console.warn(`[WARN] Expected ${target.length} args, got ${args.length}`);
       }
-      
+
       return Reflect.apply(target, thisArg, args);
     },
-    
+
     construct(target, args, newTarget) {
       console.log(`[NEW] ${target.name}`);
       // 确保正确的原型链
@@ -284,15 +284,15 @@ graph TB
         R[JSProxyRevocableResult]
         R --> proxyRef[proxy: JSProxy]
         R --> revokeRef[revoke: JSFunction]
-        
+
         proxyRef --> ProxyObj[JSProxy Object]
         ProxyObj --> targetPtr[target: JSObject*]
         ProxyObj --> handlerPtr[handler: JSObject*]
-        
+
         revokeRef --> RevokeFn[Revoke Function<br/>内部槽 [[RevocableProxy]]]
         RevokeFn --> proxyWeakRef[弱引用指向 JSProxy]
     end
-    
+
     subgraph AfterRevoke["revoke() 调用后"]
         direction TB
         ProxyObj2[JSProxy Object]
@@ -300,7 +300,7 @@ graph TB
         ProxyObj2 --> nullHandler[handler: null]
         ProxyObj2 --> revokedFlag[revoked: true]
     end
-    
+
     RevocableProxy -->|revoke()| AfterRevoke
 ```
 
@@ -658,7 +658,7 @@ class User extends Model {
       }
     }
   };
-  
+
   constructor(data) {
     super(data);
     this.id = data.id;
@@ -850,12 +850,12 @@ graph TB
         P -->|strong ref| T[target: JSObject]
         P -->|strong ref| H[handler: JSObject]
         H -->|strong ref| P2[handler 可能引用 Proxy<br/>导致循环引用]
-        
+
         Ext[外部引用]
         Ext --> P
         Ext -.->|optional| T
     end
-    
+
     subgraph LeakScenario["泄漏场景：handler 缓存 target"]
         direction TB
         P3[Proxy]
@@ -884,9 +884,9 @@ function createSafeProxy(target) {
       }
       const result = Reflect.get(target, prop, receiver);
       // 更新状态，不通过 closure 引用 target
-      proxyState.set(target, { 
-        ...state, 
-        accessCount: (state.accessCount || 0) + 1 
+      proxyState.set(target, {
+        ...state,
+        accessCount: (state.accessCount || 0) + 1
       });
       return result;
     }
@@ -901,7 +901,7 @@ function createTTLProxy(target, ttlMs) {
       return Reflect.get(target, prop, receiver);
     }
   });
-  
+
   setTimeout(revoke, ttlMs);
   return proxy;
 }
@@ -912,7 +912,7 @@ function createNonCircularProxy(target) {
   // const proxy = new Proxy(target, {
   //   get(t, p, r) { return proxy; } // 循环引用
   // });
-  
+
   // ✅ 安全：使用 receiver 参数替代 closure 引用
   return new Proxy(target, {
     get(target, prop, receiver) {
@@ -937,7 +937,7 @@ const v8 = require('v8');
 function diagnoseProxyLeak() {
   const heapStats = v8.getHeapStatistics();
   console.log('Used heap size:', (heapStats.used_heap_size / 1024 / 1024).toFixed(2), 'MB');
-  
+
   // 强制 GC（需要 --expose-gc 标志）
   if (global.gc) {
     global.gc();
@@ -964,13 +964,13 @@ graph TB
         HandlerSlot[handler: HeapObject*<br/>指向 handler 对象]
         RevokedSlot[revoked: bool<br/>默认 false]
     end
-    
+
     subgraph ICInteraction["与 Inline Cache 的交互"]
         direction TB
         NormalObj[普通 JSObject]
         NormalObj --> IC[Inline Cache<br/>Monomorphic / Polymorphic]
         IC --> FastAccess[直接偏移访问]
-        
+
         ProxyObj[JSProxy]
         ProxyObj --> NoIC[IC Miss<br/>Megamorphic fallback]
         NoIC --> SlowPath[Runtime Call<br/>调用 JSProxy::GetProperty]
@@ -1001,7 +1001,7 @@ graph TB
 function createNegativeCacheProxy(target) {
   const notFound = Symbol('notFound');
   const cache = new Map();
-  
+
   return new Proxy(target, {
     get(target, prop, receiver) {
       if (cache.has(prop)) {
@@ -1009,17 +1009,17 @@ function createNegativeCacheProxy(target) {
         if (cached === notFound) return undefined;
         return cached;
       }
-      
+
       if (prop in target) {
         const value = Reflect.get(target, prop, receiver);
         cache.set(prop, value);
         return value;
       }
-      
+
       cache.set(prop, notFound);
       return undefined;
     },
-    
+
     set(target, prop, value, receiver) {
       cache.delete(prop);
       return Reflect.set(target, prop, value, receiver);
@@ -1034,7 +1034,7 @@ function createNegativeCacheProxy(target) {
 function createDeepReadonly(target, seen = new WeakSet()) {
   if (!isObject(target) || seen.has(target)) return target;
   seen.add(target);
-  
+
   return new Proxy(target, {
     get(target, prop, receiver) {
       const value = Reflect.get(target, prop, receiver);

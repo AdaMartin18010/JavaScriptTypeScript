@@ -874,7 +874,7 @@ flowchart LR
 
 - **上一章**：[L1→L2：计算理论到编程语言](02-computation-to-language.md) — 探讨形式语言、自动机与复杂度理论如何塑造编程语言的语法与语义设计
 - **下一章**（待续）：L3→L4：范式到架构与系统 — 分析编程范式如何影响软件架构模式与系统设计决策
-- **前置知识**：[编程范式分类](../30-knowledge-base/30.2-categories/programming-paradigms.md)
+- **前置知识**：[编程范式分类](/programming-paradigms/)
 
 ---
 
