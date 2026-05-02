@@ -90,6 +90,18 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '🧪 语言核心实验室', link: '/code-lab/language-core-lab' },
         { text: '🧪 异步并发实验室', link: '/code-lab/async-concurrency-lab' },
         { text: '🧪 类型系统实验室', link: '/code-lab/type-system-lab' },
+        { text: 'λ Lambda演算实验室', link: '/code-lab/lab-00-lambda-calculus' },
+        { text: '⚙️ 操作语义实验室', link: '/code-lab/lab-00-operational-semantics' },
+        { text: '📦 工程环境实验室', link: '/code-lab/lab-01-basic-setup' },
+        { text: '🔍 类型推断实验室', link: '/code-lab/lab-01-type-inference' },
+        { text: '📐 类型系统实验室', link: '/code-lab/lab-01-types' },
+        { text: '🧮 公理语义实验室', link: '/code-lab/lab-02-axiomatic-semantics' },
+        { text: '🌐 Server Functions实验室', link: '/code-lab/lab-02-server-functions' },
+        { text: '📊 子类型关系实验室', link: '/code-lab/lab-02-subtyping' },
+        { text: '💾 变量系统实验室', link: '/code-lab/lab-02-variables' },
+        { text: '🔐 认证授权实验室', link: '/code-lab/lab-03-auth' },
+        { text: '🔄 控制流实验室', link: '/code-lab/lab-03-control-flow' },
+        { text: '🏗️ Mini TS编译器实验室', link: '/code-lab/lab-03-mini-typescript' },
       ]
     }
   ],

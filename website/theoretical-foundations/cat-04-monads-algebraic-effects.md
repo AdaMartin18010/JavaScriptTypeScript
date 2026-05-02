@@ -552,7 +552,7 @@ graph LR
 
 4. **try/catch 捕获了不该捕获的异常**。没有机制区分"预期的错误"和"意外的 Bug"，导致 Bug 被静默吞掉。
 
-5. **效应标注的过度工程**。Koka 中 `simpleGreeting` 的类型签名可能包含 `<console, exceptions, heap<div>, nontermination>`。对于应用层开发，这种精确性带来的认知负担可能超过收益。
+5. **效应标注的过度工程**。Koka 中 `simpleGreeting` 的类型签名可能包含 `<console, exceptions, heap&lt;div&gt;, nontermination>`。对于应用层开发，这种精确性带来的认知负担可能超过收益。
 
 ---
 

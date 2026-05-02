@@ -180,8 +180,8 @@ Signal 可以被看作一种特殊的 **State Monad**。区别在于：State Mon
 
 **对称差分析：Signal vs Observable**：
 
-- Signal \\ Observable = { 同步读取（pull-based）、自动依赖追踪、无订阅/取消订阅开销、更少的内存泄漏风险 }
-- Observable \\ Signal = { 异步推送（push-based）、丰富的操作符（map, filter, merge 等）、支持背压控制、多播能力 }
+- Signal \\ Observable = <span v-pre>&#123; 同步读取（pull-based）、自动依赖追踪、无订阅/取消订阅开销、更少的内存泄漏风险 &#125;</span>
+- Observable \\ Signal = <span v-pre>&#123; 异步推送（push-based）、丰富的操作符（map, filter, merge 等）、支持背压控制、多播能力 &#125;</span>
 
 ### 2.5 Svelte：编译时优化的静态分析模型
 
@@ -258,10 +258,10 @@ Svelte 编译器 = 静态分析 + 代码生成
 
 **对称差分析**：
 
-- React \\ Vue = { 函数式编程范式、更大的生态系统、React Native 跨平台、Fiber 的并发特性 }
-- Vue \\ React = { 模板编译优化、更细粒度的更新、更简单的响应式模型、更好的默认性能 }
-- Angular \\ (React ∪ Vue) = { 完整的框架（路由、HTTP、表单）、TypeScript 深度集成、依赖注入系统、企业级工具链 }
-- Solid \\ (React ∪ Vue ∪ Angular) = { 无虚拟 DOM、最小的运行时、最快的更新性能、编译时优化 }
+- React \\ Vue = <span v-pre>&#123; 函数式编程范式、更大的生态系统、React Native 跨平台、Fiber 的并发特性 &#125;</span>
+- Vue \\ React = <span v-pre>&#123; 模板编译优化、更细粒度的更新、更简单的响应式模型、更好的默认性能 &#125;</span>
+- Angular \\ (React ∪ Vue) = <span v-pre>&#123; 完整的框架（路由、HTTP、表单）、TypeScript 深度集成、依赖注入系统、企业级工具链 &#125;</span>
+- Solid \\ (React ∪ Vue ∪ Angular) = <span v-pre>&#123; 无虚拟 DOM、最小的运行时、最快的更新性能、编译时优化 &#125;</span>
 
 ### 3.2 虚拟 DOM 的权衡分析
 
