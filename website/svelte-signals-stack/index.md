@@ -68,12 +68,12 @@ npm run dev
 
 | 项目 | GitHub Stars | npm 周下载量 | 核心贡献者 | 活跃 Issue/PR |
 |------|:----------:|:----------:|:--------:|:-----------:|
-| **Svelte** | 86.5k+ | 3.2M+ | 180+ | 120+ |
-| **SvelteKit** | 20.5k+ | 850K+ | 95+ | 65+ |
+| **Svelte** | 86.5k+ | 4.2M+ | 180+ | 120+ |
+| **SvelteKit** | 20.5k+ | 1.7M+ | 95+ | 65+ |
 | **Vite** | 80.3k+ | 12M+ | 320+ | 280+ |
 | **pnpm** | 32k+ | 4.5M+ | 150+ | 90+ |
 
-> 数据来源：GitHub（2026-05-02）、npm Registry（2026-04 周均）、Open Collective 贡献者统计
+> 数据来源：GitHub（2026-05-02）、npm Registry（2026-05 周均）、Open Collective 贡献者统计
 
 ### 性能基准（来源：JS Framework Benchmark 2026-04）
 

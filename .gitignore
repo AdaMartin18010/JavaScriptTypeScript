@@ -27,3 +27,8 @@ Thumbs.db
 # Cache
 .cache/
 *.cache
+
+# Environment variables (API tokens)
+.env
+.env.local
+.env.*.local

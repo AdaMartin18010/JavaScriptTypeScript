@@ -44,11 +44,16 @@ const DEFAULT_PACKAGES = [
 ];
 
 /**
- * 发起 HTTPS 请求获取数据
+ * 发起 HTTPS 请求获取数据（带 429 重试和指数退避）
  * @param {string} url - API URL
+ * @param {Object} options - 选项
+ * @param {number} options.retries - 剩余重试次数（默认 3）
+ * @param {number} options.delay - 初始退避延迟 ms（默认 1000）
  * @returns {Promise<Object>} - JSON 响应数据
  */
-function fetchJson(url) {
+function fetchJson(url, options = {}) {
+  const { retries = 3, delay = 1000 } = options;
+
   return new Promise((resolve, reject) => {
     const request = https.get(url, {
       headers: {
@@ -59,7 +64,20 @@ function fetchJson(url) {
     }, (response) => {
       // 处理重定向
       if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-        fetchJson(response.headers.location).then(resolve).catch(reject);
+        fetchJson(response.headers.location, { retries, delay }).then(resolve).catch(reject);
+        return;
+      }
+
+      // 处理速率限制 (429 Too Many Requests)
+      if (response.statusCode === 429 && retries > 0) {
+        const retryAfter = response.headers['retry-after'];
+        const waitMs = retryAfter ? parseInt(retryAfter, 10) * 1000 : delay;
+        console.warn(`  ⚠️  npm API 429 (Rate Limit)，${waitMs}ms 后重试... (剩余 ${retries} 次)`);
+        setTimeout(() => {
+          fetchJson(url, { retries: retries - 1, delay: delay * 2 })
+            .then(resolve)
+            .catch(reject);
+        }, waitMs);
         return;
       }
 

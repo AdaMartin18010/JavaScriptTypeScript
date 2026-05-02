@@ -115,14 +115,20 @@ const REPOSITORIES = {
 };
 
 /**
- * 发送 HTTP GET 请求
+ * 发送 HTTP GET 请求（带 429 重试和指数退避）
+ * @param {string} url - 请求 URL
+ * @param {Object} options - 选项
+ * @param {number} options.retries - 剩余重试次数（默认 3）
+ * @param {number} options.delay - 初始退避延迟 ms（默认 1000）
  */
 function fetchJSON(url, options = {}) {
+  const { retries = 3, delay = 1000, ...rest } = options;
+
   return new Promise((resolve, reject) => {
     const headers = {
       'User-Agent': 'JSTS-Trends-Fetcher',
       'Accept': 'application/vnd.github.v3+json',
-      ...options.headers,
+      ...rest.headers,
     };
 
     if (GITHUB_TOKEN) {
@@ -132,7 +138,20 @@ function fetchJSON(url, options = {}) {
     const req = https.get(url, { headers }, (res) => {
       // 处理重定向
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        fetchJSON(res.headers.location, options).then(resolve).catch(reject);
+        fetchJSON(res.headers.location, { retries, delay, ...rest }).then(resolve).catch(reject);
+        return;
+      }
+
+      // 处理速率限制 (429 Too Many Requests)
+      if (res.statusCode === 429 && retries > 0) {
+        const retryAfter = res.headers['retry-after'];
+        const waitMs = retryAfter ? parseInt(retryAfter, 10) * 1000 : delay;
+        console.warn(`  ⚠️  GitHub API 429 (Rate Limit)，${waitMs}ms 后重试... (剩余 ${retries} 次)`);
+        setTimeout(() => {
+          fetchJSON(url, { retries: retries - 1, delay: delay * 2, ...rest })
+            .then(resolve)
+            .catch(reject);
+        }, waitMs);
         return;
       }
 
@@ -142,7 +161,7 @@ function fetchJSON(url, options = {}) {
         try {
           const json = JSON.parse(data);
           if (res.statusCode >= 400) {
-            reject(new Error(`API Error: ${json.message || res.statusMessage}`));
+            reject(new Error(`API Error ${res.statusCode}: ${json.message || res.statusMessage}`));
           } else {
             resolve(json);
           }

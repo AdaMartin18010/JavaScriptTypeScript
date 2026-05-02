@@ -1,0 +1,375 @@
+---
+title: ESM 基础 — import/export、静态分析与 Tree Shaking
+description: '深入解析 ECMAScript Modules 的语法特性、静态分析机制与 Tree Shaking 原理，包含完整代码示例'
+keywords: 'ESM, ECMAScript Modules, import, export, static analysis, tree shaking, named export, default export, namespace import'
+---
+
+# 01 - ESM 基础
+
+> ECMAScript Modules (ESM) 是 JavaScript 的官方模块标准（ES2015+）。本章深入解析 `import`/`export` 语法、静态分析机制与 Tree Shaking 原理。
+
+---
+
+## 1. 导入导出语法全景
+
+### 1.1 命名导出 (Named Export)
+
+```js
+// utils.js
+export const PI = 3.141592653;
+export function add(a, b) {
+  return a + b;
+}
+export class Calculator {
+  multiply(a, b) {
+    return a * b;
+  }
+}
+
+// 导出时重命名
+export { add as sum };
+```
+
+### 1.2 默认导出 (Default Export)
+
+```js
+// math.js
+export default function multiply(a, b) {
+  return a * b;
+}
+
+// 也可导出匿名值
+export default {
+  name: 'math-utils',
+  version: '1.0.0'
+};
+```
+
+> **最佳实践**：一个模块只应有一个默认导出，且默认导出应与文件名一致，便于 IDE 自动导入。
+
+### 1.3 导入语法对照表
+
+| 语法 | 说明 | 示例 |
+|------|------|------|
+| `import { a } from './mod'` | 命名导入 | 按名称导入绑定的引用 |
+| `import * as ns from './mod'` | 命名空间导入 | 将所有导出聚合为对象 |
+| `import def from './mod'` | 默认导入 | 导入默认导出 |
+| `import def, { a } from './mod'` | 混合导入 | 同时导入默认和命名 |
+| `import { a as b } from './mod'` | 重命名导入 | 解决命名冲突 |
+| `import './mod'` | 副作用导入 | 仅执行模块，不绑定值 |
+| `import.meta.url` | 模块元数据 | 当前模块的 URL |
+
+```js
+// main.js — 各种导入方式示例
+import multiply, { PI, add } from './math.js';
+import * as math from './math.js';
+import { add as sum } from './utils.js';
+import './side-effect.js';  // 仅执行副作用
+
+console.log(import.meta.url);  // file:///path/to/main.js
+```
+
+---
+
+## 2. 静态分析机制
+
+### 2.1 编译时 vs 运行时
+
+ESM 的**核心设计原则**是：所有导入导出关系必须在编译阶段确定，不能运行时动态决定。
+
+```js
+// ✅ 合法：静态路径
+import { foo } from './constants.js';
+
+// ❌ 非法：动态路径（浏览器原生 ESM 不支持）
+const moduleName = './utils.js';
+import { foo } from moduleName;  // SyntaxError
+
+// ❌ 非法：条件导入在顶层
+if (condition) {
+  import { foo } from './a.js';  // SyntaxError
+}
+```
+
+> 动态导入请使用 `import()` 表达式：
+
+```js
+// ✅ 动态导入（返回 Promise）
+const module = await import('./utils.js');
+const { foo } = await import(`./locales/${language}.js`);
+```
+
+### 2.2 绑定 (Binding) 而非值拷贝
+
+ESM 的导入是**活绑定 (Live Binding)**，而非 CommonJS 的值拷贝。
+
+```js
+// counter.js
+export let count = 0;
+export function increment() {
+  count++;
+}
+
+// main.js
+import { count, increment } from './counter.js';
+
+console.log(count);  // 0
+increment();
+console.log(count);  // 1 ✅ ESM 的绑定会自动更新
+```
+
+对比 CommonJS 的值拷贝行为：
+
+```js
+// counter.cjs
+let count = 0;
+module.exports = { count, increment: () => count++ };
+
+// main.cjs
+const { count, increment } = require('./counter.cjs');
+console.log(count);  // 0
+increment();
+console.log(count);  // 0 ❌ CJS 解构时做了值拷贝
+```
+
+### 2.3 静态分析的优势
+
+```mermaid
+flowchart LR
+    A[源代码] --> B[词法分析]
+    B --> C[语法分析]
+    C --> D[构建模块图]
+    D --> E[Tree Shaking]
+    E --> F[生成产物]
+
+    style D fill:#e1f5fe
+    style E fill:#fff3e0
+```
+
+由于导入导出关系在编译时即可确定，打包器可以：
+
+1. **构建精确的模块依赖图** — 无需执行代码即可知道依赖关系
+2. **实现 Tree Shaking** — 精确标记死代码并消除
+3. **作用域提升 (Scope Hoisting)** — 将多个模块合并到一个作用域，减少运行时开销
+4. **提前报错** — 循环引用、未导出符号等问题在编译期即可发现
+
+---
+
+## 3. Tree Shaking 深度解析
+
+### 3.1 基本原理
+
+Tree Shaking 是一种**死代码消除 (Dead Code Elimination, DCE)** 技术，利用 ESM 的静态结构，在打包时移除未被使用的导出。
+
+```js
+// utils.js — 工具库
+export function usedFunction() {
+  return 'I am used';
+}
+
+export function unusedFunction() {
+  return 'I will be shaken away';
+}
+
+export const CONSTANT_USED = 42;
+export const CONSTANT_UNUSED = 99;
+
+// main.js — 只导入需要的部分
+import { usedFunction, CONSTANT_USED } from './utils.js';
+
+console.log(usedFunction(), CONSTANT_USED);
+// 最终产物中不会包含 unusedFunction 和 CONSTANT_UNUSED
+```
+
+### 3.2 副作用与 `"sideEffects"`
+
+某些模块的执行具有副作用（如修改全局变量、注册 polyfill），打包器无法安全地移除它们。
+
+```json
+{
+  "name": "my-library",
+  "sideEffects": [
+    "./src/polyfill.js",
+    "*.css"
+  ]
+}
+```
+
+| `sideEffects` 值 | 含义 |
+|-----------------|------|
+| `false` | 该包完全没有副作用，所有未使用的导出都可以安全移除 |
+| `["./polyfill.js", "*.css"]` | 指定具有副作用的文件模式，其余文件可 Tree Shake |
+| `true` / 省略 | 所有文件都可能有副作用，不进行 Tree Shaking |
+
+```js
+// polyfill.js — 具有副作用
+if (!Array.prototype.flat) {
+  Array.prototype.flat = function(depth = 1) {
+    // polyfill 实现...
+  };
+}
+export {};  // 空导出，仅用于执行副作用
+```
+
+### 3.3 Tree Shaking 的限制
+
+```js
+// ❌ 难以 Tree Shake：动态属性访问
+import * as utils from './utils.js';
+const fnName = 'usedFunction';
+utils[fnName]();  // 打包器无法确定实际调用了哪个函数
+
+// ❌ 难以 Tree Shake：通过 eval 使用
+import { foo } from './lib.js';
+eval('foo()');
+
+// ✅ 可以 Tree Shake：直接静态使用
+import { foo, bar } from './lib.js';
+foo();  // bar 将被移除
+```
+
+### 3.4 打包器 Tree Shaking 对比
+
+| 打包器 | Tree Shaking 策略 | 作用域提升 | 备注 |
+|--------|------------------|-----------|------|
+| **Rollup** | 基于 ESM 原生支持，效果最佳 | ✅ 完整支持 | ESM-first 设计 |
+| **Webpack** | `usedExports` + `sideEffects` 标记 | ⚠️ 部分支持 | 需配置 `optimization` |
+| **Vite** | Rollup（生产构建） | ✅ 支持 | 开发时使用 ESM 原生加载 |
+| **Rspack** | 与 Webpack 兼容 | ⚠️ 部分支持 | Rust 实现，性能更优 |
+| **esbuild** | 基础 DCE | ❌ 不支持 | 以速度优先 |
+
+---
+
+## 4. 顶级 await
+
+ESM 支持模块顶层的 `await`，无需包裹在 async 函数中。
+
+```js
+// config.js
+const response = await fetch('/api/config');
+export const config = await response.json();
+
+// main.js
+import { config } from './config.js';
+// 此处 config 已经解析完成，可以直接同步使用
+console.log(config.apiEndpoint);
+```
+
+> ⚠️ **注意**：使用顶级 await 的模块会成为**异步模块**，其依赖者会隐式等待它完成加载。
+
+---
+
+## 5. 完整示例：构建一个 ESM 工具库
+
+### 项目结构
+
+```
+esm-utils/
+├── package.json
+├── src/
+│   ├── index.js
+│   ├── string.js
+│   ├── math.js
+│   └── constants.js
+└── dist/
+```
+
+### package.json
+
+```json
+{
+  "name": "esm-utils",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./string": "./dist/string.js",
+    "./math": "./dist/math.js"
+  },
+  "sideEffects": false
+}
+```
+
+### 源码
+
+```js
+// src/constants.js
+export const PI = 3.141592653589793;
+export const E = 2.718281828459045;
+
+// src/string.js
+export function camelCase(str) {
+  return str.replace(/[-_](.)/g, (_, char) => char.toUpperCase());
+}
+
+export function kebabCase(str) {
+  return str.replace(/[A-Z]/g, char => `-${char.toLowerCase()}`);
+}
+
+// src/math.js
+import { PI } from './constants.js';
+
+export function circleArea(radius) {
+  return PI * radius * radius;
+}
+
+export function circleCircumference(radius) {
+  return 2 * PI * radius;
+}
+
+// src/index.js
+export { camelCase, kebabCase } from './string.js';
+export { circleArea, circleCircumference } from './math.js';
+export { PI, E } from './constants.js';
+```
+
+### 使用
+
+```js
+// 全量导入（但 Tree Shaking 会移除未使用的导出）
+import { camelCase, circleArea } from 'esm-utils';
+
+// 子路径导入（精确加载，无需 Tree Shaking）
+import { camelCase } from 'esm-utils/string';
+```
+
+---
+
+## 6. 常见陷阱
+
+### 6.1 默认导出与命名导出的互操作
+
+```js
+// module.js
+export default function foo() {}
+export const bar = 1;
+
+// ❌ 错误：默认导出没有 named 绑定
+import { default as foo, bar } from './module.js';  // ✅ 正确
+import { foo, bar } from './module.js';             // ❌ 错误
+```
+
+### 6.2 循环依赖的 ESM 行为
+
+```js
+// a.js
+import { b } from './b.js';
+console.log('a.js executing, b =', b);
+export const a = 'a-value';
+
+// b.js
+import { a } from './a.js';
+console.log('b.js executing, a =', a);  // undefined（TDZ）
+export const b = 'b-value';
+```
+
+ESM 中循环依赖的导入在对方模块未执行完成前为**未初始化 (TDZ)** 状态，访问会抛出错误。
+
+---
+
+## 参考
+
+- [ECMAScript Specification - Module Semantics](https://tc39.es/ecma262/#sec-modules)
+- [Rollup Guide on Tree Shaking](https://rollupjs.org/guide/en/#tree-shaking)
+- [Webpack Tree Shaking Documentation](https://webpack.js.org/guides/tree-shaking/)

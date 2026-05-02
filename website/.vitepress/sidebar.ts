@@ -377,6 +377,54 @@ export const sidebar: DefaultTheme.Sidebar = {
     }
   ],
 
+  // TypeScript 类型系统深度专题（顶层）
+  '/typescript-type-system/': [
+    {
+      text: '🔷 TypeScript 类型系统深度专题',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/typescript-type-system/' },
+        { text: '01. 类型系统基础', link: '/typescript-type-system/01-type-system-fundamentals' },
+        { text: '02. 原始类型深度', link: '/typescript-type-system/02-primitive-types' },
+        { text: '03. 对象类型', link: '/typescript-type-system/03-object-types' },
+        { text: '04. 函数类型', link: '/typescript-type-system/04-function-types' },
+        { text: '05. 泛型深度', link: '/typescript-type-system/05-generics-deep-dive' },
+        { text: '06. 条件类型', link: '/typescript-type-system/06-conditional-types' },
+        { text: '07. 映射类型', link: '/typescript-type-system/07-mapped-types' },
+        { text: '08. 模板字面量类型', link: '/typescript-type-system/08-template-literal-types' },
+        { text: '09. 类型推断算法', link: '/typescript-type-system/09-type-inference' },
+        { text: '10. 类型兼容性', link: '/typescript-type-system/10-type-compatibility' },
+        { text: '11. 内置工具类型', link: '/typescript-type-system/11-utility-types' },
+        { text: '12. 类型体操', link: '/typescript-type-system/12-type-challenges' },
+        { text: '13. 高级模式', link: '/typescript-type-system/13-advanced-patterns' },
+        { text: '14. 声明合并', link: '/typescript-type-system/14-declaration-merging' },
+        { text: '15. 装饰器类型系统', link: '/typescript-type-system/15-decorators-types' },
+        { text: '16. tsconfig 深度指南', link: '/typescript-type-system/16-tsconfig-deep-dive' },
+        { text: '17. 类型系统性能优化', link: '/typescript-type-system/17-performance-optimization' },
+        { text: '18. 编译器内部原理', link: '/typescript-type-system/18-type-system-internals' },
+      ]
+    }
+  ],
+
+  // JavaScript 模块系统深度专题（顶层）
+  '/module-system/': [
+    {
+      text: '📦 JavaScript 模块系统深度专题',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/module-system/' },
+        { text: '01. ESM 基础', link: '/module-system/01-esm-fundamentals' },
+        { text: '02. CJS 内部机制', link: '/module-system/02-cjs-internals' },
+        { text: '03. ESM/CJS 互操作', link: '/module-system/03-esm-cjs-interop' },
+        { text: '04. Import Attributes', link: '/module-system/04-import-attributes' },
+        { text: '05. 循环依赖', link: '/module-system/05-circular-dependencies' },
+        { text: '06. 模块解析算法', link: '/module-system/06-module-resolution' },
+        { text: '07. 打包器模块图', link: '/module-system/07-bundler-module-graph' },
+        { text: '08. Defer & Import Maps', link: '/module-system/08-defer-module-scripts' },
+      ]
+    }
+  ],
+
   // 模板部分
   '/templates/': [
     {

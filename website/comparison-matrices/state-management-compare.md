@@ -5,7 +5,7 @@ description: 'Zustand、Redux、Jotai、Pinia、MobX、Recoil、Signals、TanSta
 
 # 状态管理库对比矩阵
 
-> 最后更新: 2026-05-01 | 覆盖: React/Vue/Solid/多框架、服务端状态、Signals
+> 最后更新: 2026-05-02 | 覆盖: React/Vue/Solid/多框架、服务端状态、Signals
 
 ---
 
@@ -13,7 +13,7 @@ description: 'Zustand、Redux、Jotai、Pinia、MobX、Recoil、Signals、TanSta
 
 | 特性 | Zustand | Redux Toolkit | Jotai | Pinia | MobX | Recoil | Solid Signals |
 |------|---------|---------------|-------|-------|------|--------|---------------|
-| **Stars** | 47k+ | 61k+ | 20k+ | 42k+ | 27k+ | 19k+ | 35k+ (Solid) |
+| **Stars** | 58k+ | 61k+ | 21k+ | 15k+ | 28k+ | 19k+ | 35k+ (Solid) |
 | **包大小(gzip)** | ~1.1KB | ~7KB | ~4KB | ~4KB | ~16KB | ~14KB | ~0KB (内置) |
 | **TypeScript** | ✅ 原生 | ✅ 原生 | ✅ 原生 | ✅ 原生 | ✅ 原生 | ✅ 原生 | ✅ 原生 |
 | **学习曲线** | 低 | 高 | 低 | 中 | 中 | 中 | 低 |
@@ -23,7 +23,7 @@ description: 'Zustand、Redux、Jotai、Pinia、MobX、Recoil、Signals、TanSta
 | **持久化** | 插件 | 插件 | 插件 | 插件 | 插件 | 插件 | 手动 |
 | **2026 状态** | 🟢 首选 | 🟡 存量 | 🟢 增长 | 🟢 Vue 首选 | 🟡 维护 | 🔴 不推荐 | 🟢 未来 |
 
-📊 数据来源: GitHub Stars (2026-05), npm 周下载量, Bundlephobia
+📊 数据来源: GitHub Stars (2026-05-02), npm 周下载量, Bundlephobia
 
 ---
 

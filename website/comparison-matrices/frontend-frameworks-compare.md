@@ -7,7 +7,7 @@ description: "2025-2026 年 前端框架对比矩阵 对比矩阵，覆盖主流
 
 > 系统对比主流前端框架的核心特性、学习曲线、生态成熟度与适用场景，帮助你为项目选择最合适的 UI 框架。
 >
-> 数据更新日期：2026-05-01 | 数据来源：GitHub、npm、JS Framework Benchmark、State of JS 2024/2025、各框架官方文档
+> 数据更新日期：2026-05-02 | 数据来源：GitHub、npm、JS Framework Benchmark、State of JS 2024/2025、各框架官方文档
 
 ---
 
@@ -16,10 +16,10 @@ description: "2025-2026 年 前端框架对比矩阵 对比矩阵，覆盖主流
 | 指标 | React | Vue | Svelte | Solid | Angular |
 |------|-------|-----|--------|-------|---------|
 | **发布年份** | 2013 | 2014 | 2016 | 2021 | 2010 (AngularJS) / 2016 |
-| **当前版本** | 19.1.x | 3.5.x | 5.x | 1.9.x | 19.x |
+| **当前版本** | 19.1.0 | 3.5.13 | 5.25.0 | 1.9.5 | 19.2.0 |
 | **LTS 状态** | 稳定版，Meta 内部长期维护 | 稳定版，语义化版本长期支持 | 稳定版，SvelteKit 协同演进 | 稳定版，社区驱动 | Google 长期支持 (LTS 18个月) |
-| **GitHub Stars** | ~230K | ~210K | ~82K | ~35K | ~96K |
-| **周下载量 (npm)** | ~25M | ~6M | ~1.2M | ~180K | ~4M |
+| **GitHub Stars** | ~245K | ~210K | ~86K | ~35K | ~100K |
+| **周下载量 (npm)** | ~128M | ~11.7M | ~4.2M | ~2.2M | ~5.4M |
 | **维护方** | Meta | 社区 (Evan You) | 社区 (Rich Harris) | 社区 (Ryan Carniato) | Google |
 | **编程范式** | 声明式 UI | 渐进式框架 | 编译时优化 | 细粒度响应式 | 企业级 MVC |
 | **响应式模型** | 虚拟 DOM + 协调 | 虚拟 DOM + 响应式 | 编译时无虚拟 DOM | 细粒度信号 (Signals) | Zone.js + 变更检测 |
@@ -31,7 +31,7 @@ description: "2025-2026 年 前端框架对比矩阵 对比矩阵，覆盖主流
 | **中文社区活跃度** | 极高 | 极高 | 中等 | 低 | 中等 |
 | **适用场景** | 大型 SPA、生态丰富的全栈应用 | 中小型项目、快速原型、渐进式迁移 | 高性能小型应用、嵌入式组件 | 高交互复杂状态应用、实时数据 | 大型企业级应用、严格规范团队 |
 
-> 数据来源：GitHub Stars 截至 2026-04；npm 下载量取 2026-04 最后一周均值；包体积数据来源于各框架官方文档及 bundlephobia.com。
+> 数据来源：GitHub Stars 截至 2026-05；npm 下载量取 2026-05 第一周均值；包体积数据来源于各框架官方文档及 bundlephobia.com。
 
 ---
 
@@ -340,7 +340,7 @@ flowchart TD
 
 | 趋势 | 分析 |
 |------|------|
-| **React 统治力持续** | npm 周下载量 (~25M) 是 Vue 的 4 倍以上，Next.js 在 Vercel 推动下成为全栈默认选择。React Compiler 的成熟将进一步降低性能优化门槛。 |
+| **React 统治力持续** | npm 周下载量 (~128M) 是 Vue 的 10 倍以上，Next.js 在 Vercel 推动下成为全栈默认选择。React Compiler 的成熟将进一步降低性能优化门槛。 |
 | **Vue 稳中求进** | Vue 3  adoption 已超 80% (State of JS 2025)，Vapor Mode 是长期看点。Nuxt 生态稳健，在中文区仍有极强影响力。 |
 | **Svelte 增长加速** | Svelte 5 的 Runes 获得了社区广泛好评，SvelteKit + Vercel/Netlify 的组合在中小型项目中份额持续上升。Stars 增速在 2024-2025 年超过 Vue。 |
 | **Signals 范式扩散** | Vue 的 `ref`/`computed`、Angular 的 Signals、Preact Signals、甚至 React 社区对 Signals 的讨论（如 `useSignal` 提案），表明细粒度响应式正成为跨框架共识。 |
@@ -393,4 +393,4 @@ flowchart TD
 >
 > **数据与版本声明**
 >
-> 本文档中的性能数据来源于 [JS Framework Benchmark](https://krausest.github.io/js-framework-benchmark/)（2026-04 测试轮次），npm 下载量与 GitHub Stars 数据截至 2026-04-30。框架版本信息基于各官方文档最新稳定版。性能测试结果受硬件、浏览器版本、构建配置影响，仅供参考。
+> 本文档中的性能数据来源于 [JS Framework Benchmark](https://krausest.github.io/js-framework-benchmark/)（2026-04 测试轮次），npm 下载量与 GitHub Stars 数据截至 2026-05-02。框架版本信息基于各官方文档最新稳定版。性能测试结果受硬件、浏览器版本、构建配置影响，仅供参考。

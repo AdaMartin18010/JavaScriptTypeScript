@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-17T12:52:31.558Z",
+  "generatedAt": "2026-05-02T05:56:00.660Z",
   "totalRepos": 49,
   "totalNpmPackages": 47,
   "repositories": {
@@ -112,12 +112,17 @@
       "repo": "kit",
       "github": {
         "starsBadge": "https://img.shields.io/github/stars/sveltejs/kit?style=flat-square",
-        "url": "https://github.com/sveltejs/kit"
+        "url": "https://github.com/sveltejs/kit",
+        "stars": 20475,
+        "forks": 2246,
+        "openIssues": 1023,
+        "fetchedAt": "2026-05-02T05:55:49.686Z"
       },
       "npm": {
         "package": "@sveltejs/kit",
-        "weekly": 1803522,
-        "monthly": 7586228
+        "weekly": 1709832,
+        "monthly": 7683572,
+        "lastUpdated": "2026-05-02"
       }
     },
     "remix-run/remix": {
@@ -587,6 +592,24 @@
         "weekly": 0,
         "monthly": 0
       }
+    },
+    "sveltejs/svelte": {
+      "owner": "sveltejs",
+      "repo": "svelte",
+      "github": {
+        "starsBadge": "https://img.shields.io/github/stars/sveltejs/svelte?style=flat-square",
+        "url": "https://github.com/sveltejs/svelte",
+        "stars": 86454,
+        "forks": 4896,
+        "openIssues": 999,
+        "fetchedAt": "2026-05-02T05:55:48.499Z"
+      },
+      "npm": {
+        "package": "svelte",
+        "weekly": 4176473,
+        "monthly": 18122100,
+        "lastUpdated": "2026-05-02"
+      }
     }
   },
   "packages": {
@@ -621,9 +644,9 @@
       "lastUpdated": "2026-04-17"
     },
     "@sveltejs/kit": {
-      "weekly": 1803522,
-      "monthly": 7586228,
-      "lastUpdated": "2026-04-17"
+      "weekly": 1709832,
+      "monthly": 7683572,
+      "lastUpdated": "2026-05-02"
     },
     "@remix-run/core": {
       "weekly": 0,
@@ -824,6 +847,56 @@
       "weekly": 2623014,
       "monthly": 11345491,
       "lastUpdated": "2026-04-17"
+    },
+    "svelte": {
+      "weekly": 4176473,
+      "monthly": 18122100,
+      "lastUpdated": "2026-05-02"
+    },
+    "vite-plugin-svelte": {
+      "weekly": 386,
+      "monthly": 1281,
+      "lastUpdated": "2026-05-02"
+    },
+    "@sveltejs/adapter-node": {
+      "weekly": 471497,
+      "monthly": 1981122,
+      "lastUpdated": "2026-05-02"
+    },
+    "@sveltejs/adapter-cloudflare": {
+      "weekly": 132721,
+      "monthly": 527127,
+      "lastUpdated": "2026-05-02"
+    },
+    "@sveltejs/adapter-vercel": {
+      "weekly": 166286,
+      "monthly": 773251,
+      "lastUpdated": "2026-05-02"
+    },
+    "@sveltejs/adapter-static": {
+      "weekly": 446828,
+      "monthly": 1838507,
+      "lastUpdated": "2026-05-02"
+    },
+    "svelte-check": {
+      "weekly": 1631737,
+      "monthly": 7443426,
+      "lastUpdated": "2026-05-02"
+    },
+    "svelte-preprocess": {
+      "weekly": 428846,
+      "monthly": 1832941,
+      "lastUpdated": "2026-05-02"
+    },
+    "@sveltejs/adapter-auto": {
+      "weekly": 687563,
+      "monthly": 3371153,
+      "lastUpdated": "2026-05-02"
+    },
+    "create-svelte": {
+      "weekly": 48940,
+      "monthly": 305383,
+      "lastUpdated": "2026-05-02"
     }
   }
 }

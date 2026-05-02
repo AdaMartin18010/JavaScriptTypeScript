@@ -9,7 +9,7 @@
 ## 目录结构
 
 ```
-88-tanstack-start-cloudflare/
+tanstack-start-cloudflare/
 ├── THEORY.md                          # 边缘渲染语义、Server Function 模型、类型安全路由原理
 ├── 01-basic-setup/
 │   ├── vite.config.ts                 # Vite + Cloudflare 插件 + TanStack Start 插件配置

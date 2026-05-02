@@ -1,0 +1,165 @@
+name: Svelte Docs CI
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'website/**'
+      - '.github/workflows/svelte-docs-ci.yml'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'website/**'
+      - '.github/workflows/svelte-docs-ci.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-check:
+    name: Build VitePress & Check Dead Links
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install dependencies
+        working-directory: website
+        run: npm ci
+
+      - name: Build documentation
+        id: build
+        working-directory: website
+        run: |
+          set -o pipefail
+          start=$(date +%s)
+          npm run docs:build 2>&1 | tee build.log
+          end=$(date +%s)
+          echo "duration=$((end - start))" >> $GITHUB_OUTPUT
+
+      - name: Analyze build logs
+        if: success() || failure()
+        working-directory: website
+        run: |
+          # Strip ANSI color codes for clean summary
+          sed 's/\x1b\[[0-9;]*m//g' build.log > build-clean.log
+
+          echo "## 📋 Build Log Analysis" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.build.outcome }}" == "failure" ]; then
+            echo "❌ **Build failed**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ **Build succeeded**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Check for dead links
+          if grep -qi "dead link" build-clean.log; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### ⚠️ Dead Links Detected" >> $GITHUB_STEP_SUMMARY
+            echo '```text' >> $GITHUB_STEP_SUMMARY
+            grep -i "dead link" build-clean.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "dead_links_found=true" >> $GITHUB_ENV
+          else
+            echo "dead_links_found=false" >> $GITHUB_ENV
+          fi
+
+          # Check for build errors
+          if [ "${{ steps.build.outcome }}" == "failure" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### ❌ Build Errors" >> $GITHUB_STEP_SUMMARY
+            echo '```text' >> $GITHUB_STEP_SUMMARY
+            grep -i "error:\|build error\|ERR!" build-clean.log | head -50 >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "build_errors_found=true" >> $GITHUB_ENV
+          else
+            echo "build_errors_found=false" >> $GITHUB_ENV
+          fi
+
+      - name: Report build time
+        if: success() || failure()
+        run: |
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ⏱️ Build Time Report" >> $GITHUB_STEP_SUMMARY
+          echo "- **Duration:** ${{ steps.build.outputs.duration }} seconds" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Ref:** ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload build artifacts
+        if: steps.build.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitepress-dist
+          path: website/.vitepress/dist
+
+      - name: Upload build logs
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: website/build.log
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && (failure() || env.dead_links_found == 'true')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const buildFailed = '${{ steps.build.outcome }}' === 'failure';
+            const deadLinks = process.env.dead_links_found === 'true';
+
+            let body = '## 📋 Docs Build Check Results\n\n';
+
+            if (buildFailed) {
+              body += '- ❌ **Build failed**\n';
+            }
+            if (deadLinks) {
+              body += '- ⚠️ **Dead links detected** in build output\n';
+            }
+
+            body += `\n📄 [View workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Create Issue on failure
+        if: github.event_name != 'pull_request' && failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+            const title = `🚨 Docs build failed on ${context.ref}`;
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'docs-build-failure',
+              state: 'open'
+            });
+
+            const exists = issues.find(i => i.title === title);
+
+            if (!exists) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: `The documentation build failed in workflow run: ${runUrl}\n\nPlease investigate and fix the issue.`,
+                labels: ['docs-build-failure', 'automated']
+              });
+            }

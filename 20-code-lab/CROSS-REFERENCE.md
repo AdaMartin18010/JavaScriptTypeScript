@@ -8,17 +8,19 @@
 
 | 模块 | 路径 | 说明 | 关联知识库 |
 |------|------|------|-----------|
-| **语言核心** | `20.1-language-core/` | 类型系统、变量、控制流、函数 | `10-fundamentals/10.2-type-system/`, `10.1-language-semantics/` |
+| **语言核心** | `20.1-fundamentals-lab/` | 类型系统、变量、控制流、函数 | `10-fundamentals/10.2-type-system/`, `10.1-language-semantics/` |
 | **设计模式** | `20.2-language-patterns/` | 架构模式、设计模式、全栈模式 | `30-knowledge-base/30.1-guides/` |
 | **并发异步** | `20.3-concurrency-async/` | Promise、Async/Await、Workers、事件循环 | `10-fundamentals/10.3-execution-model/` |
 | **数据与算法** | `20.4-data-algorithms/` | 数据结构、算法、性能优化 | `30-knowledge-base/30.3-comparison-matrices/` |
 | **前端框架** | `20.5-frontend-frameworks/` | React、Vue、组件、渲染 | `30-knowledge-base/30.10-en/signals-paradigm.md` |
 | **后端 API** | `20.6-backend-apis/` | 数据库、GraphQL、微服务、网关 | `30-knowledge-base/decision-trees.md` |
-| **SSR 元框架** | `20.7-ssr-metaframeworks/` | Next.js、Nuxt、Astro | `30-knowledge-base/30.2-categories/` |
+| **AI Agent 基础设施** | `20.7-ai-agent-infra/` | MCP、A2A、Agent 模式、LLM 集成 | `30-knowledge-base/30.2-categories/` |
 | **边缘计算** | `20.8-edge-serverless/` | Cloudflare、Deno Deploy、Serverless | `30-knowledge-base/30.4-backend/` |
 | **可观测性** | `20.9-observability-security/` | 监控、安全、调试、混沌工程 | `30-knowledge-base/30.5-diagrams/` |
 | **形式化验证** | `20.10-formal-verification/` | 类型理论、语义学、区块链 | `10-fundamentals/10.7-academic-frontiers/` |
 | **Rust 工具链** | `20.11-rust-toolchain/` | SWC、Oxc、编译器设计 | `30-knowledge-base/30.10-en/rust-toolchain-migration.md` |
+| **免构建 TypeScript** | `20.12-build-free-typescript/` | Node.js 类型剥离、Deno、Bun 原生 TS | `10-fundamentals/10.2-type-system/` |
+| **边缘数据库** | `20.13-edge-databases/` | D1、Turso、Neon、Vercel Postgres、KV | `30-knowledge-base/30.4-backend/` |
 
 ---
 
@@ -28,10 +30,10 @@
 
 | 代码实验文件 | 对应理论文件 | 主题 |
 |-------------|-------------|------|
-| `20.1-language-core/01-type-system/generics-constraints.ts` | `10-fundamentals/10.2-type-system/structural-subtyping.md` | 泛型约束与结构子类型 |
-| `20.1-language-core/02-variable-system/hoisting-demo.js` | `10-fundamentals/10.1-language-semantics/execution-context.md` | 变量提升与执行上下文 |
-| `20.1-language-core/03-control-flow/async-iteration.ts` | `10-fundamentals/10.3-execution-model/event-loop.md` | 异步迭代与事件循环 |
-| `20.1-language-core/04-functions/closure-memory.js` | `10-fundamentals/10.1-language-semantics/closure-formalization.md` | 闭包内存模型 |
+| `20.1-fundamentals-lab/language-core/01-types/generics.ts` | `10-fundamentals/10.2-type-system/structural-subtyping.md` | 泛型约束与结构子类型 |
+| `20.1-fundamentals-lab/language-core/02-variables/declarations.ts` | `10-fundamentals/10.1-language-semantics/execution-context.md` | 变量提升与执行上下文 |
+| `20.1-fundamentals-lab/language-core/03-control-flow/conditionals.ts` | `10-fundamentals/10.3-execution-model/event-loop.md` | 控制流与事件循环 |
+| `20.1-fundamentals-lab/language-core/04-functions/arrow-functions.ts` | `10-fundamentals/10.1-language-semantics/closure-formalization.md` | 箭头函数与闭包内存模型 |
 
 ### 并发异步 → 执行模型
 
@@ -64,7 +66,7 @@
 ```mermaid
 graph TD
     subgraph "语言基础层"
-        A[20.1-language-core] --> B[20.2-language-patterns]
+        A[20.1-fundamentals-lab] --> B[20.2-language-patterns]
         A --> C[20.3-concurrency-async]
         A --> D[20.4-data-algorithms]
     end
@@ -77,7 +79,7 @@ graph TD
     end
 
     subgraph "元框架与部署层"
-        E --> G[20.7-ssr-metaframeworks]
+        E --> G[20.7-ai-agent-infra]
         F --> G
         F --> H[20.8-edge-serverless]
         E --> H
@@ -123,9 +125,9 @@ graph TD
 ### 路径一：全栈应用开发 (3-4 个月)
 
 ```
-20.1-language-core → 20.2-language-patterns → 20.3-concurrency-async
+20.1-fundamentals-lab → 20.2-language-patterns → 20.3-concurrency-async
         ↓
-20.5-frontend-frameworks → 20.7-ssr-metaframeworks
+20.5-frontend-frameworks → 20.7-ai-agent-infra
         ↓
 20.6-backend-apis → 20.8-edge-serverless → 20.9-observability-security
 ```
@@ -133,7 +135,7 @@ graph TD
 ### 路径二：编译器与工具链 (4-6 个月)
 
 ```
-20.1-language-core → 20.4-data-algorithms → 20.10-formal-verification
+20.1-fundamentals-lab → 20.4-data-algorithms → 20.10-formal-verification
         ↓
 20.11-rust-toolchain → 10-fundamentals/10.6-ecmascript-spec
 ```
@@ -141,7 +143,7 @@ graph TD
 ### 路径三：性能与架构专家 (2-3 个月)
 
 ```
-20.1-language-core → 20.3-concurrency-async → 20.4-data-algorithms
+20.1-fundamentals-lab → 20.3-concurrency-async → 20.4-data-algorithms
         ↓
 20.5-frontend-frameworks → 20.6-backend-apis → 20.9-observability-security
 ```
@@ -205,7 +207,7 @@ async function scaffoldModule(config: ModuleConfig) {
 }
 
 // 使用示例
-// scaffoldModule({ id: '20.12', name: 'build-free-typescript', description: '无构建工具 TS', prerequisites: ['20.1-language-core'] });
+// scaffoldModule({ id: '20.12', name: 'build-free-typescript', description: '无构建工具 TS', prerequisites: ['20.1-fundamentals-lab'] });
 ```
 
 ## 代码示例：自动化交叉引用校验
@@ -392,17 +394,19 @@ function topoSort(modules: ModuleNode[]): string[] {
 
 | 模块 | 前置依赖 | 后续进阶 | 知识库关联 |
 |------|---------|---------|-----------|
-| 20.1-language-core | — | 20.2, 20.3, 20.4 | 10-fundamentals |
+| 20.1-fundamentals-lab | — | 20.2, 20.3, 20.4 | 10-fundamentals |
 | 20.2-language-patterns | 20.1 | 20.5, 20.6 | 30.1-guides |
 | 20.3-concurrency-async | 20.1 | 20.5, 20.6, 20.8 | 10.3-execution-model |
 | 20.4-data-algorithms | 20.1 | 20.6, 20.10 | 30.3-comparison-matrices |
 | 20.5-frontend-frameworks | 20.2, 20.3 | 20.7, 20.8 | 30.10-en/signals-paradigm |
 | 20.6-backend-apis | 20.3, 20.4 | 20.7, 20.8, 20.9 | decision-trees.md |
-| 20.7-ssr-metaframeworks | 20.5, 20.6 | — | 30.2-categories |
+| 20.7-ai-agent-infra | 20.1, 20.5 | 20.8, 20.9 | 30.2-categories |
 | 20.8-edge-serverless | 20.5, 20.6 | 20.9 | 30.4-backend |
 | 20.9-observability-security | 20.1, 20.6, 20.8 | — | 30.5-diagrams |
 | 20.10-formal-verification | 20.1, 20.4 | — | 10.7-academic-frontiers |
 | 20.11-rust-toolchain | 20.1, 20.5 | — | 30.10-en/rust-toolchain-migration |
+| 20.12-build-free-typescript | 20.1 | — | 10-fundamentals |
+| 20.13-edge-databases | 20.4, 20.6 | — | 30.4-backend |
 
 ---
 
