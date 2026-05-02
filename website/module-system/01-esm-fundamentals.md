@@ -336,9 +336,192 @@ import { camelCase } from 'esm-utils/string';
 
 ---
 
-## 6. 常见陷阱
+## 6. ESM vs CommonJS 深度对比
 
-### 6.1 默认导出与命名导出的互操作
+### 6.1 语法差异
+
+| 特性 | ESM (`import`/`export`) | CommonJS (`require`/`module.exports`) |
+|------|------------------------|--------------------------------------|
+| 加载时机 | 编译时静态解析 | 运行时动态执行 |
+| 语法位置 | 仅顶层，不可条件导入 | 任意位置，可条件加载 |
+| 导出类型 | 活绑定 (Live Binding) | 值拷贝 (Value Copy) |
+| 循环依赖处理 | 支持（通过绑定） | 部分支持（通过模块缓存） |
+| 异步加载 | 原生支持 `import()` | 需借助 `require.ensure` 或动态 `require` |
+| 浏览器支持 | 原生支持（`<script type="module">`） | 需打包工具转换 |
+| Tree Shaking | 原生支持 | 难以实现（副作用分析困难） |
+| 顶级 await | 支持 | 不支持（模块立即执行完成） |
+| `this` 值 | `undefined` | `module.exports` |
+
+### 6.2 运行时行为差异
+
+**值绑定 vs 值拷贝**：
+
+```js
+// ESM: 活绑定
+counter.mjs:
+export let count = 0;
+export function increment() { count++; }
+
+main.mjs:
+import { count, increment } from './counter.mjs';
+console.log(count); // 0
+increment();
+console.log(count); // 1 ✅ 自动更新
+
+// CJS: 值拷贝
+counter.cjs:
+let count = 0;
+module.exports = { count, increment: () => count++ };
+
+main.cjs:
+const { count, increment } = require('./counter.cjs');
+console.log(count); // 0
+increment();
+console.log(count); // 0 ❌ 拷贝的值不会更新
+```
+
+### 6.3 互操作性
+
+**CJS 导入 ESM（Node.js 14+）**：
+
+```js
+// 动态导入是唯一方式
+async function loadESM() {
+  const { foo } = await import('./esm-module.mjs');
+  return foo();
+}
+```
+
+**ESM 导入 CJS**：
+
+```js
+// Node.js 支持直接导入 CJS
+import cjsModule from './cjs-module.cjs';
+// 等效于：const cjsModule = require('./cjs-module.cjs');
+
+// 命名导入通过静态分析模拟
+import { namedExport } from './cjs-module.cjs';
+// 注意：仅当 CJS 模块有 __esModule 标记时才可靠
+```
+
+**package.json 中的 `type` 字段**：
+
+```json
+{
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  }
+}
+```
+
+| `type` 值 | `.js` 文件 | `.mjs` 文件 | `.cjs` 文件 |
+|----------|-----------|------------|------------|
+| `"module"` | ESM | ESM | CJS |
+| `"commonjs"`（默认） | CJS | ESM | CJS |
+
+### 6.4 Node.js ESM 实践
+
+**条件导出 (Conditional Exports)**：
+
+```json
+{
+  "name": "my-lib",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json",
+    "./utils": {
+      "types": "./dist/utils.d.ts",
+      "import": "./dist/utils.mjs",
+      "require": "./dist/utils.cjs"
+    }
+  }
+}
+```
+
+**子路径导入 (Subpath Imports)**：
+
+```json
+{
+  "imports": {
+    "#config": "./src/config.js",
+    "#utils/*": "./src/utils/*.js"
+  }
+}
+```
+
+```js
+// 项目中可以使用自引用导入
+import { apiUrl } from '#config';
+import { formatDate } from '#utils/date';
+```
+
+**`import.meta` 元数据**：
+
+```js
+// 当前模块的绝对路径（file:///path/to/module.js）
+console.log(import.meta.url);
+
+// 解析相对路径为绝对路径
+const configPath = new URL('./config.json', import.meta.url);
+const config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
+
+// Node.js 特有的 import.meta
+console.log(import.meta.dirname);  // 模块所在目录（Node 20.11+）
+console.log(import.meta.filename); // 模块文件路径（Node 20.11+）
+```
+
+---
+
+## 7. 动态导入与代码分割
+
+### 7.1 `import()` 表达式
+
+```js
+// 条件加载
+if (userPreference.language === 'zh') {
+  const { messages } = await import('./locales/zh.js');
+  i18n.setMessages(messages);
+}
+
+// 错误处理
+try {
+  const heavyModule = await import('./heavy-computation.js');
+  heavyModule.run();
+} catch (e) {
+  console.error('Failed to load module:', e);
+}
+
+// 并行加载
+const [moduleA, moduleB] = await Promise.all([
+  import('./a.js'),
+  import('./b.js')
+]);
+```
+
+### 7.2 打包器代码分割策略
+
+| 策略 | 配置示例 | 适用场景 |
+|------|---------|----------|
+| 路由级别 | `() => import('./pages/Home.js')` | SPA 路由懒加载 |
+| 组件级别 | `const Chart = lazy(() => import('./Chart'))` | 大型组件按需加载 |
+| 库级别 | `import('lodash-es/debounce')` | 第三方库按需引入 |
+| 手动分割 | `import(/* webpackChunkName: "admin" */ './AdminPanel')` | 按业务域分割 |
+
+---
+
+## 8. 常见陷阱
+
+### 8.1 默认导出与命名导出的互操作
 
 ```js
 // module.js
@@ -350,7 +533,7 @@ import { default as foo, bar } from './module.js';  // ✅ 正确
 import { foo, bar } from './module.js';             // ❌ 错误
 ```
 
-### 6.2 循环依赖的 ESM 行为
+### 8.2 循环依赖的 ESM 行为
 
 ```js
 // a.js
@@ -366,6 +549,91 @@ export const b = 'b-value';
 
 ESM 中循环依赖的导入在对方模块未执行完成前为**未初始化 (TDZ)** 状态，访问会抛出错误。
 
+### 8.3 Node.js ESM 与 CJS 混用陷阱
+
+```js
+// ❌ 在 ESM 中无法使用 __dirname / __filename
+console.log(__dirname); // ReferenceError
+
+// ✅ 替代方案
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// ❌ 在 ESM 中无法使用 require（除非创建）
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+// 仅用于读取 JSON 文件等特殊情况
+const pkg = require('./package.json');
+```
+
+### 8.4 路径解析差异
+
+```js
+// ESM 要求完整路径（包括扩展名）
+import { foo } from './utils.js';     // ✅
+import { foo } from './utils';        // ❌ Node.js ESM 中失败
+
+// CJS 自动补全扩展名
+const { foo } = require('./utils');    // ✅ 自动尝试 .js/.json/.node
+```
+
+---
+
+## 9. 构建工具配置最佳实践
+
+### 9.1 发布双模式包
+
+```json
+{
+  "name": "my-library",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "sideEffects": false
+}
+```
+
+### 9.2 TypeScript + ESM 配置
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "strict": true,
+    "declaration": true,
+    "outDir": "./dist"
+  },
+  "include": ["src/**/*"]
+}
+```
+
+```json
+// package.json
+{
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/**/*.test.js"
+  }
+}
+```
+
 ---
 
 ## 参考
@@ -373,3 +641,6 @@ ESM 中循环依赖的导入在对方模块未执行完成前为**未初始化 (
 - [ECMAScript Specification - Module Semantics](https://tc39.es/ecma262/#sec-modules)
 - [Rollup Guide on Tree Shaking](https://rollupjs.org/guide/en/#tree-shaking)
 - [Webpack Tree Shaking Documentation](https://webpack.js.org/guides/tree-shaking/)
+- [Node.js ESM Documentation](https://nodejs.org/api/esm.html) 📘
+- [TypeScript ESM Guide](https://www.typescriptlang.org/docs/handbook/esm-node.html) 📘
+- [Pure ESM Package](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c) 📄

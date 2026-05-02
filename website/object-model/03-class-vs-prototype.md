@@ -195,6 +195,198 @@ graph LR
 
 ---
 
+## ES6 Class 内部实现细节
+
+### Class 的初始化过程
+
+当执行 `new MyClass(args)` 时，V8 内部执行以下步骤：
+
+```
+1. 检查 MyClass 是否可被 new（ClassConstructor 标记）
+2. 创建新对象 obj
+3. 设置 obj.[[Prototype]] = MyClass.prototype
+4. 创建 this 绑定
+5. 执行 Class 字段初始化器（按声明顺序）
+6. 执行 constructor 函数体
+7. 返回 obj（除非 constructor 显式返回对象）
+```
+
+### Class 字段的初始化时机
+
+```js
+class Demo {
+  // 步骤1：字段初始化器在 constructor 之前执行
+  a = this.initA();  // 可在字段初始化器中使用 this
+
+  constructor() {
+    // 步骤2：constructor 执行
+    console.log(this.a); // 已初始化
+  }
+
+  initA() {
+    return 42;
+  }
+}
+```
+
+```mermaid
+sequenceDiagram
+    participant Caller as new Demo()
+    participant Engine as V8 Engine
+    participant Object as 新对象
+    participant Fields as 字段初始化器
+    participant Ctor as constructor()
+
+    Caller->>Engine: new Demo()
+    Engine->>Object: 分配内存，设置原型
+    Engine->>Fields: 执行 a = this.initA()
+    Fields-->>Object: a = 42
+    Engine->>Ctor: 调用 constructor()
+    Ctor-->>Engine: 执行完成
+    Engine-->>Caller: 返回对象
+```
+
+### 静态块（Static Block）
+
+ES2022 引入的静态块用于复杂的静态初始化：
+
+```js
+class Config {
+  static settings = new Map();
+  static env = process.env.NODE_ENV;
+
+  static {
+    // 静态块：类加载时执行一次
+    this.settings.set('apiUrl', this.env === 'production'
+      ? 'https://api.prod.com'
+      : 'http://localhost:3000'
+    );
+    this.settings.set('timeout', 5000);
+
+    // 可以访问 this、super
+    console.log('Config initialized');
+  }
+
+  static {
+    // 多个静态块按声明顺序执行
+    this.settings.set('version', '1.0.0');
+  }
+}
+
+console.log(Config.settings.get('apiUrl'));
+```
+
+| 特性 | 静态字段 | 静态块 |
+|------|---------|--------|
+| 执行时机 | 类加载时 | 类加载时 |
+| 可执行复杂逻辑 | ❌ 仅限表达式 | ✅ 完整语句块 |
+| 可访问 this | ✅ | ✅ |
+| 可访问 super | ❌ | ✅ |
+
+---
+
+## `super` 绑定深度解析
+
+### `[[HomeObject]]` 内部槽
+
+每个方法在定义时都会被赋予一个 `[[HomeObject]]` 内部槽，指向定义该方法的对象：
+
+```js
+const obj = {
+  home: 'obj',
+  method() {
+    // [[HomeObject]] = obj
+    console.log(super.home); // 通过 [[HomeObject]].__proto__ 查找
+  }
+};
+
+// 等价于引擎内部：
+// obj.method.__protoHomeObject__ = obj
+```
+
+### `super` 的两种调用路径
+
+```js
+class Parent {
+  constructor(name) { this.name = name; }
+  greet() { return `Hello, ${this.name}`; }
+  static create(name) { return new this(name); }
+}
+
+class Child extends Parent {
+  constructor(name, age) {
+    // super(args) 路径：
+    // 1. 通过 [[HomeObject]]（Child.prototype）获取 .__proto__（Parent.prototype）
+    // 2. 获取 Parent.prototype.constructor
+    // 3. 使用 Reflect.construct 创建实例，绑定 this
+    super(name);  // → Parent.prototype.constructor.call(this, name)
+    this.age = age;
+  }
+
+  greet() {
+    // super.method() 路径：
+    // 1. 通过 [[HomeObject]]（Child.prototype）获取 .__proto__（Parent.prototype）
+    // 2. 在 Parent.prototype 上查找 greet
+    // 3. 使用 [[GetPrototypeOf]](this) 作为 receiver 调用
+    return super.greet() + ` (${this.age})`;
+    // 内部等效：Child.prototype.__proto__.greet.call(this)
+  }
+
+  static create(name, age) {
+    // super 在静态方法中：
+    // [[HomeObject]] = Child（构造函数本身）
+    // Child.__proto__ = Parent
+    const instance = super.create(name);
+    instance.age = age;
+    return instance;
+  }
+}
+```
+
+### super 绑定不可提取的原因
+
+```js
+class A { foo() { return 'A'; } }
+class B extends A { foo() { return super.foo() + 'B'; } }
+
+const b = new B();
+const extracted = b.foo;
+
+// 错误情况分析：
+// extracted() 时，this 可能是 global 或 undefined（严格模式）
+// 但 super 绑定是在定义时固定的：
+// b.foo.[[HomeObject]] = B.prototype
+// 即使 extracted 被调用，引擎仍知道 super 指向 B.prototype.__proto__
+// 问题在于：super.foo() 需要 this 来执行，但 extracted 调用时 this 丢失
+
+extracted(); // TypeError: 无法确定 super 绑定（实际上是 this 绑定问题）
+```
+
+### 箭头函数与 super
+
+```js
+class Base {
+  value = 10;
+  getValue() { return this.value; }
+}
+
+class Derived extends Base {
+  arrow = () => super.getValue();
+
+  method() {
+    // 箭头函数没有自己的 this/super，继承 enclosing scope
+    const arrow = () => super.getValue();
+    return arrow();
+  }
+}
+
+const d = new Derived();
+console.log(d.arrow()); // 10 ✅
+// 箭头函数不绑定 this，但 super 仍通过 [[HomeObject]] 解析
+```
+
+---
+
 ## 性能对比：实例化开销
 
 | 方式 | 单次实例化耗时 (ns) | Shape 稳定性 |
@@ -223,11 +415,163 @@ function SlowPoint(x, y) {
 }
 ```
 
+### Class 字段初始化 vs 构造函数赋值
+
+```js
+// 方式1：字段初始化器
+class WithFields {
+  x = 0;  // 编译为在 constructor 开头执行
+  y = 0;
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+// 方式2：纯构造函数
+class WithoutFields {
+  constructor(x, y) {
+    this.x = x;  // 动态添加属性，触发 Transition
+    this.y = y;
+  }
+}
+
+// 性能差异：
+// WithFields: V8 在解析类时就知道了所有字段，创建优化 Map
+// WithoutFields: 每次添加属性都要检查/创建 Transition
+```
+
+### 静态方法与实例方法的 IC 差异
+
+```js
+class Utils {
+  static format(value) { return value.toFixed(2); }
+  instanceFormat(value) { return value.toFixed(2); }
+}
+
+// 静态方法：直接通过 Utils 对象访问，Monomorphic
+Utils.format(1.5);  // 最优
+
+// 实例方法：通过原型链访问，但 Shape 固定
+const u = new Utils();
+u.instanceFormat(1.5);  // 接近最优（多一次原型查找）
+```
+
+---
+
+## Class 的编译产物分析
+
+### Babel 编译后的 Class
+
+```js
+// 源代码
+class Point {
+  x = 0;
+  y = 0;
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+  distance(other) {
+    return Math.hypot(this.x - other.x, this.y - other.y);
+  }
+}
+```
+
+```js
+// Babel 编译后（简化）
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError('Cannot call a class as a function');
+  }
+}
+
+var Point = /*#__PURE__*/ function () {
+  function Point(x, y) {
+    _classCallCheck(this, Point);
+    this.x = 0;      // 字段初始化
+    this.y = 0;
+    this.x = x;      // constructor 赋值
+    this.y = y;
+  }
+
+  Point.prototype.distance = function distance(other) {
+    return Math.hypot(this.x - other.x, this.y - other.y);
+  };
+
+  return Point;
+}();
+```
+
+### TypeScript 编译后的 Class（ES5目标）
+
+```typescript
+// 源代码
+class Animal {
+  private name: string;
+  constructor(name: string) {
+    this.name = name;
+  }
+  move(distance: number): void {
+    console.log(`${this.name} moved ${distance}m`);
+  }
+}
+```
+
+```js
+// TypeScript 编译后
+var Animal = /** @class */ (function () {
+  function Animal(name) {
+    this.name = name;
+  }
+  Animal.prototype.move = function (distance) {
+    console.log(this.name + " moved " + distance + "m");
+  };
+  return Animal;
+}());
+```
+
+> **注意**：现代项目应直接以 ES2022+ 为目标编译，避免 Babel/TS 的 class 转换开销。
+
+---
+
+## Class 与原型函数的全面对比
+
+| 特性 | ES6 Class | 传统构造函数 | 工厂函数 |
+|------|-----------|-------------|----------|
+| 语法 | `class` + `extends` | `function` + `prototype` | 普通函数返回对象 |
+| `new` 必需 | ✅ 强制 | ❌ 可选 | ❌ 不适用 |
+| 方法枚举性 | 不可枚举 | 默认可枚举 | 取决于定义方式 |
+| 原型链设置 | `extends` 自动 | 手动 `Object.create` | 手动 `Object.create` |
+| 静态继承 | `extends` 继承静态 | 无原生支持 | 手动复制 |
+| `[[Call]]` 行为 | TypeError | 执行函数体 | 执行函数体 |
+| V8 优化 | 更强（严格语义） | 中等 | 较弱 |
+| 字段预声明 | ✅ Public/Private | ❌ 动态添加 | ❌ 动态添加 |
+| 代码体积 | 较小（原生支持） | 较小 | 较小 |
+| 堆栈跟踪 | 显示类名 | 显示函数名 | 显示函数名 |
+| 私有字段 | ✅ `#prefix` | ❌ 需模拟 | ❌ 需模拟 |
+
+### 选择建议
+
+```
+需要继承体系？
+  ├── 是 → 使用 Class（语义清晰，V8优化更好）
+  │         ├── 需要真正私有 → #prefix
+  │         └── 仅需编译时私有 → TypeScript private
+  └── 否 → 需要多个实例共享方法？
+            ├── 是 → 工厂函数 + Object.create(prototype)
+            └── 否 → 对象字面量（最简单）
+```
+
 ---
 
 ## 小结
 
 - Class 是原型继承的严格化语法糖，带来了更清晰的继承链与静态分析友好性。
-- `super` 依赖 `[[HomeObject]]`，不可提取使用。
+- `super` 依赖 `[[HomeObject]]` 内部槽，在方法定义时静态绑定。
+- `super()` 和 `super.method()` 有不同的内部解析路径，但都通过 `[[HomeObject]]` 定位基类。
 - `new.target` 是零开销的元信息，适合抽象类检查。
+- Class 字段初始化器在 constructor 之前执行，V8 可提前确定对象 Shape。
 - V8 对 Class 的优化优于传统构造函数，尤其在字段预声明与继承链稳定性方面。
+- 静态块提供了复杂的类级初始化能力，在框架代码中非常有用。
+- 现代项目推荐直接使用原生 Class（ES2022+目标），避免 transpiler 转换开销。

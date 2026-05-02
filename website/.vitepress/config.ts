@@ -32,16 +32,8 @@ export default withMermaid(defineConfig({
     /^\.\.\/..\/20-code-lab\//,
     /^\.\.\/..\/50-examples\//,
     /^\.\.\/..\/70-theoretical-foundations\//,
-    // 新专题建设中：TypeScript类型系统（05-18待创建）
-    /\/typescript-type-system\/(0[5-9]|1[0-8])-/,
-    // 新专题建设中：模块系统（04-08待创建）
-    /\/module-system\/(0[4-8])-/,
-    // 新专题建设中：移动端开发（02-06待创建）
-    /\/mobile-development\/(0[2-6])-/,
-    // 新专题建设中：AI编码工作流（04-08待创建）
-    /\/ai-coding-workflow\/(0[4-8])-/,
-    // 新专题建设中：对象模型（04-07待创建）
-    /\/object-model\/(0[4-7])-/,
+    // 新专题链接保护（已完成创建，后续可移除）
+    // TypeScript类型系统 / 模块系统 / 移动端 / AI编码 / 对象模型
   ],
   
   // 元数据
