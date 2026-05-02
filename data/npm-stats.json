@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-02T02:24:24.280Z",
+  "generatedAt": "2026-05-02T03:37:17.090Z",
   "totalPackages": 47,
   "stats": {
     "express": {
@@ -27,19 +27,14 @@
       "monthly": 38679601,
       "lastUpdated": "2026-05-02"
     },
-    "nuxt": {
-      "weekly": 1396136,
-      "monthly": 5925867,
-      "lastUpdated": "2026-05-02"
-    },
-    "elysia": {
-      "weekly": 481900,
-      "monthly": 2000676,
-      "lastUpdated": "2026-05-02"
-    },
     "next": {
       "weekly": 35725106,
       "monthly": 158013417,
+      "lastUpdated": "2026-05-02"
+    },
+    "nuxt": {
+      "weekly": 1396136,
+      "monthly": 5925867,
       "lastUpdated": "2026-05-02"
     },
     "@remix-run/core": {
@@ -47,19 +42,14 @@
       "monthly": 0,
       "lastUpdated": "2026-05-02"
     },
+    "elysia": {
+      "weekly": 481900,
+      "monthly": 2000676,
+      "lastUpdated": "2026-05-02"
+    },
     "@sveltejs/kit": {
       "weekly": 1709832,
       "monthly": 7683572,
-      "lastUpdated": "2026-05-02"
-    },
-    "esbuild": {
-      "weekly": 216460377,
-      "monthly": 820565950,
-      "lastUpdated": "2026-05-02"
-    },
-    "vite": {
-      "weekly": 118179115,
-      "monthly": 449171121,
       "lastUpdated": "2026-05-02"
     },
     "typescript": {
@@ -67,24 +57,24 @@
       "monthly": 761938478,
       "lastUpdated": "2026-05-02"
     },
+    "vite": {
+      "weekly": 118179115,
+      "monthly": 449171121,
+      "lastUpdated": "2026-05-02"
+    },
     "astro": {
       "weekly": 2426843,
       "monthly": 9239522,
       "lastUpdated": "2026-05-02"
     },
+    "esbuild": {
+      "weekly": 216460377,
+      "monthly": 820565950,
+      "lastUpdated": "2026-05-02"
+    },
     "@swc/core": {
       "weekly": 42871617,
       "monthly": 169228179,
-      "lastUpdated": "2026-05-02"
-    },
-    "jest": {
-      "weekly": 42897688,
-      "monthly": 185338022,
-      "lastUpdated": "2026-05-02"
-    },
-    "rollup": {
-      "weekly": 114548677,
-      "monthly": 440355145,
       "lastUpdated": "2026-05-02"
     },
     "vitest": {
@@ -97,47 +87,42 @@
       "monthly": 31273754,
       "lastUpdated": "2026-05-02"
     },
+    "jest": {
+      "weekly": 42897688,
+      "monthly": 185338022,
+      "lastUpdated": "2026-05-02"
+    },
     "@playwright/test": {
       "weekly": 32241950,
       "monthly": 138273883,
       "lastUpdated": "2026-05-02"
     },
-    "mocha": {
-      "weekly": 13276774,
-      "monthly": 58564255,
-      "lastUpdated": "2026-05-02"
-    },
-    "sequelize": {
-      "weekly": 2824771,
-      "monthly": 11815962,
-      "lastUpdated": "2026-05-02"
-    },
-    "@prisma/client": {
-      "weekly": 9578497,
-      "monthly": 38669511,
+    "rollup": {
+      "weekly": 114548677,
+      "monthly": 440355145,
       "lastUpdated": "2026-05-02"
     },
     "drizzle-orm": {
-      "weekly": 8061916,
-      "monthly": 32135853,
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-05-02"
+    },
+    "sequelize": {
+      "weekly": 0,
+      "monthly": 0,
       "lastUpdated": "2026-05-02"
     },
     "typeorm": {
-      "weekly": 4227245,
-      "monthly": 17377725,
-      "lastUpdated": "2026-05-02"
-    },
-    "ramda": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-05-02"
     },
-    "lodash": {
+    "@prisma/client": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-05-02"
     },
-    "mongoose": {
+    "mocha": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-05-02"
@@ -147,12 +132,22 @@
       "monthly": 0,
       "lastUpdated": "2026-05-02"
     },
+    "mongoose": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-05-02"
+    },
+    "ramda": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-05-02"
+    },
     "date-fns": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-05-02"
     },
-    "zustand": {
+    "lodash": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-05-02"
@@ -177,12 +172,7 @@
       "monthly": 0,
       "lastUpdated": "2026-05-02"
     },
-    "@chakra-ui/react": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-05-02"
-    },
-    "antd": {
+    "zustand": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-05-02"
@@ -192,7 +182,7 @@
       "monthly": 0,
       "lastUpdated": "2026-05-02"
     },
-    "@mui/material": {
+    "@chakra-ui/react": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-05-02"
@@ -202,7 +192,12 @@
       "monthly": 0,
       "lastUpdated": "2026-05-02"
     },
-    "tsx": {
+    "@mui/material": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-05-02"
+    },
+    "antd": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-05-02"
@@ -217,22 +212,27 @@
       "monthly": 0,
       "lastUpdated": "2026-05-02"
     },
-    "prettier": {
-      "weekly": 0,
-      "monthly": 0,
-      "lastUpdated": "2026-05-02"
-    },
     "@shadcn/ui": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-05-02"
     },
-    "pm2": {
+    "tsx": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-05-02"
+    },
+    "prettier": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-05-02"
     },
     "nodemon": {
+      "weekly": 0,
+      "monthly": 0,
+      "lastUpdated": "2026-05-02"
+    },
+    "pm2": {
       "weekly": 0,
       "monthly": 0,
       "lastUpdated": "2026-05-02"

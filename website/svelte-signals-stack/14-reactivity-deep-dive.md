@@ -1444,4 +1444,16 @@ flowchart LR
 
 **解读**: Svelte 编译器在构建时完成所有响应式分析，将 `$state`、`$derived`、`$effect` 转换为底层的 Signal 创建、依赖注册和副作用调度代码。
 
+> 💡 **相关阅读**: [编译器与 Signals 架构](01-compiler-signals-architecture) · [Svelte 5 Runes 完全指南](02-svelte-5-runes)
+
+---
+
+## 参考资源
+
+- 📘 [Svelte 5 Runes 官方文档](https://svelte.dev/docs/svelte/what-are-runes)
+- 🔬 [Svelte 编译器源码](https://github.com/sveltejs/svelte/tree/main/packages/svelte/src/compiler) — 响应式转换实现
+- 🧪 [Signals 提案与实现对比](https://github.com/tc39/proposal-signals)
+- 📊 [Svelte 5 性能基准测试](https://krausest.github.io/js-framework-benchmark/)
+- 🎓 [Rich Harris — Rethinking Reactivity](https://www.youtube.com/watch?v=AdNJ3fydeao)
+
 > **最后更新**: 2026-05-02

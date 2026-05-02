@@ -2760,4 +2760,23 @@ graph TD
 
 **解读**: 现代组件库采用"头less + 样式分离"架构。Design Tokens 定义视觉基础，Headless 层处理交互逻辑，样式层提供具体外观，无障碍规范贯穿全层。
 
+---
+
+## 总结
+
+- Svelte 5 的 Snippet 机制提供了比传统 Slots 更灵活的类型安全组合能力，是现代组件设计的核心模式
+- Action 生命周期（mount/update/destroy）与 DOM 元素绑定，是处理副作用的推荐方式
+- 现代组件库采用"Headless + 样式分离"架构，Design Tokens 贯穿无障碍规范全层
+- 组件模式的选择应遵循"简单优先"原则：Props → Snippet → Context → Store 逐级递进
+
+> 💡 **相关阅读**: [Svelte 语言完全参考](12-svelte-language-complete) · [响应式系统深度原理](14-reactivity-deep-dive)
+
+## 参考资源
+
+- 📘 [Svelte 官方文档 — 组件基础](https://svelte.dev/docs/svelte/basic-markup)
+- 🧩 [shadcn-svelte](https://www.shadcn-svelte.com/) — 现代 Svelte 组件库实践
+- 🛠️ [Melt UI](https://melt-ui.com/) — Headless Svelte 组件原语
+- 📦 [Svelte Snippets 深度指南](https://svelte.dev/docs/svelte/snippet)
+- 🎨 [Design Tokens 规范](https://design-tokens.github.io/community-group/format/)
+
 > 最后更新: 2026-05-02

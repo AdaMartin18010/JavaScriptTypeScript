@@ -389,11 +389,13 @@ const schema = loadSchema('order.json');
 ## 参考资源
 
 ### 规范与标准
+
 - [JSON Schema](https://json-schema.org/) — JSON Schema 官方规范与文档
 - [JSON Schema 2020-12 规范](https://json-schema.org/draft/2020-12/json-schema-core) — 核心规范文档
 - [OpenAPI Specification](https://spec.openapis.org/oas/latest.html) — 广泛使用的 Schema 扩展标准
 
 ### 开源实现
+
 - [React JSON Schema Form (RJSF)](https://rjsf-team.github.io/react-jsonschema-form/) — React 生态最流行的 Schema 表单库
 - [Formily](https://formilyjs.org/) — 阿里开源的跨框架 Schema 驱动表单解决方案
 - [Uniforms](https://uniforms.tools/) — 基于 JSON Schema 的 React 表单库
@@ -402,6 +404,7 @@ const schema = loadSchema('order.json');
 - [MSON (Component.js)](https://github.com/redgeoff/mson) — 基于 JSON 的组件定义语言
 
 ### 设计模式
+
 - [Schema-first Development](https://www.apollographql.com/docs/tutorial/schema/) — 先定义 Schema，再驱动实现的方法论
 
 ---

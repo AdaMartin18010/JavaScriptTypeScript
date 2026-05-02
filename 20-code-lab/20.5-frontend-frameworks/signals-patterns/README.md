@@ -18,6 +18,7 @@
 ### 2.1 核心抽象
 
 Signal 是一个**可观察的状态单元**，包含：
+
 - **值（Value）**：当前状态
 - **订阅者（Subscribers）**：依赖该 Signal 的计算/副作用
 - **更新语义**：值变化时，仅通知直接订阅者，而非整树重新渲染
@@ -46,6 +47,7 @@ double      isEven
 ```
 
 **关键特征**：
+
 - **懒计算（Lazy Evaluation）**：derived signal 仅在读取时重新计算
 - **自动追踪（Automatic Tracking）**：依赖关系在运行时动态建立
 - **细粒度更新（Granular Updates）**：仅更新变化的节点及其下游
@@ -197,11 +199,13 @@ function createResource<T>(fetcher: () => Promise<T>) {
 ### 理论深化：Signals 的响应式理论基础
 
 Signals 的响应式模型可追溯至：
+
 1. **电子表格计算**：单元格依赖图的自动重算（VisiCalc, 1979）
 2. **函数式响应式编程（FRP）**：Event/Behavior 分离（Elliott & Hudak, 1997）
 3. **细粒度响应式**：Svelte 编译时优化（Harris, 2019）
 
 **形式化语义**：Signals 构成一个有向无环图（DAG），其中：
+
 - 节点 = Signal（原子或派生）
 - 边 = 依赖关系（读操作建立依赖）
 - 更新传播 = DAG 的拓扑排序遍历

@@ -337,17 +337,20 @@ workflow.addEdge('validate', 'process');
 ## 权威参考链接
 
 ### 开源低代码平台文档
+
 - [Retool 官方文档](https://docs.retool.com/)
 - [Appsmith 官方文档](https://docs.appsmith.com/)
 - [Budibase 官方文档](https://docs.budibase.com/)
 - [ToolJet 官方文档](https://docs.tooljet.com/)
 
 ### 标准与规范
+
 - [JSON Schema 规范](https://json-schema.org/)
 - [React JSON Schema Form (rjsf)](https://rjsf-team.github.io/react-jsonschema-form/docs/)
 - [W3C Draft: Low Code Application Platform Requirements](https://www.w3.org/community/web-based-signage/wiki/Low_Code_Application_Platform) — W3C 低代码平台需求草案
 
 ### 权威英文资源
+
 - [Microsoft Power Apps: Architecture Reference](https://learn.microsoft.com/en-us/power-apps/guidance/architecture/overview) — Microsoft 企业级低代码架构参考
 - [OutSystems Architecture Fundamentals](https://success.outsystems.com/documentation/best_practices/architecture_fundamentals/) — 企业低代码架构最佳实践
 - [Mendix Atlas UI System](https://docs.mendix.com/refguide/atlas-ui/) — Mendix 设计系统与组件模型

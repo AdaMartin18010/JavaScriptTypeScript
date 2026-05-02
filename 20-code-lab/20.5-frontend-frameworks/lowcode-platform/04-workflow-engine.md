@@ -400,21 +400,25 @@ const approvalStateMachine = {
 ## 参考资源
 
 ### 规范标准
+
 - [BPMN 2.0 规范 — OMG](https://www.omg.org/spec/BPMN/) — 业务流程模型与符号标准
 - [BPMN.io](https://bpmn.io/) — BPMN 2.0 的 Web 建模工具包
 
 ### 工作流引擎实现
+
 - [Temporal.io](https://temporal.io/) — 可靠的工作流编排平台（前身为 Cadence）
 - [Camunda BPM](https://camunda.com/) — 开源 BPMN 工作流引擎
 - [Node-RED](https://nodered.org/) — 基于流的低代码编程工具
 - [n8n](https://n8n.io/) — 开源工作流自动化平台
 
 ### 数据管道工作流
+
 - [Apache Airflow](https://airflow.apache.org/) — 可编程的数据管道编排
 - [Dagster](https://dagster.io/) — 数据资产感知的工作流编排器
 - [Prefect](https://www.prefect.io/) — Python 现代工作流编排
 
 ### JavaScript 生态
+
 - [XState](https://xstate.js.org/) — JavaScript/TypeScript 状态机与工作流库
 - [Robot](https://thisrobot.life/) — 轻量函数式状态机
 - [json-logic-js](https://jsonlogic.com/) — 安全的 JSON 规则引擎（替代 new Function）

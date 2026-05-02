@@ -49,31 +49,6 @@ export const sidebar: DefaultTheme.Sidebar = {
       ]
     },
     {
-      text: 'Svelte Signals 编译器生态',
-      collapsed: false,
-      items: [
-        { text: '专题首页 ➜', link: '/svelte-signals-stack/' },
-        { text: '01. Compiler Signals 架构', link: '/svelte-signals-stack/01-compiler-signals-architecture' },
-        { text: '02. Svelte 5 Runes 深度指南', link: '/svelte-signals-stack/02-svelte-5-runes' },
-        { text: '03. SvelteKit 全栈框架', link: '/svelte-signals-stack/03-sveltekit-fullstack' },
-        { text: '04. TypeScript 编译运行时', link: '/svelte-signals-stack/04-typescript-svelte-runtime' },
-        { text: '05. Vite + pnpm 构建集成', link: '/svelte-signals-stack/05-vite-pnpm-integration' },
-        { text: '06. Edge 同构运行时', link: '/svelte-signals-stack/06-edge-isomorphic-runtime' },
-        { text: '07. 生态工具链', link: '/svelte-signals-stack/07-ecosystem-tools' },
-        { text: '08. 生产实践', link: '/svelte-signals-stack/08-production-practices' },
-        { text: '09. 迁移指南', link: '/svelte-signals-stack/09-migration-guide' },
-        { text: '10. 框架对比矩阵', link: '/svelte-signals-stack/10-framework-comparison' },
-        { text: '11. 2026-2028 路线图', link: '/svelte-signals-stack/11-roadmap-2027' },
-        { text: '12. Svelte 语言完全参考', link: '/svelte-signals-stack/12-svelte-language-complete' },
-        { text: '13. 组件开发模式大全', link: '/svelte-signals-stack/13-component-patterns' },
-        { text: '14. 响应式系统深度原理', link: '/svelte-signals-stack/14-reactivity-deep-dive' },
-        { text: '15. 应用领域与场景决策', link: '/svelte-signals-stack/15-application-scenarios' },
-        { text: '16. 渐进式学习阶梯', link: '/svelte-signals-stack/16-learning-ladder' },
-        { text: '17. 知识图谱与思维工具', link: '/svelte-signals-stack/17-knowledge-graph' },
-        { text: '18. SSR 与 Hydration 原理', link: '/svelte-signals-stack/18-ssr-hydration-internals' },
-      ]
-    },
-    {
       text: 'AI 与前沿开发',
       collapsed: false,
       items: [
@@ -378,6 +353,7 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '10. 框架对比矩阵', link: '/svelte-signals-stack/10-framework-comparison' },
         { text: '15. 应用领域与场景决策', link: '/svelte-signals-stack/15-application-scenarios' },
         { text: '11. 2026-2028 路线图', link: '/svelte-signals-stack/11-roadmap-2027' },
+        { text: '19. 前沿动态追踪', link: '/svelte-signals-stack/19-frontier-tracking' },
       ]
     },
     {

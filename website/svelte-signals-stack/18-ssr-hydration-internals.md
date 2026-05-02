@@ -1169,11 +1169,22 @@ sequenceDiagram
 
 **解读**: Streaming SSR 允许服务端在数据未完全就绪时先发送骨架屏，数据返回后再流式推送内容块并执行占位符替换，显著改善首屏可感知性能。
 
+---
+
+## 参考资源
+
+- 📘 [SvelteKit 官方文档 — SSR 与 SEO](https://kit.svelte.dev/docs/seo#ssr)
+- 🌊 [SvelteKit Streaming 与 Promises](https://kit.svelte.dev/docs/load#streaming-with-promises)
+- 🔬 [Svelte 源码 — 客户端 Hydration](https://github.com/sveltejs/svelte/tree/main/packages/svelte/src/internal/client/dom/blocks)
+- 🎓 [Google Web Vitals 优化指南](https://web.dev/vitals/)
+- 📦 [SvelteKit 适配器选择与配置](https://kit.svelte.dev/docs/adapters)
+
 > **最后更新**: 2026-05-02
 >
 > **相关阅读**:
 >
 > - [SvelteKit 官方文档 — SSR](https://kit.svelte.dev/docs/seo#ssr)
-> - Svelte 5 Runes 响应式原理（参见 14-reactivity-deep-dive）
-> - SvelteKit 路由与加载机制（参见 03-sveltekit-fullstack）
-> - VitePress 构建优化指南（参见 05-vite-pnpm-integration）
+> - [Svelte 5 Runes 响应式原理](14-reactivity-deep-dive)
+> - [SvelteKit 路由与加载机制](03-sveltekit-fullstack)
+> - [边缘同构运行时](06-edge-isomorphic-runtime)
+> - [VitePress 构建优化指南](05-vite-pnpm-integration)

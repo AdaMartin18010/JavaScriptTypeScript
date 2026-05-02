@@ -75,18 +75,21 @@ npm run test:e2e
 ## 学习要点
 
 ### 1. 路由系统
+
 - `+page.svelte` —— 页面组件
 - `+layout.svelte` —— 布局（可嵌套）
 - `[slug]` —— 动态路由参数
 - `+server.ts` —— API 端点
 
 ### 2. 数据加载（Server Load）
+
 - `+page.server.ts` 中导出 `load` 函数
 - 通过 `params` 获取路由参数
 - 返回的数据在 `+page.svelte` 中通过 `$props()` 接收
 - 自动处理 SSR / CSR  hydration
 
 ### 3. Form Actions
+
 - `+page.server.ts` 中导出 `actions` 对象
 - `default` action 处理普通表单提交
 - 支持命名 action（如 `?/create`）
@@ -95,11 +98,13 @@ npm run test:e2e
 - 表单支持渐进增强（`use:enhance`）
 
 ### 4. API 路由
+
 - `RequestHandler` 处理 HTTP 方法（GET、POST、PUT、DELETE）
 - 返回 `Response` 或 `json()` 辅助函数
 - 独立于页面路由，可作为独立 REST API 使用
 
 ### 5. Svelte 5 语法
+
 - `$props()` —— 声明组件 props
 - `$state()` —— 响应式状态
 - `$derived()` —— 派生状态
@@ -107,6 +112,7 @@ npm run test:e2e
 - `{#await}` —— Promise 处理
 
 ### 6. 适配器（Adapter）
+
 - `adapter-auto` —— 根据部署环境自动选择
 - `adapter-node` —— 独立 Node.js 服务器
 - `adapter-static` —— 静态站点生成

@@ -838,6 +838,23 @@ flowchart TD
 
 ---
 
+## 总结
+
+- SvelteKit 数据流涵盖 Client → Network → Server 三层，理解各层职责是调试和优化的基础
+- 常见陷阱集中在响应式误用、生命周期时序和 SSR 环境差异三个方面
+- Props 直接赋值、浏览器 API 在 SSR 中使用等问题可通过 Runes 和条件执行规范解决
+- 知识图谱的价值在于建立系统化认知框架，而非孤立记忆 API
+
+> 💡 **相关阅读**: [渐进式学习阶梯](16-learning-ladder) · [响应式系统深度原理](14-reactivity-deep-dive)
+
+## 参考资源
+
+- 📘 [Svelte 官方文档 — Runes](https://svelte.dev/docs/svelte/what-are-runes)
+- 🧭 [SvelteKit 文档 — 路由与加载](https://kit.svelte.dev/docs/load)
+- 🔍 [Svelte 常见错误排查指南](https://svelte.dev/docs/svelte/errors-and-warnings)
+- 📊 [Svelte 性能优化最佳实践](https://svelte.dev/docs/performance)
+- 🎓 [Svelte 官方博客与 RFC](https://svelte.dev/blog)
+
 > **最后更新:** 2026-05-02
 >
 > **相关页面:** Form Actions（参见 03-sveltekit-fullstack）· 性能模式（参见 14-reactivity-deep-dive）

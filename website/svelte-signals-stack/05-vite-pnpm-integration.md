@@ -6,7 +6,7 @@ keywords: 'Vite, pnpm, Monorepo, 构建工具, HMR, SSR构建, Rolldown'
 
 # Vite + pnpm + Svelte 构建集成
 
-> 最后更新: 2026-05-02 | Vite 6.3.x / 8 Preview | pnpm 10.x | SvelteKit 2.53.x
+> 最后更新: 2026-05-02 | Vite 6.3.x / 8 Preview | pnpm 10.x | SvelteKit 2.59.x
 
 ---
 
@@ -66,7 +66,7 @@ Vite 8 构建管线
 
 对 SvelteKit 的影响：
 
-- **SvelteKit 2.53.x** 已实验性支持 `builder.rolldown`，预计 2.60 默认启用
+- **SvelteKit 2.59.x** 已实验性支持 `builder.rolldown`，预计 2.60 默认启用
 - `.svelte` 文件的 AST 解析将由 Rolldown 的 Oxc 直接处理，跳过二次 parse
 - SSR 构建将大幅加速，对边缘部署（Cloudflare/Netlify Edge）尤为关键
 
@@ -418,6 +418,20 @@ export default defineConfig({
 
 > 来源: [Vite Plugin API](https://vitejs.dev/guide/api-plugin.html) | 2026-04
 
+> 下图展示了 Vite 插件在构建过程中的标准钩子执行顺序，以及 HMR 热更新时的特殊处理路径。
+
+```mermaid
+flowchart LR
+    A[config] --> B[configResolved]
+    B --> C[buildStart]
+    C --> D[transform]
+    D --> E[buildEnd]
+    E --> F[writeBundle]
+    D --> |HMR| G[handleHotUpdate]
+```
+
+**插件钩子解读**：Vite 插件的生命周期分为**配置阶段**（`config`/`configResolved`）、**构建阶段**（`buildStart`/`transform`/`buildEnd`/`writeBundle`）和**开发阶段**（`handleHotUpdate`）。其中 `transform` 是最常用的钩子，负责将 `.svelte` 源码编译为 JavaScript；`handleHotUpdate` 仅在开发模式下触发，使 Svelte 组件能够实现细粒度的热替换而无需刷新页面。理解这一执行顺序对于开发自定义插件和调试构建问题至关重要。
+
 ## SSR 构建流程详解
 
 ### SvelteKit SSR 架构
@@ -729,12 +743,12 @@ packages:
   - 'tooling/*'
 
 catalog:
-  svelte: ^5.53.0
+  svelte: ^5.55.0
   vite: ^6.3.0
   typescript: ^5.8.0
 
   # 开发依赖
-  '@sveltejs/kit': ^2.53.0
+  '@sveltejs/kit': ^2.59.0
   '@sveltejs/vite-plugin-svelte': ^5.0.0
 ```
 
@@ -1188,7 +1202,7 @@ Rolldown 内部管线
 - [ ] 基准测试：记录迁移前后的 `pnpm build` 耗时
 ```
 
-### 实验性启用 Rolldown（SvelteKit 2.53.x）
+### 实验性启用 Rolldown（SvelteKit 2.59.x）
 
 ```ts
 // svelte.config.js
@@ -1218,6 +1232,16 @@ DEBUG=rolldown pnpm build
 | 2026-Q3 | Vite 8 Stable，SvelteKit 2.60 默认启用（预计）|
 
 > 来源: [Vite 路线图](<https://github.com/vitejs/vite/discussions/171> July 修正: 使用公开信息), [Rolldown 仓库](https://github.com/rolldown/rolldown) | 2026-04-30
+
+## 总结
+
+- **Vite 驱动开发**：利用原生 ESM 和按需编译实现毫秒级 HMR，大幅提升 Svelte 开发体验。
+- **pnpm Workspace**：通过 `pnpm-workspace.yaml` 和共享构建配置管理 monorepo，实现依赖去重和原子安装。
+- **Svelte 插件优化**：合理配置 `vite-plugin-svelte` 的编译选项、依赖预构建和 Rollup 手动分块。
+- **未来演进**：Rolldown 作为基于 Rust 的打包器，将在 Vite 8 中提供更快的生产构建速度。
+- **实践建议**：为 monorepo 包启用 `svelte` 导出条件，使用 `optimizeDeps` 预构建常用库以减少冷启动。
+
+> 💡 **相关阅读**: [SvelteKit 全栈框架](03-sveltekit-fullstack) · [生产实践指南](08-production-practices)
 
 ---
 

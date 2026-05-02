@@ -1439,6 +1439,16 @@ flowchart LR
 
 ---
 
+## 参考资源
+
+- 📘 [SvelteKit 官方文档](https://kit.svelte.dev/docs/introduction)
+- 🏗️ [Svelte 官方示例仓库](https://github.com/sveltejs/examples)
+- 🌐 [State of JS 调查报告](https://stateofjs.com/) — Svelte 社区趋势数据
+- 📦 [Svelte Society 组件库目录](https://sveltesociety.dev/components)
+- 💼 [Svelte 企业级案例集](https://sveltesociety.dev/showcase)
+
 > **最后更新**: 2026-05-02
 >
 > 本指南基于 Svelte 5.0+ 和 SvelteKit 2.0+ 的技术现状编写。Svelte 生态发展迅速，部分评估（如库支持度、工具链成熟度）可能随时间改善。建议在做最终决策前，针对具体项目需求进行为期 1-2 周的技术原型验证（Proof of Concept）。
+
+> 💡 **相关阅读**: [框架对比矩阵](10-framework-comparison) · [渐进式学习阶梯](16-learning-ladder)

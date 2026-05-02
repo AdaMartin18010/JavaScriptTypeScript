@@ -8,6 +8,21 @@ keywords: 'shadcn-svelte, Superforms, Lucia Auth, Drizzle, 动画, MCP, UI组件
 
 > 最后更新: 2026-05-02 | 覆盖: UI 库、表单、认证、ORM、AI 工具、动画、图表、状态管理
 
+> 下图展示了 Svelte 生态中常见工具选型的决策树，帮助开发者根据项目需求快速定位合适的技术栈。
+
+```mermaid
+flowchart TD
+    A[项目需求] --> B{表单复杂?}
+    B -->|是| C[Superforms + Zod]
+    B -->|否| D{ORM需要?}
+    D -->|是| E[Drizzle ORM]
+    D -->|否| F{CSS方案?}
+    F -->|Utility| G[Tailwind]
+    F -->|Scoped| H[Svelte CSS]
+```
+
+**工具选型解读**：Svelte 生态的工具链选择遵循"按需决策"原则。对于复杂表单场景，Superforms 配合 Zod 提供了类型安全的服务端验证和客户端渐进式增强；需要数据库访问时，Drizzle ORM 以其轻量和类型安全成为首选；在样式方案上，Tailwind CSS 适合快速构建统一设计系统，而 Svelte 的原生 Scoped CSS 则更适合组件级样式隔离。这一决策树覆盖了大多数项目的核心依赖选择。
+
 ---
 
 ## UI 组件库
@@ -1803,6 +1818,24 @@ export const globalCounter = createCounter();
 | **Zustand** | ~51k | v5.x | 活跃 | MIT | 轻量全局状态，跨框架友好 |
 
 > 数据来源: GitHub Stars / npm registry 2026-05-02 | 维护状态基于最近 3 个月提交频率和发布记录
+
+## 总结
+
+- Svelte 5 Runes 和 `.svelte.ts` 模块应作为纯 Svelte 项目的首选状态管理方案
+- shadcn-svelte、Skeleton UI、Melt UI 构成 Svelte 组件生态的三大支柱
+- Superforms 和 Drizzle ORM 是 SvelteKit 全栈开发的最佳搭档
+- 动画方面优先选择 Motion One 和 GSAP，图表可视化推荐 LayerChart
+- 仅在跨框架共享、复杂异步流或大规模全局状态等特定场景下引入外部库
+
+> 💡 **相关阅读**: [应用场景决策](15-application-scenarios) · [生产实践指南](08-production-practices)
+
+## 参考资源
+
+- 🌐 [Svelte 官方文档](https://svelte.dev/docs) — 最权威的 Svelte 5 和 Runes 使用指南
+- 🛠️ [shadcn-svelte](https://shadcn-svelte.com/) — 拷贝式 UI 组件库，与 shadcn/ui 同步
+- 📦 [SvelteKit 官方文档](https://kit.svelte.dev/docs) — 全栈框架路由、表单、服务端渲染指南
+- 🔧 [Svelte DevTools](https://github.com/sveltejs/svelte-devtools) — 浏览器调试扩展，组件树和状态检查
+- 💬 [Svelte Discord](https://svelte.dev/chat) — 官方社区，获取实时帮助和生态动态
 
 ---
 

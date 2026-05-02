@@ -122,6 +122,7 @@ description: "Awesome JS/TS Ecosystem 代码实验室: 代码实验室首页"
 - [分布式与企业 (59, 61-75)](./distributed-enterprise) — 16 个模块，86 实现文件，82 测试文件
 - [理论深度 (40-41, 77-81)](./theoretical-depth) — 7 个模块，59 实现文件，56 测试文件
 - [实验室专题 (90-96)](./specialized-labs) — 7 个模块，32 实现文件，7 测试文件
+- [Svelte Signals 专题](./svelte-signals-lab) — 3 个完整项目，覆盖 Runes、SvelteKit、数据可视化
 
 ---
 

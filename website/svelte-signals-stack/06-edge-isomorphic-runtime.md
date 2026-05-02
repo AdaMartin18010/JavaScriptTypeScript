@@ -336,6 +336,20 @@ export const load = async () => {
 
 > 📚 参考: [Netlify Edge Functions 文档](https://docs.netlify.com/edge-functions/overview/) (2026-03)
 
+> 下图展示了 SvelteKit 应用在 Edge 环境下的部署架构，展示了 CDN Edge 与传统 Node.js Server 两种路径如何汇聚到同构运行时 API。
+
+```mermaid
+flowchart TD
+    A[Client请求] --> B{CDN Edge?}
+    B -->|是| C[Cloudflare Workers]
+    B -->|否| D[Node.js Server]
+    C --> E[同构运行时API]
+    D --> E
+    E --> F[数据库/存储]
+```
+
+**Edge 部署架构解读**：SvelteKit 的适配器架构实现了"一次编写，多处部署"的目标。当请求命中 CDN Edge 节点时，由 Cloudflare Workers 等边缘函数处理；否则回退到传统 Node.js 服务器。两种路径最终都通过同构运行时 API（`+page.server.ts` / `+server.ts`）访问数据库和存储。这种分层设计让开发者无需关心底层部署平台差异，同时能根据延迟和成本需求灵活选择部署策略。
+
 ---
 
 ## Node.js 适配器生产配置
@@ -994,6 +1008,16 @@ export const handle: Handle = async ({ event, resolve }) => {
   return response;
 };
 ```
+
+## 总结
+
+- **Edge 运行时特性**：基于 V8 Isolates 的冷启动低于 1ms，适合低延迟、高并发的无服务器场景。
+- **WinterCG 标准**：遵循统一的 Web 标准 API（fetch、Request、Response），实现跨平台的同构代码。
+- **部署适配策略**：根据 Node API 需求、内存/CPU 限制和 WebSocket 支持选择合适的适配器与平台。
+- **性能优化**：利用 `cache-control`、`stale-while-revalidate` 和静态资源长期缓存最大化边缘性能。
+- **实践建议**：优先选择兼容 WinterCG 的 Serverless 数据库（如 Neon、Turso），并保持业务逻辑与平台无关。
+
+> 💡 **相关阅读**: [SvelteKit 全栈框架](03-sveltekit-fullstack) · [SSR 与 Hydration 深度原理](18-ssr-hydration-internals)
 
 ---
 

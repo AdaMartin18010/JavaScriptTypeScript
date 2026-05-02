@@ -40,8 +40,12 @@ export default withMermaid(defineConfig({
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:locale', content: 'zh_CN' }],
     ['meta', { property: 'og:site_name', content: 'Awesome JS/TS Ecosystem' }],
+    ['meta', { property: 'og:title', content: 'Awesome JS/TS' }],
+    ['meta', { property: 'og:description', content: '精心策划的 JavaScript/TypeScript 生态系统资源列表' }],
     ['meta', { property: 'og:image', content: '/og-image.png' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:title', content: 'Awesome JS/TS' }],
+    ['meta', { name: 'twitter:description', content: '精心策划的 JavaScript/TypeScript 生态系统资源列表' }],
     ['meta', { name: 'twitter:image', content: '/og-image.png' }],
   ],
 
@@ -186,7 +190,15 @@ export default withMermaid(defineConfig({
 
   vite: {
     build: {
-      chunkSizeWarningLimit: 1500
+      chunkSizeWarningLimit: 1600,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'mermaid-vendor': ['vitepress-plugin-mermaid'],
+            'vue-vendor': ['vue'],
+          }
+        }
+      }
     }
   },
 

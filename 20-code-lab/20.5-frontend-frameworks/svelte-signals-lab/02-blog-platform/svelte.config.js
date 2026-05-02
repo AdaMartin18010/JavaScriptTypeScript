@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-auto';
+import adapter from '@sveltejs/adapter-node';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -7,12 +7,7 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
-		// adapter-auto 会根据部署环境自动选择适配器：
-		// - Vercel → adapter-vercel
-		// - Netlify → adapter-netlify
-		// - Cloudflare Pages → adapter-cloudflare
-		// - 无平台 → adapter-static（prerender 模式）
-		// 生产环境如需独立 Node 服务器，可替换为 adapter-node
+		// 使用 adapter-node 以支持 Docker 容器内 Node 服务器运行
 		adapter: adapter(),
 
 		// 别名配置（$lib 已内置，无需额外声明）

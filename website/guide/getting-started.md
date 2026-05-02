@@ -28,7 +28,7 @@ description: 'Awesome JS/TS Ecosystem 快速开始指南，了解站点结构、
 
 ```
 1. 语言核心 → TypeScript 语言全景 / TS 高级模式
-2. 前端框架 → React / Vue / Svelte 选型
+2. 前端框架 → React / Vue / [Svelte 5 Signals](/svelte-signals-stack/) 选型
 3. 构建工具 → Vite / Rspack / Webpack 对比
 4. 后端开发 → API 设计 / 后端框架 / 数据库
 5. 部署运维 → CI/CD / 部署平台 / 可观测性

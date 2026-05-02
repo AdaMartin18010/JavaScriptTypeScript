@@ -131,6 +131,7 @@ description: JavaScript/TypeScript 生态系统技术分类总导航，覆盖语
 | **React 生态** | 前端框架, UI 组件库, 状态管理, 路由, SSR 元框架 |
 | **Vue 生态** | 前端框架, UI 组件库, 状态管理, 路由, SSR 元框架 |
 | **Node.js 后端** | 后端框架, 数据库, ORM, API 开发, 测试 |
+| **Svelte 生态** | 前端框架, SSR 元框架, [Svelte 5 Signals 编译器生态](/svelte-signals-stack/) |
 | **Edge / Serverless** | 部署托管, Edge 平台, 后端框架 (Hono), 数据库 |
 
 ---
