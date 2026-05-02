@@ -148,9 +148,62 @@ add(1, 2); // 类型安全地调用 Wasm
 
 ---
 
-## 5. 总结与展望
+## 5. Svelte Signals 编译器生态的学术对齐
 
-### 5.1 2026 年关键趋势
+> **分析对象**：Svelte 5 Runes、Svelte 编译器、TC39 Signals 提案
+> **相关课程**：编译原理、形式化方法、类型理论、函数式编程
+
+### 5.1 编译器理论与形式化方法
+
+Svelte 5 的编译器实现是编译原理课程中经典概念在工业界的典型映射。其编译管线可对应到标准教材（如 Aho 的 *Compilers: Principles, Techniques, and Tools*）中的各阶段：
+
+| 编译阶段 | Svelte 5 实现 | 学术概念 |
+|---------|--------------|---------|
+| **词法/语法分析** | Acorn + 自定义 Parser | Context-Free Grammar, LR/LALR 分析 |
+| **语义分析** | Runes 合法性检查、作用域解析 | 属性文法 (Attribute Grammar)、符号表 |
+| **中间表示** | AST → IR（模板与逻辑分离） | SSA 形式、控制流图 (CFG) |
+| **代码生成** | 基于模板的指令生成与 DOM 操作合成 | 语法制导翻译、Partial Evaluation |
+
+**Runes 的形式化语义**：Svelte 5 引入的 `$state`、`$derived`、`$effect` 等 Runes 可视为一种简化的公理语义系统。其状态变更传播机制可对应形式化方法课程中的 **Hoare 三元组**与 **分离逻辑 (Separation Logic)** 概念——即如何在局部状态变更下维持全局不变量。编译器在编译时通过静态分析确定依赖图，本质上是对程序状态转移关系的近似求解，与 **抽象解释 (Abstract Interpretation)** 理论同构。
+
+### 5.2 响应式编程理论
+
+Signal-based 响应式并非凭空出现，其学术根源可追溯至函数式反应式编程 (Functional Reactive Programming, FRP)。Conal Elliott 和 Paul Hudak 于 1997 年在 *ICFP* 提出的 FRP 框架将时间显式建模为连续流，而现代 Signal 模型可视为其离散化、命令式的工业变体：
+
+- **Elm 架构**（Evan Czaplicki, 2013）：Model-Update-View 循环与 Signal 的对应关系，为前端响应式编程奠定了类型安全的理论基础。
+- **Reactive Streams 规范**（ReactiveX, 2014）：引入背压 (Backpressure) 与异步流的形式化契约，Svelte 的 `$effect` 调度器可视为该规范在同步/异步混合场景下的编译期特化实现。
+- **细粒度响应式**：Svelte 编译器将组件级响应式细化为语句级依赖追踪，对应于 FRP 中的 **行为 (Behavior)** 与 **事件 (Event)** 的自动区分；通过在编译期静态构建依赖图，避免了运行时高阶流的内存与调度开销。
+
+### 5.3 TC39 Signals 提案
+
+2024–2025 年，TC39 将 **Signals** 推进至 Stage 1，标志着响应式原语首次进入 JavaScript 语言标准化的学术视野：
+
+**学术意义**：
+
+- **语言设计的经验验证**：Signals 从 Angular、Solid、Vue、Svelte 等多个框架的独立实现中收敛为统一原语，体现了 *"实践中检验理论，理论中提炼标准"* 的语言演化范式。
+- **标准化研究的案例**：该提案涉及可观察状态 (Observable State)、依赖追踪 (Dependency Tracking) 和调度语义 (Scheduling Semantics) 的形式化定义，为编程语言标准化研究提供了前端领域的鲜活案例。
+
+**与浏览器引擎研究的关联**：
+
+- 若 Signals 进入 Stage 3+，浏览器引擎需在 JavaScript VM 中实现原生响应式调度，这将直接关联到事件循环 (Event Loop) 的形式化模型研究。
+- 与 **WebIDL** 和 **HTML 规范**中的任务队列 (Task Queue) 和微任务 (Microtask) 机制产生交叉，推动浏览器实现层面的形式化验证工作。
+
+### 5.4 类型系统研究
+
+Svelte 5 与 TypeScript 的深度整合为类型理论教学提供了渐进式类型系统 (Gradual Typing) 的工业样本：
+
+| 类型特性 | Svelte 5 + TS 表现 | 类型理论课程映射 |
+|---------|-------------------|----------------|
+| **组件 Props 推断** | 基于泛型的 Props 解构与推断 | 子类型 (Subtyping)、结构类型 (Structural Typing) |
+| **Runes 类型流** | `$state<T>` 的状态类型标注 | 参数多态 (Parametric Polymorphism)、类型构造子 |
+| **模板类型检查** | Svelte 文件内的 TS 类型诊断 | 领域特定语言 (DSL) 的类型嵌入 |
+| **渐进式采用** | `svelte-check` 的严格度层级 | 一致性关系 (Consistency Relation)、`?` 类型 |
+
+Svelte 的编译器在将 `.svelte` 文件转译为 `.js/.ts` 时，实际上执行了一次 **类型保留转换 (Type-Preserving Translation)**。Runes 的类型标注虽然最终擦除 (Type Erasure)，但编译期依赖图的构建利用了类型信息来优化响应式粒度，这对应于类型理论中的 **类型导向优化 (Type-Directed Optimization)** 概念。
+
+## 6. 总结与展望
+
+### 6.1 2026 年关键趋势
 
 | 趋势 | 状态 | 对 JS/TS 影响 |
 |------|------|-------------|
@@ -159,7 +212,7 @@ add(1, 2); // 类型安全地调用 Wasm
 | **AI + 形式化** | 早期应用 | 代码生成质量提升 |
 | **Wasm Component** | 标准化中 | 跨语言互操作增强 |
 
-### 5.2 对本知识库的建议
+### 6.2 对本知识库的建议
 
 1. **tsgo 跟踪**：建立专门的 tsgo 监控页面
 2. **效应系统**：关注 Koka / Eff 的 JS 输出进展

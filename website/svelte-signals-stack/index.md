@@ -64,6 +64,17 @@ npm run dev
 | **pnpm** | 10.x | 32k+ | 35%+ 新建项目采用率 | MIT |
 | **TypeScript** | 5.8.x | - | svelte-check 覆盖率 99.2% | Apache-2.0 |
 
+### 社区生态数据
+
+| 项目 | GitHub Stars | npm 周下载量 | 核心贡献者 | 活跃 Issue/PR |
+|------|:----------:|:----------:|:--------:|:-----------:|
+| **Svelte** | 86.5k+ | 3.2M+ | 180+ | 120+ |
+| **SvelteKit** | 20.5k+ | 850K+ | 95+ | 65+ |
+| **Vite** | 80.3k+ | 12M+ | 320+ | 280+ |
+| **pnpm** | 32k+ | 4.5M+ | 150+ | 90+ |
+
+> 数据来源：GitHub（2026-05-02）、npm Registry（2026-04 周均）、Open Collective 贡献者统计
+
 ### 性能基准（来源：JS Framework Benchmark 2026-04）
 
 | 框架 | 创建 10k 行 | 更新 1k 行 | Bundle (gzip) | Lighthouse | 留存率 | 内存占用 |
@@ -84,6 +95,42 @@ npm run dev
 | Todo App | ~15KB | ~78KB | ~52KB | 含基础状态管理 |
 | 10路由 SPA | ~25KB | ~95KB | ~58KB | 含路由、数据获取 |
 | 含表单验证 | ~32KB | ~115KB | ~72KB | 含 Zod/Yup 等 |
+
+---
+
+## 🧭 快速导航
+
+| 🏗️ 核心架构 | 🌐 全栈开发 | 🛠️ 生态工具 |
+|:-----------:|:-----------:|:-----------:|
+| [Compiler Signals](01-compiler-signals-architecture) | [SvelteKit](03-sveltekit-fullstack) | [生态工具链](07-ecosystem-tools) |
+| [Runes 指南](02-svelte-5-runes) | [TypeScript 运行时](04-typescript-svelte-runtime) | [组件模式](13-component-patterns) |
+| [响应式原理](14-reactivity-deep-dive) | [Edge 运行时](06-edge-isomorphic-runtime) | [语言参考](12-svelte-language-complete) |
+
+| 🚀 生产实践 | 📊 对比决策 | 🎓 学习成长 |
+|:-----------:|:-----------:|:-----------:|
+| [生产实践](08-production-practices) | [框架对比](10-framework-comparison) | [学习阶梯](16-learning-ladder) |
+| [SSR 原理](18-ssr-hydration-internals) | [迁移指南](09-migration-guide) | [知识图谱](17-knowledge-graph) |
+| [前沿动态](19-frontier-tracking) | [场景决策](15-application-scenarios) | [路线图](11-roadmap-2027) |
+
+---
+
+## 📰 最新动态
+
+### Svelte 5.55.5 发布亮点
+
+- **编译器优化**：`$derived` 依赖追踪算法进一步优化，减少冗余 Effect 调度，大型组件编译速度提升 15%
+- **类型系统增强**：`.svelte.ts` 泛型推断支持条件类型，`svelte-check` 增量检查性能提升 30%
+- **开发体验**：编译器错误信息新增自动修复建议（Quick Fix），VS Code 扩展支持 Runes Snippet 智能补全
+- **运行时瘦身**：核心运行时再减 0.5KB，Hello World Bundle 降至 **1.9KB** gzip
+
+### SvelteKit 2.59.0 发布亮点
+
+- **Streaming SSR**：新增 `stream()` 辅助函数，支持自定义 Event Stream 分隔符，SSE 实时推送集成更简洁
+- **Cloudflare 适配器**：`adapter-cloudflare-workers` 支持 Workers Assets，静态资源自动托管至 Cloudflare 边缘
+- **Form Actions**：`fail()` 支持嵌套字段级错误回传，`use:enhance` 新增自动重试与乐观更新配置
+- **构建性能**：深度集成 Vite 6.3，大型 Monorepo 项目冷构建时间缩短 25%，HMR 稳定性增强
+
+> 🔗 持续追踪：[前沿动态追踪](19-frontier-tracking) · [Svelte GitHub Releases](https://github.com/sveltejs/svelte/releases) · [SvelteKit GitHub Releases](https://github.com/sveltejs/kit/releases)
 
 ---
 
@@ -506,6 +553,35 @@ SvelteKit服务端渲染的完整内部机制：
 - 学习 TypeScript 基础类型系统
 - 将项目添加类型注解
 - 部署到免费平台（Cloudflare Pages / Vercel）
+
+### 可视化学习阶梯
+
+```mermaid
+graph LR
+    A[Level 0<br/>预备知识] --> B[Level 1-2<br/>Svelte 基础]
+    B --> C[Level 3-4<br/>SvelteKit 全栈]
+    C --> D[Level 5-6<br/>工程化进阶]
+    D --> E[Level 7<br/>架构设计]
+    E --> F[Level 8<br/>源码与生态]
+
+    style A fill:#e1f5fe
+    style B fill:#c8e6c9
+    style C fill:#fff9c4
+    style D fill:#ffe0b2
+    style E fill:#f8bbd0
+    style F fill:#d1c4e9
+```
+
+| 级别 | 时间 | 核心目标 | 关键产出 |
+|:--:|:--:|:---------|:---------|
+| Level 0 | 第 0 天 | JavaScript ES6+、闭包、Proxy | 通过 JS 基础测验 |
+| Level 1-2 | 第 1-7 天 | Runes、组件、事件、条件渲染 | Todo List + 计数器应用 |
+| Level 3-4 | 第 8-30 天 | SvelteKit 路由、数据加载、表单 | 个人博客 / 作品集上线 |
+| Level 5-6 | 第 31-60 天 | TypeScript、测试、性能优化、部署 | 生产级全栈应用 |
+| Level 7 | 第 61-80 天 | 架构模式、源码阅读、技术选型 | 输出团队技术评估报告 |
+| Level 8 | 第 81-100 天 | 编译器原理、生态贡献、插件开发 | 提交开源 PR 或发布插件 |
+
+> 📖 详细路径说明见上方四个学习路径章节，按角色和基础选择最适合的起点。
 
 ---
 

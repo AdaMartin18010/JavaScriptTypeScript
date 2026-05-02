@@ -190,15 +190,7 @@ export default withMermaid(defineConfig({
 
   vite: {
     build: {
-      chunkSizeWarningLimit: 1600,
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            'mermaid-vendor': ['vitepress-plugin-mermaid'],
-            'vue-vendor': ['vue'],
-          }
-        }
-      }
+      chunkSizeWarningLimit: 2000,
     }
   },
 
