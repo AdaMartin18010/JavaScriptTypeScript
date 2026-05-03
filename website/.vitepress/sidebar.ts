@@ -64,8 +64,10 @@ export const sidebar: DefaultTheme.Sidebar = {
   // 学习路径部分
   '/learning-paths/': [
     {
-      text: '学习路径',
+      text: '📖 学习路径',
+      collapsed: false,
       items: [
+        { text: '学习路径首页', link: '/learning-paths/' },
         { text: '初学者路径', link: '/learning-paths/beginners-path' },
         { text: '进阶者路径', link: '/learning-paths/intermediate-path' },
         { text: '高级路径', link: '/learning-paths/advanced-path' },
@@ -258,6 +260,7 @@ export const sidebar: DefaultTheme.Sidebar = {
       text: '🎨 设计模式',
       collapsed: false,
       items: [
+        { text: '设计模式首页', link: '/patterns/' },
         { text: 'React 设计模式', link: '/patterns/react-patterns' },
         { text: 'Vue 3 设计模式', link: '/patterns/vue-patterns' },
         { text: 'Node.js 设计模式', link: '/patterns/nodejs-patterns' },
@@ -272,6 +275,7 @@ export const sidebar: DefaultTheme.Sidebar = {
       text: '📱 跨平台开发',
       collapsed: false,
       items: [
+        { text: '跨平台开发首页', link: '/platforms/' },
         { text: '数据可视化', link: '/platforms/data-visualization' },
         { text: '桌面应用开发', link: '/platforms/desktop-development' },
         { text: '移动端开发', link: '/platforms/mobile-development' },
