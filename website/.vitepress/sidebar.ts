@@ -102,6 +102,10 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '🔐 认证授权实验室', link: '/code-lab/lab-03-auth' },
         { text: '🔄 控制流实验室', link: '/code-lab/lab-03-control-flow' },
         { text: '🏗️ Mini TS编译器实验室', link: '/code-lab/lab-03-mini-typescript' },
+        { text: '⚡ WASM 编译实验', link: '/code-lab/lab-wasm-rust-compilation' },
+        { text: '📊 GraphQL 联邦实验', link: '/code-lab/lab-graphql-federation' },
+        { text: '🤖 AI ONNX 推理实验', link: '/code-lab/lab-ai-onnx-inference' },
+        { text: '🦀 Rust NAPI 模块实验', link: '/code-lab/lab-rust-napi-module' },
       ]
     }
   ],

@@ -33,11 +33,6 @@ export default withMermaid(defineConfig({
     /^\.\.\/..\/50-examples\//,
     /^\.\.\/..\/70-theoretical-foundations\//,
     /^\.\.\/..\/30-knowledge-base\//,
-    // 新专题链接保护（建设中，完成后移除对应规则）
-    /\/testing-engineering\//,
-    /\/performance-engineering\//,
-    /\/database-orm\//,
-    /\/desktop-development\//,
     // 新专题链接保护（已完成创建，后续可移除）
     // TypeScript类型系统 / 模块系统 / 移动端 / AI编码 / 对象模型
     // 波次2：交叉引用网络（指向项目根目录知识库）
