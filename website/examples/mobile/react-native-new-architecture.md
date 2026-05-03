@@ -380,7 +380,7 @@ namespace facebook::react {
 class MyComponentProps final : public ViewProps {
  public:
   MyComponentProps() = default;
-  
+
   MyComponentProps(
     const PropsParserContext& context,
     const MyComponentProps& sourceProps,

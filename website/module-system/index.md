@@ -207,6 +207,11 @@ console.log(math.PI);          // 3.14159
 
 ---
 
+## 延伸阅读
+
+- **[模块系统深度研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/MODULE_SYSTEM_THEORY.md)** — ESM/CJS互操作、循环依赖解析、Tree Shaking与代码分割的形式化语义，为专题中的模块加载机制、打包优化与Monorepo管理提供理论支撑。
+- **[工具链与构建理论研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/TOOLCHAIN_BUILD_THEORY.md)** — 编译管线、依赖图构建与增量编译的形式化分析，直接支撑模块系统在现代构建工具中的性能优化策略。
+
 ## 📚 参考资源
 
 - [ECMAScript Modules Specification](https://tc39.es/ecma262/#sec-modules)

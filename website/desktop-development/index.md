@@ -290,6 +290,11 @@ graph TB
 
 ---
 
+## 延伸阅读
+
+- **[桌面开发技术研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/DESKTOP_DEVELOPMENT_THEORY.md)** — 多进程架构、原生API桥接、打包分发与性能优化的形式化分析，为专题中的 [01 桌面开发基础](./01-desktop-fundamentals.md)、[02 Electron vs Tauri](./02-electron-tauri-comparison.md) 和 [07 桌面性能](./07-desktop-performance.md) 提供理论纵深。
+- **[安全模型分析](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/SECURITY_MODEL_ANALYSIS.md)** — 纵深防御、沙箱隔离与供应链安全的形式化方法论，直接支撑 [04 桌面安全](./04-desktop-security.md) 的实践指导。
+
 ## 快速开始
 
 如果你是第一次访问本专题，建议按以下顺序开始：

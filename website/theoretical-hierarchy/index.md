@@ -619,4 +619,12 @@ graph TB
 
 ---
 
+## 延伸阅读
+
+- **[范畴论与计算范式](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/CATEGORY_THEORY_COMPUTATIONAL_PARADIGMS.md)** — 从范畴论视角分析编程语言构造，涵盖类型系统、运行时语义、控制流与并发模型，为 L0→L1→L2 的层次跃迁提供数学基础。
+- **[前端框架理论深度研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/FRONTEND_FRAMEWORK_THEORY.md)** — 组件代数、虚拟DOM的diff复杂性到细粒度响应式DAG模型的完整形式化推导，支撑 L3→L4 的范式到框架映射。
+- **[认知交互模型研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/COGNITIVE_INTERACTION_MODELS.md)** — 开发者工作记忆、心智模型与概念迁移的形式化分析，为 L2→L6 的语言到UI横向贯穿提供认知科学基础。
+
+---
+
 *最后更新: 2026-05-01 | 分类: theoretical-foundations | 层次: L0-L6 总论*

@@ -360,6 +360,11 @@ mindmap
 
 ---
 
+## 延伸阅读
+
+- **[AI 原生开发理论研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/AI_NATIVE_DEVELOPMENT_THEORY.md)** — LLM辅助编程、代码生成模型与智能IDE的形式化分析，为专题中的 [Cursor深度工作流](./01-cursor-workflow.md)、[Claude Code工作流](./02-claude-code.md) 和 [Prompt工程](./04-prompt-engineering-for-code.md) 提供认知科学基础。
+- **[MCP 协议深度解析](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/MCP_PROTOCOL_ANALYSIS.md)** — Model Context Protocol的架构设计、工具发现与上下文管理的形式化规范，直接支撑 [08 AI原生开发](./08-ai-native-development.md) 的实现指导。
+
 ## 总结
 
 - 本专题覆盖2026年AI辅助编码的完整工作流，从工具使用到方法论，从Prompt工程到AI原生开发范式

@@ -872,6 +872,11 @@ my-app/
 
 > 💡 **快速入口**: [Compiler Signals 架构](01-compiler-signals-architecture) · [Svelte 5 Runes 深度指南](02-svelte-5-runes) · [SvelteKit 全栈框架](03-sveltekit-fullstack) · [渐进式学习阶梯](16-learning-ladder)
 
+## 延伸阅读
+
+- **[响应式系统理论研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/REACTIVE_SYSTEMS_THEORY.md)** — 信号（Signals）、依赖追踪、细粒度更新与编译时优化的形式化推导，为专题中的 [01 编译器与信号架构](./01-compiler-signals-architecture.md)、[02 Svelte 5 Runes](./02-svelte-5-runes.md) 和 [14 响应式深度解析](./14-reactivity-deep-dive.md) 提供数学基础。
+- **[前端框架理论深度研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/FRONTEND_FRAMEWORK_THEORY.md)** — 组件模型、渲染管线、虚拟DOM与直接DOM操作的形式化对比，直接支撑 [10 框架对比](./10-framework-comparison.md) 和 [15 应用场景分析](./15-application-scenarios.md) 的架构论证。
+
 ## 参考资源
 
 - 📘 [Svelte 官方文档](https://svelte.dev/docs)

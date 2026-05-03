@@ -352,6 +352,11 @@ graph TB
 
 ---
 
+## 延伸阅读
+
+- **[数据库与ORM深度研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/DATABASE_ORM_THEORY.md)** — 关系模型、SQL语义、ORM设计模式与查询优化的形式化分析，为专题中的 [01 数据库基础理论](./01-database-fundamentals.md)、[02 ORM深度解析](./02-orm-deep-dive.md) 和 [03 查询优化](./03-query-optimization.md) 提供理论纵深。
+- **[数据管理架构研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/DATA_MANAGEMENT_ARCHITECTURE.md)** — 数据一致性模型、事务隔离级别、CAP定理与分布式数据库的形式化推导，直接支撑 [05 事务与并发](./05-transactions-concurrency.md) 和 [11 数据库设计模式](./11-database-design-patterns.md) 的架构论证。
+
 ## 快速开始
 
 如果你是第一次访问本专题，建议按以下顺序开始：

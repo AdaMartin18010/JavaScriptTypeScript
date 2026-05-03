@@ -721,6 +721,7 @@ type R = IsNever<never>;
 因为 `never` 被视为空联合类型。分布式条件类型作用于空联合时，对空集合进行分配，结果仍然是空联合，即 `never`。
 
 如果需要正确判断 never，应使用非分布式版本：
+
 ```ts
 type IsNeverFixed<T> = [T] extends [never] ? true : false;
 type R2 = IsNeverFixed<never>; // ✅ true
@@ -753,6 +754,7 @@ type R = OmitByValue<User, string>;
 ```
 
 关键点：
+
 1. 使用 `as` 进行键重映射（TypeScript 4.1+）
 2. 条件类型 `T[K] extends V ? never : K` 过滤值类型为 V 的键
 3. `never` 作为键名会被过滤掉

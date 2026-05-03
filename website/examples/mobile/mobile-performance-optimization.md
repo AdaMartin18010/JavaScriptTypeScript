@@ -110,7 +110,7 @@ export function RootNavigator() &#123;
     <Stack.Navigator>
       <Stack.Screen name="Home" component=&#123;HomeScreen&#125; />
       <Stack.Screen name="Explore" component=&#123;ExploreScreen&#125; />
-      
+
       &#123;/* 懒加载页面 */&#125;
       <Stack.Screen name="Profile">
         &#123;(props) => (
@@ -326,7 +326,7 @@ export const PostCard = React.memo(function PostCard(&#123;
       </View>
     </TouchableOpacity>
   );
-&#125;, 
+&#125;,
 (prevProps, nextProps) => &#123;
   return prevProps.post.id === nextProps.post.id &&
          prevProps.post.updatedAt === nextProps.post.updatedAt;
@@ -362,14 +362,14 @@ const AuthActionsContext = createContext<AuthActions | null>(null);
 
 export function AuthProvider(&#123; children &#125;: &#123; children: React.ReactNode &#125;) &#123;
   const [state, dispatch] = useReducer(authReducer, initialState);
-  
+
   const actions = useMemo(() => (&#123;
     login: (credentials: LoginCredentials) => &#123;
       dispatch(&#123; type: 'LOGIN_START' &#125;);
     &#125;,
     logout: () => dispatch(&#123; type: 'LOGOUT' &#125;),
   &#125;), []);
-  
+
   return (
     <AuthStateContext.Provider value=&#123;state&#125;>
       <AuthActionsContext.Provider value=&#123;actions&#125;>

@@ -208,5 +208,10 @@ export default withMermaid(defineConfig({
 
   sitemap: {
     hostname: 'https://awesome-jsts-ecosystem.vercel.app'
+  },
+
+  // 预加载策略：提升页面切换体验
+  router: {
+    prefetchLinks: true
   }
 }))

@@ -340,6 +340,11 @@ graph TB
 
 ---
 
+## 延伸阅读
+
+- **[性能工程深度研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/PERFORMANCE_ENGINEERING_THEORY.md)** — 渲染管线、JavaScript引擎优化、网络协议与缓存策略的形式化分析，为专题中的 [01 性能基础理论](./01-performance-fundamentals.md)、[02 渲染性能](./02-rendering-performance.md) 和 [10 JS引擎优化](./10-javascript-engine-optimization.md) 提供数学基础。
+- **[前端构建理论研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/FRONTEND_BUILD_THEORY.md)** — 打包算法、Tree Shaking、代码分割与资源优化的形式化收益评估，直接支撑 [03 打包优化](./03-bundle-optimization.md) 的决策框架。
+
 ## 快速开始
 
 如果你是第一次访问本专题，建议按以下顺序开始：

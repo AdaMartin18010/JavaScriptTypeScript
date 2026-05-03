@@ -271,4 +271,9 @@ VitePress 提供内置搜索功能，支持：
 
 > 💡 **提示**: 本站采用 VitePress 构建，所有内容以 Markdown 格式开源。点击页面底部的 "在 GitHub 上编辑此页" 即可直接参与改进。
 
+## 延伸阅读
+
+- **[生态系统全景研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/ECOSYSTEM_PANORAMA_ANALYSIS.md)** — JavaScript/TypeScript 生态系统的全景式分类分析，涵盖前端框架、后端平台、工具链、数据库与新兴技术趋势，为分类体系提供宏观视角。
+- **[技术趋势预测研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/TECHNOLOGY_TRENDS_FORECAST.md)** — 基于 GitHub Stars、npm 下载量与社区活跃度的量化趋势分析，支撑分类体系的前瞻性更新。
+
 最后更新: 2026-05-01 | 覆盖: 37 分类 | 对齐 2026 十大技术趋势 | 总计: 2,166 KB+ 结构化内容

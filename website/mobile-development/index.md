@@ -185,4 +185,9 @@ mobile-tauri-app/
 
 ---
 
+## 延伸阅读
+
+- **[跨平台移动开发理论研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/CROSS_PLATFORM_MOBILE_THEORY.md)** — 渲染管线、原生桥接与性能优化的形式化推导，为专题中的 [01 React Native新架构](./01-react-native-new-arch.md)、[03 Tauri v2移动端](./03-tauri-v2-mobile.md) 和 [05 性能优化](./05-performance-optimization.md) 提供数学基础。
+- **[前端框架理论深度研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/FRONTEND_FRAMEWORK_THEORY.md)** — 组件模型、响应式系统与渲染策略的形式化对比，直接支撑移动端框架选型的决策框架。
+
 > 📌 **下一步**：根据你的技术栈和性能需求，通过上方决策树确定方向，深入阅读对应章节。

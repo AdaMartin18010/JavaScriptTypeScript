@@ -289,6 +289,11 @@ graph BT
 
 ---
 
+## 延伸阅读
+
+- **[编程语言语义研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/PROGRAMMING_LANGUAGE_SEMANTICS.md)** — 操作语义、指称语义与公理语义的形式化对比，为专题中的形式化定义、推导规则与类型安全论证提供深层理论支撑。
+- **[类型系统深度研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/TYPE_SYSTEM_THEORY.md)** — 类型论基础、Hindley-Milner推断与依赖类型的形式化推导，直接支撑 [03 类型基础理论](./03-type-theory-fundamentals.md) 和 [13 渐进类型理论](./13-gradual-typing-theory.md) 的数学表述。
+
 ## 如何贡献
 
 本专题持续迭代。如果你发现：

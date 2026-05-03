@@ -394,6 +394,7 @@ type GetterReturns<T> = {
 ### 7.5.1 同态映射的定义
 
 满足以下条件的映射类型是同态的：
+
 - 形式为 `{ [P in keyof T]: ... }`（直接使用 `keyof T`）
 - 或者带有 `as` 子句但键仍基于 `keyof T`
 
@@ -836,6 +837,7 @@ interface Source {
 - `B<Source>` 由于使用了 `as` 子句变换键名，**不再是同态映射类型**，结果是 `{ _name: string }`，丢失了 `readonly` 和 `?` 修饰符。
 
 如果需要在键变换后保留修饰符，需要显式添加：
+
 ```ts
 type BFixed<T> = { [P in keyof T as `_${string & P}`]+?: T[P] };
 ```

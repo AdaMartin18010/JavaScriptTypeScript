@@ -341,15 +341,6 @@ export default function PostDetailScreen(): JSX.Element {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 24, fontWeight: '700', marginBottom: 12 },
-  body: { fontSize: 16, lineHeight: 24, color: '#333', marginBottom: 16 },
-  meta: { fontSize: 14, color: '#999' },
-  link: { color: '#007AFF', marginTop: 16 },
-});
 ```
 
 ### 多段动态路由与捕获所有
@@ -377,20 +368,6 @@ export default function DocsPage() {
   const { slug } = useLocalSearchParams<{ slug: string[] }>();
   const path = slug?.join('/') || '';
   return <Text>Documentation Path: {path}</Text>;
-}
-```
-
-```tsx
-// app/blog/[[...slug]].tsx
-import { useLocalSearchParams } from 'expo-router';
-
-export default function BlogPage() {
-  const { slug } = useLocalSearchParams<{ slug?: string[] }>();
-  return (
-    <View>
-      {slug ? <Text>Post: {slug.join('/')}</Text> : <Text>Blog Home</Text>}
-    </View>
-  );
 }
 ```
 
@@ -530,7 +507,7 @@ export const useAuth = () => useContext(AuthContext);
 ```tsx
 // app/(auth)/login.tsx
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '@stores/authStore';
 
@@ -554,29 +531,16 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>登录</Text>
-      <TextInput style={styles.input} placeholder="邮箱" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
-      <TextInput style={styles.input} placeholder="密码" value={password} onChangeText={setPassword} secureTextEntry />
-      <TouchableOpacity style={[styles.button, isLoading && styles.buttonDisabled]} onPress={handleLogin} disabled={isLoading}>
-        <Text style={styles.buttonText}>{isLoading ? '登录中...' : '登录'}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
-        <Text style={styles.link}>没有账号？立即注册</Text>
+    <View>
+      <Text>登录</Text>
+      <TextInput placeholder="邮箱" value={email} onChangeText={setEmail} />
+      <TextInput placeholder="密码" value={password} onChangeText={setPassword} secureTextEntry />
+      <TouchableOpacity onPress={handleLogin} disabled={isLoading}>
+        <Text>{isLoading ? '登录中...' : '登录'}</Text>
       </TouchableOpacity>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, justifyContent: 'center' },
-  title: { fontSize: 32, fontWeight: '700', marginBottom: 32 },
-  input: { height: 50, borderWidth: 1, borderColor: '#E5E5EA', borderRadius: 12, paddingHorizontal: 16, marginBottom: 16, fontSize: 16 },
-  button: { backgroundColor: '#007AFF', height: 50, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginTop: 8 },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  link: { color: '#007AFF', textAlign: 'center', marginTop: 16 },
-});
 ```
 
 ### 受保护的 API 路由
@@ -633,7 +597,7 @@ export default function AppLayout() {
 ```tsx
 // app/(app)/modal/sheet.tsx
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Dimensions } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
 
@@ -658,44 +622,24 @@ export default function BottomSheetModal() {
   }));
 
   return (
-    <View style={styles.overlay}>
-      <TouchableOpacity style={styles.backdrop} onPress={() => router.back()} />
+    <View>
+      <TouchableOpacity onPress={() => router.back()} />
       <GestureDetector gesture={gesture}>
-        <Animated.View style={[styles.sheet, animatedStyle]}>
-          <View style={styles.handle} />
-          <Text style={styles.title}>选项</Text>
-          <TouchableOpacity style={styles.option}><Text>分享</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.option}><Text>收藏</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.option}><Text style={{ color: '#FF3B30' }}>举报</Text></TouchableOpacity>
+        <Animated.View style={animatedStyle}>
+          <Text>选项</Text>
+          <TouchableOpacity><Text>分享</Text></TouchableOpacity>
+          <TouchableOpacity><Text>收藏</Text></TouchableOpacity>
+          <TouchableOpacity><Text>举报</Text></TouchableOpacity>
         </Animated.View>
       </GestureDetector>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  overlay: { flex: 1, justifyContent: 'flex-end' },
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
-  sheet: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingHorizontal: 16, paddingBottom: 32 },
-  handle: { width: 40, height: 4, backgroundColor: '#E5E5EA', borderRadius: 2, alignSelf: 'center', marginVertical: 12 },
-  title: { fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 16 },
-  option: { paddingVertical: 16, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#E5E5EA' },
-});
 ```
 
 ---
 
 ## Web 适配与 SSR
-
-### Expo Router Web 配置
-
-```javascript
-// metro.config.js
-const { getDefaultConfig } = require('expo/metro-config');
-const config = getDefaultConfig(__dirname);
-config.resolver.sourceExts = [...config.resolver.sourceExts, 'web.js', 'web.ts', 'web.tsx'];
-module.exports = config;
-```
 
 ### 响应式路由
 
@@ -821,21 +765,6 @@ module.exports = {
 };
 ```
 
-### 陷阱 6: 路由组导致路径混乱
-
-**现象**: `(app)` 和 `(auth)` 组之间的导航行为不符合预期。
-
-**解决方案**:
-
-```tsx
-router.replace('/(auth)/login');
-
-<Stack>
-  <Stack.Screen name="(app)" options={{ headerShown: false }} />
-  <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-</Stack>
-```
-
 ---
 
 ## 总结
@@ -849,7 +778,7 @@ Expo Router v3 通过文件系统路由、类型安全的导航 API 和原生深
 3. **布局复用**: `_layout.tsx` 实现嵌套导航结构
 4. **认证路由**: 结合 Zustand 实现受保护的导航流程
 5. **深度链接**: 统一的 URL 方案支持 Native 和 Web
-6. **Modal 支持**: 内置多种呈现方式 (modal, fullScreenModal, transparentModal)
+6. **Modal 支持**: 内置多种呈现方式
 
 ### 导航模式速查表
 

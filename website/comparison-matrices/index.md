@@ -294,4 +294,9 @@ description: "24 个技术选型对比矩阵，聚焦语义差异与工程实践
 
 ---
 
+## 延伸阅读
+
+- **[技术选型决策框架](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/TECHNOLOGY_SELECTION_FRAMEWORK.md)** — 多属性决策分析（MCDA）、层次分析法（AHP）与成本效益分析的形式化框架，为对比矩阵提供定量评估方法论。
+- **[工具链对比研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/TOOLCHAIN_COMPARISON_STUDY.md)** — 构建工具、测试框架、代码质量工具与部署平台的系统性对比分析，支撑对比矩阵的数据来源。
+
 最后更新: 2026-05-01 | 覆盖: 24 矩阵 | 总计: 400KB+ 对比内容 | 联动: 26 深度指南

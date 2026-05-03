@@ -42,6 +42,11 @@ mindmap
       Object.assign 陷阱
 ```
 
+## 延伸阅读
+
+- **[对象模型理论研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/OBJECT_MODEL_THEORY.md)** — 原型继承、属性描述符、Proxy元编程与内存布局的形式化语义，为专题中的 [01 对象基础](./01-object-fundamentals.md)、[02 原型链深度](./02-prototype-chain.md) 和 [03 Class vs 原型](./03-class-vs-prototype.md) 提供编译器视角的深度解析。
+- **[JavaScript 引擎原理](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/JS_ENGINE_PRINCIPLES.md)** — V8隐藏类、内联缓存与垃圾回收的形式化算法，直接支撑对象创建、属性访问与内存管理的性能优化策略。
+
 ## 学习路径
 
 1. **对象基础** — 先建立对 JS 对象在 V8 中如何存储的直觉。

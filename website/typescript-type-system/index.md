@@ -260,6 +260,13 @@ mindmap
 
 ---
 
+## 延伸阅读
+
+- **[类型系统深度研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/TYPE_SYSTEM_THEORY.md)** — 类型论基础、Hindley-Milner推断、依赖类型与线性类型的形式化推导，为专题中的 [01 类型系统基础](./01-type-system-fundamentals.md)、[05 泛型深度解析](./05-generics-deep-dive.md) 和 [09 类型推断](./09-type-inference.md) 提供数学基础。
+- **[编程语言语义研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/PROGRAMMING_LANGUAGE_SEMANTICS.md)** — 操作语义、指称语义与公理语义的形式化对比，直接支撑 [10 类型兼容性](./10-type-compatibility.md) 和 [12 类型挑战](./12-type-challenges.md) 的理论论证。
+
+---
+
 :::info 下一章
 准备好进入类型系统的集合论世界了吗？→ [01 类型系统基础：类型即集合](./01-type-system-fundamentals.md)
 :::

@@ -462,6 +462,11 @@ graph LR
 > 最后更新: 2026-05-02
 
 
+## 延伸阅读
+
+- **[状态管理深度研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/STATE_MANAGEMENT_THEORY.md)** — 状态机理论、CRDT一致性模型、响应式编程的形式化语义，为专题中的 [07 状态机](./07-state-machines.md)、[08 状态组合模式](./08-state-composition-patterns.md) 和 [12 状态架构对比](./12-state-architecture-comparison.md) 提供数学基础。
+- **[并发模型深度研究](../30-knowledge-base/30.8-research/tsjs-stack-panorama-2026/CONCURRENCY_MODELS_DEEP_DIVE.md)** — Event Loop、CSP、Actor模型与软件事务内存的形式化对比，直接支撑 [06 异步状态](./06-async-state.md) 和 [14 实时协作状态](./14-real-time-collaborative-state.md) 的并发分析。
+
 ## 状态管理性能检查清单
 
 | 检查项 | 说明 | 工具 |
