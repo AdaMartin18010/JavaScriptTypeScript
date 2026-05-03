@@ -74,7 +74,7 @@ cp .env.example .env
 
 配置 `.env` 文件，填入至少一个 AI 提供商的 API Key：
 
-```env
+```bash
 # OpenAI（推荐用于生产）
 OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
 

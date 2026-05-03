@@ -121,7 +121,7 @@ graph TD
     style F fill:#fff3e0
 ```
 
-```gradle
+```groovy
 // android/app/build.gradle
 android {
     // Google Play 要求 AAB 格式

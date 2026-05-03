@@ -88,7 +88,7 @@ const result = instance.exports.add(1, 2);
 
 WebAssembly Component Model 是 WASM 2.0 的核心扩展，它通过 **WIT (WebAssembly Interface Types)** 定义跨语言接口，使不同源码语言编译的组件能够无缝互操作。
 
-```wit
+```wasm
 // calculator.wit — 组件模型接口定义
 package example:calculator@1.0.0;
 
@@ -174,7 +174,7 @@ fn main() {
 
 **反应堆模式（Reactor）**：组件被宿主长期持有，通过导出接口响应外部调用。适用于微服务、插件系统、Edge Handler。
 
-```wit
+```wasm
 // reactor.wit
 world reactor {
     export handler;

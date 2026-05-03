@@ -267,7 +267,7 @@ app.get('/metrics', async (req, res) => {
 
 **Grafana** 作为可视化层，支持 PromQL 查询语言。典型的延迟 SLO 监控面板使用 `histogram_quantile` 函数：
 
-```promql
+```yaml
 histogram_quantile(0.99,
   sum(rate(http_request_duration_seconds_bucket[5m])) by (le, route)
 )
@@ -632,7 +632,7 @@ async function consumeOrderCreated(message) {
 
 PromQL 实现示例：
 
-```promql
+```yaml
 # 计算 5 分钟窗口内的错误率
 (
   sum(rate(http_requests_total{status_code=~"5.."}[5m]))

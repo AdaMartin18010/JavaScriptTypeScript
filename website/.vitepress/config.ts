@@ -197,7 +197,7 @@ export default withMermaid(defineConfig({
 
   vite: {
     build: {
-      chunkSizeWarningLimit: 2000,
+      chunkSizeWarningLimit: 5000,
     }
   },
 

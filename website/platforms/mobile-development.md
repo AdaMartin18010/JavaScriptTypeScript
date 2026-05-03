@@ -2842,7 +2842,7 @@ target 'MyApp' do
 end
 ```
 
-```gradle
+```groovy
 // android/app/build.gradle
 android {
     compileSdkVersion 33

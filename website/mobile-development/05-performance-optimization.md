@@ -335,7 +335,7 @@ graph TD
     style D1 fill:#e8f5e9
 ```
 
-```gradle
+```groovy
 // Android: ABI 拆分，减少 APK 体积
 android {
     splits {

@@ -739,7 +739,7 @@ function useBatteryLevel() {
 
 **解决方案**:
 
-```proguard
+```text
 # android/app/proguard-rules.pro
 -keep class expo.modules.deviceinfo.** { *; }
 -keepclassmembers class expo.modules.deviceinfo.** { *; }

@@ -315,7 +315,7 @@ npm install -g @bazel/bazelisk
   - 对前端开发者不友好
 - **适用场景**: 超大型跨语言 monorepo（数千+包）
 
-```starlark
+```python
 # BUILD.bazel
 load("@aspect_rules_js//js:defs.bzl", "js_binary")
 load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
