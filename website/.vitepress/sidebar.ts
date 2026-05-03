@@ -287,6 +287,10 @@ export const sidebar: DefaultTheme.Sidebar = {
       items: [
         { text: '速查表首页', link: '/cheatsheets/' },
         { text: 'TypeScript 速查表', link: '/cheatsheets/typescript-cheatsheet' },
+        { text: 'JavaScript 语法速查表', link: '/cheatsheets/javascript-cheatsheet' },
+        { text: '正则表达式速查表', link: '/cheatsheets/regex-cheatsheet' },
+        { text: 'npm & package.json 速查表', link: '/cheatsheets/npm-cheatsheet' },
+        { text: 'ES2024+ 新特性速查表', link: '/cheatsheets/es2024-cheatsheet' },
       ]
     }
   ],
