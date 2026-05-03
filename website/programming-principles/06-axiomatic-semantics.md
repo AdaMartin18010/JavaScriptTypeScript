@@ -112,7 +112,7 @@ $$</span>
 
 以数组求和为例：
 
-```pseudo
+```text
 { n ≥ 0 }
 i := 0;
 s := 0;
@@ -482,7 +482,7 @@ flowchart TD
 
 上述推导对应如下伪代码：
 
-```pseudo
+```text
 { x = m ∧ y = n ∧ n ≥ 0 }
 z := 0;
 { z = m·(n - y) ∧ y ≥ 0 }     <-- 循环不变式 I

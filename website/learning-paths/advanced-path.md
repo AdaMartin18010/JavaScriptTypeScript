@@ -265,7 +265,7 @@ spec:
 
 **TLA+ 基础**:
 
-```tla
+```text
 \* 简单状态机规格
 MODULE Counter
 

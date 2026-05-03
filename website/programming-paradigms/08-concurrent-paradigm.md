@@ -151,7 +151,7 @@ while (true) {
 
 例如，互斥锁的安全性可以被表达为：
 
-```tla
+```text
 MutexSafety == \A i, j \in Procs : (i # j) => ~((pc[i] = "cs") /\ (pc[j] = "cs"))
 Spec == Init /\ [][Next]_vars /\ WF_vars(Next)
 THEOREM Spec => []MutexSafety
