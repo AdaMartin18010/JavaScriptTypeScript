@@ -193,7 +193,7 @@ async function handleRequest(req) {
 
 **Koka**（Microsoft Research，由 Daan Leijen 主导）是最具代表性的代数效应语言之一。Koka 是一种函数式语言，其类型系统内置了对效应行的支持。以下是一个在 Koka 中定义和使用状态的示例：
 
-```koka
+```haskell
 // 定义状态效应
  effect state<s> {
    fun get() : s

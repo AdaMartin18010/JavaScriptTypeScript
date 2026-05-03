@@ -12,7 +12,7 @@ flowchart TB
         ThirdParty[Third-party<br/>API Consumers]
         IoT[IoT Devices]
     end
-    
+
     subgraph GatewayLayer["🚪 API Gateway 层"]
         AG[API Gateway<br/>Kong / Nginx / Ambassador]
         AGFunc["功能:
@@ -24,10 +24,10 @@ flowchart TB
         <br/>• 请求/响应转换
         <br/>• 缓存"]
     end
-    
+
     subgraph ServiceMeshLayer["🕸️ Service Mesh 层<br/>(可选 - Istio/Linkerd/Consul Connect)"]
         direction TB
-        
+
         subgraph ControlPlane["控制平面 (Control Plane)"]
             CP[Istiod / Linkerd Control Plane]
             CPFunc["• 服务发现
@@ -35,7 +35,7 @@ flowchart TB
             <br/>• 证书管理 (mTLS)
             <br/>• 遥测收集"]
         end
-        
+
         subgraph DataPlane["数据平面 (Data Plane)"]
             Sidecar[Envoy Proxy Sidecar<br/>Sidecar 代理]
             SidecarFunc["• 流量管理
@@ -44,13 +44,13 @@ flowchart TB
             <br/>• 可观测性
             <br/>• 故障注入"]
         end
-        
+
         CP -->|配置下发| Sidecar
     end
-    
+
     subgraph Microservices["🎯 微服务层 (Microservices)"]
         direction TB
-        
+
         subgraph ServiceA["用户服务 (User Service)"]
             SA[Node.js / Go / Java]
             DB_A[(User DB<br/>PostgreSQL)]
@@ -58,7 +58,7 @@ flowchart TB
             SA --> DB_A
             SA --> Cache_A
         end
-        
+
         subgraph ServiceB["订单服务 (Order Service)"]
             SB[Node.js / Go / Java]
             DB_B[(Order DB<br/>MySQL)]
@@ -66,7 +66,7 @@ flowchart TB
             SB --> DB_B
             SB --> Cache_B
         end
-        
+
         subgraph ServiceC["库存服务 (Inventory Service)"]
             SC[Node.js / Go / Java]
             DB_C[(Inventory DB<br/>MongoDB)]
@@ -74,23 +74,23 @@ flowchart TB
             SC --> DB_C
             SC --> Cache_C
         end
-        
+
         subgraph ServiceD["支付服务 (Payment Service)"]
             SD[Node.js / Go / Java]
             External[External API<br/>Stripe/Alipay]
             SD --> External
         end
-        
+
         subgraph ServiceE["通知服务 (Notification Service)"]
             SE[Node.js / Go / Java]
             Queue[Message Queue]
             SE --> Queue
         end
     end
-    
+
     subgraph EventBusLayer["📨 Event Bus / Message Queue 层"]
         direction TB
-        
+
         subgraph MessageBroker["消息代理 (Message Broker)"]
             MB[Kafka / RabbitMQ / NATS]
             MBFunc["• 异步消息传递
@@ -99,58 +99,58 @@ flowchart TB
             <br/>• 削峰填谷
             <br/>• 消息持久化"]
         end
-        
+
         subgraph EventPatterns["消息模式"]
             PubSub[Pub/Sub 发布订阅]
             CQRS[CQRS 命令查询分离]
             Saga[Saga 分布式事务]
             ES[Event Sourcing 事件溯源]
         end
-        
+
         MB --> EventPatterns
     end
-    
+
     subgraph Observability["👁️ 可观测性层 (Observability)"]
         Logs[(Log Aggregation<br/>ELK Stack)]
         Metrics[(Metrics<br/>Prometheus/Grafana)]
         Traces[(Distributed Tracing<br/>Jaeger/Zipkin)]
     end
-    
+
     subgraph Infrastructure["⚙️ 基础设施层"]
         K8s[Kubernetes<br/>容器编排]
         Registry[Container Registry]
         Secrets[Secrets Manager]
     end
-    
+
     %% 连接关系
     Clients -->|HTTPS/HTTP2/gRPC| AG
     AG -->|路由| ServiceMeshLayer
-    
+
     ServiceMeshLayer -->|流量管理| ServiceA
     ServiceMeshLayer -->|流量管理| ServiceB
     ServiceMeshLayer -->|流量管理| ServiceC
     ServiceMeshLayer -->|流量管理| ServiceD
     ServiceMeshLayer -->|流量管理| ServiceE
-    
+
     ServiceA <-->|同步调用 HTTP/gRPC| ServiceB
     ServiceB <-->|同步调用| ServiceC
     ServiceB -->|发布事件| MB
     ServiceC -->|发布事件| MB
     ServiceD -->|消费事件| MB
     ServiceE -->|消费事件| MB
-    
+
     ServiceA -.->|日志| Logs
     ServiceB -.->|日志| Logs
     ServiceC -.->|日志| Logs
     ServiceD -.->|日志| Logs
     ServiceE -.->|日志| Logs
-    
+
     Sidecar -.->|指标| Metrics
     Sidecar -.->|追踪| Traces
-    
+
     K8s -->|部署| Microservices
     K8s -->|部署| ServiceMeshLayer
-    
+
     %% 样式定义
     classDef gateway fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     classDef mesh fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
@@ -160,7 +160,7 @@ flowchart TB
     classDef observe fill:#e0f2f1,stroke:#00695c,stroke-width:2px
     classDef infra fill:#f5f5f5,stroke:#616161,stroke-width:2px
     classDef client fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px
-    
+
     class AG,AGFunc gateway
     class CP,Sidecar,CPFunc,SidecarFunc mesh
     class SA,SB,SC,SD,SE service

@@ -92,7 +92,7 @@ data ℕ : Type where
 
 在依赖类型中，我们可以定义**归纳族**——其类型本身依赖于值的归纳类型。向量类型 `Vec A n` 就是一个归纳族：
 
-```agda
+```haskell
 data Vec (A : Type) : ℕ → Type where
   []   : Vec A 0
   _::_ : A → Vec A n → Vec A (succ n)

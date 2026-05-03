@@ -47,7 +47,7 @@ WebAssembly 2.0（Phase 4 已定稿）引入了多项关键扩展，显著提升
 
 Wasm 2.0 允许模块定义多个线性内存，解决了多模块间内存隔离与大型数据缓冲的问题：
 
-```wat
+```wasm
 ;; WAT (WebAssembly Text Format) 示例
 (module
   ;; 定义两个独立的内存空间

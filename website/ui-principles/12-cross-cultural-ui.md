@@ -271,7 +271,7 @@ i18n是能力，l10n是内容。
 ICU MessageFormat（International Components for Unicode）是业界标准的国际化消息格式，被 `react-intl`、`vue-i18n`、FormatJS等库广泛支持。
 它通过占位符和选择器实现了复杂的语法适配：
 
-```icu
+```json
 // 英语
 {count, plural, =0 {No files} one {1 file} other {# files}}
 
