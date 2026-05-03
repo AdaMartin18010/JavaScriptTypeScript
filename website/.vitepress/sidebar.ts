@@ -106,6 +106,24 @@ export const sidebar: DefaultTheme.Sidebar = {
     }
   ],
 
+  // 语言基础导读
+  '/fundamentals/': [
+    {
+      text: '📚 JavaScript/TypeScript 语言基础',
+      collapsed: false,
+      items: [
+        { text: '🏠 基础导读首页', link: '/fundamentals/' },
+        { text: '语言语义 (10.1)', link: '/fundamentals/language-semantics' },
+        { text: '类型系统 (10.2)', link: '/fundamentals/type-system' },
+        { text: '执行模型 (10.3)', link: '/fundamentals/execution-model' },
+        { text: '模块系统 (10.4)', link: '/fundamentals/module-system' },
+        { text: '对象模型 (10.5)', link: '/fundamentals/object-model' },
+        { text: 'ECMAScript 规范 (10.6)', link: '/fundamentals/ecmascript-spec' },
+        { text: '学术前沿 (10.7)', link: '/fundamentals/academic-frontiers' },
+      ]
+    }
+  ],
+
   // 分类部分
   '/categories/': [
     {

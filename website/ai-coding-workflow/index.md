@@ -316,25 +316,6 @@ mindmap
 
 ---
 
-## 📸 截图/录屏占位说明
-
-> 以下占位符需要在后续内容完善时替换为实际截图或录屏。
-
-| 占位符ID | 描述 | 建议格式 |
-|----------|------|----------|
-| `IMG-001` | Cursor IDE界面全景：侧边栏Chat、中间编辑器、底部终端 | PNG, 1920x1080 |
-| `GIF-001` | Cursor Tab补全演示：输入注释→Tab接受→自动补全函数体 | GIF/MP4, 10s |
-| `GIF-002` | Cursor Composer多文件编辑演示：描述需求→AI生成多文件变更 | GIF/MP4, 30s |
-| `IMG-002` | Claude Code终端界面：命令行交互、文件浏览、任务执行 | PNG, 1920x1080 |
-| `GIF-003` | Claude Code自主Agent演示："实现用户认证"→自动创建多文件 | GIF/MP4, 45s |
-| `IMG-003` | GitHub Copilot在VS Code中的Inline补全提示 | PNG, 1920x1080 |
-| `IMG-004` | Copilot Chat面板：多轮对话、代码引用、应用修改 | PNG, 1920x1080 |
-| `GIF-004` | Copilot Agent Mode演示：任务描述→计划→执行→测试 | GIF/MP4, 60s |
-| `IMG-005` | 工具对比矩阵的可视化信息图 | PNG, 1200x800 |
-| `GIF-005` | MCP工具调用流程：AI→MCP Server→外部工具→返回结果 | GIF/MP4, 15s |
-
----
-
 ## 🔗 相关资源
 
 | 资源 | 链接 | 说明 |

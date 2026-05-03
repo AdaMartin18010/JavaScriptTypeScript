@@ -14,9 +14,17 @@ keywords: 'Cursor, Cursor Composer, Tab Completion, AI IDE, Agent Mode, Cursor R
 
 ## 📸 界面概览
 
-> **截图占位**: `IMG-001` — Cursor IDE界面全景
->
-> 建议内容：展示Cursor的主界面布局，左侧文件树，中间编辑器（显示Tab补全提示），右侧Chat面板，底部终端。
+```mermaid
+flowchart LR
+    A[文件树] --> B[编辑器<br/>代码编辑 + Tab补全]
+    B --> C[Chat面板<br/>Ask / Edit / Agent]
+    B --> D[终端<br/>AI命令执行]
+
+    style A fill:#1e1e1e,stroke:#6c9fff,color:#fff
+    style B fill:#1e1e1e,stroke:#4ec9b0,color:#fff
+    style C fill:#1e1e1e,stroke:#ce9178,color:#fff
+    style D fill:#1e1e1e,stroke:#dcdcaa,color:#fff
+```
 
 Cursor基于VS Code构建，保留所有VS Code生态（扩展、主题、快捷键），同时深度集成AI能力：
 
@@ -45,9 +53,12 @@ Cursor基于VS Code构建，保留所有VS Code生态（扩展、主题、快捷
 
 Cursor的Tab补全是目前业界响应速度最快、上下文理解最深的代码补全。
 
-> **录屏占位**: `GIF-001` — Cursor Tab补全演示
->
-> 建议内容：展示开发者输入注释 `// 计算购物车总价，含税费和折扣` 后，按Tab自动补全整个函数实现的过程。
+**Tab补全执行流程**：
+
+1. **注释输入**：开发者在函数体上方输入描述性注释，如 `// 计算购物车总价，含税费和折扣`
+2. **灰色提示**：Cursor在光标位置下方显示灰色幽灵文本，预测完整的函数实现（包含变量声明、计算逻辑、返回值）
+3. **Tab接受**：开发者按 `Tab` 键，灰色文本变为正式代码，插入到编辑器中
+4. **连续补全**：继续按 `Tab` 可接受后续多行补全，直到函数完整实现
 
 **核心特性**：
 
@@ -172,9 +183,25 @@ AI: 我将为您实现用户注册功能，计划如下：
 
 Composer是Cursor最强大的功能，支持跨文件、多步骤的复杂任务。
 
-> **录屏占位**: `GIF-002` — Cursor Composer多文件编辑演示
->
-> 建议内容：展示开发者在Composer中描述"将项目中所有console.log替换为结构化日志"，AI自动找出所有文件、生成变更、展示diff的全过程。
+```mermaid
+sequenceDiagram
+    participant D as 开发者
+    participant C as Composer
+    participant AI as AI模型
+    participant F as 项目文件
+
+    D->>C: 描述需求：将console.log替换为结构化日志
+    C->>AI: 分析需求 + @引用项目上下文
+    AI->>C: 制定执行计划（步骤列表）
+    C->>D: 请求确认计划
+    D->>C: 确认执行
+    C->>F: 扫描所有相关文件
+    AI->>F: 生成多文件变更
+    F->>C: 返回diff预览
+    C->>D: 展示每个文件的变更
+    D->>C: 接受全部 / 逐文件审查
+    C->>F: 应用变更到文件
+```
 
 **Composer使用流程**：
 
@@ -468,19 +495,6 @@ return result.data;
 | Agent修改过多 | 任务描述太宽泛 | 缩小范围，分步骤执行 |
 | 索引不完整 | 大项目或新文件 | 手动 `@` 引用相关文件 |
 | 补全太慢 | 网络或模型负载 | 切换到本地模型或错峰使用 |
-
----
-
-## 📸 截图/录屏占位说明
-
-| 占位符ID | 描述 | 建议格式 |
-|----------|------|----------|
-| `IMG-001` | Cursor IDE界面全景：Chat面板、编辑器、终端 | PNG, 1920x1080 |
-| `GIF-001` | Tab补全演示：注释驱动补全完整函数 | GIF/MP4, 10s |
-| `GIF-002` | Composer多文件编辑：描述需求→生成多文件变更 | GIF/MP4, 30s |
-| `IMG-006` | .cursorrules文件示例与AI遵循效果 | PNG, 1200x600 |
-| `GIF-006` | Agent模式执行终端命令+测试运行 | GIF/MP4, 20s |
-| `IMG-007` | @引用系统使用：文件/符号/文档引用 | PNG, 1200x600 |
 
 ---
 

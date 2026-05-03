@@ -14,10 +14,6 @@ keywords: 'Claude Code, Claude Agent, Terminal AI, MCP, Model Context Protocol, 
 
 ## 📸 界面概览
 
-> **截图占位**: `IMG-002` — Claude Code终端界面
->
-> 建议内容：展示终端中Claude Code的交互界面，包括命令提示符、文件树视图、任务执行状态、以及多轮对话历史。
-
 Claude Code完全运行在终端中，无需GUI，适合喜欢命令行工作流的开发者：
 
 ```
@@ -178,9 +174,24 @@ claude
 
 Claude Code的Agent模式可以自主规划和执行多步骤任务。
 
-> **录屏占位**: `GIF-003` — Claude Code自主Agent演示
->
-> 建议内容：展示开发者输入"实现JWT认证中间件"后，Claude Code自动分析项目结构、创建文件、修改路由、运行测试的完整流程。
+```mermaid
+flowchart LR
+    A[任务描述] --> B[计划制定]
+    B --> C[分步执行]
+    C --> D[结果验证]
+    D --> E[报告总结]
+
+    C --> C1[文件读写]
+    C --> C2[终端命令]
+    C --> C3[代码搜索]
+    C --> C4[测试运行]
+
+    style A fill:#1e1e1e,stroke:#6c9fff,color:#fff
+    style B fill:#1e1e1e,stroke:#ce9178,color:#fff
+    style C fill:#1e1e1e,stroke:#4ec9b0,color:#fff
+    style D fill:#1e1e1e,stroke:#dcdcaa,color:#fff
+    style E fill:#1e1e1e,stroke:#c586c0,color:#fff
+```
 
 ```bash
 # 启动Agent模式
@@ -336,9 +347,20 @@ claude --root src/features/auth
 
 Claude Code原生支持MCP，可以连接外部工具和数据源。
 
-> **录屏占位**: `GIF-005` — MCP工具调用流程
->
-> 建议内容：展示Claude Code通过MCP连接数据库、查询数据、返回结果给AI的完整流程。
+```mermaid
+sequenceDiagram
+    participant AI as Claude Code
+    participant M as MCP Server
+    participant T as 外部工具
+    participant P as 项目文件
+
+    AI->>M: 调用工具（如：查询数据库）
+    M->>T: 转发请求到外部服务
+    T->>M: 返回原始结果
+    M->>M: 格式化结果
+    M->>AI: 返回结构化数据
+    AI->>P: 基于结果修改文件
+```
 
 ### 配置MCP Servers
 
@@ -569,18 +591,6 @@ Bug描述：[现象描述]
 | 命令执行被拒 | 检查 `autoApprove` 配置或手动确认 |
 | 响应慢 | 检查网络，或切换到较小的模型 |
 | 索引失败 | 确保在Git仓库内，或手动指定文件 |
-
----
-
-## 📸 截图/录屏占位说明
-
-| 占位符ID | 描述 | 建议格式 |
-|----------|------|----------|
-| `IMG-002` | Claude Code终端界面：交互式命令行 | PNG, 1920x1080 |
-| `GIF-003` | Agent模式自主执行：任务→计划→执行→测试 | GIF/MP4, 45s |
-| `IMG-008` | CLAUDE.md项目配置示例 | PNG, 1200x600 |
-| `GIF-005` | MCP工具调用：AI→MCP Server→数据库查询→结果 | GIF/MP4, 15s |
-| `IMG-009` | Agent模式执行计划与文件变更列表 | PNG, 1200x600 |
 
 ---
 

@@ -14,13 +14,31 @@ keywords: 'GitHub Copilot, Copilot Chat, Copilot Workspace, Copilot Agent, AI Co
 
 ## 📸 界面概览
 
-> **截图占位**: `IMG-003` — GitHub Copilot在VS Code中的Inline补全
->
-> 建议内容：展示VS Code编辑器中Copilot的灰色补全提示，以及按Tab接受的交互。
+**Inline补全UI状态说明**：
 
-> **截图占位**: `IMG-004` — Copilot Chat面板
->
-> 建议内容：展示VS Code右侧Copilot Chat面板，包含多轮对话、代码引用、和"应用修改"按钮。
+Copilot在编辑器中以**灰色幽灵文本**形式展示补全建议，与已有代码形成明显视觉区分：
+
+| 状态 | 视觉表现 | 交互方式 |
+|------|----------|----------|
+| **建议显示** | 光标后显示灰色斜体文本 | 自然停顿0.5-1秒后自动触发 |
+| **接受补全** | 灰色文本变为正常代码颜色 | 按 `Tab` 键接受当前建议 |
+| **取消补全** | 灰色文本消失 | 按 `Esc` 键或继续输入 |
+| **多行补全** | 灰色区域覆盖整个代码块 | 按 `Tab` 接受全部，`Alt+]` 查看替代方案 |
+
+```mermaid
+flowchart TD
+    A[对话历史区域] --> B[当前问题输入]
+    B --> C[AI回复与代码块]
+    C --> D[操作按钮栏]
+    D --> E1[插入到编辑器]
+    D --> E2[复制代码]
+    D --> E3[在文件中查找]
+
+    style A fill:#1e1e1e,stroke:#6c9fff,color:#fff
+    style B fill:#1e1e1e,stroke:#4ec9b0,color:#fff
+    style C fill:#1e1e1e,stroke:#ce9178,color:#fff
+    style D fill:#1e1e1e,stroke:#dcdcaa,color:#fff
+```
 
 Copilot提供四种主要交互界面：
 
@@ -211,9 +229,16 @@ AI计划:
 
 2025年底推出的Agent模式，让Copilot可以自主执行多步骤任务。
 
-> **录屏占位**: `GIF-004` — Copilot Agent Mode演示
->
-> 建议内容：展示在VS Code中启用Agent模式，描述任务"添加用户角色权限系统"，AI制定计划、修改多文件、运行测试的完整流程。
+**Agent Mode执行流程**：
+
+1. **任务输入**：在Copilot Chat中输入 `/agent`  followed by 任务描述，如 `添加用户角色权限系统`
+2. **计划生成**：AI分析代码库，制定多步骤执行计划（文件修改清单、依赖安装、测试策略）
+3. **逐步执行**：AI按顺序执行每个步骤：
+   - 读取相关文件获取上下文
+   - 生成代码变更
+   - 执行终端命令（如 `npm install`）
+4. **验证反馈**：自动运行测试或类型检查，确认变更正确性
+5. **审查确认**：开发者审查所有变更diff，选择接受、修改或放弃
 
 **Agent模式能力**：
 
@@ -576,20 +601,6 @@ organization:
 | 企业代码泄露担忧 | 公共代码匹配 | 启用public code过滤 |
 | 多语言支持差 | 训练数据偏差 | 在注释中指定语言/框架 |
 | 与现有扩展冲突 | 快捷键重叠 | 修改快捷键绑定 |
-
----
-
-## 📸 截图/录屏占位说明
-
-| 占位符ID | 描述 | 建议格式 |
-|----------|------|----------|
-| `IMG-003` | Copilot Inline补全：灰色提示代码 | PNG, 1920x1080 |
-| `IMG-004` | Copilot Chat面板：多轮对话+代码引用 | PNG, 1920x1080 |
-| `GIF-004` | Agent模式：任务描述→计划→执行→测试 | GIF/MP4, 60s |
-| `IMG-010` | Copilot Workspace计划与变更预览界面 | PNG, 1200x800 |
-| `IMG-011` | .github/copilot-instructions.md配置示例 | PNG, 1200x600 |
-| `GIF-007` | Inline补全多行接受演示 | GIF/MP4, 10s |
-| `IMG-012` | Copilot Enterprise管理面板 | PNG, 1200x800 |
 
 ---
 
