@@ -162,7 +162,7 @@ graph TD
 
 欢迎提交 Issue 或 PR 参与贡献！请遵循以下流程：
 
-1. 阅读 [贡献指南](../CONTRIBUTING.md) 了解详细规范
+1. 阅读 [贡献指南](./guide/contributing) 了解详细规范
 2. 在 [Issues](https://github.com/AdaMartin18010/JavaScriptTypeScript/issues) 中搜索是否已有相关讨论
 3. 提交 Issue 描述问题或建议
 4. Fork 仓库并创建功能分支

@@ -123,6 +123,6 @@ head:
 
 ## 相关资源
 
-- [生态趋势](../data/ecosystem-stats) — 定量统计数据
+- [生态趋势](../data/trends-report) — 定量统计数据
 - [比较矩阵](../comparison-matrices/) — 工具横向对比
-- [知识库](../knowledge-base/) — 分类技术指南
+- [知识库](../guide/getting-started) — 分类技术指南
