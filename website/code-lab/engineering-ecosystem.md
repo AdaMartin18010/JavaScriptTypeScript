@@ -1,47 +1,135 @@
 ---
-title: 工程化生态
-description: "Awesome JS/TS Ecosystem 代码实验室: 工程化生态"
+title: 工程与生态实验室
+description: "工程与生态实验：构建工具、测试框架、状态管理、UI框架与性能优化"
 ---
 
 # 工程与生态 (10-39)
 
-> 本分组包含 30 个模块，按成熟度排序。
+> 本实验室覆盖现代前端工程化的完整工具链。从代码构建到生产部署，从状态管理到性能监控，掌握构建可靠、可维护、高性能应用的工程技术。
 
-## 模块列表
+## 工程化全景
 
-| 编号 | 模块名称 | 状态 | 实现文件 | 测试文件 | 源码 |
-|------|----------|------|----------|----------|------|
-| 🌳 **10** | js-ts-comparison | 成熟 | 25 | 17 | [查看](../../jsts-code-lab/10-js-ts-comparison/) |
-| 🌳 **18** | frontend-frameworks | 成熟 | 9 | 3 | [查看](../../jsts-code-lab/18-frontend-frameworks/) |
-| 🌳 **19** | backend-development | 成熟 | 3 | 3 | [查看](../../jsts-code-lab/19-backend-development/) |
-| 🌳 **20** | database-orm | 成熟 | 5 | 4 | [查看](../../jsts-code-lab/20-database-orm/) |
-| 🌳 **21** | api-security | 成熟 | 3 | 3 | [查看](../../jsts-code-lab/21-api-security/) |
-| 🌳 **23** | toolchain-configuration | 成熟 | 9 | 3 | [查看](../../jsts-code-lab/23-toolchain-configuration/) |
-| 🌿 **11** | benchmarks | 可用 | 1 | 1 | [查看](../../jsts-code-lab/11-benchmarks/) |
-| 🌿 **12** | package-management | 可用 | 2 | 2 | [查看](../../jsts-code-lab/12-package-management/) |
-| 🌿 **13** | code-organization | 可用 | 1 | 1 | [查看](../../jsts-code-lab/13-code-organization/) |
-| 🌿 **14** | execution-flow | 可用 | 1 | 1 | [查看](../../jsts-code-lab/14-execution-flow/) |
-| 🌿 **15** | data-flow | 可用 | 1 | 1 | [查看](../../jsts-code-lab/15-data-flow/) |
-| 🌿 **16** | application-development | 可用 | 1 | 1 | [查看](../../jsts-code-lab/16-application-development/) |
-| 🌿 **17** | debugging-monitoring | 可用 | 1 | 1 | [查看](../../jsts-code-lab/17-debugging-monitoring/) |
-| 🌿 **22** | deployment-devops | 可用 | 2 | 2 | [查看](../../jsts-code-lab/22-deployment-devops/) |
-| 🌿 **24** | graphql | 可用 | 1 | 1 | [查看](../../jsts-code-lab/24-graphql/) |
-| 🌿 **25** | microservices | 可用 | 1 | 1 | [查看](../../jsts-code-lab/25-microservices/) |
-| 🌿 **26** | event-sourcing | 可用 | 1 | 1 | [查看](../../jsts-code-lab/26-event-sourcing/) |
-| 🌿 **27** | internationalization | 可用 | 1 | 1 | [查看](../../jsts-code-lab/27-internationalization/) |
-| 🌿 **28** | testing-advanced | 可用 | 1 | 1 | [查看](../../jsts-code-lab/28-testing-advanced/) |
-| 🌿 **29** | documentation | 可用 | 1 | 1 | [查看](../../jsts-code-lab/29-documentation/) |
-| 🌿 **30** | real-time-communication | 可用 | 1 | 1 | [查看](../../jsts-code-lab/30-real-time-communication/) |
-| 🌿 **31** | serverless | 可用 | 1 | 1 | [查看](../../jsts-code-lab/31-serverless/) |
-| 🌿 **32** | edge-computing | 可用 | 1 | 1 | [查看](../../jsts-code-lab/32-edge-computing/) |
-| 🌿 **33** | ai-integration | 可用 | 1 | 1 | [查看](../../jsts-code-lab/33-ai-integration/) |
-| 🌿 **34** | blockchain-web3 | 可用 | 1 | 1 | [查看](../../jsts-code-lab/34-blockchain-web3/) |
-| 🌿 **35** | accessibility-a11y | 可用 | 1 | 1 | [查看](../../jsts-code-lab/35-accessibility-a11y/) |
-| 🌿 **36** | web-assembly | 可用 | 2 | 1 | [查看](../../jsts-code-lab/36-web-assembly/) |
-| 🌿 **37** | pwa | 可用 | 3 | 1 | [查看](../../jsts-code-lab/37-pwa/) |
-| 🌿 **38** | web-security | 可用 | 1 | 1 | [查看](../../jsts-code-lab/38-web-security/) |
-| 🌿 **39** | performance-monitoring | 可用 | 1 | 1 | [查看](../../jsts-code-lab/39-performance-monitoring/) |
+```mermaid
+flowchart LR
+    subgraph 开发阶段
+        A[Vite/Webpack] --> B[TypeScript]
+        B --> C[ESLint/Prettier]
+        C --> D[单元测试]
+    end
+    subgraph 构建阶段
+        E[代码分割] --> F[Tree Shaking]
+        F --> G[压缩混淆]
+    end
+    subgraph 部署阶段
+        H[Docker] --> I[CI/CD]
+        I --> J[CDN部署]
+    end
+    subgraph 监控阶段
+        K[错误追踪] --> L[性能监控]
+        L --> M[用户分析]
+    end
+```
+
+## 实验模块
+
+| 编号 | 模块 | 实验数 | 核心内容 |
+|------|------|--------|----------|
+| **10** | build-tools | 5 | Vite、Webpack、esbuild、Rollup |
+| **11** | state-management | 5 | Redux、Zustand、Jotai、Signals |
+| **12** | ui-frameworks | 5 | React、Vue、Svelte、Solid |
+| **13** | styling | 4 | CSS-in-JS、Tailwind、CSS Modules |
+| **14** | routing | 3 | React Router、Vue Router、文件路由 |
+| **15** | form-handling | 3 | React Hook Form、Formik、Zod |
+| **16** | data-fetching | 4 | TanStack Query、SWR、GraphQL |
+| **17** | animation | 3 | Framer Motion、GSAP、CSS动画 |
+| **18** | testing | 5 | Vitest、Playwright、Storybook |
+| **19** | i18n | 3 | react-i18n、FormatJS、Lingui |
+| **20-39** | ecosystem-deep-dive | 各3-5 | 各技术栈深度实验 |
+
+## 核心实验
+
+### 构建工具对比
+
+```typescript
+// 实验：配置 Vite 多页面应用
+// vite.config.ts
+import &#123; defineConfig &#125; from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig(&#123;
+  plugins: [react()],
+  build: &#123;
+    rollupOptions: &#123;
+      input: &#123;
+        main: './index.html',
+        admin: './admin.html',
+      &#125;,
+      output: &#123;
+        manualChunks: &#123;
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-select'],
+        &#125;,
+      &#125;,
+    &#125;,
+  &#125;,
+&#125;);
+```
+
+### 状态管理演变
+
+```typescript
+// 实验：从 Redux 到 Signals
+
+// Redux（样板代码多）
+const counterReducer = (state = 0, action) => &#123;
+  switch (action.type) &#123;
+    case 'INCREMENT': return state + 1;
+    default: return state;
+  &#125;
+&#125;;
+
+// Zustand（简洁）
+const useStore = create((set) => (&#123;
+  count: 0,
+  increment: () => set((s) => (&#123; count: s.count + 1 &#125;)),
+&#125;));
+
+// Signals（极致性能）
+const count = signal(0);
+const doubled = computed(() => count.value * 2);
+// 仅订阅的组件会重新渲染
+```
+
+### 性能优化实验
+
+```typescript
+// 实验：React 渲染优化
+import &#123; memo, useMemo, useCallback &#125; from 'react';
+
+// 1. memo 避免不必要的重渲染
+const ExpensiveComponent = memo(function ExpensiveComponent(&#123; data &#125;) &#123;
+  return &lt;div&gt;&#123;heavyComputation(data)&#125;&lt;/div&gt;;
+&#125;);
+
+// 2. useMemo 缓存计算结果
+const processedData = useMemo(() =>
+  data.map(transform).filter(filter),
+  [data]
+);
+
+// 3. useCallback 缓存函数引用
+const handleClick = useCallback(() => &#123;
+  onSelect(item.id);
+&#125;, [item.id, onSelect]);
+```
+
+## 参考资源
+
+- [前端模式示例](/examples/frontend-patterns/) — 组件组合与状态管理
+- [性能示例](/examples/performance/) — Web Vitals 优化实战
+- [测试示例](/examples/testing/) — Vitest 与 Playwright
+- [状态管理专题](/state-management/) — 完整的状态管理知识体系
 
 ---
 
-[← 返回代码实验室首页](./)
+ [← 返回代码实验室首页](./)

@@ -1,144 +1,156 @@
 ---
 title: ESM/CJS 模块解析与互操作流程
+description: "ESM 与 CommonJS 模块解析算法的详细流程图，含 Node.js 模块路径查找与互操作机制"
 ---
 
+# ESM/CJS 模块解析与互操作流程
+
+> 模块解析是 JavaScript 工程化的核心机制。本文档详细展示 Node.js 中 ESM 和 CJS 的模块解析算法，以及两种模块系统的互操作方案。
+
+## 模块解析算法对比
+
+```mermaid
 flowchart TD
-    Start(["开始导入<br/>import / require"])
-    
-    subgraph Detection["模块类型检测"]
-        CheckPkg["读取 package.json<br/>type 字段"]
-        TypeModule["type: module<br/>→ ESM"]
-        TypeCommon["type: commonjs<br/>→ CJS"]
-        CheckExt["检查文件扩展名"]
-        ExtMjs[".mjs → ESM"]
-        ExtCjs[".cjs → CJS"]
-        ExtJs[".js → 按 type 字段"]
-        ExtTs[".ts → 按 tsconfig"]
+    subgraph ESM解析
+        A[import 'x'] --> B&#123;URL格式?&#125;
+        B -->|是| C[直接加载]
+        B -->|否| D[裸导入]
+        D --> E[node_modules查找]
+        E --> F[package.json exports]
+        F --> G[条件导出解析]
+        G --> H[加载目标文件]
     end
-    
-    subgraph ESM_Path["ESM 解析路径"]
-        ESM_Specifier["解析说明符<br/>(Specifier)"]
-        ESM_Relative["相对路径<br/>./foo.js"]
-        ESM_Absolute["绝对路径<br/>/path/to/foo.js"]
-        ESM_Bare["裸导入<br/>foo / foo/bar"]
-        ESM_URL["URL 路径<br/>file:// / https://"]
-        
-        ESM_NodeModules["node_modules 查找<br/>逐层向上"]
-        ESM_Exports["解析 exports 字段<br/>条件导出"]
-        ESM_Main["解析 main 字段"]
-        ESM_Index["尝试 index.js"]
+    subgraph CJS解析
+        I[require'x'] --> J&#123;核心模块?&#125;
+        J -->|是| K[加载核心模块]
+        J -->|否| L&#123;以./或../开头?&#125;
+        L -->|是| M[相对路径解析]
+        M --> N[.js/.json/.node]
+        L -->|否| O[node_modules查找]
+        O --> P[逐层向上遍历]
+        P --> Q[解析main字段]
     end
-    
-    subgraph CJS_Path["CJS 解析路径"]
-        CJS_Specifier["解析说明符"]
-        CJS_Relative["相对路径<br/>./foo"]
-        CJS_Absolute["绝对路径"]
-        CJS_Bare["裸导入"]
-        
-        CJS_NodeModules["node_modules 查找"]
-        CJS_Main["解析 main 字段"]
-        CJS_Index["尝试 index.js"]
-        CJS_ExtOrder["扩展名优先级:<br/>.js → .json → .node"]
+```
+
+## ESM 模块解析
+
+### 裸导入解析流程
+
+```mermaid
+flowchart LR
+    A[import 'lodash'] --> B[node_modules/lodash/package.json]
+    B --> C&#123;exports字段?&#125;
+    C -->|是| D[条件导出匹配]
+    C -->|否| E[main字段]
+    D --> F[import/require条件]
+    F --> G[types条件]
+    G --> H[加载目标文件]
+```
+
+```json
+// 条件导出示例
+&#123;
+  "exports": &#123;
+    ".": &#123;
+      "import": &#123;
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      &#125;,
+      "require": &#123;
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      &#125;
+    &#125;,
+    "./package.json": "./package.json"
+  &#125;
+&#125;
+```
+
+## CJS 模块解析
+
+### require() 的完整路径
+
+```mermaid
+flowchart TD
+    A[require'module'] --> B[核心模块?]
+    B -->|是| C[返回核心模块]
+    B -->|否| D[路径以/开头?]
+    D -->|是| E[绝对路径]
+    D -->|否| F[路径以./或../开头?]
+    F -->|是| G[相对路径解析]
+    G --> H[添加.js/.json/.node]
+    F -->|否| I[node_modules查找]
+    I --> J[当前目录/node_modules]
+    J --> K[父目录/node_modules]
+    K --> L[/node_modules]
+    L --> M[解析package.json]
+```
+
+### 文件扩展名解析
+
+```javascript
+// require('./module') 的查找顺序：
+// 1. ./module.js
+// 2. ./module.json
+// 3. ./module.node
+// 4. ./module/index.js
+// 5. ./module/index.json
+// 6. ./module/index.node
+```
+
+## ESM/CJS 互操作
+
+### Node.js 互操作规则
+
+```mermaid
+flowchart LR
+    subgraph ESM导入CJS
+        A[import foo from 'cjs'] --> B[获取module.exports]
+        B --> C[作为默认导出]
+        A --> D[import &#123; named &#125;] --> E[获取exports.xxx]
     end
-    
-    subgraph Interop["ESM/CJS 互操作"]
-        ESM_Import_CJS["ESM 导入 CJS"]
-        CJS_Require_ESM["CJS 导入 ESM<br/>❌ 静态 require 不支持"]
-        CJS_Import_ESM["CJS 使用 dynamic import()<br/>✅ 支持异步导入 ESM"]
-        
-        ESM_Namespace["import * as ns<br/>ns.default = module.exports"]
-        ESM_Default["import foo<br/>foo = module.exports"]
-        ESM_Named["import { foo }<br/>从 exports 解构"]
-        
-        CJS_InteropWrap["__esModule 标记检查"]
-        CJS_DefaultExport["default 导出处理"]
+    subgraph CJS导入ESM
+        F[require'esm'] --> G[❌ 错误]
+        F --> H[await import'esm'] --> I[✅ 动态导入]
     end
-    
-    subgraph Resolution["最终解析"]
-        LoadFile["加载文件"]
-        ParseModule["解析模块"]
-        CreateModuleRecord["创建模块记录<br/>Module Record"]
-        LinkModules["链接模块<br/>解析导入/导出"]
-        ExecuteModule["执行模块"]
-        CacheModule["缓存模块<br/>Module Map"]
-    end
-    
-    Start --> CheckPkg
-    CheckPkg -->|"存在"| TypeModule
-    CheckPkg -->|"存在"| TypeCommon
-    CheckPkg -->|"不存在"| CheckExt
-    
-    TypeModule --> ESM_Specifier
-    TypeCommon --> CJS_Specifier
-    
-    CheckExt --> ExtMjs
-    CheckExt --> ExtCjs
-    CheckExt --> ExtJs
-    CheckExt --> ExtTs
-    ExtMjs --> ESM_Specifier
-    ExtCjs --> CJS_Specifier
-    ExtJs --> CheckPkg
-    ExtTs --> ESM_Specifier
-    
-    %% ESM 路径
-    ESM_Specifier --> ESM_Relative
-    ESM_Specifier --> ESM_Absolute
-    ESM_Specifier --> ESM_Bare
-    ESM_Specifier --> ESM_URL
-    
-    ESM_Bare --> ESM_NodeModules
-    ESM_NodeModules --> ESM_Exports
-    ESM_Exports -->|"无 exports"| ESM_Main
-    ESM_Main -->|"无 main"| ESM_Index
-    
-    ESM_Relative -->|"无扩展名"| CheckExt
-    ESM_Absolute -->|"无扩展名"| CheckExt
-    ESM_Index --> LoadFile
-    
-    %% CJS 路径
-    CJS_Specifier --> CJS_Relative
-    CJS_Specifier --> CJS_Absolute
-    CJS_Specifier --> CJS_Bare
-    
-    CJS_Bare --> CJS_NodeModules
-    CJS_NodeModules --> CJS_Main
-    CJS_Main -->|"无 main"| CJS_Index
-    CJS_Index --> CJS_ExtOrder
-    CJS_ExtOrder --> LoadFile
-    
-    CJS_Relative --> CJS_ExtOrder
-    
-    %% 互操作分支
-    LoadFile -->|"文件是 CJS<br/>从 ESM 导入"| ESM_Import_CJS
-    LoadFile -->|"文件是 ESM<br/>从 CJS 导入"| CJS_Require_ESM
-    
-    ESM_Import_CJS --> ESM_Namespace
-    ESM_Import_CJS --> ESM_Default
-    ESM_Import_CJS --> ESM_Named
-    
-    CJS_Require_ESM -->|"报错"| CJS_Import_ESM
-    CJS_Import_ESM -->|"返回 Promise"| ParseModule
-    
-    ESM_Namespace --> CJS_InteropWrap
-    ESM_Default --> CJS_InteropWrap
-    ESM_Named --> CJS_InteropWrap
-    CJS_InteropWrap --> CJS_DefaultExport
-    
-    %% 最终流程
-    CJS_DefaultExport --> ParseModule
-    LoadFile -.->|"直接加载"| ParseModule
-    
-    ParseModule --> CreateModuleRecord
-    CreateModuleRecord --> LinkModules
-    LinkModules --> ExecuteModule
-    ExecuteModule --> CacheModule
-    CacheModule --> End(["返回导出"])
-    
-    %% 样式
-    style Detection fill:#e3f2fd
-    style ESM_Path fill:#e8f5e9
-    style CJS_Path fill:#fff3e0
-    style Interop fill:#fce4ec
-    style Resolution fill:#f3e5f5
-    style Start fill:#bbdefb
-    style End fill:#c8e6c9
+```
+
+| 方向 | 语法 | 结果 | 说明 |
+|------|------|------|------|
+| ESM → CJS | `import def from 'cjs'` | `module.exports` | 作为默认导出 |
+| ESM → CJS | `import &#123; named &#125; from 'cjs'` | `exports.named` | Node 14+ 支持 |
+| CJS → ESM | `require('esm')` | ❌ 错误 | CJS 不能同步 require ESM |
+| CJS → ESM | `await import('esm')` | ✅ 正常 | 动态 import 可用 |
+
+### 双模式包的最佳实践
+
+```json
+&#123;
+  "name": "my-lib",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": &#123;
+    ".": &#123;
+      "import": &#123;
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      &#125;,
+      "require": &#123;
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      &#125;
+    &#125;
+  &#125;
+&#125;
+```
+
+## 参考资源
+
+- [模块系统导读](/fundamentals/module-system) — ESM/CJS 核心机制深度解析
+- [模块系统专题](/module-system/) — 完整专题（8篇深度文档）
+
+---
+
+ [← 返回架构图首页](./)

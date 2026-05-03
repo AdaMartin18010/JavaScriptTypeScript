@@ -1,85 +1,125 @@
 ---
-title: 渐进类型系统精度格 (Gradual Typing Lattice)
+title: 渐进类型系统精度格
+description: "展示从动态类型到静态类型的渐进类型系统精度格，含 TypeScript 的类型层级与 soundness 边界"
 ---
 
+# 渐进类型系统精度格 (Gradual Typing Lattice)
+
+> 渐进类型（Gradual Typing）允许开发者在动态类型和静态类型之间平滑过渡。TypeScript 是最成功的渐进类型系统实现之一。
+
+## 类型系统精度格
+
+```mermaid
 flowchart BT
-    subgraph Consistency["类型一致性 (Consistent With) ~"]
-        direction TB
+    %% 顶部：完全动态
+    A[any] --> B[unknown]
+
+    %% 中间层：渐进类型
+    B --> C[string | number | boolean]
+    B --> D[object]
+    B --> E[void]
+
+    %% 更精确的类型
+    C --> F[string]
+    C --> G[number]
+    C --> H[boolean]
+    C --> I[literal 'hello']
+    C --> J[literal 42]
+
+    D --> K[&#123; name: string &#125;]
+    D --> L[Array&lt;T&gt;]
+    D --> M[Function]
+
+    K --> N[&#123; name: 'Alice' &#125;]
+
+    %% 底部：never
+    F --> O[never]
+    G --> O
+    H --> O
+    I --> O
+    J --> O
+    N --> O
+    L --> O
+    M --> O
+    E --> O
+
+    style A fill:#ff6b6b,color:#fff
+    style O fill:#4ecdc4,color:#fff
+```
+
+## 渐进类型的核心思想
+
+```mermaid
+flowchart LR
+    subgraph 动态类型
+        A[JavaScript] --> B[运行时检查]
+        B --> C[运行时错误]
     end
-    
-    %% 精度层次 - 从下到上精度降低
-    subgraph Precise["精确类型 (最严格)"]
-        P1["具体值类型<br/>'hello' | 42 | true"]
-        P2["字面量联合<br/>'a' | 'b' | 'c'"]
-        P3["基础类型<br/>string | number | boolean"]
+    subgraph 渐进类型
+        D[TypeScript] --> E[编译时检查]
+        E -->|部分| F[类型安全]
+        E -->|部分| G[any类型]
     end
-    
-    subgraph Structured["结构化类型"]
-        S1["精确对象类型<br/>{ name: 'John', age: 30 }"]
-        S2["接口类型<br/>interface Person { name: string }"]
-        S3["泛型实例<br/>Array&lt;'hello'&gt;"]
+    subgraph 静态类型
+        H[Java/Haskell] --> I[编译时检查]
+        I --> J[完全类型安全]
     end
-    
-    subgraph Generic["泛型层次"]
-        G1["有界泛型<br/>T extends string"]
-        G2["无界泛型<br/>T"]
-    end
-    
-    subgraph Dynamic["动态类型 (最宽松)"]
-        D1["联合类型<br/>string | number"]
-        D2["交叉类型<br/>A &amp; B"]
-        D3["unknown<br/>安全顶层类型"]
-        D4["any<br/>禁用类型检查 ☠️"]
-    end
-    
-    %% 精度序关系（向上精度降低）
-    P1 --> P2
-    P2 --> P3
-    
-    P1 --> S1
-    S1 --> S2
-    S2 --> S3
-    
-    P3 --> G1
-    S2 --> G1
-    S3 --> G2
-    G1 --> G2
-    
-    G2 --> D1
-    G2 --> D2
-    D1 --> D3
-    D2 --> D3
-    D3 --> D4
-    
-    %% 一致性关系（虚线）
-    P1 -.->|"~"| S1
-    P2 -.->|"~"| G1
-    S2 -.->|"~"| D1
-    G2 -.->|"~"| D3
-    
-    %% 特殊标记
-    D4 -.->|"隐式转换"| P3
-    D4 -.->|"隐式转换"| S2
-    
-    %% 子类型关系
-    subgraph Subtyping["子类型关系 <:"]
-        direction LR
-        ST1["'hello' <: string"]
-        ST2["{x:1,y:2} <: {x:number}"]
-        ST3["T extends U ⇒ T <: U"]
-    end
-    
-    %% 注释
-    Note1["↑ 向上 = 精度降低<br/>↓ 向下 = 精度提高"]
-    Note2["any 与所有类型一致<br/>但会破坏类型安全"]
-    
-    D4 --> Note2
-    D3 --> Note1
-    
-    style Precise fill:#c8e6c9
-    style Structured fill:#bbdefb
-    style Generic fill:#fff9c4
-    style Dynamic fill:#ffcdd2
-    style D4 fill:#ef9a9a
-    style Note1 fill:#f5f5f5
-    style Note2 fill:#ffccbc
+```
+
+| 特性 | 动态类型 (JS) | 渐进类型 (TS) | 静态类型 (Java) |
+|------|--------------|--------------|----------------|
+| 类型检查时机 | 运行时 | 编译时 | 编译时 |
+| 类型错误发现 | 运行时报错 | 编译时报错 | 编译时报错 |
+| 迁移成本 | 无 | 低（可渐进） | 高（需重写） |
+| 类型精度 | 无 | 可调 | 高 |
+| 运行时开销 | 可能有检查 | 零（擦除） | 零或低 |
+
+## TypeScript 的类型层级
+
+```typescript
+// 最宽松的类型：any
+let anything: any = 4;
+anything = 'string'; // ✅
+anything.toFixed();  // ✅ 编译通过，运行时可能报错
+
+// 安全的顶级类型：unknown
+let unknownValue: unknown = 4;
+unknownValue.toFixed(); // ❌ 编译错误
+if (typeof unknownValue === 'number') &#123;
+  unknownValue.toFixed(); // ✅ 类型收窄后安全
+&#125;
+
+// 最严格的类型：never
+function throwError(): never &#123;
+  throw new Error('error');
+&#125;
+```
+
+## Soundness 与 Completeness 的权衡
+
+```mermaid
+flowchart LR
+    A[Soundness<br/>类型正确] --> B[误报多]
+    C[Completeness<br/>接受所有正确程序] --> D[漏报多]
+    E[TypeScript选择] -->|平衡| F[实用主义]
+    F --> G[常见错误捕获]
+    F --> H[any 逃生舱]
+```
+
+TypeScript 的设计哲学是**实用性优先于 soundness**：
+
+```typescript
+// 不 sound 但实用的例子
+const arr: any[] = [1, 'two', 3];
+const numbers: number[] = arr as number[]; // 编译通过，运行时不安全
+// TypeScript 允许 as 断言，因为这是有用的逃生舱
+```
+
+## 参考资源
+
+- [类型系统导读](/fundamentals/type-system) — 结构类型、泛型、变型
+- [10-fundamentals/10.2-type-system](/fundamentals/type-system) — 渐进类型理论深度解析
+
+---
+
+ [← 返回架构图首页](./)

@@ -1,93 +1,115 @@
 ---
-title: JavaScript/TypeScript 全景知识库 - 项目知识图谱
+title: JavaScript/TypeScript 全景知识库
+description: "Awesome JS/TS Ecosystem 项目的知识图谱，展示各专题间的关联关系与学习路径"
 ---
 
-graph TB
-    subgraph Meta [元认知层]
-        GLOSSARY[GLOSSARY.md<br/>术语标准]
-        INDEX[COMPLETE_DOCUMENTATION_INDEX.md<br/>完整索引]
+# JavaScript/TypeScript 全景知识库 - 项目知识图谱
+
+> 本项目构建了一个完整的 JavaScript/TypeScript 学习与知识体系。本图谱展示了各专题间的关联关系，帮助学习者规划最优学习路径。
+
+## 知识图谱总览
+
+```mermaid
+mindmap
+  root((JS/TS<br/>知识体系))
+    语言基础
+      语言语义
+      类型系统
+      执行模型
+      模块系统
+      对象模型
+      ECMAScript规范
+    工程实践
+      构建工具
+      测试工程
+      性能工程
+      安全合规
+      DevOps
+    前端框架
+      React生态
+      Vue生态
+      Svelte/Solid
+      状态管理
+    后端与API
+      Node.js
+      API设计
+      数据库ORM
+      微服务
+    前沿技术
+      WebAssembly
+      AI/ML推理
+      边缘计算
+      Rust工具链
+    理论基础
+      范畴论
+      类型论
+      认知科学
+```
+
+## 核心学习路径
+
+```mermaid
+flowchart LR
+    subgraph 基础路径
+        A[语言语义] --> B[类型系统]
+        B --> C[执行模型]
+        C --> D[模块系统]
     end
-
-    subgraph Theory [理论层 - JSTS全景综述]
-        LANG[01_language_core<br/>语言核心]
-        CONCURRENCY[04_concurrency<br/>并发模型]
-        DIST[05_distributed_systems<br/>分布式系统]
-        ARCH[07_architecture<br/>架构设计]
-        AI_ML[10_ai_ml<br/>AI/ML]
-        ACADEMIC[ACADEMIC_ALIGNMENT_2025<br/>学术前沿]
+    subgraph 工程路径
+        E[构建工具] --> F[测试工程]
+        F --> G[性能工程]
+        G --> H[DevOps]
     end
-
-    subgraph Practice [实践层 - jsts-code-lab]
-        CORE[00-language-core]
-        ECMA[01-ecmascript-evolution]
-        PATTERNS[02-design-patterns]
-        CONCUR[03-concurrency]
-        DS[04-data-structures]
-        ALGO[05-algorithms]
-        ARCHP[06-architecture-patterns]
-        TEST[07-testing]
-        FE[18-frontend-frameworks]
-        BE[19-backend-development]
-        MICRO[25-microservices]
-        BROWSER[50-browser-runtime]
-        DIST_SYS[70-distributed-systems]
-        CONSENSUS[71-consensus-algorithms]
-        FORMAL[80-formal-verification]
+    subgraph 进阶路径
+        I[设计模式] --> J[架构模式]
+        J --> K[微服务]
+        K --> L[边缘计算]
     end
+    D --> E
+    H --> I
+```
 
-    subgraph Tools [工具层 - awesome-jsts-ecosystem]
-        ECOSYS[awesome-jsts-ecosystem<br/>生态导航]
+## 专题关联矩阵
+
+| 专题 | 前置知识 | 关联专题 | 难度 |
+|------|----------|----------|------|
+| 语言语义 | 无 | 类型系统、执行模型 | 🌱 初级 |
+| 类型系统 | 语言语义 | 执行模型、对象模型 | 🌿 中级 |
+| 执行模型 | 语言语义 | 性能工程、内存模型 | 🌿 中级 |
+| 模块系统 | 语言语义 | DevOps、微服务 | 🌿 中级 |
+| 状态管理 | 前端框架 | 设计模式、性能工程 | 🌿 中级 |
+| 微服务 | 模块系统、API设计 | DevOps、数据库 | 🍂 高级 |
+| WebAssembly | 执行模型、性能工程 | 边缘计算、Rust | 🍂 高级 |
+| 范畴论 | 类型系统 | 函数式编程 | 🍁 专家 |
+
+## 项目结构导航
+
+```mermaid
+flowchart TB
+    subgraph 源码目录
+        A[10-fundamentals] --> B[语言核心文档]
+        C[20-code-lab] --> D[动手实验]
+        E[30-knowledge-base] --> F[知识体系]
+        G[50-examples] --> H[实战示例]
+        I[70-theoretical-foundations] --> J[理论前沿]
     end
-
-    subgraph Paths [路径层 - docs]
-        BEGIN[beginners-path.md]
-        INTER[intermediate-path.md]
-        ADV[advanced-path.md]
-        DT[decision-trees.md<br/>决策树]
-        CM[comparison-matrices<br/>对比矩阵]
+    subgraph 网站
+        K[website/] --> L[VitePress站点]
+        L --> M[指南与示例]
     end
+    B --> L
+    D --> L
+    F --> L
+    H --> L
+    J --> L
+```
 
-    %% Cross-layer relationships
-    LANG --> CORE
-    LANG --> ECMA
-    CONCURRENCY --> CONCUR
-    CONCURRENCY --> BROWSER
-    DIST --> DIST_SYS
-    DIST --> CONSENSUS
-    ARCH --> ARCHP
-    ARCH --> MICRO
-    ACADEMIC --> FORMAL
+## 参考资源
 
-    %% Intra-practice dependencies
-    CORE --> PATTERNS
-    CORE --> CONCUR
-    CORE --> DS
-    PATTERNS --> ARCHP
-    ARCHP --> MICRO
-    MICRO --> DIST_SYS
-    DS --> ALGO
-    CONCUR --> BROWSER
-    CONCUR --> DIST_SYS
-    DIST_SYS --> CONSENSUS
+- [项目首页](/) — 完整知识体系列表
+- [理论前沿](/theoretical-foundations/) — 36篇理论摘要
+- [代码实验室](/code-lab/) — 动手实验集合
 
-    %% Tool mappings
-    ECOSYS --> FE
-    ECOSYS --> BE
-    ECOSYS --> MICRO
+---
 
-    %% Learning paths
-    BEGIN --> CORE
-    BEGIN --> PATTERNS
-    INTER --> ARCHP
-    INTER --> CONCUR
-    ADV --> DIST_SYS
-    ADV --> CONSENSUS
-    ADV --> FORMAL
-
-    %% Meta connections
-    GLOSSARY -.-> Theory
-    GLOSSARY -.-> Practice
-    GLOSSARY -.-> Tools
-    INDEX -.-> Theory
-    INDEX -.-> Practice
-    INDEX -.-> Paths
+ [← 返回架构图首页](./)

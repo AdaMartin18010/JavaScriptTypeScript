@@ -1,128 +1,140 @@
 ---
 title: Promise 状态机转换图
-description: Promise 状态机转换图
+description: "Promise 的三种状态转换机制，含 then/catch/finally 的调用流程与错误传播规则"
 ---
 
+# Promise 状态机转换图
+
+> Promise 是 JavaScript 异步编程的核心抽象。理解其状态机模型对于编写可靠的异步代码至关重要。
+
+## Promise 状态机
+
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '16px'}}}%%
 stateDiagram-v2
-    [*] --> Pending: new Promise(executor)
-    
-    state "⏳ Pending (等待中)" as Pending {
-        [*] --> Executing
-        Executing --> Pending : 异步操作进行中
-        
-        note right of Pending
-            可以转换到:
-            - Fulfilled (通过 resolve)
-            - Rejected (通过 reject)
-            不可转换为自身
-        end note
-    }
-    
-    Pending --> Fulfilled: ✅ resolve(value)
-    Pending --> Rejected: ❌ reject(reason)
-    
-    state "✅ Fulfilled (已成功)" as Fulfilled {
-        [*] --> ValueSet
-        
-        state "Value 不可变" as ValueSet {
-            [*] --> HasValue
-        }
-        
-        note right of Fulfilled
-            - Promise 已成功完成
-            - [[Prototype]]: Promise.prototype
-            - [[PromiseState]]: "fulfilled"
-            - [[PromiseResult]]: value
-            - 不可再次改变状态
-        end note
-    }
-    
-    state "❌ Rejected (已拒绝)" as Rejected {
-        [*] --> ReasonSet
-        
-        state "Reason 不可变" as ReasonSet {
-            [*] --> HasReason
-        }
-        
-        note right of Rejected
-            - Promise 已失败
-            - [[Prototype]]: Promise.prototype
-            - [[PromiseState]]: "rejected"
-            - [[PromiseResult]]: reason
-            - 不可再次改变状态
-        end note
-    }
-    
-    Fulfilled --> [*]: 无更多引用
-    Rejected --> [*]: 无更多引用
-    
-    note "🚫 重要: Promise 状态一旦确定就不可改变<br/>只能从 Pending → Fulfilled 或 Pending → Rejected"
-    
-    state Chain <<choice>>
-    
-    Fulfilled --> Chain: .then(onFulfilled)
-    Rejected --> Chain: .then(null, onRejected)<br/>.catch(onRejected)
-    
-    state Chain {
-        [*] --> ReturnNewPromise
-        
-        state ReturnNewPromise {
-            [*] --> ThenableReturned : onFulfilled/onRejected 返回值
-            [*] --> ThrowError : 抛出异常
-            [*] --> PassThrough : 未提供处理器
-            
-            ThenableReturned --> NewPromiseFulfilled : 返回值
-            ThrowError --> NewPromiseRejected : reject(error)
-            PassThrough --> NewFulfilled : resolve(原value)
-            PassThrough --> NewRejected : reject(原reason)
-        }
-    }
-    
-    state "Promise 链式调用" as Chaining {
-        [*] --> ThenMethod
-        
-        state ThenMethod {
-            [*] --> ReturnPromise
-            ReturnPromise --> ChainedThen : .then()
-            ChainedThen --> ChainedCatch : .catch()
-            ChainedCatch --> ChainedFinally : .finally()
-        }
-    }
-    
-    Chain --> Chaining
-    
-    Chaining --> Fulfilled: 链式调用 resolve
-    Chaining --> Rejected: 链式调用 reject
-    
-    state "Promise 静态方法" as StaticMethods {
-        [*] --> PromiseAll
-        [*] --> PromiseRace
-        [*] --> PromiseAllSettled
-        [*] --> PromiseAny
-        [*] --> PromiseResolve
-        [*] --> PromiseReject
-        
-        PromiseAll --> Fulfilled: 所有 Promise 完成
-        PromiseAll --> Rejected: 任一 Promise 拒绝
-        
-        PromiseRace --> Fulfilled: 最快完成
-        PromiseRace --> Rejected: 最快拒绝
-        
-        PromiseAllSettled --> Fulfilled: 总是完成
-        
-        PromiseAny --> Fulfilled: 任一完成
-        PromiseAny --> Rejected: 全部拒绝
-        
-        PromiseResolve --> Fulfilled: 立即完成
-        PromiseReject --> Rejected: 立即拒绝
-    }
-    
-    note "State Transitions Summary"
-    
-    Pending -[#blue]-> Fulfilled : resolve(value) [不可逆]
-    Pending -[#red]-> Rejected : reject(reason) [不可逆]
-    Fulfilled -[#green]-> [*] : .then() 返回新 Promise
-    Rejected -[#orange]-> [*] : .catch() 可恢复
+    [*] --> Pending: new Promise()
+    Pending --> Fulfilled: resolve(value)
+    Pending --> Rejected: reject(reason)
+    Fulfilled --> [*]
+    Rejected --> [*]
+    note right of Pending
+        初始状态
+        可以转换为
+        Fulfilled 或 Rejected
+    end note
+    note right of Fulfilled
+        终态
+        不可再次改变
+    end note
+    note right of Rejected
+        终态
+        不可再次改变
+    end note
 ```
+
+## then/catch 的调用链
+
+```mermaid
+flowchart LR
+    A[Promise.resolve1] --> B[.then]
+    B --> C[返回值x]
+    C --> D[.then]
+    D --> E[抛出错误]
+    E --> F[.catch]
+    F --> G[恢复]
+    G --> H[.finally]
+    H --> I[Promise.resolve2]
+```
+
+## 关键规则
+
+### 规则1：状态不可变
+
+```javascript
+const p = new Promise((resolve, reject) => &#123;
+  resolve('first');
+  resolve('second'); // 被忽略，状态已确定
+  reject('error');   // 被忽略
+&#125;);
+
+p.then(v => console.log(v)); // 输出: first
+```
+
+### 规则2：then 返回新 Promise
+
+```javascript
+const p1 = Promise.resolve(1);
+const p2 = p1.then(v => v * 2);
+
+console.log(p1 === p2); // false，总是返回新 Promise
+```
+
+### 规则3：错误传播
+
+```javascript
+Promise.resolve()
+  .then(() => &#123; throw new Error('A'); &#125;)
+  .then(() => console.log('B'))  // 跳过
+  .catch(e => console.log(e))     // 捕获: Error A
+  .then(() => console.log('C'));  // 继续执行: C
+```
+
+## Promise 组合
+
+```mermaid
+flowchart TB
+    subgraph Promise.all
+        A[p1] --> D[全部成功]
+        B[p2] --> D
+        C[p3] --> D
+        E[任一失败] --> F[整体失败]
+    end
+    subgraph Promise.race
+        G[p1] --> H[最先 settled]
+        I[p2] --> H
+    end
+    subgraph Promise.allSettled
+        J[p1] --> K[等待全部完成]
+        L[p2] --> K
+        K --> L[返回所有结果]
+    end
+```
+
+| 方法 | 成功条件 | 失败条件 | 返回值 |
+|------|----------|----------|--------|
+| `Promise.all` | 全部 resolve | 任一 reject | 结果数组 |
+| `Promise.race` | 最先 settle | 最先 reject | 单个结果 |
+| `Promise.allSettled` | 全部完成 | 不会失败 | 状态对象数组 |
+| `Promise.any` | 任一 resolve | 全部 reject | 单个结果 |
+
+## async/await 的本质
+
+```mermaid
+flowchart LR
+    A[async function] --> B[返回 Promise]
+    C[await expr] --> D[暂停执行]
+    D --> E[expr resolve]
+    E --> F[恢复执行]
+```
+
+```javascript
+// async/await 是 Promise 的语法糖
+async function example() &#123;
+  const result = await fetch('/api'); // 等待 Promise resolve
+  return result.json();               // 自动包装为 Promise
+&#125;
+
+// 等价于：
+function example() &#123;
+  return fetch('/api')
+    .then(result => result.json());
+&#125;
+```
+
+## 参考资源
+
+- **并发异步专题** — Web Workers、SharedArrayBuffer
+- [执行模型导读](/fundamentals/execution-model) — 事件循环与异步机制
+
+---
+
+ [← 返回架构图首页](./)
