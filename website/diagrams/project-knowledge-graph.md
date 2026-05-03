@@ -104,6 +104,40 @@ flowchart TB
     J --> L
 ```
 
+## 推荐学习路径
+
+### 路径一：前端工程师进阶
+
+```mermaid
+flowchart LR
+    A[语言基础] --> B[前端框架]
+    B --> C[状态管理]
+    C --> D[性能优化]
+    D --> E[测试工程]
+    E --> F[DevOps]
+```
+
+### 路径二：全栈工程师
+
+```mermaid
+flowchart LR
+    A[语言基础] --> B[Node.js]
+    B --> C[数据库ORM]
+    C --> D[API设计]
+    D --> E[微服务]
+    E --> F[DevOps]
+```
+
+### 路径三：前沿技术探索
+
+```mermaid
+flowchart LR
+    A[类型系统] --> B[WebAssembly]
+    B --> C[Rust工具链]
+    C --> D[AI推理]
+    D --> E[边缘计算]
+```
+
 ## 参考资源
 
 - [项目首页](/) — 完整知识体系列表
