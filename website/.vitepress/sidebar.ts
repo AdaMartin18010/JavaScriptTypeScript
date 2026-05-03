@@ -799,6 +799,14 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '服务网格通信', link: '/examples/microservices/service-mesh-communication' },
         { text: '🎨 前端模式示例首页', link: '/examples/frontend-patterns/' },
         { text: '组件组合模式', link: '/examples/frontend-patterns/component-composition-patterns' },
+        { text: '🦀 Rust 工具链示例首页', link: '/examples/rust-toolchain/' },
+        { text: 'napi-rs 与 WASM 绑定', link: '/examples/rust-toolchain/napi-rs-wasm-bindgen' },
+        { text: '⚡ WebAssembly 示例首页', link: '/examples/webassembly/' },
+        { text: 'WASM 模块集成', link: '/examples/webassembly/wasm-module-integration' },
+        { text: '📊 GraphQL 生产示例首页', link: '/examples/graphql-production/' },
+        { text: '联邦网关架构', link: '/examples/graphql-production/federated-graphql-gateway' },
+        { text: '🤖 AI/ML 推理示例首页', link: '/examples/ai-ml-inference/' },
+        { text: '浏览器端 AI 推理', link: '/examples/ai-ml-inference/onnx-runtime-web' },
       ]
     }
   ],

@@ -249,7 +249,7 @@ GraphQL 的生产级应用与本站点的 [应用设计专题](/application-desi
 ### 跨专题关联
 
 - **[应用设计专题](/application-design/)** — 深入探讨领域驱动设计、架构模式与接口契约设计，为 GraphQL schema 的长期演进提供理论基础。
-- **[后端 API 专题](/backend-apis/)** — 涵盖 REST、GraphQL、gRPC 等多种 API 风格的对比选型及服务端实现最佳实践。
+- **后端 API 专题** — 涵盖 REST、GraphQL、gRPC 等多种 API 风格的对比选型及服务端实现最佳实践。
 - **[性能工程专题](/performance-engineering/)** — 讲解 API 层缓存策略、数据库查询优化及分布式系统的性能调优方法论。
 
 ## 参考与引用
