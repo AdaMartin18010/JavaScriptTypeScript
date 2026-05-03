@@ -123,7 +123,7 @@ flowchart LR
 ## 交叉引用
 
 - **[理论前沿 / 范畴论](/theoretical-foundations/cat-01-category-theory-primer)** — 类型理论的数学基础
-- **[理论前沿 / 认知交互模型](/theoretical-foundations/cog-01-cognitive-load-theory)** — 编程认知科学
+- **[理论前沿 / 认知交互模型](/theoretical-foundations/cog-01-cognitive-science-primer)** — 编程认知科学
 - **[编程原则 / 抽象解释](/programming-principles/07-abstract-interpretation)** — 程序分析的静态技术
 - **[编程原则 / 类型论基础](/programming-principles/03-type-theory-fundamentals)** — 类型系统的形式化理论
 
