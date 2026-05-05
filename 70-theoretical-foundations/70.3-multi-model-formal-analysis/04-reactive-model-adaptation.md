@@ -1,7 +1,7 @@
 ---
 title: "响应式模型的适配理论"
 description: "React/Vue/Solid/Svelte 响应式模型的适配与不可表达性证明"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

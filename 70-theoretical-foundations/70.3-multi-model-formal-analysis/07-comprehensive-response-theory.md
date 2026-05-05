@@ -1,7 +1,7 @@
 ---
 title: "综合响应理论"
 description: "即时+延迟+并发的统一响应框架与Event Loop形式化分析"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

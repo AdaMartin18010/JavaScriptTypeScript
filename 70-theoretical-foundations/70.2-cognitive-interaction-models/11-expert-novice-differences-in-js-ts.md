@@ -1,7 +1,7 @@
 ---
 title: "JS/TS 的专家-新手差异"
 description: "Dreyfus 模型、模式识别、新手错误根源、TS 错误信息可理解性"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

@@ -1,7 +1,7 @@
 ---
 title: "Rust vs TypeScript：范畴论视角下的全面对比"
 description: "从范畴论语境系统对比 Rust 与 TypeScript 的类型系统、所有权、错误处理、并发、泛型、生命周期六大维度，含精确直觉类比、正例与反例"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

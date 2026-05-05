@@ -1,7 +1,7 @@
 ---
 title: "React 代数效应与认知负荷深度分析"
 description: "Hooks 规则、Fiber 时间切片、Suspense、RSC 和 Concurrent Features 的认知心理学与对称差分析"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

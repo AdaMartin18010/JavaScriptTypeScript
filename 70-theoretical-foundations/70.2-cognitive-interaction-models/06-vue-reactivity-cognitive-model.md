@@ -1,7 +1,7 @@
 ---
 title: "Vue 响应式系统的认知模型"
 description: "Proxy 透明性、Ref vs Reactive、Composition vs Options API 的认知心理学深度分析"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

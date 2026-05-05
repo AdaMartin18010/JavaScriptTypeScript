@@ -1,7 +1,7 @@
-﻿---
+---
 title: "Topos 理论与类型系统的内部逻辑"
 description: "从 Topos 理论视角理解类型判断、子对象分类器、内部逻辑与直觉主义，含完整形式化定义、精确直觉类比、正例与反例"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

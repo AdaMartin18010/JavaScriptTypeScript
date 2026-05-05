@@ -1,7 +1,7 @@
 ---
 title: "Server Components 的范畴语义"
 description: "Categorical Semantics of Server Components: React Server Components as Comonads, Streaming SSR as Colimits"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

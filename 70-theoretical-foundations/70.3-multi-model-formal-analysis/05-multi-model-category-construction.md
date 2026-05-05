@@ -1,7 +1,7 @@
 ---
 title: "多模型的范畴构造"
 description: "构造模型范畴 Models，分析极限与余极限的语义"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

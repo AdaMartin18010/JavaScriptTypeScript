@@ -2,6 +2,7 @@
 title: "Islands 架构的范畴论语义"
 description: "将 Astro Islands 架构形式化为范畴论中的局部化构造，深入分析 Islands 的交互边界、hydration 策略的函子语义、偏序关系，以及与 SSR/CSR/RSC 的形式对称差"
 date: 2025-01-18
+last-updated: 2026-05-05
 category: "category-theory"
 tags: ["islands-architecture", "astro", "partial-hydration", "category-theory", "functor", "natural-transformation", "categorical-semantics", "formal-methods"]
 mermaid: true

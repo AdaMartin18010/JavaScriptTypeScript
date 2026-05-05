@@ -1,7 +1,7 @@
 ---
 title: "渲染引擎与人类认知感知"
 description: "帧率感知、渲染流水线与注意力、Core Web Vitals 与人类感知的深度映射，含对称差分析"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

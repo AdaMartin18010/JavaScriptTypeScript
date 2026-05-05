@@ -1,7 +1,7 @@
 ---
 title: "计算范式的范畴论统一模型"
 description: "从命令式、函数式、面向对象、逻辑编程、响应式的具体代码出发，理解它们背后的范畴结构"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

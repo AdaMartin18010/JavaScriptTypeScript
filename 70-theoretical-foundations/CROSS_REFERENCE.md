@@ -1,7 +1,8 @@
 # 70-theoretical-foundations 交叉引用索引
 
 > **用途**: 建立 70-theoretical-foundations 与现有项目内容的关联，避免重复并指引深化阅读
-> **最后更新**: 2026-04-30
+> **最后更新**: 2026-05-05
+> **文档总数**: 55 篇
 
 ---
 
@@ -87,6 +88,12 @@
 | `70.3/09-formal-verification` | `70.3/03-type-runtime-diff` | 前置阅读 |
 | `70.3/10-metamodel` | `70.3/05-model-category`, `70.3/07-comprehensive-response` | 前置阅读 |
 | `70.3/11-execution-framework-rendering-triangle` | `70.3/07-comprehensive-response`, `70.3/10-metamodel` | 前置阅读 |
+| `70.1/21-typescript-compiler-architecture` | `70.1/12-runtime`, `70.1/19-build-tools` | 前置阅读 |
+| `70.1/22-ecmascript-2025-2026-formal` | `70.1/01-primer`, `70.1/05-limits` | 前置阅读 |
+| `70.2/17-ai-assisted-programming` | `70.2/01-cognitive-primer`, `70.2/11-expert-novice`, `70.2/13-frontend-framework-computation` | 前置阅读 |
+| `70.3/14-heterogeneous-computing` | `70.3/11-execution-framework-rendering-triangle`, `70.3/12-meta-framework-symmetric-difference`, `70.3/13-unified-frontend-architecture` | 前置阅读 |
+| `70.3/15-security-model` | `70.3/09-formal-verification`, `70.3/10-unified-metamodel` | 前置阅读 |
+| `70.3/16-frontend-compiler-optimization` | `70.3/12-meta-framework-symmetric-difference`, `70.3/13-unified-frontend-architecture` | 前置阅读 |
 
 ---
 

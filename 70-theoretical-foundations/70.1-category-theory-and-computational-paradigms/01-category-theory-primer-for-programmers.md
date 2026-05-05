@@ -1,17 +1,20 @@
 ---
 title: "程序员视角的范畴论基础"
 description: "为 JS/TS 开发者建立范畴论直觉，从编程实践中的重复模式自然浮现抽象概念"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete
 priority: P1
 actual-length: ~9000 words
+english-abstract: "This paper presents a comprehensive programmer-oriented primer on category theory, establishing the mathematical foundations required for subsequent formal analyses of JavaScript and TypeScript systems. The theoretical contribution lies in reconstructing fundamental categorical concepts—including objects, morphisms, functors, natural transformations, and monads—from recurrent everyday programming patterns such as function composition, Array.map, and Promise chains, demonstrating that these abstract mathematical structures are not alien to practical software development but emerge naturally from repeated idioms. Methodologically, each concept is introduced through carefully constructed intuition analogies backed by runnable TypeScript examples, followed by rigorous boundary case analysis and counter-examples that clarify exactly when categorical intuition productively applies and when it encounters meaningful limitations. The engineering value enables practicing developers to recognize deep structural similarities across seemingly unrelated APIs, design more composable and reusable libraries, and reason about type-safe transformations using functor laws and compositional principles derived directly from category theory. By grounding abstract mathematics in familiar code patterns, the paper effectively lowers the barrier to formal reasoning for working programmers without sacrificing mathematical precision."
 references:
   - Awodey, Category Theory (2nd ed., 2010)
   - Pierce, Basic Category Theory for Computer Scientists (1991)
   - Milewski, Category Theory for Programmers (2019)
 ---
+
+> **Executive Summary** (English): This paper establishes category-theoretic intuition for JavaScript/TypeScript developers by grounding abstract concepts in everyday programming patterns. Rather than presenting definitions axiomatically, it reconstructs categorical structures—categories, functors, natural transformations, and monads—from recurrent code patterns such as function composition, Array.map, and Promise chains. The theoretical contribution is a pedagogical bridge between practical JS/TS idioms and rigorous category theory, demonstrating that TypeScript's type system, generic containers, and pipeline operators are concrete instances of categorical abstractions. Methodologically, each concept is introduced via a 'precise intuition analogy' backed by runnable TypeScript examples, followed by boundary case analysis (counter-examples) that clarifies when categorical intuition fails. The engineering value lies in enabling developers to recognize structural similarities across seemingly unrelated APIs, design more composable libraries, and reason about type-safe transformations using the functor laws and compositional principles derived from category theory.
 
 # 程序员视角的范畴论基础
 

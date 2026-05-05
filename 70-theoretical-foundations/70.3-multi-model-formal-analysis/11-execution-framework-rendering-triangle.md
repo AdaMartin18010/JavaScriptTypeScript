@@ -1,17 +1,21 @@
-﻿---
+---
 title: "执行-框架-渲染三角关联"
 description: "Execution-Framework-Rendering Triangle: Systematic Triadic Association"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete
 priority: P1
 actual-length: "~8569 words"
+english-abstract: "This paper conducts a systematic triadic analysis of the execution model, frontend framework design, and browser rendering optimization, revealing the structural constraints and co-evolutionary dynamics that define modern frontend architecture. The theoretical contribution is a formal integrated model demonstrating that JavaScript's execution model, framework reactivity patterns, and rendering engine mechanisms constitute a mutually constraining triangular relationship in which meaningful advances in any single dimension necessarily reshape requirements and constraints in the other two. Methodologically, the paper synthesizes detailed architectural analysis of event loop semantics, component reactivity systems, and compositor thread behaviors into a coherent framework supported by TypeScript-based executable simulations and empirical performance benchmarks. The engineering value lies in providing system architects with predictive models for technology selection and migration: by understanding precisely how execution model characteristics impact rendering performance and how framework abstractions interact with underlying engine optimizations, teams can make evidence-based decisions about framework adoption, rendering strategy evolution, and performance optimization investments rather than relying on intuition, popularity metrics, or marketing claims."
 references:
   - React Team, "Concurrent Mode" (2022)
   - Vue.js, "Vue 3 Compiler Optimizations" (2020)
   - Flutter Team, "Flutter Rendering Pipeline" (2023)
 ---
+
+> **Executive Summary** (English): This paper formalizes the systematic triadic association among JavaScript's execution model, frontend framework design, and browser rendering engine mechanics. The theoretical contribution is a three-category functorial model where the execution category (Event Loop, V8 JIT, async semantics), the framework category (component state, reactive systems), and the rendering category (DOM/CSSOM, layout, paint, composite) are linked by structure-preserving functors that explain how constraints in one domain propagate to the others. Methodologically, the paper combines historical evolution analysis (from jQuery to React Concurrent Features and Vue 3's reactivity rewrite) with TypeScript implementations of scheduler simulations, priority queues, and render-optimization derivations parameterized by execution model constraints. The engineering value is a unified diagnostic framework for performance bottlenecks: by decomposing any frontend issue into its execution, framework, and rendering dimensions, engineers can apply targeted optimizations—time-slicing for Event Loop saturation, memoization for unnecessary framework re-renders, and will-change/transform strategies for compositor-thread efficiency—rather than treating symptoms in isolation.
+
 # 执行-框架-渲染三角关联
 
 > **核心命题**：JavaScript 的执行模型、前端框架的设计、浏览器渲染引擎的机制，三者构成了一个相互制约、相互成就的三角关系。理解这个三角关系，是掌握现代前端技术的钥匙。

@@ -1,7 +1,7 @@
 ---
 title: "单子与代数效应：Promise/Async 与 Rust Result 的深度对比"
 description: "从单子三元组到代数效应处理器，系统对比 JS/TS 与 Rust 的计算模型，含完整形式化定义、精确直觉类比、正例与反例"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

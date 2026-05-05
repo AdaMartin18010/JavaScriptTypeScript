@@ -1,7 +1,7 @@
 ---
 title: "JavaScript 中的工作记忆负荷"
 description: "回调地狱、Promise、async/await、RxJS 的认知负荷深度对比分析，含工作记忆槽位计算与对称差矩阵"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

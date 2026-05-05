@@ -1,12 +1,13 @@
 ---
 title: "开发者认知科学基础"
 description: "工作记忆、认知负荷、心智模型、具身认知的跨学科入门：从大脑机制到代码设计"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete
 priority: P1
 actual-length: ~12000 words
+english-abstract: "This paper provides an interdisciplinary cognitive science primer meticulously tailored for software developers, building substantive bridges between psychological research and daily programming practice. The theoretical contribution is a systematic mapping of established cognitive mechanisms—including working memory capacity limits of four plus or minus one chunks, Baddeley's four-component model, cognitive load theory distinguishing intrinsic, extraneous, and germane loads, mental models, and embodied cognition—onto concrete JavaScript and TypeScript code design decisions. Methodologically, it employs comparative code examples to empirically measure cognitive load, applies dual-system theory to explain expert-novice differences in pattern recognition speed and accuracy, and incorporates spaced-repetition principles into programming education strategies. The engineering value is a practical analytical framework enabling developers to rigorously evaluate APIs, naming conventions, and syntax sugar through the lens of cognitive ergonomics, deliberately reducing extraneous cognitive load while maximizing germane load. The paper additionally traces the cognitive evolution of programming languages, demonstrating how type systems function as externalized memory aids that offload verification burdens from the developer's brain directly onto the compiler."
 references:
   - Baddeley, Working Memory (2007)
   - Sweller, Cognitive Load Theory (2011)
@@ -15,6 +16,8 @@ references:
   - Cowan, The Magical Number 4 (2001)
   - Kahneman, Thinking, Fast and Slow (2011)
 ---
+
+> **Executive Summary** (English): This paper provides an interdisciplinary primer on cognitive science tailored for software developers, bridging psychological research and programming practice. The theoretical contribution is a systematic mapping of cognitive mechanisms—working memory (4±1 chunks), Baddeley's four-component model, cognitive load theory (intrinsic/extraneous/germane), mental models, and embodied cognition—onto concrete code design decisions. Methodologically, it employs comparative code examples to measure cognitive load, uses Kahneman's dual-system theory to explain expert-novice differences in pattern recognition, and applies spaced-repetition principles to programming education. The engineering value is a practical analytical framework: developers can evaluate APIs, naming conventions, and syntax sugar through the lens of cognitive ergonomics, reducing extraneous load while increasing germane load. The paper also traces the cognitive evolution of programming languages from machine code to TypeScript, demonstrating how each abstraction layer liberates working memory and how type systems function as externalized memory aids that offload verification from the developer's brain to the compiler.
 
 # 开发者认知科学基础
 

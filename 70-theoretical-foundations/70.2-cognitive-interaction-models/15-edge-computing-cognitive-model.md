@@ -1,7 +1,7 @@
 ---
 title: "边缘计算的认知模型"
 description: "Cognitive Model of Edge Computing: Developer Mental Model Transition from Server-Client Binary to Edge-Origin-Client Ternary"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

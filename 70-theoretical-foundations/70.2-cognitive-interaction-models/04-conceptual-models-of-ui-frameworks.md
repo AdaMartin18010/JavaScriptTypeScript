@@ -1,7 +1,7 @@
 ---
 title: "UI 框架的概念模型映射"
 description: "Angular/React/Vue/Solid/Svelte 的多模型映射、对称差分析与框架切换认知成本量化"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

@@ -1,7 +1,7 @@
 ---
 title: "伴随函子与自由构造：从类型推断到编译器设计的深层结构"
 description: "从伴随函子视角理解类型推断、自动补全、AST转换和框架抽象的深层统一结构，含精确直觉类比、正例与反例"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

@@ -1,7 +1,7 @@
 # 70-theoretical-foundations 知识图谱 (Mermaid)
 
-> **用途**: 可视化 40 篇文档之间的理论依赖关系、跨方向引用和阅读路径
-> **最后更新**: 2026-04-30
+> **用途**: 可视化 55 篇文档之间的理论依赖关系、跨方向引用和阅读路径
+> **最后更新**: 2026-05-05
 
 ---
 
@@ -11,9 +11,9 @@
 graph TB
     subgraph L0["L0 理论基础层"]
         direction TB
-        701["70.1 范畴论与计算范式<br/>15 篇"]
-        702["70.2 认知交互模型<br/>14 篇"]
-        703["70.3 多模型形式化分析<br/>11 篇"]
+        701["70.1 范畴论与计算范式<br/>22 篇"]
+        702["70.2 认知交互模型<br/>17 篇"]
+        703["70.3 多模型形式化分析<br/>15 篇"]
     end
 
     subgraph L1["L1 语言核心层"]
@@ -72,11 +72,17 @@ graph LR
     12 --> 14["14 事件系统范畴语义"]
     04 --> 14
     14 --> 15
+    12 --> 21["21 TS 编译器架构<br/>与 CORSA"]
+    19 --> 21
+    01 --> 22["22 ECMAScript 2025-2026<br/>形式化分析"]
+    05 --> 22
 
     style 01 fill:#e1f5fe
     style 04 fill:#fff3e0
     style 10 fill:#fff3e0
     style 15 fill:#f3e5f5
+    style 21 fill:#e8f5e9
+    style 22 fill:#e8f5e9
 ```
 
 ---
@@ -103,11 +109,15 @@ graph LR
     07 --> 13
     08 --> 14["14 浏览器渲染引擎原理"]
     10 --> 14
+    01 --> 17["17 AI 辅助编程<br/>认知模型"]
+    11 --> 17
+    13 --> 17
 
     style 01 fill:#e8f5e9
     style 04 fill:#fff3e0
     style 13 fill:#f3e5f5
     style 14 fill:#f3e5f5
+    style 17 fill:#e1f5fe
 ```
 
 ---
@@ -130,10 +140,20 @@ graph LR
     07 --> 10
     07 --> 11["11 执行-框架-渲染三角"]
     10 --> 11
+    11 --> 14["14 异构计算<br/>形式化模型"]
+    12 --> 14
+    13 --> 14
+    09 --> 15["15 安全模型<br/>形式化基础"]
+    10 --> 15
+    12 --> 16["16 前端编译器<br/>优化形式化"]
+    13 --> 16
 
     style 01 fill:#e1f5fe
     style 10 fill:#fff3e0
     style 11 fill:#f3e5f5
+    style 14 fill:#e8f5e9
+    style 15 fill:#e8f5e9
+    style 16 fill:#e8f5e9
 ```
 
 ---
@@ -147,6 +167,8 @@ graph TB
         c10["10 Rust vs TS"]
         c14["14 事件系统"]
         c15["15 并发计算"]
+        c21["21 TS 编译器架构"]
+        c22["22 ECMAScript 形式化"]
     end
 
     subgraph CG["70.2 认知科学"]
@@ -154,6 +176,7 @@ graph TB
         g10["10 异步并发认知"]
         g13["13 框架计算模型"]
         g14["14 浏览器渲染"]
+        g17["17 AI 辅助编程"]
     end
 
     subgraph FM["70.3 形式化分析"]
@@ -161,17 +184,23 @@ graph TB
         f07["07 综合响应理论"]
         f10["10 统一元模型"]
         f11["11 三角关联"]
+        f14["14 异构计算"]
+        f15["15 安全模型"]
+        f16["16 前端编译器优化"]
     end
 
     c09 -->|"范畴统一"| f10
     c10 -->|"类型对称差"| f03["03 类型-运行时对称差"]
     c14 -->|"事件流时间分量"| f07
     c15 -->|"并发形式化"| f11
+    c21 -->|"编译器形式化"| f16
+    c22 -->|"语言演进"| f14
 
     g04 -->|"认知成本量化"| f04
     g10 -->|"人类并发直觉"| f07
     g13 -->|"框架抽象层"| f11
     g14 -->|"渲染感知映射"| f11
+    g17 -->|"AI 安全"| f15
 
     f10 -->|"统一元模型"| c09
     f10 -->|"统一元模型"| g04
@@ -181,6 +210,7 @@ graph TB
 
     style f11 fill:#ffebee,stroke:#c62828,stroke-width:3px
     style f10 fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    style g17 fill:#e1f5fe,stroke:#1565c0,stroke-width:2px
 ```
 
 ---
@@ -240,19 +270,21 @@ graph LR
 graph TB
     subgraph NEW["本次冲刺新建文档"]
         direction TB
-        n1["70.1/14<br/>事件系统与消息传递<br/>范畴语义"]
-        n2["70.1/15<br/>并发计算模型"]
-        n3["70.2/13<br/>前端框架计算模型"]
-        n4["70.2/14<br/>浏览器渲染引擎原理"]
-        n5["70.3/11<br/>执行-框架-渲染三角"]
+        n1["70.1/21<br/>TS 编译器架构与 CORSA"]
+        n2["70.1/22<br/>ECMAScript 2025-2026<br/>形式化分析"]
+        n3["70.2/17<br/>AI 辅助编程认知模型"]
+        n4["70.3/14<br/>异构计算形式化模型"]
+        n5["70.3/15<br/>安全模型形式化基础"]
+        n6["70.3/16<br/>前端编译器优化形式化"]
     end
 
     subgraph GAP["填补的结构性缺口"]
-        g1["事件系统/<br/>消息传递/<br/>Actor/CSP<br/>形式化空白"]
-        g2["并发计算模型<br/>形式化空白"]
-        g3["前端框架<br/>内部计算模型<br/>形式化空白"]
-        g4["浏览器渲染引擎<br/>技术原理空白"]
-        g5["执行-框架-渲染<br/>三角关联空白"]
+        g1["TS 编译器/<br/>CORSA 架构<br/>形式化空白"]
+        g2["ECMAScript 新标准<br/>形式化空白"]
+        g3["AI 辅助编程<br/>认知模型空白"]
+        g4["异构计算<br/>形式化空白"]
+        g5["安全模型<br/>形式化基础空白"]
+        g6["前端编译器优化<br/>形式化空白"]
     end
 
     n1 --> g1
@@ -260,9 +292,12 @@ graph TB
     n3 --> g3
     n4 --> g4
     n5 --> g5
+    n6 --> g6
 
-    style n5 fill:#ffebee,stroke:#c62828,stroke-width:3px
-    style g5 fill:#fce4ec,stroke:#c62828,stroke-width:2px
+    style n3 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style n6 fill:#ffebee,stroke:#c62828,stroke-width:2px
+    style g3 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style g6 fill:#fce4ec,stroke:#c62828,stroke-width:2px
 ```
 
 ---

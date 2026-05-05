@@ -1,7 +1,7 @@
-﻿---
+---
 title: "前端框架计算模型"
 description: "Computation Models of Frontend Frameworks: React Fiber, Vue Reactivity, Angular Change Detection, Solid Signals, Svelte Compiler"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

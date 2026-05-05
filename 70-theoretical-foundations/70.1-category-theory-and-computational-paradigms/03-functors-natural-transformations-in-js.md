@@ -1,7 +1,7 @@
 ---
 title: "函子与自然变换在 JavaScript/TypeScript 中的体现"
 description: "从 Array.map 到 Promise.then，系统分析 JS/TS 中的函子性和自然性，附大量可运行示例"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

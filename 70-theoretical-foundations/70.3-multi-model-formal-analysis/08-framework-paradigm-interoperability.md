@@ -1,7 +1,7 @@
 ---
 title: "框架范式互操作性"
 description: "框架间互操作性的形式化定义、微前端多模型共存、范式泄漏"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

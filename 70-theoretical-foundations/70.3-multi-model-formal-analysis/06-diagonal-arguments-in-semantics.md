@@ -1,7 +1,7 @@
 ---
 title: "语义学中的对角线论证"
 description: "Cantor 对角线、Rice 定理、模型间隙的对角线构造"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

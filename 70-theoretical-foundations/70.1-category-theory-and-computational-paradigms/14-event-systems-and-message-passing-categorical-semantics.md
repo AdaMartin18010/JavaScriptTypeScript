@@ -1,7 +1,7 @@
-﻿---
+---
 title: "事件系统与消息传递的范畴语义"
 description: "Categorical Semantics of Event Systems and Message Passing"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

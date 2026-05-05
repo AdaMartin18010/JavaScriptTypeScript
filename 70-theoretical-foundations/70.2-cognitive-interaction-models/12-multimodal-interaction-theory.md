@@ -1,7 +1,7 @@
 ---
 title: "多模态交互理论"
 description: "代码+类型+运行时的多模态整合、IDE 认知工具、AI 辅助编程"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

@@ -2,6 +2,7 @@
 title: "构建工具理论的范畴论模型"
 description: "将 Vite、Webpack、Turbopack、Rspack、esbuild 等构建工具形式化为范畴论语义，分析依赖图、增量编译、束分割与模块联邦的范畴论本质，建立编译器架构的数学统一框架"
 date: 2026-05-01
+last-updated: 2026-05-05
 category: "category-theory"
 tags: ["build-tools", "vite", "webpack", "turbopack", "rspack", "esbuild", "category-theory", "functor", "colimit", "module-federation"]
 mermaid: true

@@ -1,7 +1,7 @@
 ---
 title: "模型精化与模拟关系"
 description: "从工程直觉到形式化工具：精化关系、模拟关系、互模拟的完整理论与JS/TS语义应用"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

@@ -1,17 +1,20 @@
-﻿---
+---
 title: "浏览器渲染引擎原理"
 description: "Browser Rendering Engine Principles: DOM/CSSOM/Render Tree, Layout, Paint, Composite, V8 Interaction"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete
 priority: P1
 actual-length: "~8312 words"
+english-abstract: "This paper presents a comprehensive technical analysis of modern browser rendering engines, meticulously covering the twelve-step Critical Rendering Path from initial HTTP request through final VSync display. The theoretical contribution is a category-theoretic perspective that formally models the DOM as a tree category, the DOM-to-Render-Tree mapping as a forgetful functor, and the compositor thread as an independent categorical object enabling non-blocking GPU-accelerated layering. Methodologically, the paper supplements detailed architectural descriptions with executable TypeScript implementations including a DOM builder, CSS specificity engine, Flex layout solver, and paint-complexity analyzer, making each pipeline stage both executable and empirically measurable. The engineering value lies in establishing a principled optimization framework: by systematically classifying CSS properties into reflow, repaint, and composite triggers, developers can make evidence-based decisions about transform and opacity animations, strategic will-change usage, and layer promotion. The paper additionally covers V8-renderer interaction mechanics and Chromium's multi-process multi-thread architecture, providing an authoritative comprehensive reference for frontend performance engineering practice."
 references:
   - Google, "Inside look at modern web browser" (2018)
   - Apple, "WebKit Rendering" (2022)
   - Mozilla, "How Browsers Work" (2023)
 ---
+
+> **Executive Summary** (English): This paper presents a formalized, end-to-end analysis of the browser rendering pipeline, demystifying the transformation from HTML/CSS/JS to screen pixels as a deterministic six-stage computation graph: DOM construction, CSSOM construction, Render Tree synthesis, Layout, Paint, and Composite. The theoretical contribution is a category-theoretic perspective that models the DOM as a tree category, the DOM-to-Render-Tree mapping as a forgetful functor, and the compositor thread as an independent categorical object enabling non-blocking GPU-accelerated layering. Methodologically, the paper supplements architectural descriptions with TypeScript implementations of a DOM builder, CSS specificity engine, Flex layout solver, and paint-complexity analyzer, making each stage executable and measurable. The engineering value lies in a principled optimization framework: by classifying CSS properties into reflow/repaint/composite triggers, developers can make evidence-based decisions about transform/opacity animations, will-change usage, and layer promotion. The paper also covers the V8-renderer interaction, multi-thread Chromium architecture, and the 12-step Critical Rendering Path, providing a comprehensive reference for frontend performance engineering.
 
 # 浏览器渲染引擎原理
 
@@ -73,8 +76,22 @@ references:
   - [19. 渲染引擎的调试与剖析](#19-渲染引擎的调试与剖析)
   - [20. 渲染引擎的前沿技术](#20-渲染引擎的前沿技术)
   - [21. 渲染引擎的可持续发展](#21-渲染引擎的可持续发展)
-  - [22. 渲染引擎的终极思考](#22-渲染引擎的终极思考)
-  - [23. 渲染引擎的技术选型影响](#23-渲染引擎的技术选型影响)
+  - [23. 渲染引擎的终极思考](#23-渲染引擎的终极思考)
+  - [24. 渲染引擎的技术选型影响](#24-渲染引擎的技术选型影响)
+  - [22. Chromium 多线程架构与 12 步完整 CRP](#22-chromium-多线程架构与-12-步完整-crp)
+    - [22.1 Chromium 多进程与多线程架构](#221-chromium-多进程与多线程架构)
+    - [22.2 渲染线程工作流](#222-渲染线程工作流)
+    - [22.3 12 步完整首次渲染](#223-12-步完整首次渲染)
+    - [22.4 Core Web Vitals 的数学定义](#224-core-web-vitals-的数学定义)
+    - [22.5 VSync 与帧调度](#225-vsync-与帧调度)
+    - [22.6 性能优化策略扩展](#226-性能优化策略扩展)
+    - [22.7 代码示例](#227-代码示例)
+      - [示例 1：强制同步布局检测器](#示例-1强制同步布局检测器)
+      - [示例 2：Layout Shift 计算器](#示例-2layout-shift-计算器)
+      - [示例 3：Long Task 测量器](#示例-3long-task-测量器)
+      - [示例 4：VSync 帧率监控器](#示例-4vsync-帧率监控器)
+      - [示例 5：Layer 提升条件分析器](#示例-5layer-提升条件分析器)
+      - [示例 6：CRP 步骤计时器](#示例-6crp-步骤计时器)
 
 ---
 
@@ -1580,7 +1597,7 @@ GPU 渲染：
 24. W3C. " prefers-reduced-motion." w3.org/TR/mediaqueries-5/#prefers-reduced-motion.
 
 
-## 22. 渲染引擎的终极思考
+## 23. 渲染引擎的终极思考
 
 理解渲染引擎，是成为前端专家的必经之路。
 
@@ -1653,7 +1670,7 @@ GPU 渲染：
 25. Dijkstra, E. W. (1974). "On the Role of Scientific Thought." *Selected Writings on Computing: A Personal Perspective*.
 
 
-## 23. 渲染引擎的技术选型影响
+## 24. 渲染引擎的技术选型影响
 
 理解渲染引擎有助于做出更好的技术选型决策。
 
@@ -1738,3 +1755,558 @@ JS 动画（requestAnimationFrame）：
 24. W3C. " prefers-reduced-motion." w3.org/TR/mediaqueries-5/#prefers-reduced-motion.
 25. Dijkstra, E. W. (1974). "On the Role of Scientific Thought." *Selected Writings on Computing: A Personal Perspective*.
 26. Bostock, M., et al. (2011). "D3: Data-Driven Documents." *IEEE TVCG*.
+
+
+---
+
+## 22. Chromium 多线程架构与 12 步完整 CRP
+
+> **核心命题**：现代浏览器的渲染能力并非单线程的线性执行，而是一套由多进程隔离、多线程协作、GPU 异步加速的分布式计算系统。将关键渲染路径（Critical Rendering Path, CRP）展开为 12 个可观测、可度量的微观步骤，是诊断性能瓶颈、优化 Core Web Vitals 的必备心智模型。
+
+---
+
+### 22.1 Chromium 多进程与多线程架构
+
+Chromium 采用**多进程架构**（Multi-Process Architecture, MPA）作为其安全与稳定性的基石。每个标签页、每个 iframe、每个扩展程序，乃至每个插件，都可能运行在独立的操作系统进程中。这种设计借鉴了操作系统内核的隔离思想：一个进程的崩溃不会导致整个浏览器宕机，恶意站点的内存越界也难以波及到其他站点。
+
+**Browser 进程**（主进程）是 Chromium 的"大脑"。它负责管理用户界面（UI）线程，包括地址栏、书签管理器、标签页栏、前进/后退按钮等 Chrome UI 的绘制与交互。此外，Browser 进程还持有全局的权限管理、Cookie 数据库、历史记录、下载管理器以及扩展程序的主控制器。所有其他进程（Renderer、GPU、Network、Utility）都由 Browser 进程通过操作系统的进程创建 API 启动，并通过进程间通信（IPC）机制接受其调度。
+
+**Renderer 进程**是网页内容的实际执行环境。每个 Renderer 进程内部运行着 Blink 渲染引擎和 V8 JavaScript 引擎。Blink 负责将 HTML、CSS 转换为可视化的像素，涵盖 DOM 树构建、CSSOM 计算、样式重算（Style Recalc）、布局（Layout）、绘制记录（Paint Records）生成等核心任务。V8 则在同一个进程内执行 JavaScript，通过绑定层（Bindings）直接操作 Blink 的 DOM 对象。由于同源策略（Same-Origin Policy）和站点隔离（Site Isolation）的推进，现代 Chromium 甚至可以为跨站点的 iframe 分配独立的 Renderer 进程，从而将 Spectre 类侧信道攻击的暴露面降至最低。
+
+**GPU 进程**专责所有与图形处理单元（GPU）相关的调用。它接收来自 Renderer 进程的绘制指令和合成命令，将其翻译为底层图形 API（Windows 上的 DirectX、macOS 上的 Metal、Linux/Android 上的 OpenGL 或 Vulkan）的具体调用。GPU 进程负责纹理上传、着色器编译、帧缓冲区的管理以及最终的光栅化输出。将 GPU 操作隔离到独立进程具有双重优势：一是防止有缺陷的 GPU 驱动导致整个浏览器崩溃；二是利用操作系统的进程权限模型，对 GPU 访问进行沙箱化限制。
+
+**Network 进程**（在 Chromium 的 Service Worker 和网络栈重构后逐渐独立化）统一管理所有网络请求。它处理 HTTP/1.1、HTTP/2、HTTP/3（基于 QUIC）协议的连接建立、请求调度、响应缓存、DNS 解析以及 TLS 握手。通过将网络栈从 Renderer 进程中剥离，Chromium 实现了跨站点的连接复用（如 HTTP/2 的多路复用），同时避免了恶意网页通过自定义网络栈攻击本地网络的风险。
+
+**Utility 进程**是一类轻量级的辅助进程，用于执行特定的高风险或高资源消耗任务。例如，音频解码、视频编码、PDF 渲染、NaCl/PNaCl 插件执行等，都会在独立的 Utility 进程中运行。这种"按需 fork"的策略确保了即使解码器遭遇畸形输入而崩溃，也不会影响网页的核心渲染流程。
+
+**进程间通信（IPC）**是所有这些进程协同工作的纽带。Chromium 早期使用基于命名管道和共享内存的自定义 IPC 系统，而现在已全面迁移到 **Mojo** 接口层。Mojo 是一套现代化的 IPC 框架，支持强类型的接口定义语言（IDL）、消息管道的Capability-based 权限控制、以及跨进程句柄（Handle）传递。Mojo 不仅用于 Browser ↔ Renderer 之间的通信，也深入 Renderer 内部，成为连接主线程与 GPU 线程、Compositor 线程的桥梁。可以说，Mojo 是 Chromium 架构从"多进程浏览器"进化为"模块化操作系统"的关键基础设施。
+
+---
+
+### 22.2 渲染线程工作流
+
+在 Renderer 进程内部，渲染任务被进一步分解到多个专用线程上，形成了一条精细分工的流水线。理解这些线程的职责边界与协作模式，是定位主线程阻塞、优化滚动性能的前提。
+
+**Main 线程**（又称 UI 线程或 Blink 线程）是渲染系统的"中央厨房"。它执行以下核心任务：
+
+- **JavaScript 执行**：V8 引擎在此线程上解释和 JIT 编译 JS 代码；
+- **DOM 操作**：所有通过 JS API 对 DOM 树的修改（`createElement`、`appendChild`、`innerHTML` 等）均在此完成；
+- **样式计算（Style Recalc）**：将匹配到的 CSS 规则与 DOM 节点结合，计算每个元素的最终计算样式（Computed Style）；
+- **布局（Layout / Reflow）**：根据盒模型、Flex/Grid 约束计算元素的精确几何信息；
+- **绘制记录生成（Paint Records）**：将布局结果转换为绘制指令列表（Display List），供后续光栅化使用。
+
+Main 线程是唯一能够直接修改 DOM 和计算完整布局的线程，因此它极易成为性能瓶颈。任何超过 50ms 的长任务都会直接损害交互响应性（INP）。
+
+**Compositor 线程**是渲染系统的"调度指挥中心"。它的核心职责包括：
+
+- **输入事件响应**：接收来自 Browser 进程的鼠标、触摸、键盘事件，判断事件目标图层，并在可能的情况下直接处理滚动和 pinch-zoom，无需唤醒 Main 线程；
+- **图层树管理（Layer Tree）**：维护一个由 GraphicsLayer 组成的树状结构，每个图层对应一个独立的纹理或绘制表面；
+- **滚动偏移计算**：在滚动发生时，仅更新图层的变换矩阵（Transform），而不触发 Main 线程的 Layout；
+- **合成调度**：决定何时将光栅化完成的 Tile 合成为最终帧，并提交给 GPU 进程。
+
+Compositor 线程与 Main 线程通过线程安全的消息队列和 Mojo 管道通信。当 Main 线程完成一帧的绘制记录生成后，它会将图层树和绘制指令提交（Commit）给 Compositor 线程，后者以此为基础进行后续处理。
+
+**Raster 线程**（又称 Tile Worker 线程或光栅化线程）是"像素工厂"。Chromium 默认会根据 CPU 核心数创建多个 Raster 线程（通常每个 GPU 内存上下文对应一个线程池）。它们接收来自 Compositor 线程的绘制指令和 Tile 分块信息，使用 Skia（CPU 光栅化）或直接在 GPU 上执行（GPU Raster / Zero-Copy Raster）将矢量指令转化为位图（Bitmap）。光栅化是计算密集型操作，但它是并行化的：多个 Tile 可以同时被不同的 Raster 线程处理。
+
+**线程间的生产者-消费者关系**：
+
+- Main 线程是绘制指令的**生产者**，Compositor 线程是**消费者**（接收 Commit）；
+- Compositor 线程是光栅化任务的**生产者**，Raster 线程是**消费者**（接收 Tile 绘制任务）；
+- Raster 线程是像素位图的**生产者**，Compositor 线程再次成为**消费者**（将位图组装为合成器帧）；
+- 最终，Compositor 线程作为**生产者**，将完成的帧通过 Mojo 提交给 GPU 进程的 **Viz 服务**，后者通过**消费者**角色完成屏幕输出。
+
+这种多级的生产者-消费者解耦，使得滚动动画可以在 Main 线程被 JS 阻塞时依然保持流畅——只要Compositor 线程手中已有足够的光栅化 Tile。
+
+---
+
+### 22.3 12 步完整首次渲染
+
+将关键渲染路径（CRP）从宏观的"DOM → CSSOM → Render Tree → Layout → Paint → Composite"进一步细化，可以得到首次渲染（First Paint / Largest Contentful Paint 之前）的 12 个微观步骤。这个模型是性能审计的"解剖刀"。
+
+**步骤 1：发送 HTTP 请求 → 接收 HTML 响应**
+浏览器从地址栏获取 URL 后，由 Network 进程发起 DNS 解析（可能涉及 DNS Prefetch 或 HTTPDNS），建立 TCP/TLS 连接（或复用 HTTP/2、HTTP/3 连接），发送 HTTP GET 请求。服务器返回的 HTML 响应头中可能包含 `Content-Type`、`Cache-Control`、`Link: rel=preload` 等关键元数据，这些会直接影响后续资源的加载优先级。
+
+**步骤 2：解析 HTML 生成 DOM 树（遇到 `<script>` 阻塞）**
+主线程的 HTML Parser（由 Blink 的 Tokenizer + Tree Builder 组成）以流式（Streaming）方式逐字节解析 HTML。当遇到 `<script>` 标签（无 `async` 或 `defer` 属性）时，解析器必须**暂停 DOM 构建**，下载并执行脚本，因为脚本可能通过 `document.write()` 修改尚未解析的 HTML 流。这种阻塞行为是首屏渲染延迟的主要来源之一。
+
+**步骤 3：解析 CSS 生成 CSSOM 树**
+解析 HTML 时遇到 `<link rel="stylesheet">` 或 `<style>` 标签，浏览器会并发请求外部 CSS（不阻塞 HTML 解析器本身，但会阻塞 Render Tree 构建）。CSS 解析器将样式表转换为 CSSOM 树，并进行选择器索引、层叠排序等预处理。与 DOM 不同，CSSOM 的构建不能被脚本阻塞，但脚本可以查询计算样式，这会在步骤 4 中形成依赖。
+
+**步骤 4：合并 DOM + CSSOM → Render Tree**
+Render Tree（或称为 Layout Tree）只包含可见节点。主线程遍历 DOM 树，为每个节点计算最终样式，并过滤掉 `display: none` 的元素、`head` 内容以及不可见的伪元素之外的节点。这个阶段的输出是一棵与视觉呈现一一对应的树结构。
+
+**步骤 5：计算布局（Layout / Reflow）**
+布局是递归的约束求解过程。主线程从 Render Tree 的根节点开始，自上而下传播约束（如可用宽度），再自下而上汇总尺寸（如内容高度）。对于现代布局模式（Flexbox、Grid），可能需要多轮迭代（Measure → Layout → Alignment）才能收敛。布局的结果是每个节点的精确几何框（LayoutObject / Fragment）。
+
+**步骤 6：分层（Layer）处理**
+浏览器并非将所有内容绘制到单一平面。主线程会分析哪些元素需要提升为独立图层（Composited Layer）。提升条件包括：`will-change: transform/opacity`、3D 变换（`transform: translateZ(0)`）、`<video>` / `<canvas>` / `iframe`、固定定位（`position: fixed`）、重叠（Overlap）导致的隐式提升等。每个图层在后续步骤中被独立处理。
+
+**步骤 7：绘制（Paint）生成绘制指令（Paint Records / Display List）**
+对于每个图层，主线程生成有序的绘制指令列表，称为 Display List 或 Paint Records。指令类型包括 `DrawRect`（背景、边框）、`DrawText`（字形光栅化指令）、`DrawImage`、`DrawPath`（SVG、圆角）等。绘制顺序遵循 CSS 的层叠规则：先背景、再边框、再内容、再子元素、最后 outline。
+
+**步骤 8：分块（Tiling）**
+Compositor 线程接收图层树和绘制指令后，将大尺寸图层（尤其是接近或超过视口大小的图层）分割为固定大小的 Tile（通常为 256×256 或 512×512 像素）。分块的目的是实现增量光栅化和视口外内容的延迟处理：只有视口附近的 Tile 会被优先光栅化，远离视口的 Tile 可以延后或降低分辨率。
+
+**步骤 9：光栅化（Raster）**
+Raster 线程获取每个 Tile 的绘制指令，将其转化为位图。Chromium 使用 Skia 图形库执行 CPU 光栅化，或者在硬件加速模式下使用 GPU Raster（通过 OpenGL/Vulkan 的 MSAA 渲染到纹理）。GPU Raster 的优势在于：矢量指令可以直接在 GPU 上执行，避免了 CPU 到 GPU 的大量纹理上传开销，且可以利用 GPU 的并行管线加速抗锯齿和渐变填充。
+
+**步骤 10：合成（Composite）**
+当所有可见 Tile 光栅化完成后，Compositor 线程将它们按 z-index、变换矩阵、透明度、裁剪区域等参数合成为一帧（Compositor Frame）。合成是在 GPU 上完成的：每个 Tile 作为纹理（Texture）贴图到四边形（Quad）上，通过着色器进行 Alpha 混合和变换。由于合成仅涉及纹理采样和矩阵乘法，它完全规避了主线程的 Layout 和 Paint 开销。
+
+**步骤 11：GPU 纹理上传**
+在 GPU Raster 模式下，位图数据已经位于 GPU 显存中，无需额外上传。但在 CPU Raster 模式下，Raster 线程生成的位图需要通过共享内存或 GPU 命令缓冲区上传到 GPU 显存。Viz 服务（Chromium 的显示合成器）会聚合来自多个 Renderer 进程的 Compositor Frame，进行最终的表面聚合（Surface Aggregation）。
+
+**步骤 12：屏幕显示（VSync 同步刷新）**
+GPU 进程将最终的帧缓冲内容输出到显示设备的帧缓冲区。显示器的物理刷新由 **VSync（垂直同步）**信号控制。对于 60Hz 显示器，每 16.67ms 发出一次 VSync 信号，GPU 必须在该信号到来前准备好完整帧，否则会出现画面撕裂（Tearing）或掉帧（Jank）。
+
+---
+
+### 22.4 Core Web Vitals 的数学定义
+
+Core Web Vitals 是 Google 提出的衡量用户体验质量的量化指标 trio。从渲染引擎的角度看，它们分别对应了 CRP 的不同阶段和线程负载。
+
+**LCP（Largest Contentful Paint，最大内容绘制）**
+LCP 度量的是视口内最大图像或文本块的**渲染时间**（相对于导航开始时间 `navigationStart`）。"最大"的定义基于元素的绘制面积（width × height），而"内容块"特指：
+
+- `<img>` 元素（包括通过 `srcset` 加载的响应式图片）
+- `<video>` 元素的 poster 图像
+- 通过 `url()` 加载的背景图像（仅限 CSS 背景，且元素为块级）
+- 包含文本节点的块级元素（如 `<h1>`、`<p>`、`<div>`）
+
+LCP 的计时点在上述元素的**首帧被绘制到屏幕**的时刻。数学上，若视口内所有候选元素的绘制时间集合为 \(T = \{t_1, t_2, \dots, t_n\}\)，对应面积为 \(A = \{a_1, a_2, \dots, a_n\}\)，则：
+
+\[
+\text{LCP} = t_k \quad \text{其中} \quad k = \arg\max_i a_i
+\]
+
+优化 LCP 的关键在于缩短步骤 1（网络传输）和步骤 9（图片光栅化）的耗时，以及确保关键资源不被渲染阻塞。
+
+**INP（Interaction to Next Paint，交互到下一次绘制）**
+INP 取代了早期的 FID（First Input Delay），是衡量网页交互响应性的核心指标。它关注用户交互（如点击、按键、触摸）到浏览器下一次视觉反馈（Paint）之间的延迟。具体而言，INP 采集页面生命周期内所有交互事件的延迟时长，取**第 98 百分位数**（或排除异常值后的最长延迟）作为最终值。
+
+对于单次交互，延迟 \(d\) 的计算为：
+
+\[
+d = t_{\text{next paint}} - t_{\text{interaction}}
+\]
+
+其中 \(t_{\text{next paint}}\) 是浏览器完成该交互触发的视觉更新并呈现到屏幕的时刻。高 INP 通常由主线程的长任务（Long Task）导致：如果交互发生时 Main 线程正在执行 JS，输入事件必须排队等待，直到主线程空闲才能处理。
+
+**CLS（Cumulative Layout Shift，累积布局偏移）**
+CLS 度量的是页面生命周期内所有意外布局偏移（Layout Shift）的累积得分。一次布局偏移发生在可见元素的位置在两帧之间发生改变且没有用户交互触发时。其得分计算为：
+
+\[
+\text{layout shift score} = \text{impact fraction} \times \text{distance fraction}
+\]
+
+其中：
+
+- **Impact Fraction（影响比例）** = 发生偏移的元素与视口的交集面积 / 视口总面积。若一个元素从上方移入视口，或原有元素移位导致其他元素被推开，所有受影响区域的并集与视口的比值即为影响比例。
+- **Distance Fraction（距离比例）** = 元素在视口内移动的最大距离 / 视口的最大维度（宽度或高度，取较大者）。
+
+若页面发生 \(m\) 次独立的意外布局偏移，则：
+
+\[
+\text{CLS} = \sum_{j=1}^{m} (\text{impact fraction}_j \times \text{distance fraction}_j)
+\]
+
+CLS 的优化核心在于：为图片、广告、iframe 预留固定尺寸（`width`/`height` 属性或 `aspect-ratio`），避免在步骤 5（Layout）中因异步内容加载导致的几何重排。
+
+---
+
+### 22.5 VSync 与帧调度
+
+现代显示器的刷新率通常为 60Hz、120Hz 或 144Hz，对应每帧的显示时间预算分别为 16.67ms、8.33ms 和 6.94ms。浏览器的渲染调度必须与显示器的物理刷新周期严格对齐，这一机制称为 **VSync（Vertical Synchronization）**。
+
+以 60Hz 为例，一帧的完整生命周期如下：
+
+1. **VSync 信号到达**（t = 0ms）：Compositor 线程开始准备下一帧；
+2. **输入处理**（0–2ms）：处理用户输入事件，必要时发送给 Main 线程；
+3. **Main 线程任务**（2–10ms）：执行 JS、Style Recalc、Layout、Paint；
+4. **Commit**（10–12ms）：Main 线程将图层树提交给 Compositor 线程；
+5. **Tile 光栅化**（并行，可能在多帧前已完成）；
+6. **合成与绘制**（12–15ms）：Compositor 线程合成最终帧，通过 Mojo 发送给 GPU 进程；
+7. **扫描输出**（15–16.67ms）：GPU 将帧写入显示缓冲区，等待下一次 VSync 显示。
+
+**掉帧（Jank）的时序分析**：
+如果 Main 线程的一次任务耗时超过 16.67ms，Compositor 线程在下一个 VSync 点将无新帧可提交，只能重复显示上一帧。这种情况下，帧率从 60fps 骤降至 30fps（甚至更低），用户感知为卡顿。更严重的是，如果 Main 线程阻塞导致输入事件积压，INP 会显著恶化。
+
+**requestAnimationFrame 与 VSync 的绑定**：
+`requestAnimationFrame`（rAF）不是简单的 `setTimeout(fn, 16)`。它是浏览器向开发者暴露的**VSync 同步回调机制**。当开发者调用 `rAF(callback)` 时，浏览器将回调注册到 Compositor 线程的 VSync 监听器中。在每次 VSync 信号到达前，Compositor 线程会唤醒 Main 线程执行 rAF 回调，确保 JS 驱动的动画变更能在当前帧的 Commit 前完成。如果 rAF 回调内部又触发了强制同步布局（Forced Synchronous Layout），则整个帧预算会被迅速耗尽。
+
+**Main thread 长任务（>50ms）对 INP 的影响**：
+根据 Long Tasks API 的定义，任何在主线程上连续执行超过 50ms 的脚本任务都称为"长任务"。长任务对 INP 的损害是乘数级的：
+
+- 若交互发生在长任务开始前，输入事件需等待长任务完成 → 延迟 ≈ 长任务剩余时间；
+- 若交互发生在长任务执行中，事件处理被延后 → 延迟 ≈ 长任务剩余时间 + 事件处理时间 + 渲染时间；
+- 若多个长任务串联（如大型框架的同步渲染），交互延迟会累积到数百毫秒。
+
+因此，将长任务拆分为多个小于 50ms 的微任务（通过 `scheduler.yield()` 或 React Time Slicing），是优化 INP 的核心策略。
+
+---
+
+### 22.6 性能优化策略扩展
+
+在理解了 Chromium 的多线程架构和 12 步 CRP 后，我们可以将常见的性能优化策略映射到具体的渲染阶段，并赋予其形式化的含义。
+
+**避免强制同步布局（Forced Synchronous Layout）**
+强制同步布局是 Main 线程上最常见的性能陷阱。当 JavaScript 先读取某个布局属性（如 `offsetHeight`、`clientWidth`、`getBoundingClientRect()`），然后修改样式（如 `element.style.width = '100px'`），再立即读取另一个布局属性时，浏览器为了保证读取值的正确性，被迫在执行脚本中途插入一次完整的 Layout 计算。这种"读-写-读"模式破坏了渲染管道的批处理优化。
+
+形式化地，设主线程上的脚本操作为序列 \(\sigma = [o_1, o_2, \dots, o_n]\)，其中每个 \(o_i\) 要么是"读操作" \(R\)（依赖 Layout），要么是"写操作" \(W\)（使 Layout 失效）。当序列中出现子模式 \(W_k, R_{k+1}\) 时，浏览器必须强制执行 Layout。最优序列应将所有 \(R\) 前置、所有 \(W\) 后置，即 \(\sigma^* = [R_1, \dots, R_m, W_1, \dots, W_p]\)。
+
+**CSS containment（contain: layout/paint/size）的形式化含义**
+CSS Containment 是一种显式的边界声明，它告诉浏览器：某个子树的变更不会逃逸到外部。具体有三种常用值：
+
+- `contain: layout`：元素的内部布局变化（如子元素尺寸改变）不会影响外部元素的布局。形式化地，它切断了内部 Layout Object 对外部 Layout Constraint 的传播，使得外部布局可以缓存（Cacheable）。
+- `contain: paint`：元素的子元素不会绘制到该元素边界框之外。浏览器可以将其裁剪为一个独立的图层，避免重叠检测的复杂度。
+- `contain: size`：元素的尺寸不依赖其子元素（开发者需显式指定宽高）。这消除了"自下而上"的尺寸汇总，使得 Layout 可以从单向传播变为常数时间。
+
+使用 `contain: strict`（等价于 `layout paint size`）可以将一个组件完全封装，使其内部变更的 Reflow/Repaint 范围被限制在边界之内。
+
+**content-visibility: auto 的渲染语义**
+`content-visibility: auto` 是 CSS Containment 的高级应用。它告诉浏览器：当该元素不在视口内时，完全跳过其内部的 Layout 和 Paint 计算（但保留其尺寸占位，即 `contain-intrinsic-size`）。形式化地，设元素 \(E\) 的可见性为 \(V(E)\)，当 \(V(E) = \text{off-screen}\) 时，浏览器将 \(E\) 的子树 \(T_E\) 从 Render Tree 的活跃计算集中移除，仅保留一个占位矩形。当 \(E\) 进入视口时，浏览器再执行一次性的"延迟渲染"（Deferred Rendering）。这对于长列表、大型文档的首次渲染有数量级的加速效果。
+
+**优先级提示（Priority Hints）：fetchpriority="high"**
+现代浏览器使用启发式规则为资源分配加载优先级（如主文档最高、CSS 次之、首屏图片再次、异步脚本最低）。但有时开发者的语义知识优于启发式。`<img fetchpriority="high">` 和 `<link rel="preload" fetchpriority="high">` 允许开发者显式提升资源的网络调度优先级。在 Chromium 的 Resource Scheduler 中，这会直接映射为 HTTP/2 或 HTTP/3 的流优先级（Stream Priority）或 TCP 层的发送队列排序，从而缩短步骤 1 到步骤 9 的关键路径。
+
+---
+
+### 22.7 代码示例
+
+以下代码示例展示了如何在实际工程中检测和度量上述渲染原理。
+
+#### 示例 1：强制同步布局检测器
+
+```typescript
+/**
+ * 检测并报告强制同步布局（Forced Synchronous Layout, FSL）。
+ * 原理：比较连续读取布局属性的时间戳，若在一次样式修改后
+ * 立即出现布局读取且耗时突增，则判定为 FSL。
+ */
+class ForcedLayoutDetector {
+  private readProps = new Set(['offsetWidth', 'offsetHeight', 'clientWidth',
+    'clientHeight', 'scrollWidth', 'scrollHeight', 'getBoundingClientRect']);
+  private lastWriteTime = 0;
+  private violationLog: Array<{ prop: string; delayMs: number }> = [];
+
+  observe(element: HTMLElement): void {
+    const proxy = new Proxy(element, {
+      get: (target, prop: string | symbol) => {
+        if (typeof prop === 'string' && this.readProps.has(prop)) {
+          const now = performance.now();
+          const elapsed = now - this.lastWriteTime;
+          if (this.lastWriteTime > 0 && elapsed < 1) {
+            this.violationLog.push({ prop, delayMs: elapsed });
+            console.warn(`[FSL Detected] 属性 ${prop} 在样式修改后 ${elapsed.toFixed(3)}ms 被读取`);
+          }
+        }
+        return (target as any)[prop];
+      },
+      set: (target, prop: string | symbol, value) => {
+        if (prop === 'style' || String(prop).startsWith('style.')) {
+          this.lastWriteTime = performance.now();
+        }
+        (target as any)[prop] = value;
+        return true;
+      }
+    });
+    // 实际使用时，将 proxy 传递给操作函数以拦截访问
+    void proxy;
+  }
+
+  getViolations(): Array<{ prop: string; delayMs: number }> {
+    return [...this.violationLog];
+  }
+}
+```
+
+#### 示例 2：Layout Shift 计算器
+
+```typescript
+/**
+ * 基于 ResizeObserver 和 PerformanceObserver 的 Layout Shift 计算器。
+ * 实现了 CLS 的数学定义：impact fraction × distance fraction 的累积和。
+ */
+interface LayoutShiftEntry {
+  value: number;
+  hadRecentInput: boolean;
+  sources: Array<{ node: Element | null; previousRect: DOMRect; currentRect: DOMRect }>;
+}
+
+class LayoutShiftCalculator {
+  private cumulativeScore = 0;
+  private sessionEntries: LayoutShiftEntry[] = [];
+
+  start(): void {
+    const observer = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries() as any) {
+        if (entry.entryType === 'layout-shift' && !entry.hadRecentInput) {
+          const shift = entry as LayoutShiftEntry;
+          this.cumulativeScore += shift.value;
+          this.sessionEntries.push(shift);
+        }
+      }
+    });
+    observer.observe({ entryTypes: ['layout-shift'] });
+  }
+
+  getCLS(): number {
+    return parseFloat(this.cumulativeScore.toFixed(4));
+  }
+
+  getBreakdown(): Array<{ time: number; score: number; element?: string }> {
+    return this.sessionEntries.map(e => ({
+      time: (e as any).startTime,
+      score: (e as any).value,
+      element: e.sources[0]?.node?.tagName
+    }));
+  }
+}
+```
+
+#### 示例 3：Long Task 测量器
+
+```typescript
+/**
+ * 测量主线程长任务（Long Tasks > 50ms），用于诊断 INP 瓶颈。
+ * 利用 PerformanceObserver 监听 'longtask' 条目。
+ */
+interface LongTaskEntry {
+  startTime: number;
+  duration: number;
+  attribution: Array<{ containerSrc: string; containerType: string }>;
+}
+
+class LongTaskProfiler {
+  private tasks: LongTaskEntry[] = [];
+
+  start(): void {
+    if (!('PerformanceLongTaskTiming' in window)) {
+      console.warn('当前浏览器不支持 Long Task API');
+      return;
+    }
+    const observer = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries() as any) {
+        this.tasks.push({
+          startTime: entry.startTime,
+          duration: entry.duration,
+          attribution: entry.attribution.map((a: any) => ({
+            containerSrc: a.containerSrc,
+            containerType: a.containerType
+          }))
+        });
+      }
+    });
+    observer.observe({ entryTypes: ['longtask'] });
+  }
+
+  getReport(): {
+    totalTasks: number;
+    totalBlockedTime: number;
+    longestTask: LongTaskEntry | null;
+  } {
+    const totalBlocked = this.tasks.reduce((sum, t) => sum + (t.duration - 50), 0);
+    const longest = this.tasks.reduce((max, t) => t.duration > max.duration ? t : max,
+      this.tasks[0] ?? null as any);
+    return {
+      totalTasks: this.tasks.length,
+      totalBlockedTime: Math.max(0, totalBlocked),
+      longestTask: longest || null
+    };
+  }
+}
+```
+
+#### 示例 4：VSync 帧率监控器
+
+```typescript
+/**
+ * VSync 帧率监控器：利用 requestAnimationFrame 测量实际帧间隔，
+ * 检测掉帧（Jank）并输出帧时间线。
+ */
+class VSyncMonitor {
+  private frames: number[] = [];
+  private running = false;
+  private lastTimestamp = 0;
+  private rafId = 0;
+
+  start(durationMs = 5000): Promise<{ avgFps: number; jankFrames: number; frameTimes: number[] }> {
+    return new Promise((resolve) => {
+      this.running = true;
+      this.frames = [];
+      this.lastTimestamp = performance.now();
+
+      const frameLoop = (now: number) => {
+        if (!this.running) return;
+        const delta = now - this.lastTimestamp;
+        this.frames.push(delta);
+        this.lastTimestamp = now;
+
+        if (now - (this.lastTimestamp - this.frames.reduce((a, b) => a + b, 0)) < durationMs) {
+          this.rafId = requestAnimationFrame(frameLoop);
+        } else {
+          this.stop();
+          const avgDelta = this.frames.reduce((a, b) => a + b, 0) / this.frames.length;
+          const avgFps = 1000 / avgDelta;
+          const threshold = 1000 / 60 * 1.5; // > 1.5 倍 16.67ms 视为掉帧
+          const jankFrames = this.frames.filter(f => f > threshold).length;
+          resolve({ avgFps, jankFrames, frameTimes: [...this.frames] });
+        }
+      };
+
+      this.rafId = requestAnimationFrame(frameLoop);
+      setTimeout(() => { this.stop(); }, durationMs + 100);
+    });
+  }
+
+  stop(): void {
+    this.running = false;
+    cancelAnimationFrame(this.rafId);
+  }
+}
+```
+
+#### 示例 5：Layer 提升条件分析器
+
+```typescript
+/**
+ * 分析 DOM 元素是否会被 Chromium 提升为独立合成层（Composited Layer），
+ * 并估算其内存开销。
+ */
+interface LayerAnalysis {
+  willPromote: boolean;
+  reasons: string[];
+  estimatedMemoryBytes: number;
+}
+
+class LayerPromotionAnalyzer {
+  static analyze(element: HTMLElement): LayerAnalysis {
+    const style = window.getComputedStyle(element);
+    const reasons: string[] = [];
+    let willPromote = false;
+
+    if (style.willChange.includes('transform') || style.willChange.includes('opacity')) {
+      willPromote = true;
+      reasons.push(`will-change: ${style.willChange}`);
+    }
+    if (style.transform !== 'none' && /matrix|translate|rotate|scale/.test(style.transform)) {
+      willPromote = true;
+      reasons.push('CSS 3D/2D transform');
+    }
+    if (style.position === 'fixed' || style.position === 'sticky') {
+      willPromote = true;
+      reasons.push(`position: ${style.position}`);
+    }
+    if (element.tagName === 'VIDEO' || element.tagName === 'CANVAS' || element.tagName === 'IFRAME') {
+      willPromote = true;
+      reasons.push(`特殊元素: ${element.tagName}`);
+    }
+    if (parseFloat(style.opacity) < 1) {
+      // 透明度本身不一定提升，但配合动画时会提升
+    }
+
+    const rect = element.getBoundingClientRect();
+    const area = rect.width * rect.height;
+    const memory = area * 4; // RGBA8888
+
+    return { willPromote, reasons, estimatedMemoryBytes: memory };
+  }
+
+  static auditPage(): Array<{ element: string; analysis: LayerAnalysis }> {
+    const results: Array<{ element: string; analysis: LayerAnalysis }> = [];
+    document.querySelectorAll('*').forEach(el => {
+      const analysis = this.analyze(el as HTMLElement);
+      if (analysis.willPromote) {
+        results.push({
+          element: `${el.tagName}${(el as HTMLElement).id ? '#' + (el as HTMLElement).id : ''}`,
+          analysis
+        });
+      }
+    });
+    return results;
+  }
+}
+```
+
+#### 示例 6：CRP 步骤计时器
+
+```typescript
+/**
+ * CRP 步骤计时器：通过 PerformanceObserver 和自定义标记，
+ * 测量 12 步关键渲染路径中可观测阶段的耗时。
+ */
+interface CRPMetrics {
+  ttfb?: number;            // 步骤 1
+  domParse?: number;        // 步骤 2（近似）
+  styleRecalc?: number;     // 步骤 3-4
+  layout?: number;          // 步骤 5
+  paint?: number;           // 步骤 7
+  composite?: number;       // 步骤 10
+  firstPaint?: number;      // FP
+  largestContentfulPaint?: number; // LCP
+}
+
+class CRPStepTimer {
+  private metrics: Partial<CRPMetrics> = {};
+  private observers: PerformanceObserver[] = [];
+
+  start(): void {
+    // 测量 TTFB
+    const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    if (nav) {
+      this.metrics.ttfb = nav.responseStart - nav.startTime;
+    }
+
+    // 测量 FP / FCP / LCP
+    const paintObserver = new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        if (entry.entryType === 'paint') {
+          if (entry.name === 'first-paint') this.metrics.firstPaint = entry.startTime;
+        }
+        if (entry.entryType === 'largest-contentful-paint') {
+          this.metrics.largestContentfulPaint = entry.startTime;
+        }
+      }
+    });
+    paintObserver.observe({ entryTypes: ['paint', 'largest-contentful-paint'] });
+    this.observers.push(paintObserver);
+
+    // 测量 Long Animation Frames（LoAF，Chrome 123+）近似 Main Thread 阶段
+    if ('PerformanceLongAnimationFrameTiming' in window) {
+      const loafObserver = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries() as any) {
+          // styleAndLayoutStart 近似 Style Recalc + Layout 的开始
+          if (entry.styleAndLayoutStart) {
+            this.metrics.styleRecalc = entry.styleAndLayoutStart - entry.startTime;
+            this.metrics.layout = (entry.renderStart || entry.endTime) - entry.styleAndLayoutStart;
+          }
+          if (entry.renderStart) {
+            this.metrics.paint = (entry.endTime || entry.renderStart) - entry.renderStart;
+          }
+        }
+      });
+      loafObserver.observe({ entryTypes: ['long-animation-frame'] });
+      this.observers.push(loafObserver);
+    }
+  }
+
+  getMetrics(): Partial<CRPMetrics> {
+    return { ...this.metrics };
+  }
+
+  printReport(): void {
+    console.group('CRP 步骤计时报告');
+    console.log(`TTFB: ${this.metrics.ttfb?.toFixed(2) ?? 'N/A'} ms`);
+    console.log(`First Paint: ${this.metrics.firstPaint?.toFixed(2) ?? 'N/A'} ms`);
+    console.log(`LCP: ${this.metrics.largestContentfulPaint?.toFixed(2) ?? 'N/A'} ms`);
+    console.log(`Style Recalc: ${this.metrics.styleRecalc?.toFixed(2) ?? 'N/A'} ms`);
+    console.log(`Layout: ${this.metrics.layout?.toFixed(2) ?? 'N/A'} ms`);
+    console.log(`Paint: ${this.metrics.paint?.toFixed(2) ?? 'N/A'} ms`);
+    console.groupEnd();
+  }
+}
+```
+
+---
+
+> **小结**：Chromium 的多进程架构提供了安全与隔离，多线程架构实现了渲染的并行与流水线化，而 12 步 CRP 则为性能优化提供了可落地的诊断框架。将 Core Web Vitals（LCP、INP、CLS）与这 12 个步骤一一映射，开发者可以精确地回答"性能问题出在哪里"，而不仅仅是"页面有点慢"。

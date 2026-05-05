@@ -1,7 +1,7 @@
 ---
 title: "Signals 范式的范畴论"
 description: "Category Theory of Signals Paradigm: Signal as Copresheaf, Solid/Angular/Vue Vapor Signal Algebra"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

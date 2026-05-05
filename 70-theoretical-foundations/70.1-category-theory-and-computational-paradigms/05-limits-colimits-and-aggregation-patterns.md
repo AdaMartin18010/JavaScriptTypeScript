@@ -1,7 +1,7 @@
 ---
 title: "极限与余极限：reduce/merge/spread 的普遍性质"
 description: "从编程实践中的聚合模式出发，理解极限与余极限的精确直觉，附大量可运行 TypeScript 示例"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

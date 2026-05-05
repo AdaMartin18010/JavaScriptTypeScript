@@ -1,7 +1,7 @@
 ---
 title: "异步与并发的认知模型"
 description: "人类并发直觉的局限、Event Loop 的认知优势、竞态条件为什么难以被大脑发现"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

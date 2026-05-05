@@ -1,7 +1,7 @@
-﻿---
+---
 title: "并发计算模型"
 description: "Concurrent Computation Models: Process Algebra, pi-Calculus, CSP, Actor, Petri Nets"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

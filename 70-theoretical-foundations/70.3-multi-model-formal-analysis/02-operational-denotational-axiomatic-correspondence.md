@@ -1,17 +1,20 @@
 ---
 title: "操作语义、指称语义、公理语义的形式化对应"
 description: "三种语义的函子性对应、对称差分析与工程直觉"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete
 priority: P1
 actual-length: ~12000 words
+english-abstract: "This paper rigorously examines the deep correspondence among operational, denotational, and axiomatic semantics for JavaScript, fully formalized through functorial mappings and commutative diagrams from category theory. The theoretical contribution is a unified commutative-diagram framework that treats each semantics paradigm as a distinct functor from the program category to specialized semantic categories encompassing transition systems, domain theory, and logic, proving that soundness and completeness properties correspond precisely to the existence of natural transformations between these functors. Methodologically, the paper implements all three semantic approaches in TypeScript: a small-step structural operational semantics interpreter, a denotational semantics using continuous functions and least fixed-points, and a weakest-precondition calculus for Hoare logic. The engineering value is a unified debugging and verification vocabulary grounded in formal theory: the JavaScript engine embodies operational semantics, the TypeScript type checker approximates axiomatic semantics, and type-as-denotation provides an elegant bridge between static and dynamic program reasoning. The paper additionally traces historical industrial applications of formal methods from hardware verification to cloud infrastructure, offering a pragmatic cost-benefit analysis for adopting lightweight formalization in contemporary web development workflows."
 references:
   - Winskel, The Formal Semantics of Programming Languages (1993)
   - FORMAL_SEMANTICS_COMPLETE.md
   - Harper, Practical Foundations for Programming Languages (2016)
 ---
+
+> **Executive Summary** (English): This paper establishes a functorial correspondence among the three classical approaches to programming language semantics—operational, denotational, and axiomatic—and analyzes their symmetric differences within the JavaScript/TypeScript ecosystem. The theoretical contribution is a commutative-diagram framework that treats each semantics as a functor from the program category to distinct semantic categories (transition systems, domain theory, and logic), proving that soundness and completeness correspond to the existence of natural transformations between these functors. Methodologically, the paper implements all three semantics in TypeScript: a small-step structural operational semantics (SOS) interpreter, a denotational semantics using continuous functions and least fixed-points, and a weakest-precondition calculus for Hoare logic. The engineering value is a unified debugging and verification vocabulary: the JS engine embodies operational semantics, the TypeScript type checker approximates axiomatic semantics, and type-as-denotation provides a bridge between static and dynamic reasoning. The paper also traces the historical industrial application of formal methods, from Intel's floating-point verification to AWS's TLA+ usage, offering a pragmatic cost-benefit analysis for adopting lightweight formalization in web development.
 
 # 操作语义、指称语义、公理语义的形式化对应
 

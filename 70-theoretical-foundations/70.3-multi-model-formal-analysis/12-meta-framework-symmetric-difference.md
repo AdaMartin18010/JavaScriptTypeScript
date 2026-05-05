@@ -1,17 +1,20 @@
 ---
 title: "元框架形式化对称差分析"
 description: "Meta-Framework Symmetric Difference: Next.js/Nuxt/SvelteKit/Astro/Remix Formal Comparison with Category Theory"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete
 priority: P0
 actual-length: "~8000 words"
+english-abstract: "This paper conducts a rigorous formal symmetric-difference analysis of five major meta-frameworks including Next.js, Nuxt, SvelteKit, Astro, and Remix, constructing a rendering strategy lattice and identifying fundamental architectural trade-offs inherent in contemporary frontend development. The theoretical contribution is a formal proof that each framework rests on an incommensurable computational model: Next.js's React Server Components model, Astro's Islands architecture model, and Remix's web-standards-centric model each define distinct rendering categories where certain strategies are native constructions in one framework yet effectively inexpressible in another. Methodologically, the paper systematically maps rendering strategies including SSG, SSR, ISR, CSR, Edge, and Islands to categorical structures such as initial objects, colimits, pullbacks, terminal objects, Kleisli categories, and sheaves, then computes symmetric differences and Jaccard similarities across twenty-four-dimensional feature vectors to precisely quantify semantic distance. The engineering value is a decision-theoretic framework for technology selection: by formalizing inexpressibility as a measurable cost function and applying multi-attribute utility theory, engineering teams can quantitatively evaluate framework fit, accurately estimate migration costs, and avoid the common anti-pattern of selecting the most popular rather than the most suitable tool for a specific rendering requirement profile."
 references:
   - State of JS 2025 Survey
   - Stack Overflow Developer Survey 2025
   - Next.js, Nuxt, SvelteKit, Astro, Remix Documentation (2024-2025)
 ---
+
+> **Executive Summary** (English): This paper conducts a formal comparative analysis of five major meta-frameworks—Next.js, Nuxt, SvelteKit, Astro, and Remix—using symmetric difference analysis and category theory. The theoretical contribution is a proof that each framework rests on an incommensurable computational model: Next.js's RSC model, Astro's Islands model, and Remix's Web-standards model each define distinct rendering categories where certain strategies are native constructions in one framework yet inexpressible in another. Methodologically, the paper maps rendering strategies (SSG, SSR, ISR, CSR, Edge, Islands) to categorical structures (initial objects, colimits, pullbacks, terminal objects, Kleisli categories, sheaves), then computes symmetric differences and Jaccard similarities across 24-dimensional feature vectors to quantify semantic distance. The engineering value is a decision-theoretic framework for technology selection: by formalizing 'inexpressibility' as a cost function and applying multi-attribute utility theory, teams can quantitatively evaluate framework fit, estimate migration costs, and avoid the common anti-pattern of selecting 'the most popular' rather than 'the most suitable' tool for a given rendering requirement profile.
 
 # 元框架形式化对称差分析
 

@@ -1,7 +1,7 @@
 ---
 title: "变量系统的范畴论分析"
 description: "从解构赋值到 TDZ：变量绑定、闭包、作用域链的范畴论语义与认知直觉"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

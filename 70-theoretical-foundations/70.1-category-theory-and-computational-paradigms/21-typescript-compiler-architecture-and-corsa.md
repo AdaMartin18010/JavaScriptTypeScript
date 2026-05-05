@@ -18,7 +18,10 @@ references:
   - "Category Theory for Programmers, Bartosz Milewski, 2019"
   - "Compilers: Principles, Techniques, and Tools (Dragon Book), 2nd Edition"
   - "Pierce, B.C., Types and Programming Languages, MIT Press, 2002"
+english-abstract: "This paper presents a comprehensive categorical analysis of the TypeScript compiler architecture and the revolutionary Project Corsa (tsgo) rewrite in Go. We formalize the classical tsc four-stage pipeline—Parser, Binder, Checker, Emitter—as a covariant functor chain mapping the source category to the distribution category, revealing the deep algebraic structure underlying incremental compilation, language services, and type inference. The core theoretical contribution is a functor-chain equivalence proof showing that tsgo preserves the categorical semantics of tsc while fundamentally refactoring object representation and morphism implementation through arena allocation, type interning, and shared-memory parallelism. We systematically analyze the engineering rationale for choosing Go over Rust or C++, demonstrating that Go's concurrent garbage collector and goroutine-based shared-memory model achieve up to 10.8× compilation speedup and 57% memory reduction. The paper introduces symmetric-difference analysis at the object, homomorphism, and functor levels to precisely characterize architectural differences between tsc (JS) and tsgo (Go). Finally, we derive formal engineering decision matrices for migration strategies and discuss the limitations of category theory in capturing performance characteristics."
 ---
+
+> **Executive Summary** (English): This paper formalizes the TypeScript compiler pipeline as a functor chain in category theory, analyzes the structural typing and constraint-solving algorithms, and examines Project Corsa's Go rewrite which achieves up to 10.8× speedup through arena allocation, shared-memory parallelism, and SCC-level incremental checking, providing a rigorous mathematical and engineering foundation for compiler architecture decisions.
 
 # TypeScript 编译器架构深度解析与 Project Corsa（Go 重写）
 

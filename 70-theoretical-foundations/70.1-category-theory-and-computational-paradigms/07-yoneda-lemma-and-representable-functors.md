@@ -1,7 +1,7 @@
 ---
 title: "Yoneda 引理与可表函子：通过行为理解对象的深层原理"
 description: "Yoneda 引理的编程意义：从测试驱动开发到 API 设计的统一视角，含精确直觉类比、正例与反例、对称差分析"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

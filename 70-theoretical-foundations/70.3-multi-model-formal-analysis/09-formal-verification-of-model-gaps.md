@@ -1,7 +1,7 @@
 ---
 title: "模型间隙的形式化验证"
 description: "TLA+/Coq 建模、属性基测试、符号执行在发现模型间隙中的应用"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

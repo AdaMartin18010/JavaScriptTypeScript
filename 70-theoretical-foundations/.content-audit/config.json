@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "description": "权威来源监控配置 - 70-theoretical-foundations 内容新鲜度追踪",
+  "updateIntervalDays": 90,
+  "sources": [
+    {
+      "name": "TC39 ECMA-262 规范更新",
+      "url": "https://tc39.es/ecma262/",
+      "feedUrl": "https://github.com/tc39/ecma262/commits/main.atom",
+      "category": "language-semantics",
+      "priority": "critical"
+    },
+    {
+      "name": "TypeScript 官方博客",
+      "url": "https://devblogs.microsoft.com/typescript/",
+      "feedUrl": "https://devblogs.microsoft.com/typescript/feed/",
+      "category": "type-system",
+      "priority": "critical"
+    },
+    {
+      "name": "V8 博客",
+      "url": "https://v8.dev/blog",
+      "feedUrl": "https://v8.dev/blog.atom",
+      "category": "execution-model",
+      "priority": "high"
+    },
+    {
+      "name": "React 官方博客",
+      "url": "https://react.dev/blog",
+      "feedUrl": "https://react.dev/rss.xml",
+      "category": "frontend-framework",
+      "priority": "high"
+    },
+    {
+      "name": "Vue.js 官方博客",
+      "url": "https://blog.vuejs.org/",
+      "feedUrl": "https://blog.vuejs.org/feed.rss",
+      "category": "frontend-framework",
+      "priority": "high"
+    },
+    {
+      "name": "WebGPU W3C 规范",
+      "url": "https://www.w3.org/TR/webgpu/",
+      "feedUrl": "https://github.com/gpuweb/gpuweb/commits/main.atom",
+      "category": "web-standards",
+      "priority": "medium"
+    },
+    {
+      "name": "MDN 重大更新",
+      "url": "https://developer.mozilla.org/",
+      "feedUrl": "https://developer.mozilla.org/en-US/feeds/web-features.xml",
+      "category": "documentation",
+      "priority": "medium"
+    }
+  ],
+  "alertChannels": {
+    "githubIssue": true,
+    "consoleReport": true
+  }
+}

@@ -1,7 +1,7 @@
 ---
 title: "类型系统与运行时的对称差"
 description: "TS 编译时类型 vs JS 运行时值的形式化对称差分析：从直觉到量化的完整理论"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

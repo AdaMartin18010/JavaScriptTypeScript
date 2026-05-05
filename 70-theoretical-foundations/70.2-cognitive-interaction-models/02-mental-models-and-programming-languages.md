@@ -1,7 +1,7 @@
 ---
 title: "心智模型与编程语言设计"
 description: "动态类型 vs 静态类型的心智模型构建、认知切换成本与对称差分析"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

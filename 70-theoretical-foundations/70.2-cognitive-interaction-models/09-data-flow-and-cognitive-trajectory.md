@@ -1,7 +1,7 @@
-﻿---
+---
 title: "数据流与认知轨迹"
 description: "Data Flow and Cognitive Trajectory: Unidirectional vs Bidirectional Data Flow"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

@@ -1,7 +1,7 @@
 ---
 title: "Angular 架构的认知负荷分析"
 description: "DI、RxJS 强制使用、模块层级、装饰器的认知心理学"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

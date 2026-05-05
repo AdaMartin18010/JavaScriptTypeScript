@@ -1,16 +1,19 @@
 ---
 title: "笛卡尔闭范畴与 TypeScript 类型系统"
 description: "从 curry、元组、函数类型出发，理解 TS 类型系统的数学根基"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete
 priority: P1
 actual-length: ~8500 words
+english-abstract: "This paper provides a rigorous formal proof that TypeScript's simple type system forms a Cartesian Closed Category, bridging the gap between pure mathematics and practical type theory in software engineering. The theoretical contribution demonstrates that TypeScript's core type constructors—including terminal objects mapped to void, initial objects mapped to never, product types realized as tuples and objects, coproduct types realized as unions, and exponential objects realized as function types—collectively satisfy CCC axioms under appropriately idealized conditions. Methodologically, the paper employs accessible type-counting analogies and formal isomorphism proofs implemented in executable TypeScript code to make abstract mathematical concepts concrete, verifiable, and directly experiential for readers. The engineering value is threefold: it supplies library designers with a principled mathematical framework for evaluating type-safe API designs, explains the fundamental design constraints underlying TypeScript's conditional and mapped types, and provides a rigorous criterion for identifying when advanced type gymnastics remain structurally sound versus when they overstep the boundaries of the CCC model. This mathematical grounding transforms type system exploration from trial-and-error into structured, theory-guided engineering."
 references:
   - Lambek & Scott, Introduction to Higher-Order Categorical Logic (1986)
   - Pierce, Types and Programming Languages (2002)
 ---
+
+> **Executive Summary** (English): This paper reveals the mathematical foundations of the TypeScript type system through the lens of Cartesian Closed Categories (CCC). It formalizes the correspondence between CCC constructs—terminal objects (void), initial objects (never), product types (tuples/objects), coproduct types (unions), and exponential objects (function types)—and their TypeScript counterparts. The theoretical contribution is a rigorous demonstration that TypeScript's core type constructors form a CCC (under idealized conditions), thereby explaining why currying, destructuring, and function application are not merely syntactic conveniences but structural necessities rooted in category theory. Methodologically, the paper employs type-counting analogies and isomorphism proofs implemented in TypeScript to make abstract mathematical concepts executable and verifiable. The engineering value is threefold: it provides a principled framework for library designers to evaluate type-safe APIs, explains the design constraints behind TypeScript's conditional and mapped types, and offers a mathematical criterion for identifying when 'type gymnastics' are structurally sound versus when they overstep the boundaries of the CCC model.
 
 # 笛卡尔闭范畴与 TypeScript 类型系统
 

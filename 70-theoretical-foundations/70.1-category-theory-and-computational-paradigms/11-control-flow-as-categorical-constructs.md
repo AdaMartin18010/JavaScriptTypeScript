@@ -1,7 +1,7 @@
 ---
 title: "控制流的范畴论构造"
 description: "if/else/while/try-catch/async/generator 的范畴语义分析，从代码到结构的精确映射"
-last-updated: 2026-04-30
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-10-30
 status: complete

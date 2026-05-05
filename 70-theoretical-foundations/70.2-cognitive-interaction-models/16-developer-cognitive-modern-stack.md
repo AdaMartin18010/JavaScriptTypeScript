@@ -1,7 +1,7 @@
 ---
 title: "现代前端技术栈的开发者认知模型"
 description: "Cognitive Models for Modern Frontend Stack: 从认知负荷理论量化 Islands 架构、构建工具、Web Components、Edge Runtime 与 AI 辅助开发对开发者心智模型的系统性影响，涵盖满意决策、决策疲劳与专家-新手差异"
-last-updated: 2026-05-01
+last-updated: 2026-05-05
 review-cycle: 6 months
 next-review: 2026-11-01
 status: complete

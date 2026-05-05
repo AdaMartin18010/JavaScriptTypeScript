@@ -2,6 +2,7 @@
 title: "Web Components 的形式语义与范畴论分析"
 description: "将 Custom Elements、Shadow DOM、HTML Templates 形式化为代数数据类型与范畴论语义，分析 Web Components 与框架组件的对偶关系，探讨声明式 Shadow DOM、流式 SSR、表单关联与可访问性的形式化模型"
 date: 2026-05-01
+last-updated: 2026-05-05
 category: "category-theory"
 tags: ["web-components", "custom-elements", "shadow-dom", "formal-semantics", "category-theory", "initial-algebra", "functor", "coproduct", "design-systems"]
 mermaid: true
