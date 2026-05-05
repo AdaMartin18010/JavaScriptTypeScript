@@ -58,7 +58,7 @@ Workers continue executing until explicitly terminated or until the parent docum
 
 Forced termination is dangerous for stateful operations. If a worker holds locks in `IndexedDB`, has open `WebSocket` connections, or is in the middle of a `fetch`, these resources may leak or leave external systems in inconsistent states. Best practice involves implementing a cooperative shutdown protocol: the parent sends a "shutdown" message, the worker completes pending work, releases resources, and then calls `self.close()`.
 
-Memory leaks in long-lived worker applications typically stem from unremoved event listeners or accumulated state in the worker's heap. Unlike the main thread, where page navigation provides a natural garbage collection boundary, workers persist until explicitly killed. Profiling worker memory requires the same DevTools heap snapshots used for the main thread, but with the worker selected as the profiling target.
+Memory leaks in long-lived worker applications typically stem from unremoved event listeners or accumulated state in the worker's heap. Unlike the main thread, where page navigation provides a natural garbage collection boundary, workers persist until explicitly killed. Profiling worker memory requires the same DevTools heap snapshots used for the main thread, but with the worker selected as the profiling target. Chrome's DevTools allows attaching to individual workers from the Threads panel, while Firefox uses the about:debugging interface for worker inspection.
 
 ### 2.5 Dedicated Worker TypeScript Example: Transferable Object Validator
 
@@ -1927,6 +1927,8 @@ For a given requirement, the selection follows this decision tree:
 
 5. **Default**: Dedicated Worker for CPU-intensive tasks; MessageChannel for complex routing; main thread for DOM-touching logic.
 
+The decision matrix should be revisited periodically as browser support evolves. Safari's reintroduction of Shared Workers, the gradual stabilization of LayoutWorklet, and the expanding availability of WebGPU compute shaders all shift the optimal architectural choices. What requires `SharedArrayBuffer` and complex COOP/COEP deployment today may be achievable through simpler primitives tomorrow.
+
 ---
 
 ## 13. Counter-Examples and Common Pitfalls
@@ -2093,7 +2095,7 @@ The Web Locks API provides a mechanism for coordinating resource access across b
 
 For worker pools, Web Locks enables serialized access to shared resources without implementing custom mutexes in `SharedArrayBuffer`. For example, multiple workers writing to the same IndexedDB database can coordinate through a named lock, preventing transaction conflicts. The API also supports shared (read) locks via `{ mode: 'shared' }`, allowing concurrent readers while blocking writers.
 
-Web Locks are particularly valuable in Service Workers, where multiple tabs may trigger background sync events that need to serialize database writes. Unlike `Atomics`-based synchronization, Web Locks do not require `SharedArrayBuffer` or cross-origin isolation, making them broadly deployable.
+Web Locks are particularly valuable in Service Workers, where multiple tabs may trigger background sync events that need to serialize database writes. Unlike `Atomics`-based synchronization, Web Locks do not require `SharedArrayBuffer` or cross-origin isolation, making them broadly deployable across modern browsers without special security headers.
 
 ```typescript
 /**
@@ -2230,4 +2232,4 @@ Cross-Origin-Resource-Policy: cross-origin
 
 ---
 
-*Document generated for the JavaScript/TypeScript theoretical foundations knowledge base. Last updated: 2026-05-05.*
+*Document generated for the JavaScript/TypeScript theoretical foundations knowledge base. This document represents a living specification that should be updated as browser implementations evolve, new APIs emerge, and security requirements change. Last updated: 2026-05-05.*
