@@ -58,8 +58,8 @@ references:
     - [12.2 性能不是范畴的性质](#122-性能不是范畴的性质)
     - [12.3 调试和可观测性](#123-调试和可观测性)
     - [12.4 范畴论的正确使用边界](#124-范畴论的正确使用边界)
-    - [补充 11：消息传递的容错设计](#补充-11消息传递的容错设计)
-    - [补充 12：范畴论在消息系统设计中的未来](#补充-12范畴论在消息系统设计中的未来)
+  - [补充 11：消息传递的容错设计](#补充-11消息传递的容错设计)
+  - [补充 12：范畴论在消息系统设计中的未来](#补充-12范畴论在消息系统设计中的未来)
   - [参考文献](#参考文献)
   - [补充章节：JavaScript 事件系统的深层分析](#补充章节javascript-事件系统的深层分析)
     - [补充 1：Event Emitter 的代数定律](#补充-1event-emitter-的代数定律)
@@ -67,14 +67,12 @@ references:
     - [补充 3：消息队列的纤维化结构](#补充-3消息队列的纤维化结构)
     - [补充 4：WebSocket 的双向流范畴论模型](#补充-4websocket-的双向流范畴论模型)
     - [补充 5：精确直觉类比——消息系统像神经系统](#补充-5精确直觉类比消息系统像神经系统)
-  - [参考文献](#参考文献-1)
     - [补充 6：Event Sourcing 与消息回放](#补充-6event-sourcing-与消息回放)
     - [补充 7：Saga 模式的范畴论解释](#补充-7saga-模式的范畴论解释)
-  - [参考文献](#参考文献-2)
     - [补充 8：消息传递与函数式编程的融合](#补充-8消息传递与函数式编程的融合)
     - [补充 9：Web API 作为消息通道](#补充-9web-api-作为消息通道)
     - [补充 10：精确直觉类比——消息系统像语言](#补充-10精确直觉类比消息系统像语言)
-  - [参考文献](#参考文献-3)
+  - [参考文献](#参考文献-1)
 
 ---
 
@@ -867,13 +865,13 @@ class PubSubSystem {
 ❌ 不要用范畴论证明分布式系统的活性（它只保证安全性）
 ```
 
-### 补充 11：消息传递的容错设计
+## 补充 11：消息传递的容错设计
 
 分布式系统中的消息传递必须考虑**容错**——消息可能丢失、延迟、重复或乱序。
 
 **消息丢失的处理**：
 
-```
+```text
 策略 1：超时重传（Timeout + Retransmit）
   发送方等待 ACK，超时后重传
   范畴论：在消息通道上添加"重试"自然变换
@@ -909,7 +907,7 @@ class IdempotentHandler<T> {
 }
 ```
 
-### 补充 12：范畴论在消息系统设计中的未来
+## 补充 12：范畴论在消息系统设计中的未来
 
 随着分布式系统的普及，范畴论在消息系统设计中的应用将越来越重要。
 
@@ -1156,25 +1154,11 @@ function composeWebSockets(
 
 ---
 
-## 参考文献
-
-1. Moggi, E. (1991). "Notions of Computation and Monads." *Information and Computation*, 93(1), 55-92.
-2. Wadler, P. (1995). "Monads for Functional Programming." *Advanced Functional Programming*.
-3. Hoare, C. A. R. (1978). "Communicating Sequential Processes." *Communications of the ACM*, 21(8), 666-677.
-4. Hewitt, C., Bishop, P., & Steiger, R. (1973). "A Universal Modular Actor Formalism for Artificial Intelligence." *IJCAI*.
-5. Meijer, E. (2012). "Your Mouse is a Database." *Communications of the ACM*, 55(5), 66-73.
-6. Harper, R. (2016). *Practical Foundations for Programming Languages* (2nd ed.). Cambridge.
-7. Jacobs, B. (1999). *Categorical Logic and Type Theory*. Elsevier. (Ch. 5-6)
-8. Leinster, T. (2014). *Basic Category Theory*. Cambridge University Press.
-9. Milner, R. (1989). *Communication and Concurrency*. Prentice Hall.
-10. Armstrong, J. (2003). "Making Reliable Distributed Systems in the Presence of Software Errors." *PhD Thesis*, KTH.
-
-
 ### 补充 6：Event Sourcing 与消息回放
 
 事件溯源（Event Sourcing）是消息传递模式在数据持久化中的应用。
 
-```
+```text
 传统 CRUD：
   状态 = 数据库中的当前值
   更新 = 直接修改状态
@@ -1229,7 +1213,7 @@ function replay(events: Event[]): AccountState[] {
 
 **对称差分析：CRUD vs 事件溯源**
 
-```
+```text
 CRUD \\ 事件溯源 = {
   "简单直观",
   "查询性能好（直接读状态）",
@@ -1248,7 +1232,7 @@ CRUD \\ 事件溯源 = {
 
 Saga 模式用于管理分布式事务，可以从范畴论的角度理解。
 
-```
+```text
 Saga = 一系列局部事务 + 补偿操作
 
 正向流程 = 态射复合
@@ -1298,22 +1282,6 @@ class Saga<T> {
 
 ---
 
-## 参考文献
-
-1. Moggi, E. (1991). "Notions of Computation and Monads." *Information and Computation*, 93(1), 55-92.
-2. Wadler, P. (1995). "Monads for Functional Programming." *Advanced Functional Programming*.
-3. Hoare, C. A. R. (1978). "Communicating Sequential Processes." *Communications of the ACM*, 21(8), 666-677.
-4. Hewitt, C., Bishop, P., & Steiger, R. (1973). "A Universal Modular Actor Formalism for Artificial Intelligence." *IJCAI*.
-5. Meijer, E. (2012). "Your Mouse is a Database." *Communications of the ACM*, 55(5), 66-73.
-6. Harper, R. (2016). *Practical Foundations for Programming Languages* (2nd ed.). Cambridge.
-7. Jacobs, B. (1999). *Categorical Logic and Type Theory*. Elsevier. (Ch. 5-6)
-8. Leinster, T. (2014). *Basic Category Theory*. Cambridge University Press.
-9. Milner, R. (1989). *Communication and Concurrency*. Prentice Hall.
-10. Armstrong, J. (2003). "Making Reliable Distributed Systems in the Presence of Software Errors." *PhD Thesis*, KTH.
-11. Garcia-Molina, H., & Salem, K. (1987). "Sagas." *ACM SIGMOD*.
-12. Fowler, M. (2005). "Event Sourcing." *martinfowler.com*.
-
-
 ### 补充 8：消息传递与函数式编程的融合
 
 现代函数式编程语言将消息传递与函数式抽象融合，创造出强大的并发模型。
@@ -1345,7 +1313,7 @@ update msg model =
 
 **范畴论视角**：
 
-```
+```text
 Elm 的 update 函数 = 余代数（coalgebra）
   update: Model → (Model, Cmd Msg)
 
@@ -1363,7 +1331,7 @@ Elm 的 update 函数 = 余代数（coalgebra）
 
 **REST API = 同步消息通道**：
 
-```
+```text
 请求 = 消息（方法 + URL + 头部 + 体）
 响应 = 回复消息（状态码 + 头部 + 体）
 
@@ -1375,7 +1343,7 @@ Elm 的 update 函数 = 余代数（coalgebra）
 
 **GraphQL = 参数化消息通道**：
 
-```
+```text
 GraphQL 查询 = 带参数的"消息模板"
 
 query GetUser($id: ID!) {
@@ -1395,7 +1363,7 @@ query GetUser($id: ID!) {
 
 **WebRTC = P2P 消息通道**：
 
-```
+```text
 WebRTC 建立直接的对等连接，绕过服务器。
 
 范畴论视角：

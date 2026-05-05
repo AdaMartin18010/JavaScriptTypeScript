@@ -63,25 +63,18 @@ references:
     - [示例 3：Layout 布局引擎](#示例-3layout-布局引擎)
     - [示例 4：Paint 绘制优化检测](#示例-4paint-绘制优化检测)
     - [示例 5：渲染管道性能剖析](#示例-5渲染管道性能剖析)
+  - [13. 渲染引擎与前端框架的交互](#13-渲染引擎与前端框架的交互)
+  - [14. 渲染性能指标与测量](#14-渲染性能指标与测量)
+  - [15. 渲染引擎的未来趋势](#15-渲染引擎的未来趋势)
   - [参考文献](#参考文献)
-    - [13. 渲染引擎与前端框架的交互](#13-渲染引擎与前端框架的交互)
-    - [14. 渲染性能指标与测量](#14-渲染性能指标与测量)
-    - [15. 渲染引擎的未来趋势](#15-渲染引擎的未来趋势)
-  - [参考文献](#参考文献-1)
-    - [16. 渲染引擎的安全模型](#16-渲染引擎的安全模型)
-    - [17. 渲染引擎与前端框架的共生演化](#17-渲染引擎与前端框架的共生演化)
-  - [参考文献](#参考文献-2)
-    - [18. 渲染引擎的跨学科研究](#18-渲染引擎的跨学科研究)
-  - [参考文献](#参考文献-3)
-    - [19. 渲染引擎的调试与剖析](#19-渲染引擎的调试与剖析)
-    - [20. 渲染引擎的前沿技术](#20-渲染引擎的前沿技术)
-  - [参考文献](#参考文献-4)
-    - [21. 渲染引擎的可持续发展](#21-渲染引擎的可持续发展)
-  - [参考文献](#参考文献-5)
-    - [22. 渲染引擎的终极思考](#22-渲染引擎的终极思考)
-  - [参考文献](#参考文献-6)
-    - [23. 渲染引擎的技术选型影响](#23-渲染引擎的技术选型影响)
-  - [参考文献](#参考文献-7)
+  - [16. 渲染引擎的安全模型](#16-渲染引擎的安全模型)
+  - [17. 渲染引擎与前端框架的共生演化](#17-渲染引擎与前端框架的共生演化)
+  - [18. 渲染引擎的跨学科研究](#18-渲染引擎的跨学科研究)
+  - [19. 渲染引擎的调试与剖析](#19-渲染引擎的调试与剖析)
+  - [20. 渲染引擎的前沿技术](#20-渲染引擎的前沿技术)
+  - [21. 渲染引擎的可持续发展](#21-渲染引擎的可持续发展)
+  - [22. 渲染引擎的终极思考](#22-渲染引擎的终极思考)
+  - [23. 渲染引擎的技术选型影响](#23-渲染引擎的技术选型影响)
 
 ---
 
@@ -1014,21 +1007,7 @@ console.log(profiler.getBottleneck());
 
 ---
 
-## 参考文献
-
-1. Google Chrome Team. "Chrome University: Life of a Pixel." (2019)
-2. Hathi, S. "How Browsers Work: Behind the Scenes of Modern Web Browsers." *HTML5 Rocks*.
-3. Agrawal, R. "Rendering Performance." *web.dev*.
-4. Apple WebKit Team. "WebKit Documentation." webkit.org.
-5. Mozilla MDN. "Critical Rendering Path." developer.mozilla.org.
-6. Irish, P. "Accelerated Rendering in Chrome." *HTML5 Rocks*.
-7. W3C. "HTML Specification." html.spec.whatwg.org.
-8. W3C. "CSS Specification." w3.org/Style/CSS.
-9. Google V8 Team. "V8 Documentation." v8.dev.
-10. Blink Team. "Blink Rendering Engine." chromium.org/blink.
-
-
-### 13. 渲染引擎与前端框架的交互
+## 13. 渲染引擎与前端框架的交互
 
 前端框架与渲染引擎的交互是影响性能的关键。
 
@@ -1102,7 +1081,7 @@ function animate() {
 // 告诉浏览器：这个元素的布局/绘制不影响外部
 ```
 
-### 14. 渲染性能指标与测量
+## 14. 渲染性能指标与测量
 
 ```
 核心性能指标：
@@ -1134,7 +1113,7 @@ function animate() {
 - PageSpeed Insights
 ```
 
-### 15. 渲染引擎的未来趋势
+## 15. 渲染引擎的未来趋势
 
 ```
 趋势 1：WebGPU
@@ -1184,7 +1163,7 @@ function animate() {
 14. Chromium Blog. "RenderingNG." blog.chromium.org.
 
 
-### 16. 渲染引擎的安全模型
+## 16. 渲染引擎的安全模型
 
 浏览器渲染引擎必须平衡**功能**和**安全**。
 
@@ -1241,7 +1220,7 @@ Spectre 漏洞利用 CPU 的推测执行机制：
   需要引入"计量范畴"（metric category）
 ```
 
-### 17. 渲染引擎与前端框架的共生演化
+## 17. 渲染引擎与前端框架的共生演化
 
 ```
 渲染引擎和前端框架是"共生"关系：
@@ -1262,7 +1241,7 @@ Spectre 漏洞利用 CPU 的推测执行机制：
 
 ---
 
-## 参考文献
+---
 
 1. Google Chrome Team. "Chrome University: Life of a Pixel." (2019)
 2. Hathi, S. "How Browsers Work: Behind the Scenes of Modern Web Browsers." *HTML5 Rocks*.
@@ -1283,7 +1262,7 @@ Spectre 漏洞利用 CPU 的推测执行机制：
 17. Reis, C., & Gribble, S. D. (2009). "Isolating Web Programs in Modern Browser Architectures." *EuroSys*.
 
 
-### 18. 渲染引擎的跨学科研究
+## 18. 渲染引擎的跨学科研究
 
 浏览器渲染引擎的研究涉及多个学科。
 
@@ -1358,7 +1337,7 @@ Spectre 漏洞利用 CPU 的推测执行机制：
 
 ---
 
-## 参考文献
+---
 
 1. Google Chrome Team. "Chrome University: Life of a Pixel." (2019)
 2. Hathi, S. "How Browsers Work: Behind the Scenes of Modern Web Browsers." *HTML5 Rocks*.
@@ -1382,7 +1361,7 @@ Spectre 漏洞利用 CPU 的推测执行机制：
 20. Card, S. K., Mackinlay, J. D., & Robertson, G. G. (1991). "A Morphological Analysis of the Design Space of Input Devices." *TOCHI*.
 
 
-### 19. 渲染引擎的调试与剖析
+## 19. 渲染引擎的调试与剖析
 
 理解渲染引擎的内部机制对于调试性能问题至关重要。
 
@@ -1463,7 +1442,7 @@ Performance 面板的核心功能：
   - 使用 CSS containment
 ```
 
-### 20. 渲染引擎的前沿技术
+## 20. 渲染引擎的前沿技术
 
 ```
 正在改变渲染引擎的前沿技术：
@@ -1498,7 +1477,7 @@ Performance 面板的核心功能：
 
 ---
 
-## 参考文献
+---
 
 1. Google Chrome Team. "Chrome University: Life of a Pixel." (2019)
 2. Hathi, S. "How Browsers Work: Behind the Scenes of Modern Web Browsers." *HTML5 Rocks*.
@@ -1524,7 +1503,7 @@ Performance 面板的核心功能：
 22. W3C. "CSS View Transitions Module." w3.org/TR/css-view-transitions-1.
 
 
-### 21. 渲染引擎的可持续发展
+## 21. 渲染引擎的可持续发展
 
 浏览器渲染引擎的演化需要考虑**可持续发展**。
 
@@ -1573,7 +1552,7 @@ GPU 渲染：
 
 ---
 
-## 参考文献
+---
 
 1. Google Chrome Team. "Chrome University: Life of a Pixel." (2019)
 2. Hathi, S. "How Browsers Work: Behind the Scenes of Modern Web Browsers." *HTML5 Rocks*.
@@ -1601,7 +1580,7 @@ GPU 渲染：
 24. W3C. " prefers-reduced-motion." w3.org/TR/mediaqueries-5/#prefers-reduced-motion.
 
 
-### 22. 渲染引擎的终极思考
+## 22. 渲染引擎的终极思考
 
 理解渲染引擎，是成为前端专家的必经之路。
 
@@ -1645,7 +1624,7 @@ GPU 渲染：
 
 ---
 
-## 参考文献
+---
 
 1. Google Chrome Team. "Chrome University: Life of a Pixel." (2019)
 2. Hathi, S. "How Browsers Work: Behind the Scenes of Modern Web Browsers." *HTML5 Rocks*.
@@ -1674,7 +1653,7 @@ GPU 渲染：
 25. Dijkstra, E. W. (1974). "On the Role of Scientific Thought." *Selected Writings on Computing: A Personal Perspective*.
 
 
-### 23. 渲染引擎的技术选型影响
+## 23. 渲染引擎的技术选型影响
 
 理解渲染引擎有助于做出更好的技术选型决策。
 
@@ -1731,7 +1710,7 @@ JS 动画（requestAnimationFrame）：
 
 ---
 
-## 参考文献
+---
 
 1. Google Chrome Team. "Chrome University: Life of a Pixel." (2019)
 2. Hathi, S. "How Browsers Work: Behind the Scenes of Modern Web Browsers." *HTML5 Rocks*.

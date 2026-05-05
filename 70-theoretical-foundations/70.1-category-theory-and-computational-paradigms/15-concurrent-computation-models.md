@@ -44,6 +44,8 @@ references:
   - [8. JavaScript 并发模型的形式化分析](#8-javascript-并发模型的形式化分析)
     - [8.1 Event Loop 的形式化](#81-event-loop-的形式化)
     - [8.2 Promise 的并发代数](#82-promise-的并发代数)
+    - [8.3 Web Workers 与 SharedArrayBuffer 的形式化](#83-web-workers-与-sharedarraybuffer-的形式化)
+    - [8.4 JavaScript 并发模型的统一视图](#84-javascript-并发模型的统一视图)
   - [9. 对称差分析：并发模型的比较](#9-对称差分析并发模型的比较)
     - [9.1 四大并发模型的范畴论对比](#91-四大并发模型的范畴论对比)
   - [10. 工程决策矩阵](#10-工程决策矩阵)
@@ -56,33 +58,28 @@ references:
     - [12.1 范畴论不关心时间](#121-范畴论不关心时间)
     - [12.2 形式化验证的规模限制](#122-形式化验证的规模限制)
     - [12.3 "银弹"不存在](#123-银弹不存在)
-    - [12.1 并发模型的工程实践建议](#121-并发模型的工程实践建议)
+    - [12.4 并发模型的工程实践建议](#124-并发模型的工程实践建议)
+  - [13. 并发模型深入对比](#13-并发模型深入对比)
+    - [13.1 并发模型的认知维度对比](#131-并发模型的认知维度对比)
+    - [13.2 从范畴论角度的终极对比](#132-从范畴论角度的终极对比)
+  - [14. 工程决策矩阵深入](#14-工程决策矩阵深入)
+    - [14.1 JavaScript/TypeScript 并发选型指南](#141-javascripttypescript-并发选型指南)
+    - [14.2 并发模型与框架的匹配](#142-并发模型与框架的匹配)
+  - [15. 精确直觉类比扩展](#15-精确直觉类比扩展)
+    - [15.1 并发模型像组织管理结构](#151-并发模型像组织管理结构)
+    - [15.2 并发像交通系统](#152-并发像交通系统)
+    - [15.3 并发与并行的范畴论区分](#153-并发与并行的范畴论区分)
+  - [16. 反例与局限性扩展](#16-反例与局限性扩展)
+    - [16.1 形式化方法无法捕捉所有并发 bug](#161-形式化方法无法捕捉所有并发-bug)
+    - [16.2 "免费午餐"已经结束](#162-免费午餐已经结束)
+    - [16.3 学习路径建议](#163-学习路径建议)
+    - [15.4 并发与类型系统的交叉](#154-并发与类型系统的交叉)
+  - [17. 并发形式化与认知](#17-并发形式化与认知)
+    - [17.1 并发模型的"不可能三角"](#171-并发模型的不可能三角)
+    - [17.2 形式化与工程实践的鸿沟](#172-形式化与工程实践的鸿沟)
+    - [17.3 并发学习的认知建议](#173-并发学习的认知建议)
+  - [18. 并发系统的范畴论设计模式](#18-并发系统的范畴论设计模式)
   - [参考文献](#参考文献)
-    - [8.2 Web Workers 与 SharedArrayBuffer 的形式化](#82-web-workers-与-sharedarraybuffer-的形式化)
-    - [8.3 JavaScript 并发模型的统一视图](#83-javascript-并发模型的统一视图)
-  - [9. 对称差分析：并发模型的比较](#9-对称差分析并发模型的比较-1)
-    - [9.1 并发模型的认知维度对比](#91-并发模型的认知维度对比)
-    - [9.2 从范畴论角度的终极对比](#92-从范畴论角度的终极对比)
-  - [10. 工程决策矩阵](#10-工程决策矩阵-1)
-    - [10.1 JavaScript/TypeScript 并发选型指南](#101-javascripttypescript-并发选型指南)
-    - [10.2 并发模型与框架的匹配](#102-并发模型与框架的匹配)
-  - [11. 精确直觉类比与边界](#11-精确直觉类比与边界-1)
-    - [11.1 并发模型像组织管理结构](#111-并发模型像组织管理结构)
-    - [11.2 并发像交通系统](#112-并发像交通系统)
-  - [12. 反例与局限性](#12-反例与局限性-1)
-    - [12.1 形式化方法无法捕捉所有并发 bug](#121-形式化方法无法捕捉所有并发-bug)
-    - [12.2 "免费午餐"已经结束](#122-免费午餐已经结束)
-    - [12.3 学习路径建议](#123-学习路径建议)
-  - [参考文献](#参考文献-1)
-    - [11.1 并发与并行的范畴论区分](#111-并发与并行的范畴论区分)
-    - [11.2 并发与类型系统的交叉](#112-并发与类型系统的交叉)
-  - [12. 反例与局限性](#12-反例与局限性-2)
-    - [12.1 并发模型的"不可能三角"](#121-并发模型的不可能三角)
-    - [12.2 形式化与工程实践的鸿沟](#122-形式化与工程实践的鸿沟)
-    - [12.3 并发学习的认知建议](#123-并发学习的认知建议)
-  - [参考文献](#参考文献-2)
-    - [11.3 并发系统的范畴论设计模式](#113-并发系统的范畴论设计模式)
-  - [参考文献](#参考文献-3)
 
 ---
 
@@ -572,6 +569,79 @@ Promise.then = Kleisli 复合
 
 ---
 
+
+### 8.3 Web Workers 与 SharedArrayBuffer 的形式化
+
+Web Workers 和 SharedArrayBuffer 提供了浏览器中的多线程能力。
+
+**Web Workers = 进程代数中的并行组合**：
+
+```
+主线程 = P
+Worker 1 = Q1
+Worker 2 = Q2
+
+整体系统 = P | Q1 | Q2（并行组合）
+
+通信 = 通过 postMessage 的消息传递
+  = π 演算中的通道通信
+
+限制 = 不共享内存（除非使用 SharedArrayBuffer）
+  = P \ sharedMemory
+```
+
+**SharedArrayBuffer = 共享状态范畴**：
+
+```typescript
+// SharedArrayBuffer 允许线程间共享内存
+const buffer = new SharedArrayBuffer(1024);
+const view = new Int32Array(buffer);
+
+// Atomics 提供原子操作
+Atomics.add(view, 0, 1);  // 原子递增
+
+// 范畴论视角：
+// SharedArrayBuffer = 共享对象（多个态射可以访问）
+// Atomics = 确保某些操作是"原子态射"（不可分割）
+// 这打破了"无共享状态"的 Actor 模型假设
+```
+
+**反例：SharedArrayBuffer 的安全问题**
+
+```
+Spectre 漏洞利用 SharedArrayBuffer 进行定时攻击：
+
+1. 恶意代码读取越界内存
+2. 根据读取结果访问 SharedArrayBuffer 的不同位置
+3. 通过测量访问时间推断读取的值
+
+这导致浏览器一度禁用 SharedArrayBuffer。
+范畴论的安全模型需要考虑"时序信道"（timing channels），
+而传统范畴论不区分"快"和"慢"的态射。
+```
+
+### 8.4 JavaScript 并发模型的统一视图
+
+```
+JavaScript 的并发模型是一个"分层结构"：
+
+最底层：Event Loop（单线程调度）
+  ↓ 宏任务/微任务队列
+
+中间层：Promise/async-await（异步抽象）
+  ↓ Future Monad
+
+上层：Web Workers（多线程）
+  ↓ Actor/CSP 模型
+
+最上层：SharedArrayBuffer + Atomics（共享内存）
+  ↓ 传统线程模型
+
+这形成了从"纯消息传递"到"共享内存"的光谱。
+```
+
+---
+
 ## 9. 对称差分析：并发模型的比较
 
 ### 9.1 四大并发模型的范畴论对比
@@ -748,7 +818,7 @@ Event Loop \\ (共享内存 ∪ 消息传递) = {
 而是帮助你"理解为什么"。
 ```
 
-### 12.1 并发模型的工程实践建议
+### 12.4 并发模型的工程实践建议
 
 基于范畴论和认知科学的综合分析，我们为不同场景提供具体的并发模型选择建议。
 
@@ -792,95 +862,9 @@ CPU 密集型：Web Workers
 
 ---
 
-## 参考文献
+## 13. 并发模型深入对比
 
-1. Milner, R. (1989). *Communication and Concurrency*. Prentice Hall.
-2. Milner, R. (1999). *Communicating and Mobile Systems: The π Calculus*. Cambridge.
-3. Hoare, C. A. R. (1985). *Communicating Sequential Processes*. Prentice Hall.
-4. Hewitt, C., Bishop, P., & Steiger, R. (1973). "A Universal Modular Actor Formalism for Artificial Intelligence." *IJCAI*.
-5. Agha, G. (1986). *Actors: A Model of Concurrent Computation in Distributed Systems*. MIT Press.
-6. Petri, C. A. (1962). "Kommunikation mit Automaten." *PhD Thesis*, University of Bonn.
-7. Sassone, V., & Nielsen, M. (1996). "Models for Concurrency: Towards a Classification." *Theoretical Computer Science*, 170(1-2), 297-348.
-8. Joyal, A., Street, R., & Verity, D. (1996). "Traced Monoidal Categories." *Mathematical Proceedings of the Cambridge Philosophical Society*, 119(3), 447-468.
-9. Lee, E. A. (2006). "The Problem with Threads." *Computer*, 39(5), 33-42.
-10. Harper, R. (2016). *Practical Foundations for Programming Languages* (2nd ed.). Cambridge.
-
-
-### 8.2 Web Workers 与 SharedArrayBuffer 的形式化
-
-Web Workers 和 SharedArrayBuffer 提供了浏览器中的多线程能力。
-
-**Web Workers = 进程代数中的并行组合**：
-
-```
-主线程 = P
-Worker 1 = Q1
-Worker 2 = Q2
-
-整体系统 = P | Q1 | Q2（并行组合）
-
-通信 = 通过 postMessage 的消息传递
-  = π 演算中的通道通信
-
-限制 = 不共享内存（除非使用 SharedArrayBuffer）
-  = P \ sharedMemory
-```
-
-**SharedArrayBuffer = 共享状态范畴**：
-
-```typescript
-// SharedArrayBuffer 允许线程间共享内存
-const buffer = new SharedArrayBuffer(1024);
-const view = new Int32Array(buffer);
-
-// Atomics 提供原子操作
-Atomics.add(view, 0, 1);  // 原子递增
-
-// 范畴论视角：
-// SharedArrayBuffer = 共享对象（多个态射可以访问）
-// Atomics = 确保某些操作是"原子态射"（不可分割）
-// 这打破了"无共享状态"的 Actor 模型假设
-```
-
-**反例：SharedArrayBuffer 的安全问题**
-
-```
-Spectre 漏洞利用 SharedArrayBuffer 进行定时攻击：
-
-1. 恶意代码读取越界内存
-2. 根据读取结果访问 SharedArrayBuffer 的不同位置
-3. 通过测量访问时间推断读取的值
-
-这导致浏览器一度禁用 SharedArrayBuffer。
-范畴论的安全模型需要考虑"时序信道"（timing channels），
-而传统范畴论不区分"快"和"慢"的态射。
-```
-
-### 8.3 JavaScript 并发模型的统一视图
-
-```
-JavaScript 的并发模型是一个"分层结构"：
-
-最底层：Event Loop（单线程调度）
-  ↓ 宏任务/微任务队列
-
-中间层：Promise/async-await（异步抽象）
-  ↓ Future Monad
-
-上层：Web Workers（多线程）
-  ↓ Actor/CSP 模型
-
-最上层：SharedArrayBuffer + Atomics（共享内存）
-  ↓ 传统线程模型
-
-这形成了从"纯消息传递"到"共享内存"的光谱。
-```
-
----
-
-## 9. 对称差分析：并发模型的比较
-
-### 9.1 并发模型的认知维度对比
+### 13.1 并发模型的认知维度对比
 
 | 维度 | 线程+锁 | Actor | CSP | Event Loop | STM |
 |------|--------|-------|-----|-----------|-----|
@@ -891,7 +875,7 @@ JavaScript 的并发模型是一个"分层结构"：
 | 组合性 | 差 | 好 | 好 | 中 | 好 |
 | 性能潜力 | 高 | 中 | 中 | 低（单核） | 中 |
 
-### 9.2 从范畴论角度的终极对比
+### 13.2 从范畴论角度的终极对比
 
 ```
 共享内存（线程+锁）：
@@ -917,9 +901,9 @@ STM：
 
 ---
 
-## 10. 工程决策矩阵
+## 14. 工程决策矩阵深入
 
-### 10.1 JavaScript/TypeScript 并发选型指南
+### 14.1 JavaScript/TypeScript 并发选型指南
 
 | 场景 | 推荐方案 | 理由 |
 |------|---------|------|
@@ -930,7 +914,7 @@ STM：
 | 高频率数据更新 | RxJS / Signals | 细粒度响应，自动优化 |
 | 图像/视频处理 | WebAssembly + Worker | 接近原生性能 |
 
-### 10.2 并发模型与框架的匹配
+### 14.2 并发模型与框架的匹配
 
 | 框架 | 内置并发模型 | 扩展方案 |
 |------|------------|---------|
@@ -942,9 +926,9 @@ STM：
 
 ---
 
-## 11. 精确直觉类比与边界
+## 15. 精确直觉类比扩展
 
-### 11.1 并发模型像组织管理结构
+### 15.1 并发模型像组织管理结构
 
 | 并发模型 | 组织结构 | 特点 |
 |---------|---------|------|
@@ -964,7 +948,7 @@ STM：
 - ❌ 不像组织结构，计算机并发不会有"情绪"和"政治"
 - ❌ 不像组织结构，计算机并发可以"完美复制"（同样的输入总是同样的输出）
 
-### 11.2 并发像交通系统
+### 15.2 并发像交通系统
 
 | 并发概念 | 交通概念 | 直观理解 |
 |---------|---------|---------|
@@ -988,91 +972,7 @@ STM：
 
 ---
 
-## 12. 反例与局限性
-
-### 12.1 形式化方法无法捕捉所有并发 bug
-
-```
-即使使用进程代数和模型检查，仍然可能遗漏：
-
-1. 性能 bug：
-   - 死锁-free 但活锁存在
-   - 资源饥饿
-   - 优先级反转
-
-2. 安全 bug：
-   - 信息泄露（时序信道）
-   - 侧信道攻击
-
-3. 可用性 bug：
-   - 系统虽然没有错误，但响应极慢
-   - 部分故障导致级联失效
-
-范畴论和进程代数主要保证"安全性"（safety），
-不保证"活性"（liveness）和"性能"。
-```
-
-### 12.2 "免费午餐"已经结束
-
-```
-Herb Sutter 的名言："The Free Lunch Is Over"
-
-单核性能不再指数增长，并发成为必然。
-但并发不是免费的：
-
-- 开发成本：并发代码更难写、更难测
-- 维护成本：并发 bug 更难复现、更难调试
-- 认知成本：开发者需要学习新的心智模型
-
-范畴论和形式化方法的价值：
-不是消除这些成本，
-而是提供"地图"，帮助我们在并发迷宫中找到方向。
-```
-
-### 12.3 学习路径建议
-
-```
-基于认知负荷的并发学习路径：
-
-Level 1: 单线程思维
-  → 掌握 async/await
-  → 理解 Event Loop
-
-Level 2: 多线程思维
-  → 学习 Web Workers
-  → 理解消息传递
-
-Level 3: 并发形式化
-  → 学习进程代数基础
-  → 理解互模拟概念
-
-Level 4: 高级并发模型
-  → 学习 Actor/CSP/STM
-  → 理解范畴论语义
-
-建议：不要跳过层级！
-每一层建立的心智模型是下一层的基础。
-```
-
----
-
-## 参考文献
-
-1. Milner, R. (1989). *Communication and Concurrency*. Prentice Hall.
-2. Milner, R. (1999). *Communicating and Mobile Systems: The π Calculus*. Cambridge.
-3. Hoare, C. A. R. (1985). *Communicating Sequential Processes*. Prentice Hall.
-4. Hewitt, C., Bishop, P., & Steiger, R. (1973). "A Universal Modular Actor Formalism for Artificial Intelligence." *IJCAI*.
-5. Agha, G. (1986). *Actors: A Model of Concurrent Computation in Distributed Systems*. MIT Press.
-6. Petri, C. A. (1962). "Kommunikation mit Automaten." *PhD Thesis*, University of Bonn.
-7. Sassone, V., & Nielsen, M. (1996). "Models for Concurrency: Towards a Classification." *Theoretical Computer Science*, 170(1-2), 297-348.
-8. Joyal, A., Street, R., & Verity, D. (1996). "Traced Monoidal Categories." *Mathematical Proceedings of the Cambridge Philosophical Society*, 119(3), 447-468.
-9. Lee, E. A. (2006). "The Problem with Threads." *Computer*, 39(5), 33-42.
-10. Harper, R. (2016). *Practical Foundations for Programming Languages* (2nd ed.). Cambridge.
-11. Sutter, H. (2005). "The Free Lunch Is Over." *Dr. Dobb's Journal*.
-12. Kocher, P., et al. (2019). "Spectre Attacks: Exploiting Speculative Execution." *IEEE S&P*.
-
-
-### 11.1 并发与并行的范畴论区分
+### 15.3 并发与并行的范畴论区分
 
 在范畴论中，"并发"（Concurrency）和"并行"（Parallelism）有明确的区分。
 
@@ -1114,7 +1014,75 @@ function parallel() {
 }
 ```
 
-### 11.2 并发与类型系统的交叉
+## 16. 反例与局限性扩展
+
+### 16.1 形式化方法无法捕捉所有并发 bug
+
+```
+即使使用进程代数和模型检查，仍然可能遗漏：
+
+1. 性能 bug：
+   - 死锁-free 但活锁存在
+   - 资源饥饿
+   - 优先级反转
+
+2. 安全 bug：
+   - 信息泄露（时序信道）
+   - 侧信道攻击
+
+3. 可用性 bug：
+   - 系统虽然没有错误，但响应极慢
+   - 部分故障导致级联失效
+
+范畴论和进程代数主要保证"安全性"（safety），
+不保证"活性"（liveness）和"性能"。
+```
+
+### 16.2 "免费午餐"已经结束
+
+```
+Herb Sutter 的名言："The Free Lunch Is Over"
+
+单核性能不再指数增长，并发成为必然。
+但并发不是免费的：
+
+- 开发成本：并发代码更难写、更难测
+- 维护成本：并发 bug 更难复现、更难调试
+- 认知成本：开发者需要学习新的心智模型
+
+范畴论和形式化方法的价值：
+不是消除这些成本，
+而是提供"地图"，帮助我们在并发迷宫中找到方向。
+```
+
+### 16.3 学习路径建议
+
+```
+基于认知负荷的并发学习路径：
+
+Level 1: 单线程思维
+  → 掌握 async/await
+  → 理解 Event Loop
+
+Level 2: 多线程思维
+  → 学习 Web Workers
+  → 理解消息传递
+
+Level 3: 并发形式化
+  → 学习进程代数基础
+  → 理解互模拟概念
+
+Level 4: 高级并发模型
+  → 学习 Actor/CSP/STM
+  → 理解范畴论语义
+
+建议：不要跳过层级！
+每一层建立的心智模型是下一层的基础。
+```
+
+---
+
+### 15.4 并发与类型系统的交叉
 
 现代类型系统开始纳入并发相关的类型。
 
@@ -1141,9 +1109,9 @@ type Channel<T> = {
 
 ---
 
-## 12. 反例与局限性
+## 17. 并发形式化与认知
 
-### 12.1 并发模型的"不可能三角"
+### 17.1 并发模型的"不可能三角"
 
 ```
 并发系统有一个"不可能三角"：
@@ -1166,7 +1134,7 @@ CAP 定理：在分布式系统中，
 可能没有极限（或余极限）存在。
 ```
 
-### 12.2 形式化与工程实践的鸿沟
+### 17.2 形式化与工程实践的鸿沟
 
 ```
 形式化并发模型与工程实践之间存在巨大鸿沟：
@@ -1185,7 +1153,7 @@ CAP 定理：在分布式系统中，
 工程师需要添加"容错层"来弥补差距。
 ```
 
-### 12.3 并发学习的认知建议
+### 17.3 并发学习的认知建议
 
 ```
 基于认知科学的并发学习路径：
@@ -1218,25 +1186,7 @@ CAP 定理：在分布式系统中，
 
 ---
 
-## 参考文献
-
-1. Milner, R. (1989). *Communication and Concurrency*. Prentice Hall.
-2. Milner, R. (1999). *Communicating and Mobile Systems: The π Calculus*. Cambridge.
-3. Hoare, C. A. R. (1985). *Communicating Sequential Processes*. Prentice Hall.
-4. Hewitt, C., Bishop, P., & Steiger, R. (1973). "A Universal Modular Actor Formalism for Artificial Intelligence." *IJCAI*.
-5. Agha, G. (1986). *Actors: A Model of Concurrent Computation in Distributed Systems*. MIT Press.
-6. Petri, C. A. (1962). "Kommunikation mit Automaten." *PhD Thesis*, University of Bonn.
-7. Sassone, V., & Nielsen, M. (1996). "Models for Concurrency: Towards a Classification." *Theoretical Computer Science*, 170(1-2), 297-348.
-8. Joyal, A., Street, R., & Verity, D. (1996). "Traced Monoidal Categories." *Mathematical Proceedings of the Cambridge Philosophical Society*, 119(3), 447-468.
-9. Lee, E. A. (2006). "The Problem with Threads." *Computer*, 39(5), 33-42.
-10. Harper, R. (2016). *Practical Foundations for Programming Languages* (2nd ed.). Cambridge.
-11. Sutter, H. (2005). "The Free Lunch Is Over." *Dr. Dobb's Journal*.
-12. Kocher, P., et al. (2019). "Spectre Attacks: Exploiting Speculative Execution." *IEEE S&P*.
-13. Brewer, E. (2000). "Towards Robust Distributed Systems." *PODC*.
-14. Gilbert, S., & Lynch, N. (2002). "Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services." *ACM SIGACT News*.
-
-
-### 11.3 并发系统的范畴论设计模式
+## 18. 并发系统的范畴论设计模式
 
 基于范畴论的并发系统设计模式正在兴起。
 
