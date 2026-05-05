@@ -62,6 +62,25 @@ export const sidebar: DefaultTheme.Sidebar = {
     }
   ],
 
+  // AI 编码工作流专题
+  '/ai-coding-workflow/': [
+    {
+      text: '🤖 AI 编码工作流',
+      collapsed: false,
+      items: [
+        { text: 'AI 编码工作流首页', link: '/ai-coding-workflow/' },
+        { text: 'Cursor 工作流', link: '/ai-coding-workflow/01-cursor-workflow' },
+        { text: 'Claude Code', link: '/ai-coding-workflow/02-claude-code' },
+        { text: 'GitHub Copilot', link: '/ai-coding-workflow/03-github-copilot' },
+        { text: 'Prompt 工程', link: '/ai-coding-workflow/04-prompt-engineering-for-code' },
+        { text: 'AI 代码审查', link: '/ai-coding-workflow/05-ai-code-review' },
+        { text: 'AI 重构', link: '/ai-coding-workflow/06-ai-refactoring' },
+        { text: 'AI 测试生成', link: '/ai-coding-workflow/07-ai-testing' },
+        { text: 'AI 原生开发', link: '/ai-coding-workflow/08-ai-native-development' },
+      ]
+    }
+  ],
+
   // 学习路径部分
   '/learning-paths/': [
     {
