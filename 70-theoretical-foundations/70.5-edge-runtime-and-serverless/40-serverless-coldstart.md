@@ -435,6 +435,7 @@ Serverless 账单上的"可见成本"只是总拥有成本的一角：
 | 数据传输出 | $0.09/GB | 函数响应流量到公网 |
 
 **真实案例**：某团队月调用 5000 万次的 API，Lambda 计算费仅 $120，但：
+
 - NAT Gateway（3 AZ）：$99
 - CloudWatch Logs（200GB）：$100
 - Provisioned Concurrency（10 函数 × 100 实例）：$350
