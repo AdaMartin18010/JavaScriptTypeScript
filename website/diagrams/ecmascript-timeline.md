@@ -124,10 +124,53 @@ TypeScript 是 ECMAScript 的超集，这意味着：
 - TypeScript 在 ECMAScript 特性基础上增加了类型系统
 - TypeScript 编译器可以将新特性转译为旧环境兼容的代码
 
+## 迁移策略
+
+| 当前环境 | 目标 | 建议 |
+|----------|------|------|
+| ES5 / 无构建 | ES2020+ | 引入 Babel / SWC 转译 |
+| Babel | SWC / esbuild | 提升构建速度 10x+ |
+| 仅 ES2020 | ES2024 | 逐步启用原生特性，减少 polyfill |
+| TypeScript < 5.0 | TS 5.4+ | 获取 `satisfies`、更好的类型推断 |
+
+### 渐进式升级检查清单
+
+```javascript
+// 1. 可选链与空值合并（ES2020）
+// 之前
+const city = user && user.address && user.address.city
+// 之后
+const city = user?.address?.city
+
+// 2. Promise.allSettled（ES2020）
+// 之前
+const results = await Promise.all(promises.map(p => p.catch(e => e)))
+// 之后
+const results = await Promise.allSettled(promises)
+
+// 3. 不可变数组方法（ES2023）
+// 之前
+const sorted = [...arr].sort()
+// 之后
+const sorted = arr.toSorted()
+
+// 4. Object.groupBy（ES2024）
+// 之前
+const grouped = arr.reduce((acc, item) => {
+  (acc[item.type] ??= []).push(item)
+  return acc
+}, {})
+// 之后
+const grouped = Object.groupBy(arr, item => item.type)
+```
+
 ## 参考资源
 
 - [语言语义导读](/fundamentals/language-semantics) — ES2020-ES2025 特性矩阵
-- [10-fundamentals/10.1-language-semantics](/fundamentals/language-semantics) — 语言核心特性全览
+- [ES2024+ 新特性速查表](/cheatsheets/es2024-cheatsheet) — 已发布与 Stage 3 特性速查
+- [ECMA-262 规范](https://tc39.es/ecma262/) — TC39 官方语言规范
+- [Can I Use — ES2024](https://caniuse.com/?search=es2024) — 浏览器兼容性查询
+- [Compat Table](https://compat-table.github.io/compat-table/es2016plus/) — 详细特性兼容性表格
 
 ---
 
