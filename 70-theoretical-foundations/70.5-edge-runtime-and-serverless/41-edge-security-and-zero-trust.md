@@ -114,7 +114,7 @@ The following implementation models a production-grade JWT validator with JWKS c
 ```typescript
 /**
  * Edge JWT Validator with JWKS Caching and Key Rotation Support
- * 
+ *
  * Implements the categorical Security monad pattern: each operation
  * returns a Result<T, SecurityError> and accumulates audit context.
  */
@@ -201,7 +201,7 @@ class EdgeJWTValidator {
 
   /**
    * Validates a JWT token using a JWKS endpoint.
-   * 
+   *
    * Categorical interpretation: F_JWT(token) → Result<JWTPayload, SecurityError>
    * where F_JWT is the JWT functor applied to the input token string.
    */
@@ -524,7 +524,7 @@ The following code simulates mTLS handshake validation, certificate pinning, and
 ```typescript
 /**
  * mTLS Handshake Simulator with Certificate Pinning and SPIFFE Support
- * 
+ *
  * Models the Channel functor F_mTLS: SecCtx → Channel, mapping
  * identities to validated TLS channel bindings.
  */
@@ -585,7 +585,7 @@ class MTLSHandshakeSimulator {
 
   /**
    * Simulates the server-side mTLS validation of a client certificate chain.
-   * 
+   *
    * Categorical view: Given a chain of objects X₀ → X₁ → ... → Xₙ in the
    * certificate category (where morphisms are signatures), verify that
    * Xₙ maps to a trusted root object in the trust store.
@@ -695,7 +695,7 @@ class MTLSHandshakeSimulator {
 
   /**
    * Validates a server certificate against a pinning configuration.
-   * 
+   *
    * Models the pinning morphism: Channel → Result<Channel, PinError>
    */
   async validatePinning(
@@ -854,7 +854,7 @@ The following implementation provides a modular WAF rule engine with CRS-style a
 ```typescript
 /**
  * WAF Rule Evaluator with Anomaly Scoring and Transformation Pipeline
- * 
+ *
  * Implements the WAF functor F_WAF: Request → Decision.
  * Rules are morphisms; composition follows priority ordering.
  */
@@ -930,7 +930,7 @@ class WAFRuleEvaluator {
 
   /**
    * Evaluates a request against the rule set using anomaly scoring.
-   * 
+   *
    * Categorical view: This is the colimit of rule evaluations.
    * Each rule produces a decision; the aggregate is the sum (coproduct)
    * of their scores, modulo threshold logic.
@@ -1100,7 +1100,7 @@ This implementation uses a token bucket algorithm with edge-compatible state sto
 ```typescript
 /**
  * Edge Rate Limiter using Token Bucket Algorithm
- * 
+ *
  * Implements rate limiting as a monoid: counters from multiple edge nodes
  * can be combined associatively if using a shared backend.
  */
@@ -1139,7 +1139,7 @@ class EdgeRateLimiter {
 
   /**
    * Checks whether a request is within the rate limit.
-   * 
+   *
    * Uses token bucket algorithm for burst tolerance with
    * smooth long-term rate enforcement.
    */
@@ -1348,7 +1348,7 @@ While attestation verification ultimately relies on low-level cryptographic libr
 ```typescript
 /**
  * TEE Attestation Checker for Edge Secret Release
- * 
+ *
  * Models the TEE functor F_TEE: Hardware → Attestation,
  * verifying that an attestation document satisfies policy
  * before releasing sensitive material.
@@ -1398,7 +1398,7 @@ class TEEAttestationChecker {
 
   /**
    * Verifies an attestation document against a policy.
-   * 
+   *
    * Categorical view: This is a natural transformation from the
    * Attestation category to the Decision category: α_X: F_TEE(X) → Decision.
    */
@@ -1629,7 +1629,7 @@ The following implementation manages short-lived secrets with automatic refresh,
 ```typescript
 /**
  * Secret Rotation Manager for Edge Runtimes
- * 
+ *
  * Implements a functor that maps secret identifiers to periodically
  * refreshed values, with automatic failover and encrypted caching.
  */
@@ -1662,7 +1662,7 @@ class SecretRotationManager {
 
   /**
    * Retrieves a secret, refreshing from the provider if necessary.
-   * 
+   *
    * Implements a natural transformation from the Secret category
    * to the Value category, with caching as an intermediate functor.
    */
@@ -2126,11 +2126,12 @@ For security-critical edge systems, formal methods provide mathematically proven
 ### 16.1 Property: JWT Verification Correctness
 
 **Specification**: For all tokens `t`, if `verify(t)` returns `Ok(payload)`, then:
+
 1. `t.signature` is a valid signature under `t.header.alg` and the corresponding public key.
 2. `payload.exp > now` (within skew tolerance).
 3. `payload.iss` equals the configured issuer.
 
-**Verification Approach**: The cryptographic operations are delegated to a verified library (e.g., HACL* for ECDSA). The policy logic can be verified using Dafny or F* by modeling the `EdgeJWTValidator` as a state machine.
+**Verification Approach**: The cryptographic operations are delegated to a verified library (e.g., HACL*for ECDSA). The policy logic can be verified using Dafny or F* by modeling the `EdgeJWTValidator` as a state machine.
 
 ### 16.2 Property: Rate Limiter Safety
 
@@ -2141,6 +2142,7 @@ For security-critical edge systems, formal methods provide mathematically proven
 ### 16.3 Property: TEE Attestation Integrity
 
 **Specification**: If `verifyAttestation(doc, policy)` returns `Ok`, then:
+
 1. `doc.measurement` is in `policy.allowedMeasurements`.
 2. `doc.timestamp` is within `policy.maxAgeSeconds` of now.
 3. `doc.certificateChain` is valid under a trusted CA.
@@ -2179,33 +2181,33 @@ Edge security is evolving rapidly. Key trends and research directions include:
 
 ### Platform Documentation
 
-11. Cloudflare Workers Security Model — https://developers.cloudflare.com/workers/reference/security/
-12. AWS Nitro Enclaves Documentation — https://aws.amazon.com/ec2/nitro/nitro-enclaves/
-13. Azure Confidential Computing — https://azure.microsoft.com/en-us/solutions/confidential-compute/
-14. SPIFFE/SPIRE Documentation — https://spiffe.io/docs/
-15. HashiCorp Vault Documentation — https://developer.hashicorp.com/vault/docs
+1. Cloudflare Workers Security Model — <https://developers.cloudflare.com/workers/reference/security/>
+2. AWS Nitro Enclaves Documentation — <https://aws.amazon.com/ec2/nitro/nitro-enclaves/>
+3. Azure Confidential Computing — <https://azure.microsoft.com/en-us/solutions/confidential-compute/>
+4. SPIFFE/SPIRE Documentation — <https://spiffe.io/docs/>
+5. HashiCorp Vault Documentation — <https://developer.hashicorp.com/vault/docs>
 
 ### Academic and Technical Papers
 
-16. Kindervag, J. (2010). "No More Chewy Centers: Introducing the Zero Trust Model of Information Security." Forrester Research.
-17. Intel. (2016). "Intel Software Guard Extensions (Intel SGX) SDK Developer Reference."
-18. AMD. (2020). "AMD SEV-SNP: Strengthening VM Isolation with Integrity Protection and More."
-19. Arnautov, S., et al. (2016). "SCONE: Secure Linux Containers with Intel SGX." OSDI.
-20. Felt, A., et al. (2017). "Measuring HTTPS Adoption on the Web." USENIX Security.
+1. Kindervag, J. (2010). "No More Chewy Centers: Introducing the Zero Trust Model of Information Security." Forrester Research.
+2. Intel. (2016). "Intel Software Guard Extensions (Intel SGX) SDK Developer Reference."
+3. AMD. (2020). "AMD SEV-SNP: Strengthening VM Isolation with Integrity Protection and More."
+4. Arnautov, S., et al. (2016). "SCONE: Secure Linux Containers with Intel SGX." OSDI.
+5. Felt, A., et al. (2017). "Measuring HTTPS Adoption on the Web." USENIX Security.
 
 ### Tools and Implementations
 
-21. Sigstore/Cosign — https://docs.sigstore.dev/
-22. Trivy Vulnerability Scanner — https://aquasecurity.github.io/trivy/
-23. Syft SBOM Generator — https://github.com/anchore/syft
-24. SLSA Framework — https://slsa.dev/
-25. npm provenance attestations — https://docs.npmjs.com/generating-provenance-statements
+1. Sigstore/Cosign — <https://docs.sigstore.dev/>
+2. Trivy Vulnerability Scanner — <https://aquasecurity.github.io/trivy/>
+3. Syft SBOM Generator — <https://github.com/anchore/syft>
+4. SLSA Framework — <https://slsa.dev/>
+5. npm provenance attestations — <https://docs.npmjs.com/generating-provenance-statements>
 
 ### Category Theory and Formal Methods
 
-26. Pierce, B. C. (1991). *Basic Category Theory for Computer Scientists*. MIT Press.
-27. Moggi, E. (1991). "Notions of Computation and Monads." *Information and Computation*.
-28. Lamport, L. (2002). *Specifying Systems: The TLA+ Language and Tools for Hardware and Software Engineers*.
+1. Pierce, B. C. (1991). *Basic Category Theory for Computer Scientists*. MIT Press.
+2. Moggi, E. (1991). "Notions of Computation and Monads." *Information and Computation*.
+3. Lamport, L. (2002). *Specifying Systems: The TLA+ Language and Tools for Hardware and Software Engineers*.
 
 ---
 

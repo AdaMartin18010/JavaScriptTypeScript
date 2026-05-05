@@ -12,20 +12,139 @@ priority: P0
 
 ## Table of Contents
 
-1. [Categorical Semantics of Edge Inference](#1-categorical-semantics-of-edge-inference)
-2. [ONNX Runtime Web: Architecture and Execution Providers](#2-onnx-runtime-web-architecture-and-execution-providers)
-3. [Transformers.js: Hugging Face Models in the Browser](#3-transformersjs-hugging-face-models-in-the-browser)
-4. [WebGPU for Machine Learning](#4-webgpu-for-machine-learning)
-5. [Model Sharding and Progressive Loading](#5-model-sharding-and-progressive-loading)
-6. [TensorFlow.js: Backend Comparison and Model Conversion](#6-tensorflowjs-backend-comparison-and-model-conversion)
-7. [Edge LLM Inference](#7-edge-llm-inference)
-8. [Model Quantization, Compression, and Optimization](#8-model-quantization-compression-and-optimization)
-9. [Symmetric Diff: Edge Inference vs. Cloud Inference](#9-symmetric-diff-edge-inference-vs-cloud-inference)
-10. [Decision Matrix](#10-decision-matrix)
-11. [Counter-Examples and Anti-Patterns](#11-counter-examples-and-anti-patterns)
-12. [Use Cases and Production Deployments](#12-use-cases-and-production-deployments)
-13. [TypeScript Implementation Reference](#13-typescript-implementation-reference)
-14. [References](#14-references)
+- [Edge AI Inference and Model Serving](#edge-ai-inference-and-model-serving)
+  - [Table of Contents](#table-of-contents)
+  - [1. Categorical Semantics of Edge Inference](#1-categorical-semantics-of-edge-inference)
+    - [1.1 The Category of Models and Runtimes](#11-the-category-of-models-and-runtimes)
+    - [1.2 Monoidal Structure of Batched Inference](#12-monoidal-structure-of-batched-inference)
+    - [1.3 Natural Transformations as Backend Abstractions](#13-natural-transformations-as-backend-abstractions)
+    - [1.4 Limits and Colimits in Model Serving](#14-limits-and-colimits-in-model-serving)
+    - [1.5 Adjunctions Between Precision and Performance](#15-adjunctions-between-precision-and-performance)
+  - [2. ONNX Runtime Web: Architecture and Execution Providers](#2-onnx-runtime-web-architecture-and-execution-providers)
+    - [2.1 System Architecture Overview](#21-system-architecture-overview)
+    - [2.2 Execution Provider Deep Dive](#22-execution-provider-deep-dive)
+      - [2.2.1 WASM Execution Provider](#221-wasm-execution-provider)
+      - [2.2.2 WebGL Execution Provider](#222-webgl-execution-provider)
+      - [2.2.3 WebGPU Execution Provider](#223-webgpu-execution-provider)
+    - [2.3 Optimization Passes and Graph Transformation](#23-optimization-passes-and-graph-transformation)
+    - [2.4 Model Loading and Initialization Performance](#24-model-loading-and-initialization-performance)
+  - [3. Transformers.js: Hugging Face Models in the Browser](#3-transformersjs-hugging-face-models-in-the-browser)
+    - [3.1 Architecture and Pipeline API](#31-architecture-and-pipeline-api)
+    - [3.2 Quantization Strategies: INT8 and INT4](#32-quantization-strategies-int8-and-int4)
+      - [Dynamic Quantization (INT8)](#dynamic-quantization-int8)
+      - [Static Quantization and INT4](#static-quantization-and-int4)
+    - [3.3 Model Caching and Offline Capabilities](#33-model-caching-and-offline-capabilities)
+    - [3.4 Tokenization Performance](#34-tokenization-performance)
+  - [4. WebGPU for Machine Learning](#4-webgpu-for-machine-learning)
+    - [4.1 Compute Shader Architecture](#41-compute-shader-architecture)
+    - [4.2 Memory Bandwidth Bottlenecks](#42-memory-bandwidth-bottlenecks)
+    - [4.3 WGSL Language Features and Constraints](#43-wgsl-language-features-and-constraints)
+    - [4.4 WebGPU Pipeline for Inference](#44-webgpu-pipeline-for-inference)
+  - [5. Model Sharding and Progressive Loading](#5-model-sharding-and-progressive-loading)
+    - [5.1 Progressive Model Loading](#51-progressive-model-loading)
+    - [5.2 Layer-by-Layer Execution](#52-layer-by-layer-execution)
+    - [5.3 KV-Cache Management for Autoregressive Models](#53-kv-cache-management-for-autoregressive-models)
+  - [6. TensorFlow.js: Backend Comparison and Model Conversion](#6-tensorflowjs-backend-comparison-and-model-conversion)
+    - [6.1 Backend Architecture](#61-backend-architecture)
+      - [CPU Backend](#cpu-backend)
+      - [WebGL Backend](#webgl-backend)
+      - [WASM Backend](#wasm-backend)
+    - [6.2 Model Conversion Pipeline](#62-model-conversion-pipeline)
+      - [Layer Model Format (JSON)](#layer-model-format-json)
+      - [Graph Model Format (SavedModel)](#graph-model-format-savedmodel)
+    - [6.3 Backend Selection Heuristics](#63-backend-selection-heuristics)
+  - [7. Edge LLM Inference](#7-edge-llm-inference)
+    - [7.1 llama.cpp WASM](#71-llamacpp-wasm)
+    - [7.2 MLC LLM and WebLLM](#72-mlc-llm-and-webllm)
+    - [7.3 Memory Constraints for Large Models](#73-memory-constraints-for-large-models)
+  - [8. Model Quantization, Compression, and Optimization](#8-model-quantization-compression-and-optimization)
+    - [8.1 Quantization Theory](#81-quantization-theory)
+      - [Uniform Affine Quantization](#uniform-affine-quantization)
+      - [Clipping and Outliers](#clipping-and-outliers)
+    - [8.2 GPTQ: Post-Training Quantization for Generative Models](#82-gptq-post-training-quantization-for-generative-models)
+    - [8.3 GGUF Format](#83-gguf-format)
+    - [8.4 Pruning and Sparsity](#84-pruning-and-sparsity)
+    - [8.5 Knowledge Distillation](#85-knowledge-distillation)
+  - [9. Symmetric Diff: Edge Inference vs. Cloud Inference](#9-symmetric-diff-edge-inference-vs-cloud-inference)
+    - [9.1 Computational Topology](#91-computational-topology)
+      - [Latency Structure](#latency-structure)
+      - [Privacy Boundary](#privacy-boundary)
+      - [Cost Structure](#cost-structure)
+    - [9.2 State Synchronization](#92-state-synchronization)
+    - [9.3 Reliability and Availability](#93-reliability-and-availability)
+  - [10. Decision Matrix](#10-decision-matrix)
+    - [10.1 Model Architecture Selection](#101-model-architecture-selection)
+    - [10.2 Precision vs. Performance Trade-off](#102-precision-vs-performance-trade-off)
+  - [11. Counter-Examples and Anti-Patterns](#11-counter-examples-and-anti-patterns)
+    - [11.1 Anti-Pattern: Loading Full Models on Every Page Load](#111-anti-pattern-loading-full-models-on-every-page-load)
+    - [11.2 Anti-Pattern: Ignoring Memory Disposal](#112-anti-pattern-ignoring-memory-disposal)
+    - [11.3 Anti-Pattern: Synchronous Inference on Main Thread](#113-anti-pattern-synchronous-inference-on-main-thread)
+    - [11.4 Anti-Pattern: One-Size-Fits-All Quantization](#114-anti-pattern-one-size-fits-all-quantization)
+    - [11.5 Anti-Pattern: Assuming WebGPU Availability](#115-anti-pattern-assuming-webgpu-availability)
+    - [11.6 Anti-Pattern: Unbounded Context Windows](#116-anti-pattern-unbounded-context-windows)
+  - [12. Use Cases and Production Deployments](#12-use-cases-and-production-deployments)
+    - [12.1 Real-Time Image Classification](#121-real-time-image-classification)
+    - [12.2 Optical Character Recognition (OCR)](#122-optical-character-recognition-ocr)
+    - [12.3 Sentiment Analysis and Text Classification](#123-sentiment-analysis-and-text-classification)
+    - [12.4 Recommendation Embeddings](#124-recommendation-embeddings)
+  - [13. TypeScript Implementation Reference](#13-typescript-implementation-reference)
+    - [13.1 ONNX Model Loader with Backend Fallback](#131-onnx-model-loader-with-backend-fallback)
+    - [13.2 WebGPU Matrix Multiplication Kernel](#132-webgpu-matrix-multiplication-kernel)
+    - [13.3 Transformers.js Pipeline Wrapper](#133-transformersjs-pipeline-wrapper)
+    - [13.4 Model Quantizer Utility](#134-model-quantizer-utility)
+    - [13.5 Inference Benchmark Harness](#135-inference-benchmark-harness)
+    - [13.6 Model Cache Manager](#136-model-cache-manager)
+  - [14. References](#14-references)
+  - [Additional Deep-Dive: Extended Categorical Semantics and Computational Complexity](#additional-deep-dive-extended-categorical-semantics-and-computational-complexity)
+    - [A.1 Functorial Composition of Optimization Passes](#a1-functorial-composition-of-optimization-passes)
+    - [A.2 Exponentials and Internal Hom for Model Ensembles](#a2-exponentials-and-internal-hom-for-model-ensembles)
+    - [A.3 Yoneda Lemma and Model Embeddings](#a3-yoneda-lemma-and-model-embeddings)
+    - [A.4 Limits as Multi-Task Learning](#a4-limits-as-multi-task-learning)
+  - [Additional Deep-Dive: Extended WebGPU Kernel Optimization](#additional-deep-dive-extended-webgpu-kernel-optimization)
+    - [B.1 Workgroup Size Tuning and Occupancy](#b1-workgroup-size-tuning-and-occupancy)
+    - [B.2 Memory Hierarchy and Cache Optimization](#b2-memory-hierarchy-and-cache-optimization)
+    - [B.3 Fused Attention Kernels](#b3-fused-attention-kernels)
+    - [B.4 Quantized GEMM Kernels in WGSL](#b4-quantized-gemm-kernels-in-wgsl)
+  - [Additional Deep-Dive: Extended Edge LLM Serving Patterns](#additional-deep-dive-extended-edge-llm-serving-patterns)
+    - [C.1 Speculative Decoding in the Browser](#c1-speculative-decoding-in-the-browser)
+    - [C.2 Chunked Prefill and Decode Separation](#c2-chunked-prefill-and-decode-separation)
+    - [C.3 Federated Fine-Tuning on Edge Devices](#c3-federated-fine-tuning-on-edge-devices)
+  - [Additional Deep-Dive: Production Observability and Debugging](#additional-deep-dive-production-observability-and-debugging)
+    - [D.1 Telemetry for Edge Inference](#d1-telemetry-for-edge-inference)
+    - [D.2 Debugging Shader Compilation Failures](#d2-debugging-shader-compilation-failures)
+    - [D.3 Numerical Debugging](#d3-numerical-debugging)
+  - [Additional Deep-Dive: Security and Privacy Considerations](#additional-deep-dive-security-and-privacy-considerations)
+    - [E.1 Model Extraction Threats](#e1-model-extraction-threats)
+    - [E.2 Supply Chain Security](#e2-supply-chain-security)
+    - [E.3 Side-Channel Leakage](#e3-side-channel-leakage)
+  - [Additional Deep-Dive: Energy Efficiency and Sustainability](#additional-deep-dive-energy-efficiency-and-sustainability)
+    - [F.1 Power Profiling on Mobile Devices](#f1-power-profiling-on-mobile-devices)
+    - [F.2 Carbon-Aware Inference Scheduling](#f2-carbon-aware-inference-scheduling)
+  - [Additional Deep-Dive: Comparative Analysis of Quantization Methods](#additional-deep-dive-comparative-analysis-of-quantization-methods)
+    - [G.1 GPTQ vs. AWQ vs. SmoothQuant](#g1-gptq-vs-awq-vs-smoothquant)
+    - [G.2 Block Size Trade-offs in INT4](#g2-block-size-trade-offs-in-int4)
+  - [Additional Deep-Dive: Future Directions and Research Frontiers](#additional-deep-dive-future-directions-and-research-frontiers)
+    - [H.1 WebNN API](#h1-webnn-api)
+    - [H.2 On-Device Training and Continual Learning](#h2-on-device-training-and-continual-learning)
+    - [H.3 Multimodal Edge Models](#h3-multimodal-edge-models)
+  - [Additional Deep-Dive: Extended Use Case Implementations and Production Patterns](#additional-deep-dive-extended-use-case-implementations-and-production-patterns)
+    - [I.1 Real-Time Video Processing Pipeline](#i1-real-time-video-processing-pipeline)
+    - [I.2 Production OCR at Scale](#i2-production-ocr-at-scale)
+    - [I.3 Personalized Recommendation Systems](#i3-personalized-recommendation-systems)
+    - [I.4 Edge Voice Assistants](#i4-edge-voice-assistants)
+  - [Additional Deep-Dive: Testing and Validation Frameworks](#additional-deep-dive-testing-and-validation-frameworks)
+    - [J.1 Cross-Platform Numerical Validation](#j1-cross-platform-numerical-validation)
+    - [J.2 Performance Regression Testing](#j2-performance-regression-testing)
+    - [J.3 Adversarial Robustness Testing](#j3-adversarial-robustness-testing)
+  - [Additional Deep-Dive: Regulatory and Ethical Considerations](#additional-deep-dive-regulatory-and-ethical-considerations)
+    - [K.1 GDPR and Data Minimization](#k1-gdpr-and-data-minimization)
+    - [K.2 Algorithmic Transparency and Explainability](#k2-algorithmic-transparency-and-explainability)
+    - [K.3 Bias and Fairness](#k3-bias-and-fairness)
+  - [Additional Deep-Dive: Historical Context and Evolution](#additional-deep-dive-historical-context-and-evolution)
+    - [L.1 From JavaScript ML Libraries to WebGPU](#l1-from-javascript-ml-libraries-to-webgpu)
+    - [L.2 The Rise of Quantization as a First-Class Concern](#l2-the-rise-of-quantization-as-a-first-class-concern)
+    - [L.3 Open Source Ecosystem Maturation](#l3-open-source-ecosystem-maturation)
+  - [Additional Deep-Dive: Glossary of Key Terms](#additional-deep-dive-glossary-of-key-terms)
 
 ---
 
@@ -67,6 +186,7 @@ This commutativity ensures that model optimizations are backend-agnostic: fusing
 The category **Mod** admits products and coproducts that correspond to ensemble methods and model selection strategies, respectively. The product $\prod_{i \in I} M_i$ represents an ensemble where all models process the same input and their outputs are combined. The coproduct $\coprod_{i \in I} M_i$ represents a routing mechanism where exactly one model processes the input based on some selection criterion.
 
 In edge serving, these constructions manifest as:
+
 - **Product**: Running a small on-device model and a larger server model simultaneously, combining results (e.g., local preprocessing + cloud refinement).
 - **Coproduct**: Adaptive model selection where a lightweight classifier routes inputs to appropriate specialized models (MOE — Mixture of Experts patterns adapted for edge).
 
@@ -117,6 +237,7 @@ The WASM provider uses a single-threaded execution model by default. Multi-threa
 The WebGL backend translates ONNX operators into GLSL fragment shaders that execute on the GPU through the WebGL 2.0 API. This was the first GPU-accelerated backend for ONNX Runtime Web and remains relevant for devices without WebGPU support.
 
 WebGL's architecture imposes significant constraints on inference efficiency:
+
 - **Texture-based storage**: Tensors are stored as 2D textures (or sometimes 3D textures via `OES_texture_float`), requiring padding and shape manipulation to map N-dimensional arrays to 2D texture coordinates.
 - **Fragment shader limitations**: General-purpose computation must be phrased as rendering operations, with outputs written to framebuffer attachments. This introduces overhead for readback operations and makes efficient implementation of scatter-gather patterns difficult.
 - **No compute shaders**: WebGL 2.0 lacks compute shaders, preventing efficient reduction operations, matrix multiplications with shared memory tiling, and general parallel prefix scans.
@@ -173,6 +294,7 @@ Model loading in ONNX Runtime Web involves several sequential and parallel stage
 5. **Kernel compilation**: Backend-specific kernels are compiled (GLSL shaders for WebGL, WGSL compute pipelines for WebGPU).
 
 The total initialization latency can be substantial: a 100MB model may take 2-5 seconds to load on a mid-range mobile device. Strategies to mitigate this include:
+
 - **Weight quantization**: Reducing model size directly reduces download and parse time.
 - **Streaming protobuf parsing**: Processing the model file incrementally as it downloads.
 - **Kernel caching**: Storing compiled shader binaries in IndexedDB for reuse across sessions (where browser cache policies permit).
@@ -193,6 +315,7 @@ The library's architecture consists of three main components:
 3. **Environment Configuration**: Global settings for backend selection, cache management, dtype precision, and remote model hosting.
 
 When `pipeline('text-classification')` is called, Transformers.js:
+
 1. Determines the default model for the task (e.g., `Xenova/distilbert-base-uncased-finetuned-sst-2-english`).
 2. Fetches the model's `config.json` to identify architecture and input specifications.
 3. Downloads and instantiates the tokenizer (as a JavaScript Wasm module for fast tokenization).
@@ -225,6 +348,7 @@ $$W_{int4}^{(b)} = \text{round}\left(\text{clip}\left(\frac{W^{(b)}}{s_b} + 8, 0
 where $s_b = \frac{\max(|W^{(b)}|)}{7}$ is the per-block scale. The 4-bit values are packed into bytes (two weights per byte) and unpacked in the compute shader or WASM kernel before multiplication.
 
 Accuracy impact varies by model architecture and task:
+
 - **BERT/DistilBERT for classification**: INT8 typically incurs <0.5% accuracy drop. INT4 with block size 32 may incur 1-3% drop but is often acceptable.
 - **GPT-style generative models**: INT4 can cause significant perplexity degradation unless sensitive layers (embeddings, output head, early attention layers) are kept in higher precision (mixed quantization).
 - **Vision transformers (ViT)**: INT8 has minimal impact on image classification. INT4 requires careful block size selection to preserve patch embedding quality.
@@ -234,6 +358,7 @@ Accuracy impact varies by model architecture and task:
 Transformers.js implements a sophisticated caching layer using the Web Cache API and IndexedDB to enable offline inference after the first download. The cache key includes the model name, revision, quantization type, and dtype, ensuring that different variants are cached separately.
 
 The caching strategy supports:
+
 - **Browser HTTP cache**: Standard `Cache-Control` headers for short-term caching of model files.
 - **Service Worker cache**: For Progressive Web Apps (PWAs), models can be cached during installation and served offline.
 - **Custom cache directory**: Transformers.js allows specifying a custom cache directory location within IndexedDB for fine-grained cache management.
@@ -245,6 +370,7 @@ Cache eviction policies must be carefully managed on edge devices where storage 
 Tokenization is often the bottleneck in NLP inference pipelines, particularly for short sequences where model inference itself is fast. Transformers.js addresses this by compiling tokenization logic to WebAssembly using the original Rust implementations (via `tokenizers` crate bindings) or optimized JavaScript fallbacks.
 
 The tokenization pipeline involves:
+
 1. **Pre-tokenization**: Splitting text into words or subword units (WordPiece, BPE, Unigram, SentencePiece).
 2. **Normalization**: Unicode normalization, lowercasing, accent removal.
 3. **Encoding**: Mapping subword tokens to integer IDs and generating attention masks.
@@ -260,6 +386,7 @@ For BPE tokenizers (GPT-2, Llama), the merge table lookup dominates runtime. The
 WebGPU compute shaders provide general-purpose parallel computation on the GPU, overcoming the rendering-centric limitations of WebGL. A compute shader operates on a grid of workgroups, where each workgroup contains multiple invocations (threads) that can synchronize via barriers and share data through workgroup-level shared memory.
 
 The execution model maps naturally to tensor operations:
+
 - **Element-wise operations** (ReLU, sigmoid, addition): One thread per output element, trivially parallel with no inter-thread communication.
 - **Reduction operations** (softmax denominator, batch normalization statistics): Multi-pass approach using parallel reduction within workgroups, followed by aggregation across workgroups.
 - **Matrix multiplication**: Tiled algorithms where each workgroup computes a submatrix (tile) of the output, loading input tiles into shared memory and reusing them across multiple output elements.
@@ -281,23 +408,23 @@ fn main(@builtin(global_invocation_id) gid: vec3<u32>,
   let col = gid.x;
   let localRow = lid.y;
   let localCol = lid.x;
-  
+
   var sum = 0.0;
   let numTiles = (K + 15u) / 16u;
-  
+
   for (var t = 0u; t < numTiles; t = t + 1u) {
     // Load tiles into shared memory
     tileA[localRow * 16u + localCol] = a[row * K + t * 16u + localCol];
     tileB[localRow * 16u + localCol] = b[(t * 16u + localRow) * N + col];
     workgroupBarrier();
-    
+
     // Compute partial dot product
     for (var k = 0u; k < 16u; k = k + 1u) {
       sum = sum + tileA[localRow * 16u + k] * tileB[k * 16u + localCol];
     }
     workgroupBarrier();
   }
-  
+
   c[row * N + col] = sum;
 }
 ```
@@ -309,12 +436,14 @@ This tiled approach reduces global memory accesses from $O(M \cdot N \cdot K)$ t
 Edge GPUs, particularly integrated GPUs sharing system memory with the CPU, are fundamentally memory-bandwidth-bound for most inference workloads. Theoretical compute FLOPS often far exceed what the memory subsystem can feed, making arithmetic intensity (FLOPs per byte loaded) the critical metric.
 
 Arithmetic intensity for common operations:
+
 - **Matrix multiplication (GEMM)**: $O(N^3)$ FLOPs for $O(N^2)$ memory accesses, intensity $O(N)$. Large matrices can saturate compute, but small matrices (common in edge models) are bandwidth-bound.
 - **Convolution**: Depends on kernel size and input dimensions. Depthwise separable convolutions (MobileNet) have lower arithmetic intensity than standard convolutions, making them more bandwidth-sensitive.
 - **Attention mechanisms**: The $QK^T$ matrix has intensity $O(d)$ where $d$ is head dimension (typically 64). With sequence length $L$, memory scales as $O(L^2)$, causing severe bandwidth pressure for long sequences.
 - **Element-wise and activation functions**: Intensity $O(1)$, entirely bandwidth-bound.
 
 Optimization strategies for bandwidth-bound kernels include:
+
 - **Operator fusion**: Fusing element-wise operations (bias add, activation) into preceding compute-heavy operations (convolution, GEMM) eliminates separate memory round-trips.
 - **Memory coalescing**: Ensuring that threads in a warp/wavefront access contiguous memory addresses, maximizing cache line utilization.
 - **Shared memory staging**: Explicitly loading data into workgroup shared memory before reuse, as demonstrated in the tiled GEMM kernel.
@@ -367,6 +496,7 @@ The progressive loading pipeline operates as follows:
 Layer-by-layer execution is the natural execution pattern for feedforward neural networks but requires careful orchestration for models with skip connections (ResNet) or recurrent structures (LSTM). For transformers, autoregressive decoding presents a specific challenge: each new token requires running the entire model stack, so all layers must be loaded before generation begins. However, prompt encoding (the forward pass through all layers on the initial prompt) can sometimes be chunked if the KV-cache state can be checkpointed between chunks.
 
 Weight streaming extends progressive loading by keeping only the active layer's weights in GPU memory at any time:
+
 1. Load layer $i$ weights into GPU buffers.
 2. Execute layer $i$ forward pass.
 3. Evict layer $i$ weights and load layer $i+1$ weights.
@@ -379,6 +509,7 @@ This reduces peak memory usage from $O(\text{total model size})$ to $O(\text{lar
 For transformer-based language models, the key-value (KV) cache stores intermediate attention projections from previous tokens to avoid recomputing them during autoregressive generation. The cache size grows as $O(L \cdot n_{layers} \cdot d_{model})$ where $L$ is sequence length. On edge devices, the KV cache can exceed model weights for long contexts.
 
 KV-cache compression techniques include:
+
 - **Quantization**: Storing cache entries in INT8 or FP16 instead of FP32.
 - **Windowed attention**: Only caching the most recent $W$ tokens, dropping older entries (used in models like Mistral with sliding window attention).
 - **Cross-layer sharing**: Sharing KV caches between adjacent layers, reducing memory at the cost of some accuracy.
@@ -397,6 +528,7 @@ TensorFlow.js is Google's JavaScript library for training and deploying ML model
 The CPU backend implements tensor operations in vanilla JavaScript with optimized loops. It uses typed arrays (`Float32Array`, `Int32Array`) for storage and implements operations like matrix multiplication using naive $O(n^3)$ algorithms or Strassen-like optimizations for large matrices. The CPU backend is the fallback when no GPU is available and is surprisingly competitive for small tensors (under 100x100) where GPU setup overhead dominates.
 
 Performance characteristics:
+
 - **No initialization cost**: Immediate execution without shader compilation or buffer upload.
 - **Single-threaded**: JavaScript's single-threaded nature limits parallelism, though Web Workers can distribute independent operations.
 - **Memory efficiency**: No GPU memory overhead; tensors live in JS heap.
@@ -407,6 +539,7 @@ Performance characteristics:
 TensorFlow.js's WebGL backend was historically its primary GPU acceleration path. It maintains a texture cache where tensors are stored as 2D textures, and operations are implemented as GLSL fragment shaders. The backend uses a lazy execution model: operations are recorded into a graph and only executed when a result is read back to CPU memory.
 
 Key implementation details:
+
 - **Texture packing**: Tensors are packed into RGBA channels to maximize texture memory utilization. A 1024x1024 texture can store 4 million scalar values.
 - **Shader compilation cache**: Compiled shaders are cached by operation signature, avoiding recompilation for repeated operations.
 - **Memory management**: Textures are reference-counted and garbage-collected. Explicit `dispose()` is recommended for deterministic memory management.
@@ -419,6 +552,7 @@ The WebGL backend achieves 10-50x speedup over CPU for large convolutions and ma
 TensorFlow.js's WASM backend uses XNNPACK, a highly optimized library of neural network inference operators compiled to WebAssembly with SIMD and threading support. XNNPACK provides hand-optimized assembly-level kernels for ARM NEON and x86 SSE/AVX, which are mapped to WASM SIMD instructions.
 
 The WASM backend offers:
+
 - **Superior CPU performance**: Often 3-5x faster than the vanilla CPU backend for medium-sized operations.
 - **Predictable performance**: No GPU driver variability or context loss issues.
 - **Broader operator support**: XNNPACK covers most CNN operators but has limited support for transformer-specific operations (LayerNorm, GELU, softmax with large reductions).
@@ -430,10 +564,12 @@ Deploying trained TensorFlow or Keras models to TensorFlow.js requires conversio
 #### Layer Model Format (JSON)
 
 The layer model format consists of:
+
 - `model.json`: Topology description (layer graph, shapes, types) in JSON.
 - `weights.bin`: Binary weight files (sharded if >4GB total).
 
 Conversion from Keras:
+
 ```bash
 tensorflowjs_converter --input_format=keras model.h5 ./web_model/
 ```
@@ -445,11 +581,13 @@ This format supports fine-tuning in the browser because the full layer graph is 
 The graph model format is a frozen TensorFlow graph optimized for inference. It supports a broader range of TensorFlow operations but does not support training.
 
 Conversion from SavedModel:
+
 ```bash
 tensorflowjs_converter --input_format=tf_saved_model ./saved_model ./web_model/
 ```
 
 During conversion, the converter applies optimizations:
+
 - **Folding batch normalization**: Fusing BN parameters into preceding convolution weights.
 - **Removing training-only ops**: Dropping dropout, gradient computation nodes.
 - **Constant folding**: Precomputing constant expressions.
@@ -472,12 +610,14 @@ TensorFlow.js automatically selects the best available backend (WebGL > WASM > C
 llama.cpp is a C++ implementation of LLaMA and compatible transformer architectures optimized for CPU inference via quantized weights (GGUF format). The WASM build compiles llama.cpp to WebAssembly, enabling browser-based execution of large language models.
 
 Architecture highlights:
+
 - **GGUF loading**: The GGUF container format is parsed in WASM, extracting hyperparameters, vocabulary, and quantized weight tensors.
 - **Quantized GEMM kernels**: Custom WASM SIMD kernels for Q4_0, Q4_1, Q5_0, Q5_1, Q8_0, and FP16 matrix multiplication. These kernels dequantize weight blocks on-the-fly during multiplication, avoiding full model decompression.
 - **Single-threaded with Worker offloading**: The main computation loop runs in a Web Worker to avoid blocking the UI thread. Multi-threading via WASM threads is supported but requires SharedArrayBuffer and careful memory management.
 - **KV-cache management**: The KV cache is allocated in the WASM linear memory and grows dynamically with sequence length.
 
 Performance on consumer hardware:
+
 - **7B Q4_0 model**: ~2-5 tokens/second on a modern laptop CPU (4-core), ~0.5-1 token/second on mobile devices.
 - **Memory footprint**: ~4GB for 7B Q4 (weights) + ~0.5-2GB for KV cache depending on context length.
 
@@ -488,12 +628,14 @@ The primary limitation is memory: browsers typically enforce a 2-4GB WASM heap l
 MLC LLM (Machine Learning Compilation for Large Language Models) and its browser-specific distribution WebLLM take a different approach: they compile pre-trained LLMs to WebGPU and WASM using the Apache TVM stack, generating highly optimized kernels specific to the target model architecture and GPU.
 
 The compilation pipeline:
+
 1. **Model import**: Load a Hugging Face model (Llama, Mistral, GPT-NeoX, etc.) into TVM's Relay IR.
 2. **Optimization**: Apply operator fusion, memory planning, quantization, and layout transformation at the graph level.
 3. **Kernel generation**: Use TVM's auto-scheduler or manually written schedules to generate WGSL compute shaders for WebGPU and WASM SIMD kernels for CPU fallback.
 4. **Runtime packaging**: Bundle the generated kernels with a lightweight runtime into a JavaScript module.
 
 WebLLM specifically targets the browser and provides:
+
 - **WebGPU acceleration**: Achieves 10-20x speedup over llama.cpp WASM on compatible GPUs, enabling interactive speeds (10-30 tokens/second) for 7B models on high-end laptops.
 - **Model zoo**: Pre-compiled models available via CDN, eliminating the need for users to compile models themselves.
 - **Chat UI integration**: Built-in support for conversation templates (system prompts, user/assistant roles) matching the training format of popular chat models.
@@ -509,6 +651,7 @@ Running multi-billion parameter models on edge devices requires aggressive memor
 - **Model distillation**: Training smaller student models (1B-3B parameters) to mimic larger teachers, trading some capability for deployability.
 
 Browser-specific memory limits:
+
 - **WASM 32-bit**: 2GB or 4GB linear address space depending on browser and flags.
 - **WebGPU buffers**: Limited by GPU memory (shared with system RAM on integrated GPUs). Chrome currently limits total WebGPU memory to a fraction of available VRAM.
 - **JavaScript heap**: V8's heap limit is typically 1.4-2GB per isolate on 64-bit systems, though this can be increased in Node.js.
@@ -540,6 +683,7 @@ Weight and activation distributions often contain outliers — extreme values th
 GPTQ (General-purpose Post-Training Quantization) is a layer-wise quantization method that minimizes the error introduced by quantizing each layer's weights, taking into account the layer's input distribution. It uses approximate second-order information (the Hessian matrix) to determine optimal rounding decisions.
 
 The algorithm proceeds layer by layer:
+
 1. For layer $l$ with weight matrix $W$ and input activations $X$, compute the Hessian $H = X X^T$.
 2. Quantize weights column by column (or block by block), adjusting unquantized weights to compensate for quantization error using the inverse Hessian.
 3. The compensation ensures that the overall layer output $W X$ remains close to the original even as individual weights are rounded.
@@ -551,6 +695,7 @@ GPTQ achieves near-FP16 accuracy with INT4 weights for models up to 175B paramet
 GGUF (GGML Universal Format) is a binary container format for storing quantized models for inference with llama.cpp and compatible runtimes. It supersedes the older GGML format with better extensibility and metadata support.
 
 GGUF features:
+
 - **Key-value metadata**: Stores model architecture parameters (context length, embedding dimension, head count), vocabulary data, and custom fields.
 - **Tensor info**: Each tensor has a name, dimensions, data type (GGML type enum), and file offset.
 - **Quantization types**: Supports Q4_0, Q4_1, Q5_0, Q5_1, Q8_0, FP16, FP32, and mixed formats where different tensors use different precisions.
@@ -573,6 +718,7 @@ For edge deployment, structured pruning combined with knowledge distillation oft
 Knowledge distillation trains a smaller student model to reproduce the behavior of a larger teacher model. The student is trained on the teacher's soft predictions (logits before softmax) rather than hard labels, preserving rich relational information about the teacher's internal representations.
 
 The distillation loss combines:
+
 - **Soft target loss**: Cross-entropy between student logits and teacher soft targets with temperature scaling $T$:
   $$L_{soft} = -\sum_i p_i^{teacher}(T) \log p_i^{student}(T)$$
 - **Hard target loss**: Standard cross-entropy with ground-truth labels (optional, for preserving task accuracy).
@@ -591,12 +737,14 @@ Edge inference and cloud inference represent dual paradigms in the computational
 #### Latency Structure
 
 Cloud inference exhibits a bimodal latency distribution:
+
 - **Network latency**: Round-trip time (RTT) to the data center, typically 20-200ms depending on geographic proximity.
 - **Compute latency**: GPU inference time, typically 5-50ms for standard models.
 
 The total latency is dominated by network RTT for small models and fast networks, or by queuing delays during peak load. Critically, cloud latency is *stateful* with respect to global load: as concurrent requests increase, tail latency grows non-linearly due to batching inefficiencies and resource contention.
 
 Edge inference exhibits a unimodal latency distribution:
+
 - **Initialization latency**: Model download and compilation, occurring once per session (1-10s).
 - **Per-inference latency**: Deterministic compute time on local hardware, typically 10-500ms depending on model and device class.
 
@@ -619,6 +767,7 @@ Cloud inference has a linear operational cost per request (API call pricing) and
 A key asymmetry between edge and cloud is state management. Cloud inference can maintain persistent state (user profiles, conversation history, model fine-tuning parameters) across requests with trivial consistency. Edge inference has access only to local state, which is device-bound and subject to cache eviction.
 
 Hybrid architectures use the symmetric difference operator to partition computation:
+
 - **Edge**: Input preprocessing, privacy-sensitive inference, real-time feedback loops.
 - **Cloud**: Model training, global state aggregation, heavy post-processing.
 - **Synchronization**: Periodic upload of anonymized gradients or usage telemetry for federated model improvement.
@@ -628,6 +777,7 @@ Hybrid architectures use the symmetric difference operator to partition computat
 Edge inference availability equals device availability. If the device is offline, powered off, or resource-constrained, inference fails. Cloud inference availability depends on service provider SLA (typically 99.9-99.99%) but requires network connectivity.
 
 The symmetric diff reveals complementary failure modes:
+
 - Edge fails when device resources are exhausted.
 - Cloud fails when network is unavailable.
 - Hybrid systems can fail over from cloud to edge (degraded mode) or edge to cloud (resource overflow).
@@ -737,6 +887,7 @@ The following multi-dimensional decision matrix provides guidance for selecting 
 Edge image classification powers applications from accessibility tools (screen readers identifying UI elements) to industrial quality control (defect detection on factory floors). A typical production pipeline using ONNX Runtime Web with WebGPU achieves 30-60 FPS on mobile devices for MobileNetV3 (5MB) and 10-20 FPS for EfficientNet-Lite0 (20MB).
 
 Key production considerations:
+
 - **Input preprocessing**: Normalization and resizing must happen on GPU when possible (WebGPU compute shader) to avoid CPU-GPU transfer overhead.
 - **Top-k filtering**: Post-processing to extract the highest-confidence classes should use WASM SIMD sort algorithms for speed.
 - **Model updates**: Over-the-air model updates via differential patching (only downloading changed weights) reduce bandwidth for iterative improvements.
@@ -746,12 +897,14 @@ Key production considerations:
 Browser-based OCR combines a text detection model (DBNet, EAST) with a text recognition model (CRNN, Transformer-based). The two-stage pipeline requires careful memory management because both models may be resident simultaneously.
 
 Transformers.js provides a ready-made `ocr` pipeline that:
+
 1. Detects text regions in an input image.
 2. Crops and rectifies each region.
 3. Runs recognition on each crop in batch.
 4. Returns structured text with bounding boxes.
 
 Production optimizations:
+
 - **Region batching**: Group detected regions by similar aspect ratios to minimize padding in the recognition batch.
 - **Language-specific models**: Load language-specific recognition models on demand rather than bundling a massive multi-language model.
 - **Confidence thresholding**: Discard low-confidence detections early to save recognition compute.
@@ -761,6 +914,7 @@ Production optimizations:
 Real-time sentiment analysis in messaging applications, review platforms, and customer service chatbots requires sub-100ms end-to-end latency. DistilBERT-base (66M parameters, ~250MB FP32, ~65MB INT8) running via Transformers.js achieves 50-200ms per sentence on modern smartphones.
 
 The inference pipeline:
+
 1. Tokenize input text (1-5ms).
 2. Run ONNX model (20-80ms).
 3. Apply sigmoid/softmax to logits (<1ms).
@@ -773,6 +927,7 @@ Batching multiple user messages can improve throughput 2-3x with minimal latency
 On-device recommendation systems compute embeddings for user actions (clicks, purchases, content views) and compare them against item embeddings using cosine similarity or approximate nearest neighbor (ANN) search. The model itself (typically a small two-tower network or distilled transformer) produces embeddings, while the ANN index (HNSW, IVFPQ) enables fast retrieval from thousands or millions of candidates.
 
 Architecture:
+
 - **Embedding model**: Runs on every user action to update the user embedding vector (dimension 64-512).
 - **ANN index**: Stored in IndexedDB or memory-mapped files, queried to retrieve top-k recommendations.
 - **Re-ranking**: A lightweight model re-ranks ANN results based on real-time context (time of day, device type).
@@ -1541,17 +1696,17 @@ export class ModelCacheManager {
 
 ## 14. References
 
-1. **ONNX Runtime Documentation**. Microsoft. https://onnxruntime.ai/docs/
-2. **ONNX Runtime Web API Reference**. https://onnxruntime.ai/docs/api/js/index.html
-3. **Transformers.js Documentation**. Hugging Face. https://huggingface.co/docs/transformers.js
-4. **WebGPU Specification**. W3C. https://www.w3.org/TR/webgpu/
-5. **WGSL Specification**. W3C. https://www.w3.org/TR/WGSL/
-6. **TensorFlow.js Guide**. Google. https://www.tensorflow.org/js
-7. **XNNPACK**. Google. https://github.com/google/XNNPACK
-8. **llama.cpp**. Georgi Gerganov. https://github.com/ggerganov/llama.cpp
-9. **WebLLM**. MLC AI. https://webllm.mlc.ai/
-10. **MLC LLM Documentation**. https://llm.mlc.ai/
-11. **GGUF Format Specification**. https://github.com/ggerganov/ggml/blob/master/docs/gguf.md
+1. **ONNX Runtime Documentation**. Microsoft. <https://onnxruntime.ai/docs/>
+2. **ONNX Runtime Web API Reference**. <https://onnxruntime.ai/docs/api/js/index.html>
+3. **Transformers.js Documentation**. Hugging Face. <https://huggingface.co/docs/transformers.js>
+4. **WebGPU Specification**. W3C. <https://www.w3.org/TR/webgpu/>
+5. **WGSL Specification**. W3C. <https://www.w3.org/TR/WGSL/>
+6. **TensorFlow.js Guide**. Google. <https://www.tensorflow.org/js>
+7. **XNNPACK**. Google. <https://github.com/google/XNNPACK>
+8. **llama.cpp**. Georgi Gerganov. <https://github.com/ggerganov/llama.cpp>
+9. **WebLLM**. MLC AI. <https://webllm.mlc.ai/>
+10. **MLC LLM Documentation**. <https://llm.mlc.ai/>
+11. **GGUF Format Specification**. <https://github.com/ggerganov/ggml/blob/master/docs/gguf.md>
 12. **GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers**. Frantar et al., ICLR 2023.
 13. **SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models**. Xiao et al., ICML 2023.
 14. **AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration**. Lin et al., 2023.
@@ -1561,16 +1716,16 @@ export class ModelCacheManager {
 18. **EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks**. Tan & Le, ICML 2019.
 19. **Attention Is All You Need**. Vaswani et al., NeurIPS 2017.
 20. **Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference**. Jacob et al., CVPR 2018.
-21. **Category Theory for Programmers**. Bartosz Milewski. https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/
-22. **WebGL 2.0 Specification**. Khronos Group. https://www.khronos.org/registry/webgl/specs/latest/2.0/
-23. **Emscripten Documentation**. https://emscripten.org/
-24. **WebAssembly SIMD Proposal**. https://github.com/WebAssembly/simd
-25. **Apache TVM Documentation**. https://tvm.apache.org/docs/
+21. **Category Theory for Programmers**. Bartosz Milewski. <https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/>
+22. **WebGL 2.0 Specification**. Khronos Group. <https://www.khronos.org/registry/webgl/specs/latest/2.0/>
+23. **Emscripten Documentation**. <https://emscripten.org/>
+24. **WebAssembly SIMD Proposal**. <https://github.com/WebAssembly/simd>
+25. **Apache TVM Documentation**. <https://tvm.apache.org/docs/>
 26. **LoRA: Low-Rank Adaptation of Large Language Models**. Hu et al., ICLR 2022.
 27. **A Survey on Model Compression and Acceleration for Pretrained Language Models**. Deng et al., 2023.
 28. **Edge AI: On-Demand Deep Learning for IoT**. Deng et al., IEEE Internet of Things Journal, 2020.
 29. **Federated Learning: Collaborative Machine Learning without Centralized Training Data**. Google AI Blog, 2017.
-30. **Hugging Face Optimum**. https://huggingface.co/docs/optimum
+30. **Hugging Face Optimum**. <https://huggingface.co/docs/optimum>
 
 
 ---
@@ -1586,6 +1741,7 @@ $$D = E \circ O \circ T : \mathbf{Src} \to \mathbf{Exec}$$
 where $T: \mathbf{Src} \to \mathbf{ONNX}$ is the tracing/export functor, $O: \mathbf{ONNX} \to \mathbf{Opt}$ is the graph optimization functor, and $E: \mathbf{Opt} \to \mathbf{Exec}$ is the backend code generation functor.
 
 For this composition to be well-defined, each functor must preserve the monoidal structure of parallel execution (batching) and the cartesian product of inputs. In practice, this means:
+
 - $T$ must preserve tensor shapes and data types across the export boundary.
 - $O$ must be a natural transformation with respect to backend selection; optimizations applied before code generation must yield semantically identical results to those applied within the runtime.
 - $E$ must distribute over tensor concatenation: executing a batched model should produce the same results as batching individual executions.
@@ -1619,6 +1775,7 @@ The equalizer of two training procedures (SGD with different learning rates, or 
 WebGPU compute shader performance is highly sensitive to workgroup size selection. The workgroup size $(wx, wy, wz)$ must satisfy hardware constraints (maximum 256 total invocations per workgroup on many devices) while maximizing SIMD lane utilization and shared memory efficiency.
 
 For matrix multiplication, common configurations include:
+
 - **16x16**: 256 threads, maximal shared memory usage (1024 floats for two tiles), good for larger matrices.
 - **8x8**: 64 threads, lower register pressure, better for small matrices or memory-bound kernels.
 - **1x256 or 256x1**: Vector-style operations, useful for reduction kernels.
@@ -1628,6 +1785,7 @@ Occupancy is the ratio of active warps/wavefronts to the maximum supported by th
 ### B.2 Memory Hierarchy and Cache Optimization
 
 WebGPU exposes three memory tiers relevant to ML kernels:
+
 1. **Global/Storage memory**: Large, slow, uncached or loosely cached. Used for model weights and activations.
 2. **Workgroup shared memory**: Fast, explicitly managed, limited size (typically 16-64KB per workgroup). Used for tile staging in GEMM and reduction scratchpads.
 3. **Private registers**: Fastest, implicitly managed, extremely limited. Used for scalar accumulators and loop indices.
@@ -1637,11 +1795,13 @@ Optimizing kernel performance requires minimizing global memory accesses and max
 ### B.3 Fused Attention Kernels
 
 Transformer attention is the dominant cost in LLM inference. A naive implementation performs three separate operations:
+
 1. Compute $S = QK^T$ (batched matrix multiply).
 2. Apply softmax to $S$ row-wise.
 3. Compute $O = \text{softmax}(S)V$ (batched matrix multiply).
 
 Each operation requires reading and writing large intermediate tensors to global memory. A fused attention kernel combines all three steps into a single compute shader:
+
 1. Load a tile of $Q$ and $K$ into shared memory.
 2. Compute partial $S$ values, accumulate the max and sum statistics for online softmax.
 3. Load a tile of $V$ and accumulate the output tile $O$ directly without materializing the full $S$ matrix.
@@ -1651,6 +1811,7 @@ The FlashAttention algorithm formalizes this approach using tiling and online so
 ### B.4 Quantized GEMM Kernels in WGSL
 
 Quantized matrix multiplication requires dequantizing weight blocks on-the-fly within the compute shader. For INT4 weights with block size 128 and FP16 activations, the kernel:
+
 1. Loads a block of 128 INT4 weights (64 bytes) into shared memory.
 2. Unpacks each nibble to an FP16 value using the block scale.
 3. Multiplies with the corresponding FP16 activation vector.
@@ -1667,6 +1828,7 @@ The unpacking step introduces instruction overhead but the 8x reduction in memor
 Speculative decoding accelerates autoregressive generation by using a smaller "draft" model to predict future tokens, which are then verified in parallel by the larger "target" model. If the draft predictions are correct, multiple tokens are accepted per target model forward pass; if incorrect, the target model's logits are used to resample.
 
 In browser environments, speculative decoding faces unique constraints:
+
 - **Memory**: Running two models simultaneously doubles memory requirements. The draft model must be small enough (typically 100M-500M parameters) that the combined footprint fits within device limits.
 - **Scheduling**: WebGPU command buffers must interleave draft and target model execution, requiring careful synchronization to avoid pipeline bubbles.
 - **Acceptance rate**: The draft model's acceptance rate determines speedup. A 70% acceptance rate with a draft model 3x faster than the target yields approximately 1.6x end-to-end speedup.
@@ -1676,6 +1838,7 @@ WebLLM implements speculative decoding by generating $k$ draft tokens, concatena
 ### C.2 Chunked Prefill and Decode Separation
 
 LLM inference consists of two phases with different compute characteristics:
+
 1. **Prefill (prompt encoding)**: Process the entire input prompt in parallel through all layers. Compute-bound for long prompts.
 2. **Decode (token generation)**: Process one new token at a time, using the KV cache. Memory-bandwidth-bound.
 
@@ -1692,6 +1855,7 @@ $$W' = W + BA$$
 where $B \in \mathbb{R}^{d \times r}$, $A \in \mathbb{R}^{r \times d}$, and $r \ll d$ (typically 4-64). During fine-tuning, only $A$ and $B$ are updated while the base weights $W$ remain frozen.
 
 For edge devices:
+
 - A 7B model with LoRA rank 16 requires only ~50MB of trainable parameters instead of 28GB.
 - Forward pass uses quantized base weights (Q4) and full-precision LoRA adapters, with the adapter applied after dequantization.
 - Gradient computation and optimizer state fit within browser memory limits.
@@ -1708,6 +1872,7 @@ This pattern enables privacy-preserving personalization: a medical chatbot learn
 Production edge AI systems require telemetry to monitor model performance, device health, and user experience. Unlike cloud services with centralized logging, edge telemetry must respect bandwidth and privacy constraints.
 
 Recommended telemetry dimensions:
+
 - **Inference latency**: Per-operator breakdowns, end-to-end latency, TTFT for LLMs.
 - **Memory usage**: Peak WASM heap, GPU memory, JS heap over time.
 - **Model metrics**: Accuracy drift (measured on a small held-out validation set cached locally), output entropy distribution (detecting model degradation).
@@ -1719,6 +1884,7 @@ Telemetry should be aggregated locally (histograms, counters) and uploaded in ba
 ### D.2 Debugging Shader Compilation Failures
 
 WebGPU shader compilation failures are a common production issue due to driver bugs, specification ambiguities, and platform-specific limits. Robust edge AI systems implement:
+
 - **Shader validation**: Pre-validate WGSL against the grammar and limits before submission.
 - **Fallback kernels**: Maintain a reference implementation (simpler, slower) for every optimized kernel. If the optimized kernel fails compilation, fall back to the reference.
 - **Error telemetry**: Capture exact shader source, device info, and error messages for post-mortem analysis.
@@ -1727,6 +1893,7 @@ WebGPU shader compilation failures are a common production issue due to driver b
 ### D.3 Numerical Debugging
 
 Numerical divergence between training framework outputs and edge runtime outputs is a persistent challenge. Debugging strategies:
+
 - **Reference execution**: Run the model in PyTorch/TensorFlow on a fixed input and compare intermediate activations layer-by-layer with the edge runtime.
 - **Reduced precision sensitivity analysis**: Identify layers where FP16/INT8 quantization causes the largest output deviation using per-layer relative error metrics.
 - **Stochasticity auditing**: Document all sources of non-determinism (dropout, random sampling, atomic operations in reduction kernels) and provide deterministic modes for testing.
@@ -1740,6 +1907,7 @@ Numerical divergence between training framework outputs and edge runtime outputs
 Edge-deployed models are vulnerable to extraction attacks where adversaries query the model extensively to train a substitute. Unlike API-based serving where query rates can be throttled, local models can be queried without limit.
 
 Mitigations:
+
 - **Rate limiting**: Enforce per-session query limits and introduce artificial latency for high-frequency callers.
 - **Output perturbation**: Add calibrated noise to model outputs to prevent precise gradient estimation.
 - **Watermarking**: Embed statistical watermarks in model weights that can be detected if a stolen copy is discovered.
@@ -1748,10 +1916,12 @@ Mitigations:
 ### E.2 Supply Chain Security
 
 Edge models are typically downloaded from CDNs or model hubs, creating supply chain risks:
+
 - **Model poisoning**: Malicious weights that behave correctly on standard inputs but produce attacker-chosen outputs on trigger patterns.
 - **Tampering**: Modification of model files in transit or at rest in cache.
 
 Mitigations:
+
 - **Checksum verification**: Verify SHA-256 hashes of downloaded models against a trusted manifest.
 - **Subresource Integrity**: Use SRI hashes for model script tags in web applications.
 - **Signed models**: Cryptographically sign model artifacts and verify signatures before loading.
@@ -1762,6 +1932,7 @@ Mitigations:
 GPU execution is vulnerable to timing side-channels where an attacker infers input properties from inference duration. Convolutional networks exhibit input-dependent execution times due to early-exit optimizations or cache behavior. Similarly, transformer attention patterns may leak information about input structure through memory access timing.
 
 Mitigations:
+
 - **Constant-time inference**: Pad all inputs to a fixed size and run the full model without early exits. This trades efficiency for security.
 - **Oblivious inference**: Use cryptographic techniques (homomorphic encryption, secure multi-party computation) for sensitive inputs. These are currently too slow for real-time edge use but advancing rapidly.
 - **Isolation**: Run inference in separate processes or sandboxed workers to prevent cross-origin timing attacks.
@@ -1773,6 +1944,7 @@ Mitigations:
 ### F.1 Power Profiling on Mobile Devices
 
 Battery life is a critical constraint for edge AI on mobile devices. Different backends exhibit vastly different energy characteristics:
+
 - **CPU inference**: High power draw (~1-3W on mobile SoCs) but fast completion for small models. Total energy is moderate.
 - **GPU inference**: Very high peak power (~3-8W) but much faster completion for large models. Total energy can be lower than CPU due to shorter execution time (race-to-sleep).
 - **NPU/DSP inference**: Dedicated neural accelerators (Apple Neural Engine, Qualcomm Hexagon, Google TPU) offer the best energy efficiency (10-100x better than CPU) but are not accessible via WebGPU or WASM in browsers.
@@ -1784,6 +1956,7 @@ The "race-to-sleep" principle suggests that using the fastest available backend 
 For always-on edge devices (smart home hubs, industrial sensors), inference can be scheduled to coincide with periods of low-carbon electricity availability. The browser's `navigator.connection.saveData` and battery status APIs provide coarse signals for deferring non-critical inference.
 
 A carbon-aware scheduler:
+
 1. Classifies inference requests as critical (user-initiated) or deferrable (background analytics).
 2. Monitors device power state (charging vs. battery, battery level).
 3. Batches deferrable requests and executes them during charging or when `saveData` is false.
@@ -1798,6 +1971,7 @@ A carbon-aware scheduler:
 Three dominant post-training quantization methods for transformers target different bottlenecks:
 
 **GPTQ** optimizes weight rounding using second-order information. It is best for:
+
 - Extreme compression (INT4, INT3).
 - Generative models where weight memory dominates.
 - Scenarios where calibration data is limited (100-1000 samples sufficient).
@@ -1805,6 +1979,7 @@ Three dominant post-training quantization methods for transformers target differ
 Limitations: Computationally expensive quantization process (minutes to hours on GPU); sensitive to activation outliers that are not explicitly handled.
 
 **AWQ (Activation-aware Weight Quantization)** protects "salient" weight channels by scaling them based on activation magnitudes before quantization. It is best for:
+
 - Maintaining accuracy at INT4/INT3 with minimal calibration.
 - Hardware-friendly formats that avoid complex per-channel scaling at runtime.
 - Models with significant activation outliers (common in LLaMA-2, Mistral).
@@ -1812,6 +1987,7 @@ Limitations: Computationally expensive quantization process (minutes to hours on
 Limitations: Slightly lower compression ratios than GPTQ for some architectures; requires activation statistics from calibration data.
 
 **SmoothQuant** migrates quantization difficulty from activations to weights by applying a mathematically equivalent per-channel scaling transformation. It is best for:
+
 - INT8 quantization where both weights and activations are quantized.
 - Hardware with efficient INT8 GEMM units.
 - Scenarios requiring static quantization for maximum throughput.
@@ -1821,6 +1997,7 @@ Limitations: Requires more calibration data than GPTQ/AWQ; less effective for su
 ### G.2 Block Size Trade-offs in INT4
 
 The block size in block-wise quantization controls the granularity of scale factors:
+
 - **Small blocks (32-64)**: Higher accuracy because scales adapt to local weight distributions. Higher memory overhead from storing more scales (0.4-0.8% of total size).
 - **Large blocks (128-256)**: Lower accuracy but fewer scales and better hardware alignment. Some GPUs prefer 128-byte aligned memory accesses.
 - **Per-channel**: Best accuracy for weights, but per-channel dequantization in matrix multiplication is inefficient on SIMD hardware.
@@ -1836,11 +2013,13 @@ Empirical results on Llama-2-7B show that block size 128 provides the optimal ac
 The emerging Web Neural Network API (WebNN) provides a browser-native abstraction for neural network inference, mapping directly to operating system ML APIs (DirectML on Windows, Core ML on macOS/iOS, NNAPI on Android, OpenVINO on Linux). Unlike WebGPU, which requires explicit kernel writing, WebNN exposes high-level operations (conv2d, matmul, lstm, gru, attention) that the browser vendor implements using the most efficient hardware path available, including NPUs and DSPs.
 
 WebNN promises:
+
 - **NPU access**: First browser API to expose dedicated neural accelerators, potentially 10-100x more efficient than WebGPU.
 - **Power efficiency**: OS-managed scheduling optimizes for battery life.
 - **Simpler deployment**: No kernel writing; models are expressed as operation graphs similar to ONNX.
 
 Challenges:
+
 - **Specification maturity**: Still in Working Draft status as of 2025; operator coverage is limited compared to ONNX.
 - **Implementation variance**: Different browsers and OS backends produce different numerical results and performance characteristics.
 - **Fallback complexity**: Applications must still implement WebGPU/WASM fallbacks for unsupported operations.
@@ -1848,6 +2027,7 @@ Challenges:
 ### H.2 On-Device Training and Continual Learning
 
 Future edge AI systems will not just inference but continuously learn from user interactions. Technical challenges include:
+
 - **Catastrophic forgetting**: Updating a model on new data degrades performance on old data. Solutions include experience replay buffers, elastic weight consolidation, and progressive neural networks.
 - **Gradient storage**: Backpropagation requires storing intermediate activations, doubling memory usage during training compared to inference.
 - **Privacy-preserving updates**: Federated learning, differential privacy, and secure aggregation prevent individual user data from leaking through model updates.
@@ -1855,6 +2035,7 @@ Future edge AI systems will not just inference but continuously learn from user 
 ### H.3 Multimodal Edge Models
 
 Vision-language models (CLIP, LLaVA, GPT-4V) and speech-language models (Whisper) are increasingly deployed on edge devices. Multimodal inference requires:
+
 - **Cross-modal alignment**: Projecting image/speech features into the language model's embedding space.
 - **Memory orchestration**: Vision encoders (ViT) and language decoders (transformer) compete for limited GPU memory; careful scheduling of encoder forward passes and decoder generation is required.
 - **Latency balancing**: Vision encoding is typically parallelizable and fast, while text generation is sequential and slow. Pipelining these stages improves perceived responsiveness.
@@ -1925,6 +2106,7 @@ Ensuring that a quantized edge model produces the same results as the original f
 **End-to-End Regression Tests**: Run the full model on a curated dataset of 100-1000 representative inputs. Compute per-sample accuracy metrics and flag any sample where the edge prediction differs from the source prediction. Analyze failure modes to identify sensitive operators or input distributions.
 
 **Platform Matrix Testing**: Execute the same model and inputs on:
+
 - Desktop Chrome (WebGPU, WebGL, WASM)
 - Desktop Firefox (WASM, WebGL)
 - Desktop Safari (WebGPU, WASM)
@@ -1936,6 +2118,7 @@ Divergence across platforms indicates driver bugs, precision differences, or und
 ### J.2 Performance Regression Testing
 
 Automated benchmarks detect performance regressions between model versions or runtime updates. The benchmark harness should:
+
 - Warm up the runtime for 10 iterations before measurement.
 - Collect 100 latency samples per configuration.
 - Report mean, median, P95, P99, and standard deviation.
@@ -1947,6 +2130,7 @@ Benchmark results should be stored in a time-series database with alerts for reg
 ### J.3 Adversarial Robustness Testing
 
 Edge models are exposed to adversarial inputs crafted to cause misclassification or extract information. Adversarial testing procedures include:
+
 - **FGSM (Fast Gradient Sign Method)**: Generate perturbed inputs by following the gradient of the loss with respect to the input. Verify that the model maintains correct predictions within an epsilon ball.
 - **Boundary attacks**: Find minimal perturbations that change the model's prediction, measuring the model's decision boundary smoothness.
 - **Backdoor detection**: Test for trigger patterns that cause specific misbehavior, verifying that the model has not been poisoned in the supply chain.
@@ -1960,6 +2144,7 @@ While full adversarial training is typically done during model development, edge
 ### K.1 GDPR and Data Minimization
 
 The European Union's General Data Protection Regulation (GDPR) mandates data minimization: personal data should be "adequate, relevant and limited to what is necessary." Edge AI inherently supports GDPR compliance by processing data locally and avoiding unnecessary data transfers. However, edge systems must still:
+
 - Provide clear notice when models are downloaded or updated.
 - Allow users to delete locally cached models and inference history.
 - Document the legal basis for any data that is uploaded (anonymized telemetry vs. identifiable logs).
@@ -1968,6 +2153,7 @@ The European Union's General Data Protection Regulation (GDPR) mandates data min
 ### K.2 Algorithmic Transparency and Explainability
 
 Regulatory frameworks increasingly require explanations for automated decisions. Edge AI systems should provide:
+
 - **Attention visualization**: For transformer-based models, highlighting input tokens that most influenced the prediction.
 - **LIME/SHAP approximations**: Local surrogate models that explain individual predictions in terms of input features.
 - **Confidence scores**: Well-calibrated probability estimates that communicate model uncertainty to users.
@@ -1976,6 +2162,7 @@ Regulatory frameworks increasingly require explanations for automated decisions.
 ### K.3 Bias and Fairness
 
 Models trained on biased datasets perpetuate and amplify those biases. Edge deployment does not eliminate this risk; in fact, the lack of server-side monitoring can make bias harder to detect. Mitigation strategies:
+
 - **Pre-deployment auditing**: Evaluate model performance across demographic subgroups using fairness metrics (demographic parity, equalized odds, calibration).
 - **On-device fairness monitoring**: Track prediction rates and error rates by inferred demographic categories (where legally permissible and privacy-preserving).
 - **Differential treatment detection**: Statistical tests for whether the model's outputs correlate with protected attributes in ways that cannot be justified by task relevance.
@@ -2001,6 +2188,7 @@ The history of browser-based ML reflects the evolution of web platform capabilit
 ### L.2 The Rise of Quantization as a First-Class Concern
 
 Quantization evolved from a niche compression technique to a foundational requirement for edge deployment:
+
 - **2016**: TensorFlow introduces quantization-aware training (QAT) for mobile deployment.
 - **2019**: INT8 inference becomes standard in ONNX Runtime and TensorFlow Lite.
 - **2022**: GPTQ demonstrates that INT4 post-training quantization preserves LLM quality, sparking the local-LLM movement.
@@ -2010,6 +2198,7 @@ Quantization evolved from a niche compression technique to a foundational requir
 ### L.3 Open Source Ecosystem Maturation
 
 The ecosystem for edge AI has matured from fragmented research code to production-grade infrastructure:
+
 - **ONNX**: Standardized model exchange format adopted by all major frameworks.
 - **Hugging Face**: Centralized model hub with standardized tokenizers, configs, and export tools.
 - **ONNX Runtime**: Performant inference engine with unified APIs across cloud, mobile, and web.

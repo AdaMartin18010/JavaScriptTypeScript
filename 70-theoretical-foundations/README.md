@@ -19,7 +19,7 @@
     - [70.2 — 认知交互模型 (Cognitive Interaction Models)](#702--认知交互模型-cognitive-interaction-models)
     - [70.3 — 多模型形式化分析 (Multi-Model Formal Analysis)](#703--多模型形式化分析-multi-model-formal-analysis)
     - [70.4 — Web 平台机制 (Web Platform Fundamentals)](#704--web-平台机制-web-platform-fundamentals)
-    - [70.5 — 边缘运行时与 Serverless (Edge Runtime & Serverless)](#705--边缘运行时与-serverless-edge-runtime--serverless)
+    - [70.5 — 边缘运行时与 Serverless (Edge Runtime \& Serverless)](#705--边缘运行时与-serverless-edge-runtime--serverless)
   - [阅读路径](#阅读路径)
     - [路径 A：从数学到认知（推荐）](#路径-a从数学到认知推荐)
     - [路径 B：从框架到理论](#路径-b从框架到理论)

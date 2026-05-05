@@ -29,15 +29,38 @@ references:
 - [全栈 TypeScript 部署拓扑](#全栈-typescript-部署拓扑)
   - [目录](#目录)
   - [1. Monorepo 架构范式](#1-monorepo-架构范式)
+    - [1.1 Monorepo vs Polyrepo](#11-monorepo-vs-polyrepo)
+    - [1.2 Turborepo 的任务管道](#12-turborepo-的任务管道)
+    - [1.3 Nx 的分布式任务执行](#13-nx-的分布式任务执行)
   - [2. 构建系统与管道优化](#2-构建系统与管道优化)
+    - [2.1 TypeScript 编译优化](#21-typescript-编译优化)
+    - [2.2 Docker 多阶段构建](#22-docker-多阶段构建)
+    - [2.3 Edge 部署的构建差异](#23-edge-部署的构建差异)
   - [3. 部署目标对比：容器 vs Isolate vs VM](#3-部署目标对比容器-vs-isolate-vs-vm)
+    - [3.1 容器（Docker / Kubernetes）](#31-容器docker--kubernetes)
+    - [3.2 V8 Isolate（Edge Runtime）](#32-v8-isolateedge-runtime)
+    - [3.3 虚拟机（VM / Bare Metal）](#33-虚拟机vm--bare-metal)
   - [4. 平台锁定与可移植性](#4-平台锁定与可移植性)
+    - [4.1 平台锁定的层次](#41-平台锁定的层次)
+    - [4.2 缓解策略](#42-缓解策略)
   - [5. 边缘-中心混合拓扑](#5-边缘-中心混合拓扑)
+    - [5.1 典型的全栈 TS 部署架构](#51-典型的全栈-ts-部署架构)
+    - [5.2 数据同步策略](#52-数据同步策略)
   - [6. 范畴论语义：部署作为函子](#6-范畴论语义部署作为函子)
   - [7. 对称差分析：传统部署 vs 现代部署](#7-对称差分析传统部署-vs-现代部署)
   - [8. 工程决策矩阵](#8-工程决策矩阵)
   - [9. 反例与局限性](#9-反例与局限性)
+    - [9.1 "一键部署"的幻觉](#91-一键部署的幻觉)
+    - [9.2 Edge Runtime 的 npm 兼容性陷阱](#92-edge-runtime-的-npm-兼容性陷阱)
+    - [9.3 Monorepo 的依赖地狱](#93-monorepo-的依赖地狱)
+    - [9.4 远程缓存的安全性](#94-远程缓存的安全性)
   - [TypeScript 代码示例](#typescript-代码示例)
+    - [示例 1：Monorepo 包依赖分析器](#示例-1monorepo-包依赖分析器)
+    - [示例 2：构建缓存命中率分析器](#示例-2构建缓存命中率分析器)
+    - [示例 3：运行时能力检测器](#示例-3运行时能力检测器)
+    - [示例 4：Docker 层缓存优化器](#示例-4docker-层缓存优化器)
+    - [示例 5：蓝绿部署切换器](#示例-5蓝绿部署切换器)
+    - [示例 6：平台锁定风险评估器](#示例-6平台锁定风险评估器)
   - [参考文献](#参考文献)
 
 ---
@@ -49,12 +72,14 @@ references:
 **Monorepo**（单一代码仓库）将所有相关项目（前端、后端、共享库、工具）放在同一个 Git 仓库中管理：
 
 **优势**：
+
 - **原子提交**：跨项目的更改可以在一次提交中完成，保证一致性
 - **代码共享**：共享库（types、utils、schemas）无需发布 npm 包即可被多个应用引用
 - **统一工具链**：相同的 ESLint、TypeScript、测试配置
 - **依赖图可视化**：构建系统可以分析项目间的依赖关系，优化构建顺序
 
 **劣势**：
+
 - **仓库规模**：大型 monorepo 的 Git 操作变慢（`git status` 可能需要数秒）
 - **权限管理**：无法为不同项目设置细粒度的访问控制
 - **CI/CD 复杂度**：任何更改都可能触发全量构建（需要增量构建优化）
@@ -74,22 +99,26 @@ Turborepo 通过**任务管道（Task Pipeline）**和**远程缓存（Remote Ca
 ```
 
 **核心机制**：
+
 - **拓扑排序**：根据 `dependsOn` 构建依赖图，确保先构建依赖项
 - **输入哈希**：计算每个任务的输入文件哈希，若未变更则跳过
 - **远程缓存**：将构建产物上传到 Vercel 或自托管缓存服务器，团队成员共享
 
 **性能数据**：
+
 - Next.js 仓库使用 Turborepo 后，CI 构建时间从 30 分钟减少到 5 分钟
 - 本地开发中，未变更包的构建被完全跳过
 
 ### 1.3 Nx 的分布式任务执行
 
 Nx 提供了更激进的**分布式任务执行（DTE）**：
+
 - 将构建任务分发到多个 CI Agent 并行执行
 - 自动处理任务间的依赖关系，确保正确的执行顺序
-- 支持** affected 命令**：只构建和测试受当前更改影响的项目
+- 支持**affected 命令**：只构建和测试受当前更改影响的项目
 
 **与 Turborepo 的对比**：
+
 - Turborepo 更轻量，学习曲线低，适合中小型 monorepo
 - Nx 功能更丰富（代码生成、模块边界规则、更强大的图分析），适合大型 enterprise monorepo
 
@@ -100,11 +129,13 @@ Nx 提供了更激进的**分布式任务执行（DTE）**：
 ### 2.1 TypeScript 编译优化
 
 **Project References**：
+
 - TypeScript 3.0+ 支持项目引用，将 monorepo 拆分为多个 `tsconfig.json` 项目
 - 每个项目独立编译，通过 `.d.ts` 文件暴露公共 API
 - 增量编译：只有变更的项目及其依赖需要重新编译
 
 **SWC / esbuild 替代 tsc**：
+
 - `tsc` 的编译速度为 ~50K LOC/s
 - `esbuild` 的编译速度为 ~1000K LOC/s（20 倍提升）
 - `SWC`（Rust 编写）的编译速度为 ~800K LOC/s
@@ -135,6 +166,7 @@ CMD ["node", "dist/main.js"]
 ```
 
 **优化策略**：
+
 - 利用层缓存：依赖变更频率低，代码变更频率高
 - `node:alpine` 镜像：从 1GB+ 减少到 ~200MB
 - `pnpm deploy`：仅复制生产依赖，移除 devDependencies
@@ -142,6 +174,7 @@ CMD ["node", "dist/main.js"]
 ### 2.3 Edge 部署的构建差异
 
 Edge Runtime 的构建与容器有本质差异：
+
 - **无 Node.js 核心模块**：`fs`、`path`、`crypto`（部分）不可用，需使用 Web API 替代
 - **Bundle 大小限制**：Cloudflare Workers 100MB（gzip 后），Vercel Edge 1MB
 - **Tree Shaking 关键**：未使用的代码必须被完全移除，否则可能超出大小限制
@@ -154,17 +187,20 @@ Edge Runtime 的构建与容器有本质差异：
 ### 3.1 容器（Docker / Kubernetes）
 
 **适用场景**：
+
 - 长时间运行的服务（WebSocket 服务器、消息队列消费者）
 - 需要自定义运行时环境（特定 libc 版本、系统库）
 - 大内存需求（> 4GB）或 GPU 访问
 
 **部署流程**：
+
 1. 构建 Docker 镜像
 2. 推送到容器仓库（ECR、GCR、ACR）
 3. 部署到 Kubernetes / ECS / Cloud Run
 4. 配置负载均衡、自动扩展、健康检查
 
 **复杂性**：
+
 - 需要管理 Dockerfile、镜像安全扫描、CVE 补丁
 - Kubernetes 的学习曲线陡峭（Pod、Service、Ingress、ConfigMap、Secret）
 - 冷启动：分钟级（节点预配 + 镜像拉取 + 容器启动）
@@ -172,16 +208,19 @@ Edge Runtime 的构建与容器有本质差异：
 ### 3.2 V8 Isolate（Edge Runtime）
 
 **适用场景**：
+
 - 请求响应型 API（REST、GraphQL）
 - 内容分发和转换（HTML 重写、A/B 测试）
 - 轻量级认证和授权中间件
 
 **部署流程**：
+
 1. `wrangler deploy`（Cloudflare）或 `vercel deploy`（Vercel）
 2. 构建工具自动打包、优化、上传
 3. 全球 PoP 在数秒内生效
 
 **限制**：
+
 - 无文件系统访问（`fs` 模块不可用）
 - 无原生模块（无法使用 `bcrypt`、`sharp` 等依赖 C++ 扩展的包）
 - 执行时间和内存严格受限
@@ -189,11 +228,13 @@ Edge Runtime 的构建与容器有本质差异：
 ### 3.3 虚拟机（VM / Bare Metal）
 
 **适用场景**：
+
 - 极端性能要求（高频交易、游戏服务器）
 - 合规要求（需要独占硬件、特定区域的数据驻留）
 - 遗留系统迁移（无法容器化的应用）
 
 **劣势**：
+
 - 资源利用率低（平均 CPU 利用率 < 20%）
 - 运维负担重（OS 补丁、安全更新、备份）
 - 扩展缓慢（分钟到小时级）
@@ -205,29 +246,35 @@ Edge Runtime 的构建与容器有本质差异：
 ### 4.1 平台锁定的层次
 
 **Level 1 — 运行时 API 锁定**：
+
 - Cloudflare Workers 的 `caches`、`crypto.subtle`、`ENV` 访问方式
 - Vercel Edge 的 `geo`、`ip` 对象
 - 这些代码无法直接迁移到其他平台
 
 **Level 2 — 构建工具锁定**：
+
 - `wrangler.toml`、`vercel.json`、`netlify.toml` 的配置格式差异
 - 构建命令和输出目录的约定不同
 
 **Level 3 — 生态系统锁定**：
+
 - Cloudflare D1、Vercel Postgres、Supabase 等绑定的数据库服务
 - 迁移数据需要 ETL 流程，成本高
 
 ### 4.2 缓解策略
 
 **抽象层（Abstraction Layer）**：
+
 - 使用 Hono、Express、Elysia 等跨运行时框架
 - 将平台特定代码隔离在适配器（Adapter）中
 
 **基础设施即代码（IaC）**：
+
 - Terraform / Pulumi 定义可移植的基础设施
 - 但 Edge Runtime 的配置往往不在 Terraform 覆盖范围内
 
 **多云策略**：
+
 - 核心逻辑使用标准 Web API（Fetch、WebCrypto、Streams）
 - 平台特定功能通过条件编译或运行时检测注入
 
@@ -246,11 +293,13 @@ Edge Runtime 的构建与容器有本质差异：
 ```
 
 **边缘层（Edge Layer）**：
+
 - 静态资源缓存（HTML、JS、CSS、图片）
 - 边缘函数处理认证、A/B 测试、地理位置路由
 - KV 缓存存储用户会话、配置
 
 **中心层（Origin Layer）**：
+
 - API 服务处理业务逻辑、数据库事务
 - 长时间运行的任务（报表生成、数据分析）
 - 无法边缘化的服务（WebSocket 集群、消息队列）
@@ -260,11 +309,13 @@ Edge Runtime 的构建与容器有本质差异：
 边缘节点与中心数据库的数据同步是混合架构的核心挑战：
 
 **读取路径**：
+
 - 边缘 KV 缓存热点数据（用户配置、商品信息）
 - 缓存未命中时回源到中心数据库
 - 使用 stale-while-revalidate 减少延迟
 
 **写入路径**：
+
 - 边缘函数将写操作转发到中心 API
 - 或使用异步队列（SQS、RabbitMQ）解耦
 - 写后立即失效边缘缓存（或通过 TTL 自然过期）
@@ -281,6 +332,7 @@ Edge Runtime 的构建与容器有本质差异：
 - **态射映射**：`import` 关系 → 运行时链接关系（动态导入 / 静态链接）
 
 **函子性质**：
+
 - **保持复合**：如果模块 A 导入 B，B 导入 C，则部署后的 A 可以访问 C（通过 B 的导出）
 - **不保持同构**：源码层面的等价（如重构）可能在运行时产生不同的 bundle（Tree Shaking 效果不同）
 
@@ -324,6 +376,7 @@ Edge Runtime 的构建与容器有本质差异：
 ### 9.1 "一键部署"的幻觉
 
 某团队使用 Vercel 部署 Next.js 应用，初期体验极佳：
+
 - 但需要在 `vercel.json` 中配置复杂的路由重写和头部规则
 - 需要设置环境变量、数据库连接字符串、第三方 API 密钥
 - 需要配置 DNS、SSL 证书、自定义域名
@@ -332,6 +385,7 @@ Edge Runtime 的构建与容器有本质差异：
 ### 9.2 Edge Runtime 的 npm 兼容性陷阱
 
 某团队将现有 Express 应用迁移到 Cloudflare Workers：
+
 - 发现 `express` 依赖 `http` 模块，在 Workers 中不可用
 - `bcrypt` 依赖原生 C++ 模块，无法打包
 - 被迫重写路由层（切换到 Hono），更换密码哈希库（切换到 `bcryptjs`）
@@ -340,6 +394,7 @@ Edge Runtime 的构建与容器有本质差异：
 ### 9.3 Monorepo 的依赖地狱
 
 某团队将 50 个微服务合并为 monorepo：
+
 - 不同服务依赖不同版本的 `lodash`、`react`、`typescript`
 - pnpm 的 workspace 虽然支持多版本，但构建缓存失效频繁
 - 一个服务的类型错误导致整个 CI 管道失败
@@ -348,6 +403,7 @@ Edge Runtime 的构建与容器有本质差异：
 ### 9.4 远程缓存的安全性
 
 Turborepo 的远程缓存默认使用 Vercel 的服务器：
+
 - 构建产物（包含编译后的代码、环境变量注入）被上传到第三方服务器
 - 某些企业合规要求禁止源代码离开公司网络
 - 解决方案：自托管远程缓存（S3 + Turborepo 自定义远程缓存配置）
@@ -617,13 +673,13 @@ class LockInRiskAssessor {
 
 ## 参考文献
 
-1. Vercel. *Turborepo Documentation.* https://turbo.build/repo/docs
-2. Nrwl. *Nx Documentation.* https://nx.dev/getting-started/intro
-3. Docker. *Best Practices for Writing Dockerfiles.* https://docs.docker.com/develop/dev-best-practices/
-4. Cloudflare. *Pages and Workers.* https://developers.cloudflare.com/pages/
-5. AWS. *ECS Best Practices.* https://docs.aws.amazon.com/AmazonECS/latest/bestpracticesguide/intro.html
-6. Kubernetes. *Production Best Practices.* https://kubernetes.io/docs/setup/production-environment/
-7. Martin Fowler. *Monorepo vs Polyrepo.* https://martinfowler.com/articles/monolith-vs-microservices.html
-8. Thoughtworks. *Technology Radar: Turborepo and Nx.* https://www.thoughtworks.com/radar
-9. Google. *Bazel: Build and Test Tool.* https://bazel.build/
-10. Deno. *Deploy Documentation.* https://deno.com/deploy/docs
+1. Vercel. *Turborepo Documentation.* <https://turbo.build/repo/docs>
+2. Nrwl. *Nx Documentation.* <https://nx.dev/getting-started/intro>
+3. Docker. *Best Practices for Writing Dockerfiles.* <https://docs.docker.com/develop/dev-best-practices/>
+4. Cloudflare. *Pages and Workers.* <https://developers.cloudflare.com/pages/>
+5. AWS. *ECS Best Practices.* <https://docs.aws.amazon.com/AmazonECS/latest/bestpracticesguide/intro.html>
+6. Kubernetes. *Production Best Practices.* <https://kubernetes.io/docs/setup/production-environment/>
+7. Martin Fowler. *Monorepo vs Polyrepo.* <https://martinfowler.com/articles/monolith-vs-microservices.html>
+8. Thoughtworks. *Technology Radar: Turborepo and Nx.* <https://www.thoughtworks.com/radar>
+9. Google. *Bazel: Build and Test Tool.* <https://bazel.build/>
+10. Deno. *Deploy Documentation.* <https://deno.com/deploy/docs>
