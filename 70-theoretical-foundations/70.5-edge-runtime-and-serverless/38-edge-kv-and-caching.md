@@ -1,7 +1,7 @@
 ---
 title: 'Edge KV 与缓存策略'
 description: 'Edge KV and Caching Strategies: Cloudflare KV, Vercel Edge Config, Deno KV, CAP Theorem at the Edge'
-last-updated: 2026-05-05
+last-updated: 2026-05-06
 review-cycle: 6 months
 next-review: 2026-11-05
 status: complete
@@ -137,6 +137,16 @@ Cloudflare KV 是一个**最终一致的全球键值存储**，构建在 Cloudfl
 - 新写入的数据在**60 秒内**传播到全球所有边缘节点
 - 同一数据中心内的读取在写入后**立即一致**（因为本地缓存已更新）
 - 跨数据中心的读取在复制延迟窗口内可能返回旧值
+
+**版本化键策略（解决写入后读取延迟）**：
+
+由于 Cloudflare KV 的最终一致性，写入后立即读取（read-after-write）可能返回旧值。一种可靠的缓解策略是**版本化键（Versioned Keys）**：
+
+- 每次更新时写入一个新版本的键（如 `config:v2`），而非覆盖原键
+- 使用一个元数据键（如 `config:latest`）存储当前版本号，或通过 Durable Objects 维护版本指针
+- 读取时先获取版本指针，再读取对应版本的数据
+- 此策略保证一旦版本指针更新，所有后续读取都能获取到一致的完整状态，不受复制延迟影响
+- 代价是存储空间随版本数线性增长，需要定期清理旧版本
 
 ### 2.2 原子操作与列表操作
 

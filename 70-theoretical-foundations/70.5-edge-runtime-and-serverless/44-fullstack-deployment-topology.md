@@ -1,7 +1,7 @@
 ---
 title: '全栈 TypeScript 部署拓扑'
 description: 'Fullstack TypeScript Deployment Topology: Monorepo, Turborepo, Docker vs V8 Isolate, Platform Lock-in'
-last-updated: 2026-05-05
+last-updated: 2026-05-06
 review-cycle: 6 months
 next-review: 2026-11-05
 status: complete
@@ -108,6 +108,38 @@ Turborepo 通过**任务管道（Task Pipeline）**和**远程缓存（Remote Ca
 
 - Next.js 仓库使用 Turborepo 后，CI 构建时间从 30 分钟减少到 5 分钟
 - 本地开发中，未变更包的构建被完全跳过
+
+**GitHub Actions + Turborepo 远程缓存 CI 最佳实践**：
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      # 配置 Turborepo 远程缓存（自托管 S3 或 Vercel）
+      - run: pnpm turbo run build test --remote-only
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+      # 仅构建受影响的项目（比全量构建快 10 倍以上）
+      - run: pnpm turbo run build --affected --base=origin/main
+```
+
+**关键优化点**：
+
+- `--remote-only`：优先使用远程缓存，减少 CI 环境重复构建
+- `--affected`：仅构建和测试受当前 PR 影响的项目，大型 monorepo 可从 30 分钟降至 3 分钟
+- `pnpm install --frozen-lockfile`：保证依赖确定性，避免 lockfile 漂移
 
 ### 1.3 Nx 的分布式任务执行
 

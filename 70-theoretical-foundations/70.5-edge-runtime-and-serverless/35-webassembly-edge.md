@@ -3,7 +3,7 @@ title: 'WebAssembly Edge Computing'
 description: 'WASM module lifecycle, WASI Preview 2, Component Model, and WASM-JS boundary cost analysis'
 english-abstract: >
   A comprehensive technical deep-dive into WebAssembly (WASM) edge computing, covering the full module lifecycle (fetch, compile, instantiate, memory management), WASI Preview 2 with its component model, worlds, interfaces, and capabilities-based security, the WASM↔JavaScript boundary costs and memory models, WIT (WASM Interface Types) and wit-bindgen for polyglot interoperability, edge-specific constraints (startup speed, sandboxing, CPU/memory limits, streaming compilation), production use cases (image processing, PDF generation, cryptography, ML inference), and a rigorous comparative analysis of wasmtime, wasmer, and V8's WASM engine through categorical semantics, symmetric diff, decision matrices, and counter-examples.
-last-updated: 2026-05-05
+last-updated: 2026-05-06
 status: complete
 priority: P0
 ---
@@ -2181,7 +2181,27 @@ Future proposals relevant to edge computing include:
 - **Memory64**: 64-bit linear memory for workloads that need >4 GiB (unlikely at the edge, but useful for data-processing pipelines).
 - **Typed function references**: Stronger typing for function tables, improving security.
 
-### 13.4 The Rise of Wasi-Cloud-Core
+### 13.4 WASI 路线图：从 Preview 2 到 1.0
+
+WASI 的演进在 2025–2026 年进入了加速期：
+
+- **WASI 0.2.11**（2026-04-07）：当前稳定的 Preview 2 补丁版本，修复了资源泄漏和异步回调边界情况。
+- **WASI Preview 3**（开发中，预计 2026 年发布）：核心目标是**原生 async/await**、**线程支持**和**结构化错误处理**。Fermyon Spin v3.5（2025-11）已发布 Preview 3 的 RC。Preview 3 对边缘计算至关重要，因为边缘工作负载本质上是 I/O 绑定的（HTTP 请求、KV 查询、数据库调用），而 Preview 2 的基于 `pollable` 的异步模型对开发者不够友好。
+- **WASI 1.0**（计划 2026 年）：合并 Preview 2 和 Preview 3 的稳定特性，成为正式标准。
+
+对边缘开发者的影响：Preview 3 的 async/await 支持将消除当前组件模型中繁琐的 `pollable` 状态机，使 Rust/Go 等语言在 WASM 边缘环境中的开发体验接近原生异步运行时。
+
+### 13.5 JVM 语言与 WasmGC：Kotlin/Wasm 和 TeaVM
+
+WasmGC（WGC）在 2024–2025 年获得了所有主流浏览器的支持（包括 Safari 2024-12），消除了 JVM 语言（Java、Kotlin、Scala）进入 WASM 生态的最大障碍。
+
+- **Kotlin/Wasm Beta**（2025-09）：JetBrains 正式支持 Kotlin/Wasm 作为编译目标，JetBrains Compose for Web 已可在 WASM 上运行。UI 性能比 Kotlin/JS 快约 3 倍，启动延迟降低 40%。
+- **TeaVM**：一个将 Java/Kotlin 字节码编译为 WasmGC 的项目，无需 Kotlin Native 编译器即可复用现有 JVM 库。
+- **Scala.js / Scala 3 WASM**：Scala 社区正在探索通过 WasmGC 支持 Scala 在浏览器和边缘的运行。
+
+对边缘计算的意义：WasmGC 使得数百万 Java/Kotlin 开发者无需学习 Rust 或 C++ 即可编写 WASM 边缘组件。然而，GC 暂停时间仍是边缘平台需要监控的指标——对于延迟敏感型工作负载（如实时 API 网关），仍需评估 WGC 的 worst-case pause 是否在可接受范围内（通常 < 5ms）。
+
+### 13.6 The Rise of Wasi-Cloud-Core
 
 The WASI subgroup is developing **wasi-cloud-core**, a world definition specifically for cloud and edge workloads. It includes interfaces for:
 
@@ -2202,7 +2222,9 @@ This standardization will allow edge developers to write components against `was
 2. **WebAssembly JS Interface, Version 2.0**. W3C Recommendation, 2023. <https://www.w3.org/TR/wasm-js-api-2/>
 3. **WebAssembly Web API**. W3C Recommendation, 2023. <https://www.w3.org/TR/wasm-web-api-2/>
 4. **WebAssembly Component Model**. Bytecode Alliance, 2024–2026. <https://github.com/WebAssembly/component-model>
-5. **WASI Preview 2 (0.2.0)**. WebAssembly System Interface, 2024. <https://github.com/WebAssembly/WASI/tree/main/preview2>
+5. **WASI Preview 2 (0.2.11)**. WebAssembly System Interface, 2024–2026. <https://github.com/WebAssembly/WASI/tree/main/preview2>
+5a. **WASI Preview 3 Roadmap**. WebAssembly System Interface, 2026. <https://github.com/WebAssembly/WASI/milestone/2>
+5b. **Fermyon Spin v3.5 (Preview 3 RC)**. Fermyon, 2025-11. <https://www.fermyon.com/blog/spin-v3-5>
 6. **WIT (WASM Interface Types) Specification**. <https://github.com/WebAssembly/component-model/blob/main/design/mvp/WIT.md>
 7. **Canonical ABI**. Component Model Canonical ABI document. <https://github.com/WebAssembly/component-model/blob/main/design/mvp/CanonicalABI.md>
 
