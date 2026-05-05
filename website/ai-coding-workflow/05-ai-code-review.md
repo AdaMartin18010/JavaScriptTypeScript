@@ -27,11 +27,11 @@ graph LR
     A[开发者心理变化] --> B[第一阶段<br/>盲目信任]
     A --> C[第二阶段<br/>发现幻觉]
     A --> D[第三阶段<br/>系统审查]
-    
+
     B --> B1["哇，AI写的代码好快！<br/>直接合并！"]
     C --> C1["等等，这个API不存在？<br/>类型完全错了？<br/>安全漏洞！"]
     D --> D1["建立审查清单<br/>自动化验证<br/>人机协作审查"]
-    
+
     style B fill:#ffcdd2
     style C fill:#fff9c4
     style D fill:#c8e6c9
@@ -66,7 +66,7 @@ graph TD
     C -->|失败| Z
     D -->|通过| E[合并代码]
     D -->|需修改| Z
-    
+
     style B fill:#e3f2fd
     style C fill:#fff3e0
     style D fill:#e8f5e9
@@ -101,19 +101,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Type Check
         run: npx tsc --noEmit
         timeout-minutes: 1
-        
+
       - name: Lint Check
         run: npx eslint "src/**/*.generated.ts" --max-warnings=0
         timeout-minutes: 1
-        
+
       - name: Dependency Verification
         run: node scripts/verify-imports.js
         timeout-minutes: 1
-        
+
       - name: Smoke Test
         run: npx jest --testNamePattern="smoke" --passWithNoTests
         timeout-minutes: 2
@@ -130,13 +130,13 @@ graph LR
     A --> D[SonarQube<br/>代码质量]
     A --> E[CodeQL<br/>漏洞分析]
     A --> F[依赖审计<br/>npm audit]
-    
+
     B --> G[质量报告]
     C --> G
     D --> G
     E --> G
     F --> G
-    
+
     G --> H{阻断阈值?}
     H -->|是| I[阻断合并]
     H -->|否| J[进入第三层]
@@ -161,17 +161,17 @@ module.exports = {
       ...Object.keys(require('./package.json').dependencies || {}),
       ...Object.keys(require('./package.json').devDependencies || {}),
     ]);
-    
+
     // 添加项目内部别名
     const internalAliases = ['@/', '@/components', '@/utils'];
-    
+
     return {
       ImportDeclaration(node) {
         const source = node.source.value;
-        
+
         // 检查是否为第三方包
         const packageName = source.split('/')[0];
-        if (!source.startsWith('.') && 
+        if (!source.startsWith('.') &&
             !source.startsWith('@/') &&
             !availablePackages.has(packageName) &&
             !availablePackages.has(source)) {
@@ -226,7 +226,7 @@ sequenceDiagram
     participant D as Developer
     participant AI as AI Reviewer
     participant H as Human Reviewer
-    
+
     D->>AI: 提交AI生成代码
     AI->>AI: 执行自动审查
     AI->>D: 返回审查报告（问题+建议）
@@ -250,14 +250,17 @@ sequenceDiagram
 ```
 
 ## 上下文
+
 - 项目类型：{Node.js / React / 等}
 - 技术栈：{TypeScript 5.3, Express, Prisma}
 - 该代码由AI生成，需要重点检查幻觉和安全隐患
 
 ## 审查维度
+
 请按以下维度输出审查报告：
 
 ### 1. 安全漏洞（Security）
+
 - [ ] SQL注入 / NoSQL注入
 - [ ] XSS / CSRF
 - [ ] 敏感信息泄露
@@ -266,28 +269,34 @@ sequenceDiagram
 - 风险等级：CRITICAL / HIGH / MEDIUM / LOW
 
 ### 2. 逻辑正确性（Correctness）
+
 - [ ] 边界情况处理
 - [ ] 并发安全
 - [ ] 错误处理完整性
 - [ ] 资源泄漏（内存/连接）
 
 ### 3. 类型安全（Type Safety）
+
 - [ ] 是否存在any类型滥用
 - [ ] 类型断言是否安全
 - [ ] 泛型约束是否合理
 
 ### 4. 性能影响（Performance）
+
 - [ ] 时间复杂度是否合理
 - [ ] 是否存在N+1查询
 - [ ] 内存使用是否高效
 
 ### 5. 幻觉检测（Hallucination）
+
 - [ ] 所有引用的API是否真实存在
 - [ ] 导入的模块是否已安装
 - [ ] 类型定义是否与实际一致
 
 ## 输出格式
+
 对每个发现的问题，按以下格式输出：
+
 ```
 [风险等级] 问题标题
 - 位置：文件:行号
@@ -297,6 +306,7 @@ sequenceDiagram
 ```
 
 如果没有发现问题，明确说明"未发现明显问题"。
+
 ```
 
 ---
@@ -318,6 +328,7 @@ app.get('/search', (req, res) => {
 ```
 
 ✅ 安全版本：
+
 ```javascript
 import { z } from 'zod';
 
@@ -340,12 +351,14 @@ app.get('/search', async (req, res) => {
 ## 模式2：硬编码密钥
 
 ❌ AI常见生成：
+
 ```javascript
 const API_KEY = 'sk-live-abc123xyz789';
 const DB_PASSWORD = 'SuperSecret123!';
 ```
 
 ✅ 安全版本：
+
 ```typescript
 import { config } from './config';
 
@@ -360,6 +373,7 @@ if (!API_KEY) {
 ## 模式3：不安全的文件上传
 
 ❌ AI常见生成：
+
 ```javascript
 app.post('/upload', upload.single('file'), (req, res) => {
   fs.writeFileSync(`./uploads/${req.file.originalname}`, req.file.buffer);
@@ -368,38 +382,39 @@ app.post('/upload', upload.single('file'), (req, res) => {
 ```
 
 ✅ 安全版本：
+
 ```typescript
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from './constants';
 
-app.post('/upload', 
+app.post('/upload',
   upload.single('file'),
   (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
-    
+
     // 验证文件类型
     if (!ALLOWED_MIME_TYPES.includes(req.file.mimetype)) {
       return res.status(400).json({ error: 'Invalid file type' });
     }
-    
+
     // 验证文件大小
     if (req.file.size > MAX_FILE_SIZE) {
       return res.status(400).json({ error: 'File too large' });
     }
-    
+
     // 生成随机文件名，保留原始扩展名
     const ext = path.extname(req.file.originalname).toLowerCase();
     const safeName = `${uuidv4()}${ext}`;
     const destPath = path.join(UPLOAD_DIR, safeName);
-    
+
     // 防止目录遍历
     if (!destPath.startsWith(UPLOAD_DIR)) {
       return res.status(400).json({ error: 'Invalid path' });
     }
-    
+
     fs.writeFileSync(destPath, req.file.buffer);
     res.json({ url: `/uploads/${safeName}` });
   }
@@ -411,6 +426,7 @@ app.post('/upload',
 ## 模式4：不安全的反序列化
 
 ❌ AI常见生成：
+
 ```javascript
 const userData = eval(req.body.config);
 // 或
@@ -418,6 +434,7 @@ const obj = new Function('return ' + req.body.json)();
 ```
 
 ✅ 安全版本：
+
 ```typescript
 import { z } from 'zod';
 
@@ -432,6 +449,7 @@ if (!parsed.success) {
   return res.status(400).json({ error: 'Invalid config' });
 }
 ```
+
 ```
 
 ### 5.3.2 安全审查自动化工具链
@@ -466,15 +484,15 @@ graph TD
     B --> C{依赖存在?}
     C -->|否| D[幻觉导入]
     C -->|是| E[API签名检查]
-    
+
     E --> F{签名匹配?}
     F -->|否| G[签名幻觉]
     F -->|是| H[类型检查]
-    
+
     H --> I{类型兼容?}
     I -->|否| J[类型幻觉]
     I -->|是| K[运行时检查]
-    
+
     K --> L{测试通过?}
     L -->|否| M[逻辑幻觉]
     L -->|是| N[通过检测]
@@ -501,7 +519,7 @@ interface HallucinationReport {
 class HallucinationDetector {
   private packageDeps: Set<string> = new Set();
   private typeDefinitions: Map<string, any> = new Map();
-  
+
   async initialize(projectRoot: string) {
     const pkg = JSON.parse(
       await fs.readFile(path.join(projectRoot, 'package.json'), 'utf-8')
@@ -511,23 +529,23 @@ class HallucinationDetector {
       ...Object.keys(pkg.devDependencies || {}),
     ]);
   }
-  
+
   async detect(filePath: string): Promise<HallucinationReport[]> {
     const code = await fs.readFile(filePath, 'utf-8');
     const ast = parse(code, {
       sourceType: 'module',
       plugins: ['typescript', 'jsx'],
     });
-    
+
     const reports: HallucinationReport[] = [];
-    
+
     traverse(ast, {
       // 检测幻觉导入
       ImportDeclaration: (nodePath) => {
         const source = nodePath.node.source.value;
         const packageName = source.split('/')[0];
-        
-        if (!source.startsWith('.') && 
+
+        if (!source.startsWith('.') &&
             !source.startsWith('@/') &&
             !this.packageDeps.has(packageName) &&
             !this.packageDeps.has(source)) {
@@ -541,12 +559,12 @@ class HallucinationDetector {
           });
         }
       },
-      
+
       // 检测可能的幻觉属性访问
       MemberExpression: (nodePath) => {
         const objectName = this.getObjectName(nodePath.node.object);
         const propertyName = this.getPropertyName(nodePath.node.property);
-        
+
         // 检查是否访问了已弃用或不存在的属性
         if (objectName === 'fs' && propertyName === 'readFileSync') {
           // 正常，无需报告
@@ -554,16 +572,16 @@ class HallucinationDetector {
         // 可以扩展更多已知库的检查
       },
     });
-    
+
     return reports;
   }
-  
+
   private getObjectName(node: any): string {
     if (node.type === 'Identifier') return node.name;
     if (node.type === 'MemberExpression') return this.getObjectName(node.object);
     return '';
   }
-  
+
   private getPropertyName(node: any): string {
     if (node.type === 'Identifier') return node.name;
     if (node.type === 'StringLiteral') return node.value;
@@ -575,10 +593,10 @@ class HallucinationDetector {
 async function main() {
   const detector = new HallucinationDetector();
   await detector.initialize(process.cwd());
-  
+
   const files = process.argv.slice(2);
   let hasError = false;
-  
+
   for (const file of files) {
     const reports = await detector.detect(file);
     for (const report of reports) {
@@ -593,7 +611,7 @@ async function main() {
       if (report.severity === 'error') hasError = true;
     }
   }
-  
+
   process.exit(hasError ? 1 : 0);
 }
 
@@ -612,12 +630,15 @@ main();
 ```
 
 ## 已知环境
+
 - 已安装的依赖：{DEPENDENCIES_LIST}
 - 项目内部模块：{INTERNAL_MODULES}
 - TypeScript版本：{TS_VERSION}
 
 ## 检查清单
+
 请逐一检查：
+
 1. [ ] 所有import的来源是否真实存在？
 2. [ ] 所有调用的函数/方法是否在对应模块中导出？
 3. [ ] 所有引用的类型是否已定义或可从依赖中导入？
@@ -625,7 +646,9 @@ main();
 5. [ ] 所有正则表达式是否能正确匹配预期输入？
 
 ## 输出格式
+
 对每个疑似幻觉，输出：
+
 ```
 [幻觉类型] 位置: 行号
 - 内容: "具体代码片段"
@@ -634,6 +657,7 @@ main();
 ```
 
 如果没有发现幻觉，明确输出"未检测到幻觉"。
+
 ```
 
 ---
@@ -647,15 +671,15 @@ graph TD
     A[AI生成代码] --> B[生成单元测试]
     A --> C[生成交互测试]
     A --> D[生成E2E测试]
-    
+
     B --> B1[Jest/Vitest]
     B --> B2[覆盖边界情况]
     B --> B3[Mock外部依赖]
-    
+
     C --> C1[Supertest/MSW]
     C --> C2[数据库集成]
     C --> C3[API契约验证]
-    
+
     D --> D1[Playwright/Cypress]
     D --> D2[用户旅程]
     D --> D3[视觉回归]
@@ -680,6 +704,7 @@ function parseDateRange(input: string): { start: Date; end: Date } {
 ```
 
 ## 要求
+
 1. 使用 Jest + TypeScript
 2. 测试覆盖率目标：100%分支覆盖
 3. 包含以下测试类别：
@@ -693,6 +718,7 @@ function parseDateRange(input: string): { start: Date; end: Date } {
 6. 测试用例命名遵循：should {expected behavior} when {condition}
 
 ## 输出格式
+
 ```typescript
 import { parseDateRange } from './date-utils';
 
@@ -715,6 +741,7 @@ describe('parseDateRange', () => {
   // ... 更多测试套件
 });
 ```
+
 ```
 
 ### 5.5.3 测试覆盖率优化策略
@@ -740,10 +767,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Run Tests with Coverage
         run: npx vitest run --coverage
-        
+
       - name: Check Coverage Threshold
         run: |
           COVERAGE=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
@@ -751,7 +778,7 @@ jobs:
             echo "Coverage $COVERAGE% is below threshold 80%"
             exit 1
           fi
-          
+
       - name: Mutation Testing
         run: npx stryker run
         if: github.event.pull_request.changed_files < 10
@@ -809,7 +836,7 @@ const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
 async function reviewFile(filePath) {
   const code = await fs.readFile(filePath, 'utf-8');
-  
+
   const prompt = `
 ## 代码审查
 文件：${filePath}
@@ -837,7 +864,7 @@ ${code}
     messages: [{ role: 'user', content: prompt }],
     temperature: 0.1,
   });
-  
+
   return response.choices[0].message.content;
 }
 
@@ -910,21 +937,25 @@ for (const file of files) {
 ## 参考资源
 
 ### 安全标准
+
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/) — Web应用安全漏洞权威指南
 - [CWE/SANS Top 25](https://cwe.mitre.org/top25/) — 最危险的软件错误
 - [OWASP ASVS](https://github.com/OWASP/ASVS) — 应用安全验证标准
 
 ### 静态分析工具
+
 - [Semgrep Registry](https://semgrep.dev/explore) — 开源安全规则库
 - [CodeQL Documentation](https://codeql.github.com/docs/) — GitHub高级语义分析
 - [SonarQube Rules](https://rules.sonarsource.com/) — 代码质量规则参考
 
 ### 研究论文
+
 - "Hallucination is Inevitable: An Innate Limitation of Large Language Models" — Xu et al., 2024
 - "Measuring Code Hallucination in LLMs" — 多篇arXiv预印本
 - "Automated Security Assessment of AI-Generated Code" — 安全社区研究
 
 ### 实践指南
+
 - [Google Code Review Guide](https://google.github.io/eng-practices/review/) — 人工审查最佳实践
 - [Mozilla Web Security Guidelines](https://infosec.mozilla.org/guidelines/web_security) — Web安全规范
 - [Node.js Security Best Practices](https://nodejs.org/en/docs/guides/security/) — Node.js安全指南
