@@ -4693,11 +4693,13 @@ class OpenAIEmbedder {
   }
 }
 
+> **Note:** As of 2026, the package has been rebranded from `@xenova/transformers` to `@huggingface/transformers` (v3+). The legacy `@xenova/transformers` package remains on v2 only.
+
 // ============================================
 // HuggingFace 嵌入（本地）
 // ============================================
 
-import { pipeline, FeatureExtractionPipeline } from '@xenova/transformers';
+import { pipeline, FeatureExtractionPipeline } from '@huggingface/transformers';
 
 class HuggingFaceEmbedder {
   private extractor: FeatureExtractionPipeline | null = null;
@@ -5500,7 +5502,7 @@ class CrossEncoderReranker implements Reranker {
   private model: any;
 
   async initialize(modelName: string = 'Xenova/ms-marco-MiniLM-L-6-v2'): Promise<void> {
-    const { pipeline } = await import('@xenova/transformers');
+    const { pipeline } = await import('@huggingface/transformers');
     this.model = await pipeline('text-classification', modelName);
   }
 

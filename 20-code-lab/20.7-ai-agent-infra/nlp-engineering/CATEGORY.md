@@ -81,7 +81,7 @@ function cosineSimilarity(a: number[], b: number[]): number {
 }
 
 // 使用 transformers.js 生成嵌入
-import { pipeline } from '@xenova/transformers';
+import { pipeline } from '@huggingface/transformers';
 const embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
 const output = await embedder('JavaScript NLP is powerful', { pooling: 'mean', normalize: true });
 ```

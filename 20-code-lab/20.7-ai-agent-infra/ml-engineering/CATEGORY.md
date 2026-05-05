@@ -199,7 +199,7 @@ async function runWebNNInference(inputData: Float32Array) {
 
 ```typescript
 // transformers-pipeline.ts — 纯前端 Transformer 推理
-import { pipeline } from '@xenova/transformers';
+import { pipeline } from '@huggingface/transformers';
 
 async function classifySentiment(text: string) {
   // 自动下载并缓存 ONNX 模型到 IndexedDB

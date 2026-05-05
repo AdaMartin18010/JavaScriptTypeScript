@@ -191,7 +191,7 @@ async function buildWebNNGraph() {
 
 ```typescript
 // transformers-js-demo.ts — Hugging Face Transformers.js 浏览器推理
-import { pipeline } from '@xenova/transformers';
+import { pipeline } from '@huggingface/transformers';
 
 async function runSentimentAnalysis(text: string): Promise<unknown> {
   // 首次运行会自动下载并缓存模型到 IndexedDB
@@ -336,8 +336,8 @@ cacheModel('https://example.com/models/mnist.onnx', '1.0.0')
 | ggml / llama.cpp | 边缘 LLM 推理 | [github.com/ggerganov/llama.cpp](https://github.com/ggerganov/llama.cpp) |
 | WebLLM — MLCBot | 浏览器 LLM 推理 | [github.com/mlc-ai/web-llm](https://github.com/mlc-ai/web-llm) |
 | W3C Web Machine Learning Working Group | 工作组 | [webmachinelearning.github.io](https://webmachinelearning.github.io/) |
-| Can I Use — WebGPU](https://caniuse.com/webgpu) | 兼容性 | [caniuse.com/webgpu](https://caniuse.com/webgpu) |
-| Can I Use — WebNN](https://caniuse.com/webnn) | 兼容性 | [caniuse.com/webnn](https://caniuse.com/webnn) |
+| Can I Use — WebGPU](<https://caniuse.com/webgpu>) | 兼容性 | [caniuse.com/webgpu](https://caniuse.com/webgpu) |
+| Can I Use — WebNN](<https://caniuse.com/webnn>) | 兼容性 | [caniuse.com/webnn](https://caniuse.com/webnn) |
 
 ---
 

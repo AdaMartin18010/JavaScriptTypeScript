@@ -90,7 +90,7 @@ binding = "AI"
 
 ```typescript
 // 纯浏览器运行，无需后端，适合隐私敏感场景
-import { pipeline } from '@xenova/transformers';
+import { pipeline } from '@huggingface/transformers';
 
 // 文本分类（情感分析）
 async function classifySentiment(text: string): Promise<{ label: string; score: number }[]> {
@@ -239,7 +239,7 @@ export default function ChatPage() {
 ```typescript
 // whisper-browser.ts — Transformers.js 本地语音识别
 
-import { pipeline } from '@xenova/transformers';
+import { pipeline } from '@huggingface/transformers';
 
 async function transcribeAudio(audioBuffer: AudioBuffer): Promise<string> {
   const transcriber = await pipeline(

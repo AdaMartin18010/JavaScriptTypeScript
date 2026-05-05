@@ -121,7 +121,7 @@ const sentiment = logits[0] > logits[1] ? 'positive' : 'negative';
 
 ```typescript
 // transformers-pipeline.ts — 零样本分类与特征提取
-import { pipeline, type FeatureExtractionPipeline } from '@xenova/transformers';
+import { pipeline, type FeatureExtractionPipeline } from '@huggingface/transformers';
 
 // 零样本分类
 const classifier = await pipeline('zero-shot-classification', 'Xenova/mobilebert-uncased-mnli');

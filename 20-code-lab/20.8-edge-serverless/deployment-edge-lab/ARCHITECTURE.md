@@ -125,7 +125,7 @@ Code Push -> Build -> Validate -> Deploy to Edge -> Health Check -> Monitor -> (
 | Deno Deploy | V8 Isolate | 35+ | <10ms | Deno KV | 否 | 免费 | Deno 生态 |
 | AWS Lambda@Edge | Node.js | 400+ | 10-100ms | CloudFront | 否 | 无 | AWS 生态 |
 | Netlify Edge | Deno | 100+ | <50ms | Blob Store | 否 | 125k/月 | Jamstack |
-| Fly.io | Firecracker | 30+ | <300ms | SQLite (LiteFS) | 是 | 无 | 容器边缘 |
+| Fly.io | Firecracker | 30+ | <300ms | SQLite (LiteFS ⚠️ Cloud 已关闭 2024-10) | 是 | 无 | 容器边缘 |
 
 ## 6. 代码示例
 

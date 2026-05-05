@@ -231,7 +231,7 @@ Transformers.js 是 Hugging Face 推出的 JavaScript 库，它将 popular 的 T
 
 ```typescript
 // transformers-pipeline.ts
-import &#123; pipeline } from '@xenova/transformers';
+import &#123; pipeline } from '@huggingface/transformers';
 
 const classifier = await pipeline(
   'sentiment-analysis',
@@ -404,7 +404,7 @@ graph TB
 
 ```typescript
 // browser-rag.ts
-import &#123; pipeline } from '@xenova/transformers';
+import &#123; pipeline } from '@huggingface/transformers';
 import &#123; HNSWLib } from 'hnswlib-wasm';
 
 class BrowserRAG &#123;

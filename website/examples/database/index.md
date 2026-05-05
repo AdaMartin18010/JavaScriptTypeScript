@@ -99,7 +99,7 @@ flowchart TD
     Q3 -->|最终一致| A5[MongoDB / DynamoDB]
     Q2 -->|边缘部署| Q4{全球分布?}
     Q4 -->|是| A3[Turso / D1]
-    Q4 -->|否| A6[SQLite + LiteFS]
+    Q4 -->|否| A6[SQLite + LiteFS ⚠️ Cloud 已关闭 2024-10]
 ```
 
 ### 类型安全的数据流
