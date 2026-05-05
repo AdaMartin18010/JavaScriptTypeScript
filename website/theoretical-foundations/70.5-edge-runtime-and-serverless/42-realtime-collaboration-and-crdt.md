@@ -1,6 +1,6 @@
 ---
 title: '实时协作与 CRDT'
-description: 'CRDTs, Operational Transform, Yjs, Automerge, Loro, and edge synchronization strategies'
+description: 'CRDTs, Operational Transform, Yjs, Automerge 2.0, Loro, PartyKit/Liveblocks, and edge synchronization strategies'
 ---
 
 # 实时协作与 CRDT
@@ -64,10 +64,12 @@ Yjs 是当前 JavaScript 生态中最广泛使用的 CRDT 库。
 
 **Awareness Protocol**：轻量级 CRDT，用于同步用户光标、选区、在线状态等短暂状态。基于 `Map<clientID, Meta>`，默认 30 秒超时清理。编码非常紧凑，只包含变更的客户端 ID 和状态 JSON，适合高频广播。
 
+**托管协作基础设施（2026）**：除自托管 Provider 外，PartyKit（基于 Cloudflare Durable Objects，提供房间管理、presence、持久化）和 Liveblocks（商业托管后端，提供 Storage 和 Comments API，与 React/Next.js 深度集成）成为快速启动多人协作应用的重要选项，无需自建 WebSocket 服务器。
+
 ### Automerge 与 Loro 的差异
 
 **Automerge**：将整个应用状态视为单一的不可变文档（document），每次变更产生具有新哈希的新文档版本。核心特点：
-- 列式存储二进制格式（Rust 核心 `automerge-rs`），压缩率比早期 JSON 格式提升 5-10 倍
+- 列式存储二进制格式（Rust 核心 `automerge-rs`），压缩率比早期 JSON 格式提升 5-10 倍。性能基准：处理 260,000 次按键操作的文档加载和合并仅需约 **600 毫秒**，相比早期版本有数量级提升
 - 显式冲突 API：并发设置同一键时保留所有冲突值
 - 原生时间旅行：变更历史图（DAG）支持检出任意版本快照
 - Sync Patches 使用 Bloom filter 高效判断缺失操作

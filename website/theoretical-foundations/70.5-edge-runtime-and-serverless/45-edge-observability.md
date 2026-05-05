@@ -1,6 +1,6 @@
 ---
 title: '边缘可观测性与分布式追踪'
-description: 'Edge Observability and Distributed Tracing: Logging, Metrics, Tracing in Edge/Serverless Environments'
+description: 'Edge Observability: eBPF zero-instrumentation, AI-powered RCA, cost optimization with eBPF+OTel+OSS, distributed tracing in Edge/Serverless environments'
 ---
 
 # 边缘可观测性与分布式追踪
@@ -18,6 +18,8 @@ description: 'Edge Observability and Distributed Tracing: Logging, Metrics, Trac
 4. **分布式追踪的边界问题是跨运行时挑战**：请求从浏览器 → Edge Worker → Lambda → RDS 时，W3C Trace Context 的传播需要每个链路节点正确注入和提取 `traceparent` 头，任何一环断裂都会导致追踪链路中断。
 
 5. **OpenTelemetry 是跨平台可观测性的唯一可行标准**：通过统一的 SDK 和 OTLP 协议，实现代码一次编写、多平台运行，显著降低供应商锁定风险，避免从 Datadog 迁移到 Honeycomb 时需要完全重写仪表盘和告警规则。
+
+6. **eBPF 与 AI RCA 是 2026 年可观测性的两大变革**：eBPF 实现零插桩全栈可见性，企业采用率达 35%，典型开销 <1% CPU；AI 驱动的根因分析已被 40% 企业采用，预计年底达 60%，可自动检测异常、关联拓扑、挖掘日志模式并动态调整采样率。
 
 ## 关键概念
 
@@ -66,6 +68,52 @@ description: 'Edge Observability and Distributed Tracing: Logging, Metrics, Trac
 
 动态采样进一步优化：高峰时段降低采样率（如促销期间降至 0.1%），低峰时段提升（夜间升至 10%），基于错误率自动调整（错误率高时全量采样）。
 
+### eBPF：零插桩可观测性革命（2026）
+
+eBPF（extended Berkeley Packet Filter）已成为 2026 年可观测性领域最重要的技术突破之一，企业采用率达到 **35%** 且持续上升。
+
+**核心优势**：
+- **零插桩**：无需修改应用代码，通过内核探针（kprobe/uprobe）自动捕获系统调用、网络流量、文件访问
+- **极低开销**：eBPF 程序在内核沙箱中 JIT 编译执行，典型开销 < 1% CPU
+- **全栈可见性**：从内核网络栈到用户空间应用，覆盖传统 Agent 无法触及的盲区
+
+**边缘场景中的 eBPF 工具链**：
+- **Cilium Hubble**：基于 eBPF 的网络可观测性，自动为 Kubernetes Pod 生成 L3-L7 流量图，无需 sidecar
+- **Tetragon**：eBPF 安全可观测性，实时检测进程执行、文件访问、网络连接的异常模式
+- **Pixie**：自动采集 HTTP/gRPC/Redis/Kafka 协议数据，无需手动 instrumentation
+
+**与 OpenTelemetry 的协同**：
+- eBPF 采集基础设施层指标（网络延迟、TCP 重传、DNS 解析时间）
+- OTel SDK 采集应用层指标（业务逻辑、自定义属性）
+- 两者在 Collector 层汇合，形成从内核到业务的全栈追踪
+
+**限制**：
+- 需要 Linux 内核 5.10+（边缘容器环境通常满足）
+- 沙箱安全性限制：eBPF 程序无法执行无限循环或访问任意内存
+- 学习曲线：需要理解内核网络栈和 BPF 字节码
+
+### AI 驱动的根因分析（AI-Powered RCA）
+
+2026 年，**40% 的企业**已采用 AI 驱动的根因分析系统，这一比例预计年底将达到 60%。
+
+**AI RCA 的核心能力**：
+1. **异常自动检测**：基于时序预测模型（如 Prophet、LSTM）自动识别指标异常，无需人工设置阈值
+2. **拓扑关联分析**：将告警与基础设施拓扑图（服务依赖、K8s 资源关系）关联，快速定位故障传播路径
+3. **日志模式挖掘**：从海量日志中自动提取异常模式（如 "connection refused" 突增与特定 Pod 重启的关联）
+4. **自动采样率调整**：AI 根据流量模式和错误率预测，动态调整追踪采样率（如预测到故障前自动升至 100%）
+
+**生产实践**：
+- **Grafana Adaptive Metrics**：AI 自动识别并聚合低价值指标时间序列，减少 50% 存储成本
+- **Datadog Watchdog**：无监督机器学习自动检测异常并关联到根因服务
+- **OpenTelemetry + LLM**：将 Trace 结构化为自然语言，输入给 LLM 进行根因推理（实验性，但增长迅速）
+
+**反例：AI RCA 的误报陷阱**
+
+某团队完全依赖 AI RCA 系统，关闭了人工告警：
+- AI 将数据库慢查询归因于 "网络延迟"，实际是缺少索引
+- 因为训练数据中缺少 "缺少索引" 与 "慢查询" 的关联样本，AI 给出了错误的根因
+- **教训**：AI RCA 是辅助工具，不能替代领域专家的直觉和深度排查
+
 ### 跨运行时追踪传播
 
 当请求跨越边缘（V8 Isolate）和中心（Node.js 容器）时：
@@ -106,12 +154,13 @@ description: 'Edge Observability and Distributed Tracing: Logging, Metrics, Trac
 | 场景 | 推荐方案 | 理由 | 风险 |
 |------|---------|------|------|
 | 低流量边缘应用 | 平台原生日志 + 基础指标 | 零配置，成本最低 | 功能受限，无法自定义 |
-| 高流量边缘应用 | OpenTelemetry + Collector | 标准化，可移植 | 配置复杂，需要专业知识 |
+| 高流量边缘应用 | OpenTelemetry + Collector | 标准化，可移植；Collector 是生产环境强制模式（非直连） | 配置复杂，需要专业知识 |
 | 混合架构（Edge + Origin） | OTel + Jaeger/Tempo | 统一追踪上下文 | 跨网络传播开销 |
 | 成本极度敏感 | 分层采样 + 短保留期 | 控制数据量 | 可能丢失关键调试信息 |
-| 实时排障需求 | Tail-Based + Live Tail | 快速定位问题 | 内存消耗大，配置复杂 |
+| 实时排障需求 | Tail-Based Sampling + Live Tail | 快速定位问题 | 内存消耗大，配置复杂 |
 | 合规审计要求 | 全量日志 + 长期归档 | 满足审计需求 | 存储成本高昂 |
-| 多平台部署 | OTel SDK（统一 API） | 代码一次编写，多平台运行 | 各平台实现存在差异 |
+| 多平台部署 | OTel SDK（统一 API） | 代码一次编写，多平台运行 | 各平台实现差异 |
+| 高频微服务 | eBPF + OTel Collector + OSS 后端 | 零侵入，性能开销低；相比 Datadog/New Relic 节省 ~66% 成本 | 需要 Linux 内核支持；Cilium/Hubble 学习曲线 |
 
 ### 传统监控 vs 边缘可观测性对称差
 

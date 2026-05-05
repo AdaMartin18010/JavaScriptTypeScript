@@ -1,6 +1,6 @@
 ---
 title: 'Edge Runtime 架构对比'
-description: 'Edge Runtime Architecture: Cloudflare Workers, Vercel Edge, Deno Deploy, Bun Edge, WinterCG interoperability standards'
+description: 'Edge Runtime Architecture: Cloudflare Workers (Dynamic Workers, V8 14.8), Vercel Edge, Deno Deploy, Bun Edge, WinterCG interoperability standards'
 ---
 
 # Edge Runtime 架构对比
@@ -17,7 +17,9 @@ description: 'Edge Runtime Architecture: Cloudflare Workers, Vercel Edge, Deno D
 
 4. **状态管理决定适用边界**：无状态函数适合认证、路由、A/B 测试等轻量场景；Durable Objects、Deno KV 和嵌入式 SQLite 使有状态边缘计算成为可能，但引入新的一致性复杂性。
 
-5. **混合架构是生产最优解**：边缘层处理无状态轻量逻辑（Workers/Vercel Edge），应用层处理渲染与业务逻辑（Next.js/Remix），状态层处理持久化（Durable Objects/Deno KV/外部数据库）。没有单一运行时能满足所有需求。
+5. **Cloudflare Dynamic Workers 开启 AI-Native Edge 范式**（2026）：AI 实时生成 TypeScript 函数并直接注入 V8 Isolate 执行，亚毫秒级启动（100× 快于容器），面向无状态 Agent 工作负载优化。
+
+6. **混合架构是生产最优解**：边缘层处理无状态轻量逻辑（Workers/Vercel Edge），应用层处理渲染与业务逻辑（Next.js/Remix），状态层处理持久化（Durable Objects/Deno KV/外部数据库）。没有单一运行时能满足所有需求。
 
 ## 关键概念
 
@@ -42,7 +44,13 @@ Workers 部署在全球 300+ 城市，其核心特征：
 - **CPU 时间计费**：不按墙钟时间计费，只按 CPU 时间计费。等待外部 I/O 的 `fetch` 等待时间不计费。
 - **Durable Objects**：为需要状态的场景提供单例有状态对象，全球唯一活跃实例，所有请求路由到该实例所在节点，保证强一致性。
 
-局限：原生仅支持 JS/TS/WASM；Node.js 兼容性有限（`node_compat` 覆盖不全）；Free 计划单次 Wall Clock 上限 100ms。
+**2025–2026 关键演进**：
+- **Dynamic Workers**（2026-03）：AI Agent 以「函数即提示」方式动态生成 TypeScript 代码，毫秒级编译注入预热 Isolate，<0.01ms 启动延迟，100× 快于容器化 Agent 执行
+- **Workers Standard 计费**：取代 Bundled/Unbound 计划，支持自定义 CPU 时间上限（最高 5 分钟），按实际 CPU 用量计费
+- **Node.js 兼容显著提升**：原生支持 `node:fs`、Web File System APIs、`MessageChannel`/`MessagePort`、`FinalizationRegistry`
+- **V8 14.8**（2026-04）：当前 Workers 底层引擎版本
+
+局限：仍有部分 Node.js 内置模块（`child_process`、`net`）和依赖原生 C++ 插件的 npm 包无法直接运行；Free 计划 Wall Clock 上限 100ms。
 
 #### Vercel Edge Functions：Web API 优先的中间件运行时
 
@@ -99,7 +107,7 @@ WinterCG（Web-interoperable Runtimes Community Group）由 Cloudflare、Deno、
 | Bun Edge | 进程创建 + 模块加载 | **1–5ms** | 强（OS 级） |
 
 三种隔离模型的权衡：
-- **V8 Isolate（进程内）**：启动最快、密度最高（单进程数万 Isolate），但理论上存在 Spectre/Meltdown 侧信道风险。Cloudflare 通过严格同源策略、定时器精度限制和 seccomp-bpf 缓解。
+- **V8 Isolate（进程内）**：启动最快、密度最高（单进程数万 Isolate），但理论上存在 Spectre/Meltdown 侧信道风险。Cloudflare 部署纵深防御：第二层沙箱（seccomp-bpf）、**MPK（Memory Protection Keys）**硬件隔离、动态租户隔离，将潜在逃逸限制在单请求/单租户范围。V8 版本已更新至 14.8（2026-04）。
 - **轻量级进程（命名空间）**：Deno Deploy 使用 Linux namespaces + seccomp-bpf，隔离强度高于 Isolate，启动仍控制在毫秒级。
 - **超轻量进程**：Bun 标准 OS 进程，灵活性最高（文件系统、子进程、信号处理），但密度低于 Isolate。
 

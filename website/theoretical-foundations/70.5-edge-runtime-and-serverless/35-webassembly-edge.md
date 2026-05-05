@@ -1,6 +1,6 @@
 ---
 title: 'WebAssembly Edge Computing'
-description: 'WASM module lifecycle, WASI Preview 2, Component Model, and WASM-JS boundary cost analysis'
+description: 'WASM module lifecycle, WASI Preview 2/0.2.11, Preview 3 async/await roadmap, Component Model, WasmGC, Kotlin/Wasm Beta, TeaVM, and WASM-JS boundary cost analysis'
 ---
 
 # WebAssembly Edge Computing
@@ -13,7 +13,7 @@ description: 'WASM module lifecycle, WASI Preview 2, Component Model, and WASM-J
 
 2. **模块生命周期决定性能上限**：Fetch → Compile → Instantiate → Execute 四阶段中，编译是最关键的优化点。Streaming compilation 和内容寻址缓存可将冷启动控制在 5–15ms。
 
-3. **WASI Preview 2 重塑系统接口**：以 Component Model 替代 POSIX 式单片接口，通过 WIT 接口、Worlds 和 capabilities-based security 实现真正的最小权限原则。
+3. **WASI Preview 2/0.2.11 重塑系统接口，Preview 3 引入原生 async/await**：Component Model 通过 WIT 接口、Worlds 和 capabilities-based security 实现最小权限。WASI Preview 3（预计 2026）将消除 `pollable` 状态机，使边缘异步开发体验接近原生运行时。WasmGC 使 Java/Kotlin/Scala 可编译为 WASM。
 
 4. **JS/WASM 边界是主要性能瓶颈**：每次跨边界调用涉及类型编组、栈切换、安全检查。批量操作和 write-through memory view 可将开销降至 O(1)。
 
@@ -46,6 +46,8 @@ description: 'WASM module lifecycle, WASI Preview 2, Component Model, and WASM-J
 
 WASI Preview 1 提供 POSIX 式系统调用，但存在 **ambient authority** 缺陷：只要模块导入 `fd_write`，就能写入宿主提供的任何文件描述符，包括 stdout、stderr 甚至真实文件系统句柄。
 
+**WASI 0.2.11**（2026-04-07）是当前稳定补丁版本，修复了资源泄漏和异步回调边界情况。
+
 WASI Preview 2（2024 年标准化，2026 年广泛实现）以 **Component Model** 彻底替代：
 
 - **Component**：封装一个或多个核心模块，暴露类型化接口，而非原始整数索引和字符串函数名
@@ -53,6 +55,17 @@ WASI Preview 2（2024 年标准化，2026 年广泛实现）以 **Component Mode
 - **WIT (WASM Interface Types)**：组件模型的接口定义语言，支持 `record`（结构体）、`variant`（标签联合）、`result<T,E>`、resource（带确定性析构的宿主管理对象）
 - **Canonical ABI**：定义 WIT 类型如何「降维（lower）」到核心 WASM 线性内存的平面表示。字符串作为 UTF-8 `(ptr, len)` 传递，list 作为连续数组传递
 - **Capabilities-based Security**：模块无法表达打开 `/etc/passwd` 的意图，除非其 world 显式导入 `wasi:filesystem/types@0.2.0` 且宿主注入绑定到特定目录的 `descriptor` 能力
+
+**WASI Preview 3 路线图（2026）**：
+- 核心目标：**原生 async/await**、线程支持、结构化错误处理
+- Fermyon Spin v3.5（2025-11）已发布 Preview 3 RC
+- 对边缘计算至关重要：边缘工作负载本质 I/O 绑定，Preview 2 的 `pollable` 模型对开发者不够友好
+
+**WasmGC 与 JVM 语言（2025–2026）**：
+- **WasmGC** 已获所有主流浏览器支持，消除了 JVM 语言进入 WASM 生态的最大障碍
+- **Kotlin/Wasm Beta**（2025-09）：JetBrains 正式支持，Compose for Web 可在 WASM 运行，UI 性能比 Kotlin/JS 快约 3 倍，启动延迟降低 40%
+- **TeaVM**：将 Java/Kotlin 字节码编译为 WasmGC，无需 Kotlin Native 编译器即可复用现有 JVM 库
+- 注意：GC 暂停时间仍是边缘平台需监控的指标，延迟敏感型工作负载需评估 worst-case pause（通常 <5ms）
 
 ### JS/WASM 边界成本与内存模型
 

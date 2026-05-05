@@ -1,6 +1,6 @@
 ---
 title: 'Edge 数据库与状态管理'
-description: 'Turso, Cloudflare D1, PlanetScale, Fauna, CAP theorem, and edge consistency models'
+description: 'Turso, Cloudflare D1, PlanetScale, Neon, Fauna, CAP theorem, and edge consistency models'
 ---
 
 # Edge 数据库与状态管理
@@ -15,13 +15,15 @@ description: 'Turso, Cloudflare D1, PlanetScale, Fauna, CAP theorem, and edge co
 
 3. **一致性-延迟权衡是物理定律**：光速从纽约到东京需 ~40ms，全球强一致的写入不可能低于此物理下限。边缘架构必须按业务需求分级数据的一致性等级。
 
-4. **连接池是 Serverless 的反模式**：边缘函数存活毫秒级，无法维持 TCP 连接池。HTTP 原生协议（libSQL HTTP、D1 binding、Fauna FQL）才是 Serverless 的正解。
+4. **连接池是 Serverless 的反模式**：边缘函数存活毫秒级，无法维持 TCP 连接池。HTTP 原生协议（libSQL HTTP、D1 binding、Neon serverless driver、Fauna FQL）才是 Serverless 的正解。
 
-5. **混合家族架构是生产现实**：SQLite 副本处理读取缓存和轻量查询，PlanetScale/Vitess 处理高并发写入和复杂关系操作，Fauna 处理需要全球 ACID 的关键协调状态。
+5. **混合家族架构是生产现实**：SQLite 副本处理读取缓存和轻量查询，PlanetScale/Vitess 处理高并发写入和复杂关系操作，Neon 提供 Serverless PostgreSQL 与即时分支能力，Fauna 处理需要全球 ACID 的关键协调状态。
+
+6. **ORM bundle 大小决定冷启动命运**：Drizzle ORM（~7.4KB gzipped）专为边缘优化，原生支持 HTTP 驱动；Prisma（~17MB）在边缘需借助 Prisma Accelerate，否则可能超出运行时限制并显著增加冷启动延迟。
 
 ## 关键概念
 
-### 四大 Edge 数据库
+### 五大 Edge 数据库
 
 **Turso (libSQL)**：SQLite 的现代分支，由 ChiselStrike 发起。核心扩展包括：
 - **虚拟 WAL**：复制层拦截 WAL 帧并通过 HTTP 传输，解耦存储引擎与底层文件系统
@@ -30,11 +32,14 @@ description: 'Turso, Cloudflare D1, PlanetScale, Fauna, CAP theorem, and edge co
 - **Database-per-tenant**：单文件模型使租户 = 文件，创建租户是 O(1) 文件操作，复制到新区是文件拷贝
 
 限制：单写入者瓶颈（SQLite 架构决定），不适合高频并发写入。
+> **历史注记：LiteFS**。Fly.io 的 LiteFS 曾是类似的 SQLite 边缘复制方案，但 **LiteFS Cloud 已于 2024 年 10 月关闭**。LiteFS 开源版仍可用，但无商业支持路线图，组织应将其视为历史参考选项，除非准备长期自维护。
 
 **Cloudflare D1**：深度集成 Workers 生态的托管 SQLite：
 - 通过 `wrangler.toml` 绑定，零连接字符串，零 TLS 握手开销
 - 最终一致性读取，单主异步复制到全球
 - 查询 API 返回结构化 JSON，完全 serverless
+
+**生产限制（2026）**：查询执行超过 **30 秒** 会被强制终止，不适合长时分析查询或复杂多表 join；单次查询结果集上限 **1GB**，大数据量导出必须分页或流式处理。这些限制是不可提升的服务边界，必须在架构设计时视为不变约束。
 
 限制：平台锁定（仅 Workers）；早期版本缺乏外键约束（已逐步改善）；复杂 join 性能因存储层延迟而与本地 SQLite 差异显著。
 
@@ -44,6 +49,13 @@ description: 'Turso, Cloudflare D1, PlanetScale, Fauna, CAP theorem, and edge co
 - MySQL 兼容：现有 schema、ORM、工具链可直接使用
 
 限制：操作复杂度高（需理解 Vitess 拓扑、分片管理）；TCP 连接仍有 TLS 握手延迟。
+
+**Neon**：Serverless PostgreSQL，以 copy-on-write（CoW）存储层为核心创新：
+- **Copy-on-Write 存储**：分支创建是元数据操作，500GB 数据库的分支可在毫秒级完成，无需复制数据。Neon 提供 **永久免费额度**（通常 500MB 存储 + 足够开发使用的计算资源），是独立开发者和原型的默认选择
+- **Serverless Driver**：基于 HTTP 的轻量协议，兼容 Cloudflare Workers、Vercel Edge Functions 和 Deno Deploy，彻底消除 TCP 连接池问题
+- **与 PlanetScale 对比**：Neon 使用 CoW 存储 + 瞬时分支 + HTTP 无连接驱动；PlanetScale 使用 Vitess 分片 + MySQL 兼容 + TCP 连接多路复用。对于 2026 年的边缘部署，需要 PostgreSQL 兼容且写入量中等时，Neon 往往是首选；需要 MySQL 生态或水平写入分片时，PlanetScale 是唯一选择
+
+限制：写放大（CoW 每次更新页都产生新副本），page server 在持续高写入下可能成为瓶颈；计算节点 scale-to-zero 后首次查询有亚秒级冷启动延迟。
 
 **Fauna**：文档-关系混合模型，原生全球 ACID：
 - **Calvin 风格事务协议**：通过时间戳排序、乐观并发控制和复制日志协调，实现全球序列化事务
@@ -72,7 +84,7 @@ description: 'Turso, Cloudflare D1, PlanetScale, Fauna, CAP theorem, and edge co
 解决方案谱系：
 
 1. **连接无化（Connectionless）**：每个查询是独立 HTTP 请求
-   - Turso HTTP 接口、Cloudflare D1 binding、Fauna FQL
+   - Turso HTTP 接口、Cloudflare D1 binding、Neon serverless driver、Fauna FQL
    - 无连接状态，无池管理，无泄漏风险
    - 事务通过单请求批量语句实现
 
@@ -101,22 +113,51 @@ description: 'Turso, Cloudflare D1, PlanetScale, Fauna, CAP theorem, and edge co
 
 **SWR（Stale-While-Revalidate）**是边缘最广泛采用的 pragmatic 策略：立即返回缓存（即使略过期），同时异步刷新。HTTP `Cache-Control: stale-while-revalidate=300` 直接支持。
 
+### CRDT 与本地优先同步（Electric SQL / Replicache）
+
+对于需要离线写入和边缘节点间自动合并的场景，**Electric SQL** 和 **Replicache** 提供了基于 CRDT 的双向同步层：
+
+- **Electric SQL**：将 PostgreSQL 的变更转换为 CRDT 操作，在边缘节点间同步，冲突时按预定义语义自动合并
+- **Replicache**：专注于应用状态的本地优先存储，支持离线写入和增量同步
+
+限制：CRDT 的自动合并不保证业务不变式（如库存不能为负）。对于需要硬约束的写入，仍需通过 Fauna 或强一致数据库进行协调。
+
+### Edge ORM 选型：Drizzle vs Prisma
+
+ORM 的 bundle 大小和连接模型已成为边缘部署成败的关键决定因素。
+
+**Drizzle ORM**：TypeScript 优先的查询构建器，专为边缘约束设计。
+- Bundle 大小约 **7.4KB**（gzipped），对 serverless 冷启动几乎无影响
+- 原生支持 Turso（libSQL）、Cloudflare D1、Neon、PostgreSQL 的 HTTP 友好驱动
+- 构建时编译为参数化 SQL，无运行时查询引擎、无连接池开销
+
+**Prisma ORM**：功能丰富但结构重量大。
+- Prisma Client 体积约 **17MB**（含查询引擎二进制或 WASM 回退），可能超出部分边缘运行时的大小限制，并显著增加冷启动延迟
+- 在边缘环境必须配合 **Prisma Accelerate**（托管连接池 + 边缘代理）才能运行
+- 连接池模型假设长时 TCP 会话，在边缘函数中若无 Accelerate 易出现连接耗尽
+
+**结论**：2026 年的边缘部署中，若优先考虑 bundle 大小、冷启动延迟和原生边缘兼容性，**Drizzle 通常优于 Prisma**。Prisma 仍适用于已深度投入其生态的应用，但需计入 Accelerate 的额外成本与网络跳数。
+
 ## 工程决策矩阵
 
 | 场景 | 推荐方案 | 理由 | 风险 |
 |------|---------|------|------|
 | 读密集型 Edge API（简单写入） | **Turso** 嵌入式副本 | 本地 SQLite 零网络读取，亚毫秒级 | 单写入者瓶颈 |
 | 大规模 SaaS + 频繁 schema 变更 | **PlanetScale** | Deploy request 安全变更，Vitess 分片路径清晰 | 操作复杂度高 |
+| Serverless PostgreSQL + 即时分支 | **Neon** | CoW 分支操作免费且瞬时，HTTP serverless 驱动零连接开销 | 持续高写入场景下 page server 瓶颈 |
 | 金融/协作（全球正确性） | **Fauna** | 全球序列化事务，Temporal 查询 | 成本高，延迟大 |
 | 现场/离线数据收集 | **Electric SQL** / CRDT | 本地写，恢复时自动合并 | 复杂约束难自动解决 |
 | 多租户严格隔离 | **Turso** | 文件级隔离，O(1) 租户创建 | 全局 schema 变更是编排挑战 |
-| 已锁定 Cloudflare 生态 | **D1** | 零配置绑定，Workers 原生 | 平台锁定，复杂查询性能 |
+| 已锁定 Cloudflare 生态 | **D1** | 零配置绑定，Workers 原生 | 平台锁定，复杂查询性能，30s/1GB 硬限制 |
 | 需要 MySQL 兼容 + 水平扩展 | **PlanetScale** | 熟悉 dialect， enormous 工具生态 | 需 Vitess 专业知识 |
 
 **反模式警示：**
 - 用 Turso/D1 做高频写入摄入 → 单写入者天花板无法突破
 - 用 Fauna 做简单缓存 → 全球协调成本浪费
 - 用 PlanetScale 做无连接池代理的边缘函数 → 连接开销主导延迟
+- 用 D1 执行超过 30 秒或返回超过 1GB 的查询 → 服务硬限制无法突破
+- 用 Neon 做持续高写入摄入 → page server 写放大导致瓶颈
+- 在边缘直接使用 Prisma Client 而不启用 Prisma Accelerate → 连接耗尽或超出 bundle 大小限制
 - 用 CRDT 做有硬约束的库存管理 → 自动合并可能违反不变式（负库存）
 
 ## TypeScript 示例
@@ -375,5 +416,6 @@ class ConsistencySimulator {
 - [Turso 文档](https://docs.turso.tech/)
 - [Cloudflare D1](https://developers.cloudflare.com/d1/)
 - [PlanetScale Deploy Requests](https://planetscale.com/docs/concepts/deploy-requests)
+- [Neon Serverless Driver](https://neon.tech/docs/serverless/serverless-driver)
 - [Fauna FQL](https://docs.fauna.com/fql/current/)
 - [Electric SQL](https://electric-sql.com/)

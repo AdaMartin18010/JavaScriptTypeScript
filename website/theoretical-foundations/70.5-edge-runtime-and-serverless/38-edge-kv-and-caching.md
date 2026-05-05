@@ -30,6 +30,8 @@ description: 'Edge KV and Caching Strategies: Cloudflare KV, Vercel Edge Config,
 - **一致性**：新写入 60 秒内全球传播；同一数据中心读取写入后立即一致；跨数据中心在复制窗口内可能返回旧值
 - **限制**：不支持原子递增、条件写入或 compare-and-swap；列表操作从持久化层读取，延迟 100–500ms
 
+**版本化键策略（解决写入后读取延迟）**：由于 KV 的最终一致性，写入后立即读取可能返回旧值。一种可靠缓解策略是每次更新写入新版本键（如 `config:v2`），通过元数据键或 Durable Objects 维护版本指针。读取时先获取版本指针，再读取对应版本的数据。此策略保证一致性，不受复制延迟影响，代价是需定期清理旧版本。
+
 KV 与 Durable Objects 的对比是架构选型的关键决策点：
 
 | 特性 | KV | Durable Objects |
