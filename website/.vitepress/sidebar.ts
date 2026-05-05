@@ -23,6 +23,7 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: 'GraphQL 完全指南', link: '/guide/graphql-complete-guide' },
         { text: '网络编程完全指南', link: '/guide/network-programming' },
         { text: '正则表达式完全指南', link: '/guide/regular-expressions-complete' },
+        { text: 'Web 国际化完全指南', link: '/guide/internationalization-guide' },
       ]
     },
     {
@@ -126,6 +127,23 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '对象模型 (10.5)', link: '/fundamentals/object-model' },
         { text: 'ECMAScript 规范 (10.6)', link: '/fundamentals/ecmascript-spec' },
         { text: '学术前沿 (10.7)', link: '/fundamentals/academic-frontiers' },
+      ]
+    }
+  ],
+
+  // 对象模型深度专题
+  '/object-model/': [
+    {
+      text: '🔧 对象模型深度专题',
+      collapsed: false,
+      items: [
+        { text: '对象模型首页', link: '/object-model/' },
+        { text: '对象基础', link: '/object-model/01-object-fundamentals' },
+        { text: '原型链深度', link: '/object-model/02-prototype-chain' },
+        { text: 'Class vs 原型', link: '/object-model/03-class-vs-prototype' },
+        { text: 'Proxy / Reflect', link: '/object-model/04-proxy-reflect' },
+        { text: '私有字段', link: '/object-model/05-private-fields' },
+        { text: '对象模式', link: '/object-model/06-object-patterns' },
       ]
     }
   ],
@@ -279,6 +297,23 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '数据可视化', link: '/platforms/data-visualization' },
         { text: '桌面应用开发', link: '/platforms/desktop-development' },
         { text: '移动端开发', link: '/platforms/mobile-development' },
+      ]
+    }
+  ],
+
+  // 移动端开发专题
+  '/mobile-development/': [
+    {
+      text: '📱 移动端开发专题',
+      collapsed: false,
+      items: [
+        { text: '移动端专题首页', link: '/mobile-development/' },
+        { text: 'React Native 新架构', link: '/mobile-development/01-react-native-new-arch' },
+        { text: 'Expo 生态系统', link: '/mobile-development/02-expo-ecosystem' },
+        { text: 'Tauri v2 移动端', link: '/mobile-development/03-tauri-v2-mobile' },
+        { text: 'Capacitor & Ionic', link: '/mobile-development/04-capacitor-ionic' },
+        { text: '性能优化', link: '/mobile-development/05-performance-optimization' },
+        { text: '部署策略', link: '/mobile-development/06-deployment-strategies' },
       ]
     }
   ],

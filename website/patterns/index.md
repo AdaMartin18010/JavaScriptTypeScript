@@ -207,10 +207,10 @@ graph TD
 
 | 模式领域 | 推荐实验 |
 |----------|----------|
-| React 性能模式 | [前端框架实验](../code-lab/lab-02-frontend-frameworks) |
-| Vue 响应式原理 | [前端框架实验](../code-lab/lab-02-frontend-frameworks) |
-| Node.js Stream | [后端 API 实验](../code-lab/lab-03-backend-api) |
-| 测试替身 | [测试实验](../code-lab/lab-07-testing-strategy) |
+| React 性能模式 | [Server Functions 实验](../code-lab/lab-02-server-functions) |
+| Vue 响应式原理 | [Server Functions 实验](../code-lab/lab-02-server-functions) |
+| Node.js Stream | [Auth 实验](../code-lab/lab-03-auth) |
+| 测试替身 | [Mini TypeScript 实验](../code-lab/lab-03-mini-typescript) |
 
 ## 参考资源
 
