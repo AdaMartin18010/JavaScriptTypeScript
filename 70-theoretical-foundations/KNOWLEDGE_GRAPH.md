@@ -1,7 +1,7 @@
 # 70-theoretical-foundations 知识图谱 (Mermaid)
 
 > **用途**: 可视化 58 篇文档之间的理论依赖关系、跨方向引用和阅读路径
-> **最后更新**: 2026-05-05（含 70.4 Web Platform Fundamentals）
+> **最后更新**: 2026-05-05（含 70.4 Web Platform Fundamentals 与 70.5 Edge Runtime & Serverless）
 
 ---
 
@@ -15,6 +15,7 @@ graph TB
         702["70.2 认知交互模型<br/>20 篇"]
         703["70.3 多模型形式化分析<br/>15 篇"]
         704["70.4 Web 平台机制<br/>13 篇"]
+        705["70.5 Edge Runtime & Serverless<br/>12 篇"]
     end
 
     subgraph L1["L1 语言核心层"]
@@ -43,6 +44,10 @@ graph TB
     308 --> 702
     308 --> 703
     308 --> 704
+    308 --> 705
+    705 --> 101
+    705 --> 103
+    704 --> 705
 
     701 <-->|"三角关联"| 702
     702 <-->|"认知↔形式化"| 703
@@ -318,3 +323,82 @@ graph TB
 ---
 
 *本图谱使用 Mermaid 语法，可在支持 Mermaid 的 Markdown 渲染器（如 GitHub、GitLab、VitePress）中直接显示。*
+
+## 八、70.5 Edge Runtime & Serverless 内部依赖图
+
+```mermaid
+graph TB
+    34["34 Edge Runtime 架构<br/>V8 Isolate / WinterCG"] --> 35["35 WebAssembly 边缘化<br/>WASI Preview 2"]
+    34 --> 36["36 同构渲染与 Edge SSR<br/>RSC / Islands / Qwik"]
+    34 --> 37["37 Edge 数据库<br/>Turso / D1 / PlanetScale"]
+    34 --> 38["38 Edge KV 与缓存<br/>Cloudflare KV / Deno KV"]
+    34 --> 39["39 RPC 框架<br/>tRPC / Connect / gRPC-Web"]
+    34 --> 40["40 Serverless 冷启动<br/>成本模型 / 并发扩展"]
+
+    37 --> 38
+    38 --> 42["42 实时协同与 CRDT<br/>Yjs / Automerge / OT"]
+    39 --> 42
+    35 --> 43["43 边缘 AI 推理<br/>ONNX / Transformers.js / WebGPU"]
+
+    40 --> 44["44 全栈部署拓扑<br/>Monorepo / Docker vs Isolate"]
+    34 --> 44
+    40 --> 45["45 边缘可观测性<br/>OTel / 追踪 / 日志"]
+    34 --> 45
+    41["41 边缘安全与零信任<br/>JWT / mTLS / TEE"] --> 39
+    41 --> 44
+
+    style 34 fill:#e1f5fe
+    style 42 fill:#f3e5f5
+    style 43 fill:#e8f5e9
+    style 45 fill:#fff3e0
+```
+
+---
+
+## 九、70.5 新增文档定位图
+
+```mermaid
+graph TB
+    subgraph NEW70.5["70.5 本次新建文档"]
+        direction TB
+        e1["34 Edge Runtime 架构"]
+        e2["35 WASM 边缘计算"]
+        e3["36 同构渲染与 Edge SSR"]
+        e4["37 Edge 数据库"]
+        e5["38 Edge KV 与缓存"]
+        e6["39 RPC 框架"]
+        e7["40 Serverless 冷启动"]
+        e8["41 边缘安全"]
+        e9["42 实时协同 CRDT"]
+        e10["43 边缘 AI 推理"]
+        e11["44 全栈部署拓扑"]
+        e12["45 边缘可观测性"]
+    end
+
+    subgraph GAP70.5["填补的结构性缺口"]
+        g1["Edge Runtime<br/>理论空白"]
+        g2["WASM 边缘化<br/>深度分析空白"]
+        g3["同构渲染<br/>形式化空白"]
+        g4["Edge DB<br/>一致性模型空白"]
+        g5["Serverless<br/>成本模型空白"]
+        g6["边缘 AI<br/>推理架构空白"]
+        g7["全栈 TS<br/>部署拓扑空白"]
+        g8["边缘可观测性<br/>分布式追踪空白"]
+    end
+
+    e1 --> g1
+    e2 --> g2
+    e3 --> g3
+    e4 --> g4
+    e7 --> g5
+    e10 --> g6
+    e11 --> g7
+    e12 --> g8
+
+    style e10 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style e12 fill:#ffebee,stroke:#c62828,stroke-width:2px
+```
+
+---
+
+*本知识图谱随内容创建逐步更新。*

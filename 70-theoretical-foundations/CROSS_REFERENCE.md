@@ -2,7 +2,7 @@
 
 > **用途**: 建立 70-theoretical-foundations 与现有项目内容的关联，避免重复并指引深化阅读
 > **最后更新**: 2026-05-05
-> **文档总数**: 58 篇
+> **文档总数**: 83 篇
 
 ---
 
@@ -125,6 +125,33 @@
 | `70.4/31-navigation` | `70.4/24-http-protocol` | 前置：导航流程依赖 HTTP/TLS/TCP 连接 |
 | `70.4/32-module-system` | `70.4/31-navigation` | 关联：模块加载是导航资源加载的子集 |
 | `70.4/33-permissions` | `70.4/21-cross-origin` | 前置：权限模型的安全基础是同源策略 |
+
+## 六、70.5 边缘运行时与 Serverless 内部交叉引用
+
+| 源文件 | 引用的 70.5 文件 | 关系 |
+|--------|-----------------|------|
+| `70.5/35-webassembly-edge` | `70.5/34-edge-runtime-architecture` | 前置：WASM 在 Edge Runtime 中的执行 |
+| `70.5/36-isomorphic-rendering` | `70.5/34-edge-runtime-architecture` | 前置：边缘 SSR 依赖 Edge Runtime 能力 |
+| `70.5/37-edge-databases` | `70.5/34-edge-runtime-architecture` | 前置：Edge DB 的部署依赖运行时特性 |
+| `70.5/38-edge-kv-cache` | `70.5/34-edge-runtime-architecture`, `70.5/37-edge-databases` | 前置：KV 缓存与数据库一致性 |
+| `70.5/39-rpc-frameworks` | `70.5/34-edge-runtime-architecture` | 前置：RPC 在边缘的执行模型 |
+| `70.5/40-serverless-coldstart` | `70.5/34-edge-runtime-architecture` | 前置：冷启动分析依赖运行时架构 |
+| `70.5/41-edge-security` | `70.5/34-edge-runtime-architecture`, `70.5/39-rpc-frameworks` | 关联：安全策略影响通信协议 |
+| `70.5/42-realtime-collaboration` | `70.5/38-edge-kv-cache`, `70.5/39-rpc-frameworks` | 前置：CRDT 同步依赖通信和存储 |
+| `70.5/43-edge-ai-inference` | `70.5/35-webassembly-edge` | 前置：AI 推理依赖 WASM 执行环境 |
+| `70.5/44-deployment-topology` | `70.5/34-edge-runtime-architecture`, `70.5/40-serverless-coldstart` | 综合：部署拓扑整合运行时和成本模型 |
+| `70.5/45-edge-observability` | `70.5/40-serverless-coldstart`, `70.5/34-edge-runtime-architecture` | 前置：可观测性需要理解执行模型 |
+
+## 七、70.x 之间的跨方向引用（含 70.5）
+
+| 源方向 | 目标方向 | 引用关系 |
+|--------|---------|---------|
+| `70.4/26-web-security` | `70.5/41-edge-security` | 深化：Web 安全基础延伸到边缘零信任 |
+| `70.4/28-web-workers` | `70.5/34-edge-runtime-architecture` | 关联：Workers 与 V8 Isolate 的并行关系 |
+| `70.5/34-edge-runtime` | `70.1/12-runtime` | 深化：边缘运行时是运行时范畴的具体实例 |
+| `70.5/35-webassembly` | `70.3/14-heterogeneous-computing` | 关联：WASM 作为异构计算的形式化载体 |
+| `70.5/42-realtime-collaboration` | `70.3/15-security-model` | 关联：CRDT 同步需要安全模型保障 |
+| `70.5/43-edge-ai` | `70.2/17-ai-assisted-programming` | 关联：AI 推理与 AI 辅助编程的认知模型 |
 
 ---
 

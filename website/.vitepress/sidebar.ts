@@ -847,6 +847,18 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '🧠 现代栈开发者认知', link: '/theoretical-foundations/cog-16-developer-cognitive' },
         { text: '🔧 元框架对称差', link: '/theoretical-foundations/mm-12-meta-framework' },
         { text: '🔧 统一前端架构', link: '/theoretical-foundations/mm-13-unified-frontend' },
+        { text: '🌐 Edge Runtime 架构', link: '/theoretical-foundations/70.5-edge-runtime-and-serverless/34-edge-runtime-architecture' },
+        { text: '🌐 WebAssembly 边缘化', link: '/theoretical-foundations/70.5-edge-runtime-and-serverless/35-webassembly-edge' },
+        { text: '🌐 同构渲染与 Edge SSR', link: '/theoretical-foundations/70.5-edge-runtime-and-serverless/36-isomorphic-rendering-and-edge-ssr' },
+        { text: '🌐 Edge 数据库', link: '/theoretical-foundations/70.5-edge-runtime-and-serverless/37-edge-databases' },
+        { text: '🌐 Edge KV 与缓存', link: '/theoretical-foundations/70.5-edge-runtime-and-serverless/38-edge-kv-and-caching' },
+        { text: '🌐 RPC 框架', link: '/theoretical-foundations/70.5-edge-runtime-and-serverless/39-rpc-frameworks' },
+        { text: '🌐 Serverless 冷启动', link: '/theoretical-foundations/70.5-edge-runtime-and-serverless/40-serverless-coldstart' },
+        { text: '🌐 边缘安全与零信任', link: '/theoretical-foundations/70.5-edge-runtime-and-serverless/41-edge-security-and-zero-trust' },
+        { text: '🌐 实时协同与 CRDT', link: '/theoretical-foundations/70.5-edge-runtime-and-serverless/42-realtime-collaboration-and-crdt' },
+        { text: '🌐 边缘 AI 推理', link: '/theoretical-foundations/70.5-edge-runtime-and-serverless/43-edge-ai-inference' },
+        { text: '🌐 全栈部署拓扑', link: '/theoretical-foundations/70.5-edge-runtime-and-serverless/44-fullstack-deployment-topology' },
+        { text: '🌐 边缘可观测性', link: '/theoretical-foundations/70.5-edge-runtime-and-serverless/45-edge-observability' },
       ]
     }
   ],

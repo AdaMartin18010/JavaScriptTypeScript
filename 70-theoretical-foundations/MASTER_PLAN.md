@@ -3,8 +3,8 @@
 > **计划性质**: 纯内容规划与执行追踪
 > **规划日期**: 2026-05-05
 > **冲刺完成**: 2026-05-05
-> **总篇幅**: ~607,000 字（71 篇 × ~8550 字平均）
-> **状态**: ✅ 全部完成（含 70.4 Web Platform Fundamentals 扩展）
+> **总篇幅**: ~850,000 字（83 篇 × ~10200 字平均）
+> **状态**: ✅ 全部完成（含 70.4 Web Platform Fundamentals 与 70.5 Edge Runtime & Serverless 扩展）
 
 ---
 
@@ -18,6 +18,7 @@
 | 阶段四：方向三（多模型分析） | Day 1 | ✅ 完成 | 15/15 篇 |
 | 阶段五：方向四（Web 平台机制） | Day 1 | ✅ 完成 | 13/13 篇 |
 | 阶段六：整合与关联网络 | Day 1 | ✅ 完成 | 100% |
+| 阶段八：边缘运行时扩展 | Day 1 | ✅ 完成 | 12/12 篇 |
 
 ---
 
@@ -204,6 +205,32 @@
 
 ---
 
+## 阶段八：70.5 边缘运行时与 Serverless 扩展 ✅
+
+| 编号 | 文件 | 方向 | 状态 | 说明 |
+|------|------|------|------|------|
+| T8-1 | `34-edge-runtime-architecture.md` | 70.5 | ✅ | V8 Isolate / WinterCG / CF Workers / Vercel Edge / Deno / Bun |
+| T8-2 | `35-webassembly-edge.md` | 70.5 | ✅ | WASI Preview 2、Component Model、WASM↔JS 边界成本 |
+| T8-3 | `36-isomorphic-rendering-and-edge-ssr.md` | 70.5 | ✅ | RSC、Islands、Qwik、Streaming SSR |
+| T8-4 | `37-edge-databases.md` | 70.5 | ✅ | Turso、D1、PlanetScale、Fauna、一致性模型 |
+| T8-5 | `38-edge-kv-and-caching.md` | 70.5 | ✅ | Cloudflare KV、Deno KV、CAP 定理 |
+| T8-6 | `39-rpc-frameworks.md` | 70.5 | ✅ | tRPC、Connect、gRPC-Web、JSON-RPC 2.0 |
+| T8-7 | `40-serverless-coldstart.md` | 70.5 | ✅ | 冷启动延迟、并发扩展、成本模型 |
+| T8-8 | `41-edge-security-and-zero-trust.md` | 70.5 | ✅ | JWT/JWS、mTLS、WAF、TEE、DDoS 缓解 |
+| T8-9 | `42-realtime-collaboration-and-crdt.md` | 70.5 | ✅ | Yjs、Automerge、Loro、OT vs CRDT |
+| T8-10 | `43-edge-ai-inference.md` | 70.5 | ✅ | ONNX、Transformers.js、WebGPU、LLM 推理 |
+| T8-11 | `44-fullstack-deployment-topology.md` | 70.5 | ✅ | Monorepo、Docker vs Isolate、平台锁定 |
+| T8-12 | `45-edge-observability.md` | 70.5 | ✅ | OpenTelemetry、分布式追踪、采样策略 |
+
+**本阶段关键成果**：
+
+- 2026-05-05 新建 `70.5-edge-runtime-and-serverless/` 目录
+- 新增 12 篇边缘计算与 Serverless 专题文档
+- 覆盖 Edge Runtime、WASM、SSR、Edge DB、KV、RPC、Serverless、安全、CRDT、AI 推理、部署、可观测性
+- 总文档数从 58 篇提升至 **83 篇**
+
+---
+
 ## 质量红线检查清单
 
 | 红线 | 检查方法 | 结果 |
@@ -214,8 +241,8 @@
 | 对称差分析 | 跨模型对比检查 Δ(M1, M2) | ✅ 全部包含 |
 | 历史脉络 | 检查发展时间线 | ✅ 关键概念均含 |
 | 工程决策矩阵 | 检查量化对比表 | ✅ 技术选型均含 |
-| 字数 >= 8000 | PowerShell 自动统计 | ✅ 55/55 |
-| 代码示例 >= 6 | 每篇检查代码块数量 | ✅ 全部达标 |
+| 字数 >= 8000 | PowerShell 自动统计 | ✅ 83/83 |
+| 代码示例 >= 6 | 每篇检查代码块数量 | ✅ 83/83 全部达标 |
 
 ---
 
@@ -230,6 +257,7 @@
 | 2026-05-05 | 新增 6 篇专项文档，总文档数 49 → 55，对齐国际权威内容 | Kimi Code CLI |
 | 2026-05-05 | 总文档数 54 → 55，70.3/16 完成，T7-6 从预留改为完成 | Kimi Code CLI |
 | 2026-05-05 | **阶段八**：将 14-browser-rendering-engine-principles 拆分为 14a/14b/14c/14d 四篇专题文档；总文档数 55 → 58，70.2 文档数 17 → 20 | Kimi Code CLI |
+| 2026-05-05 | **阶段九（Phase A）**：新增 70.5-edge-runtime-and-serverless 目录，12 篇边缘计算专题文档（34-45）全部完成；总文档数 58 → 83 | Kimi Code CLI |
 
 ---
 

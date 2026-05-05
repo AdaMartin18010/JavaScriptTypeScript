@@ -2,7 +2,7 @@
 
 > **理论深度**: 研究生级别 · 跨学科 · 国际化
 > **最后更新**: 2026-05-05
-> **状态**: ✅ 71/71 篇全部完成（≥8000 字，≥6 个可运行 TS 示例）
+> **状态**: ✅ 83/83 篇全部完成（≥8000 字，≥6 个可运行 TS 示例）
 > **审查周期**: 6 个月
 
 ---
@@ -14,11 +14,12 @@
   - [项目定位](#项目定位)
     - [为什么需要 L0 层？](#为什么需要-l0-层)
     - [完成状态总览](#完成状态总览)
-  - [三大理论基础方向](#三大理论基础方向)
+  - [五大理论基础方向](#五大理论基础方向)
     - [70.1 — 范畴论与计算范式 (Category Theory \& Computational Paradigms)](#701--范畴论与计算范式-category-theory--computational-paradigms)
     - [70.2 — 认知交互模型 (Cognitive Interaction Models)](#702--认知交互模型-cognitive-interaction-models)
     - [70.3 — 多模型形式化分析 (Multi-Model Formal Analysis)](#703--多模型形式化分析-multi-model-formal-analysis)
     - [70.4 — Web 平台机制 (Web Platform Fundamentals)](#704--web-平台机制-web-platform-fundamentals)
+    - [70.5 — 边缘运行时与 Serverless (Edge Runtime & Serverless)](#705--边缘运行时与-serverless-edge-runtime--serverless)
   - [阅读路径](#阅读路径)
     - [路径 A：从数学到认知（推荐）](#路径-a从数学到认知推荐)
     - [路径 B：从框架到理论](#路径-b从框架到理论)
@@ -48,7 +49,7 @@
 │  L1 语言核心层    10-fundamentals/       │
 ├─────────────────────────────────────────┤
 │  L0 理论基础层    70-theoretical-foundations/  ← 本目录
-│     范畴论 · 认知科学 · 多模型形式化分析 · Web 平台机制 │
+│     范畴论 · 认知科学 · 多模型形式化分析 · Web 平台机制 · 边缘运行时 │
 └─────────────────────────────────────────┘
 ```
 
@@ -66,10 +67,10 @@
 
 | 指标 | 目标 | 实际 |
 |------|------|------|
-| 总文档数 | 58 篇 | ✅ 58/58 |
+| 总文档数 | 83 篇 | ✅ 83/83 |
 | 单篇字数 | ≥8000 字 | ✅ 全部达标（8000 ~ 12544 字） |
 | 代码示例/篇 | ≥6 个可运行 TS 示例 | ✅ 全部达标 |
-| 新建专项文档 | 填补 4 大结构性缺口 | ✅ 12 篇新建（70.1/14-20, 70.2/13-14, 70.3/11-13） |
+| 新建专项文档 | 填补 5 大结构性缺口 | ✅ 24 篇新建（含 70.5/34-45 边缘计算 12 篇） |
 | 既有文档补足 | 9 篇字数不足 | ✅ 9 篇全部补足 |
 
 **质量红线执行情况**：
@@ -83,7 +84,7 @@
 
 ---
 
-## 三大理论基础方向
+## 五大理论基础方向
 
 ### 70.1 — 范畴论与计算范式 (Category Theory & Computational Paradigms)
 
@@ -173,6 +174,29 @@
 - 权限模型与隐私架构（Permissions API、Privacy Sandbox、Fenced Frames）
 
 **入口文件**: [70.4-web-platform-fundamentals/README.md](70.4-web-platform-fundamentals/README.md)
+
+---
+
+### 70.5 — 边缘运行时与 Serverless (Edge Runtime & Serverless)
+
+**12 篇文档** | 边缘计算、Serverless 架构、WASM 边缘化、同构渲染、分布式系统的 L0 级理论深度分析。
+
+**核心主题**：
+
+- Edge Runtime 架构（V8 Isolate、WinterCG、Cloudflare Workers、Vercel Edge、Deno Deploy）
+- WebAssembly 边缘计算（WASI Preview 2、Component Model、WASM↔JS 边界成本）
+- 同构渲染与 Edge SSR（RSC、Islands、Qwik Resumability、Streaming）
+- Edge 数据库与状态管理（Turso、D1、PlanetScale、Fauna、一致性模型）
+- Edge KV 与缓存策略（Cloudflare KV、Vercel Edge Config、CAP 定理）
+- RPC 框架与类型安全传输（tRPC、Connect、gRPC-Web、JSON-RPC 2.0）
+- Serverless 冷启动与成本模型（启动延迟、并发扩展、请求隔离、计费）
+- 边缘安全与零信任架构（JWT/JWS、mTLS、WAF、DDoS、TEE）
+- 实时协同与 CRDT（Yjs、Automerge、Loro、OT vs CRDT）
+- 边缘 AI 推理与模型服务（ONNX Runtime、Transformers.js、WebGPU、LLM）
+- 全栈 TypeScript 部署拓扑（Monorepo、Docker vs Isolate、平台锁定）
+- 边缘可观测性与分布式追踪（OpenTelemetry、日志、采样策略）
+
+**入口文件**: [70.5-edge-runtime-and-serverless/README.md](70.5-edge-runtime-and-serverless/README.md)
 
 ---
 
