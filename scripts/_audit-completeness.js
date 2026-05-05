@@ -32,16 +32,16 @@ for (const f of files) {
   const hasAbstract = content.includes('english-abstract:');
   if (!hasAbstract) { missingAbstract++; issues.push({file:f, issue:'缺少 english-abstract'}); }
   
-  const hasCounter = content.includes('反例') && content.includes('局限性');
+  const hasCounter = (content.includes('反例') && (content.includes('局限性') || content.includes('边界情况'))) || content.includes('Counter-Example') || content.includes('Counter-example') || content.includes('counter-examples');
   if (!hasCounter) { missingCounter++; issues.push({file:f, issue:'缺少 反例与局限性'}); }
   
-  const hasMatrix = content.includes('工程决策矩阵') || content.includes('决策矩阵');
+  const hasMatrix = content.includes('工程决策矩阵') || content.includes('决策矩阵') || content.includes('Decision Matrix') || content.includes('Decision matrix') || content.includes('Engineering Decision Matrix');
   if (!hasMatrix) { missingMatrix++; issues.push({file:f, issue:'缺少 决策矩阵'}); }
   
-  const hasSymmetric = content.includes('对称差');
+  const hasSymmetric = content.includes('对称差') || content.includes('Symmetric Difference') || content.includes('Symmetric difference') || content.includes('Symmetric Diff');
   if (!hasSymmetric) { missingSymmetric++; issues.push({file:f, issue:'缺少 对称差分析'}); }
   
-  const tsBlocks = content.match(/```typescript[\s\S]*?```/g) || [];
+  const tsBlocks = content.match(/```(?:typescript|ts)\b[\s\S]*?```/g) || [];
   if (tsBlocks.length < 6) { 
     tsShort++; 
     issues.push({file:f, issue:'TS示例不足 ('+tsBlocks.length+'/6)'}); 

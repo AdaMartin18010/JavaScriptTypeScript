@@ -2,7 +2,7 @@
 
 > **理论深度**: 研究生级别 · 跨学科 · 国际化
 > **最后更新**: 2026-05-05
-> **状态**: ✅ 58/58 篇全部完成（≥8000 字，≥6 个可运行 TS 示例）
+> **状态**: ✅ 71/71 篇全部完成（≥8000 字，≥6 个可运行 TS 示例）
 > **审查周期**: 6 个月
 
 ---
@@ -18,6 +18,7 @@
     - [70.1 — 范畴论与计算范式 (Category Theory \& Computational Paradigms)](#701--范畴论与计算范式-category-theory--computational-paradigms)
     - [70.2 — 认知交互模型 (Cognitive Interaction Models)](#702--认知交互模型-cognitive-interaction-models)
     - [70.3 — 多模型形式化分析 (Multi-Model Formal Analysis)](#703--多模型形式化分析-multi-model-formal-analysis)
+    - [70.4 — Web 平台机制 (Web Platform Fundamentals)](#704--web-平台机制-web-platform-fundamentals)
   - [阅读路径](#阅读路径)
     - [路径 A：从数学到认知（推荐）](#路径-a从数学到认知推荐)
     - [路径 B：从框架到理论](#路径-b从框架到理论)
@@ -47,7 +48,7 @@
 │  L1 语言核心层    10-fundamentals/       │
 ├─────────────────────────────────────────┤
 │  L0 理论基础层    70-theoretical-foundations/  ← 本目录
-│     范畴论 · 认知科学 · 多模型形式化分析   │
+│     范畴论 · 认知科学 · 多模型形式化分析 · Web 平台机制 │
 └─────────────────────────────────────────┘
 ```
 
@@ -148,6 +149,30 @@
 - 前端框架编译时优化的形式化分析
 
 **入口文件**: [70.3-multi-model-formal-analysis/README.md](70.3-multi-model-formal-analysis/README.md)
+
+---
+
+### 70.4 — Web 平台机制 (Web Platform Fundamentals)
+
+**13 篇文档** | 浏览器作为运行时平台的全栈机制深度分析，覆盖网络协议、安全模型、存储架构、并发模型等核心基础设施。
+
+**核心主题**：
+
+- 同源策略与跨域安全模型（SOP、CORS、CSP、COOP/COEP、Site Isolation）
+- Web 缓存架构与策略（HTTP Cache、Service Worker Cache、IndexedDB、OPFS）
+- WebSocket 与实时通信协议（WebSocket、SSE、WebRTC、WebTransport）
+- HTTP 协议栈（HTTP/1.1、HTTP/2、HTTP/3/QUIC、TLS、DNS）
+- JavaScript 事件循环与并发模型（Event Loop、Microtask、Scheduling APIs）
+- Web 安全威胁模型与防御（XSS、CSRF、Clickjacking、Supply Chain）
+- 浏览器存储与持久化（Cookie、Web Storage、IndexedDB、Cache API）
+- Web Workers 与并行计算（Dedicated/Shared/Service Workers、Worklets）
+- CSS 架构与渲染管线关系（Cascade、@layer、Container Queries、Houdini）
+- 资源加载与性能优化（Resource Hints、Core Web Vitals、Priority Hints）
+- 导航与页面生命周期（BFCache、Prerender、Navigation API）
+- 模块化系统与 Web Components（ES Modules、Import Maps、Module Federation）
+- 权限模型与隐私架构（Permissions API、Privacy Sandbox、Fenced Frames）
+
+**入口文件**: [70.4-web-platform-fundamentals/README.md](70.4-web-platform-fundamentals/README.md)
 
 ---
 

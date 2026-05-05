@@ -115,6 +115,17 @@
 | 70.3/10-metamodel | 70.1/09-paradigms | 引用：统一元模型需要多范式范畴论 |
 | 70.3/10-metamodel | 70.2/02-mental-models | 引用：统一元模型需要认知模型统一 |
 
+| `70.4/21-cross-origin` | `70.4/26-web-security` | 关联：安全威胁模型建立在跨域基础之上 |
+| `70.4/22-web-caching` | `70.4/24-http-protocol` | 前置：HTTP 缓存语义依赖 HTTP 协议基础 |
+| `70.4/23-websocket` | `70.4/24-http-protocol` | 前置：WebSocket 握手基于 HTTP Upgrade |
+| `70.4/24-http-protocol` | `70.4/30-resource-loading` | 前置：资源加载依赖 HTTP 协议栈 |
+| `70.4/25-event-loop` | `70.4/28-web-workers` | 关联：Workers 是事件循环的并行扩展 |
+| `70.4/29-css-architecture` | `70.2/14a-parsing-and-layout` | 深化：CSS 架构直接作用于渲染管线 |
+| `70.4/30-resource-loading` | `70.2/14b-paint-composite` | 关联：资源加载与合成引擎的交互 |
+| `70.4/31-navigation` | `70.4/24-http-protocol` | 前置：导航流程依赖 HTTP/TLS/TCP 连接 |
+| `70.4/32-module-system` | `70.4/31-navigation` | 关联：模块加载是导航资源加载的子集 |
+| `70.4/33-permissions` | `70.4/21-cross-origin` | 前置：权限模型的安全基础是同源策略 |
+
 ---
 
 *本索引随内容创建逐步更新。*
