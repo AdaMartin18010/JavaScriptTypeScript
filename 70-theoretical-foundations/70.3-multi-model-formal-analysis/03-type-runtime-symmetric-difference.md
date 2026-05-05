@@ -13,6 +13,7 @@ references:
   - Giovannini et al., Guarded Domain Theory (2025)
   - Rastogi et al., Safe & Efficient Gradual Typing for TypeScript (2015)
   - Vitousek et al., Design and Evaluation of Gradual Typing for Python (2014)
+english-abstract: 'A comprehensive technical analysis of 类型系统与运行时的对称差, exploring theoretical foundations and practical implications for software engineering.'
 ---
 
 # 类型系统与运行时的对称差
@@ -66,6 +67,7 @@ references:
     - [陷阱 5：泛型默认参数的"静默降级"](#陷阱-5泛型默认参数的静默降级)
     - [6.3 信息论视角：类型的精度度量](#63-信息论视角类型的精度度量)
   - [参考文献](#参考文献)
+  - [工程决策矩阵](#工程决策矩阵)
 
 ---
 
@@ -1132,3 +1134,21 @@ const userId = 'alice@example.com' as UserId;
 47. Beyer, D., et al. (2007). "The Software Model Checker BLAST." *International Journal on Software Tools for Technology Transfer*, 9(5-6), 505-525.
 48. Henzinger, T. A., et al. (2002). "Lazy Abstraction." *POPL 2002*.
 49. Ball, T., & Rajamani, S. K. (2001). "Automatically Validating Temporal Safety Properties of Interfaces." *SPIN 2001*.
+
+
+## 工程决策矩阵
+
+基于本文的理论分析，以下决策矩阵为实际工程选择提供参考框架：
+
+| 场景 | 推荐方案 | 核心理由 | 风险与权衡 |
+|------|---------|---------|-----------|
+| 需要强类型保证 | 优先使用 TypeScript 严格模式 + branded types | 在结构类型系统中获得名义类型的安全性 | 编译时间增加，类型体操可能降低可读性 |
+| 高并发/实时性要求 | 考虑 Web Workers + SharedArrayBuffer | 绕过主线程事件循环瓶颈 | 共享内存的线程安全问题，Spectre 后的跨域隔离限制 |
+| 复杂状态管理 | 有限状态机（FSM）或状态图（Statecharts） | 可预测的状态转换，便于形式化验证 | 状态爆炸问题，小型项目可能过度工程化 |
+| 频繁 DOM 更新 | 虚拟 DOM diff（React/Vue）或细粒度响应式（Solid/Svelte） | 批量更新减少重排重绘 | 内存开销（虚拟 DOM）或编译复杂度（细粒度） |
+| 跨平台代码复用 | 抽象接口 + 依赖注入，而非条件编译 | 保持类型安全的同时实现平台隔离 | 接口设计成本，运行时多态的微性能损耗 |
+| 长期维护的大型项目 | 静态分析（ESLint/TypeScript）+ 架构约束（lint rules） | 将架构决策编码为可自动检查的规则 | 规则维护成本，团队学习曲线 |
+| 性能敏感路径 | 手写优化 > 编译器优化 > 通用抽象 | 范畴论抽象在热路径上可能引入间接层 | 可读性下降，优化代码更容易过时 |
+| 需要形式化验证 | 轻量级模型检查（TLA+/Alloy）+ 类型系统 | 在工程成本可接受范围内获得可靠性增益 | 形式化规格编写需要专门技能，与代码不同步风险 |
+
+> **使用指南**：本矩阵并非绝对标准，而是提供了一个将理论洞察映射到工程实践的起点。团队应根据具体项目约束（团队规模、交付压力、质量要求、技术债务水平）进行动态调整。

@@ -3,7 +3,7 @@
 > **计划性质**: 纯内容规划与执行追踪
 > **规划日期**: 2026-05-05
 > **冲刺完成**: 2026-05-05
-> **总篇幅**: ~469,800 字（55 篇 × ~8700 字平均）
+> **总篇幅**: ~496,000 字（58 篇 × ~8550 字平均）
 > **状态**: ✅ 全部完成
 
 ---
@@ -14,7 +14,7 @@
 |------|------|------|--------|
 | 阶段一：基础设施 | Day 1 | ✅ 完成 | 100% |
 | 阶段二：方向一（范畴论） | Day 1 | ✅ 完成 | 22/22 篇 |
-| 阶段三：方向二（认知模型） | Day 1 | ✅ 完成 | 17/17 篇 |
+| 阶段三：方向二（认知模型） | Day 1 | ✅ 完成 | 20/20 篇 |
 | 阶段四：方向三（多模型分析） | Day 1 | ✅ 完成 | 15/15 篇 |
 | 阶段五：整合与关联网络 | Day 1 | ✅ 完成 | 100% |
 
@@ -27,7 +27,7 @@
 - [x] `70-theoretical-foundations/`
 - [x] `70.1-category-theory-and-computational-paradigms/` (22 篇)
 - [x] `70.1-category-theory-and-computational-paradigms/code-examples/` (5 个 .ts)
-- [x] `70.2-cognitive-interaction-models/` (17 篇)
+- [x] `70.2-cognitive-interaction-models/` (20 篇)
 - [x] `70.2-cognitive-interaction-models/code-examples/` (1 个 .ts)
 - [x] `70.3-multi-model-formal-analysis/` (15 篇)
 - [x] `70.3-multi-model-formal-analysis/code-examples/` (3 个 .ts)
@@ -44,7 +44,7 @@
 | 方向 | 数量 | 字数范围 | 代码示例 |
 |------|------|---------|---------|
 | 70.1 范畴论 | 22 篇 | 8000 ~ 12544 字 | 每篇 >=6 个 |
-| 70.2 认知模型 | 17 篇 | 8000 ~ 10630 字 | 每篇 >=6 个 |
+| 70.2 认知模型 | 20 篇 | 8000 ~ 10630 字 | 每篇 >=6 个 |
 | 70.3 多模型分析 | 15 篇 | 8000 ~ 9649 字 | 每篇 >=6 个 |
 
 ### T1-4 创建 code-examples 骨架文件 ✅
@@ -111,7 +111,10 @@
 | T3-11 | `11-expert-novice-differences-in-js-ts.md` | P2 | ✅ | 9234 |
 | T3-12 | `12-multimodal-interaction-theory.md` | P2 | ✅ | 9322 |
 | T3-13 | `13-frontend-framework-computation-models.md` | P1 | ✅ 新建 | 8328 |
-| T3-14 | `14-browser-rendering-engine-principles.md` | P1 | ✅ 新建 | 8312 |
+| T3-14a | `14a-browser-parsing-layout-engine-principles.md` | P1 | ✅ 新建 | ≥8000 |
+| T3-14b | `14b-browser-paint-compositing-engine-principles.md` | P1 | ✅ 新建 | ≥8000 |
+| T3-14c | `14c-browser-rendering-physics-principles.md` | P1 | ✅ 新建 | ≥8000 |
+| T3-14d | `14d-cross-engine-rendering-architecture-comparison.md` | P1 | ✅ 新建 | ≥8000 |
 
 **本阶段关键成果**：
 
@@ -222,6 +225,7 @@
 | 2026-04-30 | 9 个 code-examples TODO 全部填充 | Kimi Code CLI |
 | 2026-05-05 | 新增 6 篇专项文档，总文档数 49 → 55，对齐国际权威内容 | Kimi Code CLI |
 | 2026-05-05 | 总文档数 54 → 55，70.3/16 完成，T7-6 从预留改为完成 | Kimi Code CLI |
+| 2026-05-05 | **阶段八**：将 14-browser-rendering-engine-principles 拆分为 14a/14b/14c/14d 四篇专题文档；总文档数 55 → 58，70.2 文档数 17 → 20 | Kimi Code CLI |
 
 ---
 

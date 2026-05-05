@@ -11,6 +11,7 @@ references:
   - Goldblatt, Topoi (1984)
   - Jacobs, Categorical Logic and Type Theory (1999)
   - Lambek & Scott, Introduction to Higher-Order Categorical Logic (1986)
+english-abstract: 'An analysis of topos theory and its relationship to type systems, logic, and programming language semantics.'
 ---
 
 # Topos 理论与类型系统的内部逻辑

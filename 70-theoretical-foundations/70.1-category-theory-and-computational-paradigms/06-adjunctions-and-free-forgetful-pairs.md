@@ -11,6 +11,7 @@ references:
   - Pierce, Types and Programming Languages (2002)
   - Awodey, Category Theory (2010)
   - Riehl, Category Theory in Context (2016)
+english-abstract: 'A comprehensive technical analysis of 伴随函子与自由构造：从类型推断到编译器设计的深层结构, exploring theoretical foundations and practical implications for software engineering.'
 ---
 
 # 伴随函子与自由构造：从类型推断到编译器设计的深层结构

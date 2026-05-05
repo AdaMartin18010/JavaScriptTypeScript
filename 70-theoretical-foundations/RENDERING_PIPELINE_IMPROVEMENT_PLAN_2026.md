@@ -1,3 +1,17 @@
+---
+title: '浏览器渲染引擎原理：全面改进计划'
+description: 'Comprehensive improvement plan for the browser rendering pipeline deep-dive documentation'
+last-updated: 2026-05-05
+review-cycle: 6 months
+next-review: 2026-11-05
+status: complete
+priority: P0
+english-abstract: 'A structured improvement plan for upgrading the browser rendering engine documentation from Pre-RenderingNG level to full RenderingNG coverage, including Display Lists, Property Trees, Layer Squashing, Viz, and cross-engine comparisons.'
+references:
+  - 'Chromium, RenderingNG Architecture (2021)'
+  - 'Google, Inside look at modern web browser (2018)'
+---
+
 # 浏览器渲染引擎原理：全面改进计划
 
 > **制定日期**: 2026-05-05

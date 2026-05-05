@@ -11,6 +11,7 @@ references:
   - React Team, "React Fiber Architecture" (2017)
   - Vue.js, "Reactivity in Depth" (2020)
   - Angular Team, "Change Detection" (2023)
+english-abstract: 'A comprehensive technical analysis of 前端框架计算模型, exploring theoretical foundations and practical implications for software engineering.'
 ---
 
 # 前端框架的计算模型

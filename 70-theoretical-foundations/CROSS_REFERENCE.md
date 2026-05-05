@@ -2,7 +2,7 @@
 
 > **用途**: 建立 70-theoretical-foundations 与现有项目内容的关联，避免重复并指引深化阅读
 > **最后更新**: 2026-05-05
-> **文档总数**: 55 篇
+> **文档总数**: 58 篇
 
 ---
 
@@ -77,7 +77,12 @@
 | `70.2/11-expert-novice` | `70.2/01-cognitive-primer` | 前置阅读 |
 | `70.2/12-multimodal` | `70.2/01-cognitive-primer` | 前置阅读 |
 | `70.2/13-frontend-framework-computation` | `70.2/04-conceptual-models`, `70.2/05-react-cognitive` | 前置阅读 |
-| `70.2/14-browser-rendering-engine` | `70.2/08-rendering`, `70.2/10-async-concurrency` | 前置阅读 |
+| `70.2/14a-browser-parsing-layout-engine` | `70.2/13-frontend-framework-computation-models` | 前置阅读 |
+| `70.2/14b-browser-paint-compositing-engine` | `70.2/14a-browser-parsing-layout-engine` | 前置阅读 |
+| `70.2/14c-browser-rendering-physics` | `70.2/14b-browser-paint-compositing-engine` | 前置阅读 |
+| `70.2/14d-cross-engine-rendering-architecture` | `70.2/14a-browser-parsing-layout-engine`, `70.2/14b-browser-paint-compositing-engine`, `70.2/14c-browser-rendering-physics` | 前置阅读 |
+| `70.3/11-execution-framework-rendering-triangle` | `70.2/14a-browser-parsing-layout-engine`, `70.2/14b-browser-paint-compositing-engine`, `70.2/14c-browser-rendering-physics`, `70.2/14d-cross-engine-rendering-architecture` | 引用 |
+| `70.2/16-developer-cognitive-modern-stack` | `70.2/14a-browser-parsing-layout-engine`, `70.2/14b-browser-paint-compositing-engine`, `70.2/14c-browser-rendering-physics`, `70.2/14d-cross-engine-rendering-architecture` | 引用 |
 | `70.3/02-semantic-correspondence` | `70.3/01-refinement`, `70.1/01-primer` | 前置阅读 |
 | `70.3/03-type-runtime-diff` | `70.3/01-refinement` | 前置阅读 |
 | `70.3/04-reactive-adaptation` | `70.3/01-refinement` | 前置阅读 |

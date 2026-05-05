@@ -29,7 +29,11 @@ const EXCLUDED_FILES = new Set([
   'FOLLOW_UP_PLAN.md',
   'CROSS_REFERENCE.md',
   'KNOWLEDGE_GRAPH.md',
-  'NOTATION_GUIDE.md'
+  'NOTATION_GUIDE.md',
+  '14-legacy-browser-rendering-engine-principles.md',
+  'RENDERING_PIPELINE_IMPROVEMENT_PLAN_2026.md',
+  'CONTENT_RESTRUCTURING_PLAN_2026.md',
+  '14-browser-rendering-engine-principles.md'
 ]);
 
 function findMarkdownFiles(dir, files = []) {

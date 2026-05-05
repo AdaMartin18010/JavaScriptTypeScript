@@ -11,6 +11,7 @@ references:
   - Pierce, Types and Programming Languages (2002)
   - The Rust Programming Language (2nd ed., 2023)
   - Programming Rust (2nd ed., 2021)
+english-abstract: 'A comprehensive technical analysis of Rust vs TypeScript：范畴论视角下的全面对比, exploring theoretical foundations and practical implications for software engineering.'
 ---
 
 # Rust vs TypeScript：范畴论视角下的全面对比
@@ -80,6 +81,7 @@ references:
     - [两种语言的范畴论语义总结](#两种语言的范畴论语义总结)
     - [核心洞察](#核心洞察)
   - [参考文献](#参考文献)
+  - [工程决策矩阵](#工程决策矩阵)
 
 ---
 
@@ -1115,3 +1117,21 @@ Infrastructure (Rust/Go)
 8. Jung, R., et al. (2018). "Iris from the Ground Up." *Journal of Functional Programming*, 28.
 9. Matsakis, N. D., & Klock, F. S. (2014). "The Rust Language." *ACM SIGAda Ada Letters*, 34(3), 103-104.
 10. Bierman, G. M., Abadi, M., & Wadler, P. (2014). "Dynamic Typing in a Statically Typed Language." *ACM TOPLAS*.
+
+
+## 工程决策矩阵
+
+基于本文的理论分析，以下决策矩阵为实际工程选择提供参考框架：
+
+| 场景 | 推荐方案 | 核心理由 | 风险与权衡 |
+|------|---------|---------|-----------|
+| 需要强类型保证 | 优先使用 TypeScript 严格模式 + branded types | 在结构类型系统中获得名义类型的安全性 | 编译时间增加，类型体操可能降低可读性 |
+| 高并发/实时性要求 | 考虑 Web Workers + SharedArrayBuffer | 绕过主线程事件循环瓶颈 | 共享内存的线程安全问题，Spectre 后的跨域隔离限制 |
+| 复杂状态管理 | 有限状态机（FSM）或状态图（Statecharts） | 可预测的状态转换，便于形式化验证 | 状态爆炸问题，小型项目可能过度工程化 |
+| 频繁 DOM 更新 | 虚拟 DOM diff（React/Vue）或细粒度响应式（Solid/Svelte） | 批量更新减少重排重绘 | 内存开销（虚拟 DOM）或编译复杂度（细粒度） |
+| 跨平台代码复用 | 抽象接口 + 依赖注入，而非条件编译 | 保持类型安全的同时实现平台隔离 | 接口设计成本，运行时多态的微性能损耗 |
+| 长期维护的大型项目 | 静态分析（ESLint/TypeScript）+ 架构约束（lint rules） | 将架构决策编码为可自动检查的规则 | 规则维护成本，团队学习曲线 |
+| 性能敏感路径 | 手写优化 > 编译器优化 > 通用抽象 | 范畴论抽象在热路径上可能引入间接层 | 可读性下降，优化代码更容易过时 |
+| 需要形式化验证 | 轻量级模型检查（TLA+/Alloy）+ 类型系统 | 在工程成本可接受范围内获得可靠性增益 | 形式化规格编写需要专门技能，与代码不同步风险 |
+
+> **使用指南**：本矩阵并非绝对标准，而是提供了一个将理论洞察映射到工程实践的起点。团队应根据具体项目约束（团队规模、交付压力、质量要求、技术债务水平）进行动态调整。

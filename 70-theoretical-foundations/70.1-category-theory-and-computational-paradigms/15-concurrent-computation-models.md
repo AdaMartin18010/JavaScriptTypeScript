@@ -11,6 +11,7 @@ references:
   - Milner, Communication and Concurrency (1989)
   - Hoare, Communicating Sequential Processes (1985)
   - Reisig, Petri Nets: An Introduction (1985)
+english-abstract: 'A comprehensive technical analysis of 并发计算模型, exploring theoretical foundations and practical implications for software engineering.'
 ---
 
 # 并发计算模型

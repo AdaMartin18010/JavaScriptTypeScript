@@ -11,6 +11,7 @@ references:
   - Riehl, Category Theory in Context (2016)
   - Milewski, Category Theory for Programmers (2019)
   - Mac Lane, Categories for the Working Mathematician (1998)
+english-abstract: 'A deep dive into the Yoneda lemma and representable functors, connecting abstract mathematics to concrete programming patterns.'
 ---
 
 # Yoneda 引理与可表函子：通过行为理解对象的深层原理

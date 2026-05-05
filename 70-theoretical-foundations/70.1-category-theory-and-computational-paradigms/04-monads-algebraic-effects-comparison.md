@@ -12,6 +12,7 @@ references:
   - Plotkin & Pretnar, Handlers of Algebraic Effects (2009)
   - Wadler, Monads for Functional Programming (1995)
   - The Rust Programming Language (2nd ed., 2023)
+english-abstract: 'A comprehensive technical analysis of 单子与代数效应：Promise/Async 与 Rust Result 的深度对比, exploring theoretical foundations and practical implications for software engineering.'
 ---
 
 # 单子与代数效应：Promise/Async 与 Rust Result 的深度对比
