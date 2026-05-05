@@ -101,11 +101,36 @@ function join(a: AbstractValue, b: AbstractValue): AbstractValue &#123;
 // 分析：if (cond) x = 1 else x = 2 → x=top
 ```
 
+## 形式化方法在工程中的应用
+
+| 理论概念 | 工程应用 | 工具 |
+|----------|----------|------|
+| 类型系统 | 静态分析、编译器 | TypeScript, Flow |
+| 抽象解释 | 程序分析、优化 | Closure Compiler |
+| 霍尔逻辑 | 合约编程、断言 | Zod, io-ts, Dafny |
+| 模型检验 | 并发正确性 | TLA+, Coq |
+| λ演算 | 函数式编程 | Haskell, OCaml, Elm |
+
+## 推荐阅读顺序
+
+```mermaid
+flowchart LR
+    A[编程原则] --> B[λ演算]
+    B --> C[类型论基础]
+    C --> D[操作语义]
+    D --> E[抽象解释]
+    E --> F[形式化验证]
+    style A fill:#4ade80,color:#000
+    style F fill:#f472b6,color:#000
+```
+
 ## 参考资源
 
 - [理论前沿](/theoretical-foundations/) — 36篇理论摘要导航
 - [编程原则](/programming-principles/) — 计算思维、λ演算、类型论
 - [学术前沿导读](/fundamentals/academic-frontiers) — 守卫域理论、TSGo编译器
+- [对象模型深度专题](/object-model/) — 形式化语义与引擎实现
+- [70-理论深度](/70-theoretical-foundations/) — 范畴论与认知交互模型
 
 ---
 

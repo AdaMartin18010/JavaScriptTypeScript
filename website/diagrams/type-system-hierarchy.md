@@ -105,10 +105,40 @@ type EventName&lt;T extends string&gt; = `on$&#123;Capitalize&lt;T&gt;&#125;`;
 type Fibonacci&lt;N extends number&gt; = /* ... */;
 ```
 
+## 类型编程能力矩阵
+
+| 能力等级 | 掌握内容 | 典型应用 |
+|----------|----------|----------|
+| L1 基础 | 原始类型、接口、类型别名 | 日常类型标注 |
+| L2 中级 | 泛型、联合/交叉类型、类型守卫 | 通用工具函数、API 类型 |
+| L3 高级 | 条件类型、映射类型、infer | 类型工具库（type-fest） |
+| L4 专家 | 递归类型、模板字面量、类型体操 | 框架类型定义、DSL |
+| L5 大师 | 图灵完备类型编程 | 编译器插件、形式化验证 |
+
+## 类型安全边界
+
+TypeScript 的类型系统在编译时擦除（type erasure），运行时无类型信息：
+
+```typescript
+// 编译时类型检查
+interface User { id: number; name: string }
+const user: User = { id: 1, name: 'Alice' }
+
+// 运行时无类型信息
+console.log(typeof user)  // 'object'（不是 'User'）
+
+// 需要运行时验证的场景
+import { z } from 'zod'
+const UserSchema = z.object({ id: z.number(), name: z.string() })
+const validated = UserSchema.parse(unknownData)  // 运行时安全
+```
+
 ## 参考资源
 
 - [类型系统导读](/fundamentals/type-system) — 结构类型、泛型、变型
 - [TypeScript 类型系统专题](/typescript-type-system/) — 19篇深度文档
+- [TypeScript 速查表](/cheatsheets/typescript-cheatsheet) — 工具类型与类型体操
+- [type-fest](https://github.com/sindresorhus/type-fest) — 常用工具类型库
 
 ---
 

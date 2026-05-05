@@ -123,10 +123,53 @@ const counter = createCounter();
 // createCounter 的执行上下文已弹出，但环境记录被闭包引用保留
 ```
 
+## 执行模型与性能
+
+### 隐藏类与内联缓存（IC）
+
+V8 通过隐藏类（Hidden Class）优化属性访问。当对象结构稳定时，属性访问可被编译为固定偏移量的内存读取，性能接近 C 结构体字段访问。
+
+```javascript
+// ✅ 单形态（Monomorphic）— 最优
+function getX(obj) { return obj.x }
+getX({ x: 1 })
+getX({ x: 2 })
+
+// ❌ 多形态（Polymorphic）— 次优
+getX({ x: 1 })
+getX({ x: 1, y: 2 })  // 不同隐藏类
+
+// ❌ 超形态（Megamorphic）— 退化
+for (let i = 0; i < 100; i++) {
+  getX({ [`prop${i}`]: i })  // 每次都不同
+}
+```
+
+### 尾调用优化（TCO）
+
+ES6 规范规定了尾调用优化，但仅 Safari/JavaScriptCore 实现。V8 和 SpiderMonkey 出于调试考虑未实现。
+
+```javascript
+// 理论上可优化为循环
+function factorial(n, acc = 1n) {
+  if (n === 0n) return acc
+  return factorial(n - 1n, acc * n)  // 尾调用
+}
+
+// 实际建议：手动改写为循环
+function factorialLoop(n) {
+  let acc = 1n
+  for (let i = 2n; i <= n; i++) acc *= i
+  return acc
+}
+```
+
 ## 参考资源
 
 - [执行模型导读](/fundamentals/execution-model) — V8 引擎架构深度解析
 - [ECMAScript 规范导读](/fundamentals/ecmascript-spec) — 抽象操作与完成记录
+- [对象模型深度专题](/object-model/) — 原型链与属性查找机制
+- [V8 博客](https://v8.dev/blog) — 引擎内部实现细节
 
 ---
 

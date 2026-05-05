@@ -107,11 +107,32 @@ server.setRequestHandler(ListToolsRequestSchema, async () => &#123;
 &#125;);
 ```
 
+## AI 工程化挑战
+
+| 挑战 | 描述 | 解决方案 |
+|------|------|----------|
+| 上下文窗口限制 | LLM 有 token 上限 | RAG、滑动窗口、摘要 |
+| 幻觉问题 | 生成虚假代码或信息 | 单元测试验证、人类审查 |
+| 延迟敏感 | 实时应用需要低延迟 | 边缘推理、流式响应 |
+| 成本控制 | API 调用费用累积 | 缓存、本地模型、批处理 |
+| 安全合规 | 代码泄露给第三方 | 本地部署、数据脱敏 |
+
+## LLM 选型参考
+
+| 场景 | 推荐模型 | 上下文 | 特点 |
+|------|----------|--------|------|
+| 代码补全 | Claude 3.5 Sonnet, GPT-4o | 200K | 理解力强 |
+| 代码审查 | Claude 3.5 Sonnet | 200K | 分析细致 |
+| 边缘推理 | Llama 3.1 8B, Gemma 2B | 8K | 本地运行 |
+| 测试生成 | GPT-4o-mini | 128K | 成本低 |
+| Agent 推理 | Claude 3 Opus, GPT-4o | 200K | 推理能力强 |
+
 ## 参考资源
 
 - [AI Agent 示例](/examples/ai-agent/) — Agent 架构与 MCP 集成实战
 - [AI/ML 推理示例](/examples/ai-ml-inference/) — ONNX Runtime Web 浏览器端推理
 - [AI 编码工作流](/ai-coding-workflow/) — Cursor、Copilot、Claude Code 深度指南
+- [AI SDK 指南](/guide/ai-sdk-guide) — Vercel AI SDK 与 Mastra 开发
 
 ---
 

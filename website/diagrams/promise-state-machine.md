@@ -130,10 +130,49 @@ function example() &#123;
 &#125;
 ```
 
+## 高级模式与陷阱
+
+### 微任务队列与事件循环
+
+Promise 的回调通过微任务（microtask）队列执行，优先级高于宏任务（macrotask）：
+
+```javascript
+console.log('1')
+setTimeout(() => console.log('2'), 0)
+Promise.resolve().then(() => console.log('3'))
+console.log('4')
+
+// 输出: 1, 4, 3, 2
+// 解释: 同步 → 微任务 → 宏任务
+```
+
+### Promise 链中的常见陷阱
+
+| 陷阱 | 错误写法 | 正确写法 |
+|------|----------|----------|
+| 忘记返回 | `.then(() => { fetch('/a') })` | `.then(() => fetch('/a'))` |
+| 嵌套地狱 | `.then(() => { return fetch().then() })` | `.then(() => fetch()).then()` |
+| 吞掉错误 | `.catch(() => {})` | `.catch(e => { log(e); throw e })` |
+| 并发误用 | `await Promise.all([await a, await b])` | `await Promise.all([a, b])` |
+
+### Promise.withResolvers（ES2024）
+
+```javascript
+const { promise, resolve, reject } = Promise.withResolvers()
+
+// 典型场景：将事件转化为 Promise
+function waitForEvent(emitter, event) {
+  const { promise, resolve } = Promise.withResolvers()
+  emitter.once(event, resolve)
+  return promise
+}
+```
+
 ## 参考资源
 
-- **并发异步专题** — Web Workers、SharedArrayBuffer
 - [执行模型导读](/fundamentals/execution-model) — 事件循环与异步机制
+- [JavaScript 语法速查表](/cheatsheets/javascript-cheatsheet) — async/await 模式
+- [ES2024+ 新特性速查表](/cheatsheets/es2024-cheatsheet) — Promise.withResolvers
 
 ---
 

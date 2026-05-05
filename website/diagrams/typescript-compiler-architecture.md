@@ -140,10 +140,32 @@ flowchart LR
 &#125;
 ```
 
+## 编译器扩展生态
+
+| 工具 | 作用 | 与 tsc 的关系 |
+|------|------|---------------|
+| **tsc** | 官方编译器 | 基准实现 |
+| **SWC** | Rust 转译器 | 替代 Emitter（快 10-70x） |
+| **esbuild** | Go 打包器 | 替代 Emitter + Bundler |
+| **Oxc** | Rust 工具链 | 替代 Parser + Linter |
+| **tsgo** | Go 重写实验 | 未来可能的官方替代品 |
+
+```json
+// 现代工具链组合（无需 tsc 转译）
+{
+  "compilerOptions": {
+    "noEmit": true,        // 仅类型检查
+    "module": "Preserve"   // 保留 ESM 语法
+  }
+}
+// 转译由 Vite(SWC/esbuild) 处理
+```
+
 ## 参考资源
 
 - [类型系统导读](/fundamentals/type-system) — TypeScript 类型理论基础
 - [TSGo 原生编译器](/fundamentals/academic-frontiers) — TypeScript 编译器重写计划
+- [JS/TS 编译器对比](/comparison-matrices/js-ts-compilers-compare) — 编译器横向对比
 
 ---
 

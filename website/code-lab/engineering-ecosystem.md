@@ -123,12 +123,56 @@ const handleClick = useCallback(() => &#123;
 &#125;, [item.id, onSelect]);
 ```
 
+## 工程化决策树
+
+```mermaid
+graph TD
+    A[新项目] --> B{需要类型安全?}
+    B -->|是| C[TypeScript]
+    B -->|否| D[JavaScript + JSDoc]
+    C --> E{构建工具?}
+    E -->|应用| F[Vite]
+    E -->|库| G[Rollup/tsup]
+    E -->|Monorepo| H[Turborepo + pnpm]
+    F --> I{测试框架?}
+    I -->|单元| J[Vitest]
+    I -->|E2E| K[Playwright]
+    I -->|两者| L[Vitest + Playwright]
+    J --> M{代码质量?}
+    M -->|基础| N[ESLint + Prettier]
+    M -->|高性能| O[Biome]
+```
+
+## CI/CD 集成实验
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+```
+
 ## 参考资源
 
 - [前端模式示例](/examples/frontend-patterns/) — 组件组合与状态管理
 - [性能示例](/examples/performance/) — Web Vitals 优化实战
 - [测试示例](/examples/testing/) — Vitest 与 Playwright
 - [状态管理专题](/state-management/) — 完整的状态管理知识体系
+- [构建工具对比](/comparison-matrices/build-tools-compare) — Vite / Webpack / Rspack 选型
 
 ---
 

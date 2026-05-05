@@ -109,11 +109,58 @@ counter2.increment(); // 1（独立状态）
 - **扩展挑战**：深入探索的进阶任务
 - **参考解答**：实验完成后的对照答案
 
+## 常见困惑与解答
+
+### var 为什么还存在？
+
+`var` 在 ES6 之前是唯一的变量声明方式。保留它的原因：
+
+- 向后兼容数十亿行现有代码
+- 函数作用域在某些场景下有用（如循环中的回调）
+- 全局变量自动成为 `window` 属性（某些库依赖此行为）
+
+**建议**：新项目一律使用 `let`/`const`，仅在有明确需求时使用 `var`。
+
+### this 绑定为什么如此复杂？
+
+JavaScript 的 `this` 绑定规则按优先级排序：
+
+1. **new 绑定**：`new Foo()` → `this = 新对象`
+2. **显式绑定**：`call/apply/bind` → `this = 指定对象`
+3. **隐式绑定**：`obj.method()` → `this = obj`
+4. **默认绑定**：`method()` → `this = window/undefined`（严格模式）
+5. **箭头函数**：继承外层 `this`，不可改变
+
+```javascript
+const obj = {
+  name: 'obj',
+  regular() { console.log(this.name) },
+  arrow: () => console.log(this.name)
+}
+
+obj.regular()  // 'obj'
+obj.arrow()    // undefined（继承全局 this）
+
+const fn = obj.regular
+fn()           // undefined（默认绑定）
+```
+
+### 为什么 `typeof null === 'object'`？
+
+这是 JavaScript 的原始 bug。在语言最早的实现中，值类型标记（type tag）用低三位表示：
+
+- `000` = 对象
+- `null` 的机器码是 `0x00`，低三位也是 `000`
+
+修复此 bug 会破坏大量现有代码，因此在 TC39 中被标记为「不可修复的历史包袱」。
+
 ## 参考资源
 
 - [语言语义导读](/fundamentals/language-semantics) — 语言特性的理论解析
 - [类型系统导读](/fundamentals/type-system) — TypeScript 类型系统基础
 - [执行模型导读](/fundamentals/execution-model) — 代码运行时的底层机制
+- [对象模型深度专题](/object-model/) — 原型链与面向对象
+- [JavaScript 语法速查表](/cheatsheets/javascript-cheatsheet) — 核心语法速查
 
 ---
 

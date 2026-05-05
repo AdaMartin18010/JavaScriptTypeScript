@@ -128,6 +128,7 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '📊 GraphQL 联邦实验', link: '/code-lab/lab-graphql-federation' },
         { text: '🤖 AI ONNX 推理实验', link: '/code-lab/lab-ai-onnx-inference' },
         { text: '🦀 Rust NAPI 模块实验', link: '/code-lab/lab-rust-napi-module' },
+        { text: '🌐 Edge-First 架构实战', link: '/code-lab/edge-first-architecture' },
       ]
     }
   ],
@@ -380,6 +381,7 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: '语言核心知识图谱', link: '/diagrams/language-core-knowledge-graph' },
         { text: '生态全景图谱', link: '/diagrams/ecosystem-landscape-graph' },
         { text: '工程实践图谱', link: '/diagrams/engineering-practices-graph' },
+        { text: '模块依赖关系图谱', link: '/diagrams/module-dependency-graph' },
       ]
     }
   ],
@@ -394,6 +396,7 @@ export const sidebar: DefaultTheme.Sidebar = {
         { text: 'Awesome-JavaScript 分析', link: '/research/awesome-javascript-analysis' },
         { text: 'Awesome-NodeJS 分析', link: '/research/awesome-nodejs-analysis' },
         { text: '国际权威资源报告', link: '/research/international-resources' },
+        { text: 'Stars 趋势报告', link: '/data/trends-report' },
       ]
     }
   ],

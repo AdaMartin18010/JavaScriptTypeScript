@@ -115,10 +115,33 @@ const numbers: number[] = arr as number[]; // 编译通过，运行时不安全
 // TypeScript 允许 as 断言，因为这是有用的逃生舱
 ```
 
+## 从动态到静态的迁移路径
+
+| 阶段 | 策略 | 工具 |
+|------|------|------|
+| 1. 允许 any | `noImplicitAny: false` | 编译器配置 |
+| 2. 推断 any | `noImplicitAny: true` | 编译器配置 |
+| 3. 显式 any | 所有参数有类型注解 | 手动 +
+| 4. 严格 null | `strictNullChecks: true` | 编译器配置 |
+| 5. 严格模式 | `strict: true` | 编译器配置 |
+| 6. 无 any | `no-explicit-any` ESLint 规则 | 工具辅助 |
+
+## 主流语言在格中的位置
+
+| 语言 | 类型系统 | 格位置 | 说明 |
+|------|----------|--------|------|
+| JavaScript | 动态 | 底部附近 | 无静态类型 |
+| Python + mypy | 渐进 | 中下部 | 可选类型注解 |
+| TypeScript | 渐进 | 中部 | 默认 any，可逐步严格 |
+| Flow | 渐进 | 中上部 | 更严格的类型推断 |
+| Java / C# | 静态 | 上部 | 显式类型，无 any |
+| Rust / Haskell | 静态 | 顶部附近 | 强类型，无 null |
+
 ## 参考资源
 
 - [类型系统导读](/fundamentals/type-system) — 结构类型、泛型、变型
 - [10-fundamentals/10.2-type-system](/fundamentals/type-system) — 渐进类型理论深度解析
+- [TypeScript 速查表](/cheatsheets/typescript-cheatsheet) — 类型工具与配置
 
 ---
 
