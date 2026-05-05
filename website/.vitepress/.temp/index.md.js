@@ -1,0 +1,39 @@
+import { ssrRenderAttrs, ssrInterpolate, ssrRenderList, ssrRenderStyle } from "vue/server-renderer";
+import { useSSRContext, ref } from "vue";
+const __pageData = JSON.parse('{"title":"","description":"","frontmatter":{"layout":"home","hero":{"name":"Awesome JS/TS","text":"Ecosystem","tagline":"精心策划的 JavaScript/TypeScript 生态系统资源列表，涵盖框架、工具、库和最佳实践","image":{"src":"/hero-logo.svg","alt":"Awesome JS/TS Ecosystem"},"actions":[{"theme":"brand","text":"快速开始","link":"/guide/getting-started"},{"theme":"alt","text":"浏览分类","link":"/categories/frontend-frameworks"},{"theme":"alt","text":"GitHub","link":"https://github.com/AdaMartin18010/JavaScriptTypeScript"}]},"features":[{"icon":"🖥️","title":"前端框架","details":"React、Vue、Angular、Svelte、Solid 等主流框架全面覆盖，包含生态库和选型建议","link":"/categories/frontend-frameworks"},{"icon":"🎨","title":"UI 组件库","details":"shadcn/ui、Ant Design、MUI、Chakra 等现代组件库，助力快速构建界面","link":"/categories/ui-component-libraries"},{"icon":"⚡","title":"构建工具","details":"Vite、Rolldown、Rspack、esbuild 等构建工具对比与最佳实践","link":"/categories/build-tools"},{"icon":"📊","title":"数据可视化","details":"D3.js、ECharts、Chart.js、Three.js 等可视化方案","link":"/categories/data-visualization"},{"icon":"🗂️","title":"状态管理","details":"Zustand、Redux、Jotai、Pinia 等状态管理方案深度解析","link":"/categories/state-management"},{"icon":"🦀","title":"Rust 工具链","details":"Rolldown、Oxc、Oxlint、Rspack、Biome 等 Rust 编写的高性能工具链","link":"/categories/rust-toolchain"},{"icon":"🤖","title":"AI 与前沿","details":"AI-Native 开发、MCP 协议、Vercel AI SDK、Mastra、Transformers.js","link":"/categories/ai-agent-infrastructure"},{"icon":"📱","title":"跨平台开发","details":"React Native、Expo、Tauri、Electron、WebAssembly 跨平台方案","link":"/categories/mobile-development"},{"icon":"🛠️","title":"开发工具","details":"ESLint、Prettier、Vitest、Playwright、Oxlint 等工程化工具","link":"/categories/linting-formatting"},{"icon":"🌐","title":"Edge 与部署","details":"Cloudflare Workers、Vercel、Docker、Serverless 边缘计算与部署平台","link":"/categories/deployment-hosting"},{"icon":"⚡","title":"Svelte 5 Signals","details":"Compiler-Based Signals 编译器生态专题 — Svelte 5、SvelteKit、TypeScript、Vite 全栈指南","link":"/svelte-signals-stack/"}]},"headers":[],"relativePath":"index.md","filePath":"index.md","lastUpdated":1777641775000}');
+const __default__ = { name: "index.md" };
+const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
+  __ssrInlineRender: true,
+  setup(__props) {
+    const stats = ref({
+      libraries: 280,
+      categories: 37,
+      contributors: 8,
+      lastUpdated: "2026-05"
+    });
+    const updates = ref([
+      { date: "2026-05", tag: "发布", content: "🚀 v5.1 发布：全面梳理2026十大趋势，覆盖语言/编译/构建/运行时/框架/架构全栈" },
+      { date: "2026-05", tag: "新增", content: "新增 Rust 工具链专题（Rolldown/Oxc/Biome/Rspack）、AI-Native开发、Edge-First架构" },
+      { date: "2026-05", tag: "新增", content: "新增 TypeScript 语言全景、性能工程、数据库与存储、API 开发、浏览器 API 2026、桌面开发、实时通信、AI/ML in JS 等 12 个分类" },
+      { date: "2026-05", tag: "更新", content: "更新所有对比矩阵至2026 Q2数据：Vite满意度98%、Cloudflare Workers 12%、TS登顶GitHub" },
+      { date: "2026-05", tag: "重构", content: "网站架构升级：VitePress 1.6 + Rolldown构建、Oxlint统一、Node 24 LTS" }
+    ]);
+    return (_ctx, _push, _parent, _attrs) => {
+      _push(`<div${ssrRenderAttrs(_attrs)}><h2 id="📊-站点统计" tabindex="-1">📊 站点统计 <a class="header-anchor" href="#📊-站点统计" aria-label="Permalink to &quot;📊 站点统计&quot;">​</a></h2><div class="stats-grid"><div class="stat-card"><div class="stat-number">${ssrInterpolate(stats.value.libraries)}+</div><div class="stat-label">收录库</div></div><div class="stat-card"><div class="stat-number">${ssrInterpolate(stats.value.categories)}</div><div class="stat-label">分类</div></div><div class="stat-card"><div class="stat-number">${ssrInterpolate(stats.value.contributors)}+</div><div class="stat-label">贡献者</div></div><div class="stat-card"><div class="stat-number">${ssrInterpolate(stats.value.lastUpdated)}</div><div class="stat-label">最后更新</div></div></div><h2 id="🗂️-分类浏览" tabindex="-1">🗂️ 分类浏览 <a class="header-anchor" href="#🗂️-分类浏览" aria-label="Permalink to &quot;🗂️ 分类浏览&quot;">​</a></h2><div class="category-grid"><a href="/categories/frontend-frameworks" class="category-card"><div class="icon">🖥️</div><h3>前端框架</h3><p>React、Vue、Angular、Svelte、Solid 及生态</p></a><a href="/categories/ui-component-libraries" class="category-card"><div class="icon">🎨</div><h3>UI 组件库</h3><p>shadcn/ui、Ant Design、MUI、Chakra 等</p></a><a href="/categories/build-tools" class="category-card"><div class="icon">⚡</div><h3>构建工具</h3><p>Vite、Webpack、Rollup、esbuild 对比</p></a><a href="/categories/data-visualization" class="category-card"><div class="icon">📊</div><h3>数据可视化</h3><p>D3.js、ECharts、Chart.js、Three.js</p></a><a href="/categories/state-management" class="category-card"><div class="icon">🗂️</div><h3>状态管理</h3><p>Zustand、Redux、Jotai、Pinia</p></a><a href="/categories/routing" class="category-card"><div class="icon">🛣️</div><h3>路由</h3><p>React Router、TanStack Router、Vue Router</p></a><a href="/categories/ssr-meta-frameworks" class="category-card"><div class="icon">🎭</div><h3>SSR/Meta框架</h3><p>Next.js、Nuxt、Remix、Astro</p></a><a href="/categories/orm-database" class="category-card"><div class="icon">🗄️</div><h3>ORM/数据库</h3><p>Prisma、Drizzle、TypeORM、Mongoose</p></a><a href="/categories/testing" class="category-card"><div class="icon">🧪</div><h3>测试</h3><p>Vitest、Jest、Playwright、Cypress</p></a><a href="/categories/backend-frameworks" class="category-card"><div class="icon">🔐</div><h3>后端框架</h3><p>Express、Fastify、NestJS、Hono</p></a><a href="/categories/rust-toolchain" class="category-card"><div class="icon">🦀</div><h3>Rust 工具链</h3><p>Rolldown、Oxc、Biome、Rspack</p></a><a href="/categories/ai-agent-infrastructure" class="category-card"><div class="icon">🤖</div><h3>AI / ML</h3><p>MCP、Transformers.js、Mastra、Vercel AI</p></a><a href="/categories/webassembly" class="category-card"><div class="icon">🔷</div><h3>WebAssembly</h3><p>WASM 2.0、WASI、Rust→WASM、Edge WASM</p></a><a href="/categories/mobile-development" class="category-card"><div class="icon">📱</div><h3>移动端</h3><p>React Native、Expo、Flutter、Capacitor</p></a><a href="/categories/desktop-development" class="category-card"><div class="icon">💻</div><h3>桌面端</h3><p>Tauri v2、Electron、Flutter Desktop</p></a></div><h2 id="🔔-最新更新" tabindex="-1">🔔 最新更新 <a class="header-anchor" href="#🔔-最新更新" aria-label="Permalink to &quot;🔔 最新更新&quot;">​</a></h2><ul class="update-list"><!--[-->`);
+      ssrRenderList(updates.value, (update) => {
+        _push(`<li><span class="date">${ssrInterpolate(update.date)}</span><span class="tag">${ssrInterpolate(update.tag)}</span><span>${ssrInterpolate(update.content)}</span></li>`);
+      });
+      _push(`<!--]--></ul><div style="${ssrRenderStyle({ "text-align": "center", "margin-top": "3rem" })}"><a href="/guide/getting-started" class="VPButton medium brand">开始探索 →</a></div></div>`);
+    };
+  }
+});
+const _sfc_setup = _sfc_main.setup;
+_sfc_main.setup = (props, ctx) => {
+  const ssrContext = useSSRContext();
+  (ssrContext.modules || (ssrContext.modules = /* @__PURE__ */ new Set())).add("index.md");
+  return _sfc_setup ? _sfc_setup(props, ctx) : void 0;
+};
+export {
+  __pageData,
+  _sfc_main as default
+};
