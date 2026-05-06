@@ -7,7 +7,6 @@ keywords: 'shadcn-svelte, Superforms, Lucia Auth, Drizzle, 动画, MCP, UI组件
 # Svelte 生态工具链
 
 > 最后更新: 2026-05-02 | 覆盖: UI 库、表单、认证、ORM、AI 工具、动画、图表、状态管理
-
 > 下图展示了 Svelte 生态中常见工具选型的决策树，帮助开发者根据项目需求快速定位合适的技术栈。
 
 ```mermaid

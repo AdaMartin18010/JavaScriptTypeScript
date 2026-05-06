@@ -112,6 +112,12 @@ npm run dev
 | [SSR 原理](18-ssr-hydration-internals) | [迁移指南](09-migration-guide) | [知识图谱](17-knowledge-graph) |
 | [前沿动态](19-frontier-tracking) | [场景决策](15-application-scenarios) | [路线图](11-roadmap-2027) |
 
+| 🔬 源码与形式化 | 🌐 标准与前沿 | 🛠️ 构建与类型 |
+|:---------------:|:-------------:|:-------------:|
+| [源码形式证明](25-reactivity-source-proofs) | [TC39 Signals 对齐](21-tc39-signals-alignment) | [Compiler IR 与构建链](23-compiler-ir-buildchain) |
+| [浏览器渲染管线](22-browser-rendering-pipeline) | [TS 5.8+ 深度融合](24-typescript-58-svelte-fusion) | |
+| [渲染优化实战](20-browser-rendering-pipeline-optimization) | | |
+
 ---
 
 ## 📰 最新动态
@@ -236,6 +242,11 @@ Edge-First 部署策略与架构设计：
 | **17. 知识图谱与思维工具** | [阅读](17-knowledge-graph) | 思维导图、决策树、推理树、多维矩阵、定理卡片 | 🌿 | 30 min |
 | **18. SSR 与 Hydration 原理** | [阅读](18-ssr-hydration-internals) | 渲染流水线、序列化、Hydration机制、Streaming | 🌳 | 60 min |
 | **19. 前沿动态追踪** | [阅读](19-frontier-tracking) | 持续跟踪 Svelte/SvelteKit/Vite/TC39 最新版本与特性 | 🔄 | 10 min |
+| **21. TC39 Signals 对齐论证** | [阅读](21-tc39-signals-alignment) | TC39 Signals Stage 1 与 Svelte Runes 逐 API 语义等价性对照 | 🔥 | 45 min |
+| **22. 浏览器渲染管线** | [阅读](22-browser-rendering-pipeline) | 从 Svelte 编译产物到屏幕像素的 CRP 全链路映射与 INP 分析 | 🔥 | 60 min |
+| **23. Compiler IR 与构建链** | [阅读](23-compiler-ir-buildchain) | Svelte Compiler IR、Vite 6.3 Environment API、Rolldown 集成 | 🔥 | 75 min |
+| **24. TypeScript 5.8+ 深度融合** | [阅读](24-typescript-58-svelte-fusion) | `satisfies`/`NoInfer` 在 Runes 中的模式、TS 7.0 前瞻 | 🔥 | 60 min |
+| **25. 响应式源码形式证明** | [阅读](25-reactivity-source-proofs) | 基于 Svelte 5.55.5 真实源码的依赖追踪、调度、内存严格论证 | 🔥 | 90 min |
 
 #### 07. 生态工具链 详细内容
 
@@ -867,7 +878,8 @@ my-app/
 
 - 本专题系统覆盖 Svelte 5 技术栈从语言基础、响应式原理到工程化实践的全景知识
 - 以"编译器优先、信号驱动、全栈一体"为核心视角，构建区别于传统虚拟 DOM 框架的认知体系
-- 18 个章节从入门到前沿，兼顾理论深度与生产实践，适合各阶段开发者按需查阅
+- **25 个专题文档**从入门到源码级形式证明，兼顾理论深度、生产实践与工程严谨性，适合各阶段开发者按需查阅
+- 新增 🔬 源码与形式化系列（21-25）：TC39 对齐、浏览器渲染管线、Compiler IR、TS 5.8+ 融合、响应式源码形式证明
 - 社区驱动的持续更新机制确保内容与技术生态同步演进，保持前沿性和准确性
 
 > 💡 **快速入口**: [Compiler Signals 架构](01-compiler-signals-architecture) · [Svelte 5 Runes 深度指南](02-svelte-5-runes) · [SvelteKit 全栈框架](03-sveltekit-fullstack) · [渐进式学习阶梯](16-learning-ladder)
@@ -885,6 +897,6 @@ my-app/
 - 🧪 [Svelte REPL](https://svelte.dev/repl)
 - 🌐 [Svelte Society](https://sveltesociety.dev/)
 
-> 最后更新: 2026-05-02 | 专题总计: 18 章节, 650KB+ | 状态: ✅ 构建通过 | 对齐: 2026 十大技术趋势
+> 最后更新: 2026-05-06 | 专题总计: **25 专题文档 + 5 支持索引**, ~766KB | 状态: ✅ 构建通过 | 对齐: Svelte 5.55.5 · TC39 Stage 1 · Vite 6.3 · TS 5.8+
 >
 > 维护者: JSTS 技术社区 | 协议: CC BY-SA 4.0 | 问题反馈: [GitHub Issues](https://github.com/luyanfei/JavaScriptTypeScript/issues)
