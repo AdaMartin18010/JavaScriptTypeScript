@@ -75,19 +75,67 @@ namespace Signal {
 5. **调度自主权**：不强制内置调度策略，允许框架在 `Watcher.notify()` 上构建自己的批处理/微任务/时间切片机制
 6. **内存管理**：通过 `watched`/`unwatched` 钩子和 `Watcher` 接口支持框架级垃圾回收优化
 
-### 1.3 算法规范（来自提案 spec）
+### 1.3 算法规范（来自提案 README `main` @ `9124ed91`）
 
-**`Signal.State.prototype.set(newValue)` 算法**（简化）：
+> **规范状态更新（2026-05）**：TC39 Signals 提案仓库自 2025-08-11 后无新 commit，当前算法规范处于**冻结审查期**。以下算法步骤直接引用提案 README 的 "proto-specification" 章节，并标注了 2026 年已发现的争议点。
 
-1. 若当前执行上下文 `frozen`，抛出异常
-2. 运行 "set Signal value" 算法：若 `equals(old, new)` 为 true，返回 `~clean~`
-3. 更新 `value` 内部槽
-4. 将所有 `sinks` 的状态设为 `~dirty~`（若为 Computed）或 `~pending~`（若为 Watcher）
-5. 递归将 sinks 的 Computed 依赖设为 `~checked~`
-6. 按深度优先顺序调用所有 `~watching~` Watcher 的 `notify` 回调
-7. 设置 `frozen = false`，返回 `undefined`
+#### 全局隐藏状态
 
-**关键约束**：`notify` 回调中**禁止读取或写入任何 Signal**。这是为了确保调度逻辑的一致性。
+所有 Signal 算法共享以下 agent-global 状态：
+
+- **`computing`**：当前因 `.get()` 而重新求值的最内层 `Computed`，或 `null`
+- **`frozen`**：`true` 表示回调（`notify` / `watched` / `unwatched` / `equals` / computed callback）正在执行，禁止修改图
+- **`generation`**：递增整数，用于追踪值新鲜度和避免 unwatched 图中的循环
+
+#### `Signal.State.prototype.get()`
+
+1. 若 **`frozen`** 为 `true`，抛出异常
+2. 若 **`computing`** 不为 `null`，将本 Signal 加入 `computing` 的 **`sources`** 集合
+3. *NOTE: 我们不将 `computing` 加入本 Signal 的 `sinks` 集合，直到它被 Watcher 显式 watch*
+4. 返回本 Signal 的 **`value`**
+
+#### `Signal.State.prototype.set(newValue)`
+
+1. 若当前执行上下文 **`frozen`**，抛出异常
+2. 对本 Signal 和 `newValue` 运行 **"set Signal value"** 算法
+3. 若该算法返回 **`~clean~`**，返回 `undefined`
+4. 将本 Signal 所有 **`sinks`** 的状态设为：
+   - （若 sink 为 `Computed`）**`~dirty~`**（若之前为 `~clean~`）
+   - （若 sink 为 `Watcher`）**`~pending~`**（若之前为 `~watching~`）
+5. 递归将所有 sinks 的 `Computed` 依赖的状态设为 **`~checked~`**（若之前为 `~clean~`，保留已有的 `~dirty~` 标记）
+6. 对上述递归搜索中遇到的每个之前为 **`~watching~`** 的 `Watcher`，按**深度优先顺序**：
+   1. 设置 **`frozen = true`**
+   2. 调用其 **`notify`** 回调（保存抛出的异常，忽略返回值）
+   3. 恢复 **`frozen = false`**
+   4. 设置 `Watcher` 的状态为 **`~waiting~`**
+7. 若有 `notify` 回调抛出异常，在所有回调执行完毕后传播；若多个异常，打包为 `AggregateError`
+8. 返回 `undefined`
+
+#### `Signal.Computed.prototype.get()`
+
+**状态机**：`~clean~` | `~checked~` | `~computing~` | `~dirty~`
+
+1. 若上下文 **`frozen`**，或本 Signal 状态为 **`~computing~`**，或本 signal 为 `Watcher` 且 `computing` 为 computed Signal，抛出异常
+2. 若 **`computing`** 不为 `null`，将本 Signal 加入 `computing` 的 **`sources`** 集合
+3. *NOTE: 同 State.get()，不立即建立 sink 链接*
+4. 若本 Signal 状态为 **`~dirty~`** 或 **`~checked~`**：重复以下直到状态为 `~clean~`：
+   1. 沿 **`sources`** 递归向上，找到**最深、最左**（最早观察到的）标记 `~dirty~` 的 `Computed`
+   2. 对该 Signal 执行 **"recalculate dirty computed Signal"** 算法
+5. 返回 Signal 的 **`value`**
+
+#### 算法：recalculate dirty computed Signal
+
+1. 清空本 Signal 的 **`sources`** 集合，并从这些 sources 的 **`sinks`** 中移除本 Signal
+2. 保存之前的 **`computing`** 值，设置 **`computing`** 为本 Signal
+3. 设置本 Signal 状态为 **`~computing~`**
+4. 运行 computed callback，保存返回值；若抛出异常，保存异常用于重抛
+5. 恢复之前的 **`computing`** 值
+6. 对 callback 返回值应用 **"set Signal value"** 算法
+7. 设置本 Signal 状态为 **`~clean~`**
+8. 若 "set Signal value" 返回 **`~dirty~`**：将所有 sinks 标记为 `~dirty~`
+9. 否则返回 **`~clean~`**：对每个 **`~checked~`** sink，若其所有 sources 现已 clean，则标记为 `~clean~`，递归清理
+
+> ⚠️ **2026 年已知争议（PR #280）**：当前文本在第 5 步恢复 `computing` 后才在第 6 步调用 "set Signal value"。PR #280 主张交换顺序，使 `computing` 在 "set Signal value" 之后才恢复，以确保 `equals` 回调内部的读取被正确追踪。
 
 ---
 
@@ -254,6 +302,89 @@ Derived 的 update_derived_status():
 
 ---
 
+### 3.4 2026 年算法争议与规范不确定性
+
+TC39 Signals 提案自 2025-08-11 后无代码合并，但 2026 年 Q2 出现了多起算法层面的公开争议，直接影响 "proto-specification" 的准确性：
+
+#### 争议一：Unwatched Computed 的脏传播（Issue #278, 2026-04-18）
+
+**问题**：若 `Signal.State` 没有 sinks（因为没有任何东西 watch 它），依赖它的 `Signal.Computed` 永远不会收到变更通知。测试 polyfill 期望下次 `.get()` 时重新求值，但 README 算法说 computed 应认为自己是 clean。
+
+**对 Svelte 5 的映射**：
+
+Svelte 5 不存在此问题，因为：
+
+- Svelte 的 `derived` 不依赖 "watched" 概念判断是否需要更新
+- `is_dirty()` 通过版本号比较（`dependency.wv > reaction.wv`）工作，无论 derived 是否被任何 effect "watch"
+- 即使一个 derived 暂时没有任何 effect 消费者，它的 `wv` 仍然会在源变化时通过 `mark_reactions()` 传播标记
+
+```javascript
+// Svelte 5 的保障：无论 derived 是否有 effect 消费者
+const d = $.derived(() => $.get(source) * 2);
+// source 变化 → mark_reactions(source, MAYBE_DIRTY) → d 被标记
+// 之后任何对 d 的读取都会触发重新计算
+$.get(d); // 正确重新求值，无需 "watch" 机制
+```
+
+#### 争议二：`equals` 回调中的依赖追踪（Issue #279/#280, 2026-04-22）
+
+**问题**："recalculate dirty computed Signal" 算法在第 5 步恢复 `computing` 后才在第 6 步调用 "set Signal value"（其中会调用 `equals`）。这意味着 `equals` 回调内部对 Signal 的读取不会被追踪，但 polyfill 测试期望它被追踪。
+
+**PR #280 方案**：交换第 5 步和第 6 步的顺序，使 `computing` 在 "set Signal value" 完成之后才恢复。
+
+**对 Svelte 5 的映射**：
+
+Svelte 5 不存在此问题，因为：
+
+- Svelte 的 `equals` 检查（`safe_equals`）在 `update_reaction` 的 `finally` 块之外执行
+- `active_reaction` 在 `derived.fn()` 执行期间被设置为 derived 本身，包括 `equals` 调用期间
+
+```javascript
+// Svelte 5 的执行顺序（deriveds.js 简化逻辑）
+function update_reaction(reaction) {
+  var previous_active_reaction = active_reaction;
+  active_reaction = reaction;  // 设置上下文
+  try {
+    var result = reaction.fn(); // 执行计算函数
+  } finally {
+    active_reaction = previous_active_reaction; // 恢复上下文
+  }
+  // equals 检查在恢复之后执行
+  if (!reaction.equals(result)) {
+    reaction.v = result;
+    reaction.wv = write_version;
+  }
+}
+```
+
+#### 争议三：`~pending~` 状态的必要性（Issue #282, 2026-05-01）
+
+**问题**：`Watcher` 的 `~pending~` 状态是否真正必要？polyfill 实际上跳过该状态，直接调用 notify 回调。
+
+**对 Svelte 5 的映射**：
+
+Svelte 5 没有直接等价的 "pending" 中间状态。Effect 的状态转换是：
+
+```
+CLEAN → DIRTY (set() 触发)
+DIRTY → 执行中 (flush 时)
+执行中 → CLEAN (flush 完成)
+```
+
+Svelte 的 `Batch` 系统将 "dirty 标记" 和 "调度执行" 分离，不需要 `~pending~` 这样的中间状态来区分 "已标记但未通知"。
+
+#### 争议总结与标准化风险评估
+
+| 争议 | 影响范围 | 解决难度 | 对 Svelte 影响 |
+|:---|:---|:---:|:---|
+| #278 Unwatched 传播 | 所有 Computed 实现 | 中 | Svelte 已解决，但标准若采用不同方案需评估 |
+| #279/#280 `equals` 追踪 | Computed 重新计算 | 低 | Svelte 不受影响，但标准语义需明确 |
+| #282 `~pending~` 必要性 | Watcher 状态机 | 低 | Svelte 无此状态，标准简化有利 |
+
+**核心观察**：这些争议表明 TC39 Signals 的 "proto-specification" 尚未达到工程实现级别的精确性。Svelte 5 的现有实现实际上**已经解决了这些边界情况**（通过版本号系统、即时双向依赖注册、Batch 调度器）。这支持了本文档第 5 章的结论：即使 TC39 Signals 最终标准化，Svelte 的调度器和效果集成层仍将保持独立演进。
+
+---
+
 ## 4. 语义等价性总结
 
 ### 4.1 等价性层级
@@ -355,15 +486,26 @@ const count = new Signal.State(0);
 3. **高级特性缺失**：TC39 Signals 作为底层原语，不涵盖 Svelte 的 `async_derived`、`fork`、Proxy 响应式等高级功能，Svelte 仍需维护大量运行时代码
 4. **Polyfill 负担**：在老旧浏览器（如 Safari 17 以下）普及前，仍需 polyfill，抵消体积优势
 
-### 6.3 时间线预测
+### 6.3 时间线预测（2026-05 更新）
 
-| 时间 | TC39 里程碑 | Svelte 生态影响 |
-|------|------------|----------------|
-| 2026 H2 | Stage 1 维持 | Svelte 5.60+ 继续优化内部实现，观望标准演进 |
-| 2027 H1 | 可能进入 Stage 2 | Svelte 6 Alpha 可能实验性支持 TC39 Signals 后端编译 |
-| 2027 H2 | Stage 2.7（验证阶段） | 社区出现基于原生 Signals 的 Svelte 实验分支 |
-| 2028 | Stage 3（推荐实现） | Svelte 6 Stable 可能引入 `compilerOptions.target: 'tc39-signals'` |
-| 2029+ | Stage 4（标准发布） | Svelte 7 可能默认使用原生 Signals，内部运行时大幅简化 |
+> **重要修正**：根据 TC39 Signals 提案仓库 2026 年最新状态，Stage 2 推进条件极为保守。README 明确列出三条前置要求：1) 多个生产级 polyfill 实现；2) 大量 JS 框架集成验证；3) 对 API 扩展空间有充分理解。2026 年 5 月 TC39 会议议程（阿姆斯特丹）未包含 Signals 的 Stage 2 推进议题。
+
+| 时间 | TC39 里程碑 | Svelte 生态影响 | 置信度 |
+|------|------------|----------------|:---:|
+| 2026 H2 | Stage 1 维持，算法争议持续 | Svelte 5.60+ 继续优化内部实现，观望标准演进 | 高 |
+| 2027 H1 | 可能仍维持 Stage 1（ polyfill 成熟度不足） | Svelte 6 前期开发，重点在 Compiler IR 和跨后端编译 | 中 |
+| 2027 H2 | **最早**进入 Stage 2（若 polyfill 和框架集成达标） | 社区可能出现基于原生 Signals 的 Svelte 实验分支 | 低 |
+| 2028 | Stage 2 深化或 Stage 2.7 | Svelte 6 Stable 可能实验性支持 `compilerOptions.target: 'tc39-signals'` | 低 |
+| 2029+ | Stage 3（若一切顺利） | Svelte 7 可能评估默认原生 Signals，但调度器层仍将保留 | 极低 |
+| 2030+ | Stage 4（标准发布） | 浏览器原生支持，运行时体积可能减少 10-20% | 极低 |
+
+**修正后的核心判断**：
+
+1. **Stage 2 不会在 2026 年推进**：三条前置要求（polyfill、框架集成、扩展空间理解）在 2026 年内无法全部满足。
+
+2. **Svelte 团队应保持独立演进**：Rich Harris 在 TC39 第 104 次会议的表态（"观望至 Stage 3"）在 2026-2027 年仍然是最优策略。过早绑定到 Stage 1 的语义不确定的 API 会带来技术债务。
+
+3. **长期前景不变，但时间线大幅延后**：即使最终标准化（2030+），Svelte 的编译器优势将从 "实现 Signals" 转向 "优化 Signals 使用模式"。标准化降低学习成本的目标仍然成立，但实现时间比此前预期推迟 2-3 年。
 
 ---
 
@@ -380,6 +522,32 @@ const count = new Signal.State(0);
 4. **生态影响**：标准化将在长期（2028+）降低 Svelte 的运行时体积和开发者学习成本，但短期内（2026-2027）Svelte 5/6 的内部实现仍将是工程最优解。
 
 ---
+
+---
+
+### 🧩 反直觉案例: `NaN` 的相等性判定差异
+
+**直觉预期**: "将 Signal 设为相同的 `NaN` 不会触发更新，因为值没变"
+
+**实际行为**: Svelte 使用 `!==` 判定相等，`NaN !== NaN` 为 `true`，因此重复赋值为 `NaN` 会触发更新；而 TC39 Signals 使用 `Object.is`，`NaN` 被视为相等，不会触发
+
+**代码演示**:
+
+```javascript
+// Svelte 5
+let s = $state(NaN);
+s = NaN; // ✅ 触发更新
+
+// TC39 Signals
+let t = new Signal.State(NaN);
+t.set(NaN); // ❌ 不触发更新
+```
+
+**为什么会这样？**
+`!==` 遵循传统 JS 语义，认为 `NaN` 不等于自身；`Object.is` 遵循 IEEE 754，将 `NaN` 视为相等。若未来 Svelte 编译器生成原生 Signals，必须显式配置 `equals` 函数以维持现有行为。
+
+**教训**
+> 处理浮点计算时，不要依赖 `NaN` 触发更新行为的一致性；应显式封装数值检查逻辑。
 
 ## 参考资源
 

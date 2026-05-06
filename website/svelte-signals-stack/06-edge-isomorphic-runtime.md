@@ -105,6 +105,39 @@ SvelteKit 的同构渲染遵循**服务端生成 HTML → 客户端接管交互*
 
 ---
 
+### 🛠️ Try It: 为不同页面选择正确的渲染模式
+
+**任务**: 为电商网站的以下页面选择最合适的渲染模式（SSR / SSG / CSR / Edge SSR），并在 `+page.ts` 中写出配置。
+
+| 页面 | 特征 | 你的选择 |
+|------|------|----------|
+| 首页（展示商品） | 内容每天更新，需要 SEO | ? |
+| 用户购物车 | 千人千面，需登录 | ? |
+| 商品详情 `/product/[id]` | 10万+ 商品，库存实时变化 | ? |
+| 订单确认页 | 支付后跳转，无需 SEO | ? |
+| 帮助文档 | 极少更新，纯内容 | ? |
+
+**starter code**:
+
+```ts
+// src/routes/product/[id]/+page.ts
+// 你的选择和配置...
+```
+
+**预期行为**: 每个页面使用最适合的渲染策略，兼顾性能、动态性和 SEO。
+
+**常见错误** ⚠️:
+> 对所有页面使用 `export const prerender = true` 以求"最快"。这会导致动态数据（如用户购物车、实时库存）在构建时被静态化，所有用户看到相同内容。SSR/Edge SSR 虽然比 SSG 慢，但能保证动态数据的实时性。正确的做法是**按页面特征选择**，而非一刀切。
+
+**验证方式**:
+
+- [ ] 首页能正确被搜索引擎收录
+- [ ] 购物车页面未登录时重定向到登录页
+- [ ] 商品库存变化后页面反映最新数据
+- [ ] 帮助文档从 CDN 边缘节点直接服务
+
+---
+
 ## SvelteKit 预渲染（prerender）策略
 
 SvelteKit 的预渲染在构建时生成静态 HTML，可部署至任何静态托管服务。
@@ -721,6 +754,51 @@ export const load: PageServerLoad = async ({ platform }) => {
 3. **谨慎使用正则**：ReDoS 在边缘 CPU 限制下影响更大
 4. **分片大数据**：> 1MB 的响应考虑流式传输或分页
 5. **监控 CPU 时间**：Cloudflare 超过 50ms 会返回 1102 错误
+
+---
+
+### 🛠️ Try It: 编写 WinterCG 兼容的 Edge 工具函数
+
+**任务**: 编写一个能在 Cloudflare Workers、Vercel Edge、Node.js 和 Deno 中无修改运行的数据获取工具函数，使用仅 WinterCG 标准化的 API。
+
+**starter code**:
+
+```ts
+// src/lib/fetch-safe.ts
+export async function fetchSafe<T>(
+  url: string,
+  options?: RequestInit,
+  timeoutMs = 5000
+): Promise<{ data?: T; error?: string }> {
+  // 你的实现：
+  // 1. 使用 AbortController 实现超时
+  // 2. 处理 HTTP 错误状态
+  // 3. 解析 JSON 响应
+  // 4. 只能使用 WinterCG 标准化 API
+}
+```
+
+**约束**: 只能使用以下 API（WinterCG 通用子集）：
+
+- `fetch`, `Request`, `Response`, `Headers`
+- `AbortController`
+- `URL`, `URLSearchParams`
+- `TextEncoder`, `TextDecoder`
+- `crypto.subtle` (Web Crypto)
+
+**禁止**: `fs`, `path`, `http`, `setTimeout`（部分 Edge 环境支持但非 WinterCG 标准，最好用 `AbortController`）
+
+**预期行为**: 该函数在四种运行时中行为一致，超时后能正确取消请求。
+
+**常见错误** ⚠️:
+> 使用 `setTimeout` 实现超时。虽然大多数 Edge 环境支持 `setTimeout`，但 WinterCG 标准并未将其列为强制 API，某些严格环境可能不支持。正确的超时实现应使用 `AbortController` 配合 `fetch`，这是所有 WinterCG 兼容运行时的标准做法。
+
+**验证方式**:
+
+- [ ] 函数在本地 Node.js `npm run dev` 中正常工作
+- [ ] 函数在 `wrangler dev` (Cloudflare Workers) 中正常工作
+- [ ] 超时场景下请求被正确取消
+- [ ] 不导入任何 Node.js 内置模块
 
 ---
 

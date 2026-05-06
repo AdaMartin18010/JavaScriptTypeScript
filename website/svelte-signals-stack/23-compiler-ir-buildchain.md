@@ -627,6 +627,37 @@ export default {
 
 ---
 
+---
+
+### 🧩 反直觉案例: 组件拆分到独立文件反而增大产物
+
+**直觉预期**: "把重复模板提取成组件能复用代码、减小体积"
+
+**实际行为**: 跨文件组件编译器无法内联，产生额外的 props 解构、上下文挂载等运行时开销，产物体积反而上升
+
+**代码演示**:
+
+```svelte
+<!-- ✅ 同一文件内：编译器直接内联为 DOM 操作 -->
+{#each items as item}
+  <span class="tag">{item}</span>
+{/each}
+
+<!-- ❌ 拆分为 Tag.svelte：生成组件包装函数 -->
+<script>
+  import Tag from './Tag.svelte';
+</script>
+{#each items as item}
+  <Tag text={item} />
+{/each}
+```
+
+**为什么会这样？**
+Svelte 编译器目前仅在同一文件内进行细粒度内联。跨文件导入的组件需要生成标准的组件调用约定（props 传递、生命周期挂载），即使组件极其轻量也无法完全消除运行时包装。
+
+**教训**
+> 对仅在一处使用的轻量 UI 片段，优先使用 Snippet（`{#snippet}`）而非独立组件，以获得编译器内联优势。
+
 ## 参考资源
 
 - 📚 [Svelte 5.55.5 源码 - compiler/index.js](https://github.com/sveltejs/svelte/blob/svelte%405.55.5/packages/svelte/src/compiler/index.js) — 编译器入口

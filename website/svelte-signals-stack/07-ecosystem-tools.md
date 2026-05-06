@@ -801,6 +801,54 @@ export const actions = {
 
 ---
 
+### 🛠️ Try It: 为 Svelte 5 组件编写 Vitest 单元测试
+
+**任务**: 为下面的 `Counter.svelte` 组件编写完整的 Vitest + `@testing-library/svelte` 测试，覆盖渲染、点击递增、和初始值 prop。
+
+**starter code**:
+
+```svelte
+<!-- Counter.svelte -->
+<script>
+  let { initial = 0 } = $props();
+  let count = $state(initial);
+</script>
+
+<button onclick={() => count++}>{count}</button>
+```
+
+```ts
+// Counter.test.ts
+import { render, screen, fireEvent } from '@testing-library/svelte';
+import { describe, it, expect } from 'vitest';
+import Counter from './Counter.svelte';
+
+describe('Counter', () => {
+  // 你的测试用例...
+});
+```
+
+**要求**:
+
+1. 测试默认初始值为 0
+2. 测试传入 `initial={5}` 时显示 5
+3. 测试点击按钮后值递增
+4. 测试点击两次后值为初始值 + 2
+
+**预期行为**: 所有测试通过，且测试文件遵循 Testing Library 的查询优先原则（优先使用 `getByRole` 而非 `getByText`）。
+
+**常见错误** ⚠️:
+> 忘记 `fireEvent.click` 是异步操作，需要 `await`。在 Svelte 5 的测试中，状态更新和 DOM 刷新是异步的（通过微任务），不 `await` 点击事件会导致断言在更新前执行。另一个常见错误是直接断言 `$state` 变量（如 `expect(component.count).toBe(1)`），应该始终通过 DOM 查询验证用户可见的行为。
+
+**验证方式**:
+
+- [ ] `npm test` 全部通过
+- [ ] 使用 `screen.getByRole('button')` 而非 `getByText`
+- [ ] 故意让组件 bug（如 `count--` 代替 `count++`）时测试失败
+- [ ] 测试覆盖率报告包含 Counter.svelte
+
+---
+
 ## 认证
 
 ### Lucia Auth

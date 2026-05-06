@@ -64,6 +64,39 @@ npm run dev
 | **pnpm** | 10.x | 32k+ | 35%+ 新建项目采用率 | MIT |
 | **TypeScript** | 5.8.x | - | svelte-check 覆盖率 99.2% | Apache-2.0 |
 
+### 推荐阅读顺序
+
+如果你是 Svelte 新手，建议按以下顺序阅读：
+
+```
+Step 1: [QUICKSTART.md](QUICKSTART.md) → 5 分钟跑起来
+Step 2: [02. Runes 深度指南](02-svelte-5-runes) → 理解核心概念
+Step 3: [03. SvelteKit 全栈框架](03-sveltekit-fullstack) → 构建完整应用
+Step 4: [16. 学习阶梯](16-learning-ladder) → 系统化练习（Day 0 → Day 100）
+Step 5: [12. 语言参考](12-svelte-language-complete) + [13. 组件模式](13-component-patterns) → 进阶提升
+Step 6: [01. 编译器架构](01-compiler-signals-architecture) + [14. 响应式原理](14-reactivity-deep-dive) → 深入原理
+```
+
+> 🔒 **门禁提示**：建议先完成 `02` + `03` + `16-Level 1~3` 的阅读和练习，再进入 `01` / `14` / `22` / `25` 等原理级文档。形式化证明（`25`）需要编译器理论基础。
+
+### 学习阶梯与文档映射
+
+[16. 学习阶梯](16-learning-ladder) 的每个 Level 都有对应的深度文档可供延伸阅读：
+
+| 学习阶梯 | 天数 | 核心能力 | 🔗 对应深度文档 |
+|:---:|:---:|:---|:---|
+| **Level 0** | 第 0 天 | HTML/CSS/JS/TS 预备 | [16-learning-ladder](16-learning-ladder) Level 0 章节 |
+| **Level 1** | 第 1-3 天 | Runes 基础 (`$state`/`$derived`/`$effect`) | [02. Runes 深度指南](02-svelte-5-runes) + [14. 响应式原理](14-reactivity-deep-dive)（概念模型） |
+| **Level 2** | 第 4-7 天 | 组件交互 (Props/Snippets/双向绑定) | [12. 语言完全参考](12-svelte-language-complete)（Props/Snippets 章节）+ [13. 组件模式](13-component-patterns) |
+| **Level 3** | 第 8-14 天 | 状态管理 (`.svelte.ts`/Store) | [04. TypeScript 深度融合](04-typescript-svelte-runtime)（`.svelte.ts` 章节）+ [15. 场景决策](15-application-scenarios) |
+| **Level 4** | 第 15-30 天 | SvelteKit 全栈 (路由/load/Form Actions) | [03. SvelteKit 全栈框架](03-sveltekit-fullstack) + [06. Edge 同构运行时](06-edge-isomorphic-runtime) |
+| **Level 5** | 第 31-45 天 | 工程化 (测试/CI/CD/Docker) | [05. Vite + pnpm 构建集成](05-vite-pnpm-integration) + [07. 生态工具链](07-ecosystem-tools) + [08. 生产实践](08-production-practices) |
+| **Level 6** | 第 46-60 天 | 高级模式 (Action/泛型/组件库) | [12. 语言完全参考](12-svelte-language-complete)（Action/泛型章节）+ [13. 组件模式](13-component-patterns) |
+| **Level 7** | 第 61-90 天 | 架构设计 (DDD/微前端/性能) | [11. 路线图 2027](11-roadmap-2027) + [08. 生产实践](08-production-practices) + [20. 渲染优化实战](20-browser-rendering-pipeline-optimization) |
+| **Level 8** | 第 91-100 天 | 源码与生态 (编译器/Signals/开源) | [01. 编译器架构](01-compiler-signals-architecture) + [25. 响应式源码形式证明](25-reactivity-source-proofs) + [22. 浏览器渲染管线](22-browser-rendering-pipeline) + [21. TC39 Signals 对齐](21-tc39-signals-alignment) |
+
+> 💡 **建议的学习闭环**：每完成一个 Level 的练习项目，立即阅读对应的深度文档，将实践经验与理论知识交叉验证。
+
 ### 社区生态数据
 
 | 项目 | GitHub Stars | npm 周下载量 | 核心贡献者 | 活跃 Issue/PR |
@@ -100,23 +133,50 @@ npm run dev
 
 ## 🧭 快速导航
 
-| 🏗️ 核心架构 | 🌐 全栈开发 | 🛠️ 生态工具 |
-|:-----------:|:-----------:|:-----------:|
-| [Compiler Signals](01-compiler-signals-architecture) | [SvelteKit](03-sveltekit-fullstack) | [生态工具链](07-ecosystem-tools) |
-| [Runes 指南](02-svelte-5-runes) | [TypeScript 运行时](04-typescript-svelte-runtime) | [组件模式](13-component-patterns) |
-| [响应式原理](14-reactivity-deep-dive) | [Edge 运行时](06-edge-isomorphic-runtime) | [语言参考](12-svelte-language-complete) |
+> 难度标识：🌿 初学者友好 → 🌳 进阶深入 → 🔥 专家级
+> **第一次使用 Svelte？** → 先阅读 [QUICKSTART.md](QUICKSTART.md)（5 分钟上手）
 
-| 🚀 生产实践 | 📊 对比决策 | 🎓 学习成长 |
-|:-----------:|:-----------:|:-----------:|
-| [生产实践](08-production-practices) | [框架对比](10-framework-comparison) | [学习阶梯](16-learning-ladder) |
-| [SSR 原理](18-ssr-hydration-internals) | [迁移指南](09-migration-guide) | [知识图谱](17-knowledge-graph) |
-| [前沿动态](19-frontier-tracking) | [场景决策](15-application-scenarios) | [路线图](11-roadmap-2027) |
+### 🌿 初学者区（从零开始）
 
-| 🔬 源码与形式化 | 🌐 标准与前沿 | 🛠️ 构建与类型 |
-|:---------------:|:-------------:|:-------------:|
-| [源码形式证明](25-reactivity-source-proofs) | [TC39 Signals 对齐](21-tc39-signals-alignment) | [Compiler IR 与构建链](23-compiler-ir-buildchain) |
-| [浏览器渲染管线](22-browser-rendering-pipeline) | [TS 5.8+ 深度融合](24-typescript-58-svelte-fusion) | |
-| [渲染优化实战](20-browser-rendering-pipeline-optimization) | | |
+| 文档 | 内容 | 预计时间 |
+|:---|:---|:---:|
+| **[5 分钟上手](QUICKSTART.md)** | 浏览器内体验 / 本地项目 / 云端项目 | 5 min |
+| **[02. Runes 深度指南](02-svelte-5-runes)** | `$state` / `$derived` / `$effect` / Snippets / `.svelte.ts` | 60 min |
+| **[03. SvelteKit 全栈框架](03-sveltekit-fullstack)** | 文件系统路由、数据加载、Form Actions、部署 | 90 min |
+| **[05. Vite + pnpm 构建集成](05-vite-pnpm-integration)** | 插件架构、Monorepo、SSR 构建、代码分割 | 75 min |
+| **[10. 框架对比](10-framework-comparison)** | Svelte vs React / Vue / Solid / Angular 决策参考 | 45 min |
+| **[16. 学习阶梯](16-learning-ladder)** | Day 0 → Day 100 的 8 级渐进路径 + 45 个练习项目 | 自定 |
+
+### 🌳 进阶区（生产级应用）
+
+| 文档 | 内容 | 预计时间 |
+|:---|:---|:---:|
+| **[01. Compiler Signals 架构](01-compiler-signals-architecture)** | 编译器四阶段、Compiler IR、Vite 6.3 + Rolldown | 60 min |
+| **[04. TypeScript + Svelte 深度融合](04-typescript-svelte-runtime)** | `.svelte.ts`、泛型推断、`satisfies` / `NoInfer`、TS 7.0 前瞻 | 75 min |
+| **[06. Edge 同构运行时](06-edge-isomorphic-runtime)** | Cloudflare/Vercel Edge、D1/Turso、Streaming SSR | 90 min |
+| **[07. 生态工具链](07-ecosystem-tools)** | 测试、Lint、Storybook、Playwright、监控 | 60 min |
+| **[08. 生产实践](08-production-practices)** | 性能优化、安全、部署、CI/CD、可观测性 | 90 min |
+| **[09. 迁移指南](09-migration-guide)** | Svelte 4 → 5 / SvelteKit 1 → 2 完整迁移路径 | 60 min |
+| **[11. 路线图 2027](11-roadmap-2027)** | Svelte 生态 2026–2028 技术演进规划 | 30 min |
+| **[12. Svelte 语言完全参考](12-svelte-language-complete)** | 语法大全、语义模型、7 大高频反模式 | 90 min |
+| **[13. 组件模式](13-component-patterns)** | 设计模式、组合策略、性能优化、可访问性 | 75 min |
+| **[14. 响应式原理](14-reactivity-deep-dive)** | 概念模型、依赖图、伪代码、与 Signals 的等价性 | 60 min |
+| **[15. 场景决策](15-application-scenarios)** | 仪表盘、电商、CMS、AI 界面等 8 大场景选型 | 60 min |
+| **[18. SSR 与 Hydration 原理](18-ssr-hydration-internals)** | 服务端渲染、渐进式 Hydration、同构策略 | 75 min |
+| **[19. 前沿动态追踪](19-frontier-tracking)** | 版本发布、TC39 进展、核心维护者动态 | 20 min |
+| **[20. 渲染优化实战](20-browser-rendering-pipeline-optimization)** | INP 优化、DevTools 诊断、CSS 策略、生产监控 | 45 min |
+| **[21. TC39 Signals 对齐](21-tc39-signals-alignment)** | Stage 1 提案与 Svelte Runes 的语义等价性分析 | 60 min |
+
+### 🔥 专家区（源码与形式化）
+
+> ⚠️ 以下文档假设你已熟练掌握 Svelte 5 开发，并具备编译器原理或形式化方法的基础知识。
+
+| 文档 | 内容 | 预计时间 |
+|:---|:---|:---:|
+| **[22. 浏览器渲染管线](22-browser-rendering-pipeline.md)** | 从编译产物到屏幕像素的 Blink 源码级全链路映射 | 90 min |
+| **[23. Compiler IR 与构建链](23-compiler-ir-buildchain.md)** | 编译器 IR 设计、LLVM 类比、多后端支持 | 75 min |
+| **[24. TS 5.8+ 深度融合](24-typescript-58-svelte-fusion.md)** | 编译时类型传播、`.svelte.ts` cross-package、TS 7.0 路线图 | 60 min |
+| **[25. 响应式源码形式证明](25-reactivity-source-proofs.md)** | 基于 svelte@5.55.5 的 9 大定理形式化证明 | 120 min |
 
 ---
 
@@ -146,18 +206,19 @@ npm run dev
 
 | 章节 | 链接 | 内容 | 难度 | 预计阅读时间 |
 |------|------|------|:----:|:----------:|
-| **01. Compiler Signals 架构** | [阅读](01-compiler-signals-architecture) | 编译器原理、Signals vs VDOM、AST 转换、跨框架对比 | 🌳 | 45 min |
+| **01. Compiler Signals 架构全景** | [阅读](01-compiler-signals-architecture) | 编译器四阶段源码解析、Compiler IR 前瞻、Vite 6.3 + Rolldown 构建链、跨框架对比 | 🔥 | 60 min |
 | **02. Svelte 5 Runes 深度指南** | [阅读](02-svelte-5-runes) | $state/$derived/$effect、Snippets、.svelte.ts、迁移策略 | 🌿 | 60 min |
 
-#### 01. Compiler Signals 架构 详细内容
+#### 01. Compiler Signals 架构全景 详细内容
 
-本章节深入解析 Svelte 5 编译器的核心机制：
+本章节为编译器架构的**统一权威入口**，整合原 `01` 与 `23` 的精华：
 
-- **编译流程**：`.svelte` → AST → IR（中间表示）→ JavaScript + DOM 操作指令
-- **Signals 实现**：编译时依赖追踪 vs 运行时 Signals（Solid/MobX）
-- **VDOM 对比**：为什么 Svelte 不需要虚拟 DOM？直接编译为 `createElement` / `setText` / `setAttribute`
-- **跨框架编译器对比**：Svelte vs Solid（DOM 表达式）vs Vue Vapor Mode vs Angular Signals
-- **性能剖析**：使用 Chrome DevTools Performance 面板分析编译产物
+- **编译器四阶段源码解析**：Parse（Acorn + 手写状态机）→ Analyze（Runes 识别、依赖图构建）→ Transform（Client/Server 双目标生成）→ Generate（ESTree 打印 + Source Map）
+- **Compiler IR 前瞻**：Rich Harris 提出的目标无关中间表示设计，未来支持 WASM / 原生移动端后端
+- **构建链全链路**：`vite-plugin-svelte` 工作机制、Vite 6.3 Environment API 多环境构建、Rolldown 集成与性能基准
+- **编译输出深度对比**：Svelte 4 vs Svelte 5、Client vs Server、TC39 Signals 假想输出
+- **跨框架 Compiler 策略对比**：Svelte 5 vs Vue Vapor Mode vs React Compiler vs Angular Signals
+- **生产优化**：Tree Shaking、代码分割、编译缓存、`rollup-plugin-visualizer` 实战
 
 #### 02. Svelte 5 Runes 深度指南 详细内容
 
@@ -175,7 +236,7 @@ Runes 是 Svelte 5 引入的显式响应式原语，取代 Svelte 4 的隐式 `$
 | 章节 | 链接 | 内容 | 难度 | 预计阅读时间 |
 |------|------|------|:----:|:----------:|
 | **03. SvelteKit 全栈框架** | [阅读](03-sveltekit-fullstack) | 文件系统路由、数据加载、Form Actions、适配器、部署策略 | 🌿 | 90 min |
-| **04. TypeScript 编译运行时** | [阅读](04-typescript-svelte-runtime) | .svelte.ts、svelte-check、泛型组件、类型系统、类型守卫 | 🌿 | 60 min |
+| **04. TypeScript + Svelte 深度融合** | [阅读](04-typescript-svelte-runtime) | .svelte.ts、$props 类型推断、TS 5.8 `satisfies` / 5.9 `NoInfer`、TS 7.0 前瞻 | 🔥 | 75 min |
 | **05. Vite + pnpm 构建集成** | [阅读](05-vite-pnpm-integration) | 插件架构、Monorepo、SSR 构建、性能优化、代码分割 | 🌿 | 75 min |
 | **06. Edge 同构运行时** | [阅读](06-edge-isomorphic-runtime) | Cloudflare/Vercel Edge、D1/Turso 数据库、缓存、Streaming SSR | 🌳 | 90 min |
 
@@ -236,7 +297,7 @@ Edge-First 部署策略与架构设计：
 | **11. 2026-2028 路线图** | [阅读](11-roadmap-2027) | 趋势预测、技术演进、关键里程碑、社区动态 | 🔥 | 45 min |
 | **12. Svelte 语言完全参考** | [阅读](12-svelte-language-complete) | 系统语法大全、指令语义模型、Runes形式化定义、Store语义 | 🔥 | 90 min |
 | **13. 组件开发模式大全** | [阅读](13-component-patterns) | Props/Events/Snippets模式、Action设计、组件库设计体系 | 🌳 | 75 min |
-| **14. 响应式系统深度原理** | [阅读](14-reactivity-deep-dive) | 依赖追踪算法、调度机制、编译器转换、内存模型 | 🔥 | 90 min |
+| **14. 响应式系统深度原理** | [阅读](14-reactivity-deep-dive) | 概念模型与工程原理导论：依赖追踪、调度、内存模型、性能优化 | 🌳 | 60 min |
 | **15. 应用领域与场景决策** | [阅读](15-application-scenarios) | 适用/不适用场景矩阵、决策树、垂直行业案例 | 🌳 | 60 min |
 | **16. 渐进式学习阶梯** | [阅读](16-learning-ladder) | 8个级别从第0天到第100天，含知识点、练习项目 | 🌿 | 30 min |
 | **17. 知识图谱与思维工具** | [阅读](17-knowledge-graph) | 思维导图、决策树、推理树、多维矩阵、定理卡片 | 🌿 | 30 min |

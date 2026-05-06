@@ -1612,6 +1612,41 @@ graph LR
 
 **解读**: 三大框架的核心响应式概念都可以直接映射到 Svelte 5 的 Runes。理解这种映射关系是快速迁移的关键。
 
+---
+
+### 🛠️ Try It: 规划一个小型迁移方案
+
+**任务**: 假设你有一个包含 3 个组件的小型 Svelte 4 项目，编写一份迁移计划文档。
+
+**starter 项目结构**:
+
+```
+src/
+├── lib/
+│   ├── Counter.svelte      // 使用 $: count += 1
+│   ├── UserProfile.svelte  // 使用 onMount + writable store
+│   └── DataList.svelte     // 使用 $: filtered = items.filter(...)
+└── stores.js               // 导出 writable stores
+```
+
+**预期产出**: 一份包含以下内容的迁移计划：
+
+1. 每个组件的 `$:` 语句应映射到哪个 Rune
+2. `stores.js` 是否应迁移为 `.svelte.ts`
+3. 迁移顺序（哪个组件最先/最后迁移）
+4. 回滚策略
+
+**常见错误** ⚠️:
+> 试图一次性将所有 `$:` 替换为 `$derived`。实际上 `$:` 有两种用法：纯计算（用 `$derived`）和副作用（用 `$effect`），必须根据上下文判断。
+
+**验证方式**:
+
+- [ ] 计划中每个 `$:` 都有明确的 Rune 映射
+- [ ] 说明了为什么某些 Store 保留、哪些迁移为 `.svelte.ts`
+- [ ] 包含至少一个"如果迁移失败，如何回滚"的预案
+
+---
+
 ## 总结
 
 - Svelte 4 → 5 的迁移应遵循"先升级版本、再逐步引入 Runes、最后清理旧语法"的三阶段策略

@@ -303,6 +303,55 @@ svelte-hmr 分析组件变更范围
 DOM 局部更新（无页面刷新）
 ```
 
+---
+
+### 🛠️ Try It: 诊断并修复 HMR 状态丢失问题
+
+**任务**: 下面的 Vite 配置在开发模式下每次保存文件时，计数器状态都会重置为 0。诊断原因并修复。
+
+**starter code**:
+
+```ts
+// vite.config.ts
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [
+    sveltekit({
+      hot: {
+        // 当前配置...
+        noReload: true,
+        preserveLocalState: false
+      }
+    })
+  ]
+});
+```
+
+```svelte
+<!-- Counter.svelte -->
+<script>
+  let count = $state(0);
+</script>
+
+<button onclick={() => count++}>{count}</button>
+```
+
+**预期行为**: 修改 Counter.svelte 的模板（如添加一个 `<p>` 标签）后保存，按钮上的计数应保持不变。
+
+**常见错误** ⚠️:
+> 将 `preserveLocalState` 设为 `false` 以为能提升 HMR 速度。实际上这个选项控制的是 `$state` 变量在热更新时是否保留。对于使用 Runes 的 Svelte 5 项目，应始终启用 `preserveLocalState`。另一个常见错误是在 `svelte.config.js` 和 `vite.config.ts` 中重复配置并产生冲突。
+
+**验证方式**:
+
+- [ ] 点击按钮使 count > 0
+- [ ] 修改组件模板并保存
+- [ ] 确认 count 值保持不变
+- [ ] 确认 HMR 更新速度仍然可接受（< 200ms）
+
+---
+
 ## Vite 插件开发：自定义 Svelte 插件
 
 ### 插件架构
@@ -927,6 +976,58 @@ export default createSvelteKitConfig({
 ```
 
 > 来源: [pnpm Workspaces](https://pnpm.io/workspaces), [Turbo Repo](https://turbo.build/repo/docs) | 2026-04
+
+---
+
+### 🛠️ Try It: 搭建 pnpm workspace 共享配置
+
+**任务**: 为一个包含两个 SvelteKit 应用（`apps/web` 和 `apps/admin`）和一个共享 UI 库（`packages/ui`）的 monorepo 编写完整的 `pnpm-workspace.yaml` 和 `turbo.json`。
+
+**starter code**:
+
+```yaml
+# pnpm-workspace.yaml
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+catalog:
+  svelte: ^5.55.0
+  vite: ^6.3.0
+```
+
+```json
+// turbo.json
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      // 你的配置...
+    },
+    "dev": {
+      // 你的配置...
+    }
+  }
+}
+```
+
+**要求**:
+
+1. `packages/ui` 必须先构建，然后 `apps/web` 和 `apps/admin` 才能构建
+2. `dev` 任务持久运行，不缓存
+3. `build` 任务输出到 `.svelte-kit/output` 和 `dist/`
+
+**预期行为**: 运行 `pnpm turbo build` 时，Turbo 自动按依赖顺序构建，且未变更的应用会命中缓存。
+
+**常见错误** ⚠️:
+> 在 `turbo.json` 的 `dependsOn` 中使用 `"^build"` 但不正确配置 `outputs`，导致缓存命中时找不到产物。必须显式声明每个任务的 `outputs` 路径，否则 Turbo 不知道要缓存哪些文件。另外，`dev` 任务必须设置 `"cache": false` 和 `"persistent": true`，否则 Turbo 会尝试缓存开发服务器进程。
+
+**验证方式**:
+
+- [ ] `pnpm turbo build` 先构建 `ui` 再构建 `web` 和 `admin`
+- [ ] 第二次构建未变更的包命中缓存（显示 `cache hit`）
+- [ ] `pnpm turbo dev` 同时启动两个应用
+- [ ] 修改 `packages/ui` 后，`apps/web` 的缓存失效
 
 ---
 

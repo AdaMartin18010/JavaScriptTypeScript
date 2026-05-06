@@ -1,0 +1,903 @@
+{
+  "meta": {
+    "timestamp": "2026-05-06T08:37:12.638Z",
+    "svelteTag": "svelte@5.55.5",
+    "totalRefs": 125,
+    "passed": 90,
+    "failed": 35
+  },
+  "failed": [
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/1-parse/state/",
+      "line": 97,
+      "context": "- `packages/svelte/src/compiler/phases/1-parse/state/`（模板解析状态机）",
+      "sourceFile": "..\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/1-parse/state/"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/3-transform/client/",
+      "line": 174,
+      "context": "- `packages/svelte/src/compiler/phases/3-transform/client/`（客户端代码生成）",
+      "sourceFile": "..\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/client/"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/3-transform/server/",
+      "line": 175,
+      "context": "- `packages/svelte/src/compiler/phases/3-transform/server/`（SSR 代码生成）",
+      "sourceFile": "..\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/server/"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/internal/client/dom/blocks",
+      "line": 1178,
+      "context": "- 🔬 [Svelte 源码 — 客户端 Hydration](https://github.com/sveltejs/svelte/tree/main/packages/svelte/src/internal/client/dom/blocks)",
+      "sourceFile": "..\\svelte-signals-stack\\18-ssr-hydration-internals.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/blocks"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/1-parse/state/",
+      "line": 57,
+      "context": "- `packages/svelte/src/compiler/phases/1-parse/state/`（模板解析状态机）",
+      "sourceFile": "..\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/1-parse/state/"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/3-transform/client/",
+      "line": 143,
+      "context": "- `packages/svelte/src/compiler/phases/3-transform/client/`（客户端代码生成）",
+      "sourceFile": "..\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/client/"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/3-transform/server/",
+      "line": 144,
+      "context": "- `packages/svelte/src/compiler/phases/3-transform/server/`（SSR 代码生成）",
+      "sourceFile": "..\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/server/"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases",
+      "line": 633,
+      "context": "- 📚 [Svelte 5.55.5 源码 - compiler/phases/](https://github.com/sveltejs/svelte/tree/svelte%405.55.5/packages/svelte/src/compiler/phases) — 编译四阶段实现",
+      "sourceFile": "..\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/internal/client/reactivity/",
+      "line": 10,
+      "context": "> **分析对象**: `packages/svelte/src/internal/client/reactivity/` + `runtime.js`",
+      "sourceFile": "..\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/internal/client/reactivity",
+      "line": 110,
+      "context": "基于 Svelte 运行时真实源码（`packages/svelte/src/internal/client/reactivity`），证明：",
+      "sourceFile": "..\\svelte-signals-stack\\meta\\PLAN_SVELTE_SIGNALS_COMPREHENSIVE_ANALYSIS.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity"
+    },
+    {
+      "type": "github-blob",
+      "path": "packages/svelte/src/internal/client/reactivity/runtime.js",
+      "line": 54,
+      "context": "| `active_reaction` | `packages/svelte/src/internal/client/reactivity/runtime.js` | [svelte@5.55.5/runtime.js](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js) | 25 |",
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js"
+    },
+    {
+      "type": "github-blob",
+      "path": "packages/svelte/src/internal/client/reactivity/runtime.js#L1-L60",
+      "line": 55,
+      "context": "| `remove_reaction()` | 同上，L1-L60 | [runtime.js#L1-L60](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L1-L60) | 25 |",
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L1-L60"
+    },
+    {
+      "type": "github-blob",
+      "path": "packages/svelte/src/internal/client/reactivity/runtime.js#L61-L120",
+      "line": 56,
+      "context": "| `update_reaction()` | 同上，L61-L120 | [runtime.js#L61-L120](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L61-L120) | 25 |",
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L61-L120"
+    },
+    {
+      "type": "github-blob",
+      "path": "packages/svelte/src/internal/client/reactivity/runtime.js#L121-L170",
+      "line": 57,
+      "context": "| `write_version` / `read_version` | 同上，L121-L170 | [runtime.js#L121-L170](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L121-L170) | 25 |",
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L121-L170"
+    },
+    {
+      "type": "github-blob",
+      "path": "packages/svelte/src/internal/client/reactivity/runtime.js#L171-L210",
+      "line": 58,
+      "context": "| `is_dirty()` | 同上，L171-L210 | [runtime.js#L171-L210](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L171-L210) | 25 |",
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L171-L210"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/1-parse/",
+      "line": 81,
+      "context": "| Parse Phase | `packages/svelte/src/compiler/phases/1-parse/` | [compiler/phases/1-parse](https://github.com/sveltejs/svelte/tree/svelte@5.55.5/packages/svelte/src/compiler/phases/1-parse) | 23 |",
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/1-parse/"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/1-parse",
+      "line": 81,
+      "context": "| Parse Phase | `packages/svelte/src/compiler/phases/1-parse/` | [compiler/phases/1-parse](https://github.com/sveltejs/svelte/tree/svelte@5.55.5/packages/svelte/src/compiler/phases/1-parse) | 23 |",
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/1-parse"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/2-analyze/",
+      "line": 82,
+      "context": "| Analyze Phase | `packages/svelte/src/compiler/phases/2-analyze/` | [compiler/phases/2-analyze](https://github.com/sveltejs/svelte/tree/svelte@5.55.5/packages/svelte/src/compiler/phases/2-analyze) | 23 |",
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/2-analyze/"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/2-analyze",
+      "line": 82,
+      "context": "| Analyze Phase | `packages/svelte/src/compiler/phases/2-analyze/` | [compiler/phases/2-analyze](https://github.com/sveltejs/svelte/tree/svelte@5.55.5/packages/svelte/src/compiler/phases/2-analyze) | 23 |",
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/2-analyze"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/3-transform/",
+      "line": 83,
+      "context": "| Transform Phase | `packages/svelte/src/compiler/phases/3-transform/` | [compiler/phases/3-transform](https://github.com/sveltejs/svelte/tree/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform) | 23 |",
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/3-transform",
+      "line": 83,
+      "context": "| Transform Phase | `packages/svelte/src/compiler/phases/3-transform/` | [compiler/phases/3-transform](https://github.com/sveltejs/svelte/tree/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform) | 23 |",
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/internal/client/reactivity/",
+      "line": 12,
+      "context": "- 所有引用文件均存在于 `packages/svelte/src/internal/client/reactivity/` 目录下",
+      "sourceFile": "..\\svelte-signals-stack\\meta\\VALIDATION_REPORT.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/internal/client/reactivity",
+      "line": 110,
+      "context": "基于 Svelte 运行时真实源码（`packages/svelte/src/internal/client/reactivity`），证明：",
+      "sourceFile": "..\\svelte-signals-stack\\PLAN_SVELTE_SIGNALS_COMPREHENSIVE_ANALYSIS.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity"
+    },
+    {
+      "type": "github-blob",
+      "path": "packages/svelte/src/internal/client/reactivity/runtime.js",
+      "line": 54,
+      "context": "| `active_reaction` | `packages/svelte/src/internal/client/reactivity/runtime.js` | [svelte@5.55.5/runtime.js](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js) | 25 |",
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js"
+    },
+    {
+      "type": "github-blob",
+      "path": "packages/svelte/src/internal/client/reactivity/runtime.js#L1-L60",
+      "line": 55,
+      "context": "| `remove_reaction()` | 同上，L1-L60 | [runtime.js#L1-L60](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L1-L60) | 25 |",
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L1-L60"
+    },
+    {
+      "type": "github-blob",
+      "path": "packages/svelte/src/internal/client/reactivity/runtime.js#L61-L120",
+      "line": 56,
+      "context": "| `update_reaction()` | 同上，L61-L120 | [runtime.js#L61-L120](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L61-L120) | 25 |",
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L61-L120"
+    },
+    {
+      "type": "github-blob",
+      "path": "packages/svelte/src/internal/client/reactivity/runtime.js#L121-L170",
+      "line": 57,
+      "context": "| `write_version` / `read_version` | 同上，L121-L170 | [runtime.js#L121-L170](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L121-L170) | 25 |",
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L121-L170"
+    },
+    {
+      "type": "github-blob",
+      "path": "packages/svelte/src/internal/client/reactivity/runtime.js#L171-L210",
+      "line": 58,
+      "context": "| `is_dirty()` | 同上，L171-L210 | [runtime.js#L171-L210](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L171-L210) | 25 |",
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L171-L210"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/1-parse/",
+      "line": 81,
+      "context": "| Parse Phase | `packages/svelte/src/compiler/phases/1-parse/` | [compiler/phases/1-parse](https://github.com/sveltejs/svelte/tree/svelte@5.55.5/packages/svelte/src/compiler/phases/1-parse) | 23 |",
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/1-parse/"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/1-parse",
+      "line": 81,
+      "context": "| Parse Phase | `packages/svelte/src/compiler/phases/1-parse/` | [compiler/phases/1-parse](https://github.com/sveltejs/svelte/tree/svelte@5.55.5/packages/svelte/src/compiler/phases/1-parse) | 23 |",
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/1-parse"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/2-analyze/",
+      "line": 82,
+      "context": "| Analyze Phase | `packages/svelte/src/compiler/phases/2-analyze/` | [compiler/phases/2-analyze](https://github.com/sveltejs/svelte/tree/svelte@5.55.5/packages/svelte/src/compiler/phases/2-analyze) | 23 |",
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/2-analyze/"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/2-analyze",
+      "line": 82,
+      "context": "| Analyze Phase | `packages/svelte/src/compiler/phases/2-analyze/` | [compiler/phases/2-analyze](https://github.com/sveltejs/svelte/tree/svelte@5.55.5/packages/svelte/src/compiler/phases/2-analyze) | 23 |",
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/2-analyze"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/3-transform/",
+      "line": 83,
+      "context": "| Transform Phase | `packages/svelte/src/compiler/phases/3-transform/` | [compiler/phases/3-transform](https://github.com/sveltejs/svelte/tree/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform) | 23 |",
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/compiler/phases/3-transform",
+      "line": 83,
+      "context": "| Transform Phase | `packages/svelte/src/compiler/phases/3-transform/` | [compiler/phases/3-transform](https://github.com/sveltejs/svelte/tree/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform) | 23 |",
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "status": 404,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform"
+    },
+    {
+      "type": "relative-path",
+      "path": "packages/svelte/src/internal/client/reactivity/",
+      "line": 12,
+      "context": "- 所有引用文件均存在于 `packages/svelte/src/internal/client/reactivity/` 目录下",
+      "sourceFile": "..\\svelte-signals-stack\\VALIDATION_REPORT.md",
+      "status": 400,
+      "ok": false,
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/"
+    }
+  ],
+  "passed": [
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 62,
+      "sourceFile": "..\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/1-parse/index.js",
+      "line": 96,
+      "sourceFile": "..\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/1-parse/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/2-analyze/index.js",
+      "line": 127,
+      "sourceFile": "..\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/2-analyze/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/index.js",
+      "line": 173,
+      "sourceFile": "..\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/print/index.js",
+      "line": 242,
+      "sourceFile": "..\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/print/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 676,
+      "sourceFile": "..\\svelte-signals-stack\\04-typescript-svelte-runtime.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js",
+      "line": 530,
+      "sourceFile": "..\\svelte-signals-stack\\21-tc39-signals-alignment.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/runtime.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js",
+      "line": 531,
+      "sourceFile": "..\\svelte-signals-stack\\21-tc39-signals-alignment.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js",
+      "line": 532,
+      "sourceFile": "..\\svelte-signals-stack\\21-tc39-signals-alignment.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js",
+      "line": 533,
+      "sourceFile": "..\\svelte-signals-stack\\21-tc39-signals-alignment.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js",
+      "line": 534,
+      "sourceFile": "..\\svelte-signals-stack\\21-tc39-signals-alignment.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/batch.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/template.js",
+      "line": 538,
+      "sourceFile": "..\\svelte-signals-stack\\22-browser-rendering-pipeline.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/template.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js",
+      "line": 748,
+      "sourceFile": "..\\svelte-signals-stack\\22-browser-rendering-pipeline.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/operations.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/template.js",
+      "line": 749,
+      "sourceFile": "..\\svelte-signals-stack\\22-browser-rendering-pipeline.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/template.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 22,
+      "sourceFile": "..\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/1-parse/index.js",
+      "line": 56,
+      "sourceFile": "..\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/1-parse/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/2-analyze/index.js",
+      "line": 91,
+      "sourceFile": "..\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/2-analyze/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/index.js",
+      "line": 142,
+      "sourceFile": "..\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/print/index.js",
+      "line": 207,
+      "sourceFile": "..\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/print/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 632,
+      "sourceFile": "..\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 1503,
+      "sourceFile": "..\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/utils.js",
+      "line": 1507,
+      "sourceFile": "..\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/utils.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 1508,
+      "sourceFile": "..\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 634,
+      "sourceFile": "..\\svelte-signals-stack\\24-typescript-58-svelte-fusion.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js",
+      "line": 29,
+      "sourceFile": "..\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/runtime.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/constants.js",
+      "line": 117,
+      "sourceFile": "..\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/constants.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js",
+      "line": 794,
+      "sourceFile": "..\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js",
+      "line": 795,
+      "sourceFile": "..\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js",
+      "line": 796,
+      "sourceFile": "..\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js",
+      "line": 797,
+      "sourceFile": "..\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/batch.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js",
+      "line": 798,
+      "sourceFile": "..\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/runtime.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/status.js",
+      "line": 799,
+      "sourceFile": "..\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/status.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js",
+      "line": 30,
+      "sourceFile": "..\\svelte-signals-stack\\MAINTENANCE_GUIDE.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js",
+      "line": 30,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\MAINTENANCE_GUIDE.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js",
+      "line": 15,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L1-L60",
+      "line": 16,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js#L1-L60"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L80-L130",
+      "line": 17,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js#L80-L130"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L131-L170",
+      "line": 18,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js#L131-L170"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L171-L210",
+      "line": 19,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js#L171-L210"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js",
+      "line": 25,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L1-L50",
+      "line": 26,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js#L1-L50"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L51-L100",
+      "line": 27,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js#L51-L100"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L101-L140",
+      "line": 28,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js#L101-L140"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L141-L170",
+      "line": 29,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js#L141-L170"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js",
+      "line": 35,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L1-L60",
+      "line": 36,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js#L1-L60"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L61-L120",
+      "line": 37,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js#L61-L120"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L121-L160",
+      "line": 38,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js#L121-L160"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L161-L210",
+      "line": 39,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js#L161-L210"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L211-L250",
+      "line": 40,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js#L211-L250"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js",
+      "line": 46,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/batch.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js#L1-L50",
+      "line": 47,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/batch.js#L1-L50"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js#L51-L100",
+      "line": 48,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/batch.js#L51-L100"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js",
+      "line": 66,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/operations.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L1-L40",
+      "line": 67,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/operations.js#L1-L40"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L41-L80",
+      "line": 68,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/operations.js#L41-L80"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L81-L120",
+      "line": 69,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/operations.js#L81-L120"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L121-L180",
+      "line": 70,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/operations.js#L121-L180"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 78,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js#L1-L60",
+      "line": 79,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js#L1-L60"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js#L61-L120",
+      "line": 80,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js#L61-L120"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/utils.js",
+      "line": 84,
+      "sourceFile": "..\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/utils.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js",
+      "line": 15,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L1-L60",
+      "line": 16,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js#L1-L60"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L80-L130",
+      "line": 17,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js#L80-L130"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L131-L170",
+      "line": 18,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js#L131-L170"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L171-L210",
+      "line": 19,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js#L171-L210"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js",
+      "line": 25,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L1-L50",
+      "line": 26,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js#L1-L50"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L51-L100",
+      "line": 27,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js#L51-L100"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L101-L140",
+      "line": 28,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js#L101-L140"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L141-L170",
+      "line": 29,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js#L141-L170"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js",
+      "line": 35,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L1-L60",
+      "line": 36,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js#L1-L60"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L61-L120",
+      "line": 37,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js#L61-L120"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L121-L160",
+      "line": 38,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js#L121-L160"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L161-L210",
+      "line": 39,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js#L161-L210"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L211-L250",
+      "line": 40,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js#L211-L250"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js",
+      "line": 46,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/batch.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js#L1-L50",
+      "line": 47,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/batch.js#L1-L50"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js#L51-L100",
+      "line": 48,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/batch.js#L51-L100"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js",
+      "line": 66,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/operations.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L1-L40",
+      "line": 67,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/operations.js#L1-L40"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L41-L80",
+      "line": 68,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/operations.js#L41-L80"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L81-L120",
+      "line": 69,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/operations.js#L81-L120"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L121-L180",
+      "line": 70,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/operations.js#L121-L180"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 78,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js#L1-L60",
+      "line": 79,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js#L1-L60"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js#L61-L120",
+      "line": 80,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js#L61-L120"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/utils.js",
+      "line": 84,
+      "sourceFile": "..\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/utils.js"
+    }
+  ]
+}

@@ -6,11 +6,13 @@ keywords: '响应式原理, Signals, 依赖追踪, 编译器转换, 内存模型
 
 # 响应式系统深度原理
 
-> 从"会用 Runes"到"理解响应式引擎"
+> **版本对齐**: Svelte 5.55.5
+> **文档定位**: 概念模型与工程原理导论 —— 从"会用 Runes"到"理解响应式引擎"
+> **阅读路径**: 本章使用**概念性伪代码**阐释响应式原理，适合建立直觉与工程判断；如需基于真实源码的严格形式证明（定理、不变量、复杂度下界），请阅读 [25. 响应式源码形式证明](25-reactivity-source-proofs)。
 
 当你写下 `let count = $state(0)` 并点击按钮让 `count++` 时，Svelte 5 内部发生了一系列精密协调的操作：编译器在构建阶段将你的声明转换为带有响应式元数据的 Signal 对象；运行时在你读取 `count` 的瞬间悄悄建立了依赖关系图；当你在事件处理器中修改值时，调度器以微任务批量处理所有变更，按照拓扑排序确保 Derived 在 Effect 之前完成计算，然后驱动 DOM 精确更新。这整个过程涉及编译器理论、图算法、内存管理和调度策略的深度融合。
 
-本章将系统性地拆解 Svelte 5 的 Compiler-Based Signals 响应式引擎，从范式对比的数学视角出发，深入运行时架构、编译转换、内存模型和性能优化方法论。
+本章将系统性地拆解 Svelte 5 的 Compiler-Based Signals 响应式引擎，从范式对比的数学视角出发，深入运行时架构、编译转换、内存模型和性能优化方法论。**本章的伪代码模型为理解 [25. 响应式源码形式证明](25-reactivity-source-proofs) 中的真实源码与严格定理提供概念基础。**
 
 ---
 
@@ -82,6 +84,56 @@ jQuery (手动 DOM) → MVC (双向绑定) → VDOM (Pull) → Proxy (细粒度 
 ```
 
 Svelte 5 的 Compiler-Based Signals 代表了当前前端响应式系统的工程最优解之一：它将**编译期知识**（哪些变量被读取、哪些表达式是派生的、哪些语句是副作用）转化为**运行期效率**（消除虚拟 DOM、消除动态依赖追踪、最小化更新路径），同时保留了**开发体验**（声明式语法、自动依赖追踪幻觉）。
+
+---
+
+### 🛠️ Try It: 手动追踪一次状态变更的完整路径
+
+**任务**: 给定下面的组件代码，在纸上（或注释中）逐步追踪当 `count` 从 0 变为 1 时，Svelte 5 响应式引擎的完整执行路径。
+
+**starter code**:
+
+```svelte
+<script>
+  let count = $state(0);
+  let doubled = $derived(count * 2);
+  let quadrupled = $derived(doubled * 2);
+
+  $effect(() => {
+    console.log('count effect:', count);
+  });
+
+  $effect(() => {
+    console.log('doubled effect:', doubled);
+  });
+</script>
+
+<button onclick={() => count++}>
+  {count} / {doubled} / {quadrupled}
+</button>
+```
+
+**请回答**:
+
+1. `count++` 执行时，运行时内部调用了什么函数？
+2. `count` 的 `version` 如何变化？
+3. 哪些节点被标记为 dirty / maybe_dirty？
+4. `flush_updates` 时，节点的执行顺序是什么？
+5. `doubled` 为什么比 `quadrupled` 先计算？
+6. 两个 `$effect` 的执行顺序是什么？为什么？
+
+**预期行为**: 通过手动追踪理解 Signals 的三阶段更新流水线：**脏标记 → 调度 → 拓扑执行**。这是理解所有响应式调试的基础。
+
+**常见错误** ⚠️:
+> 认为 `$derived` 在依赖变化时"立即"重新计算。实际上 `$derived` 采用**惰性求值**——它只被标记为 MAYBE_DIRTY，只有当有 consumer（如 effect 或模板读取）真正读取它时，才检查依赖版本并决定是否重新计算。如果没有任何 consumer 读取 `quadrupled`，即使 `count` 变化，`quadrupled` 也永远不会被计算。
+
+**验证方式**:
+
+- [ ] 正确列出所有被标记的节点
+- [ ] 正确写出执行拓扑顺序
+- [ ] 能解释为什么 derived 先于 effect 执行
+- [ ] 能解释惰性求值的意义
+- [ ] 在浏览器 DevTools 中用 `$inspect.trace()` 验证自己的推导
 
 ---
 
@@ -504,6 +556,64 @@ $effect(() => {
 | **适用场景** | 高频细粒度更新 | 复杂交互、大列表、优先级任务 |
 
 > **设计哲学差异**: Svelte 5 选择"简单即快"——没有优先级、没有时间切片、没有可中断渲染。它依赖编译器生成的高效代码和 Signals 的固有细粒度来保证性能，而非复杂的运行时调度。这使得 Svelte 5 的更新是**原子性**的：一旦开始 flush，所有 effect 同步执行完毕，DOM 处于一致状态。
+
+### 2.4 版本号机制
+
+---
+
+### 🛠️ Try It: 利用版本号机制优化冗余计算
+
+**任务**: 下面的 `expensiveDerived` 是一个计算成本很高的派生值。当前实现有一个性能问题：当 `filter` 变化但 `items` 不变时，`expensiveDerived` 会被不必要地重新计算。请利用 Svelte 5 的版本号/惰性求值特性重构代码，避免冗余计算。
+
+**starter code**:
+
+```svelte
+<script>
+  let items = $state([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  let filter = $state('even'); // 'even' | 'odd' | 'all'
+
+  // 问题：即使 items 和 filter 都没变，某些场景下仍会重复计算
+  let expensiveDerived = $derived.by(() => {
+    console.log('Expensive calculation running...');
+    const filtered = filter === 'even'
+      ? items.filter(x => x % 2 === 0)
+      : filter === 'odd'
+        ? items.filter(x => x % 2 !== 0)
+        : items;
+
+    // 模拟昂贵的数据处理
+    return filtered.map(x => x * x).reduce((a, b) => a + b, 0);
+  });
+
+  // 另一个只依赖 items 的 derived
+  let itemCount = $derived(items.length);
+</script>
+
+<p>Sum: {expensiveDerived}</p>
+<p>Count: {itemCount}</p>
+<button onclick={() => filter = filter === 'even' ? 'odd' : 'even'}>Toggle Filter</button>
+<button onclick={() => items = [...items, items.length + 1]}>Add Item</button>
+```
+
+**问题**:
+
+1. 连续点击两次 "Toggle Filter"（偶数→奇数→偶数），`expensiveDerived` 会被计算几次？
+2. 如果 `itemCount` 被读取时触发了组件更新，但模板中没有读取 `expensiveDerived`，`expensiveDerived` 会被计算吗？
+3. 如何利用 `$derived` 的惰性求值和版本号缓存来确保最小计算？
+
+**预期行为**: 理解 Svelte 5 的 `$derived` 已经内置了最优的缓存策略——只要 `expensiveDerived` 的依赖（`filter` 和 `items`）的引用/值未变，它不会重新计算。真正的问题是开发者是否在设计时拆分了独立的 derived，避免一个 derived 依赖过多无关状态。
+
+**常见错误** ⚠️:
+> 手动实现缓存逻辑（如 `useMemo` 风格的依赖数组），试图"优化" `$derived`。Svelte 5 的 `$derived` 已经通过版本号机制实现了完美的自动缓存，任何手动缓存都是画蛇添足，且可能引入一致性 bug。正确的优化是**拆分 derived**，让每个 `$derived` 只依赖最少的状态。
+
+**验证方式**:
+
+- [ ] 能解释为什么 `$derived` 不需要手动依赖数组
+- [ ] 能预测在给定交互序列下的计算次数
+- [ ] 理解惰性求值如何减少不必要的计算
+- [ ] 知道何时应该拆分一个庞大的 `$derived` 为多个小的 `$derived`
+
+---
 
 ### 2.4 版本号机制
 
@@ -948,6 +1058,62 @@ flush 时执行顺序:
 
 ---
 
+### 🛠️ Try It: 诊断并修复内存泄漏
+
+**任务**: 下面的组件在挂载/卸载多次后会导致内存泄漏。找出泄漏源并修复。
+
+**starter code**:
+
+```svelte
+<script>
+  let id = $state(1);
+  let data = $state(null);
+
+  // 泄漏源 1
+  $effect(() => {
+    fetch(`/api/data/${id}`)
+      .then(r => r.json())
+      .then(d => data = d);
+  });
+
+  // 泄漏源 2
+  $effect(() => {
+    const handler = () => console.log(data);
+    document.addEventListener('click', handler);
+    // 缺少清理...
+  });
+
+  // 泄漏源 3
+  let interval;
+  $effect(() => {
+    interval = setInterval(() => {
+      console.log('tick', id);
+    }, 1000);
+    return () => clearInterval(interval);
+  });
+</script>
+```
+
+**问题**:
+
+1. 泄漏源 1：如果组件在 fetch 返回前卸载，会发生什么？
+2. 泄漏源 2：`document.addEventListener` 为何会导致泄漏？
+3. 泄漏源 3：`interval` 变量被覆盖后，旧的 interval 还能被清理吗？
+
+**预期行为**: 组件卸载后，所有外部资源（定时器、事件监听器、未完成请求）都被正确清理，无残留引用。
+
+**常见错误** ⚠️:
+> 在 `$effect` 中启动异步操作（如 `fetch`）但不在清理函数中取消它。当组件在请求完成前卸载，回调中修改 `$state` 会导致 "Can't read properties of undefined" 错误（尝试更新已销毁组件的状态）。正确做法是使用 `AbortController` 或手动设置一个 `mounted` 标志。
+
+**验证方式**:
+
+- [ ] 修复后组件能正常挂载/卸载多次
+- [ ] 在 DevTools Performance 面板中观察内存曲线，确认无阶梯式增长
+- [ ] 快速切换路由时控制台无报错
+- [ ] 使用 Chrome DevTools Heap Snapshot 比较挂载前后的对象数量
+
+---
+
 ## 4. 内存模型与生命周期
 
 理解 Signal、Effect 和 Derived 的生命周期对于编写高性能、无泄漏的 Svelte 5 应用至关重要。
@@ -1351,6 +1517,30 @@ if (import.meta.env.DEV) {
 
 ---
 
+---
+
+### 🧩 反直觉案例: 解构 $state 对象会“断开”响应式
+
+**直觉预期**: "解构出来的变量会随原对象属性同步更新"
+
+**实际行为**: 解构是静态的属性读取，得到的值是普通变量，后续对象变化不会触发更新
+
+**代码演示**:
+
+```svelte
+<script>
+  let user = $state({ name: 'Alice' });
+  let { name } = user; // 仅读取一次
+</script>
+<p>{name}</p> <!-- 修改 user.name 后这里不更新 -->
+```
+
+**为什么会这样？**
+`$state` 返回 Proxy，但解构语法 `let { name } = ...` 在脚本执行时只读取一次属性值。编译器不会将本地变量 `name` 转换为 Signal 引用，因此它失去了与原始对象的连接。
+
+**教训**
+> 不要直接解构 `$state` 对象。如需响应式解构，使用 `$derived(() => user.name)` 或在模板中直接访问 `user.name`。
+
 ## 总结
 
 Svelte 5 的 Compiler-Based Signals 响应式系统代表了前端框架工程的前沿成果。通过将编译期的静态分析与运行时的 Signals 机制相结合，它实现了：
@@ -1449,7 +1639,11 @@ flowchart LR
 
 **解读**: Svelte 编译器在构建时完成所有响应式分析，将 `$state`、`$derived`、`$effect` 转换为底层的 Signal 创建、依赖注册和副作用调度代码。
 
-> 💡 **相关阅读**: [编译器与 Signals 架构](01-compiler-signals-architecture) · [Svelte 5 Runes 完全指南](02-svelte-5-runes)
+> 💡 **相关阅读**:
+>
+> - [25. 响应式源码形式证明](25-reactivity-source-proofs) — 基于 Svelte 5.55.5 真实运行时的 15 条定理与工程级严格论证
+> - [01. 编译器与 Signals 架构](01-compiler-signals-architecture) — 编译器四阶段、Compiler IR、跨框架对比
+> - [02. Svelte 5 Runes 完全指南](02-svelte-5-runes) — Runes 语法与使用模式
 
 ---
 

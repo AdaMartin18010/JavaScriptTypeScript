@@ -210,6 +210,58 @@ routes/
 
 ---
 
+### 🛠️ Try It: 创建一个带参数校验的动态路由
+
+**任务**: 为博客系统创建一个动态路由 `/blog/[slug]`，要求：
+
+1. 使用自定义参数匹配器确保 `slug` 只包含小写字母、数字和连字符
+2. 在 `+page.ts` 中根据 slug 加载文章数据
+3. 如果 slug 格式不合法或文章不存在，返回 404
+
+**starter code**:
+
+```ts
+// src/params/slug.ts
+import type { ParamMatcher } from '@sveltejs/kit';
+
+export const match: ParamMatcher = (param) => {
+  // 你的正则表达式
+};
+```
+
+```ts
+// src/routes/blog/[slug=slug]/+page.ts
+import type { PageLoad } from './$types';
+import { error } from '@sveltejs/kit';
+
+const posts = new Map([
+  ['hello-world', { title: 'Hello World', content: '...' }],
+  ['svelte-5-guide', { title: 'Svelte 5 Guide', content: '...' }]
+]);
+
+export const load: PageLoad = ({ params }) => {
+  // 你的实现...
+};
+```
+
+**预期行为**:
+
+- `/blog/hello-world` 正常显示文章
+- `/blog/INVALID_SLUG!` 返回 404
+- `/blog/nonexistent` 返回 404
+
+**常见错误** ⚠️:
+> 忘记在 `+page.ts` 中处理数据不存在的情况，导致页面渲染时出现 `undefined` 错误。SvelteKit 的 `error()` 辅助函数应在数据缺失时立即抛出，而不是返回空对象让组件处理。
+
+**验证方式**:
+
+- [ ] 合法 slug 正确显示文章
+- [ ] 包含大写字母的 slug 返回 404
+- [ ] 包含特殊字符的 slug 返回 404
+- [ ] 不存在的 slug 返回 404
+
+---
+
 ## 数据加载（Load Functions）
 
 数据加载是 SvelteKit 全栈能力的核心。
@@ -422,6 +474,62 @@ interface LoadEvent {
 
 ---
 
+### 🛠️ Try It: 实现带流式数据的仪表盘
+
+**任务**: 在 `+page.ts` 中实现流式加载：立即返回用户统计（快数据），同时流式返回最近订单（慢数据）。在 `+page.svelte` 中用 `{#await}` 优雅地展示加载状态。
+
+**starter code**:
+
+```ts
+// src/routes/dashboard/+page.ts
+export const load = async () => {
+  const stats = { users: 1234, revenue: 5678 }; // 快数据
+
+  // 模拟慢数据：2 秒后返回订单列表
+  const orders = new Promise((resolve) => {
+    setTimeout(() => resolve([
+      { id: 1, total: 99 },
+      { id: 2, total: 149 }
+    ]), 2000);
+  });
+
+  return {
+    // 你的实现...
+  };
+};
+```
+
+```svelte
+<!-- src/routes/dashboard/+page.svelte -->
+<script>
+  let { data } = $props();
+</script>
+
+<!-- 立即显示统计 -->
+<div class="stats">...</div>
+
+<!-- 流式显示订单，带骨架屏 -->
+```
+
+**预期行为**:
+
+- 页面立即显示统计数字
+- 订单区域先显示骨架屏/加载提示
+- 2 秒后订单列表平滑出现
+- 无 JavaScript 时（关闭 JS）表单仍通过标准 POST 提交
+
+**常见错误** ⚠️:
+> 在 `+page.ts` 中对 Promise 使用 `await`，导致整个页面被慢数据阻塞，失去流式传输的意义。流式数据的关键是**返回 Promise 本身**而非 await 后的结果。
+
+**验证方式**:
+
+- [ ] 首屏在 < 100ms 内显示统计
+- [ ] 订单区域有加载状态指示
+- [ ] 订单数据最终正确渲染
+- [ ] 关闭浏览器 JS 后页面仍能正常工作（渐进增强）
+
+---
+
 ## Form Actions
 
 SvelteKit 的 Form Actions 是其最独特和强大的特性之一。它基于原生 HTML Form 构建，通过服务端处理函数来实现数据提交，同时提供了渐进式增强（Progressive Enhancement）机制，让表单在没有 JavaScript 的情况下也能正常工作。
@@ -607,6 +715,68 @@ export const actions: Actions = {
 ::: tip 无 JavaScript 也能工作
 不使用 `use:enhance` 时，表单就是标准的 HTML Form，通过 POST 请求提交到服务端，服务端处理后返回页面。这意味着你的应用即使在 JavaScript 加载失败或被禁用的环境下依然可用——这是现代 Web 应用应有的韧性。
 :::
+
+---
+
+### 🛠️ Try It: 构建一个带验证和乐观更新的 Todo 表单
+
+**任务**: 实现一个 Todo 列表，使用 SvelteKit Form Actions 添加新项目，并应用 `use:enhance` 实现乐观更新。
+
+**starter code**:
+
+```ts
+// src/routes/todos/+page.server.ts
+import type { Actions } from './$types';
+import { fail } from '@sveltejs/kit';
+
+let todos = [
+  { id: '1', text: 'Learn SvelteKit', done: false }
+];
+
+export const actions: Actions = {
+  default: async ({ request }) => {
+    const formData = await request.formData();
+    const text = formData.get('text') as string;
+
+    // 1. 验证：text 不能为空且至少 3 个字符
+    // 2. 创建新 todo
+    // 3. 返回更新后的列表
+  }
+};
+```
+
+```svelte
+<!-- src/routes/todos/+page.svelte -->
+<script>
+  import { enhance } from '$app/forms';
+  let { data, form } = $props();
+  let optimisticTodos = $state([]);
+</script>
+
+<form method="POST" use:enhance={({ formData, submit }) => {
+  // 实现乐观更新...
+}}>
+  <input name="text" placeholder="New todo..." />
+  <button type="submit">Add</button>
+</form>
+```
+
+**预期行为**:
+
+- 空文本或短文本提交时显示错误（服务端验证）
+- 有效提交时，新 Todo 立即出现在列表中（乐观更新）
+- 如果服务端返回错误，自动回滚乐观更新
+- 无 JavaScript 时表单正常提交
+
+**常见错误** ⚠️:
+> 在 `use:enhance` 回调中直接修改 `data.todos`（这是服务端返回的 props，不应直接修改）。正确做法是维护独立的 `$state` 作为乐观状态，在 `submit` 阶段更新它，在 `result` 阶段根据服务端响应决定保留或回滚。
+
+**验证方式**:
+
+- [ ] 空提交显示验证错误
+- [ ] 有效提交立即显示新项目（无需等待网络）
+- [ ] 服务端错误时回滚到正确状态
+- [ ] 禁用 JavaScript 后表单仍可通过页面刷新工作
 
 ---
 

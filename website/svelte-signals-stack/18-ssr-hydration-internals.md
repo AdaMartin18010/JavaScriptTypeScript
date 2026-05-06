@@ -1094,6 +1094,33 @@ export default defineConfig({
 
 ---
 
+---
+
+### 🧩 反直觉案例: `localeCompare` 排序差异导致 Hydration Mismatch
+
+**直觉预期**: "同样的代码、同样的数据，服务端和客户端渲染结果必然一致"
+
+**实际行为**: Node.js 与浏览器的默认 `localeCompare` 排序规则可能不同，导致列表顺序不一致，Hydration 静默失败或重新渲染
+
+**代码演示**:
+
+```svelte
+<script>
+  let files = $state(['file10.txt', 'file1.txt', 'file2.txt']);
+</script>
+<ul>
+  {#each files.sort((a, b) => a.localeCompare(b)) as f}
+    <li>{f}</li>
+  {/each}
+</ul>
+```
+
+**为什么会这样？**
+不同运行时的 ICU/Collation 默认选项存在差异（如 `numeric` 敏感度）。服务端排好的顺序到客户端可能被重新排列，Hydration 发现 DOM 节点序列不匹配，只能回退到客户端重渲染，失去 SSR 的首屏优势。
+
+**教训**
+> 所有依赖环境语义的计算（排序、格式化、随机数）应在 `$effect` 或 `onMount` 中执行，或通过 `+page.server.ts` 返回确定性数据。
+
 ## 总结
 
 SvelteKit 的 SSR 与 Hydration 机制体现了"编译时优化"哲学的极致：

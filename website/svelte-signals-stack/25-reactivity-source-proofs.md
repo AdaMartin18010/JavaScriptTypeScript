@@ -9,9 +9,11 @@ keywords: '响应式原理, Signals, 依赖追踪, 编译器转换, 内存模型
 > **版本对齐**: Svelte 5.55.5 (`github.com/sveltejs/svelte@5.55.5`)
 > **分析对象**: `packages/svelte/src/internal/client/reactivity/` + `runtime.js`
 > **方法论**: 工程级严谨推理 —— 基于真实源码提取不变量，通过归纳法与反证法论证核心性质，非定理证明器级形式化。
+> **文档定位**: 源码级深度分析与严格论证 —— 适合已理解响应式概念、希望验证算法正确性的研究者。
+> **阅读路径**: 若你对 Signals 的依赖追踪、调度机制尚无直觉，建议先阅读 [14. 响应式系统深度原理](14-reactivity-deep-dive) 建立概念模型；本章在其基础上引入真实源码引用与形式化定理。
 
 当你写下 `let count = $state(0)` 并点击按钮让 `count++` 时，Svelte 5 内部发生了一系列精密协调的操作。
-与概念性伪代码不同，本章将直接基于 Svelte 5.55.5 的真实运行时源码，提取数据结构、算法流程与关键不变量，建立具备源码引用可追溯性的工程级论证体系。
+与概念性伪代码不同，本章将直接基于 Svelte 5.55.5 的真实运行时源码，提取数据结构、算法流程与关键不变量，建立具备源码引用可追溯性的工程级论证体系。本章的 15 条定理与真实源码片段共同构成了 Svelte 5 Compiler-Based Signals 响应式引擎的正确性与性能基础。
 
 ---
 
@@ -786,6 +788,31 @@ function remove_reaction(signal, dependency) {
 这些性质共同构成了 Svelte 5 Compiler-Based Signals 响应式引擎的正确性与性能基础。
 
 ---
+
+---
+
+### 🧩 反直觉案例: `remove_reaction` 的 `swap-pop` 导致 Effect 顺序非确定性
+
+**直觉预期**: "依赖清理只是从数组中删除元素，不会影响其他逻辑"
+
+**实际行为**: `swap-pop` 将末尾 reaction 移到被删位置，多次更新后同深度 Effect 的触发顺序可能发生偶发性互换
+
+**代码演示**:
+
+```javascript
+// 概念简化（源码逻辑）
+function remove_reaction(arr, i) {
+  arr[i] = arr[arr.length - 1];
+  arr.pop();
+}
+// 连续更新后，reactions 数组顺序可能改变
+```
+
+**为什么会这样？**
+Svelte 为追求 O(1) 删除性能使用 `swap-pop`。在绝大多数场景下 Effect 顺序无关紧要；但若存在跨 Effect 的隐式依赖（如 Effect A 测量 DOM，Effect B 写入布局），顺序互换会导致偶发的 forced reflow 或测量错误。
+
+**教训**
+> 不要依赖同深度 Effect 的执行顺序；有阶段要求的副作用应合并到同一个 `$effect` 中，或使用 `$effect.pre` 与 `$effect` 显式分离读写阶段。
 
 ## 参考资源
 
