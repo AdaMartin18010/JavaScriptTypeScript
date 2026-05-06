@@ -51,7 +51,7 @@
 
 ### 2.2 实验数据引用
 
-- **js-framework-benchmark**: Chrome 124, 1000 rows, Svelte 5 median 优化后 ~18ms 创建时间，React 18 ~42ms
+- **js-framework-benchmark**: Chrome 146, 1000 rows, Svelte 5 median 优化后 ~18ms 创建时间，React 18 ~42ms
 - **Memory**: Svelte 5 无 VDOM 树，内存占用显著低于 React (基准: 官方 benchmark 内存面板)
 - **INP 字段数据**: 2026-04 Chrome UX Report (CrUX) 未公开 Svelte 5 专项数据，采用实验室 benchmark 推算
 

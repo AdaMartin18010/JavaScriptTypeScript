@@ -484,7 +484,7 @@ const count = new Signal.State(0);
 1. **API 冻结风险**：TC39 标准化进程缓慢（Stage 1 → Stage 3 通常需 2-3 年），Svelte 的核心创新可能被标准约束
 2. **实现分歧**：不同浏览器的原生 Signals 实现可能存在细微差异，导致跨浏览器 bug
 3. **高级特性缺失**：TC39 Signals 作为底层原语，不涵盖 Svelte 的 `async_derived`、`fork`、Proxy 响应式等高级功能，Svelte 仍需维护大量运行时代码
-4. **Polyfill 负担**：在老旧浏览器（如 Safari 17 以下）普及前，仍需 polyfill，抵消体积优势
+4. **Polyfill 负担**：在老旧浏览器（如 Safari 18 以下）普及前，仍需 polyfill，抵消体积优势
 
 ### 6.3 时间线预测（2026-05 更新）
 
@@ -494,18 +494,20 @@ const count = new Signal.State(0);
 |------|------------|----------------|:---:|
 | 2026 H2 | Stage 1 维持，算法争议持续 | Svelte 5.60+ 继续优化内部实现，观望标准演进 | 高 |
 | 2027 H1 | 可能仍维持 Stage 1（ polyfill 成熟度不足） | Svelte 6 前期开发，重点在 Compiler IR 和跨后端编译 | 中 |
-| 2027 H2 | **最早**进入 Stage 2（若 polyfill 和框架集成达标） | 社区可能出现基于原生 Signals 的 Svelte 实验分支 | 低 |
-| 2028 | Stage 2 深化或 Stage 2.7 | Svelte 6 Stable 可能实验性支持 `compilerOptions.target: 'tc39-signals'` | 低 |
-| 2029+ | Stage 3（若一切顺利） | Svelte 7 可能评估默认原生 Signals，但调度器层仍将保留 | 极低 |
-| 2030+ | Stage 4（标准发布） | 浏览器原生支持，运行时体积可能减少 10-20% | 极低 |
+| 2027 H2 | **无 Stage 2 计划** — 三条前置要求（polyfill、框架集成、扩展空间）均不满足，无浏览器厂商推进 | Svelte 继续独立演进内部 Signals，无标准化时间表 | 极低 |
+| 2028+ | 维持 Stage 1 或提案撤回风险 | 若仍无推进，Svelte 6 将彻底放弃 TC39 对齐路线 | 极低 |
+| 2029+ | — | — | — |
+| 2030+ | — | — | — |
 
 **修正后的核心判断**：
 
-1. **Stage 2 不会在 2026 年推进**：三条前置要求（polyfill、框架集成、扩展空间理解）在 2026 年内无法全部满足。
+1. **Stage 2 不会在 2026-2027 年推进**：三条前置要求（polyfill、框架集成、扩展空间理解）在 2026-2027 年内无法全部满足。更关键的是，提案仓库自 2025-08-11 后**零 commit**，GitHub Issues #278-#282（Watcher 调度语义、Signal 类型扩展、内存模型边界条件等核心争议）至今**未解决**，无 Champion 推动关闭。
 
-2. **Svelte 团队应保持独立演进**：Rich Harris 在 TC39 第 104 次会议的表态（"观望至 Stage 3"）在 2026-2027 年仍然是最优策略。过早绑定到 Stage 1 的语义不确定的 API 会带来技术债务。
+2. **浏览器厂商零承诺**：Chrome/V8、SpiderMonkey、JavaScriptCore 均未在 TC39 会议或公开渠道表达原生实现意向。无浏览器引擎支持是 Stage 2 推进的根本性障碍。
 
-3. **长期前景不变，但时间线大幅延后**：即使最终标准化（2030+），Svelte 的编译器优势将从 "实现 Signals" 转向 "优化 Signals 使用模式"。标准化降低学习成本的目标仍然成立，但实现时间比此前预期推迟 2-3 年。
+3. **Svelte 团队应保持独立演进**：Rich Harris 在 TC39 第 104 次会议的表态（"观望至 Stage 3"）在 2026-2027 年仍然是最优策略。过早绑定到 Stage 1 的语义不确定的 API 会带来技术债务。Svelte 5 的内部 Signals 实现已远超 TC39 提案当前的能力范围。
+
+4. **长期前景评估下调**：TC39 Signals 存在**提案撤回或被其他提案替代**的风险（如 Observable / EventTarget 演进路线）。Svelte 的编译器优势将继续来自 "自主优化 Signals 使用模式"，而非等待标准化。即使 2030+ 年有标准发布，Svelte 也不一定会迁移。
 
 ---
 
@@ -846,8 +848,8 @@ export function schedule_effect(effect) {
 
 | 指标 | 当前状态 | 趋势 |
 |:---|:---|:---|
-| TC39 会议讨论热度 | Stage 1，活跃讨论 | ↑ 上升 |
-| 浏览器厂商支持 | Chrome/V8 团队关注 | → 观察 |
+| TC39 会议讨论热度 | Stage 1，**2025-08 后无活跃讨论** | ↓ 停滞 |
+| 浏览器厂商支持 | **无浏览器厂商表达实现意向**（Chrome/V8、Firefox、Safari 均未承诺） | → 无兴趣 |
 | 框架采用 (除 Svelte) | Solid、Qwik、Angular Signals 实验 | ↑ 上升 |
 | 开发者调查 (State of JS) | 68% 支持标准化 | ↑ 上升 |
 | 反对声音 | 担心 API 冻结过早、调度器差异 | → 存在 |
@@ -906,8 +908,8 @@ export function schedule_effect(effect) {
 |:---|:---|:---|:---|
 | TC39 第 105 次 | 2026-01 | Stage 1 延续，收集实现反馈 | 继续 Stage 1 |
 | TC39 第 106 次 | 2026-04 | 讨论 `Signal.subtle` 命名空间 | 保留 `subtle`，增加 `unsafe` 别名讨论 |
-| TC39 第 107 次 | 2026-07 (预计) | Watcher 调度语义细化 | 待定 |
-| TC39 第 108 次 | 2026-10 (预计) | 寻求 Stage 2 入口条件 | 待定 |
+| TC39 第 107 次 | 2026-07 | **Signals 不在议程中** — 无推进议题提交 | — |
+| TC39 第 108 次 | 2026-10 | **未计划 Signals 相关讨论** | — |
 
 ### D.2 框架作者的立场
 

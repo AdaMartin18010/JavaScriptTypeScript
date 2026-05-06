@@ -457,7 +457,7 @@ Angular 提供的是"一个框架解决所有问题"的方案：
 | **Startup Time** | **45ms** | 120ms | 95ms | 50ms | 180ms |
 | **Memory (1k rows)** | **1.2MB** | 2.8MB | 2.5MB | 1.4MB | 3.5MB |
 
-> **测试环境**: Chrome 124, macOS 14, M3 Pro, 16GB RAM | 越低越好
+> **测试环境**: Chrome 146, macOS 15, M3 Pro, 16GB RAM | 越低越好
 
 ### 性能对比可视化
 

@@ -851,6 +851,126 @@ Snippets 是 Svelte 5 替代 Svelte 4 Slots 的新机制。它本质上是一种
 | TypeScript | 类型支持有限 | 完整类型推断 |
 | 嵌套使用 | 有限制 | 完全自由 |
 
+### Snippets 高级特性（5.29+）
+
+#### `{@attach}` — DOM 节点行为挂载（5.29+）
+
+`{@attach}` 是一个新的特殊标签，用于在 Snippet 渲染时将行为（behavior）附加到生成的 DOM 节点上，无需创建包裹组件。它是 Action 的轻量级替代，专门用于 Snippet 上下文。
+
+```svelte
+<!-- Tooltip.svelte -->
+<script>
+  let { content, trigger } = $props();
+</script>
+
+<button>
+  {@render trigger()}
+  {@attach (node) => {
+    // node 是 trigger() 渲染出的第一个 DOM 节点
+    const tooltip = document.createElement('div');
+    tooltip.textContent = content;
+    tooltip.className = 'tooltip';
+    document.body.appendChild(tooltip);
+
+    const show = () => tooltip.style.display = 'block';
+    const hide = () => tooltip.style.display = 'none';
+    node.addEventListener('mouseenter', show);
+    node.addEventListener('mouseleave', hide);
+
+    return () => {
+      // 清理函数，节点卸载时调用
+      node.removeEventListener('mouseenter', show);
+      node.removeEventListener('mouseleave', hide);
+      tooltip.remove();
+    };
+  }}
+</button>
+```
+
+> 💡 **与 Action 的区别**: Action 通过 `use:` 指令绑定到组件元素，`{@attach}` 则绑定到 Snippet 的渲染输出节点，更适合**无包裹层**的 UI 模式。
+
+#### Snippet 泛型参数（5.30+）
+
+Snippet 现在支持泛型类型参数，使得可复用的列表渲染模板可以获得完整的类型推断。
+
+```svelte
+<!-- DataTable.svelte -->
+<script generics="T extends { id: string }">
+  let { items, row }: {
+    items: T[];
+    row: import('svelte').Snippet<[T]>;
+  } = $props();
+</script>
+
+<table>
+  {#each items as item (item.id)}
+    <tr>
+      {@render row(item)}
+      <!-- item 的类型被精确推断为 T，而非 any -->
+    </tr>
+  {/each}
+</table>
+
+<!-- 使用方 -->
+<DataTable items={users}>
+  {#snippet row(user)}
+    <!-- user 被推断为 User 类型 -->
+    <td>{user.name}</td>
+    <td>{user.email}</td>
+  {/snippet}
+</DataTable>
+```
+
+**编译器优化**: 带有 `generics` 的组件，Svelte 5.30+ 编译器会在生成 `.d.ts` 时保留泛型参数，第三方库消费时无需额外类型断言。
+
+#### Async Components — 异步组件加载（5.36+）
+
+Svelte 5.36 引入了原生异步组件支持，允许在 `<script>` 模块顶层使用 `await` 导入动态组件，无需手动管理 `{#await}` 块。
+
+```svelte
+<!-- Dashboard.svelte -->
+<script>
+  import { lazy } from 'svelte';
+
+  // 异步加载重型图表组件，自动处理 loading / error 状态
+  const Chart = lazy(() => import('./HeavyChart.svelte'));
+
+  let data = $state([]);
+</script>
+
+<Chart {data} fallback={<p>正在加载图表组件...</p>} />
+```
+
+**等效手写模式**（用于理解编译器输出）：
+
+```svelte
+<script>
+  let ChartComponent = $state(null);
+  let error = $state(null);
+
+  async function loadChart() {
+    try {
+      const mod = await import('./HeavyChart.svelte');
+      ChartComponent = mod.default;
+    } catch (e) {
+      error = e;
+    }
+  }
+
+  loadChart();
+</script>
+
+{#if error}
+  <p class="error">加载失败: {error.message}</p>
+{:else if ChartComponent}
+  <ChartComponent />
+{:else}
+  <p>正在加载...</p>
+{/if}
+```
+
+> ⚠️ **限制**: `lazy()` 仅在客户端可用。SSR 场景下应使用 `+page.js` 的 `export const ssr = false` 或在 `onMount` 中动态导入。
+
 ---
 
 ### 🛠️ Try It: 将 Svelte 4 Store 迁移为 .svelte.ts

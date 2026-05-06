@@ -51,11 +51,11 @@
 
 | 符号 | 文件路径 | GitHub 永久链接 | 被引用文档 |
 |:---|:---|:---|:---|
-| `active_reaction` | `packages/svelte/src/internal/client/reactivity/runtime.js` | [svelte@5.55.5/runtime.js](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js) | 25 |
-| `remove_reaction()` | 同上，L1-L60 | [runtime.js#L1-L60](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L1-L60) | 25 |
-| `update_reaction()` | 同上，L61-L120 | [runtime.js#L61-L120](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L61-L120) | 25 |
-| `write_version` / `read_version` | 同上，L121-L170 | [runtime.js#L121-L170](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L121-L170) | 25 |
-| `is_dirty()` | 同上，L171-L210 | [runtime.js#L171-L210](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/runtime.js#L171-L210) | 25 |
+| `active_reaction` | `packages/svelte/src/internal/client/runtime.js` | [svelte@5.55.5/runtime.js](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/runtime.js) | 25 |
+| `remove_reaction()` | 同上，L1-L60 | [runtime.js#L1-L60](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/runtime.js#L1-L60) | 25 |
+| `update_reaction()` | 同上，L61-L120 | [runtime.js#L61-L120](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/runtime.js#L61-L120) | 25 |
+| `write_version` / `read_version` | 同上，L121-L170 | [runtime.js#L121-L170](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/runtime.js#L121-L170) | 25 |
+| `is_dirty()` | 同上，L171-L210 | [runtime.js#L171-L210](https://github.com/sveltejs/svelte/blob/svelte@5.55.5/packages/svelte/src/internal/client/runtime.js#L171-L210) | 25 |
 
 ---
 

@@ -113,12 +113,13 @@ Step 6: [01. 编译器架构](01-compiler-signals-architecture) + [14. 响应式
 | 框架 | 创建 10k 行 | 更新 1k 行 | Bundle (gzip) | Lighthouse | 留存率 | 内存占用 |
 |------|:-----------:|:----------:|:-------------:|:----------:|:------:|:--------:|
 | **Svelte 5** | **250ms** | **12ms** | **~25KB** | **96** | **90%** | **18MB** |
-| React 19 + Next.js | 450ms | 28ms | ~95KB | 92 | 74% | 42MB |
+| React 19 + Next.js (Compiler ON) | 320ms | 18ms | ~78KB | 94 | 80% | 28MB |
+| React 19 + Next.js (Compiler OFF) | 450ms | 28ms | ~95KB | 92 | 74% | 42MB |
 | Vue 3.5 + Nuxt | 400ms | 22ms | ~58KB | 94 | 82% | 35MB |
 | Solid 1.9 | 220ms | **10ms** | ~35KB | **98** | 85% | 20MB |
 | Angular 19 | 520ms | 35ms | ~135KB | 89 | 68% | 55MB |
 
-> **分析**：Svelte 5 在创建性能上接近 Solid，Bundle 体积最小，内存占用仅为 React 的 43%。编译器将模板编译为直接 DOM 操作指令，无需运行时虚拟 DOM reconciler。
+> **分析**：Svelte 5 在创建性能上接近 Solid，Bundle 体积最小。React 19 开启 Compiler 后性能显著提升（创建 10k 行从 450ms 降至 320ms，内存从 42MB 降至 28MB），但与 Svelte 5 仍有差距——Svelte 5 的内存占用仅为 React 19 (Compiler ON) 的 64%。Compiler OFF 时差距更大（内存仅为 React 的 43%）。编译器将模板编译为直接 DOM 操作指令，无需运行时虚拟 DOM reconciler。
 
 ### 包体积深度对比
 
@@ -770,7 +771,18 @@ flowchart TD
 
 ### Q1: Svelte 5 和 React 19 相比，最大的区别是什么？
 
-**A**: 响应式模型的根本差异。React 使用虚拟 DOM + 协调（Reconciliation），每次状态更新都会重新渲染组件树，通过 diff 算法找出 DOM 变化。Svelte 5 使用编译器将组件编译为直接操作 DOM 的指令，状态变化时精确更新单个 DOM 节点。这使得 Svelte 5 在 Bundle 体积（2KB vs 45KB）和运行时内存占用（18MB vs 42MB）上都有数量级优势。
+**A**: 响应式模型的根本差异。React 使用虚拟 DOM + 协调（Reconciliation），每次状态更新都会重新渲染组件树，通过 diff 算法找出 DOM 变化。Svelte 5 使用编译器将组件编译为直接操作 DOM 的指令，状态变化时精确更新单个 DOM 节点。
+>
+> **性能对比（JS Framework Benchmark 2026-04）**：
+>
+> | 指标 | Svelte 5 | React 19 (Compiler ON) | React 19 (Compiler OFF) |
+> |:---|:---:|:---:|:---:|
+> | Bundle (Hello World) | ~2KB | ~38KB | ~45KB |
+> | 内存 (10k 组件) | ~18MB | ~28MB | ~42MB |
+> | 创建 10k 行 | ~250ms | ~320ms | ~450ms |
+> | 几何均值 (vs vanilla) | **1.13×** | **1.41×** | ~1.85× |
+>
+> React 19 Compiler 开启后性能显著提升（几何均值从 ~1.85× 优化至 **1.41×** vanilla），但 Svelte 5 仍以 **1.13×** 保持领先。内存方面，Svelte 5 仅为 React 19 (Compiler ON) 的 64%。Compiler OFF 时差距更大。
 
 ### Q2: 我的团队只有 React 经验，迁移到 Svelte 5 需要多久？
 

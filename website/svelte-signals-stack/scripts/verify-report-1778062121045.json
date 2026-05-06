@@ -1,0 +1,765 @@
+{
+  "meta": {
+    "timestamp": "2026-05-06T10:08:41.045Z",
+    "svelteTag": "svelte@5.55.5",
+    "totalRefs": 125,
+    "passed": 50,
+    "skipped": 75,
+    "failed": 0
+  },
+  "passed": [
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 62,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/1-parse/index.js",
+      "line": 96,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/1-parse/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/2-analyze/index.js",
+      "line": 127,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/2-analyze/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/index.js",
+      "line": 173,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/print/index.js",
+      "line": 281,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/print/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 831,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\04-typescript-svelte-runtime.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js",
+      "line": 558,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\21-tc39-signals-alignment.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/runtime.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js",
+      "line": 559,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\21-tc39-signals-alignment.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js",
+      "line": 560,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\21-tc39-signals-alignment.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js",
+      "line": 561,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\21-tc39-signals-alignment.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js",
+      "line": 562,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\21-tc39-signals-alignment.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/batch.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/template.js",
+      "line": 542,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\22-browser-rendering-pipeline.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/template.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js",
+      "line": 778,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\22-browser-rendering-pipeline.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/operations.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/template.js",
+      "line": 779,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\22-browser-rendering-pipeline.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/template.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 22,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/1-parse/index.js",
+      "line": 56,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/1-parse/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/2-analyze/index.js",
+      "line": 91,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/2-analyze/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/index.js",
+      "line": 142,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/print/index.js",
+      "line": 207,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/print/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 663,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 1534,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/utils.js",
+      "line": 1538,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/utils.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 1539,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 634,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\24-typescript-58-svelte-fusion.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js",
+      "line": 29,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/runtime.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/constants.js",
+      "line": 117,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/constants.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js",
+      "line": 819,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js",
+      "line": 820,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js",
+      "line": 821,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js",
+      "line": 822,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/batch.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js",
+      "line": 823,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/runtime.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/status.js",
+      "line": 824,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/status.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js",
+      "line": 30,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\MAINTENANCE_GUIDE.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js",
+      "line": 30,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\MAINTENANCE_GUIDE.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js",
+      "line": 15,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js",
+      "line": 25,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js",
+      "line": 35,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js",
+      "line": 46,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/batch.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js",
+      "line": 54,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/runtime.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js",
+      "line": 66,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/operations.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 78,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/utils.js",
+      "line": 84,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/utils.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js",
+      "line": 15,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/sources.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js",
+      "line": 25,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/deriveds.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js",
+      "line": 35,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/effects.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js",
+      "line": 46,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/reactivity/batch.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js",
+      "line": 54,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/runtime.js"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js",
+      "line": 66,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/internal/client/dom/operations.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js",
+      "line": 78,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/index.js"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/utils.js",
+      "line": 84,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "checkedUrl": "https://raw.githubusercontent.com/sveltejs/svelte/refs/tags/svelte@5.55.5/packages/svelte/src/compiler/phases/3-transform/utils.js"
+    }
+  ],
+  "skipped": [
+    {
+      "path": "packages/svelte/src/compiler/phases/1-parse/state/",
+      "line": 97,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/client/",
+      "line": 174,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/server/",
+      "line": 175,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\01-compiler-signals-architecture.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/blocks",
+      "line": 1205,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\18-ssr-hydration-internals.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/1-parse/state/",
+      "line": 57,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/client/",
+      "line": 143,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/server/",
+      "line": 144,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases",
+      "line": 664,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\23-compiler-ir-buildchain.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/",
+      "line": 10,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\25-reactivity-source-proofs.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity",
+      "line": 110,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\PLAN_SVELTE_SIGNALS_COMPREHENSIVE_ANALYSIS.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L1-L60",
+      "line": 16,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L80-L130",
+      "line": 17,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L131-L170",
+      "line": 18,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L171-L210",
+      "line": 19,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L1-L50",
+      "line": 26,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L51-L100",
+      "line": 27,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L101-L140",
+      "line": 28,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L141-L170",
+      "line": 29,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L1-L60",
+      "line": 36,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L61-L120",
+      "line": 37,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L121-L160",
+      "line": 38,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L161-L210",
+      "line": 39,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L211-L250",
+      "line": 40,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js#L1-L50",
+      "line": 47,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js#L51-L100",
+      "line": 48,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js#L1-L60",
+      "line": 55,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js#L61-L120",
+      "line": 56,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js#L121-L170",
+      "line": 57,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js#L171-L210",
+      "line": 58,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L1-L40",
+      "line": 67,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L41-L80",
+      "line": 68,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L81-L120",
+      "line": 69,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L121-L180",
+      "line": 70,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js#L1-L60",
+      "line": 79,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js#L61-L120",
+      "line": 80,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/1-parse/",
+      "line": 81,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/1-parse",
+      "line": 81,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/2-analyze/",
+      "line": 82,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/2-analyze",
+      "line": 82,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/",
+      "line": 83,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform",
+      "line": 83,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/",
+      "line": 12,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\meta\\VALIDATION_REPORT.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity",
+      "line": 110,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\PLAN_SVELTE_SIGNALS_COMPREHENSIVE_ANALYSIS.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L1-L60",
+      "line": 16,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L80-L130",
+      "line": 17,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L131-L170",
+      "line": 18,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/sources.js#L171-L210",
+      "line": 19,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L1-L50",
+      "line": 26,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L51-L100",
+      "line": 27,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L101-L140",
+      "line": 28,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/deriveds.js#L141-L170",
+      "line": 29,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L1-L60",
+      "line": 36,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L61-L120",
+      "line": 37,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L121-L160",
+      "line": 38,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L161-L210",
+      "line": 39,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/effects.js#L211-L250",
+      "line": 40,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js#L1-L50",
+      "line": 47,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/batch.js#L51-L100",
+      "line": 48,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js#L1-L60",
+      "line": 55,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js#L61-L120",
+      "line": 56,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js#L121-L170",
+      "line": 57,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/runtime.js#L171-L210",
+      "line": 58,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L1-L40",
+      "line": 67,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L41-L80",
+      "line": 68,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L81-L120",
+      "line": 69,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/dom/operations.js#L121-L180",
+      "line": 70,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js#L1-L60",
+      "line": 79,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/index.js#L61-L120",
+      "line": 80,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/1-parse/",
+      "line": 81,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/1-parse",
+      "line": 81,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/2-analyze/",
+      "line": 82,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/2-analyze",
+      "line": 82,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform/",
+      "line": 83,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/compiler/phases/3-transform",
+      "line": 83,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\SOURCE_REFERENCE_INDEX.md",
+      "reason": "directory path not verifiable via raw API"
+    },
+    {
+      "path": "packages/svelte/src/internal/client/reactivity/",
+      "line": 12,
+      "sourceFile": "E:\\_src\\JavaScriptTypeScript\\website\\svelte-signals-stack\\VALIDATION_REPORT.md",
+      "reason": "directory path not verifiable via raw API"
+    }
+  ],
+  "failed": []
+}

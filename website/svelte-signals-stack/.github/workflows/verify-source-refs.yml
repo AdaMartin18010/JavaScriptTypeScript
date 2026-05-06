@@ -1,0 +1,72 @@
+name: Verify Svelte Source References
+
+on:
+  pull_request:
+    paths:
+      - '**/*.md'
+      - '.github/workflows/verify-source-refs.yml'
+  push:
+    branches: [main, master]
+    paths:
+      - '**/*.md'
+      - '.github/workflows/verify-source-refs.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    name: Verify source references against svelte@5.55.5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run source reference verification
+        id: verify
+        run: |
+          cd website/svelte-signals-stack
+          node scripts/verify-svelte-source-references.js --ci > verify-result.json
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+          cat verify-result.json
+        continue-on-error: true
+
+      - name: Parse results
+        id: parse
+        run: |
+          cd website/svelte-signals-stack
+          if [ -f verify-result.json ]; then
+            FAILED=$(node -e "const d=require('./verify-result.json'); console.log(d.summary.failed)")
+            PASSED=$(node -e "const d=require('./verify-result.json'); console.log(d.summary.passed)")
+            SKIPPED=$(node -e "const d=require('./verify-result.json'); console.log(d.summary.skipped)")
+            echo "failed=$FAILED" >> $GITHUB_OUTPUT
+            echo "passed=$PASSED" >> $GITHUB_OUTPUT
+            echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
+          else
+            echo "failed=0" >> $GITHUB_OUTPUT
+            echo "passed=0" >> $GITHUB_OUTPUT
+            echo "skipped=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Report status
+        run: |
+          echo "## 📊 Source Reference Verification Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| ✅ Passed | ${{ steps.parse.outputs.passed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ⏭️ Skipped (directories) | ${{ steps.parse.outputs.skipped }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ❌ Failed | ${{ steps.parse.outputs.failed }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> **基准标签**: \`svelte@5.55.5\`" >> $GITHUB_STEP_SUMMARY
+          echo "> **校验方式**: GitHub Raw API (no clone)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail if references are broken
+        if: steps.parse.outputs.failed != '0'
+        run: |
+          echo "::error::${{ steps.parse.outputs.failed }} source reference(s) are broken. Check the job summary for details."
+          exit 1

@@ -7,7 +7,7 @@ keywords: 'INP 优化, Chrome DevTools, Svelte 性能, 渲染优化, CRP, Core W
 # 浏览器渲染管线优化实战指南
 
 > **定位**: [22-browser-rendering-pipeline](22-browser-rendering-pipeline.md) 的实战 companion 文档 | **深度**: 生产级优化指南
-> **最后更新**: 2026-05-06 | **浏览器对齐**: Chrome 124+ / Firefox 125+ / Safari 17+ | **Svelte 对齐**: 5.55.5
+> **最后更新**: 2026-05-06 | **浏览器对齐**: Chrome 130+ / Firefox 128+ / Safari 18+ | **Svelte 对齐**: 5.55.5
 
 ---
 
@@ -393,7 +393,33 @@ Main Thread:
 </script>
 ```
 
-### 2.3 使用 `scheduler.yield()` 拆分长任务（Chrome 124+）
+### 2.3 使用 `scheduler.yield()` 拆分长任务（Chrome 129+）与 LoAF 监控
+
+> **LoAF** (Long Animation Frames API, Chrome 123+) 是诊断 INP 瓶颈的利器。它精确报告每一长帧中各阶段的耗时（脚本执行、样式计算、布局、绘制），帮助定位 `$effect` 中的性能热点。
+
+**LoAF 监控代码**:
+
+```ts
+// +layout.svelte 或 app-level 初始化
+if (typeof PerformanceObserver !== 'undefined') {
+  const observer = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      if (entry.duration > 100) {
+        console.warn('🐌 Long Animation Frame detected:', {
+          duration: entry.duration,
+          scriptDuration: entry.scriptDuration,
+          styleDuration: entry.styleDuration,
+          layoutDuration: entry.layoutDuration,
+          // entry.firstUIEventTimestamp 可用于关联用户交互
+        });
+      }
+    }
+  });
+  observer.observe({ entryTypes: ['long-animation-frame'] });
+}
+```
+
+**结合 `scheduler.yield()` 拆分长任务**:
 
 ```svelte
 <script>
@@ -773,4 +799,4 @@ INP > 200ms?
 - [Chrome DevTools Performance](https://developer.chrome.com/docs/devtools/performance) — 性能分析工具文档
 - [Svelte 性能优化官方指南](https://svelte.dev/docs/performance) — Svelte 官方最佳实践
 
-> 最后更新: 2026-05-06 | 浏览器对齐: Chrome 124+ / Firefox 125+ / Safari 17+ | Svelte 对齐: 5.55.5
+> 最后更新: 2026-05-06 | 浏览器对齐: Chrome 130+ / Firefox 128+ / Safari 18+ | Svelte 对齐: 5.55.5
