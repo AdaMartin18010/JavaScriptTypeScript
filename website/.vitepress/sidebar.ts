@@ -1261,6 +1261,37 @@ export const sidebar: DefaultTheme.Sidebar = {
     },
   ],
 
+  // WebAssembly 深度专题（顶层）
+  '/webassembly/': [
+    {
+      text: '⚡ WebAssembly',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/webassembly/' },
+      ]
+    },
+    {
+      text: '核心原理与工具链',
+      collapsed: false,
+      items: [
+        { text: '01. WebAssembly 核心概念', link: '/webassembly/01-wasm-core-concepts' },
+        { text: '02. Rust → Wasm 工具链', link: '/webassembly/02-rust-wasm-toolchain' },
+        { text: '03. AssemblyScript 与替代语言', link: '/webassembly/03-alternative-languages' },
+        { text: '04. WASI 与 Component Model', link: '/webassembly/04-wasi-component-model' },
+      ]
+    },
+    {
+      text: '集成与部署',
+      collapsed: false,
+      items: [
+        { text: '05. 浏览器集成与 JS 互操作', link: '/webassembly/05-browser-js-interop' },
+        { text: '06. 边缘计算中的 Wasm', link: '/webassembly/06-wasm-edge-computing' },
+        { text: '07. 性能优化与基准测试', link: '/webassembly/07-performance-benchmarking' },
+        { text: '08. 安全模型与沙箱', link: '/webassembly/08-security-sandbox' },
+      ]
+    },
+  ],
+
   // 模板部分
   '/templates/': [
     {
