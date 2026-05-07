@@ -1,0 +1,13 @@
+{
+  "name": "inp-benchmark-runner",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "benchmark": "node runner.mjs",
+    "benchmark:svelte": "node runner.mjs --framework=svelte",
+    "benchmark:all": "node runner.mjs --framework=all --scenario=all --iterations=100"
+  },
+  "devDependencies": {
+    "playwright": "^1.52.0"
+  }
+}

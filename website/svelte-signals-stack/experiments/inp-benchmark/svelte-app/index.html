@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Svelte 5 INP Benchmark</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.js"></script>
+  <!-- web-vitals measurement -->
+  <script type="module">
+    import { onINP, onLCP, onFID } from 'web-vitals';
+    
+    window.__BENCHMARK_DATA__ = {
+      inp: [],
+      lcp: null,
+      fid: null,
+      startTime: performance.now(),
+    };
+
+    onINP((metric) => {
+      window.__BENCHMARK_DATA__.inp.push({
+        value: metric.value,
+        rating: metric.rating,
+        entries: metric.entries?.map(e => ({
+          eventType: e.name,
+          processingStart: e.processingStart,
+          processingEnd: e.processingEnd,
+          duration: e.duration,
+        })),
+      });
+    }, { reportAllChanges: true });
+
+    onLCP((metric) => {
+      window.__BENCHMARK_DATA__.lcp = {
+        value: metric.value,
+        rating: metric.rating,
+      };
+    });
+
+    onFID((metric) => {
+      window.__BENCHMARK_DATA__.fid = {
+        value: metric.value,
+        rating: metric.rating,
+      };
+    });
+
+    // Export data for benchmark runner
+    window.getBenchmarkData = () => JSON.stringify(window.__BENCHMARK_DATA__, null, 2);
+  </script>
+</body>
+</html>
