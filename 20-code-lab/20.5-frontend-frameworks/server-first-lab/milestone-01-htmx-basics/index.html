@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>HTMX Basics Lab</title>
+  <script src="https://unpkg.com/htmx.org@2.0.0"></script>
+</head>
+<body>
+  <h1>HTMX Basics Lab</h1>
+  <button hx-get="/api/hello" hx-target="#result">
+    Click Me
+  </button>
+  <div id="result"></div>
+</body>
+</html>

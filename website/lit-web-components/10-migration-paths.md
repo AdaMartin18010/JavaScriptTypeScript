@@ -59,7 +59,7 @@ export const Button = createComponent({
 | props | @property |
 | emit/on | dispatchEvent |
 | v-model / value | @property + event |
-| slot | <slot> |
+| slot | `<slot>` |
 | ref | @query |
 
 ### 2.2 生命周期映射
