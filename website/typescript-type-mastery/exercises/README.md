@@ -6,10 +6,10 @@
 
 | 难度 | 数量 | 目录 | 核心能力 |
 |------|------|------|----------|
-| ⭐ Easy | 20 | [`easy/`](./easy/) | 泛型基础、映射类型、条件类型、类型推断 |
-| ⭐⭐ Medium | 15 | [`medium/`](./medium/) | 递归类型、模板字面量、元组操作、对象变换 |
-| ⭐⭐⭐ Hard | 15 | [`hard/`](./hard/) | 分布式条件类型、类型谓词、深层对象操作 |
-| ⭐⭐⭐⭐ Extreme | 10 | [`extreme/`](./extreme/) | 编译器级别挑战、JSON Parser、完整类型系统 |
+| ⭐ Easy | 20 | [`easy/`](./easy/01-pick.ts) | 泛型基础、映射类型、条件类型、类型推断 |
+| ⭐⭐ Medium | 15 | [`medium/`](./medium/01-deep-readonly.ts) | 递归类型、模板字面量、元组操作、对象变换 |
+| ⭐⭐⭐ Hard | 15 | [`hard/`](./hard/01-union-to-intersection.ts) | 分布式条件类型、类型谓词、深层对象操作 |
+| ⭐⭐⭐⭐ Extreme | 10 | [`extreme/`](./extreme/01-json-parser.ts) | 编译器级别挑战、JSON Parser、完整类型系统 |
 
 ## Easy 题目列表 (20 道)
 

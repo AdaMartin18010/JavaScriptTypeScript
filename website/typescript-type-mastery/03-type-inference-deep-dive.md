@@ -146,7 +146,7 @@ type PrimaryColor = (typeof theme)['colors']['primary'];  // '#007bff'
 
 ---
 
-## 4. NoInfer<T> —— 阻止不期望的推断（TS 5.4+）
+## 4. `NoInfer<T>` —— 阻止不期望的推断（TS 5.4+）
 
 ### 核心问题
 
@@ -167,7 +167,7 @@ const store = createStore({
 });
 ```
 
-### 解决：NoInfer<T>
+### 解决：`NoInfer<T>`
 
 ```typescript
 function createStore<T>(config: {

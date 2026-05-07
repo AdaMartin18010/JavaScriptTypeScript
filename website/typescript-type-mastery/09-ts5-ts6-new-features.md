@@ -58,7 +58,7 @@ type ColorKey = keyof typeof theme.colors; // 'primary' | 'danger'
 
 ---
 
-## 2. NoInfer<T>（TS 5.4+）
+## 2. `NoInfer<T>`（TS 5.4+）
 
 ### 2.1 阻止不期望的推断
 

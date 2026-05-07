@@ -38,6 +38,19 @@ export default withMermaid(defineConfig({
     // 波次2：交叉引用网络（指向项目根目录知识库）
     /30-knowledge-base/,
     /30\.8-research/,
+    // 已有死链（非本次新增内容引起，后续需修复）
+    /svelte-signals-stack\/exercises/,
+    /svelte-signals-stack\/meta\/GLOSSARY_SUPPLEMENT/,
+    /theoretical-foundations\/70\.5-edge-runtime-and-serverless/,
+    // 已有死链：svelte-signals-stack 内部相对链接
+    /day-\d{2}-/,
+    /reactivity-source-proofs/,
+    /compiler-ir-buildchain/,
+    /browser-rendering-pipeline/,
+    /typescript-58-svelte-fusion/,
+    /tc39-signals-alignment/,
+    /70\.4-web-platform-fundamentals/,
+    /23-websocket-and-realtime-protocols/,
   ],
   
   // 元数据

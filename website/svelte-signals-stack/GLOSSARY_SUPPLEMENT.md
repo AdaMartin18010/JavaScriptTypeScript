@@ -104,7 +104,7 @@ Svelte 内部函数，在信号值变化时标记所有依赖该信号的 reacti
 
 ## N
 
-### NoInfer<T>
+### `NoInfer<T>`
 
 TypeScript 5.8 引入的工具类型，阻止泛型类型参数从特定位置推断，用于防止 Runes 工厂函数的类型泄漏。见 [24-typescript-58-svelte-fusion](24-typescript-58-svelte-fusion)。
 

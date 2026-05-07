@@ -286,7 +286,7 @@ type Mode = (typeof config.modes)[number]; // "light" | "dark" | "auto"
 ### 实战要点
 
 - **as const 是推断的放大器**：在配置对象上使用 `as const` 可以将推断从 `string` 提升到字面量联合类型。
-- **NoInfer<T>（TS 5.4+）**：当某些位置不应该参与泛型推断时使用。
+- **`NoInfer<T>`（TS 5.4+）**：当某些位置不应该参与泛型推断时使用。
 
 ---
 

@@ -64,7 +64,7 @@ flowchart TB
 | **机制实战期** | Day 1-5 | [01 泛型实战模式](./01-generics-patterns.md) | 掌握约束、默认参数、分布条件、型变规则；能设计可复用的泛型工具 | 10h |
 | | Day 6-10 | [02 条件类型精通](./02-conditional-types-mastery.md) | 精通 `extends ? :`、infer 提取、递归条件、分布式条件；能实现 `ReturnType`、`TupleToUnion` 等工具 | 10h |
 | | Day 11-15 | [03 类型推断深度](./03-type-inference-deep-dive.md) | 理解上下文推断、泛型推断、最佳公共类型、`as const`、`satisfies`、`NoInfer<T>` | 8h |
-| | Day 16-19 | [04 模板字面量类型](./04-template-literary-types.md) | 掌握字符串级类型运算、路径类型解析、事件名类型生成 | 6h |
+| | Day 16-19 | [04 模板字面量类型](./04-template-literal-types.md) | 掌握字符串级类型运算、路径类型解析、事件名类型生成 | 6h |
 | | Day 20-21 | [05 类型守卫与收窄](./05-type-guards-narrowing.md) | 精通自定义类型谓词、标签联合、穷尽检查、类型断言最佳实践 | 6h |
 | **模式工具期** | Day 22-28 | [06 高级工具类型模式](./06-advanced-utility-patterns.md) | 掌握 HKT 高阶类型模拟、Phantom 类型、Branded 类型、Opaque 类型 | 10h |
 | | Day 29-35 | [07 类型体操题解](./07-type-challenges-workbook.md) | 完成 60 道渐进式类型体操题，从 Easy 到 Extreme | 14h |
