@@ -1230,6 +1230,37 @@ export const sidebar: DefaultTheme.Sidebar = {
     },
   ],
 
+  // 移动端跨平台深度专题（顶层）
+  '/mobile-cross-platform/': [
+    {
+      text: '📱 移动端跨平台',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/mobile-cross-platform/' },
+      ]
+    },
+    {
+      text: '技术选型与架构',
+      collapsed: false,
+      items: [
+        { text: '01. 跨平台技术全景', link: '/mobile-cross-platform/01-cross-platform-landscape' },
+        { text: '02. React Native 新架构', link: '/mobile-cross-platform/02-react-native-new-architecture' },
+        { text: '03. Expo 生态与 EAS', link: '/mobile-cross-platform/03-expo-ecosystem' },
+        { text: '04. Capacitor 混合应用', link: '/mobile-cross-platform/04-capacitor-hybrid' },
+      ]
+    },
+    {
+      text: '工程实践',
+      collapsed: false,
+      items: [
+        { text: '05. 原生模块桥接', link: '/mobile-cross-platform/05-native-modules-bridge' },
+        { text: '06. 性能优化与调试', link: '/mobile-cross-platform/06-performance-debugging' },
+        { text: '07. 热更新与 OTA', link: '/mobile-cross-platform/07-ota-updates' },
+        { text: '08. 发布与 CI/CD', link: '/mobile-cross-platform/08-release-ci-cd' },
+      ]
+    },
+  ],
+
   // 模板部分
   '/templates/': [
     {

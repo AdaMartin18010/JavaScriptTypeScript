@@ -67,6 +67,7 @@ flowchart LR
 | [React + Next.js App Router](../react-nextjs-app-router/) | [AI 流式 UI](../ai-native-development/03-ai-streaming-ui.md)、Vercel AI SDK |
 | [数据库层与 ORM](../database-layer/) | RAG 架构：Vector DB + pgvector |
 | [Edge Runtime](../edge-runtime/) | 边缘 AI 推理：低延迟 LLM 代理部署 |
+| [移动端跨平台](../mobile-cross-platform/) | 端侧 AI 推理：Core ML / TensorFlow Lite 集成 |
 
 ## 参考资源
 

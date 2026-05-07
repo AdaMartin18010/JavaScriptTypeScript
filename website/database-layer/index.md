@@ -72,6 +72,7 @@ flowchart LR
 | [Edge Runtime](../edge-runtime/) | [边缘数据库与存储](../edge-runtime/04-edge-databases.md) |
 | [AI-Native Development](../ai-native-development/) | RAG Vector DB：pgvector, Pinecone |
 | [TypeScript 类型系统深度掌握](../typescript-type-mastery/) | Drizzle/Prisma 的类型推断机制 |
+| [移动端跨平台](../mobile-cross-platform/) | 移动端本地数据库：SQLite、WatermelonDB、Realm |
 
 ## 参考资源
 

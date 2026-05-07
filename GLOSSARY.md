@@ -44,6 +44,7 @@
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
 | 缓存策略 | Caching Strategy | 控制数据缓存行为的规则，如 Cache-Aside、Write-Through 等 |
+| Capacitor | Capacitor | Ionic 团队推出的混合应用框架，将 Web 应用嵌入原生 WebView 并通过插件调用原生能力 |
 | 类型断言插入 | Cast Insertion | 在类型驱动编译或代码生成过程中，自动插入类型断言以桥接静态类型与运行时类型差异的技术 |
 | 命令模式 | Command Pattern | 将请求封装为对象，支持参数化、队列化和日志记录 |
 | 编译器信号 | Compiler Signals | 编译器在编译阶段通过静态分析生成的响应式依赖图和更新指令 |
@@ -84,12 +85,15 @@
 | 事件溯源 | Event Sourcing | 用事件序列记录状态变更，而非仅存储当前状态 |
 | 显式资源管理 | Explicit Resource Management | ECMAScript 提议的基于 `using` 和 `await using` 声明的资源管理机制，确保作用域结束时自动释放资源 |
 | 工厂模式 | Factory Pattern | 封装对象创建逻辑的设计模式 |
+| EAS | Expo Application Services | Expo 提供的云端构建、签名、提交和 OTA 更新服务 |
 
 ## F
 
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
 | 函数式编程 | Functional Programming | 以纯函数和不可变数据为核心的编程范式 |
+| Fabric | Fabric | React Native 新架构中的 C++ 渲染层，取代旧的 Yoga + ShadowTree 异步渲染 |
+| FlashList | FlashList | Shopify 开源的 React Native 高性能列表组件，通过视图回收和布局复用优化长列表性能 |
 | 细粒度响应式 | Fine-grained Reactivity | 仅更新依赖发生变化的精确粒度的响应式更新策略，避免不必要的组件级重渲染 |
 | 表单动作 | Form Actions | SvelteKit 中处理表单提交的服务端逻辑，支持渐进增强和无 JavaScript 运行 |
 | Flight 协议 | Flight Protocol | React Server Components 使用的流式传输协议，用于在服务器和客户端之间序列化组件树和 Promise 状态 | |
@@ -116,6 +120,7 @@
 | 高阶组件 | Higher-Order Component (HOC) | 接收组件并返回新组件的函数，用于复用组件逻辑 |
 | Hoare 逻辑 | Hoare Logic | 由 Tony Hoare 提出的形式化公理系统，用于推理程序正确性，基于前置条件、后置条件和循环不变式 |
 | Helicone | Helicone | 开源 AI 可观测性平台，提供 LLM 调用的监控、缓存、速率限制和成本分析功能 |
+| Hermes | Hermes | React Native 默认的 JavaScript 引擎，支持 AOT 字节码预编译和高效的垃圾回收 |
 
 ## I
 
@@ -134,6 +139,7 @@
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
 | JSON | JavaScript Object Notation | 轻量级数据交换格式，基于 JavaScript 对象语法 |
+| JSI | JavaScript Interface | React Native 新架构中的 C++ 共享层，允许 JS 引擎直接持有 Native 对象引用并同步调用 |
 | JIT 编译 | Just-In-Time Compilation | 在运行时将字节码编译为机器码的技术 |
 
 ## K
@@ -188,7 +194,8 @@
 | 乐观锁 | Optimistic Locking | 假设冲突不常发生，提交时检查版本号的并发控制策略 |
 | OpenTelemetry | OpenTelemetry (OTel) | CNCF 主导的开放可观测性框架，提供跨语言的 Metrics、Logs、Traces 标准采集和导出协议 | |
 | Oxide 引擎 | Oxide Engine (Tailwind v4) | Tailwind CSS v4 基于 Rust 重写的全新引擎，大幅提升构建性能和 CSS 生成效率 | |
-| ORM | Object-Relational Mapping | 对象与关系数据库之间的映射技术
+| ORM | Object-Relational Mapping | 对象与关系数据库之间的映射技术 |
+| OTA | Over-The-Air | 无需重新提交应用商店即可推送代码或资源更新的技术 |
 
 ## P
 
@@ -264,6 +271,7 @@
 | TypeScript | TypeScript | JavaScript 的超集，添加了静态类型系统 |
 | 类型剥离 | Type Stripping | Node.js 原生支持的一种执行 TypeScript 的方式，通过直接剥离类型语法而不进行完整类型检查来运行 `.ts` 文件 |
 | Token 级可观测性 | Token-level Observability | 对 AI 模型每次调用的 Token 消耗、延迟、成本进行精细化监控和分析 | |
+| TurboModule | TurboModule | React Native 新架构中的按需加载原生模块，基于 JSI 支持同步方法调用 |
 | Turso / libSQL | Turso / libSQL | Turso 是基于 libSQL（SQLite 的分支）的边缘托管数据库服务，专为全球低延迟数据访问设计 |
 
 ## U
@@ -343,6 +351,7 @@
 | 2026-04-21 | 补充语言核心系统相关术语：TDZ、Completion Record、Agent、Realm、Job Queue、尾调用优化(TCO)、V8 隐藏类、内联缓存 |
 | 2026-05-02 | 新增 Svelte Signals 编译器生态相关术语（共 23 条），覆盖编译器、响应式原语、Svelte 特定 API 及全栈能力 |
 | 2026-05-07 | 新增 7 个独立深度专题术语（共 17 条），覆盖 Edge Runtime、数据库层/ORM、AI-Native、Server-First、Lit Web Components |
+| 2026-05-07 | 新增移动端跨平台专题术语（共 8 条）：OTA、TurboModule、JSI、Hermes、EAS、Capacitor、Fabric、FlashList |
 
 ---
 

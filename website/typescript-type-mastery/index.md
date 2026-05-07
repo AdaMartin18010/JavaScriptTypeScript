@@ -126,3 +126,4 @@ flowchart TB
 | [React + Next.js App Router](../react-nextjs-app-router/) | [React + TS 专属模式](./11-react-ts-patterns.md)、全栈类型安全 |
 | [数据库层与 ORM](../database-layer/) | Drizzle/Prisma + TypeScript 类型推断实践 |
 | [AI-Native Development](../ai-native-development/) | LLM 结构化输出与类型安全 |
+| [移动端跨平台](../mobile-cross-platform/) | 原生模块的类型声明与泛型组件设计 |

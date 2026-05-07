@@ -74,7 +74,7 @@ export default withMermaid(defineConfig({
         text: '更多',
         items: [
           { text: '🎨 设计模式', link: '/patterns/react-patterns' },
-          { text: '📱 跨平台开发', link: '/platforms/data-visualization' },
+          { text: '📱 移动端跨平台', link: '/mobile-cross-platform/' },
           { text: '📋 速查表', link: '/cheatsheets/' },
           { text: '📐 架构图', link: '/diagrams/' },
           { text: '📑 研究报告', link: '/research/' },

@@ -136,3 +136,4 @@ flowchart TB
 | [Edge Runtime](../edge-runtime/) | [Next.js Edge 部署](../edge-runtime/02-vercel-edge-functions.md) |
 | [数据库层与 ORM](../database-layer/) | Next.js + Drizzle/Prisma 全栈开发 |
 | [AI-Native Development](../ai-native-development/) | [AI 流式 UI 实现](../ai-native-development/03-ai-streaming-ui.md) |
+| [移动端跨平台](../mobile-cross-platform/) | React 组件模型在移动端的延续与差异 |

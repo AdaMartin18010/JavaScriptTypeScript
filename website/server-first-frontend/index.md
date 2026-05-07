@@ -124,3 +124,4 @@ flowchart TB
 | [Edge Runtime](../edge-runtime/) | HTMX + Edge Functions 低延迟架构 |
 | [Lit Web Components](../lit-web-components/) | 跨框架组件复用与渐进增强 |
 | [React + Next.js App Router](../react-nextjs-app-router/) | [React → HTMX 迁移](./09-migration-from-react.md) 对比分析 |
+| [移动端跨平台](../mobile-cross-platform/) | Capacitor 渐进式迁移：从 PWA 到原生 App |

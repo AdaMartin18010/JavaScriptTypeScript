@@ -1,6 +1,6 @@
 # JavaScript/TypeScript 全景知识库 - 完整文档索引
 
-> **版本**: v1.6.0 | **最后更新**: 2026-05-07 | **维护状态**: 活跃维护
+> **版本**: v1.7.0 | **最后更新**: 2026-05-07 | **维护状态**: 活跃维护
 
 ---
 
@@ -599,7 +599,8 @@ JavaScriptTypeScript/
     ├── edge-runtime/                    # Edge Runtime 深度专题 (8篇)
     ├── database-layer/                  # 数据库层与 ORM 深度专题 (8篇)
     ├── ai-native-development/           # AI-Native Development 深度专题 (8篇)
-    └── svelte-signals-stack/            # Svelte 5 Signals 深度专题 (32篇)
+    ├── svelte-signals-stack/            # Svelte 5 Signals 深度专题 (32篇)
+    └── mobile-cross-platform/           # 移动端跨平台开发深度专题 (9篇，含首页)
 ```
 
 ---
