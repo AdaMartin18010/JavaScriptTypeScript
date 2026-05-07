@@ -125,3 +125,5 @@ flowchart TB
 | [服务器优先前端](../server-first-frontend/) | HTMX + Web Components 协同模式 |
 | [AI-Native Development](../ai-native-development/) | AI 组件化：可复用的 LLM 交互组件 |
 | [移动端跨平台](../mobile-cross-platform/) | Web Components 跨平台复用：React Native / Capacitor 集成 |
+| [WebAssembly](../webassembly/) | Web Components 中 Wasm 模块的封装与通信 |
+| [测试工程](../testing-engineering/) | Web Components 的单元测试与快照测试 |

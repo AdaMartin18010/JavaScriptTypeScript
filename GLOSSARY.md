@@ -44,6 +44,7 @@
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
 | 缓存策略 | Caching Strategy | 控制数据缓存行为的规则，如 Cache-Aside、Write-Through 等 |
+| Component Model | Component Model | WebAssembly 组件模型，通过 WIT 接口定义语言实现模块间组合与能力安全 |
 | Capacitor | Capacitor | Ionic 团队推出的混合应用框架，将 Web 应用嵌入原生 WebView 并通过插件调用原生能力 |
 | 类型断言插入 | Cast Insertion | 在类型驱动编译或代码生成过程中，自动插入类型断言以桥接静态类型与运行时类型差异的技术 |
 | 命令模式 | Command Pattern | 将请求封装为对象，支持参数化、队列化和日志记录 |
@@ -140,6 +141,7 @@
 |---------|---------|------|
 | JSON | JavaScript Object Notation | 轻量级数据交换格式，基于 JavaScript 对象语法 |
 | JSI | JavaScript Interface | React Native 新架构中的 C++ 共享层，允许 JS 引擎直接持有 Native 对象引用并同步调用 |
+| JSPI | JavaScript Promise Integration | WebAssembly 提案，允许 Wasm 模块同步调用异步 JS API（如 fetch） |
 | JIT 编译 | Just-In-Time Compilation | 在运行时将字节码编译为机器码的技术 |
 
 ## K
@@ -259,6 +261,7 @@
 | 中文术语 | 英文术语 | 定义 |
 |---------|---------|------|
 | Temporal API | Temporal API | ECMAScript 2026 引入的新一代日期时间 API，旨在彻底解决 `Date` 对象的设计缺陷，提供不可变的、时区感知的时间对象 |
+| TurboModule | TurboModule | React Native 新架构中的按需加载原生模块，基于 JSI 支持同步方法调用 |
 | 节流 | Throttling | 限制函数执行频率的技术 |
 | 时间复杂度 | Time Complexity | 算法执行时间随输入规模增长的变化趋势 |
 | 事务 | Transaction | 作为单个逻辑工作单元执行的一系列操作 |
@@ -268,6 +271,10 @@
 | 类型擦除 | Type Erasure | 在编译阶段移除类型标注，使生成的运行时代码保持纯 JavaScript/ECMAScript 的编译策略 |
 | 类型守卫 | Type Guard | TypeScript 中用于缩小类型的运行时检查 |
 | 类型推断 | Type Inference | 编译器自动推导变量类型的能力 |
+| WASI | WebAssembly System Interface | WebAssembly 的系统接口标准，提供跨平台的文件、网络和时钟等系统调用抽象 |
+| WasmEdge | WasmEdge | CNCF 沙箱项目，高性能 WebAssembly 运行时，支持 AI 推理插件和边缘部署 |
+| Wasmtime | Wasmtime | Bytecode Alliance 官方的 WebAssembly 运行时，Rust 编写，支持 WASI Preview 2 |
+| wasm-bindgen | wasm-bindgen | Rust 的 WebAssembly 绑定生成工具，自动生成 JS 胶水代码和 TypeScript 类型定义 |
 | TypeScript | TypeScript | JavaScript 的超集，添加了静态类型系统 |
 | 类型剥离 | Type Stripping | Node.js 原生支持的一种执行 TypeScript 的方式，通过直接剥离类型语法而不进行完整类型检查来运行 `.ts` 文件 |
 | Token 级可观测性 | Token-level Observability | 对 AI 模型每次调用的 Token 消耗、延迟、成本进行精细化监控和分析 | |
@@ -333,6 +340,7 @@
 | npm | Node Package Manager | Node 包管理器 |
 | ORM | Object-Relational Mapping | 对象关系映射 |
 | SEO | Search Engine Optimization | 搜索引擎优化 |
+| SIMD | SIMD | WebAssembly 的 128 位单指令多数据扩展，用于加速向量计算和图像处理 |
 | SOLID | Single, Open/Closed, Liskov, Interface, Dependency | 五大设计原则 |
 | SPA | Single Page Application | 单页应用 |
 | SSR | Server-Side Rendering | 服务端渲染 |
@@ -352,6 +360,7 @@
 | 2026-05-02 | 新增 Svelte Signals 编译器生态相关术语（共 23 条），覆盖编译器、响应式原语、Svelte 特定 API 及全栈能力 |
 | 2026-05-07 | 新增 7 个独立深度专题术语（共 17 条），覆盖 Edge Runtime、数据库层/ORM、AI-Native、Server-First、Lit Web Components |
 | 2026-05-07 | 新增移动端跨平台专题术语（共 8 条）：OTA、TurboModule、JSI、Hermes、EAS、Capacitor、Fabric、FlashList |
+| 2026-05-07 | 新增 WebAssembly 深度专题术语（共 7 条）：WASI、Component Model、Wasmtime、WasmEdge、JSPI、wasm-bindgen、SIMD |
 
 ---
 

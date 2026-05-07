@@ -68,6 +68,8 @@ flowchart LR
 | [数据库层与 ORM](../database-layer/) | [Edge 环境 ORM 模式](../database-layer/05-edge-orm-patterns.md) |
 | [React + Next.js App Router](../react-nextjs-app-router/) | [Vercel Edge Functions](../edge-runtime/02-vercel-edge-functions.md) 实战 |
 | [移动端跨平台](../mobile-cross-platform/) | 移动端边缘计算与离线优先架构 |
+| [WebAssembly](../webassembly/) | 边缘 Wasm 运行时：Cloudflare Workers、Fastly、WasmEdge |
+| [测试工程](../testing-engineering/) | 边缘函数的单元测试与集成测试 |
 
 ## 参考资源
 

@@ -75,6 +75,8 @@ export default withMermaid(defineConfig({
         items: [
           { text: '🎨 设计模式', link: '/patterns/react-patterns' },
           { text: '📱 移动端跨平台', link: '/mobile-cross-platform/' },
+          { text: '⚡ WebAssembly', link: '/webassembly/' },
+          { text: '🧪 测试工程', link: '/testing-engineering/' },
           { text: '📋 速查表', link: '/cheatsheets/' },
           { text: '📐 架构图', link: '/diagrams/' },
           { text: '📑 研究报告', link: '/research/' },

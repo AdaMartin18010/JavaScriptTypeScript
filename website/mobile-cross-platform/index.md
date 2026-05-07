@@ -62,3 +62,5 @@ mindmap
 | [React / Next.js App Router](../react-nextjs-app-router/) | React 组件模型在移动端的延续与差异 |
 | [Server-First 前端](../server-first-frontend/) | 跨平台应用中的 SSR / 数据获取模式 |
 | [Edge Runtime](../edge-runtime/) | 移动端边缘计算与离线优先架构 |
+| [WebAssembly](../webassembly/) | 移动端 WebView 中 Wasm 的集成与性能优化 |
+| [测试工程](../testing-engineering/) | React Native / Expo 测试策略与 E2E 自动化 |

@@ -68,6 +68,8 @@ flowchart LR
 | [数据库层与 ORM](../database-layer/) | RAG 架构：Vector DB + pgvector |
 | [Edge Runtime](../edge-runtime/) | 边缘 AI 推理：低延迟 LLM 代理部署 |
 | [移动端跨平台](../mobile-cross-platform/) | 端侧 AI 推理：Core ML / TensorFlow Lite 集成 |
+| [WebAssembly](../webassembly/) | 端侧 AI 推理：TensorFlow.js Wasm 后端、ONNX Runtime |
+| [测试工程](../testing-engineering/) | AI 辅助测试生成与 LLM-as-Judge 评估 |
 
 ## 参考资源
 

@@ -65,4 +65,5 @@ mindmap
 | [Edge Runtime](../edge-runtime/) | 边缘运行时与 Wasm 的协同部署模式 |
 | [移动端跨平台](../mobile-cross-platform/) | 移动端 WebView 中 Wasm 的集成与性能 |
 | [AI-Native Development](../ai-native-development/) | 端侧 AI 推理：TensorFlow.js Wasm 后端、ONNX Runtime |
+| [测试工程](../testing-engineering/) | Wasm 模块的单元测试与边界测试 |
 | [数据库层](../database-layer/) | duckdb-wasm、sql.js 等 Wasm 数据库引擎 |

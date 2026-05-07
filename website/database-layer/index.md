@@ -73,6 +73,8 @@ flowchart LR
 | [AI-Native Development](../ai-native-development/) | RAG Vector DB：pgvector, Pinecone |
 | [TypeScript 类型系统深度掌握](../typescript-type-mastery/) | Drizzle/Prisma 的类型推断机制 |
 | [移动端跨平台](../mobile-cross-platform/) | 移动端本地数据库：SQLite、WatermelonDB、Realm |
+| [WebAssembly](../webassembly/) | Wasm 数据库引擎：duckdb-wasm、sql.js |
+| [测试工程](../testing-engineering/) | 数据库测试、TestContainers、契约测试 |
 
 ## 参考资源
 
