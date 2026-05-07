@@ -1119,6 +1119,117 @@ export const sidebar: DefaultTheme.Sidebar = {
     }
   ],
 
+  // 数据库层与 ORM 深度专题（顶层）
+  '/database-layer/': [
+    {
+      text: '🗄️ 数据库层与 ORM',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/database-layer/' },
+      ]
+    },
+    {
+      text: '工具与选型',
+      collapsed: false,
+      items: [
+        { text: '01. ORM 全景对比', link: '/database-layer/01-orm-landscape' },
+        { text: '02. Drizzle 深度解析', link: '/database-layer/02-drizzle-deep-dive' },
+      ]
+    },
+    {
+      text: '生产实践',
+      collapsed: false,
+      items: [
+        { text: '03. Prisma 生产级实践', link: '/database-layer/03-prisma-in-production' },
+        { text: '04. Kysely 类型安全 SQL', link: '/database-layer/04-kysely-type-safe-sql' },
+      ]
+    },
+    {
+      text: '架构与优化',
+      collapsed: false,
+      items: [
+        { text: '05. Edge 环境 ORM 模式', link: '/database-layer/05-edge-orm-patterns' },
+        { text: '06. Schema 设计最佳实践', link: '/database-layer/06-schema-design-patterns' },
+        { text: '07. 迁移策略', link: '/database-layer/07-migration-strategies' },
+        { text: '08. 查询性能优化', link: '/database-layer/08-query-optimization' },
+      ]
+    },
+  ],
+
+  // AI-Native Development 深度专题（顶层）
+  '/ai-native-development/': [
+    {
+      text: '🤖 AI-Native Development',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/ai-native-development/' },
+      ]
+    },
+    {
+      text: 'LLM 集成基础',
+      collapsed: false,
+      items: [
+        { text: '01. AI-Native 开发范式', link: '/ai-native-development/01-ai-native-fundamentals' },
+        { text: '02. LLM 集成模式', link: '/ai-native-development/02-llm-integration-patterns' },
+      ]
+    },
+    {
+      text: '交互与架构',
+      collapsed: false,
+      items: [
+        { text: '03. AI 流式 UI', link: '/ai-native-development/03-ai-streaming-ui' },
+        { text: '04. RAG 架构实战', link: '/ai-native-development/04-rag-architecture' },
+      ]
+    },
+    {
+      text: 'Agent 与生产',
+      collapsed: false,
+      items: [
+        { text: '05. Agents 与 MCP', link: '/ai-native-development/05-agents-and-mcp' },
+        { text: '06. AI 测试与评估', link: '/ai-native-development/06-ai-testing-evaluation' },
+        { text: '07. 成本优化', link: '/ai-native-development/07-cost-optimization' },
+        { text: '08. 安全与 Prompt Injection', link: '/ai-native-development/08-security-prompt-injection' },
+      ]
+    },
+  ],
+
+  // Edge Runtime 深度专题（顶层）
+  '/edge-runtime/': [
+    {
+      text: '🌐 Edge Runtime',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/edge-runtime/' },
+      ]
+    },
+    {
+      text: '核心概念与平台',
+      collapsed: false,
+      items: [
+        { text: '01. Edge Runtime 核心概念', link: '/edge-runtime/01-edge-runtime-fundamentals' },
+        { text: '02. Vercel Edge Functions', link: '/edge-runtime/02-vercel-edge-functions' },
+        { text: '03. Cloudflare Workers', link: '/edge-runtime/03-cloudflare-workers' },
+      ]
+    },
+    {
+      text: '数据与状态',
+      collapsed: false,
+      items: [
+        { text: '04. 边缘数据库与存储', link: '/edge-runtime/04-edge-databases' },
+        { text: '05. 边缘缓存策略', link: '/edge-runtime/05-edge-caching-strategies' },
+      ]
+    },
+    {
+      text: '工程实践',
+      collapsed: false,
+      items: [
+        { text: '06. 安全模型与隔离', link: '/edge-runtime/06-security-isolation' },
+        { text: '07. 框架集成模式', link: '/edge-runtime/07-framework-integration' },
+        { text: '08. 生产部署与监控', link: '/edge-runtime/08-production-deployment' },
+      ]
+    },
+  ],
+
   // 模板部分
   '/templates/': [
     {
