@@ -106,3 +106,12 @@ flowchart TB
 | 01 Web Components | `website/categories/frontend-frameworks.md`（6.4节） | 从章节介绍扩展到独立专题 |
 | 01 标准深度 | `website/framework-models/01-component-model-theory.md` | 形式化理论 → 工程实践 |
 | 06 微前端 | `website/categories/micro-frontends.md` | 补充 Lit 作为微前端方案 |
+
+
+## 相关专题
+
+| 专题 | 关联点 |
+|------|--------|
+| [React + Next.js App Router](../react-nextjs-app-router/) | 跨框架集成：React 中使用 Lit 组件 |
+| [服务器优先前端](../server-first-frontend/) | HTMX + Web Components 协同模式 |
+| [AI-Native Development](../ai-native-development/) | AI 组件化：可复用的 LLM 交互组件 |

@@ -117,3 +117,13 @@ flowchart TB
 | 08 性能优化 | `website/performance-engineering/` | 前端性能工程 |
 | 11 测试 | `20-code-lab/20.2-language-patterns/testing/` | 测试模式 |
 | 15 招聘分析 | `view/Frontend_Frameworks_2026.md` | 数据支撑 |
+
+
+## 相关专题
+
+| 专题 | 关联点 |
+|------|--------|
+| [TypeScript 类型系统深度掌握](../typescript-type-mastery/) | [React + TS 专属模式](../typescript-type-mastery/11-react-ts-patterns.md) |
+| [Edge Runtime](../edge-runtime/) | [Next.js Edge 部署](../edge-runtime/02-vercel-edge-functions.md) |
+| [数据库层与 ORM](../database-layer/) | Next.js + Drizzle/Prisma 全栈开发 |
+| [AI-Native Development](../ai-native-development/) | [AI 流式 UI 实现](../ai-native-development/03-ai-streaming-ui.md) |

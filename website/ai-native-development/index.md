@@ -47,6 +47,14 @@
 - [Edge Runtime](../edge-runtime/) — 边缘 AI 推理
 - [数据库层](../database-layer/) — Vector DB 与 pgvector
 
+## 相关专题
+
+| 专题 | 关联点 |
+|------|--------|
+| [React + Next.js App Router](../react-nextjs-app-router/) | [AI 流式 UI](../ai-native-development/03-ai-streaming-ui.md)、Vercel AI SDK |
+| [数据库层与 ORM](../database-layer/) | RAG 架构：Vector DB + pgvector |
+| [Edge Runtime](../edge-runtime/) | 边缘 AI 推理：低延迟 LLM 代理部署 |
+
 ## 参考资源
 
 - [Vercel AI SDK](https://sdk.vercel.ai/)

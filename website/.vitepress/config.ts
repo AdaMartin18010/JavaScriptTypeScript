@@ -21,7 +21,21 @@ export default withMermaid(defineConfig({
 
   // 忽略已知的跨项目死链（指向项目源码目录的链接，这些不属于 VitePress 站点构建范围）
   // 以及正在建设中的新专题章节链接（后续章节创建后移除对应规则）
-  ignoreDeadLinks: true,
+  ignoreDeadLinks: [
+    /jsts-code-lab\//,
+    /JSTS全景综述\//,
+    /\/10-fundamentals\//,
+    /\/20-code-lab\//,
+    /\/50-examples\//,
+    /\/70-theoretical-foundations\//,
+    /^\.\.\/..\/10-fundamentals\//,
+    /^\.\.\/..\/20-code-lab\//,
+    /^\.\.\/..\/50-examples\//,
+    /^\.\.\/..\/70-theoretical-foundations\//,
+    /^\.\.\/..\/30-knowledge-base\//,
+    /30-knowledge-base/,
+    /30\.8-research/,
+  ],
   
   // 元数据
   head: [

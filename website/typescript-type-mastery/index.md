@@ -109,3 +109,12 @@ flowchart TB
 | 07 类型体操 | `20-code-lab/20.1-fundamentals-lab/language-core/01-types/` | 配套练习 |
 | 10 性能优化 | `website/typescript-type-system/17-tsconfig-complete.md` | 进阶参考 |
 | 11 React+TS | `website/patterns/react-patterns.md` | 类型层补充 |
+
+
+## 相关专题
+
+| 专题 | 关联点 |
+|------|--------|
+| [React + Next.js App Router](../react-nextjs-app-router/) | [React + TS 专属模式](./11-react-ts-patterns.md)、全栈类型安全 |
+| [数据库层与 ORM](../database-layer/) | Drizzle/Prisma + TypeScript 类型推断实践 |
+| [AI-Native Development](../ai-native-development/) | LLM 结构化输出与类型安全 |

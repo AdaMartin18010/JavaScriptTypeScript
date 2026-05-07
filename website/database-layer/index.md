@@ -52,6 +52,14 @@
 - [React + Next.js App Router](../react-nextjs-app-router/) — Next.js + ORM 集成
 - [服务器优先前端](../server-first-frontend/) — 服务端模板 + 原始 SQL
 
+## 相关专题
+
+| 专题 | 关联点 |
+|------|--------|
+| [Edge Runtime](../edge-runtime/) | [边缘数据库与存储](../edge-runtime/04-edge-databases.md) |
+| [AI-Native Development](../ai-native-development/) | RAG Vector DB：pgvector, Pinecone |
+| [TypeScript 类型系统深度掌握](../typescript-type-mastery/) | Drizzle/Prisma 的类型推断机制 |
+
 ## 参考资源
 
 - [Drizzle ORM 文档](https://orm.drizzle.team/)

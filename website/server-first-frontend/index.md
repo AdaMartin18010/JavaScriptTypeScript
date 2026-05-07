@@ -106,3 +106,12 @@ flowchart TB
 | 05-07 Alpine | `website/categories/frontend-frameworks.md`（6.2节） | 从章节介绍扩展到独立专题 |
 | 10 架构对比 | `website/framework-models/05-rendering-models.md` | 对比分析 |
 | 11 选型决策 | `30.4-decision-trees/frontend-framework-selection.md` | 更新决策树 |
+
+
+## 相关专题
+
+| 专题 | 关联点 |
+|------|--------|
+| [Edge Runtime](../edge-runtime/) | HTMX + Edge Functions 低延迟架构 |
+| [Lit Web Components](../lit-web-components/) | 跨框架组件复用与渐进增强 |
+| [React + Next.js App Router](../react-nextjs-app-router/) | [React → HTMX 迁移](./09-migration-from-react.md) 对比分析 |
