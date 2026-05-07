@@ -8,16 +8,22 @@
 
 ## 一、维护责任矩阵
 
-| 维护项 | 频率 | 触发条件 | 检查文件 | 负责动作 |
-|:---|:---|:---|:---|:---|
-| Svelte 版本更新 | 每月 | 新 Release | 21, 22, 23, 24, 25 | 复核源码行号 |
-| TC39 提案进展 | 每季度 | 会议记录 | 21 | 更新 Stage / API 变更 |
-| Vite 版本更新 | 每季度 | 新 Release | 23 | 更新 Environment API / Rolldown |
-| TypeScript 版本 | 每季度 | 新 Release | 24 | 更新类型系统特性 |
-| 浏览器标准 | 每半年 | 新 Chrome/FF/Safari | 22 | 更新渲染管线 / INP |
-| 外部链接可用性 | 每季度 | — | SOURCE_REFERENCE_INDEX | 验证并修复死链 |
-| 社区反馈整合 | 每月 | Issue/PR/评论 | 全部 | 更新内容或 FAQ |
-| 英文版翻译 | 按需 | 社区需求 | 21-25 | 创建 en/ 子目录 |
+| 维护项 | 频率 | 触发条件 | 检查文件 | 负责动作 | 自动化 |
+|:---|:---|:---|:---|:---|:---:|
+| Svelte 版本更新 | 每月 | 新 Release | 21, 22, 23, 24, 25 | 复核源码行号 | ⚠️ 半自动 |
+| TC39 提案进展 | 每季度 | 会议记录 | 21 | 更新 Stage / API 变更 | ❌ 手动 |
+| Vite 版本更新 | 每季度 | 新 Release | 23 | 更新 Environment API / Rolldown | ⚠️ 半自动 |
+| TypeScript 版本 | 每季度 | 新 Release | 24 | 更新类型系统特性 | ⚠️ 半自动 |
+| 浏览器标准 | 每半年 | 新 Chrome/FF/Safari | 22 | 更新渲染管线 / INP | ❌ 手动 |
+| **外部链接可用性** | **每周** | **—** | **SOURCE_REFERENCE_INDEX** | **验证并修复死链** | **✅ CI 自动** |
+| **版本对齐检查** | **每周** | **—** | **全部** | **对比 npm 最新版本** | **✅ CI 自动** |
+| **Mermaid 语法检查** | **每周** | **—** | **全部** | **验证图表语法** | **✅ CI 自动** |
+| 社区反馈整合 | 每月 | Issue/PR/评论 | 全部 | 更新内容或 FAQ | ❌ 手动 |
+| 英文版翻译 | 按需 | 社区需求 | 21-25 | 创建 en/ 子目录 | ❌ 手动 |
+
+> **自动化说明**: GitHub Actions 每周日自动运行内容健康检查，生成报告并上传 Artifacts。维护者需下载报告并处理异常项。
+>
+> **手动触发**: 在 Actions 标签页选择 "Content Health Check" → "Run workflow" 可立即执行检查。
 
 ---
 
@@ -84,7 +90,53 @@ sed -i "s/$OLD_TAG/$NEW_TAG/g" SOURCE_REFERENCE_INDEX.md
 
 ---
 
-## 四、社区反馈处理流程
+## 四、自动化 CI 配置
+
+### 4.1 Content Health Check 工作流
+
+`.github/workflows/content-health-check.yml` 配置了三项自动检查：
+
+| 任务 | 工具 | 检查内容 | 失败策略 |
+|:---|:---|:---|:---|
+| `check-links` | lychee | 外部链接 200 OK、超时、重定向 | 上传报告，不阻断 |
+| `check-versions` | 自定义脚本 | npm 最新版 vs 文档基线对比 | 上传报告，不阻断 |
+| `check-mermaid` | 自定义脚本 | 括号/引号/声明匹配 | 上传报告，阻断构建 |
+
+### 4.2 版本跟踪脚本
+
+`scripts/version-tracker.js` 功能：
+
+- 查询 npm registry 获取 svelte / @sveltejs/kit / typescript / vite 最新版本
+- 与文档基线对比（major / minor / patch / current）
+- 生成 `version-check-report.json`
+- 输出行动建议（哪些文档需要更新）
+
+**使用方式**:
+
+```bash
+cd website/svelte-signals-stack
+node scripts/version-tracker.js
+```
+
+### 4.3 Mermaid 验证脚本
+
+`scripts/validate-mermaid.js` 功能：
+
+- 递归扫描所有 `.md` 文件
+- 提取 ` ```mermaid ` 代码块
+- 基础语法检查（括号匹配、引号匹配、图表声明存在性）
+- 生成 `mermaid-validation-report.json`
+
+**使用方式**:
+
+```bash
+cd website/svelte-signals-stack
+node scripts/validate-mermaid.js
+```
+
+---
+
+## 五、社区反馈处理流程
 
 ### 4.1 反馈分类
 
@@ -109,7 +161,7 @@ feedback/
 
 ---
 
-## 五、扩展专题创建流程 (未来 26-30)
+## 六、扩展专题创建流程 (未来 31-35)
 
 当 Svelte 6 Alpha 发布或重大技术变革时：
 
@@ -121,7 +173,7 @@ feedback/
 
 ---
 
-## 六、紧急修复流程
+## 七、紧急修复流程
 
 若发现严重影响准确性的错误（如源码引用完全指向错误的函数）：
 
@@ -132,7 +184,7 @@ feedback/
 
 ---
 
-## 七、联系与协作
+## 八、联系与协作
 
 | 渠道 | 用途 |
 |:---|:---|

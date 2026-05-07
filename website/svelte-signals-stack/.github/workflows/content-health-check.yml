@@ -1,0 +1,121 @@
+name: Content Health Check
+
+on:
+  schedule:
+    # 每周日 UTC 00:00 运行
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+    inputs:
+      check_type:
+        description: '检查类型'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - links
+          - versions
+          - mermaid
+
+jobs:
+  check-links:
+    name: 外部链接健康检查
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'links'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install lychee
+        run: |
+          curl -sSfL https://github.com/lycheeverse/lychee/releases/latest/download/lychee-x86_64-unknown-linux-gnu.tar.gz | tar xz
+          sudo mv lychee /usr/local/bin/
+
+      - name: Check external links
+        run: |
+          lychee \
+            --timeout 15 \
+            --retry 3 \
+            --exclude "localhost|127.0.0.1|0.0.0.0" \
+            --exclude "chrome-devtools|chromestatus|caniuse" \
+            --format markdown \
+            --output lychee-report.md \
+            "./website/svelte-signals-stack/**/*.md" || true
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-check-report
+          path: lychee-report.md
+
+  check-versions:
+    name: 版本对齐检查
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'versions'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run version tracker
+        run: |
+          cd website/svelte-signals-stack
+          node scripts/version-tracker.js
+
+      - name: Upload version report
+        uses: actions/upload-artifact@v4
+        with:
+          name: version-track-report
+          path: website/svelte-signals-stack/scripts/version-check-report.json
+
+  check-mermaid:
+    name: Mermaid 语法检查
+    runs-on: ubuntu-latest
+    if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'mermaid'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install mermaid-cli
+        run: npm install -g @mermaid-js/mermaid-cli
+
+      - name: Extract and validate mermaid diagrams
+        run: |
+          cd website/svelte-signals-stack
+          # 提取所有 mermaid 代码块并尝试渲染
+          node scripts/validate-mermaid.js
+
+      - name: Upload mermaid report
+        uses: actions/upload-artifact@v4
+        with:
+          name: mermaid-validation-report
+          path: website/svelte-signals-stack/scripts/mermaid-validation-report.json
+
+  notify:
+    name: 通知维护者
+    needs: [check-links, check-versions, check-mermaid]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Summarize results
+        run: |
+          echo "## 内容健康检查结果" >> $GITHUB_STEP_SUMMARY
+          echo "- 链接检查: ${{ needs.check-links.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- 版本检查: ${{ needs.check-versions.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Mermaid 检查: ${{ needs.check-mermaid.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "请下载 Artifacts 查看详细报告。" >> $GITHUB_STEP_SUMMARY

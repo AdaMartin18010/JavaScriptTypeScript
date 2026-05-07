@@ -599,3 +599,76 @@ Svelte 生态在 2026-2028 年面临的既是机遇也是挑战。Svelte 5 的 R
 >
 >
 > **免责声明**: 技术发展存在不确定性，本文件的预测基于 2026 年 Q2 可获取的公开信息。实际发展可能因技术突破、市场变化或社区动态而有所不同。建议读者持续关注官方渠道获取最新信息。
+
+---
+
+## 附录: 调度 API 演进 —— `scheduler.yield()`
+
+> **更新日期**: 2026-05-07
+> **API 状态**: Chrome 115+ 实验性，2026 年推荐替代 `requestIdleCallback`
+
+### `requestIdleCallback` 的问题
+
+`requestIdleCallback` (rIC) 曾是调度低优先级任务的标准方案，但存在根本性问题：
+
+1. **浏览器支持不一致**: Safari 从未实现
+2. **回调延迟不可预测**: 空闲时段不确定，可能延迟数秒
+3. **主线程阻塞**: 即使 rIC 回调执行，仍会阻塞后续高优先级任务
+
+### `scheduler.yield()` 的优势
+
+```javascript
+// ❌ 旧模式：requestIdleCallback
+requestIdleCallback(() => {
+  processChunk(data);
+});
+
+// ✅ 新模式：scheduler.yield() (Chrome 115+)
+async function processLargeDataset() {
+  for (const chunk of dataset) {
+    processChunk(chunk);
+    // 主动让出主线程，允许用户输入和渲染介入
+    if (scheduler?.yield) {
+      await scheduler.yield();
+    }
+  }
+}
+```
+
+| 特性 | `requestIdleCallback` | `scheduler.yield()` |
+|:---|:---|:---|
+| **控制精度** | 粗粒度（空闲时段） | 细粒度（立即让出） |
+| **用户输入响应** | 差（等待空闲） | 优（立即让出） |
+| **INP 优化** | 有限 | **显著** |
+| **浏览器支持** | Chrome/Firefox | Chrome 115+（渐进采用） |
+
+### Svelte 中的应用场景
+
+```svelte
+<script>
+  let items = $state([]);
+  let progress = $state(0);
+
+  async function loadLargeDataset() {
+    const data = await fetch('/api/large-dataset').then(r => r.json());
+
+    for (let i = 0; i < data.length; i += 100) {
+      items = [...items, ...data.slice(i, i + 100)];
+      progress = Math.round((i / data.length) * 100);
+
+      // 每批处理后让出主线程
+      if (scheduler?.yield) {
+        await scheduler.yield();
+      } else {
+        await new Promise(r => requestAnimationFrame(r));
+      }
+    }
+  }
+</script>
+```
+
+> **结论**: `scheduler.yield()` 是 2026 年后前端调度的新标准。Svelte 应用在处理大型数据集、批量 DOM 更新时，应优先使用 `scheduler.yield()` 替代 `requestIdleCallback`，以获得更好的 INP 表现。
+
+---
+
+> 附录更新: 2026-05-07 | API 对齐: scheduler.yield() (Chrome 115+) | 替代: requestIdleCallback (legacy)

@@ -1497,3 +1497,141 @@ export const handle = async ({ event, resolve }) => {
 ---
 
 > 最后更新: 2026-05-02
+
+---
+
+## 附录: `<svelte:boundary>` 组件级错误边界最佳实践
+
+> **更新日期**: 2026-05-07
+> **Svelte 版本**: 5.55.5（`svelte:boundary` 在 5.54.2 修复了内存泄漏，生产环境可安全使用）
+> **注意**: `svelte:boundary` 是 Svelte 5.3+ 引入的**组件级**错误边界，与 SvelteKit 2.54+ 的 `+error.ts` **服务端**错误边界互补
+
+### 什么是 `<svelte:boundary>`？
+
+`<svelte:boundary>` 是 Svelte 提供的组件级错误捕获机制，用于隔离组件树中的运行时错误，防止单个组件的崩溃扩散到整个应用。
+
+```svelte
+<svelte:boundary onerror={handleError}>
+  <RiskyComponent />
+
+  {#snippet failed(error, reset)}
+    <div class="error-fallback">
+      <p>⚠️ 组件加载失败: {error.message}</p>
+      <button onclick={reset}>重试</button>
+    </div>
+  {/snippet}
+</svelte:boundary>
+```
+
+### 核心 API
+
+| 属性/插槽 | 类型 | 说明 |
+|:---|:---|:---|
+| `onerror` | `(error: Error) => void` | 错误回调，用于日志上报 |
+| `failed` | snippet `(error, reset)` | 错误时渲染的降级 UI，`reset` 函数可重试 |
+
+### 与 SvelteKit `+error.ts` 的对比
+
+| 维度 | `<svelte:boundary>` | `+error.ts` / `+error.svelte` |
+|:---|:---|:---|
+| **作用域** | 组件树局部 | 路由级别 |
+| **捕获时机** | 客户端渲染/交互 | 服务端数据加载 (`load`) |
+| **错误类型** | 组件生命周期错误、运行时异常 | 服务端 HTTP 错误、数据获取失败 |
+| **恢复能力** | `reset()` 可重新挂载组件 | 刷新页面或导航恢复 |
+| **5.54.2 修复** | 修复了边界卸载时的内存泄漏 | — |
+
+### 最佳实践模式
+
+#### 模式 1: 第三方组件隔离
+
+```svelte
+<!-- MapWidget.svelte -->
+<script>
+  import { onError } from '$lib/analytics';
+</script>
+
+<svelte:boundary onerror={onError}>
+  <ThirdPartyMap apiKey={key} />
+
+  {#snippet failed(error)}
+    <div class="map-fallback">
+      <p>地图服务暂时不可用</p>
+      <a href="/static-map">查看静态地图</a>
+    </div>
+  {/snippet}
+</svelte:boundary>
+```
+
+#### 模式 2: 数据可视化组件保护
+
+```svelte
+<!-- Dashboard.svelte -->
+<script>
+  let charts = $state([
+    { type: 'revenue', data: revenueData },
+    { type: 'users', data: userData },
+    { type: 'performance', data: perfData }
+  ]);
+</script>
+
+<div class="dashboard-grid">
+  {#each charts as chart}
+    <svelte:boundary onerror={(e) => console.error(`Chart ${chart.type} failed:`, e)}>
+      <Chart {...chart} />
+
+      {#snippet failed()}
+        <div class="chart-error">
+          <p>图表渲染失败</p>
+        </div>
+      {/snippet}
+    </svelte:boundary>
+  {/each}
+</div>
+```
+
+#### 模式 3: 嵌套边界（分层降级）
+
+```svelte
+<svelte:boundary>
+  <PageLayout>
+    <svelte:boundary>
+      <Sidebar />
+      {#snippet failed()}<div>侧边栏加载失败</div>{/snippet}
+    </svelte:boundary>
+
+    <main>
+      <svelte:boundary>
+        <MainContent />
+        {#snippet failed()}<div>主要内容加载失败</div>{/snippet}
+      </svelte:boundary>
+    </main>
+  </PageLayout>
+
+  {#snippet failed()}<div>页面整体加载失败</div>{/snippet}
+</svelte:boundary>
+```
+
+### 5.54.2 修复说明
+
+在 Svelte 5.54.2 之前，`<svelte:boundary>` 存在以下问题：
+
+- **内存泄漏**: 边界组件卸载时，错误处理器的引用未正确清理
+- **影响**: 长时间运行的 SPA 中，频繁路由切换可能导致内存缓慢增长
+
+**修复后（5.54.2+）**:
+
+- 组件卸载时自动清理所有内部引用
+- 已通过 Svelte 官方测试套件验证
+- **建议**: 生产环境使用 Svelte ≥ 5.54.2
+
+### 生产环境检查清单
+
+- [ ] Svelte 版本 ≥ 5.54.2（内存泄漏修复）
+- [ ] 所有第三方组件均有边界保护
+- [ ] 错误回调连接到监控服务（Sentry/LogRocket）
+- [ ] `failed` snippet 提供用户友好的降级 UI
+- [ ] 关键路径组件（支付、表单提交）有额外的手动错误处理
+
+---
+
+> 附录更新: 2026-05-07 | Svelte 对齐: 5.55.5（含 5.54.2 修复）

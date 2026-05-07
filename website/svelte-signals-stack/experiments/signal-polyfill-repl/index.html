@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TC39 Signals Polyfill REPL</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+    h1 { color: #38bdf8; margin-bottom: 0.5rem; }
+    .subtitle { color: #94a3b8; margin-bottom: 2rem; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+    .panel {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid #334155;
+    }
+    .panel h2 {
+      color: #38bdf8;
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .demo { margin-bottom: 2rem; }
+    .demo h3 { color: #a78bfa; font-size: 1rem; margin-bottom: 0.5rem; }
+    .output {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.875rem;
+      min-height: 80px;
+      border: 1px solid #334155;
+    }
+    .output .log { color: #4ade80; }
+    .output .error { color: #f87171; }
+    button {
+      background: #38bdf8;
+      color: #0f172a;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 0.5rem;
+      margin-right: 0.5rem;
+    }
+    button:hover { background: #7dd3fc; }
+    .code-block {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      border: 1px solid #334155;
+      margin-top: 0.5rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-stage1 { background: #fbbf24; color: #0f172a; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔬 TC39 Signals Polyfill REPL</h1>
+    <p class="subtitle">
+      Interactive experiments with the TC39 Signals proposal 
+      <span class="badge badge-stage1">Stage 1</span>
+      &nbsp;|&nbsp; Compare with Svelte 5 Runes semantics
+    </p>
+
+    <div class="grid">
+      <div class="panel">
+        <h2>🧪 Experiment 1: Basic Counter</h2>
+        <div class="demo">
+          <h3>TC39 Signals</h3>
+          <div class="code-block">
+const count = new Signal.State(0);
+const doubled = new Signal.Computed(() => count.get() * 2);
+effect(() => console.log(count.get(), doubled.get()));
+count.set(1); // logs: 1 2
+          </div>
+          <div id="counter-output" class="output">Click "Run" to see output...</div>
+          <button onclick="runCounter()">▶ Run</button>
+          <button onclick="incrementCounter()">+ Increment</button>
+        </div>
+
+        <div class="demo">
+          <h3>Svelte 5 Equivalent</h3>
+          <div class="code-block">
+let count = $state(0);
+let doubled = $derived(count * 2);
+$effect(() => console.log(count, doubled));
+count++; // logs: 1 2
+          </div>
+          <div id="svelte-counter-output" class="output">Svelte compiler transforms to same runtime...</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>🧪 Experiment 2: Watcher & Batch</h2>
+        <div class="demo">
+          <h3>Manual Watcher (low-level API)</h3>
+          <div class="code-block">
+const a = new Signal.State(1);
+const b = new Signal.State(2);
+const sum = new Signal.Computed(() => a.get() + b.get());
+
+const w = new Signal.subtle.Watcher(() => {
+  console.log('Changed!', sum.get());
+});
+w.watch(sum);
+
+a.set(5); // Watcher notified, sum = 7
+          </div>
+          <div id="watcher-output" class="output">Click "Run" to see output...</div>
+          <button onclick="runWatcher()">▶ Run</button>
+        </div>
+
+        <div class="demo">
+          <h3>Batch Updates</h3>
+          <div class="code-block">
+// TC39: No built-in batching
+// Frameworks implement their own
+
+// Svelte 5: Automatic batching via flushSync
+// Multiple updates in one event → single effect run
+          </div>
+          <div id="batch-output" class="output">TC39 leaves batching to frameworks. Svelte uses microtask batch.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 2rem; padding: 1rem; background: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+      <h2 style="color: #fbbf24; font-size: 1rem;">📋 Semantic Equivalence Checklist</h2>
+      <ul style="list-style: none; margin-top: 0.5rem; font-size: 0.875rem; color: #94a3b8;">
+        <li>✅ Signal.State ↔ $state : Writable reactive source</li>
+        <li>✅ Signal.Computed ↔ $derived : Lazy evaluation, caching, no glitches</li>
+        <li>⚠️ Watcher ↔ $effect : Watcher is lower-level primitive; $effect includes scheduler</li>
+        <li>✅ untrack ↔ untrack : Same semantics (skip dependency registration)</li>
+        <li>⚠️ Batch : TC39 has no built-in batching; Svelte has flushSync + microtask queue</li>
+      </ul>
+    </div>
+  </div>
+
+  <script type="module">
+    import { Signal } from 'https://cdn.jsdelivr.net/npm/signal-polyfill@latest/dist/signal-polyfill.js';
+    import { effect } from 'https://cdn.jsdelivr.net/npm/signal-utils@latest/dist/subtle/microtask-effect.js';
+
+    // Make available globally for onclick handlers
+    window.Signal = Signal;
+    window.effect = effect;
+
+    let counterState = null;
+    let counterEffect = null;
+
+    window.runCounter = () => {
+      const output = document.getElementById('counter-output');
+      output.innerHTML = '';
+      
+      const count = new Signal.State(0);
+      const doubled = new Signal.Computed(() => count.get() * 2);
+      
+      counterState = count;
+      
+      effect(() => {
+        const msg = `count=${count.get()}, doubled=${doubled.get()}`;
+        output.innerHTML += `<div class="log">> ${msg}</div>`;
+      });
+      
+      count.set(1);
+      count.set(2);
+      
+      window.incrementCounter = () => {
+        counterState.set(counterState.get() + 1);
+      };
+    };
+
+    window.runWatcher = () => {
+      const output = document.getElementById('watcher-output');
+      output.innerHTML = '';
+      
+      const a = new Signal.State(1);
+      const b = new Signal.State(2);
+      const sum = new Signal.Computed(() => a.get() + b.get());
+      
+      const w = new Signal.subtle.Watcher(() => {
+        output.innerHTML += `<div class="log">> Watcher: sum=${sum.get()}</div>`;
+      });
+      w.watch(sum);
+      
+      output.innerHTML += `<div class="log">> Initial: sum=${sum.get()}</div>`;
+      
+      setTimeout(() => {
+        a.set(5);
+        output.innerHTML += `<div class="log">> After a=5: sum=${sum.get()}</div>`;
+      }, 100);
+      
+      setTimeout(() => {
+        b.set(10);
+        output.innerHTML += `<div class="log">> After b=10: sum=${sum.get()}</div>`;
+      }, 200);
+    };
+
+    // Svelte equivalent explanation
+    document.getElementById('svelte-counter-output').innerHTML = 
+      '<div class="log">Svelte 5 compiler transforms:</div>' +
+      '<div class="log">$state(0) → $.state(0)</div>' +
+      '<div class="log">$derived(x*2) → $.derived(() => x * 2)</div>' +
+      '<div class="log">$effect(fn) → $.effect(fn) + Batch scheduling</div>' +
+      '<div class="log">Result: Same reactive semantics, optimized by compiler</div>';
+  </script>
+</body>
+</html>

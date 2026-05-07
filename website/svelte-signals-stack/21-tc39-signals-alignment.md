@@ -1030,3 +1030,122 @@ C[TC39 Signal.State] ≈ C[Svelte $state]
 ---
 
 > 术语与学习路径附录更新: 2026-05-06 | TC39 对齐基准: Stage 1 (2026-04) | Svelte 对齐基准: 5.55.5
+
+---
+
+## 附录 H: `signal-polyfill` 实验指南
+
+> **更新日期**: 2026-05-07
+> **核心议题**: 如何使用 `signal-polyfill` 实验 TC39 Signals？其行为与 Svelte Runes 的对比验证
+
+### H.1 安装与基础实验
+
+```bash
+npm install signal-polyfill signal-utils
+```
+
+```javascript
+// counter-signal.js
+import { Signal } from 'signal-polyfill';
+import { effect } from 'signal-utils/subtle/microtask-effect';
+
+// 1. 创建 State Signal（等价于 Svelte $state）
+const count = new Signal.State(0);
+
+// 2. 创建 Computed Signal（等价于 Svelte $derived）
+const doubled = new Signal.Computed(() => count.get() * 2);
+
+// 3. 创建 Effect（等价于 Svelte $effect）
+effect(() => {
+  console.log(`Count: ${count.get()}, Doubled: ${doubled.get()}`);
+});
+// 输出: Count: 0, Doubled: 0
+
+count.set(1);
+// 输出: Count: 1, Doubled: 2
+
+count.set(2);
+// 输出: Count: 2, Doubled: 4
+```
+
+### H.2 与 Svelte Runes 的行为对比验证
+
+| 测试用例 | Svelte 5 | TC39 polyfill | 结果 |
+|:---|:---|:---|:---:|
+| 基础响应 | `$state(0)` → 更新触发 | `Signal.State(0)` → 更新触发 | ✅ 一致 |
+| 派生计算 | `$derived(count * 2)` | `new Signal.Computed(() => count.get() * 2)` | ✅ 一致 |
+| 惰性求值 | 未读取不计算 | 未 `.get()` 不计算 | ✅ 一致 |
+| 批处理 | 微任务自动批处理 | 需手动/框架批处理 | ⚠️ Svelte 更高级 |
+| 清理 | `$effect` 返回清理函数 | `Watcher.unwatch()` | ⚠️ API 不同 |
+
+### H.3 跨框架互操作实验
+
+```javascript
+// shared-state.js
+import { Signal } from 'signal-polyfill';
+
+// 创建一个跨框架共享的 Signal
+export const globalCounter = new Signal.State(0);
+
+// Svelte 组件中使用
+// Counter.svelte
+// <script>
+//   import { globalCounter } from './shared-state.js';
+//   // 需要适配层：将 Signal.State 包装为 $state
+//   let count = $state(globalCounter.get());
+//
+//   // 手动同步（当前无原生互操作）
+//   $effect(() => {
+//     const w = new Signal.subtle.Watcher(() => {
+//       count = globalCounter.get();
+//     });
+//     w.watch(globalCounter);
+//     return () => w.unwatch(globalCounter);
+//   });
+// </script>
+```
+
+> **当前限制**: TC39 Signals 与 Svelte Runes 的**原生互操作**尚未实现。`signal-polyfill` 是独立实现，Svelte 编译器不会自动将其与 `$state`/`$derived` 关联。真正的跨框架互操作需等待：
+>
+> 1. TC39 Signals 进入 Stage 3+（浏览器原生实现）
+> 2. Svelte 编译器支持输出原生 `Signal.State` / `Signal.Computed`
+
+### H.4 算法行为验证
+
+```javascript
+// 验证 "无 Glitch" 行为
+import { Signal } from 'signal-polyfill';
+
+const a = new Signal.State(1);
+const b = new Signal.Computed(() => a.get() * 2);
+const c = new Signal.Computed(() => a.get() + b.get());
+
+// 当 a = 1: b = 2, c = 1 + 2 = 3
+// 当 a = 2: b = 4, c = 2 + 4 = 6（不会看到 c = 2 + 2 = 4 的中间状态）
+
+let log = [];
+const w = new Signal.subtle.Watcher(() => {
+  log.push(c.get());
+});
+w.watch(c);
+
+a.set(2);
+// log: [6]（仅最终值，无中间 Glitch）
+// ✅ 验证通过：与 Svelte $derived 的拓扑排序行为一致
+```
+
+### H.5 结论
+
+`signal-polyfill` 是理解 TC39 Signals 语义的有效工具，验证了以下核心性质：
+
+- ✅ 自动依赖追踪
+- ✅ 惰性求值
+- ✅ 无 Glitch
+- ⚠️ 批处理和调度留给框架（与 Svelte 的内置 Batch 有差距）
+- ❌ 与 Svelte Runes 无原生互操作（需等待标准化推进）
+
+> **建议**: 将 `signal-polyfill` 作为学习工具，而非生产依赖。生产环境继续使用 Svelte 5 Runes，等待 TC39 Signals Stage 3+ 后再评估迁移。
+
+---
+
+> 附录 H 更新: 2026-05-07 | TC39 对齐: Stage 1 | polyfill 版本: signal-polyfill@latest

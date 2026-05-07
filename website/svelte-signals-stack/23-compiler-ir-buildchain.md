@@ -1542,3 +1542,59 @@ npx svelte-compile src/Counter.svelte --format esm
 ---
 
 > 源码索引附录更新: 2026-05-06 | 编译器对齐: Svelte 5.55.5 | 总引用: 7 个源码位置
+
+---
+
+## 附录 O: Vite 7 前瞻与 Rolldown 默认化
+
+> **更新日期**: 2026-05-07
+> **状态**: 基于 Vite RFC 和 Rolldown 仓库公开信息的前瞻分析
+
+### Vite 7 核心变化预测
+
+| 特性 | Vite 6.3 | Vite 7 (预测) | 对 Svelte 影响 |
+|:---|:---|:---|:---|
+| **默认 Bundler** | Rollup | **Rolldown (Rust)** | 构建速度 3-5x 提升 |
+| **esbuild** | 预打包 + 压缩 | Rolldown 替代 | 更一致的构建管线 |
+| **HMR** | ~50ms | **<20ms** | 开发体验质变 |
+| **Source Map** | 良好 | **完美**（Rust 级性能）| 调试体验提升 |
+| **配置兼容** | 完整 | **>95%** | 零配置迁移预期 |
+
+### Rolldown 对 Svelte 构建链的优化
+
+```
+Vite 6.3 (当前):
+.svelte → vite-plugin-svelte → JS → Rollup → Bundle → esbuild(minify)
+                                    ↓
+                              纯 JS 实现，大型项目 10-30s
+
+Vite 7 (预测):
+.svelte → vite-plugin-svelte → JS → Rolldown → Bundle + Minify
+                                    ↓
+                              Rust 实现，大型项目 3-8s
+```
+
+**关键优化点**:
+
+1. **模块图构建**: Rolldown 的 Rust 实现使模块依赖分析快 5x
+2. **Tree Shaking**: 更激进的死代码消除，Svelte 运行时辅助函数更少残留
+3. **并行处理**: 利用多核 CPU，大型 Monorepo 构建时间线性扩展
+
+### 迁移建议
+
+```bash
+# Vite 7 发布后（预计 2026 H2 或 2027 H1）
+pnpm update vite@7
+
+# 验证 Svelte 构建
+pnpm build
+
+# 对比构建时间
+# Vite 6: 15s → Vite 7: 4s (示例)
+```
+
+> **结论**: Vite 7 的 Rolldown 默认化将是 Svelte 生态的又一性能跃升。Svelte 编译器输出的 ESM 模块与 Rolldown 的 Rust 处理形成 "编译器 + 原生构建工具" 的高效组合，进一步拉大与 VDOM 框架的构建性能差距。
+
+---
+
+> 附录 O 更新: 2026-05-07 | Vite 对齐: 6.3.x / 7.0(前瞻) | Rolldown 对齐: Beta

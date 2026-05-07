@@ -887,3 +887,98 @@ npx source-map-explorer dist/**/*.js
 - 📚 [TC39 Signals Proposal](https://github.com/tc39/proposal-signals) — JavaScript 原生 Signals 标准化
 
 > 最后更新: 2026-05-06 | 源码对齐: Svelte 5.55.5 (GitHub tag) | 文档规模: ~1,650 行 | 状态: ✅ 重写完成
+
+---
+
+## 附录: Virtual DOM Diff 算法形式化对比
+
+> **更新日期**: 2026-05-07
+> **目的**: 从算法复杂度角度形式化对比 VDOM Diff 与 Svelte 的直接 DOM 操作
+
+### VDOM Diff 算法复杂度
+
+React 的 reconciliation 算法（基于 VDOM）的时间复杂度分析：
+
+**定义**: 设旧 VNode 树为 $T_1$，新 VNode 树为 $T_2$，$|T|$ 表示树的节点数。
+
+**Diff 过程**：
+
+1. **树遍历**: $O(|T_1| + |T_2|)$ — 遍历两棵树的所有节点
+2. **节点对比**: $O(\min(|T_1|, |T_2|))$ — 同位置节点逐一比较
+3. **子列表 Diff** (keyed): $O(n \log n)$ — 基于 key 的最长递增子序列算法
+4. **子列表 Diff** (unkeyed): $O(n^2)$ — 嵌套循环匹配
+
+**总复杂度**: $O(|T_1| + |T_2| + n \log n)$（keyed）或 $O(|T_1| + |T_2| + n^2)$（unkeyed）
+
+### Svelte 直接 DOM 操作复杂度
+
+Svelte 编译器在构建时确定了 "哪些 DOM 节点在哪些 Signal 变化时更新"：
+
+**定义**: 设受影响的 Signal 集合为 $S$，每个 Signal $s \in S$ 关联的 Effect 集合为 $E(s)$。
+
+**更新过程**：
+
+1. **Signal 变更**: $O(1)$ — 设置新值 + 版本号递增
+2. **标记 Dirty**: $O(|E(s)|)$ — 遍历 Signal 的 consumers
+3. **Effect 执行**: $O(\sum_{e \in E'} |deps(e)|)$ — $E'$ 为实际执行的 Effect 集合
+
+**总复杂度**: $O(|E(s)| + \text{实际 DOM 操作数})$
+
+### 形式化对比
+
+| 维度 | VDOM Diff | Svelte 直接 DOM |
+|:---|:---|:---|
+| **时间复杂度** | $O(\|T\| + n \log n)$ | $O(\text{affected})$ |
+| **与组件树关系** | 与组件树规模成正比 | 与受影响节点数成正比 |
+| **最优情况** | 仍需完整 Diff | $O(1)$（单文本更新）|
+| **最坏情况** | $O(n^2)$（unkeyed 列表） | $O(\text{affected} \cdot \text{depth})$ |
+| **摊还分析** | 每次更新都需 Diff | 仅首次建立依赖图有开销 |
+
+### 极端案例对比
+
+**案例**: 1000 行表格，仅修改第 500 行的一个单元格文本。
+
+**React (VDOM)**:
+
+```
+1. 重新执行 Table 组件 → 创建 1000 个新 VNode
+2. reconcileChildren(oldTree, newTree)
+   → 遍历 1000 个节点
+   → 999 个节点对比结果: 无变化
+   → 第 500 个节点: 子节点变化
+3. 第 500 行的子节点 Diff
+   → 20 个单元格对比
+   → 19 个无变化，1 个文本变化
+4. 生成更新队列: 1 个 setText 操作
+总操作: ~1020 次 VNode 创建 + 对比，最终 1 次 DOM 操作
+```
+
+**Svelte (直接 DOM)**:
+
+```
+1. cellValue.set("new text")
+   → internal_set: O(1)
+   → mark_reactions: O(1)（仅 1 个 render_effect）
+2. flushSync()
+   → 执行 render_effect
+   → set_text(node, "new text")
+   → node.nodeValue = "new text"
+总操作: ~5 个内部函数调用，1 次 DOM 操作
+```
+
+**差异**: Svelte 避免了 1000+ 次 VNode 创建和对比，直接定位到需要更新的节点。
+
+### 推论
+
+> **定理 (Compiler-Based 最优性)**: 当组件树深度 $d$ 大于受影响节点数 $k$ 时（即 $d \gg k$），Compiler-Based 框架的更新复杂度 $O(k)$ 渐进优于 VDOM 框架的 $O(|T|)$。
+
+**证明概要**:
+
+- VDOM 需遍历组件树，时间复杂度与树规模 $|T|$ 相关
+- Compiler-Based 仅遍历依赖图，时间复杂度与受影响节点数 $k$ 相关
+- 当 $d \gg k$ 时，$|T| \approx O(b^d)$（$b$ 为分支因子），而 $k$ 与 $d$ 无关
+- 因此 $O(k) \ll O(b^d)$ ∎
+
+---
+
+> 附录更新: 2026-05-07 | 算法对齐: React Reconciliation, Svelte 编译器输出 | 复杂度分析: Big-O 形式化

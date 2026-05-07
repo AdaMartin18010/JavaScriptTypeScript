@@ -1111,3 +1111,118 @@ export const handle: Handle = async ({ event, resolve }) => {
 - [Turso / libSQL 文档](https://docs.turso.tech/) 📚
 
 > 最后更新: 2026-05-02 | 数据来源: Cloudflare/Vercel/Netlify 官方文档, WinterCG 草案 2026-04, Node.js v22 文档, 边缘数据库厂商基准测试 2026-Q1
+
+---
+
+## 附录: Node.js 22+ 原生 TypeScript 执行与 SvelteKit
+
+> **更新日期**: 2026-05-07
+> **Node.js 版本**: 22+ (experimental type stripping)
+> **核心议题**: Node 原生支持 `.ts` 文件执行（无需 tsc/ts-node/tsx）对 SvelteKit 构建流程的影响
+
+### Node.js Type Stripping 概述
+
+Node.js 22 引入了实验性的 **Type Stripping** 功能，允许直接运行 `.ts` 文件：
+
+```bash
+# 无需任何编译工具，直接运行 TypeScript
+node --experimental-strip-types server.ts
+
+# 或使用注册钩子
+node --import ./register.ts app.ts
+```
+
+**工作原理**: Node 在加载 `.ts` 文件时，剥离类型注解（擦除语法），将剩余代码作为 JavaScript 执行。与 `tsc` 不同，它**不进行类型检查**。
+
+### 对 SvelteKit 的影响
+
+#### 1. 开发服务器启动
+
+**传统流程**:
+
+```
+SvelteKit dev
+  ↓
+vite-plugin-svelte 转换 .svelte
+  ↓
+Vite 用 esbuild 转换 .ts
+  ↓
+Node 执行 JS
+```
+
+**Node 22+ 流程（未来可能）**:
+
+```
+SvelteKit dev
+  ↓
+vite-plugin-svelte 转换 .svelte
+  ↓
+Node 直接加载 .ts（type stripping）
+  ↓
+跳过 esbuild 转换步骤
+```
+
+**潜在收益**:
+
+- 开发服务器冷启动时间减少 10-20%（跳过 esbuild 的 TS→JS 转换）
+- 减少开发依赖（无需 `tsx` 或 `ts-node`）
+
+#### 2. 服务端代码（`+page.server.ts` / `+server.ts`）
+
+```typescript
+// +page.server.ts
+// 在 Node 22+ 下，生产环境可能直接运行此文件
+import type { PageServerLoad } from './$types';
+
+export const load: PageServerLoad = async () => {
+  // Node 剥离类型注解后执行
+  const data = await fetchData();
+  return { data };
+};
+```
+
+**限制与注意事项**:
+
+| 特性 | 支持状态 | SvelteKit 影响 |
+|:---|:---:|:---|
+| 类型注解擦除 | ✅ 支持 | `.ts` 文件可直接运行 |
+| `enum` | ❌ 不支持 | 需改用 `as const` 对象 |
+| 命名空间 (`namespace`) | ❌ 不支持 | 需改用 ES 模块 |
+| 装饰器 (`@decorator`) | ❌ 不支持 | 需等 TC39 装饰器稳定 |
+| 路径别名 (`$lib`) | ⚠️ 需配置 | Node 需 `--import` 注册钩子解析 |
+| `.svelte.ts` | ❌ 不支持 | Svelte Runes 语法非标准 TS，仍需编译 |
+
+#### 3. 生产构建
+
+SvelteKit 生产构建仍需要 Vite/Rolldown 进行：
+
+- `.svelte` 文件编译
+- 客户端 Bundle 生成
+- Tree Shaking 和代码分割
+
+**结论**: Node type stripping **不会替代** SvelteKit 的构建流程，但可简化：
+
+- 纯服务端脚本（数据库迁移、CLI 工具）
+- 开发环境的快速原型
+- 边缘函数（如 Cloudflare Workers 已原生支持 TS）
+
+### 实践建议
+
+```json
+// package.json 脚本示例
+{
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "db:migrate": "node --experimental-strip-types scripts/migrate.ts",
+    "seed": "node --experimental-strip-types scripts/seed.ts"
+  }
+}
+```
+
+> **总结**: Node.js 原生 TypeScript 执行是生态的重要进步，但对 SvelteKit 项目的影响有限——核心构建流程仍依赖 Vite 编译 `.svelte` 和客户端 Bundle。主要收益在服务端脚本和开发体验优化。
+
+---
+
+> 附录更新: 2026-05-07 | Node.js 对齐: 22+ (experimental) | SvelteKit 对齐: 2.59.x
