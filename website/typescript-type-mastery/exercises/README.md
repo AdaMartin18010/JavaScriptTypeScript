@@ -81,6 +81,15 @@
 | # | 题目 | 能力点 |
 |---|------|--------|
 | 01 | [JSON Parser](./extreme/01-json-parser.ts) | 完整类型级解析器 |
+| 02 | [Tuple Filter](./extreme/02-tuple-filter.ts) | 条件过滤元组元素 |
+| 03 | [All Combinations](./extreme/03-all-combinations.ts) | 字符串全排列 |
+| 04 | [Deep Mutable](./extreme/04-deep-mutable.ts) | 递归移除只读 |
+| 05 | [Zip](./extreme/05-zip.ts) | 元组合并 |
+| 06 | [Currying](./extreme/06-currying.ts) | 函数柯里化类型 |
+| 07 | [Decode HTML](./extreme/07-decode-html-entities.ts) | 模板字面量替换 |
+| 08 | [Tuple to Union Object](./extreme/08-tuple-to-union-object.ts) | 联合类型构造 |
+| 09 | [Is Palindrome](./extreme/09-is-palindrome.ts) | 字符串回文判断 |
+| 10 | [Pick Deep](./extreme/10-pick-deep.ts) | 路径选择器 |
 
 ## 如何练习
 
