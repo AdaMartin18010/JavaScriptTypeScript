@@ -1,6 +1,6 @@
 type IsAny<T> = 0 extends 1 & T ? true : false
 
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 type cases = [
   Expect<Equal<IsAny<any>, true>>,
   Expect<Equal<IsAny<undefined>, false>>,

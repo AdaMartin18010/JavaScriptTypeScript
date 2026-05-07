@@ -17,7 +17,7 @@
 type LookUp<U, T> = U extends { type: T } ? U : never
 
 // ============ 测试用例 ============
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 
 interface Cat {
   type: 'cat'

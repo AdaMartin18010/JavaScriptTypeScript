@@ -23,7 +23,7 @@ declare function PromiseAll<T extends any[]>(
 }>
 
 // ============ 测试用例 ============
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 
 const promiseAllTest1 = PromiseAll([1, 2, 3] as const)
 const promiseAllTest2 = PromiseAll([1, 2, Promise.resolve(3)] as const)

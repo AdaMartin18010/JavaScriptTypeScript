@@ -6,7 +6,7 @@ type ReplaceKeys<U, T, Y> = {
     : U[K]
 }
 
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 type NodeA = { type: 'A'; name: string; flag: number }
 type NodeB = { type: 'B'; id: number; flag: number }
 type NodeC = { type: 'C'; name: string; flag: number }

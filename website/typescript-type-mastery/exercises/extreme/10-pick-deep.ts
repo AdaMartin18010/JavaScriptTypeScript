@@ -6,7 +6,7 @@ type DeepPick<T, Paths extends string> = Paths extends `${infer K}.${infer Rest}
     ? { [P in Paths]: T[Paths] }
     : never
 
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 type Obj = { a: { b: { c: number }; d: string }; e: boolean }
 type cases = [
   Expect<Equal<DeepPick<Obj, 'a.b.c'>, { a: { b: { c: number } } }>>,

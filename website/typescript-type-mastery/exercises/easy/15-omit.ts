@@ -16,10 +16,10 @@
 // type TodoPreview = MyOmit<Todo, 'description' | 'title'>
 // 期望: { completed: boolean }
 
-type MyOmit<T, K extends keyof any> = Pick<T, Exclude<keyof T, K>>
+type MyOmit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 
 // ============ 测试用例 ============
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 
 type cases = [
   Expect<Equal<Expected1, MyOmit<Todo, 'description'>>>,

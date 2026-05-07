@@ -4,7 +4,7 @@ type TupleToNestedObject<T extends any[], U> = T extends [infer First, ...infer 
     : never
   : U
 
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 type cases = [
   Expect<Equal<TupleToNestedObject<['a'], string>, { a: string }>>,
   Expect<Equal<TupleToNestedObject<['a', 'b'], number>, { a: { b: number } }>>,

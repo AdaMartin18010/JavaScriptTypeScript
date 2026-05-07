@@ -4,7 +4,7 @@ type CamelCase<S extends string> = S extends `${infer L}-${infer R}`
     : `${Lowercase<L>}-${R}`
   : Lowercase<S>
 
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 type cases = [
   Expect<Equal<CamelCase<'foo-bar-baz'>, 'fooBarBaz'>>,
   Expect<Equal<CamelCase<'foo-Bar-Baz'>, 'fooBarBaz'>>,

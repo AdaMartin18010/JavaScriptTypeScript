@@ -15,7 +15,7 @@ type StringToUnion<T extends string> = T extends `${infer First}${infer Rest}`
   : never
 
 // ============ 测试用例 ============
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 
 type cases = [
   Expect<Equal<StringToUnion<''>, never>>,

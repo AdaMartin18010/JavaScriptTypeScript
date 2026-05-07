@@ -15,7 +15,7 @@
 type MyExclude<T, U> = T extends U ? never : T
 
 // ============ 测试用例 ============
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 
 type cases = [
   Expect<Equal<MyExclude<'a' | 'b' | 'c', 'a'>, 'b' | 'c'>>,

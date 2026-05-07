@@ -4,7 +4,7 @@ type TupleToUnionObject<T extends readonly any[]> = T extends readonly [infer F,
     : never
   : {}
 
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 type cases = [
   Expect<Equal<TupleToUnionObject<['a', 'b']>, { a: true } & { b: true }>>,
 ]

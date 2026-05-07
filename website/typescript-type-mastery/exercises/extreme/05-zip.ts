@@ -4,7 +4,7 @@ type Zip<T extends any[], U extends any[]> = T extends [infer TF, ...infer TR]
     : []
   : []
 
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 type cases = [
   Expect<Equal<Zip<[1, 2], ['a', 'b']>, [[1, 'a'], [2, 'b']]>>,
 ]

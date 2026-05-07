@@ -6,8 +6,9 @@
     "moduleResolution": "node",
     "target": "ES2020",
     "lib": ["ES2020"],
+    "baseUrl": ".",
     "paths": {
-      "@type-challenges/utils": ["./_shared/type-utils.ts"]
+      "@type-challenges/utils": ["_shared/type-utils.ts"]
     }
   },
   "include": ["**/*.ts"],

@@ -14,7 +14,7 @@
 type Unshift<T extends any[], U> = [U, ...T]
 
 // ============ 测试用例 ============
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 
 type cases = [
   Expect<Equal<Unshift<[], 1>, [1]>>,

@@ -4,7 +4,7 @@ type IsUnion<T, U = T> = T extends T
     : true
   : never
 
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 type cases = [
   Expect<Equal<IsUnion<string>, false>>,
   Expect<Equal<IsUnion<string | number>, true>>,

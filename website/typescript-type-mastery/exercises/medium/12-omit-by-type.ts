@@ -2,7 +2,7 @@ type OmitByType<T, U> = {
   [K in keyof T as T[K] extends U ? never : K]: T[K]
 }
 
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 interface Model {
   name: string
   count: number

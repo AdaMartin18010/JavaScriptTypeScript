@@ -1,12 +1,14 @@
-type DeepMutable<T> = T extends ReadonlyMap<infer K, infer V>
-  ? Map<K, V>
-  : T extends ReadonlySet<infer V>
-    ? Set<V>
-    : T extends object
-      ? { -readonly [K in keyof T]: DeepMutable<T[K]> }
-      : T
+type DeepMutable<T> = T extends Function
+  ? T
+  : T extends ReadonlyMap<infer K, infer V>
+    ? Map<K, V>
+    : T extends ReadonlySet<infer V>
+      ? Set<V>
+      : T extends object
+        ? { -readonly [K in keyof T]: DeepMutable<T[K]> }
+        : T
 
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 interface Test1 {
   readonly a: () => 22
   readonly b: string

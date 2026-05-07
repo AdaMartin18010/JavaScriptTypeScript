@@ -4,7 +4,7 @@ type Flatten<T extends any[]> = T extends [infer First, ...infer Rest]
     : [First, ...Flatten<Rest>]
   : []
 
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 type cases = [
   Expect<Equal<Flatten<[]>, []>>,
   Expect<Equal<Flatten<[1, 2, 3, 4]>, [1, 2, 3, 4]>>,

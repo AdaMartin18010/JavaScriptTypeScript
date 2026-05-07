@@ -2,7 +2,7 @@ type RemoveIndexSignature<T> = {
   [K in keyof T as string extends K ? never : number extends K ? never : K]: T[K]
 }
 
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 type Foo = {
   [key: string]: any
   foo(): void

@@ -21,7 +21,7 @@ type MyAwaited<T extends PromiseLike<any>> = T extends PromiseLike<infer U>
   : never
 
 // ============ 测试用例 ============
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 
 type X = Promise<string>
 type Y = Promise<{ field: number }>

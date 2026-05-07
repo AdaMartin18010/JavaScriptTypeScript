@@ -6,7 +6,7 @@ type Get<T, K extends string> = K extends keyof T
       : never
     : never
 
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 type Data = { foo: { bar: { value: 'foobar'; count: 6 }; included: true }; hello: 'world' }
 type cases = [
   Expect<Equal<Get<Data, 'hello'>, 'world'>>,

@@ -22,7 +22,7 @@ type DecodeEntity<S extends string, Acc extends string = ''> = S extends `${infe
     : DecodeEntity<Rest, `${Acc}${C}`>
   : Acc
 
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 type cases = [
   Expect<Equal<DecodeHtml<'&lt;&gt;'>, '<>'>>,
   Expect<Equal<DecodeHtml<'&amp;'>, '&'>>,

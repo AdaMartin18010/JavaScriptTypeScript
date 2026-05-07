@@ -15,7 +15,7 @@
 type Last<T extends any[]> = T extends [...any[], infer L] ? L : never
 
 // ============ 测试用例 ============
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 
 type cases = [
   Expect<Equal<Last<[3, 2, 1]>, 1>>,

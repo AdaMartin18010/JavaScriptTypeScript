@@ -14,7 +14,7 @@
 type Push<T extends any[], U> = [...T, U]
 
 // ============ 测试用例 ============
-import type { Equal, Expect } from '@type-challenges/utils'
+import type { Equal, Expect } from '../_shared/type-utils'
 
 type cases = [
   Expect<Equal<Push<[], 1>, [1]>>,
