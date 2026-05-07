@@ -918,6 +918,207 @@ export const sidebar: DefaultTheme.Sidebar = {
     }
   ],
 
+  // TypeScript 类型系统深度掌握（顶层）
+  '/typescript-type-mastery/': [
+    {
+      text: '🔷 TypeScript 类型系统深度掌握',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/typescript-type-mastery/' },
+      ]
+    },
+    {
+      text: '核心机制实战',
+      collapsed: false,
+      items: [
+        { text: '01. 泛型实战模式', link: '/typescript-type-mastery/01-generics-patterns' },
+        { text: '02. 条件类型精通', link: '/typescript-type-mastery/02-conditional-types-mastery' },
+        { text: '03. 类型推断深度', link: '/typescript-type-mastery/03-type-inference-deep-dive' },
+        { text: '04. 模板字面量类型', link: '/typescript-type-mastery/04-template-literal-types' },
+        { text: '05. 类型守卫与收窄', link: '/typescript-type-mastery/05-type-guards-narrowing' },
+      ]
+    },
+    {
+      text: '高级模式与工具',
+      collapsed: false,
+      items: [
+        { text: '06. 高级工具类型模式', link: '/typescript-type-mastery/06-advanced-utility-patterns' },
+        { text: '07. 类型体操题解', link: '/typescript-type-mastery/07-type-challenges-workbook' },
+        { text: '08. 真实库类型分析', link: '/typescript-type-mastery/08-real-world-library-types' },
+        { text: '09. TS 5.x/6.x 新特性', link: '/typescript-type-mastery/09-ts5-ts6-new-features' },
+      ]
+    },
+    {
+      text: '工程化与决策',
+      collapsed: false,
+      items: [
+        { text: '10. 类型系统性能优化', link: '/typescript-type-mastery/10-performance-optimization' },
+        { text: '11. React + TS 专属模式', link: '/typescript-type-mastery/11-react-ts-patterns' },
+        { text: '12. 类型技术决策矩阵', link: '/typescript-type-mastery/12-decision-matrix' },
+      ]
+    },
+    {
+      text: '相关资源',
+      collapsed: true,
+      items: [
+        { text: 'TypeScript 类型系统深度专题', link: '/typescript-type-system/' },
+        { text: '编译器工作坊', link: '/50-examples/50.3-advanced/compiler-workshop/' },
+      ]
+    }
+  ],
+
+  // React + Next.js App Router 深度专题（顶层）
+  '/react-nextjs-app-router/': [
+    {
+      text: '⚛️ React + Next.js App Router',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/react-nextjs-app-router/' },
+      ]
+    },
+    {
+      text: '核心机制',
+      collapsed: false,
+      items: [
+        { text: '01. App Router 核心机制', link: '/react-nextjs-app-router/01-app-router-fundamentals' },
+        { text: '02. RSC 深度解析', link: '/react-nextjs-app-router/02-server-components-deep-dive' },
+        { text: '03. Streaming + Suspense', link: '/react-nextjs-app-router/03-streaming-suspense-patterns' },
+        { text: '04. Server Actions', link: '/react-nextjs-app-router/04-server-actions-patterns' },
+        { text: '05. 数据获取模式', link: '/react-nextjs-app-router/05-data-fetching-patterns' },
+      ]
+    },
+    {
+      text: '生产实践',
+      collapsed: false,
+      items: [
+        { text: '06. 缓存策略全解', link: '/react-nextjs-app-router/06-caching-strategies' },
+        { text: '07. 认证模式', link: '/react-nextjs-app-router/07-authentication-patterns' },
+        { text: '08. 性能优化', link: '/react-nextjs-app-router/08-performance-optimization' },
+        { text: '09. 边缘部署', link: '/react-nextjs-app-router/09-edge-deployment' },
+        { text: '10. AI 流式集成', link: '/react-nextjs-app-router/10-ai-streaming-integration' },
+      ]
+    },
+    {
+      text: '工程与决策',
+      collapsed: false,
+      items: [
+        { text: '11. 测试策略', link: '/react-nextjs-app-router/11-testing-strategies' },
+        { text: '12. Pages → App 迁移', link: '/react-nextjs-app-router/12-migration-from-pages' },
+        { text: '13. 生产检查清单', link: '/react-nextjs-app-router/13-production-checklist' },
+        { text: '14. 框架对比矩阵', link: '/react-nextjs-app-router/14-framework-comparison' },
+        { text: '15. 招聘生态分析', link: '/react-nextjs-app-router/15-ecosystem-talent-analysis' },
+      ]
+    },
+    {
+      text: '相关资源',
+      collapsed: true,
+      items: [
+        { text: '前端框架生态', link: '/categories/frontend-frameworks' },
+        { text: 'SSR 元框架', link: '/categories/ssr-meta-frameworks' },
+        { text: 'React 设计模式', link: '/patterns/react-patterns' },
+      ]
+    }
+  ],
+
+  // 服务器优先前端范式（顶层）
+  '/server-first-frontend/': [
+    {
+      text: '🌿 服务器优先前端范式',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/server-first-frontend/' },
+      ]
+    },
+    {
+      text: 'HTMX 核心',
+      collapsed: false,
+      items: [
+        { text: '01. HTMX 核心概念', link: '/server-first-frontend/01-htmx-core-concepts' },
+        { text: '02. HTMX 高级模式', link: '/server-first-frontend/02-htmx-advanced-patterns' },
+        { text: '03. HTMX 后端集成', link: '/server-first-frontend/03-htmx-backend-integration' },
+        { text: '04. HTMX 4.0 新特性', link: '/server-first-frontend/04-htmx-4-0-new-features' },
+      ]
+    },
+    {
+      text: 'Alpine.js 与协同',
+      collapsed: false,
+      items: [
+        { text: '05. Alpine.js 核心', link: '/server-first-frontend/05-alpine-js-core' },
+        { text: '06. Alpine.js 模式', link: '/server-first-frontend/06-alpine-js-patterns' },
+        { text: '07. TALL Stack 实战', link: '/server-first-frontend/07-tall-stack-practices' },
+        { text: '08. HTMX + Alpine 协同', link: '/server-first-frontend/08-htmx-alpine-integration' },
+      ]
+    },
+    {
+      text: '架构与决策',
+      collapsed: false,
+      items: [
+        { text: '09. React → HTMX 迁移', link: '/server-first-frontend/09-migration-from-react' },
+        { text: '10. 架构对比', link: '/server-first-frontend/10-architecture-comparison' },
+        { text: '11. 选型决策', link: '/server-first-frontend/11-when-to-choose' },
+        { text: '12. 生态趋势', link: '/server-first-frontend/12-ecosystem-trends' },
+      ]
+    },
+    {
+      text: '相关资源',
+      collapsed: true,
+      items: [
+        { text: '前端框架生态', link: '/categories/frontend-frameworks' },
+        { text: '渲染模型理论', link: '/framework-models/05-rendering-models' },
+      ]
+    }
+  ],
+
+  // Lit Web Components 跨框架复用（顶层）
+  '/lit-web-components/': [
+    {
+      text: '🔥 Lit Web Components',
+      collapsed: false,
+      items: [
+        { text: '🏠 专题首页', link: '/lit-web-components/' },
+      ]
+    },
+    {
+      text: '标准与基础',
+      collapsed: false,
+      items: [
+        { text: '01. Web Components 标准', link: '/lit-web-components/01-web-components-standards' },
+        { text: '02. Lit 基础', link: '/lit-web-components/02-lit-fundamentals' },
+        { text: '03. Lit 高级模式', link: '/lit-web-components/03-lit-advanced-patterns' },
+      ]
+    },
+    {
+      text: '设计系统与集成',
+      collapsed: false,
+      items: [
+        { text: '04. 用 Lit 构建设计系统', link: '/lit-web-components/04-design-system-with-lit' },
+        { text: '05. 跨框架集成', link: '/lit-web-components/05-cross-framework-integration' },
+        { text: '06. 微前端场景', link: '/lit-web-components/06-micro-frontends-with-lit' },
+      ]
+    },
+    {
+      text: '工程与生态',
+      collapsed: false,
+      items: [
+        { text: '07. 测试策略', link: '/lit-web-components/07-testing-strategies' },
+        { text: '08. 安全最佳实践', link: '/lit-web-components/08-security-best-practices' },
+        { text: '09. 性能优化', link: '/lit-web-components/09-performance-optimization' },
+        { text: '10. 迁移路径', link: '/lit-web-components/10-migration-paths' },
+        { text: '11. 浏览器兼容性', link: '/lit-web-components/11-browser-compatibility' },
+        { text: '12. 生态分析', link: '/lit-web-components/12-ecosystem-analysis' },
+      ]
+    },
+    {
+      text: '相关资源',
+      collapsed: true,
+      items: [
+        { text: '前端框架生态', link: '/categories/frontend-frameworks' },
+        { text: '组件模型理论', link: '/framework-models/01-component-model-theory' },
+        { text: '微前端', link: '/categories/micro-frontends' },
+      ]
+    }
+  ],
+
   // 模板部分
   '/templates/': [
     {
