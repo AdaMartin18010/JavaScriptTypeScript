@@ -71,4 +71,4 @@ Day 29-30   🔥 Advanced     →  Fullstack integration
 
 ---
 
-> **Start here**: [Day 1-3: Counter + Todo](./day-01-counter/)
+> **Start here**: [Day 1-3: Counter + Todo](./day-01-counter/README.md)

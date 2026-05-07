@@ -20,15 +20,28 @@
 
 ## 学习路径
 
+```mermaid
+flowchart LR
+    A[ORM选型] --> B[Drizzle]
+    B --> C[Prisma]
+    C --> C2[Kysely]
+    C2 --> D[Edge ORM]
+    D --> E[Schema设计]
+    E --> F[性能优化]
+```
+
 ### Phase 1: 工具对比与选型
+
 - [01. ORM 全景对比与选型](./01-orm-landscape)
 - [02. Drizzle 深度解析](./02-drizzle-deep-dive)
 
 ### Phase 2: 生产实践
+
 - [03. Prisma 生产级实践](./03-prisma-in-production)
 - [04. Kysely 类型安全 SQL](./04-kysely-type-safe-sql)
 
 ### Phase 3: 架构与优化
+
 - [05. Edge 环境 ORM 模式](./05-edge-orm-patterns)
 - [06. Schema 设计最佳实践](./06-schema-design-patterns)
 - [07. 迁移策略与版本控制](./07-migration-strategies)

@@ -1,0 +1,15 @@
+{
+  "name": "type-challenges-runner",
+  "version": "1.0.0",
+  "description": "TypeScript 类型体操 60 道题目统一测试 runner",
+  "scripts": {
+    "test": "node run-tests.js",
+    "test:easy": "node run-tests.js easy",
+    "test:medium": "node run-tests.js medium",
+    "test:hard": "node run-tests.js hard",
+    "test:extreme": "node run-tests.js extreme"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

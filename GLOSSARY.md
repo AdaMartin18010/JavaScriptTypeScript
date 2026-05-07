@@ -22,6 +22,8 @@
 | A2A (Agent-to-Agent Protocol) | A2A | Google 提出的开放协议，允许不同 AI Agent 之间安全地交换能力、上下文和任务状态 |
 | 动作 | Action | Svelte 中用于直接操作 DOM 元素的底层接口，通常用于集成第三方库 |
 | 适配器 | Adapter | SvelteKit 中用于将应用适配到不同部署目标的构建输出转换器 |
+| Agent | Agent | 具备自主决策、工具调用和规划能力的 AI 系统，通常由 LLM + 工具 + 记忆组成 |
+| AI 网关 | AI Gateway | 统一管理 AI 模型调用、负载均衡、缓存、成本控制和内容安全的中间层基础设施 |
 | AI 网关 | AI Gateway | 统一管理 AI 模型调用、负载均衡、缓存、成本控制和内容安全的中间层基础设施 |
 
 ## B
@@ -340,6 +342,7 @@
 | 2026-04-17 | 补充 v4.0 语义模型与编译工程相关术语 |
 | 2026-04-21 | 补充语言核心系统相关术语：TDZ、Completion Record、Agent、Realm、Job Queue、尾调用优化(TCO)、V8 隐藏类、内联缓存 |
 | 2026-05-02 | 新增 Svelte Signals 编译器生态相关术语（共 23 条），覆盖编译器、响应式原语、Svelte 特定 API 及全栈能力 |
+| 2026-05-07 | 新增 7 个独立深度专题术语（共 17 条），覆盖 Edge Runtime、数据库层/ORM、AI-Native、Server-First、Lit Web Components |
 
 ---
 

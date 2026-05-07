@@ -28,4 +28,4 @@ Rate yourself 1-5 on each item:
 ## Action Items
 
 - [ ] Items scored ≤ 3: Review corresponding section in solution
-- [ ] All items ≥ 4: Proceed to [Day 4-7: Contact List](../day-04-contact-list/)
+- [ ] All items ≥ 4: Proceed to [Day 4-7: Contact List](../day-04-contact-list/README.md)

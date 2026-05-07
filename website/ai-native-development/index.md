@@ -15,19 +15,32 @@
 
 ## 学习路径
 
+```mermaid
+flowchart LR
+    A[LLM集成] --> B[流式UI]
+    B --> C[RAG架构]
+    C --> D[Agents+MCP]
+    D --> E[测试评估]
+    E --> F[成本优化]
+```
+
 ### Phase 1: LLM 集成基础
+
 - [01. AI-Native 开发范式](./01-ai-native-fundamentals)
 - [02. LLM 集成模式](./02-llm-integration-patterns)
 
 ### Phase 2: 交互与架构
+
 - [03. AI 流式 UI 实现](./03-ai-streaming-ui)
 - [04. RAG 架构实战](./04-rag-architecture)
 
 ### Phase 3: Agent 与生态
+
 - [05. Agents 与 MCP 协议](./05-agents-and-mcp)
 - [06. AI 测试与评估](./06-ai-testing-evaluation)
 
 ### Phase 4: 生产化
+
 - [07. 成本优化策略](./07-cost-optimization)
 - [08. 安全与 Prompt Injection](./08-security-prompt-injection)
 

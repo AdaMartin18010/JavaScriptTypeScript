@@ -28,6 +28,15 @@ lastUpdated: true
 ## 全景概览
 
 ```mermaid
+flowchart LR
+    A[HTMX核心] --> B[HTMX高级模式]
+    B --> C[Alpine.js协同]
+    C --> D[TALL Stack]
+    D --> E[架构选型]
+    E --> F[生产部署]
+```
+
+```mermaid
 flowchart TB
     subgraph L1["🧱 HTMX 核心 (Days 1-16)"]
         A1["01 HTMX 核心概念<br/>hx-* 属性、HATEOAS、超媒体驱动"]

@@ -1,6 +1,6 @@
 # JavaScript/TypeScript 全景知识库 - 完整文档索引
 
-> **版本**: v1.5.0 | **最后更新**: 2026-04-27 | **维护状态**: 活跃维护
+> **版本**: v1.6.0 | **最后更新**: 2026-05-07 | **维护状态**: 活跃维护
 
 ---
 
@@ -592,10 +592,18 @@ JavaScriptTypeScript/
 │       └── *.ts (实现代码)
 │
 └── website/                           # 项目网站
+    ├── typescript-type-mastery/         # TypeScript 类型系统深度掌握 (13篇+60道类型体操)
+    ├── react-nextjs-app-router/         # React + Next.js App Router 深度专题 (16篇)
+    ├── server-first-frontend/           # 服务器优先前端范式 (13篇)
+    ├── lit-web-components/              # Lit Web Components 跨框架复用 (13篇)
+    ├── edge-runtime/                    # Edge Runtime 深度专题 (8篇)
+    ├── database-layer/                  # 数据库层与 ORM 深度专题 (8篇)
+    ├── ai-native-development/           # AI-Native Development 深度专题 (8篇)
+    └── svelte-signals-stack/            # Svelte 5 Signals 深度专题 (32篇)
 ```
 
 ---
 
 > **维护者**: JavaScript/TypeScript 全景知识库团队
-> **最后更新**: 2026-04-19
-> **版本**: v1.4.0
+> **最后更新**: 2026-05-07
+> **版本**: v1.6.0

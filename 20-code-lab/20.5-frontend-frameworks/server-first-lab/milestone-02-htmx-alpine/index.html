@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>HTMX + Alpine.js Lab M2</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.0"></script>
+  <style>body{font-family:system-ui;padding:24px;max-width:600px;margin:0 auto;}</style>
+</head>
+<body>
+  <h1>M2: HTMX + Alpine.js 协同</h1>
+
+  <!-- Alpine.js 管理本地状态，HTMX 加载服务端内容 -->
+  <div x-data="{ open: false }">
+    <button @click="open = !open">Toggle Panel</button>
+    <div x-show="open" x-transition>
+      <div hx-get="/api/toggle" hx-trigger="revealed" hx-target="#content">
+        <div id="content">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 表单：HTMX 提交 + Alpine.js 验证状态 -->
+  <div x-data="{ errors: {} }" style="margin-top:24px;">
+    <form hx-post="/api/form" hx-target="#result">
+      <input name="email" type="email" placeholder="Email" required style="padding:8px;width:200px;" />
+      <button type="submit" style="padding:8px 16px;">Submit</button>
+    </form>
+    <div id="result"></div>
+  </div>
+</body>
+</html>

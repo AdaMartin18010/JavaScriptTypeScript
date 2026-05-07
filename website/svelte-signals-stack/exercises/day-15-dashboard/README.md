@@ -1,7 +1,7 @@
 # Day 15-21: Dashboard
 
-> **Difficulty**: 🌳 Intermediate-Advanced  
-> **Prerequisites**: Day 8-14 completed, basic SvelteKit knowledge  
+> **Difficulty**: 🌳 Intermediate-Advanced
+> **Prerequisites**: Day 8-14 completed, basic SvelteKit knowledge
 > **Aligned with**: [16-learning-ladder.md](../../16-learning-ladder.md) — Level 6-8
 
 ---
@@ -24,6 +24,7 @@ By completing this exercise, you will:
 Build an analytics dashboard with:
 
 ### Core Features
+
 - [ ] **Data Loading**: Fetch metrics from API in `+page.ts`/`+page.server.ts`
 - [ ] **Charts**: SVG-based reactive charts (no external libs)
 - [ ] **Date Range Picker**: Filter data by date range
@@ -96,7 +97,7 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ fetch }) => {
   const res = await fetch('/api/metrics');
   const metrics: Metric[] = await res.json();
-  
+
   return {
     metrics,
     summary: computeSummary(metrics),
@@ -112,16 +113,16 @@ export const actions = {
   export: async ({ request }) => {
     const data = await request.formData();
     const format = data.get('format'); // 'csv' | 'json'
-    
+
     // Generate export
     const csv = generateCsv(metrics);
-    
+
     return {
       success: true,
       downloadUrl: `/exports/${filename}`,
     };
   },
-  
+
   updateSettings: async ({ request }) => {
     const data = await request.formData();
     // Validate
@@ -178,4 +179,4 @@ npm run dev
 
 ---
 
-> **Next**: [Day 22-28: Real-time Chat](../day-22-chat/) → SSE, `$state.raw`, Edge runtime
+> **Next**: [Day 22-28: Real-time Chat](../day-22-chat/README.md) → SSE, `$state.raw`, Edge runtime

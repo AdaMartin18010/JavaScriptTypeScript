@@ -29,6 +29,15 @@ lastUpdated: true
 ## 全景概览
 
 ```mermaid
+flowchart LR
+    A[Web Components标准] --> B[Lit基础]
+    B --> C[Lit高级模式]
+    C --> D[设计系统]
+    D --> E[跨框架集成]
+    E --> F[微前端]
+```
+
+```mermaid
 flowchart TB
     subgraph L1["🧱 标准与基础 (Days 1-15)"]
         A1["01 Web Components 标准深度<br/>Custom Elements、Shadow DOM、Slot"]

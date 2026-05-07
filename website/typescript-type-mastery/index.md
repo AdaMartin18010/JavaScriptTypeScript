@@ -29,6 +29,14 @@ lastUpdated: true
 ## 全景概览
 
 ```mermaid
+flowchart LR
+    A[筑基期<br/>泛型基础] --> B[核心机制期<br/>条件类型/推断]
+    B --> C[实战挑战期<br/>类型体操/库分析]
+    C --> D[工程前沿期<br/>性能/决策]
+    D --> E[60道练习题<br/>Easy→Extreme]
+```
+
+```mermaid
 flowchart TB
     subgraph L1["🔧 核心机制实战 (Days 1-21)"]
         A1["01 泛型实战模式<br/>约束、分布、型变、高阶"]

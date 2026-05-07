@@ -29,6 +29,15 @@ lastUpdated: true
 ## 全景概览
 
 ```mermaid
+flowchart LR
+    A[App Router核心] --> B[RSC深度解析]
+    B --> C[Streaming+Suspense]
+    C --> D[Server Actions]
+    D --> E[生产部署]
+    E --> F[AI流式集成]
+```
+
+```mermaid
 flowchart TB
     subgraph L1["🧱 核心机制 (Days 1-18)"]
         A1["01 App Router 核心机制<br/>文件约定、嵌套布局、loading/error"]

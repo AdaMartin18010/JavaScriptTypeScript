@@ -411,5 +411,5 @@ class ProtoCompatibilityChecker {
 ## 延伸阅读
 
 - [完整理论文档](../../70-theoretical-foundations/70.5-edge-runtime-and-serverless/39-rpc-frameworks.md)
-- [Edge Runtime 架构](../70.4-web-platform-fundamentals/34-edge-runtime-architecture.md)
-- [WebSocket 与实时协议](../70.4-web-platform-fundamentals/23-websocket-and-realtime-protocols.md)
+- Edge Runtime 架构（待补充）
+- WebSocket 与实时协议（待补充）

@@ -1,7 +1,7 @@
 # Day 1-3: Counter + Todo List
 
-> **Difficulty**: 🌿 Beginner  
-> **Prerequisites**: Basic HTML/JS, npm installed  
+> **Difficulty**: 🌿 Beginner
+> **Prerequisites**: Basic HTML/JS, npm installed
 > **Aligned with**: [16-learning-ladder.md](../../16-learning-ladder.md) — Level 1-2
 
 ---
@@ -22,6 +22,7 @@ By completing this exercise, you will:
 ## Exercise A: Counter (15 min)
 
 Build a counter with:
+
 - [ ] Increment/decrement buttons
 - [ ] Display current count
 - [ ] Display `doubled = count * 2` using `$derived`
@@ -63,6 +64,7 @@ Build a counter with:
 ## Exercise B: Todo List (30 min)
 
 Build a todo list with:
+
 - [ ] Input field to add new todos
 - [ ] List of todos with check/uncheck
 - [ ] "Active count" showing unchecked items (`$derived`)
@@ -168,8 +170,9 @@ $effect(() => {
 // Load on init
 let todos = $state(JSON.parse(localStorage.getItem('todos') || '[]'));
 ```
+
 </details>
 
 ---
 
-> **Next**: [Day 4-7: Contact List](../day-04-contact-list/) → `{#each}`, `$props`, Snippets
+> **Next**: [Day 4-7: Contact List](../day-04-contact-list/README.md) → `{#each}`, `$props`, Snippets

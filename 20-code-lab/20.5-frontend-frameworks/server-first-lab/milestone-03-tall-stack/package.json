@@ -1,0 +1,12 @@
+{
+  "name": "tall-stack-m3",
+  "version": "1.0.0",
+  "description": "TALL Stack simulation with Express + HTMX + Alpine.js + Tailwind CDN",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  }
+}

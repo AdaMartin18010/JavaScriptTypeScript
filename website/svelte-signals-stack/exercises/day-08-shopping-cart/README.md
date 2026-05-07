@@ -1,7 +1,7 @@
 # Day 8-14: Shopping Cart
 
-> **Difficulty**: 🌳 Intermediate  
-> **Prerequisites**: Day 1-3 completed, `$state`, `$derived`, `$effect`  
+> **Difficulty**: 🌳 Intermediate
+> **Prerequisites**: Day 1-3 completed, `$state`, `$derived`, `$effect`
 > **Aligned with**: [16-learning-ladder.md](../../16-learning-ladder.md) — Level 3-5
 
 ---
@@ -24,6 +24,7 @@ By completing this exercise, you will:
 Build a shopping cart with:
 
 ### Core Features
+
 - [ ] Product catalog (10+ items with price, image, category)
 - [ ] Add/remove items from cart
 - [ ] Quantity controls (+/-)
@@ -32,6 +33,7 @@ Build a shopping cart with:
 - [ ] Persist cart to localStorage
 
 ### Advanced Features
+
 - [ ] **Undo/Redo**: `$state.snapshot` + history stack
 - [ ] **Stock tracking**: Prevent adding out-of-stock items
 - [ ] **Category filter**: Filter products by category
@@ -104,14 +106,14 @@ export function createCart() {
 
 export function createCart() {
   let items = $state<CartItem[]>([]);
-  
+
   let subtotal = $derived(
     items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
   );
-  
+
   let tax = $derived(subtotal * 0.08);
   let total = $derived(subtotal + tax);
-  
+
   // ...
 }
 ```
@@ -209,6 +211,7 @@ function createHistory<T>(initial: T) {
   };
 }
 ```
+
 </details>
 
 <details>
@@ -224,8 +227,9 @@ function canAdd(product: Product) {
   return inCart < product.stock;
 }
 ```
+
 </details>
 
 ---
 
-> **Next**: [Day 15-21: Dashboard](../day-15-dashboard/) → SvelteKit, `load`, Form Actions
+> **Next**: [Day 15-21: Dashboard](../day-15-dashboard/README.md) → SvelteKit, `load`, Form Actions
