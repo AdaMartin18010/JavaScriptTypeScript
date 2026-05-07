@@ -962,7 +962,7 @@ export const sidebar: DefaultTheme.Sidebar = {
       collapsed: true,
       items: [
         { text: 'TypeScript 类型系统深度专题', link: '/typescript-type-system/' },
-        { text: '编译器工作坊', link: '/50-examples/50.3-advanced/compiler-workshop/' },
+        { text: '编译器工作坊', link: '/examples/' },
       ]
     }
   ],
