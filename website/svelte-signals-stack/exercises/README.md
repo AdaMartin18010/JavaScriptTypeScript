@@ -6,42 +6,69 @@
 
 ## Exercise Map
 
-| Day | Exercise | Skills | Difficulty |
-|:---:|:---|:---|:---:|
-| 1-3 | [Counter + Todo](./day-01-counter/) | `$state`, `$derived`, `$effect`, events | 🌿 |
-| 4-7 | Contact List | `{#each}`, `$props`, Snippets, forms | 🌿 |
-| 8-14 | [Shopping Cart](./day-08-shopping-cart/) | `.svelte.ts`, `$derived.by`, stores | 🌳 |
-| 15-21 | [Dashboard](./day-15-dashboard/) | SvelteKit, `load`, Form Actions, SSR | 🌳 |
-| 22-28 | [Real-time Chat](./day-22-chat/) | SSE, `$effect`, `$state.raw`, Edge | 🔥 |
-| 29-30 | Fullstack App | SSR, auth, database, deployment | 🔥 |
+| Day | Exercise | Skills | Difficulty | Status |
+|:---:|:---|:---|:---:|:---:|
+| 1-3 | [Counter + Todo](./day-01-counter/) | `$state`, `$derived`, `$effect`, events | 🌿 | ✅ Complete |
+| 4-7 | Contact List | `{#each}`, `$props`, Snippets, forms | 🌿 | 📝 Framework |
+| 8-14 | [Shopping Cart](./day-08-shopping-cart/) | `.svelte.ts`, `$derived.by`, undo/redo | 🌳 | ✅ Complete |
+| 15-21 | [Dashboard](./day-15-dashboard/) | SvelteKit, `load`, Form Actions, SSR | 🌳 | ✅ Complete |
+| 22-28 | [Real-time Chat](./day-22-chat/) | SSE, `$state.raw`, optimistic UI | 🔥 | ✅ Complete |
+| 29-30 | Fullstack App | SSR, auth, database, deployment | 🔥 | 📝 Framework |
 
 ---
 
-## Getting Started
+## Quick Start
 
 ```bash
-# Each exercise is a standalone SvelteKit project
+# Each exercise is a standalone project
 cd exercises/day-01-counter
 npm install
 npm run dev
 ```
 
-## Exercise Template
+---
+
+## Exercise Structure
 
 Each exercise contains:
 
 ```
 day-XX-name/
 ├── README.md          # Exercise instructions & learning objectives
+├── package.json       # Dependencies
+├── vite.config.js     # Build config
+├── index.html         # Entry point
 ├── src/
-│   ├── routes/        # SvelteKit routes
-│   ├── lib/           # Reusable components
-│   └── app.html
-├── package.json
+│   ├── main.js        # App bootstrap
+│   ├── App.svelte     # Main component (starter code with TODOs)
+│   └── lib/           # Shared utilities
 ├── SOLUTION.md        # Reference solution (spoilers!)
 └── CHECKLIST.md       # Self-assessment rubric
 ```
 
 ---
 
-> **Status**: Framework created. Individual exercise implementations in progress.
+## Progression Path
+
+```
+Day 1-3     🌿 Beginner     →  $state, $derived, $effect basics
+Day 4-7     🌿 Beginner     →  Components, props, forms
+Day 8-14    🌳 Intermediate →  .svelte.ts, complex derived, undo/redo
+Day 15-21   🌳 Intermediate →  SvelteKit, SSR, form actions
+Day 22-28   🔥 Advanced     →  SSE, optimistic UI, $state.raw
+Day 29-30   🔥 Advanced     →  Fullstack integration
+```
+
+---
+
+## Status Legend
+
+| Icon | Meaning |
+|:---:|:---|
+| ✅ Complete | Full implementation with working code |
+| 📝 Framework | Structure created, implementation in progress |
+| 🚧 Planned | Listed in roadmap, not yet started |
+
+---
+
+> **Start here**: [Day 1-3: Counter + Todo](./day-01-counter/)
