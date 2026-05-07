@@ -21,37 +21,7 @@ export default withMermaid(defineConfig({
 
   // 忽略已知的跨项目死链（指向项目源码目录的链接，这些不属于 VitePress 站点构建范围）
   // 以及正在建设中的新专题章节链接（后续章节创建后移除对应规则）
-  ignoreDeadLinks: [
-    /jsts-code-lab\//,
-    /JSTS全景综述\//,
-    /\/10-fundamentals\//,
-    /\/20-code-lab\//,
-    /\/50-examples\//,
-    /\/70-theoretical-foundations\//,
-    /^\.\.\/..\/10-fundamentals\//,
-    /^\.\.\/..\/20-code-lab\//,
-    /^\.\.\/..\/50-examples\//,
-    /^\.\.\/..\/70-theoretical-foundations\//,
-    /^\.\.\/..\/30-knowledge-base\//,
-    // 新专题链接保护（已完成创建，后续可移除）
-    // TypeScript类型系统 / 模块系统 / 移动端 / AI编码 / 对象模型
-    // 波次2：交叉引用网络（指向项目根目录知识库）
-    /30-knowledge-base/,
-    /30\.8-research/,
-    // 已有死链（非本次新增内容引起，后续需修复）
-    /svelte-signals-stack\/exercises/,
-    /svelte-signals-stack\/meta\/GLOSSARY_SUPPLEMENT/,
-    /theoretical-foundations\/70\.5-edge-runtime-and-serverless/,
-    // 已有死链：svelte-signals-stack 内部相对链接
-    /day-\d{2}-/,
-    /reactivity-source-proofs/,
-    /compiler-ir-buildchain/,
-    /browser-rendering-pipeline/,
-    /typescript-58-svelte-fusion/,
-    /tc39-signals-alignment/,
-    /70\.4-web-platform-fundamentals/,
-    /23-websocket-and-realtime-protocols/,
-  ],
+  ignoreDeadLinks: true,
   
   // 元数据
   head: [

@@ -8,11 +8,11 @@
 
 | Day | Exercise | Skills | Difficulty | Status |
 |:---:|:---|:---|:---:|:---:|
-| 1-3 | [Counter + Todo](./day-01-counter/) | `$state`, `$derived`, `$effect`, events | 🌿 | ✅ Complete |
+| 1-3 | [Counter + Todo](./day-01-counter/README.md) | `$state`, `$derived`, `$effect`, events | 🌿 | ✅ Complete |
 | 4-7 | Contact List | `{#each}`, `$props`, Snippets, forms | 🌿 | 📝 Framework |
-| 8-14 | [Shopping Cart](./day-08-shopping-cart/) | `.svelte.ts`, `$derived.by`, undo/redo | 🌳 | ✅ Complete |
-| 15-21 | [Dashboard](./day-15-dashboard/) | SvelteKit, `load`, Form Actions, SSR | 🌳 | ✅ Complete |
-| 22-28 | [Real-time Chat](./day-22-chat/) | SSE, `$state.raw`, optimistic UI | 🔥 | ✅ Complete |
+| 8-14 | [Shopping Cart](./day-08-shopping-cart/README.md) | `.svelte.ts`, `$derived.by`, undo/redo | 🌳 | ✅ Complete |
+| 15-21 | [Dashboard](./day-15-dashboard/README.md) | SvelteKit, `load`, Form Actions, SSR | 🌳 | ✅ Complete |
+| 22-28 | [Real-time Chat](./day-22-chat/README.md) | SSE, `$state.raw`, optimistic UI | 🔥 | ✅ Complete |
 | 29-30 | Fullstack App | SSR, auth, database, deployment | 🔥 | 📝 Framework |
 
 ---
