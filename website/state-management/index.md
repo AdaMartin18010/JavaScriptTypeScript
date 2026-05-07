@@ -371,7 +371,7 @@ graph LR
 
 ## 状态管理生态系统图
 
-`mermaid
+```mermaid
 graph TB
     subgraph Core[核心概念]
         S1[State]
@@ -396,7 +396,8 @@ graph TB
     Patterns --> Tools
 
 end
-``n
+```
+
 ---
 
 ## 快速参考卡片
@@ -419,33 +420,34 @@ end
 
 ### Flux架构
 
-`mermaid
+```mermaid
 graph LR
     A[Action] --> D[Dispatcher]
     D --> S[Store]
     S --> V[View]
     V --> A
-``n
+```
 
 ### 单向数据流
 
-`mermaid
+```mermaid
 graph LR
     User[用户交互] --> Event[事件]
     Event --> Handler[处理器]
     Handler --> Update[更新状态]
     Update --> Render[重新渲染]
     Render --> UI[UI更新]
-``n
+```
 
 ### 分层状态架构
 
-``n应用层
+```应用层
   ├── 视图层 (Components)
   ├── 状态层 (Store/Context)
   ├── 服务层 (API/Cache)
   └── 基础设施层 (Storage/Network)
-``n
+```
+
 ---
 
 ## 参考资源
@@ -479,7 +481,7 @@ graph LR
 
 ### 性能优化速查
 
-` sx
+```tsx
 // ✅ 使用选择器精确订阅
 const name = useStore(state => state.user.name);
 
@@ -492,7 +494,8 @@ const fullName = useMemo(() => ${first} , [first, last]);
 
 // ❌ 避免全量订阅
 const state = useStore(); // 任何变化都触发重渲染
-``n
+```
+
 ---
 
 > 最后更新: 2026-05-02
@@ -500,7 +503,7 @@ const state = useStore(); // 任何变化都触发重渲染
 
 ## 状态管理学习路径
 
-`mermaid
+```mermaid
 graph LR
     A[基础: useState/useRef] --> B[进阶: useReducer/Context]
     B --> C[工具: Zustand/Redux]
@@ -514,7 +517,7 @@ graph LR
     C --> F
     C --> G
     C --> H
-``n
+```
 
 1. **入门**: 掌握useState、useRef、props drilling
 2. **进阶**: 学习useReducer、Context API、状态提升

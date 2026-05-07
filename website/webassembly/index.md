@@ -66,4 +66,6 @@ mindmap
 | [移动端跨平台](../mobile-cross-platform/) | 移动端 WebView 中 Wasm 的集成与性能 |
 | [AI-Native Development](../ai-native-development/) | 端侧 AI 推理：TensorFlow.js Wasm 后端、ONNX Runtime |
 | [测试工程](../testing-engineering/) | Wasm 模块的单元测试与边界测试 |
+| [性能工程](../performance-engineering/) | Wasm 与 JS 边界开销、SIMD、Streaming 编译优化 |
+| [应用设计](../application-design/) | Wasm 在微服务与边缘架构中的角色 |
 | [数据库层](../database-layer/) | duckdb-wasm、sql.js 等 Wasm 数据库引擎 |

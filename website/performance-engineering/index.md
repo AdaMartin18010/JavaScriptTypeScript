@@ -355,3 +355,18 @@ graph TB
 4. 🛠️ 实施一项可量化的优化改进，并在 **08-性能监控** 的指导下建立持续追踪（约 1 小时）
 
 性能工程是一场马拉松，而非短跑。每一次百分之一的改进，乘以百万级用户，都将产生巨大的体验价值。愿本专题成为你性能精进之旅的可靠伴侣。
+
+---
+
+## 相关专题
+
+| 专题 | 关联点 |
+|------|--------|
+| [React / Next.js App Router](../react-nextjs-app-router/) | Next.js 渲染优化、Streaming、RSC 性能 |
+| [WebAssembly](../webassembly/) | Wasm 模块性能、SIMD、边界开销优化 |
+| [移动端跨平台](../mobile-cross-platform/) | React Native 启动时间、FPS、内存优化 |
+| [Edge Runtime](../edge-runtime/) | 边缘计算低延迟架构与缓存策略 |
+| [测试工程](../testing-engineering/) | 性能测试方法论、Lighthouse CI、负载测试 |
+| [数据库层](../database-layer/) | 查询性能优化、ORM N+1 问题、连接池 |
+| [状态管理](../state-management/) | 状态更新频率控制、选择器优化、重渲染治理 |
+| [应用设计](../application-design/) | 架构层面的性能决策、CAP 定理与一致性权衡 |

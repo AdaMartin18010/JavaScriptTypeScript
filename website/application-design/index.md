@@ -578,3 +578,18 @@ graph TB
 ---
 
 *最后更新: 2026-05-01 | 分类: theoretical-foundations | 层次: L5 应用设计*
+
+---
+
+## 相关专题
+
+| 专题 | 关联点 |
+|------|--------|
+| [TypeScript 类型精通](../typescript-type-mastery/) | 类型驱动的架构设计、DDD 值对象与实体类型 |
+| [数据库层](../database-layer/) | DDD 聚合与持久化、CQRS 与事件溯源 |
+| [Edge Runtime](../edge-runtime/) | 边缘架构模式、Serverless 设计决策 |
+| [AI-Native Development](../ai-native-development/) | AI 原生应用架构、RAG 模式与 Agent 编排 |
+| [测试工程](../testing-engineering/) | 可测试性设计、契约测试、混沌工程 |
+| [性能工程](../performance-engineering/) | 架构层面的性能决策、CAP 定理与一致性权衡 |
+| [状态管理](../state-management/) | DDD 限界上下文与状态边界划分 |
+| [WebAssembly](../webassembly/) | Wasm 在微服务架构中的角色与边缘部署 |

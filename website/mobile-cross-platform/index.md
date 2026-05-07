@@ -64,3 +64,5 @@ mindmap
 | [Edge Runtime](../edge-runtime/) | 移动端边缘计算与离线优先架构 |
 | [WebAssembly](../webassembly/) | 移动端 WebView 中 Wasm 的集成与性能优化 |
 | [测试工程](../testing-engineering/) | React Native / Expo 测试策略与 E2E 自动化 |
+| [性能工程](../performance-engineering/) | 移动端启动时间、FPS、内存与包体积优化 |
+| [状态管理](../state-management/) | React Native / Expo 中的全局状态方案选型 |

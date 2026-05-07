@@ -127,3 +127,5 @@ flowchart TB
 | [移动端跨平台](../mobile-cross-platform/) | Capacitor 渐进式迁移：从 PWA 到原生 App |
 | [WebAssembly](../webassembly/) | HTMX + Wasm 高性能计算模块集成 |
 | [测试工程](../testing-engineering/) | HTMX 超媒体驱动的集成测试策略 |
+| [性能工程](../performance-engineering/) | HTMX 极简 DOM 更新的性能优势与缓存策略 |
+| [应用设计](../application-design/) | 服务器优先架构与事件驱动设计模式 |

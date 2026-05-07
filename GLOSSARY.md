@@ -361,6 +361,7 @@
 | 2026-05-07 | 新增 7 个独立深度专题术语（共 17 条），覆盖 Edge Runtime、数据库层/ORM、AI-Native、Server-First、Lit Web Components |
 | 2026-05-07 | 新增移动端跨平台专题术语（共 8 条）：OTA、TurboModule、JSI、Hermes、EAS、Capacitor、Fabric、FlashList |
 | 2026-05-07 | 新增 WebAssembly 深度专题术语（共 7 条）：WASI、Component Model、Wasmtime、WasmEdge、JSPI、wasm-bindgen、SIMD |
+| 2026-05-07 | 统一 14 个深度专题的交叉引用体系，修复 state-management 首页的代码围栏语法错误 |
 
 ---
 

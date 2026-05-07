@@ -601,7 +601,11 @@ JavaScriptTypeScript/
     ├── ai-native-development/           # AI-Native Development 深度专题 (8篇)
     ├── svelte-signals-stack/            # Svelte 5 Signals 深度专题 (32篇)
     ├── mobile-cross-platform/           # 移动端跨平台开发深度专题 (9篇，含首页)
-    └── webassembly/                     # WebAssembly 深度专题 (9篇，含首页)
+    ├── webassembly/                     # WebAssembly 深度专题 (9篇，含首页)
+    ├── performance-engineering/         # 性能工程深度专题 (12篇，含首页)
+    ├── state-management/                # 状态管理深度专题 (21篇，含首页)
+    ├── application-design/              # 应用设计深度专题 (14篇，含首页)
+    └── svelte-signals-stack/            # Svelte Signals 编译器生态深度专题 (32篇，含首页)
 ```
 
 ---

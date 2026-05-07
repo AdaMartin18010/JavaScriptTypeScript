@@ -986,3 +986,18 @@ my-app/
 > 最后更新: 2026-05-07 | 专题总计: **30 专题文档 + 12 支持索引**, ~1.2MB | 状态: ✅ 构建通过 | 对齐: Svelte 5.55.5 · TC39 Stage 1 · Vite 6.3 · TS 5.8+ · TS 7.0 Preview
 >
 > 维护者: JSTS 技术社区 | 协议: CC BY-SA 4.0 | 问题反馈: [GitHub Issues](https://github.com/luyanfei/JavaScriptTypeScript/issues)
+
+---
+
+## 相关专题
+
+| 专题 | 关联点 |
+|------|--------|
+| [TypeScript 类型精通](../typescript-type-mastery/) | Svelte 5 Runes 的类型推断与泛型组件 |
+| [React / Next.js App Router](../react-nextjs-app-router/) | Signals vs React 响应式模型对比、迁移路径 |
+| [状态管理](../state-management/) | Signals 作为细粒度状态管理的实现原理 |
+| [性能工程](../performance-engineering/) | 编译器优化、INP 指标、细粒度更新性能 |
+| [构建工具链](../categories/build-tools) | Vite 与 Svelte 编译器集成、Rollup 插件 |
+| [移动端跨平台](../mobile-cross-platform/) | Svelte Native / Capacitor 中的响应式适配 |
+| [WebAssembly](../webassembly/) | Svelte 编译输出与 Wasm 模块的协同 |
+| [测试工程](../testing-engineering/) | Svelte 组件测试、快照测试与属性测试 |

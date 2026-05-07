@@ -70,6 +70,8 @@ flowchart LR
 | [移动端跨平台](../mobile-cross-platform/) | 移动端边缘计算与离线优先架构 |
 | [WebAssembly](../webassembly/) | 边缘 Wasm 运行时：Cloudflare Workers、Fastly、WasmEdge |
 | [测试工程](../testing-engineering/) | 边缘函数的单元测试与集成测试 |
+| [性能工程](../performance-engineering/) | 边缘计算低延迟架构与全局缓存策略 |
+| [应用设计](../application-design/) | Serverless 架构设计与微服务拆分策略 |
 
 ## 参考资源
 

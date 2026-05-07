@@ -139,3 +139,5 @@ flowchart TB
 | [移动端跨平台](../mobile-cross-platform/) | React 组件模型在移动端的延续与差异 |
 | [WebAssembly](../webassembly/) | Next.js 中 Wasm 模块的 SSR/CSR 集成 |
 | [测试工程](../testing-engineering/) | 组件测试、RSC 测试、Playwright E2E |
+| [性能工程](../performance-engineering/) | Next.js 渲染优化、Streaming、Core Web Vitals |
+| [状态管理](../state-management/) | React Context、Zustand、Jotai 在 Next.js 中的实践 |

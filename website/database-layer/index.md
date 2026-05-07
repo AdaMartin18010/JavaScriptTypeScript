@@ -75,6 +75,8 @@ flowchart LR
 | [移动端跨平台](../mobile-cross-platform/) | 移动端本地数据库：SQLite、WatermelonDB、Realm |
 | [WebAssembly](../webassembly/) | Wasm 数据库引擎：duckdb-wasm、sql.js |
 | [测试工程](../testing-engineering/) | 数据库测试、TestContainers、契约测试 |
+| [性能工程](../performance-engineering/) | 查询性能优化、ORM N+1 问题与连接池 |
+| [应用设计](../application-design/) | DDD 聚合设计、CQRS 与事件溯源架构 |
 
 ## 参考资源
 

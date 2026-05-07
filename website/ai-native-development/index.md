@@ -70,6 +70,8 @@ flowchart LR
 | [移动端跨平台](../mobile-cross-platform/) | 端侧 AI 推理：Core ML / TensorFlow Lite 集成 |
 | [WebAssembly](../webassembly/) | 端侧 AI 推理：TensorFlow.js Wasm 后端、ONNX Runtime |
 | [测试工程](../testing-engineering/) | AI 辅助测试生成与 LLM-as-Judge 评估 |
+| [性能工程](../performance-engineering/) | AI 推理延迟优化、流式响应与 Token 吞吐量 |
+| [应用设计](../application-design/) | AI 原生应用架构、RAG 模式与 Agent 编排 |
 
 ## 参考资源
 
